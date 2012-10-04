@@ -1,0 +1,198 @@
+// Gfx entry types, Doom and port formats
+
+entry_types
+{
+	gfx_raw // The base type for the various raw graphic formats
+	{
+		name = "(gfx raw base)";
+		format = img_raw;
+		export_ext = "raw";
+		editor = gfx;
+		icon = "e_gfx";
+		detectable = 0;
+		extra = image;
+		category = "Graphics";
+		image_format = "raw";
+		colour = 0, 0, 255;
+	}
+
+	gfx_flat : gfx_raw
+	{
+		name = "Graphic (Flat)";
+		size = 4, 4096, 4160, 8192, 16384, 65536, 64000, 1048576, 4194304, 16777216;
+		section = "flats";
+		extra = image;
+		image_format = "raw_flat";
+	}
+
+	gfx_autopage : gfx_raw
+	{
+		name = "Graphic (Autopage)";
+		size_multiple = 320;
+		//format = autopage;
+		match_name = "autopage";
+		extra = image;
+		image_format = "raw_flat";
+	}
+
+	gfx_strifestartup : gfx_raw
+	{
+		name = "Graphic (Startup)";
+		size = 256, 2048, 2304;
+		//format = strifestart;
+		match_name = "strtpa1", "strtpb1", "strtpc1", "strtpd1", "strtlz1", "strtlz2", "strtbot";
+		extra = image;
+	}
+
+	gfx_raw_screen : gfx_raw
+	{
+		name = "Graphic (Raw Screen)";
+		size = 64000;
+		//format = fullscreen;
+		match_name = "title", "help1", "help2", "credit", "interpic", "finale1", "finale2", "finale3", "e2end", "final1", "final2", "startup0";
+		extra = image;
+		image_format = "raw_flat";
+	}
+	
+	gfx_base
+	{
+		icon = "e_gfx";
+		colour = 0, 0, 255;
+		category = "Graphics";
+		detectable = 0;
+	}
+
+	gfx_doom : gfx_base
+	{
+		name = "Graphic (Doom)";
+		format = img_doom;
+		editor = gfx;
+		reliability = 230;
+		extra = image, patch;
+		export_ext = "lmp";
+		image_format = "doom";
+	}
+
+	gfx_doom_beta : gfx_base
+	{
+		name = "Graphic (Beta)";
+		format = img_doom_beta;
+		editor = gfx;
+		reliability = 160;
+		extra = image, patch;
+		export_ext = "lmp";
+		image_format = "doom_beta";
+	}
+
+	gfx_doom_snea : gfx_base
+	{
+		name = "Graphic (Snea)";
+		format = img_doom_snea;
+		editor = gfx;
+		extra = image;
+		export_ext = "lmp";
+		image_format = "doom_snea";
+	}
+
+	gfx_doom_gnum : gfx_base
+	{
+		name = "Graphic (Gnum)";
+		format = img_raw;
+		size = 120;
+		match_name = "gnum?";
+		editor = gfx;
+		extra = image;
+		image_format = "raw";
+	}
+
+	gfx_doom_arah : gfx_base
+	{
+		name = "Graphic (Arah)";
+		format = img_doom_arah;
+		editor = gfx;
+		extra = image;
+		reliability = 100;
+		export_ext = "lmp";
+		image_format = "doom_arah";
+	}
+
+	gfx_doom_alpha : gfx_base
+	{
+		name = "Graphic (Alpha)";
+		format = img_doom_alpha;
+		editor = gfx;
+		reliability = 100;
+		extra = image, patch;
+		export_ext = "lmp";
+		image_format = "doom_alpha";
+	}
+
+	gfx_doom_jaguar : gfx_base
+	{
+		name = "Graphic (Jaguar)";
+		format = img_doom_jaguar;
+		editor = gfx;
+		extra = image;
+		export_ext = "lmp";
+		image_format = "doom_jaguar";
+		reliability = 65;
+	}
+
+	img_jaguar_texture : gfx_base
+	{
+		name = "Graphic (Jaguar Tx)";
+		format = img_jaguar_texture;
+		editor = gfx;
+		extra = image;
+		export_ext = "raw";
+		//image_format = "doom_jagtex";
+		reliability = 75;
+	}
+
+	img_jaguar_sprite : gfx_base
+	{
+		name = "Graphic (Jaguar Sp)";
+		format = img_jaguar_sprite;
+		editor = gfx;
+		extra = image, patch;
+		export_ext = "hdr";
+		//image_format = "doom_jagsprite";
+		reliability = 70;
+		section = "sprites";
+	}
+
+	gfx_4bitchunk : gfx_base
+	{
+		name = "Graphic (4-bit)";
+		size = 32, 184;
+		match_name = "notch", "netnotch";
+		format = img_4bitchunk;
+		editor = gfx;
+		reliability = 80;
+		extra = image;
+		export_ext = "lmp";
+		image_format = "4bitchunk";
+	}
+
+	gfx_planar : gfx_base
+	{
+		name = "Graphic (Planar)";
+		size = 153648;
+		editor = gfx;
+		format = img_planar;
+		match_name = "startup";
+		reliability = 240;
+		extra = image;
+		image_format = "planar";
+	}
+
+	imgz : gfx_base
+	{
+		name = "Graphic (IMGZ)";
+		format = img_imgz;
+		export_ext = "imgz";
+		editor = gfx;
+		extra = image;
+		image_format = "imgz";
+	}
+}

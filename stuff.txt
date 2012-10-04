@@ -1,0 +1,252 @@
+
+--------------------------- SLADE - stuff.txt ---------------------------
+              Big list of unimplemented features, requests,
+            TODOs, ideas, and other general development notes
+-------------------------------------------------------------------------
+
+
+TODO List ---------------------------------------------------------------
+
+--- Bugs ---
+- Gfx doesn't update after being converted
+- No handling for when a line is moved to overlap another
+- Map editor should use PLAYPAL from resource chain on 'existing/global'
+- 3d mode textures need to update with MapTextureManager, somehow
+
+
+--- Map Editor ---
+- Checks:
+	- Missing textures
+	- Specials with 0 tag that require a tag
+	- Invalid sector references (maybe not, shouldn't really happen)
+- Non-power-of-two textures (where simply expanding the texture canvas to 128x128 won't work)
+	- Will probably have to implement some kind of resize for this (perhaps FreeImage can do it nicely?)
+- 3d mode
+	- Auto-align Y
+	- Thing z height editing
+	- Offsets/scaling copy+paste
+	- Flat offset/scale editing (udmf+zdoom)
+	- Better vis checking
+	- (Z)MAPINFO parsing for sky texture
+	- Thing boxes (might not bother with full boxes unless I add game-accurate 'height' property to thing configurations)
+	- Preferences dialog page
+- Editing:
+	- Proper UDMF/Hexen/Doom64 Map saving (BEHAVIOR, SCRIPTS, DIALOGUE, LIGHTS, MACROS, etc.)
+	- Generalised sector and line specials
+	- Rotate/scale objects ('edit' mode similar to db2 would be nice, perhaps not a mode though)
+	- Light increments should probably be defined in game configs (8 for zdoom, 16 for others)
+	- Copy+paste sectors/lines
+- Script editor
+- Better UDMF property handling, proper support for unknown properties read with the map
+- (Possibly) better line/thing flag handling
+- 'Tag edit' mode
+- Optimise Polygon2D splitting somehow, it creates many unneeded splits
+
+
+--- Minor Problems/Annoyances ---
+- Long calltips can extend off the edge of the screen
+- Incorrect ctrl+tab behaviour with tabs
+
+--- Editor Features ---
+- Generic entry data view (for VERTEXES, LINEDEFS, SIDEDEFS, SECTORS, THINGS, DEMO*, TEXTUREX/PNAMES, ...)
+- ANSI screen editor
+- Proper font viewer
+- 'Cleanup' stuff (unused patches, textures, flats, unneeded entries...)
+- Compilation of other language scripts
+- Archive merging
+- Archive conversion
+- 'Export As' for archives (or just ability to select a different type/extension on save as)
+- 'Export As' for entries - does conversion+export
+
+--- Formats ---
+- 7z
+- Lzma/bz2 for zip
+
+--- Text Editor ---
+- 'Tabs as Spaces' option
+
+--- Gfx Editor ---
+- Basic pixel-drawing tools
+
+--- Audio ---
+
+--- General ---
+- Preferences Dialog:
+	- List of entry types, ability to enable/disable detection of certain types
+- Finish entry data format (EDF_*) system:
+	- Simple user-definable data formats:
+		- Minimum/maximum size
+		- Byte pattern to look for at a certain offset in the file (ideally allow multiple of these), something like:
+		  pattern = 10, 255, 255, 255, 0; = look for 255,255,255,0 at offset 10 in file
+		- Call inbuilt tests for more complex detection algorithms (wad files, doom gfx, etc)
+- General optimisation:
+	- Entry type detection (maybe move the initial detection to a background thread)
+	- Gfx conversion
+- *Resources system:
+	- opened archives are either used as resources or not
+	- when searching for patches etc, resource archives are searched, then base resource archive
+	- archive list on archive manager panel could have 'resource' checkboxes for each list item
+- Undo/Redo system
+	- Should be general enough to be used by the map editor also
+- Different icon sets
+- Better backup system
+- More drag-and-drop support
+- Rewrite VirtualListView with item filtering/sorting in mind
+
+
+--- Internal / Dev ---
+- SFont class
+- Ability to set an archive never to read entry data into memory (read data from the file every time)
+- MemChunk subclass that deals with a file rather than a memory block
+- Some lump (sub)formats can only be identified properly from the presence of other lumps; e.g. GL nodes and THINGS/LINEDEFS
+- Needs some kind of proper archive type system, handled by ArchiveManager (similar to SIFormat)
+- Need to do something about keeping ArchiveEntry.data.size and ArchiveEntry.size in sync
+  (Still need the size member for entries that don't have their data loaded into memory yet)
+  (could make ArchiveEntry a subclass of MemChunk?)
+- Better way to get the currently selected entries would be nice
+- Should probably write my own lexer for TextEditor since the default cpp/cppnocase ones are somewhat limited
+- Implement custom replacement for wxFileName that allows fast matching against name/extension etc
+- Multithreaded entry type detection?
+
+
+
+Changes since 3.0.2 -----------------------------------------------------
+To keep track of resource editor changes (in case I decide to release a 3.0.3 after all)
+
+- Added ability to open maps with Doom Builder 2 (if it is installed)
+- Added ability to export a texture to a single graphic entry
+- Added console commands to list/set cvars
+- Gfx offsets are preserved on import
+- Added palette editing functionality
+- If alt is held down when moving a patch with the arrow keys, a duplicate patch will be added and moved'
+- Added ability to quickly jump to items in the patch browser by typing the first few letters of the patch name
+- Added word wrapping checkbox to text entry panel
+- Keybinds are now configurable in the preferences dialog
+- Added colour configuration to preferences dialog
+- In the gfx conversion dialog, the transparent colour can now be set by left-clicking on the current preview image
+- Multiple entry name filters can now be entered (separated by commas) eg: "MAP01, MAP02"
+- Implemented basic 'remove unused textures' and 'remove unused patches' actions
+- Added mp3 and module playback
+- Changed the browser to use a proper font for item names
+- Browser background changed to the checkered texture used in most other gfx views (optional)
+- Added 'zoom' slider to the browser window
+- Removed the maps list from the open archives tab on the archive manager
+- Merged the Archives and Recent Files tabs into one
+- Implemented a custom toolbar, replacing the ugly wxAUI ones
+- Added ability to directly generate new PLAYPAL, ANIMATED and SWITCHES lumps instead of having to create an empty lump and then import content in it
+- Implemented notebook tab art class from CodeLite, now tabs look a fair bit nicer, especially in linux
+- New maintenance option: cleaning out entries that are identical duplicates of an IWAD lump
+- Texture editor: implemented support for "UseOffsets" property
+- Added "Edit Level Script" button to MapEntryPanel and FraggleScript language
+- Added playback of Wolfenstein digitized sounds (VSWAP)
+- Added new maintenance option: check for duplicated entry content with a CRC-32 check for each entry
+- 'Replace In Maps' stuff
+- Added COLORMAP lump generation
+- Various additions and improvements to texture editor for ZDoom TEXTURES format
+- Added option to colour entry list item background by entry type
+
+
+
+Unimplemented Feature Requests ------------------------------------------
+
+--- General / User Interface ---
+- Fully customisable toolbars
+- Sorting by column (I.E. Name or Type)
+
+--- Archive / Entry Management ---
+- mass export to format (XWE)
+- sorting lumps in archive (not just their display)
+
+--- Entry Editing ---
+- SBARINFO viewer/editor
+
+--- Gfx ---
+- Save offset type between sessions
+Translation dialog:
+- Source/destination palette selectable
+- Scroll through multiple preview gfx
+- Allow use with truecolour gfx
+- Tool for trimming blank space around a graphic.
+- Tool for adding blank space to either side as needed to put the x offset right in the center (better for mirrored sprites).
+
+Conversion dialog:
+- Enter and esc mapped to convert all and skip all
+
+--- Text Editor ---
+
+--- TEXTUREx Editor ---
+- list textures and patches in alphabetical order (with non-iwad ones at the bottom of the list)
+- find/replace for patches
+- Ability to search for a texture containing a specific patch
+
+--- General ---
+- Support for LZMA, Bzip2 and zip formats other than store and deflate
+- Mass research & replace of map elements (thing numbers, texture or flat names) across a map or all the maps of an archive
+	- Mostly done, still needs UDMF implementation and a solid UI for selecting maps to change, what to replace, and with what.
+
+
+
+Ideas / Possible Features -----------------------------------------------
+
+- Tree view for entry list (optional)
+- Ability to perform all archive/entry management functions via the console (possibly allow scripts too?)
+- 'Animation viewer' (select a bunch of sprites to test an animation or whatever)
+- Hex editor
+- Font editor
+- Better UI for palette editing tools (something like the color remap maybe?)
+- UI for creating custom colormaps (with other settings than dcolors.c's)
+- Merge "Tint" and "Colourize" into a versatile image recolour feature with RGB, HSL, and Lab tweak options as well.
+- *Project system:
+	- Hide/abstract underlying archive/entry stuff
+	- Will need to specify a 'game' for the project to enable/disable certain features:
+		- Changes the way certain things are handled (ie vanilla will have separate textures/flats where zdoom will have just textures)
+		- Limits resource formats to what is supported (PNG in zdoom but not vanilla)
+	- Work with 'resources' rather than entries
+	- Resources imported from archives
+	- Resource types:
+		- Graphics:
+			- Textures
+			- Flats (for games that don't support mixing of flats/textures only)
+			- Sprites
+		- Maps
+		- Audio:
+			- Sounds
+			- Music
+		- etc...
+		- Data (anything that doesn't fit into the above categories)
+	- Resources can either be internal or external:
+		- Internal means the resource is imported into the project and exported with it
+		- External means the resource exists in an external archive and will not be exported with the project
+		  (for resources in an IWAD, texture pack, etc)
+	- Ability to export project to archive(s):
+		- Can export all resources to a single archive
+		- Can 'split' resources to separate archives (ie one for textures, another for maps, etc)
+	- A system of cascading configurations will be needed to handle all the game/port/format combinations
+- Archive/Entry information database:
+	- Store within the archive or in a separate file (optional)
+	- Menu item 'Archive->Write Metadata'
+	- Keeps information about archive entries:
+		- CRC (will be used to determine if the info is up-to-date)
+		- Extra properties
+		- Entry type
+- Model viewer
+- The 'findModifiedEntries()' function could be used to create an 'Export Changes in New File' feature as an alternative to saving the archive, useful especially for IWADs.
+- EntryPanels able to handle multiple entries for special purposes
+	- GfxEntryPanel: shows all selected images in a browser kind of thing
+	- AudioEntryPanel: loads all selected entries as a playlist
+- Full DECORATE editor (would go nicely with the project system above)
+- DeHackEd editor (could be an outgrowth of the DECORATE editor since it'd require actor/state management)
+- Feature to dump map information (number of vertices (+ nodebuilder vertices), of linedefs, of sidedefs, of sectors, of segs, of things)
+	- Report on flats and textures used (which ones, and how many times)
+	- Report on thing placement (using game configuration to name and categorize things)
+	- Report specials used in map (both linedefs and, if appropriate, things, using game config to name and categorize specials)
+	- Ideally would allow to output in a wiki syntax to help make the tables used in the Doom Wiki.
+- Waiting For SladeScript(tm), in four steps:
+	- Console commands to perform archive management actions (opening or creating archives, saving, importing files, exporting entries, copying, renaming, etc.)
+	- Console commands aliases (like in ZDoom)
+	- Console command batches (run all commands contained in a file or a lump)
+	- Script mode: command-line options to (1) run a console command batch at startup and optionally also (2) quit once the batch is finished.
+		- Bonus fifth step: interpret DeuTex scripts, allowing SLADE to replace that outdated tool in projects like Hacx and Freedoom.
+
+
+Other / Notes -----------------------------------------------------------

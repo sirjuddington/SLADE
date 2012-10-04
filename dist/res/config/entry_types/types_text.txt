@@ -1,0 +1,455 @@
+// Text entry types
+
+entry_types
+{
+	text // The base type for text entries (won't be detected)
+	{
+		name = "Text";
+		format = text;
+		export_ext = "txt";
+		editor = text;
+		icon = "e_text";
+		detectable = 0;
+		category = "Text";
+	}
+	
+	sladecfg : text
+	{
+		name = "SLADE Configuration";
+		match_name = "sladecfg";
+	}
+
+	xnmsg : text
+	{
+		name = "Messages";
+		match_name = "clus?msg", "win?msg";
+	}
+
+	strflog : text
+	{
+		name = "Log";
+		match_name = "log?", "log??", "log???", "log????";
+	}
+
+	strftext : text
+	{
+		name = "Endgame text";
+		match_name = "t1text", "c1text";
+	}
+
+	althudcf : text
+	{
+		name = "HUD config";
+		match_name = "althudcf";
+	}
+
+	animdefs : text
+	{
+		name = "Animations";
+		match_name = "animdefs";
+		text_language = "z_animdefs";
+	}
+
+	decaldef : text
+	{
+		name = "Decals";
+		match_name = "decaldef";
+		text_language = "z_decaldef";
+	}
+
+	decorate : text
+	{
+		name = "Decorate";
+		match_name = "decorate";
+		match_ext = "dec";
+		match_extorname = 1;
+		text_language = "decorate";
+	}
+
+	dehacked : text
+	{
+		name = "DeHackEd";
+		match_name = "dehacked";
+		match_ext = "deh";
+		match_extorname = 1;
+	}
+
+	dehsupp : text
+	{
+		name = "Dehsupp";
+		match_name = "dehsupp";
+	}
+
+	dmxgus : text
+	{
+		name = "Dmxgus";
+		match_name = "dmxgus", "dmxgusc", "gusmidi";
+	}
+
+	fsglobal : text
+	{
+		name = "FraggleScript";
+		match_name = "fsglobal";
+	}
+
+	fontdefs : text
+	{
+		name = "Fontdefs";
+		match_name = "fontdefs";
+		text_language = "z_fontdefs";
+	}
+
+	gameinfo : text
+	{
+		name = "Game info";
+		match_name = "gameinfo";
+		text_language = "z_gameinfo";
+	}
+
+	gldefslump : text
+	{
+		name = "OpenGL defs";
+		match_extorname = 1;
+		match_name = "gldefs", "doomdefs", "hticdefs", "hexndefs", "strfdefs";
+		match_ext = "gl", "bm";
+		text_language = "z_gldefs";
+	}
+
+	hehacked : text
+	{
+		name = "HeHackEd";
+		match_ext = "hhe";
+	}
+
+	keyconf : text
+	{
+		name = "Key conf";
+		match_name = "keyconf";
+		text_language = "z_keyconf";
+	}
+
+	language : text
+	{
+		name = "Language";
+		match_name = "language";
+	}
+
+	loadacs : text
+	{
+		name = "ACS loader";
+		match_name = "loadacs";
+	}
+
+	lockdefs : text
+	{
+		name = "Lock defs";
+		match_name = "lockdefs";
+		text_language = "z_lockdefs";
+	}
+
+	mapinfo : text
+	{
+		name = "Mapinfo";
+		match_name = "mapinfo";
+		text_language = "z_mapinfo";
+	}
+
+	zmapinfo : text
+	{
+		name = "Mapinfo (ZDoom)";
+		match_name = "zmapinfo";
+		text_language = "z_mapinfo";
+	}
+	
+	menudef : text
+	{
+		name = "Menu Definition";
+		match_name = "menudef";
+		text_language = "z_menudef";
+	}
+
+	modeldefs : text
+	{
+		name = "3D model defs";
+		match_name = "modeldef";
+		text_language = "z_modeldef";
+	}
+
+	reverbs : text
+	{
+		name = "Reverbs";
+		match_name = "reverbs";
+		text_language = "z_reverbs";
+	}
+
+	rscript : text
+	{
+		name = "EDGE RTS";
+		match_name = "rscript";
+	}
+
+	skininfo : text
+	{
+		name = "Skin defs";
+		match_name = "s_skin", "skininfo";
+		text_language = "z_s_skin";
+	}
+
+	sbarinfo : text
+	{
+		name = "Status bar";
+		match_name = "sbarinfo";
+		text_language = "z_sbarinfo";
+	}
+
+	acs : text
+	{
+		name = "ACS source";
+		match_extorname = 1;
+		match_name = "scripts";
+		match_ext = "acs";
+		text_language = "acs_z";
+	}
+
+	zsdf : text
+	{
+		name = "Strife dialogue";
+		match_name = "dialogue", "script??";
+		match_ext = "dlg";
+		match_extorname = 1;
+		text_language = "zsdf";
+	}
+
+	sndinfo : text
+	{
+		name = "Sound info";
+		match_name = "sndinfo";
+		text_language = "z_sndinfo";
+	}
+
+	sndseq : text
+	{
+		name = "Sound sequence";
+		match_name = "sndseq";
+		text_language = "z_sndseq";
+	}
+
+	teaminfo : text
+	{
+		name = "Team defs";
+		match_name = "teaminfo";
+		text_language = "z_teaminfo";
+	}
+
+	terrain : text
+	{
+		name = "Terrain defs";
+		match_name = "terrain";
+		text_language = "z_terrain";
+	}
+
+	textcolo : text
+	{
+		name = "Text colors";
+		match_name = "textcolo", "textcolors";
+	}
+
+	zdtextures : text
+	{
+		name = "Texture definitions";
+		match_name = "textures", "hirestex";
+		icon = "e_texturex";
+		text_language = "z_textures";
+	}
+	
+	palvers : text
+	{
+		name = "Paletted Texture Substitutions";
+		match_name = "palvers";
+	}
+
+	udmf_textmap : text
+	{
+		name = "UDMF Map Data";
+		match_name = "textmap";
+	}
+
+	xhairs : text
+	{
+		name = "Crosshairs";
+		match_name = "xhairs";
+	}
+	
+	// Doomsday DED lumps and files
+    ded : text
+    {
+        name = "Doomsday Engine Defs";
+		match_extorname = 1;
+		match_name = "dd_defns";
+        match_ext = "ded";
+    }
+
+
+	// EDGE DDF lumps and files
+	ddf: text
+	{
+		name = "EDGE DDF";
+		match_extorname = 1;
+		match_name = "ddf*";
+		match_ext = "ddf", "ldf";
+	}
+
+	// Eternity text lumps
+	options : text
+	{
+		name = "Forced Options";
+		match_name = "options";
+	}
+	
+	edf : text
+	{
+		name = "Eternity EDF";
+		text_language = "edf";
+		match_extorname = 1;
+		match_ext = "edf";
+		match_name = "edfroot", "estrings", "eterrain", "emenus", "esndseq",
+					 "esndinfo", "efonts", "emapinfo", "edf*";
+	}
+	
+	// PrBoom+ lumps
+	prbhud : text
+	{
+		name = "PrBoom+ HUDs";
+		match_name = "-prbhud-";
+	}
+	
+	// SRB2 text lumps
+	maincfg : text
+	{
+		name = "Main Configuration";
+		match_name = "maincfg";
+	}
+
+	// Catchall for various misc text lumps
+	misctext : text
+	{
+		name = "Text";
+		match_name = "extended", "copyrite", "serial", "license", "credits", "iwadinfo";
+	}
+
+	shaders : text
+	{
+		name = "OpenGL Shaders";
+		match_ext = "fp", "fs", "ps", "vp";
+	}
+
+	compshaders // Not actually text!
+	{
+		name = "Compiled Shaders";
+		match_ext = "pso";
+	}
+
+	batch : text
+	{
+		name = "DOS Batch";
+		match_ext = "bat";
+	}
+
+	logfile : text
+	{
+		name = "Log";
+		match_ext = "log";
+	}
+
+	configfile : text
+	{
+		name = "Configuration";
+		match_ext = "cfg", "ini";
+	}
+
+	html : text
+	{
+		name = "HTML";
+		match_ext = "htm", "html";
+	}
+
+	qrc : text
+	{
+		name = "Quake Resources";
+		match_ext = "rc";
+	}
+
+	con : text
+	{
+		name = "DN3D Content";
+		match_ext = "con";
+	}
+	
+	msg : text
+	{
+		name = "Messages";
+		match_ext = "msg";
+	}
+
+	lst : text
+	{
+		name = "List";
+		match_ext = "lst";
+	}
+	
+	jedi_level : text
+	{
+		name = "DF Level";
+		match_ext = "lev", "lvl";
+	}
+
+	jedi_model : text
+	{
+		name = "DF Model";
+		match_ext = "3do";
+	}
+
+	jedi_vue : text
+	{
+		name = "DF Scene";
+		match_ext = "vue";
+	}
+
+	jedi_inf : text
+	{
+		name = "DF Script";
+		match_ext = "inf";
+	}
+
+	jedi_objects : text
+	{
+		name = "DF Objects";
+		match_ext = "o";
+	}
+
+	jedi_goal : text
+	{
+		name = "DF Goals";
+		match_ext = "gol";
+	}
+	
+	rottscript : text
+	{
+		name = "Intro Script";
+		match_name = "shartit?";
+	}
+	
+	sourcecode : text
+	{
+		name = "Source Code";
+		match_ext = "c", "cpp", "cxx", "h", "hpp", "hxx", "java", "cs", "js", "bas", "py", "pl", "pm", "php", "pas", "p", "pp", "vb", "rb", "l", "m", "d", "e";
+	}
+
+	txt : text
+	{
+		name = "Text";
+		match_extorname = 1;
+		match_ext = "txt", "diz", "1st", "doc", "nfo";
+		match_name = "readme", "*info", "*defs";
+	}
+}

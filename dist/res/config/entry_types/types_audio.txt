@@ -1,0 +1,217 @@
+// Audio entry types
+
+entry_types
+{
+	music
+	{
+		icon = "e_music";
+		category = "Audio";
+		colour = 255, 0, 255;
+		detectable = 0;
+	}
+
+	mus : music
+	{
+		name = "Music (MUS)";
+		format = mus;
+		export_ext = "mus";
+		editor = audio;
+	}
+
+	midi : music
+	{
+		name = "Music (MIDI)";
+		format = midi;
+		export_ext = "mid";
+		editor = audio;
+	}
+
+	xmi : music
+	{
+		name = "Music (XMI)";
+		format = xmi;
+		export_ext = "xmi";
+		reliability = 100;
+		editor = audio;
+	}
+
+	hmi : music
+	{
+		name = "Music (HMI)";
+		format = hmi;
+		export_ext = "hmi";
+		reliability = 100;
+		editor = audio;
+	}
+
+	hmp : music
+	{
+		name = "Music (HMP)";
+		format = hmp;
+		export_ext = "hmp";
+		reliability = 100;
+		editor = audio;
+	}
+
+	gmid : music
+	{
+		name = "Music (GMID)";
+		format = gmid;
+		export_ext = "gmd";
+		reliability = 75;
+		editor = audio;
+	}
+
+	mod_it : music
+	{
+		name = "Music (IT Module)";
+		format = mod_it;
+		export_ext = "it";
+		editor = audio;
+	}
+
+	mod_xm : music
+	{
+		name = "Music (XM Module)";
+		format = mod_xm;
+		export_ext = "xm";
+		editor = audio;
+	}
+
+	mod_s3m : music
+	{
+		name = "Music (S3M Module)";
+		format = mod_s3m;
+		export_ext = "s3m";
+		editor = audio;
+	}
+
+	mod_mod : music
+	{
+		name = "Music (MOD Module)";
+		format = mod_mod;
+		export_ext = "mod";
+		editor = audio;
+	}
+
+	
+	sound
+	{
+		icon = "e_sound";
+		category = "Audio";
+		colour = 255, 0, 0;
+		detectable = 0;
+	}
+	
+	snd_doom : sound
+	{
+		name = "Sound (Doom Format)";
+		format = snd_doom;
+		reliability = 200;
+		export_ext = "lmp";
+		editor = audio;
+	}
+	
+	snd_jaguar : sound
+	{
+		name = "Sound (Jaguar Format)";
+		format = snd_jaguar;
+		reliability = 100;
+		export_ext = "lmp";
+		editor = audio;
+	}
+	
+	imf : sound
+	{
+		name = "IMF OPL File";
+		format = imf;
+		reliability = 120;
+		export_ext = "imf";
+		editor = audio;
+	}
+	
+	snd_wolf : sound
+	{
+		name = "Sound (Wolf3D Format)";
+		format = snd_wolf;
+		match_name = "SND0*";
+		match_archive = "archive_wolf";
+		reliability = 10;
+		export_ext = "swp";
+		editor = audio;
+	}
+	
+	// This is used to interpret a raw sample
+	snd_bloodsfx : sound
+	{
+		name = "Sound (Blood Format)";
+		format = snd_bloodsfx;
+		match_ext = "SFX";
+		export_ext = "sfx";
+		editor = audio;
+	}
+
+	snd_speaker : sound
+	{
+		name = "Sound (PC Speaker)";
+		format = snd_speaker;
+		export_ext = "lmp";
+		reliability = 100;
+	}
+
+	snd_wav : sound
+	{
+		name = "Sound (Wav Format)";
+		format = snd_wav;
+		export_ext = "wav";
+		editor = audio;
+	}
+
+	snd_voc : sound
+	{
+		name = "Sound (Creative)";
+		format = snd_voc;
+		export_ext = "voc";
+		editor = audio;
+	}
+
+	snd_ogg : sound
+	{
+		name = "Sound (Ogg Vorbis)";
+		format = snd_ogg;
+		export_ext = "ogg";
+		editor = audio;
+	}
+
+	snd_flac : sound
+	{
+		name = "Sound (FLAC)";
+		format = snd_flac;
+		export_ext = "flac";
+		editor = audio;
+	}
+
+	snd_mp2 : sound
+	{
+		name = "Sound (MP2)";
+		format = snd_mp2;
+		export_ext = "mp2";
+		editor = audio;
+	}
+
+	snd_mp3 : sound
+	{
+		name = "Sound (MP3)";
+		format = snd_mp3;
+		export_ext = "mp3";
+		editor = audio;
+	}
+
+	snd_spc : sound
+	{
+		name = "Sound (SPC)";
+		format = snd_spc;
+		export_ext = "spc";
+		//editor = audio;
+	}
+}

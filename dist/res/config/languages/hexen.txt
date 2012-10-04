@@ -1,0 +1,9 @@
+
+hsndseq {
+	name = "Hexen SndSequence";
+	comment_line = ";";
+
+	keywords = {
+		playuntildone, playrepeat, stopsound, playtime
+	}
+}

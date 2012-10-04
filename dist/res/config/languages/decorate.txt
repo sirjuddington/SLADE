@@ -1,0 +1,832 @@
+
+decorate : cstyle {
+	name = "ZDoom Decorate";
+	keyword_link = "http://zdoom.org/wiki/Special:Search/%s";
+	constant_link = "http://zdoom.org/wiki/Special:Search/%s";
+	function_link = "http://zdoom.org/wiki/%s";
+	case_sensitive = false;
+	blocks = "Actor";
+
+	keywords = {
+		$override,
+
+		// General keywords
+		Actor, States, Spawn, See, Melee, Missile, Pain, Death, XDeath, Burn, Ice, Disintegrate,
+		Raise, Heal, Crash, Crush, Wound, Greetings, Yes, No, Loop, Stop, Wait, Fail, Goto, Ready,
+		Deselect, Select, Fire, AltFire, Hold, AltHold, Flash, AltFlash, Pickup, Use, Drop, Bright,
+		Idle, Active, Inactive, Light, Offset, Native,
+
+		// Actor properties
+		
+		// Generic
+		Game, SpawnID, ConversationID, 
+		
+		// Text
+		Obituary, HitObituary, Tag, 
+		
+		// Health and Pain
+		Health, GibHealth, WoundHealth, PainChance, PainThreshold, PainType, DeathType, 
+
+		// Combat
+		Accuracy, Stamina, ReactionTime,
+		Damage, DamageFactor, DamageType, PoisonDamage, PoisonDamageType, 
+		ExplosionRadius, ExplosionDamage, RadiusDamageFactor, DontHurtShooter, 
+		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, 
+		MissileType, MissileHeight, MinMissileChance, 
+		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack, 
+		
+		// Physics
+		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
+		DeathHeight, BurnHeight, ProjectilePassHeight, CameraHeight, MaxStepHeight, MaxDropOffHeight, 
+		Speed, VSpeed, FastSpeed, FloatSpeed, 
+		
+		// Rendering
+		RenderStyle, None, Normal, Fuzzy, Translucent, SoulTrans, Stencil, StencilColor, Shaded, 
+		Shadow, Add, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
+		BloodColor, BloodType, Decal, 
+		
+		// Sounds
+		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
+		DeathSound, ActiveSound, MeleeSound, HowlSound, PainSound, WallBounceSound, 
+		
+		// Multiplayer weirdness
+		DesignatedTeam, VisibleToTeam, VisibleToPlayerClass, 
+		
+		// Scripting
+		Args, ClearFlags, Species, Activation, DropItem, Skip_Super, DynamicLight,
+
+		// Player-specific properties
+		Player, DisplayName, SoundClass, Face, ColorRange, ColorSet, ColorSetFile, ClearColorSet, 
+		AttackZOffset, JumpZ, SpawnClass, ViewHeight, ForwardMove, SideMove, MaxHealth, MugshotMaxHealth, 
+		RunHealth, MorphWeapon, FlechetteType, ScoreIcon, CrouchSprite, DamageScreenColor, StartItem, 
+		InvulnerabilityMode, HealRadiusType, HexenArmor, Portrait, WeaponSlot, 
+		
+		// Inventory-specific properties
+		Inventory, RestrictedTo, ForbiddenTo, Amount, Icon, InterHubAmount, MaxAmount, 
+		DefMaxAmount, PickupFlash, PickupMessage, PickupSound, PickupAnnouncerEntry,
+		Respawntics, UseSound, GiveQuest,
+		
+		// Fake Inventory
+		FakeInventory, Respawns,
+		
+		// Health
+		Health, LowMessage,
+		
+		// Health pickup
+		HealthPickup, AutoUse,
+		
+		// Armor-specific properties
+		Armor, SaveAmount, SavePercent, MaxAbsorb, MaxFullAbsorb, MaxSaveAmount, MaxBonus, MaxBonusMax,
+
+		// Powerup-specific properties
+		Powerup, Color, Colormap, Duration, Mode, Strength, Type,
+		
+		// Morph powerup
+		PowerMorph, PlayerClass, MorphStyle, MorphFlash, UnmorphFlash,
+		
+		// Morph projectile
+		MorphProjectile, PlayerClass, MonsterClass, Duration, MorphStyle, MorphFlash, UnmorphFlash,
+		
+		// Weapon-specific properties
+		Weapon, Kickback, DefaultKickback, ReadySound, SelectionOrder, SisterWeapon, UpSound, YAdjust, 
+		AmmoGive, AmmoGive1, AmmoGive2, AmmoType, AmmoType1, AmmoType2, AmmoUse, AmmoUse1, AmmoUse2,
+		BobStyle, BobSpeed, BobRangeX, BobRangeY, SlotNumber, SlotPriority, PreferredSkin,
+		
+		// Weapon piece
+		WeaponPiece, Number, Weapon, 
+		
+		// Ammo-specific properties
+		Ammo, BackpackAmount, BackpackMaxAmount, DropAmount,
+		
+		// Puzzle items
+		PuzzleItem, Number, FailMessage,
+
+		// Combos
+		Monster, Projectile,
+
+		// DECORATE expressions
+		x, y, z, angle, momx, momy, momz, velx, vely, velz, pitch, tid, tidtohate, 
+		ceilingz, floorz, scalex, scaley, score, special, waterlevel, var, int, fixed_t, angle_t,
+	}
+
+	constants = {
+		//ZDoom 2.5.0 update by Michaelis
+		//auto-parsed through ZDoom Wiki > Actor flags, so nevermind duplicate entries
+		ACTIVATEIMPACT, ACTIVATEMCROSS, ACTIVATEPCROSS, ACTLIKEBRIDGE, ADDITIVEPOISONDAMAGE,
+		ADDITIVEPOISONDURATION, ALLOWBOUNCEONACTORS, ALLOWPARTICLES, ALWAYSFAST,
+		ALWAYSPUFF, ALWAYSRESPAWN, AMBUSH, AVOIDMELEE, BLASTED, BLOCKEDBYSOLIDACTORS,
+		BLOODLESSIMPACT, BLOODSPLATTER, BOSS, BOSSDEATH, BOUNCEAUTOOFF, BOUNCELIKEHERETIC,
+		BOUNCEONACTORS, BOUNCEONCEILINGS, BOUNCEONFLOORS, BOUNCEONWALLS, BRIGHT, BUMPSPECIAL,
+		CANBLAST, CANBOUNCEWATER, CANNOTPUSH, CANPASS, CANPASS, CANPUSHWALLS, CANTLEAVEFLOORPIC,
+		CANTSEEK, CANUSEWALLS, CEILINGHUGGER, CORPSE, COUNTITEM, COUNTKILL, DEFLECT, DEHEXPLOSION,
+		DONTBLAST, DONTFALL, DONTGIB, DONTHARMCLASS, DONTHURTSPECIES, DONTMORPH, DONTOVERLAP,
+		DONTREFLECT, DONTRIP, DONTSEEKINVISIBLE, DONTSPLASH, DONTSQUASH, DONTTRANSLATE, DOOMBOUNCE,
+		DORMANT, DROPOFF, DROPPED, EXPLOCOUNT, EXPLODEONWATER, EXTREMEDEATH, FASTER, FASTMELEE,
+		FIREDAMAGE, FIRERESIST, FIXMAPTHINGPOS, FLOAT, FLOATBOB, FLOORCLIP, FLOORHUGGER, FOILINVUL,
+		FORCEPAIN, FORCERADIUSDMG, FORCEXYBILLBOARD, FORCEYBILLBOARD, FRIENDLY, FRIGHTENED,
+		FULLVOLACTIVE, FULLVOLDEATH, GHOST, GRENADETRAIL, HERETICBOUNCE, HEXENBOUNCE, ICECORPSE,
+		ICEDAMAGE, INCOMBAT, INVISIBLE, INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LONGMELEERANGE,
+		LOOKALLAROUND, LOWGRAVITY, MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MOVEWITHSECTOR,
+		MTHRUSPECIES, NEVERFAST, NEVERRESPAWN, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS,
+		NOBOSSRIP, NOBOUNCESOUND, NOCLIP, NODAMAGE, NODAMAGETHRUST, NODROPOFF, NOEXPLODEFLOOR,
+		NOEXTREMEDEATH, NOFEAR, NOGRAVITY, NOICEDEATH, NOINFIGHTING, NOINTERACTION, NOLIFTDROP,
+		NONSHOOTABLE, NOPAIN, NORADIUSDMG, NOSECTOR, NOSKIN, NOSPLASHALERT, NOTARGET, NOTARGETSWITCH,
+		NOTDMATCH, NOTELEFRAG, NOTELEOTHER, NOTELEPORT, NOTIMEFREEZE, NOTRIGGER, NOVERTICALMELEERANGE,
+		NOWALLBOUNCESND, OLDRADIUSDMG, PAINLESS, PICKUP, PIERCEARMOR, PUFFGETSOWNER, PUFFONACTORS,
+		PUSHABLE, QUARTERGRAVITY, QUICKTORETALIATE, RANDOMIZE, REFLECTIVE, RIPPER, ROCKETTRAIL,
+		SCREENSEEKER, SEEKERMISSILE, SEESDAGGERS, SHADOW, SHIELDREFLECT, SHOOTABLE, SHORTMISSILERANGE,
+		SKYEXPLODE, SLIDESONWALLS, SOLID, SPAWNCEILING, SPAWNFLOAT, SPAWNSOUNDSOURCE, SPECTRAL,
+		STANDSTILL, STAYMORPHED, STEALTH, STEPMISSILE, STRIFEDAMAGE, SYNCHRONIZED, TELEPORT, TELESTOMP,
+		TERRAIN, THRUACTORS, THRUGHOST, THRUSPECIES, TOUCHY, USESPECIAL, VISIBILITYPULSE, VULNERABLE,
+		WINDTHRUST,
+
+		// INVENTORY.
+		INVENTORY,
+		QUIET, AUTOACTIVATE, UNDROPPABLE, INVBAR,
+		HUBPOWER, PERSISTENTPOWER, INTERHUBSTRIP,
+		PICKUPFLASH, ALWAYSPICKUP, FANCYPICKUPSOUND, BIGPOWERUP,
+		KEEPDEPLETED, IGNORESKILL, ADDITIVETIME,
+
+		// WEAPON.
+		WEAPON,
+		NOAUTOFIRE, READYSNDHALF, DONTBOB, AXEBLOOD, NOALERT,
+		AMMO_OPTIONAL, ALT_AMMO_OPTIONAL, AMMO_CHECKBOTH, PRIMARY_USES_BOTH,
+		WIMPY_WEAPON, POWERED_UP, STAFF2_KICKBACK, EXPLOSIVE,
+		MELEEWEAPON, BFG, CHEATNOTWEAPON, NO_AUTO_SWITCH, NOAUTOAIM,
+
+		//thing activation
+		THINGSPEC_Default, THINGSPEC_ThingActs, THINGSPEC_TriggerActs, THINGSPEC_ThingTargets, THINGSPEC_TriggerTargets,
+		THINGSPEC_MonsterTrigger, THINGSPEC_MissileTrigger, THINGSPEC_ClearSpecial, THINGSPEC_NoDeathSpecial, THINGSPEC_Activate,
+		THINGSPEC_Deactivate, THINGSPEC_Switch,
+		AF_Default, AF_ThingActs, AF_ThingTargets, AF_TriggerTargets, AF_MonsterTrigger, AF_MissileTrigger, AF_ClearSpecial, AF_NoDeathSpecial, AF_TriggerActs,
+
+		//both bouncetype and game constants
+		Doom, Heretic, Hexen, Chex, Raven, Strife, Classic, Grenade, DoomCompat, HereticCompat, HexenCompat,
+
+		//constants, source: gzdoom.pk3
+		AAPTR_DEFAULT, AAPTR_FRIENDPLAYER, AAPTR_MASTER, AAPTR_NULL, AAPTR_PLAYER_GETCONVERSATION,
+		AAPTR_PLAYER_GETTARGET, AAPTR_PLAYER1, AAPTR_PLAYER2, AAPTR_PLAYER3, AAPTR_PLAYER4, AAPTR_PLAYER5,
+		AAPTR_PLAYER6, AAPTR_PLAYER7, AAPTR_PLAYER8, AAPTR_TARGET, AAPTR_TRACER, 
+		AF_ClearSpecial, AF_Default, AF_MissileTrigger, AF_MonsterTrigger, AF_NoDeathSpecial, AF_ThingActs,
+		AF_ThingTargets, AF_TriggerActs, AF_TriggerTargets,
+		ATTN_IDLE, ATTN_NONE, ATTN_NORM, ATTN_STATIC,
+		BF_AFFECTBOSSES, BF_DONTWARN, BF_USEAMMO, BF_NOIMPACTDAMAGE,
+		BLOCKF_CREATURES, BLOCKF_EVERYTHING, BLOCKF_FLOATERS, BLOCKF_MONSTERS, BLOCKF_PLAYERS,
+		BLOCKF_PROJECTILES, BLOCKF_RAILING, BLOCKF_USE,
+		CBAF_AIMFACING, CBAF_EXPLICITANGLE, CBAF_NOPITCH, CBAF_NORANDOM,
+		CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL,
+		CHAN_NOPAUSE, CHAN_UI, CHAN_VOICE, CHAN_WEAPON,
+		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT, CMF_ABSOLUTEANGLE,
+		CMF_ABSOLUTEPITCH, CMF_AIMDIRECTION, CMF_AIMOFFSET, CMF_CHECKTARGETDEAD, CMF_OFFSETPITCH, CMF_SAVEPITCH,
+		CMF_TRACKOWNER,
+		CPF_DAGGER, CPF_PULLIN, CPF_USEAMMO,
+		CVF_RELATIVE, CVF_REPLACE,
+		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO,
+		GFF_NOEXTCHANGE,
+		JLOSF_ALLYNOJUMP, JLOSF_CHECKMASTER, JLOSF_CLOSENOFOV, JLOSF_CLOSENOJUMP, JLOSF_CLOSENOSIGHT, 
+		JLOSF_COMBATANTONLY, JLOSF_DEADNOJUMP, JLOSF_FLIPFOV, JLOSF_NOSIGHT, JLOSF_PROJECTILE, JLOSF_TARGETLOS,
+		LOF_DONTCHASEGOAL, LOF_FULLVOLSEESOUND, LOF_NOJUMP, LOF_NOSEESOUND, LOF_NOSIGHTCHECK, LOF_NOSOUNDCHECK,
+		MRF_ADDSTAMINA, MRF_FAILNOLAUGH, MRF_FAILNOTELEFRAG, MRF_FULLHEALTH, MRF_LOSEACTUALWEAPON, 
+		MRF_NEWTIDBEHAVIOUR, MRF_UNDOBYCHAOSDEVICE, MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES,
+		MRF_UNDOBYTOMEOFPOWER, MRF_WHENINVULNERABLE,
+		MSF_Classic, MSF_DontHurt, MSF_Standard,
+		PAF_AIMFACING, PAF_NOSKULLATTACK, PAF_NOTARGET,
+		PROP_ALLMAP, PROP_BUDDHA, PROP_FLIGHT, PROP_FLY, PROP_FROZEN, PROP_INFRARED, PROP_INSTANTWEAPONSWITCH,
+		PROP_INVISIBILITY, PROP_INVULNERABILITY , PROP_NOTARGET, PROP_RADIATIONSUIT, PROP_SPEED, PROP_STRENGTH,
+		PROP_TOTALLYFROZEN, PROP_WEAPONLEVEL2, PTROP_NOSAFEGUARDS, PTROP_UNSAFEMASTER, PTROP_UNSAFETARGET,
+		RGF_CENTERZ, RGF_CORPSES, RGF_CUBE, RGF_EXPLICITANGLE, RGF_FULLBRIGHT, RGF_GIVESELF, RGF_MONSTERS, 
+		RGF_NOMASTER, RGF_NOPIERCING, RGF_NOTARGET, RGF_NOTRACER, RGF_OBJECTS, RGF_PLAYERS, RGF_SILENT,
+		RGF_VOODOO,
+		RSF_FOG, RSF_KEEPTARGET, RSF_TELEFRAG,
+		RTF_AFFECTSOURCE, RTF_NOIMPACTDAMAGE, RTF_NOTMISSILE,
+		SF_NORANDOM, SF_NOUSEAMMO, SF_NOUSEAMMOMISS, SF_RANDOMLIGHTBOTH, SF_RANDOMLIGHTHIT, SF_RANDOMLIGHTMISS,
+		SMF_CURSPEED, SMF_LOOK, SMF_PRECISE,
+		SPF_FORCECLAMP,
+		SXF_ABSOLUTEANGLE, SXF_ABSOLUTEMOMENTUM, SXF_ABSOLUTEPOSITION, SXF_ABSOLUTEVELOCITY, SXF_CLIENTSIDE,
+		SXF_NOCHECKPOSITION, SXF_SETMASTER, SXF_TELEFRAG, SXF_TRANSFERAMBUSHFLAG, SXF_TRANSFERPITCH,
+		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION,
+		TF_RANDOMDECIDE, TF_TELEFRAG,
+		THINGSPEC_ClearSpecial, THINGSPEC_Default, THINGSPEC_MissileTrigger, THINGSPEC_MonsterTrigger,
+		THINGSPEC_NoDeathSpecial, THINGSPEC_ThingActs, THINGSPEC_ThingTargets, THINGSPEC_TriggerActs,
+		THINGSPEC_TriggerTargets,
+		TIF_NOTAKEINFINITE,
+		WAF_NORANDOM, WAF_USEPUFF,
+		WARPF_ABSOLUTEANGLE, WARPF_ABSOLUTEOFFSET, WARPF_COPYINTERPOLATION, WARPF_INTERPOLATE,WARPF_NOCHECKPOSITION, 
+		WARPF_STOP, WARPF_TESTONLY, WARPF_TOFLOOR, WARPF_USECALLERANGLE, WARPF_WARPINTERPOLATION,
+		WRF_ALLOWRELOAD, WRF_ALLOWZOOM, WRF_NOBOB, WRF_NOFIRE, WRF_NOPRIMARY, WRF_NOSECONDARY, WRF_NOSWITCH,
+		XF_HURTSOURCE, XF_NOTMISSILE,
+		
+		// A_ZoomFactor constants (not in constants.txt)
+		ZOOM_INSTANT, ZOOM_NOSCALETURNING,
+		
+		// Some additional constants
+		ChunkFlags, 
+		BeastAttack, BeastPuff, ClinkAttack, ImpMeAttack, TeleGlitter, TeleGlitter2, 
+		StaffAttack, BoltSpark, MummyAttack, MummyAttack2,
+		CentaurDrop, DemonAttack1, EttinAttack, DropMace, PigAttack,
+		SpectreMelee, PeasantAttack, spectrespawn, ReaverMelee, 
+	}
+
+	functions {
+		A_AlertMonsters;
+		A_Burst = "string classname";
+		A_CentaurDefend;
+		A_Chase = "[string MeleeState], [string RangedState], [int Flags]";
+		A_ClearSoundTarget;
+		A_ClearTarget;
+		A_ClearLastHeard;
+		A_CopyFriendliness = "[pointer source]";
+		A_DamageChildren = "int amount, [string type]";
+		A_DamageMaster = "int amount, [string type]";
+		A_DamageSiblings = "int amount, [string type]";
+		A_Die = "[string DamageType]";
+		A_ExtChase = "bool domelee, bool domissile, bool playactive, bool nightmarefast";
+		A_FaceTarget = "[float max_turn_allowed]";
+		A_FaceTracer = "[float max_turn_allowed, float max_pitch_allowed]";
+		A_FaceMaster = "[float max_turn_allowed, float max_pitch_allowed]";
+		A_FastChase;
+		A_KillChildren = "string damagetype";
+		A_KillMaster = "string damagetype";
+		A_KillSiblings = "string damagetype";
+		A_Look;
+		A_Look2;
+		A_LookEx = "int flags, fixed minseedist, fixed maxseedist, fixed maxheardist, fixed fov, state seestate";
+		A_RaiseChildren;
+		A_RaiseMaster;
+		A_RaiseSiblings;
+		A_RemoveChildren = "[bool remove_alive_too]";
+		A_RemoveMaster;
+		A_RemoveSiblings = "[bool remove_alive_too]";
+		A_SentinelBob;
+		A_Teleport;
+		A_TurretLook;
+		A_VileChase;
+		A_Wander;
+		A_Warp = "pointer destination, [float xofs], [float yofs], [float zofs], float [angle], int [flags], [state success_state]";
+
+		A_RearrangePointers = "pointer newtarget, [pointer newmaster], [pointer newtracer], [int flags]";
+		A_TransferPointer = "pointer source, pointer recipient, pointer sourcefield, [pointer recipientfield], [int flags]";
+
+		A_CustomMissile = "string missiletype, [float spawnheight], [int spawnofs_horiz], [angle angle], [int aimflags], [angle pitch]";
+		A_CustomBulletAttack = "float horz_spread, float vert_spread, int numbullets, int dmgperbullet, string pufftype, [float range], [int flags]";
+		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [bool aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z]";
+		A_CustomMeleeAttack = "int damage, [string meleesound], [string misssound], [string damagetype], [bool bleed]";
+		A_CustomComboAttack = "string missiletype, float spawnheight, int damage, string meleesound, string damagetype, bool bleed";
+		A_MeleeAttack;
+		A_MissileAttack;
+		A_MonsterRefire = "int chancecontinue, string abortstate";
+		A_ComboAttack;
+		A_BasicAttack = "int meleedamage, string meleesound, string missiletype, float missileheight";
+		A_BulletAttack;
+		A_MonsterRail;
+		A_Blast = "[int flags, int strength, int radius, float speed, class blasteffect, sound blastsound]";
+		A_Explode = "[int dmg], [int radius], [bool hurtshooter], [bool alert], [int fulldmgradius], [int nails], [int naildmg]";
+		A_RadiusThrust = "int thrust, int radius, bool hurtshooter";
+		A_RadiusGive = "class itemtype, int distance, int flags, [int amount]";
+		A_Detonate;
+		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
+		A_Quake = "int intensity, int duration, int damrad, int tremrad, [sound sfx]";
+
+		A_FreezeDeath;
+		A_GenericFreezeDeath;
+		A_FreezeDeathChunks;
+		A_IceGuyDie;
+
+		A_PlaySound = "string soundname, [int slot], [float volume], [bool looping], [float attenuation]";
+		A_PlaySoundEx = "string soundname, string channel, [bool loop], [int attenuation]";
+		A_PlayWeaponSound = "string soundname";
+		A_ActiveSound;
+		A_LoopActiveSound;
+		A_FLoopActiveSound;
+		A_StopSound = "[int slot]";
+		A_StopSoundEx = "string channel";
+		A_Pain;
+		A_PigPain;
+		A_Scream;
+		A_XScream;
+		A_PlayerScream;
+		A_VileStart;
+		A_BrainPain;
+		A_BrainAwake;
+		A_BFGSound;
+
+		A_Print = "string text";
+		A_PrintBold = "string text_to_all_players";
+		A_Log = "string text";
+		A_LogInt = "int number";
+
+		A_BossDeath;
+		A_KeenDie = "[int tag]";
+		A_BrainDie;
+		A_GetHurt;
+		A_KlaxonBlare;
+		A_CheckTerrain;
+		A_SetBlend = "color blendcolor, float alpha, int duration";
+		A_CheckPlayerDone = "string state";
+		A_PlayerSkinCheck;
+		A_SkullPop = "string className";
+		A_Bang4Cloud;
+		A_DropFire;
+		A_RemoveForcefield;
+
+		A_TossGib;
+		A_Feathers;
+		A_SpawnDebris = "string type, bool translation";
+		A_SpawnItem = "string type, int distance, float zpos, bool useammo, bool translation";
+		A_SpawnItemEx = "string type, float xoffset, float yoffset, float zoffset, float xvelocity, float yvelocity, float zvelocity, float angle, int flags, int failchance";
+
+		A_CheckCeiling = "string state", "int offset";
+		A_CheckFloor =	"string state", "int offset";
+		A_CheckSight = "string state", "int offset";
+		A_CheckSightOrRange = "float distance, string state", "float distance, int offset";
+
+		A_Jump = "int chance, string state, [...]", "int chance, int offset, [...]";
+		A_JumpIf = "condition, string state", "condition, int offset";
+		A_JumpIfArmorType = "string armortype, string state, [int minimum]", "string armortype, int offset, [int minimum]";
+		A_JumpIfCloser = "int distance, string state", "int distance, int offset";
+		A_JumpIfHealthLower = "int health, string state", "int health, int offset";
+		A_JumpIfInventory = "string inventorytype, int amount, string state", "string inventorytype, int amount, int offset";
+		A_JumpIfInTargetInventory = "string item, int count, string state", "string item, int count, int offset";
+		A_JumpIfMasterCloser = "int distance, string state", "int distance, int offset";
+		A_JumpIfNoAmmo = "string state", "int offset";
+		A_JumpIfTargetInLOS = "string state, [float fov], [int flags], [float dist_max], [float dist_close]", "int offset, [float fov], [int flags], [float dist_max], [float dist_close]";
+		A_JumpIfInTargetLOS = "string state, [float fov], [int flags], [float dist_max], [float dist_close]", "int offset, [float fov], [int flags], [float dist_max], [float dist_close]";
+		A_JumpIfTracerCloser = "int distance, string state", "int distance, int offset";
+
+		A_ClassBossHealth;
+		A_ChangeFlag = "string flagname, bool value";
+		A_CheckFlag = "string flagname, state label, [pointer which_actor]";
+		A_SetFloorClip;
+		A_UnSetFloorClip;
+		A_HideThing;
+		A_UnHideThing;
+		A_SetInvulnerable;
+		A_UnSetInvulnerable;
+		A_SetReflective;
+		A_UnSetReflective;
+		A_SetReflectiveInvulnerable;
+		A_UnSetReflectiveInvulnerable;
+		A_SetShootable;
+		A_UnSetShootable;
+		A_NoGravity;
+		A_Gravity;
+		A_LowGravity;
+		A_SetGravity = "float gravity";
+		A_NoBlocking;
+		A_Fall;
+		A_SetSolid;
+		A_UnsetSolid;
+		A_SetFloat;
+		A_UnsetFloat;
+		A_ScreamAndUnblock;
+		A_ActiveAndUnblock;
+		A_SetShadow;
+		A_ClearShadow;
+		A_SetTranslucent = "float alpha, int mode";
+		A_FadeIn = "[float increase_amount]";
+		A_FadeOut = "[float reduce_amount], [bool remove_when_zero]";
+		A_FadeTo = "float target, [float amount], [bool remove_when_target]";
+		A_QueueCorpse;
+		A_DeQueueCorpse;
+		A_Respawn = "[bool fog]";
+		A_SetAngle = "float angle";
+		A_SetArg = "int position, int value";
+		A_SetPitch = "float pitch";
+		A_SetSpecial = "int special, int arg0, int arg1, int arg2, int arg3, int arg4";
+		A_SetScale = "float scalex, [float scaley]";
+		A_SetMass = "int mass";
+		A_SetUserArray = "string name, int pos, int value";
+		A_SetUserVar = "string name, int value";
+		A_ScaleVelocity = "float scale";
+		A_ChangeVelocity = "float x, float y, float z, int flags";
+
+		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
+		A_Tracer;
+		A_Tracer2;
+		A_Fire;
+		A_BishopMissileWeave;
+		A_CStaffMissileSlither;
+		A_RocketInFlight;
+		A_Weave = "int horzspeed, int vertspeed, float horzdist, float vertdist";
+		A_Countdown;
+		A_CountdownArg = "int arg, [string target_state]";
+		A_Stop;
+
+		A_GiveInventory = "string type, int count";
+		A_GiveToTarget = "string type, int count";
+		A_TakeInventory = "string type, int count, [int flags]";
+		A_TakeFromTarget = "string type, int count, [int flags]";
+		A_DropInventory = "string type";
+		A_SelectWeapon = "string type";
+		A_GiveQuestItem = "int itemno";
+		A_DropWeaponPieces = "class piece_1, class piece_2, class piece_3";
+
+		A_WeaponReady = "[int flags]";
+		A_Lower;
+		A_Raise;
+		A_ReFire = "[string state]";
+		A_ClearReFire;
+		A_GunFlash = "[string flashstate], [int flags]";
+		A_CheckReload;
+		A_CheckForReload = "int counter, string state, [bool dontincrement]";
+		A_CheckRailReload;
+		A_ResetReloadCounter;
+		A_Light = "int intensity";
+		A_Light0;
+		A_Light1;
+		A_Light2;
+		A_LightInverse;
+		A_Recoil = "float force";
+		A_ZoomFactor = "float zoom, [int flags]";
+		A_SetCrosshair = "int number";
+		A_Punch;
+		A_Saw = "[string fullsound], [string hitsound], [int damage], [string pufftype], [int flags], [float range], [float spread_xy], [float spread_z], [float lifesteal]";
+		A_CustomPunch = "int damage, [bool norandom], [int flags], [string pufftype], [float range], [float lifesteal]";
+		A_FireBullets = "angle spread_horz, angle spread_vert, int numbullets, int damage, [string pufftype], [int flags], [float range]";
+		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [int spawnofs_horz], [int spawnheight], [int aim], [angle pitch]";
+		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [int maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn]";
+		A_FireAssaultGun;
+		A_FireBFG;
+		A_FireOldBFG;
+		A_FirePistol();
+		A_FireShotgun;
+		A_FireShotgun2;
+		A_OpenShotgun2();
+		A_LoadShotgun2();
+		A_CloseShotgun2();
+		A_FireCGun;
+		A_FireMissile;
+		A_FirePlasma;
+		A_FireSTGrenade = "[string missiletype]";
+		A_FireRailgun();
+		A_FireRailgunLeft();
+		A_FireRailgunRight();
+		A_RailWait();
+
+		A_RestoreSpecialPosition();
+		A_RestoreSpecialDoomThing();
+		A_RestoreSpecialThing1();
+		A_RestoreSpecialThing2();
+
+		A_PosAttack;
+		A_SPosAttack;
+		A_SPosAttackUseAtkSound;
+		A_CPosAttack;
+		A_CPosRefire;
+		A_SpidRefire;
+		A_TroopAttack;
+		A_SargAttack;
+		A_HeadAttack;
+		A_BruisAttack;
+		A_SkullAttack = "[int speed]";
+		A_BspiAttack;
+		A_CyberAttack;
+		A_PainAttack = "[string spawntype]";
+		A_DualPainAttack = "[string spawntype]";
+		A_PainDie = "[string spawntype]";
+		A_SkelFist;
+		A_SkelMissile;
+		A_FatAttack1 = "[string spawntype]";
+		A_FatAttack2 = "[string spawntype]";
+		A_FatAttack3 = "[string spawntype]";
+		A_VileTarget = "[string type]";
+		A_VileAttack = "string sound, int initialdamage, int blastdamage, int blastradius, float thrustfactor, string damagetype";
+		A_BrainSpit = "[string Actor]";
+		A_SpawnFly = "[string FogActor]";
+		A_SpawnSound;
+		A_BrainScream;
+		A_BrainExplode;
+		A_Mushroom = "[string spawntype], [int amount], [int flags], [float vrange], [float hrange]";
+		A_M_Saw = "[string fullsound], [string hitsound], [int damage], [string pufftype]";
+		A_SentinelRefire;
+		A_ShootGun;
+		A_BetaSkullAttack;
+		A_WolfAttack = "[int flags, sound whattoplay, float snipe_factor, int maxdamage, int blocksize, int pointblank, int longrange, float runspeed, class pufftype]";
+
+		A_Hoof;
+		A_Metal;
+		A_BabyMetal;
+		A_FatRaise;
+		A_SkelWhoosh;
+		A_StartFire;
+		A_FireCrackle;
+		A_BFGSpray = "[string flashtype], [int numrays], [int damage]";
+		A_BarrelDestroy;
+		
+		// Restricted functions
+		A_IceSetTics; A_BridgeOrbit; A_BridgeInit = "[class ball]";
+		A_SpawnSingleItem = "class type, [int fail_single], [int fail_coop], [int fail_dm]";
+		
+		// Heretic has a lot of them
+		A_BeakRaise; A_BeakAttackPL1; A_BeakAttackPL2;
+		A_Sor1Pain; A_Sor1Chase; A_Srcr1Attack; A_SorcererRise;
+		A_Srcr2Decide; A_Srcr2Attack; A_Sor2DthInit; A_Sor2DthLoop;
+		A_BlueSpark; A_GenWizard;
+		A_Timebomb;
+		A_ImpMsAttack; A_ImpDeath; A_ImpXDeath1; A_ImpExplode;
+		A_PodPain = "[class goo]"; A_RemovePod; A_MakePod = "[class pod]";
+		A_AccTeleGlitter; A_VolcanoSet; A_VolcanoBlast; A_VolcBallImpact;
+		A_StaffAttack = "int damage, class puff";
+		A_FireGoldWandPL1; A_FireGoldWandPL2;
+		A_FireCrossbowPL1; A_FireCrossbowPL2;
+		A_GauntletAttack;
+		A_FireMacePL1; A_FireMacePL2; A_MacePL1Check; A_MaceBallImpact; A_MaceBallImpact2; A_DeathBallImpact;
+		A_FireBlasterPL1; A_SpawnRippers;
+		A_FireSkullRodPL1; A_FireSkullRodPL2; A_AddPlayerRain; A_HideInCeiling; A_SkullRodStorm; A_RainImpact;
+		A_FirePhoenixPL1; A_InitPhoenixPL2; A_FirePhoenixPL2; A_ShutdownPhoenixPL2;
+		A_PhoenixPuff; A_FlameEnd; A_FloatPuff;
+		A_LichAttack; A_LichIceImpact; A_LichFireGrow; A_WhirlwindSeek;
+		A_MinotaurDecide; A_MinotaurAtk1; A_MinotaurAtk2; A_MinotaurAtk3; A_MinotaurCharge;
+		A_MinotaurLook; A_MinotaurRoam; A_MinotaurChase; A_MinotaurDeath; A_MntrFloorFire;
+
+		A_KnightAttack; A_DripBlood;		
+		A_GhostOff; A_WizAtk1; A_WizAtk2; A_WizAtk3;
+
+		// Hexen has a bunch of them, too
+		A_BatSpawnInit; A_BatSpawn; A_BatMove;
+		A_BishopChase; A_BishopDecide; A_BishopDoBlur;
+		A_BishopSpawnBlur; A_BishopPainBlur; A_BishopAttack; A_BishopAttack2;
+		A_ClericAttack; A_FighterAttack; 
+		A_CFlameAttack; A_CFlameRotate; A_CFlamePuff; A_CFlameMissile;
+		A_CHolyAttack; A_CHolyPalette; A_CHolyAttack2; A_CHolySeek; A_CHolyCheckScream; A_CHolyTail;
+		A_CMaceAttack;
+		A_CStaffInitBlink; A_CStaffCheckBlink; A_CStaffCheck; A_CStaffAttack;
+		A_DragonInitFlight; A_DragonFlap; A_DragonFlight; A_DragonPain; A_DragonAttack; A_DragonCheckCrash;
+		A_DragonFX2;
+		A_FAxeCheckUp; A_FAxeCheckReady; A_FAxeCheckAtk; A_FAxeAttack; A_FAxeCheckUpG; A_FAxeCheckReadyG;
+		A_FPunchAttack; A_FHammerAttack; A_FHammerThrow;
+		A_FSwordAttack; A_FSwordFlames;
+		A_FiredRocks; A_FiredChase; A_FiredAttack; A_FiredSplotch; A_SmBounce;
+		A_PoisonBagInit; A_TimeBomb; A_CheckThrowBomb; A_CheckThrowBomb2; A_PoisonBagDamage; A_PoisonBagCheck; A_PoisonShroom;
+		A_FogSpawn; A_FogMove;
+		A_SorcSpinBalls; A_SpeedBalls; A_SorcBossAttack; A_SpawnFizzle; A_SpawnBishop; A_SorcererBishopEntry;
+		A_SorcBallOrbit; A_SorcBallPop; A_BounceCheck; A_SorcFX1Seek; A_SorcFX2Split; A_SorcFX2Orbit; A_SorcFX4Check;
+		A_PotteryExplode; A_PotteryChooseBit; A_PotteryCheck; A_CorpseBloodDrip; A_CorpseExplode;
+		A_LeafSpawn; A_LeafThrust; A_LeafCheck; A_SoAExplode; A_BellReset1; A_BellReset2;
+		A_IceGuyLook; A_IceGuyChase; A_IceGuyAttack; A_IceGuyMissileExplode;
+		A_KoraxChase; A_KoraxDecide; A_KoraxBonePop; A_KoraxMissile; A_KoraxCommand;
+		A_KSpiritRoam; A_KBolt; A_KBoltRaise;
+		A_MageAttack;
+		A_FireConePL1; A_ShedShard;
+		A_LightningReady; A_MLightningAttack = "[class floor], [class ceiling]";
+		A_LightningZap; A_LightningClip; A_LightningRemove; A_LastZap; A_ZapMimic;
+		A_MStaffAttack; A_MStaffPalette; A_MStaffTrack;
+		A_SnoutAttack;
+		A_SerpentHumpDecide; A_SerpentHide; A_SerpentCheckForAttack; A_SerpentSpawnGibs;
+		A_SerpentUnHide; A_SerpentRaiseHump; A_SerpentLowerHump; A_SerpentChooseAttack; A_SerpentMeleeAttack;
+		A_SerpentHeadCheck; A_FloatGib; A_DelayGib; A_SinkGib;
+		A_ThrustRaise; A_ThrustImpale; A_ThrustLower; A_ThrustInitDn; A_ThrustInitUp;
+		A_Summon;
+		A_TeloSpawnA; A_TeloSpawnB; A_TeloSpawnC; A_TeloSpawnD; A_CheckTeleRing;
+		A_WraithInit; A_WraithChase; A_WraithFX3; A_WraithMelee;
+		
+		// Strife is the last with these
+		A_BeShadowyFoe; A_AcolyteBits; A_AcolyteDie; A_HideDecepticon;
+		A_AlienSpectreDeath;
+		A_CrusaderChoose; A_CrusaderSweepLeft; A_CrusaderSweepRight; A_CrusaderRefire; A_CrusaderDeath;
+		A_SpawnEntity;
+		A_InquisitorWalk; A_InquisitorDecide; A_InquisitorAttack; A_InquisitorJump;
+		A_InquisitorCheckLand; A_TossArm; A_ReaverRanged;
+		A_LoremasterChain;
+		A_WakeOracleSpectre;
+		A_ProgrammerMelee ; A_SpawnProgrammerBase; A_ProgrammerDeath; A_SpotLightning;
+		A_ReaverRanged;
+		A_Beacon;
+		A_SentinelAttack;
+		A_SelectPiece; A_SelectSigilView; A_SelectSigilDown; A_SelectSigilAttack; A_SigilCharge;
+		A_FireSigil1; A_FireSigil2; A_FireSigil3; A_FireSigil4; A_FireSigil5;
+		A_SpectreChunkSmall; A_SpectreChunkLarge; A_Spectre3Attack; A_SpotLightning;
+		A_SpectralLightningTail; A_SpectralLightning;
+		A_StalkerLookInit; A_StalkerChaseDecide; A_StalkerWalk; A_StalkerDrop; A_StalkerAttack;
+		A_ItBurnsItBurns; A_CrispyPlayer; A_HandLower;
+		A_JabDagger; A_FireMiniMissile; A_FireFlamer; A_FlameDie;
+		A_ClearFlash; A_ShowElectricFlash; A_FireArrow = "class proj";
+		A_FireMauler1; A_FireMauler2Pre; A_FireMauler2; A_MaulerTorpedoWave;
+		A_Burnarea; A_Burnination;
+		A_FireGrenade = "class grenadetype, int angleofs, state flash";
+		A_TemplarAttack;
+		A_ExtraLightOff; A_Explode512; A_LightGoesOut;
+
+		// Special functions for DECORATE expressions
+		abs = "int value";
+		cos = "angle degrees";
+		sin = "angle degrees";
+		sqrt = "float value";
+		random = "int min, int max";
+		frandom = "float min, float max";
+		ACS_NamedExecute = "string script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
+		ACS_NamedExecuteAlways = "string script, [int mapnum], [int arg1], [int arg2], [int arg3]";
+		ACS_NamedExecuteWithResult = "string script, [int s_arg1], [int s_arg2], [int s_arg3]";
+		ACS_NamedLockedExecute = "string script, [int mapnum], [int arg1], [int arg2], [int lock]";
+		ACS_NamedLockedExecuteDoor = "string script, [int mapnum], [int arg1], [int arg2], [int lock]";
+		ACS_NamedSuspend = "string script, [int mapnum]";
+		ACS_NamedTerminate = "string script, [int mapnum]";
+		CallACS = "string script, [int s_arg1], [int s_arg2], [int s_arg3]";
+		
+		// Internal use only, normally
+		A_Turn = "[float angle]";
+		A_LineEffect = "int boomspecial, int tag";
+		A_CallSpecial = "int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
+
+		// Action specials that can be called from within DECORATE:
+		ACS_Execute = "int script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
+		ACS_ExecuteAlways = "int script, [int mapnum], [int arg1], [int arg2], [int arg3]";
+		ACS_ExecuteWithResult = "int script, [int s_arg1], [int s_arg2], [int s_arg3]";
+		ACS_LockedExecute = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
+		ACS_LockedExecuteDoor = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
+		ACS_Suspend = "int script, [int mapnum]";
+		ACS_Terminate = "int script, [int mapnum]";
+		Autosave;
+		Ceiling_CrushAndRaise = "int tag, int speed, int damage, [int crushmode]";
+		Ceiling_CrushAndRaiseA = "int tag, int downspeed, int upspeed, int damage, [cint rushmode]";
+		Ceiling_CrushAndRaiseDist = "int tag, int dist, int speed, int damage, [int crushmode]";
+		Ceiling_CrushAndRaiseSilentA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushRaiseAndStay = "int tag, int speed, int crush, [int crushmode]";
+		Ceiling_CrushRaiseAndStayA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushRaiseAndStaySilA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushStop = "int tag";
+		Ceiling_LowerAndCrush = "int tag, int speed, int damage, [int crushmode]";
+		Ceiling_LowerAndCrushDist = "int tag, int speed, int damage, int dist, [int crushmode]";
+		Ceiling_LowerByValue = "int tag, int speed, int value";
+		Ceiling_LowerByValueTimes8 = "int tag, int speed, int value";
+		Ceiling_LowerInstant = "int tag, int unused, int value";
+		Ceiling_LowerToFloor = "int tag, int speed";
+		Ceiling_LowerToHighestFloor = "int tag, int speed";
+		Ceiling_LowerToLowest = "int tag, int speed";
+		Ceiling_MoveToValue = "int tag, int speed, int value, int negative";
+		Ceiling_MoveToValueTimes8 = "int tag, int speed, int value, int negative";
+		Ceiling_RaiseByValue = "int tag, int speed, int value";
+		Ceiling_RaiseByValueTimes8 = "int tag, int speed, int value";
+		Ceiling_RaiseInstant = "int tag, int unused, int value";
+		Ceiling_RaiseToNearest = "int tag, int speed";
+		Ceiling_Waggle = "int tag, int amplitude, int frequency, int delay, int time";
+		ChangeCamera = "int tid, int who, int revert";
+		ChangeSkill = "int level";
+		ClearForceField = "int tag";
+		DamageThing = "int damage, [int mod]";
+		Door_Animated = "int tag, int speed, int delay, int lock";
+		Door_Close = "int tag, int speed, [int lighttag]";
+		Door_CloseWaitOpen = "int tag, int speed, int delay, [int lighttag]";
+		Door_LockedRaise = "int tag, int speed, int delay, int lock, [int lighttag]";
+		Door_Open = "int tag, int speed, [int lighttag]";
+		Door_Raise = "int tag, int speed, int delay, [int lighttag]";		
+		Elevator_LowerToNearest = "int tag, int speed";
+		Elevator_MoveToFloor = "int tag, int speed";
+		Elevator_RaiseToNearest = "int tag, int speed";
+		Exit_Normal = "int position";
+		Exit_Secret = "int position";
+		Floor_CrushStop = "int tag";
+		Floor_Donut = "int pillartag, int pillarspeed, int moatspeed";
+		Floor_LowerByValue = "int tag, int speed, int value";
+		Floor_LowerByValueTimes8 = "int tag, int speed, int value";
+		Floor_LowerInstant = "int tag, int unused, int value";
+		Floor_LowerToHighest = "int tag, int speed, int adjust, [int always]";
+		Floor_LowerToLowest = "int tag, int speed";
+		Floor_LowerToLowestTxTy = "int tag, int speed";
+		Floor_LowerToNearest = "int tag, int speed";
+		Floor_MoveToValue = "int tag, int speed, int value, int neg";
+		Floor_MoveToValueTimes8 = "int tag, int speed, int value, int neg";
+		Floor_RaiseAndCrush = "int tag, int speed, int crush, [int crushmode]";
+		Floor_RaiseByTexture = "int tag, int speed";
+		Floor_RaiseByValue = "int tag, int speed, int value";
+		Floor_RaiseByValueTimes8 = "int tag, int speed, int value";
+		Floor_RaiseByValueTxTy = "int tag, int speed, int value";
+		Floor_RaiseInstant = "int tag, int unused, int value";
+		Floor_RaiseToHighest = "int tag, int speed";
+		Floor_RaiseToLowestCeiling = "int tag, int speed";
+		Floor_RaiseToNearest = "int tag, int speed";
+		Floor_TransferNumeric = "int tag";
+		Floor_TransferTrigger = "int tag";
+		Floor_Waggle = "int tag, int amp, int freq, int offset, int time";
+		FloorAndCeiling_LowerByValue = "int tag, int speed, int value";
+		FloorAndCeiling_LowerRaise = "int tag, int floor_speed, int ceiling_speed, [int boom1998]";
+		FloorAndCeiling_RaiseByValue = "int tag, int speed, int value";
+		ForceField;
+		FS_Execute = "int script, [int frontonly], [int lock], [int lockedmessage]";
+		Generic_Ceiling = "int tag, int speed, int height, int target, int flags";
+		Generic_Crusher = "int tag, int downspeed, int upspeed, int silent, int damage";
+		Generic_Crusher2 = "int tag, int downspeed, int upspeed, int silent, int damage";
+		Generic_Door = "int tag, int speed, int kind, int delay, int lock";
+		Generic_Floor = "int tag, int speed, int height, int target, int flags";
+		Generic_Lift = "int tag, int speed, int delay, int target, int height";
+		Generic_Stairs = "int tag, int speed, int step, int flags, int reset";
+		GlassBreak = "[int nojunk]";
+		HealThing = "amount, [int max]";
+		Light_ChangeToValue = "int tag, int value";
+		Light_Fade = "int tag, int value, int tics";
+		Light_Flicker = "int tag, int upper, int lower";
+		Light_ForceLightning = "int mode";
+		Light_Glow = "int tag, int upper, int lower, int tics";
+		Light_LowerByValue = "int tag, int value";
+		Light_MaxNeighbor = "int tag";
+		Light_MinNeighbor = "int tag";
+		Light_RaiseByValue = "int tag, int value";
+		Light_Stop = "int tag";
+		Light_Strobe = "int tag, int upper, int lower, int u-tics, int l-tics";
+		Light_Strobe = "int tag, int u-tics, int l-tics";
+		Line_AlignCeiling  = "int lineid, int side";
+		Line_AlignFloor = "int lineid, int side";
+		Line_SetBlocking = "int lineid, int setflags, int clearflags";
+		Line_SetTextureOffset = "int id, int x, int y, int side, int flags";
+		Line_SetTextureScale = "int id, int x, int y, int side, int flags";
+		NoiseAlert = "int target_tid, int emitter_tid";
+		Pillar_Build = "int tag, int speed, int value";
+		Pillar_BuildAndCrush = "int tag, int speed, int value, int damage, int crushmode";
+		Pillar_Open = "int tag, int speed, int floor, int ceiling";
+		Plat_DownByValue = "int tag, int speed, int delay, int value";
+		Plat_DownWaitUpStay = "int tag, int speed, int delay";
+		Plat_DownWaitUpStayLip = "int tag, int speed, int delay, int lip, int sound";
+		Plat_PerpetualRaise = "int tag, int speed, int delay";
+		Plat_PerpetualRaiseLip = "int tag, int speed, int delay, int lip";
+		Plat_RaiseAndStayTx0 = "int tag, int speed, [int lockout]";
+		Plat_Stop = "int tag";
+		Plat_ToggleCeiling = "int tag";
+		Plat_UpByValue = "int tag, int speed, int delay, int value";
+		Plat_UpByValueStayTx = "int tag, int speed, int value";
+		Plat_UpNearestWaitDownStay = "int tag, int speed, int delay";
+		Plat_UpWaitDownStay = "int tag, int speed, int delay";
+		Polyobj_DoorSlide = "int po, int speed, int angle, int dist, int delay";
+		Polyobj_DoorSwing = "int po, int speed, int angle, int delay";
+		Polyobj_Move = "int po, int speed, int angle, int dist";
+		Polyobj_MoveTimes8 = "int po, int speed, int angle, int dist";
+		Polyobj_MoveTo = "int po, int speed, int x, int y";
+		Polyobj_MoveToSpot = "int po, int speed, int tid";
+		Polyobj_OR_Move = "int po, int speed, int angle, int distance";
+		Polyobj_OR_MoveTimes8 = "int po, int speed, int angle, int distance";
+		Polyobj_OR_MoveTo = "int po, int speed, int x, int y";
+		Polyobj_OR_MoveToSpot = "int po, int speed, int tid";
+		Polyobj_OR_RotateLeft = "int po, int speed";
+		Polyobj_OR_RotateRight = "int po, int speed, int angle";
+		Polyobj_RotateLeft = "int po, int speed, int angle";
+		Polyobj_RotateRight = "int po, int speed, int angle";
+		Polyobj_Stop = "int po";
+		Radius_Quake = "int intensity, int duration, int damrad, int tremrad, int tid";
+		Scroll_Ceiling = "int tag, int x-move, int y-move, int unused";
+		Scroll_Floor = "int tag, int x-move, int y-move, int mode";
+		Scroll_Texture_Both = "int lineid, int left, int right, int up, int down";
+		Scroll_Wall = "int lineid, int x, int y, int side, int flags";
+		Sector_ChangeFlags = "int tag, int set, int clear";
+		Sector_ChangeSound = "int tag, int newsequence";
+		Sector_SetCeilingPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
+		Sector_SetCeilingScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
+		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
+		Sector_SetColor = "int tag, int r, int g, int b, int desaturate";
+		Sector_SetCurrent = "int tag, int amount, int angle";
+		Sector_SetDamage = "int tag, int amount, int mod";
+		Sector_SetFade = "int tag, int r, int g, int b";
+		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
+		Sector_SetFloorScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
+		Sector_SetFloorScale2 = "int tag, int x-factor, int y-factor";
+		Sector_SetFriction = "int tag, int amount";
+		Sector_SetGravity = "int tag, int intpart, int fracpart";
+		Sector_SetLink = "int controltag, int linktag, int floor/ceiling, int movetype";
+		Sector_SetPlaneReflection = "int tag, int floor, int ceiling";
+		Sector_SetRotation = "int tag, int floor-angle, int ceiling-angle";
+		Sector_SetTranslucent = "int tag, int plane, int amount, int type";
+		Sector_SetWind = "int tag, int amount, int angle";
+		SendToCommunicator = "int voc_num, int front-only, int identify, int nolog";
+		SetGlobalFogParameter = "int type, int value";
+		SetPlayerProperty = "int allplayers, int value, int which";
+		Stairs_BuildDown = "int tag, int speed, int height, int delay, int reset";
+		Stairs_BuildDownSync = "int tag, int speed, int height, int reset";
+		Stairs_BuildUp = "int tag, int speed, int height, int delay, int reset";
+		Stairs_BuildUpDoom = "int tag, int speed, int height, int reset";
+		Stairs_BuildUpSync = "int tag, int speed, int height, int reset";
+		StartConversation = "int tid, [int facetalker]";
+		Teleport = "int tid, int tag, int nosourcefog";
+		Teleport_EndGame;
+		Teleport_Line = "int thisid, int destid, [int reversed]";
+		Teleport_NewMap = "int map, int pos, [int keepangle]";
+		Teleport_NoFog = "int tid, [int useang], [int sectortag], [int keepheight]";
+		Teleport_NoStop = "int tid, int sectortag, [int nosourcefog]";
+		Teleport_ZombieChanger = "int tid, int sectortag";
+		TeleportGroup = "int group_tid, int source_tid, int dest_tid, int move_source, int use_fog";
+		TeleportInSector = "int tag, int source_tid, int dest_tid, int use_fog, [int group_tid]";
+		TeleportOther = "int other_tid, int dest_tid, [int fog]";
+		Thing_Activate = "int tid";
+		Thing_ChangeTID = "int oldtid, int newtid";
+		Thing_Damage = "int tid, int amount, int mod";
+		Thing_Deactivate = "int tid";
+		Thing_Destroy = "int tid, [int extreme], [int sector_tag]";
+		Thing_Hate = "int hater, int hatee, [int flags]";
+		Thing_Move = "int tid, int mapspot, [int nofog]";
+		Thing_Projectile = "int tid, int type, int angle, int speed, int vspeed";
+		Thing_ProjectileAimed = "int tid, int type, int speed, int target, [int newtid]";
+		Thing_ProjectileGravity = "int tid, int type, int angle, int speed, int vspeed";
+		Thing_ProjectileIntercept = "int tid, int type, int speed, int target, int newtid";
+		Thing_Raise = "int tid";
+		Thing_Remove = "int tid";
+		Thing_SetConversation = "int tid, conv_id";
+		Thing_SetGoal = "int tid, int goal, int delay, [int chasegoal]";
+		Thing_SetSpecial = "int tid, int special, int arg1, int arg2, int arg3";
+		Thing_SetTranslation = "int tid, int translation_num";
+		Thing_Spawn = "int tid, int type, int angle, [int newtid]";
+		Thing_SpawnFacing = "int tid, int type, [int nofog], [int newtid]";
+		Thing_SpawnNoFog = "int tid, int type, int angle, [int newtid]";
+		Thing_Stop = "int tid";
+		ThrustThing = "int angle, int force, [int limit], [int tid]";
+		ThrustThingZ = "int tid, int zthrust, int dir, int set";
+		TranslucentLine = "int id, int amount, int transtype";
+		UsePuzzleItem = "int item, int script";
+	}
+}

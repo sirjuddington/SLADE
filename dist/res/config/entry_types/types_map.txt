@@ -1,0 +1,286 @@
+// Map-related entry types
+
+entry_types
+{
+	map_base
+	{
+		icon = "e_map_data";
+		category = "Maps";
+		colour = 60, 255, 100;
+		detectable = 0;
+	}
+	
+	// Doom-format element is ten bytes, Hexen-format is twenty,
+	// Doom64-format uses uses 14 bytes.
+	map_things : map_base
+	{
+		name = "Map Things";
+		match_name = "THINGS";
+		size_multiple = 10, 14;
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	// Doom-format element is fourteen bytes, Hexen-format is sixteen,
+	// Doom64-format uses sixteen bytes like Hexen.
+	map_linedefs : map_base
+	{
+		name = "Map Lines";
+		match_name = "LINEDEFS";
+		size_multiple = 14, 16;
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	// Doom64 sidedef_t is 12-byte long; "normal" sidedefs are 30-byte long.
+	// The reduced size in D64 is because the textures are referenced by a
+	// two-byte index rather than by their eight-byte name. 
+	map_sidedefs : map_base
+	{
+		name = "Map Sides";
+		match_name = "SIDEDEFS";
+		size_multiple = 12, 30;
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	// Doom64 sector_t is 24-byte long; "normal" sectors are 26-byte long.
+	// While it contains more information, the reduced size in D64 is
+	// because it represents the floor and ceiling textures by a two-byte
+	// index rather than by their eight-byte names.
+	map_sectors : map_base
+	{
+		name = "Map Sectors";
+		match_name = "SECTORS";
+		size_multiple = 24, 26;
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_vertexes : map_base
+	{
+		name = "Map Vertices";
+		match_name = "VERTEXES";
+		size_multiple = 4;
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	// ZDBSP compressed nodes listed before normal nodes since they
+	// use the same name. If they fail the header check, they are
+	// normal lumps; but they can't fail a test of normalcy...
+	map_znodes : map_base
+	{
+		name = "Map Nodes (Compressed)";
+		match_name = "NODES";
+		format = "znod";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_zglnodes : map_base
+	{
+		name = "Map GLNodes (Compressed)";
+		match_name = "SSECTORS", "ZNODES";
+		format = "zgln";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_zglnodes2 : map_base
+	{
+		name = "Map GLNodes+ (Compressed)";
+		match_name = "SSECTORS", "ZNODES";
+		format = "zgl2";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_znodes : map_base
+	{
+		name = "Map Nodes (Compressed)";
+		match_name = "NODES";
+		format = "xnod";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_xglnodes : map_base
+	{
+		name = "Map GLNodes (Extended)";
+		match_name = "SSECTORS", "ZNODES";
+		format = "xgln";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_xglnodes2 : map_base
+	{
+		name = "Map GLNodes+ (Extended)";
+		match_name = "SSECTORS", "ZNODES";
+		format = "xgl2";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_nodes : map_base
+	{
+		name = "Map Nodes";
+		match_name = "NODES";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_ssectors : map_base
+	{
+		name = "Map Subsectors";
+		match_name = "SSECTORS";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_segs : map_base
+	{
+		name = "Map Segments";
+		match_name = "SEGS";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_reject : map_base
+	{
+		name = "Map Reject Table";
+		match_name = "REJECT";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_blockmap : map_base
+	{
+		name = "Map Blockmap";
+		match_name = BLOCKMAP;
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_behavior_h : map_base
+	{
+		name = "Compiled ACS (Hexen)";
+		match_name = "BEHAVIOR";
+		format = "acs0";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_behavior_l : map_base
+	{
+		name = "Compiled ACS (ZDoom)";
+		match_name = "BEHAVIOR";
+		format = "acsl";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_behavior_e : map_base
+	{
+		name = "Compiled ACS (Enhanced)";
+		match_name = "BEHAVIOR";
+		format = "acse";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_dialog : map_base
+	{
+		name = "Map Conversation";
+		match_name = "dialogue", "script??";
+		size_multiple = 1488, 1516;
+		icon = "e_map_data";
+		export_ext = "lmp";
+	}
+
+	// The following four lumps are used by OpenGL ports (including EDGE, GZDoom, and others)
+	map_gl_vert : map_base
+	{
+		name = "Map GL Vertices";
+		match_name = "gl_vert";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_gl_segs : map_base
+	{
+		name = "Map GL Segments";
+		match_name = "gl_segs";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_gl_ssect : map_base
+	{
+		name = "Map GL Subsectors";
+		match_name = "gl_ssect";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_gl_nodes : map_base
+	{
+		name = "Map GL Nodes";
+		match_name = "gl_nodes";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	// The following three lumps are used by Doom64Ex:
+	map_leafs : map_base
+	{
+		name = "Map Node Leaves";
+		match_name = "leafs";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_lights : map_base
+	{
+		name = "Map Light Colors";
+		match_name = "lights";
+		icon = "e_map_data";
+		size_multiple = 6;
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	map_macros : map_base
+	{
+		name = "Map Macros";
+		match_name = "macros";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+}

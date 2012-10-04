@@ -1,0 +1,97 @@
+
+colours {
+	// Map editor colours
+	map_background {
+		name = "Background";
+		group = "Map Editor";
+		rgb = 150, 150, 150;
+	}
+
+	map_overlay_background {
+		name = "Info Overlay Background";
+		group = "Map Editor";
+		rgb = 150, 150, 150;
+		alpha = 220;
+	}
+
+	map_overlay_foreground {
+		name = "Info Overlay Foreground";
+		group = "Map Editor";
+		rgb = 0, 0, 0;
+	}
+
+	map_grid {
+		name = "Grid";
+		group = "Map Editor";
+		rgb = 0, 0, 0;
+		alpha = 30;
+	}
+
+	map_64grid {
+		name = "64 Grid";
+		group = "Map Editor";
+		rgb = 0, 0, 0;
+		alpha = 40;
+	}
+
+	map_hilight {
+		name = "Hilighted Item";
+		group = "Map Editor";
+		rgb = 255, 255, 255;
+		alpha = 180;
+		additive = true;
+	}
+
+	map_selection {
+		name = "Selected Item";
+		group = "Map Editor";
+		rgb = 0, 100, 255;
+		alpha = 180;
+		additive = true;
+	}
+
+	map_tagged {
+		name = "Tagged Item(s)";
+		group = "Map Editor";
+		rgb = 0, 255, 100;
+		alpha = 120;
+		additive = true;
+	}
+
+	map_selbox_outline {
+		name = "Selection Box Outline";
+		group = "Map Editor";
+		rgb = 0, 0, 0;
+	}
+
+	map_selbox_fill {
+		name = "Selection Box Fill";
+		group = "Map Editor";
+		rgb = 255, 255, 255;
+		alpha = 100;
+	}
+
+	map_vertex {
+		name = "Vertex";
+		group = "Map Editor";
+		rgb = 0, 50, 200;
+	}
+
+	map_line_normal {
+		name = "Line: Normal";
+		group = "Map Editor";
+		rgb = 0, 0, 0;
+	}
+
+	map_line_special {
+		name = "Line: Special";
+		group = "Map Editor";
+		rgb = 0, 20, 200;
+	}
+
+	map_line_invalid {
+		name = "Line: Invalid";
+		group = "Map Editor";
+		rgb = 255, 0, 0;
+	}
+}

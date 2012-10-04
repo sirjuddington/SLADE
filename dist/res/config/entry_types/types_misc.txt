@@ -1,0 +1,195 @@
+// Misc/General entry types
+
+entry_types
+{
+	// Demo lumps
+	demo
+	{
+		name = "Demo";
+		match_name = "demo?", "demo?lmp";
+		reliability = 120;
+		export_ext = "lmp";
+		colour = 255, 180, 0;
+	}
+
+	texturex
+	{
+		name = "TEXTUREx";
+		match_name = "TEXTURE1", "TEXTURE2", "TEXTURES";
+		format = "texturex";
+		icon = "e_texturex";
+		extra = textures;
+		export_ext = "lmp";
+		min_size = 4;
+		colour = 255, 180, 0;
+	}
+
+	pnames
+	{
+		name = "PNames";
+		match_name = "PNAMES";
+		format = pnames;
+		export_ext = "lmp";
+		min_size = 4;
+		icon = "e_pnames";
+		colour = 255, 180, 0;
+	}
+
+	// Use the same format as PNames, but can't use the texture editor
+	notpnames
+	{
+		name = "Not PNames";
+		match_name = "M_FNAMES", "M_PNAMES", "FLATNAME";
+		icon = "e_pnames";
+		export_ext = "lmp";
+	}
+
+	// Miscellaneous binary lumps
+	genmidi
+	{
+		name = "General MIDI set";
+		match_name = "genmidi";
+		export_ext = "lmp";
+		icon = "e_data";
+	}
+
+	sndcurve
+	{
+		name = "Sound curve";
+		match_name = "sndcurve";
+		export_ext = "lmp";
+		icon = "e_data";
+	}
+
+	rominfo
+	{
+		name = "ROM Information";
+		match_name = "rominfo";
+		icon = "e_data";
+	}
+
+	palette
+	{
+		name = "Palette";
+		match_extorname = 1;
+		match_ext = "pal";
+		size_multiple = 768, 10824;
+		//format = palette;
+		editor = palette;
+		match_name = "*pal*", "shadowpage+1";
+		export_ext = "pal";
+		icon = "e_palette";
+		colour = 255, 180, 0;
+	}
+
+	colormap : gfx_raw
+	{
+		name = "Colormap";
+		match_name = "colormap", "*map", "tinttab", "xlatab", "lights", "*lite?", "*lite";
+		match_ext = "cmp";
+		match_extorname = 1;
+		size = 256, 8192, 8320, 8704, 8448, 8776, 15104, 65536;
+		reliability = 120;
+		extra = image;
+		export_ext = "lmp";
+		category = "Data";
+		icon = "e_colormap";
+		colour = 255, 180, 0;
+	}
+
+	transtable : colormap
+	{
+		name = "Translation Table";
+		match_name = "trantbl*", "tranmap", "cr???*", "*mask", "colort??";
+		extra = image;
+		export_ext = "lmp";
+		category = "Data";
+		icon = "e_palette";
+	}
+
+	ansi
+	{
+		name = "ANSI Text";
+		//format = ansi;
+		size = 4000;
+		match_name = "endoom", "endtext", "endstrf", "loading", "endboom", "doomerr", "duke3d";
+		export_ext = "bin";
+		icon = "e_gfx";
+		editor = ansi;
+		colour = 255, 180, 0;
+	}
+
+	animated
+	{
+		name = "Boom Animated";
+		format = animated;
+		match_name = "animated";
+		editor = animated;
+		export_ext = "lmp";
+		icon = "e_animated";
+	}
+
+	switches
+	{
+		name = "Boom Switches";
+		format = switches;
+		match_name = "switches";
+		editor = switches;
+		export_ext = "lmp";
+		icon = "e_switches";
+	}
+
+	misc_rle0
+	{
+		name = "RLE0-encoded entry";
+		format = misc_rle0;
+		icon = "e_data";
+	}
+
+	// Compiled ACS that's not BEHAVIOR
+	acs0
+	{
+		name = "Compiled ACS (Hexen)";
+		format = "acs0";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	acsl
+	{
+		name = "Compiled ACS (ZDoom)";
+		format = "acsl";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+	acse
+	{
+		name = "Compiled ACS (Enhanced)";
+		format = "acse";
+		icon = "e_map_data";
+		export_ext = "lmp";
+		category = "Maps";
+	}
+
+
+	// This one could be anything
+	rawdata
+	{
+		name = "Raw Data";
+		match_ext = "raw";
+		export_ext = "raw";
+		icon = "e_data";
+		reliability = 1;	// Detect anything else over this
+	}
+
+	d3d_tables_dat
+	{
+		name = "DN3D Lookup Tables";
+		match_name = "tables";
+		match_size = 8448;
+		icon = "e_data";
+	}
+}

@@ -1,0 +1,51 @@
+
+styleset {
+	name = "SLADE Default";
+
+	default {
+		//font = "";						// Undefined means use system default (monospace)
+		size = 10;						// Default is 10
+		foreground = 0, 0, 0;			// Default is black (0,0,0)
+		background = 255, 255, 255;		// Default is white (255,255,255)
+		bold = false;					// Default is false
+		italic = false;					// Default is false
+		underlined = false;				// Default is false
+	}
+
+	preprocessor {
+		// Any omitted properties will be inherited from 'default'
+		foreground = 0, 100, 200;
+	}
+
+	comment {
+		foreground = 0, 150, 0;
+	}
+
+	string {
+		foreground = 0, 120, 130;
+	}
+
+	character {
+		foreground = 0, 120, 130;
+	}
+
+	keyword {
+		foreground = 0, 30, 200;
+	}
+
+	constant {
+		foreground = 180, 30, 200;
+	}
+
+	function {
+		foreground = 200, 100, 30;
+	}
+
+	bracematch {
+		background = 170, 255, 170;
+	}
+
+	bracebad {
+		background = 255, 170, 170;
+	}
+}

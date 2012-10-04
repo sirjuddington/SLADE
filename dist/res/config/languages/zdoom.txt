@@ -1,0 +1,340 @@
+
+// Misc ZDoom text language definitions
+
+z_animdefs {
+	name = "ZDoom AnimDefs";
+	keyword_link = "http://zdoom.org/wiki/ANIMDEFS";
+	constant_link = "http://zdoom.org/wiki/ANIMDEFS";
+	function_link = "http://zdoom.org/wiki/ANIMDEFS";
+	case_sensitive = false;
+
+	keywords = {
+		texture, flat, tics, rand, range, fit, switch, sound, animateddoor,
+		pic, warp, warp2, on, off, opensound, closesound, cameratexture
+	}
+
+	constants = {
+		allowdecals, doom, heretic, hexen, strife
+	}
+}
+
+z_decaldef {
+	name = "ZDoom DecalDef";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/DECALDEF";
+	constant_link = "http://zdoom.org/wiki/DECALDEF";
+	function_link = "http://zdoom.org/wiki/DECALDEF";
+	blocks = "decal";
+
+	keywords = {
+		pic, shade, x-scale, y-scale, flipx, flipy, randomflipx, randomflipy, solid,
+		translucent, add, fuzzy, fullbright, lowerdecal, colors, animator, decal,
+		decalgroup, generator
+	}
+}
+
+z_fontdefs {
+	name = "ZDoom FontDefs";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/FONTDEFS";
+	constant_link = "http://zdoom.org/wiki/FONTDEFS";
+	function_link = "http://zdoom.org/wiki/FONTDEFS";
+
+	keywords = {
+		Template, NOTRANSLATION, SPACEWIDTH
+	}
+
+	constants = {
+		DOOMFONT, STATUSFONT, INDEXFONT, STCFN, STBFN, FONTA
+	}
+}
+
+z_gameinfo {
+	name = "ZDoom GameInfo";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/GAMEINFO";
+	constant_link = "http://zdoom.org/wiki/GAMEINFO";
+	function_link = "http://zdoom.org/wiki/GAMEINFO";
+
+	keywords = { IWAD, LOAD }
+}
+
+z_gldefs {
+	name = "GZDoom GLDefs";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/GLDEFS";
+	constant_link = "http://zdoom.org/wiki/GLDEFS";
+	function_link = "http://zdoom.org/wiki/GLDEFS";
+
+	keywords = {
+		PointLight, PulseLight, FlickerLight, FlickerLight2, SectorLight, Detail,
+		Object, Frame, Light, Skybox, brightmap, Glow, Flats, Walls, HardwareShader
+	}
+
+	constants = {
+		color, size, offset, subtractive, secondarySize, interval, chance, scale,
+		map, iwad, thiswad, disablefullbright, Texture, Shader, speed
+	}
+}
+
+z_keyconf {
+	name = "ZDoom KeyConf";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/KEYCONF";
+	constant_link = "http://zdoom.org/wiki/KEYCONF";
+	function_link = "http://zdoom.org/wiki/KEYCONF";
+
+	keywords = {
+		alias, bind, defaultbind, addkeysection, addmenukey, addslotdefault,
+		weaponsection, setslot, clearplayerclasses, addplayerclass
+	}
+}
+
+z_lockdefs {
+	name = "ZDoom LockDefs";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/LOCKDEFS";
+	constant_link = "http://zdoom.org/wiki/LOCKDEFS";
+	function_link = "http://zdoom.org/wiki/LOCKDEFS";
+
+	keywords = {
+		CLEARLOCKS, LOCK, ANY, MESSAGE, REMOTEMESSAGE, MAPCOLOR, LOCKEDSOUND
+	}
+
+	constants = {
+		BlueCard,	BlueSkull,		KeyBlue,
+		YellowCard,	YellowSkull,	KeyYellow,
+		RedCard,	RedSkull,		KeyGreen,
+		KeySteel, KeyCave, KeyAxe, KeyFire, KeyEmerald, KeyDungeon, KeySilver, KeyRusted, KeyHorn, KeySwamp, KeyCastle,
+		BaseKey, GovsKey, Passcard, IDBadge, PrisonKey, SeveredHand, Power1Key, Power2Key, Power3Key, GoldKey, IDCard,
+		SilverKey, OracleKey, MilitaryID, OrderKey, WarehouseKey, BrassKey, RedCrystalKey, BlueCrystalKey, ChapelKey,
+		CatacombKey, SecurityKey, CoreKey, MaulerKey, FactoryKey, MineKey, NewKey5, PrisonPass, OraclePass,
+		ChexRedCard, ChexBlueCard, ChexYellowCard
+	}
+}
+
+z_mapinfo {
+	name = "ZDoom MapInfo";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/MAPINFO";
+	constant_link = "http://zdoom.org/wiki/MAPINFO";
+	function_link = "http://zdoom.org/wiki/MAPINFO";
+	blocks = "gameinfo", "skill", "map", "episode", "cluster";
+
+	keywords = {
+		Episode, ClearEpisodes, Map, ClusterDef,
+		DefaultMap, LevelNum, Next, SecretNext, Cluster, DoubleSky, Sky1, Sky2, Fade, OutsideFog, TitlePatch,
+		Par, Music, CDTrack, CDid, NoIntermission, ExitPic, EnterPic, InterMusic, NoSoundClipping, LookUp,
+		AllowMonsterTelefrags, SpecialAction, Map07Special, BaronSpecial, CyberdemonSpecial,
+		SpiderMastermindSpecial, SpecialAction_ExitLevel, SpecialAction_OpenDoor, SpecialAction_LowerFloor,
+		SpecialAction_KillMonsters, Lightning, Fadetable, EvenLighting, VertWallShade, HorizWallShade,
+		ForceNoSkyStretch, NoAutoSequences, StrictMonsterActivation, LaxMonsterActivation, FallingDamage,
+		OldFallingDamage, ForceFallingDamage, NoFallingDamage, Gravity, AirControl, AirSupply, FilterStarts,
+		NoInventoryBar, KeepFullInventory, EnterText, ExitText, Music, Flat, Hub, Pic, ExitTextIsLump, NoAllies,
+		SuckTime, DeathSlideShow, Redirect, StrifeFallingDamage, IronLichSpecial, MinotaurSpecial, DsparilSpecial,
+		DefaultEnvironment,
+
+		// GZDoom
+		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate,
+
+		// Skill definitions
+		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
+		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
+		FastMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain, DefaultSkill,
+		ArmorFactor,
+
+		// Gameinfo definitions
+		GameInfo, AdvisoryTime, Border, BackpackType, BorderFlat, ChatSound, CreditPage, DefaultBloodColor,
+		DefaultBloodParticleColor, DrawReadThis, FinaleFlat, FinaleMusic, FinalPage, InfoPage, IntermissionCounter,
+		IntermissionMusic, NoLoopFinaleMusic, PageTime, QuitSound, SkyFlatName, StatusBar, TeleFogHeight, TitleMusic,
+		TitlePage, TitleTime, Translator, WeaponSlot, ArmorIcons, DimColor, DimAmount, DefInventoryMaxAmount,
+		DefaultRespawnTime, DefaultDropStyle, Endoom, Player5Start, PickupColor, QuitMessages, MenuFontColor_Title,
+		MenuFontColor_Label, MenuFontColor_Value, MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight,
+		MenuFontColor_Selection, MenuBackButton, PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX,
+		TextScreenY, DefaultEndSequence, MapArrow,
+
+		// Intermission definitions
+		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
+		DrawConditional, Music, Sound, Time, CastClass, CastName, AttackSound, FadeType, Background2, InitialDelay,
+		ScrollDirection, ScrollTime, Position, Text, TextColor, TextDelay, TextLump, TextSpeed, WipeType
+	}
+
+	constants = {
+		EndGame
+	}
+}
+
+z_modeldef {
+	name = "GZDoom ModelDef";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/MODELDEF";
+	constant_link = "http://zdoom.org/wiki/MODELDEF";
+	function_link = "http://zdoom.org/wiki/MODELDEF";
+
+	keywords = {
+		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
+		Rotation-Speed, Rotation-Vector, Rotation-Center, 
+		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, 
+	}
+
+	constants = {
+		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
+		INHERITACTORPITCH, INHERITACTORROLL,
+	}
+}
+
+z_reverbs {
+	name = "ZDoom Reverbs";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/REVERBS";
+	constant_link = "http://zdoom.org/wiki/REVERBS";
+	function_link = "http://zdoom.org/wiki/REVERBS";
+
+	keywords = {
+		AirAbsorptionHF, bDecayHFLimit, bEchoTimeScale, bEchoTimeScale, DecayHFRatio, DecayLFRatio, DecayTime,
+		Density, Diffusion, EchoDepth, EchoTime, Environment, EnvironmentDiffusion, EnvironmentSize, HFReference,
+		LFReference, ModulationDepth, Reflections, ReflectionsDelay, Reverb, ReverbDelay, Room, RoomHF, RoomLF
+	}
+}
+
+z_s_skin {
+	name = "ZDoom S_Skin";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/S_SKIN";
+	constant_link = "http://zdoom.org/wiki/S_SKIN";
+	function_link = "http://zdoom.org/wiki/S_SKIN";
+
+	keywords = {
+		name, sprite, crouchsprite, face, gender, scale, game, class, sounds,
+		dsplpain, dsoof, dspldeth, dspdiehi, dsnoway, dsslop, dspunch, dsjump
+	}
+}
+
+z_sbarinfo {
+	name = "ZDoom StatusBarInfo";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/SBARINFO";
+	constant_link = "http://zdoom.org/wiki/SBARINFO";
+	function_link = "http://zdoom.org/wiki/SBARINFO";
+
+	keywords = {
+		Base, completeborder, CreatePopup, Height, InterpolateHealth, InterpolateArmor, LowerHealthCap, MonospaceFonts,
+		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
+		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
+		InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, UsesAmmo, UsesSecondaryAmmo, WeaponAmmo, mugshot
+	}
+
+	constants = {
+		nullimage, true, false, none, SlideInBottom, pushup, fade, fullscreen, normal, automap, inventory, inventoryfullscreen,
+		popuplog, popupkeys, popupstatus, forcescaled, fullscreenoffsets, reverse, wiggle, translatable, armor, vertical, horizontal,
+		reverserows, alwaysshow, noartibox, noarrows, alwaysshowcounter, translucent, Doom, Heretic, Hexen, HexenStrict, Strife,
+		playericon, armoricon, weaponicon, ammoicon1, ammoicon2, sigil, hexenarmor, xdeathface, animatedgodmode,
+		disablegrin, disableouch, disablepain, disablerampage, health, armorclass, ammo1, ammo2, frags, kills, monsters, items,
+		totalitems, secrets, score, totalsecrets, airtime, ammo, ammocapacity, poweruptime, globalvar, globalarray,
+		fillzeros, whennotzero, alternateonempty, artiflash, alwaysshowcounter, center, centerbottom, invulnerable,
+		levelname, levellump, skillname, playerclass, playername, ammo1tag, ammo2tag, weapontag, inventorytag,
+		normal, pain, ouch, rampage, god, animatedgod, grin, death, xdeath, health2, helathspecial, directional
+	}
+
+	functions {
+		interpolate = "speed";
+		drawshadow = "[xOffset], [yOffset]";
+	}
+}
+
+z_sndinfo {
+	name = "ZDoom SndInfo";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/SNDINFO";
+	constant_link = "http://zdoom.org/wiki/SNDINFO";
+	function_link = "http://zdoom.org/wiki/SNDINFO";
+
+	keywords = {
+		$random, $alias, $limit, $pitchshift, $pitchshiftrange, $playerreserve, $playersound, $playersounddup,
+		$playeralias, $playercompat, $ambient, $ifdoom, $ifheretic, $ifhexen, $ifstrife, $map, $musicvolume,
+		$registered, $archivepath, point, surround, world, $continuous, periodic, random,
+		$volume, $rolloff, $mididevice
+	}
+
+	constants = {
+		custom, linear, log,
+		male, female, other
+	}
+}
+
+z_sndseq {
+	name = "ZDoom SndSequence";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/SNDSEQ";
+	constant_link = "http://zdoom.org/wiki/SNDSEQ";
+	function_link = "http://zdoom.org/wiki/SNDSEQ";
+
+	keywords = {
+		play, playuntildone, playtime, playrepeat, playloop, delay, delayonce, delayrand, volume, volumerel, volumerand, attenuation,
+		door, platform, environment, stopsound, nostopcutoff, end, slot, randomsequence, restart
+	}
+
+	constants = {
+		normal, idle, static, none, surround
+	}
+}
+
+z_teaminfo {
+	name = "ZDoom TeamInfo";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/TEAMINFO";
+	constant_link = "http://zdoom.org/wiki/TEAMINFO";
+	function_link = "http://zdoom.org/wiki/TEAMINFO";
+
+	keywords = {
+		clearteams, Team,
+		Name, Game, PlayerColor, TextColor, Logo, AllowCustomPlayerColor,
+		RailColor, FlagItem, SkullItem, PlayerStartThingNumber,
+		SmallFlagHUDIcon, SmallSkullHUDIcon, LargeFlagHUDIcon, LargeSkullHUDIcon,
+		WinnerPic, LoserPic, WinnerTheme, LoserTheme
+	}
+
+	constants = {
+		Any, Chex, Doom, Heretic, Hexen, Raven, Strife
+	}
+}
+
+z_terrain {
+	name = "ZDoom Terrain";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/TERRAIN";
+	constant_link = "http://zdoom.org/wiki/TERRAIN";
+	function_link = "http://zdoom.org/wiki/TERRAIN";
+
+	keywords = {
+		splash,
+		smallclass, smallclip, smallsound,
+		baseclass, chunkclass, chunkxvelshift, chunkyvelshift, chunkzvelshift, chunkbasezvel, sound,
+		terrain, footclip, liquid, friction, damagetype, damageamount, damagetimemask,
+		floor, defaultterrain, noalert
+	}
+
+	constants = {
+		ifdoom, ifheretic, ifhexen, ifstrife, endif
+	}
+}
+
+z_textures {
+	name = "ZDoom Textures";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/TEXTURES";
+	constant_link = "http://zdoom.org/wiki/TEXTURES";
+	function_link = "http://zdoom.org/wiki/TEXTURES";
+
+	keywords = {
+		texture, patch, sprite, graphic, walltexture, flat,
+		XScale, YScale, offset, worldpanning, NoDecals, NullTexture,
+		FlipX, FlipY, Rotate, Translation, Blend, Alpha, Style
+	}
+
+	constants = {
+		Inverse, Gold, Red, Green, Ice, Desaturate, Copy, Translucent, 
+		Add, Subtract, ReverseSubtract, Modulate, CopyAlpha, Overlay,
+		CopyNewAlpha
+	}
+}

@@ -1,0 +1,48 @@
+SLADE3 SVN UNIX COMPILATION INSTRUCTIONS
+----------------------------------------
+1)
+Download the required libraries (most should be available in your distro's package repository):
+-wxWidgets *2.9+* from <http://wxwidgets.org> (most repositories don't currently have 2.9)
+-FreeImage from <http://freeimage.sourceforge.net>
+-FluidSynth from <http://fluidsynth.org>
+-SFML from <http://sfml-dev.org>
+
+2)
+Compile/install the required libraries if needed.
+
+a) wxWidgets:
+-Extract the wxWidgets tar
+-Follow the instructions in docs/gtk/install.txt ('the simplest case'), but add '--with-opengl --enable-mediactrl' to the ../configure line
+-If the above fails and says gstreamer not found, you need to install the gstreamer, gstreamer-plugins and gconf2 dev packages
+
+b) FreeImage:
+-Extract the FreeImage tar
+-Follow the instructions in README.linux (to install normal FreeImage, not FreeImagePlus)
+
+3)
+To compile SLADE3, there are two ways to go about it: either install CodeLite IDE and use that, or build it using CMake
+
+a) IDE Compilation
+-Download and install CodeLite IDE from <http://codelite.org>
+-Run CodeLite
+-Select Workspace->Switch to workspace... and select 'SLADE.workspace' in the trunk directory of the SLADE SVN
+-Select Release configuration from the drop-down box on the workspace view if it isn't already selected
+-Click the 'Build Active Project' button on the toolbar
+
+b) CMake Compilation
+-Make sure cmake is installed <http://cmake.org>
+-cd to the 'dist' directory
+-Enter the following commands: 'cmake ..' then 'make'
+
+And that should be it. There are some more detailed instructions on the SLADE wiki here: http://slade-editor.wikia.com/wiki/Compilation
+
+If you are having problems I can be contacted via email:
+sirjuddington@gmail.com
+
+
+OTHER SLADE3 UNIX ISSUES
+------------------------
+Ubuntu 11.04:
+wxWidgets 2.9.1 has some issues with Ubuntu 11.04. These are fixed in wxWidgets 2.9.2 on the wx SVN. Instructions
+for checking out the wxWidgets svn can be found here: <http://www.wxwidgets.org/develop/svn.htm>. The compilation
+instructions for 2.9.1 above also apply for 2.9.2.
