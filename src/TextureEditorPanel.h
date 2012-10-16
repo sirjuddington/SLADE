@@ -33,6 +33,7 @@ protected:
 	wxSpinCtrl*		spin_tex_scalex;
 	wxSpinCtrl*		spin_tex_scaley;
 	wxStaticText*	label_scaled_size;
+	wxCheckBox*		cb_tex_world_panning;
 
 	// Texture patches list + related controls
 	ListView*		list_patches;
@@ -97,6 +98,7 @@ public:
 	void	onTexHeightChanged(wxSpinEvent& e);
 	void	onTexScaleXChanged(wxSpinEvent& e);
 	void	onTexScaleYChanged(wxSpinEvent& e);
+	void	onTexWorldPanningChanged(wxCommandEvent& e);
 	void	onPatchListSelect(wxListEvent& e);
 	void	onPatchListDeSelect(wxListEvent& e);
 	void	onBtnPatchAdd(wxCommandEvent& e);

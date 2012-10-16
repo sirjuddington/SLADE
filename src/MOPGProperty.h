@@ -7,14 +7,16 @@
 
 class MapObject;
 class MapObjectPropsPanel;
+class UDMFProperty;
 class MOPGProperty {
 protected:
 	int						type;
 	MapObjectPropsPanel*	parent;
 	bool					noupdate;
+	UDMFProperty*			udmf_prop;
 
 public:
-	MOPGProperty(int type) { this->type = type; noupdate = false; }
+	MOPGProperty(int type) { this->type = type; noupdate = false; udmf_prop = NULL; }
 	~MOPGProperty() {}
 
 	enum {
@@ -35,6 +37,7 @@ public:
 
 	int		getType() { return type; }
 	void	setParent(MapObjectPropsPanel* parent) { this->parent = parent; }
+	void	setUDMFProp(UDMFProperty* prop) { this->udmf_prop = prop; }
 
 	virtual void	openObjects(vector<MapObject*>& objects) = 0;
 	virtual void	applyValue() {}

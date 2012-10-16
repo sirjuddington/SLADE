@@ -61,7 +61,7 @@ UndoLevel::~UndoLevel() {
  * Performs all undo steps for this level
  *******************************************************************/
 bool UndoLevel::doUndo() {
-	wxLogMessage("Performing undo \"%s\" (%d steps)", CHR(name), undo_steps.size());
+	//wxLogMessage("Performing undo \"%s\" (%d steps)", CHR(name), undo_steps.size());
 	bool ok = true;
 	for (int a = (int)undo_steps.size() - 1; a >= 0; a--) {
 		if (!undo_steps[a]->doUndo())
@@ -75,7 +75,7 @@ bool UndoLevel::doUndo() {
  * Performs all redo steps for this level
  *******************************************************************/
 bool UndoLevel::doRedo() {
-	wxLogMessage("Performing redo \"%s\" (%d steps)", CHR(name), undo_steps.size());
+	//wxLogMessage("Performing redo \"%s\" (%d steps)", CHR(name), undo_steps.size());
 	bool ok = true;
 	for (unsigned a = 0; a < undo_steps.size(); a++) {
 		if (!undo_steps[a]->doRedo())
@@ -138,7 +138,7 @@ void UndoManager::beginRecord(string name) {
 		endRecord(true);
 
 	// Begin new UndoLevel
-	wxLogMessage("Recording undo level \"%s\"", CHR(name));
+	//wxLogMessage("Recording undo level \"%s\"", CHR(name));
 	current_level = new UndoLevel(name);
 }
 
@@ -152,7 +152,7 @@ void UndoManager::endRecord(bool success) {
 
 	// If failed, delete current undo level
 	if (!success) {
-		wxLogMessage("Recording undo level \"%s\" failed", CHR(current_level->getName()));
+		//wxLogMessage("Recording undo level \"%s\" failed", CHR(current_level->getName()));
 		delete current_level;
 		current_level = NULL;
 		return;
@@ -160,13 +160,13 @@ void UndoManager::endRecord(bool success) {
 
 	// Remove any undo levels after the current
 	while ((int)undo_levels.size() - 1 > current_level_index) {
-		wxLogMessage("Removing undo level \"%s\"", CHR(undo_levels.back()->getName()));
+		//wxLogMessage("Removing undo level \"%s\"", CHR(undo_levels.back()->getName()));
 		delete undo_levels.back();
 		undo_levels.pop_back();
 	}
 
 	// Add current level to levels
-	wxLogMessage("Recording undo level \"%s\" succeeded", CHR(current_level->getName()));
+	//wxLogMessage("Recording undo level \"%s\" succeeded", CHR(current_level->getName()));
 	undo_levels.push_back(current_level);
 	current_level = NULL;
 	current_level_index = undo_levels.size() - 1;

@@ -44,6 +44,8 @@ private:
 		MSTATE_LINE_DRAW,
 		MSTATE_EDIT,
 		MSTATE_PASTE,
+		MSTATE_TAG_SECTORS,
+		MSTATE_TAG_THINGS,
 
 		DSTATE_LINE = 0,
 		DSTATE_SHAPE_ORIGIN,
@@ -150,6 +152,7 @@ public:
 
 	// Keybind handling
 	void	onKeyBindPress(string name);
+	void	keyBinds2dView(string name);
 	void	keyBinds2d(string name);
 	void	keyBinds3d(string name);
 	void	onKeyBindRelease(string name);

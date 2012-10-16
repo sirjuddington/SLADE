@@ -35,8 +35,6 @@ public:
 	rgba_t	getDisabledColour();
 	bool	setItemStatus(int item, int status);
 	bool	setItemText(int item, int column, string text);
-	bool	setItemBold(int item, bool bold = true);
-	bool	setItemItalic(int item, bool italic = true);
 
 	void	clearSelection();
 	bool	selectItem(int item, bool focus = true);

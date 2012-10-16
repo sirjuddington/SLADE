@@ -64,7 +64,7 @@ void SectorTextureOverlay::draw(int width, int height, float fade) {
 	if (border > 48)
 		border = 48;
 	int cur_size = tex_size;
-	if (active) cur_size *= fade;
+	if (active) cur_size = cur_size*0.8 + cur_size*0.2*fade;
 
 	// Determine texture name strings
 	string ftex = tex_floor[0];

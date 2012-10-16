@@ -203,12 +203,17 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent) {
 
 	// Scaled size
 	label_scaled_size = new wxStaticText(panel, -1, "Scaled Size: N/A");
-	gb_sizer->Add(label_scaled_size, wxGBPosition(3, 0), wxGBSpan(1, 3), wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(label_scaled_size, wxGBPosition(3, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL);
+
+	// World panning
+	cb_tex_world_panning = new wxCheckBox(panel, -1, "World Panning");
+	gb_sizer->Add(cb_tex_world_panning, wxGBPosition(3, 2), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 
 
 	// Bind events
 	spin_tex_scalex->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onTexScaleXChanged, this);
 	spin_tex_scaley->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onTexScaleYChanged, this);
+	cb_tex_world_panning->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextureEditorPanel::onTexWorldPanningChanged, this);
 
 	return panel;
 }
@@ -226,6 +231,7 @@ void TextureEditorPanel::updateTextureControls() {
 	spin_tex_height->SetValue(tex_current->getHeight());
 	spin_tex_scalex->SetValue(tex_current->getScaleX()*8);
 	spin_tex_scaley->SetValue(tex_current->getScaleY()*8);
+	cb_tex_world_panning->SetValue(tex_current->worldPanning());
 	updateTextureScaleLabel();
 }
 
@@ -1027,6 +1033,17 @@ void TextureEditorPanel::onTexScaleYChanged(wxSpinEvent& e) {
 
 	// Update UI
 	updateTextureScaleLabel();
+
+	tex_modified = true;
+}
+
+/* TextureEditorPanel::onTexWorldPanningChanged
+ * Called when the texture world panning checkbox is toggled
+ *******************************************************************/
+void TextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e) {
+	// Set texture world panning flag
+	if (tex_current)
+		tex_current->setWorldPanning(cb_tex_world_panning->IsChecked());
 
 	tex_modified = true;
 }

@@ -57,6 +57,7 @@ CVAR(Int, mew_top, -1, CVAR_SAVE);
 CVAR(Bool, mew_maximized, true, CVAR_SAVE);
 CVAR(String, nodebuilder_id, "zdbsp", CVAR_SAVE);
 CVAR(String, nodebuilder_options, "", CVAR_SAVE);
+CVAR(Bool, map_editor_readonly, true, CVAR_SAVE);
 
 
 /*******************************************************************
@@ -178,6 +179,7 @@ void MapEditorWindow::setupLayout() {
 	theApp->getAction("mapw_save")->addToMenu(menu_map);
 	theApp->getAction("mapw_saveas")->addToMenu(menu_map);
 	theApp->getAction("mapw_rename")->addToMenu(menu_map);
+	theApp->getAction("mapw_convert")->addToMenu(menu_map);
 	menu->Append(menu_map, "&Map");
 
 	// Edit menu

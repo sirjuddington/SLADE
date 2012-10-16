@@ -105,8 +105,9 @@ private:
 	struct flag_t {
 		int		flag;
 		string	name;
-		flag_t() { flag = 0; name = ""; }
-		flag_t(int flag, string name) { this->flag = flag; this->name = name; }
+		string	udmf;
+		flag_t() { flag = 0; name = ""; udmf = ""; }
+		flag_t(int flag, string name, string udmf = "") { this->flag = flag; this->name = name; this->udmf = udmf; }
 	};
 	vector<flag_t>	flags_thing;
 	vector<flag_t>	flags_line;

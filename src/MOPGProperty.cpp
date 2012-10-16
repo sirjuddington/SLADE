@@ -47,6 +47,10 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getBoolValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -92,6 +96,10 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -137,6 +145,10 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getFloatValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -182,6 +194,10 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getStringValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -244,7 +260,10 @@ void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
-	SetValue(first);
+	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	noupdate = false;
 
 	// Set arg property names

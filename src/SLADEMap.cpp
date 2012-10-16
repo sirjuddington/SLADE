@@ -2636,6 +2636,18 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front) {
 	return NULL;
 }
 
+int SLADEMap::findUnusedSectorTag() {
+	int tag = 1;
+	for (unsigned a = 0; a < sectors.size(); a++) {
+		if (sectors[a]->intProperty("id") == tag) {
+			tag++;
+			a = 0;
+		}
+	}
+
+	return tag;
+}
+
 MapVertex* SLADEMap::createVertex(double x, double y, double split_dist) {
 	// Round position to integral if fractional positions are disabled
 	if (!position_frac) {
@@ -3128,4 +3140,48 @@ int SLADEMap::removeZeroLengthLines() {
 	}
 
 	return count;
+}
+
+bool SLADEMap::convertToHexen() {
+	// Already hexen format
+	if (current_format == MAP_HEXEN)
+		return true;
+}
+
+bool SLADEMap::convertToUDMF() {
+	// Already UDMF format
+	if (current_format == MAP_UDMF)
+		return true;
+
+	// Line_SetIdentification special, set line id
+	for (unsigned a = 0; a < lines.size(); a++) {
+		if (lines[a]->intProperty("special") == 121) {
+			int id = lines[a]->intProperty("arg0");
+			
+			if (current_format == MAP_HEXEN) {
+				// id high byte
+				int hi = lines[a]->intProperty("arg4");
+				id = (hi*256) + id;
+
+				// flags
+				int flags = lines[a]->intProperty("arg1");
+				if (flags & 1) lines[a]->setBoolProperty("zoneboundary", true);
+				if (flags & 2) lines[a]->setBoolProperty("jumpover", true);
+				if (flags & 4) lines[a]->setBoolProperty("blockfloaters", true);
+				if (flags & 8) lines[a]->setBoolProperty("clipmidtex", true);
+				if (flags & 16) lines[a]->setBoolProperty("wrapmidtex", true);
+				if (flags & 32) lines[a]->setBoolProperty("midtex3d", true);
+				if (flags & 64) lines[a]->setBoolProperty("checkswitchrange", true);
+			}
+
+			lines[a]->setIntProperty("special", 0);
+			lines[a]->setIntProperty("id", id);
+			lines[a]->setIntProperty("arg0", 0);
+		}
+	}
+
+	// flags
+
+	// Set format
+	current_format = MAP_UDMF;
 }

@@ -176,7 +176,7 @@ public:
 	void			endMove(bool accept = true);
 
 	// Editing
-	void	copyProperties();
+	void	copyProperties(MapObject* object = NULL);
 	void	pasteProperties();
 	void	splitLine(double x, double y, double min_dist = 64);
 	void	flipLines(bool sides = true);

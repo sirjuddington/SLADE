@@ -21,6 +21,8 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Add item label
 	//label_item = new wxStaticText(this, -1, "");
 	//sizer->Add(label_item, 0, wxEXPAND|wxALL, 4);
+	cb_show_all = new wxCheckBox(this, -1, "Show All");
+	sizer->Add(cb_show_all, 0, wxEXPAND|wxALL, 4);
 	sizer->AddSpacer(4);
 
 	// Add tabs
@@ -66,10 +68,11 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 MapObjectPropsPanel::~MapObjectPropsPanel() {
 }
 
-MOPGProperty* MapObjectPropsPanel::addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid) {
+MOPGProperty* MapObjectPropsPanel::addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop) {
 	// Create property
 	MOPGBoolProperty* prop = new MOPGBoolProperty(label, propname);
 	prop->setParent(this);
+	prop->setUDMFProp(udmf_prop);
 
 	// Add it
 	properties.push_back(prop);
@@ -83,10 +86,11 @@ MOPGProperty* MapObjectPropsPanel::addBoolProperty(wxPGProperty* group, string l
 	return prop;
 }
 
-MOPGProperty* MapObjectPropsPanel::addIntProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid) {
+MOPGProperty* MapObjectPropsPanel::addIntProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop) {
 	// Create property
 	MOPGIntProperty* prop = new MOPGIntProperty(label, propname);
 	prop->setParent(this);
+	prop->setUDMFProp(udmf_prop);
 
 	// Add it
 	properties.push_back(prop);
@@ -100,10 +104,11 @@ MOPGProperty* MapObjectPropsPanel::addIntProperty(wxPGProperty* group, string la
 	return prop;
 }
 
-MOPGProperty* MapObjectPropsPanel::addFloatProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid) {
+MOPGProperty* MapObjectPropsPanel::addFloatProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop) {
 	// Create property
 	MOPGFloatProperty* prop = new MOPGFloatProperty(label, propname);
 	prop->setParent(this);
+	prop->setUDMFProp(udmf_prop);
 
 	// Add it
 	properties.push_back(prop);
@@ -117,10 +122,11 @@ MOPGProperty* MapObjectPropsPanel::addFloatProperty(wxPGProperty* group, string 
 	return prop;
 }
 
-MOPGProperty* MapObjectPropsPanel::addStringProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid) {
+MOPGProperty* MapObjectPropsPanel::addStringProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop) {
 	// Create property
 	MOPGStringProperty* prop = new MOPGStringProperty(label, propname);
 	prop->setParent(this);
+	prop->setUDMFProp(udmf_prop);
 
 	// Add it
 	properties.push_back(prop);
@@ -134,10 +140,11 @@ MOPGProperty* MapObjectPropsPanel::addStringProperty(wxPGProperty* group, string
 	return prop;
 }
 
-MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly, wxPropertyGrid* grid) {
+MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop) {
 	// Create property
 	MOPGLineFlagProperty* prop = new MOPGLineFlagProperty(label, propname, index);
 	prop->setParent(this);
+	prop->setUDMFProp(udmf_prop);
 
 	// Add it
 	properties.push_back(prop);
@@ -151,10 +158,11 @@ MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(wxPGProperty* group, stri
 	return prop;
 }
 
-MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly, wxPropertyGrid* grid) {
+MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop) {
 	// Create property
 	MOPGThingFlagProperty* prop = new MOPGThingFlagProperty(label, propname, index);
 	prop->setParent(this);
+	prop->setUDMFProp(udmf_prop);
 
 	// Add it
 	properties.push_back(prop);
@@ -168,10 +176,11 @@ MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(wxPGProperty* group, str
 	return prop;
 }
 
-MOPGProperty* MapObjectPropsPanel::addTextureProperty(wxPGProperty* group, string label, string propname, int textype, bool readonly, wxPropertyGrid* grid) {
+MOPGProperty* MapObjectPropsPanel::addTextureProperty(wxPGProperty* group, string label, string propname, int textype, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop) {
 	// Create property
 	MOPGTextureProperty* prop = new MOPGTextureProperty(textype, label, propname);
 	prop->setParent(this);
+	prop->setUDMFProp(udmf_prop);
 
 	// Add it
 	properties.push_back(prop);
@@ -233,16 +242,17 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 
 	// Add property depending on type
 	if (prop->getType() == UDMFProperty::TYPE_BOOL)
-		addBoolProperty(group, prop->getName(), propname, false, grid);
+		addBoolProperty(group, prop->getName(), propname, false, grid, prop);
 	else if (prop->getType() == UDMFProperty::TYPE_INT)
-		addIntProperty(group, prop->getName(), propname, false, grid);
+		addIntProperty(group, prop->getName(), propname, false, grid, prop);
 	else if (prop->getType() == UDMFProperty::TYPE_FLOAT)
-		addFloatProperty(group, prop->getName(), propname, false, grid);
+		addFloatProperty(group, prop->getName(), propname, false, grid, prop);
 	else if (prop->getType() == UDMFProperty::TYPE_STRING)
-		addStringProperty(group, prop->getName(), propname, false, grid);
+		addStringProperty(group, prop->getName(), propname, false, grid, prop);
 	else if (prop->getType() == UDMFProperty::TYPE_COLOUR) {
 		MOPGColourProperty* prop_col = new MOPGColourProperty(prop->getName(), propname);
 		prop_col->setParent(this);
+		prop_col->setUDMFProp(prop);
 		properties.push_back(prop_col);
 		grid->AppendIn(group, prop_col);
 	}
@@ -250,29 +260,32 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 	else if (prop->getType() == UDMFProperty::TYPE_ASPECIAL) {
 		MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty("Special", propname);
 		prop_as->setParent(this);
+		prop_as->setUDMFProp(prop);
 		properties.push_back(prop_as);
 		grid->AppendIn(group, prop_as);
 	}
 	else if (prop->getType() == UDMFProperty::TYPE_SSPECIAL) {
 		// For now
-		addIntProperty(group, prop->getName(), prop->getProperty(), false, grid);
+		addIntProperty(group, prop->getName(), prop->getProperty(), false, grid, prop);
 	}
 	else if (prop->getType() == UDMFProperty::TYPE_TTYPE) {
 		MOPGThingTypeProperty* prop_tt = new MOPGThingTypeProperty("Type", propname);
 		prop_tt->setParent(this);
+		prop_tt->setUDMFProp(prop);
 		properties.push_back(prop_tt);
 		grid->AppendIn(group, prop_tt);
 	}
 	else if (prop->getType() == UDMFProperty::TYPE_ANGLE) {
 		MOPGAngleProperty* prop_angle = new MOPGAngleProperty(prop->getName(), propname);
 		prop_angle->setParent(this);
+		prop_angle->setUDMFProp(prop);
 		properties.push_back(prop_angle);
 		grid->AppendIn(group, prop_angle);
 	}
 	else if (prop->getType() == UDMFProperty::TYPE_TEX_WALL)
-		addTextureProperty(group, prop->getName(), propname, 0, false, grid);
+		addTextureProperty(group, prop->getName(), propname, 0, false, grid, prop);
 	else if (prop->getType() == UDMFProperty::TYPE_TEX_FLAT)
-		addTextureProperty(group, prop->getName(), propname, 1, false, grid);
+		addTextureProperty(group, prop->getName(), propname, 1, false, grid, prop);
 }
 
 void MapObjectPropsPanel::setupType(int objtype) {
@@ -331,14 +344,18 @@ void MapObjectPropsPanel::setupType(int objtype) {
 		properties.push_back(prop_as);
 		pg_properties->AppendIn(g_special, prop_as);
 
-		// Add args
-		for (unsigned a = 0; a < 5; a++) {
-			// Add arg property
-			MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_special, S_FMT("Arg%d", a+1), S_FMT("arg%d", a));
+		// Add args (hexen)
+		if (map_format == MAP_HEXEN) {
+			for (unsigned a = 0; a < 5; a++) {
+				// Add arg property
+				MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_special, S_FMT("Arg%d", a+1), S_FMT("arg%d", a));
 
-			// Link to action special if appropriate
-			if (map_format == MAP_HEXEN || map_format == MAP_UDMF) prop_as->addArgProperty(prop, a);
+				// Link to action special if appropriate
+				if (map_format == MAP_HEXEN) prop_as->addArgProperty(prop, a);
+			}
 		}
+		else // Sector tag otherwise
+			addIntProperty(g_special, "Sector Tag", "arg0");
 
 		// Add SPAC
 		if (map_format == MAP_HEXEN) {
@@ -354,15 +371,6 @@ void MapObjectPropsPanel::setupType(int objtype) {
 		// Add flags
 		for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
 			addLineFlagProperty(g_flags, theGameConfiguration->lineFlag(a), S_FMT("flag%d", a), a);
-
-		// Hide args if doom or doom64 format
-		if (map_format != MAP_HEXEN && map_format != MAP_UDMF) {
-			pg_properties->GetProperty("arg0")->SetLabel("Sector Tag");	// Arg0 = sector tag
-			pg_properties->GetProperty("arg1")->Hide(true);
-			pg_properties->GetProperty("arg2")->Hide(true);
-			pg_properties->GetProperty("arg3")->Hide(true);
-			pg_properties->GetProperty("arg4")->Hide(true);
-		}
 
 		// --- Sides ---
 		pg_props_side1->Show(true);
@@ -449,7 +457,8 @@ void MapObjectPropsPanel::setupType(int objtype) {
 		addIntProperty(g_basic, "Y Position", "y");
 
 		// Add z height
-		addIntProperty(g_basic, "Z Height", "height");
+		if (map_format != MAP_DOOM)
+			addIntProperty(g_basic, "Z Height", "height");
 
 		// Add angle
 		//addIntProperty(g_basic, "Angle", "angle");
@@ -465,22 +474,25 @@ void MapObjectPropsPanel::setupType(int objtype) {
 		pg_properties->AppendIn(g_basic, prop_tt);
 
 		// Add id
-		addIntProperty(g_basic, "ID", "id");
+		if (map_format != MAP_DOOM)
+			addIntProperty(g_basic, "ID", "id");
 
-		// Add 'Scripting Special' group
-		wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Scripting Special"));
+		if (map_format == MAP_HEXEN) {
+			// Add 'Scripting Special' group
+			wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Scripting Special"));
 
-		// Add special
-		MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty("Special", "special");
-		prop_as->setParent(this);
-		properties.push_back(prop_as);
-		pg_properties->AppendIn(g_special, prop_as);
+			// Add special
+			MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty("Special", "special");
+			prop_as->setParent(this);
+			properties.push_back(prop_as);
+			pg_properties->AppendIn(g_special, prop_as);
 
-		// Add 'Args' group
-		wxPGProperty* g_args = pg_properties->Append(new wxPropertyCategory("Args"));
-		for (unsigned a = 0; a < 5; a++) {
-			MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_args, S_FMT("Arg%d", a+1), S_FMT("arg%d", a));
-			prop_tt->addArgProperty(prop, a);
+			// Add 'Args' group
+			wxPGProperty* g_args = pg_properties->Append(new wxPropertyCategory("Args"));
+			for (unsigned a = 0; a < 5; a++) {
+				MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_args, S_FMT("Arg%d", a+1), S_FMT("arg%d", a));
+				prop_tt->addArgProperty(prop, a);
+			}
 		}
 
 		// Add 'Flags' group
@@ -489,18 +501,6 @@ void MapObjectPropsPanel::setupType(int objtype) {
 		// Add flags
 		for (int a = 0; a < theGameConfiguration->nThingFlags(); a++)
 			addThingFlagProperty(g_flags, theGameConfiguration->thingFlag(a), S_FMT("flag%d", a), a);
-
-		// Hide hexen extras if in doom format
-		if (map_format == MAP_DOOM) {
-			pg_properties->GetProperty("height")->Hide(true);
-			pg_properties->GetProperty("id")->Hide(true);
-			g_args->Hide(true);
-			g_special->Hide(true);
-		// Doom 64 has TID and height, but not scripting stuff
-		} else if (map_format == MAP_DOOM64) {
-			g_args->Hide(true);
-			g_special->Hide(true);
-		}
 	}
 
 	// Set all bool properties to use checkboxes
@@ -610,7 +610,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects) {
 		pg_props_side2->DisableProperty(pg_props_side2->GetGrid()->GetRoot());
 		pg_props_side2->SetPropertyValueUnspecified(pg_props_side2->GetGrid()->GetRoot());
 		pg_props_side2->Refresh();
-		//label_item->SetLabel("Nothing selected");
+
 		return;
 	}
 	else
@@ -621,34 +621,6 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects) {
 		setupTypeUDMF(objects[0]->getObjType());
 	else
 		setupType(objects[0]->getObjType());
-
-	// Set item label
-	/*
-	if (objects.size() == 1) {
-		if (last_type == MOBJ_VERTEX)
-			label_item->SetLabel(S_FMT("Vertex #%d properties", objects[0]->getIndex()));
-		else if (last_type == MOBJ_LINE)
-			label_item->SetLabel(S_FMT("Line #%d properties", objects[0]->getIndex()));
-		else if (last_type == MOBJ_SECTOR)
-			label_item->SetLabel(S_FMT("Sector #%d properties", objects[0]->getIndex()));
-		else if (last_type == MOBJ_THING)
-			label_item->SetLabel(S_FMT("Thing #%d properties", objects[0]->getIndex()));
-		else
-			label_item->SetLabel(S_FMT("Object #%d properties", objects[0]->getIndex()));
-	}
-	else {
-		if (last_type == MOBJ_VERTEX)
-			label_item->SetLabel(S_FMT("%d Vertices selected", objects.size()));
-		else if (last_type == MOBJ_LINE)
-			label_item->SetLabel(S_FMT("%d Lines selected", objects.size()));
-		else if (last_type == MOBJ_SECTOR)
-			label_item->SetLabel(S_FMT("%d Sectors selected", objects.size()));
-		else if (last_type == MOBJ_THING)
-			label_item->SetLabel(S_FMT("%d Things selected", objects.size()));
-		else
-			label_item->SetLabel(S_FMT("%d Objects selected", objects.size()));
-	}
-	*/
 
 	// Generic properties
 	for (unsigned a = 0; a < properties.size(); a++)

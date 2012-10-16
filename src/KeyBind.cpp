@@ -438,6 +438,7 @@ void KeyBind::initBinds() {
 	addBind("me2d_line_change_texture", keypress_t("T", KPM_CTRL), "Change texture(s)", group);
 	addBind("me2d_line_flip", keypress_t("F"), "Flip line(s)", group);
 	addBind("me2d_line_flip_nosides", keypress_t("F", KPM_SHIFT), "Flip line(s) but not sides", group);
+	addBind("me2d_line_tag_edit", keypress_t("T", KPM_SHIFT), "Begin tag edit", group);
 
 	// Map Editor 2D Sectors mode (me2d_sector*)
 	group = "Map Editor 2D Sectors Mode";

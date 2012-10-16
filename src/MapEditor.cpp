@@ -1068,7 +1068,7 @@ void MapEditor::endMove(bool accept) {
 	map.refreshIndices();
 }
 
-void MapEditor::copyProperties() {
+void MapEditor::copyProperties(MapObject* object) {
 	// Do nothing if no selection or hilight
 	if (selection.size() == 0 && hilight_item < 0)
 		return;
@@ -1086,7 +1086,8 @@ void MapEditor::copyProperties() {
 			copy_sector->copy(map.getSector(hilight_item));
 
 		// Editor message
-		addEditorMessage("Copied sector properties");
+		if (!object)
+			addEditorMessage("Copied sector properties");
 	}
 
 	// Things mode
@@ -1095,16 +1096,22 @@ void MapEditor::copyProperties() {
 		if (!copy_thing)
 			copy_thing = new MapThing(NULL);
 
-		// Copy selection/hilight properties
-		if (selection.size() > 0)
-			copy_thing->copy(map.getThing(selection[0]));
-		else if (hilight_item >= 0)
-			copy_thing->copy(map.getThing(hilight_item));
-		else
-			return;
+		// Copy given object properties (if any)
+		if (object && object->getObjType() == MOBJ_THING)
+			copy_thing->copy(object);
+		else {
+			// Otherwise copy selection/hilight properties
+			if (selection.size() > 0)
+				copy_thing->copy(map.getThing(selection[0]));
+			else if (hilight_item >= 0)
+				copy_thing->copy(map.getThing(hilight_item));
+			else
+				return;
+		}
 
 		// Editor message
-		addEditorMessage("Copied thing properties");
+		if (!object)
+			addEditorMessage("Copied thing properties");
 	}
 }
 
@@ -2824,6 +2831,7 @@ string MapEditor::getModeString() {
 bool MapEditor::handleKeyBind(string key, fpoint2_t position) {
 	// --- General keybinds ---
 
+	bool handled = true;
 	if (edit_mode != MODE_3D) {
 		// Increment grid
 		if (key == "me2d_grid_inc")
@@ -2859,21 +2867,12 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position) {
 		else if (key == "copy")
 			copy();
 
-		// Paste
-		//else if (key == "paste")
-		//	paste();
-	}
-
-	// --- Line mode keybinds ---
-	if (key.StartsWith("me2d_line") && edit_mode == MODE_LINES) {
-		// Split line
-		if (key == "me2d_line_split")	splitLine(position.x, position.y);
 		else
-			return false;
+			handled = false;
 	}
 
 	// --- Sector mode keybinds ---
-	else if (key.StartsWith("me2d_sector") && edit_mode == MODE_SECTORS) {
+	if (key.StartsWith("me2d_sector") && edit_mode == MODE_SECTORS) {
 		// Height changes
 		if		(key == "me2d_sector_floor_up8")	changeSectorHeight(8, true, false);
 		else if (key == "me2d_sector_floor_up")		changeSectorHeight(1, true, false);
@@ -2983,13 +2982,12 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position) {
 		// Toggle upper unpegged
 		else if (key == "me3d_wall_unpeg_upper")
 			toggleUnpegged3d(false);
+
+		else
+			return false;
 	}
 
-	// Not handled
-	else
-		return false;
-
-	return true;
+	return handled;
 }
 
 void MapEditor::updateDisplay() {

@@ -211,44 +211,6 @@ bool ListView::setItemText(int item, int column, string text) {
 	return true;
 }
 
-/* ListView::setItemBold
- * Sets the font of [item] bold
- *******************************************************************/
-bool ListView::setItemBold(int item, bool bold) {
-	// Check item id is in range
-	if (item >= GetItemCount())
-		return false;
-
-	// Get the item font
-	wxFont font = GetItemFont(item);
-
-	// Set bold
-	if (bold)
-		font.SetWeight(wxFONTWEIGHT_BOLD);
-	else
-		font.SetWeight(wxFONTWEIGHT_NORMAL);
-	SetItemFont(item, font);
-}
-
-/* ListView::setItemItalic
- * Sets the font of [item] italic
- *******************************************************************/
-bool ListView::setItemItalic(int item, bool italic) {
-	// Check item id is in range
-	if (item >= GetItemCount())
-		return false;
-
-	// Get the item font
-	wxFont font = GetItemFont(item);
-
-	// Set italic
-	if (italic)
-		font.SetStyle(wxFONTSTYLE_ITALIC);
-	else
-		font.SetStyle(wxFONTSTYLE_NORMAL);
-	SetItemFont(item, font);
-}
-
 /* ListView::clearSelection
  * Deselects all list items
  *******************************************************************/

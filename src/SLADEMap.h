@@ -170,6 +170,7 @@ public:
 	// Info
 	string		getAdjacentLineTexture(MapVertex* vertex, int tex_part = 255);
 	MapSector*	getLineSideSector(MapLine* line, bool front = true);
+	int			findUnusedSectorTag();
 
 	// Creation
 	MapVertex*	createVertex(double x, double y, double split_dist = -1);
@@ -196,6 +197,10 @@ public:
 	int		removeDetachedSides();
 	int		removeDetachedSectors();
 	int		removeZeroLengthLines();
+
+	// Convert
+	bool	convertToHexen();
+	bool	convertToUDMF();
 };
 
 #endif //__SLADEMAP_H__

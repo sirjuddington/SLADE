@@ -97,7 +97,7 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent) {
 
 	// Scaled size
 	label_scaled_size = new wxStaticText(panel, -1, "Scaled Size: N/A");
-	gb_sizer->Add(label_scaled_size, wxGBPosition(3, 0), wxGBSpan(1, 3), wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(label_scaled_size, wxGBPosition(3, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL);
 
 	// Type
 	string types[] = { "Texture", "Sprite", "Graphic", "WallTexture", "Flat" };

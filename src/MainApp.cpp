@@ -503,8 +503,9 @@ void MainApp::initActions() {
 
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "t_save", "Save any changes to the current map", "Ctrl+S");
-	new SAction("mapw_saveas", "Save Map &As", "t_saveas", "Save the map to a new wad archive", "Ctrl+Shift+S");
+	new SAction("mapw_saveas", "Save Map &As...", "t_saveas", "Save the map to a new wad archive", "Ctrl+Shift+S");
 	new SAction("mapw_rename", "&Rename Map", "t_rename", "Rename the current map");
+	new SAction("mapw_convert", "Con&vert Map...", "t_convert", "Convert the current map to a different format");
 	new SAction("mapw_undo", "Undo", "t_undo", "Undo", "Ctrl+Z");
 	new SAction("mapw_redo", "Redo", "t_redo", "Redo", "Ctrl+Y");
 	new SAction("mapw_setbra", "Set &Base Resource Archive", "e_archive", "Set the Base Resource Archive, to act as the program 'IWAD'");
@@ -529,6 +530,7 @@ void MainApp::initActions() {
 	new SAction("mapw_line_changetexture", "Change Texture", "", "Change the currently selected or hilighted line texture(s)");
 	new SAction("mapw_line_changespecial", "Change Special", "", "Change the currently selected or hilighted line special");
 	new SAction("mapw_thing_changetype", "Change Type", "", "Change the currently selected or hilighted thing type(s)");
+	new SAction("mapw_thing_create", "Create Thing Here", "", "Creates a new thing at the cursor position");
 	new SAction("mapw_sector_changetexture", "Change Texture", "", "Change the currently selected or hilighted sector texture(s)");
 	new SAction("mapw_item_properties", "Properties", "t_properties", "Edit the currently selected item's properties");
 	new SAction("mapw_camera_set", "Move 3d Camera Here", "", "Set the current position of the 3d mode camera to the cursor position");

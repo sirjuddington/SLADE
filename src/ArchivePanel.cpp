@@ -2499,6 +2499,9 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e) {
 			if (!dlg.configMatchesMap(info))
 				wxMessageBox("Selected Game Configuration does not match the map format", "Error", wxICON_ERROR);
 			else {
+				// Load game configuration
+				theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort());
+
 				// Attempt to open map
 				if (theMapEditor->openMap(info))
 					theMapEditor->Show();

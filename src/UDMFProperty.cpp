@@ -9,6 +9,7 @@ UDMFProperty::UDMFProperty() {
 	flag = false;
 	trigger = false;
 	type = -1;
+	show_always = false;
 }
 
 UDMFProperty::~UDMFProperty() {
@@ -114,6 +115,10 @@ void UDMFProperty::parse(ParseTreeNode* node, string group) {
 					values.push_back(prop->getStringValue(b));
 			}
 		}
+
+		// Show always
+		else if (S_CMPNOCASE(prop->getName(), "show_always"))
+			show_always = prop->getBoolValue();
 	}
 }
 

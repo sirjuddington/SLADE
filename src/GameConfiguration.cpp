@@ -861,7 +861,29 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 					continue;
 
 				long flag_val;
-				value->getName().ToLong(&flag_val);
+				string flag_name, flag_udmf;
+				
+				if (value->nValues() == 0) {
+					// Full definition
+					flag_name = value->getName();
+
+					for (unsigned v = 0; v < value->nChildren(); v++) {
+						ParseTreeNode* prop = (ParseTreeNode*)value->getChild(v);
+
+						if (S_CMPNOCASE(prop->getName(), "value"))
+							flag_val = prop->getIntValue();
+						else if (S_CMPNOCASE(prop->getName(), "udmf")) {
+							for (unsigned u = 0; u < prop->nValues(); u++)
+								flag_udmf += prop->getStringValue(u) + " ";
+							flag_udmf.RemoveLast(1);
+						}
+					}
+				}
+				else {
+					// Short definition
+					value->getName().ToLong(&flag_val);
+					flag_name = value->getStringValue();
+				}
 
 				// Check if the flag value already exists
 				bool exists = false;
@@ -875,7 +897,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 
 				// Add flag otherwise
 				if (!exists)
-					flags_line.push_back(flag_t(flag_val, value->getStringValue()));
+					flags_line.push_back(flag_t(flag_val, flag_name, flag_udmf));
 			}
 		}
 
@@ -889,9 +911,31 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 					continue;
 
 				long flag_val;
-				value->getName().ToLong(&flag_val);
+				string flag_name, flag_udmf;
+				
+				if (value->nValues() == 0) {
+					// Full definition
+					flag_name = value->getName();
 
-				// Check if the flag value already exists
+					for (unsigned v = 0; v < value->nChildren(); v++) {
+						ParseTreeNode* prop = (ParseTreeNode*)value->getChild(v);
+
+						if (S_CMPNOCASE(prop->getName(), "value"))
+							flag_val = prop->getIntValue();
+						else if (S_CMPNOCASE(prop->getName(), "udmf")) {
+							for (unsigned u = 0; u < prop->nValues(); u++)
+								flag_udmf += prop->getStringValue(u) + " ";
+							flag_udmf.RemoveLast(1);
+						}
+					}
+				}
+				else {
+					// Short definition
+					value->getName().ToLong(&flag_val);
+					flag_name = value->getStringValue();
+				}
+
+				// Check if the trigger value already exists
 				bool exists = false;
 				for (unsigned f = 0; f < triggers_line.size(); f++) {
 					if (triggers_line[f].flag == flag_val) {
@@ -901,9 +945,9 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 					}
 				}
 
-				// Add flag otherwise
+				// Add trigger otherwise
 				if (!exists)
-					triggers_line.push_back(flag_t(flag_val, value->getStringValue()));
+					triggers_line.push_back(flag_t(flag_val, flag_name, flag_udmf));
 			}
 		}
 
@@ -917,7 +961,29 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 					continue;
 
 				long flag_val;
-				value->getName().ToLong(&flag_val);
+				string flag_name, flag_udmf;
+				
+				if (value->nValues() == 0) {
+					// Full definition
+					flag_name = value->getName();
+
+					for (unsigned v = 0; v < value->nChildren(); v++) {
+						ParseTreeNode* prop = (ParseTreeNode*)value->getChild(v);
+
+						if (S_CMPNOCASE(prop->getName(), "value"))
+							flag_val = prop->getIntValue();
+						else if (S_CMPNOCASE(prop->getName(), "udmf")) {
+							for (unsigned u = 0; u < prop->nValues(); u++)
+								flag_udmf += prop->getStringValue(u) + " ";
+							flag_udmf.RemoveLast(1);
+						}
+					}
+				}
+				else {
+					// Short definition
+					value->getName().ToLong(&flag_val);
+					flag_name = value->getStringValue();
+				}
 
 				// Check if the flag value already exists
 				bool exists = false;
@@ -931,7 +997,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 
 				// Add flag otherwise
 				if (!exists)
-					flags_thing.push_back(flag_t(flag_val, value->getStringValue()));
+					flags_thing.push_back(flag_t(flag_val, flag_name, flag_udmf));
 			}
 		}
 
