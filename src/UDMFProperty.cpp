@@ -54,6 +54,8 @@ void UDMFProperty::parse(ParseTreeNode* node, string group) {
 				type = TYPE_TEX_WALL;
 			else if (S_CMPNOCASE(prop->getStringValue(), "texture_flat"))
 				type = TYPE_TEX_FLAT;
+			else if (S_CMPNOCASE(prop->getStringValue(), "id"))
+				type = TYPE_ID;
 		}
 
 		// Property name
@@ -74,6 +76,7 @@ void UDMFProperty::parse(ParseTreeNode* node, string group) {
 			case TYPE_ANGLE:	default_value = prop->getIntValue(); break;
 			case TYPE_TEX_WALL:	default_value = prop->getStringValue(); break;
 			case TYPE_TEX_FLAT:	default_value = prop->getStringValue(); break;
+			case TYPE_ID:		default_value = prop->getIntValue(); break;
 			default:			default_value = prop->getStringValue(); break;
 			}
 
@@ -137,6 +140,7 @@ string UDMFProperty::getStringRep() {
 	case TYPE_ANGLE: ret += ", type = angle"; break;
 	case TYPE_TEX_WALL: ret += ", type = wall texture"; break;
 	case TYPE_TEX_FLAT: ret += ", type = flat texture"; break;
+	case TYPE_ID: ret += ", type = id"; break;
 	default: ret += ", ******unknown type********"; break;
 	};
 

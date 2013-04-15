@@ -148,6 +148,9 @@
     <Filter Include="Map Editor\GameConfiguration\Configurations\Ports\Include">
       <UniqueIdentifier>{99eceb21-bb23-4972-bb7e-23a2cbe6de2b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External\libmodplug">
+      <UniqueIdentifier>{d4a54f03-4a85-41e3-8cc0-f8268538d3bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GfxConvDialog.cpp">
@@ -705,9 +708,6 @@
     <ClCompile Include="src\KeyBind.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="src\MapEditor.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\SFileDialog.cpp">
       <Filter>General\Utility</Filter>
     </ClCompile>
@@ -773,9 +773,6 @@
     </ClCompile>
     <ClCompile Include="src\MapObject.cpp">
       <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ActionSpecialTreeView.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
     <ClCompile Include="src\ThingTypeTreeView.cpp">
       <Filter>Map Editor\UI Elements</Filter>
@@ -962,6 +959,129 @@
     </ClCompile>
     <ClCompile Include="src\UndoManagerHistoryPanel.cpp">
       <Filter>UI Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DiskArchive.cpp">
+      <Filter>Resources\Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SectorSpecialDialog.cpp">
+      <Filter>Map Editor\UI Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\fastmix.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_669.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_abc.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_amf.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_ams.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_dbm.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_dmf.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_dsm.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_far.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_it.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_j2b.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_mdl.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_med.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_mid.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_mod.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_mt2.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_mtm.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_okt.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_pat.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_psm.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_ptm.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_s3m.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_stm.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_ult.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_umx.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_wav.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\load_xm.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\mmcmp.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\modplug.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\snd_dsp.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\snd_flt.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\snd_fx.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\sndfile.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="libmodplug\sndmix.cpp">
+      <Filter>External\libmodplug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenLineSpecial.cpp">
+      <Filter>Map Editor\GameConfiguration</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MapEditor.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\QuickTextureOverlay3d.cpp">
+      <Filter>Map Editor\UI Elements\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenLineSpecialPanel.cpp">
+      <Filter>Map Editor\UI Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ActionSpecialDialog.cpp">
+      <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1548,9 +1668,6 @@
     <ClInclude Include="src\KeyBind.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="src\MapEditor.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
     <ClInclude Include="src\SFileDialog.h">
       <Filter>General\Utility</Filter>
     </ClInclude>
@@ -1625,9 +1742,6 @@
     </ClInclude>
     <ClInclude Include="src\MapObject.h">
       <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ActionSpecialTreeView.h">
-      <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
     <ClInclude Include="src\ThingTypeTreeView.h">
       <Filter>Map Editor\UI Elements</Filter>
@@ -1797,6 +1911,36 @@
     <ClInclude Include="src\UndoManagerHistoryPanel.h">
       <Filter>UI Elements</Filter>
     </ClInclude>
+    <ClInclude Include="src\DiskArchive.h">
+      <Filter>Resources\Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SectorSpecialDialog.h">
+      <Filter>Map Editor\UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="libmodplug\load_pat.h">
+      <Filter>External\libmodplug</Filter>
+    </ClInclude>
+    <ClInclude Include="libmodplug\modplug.h">
+      <Filter>External\libmodplug</Filter>
+    </ClInclude>
+    <ClInclude Include="libmodplug\tables.h">
+      <Filter>External\libmodplug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GenLineSpecial.h">
+      <Filter>Map Editor\GameConfiguration</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MapEditor.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\QuickTextureOverlay3d.h">
+      <Filter>Map Editor\UI Elements\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GenLineSpecialPanel.h">
+      <Filter>Map Editor\UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ActionSpecialDialog.h">
+      <Filter>Map Editor\UI Elements</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
@@ -1887,21 +2031,6 @@
       <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
     </None>
     <None Include="dist\res\config\games\include\things_strife.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="dist\res\config\games\include\udmfprops_all.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="dist\res\config\games\include\udmfprops_base.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="dist\res\config\games\include\udmfprops_boom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="dist\res\config\games\include\udmfprops_hexen.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="dist\res\config\games\include\udmfprops_zdoom.cfg">
       <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
     </None>
     <None Include="dist\res\config\ports\boom.cfg">

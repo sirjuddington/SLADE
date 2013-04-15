@@ -34,7 +34,7 @@ public:
 	virtual STreeNode*			addChild(string name);
 	virtual bool 				removeChild(STreeNode* child);
 
-	virtual bool	isLeaf() { return children.size() == 0; }
+	virtual bool	isLeaf() { return children.empty(); }
 };
 
 #endif//__TREE_H__

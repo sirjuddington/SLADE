@@ -275,6 +275,33 @@ public:
 	}
 };
 
+class DoomMacSoundDataFormat : public EntryDataFormat {
+public:
+	DoomMacSoundDataFormat() : EntryDataFormat("snd_doom_mac") {};
+	~DoomMacSoundDataFormat() {}
+
+	int isThisFormat(MemChunk& mc) {
+		// Check size
+		if (mc.getSize() > 8) {
+			// Check header
+			uint16_t head, samplerate;
+			uint32_t samples;
+			mc.seek(0, SEEK_SET);
+			mc.read(&head, 2);
+			mc.read(&samplerate, 2);
+			mc.read(&samples, 4);
+
+			head = wxUINT16_SWAP_ON_BE(head);
+			samples = wxUINT32_SWAP_ON_BE(samples);
+
+			if (head == 0x300 && samples <= (mc.getSize() - 8) && samples > 4)
+				return EDF_TRUE;
+		}
+
+		return EDF_FALSE;
+	}
+};
+
 class JaguarDoomSoundDataFormat : public EntryDataFormat {
 public:
 	JaguarDoomSoundDataFormat() : EntryDataFormat("snd_jaguar") {};
@@ -323,18 +350,50 @@ public:
 	}
 };
 
+
+// WAV format values
+// A more complete list can be found in mmreg.h, 
+// under the "WAVE form wFormatTag IDs" comment.
+// There are dozens upon dozens of them, most of
+// which are not usually seen in practice.
+#define WAVE_FMT_PCM	0x0001
+#define WAVE_FMT_MP3	0x0055
+int RiffWavFormat(MemChunk& mc) {
+	// Check size
+	if (mc.getSize() > 44) {
+		// Check for wav header
+		if (mc[0] != 'R' || mc[1] != 'I' || mc[2] != 'F' || mc[3] != 'F' &&
+			mc[8] != 'W' || mc[9] != 'A' || mc[10] != 'V' || mc[11] != 'E' &&
+			mc[12] != 'f' || mc[13] != 'm' || mc[14] != 't' || mc[15] != ' ')
+				// Not a RIFF-WAV file
+				return -1;
+		int format = READ_L16(mc, 20);
+
+		// Verify existence of fact chunk for non-PCM formats
+		if (format != WAVE_FMT_PCM) {
+			uint32_t fmtsize = READ_L32(mc, 16);
+			uint32_t ncoffs = 20 + fmtsize; // next chunk offset
+			if (mc.getSize() <= ncoffs + 8)
+				return -1;
+			if (mc[ncoffs + 0] != 'f' || mc[ncoffs + 1] != 'a' || mc[ncoffs + 2] != 'c' || mc[ncoffs + 3] != 't')
+				return -1;
+		}
+		return format;
+	}
+	return -1;
+}
+
 class WAVDataFormat : public EntryDataFormat {
 public:
 	WAVDataFormat() : EntryDataFormat("snd_wav") {};
 	~WAVDataFormat() {}
 
 	int isThisFormat(MemChunk& mc) {
-		// Check size
-		if (mc.getSize() > 8) {
-			// Check for wav header
-			if (mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F')
-				return EDF_TRUE;
-		}
+		int fmt = RiffWavFormat(mc);
+		if (fmt == WAVE_FMT_PCM)
+			return EDF_TRUE;
+		else if (fmt > 0)
+			return EDF_MAYBE;
 
 		return EDF_FALSE;
 	}
@@ -420,6 +479,14 @@ public:
 	~MP3DataFormat() {}
 
 	int isThisFormat(MemChunk& mc) {
+		// MP3 data might be contained in RIFF-WAV files.
+		// Officially, they are legit .WAV files, just using MP3 instead of PCM.
+		// In practice, a simple PCM WAV player will abort, while MP3 players will 
+		// usually work; so it's probably better to identify them as MP3.
+		int rwfmt = RiffWavFormat(mc);
+		if (rwfmt == WAVE_FMT_MP3)
+			return EDF_TRUE;
+
 		return validMPEG(mc, 3, checkForTags(mc));
 	}
 };
@@ -494,8 +561,8 @@ public:
 		// Check size
 		if (mc.getSize() > 35) {
 			// Check for header text using official signature string
-			string header(wxString::FromAscii(mc.getData(), 35));
-			if (header == "SNES-SPC700 Sound File Data v0.30\x1A\x1A")
+			string header(wxString::FromAscii(mc.getData(), 27));
+			if (header == "SNES-SPC700 Sound File Data")
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;

@@ -145,6 +145,20 @@ void Console::execute(string command) {
 
 		logMessage(S_FMT("\"%s\" = \"%s\"", CHR(cmd_name), CHR(value)));
 
+		if (cmd_name == "log_verbosity")
+			Global::log_verbosity = cvar->GetValue().Int;
+
+		return;
+	}
+
+	// Toggle global debug mode
+	if (cmd_name == "debug") {
+		Global::debug = !Global::debug;
+		if (Global::debug)
+			logMessage("Debugging stuff enabled");
+		else
+			logMessage("Debugging stuff disabled");
+
 		return;
 	}
 
@@ -235,11 +249,12 @@ ConsoleCommand& Console::command(size_t index) {
 /* ConsoleCommand::ConsoleCommand
  * ConsoleCommand class constructor
  *******************************************************************/
-ConsoleCommand::ConsoleCommand(string name, void(*commandFunc)(vector<string>), int min_args = 0) {
+ConsoleCommand::ConsoleCommand(string name, void(*commandFunc)(vector<string>), int min_args = 0, bool show_in_list) {
 	// Init variables
 	this->name = name;
 	this->commandFunc = commandFunc;
 	this->min_args = min_args;
+	this->show_in_list = show_in_list;
 
 	// Add this command to the console
 	theConsole->addCommand(*this);
@@ -265,24 +280,26 @@ void ConsoleCommand::execute(vector<string> args) {
  * A simple command to print the first given argument to the console.
  * Subsequent arguments are ignored.
  *******************************************************************/
-CONSOLE_COMMAND (echo, 1) {
+CONSOLE_COMMAND (echo, 1, true) {
 	theConsole->logMessage(args[0]);
 }
 
 /* Console Command - "cmdlist"
  * Lists all valid console commands
  *******************************************************************/
-CONSOLE_COMMAND (cmdlist, 0) {
+CONSOLE_COMMAND (cmdlist, 0, true) {
 	theConsole->logMessage(S_FMT("%d Valid Commands:", theConsole->numCommands()));
 
-	for (int a = 0; a < theConsole->numCommands(); a++)
-		theConsole->logMessage(S_FMT("\"%s\"", theConsole->command(a).getName().c_str()));
+	for (int a = 0; a < theConsole->numCommands(); a++) {
+		if (theConsole->command(a).showInList() || Global::debug)
+			theConsole->logMessage(S_FMT("\"%s\"", theConsole->command(a).getName().c_str()));
+	}
 }
 
 /* Console Command - "cvarlist"
  * Lists all cvars
  *******************************************************************/
-CONSOLE_COMMAND (cvarlist, 0) {
+CONSOLE_COMMAND (cvarlist, 0, true) {
 	// Get sorted list of cvars
 	vector<string> list;
 	get_cvar_list(list);
@@ -295,15 +312,13 @@ CONSOLE_COMMAND (cvarlist, 0) {
 		theConsole->logMessage(list[a]);
 }
 
-/*
-CONSOLE_COMMAND (testmatch, 0) {
+CONSOLE_COMMAND (testmatch, 0, false) {
 	bool match = args[0].Matches(args[1]);
 	if (match)
 		theConsole->logMessage("Match");
 	else
 		theConsole->logMessage("No Match");
 }
-*/
 
 
 // Converts DB-style ACS function definitions to SLADE-style:

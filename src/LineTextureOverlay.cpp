@@ -59,9 +59,9 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list) {
 		MapSide* side1 = list[a]->s1();
 		if (side1) {
 			// Add textures
-			addTexture(textures[FRONT_UPPER], side1->stringProperty("texturetop"));
-			addTexture(textures[FRONT_MIDDLE], side1->stringProperty("texturemiddle"));
-			addTexture(textures[FRONT_LOWER], side1->stringProperty("texturebottom"));
+			addTexture(textures[FRONT_UPPER], side1->getTexUpper());
+			addTexture(textures[FRONT_MIDDLE], side1->getTexMiddle());
+			addTexture(textures[FRONT_LOWER], side1->getTexLower());
 
 			this->side1 = true;
 		}
@@ -70,9 +70,9 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list) {
 		MapSide* side2 = list[a]->s2();
 		if (side2) {
 			// Add textures
-			addTexture(textures[BACK_UPPER], side2->stringProperty("texturetop"));
-			addTexture(textures[BACK_MIDDLE], side2->stringProperty("texturemiddle"));
-			addTexture(textures[BACK_LOWER], side2->stringProperty("texturebottom"));
+			addTexture(textures[BACK_UPPER], side2->getTexUpper());
+			addTexture(textures[BACK_MIDDLE], side2->getTexMiddle());
+			addTexture(textures[BACK_LOWER], side2->getTexLower());
 
 			this->side2 = true;
 		}
@@ -85,6 +85,8 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list) {
 void LineTextureOverlay::close(bool cancel) {
 	// Apply texture changes if not cancelled
 	if (!cancel) {
+		theMapEditor->mapEditor().beginUndoRecord("Change Line Texture", true, false, false);
+
 		// Go through lines
 		for (unsigned a = 0; a < lines.size(); a++) {
 			// Front Upper
@@ -112,6 +114,8 @@ void LineTextureOverlay::close(bool cancel) {
 			if (textures[BACK_LOWER].changed)
 				lines[a]->setStringProperty("side2.texturebottom", textures[BACK_LOWER].textures[0]);
 		}
+
+		theMapEditor->mapEditor().endUndoRecord();
 	}
 
 	// Deactivate
@@ -240,6 +244,8 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 										tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
 		}
 	}
+	else
+		return;
 
 	glDisable(GL_TEXTURE_2D);
 

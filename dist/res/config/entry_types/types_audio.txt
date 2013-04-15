@@ -112,6 +112,15 @@ entry_types
 		editor = audio;
 	}
 	
+	snd_doom_mac : sound
+	{
+		name = "Sound (Mac Doom Format)";
+		format = snd_doom_mac;
+		reliability = 190;
+		export_ext = "lmp";
+		editor = audio;
+	}
+	
 	snd_jaguar : sound
 	{
 		name = "Sound (Jaguar Format)";

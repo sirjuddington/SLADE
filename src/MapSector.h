@@ -39,6 +39,11 @@ private:
 	// Basic data
 	string		f_tex;
 	string		c_tex;
+	short		f_height;
+	short		c_height;
+	short		light;
+	short		special;
+	short		tag;
 
 	// Internal info
 	vector<MapSide*>	connected_sides;
@@ -53,12 +58,19 @@ public:
 
 	void	copy(MapObject* copy);
 
-	string		floorTexture() { return f_tex; }
-	string		ceilingTexture() { return c_tex; }
+	string		getFloorTex() { return f_tex; }
+	string		getCeilingTex() { return c_tex; }
+	short		getFloorHeight() { return f_height; }
+	short		getCeilingHeight() { return c_height; }
+	short		getLightLevel() { return light; }
+	short		getSpecial() { return special; }
+	short		getTag() { return tag; }
 
 	string	stringProperty(string key);
+	int		intProperty(string key);
 	void	setStringProperty(string key, string value);
 	void	setFloatProperty(string key, double value);
+	void	setIntProperty(string key, int value);
 
 	fpoint2_t			midPoint();
 	void				resetBBox() { bbox.reset(); }
@@ -78,6 +90,9 @@ public:
 	void	disconnectSide(MapSide* side);
 
 	void	updateBBox();
+
+	void	writeBackup(mobj_backup_t* backup);
+	void	readBackup(mobj_backup_t* backup);
 };
 
 #endif //__MAPSECTOR_H__

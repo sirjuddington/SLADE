@@ -57,6 +57,8 @@ Property::Property(uint8_t type) {
 		val_string = wxEmptyString;
 	else if (type == PROP_FLAG)
 		value.Boolean = true;
+	else if (type == PROP_UINT)
+		value.Unsigned = 0;
 	else {
 		// Invalid type given, default to boolean
 		type = PROP_BOOL;
@@ -114,6 +116,16 @@ Property::Property(string value) {
 	this->has_value = true;
 }
 
+/* Property::Property
+ * Property class constructor (unsigned)
+ *******************************************************************/
+Property::Property(unsigned value) {
+	// Init string property
+	this->type = PROP_UINT;
+	this->value.Unsigned = value;
+	this->has_value = true;
+}
+
 /* Property::~Property
  * Property class destructor
  *******************************************************************/
@@ -143,6 +155,8 @@ bool Property::getBoolValue(bool warn_wrong_type) {
 		return value.Boolean;
 	else if (type == PROP_INT)
 		return !!value.Integer;
+	else if (type == PROP_UINT)
+		return !!value.Unsigned;
 	else if (type == PROP_FLOAT)
 		return !!((int)value.Floating);
 	else if (type == PROP_STRING) {
@@ -178,6 +192,8 @@ int Property::getIntValue(bool warn_wrong_type) {
 	// Return value (convert if needed)
 	if (type == PROP_INT)
 		return value.Integer;
+	else if (type == PROP_UINT)
+		return (int)value.Unsigned;
 	else if (type == PROP_BOOL)
 		return (int)value.Boolean;
 	else if (type == PROP_FLOAT)
@@ -214,6 +230,8 @@ double Property::getFloatValue(bool warn_wrong_type) {
 		return (double)value.Boolean;
 	else if (type == PROP_INT)
 		return (double)value.Integer;
+	else if (type == PROP_UINT)
+		return (double)value.Unsigned;
 	else if (type == PROP_STRING)
 		return (double)atof(CHR(val_string));
 
@@ -244,6 +262,8 @@ string Property::getStringValue(bool warn_wrong_type) {
 		return val_string;
 	else if (type == PROP_INT)
 		return S_FMT("%d", value.Integer);
+	else if (type == PROP_UINT)
+		return S_FMT("%d", value.Unsigned);
 	else if (type == PROP_BOOL) {
 		if (value.Boolean)
 			return "true";
@@ -255,6 +275,40 @@ string Property::getStringValue(bool warn_wrong_type) {
 
 	// Return default string value
 	return wxEmptyString;
+}
+
+/* Property::getUnsignedValue
+ * Returns the property value as an unsigned int. If [warn_wrong_type]
+ * is true, a warning message is written to the log if the property is
+ * not of integer type
+ *******************************************************************/
+unsigned Property::getUnsignedValue(bool warn_wrong_type) {
+	// If this is a flag, just return boolean 'true' (or equivalent)
+	if (type == PROP_FLAG)
+		return 1;
+
+	// If the value is undefined, default to 0
+	if (!has_value)
+		return 0;
+
+	// Write warning to log if needed
+	if (warn_wrong_type && type != PROP_INT)
+		wxLogMessage("Warning: Requested Integer value of a %s Property", typeString().c_str());
+
+	// Return value (convert if needed)
+	if (type == PROP_INT)
+		return value.Integer;
+	else if (type == PROP_BOOL)
+		return (int)value.Boolean;
+	else if (type == PROP_FLOAT)
+		return (int)value.Floating;
+	else if (type == PROP_STRING)
+		return atoi(CHR(val_string));
+	else if (type == PROP_UINT)
+		return value.Unsigned;
+
+	// Return default integer value
+	return 0;
 }
 
 /* Property::setValue
@@ -313,6 +367,20 @@ void Property::setValue(string val) {
 	has_value = true;
 }
 
+/* Property::setValue
+ * Sets the property to [val], and changes its type to unsigned int
+ * if necessary
+ *******************************************************************/
+void Property::setValue(unsigned val) {
+	// Change type if necessary
+	if (type != PROP_UINT)
+		changeType(PROP_UINT);
+
+	// Set value
+	value.Unsigned = val;
+	has_value = true;
+}
+
 /* Property::changeType
  * Changes the property's value type and gives it a default value
  *******************************************************************/
@@ -339,6 +407,8 @@ void Property::changeType(uint8_t newtype) {
 		val_string = wxEmptyString;
 	else if (type == PROP_FLAG)
 		value.Boolean = true;
+	else if (type == PROP_UINT)
+		value.Unsigned = 0;
 }
 
 /* Property::typeString
@@ -356,6 +426,8 @@ string Property::typeString() {
 		return "String";
 	case PROP_FLAG:
 		return "Flag";
+	case PROP_UINT:
+		return "Unsigned";
 	default:
 		return "Unknown";
 	}

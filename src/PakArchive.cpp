@@ -240,7 +240,6 @@ bool PakArchive::write(MemChunk& mc, bool update) {
 			if (name.Len() > 56)
 				name.Truncate(56);
 		}
-		wxLogMessage(name);
 
 		// Write entry name
 		char name_data[56];

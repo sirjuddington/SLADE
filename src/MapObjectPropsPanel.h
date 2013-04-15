@@ -43,6 +43,7 @@ public:
 	~MapObjectPropsPanel();
 
 	vector<MapObject*>&	getObjects() { return objects; }
+	bool showAll() { return cb_show_all->IsChecked(); }
 
 	void	openObject(MapObject* object);
 	void	openObjects(vector<MapObject*>& objects);
@@ -52,6 +53,7 @@ public:
 	// Events
 	void	onBtnApply(wxCommandEvent& e);
 	void	onBtnReset(wxCommandEvent& e);
+	void	onShowAllToggled(wxCommandEvent& e);
 };
 
 #endif//__MAP_OBJECT_PROPS_PANEL_H__

@@ -10,6 +10,19 @@
 #include "Archive.h"
 #include "PropertyList.h"
 
+struct mobj_holder_t {
+	MapObject*	mobj;
+	bool		in_map;
+
+	mobj_holder_t() { mobj = NULL; in_map = false; }
+	mobj_holder_t(MapObject* mobj, bool in_map) { this->mobj = mobj; this->in_map = in_map; }
+
+	void set(MapObject* object, bool in_map) {
+		this->mobj = object;
+		this->in_map = in_map;
+	}
+};
+
 class ParseTreeNode;
 class SLADEMap {
 friend class MapEditor;
@@ -24,6 +37,10 @@ private:
 	bool				position_frac;
 	string				name;
 	int					current_format;
+
+	vector<mobj_holder_t>	all_objects;
+	vector<unsigned>		deleted_objects;
+	vector<unsigned>		created_objects;
 
 	// The last time the map geometry was updated
 	long	geometry_updated;
@@ -104,12 +121,24 @@ public:
 	MapLine*	getLine(unsigned index);
 	MapSector*	getSector(unsigned index);
 	MapThing*	getThing(unsigned index);
+	MapObject*	getObject(uint8_t type, unsigned index);
 	size_t		nVertices() { return vertices.size(); }
 	size_t		nLines() { return lines.size(); }
 	size_t		nSides() { return sides.size(); }
 	size_t		nSectors() { return sectors.size(); }
 	size_t		nThings() { return things.size(); }
 	long		geometryUpdated() { return geometry_updated; }
+
+	// MapObject id hashing stuff (used for undo/redo)
+	void				addMapObject(MapObject* object);
+	void				removeMapObject(MapObject* object);
+	MapObject*			getObjectById(unsigned id) { return all_objects[id].mobj; }
+	void				clearCreatedObjectIds() { created_objects.clear(); }
+	vector<unsigned>&	createdObjectIds() { return created_objects; }
+	void				clearDeletedObjectIds() { deleted_objects.clear(); }
+	vector<unsigned>&	deletedObjectIds() { return deleted_objects; }
+	void				restoreObjectById(unsigned id);
+	void				removeObjectById(unsigned id);
 
 	// Map structure indices
 	int		vertexIndex(MapVertex* v);
@@ -141,8 +170,8 @@ public:
 	bool	removeVertex(unsigned index);
 	bool	removeLine(MapLine* line);
 	bool	removeLine(unsigned index);
-	bool	removeSide(MapSide* side);
-	bool	removeSide(unsigned index);
+	bool	removeSide(MapSide* side, bool remove_from_line = true);
+	bool	removeSide(unsigned index, bool remove_from_line = true);
 	bool	removeSector(MapSector* sector);
 	bool	removeSector(unsigned index);
 	bool	removeThing(MapThing* thing);
@@ -166,11 +195,15 @@ public:
 	void	getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list);
 	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list);
 	void	getTaggingLinesById(int id, int type, vector<MapLine*>& list);
+	int		findUnusedSectorTag();
+	int		findUnusedThingId();
+	int		findUnusedLineId();
 
 	// Info
-	string		getAdjacentLineTexture(MapVertex* vertex, int tex_part = 255);
-	MapSector*	getLineSideSector(MapLine* line, bool front = true);
-	int			findUnusedSectorTag();
+	string				getAdjacentLineTexture(MapVertex* vertex, int tex_part = 255);
+	MapSector*			getLineSideSector(MapLine* line, bool front = true);
+	vector<MapObject*>	getModifiedObjects(long since, int type = -1);
+	vector<MapObject*>	getAllModifiedObjects(long since);
 
 	// Creation
 	MapVertex*	createVertex(double x, double y, double split_dist = -1);
@@ -201,6 +234,10 @@ public:
 	// Convert
 	bool	convertToHexen();
 	bool	convertToUDMF();
+
+	// Cleanup/Extra
+	void	rebuildConnectedLines();
+	void	rebuildConnectedSides();
 };
 
 #endif //__SLADEMAP_H__

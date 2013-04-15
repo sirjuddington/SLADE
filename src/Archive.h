@@ -72,6 +72,7 @@ enum ArchiveTypes {
 	ARCHIVE_GZIP,
 	ARCHIVE_BZ2,
 	ARCHIVE_7Z,
+	ARCHIVE_DISK,
 };
 
 class Archive : public Announcer {
@@ -127,6 +128,7 @@ public:
 	// Archive type info
 	virtual string	getFileExtensionString() = 0;
 	virtual string	getFormat() = 0;
+	virtual bool	isTreeless() { return false; }
 
 	// Opening
 	virtual bool	open(string filename);			// Open from File
@@ -213,6 +215,7 @@ public:
 	virtual unsigned		numEntries() { return getRoot()->numEntries(); }
 	void					getEntryTreeAsList(vector<ArchiveEntry*>& list, ArchiveTreeNode* start = NULL) { return Archive::getEntryTreeAsList(list, NULL); }
 	bool					paste(ArchiveTreeNode* tree, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* base = NULL);
+	bool					isTreeless() { return true; }
 
 	// Directory stuff
 	virtual ArchiveTreeNode*	getDir(string path, ArchiveTreeNode* base = NULL) { return getRoot(); }

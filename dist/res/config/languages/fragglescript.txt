@@ -5,6 +5,7 @@ fragglescript : cstyle {
 	keyword_link = "http://www.doomwiki.org/wiki/FraggleScript";
 	constant_link = "http://www.doomwiki.org/wiki/FraggleScript";
 	function_link = "http://www.doomwiki.org/wiki/FraggleScript";
+	blocks = script;
 
 	keywords = {
 		// Level info

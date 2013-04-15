@@ -22,6 +22,7 @@ private:
 	SLADEMap			map;
 	MapCanvas*			canvas;
 	UndoManager*		undo_manager;
+	UndoManager*		undo_manager_3d;
 
 	// Editor state
 	uint8_t		edit_mode;
@@ -33,6 +34,13 @@ private:
 	bool		grid_snap;
 	bool		link_3d_light;
 	bool		link_3d_offset;
+	int			current_tag;
+
+	// Undo/Redo
+	bool	undo_modified;
+	bool	undo_created;
+	bool	undo_deleted;
+	string	last_undo_level;
 
 	// Tagged items
 	vector<MapSector*>	tagged_sectors;
@@ -128,10 +136,12 @@ public:
 	bool				hilightLocked() { return hilight_locked; }
 	void				lockHilight(bool lock = true) { hilight_locked = lock; }
 	bool				gridSnap() { return grid_snap; }
+	UndoManager*		undoManager() { return undo_manager; }
 
 	vector<selection_3d_t>&	get3dSelection() { return selection_3d; }
-	void					set3dHilight(selection_3d_t hl) { hilight_3d = hl; }
+	bool					set3dHilight(selection_3d_t hl);
 	selection_3d_t			hilightItem3d() { return hilight_3d; }
+	void					get3dSelectionOrHilight(vector<selection_3d_t>& list);
 
 	void	setEditMode(int mode);
 	void	setSectorEditMode(int mode);
@@ -144,6 +154,7 @@ public:
 	// Selection/hilight
 	void		clearHilight() { if (!hilight_locked) hilight_item = -1; }
 	bool		updateHilight(fpoint2_t mouse_pos, double dist_scale = 1.0);
+	void		updateTagged();
 	void		selectionUpdated();
 	void		clearSelection();
 	void		selectAll();
@@ -160,7 +171,7 @@ public:
 	void		getSelectedThings(vector<MapThing*>& list);
 	void		getSelectedObjects(vector<MapObject*>& list);
 	void		showItem(int index);
-	bool		isHilightOrSelection() { return selection.size() > 0 || hilight_item != -1; }
+	bool		isHilightOrSelection() { return !selection.empty() || hilight_item != -1; }
 	void		selectItem3d(selection_3d_t item, int sel = TOGGLE);
 
 	// Grid
@@ -185,7 +196,12 @@ public:
 	void	joinSectors(bool remove_lines);
 	void	changeThingType(int newtype);
 	void	thingQuickAngle(fpoint2_t mouse_pos);
-	
+
+	// Tag edit
+	int		beginTagEdit();
+	void	tagSectorAt(double x, double y);
+	void	endTagEdit(bool accept = true);
+
 	// Object creation/deletion
 	void	createObject(double x, double y);
 	void	createVertex(double x, double y);
@@ -209,19 +225,30 @@ public:
 	// 3d mode
 	void	selectAdjacent3d(selection_3d_t item);
 	void	changeSectorLight3d(int amount);
-	void	changeWallOffset3d(int amount, bool x);
+	void	changeOffset3d(int amount, bool x);
 	void	changeSectorHeight3d(int amount);
 	void	autoAlignX3d(selection_3d_t start);
 	void	resetWall3d();
 	void	toggleUnpegged3d(bool lower);
 	void	copy3d(int type);
 	void	paste3d(int type);
+	void	changeThingZ3d(int amount);
+	void	deleteThing3d();
+	void	changeScale3d(double amount, bool x);
 
 	// Editor messages
 	unsigned	numEditorMessages();
 	string		getEditorMessage(int index);
 	long		getEditorMessageTime(int index);
 	void		addEditorMessage(string message);
+
+	// Undo/Redo
+	void	beginUndoRecord(string name, bool mod = true, bool create = true, bool del = true);
+	void	beginUndoRecordLocked(string name, bool mod = true, bool create = true, bool del = true);
+	void	endUndoRecord(bool success = true);
+	void	recordPropertyChangeUndoStep(MapObject* object);
+	void	doUndo();
+	void	doRedo();
 
 	// Misc
 	string	getModeString();

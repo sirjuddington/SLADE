@@ -631,7 +631,7 @@ struct bbox_t {
 };
 
 
-// patch_header_t: The header of a doom-format gfx image
+// patch_header_t: The header of a Doom-format gfx image
 struct patch_header_t
 {
 	short	width;
@@ -640,7 +640,7 @@ struct patch_header_t
 	short	top;
 };
 
-// oldpatch_header_t: The header of an alpha/beta doom-format gfx image
+// oldpatch_header_t: The header of an alpha/beta Doom-format gfx image
 struct oldpatch_header_t {
 	uint8_t width;
 	uint8_t height;
@@ -655,6 +655,15 @@ struct jagpic_header_t {
 	short	depth;
 	short	palshift;
 	char	padding[8];
+};
+
+// psxpic_header_t: The header of a PSX Doom-format gfx image
+struct psxpic_header_t
+{
+	short	left;
+	short	top;
+	short	width;
+	short	height;
 };
 
 // rottpatch_header_t: The header of a rott-format gfx image

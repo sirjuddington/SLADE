@@ -5,7 +5,7 @@ acs : cstyle {
 	keyword_link = "http://zdoom.org/wiki/Special:Search/%s";
 	constant_link = "http://zdoom.org/wiki/Special:Search/%s";
 	function_link = "http://zdoom.org/wiki/%s";
-	blocks = "Script";
+	blocks = "Script", "function";
 
 	keywords = {
 		open, restart, script, special, str, suspend, terminate, world, 
@@ -218,6 +218,7 @@ acs_z : acs {
 		HUDMSG_COLORSTRING, HUDMSG_ADDBLEND, HUDMSG_LAYER_OVERHUD, HUDMSG_ALPHA,
 		HUDMSG_LAYER_OVERMAP, HUDMSG_LAYER_UNDERHUD, HUDMSG_LOG, HUDMSG_LOG,
 		HUDMSG_NOTWITH3DVIEW, HUDMSG_NOTWITHFULLMAP, HUDMSG_NOTWITHOVERLAYMAP,
+		HUDMSG_NOWRAP,
 
 		MARINEWEAPON_Dummy, MARINEWEAPON_Fist, MARINEWEAPON_BerserkFist, 
 		MARINEWEAPON_Chainsaw, MARINEWEAPON_Pistol, MARINEWEAPON_Shotgun, 
@@ -244,7 +245,7 @@ acs_z : acs {
 
 		PLAYERINFO_TEAM, PLAYERINFO_AIMDIST, PLAYERINFO_COLOR, PLAYERINFO_GENDER, 
 		PLAYERINFO_NEVERSWITCH, PLAYERINFO_MOVEBOB, PLAYERINFO_STILLBOB, 
-		PLAYERINFO_PLAYERCLASS, 
+		PLAYERINFO_PLAYERCLASS, PLAYERINFO_FOV, PLAYERINFO_DESIREDFOV,
 
 		NOT_BOTTOM, NOT_MIDDLE, NOT_TOP, NOT_FLOOR, NOT_CEILING, 
 
@@ -353,6 +354,7 @@ acs_z : acs {
 
 		CHANGELEVEL_KEEPFACING, CHANGELEVEL_RESETINVENTORY, CHANGELEVEL_NOMONSTERS, 
 		CHANGELEVEL_CHANGESKILL, CHANGELEVEL_NOINTERMISSION, CHANGELEVEL_RESETHEALTH, 
+		CHANGELEVEL_PRERAISEWEAPON, 
 
 		NO_CHANGE, 
 
@@ -610,6 +612,7 @@ acs_z : acs {
 		FadeTo = "int red, int green, int blue, fixed amount, fixed seconds";
 		FixedDiv = "fixed a, fixed b";
 		FixedMul = "fixed a, fixed b";
+		FixedSqrt = "fixed number";
 		GameSkill;
 		GameType;
 		GetActorAngle = "int tid";
@@ -656,6 +659,7 @@ acs_z : acs {
 		GiveInventory = "str inventory_item, int amount";
 		HudMessage = "text; int type, int id, int color, fixed x, fixed y, fixed holdTime, alpha", "text; HUDMSG_FADEOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed fadetime, alpha", "text; HUDMSG_TYPEON, int id, int color, fixed x, fixed y, fixed holdTime, fixed typetime, fixed fadetime, alpha", "text; HUDMSG_FADEINOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed inTime, fixed outTime, alpha";
 		HudMessageBold = "text; int type, int id, int color, fixed x, fixed y, fixed holdTime, alpha", "text; HUDMSG_FADEOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed fadetime, alpha", "text; HUDMSG_TYPEON, int id, int color, fixed x, fixed y, fixed holdTime, fixed typetime, fixed fadetime, alpha", "text; HUDMSG_FADEINOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed inTime, fixed outTime, alpha";
+		IsTIDUsed = "int tid";
 		LineSide;
 		LocalAmbientSound = "str sound, int volume";
 		LocalSetMusic = "str song, [int order]";
@@ -693,7 +697,9 @@ acs_z : acs {
 		SetFloorTrigger = "int tag, int height, int special [, int arg1 [, int arg2 [, int arg3 [, int arg4 [, int arg5]]]]]";
 		SetFont = "str fontlump";
 		SetGravity = "fixed amount";
-		SetHudSize = "int width, int height, bool statusbar";
+		SetHUDClipRect = "int x; int y, int width, int height[, int wrapwidth]";
+		SetHUDSize = "int width, int height, bool statusbar";
+		SetHUDWrapWidth = "int wrapwidth";
 		SetLineBlocking = "int lineid, int setting";
 		SetLineMonsterBlocking = "int lineid, int setting";
 		SetLineSpecial = "int lineid, int special [, int arg0 [, int arg1 [, int arg2 [, int arg3 [, int arg4]]]]]";
@@ -721,6 +727,7 @@ acs_z : acs {
 		SpawnSpotFacing = "str classname, int spottid [, int tid]";
 		SpawnSpotFacingForced = "str classname, int spottid [, int tid]";
 		SpawnSpotForced = "str classname, int spottid [, int tid [, int angle]]";
+		Sqrt = "int number";
 		StrCopy = "a:destination, string source[, int source_index]";
 		StrLen = "str string";
 		StrParam = "type:expression";
@@ -735,10 +742,12 @@ acs_z : acs {
 		ThingCountSector = "int type, int tid, int tag";
 		ThingSound = "int tid, str sound, int volume";
 		Timer;
+		UniqueTID = "[int tid[, int limit]]";
 		UnMorphActor = "int tid, [bool force]";
 		UseActorInventory = "int TID, str classname";
 		UseInventory = "str classname";
 		VectorAngle = "int x, int y";
+		VectorLength = "int x, int y";
 		
 		// Skulltag functions
 		BlueCount;

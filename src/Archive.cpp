@@ -1454,10 +1454,10 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options) {
 			// Cut extension if ignoring
 			wxFileName fn(entry->getName());
 			if (options.ignore_ext) {
-				if (!options.match_name.Matches(fn.GetName().MakeLower()))
+				if (!fn.GetName().MakeLower().Matches(options.match_name))
 					continue;
 			}
-			else if (!options.match_name.Matches(fn.GetFullName().MakeLower()))
+			else if (!fn.GetFullName().MakeLower().Matches(options.match_name))
 				continue;
 		}
 

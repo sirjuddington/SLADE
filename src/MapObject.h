@@ -15,10 +15,19 @@ enum {
 	MOBJ_THING,
 };
 
+struct mobj_backup_t {
+	PropertyList	properties;
+	PropertyList	props_internal;
+	unsigned		id;
+	uint8_t			type;
+
+	mobj_backup_t() { id = 0; type = 0; }
+};
+
 class MapObject {
 friend class SLADEMap;
 private:
-	int			type;
+	uint8_t			type;
 
 protected:
 	unsigned		index;
@@ -26,20 +35,24 @@ protected:
 	PropertyList	properties;
 	bool			filtered;
 	long			modified_time;
+	unsigned		id;
+	mobj_backup_t*	obj_backup;
 
 public:
 	MapObject(int type = MOBJ_UNKNOWN, SLADEMap* parent = NULL);
-	~MapObject();
+	virtual ~MapObject();
 
-	int			getObjType() { return type; }
+	uint8_t		getObjType() { return type; }
 	unsigned	getIndex();
 	SLADEMap*	getParentMap() { return parent_map; }
 	bool		isFiltered() { return filtered; }
 	long		modifiedTime() { return modified_time; }
+	unsigned	getId() { return id; }
+	string		getTypeName();
+	void		setModified();
 
 	PropertyList&	props()				{ return properties; }
-	//Property&		prop(string key)	{ return properties[key]; }
-	bool			hasProp(string key)	{ return properties.propertyExists(key); }
+	bool			hasProp(string key)	{ return properties[key].hasValue(); }
 
 	// Generic property modification
 	virtual bool	boolProperty(string key);
@@ -57,6 +70,18 @@ public:
 	void	filter(bool f = true) { filtered = f; }
 
 	virtual void	copy(MapObject* c);
+
+	void			backup(mobj_backup_t* backup);
+	void			loadFromBackup(mobj_backup_t* backup);
+	mobj_backup_t*	getBackup(bool remove = false);
+
+	virtual void writeBackup(mobj_backup_t* backup) = 0;
+	virtual void readBackup(mobj_backup_t* backup) = 0;
+
+	static void resetIdCounter();
+	static long propBackupTime();
+	static void beginPropBackup(long current_time);
+	static void endPropBackup();
 };
 
 #endif//__MAP_OBJECT_H__

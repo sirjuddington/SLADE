@@ -25,7 +25,10 @@ void LineInfoOverlay::update(MapLine* line) {
 	int map_format = theMapEditor->currentMapDesc().format;
 
 	// General line info
-	info.push_back(S_FMT("Line #%d", line->getIndex()));
+	if (Global::debug)
+		info.push_back(S_FMT("Line #%d (%d)", line->getIndex(), line->getId()));
+	else
+		info.push_back(S_FMT("Line #%d", line->getIndex()));
 	info.push_back(S_FMT("Length: %d", MathStuff::round(line->getLength())));
 
 	// Line special
@@ -66,11 +69,14 @@ void LineInfoOverlay::update(MapLine* line) {
 		int xoff = s->intProperty("offsetx");
 		int yoff = s->intProperty("offsety");
 		side_front.exists = true;
-		side_front.info = S_FMT("Front Side #%d (Sector %d)", s->getIndex(), s->getSector()->getIndex());
+		if (Global::debug)
+			side_front.info = S_FMT("Front Side #%d (%d) (Sector %d)", s->getIndex(), s->getId(), s->getSector()->getIndex());
+		else
+			side_front.info = S_FMT("Front Side #%d (Sector %d)", s->getIndex(), s->getSector()->getIndex());
 		side_front.offsets = S_FMT("Offsets: (%d, %d)", xoff, yoff);
-		side_front.tex_upper = s->stringProperty("texturetop");
-		side_front.tex_middle = s->stringProperty("texturemiddle");
-		side_front.tex_lower = s->stringProperty("texturebottom");
+		side_front.tex_upper = s->getTexUpper();
+		side_front.tex_middle = s->getTexMiddle();
+		side_front.tex_lower = s->getTexLower();
 	}
 	else side_front.exists = false;
 
@@ -80,11 +86,14 @@ void LineInfoOverlay::update(MapLine* line) {
 		int xoff = s->intProperty("offsetx");
 		int yoff = s->intProperty("offsety");
 		side_back.exists = true;
-		side_back.info = S_FMT("Back Side #%d (Sector %d)", s->getIndex(), s->getSector()->getIndex());
+		if (Global::debug)
+			side_back.info = S_FMT("Back Side #%d (%d) (Sector %d)", s->getIndex(), s->getId(), s->getSector()->getIndex());
+		else
+			side_back.info = S_FMT("Back Side #%d (Sector %d)", s->getIndex(), s->getSector()->getIndex());
 		side_back.offsets = S_FMT("Offsets: (%d, %d)", xoff, yoff);
-		side_back.tex_upper = s->stringProperty("texturetop");
-		side_back.tex_middle = s->stringProperty("texturemiddle");
-		side_back.tex_lower = s->stringProperty("texturebottom");
+		side_back.tex_upper = s->getTexUpper();
+		side_back.tex_middle = s->getTexMiddle();
+		side_back.tex_lower = s->getTexLower();
 	}
 	else side_back.exists = false;
 }

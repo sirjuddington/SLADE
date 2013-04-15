@@ -3,6 +3,7 @@
 #define __MAPLINE_H__
 
 #include "MapObject.h"
+#include <map>
 
 class MapVertex;
 class MapSide;
@@ -56,6 +57,7 @@ private:
 	MapVertex*	vertex2;
 	MapSide*	side1;
 	MapSide*	side2;
+	int			special;
 
 	// Internally used info
 	double		length;
@@ -74,6 +76,7 @@ public:
 	MapVertex*		v2() { return vertex2; }
 	MapSide*		s1() { return side1; }
 	MapSide*		s2() { return side2; }
+	int				getSpecial() { return special; }
 
 	MapSector*	frontSector();
 	MapSector*	backSector();
@@ -111,6 +114,9 @@ public:
 
 	void	resetInternals();
 	void	flip(bool sides = true);
+
+	void	writeBackup(mobj_backup_t* backup);
+	void	readBackup(mobj_backup_t* backup);
 };
 
 #endif //__MAPLINE_H__

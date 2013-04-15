@@ -9,6 +9,8 @@
 #include <wx/colour.h>
 
 class GLTexture;
+class FontManager;
+
 namespace Drawing {
 	enum {
 		// Text fonts

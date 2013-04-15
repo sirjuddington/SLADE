@@ -101,6 +101,14 @@ bool GLTexture::loadData(const uint8_t* data, uint32_t width, uint32_t height, b
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	}
 
+	// Force mipmapping if np2 and splitting isn't allowed
+	if (!allow_split && (!OpenGL::validTexDimension(width) || !OpenGL::validTexDimension(height))) {
+		if (filter == LINEAR)
+			filter = LINEAR_MIPMAP;
+		else if (filter == NEAREST)
+			filter = NEAREST_MIPMAP;
+	}
+
 	// Generate the texture
 	if (filter == LINEAR) {
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

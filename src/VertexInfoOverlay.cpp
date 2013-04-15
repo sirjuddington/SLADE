@@ -23,6 +23,9 @@ void VertexInfoOverlay::update(MapVertex* vertex) {
 		info = S_FMT("Vertex %d: (%1.4f, %1.4f)", vertex->getIndex(), vertex->xPos(), vertex->yPos());
 	else
 		info = S_FMT("Vertex %d: (%d, %d)", vertex->getIndex(), (int)vertex->xPos(), (int)vertex->yPos());
+
+	if (Global::debug)
+		info += S_FMT(" (%d)", vertex->getId());
 }
 
 void VertexInfoOverlay::draw(int bottom, int right, float alpha) {

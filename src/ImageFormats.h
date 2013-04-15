@@ -537,6 +537,34 @@ public:
 	}
 };
 
+class DoomPSXDataFormat : public EntryDataFormat {
+public:
+	DoomPSXDataFormat() : EntryDataFormat("img_doom_psx") {};
+	~DoomPSXDataFormat() {}
+
+	int isThisFormat(MemChunk& mc) {
+		if (mc.getSize() < sizeof(psxpic_header_t))
+			return EDF_FALSE;
+
+		const uint8_t* data = mc.getData();
+		const psxpic_header_t *header = (const psxpic_header_t *)data;
+
+		// Check header values are 'sane'
+		if (!(header->height > 0 && header->height < 4096 &&
+			header->width > 0 && header->width < 4096 &&
+			header->top > -2000 && header->top < 2000 &&
+			header->left > -2000 && header->left < 2000))
+			return EDF_FALSE;
+
+		// Check the size matches
+		size_t rawsize = (sizeof(psxpic_header_t) + (header->width * header->height));
+		if (mc.getSize() < rawsize && mc.getSize() >= rawsize + 4)
+			return EDF_FALSE;
+
+		return EDF_TRUE;
+	}
+};
+
 class IMGZDataFormat : public EntryDataFormat {
 public:
 	IMGZDataFormat() : EntryDataFormat("img_imgz") {};

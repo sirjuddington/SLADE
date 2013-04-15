@@ -14,6 +14,7 @@ ThingType::ThingType(string name) {
 	this->height = -1;
 	this->fullbright = false;
 	this->decoration = false;
+	this->decorate = false;
 
 	// Init args
 	args[0].name = "Arg1";
@@ -225,6 +226,7 @@ string ThingType::stringDesc() {
 	if (hanging) ret += ", hanging";
 	if (fullbright) ret += ", fullbright";
 	if (decoration) ret += ", decoration";
+	if (decorate) ret += ", defined in DECORATE";
 
 	return ret;
 }

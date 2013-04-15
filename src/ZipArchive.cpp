@@ -66,7 +66,7 @@ ZipArchive::~ZipArchive() {
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
 string ZipArchive::getFileExtensionString() {
-	return "Any Zip Format File (*.zip;*.pk3;*.jdf)|*.zip;*.pk3;*.jdf|Zip File (*.zip)|*.zip|Pk3 File (*.pk3)|*.pk3|JDF File (*.jdf)|*.jdf";
+	return "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)|*.zip;*.pk3;*.pke;*.jdf|Zip File (*.zip)|*.zip|Pk3 File (*.pk3)|*.pk3|Eternity Pke File (*.pke)|*.pke|JDF File (*.jdf)|*.jdf";
 }
 
 /* ZipArchive::getFormat

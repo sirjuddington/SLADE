@@ -266,7 +266,7 @@ void SplashWindow::onPaint(wxPaintEvent& e) {
  * Shows the splash screen with the given message, or hides it if
  * no message is given
  *******************************************************************/
-CONSOLE_COMMAND (splash, 0) {
+CONSOLE_COMMAND (splash, 0, false) {
 	if (args.size() == 0)
 		theSplashWindow->hide();
 	else if (args.size() == 1)

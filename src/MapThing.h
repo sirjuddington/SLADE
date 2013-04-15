@@ -44,6 +44,7 @@ private:
 	short		type;
 	double		x;
 	double		y;
+	short		angle;
 
 public:
 	MapThing(SLADEMap* parent = NULL);
@@ -57,6 +58,7 @@ public:
 	fpoint2_t	midPoint() { return fpoint2_t(x, y); }
 
 	short	getType() { return type; }
+	short	getAngle() { return angle; }
 
 	int		intProperty(string key);
 	double	floatProperty(string key);
@@ -66,6 +68,9 @@ public:
 	void	copy(MapObject* c);
 
 	void	setAnglePoint(fpoint2_t point);
+
+	void	writeBackup(mobj_backup_t* backup);
+	void	readBackup(mobj_backup_t* backup);
 };
 
 #endif //__MAPTHING_H__

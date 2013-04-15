@@ -30,13 +30,15 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "ACSPrefsPanel.h"
-#include <wx/filedlg.h>
+#include "SFileDialog.h"
+#include <wx/listbox.h>
 
 
 /*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(String, path_acc)
+EXTERN_CVAR(String, path_acc_libs)
 
 
 /*******************************************************************
@@ -65,8 +67,30 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
 	hbox->Add(btn_browse_accpath, 0, wxEXPAND);
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
+	// Include paths
+	sizer->Add(new wxStaticText(this, -1, "Include Paths:"), 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	list_inc_paths = new wxListBox(this, -1, wxDefaultPosition, wxSize(-1, 200));
+	hbox->Add(list_inc_paths, 1, wxEXPAND|wxRIGHT, 4);
+
+	// Add include path
+	btn_incpath_add = new wxButton(this, -1, "Add");
+	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	hbox->Add(vbox, 0, wxEXPAND);
+	vbox->Add(btn_incpath_add, 0, wxEXPAND|wxBOTTOM, 4);
+
+	// Remove include path
+	btn_incpath_remove = new wxButton(this, -1, "Remove");
+	vbox->Add(btn_incpath_remove, 0, wxEXPAND|wxBOTTOM, 4);
+
+	// Populate include paths list
+	list_inc_paths->Append(wxSplit(path_acc_libs, ';'));
+
 	// Bind events
 	btn_browse_accpath->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ACSPrefsPanel::onBtnBrowseACCPath, this);
+	btn_incpath_add->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ACSPrefsPanel::onBtnAddIncPath, this);
+	btn_incpath_remove->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ACSPrefsPanel::onBtnRemoveIncPath, this);
 }
 
 /* ACSPrefsPanel::~ACSPrefsPanel
@@ -87,6 +111,16 @@ void ACSPrefsPanel::init() {
  *******************************************************************/
 void ACSPrefsPanel::applyPreferences() {
 	path_acc = text_accpath->GetValue();
+
+	// Build include paths string
+	string paths_string;
+	wxArrayString lib_paths = list_inc_paths->GetStrings();
+	for (unsigned a = 0; a < lib_paths.size(); a++)
+		paths_string += lib_paths[a] + ";";
+	if (paths_string.EndsWith(";"))
+		paths_string.RemoveLast(1);
+
+	path_acc_libs = paths_string;
 }
 
 
@@ -108,4 +142,17 @@ void ACSPrefsPanel::onBtnBrowseACCPath(wxCommandEvent& e) {
 	wxFileDialog fd(this, "Browse for ACC Executable", wxEmptyString, acc_exe, acc_exe);
 	if (fd.ShowModal() == wxID_OK)
 		text_accpath->SetValue(fd.GetPath());
+}
+
+
+void ACSPrefsPanel::onBtnAddIncPath(wxCommandEvent& e) {
+	wxDirDialog dlg(this, "Browse for ACC Include Path");
+	if (dlg.ShowModal() == wxID_OK) {
+		list_inc_paths->Append(dlg.GetPath());
+	}
+}
+
+void ACSPrefsPanel::onBtnRemoveIncPath(wxCommandEvent& e) {
+	if (list_inc_paths->GetSelection() >= 0)
+		list_inc_paths->Delete(list_inc_paths->GetSelection());
 }

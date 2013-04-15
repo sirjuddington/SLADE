@@ -4,9 +4,9 @@
 #include "Parser.h"
 #include "ArchiveManager.h"
 #include "Console.h"
-#include <wx/hashmap.h>
+#include <map>
 
-WX_DECLARE_STRING_HASH_MAP(cc_col_t, ColourHashMap);
+typedef std::map<string, cc_col_t> ColourHashMap;
 ColourHashMap	cc_colours;
 
 rgba_t ColourConfiguration::getColour(string name) {
@@ -192,7 +192,7 @@ void ColourConfiguration::getColourNames(vector<string>& list) {
 
 
 
-CONSOLE_COMMAND(ccfg, 1) {
+CONSOLE_COMMAND(ccfg, 1, false) {
 	// Check for 'list'
 	if (S_CMPNOCASE(args[0], "list")) {
 		// Get (sorted) list of colour names
@@ -234,6 +234,6 @@ CONSOLE_COMMAND(ccfg, 1) {
 	}
 }
 
-CONSOLE_COMMAND(load_ccfg, 1) {
+CONSOLE_COMMAND(load_ccfg, 1, false) {
 	ColourConfiguration::readConfiguration(args[0]);
 }

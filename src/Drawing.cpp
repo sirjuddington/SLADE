@@ -57,25 +57,62 @@ CVAR(Bool, hud_center, 1, CVAR_SAVE)
 CVAR(Bool, hud_wide, 0, CVAR_SAVE)
 CVAR(Bool, hud_bob, 0, CVAR_SAVE)
 
-namespace Drawing {
 #ifdef USE_SFML_RENDERWINDOW
-	sf::Font			font_normal;
-	sf::Font			font_condensed;
-	sf::Font			font_bold;
-	sf::Font			font_boldcondensed;
-	sf::Font			font_mono;
-	sf::Font			font_small;
+namespace Drawing {
 	sf::RenderWindow*	render_target = NULL;
-#else
-	FTFont*	font_normal;
-	FTFont*	font_condensed;
-	FTFont*	font_bold;
-	FTFont*	font_boldcondensed;
-	FTFont*	font_mono;
-	FTFont* font_small;
-#endif
 };
+#endif
 
+
+class FontManager {
+private:
+#ifdef USE_SFML_RENDERWINDOW
+	sf::Font	font_normal;
+	sf::Font	font_condensed;
+	sf::Font	font_bold;
+	sf::Font	font_boldcondensed;
+	sf::Font	font_mono;
+	sf::Font	font_small;
+#else
+	FTFont*		font_normal;
+	FTFont*		font_condensed;
+	FTFont*		font_bold;
+	FTFont*		font_boldcondensed;
+	FTFont*		font_mono;
+	FTFont*		font_small;
+#endif
+	static FontManager*	instance;
+
+public:
+	FontManager() {}
+	~FontManager() {
+#ifndef USE_SFML_RENDERWINDOW
+		if (font_normal)		{ delete font_normal;			font_normal = NULL;			}
+		if (font_condensed)		{ delete font_condensed;		font_condensed = NULL;		}
+		if (font_bold)			{ delete font_bold;				font_bold = NULL;			}
+		if (font_boldcondensed) { delete font_boldcondensed;	font_boldcondensed = NULL;	}
+		if (font_mono)			{ delete font_mono;				font_mono = NULL;			}
+		if (font_small)			{ delete font_small;			font_small = NULL;			}
+#endif
+	}
+
+	static FontManager*	getInstance() {
+		if (!instance)
+			instance = new FontManager();
+
+		return instance;
+	}
+	int initFonts();
+
+#ifdef USE_SFML_RENDERWINDOW
+	sf::Font*	getFont(int font);
+#else
+	FTFont*		getFont(int font);
+#endif
+
+};
+#define theFontManager FontManager::getInstance()
+FontManager* FontManager::instance = NULL;
 
 /*******************************************************************
  * FUNCTIONS
@@ -84,71 +121,78 @@ namespace Drawing {
 #ifdef USE_SFML_RENDERWINDOW
 
 #if SFML_VERSION_MAJOR < 2
-/* Drawing::initFonts
+/* FontManager::initFonts
  * Loads all needed fonts for rendering. SFML 1.x implementation
  *******************************************************************/
-void Drawing::initFonts() {
+int FontManager::initFonts() {
 	// --- Load general fonts ---
+	int ret = 0;
 
 	// Normal
 	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) font_normal.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
+	if (entry) ++ret, font_normal.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
 
 	// Condensed
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry) font_condensed.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
+	if (entry) ++ret, font_condensed.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
 
 	// Bold
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry) font_bold.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
+	if (entry) ++ret, font_bold.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
 
 	// Condensed Bold
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry) font_boldcondensed.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
+	if (entry) ++ret, font_boldcondensed.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
 
 	// Monospace
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry) font_mono.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
+	if (entry) ++ret, font_mono.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
 
 	// Small
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) font_small.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 8);
+	if (entry) ++ret, font_small.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 8);
+
+	return ret;
 }
 #else
-/* Drawing::initFonts
+/* FontManager::initFonts
  * Loads all needed fonts for rendering. SFML 2.x implementation
  *******************************************************************/
-void Drawing::initFonts() {
+int FontManager::initFonts() {
 	// --- Load general fonts ---
+	int ret = 0;
 
 	// Normal
 	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) font_normal.loadFromMemory((const char*)entry->getData(), entry->getSize());
+	if (entry) ++ret, font_normal.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Condensed
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry) font_condensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
+	if (entry) ++ret, font_condensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Bold
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry) font_bold.loadFromMemory((const char*)entry->getData(), entry->getSize());
+	if (entry) ++ret, font_bold.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Condensed Bold
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry) font_boldcondensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
+	if (entry) ++ret, font_boldcondensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
 
 	// Monospace
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry) font_small.loadFromMemory((const char*)entry->getData(), entry->getSize());
+	if (entry) ++ret, font_small.loadFromMemory((const char*)entry->getData(), entry->getSize());
+
+	return ret;
 }
 #endif//SFML_VERSION_MAJOR
 
 #else
-/* Drawing::initFonts
+/* FontManager::initFonts
  * Loads all needed fonts for rendering. Non-SFML implementation
  *******************************************************************/
-void Drawing::initFonts() {
+int FontManager::initFonts() {
 	// --- Load general fonts ---
+	int ret = 0;
 
 	// Normal
 	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
@@ -160,7 +204,7 @@ void Drawing::initFonts() {
 		if (font_normal->Error()) {
 			delete font_normal;
 			font_normal = NULL;
-		}
+		} else ++ ret;
 	}
 
 	// Condensed
@@ -173,7 +217,7 @@ void Drawing::initFonts() {
 		if (font_condensed->Error()) {
 			delete font_condensed;
 			font_condensed = NULL;
-		}
+		} else ++ ret;
 	}
 
 	// Bold
@@ -186,7 +230,7 @@ void Drawing::initFonts() {
 		if (font_bold->Error()) {
 			delete font_bold;
 			font_bold = NULL;
-		}
+		} else ++ ret;
 	}
 
 	// Condensed bold
@@ -199,7 +243,7 @@ void Drawing::initFonts() {
 		if (font_boldcondensed->Error()) {
 			delete font_boldcondensed;
 			font_boldcondensed = NULL;
-		}
+		} else ++ ret;
 	}
 
 	// Monospace
@@ -212,7 +256,7 @@ void Drawing::initFonts() {
 		if (font_mono->Error()) {
 			delete font_mono;
 			font_mono = NULL;
-		}
+		} else ++ ret;
 	}
 
 	// Small
@@ -225,10 +269,51 @@ void Drawing::initFonts() {
 		if (font_small->Error()) {
 			delete font_small;
 			font_small = NULL;
-		}
+		} else ++ ret;
 	}
+
+	return ret;
 }
 #endif
+
+/* FontManager::getFont
+ * Returns a font
+ *******************************************************************/
+#ifdef USE_SFML_RENDERWINDOW
+sf::Font* FontManager::getFont(int font) {
+	switch (font) {
+	case Drawing::FONT_NORMAL:			return &font_normal;
+	case Drawing::FONT_CONDENSED:		return &font_condensed;
+	case Drawing::FONT_BOLD:			return &font_bold;
+	case Drawing::FONT_BOLDCONDENSED:	return &font_boldcondensed;
+	case Drawing::FONT_MONOSPACE:		return &font_mono;
+	case Drawing::FONT_SMALL:			return &font_small;
+	default:							return &font_normal;
+	};
+	return NULL;
+}
+#else // USE_SFML_RENDERWINDOW
+FTFont* FontManager::getFont(int font) {
+	switch (font) {
+	case Drawing::FONT_NORMAL:			return font_normal;
+	case Drawing::FONT_CONDENSED:		return font_condensed;
+	case Drawing::FONT_BOLD:			return font_bold;
+	case Drawing::FONT_BOLDCONDENSED:	return font_boldcondensed;
+	case Drawing::FONT_MONOSPACE:		return font_mono;
+	case Drawing::FONT_SMALL:			return font_small;
+	default:							return font_normal;
+	};
+	return NULL;
+}
+#endif // USE_SFML_RENDERWINDOW
+
+
+/* Drawing::initFonts
+ * Creates a FontManager if needed and let it init its own fonts
+ *******************************************************************/
+void Drawing::initFonts() {
+	theFontManager->initFonts();
+}
 
 /* Drawing::drawLine
  * Draws a line from [start] to [end]
@@ -473,16 +558,9 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	sf_str.SetColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 
 	// Set font
-	switch (font) {
-	case FONT_NORMAL:			sf_str.SetFont(font_normal); break;
-	case FONT_CONDENSED:		sf_str.SetFont(font_condensed); break;
-	case FONT_BOLD:				sf_str.SetFont(font_bold); break;
-	case FONT_BOLDCONDENSED:	sf_str.SetFont(font_boldcondensed); break;
-	case FONT_MONOSPACE:		sf_str.SetFont(font_mono); break;
-	case FONT_SMALL:			sf_str.SetFont(font_small); break;
-	default:					sf_str.SetFont(font_normal); break;
-	};
-	sf_str.SetSize(sf_str.GetFont().GetCharacterSize());
+	sf::Font * f = theFontManager->getFont(font);
+	sf_str.SetFont(*f);
+	sf_str.SetSize(f->GetCharacterSize());
 
 	// Setup alignment
 	if (alignment != ALIGN_LEFT) {
@@ -513,16 +591,9 @@ fpoint2_t Drawing::textExtents(string text, int font) {
 	sf::String sf_str(CHR(text));
 
 	// Set font
-	switch (font) {
-	case FONT_NORMAL:			sf_str.SetFont(font_normal); break;
-	case FONT_CONDENSED:		sf_str.SetFont(font_condensed); break;
-	case FONT_BOLD:				sf_str.SetFont(font_bold); break;
-	case FONT_BOLDCONDENSED:	sf_str.SetFont(font_boldcondensed); break;
-	case FONT_MONOSPACE:		sf_str.SetFont(font_mono); break;
-	case FONT_SMALL:			sf_str.SetFont(font_small); break;
-	default:					sf_str.SetFont(font_normal); break;
-	};
-	sf_str.SetSize(sf_str.GetFont().GetCharacterSize());
+	sf::Font * f = theFontManager->getFont(font);
+	sf_str.SetFont(*f);
+	sf_str.SetSize(f->GetCharacterSize());
 
 	// Return width and height of text
 	sf::FloatRect rect = sf_str.GetRect();
@@ -546,15 +617,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 
 	// Set font
-	switch (font) {
-	case FONT_NORMAL:			sf_str.setFont(font_normal); break;
-	case FONT_CONDENSED:		sf_str.setFont(font_condensed); break;
-	case FONT_BOLD:				sf_str.setFont(font_bold); break;
-	case FONT_BOLDCONDENSED:	sf_str.setFont(font_boldcondensed); break;
-	case FONT_MONOSPACE:		sf_str.setFont(font_mono); break;
-	case FONT_SMALL:			sf_str.setFont(font_normal); break;
-	default:					sf_str.setFont(font_normal); break;
-	};
+	sf::Font * f = theFontManager->getFont(font);
+	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
 		sf_str.setCharacterSize(8);
 	else
@@ -604,15 +668,8 @@ fpoint2_t Drawing::textExtents(string text, int font) {
 	sf_str.setString(CHR(text));
 
 	// Set font
-	switch (font) {
-	case FONT_NORMAL:			sf_str.setFont(font_normal); break;
-	case FONT_CONDENSED:		sf_str.setFont(font_condensed); break;
-	case FONT_BOLD:				sf_str.setFont(font_bold); break;
-	case FONT_BOLDCONDENSED:	sf_str.setFont(font_boldcondensed); break;
-	case FONT_MONOSPACE:		sf_str.setFont(font_mono); break;
-	case FONT_SMALL:			sf_str.setFont(font_normal); break;
-	default:					sf_str.setFont(font_normal); break;
-	};
+	sf::Font * f = theFontManager->getFont(font);
+	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
 		sf_str.setCharacterSize(8);
 	else
@@ -635,17 +692,7 @@ fpoint2_t Drawing::textExtents(string text, int font) {
  *******************************************************************/
 void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds) {
 	// Get desired font
-	FTFont* ftgl_font;
-	// Set font
-	switch (font) {
-	case FONT_NORMAL:			ftgl_font = font_normal; break;
-	case FONT_CONDENSED:		ftgl_font = font_condensed; break;
-	case FONT_BOLD:				ftgl_font = font_bold; break;
-	case FONT_BOLDCONDENSED:	ftgl_font = font_boldcondensed; break;
-	case FONT_MONOSPACE:		ftgl_font = font_mono; break;
-	case FONT_SMALL:			ftgl_font = font_small; break;
-	default:					ftgl_font = font_normal; break;
-	};
+	FTFont* ftgl_font = theFontManager->getFont(font);
 
 	// If FTGL font is invalid, do nothing
 	if (!ftgl_font)
@@ -685,17 +732,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
  *******************************************************************/
 fpoint2_t Drawing::textExtents(string text, int font) {
 	// Get desired font
-	FTFont* ftgl_font;
-	// Set font
-	switch (font) {
-	case FONT_NORMAL:			ftgl_font = font_normal; break;
-	case FONT_CONDENSED:		ftgl_font = font_condensed; break;
-	case FONT_BOLD:				ftgl_font = font_bold; break;
-	case FONT_BOLDCONDENSED:	ftgl_font = font_boldcondensed; break;
-	case FONT_MONOSPACE:		ftgl_font = font_mono; break;
-	case FONT_SMALL:			ftgl_font = font_small; break;
-	default:					ftgl_font = font_normal; break;
-	};
+	FTFont* ftgl_font = theFontManager->getFont(font);
 
 	// If FTGL font is invalid, return empty
 	if (!ftgl_font)
@@ -785,7 +822,7 @@ wxColour Drawing::getPanelBGColour() {
 }
 
 wxColour Drawing::getMenuTextColour() {
-#ifdef __WXGTK__
+/*#ifdef __WXGTK__
 	static bool     intitialized(false);
 	static wxColour textColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT));
 
@@ -804,12 +841,13 @@ wxColour Drawing::getMenuTextColour() {
 		intitialized = true;
 	}
 	return textColour;
-#else
+#else*/
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
-#endif
+//#endif
 }
 
 wxColour Drawing::getMenuBarBGColour() {
+/*
 #ifdef __WXGTK__
 	static bool     intitialized(false);
 	static wxColour textColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUBAR));
@@ -829,9 +867,9 @@ wxColour Drawing::getMenuBarBGColour() {
 		intitialized = true;
 	}
 	return textColour;
-#else
-	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUBAR);
-#endif
+#else*/
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
+//#endif
 }
 
 wxColour Drawing::lightColour(const wxColour& colour, float percent) {

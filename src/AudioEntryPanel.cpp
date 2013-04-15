@@ -191,7 +191,8 @@ bool AudioEntryPanel::open() {
 
 	// Convert if necessary, then write to file
 	MemChunk convdata;
-	if (entry->getType()->getFormat() == "snd_doom")			// Doom Sound -> WAV
+	if (entry->getType()->getFormat() == "snd_doom" ||			// Doom Sound -> WAV
+		entry->getType()->getFormat() == "snd_doom_mac")
 		Conversions::doomSndToWav(mcdata, convdata);
 	else if (entry->getType()->getFormat() == "snd_wolf")		// Wolfenstein 3D Sound -> WAV
 		Conversions::wolfSndToWav(mcdata, convdata);

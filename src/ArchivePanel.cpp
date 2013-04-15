@@ -1227,6 +1227,7 @@ bool ArchivePanel::gfxConvert() {
 
 	// Hide splash window
 	theSplashWindow->hide();
+	theActivePanel->callRefresh();
 
 	return true;
 }
@@ -1279,6 +1280,7 @@ bool ArchivePanel::gfxRemap() {
 		// Finish recording undo level
 		undo_manager->endRecord(true);
 	}
+	theActivePanel->callRefresh();
 
 	return true;
 }
@@ -1304,6 +1306,7 @@ bool ArchivePanel::gfxModifyOffsets() {
 		undo_manager->recordUndoStep(new EntryDataUS(selection[a]));
 		EntryOperations::modifyGfxOffsets(selection[a], mod.getAlignType(), mod.getOffset(), mod.xOffChange(), mod.yOffChange(), mod.relativeOffset());
 	}
+	theActivePanel->callRefresh();
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -1368,7 +1371,7 @@ ArchiveEntry * ArchivePanel::currentEntry() {
 		return NULL;
 }
 
-/* ArchivePanel::currentEntry
+/* ArchivePanel::currentEntries
  * Returns a vector of all selected entries
  *******************************************************************/
 vector<ArchiveEntry*> ArchivePanel::currentEntries() {
@@ -1376,6 +1379,15 @@ vector<ArchiveEntry*> ArchivePanel::currentEntries() {
 	if (entry_list)
 		selection = entry_list->getSelectedEntries();
 	return selection;
+}
+
+/* ArchivePanel::currentDir
+ * Returns a vector of all selected entries
+ *******************************************************************/
+ArchiveTreeNode* ArchivePanel::currentDir() {
+	if (entry_list)
+		return entry_list->getCurrentDir();
+	return NULL;
 }
 
 /* ArchivePanel::basConvert
@@ -1447,6 +1459,7 @@ bool ArchivePanel::palConvert() {
 		dest[i] = ((dest[i] << 2) | (dest[i] >> 4));
 	}
 	pal6bit->importMem(dest, pal6bit->getSize());
+	theActivePanel->callRefresh();
 	delete[] dest;
 	return true;
 }
@@ -1499,7 +1512,8 @@ bool ArchivePanel::dSndWavConvert() {
 		bool worked = false;
 		MemChunk wav;
 		// Convert Doom Sound -> WAV if the entry is Doom Sound format
-		if (selection[a]->getType()->getFormat() == "snd_doom")
+		if (selection[a]->getType()->getFormat() == "snd_doom" ||
+			selection[a]->getType()->getFormat() == "snd_doom_mac")
 			worked = Conversions::doomSndToWav(selection[a]->getMCData(), wav);
 		// Or Jaguar Doom sound format
 		else if (selection[a]->getType()->getFormat() == "snd_jaguar")
@@ -1590,7 +1604,6 @@ bool ArchivePanel::optimizePNG() {
 
 	// Go through selection
 	for (unsigned a = 0; a < selection.size(); a++) {
-		theSplashWindow->Raise();
 		theSplashWindow->setProgressMessage(selection[a]->getName(true));
 		theSplashWindow->setProgress(float(a) / float(selection.size()));
 		if (selection[a]->getType()->getFormat() == "img_png") {
@@ -1599,7 +1612,6 @@ bool ArchivePanel::optimizePNG() {
 		}
 	}
 	theSplashWindow->hide();
-	theMainWindow->Raise();
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -1648,6 +1660,13 @@ bool ArchivePanel::mapOpenDb2() {
 	return EntryOperations::openMapDB2(entry);
 }
 
+
+/* ArchivePanel::openDir
+ * Opens the given directory.
+ *******************************************************************/
+bool ArchivePanel::openDir(ArchiveTreeNode* dir) {
+	return entry_list->setDir(dir);
+}
 
 /* ArchivePanel::openEntry
  * Shows the appropriate entry area and sends the given entry to it.
@@ -2210,6 +2229,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e) {
 		if (!dsnd_selected) {
 			if (selection[a]->getType()->getFormat() == "snd_doom" ||
 				selection[a]->getType()->getFormat() == "snd_wolf" ||
+				selection[a]->getType()->getFormat() == "snd_doom_mac" ||
 				selection[a]->getType()->getFormat() == "snd_jaguar" ||
 				selection[a]->getType()->getFormat() == "snd_bloodsfx" ||
 				selection[a]->getType()->getFormat() == "snd_voc")
@@ -2692,11 +2712,246 @@ ArchivePanel * CH::getCurrentArchivePanel() {
 	return NULL;
 }
 
-CONSOLE_COMMAND(palconv, 0) {
+CONSOLE_COMMAND(palconv, 0, false) {
 	ArchivePanel * meep = CH::getCurrentArchivePanel();
 	if (meep)
 	{
 		meep->palConvert();
 		meep->reloadCurrentPanel();
 	}
+}
+
+CONSOLE_COMMAND(palconv64, 0, false) {
+	ArchivePanel * meep = CH::getCurrentArchivePanel();
+	if (meep)
+	{
+		// Get the entry index of the last selected list item
+		ArchiveEntry* pal = meep->currentEntry();
+		const uint8_t * source = pal->getData(true);
+		uint8_t * dest = new uint8_t[(pal->getSize() / 2) * 3];
+		for (size_t i = 0; i < pal->getSize() / 2; ++i)
+		{
+			uint8_t r, g, b;
+			uint16_t col = READ_B16(source, 2*i);
+			r = (col & 0xF800) >> 8;
+			g = (col & 0x07C0) >> 3;
+			b = (col & 0x003E) << 2;
+			dest[(3*i)+0] = r;
+			dest[(3*i)+1] = g;
+			dest[(3*i)+2] = b;
+		}
+		pal->importMem(dest, (pal->getSize()/2)*3);
+		theActivePanel->callRefresh();
+		delete[] dest;
+	}
+}
+
+CONSOLE_COMMAND(palconvpsx, 0, false) {
+	ArchivePanel * meep = CH::getCurrentArchivePanel();
+	if (meep)
+	{
+		// Get the entry index of the last selected list item
+		ArchiveEntry* pal = meep->currentEntry();
+		const uint8_t * source = pal->getData(true);
+		uint8_t * dest = new uint8_t[(pal->getSize() / 2) * 3];
+		for (size_t i = 0; i < pal->getSize() / 2; ++i)
+		{
+			// A1 B5 G5 R5, LE
+			uint8_t a, r, g, b;
+			uint16_t col = READ_L16(source, 2*i);
+			a = (col & 0x8000) >> 15;
+			b = (col & 0x7C00) >> 10;
+			g = (col & 0x03E0) >>  5;
+			r = (col & 0x001F);
+			r = (r << 3) | (r >> 2);
+			g = (g << 3) | (g >> 2);
+			b = (b << 3) | (b >> 2);
+			dest[(3*i)+0] = r;
+			dest[(3*i)+1] = g;
+			dest[(3*i)+2] = b;
+		}
+		pal->importMem(dest, (pal->getSize()/2)*3);
+		theActivePanel->callRefresh();
+		delete[] dest;
+	}
+}
+
+CONSOLE_COMMAND(vertex32x, 0, false) {
+	ArchivePanel * meep = CH::getCurrentArchivePanel();
+	if (meep)
+	{
+		// Get the entry index of the last selected list item
+		ArchiveEntry* v32x = meep->currentEntry();
+		const uint8_t * source = v32x->getData(true);
+		uint8_t * dest = new uint8_t[v32x->getSize() / 2];
+		for (size_t i = 0; i < v32x->getSize() / 4; ++i)
+		{
+			dest[2*i+0] = source[4*i+1];
+			dest[2*i+1] = source[4*i+0];
+		}
+		v32x->importMem(dest, v32x->getSize()/2);
+		theActivePanel->callRefresh();
+		delete[] dest;
+	}
+}
+
+CONSOLE_COMMAND(vertexpsx, 0, false) {
+	ArchivePanel * meep = CH::getCurrentArchivePanel();
+	if (meep)
+	{
+		// Get the entry index of the last selected list item
+		ArchiveEntry* vpsx = meep->currentEntry();
+		const uint8_t * source = vpsx->getData(true);
+		uint8_t * dest = new uint8_t[vpsx->getSize() / 2];
+		for (size_t i = 0; i < vpsx->getSize() / 4; ++i)
+		{
+			dest[2*i+0] = source[4*i+2];
+			dest[2*i+1] = source[4*i+3];
+		}
+		vpsx->importMem(dest, vpsx->getSize()/2);
+		theActivePanel->callRefresh();
+		delete[] dest;
+	}
+}
+
+CONSOLE_COMMAND(lightspsxtopalette, 0, false) {
+	ArchivePanel * meep = CH::getCurrentArchivePanel();
+	if (meep)
+	{
+		// Get the entry index of the last selected list item
+		ArchiveEntry* lights = meep->currentEntry();
+		const uint8_t * source = lights->getData(true);
+		size_t entries = lights->getSize() / 4;
+		uint8_t * dest = new uint8_t[entries * 3];
+		for (size_t i = 0; i < entries; ++i)
+		{
+			dest[3*i+0] = source[4*i+0];
+			dest[3*i+1] = source[4*i+1];
+			dest[3*i+2] = source[4*i+2];
+		}
+		lights->importMem(dest, entries * 3);
+		theActivePanel->callRefresh();
+		delete[] dest;
+	}
+}
+
+
+vector<ArchiveEntry*> Console_SearchEntries(string name) {
+	vector<ArchiveEntry*> entries;
+	Archive* archive = theMainWindow->getCurrentArchive();
+	ArchivePanel* panel = CH::getCurrentArchivePanel();
+
+	if (archive)
+	{
+		Archive::search_options_t options;
+		options.search_subdirs = true;
+		if (panel) {
+			options.dir = panel->currentDir();
+		}
+		options.match_name = name;
+		entries = archive->findAll(options);
+	}
+	return entries;
+}
+
+CONSOLE_COMMAND(find, 1, true) {
+	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
+
+	string message;
+	size_t count = entries.size();
+	if (count > 0) {
+		for (size_t i = 0; i < count; ++i) {
+			message += entries[i]->getPath(true) + "\n";
+		}
+	}
+	wxLogMessage(S_FMT("Found %i entr%s", count, count==1?"y":"ies\n") + message);
+}
+
+CONSOLE_COMMAND(ren, 2, true) {
+	Archive* archive = theMainWindow->getCurrentArchive();
+	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
+	if (entries.size() > 0) {
+		size_t count = 0;
+		for (size_t i = 0; i < entries.size(); ++i) {
+			// Rename filter logic
+			string newname = entries[i]->getName();
+			for (unsigned c = 0; c < args[1].size(); c++) {
+				// Check character
+				if (args[1][c] == '*')
+					continue;					// Skip if *
+				else {
+					// First check that we aren't past the end of the name
+					if (c >= newname.size()) {
+						// If we are, pad it with spaces
+						while (newname.size() <= c)
+							newname += " ";
+					}
+
+					// Replace character
+					newname[c] = args[1][c];
+				}
+			}
+
+			if (archive->renameEntry(entries[i], newname))
+				++count;
+		}
+		wxLogMessage("Renamed %i entr%s", count, count==1?"y":"ies");
+	}
+}
+
+CONSOLE_COMMAND(cd, 1, true) {
+	Archive* current = theMainWindow->getCurrentArchive();
+	ArchivePanel* panel = CH::getCurrentArchivePanel();
+
+	if (current && panel) {
+		ArchiveTreeNode* dir = panel->currentDir();
+		ArchiveTreeNode* newdir = current->getDir(args[0], dir);
+		if (newdir == NULL) {
+			if (args[0].Matches(".."))
+				newdir = (ArchiveTreeNode*) dir->getParent();
+			else if (args[0].Matches("/") || args[0].Matches("\\"))
+				newdir = current->getRoot();
+		}
+
+		if (newdir) {
+			panel->openDir(newdir);
+		} else {
+			wxLogMessage("Error: Trying to open nonexistant directory %s", CHR(args[0]));
+		}
+
+	}
+}
+
+CONSOLE_COMMAND(run, 1, true) {
+	MemChunk mc;
+	// Try to run a batch command file
+	if (wxFile::Exists(args[0])) {
+		if (!mc.importFile(args[0]))
+			return;
+	} else {
+	// Try to run a batch command lump
+		vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
+		if (entries.size() > 0) {
+			if (!mc.importMem(entries[0]->getData(), entries[0]->getSize()))
+				return;
+		}
+	}
+
+	Tokenizer t;
+	if (!t.openMem(&mc, args[0]))
+		return;
+
+	string cmdline, s;
+	uint32_t line = t.lineNo();
+
+	// There's probably a better way to slice the chunk into lines...
+	while (1 + t.tokenEnd() < mc.getSize()) {
+		s = t.getToken() + " ";
+		if (t.lineNo() != line || 1 + t.tokenEnd() >= mc.getSize()) {
+			theConsole->execute(cmdline);
+			cmdline.Empty();
+			line = t.lineNo();
+		};
+		cmdline += s;
+	};
 }

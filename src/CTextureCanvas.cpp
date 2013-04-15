@@ -273,7 +273,7 @@ void CTextureCanvas::drawTexture() {
 		glTranslated(-160, -100, 0);												// HUD offsets
 
 	// Draw the texture border
-	if (gfx_show_border)
+	//if (gfx_show_border)
 		drawTextureBorder();
 
 	// Enable textures

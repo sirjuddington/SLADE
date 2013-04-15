@@ -840,14 +840,14 @@ void TextureXPanel::exportTexture() {
  * Converts [texture] to a PNG image (if possible) and saves the PNG
  * data to a file [filename]. Does not alter the texture data itself
  *******************************************************************/
-bool TextureXPanel::exportAsPNG(CTexture* texture, string filename) {
+bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_rgba) {
 	// Check entry was given
 	if (!texture)
 		return false;
 
 	// Create image from entry
 	SImage image;
-	if (!texture->toImage(image)) {
+	if (!texture->toImage(image, NULL, texture_editor->getPalette()), force_rgba) {
 		wxLogMessage("Error converting %s: %s", CHR(texture->getName()), CHR(Global::error));
 		return false;
 	}
@@ -897,7 +897,7 @@ void TextureXPanel::extractTexture() {
 		SFileDialog::fd_info_t info;
 		if (SFileDialog::saveFile(info, "Export Texture \"" + selection[0]->getName() + "\" as PNG", "PNG Files (*.png)|*.png", this, fn.GetFullName())) {
 			// If a filename was selected, export it
-			if (!exportAsPNG(selection[0], info.filenames[0])) {
+			if (!exportAsPNG(selection[0], info.filenames[0], force_rgba)) {
 				wxMessageBox(S_FMT("Error: %s", CHR(Global::error)), "Error", wxOK|wxICON_ERROR);
 				return;
 			}
@@ -924,7 +924,7 @@ void TextureXPanel::extractTexture() {
 				fn.SetExt("png");
 
 				// Do export
-				exportAsPNG(selection[a], fn.GetFullPath());
+				exportAsPNG(selection[a], fn.GetFullPath(), force_rgba);
 			}
 
 			// Hide splash window

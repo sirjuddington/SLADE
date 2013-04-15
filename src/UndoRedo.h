@@ -35,31 +35,39 @@ public:
 	bool	readFile(string filename);
 };
 
+class SLADEMap;
 class UndoManager : public Announcer {
 private:
 	vector<UndoLevel*>	undo_levels;
 	UndoLevel*			current_level;
 	int					current_level_index;
 	bool				undo_running;
+	SLADEMap*			map;
 
 public:
-	UndoManager();
+	UndoManager(SLADEMap* map = NULL);
 	~UndoManager();
 
-	void	getAllLevels(vector<string>& list);
-	int		getCurrentIndex() { return current_level_index; }
+	SLADEMap*	getMap() { return map; }
+	void		getAllLevels(vector<string>& list);
+	int			getCurrentIndex() { return current_level_index; }
+	unsigned	nUndoLevels() { return undo_levels.size(); }
+	UndoLevel*	undoLevel(unsigned index) { return undo_levels[index]; }
 
 	void	beginRecord(string name);
 	void	endRecord(bool success);
 	bool	currentlyRecording();
 	bool	recordUndoStep(UndoStep* step);
-	void	undo();
-	void	redo();
+	string	undo();
+	string	redo();
+
+	void	clear();
 };
 
 namespace UndoRedo {
 	bool			currentlyRecording();
 	UndoManager*	currentManager();
+	SLADEMap*		currentMap();
 }
 
 #endif//__UNDO_REDO_H__

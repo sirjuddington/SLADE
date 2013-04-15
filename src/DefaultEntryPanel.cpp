@@ -223,6 +223,7 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e) {
 	for (uint32_t a = 0; a < entries.size(); a++)
 		EntryOperations::modifyGfxOffsets(entries[a], mod.getAlignType(), mod.getOffset(),
 											mod.xOffChange(), mod.yOffChange(), mod.relativeOffset());
+	theActivePanel->callRefresh();
 }
 
 /* DefaultEntryPanel::onBtnTextureEdit

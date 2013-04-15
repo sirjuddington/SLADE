@@ -49,6 +49,9 @@ public:
 	void		disconnectLine(MapLine* line);
 	unsigned	nConnectedLines() { return connected_lines.size(); }
 	MapLine*	connectedLine(unsigned index);
+
+	void	writeBackup(mobj_backup_t* backup);
+	void	readBackup(mobj_backup_t* backup);
 };
 
 #endif //__MAPVERTEX_H__

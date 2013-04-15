@@ -1030,7 +1030,7 @@ bool WolfArchive::isWolfArchive(string filename) {
 #include "Console.h"
 #include "MainWindow.h"
 
-CONSOLE_COMMAND(addimfheader, 0) {
+CONSOLE_COMMAND(addimfheader, 0, true) {
 	vector<ArchiveEntry *> entries = theMainWindow->getCurrentEntrySelection();
 
 	for (size_t i = 0; i < entries.size(); ++i)

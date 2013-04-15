@@ -107,8 +107,10 @@ public:
 	EntryPanel *			currentArea() { return cur_area;}
 	ArchiveEntry*			currentEntry();
 	vector<ArchiveEntry*>	currentEntries();
+	ArchiveTreeNode*		currentDir();
 
 	// UI related
+	bool	openDir(ArchiveTreeNode* dir);
 	bool	openEntry(ArchiveEntry* entry, bool force = false);
 	bool	openEntryAsText(ArchiveEntry* entry);
 	bool	openEntryAsHex(ArchiveEntry* entry);

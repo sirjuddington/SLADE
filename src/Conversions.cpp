@@ -86,8 +86,16 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out) {
 	in.seek(0, SEEK_SET);
 	in.read(&header, 8);
 
+	// Some sounds created on Mac platforms have their identifier and samplerate in BE format.
+	// Curiously, the number of samples is still in LE format.
+	header.three = wxUINT16_SWAP_ON_BE(header.three);
+	header.samplerate = wxUINT16_SWAP_ON_BE(header.samplerate);
+	header.samples = wxUINT32_SWAP_ON_BE(header.samples);
+	if (header.three == 0x300)
+		header.samplerate = wxUINT16_SWAP_ALWAYS(header.samplerate);
+
 	// Format checks
-	if (header.three != 3) {	// Check for magic number
+	if (header.three != 3 && header.three != 0x300) {	// Check for magic number
 		Global::error = "Invalid Doom Sound";
 		return false;
 	}

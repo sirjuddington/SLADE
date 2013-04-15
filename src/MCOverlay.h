@@ -7,12 +7,14 @@ private:
 
 protected:
 	bool	active;
+	bool	allow_3d_mlook;
 
 public:
-	MCOverlay() { active = true; }
+	MCOverlay() { active = true; allow_3d_mlook = false; }
 	~MCOverlay() {}
 
 	bool	isActive() { return active; }
+	bool	allow3dMlook() { return allow_3d_mlook; }
 
 	virtual void	update(long frametime) {}
 	virtual void	draw(int width, int height, float fade = 1.0f) {}

@@ -162,8 +162,10 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1) {
 	theApp->getAction("txed_delete")->addToMenu(menu_texture);
 	menu_texture->AppendSeparator();
 	theApp->getAction("txed_rename")->addToMenu(menu_texture);
-	theApp->getAction("txed_export")->addToMenu(menu_texture);
-	theApp->getAction("txed_extract")->addToMenu(menu_texture);
+	wxMenu* menu_export = new wxMenu();
+	theApp->getAction("txed_export")->addToMenu(menu_export, "Archive (as image)");
+	theApp->getAction("txed_extract")->addToMenu(menu_export, "File");
+	menu_texture->AppendSubMenu(menu_export, "&Export To");
 	menu_texture->AppendSeparator();
 	theApp->getAction("txed_copy")->addToMenu(menu_texture);
 	theApp->getAction("txed_cut")->addToMenu(menu_texture);

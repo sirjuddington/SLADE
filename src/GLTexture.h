@@ -47,7 +47,7 @@ public:
 	uint32_t	getHeight() { return height; }
 	int			getFilter() { return filter; }
 	bool		isTiling() { return tiling; }
-	GLuint		glId() { if (tex.size()>0) return tex[0].id; else return 0; }
+	GLuint		glId() { if (!tex.empty()) return tex[0].id; else return 0; }
 
 	void		setFilter(int filter) { this->filter = filter; }
 	void		setTiling(bool tiling) { this->tiling = tiling; }

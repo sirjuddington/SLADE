@@ -56,7 +56,7 @@ z_gameinfo {
 	constant_link = "http://zdoom.org/wiki/GAMEINFO";
 	function_link = "http://zdoom.org/wiki/GAMEINFO";
 
-	keywords = { IWAD, LOAD }
+	keywords = { IWAD, LOAD, NOSPRITERENAME, STARTUPTITLE, STARTUPCOLORS, STARTUPTYPE, STARTUPSONG  }
 }
 
 z_gldefs {
@@ -65,6 +65,8 @@ z_gldefs {
 	keyword_link = "http://zdoom.org/wiki/GLDEFS";
 	constant_link = "http://zdoom.org/wiki/GLDEFS";
 	function_link = "http://zdoom.org/wiki/GLDEFS";
+	blocks = "pointlight", "pulselight", "flickerlight", "flickerlight2", "sectorlight", 
+				"object", "detail", "skybox", "brightmap", "glow", "hardwareshader";
 
 	keywords = {
 		PointLight, PulseLight, FlickerLight, FlickerLight2, SectorLight, Detail,
@@ -83,6 +85,7 @@ z_keyconf {
 	keyword_link = "http://zdoom.org/wiki/KEYCONF";
 	constant_link = "http://zdoom.org/wiki/KEYCONF";
 	function_link = "http://zdoom.org/wiki/KEYCONF";
+	blocks = "addkeysection", "weaponsection";
 
 	keywords = {
 		alias, bind, defaultbind, addkeysection, addmenukey, addslotdefault,
@@ -96,6 +99,7 @@ z_lockdefs {
 	keyword_link = "http://zdoom.org/wiki/LOCKDEFS";
 	constant_link = "http://zdoom.org/wiki/LOCKDEFS";
 	function_link = "http://zdoom.org/wiki/LOCKDEFS";
+	blocks = "lock";
 
 	keywords = {
 		CLEARLOCKS, LOCK, ANY, MESSAGE, REMOTEMESSAGE, MAPCOLOR, LOCKEDSOUND
@@ -132,7 +136,7 @@ z_mapinfo {
 		OldFallingDamage, ForceFallingDamage, NoFallingDamage, Gravity, AirControl, AirSupply, FilterStarts,
 		NoInventoryBar, KeepFullInventory, EnterText, ExitText, Music, Flat, Hub, Pic, ExitTextIsLump, NoAllies,
 		SuckTime, DeathSlideShow, Redirect, StrifeFallingDamage, IronLichSpecial, MinotaurSpecial, DsparilSpecial,
-		DefaultEnvironment,
+		DefaultEnvironment, SpawnWithWeaponRaised, 
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate,
@@ -151,7 +155,7 @@ z_mapinfo {
 		DefaultRespawnTime, DefaultDropStyle, Endoom, Player5Start, PickupColor, QuitMessages, MenuFontColor_Title,
 		MenuFontColor_Label, MenuFontColor_Value, MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight,
 		MenuFontColor_Selection, MenuBackButton, PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX,
-		TextScreenY, DefaultEndSequence, MapArrow,
+		TextScreenY, DefaultEndSequence, MapArrow, NoRandomPlayerclass, 
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -164,12 +168,38 @@ z_mapinfo {
 	}
 }
 
+z_menudef {
+	name = "ZDoom Menu";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/MENUDEF";
+	constant_link = "http://zdoom.org/wiki/MENUDEF";
+	function_link = "http://zdoom.org/wiki/MENUDEF";
+	blocks = "listmenu", "optionmenu", "optionvalue";
+	
+	keywords = { 
+		ListMenu, OptionMenu, OptionValue, OptionString, 
+		DefaultListMenu, DefaultOptionMenu, OptionMenuSettings, 
+		Font, Linespacing, LabelOffset, PlayerDisplay, Position, Selector, StaticText, 
+		StaticTextSwitchable, ScrollTop, SafeCommand, ColorPicker, Class, ScreenResolution, 
+		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command
+	}
+	
+	functions { ifgame = "games ..."; ifoption = "options ..."; }
+	
+	constants = { 
+		doom, heretic, hexen, strife, chex, readthis, swapmenu, windows, 
+		LoadMenu, SaveMenu, PlayerMenu, JoystickConfigMenu, 
+		GameplayMenu, CompatibilityMenu, VideoModeMenu, 
+	}
+}
+
 z_modeldef {
 	name = "GZDoom ModelDef";
 	case_sensitive = false;
 	keyword_link = "http://zdoom.org/wiki/MODELDEF";
 	constant_link = "http://zdoom.org/wiki/MODELDEF";
 	function_link = "http://zdoom.org/wiki/MODELDEF";
+	blocks = "model";
 
 	keywords = {
 		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
@@ -216,6 +246,7 @@ z_sbarinfo {
 	keyword_link = "http://zdoom.org/wiki/SBARINFO";
 	constant_link = "http://zdoom.org/wiki/SBARINFO";
 	function_link = "http://zdoom.org/wiki/SBARINFO";
+	blocks = "statusbar", "mugshot";
 
 	keywords = {
 		Base, completeborder, CreatePopup, Height, InterpolateHealth, InterpolateArmor, LowerHealthCap, MonospaceFonts,
@@ -285,6 +316,7 @@ z_teaminfo {
 	keyword_link = "http://zdoom.org/wiki/TEAMINFO";
 	constant_link = "http://zdoom.org/wiki/TEAMINFO";
 	function_link = "http://zdoom.org/wiki/TEAMINFO";
+	blocks = "team";
 
 	keywords = {
 		clearteams, Team,
@@ -305,6 +337,7 @@ z_terrain {
 	keyword_link = "http://zdoom.org/wiki/TERRAIN";
 	constant_link = "http://zdoom.org/wiki/TERRAIN";
 	function_link = "http://zdoom.org/wiki/TERRAIN";
+	blocks = "splash", "terrain", "floor";
 
 	keywords = {
 		splash,
@@ -325,6 +358,7 @@ z_textures {
 	keyword_link = "http://zdoom.org/wiki/TEXTURES";
 	constant_link = "http://zdoom.org/wiki/TEXTURES";
 	function_link = "http://zdoom.org/wiki/TEXTURES";
+	blocks = "texture", "sprite", "graphic", "walltexture", "flat", "remap", "define";
 
 	keywords = {
 		texture, patch, sprite, graphic, walltexture, flat,

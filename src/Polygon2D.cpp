@@ -196,7 +196,7 @@ void Polygon2D::render() {
 	// Go through sub-polys
 	for (unsigned a = 0; a < subpolys.size(); a++) {
 		gl_polygon_t* poly = subpolys[a];
-		glBegin(GL_POLYGON);
+		glBegin(GL_TRIANGLE_FAN);
 		for (unsigned v = 0; v < poly->n_vertices; v++) {
 			glTexCoord2f(poly->vertices[v].tx, poly->vertices[v].ty);
 			glVertex3d(poly->vertices[v].x, poly->vertices[v].y, poly->vertices[v].z);
@@ -222,7 +222,7 @@ void Polygon2D::renderVBO(bool colour) {
 	// Render
 	//glColor4f(this->colour[0], this->colour[1], this->colour[2], this->colour[3]);
 	for (unsigned a = 0; a < subpolys.size(); a++)
-		glDrawArrays(GL_POLYGON, subpolys[a]->vbo_index, subpolys[a]->n_vertices);
+		glDrawArrays(GL_TRIANGLE_FAN, subpolys[a]->vbo_index, subpolys[a]->n_vertices);
 }
 
 void Polygon2D::renderWireframeVBO(bool colour) {
@@ -291,6 +291,7 @@ int PolygonSplitter::addEdge(int v1, int v2) {
 	edge.ok = true;
 	edge.done = false;
 	edge.inpoly = false;
+	edge.sister = -1;
 
 	// Add edge to list
 	edges.push_back(edge);
@@ -399,15 +400,15 @@ bool PolygonSplitter::detectUnclosed() {
 	// Go through all vertices
 	for (unsigned a = 0; a < vertices.size(); a++) {
 		// If the vertex has no outgoing edges, we have an unclosed polygon
-		if (vertices[a].edges_out.size() == 0)
+		if (vertices[a].edges_out.empty())
 			end_verts.push_back(a);
 		// Same if it has no incoming
-		else if (vertices[a].edges_in.size() == 0)
+		else if (vertices[a].edges_in.empty())
 			start_verts.push_back(a);
 	}
 
 	// If there are no end/start vertices, the polygon is closed
-	if (end_verts.size() == 0 && start_verts.size() == 0)
+	if (end_verts.empty() && start_verts.empty())
 		return false;
 	else if (verbose) {
 		// Print invalid vertices info if verbose
@@ -456,20 +457,20 @@ bool PolygonSplitter::detectUnclosed() {
 			continue;
 
 		// If the vertex has no outgoing edges, we have an unclosed polygon
-		if (vertices[a].edges_out.size() == 0)
+		if (vertices[a].edges_out.empty())
 			end_verts.push_back(a);
-		else if (vertices[a].edges_in.size() == 0)
+		else if (vertices[a].edges_in.empty())
 			start_verts.push_back(a);
 	}
 
 	// If there are no end/start vertices, the polygon is closed
-	if (end_verts.size() == 0 && start_verts.size() == 0)
+	if (end_verts.empty() && start_verts.empty())
 		return false;
 
 	// If it still isn't closed, check for completely detached edges and 'remove' them
 	for (unsigned a = 0; a < edges.size(); a++) {
-		if (vertices[edges[a].v1].edges_in.size() == 0 &&
-			vertices[edges[a].v2].edges_out.size() == 0) {
+		if (vertices[edges[a].v1].edges_in.empty() &&
+			vertices[edges[a].v2].edges_out.empty()) {
 			// Invalidate edge
 			edges[a].ok = false;
 
@@ -487,14 +488,14 @@ bool PolygonSplitter::detectUnclosed() {
 			continue;
 
 		// If the vertex has no outgoing edges, we have an unclosed polygon
-		if (vertices[a].edges_out.size() == 0)
+		if (vertices[a].edges_out.empty())
 			end_verts.push_back(a);
-		else if (vertices[a].edges_in.size() == 0)
+		else if (vertices[a].edges_in.empty())
 			start_verts.push_back(a);
 	}
 
 	// If there are no end/start vertices, the polygon is closed
-	if (end_verts.size() == 0 && start_verts.size() == 0)
+	if (end_verts.empty() && start_verts.empty())
 		return false;
 
 	// Not closed
@@ -528,8 +529,8 @@ bool PolygonSplitter::tracePolyOutline(int edge_start) {
 
 		// Abort if no next edge was found
 		if (next < 0) {
-			for (unsigned a = 0; a < poly.edges.size(); a++)
-				edges[poly.edges[a]].inpoly = false;
+			for (unsigned b = 0; b < poly.edges.size(); b++)
+				edges[poly.edges[b]].inpoly = false;
 
 			polygon_outlines.pop_back();
 			return false;
@@ -568,6 +569,38 @@ bool PolygonSplitter::tracePolyOutline(int edge_start) {
 		if (poly.clockwise) info += "clockwise";
 		else info += "anticlockwise";
 		wxLogMessage(info);
+	}
+
+	return true;
+}
+
+bool PolygonSplitter::testTracePolyOutline(int edge_start) {
+	int edge = edge_start;
+	int v1, v2, next;
+	unsigned a = 0;
+	for (a = 0; a < 100000; a++) {
+		v1 = edges[edge].v1;
+		v2 = edges[edge].v2;
+		next = -1;
+
+		// Find the next convex edge with the lowest angle
+		next = findNextEdge(edge, false, true);
+
+		// Abort if no next edge was found
+		if (next < 0)
+			return false;
+
+		// Stop if we're back at the start
+		if (next == edge_start)
+			break;
+
+		// Continue loop
+		edge = next;
+	}
+
+	if (a >= 99999) {
+		if (verbose) wxLogMessage("Possible infinite loop in tracePolyOutline");
+		return false;
 	}
 
 	return true;
@@ -621,8 +654,10 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge) {
 	}
 	if (!intersect) {
 		// No edge intersections, create split
-		addEdge(v2, closest);
-		addEdge(closest, v2);
+		int e1 = addEdge(v2, closest);
+		int e2 = addEdge(closest, v2);
+		edges[e1].sister = e2;
+		edges[e2].sister = e1;
 
 		return true;
 	}
@@ -659,8 +694,10 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge) {
 
 		if (!intersect) {
 			// No edge intersections, create split
-			addEdge(v2, index);
-			addEdge(index, v2);
+			int e1 = addEdge(v2, index);
+			int e2 = addEdge(index, v2);
+			edges[e1].sister = e2;
+			edges[e2].sister = e1;
 
 			return true;
 		}
@@ -677,10 +714,21 @@ bool PolygonSplitter::buildSubPoly(int edge_start, gl_polygon_t* poly) {
 
 	// Loop of death
 	int edge = edge_start;
+	//int v1 = edges[edge].v1;
+	//int v = 0;
 	vector<int> verts;
 	for (unsigned a = 0; a < 1000; a++) {
 		// Add vertex
 		verts.push_back(edges[edge].v1);
+
+		// Fill triangle
+		// (doesn't seem to be any kind of performance increase using triangles over
+		//	just rendering a GL_TRIANGLE_FAN polygon, not worth the memory usage increase)
+		//v++;
+		//if (v > 2) {
+		//	verts.push_back(v1);
+		//	verts.push_back(edges[edge].v1);
+		//}
 
 		// Add edge to 'valid' edges list, so it is ignored when building further polygons
 		if (edge != edge_start) edges[edge].done = true;
@@ -798,8 +846,29 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly) {
 			splitFromEdge(concave_edges[a]);
 
 		detectConcavity();
-		if (concave_edges.size() == 0)
+		if (concave_edges.empty())
 			break;
+	}
+
+	// Remove unnecessary splits
+	for (unsigned a = split_edges_start; a < edges.size(); a++) {
+		if (!edges[a].ok)
+			continue;
+
+		// Invalidate split
+		edges[a].ok = false;
+		edges[edges[a].sister].ok = false;
+
+		// Check poly is still convex without split
+		int next = findNextEdge(a, false, true);
+		if (next >= 0) {
+			if (testTracePolyOutline(next))
+				continue;
+		}
+
+		// Not convex, split is needed
+		edges[a].ok = true;
+		edges[edges[a].sister].ok = true;
 	}
 
 	// Reset edge 'done' status

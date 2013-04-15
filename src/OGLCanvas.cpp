@@ -56,36 +56,14 @@
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
 : wxControl(parent, id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this) {
 	init_done = false;
+	recreate = false;
 	last_time = theApp->runTimer();
 
 	if (handle_timer)
 		timer.Start(100);
 
-	// Code taken from SFML wxWidgets integration example
-	sf::WindowHandle handle;
-#ifdef __WXGTK__
-	// GTK implementation requires to go deeper to find the
-	// low-level X11 identifier of the widget
-	gtk_widget_realize(m_wxwindow);
-	gtk_widget_set_double_buffered(m_wxwindow, false);
-	GdkWindow* Win = gtk_widget_get_window(m_wxwindow);
-	XFlush(GDK_WINDOW_XDISPLAY(Win));
-	//sf::RenderWindow::Create(GDK_WINDOW_XWINDOW(Win));
-	handle = GDK_WINDOW_XWINDOW(Win);
-#else
-	handle = GetHandle();
-#endif
-
-
-#if SFML_VERSION_MAJOR < 2
-	sf::RenderWindow::Create(handle);
-#else
-	// Context settings
-	sf::ContextSettings settings;
-	settings.depthBits = 32;
-	settings.stencilBits = 8;
-	sf::RenderWindow::create(handle, settings);
-#endif
+	// Create SFML RenderWindow
+	createSFML();
 
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
@@ -93,6 +71,9 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
 	//Bind(wxEVT_IDLE, &OGLCanvas::onIdle, this);
 	if (handle_timer)
 		Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
+	Bind(wxEVT_SIZE, &OGLCanvas::onResize, this);
+
+	GLTexture::resetBgTex();
 }
 #else
 /* OGLCanvas::OGLCanvas
@@ -108,6 +89,8 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
 	//Bind(wxEVT_IDLE, &OGLCanvas::onIdle, this);
 	//Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
+
+	GLTexture::resetBgTex();
 }
 #endif
 
@@ -135,6 +118,36 @@ bool OGLCanvas::setContext() {
 		return false;
 #else
 	return true;
+#endif
+}
+
+void OGLCanvas::createSFML() {
+#ifdef USE_SFML_RENDERWINDOW
+	// Code taken from SFML wxWidgets integration example
+	sf::WindowHandle handle;
+#ifdef __WXGTK__
+	// GTK implementation requires to go deeper to find the
+	// low-level X11 identifier of the widget
+	gtk_widget_realize(m_wxwindow);
+	gtk_widget_set_double_buffered(m_wxwindow, false);
+	GdkWindow* Win = gtk_widget_get_window(m_wxwindow);
+	XFlush(GDK_WINDOW_XDISPLAY(Win));
+	//sf::RenderWindow::Create(GDK_WINDOW_XWINDOW(Win));
+	handle = GDK_WINDOW_XWINDOW(Win);
+#else
+	handle = GetHandle();
+#endif
+
+
+#if SFML_VERSION_MAJOR < 2
+	sf::RenderWindow::Create(handle);
+#else
+	// Context settings
+	sf::ContextSettings settings;
+	settings.depthBits = 32;
+	settings.stencilBits = 8;
+	sf::RenderWindow::create(handle, settings);
+#endif
 #endif
 }
 
@@ -245,6 +258,13 @@ wxWindow* OGLCanvas::toPanel(wxWindow* parent) {
 void OGLCanvas::onPaint(wxPaintEvent& e) {
 	wxPaintDC(this);
 
+#ifdef __WXGTK__
+	if (recreate) {
+		createSFML();
+        recreate = false;
+	}
+#endif
+
 	if (IsShown()) {
 		// Set context to this window
 #ifdef USE_SFML_RENDERWINDOW
@@ -309,4 +329,13 @@ void OGLCanvas::onTimer(wxTimerEvent& e) {
 	// Update/refresh
 	update(frametime);
 	Refresh();
+}
+
+void OGLCanvas::onResize(wxSizeEvent& e) {
+	// Recreate SFML RenderWindow if GTK
+#ifdef __WXGTK__
+	recreate = true;
+#endif
+
+	e.Skip();
 }

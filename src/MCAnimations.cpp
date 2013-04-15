@@ -6,6 +6,8 @@
 #include "MapEditorWindow.h"
 #include "MapLine.h"
 #include "MapVertex.h"
+#include "MapRenderer2D.h"
+#include "MapRenderer3D.h"
 
 EXTERN_CVAR(Bool, thing_overlay_square)
 EXTERN_CVAR(Int, thing_drawtype)
@@ -343,7 +345,7 @@ void MCA3dWallSelection::draw() {
 	// Setup colour
 	rgba_t col;
 	if (select)
-		col.set(255, 255, 255, 180*fade, 1);
+		col.set(255, 255, 255, 90*fade, 1);
 	else {
 		col = ColourConfiguration::getColour("map_3d_selection");
 		col.a *= fade*0.75;
@@ -399,7 +401,7 @@ void MCA3dFlatSelection::draw() {
 	// Setup colour
 	rgba_t col;
 	if (select)
-		col.set(255, 255, 255, 180*fade, 1);
+		col.set(255, 255, 255, 60*fade, 1);
 	else {
 		col = ColourConfiguration::getColour("map_3d_selection");
 		col.a *= fade*0.75*0.5;
@@ -417,4 +419,68 @@ void MCA3dFlatSelection::draw() {
 	sector->getPolygon()->setZ(0);
 
 	glEnable(GL_CULL_FACE);
+}
+
+
+MCAHilightFade::MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init) : MCAnimation(start) {
+	this->object = object;
+	this->renderer = renderer;
+	this->init_fade = fade_init;
+	this->fade = fade_init;
+}
+
+MCAHilightFade::~MCAHilightFade() {
+}
+
+bool MCAHilightFade::update(long time) {
+	// Determine fade amount (1.0-0.0 over 150ms)
+	fade = init_fade - ((time - starttime) * 0.006f);
+
+	// Check if animation is finished
+	if (fade < 0.0f || fade > 1.0f)
+		return false;
+	else
+		return true;
+}
+
+void MCAHilightFade::draw() {
+	switch (object->getObjType()) {
+	case MOBJ_LINE:
+		renderer->renderLineHilight(object->getIndex(), fade); break;
+	case MOBJ_SECTOR:
+		renderer->renderFlatHilight(object->getIndex(), fade); break;
+	case MOBJ_THING:
+		renderer->renderThingHilight(object->getIndex(), fade); break;
+	case MOBJ_VERTEX:
+		renderer->renderVertexHilight(object->getIndex(), fade); break;
+	default:
+		break;
+	}
+}
+
+
+MCAHilightFade3D::MCAHilightFade3D(long start, int item_index, uint8_t item_type, MapRenderer3D* renderer, float fade_init) : MCAnimation(start, true) {
+	this->item_index = item_index;
+	this->item_type = item_type;
+	this->renderer = renderer;
+	this->init_fade = fade_init;
+	this->fade = fade_init;
+}
+
+MCAHilightFade3D::~MCAHilightFade3D() {
+}
+
+bool MCAHilightFade3D::update(long time) {
+	// Determine fade amount (1.0-0.0 over 150ms)
+	fade = init_fade - ((time - starttime) * 0.006f);
+
+	// Check if animation is finished
+	if (fade < 0.0f || fade > 1.0f)
+		return false;
+	else
+		return true;
+}
+
+void MCAHilightFade3D::draw() {
+	renderer->renderHilight(selection_3d_t(item_index, item_type), fade);
 }

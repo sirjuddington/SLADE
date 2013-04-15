@@ -187,7 +187,7 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 		return EDF_FALSE;
 
 	// Check for archive match if needed
-	if (match_archive.size() > 0) {
+	if (!match_archive.empty()) {
 		bool match = false;
 		for (size_t a = 0; a < match_archive.size(); a++) {
 			if (entry->getParent() && entry->getParent()->getFormat() == match_archive[a]) {
@@ -200,7 +200,7 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 	}
 
 	// Check for size match if needed
-	if (match_size.size() > 0) {
+	if (!match_size.empty()) {
 		bool match = false;
 		for (size_t a = 0; a < match_size.size(); a++) {
 			if (entry->getSize() == match_size[a]) {
@@ -232,7 +232,7 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 	}
 
 	// Check for size multiple match if needed
-	if (size_multiple.size() > 0) {
+	if (!size_multiple.empty()) {
 		bool match = false;
 		for (size_t a = 0; a < size_multiple.size(); a++) {
 			if (entry->getSize() % size_multiple[a] == 0) {
@@ -249,17 +249,21 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 	// of the two, not both, take it into account.
 	bool extorname = false;
 	bool matchedname = false;
-	if (matchextorname && match_name.size() > 0 && match_extension.size() > 0)
+	if (matchextorname && !match_name.empty() && !match_extension.empty())
 		extorname = true;
 
 	// Entry name related stuff
-	if (match_name.size() > 0 || match_extension.size() > 0) {
-		// Get full entry name as filename (only do this if absolutely necessary, wxFileName stuff is slow)
-		wxFileName fn(entry->getName());
+	if (!match_name.empty() || !match_extension.empty()) {
+		// Get entry name (lowercase), find extension separator
+		string fn = entry->getName().Lower();
+		size_t ext_sep = fn.find_first_of('.', 0);
 
 		// Check for name match if needed
-		if (match_name.size() > 0) {
-			string name = fn.GetName().Lower();
+		if (!match_name.empty()) {
+			string name = fn;
+			if (ext_sep != wxString::npos)
+				name = fn.Left(ext_sep);
+
 			bool match = false;
 			for (size_t a = 0; a < match_name.size(); a++) {
 				if (name.Matches(match_name[a])) {
@@ -274,12 +278,15 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 		}
 
 		// Check for extension match if needed
-		if (match_extension.size() > 0) {
+		if (!match_extension.empty()) {
 			bool match = false;
-			for (size_t a = 0; a < match_extension.size(); a++) {
-				if (!fn.GetExt().CmpNoCase(match_extension[a])) {
-					match = true;
-					break;
+			if (ext_sep != wxString::npos) {
+				string ext = fn.Mid(ext_sep+1);
+				for (size_t a = 0; a < match_extension.size(); a++) {
+					if (ext == match_extension[a]) {
+						match = true;
+						break;
+					}
 				}
 			}
 
@@ -287,6 +294,42 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 				return EDF_FALSE;
 		}
 	}
+
+	//// Entry name related stuff
+ //   if (match_name.size() > 0 || match_extension.size() > 0) {
+ //       // Get full entry name as filename (only do this if absolutely necessary, wxFileName stuff is slow)
+ //       wxFileName fn(entry->getName());
+
+ //       // Check for name match if needed
+ //       if (match_name.size() > 0) {
+ //           string name = fn.GetName().Lower();
+ //           bool match = false;
+ //           for (size_t a = 0; a < match_name.size(); a++) {
+ //               if (name.Matches(match_name[a])) {
+ //                   match = true;
+ //                   break;
+ //               }
+ //           }
+
+ //           if (!match && !extorname)
+ //               return EDF_FALSE;
+ //           else matchedname = match;
+ //       }
+
+ //       // Check for extension match if needed
+ //       if (match_extension.size() > 0) {
+ //           bool match = false;
+ //           for (size_t a = 0; a < match_extension.size(); a++) {
+ //               if (!fn.GetExt().CmpNoCase(match_extension[a])) {
+ //                   match = true;
+ //                   break;
+ //               }
+ //           }
+
+ //           if (!match && !(extorname && matchedname))
+ //               return EDF_FALSE;
+ //       }
+ //   }
 
 	// Check for entry section match if needed
 	if (section != "none") {
@@ -657,7 +700,7 @@ vector<string> EntryType::allCategories() {
 
 // Command to attempt to detect the currently selected entries
 // as the given type id. Lists all type ids if no parameters given
-CONSOLE_COMMAND (type, 0) {
+CONSOLE_COMMAND (type, 0, true) {
 	vector<EntryType*> all_types = EntryType::allTypes();
 	if (args.size() == 0) {
 		// List existing types and their IDs
@@ -730,7 +773,7 @@ CONSOLE_COMMAND (type, 0) {
 	}
 }
 
-CONSOLE_COMMAND (size, 0) {
+CONSOLE_COMMAND (size, 0, true) {
 	ArchiveEntry * meep = theMainWindow->getCurrentEntry();
 	if (!meep) {
 		wxLogMessage("No entry selected");

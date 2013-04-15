@@ -41,14 +41,15 @@
 #include "MapThing.h"
 #include "MapLine.h"
 #include "Console.h"
-#include <wx/hashmap.h>
+#include <map>
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-WX_DECLARE_STRING_HASH_MAP(int, StrIntMap);
-WX_DECLARE_HASH_MAP(int, vector<ArchiveEntry *>, wxIntegerHash, wxIntegerEqual, CRCMap);
+typedef std::map<string, int> StrIntMap;
+typedef std::map<string, vector<ArchiveEntry*> > PathMap;
+typedef std::map<int, vector<ArchiveEntry*> > CRCMap;
 
 
 /*******************************************************************
@@ -145,6 +146,7 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive) {
  *******************************************************************/
 bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive) {
 	StrIntMap map_namecounts;
+	PathMap map_entries;
 	
 	// Get list of all entries in archive
 	vector<ArchiveEntry*> entries;
@@ -158,18 +160,42 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive) {
 
 		// Increment count for entry name
 		map_namecounts[entries[a]->getPath(true)] += 1;
+
+		// Enqueue entries
+		map_entries[entries[a]->getName(true)].push_back(entries[a]);
 	}
 
 	// Generate string of duplicate entry names
 	string dups;
-	StrIntMap::iterator i = map_namecounts.begin();
-	while (i != map_namecounts.end()) {
-		if (i->second > 1) {
-			string name = i->first;
-			name.Remove(0, 1);
-			dups += S_FMT("%s appears %d times\n", CHR(name), i->second);
+	// Treeless archives such as WADs can just include a simple list of duplicated names and how often they appear
+	if (archive->isTreeless()) {
+		StrIntMap::iterator i = map_namecounts.begin();
+		while (i != map_namecounts.end()) {
+			if (i->second > 1) {
+				string name = i->first;
+				name.Remove(0, 1);
+				dups += S_FMT("%s appears %d times\n", CHR(name), i->second);
+			}
+			i++;
 		}
-		i++;
+	// Hierarchized archives, however, need to compare only the name (not the whole path) and to display the full
+	// path of each entry with a duplicated name, so that they might be found more easily than by having the user
+	// recurse through the entire directory tree -- such a task is something a program should do instead.
+	} else {
+		PathMap::iterator i = map_entries.begin();
+		while (i != map_entries.end()) {
+			if (i->second.size() > 1) {
+				string name;
+				dups += S_FMT("\n%i entries are named %s\t", i->second.size(), CHR(i->first));
+				vector<ArchiveEntry*>::iterator j = i->second.begin();
+				while (j != i->second.end()) {
+					name = (*j)->getPath(true); name.Remove(0, 1);
+					dups += S_FMT("\t%s", CHR(name));
+					++j;
+				}
+			}
+			++i;
+		}
 	}
 
 	// If no duplicates exist, do nothing
@@ -248,8 +274,6 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive) {
 	msg.setMessage(message);
 	msg.ShowModal();
 }
-
-
 
 /* ArchiveOperations::checkDuplicateEntryContent
  * Checks [archive] for multiple entries with the same data, and
@@ -505,7 +529,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 			string swname = unused_tex[a];
 			swname.Replace("SW1", "SW2", false);
 
-			// Check if it's counterpart is used
+			// Check if its counterpart is used
 			if (used_textures[swname].used)
 				swtex = true;
 		}
@@ -514,7 +538,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 			string swname = unused_tex[a];
 			swname.Replace("SW2", "SW1", false);
 
-			// Check if it's counterpart is used
+			// Check if its counterpart is used
 			if (used_textures[swname].used)
 				swtex = true;
 		}
@@ -696,12 +720,12 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive) {
 }
 
 
-CONSOLE_COMMAND(test_cleantex, 0) {
+CONSOLE_COMMAND(test_cleantex, 0, false) {
 	Archive* current = theMainWindow->getCurrentArchive();
 	if (current) ArchiveOperations::removeUnusedTextures(current);
 }
 
-CONSOLE_COMMAND(test_cleanflats, 0) {
+CONSOLE_COMMAND(test_cleanflats, 0, false) {
 	Archive* current = theMainWindow->getCurrentArchive();
 	if (current) ArchiveOperations::removeUnusedFlats(current);
 }
@@ -873,7 +897,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 	return changed;
 }
 
-CONSOLE_COMMAND(replacethings, 2) {
+CONSOLE_COMMAND(replacethings, 2, true) {
 	Archive* current = theMainWindow->getCurrentArchive();
 	long oldtype, newtype;
 
@@ -1108,7 +1132,7 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 	return changed;
 }
 
-CONSOLE_COMMAND(replacespecials, 2) {
+CONSOLE_COMMAND(replacespecials, 2, true) {
 	Archive* current = theMainWindow->getCurrentArchive();
 	long oldtype, newtype;
 	bool arg0 = false, arg1 = false, arg2 = false, arg3 = false, arg4 = false;
@@ -1407,7 +1431,7 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 	return changed;
 }
 
-CONSOLE_COMMAND(replacetextures, 2) {
+CONSOLE_COMMAND(replacetextures, 2, true) {
 	Archive* current = theMainWindow->getCurrentArchive();
 
 	if (current) {

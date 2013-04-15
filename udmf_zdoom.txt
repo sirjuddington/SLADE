@@ -141,6 +141,9 @@ Note: All <bool> fields default to false unless mentioned otherwise.
       light = <integer>;        // This side's light level. Default is 0.
       lightabsolute = <bool>;   // true = 'light' is an absolute value. Default is 
                                 // relative to the owning sector's light level.
+      lightfog = <bool>;        // true = This side's relative lighting is used even in
+                                // foggy sectors. Default is to disable relative
+                                // lighting in foggy sectors.
       nofakecontrast = <bool>;  // Disables use of fake contrast on this sidedef.
       smoothlighting = <bool>;  // Use smooth fake contrast.
       clipmidtex = <bool>;      // Side's mid textures are clipped to floor and ceiling.
@@ -199,6 +202,12 @@ Note: All <bool> fields default to false unless mentioned otherwise.
       conversation = <int>		// Assigns a conversation dialogue to this thing.
                                 // Parameter is the conversation ID, 0 meaning none.
       countsecret = <bool>;     // Picking up this actor counts as a secret.
+      arg0str = <string>;       // Alternate string-based version of arg0
+
+      * Note about arg0str
+
+      For things with ACS specials (80-86 and 226), if arg0str is present and non-null, it
+      will be used as the name of the script to execute, and arg0 will be ignored.
    }
 
 
@@ -315,6 +324,9 @@ Standardized whitespace.
 
 1.19 24.02.2012
 Added back locknumber property.
+
+1.20 25.02.2012
+Added arg0str thing property.
 
 ===============================================================================
 EOF

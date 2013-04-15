@@ -34,6 +34,7 @@
 #include "Misc.h"
 #include <wx/filename.h>
 
+bool JaguarDecode(MemChunk& mc);
 
 /*******************************************************************
  * VARIABLES
@@ -231,9 +232,9 @@ void WadArchive::updateNamespaces() {
 		}
 
 		// Check namespace name for special cases
-		for (int a = 0; a < n_special_namespaces; a++) {
-			if (S_CMP(ns.name, special_namespaces[a].letter))
-				ns.name = special_namespaces[a].name;
+		for (int n = 0; n < n_special_namespaces; n++) {
+			if (S_CMP(ns.name, special_namespaces[n].letter))
+				ns.name = special_namespaces[n].name;
 		}
 
 		ns.start_index = entryIndex(ns.start);
@@ -316,11 +317,44 @@ bool WadArchive::open(MemChunk& mc) {
 		offset = wxINT32_SWAP_ON_BE(offset);
 		size = wxINT32_SWAP_ON_BE(size);
 
+		// Hack to open Operation: Rheingold WAD files
+		if (size == 0 && offset > mc.getSize())
+			offset = 0;
+
+		// Is there a compression/encryption thing going on?
+		bool jaguarencrypt = !!(name[0] & 0x80);	// look at high bit
+		name[0] = name[0] & 0x7F;					// then strip it away
+
+		// Look for encryption shenanigans
+		size_t actualsize = size;
+		if (jaguarencrypt) {
+			if (d < num_lumps - 1) {
+				size_t pos = mc.currentPos();
+				uint32_t nextoffset = 0;
+				for (int i = 0; i + d < num_lumps; ++i) {
+					mc.read(&nextoffset, 4);
+					if (nextoffset != 0) break;
+					mc.seek(12, SEEK_CUR);
+				}
+				nextoffset = wxINT32_SWAP_ON_BE(nextoffset);
+				if (nextoffset == 0) nextoffset = dir_offset;
+				mc.seek(pos, SEEK_SET);
+				actualsize = nextoffset - offset;
+			} else {
+				if (offset > dir_offset) {
+					actualsize = mc.getSize() - offset;
+				}
+				else  {
+					actualsize = dir_offset - offset;
+				}
+			}
+		}
+
 		// If the lump data goes past the end of the file,
 		// the wadfile is invalid
-		if (offset + size > mc.getSize()) {
+		if (offset + actualsize > mc.getSize()) {
 			wxLogMessage("WadArchive::open: Wad archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
+			Global::error = S_FMT("Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
 			setMuted(false);
 			return false;
 		}
@@ -330,6 +364,12 @@ bool WadArchive::open(MemChunk& mc) {
 		nlump->setLoaded(false);
 		nlump->exProp("Offset") = (int)offset;
 		nlump->setState(0);
+
+		if (jaguarencrypt)
+		{
+			nlump->setEncryption(ENC_JAGUAR);
+			nlump->exProp("FullSize") = (int)size;
+		}
 
 		// Add to entry list
 		getRoot()->addEntry(nlump);
@@ -353,6 +393,13 @@ bool WadArchive::open(MemChunk& mc) {
 		if (entry->getSize() > 0) {
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
+			if (entry->isEncrypted()) {
+				if (entry->exProps().propertyExists("FullSize")
+					&& (unsigned)(int)(entry->exProp("FullSize")) >  entry->getSize())
+					edata.reSize((int)(entry->exProp("FullSize")), true);
+				if (!JaguarDecode(edata)) 
+					wxLogMessage("%i: %s (following %s), did not decode properly", a, CHR(entry->getName()), a>0?CHR(getEntry(a-1)->getName()):"nothing");
+			}
 			entry->importMemChunk(edata);
 		}
 

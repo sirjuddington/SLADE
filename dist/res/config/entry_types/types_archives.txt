@@ -183,4 +183,14 @@ entry_types
 		icon = "e_archive";
 		category = "Archives";
 	}
+
+	disk
+	{
+		name = "Disk Archive";
+		format = archive_disk;
+		export_ext = "disk";
+		icon = "e_archive";
+		reliability = 175;
+		category = "Archives";
+	}
 }

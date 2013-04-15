@@ -55,6 +55,9 @@ private:
 	double	view_scale_inv;
 	bool	things_angles;
 
+	vector<GLTexture*>	tex_flats;
+	int					last_flat_type;
+
 public:
 	MapRenderer2D(SLADEMap* map);
 	~MapRenderer2D();
@@ -122,6 +125,7 @@ public:
 	void	forceUpdate(float line_alpha = 1.0f);
 	double	scaledRadius(int radius);
 	bool	visOK();
+	void	clearTextureCache() { tex_flats.clear(); }
 };
 
 #endif//__MAP_RENDERER_2D__

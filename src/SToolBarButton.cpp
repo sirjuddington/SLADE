@@ -8,7 +8,7 @@
 #include "MainWindow.h"
 #include <wx/graphics.h>
 
-CVAR(Bool, toolbar_button_flat, false, CVAR_SAVE)
+CVAR(Bool, toolbar_button_flat, true, CVAR_SAVE)
 
 SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon)
 : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton") {

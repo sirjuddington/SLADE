@@ -42,33 +42,42 @@ struct gc_mapinfo_t {
 	string	sky2;
 };
 
+struct sectype_t {
+	int		type;
+	string	name;
+	sectype_t() { type = -1; name = "Unknown"; }
+	sectype_t(int type, string name) { this->type = type; this->name = name; }
+};
+
 WX_DECLARE_HASH_MAP(int, as_t, wxIntegerHash, wxIntegerEqual, ASpecialMap);
 WX_DECLARE_HASH_MAP(int, tt_t, wxIntegerHash, wxIntegerEqual, ThingTypeMap);
 WX_DECLARE_STRING_HASH_MAP(udmfp_t, UDMFPropMap);
 
 class ParseTreeNode;
 class ArchiveEntry;
+class Archive;
 class MapLine;
 class MapThing;
 class MapObject;
 class GameConfiguration {
 private:
 	//string			name;				// Game/port name
-	string			current_game;		// Current game name
-	string			current_port;		// Current port name (empty if none)
-	bool			map_formats[4];		// Supported map formats
-	string			udmf_namespace;		// Namespace to use for UDMF
-	bool			boom;				// Boom extensions enabled
-	ASpecialMap		action_specials;	// Action specials
-	ActionSpecial	as_unknown;			// Default action special
-	ThingTypeMap	thing_types;		// Thing types
-	ThingType		ttype_unknown;		// Default thing type
-	bool			any_map_name;		// Allow any map name
-	bool			mix_tex_flats;		// Allow mixed textures/flats
-	bool			tx_textures;		// Allow TX_ textures
-	string			sky_flat;			// Sky flat for 3d mode
-	string			script_language;	// Scripting language (should be extended to allow multiple)
-	vector<int>		light_levels;		// Light levels for up/down light in editor
+	string				current_game;		// Current game name
+	string				current_port;		// Current port name (empty if none)
+	bool				map_formats[4];		// Supported map formats
+	string				udmf_namespace;		// Namespace to use for UDMF
+	bool				boom;				// Boom extensions enabled
+	ASpecialMap			action_specials;	// Action specials
+	ActionSpecial		as_unknown;			// Default action special
+	ThingTypeMap		thing_types;		// Thing types
+	vector<ThingType*>	tt_group_defaults;	// Thing type group defaults
+	ThingType			ttype_unknown;		// Default thing type
+	bool				any_map_name;		// Allow any map name
+	bool				mix_tex_flats;		// Allow mixed textures/flats
+	bool				tx_textures;		// Allow TX_ textures
+	string				sky_flat;			// Sky flat for 3d mode
+	string				script_language;	// Scripting language (should be extended to allow multiple)
+	vector<int>			light_levels;		// Light levels for up/down light in editor
 
 	// Basic game configuration info
 	struct gconf_t {
@@ -114,12 +123,6 @@ private:
 	vector<flag_t>	triggers_line;
 
 	// Sector types
-	struct sectype_t {
-		int		type;
-		string	name;
-		sectype_t() { type = -1; name = "Unknown"; }
-		sectype_t(int type, string name) { this->type = type; this->name = name; }
-	};
 	vector<sectype_t>	sector_types;
 
 	// Map info
@@ -183,7 +186,7 @@ public:
 
 	// Config #include handling
 	void	buildConfig(string filename, string& out);
-	void	buildConfig(ArchiveEntry* entry, string& out);
+	void	buildConfig(ArchiveEntry* entry, string& out, bool use_res = true);
 
 	// Configuration reading
 	void	readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults = NULL);
@@ -211,6 +214,9 @@ public:
 	string	thingFlagsString(int flags);
 	void	setThingFlag(unsigned flag_index, MapThing* thing, bool set = true);
 
+	// DECORATE
+	bool	parseDecorateDefs(Archive* archive);
+
 	// Line flags
 	int		nLineFlags() { return flags_line.size(); }
 	string	lineFlag(unsigned flag_index);
@@ -231,7 +237,15 @@ public:
 	void			cleanObjectUDMFProps(MapObject* object);
 
 	// Sector types
-	string	sectorTypeName(int type, int map_format);
+	string				sectorTypeName(int type, int map_format);
+	vector<sectype_t>	allSectorTypes() { return sector_types; }
+	int					sectorTypeByName(string name);
+	int					baseSectorType(int type, int map_format);
+	int					sectorBoomDamage(int type, int map_format);
+	bool				sectorBoomSecret(int type, int map_format);
+	bool				sectorBoomFriction(int type, int map_format);
+	bool				sectorBoomPushPull(int type, int map_format);
+	int					boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull, int map_format);
 
 	// Defaults
 	string	getDefaultString(int type, string property);

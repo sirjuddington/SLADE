@@ -7,7 +7,7 @@ entry_types
 	{
 		name = "Demo";
 		match_name = "demo?", "demo?lmp";
-		reliability = 120;
+		reliability = 60;
 		export_ext = "lmp";
 		colour = 255, 180, 0;
 	}

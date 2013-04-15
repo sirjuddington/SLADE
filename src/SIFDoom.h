@@ -576,6 +576,73 @@ public:
 };
 
 
+class SIFDoomPSX : public SIFormat {
+protected:
+	bool readImage(SImage& image, MemChunk& data, int index) {
+		// Setup variables
+		psxpic_header_t header;
+		data.read(&header, 8, 0);
+		int width = wxINT16_SWAP_ON_BE(header.width);
+		int height = wxINT16_SWAP_ON_BE(header.height);
+		int offset_x = wxINT16_SWAP_ON_BE(header.left);
+		int offset_y = wxINT16_SWAP_ON_BE(header.top);
+
+		// Create image
+		image.create(width, height, PALMASK);
+		uint8_t* img_data = imageData(image);
+		uint8_t* img_mask = imageMask(image);
+
+		// Read raw pixel data
+		data.read(img_data, width*height, 8);
+
+		// Create mask (all opaque)
+		memset(img_mask, 255, width*height);
+
+		// Mark as transparent all pixels that are index 0
+		for (size_t  i = 0; i < (unsigned)(width*height); ++i)
+			if (img_data[i] == 0) img_mask[i] = 0;
+
+		// Setup other image properties
+		image.setXOffset(offset_x);
+		image.setYOffset(offset_y);
+
+		return true;
+	}
+
+public:
+	SIFDoomPSX() : SIFormat("doom_psx") {
+		name = "Doom PSX";
+		extension = "lmp";
+		reliability = 100;
+	}
+	~SIFDoomPSX() {}
+
+	bool isThisFormat(MemChunk& mc) {
+		if (EntryDataFormat::getFormat("img_doom_psx")->isThisFormat(mc))
+			return true;
+		else
+			return false;
+	}
+
+	SImage::info_t getInfo(MemChunk& mc, int index) {
+		SImage::info_t info;
+
+		// Read header
+		patch_header_t header;
+		mc.read(&header, 8, 0);
+
+		// Set info
+		info.width = wxINT16_SWAP_ON_BE(header.width);
+		info.height = wxINT16_SWAP_ON_BE(header.height);
+		info.offset_x = wxINT16_SWAP_ON_BE(header.left);
+		info.offset_y = wxINT16_SWAP_ON_BE(header.top);
+		info.colformat = PALMASK;
+		info.format = id;
+
+		return info;
+	}
+};
+
 class SIFDoomJaguar : public SIFormat {
 protected:
 	bool readImage(SImage& image, MemChunk& data, int index) {

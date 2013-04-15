@@ -3,13 +3,14 @@
 #include "WxStuff.h"
 #include "MOPGProperty.h"
 #include "SLADEMap.h"
-#include "ActionSpecialTreeView.h"
+#include "ActionSpecialDialog.h"
 #include "ThingTypeTreeView.h"
 #include "GameConfiguration.h"
 #include "MapObjectPropsPanel.h"
 #include "ThingTypeBrowser.h"
 #include "MapEditorWindow.h"
 #include "MapTextureBrowser.h"
+#include "SectorSpecialDialog.h"
 
 
 void MOPGProperty::resetValue() {
@@ -47,7 +48,7 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
-	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getBoolValue() == first)
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getBoolValue() == first)
 		Hide(true);
 	else
 		Hide(false);
@@ -96,7 +97,7 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
-	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
 		Hide(true);
 	else
 		Hide(false);
@@ -145,7 +146,7 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
-	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getFloatValue() == first)
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getFloatValue() == first)
 		Hide(true);
 	else
 		Hide(false);
@@ -194,7 +195,7 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
-	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getStringValue() == first)
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getStringValue() == first)
 		Hide(true);
 	else
 		Hide(false);
@@ -260,10 +261,11 @@ void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
-	if (udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
 		Hide(true);
 	else
 		Hide(false);
+	SetValue(first);
 	noupdate = false;
 
 	// Set arg property names
@@ -311,7 +313,12 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant &value, int argFlags
 
 bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) {
 	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED) {
-		int special = ActionSpecialTreeView::showDialog(window, GetValue().GetInteger());
+		int special = -1;
+		ActionSpecialDialog dlg(window);
+		dlg.setSpecial(GetValue().GetInteger());
+		if (dlg.ShowModal() == wxID_OK)
+			special = dlg.selectedSpecial();
+
 		if (special >= 0) SetValue(special);
 	}
 
@@ -361,6 +368,10 @@ void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 
@@ -450,6 +461,10 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getBoolValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -497,6 +512,10 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getBoolValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -566,6 +585,10 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -685,6 +708,10 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -756,6 +783,10 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set to common value
 	noupdate = true;
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+		Hide(true);
+	else
+		Hide(false);
 	SetValue(first);
 	noupdate = false;
 }
@@ -774,4 +805,146 @@ void MOPGSPACTriggerProperty::applyValue() {
 	for (unsigned a = 0; a < objects.size(); a++)
 		theGameConfiguration->setLineSpacTrigger(GetChoiceSelection(), (MapLine*)objects[a]);
 		//objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+}
+
+
+
+MOPGTagProperty::MOPGTagProperty(const wxString& label, const wxString& name)
+: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ID) {
+	// Set to text+button editor
+	SetEditor(wxPGEditor_TextCtrlAndButton);
+}
+
+void MOPGTagProperty::openObjects(vector<MapObject*>& objects) {
+	// Set unspecified if no objects given
+	if (objects.size() == 0) {
+		SetValueToUnspecified();
+		return;
+	}
+
+	// Get property of first object
+	int first = objects[0]->intProperty(GetName());
+
+	// Check whether all objects share the same value
+	for (unsigned a = 1; a < objects.size(); a++) {
+		if (objects[a]->intProperty(GetName()) != first) {
+			// Different value found, set unspecified
+			SetValueToUnspecified();
+			return;
+		}
+	}
+
+	// Set to common value
+	noupdate = true;
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+		Hide(true);
+	else
+		Hide(false);
+	SetValue(first);
+	noupdate = false;
+}
+
+void MOPGTagProperty::applyValue() {
+	// Do nothing if no parent (and thus no object list)
+	if (!parent || noupdate)
+		return;
+
+	// Do nothing if the value is unspecified
+	if (IsValueUnspecified())
+		return;
+
+	// Go through objects and set this value
+	vector<MapObject*>& objects = parent->getObjects();
+	for (unsigned a = 0; a < objects.size(); a++)
+		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+}
+
+bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) {
+	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED) {
+		vector<MapObject*>& objects = parent->getObjects();
+		if (objects.size() == 0)
+			return false;
+		if (!objects[0]->getParentMap())
+			return false;
+
+		// Get unused tag/id depending on object type
+		int tag = GetValue().GetInteger();
+		if (objects[0]->getObjType() == MOBJ_SECTOR)
+			tag = objects[0]->getParentMap()->findUnusedSectorTag();
+		else if (objects[0]->getObjType() == MOBJ_THING)
+			tag = objects[0]->getParentMap()->findUnusedThingId();
+		else if (objects[0]->getObjType() == MOBJ_LINE)
+			tag = objects[0]->getParentMap()->findUnusedLineId();
+
+		SetValue(tag);
+		return true;
+	}
+
+	return wxIntProperty::OnEvent(propgrid, window, e);
+}
+
+
+
+MOPGSectorSpecialProperty::MOPGSectorSpecialProperty(const wxString& label, const wxString& name)
+: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_SSPECIAL) {
+	// Set to text+button editor
+	SetEditor(wxPGEditor_TextCtrlAndButton);
+}
+
+void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects) {
+	// Set unspecified if no objects given
+	if (objects.size() == 0) {
+		SetValueToUnspecified();
+		return;
+	}
+
+	// Get property of first object
+	int first = objects[0]->intProperty(GetName());
+
+	// Check whether all objects share the same value
+	for (unsigned a = 1; a < objects.size(); a++) {
+		if (objects[a]->intProperty(GetName()) != first) {
+			// Different value found, set unspecified
+			SetValueToUnspecified();
+			return;
+		}
+	}
+
+	// Set to common value
+	noupdate = true;
+	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+		Hide(true);
+	else
+		Hide(false);
+	SetValue(first);
+	noupdate = false;
+}
+
+void MOPGSectorSpecialProperty::applyValue() {
+	// Do nothing if no parent (and thus no object list)
+	if (!parent || noupdate)
+		return;
+
+	// Do nothing if the value is unspecified
+	if (IsValueUnspecified())
+		return;
+
+	// Go through objects and set this value
+	vector<MapObject*>& objects = parent->getObjects();
+	for (unsigned a = 0; a < objects.size(); a++)
+		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+}
+
+bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) {
+	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED) {
+		SectorSpecialDialog dlg(theMapEditor);
+		int map_format = theMapEditor->currentMapDesc().format;
+		dlg.setup(m_value.GetInteger(), map_format);
+		if (dlg.ShowModal() == wxID_OK)
+			SetValue(dlg.getSelectedSpecial(map_format));
+
+		return true;
+	}
+
+	return wxIntProperty::OnEvent(propgrid, window, e);
 }

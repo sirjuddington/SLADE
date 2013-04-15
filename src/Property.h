@@ -8,9 +8,10 @@
 #define PROP_FLOAT	2
 #define PROP_STRING	3
 #define PROP_FLAG	4	// The 'flag' property type mimics a boolean property that is always true
+#define PROP_UINT	5
 
 // Union for (most) property values
-union prop_value { bool Boolean; int Integer; double Floating; };
+union prop_value { bool Boolean; int Integer; double Floating; unsigned Unsigned; };
 
 class Property {
 private:
@@ -27,6 +28,7 @@ public:
 	Property(float value);
 	Property(double value);
 	Property(string value);
+	Property(unsigned value);
 	~Property();
 
 	uint8_t		getType() { return type; }
@@ -41,22 +43,26 @@ public:
 	inline operator float () { return (float)getFloatValue(); }
 	inline operator double () { return getFloatValue(); }
 	inline operator string () { return getStringValue(); }
+	inline operator unsigned () { return getUnsignedValue(); }
 
 	inline bool operator= (bool val) { setValue(val); return val; }
 	inline int operator= (int val) { setValue(val); return val; }
 	inline float operator= (float val) { setValue((double)val); return val; }
 	inline double operator= (double val) { setValue(val); return val; }
 	inline string operator= (string val) { setValue(val); return val; }
+	inline unsigned operator= (unsigned val) { setValue(val); return val; }
 
 	bool		getBoolValue(bool warn_wrong_type = false);
 	int			getIntValue(bool warn_wrong_type = false);
 	double		getFloatValue(bool warn_wrong_type = false);
 	string		getStringValue(bool warn_wrong_type = false);
+	unsigned	getUnsignedValue(bool warn_wrong_type = false);
 
 	void	setValue(bool val);
 	void	setValue(int val);
 	void	setValue(double val);
 	void	setValue(string val);
+	void	setValue(unsigned val);
 
 	string	typeString();
 };

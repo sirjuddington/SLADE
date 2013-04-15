@@ -122,6 +122,7 @@ void EntryPanel::setModified(bool c) {
 		else
 			modified = c;
 	}
+	if (modified) callRefresh();
 }
 
 /* EntryPanel::openEntry

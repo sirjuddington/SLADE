@@ -8,44 +8,53 @@
 TODO List ---------------------------------------------------------------
 
 --- Bugs ---
-- Gfx doesn't update after being converted
-- No handling for when a line is moved to overlap another
-- Map editor should use PLAYPAL from resource chain on 'existing/global'
-- 3d mode textures need to update with MapTextureManager, somehow
+- Wall/flat scale not working in 3d mode
 
 
---- Map Editor ---
+--- Map Editor 3.1 ---
 - Checks:
+	- When error is found, zoom/scroll to the error in question and bring up fullscreen overlay
+		asking whether to fix or not (and possibly fix options)
 	- Missing textures
 	- Specials with 0 tag that require a tag
 	- Invalid sector references (maybe not, shouldn't really happen)
-- Non-power-of-two textures (where simply expanding the texture canvas to 128x128 won't work)
-	- Will probably have to implement some kind of resize for this (perhaps FreeImage can do it nicely?)
+	- Intersecting lines
+	- Overlapping lines
 - 3d mode
-	- Auto-align Y
-	- Thing z height editing
 	- Offsets/scaling copy+paste
-	- Flat offset/scale editing (udmf+zdoom)
-	- Better vis checking
 	- (Z)MAPINFO parsing for sky texture
-	- Thing boxes (might not bother with full boxes unless I add game-accurate 'height' property to thing configurations)
-	- Preferences dialog page
+	- Line transparency (udmf+zdoom)
+	- Slopes preview
 - Editing:
 	- Proper UDMF/Hexen/Doom64 Map saving (BEHAVIOR, SCRIPTS, DIALOGUE, LIGHTS, MACROS, etc.)
-	- Generalised sector and line specials
 	- Rotate/scale objects ('edit' mode similar to db2 would be nice, perhaps not a mode though)
-	- Light increments should probably be defined in game configs (8 for zdoom, 16 for others)
-	- Copy+paste sectors/lines
+	- Proper split/merge checks on paste lines
 - Script editor
+	- Other script types (DIALOGUE etc)
 - Better UDMF property handling, proper support for unknown properties read with the map
 - (Possibly) better line/thing flag handling
-- 'Tag edit' mode
+- Tag edit mode for TIDs/LineIDs(?)
+- Need to separate editor defaults from udmf defaults (eg. thing skill flags are all false by default in udmf)
+
+
+--- Map Editor post-3.1 ---
 - Optimise Polygon2D splitting somehow, it creates many unneeded splits
+- 3d mode
+	- Auto-align Y
+	- Better vis checking
+	- 3d floors preview
+	- Portals preview
+- Script editor
+	- Compiler output pane
+	- Error pane rather than just displaying error output
+	- Ability to edit/compile library scripts
 
 
 --- Minor Problems/Annoyances ---
 - Long calltips can extend off the edge of the screen
 - Incorrect ctrl+tab behaviour with tabs
+- Focus find+replace window on opening it
+- Esc to close find+replace window
 
 --- Editor Features ---
 - Generic entry data view (for VERTEXES, LINEDEFS, SIDEDEFS, SECTORS, THINGS, DEMO*, TEXTUREX/PNAMES, ...)
@@ -61,6 +70,7 @@ TODO List ---------------------------------------------------------------
 --- Formats ---
 - 7z
 - Lzma/bz2 for zip
+- View any entry as raw gfx
 
 --- Text Editor ---
 - 'Tabs as Spaces' option
@@ -86,8 +96,6 @@ TODO List ---------------------------------------------------------------
 	- opened archives are either used as resources or not
 	- when searching for patches etc, resource archives are searched, then base resource archive
 	- archive list on archive manager panel could have 'resource' checkboxes for each list item
-- Undo/Redo system
-	- Should be general enough to be used by the map editor also
 - Different icon sets
 - Better backup system
 - More drag-and-drop support
@@ -105,7 +113,6 @@ TODO List ---------------------------------------------------------------
   (could make ArchiveEntry a subclass of MemChunk?)
 - Better way to get the currently selected entries would be nice
 - Should probably write my own lexer for TextEditor since the default cpp/cppnocase ones are somewhat limited
-- Implement custom replacement for wxFileName that allows fast matching against name/extension etc
 - Multithreaded entry type detection?
 
 
@@ -126,7 +133,7 @@ To keep track of resource editor changes (in case I decide to release a 3.0.3 af
 - In the gfx conversion dialog, the transparent colour can now be set by left-clicking on the current preview image
 - Multiple entry name filters can now be entered (separated by commas) eg: "MAP01, MAP02"
 - Implemented basic 'remove unused textures' and 'remove unused patches' actions
-- Added mp3 and module playback
+- Added mp3 and tracker module playback
 - Changed the browser to use a proper font for item names
 - Browser background changed to the checkered texture used in most other gfx views (optional)
 - Added 'zoom' slider to the browser window
@@ -144,6 +151,7 @@ To keep track of resource editor changes (in case I decide to release a 3.0.3 af
 - Added COLORMAP lump generation
 - Various additions and improvements to texture editor for ZDoom TEXTURES format
 - Added option to colour entry list item background by entry type
+- Improved entry type detection speed
 
 
 
@@ -181,8 +189,6 @@ Conversion dialog:
 
 --- General ---
 - Support for LZMA, Bzip2 and zip formats other than store and deflate
-- Mass research & replace of map elements (thing numbers, texture or flat names) across a map or all the maps of an archive
-	- Mostly done, still needs UDMF implementation and a solid UI for selecting maps to change, what to replace, and with what.
 
 
 

@@ -28,7 +28,10 @@ void ThingInfoOverlay::update(MapThing* thing) {
 	// Index + type
 	ThingType* tt = theGameConfiguration->thingType(thing->getType());
 	string type = S_FMT("%s (Type %d)", CHR(tt->getName()), thing->getType());
-	info.push_back(S_FMT("Thing #%d: %s", thing->getIndex(), CHR(type)));
+	if (Global::debug)
+		info.push_back(S_FMT("Thing #%d (%d): %s", thing->getIndex(), thing->getId(), CHR(type)));
+	else
+		info.push_back(S_FMT("Thing #%d: %s", thing->getIndex(), CHR(type)));
 
 	// Position
 	if (map_format != MAP_DOOM)

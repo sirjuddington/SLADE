@@ -11,6 +11,10 @@
 
 ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 : wxPanel(parent, -1) {
+	// Init variables
+	entry_script = new ArchiveEntry();
+	entry_compiled = new ArchiveEntry();
+
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -34,10 +38,16 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 
 	// Set language
 	string lang = theGameConfiguration->scriptLanguage();
-	if (S_CMPNOCASE(lang, "acs_hexen"))
+	if (S_CMPNOCASE(lang, "acs_hexen")) {
 		text_editor->setLanguage(TextLanguage::getLanguage("acs"));
-	else if (S_CMPNOCASE(lang, "acs_zdoom"))
+		entry_script->setName("SCRIPTS");
+		entry_compiled->setName("BEHAVIOR");
+	}
+	else if (S_CMPNOCASE(lang, "acs_zdoom")) {
 		text_editor->setLanguage(TextLanguage::getLanguage("acs_z"));
+		entry_script->setName("SCRIPTS");
+		entry_compiled->setName("BEHAVIOR");
+	}
 
 	// Add function/constants list
 	list_words = new wxTreeListCtrl(this, -1);
@@ -50,20 +60,21 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 }
 
 ScriptEditorPanel::~ScriptEditorPanel() {
+	delete entry_script;
+	delete entry_compiled;
 }
 
-bool ScriptEditorPanel::openScripts(ArchiveEntry* entry) {
-	if (!entry) {
-		entry_script = NULL;
-		return false;
-	}
+bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled) {
+	// Clear current script data
+	entry_script->clearData();
+	entry_compiled->clearData();
 
-	if (text_editor->loadEntry(entry)) {
-		entry_script = entry;
-		return true;
-	}
-	else
-		return false;
+	// Import script data
+	if (script) entry_script->importEntry(script);
+	if (compiled) entry_compiled->importEntry(compiled);
+
+	// Load script text
+	return text_editor->loadEntry(entry_script);
 }
 
 void ScriptEditorPanel::populateWordList() {
@@ -93,9 +104,16 @@ void ScriptEditorPanel::populateWordList() {
 bool ScriptEditorPanel::handleAction(string name) {
 	// Compile Script
 	if (name == "mapw_script_compile") {
-		EntryOperations::compileACS(entry_script, false, entry_compiled, theMapEditor);
+		// Write text to entry
+		wxCharBuffer buf = text_editor->GetText().mb_str();
+		entry_script->importMem(buf, buf.length());
 
-		return true;
+		// Compile depending on language
+		string lang = theGameConfiguration->scriptLanguage();
+		if (lang == "acs_hexen")
+			EntryOperations::compileACS(entry_script, true, entry_compiled, theMapEditor);
+		else if (lang == "acs_zdoom")
+			EntryOperations::compileACS(entry_script, false, entry_compiled, theMapEditor);
 	}
 
 	// Save Script
@@ -109,7 +127,11 @@ bool ScriptEditorPanel::handleAction(string name) {
 	else if (name == "mapw_script_jumpto")
 		text_editor->openJumpToDialog();
 
-	return false;
+	// Not handled
+	else
+		return false;
+
+	return true;
 }
 
 void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e) {

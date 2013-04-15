@@ -3,14 +3,11 @@
 #define __PROPERTY_LIST_H__
 
 #include "Property.h"
-#include <wx/hashmap.h>
-
-// Declare hash map class to hold properties
-WX_DECLARE_STRING_HASH_MAP(Property, PropertyHashMap);
+#include <map>
 
 class PropertyList {
 private:
-	PropertyHashMap	properties;
+	std::map<string, Property>	properties;
 
 public:
 	PropertyList();
@@ -26,7 +23,7 @@ public:
 	void	addFlag(string key);
 	void	allProperties(vector<Property>& list);
 	void	allPropertyNames(vector<string>& list);
-	bool	isEmpty() { return properties.size() == 0; }
+	bool	isEmpty() { return properties.empty(); }
 
 	string	toString(bool condensed = false);
 };

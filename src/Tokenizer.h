@@ -13,6 +13,7 @@ class Tokenizer {
 private:
 	char*		current;		// Current position
 	char*		start;			// Start of text
+	char*		end;			// End of text
 	uint32_t	size;			// Size of text
 	uint32_t	position;		// Current position
 	uint8_t		comments;		// See CommentTypes enum
@@ -24,6 +25,7 @@ private:
 	uint32_t	t_start;		// The starting position of the last-read token
 	uint32_t	t_end;			// The ending position of the last-read token
 	string		token_current;	// Current token data
+	bool		decorate;		// Whether to parse doom builder //$ decorate comments
 
 
 	void	readToken();
@@ -34,6 +36,7 @@ public:
 
 	void	setSpecialCharacters(string special) { this->special = special; }
 	void	enableDebug(bool debug = true) { this->debug = debug; }
+	void	enableDecorate(bool enable) { decorate = enable; }
 
 	string	getName() { return name; }
 	bool	openFile(string filename, uint32_t offset = 0, uint32_t length = 0);
@@ -65,6 +68,8 @@ public:
 	uint32_t	lineNo() { return line; }
 	uint32_t	tokenStart() { return t_start; }
 	uint32_t	tokenEnd() { return t_end; }
+
+	void	skipSection(string open, string close);
 };
 
 #endif //__TOKENIZER_H__

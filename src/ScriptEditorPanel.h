@@ -22,10 +22,10 @@ public:
 	ScriptEditorPanel(wxWindow* parent);
 	~ScriptEditorPanel();
 
-	void	setScriptEntry(ArchiveEntry* entry) { entry_script = entry; }
-	void	setCompiledEntry(ArchiveEntry* entry) { entry_compiled = entry; }
+	ArchiveEntry*	scriptEntry() { return entry_script; }
+	ArchiveEntry*	compiledEntry() { return entry_compiled; }
 
-	bool	openScripts(ArchiveEntry* entry);
+	bool	openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = NULL);
 	void	populateWordList();
 
 	bool	handleAction(string name);

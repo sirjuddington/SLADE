@@ -192,4 +192,14 @@ public:
 	}
 };
 
+class DiskDataFormat : public EntryDataFormat {
+public:
+	DiskDataFormat() : EntryDataFormat("archive_disk") {};
+	~DiskDataFormat() {}
+
+	int isThisFormat(MemChunk& mc) {
+		return PakArchive::isPakArchive(mc) ? EDF_TRUE : EDF_FALSE;
+	}
+};
+
 #endif //ARCHIVEFORMATS_H

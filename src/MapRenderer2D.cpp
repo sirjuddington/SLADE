@@ -25,6 +25,7 @@ CVAR(Bool, map_animate_selection, false, CVAR_SAVE)
 CVAR(Bool, map_animate_tagged, true, CVAR_SAVE)
 CVAR(Float, arrow_alpha, 1.0f, CVAR_SAVE)
 CVAR(Bool, arrow_colour, false, CVAR_SAVE)
+CVAR(Bool, flats_use_vbo, true, CVAR_SAVE)
 
 CVAR(Bool, test_ssplit, false, CVAR_SAVE)
 
@@ -166,7 +167,7 @@ void MapRenderer2D::renderVerticesVBO() {
 
 void MapRenderer2D::renderVertexHilight(int index, float fade) {
 	// Check hilight
-	if (index < 0)
+	if (!map->getVertex(index))
 		return;
 
 	// Reset fade if hilight animation is disabled
@@ -362,7 +363,7 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha) {
 
 void MapRenderer2D::renderLineHilight(int index, float fade) {
 	// Check hilight
-	if (index < 0)
+	if (!map->getLine(index))
 		return;
 
 	// Reset fade if hilight animation is disabled
@@ -653,6 +654,24 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 
 	// Attempt to get sprite texture
 	tex = theMapEditor->textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
+
+	// Check for ? ending (0 or 1)
+	/*
+	if (!tex && tt->getSprite().EndsWith("?")) {
+		string sprite = tt->getSprite();
+		sprite.RemoveLast(1);
+		sprite = sprite + "0";
+		tex = theMapEditor->textureManager().getSprite(sprite, tt->getTranslation(), tt->getPalette());
+		if (!tex) {
+			sprite.RemoveLast(1);
+			sprite = sprite + "1";
+			tex = theMapEditor->textureManager().getSprite(sprite, tt->getTranslation(), tt->getPalette());
+		}
+
+		if (tex)
+			tt->setSprite(sprite);
+	}
+	*/
 
 	// If sprite not found, just draw as a normal, round thing
 	if (!tex) {
@@ -958,7 +977,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha) {
 		thing = map->getThing(a);
 		x = thing->xPos();
 		y = thing->yPos();
-		angle = thing->intProperty("angle");
+		angle = thing->getAngle();
 
 		// Set alpha
 		if (thing->isFiltered())
@@ -996,7 +1015,6 @@ void MapRenderer2D::renderThingsImmediate(float alpha) {
 			ThingType* tt = theGameConfiguration->thingType(thing->getType());
 			x = thing->xPos();
 			y = thing->yPos();
-			angle = thing->intProperty("angle");
 
 			// Set alpha
 			if (thing->isFiltered())
@@ -1004,7 +1022,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha) {
 			else
 				talpha = alpha;
 
-			if (renderSpriteThing(x, y, angle, tt, talpha, true))
+			if (renderSpriteThing(x, y, thing->getAngle(), tt, talpha, true))
 				things_arrows.push_back(a);
 		}
 	}
@@ -1036,7 +1054,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha) {
 
 				glPushMatrix();
 				glTranslated(x, y, 0);
-				glRotated(thing->intProperty("angle"), 0, 0, 1);
+				glRotated(thing->getAngle(), 0, 0, 1);
 
 				glBegin(GL_QUADS);
 				glTexCoord2f(0.0f, 1.0f);	glVertex2d(-32, -32);
@@ -1056,7 +1074,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha) {
 
 void MapRenderer2D::renderThingHilight(int index, float fade) {
 	// Check hilight
-	if (index < 0)
+	if (!map->getThing(index))
 		return;
 
 	// Reset fade if hilight animation is disabled
@@ -1240,10 +1258,12 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha) {
 	if (alpha <= 0.01f)
 		return;
 
-	if (OpenGL::vboSupport())
+	if (OpenGL::vboSupport() && flats_use_vbo)
 		renderFlatsVBO(type, texture, alpha);
 	else
 		renderFlatsImmediate(type, texture, alpha);
+
+	flats_updated = theApp->runTimer();
 }
 
 bool sortPolyByTex(Polygon2D* left, Polygon2D* right) {
@@ -1257,6 +1277,15 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha) {
 	if (flat_ignore_light)
 		glColor4f(flat_brightness, flat_brightness, flat_brightness, alpha);
 
+	// Re-init flats texture list if invalid
+	if (texture && tex_flats.size() < map->nSectors() || last_flat_type != type) {
+		tex_flats.clear();
+		for (unsigned a = 0; a < map->nSectors(); a++)
+			tex_flats.push_back(NULL);
+
+		last_flat_type = type;
+	}
+
 	// Go through sectors
 	GLTexture* tex_last = NULL;
 	GLTexture* tex = NULL;
@@ -1268,11 +1297,17 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha) {
 			continue;
 
 		if (texture) {
-			// Get the sector texture
-			if (type <= 1)
-				tex = theMapEditor->textureManager().getFlat(sector->floorTexture(), theGameConfiguration->mixTexFlats());
+			if (!tex_flats[a] || sector->modifiedTime() > flats_updated) {
+				// Get the sector texture
+				if (type <= 1)
+					tex = theMapEditor->textureManager().getFlat(sector->getFloorTex(), theGameConfiguration->mixTexFlats());
+				else
+					tex = theMapEditor->textureManager().getFlat(sector->getCeilingTex(), theGameConfiguration->mixTexFlats());
+
+				tex_flats[a] = tex;
+			}
 			else
-				tex = theMapEditor->textureManager().getFlat(sector->ceilingTexture(), theGameConfiguration->mixTexFlats());
+				tex = tex_flats[a];
 
 			// Bind the texture if needed
 			if (tex) {
@@ -1283,6 +1318,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha) {
 			}
 			else if (tex_last)
 				glDisable(GL_TEXTURE_2D);
+
 			tex_last = tex;
 		}
 
@@ -1342,6 +1378,15 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha) {
 	if (!glGenBuffers)
 		return;
 
+	// Re-init flats texture list if invalid
+	if (texture && tex_flats.size() < map->nSectors() || last_flat_type != type) {
+		tex_flats.clear();
+		for (unsigned a = 0; a < map->nSectors(); a++)
+			tex_flats.push_back(NULL);
+
+		last_flat_type = type;
+	}
+
 	// First, check if any polygon vertex data has changed (in this case we need to refresh the entire vbo)
 	for (unsigned a = 0; a < map->nSectors(); a++) {
 		Polygon2D* poly = map->getSector(a)->getPolygon();
@@ -1382,18 +1427,24 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha) {
 
 		first = false;
 		if (texture) {
-			// Get the sector texture
-			if (type <= 1)
-				tex = theMapEditor->textureManager().getFlat(sector->floorTexture(), theGameConfiguration->mixTexFlats());
+			if (!tex_flats[a] || sector->modifiedTime() > flats_updated) {
+				// Get the sector texture
+				if (type <= 1)
+					tex = theMapEditor->textureManager().getFlat(sector->getFloorTex(), theGameConfiguration->mixTexFlats());
+				else
+					tex = theMapEditor->textureManager().getFlat(sector->getCeilingTex(), theGameConfiguration->mixTexFlats());
+
+				tex_flats[a] = tex;
+			}
 			else
-				tex = theMapEditor->textureManager().getFlat(sector->ceilingTexture(), theGameConfiguration->mixTexFlats());
+				tex = tex_flats[a];
 		}
 
 		// Setup polygon texture info if needed
 		Polygon2D* poly = sector->getPolygon();
 		if (texture && poly->getTexture() != tex) {
 			poly->setTexture(tex);			// Set polygon texture
-			
+
 			// Get scaling/offset info
 			double ox = 0;
 			double oy = 0;
@@ -1460,7 +1511,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha) {
 
 void MapRenderer2D::renderFlatHilight(int index, float fade) {
 	// Check hilight
-	if (index < 0)
+	if (!map->getSector(index))
 		return;
 
 	// Reset fade if hilight animation is disabled
@@ -1780,7 +1831,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec) 
 		thing = map->getThing(things[a]);
 		x = thing->xPos() + move_vec.x;
 		y = thing->yPos() + move_vec.y;
-		angle = thing->intProperty("angle");
+		angle = thing->getAngle();
 
 		// Get thing type properties from game configuration
 		ThingType* tt = theGameConfiguration->thingType(thing->getType());
@@ -1804,7 +1855,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec) 
 			ThingType* tt = theGameConfiguration->thingType(thing->getType());
 			x = thing->xPos() + move_vec.x;
 			y = thing->yPos() + move_vec.y;
-			angle = thing->intProperty("angle");
+			angle = thing->getAngle();
 
 			renderSpriteThing(x, y, angle, tt, 1.0f, true);
 		}
@@ -1850,7 +1901,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos) 
 		thing = things[a];
 		x = thing->xPos() + pos.x;
 		y = thing->yPos() + pos.y;
-		angle = thing->intProperty("angle");
+		angle = thing->getAngle();
 
 		// Get thing type properties from game configuration
 		ThingType* tt = theGameConfiguration->thingType(thing->getType());
@@ -1874,7 +1925,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos) 
 			ThingType* tt = theGameConfiguration->thingType(thing->getType());
 			x = thing->xPos() + pos.x;
 			y = thing->yPos() + pos.y;
-			angle = thing->intProperty("angle");
+			angle = thing->getAngle();
 
 			renderSpriteThing(x, y, angle, tt, 1.0f, true);
 		}
@@ -1994,6 +2045,9 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha) {
 }
 
 void MapRenderer2D::updateFlatsVBO() {
+	if (!flats_use_vbo)
+		return;
+
 	// Create VBO if needed
 	if (vbo_flats == 0)
 		glGenBuffers(1, &vbo_flats);
@@ -2080,11 +2134,13 @@ void MapRenderer2D::forceUpdate(float line_alpha) {
 	// Update variables
 	this->view_scale = view_scale;
 	this->view_scale_inv = 1.0 / view_scale;
+	tex_flats.clear();
 
 	if (OpenGL::vboSupport()) {
 		updateVerticesVBO();
 		updateLinesVBO(lines_dirs, line_alpha);
-	} else {
+	}
+	else {
 		if (list_lines > 0) {
 			glDeleteLists(list_lines, 1);
 			list_lines = 0;

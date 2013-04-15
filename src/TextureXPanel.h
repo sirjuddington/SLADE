@@ -63,7 +63,7 @@ public:
 	void		removeTexture();
 	void		renameTexture();
 	void		exportTexture();
-	bool		exportAsPNG(CTexture* texture, string filename);
+	bool		exportAsPNG(CTexture* texture, string filename, bool force_rgba);
 	void		extractTexture();
 	bool		modifyOffsets();
 	void		moveUp();

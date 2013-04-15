@@ -25,6 +25,7 @@ protected:
 	Palette8bit	palette;
 	wxTimer		timer;
 	long		last_time;
+	bool		recreate;
 
 public:
 	OGLCanvas(wxWindow* parent, int id, bool handle_timer = true);
@@ -33,6 +34,7 @@ public:
 	Palette8bit*	getPalette() { return &palette; }
 	void			setPalette(Palette8bit* pal) { palette.copyPalette(pal); }
 	bool			setContext();
+	void			createSFML();
 	void			init();
 	virtual void	draw() = 0;
 	virtual void	update(long frametime) {}
@@ -50,6 +52,7 @@ public:
 	void	onPaint(wxPaintEvent& e);
 	void	onEraseBackground(wxEraseEvent& e);
 	void	onTimer(wxTimerEvent& e);
+	void	onResize(wxSizeEvent& e);
 	//void	onIdle(wxIdleEvent& e);
 };
 

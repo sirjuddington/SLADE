@@ -124,4 +124,38 @@ public:
 	void draw();
 };
 
+class MapRenderer2D;
+class MapObject;
+class MCAHilightFade : public MCAnimation {
+private:
+	MapObject*		object;
+	float			fade;
+	float			init_fade;
+	MapRenderer2D*	renderer;
+
+public:
+	MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init);
+	~MCAHilightFade();
+
+	bool update(long time);
+	void draw();
+};
+
+class MapRenderer3D;
+class MCAHilightFade3D : public MCAnimation {
+private:
+	int				item_index;
+	uint8_t			item_type;
+	float			fade;
+	float			init_fade;
+	MapRenderer3D*	renderer;
+
+public:
+	MCAHilightFade3D(long start, int item_index, uint8_t item_type, MapRenderer3D* renderer, float fade_init);
+	~MCAHilightFade3D();
+
+	bool update(long time);
+	void draw();
+};
+
 #endif//__MC_ANIMATIONS_H__

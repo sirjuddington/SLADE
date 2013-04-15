@@ -812,7 +812,7 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	for (int w = 0; w < width; ++w) {
 		int post_p = col_offsets[w];
 		// Process all posts in the column
-		while (READ_B32(header, post_p) != 0xFFFFFFFF) {
+		while (READ_B16(header, post_p) != 0xFFFF) {
 			int top = header[post_p];
 			int len = header[post_p + 1];
 			int pixel_p = READ_B16(header, post_p + 2);

@@ -4,7 +4,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "KeyBind.h"
-#include <wx/hashmap.h>
 #include <wx/event.h>
 
 
@@ -235,6 +234,7 @@ string KeyBind::keyName(int key) {
 	case WXK_WINDOWS_LEFT:		return "win_left";
 	case WXK_WINDOWS_RIGHT:		return "win_right";
 	case WXK_WINDOWS_MENU:		return "win_menu";
+	case WXK_PRINT:				return "printscrn";
 #ifdef __APPLE__
 	case WXK_COMMAND:			return "command";
 #else
@@ -330,6 +330,11 @@ void KeyBind::allKeyBinds(vector<KeyBind*>& list) {
 		list.push_back(&keybinds[a]);
 }
 
+void KeyBind::releaseAll() {
+	for (unsigned a = 0; a < keybinds.size(); a++)
+		keybinds[a].pressed = false;
+}
+
 // The + key char is different between windows and unix/mac
 #ifdef __WXMSW__
 #define PLUSKEY "+"
@@ -398,6 +403,7 @@ void KeyBind::initBinds() {
 	addBind("map_edit_accept", keypress_t("return"), "Accept edit", group);
 	addBind("map_edit_cancel", keypress_t("escape"), "Cancel edit", group);
 	addBind("map_toggle_3d", keypress_t("Q"), "Toggle 3d mode", group);
+	addBind("map_screenshot", keypress_t("P", KPM_CTRL|KPM_SHIFT), "Take Screenshot", group);
 
 	// Map Editor 2D (me2d*)
 	group = "Map Editor 2D Mode";
@@ -482,6 +488,7 @@ void KeyBind::initBinds() {
 	addBind("me3d_paste_tex_type", keypress_t("V", KPM_CTRL), "Paste texture or thing type", group);
 	addBind("me3d_paste_tex_type", keypress_t("mouse3", KPM_SHIFT));
 	addBind("me3d_toggle_info", keypress_t("I"), "Toggle information overlay", group);
+	addBind("me3d_quick_texture", keypress_t("T", KPM_CTRL), "Quick Texture", group);
 
 	// Map Editor 3D Camera (me3d_camera*)
 	group = "Map Editor 3D Mode Camera";
@@ -502,16 +509,30 @@ void KeyBind::initBinds() {
 	addBind("me3d_light_down", keypress_t(";", KPM_SHIFT), "Sector light level down 1", group);
 	addBind("me3d_light_toggle_link", keypress_t("L", KPM_CTRL), "Toggle linked flat light levels", group);
 
+	// Map Editor 3D Offsets (me3d_xoff*, me3d_yoff*)
+	group = "Map Editor 3D Mode Offsets";
+	addBind("me3d_xoff_up8", keypress_t("num_4"), "X offset up 8", group);
+	addBind("me3d_xoff_up", keypress_t("num_left"), "X offset up 1", group);
+	addBind("me3d_xoff_down8", keypress_t("num_6"), "X offset down 8", group);
+	addBind("me3d_xoff_down", keypress_t("num_right"), "X offset down 1", group);
+	addBind("me3d_yoff_up8", keypress_t("num_8"), "Y offset up 8", group);
+	addBind("me3d_yoff_up", keypress_t("num_up"), "Y offset up 1", group);
+	addBind("me3d_yoff_down8", keypress_t("num_2"), "Y offset down 8", group);
+	addBind("me3d_yoff_down", keypress_t("num_down"), "Y offset down 1", group);
+
+	// Map Editor 3D Scaling (me3d_scale*)
+	group = "Map Editor 3D Mode Scaling";
+	addBind("me3d_scalex_up_l", keypress_t("num_4", KPM_CTRL), "X scale up (large)", group);
+	addBind("me3d_scalex_up_s", keypress_t("num_left", KPM_CTRL), "X scale up (small)", group);
+	addBind("me3d_scalex_down_l", keypress_t("num_6", KPM_CTRL), "X scale down (large)", group);
+	addBind("me3d_scalex_down_s", keypress_t("num_right", KPM_CTRL), "X scale down (small)", group);
+	addBind("me3d_scaley_up_l", keypress_t("num_8", KPM_CTRL), "Y scale up (large)", group);
+	addBind("me3d_scaley_up_s", keypress_t("num_up", KPM_CTRL), "Y scale up (small)", group);
+	addBind("me3d_scaley_down_l", keypress_t("num_2", KPM_CTRL), "Y scale down (large)", group);
+	addBind("me3d_scaley_down_s", keypress_t("num_down", KPM_CTRL), "Y scale down (small)", group);
+
 	// Map Editor 3D Walls (me3d_wall*)
 	group = "Map Editor 3D Mode Walls";
-	addBind("me3d_wall_xoff_up8", keypress_t("num_4"), "X offset up 8", group);
-	addBind("me3d_wall_xoff_up", keypress_t("num_left"), "X offset up 1", group);
-	addBind("me3d_wall_xoff_down8", keypress_t("num_6"), "X offset down 8", group);
-	addBind("me3d_wall_xoff_down", keypress_t("num_right"), "X offset down 1", group);
-	addBind("me3d_wall_yoff_up8", keypress_t("num_8"), "Y offset up 8", group);
-	addBind("me3d_wall_yoff_up", keypress_t("num_up"), "Y offset up 1", group);
-	addBind("me3d_wall_yoff_down8", keypress_t("num_2"), "Y offset down 8", group);
-	addBind("me3d_wall_yoff_down", keypress_t("num_down"), "Y offset down 1", group);
 	addBind("me3d_wall_toggle_link_ofs", keypress_t("O", KPM_CTRL), "Toggle linked wall offsets", group);
 	addBind("me3d_wall_autoalign_x", keypress_t("A", KPM_CTRL), "Auto-align textures on X", group);
 	addBind("me3d_wall_reset", keypress_t("R"), "Reset wall (offsets and scaling)", group);
@@ -528,6 +549,14 @@ void KeyBind::initBinds() {
 	addBind("me3d_flat_height_down8", keypress_t("mwheeldown"));
 	addBind("me3d_flat_height_down", keypress_t("num_minus", KPM_SHIFT), "Height down 1", group);
 	addBind("me3d_flat_height_down", keypress_t("mwheeldown", KPM_SHIFT));
+
+	// Map Editor 3D Things (me3d_thing*)
+	group = "Map Editor 3D Mode Things";
+	addBind("me3d_thing_remove", keypress_t("delete"), "Remove", group);
+	addBind("me3d_thing_up8", keypress_t("num_8"), "Z up 8", group);
+	addBind("me3d_thing_up", keypress_t("num_up"), "Z up 1", group);
+	addBind("me3d_thing_down8", keypress_t("num_2"), "Z down 8", group);
+	addBind("me3d_thing_down", keypress_t("num_down"), "Z down 1", group);
 
 	// Set above keys as defaults
 	for (unsigned a = 0; a < keybinds.size(); a++) {
@@ -548,7 +577,7 @@ string KeyBind::writeBinds() {
 		ret += "\t";
 		ret += kb.name;
 
-		// '.' indicates no binds
+		// 'unbound' indicates no binds
 		if (kb.keys.size() == 0)
 			ret += " unbound";
 

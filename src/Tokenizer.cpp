@@ -51,6 +51,7 @@ Tokenizer::Tokenizer(bool c_comments, bool h_comments, bool s_comments) {
 	line = 1;
 	t_start = 0;
 	t_end = 0;
+	decorate = false;
 }
 
 /* Tokenizer::~Tokenizer
@@ -85,6 +86,7 @@ bool Tokenizer::openFile(string filename, uint32_t offset, uint32_t length) {
 	size = length;
 	position = 0;
 	start = current = (char *) malloc(size);
+	end = start + size + 1;
 	line = 1;
 	t_start = 0;
 	t_end = 0;
@@ -112,6 +114,7 @@ bool Tokenizer::openString(string text, uint32_t offset, uint32_t length, string
 	t_start = 0;
 	t_end = 0;
 	start = current = (char *) malloc(size);
+	end = start + size + 1;
 	name = source;
 
 	// Copy the string portion
@@ -139,6 +142,7 @@ bool Tokenizer::openMem(const char* mem, uint32_t length, string source) {
 	t_start = 0;
 	t_end = 0;
 	start = current = (char*) malloc(size);
+	end = start + size + 1;
 
 	// Copy the data
 	memcpy(start, mem, size);
@@ -165,6 +169,7 @@ bool Tokenizer::openMem(const uint8_t* mem, uint32_t length, string source) {
 	t_start = 0;
 	t_end = 0;
 	start = current = (char*) malloc(size);
+	end = start + size + 1;
 
 	// Copy the data
 	memcpy(start, mem, size);
@@ -191,6 +196,7 @@ bool Tokenizer::openMem(MemChunk * mem, string source) {
 	t_start = 0;
 	t_end = 0;
 	start = current = (char*) malloc(size);
+	end = start + size + 1;
 
 	// Copy the data
 	memcpy(start, mem->getData(), size);
@@ -295,13 +301,20 @@ void Tokenizer::readToken() {
 		// Skip C-style comments
 		if (comments & CCOMMENTS) {
 			// Check if we have a line comment
-			if (current[0] == '/' && current[1] == '/' && current[2] != '$') {
-				skipLineComment(); // Skip it
+			if (current + 1 < end && current[0] == '/' && current[1] == '/') {
 				ready = false;
+
+				// DECORATE //$ handling
+				if (!decorate)
+					skipLineComment();
+				else if (current + 2 < end && current[2] != '$')
+					skipLineComment();
+				else
+					ready = true;
 			}
 
 			// Check if we have a multiline comment
-			if (current[0] == '/' && current[1] == '*') {
+			if (current + 1 != end && current[0] == '/' && current[1] == '*') {
 				skipMultilineComment(); // Skip it
 				ready = false;
 			}
@@ -309,7 +322,7 @@ void Tokenizer::readToken() {
 
 		// Skip '##' comments
 		if (comments & HCOMMENTS) {
-			if (current[0] == '#' && current[1] == '#') {
+			if (current + 1 != end && current[0] == '#' && current[1] == '#') {
 				skipLineComment(); // Skip it
 				ready = false;
 			}
@@ -535,4 +548,24 @@ void Tokenizer::getBool(bool* b) {
 		*b = false;
 	else
 		*b = !!atoi(CHR(token_current));
+}
+
+void Tokenizer::skipSection(string open, string close) {
+	int level = 0;
+	readToken();
+	while (!(token_current.empty() && !qstring)) {
+		// Increase depth level if another opener
+		if (token_current == open)
+			level++;
+
+		// Check for section closer
+		else if (token_current == close) {
+			if (level == 0)
+				break;
+			else
+				level--;
+		}
+
+		readToken();
+	}
 }

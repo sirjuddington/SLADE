@@ -14,6 +14,7 @@ MapLine::MapLine(SLADEMap* parent) : MapObject(MOBJ_LINE, parent) {
 	side1 = NULL;
 	side2 = NULL;
 	length = -1;
+	special = 0;
 }
 
 MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMap* parent) : MapObject(MOBJ_LINE, parent) {
@@ -23,6 +24,7 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMa
 	side1 = s1;
 	side2 = s2;
 	length = -1;
+	special = 0;
 
 	// Connect to vertices
 	if (v1) v1->connectLine(this);
@@ -34,8 +36,6 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, SLADEMa
 }
 
 MapLine::~MapLine() {
-	if (vertex1) vertex1->disconnectLine(this);
-	if (vertex2) vertex2->disconnectLine(this);
 }
 
 MapSector* MapLine::frontSector() {
@@ -118,6 +118,8 @@ int MapLine::intProperty(string key) {
 		return s1Index();
 	else if (key == "sideback")
 		return s2Index();
+	else if (key == "special")
+		return special;
 	else
 		return MapObject::intProperty(key);
 }
@@ -171,6 +173,12 @@ void MapLine::setIntProperty(string key, int value) {
 			return side2->setIntProperty(key.Mid(6), value);
 	}
 
+	// Special
+	else if (key == "special") {
+		setModified();
+		special = value;
+	}
+
 	// Line property
 	else
 		MapObject::setIntProperty(key, value);
@@ -214,6 +222,7 @@ void MapLine::setStringProperty(string key, string value) {
 
 void MapLine::setS1(MapSide* side) {
 	if (!side1) {
+		setModified();
 		side1 = side;
 		side->parent = this;
 	}
@@ -221,6 +230,7 @@ void MapLine::setS1(MapSide* side) {
 
 void MapLine::setS2(MapSide* side) {
 	if (!side2) {
+		setModified();
 		side2 = side;
 		side->parent = this;
 	}
@@ -279,8 +289,10 @@ double MapLine::distanceTo(double x, double y) {
 	// Update length data if needed
 	if (length < 0) {
 		length = MathStuff::distance(vertex1->xPos(), vertex1->yPos(), vertex2->xPos(), vertex2->yPos());
-		ca = (vertex2->xPos() - vertex1->xPos()) / length;
-		sa = (vertex2->yPos() - vertex1->yPos()) / length;
+		if (length != 0) {
+			ca = (vertex2->xPos() - vertex1->xPos()) / length;
+			sa = (vertex2->yPos() - vertex1->yPos()) / length;
+		}
 	}
 
 	// Calculate intersection point
@@ -305,10 +317,10 @@ int MapLine::needsTexture() {
 		return TEX_FRONT_MIDDLE;
 
 	// Get sector heights
-	int floor_front = frontSector()->intProperty("heightfloor");
-	int ceiling_front = frontSector()->intProperty("heightceiling");
-	int floor_back = backSector()->intProperty("heightfloor");
-	int ceiling_back = backSector()->intProperty("heightceiling");
+	int floor_front = frontSector()->getFloorHeight();
+	int ceiling_front = frontSector()->getCeilingHeight();
+	int floor_back = backSector()->getFloorHeight();
+	int ceiling_back = backSector()->getCeilingHeight();
 
 	// Front lower
 	int tex = 0;
@@ -372,10 +384,12 @@ void MapLine::resetInternals() {
 		s2->resetBBox();
 	}
 
-	modified_time = theApp->runTimer();
+	setModified();
 }
 
 void MapLine::flip(bool sides) {
+	setModified();
+
 	// Flip vertices
 	MapVertex* v = vertex1;
 	vertex1 = vertex2;
@@ -388,6 +402,53 @@ void MapLine::flip(bool sides) {
 		side2 = s;
 	}
 
-	modified_time = theApp->runTimer();
 	resetInternals();
+}
+
+void MapLine::writeBackup(mobj_backup_t* backup) {
+	// Vertices
+	backup->props_internal["v1"] = vertex1->getId();
+	backup->props_internal["v2"] = vertex2->getId();
+
+	// Sides
+	if (side1)
+		backup->props_internal["s1"] = side1->getId();
+	else
+		backup->props_internal["s1"] = 0;
+	if (side2)
+		backup->props_internal["s2"] = side2->getId();
+	else
+		backup->props_internal["s2"] = 0;
+
+	// Special
+	backup->props_internal["special"] = special;
+}
+
+void MapLine::readBackup(mobj_backup_t* backup) {
+	// Vertices
+	MapObject* v1 = parent_map->getObjectById(backup->props_internal["v1"]);
+	MapObject* v2 = parent_map->getObjectById(backup->props_internal["v2"]);
+	if (v1 && v1 != vertex1) {
+		vertex1->disconnectLine(this);
+		vertex1 = (MapVertex*)v1;
+		vertex1->connectLine(this);
+		resetInternals();
+	}
+	if (v2 && v2 != vertex2) {
+		vertex2->disconnectLine(this);
+		vertex2 = (MapVertex*)v2;
+		vertex2->connectLine(this);
+		resetInternals();
+	}
+
+	// Sides
+	MapObject* s1 = parent_map->getObjectById(backup->props_internal["s1"]);
+	MapObject* s2 = parent_map->getObjectById(backup->props_internal["s2"]);
+	side1 = (MapSide*)s1;
+	side2 = (MapSide*)s2;
+	if (side1) side1->parent = this;
+	if (side2) side2->parent = this;
+
+	// Special
+	special = backup->props_internal["special"];
 }

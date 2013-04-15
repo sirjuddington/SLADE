@@ -442,7 +442,7 @@ bool GrpArchive::isGrpArchive(string filename) {
 #include "Console.h"
 #include "MainWindow.h"
 
-CONSOLE_COMMAND(lookupdat, 0) {
+CONSOLE_COMMAND(lookupdat, 0, false) {
 	ArchiveEntry * entry = theMainWindow->getCurrentEntry();
 
 	if (!entry)
@@ -494,7 +494,7 @@ CONSOLE_COMMAND(lookupdat, 0) {
 	mc.clear();
 }
 
-CONSOLE_COMMAND(palettedat, 0) {
+CONSOLE_COMMAND(palettedat, 0, false) {
 	ArchiveEntry * entry = theMainWindow->getCurrentEntry();
 
 	if (!entry)
@@ -535,7 +535,7 @@ CONSOLE_COMMAND(palettedat, 0) {
 	mc.clear();
 }
 
-CONSOLE_COMMAND(tablesdat, 0) {
+CONSOLE_COMMAND(tablesdat, 0, false) {
 	ArchiveEntry * entry = theMainWindow->getCurrentEntry();
 
 	if (!entry)

@@ -37,27 +37,27 @@ double MapVertex::floatProperty(string key) {
 }
 
 void MapVertex::setIntProperty(string key, int value) {
+	// Update modified time
+	setModified();
+
 	if (key == "x")
 		x = value;
 	else if (key == "y")
 		y = value;
 	else
-		MapObject::setIntProperty(key, value);
-
-	// Update modified time
-	modified_time = theApp->runTimer();
+		return MapObject::setIntProperty(key, value);
 }
 
 void MapVertex::setFloatProperty(string key, double value) {
+	// Update modified time
+	setModified();
+
 	if (key == "x")
 		x = value;
 	else if (key == "y")
 		y = value;
 	else
-		MapObject::setFloatProperty(key, value);
-
-	// Update modified time
-	modified_time = theApp->runTimer();
+		return MapObject::setFloatProperty(key, value);
 }
 
 void MapVertex::connectLine(MapLine* line) {
@@ -83,4 +83,16 @@ MapLine* MapVertex::connectedLine(unsigned index) {
 		return NULL;
 
 	return connected_lines[index];
+}
+
+void MapVertex::writeBackup(mobj_backup_t* backup) {
+	// Position
+	backup->props_internal["x"] = x;
+	backup->props_internal["y"] = y;
+}
+
+void MapVertex::readBackup(mobj_backup_t* backup) {
+	// Position
+	x = backup->props_internal["x"].getFloatValue();
+	y = backup->props_internal["y"].getFloatValue();
 }

@@ -203,7 +203,7 @@ void ResourceManager::removeArchive(Archive* archive) {
 }
 
 /* ResourceManager::getTextureHash
- * Returns the Doom64 hash of a given texture name, computed using 
+ * Returns the Doom64 hash of a given texture name, computed using
  * the same hash algorithm as Doom64 EX itself
  *******************************************************************/
 uint16_t ResourceManager::getTextureHash(string name) {
@@ -427,6 +427,25 @@ void ResourceManager::getAllTextures(vector<TextureResource::tex_res_t>& list, A
 	}
 }
 
+/* ResourceManager::getAllTextureNames
+ * Adds all current texture names to [list]
+ *******************************************************************/
+void ResourceManager::getAllTextureNames(vector<string>& list) {
+	TextureResourceMap::iterator i = textures.begin();
+
+	// Add all primary textures to the list
+	while (i != textures.end()) {
+		// Skip if no entries
+		if (i->second.length() == 0) {
+			i++;
+			continue;
+		}
+
+		list.push_back(i->first);
+		i++;
+	}
+}
+
 /* ResourceManager::getAllFlatEntries
  * Adds all current flat entries to [list]
  *******************************************************************/
@@ -459,6 +478,25 @@ void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
 		// Add entry to the list
 		list.push_back(entry);
 
+		i++;
+	}
+}
+
+/* ResourceManager::getAllFlatNames
+ * Adds all current flat names to [list]
+ *******************************************************************/
+void ResourceManager::getAllFlatNames(vector<string>& list) {
+	EntryResourceMap::iterator i = flats.begin();
+
+	// Add all primary textures to the list
+	while (i != flats.end()) {
+		// Skip if no entries
+		if (i->second.length() == 0) {
+			i++;
+			continue;
+		}
+
+		list.push_back(i->first);
 		i++;
 	}
 }
@@ -683,6 +721,6 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 
 
 
-CONSOLE_COMMAND(list_res_patches, 0) {
+CONSOLE_COMMAND(list_res_patches, 0, false) {
 	theResourceManager->listAllPatches();
 }

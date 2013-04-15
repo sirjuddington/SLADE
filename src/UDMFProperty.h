@@ -48,6 +48,7 @@ public:
 		TYPE_ANGLE,
 		TYPE_TEX_WALL,
 		TYPE_TEX_FLAT,
+		TYPE_ID,
 	};
 };
 

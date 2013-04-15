@@ -67,16 +67,7 @@ bool PropertyList::propertyExists(string key) {
  * or false if key didn't exist
  *******************************************************************/
 bool PropertyList::removeProperty(string key) {
-	// Find property with given key
-	PropertyHashMap::iterator i = properties.find(key);
-
-	// Remove it if exists and return accordingly
-	if (i != properties.end()) {
-		properties.erase(i);
-		return true;
-	}
-	else
-		return false;
+	return properties.erase(key) > 0;
 }
 
 /* PropertyList::copyTo
@@ -87,11 +78,12 @@ void PropertyList::copyTo(PropertyList &list) {
 	list.clear();
 
 	// Get iterator to first property
-	PropertyHashMap::iterator i = properties.begin();
+	std::map<string, Property>::iterator i = properties.begin();
 
 	// Add all properties to given list
 	while (i != properties.end()) {
-		list[i->first] = i->second;
+		if (i->second.hasValue())
+			list[i->first] = i->second;
 		i++;
 	}
 }
@@ -112,7 +104,7 @@ string PropertyList::toString(bool condensed) {
 	string ret = wxEmptyString;
 
 	// Get iterator to first property
-	PropertyHashMap::iterator i = properties.begin();
+	std::map<string, Property>::iterator i = properties.begin();
 
 	// Go through all properties
 	while (i != properties.end()) {
@@ -124,15 +116,17 @@ string PropertyList::toString(bool condensed) {
 
 		// Add "key = value;\n" to the return string
 		string key = i->first;
-		string val = i->second;
+		string val = i->second.getStringValue();
 
 		if (i->second.getType() == PROP_STRING)
 			val = "\"" + val + "\"";
 
-		if (condensed)
-			ret += key + "=" + val + ";\n";
-		else
-			ret += key + " = " + val + ";\n";
+		//if (!val.empty()) {
+			if (condensed)
+				ret += key + "=" + val + ";\n";
+			else
+				ret += key + " = " + val + ";\n";
+		//}
 
 		//wxLogMessage("key %s type %s value %s", CHR(key), CHR(i->second.typeString()), CHR(val));
 
@@ -148,7 +142,7 @@ string PropertyList::toString(bool condensed) {
  *******************************************************************/
 void PropertyList::allProperties(vector<Property>& list) {
 	// Get iterator to first property
-	PropertyHashMap::iterator i = properties.begin();
+	std::map<string, Property>::iterator i = properties.begin();
 
 	// Add all properties to the list
 	while (i != properties.end()) {
@@ -162,7 +156,7 @@ void PropertyList::allProperties(vector<Property>& list) {
  *******************************************************************/
 void PropertyList::allPropertyNames(vector<string>& list) {
 	// Get iterator to first property
-	PropertyHashMap::iterator i = properties.begin();
+	std::map<string, Property>::iterator i = properties.begin();
 
 	// Add all properties to the list
 	while (i != properties.end()) {

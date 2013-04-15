@@ -3,10 +3,11 @@
 #define __MAP_RENDERER_3D_H__
 
 #include "MapEditor.h"
+#include "ListenerAnnouncer.h"
 
 class GLTexture;
 class Polygon2D;
-class MapRenderer3D {
+class MapRenderer3D : public Listener {
 public:
 	// Structs
 	enum {
@@ -100,6 +101,8 @@ public:
 	void	enableFullbright(bool enable = true) { fullbright = enable; }
 	void	enableFog(bool enable = true) { fog = enable; }
 	int		itemDistance() { return item_dist; }
+	void	enableHilight(bool render) { render_hilight = render; }
+	void	enableSelection(bool render) { render_selection = render; }
 
 	bool	init();
 	void	refresh();
@@ -119,6 +122,7 @@ public:
 	void	cameraSet(fpoint3_t position, fpoint2_t direction);
 	void	cameraSetPosition(fpoint3_t position);
 	void	cameraApplyGravity(double mult);
+	double	camPitch() { return cam_pitch; }
 
 	// -- Rendering --
 	void	setupView(int width, int height);
@@ -161,6 +165,9 @@ public:
 	selection_3d_t	determineHilight();
 	void			renderHilight(selection_3d_t hilight, float alpha = 1.0f);
 
+	// Listener stuff
+	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+
 private:
 	SLADEMap*	map;
 	bool		udmf_zdoom;
@@ -171,6 +178,8 @@ private:
 	unsigned	n_quads;
 	unsigned	n_flats;
 	int			flat_last;
+	bool		render_hilight;
+	bool		render_selection;
 
 	// Visibility
 	vector<float>	dist_sectors;

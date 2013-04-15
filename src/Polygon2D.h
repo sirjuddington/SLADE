@@ -47,7 +47,7 @@ public:
 
 	void		setTexture(GLTexture* tex) { this->texture = tex; }
 	void		setColour(float r, float g, float b, float a);
-	bool		hasPolygon() { return (subpolys.size() != 0); }
+	bool		hasPolygon() { return !subpolys.empty(); }
 	int			vboUpdate() { return vbo_update; }
 	void		setZ(float z);
 	void		setZ(plane_t plane);
@@ -84,6 +84,7 @@ private:
 		bool	ok;
 		bool	done;
 		bool	inpoly;
+		int		sister;
 	};
 	struct vertex_t {
 		double 			x, y;
@@ -127,6 +128,7 @@ public:
 	bool	detectUnclosed();
 
 	bool	tracePolyOutline(int edge_start);
+	bool	testTracePolyOutline(int edge_start);
 
 	bool	splitFromEdge(int splitter_edge);
 	bool	buildSubPoly(int edge_start, gl_polygon_t* poly);

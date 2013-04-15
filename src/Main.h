@@ -46,6 +46,7 @@ using std::vector;
 
 // Logfile
 #include <wx/log.h>
+#define LOG_MESSAGE(level, ...) if (Global::log_verbosity >= level) wxLogMessage(__VA_ARGS__)
 
 // OpenGL
 #ifdef __WXMSW__
@@ -77,6 +78,8 @@ using std::vector;
 namespace Global {
 	extern string error;
 	extern string version;
+	extern int log_verbosity;
+	extern bool debug;
 };
 
 

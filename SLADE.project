@@ -126,6 +126,8 @@
     <File Name="src/KeyBind.h"/>
     <File Name="src/Lua.cpp"/>
     <File Name="src/Lua.h"/>
+    <File Name="src/UndoRedo.cpp"/>
+    <File Name="src/UndoRedo.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Main Editor">
     <VirtualDirectory Name="UI Elements">
@@ -221,9 +223,9 @@
         <File Name="src/LineTextureOverlay.h"/>
         <File Name="src/InfoOverlay3d.cpp"/>
         <File Name="src/InfoOverlay3d.h"/>
+        <File Name="src/QuickTextureOverlay3d.cpp"/>
+        <File Name="src/QuickTextureOverlay3d.h"/>
       </VirtualDirectory>
-      <File Name="src/ActionSpecialTreeView.cpp"/>
-      <File Name="src/ActionSpecialTreeView.h"/>
       <File Name="src/ThingTypeTreeView.cpp"/>
       <File Name="src/ThingTypeTreeView.h"/>
       <VirtualDirectory Name="MapObjectPropsPanel">
@@ -240,6 +242,12 @@
       <File Name="src/ShapeDrawPanel.h"/>
       <File Name="src/ScriptEditorPanel.cpp"/>
       <File Name="src/ScriptEditorPanel.h"/>
+      <File Name="src/SectorSpecialDialog.cpp"/>
+      <File Name="src/SectorSpecialDialog.h"/>
+      <File Name="src/ActionSpecialDialog.cpp"/>
+      <File Name="src/ActionSpecialDialog.h"/>
+      <File Name="src/GenLineSpecialPanel.cpp"/>
+      <File Name="src/GenLineSpecialPanel.h"/>
     </VirtualDirectory>
     <File Name="src/MapEditorWindow.h"/>
     <File Name="src/MapEditorWindow.cpp"/>
@@ -257,8 +265,9 @@
       <File Name="src/Args.h"/>
       <File Name="src/UDMFProperty.h"/>
       <File Name="src/UDMFProperty.cpp"/>
+      <File Name="src/GenLineSpecial.cpp"/>
+      <File Name="src/GenLineSpecial.h"/>
     </VirtualDirectory>
-    <File Name="src/MapRenderer2D.cpp"/>
     <File Name="src/MapRenderer2D.h"/>
     <File Name="src/SectorBuilder.cpp"/>
     <File Name="src/SectorBuilder.h"/>
@@ -266,6 +275,7 @@
     <File Name="src/NodeBuilders.h"/>
     <File Name="src/MapRenderer3D.cpp"/>
     <File Name="src/MapRenderer3D.h"/>
+    <File Name="src/MapRenderer2D.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Resources">
     <VirtualDirectory Name="Archive">
@@ -330,6 +340,8 @@
         <File Name="src/WolfArchive.h"/>
         <File Name="src/ZipArchive.cpp"/>
         <File Name="src/ZipArchive.h"/>
+        <File Name="src/DiskArchive.cpp"/>
+        <File Name="src/DiskArchive.h"/>
       </VirtualDirectory>
     </VirtualDirectory>
     <VirtualDirectory Name="Binary Control Lumps">
@@ -440,6 +452,8 @@
     <File Name="src/MapPreviewCanvas.h"/>
     <File Name="src/STopWindow.cpp"/>
     <File Name="src/STopWindow.h"/>
+    <File Name="src/UndoManagerHistoryPanel.cpp"/>
+    <File Name="src/UndoManagerHistoryPanel.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
@@ -655,6 +669,10 @@
       
       
       
+      
+      
+      
+      
       ]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
@@ -709,6 +727,10 @@
       
       
       
+      
+      
+      
+      
       ]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
@@ -747,6 +769,7 @@
       <Compiler Options="-O3;$(shell wx-config --cxxflags std,gl,stc,aui --unicode=yes --debug=no);`pkg-config --cflags gtk+-2.0`" C_Options="-O3;$(shell wx-config --cxxflags std,gl,stc,aui --unicode=yes --debug=no)" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
         <Preprocessor Value="__WX__"/>
         <Preprocessor Value="NDEBUG"/>
+        <Preprocessor Value="USEGTK3"/>
       </Compiler>
       <Linker Options="$(shell wx-config --debug=no --libs std,gl,stc,aui,propgrid,media --unicode=yes)" Required="yes">
         <Library Value="sfml-system"/>
@@ -758,11 +781,6 @@
       <General OutputFile="./dist/slade" IntermediateDirectory="./Release" Command="./slade" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="./dist" PauseExecWhenProcTerminates="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[
-      
-      
-      
-      
-      
       
       
       ]]>
@@ -806,6 +824,10 @@
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[
       
+      
+      
+      
+      
       ]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
@@ -845,6 +867,10 @@
       <General OutputFile="./dist/SLADE.app/Contents/MacOS/SLADE" IntermediateDirectory="./Release" Command="./dist/SLADE.app/Contents/MacOS/SLADE" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="./dist" PauseExecWhenProcTerminates="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[
+      
+      
+      
+      
       
       
       

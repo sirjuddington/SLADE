@@ -4,6 +4,7 @@
 
 class SLADEMap;
 class GLTexture;
+class MapObject;
 class InfoOverlay3D {
 private:
 	vector<string>	info;
@@ -12,6 +13,8 @@ private:
 	string			texname;
 	GLTexture*		texture;
 	bool			thing_icon;
+	MapObject*		object;
+	long			last_update;
 
 public:
 	InfoOverlay3D();

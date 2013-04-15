@@ -54,6 +54,9 @@
 #include <wx/dir.h>
 #include <wx/sysopt.h>
 
+#undef BOOL
+#include <FreeImage.h>
+
 #ifdef UPDATEREVISION
 #include "svnrevision.h"
 #endif
@@ -64,11 +67,20 @@
  *******************************************************************/
 namespace Global {
 	string error = "";
+
 	string version = "3.1.0 alpha"
 #ifdef SVN_REVISION_STRING
 	" (r" SVN_REVISION_STRING ")"
 #endif
 	"";
+
+	int log_verbosity = 1;
+
+#ifdef DEBUG
+	bool debug = true;
+#else
+	bool debug = false;
+#endif
 }
 
 string	dir_data = "";
@@ -78,6 +90,7 @@ bool	exiting = false;
 string	current_action = "";
 CVAR(Bool, temp_use_appdir, false, CVAR_SAVE)
 CVAR(String, dir_last, "", CVAR_SAVE)
+CVAR(Int, log_verbosity, 1, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -256,6 +269,24 @@ void SLADELog::DoLogText(const wxString& msg) {
 
 
 /*******************************************************************
+ * FREEIMAGE ERROR HANDLER
+ *******************************************************************/
+
+/* FreeImageErrorHandler
+ * Allows to catch FreeImage errors and log them to the console.
+ *******************************************************************/
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
+	string error = "FreeImage: ";
+	if (fif != FIF_UNKNOWN) {
+		error += S_FMT("[%s] ", FreeImage_GetFormatFromFIF(fif));
+	}
+	error += message;
+
+	LOG_MESSAGE(2, error);
+}
+
+
+/*******************************************************************
  * MAINAPP CLASS FUNCTIONS
  *******************************************************************/
 IMPLEMENT_APP(MainApp)
@@ -339,6 +370,9 @@ void MainApp::initLogFile() {
 	wxLogMessage("Compiled with wxWidgets %i.%i.%i", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER);
 #endif
 	wxLogMessage("--------------------------------");
+
+	// Set up FreeImage to use our log:
+	FreeImage_SetOutputMessage(FreeImageErrorHandler);
 }
 
 /* MainApp::initActions
@@ -529,9 +563,11 @@ void MainApp::initActions() {
 	new SAction("mapw_sectormode_ceiling", "Ceilings", "t_sector_ceiling", "Edit sector ceilings", "", SAction::RADIO, -1, group_sector_mode);
 	new SAction("mapw_line_changetexture", "Change Texture", "", "Change the currently selected or hilighted line texture(s)");
 	new SAction("mapw_line_changespecial", "Change Special", "", "Change the currently selected or hilighted line special");
+	new SAction("mapw_line_tagedit", "Edit Tagged", "", "Select sectors/things to tag to this line's special");
 	new SAction("mapw_thing_changetype", "Change Type", "", "Change the currently selected or hilighted thing type(s)");
 	new SAction("mapw_thing_create", "Create Thing Here", "", "Creates a new thing at the cursor position");
 	new SAction("mapw_sector_changetexture", "Change Texture", "", "Change the currently selected or hilighted sector texture(s)");
+	new SAction("mapw_sector_changespecial", "Change Special", "", "Change the currently selected or hilighted sector special(s)");
 	new SAction("mapw_item_properties", "Properties", "t_properties", "Edit the currently selected item's properties");
 	new SAction("mapw_camera_set", "Move 3d Camera Here", "", "Set the current position of the 3d mode camera to the cursor position");
 	new SAction("mapw_clear_selection", "Clear Selection", "", "Clear the current selection, if any");
@@ -589,6 +625,7 @@ bool MainApp::OnInit() {
 	// Load configuration file
 	wxLogMessage("Loading configuration");
 	readConfigFile();
+	Global::log_verbosity = log_verbosity;
 
 	// Check that SLADE.pk3 can be found
 	wxLogMessage("Loading resources");
@@ -638,10 +675,12 @@ bool MainApp::OnInit() {
 
 	// Init actions
 	initActions();
+	theMainWindow;
 
 	// Init base resource
 	wxLogMessage("Loading base resource");
 	theArchiveManager->initBaseResource();
+	wxLogMessage("Base resource loaded");
 
 	// Show the main window
 	theMainWindow->Show(true);
@@ -924,7 +963,7 @@ void MainApp::onMenu(wxCommandEvent& e) {
 }
 
 
-CONSOLE_COMMAND (crash, 0) {
+CONSOLE_COMMAND (crash, 0, false) {
 	if (wxMessageBox("Yes, this command does actually exist and *will* crash the program. Do you really want it to crash?", "...Really?", wxYES_NO|wxCENTRE) == wxYES) {
 		uint8_t* test = NULL;
 		test[123] = 5;

@@ -394,6 +394,7 @@ void SIFormat::initFormats() {
 	new SIFDoomArah();
 	new SIFDoomSnea();
 	new SIFDoomJaguar();
+	new SIFDoomPSX();
 
 	// Hexen formats
 	new SIFPlanar();

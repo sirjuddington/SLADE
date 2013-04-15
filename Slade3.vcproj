@@ -39,6 +39,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/I &quot;libmodplug\libmodplug&quot; /D &quot;USE_SFML_RENDERWINDOW&quot; /D &quot;__WXMSW__&quot; /D &quot;NOPCH&quot; /D &quot;GLEW_STATIC&quot; /D &quot;SFML_STATIC&quot;  /D &quot;UPDATEREVISION&quot;"
 				Optimization="0"
 				PreprocessorDefinitions="WXDEBUG;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
@@ -59,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib rpcrt4.lib kernel32.lib user32.lib gdi32.lib ole32.lib oleaut32.lib comctl32.lib comdlg32.lib uuid.lib advapi32.lib shell32.lib wxbase29ud.lib wxmsw29ud_core.lib wxmsw29ud_gl.lib wxmsw29ud_aui.lib wxmsw29ud_html.lib wxmsw29ud_adv.lib wxmsw29ud_stc.lib wxzlibd.lib wxpngd.lib wxscintillad.lib opengl32.lib glu32.lib FreeImage.lib"
+				AdditionalDependencies="winmm.lib rpcrt4.lib kernel32.lib user32.lib gdi32.lib ole32.lib oleaut32.lib comctl32.lib comdlg32.lib uuid.lib advapi32.lib shell32.lib fluidsynth.lib wxbase29ud.lib wxmsw29ud_core.lib wxmsw29ud_gl.lib wxmsw29ud_aui.lib wxmsw29ud_html.lib wxmsw29ud_adv.lib wxmsw29ud_stc.lib wxzlibd.lib wxpngd.lib wxscintillad.lib opengl32.lib glu32.lib FreeImage.lib sfml-graphics-s-d.lib sfml-window-s-d.lib sfml-audio-s-d.lib sfml-system-s-d.lib sfml-main-d.lib"
 				OutputFile="$(OutDir)\$(ProjectName)-dbg.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -121,6 +122,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="libmodplug\libmodplug"
 				PreprocessorDefinitions="WIN32;USE_SFML_RENDERWINDOW;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;GLEW_STATIC;SFML_STATIC;NDEBUG;UPDATEREVISION"
 				GeneratePreprocessedFile="0"
 				StringPooling="true"
@@ -141,7 +143,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/NODEFAULTLIB:LIBCMT /LTCG"
+				AdditionalOptions="/NODEFAULTLIB:LIBCMT"
 				AdditionalDependencies="winmm.lib comctl32.lib rpcrt4.lib wsock32.lib user32.lib shell32.lib advapi32.lib comdlg32.lib gdi32.lib ole32.lib oleaut32.lib fluidsynth.lib FreeImage.lib wxbase29u.lib wxmsw29u_core.lib wxmsw29u_aui.lib wxmsw29u_gl.lib wxmsw29u_html.lib wxmsw29u_adv.lib wxmsw29u_stc.lib wxmsw29u_media.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregexu.lib wxexpat.lib wxscintilla.lib sfml-graphics-s.lib sfml-window-s.lib sfml-audio-s.lib sfml-system-s.lib sfml-main.lib"
 				LinkIncremental="1"
 				GenerateManifest="true"
@@ -1041,11 +1043,19 @@
 				Name="UI Elements"
 				>
 				<File
-					RelativePath=".\src\ActionSpecialTreeView.cpp"
+					RelativePath=".\src\ActionSpecialDialog.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ActionSpecialTreeView.h"
+					RelativePath=".\src\ActionSpecialDialog.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\GenLineSpecialPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\GenLineSpecialPanel.h"
 					>
 				</File>
 				<File
@@ -1073,6 +1083,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\SectorSpecialDialog.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\SectorSpecialDialog.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\ShapeDrawPanel.cpp"
 					>
 				</File>
@@ -1094,6 +1112,14 @@
 				</File>
 				<File
 					RelativePath=".\src\ThingTypeTreeView.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\UndoManagerHistoryPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\UndoManagerHistoryPanel.h"
 					>
 				</File>
 				<Filter
@@ -1125,6 +1151,14 @@
 					</File>
 					<File
 						RelativePath=".\src\MCOverlay.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\QuickTextureOverlay3d.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\QuickTextureOverlay3d.h"
 						>
 					</File>
 					<File
@@ -1262,6 +1296,14 @@
 				</File>
 				<File
 					RelativePath=".\src\GameConfiguration.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\GenLineSpecial.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\GenLineSpecial.h"
 					>
 				</File>
 				<File
@@ -1411,26 +1453,6 @@
 							</File>
 							<File
 								RelativePath=".\dist\res\config\games\include\things_strife.cfg"
-								>
-							</File>
-							<File
-								RelativePath=".\dist\res\config\games\include\udmfprops_all.cfg"
-								>
-							</File>
-							<File
-								RelativePath=".\dist\res\config\games\include\udmfprops_base.cfg"
-								>
-							</File>
-							<File
-								RelativePath=".\dist\res\config\games\include\udmfprops_boom.cfg"
-								>
-							</File>
-							<File
-								RelativePath=".\dist\res\config\games\include\udmfprops_hexen.cfg"
-								>
-							</File>
-							<File
-								RelativePath=".\dist\res\config\games\include\udmfprops_zdoom.cfg"
 								>
 							</File>
 						</Filter>
@@ -1598,6 +1620,14 @@
 				</File>
 				<File
 					RelativePath=".\src\DatArchive.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\DiskArchive.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\DiskArchive.h"
 					>
 				</File>
 				<File
@@ -2538,6 +2568,182 @@
 					RelativePath=".\src\lua\lzio.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="libmodplug"
+				>
+				<File
+					RelativePath=".\libmodplug\fastmix.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_669.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_abc.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_amf.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_ams.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_dbm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_dmf.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_dsm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_far.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_it.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_j2b.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_mdl.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_med.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_mid.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_mod.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_mt2.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_mtm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_okt.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_pat.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_psm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_ptm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_s3m.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_stm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_ult.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_umx.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_wav.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\load_xm.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\mmcmp.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\modplug.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\snd_dsp.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\snd_flt.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\snd_fx.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\sndfile.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\libmodplug\sndmix.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath=".\libmodplug\it_defs.h"
+						>
+					</File>
+					<File
+						RelativePath=".\libmodplug\load_pat.h"
+						>
+					</File>
+					<File
+						RelativePath=".\libmodplug\modplug.h"
+						>
+					</File>
+					<File
+						RelativePath=".\libmodplug\sndfile.h"
+						>
+					</File>
+					<File
+						RelativePath=".\libmodplug\tables.h"
+						>
+					</File>
+					<Filter
+						Name="libmodplug"
+						>
+						<File
+							RelativePath=".\libmodplug\libmodplug\sndfile.h"
+							>
+						</File>
+						<File
+							RelativePath=".\libmodplug\libmodplug\stdafx.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
 			</Filter>
 		</Filter>
 		<File

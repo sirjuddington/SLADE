@@ -42,7 +42,6 @@ EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Bool, iwad_lock)
 extern string map_lumps[];
 
-#if 1
 /*******************************************************************
  * WADJARCHIVE HELPER FUNCTIONS
  *******************************************************************/
@@ -108,7 +107,6 @@ bool JaguarDecode(MemChunk& mc)
 	delete[] ostart;
 	return okay;
 }
-#endif
 
 /*******************************************************************
  * WADJARCHIVE CLASS FUNCTIONS
@@ -179,15 +177,6 @@ bool WadJArchive::open(MemChunk& mc) {
 		offset = wxINT32_SWAP_ON_LE(offset);
 		size = wxINT32_SWAP_ON_LE(size);
 
-		// If the lump data goes past the end of the file,
-		// the wadfile is invalid
-		if (offset + size > mc.getSize()) {
-			wxLogMessage("WadJArchive::open: Wad archive is invalid or corrupt");
-			Global::error = "Archive is invalid and/or corrupt";
-			setMuted(false);
-			return false;
-		}
-
 		// Is there a compression/encryption thing going on?
 		bool jaguarencrypt = !!(name[0] & 0x80);	// look at high bit
 		name[0] = name[0] & 0x7F;					// then strip it away
@@ -208,10 +197,20 @@ bool WadJArchive::open(MemChunk& mc) {
 				mc.seek(pos, SEEK_SET);
 				actualsize = nextoffset - offset;
 			} else {
-				// We're kinda assuming here that the directory
-				// comes after the entries, which is not guaranteed.
-				actualsize = dir_offset - offset;
+				if (offset > dir_offset)
+					actualsize = mc.getSize() - offset;
+				else 
+					actualsize = dir_offset - offset;
 			}
+		}
+
+		// If the lump data goes past the end of the file,
+		// the wadfile is invalid
+		if (offset + actualsize > mc.getSize()) {
+			wxLogMessage("WadJArchive::open: Wad archive is invalid or corrupt");
+			Global::error = S_FMT("Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
+			setMuted(false);
+			return false;
 		}
 
 		// Create & setup lump

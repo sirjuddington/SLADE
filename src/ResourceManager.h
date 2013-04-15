@@ -4,7 +4,7 @@
 
 #include "ListenerAnnouncer.h"
 #include "Archive.h"
-#include <wx/hashmap.h>
+#include <map>
 
 class ResourceManager;
 class CTexture;
@@ -57,9 +57,8 @@ private:
 	vector<tex_res_t>	textures;
 };
 
-// Declare hash map class to hold resources
-WX_DECLARE_STRING_HASH_MAP(EntryResource, EntryResourceMap);
-WX_DECLARE_STRING_HASH_MAP(TextureResource, TextureResourceMap);
+typedef std::map<string, EntryResource> EntryResourceMap;
+typedef std::map<string, TextureResource> TextureResourceMap;
 
 class ResourceManager : public Listener, public Announcer {
 private:
@@ -94,8 +93,10 @@ public:
 	void	getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority);
 
 	void	getAllTextures(vector<TextureResource::tex_res_t>& list, Archive* priority, Archive* ignore = NULL);
+	void	getAllTextureNames(vector<string>& list);
 
 	void	getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority);
+	void	getAllFlatNames(vector<string>& list);
 
 	ArchiveEntry*	getPaletteEntry(string palette, Archive* priority = NULL);
 	ArchiveEntry*	getPatchEntry(string patch, string nspace = "patches", Archive* priority = NULL);

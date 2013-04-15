@@ -9,6 +9,8 @@
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
 
+CVAR(Bool, mobj_props_show_all, false, CVAR_SAVE)
+
 
 MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1) {
 	// Init variables
@@ -22,6 +24,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	//label_item = new wxStaticText(this, -1, "");
 	//sizer->Add(label_item, 0, wxEXPAND|wxALL, 4);
 	cb_show_all = new wxCheckBox(this, -1, "Show All");
+	cb_show_all->SetValue(mobj_props_show_all);
 	sizer->Add(cb_show_all, 0, wxEXPAND|wxALL, 4);
 	sizer->AddSpacer(4);
 
@@ -57,6 +60,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Bind events
 	btn_apply->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapObjectPropsPanel::onBtnApply, this);
 	btn_reset->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapObjectPropsPanel::onBtnReset, this);
+	cb_show_all->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &MapObjectPropsPanel::onShowAllToggled, this);
 
 	// Hide side property grids
 	pg_props_side1->Show(false);
@@ -241,6 +245,7 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 	propname += prop->getProperty();
 
 	// Add property depending on type
+	//MOPGProperty* mopg_prop = NULL;
 	if (prop->getType() == UDMFProperty::TYPE_BOOL)
 		addBoolProperty(group, prop->getName(), propname, false, grid, prop);
 	else if (prop->getType() == UDMFProperty::TYPE_INT)
@@ -256,20 +261,22 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 		properties.push_back(prop_col);
 		grid->AppendIn(group, prop_col);
 	}
-		//addIntProperty(group, prop->getName(), propname, false, grid);
 	else if (prop->getType() == UDMFProperty::TYPE_ASPECIAL) {
-		MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty("Special", propname);
+		MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty(prop->getName(), propname);
 		prop_as->setParent(this);
 		prop_as->setUDMFProp(prop);
 		properties.push_back(prop_as);
 		grid->AppendIn(group, prop_as);
 	}
 	else if (prop->getType() == UDMFProperty::TYPE_SSPECIAL) {
-		// For now
-		addIntProperty(group, prop->getName(), prop->getProperty(), false, grid, prop);
+		MOPGSectorSpecialProperty* prop_ss = new MOPGSectorSpecialProperty(prop->getName(), propname);
+		prop_ss->setParent(this);
+		prop_ss->setUDMFProp(prop);
+		properties.push_back(prop_ss);
+		grid->AppendIn(group, prop_ss);
 	}
 	else if (prop->getType() == UDMFProperty::TYPE_TTYPE) {
-		MOPGThingTypeProperty* prop_tt = new MOPGThingTypeProperty("Type", propname);
+		MOPGThingTypeProperty* prop_tt = new MOPGThingTypeProperty(prop->getName(), propname);
 		prop_tt->setParent(this);
 		prop_tt->setUDMFProp(prop);
 		properties.push_back(prop_tt);
@@ -286,6 +293,20 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 		addTextureProperty(group, prop->getName(), propname, 0, false, grid, prop);
 	else if (prop->getType() == UDMFProperty::TYPE_TEX_FLAT)
 		addTextureProperty(group, prop->getName(), propname, 1, false, grid, prop);
+	else if (prop->getType() == UDMFProperty::TYPE_ID) {
+		MOPGTagProperty* prop_id = new MOPGTagProperty(prop->getName(), propname);
+		prop_id->setParent(this);
+		prop_id->setUDMFProp(prop);
+		properties.push_back(prop_id);
+		grid->AppendIn(group, prop_id);
+	}
+
+	/*if (mopg_prop) {
+		mopg_prop->setParent(this);
+		mopg_prop->setUDMFProp(prop);
+		properties.push_back(mopg_prop);
+		grid->AppendIn(group, (wxPGProperty*)mopg_prop);
+	}*/
 }
 
 void MapObjectPropsPanel::setupType(int objtype) {
@@ -354,8 +375,13 @@ void MapObjectPropsPanel::setupType(int objtype) {
 				if (map_format == MAP_HEXEN) prop_as->addArgProperty(prop, a);
 			}
 		}
-		else // Sector tag otherwise
-			addIntProperty(g_special, "Sector Tag", "arg0");
+		else { // Sector tag otherwise
+			//addIntProperty(g_special, "Sector Tag", "arg0");
+			MOPGTagProperty* prop_tag = new MOPGTagProperty("Sector Tag", "arg0");
+			prop_tag->setParent(this);
+			properties.push_back(prop_tag);
+			pg_properties->AppendIn(g_special, prop_tag);
+		}
 
 		// Add SPAC
 		if (map_format == MAP_HEXEN) {
@@ -422,7 +448,11 @@ void MapObjectPropsPanel::setupType(int objtype) {
 		addIntProperty(g_basic, "Ceiling Height", "heightceiling");
 
 		// Add tag
-		addIntProperty(g_basic, "Tag/ID", "id");
+		//addIntProperty(g_basic, "Tag/ID", "id");
+		MOPGTagProperty* prop_tag = new MOPGTagProperty("Tag/ID", "id");
+		prop_tag->setParent(this);
+		properties.push_back(prop_tag);
+		pg_properties->AppendIn(g_basic, prop_tag);
 
 		// Add 'Lighting' group
 		wxPGProperty* g_light = pg_properties->Append(new wxPropertyCategory("Lighting"));
@@ -441,7 +471,10 @@ void MapObjectPropsPanel::setupType(int objtype) {
 		wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Special"));
 
 		// Add special
-		addIntProperty(g_special, "Special", "special");
+		MOPGSectorSpecialProperty* prop_special = new MOPGSectorSpecialProperty("Special", "special");
+		prop_special->setParent(this);
+		properties.push_back(prop_special);
+		pg_properties->AppendIn(g_special, prop_special);
 	}
 
 	// Thing properties
@@ -474,8 +507,12 @@ void MapObjectPropsPanel::setupType(int objtype) {
 		pg_properties->AppendIn(g_basic, prop_tt);
 
 		// Add id
-		if (map_format != MAP_DOOM)
-			addIntProperty(g_basic, "ID", "id");
+		if (map_format != MAP_DOOM) {
+			MOPGTagProperty* prop_id = new MOPGTagProperty("ID", "id");
+			prop_id->setParent(this);
+			properties.push_back(prop_id);
+			pg_properties->AppendIn(g_basic, prop_id);
+		}
 
 		if (map_format == MAP_HEXEN) {
 			// Add 'Scripting Special' group
@@ -646,9 +683,11 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects) {
 	}
 
 	// Update internal objects list
-	this->objects.clear();
-	for (unsigned a = 0; a < objects.size(); a++)
-		this->objects.push_back(objects[a]);
+	if (&objects != &this->objects) {
+		this->objects.clear();
+		for (unsigned a = 0; a < objects.size(); a++)
+			this->objects.push_back(objects[a]);
+	}
 
 	pg_properties->Refresh();
 	pg_props_side1->Refresh();
@@ -678,4 +717,11 @@ void MapObjectPropsPanel::onBtnReset(wxCommandEvent& e) {
 	// Go through all current properties and reset the value
 	for (unsigned a = 0; a < properties.size(); a++)
 		properties[a]->resetValue();
+}
+
+void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e) {
+	mobj_props_show_all = cb_show_all->GetValue();
+
+	// Refresh the list
+	openObjects(objects);
 }

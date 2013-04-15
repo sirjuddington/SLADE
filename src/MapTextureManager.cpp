@@ -13,6 +13,7 @@ MapTextureManager::MapTextureManager(Archive* archive) {
 	// Init variables
 	this->archive = archive;
 	editor_images_loaded = false;
+	palette = new Palette8bit();
 
 	// Listen to the various managers
 	listenTo(theResourceManager);
@@ -21,6 +22,21 @@ MapTextureManager::MapTextureManager(Archive* archive) {
 }
 
 MapTextureManager::~MapTextureManager() {
+	delete palette;
+}
+
+Palette8bit* MapTextureManager::getResourcePalette() {
+	if (thePaletteChooser->globalSelected()) {
+		ArchiveEntry* entry = theResourceManager->getPaletteEntry("PLAYPAL", archive);
+
+		if (!entry)
+			return thePaletteChooser->getSelectedPalette();
+
+		palette->loadMem(entry->getMCData());
+		return palette;
+	}
+	else
+		return thePaletteChooser->getSelectedPalette();
 }
 
 GLTexture* MapTextureManager::getTexture(string name, bool mixed) {
@@ -51,7 +67,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed) {
 	}
 
 	// Texture not found or unloaded, look for it
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette8bit* pal = getResourcePalette();
 
 	// Look for stand-alone textures first
 	ArchiveEntry * etex = theResourceManager->getTextureEntry(name, "hires", archive);
@@ -130,7 +146,7 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed) {
 	}
 
 	// Flat not found, look for it
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette8bit* pal = getResourcePalette();
 	if (!mtex.texture) {
 		ArchiveEntry * entry = theResourceManager->getTextureEntry(name, "hires", archive);
 		if (entry == NULL)
@@ -215,7 +231,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	// Sprite not found, look for it
 	bool found = false;
 	SImage image;
-	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	Palette8bit* pal = getResourcePalette();
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "sprites", archive);
 	if (!entry) entry = theResourceManager->getPatchEntry(name, "", archive);
 	if (entry) {
@@ -250,6 +266,14 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 		mtex.texture->setTiling(false);
 		mtex.texture->loadImage(&image, pal);
 		return mtex.texture;
+	}
+	else if (name.EndsWith("?")) {
+		name.RemoveLast(1);
+		GLTexture* sprite = getSprite(name + "0", translation, palette);
+		if (!sprite)
+			sprite = getSprite(name + "1", translation, palette);
+		if (sprite)
+			return sprite;
 	}
 
 	return NULL;
@@ -333,6 +357,7 @@ void MapTextureManager::refreshResources() {
 	flats.clear();
 	sprites.clear();
 	thePaletteChooser->setGlobalFromArchive(archive);
+	theMapEditor->forceRefresh(true);
 	//wxLogMessage("texture manager cleared");
 }
 
