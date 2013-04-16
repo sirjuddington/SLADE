@@ -43,6 +43,19 @@ using std::vector;
 // A macro to remove an item with a given value from a vector
 #define VECTOR_REMOVE(vec, val) vec.erase(find(vec.begin(), vec.end(), val))
 
+// Template function to find something in an associative map.
+// M::mapped_type should be default constructible, or just provide
+// a value for the third argument (the default value if not found).
+// This really only works for value types right now, like maps to pointers.
+template<typename M>
+typename M::mapped_type findInMap(M &m, const typename M::key_type &k, typename M::mapped_type def = typename M::mapped_type()) {
+    typename M::iterator i = m.find(k);
+    if(i == m.end()) {
+        return const_cast<typename M::mapped_type&>(def);
+    } else {
+        return i->second;
+    }
+}
 
 // Logfile
 #include <wx/log.h>

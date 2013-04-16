@@ -68,7 +68,7 @@ public:
 
 	void	addLines(vector<MapLine*> lines);
 	string	getInfo();
-	void	pasteToMap(SLADEMap* map, fpoint2_t position);
+	vector<MapVertex*> pasteToMap(SLADEMap* map, fpoint2_t position);
 	void	getLines(vector<MapLine*>& list);
 };
 

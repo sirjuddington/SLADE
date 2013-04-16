@@ -32,6 +32,7 @@
 #include "CTexture.h"
 #include "SLADEMap.h"
 #include "SectorBuilder.h"
+#include <map>
 
 
 /*******************************************************************
@@ -311,54 +312,46 @@ string MapArchClipboardItem::getInfo() {
 /* MapArchClipboardItem::pasteToMap
  * Pastes copied architecture to [map] at [position]
  *******************************************************************/
-void MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position) {
+vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position) {
+        std::map<MapVertex*, MapVertex*> vertMap;
+        std::map<MapSector*, MapSector*> sectMap;
+        std::map<MapSide*, MapSide*> sideMap;
+        // Not used yet...
+        // std::map<MapLine*, MapLine*> lineMap;
+
 	// Add vertices
 	vector<MapVertex*> new_verts;
 	for (unsigned a = 0; a < vertices.size(); a++) {
 		new_verts.push_back(map->createVertex(position.x + vertices[a]->xPos(), position.y + vertices[a]->yPos()));
 		new_verts.back()->copy(vertices[a]);
+                vertMap[vertices[a]] = new_verts.back();
 	}
 
 	// Add sectors
-	vector<MapSector*> new_sectors;
 	for (unsigned a = 0; a < sectors.size(); a++) {
-		new_sectors.push_back(map->createSector());
-		new_sectors.back()->copy(sectors[a]);
+		MapSector *new_sector = map->createSector();
+		new_sector->copy(sectors[a]);
+                sectMap[sectors[a]] = new_sector;
 	}
 
 	// Add sides
-	vector<MapSide*> new_sides;
 	int first_new_side = map->nSides();
 	for (unsigned a = 0; a < sides.size(); a++) {
 		// Get relative sector
-		MapSector* sector = NULL;
-		for (unsigned b = 0; b < sectors.size(); b++) {
-			if (sides[a]->getSector() == sectors[b]) {
-				sector = new_sectors[b];
-				break;
-			}
-		}
+		MapSector* sector = findInMap(sectMap, sides[a]->getSector());
 
-		new_sides.push_back(map->createSide(sector));
-		new_sides.back()->copy(sides[a]);
+		MapSide *new_side = map->createSide(sector);
+		new_side->copy(sides[a]);
+                sideMap[sides[a]] = new_side;
 	}
 
 	// Add lines
 	int first_new_line = map->nLines();
-	vector<MapLine*> new_lines;
 	for (unsigned a = 0; a < lines.size(); a++) {
 		// Get relative vertices
-		MapVertex* v1 = NULL;
-		MapVertex* v2 = NULL;
-		for (unsigned b = 0; b < vertices.size(); b++) {
-			if (lines[a]->v1() == vertices[b])
-				v1 = new_verts[b];
-			if (lines[a]->v2() == vertices[b])
-				v2 = new_verts[b];
+		MapVertex* v1 = findInMap(vertMap, lines[a]->v1());
+		MapVertex* v2 = findInMap(vertMap, lines[a]->v2());
 
-			if (v1 && v2)
-				break;
-		}
 		if (!v1) {
 			wxLogMessage("no v1");
 			continue;
@@ -367,26 +360,19 @@ void MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position) {
 			wxLogMessage("no v2");
 		}
 
-		MapLine* newline = map->createLine(v1, v2);
-		new_lines.push_back(newline);
+		MapLine* newline = map->createLine(v1, v2, true);
 		newline->copy(lines[a]);
+                // lineMap[lines[a]] = newline;
 
 		// Set relative sides
 		bool s1 = false;
 		bool s2 = !(lines[a]->s2());
-		for (unsigned b = 0; b < sides.size(); b++) {
-			if (lines[a]->s1() == sides[b]) {
-				newline->setS1(new_sides[b]);
-				s1 = true;
-			}
-			if (lines[a]->s2() == sides[b]) {
-				newline->setS2(new_sides[b]);
-				s2 = true;
-			}
-
-			if (s1 && s2)
-				break;
-		}
+                MapSide *newS1 = findInMap(sideMap, lines[a]->s1());
+                MapSide *newS2 = findInMap(sideMap, lines[a]->s2());
+                if(newS1)
+                    newline->setS1(newS1);
+                if(newS2)
+                    newline->setS2(newS2);
 	}
 
 	// TODO:
@@ -406,6 +392,8 @@ void MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position) {
 		map->setLineSector(a, i1, true);
 		map->setLineSector(a, i2, false);
 	}
+
+        return new_verts;
 }
 
 /* MapArchClipboardItem::getLines

@@ -208,7 +208,7 @@ public:
 	// Creation
 	MapVertex*	createVertex(double x, double y, double split_dist = -1);
 	MapLine*	createLine(double x1, double y1, double x2, double y2, double split_dist = -1);
-	MapLine*	createLine(MapVertex* vertex1, MapVertex* vertex2);
+	MapLine*	createLine(MapVertex* vertex1, MapVertex* vertex2, bool force = false);
 	MapThing*	createThing(double x, double y);
 	MapSector*	createSector();
 	MapSide*	createSide(MapSector* sector);

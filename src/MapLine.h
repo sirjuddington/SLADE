@@ -117,6 +117,7 @@ public:
 
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
+	void	copy(MapObject*);
 };
 
 #endif //__MAPLINE_H__

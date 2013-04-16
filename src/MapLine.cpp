@@ -452,3 +452,20 @@ void MapLine::readBackup(mobj_backup_t* backup) {
 	// Special
 	special = backup->props_internal["special"];
 }
+
+void MapLine::copy(MapObject *c) {
+    if(getObjType() != c->getObjType())
+        return;
+
+    MapObject::copy(c);
+
+    MapLine *l = static_cast<MapLine*>(c);
+
+    if(side1 && l->side1)
+        side1->copy(l->side1);
+
+    if(side2 && l->side2)
+        side2->copy(l->side2);
+
+    setIntProperty("special", l->intProperty("special"));
+}

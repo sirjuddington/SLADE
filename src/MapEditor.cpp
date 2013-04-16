@@ -214,6 +214,7 @@ MapEditor::MapEditor() {
 	grid_snap = true;
 	copy_thing = NULL;
 	copy_sector = NULL;
+	copy_line = NULL;
 	link_3d_light = true;
 	link_3d_offset = true;
 	undo_manager = new UndoManager(&map);
@@ -224,6 +225,17 @@ MapEditor::MapEditor() {
 MapEditor::~MapEditor() {
 	if (copy_thing) delete copy_thing;
 	if (copy_sector) delete copy_sector;
+	if (copy_line) {
+            if(copy_line->s1()) {
+                delete copy_line->s1();
+            }
+
+            if(copy_line->s2()) {
+                delete copy_line->s2();
+            }
+
+            delete copy_line;
+        }
 	delete undo_manager;
 	delete undo_manager_3d;
 }
@@ -1093,39 +1105,17 @@ void MapEditor::incrementGrid() {
 }
 
 void MapEditor::decrementGrid() {
-	// Non-integral grid size disabled for now
 	gridsize--;
-	if (gridsize < 4)
-		gridsize = 4;
+	if (gridsize < 0)
+		gridsize = 0;
 
 	addEditorMessage(S_FMT("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
 }
 
 double MapEditor::snapToGrid(double position) {
-	// This won't work with non-integer grid sizes for now
-	int upper, lower;
-
-	for (int i = position; i >= (position - gridSize()); i--) {
-		if ((i % (int)gridSize()) == 0) {
-			lower = i;
-			break;
-		}
-	}
-
-	for (int i = position; i < (position + gridSize()); i++) {
-		if ((i % (int)gridSize()) == 0) {
-			upper = i;
-			break;
-		}
-	}
-
-	double mid = lower + ((upper - lower) / 2.0);
-
-	if (position > mid)
-		return upper;
-	else
-		return lower;
+        return ceil(position / gridSize() - 0.5) * gridSize();
 }
+
 
 #pragma endregion
 
@@ -1271,36 +1261,7 @@ void MapEditor::endMove(bool accept) {
 		//endUndoRecord(true);
 		//beginUndoRecord("Stitch And Merge");
 
-		// Merge vertices and split lines
-		for (unsigned a = 0; a < merge_points.size(); a++) {
-			MapVertex* v = map.mergeVerticesPoint(merge_points[a].x, merge_points[a].y);
-			if (v) map.splitLinesAt(v, 1);
-		}
-
-		// Split lines overlapping vertices
-		for (unsigned a = 0; a < map.nLines(); a++) {
-			MapLine* line = map.getLine(a);
-			if (line->modifiedTime() >= move_time) {
-				MapVertex* split = map.lineCrossVertex(line->x1(), line->y1(), line->x2(), line->y2());
-				if (split) {
-					map.splitLine(a, split->getIndex());
-					a = 0;
-				}
-			}
-		}
-
-		// Merge lines
-		for (unsigned a = 0; a < map.nLines(); a++) {
-			if (map.getLine(a)->modifiedTime() >= move_time) {
-				if (map.mergeLine(a) > 0 && a < map.nLines()) {
-					map.getLine(a)->clearUnneededTextures();
-					a = 0;
-				}
-			}
-		}
-
-		// Remove any resulting zero-length lines
-		map.removeZeroLengthLines();
+                mergeLines(move_time, merge_points);
 
 		endUndoRecord(true);
 	}
@@ -1316,6 +1277,41 @@ void MapEditor::endMove(bool accept) {
 
 	// Update map item indices
 	map.refreshIndices();
+}
+
+void MapEditor::mergeLines(long move_time, vector<fpoint2_t> &merge_points) {
+
+        // Merge vertices and split lines
+        for (unsigned a = 0; a < merge_points.size(); a++) {
+                MapVertex* v = map.mergeVerticesPoint(merge_points[a].x, merge_points[a].y);
+                if (v) map.splitLinesAt(v, 1);
+        }
+
+        // Split lines overlapping vertices
+        for (unsigned a = 0; a < map.nLines(); a++) {
+                MapLine* line = map.getLine(a);
+                if (line->modifiedTime() >= move_time) {
+                        MapVertex* split = map.lineCrossVertex(line->x1(), line->y1(), line->x2(), line->y2());
+                        if (split) {
+                                map.splitLine(a, split->getIndex());
+                                a = 0;
+                        }
+                }
+        }
+
+        // Merge lines
+        for (unsigned a = 0; a < map.nLines(); a++) {
+                if (map.getLine(a)->modifiedTime() >= move_time) {
+                        if (map.mergeLine(a) > 0 && a < map.nLines()) {
+                                map.getLine(a)->clearUnneededTextures();
+                                a = 0;
+                        }
+                }
+        }
+
+        // Remove any resulting zero-length lines
+        map.removeZeroLengthLines();
+
 }
 
 #pragma endregion
@@ -2030,7 +2026,11 @@ bool MapEditor::addLineDrawPoint(fpoint2_t point, bool nearest) {
 }
 
 void MapEditor::removeLineDrawPoint() {
-	draw_points.pop_back();
+        if(draw_points.empty()) {
+            endLineDraw(false);
+        } else {
+            draw_points.pop_back();
+        }
 }
 
 void MapEditor::setShapeDrawOrigin(fpoint2_t point, bool nearest) {
@@ -2383,6 +2383,19 @@ void MapEditor::copyProperties(MapObject* object) {
 		if (!object)
 			addEditorMessage("Copied thing properties");
 	}
+
+        else if (edit_mode == MODE_LINES) {
+                if (!copy_line)
+                        copy_line = new MapLine(NULL, NULL, new MapSide(NULL, NULL), new MapSide(NULL, NULL), NULL);
+
+                if (selection.size() > 0)
+                        copy_line->copy(map.getLine(selection[0]));
+                else if (hilight_item >= 0)
+                        copy_line->copy(map.getLine(hilight_item));
+
+                if(!object)
+                        addEditorMessage("Copied line properties");
+        }
 }
 
 void MapEditor::pasteProperties() {
@@ -2444,6 +2457,26 @@ void MapEditor::pasteProperties() {
 		addEditorMessage("Pasted thing properties");
 	}
 
+	// Lines mode
+        else if (edit_mode == MODE_LINES) {
+		// Do nothing if no properties have been copied
+		if (!copy_line)
+			return;
+
+		// Paste properties to selection/hilight
+		beginUndoRecord("Paste Line Properties", true, false, false);
+		if (selection.size() > 0) {
+			for (unsigned a = 0; a < selection.size(); a++)
+				map.getLine(selection[a])->copy(copy_line);
+		}
+		else if (hilight_item >= 0)
+			map.getLine(hilight_item)->copy(copy_line);
+		endUndoRecord();
+
+		// Editor message
+		addEditorMessage("Pasted line properties");
+	}
+
 	// Update display
 	updateDisplay();
 }
@@ -2495,8 +2528,14 @@ void MapEditor::paste(fpoint2_t mouse_pos) {
 		// Map architecture
 		if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH) {
 			beginUndoRecord("Paste Map Architecture");
+                        long move_time = theApp->runTimer();
 			MapArchClipboardItem* p = (MapArchClipboardItem*)theClipboard->getItem(a);
-			p->pasteToMap(&map, mouse_pos);
+			vector<MapVertex*> newVerts = p->pasteToMap(&map, mouse_pos);
+                        vector<fpoint2_t> merge_points;
+                        for (unsigned a = 0; a < newVerts.size(); a++) {
+                                merge_points.push_back(fpoint2_t(newVerts[a]->xPos(), newVerts[a]->yPos()));
+                        }
+                        mergeLines(move_time, merge_points);
 			addEditorMessage(S_FMT("Pasted %s", CHR(p->getInfo())));
 			endUndoRecord(true);
 		}

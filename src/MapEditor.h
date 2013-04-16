@@ -60,6 +60,7 @@ private:
 	// Object properties and copy/paste
 	MapThing*	copy_thing;
 	MapSector*	copy_sector;
+	MapLine*	copy_line;
 	string		copy_texture;
 	double		copy_offsets[2];
 
@@ -84,6 +85,8 @@ private:
 
 	// Helper for autoAlignX3d
 	void doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done);
+
+        void mergeLines(long, vector<fpoint2_t>&);
 
 public:
 	enum {
