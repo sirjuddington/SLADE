@@ -1992,6 +1992,9 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap) {
 
 	//sf::Clock clock;
 
+	// Locale for float number format
+	setlocale(LC_NUMERIC, "C");
+
 	// Write things
 	string object_def;
 	for (unsigned a = 0; a < things.size(); a++) {
