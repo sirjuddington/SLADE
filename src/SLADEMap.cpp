@@ -431,6 +431,8 @@ bool SLADEMap::readMap(Archive::mapdesc_t map) {
 	if (ok)
 		current_format = map.format;
 
+	opened_time = theApp->runTimer() + 10;
+
 	return ok;
 }
 
@@ -3003,6 +3005,28 @@ vector<MapObject*> SLADEMap::getAllModifiedObjects(long since) {
 	}
 
 	return modified_objects;
+}
+
+long SLADEMap::getLastModifiedTime() {
+	long mod_time = 0;
+
+	for (unsigned a = 0; a < all_objects.size(); a++) {
+		if (all_objects[a].mobj && all_objects[a].mobj->modifiedTime() > mod_time)
+			mod_time = all_objects[a].mobj->modifiedTime();
+	}
+
+	return mod_time;
+}
+
+bool SLADEMap::isModified() {
+	if (getLastModifiedTime() > opened_time)
+		return true;
+	else
+		return false;
+}
+
+void SLADEMap::setOpenedTime() {
+	opened_time = theApp->runTimer();
 }
 
 MapVertex* SLADEMap::createVertex(double x, double y, double split_dist) {

@@ -37,6 +37,7 @@ private:
 	bool				position_frac;
 	string				name;
 	int					current_format;
+	long				opened_time;
 
 	vector<mobj_holder_t>	all_objects;
 	vector<unsigned>		deleted_objects;
@@ -204,6 +205,9 @@ public:
 	MapSector*			getLineSideSector(MapLine* line, bool front = true);
 	vector<MapObject*>	getModifiedObjects(long since, int type = -1);
 	vector<MapObject*>	getAllModifiedObjects(long since);
+	long				getLastModifiedTime();
+	bool				isModified();
+	void				setOpenedTime();
 
 	// Creation
 	MapVertex*	createVertex(double x, double y, double split_dist = -1);

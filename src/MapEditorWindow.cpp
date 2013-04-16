@@ -545,8 +545,9 @@ bool MapEditorWindow::saveMap() {
 		mdesc_current.end = entry;
 	}
 
-	// Lock current map entries
+	// Finish
 	lockMapEntries();
+	editor.getMap().setOpenedTime();
 
 	return true;
 }
@@ -751,6 +752,17 @@ bool MapEditorWindow::handleAction(string id) {
  * Called when the window is closed
  *******************************************************************/
 void MapEditorWindow::onClose(wxCloseEvent& e) {
+	if (editor.getMap().isModified()) {
+		wxMessageDialog md(this, S_FMT("Save changes to %s", CHR(currentMapDesc().name)), "Unsaved Changes", wxYES_NO|wxCANCEL);
+		int answer = md.ShowModal();
+		if (answer == wxID_YES)
+			saveMap();
+		else if (answer == wxID_CANCEL) {
+			e.Veto();
+			return;
+		}
+	}
+
 	// Save current layout
 	saveLayout();
 
