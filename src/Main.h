@@ -48,10 +48,10 @@ using std::vector;
 // a value for the third argument (the default value if not found).
 // This really only works for value types right now, like maps to pointers.
 template<typename M>
-typename M::mapped_type findInMap(M &m, const typename M::key_type &k, typename M::mapped_type def = typename M::mapped_type()) {
-    typename M::iterator i = m.find(k);
+typename M::mapped_type findInMap(M &m, const typename M::key_type &k, typename M::mapped_type def = M::mapped_type()) {
+    M::iterator i = m.find(k);
     if(i == m.end()) {
-        return const_cast<typename M::mapped_type&>(def);
+        return const_cast<M::mapped_type&>(def);
     } else {
         return i->second;
     }
