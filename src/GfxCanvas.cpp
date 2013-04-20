@@ -40,6 +40,7 @@
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED)
 CVAR(Bool, gfx_show_border, true, CVAR_SAVE)
 CVAR(Bool, gfx_hilight_mouseover, true, CVAR_SAVE)
+CVAR(Bool, gfx_arc, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -145,9 +146,10 @@ void GfxCanvas::drawOffsetLines() {
 		glEnd();
 	}
 	else if (view_type == GFXVIEW_HUD) {
+		double yscale = (gfx_arc ? scale * 1.2 : scale);
 		glPushMatrix();
 		glEnable(GL_LINE_SMOOTH);
-		glScaled(scale, scale, 1);
+		glScaled(scale, yscale, 1);
 		Drawing::drawHud();
 		glDisable(GL_LINE_SMOOTH);
 		glPopMatrix();
@@ -167,7 +169,8 @@ void GfxCanvas::drawImage() {
 	glPushMatrix();
 
 	// Zoom
-	glScaled(scale, scale, 1);
+	double yscale = (gfx_arc ? scale * 1.2 : scale);
+	glScaled(scale, yscale, 1.0);
 
 	// Pan
 	if (view_type == GFXVIEW_CENTERED)

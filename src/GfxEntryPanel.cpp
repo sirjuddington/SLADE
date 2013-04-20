@@ -44,6 +44,11 @@
 
 
 /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Bool, gfx_arc)
+
+/*******************************************************************
  * GFXCOLOURISEDIALOG CLASS
  *******************************************************************
  A simple dialog for the 'Colourise' function, allows the user to
@@ -322,6 +327,12 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 
 	sizer_bottom->AddStretchSpacer();
 
+	// Aspect ratio correction checkbox
+	cb_arc = new wxCheckBox(this, -1, "Aspect Ratio Correction");
+	cb_arc->SetValue(gfx_arc);
+	sizer_bottom->Add(cb_arc, 0, wxEXPAND, 0);
+	sizer_bottom->AddSpacer(8);
+
 	// Tile checkbox
 	cb_tile = new wxCheckBox(this, -1, "Tile");
 	sizer_bottom->Add(cb_tile, 0, wxEXPAND, 0);
@@ -368,6 +379,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	spin_yoffset->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &GfxEntryPanel::onYOffsetChanged, this);
 	choice_offset_type->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GfxEntryPanel::onOffsetTypeChanged, this);
 	cb_tile->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &GfxEntryPanel::onTileChanged, this);
+	cb_arc->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &GfxEntryPanel::onARCChanged, this);
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas->GetId());
 	btn_nextimg->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxEntryPanel::onBtnNextImg, this);
 	btn_previmg->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxEntryPanel::onBtnPrevImg, this);
@@ -963,6 +975,14 @@ void GfxEntryPanel::onOffsetTypeChanged(wxCommandEvent& e) {
 void GfxEntryPanel::onTileChanged(wxCommandEvent& e) {
 	choice_offset_type->Enable(!cb_tile->IsChecked());
 	applyViewType();
+}
+
+/* GfxEntryPanel::onARCChanged
+ * Called when the 'Aspect Ratio' checkbox is checked/unchecked
+ *******************************************************************/
+void GfxEntryPanel::onARCChanged(wxCommandEvent& e) {
+	gfx_arc = cb_arc->IsChecked();
+	gfx_canvas->Refresh();
 }
 
 /* GfxEntryPanel::gfxOffsetChanged

@@ -9,6 +9,7 @@ TODO List ---------------------------------------------------------------
 
 --- Bugs ---
 - Wall/flat scale not working in 3d mode
+- Undo/redo only works in WADs (no effect on ZIP entries)
 
 
 --- Map Editor 3.1 ---
@@ -152,6 +153,7 @@ To keep track of resource editor changes (in case I decide to release a 3.0.3 af
 - Various additions and improvements to texture editor for ZDoom TEXTURES format
 - Added option to colour entry list item background by entry type
 - Improved entry type detection speed
+- Console command batches (run all commands contained in a file or a lump)
 
 
 
@@ -173,6 +175,7 @@ Unimplemented Feature Requests ------------------------------------------
 Translation dialog:
 - Source/destination palette selectable
 - Scroll through multiple preview gfx
+- Zoom on preview gfx (perhaps in pop-up window?)
 - Allow use with truecolour gfx
 - Tool for trimming blank space around a graphic.
 - Tool for adding blank space to either side as needed to put the x offset right in the center (better for mirrored sprites).
@@ -235,7 +238,7 @@ Ideas / Possible Features -----------------------------------------------
 		- CRC (will be used to determine if the info is up-to-date)
 		- Extra properties
 		- Entry type
-- Model viewer
+- Model and voxel viewer
 - The 'findModifiedEntries()' function could be used to create an 'Export Changes in New File' feature as an alternative to saving the archive, useful especially for IWADs.
 - EntryPanels able to handle multiple entries for special purposes
 	- GfxEntryPanel: shows all selected images in a browser kind of thing
@@ -247,12 +250,13 @@ Ideas / Possible Features -----------------------------------------------
 	- Report on thing placement (using game configuration to name and categorize things)
 	- Report specials used in map (both linedefs and, if appropriate, things, using game config to name and categorize specials)
 	- Ideally would allow to output in a wiki syntax to help make the tables used in the Doom Wiki.
-- Waiting For SladeScript(tm), in four steps:
-	- Console commands to perform archive management actions (opening or creating archives, saving, importing files, exporting entries, copying, renaming, etc.)
-	- Console commands aliases (like in ZDoom)
-	- Console command batches (run all commands contained in a file or a lump)
+- Waiting For SladeScript(tm), in three remaining steps:
+	- Console commands to perform archive management actions (opening or creating archives, saving, importing files, exporting entries, copying, etc.)
+	- Console command aliases (like in ZDoom)
 	- Script mode: command-line options to (1) run a console command batch at startup and optionally also (2) quit once the batch is finished.
-		- Bonus fifth step: interpret DeuTex scripts, allowing SLADE to replace that outdated tool in projects like Hacx and Freedoom.
+		- Bonus fourth step: interpret DeuTex scripts, allowing SLADE to replace that outdated tool in projects like Hacx and Freedoom.
 
 
 Other / Notes -----------------------------------------------------------
+ http://tfc.duke.free.fr/old/models/md2.htm -- reference code for a simple OpenGL MD2 viewer
+ 

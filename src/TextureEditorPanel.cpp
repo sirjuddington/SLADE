@@ -41,6 +41,7 @@
  *******************************************************************/
 bool hack_nodrag = false;	// Hack to stop the drag event being erroneously triggered when
 							// double-clicking a patch in the patch browser to select it
+EXTERN_CVAR(Bool, tx_arc)
 
 
 /*******************************************************************
@@ -106,6 +107,11 @@ void TextureEditorPanel::setupLayout() {
 	cb_tex_scale->SetValue(false);
 	hbox->Add(cb_tex_scale, 0, wxEXPAND|wxRIGHT, 4);
 
+	// 'Aspect Ratio Correction' checkbox
+	cb_tex_arc = new wxCheckBox(this, -1, "Aspect Ratio Correction");
+	cb_tex_arc->SetValue(tx_arc);
+	hbox->Add(cb_tex_arc, 0, wxEXPAND|wxRIGHT, 4);
+
 	// 'Truecolour Preview' checkbox
 	cb_blend_rgba = new wxCheckBox(this, -1, "Truecolour Preview");
 	cb_blend_rgba->SetValue(false);
@@ -158,6 +164,7 @@ void TextureEditorPanel::setupLayout() {
 	spin_patch_left->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onPatchPositionXChanged, this);
 	spin_patch_top->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onPatchPositionYChanged, this);
 	cb_tex_scale->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextureEditorPanel::onApplyScaleChanged, this);
+	cb_tex_arc->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextureEditorPanel::onARCChanged, this);
 
 	// Init layout
 	Layout();
@@ -1161,5 +1168,13 @@ void TextureEditorPanel::onPatchPositionYChanged(wxSpinEvent& e) {
  *******************************************************************/
 void TextureEditorPanel::onApplyScaleChanged(wxCommandEvent& e) {
 	tex_canvas->applyTexScale(cb_tex_scale->GetValue());
+	tex_canvas->redraw();
+}
+
+/* TextureEditorPanel::onARCChanged
+ * Called when the 'Aspect Ratio Correction' checkbox is changed
+ *******************************************************************/
+void TextureEditorPanel::onARCChanged(wxCommandEvent& e) {
+	tx_arc = cb_tex_arc->IsChecked();
 	tex_canvas->redraw();
 }

@@ -23,6 +23,8 @@ public:
 	void	refreshPanel();
 	void	closeEntry();
 	string	statusString();
+	bool	undo();
+	bool	redo();
 
 	// Events
 	void	onTextModified(wxStyledTextEvent& e);
