@@ -971,7 +971,7 @@ bool ArchiveManagerPanel::closeArchive(Archive* archive) {
 
 	// If the archive has unsaved changes, prompt to save
 	if (archive->isModified() && archive->isWritable()) {
-		wxMessageDialog md(this, S_FMT("Save changes to %s?", archive->getFilename(false)), "Unsaved Changes", wxYES_NO|wxCANCEL);
+		wxMessageDialog md(this, S_FMT("Save changes to archive %s?", archive->getFilename(false)), "Unsaved Changes", wxYES_NO|wxCANCEL);
 		int result = md.ShowModal();
 		if (result == wxID_YES) {
 			// User selected to save

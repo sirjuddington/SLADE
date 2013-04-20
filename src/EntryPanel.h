@@ -56,7 +56,9 @@ public:
 	string			getCustomMenuName() { return custom_menu_name; }
 	void			callRefresh() { refreshPanel(); }
 	void			nullEntry() { entry = NULL; }
-	virtual void	handleAction(int menu_id) {}
+	//virtual void	handleAction(int menu_id) {}
+	virtual bool	undo() { return false; }
+	virtual bool	redo() { return false; }
 
 	virtual void	onBtnSave(wxCommandEvent& e);
 	virtual void	onBtnRevert(wxCommandEvent& e);

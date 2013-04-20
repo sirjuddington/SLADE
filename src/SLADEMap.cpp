@@ -46,6 +46,9 @@ SLADEMap::SLADEMap() {
 
 	// Object id 0 is always null
 	all_objects.push_back(mobj_holder_t(NULL, false));
+
+	// Init opened time so it's not random leftover garbage values
+	setOpenedTime();
 }
 
 SLADEMap::~SLADEMap() {
