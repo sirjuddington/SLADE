@@ -83,7 +83,6 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	btn_jump_to->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextEntryPanel::onBtnJumpTo, this);
 
 	// Custom toolbar
-	custom_menu_name = "Text";
 	custom_toolbar_actions = "arch_scripts_compileacs;arch_scripts_compilehacs";
 
 	Layout();
@@ -156,6 +155,8 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry) {
 	else
 		choice_text_language->Select(0);
 
+	// Prevent undoing loading the entry
+	text_area->EmptyUndoBuffer();
 
 	// Update variables
 	this->entry = entry;
@@ -228,6 +229,32 @@ string TextEntryPanel::statusString() {
 	return status;
 }
 
+/* TextEntryPanel::undo
+ * Tells the text editor to undo
+ *******************************************************************/
+bool TextEntryPanel::undo() {
+	if (text_area->CanUndo()) {
+		text_area->Undo();
+		// If we have undone all the way back, it is not modified anymore
+		if (!text_area->CanUndo()) {
+			setModified(false);
+		}
+		return true;
+	}
+	return false;
+}
+
+/* TextEntryPanel::redo
+ * Tells the text editor to redo
+ *******************************************************************/
+bool TextEntryPanel::redo() {
+	if (text_area->CanRedo()) {
+		text_area->Redo();
+		return true;
+	}
+	return false;
+}
+
 
 /*******************************************************************
  * TEXTENTRYPANEL CLASS EVENTS
@@ -269,11 +296,12 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e) {
  * Called when the "Word Wrap" checkbox is clicked
  *******************************************************************/
 void TextEntryPanel::onWordWrapChanged(wxCommandEvent& e) {
+	bool m = isModified();
 	if (cb_wordwrap->IsChecked())
 		text_area->SetWrapMode(wxSTC_WRAP_WORD);
 	else
 		text_area->SetWrapMode(wxSTC_WRAP_NONE);
-	setModified(false);
+	setModified(m);
 }
 
 /* TextEntryPanel::onUpdateUI

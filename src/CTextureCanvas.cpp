@@ -38,6 +38,7 @@
  * VARIABLES
  *******************************************************************/
 wxDEFINE_EVENT(EVT_DRAG_END, wxCommandEvent);
+CVAR(Bool, tx_arc, false, CVAR_SAVE)
 EXTERN_CVAR(Bool, gfx_show_border)
 
 
@@ -250,7 +251,8 @@ void CTextureCanvas::drawTexture() {
 	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
 
 	// Zoom
-	glScaled(scale, scale, 1);
+	double yscale = (tx_arc ? scale * 1.2 : scale);
+	glScaled(scale, yscale, 1);
 
 	// Apply texture scale
 	if (tex_scale) {

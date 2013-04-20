@@ -396,22 +396,26 @@ void ArchivePanel::removeMenus() {
  * Performs an undo operation
  *******************************************************************/
 void ArchivePanel::undo() {
-	// Undo
-	undo_manager->undo();
+	if (!(cur_area && cur_area->undo())) {
+		// Undo
+		undo_manager->undo();
 
-	// Refresh entry list
-	entry_list->updateList();
+		// Refresh entry list
+		entry_list->updateList();
+	}
 }
 
 /* ArchivePanel::redo
  * Performs a redo operation
  *******************************************************************/
 void ArchivePanel::redo() {
-	// Redo
-	undo_manager->redo();
+	if (!(cur_area && cur_area->redo())) {
+		// Redo
+		undo_manager->redo();
 
-	// Refresh entry list
-	entry_list->updateList();
+		// Refresh entry list
+		entry_list->updateList();
+	}
 }
 
 /* ArchivePanel::save
@@ -1157,6 +1161,7 @@ bool ArchivePanel::pasteEntry() {
 
 	// Go through all clipboard items
 	bool pasted = false;
+	undo_manager->beginRecord("Paste Entry");
 	for (unsigned a = 0; a < theClipboard->nItems(); a++) {
 		// Check item type
 		if (theClipboard->getItem(a)->getType() != CLIPBOARD_ENTRY_TREE)
@@ -1169,6 +1174,7 @@ bool ArchivePanel::pasteEntry() {
 		if (archive->paste(clip->getTree(), index, entry_list->getCurrentDir()))
 			pasted = true;
 	}
+	undo_manager->endRecord(true);
 
 	if (pasted) {
 		// Update archive

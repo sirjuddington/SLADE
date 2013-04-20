@@ -22,6 +22,7 @@ protected:
 	wxCheckBox*		cb_draw_outside;
 	wxCheckBox*		cb_blend_rgba;
 	wxCheckBox*		cb_tex_scale;
+	wxCheckBox*		cb_tex_arc;
 	wxStaticText*	label_viewtype;
 	wxChoice*		choice_viewtype;
 	CTextureCanvas*	tex_canvas;
@@ -111,6 +112,7 @@ public:
 	void	onPatchPositionYChanged(wxSpinEvent& e);
 	void	onContextMenu(wxCommandEvent& e);
 	void	onApplyScaleChanged(wxCommandEvent& e);
+	void	onARCChanged(wxCommandEvent& e);
 };
 
 #endif//__TEXTURE_EDITOR_PANEL_H__

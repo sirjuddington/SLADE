@@ -21,6 +21,7 @@ private:
 	wxSpinCtrl*		spin_xoffset;
 	wxSpinCtrl*		spin_yoffset;
 	wxCheckBox*		cb_tile;
+	wxCheckBox*		cb_arc;
 
 	wxButton*		btn_nextimg;
 	wxButton*		btn_previmg;
@@ -54,6 +55,7 @@ public:
 	void	onYOffsetChanged(wxSpinEvent& e);
 	void	onOffsetTypeChanged(wxCommandEvent& e);
 	void	onTileChanged(wxCommandEvent& e);
+	void	onARCChanged(wxCommandEvent& e);
 	void	onGfxOffsetChanged(wxEvent& e);
 	void	onBtnNextImg(wxCommandEvent& e);
 	void	onBtnPrevImg(wxCommandEvent& e);
