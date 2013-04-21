@@ -172,7 +172,7 @@ void Console::execute(string command) {
  *******************************************************************/
 void Console::logMessage(string message) {
 	// Add a newline to the end of the message if there isn't one
-	if (message.Last() != '\n')
+	if (message.size() == 0 || message.Last() != '\n')
 		message.Append("\n");
 
 	// Log the message
