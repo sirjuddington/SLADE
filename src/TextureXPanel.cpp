@@ -1091,14 +1091,15 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e) {
  *******************************************************************/
 void TextureXPanel::onTextureListRightClick(wxListEvent& e) {
 	// Create context menu
-	wxMenu context;
+	wxMenu context, texport;
 	theApp->getAction("txed_delete")->addToMenu(&context);
 	context.AppendSeparator();
 	theApp->getAction("txed_rename")->addToMenu(&context);
 	if (texturex.getFormat() == TXF_TEXTURES)
 		theApp->getAction("txed_offsets")->addToMenu(&context);
-	theApp->getAction("txed_export")->addToMenu(&context);
-	theApp->getAction("txed_extract")->addToMenu(&context);
+	theApp->getAction("txed_export")->addToMenu(&texport, "Archive (as image)");
+	theApp->getAction("txed_extract")->addToMenu(&texport, "File");
+	context.AppendSubMenu(&texport, "&Export To");
 	context.AppendSeparator();
 	theApp->getAction("txed_copy")->addToMenu(&context);
 	theApp->getAction("txed_cut")->addToMenu(&context);
