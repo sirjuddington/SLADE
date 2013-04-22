@@ -69,6 +69,8 @@ private:
 	bool				boom;				// Boom extensions enabled
 	ASpecialMap			action_specials;	// Action specials
 	ActionSpecial		as_unknown;			// Default action special
+	ActionSpecial		as_generalized_s;	// Dummy for Boom generalized switched specials
+	ActionSpecial		as_generalized_m;	// Dummy for Boom generalized manual specials
 	ThingTypeMap		thing_types;		// Thing types
 	vector<ThingType*>	tt_group_defaults;	// Thing type group defaults
 	ThingType			ttype_unknown;		// Default thing type
