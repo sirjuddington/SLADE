@@ -69,6 +69,8 @@ void GameConfiguration::setDefaults() {
 	for (int a = 0; a < 4; a++)
 		map_formats[a] = false;
 	boom = false;
+	as_generalized.setName("Boom Generalized Special");
+	as_generalized.setTagged(AS_TT_SECTOR);
 }
 
 string GameConfiguration::udmfNamespace() {
@@ -1539,6 +1541,8 @@ ActionSpecial* GameConfiguration::actionSpecial(unsigned id) {
 	as_t& as = action_specials[id];
 	if (as.special)
 		return as.special;
+	else if (boom && id >= 0x2f80)
+		return &as_generalized;
 	else
 		return &as_unknown;
 }
