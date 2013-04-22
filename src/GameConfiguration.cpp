@@ -69,6 +69,10 @@ void GameConfiguration::setDefaults() {
 	for (int a = 0; a < 4; a++)
 		map_formats[a] = false;
 	boom = false;
+	as_generalized_s.setName("Boom Generalized Switched Special");
+	as_generalized_s.setTagged(AS_TT_SECTOR);
+	as_generalized_m.setName("Boom Generalized Manual Special");
+	as_generalized_m.setTagged(AS_TT_SECTOR_BACK);
 }
 
 string GameConfiguration::udmfNamespace() {
@@ -1537,10 +1541,16 @@ bool GameConfiguration::openConfig(string game, string port) {
 
 ActionSpecial* GameConfiguration::actionSpecial(unsigned id) {
 	as_t& as = action_specials[id];
-	if (as.special)
+	if (as.special) {
 		return as.special;
-	else
+	} else if (boom && id >= 0x2f80) {
+		if ((id & 7) >= 6)
+			return &as_generalized_m;
+		else
+			return &as_generalized_s;
+	} else {
 		return &as_unknown;
+	}
 }
 
 string GameConfiguration::actionSpecialName(int special) {
