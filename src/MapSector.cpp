@@ -159,13 +159,13 @@ bool MapSector::isWithin(double x, double y) {
 	MapLine* nline = NULL;
 	for (unsigned a = 0; a < connected_sides.size(); a++) {
 		// Calculate distance to line
-		if (connected_sides[a] == NULL) {
-			LOG_MESSAGE(3, "Warning: connected side #%i is a NULL pointer!", a);
-			continue;
-		} else if (connected_sides[a]->getParentLine() == NULL) {
-			LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!", a);
-			continue;
-		}
+		//if (connected_sides[a] == NULL) {
+		//	LOG_MESSAGE(3, "Warning: connected side #%i is a NULL pointer!", a);
+		//	continue;
+		//} else if (connected_sides[a]->getParentLine() == NULL) {
+		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!", connected_sides[a]->getIndex());
+		//	continue;
+		//}
 		dist = connected_sides[a]->getParentLine()->distanceTo(x, y);
 
 		// Check distance
