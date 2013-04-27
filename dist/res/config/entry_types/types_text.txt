@@ -175,11 +175,24 @@ entry_types
 		text_language = "z_modeldef";
 	}
 
+	voxeldefs : text
+	{
+		name = "Voxel defs";
+		match_name = "voxeldef";
+		text_language = "z_voxeldef";
+	}
+
 	reverbs : text
 	{
 		name = "Reverbs";
 		match_name = "reverbs";
 		text_language = "z_reverbs";
+	}
+	
+	secrets : text
+	{
+		name = "ZDoom secret list";
+		match_name = "secrets";
 	}
 
 	rscript : text
