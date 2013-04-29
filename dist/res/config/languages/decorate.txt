@@ -5,7 +5,7 @@ decorate : cstyle {
 	constant_link = "http://zdoom.org/wiki/Special:Search/%s";
 	function_link = "http://zdoom.org/wiki/%s";
 	case_sensitive = false;
-	blocks = "Actor";
+	blocks = "Actor", "DamageType";
 
 	keywords = {
 		$override,
@@ -14,7 +14,7 @@ decorate : cstyle {
 		Actor, States, Spawn, See, Melee, Missile, Pain, Death, XDeath, Burn, Ice, Disintegrate,
 		Raise, Heal, Crash, Crush, Wound, Greetings, Yes, No, Loop, Stop, Wait, Fail, Goto, Ready,
 		Deselect, Select, Fire, AltFire, Hold, AltHold, Flash, AltFlash, Pickup, Use, Drop, Bright,
-		Idle, Active, Inactive, Light, Offset, Native,
+		Idle, Active, Inactive, Light, Offset, Action, Native,
 
 		// Actor properties
 		
@@ -41,7 +41,7 @@ decorate : cstyle {
 		Speed, VSpeed, FastSpeed, FloatSpeed,
 		
 		// Rendering
-		RenderStyle, None, Normal, Fuzzy, Translucent, SoulTrans, Stencil, StencilColor, Shaded, 
+		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, StencilColor, Shaded, 
 		Shadow, Add, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
 		BloodColor, BloodType, Decal, 
 		
@@ -81,6 +81,9 @@ decorate : cstyle {
 		// Powerup-specific properties
 		Powerup, Color, Colormap, Duration, Mode, Strength, Type,
 		
+		// Predefined powerup colors
+		BlueMap, GoldMap, GreenMap, InverseMap, RedMap,
+		
 		// Morph powerup
 		PowerMorph, PlayerClass, MorphStyle, MorphFlash, UnmorphFlash,
 		
@@ -91,6 +94,7 @@ decorate : cstyle {
 		Weapon, Kickback, DefaultKickback, ReadySound, SelectionOrder, SisterWeapon, UpSound, YAdjust, 
 		AmmoGive, AmmoGive1, AmmoGive2, AmmoType, AmmoType1, AmmoType2, AmmoUse, AmmoUse1, AmmoUse2,
 		BobStyle, BobSpeed, BobRangeX, BobRangeY, SlotNumber, SlotPriority, PreferredSkin,
+		MinSelectionAmmo1, MinSelectionAmmo2,
 		
 		// Weapon piece
 		WeaponPiece, Number, Weapon, 
@@ -107,11 +111,12 @@ decorate : cstyle {
 		// DECORATE expressions
 		x, y, z, angle, momx, momy, momz, velx, vely, velz, pitch, tid, tidtohate, 
 		ceilingz, floorz, scalex, scaley, score, special, waterlevel, var, int, fixed_t, angle_t,
+		
+		// Damage type properties
+		NoArmor, Factor, ReplaceFactor,
 	}
 
 	constants = {
-		//ZDoom 2.5.0 update by Michaelis
-		//auto-parsed through ZDoom Wiki > Actor flags, so nevermind duplicate entries
 		ACTIVATEIMPACT, ACTIVATEMCROSS, ACTIVATEPCROSS, ACTLIKEBRIDGE, ADDITIVEPOISONDAMAGE,
 		ADDITIVEPOISONDURATION, ALLOWBOUNCEONACTORS, ALLOWPARTICLES, ALWAYSFAST,
 		ALWAYSPUFF, ALWAYSRESPAWN, AMBUSH, AVOIDMELEE, BLASTED, BLOCKEDBYSOLIDACTORS,
@@ -150,6 +155,7 @@ decorate : cstyle {
 		// PLAYERPAWN.
 		PLAYERPAWN, 
 		CANSUPERMORPH,
+		CROUCHABLEMORPH,
 		
 		// POWERSPEED.
 		POWERSPEED,
@@ -181,18 +187,24 @@ decorate : cstyle {
 		BF_AFFECTBOSSES, BF_DONTWARN, BF_USEAMMO, BF_NOIMPACTDAMAGE,
 		BLOCKF_CREATURES, BLOCKF_EVERYTHING, BLOCKF_FLOATERS, BLOCKF_MONSTERS, BLOCKF_PLAYERS,
 		BLOCKF_PROJECTILES, BLOCKF_RAILING, BLOCKF_USE,
-		CBAF_AIMFACING, CBAF_EXPLICITANGLE, CBAF_NOPITCH, CBAF_NORANDOM,
+		CBAF_AIMFACING, CBAF_EXPLICITANGLE, CBAF_NOPITCH, CBAF_NORANDOM, CBAF_NORANDOMPUFFZ,
 		CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL,
 		CHAN_NOPAUSE, CHAN_UI, CHAN_VOICE, CHAN_WEAPON,
 		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT, CMF_ABSOLUTEANGLE,
+		CLOFF_NOAIM_VERT, CLOFF_NOAIM_HORZ, CLOFF_AIM_VERT_NOOFFSET, CLOFF_FROMBASE, CLOFF_MUL_HEIGHT,
+		CLOFF_MUL_WIDTH, CLOFF_JUMPENEMY, CLOFF_JUMPFRIEND, CLOFF_JUMPOBJECT, CLOFF_JUMPNONHOSTILE,
+		CLOFF_SKIPENEMY, CLOFF_SKIPFRIEND, CLOFF_SKIPOBJECT, CLOFF_SKIPNONHOSTILE, CLOFF_JUMP_ON_MISS,
+		CLOFF_MUSTBESHOOTABLE, CLOFF_MUSTBEGHOST, CLOFF_IGNOREGHOST, CLOFF_MUSTBESOLID, CLOFF_SKIPTARGET,
+		CLOFF_BEYONDTARGET, CLOFF_ALLOWNULL, CLOFF_CHECKPARTIAL, CLOFF_SKIPOBSTACLES, CLOFF_NOAIM,
 		CMF_ABSOLUTEPITCH, CMF_AIMDIRECTION, CMF_AIMOFFSET, CMF_CHECKTARGETDEAD, CMF_OFFSETPITCH, CMF_SAVEPITCH,
 		CMF_TRACKOWNER,
-		CPF_DAGGER, CPF_PULLIN, CPF_USEAMMO,
+		CPF_DAGGER, CPF_PULLIN, CPF_USEAMMO, CPF_NORANDOMPUFFZ,
 		CVF_RELATIVE, CVF_REPLACE,
-		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO,
+		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO, FBF_NORANDOMPUFFZ,
 		GFF_NOEXTCHANGE,
 		JLOSF_ALLYNOJUMP, JLOSF_CHECKMASTER, JLOSF_CLOSENOFOV, JLOSF_CLOSENOJUMP, JLOSF_CLOSENOSIGHT, 
 		JLOSF_COMBATANTONLY, JLOSF_DEADNOJUMP, JLOSF_FLIPFOV, JLOSF_NOSIGHT, JLOSF_PROJECTILE, JLOSF_TARGETLOS,
+		JLOSF_NOAUTOAIM,
 		LOF_DONTCHASEGOAL, LOF_FULLVOLSEESOUND, LOF_NOJUMP, LOF_NOSEESOUND, LOF_NOSIGHTCHECK, LOF_NOSOUNDCHECK,
 		MRF_ADDSTAMINA, MRF_FAILNOLAUGH, MRF_FAILNOTELEFRAG, MRF_FULLHEALTH, MRF_LOSEACTUALWEAPON, 
 		MRF_NEWTIDBEHAVIOUR, MRF_UNDOBYCHAOSDEVICE, MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES,
@@ -212,7 +224,8 @@ decorate : cstyle {
 		SPF_FORCECLAMP,
 		SXF_ABSOLUTEANGLE, SXF_ABSOLUTEMOMENTUM, SXF_ABSOLUTEPOSITION, SXF_ABSOLUTEVELOCITY, SXF_CLIENTSIDE,
 		SXF_NOCHECKPOSITION, SXF_SETMASTER, SXF_TELEFRAG, SXF_TRANSFERAMBUSHFLAG, SXF_TRANSFERPITCH,
-		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION,
+		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION, SXF_USEBLOODCOLOR, SXF_CLEARCALLERTID, SXF_MULTIPLYSPEED, 
+		SXF_TRANSFERSCALE, SXF_TRANSFERSPECIAL, SXF_CLEARCALLERSPECIAL,
 		TF_RANDOMDECIDE, TF_TELEFRAG,
 		THINGSPEC_ClearSpecial, THINGSPEC_Default, THINGSPEC_MissileTrigger, THINGSPEC_MonsterTrigger,
 		THINGSPEC_NoDeathSpecial, THINGSPEC_ThingActs, THINGSPEC_ThingTargets, THINGSPEC_TriggerActs,
@@ -240,6 +253,7 @@ decorate : cstyle {
 		A_Burst = "string classname";
 		A_CentaurDefend;
 		A_Chase = "[string MeleeState], [string RangedState], [int Flags]";
+		A_CheckLOF = "state jump, [int flags], [float range], [float minrange], [float angle], [float pitch], [float offsetheight], [float offsetwidth], [pointer target]";
 		A_ClearSoundTarget;
 		A_ClearTarget;
 		A_ClearLastHeard;
@@ -358,6 +372,8 @@ decorate : cstyle {
 		A_JumpIfInTargetInventory = "string item, int count, string state", "string item, int count, int offset";
 		A_JumpIfMasterCloser = "int distance, string state", "int distance, int offset";
 		A_JumpIfNoAmmo = "string state", "int offset";
+		A_JumpIfTargetInsideMeleeRange = "string state", "int offset";
+		A_JumpIfTargetOutsideMeleeRange = "string state", "int offset";
 		A_JumpIfTargetInLOS = "string state, [float fov], [int flags], [float dist_max], [float dist_close]", "int offset, [float fov], [int flags], [float dist_max], [float dist_close]";
 		A_JumpIfInTargetLOS = "string state, [float fov], [int flags], [float dist_max], [float dist_close]", "int offset, [float fov], [int flags], [float dist_max], [float dist_close]";
 		A_JumpIfTracerCloser = "int distance, string state", "int distance, int offset";
@@ -402,6 +418,7 @@ decorate : cstyle {
 		A_Respawn = "[bool fog]";
 		A_SetAngle = "float angle";
 		A_SetArg = "int position, int value";
+		A_SetDamageType = "string damagetype";
 		A_SetPitch = "float pitch";
 		A_SetSpecial = "int special, int arg0, int arg1, int arg2, int arg3, int arg4";
 		A_SetScale = "float scalex, [float scaley]";
@@ -459,25 +476,25 @@ decorate : cstyle {
 		A_FireAssaultGun;
 		A_FireBFG;
 		A_FireOldBFG;
-		A_FirePistol();
+		A_FirePistol;
 		A_FireShotgun;
 		A_FireShotgun2;
-		A_OpenShotgun2();
-		A_LoadShotgun2();
-		A_CloseShotgun2();
+		A_OpenShotgun2;
+		A_LoadShotgun2;
+		A_CloseShotgun2;
 		A_FireCGun;
 		A_FireMissile;
 		A_FirePlasma;
 		A_FireSTGrenade = "[string missiletype]";
-		A_FireRailgun();
-		A_FireRailgunLeft();
-		A_FireRailgunRight();
-		A_RailWait();
-
-		A_RestoreSpecialPosition();
-		A_RestoreSpecialDoomThing();
-		A_RestoreSpecialThing1();
-		A_RestoreSpecialThing2();
+		A_FireRailgun;
+		A_FireRailgunLeft;
+		A_FireRailgunRight;
+		A_RailWait;
+		
+		A_RestoreSpecialPosition;
+		A_RestoreSpecialDoomThing;
+		A_RestoreSpecialThing1;
+		A_RestoreSpecialThing2;
 
 		A_PosAttack;
 		A_SPosAttack;
@@ -527,6 +544,24 @@ decorate : cstyle {
 		// Restricted functions
 		A_IceSetTics; A_BridgeOrbit; A_BridgeInit = "[class ball]";
 		A_SpawnSingleItem = "class type, [int fail_single], [int fail_coop], [int fail_dm]";
+		
+		// Scripted marines have some
+		A_M_Refire = "[bool ignoremissile]";
+		A_M_CheckAttack;
+		A_MarineChase;
+		A_MarineLook;
+		A_MarineNoise;
+		A_M_Punch = "int force";
+		A_M_SawRefire;
+		A_M_FirePistol = "bool accurate";
+		A_M_FireShotgun;
+		A_M_FireShotgun2;
+		A_M_FireCGun = "bool accurate";
+		A_M_FireMissile;
+		A_M_FirePlasma;
+		A_M_FireRailgun;
+		A_M_BFGsound;
+		A_M_FireBFG;
 		
 		// Heretic has a lot of them
 		A_BeakRaise; A_BeakAttackPL1; A_BeakAttackPL2;
@@ -589,13 +624,13 @@ decorate : cstyle {
 		A_ThrustRaise; A_ThrustImpale; A_ThrustLower; A_ThrustInitDn; A_ThrustInitUp;
 		A_Summon;
 		A_TeloSpawnA; A_TeloSpawnB; A_TeloSpawnC; A_TeloSpawnD; A_CheckTeleRing;
-		A_WraithInit; A_WraithChase; A_WraithFX3; A_WraithMelee;
+		A_WraithInit; A_WraithChase; A_WraithMelee; A_WraithRaiseInit; A_WraithRaise; A_WraithFX2; A_WraithFX3;
 		
 		// Strife is the last with these
 		A_BeShadowyFoe; A_AcolyteBits; A_AcolyteDie; A_HideDecepticon;
 		A_AlienSpectreDeath;
 		A_CrusaderChoose; A_CrusaderSweepLeft; A_CrusaderSweepRight; A_CrusaderRefire; A_CrusaderDeath;
-		A_SpawnEntity;
+		A_SpawnEntity; A_EntityAttack; A_EntityDeath; A_SubEntityDeath;	
 		A_InquisitorWalk; A_InquisitorDecide; A_InquisitorAttack; A_InquisitorJump;
 		A_InquisitorCheckLand; A_TossArm; A_ReaverRanged;
 		A_LoremasterChain;
@@ -607,7 +642,7 @@ decorate : cstyle {
 		A_SelectPiece; A_SelectSigilView; A_SelectSigilDown; A_SelectSigilAttack; A_SigilCharge;
 		A_FireSigil1; A_FireSigil2; A_FireSigil3; A_FireSigil4; A_FireSigil5;
 		A_SpectreChunkSmall; A_SpectreChunkLarge; A_Spectre3Attack; A_SpotLightning;
-		A_SpectralLightningTail; A_SpectralLightning;
+		A_SpectralBigBallLightning; A_SpectralLightningTail; A_SpectralLightning;
 		A_StalkerLookInit; A_StalkerChaseDecide; A_StalkerWalk; A_StalkerDrop; A_StalkerAttack;
 		A_ItBurnsItBurns; A_CrispyPlayer; A_HandLower;
 		A_JabDagger; A_FireMiniMissile; A_FireFlamer; A_FlameDie;
@@ -698,6 +733,7 @@ decorate : cstyle {
 		Floor_MoveToValue = "int tag, int speed, int value, int neg";
 		Floor_MoveToValueTimes8 = "int tag, int speed, int value, int neg";
 		Floor_RaiseAndCrush = "int tag, int speed, int crush, [int crushmode]";
+		Floor_RaiseAndCrushDoom = "int tag, int speed, int crush, [int crushmode]";
 		Floor_RaiseByTexture = "int tag, int speed";
 		Floor_RaiseByValue = "int tag, int speed, int value";
 		Floor_RaiseByValueTimes8 = "int tag, int speed, int value";

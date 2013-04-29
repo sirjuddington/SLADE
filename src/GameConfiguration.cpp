@@ -1666,6 +1666,16 @@ void GameConfiguration::setThingFlag(unsigned index, MapThing* thing, bool set) 
 	thing->setIntProperty("flags", flags);
 }
 
+// This is used to have the same priority order as DB2
+// Idle, See, Inactive, Spawn, first defined
+enum StateSprites {
+	SS_FIRSTDEFINED = 1,
+	SS_SPAWN,
+	SS_INACTIVE,
+	SS_SEE,
+	SS_IDLE,
+};
+
 bool GameConfiguration::parseDecorateDefs(Archive* archive) {
 	// Get base decorate file
 	Archive::search_options_t opt;
@@ -1772,6 +1782,12 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive) {
 						else if (S_CMPNOCASE(token, "height"))
 							found_props["height"] = tz.getInteger();
 
+						// Angled
+						else if (S_CMPNOCASE(token, "//$Angled"))
+							found_props["angled"] = true;
+						else if (S_CMPNOCASE(token, "//$NotAngled"))
+							found_props["angled"] = false;
+
 						// Hanging
 						else if (S_CMPNOCASE(token, "+spawnceiling"))
 							found_props["hanging"] = true;
@@ -1798,20 +1814,40 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive) {
 						if (!sprite_given && S_CMPNOCASE(token, "states")) {
 							tz.skipToken(); // Skip {
 
+							int statecounter = 0;
+							string spritestate;
+							int priority = 0;
+
 							token = tz.getToken();
 							while (token != "}") {
-								// Spawn state
-								if (S_CMPNOCASE(token, "spawn")) {
-									tz.skipToken();	// Skip :
+								// Idle, See, Inactive, Spawn, and finally first defined
+								if (priority < SS_IDLE) {
+									spritestate = token;
+									token = tz.getToken();
+									while (token.Cmp(":") && token.Cmp("}")) {
+										spritestate = token;
+										token = tz.getToken();
+									}
+									if (S_CMPNOCASE(token, "}"))
+										break;
 									string sb = tz.getToken(); // Sprite base
 									string sf = tz.getToken(); // Sprite frame(s)
 									string sprite = sb + sf.Left(1) + "?";
-									found_props["sprite"] = sprite;
-									LOG_MESSAGE(2, S_FMT("Actor %s found sprite %s", CHR(name), CHR(sprite)));
+									int mypriority = 0;
+									if (statecounter++ == 0)						mypriority = SS_FIRSTDEFINED;
+									if (S_CMPNOCASE(spritestate, "spawn"))			mypriority = SS_SPAWN;
+									else if (S_CMPNOCASE(spritestate, "inactive"))	mypriority = SS_INACTIVE;
+									else if (S_CMPNOCASE(spritestate, "see"))		mypriority = SS_SEE;
+									else if (S_CMPNOCASE(spritestate, "idle"))		mypriority = SS_IDLE;
+									if (mypriority > priority) {
+										priority = mypriority;
+										found_props["sprite"] = sprite;
+										LOG_MESSAGE(2, S_FMT("Actor %s found sprite %s from state %s", CHR(name), CHR(sprite), CHR(spritestate)));
+									}
+								} else {
 									tz.skipSection("{", "}");
 									break;
 								}
-
 								token = tz.getToken();
 							}
 						}
@@ -1854,6 +1890,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive) {
 				if (found_props["radius"].hasValue()) tt->radius = found_props["radius"].getIntValue();
 				if (found_props["height"].hasValue()) tt->height = found_props["height"].getIntValue();
 				if (found_props["hanging"].hasValue()) tt->hanging = found_props["hanging"].getBoolValue();
+				if (found_props["angled"].hasValue()) tt->angled = found_props["angled"].getBoolValue();
 				if (found_props["bright"].hasValue()) tt->fullbright = found_props["bright"].getBoolValue();
 				if (found_props["decoration"].hasValue()) tt->decoration = found_props["decoration"].getBoolValue();
 				if (found_props["icon"].hasValue()) tt->icon = found_props["icon"].getStringValue();

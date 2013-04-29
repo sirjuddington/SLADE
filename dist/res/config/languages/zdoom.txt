@@ -29,7 +29,9 @@ z_decaldef {
 	keywords = {
 		pic, shade, x-scale, y-scale, flipx, flipy, randomflipx, randomflipy, solid,
 		translucent, add, fuzzy, fullbright, lowerdecal, colors, animator, decal,
-		decalgroup, generator
+		decalgroup, generator, stretcher, GoalX, GoalY, StretchStart, StretchTime, 
+		fader, DecayStart, DecayTime, Combiner, slider, DistX, DistY, SlideStart, 
+		SlideTime, colorchanger, FadeStart, FadeTime,
 	}
 }
 
@@ -126,17 +128,38 @@ z_mapinfo {
 	blocks = "gameinfo", "skill", "map", "episode", "cluster";
 
 	keywords = {
-		Episode, ClearEpisodes, Map, ClusterDef,
-		DefaultMap, LevelNum, Next, SecretNext, Cluster, DoubleSky, Sky1, Sky2, Fade, OutsideFog, TitlePatch,
-		Par, Music, CDTrack, CDid, NoIntermission, ExitPic, EnterPic, InterMusic, NoSoundClipping, LookUp,
-		AllowMonsterTelefrags, SpecialAction, Map07Special, BaronSpecial, CyberdemonSpecial,
-		SpiderMastermindSpecial, SpecialAction_ExitLevel, SpecialAction_OpenDoor, SpecialAction_LowerFloor,
-		SpecialAction_KillMonsters, Lightning, Fadetable, EvenLighting, VertWallShade, HorizWallShade,
-		ForceNoSkyStretch, NoAutoSequences, StrictMonsterActivation, LaxMonsterActivation, FallingDamage,
-		OldFallingDamage, ForceFallingDamage, NoFallingDamage, Gravity, AirControl, AirSupply, FilterStarts,
-		NoInventoryBar, KeepFullInventory, EnterText, ExitText, Music, Flat, Hub, Pic, ExitTextIsLump, NoAllies,
-		SuckTime, DeathSlideShow, Redirect, StrifeFallingDamage, IronLichSpecial, MinotaurSpecial, DsparilSpecial,
-		DefaultEnvironment, SpawnWithWeaponRaised, 
+		// Generic
+		lookup,
+		
+		// Cluster
+		Cluster, ClusterDef, EnterText, ExitText, ExitTextIsLump, Music, Flat, Pic, Hub, 
+		
+		// Episode
+		ClearEpisodes, Episode, Name, PicName, Key, Remove, NoSkillMenu, Optional, Extended,
+		
+		// Map
+		Map, DefaultMap, AddDefaultMap, GameDefaults, 
+		ActivateOwnDeathSpecials, AirControl, AirSupply, AllowCrouch, AllowJump, 
+		AllowMonsterTelefrags, AllowRespawn, AutoSquences, BaronSpecial,
+		BorderTexture, CDId, CDTrack, CheckSwitchRange, ClipMidTextures,
+		CyberdemonSpecial, DeathSequence, DefaultEnvironment, DefaultEnvironment,
+		DoubleSky, DSparilSpecial, EnterPic, EvenLighting, ExitPic, F1, Fade,
+		FadeTable, FallingDamage, FilterStarts, ForceNoSkyStretch, ForgetState,
+		Gravity, Grinding_Polyobj, HorizWallShade, InfiniteFlightPowerup,
+		InterMusic, IronlichSpecial, KeepFullInventory, LaxMonsterActivation,
+		LevelNum, Lightning, Map07Special, MinotaurSpecial, 
+		MissilesActivateImpactLines, MissileShootersActivateImpactLines,
+		MonsterFallingDamage, Music, No_Grinding_Polyobj, NoAllies, NoAutosaveHint,
+		NoAutoSequences, NoCheckSwitchRange, NoCrouch, NoFallingDamage, NoFreelook,
+		NoInfighting, NoIntermission, NoInventoryBar, NoJump, NormalInfighting,
+		NoSoundClipping, OldFallingDamage, ForceFallingDamage, OutsideFog, Par,
+		PrecacheSounds, RandomPlayerStarts, Redirect, RememberState, ResetHealth,
+		ResetInventory, Sky1, Sky2, Skybox, SkyStretch, Slideshow, SmoothLighting,
+		SpawnWithWeaponRaised, SpecialAction, SpecialAction_ExitLevel, 
+		SpecialAction_OpenDoor, SpecialAction_LowerFloor, SpecialAction_KillMonsters,
+		SpiderMastermindSpecial, StrictMonsterActivation, StrifeFallingDamage,
+		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
+		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate,
@@ -147,7 +170,7 @@ z_mapinfo {
 		FastMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain, DefaultSkill,
 		ArmorFactor,
 
-		// Gameinfo definitions
+		// GameInfo definitions
 		GameInfo, AdvisoryTime, Border, BackpackType, BorderFlat, ChatSound, CreditPage, DefaultBloodColor,
 		DefaultBloodParticleColor, DrawReadThis, FinaleFlat, FinaleMusic, FinalPage, InfoPage, IntermissionCounter,
 		IntermissionMusic, NoLoopFinaleMusic, PageTime, QuitSound, SkyFlatName, StatusBar, TeleFogHeight, TitleMusic,
@@ -210,6 +233,18 @@ z_modeldef {
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
 		INHERITACTORPITCH, INHERITACTORROLL,
+	}
+}
+
+z_voxeldef {
+	name = "ZDoom VoxelDef";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/VOXELDEF";
+	constant_link = "http://zdoom.org/wiki/VOXELDEF";
+	function_link = "http://zdoom.org/wiki/VOXELDEF";
+
+	keywords = {
+		AngleOffset, Scale, Spin, DroppedSpin, PlacedSpin,
 	}
 }
 
@@ -361,7 +396,7 @@ z_textures {
 	blocks = "texture", "sprite", "graphic", "walltexture", "flat", "remap", "define";
 
 	keywords = {
-		texture, patch, sprite, graphic, walltexture, flat,
+		texture, patch, sprite, graphic, walltexture, flat, optional,
 		XScale, YScale, offset, worldpanning, NoDecals, NullTexture,
 		FlipX, FlipY, Rotate, Translation, Blend, Alpha, Style
 	}

@@ -230,10 +230,17 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 
 	// Sprite not found, look for it
 	bool found = false;
+	bool mirror = false;
 	SImage image;
 	Palette8bit* pal = getResourcePalette();
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "sprites", archive);
 	if (!entry) entry = theResourceManager->getPatchEntry(name, "", archive);
+	if (!entry && name.length() == 8) {
+		string newname = name;
+		newname[4] = name[6]; newname[5] = name[7]; newname[6] = name[4]; newname[7] = name[5];
+		entry = theResourceManager->getPatchEntry(newname, "sprites", archive);
+		if (entry) mirror = true;
+	}
 	if (entry) {
 		found = true;
 		Misc::loadImageFromEntry(&image, entry);
@@ -261,6 +268,9 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 				pal->loadMem(mc);
 			}
 		}
+		// Apply mirroring
+		if (mirror) image.mirror(false);
+		// Turn into GL texture
 		mtex.texture = new GLTexture(false);
 		mtex.texture->setFilter(filter);
 		mtex.texture->setTiling(false);
@@ -269,11 +279,19 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	}
 	else if (name.EndsWith("?")) {
 		name.RemoveLast(1);
-		GLTexture* sprite = getSprite(name + "0", translation, palette);
+		GLTexture* sprite = getSprite(name + '0', translation, palette);
 		if (!sprite)
-			sprite = getSprite(name + "1", translation, palette);
+			sprite = getSprite(name + '1', translation, palette);
 		if (sprite)
 			return sprite;
+		if (!sprite && name.length() == 5) {
+			for (char chr = 'A'; chr <= ']'; ++chr) {
+				sprite = getSprite(name + '0' + chr + '0', translation, palette);
+				if (sprite) return sprite;
+				sprite = getSprite(name + '1' + chr + '1', translation, palette);
+				if (sprite) return sprite;
+			}
+		}
 	}
 
 	return NULL;
