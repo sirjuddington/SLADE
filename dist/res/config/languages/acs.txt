@@ -232,7 +232,8 @@ acs_z : acs {
 		APROP_SpawnHealth, APROP_Dropped, APROP_Notarget, APROP_Species, APROP_Nametag, 
 		APROP_Score, APROP_Notrigger, APROP_DamageFactor, APROP_MasterTID, 
 		APROP_TargetTID, APROP_TracerTID, APROP_Waterlevel, APROP_ScaleX, APROP_ScaleY, 
-		APROP_Dormant, APROP_Mass, APROP_Accuracy, APROP_Stamina, 
+		APROP_Dormant, APROP_Mass, APROP_Accuracy, APROP_Stamina, APROP_Height,
+		APROP_Radius, APROP_ReactionTime,
 
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_Stencil, 
 		STYLE_OptFuzzy, STYLE_Translucent, STYLE_Add, STYLE_Shaded, 
@@ -335,7 +336,7 @@ acs_z : acs {
 		T_GRENADE, T_BFG10KSHOT, T_DARKIMPFIREBALL, T_CACOLANTERNSHOT, T_ABADDONSHOT, 
 		T_DARKIMP, T_BLOODDEMON, T_SSGGUY, T_HECTEBUS, T_CACOLANTERN, T_BELPHEGOR, 
 		T_ABADDON, T_PISTOL, T_GRENADELAUNCHER, T_RAILGUN, T_BFG10000, T_MINIGUN, 
-		T_MAXHEALTHBONUS, T_MASARMORBONUS, T_REDARMOR, T_TURBOSPHERE, T_ANTIGRAVBELT, 
+		T_MAXHEALTHBONUS, T_MAXARMORBONUS, T_REDARMOR, T_TURBOSPHERE, T_ANTIGRAVBELT, 
 		T_TIMEFREEZER, T_INFRAGOGGLES, T_INFRATRACKER, T_TRANSLUCENCY, T_DOOMSPHERE, 
 		T_RANDOMPOWERUP, T_BLUEFLAG, T_REDFLAG, T_WHITEFLAG, T_STRENGTH, T_RAGE, 
 		T_DRAIN, T_SPREAD, T_RESISTANCE, T_REGENERATION, T_PROSPERITY, T_REFLECTION, 
@@ -431,6 +432,7 @@ acs_z : acs {
 		Floor_MoveToValue = "int tag, int speed, int value, int neg";
 		Floor_MoveToValueTimes8 = "int tag, int speed, int value, int neg";
 		Floor_RaiseAndCrush = "int tag, int speed, int crush, [int crushmode]";
+		Floor_RaiseAndCrushDoom = "int tag, int speed, int crush, [int crushmode]";
 		Floor_RaiseByTexture = "int tag, int speed";
 		Floor_RaiseByValue = "int tag, int speed, int value";
 		Floor_RaiseByValueTimes8 = "int tag, int speed, int value";
@@ -572,7 +574,6 @@ acs_z : acs {
 		ThrustThingZ = "int tid, int zthrust, int dir, int set";
 		TranslucentLine = "int id, int amount, int transtype";
 		UsePuzzleItem = "int item, int script";
-
 
 		// Native ACS functions
 		ACS_ExecuteWait = "int script, int unused, int arg1, int arg2, int arg3";
@@ -763,5 +764,9 @@ acs_z : acs {
 		RedCount;
 		RedScore;
 		SinglePlayer;
+		
+		// ZDaemon functions
+		GetTeamScore = "int team";
+		SetTeamScore = "int team, int score";
 	}
 }
