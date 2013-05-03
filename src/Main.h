@@ -48,10 +48,16 @@ using std::vector;
 // a value for the third argument (the default value if not found).
 // This really only works for value types right now, like maps to pointers.
 template<typename M>
+#if defined(_MSC_VER) && (_MSC_VER < 1500)
+// MSVC++ 2005 will give error C2899 if attempting to compile "typename M::mapped_type()".
 typename M::mapped_type findInMap(M &m, const typename M::key_type &k, typename M::mapped_type def = M::mapped_type()) {
-    M::iterator i = m.find(k);
+#else
+// On the other hand, other compilers will fail if this typename isn't there.
+typename M::mapped_type findInMap(M &m, const typename M::key_type &k, typename M::mapped_type def = typename M::mapped_type()) {
+#endif
+    typename M::iterator i = m.find(k);
     if(i == m.end()) {
-        return const_cast<M::mapped_type&>(def);
+        return const_cast<typename M::mapped_type&>(def);
     } else {
         return i->second;
     }
