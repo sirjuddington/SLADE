@@ -42,7 +42,8 @@
 /* STreeNode::STreeNode
  * STreeNode class constructor
  *******************************************************************/
-STreeNode::STreeNode(STreeNode* parent) {
+STreeNode::STreeNode(STreeNode* parent)
+{
 	if (parent)
 		parent->addChild(this);
 	else
@@ -55,7 +56,8 @@ STreeNode::STreeNode(STreeNode* parent) {
 /* STreeNode::~STreeNode
  * STreeNode class destructor
  *******************************************************************/
-STreeNode::~STreeNode() {
+STreeNode::~STreeNode()
+{
 	// Delete children
 	for (unsigned a = 0; a < children.size(); a++)
 		delete children[a];
@@ -65,7 +67,8 @@ STreeNode::~STreeNode() {
  * Returns the 'path' to this node, ie, the names of all its parent
  * nodes each separated by a / (including the name of this node)
  *******************************************************************/
-string STreeNode::getPath() {
+string STreeNode::getPath()
+{
 	if (!parent)
 		return getName() + "/";
 	else
@@ -75,7 +78,8 @@ string STreeNode::getPath() {
 /* STreeNode::getChild
  * Returns the child node at [index], or NULL if index is invalid
  *******************************************************************/
-STreeNode* STreeNode::getChild(unsigned index) {
+STreeNode* STreeNode::getChild(unsigned index)
+{
 	// Check index
 	if (index >= children.size())
 		return NULL;
@@ -88,7 +92,8 @@ STreeNode* STreeNode::getChild(unsigned index) {
  * child nodes if a path is given in [name]. Returns NULL if no
  * match is found
  *******************************************************************/
-STreeNode* STreeNode::getChild(string name) {
+STreeNode* STreeNode::getChild(string name)
+{
 	// Check name was given
 	if (name.IsEmpty())
 		return NULL;
@@ -101,9 +106,11 @@ STreeNode* STreeNode::getChild(string name) {
 	wxFileName fn(name);
 
 	// If no directories were given
-	if (fn.GetDirCount() == 0) {
+	if (fn.GetDirCount() == 0)
+	{
 		// Find child of this node
-		for (unsigned a = 0; a < children.size(); a++) {
+		for (unsigned a = 0; a < children.size(); a++)
+		{
 			if (S_CMPNOCASE(name, children[a]->getName()))
 				return children[a];
 		}
@@ -111,13 +118,15 @@ STreeNode* STreeNode::getChild(string name) {
 		// Child not found
 		return NULL;
 	}
-	else {
+	else
+	{
 		// Directories were given, get the first directory
 		string dir = fn.GetDirs()[0];
 
 		// See if it is a child of this node
 		STreeNode* child = getChild(dir);
-		if (child) {
+		if (child)
+		{
 			// It is, remove the first directory and continue searching that child
 			fn.RemoveDir(0);
 			return child->getChild(fn.GetFullPath(wxPATH_UNIX));
@@ -131,7 +140,8 @@ STreeNode* STreeNode::getChild(string name) {
  * Returns a list of all the node's children matching [name]. Also
  * handles paths as per getChild
  *******************************************************************/
-vector<STreeNode*> STreeNode::getChildren(string name) {
+vector<STreeNode*> STreeNode::getChildren(string name)
+{
 	// Init return vector
 	vector<STreeNode*> ret;
 
@@ -147,20 +157,24 @@ vector<STreeNode*> STreeNode::getChildren(string name) {
 	wxFileName fn(name);
 
 	// If no directories were given
-	if (fn.GetDirCount() == 0) {
+	if (fn.GetDirCount() == 0)
+	{
 		// Find child of this node
-		for (unsigned a = 0; a < children.size(); a++) {
+		for (unsigned a = 0; a < children.size(); a++)
+		{
 			if (S_CMPNOCASE(name, children[a]->getName()))
 				ret.push_back(children[a]);
 		}
 	}
-	else {
+	else
+	{
 		// Directories were given, get the first directory
 		string dir = fn.GetDirs()[0];
 
 		// See if it is a child of this node
 		STreeNode* child = getChild(dir);
-		if (child) {
+		if (child)
+		{
 			// It is, remove the first directory and continue searching that child
 			fn.RemoveDir(0);
 			return child->getChildren(fn.GetFullPath(wxPATH_UNIX));
@@ -173,7 +187,8 @@ vector<STreeNode*> STreeNode::getChildren(string name) {
 /* STreeNode::addChild
  * Adds [child] to this node
  *******************************************************************/
-void STreeNode::addChild(STreeNode* child) {
+void STreeNode::addChild(STreeNode* child)
+{
 	children.push_back(child);
 	child->parent = this;
 }
@@ -182,7 +197,8 @@ void STreeNode::addChild(STreeNode* child) {
  * Creates a new child node matching [name] and adds it to the node's
  * children. Also works recursively if a path is given
  *******************************************************************/
-STreeNode* STreeNode::addChild(string name) {
+STreeNode* STreeNode::addChild(string name)
+{
 	// Check name was given
 	if (name.IsEmpty())
 		return NULL;
@@ -195,7 +211,8 @@ STreeNode* STreeNode::addChild(string name) {
 	wxFileName fn(name);
 
 	// If no directories were given
-	if (fn.GetDirCount() == 0) {
+	if (fn.GetDirCount() == 0)
+	{
 		// If child name duplication is disallowed,
 		// check if a child with this name exists
 		STreeNode* child = NULL;
@@ -203,7 +220,8 @@ STreeNode* STreeNode::addChild(string name) {
 			child = getChild(name);
 
 		// If it doesn't exist, create it
-		if (!child) {
+		if (!child)
+		{
 			child = createChild(name);
 			addChild(child);
 		}
@@ -212,7 +230,8 @@ STreeNode* STreeNode::addChild(string name) {
 		return child;
 
 	}
-	else {
+	else
+	{
 		// Directories were given, get the first directory
 		string dir = fn.GetDirs()[0];
 
@@ -223,7 +242,8 @@ STreeNode* STreeNode::addChild(string name) {
 			child = getChild(dir);
 
 		// If it doesn't exist, create it
-		if (!child) {
+		if (!child)
+		{
 			child = createChild(dir);
 			addChild(child);
 		}
@@ -238,10 +258,13 @@ STreeNode* STreeNode::addChild(string name) {
  * Removes [child] from this node's children. Returns false if
  * [child] is not a child node, true otherwise
  *******************************************************************/
-bool STreeNode::removeChild(STreeNode* child) {
+bool STreeNode::removeChild(STreeNode* child)
+{
 	// Find child node
-	for (unsigned a = 0; a < children.size(); a++) {
-		if (children[a] == child) {
+	for (unsigned a = 0; a < children.size(); a++)
+	{
+		if (children[a] == child)
+		{
 			// Reset child's parent
 			children[a]->parent = NULL;
 

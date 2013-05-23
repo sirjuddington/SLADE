@@ -1,7 +1,9 @@
 
-class SIFRottGfx : public SIFormat {
+class SIFRottGfx : public SIFormat
+{
 protected:
-	bool readRottGfx(SImage& image, MemChunk& data, bool mask) {
+	bool readRottGfx(SImage& image, MemChunk& data, bool mask)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, 0);
 
@@ -22,7 +24,8 @@ protected:
 		// Load data
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
-		for (int c = 0; c < info.width; c++) {
+		for (int c = 0; c < info.width; c++)
+		{
 			// Get current column offset
 			uint16_t col_offset = col_offsets[c];
 			//if (transparent) wxLogMessage("Column %i, offset at %i, offset %i", c, (c<<1) + hdr_size, col_offset);
@@ -36,7 +39,8 @@ protected:
 
 			// Read posts
 			int counter = 0;
-			while (1) {
+			while (1)
+			{
 				// Get row offset
 				//if (transparent) wxLogMessage("Row number %i at offset %i", *bits, bits - gfx_data);
 				uint8_t row = *bits++;
@@ -45,28 +49,32 @@ protected:
 					break;
 
 				// This apparently triggers translucency mode, but I'm not sure how it works
-				if (mask && *bits == 254) {
+				if (mask && *bits == 254)
+				{
 					Global::error = "Sorry, masked ROTT patches with translucency are not yet supported";
 					return false;
 				}
-				else {
+				else
+				{
 
 					// Get no. of pixels
 					uint8_t n_pix = *bits++;
 					//if (transparent) wxLogMessage("Post %i, row = %i, numpixels = %i, offset %i", counter++, row, n_pix, bits - gfx_data);
 
-					if (n_pix >= info.height && row != 0 && row < info.height) {
+					if (n_pix >= info.height && row != 0 && row < info.height)
+					{
 						wxLogMessage("Hack triggered!");
 						bits+=2;
 						continue;
 					}
 
-					for (uint8_t p = 0; p < n_pix; p++) {
+					for (uint8_t p = 0; p < n_pix; p++)
+					{
 						// Get pixel position
 						int pos = ((row + p)*info.width + c);
 						//if (transparent) wxLogMessage("Pixel %i: pos %i, offset %i", p, pos, bits - gfx_data);
 
-							// Stop if we're outside the image
+						// Stop if we're outside the image
 						if (pos > info.width*info.height)
 							break;
 
@@ -89,26 +97,30 @@ protected:
 		return true;
 	}
 
-	virtual bool readImage(SImage& image, MemChunk& data, int index) {
+	virtual bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		return readRottGfx(image, data, false);
 	}
 
 public:
-	SIFRottGfx(string id = "rott") : SIFormat(id) {
+	SIFRottGfx(string id = "rott") : SIFormat(id)
+	{
 		name = "ROTT Gfx";
 		extension = "dat";
 		reliability = 121;
 	}
 	~SIFRottGfx() {}
 
-	virtual bool isThisFormat(MemChunk& mc) {
+	virtual bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_rott")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Read header
@@ -126,20 +138,24 @@ public:
 	}
 };
 
-class SIFRottGfxMasked : public SIFRottGfx {
+class SIFRottGfxMasked : public SIFRottGfx
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		return readRottGfx(image, data, true);
 	}
 
 public:
-	SIFRottGfxMasked() : SIFRottGfx("rottmask") {
+	SIFRottGfxMasked() : SIFRottGfx("rottmask")
+	{
 		name = "ROTT Masked Gfx";
 		reliability = 120;
 	}
 	~SIFRottGfxMasked() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_rottmask")->isThisFormat(mc))
 			return true;
 		else
@@ -147,9 +163,11 @@ public:
 	}
 };
 
-class SIFRottLbm : public SIFormat {
+class SIFRottLbm : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, index);
 
@@ -159,7 +177,8 @@ protected:
 
 		// Build palette
 		Palette8bit palette;
-		for (size_t c = 0; c < 256; ++c) {
+		for (size_t c = 0; c < 256; ++c)
+		{
 			rgba_t color;
 			color.r = data[(c*3)+4];
 			color.g = data[(c*3)+5];
@@ -173,24 +192,27 @@ protected:
 		image.fillAlpha(255);
 
 		// Create some variables needed for LBM decompression
-		const uint8_t * read = data.getData() + 768 +4;
-		const uint8_t * readend = data.getData() + data.getSize();
-		uint8_t * dest = img_data;
-		uint8_t * destend = img_data + (info.width * info.height);
+		const uint8_t* read = data.getData() + 768 +4;
+		const uint8_t* readend = data.getData() + data.getSize();
+		uint8_t* dest = img_data;
+		uint8_t* destend = img_data + (info.width * info.height);
 		uint8_t code = 0;
 		uint8_t length = 0;
 		uint8_t count = 0;
 
 		// Read image data
-		while (read < readend && dest < destend && count < info.width) {
+		while (read < readend && dest < destend && count < info.width)
+		{
 			code = *read++;
-			if (code < 0x80) {
+			if (code < 0x80)
+			{
 				length = code + 1;
 				memcpy(dest, read, length);
 				dest+=length;
 				read+=length;
 			}
-			else if (code > 0x80) {
+			else if (code > 0x80)
+			{
 				length = (code^0xFF)+2;;
 				code = *read++;
 				memset(dest, code, length);
@@ -205,21 +227,24 @@ protected:
 	}
 
 public:
-	SIFRottLbm() : SIFormat("rottlbm") {
+	SIFRottLbm() : SIFormat("rottlbm")
+	{
 		name = "ROTT Lbm";
 		extension = "dat";
 		reliability = 80;
 	}
 	~SIFRottLbm() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_rottlbm")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Setup info
@@ -233,14 +258,16 @@ public:
 	}
 };
 
-class SIFRottRaw : public SIFormat {
+class SIFRottRaw : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, index);
 
 		// Create image (swapped width/height because column-major)
-		image.create(info.height, info.width, PALMASK); 
+		image.create(info.height, info.width, PALMASK);
 		image.fillAlpha(255);
 
 		// Read raw pixel data
@@ -254,21 +281,24 @@ protected:
 	}
 
 public:
-	SIFRottRaw() : SIFormat("rottraw") {
+	SIFRottRaw() : SIFormat("rottraw")
+	{
 		name = "ROTT Raw";
 		extension = "dat";
 		reliability = 101;
 	}
 	~SIFRottRaw() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_rottraw")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Read header
@@ -286,9 +316,11 @@ public:
 	}
 };
 
-class SIFRottPic : public SIFormat {
+class SIFRottPic : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, index);
 
@@ -306,7 +338,8 @@ protected:
 		uint8_t* dataend = img_data + data.getSize() - 4;
 		const uint8_t* pixel = data.getData() + 2;
 		uint8_t* brush = img_data;
-		while (pixel < entryend) {
+		while (pixel < entryend)
+		{
 			*brush = *pixel++;
 			brush += 4;
 			if (brush >= dataend)
@@ -314,7 +347,8 @@ protected:
 		}
 
 		// Create mask (index 255 is transparent)
-		for (int a = 0; a < info.width*info.height; a++) {
+		for (int a = 0; a < info.width*info.height; a++)
+		{
 			if (img_data[a] == 255)
 				img_mask[a] = 0;
 			else
@@ -325,21 +359,24 @@ protected:
 	}
 
 public:
-	SIFRottPic() : SIFormat("rottpic") {
+	SIFRottPic() : SIFormat("rottpic")
+	{
 		name = "ROTT Picture";
 		extension = "dat";
 		reliability = 60;
 	}
 	~SIFRottPic() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_rottpic")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Read dimensions
@@ -354,14 +391,16 @@ public:
 	}
 };
 
-class SIFRottWall : public SIFormat {
+class SIFRottWall : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, index);
 
 		// Create image (swapped width/height because column-major)
-		image.create(info.height, info.width, PALMASK); 
+		image.create(info.height, info.width, PALMASK);
 		image.fillAlpha(255);
 
 		// Read raw pixel data
@@ -376,21 +415,24 @@ protected:
 	}
 
 public:
-	SIFRottWall() : SIFormat("rottwall") {
+	SIFRottWall() : SIFormat("rottwall")
+	{
 		name = "ROTT Flat";
 		extension = "dat";
 		reliability = 10;
 	}
 	~SIFRottWall() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (mc.getSize() == 4096 || mc.getSize() == 51200)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Always the same thing

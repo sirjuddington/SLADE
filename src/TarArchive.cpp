@@ -44,7 +44,8 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 #pragma pack(1)
 struct tar_header
-{					/* byte offset */
+{
+	/* byte offset */
 	char name[100];			/*   0 */
 	char mode[8];			/* 100 */
 	char uid[8];			/* 108 */
@@ -67,7 +68,8 @@ struct tar_header
 
 #define TMAGIC	"ustar"	/* ustar */
 #define GMAGIC	"  "	/* two spaces */
-enum typeflags {
+enum typeflags
+{
 	AREGTYPE = 0,	/* regular file */
 	REGTYPE  = '0',	/* regular file */
 	LNKTYPE  = '1',	/* link */
@@ -83,10 +85,12 @@ enum typeflags {
  * Returns the value of field from a tar header, where it was
  * written as an octal number in ASCII. Returns -1 if not a number.
  *******************************************************************/
-static int TarSum(const char * field, int size) {
+static int TarSum(const char* field, int size)
+{
 	--size; // We can't use the last byte
 	int sum = 0;
-	for (int a = 0; a < size; ++a) {
+	for (int a = 0; a < size; ++a)
+	{
 		// Check for strictness of octal representation
 		if ((field[a] < '0' || field[a] > '7') && field[a] != ' ')
 			return -1;
@@ -98,14 +102,17 @@ static int TarSum(const char * field, int size) {
 }
 
 /* TarWriteOctal
- * Writes the ASCII representation of the octal value of the 
+ * Writes the ASCII representation of the octal value of the
  * given <sum> in the given <field> using <size> characters
  *******************************************************************/
-static bool TarWriteOctal(size_t sum, char * field, int size) {
+static bool TarWriteOctal(size_t sum, char* field, int size)
+{
 	// Check for overflow, which are possible on 8-byte fields
-	if (size < 11 && sum >= (unsigned)(1<<(3*size))) {
+	if (size < 11 && sum >= (unsigned)(1<<(3*size)))
+	{
 		char errormessage[9] = "WOLFREVO";
-		for (int a = 1; a <= (size + 1); ++a) {
+		for (int a = 1; a <= (size + 1); ++a)
+		{
 			// Should write "OVERFLOW" in a 8-byte field and
 			// be enough to tell the tar is completely kaput.
 			field[size - a] = errormessage[a - 1];
@@ -114,7 +121,8 @@ static bool TarWriteOctal(size_t sum, char * field, int size) {
 	}
 	// If the value is within bounds, write it, starting from the end
 	field[size - 1] = 0; // The last byte must be null or zero and cannot be used
-	for (int a = size - 2; a >= 0; --a) {
+	for (int a = size - 2; a >= 0; --a)
+	{
 		int thisoct = sum % 8;			// Get a value between 0 and 7
 		field[a] = ('0' + thisoct);		// then write it
 		sum >>= 3;						// finally shift the sum.
@@ -126,22 +134,27 @@ static bool TarWriteOctal(size_t sum, char * field, int size) {
  * Computes the checksum of a tar header, both as signed and unsigned
  * bytes, and verifies that one of the two matches the existing value
  *******************************************************************/
-static bool TarChecksum(tar_header * header) {
+static bool TarChecksum(tar_header* header)
+{
 	// Create our dummy header with three pointers so as to be able
 	// to address it either as a tar header, as a block of signed char,
 	// or as a block of unsigned char.
-	int8_t  * sigblock = new int8_t [512];
-	uint8_t * unsblock = (uint8_t *)sigblock;
-	tar_header * block = (tar_header *)sigblock;
+	int8_t*   sigblock = new int8_t [512];
+	uint8_t* unsblock = (uint8_t*)sigblock;
+	tar_header* block = (tar_header*)sigblock;
 	memcpy(sigblock, header, 512);
 	int32_t checksum = 0;
 	// Blank out checksum
-	for (int a = 0; a < 7; ++a) {
-		if ((block->chksum[a] > '7' || block->chksum[a] < '0') && block->chksum[a] != ' ') {
+	for (int a = 0; a < 7; ++a)
+	{
+		if ((block->chksum[a] > '7' || block->chksum[a] < '0') && block->chksum[a] != ' ')
+		{
 			// This is not a checksum
 			//delete[] sigblock;
 			//return false;
-		} else { 
+		}
+		else
+		{
 			checksum<<=3;
 			if (block->chksum[a] != ' ') checksum+=(block->chksum[a] - '0');
 		}
@@ -151,7 +164,8 @@ static bool TarChecksum(tar_header * header) {
 	// Compute the sum
 	int32_t sigsum = 0;
 	uint32_t unssum = 0;
-	for (int a = 0; a < 512; ++a) {
+	for (int a = 0; a < 512; ++a)
+	{
 		sigsum += sigblock[a];
 		unssum += unsblock[a];
 	}
@@ -159,7 +173,7 @@ static bool TarChecksum(tar_header * header) {
 	// Cleanup
 	delete[] sigblock;
 
-	// Consider the checksum valid if it corresponds 
+	// Consider the checksum valid if it corresponds
 	// to either a signed or an unsigned sum
 	return (checksum == sigsum || checksum == unssum);
 }
@@ -167,9 +181,10 @@ static bool TarChecksum(tar_header * header) {
 /* TarChecksum
  * Computes and returns the unsigned checksum of a tar header
  *******************************************************************/
-static size_t TarMakeChecksum(tar_header * header) {
+static size_t TarMakeChecksum(tar_header* header)
+{
 	size_t checksum = 0;
-	uint8_t * h = (uint8_t *) header;
+	uint8_t* h = (uint8_t*) header;
 	for (int a = 0; a < 512; ++a)
 		checksum += h[a];
 	return checksum;
@@ -178,7 +193,8 @@ static size_t TarMakeChecksum(tar_header * header) {
 /* TarDefaultHeader
  * Fill a tar_header with default preset values
  *******************************************************************/
-static void TarDefaultHeader(tar_header * header) {
+static void TarDefaultHeader(tar_header* header)
+{
 	if (header == NULL)
 		return;
 
@@ -192,7 +208,7 @@ static void TarDefaultHeader(tar_header * header) {
 	header->typeflag = 0;					// Typeflag: regular file
 	memset(header->linkname, 0, 100);		// Linkname: fill with zeroes
 	// Now pretend to be POSIX-compliant so as to be legible
-	header->magic[0] = 'u'; header->magic[1] = 's'; header->magic[2] = 't'; 
+	header->magic[0] = 'u'; header->magic[1] = 's'; header->magic[2] = 't';
 	header->magic[3] = 'a'; header->magic[4] = 'r'; header->version[0] = 0;
 	header->version[1] = '0'; header->version[2] = '0';
 	// Username: slade3, of course
@@ -217,26 +233,30 @@ static void TarDefaultHeader(tar_header * header) {
 /* TarArchive::TarArchive
  * TarArchive class constructor
  *******************************************************************/
-TarArchive::TarArchive() : Archive(ARCHIVE_TAR) {
+TarArchive::TarArchive() : Archive(ARCHIVE_TAR)
+{
 }
 
 /* TarArchive::~TarArchive
  * TarArchive class destructor
  *******************************************************************/
-TarArchive::~TarArchive() {
+TarArchive::~TarArchive()
+{
 }
 
 /* TarArchive::getFileExtensionString
  * Returns the file extension string to use in the file open dialog
  *******************************************************************/
-string TarArchive::getFileExtensionString() {
+string TarArchive::getFileExtensionString()
+{
 	return "Tar Files (*.tar)|*.tar";
 }
 
 /* TarArchive::getFormat
  * Returns the string id for the tar EntryDataFormat
  *******************************************************************/
-string TarArchive::getFormat() {
+string TarArchive::getFormat()
+{
 	return "archive_tar";
 }
 
@@ -244,7 +264,8 @@ string TarArchive::getFormat() {
  * Reads tar format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool TarArchive::open(MemChunk& mc) {
+bool TarArchive::open(MemChunk& mc)
+{
 	// Check given data is valid
 	if (mc.getSize() < 1024)
 		return false;
@@ -259,7 +280,8 @@ bool TarArchive::open(MemChunk& mc) {
 	int blankcount = 0;
 
 	// Read all entries in the order they appear
-	while ((mc.currentPos() + 512) < mc.getSize() && blankcount < 2) {
+	while ((mc.currentPos() + 512) < mc.getSize() && blankcount < 2)
+	{
 		// Update splash window progress
 		// Since there is no directory in Unix tape archives, use the size
 		theSplashWindow->setProgress(((float)mc.currentPos() / (float)mc.getSize()));
@@ -267,26 +289,32 @@ bool TarArchive::open(MemChunk& mc) {
 		// Read tar header
 		tar_header header;
 		mc.read(&header, 512);
-		if (wxString::FromAscii(header.magic, 5).CmpNoCase(TMAGIC)) {
-			if (TarMakeChecksum(&header) == 0) {
+		if (wxString::FromAscii(header.magic, 5).CmpNoCase(TMAGIC))
+		{
+			if (TarMakeChecksum(&header) == 0)
+			{
 				++blankcount;
 			}
 			// Invalid block, ignore
 			mc.seek(512, SEEK_CUR);
 			continue;
-		} else if (blankcount) {
+		}
+		else if (blankcount)
+		{
 			// Avoid premature end of file
 			--blankcount;
 		}
 
-		if (!TarChecksum(&header)) {
+		if (!TarChecksum(&header))
+		{
 			wxLogMessage("Invalid checksum for block at 0x%x", mc.currentPos() - 512);
 			continue;
 		}
 
 		// Find name
 		string name;
-		for (int a = 0; a < 100; ++a) {
+		for (int a = 0; a < 100; ++a)
+		{
 			if (header.name[a] == 0)
 				break;
 			name += header.name[a];
@@ -295,7 +323,8 @@ bool TarArchive::open(MemChunk& mc) {
 		// Find size
 		size_t size = TarSum(header.size, 12);
 
-		if ((int)header.typeflag == AREGTYPE || (int)header.typeflag == REGTYPE) {
+		if ((int)header.typeflag == AREGTYPE || (int)header.typeflag == REGTYPE)
+		{
 			// Normal entry
 			wxFileName fn(name);
 
@@ -310,10 +339,14 @@ bool TarArchive::open(MemChunk& mc) {
 
 			// Add to directory
 			dir->addEntry(entry);
-		} else if ((int)header.typeflag == DIRTYPE) {
+		}
+		else if ((int)header.typeflag == DIRTYPE)
+		{
 			// Directory
 			ArchiveTreeNode* dir = createDir(name);
-		} else {
+		}
+		else
+		{
 			// Something different that we will ignore
 		}
 
@@ -330,7 +363,8 @@ bool TarArchive::open(MemChunk& mc) {
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < all_entries.size(); a++) {
+	for (size_t a = 0; a < all_entries.size(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)all_entries.size())));
 
@@ -338,7 +372,8 @@ bool TarArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
 			entry->importMemChunk(edata);
@@ -369,7 +404,8 @@ bool TarArchive::open(MemChunk& mc) {
  * Writes the tar archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool TarArchive::write(MemChunk& mc, bool update) {
+bool TarArchive::write(MemChunk& mc, bool update)
+{
 	// Clear current data
 	mc.clear();
 
@@ -382,7 +418,8 @@ bool TarArchive::write(MemChunk& mc, bool update) {
 	getEntryTreeAsList(entries);
 	size_t listsize = entries.size();
 
-	for (size_t a = 0; a < listsize; ++a) {
+	for (size_t a = 0; a < listsize; ++a)
+	{
 		// MAYBE TODO: store the header variables as ExProps for the entries, then only change
 		// header.mtime for modified entries, and only use the default values for new entries.
 		tar_header header;
@@ -391,7 +428,8 @@ bool TarArchive::write(MemChunk& mc, bool update) {
 		// Write entry name
 		string name = entries[a]->getPath(true);
 		name.Remove(0, 1);	// Remove leading /
-		if (name.Len() > 99) {
+		if (name.Len() > 99)
+		{
 			wxLogMessage("Warning: Entry %s path is too long (> 99 characters), putting it in the root directory", CHR(name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
@@ -401,13 +439,16 @@ bool TarArchive::write(MemChunk& mc, bool update) {
 		memcpy(header.name, CHR(name), name.Length());
 
 		// Address folders
-		if (entries[a]->getType() == EntryType::folderType()) {
+		if (entries[a]->getType() == EntryType::folderType())
+		{
 			header.typeflag = DIRTYPE;
 			TarWriteOctal(TarMakeChecksum(&header), header.chksum, 7);
 			mc.write(&header, 512);
 
-		// Else we've got a file
-		} else {
+			// Else we've got a file
+		}
+		else
+		{
 			header.typeflag = REGTYPE;
 			TarWriteOctal(entries[a]->getSize(), header.size, 12);
 			TarWriteOctal(TarMakeChecksum(&header), header.chksum, 7);
@@ -430,23 +471,26 @@ bool TarArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the tar file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool TarArchive::loadEntryData(ArchiveEntry* entry) {
+bool TarArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check entry is ok
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
 
 	// Open archive file
 	wxFile file(filename);
-	
+
 	// Check it opened
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("TarArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
 		return false;
 	}
@@ -464,7 +508,8 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry) {
 /* TarArchive::detectNamespace
  * Returns the namespace that [entry] is within
  *******************************************************************/
-string TarArchive::detectNamespace(ArchiveEntry* entry) {
+string TarArchive::detectNamespace(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return "global";
@@ -492,27 +537,36 @@ string TarArchive::detectNamespace(ArchiveEntry* entry) {
 /* TarArchive::isTarArchive
  * Checks if the given data is a valid Unix tar archive
  *******************************************************************/
-bool TarArchive::isTarArchive(MemChunk& mc) {
+bool TarArchive::isTarArchive(MemChunk& mc)
+{
 	mc.seek(0, SEEK_SET);
 	int blankcount = 0;
-	while ((mc.currentPos() + 512) <= mc.getSize() && blankcount < 3) {
+	while ((mc.currentPos() + 512) <= mc.getSize() && blankcount < 3)
+	{
 		// Read tar header
 		tar_header header;
 		mc.read(&header, 512);
-		if (string(wxString::FromAscii(header.magic, 5)).CmpNoCase(TMAGIC)) {
-			if (TarMakeChecksum(&header) == 0) {
+		if (string(wxString::FromAscii(header.magic, 5)).CmpNoCase(TMAGIC))
+		{
+			if (TarMakeChecksum(&header) == 0)
+			{
 				++blankcount;
-			} else {
+			}
+			else
+			{
 				return false;
 			}
 			// Move to next
 			continue;
-		} else if (blankcount) {
+		}
+		else if (blankcount)
+		{
 			// Avoid premature end of file
 			--blankcount;
 		}
 
-		if (!TarChecksum(&header)) {
+		if (!TarChecksum(&header))
+		{
 			return false;
 		}
 
@@ -531,7 +585,8 @@ bool TarArchive::isTarArchive(MemChunk& mc) {
 /* TarArchive::isTarArchive
  * Checks if the file at [filename] is a valid Unix tar archive
  *******************************************************************/
-bool TarArchive::isTarArchive(string filename) {
+bool TarArchive::isTarArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 
@@ -540,25 +595,33 @@ bool TarArchive::isTarArchive(string filename) {
 		return false;
 
 	int blankcount = 0;
-	while ((file.Tell() + 512) <= file.Length() && blankcount < 3) {
+	while ((file.Tell() + 512) <= file.Length() && blankcount < 3)
+	{
 
 		// Read tar header
 		tar_header header;
 		file.Read(&header, 512);
-		if (string(wxString::FromAscii(header.magic, 5)).CmpNoCase(TMAGIC)) {
-			if (TarMakeChecksum(&header) == 0) {
+		if (string(wxString::FromAscii(header.magic, 5)).CmpNoCase(TMAGIC))
+		{
+			if (TarMakeChecksum(&header) == 0)
+			{
 				++blankcount;
-			} else {
+			}
+			else
+			{
 				return false;
 			}
 			// Move to next
 			continue;
-		} else if (blankcount) {
+		}
+		else if (blankcount)
+		{
 			// Avoid premature end of file
 			--blankcount;
 		}
 
-		if (!TarChecksum(&header)) {
+		if (!TarChecksum(&header))
+		{
 			return false;
 		}
 

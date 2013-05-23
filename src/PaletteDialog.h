@@ -4,7 +4,8 @@
 
 #include "PaletteCanvas.h"
 
-class PaletteDialog : public wxDialog {
+class PaletteDialog : public wxDialog
+{
 private:
 	PaletteCanvas*	pal_canvas;
 

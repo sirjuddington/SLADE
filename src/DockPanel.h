@@ -2,7 +2,8 @@
 #ifndef __DOCK_PANEL_H__
 #define __DOCK_PANEL_H__
 
-class DockPanel : public wxPanel {
+class DockPanel : public wxPanel
+{
 protected:
 	uint8_t	current_layout;	// 0=normal, 1=horizontal, 2=vertical
 

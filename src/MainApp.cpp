@@ -65,14 +65,15 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-namespace Global {
+namespace Global
+{
 	string error = "";
 
 	string version = "3.1.0 alpha"
 #ifdef SVN_REVISION_STRING
-	" (r" SVN_REVISION_STRING ")"
+	                 " (r" SVN_REVISION_STRING ")"
 #endif
-	"";
+	                 "";
 
 	int log_verbosity = 1;
 
@@ -104,23 +105,26 @@ CVAR(Int, log_verbosity, 1, CVAR_SAVE)
  * so unfortunately it has to be disabled there
  *******************************************************************/
 #ifndef __APPLE__
-class SLADEStackTrace : public wxStackWalker {
+class SLADEStackTrace : public wxStackWalker
+{
 private:
 	string	stack_trace;
 
 public:
-	SLADEStackTrace() {
+	SLADEStackTrace()
+	{
 		stack_trace = "Stack Trace:\n";
 	}
 
-	~SLADEStackTrace() {
-	}
+	~SLADEStackTrace() {}
 
-	string getTraceString() {
+	string getTraceString()
+	{
 		return stack_trace;
 	}
 
-	void OnStackFrame(const wxStackFrame& frame) {
+	void OnStackFrame(const wxStackFrame& frame)
+	{
 		string location = "[unknown location] ";
 		if (frame.HasSourceLocation())
 			location = S_FMT("(%s:%d) ", frame.GetFileName().c_str(), frame.GetLine());
@@ -154,12 +158,14 @@ public:
  * A simple dialog that displays a crash message and a scrollable,
  * multi-line textbox with a stack trace
  *******************************************************************/
-class SLADECrashDialog : public wxDialog {
+class SLADECrashDialog : public wxDialog
+{
 private:
 	wxTextCtrl*	text_stack;
 
 public:
-	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE3 Application Crash") {
+	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE3 Application Crash")
+	{
 		// Setup sizer
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
@@ -196,8 +202,7 @@ public:
 		SetInitialSize(wxSize(500, 500));
 	}
 
-	~SLADECrashDialog() {
-	}
+	~SLADECrashDialog() {}
 };
 #endif//__APPLE__
 
@@ -213,7 +218,8 @@ public:
  * DIR_TEMP: Temporary files directory
  *******************************************************************/
 int temp_fail_count = 0;
-string appPath(string filename, int dir) {
+string appPath(string filename, int dir)
+{
 	// Setup separator character
 #ifdef WIN32
 	string sep = "\\";
@@ -228,7 +234,8 @@ string appPath(string filename, int dir) {
 		return dir_user + sep + filename;
 	else if (dir == DIR_APP)
 		return dir_app + sep + filename;
-	else if (dir == DIR_TEMP) {
+	else if (dir == DIR_TEMP)
+	{
 		// Get temp path
 		string dir_temp;
 		if (temp_use_appdir)
@@ -237,8 +244,10 @@ string appPath(string filename, int dir) {
 			dir_temp = wxStandardPaths::Get().GetTempDir().Append(sep).Append("SLADE3");
 
 		// Create folder if necessary
-		if (!wxDirExists(dir_temp) && temp_fail_count < 2) {
-			if (!wxMkdir(dir_temp)) {
+		if (!wxDirExists(dir_temp) && temp_fail_count < 2)
+		{
+			if (!wxMkdir(dir_temp))
+			{
 				wxLogMessage("Unable to create temp directory \"%s\"", CHR(dir_temp));
 				temp_use_appdir = !temp_use_appdir;
 				temp_fail_count++;
@@ -259,9 +268,11 @@ string appPath(string filename, int dir) {
 
 // How fun. DoLogString() does not work with 2.9.1, and DoLogText() with 2.9.0.
 #if (wxMAJOR_VERSION == 2 && wxMINOR_VERSION == 9 && wxRELEASE_NUMBER == 0)
-void SLADELog::DoLogString(const wxString& msg, time_t time) {
+void SLADELog::DoLogString(const wxString& msg, time_t time)
+{
 #else
-void SLADELog::DoLogText(const wxString& msg) {
+void SLADELog::DoLogText(const wxString& msg)
+{
 #endif
 	if (!exiting)
 		theConsole->logMessage(msg);
@@ -275,9 +286,11 @@ void SLADELog::DoLogText(const wxString& msg) {
 /* FreeImageErrorHandler
  * Allows to catch FreeImage errors and log them to the console.
  *******************************************************************/
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
+{
 	string error = "FreeImage: ";
-	if (fif != FIF_UNKNOWN) {
+	if (fif != FIF_UNKNOWN)
+	{
 		error += S_FMT("[%s] ", FreeImage_GetFormatFromFIF(fif));
 	}
 	error += message;
@@ -294,7 +307,8 @@ IMPLEMENT_APP(MainApp)
 /* MainApp::MainApp
  * MainApp class constructor
  *******************************************************************/
-MainApp::MainApp() {
+MainApp::MainApp()
+{
 	main_window = NULL;
 	cur_id = 26000;
 	action_invalid = NULL;
@@ -304,7 +318,8 @@ MainApp::MainApp() {
 /* MainApp::~MainApp
  * MainApp class destructor
  *******************************************************************/
-MainApp::~MainApp() {
+MainApp::~MainApp()
+{
 }
 
 /* MainApp::initDirectories
@@ -312,7 +327,8 @@ MainApp::~MainApp() {
  * true if all directories existed and were created successfully if
  * needed, false otherwise
  *******************************************************************/
-bool MainApp::initDirectories() {
+bool MainApp::initDirectories()
+{
 	// Setup separator character
 #ifdef WIN32
 	string sep = "\\";
@@ -324,20 +340,24 @@ bool MainApp::initDirectories() {
 	dir_app = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 
 	// Check for portable install
-	if (wxFileExists(appPath("portable", DIR_APP))) {
+	if (wxFileExists(appPath("portable", DIR_APP)))
+	{
 		// Setup portable user/data dirs
 		dir_data = dir_app;
 		dir_user = dir_app + sep + "config";
 	}
-	else {
+	else
+	{
 		// Setup standard user/data dirs
 		dir_user = wxStandardPaths::Get().GetUserDataDir();
 		dir_data = wxStandardPaths::Get().GetDataDir();
 	}
 
 	// Create user dir if necessary
-	if (!wxDirExists(dir_user)) {
-		if (!wxMkdir(dir_user)) {
+	if (!wxDirExists(dir_user))
+	{
+		if (!wxMkdir(dir_user))
+		{
 			wxMessageBox(S_FMT("Unable to create user directory \"%s\"", dir_user.c_str()), "Error", wxICON_ERROR);
 			return false;
 		}
@@ -353,7 +373,8 @@ bool MainApp::initDirectories() {
 /* MainApp::initLogFile
  * Sets up the SLADE log file
  *******************************************************************/
-void MainApp::initLogFile() {
+void MainApp::initLogFile()
+{
 	// Set wxLog target(s)
 	wxLog::SetActiveTarget(new SLADELog());
 	FILE* log_file = fopen(CHR(appPath("slade3.log", DIR_DATA)), "wt");
@@ -378,7 +399,8 @@ void MainApp::initLogFile() {
 /* MainApp::initActions
  * Sets up all menu/toolbar actions
  *******************************************************************/
-void MainApp::initActions() {
+void MainApp::initActions()
+{
 	// MainWindow
 	new SAction("main_exit", "E&xit", "t_exit", "Quit SLADE", "", 0, wxID_EXIT);
 	new SAction("main_undo", "Undo", "t_undo", "Undo", "Ctrl+Z");
@@ -581,7 +603,8 @@ void MainApp::initActions() {
 /* MainApp::OnInit
  * Application initialization, run when program is started
  *******************************************************************/
-bool MainApp::OnInit() {
+bool MainApp::OnInit()
+{
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
 	setlocale (LC_ALL, "C");
@@ -630,7 +653,8 @@ bool MainApp::OnInit() {
 	// Check that SLADE.pk3 can be found
 	wxLogMessage("Loading resources");
 	theArchiveManager->init();
-	if (!theArchiveManager->resArchiveOK()) {
+	if (!theArchiveManager->resArchiveOK())
+	{
 		wxMessageBox("Unable to find slade.pk3, make sure it exists in the same directory as the SLADE executable", "Error", wxICON_ERROR);
 		return false;
 	}
@@ -691,7 +715,8 @@ bool MainApp::OnInit() {
 	// Open any archives on the command line
 	// argv[0] is normally the executable itself (i.e. Slade.exe)
 	// and opening it as an archive should not be attempted...
-	for (int a = 1; a < argc; a++) {
+	for (int a = 1; a < argc; a++)
+	{
 		string arg = argv[a];
 		theArchiveManager->openArchive(arg);
 	}
@@ -714,7 +739,8 @@ bool MainApp::OnInit() {
 /* MainApp::OnExit
  * Application shutdown, run when program is closed
  *******************************************************************/
-int MainApp::OnExit() {
+int MainApp::OnExit()
+{
 	exiting = true;
 
 	// Save configuration
@@ -745,7 +771,8 @@ int MainApp::OnExit() {
 	temp.Open(appPath("", DIR_TEMP));
 	string filename = wxEmptyString;
 	bool files = temp.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files) {
+	while (files)
+	{
 		if (!wxRemoveFile(appPath(filename, DIR_TEMP)))
 			wxLogMessage("Warning: Could not clean up temporary file \"%s\"", CHR(filename));
 		files = temp.GetNext(&filename);
@@ -757,7 +784,8 @@ int MainApp::OnExit() {
 	return 0;
 }
 
-void MainApp::OnFatalException() {
+void MainApp::OnFatalException()
+{
 #ifndef __APPLE__
 #ifndef _DEBUG
 	SLADEStackTrace st;
@@ -771,7 +799,8 @@ void MainApp::OnFatalException() {
 /* MainApp::readConfigFile
  * Reads and parses the SLADE configuration file
  *******************************************************************/
-void MainApp::readConfigFile() {
+void MainApp::readConfigFile()
+{
 	// Open SLADE.cfg
 	Tokenizer tz;
 	if (!tz.openFile(appPath("slade3.cfg", DIR_USER)))
@@ -779,14 +808,17 @@ void MainApp::readConfigFile() {
 
 	// Go through the file with the tokenizer
 	string token = tz.getToken();
-	while (token.Cmp("")) {
+	while (token.Cmp(""))
+	{
 		// If we come across a 'cvars' token, read in the cvars section
-		if (!token.Cmp("cvars")) {
+		if (!token.Cmp("cvars"))
+		{
 			token = tz.getToken();	// Skip '{'
 
 			// Keep reading name/value pairs until we hit the ending '}'
 			string cvar_name = tz.getToken();
-			while (cvar_name.Cmp("}")) {
+			while (cvar_name.Cmp("}"))
+			{
 				string cvar_val = tz.getToken();
 				read_cvar(cvar_name, cvar_val);
 				cvar_name = tz.getToken();
@@ -794,44 +826,51 @@ void MainApp::readConfigFile() {
 		}
 
 		// Read base resource archive paths
-		if (!token.Cmp("base_resource_paths")) {
+		if (!token.Cmp("base_resource_paths"))
+		{
 			// Skip {
 			token = tz.getToken();
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token.Cmp("}")) {
+			while (token.Cmp("}"))
+			{
 				theArchiveManager->addBaseResourcePath(token);
 				token = tz.getToken();
 			}
 		}
 
 		// Read recent files list
-		if (token == "recent_files") {
+		if (token == "recent_files")
+		{
 			// Skip {
 			token = tz.getToken();
 
 			// Read files until closing brace found
 			token = tz.getToken();
-			while (token != "}") {
+			while (token != "}")
+			{
 				theArchiveManager->addRecentFile(token);
 				token = tz.getToken();
 			}
 		}
 
 		// Read keybinds
-		if (token == "keys") {
+		if (token == "keys")
+		{
 			token = tz.getToken();	// Skip {
 			KeyBind::readBinds(tz);
 		}
 
 		// Read nodebuilder paths
-		if (token == "nodebuilder_paths") {
+		if (token == "nodebuilder_paths")
+		{
 			token = tz.getToken();	// Skip {
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token != "}") {
+			while (token != "}")
+			{
 				string path = tz.getToken();
 				NodeBuilders::addBuilderPath(token, path);
 				token = tz.getToken();
@@ -846,7 +885,8 @@ void MainApp::readConfigFile() {
 /* MainApp::saveConfigFile
  * Saves the SLADE configuration file
  *******************************************************************/
-void MainApp::saveConfigFile() {
+void MainApp::saveConfigFile()
+{
 	// Open SLADE.cfg for writing text
 	wxFile file(appPath("slade3.cfg", DIR_USER), wxFile::write);
 
@@ -888,9 +928,11 @@ void MainApp::saveConfigFile() {
 	file.Write("\n// End Configuration File\n\n");
 }
 
-SAction* MainApp::getAction(string id) {
+SAction* MainApp::getAction(string id)
+{
 	// Find matching action
-	for (unsigned a = 0; a < actions.size(); a++) {
+	for (unsigned a = 0; a < actions.size(); a++)
+	{
 		if (S_CMP(actions[a]->getId(), id))
 			return actions[a];
 	}
@@ -899,14 +941,17 @@ SAction* MainApp::getAction(string id) {
 	return action_invalid;
 }
 
-bool MainApp::doAction(string id) {
+bool MainApp::doAction(string id)
+{
 	// Toggle action if necessary
 	toggleAction(id);
 
 	// Send action to all handlers
 	bool handled = false;
-	for (unsigned a = 0; a < action_handlers.size(); a++) {
-		if (action_handlers[a]->handleAction(id)) {
+	for (unsigned a = 0; a < action_handlers.size(); a++)
+	{
+		if (action_handlers[a]->handleAction(id))
+		{
 			handled = true;
 			break;
 		}
@@ -920,7 +965,8 @@ bool MainApp::doAction(string id) {
 	return handled;
 }
 
-void MainApp::toggleAction(string id) {
+void MainApp::toggleAction(string id)
+{
 	// Check action type for check/radio toggle
 	SAction* action = getAction(id);
 
@@ -929,9 +975,11 @@ void MainApp::toggleAction(string id) {
 		action->toggled = !action->toggled;
 
 	// Type is 'radio', toggle this and un-toggle others in the group
-	else if (action && action->type == SAction::RADIO && action->group >= 0) {
+	else if (action && action->type == SAction::RADIO && action->group >= 0)
+	{
 		// Go through and toggle off all other actions in the same group
-		for (unsigned a = 0; a < actions.size(); a++) {
+		for (unsigned a = 0; a < actions.size(); a++)
+		{
 			if (actions[a]->group == action->group)
 				actions[a]->toggled = false;
 		}
@@ -940,18 +988,22 @@ void MainApp::toggleAction(string id) {
 	}
 }
 
-void MainApp::onMenu(wxCommandEvent& e) {
+void MainApp::onMenu(wxCommandEvent& e)
+{
 	// Find applicable action
 	string action = "";
-	for (unsigned a = 0; a < actions.size(); a++) {
-		if (actions[a]->getWxId() == e.GetId()) {
+	for (unsigned a = 0; a < actions.size(); a++)
+	{
+		if (actions[a]->getWxId() == e.GetId())
+		{
 			action = actions[a]->getId();
 			break;
 		}
 	}
 
 	// If action is valid, send to all action handlers
-	if (!action.IsEmpty()) {
+	if (!action.IsEmpty())
+	{
 		current_action = action;
 		doAction(action);
 		current_action = "";
@@ -963,8 +1015,10 @@ void MainApp::onMenu(wxCommandEvent& e) {
 }
 
 
-CONSOLE_COMMAND (crash, 0, false) {
-	if (wxMessageBox("Yes, this command does actually exist and *will* crash the program. Do you really want it to crash?", "...Really?", wxYES_NO|wxCENTRE) == wxYES) {
+CONSOLE_COMMAND (crash, 0, false)
+{
+	if (wxMessageBox("Yes, this command does actually exist and *will* crash the program. Do you really want it to crash?", "...Really?", wxYES_NO|wxCENTRE) == wxYES)
+	{
 		uint8_t* test = NULL;
 		test[123] = 5;
 	}

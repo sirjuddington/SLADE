@@ -62,14 +62,15 @@ EXTERN_CVAR(Float, col_cie_kh)
 /* ColorimetryPrefsPanel::ColorimetryPrefsPanel
  * ColorimetryPrefsPanel class constructor
  *******************************************************************/
-ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Colorimetry Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Colorimetry Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Let's stack horizontal sizers in a vertical sizer
@@ -145,16 +146,17 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 	hbox->Add(new wxStaticText(this, -1, "Z:"), 0, wxALL, 4);
 	spin_tristim_z = new wxSpinCtrlDouble(this, -1, "TriStimZ", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 200.0, 100.0, 0.1);
 	hbox->Add(spin_tristim_z, 0, wxEXPAND|wxBOTTOM, 4);
-	string tristimuli[] = { 
-		"Illuminant A, 2° Observer", "Illuminant A, 10° Observer", 
-		"Illuminant C, 2° Observer", "Illuminant C, 10° Observer", 
-		"Illuminant D50, 2° Observer", "Illuminant D50, 10° Observer", 
-		"Illuminant D60, 2° Observer", "Illuminant D60, 10° Observer", 
-		"Illuminant D65, 2° Observer", "Illuminant D65, 10° Observer", 
-		"Illuminant D75, 2° Observer", "Illuminant D75, 10° Observer", 
-		"Illuminant F2, 2° Observer", "Illuminant F2, 10° Observer", 
-		"Illuminant TL4, 2° Observer", "Illuminant TL4, 10° Observer", 
-		"Illuminant UL3000, 2° Observer", "Illuminant UL3000, 10° Observer", 
+	string tristimuli[] =
+	{
+		"Illuminant A, 2° Observer", "Illuminant A, 10° Observer",
+		"Illuminant C, 2° Observer", "Illuminant C, 10° Observer",
+		"Illuminant D50, 2° Observer", "Illuminant D50, 10° Observer",
+		"Illuminant D60, 2° Observer", "Illuminant D60, 10° Observer",
+		"Illuminant D65, 2° Observer", "Illuminant D65, 10° Observer",
+		"Illuminant D75, 2° Observer", "Illuminant D75, 10° Observer",
+		"Illuminant F2, 2° Observer", "Illuminant F2, 10° Observer",
+		"Illuminant TL4, 2° Observer", "Illuminant TL4, 10° Observer",
+		"Illuminant UL3000, 2° Observer", "Illuminant UL3000, 10° Observer",
 	};
 	choice_presets_tristim = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 18, tristimuli);
 	hbox->Add(choice_presets_tristim, 1, wxEXPAND);
@@ -194,13 +196,15 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 /* ColorimetryPrefsPanel::~ColorimetryPrefsPanel
  * ColorimetryPrefsPanel class destructor
  *******************************************************************/
-ColorimetryPrefsPanel::~ColorimetryPrefsPanel() {
+ColorimetryPrefsPanel::~ColorimetryPrefsPanel()
+{
 }
 
 /* ColorimetryPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void ColorimetryPrefsPanel::init() {
+void ColorimetryPrefsPanel::init()
+{
 	spin_grey_r->SetValue(col_greyscale_r);
 	spin_grey_g->SetValue(col_greyscale_g);
 	spin_grey_b->SetValue(col_greyscale_b);
@@ -223,7 +227,8 @@ void ColorimetryPrefsPanel::init() {
 /* ColorimetryPrefsPanel::applyPreferences
  * Applies preferences from the panel controls
  *******************************************************************/
-void ColorimetryPrefsPanel::applyPreferences() {
+void ColorimetryPrefsPanel::applyPreferences()
+{
 	col_greyscale_r = spin_grey_r->GetValue();
 	col_greyscale_g = spin_grey_g->GetValue();
 	col_greyscale_b = spin_grey_b->GetValue();
@@ -245,7 +250,8 @@ void ColorimetryPrefsPanel::applyPreferences() {
 /* ColorimetryPrefsPanel::onChoiceColormatchSelected
  * Called when the 'color matching' dropdown choice is changed
  *******************************************************************/
-void ColorimetryPrefsPanel::onChoiceColormatchSelected(wxCommandEvent& e) {
+void ColorimetryPrefsPanel::onChoiceColormatchSelected(wxCommandEvent& e)
+{
 	col_match = 1 + choice_colmatch->GetSelection();
 }
 
@@ -257,10 +263,12 @@ void ColorimetryPrefsPanel::onChoiceColormatchSelected(wxCommandEvent& e) {
  * Grafica Obscura's weights for linear RGB: 0.3086, 0.6094, 0.0820
  * http://www.graficaobscura.com/matrix/index.html
  *******************************************************************/
-void ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected(wxCommandEvent& e) {
+void ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected(wxCommandEvent& e)
+{
 	int preset = choice_presets_grey->GetSelection();
 
-	switch (preset) {
+	switch (preset)
+	{
 	case 0:		// Standard
 		spin_grey_r->SetValue(0.299);
 		spin_grey_g->SetValue(0.587);
@@ -298,10 +306,12 @@ void ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected(wxCommandEvent& e) {
  *		UL3000	107.99	 33.91	111.12	 35.21
  * Source: http://www.hunterlab.com/appnotes/an07_96a.pdf
  *******************************************************************/
-void ColorimetryPrefsPanel::onChoiceTristimPresetSelected(wxCommandEvent& e) {
+void ColorimetryPrefsPanel::onChoiceTristimPresetSelected(wxCommandEvent& e)
+{
 	int preset = choice_presets_tristim->GetSelection();
 
-	switch (preset) {
+	switch (preset)
+	{
 	case 0:		// 2°A
 		spin_tristim_x->SetValue(109.83);
 		spin_tristim_z->SetValue( 35.55);

@@ -31,7 +31,8 @@
 
 class ArchiveEntry;
 
-struct gcd_item_t {
+struct gcd_item_t
+{
 	ArchiveEntry*	entry;
 	CTexture*		texture;
 	SImage			image;
@@ -41,7 +42,8 @@ struct gcd_item_t {
 	Archive*		archive;
 	bool			force_rgba;
 
-	gcd_item_t(ArchiveEntry* entry = NULL) {
+	gcd_item_t(ArchiveEntry* entry = NULL)
+	{
 		this->entry = entry;
 		this->texture = NULL;
 		this->modified = false;
@@ -51,7 +53,8 @@ struct gcd_item_t {
 		this->force_rgba = false;
 	}
 
-	gcd_item_t(CTexture* texture, Palette8bit* palette = NULL, Archive* archive = NULL, bool force_rgba = false) {
+	gcd_item_t(CTexture* texture, Palette8bit* palette = NULL, Archive* archive = NULL, bool force_rgba = false)
+	{
 		this->entry = NULL;
 		this->texture = texture;
 		this->modified = false;
@@ -62,13 +65,16 @@ struct gcd_item_t {
 	}
 };
 
-class GfxConvDialog : public wxDialog {
+class GfxConvDialog : public wxDialog
+{
 private:
-	struct conv_format_t {
+	struct conv_format_t
+	{
 		SIFormat*	format;
 		int			coltype;
 
-		conv_format_t(SIFormat* format = NULL, int coltype = RGBA) {
+		conv_format_t(SIFormat* format = NULL, int coltype = RGBA)
+		{
 			this->format = format;
 			this->coltype = coltype;
 		}

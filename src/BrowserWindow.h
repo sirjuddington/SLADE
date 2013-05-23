@@ -8,13 +8,15 @@
 #include <wx/treelist.h>
 #include <wx/frame.h>
 
-class BrowserTreeNode : public STreeNode {
+class BrowserTreeNode : public STreeNode
+{
 private:
 	string 					name;
 	vector<BrowserItem*>	items;
 	wxTreeListItem			tree_id;
 
-	STreeNode* createChild(string name) {
+	STreeNode* createChild(string name)
+	{
 		BrowserTreeNode* node = new BrowserTreeNode();
 		node->name = name;
 		return node;
@@ -36,7 +38,8 @@ public:
 };
 
 
-class BrowserWindow : public wxDialog {
+class BrowserWindow : public wxDialog
+{
 private:
 	//wxTreeCtrl*			tree_items;
 	wxTreeListCtrl*		tree_items;

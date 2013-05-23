@@ -5,24 +5,29 @@
 #include "UndoRedo.h"
 
 
-UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) : VirtualListView(parent) {
+UndoListView::UndoListView(wxWindow* parent, UndoManager* manager) : VirtualListView(parent)
+{
 	this->manager = manager;
 
-	if (manager) {
+	if (manager)
+	{
 		SetItemCount(manager->nUndoLevels());
 		listenTo(manager);
 	}
 }
 
-UndoListView::~UndoListView() {
+UndoListView::~UndoListView()
+{
 }
 
-string UndoListView::getItemText(long item, long column) const {
+string UndoListView::getItemText(long item, long column) const
+{
 	if (!manager)
 		return "";
 
 	int max = manager->nUndoLevels();
-	if (item < max) {
+	if (item < max)
+	{
 		int index = max - item - 1;
 		string name = manager->undoLevel(index)->getName();
 		return S_FMT("%d. %s", index+1, CHR(name));
@@ -31,11 +36,13 @@ string UndoListView::getItemText(long item, long column) const {
 		return "Invalid Index";
 }
 
-int UndoListView::getItemIcon(long item) const {
+int UndoListView::getItemIcon(long item) const
+{
 	return -1;
 }
 
-void UndoListView::updateItemAttr(long item) const {
+void UndoListView::updateItemAttr(long item) const
+{
 	if (!manager)
 		return;
 
@@ -48,7 +55,8 @@ void UndoListView::updateItemAttr(long item) const {
 		item_attr->SetTextColour(WXCOL(rgba_t(150, 150, 150)));
 }
 
-void UndoListView::setManager(UndoManager* manager) {
+void UndoListView::setManager(UndoManager* manager)
+{
 	if (this->manager)
 		stopListening(this->manager);
 
@@ -58,7 +66,8 @@ void UndoListView::setManager(UndoManager* manager) {
 	SetItemCount(manager->nUndoLevels());
 }
 
-void UndoListView::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {
+void UndoListView::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+{
 	if (announcer != manager)
 		return;
 
@@ -68,7 +77,8 @@ void UndoListView::onAnnouncement(Announcer* announcer, string event_name, MemCh
 
 
 
-UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager) : wxPanel(parent, -1) {
+UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager) : wxPanel(parent, -1)
+{
 	// Init variables
 	this->manager = manager;
 
@@ -86,13 +96,15 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 	list_levels->InsertColumn(list_levels->GetColumnCount(), "Action", 0, 160);
 #endif
 
-	list_levels->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this); 
+	list_levels->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 }
 
-UndoManagerHistoryPanel::~UndoManagerHistoryPanel() {
+UndoManagerHistoryPanel::~UndoManagerHistoryPanel()
+{
 }
 
-void UndoManagerHistoryPanel::setManager(UndoManager* manager) {
+void UndoManagerHistoryPanel::setManager(UndoManager* manager)
+{
 	this->manager = manager;
 	list_levels->setManager(manager);
 }
@@ -132,14 +144,18 @@ void UndoManagerHistoryPanel::updateList() {
 }
 */
 
-void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e) {
+void UndoManagerHistoryPanel::onItemRightClick(wxCommandEvent& e)
+{
 	int index = e.GetInt();
 	wxMessageBox(S_FMT("Item %d", e.GetInt()));
 
-	if (index == manager->getCurrentIndex()) {
+	if (index == manager->getCurrentIndex())
+	{
 	}
-	else if (index < manager->getCurrentIndex()) {
+	else if (index < manager->getCurrentIndex())
+	{
 	}
-	else {
+	else
+	{
 	}
 }

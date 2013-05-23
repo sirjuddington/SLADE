@@ -1,19 +1,22 @@
 #ifndef IMAGEFORMATS_H
 #define IMAGEFORMATS_H
 
-class PNGDataFormat : public EntryDataFormat {
+class PNGDataFormat : public EntryDataFormat
+{
 public:
 	PNGDataFormat() : EntryDataFormat("img_png") {}
 	~PNGDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 8) {
+		if (mc.getSize() > 8)
+		{
 			// Check for PNG header
 			if (mc[0] == 137 && mc[1] == 80 &&
-					mc[2] == 78 && mc[3] == 71 &&
-					mc[4] == 13 && mc[5] == 10 &&
-					mc[6] == 26 && mc[7] == 10)
+			        mc[2] == 78 && mc[3] == 71 &&
+			        mc[4] == 13 && mc[5] == 10 &&
+			        mc[6] == 26 && mc[7] == 10)
 				return EDF_TRUE;
 		}
 
@@ -21,14 +24,17 @@ public:
 	}
 };
 
-class BMPDataFormat : public EntryDataFormat {
+class BMPDataFormat : public EntryDataFormat
+{
 public:
 	BMPDataFormat() : EntryDataFormat("img_bmp") {};
 	~BMPDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 14) {
+		if (mc.getSize() > 14)
+		{
 			// Check for BMP header
 			if (mc[0] == 'B' && mc[1] == 'M' && mc[6] == 0 && mc[7] == 0 && mc[8] == 0 && mc[9] == 0)
 				return EDF_TRUE;
@@ -38,17 +44,20 @@ public:
 	}
 };
 
-class GIFDataFormat : public EntryDataFormat {
+class GIFDataFormat : public EntryDataFormat
+{
 public:
 	GIFDataFormat() : EntryDataFormat("img_gif") {};
 	~GIFDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 6) {
+		if (mc.getSize() > 6)
+		{
 			// Check for GIF header
 			if (mc[0] == 'G' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == '8' &&
-				(mc[4] == '7' || mc[4] =='9') && mc[5] == 'a')
+			        (mc[4] == '7' || mc[4] =='9') && mc[5] == 'a')
 				return EDF_TRUE;
 		}
 
@@ -56,12 +65,14 @@ public:
 	}
 };
 
-class PCXDataFormat : public EntryDataFormat {
+class PCXDataFormat : public EntryDataFormat
+{
 public:
 	PCXDataFormat() : EntryDataFormat("img_pcx") {};
 	~PCXDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
 		if (mc.getSize() < 129)
 			return EDF_FALSE;
@@ -72,21 +83,23 @@ public:
 		if (mc[1] > 5 || mc[1] == 1)
 			return EDF_FALSE;
 		// Bit depth and color plane fields are used in combination
-		switch (mc[3]) {
-			case 1: // Monochrome, EGA or VGA
-				if (mc[65] != 1 && mc[65] != 3 && mc[65] != 4)	return EDF_FALSE;	break;
-			case 2: // CGA
-				if (mc[65] != 1)								return EDF_FALSE;	break;
-			case 4: // EGA or VGA
-				if (mc[65] != 1 && mc[65] != 2)					return EDF_FALSE;	break;
-			case 8: // VGA, SVGA or SVGA with alpha
-				if (mc[65] != 1 && mc[65] != 3 && mc[65] != 4)	return EDF_FALSE;	break;
-			default: // Not a valid bit depth
-				return EDF_FALSE;
+		switch (mc[3])
+		{
+		case 1: // Monochrome, EGA or VGA
+			if (mc[65] != 1 && mc[65] != 3 && mc[65] != 4)	return EDF_FALSE;	break;
+		case 2: // CGA
+			if (mc[65] != 1)								return EDF_FALSE;	break;
+		case 4: // EGA or VGA
+			if (mc[65] != 1 && mc[65] != 2)					return EDF_FALSE;	break;
+		case 8: // VGA, SVGA or SVGA with alpha
+			if (mc[65] != 1 && mc[65] != 3 && mc[65] != 4)	return EDF_FALSE;	break;
+		default: // Not a valid bit depth
+			return EDF_FALSE;
 		}
 		// In 256-color mode, the palette, if any, is contained at the end
 		// of the file and preceded by a 0x0C. Only version 5 is concerned.
-		if (mc[1] == 5 && ((mc[3] == 8 && mc[65] == 1) || (mc[3] == 4 && mc[65] == 2))) {
+		if (mc[1] == 5 && ((mc[3] == 8 && mc[65] == 1) || (mc[3] == 4 && mc[65] == 2)))
+		{
 			size_t filesize = mc.getSize();
 			if (filesize < 900 || mc[filesize-769] != 12)
 				return EDF_FALSE;
@@ -120,12 +133,14 @@ public:
 	}
 };
 
-class TGADataFormat : public EntryDataFormat {
+class TGADataFormat : public EntryDataFormat
+{
 public:
 	TGADataFormat() : EntryDataFormat("img_tga") {};
 	~TGADataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Size check for the header
 		if (mc.getSize() < 18)
 			return EDF_FALSE;
@@ -162,12 +177,14 @@ public:
 	}
 };
 
-class TIFFDataFormat : public EntryDataFormat {
+class TIFFDataFormat : public EntryDataFormat
+{
 public:
 	TIFFDataFormat() : EntryDataFormat("img_tiff") {};
 	~TIFFDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size, minimum size is 26 if I'm not mistaken:
 		// 8 for the image header, +2 for at least one image
 		// file directory, +12 for at least one directory entry,
@@ -182,20 +199,20 @@ public:
 		// The value of 42 (0x2A) is present in the next two bytes,
 		// in the given endianness
 		if (42 != (littleendian ?
-			wxUINT16_SWAP_ON_BE((const uint16_t)(mc[2])) :
-			wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
+		           wxUINT16_SWAP_ON_BE((const uint16_t)(mc[2])) :
+		           wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
 			return EDF_FALSE;
 		// First offset must be on a word boundary (therefore, %2 == 0) and
 		// somewhere within the file, but not in the header of course.
 		size_t offset = (littleendian ?
-			wxUINT32_SWAP_ON_BE((const uint32_t)(mc[4])) :
-			wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
+		                 wxUINT32_SWAP_ON_BE((const uint32_t)(mc[4])) :
+		                 wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
 		if (offset < 8 || offset >= size || offset %2)
 			return EDF_FALSE;
 		// Check the first IFD for validity
 		uint16_t numentries = (littleendian ?
-			wxUINT16_SWAP_ON_BE((const uint16_t)(mc[offset])) :
-			wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
+		                       wxUINT16_SWAP_ON_BE((const uint16_t)(mc[offset])) :
+		                       wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
 		if (offset + 6 + (numentries * 12) > size)
 			return EDF_FALSE;
 		// Okay, it seems valid so far
@@ -203,18 +220,23 @@ public:
 	}
 };
 
-class JPEGDataFormat : public EntryDataFormat {
+class JPEGDataFormat : public EntryDataFormat
+{
 public:
 	JPEGDataFormat() : EntryDataFormat("img_jpeg") {};
 	~JPEGDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 128) {
+		if (mc.getSize() > 128)
+		{
 			// Check for JPEG header
 			if ((mc[6] == 'J' && mc[7] == 'F' && mc[8] == 'I' && mc[9] == 'F') ||
-					(mc[6] == 'E' && mc[7] == 'x' && mc[8] == 'i' && mc[9] == 'f')) {
-				if (mc[0] == 255 && mc[1] == 216 && mc[2] == 255) {
+			        (mc[6] == 'E' && mc[7] == 'x' && mc[8] == 'i' && mc[9] == 'f'))
+			{
+				if (mc[0] == 255 && mc[1] == 216 && mc[2] == 255)
+				{
 					return EDF_TRUE;
 				}
 			}
@@ -224,31 +246,36 @@ public:
 	}
 };
 
-class DoomGfxDataFormat : public EntryDataFormat {
+class DoomGfxDataFormat : public EntryDataFormat
+{
 public:
 	DoomGfxDataFormat() : EntryDataFormat("img_doom") {};
 	~DoomGfxDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		const uint8_t* data = mc.getData();
 
 		// Check size
-		if (mc.getSize() > sizeof(patch_header_t)) {
-			const patch_header_t *header = (const patch_header_t *)data;
+		if (mc.getSize() > sizeof(patch_header_t))
+		{
+			const patch_header_t* header = (const patch_header_t*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 &&
-					header->width > 0 && header->width < 4096 &&
-					header->top > -2000 && header->top < 2000 &&
-					header->left > -2000 && header->left < 2000) {
-				uint32_t *col_offsets = (uint32_t *)((const uint8_t *)data + sizeof(patch_header_t));
+			        header->width > 0 && header->width < 4096 &&
+			        header->top > -2000 && header->top < 2000 &&
+			        header->left > -2000 && header->left < 2000)
+			{
+				uint32_t* col_offsets = (uint32_t*)((const uint8_t*)data + sizeof(patch_header_t));
 
 				// Check there is room for needed column pointers
 				if (mc.getSize() < sizeof(patch_header_t) + (header->width * sizeof(uint32_t)))
 					return EDF_FALSE;
 
 				// Check column pointers are within range
-				for (int a = 0; a < header->width; a++) {
+				for (int a = 0; a < header->width; a++)
+				{
 					if (col_offsets[a] > mc.getSize() || col_offsets[a] < sizeof(patch_header_t))
 						return EDF_FALSE;
 				}
@@ -257,8 +284,9 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels = (header->height + 2 + header->height%2)/2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels*5) + 1;
-				if (mc.getSize() > (sizeof(patch_header_t) + (header->width * maxcolsize))) {
-					return EDF_UNLIKELY;	// This may still be good anyway 
+				if (mc.getSize() > (sizeof(patch_header_t) + (header->width * maxcolsize)))
+				{
+					return EDF_UNLIKELY;	// This may still be good anyway
 				}
 
 				// Passed all checks, so probably is doom gfx
@@ -270,37 +298,43 @@ public:
 	}
 };
 
-class DoomGfxAlphaDataFormat : public EntryDataFormat {
+class DoomGfxAlphaDataFormat : public EntryDataFormat
+{
 public:
 	DoomGfxAlphaDataFormat() : EntryDataFormat("img_doom_alpha") {};
 	~DoomGfxAlphaDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Get entry data
 		const uint8_t* data = mc.getData();
 
 		// Check size
-		if (mc.getSize() > sizeof(oldpatch_header_t)) {
+		if (mc.getSize() > sizeof(oldpatch_header_t))
+		{
 			// Check that it ends on a FF byte
 			if (mc[mc.getSize() -1] != 0xFF)
 				return EDF_FALSE;
 
-			const oldpatch_header_t *header = (const oldpatch_header_t *)data;
+			const oldpatch_header_t* header = (const oldpatch_header_t*)data;
 
 			// Check header values are 'sane'
-			if (header->width > 0 && header->height > 0) {
+			if (header->width > 0 && header->height > 0)
+			{
 				// Check there is room for needed column pointers
 				if (mc.getSize() < sizeof(oldpatch_header_t) + (header->width * sizeof(uint16_t)))
 					return EDF_FALSE;
 
 				uint16_t col_offsets[255]; // Old format headers do not allow dimensions greater than 255.
-				for (uint16_t a = 0; a < header->width; a++) {
+				for (uint16_t a = 0; a < header->width; a++)
+				{
 					col_offsets[a] = READ_L16(data, (sizeof(oldpatch_header_t) + a * sizeof(uint16_t)));
 				}
 
 
 				// Check column pointers are within range
-				for (int a = 0; a < header->width; a++) {
+				for (int a = 0; a < header->width; a++)
+				{
 					if (col_offsets[a] > mc.getSize() || col_offsets[a] < sizeof(oldpatch_header_t))
 						return EDF_FALSE;
 				}
@@ -309,7 +343,8 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels = (header->height + 2 + header->height%2)/2;
 				int maxcolsize = sizeof(uint16_t) + (numpixels*3) + 1;
-				if (mc.getSize() > (sizeof(oldpatch_header_t) + (header->width * maxcolsize))) {
+				if (mc.getSize() > (sizeof(oldpatch_header_t) + (header->width * maxcolsize)))
+				{
 					return EDF_FALSE;
 				}
 
@@ -322,12 +357,14 @@ public:
 	}
 };
 
-class DoomGfxBetaDataFormat : public EntryDataFormat {
+class DoomGfxBetaDataFormat : public EntryDataFormat
+{
 public:
 	DoomGfxBetaDataFormat() : EntryDataFormat("img_doom_beta") {};
 	~DoomGfxBetaDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
 		if (mc.getSize() <= sizeof(patch_header_t))
 			return EDF_FALSE;
@@ -335,9 +372,11 @@ public:
 		const uint8_t* data = mc.getData();
 
 		// Check that it ends on a FF byte.
-		if (mc[mc.getSize() -1] != 0xFF) {
+		if (mc[mc.getSize() -1] != 0xFF)
+		{
 			// The lumps in the beta have sometimes up to three garbage 00 bytes; probably a question of byte alignment.
-			for (uint8_t i = 1; i < 4; i++) {
+			for (uint8_t i = 1; i < 4; i++)
+			{
 				if (mc[mc.getSize() - i] == 0xFF)
 					// Cool, we found the ending byte so it's okay.
 					break;
@@ -347,21 +386,23 @@ public:
 			}
 		}
 
-		const patch_header_t *header = (const patch_header_t *)data;
+		const patch_header_t* header = (const patch_header_t*)data;
 
 		// Check header values are 'sane'
 		if (header->height > 0 && header->height < 4096 &&
-				header->width > 0 && header->width < 4096 &&
-				header->top > -2000 && header->top < 2000 &&
-				header->left > -2000 && header->left < 2000) {
-			uint16_t *col_offsets = (uint16_t *)((const uint8_t *)data + sizeof(patch_header_t));
+		        header->width > 0 && header->width < 4096 &&
+		        header->top > -2000 && header->top < 2000 &&
+		        header->left > -2000 && header->left < 2000)
+		{
+			uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(patch_header_t));
 
 			// Check there is room for needed column pointers
 			if (mc.getSize() < sizeof(patch_header_t) + (header->width * sizeof(uint16_t)))
 				return EDF_FALSE;
 
 			// Check column pointers are within range
-			for (int a = 0; a < header->width; a++) {
+			for (int a = 0; a < header->width; a++)
+			{
 				if (col_offsets[a] > mc.getSize() || col_offsets[a] < sizeof(patch_header_t))
 					return EDF_FALSE;
 			}
@@ -370,7 +411,8 @@ public:
 			// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 			int numpixels = (header->height + 2 + header->height%2)/2;
 			int maxcolsize = sizeof(uint16_t) + (numpixels*3) + 1;
-			if (mc.getSize() > (sizeof(patch_header_t) + (header->width * maxcolsize))) {
+			if (mc.getSize() > (sizeof(patch_header_t) + (header->width * maxcolsize)))
+			{
 				return EDF_FALSE;
 			}
 
@@ -382,7 +424,8 @@ public:
 	}
 };
 
-class DoomSneaDataFormat : public EntryDataFormat {
+class DoomSneaDataFormat : public EntryDataFormat
+{
 public:
 	DoomSneaDataFormat() : EntryDataFormat("img_doom_snea") {};
 	~DoomSneaDataFormat() {}
@@ -398,7 +441,8 @@ public:
 	 *	next WxH bytes contain the bitmap for columns 1, 5, 9,
 	 *	etc., and so on. No transparency.
 	 */
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
 		if (mc.getSize() < 2)
 			return EDF_FALSE;
@@ -407,15 +451,16 @@ public:
 		uint8_t qwidth = data[0]; // quarter of width
 		uint8_t height = data[1];
 		if (mc.getSize() != (2 + (4 * qwidth * height)) &&
-			// The TITLEPIC in the Doom Press-Release Beta has
-			// two extraneous null bytes at the end, for padding.
-			(qwidth != 80 || height != 200 || mc.getSize() != 64004))
+		        // The TITLEPIC in the Doom Press-Release Beta has
+		        // two extraneous null bytes at the end, for padding.
+		        (qwidth != 80 || height != 200 || mc.getSize() != 64004))
 			return EDF_FALSE;
 		return EDF_TRUE;
 	}
 };
 
-class DoomArahDataFormat : public EntryDataFormat {
+class DoomArahDataFormat : public EntryDataFormat
+{
 public:
 	DoomArahDataFormat() : EntryDataFormat("img_doom_arah") {};
 	~DoomArahDataFormat() {}
@@ -428,18 +473,19 @@ public:
 	 * To be honest, I'm not actually sure there are offset fields
 	 * since those values always seem to be set to 0, but hey.
 	 */
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		if (mc.getSize() < sizeof(patch_header_t))
 			return EDF_FALSE;
 
 		const uint8_t* data = mc.getData();
-		const patch_header_t *header = (const patch_header_t *)data;
+		const patch_header_t* header = (const patch_header_t*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 &&
-			header->width > 0 && header->width < 4096 &&
-			header->top > -2000 && header->top < 2000 &&
-			header->left > -2000 && header->left < 2000))
+		        header->width > 0 && header->width < 4096 &&
+		        header->top > -2000 && header->top < 2000 &&
+		        header->left > -2000 && header->left < 2000))
 			return EDF_FALSE;
 
 		// Check the size matches
@@ -450,19 +496,21 @@ public:
 	}
 };
 
-class DoomJaguarDataFormat : public EntryDataFormat {
+class DoomJaguarDataFormat : public EntryDataFormat
+{
 public:
 	DoomJaguarDataFormat() : EntryDataFormat("img_doom_jaguar") {};
 	~DoomJaguarDataFormat() {}
 
 	/* This format is used in the Jaguar Doom IWAD.
 	 */
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		if (mc.getSize() < sizeof(jagpic_header_t))
 			return EDF_FALSE;
 
 		const uint8_t* data = mc.getData();
-		const jagpic_header_t *header = (const jagpic_header_t *)data;
+		const jagpic_header_t* header = (const jagpic_header_t*)data;
 		int width, height, depth, size;
 		width = wxINT16_SWAP_ON_LE(header->width);
 		height = wxINT16_SWAP_ON_LE(header->height);
@@ -482,14 +530,16 @@ public:
 	}
 };
 
-class DoomJagTexDataFormat : public EntryDataFormat {
+class DoomJagTexDataFormat : public EntryDataFormat
+{
 public:
 	DoomJagTexDataFormat() : EntryDataFormat("img_jaguar_texture") {};
 	~DoomJagTexDataFormat() {}
 
 	/* This format is used in the Jaguar Doom IWAD. It can be recognized by the fact the last 320 bytes are a copy of the first.
 	 */
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 640 || size % 32)
 			return EDF_FALSE;
@@ -497,7 +547,8 @@ public:
 		// Verify duplication of content
 		const uint8_t* data = mc.getData();
 		size_t dupe = size - 320;
-		for (size_t p = 0; p < 320; ++p) {
+		for (size_t p = 0; p < 320; ++p)
+		{
 			if (data[p] != data[dupe + p])
 				return EDF_FALSE;
 		}
@@ -505,14 +556,16 @@ public:
 	}
 };
 
-class DoomJagSpriteDataFormat : public EntryDataFormat {
+class DoomJagSpriteDataFormat : public EntryDataFormat
+{
 public:
 	DoomJagSpriteDataFormat() : EntryDataFormat("img_jaguar_sprite") {};
 	~DoomJagSpriteDataFormat() {}
 
 	/* This format is used in the Jaguar Doom IWAD. It is an annoying format.
 	 */
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 16)
 			return EDF_FALSE;
@@ -526,7 +579,7 @@ public:
 		// Read column offsets
 		if (size < (8 + (width * 6)))
 			return EDF_FALSE;
-		uint16_t * col_offsets = new uint16_t[width];
+		uint16_t* col_offsets = new uint16_t[width];
 		for (size_t w = 0; w < width; ++w)
 			col_offsets[w] = READ_B16(mc, 8+2*w);
 		if (size < unsigned(4 + col_offsets[width - 1]))
@@ -537,23 +590,25 @@ public:
 	}
 };
 
-class DoomPSXDataFormat : public EntryDataFormat {
+class DoomPSXDataFormat : public EntryDataFormat
+{
 public:
 	DoomPSXDataFormat() : EntryDataFormat("img_doom_psx") {};
 	~DoomPSXDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		if (mc.getSize() < sizeof(psxpic_header_t))
 			return EDF_FALSE;
 
 		const uint8_t* data = mc.getData();
-		const psxpic_header_t *header = (const psxpic_header_t *)data;
+		const psxpic_header_t* header = (const psxpic_header_t*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 &&
-			header->width > 0 && header->width < 4096 &&
-			header->top > -2000 && header->top < 2000 &&
-			header->left > -2000 && header->left < 2000))
+		        header->width > 0 && header->width < 4096 &&
+		        header->top > -2000 && header->top < 2000 &&
+		        header->left > -2000 && header->left < 2000))
 			return EDF_FALSE;
 
 		// Check the size matches
@@ -565,12 +620,14 @@ public:
 	}
 };
 
-class IMGZDataFormat : public EntryDataFormat {
+class IMGZDataFormat : public EntryDataFormat
+{
 public:
 	IMGZDataFormat() : EntryDataFormat("img_imgz") {};
 	~IMGZDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// A format created by Randy Heit and used by some crosshairs in ZDoom.
 		uint32_t size = mc.getSize();
 
@@ -578,11 +635,11 @@ public:
 			return EDF_FALSE;
 
 		const uint8_t* data = mc.getData();
-		const imgz_header_t *header = (const imgz_header_t *)data;
+		const imgz_header_t* header = (const imgz_header_t*)data;
 
 		// Check signature
 		if (header->magic[0] != 'I' || header->magic[1] != 'M' ||
-			header->magic[2] != 'G' || header->magic[3] != 'Z')
+		        header->magic[2] != 'G' || header->magic[3] != 'Z')
 			return EDF_FALSE;
 
 		// Check that values are sane
@@ -598,14 +655,16 @@ public:
 	}
 };
 
-class QuakeGfxDataFormat : public EntryDataFormat {
+class QuakeGfxDataFormat : public EntryDataFormat
+{
 public:
 	QuakeGfxDataFormat() : EntryDataFormat("img_quake") {};
 	~QuakeGfxDataFormat() {}
 
 	// A data format found while rifling through some Legacy mods,
 	// specifically High Tech Hell 2. It seems to be how it works.
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		uint32_t size = mc.getSize();
 		if (size < 9)
 			return EDF_FALSE;
@@ -623,13 +682,15 @@ public:
 	}
 };
 
-class QuakeSpriteDataFormat : public EntryDataFormat {
+class QuakeSpriteDataFormat : public EntryDataFormat
+{
 public:
 	QuakeSpriteDataFormat() : EntryDataFormat("img_qspr") {};
 	~QuakeSpriteDataFormat() {}
 
 	// A Quake sprite can contain several frames and each frame may contain several pictures.
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		uint32_t size = mc.getSize();
 		// Minimum size for a sprite with a single frame containing a single 2x2 picture
 		if (size < 64)
@@ -653,24 +714,30 @@ public:
 
 		// Validate frames
 		uint32_t offset = 36; // Offset to start of first frame
-		for (size_t a = 0; a < nframes; ++a) {
-			if (READ_L32(mc, offset) != 0) {
+		for (size_t a = 0; a < nframes; ++a)
+		{
+			if (READ_L32(mc, offset) != 0)
+			{
 				// We have a frame with a group of picture
 				uint32_t grpsz = READ_L32(mc, offset + 4);
 				// Move to end of group header
 				offset += (grpsz+2)<<2;
-				for (size_t b = 0; b < grpsz; ++b) {
+				for (size_t b = 0; b < grpsz; ++b)
+				{
 					uint32_t pw = READ_L32(mc, offset + 8);
 					uint32_t ph = READ_L32(mc, offset + 12);
 					if (pw > width || ph > height)
 						return EDF_FALSE;
 					// Move to end of picture data
 					offset += 16 + pw * ph;
-					if (offset > (unsigned) size) {
+					if (offset > (unsigned) size)
+					{
 						return EDF_FALSE;
 					}
 				}
-			} else {
+			}
+			else
+			{
 				// We have a frame with a single picture
 				offset += 4;
 				uint32_t pw = READ_L32(mc, offset + 8);
@@ -680,7 +747,8 @@ public:
 				// Move to end of picture data
 				offset += 16 + pw * ph;
 			}
-			if (offset > (unsigned) size) {
+			if (offset > (unsigned) size)
+			{
 				return EDF_FALSE;
 			}
 		}
@@ -689,12 +757,14 @@ public:
 	}
 };
 
-class QuakeTexDataFormat: public EntryDataFormat {
+class QuakeTexDataFormat: public EntryDataFormat
+{
 public:
 	QuakeTexDataFormat() : EntryDataFormat("img_quaketex") {};
 	~QuakeTexDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 125)
 			return EDF_FALSE;
@@ -703,7 +773,8 @@ public:
 		size_t height = READ_L32(mc, 20);
 		if (!width || !height || width % 8 || height % 8)
 			return EDF_FALSE;
-		for (int m = 0; m < 4; ++m) {
+		for (int m = 0; m < 4; ++m)
+		{
 			size_t offset = READ_L32(mc, (24+(m<<2)));
 			if (!offset || size < offset + ((width>>m) * (height>>m)))
 				return EDF_FALSE;
@@ -712,23 +783,29 @@ public:
 	}
 };
 
-class QuakeIIWalDataFormat: public EntryDataFormat {
+class QuakeIIWalDataFormat: public EntryDataFormat
+{
 public:
 	QuakeIIWalDataFormat() : EntryDataFormat("img_quake2wal") {};
 	~QuakeIIWalDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 101)
 			return EDF_FALSE;
 		// Avoid some false positives by looking for "garbage" characters
 		// after the end of the "name"
 		bool nameend = false;
-		for (int i = 0; i < 32; ++i) {
-			if (mc[i] == 0) {
+		for (int i = 0; i < 32; ++i)
+		{
+			if (mc[i] == 0)
+			{
 				if (i == 0) return false;
 				nameend = true;
-			} else if (nameend) {
+			}
+			else if (nameend)
+			{
 				return false;
 			}
 		}
@@ -736,7 +813,8 @@ public:
 		size_t height = READ_L32(mc, 36);
 		if (!width || !height || width % 8 || height % 8)
 			return EDF_FALSE;
-		for (int m = 0; m < 4; ++m) {
+		for (int m = 0; m < 4; ++m)
+		{
 			size_t offset = READ_L32(mc, (40+(m<<2)));
 			if (width>>m == 0 && height>>m == 0 && offset == 0)
 				break;
@@ -748,12 +826,14 @@ public:
 };
 
 
-class ShadowCasterGfxFormat: public EntryDataFormat {
+class ShadowCasterGfxFormat: public EntryDataFormat
+{
 public:
 	ShadowCasterGfxFormat() : EntryDataFormat("img_scgfx") {};
 	~ShadowCasterGfxFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// If those were static functions, then I could
 		// just do this instead of such copypasta:
 		//	return DoomArahDataFormat::isThisFormat(mc);
@@ -761,13 +841,13 @@ public:
 			return EDF_FALSE;
 
 		const uint8_t* data = mc.getData();
-		const patch_header_t *header = (const patch_header_t *)data;
+		const patch_header_t* header = (const patch_header_t*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 &&
-			header->width > 0 && header->width < 4096 &&
-			header->top > -2000 && header->top < 2000 &&
-			header->left > -2000 && header->left < 2000))
+		        header->width > 0 && header->width < 4096 &&
+		        header->top > -2000 && header->top < 2000 &&
+		        header->left > -2000 && header->left < 2000))
 			return EDF_FALSE;
 
 		// Check the size matches
@@ -776,14 +856,16 @@ public:
 
 		return EDF_TRUE;
 	}
-}; 
+};
 
-class ShadowCasterSpriteFormat: public EntryDataFormat {
+class ShadowCasterSpriteFormat: public EntryDataFormat
+{
 public:
 	ShadowCasterSpriteFormat() : EntryDataFormat("img_scsprite") {};
 	~ShadowCasterSpriteFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		int size = mc.getSize();
 		if (size < 4)
 			return EDF_FALSE;
@@ -793,7 +875,8 @@ public:
 		int height = 0;
 		// Error checking with average column height and proportion of empty columns
 		int avgcolheight = 0, pnumemptycol = 0;
-		for (int j = 0; j < width; ++j) {
+		for (int j = 0; j < width; ++j)
+		{
 			int offstart = READ_L16(mc, ((j<<1)+4));
 			if (offstart == 0) continue;
 			if (offstart < 0 || size < offstart+2 || offstart < (width*2+4))
@@ -814,7 +897,7 @@ public:
 
 		avgcolheight *= 16;	avgcolheight /= width;
 		pnumemptycol *= 16;	pnumemptycol /= width;
-		
+
 		// Arbitrary value: sprite must be at least about 12% filled
 		if ((avgcolheight < height / 2) || (pnumemptycol > 14))
 			return EDF_UNLIKELY;
@@ -824,27 +907,31 @@ public:
 	}
 };
 
-class ShadowCasterWallFormat: public EntryDataFormat {
+class ShadowCasterWallFormat: public EntryDataFormat
+{
 public:
 	ShadowCasterWallFormat() : EntryDataFormat("img_scwall") {};
 	~ShadowCasterWallFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		int size = mc.getSize();
-		// Minimum valid size for such a picture to be 
+		// Minimum valid size for such a picture to be
 		// successfully loaded: 130 header, +1 line of 64.
 		if (size < 194)
 			return EDF_FALSE;
 		return (size == (mc[0]*256) + 130) ? EDF_TRUE : EDF_FALSE;
 	}
-}; 
+};
 
-class AnaMipImageFormat: public EntryDataFormat {
+class AnaMipImageFormat: public EntryDataFormat
+{
 public:
 	AnaMipImageFormat() : EntryDataFormat("img_mipimage") {};
 	~AnaMipImageFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 4)
 			return EDF_FALSE;
@@ -857,12 +944,14 @@ public:
 	}
 };
 
-class BuildTileFormat: public EntryDataFormat {
+class BuildTileFormat: public EntryDataFormat
+{
 public:
 	BuildTileFormat() : EntryDataFormat("img_arttile") {};
 	~BuildTileFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 16)
 			return EDF_FALSE;
@@ -878,7 +967,8 @@ public:
 		size_t gfxdatasize = 0;
 		size_t xofs = 16;
 		size_t yofs = xofs + (tilecount<<1);
-		for (size_t a = 0; a < tilecount; ++a) {
+		for (size_t a = 0; a < tilecount; ++a)
+		{
 			if (size <= xofs+(a<<1) || size <= yofs+(a<<1))
 				return EDF_FALSE;
 			gfxdatasize += (mc[xofs+(a<<1)] * mc[yofs+(a<<1)]);
@@ -889,27 +979,30 @@ public:
 	}
 };
 
-class Heretic2M8Format: public EntryDataFormat {
+class Heretic2M8Format: public EntryDataFormat
+{
 public:
 	Heretic2M8Format() : EntryDataFormat("img_m8") {};
 	~Heretic2M8Format() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 1040)
 			return EDF_FALSE;
 		uint32_t version = READ_L32(mc, 0);
 		if (version != 2)
 			return EDF_FALSE;
-		for (int m = 0; m < 16; ++m) {
+		for (int m = 0; m < 16; ++m)
+		{
 			size_t width = READ_L32(mc, (36+(m<<2)));
 			size_t height = READ_L32(mc, (100+(m<<2)));
 			size_t offset = READ_L32(mc, (164+(m<<2)));
 			if (width == 0 && height == 0 && offset == 0)
 				break;
 			else if ((width == 0 && (height|offset) != 0) ||
-				(height == 0 && (width|offset) != 0) ||
-				(offset == 0 && (width|height) != 0))
+			         (height == 0 && (width|offset) != 0) ||
+			         (offset == 0 && (width|height) != 0))
 				return EDF_FALSE;
 			else if (offset + (width * height) > size)
 				return EDF_FALSE;
@@ -918,27 +1011,30 @@ public:
 	}
 };
 
-class Heretic2M32Format: public EntryDataFormat {
+class Heretic2M32Format: public EntryDataFormat
+{
 public:
 	Heretic2M32Format() : EntryDataFormat("img_m32") {};
 	~Heretic2M32Format() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 1040)
 			return EDF_FALSE;
 		uint32_t version = READ_L32(mc, 0);
 		if (version != 4)
 			return EDF_FALSE;
-		for (int m = 0; m < 16; ++m) {
+		for (int m = 0; m < 16; ++m)
+		{
 			size_t width = READ_L32(mc, (516+(m<<2)));
 			size_t height = READ_L32(mc, (580+(m<<2)));
 			size_t offset = READ_L32(mc, (644+(m<<2)));
 			if (width == 0 && height == 0 && offset == 0)
 				break;
 			else if ((width == 0 && (height|offset) != 0) ||
-				(height == 0 && (width|offset) != 0) ||
-				(offset == 0 && (width|height) != 0))
+			         (height == 0 && (width|offset) != 0) ||
+			         (offset == 0 && (width|height) != 0))
 				return EDF_FALSE;
 			else if (offset + (4 * width * height) > size)
 				return EDF_FALSE;
@@ -947,12 +1043,14 @@ public:
 	}
 };
 
-class HalfLifeTextureFormat: public EntryDataFormat {
+class HalfLifeTextureFormat: public EntryDataFormat
+{
 public:
 	HalfLifeTextureFormat() : EntryDataFormat("img_hlt") {};
 	~HalfLifeTextureFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 812)
 			return EDF_FALSE;
@@ -960,7 +1058,8 @@ public:
 		size_t height = READ_L32(mc, 20);
 		if (!width || !height || width % 8 || height % 8)
 			return EDF_FALSE;
-		for (int m = 0; m < 4; ++m) {
+		for (int m = 0; m < 4; ++m)
+		{
 			size_t offset = READ_L32(mc, (24+(m<<2)));
 			if (width>>m == 0 && height>>m == 0 && offset == 0)
 				break;
@@ -979,33 +1078,38 @@ public:
 	}
 };
 
-class RottGfxDataFormat : public EntryDataFormat {
+class RottGfxDataFormat : public EntryDataFormat
+{
 public:
 	RottGfxDataFormat() : EntryDataFormat("img_rott") {};
 	~RottGfxDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		const uint8_t* data = mc.getData();
 
 		// Check size
-		if (mc.getSize() > sizeof(rottpatch_header_t)) {
-			const rottpatch_header_t *header = (const rottpatch_header_t *)data;
+		if (mc.getSize() > sizeof(rottpatch_header_t))
+		{
+			const rottpatch_header_t* header = (const rottpatch_header_t*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 &&
-					header->width > 0 && header->width < 4096 &&
-					header->top > -2000 && header->top < 2000 &&
-					header->left > -2000 && header->left < 2000) {
-				uint16_t *col_offsets = (uint16_t *)((const uint8_t *)data + sizeof(rottpatch_header_t));
+			        header->width > 0 && header->width < 4096 &&
+			        header->top > -2000 && header->top < 2000 &&
+			        header->left > -2000 && header->left < 2000)
+			{
+				uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(rottpatch_header_t));
 
 				// Check there is room for needed column pointers
 				if (mc.getSize() < sizeof(rottpatch_header_t) + (header->width * sizeof(uint16_t)))
 					return EDF_FALSE;
 
 				// Check column pointers are within range
-				for (int a = 0; a < header->width; a++) {
+				for (int a = 0; a < header->width; a++)
+				{
 					if (col_offsets[a] > mc.getSize() ||
-						col_offsets[a] < (header->width<<1) + sizeof(rottpatch_header_t))
+					        col_offsets[a] < (header->width<<1) + sizeof(rottpatch_header_t))
 						return EDF_FALSE;
 				}
 
@@ -1013,8 +1117,9 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels = (header->height + 2 + header->height%2)/2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels*3) + 1;
-				if (mc.getSize() > (2 + sizeof(rottpatch_header_t) + (header->width * maxcolsize))) {
-					return EDF_UNLIKELY;	// This may still be good anyway 
+				if (mc.getSize() > (2 + sizeof(rottpatch_header_t) + (header->width * maxcolsize)))
+				{
+					return EDF_UNLIKELY;	// This may still be good anyway
 				}
 
 				// Passed all checks, so probably is ROTT gfx
@@ -1025,33 +1130,38 @@ public:
 	}
 };
 
-class RottTransGfxDataFormat : public EntryDataFormat {
+class RottTransGfxDataFormat : public EntryDataFormat
+{
 public:
 	RottTransGfxDataFormat() : EntryDataFormat("img_rottmask") {};
 	~RottTransGfxDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		const uint8_t* data = mc.getData();
 
 		// Check size
-		if (mc.getSize() > sizeof(rottpatch_header_t)) {
-			const rottpatch_header_t *header = (const rottpatch_header_t *)data;
+		if (mc.getSize() > sizeof(rottpatch_header_t))
+		{
+			const rottpatch_header_t* header = (const rottpatch_header_t*)data;
 
 			// Check header values are 'sane'
 			if (header->height > 0 && header->height < 4096 &&
-					header->width > 0 && header->width < 4096 &&
-					header->top > -2000 && header->top < 2000 &&
-					header->left > -2000 && header->left < 2000) {
-				uint16_t *col_offsets = (uint16_t *)(2 + (const uint8_t *)data + sizeof(rottpatch_header_t));
+			        header->width > 0 && header->width < 4096 &&
+			        header->top > -2000 && header->top < 2000 &&
+			        header->left > -2000 && header->left < 2000)
+			{
+				uint16_t* col_offsets = (uint16_t*)(2 + (const uint8_t*)data + sizeof(rottpatch_header_t));
 
 				// Check there is room for needed column pointers
 				if (mc.getSize() < 2 + sizeof(rottpatch_header_t) + (header->width * sizeof(uint16_t)))
 					return EDF_FALSE;
 
 				// Check column pointers are within range
-				for (int a = 0; a < header->width; a++) {
+				for (int a = 0; a < header->width; a++)
+				{
 					if (col_offsets[a] > mc.getSize() ||
-						col_offsets[a] < (header->width<<1) + sizeof(rottpatch_header_t))
+					        col_offsets[a] < (header->width<<1) + sizeof(rottpatch_header_t))
 						return EDF_FALSE;
 				}
 
@@ -1059,8 +1169,9 @@ public:
 				// possible use of space by the format (horizontal stripes of 1 pixel, 1 pixel apart).
 				int numpixels = (header->height + 2 + header->height%2)/2;
 				int maxcolsize = sizeof(uint32_t) + (numpixels*3) + 1;
-				if (mc.getSize() > (2 + sizeof(rottpatch_header_t) + (header->width * maxcolsize))) {
-					return EDF_UNLIKELY;	// This may still be good anyway 
+				if (mc.getSize() > (2 + sizeof(rottpatch_header_t) + (header->width * maxcolsize)))
+				{
+					return EDF_UNLIKELY;	// This may still be good anyway
 				}
 
 				// Passed all checks, so probably is ROTT masked gfx
@@ -1072,12 +1183,14 @@ public:
 	}
 };
 
-class RottLBMDataFormat : public EntryDataFormat {
+class RottLBMDataFormat : public EntryDataFormat
+{
 public:
 	RottLBMDataFormat() : EntryDataFormat("img_rottlbm") {};
 	~RottLBMDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		const uint8_t* data = mc.getData();
 
 		// Check size
@@ -1093,7 +1206,8 @@ public:
 	}
 };
 
-class RottRawDataFormat : public EntryDataFormat {
+class RottRawDataFormat : public EntryDataFormat
+{
 public:
 	RottRawDataFormat() : EntryDataFormat("img_rottraw") {};
 	~RottRawDataFormat() {}
@@ -1101,18 +1215,19 @@ public:
 	/* How many format does ROTT need? This is just like the raw data plus header
 	 * format from the Doom alpha, except that it's column-major instead of row-major.
 	 */
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		if (mc.getSize() < sizeof(patch_header_t))
 			return EDF_FALSE;
 
 		const uint8_t* data = mc.getData();
-		const patch_header_t *header = (const patch_header_t *)data;
+		const patch_header_t* header = (const patch_header_t*)data;
 
 		// Check header values are 'sane'
 		if (!(header->height > 0 && header->height < 4096 &&
-			header->width > 0 && header->width < 4096 &&
-			header->top > -2000 && header->top < 2000 &&
-			header->left > -2000 && header->left < 2000))
+		        header->width > 0 && header->width < 4096 &&
+		        header->top > -2000 && header->top < 2000 &&
+		        header->left > -2000 && header->left < 2000))
 			return EDF_FALSE;
 
 		// Check the size matches
@@ -1123,13 +1238,15 @@ public:
 	}
 };
 
-class RottPicDataFormat : public EntryDataFormat {
+class RottPicDataFormat : public EntryDataFormat
+{
 public:
 	RottPicDataFormat() : EntryDataFormat("img_rottpic") {};
 	~RottPicDataFormat() {}
 
 	// Yet another ROTT image format. Cheesus.
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 8)
 			return EDF_FALSE;
@@ -1141,13 +1258,15 @@ public:
 	}
 };
 
-class WolfPicDataFormat : public EntryDataFormat {
+class WolfPicDataFormat : public EntryDataFormat
+{
 public:
 	WolfPicDataFormat() : EntryDataFormat("img_wolfpic") {};
 	~WolfPicDataFormat() {}
 
 	// Wolf picture format
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 4)
 			return EDF_FALSE;
@@ -1158,13 +1277,15 @@ public:
 	}
 };
 
-class WolfSpriteDataFormat : public EntryDataFormat {
+class WolfSpriteDataFormat : public EntryDataFormat
+{
 public:
 	WolfSpriteDataFormat() : EntryDataFormat("img_wolfsprite") {};
 	~WolfSpriteDataFormat() {}
 
 	// Wolf picture format
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
 		if (size < 8 || size > 4228)
 			return EDF_FALSE;
@@ -1176,18 +1297,22 @@ public:
 };
 
 // Dark Forces uses the "Jedi engine" so its data formats are named jedi too.
-class JediBMFormat : public EntryDataFormat {
+class JediBMFormat : public EntryDataFormat
+{
 public:
 	JediBMFormat() : EntryDataFormat("img_jedi_bm") {};
 	~JediBMFormat() {}
 
 	// Jedi engine bitmap format
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
-		if (size > 32) {
+		if (size > 32)
+		{
 			if (mc[0] == 'B' && mc[1] == 'M' && mc[2] == ' ' && mc[3] == 0x1E
-				&& READ_L16(mc, 4) != 0 && READ_L16(mc, 6) != 0
-				&& mc[14] < 3 && mc[15] == 0) {
+			        && READ_L16(mc, 4) != 0 && READ_L16(mc, 6) != 0
+			        && mc[14] < 3 && mc[15] == 0)
+			{
 				// Check that padding is left alone
 				for (int i = 20; i < 32; ++i)
 					if (mc[i]) return EDF_FALSE;
@@ -1199,27 +1324,32 @@ public:
 	}
 };
 
-class JediFMEFormat : public EntryDataFormat {
+class JediFMEFormat : public EntryDataFormat
+{
 public:
 	JediFMEFormat() : EntryDataFormat("img_jedi_fme") {};
 	~JediFMEFormat() {}
 
 	// Jedi engine frame format
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
-		if (size > 64) {
+		if (size > 64)
+		{
 			// The only constants we have is that byte 8 is either 1 or 0 (h-flip)
 			// and byte 12 is always 32 (secondary header after the first header)
 			// Then in the secondary header, byte 40 is 1 or 0 (compression) and
 			// bytes 44-47 correspond to the little-endian size of the file - 32.
-			if (mc[8] < 2 && mc[12] == 32 && (mc[9]|mc[10]|mc[11]|mc[13]|mc[14]|mc[15]) == 0 && mc[40] < 2) {
+			if (mc[8] < 2 && mc[12] == 32 && (mc[9]|mc[10]|mc[11]|mc[13]|mc[14]|mc[15]) == 0 && mc[40] < 2)
+			{
 				// Check that padding is left alone
 				for (int i = 16; i < 32; ++i)
 					if (mc[i]) return EDF_FALSE;
 				for (int i = 16; i < 32; ++i)
 					if (mc[i]) return EDF_FALSE;
 				// Check size if compressed:
-				if (mc[40] == 1) {
+				if (mc[40] == 1)
+				{
 					if (READ_L32(mc, 44) != size - 32)
 						return EDF_FALSE;
 					// Check some padding
@@ -1227,7 +1357,9 @@ public:
 						if (mc[i]) return EDF_FALSE;
 					for (int i = 48; i < 56; ++i)
 						if (mc[i]) return EDF_FALSE;
-				} else {
+				}
+				else
+				{
 					// All that should be zero if uncompressed
 					for (int i = 41; i < 56; ++i)
 						if (mc[i]) return EDF_FALSE;
@@ -1240,17 +1372,21 @@ public:
 	}
 };
 
-class JediWAXFormat : public EntryDataFormat {
+class JediWAXFormat : public EntryDataFormat
+{
 public:
 	JediWAXFormat() : EntryDataFormat("img_jedi_wax") {};
 	~JediWAXFormat() {}
 
 	// Jedi engine wax format
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
-		if (size > 460) {
+		if (size > 460)
+		{
 			// Constant identifier 00 10 01 00 *or* 00 00 01 00
-			if (mc[0] == 0 && (mc[1] == 16 || mc[1] == 0) && mc[2] == 1 && mc[3] == 0) {
+			if (mc[0] == 0 && (mc[1] == 16 || mc[1] == 0) && mc[2] == 1 && mc[3] == 0)
+			{
 				// The numbers of sequences, frames and cells should not exceed 255.
 				// Also check that padding is left alone.
 				for (int i = 5; i < 8; ++i)
@@ -1268,16 +1404,18 @@ public:
 };
 
 
-class Font0DataFormat : public EntryDataFormat {
+class Font0DataFormat : public EntryDataFormat
+{
 public:
 	Font0DataFormat() : EntryDataFormat("font_doom_alpha") {};
 	~Font0DataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		if (mc.getSize() <= 0x302)
 			return EDF_FALSE;
 
-		const uint16_t * gfx_data = (const uint16_t *) mc.getData();
+		const uint16_t* gfx_data = (const uint16_t*) mc.getData();
 
 		size_t height = wxINT16_SWAP_ON_BE(gfx_data[0]);
 
@@ -1298,14 +1436,17 @@ public:
 	}
 };
 
-class Font1DataFormat : public EntryDataFormat {
+class Font1DataFormat : public EntryDataFormat
+{
 public:
 	Font1DataFormat() : EntryDataFormat("font_zd_console") {};
 	~Font1DataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for FON1 header
 			if (mc[0] == 'F' && mc[1] == 'O' && mc[2] == 'N' && mc[3] == '1')
 				return EDF_TRUE;
@@ -1314,14 +1455,17 @@ public:
 	}
 };
 
-class Font2DataFormat : public EntryDataFormat {
+class Font2DataFormat : public EntryDataFormat
+{
 public:
 	Font2DataFormat() : EntryDataFormat("font_zd_big") {};
 	~Font2DataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for FON2 header
 			if (mc[0] == 'F' && mc[1] == 'O' && mc[2] == 'N' && mc[3] == '2')
 				return EDF_TRUE;
@@ -1330,14 +1474,17 @@ public:
 	}
 };
 
-class BMFontDataFormat : public EntryDataFormat {
+class BMFontDataFormat : public EntryDataFormat
+{
 public:
 	BMFontDataFormat() : EntryDataFormat("font_bmf") {};
 	~BMFontDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for BMF header
 			if (mc[0] == 0xE1 && mc[1] == 0xE6 && mc[2] == 0xD5 && mc[3] == 0x1A)
 				return EDF_TRUE;
@@ -1346,16 +1493,18 @@ public:
 	}
 };
 
-class FontWolfDataFormat : public EntryDataFormat {
+class FontWolfDataFormat : public EntryDataFormat
+{
 public:
 	FontWolfDataFormat() : EntryDataFormat("font_wolf") {};
 	~FontWolfDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		if (mc.getSize() <= 0x302)
 			return EDF_FALSE;
 
-		const uint16_t * gfx_data = (const uint16_t *) mc.getData();
+		const uint16_t* gfx_data = (const uint16_t*) mc.getData();
 
 		size_t height = wxINT16_SWAP_ON_BE(gfx_data[0]);
 
@@ -1376,19 +1525,23 @@ public:
 	}
 };
 
-class JediFNTFormat : public EntryDataFormat {
+class JediFNTFormat : public EntryDataFormat
+{
 public:
 	JediFNTFormat() : EntryDataFormat("font_jedi_fnt") {};
 	~JediFNTFormat() {}
 
 	// Jedi engine fnt format
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
-		if (size > 35) {
-			// Constant identifier FNT\15, height should be greater than 0, 
+		if (size > 35)
+		{
+			// Constant identifier FNT\15, height should be greater than 0,
 			// last should be greater than first.
 			if (mc[0] == 'F' && mc[1] == 'N' && mc[2] == 'T' && mc[3] == 0x15
-				&& mc[4] > 0 && mc[8] <= mc[9]) {
+			        && mc[4] > 0 && mc[8] <= mc[9])
+			{
 				// Check that padding is left alone.
 				for (int i = 10; i < 32; ++i)
 					if (mc[i]) return EDF_FALSE;
@@ -1400,19 +1553,23 @@ public:
 	}
 };
 
-class JediFONTFormat : public EntryDataFormat {
+class JediFONTFormat : public EntryDataFormat
+{
 public:
 	JediFONTFormat() : EntryDataFormat("font_jedi_font") {};
 	~JediFONTFormat() {}
 
 	// Jedi engine font format
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		size_t size = mc.getSize();
-		if (size > 16) {
+		if (size > 16)
+		{
 			// Numchar should be greater than 0, width should be multiple of 8,
 			// height should be greater than 0, padding should be null.
-			if (READ_L16(mc, 2) >= 0 && (READ_L16(mc, 4)%8) == 0 && 
-				READ_L16(mc, 6) >= 0 && READ_L16(mc, 10) == 0) {
+			if (READ_L16(mc, 2) >= 0 && (READ_L16(mc, 4)%8) == 0 &&
+			        READ_L16(mc, 6) >= 0 && READ_L16(mc, 10) == 0)
+			{
 				size_t numchr = READ_L16(mc, 2);
 				if (size < 16 + numchr)
 					return EDF_FALSE;

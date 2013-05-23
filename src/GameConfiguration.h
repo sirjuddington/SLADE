@@ -7,7 +7,8 @@
 #include "UDMFProperty.h"
 #include "PropertyList.h"
 
-struct tt_t {
+struct tt_t
+{
 	ThingType*	type;
 	int			number;
 	int			index;
@@ -17,7 +18,8 @@ struct tt_t {
 	bool operator> (const tt_t& right) const { return (index > right.index); }
 };
 
-struct as_t {
+struct as_t
+{
 	ActionSpecial*	special;
 	int				number;
 	int				index;
@@ -27,7 +29,8 @@ struct as_t {
 	bool operator> (const as_t& right) const { return (index > right.index); }
 };
 
-struct udmfp_t {
+struct udmfp_t
+{
 	UDMFProperty*	property;
 	int				index;
 	udmfp_t(UDMFProperty* property = NULL) { this->property = property; index = 0; }
@@ -36,13 +39,15 @@ struct udmfp_t {
 	bool operator> (const udmfp_t& right) const { return (index > right.index); }
 };
 
-struct gc_mapinfo_t {
+struct gc_mapinfo_t
+{
 	string	mapname;
 	string	sky1;
 	string	sky2;
 };
 
-struct sectype_t {
+struct sectype_t
+{
 	int		type;
 	string	name;
 	sectype_t() { type = -1; name = "Unknown"; }
@@ -59,7 +64,8 @@ class Archive;
 class MapLine;
 class MapThing;
 class MapObject;
-class GameConfiguration {
+class GameConfiguration
+{
 private:
 	//string			name;				// Game/port name
 	string				current_game;		// Current game name
@@ -82,7 +88,8 @@ private:
 	vector<int>			light_levels;		// Light levels for up/down light in editor
 
 	// Basic game configuration info
-	struct gconf_t {
+	struct gconf_t
+	{
 		string	name;
 		string	title;
 		string	filename;
@@ -97,7 +104,8 @@ private:
 	size_t			lastDefaultConfig;
 
 	// Basic port configuration info
-	struct pconf_t {
+	struct pconf_t
+	{
 		string			name;
 		string			title;
 		string			filename;
@@ -113,7 +121,8 @@ private:
 	size_t			lastDefaultPort;
 
 	// Flags
-	struct flag_t {
+	struct flag_t
+	{
 		int		flag;
 		string	name;
 		string	udmf;
@@ -151,7 +160,8 @@ public:
 	~GameConfiguration();
 
 	// Singleton implementation
-	static GameConfiguration* getInstance() {
+	static GameConfiguration* getInstance()
+	{
 		if (!instance)
 			instance = new GameConfiguration();
 

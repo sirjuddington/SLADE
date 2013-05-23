@@ -2,7 +2,8 @@
 #ifndef __MEMCHUNK_H__
 #define __MEMCHUNK_H__
 
-class MemChunk {
+class MemChunk
+{
 protected:
 	uint8_t*	data;
 	uint32_t	cur_ptr;

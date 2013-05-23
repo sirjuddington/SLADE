@@ -49,7 +49,8 @@ EXTERN_CVAR(String, dir_last)
  * Shows a dialog to open a single file. Returns true and sets [info]
  * if the user clicked ok, false otherwise
  *******************************************************************/
-bool SFileDialog::openFile(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default) {
+bool SFileDialog::openFile(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default)
+{
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN|wxFD_FILE_MUST_EXIST);
 
@@ -57,7 +58,8 @@ bool SFileDialog::openFile(fd_info_t& info, string caption, string extensions, w
 	fd.SetFilterIndex(ext_default);
 
 	// Run the dialog
-	if (fd.ShowModal() == wxID_OK) {
+	if (fd.ShowModal() == wxID_OK)
+	{
 		// Set file dialog info
 		wxFileName fn(fd.GetPath());
 		info.filenames.Add(fn.GetFullPath());
@@ -78,7 +80,8 @@ bool SFileDialog::openFile(fd_info_t& info, string caption, string extensions, w
  * Shows a dialog to open multiple files. Returns true and sets
  * [info] if the user clicked ok, false otherwise
  *******************************************************************/
-bool SFileDialog::openFiles(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default) {
+bool SFileDialog::openFiles(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default)
+{
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_MULTIPLE);
 
@@ -86,7 +89,8 @@ bool SFileDialog::openFiles(fd_info_t& info, string caption, string extensions, 
 	fd.SetFilterIndex(ext_default);
 
 	// Run the dialog
-	if (fd.ShowModal() == wxID_OK) {
+	if (fd.ShowModal() == wxID_OK)
+	{
 		// Set file dialog info
 		fd.GetPaths(info.filenames);
 		wxFileName fn(info.filenames[0]);
@@ -107,7 +111,8 @@ bool SFileDialog::openFiles(fd_info_t& info, string caption, string extensions, 
  * Shows a dialog to save a single file. Returns true and sets [info]
  * if the user clicked ok, false otherwise
  *******************************************************************/
-bool SFileDialog::saveFile(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default) {
+bool SFileDialog::saveFile(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default)
+{
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 
@@ -115,7 +120,8 @@ bool SFileDialog::saveFile(fd_info_t& info, string caption, string extensions, w
 	fd.SetFilterIndex(ext_default);
 
 	// Run the dialog
-	if (fd.ShowModal() == wxID_OK) {
+	if (fd.ShowModal() == wxID_OK)
+	{
 		// Set file dialog info
 		wxFileName fn(fd.GetPath());
 		info.filenames.Add(fn.GetFullPath());
@@ -137,7 +143,8 @@ bool SFileDialog::saveFile(fd_info_t& info, string caption, string extensions, w
  * [info] if the user clicked ok, false otherwise. This is used to
  * replace wxDirDialog, which sucks
  *******************************************************************/
-bool SFileDialog::saveFiles(fd_info_t& info, string caption, string extensions, wxWindow* parent, int ext_default) {
+bool SFileDialog::saveFiles(fd_info_t& info, string caption, string extensions, wxWindow* parent, int ext_default)
+{
 	// Create file dialog
 	wxFileDialog fd(parent, caption, dir_last, "ignored", extensions, wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 
@@ -145,7 +152,8 @@ bool SFileDialog::saveFiles(fd_info_t& info, string caption, string extensions, 
 	fd.SetFilterIndex(ext_default);
 
 	// Run the dialog
-	if (fd.ShowModal() == wxID_OK) {
+	if (fd.ShowModal() == wxID_OK)
+	{
 		// Set file dialog info
 		info.filenames.Clear();
 		info.extension = fd.GetWildcard().AfterLast('.');

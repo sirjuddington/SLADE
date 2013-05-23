@@ -3,22 +3,26 @@
 #include "MapVertex.h"
 #include "MainApp.h"
 
-MapVertex::MapVertex(SLADEMap* parent) : MapObject(MOBJ_VERTEX, parent) {
+MapVertex::MapVertex(SLADEMap* parent) : MapObject(MOBJ_VERTEX, parent)
+{
 	// Init variables
 	this->x = 0;
 	this->y = 0;
 }
 
-MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(MOBJ_VERTEX, parent) {
+MapVertex::MapVertex(double x, double y, SLADEMap* parent) : MapObject(MOBJ_VERTEX, parent)
+{
 	// Init variables
 	this->x = x;
 	this->y = y;
 }
 
-MapVertex::~MapVertex() {
+MapVertex::~MapVertex()
+{
 }
 
-int MapVertex::intProperty(string key) {
+int MapVertex::intProperty(string key)
+{
 	if (key == "x")
 		return (int)x;
 	else if (key == "y")
@@ -27,7 +31,8 @@ int MapVertex::intProperty(string key) {
 		return MapObject::intProperty(key);
 }
 
-double MapVertex::floatProperty(string key) {
+double MapVertex::floatProperty(string key)
+{
 	if (key == "x")
 		return x;
 	else if (key == "y")
@@ -36,7 +41,8 @@ double MapVertex::floatProperty(string key) {
 		return MapObject::floatProperty(key);
 }
 
-void MapVertex::setIntProperty(string key, int value) {
+void MapVertex::setIntProperty(string key, int value)
+{
 	// Update modified time
 	setModified();
 
@@ -48,7 +54,8 @@ void MapVertex::setIntProperty(string key, int value) {
 		return MapObject::setIntProperty(key, value);
 }
 
-void MapVertex::setFloatProperty(string key, double value) {
+void MapVertex::setFloatProperty(string key, double value)
+{
 	// Update modified time
 	setModified();
 
@@ -60,8 +67,10 @@ void MapVertex::setFloatProperty(string key, double value) {
 		return MapObject::setFloatProperty(key, value);
 }
 
-void MapVertex::connectLine(MapLine* line) {
-	for (unsigned a = 0; a < connected_lines.size(); a++) {
+void MapVertex::connectLine(MapLine* line)
+{
+	for (unsigned a = 0; a < connected_lines.size(); a++)
+	{
 		if (connected_lines[a] == line)
 			return;
 	}
@@ -69,29 +78,35 @@ void MapVertex::connectLine(MapLine* line) {
 	connected_lines.push_back(line);
 }
 
-void MapVertex::disconnectLine(MapLine* line) {
-	for (unsigned a = 0; a < connected_lines.size(); a++) {
-		if (connected_lines[a] == line) {
+void MapVertex::disconnectLine(MapLine* line)
+{
+	for (unsigned a = 0; a < connected_lines.size(); a++)
+	{
+		if (connected_lines[a] == line)
+		{
 			connected_lines.erase(connected_lines.begin() + a);
 			return;
 		}
 	}
 }
 
-MapLine* MapVertex::connectedLine(unsigned index) {
+MapLine* MapVertex::connectedLine(unsigned index)
+{
 	if (index > connected_lines.size())
 		return NULL;
 
 	return connected_lines[index];
 }
 
-void MapVertex::writeBackup(mobj_backup_t* backup) {
+void MapVertex::writeBackup(mobj_backup_t* backup)
+{
 	// Position
 	backup->props_internal["x"] = x;
 	backup->props_internal["y"] = y;
 }
 
-void MapVertex::readBackup(mobj_backup_t* backup) {
+void MapVertex::readBackup(mobj_backup_t* backup)
+{
 	// Position
 	x = backup->props_internal["x"].getFloatValue();
 	y = backup->props_internal["y"].getFloatValue();

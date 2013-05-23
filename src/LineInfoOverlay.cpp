@@ -11,13 +11,16 @@
 #include "ColourConfiguration.h"
 #include "GameConfiguration.h"
 
-LineInfoOverlay::LineInfoOverlay() {
+LineInfoOverlay::LineInfoOverlay()
+{
 }
 
-LineInfoOverlay::~LineInfoOverlay() {
+LineInfoOverlay::~LineInfoOverlay()
+{
 }
 
-void LineInfoOverlay::update(MapLine* line) {
+void LineInfoOverlay::update(MapLine* line)
+{
 	if (!line)
 		return;
 
@@ -33,10 +36,12 @@ void LineInfoOverlay::update(MapLine* line) {
 
 	// Line special
 	int as_id = line->intProperty("special");
-	if (line->props().propertyExists("macro")) {
+	if (line->props().propertyExists("macro"))
+	{
 		int macro = line->intProperty("macro");
 		info.push_back(S_FMT("Macro: #%d", macro));
-	} else
+	}
+	else
 		info.push_back(S_FMT("Special: %d (%s)", as_id, CHR(theGameConfiguration->actionSpecialName(as_id))));
 
 	// Line trigger
@@ -44,7 +49,8 @@ void LineInfoOverlay::update(MapLine* line) {
 		info.push_back(S_FMT("Trigger: %s", CHR(theGameConfiguration->spacTriggerString(line, map_format))));
 
 	// Line args (or sector tag)
-	if (map_format == MAP_HEXEN || theMapEditor->currentMapDesc().format == MAP_UDMF) {
+	if (map_format == MAP_HEXEN || theMapEditor->currentMapDesc().format == MAP_UDMF)
+	{
 		int args[5];
 		args[0] = line->intProperty("arg0");
 		args[1] = line->intProperty("arg1");
@@ -65,7 +71,8 @@ void LineInfoOverlay::update(MapLine* line) {
 
 	// Front side
 	MapSide* s = line->s1();
-	if (s) {
+	if (s)
+	{
 		int xoff = s->intProperty("offsetx");
 		int yoff = s->intProperty("offsety");
 		side_front.exists = true;
@@ -82,7 +89,8 @@ void LineInfoOverlay::update(MapLine* line) {
 
 	// Back side
 	s = line->s2();
-	if (s) {
+	if (s)
+	{
 		int xoff = s->intProperty("offsetx");
 		int yoff = s->intProperty("offsety");
 		side_back.exists = true;
@@ -98,7 +106,8 @@ void LineInfoOverlay::update(MapLine* line) {
 	else side_back.exists = false;
 }
 
-void LineInfoOverlay::draw(int bottom, int right, float alpha) {
+void LineInfoOverlay::draw(int bottom, int right, float alpha)
+{
 	// Don't bother if invisible
 	if (alpha <= 0.0f)
 		return;
@@ -137,14 +146,16 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha) {
 
 	// Draw info text lines
 	int y = height;
-	for (unsigned a = 0; a < info.size(); a++) {
+	for (unsigned a = 0; a < info.size(); a++)
+	{
 		Drawing::drawText(info[a], 2, bottom - y, col_fg, Drawing::FONT_CONDENSED);
 		y -= 16;
 	}
 
 	// Side info
 	int x = right - 256;
-	if (side_front.exists) {
+	if (side_front.exists)
+	{
 		// Background
 		glDisable(GL_TEXTURE_2D);
 		Drawing::drawBorderedRect(x, bottom-height-4, x + 256, bottom+2, col_bg, col_border);
@@ -152,7 +163,8 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha) {
 		drawSide(bottom-4, right, alpha, side_front, x);
 		x -= 258;
 	}
-	if (side_back.exists) {
+	if (side_back.exists)
+	{
 		// Background
 		glDisable(GL_TEXTURE_2D);
 		Drawing::drawBorderedRect(x, bottom-height-4, x + 256, bottom+2, col_bg, col_border);
@@ -164,7 +176,8 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha) {
 	glEnable(GL_LINE_SMOOTH);
 }
 
-void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side, int xstart) {
+void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side, int xstart)
+{
 	// Get colours
 	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
@@ -181,14 +194,16 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side,
 	drawTexture(alpha, xstart + 92 + 80, bottom - 32, side.tex_lower, "L");
 }
 
-void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos) {
+void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
+{
 	// Get colours
 	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
 	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 
 	// Check texture isn't blank
-	if (texture != "-" && !texture.IsEmpty()) {
+	if (texture != "-" && !texture.IsEmpty())
+	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
 		rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
@@ -201,7 +216,8 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, str
 		GLTexture* tex = theMapEditor->textureManager().getTexture(texture, theGameConfiguration->mixTexFlats());
 
 		// Draw texture
-		if (tex) {
+		if (tex)
+		{
 			rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
 			Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0);
 		}

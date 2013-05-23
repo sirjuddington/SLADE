@@ -4,7 +4,8 @@
 
 #include <wx/dialog.h>
 
-class ExtMessageDialog : public wxDialog {
+class ExtMessageDialog : public wxDialog
+{
 private:
 	wxStaticText*	label_message;
 	wxTextCtrl*		text_ext;

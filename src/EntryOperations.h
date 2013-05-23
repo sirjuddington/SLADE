@@ -6,7 +6,8 @@
 #include "SIFormat.h"
 
 class wxFrame;
-namespace EntryOperations {
+namespace EntryOperations
+{
 	bool	openExternal(ArchiveEntry* entry);
 	bool	openMapDB2(ArchiveEntry* entry);
 	bool	gfxConvert(ArchiveEntry* entry, string target_format, SIFormat::convert_options_t opt, int target_colformat = -1);
@@ -15,7 +16,7 @@ namespace EntryOperations {
 	bool	modifytRNSChunk(ArchiveEntry* entry, bool value);
 	bool	getalPhChunk(ArchiveEntry* entry);
 	bool	gettRNSChunk(ArchiveEntry* entry);
-	bool	readgrAbChunk(ArchiveEntry* entry, point2_t &offsets);
+	bool	readgrAbChunk(ArchiveEntry* entry, point2_t& offsets);
 	bool	addToPatchTable(vector<ArchiveEntry*> entries);
 	bool	createTexture(vector<ArchiveEntry*> entries);
 	bool	convertTextures(vector<ArchiveEntry*> entries);

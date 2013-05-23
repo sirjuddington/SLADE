@@ -50,7 +50,8 @@ DEFINE_EVENT_TYPE(wxEVT_BROWSERCANVAS_SELECTION_CHANGED)
 /* BrowserCanvas::BrowserCanvas
  * BrowserCanvas class constructor
  *******************************************************************/
-BrowserCanvas::BrowserCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {
+BrowserCanvas::BrowserCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+{
 	// Init variables
 	yoff = 0;
 	item_border = 8;
@@ -74,13 +75,15 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {
 /* BrowserCanvas::~BrowserCanvas
  * BrowserCanvas class destructor
  *******************************************************************/
-BrowserCanvas::~BrowserCanvas() {
+BrowserCanvas::~BrowserCanvas()
+{
 }
 
 /* BrowserCanvas::addItem
  * Adds [item] to the list of items
  *******************************************************************/
-void BrowserCanvas::addItem(BrowserItem* item) {
+void BrowserCanvas::addItem(BrowserItem* item)
+{
 	items.push_back(item);
 	longest_text = -1;
 }
@@ -88,7 +91,8 @@ void BrowserCanvas::addItem(BrowserItem* item) {
 /* BrowserCanvas::clearItems
  * Clears all items
  *******************************************************************/
-void BrowserCanvas::clearItems() {
+void BrowserCanvas::clearItems()
+{
 	items.clear();
 	longest_text = -1;
 }
@@ -96,7 +100,8 @@ void BrowserCanvas::clearItems() {
 /* BrowserCanvas::fullItemSizeX
  * Returns the 'full' (including border) width of each item
  *******************************************************************/
-int BrowserCanvas::fullItemSizeX() {
+int BrowserCanvas::fullItemSizeX()
+{
 	int base_size;
 	if (item_size > 0)
 		base_size = item_size + (item_border*2);
@@ -113,7 +118,8 @@ int BrowserCanvas::fullItemSizeX() {
  * Returns the 'full' (including border and row gap) height of each
  * item
  *******************************************************************/
-int BrowserCanvas::fullItemSizeY() {
+int BrowserCanvas::fullItemSizeY()
+{
 	int gap = 16;
 	if (show_names == NAMES_NONE || item_type == ITEMS_TILES)
 		gap = 0;
@@ -127,7 +133,8 @@ int BrowserCanvas::fullItemSizeY() {
 /* BrowserCanvas::draw
  * Handles drawing of the canvas content
  *******************************************************************/
-void BrowserCanvas::draw() {
+void BrowserCanvas::draw()
+{
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
 
@@ -142,7 +149,8 @@ void BrowserCanvas::draw() {
 	// Setup colours
 	rgba_t col_bg, col_text;
 	bool text_shadow = true;
-	if (browser_bg_type == 1) {
+	if (browser_bg_type == 1)
+	{
 		// Get system panel background colour
 		wxColour bgcolwx = Drawing::getPanelBGColour();
 		col_bg.set(bgcolwx.Red(), bgcolwx.Green(), bgcolwx.Blue());
@@ -150,14 +158,15 @@ void BrowserCanvas::draw() {
 		// Get system text colour
 		wxColour textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 		col_text.set(textcol.Red(), textcol.Green(), textcol.Blue());
-		
+
 		// Check text colour brightness, if it's dark don't draw text shadow
 		rgba_t col_temp = col_text;
 		wxColor::MakeGrey(&col_temp.r, &col_temp.g, &col_temp.b);
 		if (col_temp.r < 60)
 			text_shadow = false;
 	}
-	else {
+	else
+	{
 		// Otherwise use black background
 		col_bg.set(0, 0, 0);
 
@@ -188,11 +197,14 @@ void BrowserCanvas::draw() {
 	int col_width = GetSize().x / num_cols;
 	int col = 0;
 	top_index = -1;
-	for (unsigned a = 0; a < items_filter.size(); a++) {
+	for (unsigned a = 0; a < items_filter.size(); a++)
+	{
 		// If we're not yet into the viewable area, skip
-		if (y < yoff - fullItemSizeY()) {
+		if (y < yoff - fullItemSizeY())
+		{
 			col++;
-			if (col >= num_cols) {
+			if (col >= num_cols)
+			{
 				col = 0;
 				y += fullItemSizeY();
 
@@ -204,7 +216,8 @@ void BrowserCanvas::draw() {
 		}
 
 		// If we're drawing the first non-hidden item, save it
-		if (top_index < 0) {
+		if (top_index < 0)
+		{
 			top_index = a;
 			top_y = y - yoff;
 		}
@@ -214,7 +227,8 @@ void BrowserCanvas::draw() {
 		x = item_border + xgap + (col * col_width);
 
 		// Draw selection box if selected
-		if (item_selected == items[items_filter[a]]) {
+		if (item_selected == items[items_filter[a]])
+		{
 			// Setup
 			glDisable(GL_TEXTURE_2D);
 			glColor4f(0.3f, 0.5f, 1.0f, 0.3f);
@@ -253,7 +267,8 @@ void BrowserCanvas::draw() {
 
 		// Move over for next item
 		col++;
-		if (col >= num_cols) {
+		if (col >= num_cols)
+		{
 			col = 0;
 			y += fullItemSizeY();
 
@@ -270,7 +285,8 @@ void BrowserCanvas::draw() {
 /* BrowserCanvas::setScrollBar
  * Sets this canvas' associated vertical scrollbar
  *******************************************************************/
-void BrowserCanvas::setScrollBar(wxScrollBar* scrollbar) {
+void BrowserCanvas::setScrollBar(wxScrollBar* scrollbar)
+{
 	// Set scrollbar
 	this->scrollbar = scrollbar;
 
@@ -286,7 +302,8 @@ void BrowserCanvas::setScrollBar(wxScrollBar* scrollbar) {
  * Updates the associated scrollbar's properties depending on the
  * number of items, the canvas size, etc.
  *******************************************************************/
-void BrowserCanvas::updateScrollBar() {
+void BrowserCanvas::updateScrollBar()
+{
 	// Do nothing special if no scrollbar present
 	if (!scrollbar)
 		return;
@@ -303,7 +320,8 @@ void BrowserCanvas::updateScrollBar() {
 /* BrowserCanvas::updateLayout
  * Updates variables concerning the object layout
  *******************************************************************/
-void BrowserCanvas::updateLayout() {
+void BrowserCanvas::updateLayout()
+{
 	// Determine number of columns
 	num_cols = GetSize().x / fullItemSizeX();
 
@@ -317,7 +335,8 @@ void BrowserCanvas::updateLayout() {
  * Returns the currently selected BrowserItem, or NULL if nothing is
  * selected
  *******************************************************************/
-BrowserItem* BrowserCanvas::getSelectedItem() {
+BrowserItem* BrowserCanvas::getSelectedItem()
+{
 	return item_selected;
 }
 
@@ -325,7 +344,8 @@ BrowserItem* BrowserCanvas::getSelectedItem() {
  * Returns the currently BrowserItem at [index], taking the current
  * filter into account
  *******************************************************************/
-BrowserItem* BrowserCanvas::itemAt(int index) {
+BrowserItem* BrowserCanvas::itemAt(int index)
+{
 	// Check index
 	if (index < 0 || index >= (int)items_filter.size())
 		return NULL;
@@ -336,11 +356,13 @@ BrowserItem* BrowserCanvas::itemAt(int index) {
 /* BrowserCanvas::itemIndex
  * Returns the index of [item] taking the current filter into account
  *******************************************************************/
-int BrowserCanvas::itemIndex(BrowserItem* item) {
+int BrowserCanvas::itemIndex(BrowserItem* item)
+{
 	// Search for the item in the current filtered list
-	for (unsigned a = 0; a < items_filter.size(); a++) {
+	for (unsigned a = 0; a < items_filter.size(); a++)
+	{
 		if ((unsigned)items_filter[a] < items.size() &&
-			items[items_filter[a]] == item)
+		        items[items_filter[a]] == item)
 			return a;
 	}
 
@@ -351,13 +373,16 @@ int BrowserCanvas::itemIndex(BrowserItem* item) {
 /* BrowserCanvas::selectItem
  * Selects the item [item]
  *******************************************************************/
-void BrowserCanvas::selectItem(BrowserItem* item) {
+void BrowserCanvas::selectItem(BrowserItem* item)
+{
 	// Check if we're clearing the selection
 	if (item == NULL)
 		item_selected = NULL;
-	else {
+	else
+	{
 		// Check the item exists in the current set
-		for (unsigned a = 0; a < items.size(); a++) {
+		for (unsigned a = 0; a < items.size(); a++)
+		{
 			if (items[a] == item)
 				item_selected = item;
 		}
@@ -372,7 +397,8 @@ void BrowserCanvas::selectItem(BrowserItem* item) {
 /* BrowserCanvas::selectItem
  * Selects the item at [index]
  *******************************************************************/
-void BrowserCanvas::selectItem(int index) {
+void BrowserCanvas::selectItem(int index)
+{
 	// Check index
 	if (index < 0 || index >= (int)items_filter.size())
 		return;
@@ -388,22 +414,26 @@ void BrowserCanvas::selectItem(int index) {
 /* BrowserCanvas::filterItems
  * Filters the visible items by [filter], by name
  *******************************************************************/
-void BrowserCanvas::filterItems(string filter) {
+void BrowserCanvas::filterItems(string filter)
+{
 	// Clear current filter list
 	items_filter.clear();
 
 	// If the filter is empty, just add all items to the filter
-	if (filter.IsEmpty()) {
+	if (filter.IsEmpty())
+	{
 		for (unsigned a = 0; a < items.size(); a++)
 			items_filter.push_back(a);
 	}
-	else {
+	else
+	{
 		// Setup filter string
 		filter.MakeLower();
 		filter += "*";
 
 		// Go through items
-		for (unsigned a = 0; a < items.size(); a++) {
+		for (unsigned a = 0; a < items.size(); a++)
+		{
 			// Add to filter list if name matches
 			if (items[a]->getName().Lower().Matches(filter))
 				items_filter.push_back(a);
@@ -420,7 +450,8 @@ void BrowserCanvas::filterItems(string filter) {
  * [top] is true, the item will be shown on the top row, otherwise,
  * the item will be shown on the bottom row
  *******************************************************************/
-void BrowserCanvas::showItem(int item, bool top) {
+void BrowserCanvas::showItem(int item, bool top)
+{
 	// Check item index
 	if (item < 0 || item >= (int)items_filter.size())
 		return;
@@ -431,13 +462,16 @@ void BrowserCanvas::showItem(int item, bool top) {
 	int y_bottom = y_top + fullItemSizeY();
 
 	// Check if item is above current view
-	if (y_top < yoff || y_bottom > yoff + GetSize().y) {
-		if (top) {
+	if (y_top < yoff || y_bottom > yoff + GetSize().y)
+	{
+		if (top)
+		{
 			// Scroll view to show the item on the top row
 			yoff = y_top;
 			if (scrollbar) scrollbar->SetThumbPosition(yoff);
 		}
-		else {
+		else
+		{
 			// Scroll view to show the item on the bottom row
 			yoff = y_bottom - GetSize().y;
 			if (scrollbar) scrollbar->SetThumbPosition(yoff);
@@ -448,7 +482,8 @@ void BrowserCanvas::showItem(int item, bool top) {
 /* BrowserCanvas::showItem
  * Scrolls the view to show the currently selected item
  *******************************************************************/
-void BrowserCanvas::showSelectedItem() {
+void BrowserCanvas::showSelectedItem()
+{
 	showItem(itemIndex(item_selected));
 }
 
@@ -456,13 +491,16 @@ void BrowserCanvas::showSelectedItem() {
  * Used by BrowserCanvas::onKeyChar, returns true if an item matching
  * [search] is found (starting from [from]), false otherwise
  *******************************************************************/
-bool BrowserCanvas::searchItemFrom(int from) {
+bool BrowserCanvas::searchItemFrom(int from)
+{
 	int index = from;
 	bool looped = false;
 	bool gotmatch = false;
-	while ((!looped && index < (int)items_filter.size()) || (looped && index < from)) {
+	while ((!looped && index < (int)items_filter.size()) || (looped && index < from))
+	{
 		string name = items[items_filter[index]]->getName();
-		if (name.Upper().StartsWith(search)) {
+		if (name.Upper().StartsWith(search))
+		{
 			// Matches, update selection
 			selectItem(index);
 			showSelectedItem();
@@ -471,7 +509,8 @@ bool BrowserCanvas::searchItemFrom(int from) {
 
 		// No match, next item; look in the above entries
 		// if no matches were found below.
-		if (++index == items_filter.size() && !looped) {
+		if (++index == items_filter.size() && !looped)
+		{
 			looped = true;
 			index = 0;
 		}
@@ -480,13 +519,15 @@ bool BrowserCanvas::searchItemFrom(int from) {
 	return false;
 }
 
-int BrowserCanvas::longestItemTextWidth() {
+int BrowserCanvas::longestItemTextWidth()
+{
 	// Just return it if it's already calculated
 	if (longest_text >= 0)
 		return longest_text;
 
 	// Go through all items
-	for (unsigned a = 0; a < items.size(); a++) {
+	for (unsigned a = 0; a < items.size(); a++)
+	{
 		string name = items[a]->getName();
 		int width = Drawing::textExtents(name, font).x;
 		if (width > longest_text)
@@ -504,7 +545,8 @@ int BrowserCanvas::longestItemTextWidth() {
 /* BrowserCanvas::onSize
  * Called when the canvas is resized
  *******************************************************************/
-void BrowserCanvas::onSize(wxSizeEvent& e) {
+void BrowserCanvas::onSize(wxSizeEvent& e)
+{
 	updateScrollBar();
 	updateLayout();
 
@@ -515,7 +557,8 @@ void BrowserCanvas::onSize(wxSizeEvent& e) {
 /* BrowserCanvas::onScrollThumbTrack
  * Called when the scrollbar 'thumb' is moved
  *******************************************************************/
-void BrowserCanvas::onScrollThumbTrack(wxScrollEvent& e) {
+void BrowserCanvas::onScrollThumbTrack(wxScrollEvent& e)
+{
 	// Update y-offset and refresh
 	yoff = scrollbar->GetThumbPosition();
 	Refresh();
@@ -525,7 +568,8 @@ void BrowserCanvas::onScrollThumbTrack(wxScrollEvent& e) {
  * Called when the scrollbar recieves a 'line up' command (ie when
  * the up arrow is clicked)
  *******************************************************************/
-void BrowserCanvas::onScrollLineUp(wxScrollEvent& e) {
+void BrowserCanvas::onScrollLineUp(wxScrollEvent& e)
+{
 	// Scroll up by one row
 	scrollbar->SetThumbPosition(yoff - fullItemSizeY());
 
@@ -538,7 +582,8 @@ void BrowserCanvas::onScrollLineUp(wxScrollEvent& e) {
  * Called when the scrollbar recieves a 'line down' command (ie when
  * the down arrow is clicked)
  *******************************************************************/
-void BrowserCanvas::onScrollLineDown(wxScrollEvent& e) {
+void BrowserCanvas::onScrollLineDown(wxScrollEvent& e)
+{
 	// Scroll down by one row
 	scrollbar->SetThumbPosition(yoff + fullItemSizeY());
 
@@ -551,7 +596,8 @@ void BrowserCanvas::onScrollLineDown(wxScrollEvent& e) {
  * Called when the scrollbar recieves a 'page up' command (ie when
  * the area above the 'thumb' is clicked)
  *******************************************************************/
-void BrowserCanvas::onScrollPageUp(wxScrollEvent& e) {
+void BrowserCanvas::onScrollPageUp(wxScrollEvent& e)
+{
 	// Scroll up by one screen
 	scrollbar->SetThumbPosition(yoff - GetSize().y);
 
@@ -564,7 +610,8 @@ void BrowserCanvas::onScrollPageUp(wxScrollEvent& e) {
  * Called when the scrollbar recieves a 'page down' command (ie when
  * the area below the 'thumb' is clicked)
  *******************************************************************/
-void BrowserCanvas::onScrollPageDown(wxScrollEvent& e) {
+void BrowserCanvas::onScrollPageDown(wxScrollEvent& e)
+{
 	// Scroll down by one screen
 	scrollbar->SetThumbPosition(yoff + GetSize().y);
 
@@ -576,9 +623,11 @@ void BrowserCanvas::onScrollPageDown(wxScrollEvent& e) {
 /* BrowserCanvas::onMouseEvent
  * Called when any mouse event is generated (click, scroll, etc)
  *******************************************************************/
-void BrowserCanvas::onMouseEvent(wxMouseEvent& e) {
+void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
+{
 	// --- Scroll wheel ---
-	if (e.GetEventType() == wxEVT_MOUSEWHEEL) {
+	if (e.GetEventType() == wxEVT_MOUSEWHEEL)
+	{
 		// Detemine the scroll multiplier
 		float scroll_mult = (float)e.GetWheelRotation() / (float)e.GetWheelDelta();
 
@@ -594,7 +643,8 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e) {
 	}
 
 	// --- Left click ---
-	else if (e.GetEventType() == wxEVT_LEFT_DOWN) {
+	else if (e.GetEventType() == wxEVT_LEFT_DOWN)
+	{
 		// Clear selection
 		item_selected = NULL;
 
@@ -616,41 +666,48 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e) {
 /* BrowserCanvas::onMouseEvent
  * Called when a key is pressed within the canvas
  *******************************************************************/
-void BrowserCanvas::onKeyDown(wxKeyEvent& e) {
+void BrowserCanvas::onKeyDown(wxKeyEvent& e)
+{
 	bool handled = true;
 	int num_cols = GetSize().x / fullItemSizeX();
 	int selected = itemIndex(item_selected);
 
 	// Down arrow
-	if (e.GetKeyCode() == WXK_DOWN) {
+	if (e.GetKeyCode() == WXK_DOWN)
+	{
 		selected += num_cols;
 		showItem(selected, false);
 	}
 
 	// Up arrow
-	else if (e.GetKeyCode() == WXK_UP) {
+	else if (e.GetKeyCode() == WXK_UP)
+	{
 		selected -= num_cols;
 		showItem(selected);
 	}
 
 	// Left arrow
-	else if (e.GetKeyCode() == WXK_LEFT) {
+	else if (e.GetKeyCode() == WXK_LEFT)
+	{
 		selected--;
 		showItem(selected);
 	}
 
 	// Right arrow
-	else if (e.GetKeyCode() == WXK_RIGHT) {
+	else if (e.GetKeyCode() == WXK_RIGHT)
+	{
 		selected++;
 		showItem(selected, false);
 	}
 
-	else {
+	else
+	{
 		e.Skip();
 		handled = false;
 	}
 
-	if (handled) {
+	if (handled)
+	{
 		// Clamp selection
 		if (selected >= (int)items_filter.size())
 			selectItem((int)items_filter.size() - 1);
@@ -665,14 +722,16 @@ void BrowserCanvas::onKeyDown(wxKeyEvent& e) {
 /* BrowserCanvas::onKeyChar
  * Called when a 'character' key is pressed within the canvas
  *******************************************************************/
-int bc_chars[] = {
+int bc_chars[] =
+{
 	'.', ',', '_', '-', '+', '=', '`', '~',
 	'!', '@', '#', '$', '(', ')', '[', ']',
 	'{', '}', ':', ';', '/', '\\', '<', '>',
 	'?', '^', '&', '\'', '\"',
 };
 int n_bc_chars = 30;
-void BrowserCanvas::onKeyChar(wxKeyEvent& e) {
+void BrowserCanvas::onKeyChar(wxKeyEvent& e)
+{
 	// Check the key pressed is actually a character (a-z, 0-9 etc)
 	bool isRealChar = false;
 	if (e.GetKeyCode() >= 'a' && e.GetKeyCode() <= 'z')			// Lowercase
@@ -681,16 +740,20 @@ void BrowserCanvas::onKeyChar(wxKeyEvent& e) {
 		isRealChar = true;
 	else if (e.GetKeyCode() >= '0' && e.GetKeyCode() <= '9')	// Number
 		isRealChar = true;
-	else {
-		for (int a = 0; a < n_bc_chars; a++) {
-			if (e.GetKeyCode() == bc_chars[a]) {
+	else
+	{
+		for (int a = 0; a < n_bc_chars; a++)
+		{
+			if (e.GetKeyCode() == bc_chars[a])
+			{
 				isRealChar = true;
 				break;
 			}
 		}
 	}
 
-	if (isRealChar) {
+	if (isRealChar)
+	{
 		// Get currently selected item (or first if nothing is focused)
 		int selected = itemIndex(item_selected);
 		if (selected < 0) selected = 0;
@@ -701,7 +764,8 @@ void BrowserCanvas::onKeyChar(wxKeyEvent& e) {
 
 		// Search for match from the current focus, and if failed
 		// start a new search from after the current focus.
-		if (!searchItemFrom(selected)) {
+		if (!searchItemFrom(selected))
+		{
 			search = S_FMT("%c", e.GetKeyCode());
 			search.MakeUpper();
 			searchItemFrom(selected+1);
@@ -710,7 +774,8 @@ void BrowserCanvas::onKeyChar(wxKeyEvent& e) {
 		// Refresh canvas
 		Refresh();
 	}
-	else {
+	else
+	{
 		search = "";
 		e.Skip();
 	}

@@ -48,7 +48,8 @@ CVAR(String, bgtx_colour2, "#505060", CVAR_SAVE)
 /* GLTexture::GLTexture
  * GLTexture class constructor
  *******************************************************************/
-GLTexture::GLTexture(bool allow_split) {
+GLTexture::GLTexture(bool allow_split)
+{
 	this->loaded = false;
 	this->allow_split = allow_split;
 	this->filter = NEAREST;
@@ -58,7 +59,8 @@ GLTexture::GLTexture(bool allow_split) {
 /* GLTexture::~GLTexture
  * GLTexture class destructor
  *******************************************************************/
-GLTexture::~GLTexture() {
+GLTexture::~GLTexture()
+{
 	// Delete current textures if they exist
 	if (loaded)
 		clear();
@@ -69,7 +71,8 @@ GLTexture::~GLTexture() {
  * the texture is added to the texture list (for split images),
  * otherwise any current texture data is overwritten
  *******************************************************************/
-bool GLTexture::loadData(const uint8_t* data, uint32_t width, uint32_t height, bool add) {
+bool GLTexture::loadData(const uint8_t* data, uint32_t width, uint32_t height, bool add)
+{
 	// Check data was given
 	if (!data)
 		return false;
@@ -92,17 +95,20 @@ bool GLTexture::loadData(const uint8_t* data, uint32_t width, uint32_t height, b
 	glBindTexture(GL_TEXTURE_2D, ntex.id);
 
 	// Set texture params
-	if (tiling) {
+	if (tiling)
+	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
-	else {
+	else
+	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	}
 
 	// Force mipmapping if np2 and splitting isn't allowed
-	if (!allow_split && (!OpenGL::validTexDimension(width) || !OpenGL::validTexDimension(height))) {
+	if (!allow_split && (!OpenGL::validTexDimension(width) || !OpenGL::validTexDimension(height)))
+	{
 		if (filter == LINEAR)
 			filter = LINEAR_MIPMAP;
 		else if (filter == NEAREST)
@@ -110,27 +116,32 @@ bool GLTexture::loadData(const uint8_t* data, uint32_t width, uint32_t height, b
 	}
 
 	// Generate the texture
-	if (filter == LINEAR) {
+	if (filter == LINEAR)
+	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
-	else if (filter == MIPMAP || filter == LINEAR_MIPMAP) {
+	else if (filter == MIPMAP || filter == LINEAR_MIPMAP)
+	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
-	else if (filter == NEAREST_MIPMAP) {
+	else if (filter == NEAREST_MIPMAP)
+	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
-	else if (filter == NEAREST_LINEAR_MIN) {
+	else if (filter == NEAREST_LINEAR_MIN)
+	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
-	else {
+	else
+	{
 		// Default to NEAREST
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -152,7 +163,8 @@ bool GLTexture::loadData(const uint8_t* data, uint32_t width, uint32_t height, b
  * 128x128 squares. Returns false if the given data is invalid, true
  * otherwise
  *******************************************************************/
-bool GLTexture::loadRawData(const uint8_t* data, uint32_t w, uint32_t h) {
+bool GLTexture::loadRawData(const uint8_t* data, uint32_t w, uint32_t h)
+{
 	// Check image was given
 	if (!data)
 		return false;
@@ -161,22 +173,28 @@ bool GLTexture::loadRawData(const uint8_t* data, uint32_t w, uint32_t h) {
 	clear();
 
 	// Check image dimensions
-	if (OpenGL::validTexDimension(w) && OpenGL::validTexDimension(h)) {
+	if (OpenGL::validTexDimension(w) && OpenGL::validTexDimension(h))
+	{
 		// If the image dimensions are valid for OpenGL on this system, just load it as a single texture
 
 		return loadData(data, w, h);
-	} else {
+	}
+	else
+	{
 		// Otherwise split the image into 128x128 chunks
-		uint8_t * buf = new uint8_t[128*128*4];
+		uint8_t* buf = new uint8_t[128*128*4];
 		size_t top = 0;
-		while (top < h) {
+		while (top < h)
+		{
 			size_t left = 0;
-			while (left < w) {
+			while (left < w)
+			{
 				// Load 128x128 portion of image
 				memset(buf, 0, 128*128*4);
 				size_t rowlen = MIN(128, int(w - left));
 				size_t collen = MIN(128, int(h - top));
-				for (size_t i = 0; i < collen; ++i) {
+				for (size_t i = 0; i < collen; ++i)
+				{
 					size_t doffset = (((top + i) * w) + left) * 4;
 					size_t boffset = i * 128 * 4;
 					memcpy(buf + boffset, data + doffset, rowlen*4);
@@ -206,7 +224,8 @@ bool GLTexture::loadRawData(const uint8_t* data, uint32_t w, uint32_t h) {
  * 128x128 squares. Returns false if the given data is invalid, true
  * otherwise
  *******************************************************************/
-bool GLTexture::loadImage(SImage* image, Palette8bit* pal) {
+bool GLTexture::loadImage(SImage* image, Palette8bit* pal)
+{
 	// Check image was given
 	if (!image)
 		return false;
@@ -219,7 +238,8 @@ bool GLTexture::loadImage(SImage* image, Palette8bit* pal) {
 	clear();
 
 	// Check image dimensions
-	if (OpenGL::validTexDimension(image->getWidth()) && OpenGL::validTexDimension(image->getHeight())) {
+	if (OpenGL::validTexDimension(image->getWidth()) && OpenGL::validTexDimension(image->getHeight()))
+	{
 		// If the image dimensions are valid for OpenGL on this system, just load it as a single texture
 
 		// Get RGBA image data
@@ -229,12 +249,15 @@ bool GLTexture::loadImage(SImage* image, Palette8bit* pal) {
 		// Generate GL texture from rgba data
 		return loadData(rgba.getData(), image->getWidth(), image->getHeight());
 	}
-	else {
+	else
+	{
 		// Otherwise split the image into 128x128 chunks
 		int top = 0;
-		while (top < image->getHeight()) {
+		while (top < image->getHeight())
+		{
 			int left = 0;
-			while (left < image->getWidth()) {
+			while (left < image->getWidth())
+			{
 				// Load 128x128 portion of image
 				loadImagePortion(image, rect_t(left, top, left + 128, top + 128), pal, true);
 
@@ -258,7 +281,8 @@ bool GLTexture::loadImage(SImage* image, Palette8bit* pal) {
  * Loads a portion of a SImage to the texture. Only used internally,
  * the portion must be 128x128 in size
  *******************************************************************/
-bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette8bit* pal, bool add) {
+bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette8bit* pal, bool add)
+{
 	// Check image was given
 	if (!image)
 		return false;
@@ -281,7 +305,8 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette8bit* pal, b
 	portion.fillData(0);
 
 	// Read portion of image if rect isn't completely outside the image
-	if (!(rect.left() >= image->getWidth() || rect.right() < 0 || rect.top() >= image->getHeight() || rect.bottom() < 0)) {
+	if (!(rect.left() >= image->getWidth() || rect.right() < 0 || rect.top() >= image->getHeight() || rect.bottom() < 0))
+	{
 		// Determine start of each row to read
 		uint32_t row_start = 0;
 		if (rect.left() > 0)
@@ -301,12 +326,14 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette8bit* pal, b
 		uint8_t* buf = new uint8_t[rect.width() * 4];
 
 		// Go through each row
-		for (int32_t row = rect.top(); row < rect.bottom(); row++) {
+		for (int32_t row = rect.top(); row < rect.bottom(); row++)
+		{
 			// Clear row buffer
 			memset(buf, 0, rect.width() * 4);
 
 			// Check that the current row is within the image
-			if (row >= 0 && row < image->getHeight()) {
+			if (row >= 0 && row < image->getHeight())
+			{
 				// Seek to current row in image data
 				rgba.seek((row * image->getWidth() + row_start) * 4, SEEK_SET);
 
@@ -329,7 +356,8 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette8bit* pal, b
 /* GLTexture::clear
  * Clears the texture and resets variables
  *******************************************************************/
-bool GLTexture::clear() {
+bool GLTexture::clear()
+{
 	// Delete texture(s)
 	for (size_t a = 0; a < tex.size(); a++)
 		glDeleteTextures(1, &tex[a].id);
@@ -347,10 +375,13 @@ bool GLTexture::clear() {
  * Generates a chequered pattern, with each square being [size] and
  * alternating between [col1] and [col2]
  *******************************************************************/
-bool GLTexture::genChequeredTexture(uint8_t block_size, rgba_t col1, rgba_t col2) {
+bool GLTexture::genChequeredTexture(uint8_t block_size, rgba_t col1, rgba_t col2)
+{
 	// Check given block size and change if necessary
-	for (uint8_t s = 1; s <= 64; s *= 2) {
-		if (block_size <= s) {
+	for (uint8_t s = 1; s <= 64; s *= 2)
+	{
+		if (block_size <= s)
+		{
 			block_size = s;
 			break;
 		}
@@ -360,28 +391,34 @@ bool GLTexture::genChequeredTexture(uint8_t block_size, rgba_t col1, rgba_t col2
 	uint32_t data_size = (block_size*block_size*4) * 4;
 	uint8_t* data = new uint8_t[data_size];
 	uint32_t c = 0;
-	for (uint32_t y = 0; y < block_size; y++) {		// Top half
-		for (uint32_t x = 0; x < block_size; x++) {
+	for (uint32_t y = 0; y < block_size; y++)  		// Top half
+	{
+		for (uint32_t x = 0; x < block_size; x++)
+		{
 			data[c++] = col1.r;
 			data[c++] = col1.g;
 			data[c++] = col1.b;
 			data[c++] = 255;
 		}
-		for (uint32_t x = 0; x < block_size; x++) {
+		for (uint32_t x = 0; x < block_size; x++)
+		{
 			data[c++] = col2.r;
 			data[c++] = col2.g;
 			data[c++] = col2.b;
 			data[c++] = 255;
 		}
 	}
-	for (uint32_t y = 0; y < block_size; y++) {		// Bottom half
-		for (uint32_t x = 0; x < block_size; x++) {
+	for (uint32_t y = 0; y < block_size; y++)  		// Bottom half
+	{
+		for (uint32_t x = 0; x < block_size; x++)
+		{
 			data[c++] = col2.r;
 			data[c++] = col2.g;
 			data[c++] = col2.b;
 			data[c++] = 255;
 		}
-		for (uint32_t x = 0; x < block_size; x++) {
+		for (uint32_t x = 0; x < block_size; x++)
+		{
 			data[c++] = col1.r;
 			data[c++] = col1.g;
 			data[c++] = col1.b;
@@ -402,7 +439,8 @@ bool GLTexture::genChequeredTexture(uint8_t block_size, rgba_t col1, rgba_t col2
  * Binds the texture for use in opengl. Returns false if the texture
  * isn't loaded, true otherwise
  *******************************************************************/
-bool GLTexture::bind() {
+bool GLTexture::bind()
+{
 	// Check texture is loaded
 	if (!loaded || tex.size() == 0)
 		return false;
@@ -417,7 +455,8 @@ bool GLTexture::bind() {
  * Draws the texture as a 2d image at [x], [y]. Returns false if the
  * texture isn't loaded, true otherwise
  *******************************************************************/
-bool GLTexture::draw2d(double x, double y, bool flipx, bool flipy) {
+bool GLTexture::draw2d(double x, double y, bool flipx, bool flipy)
+{
 	// Can't draw if texture not loaded
 	if (!loaded)
 		return false;
@@ -429,7 +468,8 @@ bool GLTexture::draw2d(double x, double y, bool flipx, bool flipy) {
 		y += height;
 
 	// If the texture isn't split, just draw it straight
-	if (OpenGL::validTexDimension(width) && OpenGL::validTexDimension(height)) {
+	if (OpenGL::validTexDimension(width) && OpenGL::validTexDimension(height))
+	{
 		// Bind the texture
 		glBindTexture(GL_TEXTURE_2D, tex[0].id);
 
@@ -455,7 +495,8 @@ bool GLTexture::draw2d(double x, double y, bool flipx, bool flipy) {
 	}
 
 	// Otherwise draw the 128x128 chunks
-	else {
+	else
+	{
 		// Translate to position
 		glPushMatrix();
 		glTranslated(x, y, 0);
@@ -467,9 +508,11 @@ bool GLTexture::draw2d(double x, double y, bool flipx, bool flipy) {
 
 		size_t tex_index = 0;
 		double top = 0;
-		while (top < height && top >= 0) {
+		while (top < height && top >= 0)
+		{
 			double left = 0;
-			while (left < width && left >= 0) {
+			while (left < width && left >= 0)
+			{
 				// Bind the texture
 				glBindTexture(GL_TEXTURE_2D, tex[tex_index].id);
 
@@ -500,13 +543,15 @@ bool GLTexture::draw2d(double x, double y, bool flipx, bool flipy) {
  * Draws the texture tiled within an area [width]x[height]. Returns
  * false if the texture isn't loaded, true otherwise
  *******************************************************************/
-bool GLTexture::draw2dTiled(uint32_t width, uint32_t height) {
+bool GLTexture::draw2dTiled(uint32_t width, uint32_t height)
+{
 	// Can't draw if texture not loaded
 	if (!loaded)
 		return false;
 
 	// If the texture isn't split, just draw it straight
-	if (OpenGL::validTexDimension(width) && OpenGL::validTexDimension(height)) {
+	if (OpenGL::validTexDimension(width) && OpenGL::validTexDimension(height))
+	{
 		// Bind the texture
 		glBindTexture(GL_TEXTURE_2D, tex[0].id);
 
@@ -524,11 +569,14 @@ bool GLTexture::draw2dTiled(uint32_t width, uint32_t height) {
 	}
 
 	// Otherwise draw the 128x128 chunks
-	else {
+	else
+	{
 		uint32_t x = 0;
-		while (x < width) {
+		while (x < width)
+		{
 			uint32_t y = 0;
-			while (y < height) {
+			while (y < height)
+			{
 				// Draw texture
 				draw2d(x, y);
 
@@ -547,7 +595,8 @@ bool GLTexture::draw2dTiled(uint32_t width, uint32_t height) {
 /* GLTexture::averageColour
  * Returns the average colour of the texture
  *******************************************************************/
-rgba_t GLTexture::averageColour(rect_t area) {
+rgba_t GLTexture::averageColour(rect_t area)
+{
 	// Check texture is loaded
 	if (!loaded)
 		return COL_BLACK;
@@ -573,8 +622,10 @@ rgba_t GLTexture::averageColour(rect_t area) {
 	unsigned blue = 0;
 	unsigned npix = 0;
 	// Go through area
-	for (int y = area.tl.y; y < area.br.y; y++) {
-		for (int x = area.tl.x; x < area.br.x; x++) {
+	for (int y = area.tl.y; y < area.br.y; y++)
+	{
+		for (int x = area.tl.x; x < area.br.x; x++)
+		{
 			// Add pixel
 			unsigned c = (y * width * 4) + (x * 4);
 			red += pixels[c++];
@@ -600,18 +651,21 @@ rgba_t GLTexture::averageColour(rect_t area) {
 /* GLTexture::bgTex
  * Returns the global chequered 'background' texture
  *******************************************************************/
-GLTexture& GLTexture::bgTex() {
-	if (!tex_background.isLoaded()) {
+GLTexture& GLTexture::bgTex()
+{
+	if (!tex_background.isLoaded())
+	{
 		wxColour col1(bgtx_colour1);
 		wxColour col2(bgtx_colour2);
 		tex_background.genChequeredTexture(8,
-			rgba_t(col1.Red(), col1.Green(), col1.Blue(), 255),
-			rgba_t(col2.Red(), col2.Green(), col2.Blue(), 255));
+		                                   rgba_t(col1.Red(), col1.Green(), col1.Blue(), 255),
+		                                   rgba_t(col2.Red(), col2.Green(), col2.Blue(), 255));
 	}
 	return tex_background;
 }
 
-GLTexture& GLTexture::missingTex() {
+GLTexture& GLTexture::missingTex()
+{
 	if (!tex_missing.isLoaded())
 		tex_missing.genChequeredTexture(8, rgba_t(0, 0, 0), rgba_t(255, 0, 0));
 	return tex_missing;
@@ -620,7 +674,8 @@ GLTexture& GLTexture::missingTex() {
 /* GLTexture::resetBgTex
  * Resets the global chequered 'background' texture
  *******************************************************************/
-void GLTexture::resetBgTex() {
+void GLTexture::resetBgTex()
+{
 	if (tex_background.isLoaded())
 		tex_background.clear();
 }

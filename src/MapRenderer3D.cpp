@@ -23,7 +23,8 @@ CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 EXTERN_CVAR(Bool, flats_use_vbo)
 
 
-MapRenderer3D::MapRenderer3D(SLADEMap* map) {
+MapRenderer3D::MapRenderer3D(SLADEMap* map)
+{
 	// Init variables
 	this->map = map;
 	this->fog = true;
@@ -54,7 +55,8 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map) {
 	listenTo(theResourceManager);
 }
 
-MapRenderer3D::~MapRenderer3D() {
+MapRenderer3D::~MapRenderer3D()
+{
 	if (quads)				delete quads;
 	if (flats)				delete flats;
 	if (vbo_ceilings > 0)	glDeleteBuffers(1, &vbo_ceilings);
@@ -62,7 +64,8 @@ MapRenderer3D::~MapRenderer3D() {
 	if (vbo_walls > 0)		glDeleteBuffers(1, &vbo_walls);
 }
 
-bool MapRenderer3D::init() {
+bool MapRenderer3D::init()
+{
 	// Check to enable zdoom udmf extensions
 	if (S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom") && map->currentFormat() == MAP_UDMF)
 		udmf_zdoom = true;
@@ -79,20 +82,24 @@ bool MapRenderer3D::init() {
 	return true;
 }
 
-void MapRenderer3D::refresh() {
+void MapRenderer3D::refresh()
+{
 	// Clear any existing map data
 	dist_sectors.clear();
-	if (quads) {
+	if (quads)
+	{
 		delete quads;
 		quads = NULL;
 	}
-	if (flats) {
+	if (flats)
+	{
 		delete flats;
 		flats = NULL;
 	}
 
 	// Clear VBOs
-	if (vbo_floors != 0) {
+	if (vbo_floors != 0)
+	{
 		glDeleteBuffers(1, &vbo_floors);
 		glDeleteBuffers(1, &vbo_ceilings);
 		vbo_floors = vbo_ceilings = 0;
@@ -109,7 +116,8 @@ void MapRenderer3D::refresh() {
 	//wxLogMessage("sky1: %s, sky2: %s", CHR(skytex1), CHR(skytex2));
 }
 
-void MapRenderer3D::clearData() {
+void MapRenderer3D::clearData()
+{
 	// Clear map structures
 	lines.clear();
 	things.clear();
@@ -120,19 +128,22 @@ void MapRenderer3D::clearData() {
 	refresh();
 }
 
-void MapRenderer3D::buildSkyCircle() {
+void MapRenderer3D::buildSkyCircle()
+{
 	double rot = 0;
-	for (unsigned a = 0; a < 32; a++) {
+	for (unsigned a = 0; a < 32; a++)
+	{
 		sky_circle[a].set(sin(rot), -cos(rot));
 		rot -= (3.1415926535897932384626433832795 * 2) / 32.0;
 	}
 }
 
-MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item) {
+MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item)
+{
 	// Check item type
 	if (item.type != MapEditor::SEL_SIDE_BOTTOM &&
-		item.type != MapEditor::SEL_SIDE_MIDDLE &&
-		item.type != MapEditor::SEL_SIDE_TOP)
+	        item.type != MapEditor::SEL_SIDE_MIDDLE &&
+	        item.type != MapEditor::SEL_SIDE_TOP)
 		return NULL;
 
 	// Get side
@@ -142,7 +153,8 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item) {
 
 	// Find matching quad
 	int lindex = side->getParentLine()->getIndex();
-	for (unsigned a = 0; a < lines[lindex].quads.size(); a++) {
+	for (unsigned a = 0; a < lines[lindex].quads.size(); a++)
+	{
 		quad_3d_t* quad = &lines[lindex].quads[a];
 
 		// Check side
@@ -152,15 +164,18 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item) {
 			continue;
 
 		// Check part
-		if (item.type == MapEditor::SEL_SIDE_BOTTOM) {
+		if (item.type == MapEditor::SEL_SIDE_BOTTOM)
+		{
 			if (quad->flags & LOWER)
 				return quad;
 		}
-		if (item.type == MapEditor::SEL_SIDE_TOP) {
+		if (item.type == MapEditor::SEL_SIDE_TOP)
+		{
 			if (quad->flags & UPPER)
 				return quad;
 		}
-		if (item.type == MapEditor::SEL_SIDE_MIDDLE) {
+		if (item.type == MapEditor::SEL_SIDE_MIDDLE)
+		{
 			if ((quad->flags & UPPER) == 0 && (quad->flags & LOWER) == 0)
 				return quad;
 		}
@@ -170,7 +185,8 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item) {
 	return NULL;
 }
 
-MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(selection_3d_t item) {
+MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(selection_3d_t item)
+{
 	// Check index
 	if ((unsigned)item.index >= floors.size())
 		return NULL;
@@ -188,20 +204,24 @@ MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(selection_3d_t item) {
 		return NULL;
 }
 
-void MapRenderer3D::cameraMove(double distance, bool z) {
+void MapRenderer3D::cameraMove(double distance, bool z)
+{
 	// Move along direction vector
-	if (z) {
+	if (z)
+	{
 		cam_position.x += cam_dir3d.x * distance;
 		cam_position.y += cam_dir3d.y * distance;
 		cam_position.z += cam_dir3d.z * distance;
 	}
-	else {
+	else
+	{
 		cam_position.x += cam_direction.x * distance;
 		cam_position.y += cam_direction.y * distance;
 	}
 }
 
-void MapRenderer3D::cameraTurn(double angle) {
+void MapRenderer3D::cameraTurn(double angle)
+{
 	// Find rotated view point
 	fpoint2_t cp2d(cam_position.x, cam_position.y);
 	fpoint2_t nd = MathStuff::rotatePoint(cp2d, cp2d + cam_direction, angle);
@@ -214,17 +234,20 @@ void MapRenderer3D::cameraTurn(double angle) {
 	cameraUpdateVectors();
 }
 
-void MapRenderer3D::cameraMoveUp(double distance) {
+void MapRenderer3D::cameraMoveUp(double distance)
+{
 	cam_position.z += distance;
 }
 
-void MapRenderer3D::cameraStrafe(double distance) {
+void MapRenderer3D::cameraStrafe(double distance)
+{
 	// Move along strafe vector
 	cam_position.x += cam_strafe.x * distance;
 	cam_position.y += cam_strafe.y * distance;
 }
 
-void MapRenderer3D::cameraPitch(double amount) {
+void MapRenderer3D::cameraPitch(double amount)
+{
 	// Pitch camera
 	cam_pitch += amount;
 
@@ -239,7 +262,8 @@ void MapRenderer3D::cameraPitch(double amount) {
 	cameraUpdateVectors();
 }
 
-void MapRenderer3D::cameraUpdateVectors() {
+void MapRenderer3D::cameraUpdateVectors()
+{
 	// Normalize direction
 	cam_direction.normalize();
 
@@ -252,7 +276,8 @@ void MapRenderer3D::cameraUpdateVectors() {
 	cam_dir3d = cam_dir3d.normalize();
 }
 
-void MapRenderer3D::cameraSet(fpoint3_t position, fpoint2_t direction) {
+void MapRenderer3D::cameraSet(fpoint3_t position, fpoint2_t direction)
+{
 	// Set camera position/direction
 	cam_position = position;
 	cam_direction = direction;
@@ -262,11 +287,13 @@ void MapRenderer3D::cameraSet(fpoint3_t position, fpoint2_t direction) {
 	cameraUpdateVectors();
 }
 
-void MapRenderer3D::cameraSetPosition(fpoint3_t position) {
+void MapRenderer3D::cameraSetPosition(fpoint3_t position)
+{
 	cam_position = position;
 }
 
-void MapRenderer3D::cameraApplyGravity(double mult) {
+void MapRenderer3D::cameraApplyGravity(double mult)
+{
 	// Get current sector
 	int sector = map->sectorAt(cam_position.x, cam_position.y);
 	if (sector < 0)
@@ -278,14 +305,16 @@ void MapRenderer3D::cameraApplyGravity(double mult) {
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
-	if (cam_position.z > fheight) {
+	if (cam_position.z > fheight)
+	{
 		double diff = cam_position.z - fheight;
 		cam_position.z -= (diff*0.3*mult);
 		if (cam_position.z < fheight)
 			cam_position.z = fheight;
 	}
 
-	else if (cam_position.z < fheight) {
+	else if (cam_position.z < fheight)
+	{
 		double diff = fheight - cam_position.z;
 		cam_position.z += (diff*0.5*mult);
 		if (cam_position.z > fheight)
@@ -293,7 +322,8 @@ void MapRenderer3D::cameraApplyGravity(double mult) {
 	}
 }
 
-void MapRenderer3D::setupView(int width, int height) {
+void MapRenderer3D::setupView(int width, int height)
+{
 	// Setup projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -311,20 +341,23 @@ void MapRenderer3D::setupView(int width, int height) {
 
 	// Setup camera view
 	gluLookAt(cam_position.x, cam_position.y, cam_position.z,
-				cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y, cam_position.z+cam_dir3d.z,
-				up.x, up.y, up.z);
+	          cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y, cam_position.z+cam_dir3d.z,
+	          up.x, up.y, up.z);
 }
 
-void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha) {
+void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
+{
 	// Force 255 light in fullbright mode
 	if (fullbright)
 		light = 255;
 
 	// Setup fog
-	if (fog && light != last_light) {
+	if (fog && light != last_light)
+	{
 		if (light >= 240)
 			glDisable(GL_FOG);
-		else {
+		else
+		{
 			glEnable(GL_FOG);
 			float lm = light/170.0f;
 			glFogf(GL_FOG_END, (lm * lm * 3000.0f));
@@ -340,7 +373,8 @@ void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha) {
 	glColor4f(colour.fr()*mult, colour.fg()*mult, colour.fb()*mult, colour.fa()*alpha);
 }
 
-void MapRenderer3D::renderMap() {
+void MapRenderer3D::renderMap()
+{
 	// Setup GL stuff
 	glEnable(GL_DEPTH_TEST);
 	glCullFace(GL_BACK);
@@ -366,12 +400,15 @@ void MapRenderer3D::renderMap() {
 	tex_last = NULL;
 
 	// Init VBO stuff
-	if (OpenGL::vboSupport()) {
+	if (OpenGL::vboSupport())
+	{
 		// Check if any polygon vertex data has changed (in this case we need to refresh the entire vbo)
 		bool vbo_updated = false;
-		for (unsigned a = 0; a < map->nSectors(); a++) {
+		for (unsigned a = 0; a < map->nSectors(); a++)
+		{
 			Polygon2D* poly = map->getSector(a)->getPolygon();
-			if (poly && poly->vboUpdate() > 1) {
+			if (poly && poly->vboUpdate() > 1)
+			{
 				updateFlatsVBO();
 				vbo_updated = true;
 				break;
@@ -387,7 +424,8 @@ void MapRenderer3D::renderMap() {
 	}
 
 	// Create flat arrays if needed
-	if (floors.size() != map->nSectors()) {
+	if (floors.size() != map->nSectors())
+	{
 		floors.resize(map->nSectors());
 		ceilings.resize(map->nSectors());
 	}
@@ -424,18 +462,21 @@ void MapRenderer3D::renderMap() {
 		renderThings();
 
 	// Check elapsed time
-	if (render_max_dist_adaptive) {
+	if (render_max_dist_adaptive)
+	{
 #if SFML_VERSION_MAJOR < 2	// SFML 1.6: uppercase G, returns time in seconds as a float
 		long ms = clock.GetElapsedTime() * 1000;
 #else						// SFML 2.0: lowercase G, returns a Time object
 		long ms = clock.getElapsedTime().asMilliseconds();
 #endif
-		if (ms > render_adaptive_ms) {
+		if (ms > render_adaptive_ms)
+		{
 			render_max_dist = render_max_dist - 100;
 			if (render_max_dist < 1000)
 				render_max_dist = 1000;
 		}
-		else if (ms < render_adaptive_ms-5) {
+		else if (ms < render_adaptive_ms-5)
+		{
 			render_max_dist = render_max_dist + 100;
 			if (render_max_dist > 20000)
 				render_max_dist = 20000;
@@ -449,7 +490,8 @@ void MapRenderer3D::renderMap() {
 	glDisable(GL_FOG);
 }
 
-void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float abottom, float size, float tx, float ty) {
+void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float abottom, float size, float tx, float ty)
+{
 	float tc_x = 0.0f;
 	float tc_y1 = (-top + 1.0f) * (ty * 0.5f);
 	float tc_y2 = (-bottom + 1.0f) * (ty * 0.5f);
@@ -457,7 +499,8 @@ void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float ab
 	glBegin(GL_QUADS);
 
 	// Go through circular points
-	for (unsigned a = 0; a < 31; a++) {
+	for (unsigned a = 0; a < 31; a++)
+	{
 		// Top
 		glColor4f(1.0f, 1.0f, 1.0f, atop);
 		glTexCoord2f(tc_x+tx, tc_y1);	glVertex3f(cam_position.x + (sky_circle[a+1].x * size), cam_position.y - (sky_circle[a+1].y * size), cam_position.z + (top * size));
@@ -485,7 +528,8 @@ void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float ab
 	glEnd();
 }
 
-void MapRenderer3D::renderSky() {
+void MapRenderer3D::renderSky()
+{
 	COL_WHITE.set_gl();
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_FOG);
@@ -503,12 +547,14 @@ void MapRenderer3D::renderSky() {
 		sky = theMapEditor->textureManager().getTexture(skytex2, false);
 	else
 		sky = theMapEditor->textureManager().getTexture(skytex1, false);
-	if (sky) {
+	if (sky)
+	{
 		// Bind texture
 		sky->bind();
 
 		// Get average colour if needed
-		if (skycol_top.a == 0) {
+		if (skycol_top.a == 0)
+		{
 			int theight = sky->getHeight() * 0.4;
 			skycol_top = sky->averageColour(rect_t(0, 0, sky->getWidth(), theight));
 			skycol_bottom = sky->averageColour(rect_t(0, sky->getHeight() - theight, sky->getWidth(), sky->getHeight()));
@@ -559,7 +605,8 @@ void MapRenderer3D::renderSky() {
 
 	// Render all sky quads
 	glDisable(GL_TEXTURE_2D);
-	for (unsigned a = 0; a < n_quads; a++) {
+	for (unsigned a = 0; a < n_quads; a++)
+	{
 		// Ignore if not sky
 		if ((quads[a]->flags & SKY) == 0)
 			continue;
@@ -573,7 +620,8 @@ void MapRenderer3D::renderSky() {
 
 	// Render all sky flats
 	flat_last = 0;
-	for (unsigned a = 0; a < n_flats; a++) {
+	for (unsigned a = 0; a < n_flats; a++)
+	{
 		// Ignore if not sky
 		if ((flats[a]->flags & SKY) == 0)
 			continue;
@@ -587,7 +635,8 @@ void MapRenderer3D::renderSky() {
 	glEnable(GL_TEXTURE_2D);
 }
 
-void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor) {
+void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
+{
 	// Check index
 	if (index >= map->nSectors())
 		return;
@@ -603,15 +652,18 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor) {
 	double rot = 0;
 
 	// Check for UDMF + ZDoom extensions
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom")) {
-		if (floor) {
+	if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
+	{
+		if (floor)
+		{
 			ox = sector->floatProperty("xpanningfloor");
 			oy = sector->floatProperty("ypanningfloor");
 			sx = sector->floatProperty("xscalefloor");
 			sy = sector->floatProperty("yscalefloor");
 			rot = sector->floatProperty("rotationfloor");
 		}
-		else {
+		else
+		{
 			ox = sector->floatProperty("xpanningceiling");
 			oy = sector->floatProperty("ypanningceiling");
 			sx = sector->floatProperty("xscaleceiling");
@@ -628,7 +680,8 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor) {
 	sector->getPolygon()->updateTextureCoords(sx, sy, ox, oy, rot);
 }
 
-void MapRenderer3D::updateSector(unsigned index) {
+void MapRenderer3D::updateSector(unsigned index)
+{
 	// Check index
 	if (index >= map->nSectors())
 		return;
@@ -648,7 +701,8 @@ void MapRenderer3D::updateSector(unsigned index) {
 		floors[index].flags |= SKY;
 
 	// Update floor VBO
-	if (OpenGL::vboSupport()) {
+	if (OpenGL::vboSupport())
+	{
 		updateFlatTexCoords(index, true);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_floors);
 		Polygon2D::setupVBOPointers();
@@ -670,7 +724,8 @@ void MapRenderer3D::updateSector(unsigned index) {
 		ceilings[index].flags |= SKY;
 
 	// Update ceiling VBO
-	if (OpenGL::vboSupport()) {
+	if (OpenGL::vboSupport())
+	{
 		updateFlatTexCoords(index, false);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings);
 		Polygon2D::setupVBOPointers();
@@ -681,20 +736,23 @@ void MapRenderer3D::updateSector(unsigned index) {
 	// Finish up
 	floors[index].updated_time = theApp->runTimer();
 	ceilings[index].updated_time = theApp->runTimer();
-	if (OpenGL::vboSupport()) {
+	if (OpenGL::vboSupport())
+	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		sector->getPolygon()->setZ(0);
 	}
 }
 
-void MapRenderer3D::renderFlat(flat_3d_t* flat) {
+void MapRenderer3D::renderFlat(flat_3d_t* flat)
+{
 	// Skip if no sector (for whatever reason)
 	if (!flat->sector)
 		return;
 
 	// Setup special rendering options
 	float alpha = flat->alpha;
-	if (flat->flags & SKY && render_3d_sky) {
+	if (flat->flags & SKY && render_3d_sky)
+	{
 		alpha = 0;
 		glDisable(GL_ALPHA_TEST);
 	}
@@ -703,18 +761,23 @@ void MapRenderer3D::renderFlat(flat_3d_t* flat) {
 	setLight(flat->colour, flat->light, alpha);
 
 	// Render flat
-	if (OpenGL::vboSupport() && flats_use_vbo) {
+	if (OpenGL::vboSupport() && flats_use_vbo)
+	{
 		// Setup for floor or ceiling
-		if (flat->flags & CEIL) {
-			if (flat_last != 2) {
+		if (flat->flags & CEIL)
+		{
+			if (flat_last != 2)
+			{
 				glCullFace(GL_BACK);
 				glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings);
 				Polygon2D::setupVBOPointers();
 				flat_last = 2;
 			}
 		}
-		else {
-			if (flat_last != 1) {
+		else
+		{
+			if (flat_last != 1)
+			{
 				glCullFace(GL_FRONT);
 				glBindBuffer(GL_ARRAY_BUFFER, vbo_floors);
 				Polygon2D::setupVBOPointers();
@@ -725,15 +788,18 @@ void MapRenderer3D::renderFlat(flat_3d_t* flat) {
 		// Render
 		flat->sector->getPolygon()->renderVBO(false);
 	}
-	else {
+	else
+	{
 		glPushMatrix();
 
 		// Setup for floor or ceiling
-		if (flat->flags & CEIL) {
+		if (flat->flags & CEIL)
+		{
 			glCullFace(GL_BACK);
 			glTranslated(0, 0, flat->sector->getCeilingHeight());
 		}
-		else {
+		else
+		{
 			glCullFace(GL_FRONT);
 			glTranslated(0, 0, flat->sector->getFloorHeight());
 		}
@@ -749,7 +815,8 @@ void MapRenderer3D::renderFlat(flat_3d_t* flat) {
 		glEnable(GL_ALPHA_TEST);
 }
 
-void MapRenderer3D::renderFlats() {
+void MapRenderer3D::renderFlats()
+{
 	// Check for map
 	if (!map)
 		return;
@@ -760,16 +827,20 @@ void MapRenderer3D::renderFlats() {
 	// Render all visible flats, ordered by texture
 	unsigned a = 0;
 	flat_last = 0;
-	while (n_flats > 0) {
+	while (n_flats > 0)
+	{
 		tex_last = NULL;
 		a = 0;
-		while (a < n_flats) {
+		while (a < n_flats)
+		{
 			// Check texture
-			if (!tex_last && flats[a]->texture) {
+			if (!tex_last && flats[a]->texture)
+			{
 				tex_last = flats[a]->texture;
 				flats[a]->texture->bind();
 			}
-			if (flats[a]->texture != tex_last) {
+			if (flats[a]->texture != tex_last)
+			{
 				a++;
 				continue;
 			}
@@ -783,14 +854,16 @@ void MapRenderer3D::renderFlats() {
 
 	// Reset gl stuff
 	glDisable(GL_TEXTURE_2D);
-	if (OpenGL::vboSupport()) {
+	if (OpenGL::vboSupport())
+	{
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
 
-void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float alpha) {
+void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float alpha)
+{
 	if (!render_selection)
 		return;
 
@@ -810,7 +883,8 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 	col2.a *= 0.5;
 
 	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++) {
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
 		// Ignore if not a sector hilight
 		if (selection[a].type != MapEditor::SEL_CEILING && selection[a].type != MapEditor::SEL_FLOOR)
 			continue;
@@ -822,11 +896,13 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 
 		// Translate to floor/ceiling height
 		glPushMatrix();
-		if (selection[a].type == MapEditor::SEL_FLOOR) {
+		if (selection[a].type == MapEditor::SEL_FLOOR)
+		{
 			glTranslated(0, 0, sector->intProperty("heightfloor"));
 			glCullFace(GL_FRONT);
 		}
-		else {
+		else
+		{
 			glTranslated(0, 0, sector->intProperty("heightceiling"));
 			glCullFace(GL_BACK);
 		}
@@ -836,7 +912,8 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		sector->getLines(lines);
 		col1.set_gl(false);
 		glBegin(GL_LINES);
-		for (unsigned a = 0; a < lines.size(); a++) {
+		for (unsigned a = 0; a < lines.size(); a++)
+		{
 			glVertex3d(lines[a]->x1(), lines[a]->y1(), 0);
 			glVertex3d(lines[a]->x2(), lines[a]->y2(), 0);
 		}
@@ -852,7 +929,8 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 	glCullFace(GL_BACK);
 }
 
-void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom) {
+void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom)
+{
 	// Left
 	quad->points[0].x = quad->points[1].x = x1;
 	quad->points[0].y = quad->points[1].y = y1;
@@ -866,7 +944,8 @@ void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double 
 	quad->points[1].z = quad->points[2].z = bottom;
 }
 
-void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int length, double left, double top, bool pegbottom, double sx, double sy) {
+void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int length, double left, double top, bool pegbottom, double sx, double sy)
+{
 	// Check texture
 	if (!quad->texture)
 		return;
@@ -879,7 +958,8 @@ void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int lengt
 	double x2 = left + length;
 	double y1 = top;
 	double y2 = top + height;
-	if (pegbottom) {
+	if (pegbottom)
+	{
 		y2 = top + quad->texture->getHeight();
 		y1 = y2 - height;
 	}
@@ -895,7 +975,8 @@ void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int lengt
 	quad->points[3].ty = y1 / (quad->texture->getHeight() * sy);
 }
 
-void MapRenderer3D::updateLine(unsigned index) {
+void MapRenderer3D::updateLine(unsigned index)
+{
 	// Check index
 	if (index > lines.size())
 		return;
@@ -925,13 +1006,15 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 	// --- One-sided line ---
 	int length = MathStuff::round(line->getLength());
-	if (line->s1() && !line->s2()) {
+	if (line->s1() && !line->s2())
+	{
 		quad_3d_t quad;
 
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
 			if (line->s1()->hasProp("offsety_mid"))
@@ -940,7 +1023,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s1()->hasProp("scalex_mid"))
 				sx = line->s1()->floatProperty("scalex_mid");
 			if (line->s1()->hasProp("scaley_mid"))
@@ -974,7 +1058,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 	string sky_flat = theGameConfiguration->skyFlat();
 
 	// Front lower
-	if (floor2 > floor1) {
+	if (floor2 > floor1)
+	{
 		quad_3d_t quad;
 
 		// Determine offsets
@@ -982,7 +1067,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 		yoff = yoff1;
 		if (lpeg)	// Lower unpegged
 			yoff += (ceiling1 - floor2);
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			// ZDoom UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_bottom"))
 				xoff += line->s1()->floatProperty("offsetx_bottom");
@@ -992,7 +1078,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s1()->hasProp("scalex_bottom"))
 				sx = line->s1()->floatProperty("scalex_bottom");
 			if (line->s1()->hasProp("scaley_bottom"))
@@ -1014,7 +1101,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 	// Front middle
 	string midtex1 = line->stringProperty("side1.texturemiddle");
-	if (!midtex1.IsEmpty() && midtex1 != "-") {
+	if (!midtex1.IsEmpty() && midtex1 != "-")
+	{
 		quad_3d_t quad;
 
 		// Get texture
@@ -1023,7 +1111,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 		// Determine offsets
 		xoff = xoff1;
 		yoff = 0;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
 			if (line->s1()->hasProp("offsety_mid"))
@@ -1032,7 +1121,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s1()->hasProp("scalex_mid"))
 				sx = line->s1()->floatProperty("scalex_mid");
 			if (line->s1()->hasProp("scaley_mid"))
@@ -1042,13 +1132,15 @@ void MapRenderer3D::updateLine(unsigned index) {
 		// Setup quad coordinates
 		double top = lowceil + yoff1;
 		double bottom = top - (quad.texture->getHeight() * sy);
-		if (lpeg) {
+		if (lpeg)
+		{
 			bottom = highfloor + yoff1;
 			top = bottom + (quad.texture->getHeight() * sy);
 		}
 		if (bottom < highfloor)
 			bottom = highfloor;
-		if (top > lowceil) {
+		if (top > lowceil)
+		{
 			yoff = top - lowceil;
 			top = lowceil;
 		}
@@ -1065,13 +1157,15 @@ void MapRenderer3D::updateLine(unsigned index) {
 	}
 
 	// Front upper
-	if (ceiling1 > ceiling2) {
+	if (ceiling1 > ceiling2)
+	{
 		quad_3d_t quad;
 
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			// ZDoom UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_top"))
 				xoff += line->s1()->floatProperty("offsetx_top");
@@ -1081,7 +1175,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s1()->hasProp("scalex_top"))
 				sx = line->s1()->floatProperty("scalex_top");
 			if (line->s1()->hasProp("scaley_top"))
@@ -1102,7 +1197,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 	}
 
 	// Back lower
-	if (floor1 > floor2) {
+	if (floor1 > floor2)
+	{
 		quad_3d_t quad;
 
 		// Determine offsets
@@ -1110,7 +1206,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 		yoff = yoff2;
 		if (lpeg)	// Lower unpegged
 			yoff += (ceiling2 - floor1);
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			// ZDoom UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_bottom"))
 				xoff += line->s2()->floatProperty("offsetx_bottom");
@@ -1120,7 +1217,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s2()->hasProp("scalex_bottom"))
 				sx = line->s2()->floatProperty("scalex_bottom");
 			if (line->s2()->hasProp("scaley_bottom"))
@@ -1143,7 +1241,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 	// Back middle
 	string midtex2 = line->stringProperty("side2.texturemiddle");
-	if (!midtex2.IsEmpty() && midtex2 != "-") {
+	if (!midtex2.IsEmpty() && midtex2 != "-")
+	{
 		quad_3d_t quad;
 
 		// Get texture
@@ -1152,7 +1251,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 		// Determine offsets
 		xoff = xoff2;
 		yoff = 0;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s2()->hasProp("offsetx_mid"))
 				xoff += line->s2()->floatProperty("offsetx_mid");
 			if (line->s2()->hasProp("offsety_mid"))
@@ -1161,7 +1261,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s2()->hasProp("scalex_mid"))
 				sx = line->s2()->floatProperty("scalex_mid");
 			if (line->s2()->hasProp("scaley_mid"))
@@ -1171,13 +1272,15 @@ void MapRenderer3D::updateLine(unsigned index) {
 		// Setup quad coordinates
 		double top = lowceil + yoff2;
 		double bottom = top - (quad.texture->getHeight() * sy);
-		if (lpeg) {
+		if (lpeg)
+		{
 			bottom = highfloor + yoff2;
 			top = bottom + (quad.texture->getHeight() * sy);
 		}
 		if (bottom < highfloor)
 			bottom = highfloor;
-		if (top > lowceil) {
+		if (top > lowceil)
+		{
 			yoff = top - lowceil;
 			top = lowceil;
 		}
@@ -1195,13 +1298,15 @@ void MapRenderer3D::updateLine(unsigned index) {
 	}
 
 	// Back upper
-	if (ceiling2 > ceiling1) {
+	if (ceiling2 > ceiling1)
+	{
 		quad_3d_t quad;
 
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			// ZDoom UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_top"))
 				xoff += line->s2()->floatProperty("offsetx_top");
@@ -1211,7 +1316,8 @@ void MapRenderer3D::updateLine(unsigned index) {
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom) {
+		if (udmf_zdoom)
+		{
 			if (line->s2()->hasProp("scalex_top"))
 				sx = line->s2()->floatProperty("scalex_top");
 			if (line->s2()->hasProp("scaley_top"))
@@ -1237,9 +1343,11 @@ void MapRenderer3D::updateLine(unsigned index) {
 	lines[index].updated_time = theApp->runTimer();
 }
 
-void MapRenderer3D::renderQuad(MapRenderer3D::quad_3d_t* quad, float alpha) {
+void MapRenderer3D::renderQuad(MapRenderer3D::quad_3d_t* quad, float alpha)
+{
 	// Setup special rendering options
-	if (quad->flags & SKY && render_3d_sky) {
+	if (quad->flags & SKY && render_3d_sky)
+	{
 		alpha = 0;
 		glDisable(GL_ALPHA_TEST);
 	}
@@ -1264,23 +1372,28 @@ void MapRenderer3D::renderQuad(MapRenderer3D::quad_3d_t* quad, float alpha) {
 		glAlphaFunc(GL_GREATER, 0.0f);
 }
 
-void MapRenderer3D::renderWalls() {
+void MapRenderer3D::renderWalls()
+{
 	// Init
 	glEnable(GL_TEXTURE_2D);
 	glCullFace(GL_BACK);
 
 	// Render all visible quads, ordered by texture
 	unsigned a = 0;
-	while (n_quads > 0) {
+	while (n_quads > 0)
+	{
 		tex_last = NULL;
 		a = 0;
-		while (a < n_quads) {
+		while (a < n_quads)
+		{
 			// Check texture
-			if (!tex_last && quads[a]->texture) {
+			if (!tex_last && quads[a]->texture)
+			{
 				tex_last = quads[a]->texture;
 				quads[a]->texture->bind();
 			}
-			if (quads[a]->texture != tex_last) {
+			if (quads[a]->texture != tex_last)
+			{
 				a++;
 				continue;
 			}
@@ -1295,7 +1408,8 @@ void MapRenderer3D::renderWalls() {
 	glDisable(GL_TEXTURE_2D);
 }
 
-void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float alpha) {
+void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float alpha)
+{
 	if (!render_selection)
 		return;
 
@@ -1316,11 +1430,12 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 	col2.a *= 0.5;
 
 	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++) {
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
 		// Ignore if not a wall selection
 		if (selection[a].type != MapEditor::SEL_SIDE_BOTTOM &&
-			selection[a].type != MapEditor::SEL_SIDE_MIDDLE &&
-			selection[a].type != MapEditor::SEL_SIDE_TOP)
+		        selection[a].type != MapEditor::SEL_SIDE_MIDDLE &&
+		        selection[a].type != MapEditor::SEL_SIDE_TOP)
 			continue;
 
 		// Get side
@@ -1333,7 +1448,8 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 
 		// Get appropriate quad
 		quad_3d_t* quad = NULL;
-		for (unsigned q = 0; q < lines[line].quads.size(); q++) {
+		for (unsigned q = 0; q < lines[line].quads.size(); q++)
+		{
 			// Check quad is correct side
 			if (map->getLine(line)->s1() == side && lines[line].quads[q].flags & BACK)
 				continue;
@@ -1341,19 +1457,24 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 				continue;
 
 			// Check quad is correct part
-			if (lines[line].quads[q].flags & UPPER) {
-				if (selection[a].type == MapEditor::SEL_SIDE_TOP) {
+			if (lines[line].quads[q].flags & UPPER)
+			{
+				if (selection[a].type == MapEditor::SEL_SIDE_TOP)
+				{
 					quad = &lines[line].quads[q];
 					break;
 				}
 			}
-			else if (lines[line].quads[q].flags & LOWER) {
-				if (selection[a].type == MapEditor::SEL_SIDE_BOTTOM) {
+			else if (lines[line].quads[q].flags & LOWER)
+			{
+				if (selection[a].type == MapEditor::SEL_SIDE_BOTTOM)
+				{
 					quad = &lines[line].quads[q];
 					break;
 				}
 			}
-			else if (selection[a].type == MapEditor::SEL_SIDE_MIDDLE) {
+			else if (selection[a].type == MapEditor::SEL_SIDE_MIDDLE)
+			{
 				quad = &lines[line].quads[q];
 				break;
 			}
@@ -1378,7 +1499,8 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 	}
 }
 
-void MapRenderer3D::updateThing(unsigned index, MapThing* thing) {
+void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
+{
 	// Check index
 	if (index >= things.size() || !thing)
 		return;
@@ -1390,22 +1512,26 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing) {
 	// Get sprite texture
 	uint32_t theight = render_thing_icon_size;
 	things[index].sprite = theMapEditor->textureManager().getSprite(things[index].type->getSprite(), things[index].type->getTranslation(), things[index].type->getPalette());
-	if (!things[index].sprite) {
+	if (!things[index].sprite)
+	{
 		// Sprite not found, try an icon
 		things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(things[index].type->getIcon())));
 		things[index].flags |= ICON;
 	}
 	else theight = things[index].sprite->getHeight();
-	if (!things[index].sprite) {
+	if (!things[index].sprite)
+	{
 		// Icon not found either, use unknown icon
 		things[index].sprite = theMapEditor->textureManager().getEditorImage("thing/unknown");
 	}
 
 	// Determine z position
-	if (things[index].sector) {
+	if (things[index].sector)
+	{
 		// Get sector floor (or ceiling) height
 		int sheight = things[index].sector->getFloorHeight();
-		if (things[index].type->isHanging()) {
+		if (things[index].type->isHanging())
+		{
 			sheight = things[index].sector->getCeilingHeight();
 			sheight -= theight;
 		}
@@ -1425,7 +1551,8 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing) {
 	things[index].updated_time = theApp->runTimer();
 }
 
-void MapRenderer3D::renderThings() {
+void MapRenderer3D::renderThings()
+{
 	// Init
 	glEnable(GL_TEXTURE_2D);
 	glCullFace(GL_BACK);
@@ -1440,18 +1567,21 @@ void MapRenderer3D::renderThings() {
 	float x1, y1, x2, y2;
 	unsigned update = 0;
 	fpoint2_t strafe(cam_position.x + cam_strafe.x, cam_position.y + cam_strafe.y);
-	for (unsigned a = 0; a < map->nThings(); a++) {
+	for (unsigned a = 0; a < map->nThings(); a++)
+	{
 		MapThing* thing = map->getThing(a);
 		things[a].flags = things[a].flags & ~DRAWN;
 
 		// Check side of camera
-		if (cam_pitch > -0.9 && cam_pitch < 0.9) {
+		if (cam_pitch > -0.9 && cam_pitch < 0.9)
+		{
 			if (MathStuff::lineSide(thing->xPos(), thing->yPos(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
 				continue;
 		}
 
 		// Check thing distance if needed
-		if (mdist > 0) {
+		if (mdist > 0)
+		{
 			dist = MathStuff::distance(cam_position.x, cam_position.y, thing->xPos(), thing->yPos());
 			if (dist > mdist)
 				continue;
@@ -1459,7 +1589,8 @@ void MapRenderer3D::renderThings() {
 
 		// Update thing if needed
 		if (things[a].updated_time < thing->modifiedTime() ||
-			(things[a].sector && things[a].updated_time < things[a].sector->modifiedTime())) {
+		        (things[a].sector && things[a].updated_time < things[a].sector->modifiedTime()))
+		{
 			updateThing(a, thing);
 			update++;
 			if (update > 500)
@@ -1474,7 +1605,8 @@ void MapRenderer3D::renderThings() {
 		tex = things[a].sprite;
 
 		// Bind texture if needed
-		if (tex != tex_last) {
+		if (tex != tex_last)
+		{
 			tex->bind();
 			tex_last = tex;
 		}
@@ -1482,7 +1614,8 @@ void MapRenderer3D::renderThings() {
 		// Determine coordinates
 		halfwidth = tex->getWidth() * 0.5;
 		theight = tex->getHeight();
-		if (things[a].flags & ICON) {
+		if (things[a].flags & ICON)
+		{
 			halfwidth = render_thing_icon_size*0.5;
 			theight = render_thing_icon_size;
 		}
@@ -1496,7 +1629,8 @@ void MapRenderer3D::renderThings() {
 		light = 255;
 		if (things[a].type->isFullbright())
 			col.set(255, 255, 255, 255);
-		else {
+		else
+		{
 			// Get light level from sector
 			if (things[a].sector)
 				light = things[a].sector->getLightLevel();
@@ -1523,14 +1657,16 @@ void MapRenderer3D::renderThings() {
 	}
 
 	// Draw thing borders if needed
-	if (render_3d_things_style >= 1) {
+	if (render_3d_things_style >= 1)
+	{
 		glDisable(GL_TEXTURE_2D);
 		glDepthMask(GL_FALSE);
 		glAlphaFunc(GL_GREATER, 0.2f);
 		glDisable(GL_CULL_FACE);
 		glLineWidth(3.5f);
 
-		for (unsigned a = 0; a < map->nThings(); a++) {
+		for (unsigned a = 0; a < map->nThings(); a++)
+		{
 			// Skip if hidden
 			if (!(things[a].flags & DRAWN))
 				continue;
@@ -1553,7 +1689,8 @@ void MapRenderer3D::renderThings() {
 			glVertex3f(thing->xPos() + radius, thing->yPos() - radius, bottom);
 			glVertex3f(thing->xPos() + radius, thing->yPos() + radius, bottom);
 			glVertex3f(thing->xPos() - radius, thing->yPos() + radius, bottom);
-			if (render_3d_things_style == 2) {
+			if (render_3d_things_style == 2)
+			{
 				// Top
 				glVertex3f(thing->xPos() + radius, thing->yPos() - radius, top);
 				glVertex3f(thing->xPos() - radius, thing->yPos() - radius, top);
@@ -1591,7 +1728,8 @@ void MapRenderer3D::renderThings() {
 			glVertex3f(thing->xPos() + radius, thing->yPos() + radius, bottom);
 			glVertex3f(thing->xPos() - radius, thing->yPos() + radius, bottom);
 			glEnd();
-			if (render_3d_things_style == 2) {
+			if (render_3d_things_style == 2)
+			{
 				// Top
 				glBegin(GL_LINE_LOOP);
 				glVertex3f(thing->xPos() - radius, thing->yPos() - radius, top);
@@ -1632,7 +1770,8 @@ void MapRenderer3D::renderThings() {
 	}
 }
 
-void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, float alpha) {
+void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, float alpha)
+{
 	// Do nothing if no things visible
 	if (render_3d_things == 0 || !render_selection)
 		return;
@@ -1653,7 +1792,8 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 
 	// Go through selection
 	double halfwidth, theight, x1, y1, x2, y2;
-	for (unsigned a = 0; a < selection.size(); a++) {
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
 		// Ignore if not a thing selection
 		if (selection[a].type != MapEditor::SEL_THING)
 			continue;
@@ -1671,7 +1811,8 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 		// Determine coordinates
 		halfwidth = things[selection[a].index].sprite->getWidth() * 0.5;
 		theight = things[selection[a].index].sprite->getHeight();
-		if (things[selection[a].index].flags & ICON) {
+		if (things[selection[a].index].flags & ICON)
+		{
 			halfwidth = render_thing_icon_size*0.5;
 			theight = render_thing_icon_size;
 		}
@@ -1701,19 +1842,22 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 	}
 }
 
-void MapRenderer3D::updateFlatsVBO() {
+void MapRenderer3D::updateFlatsVBO()
+{
 	if (!flats_use_vbo)
 		return;
 
 	// Create VBOs if needed
-	if (vbo_floors == 0) {
+	if (vbo_floors == 0)
+	{
 		glGenBuffers(1, &vbo_floors);
 		glGenBuffers(1, &vbo_ceilings);
 	}
 
 	// Get total size needed
 	unsigned totalsize = 0;
-	for (unsigned a = 0; a < map->nSectors(); a++) {
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
 		Polygon2D* poly = map->getSector(a)->getPolygon();
 		totalsize += poly->vboDataSize();
 	}
@@ -1729,7 +1873,8 @@ void MapRenderer3D::updateFlatsVBO() {
 	unsigned offset = 0;
 	unsigned index = 0;
 	int height = 0;
-	for (unsigned a = 0; a < map->nSectors(); a++) {
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
 		// Set polygon z height
 		Polygon2D* poly = map->getSector(a)->getPolygon();
 		height = map->getSector(a)->intProperty("heightfloor");
@@ -1750,7 +1895,8 @@ void MapRenderer3D::updateFlatsVBO() {
 	// Write polygon data to VBO
 	offset = 0;
 	index = 0;
-	for (unsigned a = 0; a < map->nSectors(); a++) {
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
 		// Set polygon z height
 		Polygon2D* poly = map->getSector(a)->getPolygon();
 		height = map->getSector(a)->intProperty("heightceiling");
@@ -1768,10 +1914,12 @@ void MapRenderer3D::updateFlatsVBO() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void MapRenderer3D::updateWallsVBO() {
+void MapRenderer3D::updateWallsVBO()
+{
 }
 
-void MapRenderer3D::quickVisDiscard() {
+void MapRenderer3D::quickVisDiscard()
+{
 	// Create sector distance array if needed
 	if (dist_sectors.size() != map->nSectors())
 		dist_sectors.resize(map->nSectors());
@@ -1781,7 +1929,8 @@ void MapRenderer3D::quickVisDiscard() {
 	double y = cam_position.y;
 	double min_dist, dist;
 	fpoint2_t strafe(x + cam_strafe.x, y + cam_strafe.y);
-	for (unsigned a = 0; a < map->nSectors(); a++) {
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
 		// Get sector bbox
 		bbox_t bbox = map->getSector(a)->boundingBox();
 
@@ -1793,11 +1942,13 @@ void MapRenderer3D::quickVisDiscard() {
 			continue;
 
 		// Check side of camera
-		if (cam_pitch > -0.9 && cam_pitch < 0.9) {
+		if (cam_pitch > -0.9 && cam_pitch < 0.9)
+		{
 			if (MathStuff::lineSide(bbox.min.x, bbox.min.y, x, y, strafe.x, strafe.y) > 0 &&
-				MathStuff::lineSide(bbox.max.x, bbox.min.y, x, y, strafe.x, strafe.y) > 0 &&
-				MathStuff::lineSide(bbox.max.x, bbox.max.y, x, y, strafe.x, strafe.y) > 0 &&
-				MathStuff::lineSide(bbox.min.x, bbox.max.y, x, y, strafe.x, strafe.y) > 0) {
+			        MathStuff::lineSide(bbox.max.x, bbox.min.y, x, y, strafe.x, strafe.y) > 0 &&
+			        MathStuff::lineSide(bbox.max.x, bbox.max.y, x, y, strafe.x, strafe.y) > 0 &&
+			        MathStuff::lineSide(bbox.min.x, bbox.max.y, x, y, strafe.x, strafe.y) > 0)
+			{
 				// Behind camera, invisible
 				dist_sectors[a] = -1.0f;
 				continue;
@@ -1805,7 +1956,8 @@ void MapRenderer3D::quickVisDiscard() {
 		}
 
 		// Check distance to bbox
-		if (render_max_dist > 0) {
+		if (render_max_dist > 0)
+		{
 			min_dist = 9999999;
 			dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
 			if (dist < min_dist) min_dist = dist;
@@ -1821,7 +1973,8 @@ void MapRenderer3D::quickVisDiscard() {
 	}
 
 	// Set all lines that are part of invisible sectors to invisible
-	for (unsigned a = 0; a < map->nSides(); a++) {
+	for (unsigned a = 0; a < map->nSides(); a++)
+	{
 		dist = dist_sectors[map->getSide(a)->getSector()->getIndex()];
 		if (dist < 0 || (render_max_dist > 0 && dist > render_max_dist))
 			lines[map->getSide(a)->getParentLine()->getIndex()].visible = false;
@@ -1830,7 +1983,8 @@ void MapRenderer3D::quickVisDiscard() {
 	}
 }
 
-float MapRenderer3D::calcDistFade(double distance, double max) {
+float MapRenderer3D::calcDistFade(double distance, double max)
+{
 	if (max <= 0)
 		return 1.0f;
 
@@ -1841,7 +1995,8 @@ float MapRenderer3D::calcDistFade(double distance, double max) {
 		return 1.0f;
 }
 
-void MapRenderer3D::checkVisibleQuads() {
+void MapRenderer3D::checkVisibleQuads()
+{
 	// Create quads array if empty
 	if (!quads)
 		quads = (quad_3d_t**)malloc(sizeof(quad_3d_t*) * map->nLines() * 4);
@@ -1853,7 +2008,8 @@ void MapRenderer3D::checkVisibleQuads() {
 	unsigned updates = 0;
 	bool update = false;
 	fpoint2_t strafe(cam_position.x+cam_strafe.x, cam_position.y+cam_strafe.y);
-	for (unsigned a = 0; a < lines.size(); a++) {
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
 		line = map->getLine(a);
 
 		// Skip if not visible
@@ -1861,9 +2017,10 @@ void MapRenderer3D::checkVisibleQuads() {
 			continue;
 
 		// Check side of camera
-		if (cam_pitch > -0.9 && cam_pitch < 0.9) {
+		if (cam_pitch > -0.9 && cam_pitch < 0.9)
+		{
 			if (MathStuff::lineSide(line->x1(), line->y1(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0 &&
-				MathStuff::lineSide(line->x2(), line->y2(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
+			        MathStuff::lineSide(line->x2(), line->y2(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
 				continue;
 		}
 
@@ -1877,19 +2034,22 @@ void MapRenderer3D::checkVisibleQuads() {
 		update = false;
 		if (lines[a].updated_time < line->modifiedTime())	// Check line modified
 			update = true;
-		if (!update && line->s1()) {
+		if (!update && line->s1())
+		{
 			// Check front side/sector modified
 			if (lines[a].updated_time < line->s1()->modifiedTime() ||
-				lines[a].updated_time < line->frontSector()->modifiedTime())
+			        lines[a].updated_time < line->frontSector()->modifiedTime())
 				update = true;
 		}
-		if (!update && line->s2()) {
+		if (!update && line->s2())
+		{
 			// Check back side/sector modified
 			if (lines[a].updated_time < line->s2()->modifiedTime() ||
-				lines[a].updated_time < line->backSector()->modifiedTime())
+			        lines[a].updated_time < line->backSector()->modifiedTime())
 				update = true;
 		}
-		if (update) {
+		if (update)
+		{
 			updateLine(a);
 			//updates++;
 			//if (updates > 500)
@@ -1898,7 +2058,8 @@ void MapRenderer3D::checkVisibleQuads() {
 
 		// Determine quads to be drawn
 		quad_3d_t* quad;
-		for (unsigned q = 0; q < lines[a].quads.size(); q++) {
+		for (unsigned q = 0; q < lines[a].quads.size(); q++)
+		{
 			// Check we're on the right side of the quad
 			quad = &(lines[a].quads[q]);
 			if (MathStuff::lineSide(cam_position.x, cam_position.y, quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y) < 0)
@@ -1911,7 +2072,8 @@ void MapRenderer3D::checkVisibleQuads() {
 	}
 }
 
-void MapRenderer3D::checkVisibleFlats() {
+void MapRenderer3D::checkVisibleFlats()
+{
 	// Create flats array if empty
 	if (!flats)
 		flats = (flat_3d_t**)malloc(sizeof(flat_3d_t*) * map->nSectors() * 2);
@@ -1920,7 +2082,8 @@ void MapRenderer3D::checkVisibleFlats() {
 	MapSector* sector;
 	n_flats = 0;
 	float alpha;
-	for (unsigned a = 0; a < map->nSectors(); a++) {
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
 		sector = map->getSector(a);
 
 		// Skip if invisible
@@ -1928,12 +2091,14 @@ void MapRenderer3D::checkVisibleFlats() {
 			continue;
 
 		// Check distance if needed
-		if (render_max_dist > 0) {
+		if (render_max_dist > 0)
+		{
 			if (dist_sectors[a] > render_max_dist)
 				continue;
 			// Double-check distance
 			dist_sectors[a] = sector->distanceTo(cam_position.x, cam_position.y, render_max_dist);
-			if (dist_sectors[a] > render_max_dist && !sector->boundingBox().point_within(cam_position.x, cam_position.y)) {
+			if (dist_sectors[a] > render_max_dist && !sector->boundingBox().point_within(cam_position.x, cam_position.y))
+			{
 				dist_sectors[a] = -1;
 				continue;
 			}
@@ -1954,7 +2119,8 @@ void MapRenderer3D::checkVisibleFlats() {
 		// Add floor flat
 		flats[n_flats++] = &(floors[a]);
 	}
-	for (unsigned a = 0; a < map->nSectors(); a++) {
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
 		// Skip if invisible
 		if (dist_sectors[a] < 0)
 			continue;
@@ -1964,7 +2130,8 @@ void MapRenderer3D::checkVisibleFlats() {
 	}
 }
 
-selection_3d_t MapRenderer3D::determineHilight() {
+selection_3d_t MapRenderer3D::determineHilight()
+{
 	// Init
 	double min_dist = 9999999;
 	selection_3d_t current;
@@ -1972,14 +2139,15 @@ selection_3d_t MapRenderer3D::determineHilight() {
 
 	// Check for required map structures
 	if (!map || lines.size() != map->nLines() ||
-		floors.size() != map->nSectors() ||
-		things.size() != map->nThings())
+	        floors.size() != map->nSectors() ||
+	        things.size() != map->nThings())
 		return current;
 
 	// Check lines
 	double height, dist;
 	quad_3d_t* quad;
-	for (unsigned a = 0; a < map->nLines(); a++) {
+	for (unsigned a = 0; a < map->nLines(); a++)
+	{
 		// Ignore if not visible
 		if (!lines[a].visible)
 			continue;
@@ -1988,8 +2156,8 @@ selection_3d_t MapRenderer3D::determineHilight() {
 
 		// Find (2d) distance to line
 		dist = MathStuff::distanceRayLine(fpoint2_t(cam_position.x, cam_position.y),
-											fpoint2_t(cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y),
-											line->x1(), line->y1(), line->x2(), line->y2());
+		                                  fpoint2_t(cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y),
+		                                  line->x1(), line->y1(), line->x2(), line->y2());
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
@@ -1997,7 +2165,8 @@ selection_3d_t MapRenderer3D::determineHilight() {
 
 		// Find quad intersect if any
 		height = cam_position.z + cam_dir3d.z*dist;
-		for (unsigned q = 0; q < lines[a].quads.size(); q++) {
+		for (unsigned q = 0; q < lines[a].quads.size(); q++)
+		{
 			quad = &lines[a].quads[q];
 
 			// Check side of camera
@@ -2005,7 +2174,8 @@ selection_3d_t MapRenderer3D::determineHilight() {
 				continue;
 
 			// Check intersection height
-			if (height >= quad->points[1].z && height <= quad->points[0].z) {
+			if (height >= quad->points[1].z && height <= quad->points[0].z)
+			{
 				// Determine selected item from quad flags
 
 				// Side index
@@ -2028,16 +2198,19 @@ selection_3d_t MapRenderer3D::determineHilight() {
 	}
 
 	// Check sectors
-	for (unsigned a = 0; a < map->nSectors(); a++) {
+	for (unsigned a = 0; a < map->nSectors(); a++)
+	{
 		// Ignore if not visible
 		if (dist_sectors[a] < 0)
 			continue;
 
 		// Check distance to floor plane
 		dist = MathStuff::distanceRayPlane(cam_position, cam_dir3d, floors[a].plane);
-		if (dist >= 0 && dist < min_dist) {
+		if (dist >= 0 && dist < min_dist)
+		{
 			// Check if intersection is within sector
-			if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist)) {
+			if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+			{
 				current.index = a;
 				current.type = MapEditor::SEL_FLOOR;
 				min_dist = dist;
@@ -2046,9 +2219,11 @@ selection_3d_t MapRenderer3D::determineHilight() {
 
 		// Check distance to ceiling plane
 		dist = MathStuff::distanceRayPlane(cam_position, cam_dir3d, ceilings[a].plane);
-		if (dist >= 0 && dist < min_dist) {
+		if (dist >= 0 && dist < min_dist)
+		{
 			// Check if intersection is within sector
-			if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist)) {
+			if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+			{
 				current.index = a;
 				current.type = MapEditor::SEL_CEILING;
 				min_dist = dist;
@@ -2066,7 +2241,8 @@ selection_3d_t MapRenderer3D::determineHilight() {
 	if (render_3d_things == 0)
 		return current;
 	double halfwidth, theight;
-	for (unsigned a = 0; a < map->nThings(); a++) {
+	for (unsigned a = 0; a < map->nThings(); a++)
+	{
 		// Ignore if no sprite
 		if (!things[a].sprite)
 			continue;
@@ -2085,9 +2261,9 @@ selection_3d_t MapRenderer3D::determineHilight() {
 		if (things[a].flags & ICON)
 			halfwidth = render_thing_icon_size*0.5;
 		dist = MathStuff::distanceRayLine(fpoint2_t(cam_position.x, cam_position.y),
-											fpoint2_t(cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y),
-											thing->xPos() - cam_strafe.x * halfwidth, thing->yPos() - cam_strafe.y * halfwidth,
-											thing->xPos() + cam_strafe.x * halfwidth, thing->yPos() + cam_strafe.y * halfwidth);
+		                                  fpoint2_t(cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y),
+		                                  thing->xPos() - cam_strafe.x * halfwidth, thing->yPos() - cam_strafe.y * halfwidth,
+		                                  thing->xPos() + cam_strafe.x * halfwidth, thing->yPos() + cam_strafe.y * halfwidth);
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
@@ -2098,7 +2274,8 @@ selection_3d_t MapRenderer3D::determineHilight() {
 		height = cam_position.z + cam_dir3d.z*dist;
 		if (things[a].flags & ICON)
 			theight = render_thing_icon_size;
-		if (height >= things[a].z && height <= things[a].z + theight) {
+		if (height >= things[a].z && height <= things[a].z + theight)
+		{
 			current.index = a;
 			current.type = MapEditor::SEL_THING;
 			min_dist = dist;
@@ -2114,7 +2291,8 @@ selection_3d_t MapRenderer3D::determineHilight() {
 	return current;
 }
 
-void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
+void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
+{
 	// Do nothing if no item hilighted
 	if (hilight.index < 0 || render_3d_hilight == 0 || !render_hilight)
 		return;
@@ -2130,7 +2308,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 	col_hilight.set_gl();
 
 	// Quad hilight
-	if (hilight.type == MapEditor::SEL_SIDE_BOTTOM || hilight.type == MapEditor::SEL_SIDE_MIDDLE || hilight.type == MapEditor::SEL_SIDE_TOP) {
+	if (hilight.type == MapEditor::SEL_SIDE_BOTTOM || hilight.type == MapEditor::SEL_SIDE_MIDDLE || hilight.type == MapEditor::SEL_SIDE_TOP)
+	{
 		// Get side
 		MapSide* side = map->getSide(hilight.index);
 		if (!side)
@@ -2141,25 +2320,31 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 
 		// Get appropriate quad
 		quad_3d_t* quad = NULL;
-		for (unsigned a = 0; a < lines[line].quads.size(); a++) {
+		for (unsigned a = 0; a < lines[line].quads.size(); a++)
+		{
 			// Check quad is correct side
 			if (map->getLine(line)->s1() == side && lines[line].quads[a].flags & BACK)
 				continue;
 
 			// Check quad is correct part
-			if (lines[line].quads[a].flags & UPPER) {
-				if (hilight.type == MapEditor::SEL_SIDE_TOP) {
+			if (lines[line].quads[a].flags & UPPER)
+			{
+				if (hilight.type == MapEditor::SEL_SIDE_TOP)
+				{
 					quad = &lines[line].quads[a];
 					break;
 				}
 			}
-			else if (lines[line].quads[a].flags & LOWER) {
-				if (hilight.type == MapEditor::SEL_SIDE_BOTTOM) {
+			else if (lines[line].quads[a].flags & LOWER)
+			{
+				if (hilight.type == MapEditor::SEL_SIDE_BOTTOM)
+				{
 					quad = &lines[line].quads[a];
 					break;
 				}
 			}
-			else if (hilight.type == MapEditor::SEL_SIDE_MIDDLE) {
+			else if (hilight.type == MapEditor::SEL_SIDE_MIDDLE)
+			{
 				quad = &lines[line].quads[a];
 				break;
 			}
@@ -2175,7 +2360,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 		glEnd();
 
 		// Render fill (if needed)
-		if (render_3d_hilight > 1) {
+		if (render_3d_hilight > 1)
+		{
 			glCullFace(GL_BACK);
 			col_hilight.a *= 0.3;
 			col_hilight.set_gl(false);
@@ -2187,7 +2373,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 	}
 
 	// Sector hilight
-	if (hilight.type == MapEditor::SEL_FLOOR || hilight.type == MapEditor::SEL_CEILING) {
+	if (hilight.type == MapEditor::SEL_FLOOR || hilight.type == MapEditor::SEL_CEILING)
+	{
 		// Get sector
 		MapSector* sector = map->getSector(hilight.index);
 		if (!sector)
@@ -2195,11 +2382,13 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 
 		// Translate to floor/ceiling height
 		glPushMatrix();
-		if (hilight.type == MapEditor::SEL_FLOOR) {
+		if (hilight.type == MapEditor::SEL_FLOOR)
+		{
 			glTranslated(0, 0, sector->getFloorHeight());
 			glCullFace(GL_FRONT);
 		}
-		else {
+		else
+		{
 			glTranslated(0, 0, sector->getCeilingHeight());
 			glCullFace(GL_BACK);
 		}
@@ -2208,14 +2397,16 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 		vector<MapLine*> lines;
 		sector->getLines(lines);
 		glBegin(GL_LINES);
-		for (unsigned a = 0; a < lines.size(); a++) {
+		for (unsigned a = 0; a < lines.size(); a++)
+		{
 			glVertex3d(lines[a]->x1(), lines[a]->y1(), 0);
 			glVertex3d(lines[a]->x2(), lines[a]->y2(), 0);
 		}
 		glEnd();
 
 		// Render fill if needed
-		if (render_3d_hilight > 1) {
+		if (render_3d_hilight > 1)
+		{
 			col_hilight.a *= 0.3;
 			col_hilight.set_gl(false);
 			sector->getPolygon()->render();
@@ -2226,7 +2417,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 
 	// Thing hilight
 	double x1, y1, x2, y2;
-	if (hilight.type == MapEditor::SEL_THING) {
+	if (hilight.type == MapEditor::SEL_THING)
+	{
 		// Get thing
 		fpoint2_t strafe(cam_position.x+cam_strafe.x, cam_position.y+cam_strafe.y);
 		MapThing* thing = map->getThing(hilight.index);
@@ -2236,7 +2428,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 		// Determine coordinates
 		double halfwidth = things[hilight.index].sprite->getWidth() * 0.5;
 		double theight = things[hilight.index].sprite->getHeight();
-		if (things[hilight.index].flags & ICON) {
+		if (things[hilight.index].flags & ICON)
+		{
 			halfwidth = render_thing_icon_size*0.5;
 			theight = render_thing_icon_size;
 		}
@@ -2255,7 +2448,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 		glEnd();
 
 		// Render fill if needed
-		if (render_3d_hilight > 1) {
+		if (render_3d_hilight > 1)
+		{
 			glCullFace(GL_BACK);
 			col_hilight.a *= 0.3;
 			col_hilight.set_gl(false);
@@ -2272,13 +2466,16 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha) {
 	COL_WHITE.set_gl();
 }
 
-void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {
+void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+{
 	if (announcer != thePaletteChooser && announcer != theResourceManager)
 		return;
 
-	if (event_name == "resources_updated" || event_name == "main_palette_changed") {
+	if (event_name == "resources_updated" || event_name == "main_palette_changed")
+	{
 		// Refresh lines
-		for (unsigned a = 0; a < lines.size(); a++) {
+		for (unsigned a = 0; a < lines.size(); a++)
+		{
 			for (unsigned q = 0; q < lines[a].quads.size(); q++)
 				lines[a].quads[q].texture = NULL;
 
@@ -2286,17 +2483,20 @@ void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemC
 		}
 
 		// Refresh flats
-		for (unsigned a = 0; a < floors.size(); a++) {
+		for (unsigned a = 0; a < floors.size(); a++)
+		{
 			floors[a].texture = NULL;
 			floors[a].updated_time = 0;
 		}
-		for (unsigned a = 0; a < ceilings.size(); a++) {
+		for (unsigned a = 0; a < ceilings.size(); a++)
+		{
 			ceilings[a].texture = NULL;
 			ceilings[a].updated_time = 0;
 		}
 
 		// Refresh things
-		for (unsigned a = 0; a < things.size(); a++) {
+		for (unsigned a = 0; a < things.size(); a++)
+		{
 			things[a].sprite = NULL;
 			things[a].updated_time = 0;
 		}

@@ -6,9 +6,11 @@
 
 class GLTexture;
 class MapEditor;
-class QuickTextureOverlay3d : public MCOverlay {
+class QuickTextureOverlay3d : public MCOverlay
+{
 private:
-	struct qt_tex_t {
+	struct qt_tex_t
+	{
 		GLTexture*	texture;
 		string		name;
 		qt_tex_t(string name) { texture = NULL; this->name = name; }

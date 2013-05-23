@@ -5,7 +5,8 @@
 #include "BrowserWindow.h"
 
 class ThingType;
-class ThingBrowserItem : public BrowserItem {
+class ThingBrowserItem : public BrowserItem
+{
 private:
 	ThingType*	type;
 
@@ -16,7 +17,8 @@ public:
 	bool	loadImage();
 };
 
-class ThingTypeBrowser : public BrowserWindow {
+class ThingTypeBrowser : public BrowserWindow
+{
 private:
 	wxCheckBox*	cb_view_tiles;
 

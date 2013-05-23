@@ -34,7 +34,8 @@
 /*******************************************************************
  * DATA TABLES
  *******************************************************************/
-string asciitable[128] = {
+string asciitable[128] =
+{
 	"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS", "TAB", "LF", "VT", "FF", "CR", "SO", "SI",
 	"DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", "CAN", "EM", "SUB", "ESC", "FS", "GS", "RS", "US",
 	"Space", "!", "\"", "#", "$", "%", "&", "\'", "(", ")", "*", "+", ",", "-", ".", "/",
@@ -46,7 +47,8 @@ string asciitable[128] = {
 };
 
 // Those are the UTF-8 values for the characters in the IBM Code Page 437
-uint8_t cp437table[256][3] = {
+uint8_t cp437table[256][3] =
+{
 	{ 0xc2, 0xb7 }, // NULL represented by a middle dot (which isn't actually part of CP437)
 	{ 0xe2, 0x98, 0xba }, { 0xe2, 0x98, 0xbb }, { 0xe2, 0x99, 0xa5 }, { 0xe2, 0x99, 0xa6 },
 	{ 0xe2, 0x99, 0xa3 }, { 0xe2, 0x99, 0xa0 }, { 0xe2, 0x80, 0xa2 }, { 0xe2, 0x97, 0x98 },
@@ -101,7 +103,8 @@ uint8_t cp437table[256][3] = {
 	{ 0xe2, 0x81, 0xbf }, { 0xc2, 0xb2 }, { 0xe2, 0x96, 0xa0 }
 };
 
-uint8_t cp437len[256] = {
+uint8_t cp437len[256] =
+{
 	2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	// Boring ASCII characters begin here
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	1, 1, 1, 1, 1, 1, 1, 1,	1, 1, 1, 1, 1, 1, 1, 1,
@@ -114,7 +117,8 @@ uint8_t cp437len[256] = {
 	3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 3, 3, 2, 3, 3, 3, 3, 2, 3, 2, 3, 2, 3, 3, 2, 3
 };
 
-uint8_t ansicolors[16][3] = {
+uint8_t ansicolors[16][3] =
+{
 	{ 0x00, 0x00, 0x00 }, // Black
 	{ 0x00, 0x00, 0xAA }, // Blue
 	{ 0x00, 0xAA, 0x00 }, // Green
@@ -137,16 +141,19 @@ uint8_t ansicolors[16][3] = {
 /*******************************************************************
  * FUNCTIONS
  *******************************************************************/
-string CodePages::fromASCII(uint8_t val) {
+string CodePages::fromASCII(uint8_t val)
+{
 	if (val < 128)				return asciitable[val];
 	else						return "";
 }
 
-string CodePages::fromCP437(uint8_t val) {
-	return wxString::FromUTF8((const char *)cp437table[val], cp437len[val]);
+string CodePages::fromCP437(uint8_t val)
+{
+	return wxString::FromUTF8((const char*)cp437table[val], cp437len[val]);
 }
 
-rgba_t CodePages::ansiColor(uint8_t val) {
+rgba_t CodePages::ansiColor(uint8_t val)
+{
 	if (val >= 16) val = ((val >> 4) & 7);
 	return rgba_t(ansicolors[val][0], ansicolors[val][1], ansicolors[val][2]);
 }

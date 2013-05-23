@@ -49,7 +49,8 @@ CVAR(Bool, swap_epanel_bars, false, CVAR_SAVE)
  * EntryPanel class constructor
  *******************************************************************/
 EntryPanel::EntryPanel(wxWindow* parent, string id)
-: wxPanel(parent, -1) {
+	: wxPanel(parent, -1)
+{
 	// Init variables
 	modified = false;
 	entry = NULL;
@@ -62,7 +63,7 @@ EntryPanel::EntryPanel(wxWindow* parent, string id)
 
 	// Create & set sizer & border
 	frame = new wxStaticBox(this, -1, "Entry Contents");
-	wxStaticBoxSizer *framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, 1, wxEXPAND|wxALL, 4);
 	Show(false);
 
@@ -70,12 +71,14 @@ EntryPanel::EntryPanel(wxWindow* parent, string id)
 	sizer_top = new wxBoxSizer(wxHORIZONTAL);
 	sizer_bottom = new wxBoxSizer(wxHORIZONTAL);
 	sizer_main = new wxBoxSizer(wxVERTICAL);
-	if (swap_epanel_bars) {
+	if (swap_epanel_bars)
+	{
 		framesizer->Add(sizer_bottom, 0, wxEXPAND|wxALL, 4);
 		framesizer->Add(sizer_main, 1, wxEXPAND|wxLEFT|wxRIGHT, 4);
 		framesizer->Add(sizer_top, 0, wxEXPAND|wxALL, 4);
 	}
-	else {
+	else
+	{
 		framesizer->Add(sizer_top, 0, wxEXPAND|wxALL, 4);
 		framesizer->Add(sizer_main, 1, wxEXPAND|wxLEFT|wxRIGHT, 4);
 		framesizer->Add(sizer_bottom, 0, wxEXPAND|wxALL, 4);
@@ -102,7 +105,8 @@ EntryPanel::EntryPanel(wxWindow* parent, string id)
 /* EntryPanel::~EntryPanel
  * EntryPanel class destructor
  *******************************************************************/
-EntryPanel::~EntryPanel() {
+EntryPanel::~EntryPanel()
+{
 	removeCustomMenu();
 	removeCustomToolBar();
 }
@@ -111,12 +115,15 @@ EntryPanel::~EntryPanel() {
  * Sets the modified flag. If the entry is locked modified will
  * always be false
  *******************************************************************/
-void EntryPanel::setModified(bool c) {
-	if (!entry) {
+void EntryPanel::setModified(bool c)
+{
+	if (!entry)
+	{
 		modified = c;
 		return;
 	}
-	else {
+	else
+	{
 		if (entry->isLocked())
 			modified = false;
 		else
@@ -128,9 +135,11 @@ void EntryPanel::setModified(bool c) {
 /* EntryPanel::openEntry
  * 'Opens' the given entry (sets the frame label then loads it)
  *******************************************************************/
-bool EntryPanel::openEntry(ArchiveEntry* entry) {
+bool EntryPanel::openEntry(ArchiveEntry* entry)
+{
 	// Check entry was given
-	if (!entry) {
+	if (!entry)
+	{
 		entry_data.clear();
 		this->entry = NULL;
 		return false;
@@ -141,12 +150,14 @@ bool EntryPanel::openEntry(ArchiveEntry* entry) {
 	entry_data.importMem(entry->getData(true), entry->getSize());
 
 	// Load the entry
-	if (loadEntry(entry)) {
+	if (loadEntry(entry))
+	{
 		this->entry = entry;
 		updateStatus();
 		return true;
 	}
-	else {
+	else
+	{
 		theMainWindow->SetStatusText("", 1);
 		theMainWindow->SetStatusText("", 2);
 		return false;
@@ -157,7 +168,8 @@ bool EntryPanel::openEntry(ArchiveEntry* entry) {
  * Loads an entry into the entry panel (does nothing here, to be
  * overridden by child classes)
  *******************************************************************/
-bool EntryPanel::loadEntry(ArchiveEntry* entry) {
+bool EntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	Global::error = "Cannot open an entry with the base EntryPanel class";
 	return false;
 }
@@ -166,7 +178,8 @@ bool EntryPanel::loadEntry(ArchiveEntry* entry) {
  * Saves the entrypanel content to the entry (does nothing here, to
  * be overridden by child classes)
  *******************************************************************/
-bool EntryPanel::saveEntry() {
+bool EntryPanel::saveEntry()
+{
 	Global::error = "Cannot save an entry with the base EntryPanel class";
 	return false;
 }
@@ -176,9 +189,12 @@ bool EntryPanel::saveEntry() {
  * the EntryPanel. Returns false if no changes have been made or
  * if the entry data wasn't saved
  *******************************************************************/
-bool EntryPanel::revertEntry() {
-	if (modified) {
-		if (entry_data.hasData()) {
+bool EntryPanel::revertEntry()
+{
+	if (modified)
+	{
+		if (entry_data.hasData())
+		{
 			entry->importMemChunk(entry_data);
 			EntryType::detectEntryType(entry);
 			loadEntry(entry);
@@ -193,7 +209,8 @@ bool EntryPanel::revertEntry() {
 /* EntryPanel::refreshPanel
  * Redraws the panel
  *******************************************************************/
-void EntryPanel::refreshPanel() {
+void EntryPanel::refreshPanel()
+{
 	Update();
 	Refresh();
 }
@@ -201,14 +218,16 @@ void EntryPanel::refreshPanel() {
 /* EntryPanel::closeEntry
  * 'Closes' the current entry - clean up, save extra info, etc
  *******************************************************************/
-void EntryPanel::closeEntry() {
+void EntryPanel::closeEntry()
+{
 }
 
 /* EntryPanel::updateStatus
  * Updates the main window status bar with info about the current
  * entry
  *******************************************************************/
-void EntryPanel::updateStatus() {
+void EntryPanel::updateStatus()
+{
 	// Basic info
 	if (entry)
 		theMainWindow->SetStatusText(S_FMT("%s, %d bytes, %s", CHR(entry->getName()), entry->getSize(), CHR(entry->getType()->getName())), 1);
@@ -223,7 +242,8 @@ void EntryPanel::updateStatus() {
  * Adds this EntryPanel's custom menu to the main window menubar
  * (if it exists)
  *******************************************************************/
-void EntryPanel::addCustomMenu() {
+void EntryPanel::addCustomMenu()
+{
 	if (menu_custom)
 		theMainWindow->addCustomMenu(menu_custom, custom_menu_name);
 }
@@ -231,7 +251,8 @@ void EntryPanel::addCustomMenu() {
 /* EntryPanel::removeCustomMenu
  * Removes this EntryPanel's custom menu from the main window menubar
  *******************************************************************/
-void EntryPanel::removeCustomMenu() {
+void EntryPanel::removeCustomMenu()
+{
 	theMainWindow->removeCustomMenu(menu_custom);
 }
 
@@ -239,7 +260,8 @@ void EntryPanel::removeCustomMenu() {
  * Adds this EntryPanel's custom toolbar group to the main window
  * toolbar
  *******************************************************************/
-void EntryPanel::addCustomToolBar() {
+void EntryPanel::addCustomToolBar()
+{
 	// Check any custom actions exist
 	if (custom_toolbar_actions.IsEmpty())
 		return;
@@ -255,7 +277,8 @@ void EntryPanel::addCustomToolBar() {
  * Removes this EntryPanel's custom toolbar group from the main
  * window toolbar
  *******************************************************************/
-void EntryPanel::removeCustomToolBar() {
+void EntryPanel::removeCustomToolBar()
+{
 	theMainWindow->removeCustomToolBar("Current Entry");
 }
 
@@ -266,7 +289,8 @@ void EntryPanel::removeCustomToolBar() {
  * is not enough, it will return true if the panel is shown on any
  * tab, even if it is not on the one that is selected...
  *******************************************************************/
-bool EntryPanel::isActivePanel() {
+bool EntryPanel::isActivePanel()
+{
 	return (IsShown() && theActivePanel == this);
 }
 
@@ -277,14 +301,18 @@ bool EntryPanel::isActivePanel() {
 /* EntryPanel::onBtnSave
  * Called when the 'Save Changes' button is clicked
  *******************************************************************/
-void EntryPanel::onBtnSave(wxCommandEvent& e) {
-	if (modified) {
-		if (undo_manager) {
+void EntryPanel::onBtnSave(wxCommandEvent& e)
+{
+	if (modified)
+	{
+		if (undo_manager)
+		{
 			undo_manager->beginRecord("Save Entry Modifications");
 			undo_manager->recordUndoStep(new EntryDataUS(entry));
 		}
 
-		if (saveEntry()) {
+		if (saveEntry())
+		{
 			modified = false;
 			if (undo_manager)
 				undo_manager->endRecord(true);
@@ -297,13 +325,15 @@ void EntryPanel::onBtnSave(wxCommandEvent& e) {
 /* EntryPanel::onBtnRevert
  * Called when the 'Revert Changes' button is clicked
  *******************************************************************/
-void EntryPanel::onBtnRevert(wxCommandEvent& e) {
+void EntryPanel::onBtnRevert(wxCommandEvent& e)
+{
 	revertEntry();
 }
 
 /* EntryPanel::onBtnEditExt
  * Called when the 'Edit Externally' button is clicked
  *******************************************************************/
-void EntryPanel::onBtnEditExt(wxCommandEvent& e) {
+void EntryPanel::onBtnEditExt(wxCommandEvent& e)
+{
 	wxLogMessage("External edit not implemented");
 }

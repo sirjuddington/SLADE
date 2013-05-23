@@ -38,12 +38,14 @@
  * STRUCTS
  *******************************************************************/
 // Some structs for wav conversion
-struct wav_chunk_t {
+struct wav_chunk_t
+{
 	char id[4];
 	uint32_t size;
 };
 
-struct wav_fmtchunk_t {
+struct wav_fmtchunk_t
+{
 	wav_chunk_t header;
 	uint16_t tag;
 	uint16_t channels;
@@ -54,14 +56,16 @@ struct wav_fmtchunk_t {
 };
 
 // For doom sound conversion
-struct dsnd_header_t {
+struct dsnd_header_t
+{
 	uint16_t three;
 	uint16_t samplerate;
 	uint32_t samples;
 };
 
 // For Jaguar doom sound conversion
-struct jsnd_header_t {
+struct jsnd_header_t
+{
 	uint32_t samples;
 	uint32_t loopstart;
 	uint32_t loopend;
@@ -78,7 +82,8 @@ struct jsnd_header_t {
 /* Conversions::doomSndToWav
  * Converts doom sound data [in] to wav format, written to [out]
  *******************************************************************/
-bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out) {
+bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out)
+{
 	// --- Read Doom sound ---
 
 	// Read doom sound header
@@ -95,11 +100,13 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out) {
 		header.samplerate = wxUINT16_SWAP_ALWAYS(header.samplerate);
 
 	// Format checks
-	if (header.three != 3 && header.three != 0x300) {	// Check for magic number
+	if (header.three != 3 && header.three != 0x300)  	// Check for magic number
+	{
 		Global::error = "Invalid Doom Sound";
 		return false;
 	}
-	if (header.samples > (in.getSize() - 8) || header.samples <= 4) {	// Check for sane values
+	if (header.samples > (in.getSize() - 8) || header.samples <= 4)  	// Check for sane values
+	{
 		Global::error = "Invalid Doom Sound";
 		return false;
 	}
@@ -152,7 +159,8 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out) {
 /* Conversions::wavToDoomSnd
  * Converts wav data [in] to doom sound format, written to [out]
  *******************************************************************/
-bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out) {
+bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
+{
 	// --- Read WAV ---
 	wav_chunk_t chunk;
 
@@ -161,7 +169,8 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out) {
 	in.read(&chunk, 8);
 
 	// Check header
-	if (chunk.id[0] != 'R' || chunk.id[1] != 'I' || chunk.id[2] != 'F' || chunk.id[3] != 'F') {
+	if (chunk.id[0] != 'R' || chunk.id[1] != 'I' || chunk.id[2] != 'F' || chunk.id[3] != 'F')
+	{
 		Global::error = "Invalid WAV";
 		return false;
 	}
@@ -171,7 +180,8 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out) {
 	in.read(format, 4);
 
 	// Check format
-	if (format[0] != 'W' || format[1] != 'A' || format[2] != 'V' || format[3] != 'E') {
+	if (format[0] != 'W' || format[1] != 'A' || format[2] != 'V' || format[3] != 'E')
+	{
 		Global::error = "Invalid WAV format";
 		return false;
 	}
@@ -181,15 +191,18 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out) {
 	in.read(&fmtchunk, sizeof(wav_fmtchunk_t));
 
 	// Check fmt chunk values
-	if (fmtchunk.header.id[0] != 'f' || fmtchunk.header.id[1] != 'm' || fmtchunk.header.id[2] != 't' || fmtchunk.header.id[3] != ' ') {
+	if (fmtchunk.header.id[0] != 'f' || fmtchunk.header.id[1] != 'm' || fmtchunk.header.id[2] != 't' || fmtchunk.header.id[3] != ' ')
+	{
 		Global::error = "Invalid WAV";
 		return false;
 	}
-	if (fmtchunk.channels != 1) {
+	if (fmtchunk.channels != 1)
+	{
 		Global::error = "Cannot convert, must be mono";
 		return false;
 	}
-	if (fmtchunk.bps != 8) {
+	if (fmtchunk.bps != 8)
+	{
 		Global::error = "Cannot convert, must be 8bit";
 		return false;
 	}
@@ -198,7 +211,8 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out) {
 	in.read(&chunk, 8);
 
 	// Check data
-	if (chunk.id[0] != 'd' || chunk.id[1] != 'a' || chunk.id[2] != 't' || chunk.id[3] != 'a') {
+	if (chunk.id[0] != 'd' || chunk.id[1] != 'a' || chunk.id[2] != 't' || chunk.id[3] != 'a')
+	{
 		Global::error = "Invalid WAV";
 		return false;
 	}
@@ -225,16 +239,19 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out) {
 /* Conversions::musToMidi
  * Converts mus data [in] to midi, written to [out]
  *******************************************************************/
-bool Conversions::musToMidi(MemChunk& in, MemChunk& out) {
+bool Conversions::musToMidi(MemChunk& in, MemChunk& out)
+{
 	return mus2mid(in, out);
 }
 
 /* Conversions::vocToWav
  * Creative Voice files to wav format
  *******************************************************************/
-bool Conversions::vocToWav(MemChunk& in, MemChunk& out) {
+bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
+{
 	if (in.getSize() < 26 || in[19] != 26 || in[20] != 26 || in[21] != 0
-		|| (0x1234 + ~(READ_L16(in, 22)) != (READ_L16(in, 24)))) {
+	        || (0x1234 + ~(READ_L16(in, 22)) != (READ_L16(in, 24))))
+	{
 		Global::error = "Invalid VOC";
 		return false;
 	}
@@ -249,94 +266,108 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out) {
 	size_t datasize = 0;
 	size_t i = 26, e = in.getSize();
 	bool gotextra = false;
-	while (i < e) {
+	while (i < e)
+	{
 		// Parses through blocks
 		uint8_t blocktype = in[i];
 		size_t blocksize = READ_L24(in, i+1);
 		i+=4;
-		if (i + blocksize > e && blocktype != 0) {
+		if (i + blocksize > e && blocktype != 0)
+		{
 			Global::error = S_FMT("VOC file cut abruptly in block %i", blockcount);
 			return false;
 		}
 		blockcount++;
-		switch (blocktype) {
-			case 0: // Terminator, the rest should be ignored
-				i = e; break;
-			case 1: // Sound data
-				if (!gotextra && codec >= 0 && codec != in[i+1]) {
-					Global::error = "VOC files with different codecs are not supported";
-					return false;
-				} else if (codec == -1) {
-					fmtchunk.samplerate = 1000000/(256 - in[i]);
-					fmtchunk.channels = 1;
-					fmtchunk.tag = 1;
-					codec = in[i+1];
-				}
-				datasize += blocksize - 2;
-				break;
-			case 2: // Sound data continuation
-				if (codec == -1) {
-						Global::error = "Sound data without codec in VOC file";
-						return false;
-				}
-				datasize += blocksize;
-				break;
-			case 3: // Silence
-			case 4: // Marker
-			case 5: // Text
-			case 6: // Repeat start point
-			case 7: // Repeat end point
-				break;
-			case 8: // Extra info, overrides any following sound data codec info
-				if (codec != -1) {
-					Global::error = "Extra info block must precede sound data info block in VOC file";
-					return false;
-				} else {
-					fmtchunk.samplerate = 256000000/((in[i+3] + 1) * (65536 - READ_L16(in, i)));
-					fmtchunk.channels = in[i+3] + 1;
-					fmtchunk.tag = 1;
-					codec = in[i+2];
-				}
-				break;
-			case 9: // Sound data in new format
-				if (codec >= 0 && codec != READ_L16(in, i+6)) {
-					Global::error = "VOC files with different codecs are not supported";
-					return false;
-				} else if (codec == -1) {
-					fmtchunk.samplerate = READ_L32(in, i);
-					fmtchunk.bps = in[i+4];
-					fmtchunk.channels = in[i+5];
-					fmtchunk.tag = 1;
-					codec = READ_L16(in, i+6);
-				}
-				datasize += blocksize - 12;
-				break;
+		switch (blocktype)
+		{
+		case 0: // Terminator, the rest should be ignored
+			i = e; break;
+		case 1: // Sound data
+			if (!gotextra && codec >= 0 && codec != in[i+1])
+			{
+				Global::error = "VOC files with different codecs are not supported";
+				return false;
+			}
+			else if (codec == -1)
+			{
+				fmtchunk.samplerate = 1000000/(256 - in[i]);
+				fmtchunk.channels = 1;
+				fmtchunk.tag = 1;
+				codec = in[i+1];
+			}
+			datasize += blocksize - 2;
+			break;
+		case 2: // Sound data continuation
+			if (codec == -1)
+			{
+				Global::error = "Sound data without codec in VOC file";
+				return false;
+			}
+			datasize += blocksize;
+			break;
+		case 3: // Silence
+		case 4: // Marker
+		case 5: // Text
+		case 6: // Repeat start point
+		case 7: // Repeat end point
+			break;
+		case 8: // Extra info, overrides any following sound data codec info
+			if (codec != -1)
+			{
+				Global::error = "Extra info block must precede sound data info block in VOC file";
+				return false;
+			}
+			else
+			{
+				fmtchunk.samplerate = 256000000/((in[i+3] + 1) * (65536 - READ_L16(in, i)));
+				fmtchunk.channels = in[i+3] + 1;
+				fmtchunk.tag = 1;
+				codec = in[i+2];
+			}
+			break;
+		case 9: // Sound data in new format
+			if (codec >= 0 && codec != READ_L16(in, i+6))
+			{
+				Global::error = "VOC files with different codecs are not supported";
+				return false;
+			}
+			else if (codec == -1)
+			{
+				fmtchunk.samplerate = READ_L32(in, i);
+				fmtchunk.bps = in[i+4];
+				fmtchunk.channels = in[i+5];
+				fmtchunk.tag = 1;
+				codec = READ_L16(in, i+6);
+			}
+			datasize += blocksize - 12;
+			break;
 		}
 		i += blocksize;
 	}
 	wdhdr.size = datasize;
-	switch (codec) {
-		case 0: // 8 bits unsigned PCM
-			fmtchunk.bps = 8;
-			fmtchunk.datarate = fmtchunk.samplerate;
-			fmtchunk.blocksize = 1;
-			break;
-		case 4: // 16 bits signed PCM
-			fmtchunk.bps = 16;
-			fmtchunk.datarate = fmtchunk.samplerate<<1;
-			fmtchunk.blocksize = 2;
-			break;
-		case 1: // 4 bits to 8 bits Creative ADPCM
-		case 2: // 3 bits to 8 bits Creative ADPCM (AKA 2.6 bits)
-		case 3: // 2 bits to 8 bits Creative ADPCM
-		case 6: // alaw
-		case 7: // ulaw
-		case 0x200: // 4 bits to 16 bits Creative ADPCM (only valid in block type 0x09)
-			Global::error = S_FMT("Unsupported codec %i in VOC file", codec);
-			return false;
-		default:
-			Global::error = S_FMT("Unknown codec %i in VOC file", codec);
-			return false;
+	switch (codec)
+	{
+	case 0: // 8 bits unsigned PCM
+		fmtchunk.bps = 8;
+		fmtchunk.datarate = fmtchunk.samplerate;
+		fmtchunk.blocksize = 1;
+		break;
+	case 4: // 16 bits signed PCM
+		fmtchunk.bps = 16;
+		fmtchunk.datarate = fmtchunk.samplerate<<1;
+		fmtchunk.blocksize = 2;
+		break;
+	case 1: // 4 bits to 8 bits Creative ADPCM
+	case 2: // 3 bits to 8 bits Creative ADPCM (AKA 2.6 bits)
+	case 3: // 2 bits to 8 bits Creative ADPCM
+	case 6: // alaw
+	case 7: // ulaw
+	case 0x200: // 4 bits to 16 bits Creative ADPCM (only valid in block type 0x09)
+		Global::error = S_FMT("Unsupported codec %i in VOC file", codec);
+		return false;
+	default:
+		Global::error = S_FMT("Unknown codec %i in VOC file", codec);
+		return false;
 	}
 
 	// --- Write WAV ---
@@ -362,27 +393,29 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out) {
 	out.write(&wdhdr, 8);
 
 	// Now go and copy sound data
-	const uint8_t * src = in.getData();
+	const uint8_t* src = in.getData();
 	i = 26;
-	while (i < e) {
+	while (i < e)
+	{
 		// Parses through blocks again
 		uint8_t blocktype = in[i];
 		size_t blocksize = READ_L24(in, i+1);
 		i+=4;
-		switch (blocktype) {
-			case 1: // Sound data
-				out.write(src+i+2, blocksize - 2);
-				break;
-			case 2: // Sound data continuation
-				out.write(src+i, blocksize);
-				break;
-			case 3: // Silence
-				// Not supported yet
-				break;
-			case 9: // Sound data in new format
-				out.write(src+i+12, blocksize - 12);
-			default:
-				break;
+		switch (blocktype)
+		{
+		case 1: // Sound data
+			out.write(src+i+2, blocksize - 2);
+			break;
+		case 2: // Sound data continuation
+			out.write(src+i, blocksize);
+			break;
+		case 3: // Silence
+			// Not supported yet
+			break;
+		case 9: // Sound data in new format
+			out.write(src+i+12, blocksize - 12);
+		default:
+			break;
 		}
 		i += blocksize;
 	}
@@ -393,26 +426,32 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out) {
 /* Conversions::bloodToWav
  * Blood SFX files to wav format
  *******************************************************************/
-bool Conversions::bloodToWav(ArchiveEntry * in, MemChunk& out) {
+bool Conversions::bloodToWav(ArchiveEntry* in, MemChunk& out)
+{
 	MemChunk& mc = in->getMCData();
-	if (mc.getSize() < 22 || mc.getSize() > 29 || (mc[12] != 1 && mc[12] != 5 || mc[mc.getSize()-1] != 0)) {
+	if (mc.getSize() < 22 || mc.getSize() > 29 || (mc[12] != 1 && mc[12] != 5 || mc[mc.getSize()-1] != 0))
+	{
 		Global::error = "Invalid SFX";
 		return false;
 	}
 	string name;
-	for (size_t i = 20; i < mc.getSize() - 1; ++i) {
+	for (size_t i = 20; i < mc.getSize() - 1; ++i)
+	{
 		// Check that the entry does give a purely alphanumeric ASCII name
 		if ((mc[i] < '0' || (mc[i] > '9' && mc[i] < 'A') ||
-			(mc[i] > 'Z' && mc[i] < 'a') || mc[i] > 'z') && mc[i] != '_') {
+		        (mc[i] > 'Z' && mc[i] < 'a') || mc[i] > 'z') && mc[i] != '_')
+		{
 			Global::error = "Invalid SFX";
 			return false;
-		} else name += mc[i];
+		}
+		else name += mc[i];
 	}
 
 	// Find raw data
 	name += ".raw";
-	ArchiveEntry * raw = in->getParent()->getEntry(name);
-	if (!raw || raw->getSize() == 0) {
+	ArchiveEntry* raw = in->getParent()->getEntry(name);
+	if (!raw || raw->getSize() == 0)
+	{
 		Global::error = "No RAW data for SFX";
 		return false;
 	}
@@ -457,12 +496,13 @@ bool Conversions::bloodToWav(ArchiveEntry * in, MemChunk& out) {
 /* Conversions::wolfSndToWav
  * Converts Wolf3D sound data [in] to wav format, written to [out]
  *******************************************************************/
-bool Conversions::wolfSndToWav(MemChunk& in, MemChunk& out) {
+bool Conversions::wolfSndToWav(MemChunk& in, MemChunk& out)
+{
 	// --- Read Doom sound ---
 
 	// Read samples
 	size_t numsamples = in.getSize();
-	const uint8_t * samples = in.getData();
+	const uint8_t* samples = in.getData();
 
 	// --- Write WAV ---
 
@@ -507,7 +547,8 @@ bool Conversions::wolfSndToWav(MemChunk& in, MemChunk& out) {
 /* Conversions::jagSndToWav
  * Converts Jaguar Doom sound data [in] to wav format, written to [out]
  *******************************************************************/
-bool Conversions::jagSndToWav(MemChunk& in, MemChunk& out) {
+bool Conversions::jagSndToWav(MemChunk& in, MemChunk& out)
+{
 	// --- Read Jaguar Doom sound ---
 
 	// Read Jaguar doom sound header
@@ -521,7 +562,8 @@ bool Conversions::jagSndToWav(MemChunk& in, MemChunk& out) {
 	header.samples = wxINT32_SWAP_ON_LE(header.samples);
 
 	// Format checks
-	if (header.samples > (in.getSize() - 28) || header.samples <= 4) {	// Check for sane values
+	if (header.samples > (in.getSize() - 28) || header.samples <= 4)  	// Check for sane values
+	{
 		Global::error = "Invalid Jaguar Doom Sound";
 		return false;
 	}
@@ -574,19 +616,21 @@ bool Conversions::jagSndToWav(MemChunk& in, MemChunk& out) {
 /* Conversions::gmidToMidi
  * Dark Forces GMID file to Standard MIDI File
  *******************************************************************/
-bool Conversions::gmidToMidi(MemChunk& in, MemChunk& out) {
+bool Conversions::gmidToMidi(MemChunk& in, MemChunk& out)
+{
 	// Skip beginning of file and look for MThd chunk
 	// (the standard MIDI header)
 	size_t size = in.getSize();
 	if (size < 16)
 		return false;
 	if (in[0] != 'M' && in[1] != 'I' && in[2] != 'D' && in[3] != 'I' &&
-		((READ_B32(in, 4) + 8) != size))
+	        ((READ_B32(in, 4) + 8) != size))
 		return false;
 
 	size_t offset = 8;
 	bool notfound = true;
-	while (notfound) {
+	while (notfound)
+	{
 		if (offset + 8 >  size)
 			return false;
 		// Look for header

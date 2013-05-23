@@ -5,13 +5,16 @@
 #include "ArchiveEntry.h"
 #include "ListenerAnnouncer.h"
 
-struct patch_t {
+struct patch_t
+{
 	string			name;
 	vector<string>	used_in;
 
-	void removeTextureUsage(string texture) {
+	void removeTextureUsage(string texture)
+	{
 		vector<string>::iterator i = used_in.begin();
-		while (i != used_in.end()) {
+		while (i != used_in.end())
+		{
 			if (S_CMP(texture, *i))
 				used_in.erase(i);
 			else
@@ -22,7 +25,8 @@ struct patch_t {
 
 class CTexture;
 
-class PatchTable : public Announcer {
+class PatchTable : public Announcer
+{
 private:
 	Archive*		parent;
 	vector<patch_t>	patches;

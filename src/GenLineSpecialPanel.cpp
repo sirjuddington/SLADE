@@ -4,7 +4,8 @@
 #include "WxStuff.h"
 #include "GenLineSpecialPanel.h"
 
-GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1) {
+GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
+{
 	// --- Setup layout ---
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -28,7 +29,8 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	choice_props[0]->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GenLineSpecialPanel::onChoicePropertyChanged, this);
 
 	// Other properties
-	for (unsigned a = 1; a < 7; a++) {
+	for (unsigned a = 1; a < 7; a++)
+	{
 		label_props[a] = new wxStaticText(this, -1, "");
 		label_props[a]->Hide();
 		choice_props[a] = new wxChoice(this, -1);
@@ -42,13 +44,16 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	setupForType(0);
 }
 
-GenLineSpecialPanel::~GenLineSpecialPanel() {
+GenLineSpecialPanel::~GenLineSpecialPanel()
+{
 }
 
-void GenLineSpecialPanel::setupForType(int type) {
+void GenLineSpecialPanel::setupForType(int type)
+{
 	// Clear properties
 	gb_sizer->Clear();
-	for (unsigned a = 1; a < 7; a++) {
+	for (unsigned a = 1; a < 7; a++)
+	{
 		label_props[a]->Hide();
 		choice_props[a]->Hide();
 		choice_props[a]->Clear();
@@ -61,7 +66,8 @@ void GenLineSpecialPanel::setupForType(int type) {
 	gb_sizer->AddGrowableCol(1, 1);
 
 	// Floor
-	if (type == BoomGenLineSpecial::GS_FLOOR) {
+	if (type == BoomGenLineSpecial::GS_FLOOR)
+	{
 		// Speed
 		label_props[1]->SetLabel("Speed:");
 		choice_props[1]->AppendString("Slow");
@@ -106,7 +112,8 @@ void GenLineSpecialPanel::setupForType(int type) {
 	}
 
 	// Ceiling
-	else if (type == BoomGenLineSpecial::GS_CEILING) {
+	else if (type == BoomGenLineSpecial::GS_CEILING)
+	{
 		// Speed
 		label_props[1]->SetLabel("Speed:");
 		choice_props[1]->AppendString("Slow");
@@ -151,7 +158,8 @@ void GenLineSpecialPanel::setupForType(int type) {
 	}
 
 	// Door
-	else if (type == BoomGenLineSpecial::GS_DOOR) {
+	else if (type == BoomGenLineSpecial::GS_DOOR)
+	{
 		// Speed
 		label_props[1]->SetLabel("Speed:");
 		choice_props[1]->AppendString("Slow");
@@ -182,7 +190,8 @@ void GenLineSpecialPanel::setupForType(int type) {
 	}
 
 	// Locked Door
-	else if (type == BoomGenLineSpecial::GS_LOCKED_DOOR) {
+	else if (type == BoomGenLineSpecial::GS_LOCKED_DOOR)
+	{
 		// Speed
 		label_props[1]->SetLabel("Speed:");
 		choice_props[1]->AppendString("Slow");
@@ -217,7 +226,8 @@ void GenLineSpecialPanel::setupForType(int type) {
 	}
 
 	// Lift
-	else if (type == BoomGenLineSpecial::GS_LIFT) {
+	else if (type == BoomGenLineSpecial::GS_LIFT)
+	{
 		// Speed
 		label_props[1]->SetLabel("Speed:");
 		choice_props[1]->AppendString("Slow");
@@ -248,7 +258,8 @@ void GenLineSpecialPanel::setupForType(int type) {
 	}
 
 	// Stairs
-	else if (type == BoomGenLineSpecial::GS_STAIRS) {
+	else if (type == BoomGenLineSpecial::GS_STAIRS)
+	{
 		// Speed
 		label_props[1]->SetLabel("Speed:");
 		choice_props[1]->AppendString("Slow");
@@ -282,7 +293,8 @@ void GenLineSpecialPanel::setupForType(int type) {
 	}
 
 	// Crusher
-	else if (type == BoomGenLineSpecial::GS_CRUSHER) {
+	else if (type == BoomGenLineSpecial::GS_CRUSHER)
+	{
 		// Speed
 		label_props[1]->SetLabel("Speed:");
 		choice_props[1]->AppendString("Slow");
@@ -304,7 +316,8 @@ void GenLineSpecialPanel::setupForType(int type) {
 	}
 
 	// Show properties
-	for (unsigned a = 1; a < n_props; a++) {
+	for (unsigned a = 1; a < n_props; a++)
+	{
 		gb_sizer->Add(label_props[a], wxGBPosition(a, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		gb_sizer->Add(choice_props[a], wxGBPosition(a, 1), wxDefaultSpan, wxEXPAND);
 		label_props[a]->Show();
@@ -316,27 +329,32 @@ void GenLineSpecialPanel::setupForType(int type) {
 	Update();
 }
 
-void GenLineSpecialPanel::setProp(int prop, int value) {
+void GenLineSpecialPanel::setProp(int prop, int value)
+{
 	if (prop < 0 || prop > 6)
 		return;
 
 	choice_props[prop]->Select(value);
 
 	// Floor
-	if (choice_type->GetSelection() == BoomGenLineSpecial::GS_FLOOR) {
+	if (choice_type->GetSelection() == BoomGenLineSpecial::GS_FLOOR)
+	{
 		// Change
-		if (prop == 5) {
+		if (prop == 5)
+		{
 			// 0 (No Change), prop 2 is monster
-			if (value == 0) {
+			if (value == 0)
+			{
 				label_props[2]->SetLabel("Monsters Activate:");
 				choice_props[2]->Clear();
 				choice_props[2]->AppendString("No");
 				choice_props[2]->AppendString("Yes");
 				choice_props[2]->Select(0);
 			}
-			
+
 			// > 0, prop 2 is model
-			else {
+			else
+			{
 				label_props[2]->SetLabel("Model Sector:");
 				choice_props[2]->Clear();
 				choice_props[2]->AppendString("Trigger: Front Side of Trigger Line");
@@ -349,18 +367,21 @@ void GenLineSpecialPanel::setProp(int prop, int value) {
 	}
 }
 
-bool GenLineSpecialPanel::loadSpecial(int special) {
+bool GenLineSpecialPanel::loadSpecial(int special)
+{
 	// Get special info
 	int props[7];
 	int type = BoomGenLineSpecial::getLineTypeProperties(special, props);
 
-	if (type >= 0) {
+	if (type >= 0)
+	{
 		// Set special type
 		choice_type->Select(type);
 		setupForType(type);
 
 		// Set selected properties
-		for (unsigned a = 0; a < 7; a++) {
+		for (unsigned a = 0; a < 7; a++)
+		{
 			if (choice_props[a]->IsShown())
 				setProp(a, props[a]);
 		}
@@ -372,7 +393,8 @@ bool GenLineSpecialPanel::loadSpecial(int special) {
 	return false;
 }
 
-int GenLineSpecialPanel::getSpecial() {
+int GenLineSpecialPanel::getSpecial()
+{
 	int props[7];
 	for (unsigned a = 0; a < 7; a++)
 		props[a] = choice_props[a]->GetSelection();
@@ -380,29 +402,35 @@ int GenLineSpecialPanel::getSpecial() {
 }
 
 
-void GenLineSpecialPanel::onChoiceTypeChanged(wxCommandEvent& e) {
+void GenLineSpecialPanel::onChoiceTypeChanged(wxCommandEvent& e)
+{
 	setupForType(choice_type->GetSelection());
 }
 
-void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e) {
+void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e)
+{
 	int type = choice_type->GetSelection();
 	wxChoice* choice_changed = (wxChoice*)e.GetEventObject();
 
 	// Floor
-	if (type == BoomGenLineSpecial::GS_FLOOR) {
+	if (type == BoomGenLineSpecial::GS_FLOOR)
+	{
 		// Change
-		if (choice_changed == choice_props[5]) {
+		if (choice_changed == choice_props[5])
+		{
 			// 0 (No Change), prop 2 is monster
-			if (choice_changed->GetSelection() == 0) {
+			if (choice_changed->GetSelection() == 0)
+			{
 				label_props[2]->SetLabel("Monsters Activate:");
 				choice_props[2]->Clear();
 				choice_props[2]->AppendString("No");
 				choice_props[2]->AppendString("Yes");
 				choice_props[2]->Select(0);
 			}
-			
+
 			// > 0, prop 2 is model
-			else {
+			else
+			{
 				label_props[2]->SetLabel("Model Sector:");
 				choice_props[2]->Clear();
 				choice_props[2]->AppendString("Trigger: Front Side of Trigger Line");

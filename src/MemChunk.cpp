@@ -41,7 +41,8 @@
 /* MemChunk::MemChunk
  * MemChunk class constructor
  *******************************************************************/
-MemChunk::MemChunk(uint32_t size) {
+MemChunk::MemChunk(uint32_t size)
+{
 	// Init variables
 	this->size = size;
 	this->cur_ptr = 0;
@@ -56,7 +57,8 @@ MemChunk::MemChunk(uint32_t size) {
 /* MemChunk::MemChunk
  * MemChunk class constructor taking initial data
  *******************************************************************/
-MemChunk::MemChunk(const uint8_t* data, uint32_t size) {
+MemChunk::MemChunk(const uint8_t* data, uint32_t size)
+{
 	// Init variables
 	this->cur_ptr = 0;
 	this->data = NULL;
@@ -69,7 +71,8 @@ MemChunk::MemChunk(const uint8_t* data, uint32_t size) {
 /* MemChunk::~MemChunk
  * MemChunk class destructor
  *******************************************************************/
-MemChunk::~MemChunk() {
+MemChunk::~MemChunk()
+{
 	// Free memory
 	if (data)
 		delete[] data;
@@ -78,7 +81,8 @@ MemChunk::~MemChunk() {
 /* MemChunk::hasData
  * Returns true if the chunk contains data
  *******************************************************************/
-bool MemChunk::hasData() {
+bool MemChunk::hasData()
+{
 	if (size > 0 && data)
 		return true;
 	else
@@ -89,8 +93,10 @@ bool MemChunk::hasData() {
  * Deletes the memory chunk.
  * Returns false if no data exists, true otherwise.
  *******************************************************************/
-bool MemChunk::clear() {
-	if (hasData()) {
+bool MemChunk::clear()
+{
+	if (hasData())
+	{
 		delete[] data;
 		data = NULL;
 		size = 0;
@@ -105,24 +111,29 @@ bool MemChunk::clear() {
  * Resizes the memory chunk, preserving existing data if specified
  * Returns false if new size is invalid, true otherwise
  *******************************************************************/
-bool MemChunk::reSize(uint32_t new_size, bool preserve_data) {
+bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
+{
 	// Check for invalid new size
-	if (new_size == 0) {
+	if (new_size == 0)
+	{
 		wxLogMessage("MemChunk::reSize: new_size cannot be 0");
 		return false;
 	}
 
 	// Resize data
-	if (preserve_data) {
+	if (preserve_data)
+	{
 		uint8_t* ndata = (uint8_t*)realloc(data, new_size);
 		if (ndata)
 			data = ndata;
-		else {
+		else
+		{
 			wxLogMessage("MemChunk::reSize: Realloc of %d bytes failed", new_size);
 			return false;
 		}
 	}
-	else {
+	else
+	{
 		clear();
 		data = new uint8_t[new_size];
 	}
@@ -141,12 +152,14 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data) {
  * Loads a file (or part of it) into the MemChunk
  * Returns false if file couldn't be opened, true otherwise
  *******************************************************************/
-bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len) {
+bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len)
+{
 	// Open the file
 	wxFile file(filename);
 
 	// Return false if file open failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("MemChunk::importFile: Unable to open file %s", filename.c_str());
 		Global::error = S_FMT("Unable to open file %s", filename.c_str());
 		return false;
@@ -164,16 +177,18 @@ bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len) {
 	size = len;
 
 	// Read the file
-	if (size > 0) {
+	if (size > 0)
+	{
 		data = new uint8_t[size];
 
 		// Read the file
 		file.Seek(offset, wxFromStart);
 		size_t count = file.Read(data, size);
-		if (count != size) {
+		if (count != size)
+		{
 			delete[] data;
 			wxLogMessage("MemChunk::importFile: Unable to read full file %s, read %u out of %u",
-				filename.c_str(), count, size);
+			             filename.c_str(), count, size);
 			Global::error = S_FMT("Unable to read file %s", filename.c_str());
 			return false;
 		}
@@ -189,7 +204,8 @@ bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len) {
  * into the MemChunk
  * Returns false if file couldn't be opened, true otherwise
  *******************************************************************/
-bool MemChunk::importFileStream(wxFile& file, uint32_t len) {
+bool MemChunk::importFileStream(wxFile& file, uint32_t len)
+{
 	// Check file
 	if (!file.IsOpened())
 		return false;
@@ -209,7 +225,8 @@ bool MemChunk::importFileStream(wxFile& file, uint32_t len) {
 	size = len;
 
 	// Read the file
-	if (size > 0) {
+	if (size > 0)
+	{
 		data = new uint8_t[size];
 		file.Read(data, size);
 	}
@@ -221,7 +238,8 @@ bool MemChunk::importFileStream(wxFile& file, uint32_t len) {
  * Loads a chunk of memory into the MemChunk
  * Returns false if size or data pointer is invalid, true otherwise
  *******************************************************************/
-bool MemChunk::importMem(const uint8_t* start, uint32_t len) {
+bool MemChunk::importMem(const uint8_t* start, uint32_t len)
+{
 	// Check that length & data to be loaded are valid
 	if (!start)
 		return false;
@@ -233,7 +251,8 @@ bool MemChunk::importMem(const uint8_t* start, uint32_t len) {
 	size = len;
 
 	// Load new data
-	if (size > 0) {
+	if (size > 0)
+	{
 		data = new uint8_t[size];
 		memcpy(data, start, size);
 	}
@@ -246,7 +265,8 @@ bool MemChunk::importMem(const uint8_t* start, uint32_t len) {
  * from [start] to [start+size]. If [size] is 0, writes from [start]
  * to the end of the data
  *******************************************************************/
-bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size) {
+bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size)
+{
 	// Check data exists
 	if (!hasData())
 		return false;
@@ -261,7 +281,8 @@ bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size) {
 
 	// Open file for writing
 	wxFile file(filename, wxFile::write);
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage(S_FMT("Unable to write to file %s", filename.c_str()));
 		Global::error = "Unable to open file for writing";
 		return false;
@@ -278,7 +299,8 @@ bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size) {
  * [start] to [start+size]. If [size] is 0, writes from [start] to
  * the end of the data
  *******************************************************************/
-bool MemChunk::exportMemChunk(MemChunk& mc, uint32_t start, uint32_t size) {
+bool MemChunk::exportMemChunk(MemChunk& mc, uint32_t start, uint32_t size)
+{
 	// Check data exists
 	if (!hasData())
 		return false;
@@ -300,7 +322,8 @@ bool MemChunk::exportMemChunk(MemChunk& mc, uint32_t start, uint32_t size) {
  * Writes the given data at the current position. Expands the memory
  * chunk if necessary.
  *******************************************************************/
-bool MemChunk::write(const void* data, uint32_t size) {
+bool MemChunk::write(const void* data, uint32_t size)
+{
 	// Check pointers
 	if (!data)
 		return false;
@@ -322,16 +345,18 @@ bool MemChunk::write(const void* data, uint32_t size) {
  * Writes the given data at the [start] position. Expands the memory
  * chunk if necessary.
  *******************************************************************/
- bool MemChunk::write(const void* data, uint32_t size, uint32_t start) {
-	 seek(start, SEEK_SET);
-	 return write(data, size);
- }
+bool MemChunk::write(const void* data, uint32_t size, uint32_t start)
+{
+	seek(start, SEEK_SET);
+	return write(data, size);
+}
 
 /* MemChunk::read
  * Reads data from the current position into [buf]. Returns false if
  * attempting to read data outside of the chunk, true otherwise
  *******************************************************************/
-bool MemChunk::read(void* buf, uint32_t size) {
+bool MemChunk::read(void* buf, uint32_t size)
+{
 	// Check pointers
 	if (!this->data || !buf)
 		return false;
@@ -352,11 +377,12 @@ bool MemChunk::read(void* buf, uint32_t size) {
  * Reads [size] bytes of data from [start] into [buf]. Returns false
  * if attempting to read data outside of the chunk, true otherwise
  *******************************************************************/
-bool MemChunk::read(void* buf, uint32_t size, uint32_t start) {
+bool MemChunk::read(void* buf, uint32_t size, uint32_t start)
+{
 	// Check options
 	if (start + size > this->size)
 		return false;
-	
+
 	// Do read
 	seek(start, SEEK_SET);
 	return read(buf, size);
@@ -365,20 +391,24 @@ bool MemChunk::read(void* buf, uint32_t size, uint32_t start) {
 /* MemChunk::seek
  * Moves the current position, works the same as fseek() etc.
  *******************************************************************/
-bool MemChunk::seek(uint32_t offset, uint32_t start) {
-	if (start == SEEK_CUR) {
+bool MemChunk::seek(uint32_t offset, uint32_t start)
+{
+	if (start == SEEK_CUR)
+	{
 		// Move forward from the current position
 		cur_ptr += offset;
 		if (cur_ptr > size)
 			cur_ptr = size;
 	}
-	else if (start == SEEK_SET) {
+	else if (start == SEEK_SET)
+	{
 		// Move to the specified offset
 		cur_ptr = offset;
 		if (cur_ptr > size)
 			cur_ptr = size;
 	}
-	else if (start == SEEK_END) {
+	else if (start == SEEK_END)
+	{
 		// Move to <offset> bytes before the end of the chunk
 		if (offset > size)
 			cur_ptr = 0;
@@ -394,11 +424,13 @@ bool MemChunk::seek(uint32_t offset, uint32_t start) {
  * Reads [size] bytes of data into [mc]. Returns false if attempting
  * to read outside the chunk, true otherwise
  *******************************************************************/
-bool MemChunk::readMC(MemChunk& mc, uint32_t size) {
+bool MemChunk::readMC(MemChunk& mc, uint32_t size)
+{
 	if (cur_ptr + size >= this->size)
 		return false;
 
-	if (mc.write(data + cur_ptr, size)) {
+	if (mc.write(data + cur_ptr, size))
+	{
 		cur_ptr += size;
 		return true;
 	}
@@ -410,7 +442,8 @@ bool MemChunk::readMC(MemChunk& mc, uint32_t size) {
  * Overwrites all data bytes with [val] (basically is memset).
  * Returns false if no data exists, true otherwise
  *******************************************************************/
-bool MemChunk::fillData(uint8_t val) {
+bool MemChunk::fillData(uint8_t val)
+{
 	// Check data exists
 	if (!hasData())
 		return false;
@@ -426,7 +459,8 @@ bool MemChunk::fillData(uint8_t val) {
  * Calculates the 32bit CRC value of the data. Returns the CRC or 0
  * if no data is present
  *******************************************************************/
-uint32_t MemChunk::crc() {
+uint32_t MemChunk::crc()
+{
 	if (hasData())
 		return Misc::crc(data, size);
 	else

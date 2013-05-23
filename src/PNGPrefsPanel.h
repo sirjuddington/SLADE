@@ -4,7 +4,8 @@
 
 #include "PrefsPanelBase.h"
 
-class PNGPrefsPanel : public PrefsPanelBase {
+class PNGPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxTextCtrl*	text_pngoutpath;
 	wxTextCtrl*	text_pngcrushpath;

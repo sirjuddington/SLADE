@@ -9,7 +9,8 @@
 
 class TextureXEditor;
 
-class TextureXListView : public VirtualListView {
+class TextureXListView : public VirtualListView
+{
 private:
 	TextureXList*	texturex;
 
@@ -24,7 +25,8 @@ public:
 	void	updateList(bool clear = false);
 };
 
-class TextureXPanel : public wxPanel, SActionHandler {
+class TextureXPanel : public wxPanel, SActionHandler
+{
 private:
 	TextureXList		texturex;
 	TextureXEditor*		tx_editor;

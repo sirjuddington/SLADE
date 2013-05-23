@@ -13,7 +13,8 @@
 // Union for (most) property values
 union prop_value { bool Boolean; int Integer; double Floating; unsigned Unsigned; };
 
-class Property {
+class Property
+{
 private:
 	uint8_t		type;
 	prop_value	value;

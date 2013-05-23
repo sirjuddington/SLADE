@@ -45,7 +45,8 @@
 /* ANSIEntryPanel::ANSIEntryPanel
  * ANSIEntryPanel class constructor
  *******************************************************************/
-ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi") {
+ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
+{
 	// Get the VGA font
 
 	ansi_chardata = new uint8_t[DATASIZE];
@@ -63,19 +64,22 @@ ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi") {
 /* ANSIEntryPanel::~ANSIEntryPanel
  * ANSIEntryPanel class destructor
  *******************************************************************/
-ANSIEntryPanel::~ANSIEntryPanel() {
+ANSIEntryPanel::~ANSIEntryPanel()
+{
 	delete[] ansi_chardata;
 }
 
 /* ANSIEntryPanel::loadEntry
  * Loads an entry to the panel
  *******************************************************************/
-bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry) {
+bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	// Check entry exists
 	if (!entry)
 		return false;
 
-	if (entry->getSize() == DATASIZE) {
+	if (entry->getSize() == DATASIZE)
+	{
 		memcpy(ansi_chardata, entry->getData(), DATASIZE);
 		ansi_canvas->loadData(ansi_chardata);
 		for (size_t i = 0; i < DATASIZE/2; i++)
@@ -90,7 +94,8 @@ bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry) {
 /* ANSIEntryPanel::saveEntry
  * Saves changes to the entry
  *******************************************************************/
-bool ANSIEntryPanel::saveEntry() {
+bool ANSIEntryPanel::saveEntry()
+{
 	entry->importMem(ansi_chardata, DATASIZE);
 	return true;
 }
@@ -98,7 +103,8 @@ bool ANSIEntryPanel::saveEntry() {
 /* ANSIEntryPanel::drawCharacter
  * Draws a single character in the canvas
  *******************************************************************/
-void ANSIEntryPanel::drawCharacter(size_t i) {
+void ANSIEntryPanel::drawCharacter(size_t i)
+{
 	if (ansi_canvas)
 		ansi_canvas->drawCharacter(i);
 }

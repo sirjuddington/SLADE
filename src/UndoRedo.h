@@ -4,24 +4,26 @@
 
 #include "ListenerAnnouncer.h"
 
-class UndoStep {
+class UndoStep
+{
 private:
 
 public:
 	UndoStep() {}
 	virtual ~UndoStep() {}
-	
+
 	virtual bool	doUndo() { return true; }
 	virtual bool	doRedo() { return true; }
 	virtual bool	writeFile(MemChunk& mc) { return true; }
 	virtual bool	readFile(MemChunk& mc) { return true; }
 };
 
-class UndoLevel {
+class UndoLevel
+{
 private:
 	string				name;
 	vector<UndoStep*>	undo_steps;
-	
+
 public:
 	UndoLevel(string name);
 	~UndoLevel();
@@ -30,13 +32,14 @@ public:
 	bool	doUndo();
 	bool	doRedo();
 	void	addStep(UndoStep* step) { undo_steps.push_back(step); }
-	
+
 	bool	writeFile(string filename);
 	bool	readFile(string filename);
 };
 
 class SLADEMap;
-class UndoManager : public Announcer {
+class UndoManager : public Announcer
+{
 private:
 	vector<UndoLevel*>	undo_levels;
 	UndoLevel*			current_level;
@@ -64,7 +67,8 @@ public:
 	void	clear();
 };
 
-namespace UndoRedo {
+namespace UndoRedo
+{
 	bool			currentlyRecording();
 	UndoManager*	currentManager();
 	SLADEMap*		currentMap();

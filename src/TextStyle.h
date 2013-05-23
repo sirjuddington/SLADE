@@ -6,7 +6,8 @@
 #include <wx/font.h>
 #include <wx/stc/stc.h>
 
-class TextStyle {
+class TextStyle
+{
 	friend class StyleSet;
 private:
 	string	font;
@@ -51,7 +52,8 @@ public:
 	string	getDefinition(unsigned tabs = 0);
 };
 
-class StyleSet {
+class StyleSet
+{
 private:
 	string		name;
 	TextStyle	ts_default;

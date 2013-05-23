@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class RffArchive : public TreelessArchive {
+class RffArchive : public TreelessArchive
+{
 public:
 	RffArchive();
 	~RffArchive();

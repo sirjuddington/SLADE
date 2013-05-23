@@ -6,7 +6,8 @@
 	createChild should simply create a STreeNode of the derived type, NOT set its parent (via the constructor or otherwise)
 	deleting a STreeNode will not remove it from its parent, this must be done manually
 */
-class STreeNode {
+class STreeNode
+{
 protected:
 	vector<STreeNode*>	children;
 	STreeNode*			parent;

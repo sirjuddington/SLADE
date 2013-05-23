@@ -7,7 +7,8 @@
 #include <wx/statline.h>
 
 
-ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent, -1) {
+ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
+{
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -32,16 +33,19 @@ ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent,
 	//gbsizer->Add(btn_browse_to, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND);
 }
 
-ThingTypeReplacePanel::~ThingTypeReplacePanel() {
+ThingTypeReplacePanel::~ThingTypeReplacePanel()
+{
 }
 
-void ThingTypeReplacePanel::doReplace(Archive* archive) {
+void ThingTypeReplacePanel::doReplace(Archive* archive)
+{
 	size_t count = ArchiveOperations::replaceThings(archive, spin_from->GetValue(), spin_to->GetValue());
 	wxMessageBox(S_FMT("Replaced %d occurrences. See console log for more detailed information.", count), "Replace Things");
 }
 
 
-SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1) {
+SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
+{
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -73,7 +77,8 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Args
 	gbsizer = new wxGridBagSizer(4, 4);
 	sizer->Add(gbsizer, 0, wxALIGN_CENTER|wxALL, 4);
-	for (unsigned a = 0; a < 5; a++) {
+	for (unsigned a = 0; a < 5; a++)
+	{
 		// Create controls
 		cb_args[a] = new wxCheckBox(this, -1, S_FMT("Arg %d", a));
 		spin_args_from[a] = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 255);
@@ -92,23 +97,26 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	cb_line_specials->SetValue(true);
 }
 
-SpecialReplacePanel::~SpecialReplacePanel() {
+SpecialReplacePanel::~SpecialReplacePanel()
+{
 }
 
-void SpecialReplacePanel::doReplace(Archive* archive) {
+void SpecialReplacePanel::doReplace(Archive* archive)
+{
 	size_t count = ArchiveOperations::replaceSpecials(archive, spin_from->GetValue(), spin_to->GetValue(),
-						cb_line_specials->GetValue(), cb_thing_specials->GetValue(),
-						cb_args[0]->GetValue(), spin_args_from[0]->GetValue(), spin_args_to[0]->GetValue(),
-						cb_args[1]->GetValue(), spin_args_from[1]->GetValue(), spin_args_to[1]->GetValue(),
-						cb_args[2]->GetValue(), spin_args_from[2]->GetValue(), spin_args_to[2]->GetValue(),
-						cb_args[3]->GetValue(), spin_args_from[3]->GetValue(), spin_args_to[3]->GetValue(),
-						cb_args[4]->GetValue(), spin_args_from[4]->GetValue(), spin_args_to[4]->GetValue());
+	               cb_line_specials->GetValue(), cb_thing_specials->GetValue(),
+	               cb_args[0]->GetValue(), spin_args_from[0]->GetValue(), spin_args_to[0]->GetValue(),
+	               cb_args[1]->GetValue(), spin_args_from[1]->GetValue(), spin_args_to[1]->GetValue(),
+	               cb_args[2]->GetValue(), spin_args_from[2]->GetValue(), spin_args_to[2]->GetValue(),
+	               cb_args[3]->GetValue(), spin_args_from[3]->GetValue(), spin_args_to[3]->GetValue(),
+	               cb_args[4]->GetValue(), spin_args_from[4]->GetValue(), spin_args_to[4]->GetValue());
 
 	wxMessageBox(S_FMT("Replaced %d occurrences. See console log for more detailed information.", count), "Replace Specials");
 }
 
 
-TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1) {
+TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
+{
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -155,23 +163,26 @@ TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	sizer->AddStretchSpacer();
 }
 
-TextureReplacePanel::~TextureReplacePanel() {
+TextureReplacePanel::~TextureReplacePanel()
+{
 }
 
-void TextureReplacePanel::doReplace(Archive* archive) {
+void TextureReplacePanel::doReplace(Archive* archive)
+{
 	size_t count = ArchiveOperations::replaceTextures(archive, text_from->GetValue(), text_to->GetValue(),
-										cb_floor->GetValue(), cb_ceiling->GetValue(),
-										cb_lower->GetValue(), cb_middle->GetValue(), cb_upper->GetValue());
+	               cb_floor->GetValue(), cb_ceiling->GetValue(),
+	               cb_lower->GetValue(), cb_middle->GetValue(), cb_upper->GetValue());
 
 	wxMessageBox(S_FMT("Replaced %d occurrences. See console log for more detailed information.", count), "Replace Textures");
 }
 
 
 MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
-	: wxDialog(parent, -1, "Replace In Maps", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+	: wxDialog(parent, -1, "Replace In Maps", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
 	// Init variables
 	this->archive = archive;
-		
+
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -213,17 +224,20 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
 	btn_replace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapReplaceDialog::onBtnReplace, this);
 }
 
-MapReplaceDialog::~MapReplaceDialog() {
+MapReplaceDialog::~MapReplaceDialog()
+{
 }
 
-void MapReplaceDialog::onBtnDone(wxCommandEvent& e) {
+void MapReplaceDialog::onBtnDone(wxCommandEvent& e)
+{
 	this->EndModal(wxID_OK);
 }
 
-void MapReplaceDialog::onBtnReplace(wxCommandEvent& e) {
+void MapReplaceDialog::onBtnReplace(wxCommandEvent& e)
+{
 	// Get current tab
 	int current = nb_tabs->GetSelection();
-	
+
 	// Thing types
 	if (current == 0)
 		panel_thing->doReplace(archive);

@@ -11,7 +11,8 @@
 CVAR(Bool, toolbar_button_flat, true, CVAR_SAVE)
 
 SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon)
-: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton") {
+	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
+{
 	// Init variables
 	this->action = theApp->getAction(action);
 	this->state = STATE_NORMAL;
@@ -44,10 +45,12 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon)
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
 }
 
-SToolBarButton::~SToolBarButton() {
+SToolBarButton::~SToolBarButton()
+{
 }
 
-void SToolBarButton::onPaint(wxPaintEvent& e) {
+void SToolBarButton::onPaint(wxPaintEvent& e)
+{
 	wxPaintDC dc(this);
 
 	// Get system colours needed
@@ -64,7 +67,8 @@ void SToolBarButton::onPaint(wxPaintEvent& e) {
 		return;
 
 	// Draw toggled border/background
-	if (action->isToggled()) {
+	if (action->isToggled())
+	{
 		// Use greyscale version of hilight colour
 		uint8_t r = col_hilight.Red();
 		uint8_t g = col_hilight.Green();
@@ -73,14 +77,16 @@ void SToolBarButton::onPaint(wxPaintEvent& e) {
 		wxColour col_toggle(r, g, b, 255);
 		wxColour col_trans(r, g, b, 150);
 
-		if (toolbar_button_flat) {
+		if (toolbar_button_flat)
+		{
 			// Draw border
 			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(Drawing::darkColour(col_toggle, 5.0f)));
 			gc->DrawRectangle(1, 1, 20, 20);
 		}
-		else {
+		else
+		{
 			// Draw border
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(Drawing::lightColour(col_toggle, 5.0f), 1));
@@ -94,7 +100,8 @@ void SToolBarButton::onPaint(wxPaintEvent& e) {
 	}
 
 	// Draw border on mouseover
-	if (state == STATE_MOUSEOVER || state == STATE_MOUSEDOWN) {
+	if (state == STATE_MOUSEOVER || state == STATE_MOUSEDOWN)
+	{
 		// Determine transparency level
 		int trans = 160;
 		if (state == STATE_MOUSEDOWN)
@@ -103,14 +110,16 @@ void SToolBarButton::onPaint(wxPaintEvent& e) {
 		// Create semitransparent hilight colour
 		wxColour col_trans(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), trans);
 
-		if (toolbar_button_flat) {
+		if (toolbar_button_flat)
+		{
 			// Draw border
 			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight));
 			gc->DrawRectangle(1, 1, 20, 20);
 		}
-		else {
+		else
+		{
 			// Draw border
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(Drawing::lightColour(col_hilight, 5.0f), 1));
@@ -124,7 +133,8 @@ void SToolBarButton::onPaint(wxPaintEvent& e) {
 	}
 
 	// Draw disabled icon if disabled
-	if (!IsEnabled()) {
+	if (!IsEnabled())
+	{
 		// Determine toolbar background brightness
 		uint8_t r,g,b;
 		r = col_background.Red();
@@ -143,11 +153,13 @@ void SToolBarButton::onPaint(wxPaintEvent& e) {
 	delete gc;
 }
 
-void SToolBarButton::onMouseEvent(wxMouseEvent& e) {
+void SToolBarButton::onMouseEvent(wxMouseEvent& e)
+{
 	wxFrame* parent_window = (wxFrame*)wxGetTopLevelParent(this);
 
 	// Mouse enter
-	if (e.GetEventType() == wxEVT_ENTER_WINDOW) {
+	if (e.GetEventType() == wxEVT_ENTER_WINDOW)
+	{
 		// Set state to mouseover
 		state = STATE_MOUSEOVER;
 
@@ -157,7 +169,8 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e) {
 	}
 
 	// Mouse leave
-	if (e.GetEventType() == wxEVT_LEAVE_WINDOW) {
+	if (e.GetEventType() == wxEVT_LEAVE_WINDOW)
+	{
 		// Set state to normal
 		state = STATE_NORMAL;
 
@@ -167,7 +180,8 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e) {
 	}
 
 	// Left button down
-	if (e.GetEventType() == wxEVT_LEFT_DOWN || e.GetEventType() == wxEVT_LEFT_DCLICK) {
+	if (e.GetEventType() == wxEVT_LEFT_DOWN || e.GetEventType() == wxEVT_LEFT_DCLICK)
+	{
 		state = STATE_MOUSEDOWN;
 		if (action->isRadio()) GetParent()->Refresh();
 
@@ -175,7 +189,8 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e) {
 	}
 
 	// Left button up
-	if (e.GetEventType() == wxEVT_LEFT_UP) {
+	if (e.GetEventType() == wxEVT_LEFT_UP)
+	{
 		state = STATE_MOUSEOVER;
 
 		// Clear status bar help text
@@ -188,7 +203,8 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e) {
 	//e.Skip();
 }
 
-void SToolBarButton::onFocus(wxFocusEvent& e) {
+void SToolBarButton::onFocus(wxFocusEvent& e)
+{
 	// Redraw
 	state = STATE_NORMAL;
 	Update();
@@ -197,5 +213,6 @@ void SToolBarButton::onFocus(wxFocusEvent& e) {
 	e.Skip();
 }
 
-void SToolBarButton::onEraseBackground(wxEraseEvent& e) {
+void SToolBarButton::onEraseBackground(wxEraseEvent& e)
+{
 }

@@ -6,7 +6,8 @@
 #include "Tree.h"
 #include "ListenerAnnouncer.h"
 
-class ArchiveTreeNode : public STreeNode {
+class ArchiveTreeNode : public STreeNode
+{
 	friend class Archive;
 private:
 	Archive*				archive;
@@ -14,7 +15,8 @@ private:
 	vector<ArchiveEntry*>	entries;
 
 protected:
-	STreeNode* createChild(string name) {
+	STreeNode* createChild(string name)
+	{
 		ArchiveTreeNode* node = new ArchiveTreeNode();
 		node->dir_entry->name = name;
 		node->archive = archive;
@@ -47,7 +49,8 @@ public:
 };
 
 // Define archive types
-enum ArchiveTypes {
+enum ArchiveTypes
+{
 	ARCHIVE_INVALID = 0,
 	ARCHIVE_WAD,
 	ARCHIVE_ZIP,
@@ -75,7 +78,8 @@ enum ArchiveTypes {
 	ARCHIVE_DISK,
 };
 
-class Archive : public Announcer {
+class Archive : public Announcer
+{
 private:
 	bool				modified;
 	uint8_t				type;	// See ArchiveTypes enum
@@ -88,14 +92,16 @@ protected:
 	bool			read_only;	// If true, the archive cannot be modified
 
 public:
-	struct mapdesc_t {
+	struct mapdesc_t
+	{
 		string			name;
 		ArchiveEntry*	head;
 		ArchiveEntry*	end;
 		uint8_t			format;		// See MapTypes enum
 		bool			archive;	// True if head is an archive (for maps in zips)
 
-		mapdesc_t() {
+		mapdesc_t()
+		{
 			head = end = NULL;
 			archive = false;
 			format = MAP_UNKNOWN;
@@ -177,7 +183,8 @@ public:
 	virtual string				detectNamespace(ArchiveEntry* entry) { return "global"; }
 
 	// Search
-	struct search_options_t {
+	struct search_options_t
+	{
 		string				match_name;			// Ignore if empty
 		EntryType*			match_type;			// Ignore if NULL
 		string				match_namespace;	// Ignore if empty
@@ -185,7 +192,8 @@ public:
 		bool				ignore_ext;			// Defaults true
 		bool				search_subdirs;		// Defaults false
 
-		search_options_t() {
+		search_options_t()
+		{
 			match_name = "";
 			match_type = NULL;
 			match_namespace = "";
@@ -201,7 +209,8 @@ public:
 };
 
 // Base class for list-based archive formats
-class TreelessArchive : public Archive {
+class TreelessArchive : public Archive
+{
 public:
 	TreelessArchive(uint8_t type = ARCHIVE_INVALID):Archive(type) {}
 	virtual ~TreelessArchive() {}

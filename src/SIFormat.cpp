@@ -25,7 +25,8 @@ SIFormat*			sif_unknown = NULL;
 
 
 // 'Unknown' format
-class SIFUnknown : public SIFormat {
+class SIFUnknown : public SIFormat
+{
 protected:
 	bool readImage(SImage& image, MemChunk& data, int index) { return false; }
 
@@ -38,13 +39,15 @@ public:
 };
 
 // General image format is a special case, only try if no other formats detected
-class SIFGeneralImage : public SIFormat {
+class SIFGeneralImage : public SIFormat
+{
 private:
-	FIBITMAP* getFIInfo(MemChunk& data, SImage::info_t& info) {
+	FIBITMAP* getFIInfo(MemChunk& data, SImage::info_t& info)
+	{
 		// Get FreeImage bitmap info from entry data
 		FIMEMORY* mem = FreeImage_OpenMemory((BYTE*)data.getData(), data.getSize());
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(mem, 0);
-		FIBITMAP *bm = FreeImage_LoadFromMemory(fif, mem, 0);
+		FIBITMAP* bm = FreeImage_LoadFromMemory(fif, mem, 0);
 		FreeImage_CloseMemory(mem);
 
 		// Check it created/read ok
@@ -65,13 +68,15 @@ private:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info;
 		FIBITMAP* bm = getFIInfo(data, info);
 
 		// Check it created/read ok
-		if (!bm) {
+		if (!bm)
+		{
 			Global::error = "Unable to read image data (unsupported format?)";
 			return false;
 		}
@@ -79,7 +84,8 @@ protected:
 		// Get image palette if it exists
 		RGBQUAD* bm_pal = FreeImage_GetPalette(bm);
 		Palette8bit palette;
-		if (bm_pal) {
+		if (bm_pal)
+		{
 			int a = 0;
 			int b = FreeImage_GetColorsUsed(bm);
 			if (b > 256)
@@ -96,13 +102,14 @@ protected:
 		uint8_t* img_data = imageData(image);
 
 		// Convert to 32bpp & flip vertically
-		FIBITMAP *rgba = FreeImage_ConvertTo32Bits(bm);
+		FIBITMAP* rgba = FreeImage_ConvertTo32Bits(bm);
 		FreeImage_FlipVertical(rgba);
 
 		// Load raw RGBA data
 		uint8_t* bits_rgba = FreeImage_GetBits(rgba);
 		int c = 0;
-		for (int a = 0; a < info.width * info.height; a++) {
+		for (int a = 0; a < info.width * info.height; a++)
+		{
 			img_data[c++] = bits_rgba[a * 4 + 2];	// Red
 			img_data[c++] = bits_rgba[a * 4 + 1];	// Green
 			img_data[c++] = bits_rgba[a * 4];		// Blue
@@ -115,19 +122,22 @@ protected:
 
 		return true;
 	}
-	
-	bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index) {
+
+	bool writeImage(SImage& image, MemChunk& out, Palette8bit* pal, int index)
+	{
 		return false;
 	}
-	
+
 public:
-	SIFGeneralImage() : SIFormat("image") {
+	SIFGeneralImage() : SIFormat("image")
+	{
 		name = "Image";
 		extension = "dat";
 	}
 	~SIFGeneralImage() {}
-	
-	bool isThisFormat(MemChunk& mc) {
+
+	bool isThisFormat(MemChunk& mc)
+	{
 		FIMEMORY* mem = FreeImage_OpenMemory((BYTE*)mc.getData(), mc.getSize());
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(mem, 0);
 		FreeImage_CloseMemory(mem);
@@ -136,18 +146,20 @@ public:
 		else
 			return true;
 	}
-	
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
-		
+
 		getFIInfo(mc, info);
-		
+
 		return info;
 	}
 };
 
 // Define valid raw flat sizes
-uint32_t valid_flat_size[][3] = {
+uint32_t valid_flat_size[][3] =
+{
 	{	2,	 2,	0 },	// lol Heretic F_SKY1
 	{  10,  12,	0 },	// gnum format
 	{  16,  16,	0 },	// |
@@ -168,19 +180,22 @@ uint32_t valid_flat_size[][3] = {
 uint32_t	n_valid_flat_sizes = 17;
 
 // Raw format is a special case - not detectable
-class SIFRaw : public SIFormat {
+class SIFRaw : public SIFormat
+{
 protected:
-	bool validSize(unsigned size) {
-		for (unsigned a = 0; a < n_valid_flat_sizes; a++) {
+	bool validSize(unsigned size)
+	{
+		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
+		{
 			if (valid_flat_size[a][0] * valid_flat_size[a][1] == size)
 				return true;
 		}
-		
+
 		// COLORMAP size
 		if (size == 8776) size = 8704;	// Ignore inkworks signature
 		if (size % 256 == 0)
 			return true;
-			
+
 		// AUTOPAGE size
 		if (size % 320 == 0)
 			return true;
@@ -188,10 +203,12 @@ protected:
 		return false;
 	}
 
-	bool validSize(int width, int height) {
-		for (unsigned a = 0; a < n_valid_flat_sizes; a++) {
+	bool validSize(int width, int height)
+	{
+		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
+		{
 			if (valid_flat_size[a][0] == width && valid_flat_size[a][1] == height
-				&& (valid_flat_size[a][2] == 1 || gfx_extraconv))
+			        && (valid_flat_size[a][2] == 1 || gfx_extraconv))
 				return true;
 		}
 
@@ -200,13 +217,14 @@ protected:
 			return true;
 
 		// Fullscreen gfx special case
-		if (width == 320) // autopage, too && height == 200) 
+		if (width == 320) // autopage, too && height == 200)
 			return true;
 
 		return false;
 	}
 
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get info
 		SImage::info_t info = getInfo(data, index);
 
@@ -219,43 +237,52 @@ protected:
 	}
 
 public:
-	SIFRaw(string id = "raw") : SIFormat(id) {
+	SIFRaw(string id = "raw") : SIFormat(id)
+	{
 		this->name = "Raw";
 		this->extension = "dat";
 	}
 	~SIFRaw() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		// Just check the size
 		return validSize(mc.getSize());
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 		unsigned size = mc.getSize();
 
 		// Determine dimensions
 		bool valid_size = false;
-		for (uint32_t a = 0; a < n_valid_flat_sizes; a++) {
+		for (uint32_t a = 0; a < n_valid_flat_sizes; a++)
+		{
 			uint32_t w = valid_flat_size[a][0];
 			uint32_t h = valid_flat_size[a][1];
 
-			if (size == w * h || size - 4 == w * h) {
+			if (size == w * h || size - 4 == w * h)
+			{
 				info.width = w;
 				info.height = h;
 				valid_size = true;
 				break;
 			}
 		}
-		if (size == 8776) { // Inkworks and its signature at the end of COLORMAPS
+		if (size == 8776)   // Inkworks and its signature at the end of COLORMAPS
+		{
 			size = 8704;
 		}
-		if (!valid_size) {
-			if (size % 320 == 0)	{	// This should handle any custom AUTOPAGE
+		if (!valid_size)
+		{
+			if (size % 320 == 0)	 	// This should handle any custom AUTOPAGE
+			{
 				info.width = 320;
 				info.height = size/320;
 			}
-			else if (size % 256 == 0) { // This allows display of COLORMAPS
+			else if (size % 256 == 0)   // This allows display of COLORMAPS
+			{
 				info.width = 256;
 				info.height = size/256;
 			}
@@ -268,7 +295,8 @@ public:
 		return info;
 	}
 
-	bool canWriteType(SIType type) {
+	bool canWriteType(SIType type)
+	{
 		// Raw format only supports paletted images
 		if (type == PALMASK)
 			return true;
@@ -277,9 +305,11 @@ public:
 	}
 };
 
-class SIFRawFlat : public SIFRaw {
+class SIFRawFlat : public SIFRaw
+{
 protected:
-	bool writeImage(SImage& image, MemChunk& data, Palette8bit* pal, int index) {
+	bool writeImage(SImage& image, MemChunk& data, Palette8bit* pal, int index)
+	{
 		// Can't write if RGBA
 		if (image.getType() == RGBA)
 			return false;
@@ -296,23 +326,26 @@ protected:
 	}
 
 public:
-	SIFRawFlat() : SIFRaw("raw_flat") {
+	SIFRawFlat() : SIFRaw("raw_flat")
+	{
 		this->name = "Doom Flat";
 		this->extension = "lmp";
 	}
 	~SIFRawFlat() {}
 
-	int canWrite(SImage& image) {
+	int canWrite(SImage& image)
+	{
 		// If it's the correct size and colour format, it's writable
 		if (image.getType() == PALMASK &&
-			validSize(image.getWidth(), image.getHeight()))
+		        validSize(image.getWidth(), image.getHeight()))
 			return WRITABLE;
 
 		// Otherwise, it can be converted via palettising and cropping
 		return CONVERTIBLE;
 	}
 
-	bool convertWritable(SImage& image, convert_options_t opt) {
+	bool convertWritable(SImage& image, convert_options_t opt)
+	{
 		// Firstly, make image paletted
 		image.convertPaletted(opt.pal_target, opt.pal_current);
 
@@ -332,21 +365,23 @@ public:
 		int width = 0;
 		int height = 0;
 
-		for (unsigned a = 1; a < n_valid_flat_sizes; a++) {
+		for (unsigned a = 1; a < n_valid_flat_sizes; a++)
+		{
 			// Ignore non-writable flat sizes
 			if (valid_flat_size[a][2] == 0)
 				continue;
 
 			// Check for exact match (no need to crop)
 			if (image.getWidth() == valid_flat_size[a][0] &&
-				image.getHeight() == valid_flat_size[a][1])
+			        image.getHeight() == valid_flat_size[a][1])
 				return true;
 
 			// If the flat will fit within this size, crop to the previous size
 			// (this works because flat sizes list is in size-order)
 			if (image.getWidth() <= (int)valid_flat_size[a][0] &&
-				image.getHeight() <= (int)valid_flat_size[a][1] &&
-				width > 0 && height > 0) {
+			        image.getHeight() <= (int)valid_flat_size[a][1] &&
+			        width > 0 && height > 0)
+			{
 				image.crop(0, 0, width, height);
 				return true;
 			}
@@ -360,7 +395,8 @@ public:
 	}
 };
 
-SIFormat::SIFormat(string id) {
+SIFormat::SIFormat(string id)
+{
 	// Init variables
 	this->id = id;
 	this->name = "Unknown";
@@ -371,12 +407,14 @@ SIFormat::SIFormat(string id) {
 	simage_formats.push_back(this);
 }
 
-SIFormat::~SIFormat() {
+SIFormat::~SIFormat()
+{
 }
 
 
 
-void SIFormat::initFormats() {
+void SIFormat::initFormats()
+{
 	// Non-detectable formats
 	sif_unknown = new SIFUnknown();
 	sif_raw = new SIFRaw();
@@ -437,7 +475,8 @@ void SIFormat::initFormats() {
 	new SIFWolfSprite();
 }
 
-SIFormat* SIFormat::getFormat(string id) {
+SIFormat* SIFormat::getFormat(string id)
+{
 	// Check for special types
 	if (id == "raw")
 		return sif_raw;
@@ -447,7 +486,8 @@ SIFormat* SIFormat::getFormat(string id) {
 		return sif_general;
 
 	// Search for format matching id
-	for (unsigned a = 0; a < simage_formats.size(); a++) {
+	for (unsigned a = 0; a < simage_formats.size(); a++)
+	{
 		if (simage_formats[a]->id == id)
 			return simage_formats[a];
 	}
@@ -456,10 +496,12 @@ SIFormat* SIFormat::getFormat(string id) {
 	return sif_unknown;
 }
 
-SIFormat* SIFormat::determineFormat(MemChunk& mc) {
+SIFormat* SIFormat::determineFormat(MemChunk& mc)
+{
 	// Go through all registered formats
 	SIFormat* format = sif_unknown;
-	for (unsigned a = 0; a < simage_formats.size(); a++) {
+	for (unsigned a = 0; a < simage_formats.size(); a++)
+	{
 		// Don't bother checking if the format is less reliable
 		if (simage_formats[a]->reliability < format->reliability)
 			continue;
@@ -477,23 +519,28 @@ SIFormat* SIFormat::determineFormat(MemChunk& mc) {
 	return format;
 }
 
-SIFormat* SIFormat::unknownFormat() {
+SIFormat* SIFormat::unknownFormat()
+{
 	return sif_unknown;
 }
 
-SIFormat* SIFormat::rawFormat() {
+SIFormat* SIFormat::rawFormat()
+{
 	return sif_raw;
 }
 
-SIFormat* SIFormat::flatFormat() {
+SIFormat* SIFormat::flatFormat()
+{
 	return sif_flat;
 }
 
-SIFormat* SIFormat::generalFormat() {
+SIFormat* SIFormat::generalFormat()
+{
 	return sif_general;
 }
 
-void SIFormat::getAllFormats(vector<SIFormat*>& list) {
+void SIFormat::getAllFormats(vector<SIFormat*>& list)
+{
 	// Clear list
 	list.clear();
 

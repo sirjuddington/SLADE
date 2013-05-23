@@ -53,26 +53,30 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* ZipArchive::ZipArchive
  * ZipArchive class constructor
  *******************************************************************/
-ZipArchive::ZipArchive() : Archive(ARCHIVE_ZIP) {
+ZipArchive::ZipArchive() : Archive(ARCHIVE_ZIP)
+{
 }
 
 /* ZipArchive::~ZipArchive
  * ZipArchive class destructor
  *******************************************************************/
-ZipArchive::~ZipArchive() {
+ZipArchive::~ZipArchive()
+{
 }
 
 /* ZipArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string ZipArchive::getFileExtensionString() {
+string ZipArchive::getFileExtensionString()
+{
 	return "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)|*.zip;*.pk3;*.pke;*.jdf|Zip File (*.zip)|*.zip|Pk3 File (*.pk3)|*.pk3|Eternity Pke File (*.pke)|*.pke|JDF File (*.jdf)|*.jdf";
 }
 
 /* ZipArchive::getFormat
  * Returns the EntryDataFormat id of this archive type
  *******************************************************************/
-string ZipArchive::getFormat() {
+string ZipArchive::getFormat()
+{
 	return "archive_zip";
 }
 
@@ -80,17 +84,20 @@ string ZipArchive::getFormat() {
  * Reads zip data from a file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ZipArchive::open(string filename) {
+bool ZipArchive::open(string filename)
+{
 	// Open the file
 	wxFFileInputStream in(filename);
-	if (!in.IsOk()) {
+	if (!in.IsOk())
+	{
 		Global::error = "Unable to open file";
 		return false;
 	}
 
 	// Create zip stream
 	wxZipInputStream zip(in);
-	if (!zip.IsOk()) {
+	if (!zip.IsOk())
+	{
 		Global::error = "Invalid zip file";
 		return false;
 	}
@@ -102,20 +109,23 @@ bool ZipArchive::open(string filename) {
 	int entry_index = 0;
 	wxZipEntry* entry = zip.GetNextEntry();
 	theSplashWindow->setProgressMessage("Reading zip data");
-	while (entry) {
+	while (entry)
+	{
 		theSplashWindow->setProgress(-1.0f);
-		if (entry->GetMethod() != wxZIP_METHOD_DEFLATE && entry->GetMethod() != wxZIP_METHOD_STORE) {
+		if (entry->GetMethod() != wxZIP_METHOD_DEFLATE && entry->GetMethod() != wxZIP_METHOD_STORE)
+		{
 			Global::error = "Unsupported zip compression method";
 			setMuted(false);
 			return false;
 		}
 
-		if (!entry->IsDir()) {
+		if (!entry->IsDir())
+		{
 			// Get the entry name as a wxFileName (so we can break it up)
 			wxFileName fn(entry->GetName(wxPATH_UNIX), wxPATH_UNIX);
 
 			// Create entry
-			ArchiveEntry *new_entry = new ArchiveEntry(fn.GetFullName(), entry->GetSize());
+			ArchiveEntry* new_entry = new ArchiveEntry(fn.GetFullName(), entry->GetSize());
 
 			// Setup entry info
 			new_entry->setLoaded(false);
@@ -144,13 +154,17 @@ bool ZipArchive::open(string filename) {
 
 				// Clean up
 				delete[] data;
-			} else {
+			}
+			else
+			{
 				Global::error = S_FMT("Entry too large: %s is %u mb",
-					CHR(entry->GetName(wxPATH_UNIX)), entry->GetSize() / (1<<20));
+				                      CHR(entry->GetName(wxPATH_UNIX)), entry->GetSize() / (1<<20));
 				setMuted(false);
 				return false;
 			}
-		} else {
+		}
+		else
+		{
 			// Zip entry is a directory, add it to the directory tree
 			wxFileName fn(entry->GetName(wxPATH_UNIX), wxPATH_UNIX);
 			createDir(fn.GetPath(true, wxPATH_UNIX));
@@ -187,7 +201,8 @@ bool ZipArchive::open(string filename) {
  * Reads zip format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ZipArchive::open(MemChunk& mc) {
+bool ZipArchive::open(MemChunk& mc)
+{
 	// Write the MemChunk to a temp file
 	string tempfile = appPath("slade-temp-open.zip", DIR_TEMP);
 	mc.exportFile(tempfile);
@@ -205,12 +220,14 @@ bool ZipArchive::open(MemChunk& mc) {
  * Writes the zip archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ZipArchive::write(MemChunk& mc, bool update) {
+bool ZipArchive::write(MemChunk& mc, bool update)
+{
 	bool success = false;
 
 	// Write to a temporary file
 	string tempfile = appPath("slade-temp-write.zip", DIR_TEMP);
-	if (write(tempfile, true)) {
+	if (write(tempfile, true))
+	{
 		// Load file into MemChunk
 		success = mc.importFile(tempfile);
 	}
@@ -225,11 +242,13 @@ bool ZipArchive::write(MemChunk& mc, bool update) {
  * Writes the zip archive to a file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ZipArchive::write(string filename, bool update) {
+bool ZipArchive::write(string filename, bool update)
+{
 	// If we're overwriting the current file, rename it so that it can still be read while writing the 'new' file
 	string current = this->filename;
 	bool temp = false;
-	if (S_CMPNOCASE(filename, this->filename)) {
+	if (S_CMPNOCASE(filename, this->filename))
+	{
 		current = appPath("tempzip.zip", DIR_TEMP);
 		wxCopyFile(this->filename, current);
 		temp = true;
@@ -237,14 +256,16 @@ bool ZipArchive::write(string filename, bool update) {
 
 	// Open the file
 	wxFFileOutputStream out(filename);
-	if (!out.IsOk()) {
+	if (!out.IsOk())
+	{
 		Global::error = "Unable to open file for saving. Make sure it isn't in use by another program.";
 		return false;
 	}
 
 	// Open as zip for writing
 	wxZipOutputStream zip(out, 9);
-	if (!zip.IsOk()) {
+	if (!zip.IsOk())
+	{
 		Global::error = "Unable to create zip for saving";
 		return false;
 	}
@@ -265,8 +286,10 @@ bool ZipArchive::write(string filename, bool update) {
 	getEntryTreeAsList(entries);
 
 	// Go through all entries
-	for (size_t a = 0; a < entries.size(); a++) {
-		if (entries[a]->getType() == EntryType::folderType()) {
+	for (size_t a = 0; a < entries.size(); a++)
+	{
+		if (entries[a]->getType() == EntryType::folderType())
+		{
 			// If the current entry is a folder, just write a directory entry and continue
 			zip.PutNextDirEntry(entries[a]->getPath(true));
 			if (update) entries[a]->setState(0);
@@ -278,13 +301,16 @@ bool ZipArchive::write(string filename, bool update) {
 		if (entries[a]->exProps().propertyExists("ZipIndex"))
 			index = entries[a]->exProp("ZipIndex");
 
-		if (!inzip.IsOk() || entries[a]->getState() > 0 || index < 0 || index >= inzip.GetTotalEntries()) {
+		if (!inzip.IsOk() || entries[a]->getState() > 0 || index < 0 || index >= inzip.GetTotalEntries())
+		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
 			wxZipEntry* zipentry = new wxZipEntry(entries[a]->getPath() + entries[a]->getName());
 			zip.PutNextEntry(zipentry);
 			zip.Write(entries[a]->getData(), entries[a]->getSize());
-		} else {
+		}
+		else
+		{
 			// If the entry is unmodified and exists in the old zip, just copy it over
 			c_entries[index]->SetName(entries[a]->getPath() + entries[a]->getName());
 			zip.CopyEntry(c_entries[index], inzip);
@@ -292,7 +318,8 @@ bool ZipArchive::write(string filename, bool update) {
 		}
 
 		// Update entry info
-		if (update) {
+		if (update)
+		{
 			entries[a]->setState(0);
 			entries[a]->exProp("ZipIndex") = (int)a;
 		}
@@ -310,16 +337,19 @@ bool ZipArchive::write(string filename, bool update) {
  * Returns false if the entry is invalid, doesn't belong to the
  * archive or doesn't exist in the saved copy, true otherwise.
  *******************************************************************/
-bool ZipArchive::loadEntryData(ArchiveEntry* entry) {
+bool ZipArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check that the entry belongs to this archive
-	if (entry->getParent() != this) {
+	if (entry->getParent() != this)
+	{
 		wxLogMessage("ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->getName().c_str());
 		return false;
 	}
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -328,21 +358,24 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry) {
 	int zip_index = 0;
 	if (entry->exProps().propertyExists("ZipIndex"))
 		zip_index = entry->exProp("ZipIndex");
-	else {
+	else
+	{
 		wxLogMessage("ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->getName().c_str());
 		return false;
 	}
 
 	// Open the file
 	wxFFileInputStream in(filename);
-	if (!in.IsOk()) {
+	if (!in.IsOk())
+	{
 		wxLogMessage("ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename.c_str());
 		return false;
 	}
 
 	// Create zip stream
 	wxZipInputStream zip(in);
-	if (!zip.IsOk()) {
+	if (!zip.IsOk())
+	{
 		wxLogMessage("ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename.c_str());
 		return false;
 	}
@@ -352,13 +385,15 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry) {
 
 	// Skip to correct entry in zip
 	wxZipEntry* zentry = zip.GetNextEntry();
-	for (long a = 0; a < zip_index; a++) {
+	for (long a = 0; a < zip_index; a++)
+	{
 		delete zentry;
 		zentry = zip.GetNextEntry();
 	}
 
 	// Abort if entry doesn't exist in zip (some kind of error)
-	if (!zentry) {
+	if (!zentry)
+	{
 		wxLogMessage("Error: ZipEntry for entry \"%s\" does not exist in zip", entry->getName().c_str());
 		return false;
 	}
@@ -387,7 +422,8 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry) {
  * In a zip archive, a namespace is simply a first-level directory,
  * ie <root>/<namespace>
  *******************************************************************/
-ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	// Check namespace
 	if (add_namespace.IsEmpty() || add_namespace == "global")
 		return Archive::addEntry(entry, 0xFFFFFFFF, NULL, copy);
@@ -404,7 +440,8 @@ ArchiveEntry* ZipArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * [entry] is actually a valid map (ie. a wad archive in the maps
  * folder)
  *******************************************************************/
-Archive::mapdesc_t ZipArchive::getMapInfo(ArchiveEntry* entry) {
+Archive::mapdesc_t ZipArchive::getMapInfo(ArchiveEntry* entry)
+{
 	mapdesc_t map;
 
 	// Check entry
@@ -432,7 +469,8 @@ Archive::mapdesc_t ZipArchive::getMapInfo(ArchiveEntry* entry) {
  * Detects all the maps in the archive and returns a vector of
  * information about them.
  *******************************************************************/
-vector<Archive::mapdesc_t> ZipArchive::detectMaps() {
+vector<Archive::mapdesc_t> ZipArchive::detectMaps()
+{
 	vector<mapdesc_t> ret;
 
 	// Get the maps directory
@@ -441,7 +479,8 @@ vector<Archive::mapdesc_t> ZipArchive::detectMaps() {
 		return ret;
 
 	// Go through entries in map dir
-	for (unsigned a = 0; a < mapdir->numEntries(); a++) {
+	for (unsigned a = 0; a < mapdir->numEntries(); a++)
+	{
 		ArchiveEntry* entry = mapdir->getEntry(a);
 
 		// Maps can only be wad archives
@@ -473,7 +512,8 @@ vector<Archive::mapdesc_t> ZipArchive::detectMaps() {
 /* ZipArchive::detectNamespace
  * Returns the namespace that [entry] is within
  *******************************************************************/
-string ZipArchive::detectNamespace(ArchiveEntry* entry) {
+string ZipArchive::detectNamespace(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return "global";
@@ -498,17 +538,20 @@ string ZipArchive::detectNamespace(ArchiveEntry* entry) {
  * Returns the first entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* ZipArchive::findFirst(search_options_t& options) {
+ArchiveEntry* ZipArchive::findFirst(search_options_t& options)
+{
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
 	options.match_name = options.match_name.Lower();
 
 	// Check for search directory (overrides namespace)
-	if (options.dir) {
+	if (options.dir)
+	{
 		dir = options.dir;
 	}
 	// Check for namespace
-	else if (!options.match_namespace.IsEmpty()) {
+	else if (!options.match_namespace.IsEmpty())
+	{
 		dir = getDir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
@@ -529,17 +572,20 @@ ArchiveEntry* ZipArchive::findFirst(search_options_t& options) {
  * Returns the last entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* ZipArchive::findLast(search_options_t& options) {
+ArchiveEntry* ZipArchive::findLast(search_options_t& options)
+{
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
 	options.match_name = options.match_name.Lower();
 
 	// Check for search directory (overrides namespace)
-	if (options.dir) {
+	if (options.dir)
+	{
 		dir = options.dir;
 	}
 	// Check for namespace
-	else if (!options.match_namespace.IsEmpty()) {
+	else if (!options.match_namespace.IsEmpty())
+	{
 		dir = getDir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
@@ -559,18 +605,21 @@ ArchiveEntry* ZipArchive::findLast(search_options_t& options) {
 /* ZipArchive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> ZipArchive::findAll(search_options_t& options) {
+vector<ArchiveEntry*> ZipArchive::findAll(search_options_t& options)
+{
 	// Init search variables
 	ArchiveTreeNode* dir = getRoot();
 	options.match_name = options.match_name.Lower();
 	vector<ArchiveEntry*> ret;
 
 	// Check for search directory (overrides namespace)
-	if (options.dir) {
+	if (options.dir)
+	{
 		dir = options.dir;
 	}
 	// Check for namespace
-	else if (!options.match_namespace.IsEmpty()) {
+	else if (!options.match_namespace.IsEmpty())
+	{
 		dir = getDir(options.match_namespace);
 
 		// If the requested namespace doesn't exist, return nothing
@@ -589,7 +638,8 @@ vector<ArchiveEntry*> ZipArchive::findAll(search_options_t& options) {
 
 
 // Struct representing a zip file header
-struct zip_file_header_t {
+struct zip_file_header_t
+{
 	uint32_t	sig;
 	uint16_t	version;
 	uint16_t	flag;
@@ -606,7 +656,8 @@ struct zip_file_header_t {
 /* ZipArchive::isZipArchive
  * Checks if the given data is a valid zip archive
  *******************************************************************/
-bool ZipArchive::isZipArchive(MemChunk& mc) {
+bool ZipArchive::isZipArchive(MemChunk& mc)
+{
 	// Check size
 	if (mc.getSize() < sizeof(zip_file_header_t))
 		return false;
@@ -627,7 +678,8 @@ bool ZipArchive::isZipArchive(MemChunk& mc) {
 /* ZipArchive::isZipArchive
  * Checks if the file at [filename] is a valid zip archive
  *******************************************************************/
-bool ZipArchive::isZipArchive(string filename) {
+bool ZipArchive::isZipArchive(string filename)
+{
 	// Open the file for reading
 	wxFile file(filename);
 

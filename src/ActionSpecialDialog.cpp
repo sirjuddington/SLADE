@@ -5,7 +5,8 @@
 #include "GameConfiguration.h"
 #include "GenLineSpecialPanel.h"
 
-ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeCtrl(parent, -1) {
+ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeCtrl(parent, -1)
+{
 	parent_dialog = NULL;
 
 	// Create root item
@@ -17,9 +18,10 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	// Populate tree
 	vector<as_t> specials = theGameConfiguration->allActionSpecials();
 	std::sort(specials.begin(), specials.end());
-	for (unsigned a = 0; a < specials.size(); a++) {
+	for (unsigned a = 0; a < specials.size(); a++)
+	{
 		AppendItem(getGroup(specials[a].special->getGroup()),
-					S_FMT("%d: %s", specials[a].number, CHR(specials[a].special->getName())), -1);
+		           S_FMT("%d: %s", specials[a].number, CHR(specials[a].special->getName())), -1);
 	}
 
 	// Bind events
@@ -29,10 +31,12 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	Expand(root);
 }
 
-ActionSpecialTreeView::~ActionSpecialTreeView() {
+ActionSpecialTreeView::~ActionSpecialTreeView()
+{
 }
 
-int ActionSpecialTreeView::specialNumber(wxDataViewItem item) {
+int ActionSpecialTreeView::specialNumber(wxDataViewItem item)
+{
 	string num = GetItemText(item).BeforeFirst(':');
 	long s;
 	num.ToLong(&s);
@@ -40,15 +44,19 @@ int ActionSpecialTreeView::specialNumber(wxDataViewItem item) {
 	return s;
 }
 
-void ActionSpecialTreeView::showSpecial(int special) {
+void ActionSpecialTreeView::showSpecial(int special)
+{
 	// Go through item groups
-	for (unsigned a = 0; a < groups.size(); a++) {
+	for (unsigned a = 0; a < groups.size(); a++)
+	{
 		// Go through group items
-		for (int b = 0; b < GetChildCount(groups[a].item); b++) {
+		for (int b = 0; b < GetChildCount(groups[a].item); b++)
+		{
 			wxDataViewItem item = GetNthChild(groups[a].item, b);
 
 			// Select+show if match
-			if (specialNumber(item) == special) {
+			if (specialNumber(item) == special)
+			{
 				EnsureVisible(item);
 				Select(item);
 				SetFocus();
@@ -58,7 +66,8 @@ void ActionSpecialTreeView::showSpecial(int special) {
 	}
 }
 
-int ActionSpecialTreeView::selectedSpecial() {
+int ActionSpecialTreeView::selectedSpecial()
+{
 	wxDataViewItem item = GetSelection();
 	if (item.IsOk())
 		return specialNumber(item);
@@ -66,9 +75,11 @@ int ActionSpecialTreeView::selectedSpecial() {
 		return -1;
 }
 
-wxDataViewItem ActionSpecialTreeView::getGroup(string group) {
+wxDataViewItem ActionSpecialTreeView::getGroup(string group)
+{
 	// Check if group was already made
-	for (unsigned a = 0; a < groups.size(); a++) {
+	for (unsigned a = 0; a < groups.size(); a++)
+	{
 		if (group == groups[a].name)
 			return groups[a].item;
 	}
@@ -79,20 +90,24 @@ wxDataViewItem ActionSpecialTreeView::getGroup(string group) {
 	// Create group needed
 	wxDataViewItem current = root;
 	string fullpath = "";
-	for (unsigned p = 0; p < path.size(); p++) {
+	for (unsigned p = 0; p < path.size(); p++)
+	{
 		if (p > 0) fullpath += "/";
 		fullpath += path[p];
 
 		bool found = false;
-		for (unsigned a = 0; a < groups.size(); a++) {
-			if (groups[a].name == fullpath) {
+		for (unsigned a = 0; a < groups.size(); a++)
+		{
+			if (groups[a].name == fullpath)
+			{
 				current = groups[a].item;
 				found = true;
 				break;
 			}
 		}
 
-		if (!found) {
+		if (!found)
+		{
 			current = AppendContainer(current, path[p], -1, 1);
 			groups.push_back(astv_group_t(current, fullpath));
 		}
@@ -102,11 +117,13 @@ wxDataViewItem ActionSpecialTreeView::getGroup(string group) {
 }
 
 
-void ActionSpecialTreeView::onItemEdit(wxDataViewEvent& e) {
+void ActionSpecialTreeView::onItemEdit(wxDataViewEvent& e)
+{
 	e.Veto();
 }
 
-void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e) {
+void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
+{
 	if (parent_dialog)
 		parent_dialog->EndModal(wxID_OK);
 }
@@ -114,13 +131,15 @@ void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e) {
 
 
 ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent)
-: wxDialog(parent, -1, "Select Action Special", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+	: wxDialog(parent, -1, "Select Action Special", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
 	// Setup layout
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Boom (tabbed w/generalised tab)
-	if (theGameConfiguration->isBoom()) {
+	if (theGameConfiguration->isBoom())
+	{
 		// Notebook (tabs)
 		nb_tabs = new wxNotebook(this, -1);
 		sizer->Add(nb_tabs, 1, wxEXPAND|wxALL, 4);
@@ -133,9 +152,10 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent)
 		panel_gen_specials = new GenLineSpecialPanel(nb_tabs);
 		nb_tabs->AddPage(panel_gen_specials, "Generalised Special");
 	}
-	
+
 	// Non-Boom (no generalised tab)
-	else {
+	else
+	{
 		tree_specials = new ActionSpecialTreeView(this);
 		sizer->Add(tree_specials, 1, wxEXPAND|wxALL, 4);
 	}
@@ -148,13 +168,17 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent)
 	CenterOnParent();
 }
 
-ActionSpecialDialog::~ActionSpecialDialog() {
+ActionSpecialDialog::~ActionSpecialDialog()
+{
 }
 
-void ActionSpecialDialog::setSpecial(int special) {
+void ActionSpecialDialog::setSpecial(int special)
+{
 	// Check for boom generalised special
-	if (theGameConfiguration->isBoom()) {
-		if (panel_gen_specials->loadSpecial(special)) {
+	if (theGameConfiguration->isBoom())
+	{
+		if (panel_gen_specials->loadSpecial(special))
+		{
 			nb_tabs->SetSelection(1);
 			panel_gen_specials->SetFocus();
 			return;
@@ -167,8 +191,10 @@ void ActionSpecialDialog::setSpecial(int special) {
 	tree_specials->SetFocusFromKbd();
 }
 
-int ActionSpecialDialog::selectedSpecial() {
-	if (theGameConfiguration->isBoom()) {
+int ActionSpecialDialog::selectedSpecial()
+{
+	if (theGameConfiguration->isBoom())
+	{
 		if (nb_tabs->GetSelection() == 0)
 			return tree_specials->selectedSpecial();
 		else

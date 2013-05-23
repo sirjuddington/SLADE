@@ -10,7 +10,8 @@ class MapSide;
 class MapSector;
 
 // Line texture ids
-enum {
+enum
+{
 	TEX_FRONT_MIDDLE	= 0x01,
 	TEX_FRONT_UPPER		= 0x02,
 	TEX_FRONT_LOWER		= 0x04,
@@ -19,7 +20,8 @@ enum {
 	TEX_BACK_LOWER		= 0x20,
 };
 
-struct doomline_t {
+struct doomline_t
+{
 	uint16_t vertex1;
 	uint16_t vertex2;
 	uint16_t flags;
@@ -29,7 +31,8 @@ struct doomline_t {
 	uint16_t side2;
 };
 
-struct hexenline_t {
+struct hexenline_t
+{
 	uint16_t	vertex1;
 	uint16_t	vertex2;
 	uint16_t	flags;
@@ -39,7 +42,8 @@ struct hexenline_t {
 	uint16_t	side2;
 };
 
-struct doom64line_t {
+struct doom64line_t
+{
 	uint16_t vertex1;
 	uint16_t vertex2;
 	uint32_t flags;
@@ -49,8 +53,9 @@ struct doom64line_t {
 	uint16_t side2;
 };
 
-class MapLine : public MapObject {
-friend class SLADEMap;
+class MapLine : public MapObject
+{
+	friend class SLADEMap;
 private:
 	// Basic data
 	MapVertex*	vertex1;

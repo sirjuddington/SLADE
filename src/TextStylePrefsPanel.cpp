@@ -42,7 +42,8 @@
 /* TextStylePrefsPanel::TextStylePrefsPanel
  * TextStylePrefsPanel class constructor
  *******************************************************************/
-TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Init variables
 	ss_current.copySet(StyleSet::currentSet());
 	ts_current = ss_current.getStyle("default");
@@ -52,8 +53,8 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Text Editor Fonts and Colours");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Text Editor Fonts and Colours");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 
@@ -165,20 +166,23 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 /* TextStylePrefsPanel::~TextStylePrefsPanel
  * TextStylePrefsPanel class destructor
  *******************************************************************/
-TextStylePrefsPanel::~TextStylePrefsPanel() {
+TextStylePrefsPanel::~TextStylePrefsPanel()
+{
 }
 
 /* TextStylePrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void TextStylePrefsPanel::init() {
+void TextStylePrefsPanel::init()
+{
 }
 
 /* TextStylePrefsPanel::updateStyleControls
  * Updates style-related controls to reflect the currently selected
  * style in the list
  *******************************************************************/
-void TextStylePrefsPanel::updateStyleControls() {
+void TextStylePrefsPanel::updateStyleControls()
+{
 	if (!ts_current)
 		return;
 
@@ -209,7 +213,8 @@ void TextStylePrefsPanel::updateStyleControls() {
 
 	// Font face
 	string font_face = ts_current->getFontFace();
-	if (font_face.IsEmpty()) {
+	if (font_face.IsEmpty())
+	{
 		font_face = style_default->getFontFace();
 		cb_override_font_face->SetValue(false);
 	}
@@ -217,7 +222,8 @@ void TextStylePrefsPanel::updateStyleControls() {
 
 	// Font size
 	int font_size = ts_current->getFontSize();
-	if (font_size <= 0) {
+	if (font_size <= 0)
+	{
 		font_size = style_default->getFontSize();
 		cb_override_font_size->SetValue(false);
 	}
@@ -227,7 +233,8 @@ void TextStylePrefsPanel::updateStyleControls() {
 	bool bold = false;
 	if (ts_current->getBold() > 0)
 		bold = true;
-	else if (ts_current->getBold() < 0) {
+	else if (ts_current->getBold() < 0)
+	{
 		bold = !!style_default->getBold();
 		cb_override_font_bold->SetValue(false);
 	}
@@ -240,7 +247,8 @@ void TextStylePrefsPanel::updateStyleControls() {
 	bool italic = false;
 	if (ts_current->getItalic() > 0)
 		italic = true;
-	else if (ts_current->getItalic() < 0) {
+	else if (ts_current->getItalic() < 0)
+	{
 		italic = !!style_default->getItalic();
 		cb_override_font_italic->SetValue(false);
 	}
@@ -253,7 +261,8 @@ void TextStylePrefsPanel::updateStyleControls() {
 	bool underlined = false;
 	if (ts_current->getUnderlined() > 0)
 		underlined = true;
-	else if (ts_current->getUnderlined() < 0) {
+	else if (ts_current->getUnderlined() < 0)
+	{
 		underlined = !!style_default->getUnderlined();
 		cb_override_font_underlined->SetValue(false);
 	}
@@ -263,7 +272,8 @@ void TextStylePrefsPanel::updateStyleControls() {
 	rgba_t col_foreground;
 	if (ts_current->hasForeground())
 		col_foreground.set(ts_current->getForeground());
-	else {
+	else
+	{
 		col_foreground.set(style_default->getForeground());
 		cb_override_foreground->SetValue(false);
 	}
@@ -273,7 +283,8 @@ void TextStylePrefsPanel::updateStyleControls() {
 	rgba_t col_background;
 	if (ts_current->hasBackground())
 		col_background.set(ts_current->getBackground());
-	else {
+	else
+	{
 		col_background.set(style_default->getBackground());
 		cb_override_background->SetValue(false);
 	}
@@ -286,7 +297,8 @@ void TextStylePrefsPanel::updateStyleControls() {
 /* TextStylePrefsPanel::updateFontFace
  * Updates the font face property of the currently selected style
  *******************************************************************/
-void TextStylePrefsPanel::updateFontFace() {
+void TextStylePrefsPanel::updateFontFace()
+{
 	// Update current style
 	if (cb_override_font_face->GetValue())
 		ts_current->setFontFace(fp_font->GetSelectedFont().GetFaceName());
@@ -297,7 +309,8 @@ void TextStylePrefsPanel::updateFontFace() {
 /* TextStylePrefsPanel::updateFontSize
  * Updates the font size property of the currently selected style
  *******************************************************************/
-void TextStylePrefsPanel::updateFontSize() {
+void TextStylePrefsPanel::updateFontSize()
+{
 	if (cb_override_font_size->GetValue())
 		ts_current->setFontSize(fp_font->GetSelectedFont().GetPointSize());
 	else
@@ -307,8 +320,10 @@ void TextStylePrefsPanel::updateFontSize() {
 /* TextStylePrefsPanel::updateFontBold
  * Updates the font bold property of the currently selected style
  *******************************************************************/
-void TextStylePrefsPanel::updateFontBold() {
-	if (cb_override_font_bold->GetValue()) {
+void TextStylePrefsPanel::updateFontBold()
+{
+	if (cb_override_font_bold->GetValue())
+	{
 		wxFont font = fp_font->GetSelectedFont();
 		if (font.GetWeight() == wxFONTWEIGHT_BOLD)
 			ts_current->setBold(1);
@@ -322,8 +337,10 @@ void TextStylePrefsPanel::updateFontBold() {
 /* TextStylePrefsPanel::updateFontItalic
  * Updates the font italic property of the currently selected style
  *******************************************************************/
-void TextStylePrefsPanel::updateFontItalic() {
-	if (cb_override_font_italic->GetValue()) {
+void TextStylePrefsPanel::updateFontItalic()
+{
+	if (cb_override_font_italic->GetValue())
+	{
 		wxFont font = fp_font->GetSelectedFont();
 		if (font.GetStyle() == wxFONTSTYLE_ITALIC)
 			ts_current->setItalic(1);
@@ -338,8 +355,10 @@ void TextStylePrefsPanel::updateFontItalic() {
  * Updates the font underline property of the currently selected
  * style
  *******************************************************************/
-void TextStylePrefsPanel::updateFontUnderlined() {
-	if (cb_override_font_underlined->GetValue()) {
+void TextStylePrefsPanel::updateFontUnderlined()
+{
+	if (cb_override_font_underlined->GetValue())
+	{
 		wxFont font = fp_font->GetSelectedFont();
 		if (font.GetUnderlined())
 			ts_current->setUnderlined(1);
@@ -354,12 +373,15 @@ void TextStylePrefsPanel::updateFontUnderlined() {
  * Updates the foreground colour property of the currently selected
  * style
  *******************************************************************/
-void TextStylePrefsPanel::updateForeground() {
-	if (cb_override_foreground->GetValue()) {
+void TextStylePrefsPanel::updateForeground()
+{
+	if (cb_override_foreground->GetValue())
+	{
 		wxColour wxc = cp_foreground->GetColour();
 		ts_current->setForeground(rgba_t(wxc.Red(), wxc.Green(), wxc.Blue(), 255));
 	}
-	else {
+	else
+	{
 		ts_current->clearForeground();
 	}
 }
@@ -368,12 +390,15 @@ void TextStylePrefsPanel::updateForeground() {
  * Updates the background colour property of the currently selected
  * style
  *******************************************************************/
-void TextStylePrefsPanel::updateBackground() {
-	if (cb_override_background->GetValue()) {
+void TextStylePrefsPanel::updateBackground()
+{
+	if (cb_override_background->GetValue())
+	{
 		wxColour wxc = cp_background->GetColour();
 		ts_current->setBackground(rgba_t(wxc.Red(), wxc.Green(), wxc.Blue(), 255));
 	}
-	else {
+	else
+	{
 		ts_current->clearBackground();
 	}
 }
@@ -381,7 +406,8 @@ void TextStylePrefsPanel::updateBackground() {
 /* TextStylePrefsPanel::applyPreferences
  * Applies the current style properties to the current set
  *******************************************************************/
-void TextStylePrefsPanel::applyPreferences() {
+void TextStylePrefsPanel::applyPreferences()
+{
 	// Apply styleset to global current
 	StyleSet::currentSet()->copySet(&ss_current);
 }
@@ -394,9 +420,11 @@ void TextStylePrefsPanel::applyPreferences() {
 /* TextStylePrefsPanel::onStyleSelected
  * Called when a style is selected in the style list
  *******************************************************************/
-void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e) {
+void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e)
+{
 	// Set style from current set depending on selection
-	switch (list_styles->GetSelection()) {
+	switch (list_styles->GetSelection())
+	{
 	case 0:
 		ts_current = ss_current.getStyle("default");
 		break;
@@ -437,56 +465,64 @@ void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e) {
 /* TextStylePrefsPanel::onCBOverrideFontFace
  * Called when the 'Override' font face checkbox is changed
  *******************************************************************/
-void TextStylePrefsPanel::onCBOverrideFontFace(wxCommandEvent& e) {
+void TextStylePrefsPanel::onCBOverrideFontFace(wxCommandEvent& e)
+{
 	updateFontFace();
 }
 
 /* TextStylePrefsPanel::onCBOverrideFontSize
  * Called when the 'Override' font size checkbox is changed
  *******************************************************************/
-void TextStylePrefsPanel::onCBOverrideFontSize(wxCommandEvent& e) {
+void TextStylePrefsPanel::onCBOverrideFontSize(wxCommandEvent& e)
+{
 	updateFontSize();
 }
 
 /* TextStylePrefsPanel::onCBOverrideFontBold
  * Called when the 'Override' font bold checkbox is changed
  *******************************************************************/
-void TextStylePrefsPanel::onCBOverrideFontBold(wxCommandEvent& e) {
+void TextStylePrefsPanel::onCBOverrideFontBold(wxCommandEvent& e)
+{
 	updateFontBold();
 }
 
 /* TextStylePrefsPanel::onCBOverrideFontItalic
  * Called when the 'Override' font italic checkbox is changed
  *******************************************************************/
-void TextStylePrefsPanel::onCBOverrideFontItalic(wxCommandEvent& e) {
+void TextStylePrefsPanel::onCBOverrideFontItalic(wxCommandEvent& e)
+{
 	updateFontItalic();
 }
 
 /* TextStylePrefsPanel::onCBOverrideFontUnderlined
  * Called when the 'Override' font underlined checkbox is changed
  *******************************************************************/
-void TextStylePrefsPanel::onCBOverrideFontUnderlined(wxCommandEvent& e) {
+void TextStylePrefsPanel::onCBOverrideFontUnderlined(wxCommandEvent& e)
+{
 	updateFontUnderlined();
 }
 
 /* TextStylePrefsPanel::onCBOverrideForeground
  * Called when the 'Override' foreground colour checkbox is changed
  *******************************************************************/
-void TextStylePrefsPanel::onCBOverrideForeground(wxCommandEvent& e) {
+void TextStylePrefsPanel::onCBOverrideForeground(wxCommandEvent& e)
+{
 	updateForeground();
 }
 
 /* TextStylePrefsPanel::onCBOverrideBackground
  * Called when the 'Override' background colour checkbox is changed
  *******************************************************************/
-void TextStylePrefsPanel::onCBOverrideBackground(wxCommandEvent& e) {
+void TextStylePrefsPanel::onCBOverrideBackground(wxCommandEvent& e)
+{
 	updateBackground();
 }
 
 /* TextStylePrefsPanel::onFontChanged
  * Called when the font chooser font is changed
  *******************************************************************/
-void TextStylePrefsPanel::onFontChanged(wxFontPickerEvent& e) {
+void TextStylePrefsPanel::onFontChanged(wxFontPickerEvent& e)
+{
 	// Update relevant style properties
 	updateFontFace();
 	updateFontSize();
@@ -498,21 +534,24 @@ void TextStylePrefsPanel::onFontChanged(wxFontPickerEvent& e) {
 /* TextStylePrefsPanel::onForegroundChanged
  * Called when the foreground colour is changed
  *******************************************************************/
-void TextStylePrefsPanel::onForegroundChanged(wxColourPickerEvent& e) {
+void TextStylePrefsPanel::onForegroundChanged(wxColourPickerEvent& e)
+{
 	updateForeground();
 }
 
 /* TextStylePrefsPanel::onBackgroundChanged
  * Called when the background colour is changed
  *******************************************************************/
-void TextStylePrefsPanel::onBackgroundChanged(wxColourPickerEvent& e) {
+void TextStylePrefsPanel::onBackgroundChanged(wxColourPickerEvent& e)
+{
 	updateBackground();
 }
 
 /* TextStylePrefsPanel::onBtnSaveStyleSet
  * Called when the 'Save' style set button is clicked
  *******************************************************************/
-void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e) {
+void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
+{
 	// Get name for set
 	string name = wxGetTextFromUser("Enter Style Set name:", "Save Style Set");
 	if (name.IsEmpty())
@@ -533,11 +572,14 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e) {
 /* TextStylePrefsPanel::onStyleSetSelected
  * Called when the style set selection is changed
  *******************************************************************/
-void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e) {
-	if (init_done) {
+void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
+{
+	if (init_done)
+	{
 		// Get selected styleset
 		StyleSet* set = StyleSet::getSet(choice_styleset->GetSelection());
-		if (set) {
+		if (set)
+		{
 			ss_current.copySet(set);
 			updateStyleControls();
 		}

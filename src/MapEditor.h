@@ -5,11 +5,13 @@
 #include "SLADEMap.h"
 #include "GameConfiguration.h"
 
-struct selection_3d_t {
+struct selection_3d_t
+{
 	int		index;
 	uint8_t	type;
 
-	selection_3d_t(int index = -1, uint8_t type = 0) {
+	selection_3d_t(int index = -1, uint8_t type = 0)
+	{
 		this->index = index;
 		this->type = type;
 	}
@@ -17,7 +19,8 @@ struct selection_3d_t {
 
 class MapCanvas;
 class UndoManager;
-class MapEditor {
+class MapEditor
+{
 private:
 	SLADEMap			map;
 	MapCanvas*			canvas;
@@ -69,7 +72,8 @@ private:
 	fpoint2_t			draw_origin;
 
 	// Editor messages
-	struct editor_msg_t {
+	struct editor_msg_t
+	{
 		string	message;
 		long	act_time;
 	};
@@ -86,10 +90,11 @@ private:
 	// Helper for autoAlignX3d
 	void doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done);
 
-        void mergeLines(long, vector<fpoint2_t>&);
+	void mergeLines(long, vector<fpoint2_t>&);
 
 public:
-	enum {
+	enum
+	{
 		// Editor modes
 		MODE_VERTICES = 0,
 		MODE_LINES,

@@ -5,7 +5,8 @@
 #include "ListenerAnnouncer.h"
 
 
-class BaseResourceChooser : public wxChoice, public Listener {
+class BaseResourceChooser : public wxChoice, public Listener
+{
 private:
 	bool	load_change;
 

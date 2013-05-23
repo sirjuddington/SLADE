@@ -47,19 +47,22 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* GobArchive::GobArchive
  * GobArchive class constructor
  *******************************************************************/
-GobArchive::GobArchive() : TreelessArchive(ARCHIVE_GOB) {
+GobArchive::GobArchive() : TreelessArchive(ARCHIVE_GOB)
+{
 }
 
 /* GobArchive::~GobArchive
  * GobArchive class destructor
  *******************************************************************/
-GobArchive::~GobArchive() {
+GobArchive::~GobArchive()
+{
 }
 
 /* GobArchive::getEntryOffset
  * Returns the file byte offset for [entry]
  *******************************************************************/
-uint32_t GobArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t GobArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return 0;
@@ -70,7 +73,8 @@ uint32_t GobArchive::getEntryOffset(ArchiveEntry* entry) {
 /* GobArchive::setEntryOffset
  * Sets the file byte offset for [entry]
  *******************************************************************/
-void GobArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
+void GobArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return;
@@ -81,14 +85,16 @@ void GobArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
 /* GobArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string GobArchive::getFileExtensionString() {
+string GobArchive::getFileExtensionString()
+{
 	return "Gob Files (*.gob)|*.gob";
 }
 
 /* GobArchive::getFormat
  * Returns the EntryDataFormat id of this archive type
  *******************************************************************/
-string GobArchive::getFormat() {
+string GobArchive::getFormat()
+{
 	return "archive_gob";
 }
 
@@ -96,7 +102,8 @@ string GobArchive::getFormat() {
  * Reads gob format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GobArchive::open(MemChunk& mc) {
+bool GobArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -135,7 +142,8 @@ bool GobArchive::open(MemChunk& mc) {
 
 	// Read the directory
 	theSplashWindow->setProgressMessage("Reading gob archive data");
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -154,7 +162,8 @@ bool GobArchive::open(MemChunk& mc) {
 
 		// If the lump data goes past the end of the file,
 		// the gobfile is invalid
-		if (offset + size > mc.getSize()) {
+		if (offset + size > mc.getSize())
+		{
 			wxLogMessage("GobArchive::open: gob archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -174,7 +183,8 @@ bool GobArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -182,7 +192,8 @@ bool GobArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -213,11 +224,13 @@ bool GobArchive::open(MemChunk& mc) {
  * Writes the gob archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GobArchive::write(MemChunk& mc, bool update) {
+bool GobArchive::write(MemChunk& mc, bool update)
+{
 	// Determine directory offset & individual lump offsets
 	uint32_t dir_offset = 8;
 	ArchiveEntry* entry = NULL;
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		setEntryOffset(entry, dir_offset);
 		dir_offset += entry->getSize();
@@ -236,14 +249,16 @@ bool GobArchive::write(MemChunk& mc, bool update) {
 	mc.write(&dir_offset, 4);
 
 	// Write the lumps
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		mc.write(entry->getData(), entry->getSize());
 	}
 
 	// Write the directory
 	mc.write(&num_lumps, 4);
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		long offset = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
@@ -256,7 +271,8 @@ bool GobArchive::write(MemChunk& mc, bool update) {
 		mc.write(&size, 4);
 		mc.write(name, 13);
 
-		if (update) {
+		if (update)
+		{
 			entry->setState(0);
 			entry->exProp("Offset") = (int)offset;
 		}
@@ -269,14 +285,16 @@ bool GobArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the gobfile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GobArchive::loadEntryData(ArchiveEntry* entry) {
+bool GobArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -285,7 +303,8 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("GobArchive::loadEntryData: Failed to open gobfile %s", filename.c_str());
 		return false;
 	}
@@ -305,7 +324,8 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry) {
  * directory, update namespaces if needed and rename the entry if
  * necessary to be gob-friendly (12 characters max with extension)
  *******************************************************************/
-ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -334,7 +354,8 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 /* GobArchive::addEntry
  * Since gob files have no namespaces, just call the other function.
  *******************************************************************/
-ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
 }
 
@@ -343,7 +364,8 @@ ArchiveEntry* GobArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * and rename the entry if necessary to be gob-friendly (twelve
  * characters max)
  *******************************************************************/
-bool GobArchive::renameEntry(ArchiveEntry* entry, string name) {
+bool GobArchive::renameEntry(ArchiveEntry* entry, string name)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
@@ -359,7 +381,8 @@ bool GobArchive::renameEntry(ArchiveEntry* entry, string name) {
 /* GobArchive::isGobArchive
  * Checks if the given data is a valid Dark Forces gob archive
  *******************************************************************/
-bool GobArchive::isGobArchive(MemChunk& mc) {
+bool GobArchive::isGobArchive(MemChunk& mc)
+{
 	// Check size
 	if (mc.getSize() < 12)
 		return false;
@@ -396,7 +419,8 @@ bool GobArchive::isGobArchive(MemChunk& mc) {
 /* GobArchive::isGobArchive
  * Checks if the file at [filename] is a valid Dark Forces gob archive
  *******************************************************************/
-bool GobArchive::isGobArchive(string filename) {
+bool GobArchive::isGobArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 

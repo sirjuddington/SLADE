@@ -52,14 +52,15 @@ EXTERN_CVAR(Bool, gfx_hilight_mouseover)
 /* GraphicsPrefsPanel::GraphicsPrefsPanel
  * GraphicsPrefsPanel class constructor
  *******************************************************************/
-GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Graphics Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Graphics Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Colours for the chequered background texture
@@ -74,12 +75,13 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, 4);
 	string schemes[] = { "Default",
-							"Black", "Black (Checkered)",
-							"Cyan", "Cyan (Checkered)",
-							"Magenta", "Magenta (Checkered)",
-							"White", "White (Checkered)",
-							"Yellow", "Yellow (Checkered)",
-							"Vintage Id Software" };
+	                     "Black", "Black (Checkered)",
+	                     "Cyan", "Cyan (Checkered)",
+	                     "Magenta", "Magenta (Checkered)",
+	                     "White", "White (Checkered)",
+	                     "Yellow", "Yellow (Checkered)",
+	                     "Vintage Id Software"
+	                   };
 	choice_presets = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 12, schemes);
 	hbox->Add(new wxStaticText(this, -1, "Presets:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 	hbox->Add(choice_presets, 1, wxEXPAND);
@@ -113,13 +115,15 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 /* GraphicsPrefsPanel::~GraphicsPrefsPanel
  * GraphicsPrefsPanel class destructor
  *******************************************************************/
-GraphicsPrefsPanel::~GraphicsPrefsPanel() {
+GraphicsPrefsPanel::~GraphicsPrefsPanel()
+{
 }
 
 /* GraphicsPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void GraphicsPrefsPanel::init() {
+void GraphicsPrefsPanel::init()
+{
 	cp_colour1->SetColour(wxColour(bgtx_colour1));
 	cp_colour2->SetColour(wxColour(bgtx_colour2));
 	cb_show_border->SetValue(gfx_show_border);
@@ -131,7 +135,8 @@ void GraphicsPrefsPanel::init() {
 /* GraphicsPrefsPanel::applyPreferences
  * Applies preferences from the panel controls
  *******************************************************************/
-void GraphicsPrefsPanel::applyPreferences() {
+void GraphicsPrefsPanel::applyPreferences()
+{
 	wxColour wxc = cp_colour1->GetColour();
 	bgtx_colour1 = wxc.GetAsString();
 	wxc = cp_colour2->GetColour();
@@ -147,10 +152,12 @@ void GraphicsPrefsPanel::applyPreferences() {
 /* GraphicsPrefsPanel::onChoiceSchemeSelected
  * Called when the 'preset' dropdown choice is changed
  *******************************************************************/
-void GraphicsPrefsPanel::onChoicePresetSelected(wxCommandEvent& e) {
+void GraphicsPrefsPanel::onChoicePresetSelected(wxCommandEvent& e)
+{
 	int preset = choice_presets->GetSelection();
 
-	switch (preset) {
+	switch (preset)
+	{
 	case 1:		// Black
 		cp_colour1->SetColour(wxColour(0, 0, 0));
 		cp_colour2->SetColour(wxColour(0, 0, 0));

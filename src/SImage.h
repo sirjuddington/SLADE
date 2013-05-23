@@ -5,13 +5,15 @@
 #include "Palette.h"
 #include "ListenerAnnouncer.h"
 
-enum SIType {
+enum SIType
+{
 	PALMASK,	// 2 bytes per pixel: palette index and alpha value
 	RGBA,		// 4 bytes per pixel: RGBA
 	ALPHAMAP,	// 1 byte per pixel: alpha
 };
 
-enum SIBlendType {
+enum SIBlendType
+{
 	NORMAL,				// Normal blend
 	ADD,				// Additive blend
 	SUBTRACT,			// Subtractive blend
@@ -20,7 +22,8 @@ enum SIBlendType {
 };
 
 // Simple struct to hold pixel drawing properties
-struct si_drawprops_t {
+struct si_drawprops_t
+{
 	SIBlendType	blend;		// The blending mode
 	float		alpha;
 	bool		src_alpha;	// Whether to respect source pixel alpha
@@ -31,8 +34,9 @@ struct si_drawprops_t {
 class Translation;
 class SIFormat;
 
-class SImage : public Announcer {
-friend class SIFormat;
+class SImage : public Announcer
+{
+	friend class SIFormat;
 private:
 	int			width;
 	int			height;
@@ -53,13 +57,15 @@ private:
 	void	clearData(bool clear_mask = true);
 
 public:
-	enum {
+	enum
+	{
 		// Alpha map generation sources
 		BRIGHTNESS = 0,
 		ALPHA,
 	};
 
-	struct info_t {
+	struct info_t
+	{
 		int		width;
 		int		height;
 		int		colformat;
@@ -70,7 +76,8 @@ public:
 		int		offset_y;
 		bool	has_palette;
 
-		info_t() {
+		info_t()
+		{
 			width = height = offset_x = offset_y = imgindex = 0;
 			colformat = RGBA;
 			numimages = 1;
@@ -126,53 +133,8 @@ public:
 	bool	loadWolfFont(const uint8_t* gfx_data, int size);
 	bool	loadJediFNT(const uint8_t* gfx_data, int size);
 	bool	loadJediFONT(const uint8_t* gfx_data, int size);
-
 	bool	loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t* gfx_data, int size);
 	bool	loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, int i_height);
-
-	/*
-	bool	loadImage(const uint8_t* data, int size);
-	bool	loadDoomGfx(const uint8_t* data, int size, uint8_t version = 0);
-	bool	loadDoomGfxA(const uint8_t* data, int size) {return loadDoomGfx(data, size, 2);}
-	bool	loadDoomGfxB(const uint8_t* data, int size) {return loadDoomGfx(data, size, 1);}
-	bool	loadDoomSnea(const uint8_t* data, int size);
-	bool	loadDoomFlat(const uint8_t* data, int size, bool columnmajor = false);
-	bool	loadDoomArah(const uint8_t* gfx_data, int size, int transindex = 255);
-	bool	loadQuake(const uint8_t* gfx_data, int size);
-	bool	loadQuakeSprite(const uint8_t* gfx_data, int size, int index);
-	bool	loadQuakeTex(const uint8_t* gfx_data, int size, int index);
-	bool	loadQuakeIIWal(const uint8_t* gfx_data, int size, int index);
-	bool	loadRottGfx(const uint8_t* gfx_data, int size, bool transparent);
-	bool	loadRottLbm(const uint8_t* gfx_data, int size);
-	bool	loadRottRaw(const uint8_t* gfx_data, int size);
-	bool	loadRottPic(const uint8_t* gfx_data, int size);
-	bool	loadWolfPic(const uint8_t* gfx_data, int size);
-	bool	loadWolfSprite(const uint8_t* gfx_data, int size);
-	bool	loadPlanar(const uint8_t* gfx_data, int size);
-	bool	load4bitChunk(const uint8_t* gfx_data, int size);
-	bool	loadImgz(const uint8_t* gfx_data, int size);
-	bool	loadSCSprite(const uint8_t* data, int size);
-	bool	loadSCWall(const uint8_t* data, int size);
-	bool	loadAnaMip(const uint8_t* data, int size);
-	bool	loadBuildTile(const uint8_t* gfx_data, int size, int index);
-	bool	loadHeretic2M8(const uint8_t* gfx_data, int size, int index);
-	bool	loadHeretic2M32(const uint8_t* gfx_data, int size, int index);
-	bool	loadHalfLifeTex(const uint8_t* gfx_data, int size, int index);
-	bool	loadJediBM(const uint8_t* gfx_data, int size, int index);
-	bool	JediFrame(const uint8_t* gfx_data, uint32_t hdroffs);
-	bool	loadJediFME(const uint8_t* gfx_data, int size);
-	bool	loadJediWAX(const uint8_t* gfx_data, int size, int index);
-	*/
-
-	// Image format writing
-	/*
-	bool	safeConvert(MemChunk& out, Palette8bit* pal = NULL);
-	bool	toPNG(MemChunk& out, Palette8bit* pal = NULL);
-	bool	toDoomGfx(MemChunk& out, uint8_t alpha_threshold = 0);
-	bool	toDoomFlat(MemChunk& out);
-	bool	toPlanar(MemChunk& out, Palette8bit* pal = NULL);
-	bool	to4bitChunk(MemChunk& out, Palette8bit* pal = NULL);
-	*/
 
 	// Conversion stuff
 	bool	convertRGBA(Palette8bit* pal = NULL);
@@ -190,7 +152,7 @@ public:
 	bool	mirror(bool vert);
 	bool	crop(long x1, long y1, long x2, long y2);
 	bool	resize(int nwidth, int nheight);
-	bool	setImageData(uint8_t *ndata, int nwidth, int nheight, SIType ntype);
+	bool	setImageData(uint8_t* ndata, int nwidth, int nheight, SIType ntype);
 	bool	applyTranslation(Translation* tr, Palette8bit* pal = NULL);
 	bool	applyTranslation(string tr, Palette8bit* pal = NULL);
 	bool	drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, Palette8bit* pal);

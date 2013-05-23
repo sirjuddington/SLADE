@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class LfdArchive : public TreelessArchive {
+class LfdArchive : public TreelessArchive
+{
 public:
 	LfdArchive();
 	~LfdArchive();

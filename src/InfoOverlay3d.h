@@ -5,7 +5,8 @@
 class SLADEMap;
 class GLTexture;
 class MapObject;
-class InfoOverlay3D {
+class InfoOverlay3D
+{
 private:
 	vector<string>	info;
 	vector<string>	info2;

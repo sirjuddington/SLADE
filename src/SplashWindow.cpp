@@ -56,7 +56,8 @@ int				SplashWindow::height = 204;
  * SplashWindow class constructor
  *******************************************************************/
 SplashWindow::SplashWindow()
-: wxMiniFrame(NULL, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxFRAME_FLOAT_ON_PARENT) {
+	: wxMiniFrame(NULL, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxFRAME_FLOAT_ON_PARENT)
+{
 	// Init
 	show_progress = false;
 	progress = 0.0f;
@@ -74,13 +75,15 @@ SplashWindow::SplashWindow()
 /* SplashWindow::~SplashWindow
  * SplashWindow class destructor
  *******************************************************************/
-SplashWindow::~SplashWindow() {
+SplashWindow::~SplashWindow()
+{
 }
 
 /* SplashWindow::setMessage
  * Changes the splash window message
  *******************************************************************/
-void SplashWindow::setMessage(string message) {
+void SplashWindow::setMessage(string message)
+{
 	this->message = message;
 	forceRedraw();
 }
@@ -88,7 +91,8 @@ void SplashWindow::setMessage(string message) {
 /* SplashWindow::setProgressMessage
  * Changes the progress bar message
  *******************************************************************/
-void SplashWindow::setProgressMessage(string message) {
+void SplashWindow::setProgressMessage(string message)
+{
 	message_progress = message;
 	forceRedraw();
 }
@@ -99,7 +103,8 @@ void SplashWindow::setProgressMessage(string message) {
  * call this very rapidly as it will only redraw the window once
  * every 20ms no matter how often it is called
  *******************************************************************/
-void SplashWindow::setProgress(float progress) {
+void SplashWindow::setProgress(float progress)
+{
 	this->progress = progress;
 
 	// Refresh if last redraw was > 20ms ago
@@ -110,11 +115,13 @@ void SplashWindow::setProgress(float progress) {
 /* SplashWindow::init
  * Sets up the splash window
  *******************************************************************/
-void SplashWindow::init() {
+void SplashWindow::init()
+{
 	// Load logo image
 	string tempfile = appPath("temp.png", DIR_TEMP);
 	ArchiveEntry* logo = theArchiveManager->programResourceArchive()->getEntry("logo.png");
-	if (logo) {
+	if (logo)
+	{
 		logo->exportFile(tempfile);
 		bm_logo.LoadFile(tempfile, wxBITMAP_TYPE_PNG);
 	}
@@ -127,10 +134,12 @@ void SplashWindow::init() {
  * Shows the splash window with [message]. If [progress] is true, a
  * progress bar will also be shown
  *******************************************************************/
-void SplashWindow::show(string message, bool progress) {
+void SplashWindow::show(string message, bool progress)
+{
 	// Setup progress bar
 	int rheight = height;
-	if (progress) {
+	if (progress)
+	{
 		show_progress = true;
 		setProgress(0.0f);
 		rheight += 10;
@@ -157,7 +166,8 @@ void SplashWindow::show(string message, bool progress) {
 /* SplashWindow::hide
  * Hides (destroys) the splash window
  *******************************************************************/
-void SplashWindow::hide() {
+void SplashWindow::hide()
+{
 	// Destroy instance
 	deleteInstance();
 }
@@ -165,7 +175,8 @@ void SplashWindow::hide() {
 /* SplashWindow::forceRedraw
  * Forces the splash window to redraw itself
  *******************************************************************/
-void SplashWindow::forceRedraw() {
+void SplashWindow::forceRedraw()
+{
 	Refresh();
 	Update();
 }
@@ -178,7 +189,8 @@ void SplashWindow::forceRedraw() {
 /* SplashWindow::onPaint
  * Handles drawing the splash window
  *******************************************************************/
-void SplashWindow::onPaint(wxPaintEvent& e) {
+void SplashWindow::onPaint(wxPaintEvent& e)
+{
 	// Create device context
 	wxAutoBufferedPaintDC dc(this);
 
@@ -212,7 +224,8 @@ void SplashWindow::onPaint(wxPaintEvent& e) {
 	dc.DrawText(message, x, y);
 
 	// Draw progress bar if necessary
-	if (show_progress) {
+	if (show_progress)
+	{
 		// Setup progress bar
 		wxRect rect_pbar(0, height-4, width, 14);
 
@@ -221,12 +234,14 @@ void SplashWindow::onPaint(wxPaintEvent& e) {
 		dc.DrawRectangle(rect_pbar);
 
 		// Draw meter
-		if (progress >= 0) {
+		if (progress >= 0)
+		{
 			rect_pbar.SetRight(progress * width);
 			dc.SetBrush(wxBrush(wxColour(100, 120, 255)));
 			dc.DrawRectangle(rect_pbar);
 		}
-		else {
+		else
+		{
 			// Negative progress means indefinite, show animation
 
 			// Determine gradient colours
@@ -266,12 +281,14 @@ void SplashWindow::onPaint(wxPaintEvent& e) {
  * Shows the splash screen with the given message, or hides it if
  * no message is given
  *******************************************************************/
-CONSOLE_COMMAND (splash, 0, false) {
+CONSOLE_COMMAND (splash, 0, false)
+{
 	if (args.size() == 0)
 		theSplashWindow->hide();
 	else if (args.size() == 1)
 		theSplashWindow->show(args[0]);
-	else {
+	else
+	{
 		theSplashWindow->show(args[0], true);
 		float prog = atof(CHR(args[1]));
 		theSplashWindow->setProgress(prog);

@@ -7,7 +7,8 @@
 #include <wx/clrpicker.h>
 #include <wx/fontpicker.h>
 
-class TextStylePrefsPanel : public PrefsPanelBase {
+class TextStylePrefsPanel : public PrefsPanelBase
+{
 private:
 	bool				init_done;
 	wxChoice*			choice_styleset;

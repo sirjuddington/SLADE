@@ -4,7 +4,8 @@
 
 class MapThing;
 class GLTexture;
-class ThingInfoOverlay {
+class ThingInfoOverlay
+{
 private:
 	vector<string>	info;
 	string			sprite;

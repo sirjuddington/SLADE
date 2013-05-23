@@ -19,8 +19,9 @@ struct doom64vertex_t
 	int32_t y;
 };
 
-class MapVertex : public MapObject {
-friend class SLADEMap;
+class MapVertex : public MapObject
+{
+	friend class SLADEMap;
 private:
 	// Basic data
 	double		x;

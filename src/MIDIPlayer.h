@@ -4,7 +4,8 @@
 
 #include <fluidsynth.h>
 
-class MIDIPlayer {
+class MIDIPlayer
+{
 private:
 	static MIDIPlayer*	instance;
 
@@ -21,7 +22,8 @@ public:
 	~MIDIPlayer();
 
 	// Singleton implementation
-	static MIDIPlayer*	getInstance() {
+	static MIDIPlayer*	getInstance()
+	{
 		if (!instance)
 			instance = new MIDIPlayer();
 
@@ -30,8 +32,11 @@ public:
 
 	bool	isInitialised() { return fs_initialised; }
 	bool	isSoundfontLoaded() { return fs_soundfont_id != FLUID_FAILED; }
-	void	resetPlayer() {
-		if (instance) {
+
+	void resetPlayer()
+	{
+		if (instance)
+		{
 			delete instance;
 			instance = new MIDIPlayer();
 		}

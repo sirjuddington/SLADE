@@ -69,12 +69,14 @@ CVAR(Bool, mw_maximized, true, CVAR_SAVE);
  *******************************************************************
  Handles drag'n'drop of files on to the SLADE window
 */
-class MainWindowDropTarget : public wxFileDropTarget {
+class MainWindowDropTarget : public wxFileDropTarget
+{
 public:
-	MainWindowDropTarget(){}
-	~MainWindowDropTarget(){}
+	MainWindowDropTarget() {}
+	~MainWindowDropTarget() {}
 
-	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) {
+	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames)
+	{
 		for (unsigned a = 0; a < filenames.size(); a++)
 			theArchiveManager->openArchive(filenames[a]);
 
@@ -91,7 +93,8 @@ public:
  * MainWindow class constructor
  *******************************************************************/
 MainWindow::MainWindow()
-: STopWindow("SLADE", mw_left, mw_top, mw_width, mw_height) {
+	: STopWindow("SLADE", mw_left, mw_top, mw_width, mw_height)
+{
 	lasttipindex = 0;
 	custom_menus_begin = 2;
 	if (mw_maximized) Maximize();
@@ -102,21 +105,24 @@ MainWindow::MainWindow()
 /* MainWindow::~MainWindow
  * MainWindow class destructor
  *******************************************************************/
-MainWindow::~MainWindow() {
+MainWindow::~MainWindow()
+{
 }
 
 /* MainWindow::loadLayout
  * Loads the previously saved layout file for the window
  *******************************************************************/
-void MainWindow::loadLayout() {
+void MainWindow::loadLayout()
+{
 	// Open layout file
 	Tokenizer tz;
 	if (!tz.openFile(appPath("mainwindow.layout", DIR_USER)))
 		return;
 
 	// Parse layout
-	wxAuiManager *m_mgr = wxAuiManager::GetManager(this);
-	while (true) {
+	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
+	while (true)
+	{
 		// Read component+layout pair
 		string component = tz.getToken();
 		string layout = tz.getToken();
@@ -134,12 +140,13 @@ void MainWindow::loadLayout() {
 /* MainWindow::saveLayout
  * Saves the current window layout to a file
  *******************************************************************/
-void MainWindow::saveLayout() {
+void MainWindow::saveLayout()
+{
 	// Open layout file
 	wxFile file(appPath("mainwindow.layout", DIR_USER), wxFile::write);
 
 	// Write component layout
-	wxAuiManager *m_mgr = wxAuiManager::GetManager(this);
+	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
 
 	// Console pane
 	file.Write("\"console\" ");
@@ -163,7 +170,8 @@ void MainWindow::saveLayout() {
 /* MainWindow::setupLayout
  * Sets up the wxWidgets window layout
  *******************************************************************/
-void MainWindow::setupLayout() {
+void MainWindow::setupLayout()
+{
 	// Create the wxAUI manager & related things
 	m_mgr = new wxAuiManager(this);
 	wxAuiPaneInfo p_inf;
@@ -188,7 +196,8 @@ void MainWindow::setupLayout() {
 	// Create Start Page (temporary)
 	html_startpage = new wxHtmlWindow(notebook_tabs, -1, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_NEVER, "startpage");
 	html_startpage->SetName("startpage");
-	if (show_start_page) {
+	if (show_start_page)
+	{
 		notebook_tabs->AddPage(html_startpage,"Start Page");
 		notebook_tabs->SetPageBitmap(0, getIcon("i_logo"));
 		createStartPage();
@@ -198,7 +207,7 @@ void MainWindow::setupLayout() {
 
 
 	// -- Console Panel --
-	ConsolePanel *panel_console = new ConsolePanel(this, -1);
+	ConsolePanel* panel_console = new ConsolePanel(this, -1);
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -241,7 +250,7 @@ void MainWindow::setupLayout() {
 
 
 	// -- Menu bar --
-	wxMenuBar *menu = new wxMenuBar();
+	wxMenuBar* menu = new wxMenuBar();
 
 	// File menu
 	wxMenu* fileNewMenu = new wxMenu("");
@@ -369,7 +378,8 @@ void MainWindow::setupLayout() {
  * Builds the HTML start page and loads it into the html viewer
  * (start page tab)
  *******************************************************************/
-void MainWindow::createStartPage() {
+void MainWindow::createStartPage()
+{
 	// Get relevant resource entries
 	Archive* res_archive = theArchiveManager->programResourceArchive();
 	if (!res_archive)
@@ -379,7 +389,8 @@ void MainWindow::createStartPage() {
 	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
 
 	// Can't do anything without html entry
-	if (!entry_html) {
+	if (!entry_html)
+	{
 		html_startpage->SetPage("<html><head><title>SLADE</title></head><body><center><h1>Something is wrong with slade.pk3 :(</h1><center></body></html>");
 		return;
 	}
@@ -389,17 +400,20 @@ void MainWindow::createStartPage() {
 
 	// Generate tip of the day string
 	string tip = "It seems tips.txt is missing from your slade.pk3";
-	if (entry_tips) {
+	if (entry_tips)
+	{
 		Tokenizer tz;
 		tz.openMem((const char*)entry_tips->getData(), entry_tips->getSize(), entry_tips->getName());
 		srand(wxGetLocalTime());
 		int numtips = tz.getInteger();
 		if (numtips < 2) // Needs at least two choices or it's kinda pointless.
 			tip = "Did you know? Something is wrong with the tips.txt file in your slade.pk3.";
-		else {
+		else
+		{
 			int tipindex = 0;
 			// Don't show same tip twice in a row
-			do { tipindex = 1 + (rand() % numtips); } while (tipindex == lasttipindex);
+			do { tipindex = 1 + (rand() % numtips); }
+			while (tipindex == lasttipindex);
 			lasttipindex = tipindex;
 			for (int a = 0; a < tipindex; a++)
 				tip = tz.getToken();
@@ -408,7 +422,8 @@ void MainWindow::createStartPage() {
 
 	// Generate recent files string
 	string recent;
-	for (unsigned a = 0; a < 4; a++) {
+	for (unsigned a = 0; a < 4; a++)
+	{
 		if (a >= theArchiveManager->numRecentFiles())
 			break;	// No more recent files
 
@@ -442,7 +457,8 @@ void MainWindow::createStartPage() {
  * Attempts to exit the program. Only fails if an unsaved archive is
  * found and the user cancels the exit
  *******************************************************************/
-bool MainWindow::exitProgram() {
+bool MainWindow::exitProgram()
+{
 	// Close all archives
 	if (!panel_archivemanager->closeAll())
 		return false;
@@ -465,7 +481,8 @@ bool MainWindow::exitProgram() {
  * Returns the currently open archive (ie the current tab's archive,
  * if any)
  *******************************************************************/
-Archive* MainWindow::getCurrentArchive() {
+Archive* MainWindow::getCurrentArchive()
+{
 	return panel_archivemanager->currentArchive();
 }
 
@@ -473,7 +490,8 @@ Archive* MainWindow::getCurrentArchive() {
  * Returns the currently open entry (current tab -> current entry
  * panel)
  *******************************************************************/
-ArchiveEntry* MainWindow::getCurrentEntry() {
+ArchiveEntry* MainWindow::getCurrentEntry()
+{
 	return panel_archivemanager->currentEntry();
 }
 
@@ -481,36 +499,42 @@ ArchiveEntry* MainWindow::getCurrentEntry() {
  * Returns a list of all currently selected entries, in the current
  * archive panel
  *******************************************************************/
-vector<ArchiveEntry*> MainWindow::getCurrentEntrySelection() {
+vector<ArchiveEntry*> MainWindow::getCurrentEntrySelection()
+{
 	return panel_archivemanager->currentEntrySelection();
 }
 
 /* MainWindow::openTextureEditor
  * Opens the texture editor for the current archive tab
  *******************************************************************/
-void MainWindow::openTextureEditor(Archive* archive) {
+void MainWindow::openTextureEditor(Archive* archive)
+{
 	panel_archivemanager->openTextureTab(theArchiveManager->archiveIndex(archive));
 }
 
 /* MainWindow::openMapEditor
  * Opens the map editor for the current archive tab
  *******************************************************************/
-void MainWindow::openMapEditor(Archive* archive) {
+void MainWindow::openMapEditor(Archive* archive)
+{
 	MapEditorConfigDialog dlg(this, archive);
-	if (dlg.ShowModal() == wxID_OK) {
+	if (dlg.ShowModal() == wxID_OK)
+	{
 		Archive::mapdesc_t md = dlg.selectedMap();
 
 		if (!md.head)
 			return;
 
 		// Attempt to load selected game configuration
-		if (!theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort())) {
+		if (!theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort()))
+		{
 			wxMessageBox("An error occurred loading the game configuration, see the console log for details", "Error", wxICON_ERROR);
 			return;
 		}
 
 		// Attempt to open map
-		if (!theMapEditor->openMap(md)) {
+		if (!theMapEditor->openMap(md))
+		{
 			theMapEditor->Hide();
 			wxMessageBox(S_FMT("Unable to open map %s: %s", CHR(md.name), CHR(Global::error)), "Invalid map error", wxICON_ERROR);
 		}
@@ -520,7 +544,8 @@ void MainWindow::openMapEditor(Archive* archive) {
 /* MainWindow::openEntry
  * Opens [entry] in its own tab
  *******************************************************************/
-void MainWindow::openEntry(ArchiveEntry* entry) {
+void MainWindow::openEntry(ArchiveEntry* entry)
+{
 	panel_archivemanager->openEntryTab(entry);
 }
 
@@ -528,31 +553,36 @@ void MainWindow::openEntry(ArchiveEntry* entry) {
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
  *******************************************************************/
-bool MainWindow::handleAction(string id) {
+bool MainWindow::handleAction(string id)
+{
 	// We're only interested in "main_" actions
 	if (!id.StartsWith("main_"))
 		return false;
 
 	// File->Exit
-	if (id == "main_exit") {
+	if (id == "main_exit")
+	{
 		Close();
 		return true;
 	}
 
 	// Edit->Undo
-	if (id == "main_undo") {
+	if (id == "main_undo")
+	{
 		panel_archivemanager->undo();
 		return true;
 	}
 
 	// Edit->Redo
-	if (id == "main_redo") {
+	if (id == "main_redo")
+	{
 		panel_archivemanager->redo();
 		return true;
 	}
 
 	// Edit->Set Base Resource Archive
-	if (id == "main_setbra") {
+	if (id == "main_setbra")
+	{
 		wxDialog dialog_ebr(this, -1, "Edit Base Resource Archives", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
 		BaseResourceArchivesPanel brap(&dialog_ebr);
 
@@ -572,15 +602,17 @@ bool MainWindow::handleAction(string id) {
 	}
 
 	// Edit->Preferences
-	if (id == "main_preferences") {
+	if (id == "main_preferences")
+	{
 		PreferencesDialog::openPreferences(this);
 
 		return true;
 	}
 
 	// View->Archive Manager
-	if (id == "main_showam") {
-		wxAuiManager *m_mgr = wxAuiManager::GetManager(panel_archivemanager);
+	if (id == "main_showam")
+	{
+		wxAuiManager* m_mgr = wxAuiManager::GetManager(panel_archivemanager);
 		wxAuiPaneInfo& p_inf = m_mgr->GetPane("archive_manager");
 		p_inf.Show(!p_inf.IsShown());
 		m_mgr->Update();
@@ -588,8 +620,9 @@ bool MainWindow::handleAction(string id) {
 	}
 
 	// View->Console
-	if (id == "main_showconsole") {
-		wxAuiManager *m_mgr = wxAuiManager::GetManager(panel_archivemanager);
+	if (id == "main_showconsole")
+	{
+		wxAuiManager* m_mgr = wxAuiManager::GetManager(panel_archivemanager);
 		wxAuiPaneInfo& p_inf = m_mgr->GetPane("console");
 		p_inf.Show(!p_inf.IsShown());
 		p_inf.MinSize(200, 128);
@@ -598,8 +631,9 @@ bool MainWindow::handleAction(string id) {
 	}
 
 	// View->Undo History
-	if (id == "main_showundohistory") {
-		wxAuiManager *m_mgr = wxAuiManager::GetManager(panel_archivemanager);
+	if (id == "main_showundohistory")
+	{
+		wxAuiManager* m_mgr = wxAuiManager::GetManager(panel_archivemanager);
 		wxAuiPaneInfo& p_inf = m_mgr->GetPane("undo_history");
 		p_inf.Show(!p_inf.IsShown());
 		m_mgr->Update();
@@ -607,7 +641,8 @@ bool MainWindow::handleAction(string id) {
 	}
 
 	// Help->About
-	if (id == "main_about") {
+	if (id == "main_about")
+	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
 		info.SetVersion("v" + Global::version);
@@ -629,7 +664,8 @@ bool MainWindow::handleAction(string id) {
 	}
 
 	// Help->Online Documentation
-	if (id == "main_onlinedocs") {
+	if (id == "main_onlinedocs")
+	{
 		wxLaunchDefaultBrowser("http://slade-editor.wikia.com");
 		return true;
 	}
@@ -647,12 +683,14 @@ bool MainWindow::handleAction(string id) {
  * Called when a link is clicked on the HTML Window, so that
  * external (http) links are opened in the default browser
  *******************************************************************/
-void MainWindow::onHTMLLinkClicked(wxHtmlLinkEvent &e) {
+void MainWindow::onHTMLLinkClicked(wxHtmlLinkEvent& e)
+{
 	string href = e.GetLinkInfo().GetHref();
 
 	if (href.StartsWith("http://"))
 		wxLaunchDefaultBrowser(e.GetLinkInfo().GetHref());
-	else if (href.StartsWith("recent://")) {
+	else if (href.StartsWith("recent://"))
+	{
 		// Recent file
 		string rs = href.Right(1);
 		unsigned long index = 0;
@@ -661,7 +699,8 @@ void MainWindow::onHTMLLinkClicked(wxHtmlLinkEvent &e) {
 
 		panel_archivemanager->handleAction(S_FMT("aman_recent%d", index));
 	}
-	else if (href.StartsWith("action://")) {
+	else if (href.StartsWith("action://"))
+	{
 		// Action
 		if (href.EndsWith("open"))
 			theApp->doAction("aman_open");
@@ -679,7 +718,8 @@ void MainWindow::onHTMLLinkClicked(wxHtmlLinkEvent &e) {
 /* MainWindow::onClose
  * Called when the window is closed
  *******************************************************************/
-void MainWindow::onClose(wxCloseEvent& e) {
+void MainWindow::onClose(wxCloseEvent& e)
+{
 	if (!exitProgram())
 		e.Veto();
 }
@@ -687,12 +727,14 @@ void MainWindow::onClose(wxCloseEvent& e) {
 /* MainWindow::onTabChanged
  * Called when the current tab is changed
  *******************************************************************/
-void MainWindow::onTabChanged(wxAuiNotebookEvent& e) {
+void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
+{
 	// Get current page
 	wxWindow* page = notebook_tabs->GetPage(notebook_tabs->GetSelection());
 
 	// If start page is selected, refresh it
-	if (page->GetName() == "startpage") {
+	if (page->GetName() == "startpage")
+	{
 		createStartPage();
 		SetStatusText("", 1);
 		SetStatusText("", 2);
@@ -709,9 +751,11 @@ void MainWindow::onTabChanged(wxAuiNotebookEvent& e) {
 /* MainWindow::onSize
  * Called when the window is resized
  *******************************************************************/
-void MainWindow::onSize(wxSizeEvent& e) {
+void MainWindow::onSize(wxSizeEvent& e)
+{
 	// Update window size settings, but only if not maximized
-	if (!IsMaximized()) {
+	if (!IsMaximized())
+	{
 		mw_width = GetSize().x;
 		mw_height = GetSize().y;
 	}
@@ -732,9 +776,11 @@ void MainWindow::onSize(wxSizeEvent& e) {
 /* MainWindow::onMove
  * Called when the window moves
  *******************************************************************/
-void MainWindow::onMove(wxMoveEvent& e) {
+void MainWindow::onMove(wxMoveEvent& e)
+{
 	// Update window position settings, but only if not maximized
-	if (!IsMaximized()) {
+	if (!IsMaximized())
+	{
 		mw_left = GetPosition().x;
 		mw_top = GetPosition().y;
 	}
@@ -745,7 +791,8 @@ void MainWindow::onMove(wxMoveEvent& e) {
 /* MainWindow::onToolBarLayoutChanged
  * Called when the toolbar layout is changed
  *******************************************************************/
-void MainWindow::onToolBarLayoutChanged(wxEvent& e) {
+void MainWindow::onToolBarLayoutChanged(wxEvent& e)
+{
 	// Update toolbar size
 	m_mgr->GetPane(toolbar).MinSize(-1, toolbar->minHeight());
 	m_mgr->Update();

@@ -35,7 +35,7 @@
 
 /*
 
-The only thing interesting in Quake BSP files is the texture collection. 
+The only thing interesting in Quake BSP files is the texture collection.
 Quake 1 is the only game of the series to hold texture definitions in it,
 so even if the BSP formats of the other Quake engine/Source engine games
 are saner, it's not interesting for something that isn't a level editor
@@ -54,19 +54,22 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* BSPArchive::BSPArchive
  * BSPArchive class constructor
  *******************************************************************/
-BSPArchive::BSPArchive() : Archive(ARCHIVE_BSP) {
+BSPArchive::BSPArchive() : Archive(ARCHIVE_BSP)
+{
 }
 
 /* BSPArchive::~BSPArchive
  * BSPArchive class destructor
  *******************************************************************/
-BSPArchive::~BSPArchive() {
+BSPArchive::~BSPArchive()
+{
 }
 
 /* WadArchive::getEntryOffset
  * Returns the file byte offset for [entry]
  *******************************************************************/
-uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return 0;
@@ -77,14 +80,16 @@ uint32_t BSPArchive::getEntryOffset(ArchiveEntry* entry) {
 /* BSPArchive::getFileExtensionString
  * Returns the file extension string to use in the file open dialog
  *******************************************************************/
-string BSPArchive::getFileExtensionString() {
+string BSPArchive::getFileExtensionString()
+{
 	return "BSP Files (*.bsp)|*.bsp";
 }
 
 /* BSPArchive::getFormat
  * Returns the string id for the pak EntryDataFormat
  *******************************************************************/
-string BSPArchive::getFormat() {
+string BSPArchive::getFormat()
+{
 	return "archive_bsp";
 }
 
@@ -92,10 +97,12 @@ string BSPArchive::getFormat() {
  * Reads BSP format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool BSPArchive::open(MemChunk& mc) {
+bool BSPArchive::open(MemChunk& mc)
+{
 	// If size is less than 64, there's not even enough room for a full header
 	size_t size = mc.getSize();
-	if (size < 64) {
+	if (size < 64)
+	{
 		wxLogMessage("BSPArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid BSP header";
 		return false;
@@ -108,7 +115,8 @@ bool BSPArchive::open(MemChunk& mc) {
 	mc.seek(0, SEEK_SET);
 	mc.read(&version, 4);
 	version = wxINT32_SWAP_ON_BE(version);
-	if (version != 0x17 && version != 0x1D) {
+	if (version != 0x17 && version != 0x1D)
+	{
 		wxLogMessage("BSPArchive::open: Opening failed, unknown BSP version");
 		Global::error = "Unknown BSP version";
 		return false;
@@ -120,24 +128,28 @@ bool BSPArchive::open(MemChunk& mc) {
 	// Validate directory to make sure it's the correct format.
 	// This mean checking each of the 15 entries, even if only
 	// the third has content we want.
-	for (int a = 0; a < 15; ++a) {
+	for (int a = 0; a < 15; ++a)
+	{
 		uint32_t ofs, sz;
 		mc.read(&ofs, 4);
 		mc.read(&sz, 4);
 
 		// Check that content stays within bounds
-		if (wxINT32_SWAP_ON_BE(sz) + wxINT32_SWAP_ON_BE(ofs) > size) {
+		if (wxINT32_SWAP_ON_BE(sz) + wxINT32_SWAP_ON_BE(ofs) > size)
+		{
 			wxLogMessage("BSPArchive::open: Opening failed, invalid header (data out of bounds)");
 			Global::error = "Invalid BSP header";
 			return false;
 		}
 		// Grab the miptex entry data
-		if (a == 2) {
+		if (a == 2)
+		{
 			texoffset = wxINT32_SWAP_ON_BE(ofs);
 			texsize = wxINT32_SWAP_ON_BE(sz);
 
 			// If there are no textures, no need to bother
-			if (texsize == 0) {
+			if (texsize == 0)
+			{
 				wxLogMessage("BSPArchive::open: Opening failed, no texture");
 				Global::error = "No texture content";
 				return false;
@@ -153,14 +165,16 @@ bool BSPArchive::open(MemChunk& mc) {
 	theSplashWindow->setProgressMessage("Reading BSP texture data");
 
 	// Check that the offset table is within bounds
-	if (texoffset + ((numtex + 1)<<2) > size) {
+	if (texoffset + ((numtex + 1)<<2) > size)
+	{
 		wxLogMessage("BSPArchive::open: Opening failed, miptex entry out of bounds");
 		Global::error = "Out of bounds";
 		return false;
 	}
 
 	// Check that each texture is within bounds
-	for (size_t a = 0; a < numtex; ++a) {
+	for (size_t a = 0; a < numtex; ++a)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)a / (float)numtex));
 
@@ -169,7 +183,8 @@ bool BSPArchive::open(MemChunk& mc) {
 		offset = wxINT32_SWAP_ON_BE(offset);
 
 		// Skip entries with an offset of -1. (No, I don't know why they are included at all.)
-		if (offset != 0xFFFFFFFF) {
+		if (offset != 0xFFFFFFFF)
+		{
 
 			// A texture header takes 40 bytes (16 bytes for name, 6 int32 for records),
 			// and offsets are measured from the start of the miptex lump.
@@ -202,7 +217,8 @@ bool BSPArchive::open(MemChunk& mc) {
 
 			// Cap texture name if needed and clean out garbage characters
 			bool nameend = false;
-			for (size_t d = 1; d < 17; ++d) {
+			for (size_t d = 1; d < 17; ++d)
+			{
 				if (name[d] == 0 || d == 16)
 					nameend = true;
 				if (nameend)
@@ -244,7 +260,8 @@ bool BSPArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)numtex)));
 
@@ -252,7 +269,8 @@ bool BSPArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -283,7 +301,8 @@ bool BSPArchive::open(MemChunk& mc) {
  * Writes the BSP archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool BSPArchive::write(MemChunk& mc, bool update) {
+bool BSPArchive::write(MemChunk& mc, bool update)
+{
 	Global::error = "Sorry, not implemented";
 	return false;
 }
@@ -292,23 +311,26 @@ bool BSPArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the pak file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool BSPArchive::loadEntryData(ArchiveEntry* entry) {
+bool BSPArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check entry is ok
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
 
 	// Open archive file
 	wxFile file(filename);
-	
+
 	// Check it opened
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("BSPArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
 		return false;
 	}
@@ -331,7 +353,8 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry) {
 /* BSPArchive::isBSPArchive
  * Checks if the given data is a valid Quake BSP archive
  *******************************************************************/
-bool BSPArchive::isBSPArchive(MemChunk& mc) {
+bool BSPArchive::isBSPArchive(MemChunk& mc)
+{
 	// If size is less than 64, there's not even enough room for a full header
 	size_t size = mc.getSize();
 	if (size < 64)
@@ -350,7 +373,8 @@ bool BSPArchive::isBSPArchive(MemChunk& mc) {
 	// Validate directory to make sure it's the correct format.
 	// This mean checking each of the 15 entries, even if only
 	// the third has content we want.
-	for (int a = 0; a < 15; ++a) {
+	for (int a = 0; a < 15; ++a)
+	{
 		uint32_t ofs, sz;
 		mc.read(&ofs, 4);
 		mc.read(&sz, 4);
@@ -359,7 +383,8 @@ bool BSPArchive::isBSPArchive(MemChunk& mc) {
 		if (wxINT32_SWAP_ON_BE(sz) + wxINT32_SWAP_ON_BE(ofs) > size)
 			return false;
 		// Grab the miptex entry data
-		if (a == 2) {
+		if (a == 2)
+		{
 			texoffset = wxINT32_SWAP_ON_BE(ofs);
 			texsize = wxINT32_SWAP_ON_BE(sz);
 
@@ -380,7 +405,8 @@ bool BSPArchive::isBSPArchive(MemChunk& mc) {
 		return false;
 
 	// Check that each texture is within bounds
-	for (size_t a = 0; a < numtex; ++a) {
+	for (size_t a = 0; a < numtex; ++a)
+	{
 		size_t offset;
 		mc.read(&offset, 4);
 		offset = wxINT32_SWAP_ON_BE(offset);
@@ -390,7 +416,8 @@ bool BSPArchive::isBSPArchive(MemChunk& mc) {
 		if (offset + texoffset + 40 > size)
 			return false;
 
-		if (offset != 0xFFFFFFFF) {
+		if (offset != 0xFFFFFFFF)
+		{
 
 			// Keep track of where we are now to return to it later.
 			size_t currentpos = mc.currentPos();
@@ -438,7 +465,8 @@ bool BSPArchive::isBSPArchive(MemChunk& mc) {
 /* BSPArchive::isBSPArchive
  * Checks if the file at [filename] is a valid Quake BSP archive
  *******************************************************************/
-bool BSPArchive::isBSPArchive(string filename) {
+bool BSPArchive::isBSPArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 
@@ -464,7 +492,8 @@ bool BSPArchive::isBSPArchive(string filename) {
 	// Validate directory to make sure it's the correct format.
 	// This mean checking each of the 15 entries, even if only
 	// the third has content we want.
-	for (int a = 0; a < 15; ++a) {
+	for (int a = 0; a < 15; ++a)
+	{
 		uint32_t ofs, sz;
 		file.Read(&ofs, 4);
 		file.Read(&sz, 4);
@@ -473,7 +502,8 @@ bool BSPArchive::isBSPArchive(string filename) {
 		if (wxINT32_SWAP_ON_BE(sz) + wxINT32_SWAP_ON_BE(ofs) > size)
 			return false;
 		// Grab the miptex entry data
-		if (a == 2) {
+		if (a == 2)
+		{
 			texoffset = wxINT32_SWAP_ON_BE(ofs);
 			texsize = wxINT32_SWAP_ON_BE(sz);
 		}
@@ -490,7 +520,8 @@ bool BSPArchive::isBSPArchive(string filename) {
 		return false;
 
 	// Check that each texture is within bounds
-	for (size_t a = 0; a < numtex; ++a) {
+	for (size_t a = 0; a < numtex; ++a)
+	{
 		size_t offset;
 		file.Read(&offset, 4);
 		offset = wxINT32_SWAP_ON_BE(offset);

@@ -48,14 +48,15 @@ EXTERN_CVAR(String, path_acc_libs)
 /* ACSPrefsPanel::ACSPrefsPanel
  * ACSPrefsPanel class constructor
  *******************************************************************/
-ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "ACS Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "ACS Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// ACC.exe path
@@ -96,20 +97,23 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
 /* ACSPrefsPanel::~ACSPrefsPanel
  * ACSPrefsPanel class destructor
  *******************************************************************/
-ACSPrefsPanel::~ACSPrefsPanel() {
+ACSPrefsPanel::~ACSPrefsPanel()
+{
 }
 
 /* ACSPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void ACSPrefsPanel::init() {
+void ACSPrefsPanel::init()
+{
 	text_accpath->SetValue(wxString(path_acc));
 }
 
 /* ACSPrefsPanel::applyPreferences
  * Applies preferences from the panel controls
  *******************************************************************/
-void ACSPrefsPanel::applyPreferences() {
+void ACSPrefsPanel::applyPreferences()
+{
 	path_acc = text_accpath->GetValue();
 
 	// Build include paths string
@@ -131,7 +135,8 @@ void ACSPrefsPanel::applyPreferences() {
 /* ACSPrefsPanel::onBtnBrowseACCPath
  * Called when the 'Browse' for ACC path button is clicked
  *******************************************************************/
-void ACSPrefsPanel::onBtnBrowseACCPath(wxCommandEvent& e) {
+void ACSPrefsPanel::onBtnBrowseACCPath(wxCommandEvent& e)
+{
 	// Setup acc executable file string
 	string acc_exe = "acc";
 #ifdef WIN32
@@ -145,14 +150,17 @@ void ACSPrefsPanel::onBtnBrowseACCPath(wxCommandEvent& e) {
 }
 
 
-void ACSPrefsPanel::onBtnAddIncPath(wxCommandEvent& e) {
+void ACSPrefsPanel::onBtnAddIncPath(wxCommandEvent& e)
+{
 	wxDirDialog dlg(this, "Browse for ACC Include Path");
-	if (dlg.ShowModal() == wxID_OK) {
+	if (dlg.ShowModal() == wxID_OK)
+	{
 		list_inc_paths->Append(dlg.GetPath());
 	}
 }
 
-void ACSPrefsPanel::onBtnRemoveIncPath(wxCommandEvent& e) {
+void ACSPrefsPanel::onBtnRemoveIncPath(wxCommandEvent& e)
+{
 	if (list_inc_paths->GetSelection() >= 0)
 		list_inc_paths->Delete(list_inc_paths->GetSelection());
 }

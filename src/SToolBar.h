@@ -2,7 +2,8 @@
 #ifndef __S_TOOL_BAR_H__
 #define __S_TOOL_BAR_H__
 
-class SToolBarGroup : public wxPanel {
+class SToolBarGroup : public wxPanel
+{
 private:
 	string	name;
 	bool	hidden;
@@ -20,7 +21,8 @@ public:
 	void	addCustomControl(wxWindow* control);
 };
 
-class SToolBar : public wxPanel {
+class SToolBar : public wxPanel
+{
 private:
 	vector<SToolBarGroup*>	groups;
 	vector<wxWindow*>		separators;

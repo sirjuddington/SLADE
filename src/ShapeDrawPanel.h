@@ -4,7 +4,8 @@
 
 #include <wx/spinctrl.h>
 
-class ShapeDrawPanel : public wxPanel {
+class ShapeDrawPanel : public wxPanel
+{
 private:
 	wxChoice*	choice_shape;
 	wxCheckBox*	cb_centered;

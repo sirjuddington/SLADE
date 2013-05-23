@@ -47,7 +47,8 @@ wxArrayString languages;
  * TextEntryPanel class constructor
  *******************************************************************/
 TextEntryPanel::TextEntryPanel(wxWindow* parent)
-: EntryPanel(parent, "text") {
+	: EntryPanel(parent, "text")
+{
 	// Create the text area
 	text_area = new TextEditor(this, -1);
 	sizer_main->Add(text_area, 1, wxEXPAND, 0);
@@ -91,13 +92,15 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 /* TextEntryPanel::~TextEntryPanel
  * TextEntryPanel class destructor
  *******************************************************************/
-TextEntryPanel::~TextEntryPanel() {
+TextEntryPanel::~TextEntryPanel()
+{
 }
 
 /* TextEntryPanel::loadEntry
  * Loads an entry into the panel as text
  *******************************************************************/
-bool TextEntryPanel::loadEntry(ArchiveEntry* entry) {
+bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	// Load entry into the text editor
 	if (!text_area->loadEntry(entry))
 		return false;
@@ -116,27 +119,31 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry) {
 	TextLanguage* tl = NULL;
 
 	// Level markers use FraggleScript
-	if (entry->getType() == EntryType::mapMarkerType()) {
+	if (entry->getType() == EntryType::mapMarkerType())
+	{
 		tl = TextLanguage::getLanguage("fragglescript");
 	}
 
 	// From entry language hint
-	if (entry->exProps().propertyExists("TextLanguage")) {
+	if (entry->exProps().propertyExists("TextLanguage"))
+	{
 		string lang_id = entry->exProp("TextLanguage");
 		tl = TextLanguage::getLanguage(lang_id);
 	}
 
 	// Or, from entry type
-	if (!tl && entry->getType()->extraProps().propertyExists("text_language")) {
+	if (!tl && entry->getType()->extraProps().propertyExists("text_language"))
+	{
 		string lang_id = entry->getType()->extraProps()["text_language"];
 		tl = TextLanguage::getLanguage(lang_id);
 	}
 
 	// Or, from entry's parent directory
-	if (!tl) {
+	if (!tl)
+	{
 		// ZDoom DECORATE (within 'actors' or 'decorate' directories)
 		if (S_CMPNOCASE(wxString("/actors/"), entry->getPath().Left(8)) ||
-			S_CMPNOCASE(wxString("/decorate/"), entry->getPath().Left(10)))
+		        S_CMPNOCASE(wxString("/decorate/"), entry->getPath().Left(10)))
 			tl = TextLanguage::getLanguage("decorate");
 	}
 
@@ -144,9 +151,12 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry) {
 	text_area->setLanguage(tl);
 
 	// Select it in the choice box
-	if (tl) {
-		for (unsigned a = 0; a < languages.size(); a++) {
-			if (S_CMPNOCASE(tl->getName(), languages[a])) {
+	if (tl)
+	{
+		for (unsigned a = 0; a < languages.size(); a++)
+		{
+			if (S_CMPNOCASE(tl->getName(), languages[a]))
+			{
 				choice_text_language->Select(a);
 				break;
 			}
@@ -168,7 +178,8 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry) {
 /* TextEntryPanel::saveEntry
  * Saves any changes to the entry
  *******************************************************************/
-bool TextEntryPanel::saveEntry() {
+bool TextEntryPanel::saveEntry()
+{
 	// Trim whitespace
 	if (txed_trim_whitespace)
 		text_area->trimWhitespace();
@@ -195,7 +206,8 @@ bool TextEntryPanel::saveEntry() {
 /* TextEntryPanel::refreshPanel
  * Updates the text editor options and redraws it
  *******************************************************************/
-void TextEntryPanel::refreshPanel() {
+void TextEntryPanel::refreshPanel()
+{
 	// Update text editor
 	text_area->setup();
 
@@ -206,7 +218,8 @@ void TextEntryPanel::refreshPanel() {
 /* TextEntryPanel::closeEntry
  * Performs any actions required on closing the entry
  *******************************************************************/
-void TextEntryPanel::closeEntry() {
+void TextEntryPanel::closeEntry()
+{
 	// Check any entry is open
 	if (!entry)
 		return;
@@ -219,7 +232,8 @@ void TextEntryPanel::closeEntry() {
  * Returns a string with extended editing/entry info for the status
  * bar
  *******************************************************************/
-string TextEntryPanel::statusString() {
+string TextEntryPanel::statusString()
+{
 	// Setup status string
 	int line = text_area->GetCurrentLine()+1;
 	int pos = text_area->GetCurrentPos();
@@ -232,11 +246,14 @@ string TextEntryPanel::statusString() {
 /* TextEntryPanel::undo
  * Tells the text editor to undo
  *******************************************************************/
-bool TextEntryPanel::undo() {
-	if (text_area->CanUndo()) {
+bool TextEntryPanel::undo()
+{
+	if (text_area->CanUndo())
+	{
 		text_area->Undo();
 		// If we have undone all the way back, it is not modified anymore
-		if (!text_area->CanUndo()) {
+		if (!text_area->CanUndo())
+		{
 			setModified(false);
 		}
 		return true;
@@ -247,8 +264,10 @@ bool TextEntryPanel::undo() {
 /* TextEntryPanel::redo
  * Tells the text editor to redo
  *******************************************************************/
-bool TextEntryPanel::redo() {
-	if (text_area->CanRedo()) {
+bool TextEntryPanel::redo()
+{
+	if (text_area->CanRedo())
+	{
 		text_area->Redo();
 		return true;
 	}
@@ -263,21 +282,24 @@ bool TextEntryPanel::redo() {
 /* TextEntryPanel::onTextModified
  * Called when the text in the TextEditor is modified
  *******************************************************************/
-void TextEntryPanel::onTextModified(wxStyledTextEvent& e) {
+void TextEntryPanel::onTextModified(wxStyledTextEvent& e)
+{
 	setModified();
 }
 
 /* TextEntryPanel::onBtnFindReplace
  * Called when the 'Find+Replace' button is clicked
  *******************************************************************/
-void TextEntryPanel::onBtnFindReplace(wxCommandEvent& e) {
+void TextEntryPanel::onBtnFindReplace(wxCommandEvent& e)
+{
 	text_area->showFindReplaceDialog();
 }
 
 /* TextEntryPanel::onChoiceLanguageChanged
  * Called when the language in the dropdown is changed
  *******************************************************************/
-void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e) {
+void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
+{
 	int index = choice_text_language->GetSelection();
 	// Get selected language
 	TextLanguage* tl = TextLanguage::getLanguageByName(choice_text_language->GetStringSelection());
@@ -295,7 +317,8 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e) {
 /* TextEntryPanel::onWordWrapChanged
  * Called when the "Word Wrap" checkbox is clicked
  *******************************************************************/
-void TextEntryPanel::onWordWrapChanged(wxCommandEvent& e) {
+void TextEntryPanel::onWordWrapChanged(wxCommandEvent& e)
+{
 	bool m = isModified();
 	if (cb_wordwrap->IsChecked())
 		text_area->SetWrapMode(wxSTC_WRAP_WORD);
@@ -307,7 +330,8 @@ void TextEntryPanel::onWordWrapChanged(wxCommandEvent& e) {
 /* TextEntryPanel::onUpdateUI
  * Called when the text editor UI is updated
  *******************************************************************/
-void TextEntryPanel::onUpdateUI(wxStyledTextEvent& e) {
+void TextEntryPanel::onUpdateUI(wxStyledTextEvent& e)
+{
 	updateStatus();
 	e.Skip();
 }
@@ -315,6 +339,7 @@ void TextEntryPanel::onUpdateUI(wxStyledTextEvent& e) {
 /* TextEntryPanel::onBtnJumpTo
  * Called when the 'Jump To' button is clicked
  *******************************************************************/
-void TextEntryPanel::onBtnJumpTo(wxCommandEvent& e) {
+void TextEntryPanel::onBtnJumpTo(wxCommandEvent& e)
+{
 	text_area->openJumpToDialog();
 }

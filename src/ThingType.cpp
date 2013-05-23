@@ -3,7 +3,8 @@
 #include "ThingType.h"
 #include "Parser.h"
 
-ThingType::ThingType(string name) {
+ThingType::ThingType(string name)
+{
 	// Init variables
 	this->name = name;
 	this->angled = true;
@@ -24,7 +25,8 @@ ThingType::ThingType(string name) {
 	args[4].name = "Arg5";
 }
 
-void ThingType::copy(ThingType* copy) {
+void ThingType::copy(ThingType* copy)
+{
 	// Check TT was given
 	if (!copy) return;
 
@@ -43,17 +45,19 @@ void ThingType::copy(ThingType* copy) {
 	this->translation = copy->translation;
 	this->palette = copy->palette;
 	this->decoration = copy->decoration;
-	
+
 	// Copy args
 	for (unsigned a = 0; a < 5; a++)
 		this->args[a] = copy->args[a];
 }
 
-string ThingType::getArgsString(int args[5]) {
+string ThingType::getArgsString(int args[5])
+{
 	string ret;
 
 	// Add each arg to the string
-	for (unsigned a = 0; a < 5; a++) {
+	for (unsigned a = 0; a < 5; a++)
+	{
 		// Skip if the arg name is undefined and the arg value is 0
 		if (args[a] == 0 && this->args[a].name.StartsWith("Arg"))
 			continue;
@@ -71,7 +75,8 @@ string ThingType::getArgsString(int args[5]) {
 	return ret;
 }
 
-void ThingType::reset() {
+void ThingType::reset()
+{
 	// Reset variables
 	this->name = "Unknown";
 	this->group = "";
@@ -89,7 +94,8 @@ void ThingType::reset() {
 	this->decoration = false;
 
 	// Reset args
-	for (unsigned a = 0; a < 5; a++) {
+	for (unsigned a = 0; a < 5; a++)
+	{
 		args[a].name = S_FMT("Arg%d", a+1);
 		args[a].type = ARGT_NUMBER;
 		args[a].custom_flags.clear();
@@ -97,10 +103,12 @@ void ThingType::reset() {
 	}
 }
 
-void ThingType::parse(ParseTreeNode* node) {
+void ThingType::parse(ParseTreeNode* node)
+{
 	// Go through all child nodes/values
 	ParseTreeNode* child = NULL;
-	for (unsigned a = 0; a < node->nChildren(); a++) {
+	for (unsigned a = 0; a < node->nChildren(); a++)
+	{
 		child = (ParseTreeNode*)node->getChild(a);
 		string name = child->getName();
 		int arg = -1;
@@ -166,9 +174,11 @@ void ThingType::parse(ParseTreeNode* node) {
 		{
 			this->translation += "\"";
 			size_t v = 0;
-			do {
+			do
+			{
 				this->translation += child->getStringValue(v++);
-			} while ((v < child->nValues()) && ((this->translation += "\", \""), true));
+			}
+			while ((v < child->nValues()) && ((this->translation += "\", \""), true));
 			this->translation += "\"";
 		}
 
@@ -179,16 +189,19 @@ void ThingType::parse(ParseTreeNode* node) {
 
 
 		// Parse arg definition if it was one
-		if (arg >= 0) {
+		if (arg >= 0)
+		{
 			// Check for simple definition
-			if (child->isLeaf()) {
+			if (child->isLeaf())
+			{
 				// Set name
 				args[arg].name = child->getStringValue();
 
 				// Set description (if specified)
 				if (child->nValues() > 1) args[arg].desc = child->getStringValue(1);
 			}
-			else {
+			else
+			{
 				// Extended arg definition
 
 				// Name
@@ -216,7 +229,8 @@ void ThingType::parse(ParseTreeNode* node) {
 	}
 }
 
-string ThingType::stringDesc() {
+string ThingType::stringDesc()
+{
 	// Init return string
 	string ret = S_FMT("\"%s\" in group \"%s\", colour %d,%d,%d, radius %d", CHR(name), CHR(group), colour.r, colour.g, colour.b, radius);
 

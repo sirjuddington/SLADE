@@ -4,7 +4,8 @@
 
 #include "PrefsPanelBase.h"
 
-class NodesPrefsPanel : public PrefsPanelBase {
+class NodesPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxChoice*		choice_nodebuilder;
 	wxButton*		btn_browse_path;

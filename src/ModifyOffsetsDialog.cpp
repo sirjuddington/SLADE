@@ -43,9 +43,10 @@
  * ModifyOffsetsDialog class constructor
  *******************************************************************/
 ModifyOffsetsDialog::ModifyOffsetsDialog()
-:	wxDialog(NULL, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+	:	wxDialog(NULL, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
 	// Create main sizer
-	wxBoxSizer *m_vbox = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);
 
 	// Set dialog icon
@@ -54,7 +55,7 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 	SetIcon(icon);
 
 	// Setup layout
-	wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(hbox, 0, wxEXPAND|wxALL, 4);
 
 	// 'Set Offsets'
@@ -75,7 +76,8 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 	opt_auto = new wxRadioButton(this, -1, "Automatic Offsets");
 	hbox->Add(opt_auto, 1, wxEXPAND|wxALL, 4);
 
-	string offtypes[] = {
+	string offtypes[] =
+	{
 		"Monster",
 		"Monster (GL-friendly)",
 		"Projectile",
@@ -107,13 +109,15 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 /* ModifyOffsetsDialog::~ModifyOffsetsDialog
  * ModifyOffsetsDialog class destructor
  *******************************************************************/
-ModifyOffsetsDialog::~ModifyOffsetsDialog() {
+ModifyOffsetsDialog::~ModifyOffsetsDialog()
+{
 }
 
 /* ModifyOffsetsDialog::getOffset
  * Returns the offsets that have been entered
  *******************************************************************/
-point2_t ModifyOffsetsDialog::getOffset() {
+point2_t ModifyOffsetsDialog::getOffset()
+{
 	long x = 0;
 	long y = 0;
 	entry_xoff->GetValue().ToLong(&x);
@@ -126,7 +130,8 @@ point2_t ModifyOffsetsDialog::getOffset() {
  * Returns the selected alignment type (0=monster, 1=projectile,
  * 2=hud/weapon)
  *******************************************************************/
-int	ModifyOffsetsDialog::getAlignType() {
+int	ModifyOffsetsDialog::getAlignType()
+{
 	if (opt_auto->GetValue())
 		return combo_aligntype->GetSelection();
 	else
@@ -136,7 +141,8 @@ int	ModifyOffsetsDialog::getAlignType() {
 /* ModifyOffsetsDialog::autoOffset
  * Returns true if 'automatic offsets' is selected
  *******************************************************************/
-bool ModifyOffsetsDialog::autoOffset() {
+bool ModifyOffsetsDialog::autoOffset()
+{
 	if (opt_auto->GetValue())
 		return true;
 	else
@@ -146,14 +152,16 @@ bool ModifyOffsetsDialog::autoOffset() {
 /* ModifyOffsetsDialog::relativeOffset
  * Returns true if the 'relative' offset checkbox is checked
  *******************************************************************/
-bool ModifyOffsetsDialog::relativeOffset() {
+bool ModifyOffsetsDialog::relativeOffset()
+{
 	return cbox_relative->GetValue();
 }
 
 /* ModifyOffsetsDialog::xOffChange
  * Returns true if the user has entered an x-offset
  *******************************************************************/
-bool ModifyOffsetsDialog::xOffChange() {
+bool ModifyOffsetsDialog::xOffChange()
+{
 	if (entry_xoff->GetValue().IsEmpty())
 		return false;
 	else
@@ -163,7 +171,8 @@ bool ModifyOffsetsDialog::xOffChange() {
 /* ModifyOffsetsDialog::yOffChange
  * Returns true if the user has entered a y-offset
  *******************************************************************/
-bool ModifyOffsetsDialog::yOffChange() {
+bool ModifyOffsetsDialog::yOffChange()
+{
 	if (entry_yoff->GetValue().IsEmpty())
 		return false;
 	else
@@ -178,7 +187,8 @@ bool ModifyOffsetsDialog::yOffChange() {
 /* ModifyOffsetsDialog::onOptSet
  * Called when the 'Set Offsets' radio button is selected
  *******************************************************************/
-void ModifyOffsetsDialog::onOptSet(wxCommandEvent& e) {
+void ModifyOffsetsDialog::onOptSet(wxCommandEvent& e)
+{
 	entry_xoff->Enable(true);
 	entry_yoff->Enable(true);
 	cbox_relative->Enable(true);
@@ -188,7 +198,8 @@ void ModifyOffsetsDialog::onOptSet(wxCommandEvent& e) {
 /* ModifyOffsetsDialog::ModifyOffsetsDialog
  * Called when the 'Automatic Offsets' radio button is selected
  *******************************************************************/
-void ModifyOffsetsDialog::onOptAuto(wxCommandEvent& e) {
+void ModifyOffsetsDialog::onOptAuto(wxCommandEvent& e)
+{
 	entry_xoff->Enable(false);
 	entry_yoff->Enable(false);
 	cbox_relative->Enable(false);

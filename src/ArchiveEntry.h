@@ -16,7 +16,8 @@ enum EncryptionModes
 	ENC_SCRLE0,
 };
 
-class ArchiveEntry {
+class ArchiveEntry
+{
 	friend class ArchiveTreeNode;
 	friend class Archive;
 private:

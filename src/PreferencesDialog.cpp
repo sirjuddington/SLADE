@@ -71,7 +71,8 @@ int PreferencesDialog::height = 0;
 /* PreferencesDialog::PreferencesDialog
  * PreferencesDialog class constructor
  *******************************************************************/
-PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "SLADE Preferences", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "SLADE Preferences", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
 	// Setup main sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -135,22 +136,24 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "S
 /* PreferencesDialog::~PreferencesDialog
  * PreferencesDialog class destructor
  *******************************************************************/
-PreferencesDialog::~PreferencesDialog() {
+PreferencesDialog::~PreferencesDialog()
+{
 }
 
 /* PreferencesDialog::setupBaseResourceArchivesPanel
  * Creates the wxPanel containing the Base Resource Archives panel,
  * plus some extra stuff, and returns it
  *******************************************************************/
-wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel() {
+wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
+{
 	// Create panel
 	wxPanel* panel = new wxPanel(tree_prefs, -1);
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(panel, -1, "Base Resource Archive");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(panel, -1, "Base Resource Archive");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Add BRA panel
@@ -170,10 +173,13 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel() {
 /* PreferencesDialog::showPage
  * Shows the preferences page matching [name]
  *******************************************************************/
-void PreferencesDialog::showPage(string name) {
+void PreferencesDialog::showPage(string name)
+{
 	// Go through all pages
-	for (unsigned a = 0; a < tree_prefs->GetPageCount(); a++) {
-		if (S_CMPNOCASE(tree_prefs->GetPageText(a), name)) {
+	for (unsigned a = 0; a < tree_prefs->GetPageCount(); a++)
+	{
+		if (S_CMPNOCASE(tree_prefs->GetPageText(a), name))
+		{
 			tree_prefs->SetSelection(a);
 			return;
 		}
@@ -183,9 +189,10 @@ void PreferencesDialog::showPage(string name) {
 /* PreferencesDialog::currentPage
  * Returns the name of the currently selected page
  *******************************************************************/
-string PreferencesDialog::currentPage() {
+string PreferencesDialog::currentPage()
+{
 	int sel = tree_prefs->GetSelection();
-	
+
 	if (sel >= 0)
 		return tree_prefs->GetPageText(sel);
 	else
@@ -195,7 +202,8 @@ string PreferencesDialog::currentPage() {
 /* PreferencesDialog::initPages
  * Initialises controls on all preference panels
  *******************************************************************/
-void PreferencesDialog::initPages() {
+void PreferencesDialog::initPages()
+{
 	for (unsigned a = 0; a < prefs_pages.size(); a++)
 		prefs_pages[a]->init();
 	prefs_advanced->init();
@@ -204,7 +212,8 @@ void PreferencesDialog::initPages() {
 /* PreferencesDialog::applyPreferences
  * Applies preference values from all preference panels
  *******************************************************************/
-void PreferencesDialog::applyPreferences() {
+void PreferencesDialog::applyPreferences()
+{
 	for (unsigned a = 0; a < prefs_pages.size(); a++)
 		prefs_pages[a]->applyPreferences();
 	prefs_advanced->applyPreferences();
@@ -218,14 +227,16 @@ void PreferencesDialog::applyPreferences() {
 /* PreferencesDialog::onBtnBRAOpenClicked
  * Called when the 'Open Selected BRA' button is clicked
  *******************************************************************/
-void PreferencesDialog::onBtnBRAOpenClicked(wxCommandEvent& e) {
+void PreferencesDialog::onBtnBRAOpenClicked(wxCommandEvent& e)
+{
 	theArchiveManager->openBaseResource(panel_bra->getSelectedPath());
 }
 
 /* PreferencesDialog::onButtonClicked
  * Called when a button is clicked
  *******************************************************************/
-void PreferencesDialog::onButtonClicked(wxCommandEvent& e) {
+void PreferencesDialog::onButtonClicked(wxCommandEvent& e)
+{
 	// Check if it was the apply button
 	if (e.GetId() == wxID_APPLY)
 		applyPreferences();
@@ -242,7 +253,8 @@ void PreferencesDialog::onButtonClicked(wxCommandEvent& e) {
  * Opens a preferences dialog on top of [parent], showing either the
  * last viewed page or [initial_page] if it is specified
  *******************************************************************/
-void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page) {
+void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page)
+{
 	// Setup dialog
 	PreferencesDialog dlg(parent);
 	if (initial_page.IsEmpty())

@@ -8,7 +8,8 @@
 class MapObject;
 class MapObjectPropsPanel;
 class UDMFProperty;
-class MOPGProperty {
+class MOPGProperty
+{
 protected:
 	int						type;
 	MapObjectPropsPanel*	parent;
@@ -19,7 +20,8 @@ public:
 	MOPGProperty(int type) { this->type = type; noupdate = false; udmf_prop = NULL; }
 	~MOPGProperty() {}
 
-	enum {
+	enum
+	{
 		TYPE_BOOL = 0,
 		TYPE_INT,
 		TYPE_FLOAT,
@@ -45,7 +47,8 @@ public:
 	virtual void	resetValue();
 };
 
-class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty {
+class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty
+{
 public:
 	MOPGBoolProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
@@ -53,7 +56,8 @@ public:
 	void	applyValue();
 };
 
-class MOPGIntProperty : public MOPGProperty, public wxIntProperty {
+class MOPGIntProperty : public MOPGProperty, public wxIntProperty
+{
 public:
 	MOPGIntProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
@@ -61,7 +65,8 @@ public:
 	void	applyValue();
 };
 
-class MOPGFloatProperty : public MOPGProperty, public wxFloatProperty {
+class MOPGFloatProperty : public MOPGProperty, public wxFloatProperty
+{
 public:
 	MOPGFloatProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
@@ -69,7 +74,8 @@ public:
 	void	applyValue();
 };
 
-class MOPGStringProperty : public MOPGProperty, public wxStringProperty {
+class MOPGStringProperty : public MOPGProperty, public wxStringProperty
+{
 public:
 	MOPGStringProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
@@ -77,7 +83,8 @@ public:
 	void	applyValue();
 };
 
-class MOPGActionSpecialProperty : public MOPGProperty, public wxIntProperty {
+class MOPGActionSpecialProperty : public MOPGProperty, public wxIntProperty
+{
 private:
 	wxPGProperty*	args[5];
 
@@ -89,11 +96,12 @@ public:
 	void	applyValue();
 
 	// wxPGProperty overrides
-	wxString	ValueToString(wxVariant &value, int argFlags = 0) const;
+	wxString	ValueToString(wxVariant& value, int argFlags = 0) const;
 	bool 		OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
 };
 
-class MOPGThingTypeProperty : public MOPGProperty, public wxIntProperty {
+class MOPGThingTypeProperty : public MOPGProperty, public wxIntProperty
+{
 private:
 	wxPGProperty*	args[5];
 
@@ -105,11 +113,12 @@ public:
 	void	applyValue();
 
 	// wxPGProperty overrides
-	wxString	ValueToString(wxVariant &value, int argFlags = 0) const;
+	wxString	ValueToString(wxVariant& value, int argFlags = 0) const;
 	bool 		OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
 };
 
-class MOPGLineFlagProperty : public MOPGProperty, public wxBoolProperty {
+class MOPGLineFlagProperty : public MOPGProperty, public wxBoolProperty
+{
 private:
 	int	index;
 
@@ -120,7 +129,8 @@ public:
 	void	applyValue();
 };
 
-class MOPGThingFlagProperty : public MOPGProperty, public wxBoolProperty {
+class MOPGThingFlagProperty : public MOPGProperty, public wxBoolProperty
+{
 private:
 	int	index;
 
@@ -131,7 +141,8 @@ public:
 	void	applyValue();
 };
 
-class MOPGAngleProperty : public MOPGProperty, public wxEditEnumProperty {
+class MOPGAngleProperty : public MOPGProperty, public wxEditEnumProperty
+{
 public:
 	MOPGAngleProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
@@ -139,10 +150,11 @@ public:
 	void	applyValue();
 
 	// wxPGProperty overrides
-	wxString	ValueToString(wxVariant &value, int argFlags = 0) const;
+	wxString	ValueToString(wxVariant& value, int argFlags = 0) const;
 };
 
-class MOPGColourProperty : public MOPGProperty, public wxColourProperty {
+class MOPGColourProperty : public MOPGProperty, public wxColourProperty
+{
 public:
 	MOPGColourProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
@@ -150,7 +162,8 @@ public:
 	void	applyValue();
 };
 
-class MOPGTextureProperty : public MOPGProperty, public wxStringProperty {
+class MOPGTextureProperty : public MOPGProperty, public wxStringProperty
+{
 private:
 	int	textype;
 
@@ -164,7 +177,8 @@ public:
 	bool 	OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
 };
 
-class MOPGSPACTriggerProperty : public MOPGProperty, public wxEnumProperty {
+class MOPGSPACTriggerProperty : public MOPGProperty, public wxEnumProperty
+{
 public:
 	MOPGSPACTriggerProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
@@ -172,7 +186,8 @@ public:
 	void	applyValue();
 };
 
-class MOPGTagProperty : public MOPGProperty, public wxIntProperty {
+class MOPGTagProperty : public MOPGProperty, public wxIntProperty
+{
 public:
 	MOPGTagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
@@ -183,7 +198,8 @@ public:
 	bool 	OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
 };
 
-class MOPGSectorSpecialProperty : public MOPGProperty, public wxIntProperty {
+class MOPGSectorSpecialProperty : public MOPGProperty, public wxIntProperty
+{
 public:
 	MOPGSectorSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 

@@ -4,7 +4,8 @@
 
 #include "BrowserWindow.h"
 
-class MapTexBrowserItem : public BrowserItem {
+class MapTexBrowserItem : public BrowserItem
+{
 private:
 
 public:
@@ -15,7 +16,8 @@ public:
 	string	itemInfo();
 };
 
-class MapTextureBrowser : public BrowserWindow {
+class MapTextureBrowser : public BrowserWindow
+{
 private:
 	int	type;
 

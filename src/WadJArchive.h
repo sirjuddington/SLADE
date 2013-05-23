@@ -5,7 +5,8 @@
 #include "Archive.h"
 #include "WadArchive.h"
 
-class WadJArchive : public WadArchive {
+class WadJArchive : public WadArchive
+{
 private:
 	vector<ArchiveEntry*>	entries;
 	char					wad_type[4];

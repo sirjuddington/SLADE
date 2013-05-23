@@ -2,7 +2,8 @@
 #ifndef __COLOUR_CONFIGURATION_H__
 #define __COLOUR_CONFIGURATION_H__
 
-struct cc_col_t {
+struct cc_col_t
+{
 	bool	exists;
 	bool	custom;
 	string	name;
@@ -11,7 +12,8 @@ struct cc_col_t {
 	cc_col_t() { exists = false; custom = false; }
 };
 
-namespace ColourConfiguration {
+namespace ColourConfiguration
+{
 	rgba_t		getColour(string name);
 	cc_col_t	getColDef(string name);
 	void		setColour(string name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);

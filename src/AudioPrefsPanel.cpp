@@ -49,14 +49,15 @@ EXTERN_CVAR(String, dir_last)
 /* AudioPrefsPanel::AudioPrefsPanel
  * AudioPrefsPanel class constructor
  *******************************************************************/
-AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Audio Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Audio Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Autoplay
@@ -87,13 +88,15 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
 /* AudioPrefsPanel::~AudioPrefsPanel
  * AudioPrefsPanel class destructor
  *******************************************************************/
-AudioPrefsPanel::~AudioPrefsPanel() {
+AudioPrefsPanel::~AudioPrefsPanel()
+{
 }
 
 /* AudioPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void AudioPrefsPanel::init() {
+void AudioPrefsPanel::init()
+{
 	cb_snd_autoplay->SetValue(snd_autoplay);
 	text_soundfont_path->SetValue(wxString(fs_soundfont_path));
 }
@@ -101,7 +104,8 @@ void AudioPrefsPanel::init() {
 /* AudioPrefsPanel::applyPreferences
  * Applies preferences from the panel controls
  *******************************************************************/
-void AudioPrefsPanel::applyPreferences() {
+void AudioPrefsPanel::applyPreferences()
+{
 	snd_autoplay = cb_snd_autoplay->GetValue();
 	fs_soundfont_path = text_soundfont_path->GetValue();
 	if (!theMIDIPlayer->isSoundfontLoaded())
@@ -116,10 +120,12 @@ void AudioPrefsPanel::applyPreferences() {
 /* AudioPrefsPanel::onBtnBrowseSoundfont
  * Called when the browse for soundfont button is clicked
  *******************************************************************/
-void AudioPrefsPanel::onBtnBrowseSoundfont(wxCommandEvent& e) {
+void AudioPrefsPanel::onBtnBrowseSoundfont(wxCommandEvent& e)
+{
 	// Open file dialog
 	wxFileDialog fd(this, "Browse for MIDI Soundfont", dir_last, "", "Soundfont files (*.sf2)|*.sf2");
-	if (fd.ShowModal() == wxID_OK) {
+	if (fd.ShowModal() == wxID_OK)
+	{
 		text_soundfont_path->SetValue(fd.GetPath());
 		dir_last = fd.GetDirectory();
 	}
@@ -128,6 +134,7 @@ void AudioPrefsPanel::onBtnBrowseSoundfont(wxCommandEvent& e) {
 /* AudioPrefsPanel::onBtnResetPlayer
  * Called for resetting the MIDI player
  *******************************************************************/
-void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e) {
+void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e)
+{
 	theMIDIPlayer->resetPlayer();
 }

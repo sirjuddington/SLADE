@@ -42,7 +42,8 @@
 /* BrowserItem::BrowserItem
  * BrowserItem class constructor
  *******************************************************************/
-BrowserItem::BrowserItem(string name, unsigned index, string type) {
+BrowserItem::BrowserItem(string name, unsigned index, string type)
+{
 	this->name = name;
 	this->index = index;
 	this->type = type;
@@ -53,14 +54,16 @@ BrowserItem::BrowserItem(string name, unsigned index, string type) {
 /* BrowserItem::~BrowserItem
  * BrowserItem class destructor
  *******************************************************************/
-BrowserItem::~BrowserItem() {
+BrowserItem::~BrowserItem()
+{
 }
 
 /* BrowserItem::loadImage
  * Loads the item image (base class does nothing, must be overridden
  * by child classes to be useful at all)
  *******************************************************************/
-bool BrowserItem::loadImage() {
+bool BrowserItem::loadImage()
+{
 	return false;
 }
 
@@ -68,7 +71,8 @@ bool BrowserItem::loadImage() {
  * Draws the item in a [size]x[size] box, keeping the correct aspect
  * ratio of it's image
  *******************************************************************/
-void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewtype, rgba_t colour, bool text_shadow) {
+void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewtype, rgba_t colour, bool text_shadow)
+{
 	// Determine item name string (for normal viewtype)
 	string draw_name = "";
 	if (nametype == 0)
@@ -77,11 +81,13 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 		draw_name = S_FMT("%d", index);
 
 	// Item name
-	if (viewtype == 0) {
+	if (viewtype == 0)
+	{
 		if (text_shadow) Drawing::drawText(draw_name, x+(size*0.5+1), y+size+5, COL_BLACK, font, Drawing::ALIGN_CENTER);
 		Drawing::drawText(draw_name, x+(size*0.5), y+size+4, colour, font, Drawing::ALIGN_CENTER);
 	}
-	else if (viewtype == 1) {
+	else if (viewtype == 1)
+	{
 		if (text_shadow) Drawing::drawText(name, x+size+9, y+(size*0.5)+1, COL_BLACK, font);
 		Drawing::drawText(name, x+size+8, y+(size*0.5), colour, font);
 		if (text_shadow) Drawing::drawText(S_FMT("%d", index), x+size+9, y+(size*0.5)-15, COL_BLACK, font);
@@ -97,7 +103,8 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 		loadImage();
 
 	// If it still isn't just draw a red box with an X
-	if (!image || (image && !image->isLoaded())) {
+	if (!image || (image && !image->isLoaded()))
+	{
 		glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT);
 
 		glColor3f(1, 0, 0);
@@ -129,23 +136,28 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 	double height = image->getHeight();
 
 	// Scale up if size > 128
-	if (size > 128) {
+	if (size > 128)
+	{
 		double scale = (double)size / 128.0;
 		width *= scale;
 		height *= scale;
 	}
 
-	if (width > height) {
+	if (width > height)
+	{
 		// Scale down by width
-		if (width > size) {
+		if (width > size)
+		{
 			double scale = (double)size / width;
 			width *= scale;
 			height *= scale;
 		}
 	}
-	else {
+	else
+	{
 		// Scale down by height
-		if (height > size) {
+		if (height > size)
+		{
 			double scale = (double)size / height;
 			width *= scale;
 			height *= scale;
@@ -171,6 +183,7 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 /* BrowserItem::clearImage
  * Clears the item image
  *******************************************************************/
-void BrowserItem::clearImage() {
+void BrowserItem::clearImage()
+{
 	if (image) image->clear();
 }

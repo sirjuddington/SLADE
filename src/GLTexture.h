@@ -4,13 +4,15 @@
 
 #include "SImage.h"
 
-struct gl_tex_t {
+struct gl_tex_t
+{
 	GLuint		id;
 	uint32_t	width;
 	uint32_t	height;
 };
 
-class GLTexture {
+class GLTexture
+{
 private:
 	uint32_t			width;
 	uint32_t			height;
@@ -29,14 +31,15 @@ private:
 	bool	loadImagePortion(SImage* image, rect_t rect, Palette8bit* pal = NULL, bool add = false);
 
 public:
-	enum {
-		// Filter types
-		NEAREST,
-		LINEAR,
-		MIPMAP,
-		LINEAR_MIPMAP,	// (same as MIPMAP)
-		NEAREST_LINEAR_MIN,
-		NEAREST_MIPMAP,
+	enum
+	{
+	    // Filter types
+	    NEAREST,
+	    LINEAR,
+	    MIPMAP,
+	    LINEAR_MIPMAP,	// (same as MIPMAP)
+	    NEAREST_LINEAR_MIN,
+	    NEAREST_MIPMAP,
 	};
 
 	GLTexture(bool allow_split = true);

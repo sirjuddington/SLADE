@@ -9,27 +9,33 @@
 
 CVAR(Bool, browser_thing_tiles, true, CVAR_SAVE)
 
-ThingBrowserItem::ThingBrowserItem(string name, ThingType* type, unsigned index) : BrowserItem(name, index) {
+ThingBrowserItem::ThingBrowserItem(string name, ThingType* type, unsigned index) : BrowserItem(name, index)
+{
 	// Init variables
 	this->type = type;
 }
 
-ThingBrowserItem::~ThingBrowserItem() {
+ThingBrowserItem::~ThingBrowserItem()
+{
 }
 
-bool ThingBrowserItem::loadImage() {
+bool ThingBrowserItem::loadImage()
+{
 	// Get sprite
 	GLTexture* tex = theMapEditor->textureManager().getSprite(type->getSprite(), type->getTranslation(), type->getPalette());
-	if (!tex) {
+	if (!tex)
+	{
 		// Sprite not found, try an icon
 		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(type->getIcon())));
 	}
-	if (!tex) {
+	if (!tex)
+	{
 		// Icon not found either, use unknown icon
 		tex = theMapEditor->textureManager().getEditorImage("thing/unknown");
 	}
 
-	if (tex) {
+	if (tex)
+	{
 		image = tex;
 		return true;
 	}
@@ -39,7 +45,8 @@ bool ThingBrowserItem::loadImage() {
 
 
 
-ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent) {
+ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent)
+{
 	// Set window title
 	SetTitle("Browse Thing Types");
 
@@ -71,16 +78,20 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	Layout();
 }
 
-ThingTypeBrowser::~ThingTypeBrowser() {
+ThingTypeBrowser::~ThingTypeBrowser()
+{
 }
 
-void ThingTypeBrowser::setupViewOptions() {
-	if (browser_thing_tiles) {
+void ThingTypeBrowser::setupViewOptions()
+{
+	if (browser_thing_tiles)
+	{
 		setFont(Drawing::FONT_CONDENSED);
 		setItemSize(48);
 		setItemViewType(BrowserCanvas::ITEMS_TILES);
 	}
-	else {
+	else
+	{
 		setFont(Drawing::FONT_BOLD);
 		setItemSize(80);
 		setItemViewType(BrowserCanvas::ITEMS_NORMAL);
@@ -91,9 +102,11 @@ void ThingTypeBrowser::setupViewOptions() {
 	canvas->showSelectedItem();
 }
 
-int ThingTypeBrowser::getSelectedType() {
+int ThingTypeBrowser::getSelectedType()
+{
 	BrowserItem* selected = getSelectedItem();
-	if (selected) {
+	if (selected)
+	{
 		wxLogMessage("Selected item %d", selected->getIndex());
 		return selected->getIndex();
 	}
@@ -102,7 +115,8 @@ int ThingTypeBrowser::getSelectedType() {
 }
 
 
-void ThingTypeBrowser::onViewTilesClicked(wxCommandEvent& e) {
+void ThingTypeBrowser::onViewTilesClicked(wxCommandEvent& e)
+{
 	browser_thing_tiles = cb_view_tiles->GetValue();
 	setupViewOptions();
 	Refresh();

@@ -6,7 +6,8 @@
 
 class PrefsPanelBase;
 class BaseResourceArchivesPanel;
-class PreferencesDialog : public wxDialog {
+class PreferencesDialog : public wxDialog
+{
 private:
 	wxTreebook*				tree_prefs;
 	vector<PrefsPanelBase*>	prefs_pages;

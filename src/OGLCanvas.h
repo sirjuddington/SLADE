@@ -16,9 +16,11 @@
 
 class wxPanel;
 #ifdef USE_SFML_RENDERWINDOW
-class OGLCanvas : public wxControl, public sf::RenderWindow {
+class OGLCanvas : public wxControl, public sf::RenderWindow
+{
 #else
-class OGLCanvas : public wxGLCanvas {
+class OGLCanvas : public wxGLCanvas
+{
 #endif
 protected:
 	bool		init_done;

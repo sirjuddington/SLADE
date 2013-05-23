@@ -5,8 +5,9 @@
 #include "Args.h"
 
 class ParseTreeNode;
-class ThingType {
-friend class GameConfiguration;
+class ThingType
+{
+	friend class GameConfiguration;
 private:
 	string	name;
 	string	group;

@@ -54,7 +54,8 @@
  * OGLCanvas class constructor, SFML implementation
  *******************************************************************/
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
-: wxControl(parent, id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this) {
+	: wxControl(parent, id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this)
+{
 	init_done = false;
 	recreate = false;
 	last_time = theApp->runTimer();
@@ -80,7 +81,8 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
  * OGLCanvas class constructor, wxGLCanvas implementation
  *******************************************************************/
 OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
-: wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this) {
+	: wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this)
+{
 	init_done = false;
 	last_time = theApp->runTimer();
 
@@ -98,7 +100,8 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
 /* OGLCanvas::OGLCanvas
  * OGLCanvas class constructor
  *******************************************************************/
-OGLCanvas::~OGLCanvas() {
+OGLCanvas::~OGLCanvas()
+{
 }
 
 /* OGLCanvas::setContext
@@ -106,11 +109,13 @@ OGLCanvas::~OGLCanvas() {
  * it if it doesn't exist. Returns true if the context is valid,
  * false otherwise
  *******************************************************************/
-bool OGLCanvas::setContext() {
+bool OGLCanvas::setContext()
+{
 #ifndef USE_SFML_RENDERWINDOW
 	wxGLContext* context = OpenGL::getContext(this);
 
-	if (context) {
+	if (context)
+	{
 		context->SetCurrent(*this);
 		return true;
 	}
@@ -121,7 +126,8 @@ bool OGLCanvas::setContext() {
 #endif
 }
 
-void OGLCanvas::createSFML() {
+void OGLCanvas::createSFML()
+{
 #ifdef USE_SFML_RENDERWINDOW
 	// Code taken from SFML wxWidgets integration example
 	sf::WindowHandle handle;
@@ -154,7 +160,8 @@ void OGLCanvas::createSFML() {
 /* OGLCanvas::init
  * Initialises OpenGL settings for the GL canvas
  *******************************************************************/
-void OGLCanvas::init() {
+void OGLCanvas::init()
+{
 	OpenGL::init();
 
 #ifdef USE_SFML_RENDERWINDOW
@@ -191,7 +198,8 @@ void OGLCanvas::init() {
  * Fills the canvas with a checkered pattern (generally used as the
  * 'background' - to indicate transparency)
  *******************************************************************/
-void OGLCanvas::drawCheckeredBackground() {
+void OGLCanvas::drawCheckeredBackground()
+{
 	// Save current matrix
 	glPushMatrix();
 
@@ -222,7 +230,8 @@ void OGLCanvas::drawCheckeredBackground() {
  * Places the canvas on top of a new wxPanel and returns the panel.
  * This is sometimes needed to fix redraw problems in Windows XP
  *******************************************************************/
-wxWindow* OGLCanvas::toPanel(wxWindow* parent) {
+wxWindow* OGLCanvas::toPanel(wxWindow* parent)
+{
 #ifdef USE_SFML_RENDERWINDOW
 #ifdef __WXGTK__
 	// Reparenting the window causes a crash under gtk, so don't do it there
@@ -255,17 +264,20 @@ wxWindow* OGLCanvas::toPanel(wxWindow* parent) {
 /* OGLCanvas::onPaint
  * Called when the gfx canvas has to be redrawn
  *******************************************************************/
-void OGLCanvas::onPaint(wxPaintEvent& e) {
+void OGLCanvas::onPaint(wxPaintEvent& e)
+{
 	wxPaintDC(this);
 
 #ifdef __WXGTK__
-	if (recreate) {
+	if (recreate)
+	{
 		createSFML();
-        recreate = false;
+		recreate = false;
 	}
 #endif
 
-	if (IsShown()) {
+	if (IsShown())
+	{
 		// Set context to this window
 #ifdef USE_SFML_RENDERWINDOW
 #if SFML_VERSION_MAJOR < 2
@@ -294,7 +306,8 @@ void OGLCanvas::onPaint(wxPaintEvent& e) {
  * Called when the gfx canvas background is to be erased (need to
  * override this to do nothing or the canvas will flicker in wxMSW)
  *******************************************************************/
-void OGLCanvas::onEraseBackground(wxEraseEvent& e) {
+void OGLCanvas::onEraseBackground(wxEraseEvent& e)
+{
 	// Do nothing
 }
 
@@ -321,7 +334,8 @@ void OGLCanvas::onIdle(wxIdleEvent& e) {
 }
 */
 
-void OGLCanvas::onTimer(wxTimerEvent& e) {
+void OGLCanvas::onTimer(wxTimerEvent& e)
+{
 	// Get time since last redraw
 	long frametime = theApp->runTimer() - last_time;
 	last_time = theApp->runTimer();
@@ -331,7 +345,8 @@ void OGLCanvas::onTimer(wxTimerEvent& e) {
 	Refresh();
 }
 
-void OGLCanvas::onResize(wxSizeEvent& e) {
+void OGLCanvas::onResize(wxSizeEvent& e)
+{
 	// Recreate SFML RenderWindow if GTK
 #ifdef __WXGTK__
 	recreate = true;

@@ -8,13 +8,16 @@
 #include "Drawing.h"
 #include "MapEditorWindow.h"
 
-ThingInfoOverlay::ThingInfoOverlay() {
+ThingInfoOverlay::ThingInfoOverlay()
+{
 }
 
-ThingInfoOverlay::~ThingInfoOverlay() {
+ThingInfoOverlay::~ThingInfoOverlay()
+{
 }
 
-void ThingInfoOverlay::update(MapThing* thing) {
+void ThingInfoOverlay::update(MapThing* thing)
+{
 	if (!thing)
 		return;
 
@@ -61,7 +64,8 @@ void ThingInfoOverlay::update(MapThing* thing) {
 
 	// Special and Args (if in hexen format or udmf with thing args)
 	if (map_format == MAP_HEXEN ||
-		(map_format == MAP_UDMF && theGameConfiguration->getUDMFProperty("arg0", MOBJ_THING))) {
+	        (map_format == MAP_UDMF && theGameConfiguration->getUDMFProperty("arg0", MOBJ_THING)))
+	{
 		int as_id = thing->intProperty("special");
 		info.push_back(S_FMT("Special: %d (%s)", as_id, CHR(theGameConfiguration->actionSpecialName(as_id))));
 		int args[5];
@@ -82,7 +86,8 @@ void ThingInfoOverlay::update(MapThing* thing) {
 		info.push_back(S_FMT("Flags: %s", CHR(theGameConfiguration->thingFlagsString(thing->intProperty("flags")))));
 
 	// TID (if in doom64/hexen/udmf format)
-	if (map_format != MAP_DOOM) {
+	if (map_format != MAP_DOOM)
+	{
 		info.push_back(S_FMT("TID: %i", thing->intProperty("id")));
 	}
 
@@ -93,7 +98,8 @@ void ThingInfoOverlay::update(MapThing* thing) {
 	icon = tt->getIcon();
 }
 
-void ThingInfoOverlay::draw(int bottom, int right, float alpha) {
+void ThingInfoOverlay::draw(int bottom, int right, float alpha)
+{
 	// Don't bother if invisible
 	if (alpha <= 0.0f)
 		return;
@@ -122,7 +128,8 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha) {
 
 	// Draw info text lines
 	int y = height;
-	for (unsigned a = 0; a < info.size(); a++) {
+	for (unsigned a = 0; a < info.size(); a++)
+	{
 		Drawing::drawText(info[a], 2, bottom - y, col_fg, Drawing::FONT_CONDENSED);
 		y -= 16;
 	}
@@ -130,16 +137,19 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha) {
 	// Draw sprite
 	bool isicon = false;
 	GLTexture* tex = theMapEditor->textureManager().getSprite(sprite, translation, palette);
-	if (!tex) {
+	if (!tex)
+	{
 		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(icon)));
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);
 	rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
-	if (tex) {
+	if (tex)
+	{
 		double width = tex->getWidth();
 		double height = tex->getHeight();
-		if (isicon) {
+		if (isicon)
+		{
 			width = 64;
 			height = 64;
 		}

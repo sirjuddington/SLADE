@@ -8,13 +8,16 @@
 #include "ColourConfiguration.h"
 #include "GameConfiguration.h"
 
-SectorInfoOverlay::SectorInfoOverlay() {
+SectorInfoOverlay::SectorInfoOverlay()
+{
 }
 
-SectorInfoOverlay::~SectorInfoOverlay() {
+SectorInfoOverlay::~SectorInfoOverlay()
+{
 }
 
-void SectorInfoOverlay::update(MapSector* sector) {
+void SectorInfoOverlay::update(MapSector* sector)
+{
 	if (!sector)
 		return;
 
@@ -44,7 +47,8 @@ void SectorInfoOverlay::update(MapSector* sector) {
 	ctex = sector->getCeilingTex();
 }
 
-void SectorInfoOverlay::draw(int bottom, int right, float alpha) {
+void SectorInfoOverlay::draw(int bottom, int right, float alpha)
+{
 	// Don't bother if invisible
 	if (alpha <= 0.0f)
 		return;
@@ -74,14 +78,15 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha) {
 
 	// Draw info text lines
 	int y = height;
-	for (unsigned a = 0; a < info.size(); a++) {
+	for (unsigned a = 0; a < info.size(); a++)
+	{
 		Drawing::drawText(info[a], 2, bottom - y, col_fg, Drawing::FONT_CONDENSED);
 		y -= 16;
 	}
 
 	// Ceiling texture
 	drawTexture(alpha, right - 88, bottom - 4, ctex, "C");
-	
+
 	// Floor texture
 	drawTexture(alpha, right - 88 - 92, bottom - 4, ftex, "F");
 
@@ -89,14 +94,16 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha) {
 	glEnable(GL_LINE_SMOOTH);
 }
 
-void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos) {
+void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
+{
 	// Get colours
 	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
 	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 
 	// Check texture isn't blank
-	if (!(S_CMPNOCASE(texture, "-"))) {
+	if (!(S_CMPNOCASE(texture, "-")))
+	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
 		rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
@@ -109,7 +116,8 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 		GLTexture* tex = theMapEditor->textureManager().getFlat(texture, theGameConfiguration->mixTexFlats());
 
 		// Draw texture
-		if (tex) {
+		if (tex)
+		{
 			rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
 			Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0, 100);
 		}

@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class GZipArchive : public TreelessArchive {
+class GZipArchive : public TreelessArchive
+{
 private:
 	string comment;
 	MemChunk xtra;

@@ -6,13 +6,15 @@
 #include "Archive.h"
 
 // Structs for basic map features
-struct mep_vertex_t {
+struct mep_vertex_t
+{
 	double x;
 	double y;
 	mep_vertex_t(double x, double y) { this->x = x; this->y = y; }
 };
 
-struct mep_line_t {
+struct mep_line_t
+{
 	unsigned	v1;
 	unsigned	v2;
 	bool		twosided;
@@ -22,7 +24,8 @@ struct mep_line_t {
 	mep_line_t(unsigned v1, unsigned v2) { this->v1 = v1; this->v2 = v2; }
 };
 
-class MapPreviewCanvas : public OGLCanvas {
+class MapPreviewCanvas : public OGLCanvas
+{
 private:
 	vector<mep_vertex_t>	verts;
 	vector<mep_line_t>		lines;

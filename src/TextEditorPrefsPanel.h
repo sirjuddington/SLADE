@@ -5,7 +5,8 @@
 #include "PrefsPanelBase.h"
 #include <wx/spinctrl.h>
 
-class TextEditorPrefsPanel : public PrefsPanelBase {
+class TextEditorPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxSpinCtrl*	spin_tab_width;
 	wxCheckBox*	cb_auto_indent;

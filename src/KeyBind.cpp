@@ -22,7 +22,8 @@ vector<KeyBindHandler*> kb_handlers;
 /* KeyBind::KeyBind
  * KeyBind class constructor
  *******************************************************************/
-KeyBind::KeyBind(string name) {
+KeyBind::KeyBind(string name)
+{
 	// Init variables
 	this->name = name;
 	this->pressed = false;
@@ -31,10 +32,12 @@ KeyBind::KeyBind(string name) {
 /* KeyBind::~KeyBind
  * KeyBind class destructor
  *******************************************************************/
-KeyBind::~KeyBind() {
+KeyBind::~KeyBind()
+{
 }
 
-void KeyBind::addKey(string key, bool alt, bool ctrl, bool shift) {
+void KeyBind::addKey(string key, bool alt, bool ctrl, bool shift)
+{
 	keys.push_back(keypress_t());
 	keys.back().alt = alt;
 	keys.back().ctrl = ctrl;
@@ -42,10 +45,12 @@ void KeyBind::addKey(string key, bool alt, bool ctrl, bool shift) {
 	keys.back().key = key;
 }
 
-string KeyBind::keysAsString() {
+string KeyBind::keysAsString()
+{
 	string ret = "";
 
-	for (unsigned a = 0; a < keys.size(); a++) {
+	for (unsigned a = 0; a < keys.size(); a++)
+	{
 		if (keys[a].ctrl) ret += "Ctrl+";
 		if (keys[a].alt) ret += "Alt+";
 		if (keys[a].shift) ret += "Shift+";
@@ -70,8 +75,10 @@ string KeyBind::keysAsString() {
  * KEYBIND STATIC FUNCTIONS
  *******************************************************************/
 
-KeyBind& KeyBind::getBind(string name) {
-	for (unsigned a = 0; a < keybinds.size(); a++) {
+KeyBind& KeyBind::getBind(string name)
+{
+	for (unsigned a = 0; a < keybinds.size(); a++)
+	{
 		if (keybinds[a].name == name)
 			return keybinds[a];
 	}
@@ -79,23 +86,26 @@ KeyBind& KeyBind::getBind(string name) {
 	return kb_none;
 }
 
-wxArrayString KeyBind::getBinds(keypress_t key) {
+wxArrayString KeyBind::getBinds(keypress_t key)
+{
 	wxArrayString matches;
 
 	// Go through all keybinds
 	bool pressed = false;
-	for (unsigned k = 0; k < keybinds.size(); k++) {
+	for (unsigned k = 0; k < keybinds.size(); k++)
+	{
 		KeyBind& kb = keybinds[k];
 
 		// Go through all keys bound to this keybind
-		for (unsigned a = 0; a < kb.keys.size(); a++) {
+		for (unsigned a = 0; a < kb.keys.size(); a++)
+		{
 			keypress_t& kp = kb.keys[a];
 
 			// Check for match with keypress
 			if (kp.shift == key.shift &&
-				kp.alt == key.alt &&
-				kp.ctrl == key.ctrl &&
-				kp.key == key.key)
+			        kp.alt == key.alt &&
+			        kp.ctrl == key.ctrl &&
+			        kp.key == key.key)
 				matches.Add(kb.name);
 		}
 	}
@@ -103,38 +113,46 @@ wxArrayString KeyBind::getBinds(keypress_t key) {
 	return matches;
 }
 
-bool KeyBind::isPressed(string name) {
+bool KeyBind::isPressed(string name)
+{
 	return getBind(name).pressed;
 }
 
-bool KeyBind::addBind(string name, keypress_t key, string desc, string group) {
+bool KeyBind::addBind(string name, keypress_t key, string desc, string group)
+{
 	// Find keybind
 	KeyBind* bind = NULL;
-	for (unsigned a = 0; a < keybinds.size(); a++) {
-		if (keybinds[a].name == name) {
+	for (unsigned a = 0; a < keybinds.size(); a++)
+	{
+		if (keybinds[a].name == name)
+		{
 			bind = &keybinds[a];
 			break;
 		}
 	}
 
 	// Add keybind if it doesn't exist
-	if (!bind) {
+	if (!bind)
+	{
 		keybinds.push_back(KeyBind(name));
 		bind = &keybinds.back();
 	}
 
 	// Set keybind description/group
-	if (!desc.IsEmpty()) {
+	if (!desc.IsEmpty())
+	{
 		bind->description = desc;
 		bind->group = group;
 	}
 
 	// Check if the key is already bound to it
-	for (unsigned a = 0; a < bind->keys.size(); a++) {
+	for (unsigned a = 0; a < bind->keys.size(); a++)
+	{
 		if (bind->keys[a].alt == key.alt &&
-			bind->keys[a].ctrl == key.ctrl &&
-			bind->keys[a].shift == key.shift &&
-			bind->keys[a].key == key.key) {
+		        bind->keys[a].ctrl == key.ctrl &&
+		        bind->keys[a].shift == key.shift &&
+		        bind->keys[a].key == key.key)
+		{
 			// It is, remove the bind
 			bind->keys.erase(bind->keys.begin() + a);
 			return false;
@@ -147,9 +165,11 @@ bool KeyBind::addBind(string name, keypress_t key, string desc, string group) {
 	return true;
 }
 
-string KeyBind::keyName(int key) {
+string KeyBind::keyName(int key)
+{
 	// Return string representation of key id
-	switch (key) {
+	switch (key)
+	{
 	case WXK_BACK:				return "backspace";
 	case WXK_TAB:				return "tab";
 	case WXK_RETURN:			return "return";
@@ -251,8 +271,10 @@ string KeyBind::keyName(int key) {
 	return S_FMT("key%d", key);
 }
 
-string KeyBind::mbName(int button) {
-	switch (button) {
+string KeyBind::mbName(int button)
+{
+	switch (button)
+	{
 	case wxMOUSE_BTN_LEFT:		return "mouse1";
 	case wxMOUSE_BTN_RIGHT:		return "mouse2";
 	case wxMOUSE_BTN_MIDDLE:	return "mouse3";
@@ -261,21 +283,25 @@ string KeyBind::mbName(int button) {
 	};
 }
 
-bool KeyBind::keyPressed(keypress_t key) {
+bool KeyBind::keyPressed(keypress_t key)
+{
 	// Go through all keybinds
 	bool pressed = false;
-	for (unsigned k = 0; k < keybinds.size(); k++) {
+	for (unsigned k = 0; k < keybinds.size(); k++)
+	{
 		KeyBind& kb = keybinds[k];
 
 		// Go through all keys bound to this keybind
-		for (unsigned a = 0; a < kb.keys.size(); a++) {
+		for (unsigned a = 0; a < kb.keys.size(); a++)
+		{
 			keypress_t& kp = kb.keys[a];
 
 			// Check for match with keypress
 			if (kp.shift == key.shift &&
-				kp.alt == key.alt &&
-				kp.ctrl == key.ctrl &&
-				kp.key == key.key) {
+			        kp.alt == key.alt &&
+			        kp.ctrl == key.ctrl &&
+			        kp.key == key.key)
+			{
 				// Set bind state
 				kb.pressed = true;
 
@@ -292,16 +318,20 @@ bool KeyBind::keyPressed(keypress_t key) {
 	return pressed;
 }
 
-bool KeyBind::keyReleased(string key) {
+bool KeyBind::keyReleased(string key)
+{
 	// Go through all keybinds
 	bool released = false;
-	for (unsigned k = 0; k < keybinds.size(); k++) {
+	for (unsigned k = 0; k < keybinds.size(); k++)
+	{
 		KeyBind& kb = keybinds[k];
 
 		// Go through all keys bound to this keybind
-		for (unsigned a = 0; a < kb.keys.size(); a++) {
+		for (unsigned a = 0; a < kb.keys.size(); a++)
+		{
 			// Check for match with keypress, and that it is currently pressed
-			if (kb.keys[a].key == key && kb.pressed) {
+			if (kb.keys[a].key == key && kb.pressed)
+			{
 				// Set bind state
 				kb.pressed = false;
 
@@ -318,19 +348,22 @@ bool KeyBind::keyReleased(string key) {
 	return released;
 }
 
-keypress_t KeyBind::asKeyPress(int keycode, int modifiers) {
+keypress_t KeyBind::asKeyPress(int keycode, int modifiers)
+{
 	return keypress_t(keyName(keycode),
-						((modifiers & wxMOD_ALT) != 0),
-						((modifiers & wxMOD_CMD) != 0),
-						((modifiers & wxMOD_SHIFT) != 0));
+	                  ((modifiers & wxMOD_ALT) != 0),
+	                  ((modifiers & wxMOD_CMD) != 0),
+	                  ((modifiers & wxMOD_SHIFT) != 0));
 }
 
-void KeyBind::allKeyBinds(vector<KeyBind*>& list) {
+void KeyBind::allKeyBinds(vector<KeyBind*>& list)
+{
 	for (unsigned a = 0; a < keybinds.size(); a++)
 		list.push_back(&keybinds[a]);
 }
 
-void KeyBind::releaseAll() {
+void KeyBind::releaseAll()
+{
 	for (unsigned a = 0; a < keybinds.size(); a++)
 		keybinds[a].pressed = false;
 }
@@ -343,7 +376,8 @@ void KeyBind::releaseAll() {
 #endif
 
 
-void KeyBind::initBinds() {
+void KeyBind::initBinds()
+{
 	// General
 	string group = "General";
 	addBind("copy", keypress_t("C", KPM_CTRL), "Copy", group);
@@ -559,18 +593,21 @@ void KeyBind::initBinds() {
 	addBind("me3d_thing_down", keypress_t("num_down"), "Z down 1", group);
 
 	// Set above keys as defaults
-	for (unsigned a = 0; a < keybinds.size(); a++) {
+	for (unsigned a = 0; a < keybinds.size(); a++)
+	{
 		for (unsigned k = 0; k < keybinds[a].keys.size(); k++)
 			keybinds[a].defaults.push_back(keybinds[a].keys[k]);
 	}
 }
 
-string KeyBind::writeBinds() {
+string KeyBind::writeBinds()
+{
 	// Init string
 	string ret = "";
 
 	// Go through all keybinds
-	for (unsigned k = 0; k < keybinds.size(); k++) {
+	for (unsigned k = 0; k < keybinds.size(); k++)
+	{
 		KeyBind& kb = keybinds[k];
 
 		// Add keybind line
@@ -582,7 +619,8 @@ string KeyBind::writeBinds() {
 			ret += " unbound";
 
 		// Go through all bound keys
-		for (unsigned a = 0; a < kb.keys.size(); a++) {
+		for (unsigned a = 0; a < kb.keys.size(); a++)
+		{
 			keypress_t& kp = kb.keys[a];
 			ret += " \"";
 
@@ -611,15 +649,18 @@ string KeyBind::writeBinds() {
 	return ret;
 }
 
-bool KeyBind::readBinds(Tokenizer& tz) {
+bool KeyBind::readBinds(Tokenizer& tz)
+{
 	// Parse until ending }
 	string name = tz.getToken();
-	while (name != "}" && !name.IsEmpty()) {
+	while (name != "}" && !name.IsEmpty())
+	{
 		// Clear any current binds for the key
 		getBind(name).keys.clear();
 
 		// Read keys
-		while (1) {
+		while (1)
+		{
 			string keystr = tz.getToken();
 
 			// Finish if no keys are bound
@@ -628,7 +669,8 @@ bool KeyBind::readBinds(Tokenizer& tz) {
 
 			// Parse key string
 			string key, mods;
-			if (keystr.Find("|") >= 0) {
+			if (keystr.Find("|") >= 0)
+			{
 				mods = keystr.BeforeFirst('|');
 				key = keystr.AfterFirst('|');
 			}
@@ -654,13 +696,17 @@ bool KeyBind::readBinds(Tokenizer& tz) {
 
 
 
-KeyBindHandler::KeyBindHandler() {
+KeyBindHandler::KeyBindHandler()
+{
 	kb_handlers.push_back(this);
 }
 
-KeyBindHandler::~KeyBindHandler() {
-	for (unsigned a = 0; a < kb_handlers.size(); a++) {
-		if (kb_handlers[a] == this) {
+KeyBindHandler::~KeyBindHandler()
+{
+	for (unsigned a = 0; a < kb_handlers.size(); a++)
+	{
+		if (kb_handlers[a] == this)
+		{
 			kb_handlers.erase(kb_handlers.begin() + a);
 			a--;
 		}

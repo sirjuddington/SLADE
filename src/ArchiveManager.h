@@ -7,9 +7,11 @@
 
 #define MAX_RECENT_FILES 25
 
-class ArchiveManager : public Announcer, Listener {
+class ArchiveManager : public Announcer, Listener
+{
 private:
-	struct archive_t {
+	struct archive_t
+	{
 		Archive*			archive;
 		vector<Archive*>	open_children;	// A list of currently open archives that are within this archive
 		bool				resource;
@@ -29,15 +31,18 @@ public:
 	ArchiveManager();
 	~ArchiveManager();
 
-	static ArchiveManager*	getInstance() {
+	static ArchiveManager*	getInstance()
+	{
 		if (!instance)
 			instance = new ArchiveManager();
 
 		return instance;
 	}
 
-	static void deleteInstance() {
-		if (instance) {
+	static void deleteInstance()
+	{
+		if (instance)
+		{
 			delete instance;
 			instance = NULL;
 		}

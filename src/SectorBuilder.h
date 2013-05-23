@@ -8,14 +8,17 @@ class MapVertex;
 class MapSector;
 class SLADEMap;
 
-class SectorBuilder {
+class SectorBuilder
+{
 private:
-	struct edge_t {
+	struct edge_t
+	{
 		MapLine*	line;
 		bool		front;
 		bool		side_created;
 
-		edge_t(MapLine* line = NULL, bool front = true) {
+		edge_t(MapLine* line = NULL, bool front = true)
+		{
 			this->line = line;
 			this->front = front;
 			side_created = false;

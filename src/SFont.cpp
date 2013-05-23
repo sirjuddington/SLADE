@@ -49,7 +49,8 @@ SFont SFont::font_slade;
 /* SFontChar::SFontChar
  * SFontChar class constructor
  *******************************************************************/
-SFontChar::SFontChar() {
+SFontChar::SFontChar()
+{
 	// Init variables
 	width = 0;
 	height = 0;
@@ -58,7 +59,8 @@ SFontChar::SFontChar() {
 /* SFontChar::~SFontChar
  * SFontChar class destructor
  *******************************************************************/
-SFontChar::~SFontChar() {
+SFontChar::~SFontChar()
+{
 }
 
 
@@ -69,7 +71,8 @@ SFontChar::~SFontChar() {
 /* SFont::SFont
  * SFont class constructor
  *******************************************************************/
-SFont::SFont() {
+SFont::SFont()
+{
 	// Init character map
 	for (unsigned a = 0; a < 256; a++)
 		characters[a] = NULL;
@@ -78,28 +81,32 @@ SFont::SFont() {
 /* SFont::~SFont
  * SFont class destructor
  *******************************************************************/
-SFont::~SFont() {
+SFont::~SFont()
+{
 }
 
 /* SFont::loadFont0
  * Loads a Doom alpha HUFONT font. Returns true on success, false
  * otherwise
  *******************************************************************/
-bool SFont::loadFont0(MemChunk& mc) {
+bool SFont::loadFont0(MemChunk& mc)
+{
 	return false;
 }
 
 /* SFont::loadFont1
  * Loads a ZDoom FON1 font. Returns true on success, false otherwise
  *******************************************************************/
-bool SFont::loadFont1(MemChunk& mc) {
+bool SFont::loadFont1(MemChunk& mc)
+{
 	return false;
 }
 
 /* SFont::loadFont2
  * Loads a ZDoom FON2 font. Returns true on success, false otherwise
  *******************************************************************/
-bool SFont::loadFont2(MemChunk& mc) {
+bool SFont::loadFont2(MemChunk& mc)
+{
 	return false;
 }
 
@@ -107,7 +114,8 @@ bool SFont::loadFont2(MemChunk& mc) {
  * Loads a monochrome vga font. Returns true on success, false
  * otherwise
  *******************************************************************/
-bool SFont::loadFontM(MemChunk& mc) {
+bool SFont::loadFontM(MemChunk& mc)
+{
 	// Check data
 	if (mc.getSize() == 0 || mc.getSize() % 256)
 		return false;
@@ -133,7 +141,8 @@ bool SFont::loadFontM(MemChunk& mc) {
 	unsigned yoff = 0;
 	unsigned i = 0;
 	bool test = true;
-	for (unsigned a = 0; a < 256; a++) {
+	for (unsigned a = 0; a < 256; a++)
+	{
 		// Setup character info
 		SFontChar* c = new SFontChar();
 		c->tex_bounds.set(xoff, yoff, xoff+charwidth, yoff+charheight);
@@ -143,8 +152,10 @@ bool SFont::loadFontM(MemChunk& mc) {
 
 		// Write rows to image
 		uint8_t val = 255;
-		for (unsigned row = 0; row < charheight; row++) {
-			for (unsigned p = 0; p < charwidth; ++p) {
+		for (unsigned row = 0; row < charheight; row++)
+		{
+			for (unsigned p = 0; p < charwidth; ++p)
+			{
 				val = ((mc[i]>>(7-p)) & 1) * 255;
 				image.setPixel(xoff + p, yoff + row, rgba_t(val, val, val, val));
 			}
@@ -153,7 +164,8 @@ bool SFont::loadFontM(MemChunk& mc) {
 
 		// Go to next character
 		xoff += charwidth;
-		if (xoff >= 256) {
+		if (xoff >= 256)
+		{
 			xoff = 0;
 			yoff += charheight;
 		}
@@ -170,14 +182,16 @@ bool SFont::loadFontM(MemChunk& mc) {
 /* SFont::loadBMF
  * Loads a BMF font. Returns true on success, false otherwise
  *******************************************************************/
-bool SFont::loadBMF(MemChunk& mc) {
+bool SFont::loadBMF(MemChunk& mc)
+{
 	return false;
 }
 
 /* SFont::drawCharacter
  * Draws the character [c] with the font, in [colour]
  *******************************************************************/
-void SFont::drawCharacter(char c, rgba_t colour) {
+void SFont::drawCharacter(char c, rgba_t colour)
+{
 	// Bind texture
 	if (!texture.bind())
 		return;
@@ -206,7 +220,8 @@ void SFont::drawCharacter(char c, rgba_t colour) {
  * Draws the string [srt] with the font, in [colour]. [align] can be
  * one of SF_ALIGN_LEFT, SF_ALIGN_RIGHT or SF_ALIGN_CENTER
  *******************************************************************/
-void SFont::drawString(string str, rgba_t colour, uint8_t align) {
+void SFont::drawString(string str, rgba_t colour, uint8_t align)
+{
 	// Bind texture
 	if (!texture.bind())
 		return;
@@ -216,7 +231,8 @@ void SFont::drawString(string str, rgba_t colour, uint8_t align) {
 
 	// Determine string length (for alignment)
 	int total_width = 0;
-	for (unsigned a = 0; a < str.size(); a++) {
+	for (unsigned a = 0; a < str.size(); a++)
+	{
 		// Get character
 		SFontChar* ch = characters[CHR(str)[a]];
 
@@ -236,10 +252,12 @@ void SFont::drawString(string str, rgba_t colour, uint8_t align) {
 
 	// Draw the string
 	unsigned xoff = 0;
-	for (unsigned a = 0; a < str.size(); a++) {
+	for (unsigned a = 0; a < str.size(); a++)
+	{
 		// Get character
 		SFontChar* ch = characters[CHR(str)[a]];
-		if (!ch) {
+		if (!ch)
+		{
 			xoff += spacing;
 			continue;
 		}
@@ -270,8 +288,10 @@ void SFont::drawString(string str, rgba_t colour, uint8_t align) {
 /* SFont::sladeFont
  * Returns the global SLADE font
  *******************************************************************/
-SFont& SFont::sladeFont() {
-	if (!font_slade.texture.isLoaded()) {
+SFont& SFont::sladeFont()
+{
+	if (!font_slade.texture.isLoaded())
+	{
 		// Load slade font
 	}
 
@@ -281,8 +301,10 @@ SFont& SFont::sladeFont() {
 /* SFont::vgaFont
  * Returns the global VGA font
  *******************************************************************/
-SFont& SFont::vgaFont() {
-	if (!font_vga.texture.isLoaded()) {
+SFont& SFont::vgaFont()
+{
+	if (!font_vga.texture.isLoaded())
+	{
 		// Get vga font entry
 		ArchiveEntry* entry_vgafont = theArchiveManager->programResourceArchive()->entryAtPath("vga-rom-font.16");
 

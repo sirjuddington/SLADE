@@ -36,7 +36,8 @@
 /*******************************************************************
  * MATHSTUFF NAMESPACE VARIABLES
  *******************************************************************/
-namespace MathStuff {
+namespace MathStuff
+{
 	double rad2deg = 180 / PI;
 	double deg2rad = PI / 180;
 }
@@ -49,7 +50,8 @@ namespace MathStuff {
 /* MathStuff::clamp
  * Clamps [val] to be between [min] and [max]
  *******************************************************************/
-double MathStuff::clamp(double val, double min, double max) {
+double MathStuff::clamp(double val, double min, double max)
+{
 	if (val < min) val = min;
 	if (val > max) val = max;
 	return val;
@@ -58,7 +60,8 @@ double MathStuff::clamp(double val, double min, double max) {
 /* MathStuff::floor
  * Returns the integral floor of [val]
  *******************************************************************/
-int MathStuff::floor(double val) {
+int MathStuff::floor(double val)
+{
 	if (val >= 0)
 		return (int)val;
 	else
@@ -68,7 +71,8 @@ int MathStuff::floor(double val) {
 /* MathStuff::ceil
  * Returns the integral ceiling of [val]
  *******************************************************************/
-int MathStuff::ceil(double val) {
+int MathStuff::ceil(double val)
+{
 	if (val > 0)
 		return (int)val + 1;
 	else
@@ -78,7 +82,8 @@ int MathStuff::ceil(double val) {
 /* MathStuff::round
  * Returns the closest integral value of [val]
  *******************************************************************/
-int MathStuff::round(double val) {
+int MathStuff::round(double val)
+{
 	int ret = (int)val;
 	if ((val - (double)ret) >= 0.5) ret++;
 	return ret;
@@ -87,14 +92,16 @@ int MathStuff::round(double val) {
 /* MathStuff::distance
  * Returns the distance between [x1,y1] and [x2,y2]
  *******************************************************************/
-double MathStuff::distance(double x1, double y1, double x2, double y2) {
+double MathStuff::distance(double x1, double y1, double x2, double y2)
+{
 	return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
 }
 
 /* MathStuff::distance3d
  * Returns the distance between [x1,y1,z1] and [x2,y2,z2]
  *******************************************************************/
-double MathStuff::distance3d(double x1, double y1, double z1, double x2, double y2, double z2) {
+double MathStuff::distance3d(double x1, double y1, double z1, double x2, double y2, double z2)
+{
 	return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
 }
 
@@ -103,17 +110,20 @@ double MathStuff::distance3d(double x1, double y1, double z1, double x2, double 
  * point at [x,y] lies on. Positive is front, negative is back, zero
  * is on the line
  *******************************************************************/
-double MathStuff::lineSide(double x, double y, double x1, double y1, double x2, double y2) {
+double MathStuff::lineSide(double x, double y, double x1, double y1, double x2, double y2)
+{
 	return -((y-y1)*(x2-x1) - (x-x1)*(y2-y1));
 }
 
-fpoint2_t MathStuff::closestPointOnLine(double x, double y, double x1, double y1, double x2, double y2) {
+fpoint2_t MathStuff::closestPointOnLine(double x, double y, double x1, double y1, double x2, double y2)
+{
 	// Get line length
 	double len = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
 
 	// Calculate intersection distance
 	double u = 0;
-	if (len > 0) {
+	if (len > 0)
+	{
 		u = ((x-x1)*(x2-x1) + (y-y1)*(y2-y1)) / (len*len);
 
 		// Limit intersection distance to the line
@@ -130,7 +140,8 @@ fpoint2_t MathStuff::closestPointOnLine(double x, double y, double x1, double y1
  * Returns the shortest distance between the point at [x,y] and the
  * line from [x1,y1] to [x2,y2]
  *******************************************************************/
-double MathStuff::distanceToLine(double x, double y, double x1, double y1, double x2, double y2) {
+double MathStuff::distanceToLine(double x, double y, double x1, double y1, double x2, double y2)
+{
 	// Calculate intersection point
 	fpoint2_t i = closestPointOnLine(x, y, x1, y1, x2, y2);
 
@@ -145,7 +156,8 @@ double MathStuff::distanceToLine(double x, double y, double x1, double y1, doubl
  * real distance, but can be used to find the 'closest' line to the
  * point
  *******************************************************************/
-double MathStuff::distanceToLineFast(double x, double y, double x1, double y1, double x2, double y2) {
+double MathStuff::distanceToLineFast(double x, double y, double x1, double y1, double x2, double y2)
+{
 	// Calculate intersection point
 	fpoint2_t i = closestPointOnLine(x, y, x1, y1, x2, y2);
 
@@ -160,33 +172,36 @@ double MathStuff::distanceToLineFast(double x, double y, double x1, double y1, d
  * sets [x,y] to the intersection point
  *******************************************************************/
 bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y2,
-								double l2x1, double l2y1, double l2x2, double l2y2,
-								double& x, double& y) {
+							   double l2x1, double l2y1, double l2x2, double l2y2,
+							   double& x, double& y)
+{
 	// First, simple check for two parallel horizontal or vertical lines
 	if ((l1x1 == l1x2 && l2x1 == l2x2) || (l1y1 == l1y2 && l2y1 == l2y2))
 		return false;
 
 	// Second, check if the lines share any endpoints
 	if ((l1x1 == l2x1 && l1y1 == l2y1) ||
-		(l1x2 == l2x2 && l1y2 == l2y2) ||
-		(l1x1 == l2x2 && l1y1 == l2y2) ||
-		(l1x2 == l2x1 && l1y2 == l2y1))
+			(l1x2 == l2x2 && l1y2 == l2y2) ||
+			(l1x1 == l2x2 && l1y1 == l2y2) ||
+			(l1x2 == l2x1 && l1y2 == l2y1))
 		return false;
 
 	// Third, check bounding boxes
 	if (max(l1x1, l1x2) < min(l2x1, l2x2) ||
-		max(l2x1, l2x2) < min(l1x1, l1x2) ||
-		max(l1y1, l1y2) < min(l2y1, l2y2) ||
-		max(l2y1, l2y2) < min(l1y1, l1y2))
+			max(l2x1, l2x2) < min(l1x1, l1x2) ||
+			max(l1y1, l1y2) < min(l2y1, l2y2) ||
+			max(l2y1, l2y2) < min(l1y1, l1y2))
 		return false;
 
 	// Fourth, check for two perpendicular horizontal or vertical lines
-	if (l1x1 == l1x2 && l2y1 == l2y2) {
+	if (l1x1 == l1x2 && l2y1 == l2y2)
+	{
 		x = l1x1;
 		y = l2y1;
 		return true;
 	}
-	if (l1y1 == l1y2 && l2x1 == l2x2) {
+	if (l1y1 == l1y2 && l2x1 == l2x2)
+	{
 		x = l2x1;
 		y = l1y1;
 		return true;
@@ -217,29 +232,31 @@ bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y
 
 	// Check that the intersection point is on both lines
 	if (min(l1x1, l1x2) <= x && x <= max(l1x1, l1x2) &&
-		min(l1y1, l1y2) <= y && y <= max(l1y1, l1y2) &&
-		min(l2x1, l2x2) <= x && x <= max(l2x1, l2x2) &&
-		min(l2y1, l2y2) <= y && y <= max(l2y1, l2y2))
+			min(l1y1, l1y2) <= y && y <= max(l1y1, l1y2) &&
+			min(l2x1, l2x2) <= x && x <= max(l2x1, l2x2) &&
+			min(l2y1, l2y2) <= y && y <= max(l2y1, l2y2))
 		return true;
 
 	// Intersection point does not lie on both lines
 	return false;
 }
 
-double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, double x1, double y1, double x2, double y2) {
+double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, double x1, double y1, double x2, double y2)
+{
 	// Calculate the intersection distance from the ray
 	double u_ray = ((x2 - x1) * (r1.y - y1) - (y2 - y1) * (r1.x - x1)) /
-				  ((y2 - y1) * (r2.x - r1.x) - (x2 - x1) * (r2.y - r1.y));
-	
+				   ((y2 - y1) * (r2.x - r1.x) - (x2 - x1) * (r2.y - r1.y));
+
 	// Calculate the intersection distance from the line
 	double u_line = ((r2.x - r1.x) * (r1.y - y1) - (r2.y - r1.y) * (r1.x - x1)) /
-				   ((y2 - y1) * (r2.x - r1.x) - (x2 - x1) * (r2.y - r1.y));
-	
+					((y2 - y1) * (r2.x - r1.x) - (x2 - x1) * (r2.y - r1.y));
+
 	// Return the distance on the ray if intersecting, or return -1
 	if((u_ray >= 0)/* && (u_ray <= 1024) */&& (u_line >= 0) && (u_line <= 1)) return u_ray; else return -1;
 }
 
-double MathStuff::angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3) {
+double MathStuff::angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3)
+{
 	/*
 	double dot = (p1.x - p2.x) * (p3.x - p2.x) + (p1.y - p2.y) * (p3.y - p2.y);
 	double cross = (p1.x - p2.x) * (p3.y - p2.y) - (p1.y - p2.y) * (p3.x - p2.x);
@@ -300,7 +317,8 @@ double MathStuff::angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3) {
 	return rs;
 }
 
-fpoint2_t MathStuff::rotatePoint(fpoint2_t origin, fpoint2_t point, double angle) {
+fpoint2_t MathStuff::rotatePoint(fpoint2_t origin, fpoint2_t point, double angle)
+{
 	// Translate to origin
 	double x = point.x - origin.x;
 	double y = point.y - origin.y;
@@ -316,7 +334,8 @@ fpoint2_t MathStuff::rotatePoint(fpoint2_t origin, fpoint2_t point, double angle
 	return fpoint2_t(x + origin.x, y + origin.y);
 }
 
-fpoint3_t MathStuff::rotateVector3D(fpoint3_t vector, fpoint3_t axis, double angle) {
+fpoint3_t MathStuff::rotateVector3D(fpoint3_t vector, fpoint3_t axis, double angle)
+{
 	fpoint3_t rvec;
 
 	// Calculate the sine and cosine of the angle once
@@ -341,19 +360,23 @@ fpoint3_t MathStuff::rotateVector3D(fpoint3_t vector, fpoint3_t axis, double ang
 	return rvec;
 }
 
-double MathStuff::degToRad(double angle) {
+double MathStuff::degToRad(double angle)
+{
 	return (angle * PI) / 180;
 }
 
-double MathStuff::radToDeg(double angle) {
+double MathStuff::radToDeg(double angle)
+{
 	return angle * rad2deg;
 }
 
-fpoint2_t MathStuff::vectorAngle(double angle_rad) {
+fpoint2_t MathStuff::vectorAngle(double angle_rad)
+{
 	return fpoint2_t(cos(-angle_rad), -sin(-angle_rad));
 }
 
-double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane) {
+double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane)
+{
 	fpoint3_t p_normal = plane.normal();
 	double cos_a = r_v.dot(p_normal);
 
@@ -366,9 +389,11 @@ double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane) 
 
 
 
-CONSOLE_COMMAND(angle2d, 6, false) {
+CONSOLE_COMMAND(angle2d, 6, false)
+{
 	double vals[6];
-	for (unsigned a = 0; a < args.size(); a++) {
+	for (unsigned a = 0; a < args.size(); a++)
+	{
 		args[a].ToDouble(&vals[a]);
 	}
 

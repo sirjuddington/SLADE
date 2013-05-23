@@ -43,7 +43,8 @@
  * PaletteDialog class constructor
  *******************************************************************/
 PaletteDialog::PaletteDialog(Palette8bit* palette)
-: wxDialog(NULL, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+	: wxDialog(NULL, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
 	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);
 
@@ -66,7 +67,8 @@ PaletteDialog::PaletteDialog(Palette8bit* palette)
 /* PaletteDialog::~PaletteDialog
  * PaletteDialog class destructor
  *******************************************************************/
-PaletteDialog::~PaletteDialog() {
+PaletteDialog::~PaletteDialog()
+{
 	if (pal_canvas)
 		delete pal_canvas;
 }
@@ -74,7 +76,8 @@ PaletteDialog::~PaletteDialog() {
 /* PaletteDialog::getSelectedColour
  * Returns the currently selected coloir on the palette canvas
  *******************************************************************/
-rgba_t PaletteDialog::getSelectedColour() {
+rgba_t PaletteDialog::getSelectedColour()
+{
 	return pal_canvas->getSelectedColour();
 }
 
@@ -86,6 +89,7 @@ rgba_t PaletteDialog::getSelectedColour() {
 /* PaletteDialog::onLeftDoubleClick
  * Called when the palette canvas is double clicked
  *******************************************************************/
-void PaletteDialog::onLeftDoubleClick(wxMouseEvent& e) {
+void PaletteDialog::onLeftDoubleClick(wxMouseEvent& e)
+{
 	EndModal(wxID_OK);
 }

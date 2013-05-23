@@ -81,13 +81,13 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* BloodCrypt
  * From ZDoom: decrypts RFF data
  *******************************************************************/
-void BloodCrypt (void *data, int key, int len)
+void BloodCrypt (void* data, int key, int len)
 {
 	int p = (uint8_t)key, i;
 
 	for (i = 0; i < len; ++i)
 	{
-		((uint8_t *)data)[i] ^= (unsigned char)(p+(i>>1));
+		((uint8_t*)data)[i] ^= (unsigned char)(p+(i>>1));
 	}
 }
 
@@ -114,19 +114,22 @@ struct RFFLump
 /* RffArchive::RffArchive
  * RffArchive class constructor
  *******************************************************************/
-RffArchive::RffArchive() : TreelessArchive(ARCHIVE_RFF) {
+RffArchive::RffArchive() : TreelessArchive(ARCHIVE_RFF)
+{
 }
 
 /* RffArchive::~RffArchive
  * RffArchive class destructor
  *******************************************************************/
-RffArchive::~RffArchive() {
+RffArchive::~RffArchive()
+{
 }
 
 /* RffArchive::getEntryOffset
  * Returns the file byte offset for [entry]
  *******************************************************************/
-uint32_t RffArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t RffArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return 0;
@@ -137,7 +140,8 @@ uint32_t RffArchive::getEntryOffset(ArchiveEntry* entry) {
 /* RffArchive::setEntryOffset
  * Sets the file byte offset for [entry]
  *******************************************************************/
-void RffArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
+void RffArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return;
@@ -148,14 +152,16 @@ void RffArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
 /* RffArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string RffArchive::getFileExtensionString() {
+string RffArchive::getFileExtensionString()
+{
 	return "Rff Files (*.rff)|*.rff";
 }
 
 /* RffArchive::getFormat
  * Returns the EntryDataFormat id of this archive type
  *******************************************************************/
-string RffArchive::getFormat() {
+string RffArchive::getFormat()
+{
 	return "archive_rff";
 }
 
@@ -163,7 +169,8 @@ string RffArchive::getFormat() {
  * Reads grp format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool RffArchive::open(MemChunk& mc) {
+bool RffArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -184,7 +191,8 @@ bool RffArchive::open(MemChunk& mc) {
 	version = wxINT32_SWAP_ON_BE(version);
 
 	// Check the header
-	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301) {
+	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
+	{
 		wxLogMessage("RffArchive::openFile: File %s has invalid header", filename.c_str());
 		Global::error = "Invalid rff header";
 		return false;
@@ -194,12 +202,13 @@ bool RffArchive::open(MemChunk& mc) {
 	setMuted(true);
 
 	// Read the directory
-	RFFLump *lumps = new RFFLump[num_lumps];
+	RFFLump* lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
 	theSplashWindow->setProgressMessage("Reading rff archive data");
 	mc.read (lumps, num_lumps * sizeof(RFFLump));
 	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -210,7 +219,8 @@ bool RffArchive::open(MemChunk& mc) {
 
 		// Reconstruct name
 		int i, j = 0;
-		for (i = 0; i < 8; ++i) {
+		for (i = 0; i < 8; ++i)
+		{
 			if (lumps[d].Name[i] == 0) break;
 			name[i] = lumps[d].Name[i];
 		}
@@ -219,7 +229,8 @@ bool RffArchive::open(MemChunk& mc) {
 
 		// If the lump data goes past the end of the file,
 		// the rfffile is invalid
-		if (offset + size > mc.getSize()) {
+		if (offset + size > mc.getSize())
+		{
 			wxLogMessage("RffArchive::open: rff archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -244,7 +255,8 @@ bool RffArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -252,13 +264,15 @@ bool RffArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 
 			// If the entry is encrypted, decrypt it
-			if (entry->isEncrypted()) {
-				uint8_t * cdata = new uint8_t[entry->getSize()];
+			if (entry->isEncrypted())
+			{
+				uint8_t* cdata = new uint8_t[entry->getSize()];
 				memcpy(cdata, edata.getData(), entry->getSize());
 				int cryptlen = entry->getSize() < 256 ? entry->getSize() : 256;
 				BloodCrypt(cdata, 0, cryptlen);
@@ -299,7 +313,8 @@ bool RffArchive::open(MemChunk& mc) {
  * Writes the rff archive to a MemChunk
  * Not implemented because of encrypted directory and unknown stuff.
  *******************************************************************/
-bool RffArchive::write(MemChunk& mc, bool update) {
+bool RffArchive::write(MemChunk& mc, bool update)
+{
 	wxLogMessage("Saving RFF files is not implemented because the format is not entirely known.");
 	return false;
 }
@@ -308,14 +323,16 @@ bool RffArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the grpfile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool RffArchive::loadEntryData(ArchiveEntry* entry) {
+bool RffArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -324,7 +341,8 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("RffArchive::loadEntryData: Failed to open rfffile %s", filename.c_str());
 		return false;
 	}
@@ -344,7 +362,8 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry) {
  * directory, update namespaces if needed and rename the entry if
  * necessary to be rff-friendly  (12 characters max with extension)
  *******************************************************************/
-ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -373,7 +392,8 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 /* RffArchive::addEntry
  * Since RFF files have no namespaces, just call the other function.
  *******************************************************************/
-ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
 }
 
@@ -382,7 +402,8 @@ ArchiveEntry* RffArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * and rename the entry if necessary to be grp-friendly (twelve
  * characters max)
  *******************************************************************/
-bool RffArchive::renameEntry(ArchiveEntry* entry, string name) {
+bool RffArchive::renameEntry(ArchiveEntry* entry, string name)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
@@ -398,7 +419,8 @@ bool RffArchive::renameEntry(ArchiveEntry* entry, string name) {
 /* RffArchive::isRffArchive
  * Checks if the given data is a valid Duke Nukem 3D grp archive
  *******************************************************************/
-bool RffArchive::isRffArchive(MemChunk& mc) {
+bool RffArchive::isRffArchive(MemChunk& mc)
+{
 	// Check size
 	if (mc.getSize() < 12)
 		return false;
@@ -424,14 +446,15 @@ bool RffArchive::isRffArchive(MemChunk& mc) {
 
 
 	// Compute total size
-	RFFLump *lumps = new RFFLump[num_lumps];
+	RFFLump* lumps = new RFFLump[num_lumps];
 	mc.seek(dir_offset, SEEK_SET);
 	theSplashWindow->setProgressMessage("Reading rff archive data");
 	mc.read (lumps, num_lumps * sizeof(RFFLump));
 	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
 	uint32_t size = 0;
-	for (uint32_t a = 0; a < num_lumps; ++a) {
+	for (uint32_t a = 0; a < num_lumps; ++a)
+	{
 		totalsize += lumps[a].Size;
 	}
 
@@ -446,7 +469,8 @@ bool RffArchive::isRffArchive(MemChunk& mc) {
 /* RffArchive::isRffArchive
  * Checks if the file at [filename] is a valid DN3D grp archive
  *******************************************************************/
-bool RffArchive::isRffArchive(string filename) {
+bool RffArchive::isRffArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 
@@ -479,14 +503,15 @@ bool RffArchive::isRffArchive(string filename) {
 
 
 	// Compute total size
-	RFFLump *lumps = new RFFLump[num_lumps];
+	RFFLump* lumps = new RFFLump[num_lumps];
 	file.Seek(dir_offset, wxFromStart);
 	theSplashWindow->setProgressMessage("Reading rff archive data");
 	file.Read(lumps, num_lumps * sizeof(RFFLump));
 	BloodCrypt (lumps, dir_offset, num_lumps * sizeof(RFFLump));
 	uint32_t totalsize = 12 + num_lumps * sizeof(RFFLump);
 	uint32_t size = 0;
-	for (uint32_t a = 0; a < num_lumps; ++a) {
+	for (uint32_t a = 0; a < num_lumps; ++a)
+	{
 		totalsize += lumps[a].Size;
 	}
 

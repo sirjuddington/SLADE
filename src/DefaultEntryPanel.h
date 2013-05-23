@@ -4,7 +4,8 @@
 
 #include "EntryPanel.h"
 
-class DefaultEntryPanel : public EntryPanel {
+class DefaultEntryPanel : public EntryPanel
+{
 private:
 	vector<ArchiveEntry*>	entries;
 

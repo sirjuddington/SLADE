@@ -48,7 +48,8 @@
  * DefaultEntryPanel class constructor
  *******************************************************************/
 DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent)
-: EntryPanel(parent, "default") {
+	: EntryPanel(parent, "default")
+{
 	sizer_main->AddStretchSpacer(1);
 
 	// Add type label
@@ -102,13 +103,15 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent)
 /* DefaultEntryPanel::~DefaultEntryPanel
  * DefaultEntryPanel class destructor
  *******************************************************************/
-DefaultEntryPanel::~DefaultEntryPanel() {
+DefaultEntryPanel::~DefaultEntryPanel()
+{
 }
 
 /* DefaultEntryPanel::loadEntry
  * Loads [entry] into the panel
  *******************************************************************/
-bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry) {
+bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	// Update labels
 	label_type->SetLabel(S_FMT("Entry Type: %s", CHR(entry->getTypeString())));
 	label_size->SetLabel(S_FMT("Entry Size: %d bytes", entry->getSize()));
@@ -123,14 +126,16 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry) {
 	frame_actions->Show(false);
 
 	// Check for gfx entry
-	if (entry->getType()->extraProps().propertyExists("image")) {
+	if (entry->getType()->extraProps().propertyExists("image"))
+	{
 		frame_actions->Show(true);
 		btn_gfx_convert->Show(true);
 		btn_gfx_modify_offsets->Show(true);
 	}
 
 	// Check for TEXTUREx related entry
-	if (entry->getType()->getId() == "texturex" || entry->getType()->getId() == "pnames") {
+	if (entry->getType()->getId() == "texturex" || entry->getType()->getId() == "pnames")
+	{
 		frame_actions->Show(true);
 		btn_texture_edit->Show(true);
 	}
@@ -144,7 +149,8 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry) {
 /* DefaultEntryPanel::loadEntries
  * Loads [entries] into the panel, for multiple selection handling
  *******************************************************************/
-bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries) {
+bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
+{
 	// Update labels
 	label_type->SetLabel(S_FMT("%d selected entries", entries.size()));
 	unsigned size = 0;
@@ -164,7 +170,8 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries) {
 	bool gfx = false;
 	bool texture = false;
 	this->entries.clear();
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Check for gfx entry
 		if (entries[a]->getType()->extraProps().propertyExists("image"))
 			gfx = true;
@@ -175,12 +182,14 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries) {
 
 		this->entries.push_back(entries[a]);
 	}
-	if (gfx) {
+	if (gfx)
+	{
 		frame_actions->Show(true);
 		btn_gfx_convert->Show(true);
 		btn_gfx_modify_offsets->Show(true);
 	}
-	if (texture) {
+	if (texture)
+	{
 		frame_actions->Show(true);
 		btn_texture_edit->Show(true);
 	}
@@ -194,7 +203,8 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries) {
 /* DefaultEntryPanel::saveEntry
  * Saves any changes to the entry
  *******************************************************************/
-bool DefaultEntryPanel::saveEntry() {
+bool DefaultEntryPanel::saveEntry()
+{
 	return true;
 }
 
@@ -206,14 +216,16 @@ bool DefaultEntryPanel::saveEntry() {
 /* DefaultEntryPanel::onBtnGfxConvert
  * Called when the 'Convert Gfx To' button is clicked
  *******************************************************************/
-void DefaultEntryPanel::onBtnGfxConvert(wxCommandEvent& e) {
+void DefaultEntryPanel::onBtnGfxConvert(wxCommandEvent& e)
+{
 	theApp->doAction("arch_gfx_convert");
 }
 
 /* DefaultEntryPanel::onBtnGfxModifyOffsets
  * Called when the 'Modify Offsets' button is clicked
  *******************************************************************/
-void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e) {
+void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
+{
 	// Create and run modify offsets dialog
 	ModifyOffsetsDialog mod;
 	if (mod.ShowModal() == wxID_CANCEL)
@@ -222,13 +234,14 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e) {
 	// Apply offsets to selected entries
 	for (uint32_t a = 0; a < entries.size(); a++)
 		EntryOperations::modifyGfxOffsets(entries[a], mod.getAlignType(), mod.getOffset(),
-											mod.xOffChange(), mod.yOffChange(), mod.relativeOffset());
+		                                  mod.xOffChange(), mod.yOffChange(), mod.relativeOffset());
 	theActivePanel->callRefresh();
 }
 
 /* DefaultEntryPanel::onBtnTextureEdit
  * Called when the 'Edit Textures' button is clicked
  *******************************************************************/
-void DefaultEntryPanel::onBtnTextureEdit(wxCommandEvent& e) {
+void DefaultEntryPanel::onBtnTextureEdit(wxCommandEvent& e)
+{
 	theMainWindow->openTextureEditor(entry->getParent());
 }

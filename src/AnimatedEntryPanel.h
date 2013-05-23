@@ -10,7 +10,8 @@
 #include "GfxCanvas.h"
 #include <wx/radiobut.h>
 
-class AnimatedEntryPanel : public EntryPanel, public SActionHandler {
+class AnimatedEntryPanel : public EntryPanel, public SActionHandler
+{
 private:
 	AnimatedList	animated;
 	AnimatedEntry*	ae_current;

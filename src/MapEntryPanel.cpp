@@ -60,7 +60,8 @@ EXTERN_CVAR(String, dir_last)
 /* MapEntryPanel::MapEntryPanel
  * MapEntryPanel class constructor
  *******************************************************************/
-MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map") {
+MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
+{
 	// Setup map canvas
 	map_canvas = new MapPreviewCanvas(this);
 	sizer_main->Add(map_canvas->toPanel(this), 1, wxEXPAND, 0);
@@ -83,14 +84,16 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map") {
 /* MapEntryPanel::~MapEntryPanel
  * MapEntryPanel class destructor
  *******************************************************************/
-MapEntryPanel::~MapEntryPanel() {
+MapEntryPanel::~MapEntryPanel()
+{
 }
 
 /* MapEntryPanel::loadEntry
  * Loads [entry] into the EntryPanel. Returns false if the map was
  * invalid, true otherwise
  *******************************************************************/
-bool MapEntryPanel::loadEntry(ArchiveEntry* entry) {
+bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	// Clear current map data
 	map_canvas->clearMap();
 
@@ -98,8 +101,10 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry) {
 	vector<Archive::mapdesc_t> maps = entry->getParent()->detectMaps();
 	Archive::mapdesc_t thismap;
 	bool found = false;
-	for (unsigned a = 0; a < maps.size(); a++) {
-		if (maps[a].head == entry) {
+	for (unsigned a = 0; a < maps.size(); a++)
+	{
+		if (maps[a].head == entry)
+		{
 			thismap = maps[a];
 			found = true;
 			break;
@@ -111,7 +116,8 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry) {
 
 	// There is no map entry for the map marker.
 	// This may happen if a map marker lump is copy/pasted without the rest of the map lumps.
-	if (!found) {
+	if (!found)
+	{
 		entry->setType(EntryType::unknownType());
 		EntryType::detectEntryType(entry);
 		return false;
@@ -124,7 +130,8 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry) {
 /* MapEntryPanel::saveEntry
  * Saves any changes to the entry (does nothing in map viewer)
  *******************************************************************/
-bool MapEntryPanel::saveEntry() {
+bool MapEntryPanel::saveEntry()
+{
 	return true;
 }
 
@@ -133,7 +140,8 @@ bool MapEntryPanel::saveEntry() {
  * TODO: Preference panel for background and line colors,
  * as well as for image size
  *******************************************************************/
-bool MapEntryPanel::createImage() {
+bool MapEntryPanel::createImage()
+{
 	if (entry == NULL)
 		return false;
 
@@ -142,18 +150,19 @@ bool MapEntryPanel::createImage() {
 	if (GLEW_ARB_framebuffer_object)
 		map_canvas->createImage(temp, map_image_width, map_image_height);
 	else
-		map_canvas->createImage(temp, min<int>(map_image_width, map_canvas->GetSize().x), 
-									  min<int>(map_image_height, map_canvas->GetSize().y));
+		map_canvas->createImage(temp, min<int>(map_image_width, map_canvas->GetSize().x),
+		                        min<int>(map_image_height, map_canvas->GetSize().y));
 	string name = S_FMT("%s_%s", CHR(entry->getParent()->getFilename(false)), CHR(entry->getName()));
 	wxFileName fn(name);
 
 	// Create save file dialog
 	wxFileDialog dialog_save(this, S_FMT("Save Map Preview \"%s\"", name.c_str()),
-								dir_last, fn.GetFullName(), "PNG (*.PNG)|*.png",
-								wxFD_SAVE | wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
+	                         dir_last, fn.GetFullName(), "PNG (*.PNG)|*.png",
+	                         wxFD_SAVE | wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
 
 	// Run the dialog & check that the user didn't cancel
-	if (dialog_save.ShowModal() == wxID_OK) {
+	if (dialog_save.ShowModal() == wxID_OK)
+	{
 		// If a filename was selected, export it
 		bool ret = temp.exportFile(dialog_save.GetPath());
 
@@ -168,6 +177,7 @@ bool MapEntryPanel::createImage() {
 /* MapEntryPanel::onBtnSaveImage
  * Called when the 'Save Map Image' button is clicked
  *******************************************************************/
-void MapEntryPanel::onBtnSaveImage(wxCommandEvent& e) {
+void MapEntryPanel::onBtnSaveImage(wxCommandEvent& e)
+{
 	createImage();
 }

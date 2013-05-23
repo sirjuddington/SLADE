@@ -48,14 +48,15 @@ EXTERN_CVAR(Bool, temp_use_appdir)
 /* GeneralPrefsPanel::GeneralPrefsPanel
  * GeneralPrefsPanel class constructor
  *******************************************************************/
-GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "General Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "General Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Load on open archive
@@ -80,13 +81,15 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) 
 /* GeneralPrefsPanel::~GeneralPrefsPanel
  * GeneralPrefsPanel class destructor
  *******************************************************************/
-GeneralPrefsPanel::~GeneralPrefsPanel() {
+GeneralPrefsPanel::~GeneralPrefsPanel()
+{
 }
 
 /* GeneralPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void GeneralPrefsPanel::init() {
+void GeneralPrefsPanel::init()
+{
 	cb_archive_load->SetValue(archive_load_data);
 	cb_archive_close_tab->SetValue(close_archive_with_tab);
 	cb_gl_np2->SetValue(gl_tex_enable_np2);
@@ -99,7 +102,8 @@ void GeneralPrefsPanel::init() {
 /* GeneralPrefsPanel::applyPreferences
  * Applies preference values from the controls to CVARs
  *******************************************************************/
-void GeneralPrefsPanel::applyPreferences() {
+void GeneralPrefsPanel::applyPreferences()
+{
 	archive_load_data = cb_archive_load->GetValue();
 	close_archive_with_tab = cb_archive_close_tab->GetValue();
 	gl_tex_enable_np2 = cb_gl_np2->GetValue();
@@ -110,10 +114,13 @@ void GeneralPrefsPanel::applyPreferences() {
 #endif
 
 	// Create temp dir if necessary
-	if (temp_use_appdir) {
+	if (temp_use_appdir)
+	{
 		string dir_temp = appPath("", DIR_TEMP);
-		if (!wxDirExists(dir_temp)) {
-			if (!wxMkdir(dir_temp)) {
+		if (!wxDirExists(dir_temp))
+		{
+			if (!wxMkdir(dir_temp))
+			{
 				// Unable to create it, just use system temp dir
 				wxMessageBox(S_FMT("Unable to create temp directory \"%s\"", dir_temp.c_str()), "Error", wxICON_ERROR);
 				temp_use_appdir = false;

@@ -46,20 +46,23 @@
  * LibArchive class constructor
  *******************************************************************/
 LibArchive::LibArchive()
-: TreelessArchive(ARCHIVE_LIB) {
+	: TreelessArchive(ARCHIVE_LIB)
+{
 }
 
 /* LibArchive::~LibArchive
  * LibArchive class destructor
  *******************************************************************/
-LibArchive::~LibArchive() {
+LibArchive::~LibArchive()
+{
 }
 
 /* LibArchive::getEntryOffset
  * Gets a lump entry's offset
  * Returns the lump entry's offset, or zero if it doesn't exist
  *******************************************************************/
-uint32_t LibArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t LibArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return 0;
@@ -70,7 +73,8 @@ uint32_t LibArchive::getEntryOffset(ArchiveEntry* entry) {
 /* LibArchive::setEntryOffset
  * Sets a lump entry's offset
  *******************************************************************/
-void LibArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
+void LibArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return;
@@ -81,14 +85,16 @@ void LibArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
 /* LibArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string LibArchive::getFileExtensionString() {
+string LibArchive::getFileExtensionString()
+{
 	return "Shadowcaster Lib Files (*.lib)|*.lib";
 }
 
 /* LibArchive::getFormat
  * Gives the "archive_lib" string
  *******************************************************************/
-string LibArchive::getFormat() {
+string LibArchive::getFormat()
+{
 	return "archive_lib";
 }
 
@@ -96,7 +102,8 @@ string LibArchive::getFormat() {
  * Reads wad format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool LibArchive::open(MemChunk& mc) {
+bool LibArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -114,7 +121,8 @@ bool LibArchive::open(MemChunk& mc) {
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
 	theSplashWindow->setProgressMessage("Reading lib archive data");
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -134,7 +142,8 @@ bool LibArchive::open(MemChunk& mc) {
 
 		// If the lump data goes past the directory,
 		// the wadfile is invalid
-		if (offset + size > dir_offset) {
+		if (offset + size > dir_offset)
+		{
 			wxLogMessage("LibArchive::open: Lib archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -155,7 +164,8 @@ bool LibArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -163,7 +173,8 @@ bool LibArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -194,7 +205,8 @@ bool LibArchive::open(MemChunk& mc) {
  * Writes the wad archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool LibArchive::write(MemChunk& mc, bool update) {
+bool LibArchive::write(MemChunk& mc, bool update)
+{
 	// Only two bytes are used for storing entry amount,
 	// so abort for excessively large files:
 	if (numEntries() > 65535)
@@ -203,7 +215,8 @@ bool LibArchive::write(MemChunk& mc, bool update) {
 	uint16_t num_files = numEntries();
 	uint32_t dir_offset = 0;
 	ArchiveEntry* entry = NULL;
-	for (uint16_t l = 0; l < num_files; l++) {
+	for (uint16_t l = 0; l < num_files; l++)
+	{
 		entry = getEntry(l);
 		setEntryOffset(entry, dir_offset);
 		dir_offset += entry->getSize();
@@ -215,13 +228,15 @@ bool LibArchive::write(MemChunk& mc, bool update) {
 	mc.reSize(2 + dir_offset + num_files * 21);
 
 	// Write the files
-	for (uint16_t l = 0; l < num_files; l++) {
+	for (uint16_t l = 0; l < num_files; l++)
+	{
 		entry = getEntry(l);
 		mc.write(entry->getData(), entry->getSize());
 	}
 
 	// Write the directory
-	for (uint16_t l = 0; l < num_files; l++) {
+	for (uint16_t l = 0; l < num_files; l++)
+	{
 		entry = getEntry(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		long offset = wxINT32_SWAP_ON_BE(getEntryOffset(entry));
@@ -234,7 +249,8 @@ bool LibArchive::write(MemChunk& mc, bool update) {
 		mc.write(&offset, 4);	// Offset
 		mc.write(name, 13);		// Name
 
-		if (update) {
+		if (update)
+		{
 			entry->setState(0);
 			entry->exProp("Offset") = (int)wxINT32_SWAP_ON_BE(offset);
 		}
@@ -252,14 +268,16 @@ bool LibArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the wadfile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool LibArchive::loadEntryData(ArchiveEntry* entry) {
+bool LibArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -268,7 +286,8 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("LibArchive::loadEntryData: Failed to open libfile %s", filename.c_str());
 		return false;
 	}
@@ -285,10 +304,11 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry) {
 
 /* LibArchive::addEntry
  * Override of Archive::addEntry to force entry addition to the root
- * directory and rename the entry if necessary to be lib-friendly 
+ * directory and rename the entry if necessary to be lib-friendly
  * (12 characters max)
  *******************************************************************/
-ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -316,7 +336,8 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 /* LibArchive::addEntry
  * There is no namespaces in lib archives, so just put it at the end
  *******************************************************************/
-ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
 }
 
@@ -324,7 +345,8 @@ ArchiveEntry* LibArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * Override of Archive::renameEntry to rename the entry if necessary
  * to be lib-friendly (12 characters max)
  *******************************************************************/
-bool LibArchive::renameEntry(ArchiveEntry* entry, string name) {
+bool LibArchive::renameEntry(ArchiveEntry* entry, string name)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
@@ -340,7 +362,8 @@ bool LibArchive::renameEntry(ArchiveEntry* entry, string name) {
 /* LibArchive::isLibArchive
  * Checks if the given data is a valid Shadowcaster lib archive
  *******************************************************************/
-bool LibArchive::isLibArchive(MemChunk& mc) {
+bool LibArchive::isLibArchive(MemChunk& mc)
+{
 	if (mc.getSize() < 64)
 		return false;
 
@@ -371,19 +394,21 @@ bool LibArchive::isLibArchive(MemChunk& mc) {
 
 	// If the lump data goes past the directory,
 	// the library is invalid
-	if (dummy != 0 || offset != 0 || offset + size > mc.getSize()) {
+	if (dummy != 0 || offset != 0 || offset + size > mc.getSize())
+	{
 		return false;
 	}
 
 	// Check that the file name given for the first lump is acceptable
 	int filnamlen = 0;
-	for (; filnamlen < 13; ++filnamlen) {
+	for (; filnamlen < 13; ++filnamlen)
+	{
 		if (myname[filnamlen] == 0)
 			break;
 		if (myname[filnamlen] < 33 || myname[filnamlen] > 126 ||
-			myname[filnamlen] == '"' || myname[filnamlen] == '*' || myname[filnamlen] == '/' ||
-			myname[filnamlen] == ':' || myname[filnamlen] == '<' || myname[filnamlen] == '?' ||
-			myname[filnamlen] == '\\' || myname[filnamlen] == '|')
+		        myname[filnamlen] == '"' || myname[filnamlen] == '*' || myname[filnamlen] == '/' ||
+		        myname[filnamlen] == ':' || myname[filnamlen] == '<' || myname[filnamlen] == '?' ||
+		        myname[filnamlen] == '\\' || myname[filnamlen] == '|')
 			return false;
 	}
 	// At a minimum, one character for the name and the dot separating it from the extension
@@ -397,7 +422,8 @@ bool LibArchive::isLibArchive(MemChunk& mc) {
 /* LibArchive::isLibArchive
  * Checks if the file at [filename] is a valid Shadowcaster lib archive
  *******************************************************************/
-bool LibArchive::isLibArchive(string filename) {
+bool LibArchive::isLibArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 
@@ -431,18 +457,20 @@ bool LibArchive::isLibArchive(string filename) {
 
 	// If the lump data goes past the directory,
 	// the library is invalid
-	if (dummy != 0 || offset != 0 || offset + size > file.Length()) {
+	if (dummy != 0 || offset != 0 || offset + size > file.Length())
+	{
 		return false;
 	}
 	// Check that the file name given for the first lump is acceptable
 	int filnamlen = 0;
-	for (; filnamlen < 13; ++filnamlen) {
+	for (; filnamlen < 13; ++filnamlen)
+	{
 		if (myname[filnamlen] == 0)
 			break;
 		if (myname[filnamlen] < 33 || myname[filnamlen] > 126 ||
-			myname[filnamlen] == '"' || myname[filnamlen] == '*' || myname[filnamlen] == '/' ||
-			myname[filnamlen] == ':' || myname[filnamlen] == '<' || myname[filnamlen] == '?' ||
-			myname[filnamlen] == '\\' || myname[filnamlen] == '|')
+		        myname[filnamlen] == '"' || myname[filnamlen] == '*' || myname[filnamlen] == '/' ||
+		        myname[filnamlen] == ':' || myname[filnamlen] == '<' || myname[filnamlen] == '?' ||
+		        myname[filnamlen] == '\\' || myname[filnamlen] == '|')
 			return false;
 	}
 	// At a minimum, one character for the name and the dot separating it from the extension

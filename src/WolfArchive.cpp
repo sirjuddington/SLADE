@@ -42,7 +42,8 @@
  * Anyone who finds that the Doom source code is hacky should take
  * a look at how Wolf3D was coded. It's a wonder it works at all.
  *******************************************************************/
-enum WolfConstants {
+enum WolfConstants
+{
 	NUMTILE8,
 	STARTPICS,
 	STARTPICM,
@@ -59,33 +60,36 @@ enum WolfConstants {
 	PLACEHOLDER,
 };
 #define return7(a, b, c, d, e, f, g, h) switch(a) { case 0: return b; case 1: return c; case 2: return d; case 3: return e; case 4: return f; case 5: return g; case 6: return h; }
-size_t WolfConstant(int name, size_t numlumps) {
+size_t WolfConstant(int name, size_t numlumps)
+{
 	int game = 0;	// 0: wolf shareware V, 1: wolf shareware E, 2: wolf shareware ?
 					// 3: wolf full V, 4: wolf fulll E,
 					// 5: spear demo V, 6: spear full V
 					// There's also a GFXV_SDM, but with the same numlumps as GFXE_WL6 so screw it.
-	switch (numlumps) {
-		case 133: game = 5; break;	// GFXV_SDM
-		case 149: game = 3; break;	// GFXV_WL6
-		case 156: game = 2; break;	// It's the version I have but it's not in the Wolf source code...
-		case 169: game = 6; break;	// GFXV_SOD
-		case 414: game = 4; break;	// GFXE_WL6: Just a mess of chunks without anything usable
-		case 556: game = 0; break;	// GFXV_WL1
-		case 558: game = 1;	break;	// GFXE_WL1
-		default: return 0;
+	switch (numlumps)
+	{
+	case 133: game = 5; break;	// GFXV_SDM
+	case 149: game = 3; break;	// GFXV_WL6
+	case 156: game = 2; break;	// It's the version I have but it's not in the Wolf source code...
+	case 169: game = 6; break;	// GFXV_SOD
+	case 414: game = 4; break;	// GFXE_WL6: Just a mess of chunks without anything usable
+	case 556: game = 0; break;	// GFXV_WL1
+	case 558: game = 1;	break;	// GFXE_WL1
+	default: return 0;
 	}
-	switch (name) {					//	  VW1, EW1, ?W1, VW6, EW6, SDM, SOD
-		case STARTPICS:		return7(game,   3,   3,   3,   3,   0,   3,   3) break;
-		case STARTPICM:		return7(game, 139, 142, 147, 135,   0, 128, 150) break;
-		case NUMTILE8:		return7(game,  72,  72,  72,  72,   0,  72,  72) break;
-		case STARTPAL:		return7(game,   0,   0,   0,   0,   0, 131, 153) break;
-		case ENDPAL:		return7(game,   0,   0,   0,   0,   0, 131, 163) break;
-		case TITLE1PIC:		return7(game,   0,   0,   0,   0,   0,  74,  79) break;
-		case TITLE2PIC:		return7(game,   0,   0,   0,   0,   0,  75,  80) break;
-		case ENDSCREEN1PIC:	return7(game,   0,   0,   0,   0,   0,   0,  81) break;
-		case ENDSCREEN9PIC:	return7(game,   0,   0,   0,   0,   0,   0,  89) break;
-		case IDGUYS1PIC:	return7(game,   0,   0,   0,   0,   0,   0,  93) break;
-		case IDGUYS2PIC:	return7(game,   0,   0,   0,   0,   0,   0,  94) break;
+	switch (name)  					//	  VW1, EW1, ?W1, VW6, EW6, SDM, SOD
+	{
+	case STARTPICS:		return7(game,   3,   3,   3,   3,   0,   3,   3) break;
+	case STARTPICM:		return7(game, 139, 142, 147, 135,   0, 128, 150) break;
+	case NUMTILE8:		return7(game,  72,  72,  72,  72,   0,  72,  72) break;
+	case STARTPAL:		return7(game,   0,   0,   0,   0,   0, 131, 153) break;
+	case ENDPAL:		return7(game,   0,   0,   0,   0,   0, 131, 163) break;
+	case TITLE1PIC:		return7(game,   0,   0,   0,   0,   0,  74,  79) break;
+	case TITLE2PIC:		return7(game,   0,   0,   0,   0,   0,  75,  80) break;
+	case ENDSCREEN1PIC:	return7(game,   0,   0,   0,   0,   0,   0,  81) break;
+	case ENDSCREEN9PIC:	return7(game,   0,   0,   0,   0,   0,   0,  89) break;
+	case IDGUYS1PIC:	return7(game,   0,   0,   0,   0,   0,   0,  93) break;
+	case IDGUYS2PIC:	return7(game,   0,   0,   0,   0,   0,   0,  94) break;
 	}
 	return 0;
 }
@@ -94,21 +98,26 @@ size_t WolfConstant(int name, size_t numlumps) {
  * Looks for the string naming the song, at no fixed place towards
  * the end of the file. Returns an empty string if nothing is found.
  *******************************************************************/
-string searchIMFName(MemChunk& mc) {
+string searchIMFName(MemChunk& mc)
+{
 	string ret = "";
-	if (mc.getSize() > 90) {
+	if (mc.getSize() > 90)
+	{
 		size_t counter = mc.getSize() - 1;
 		size_t stop = counter - 88;
-		while (counter > stop) {
+		while (counter > stop)
+		{
 			if (mc[counter] == 'F' && mc[counter - 1] == 'M'
-				&& mc[counter - 2] == 'I' && mc[counter - 3] == '.')
+					&& mc[counter - 2] == 'I' && mc[counter - 3] == '.')
 			{
 				size_t start = counter - 4;
 				while ((mc[start] >= 'A' && mc[start] <= 'Z') || mc[start] == '-'
-					|| (mc[start] >= '0' && mc[start] <= '9') || mc[start] == '!') {
+						|| (mc[start] >= '0' && mc[start] <= '9') || mc[start] == '!')
+				{
 					start--;
 				}
-				if (counter - start < 13 && mc[start] == '\\') {
+				if (counter - start < 13 && mc[start] == '\\')
+				{
 					for (size_t i = 1; start + i <= counter; ++i)
 						ret += mc[start + i];
 				}
@@ -124,7 +133,8 @@ string searchIMFName(MemChunk& mc) {
  * Adds height and width information to a picture. Needed because
  * Wolfenstein 3-D is just that much of a horrible hacky mess.
  *******************************************************************/
-void addWolfPicHeader(ArchiveEntry * entry, uint16_t width, uint16_t height) {
+void addWolfPicHeader(ArchiveEntry* entry, uint16_t width, uint16_t height)
+{
 	if (!entry)
 		return;
 
@@ -133,14 +143,15 @@ void addWolfPicHeader(ArchiveEntry * entry, uint16_t width, uint16_t height) {
 		return;
 
 	uint32_t newsize = mc.getSize() + 4;
-	uint8_t * newdata = new uint8_t[newsize];
+	uint8_t* newdata = new uint8_t[newsize];
 
 	newdata[0] = (uint8_t) (width & 0xFF);
 	newdata[1] = (uint8_t) (width>>8);
 	newdata[2] = (uint8_t) (height & 0xFF);
 	newdata[3] = (uint8_t) (height>>8);
 
-	for (size_t i = 0; 4 + i < newsize; ++i) {
+	for (size_t i = 0; 4 + i < newsize; ++i)
+	{
 		newdata[4 + i] = mc[i];
 	}
 	//mc.clear();
@@ -151,7 +162,8 @@ void addWolfPicHeader(ArchiveEntry * entry, uint16_t width, uint16_t height) {
 /* addIMFHeader
  * Automatizes this: http://zdoom.org/wiki/Using_OPL_music_in_ZDoom
  *******************************************************************/
-void addIMFHeader(ArchiveEntry * entry) {
+void addIMFHeader(ArchiveEntry* entry)
+{
 	if (!entry)
 		return;
 
@@ -161,21 +173,27 @@ void addIMFHeader(ArchiveEntry * entry) {
 
 	uint32_t newsize = mc.getSize() + 9;
 	uint8_t start = 0;
-	if (mc[0] | mc[1]) {
+	if (mc[0] | mc[1])
+	{
 		// non-zero start
 		newsize += 2;
 		start = 2;
-	} else newsize += 4;
+	}
+	else newsize += 4;
 
-	uint8_t * newdata = new uint8_t[newsize];
+	uint8_t* newdata = new uint8_t[newsize];
 	newdata[0] = 'A'; newdata[1] = 'D'; newdata[2] = 'L'; newdata[3] = 'I'; newdata[4] = 'B';
 	newdata[5] = 1; newdata[6] = 0; newdata[7] = 0; newdata[8] = 1;
-	if (mc[0] | mc[1]) {
+	if (mc[0] | mc[1])
+	{
 		newdata[9] = mc[0]; newdata[10] = mc[1]; newdata[11] = 0; newdata[12] = 0;
-	} else {
+	}
+	else
+	{
 		newdata[9] = 0; newdata[10] = 0; newdata[11] = 0; newdata[12] = 0;
 	}
-	for (size_t i = 0; ((i + start < mc.getSize()) && (13 + i < newsize)); ++i) {
+	for (size_t i = 0; ((i + start < mc.getSize()) && (13 + i < newsize)); ++i)
+	{
 		newdata[13 + i] = mc[i+start];
 	}
 	//mc.clear();
@@ -187,10 +205,11 @@ void addIMFHeader(ArchiveEntry * entry) {
  * Needed to read VGAGRAPH content. Adapted from Wolf3D code, but
  * with dead code removed from it.
  *******************************************************************/
-struct huffnode {
+struct huffnode
+{
 	uint16_t bit0, bit1;	// 0-255 is a character, > is a pointer to a node
 };
-void ExpandWolfGraphLump (ArchiveEntry * entry, size_t lumpnum, size_t numlumps, huffnode *hufftable)
+void ExpandWolfGraphLump (ArchiveEntry* entry, size_t lumpnum, size_t numlumps, huffnode* hufftable)
 {
 	if (!entry || entry->getSize() == 0)
 		return;
@@ -201,46 +220,53 @@ void ExpandWolfGraphLump (ArchiveEntry * entry, size_t lumpnum, size_t numlumps,
 
 	if (lumpnum == WolfConstant(STARTTILE8, numlumps))
 		expanded = 64 * WolfConstant(NUMTILE8, numlumps);
-	else {
-		expanded = *(uint32_t *)source;
+	else
+	{
+		expanded = *(uint32_t*)source;
 		source += 4;			// skip over length
 	}
 
-	if (expanded == 0 || expanded > 65000) {
+	if (expanded == 0 || expanded > 65000)
+	{
 		wxLogMessage("ExpandWolfGraphLump: invalid expanded size in entry %d", lumpnum);
 		return;
 	}
 
-	uint8_t *dest = new uint8_t[expanded];
-    uint8_t *end, *start;
-    huffnode *headptr, *huffptr;
+	uint8_t* dest = new uint8_t[expanded];
+	uint8_t* end, *start;
+	huffnode* headptr, *huffptr;
 
-    headptr = hufftable+254;        // head node is always node 254
+	headptr = hufftable+254;        // head node is always node 254
 
-    size_t written = 0;
+	size_t written = 0;
 
-    end = dest+expanded;
+	end = dest+expanded;
 	start = dest;
 
-    uint8_t val = *source++;
-    uint8_t mask = 1;
-    uint16_t nodeval = 0;
-    huffptr = headptr;
-    while(1) {
-        if(!(val & mask))		nodeval = huffptr->bit0;
-        else					nodeval = huffptr->bit1;
-        if(mask==0x80)			val = *source++, mask = 1;
-        else					mask <<= 1;
+	uint8_t val = *source++;
+	uint8_t mask = 1;
+	uint16_t nodeval = 0;
+	huffptr = headptr;
+	while(1)
+	{
+		if(!(val & mask))		nodeval = huffptr->bit0;
+		else					nodeval = huffptr->bit1;
+		if(mask==0x80)			val = *source++, mask = 1;
+		else					mask <<= 1;
 
-		if(nodeval<256) {
+		if(nodeval<256)
+		{
 			*dest++ = (uint8_t) nodeval;
 			written++;
 			huffptr = headptr;
 			if(dest>=end) break;
-		} else if (nodeval < 512) {
+		}
+		else if (nodeval < 512)
+		{
 			huffptr = hufftable + (nodeval - 256);
-		} else wxLogMessage("ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum);
-    }
+		}
+		else wxLogMessage("ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum);
+	}
 
 	entry->importMem(start, expanded);
 	delete[] start;
@@ -258,27 +284,31 @@ void ExpandWolfGraphLump (ArchiveEntry * entry, size_t lumpnum, size_t numlumps,
  * WolfArchive class constructor
  *******************************************************************/
 WolfArchive::WolfArchive()
-: TreelessArchive(ARCHIVE_WOLF) {
+	: TreelessArchive(ARCHIVE_WOLF)
+{
 }
 
 /* WolfArchive::~WolfArchive
  * WolfArchive class destructor
  *******************************************************************/
-WolfArchive::~WolfArchive() {
+WolfArchive::~WolfArchive()
+{
 }
 
 /* WolfArchive::getEntryOffset
  * Gets a lump entry's offset
  * Returns the lump entry's offset, or zero if it doesn't exist
  *******************************************************************/
-uint32_t WolfArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t WolfArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	return uint32_t((int)entry->exProp("Offset"));
 }
 
 /* WolfArchive::setEntryOffset
  * Sets a lump entry's offset
  *******************************************************************/
-void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
+void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
+{
 	entry->exProp("Offset") = (int)offset;
 }
 
@@ -286,14 +316,16 @@ void WolfArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
 /* WolfArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string WolfArchive::getFileExtensionString() {
+string WolfArchive::getFileExtensionString()
+{
 	return "Wolfenstein 3D Files (*.wl1; *.wl6; *.sod; *.sd?)|*.wl1;*.wl6;*.sod;*.sd1;*.sd2;*.sd3";
 }
 
 /* WolfArchive::getFormat
  * Gives the "archive_dat" string
  *******************************************************************/
-string WolfArchive::getFormat() {
+string WolfArchive::getFormat()
+{
 	return "archive_wolf";
 }
 
@@ -301,11 +333,13 @@ string WolfArchive::getFormat() {
  * Reads a Wolf format file from disk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool WolfArchive::open(string filename) {
+bool WolfArchive::open(string filename)
+{
 	// Find wolf archive type
 	wxFileName fn1(filename);
 	bool opened = false;
-	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS") {
+	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS")
+	{
 		wxFileName fn2(fn1);
 		fn1.SetName("MAPHEAD");
 		fn2.SetName("GAMEMAPS");
@@ -313,7 +347,9 @@ bool WolfArchive::open(string filename) {
 		head.importFile(fn1.GetFullPath());
 		data.importFile(fn2.GetFullPath());
 		opened = openMaps(head, data);
-	} else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT") {
+	}
+	else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT")
+	{
 		wxFileName fn2(fn1);
 		fn1.SetName("AUDIOHED");
 		fn2.SetName("AUDIOT");
@@ -321,7 +357,9 @@ bool WolfArchive::open(string filename) {
 		head.importFile(fn1.GetFullPath());
 		data.importFile(fn2.GetFullPath());
 		opened = openAudio(head, data);
-	} else if (fn1.GetName().MakeUpper() == "VGAHEAD" || fn1.GetName().MakeUpper() == "VGAGRAPH" || fn1.GetName().MakeUpper() == "VGADICT") {
+	}
+	else if (fn1.GetName().MakeUpper() == "VGAHEAD" || fn1.GetName().MakeUpper() == "VGAGRAPH" || fn1.GetName().MakeUpper() == "VGADICT")
+	{
 		wxFileName fn2(fn1);
 		wxFileName fn3(fn1);
 		fn1.SetName("VGAHEAD");
@@ -332,10 +370,13 @@ bool WolfArchive::open(string filename) {
 		data.importFile(fn2.GetFullPath());
 		dict.importFile(fn3.GetFullPath());
 		opened = openGraph(head, data, dict);
-	} else {
+	}
+	else
+	{
 		// Read the file into a MemChunk
 		MemChunk mc;
-		if (!mc.importFile(filename)) {
+		if (!mc.importFile(filename))
+		{
 			Global::error = "Unable to open file. Make sure it isn't in use by another program.";
 			return false;
 		}
@@ -343,7 +384,8 @@ bool WolfArchive::open(string filename) {
 		opened = open(mc);
 	}
 
-	if (opened) {
+	if (opened)
+	{
 		// Update variables
 		this->filename = filename;
 		this->on_disk = true;
@@ -358,7 +400,8 @@ bool WolfArchive::open(string filename) {
  * Reads VSWAP Wolf format data from a MemChunk.
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool WolfArchive::open(MemChunk& mc) {
+bool WolfArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -379,8 +422,9 @@ bool WolfArchive::open(MemChunk& mc) {
 
 	// Read the offsets
 	theSplashWindow->setProgressMessage("Reading Wolf archive data");
-	WolfHandle * pages = new WolfHandle[num_lumps];
-	for (uint32_t d = 0; d < num_chunks; d++) {
+	WolfHandle* pages = new WolfHandle[num_lumps];
+	for (uint32_t d = 0; d < num_chunks; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_chunks*2.0f));
 
@@ -391,7 +435,8 @@ bool WolfArchive::open(MemChunk& mc) {
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid
-		if (pages[d].offset != 0 && pages[d].offset < (unsigned)((num_lumps + 1) * 6)) {
+		if (pages[d].offset != 0 && pages[d].offset < (unsigned)((num_lumps + 1) * 6))
+		{
 			delete[] pages;
 			wxLogMessage("WolfArchive::open: Wolf archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt ";
@@ -401,7 +446,8 @@ bool WolfArchive::open(MemChunk& mc) {
 	}
 
 	// Then read the sizes
-	for (uint32_t d = 0, l = 0; d < num_chunks; d++) {
+	for (uint32_t d = 0, l = 0; d < num_chunks; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)(d + num_chunks) / (float)num_chunks*2.0f));
 
@@ -420,18 +466,22 @@ bool WolfArchive::open(MemChunk& mc) {
 
 		// Shareware versions do not include all lumps,
 		// no need to bother with fakes
-		if (pages[d].offset > 0) {
+		if (pages[d].offset > 0)
+		{
 
 			// Digitized sounds can be made of multiple pages
 			size_t e = d;
-			if (d >= soundstart && size == 4096) {
+			if (d >= soundstart && size == 4096)
+			{
 				size_t fullsize = 4096;
-				do {
+				do
+				{
 					mc.read(&size, 2);
 					size = wxINT16_SWAP_ON_BE(size);
 					fullsize += size;
 					++e;
-				} while (size == 4096);
+				}
+				while (size == 4096);
 				size = fullsize;
 			}
 
@@ -448,7 +498,8 @@ bool WolfArchive::open(MemChunk& mc) {
 
 			// If the lump data goes past the end of file,
 			// the data file is invalid
-			if (getEntryOffset(nlump) + size > mc.getSize()) {
+			if (getEntryOffset(nlump) + size > mc.getSize())
+			{
 				delete[] pages;
 				wxLogMessage("WolfArchive::open: Wolf archive is invalid or corrupt");
 				Global::error = "Archive is invalid and/or corrupt";
@@ -464,7 +515,8 @@ bool WolfArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -472,7 +524,8 @@ bool WolfArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -499,7 +552,8 @@ bool WolfArchive::open(MemChunk& mc) {
  * Reads Wolf AUDIOT/AUDIOHEAD format data from a MemChunk.
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool WolfArchive::openAudio(MemChunk& head, MemChunk& data) {
+bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
+{
 	// Check data was given
 	if (!head.hasData() || !data.hasData())
 		return false;
@@ -513,9 +567,10 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data) {
 
 	// Read the offsets
 	theSplashWindow->setProgressMessage("Reading Wolf archive data");
-	const uint32_t * offsets = (const uint32_t *) head.getData();
+	const uint32_t* offsets = (const uint32_t*) head.getData();
 	MemChunk edata;
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -525,7 +580,8 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data) {
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid
-		if (offset + size > data.getSize()) {
+		if (offset + size > data.getSize())
+		{
 			wxLogMessage("WolfArchive::openAudio: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
@@ -533,7 +589,8 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data) {
 		}
 
 		// Read entry data if it isn't zero-sized
-		if (size > 0) {
+		if (size > 0)
+		{
 			// Read the entry data
 			data.exportMemChunk(edata, offset, size);
 		}
@@ -571,7 +628,8 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data) {
  * Reads Wolf GAMEMAPS/MAPHEAD format data from a MemChunk.
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool WolfArchive::openMaps(MemChunk& head, MemChunk& data) {
+bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
+{
 	// Check data was given
 	if (!head.hasData() || !data.hasData())
 		return false;
@@ -585,8 +643,9 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data) {
 
 	// Read the offsets
 	theSplashWindow->setProgressMessage("Reading Wolf archive data");
-	const uint32_t * offsets = (const uint32_t *) (2 + head.getData());
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	const uint32_t* offsets = (const uint32_t*) (2 + head.getData());
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -596,7 +655,8 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data) {
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid
-		if (offset + size > data.getSize()) {
+		if (offset + size > data.getSize())
+		{
 			wxLogMessage("WolfArchive::openMaps: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
@@ -606,7 +666,8 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data) {
 		if (offset == 0 && d > 0) continue;
 
 		string name = "";
-		for (size_t i = 0; i < 16; ++i) {
+		for (size_t i = 0; i < 16; ++i)
+		{
 			name += data[offset + 22 + i];
 			if (data[offset + 22 + i] == 0)
 				break;
@@ -629,7 +690,8 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data) {
 		planelen[0] = READ_L16(data, offset +12);
 		planelen[1] = READ_L16(data, offset +14);
 		planelen[2] = READ_L16(data, offset +16);
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < 3; ++i)
+		{
 			name = S_FMT("PLANE%d", i);
 			nlump = new ArchiveEntry(name, planelen[i]);
 			nlump->setLoaded(false);
@@ -642,7 +704,8 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -650,7 +713,8 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			data.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -678,12 +742,14 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data) {
  * Returns true if successful, false otherwise
  *******************************************************************/
 #define WC(a) WolfConstant(a, num_lumps)
-bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict) {
+bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
+{
 	// Check data was given
 	if (!head.hasData() || !data.hasData() || !dict.hasData())
 		return false;
 
-	if (dict.getSize() != 1024) {
+	if (dict.getSize() != 1024)
+	{
 		Global::error = S_FMT("WolfArchive::openGraph: VGADICT is improperly sized (%d bytes instead of 1024)", dict.getSize());
 		return false;
 	}
@@ -699,7 +765,8 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict) {
 
 	// Read the offsets
 	theSplashWindow->setProgressMessage("Reading Wolf archive data");
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -708,11 +775,12 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict) {
 
 		// Compute size from next offset
 		uint32_t size = /*((d == num_lumps - 1) ? data.getSize() - offset :*/(
-			READ_L24(head, ((d+1) * 3)) - offset);
+					READ_L24(head, ((d+1) * 3)) - offset);
 
 		// If the lump data goes before the end of the directory,
 		// the data file is invalid
-		if (offset + size > data.getSize()) {
+		if (offset + size > data.getSize())
+		{
 			wxLogMessage("WolfArchive::openGraph: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
@@ -723,7 +791,8 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict) {
 		string name;
 		if (d == 0)														name = "INF";
 		else if (d == 1 || d == 2)										name = "FNT";
-		else if (d >= WC(STARTPICS)) {
+		else if (d >= WC(STARTPICS))
+		{
 			if (d >= WC(STARTPAL) && d <= WC(ENDPAL))					name = "PAL";
 			else if (d == WC(TITLE1PIC) || d == WC(TITLE2PIC))			name = "TIT";
 			else if (d == WC(IDGUYS1PIC)|| d == WC(IDGUYS2PIC))			name = "IDG";
@@ -748,9 +817,10 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict) {
 
 	// Detect all entry types
 	MemChunk edata;
-	const uint16_t * pictable;
+	const uint16_t* pictable;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		//wxLogMessage(s_fmt("Entry %d/%d", a, numEntries()));
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
@@ -759,7 +829,8 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			data.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -768,8 +839,9 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict) {
 
 		// Store pictable information
 		if (a == 0)
-			pictable = (uint16_t *) entry->getData();
-		else if (a >= WC(STARTPICS) && a < WC(STARTPICM)) {
+			pictable = (uint16_t*) entry->getData();
+		else if (a >= WC(STARTPICS) && a < WC(STARTPICM))
+		{
 			size_t i = (a - WC(STARTPICS))<<1;
 			addWolfPicHeader(entry, pictable[i], pictable[i+1]);
 		}
@@ -795,7 +867,8 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict) {
  * Override of Archive::addEntry to force entry addition to the root
  * directory, and update namespaces if needed
  *******************************************************************/
-ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -818,14 +891,16 @@ ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, unsigned position, Arch
  * Since there are no namespaces, just give the hot potato to the
  * other function and call it a day.
  *******************************************************************/
-ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* WolfArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
 }
 
 /* WolfArchive::renameEntry
  * Wolf chunks have no names, so renaming is pointless.
  *******************************************************************/
-bool WolfArchive::renameEntry(ArchiveEntry* entry, string name) {
+bool WolfArchive::renameEntry(ArchiveEntry* entry, string name)
+{
 	return false;
 }
 
@@ -833,7 +908,8 @@ bool WolfArchive::renameEntry(ArchiveEntry* entry, string name) {
  * Writes the dat archive to a MemChunk
  * Returns true if successful, false otherwise [Not implemented]
  *******************************************************************/
-bool WolfArchive::write(MemChunk& mc, bool update) {
+bool WolfArchive::write(MemChunk& mc, bool update)
+{
 	return false;
 }
 
@@ -841,14 +917,16 @@ bool WolfArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the datafile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool WolfArchive::loadEntryData(ArchiveEntry* entry) {
+bool WolfArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -857,7 +935,8 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("WolfArchive::loadEntryData: Failed to open datfile %s", filename.c_str());
 		return false;
 	}
@@ -875,7 +954,8 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry) {
 /* WolfArchive::isWolfArchive
  * Checks if the given data is a valid Wolfenstein VSWAP archive
  *******************************************************************/
-bool WolfArchive::isWolfArchive(MemChunk& mc) {
+bool WolfArchive::isWolfArchive(MemChunk& mc)
+{
 	// Read Wolf header
 	mc.seek(0, SEEK_SET);
 	uint16_t num_lumps, sprites, sounds;
@@ -900,12 +980,14 @@ bool WolfArchive::isWolfArchive(MemChunk& mc) {
 	if (filesize < totalsize)
 		return false;
 
-	WolfHandle * pages = new WolfHandle[num_lumps];
+	WolfHandle* pages = new WolfHandle[num_lumps];
 	uint32_t lastoffset = 0;
-	for (size_t a = 0; a < num_lumps; ++a) {
+	for (size_t a = 0; a < num_lumps; ++a)
+	{
 		mc.read(&offset, 4);
 		offset = wxINT32_SWAP_ON_BE(offset);
-		if (offset < lastoffset || offset % 512) {
+		if (offset < lastoffset || offset % 512)
+		{
 			delete[] pages;
 			return false;
 		}
@@ -913,12 +995,14 @@ bool WolfArchive::isWolfArchive(MemChunk& mc) {
 		pages[a].offset = offset;
 	}
 	uint16_t lastsize = 0;
-	for (size_t b = 0; b < num_lumps; ++b) {
+	for (size_t b = 0; b < num_lumps; ++b)
+	{
 		mc.read(&size, 2);
 		size = wxINT16_SWAP_ON_BE(size);
 		pagesize += (size / 512) + ((size % 512) ? 1 : 0);
 		pages[b].size = size;
-		if (b > 0 && (pages[b - 1].offset + pages[b - 1].size) > pages[b].offset) {
+		if (b > 0 && (pages[b - 1].offset + pages[b - 1].size) > pages[b].offset)
+		{
 			delete[] pages;
 			return false;
 		}
@@ -931,28 +1015,34 @@ bool WolfArchive::isWolfArchive(MemChunk& mc) {
 /* WolfArchive::isWolfArchive
  * Checks if the file at [filename] is a valid Wolfenstein VSWAP archive
  *******************************************************************/
-bool WolfArchive::isWolfArchive(string filename) {
+bool WolfArchive::isWolfArchive(string filename)
+{
 	// Find wolf archive type
 	wxFileName fn1(filename);
-	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS") {
+	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS")
+	{
 		wxFileName fn2(fn1);
 		fn1.SetName("MAPHEAD");
 		fn2.SetName("GAMEMAPS");
 		return (wxFile::Exists(fn1.GetFullPath()) && wxFile::Exists(fn2.GetFullPath()));
-	} else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT") {
+	}
+	else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT")
+	{
 		wxFileName fn2(fn1);
 		fn1.SetName("AUDIOHED");
 		fn2.SetName("AUDIOT");
 		return (wxFile::Exists(fn1.GetFullPath()) && wxFile::Exists(fn2.GetFullPath()));
-	} else if (fn1.GetName().MakeUpper() == "VGAHEAD" || fn1.GetName().MakeUpper() == "VGAGRAPH"
-		|| fn1.GetName().MakeUpper() == "VGADICT") {
+	}
+	else if (fn1.GetName().MakeUpper() == "VGAHEAD" || fn1.GetName().MakeUpper() == "VGAGRAPH"
+			 || fn1.GetName().MakeUpper() == "VGADICT")
+	{
 		wxFileName fn2(fn1);
 		wxFileName fn3(fn1);
 		fn1.SetName("VGAHEAD");
 		fn2.SetName("VGAGRAPH");
 		fn3.SetName("VGADICT");
 		return (wxFile::Exists(fn1.GetFullPath()) && wxFile::Exists(fn2.GetFullPath())
-			&& wxFile::Exists(fn3.GetFullPath()));
+				&& wxFile::Exists(fn3.GetFullPath()));
 	}
 
 	// else we have to deal with a VSWAP archive, which is the only self-contained type
@@ -989,14 +1079,18 @@ bool WolfArchive::isWolfArchive(string filename) {
 	if (filesize < totalsize)
 		return false;
 
-	WolfHandle * pages = new WolfHandle[num_lumps];
+	WolfHandle* pages = new WolfHandle[num_lumps];
 	uint32_t lastoffset = 0;
-	for (size_t a = 0; a < num_lumps; ++a) {
+	for (size_t a = 0; a < num_lumps; ++a)
+	{
 		file.Read(&offset, 4);
 		offset = wxINT32_SWAP_ON_BE(offset);
-		if (offset == 0) {
+		if (offset == 0)
+		{
 			// Empty entry (we're opening a shareware/demo archive)
-		} else if (offset < lastoffset || offset % 512) {
+		}
+		else if (offset < lastoffset || offset % 512)
+		{
 			delete[] pages;
 			return false;
 		}
@@ -1006,19 +1100,23 @@ bool WolfArchive::isWolfArchive(string filename) {
 	}
 	uint16_t lastsize = 0;
 	lastoffset = pages[0].offset;
-	for (size_t b = 0; b < num_lumps; ++b) {
+	for (size_t b = 0; b < num_lumps; ++b)
+	{
 		file.Read(&size, 2);
-		if (pages[b].offset > 0) {
+		if (pages[b].offset > 0)
+		{
 			size = wxINT16_SWAP_ON_BE(size);
 			pagesize += (size / 512) + ((size % 512) ? 1 : 0);
 			pages[b].size = size;
-			if (b > 0 && lastoffset + lastsize > pages[b].offset) {
+			if (b > 0 && lastoffset + lastsize > pages[b].offset)
+			{
 				delete[] pages;
 				return false;
 			}
 			lastoffset = pages[b].offset;
 			lastsize = size;
-		} else pages[b].size = 0;
+		}
+		else pages[b].size = 0;
 	}
 	delete[] pages;
 	return ((pagesize * 512) <= filesize || filesize >= lastoffset + lastsize);
@@ -1030,8 +1128,9 @@ bool WolfArchive::isWolfArchive(string filename) {
 #include "Console.h"
 #include "MainWindow.h"
 
-CONSOLE_COMMAND(addimfheader, 0, true) {
-	vector<ArchiveEntry *> entries = theMainWindow->getCurrentEntrySelection();
+CONSOLE_COMMAND(addimfheader, 0, true)
+{
+	vector<ArchiveEntry*> entries = theMainWindow->getCurrentEntrySelection();
 
 	for (size_t i = 0; i < entries.size(); ++i)
 		addIMFHeader(entries[i]);

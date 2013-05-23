@@ -57,7 +57,8 @@
  * So, total size - 302 % value @ 0x00 must be null.
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-bool SImage::loadFont0(const uint8_t* gfx_data, int size) {
+bool SImage::loadFont0(const uint8_t* gfx_data, int size)
+{
 	// Check data
 	if (!gfx_data)
 		return false;
@@ -91,7 +92,8 @@ bool SImage::loadFont0(const uint8_t* gfx_data, int size) {
 
 	// Data is in column-major format, convert to row-major
 	size_t p = 0;
-	for (size_t i = 0; i < datasize; ++i) {
+	for (size_t i = 0; i < datasize; ++i)
+	{
 		data[p] = r[i];
 
 		// Index 0 is transparent
@@ -102,7 +104,8 @@ bool SImage::loadFont0(const uint8_t* gfx_data, int size) {
 		p+=width;
 
 		// Move to next row
-		if (p >= datasize) {
+		if (p >= datasize)
+		{
 			p -= datasize;
 			++p;
 		}
@@ -120,7 +123,8 @@ bool SImage::loadFont0(const uint8_t* gfx_data, int size) {
  * would be a lot more legible...
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-bool SImage::loadFont1(const uint8_t* gfx_data, int size) {
+bool SImage::loadFont1(const uint8_t* gfx_data, int size)
+{
 	// Check data
 	if (!gfx_data)
 		return false;
@@ -151,28 +155,31 @@ bool SImage::loadFont1(const uint8_t* gfx_data, int size) {
 	memset(mask, 0xFF, width*height);
 
 	// Since gfx_data is a const pointer, we can't work on it.
-	uint8_t * tempdata = new uint8_t[size];
+	uint8_t* tempdata = new uint8_t[size];
 	memcpy(tempdata, gfx_data, size);
 
 
 	// We'll use wandering pointers. The original pointer is kept for cleanup.
-	uint8_t * read = tempdata + 8;
-	uint8_t * readend = tempdata + size - 1;
-	uint8_t * dest  = data;
-	uint8_t * destend = dest + width*height;
+	uint8_t* read = tempdata + 8;
+	uint8_t* readend = tempdata + size - 1;
+	uint8_t* dest  = data;
+	uint8_t* destend = dest + width*height;
 
 	uint8_t code = 0; size_t length = 0;
 
 	// This uses the same RLE algorithm as compressed IMGZ.
-	while (read < readend && dest < destend) {
+	while (read < readend && dest < destend)
+	{
 		code = *read++;
-		if (code < 0x80) {
+		if (code < 0x80)
+		{
 			length = code + 1;
 			memcpy(dest, read, length);
 			dest+=length;
 			read+=length;
 		}
-		else if (code > 0x80) {
+		else if (code > 0x80)
+		{
 			length = 0x101 - code;
 			code = *read++;
 			memset(dest, code, length);
@@ -194,12 +201,14 @@ bool SImage::loadFont1(const uint8_t* gfx_data, int size) {
  * Loads a ZDoom FON2 lump and displays it as a picture.
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-struct Font2Char {
+struct Font2Char
+{
 	uint16_t width;
-	uint8_t * data;
+	uint8_t* data;
 	Font2Char() { width = 0; data = NULL; }
 };
-struct Font2Header {
+struct Font2Header
+{
 	uint8_t headr[4];
 	uint16_t charheight;
 	uint8_t firstc;
@@ -209,7 +218,8 @@ struct Font2Header {
 	uint8_t palsize;
 	uint8_t kerning;	// Theoretically a flag field, but with only one flag...
 };
-bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
+bool SImage::loadFont2(const uint8_t* gfx_data, int size)
+{
 	// Clear current data if it exists
 	clearData();
 
@@ -226,7 +236,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
 	if (size < sizeof(Font2Header))
 		return false;
 
-	const Font2Header * header = (Font2Header *) gfx_data;
+	const Font2Header* header = (Font2Header*) gfx_data;
 	width = 0;
 	height = wxUINT16_SWAP_ON_BE(header->charheight);
 
@@ -234,7 +244,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
 	if (height == 0)
 		return false;
 
-	const uint8_t * p = gfx_data + sizeof(Font2Header);
+	const uint8_t* p = gfx_data + sizeof(Font2Header);
 
 	// Skip kerning information which do not concern us.
 	if (header->kerning)
@@ -242,9 +252,10 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
 
 	// Start building the character table.
 	size_t numchars = wxUINT16_SWAP_ON_BE(header->lastc) - wxUINT16_SWAP_ON_BE(header->firstc) +1;
-	Font2Char * chars = new Font2Char[numchars];
-	for (size_t i = 0; i < numchars; ++i) {
-		chars[i].width = wxUINT16_SWAP_ON_BE(*(uint16_t *)p);
+	Font2Char* chars = new Font2Char[numchars];
+	for (size_t i = 0; i < numchars; ++i)
+	{
+		chars[i].width = wxUINT16_SWAP_ON_BE(*(uint16_t*)p);
 		// Let's increase the total width
 		width+=chars[i].width;
 		// The width information is enumerated for each character only if they are
@@ -254,7 +265,8 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
 	}
 
 	// Let's build the palette now.
-	for (size_t i = 0; i < header->palsize + 1u; ++i) {
+	for (size_t i = 0; i < header->palsize + 1u; ++i)
+	{
 		rgba_t color;
 		color.r = *p++;
 		color.g = *p++;
@@ -270,21 +282,26 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
 	clearData();
 
 	// The picture data follows, using the same RLE as FON1 and IMGZ.
-	for (size_t i = 0; i < numchars; ++i) {
+	for (size_t i = 0; i < numchars; ++i)
+	{
 		// A big font is not necessarily continuous; several characters
 		// may be skipped; they are given a width of 0.
-		if (chars[i].width) {
+		if (chars[i].width)
+		{
 			size_t numpixels = chars[i].width * height;
 			chars[i].data = new uint8_t[numpixels];
-			uint8_t * d = chars[i].data;
+			uint8_t* d = chars[i].data;
 			uint8_t code = 0; size_t length = 0;
 
-			while (numpixels) {
+			while (numpixels)
+			{
 				code = *p++;
-				if (code < 0x80) {
+				if (code < 0x80)
+				{
 					length = code + 1;
 					// Overflows shouldn't happen
-					if (length > numpixels) {
+					if (length > numpixels)
+					{
 						return false;
 					}
 					memcpy(d, p, length);
@@ -292,10 +309,12 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
 					p+=length;
 					numpixels -= length;
 				}
-				else if (code > 0x80) {
+				else if (code > 0x80)
+				{
 					length = 0x101 - code;
 					// Overflows shouldn't happen
-					if (length > numpixels) {
+					if (length > numpixels)
+					{
 						return false;
 					}
 					code = *p++;
@@ -315,10 +334,13 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
 	clearData();
 
 	data = new uint8_t[width*height];
-	uint8_t * d = data;
-	for (size_t i = 0; i < (unsigned)height; ++i) {
-		for (size_t j = 0; j < numchars; ++j) {
-			if (chars[j].width) {
+	uint8_t* d = data;
+	for (size_t i = 0; i < (unsigned)height; ++i)
+	{
+		for (size_t j = 0; j < numchars; ++j)
+		{
+			if (chars[j].width)
+			{
 				memcpy(d, chars[j].data+(i*chars[j].width), chars[j].width);
 				d+=chars[j].width;
 			}
@@ -326,7 +348,8 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
 	}
 
 	// Clean up the characters once the big picture is finished
-	for (size_t i = 0; i < numchars; ++i) {
+	for (size_t i = 0; i < numchars; ++i)
+	{
 		if (chars[i].data)
 			delete[] chars[i].data;
 	}
@@ -349,25 +372,27 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size) {
  * Specs for the format are here: http://bmf.wz.cz/bmf-format.htm
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-struct BMFChar {
+struct BMFChar
+{
 	uint8_t which; // 0
 	uint8_t width; // 1
 	uint8_t height;// 2
-	 int8_t offsx; // 3
-	 int8_t offsy; // 4
+	int8_t offsx; // 3
+	int8_t offsy; // 4
 	uint8_t shift; // 5
 	// Rest is not part of the header proper
-	const uint8_t * cdata;
+	const uint8_t* cdata;
 	BMFChar() { which = width = height = offsx = offsy = shift = 0; cdata = NULL; }
 };
-struct BMFFont {
+struct BMFFont
+{
 	uint8_t headr[4];	//  0
 	uint8_t version;	//  4
 	uint8_t lineheight;	//  5
-	 int8_t size_over;	//  6
-	 int8_t size_under;	//  7
-	 int8_t add_space;	//  8
-	 int8_t size_inner;	//  9
+	int8_t size_over;	//  6
+	int8_t size_under;	//  7
+	int8_t add_space;	//  8
+	int8_t size_inner;	//  9
 	uint8_t num_colors;	// 10
 	uint8_t top_color;	// 11
 	uint8_t reserved[4];// 12
@@ -375,14 +400,16 @@ struct BMFFont {
 	// Rest is not part of the header proper
 	uint8_t info_size;
 	uint16_t num_chars;
-	const char * info;
-	BMFChar * chars;
-	BMFFont() {
+	const char* info;
+	BMFChar* chars;
+	BMFFont()
+	{
 		lineheight = size_over = size_under = add_space = size_inner =
-			num_colors = top_color = pal_size = info_size = num_chars = 0;
+		        num_colors = top_color = pal_size = info_size = num_chars = 0;
 		info = NULL; chars = NULL;
 	}
-	BMFFont(BMFFont * other) {
+	BMFFont(BMFFont* other)
+	{
 		lineheight = other->lineheight;
 		size_over = other->size_over;
 		size_under = other->size_under;
@@ -397,12 +424,13 @@ struct BMFFont {
 	}
 	~BMFFont() { if (chars) delete[] chars; }
 };
-bool SImage::loadBMF(const uint8_t* gfx_data, int size) {
+bool SImage::loadBMF(const uint8_t* gfx_data, int size)
+{
 	if (!gfx_data || size < 24)
 		return false;
-	const uint8_t * eod = gfx_data + size;
+	const uint8_t* eod = gfx_data + size;
 
-	BMFFont mf((BMFFont *)gfx_data);
+	BMFFont mf((BMFFont*)gfx_data);
 
 	// Check for invalid data, we need at least one visible color
 	if (mf.pal_size == 0)
@@ -418,25 +446,28 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size) {
 	numimages = 1;
 	imgindex = 0;
 
-	const uint8_t * ofs = gfx_data+17;
+	const uint8_t* ofs = gfx_data+17;
 
 	// Setup palette -- it's a 6-bit palette (63 max) so we have to convert it to 8-bit.
 	// Palette index 0 is used as the transparent color and not described at all.
 	palette.setColour(0, rgba_t(0, 0, 0, 0));
-	for (size_t i = 0; i < mf.pal_size; ++i) {
+	for (size_t i = 0; i < mf.pal_size; ++i)
+	{
 		palette.setColour(i+1, rgba_t((ofs[(i*3)]<<2)+(ofs[(i*3)]>>4),
-			(ofs[(i*3)+1]<<2)+(ofs[(i*3)]>>4), (ofs[(i*3)+2]<<2)+(ofs[(i*3)+2]>>4), 255));
+		                              (ofs[(i*3)+1]<<2)+(ofs[(i*3)]>>4), (ofs[(i*3)+2]<<2)+(ofs[(i*3)+2]>>4), 255));
 	}
 
 	// Move to after the palette and get amount of characters
 	ofs += mf.pal_size*3;
-	if (ofs >= eod) {
+	if (ofs >= eod)
+	{
 		wxLogMessage("BMF aborted: no data after palette");
 		return false;
 	}
 	mf.info_size = ofs[0];
-	if (mf.info_size > 0) {
-		mf.info = (char *) ofs+1;
+	if (mf.info_size > 0)
+	{
+		mf.info = (char*) ofs+1;
 	}
 	ofs+=mf.info_size+1;
 	mf.num_chars = READ_L16(ofs, 0);
@@ -445,7 +476,8 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size) {
 
 	// Now we are at the beginning of character data
 	ofs+=2;
-	if (ofs >= eod) {
+	if (ofs >= eod)
+	{
 		wxLogMessage("BMF aborted: no data after char size");
 		return false;
 	}
@@ -453,7 +485,8 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size) {
 	mf.chars = new BMFChar[mf.num_chars];
 	int miny = ofs[4], maxy = ofs[2];
 	width = ofs[5] + abs(ofs[3]);
-	for (size_t i = 0; i < mf.num_chars; ++i) {
+	for (size_t i = 0; i < mf.num_chars; ++i)
+	{
 		mf.chars[i].which = ofs[0];
 		mf.chars[i].width = ofs[1];
 		mf.chars[i].height= ofs[2];
@@ -465,14 +498,18 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size) {
 		// Sanity check, some supposedly-valid fonts do not have all the
 		// characters they pretend to have (e.g., 274.bmf). Being truncated
 		// does not prevent them from being considered valid, so cut them off
-		if (ofs >= eod && (i+1) < mf.num_chars) {
+		if (ofs >= eod && (i+1) < mf.num_chars)
+		{
 			mf.num_chars = i;
 		}
 		// Zap empty characters, no need to waste space displaying their void.
-		if (mf.chars[i].width == 0 && mf.chars[i].height == 0) {
+		if (mf.chars[i].width == 0 && mf.chars[i].height == 0)
+		{
 			--i;
 			--mf.num_chars;
-		} else {
+		}
+		else
+		{
 			if (miny > mf.chars[i].offsy)
 				miny = mf.chars[i].offsy;
 			if (maxy < mf.chars[i].height)
@@ -492,18 +529,23 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size) {
 	// Start processing each character, painting it on the empty canvas
 	int startx = (mf.chars[0].offsy < 0 ? 0 : mf.chars[0].offsy);
 	int starty = (miny < 0 ? 0 - miny : 0);
-	for (int i = 0; i < mf.num_chars; ++i) {
-		BMFChar * mc = &mf.chars[i];
-		if (mc->width && mc->height) {
-			for (int v = 0; v < mc->height; ++v) {
-				for (int u = 0; u < mc->width; ++u) {
+	for (int i = 0; i < mf.num_chars; ++i)
+	{
+		BMFChar* mc = &mf.chars[i];
+		if (mc->width && mc->height)
+		{
+			for (int v = 0; v < mc->height; ++v)
+			{
+				for (int u = 0; u < mc->width; ++u)
+				{
 					// Source pixel
 					pixela = v*mc->width + u;
 					// Destination pixel
 					pixelb = (starty+v+mc->offsy)*width+startx+u+mc->offsx;
 					// Only paint if appropriate
 					if ((mc->cdata + pixela < eod) && (mc->cdata + pixela < mf.chars[i+1].cdata - 6) &&
-						mc->cdata[pixela] && pixelb < pixels) {
+					        mc->cdata[pixela] && pixelb < pixels)
+					{
 						data[pixelb] = mc->cdata[pixela];
 						mask[pixelb] = 0xFF;
 					}
@@ -521,7 +563,8 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size) {
  * Loads a monochrome, monospaced font and displays it as a picture.
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-bool SImage::loadFontM(const uint8_t* gfx_data, int size) {
+bool SImage::loadFontM(const uint8_t* gfx_data, int size)
+{
 	// Check data
 	if (!gfx_data || size % 256)
 		return false;
@@ -552,7 +595,8 @@ bool SImage::loadFontM(const uint8_t* gfx_data, int size) {
 	imgindex = 0;
 
 	//Each pixel is described as a single bit, either on or off
-	for (size_t i = 0; i < (unsigned)size; ++i) {
+	for (size_t i = 0; i < (unsigned)size; ++i)
+	{
 		for (size_t p = 0; p < 8; ++p)
 			mask[(i*8)+p] = ((gfx_data[i]>>(7-p)) & 1) * 255;
 	}
@@ -573,7 +617,8 @@ bool SImage::loadFontM(const uint8_t* gfx_data, int size) {
  * So, total size - 302 % value @ 0x00 must be null.
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-bool SImage::loadWolfFont(const uint8_t* gfx_data, int size) {
+bool SImage::loadWolfFont(const uint8_t* gfx_data, int size)
+{
 	// Check data
 	if (!gfx_data)
 		return false;
@@ -609,12 +654,14 @@ bool SImage::loadWolfFont(const uint8_t* gfx_data, int size) {
 	size_t p = 0; // Previous width
 	size_t w = 0; // This character's width
 	// Run through each character
-	for (size_t c = 0; c < 256; ++c) {
+	for (size_t c = 0; c < 256; ++c)
+	{
 		p += w; // Add previous character width to total
 		w = gfx_data[c + 0x202]; // Get this character's width
 		if (!w) continue;
 		size_t o = READ_L16(gfx_data, ((c<<1)+2));
-		for (size_t i = 0; i < w * height; ++i) {
+		for (size_t i = 0; i < w * height; ++i)
+		{
 			// Compute source and destination offsets
 			size_t s = o + i;
 			size_t d = ((i/w) * width) + (i%w) + p;
@@ -638,7 +685,8 @@ bool SImage::loadWolfFont(const uint8_t* gfx_data, int size) {
  * by a list of columns. The characters are listed in order.
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-bool SImage::loadJediFNT(const uint8_t* gfx_data, int size) {
+bool SImage::loadJediFNT(const uint8_t* gfx_data, int size)
+{
 	// Check data
 	if (!gfx_data)
 		return false;
@@ -662,7 +710,8 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size) {
 	// Go through each character to compute the total width (pre-rotation height)
 	height = 0;
 	size_t wo = 32; // Offset to width of next character
-	for (uint8_t i = 0; i < numchr; ++i) {
+	for (uint8_t i = 0; i < numchr; ++i)
+	{
 		height += gfx_data[wo];
 		wo += 1 + (width * gfx_data[wo]);
 	}
@@ -684,7 +733,8 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size) {
 	// Run through each character and add the pixel data
 	wo = 32;
 	size_t col = 0;
-	for (uint8_t i = 0; i < numchr; ++i) {
+	for (uint8_t i = 0; i < numchr; ++i)
+	{
 		uint8_t numcols = gfx_data[wo++];
 		memcpy(data + (col * width), gfx_data + wo, numcols * width);
 		col += numcols;
@@ -712,7 +762,8 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size) {
  * of characters! They're also mistaken about character width.
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-bool SImage::loadJediFONT(const uint8_t* gfx_data, int size) {
+bool SImage::loadJediFONT(const uint8_t* gfx_data, int size)
+{
 	// Check data
 	if (size < 16)
 		return false;
@@ -746,14 +797,17 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size) {
 	int bpc = width / 8;
 
 	//Each pixel is described as a single bit, either on or off
-	for (int i = 0; i < height; ++i) {
-		for (int p = 0; p < width; ++p) {
-			switch (bpc) {
-				case 1: mask[(i*width)+p] = ((gfx_data[o+i]>>(7-p)) & 1) * 255; break;
-				case 2: mask[(i*width)+p] = ((READ_B16(gfx_data, o+(i*2))>>(15-p)) & 1) * 255; break;
-				case 3: mask[(i*width)+p] = ((READ_B24(gfx_data, o+(i*3))>>(23-p)) & 1) * 255; break;
-				case 4: mask[(i*width)+p] = ((READ_B32(gfx_data, o+(i*4))>>(31-p)) & 1) * 255; break;
-				default: clearData(); Global::error = "Jedi FONT: Weird word width"; return false;
+	for (int i = 0; i < height; ++i)
+	{
+		for (int p = 0; p < width; ++p)
+		{
+			switch (bpc)
+			{
+			case 1: mask[(i*width)+p] = ((gfx_data[o+i]>>(7-p)) & 1) * 255; break;
+			case 2: mask[(i*width)+p] = ((READ_B16(gfx_data, o+(i*2))>>(15-p)) & 1) * 255; break;
+			case 3: mask[(i*width)+p] = ((READ_B24(gfx_data, o+(i*3))>>(23-p)) & 1) * 255; break;
+			case 4: mask[(i*width)+p] = ((READ_B32(gfx_data, o+(i*4))>>(31-p)) & 1) * 255; break;
+			default: clearData(); Global::error = "Jedi FONT: Weird word width"; return false;
 			}
 		}
 	}
@@ -768,8 +822,10 @@ bool SImage::loadJediFONT(const uint8_t* gfx_data, int size) {
  * the other with raw pixel data. So we need to have access to both.
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t* gfx_data, int size) {
-	if (header == NULL || gfx_data == NULL || hdr_size < 16 || size == 0) {
+bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t* gfx_data, int size)
+{
+	if (header == NULL || gfx_data == NULL || hdr_size < 16 || size == 0)
+	{
 		Global::error = "Invalid Jaguar sprite";
 		return false;
 	}
@@ -795,33 +851,40 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
 	memset(mask, 0x00, width*height);
 
 	// Read column offsets
-	if (hdr_size < (8 + (width * 6))) {
+	if (hdr_size < (8 + (width * 6)))
+	{
 		Global::error = S_FMT("Invalid Jaguar sprite: header too small (%d) for column offsets (%d)", hdr_size, (8 + (width * 6)));
 		return false;
 	}
-	uint16_t * col_offsets = new uint16_t[width];
-	for (int w = 0; w < width; ++w) {
+	uint16_t* col_offsets = new uint16_t[width];
+	for (int w = 0; w < width; ++w)
+	{
 		col_offsets[w] = READ_B16(header, 8+2*w);
 	}
-	if (hdr_size < (4 + col_offsets[width - 1])) {
+	if (hdr_size < (4 + col_offsets[width - 1]))
+	{
 		Global::error = S_FMT("Invalid Jaguar sprite: header too small (%d) for post offsets (%d)", hdr_size, 4 + col_offsets[width - 1]);
 		return false;
 	}
 
 	// Okay, so it's finally time to read some pixel data
-	for (int w = 0; w < width; ++w) {
+	for (int w = 0; w < width; ++w)
+	{
 		int post_p = col_offsets[w];
 		// Process all posts in the column
-		while (READ_B16(header, post_p) != 0xFFFF) {
+		while (READ_B16(header, post_p) != 0xFFFF)
+		{
 			int top = header[post_p];
 			int len = header[post_p + 1];
 			int pixel_p = READ_B16(header, post_p + 2);
-			if (pixel_p + len > size) {
+			if (pixel_p + len > size)
+			{
 				Global::error = S_FMT("Invalid Jaguar sprite: body too small (%d) for pixel data (%d)", size, pixel_p + len);
 				return false;
 			}
 			// Copy pixels
-			for (int p = 0; p < len; ++p) {
+			for (int p = 0; p < len; ++p)
+			{
 				size_t pos = w + width * (top + p);
 				data[pos] = gfx_data[pixel_p + p];
 				mask[pos] = 0xFF;
@@ -840,9 +903,11 @@ bool SImage::loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t
  * the dimensions are contained in the TEXTURE1 lump instead.
  * Returns false if the image data was invalid, true otherwise.
  *******************************************************************/
-bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, int i_height) {
+bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, int i_height)
+{
 	// Check data
-	if (i_width * i_height == 0 || size < i_width*i_height + 320) {
+	if (i_width * i_height == 0 || size < i_width*i_height + 320)
+	{
 		Global::error = S_FMT("Size is %d, expected %d", size, i_width*i_height + 320);
 		return false;
 	}

@@ -41,7 +41,8 @@
 /* ExtMessageDialog::ExtMessageDialog
  * ExtMessageDialog class constructor
  *******************************************************************/
-ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) : wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) : wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
 	// Create and set sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -67,20 +68,23 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) : wxDialog(
 /* ExtMessageDialog::~ExtMessageDialog
  * ExtMessageDialog class destructor
  *******************************************************************/
-ExtMessageDialog::~ExtMessageDialog() {
+ExtMessageDialog::~ExtMessageDialog()
+{
 }
 
 /* ExtMessageDialog::setMessage
  * Sets the dialog short message
  *******************************************************************/
-void ExtMessageDialog::setMessage(string message) {
+void ExtMessageDialog::setMessage(string message)
+{
 	label_message->SetLabel(message);
 }
 
 /* ExtMessageDialog::setExt
  * Sets the dialog extended text
  *******************************************************************/
-void ExtMessageDialog::setExt(string text) {
+void ExtMessageDialog::setExt(string text)
+{
 	text_ext->SetValue(text);
 }
 
@@ -92,7 +96,8 @@ void ExtMessageDialog::setExt(string text) {
 /* ExtMessageDialog::onSize
  * Called when the dialog is resized
  *******************************************************************/
-void ExtMessageDialog::onSize(wxSizeEvent& e) {
+void ExtMessageDialog::onSize(wxSizeEvent& e)
+{
 	Layout();
 	label_message->Wrap(label_message->GetSize().GetWidth());
 	Layout();

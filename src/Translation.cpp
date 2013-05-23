@@ -46,13 +46,15 @@
 /* Translation::Translation
  * Translation class constructor
  *******************************************************************/
-Translation::Translation() {
+Translation::Translation()
+{
 }
 
 /* Translation::~Translation
  * Translation class destructor
  *******************************************************************/
-Translation::~Translation() {
+Translation::~Translation()
+{
 	for (unsigned a = 0; a < translations.size(); a++)
 		delete translations[a];
 }
@@ -61,7 +63,8 @@ Translation::~Translation() {
  * Parses a text definition [def] (in zdoom format, detailed here:
  * http://zdoom.org/wiki/Translation)
  *******************************************************************/
-void Translation::parse(string def) {
+void Translation::parse(string def)
+{
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
 	tz.setSpecialCharacters("[]:%,=");
@@ -81,7 +84,8 @@ void Translation::parse(string def) {
 	bool reverse = (o_start > o_end);
 
 	// Type of translation depends on next token
-	if (tz.peekToken() == "[") {
+	if (tz.peekToken() == "[")
+	{
 		// Colour translation
 		rgba_t start, end;
 
@@ -109,13 +113,15 @@ void Translation::parse(string def) {
 
 		// Add translation
 		TransRangeColour* tr = new TransRangeColour();
-		if (reverse) {
+		if (reverse)
+		{
 			tr->o_start = o_end;
 			tr->o_end = o_start;
 			tr->d_start.set(end);
 			tr->d_end.set(start);
 		}
-		else {
+		else
+		{
 			tr->o_start = o_start;
 			tr->o_end = o_end;
 			tr->d_start.set(start);
@@ -125,7 +131,8 @@ void Translation::parse(string def) {
 
 		//wxLogMessage("Added colour translation");
 	}
-	else if (tz.peekToken() == "%") {
+	else if (tz.peekToken() == "%")
+	{
 		// Desat colour translation
 		float sr, sg, sb, er, eg, eb;
 
@@ -154,7 +161,8 @@ void Translation::parse(string def) {
 
 		// Add translation
 		TransRangeDesat* tr = new TransRangeDesat();
-		if (reverse) {
+		if (reverse)
+		{
 			tr->o_start = o_end;
 			tr->o_end = o_start;
 			tr->d_sr = er;
@@ -164,7 +172,8 @@ void Translation::parse(string def) {
 			tr->d_eg = sg;
 			tr->d_eb = sb;
 		}
-		else {
+		else
+		{
 			tr->o_start = o_start;
 			tr->o_end = o_end;
 			tr->d_sr = sr;
@@ -178,7 +187,8 @@ void Translation::parse(string def) {
 
 		//wxLogMessage("Added desat translation");
 	}
-	else {
+	else
+	{
 		// Palette range translation
 		uint8_t d_start, d_end;
 
@@ -189,13 +199,15 @@ void Translation::parse(string def) {
 
 		// Add translation
 		TransRangePalette* tr = new TransRangePalette();
-		if (reverse) {
+		if (reverse)
+		{
 			tr->o_start = o_end;
 			tr->o_end = o_start;
 			tr->d_start = d_end;
 			tr->d_end = d_start;
 		}
-		else {
+		else
+		{
 			tr->o_start = o_start;
 			tr->o_end = o_end;
 			tr->d_start = d_start;
@@ -211,7 +223,8 @@ void Translation::parse(string def) {
  * Returns a string representation of the translation
  * (in zdoom format)
  *******************************************************************/
-string Translation::asText() {
+string Translation::asText()
+{
 	string ret;
 
 	// Go through translation ranges
@@ -228,7 +241,8 @@ string Translation::asText() {
 /* Translation::clear
  * Clears the translation
  *******************************************************************/
-void Translation::clear() {
+void Translation::clear()
+{
 	for (unsigned a = 0; a < translations.size(); a++)
 		delete translations[a];
 	translations.clear();
@@ -237,12 +251,14 @@ void Translation::clear() {
 /* Translation::copy
  * Copies translation information from [copy]
  *******************************************************************/
-void Translation::copy(Translation& copy) {
+void Translation::copy(Translation& copy)
+{
 	// Clear current definitions
 	clear();
 
 	// Copy translations
-	for (unsigned a = 0; a < copy.translations.size(); a++) {
+	for (unsigned a = 0; a < copy.translations.size(); a++)
+	{
 		if (copy.translations[a]->type == TRANS_PALETTE)
 			translations.push_back(new TransRangePalette((TransRangePalette*)copy.translations[a]));
 		if (copy.translations[a]->type == TRANS_COLOUR)
@@ -255,7 +271,8 @@ void Translation::copy(Translation& copy) {
 /* Translation::getRange
  * Returns the translation range at [index]
  *******************************************************************/
-TransRange* Translation::getRange(unsigned index) {
+TransRange* Translation::getRange(unsigned index)
+{
 	if (index >= translations.size())
 		return NULL;
 	else
@@ -265,11 +282,13 @@ TransRange* Translation::getRange(unsigned index) {
 /* Translation::addRange
  * Adds a new translation range of [type] at [pos] in the list
  *******************************************************************/
-void Translation::addRange(int type, int pos) {
+void Translation::addRange(int type, int pos)
+{
 	TransRange* tr = NULL;
 
 	// Create range
-	switch (type) {
+	switch (type)
+	{
 	case TRANS_COLOUR:
 		tr = new TransRangeColour();
 		break;
@@ -291,7 +310,8 @@ void Translation::addRange(int type, int pos) {
 /* Translation::removeRange
  * Removes the translation range at [pos]
  *******************************************************************/
-void Translation::removeRange(int pos) {
+void Translation::removeRange(int pos)
+{
 	// Check position
 	if (pos < 0 || pos >= (int)translations.size())
 		return;
@@ -304,7 +324,8 @@ void Translation::removeRange(int pos) {
 /* Translation::swapRanges
  * Swaps the translation range at [pos1] with the one at [pos2]
  *******************************************************************/
-void Translation::swapRanges(int pos1, int pos2) {
+void Translation::swapRanges(int pos1, int pos2)
+{
 	// Check positions
 	if (pos1 < 0 || pos2 < 0 || pos1 >= (int)translations.size() || pos2 >= (int)translations.size())
 		return;

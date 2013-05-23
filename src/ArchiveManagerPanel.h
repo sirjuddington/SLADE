@@ -16,7 +16,8 @@
 class ArchiveManagerPanel;
 class ArchivePanel;
 
-class WMFileBrowser : public wxGenericDirCtrl {
+class WMFileBrowser : public wxGenericDirCtrl
+{
 private:
 
 public:
@@ -25,11 +26,12 @@ public:
 	WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id);
 	~WMFileBrowser();
 
-	void onItemActivated(wxTreeEvent &e);
+	void onItemActivated(wxTreeEvent& e);
 };
 
 class TextureXEditor;
-class ArchiveManagerPanel : public DockPanel, Listener, SActionHandler {
+class ArchiveManagerPanel : public DockPanel, Listener, SActionHandler
+{
 private:
 	wxAuiNotebook*		notebook_tabs;
 	wxAuiNotebook*		notebook_archives;
@@ -45,7 +47,7 @@ private:
 	Archive*			current_maps;
 
 public:
-	ArchiveManagerPanel(wxWindow *parent, wxAuiNotebook* nb_archives);
+	ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_archives);
 	~ArchiveManagerPanel();
 
 	wxMenu*			getRecentMenu() { return menu_recent; }

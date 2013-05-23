@@ -44,7 +44,8 @@ public:
 };
 */
 
-class MapEntryPanel : public EntryPanel {
+class MapEntryPanel : public EntryPanel
+{
 private:
 	MapPreviewCanvas*	map_canvas;
 	wxButton*			btn_saveimg;

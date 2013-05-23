@@ -7,7 +7,8 @@
 
 long	prop_backup_time = -1;
 
-MapObject::MapObject(int type, SLADEMap* parent) {
+MapObject::MapObject(int type, SLADEMap* parent)
+{
 	// Init variables
 	this->type = type;
 	this->parent_map = parent;
@@ -21,20 +22,23 @@ MapObject::MapObject(int type, SLADEMap* parent) {
 		parent->addMapObject(this);
 }
 
-MapObject::~MapObject() {
+MapObject::~MapObject()
+{
 	properties.clear();
 	if (obj_backup)
 		delete obj_backup;
 }
 
-unsigned MapObject::getIndex() {
+unsigned MapObject::getIndex()
+{
 	if (parent_map)
 		return parent_map->objectIndex(this);
 	else
 		return index;
 }
 
-string MapObject::getTypeName() {
+string MapObject::getTypeName()
+{
 	switch (type)
 	{
 	case MOBJ_VERTEX:
@@ -52,9 +56,11 @@ string MapObject::getTypeName() {
 	}
 }
 
-void MapObject::setModified() {
+void MapObject::setModified()
+{
 	// Backup current properties if required
-	if (modified_time < prop_backup_time) {
+	if (modified_time < prop_backup_time)
+	{
 		if (obj_backup) delete obj_backup;
 		obj_backup = new mobj_backup_t();
 		backup(obj_backup);
@@ -63,7 +69,8 @@ void MapObject::setModified() {
 	modified_time = theApp->runTimer();
 }
 
-void MapObject::copy(MapObject* c) {
+void MapObject::copy(MapObject* c)
+{
 	// Can't copy an object of a different type
 	if (c->type != type)
 		return;
@@ -72,7 +79,8 @@ void MapObject::copy(MapObject* c) {
 	properties.clear();
 
 	// Copy object properties
-	if (!c->properties.isEmpty()) {
+	if (!c->properties.isEmpty())
+	{
 		c->properties.copyTo(properties);
 		this->parent_map = c->parent_map;
 		this->filtered = c->filtered;
@@ -82,13 +90,15 @@ void MapObject::copy(MapObject* c) {
 	setModified();
 }
 
-bool MapObject::boolProperty(string key) {
+bool MapObject::boolProperty(string key)
+{
 	// If the property exists already, return it
 	if (properties[key].hasValue())
 		return properties[key].getBoolValue();
 
 	// Otherwise check the game configuration for a default value
-	else {
+	else
+	{
 		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
 		if (prop)
 			return prop->getDefaultValue().getBoolValue();
@@ -97,13 +107,15 @@ bool MapObject::boolProperty(string key) {
 	}
 }
 
-int MapObject::intProperty(string key) {
+int MapObject::intProperty(string key)
+{
 	// If the property exists already, return it
 	if (properties[key].hasValue())
 		return properties[key].getIntValue();
 
 	// Otherwise check the game configuration for a default value
-	else {
+	else
+	{
 		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
 		if (prop)
 			return prop->getDefaultValue().getIntValue();
@@ -112,13 +124,15 @@ int MapObject::intProperty(string key) {
 	}
 }
 
-double MapObject::floatProperty(string key) {
+double MapObject::floatProperty(string key)
+{
 	// If the property exists already, return it
 	if (properties[key].hasValue())
 		return properties[key].getFloatValue();
 
 	// Otherwise check the game configuration for a default value
-	else {
+	else
+	{
 		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
 		if (prop)
 			return prop->getDefaultValue().getFloatValue();
@@ -127,13 +141,15 @@ double MapObject::floatProperty(string key) {
 	}
 }
 
-string MapObject::stringProperty(string key) {
+string MapObject::stringProperty(string key)
+{
 	// If the property exists already, return it
 	if (properties[key].hasValue())
 		return properties[key].getStringValue();
 
 	// Otherwise check the game configuration for a default value
-	else {
+	else
+	{
 		UDMFProperty* prop = theGameConfiguration->getUDMFProperty(key, type);
 		if (prop)
 			return prop->getDefaultValue().getStringValue();
@@ -142,7 +158,8 @@ string MapObject::stringProperty(string key) {
 	}
 }
 
-void MapObject::setBoolProperty(string key, bool value) {
+void MapObject::setBoolProperty(string key, bool value)
+{
 	// Update modified time
 	setModified();
 
@@ -150,7 +167,8 @@ void MapObject::setBoolProperty(string key, bool value) {
 	properties[key] = value;
 }
 
-void MapObject::setIntProperty(string key, int value) {
+void MapObject::setIntProperty(string key, int value)
+{
 	// Update modified time
 	setModified();
 
@@ -158,7 +176,8 @@ void MapObject::setIntProperty(string key, int value) {
 	properties[key] = value;
 }
 
-void MapObject::setFloatProperty(string key, double value) {
+void MapObject::setFloatProperty(string key, double value)
+{
 	// Update modified time
 	setModified();
 
@@ -166,7 +185,8 @@ void MapObject::setFloatProperty(string key, double value) {
 	properties[key] = value;
 }
 
-void MapObject::setStringProperty(string key, string value) {
+void MapObject::setStringProperty(string key, string value)
+{
 	// Update modified time
 	setModified();
 
@@ -174,7 +194,8 @@ void MapObject::setStringProperty(string key, string value) {
 	properties[key] = value;
 }
 
-void MapObject::backup(mobj_backup_t* backup) {
+void MapObject::backup(mobj_backup_t* backup)
+{
 	// Save basic info
 	backup->id = id;
 	backup->type = type;
@@ -186,14 +207,17 @@ void MapObject::backup(mobj_backup_t* backup) {
 	writeBackup(backup);
 }
 
-void MapObject::loadFromBackup(mobj_backup_t* backup) {
+void MapObject::loadFromBackup(mobj_backup_t* backup)
+{
 	// Check type match
-	if (backup->type != type) {
+	if (backup->type != type)
+	{
 		wxLogMessage("loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
 		return;
 	}
 	// Check id match
-	if (backup->id != id) {
+	if (backup->id != id)
+	{
 		wxLogMessage("loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
 		return;
 	}
@@ -209,20 +233,24 @@ void MapObject::loadFromBackup(mobj_backup_t* backup) {
 	setModified();
 }
 
-mobj_backup_t* MapObject::getBackup(bool remove) {
+mobj_backup_t* MapObject::getBackup(bool remove)
+{
 	mobj_backup_t* bak = obj_backup;
 	if (remove) obj_backup = NULL;
 	return bak;
 }
 
-long MapObject::propBackupTime() {
+long MapObject::propBackupTime()
+{
 	return prop_backup_time;
 }
 
-void MapObject::beginPropBackup(long current_time) {
+void MapObject::beginPropBackup(long current_time)
+{
 	prop_backup_time = current_time;
 }
 
-void MapObject::endPropBackup() {
+void MapObject::endPropBackup()
+{
 	prop_backup_time = -1;
 }

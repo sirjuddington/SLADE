@@ -61,7 +61,8 @@ EntryType			etype_map;		// Map marker type
 /* EntryType::EntryType
  * EntryType class constructor
  *******************************************************************/
-EntryType::EntryType(string id) {
+EntryType::EntryType(string id)
+{
 	// Init info variables
 	this->id = id;
 	name = "Unknown";
@@ -83,7 +84,8 @@ EntryType::EntryType(string id) {
 /* EntryType::~EntryType
  * EntryType class constructor
  *******************************************************************/
-EntryType::~EntryType() {
+EntryType::~EntryType()
+{
 	match_extension.clear();
 	match_name.clear();
 	match_size.clear();
@@ -94,7 +96,8 @@ EntryType::~EntryType() {
 /* EntryType::addToList
  * Adds the type to the list of entry types
  *******************************************************************/
-void EntryType::addToList() {
+void EntryType::addToList()
+{
 	entry_types.push_back(this);
 	index = entry_types.size() - 1;
 }
@@ -102,7 +105,8 @@ void EntryType::addToList() {
 /* EntryType::dump
  * Dumps entry type info to the log
  *******************************************************************/
-void EntryType::dump() {
+void EntryType::dump()
+{
 	wxLogMessage(S_FMT("Type %s \"%s\", format %s, extension %s", CHR(id), CHR(name), CHR(format->getId()), CHR(extension)));
 	wxLogMessage(S_FMT("Size limit: %d-%d", size_limit[0], size_limit[1]));
 
@@ -127,7 +131,8 @@ void EntryType::dump() {
 /* EntryType::copyToType
  * Copies this entry type's info/properties to [target]
  *******************************************************************/
-void EntryType::copyToType(EntryType* target) {
+void EntryType::copyToType(EntryType* target)
+{
 	// Copy type attributes
 	target->editor = editor;
 	target->extension = extension;
@@ -156,7 +161,8 @@ void EntryType::copyToType(EntryType* target) {
  * Returns a file filter string for this type:
  * "<type name> files (*.<type extension)|*.<type extension>"
  *******************************************************************/
-string EntryType::getFileFilterString() {
+string EntryType::getFileFilterString()
+{
 	string ret = name + " files (*.";
 	ret += extension;
 	ret += ")|*.";
@@ -169,7 +175,8 @@ string EntryType::getFileFilterString() {
  * Returns true if [entry] matches the EntryType's criteria, false
  * otherwise
  *******************************************************************/
-int EntryType::isThisType(ArchiveEntry* entry) {
+int EntryType::isThisType(ArchiveEntry* entry)
+{
 	// Check entry was given
 	if (!entry)
 		return EDF_FALSE;
@@ -187,10 +194,13 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 		return EDF_FALSE;
 
 	// Check for archive match if needed
-	if (!match_archive.empty()) {
+	if (!match_archive.empty())
+	{
 		bool match = false;
-		for (size_t a = 0; a < match_archive.size(); a++) {
-			if (entry->getParent() && entry->getParent()->getFormat() == match_archive[a]) {
+		for (size_t a = 0; a < match_archive.size(); a++)
+		{
+			if (entry->getParent() && entry->getParent()->getFormat() == match_archive[a])
+			{
 				match = true;
 				break;
 			}
@@ -200,10 +210,13 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 	}
 
 	// Check for size match if needed
-	if (!match_size.empty()) {
+	if (!match_size.empty())
+	{
 		bool match = false;
-		for (size_t a = 0; a < match_size.size(); a++) {
-			if (entry->getSize() == match_size[a]) {
+		for (size_t a = 0; a < match_size.size(); a++)
+		{
+			if (entry->getSize() == match_size[a])
+			{
 				match = true;
 				break;
 			}
@@ -215,7 +228,8 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 
 	// Check for data format match if needed
 	int r = EDF_TRUE;
-	if (format == EntryDataFormat::textFormat()) {
+	if (format == EntryDataFormat::textFormat())
+	{
 		// Hack for identifying ACS script sources despite DB2 apparently appending
 		// two null bytes to them, which make the memchr test fail.
 		size_t end = entry->getSize() - 1;
@@ -225,17 +239,21 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 		if (entry->getSize() > 0 && memchr(entry->getData(), 0, end) != NULL)
 			return EDF_FALSE;
 	}
-	else if (format != EntryDataFormat::anyFormat() && entry->getSize() > 0) {
+	else if (format != EntryDataFormat::anyFormat() && entry->getSize() > 0)
+	{
 		r = format->isThisFormat(entry->getMCData());
 		if (r == EDF_FALSE)
 			return EDF_FALSE;
 	}
 
 	// Check for size multiple match if needed
-	if (!size_multiple.empty()) {
+	if (!size_multiple.empty())
+	{
 		bool match = false;
-		for (size_t a = 0; a < size_multiple.size(); a++) {
-			if (entry->getSize() % size_multiple[a] == 0) {
+		for (size_t a = 0; a < size_multiple.size(); a++)
+		{
+			if (entry->getSize() % size_multiple[a] == 0)
+			{
 				match = true;
 				break;
 			}
@@ -253,20 +271,24 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 		extorname = true;
 
 	// Entry name related stuff
-	if (!match_name.empty() || !match_extension.empty()) {
+	if (!match_name.empty() || !match_extension.empty())
+	{
 		// Get entry name (lowercase), find extension separator
 		string fn = entry->getName().Lower();
 		size_t ext_sep = fn.find_first_of('.', 0);
 
 		// Check for name match if needed
-		if (!match_name.empty()) {
+		if (!match_name.empty())
+		{
 			string name = fn;
 			if (ext_sep != wxString::npos)
 				name = fn.Left(ext_sep);
 
 			bool match = false;
-			for (size_t a = 0; a < match_name.size(); a++) {
-				if (name.Matches(match_name[a])) {
+			for (size_t a = 0; a < match_name.size(); a++)
+			{
+				if (name.Matches(match_name[a]))
+				{
 					match = true;
 					break;
 				}
@@ -278,12 +300,16 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 		}
 
 		// Check for extension match if needed
-		if (!match_extension.empty()) {
+		if (!match_extension.empty())
+		{
 			bool match = false;
-			if (ext_sep != wxString::npos) {
+			if (ext_sep != wxString::npos)
+			{
 				string ext = fn.Mid(ext_sep+1);
-				for (size_t a = 0; a < match_extension.size(); a++) {
-					if (ext == match_extension[a]) {
+				for (size_t a = 0; a < match_extension.size(); a++)
+				{
+					if (ext == match_extension[a])
+					{
 						match = true;
 						break;
 					}
@@ -296,43 +322,44 @@ int EntryType::isThisType(ArchiveEntry* entry) {
 	}
 
 	//// Entry name related stuff
- //   if (match_name.size() > 0 || match_extension.size() > 0) {
- //       // Get full entry name as filename (only do this if absolutely necessary, wxFileName stuff is slow)
- //       wxFileName fn(entry->getName());
+//   if (match_name.size() > 0 || match_extension.size() > 0) {
+//       // Get full entry name as filename (only do this if absolutely necessary, wxFileName stuff is slow)
+//       wxFileName fn(entry->getName());
 
- //       // Check for name match if needed
- //       if (match_name.size() > 0) {
- //           string name = fn.GetName().Lower();
- //           bool match = false;
- //           for (size_t a = 0; a < match_name.size(); a++) {
- //               if (name.Matches(match_name[a])) {
- //                   match = true;
- //                   break;
- //               }
- //           }
+//       // Check for name match if needed
+//       if (match_name.size() > 0) {
+//           string name = fn.GetName().Lower();
+//           bool match = false;
+//           for (size_t a = 0; a < match_name.size(); a++) {
+//               if (name.Matches(match_name[a])) {
+//                   match = true;
+//                   break;
+//               }
+//           }
 
- //           if (!match && !extorname)
- //               return EDF_FALSE;
- //           else matchedname = match;
- //       }
+//           if (!match && !extorname)
+//               return EDF_FALSE;
+//           else matchedname = match;
+//       }
 
- //       // Check for extension match if needed
- //       if (match_extension.size() > 0) {
- //           bool match = false;
- //           for (size_t a = 0; a < match_extension.size(); a++) {
- //               if (!fn.GetExt().CmpNoCase(match_extension[a])) {
- //                   match = true;
- //                   break;
- //               }
- //           }
+//       // Check for extension match if needed
+//       if (match_extension.size() > 0) {
+//           bool match = false;
+//           for (size_t a = 0; a < match_extension.size(); a++) {
+//               if (!fn.GetExt().CmpNoCase(match_extension[a])) {
+//                   match = true;
+//                   break;
+//               }
+//           }
 
- //           if (!match && !(extorname && matchedname))
- //               return EDF_FALSE;
- //       }
- //   }
+//           if (!match && !(extorname && matchedname))
+//               return EDF_FALSE;
+//       }
+//   }
 
 	// Check for entry section match if needed
-	if (section != "none") {
+	if (section != "none")
+	{
 		// Check entry is part of an archive (if not it can't be in a section)
 		if (!entry->getParent())
 			return EDF_FALSE;
@@ -351,7 +378,8 @@ int EntryType::isThisType(ArchiveEntry* entry) {
  * Reads in a block of entry type definitions. Returns false if there
  * was a parsing error, true otherwise
  *******************************************************************/
-bool EntryType::readEntryTypeDefinition(MemChunk& mc) {
+bool EntryType::readEntryTypeDefinition(MemChunk& mc)
+{
 	// Parse the definition
 	Parser p;
 	p.parseText(mc);
@@ -364,7 +392,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc) {
 		return false;
 
 	// Go through all parsed types
-	for (unsigned a = 0; a < pt_etypes->nChildren(); a++) {
+	for (unsigned a = 0; a < pt_etypes->nChildren(); a++)
+	{
 		// Get child as ParseTreeNode
 		ParseTreeNode* typenode = (ParseTreeNode*)pt_etypes->getChild(a);
 
@@ -372,7 +401,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc) {
 		EntryType* ntype = new EntryType(typenode->getName().Lower());
 
 		// Copy from existing type if inherited
-		if (!typenode->getInherit().IsEmpty()) {
+		if (!typenode->getInherit().IsEmpty())
+		{
 			EntryType* parent_type = EntryType::getType(typenode->getInherit().Lower());
 
 			if (parent_type != EntryType::unknownType())
@@ -382,21 +412,26 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc) {
 		}
 
 		// Go through all parsed fields
-		for (unsigned b = 0; b < typenode->nChildren(); b++) {
+		for (unsigned b = 0; b < typenode->nChildren(); b++)
+		{
 			// Get child as ParseTreeNode
 			ParseTreeNode* fieldnode = (ParseTreeNode*)typenode->getChild(b);
 
 			// Process it
-			if (S_CMPNOCASE(fieldnode->getName(), "name")) {				// Name field
+			if (S_CMPNOCASE(fieldnode->getName(), "name"))  				// Name field
+			{
 				ntype->name = fieldnode->getStringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "detectable")) {		// Detectable field
+			else if (S_CMPNOCASE(fieldnode->getName(), "detectable"))  		// Detectable field
+			{
 				ntype->detectable = fieldnode->getBoolValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "export_ext")) {		// Export Extension field
+			else if (S_CMPNOCASE(fieldnode->getName(), "export_ext"))  		// Export Extension field
+			{
 				ntype->extension = fieldnode->getStringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "format")) {			// Format field
+			else if (S_CMPNOCASE(fieldnode->getName(), "format"))  			// Format field
+			{
 				string format_string = fieldnode->getStringValue();
 				ntype->format = EntryDataFormat::getFormat(format_string);
 
@@ -404,58 +439,74 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc) {
 				if (ntype->format == EntryDataFormat::anyFormat())
 					wxLogMessage("Warning: Entry type %s requires undefined format %s", CHR(ntype->getId()), CHR(format_string));
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "icon")) {			// Icon field
+			else if (S_CMPNOCASE(fieldnode->getName(), "icon"))  			// Icon field
+			{
 				ntype->icon = fieldnode->getStringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "editor")) {			// Editor field (to be removed)
+			else if (S_CMPNOCASE(fieldnode->getName(), "editor"))  			// Editor field (to be removed)
+			{
 				ntype->editor = fieldnode->getStringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "section")) {		// Section field
+			else if (S_CMPNOCASE(fieldnode->getName(), "section"))  		// Section field
+			{
 				ntype->section = fieldnode->getStringValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "match_ext")) {		// Match Extension field
+			else if (S_CMPNOCASE(fieldnode->getName(), "match_ext"))  		// Match Extension field
+			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_extension.push_back(fieldnode->getStringValue(v).Lower());
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "match_name")) {		// Match Name field
+			else if (S_CMPNOCASE(fieldnode->getName(), "match_name"))  		// Match Name field
+			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_name.push_back(fieldnode->getStringValue(v).Lower());
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "match_extorname")) {// Match name or extension
-					ntype->matchextorname = fieldnode->getBoolValue();
+			else if (S_CMPNOCASE(fieldnode->getName(), "match_extorname"))  // Match name or extension
+			{
+				ntype->matchextorname = fieldnode->getBoolValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "size")) {			// Size field
+			else if (S_CMPNOCASE(fieldnode->getName(), "size"))  			// Size field
+			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_size.push_back(fieldnode->getIntValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "min_size")) {		// Min Size field
+			else if (S_CMPNOCASE(fieldnode->getName(), "min_size"))  		// Min Size field
+			{
 				ntype->size_limit[0] = fieldnode->getIntValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "max_size")) {		// Max Size field
+			else if (S_CMPNOCASE(fieldnode->getName(), "max_size"))  		// Max Size field
+			{
 				ntype->size_limit[1] = fieldnode->getIntValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "size_multiple")) {	// Size Multiple field
+			else if (S_CMPNOCASE(fieldnode->getName(), "size_multiple"))  	// Size Multiple field
+			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->size_multiple.push_back(fieldnode->getIntValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "reliability")) {	// Reliability field
+			else if (S_CMPNOCASE(fieldnode->getName(), "reliability"))  	// Reliability field
+			{
 				ntype->reliability = fieldnode->getIntValue();
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "match_archive")) {	// Archive field
+			else if (S_CMPNOCASE(fieldnode->getName(), "match_archive"))  	// Archive field
+			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->match_archive.push_back(fieldnode->getStringValue(v).Lower());
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "extra")) {			// Extra properties
+			else if (S_CMPNOCASE(fieldnode->getName(), "extra"))  			// Extra properties
+			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
 					ntype->extra.addFlag(fieldnode->getStringValue(v));
 			}
-			else if (S_CMPNOCASE(fieldnode->getName(), "category")) {		// Type category
+			else if (S_CMPNOCASE(fieldnode->getName(), "category"))  		// Type category
+			{
 				ntype->category = fieldnode->getStringValue();
 
 				// Add to category list if needed
 				bool exists = false;
-				for (unsigned b = 0; b < entry_categories.size(); b++) {
-					if (S_CMPNOCASE(entry_categories[b], ntype->category)) {
+				for (unsigned b = 0; b < entry_categories.size(); b++)
+				{
+					if (S_CMPNOCASE(entry_categories[b], ntype->category))
+					{
 						exists = true;
 						break;
 					}
@@ -464,13 +515,15 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc) {
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "image_format"))		// Image format hint
 				ntype->extra["image_format"] = fieldnode->getStringValue(0);
-			else if (S_CMPNOCASE(fieldnode->getName(), "colour")) {			// Colour
+			else if (S_CMPNOCASE(fieldnode->getName(), "colour"))  			// Colour
+			{
 				if (fieldnode->nValues() >= 3)
 					ntype->colour = rgba_t(fieldnode->getIntValue(0), fieldnode->getIntValue(1), fieldnode->getIntValue(2));
 				else
 					wxLogMessage("Not enough colour components defined for entry type %s", CHR(ntype->getId()));
 			}
-			else {
+			else
+			{
 				// Unhandled properties can go into 'extra', only their first value is kept
 				ntype->extra[fieldnode->getName()] = fieldnode->getStringValue();
 			}
@@ -486,7 +539,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc) {
 /* EntryType::loadEntryTypes
  * Loads all built-in and custom user entry types
  *******************************************************************/
-bool EntryType::loadEntryTypes() {
+bool EntryType::loadEntryTypes()
+{
 	EntryDataFormat* fmt_any = EntryDataFormat::anyFormat();
 
 	// Setup unknown type
@@ -526,7 +580,8 @@ bool EntryType::loadEntryTypes() {
 	Archive* res_archive = theArchiveManager->programResourceArchive();
 
 	// Check resource archive exists
-	if (!res_archive) {
+	if (!res_archive)
+	{
 		wxLogMessage("Error: No resource archive open!");
 		return false;
 	}
@@ -535,14 +590,16 @@ bool EntryType::loadEntryTypes() {
 	ArchiveTreeNode* et_dir = res_archive->getDir("config/entry_types/");
 
 	// Check it exists
-	if (!et_dir) {
+	if (!et_dir)
+	{
 		wxLogMessage("Error: config/entry_types does not exist in slade.pk3");
 		return false;
 	}
 
 	// Read in each file in the directory
 	bool etypes_read = false;
-	for (unsigned a = 0; a < et_dir->numEntries(); a++) {
+	for (unsigned a = 0; a < et_dir->numEntries(); a++)
+	{
 		if (readEntryTypeDefinition(et_dir->getEntry(a)->getMCData()))
 			etypes_read = true;
 	}
@@ -564,7 +621,8 @@ bool EntryType::loadEntryTypes() {
 	// Go through each file in the directory
 	string filename = wxEmptyString;
 	bool files = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files) {
+	while (files)
+	{
 		// Load file data
 		MemChunk mc;
 		mc.importFile(res_dir.GetName() + "/" + filename);
@@ -582,13 +640,15 @@ bool EntryType::loadEntryTypes() {
 /* EntryType::detectEntryType
  * Attempts to detect the given entry's type
  *******************************************************************/
-bool EntryType::detectEntryType(ArchiveEntry* entry) {
+bool EntryType::detectEntryType(ArchiveEntry* entry)
+{
 	// Do nothing if the entry is a folder or a map marker
 	if (!entry || entry->getType() == &etype_folder || entry->getType() == &etype_map)
 		return false;
 
 	// If the entry's size is zero, set it to marker type
-	if (entry->getSize() == 0) {
+	if (entry->getSize() == 0)
+	{
 		entry->setType(&etype_marker);
 		return true;
 	}
@@ -597,14 +657,16 @@ bool EntryType::detectEntryType(ArchiveEntry* entry) {
 	entry->setType(&etype_unknown);
 
 	// Go through all registered types
-	for (size_t a = 0; a < entry_types.size(); a++) {
+	for (size_t a = 0; a < entry_types.size(); a++)
+	{
 		// If the current type is more 'reliable' than this one, skip it
 		if (entry->getTypeReliability() >= entry_types[a]->getReliability())
 			continue;
 
 		// Check for possible type match
 		int r = entry_types[a]->isThisType(entry);
-		if (r > 0) {
+		if (r > 0)
+		{
 			// Type matches, set it
 			entry->setType(entry_types[a], r);
 
@@ -625,8 +687,10 @@ bool EntryType::detectEntryType(ArchiveEntry* entry) {
  * Returns the entry type with the given id, or etype_unknown if no
  * id match is found
  *******************************************************************/
-EntryType* EntryType::getType(string id) {
-	for (size_t a = 0; a < entry_types.size(); a++) {
+EntryType* EntryType::getType(string id)
+{
+	for (size_t a = 0; a < entry_types.size(); a++)
+	{
 		if (entry_types[a]->getId() == id)
 			return entry_types[a];
 	}
@@ -637,21 +701,24 @@ EntryType* EntryType::getType(string id) {
 /* EntryType::unknownType
  * Returns the global 'unknown' entry type
  *******************************************************************/
-EntryType* EntryType::unknownType() {
+EntryType* EntryType::unknownType()
+{
 	return &etype_unknown;
 }
 
 /* EntryType::folderType
  * Returns the global 'folder' entry type
  *******************************************************************/
-EntryType* EntryType::folderType() {
+EntryType* EntryType::folderType()
+{
 	return &etype_folder;
 }
 
 /* EntryType::mapMarkerType
  * Returns the global 'map marker' entry type
  *******************************************************************/
-EntryType* EntryType::mapMarkerType() {
+EntryType* EntryType::mapMarkerType()
+{
 	return &etype_map;
 }
 
@@ -659,7 +726,8 @@ EntryType* EntryType::mapMarkerType() {
  * Returns a list of icons for all entry types, organised by type
  * index
  *******************************************************************/
-wxArrayString EntryType::getIconList() {
+wxArrayString EntryType::getIconList()
+{
 	wxArrayString list;
 
 	for (size_t a = 0; a < entry_types.size(); a++)
@@ -671,8 +739,10 @@ wxArrayString EntryType::getIconList() {
 /* EntryType::cleanupEntryTypes
  * Clears all defined entry types
  *******************************************************************/
-void EntryType::cleanupEntryTypes() {
-	for (size_t a = 3; a < entry_types.size(); a++) {
+void EntryType::cleanupEntryTypes()
+{
+	for (size_t a = 3; a < entry_types.size(); a++)
+	{
 		EntryType* e = entry_types[a];
 		if (e != &etype_unknown && e != &etype_folder && e != &etype_marker && e != &etype_map)
 			delete entry_types[a];
@@ -682,14 +752,16 @@ void EntryType::cleanupEntryTypes() {
 /* EntryType::allTypes
  * Returns a list of all entry types
  *******************************************************************/
-vector<EntryType*> EntryType::allTypes() {
+vector<EntryType*> EntryType::allTypes()
+{
 	return entry_types;
 }
 
 /* EntryType::allCategories
  * Returns a list of all entry type categories
  *******************************************************************/
-vector<string> EntryType::allCategories() {
+vector<string> EntryType::allCategories()
+{
 	return entry_categories;
 }
 
@@ -700,13 +772,16 @@ vector<string> EntryType::allCategories() {
 
 // Command to attempt to detect the currently selected entries
 // as the given type id. Lists all type ids if no parameters given
-CONSOLE_COMMAND (type, 0, true) {
+CONSOLE_COMMAND (type, 0, true)
+{
 	vector<EntryType*> all_types = EntryType::allTypes();
-	if (args.size() == 0) {
+	if (args.size() == 0)
+	{
 		// List existing types and their IDs
 		string listing = "List of entry types:\n\t";
 		string separator = "]\n\t"; string colon = ": "; string paren = " [";
-		for (size_t a = 3; a < all_types.size(); a++) {
+		for (size_t a = 3; a < all_types.size(); a++)
+		{
 			listing += all_types[a]->getName();
 			listing += paren;
 			listing += all_types[a]->getId();
@@ -715,9 +790,11 @@ CONSOLE_COMMAND (type, 0, true) {
 			listing += separator;
 		}
 		wxLogMessage(listing);
-	} else {
+	}
+	else
+	{
 		// Find type by id or first matching format
-		EntryType * desttype = EntryType::unknownType();
+		EntryType* desttype = EntryType::unknownType();
 		bool match = false;
 
 		// Use true unknown type rather than map marker...
@@ -725,28 +802,33 @@ CONSOLE_COMMAND (type, 0, true) {
 			match = true;
 
 		// Find actual format
-		else for (size_t a = 3; a < all_types.size(); a++) {
-			if (!args[0].CmpNoCase(all_types[a]->getFormat()) || !args[0].CmpNoCase(all_types[a]->getId())) {
-				desttype = all_types[a];
-				match = true;
-				break;
+		else for (size_t a = 3; a < all_types.size(); a++)
+			{
+				if (!args[0].CmpNoCase(all_types[a]->getFormat()) || !args[0].CmpNoCase(all_types[a]->getId()))
+				{
+					desttype = all_types[a];
+					match = true;
+					break;
+				}
 			}
-		}
-		if (!match) {
+		if (!match)
+		{
 			wxLogMessage("Type %s does not exist (use \"type\" without parameter for a list)", args[0].mb_str());
 			return;
 		}
 
 		// Allow to force type change even if format checks fails (use at own risk!)
 		int okay = 0, force = !(args.size() < 2 || args[1].CmpNoCase("force"));
-		vector<ArchiveEntry *> meep = theMainWindow->getCurrentEntrySelection();
-		if (meep.size() == 0) {
+		vector<ArchiveEntry*> meep = theMainWindow->getCurrentEntrySelection();
+		if (meep.size() == 0)
+		{
 			wxLogMessage("No entry selected");
 			return;
 		}
 
 		EntryDataFormat* foo = NULL;
-		if (desttype != EntryType::unknownType()) {
+		if (desttype != EntryType::unknownType())
+		{
 			// Check if format corresponds to entry
 			foo = EntryDataFormat::getFormat(desttype->getFormat());
 			if (foo)
@@ -755,7 +837,8 @@ CONSOLE_COMMAND (type, 0, true) {
 		}
 		else force = true; // Always force the unknown type
 
-		for (size_t b = 0; b < meep.size(); ++b) {
+		for (size_t b = 0; b < meep.size(); ++b)
+		{
 			okay = false;
 			if (foo)
 			{
@@ -765,7 +848,8 @@ CONSOLE_COMMAND (type, 0, true) {
 			}
 
 			// Change type
-			if (force || okay) {
+			if (force || okay)
+			{
 				meep[b]->setType(desttype, okay);
 				wxLogMessage("%s: Type changed.", meep[b]->getName().mb_str());
 			}
@@ -773,9 +857,11 @@ CONSOLE_COMMAND (type, 0, true) {
 	}
 }
 
-CONSOLE_COMMAND (size, 0, true) {
-	ArchiveEntry * meep = theMainWindow->getCurrentEntry();
-	if (!meep) {
+CONSOLE_COMMAND (size, 0, true)
+{
+	ArchiveEntry* meep = theMainWindow->getCurrentEntry();
+	if (!meep)
+	{
 		wxLogMessage("No entry selected");
 		return;
 	}

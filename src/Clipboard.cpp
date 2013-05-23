@@ -48,14 +48,16 @@ Clipboard* Clipboard::instance = NULL;
 /* ClipboardItem::ClipboardItem
  * ClipboardItem class constructor
  *******************************************************************/
-ClipboardItem::ClipboardItem(int type) {
+ClipboardItem::ClipboardItem(int type)
+{
 	this->type = type;
 }
 
 /* ClipboardItem::~ClipboardItem
  * ClipboardItem class destructor
  *******************************************************************/
-ClipboardItem::~ClipboardItem() {
+ClipboardItem::~ClipboardItem()
+{
 }
 
 
@@ -67,7 +69,8 @@ ClipboardItem::~ClipboardItem() {
  * EntryTreeClipboardItem class constructor
  *******************************************************************/
 EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, vector<ArchiveTreeNode*>& dirs)
-: ClipboardItem(CLIPBOARD_ENTRY_TREE) {
+	: ClipboardItem(CLIPBOARD_ENTRY_TREE)
+{
 	// Create tree
 	tree = new ArchiveTreeNode();
 
@@ -81,7 +84,8 @@ EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, v
 /* EntryTreeClipboardItem::~EntryTreeClipboardItem
  * EntryTreeClipboardItem class destructor
  *******************************************************************/
-EntryTreeClipboardItem::~EntryTreeClipboardItem() {
+EntryTreeClipboardItem::~EntryTreeClipboardItem()
+{
 	if (tree)
 		delete tree;
 }
@@ -94,13 +98,15 @@ EntryTreeClipboardItem::~EntryTreeClipboardItem() {
 /* TextureClipboardItem::TextureClipboardItem
  * TextureClipboardItem class constructor
  *******************************************************************/
-TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) : ClipboardItem(CLIPBOARD_COMPOSITE_TEXTURE) {
+TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) : ClipboardItem(CLIPBOARD_COMPOSITE_TEXTURE)
+{
 	// Create/copy texture
 	this->texture = new CTexture();
 	this->texture->copyTexture(texture);
 
 	// Copy patch entries if possible
-	for (unsigned a = 0; a < texture->nPatches(); a++) {
+	for (unsigned a = 0; a < texture->nPatches(); a++)
+	{
 		ArchiveEntry* entry = texture->getPatch(a)->getPatchEntry(parent);
 
 		// FIXME/TODO: Do something to handle patches that are defined
@@ -110,8 +116,10 @@ TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) :
 
 		// Don't copy patch if it has been already
 		bool there = false;
-		for (unsigned b = 0; b < patch_entries.size(); b++) {
-			if (patch_entries[b]->getName() == entry->getName()) {
+		for (unsigned b = 0; b < patch_entries.size(); b++)
+		{
+			if (patch_entries[b]->getName() == entry->getName())
+			{
 				there = true;
 				break;
 			}
@@ -127,10 +135,12 @@ TextureClipboardItem::TextureClipboardItem(CTexture* texture, Archive* parent) :
 /* TextureClipboardItem::~TextureClipboardItem
  * TextureClipboardItem class destructor
  *******************************************************************/
-TextureClipboardItem::~TextureClipboardItem() {
+TextureClipboardItem::~TextureClipboardItem()
+{
 	// Clean up
 	delete texture;
-	for (unsigned a = 0; a < patch_entries.size(); a++) {
+	for (unsigned a = 0; a < patch_entries.size(); a++)
+	{
 		if (patch_entries[a])
 			delete patch_entries[a];
 	}
@@ -139,9 +149,11 @@ TextureClipboardItem::~TextureClipboardItem() {
 /* TextureClipboardItem::getPatchEntry
  * Returns the entry copy for the patch at [index] in the texture
  *******************************************************************/
-ArchiveEntry* TextureClipboardItem::getPatchEntry(string patch) {
+ArchiveEntry* TextureClipboardItem::getPatchEntry(string patch)
+{
 	// Find copied patch entry with matching name
-	for (unsigned a = 0; a < patch_entries.size(); a++) {
+	for (unsigned a = 0; a < patch_entries.size(); a++)
+	{
 		if (S_CMPNOCASE(patch_entries[a]->getName(true).Truncate(8), patch))
 			return patch_entries[a];
 	}
@@ -158,13 +170,15 @@ ArchiveEntry* TextureClipboardItem::getPatchEntry(string patch) {
 /* MapArchClipboardItem::MapArchClipboardItem
  * MapArchClipboardItem class constructor
  *******************************************************************/
-MapArchClipboardItem::MapArchClipboardItem() : ClipboardItem(CLIPBOARD_MAP_ARCH) {
+MapArchClipboardItem::MapArchClipboardItem() : ClipboardItem(CLIPBOARD_MAP_ARCH)
+{
 }
 
 /* MapArchClipboardItem::~MapArchClipboardItem
  * MapArchClipboardItem class destructor
  *******************************************************************/
-MapArchClipboardItem::~MapArchClipboardItem() {
+MapArchClipboardItem::~MapArchClipboardItem()
+{
 	for (unsigned a = 0; a < vertices.size(); a++)
 		delete vertices[a];
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -176,23 +190,27 @@ MapArchClipboardItem::~MapArchClipboardItem() {
 /* MapArchClipboardItem::addLines
  * Copies [lines] and all related map structures
  *******************************************************************/
-void MapArchClipboardItem::addLines(vector<MapLine*> lines) {
+void MapArchClipboardItem::addLines(vector<MapLine*> lines)
+{
 	// Get sectors and sides to copy
 	vector<MapSector*> copy_sectors;
 	vector<MapSide*> copy_sides;
-	for (unsigned a = 0; a < lines.size(); a++) {
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
 		MapSide* s1 = lines[a]->s1();
 		MapSide* s2 = lines[a]->s2();
 
 		// Front side
-		if (s1) {
+		if (s1)
+		{
 			copy_sides.push_back(s1);
 			if (std::find(copy_sectors.begin(), copy_sectors.end(), s1->getSector()) == copy_sectors.end())
 				copy_sectors.push_back(s1->getSector());
 		}
 
 		// Back side
-		if (s2) {
+		if (s2)
+		{
 			copy_sides.push_back(s2);
 			if (std::find(copy_sectors.begin(), copy_sectors.end(), s2->getSector()) == copy_sectors.end())
 				copy_sectors.push_back(s2->getSector());
@@ -200,20 +218,24 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines) {
 	}
 
 	// Copy sectors
-	for (unsigned a = 0; a < copy_sectors.size(); a++) {
+	for (unsigned a = 0; a < copy_sectors.size(); a++)
+	{
 		MapSector* copy = new MapSector(NULL);
 		copy->copy(copy_sectors[a]);
 		sectors.push_back(copy);
 	}
 
 	// Copy sides
-	for (unsigned a = 0; a < copy_sides.size(); a++) {
+	for (unsigned a = 0; a < copy_sides.size(); a++)
+	{
 		MapSide* copy = new MapSide();
 		copy->copy(copy_sides[a]);
 
 		// Set relative sector
-		for (unsigned b = 0; b < copy_sectors.size(); b++) {
-			if (copy_sides[a]->getSector() == copy_sectors[b]) {
+		for (unsigned b = 0; b < copy_sectors.size(); b++)
+		{
+			if (copy_sides[a]->getSector() == copy_sectors[b])
+			{
 				copy->setSector(sectors[b]);
 				break;
 			}
@@ -228,7 +250,8 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines) {
 	double min_y = 9999999;
 	double max_y = -9999999;
 	vector<MapVertex*> copy_verts;
-	for (unsigned a = 0; a < lines.size(); a++) {
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
 		MapVertex* v1 = lines[a]->v1();
 		MapVertex* v2 = lines[a]->v2();
 
@@ -254,25 +277,30 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines) {
 	double mid_y = min_y + ((max_y - min_y) * 0.5);
 
 	// Copy vertices
-	for (unsigned a = 0; a < copy_verts.size(); a++) {
+	for (unsigned a = 0; a < copy_verts.size(); a++)
+	{
 		MapVertex* copy = new MapVertex(copy_verts[a]->xPos() - mid_x, copy_verts[a]->yPos() - mid_y);
 		copy->copy(copy_verts[a]);
 		vertices.push_back(copy);
 	}
 
 	// Copy lines
-	for (unsigned a = 0; a < lines.size(); a++) {
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
 		// Get relative sides
 		MapSide* s1 = NULL;
 		MapSide* s2 = NULL;
 		bool s1_found = false;
 		bool s2_found = !(lines[a]->s2());
-		for (unsigned b = 0; b < copy_sides.size(); b++) {
-			if (lines[a]->s1() == copy_sides[b]) {
+		for (unsigned b = 0; b < copy_sides.size(); b++)
+		{
+			if (lines[a]->s1() == copy_sides[b])
+			{
 				s1 = sides[b];
 				s1_found = true;
 			}
-			if (lines[a]->s2() == copy_sides[b]) {
+			if (lines[a]->s2() == copy_sides[b])
+			{
 				s2 = sides[b];
 				s2_found = true;
 			}
@@ -284,7 +312,8 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines) {
 		// Get relative vertices
 		MapVertex* v1 = NULL;
 		MapVertex* v2 = NULL;
-		for (unsigned b = 0; b < copy_verts.size(); b++) {
+		for (unsigned b = 0; b < copy_verts.size(); b++)
+		{
 			if (lines[a]->v1() == copy_verts[b])
 				v1 = vertices[b];
 			if (lines[a]->v2() == copy_verts[b])
@@ -304,75 +333,83 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines) {
 /* MapArchClipboardItem::getInfo
  * Returns a string with info on what items are copied
  *******************************************************************/
-string MapArchClipboardItem::getInfo() {
+string MapArchClipboardItem::getInfo()
+{
 	return S_FMT("%d Vertices, %d Lines, %d Sides and %d Sectors",
-					vertices.size(), lines.size(), sides.size(), sectors.size());
+	             vertices.size(), lines.size(), sides.size(), sectors.size());
 }
 
 /* MapArchClipboardItem::pasteToMap
  * Pastes copied architecture to [map] at [position]
  *******************************************************************/
-vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position) {
-        std::map<MapVertex*, MapVertex*> vertMap;
-        std::map<MapSector*, MapSector*> sectMap;
-        std::map<MapSide*, MapSide*> sideMap;
-        // Not used yet...
-        // std::map<MapLine*, MapLine*> lineMap;
+vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position)
+{
+	std::map<MapVertex*, MapVertex*> vertMap;
+	std::map<MapSector*, MapSector*> sectMap;
+	std::map<MapSide*, MapSide*> sideMap;
+	// Not used yet...
+	// std::map<MapLine*, MapLine*> lineMap;
 
 	// Add vertices
 	vector<MapVertex*> new_verts;
-	for (unsigned a = 0; a < vertices.size(); a++) {
+	for (unsigned a = 0; a < vertices.size(); a++)
+	{
 		new_verts.push_back(map->createVertex(position.x + vertices[a]->xPos(), position.y + vertices[a]->yPos()));
 		new_verts.back()->copy(vertices[a]);
-                vertMap[vertices[a]] = new_verts.back();
+		vertMap[vertices[a]] = new_verts.back();
 	}
 
 	// Add sectors
-	for (unsigned a = 0; a < sectors.size(); a++) {
-		MapSector *new_sector = map->createSector();
+	for (unsigned a = 0; a < sectors.size(); a++)
+	{
+		MapSector* new_sector = map->createSector();
 		new_sector->copy(sectors[a]);
-                sectMap[sectors[a]] = new_sector;
+		sectMap[sectors[a]] = new_sector;
 	}
 
 	// Add sides
 	int first_new_side = map->nSides();
-	for (unsigned a = 0; a < sides.size(); a++) {
+	for (unsigned a = 0; a < sides.size(); a++)
+	{
 		// Get relative sector
 		MapSector* sector = findInMap(sectMap, sides[a]->getSector());
 
-		MapSide *new_side = map->createSide(sector);
+		MapSide* new_side = map->createSide(sector);
 		new_side->copy(sides[a]);
-                sideMap[sides[a]] = new_side;
+		sideMap[sides[a]] = new_side;
 	}
 
 	// Add lines
 	int first_new_line = map->nLines();
-	for (unsigned a = 0; a < lines.size(); a++) {
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
 		// Get relative vertices
 		MapVertex* v1 = findInMap(vertMap, lines[a]->v1());
 		MapVertex* v2 = findInMap(vertMap, lines[a]->v2());
 
-		if (!v1) {
+		if (!v1)
+		{
 			wxLogMessage("no v1");
 			continue;
 		}
-		if (!v2) {
+		if (!v2)
+		{
 			wxLogMessage("no v2");
 		}
 
 		MapLine* newline = map->createLine(v1, v2, true);
 		newline->copy(lines[a]);
-                // lineMap[lines[a]] = newline;
+		// lineMap[lines[a]] = newline;
 
 		// Set relative sides
 		bool s1 = false;
 		bool s2 = !(lines[a]->s2());
-                MapSide *newS1 = findInMap(sideMap, lines[a]->s1());
-                MapSide *newS2 = findInMap(sideMap, lines[a]->s2());
-                if(newS1)
-                    newline->setS1(newS1);
-                if(newS2)
-                    newline->setS2(newS2);
+		MapSide* newS1 = findInMap(sideMap, lines[a]->s1());
+		MapSide* newS2 = findInMap(sideMap, lines[a]->s2());
+		if(newS1)
+			newline->setS1(newS1);
+		if(newS2)
+			newline->setS2(newS2);
 	}
 
 	// TODO:
@@ -381,7 +418,8 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 
 	// Fix sector references
 	// TODO: figure out what lines are 'outside' on copy, only fix said lines
-	for (unsigned a = first_new_line; a < map->nLines(); a++) {
+	for (unsigned a = first_new_line; a < map->nLines(); a++)
+	{
 		MapLine* line = map->getLine(a);
 		MapSector* sec1 = map->getLineSideSector(line, true);
 		MapSector* sec2 = map->getLineSideSector(line, false);
@@ -393,13 +431,14 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 		map->setLineSector(a, i2, false);
 	}
 
-        return new_verts;
+	return new_verts;
 }
 
 /* MapArchClipboardItem::getLines
  * Adds all copied lines to [list]
  *******************************************************************/
-void MapArchClipboardItem::getLines(vector<MapLine*>& list) {
+void MapArchClipboardItem::getLines(vector<MapLine*>& list)
+{
 	for (unsigned a = 0; a < lines.size(); a++)
 		list.push_back(lines[a]);
 }
@@ -412,13 +451,15 @@ void MapArchClipboardItem::getLines(vector<MapLine*>& list) {
 /* MapThingsClipboardItem::MapThingsClipboardItem
  * MapThingsClipboardItem class constructor
  *******************************************************************/
-MapThingsClipboardItem::MapThingsClipboardItem() : ClipboardItem(CLIPBOARD_MAP_THINGS) {
+MapThingsClipboardItem::MapThingsClipboardItem() : ClipboardItem(CLIPBOARD_MAP_THINGS)
+{
 }
 
 /* MapThingsClipboardItem::~MapThingsClipboardItem
  * MapThingsClipboardItem class destructor
  *******************************************************************/
-MapThingsClipboardItem::~MapThingsClipboardItem() {
+MapThingsClipboardItem::~MapThingsClipboardItem()
+{
 	for (unsigned a = 0; a < things.size(); a++)
 		delete things[a];
 }
@@ -426,13 +467,15 @@ MapThingsClipboardItem::~MapThingsClipboardItem() {
 /* MapThingsClipboardItem::addThings
  * Copies [things]
  *******************************************************************/
-void MapThingsClipboardItem::addThings(vector<MapThing*>& things) {
+void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
+{
 	// Copy things
 	double min_x = 99999999;
 	double min_y = 99999999;
 	double max_x = -99999999;
 	double max_y = -99999999;
-	for (unsigned a = 0; a < things.size(); a++) {
+	for (unsigned a = 0; a < things.size(); a++)
+	{
 		MapThing* copy_thing = new MapThing();
 		copy_thing->copy(things[a]);
 		this->things.push_back(copy_thing);
@@ -448,7 +491,8 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things) {
 	double mid_y = min_y + ((max_y - min_y) * 0.5);
 
 	// Adjust thing positions
-	for (unsigned a = 0; a < this->things.size(); a++) {
+	for (unsigned a = 0; a < this->things.size(); a++)
+	{
 		MapThing* thing = this->things[a];
 		thing->setPos(thing->xPos() - mid_x, thing->yPos() - mid_y);
 	}
@@ -457,15 +501,18 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things) {
 /* MapThingsClipboardItem::getInfo
  * Returns a string with info on what items are copied
  *******************************************************************/
-string MapThingsClipboardItem::getInfo() {
+string MapThingsClipboardItem::getInfo()
+{
 	return S_FMT("%d Things", things.size());
 }
 
 /* MapThingsClipboardItem::pasteToMap
  * Pastes copied things to [map] at [position]
  *******************************************************************/
-void MapThingsClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position) {
-	for (unsigned a = 0; a < things.size(); a++) {
+void MapThingsClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position)
+{
+	for (unsigned a = 0; a < things.size(); a++)
+	{
 		MapThing* newthing = map->createThing(0, 0);
 		newthing->copy(things[a]);
 		newthing->setPos(position.x + things[a]->xPos(), position.y + things[a]->yPos());
@@ -475,8 +522,10 @@ void MapThingsClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t position) {
 /* MapThingsClipboardItem::getLines
  * Adds all copied things to [list]
  *******************************************************************/
-void MapThingsClipboardItem::getThings(vector<MapThing*>& list) {
-	for (unsigned a = 0; a < things.size(); a++) {
+void MapThingsClipboardItem::getThings(vector<MapThing*>& list)
+{
+	for (unsigned a = 0; a < things.size(); a++)
+	{
 		list.push_back(things[a]);
 	}
 }
@@ -489,13 +538,15 @@ void MapThingsClipboardItem::getThings(vector<MapThing*>& list) {
 /* Clipboard::Clipboard
  * Clipboard class constructor
  *******************************************************************/
-Clipboard::Clipboard() {
+Clipboard::Clipboard()
+{
 }
 
 /* Clipboard::~Clipboard
  * Clipboard class destructor
  *******************************************************************/
-Clipboard::~Clipboard() {
+Clipboard::~Clipboard()
+{
 	for (uint32_t a = 0; a < items.size(); a++)
 		delete items[a];
 }
@@ -503,7 +554,8 @@ Clipboard::~Clipboard() {
 /* Clipboard::getItem
  * Returns the item at index or NULL if index is out of bounds
  *******************************************************************/
-ClipboardItem* Clipboard::getItem(uint32_t index) {
+ClipboardItem* Clipboard::getItem(uint32_t index)
+{
 	if (index >= items.size())
 		return NULL;
 	else
@@ -513,7 +565,8 @@ ClipboardItem* Clipboard::getItem(uint32_t index) {
 /* Clipboard::clear
  * Clears all clipboard items
  *******************************************************************/
-void Clipboard::clear() {
+void Clipboard::clear()
+{
 	for (uint32_t a = 0; a < items.size(); a++)
 		delete items[a];
 
@@ -523,7 +576,8 @@ void Clipboard::clear() {
 /* Clipboard::addItem
  * Adds an item to the clipboard. Returns false if item is invalid
  *******************************************************************/
-bool Clipboard::addItem(ClipboardItem* item) {
+bool Clipboard::addItem(ClipboardItem* item)
+{
 	// Clear current clipboard contents
 	clear();
 
@@ -537,11 +591,13 @@ bool Clipboard::addItem(ClipboardItem* item) {
 /* Clipboard::addItems
  * Adds multiple items to the clipboard
  *******************************************************************/
-bool Clipboard::addItems(vector<ClipboardItem*>& items) {
+bool Clipboard::addItems(vector<ClipboardItem*>& items)
+{
 	// Clear current clipboard contents
 	clear();
 
-	for (unsigned a = 0; a < items.size(); a++) {
+	for (unsigned a = 0; a < items.size(); a++)
+	{
 		if (items[a])
 			this->items.push_back(items[a]);
 	}

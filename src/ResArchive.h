@@ -6,7 +6,8 @@
 
 #define RESDIRENTRYSIZE 39	// The size of a res entry in the res directory
 
-class ResArchive : public Archive {
+class ResArchive : public Archive
+{
 private:
 
 public:

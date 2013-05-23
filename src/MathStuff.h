@@ -4,7 +4,8 @@
 
 #define PI	3.1415926535897932384
 
-namespace MathStuff {
+namespace MathStuff
+{
 	double		clamp(double val, double min, double max);
 	int			floor(double val);
 	int			ceil(double val);
@@ -16,8 +17,8 @@ namespace MathStuff {
 	double		distanceToLine(double x, double y, double x1, double y1, double x2, double y2);
 	double		distanceToLineFast(double x, double y, double x1, double y1, double x2, double y2);
 	bool		linesIntersect(double l1x1, double l1y1, double l1x2, double l1y2,
-							double l2x1, double l2y1, double l2x2, double l2y2,
-							double& x, double& y);
+	                           double l2x1, double l2y1, double l2x2, double l2y2,
+	                           double& x, double& y);
 	double		distanceRayLine(fpoint2_t ray_origin, fpoint2_t ray_dir, double x1, double y1, double x2, double y2);
 	double		angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3);
 	fpoint2_t	rotatePoint(fpoint2_t origin, fpoint2_t point, double angle);

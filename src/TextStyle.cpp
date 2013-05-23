@@ -53,7 +53,8 @@ StyleSet*			ss_current = NULL;
 /* TextStyle::TextStyle
  * TextStyle class constructor
  *******************************************************************/
-TextStyle::TextStyle() {
+TextStyle::TextStyle()
+{
 	// Default (undefined) values
 	font = "";
 	size = -1;
@@ -67,19 +68,22 @@ TextStyle::TextStyle() {
 /* TextStyle::~TextStyle
  * TextStyle class destructor
  *******************************************************************/
-TextStyle::~TextStyle() {
+TextStyle::~TextStyle()
+{
 }
 
 /* TextStyle::parse
  * Reads text style information from a parse tree
  *******************************************************************/
-bool TextStyle::parse(ParseTreeNode* node) {
+bool TextStyle::parse(ParseTreeNode* node)
+{
 	// Check any info was given
 	if (!node)
 		return false;
 
 	// Go through info nodes
-	for (unsigned a = 0; a < node->nChildren(); a++) {
+	for (unsigned a = 0; a < node->nChildren(); a++)
+	{
 		ParseTreeNode* child = (ParseTreeNode*)node->getChild(a);
 		string name = child->getName();
 
@@ -92,13 +96,15 @@ bool TextStyle::parse(ParseTreeNode* node) {
 			size = child->getIntValue();
 
 		// Foreground colour
-		if (S_CMPNOCASE(name, "foreground")) {
+		if (S_CMPNOCASE(name, "foreground"))
+		{
 			foreground.set(child->getIntValue(0), child->getIntValue(1), child->getIntValue(2), 255);
 			fg_defined = true;
 		}
 
 		// Background colour
-		if (S_CMPNOCASE(name, "background")) {
+		if (S_CMPNOCASE(name, "background"))
+		{
 			background.set(child->getIntValue(0), child->getIntValue(1), child->getIntValue(2), 255);
 			bg_defined = true;
 		}
@@ -123,7 +129,8 @@ bool TextStyle::parse(ParseTreeNode* node) {
  * Applies the style settings to [style] in the scintilla text
  * control [stc]
  *******************************************************************/
-void TextStyle::applyTo(wxStyledTextCtrl* stc, int style) {
+void TextStyle::applyTo(wxStyledTextCtrl* stc, int style)
+{
 	// Set font face
 	if (!font.IsEmpty())
 		stc->StyleSetFaceName(style, font);
@@ -162,7 +169,8 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc, int style) {
 /* TextStyle::copyStyle
  * Copies style info from [copy]
  *******************************************************************/
-bool TextStyle::copyStyle(TextStyle* copy) {
+bool TextStyle::copyStyle(TextStyle* copy)
+{
 	if (!copy)
 		return false;
 
@@ -183,47 +191,55 @@ bool TextStyle::copyStyle(TextStyle* copy) {
 /* TextStyle::getDefinition
  * Returns a formatted string defining this style
  *******************************************************************/
-string TextStyle::getDefinition(unsigned tabs) {
+string TextStyle::getDefinition(unsigned tabs)
+{
 	string ret = "";
 
 	// Write font
-	if (!font.IsEmpty()) {
+	if (!font.IsEmpty())
+	{
 		for (unsigned t = 0; t < tabs; t++) ret += "\t";
 		ret += S_FMT("font = \"%s\";\n", CHR(font));
 	}
 
 	// Write size
-	if (size >= 0) {
+	if (size >= 0)
+	{
 		for (unsigned t = 0; t < tabs; t++) ret += "\t";
 		ret += S_FMT("size = %d;\n", size);
 	}
 
 	// Write foreground
-	if (fg_defined) {
+	if (fg_defined)
+	{
 		for (unsigned t = 0; t < tabs; t++) ret += "\t";
 		ret += S_FMT("foreground = %d, %d, %d;\n", foreground.r, foreground.g, foreground.b);
 	}
 
 	// Write background
-	if (bg_defined) {
+	if (bg_defined)
+	{
 		for (unsigned t = 0; t < tabs; t++) ret += "\t";
 		ret += S_FMT("background = %d, %d, %d;\n", background.r, background.g, background.b);
 	}
 
 	// Write bold
-	if (bold >= 0) {
+	if (bold >= 0)
+	{
 		for (unsigned t = 0; t < tabs; t++) ret += "\t";
 		ret += S_FMT("bold = %d;\n", bold);
 	}
 
 	// Write italic
-	if (italic >= 0) {
+	if (italic >= 0)
+	{
 		for (unsigned t = 0; t < tabs; t++) ret += "\t";
 		ret += S_FMT("italic = %d;\n", italic);
 	}
 
 	// Write underlined
-	if (underlined >= 0) {
+	if (underlined >= 0)
+	{
 		for (unsigned t = 0; t < tabs; t++) ret += "\t";
 		ret += S_FMT("underlined = %d;\n", underlined);
 	}
@@ -239,7 +255,8 @@ string TextStyle::getDefinition(unsigned tabs) {
 /* StyleSet::StyleSet
  * StyleSet class constructor
  *******************************************************************/
-StyleSet::StyleSet(string name) {
+StyleSet::StyleSet(string name)
+{
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 	ts_default.font = f.GetFaceName();
@@ -259,13 +276,15 @@ StyleSet::StyleSet(string name) {
 /* StyleSet::~StyleSet
  * StyleSet class destructor
  *******************************************************************/
-StyleSet::~StyleSet() {
+StyleSet::~StyleSet()
+{
 }
 
 /* StyleSet::parseSet
  * Reads style set info from a parse tree
  *******************************************************************/
-bool StyleSet::parseSet(ParseTreeNode* root) {
+bool StyleSet::parseSet(ParseTreeNode* root)
+{
 	if (!root)
 		return false;
 
@@ -293,7 +312,8 @@ bool StyleSet::parseSet(ParseTreeNode* root) {
  * Applies all the styles in this set to the text styles in scintilla
  * text control [stc]
  *******************************************************************/
-void StyleSet::applyTo(wxStyledTextCtrl* stc) {
+void StyleSet::applyTo(wxStyledTextCtrl* stc)
+{
 	// Set default style
 	ts_default.applyTo(stc, wxSTC_STYLE_DEFAULT);
 
@@ -319,7 +339,8 @@ void StyleSet::applyTo(wxStyledTextCtrl* stc) {
 /* StyleSet::copySet
  * Copies all styles in [copy] to this set
  *******************************************************************/
-bool StyleSet::copySet(StyleSet* copy) {
+bool StyleSet::copySet(StyleSet* copy)
+{
 	if (!copy)
 		return false;
 
@@ -342,7 +363,8 @@ bool StyleSet::copySet(StyleSet* copy) {
  * Returns the text style associated with [name] (these are hard
  * coded), or NULL if [name] was invalid
  *******************************************************************/
-TextStyle* StyleSet::getStyle(string name) {
+TextStyle* StyleSet::getStyle(string name)
+{
 	// Return style matching name given
 	if (S_CMPNOCASE(name, "default"))
 		return &ts_default;
@@ -372,7 +394,8 @@ TextStyle* StyleSet::getStyle(string name) {
 /* StyleSet::writeFile
  * Writes this style set as a text definition to a file [filename]
  *******************************************************************/
-bool StyleSet::writeFile(string filename) {
+bool StyleSet::writeFile(string filename)
+{
 	// Open file for writing
 	wxFile file(filename, wxFile::write);
 
@@ -454,14 +477,16 @@ bool StyleSet::writeFile(string filename) {
  * 'current.sss' file, or uses the default set if the file does not
  * exist
  *******************************************************************/
-void StyleSet::initCurrent() {
+void StyleSet::initCurrent()
+{
 	// Create 'current' styleset
 	ss_current = new StyleSet();
 	ss_current->name = "<current styleset>";
 
 	// First up, check if "<userdir>/current.sss" exists
 	string path = appPath("current.sss", DIR_USER);
-	if (wxFileExists(path)) {
+	if (wxFileExists(path))
+	{
 		// Read it in
 		Tokenizer tz;
 		tz.openFile(path);
@@ -473,7 +498,8 @@ void StyleSet::initCurrent() {
 
 		// Find definition
 		ParseTreeNode* node = (ParseTreeNode*)root.getChild("styleset");
-		if (node) {
+		if (node)
+		{
 			// If found, load it into the current set
 			ss_current->parseSet(node);
 			return;
@@ -488,7 +514,8 @@ void StyleSet::initCurrent() {
 /* StyleSet::saveCurrent
  * Writes the current style set to the 'current.sss' file
  *******************************************************************/
-void StyleSet::saveCurrent() {
+void StyleSet::saveCurrent()
+{
 	if (!ss_current)
 		return;
 
@@ -498,7 +525,8 @@ void StyleSet::saveCurrent() {
 /* StyleSet::currentSet
  * Returns the current style set
  *******************************************************************/
-StyleSet* StyleSet::currentSet() {
+StyleSet* StyleSet::currentSet()
+{
 	if (!ss_current)
 		initCurrent();
 
@@ -509,10 +537,13 @@ StyleSet* StyleSet::currentSet() {
  * Loads the style set matching [name] to the current style set.
  * Returns false if no match was found, true otherwise
  *******************************************************************/
-bool StyleSet::loadSet(string name) {
+bool StyleSet::loadSet(string name)
+{
 	// Search for set matching name
-	for (unsigned a = 0; a < style_sets.size(); a++) {
-		if (S_CMPNOCASE(style_sets[a]->name, name)) {
+	for (unsigned a = 0; a < style_sets.size(); a++)
+	{
+		if (S_CMPNOCASE(style_sets[a]->name, name))
+		{
 			ss_current->copySet(style_sets[a]);
 			return true;
 		}
@@ -525,7 +556,8 @@ bool StyleSet::loadSet(string name) {
  * Loads the style set at [index] to the current style set. Returns
  * false if [index] was out of bounds, true otherwise
  *******************************************************************/
-bool StyleSet::loadSet(unsigned index) {
+bool StyleSet::loadSet(unsigned index)
+{
 	// Check index
 	if (index >= style_sets.size())
 		return false;
@@ -538,7 +570,8 @@ bool StyleSet::loadSet(unsigned index) {
 /* StyleSet::applyCurrent
  * Applies the current style set to the scintilla text control [stc]
  *******************************************************************/
-void StyleSet::applyCurrent(wxStyledTextCtrl* stc) {
+void StyleSet::applyCurrent(wxStyledTextCtrl* stc)
+{
 	currentSet()->applyTo(stc);
 }
 
@@ -546,7 +579,8 @@ void StyleSet::applyCurrent(wxStyledTextCtrl* stc) {
  * Returns the name of the style set at [index], or an empty string
  * if [index] is out of bounds
  *******************************************************************/
-string StyleSet::getName(unsigned index) {
+string StyleSet::getName(unsigned index)
+{
 	// Check index
 	if (index >= style_sets.size())
 		return "";
@@ -557,14 +591,16 @@ string StyleSet::getName(unsigned index) {
 /* StyleSet::numSets
  * Returns the number of loaded style sets
  *******************************************************************/
-unsigned StyleSet::numSets() {
+unsigned StyleSet::numSets()
+{
 	return style_sets.size();
 }
 
 /* StyleSet::getSet
  * Returns the style set at [index], or NULL if [index] is out of bounds
  *******************************************************************/
-StyleSet* StyleSet::getSet(unsigned index) {
+StyleSet* StyleSet::getSet(unsigned index)
+{
 	// Check index
 	if (index >= style_sets.size())
 		return NULL;
@@ -575,19 +611,22 @@ StyleSet* StyleSet::getSet(unsigned index) {
 /* StyleSet::loadResourceStyles
  * Loads all text styles from the slade resource archive (slade.pk3)
  *******************************************************************/
-bool StyleSet::loadResourceStyles() {
+bool StyleSet::loadResourceStyles()
+{
 	// Get 'config/text_styles' directory in slade.pk3
 	ArchiveTreeNode* dir = theArchiveManager->programResourceArchive()->getDir("config/text_styles");
 
 	// Check it exists
-	if (!dir) {
+	if (!dir)
+	{
 		wxLogMessage("Warning: No 'config/text_styles' directory exists in slade.pk3");
 		return false;
 	}
 
 	// Read default style set first
 	ArchiveEntry* default_style = dir->getEntry("default.sss");
-	if (default_style) {
+	if (default_style)
+	{
 		// Read entry data into tokenizer
 		Tokenizer tz;
 		tz.openMem(&default_style->getMCData(), default_style->getName());
@@ -599,7 +638,8 @@ bool StyleSet::loadResourceStyles() {
 
 		// Read any styleset definitions
 		vector<STreeNode*> nodes = root.getChildren("styleset");
-		for (unsigned b = 0; b  < nodes.size(); b++) {
+		for (unsigned b = 0; b  < nodes.size(); b++)
+		{
 			StyleSet* newset = new StyleSet();
 			if (newset->parseSet((ParseTreeNode*)nodes[b]))
 				style_sets.push_back(newset);
@@ -609,7 +649,8 @@ bool StyleSet::loadResourceStyles() {
 	}
 
 	// Go through all entries within it
-	for (unsigned a = 0; a < dir->numEntries(); a++) {
+	for (unsigned a = 0; a < dir->numEntries(); a++)
+	{
 		ArchiveEntry* entry = dir->getEntry(a);
 
 		// Skip default
@@ -627,7 +668,8 @@ bool StyleSet::loadResourceStyles() {
 
 		// Read any styleset definitions
 		vector<STreeNode*> nodes = root.getChildren("styleset");
-		for (unsigned b = 0; b  < nodes.size(); b++) {
+		for (unsigned b = 0; b  < nodes.size(); b++)
+		{
 			StyleSet* newset = new StyleSet();
 			if (newset->parseSet((ParseTreeNode*)nodes[b]))
 				style_sets.push_back(newset);
@@ -642,7 +684,8 @@ bool StyleSet::loadResourceStyles() {
 /* StyleSet::loadCustomStyles
  * Loads all text styles from the user text style directory
  *******************************************************************/
-bool StyleSet::loadCustomStyles() {
+bool StyleSet::loadCustomStyles()
+{
 	// If the custom stylesets directory doesn't exist, create it
 	if (!wxDirExists(appPath("text_styles", DIR_USER)))
 		wxMkdir(appPath("text_styles", DIR_USER));
@@ -654,7 +697,8 @@ bool StyleSet::loadCustomStyles() {
 	// Go through each file in the directory
 	string filename = wxEmptyString;
 	bool files = res_dir.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files) {
+	while (files)
+	{
 		// Read file into tokenizer
 		Tokenizer tz;
 		tz.openFile(res_dir.GetName() + "/" + filename);
@@ -666,7 +710,8 @@ bool StyleSet::loadCustomStyles() {
 
 		// Read any styleset definitions
 		vector<STreeNode*> nodes = root.getChildren("styleset");
-		for (unsigned b = 0; b  < nodes.size(); b++) {
+		for (unsigned b = 0; b  < nodes.size(); b++)
+		{
 			StyleSet* newset = new StyleSet();
 			if (newset->parseSet((ParseTreeNode*)nodes[b]))
 				style_sets.push_back(newset);

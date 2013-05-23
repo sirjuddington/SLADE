@@ -4,7 +4,8 @@
 
 #include "Palette.h"
 
-class ColourBox : public wxPanel {
+class ColourBox : public wxPanel
+{
 private:
 	rgba_t			colour;
 	Palette8bit*	palette;

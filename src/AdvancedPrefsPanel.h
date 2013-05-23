@@ -5,7 +5,8 @@
 #include "PrefsPanelBase.h"
 #include <wx/propgrid/propgrid.h>
 
-class AdvancedPrefsPanel : public PrefsPanelBase {
+class AdvancedPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxPropertyGrid*	pg_cvars;
 

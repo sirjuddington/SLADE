@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class DiskArchive : public Archive {
+class DiskArchive : public Archive
+{
 private:
 
 public:

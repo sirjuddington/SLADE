@@ -10,7 +10,8 @@
 #include <wx/dataview.h>
 
 ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
-: wxPanel(parent, -1) {
+	: wxPanel(parent, -1)
+{
 	// Init variables
 	entry_script = new ArchiveEntry();
 	entry_compiled = new ArchiveEntry();
@@ -38,12 +39,14 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 
 	// Set language
 	string lang = theGameConfiguration->scriptLanguage();
-	if (S_CMPNOCASE(lang, "acs_hexen")) {
+	if (S_CMPNOCASE(lang, "acs_hexen"))
+	{
 		text_editor->setLanguage(TextLanguage::getLanguage("acs"));
 		entry_script->setName("SCRIPTS");
 		entry_compiled->setName("BEHAVIOR");
 	}
-	else if (S_CMPNOCASE(lang, "acs_zdoom")) {
+	else if (S_CMPNOCASE(lang, "acs_zdoom"))
+	{
 		text_editor->setLanguage(TextLanguage::getLanguage("acs_z"));
 		entry_script->setName("SCRIPTS");
 		entry_compiled->setName("BEHAVIOR");
@@ -59,12 +62,14 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	list_words->Bind(wxEVT_COMMAND_TREELIST_ITEM_ACTIVATED, &ScriptEditorPanel::onWordListActivate, this);
 }
 
-ScriptEditorPanel::~ScriptEditorPanel() {
+ScriptEditorPanel::~ScriptEditorPanel()
+{
 	delete entry_script;
 	delete entry_compiled;
 }
 
-bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled) {
+bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled)
+{
 	// Clear current script data
 	entry_script->clearData();
 	entry_compiled->clearData();
@@ -77,7 +82,8 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	return text_editor->loadEntry(entry_script);
 }
 
-void ScriptEditorPanel::populateWordList() {
+void ScriptEditorPanel::populateWordList()
+{
 	// Clear/refresh list
 	list_words->DeleteAllItems();
 	list_words->ClearColumns();
@@ -90,20 +96,24 @@ void ScriptEditorPanel::populateWordList() {
 
 	// Add functions to list
 	wxTreeListItem item = list_words->AppendItem(list_words->GetRootItem(), "Functions");
-	for (unsigned a = 0; a < functions.size()-1; a++) {
+	for (unsigned a = 0; a < functions.size()-1; a++)
+	{
 		list_words->AppendItem(item, functions[a]);
 	}
 
 	// Add constants to list
 	item = list_words->AppendItem(list_words->GetRootItem(), "Constants");
-	for (unsigned a = 0; a < constants.size()-1; a++) {
+	for (unsigned a = 0; a < constants.size()-1; a++)
+	{
 		list_words->AppendItem(item, constants[a]);
 	}
 }
 
-bool ScriptEditorPanel::handleAction(string name) {
+bool ScriptEditorPanel::handleAction(string name)
+{
 	// Compile Script
-	if (name == "mapw_script_compile") {
+	if (name == "mapw_script_compile")
+	{
 		// Write text to entry
 		wxCharBuffer buf = text_editor->GetText().mb_str();
 		entry_script->importMem(buf, buf.length());
@@ -117,7 +127,8 @@ bool ScriptEditorPanel::handleAction(string name) {
 	}
 
 	// Save Script
-	else if (name == "mapw_script_save") {
+	else if (name == "mapw_script_save")
+	{
 		// Write text to entry
 		wxCharBuffer buf = text_editor->GetText().mb_str();
 		entry_script->importMem(buf, buf.length());
@@ -134,7 +145,8 @@ bool ScriptEditorPanel::handleAction(string name) {
 	return true;
 }
 
-void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e) {
+void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
+{
 	// Get word
 	wxTreeListItem item = list_words->GetSelection();
 	string word = list_words->GetItemText(item);
@@ -145,7 +157,8 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e) {
 		return;
 
 	// Check for selection
-	if (text_editor->GetSelectionStart() < text_editor->GetSelectionEnd()) {
+	if (text_editor->GetSelectionStart() < text_editor->GetSelectionEnd())
+	{
 		// Replace selection with word
 		text_editor->ReplaceSelection(word);
 		text_editor->SetFocus();
@@ -154,7 +167,8 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e) {
 
 	// Check for function
 	int pos = text_editor->GetCurrentPos();
-	if (language->isFunction(word)) {
+	if (language->isFunction(word))
+	{
 		TLFunction* func = language->getFunction(word);
 
 		// Add function + ()
@@ -169,7 +183,8 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e) {
 
 		text_editor->SetFocus();
 	}
-	else {
+	else
+	{
 		// Not a function, just add it & move caret position
 		text_editor->InsertText(pos, word);
 		pos += word.length();

@@ -47,19 +47,22 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* LfdArchive::LfdArchive
  * LfdArchive class constructor
  *******************************************************************/
-LfdArchive::LfdArchive() : TreelessArchive(ARCHIVE_LFD) {
+LfdArchive::LfdArchive() : TreelessArchive(ARCHIVE_LFD)
+{
 }
 
 /* LfdArchive::~LfdArchive
  * LfdArchive class destructor
  *******************************************************************/
-LfdArchive::~LfdArchive() {
+LfdArchive::~LfdArchive()
+{
 }
 
 /* LfdArchive::getEntryOffset
  * Returns the file byte offset for [entry]
  *******************************************************************/
-uint32_t LfdArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t LfdArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return 0;
@@ -70,7 +73,8 @@ uint32_t LfdArchive::getEntryOffset(ArchiveEntry* entry) {
 /* LfdArchive::setEntryOffset
  * Sets the file byte offset for [entry]
  *******************************************************************/
-void LfdArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
+void LfdArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return;
@@ -81,14 +85,16 @@ void LfdArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
 /* LfdArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string LfdArchive::getFileExtensionString() {
+string LfdArchive::getFileExtensionString()
+{
 	return "Lfd Files (*.lfd)|*.lfd";
 }
 
 /* LfdArchive::getFormat
  * Returns the EntryDataFormat id of this archive type
  *******************************************************************/
-string LfdArchive::getFormat() {
+string LfdArchive::getFormat()
+{
 	return "archive_lfd";
 }
 
@@ -96,7 +102,8 @@ string LfdArchive::getFormat() {
  * Reads lfd format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool LfdArchive::open(MemChunk& mc) {
+bool LfdArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -129,7 +136,8 @@ bool LfdArchive::open(MemChunk& mc) {
 	theSplashWindow->setProgressMessage("Reading lfd archive data");
 	size_t offset = dir_len + 16;
 	size_t size = mc.getSize();
-	for (uint32_t d = 0; offset < size; d++) {
+	for (uint32_t d = 0; offset < size; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -151,7 +159,8 @@ bool LfdArchive::open(MemChunk& mc) {
 
 		// If the lump data goes past the end of the file,
 		// the gobfile is invalid
-		if (offset + length > size) {
+		if (offset + length > size)
+		{
 			wxLogMessage("LfdArchive::open: lfd archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -180,7 +189,8 @@ bool LfdArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -188,7 +198,8 @@ bool LfdArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -219,16 +230,19 @@ bool LfdArchive::open(MemChunk& mc) {
  * Writes the lfd archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool LfdArchive::write(MemChunk& mc, bool update) {
+bool LfdArchive::write(MemChunk& mc, bool update)
+{
 	// Determine total size
 	uint32_t dir_size = (numEntries() + 1)<<4;
 	uint32_t total_size = dir_size;
 	ArchiveEntry* entry = NULL;
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		total_size += 16;
 		setEntryOffset(entry, total_size);
-		if (update) {
+		if (update)
+		{
 			entry->setState(0);
 			entry->exProp("Offset") = (int)total_size;
 		}
@@ -250,7 +264,8 @@ bool LfdArchive::write(MemChunk& mc, bool update) {
 	mc.write(type, 4);
 	mc.write(name, 8);
 	mc.write(&size,4);
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		for (int t = 0; t < 5; ++t) type[t] = 0;
 		for (int n = 0; n < 9; ++n) name[n] = 0;
@@ -268,7 +283,8 @@ bool LfdArchive::write(MemChunk& mc, bool update) {
 	}
 
 	// Write the lumps
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		for (int t = 0; t < 5; ++t) type[t] = 0;
 		for (int n = 0; n < 9; ++n) name[n] = 0;
@@ -293,14 +309,16 @@ bool LfdArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the lfdfile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool LfdArchive::loadEntryData(ArchiveEntry* entry) {
+bool LfdArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -309,7 +327,8 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("LfdArchive::loadEntryData: Failed to open lfdfile %s", filename.c_str());
 		return false;
 	}
@@ -329,7 +348,8 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry) {
  * directory, update namespaces if needed and rename the entry if
  * necessary to be lfd-friendly (13 characters max with extension)
  *******************************************************************/
-ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -358,7 +378,8 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 /* LfdArchive::addEntry
  * Since lfd files have no namespaces, just call the other function.
  *******************************************************************/
-ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
 }
 
@@ -367,7 +388,8 @@ ArchiveEntry* LfdArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * and rename the entry if necessary to be lfd-friendly (twelve
  * characters max)
  *******************************************************************/
-bool LfdArchive::renameEntry(ArchiveEntry* entry, string name) {
+bool LfdArchive::renameEntry(ArchiveEntry* entry, string name)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
@@ -383,7 +405,8 @@ bool LfdArchive::renameEntry(ArchiveEntry* entry, string name) {
 /* LfdArchive::isLfdArchive
  * Checks if the given data is a valid Dark Forces lfd archive
  *******************************************************************/
-bool LfdArchive::isLfdArchive(MemChunk& mc) {
+bool LfdArchive::isLfdArchive(MemChunk& mc)
+{
 	// Check size
 	if (mc.getSize() < 12)
 		return false;
@@ -425,7 +448,8 @@ bool LfdArchive::isLfdArchive(MemChunk& mc) {
 /* LfdArchive::isLfdArchive
  * Checks if the file at [filename] is a valid Dark Forces lfd archive
  *******************************************************************/
-bool LfdArchive::isLfdArchive(string filename) {
+bool LfdArchive::isLfdArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 

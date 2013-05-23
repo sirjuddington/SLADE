@@ -8,13 +8,15 @@
 #define EDF_PROBABLY 192
 #define EDF_TRUE 255
 
-class EntryDataFormat {
+class EntryDataFormat
+{
 private:
 	string	id;
 
 	// Struct to specify a range for a byte (min <= valid >= max)
 	// If max == min, only 1 valid value
-	struct byte_vrange_t {
+	struct byte_vrange_t
+	{
 		uint8_t	min;
 		uint8_t	max;
 
@@ -22,12 +24,15 @@ private:
 	};
 
 	// Struct to specify valid values for a byte at pos
-	struct byte_pattern_t {
+	struct byte_pattern_t
+	{
 		unsigned				pos;
 		vector<byte_vrange_t>	valid_values;
 
-		bool match(uint8_t value) {
-			for (unsigned a = 0; a < valid_values.size(); a++) {
+		bool match(uint8_t value)
+		{
+			for (unsigned a = 0; a < valid_values.size(); a++)
+			{
 				if (value < valid_values[a].min || value > valid_values[a].max)
 					return false;
 			}

@@ -25,14 +25,15 @@ EXTERN_CVAR(Bool, map_animate_tagged)
 EXTERN_CVAR(Bool, line_fade)
 EXTERN_CVAR(Bool, flat_fade)
 
-MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Map Editor Display Preferences");
-	wxStaticBoxSizer *fsizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Map Editor Display Preferences");
+	wxStaticBoxSizer* fsizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(fsizer, 1, wxEXPAND|wxALL, 4);
 
 	// Create notebook
@@ -190,13 +191,15 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	Layout();
 }
 
-MapDisplayPrefsPanel::~MapDisplayPrefsPanel() {
+MapDisplayPrefsPanel::~MapDisplayPrefsPanel()
+{
 }
 
 /* MapDisplayPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void MapDisplayPrefsPanel::init() {
+void MapDisplayPrefsPanel::init()
+{
 	cb_vertex_round->SetValue(vertex_round);
 	cb_line_smooth->SetValue(line_smooth);
 	cb_line_tabs_always->SetValue(line_tabs_always);
@@ -219,7 +222,8 @@ void MapDisplayPrefsPanel::init() {
 	slider_flat_brightness->SetValue(flat_brightness * 10);
 }
 
-void MapDisplayPrefsPanel::applyPreferences() {
+void MapDisplayPrefsPanel::applyPreferences()
+{
 	grid_dashed = cb_grid_dashed->GetValue();
 	vertex_round = cb_vertex_round->GetValue();
 	vertex_size = slider_vertex_size->GetValue();

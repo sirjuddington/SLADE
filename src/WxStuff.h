@@ -8,7 +8,7 @@
 #ifdef __WXMSW__
 #include "wx/wxprec.h"
 #ifndef WX_PRECOMP
-    #include "wx/wx.h"
+#include "wx/wx.h"
 #endif
 #else
 #include <wx/wx.h>

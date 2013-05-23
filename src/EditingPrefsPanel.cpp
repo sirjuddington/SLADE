@@ -46,14 +46,15 @@ EXTERN_CVAR(Int, autosave_entry_changes)
 /* EditingPrefsPanel::EditingPrefsPanel
  * EditingPrefsPanel class constructor
  *******************************************************************/
-EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Editing Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Editing Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Force uppercase
@@ -72,13 +73,15 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) 
 /* EditingPrefsPanel::~EditingPrefsPanel
  * EditingPrefsPanel class destructor
  *******************************************************************/
-EditingPrefsPanel::~EditingPrefsPanel() {
+EditingPrefsPanel::~EditingPrefsPanel()
+{
 }
 
 /* EditingPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void EditingPrefsPanel::init() {
+void EditingPrefsPanel::init()
+{
 	cb_wad_force_uppercase->SetValue(wad_force_uppercase);
 	choice_entry_mod->SetSelection(autosave_entry_changes);
 }
@@ -86,7 +89,8 @@ void EditingPrefsPanel::init() {
 /* EditingPrefsPanel::applyPreferences
  * Applies preference values from the controls to CVARs
  *******************************************************************/
-void EditingPrefsPanel::applyPreferences() {
+void EditingPrefsPanel::applyPreferences()
+{
 	wad_force_uppercase = cb_wad_force_uppercase->GetValue();
 	autosave_entry_changes = choice_entry_mod->GetSelection();
 }

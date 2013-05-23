@@ -5,7 +5,8 @@
 #include "GameConfiguration.h"
 
 SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
-: wxDialog(parent, -1, "Select Sector Special", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+	: wxDialog(parent, -1, "Select Sector Special", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -25,7 +26,8 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 	lv_specials->InsertColumn(lv_specials->GetColumnCount(), "Name");
 #endif
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
-	for (unsigned a = 0; a < types.size(); a++) {
+	for (unsigned a = 0; a < types.size(); a++)
+	{
 		wxArrayString item;
 		item.Add(S_FMT("%d", types[a].type));
 		item.Add(types[a].name);
@@ -34,7 +36,8 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 
 	// Boom Flags
 	int width = 300;
-	if (theGameConfiguration->isBoom()) {
+	if (theGameConfiguration->isBoom())
+	{
 		frame = new wxStaticBox(this, -1, "Flags");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 		sizer->Add(framesizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 8);
@@ -75,16 +78,20 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 	CenterOnParent();
 }
 
-SectorSpecialDialog::~SectorSpecialDialog() {
+SectorSpecialDialog::~SectorSpecialDialog()
+{
 }
 
-void SectorSpecialDialog::setup(int special, int map_format) {
+void SectorSpecialDialog::setup(int special, int map_format)
+{
 	int base_type = theGameConfiguration->baseSectorType(special, map_format);
 
 	// Select base type
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
-	for (unsigned a = 0; a < types.size(); a++) {
-		if (types[a].type == base_type) {
+	for (unsigned a = 0; a < types.size(); a++)
+	{
+		if (types[a].type == base_type)
+		{
 			lv_specials->selectItem(a);
 			lv_specials->EnsureVisible(a);
 			break;
@@ -92,7 +99,8 @@ void SectorSpecialDialog::setup(int special, int map_format) {
 	}
 
 	// Flags
-	if (theGameConfiguration->isBoom()) {
+	if (theGameConfiguration->isBoom())
+	{
 		// Damage
 		choice_damage->Select(theGameConfiguration->sectorBoomDamage(special, map_format));
 
@@ -107,7 +115,8 @@ void SectorSpecialDialog::setup(int special, int map_format) {
 	}
 }
 
-int SectorSpecialDialog::getSelectedSpecial(int map_format) {
+int SectorSpecialDialog::getSelectedSpecial(int map_format)
+{
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
 	int selection = lv_specials->selectedItems()[0];
 
@@ -123,6 +132,7 @@ int SectorSpecialDialog::getSelectedSpecial(int map_format) {
 }
 
 
-void SectorSpecialDialog::onSpecialsListViewItemActivated(wxListEvent& e) {
+void SectorSpecialDialog::onSpecialsListViewItemActivated(wxListEvent& e)
+{
 	EndModal(wxID_OK);
 }

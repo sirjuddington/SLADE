@@ -5,7 +5,8 @@
 #include "TextureEditorPanel.h"
 #include <wx/clrpicker.h>
 
-class ZTextureEditorPanel : public TextureEditorPanel {
+class ZTextureEditorPanel : public TextureEditorPanel
+{
 private:
 	// Texture properties
 	wxSpinCtrlDouble*	spin_tex_scalex;

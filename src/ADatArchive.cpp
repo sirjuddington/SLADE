@@ -53,26 +53,30 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* ADatArchive::ADatArchive
  * ADatArchive class constructor
  *******************************************************************/
-ADatArchive::ADatArchive() : Archive(ARCHIVE_ADAT) {
+ADatArchive::ADatArchive() : Archive(ARCHIVE_ADAT)
+{
 }
 
 /* ADatArchive::~ADatArchive
  * ADatArchive class destructor
  *******************************************************************/
-ADatArchive::~ADatArchive() {
+ADatArchive::~ADatArchive()
+{
 }
 
 /* ADatArchive::getFileExtensionString
  * Returns the file extension string to use in the file open dialog
  *******************************************************************/
-string ADatArchive::getFileExtensionString() {
+string ADatArchive::getFileExtensionString()
+{
 	return "Dat Files (*.dat)|*.dat";
 }
 
 /* ADatArchive::getFormat
  * Returns the string id for the dat EntryDataFormat
  *******************************************************************/
-string ADatArchive::getFormat() {
+string ADatArchive::getFormat()
+{
 	return "archive_adat";
 }
 
@@ -80,7 +84,8 @@ string ADatArchive::getFormat() {
  * Reads dat format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ADatArchive::open(MemChunk& mc) {
+bool ADatArchive::open(MemChunk& mc)
+{
 	// Check given data is valid
 	if (mc.getSize() < 16)
 		return false;
@@ -95,7 +100,8 @@ bool ADatArchive::open(MemChunk& mc) {
 	mc.read(&dir_size, 4);
 
 	// Check it
-	if (magic[0] != 'A' || magic[1] != 'D' || magic[2] != 'A' || magic[3] != 'T') {
+	if (magic[0] != 'A' || magic[1] != 'D' || magic[2] != 'A' || magic[3] != 'T')
+	{
 		wxLogMessage("ADatArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid dat header";
 		return false;
@@ -108,7 +114,8 @@ bool ADatArchive::open(MemChunk& mc) {
 	size_t num_entries = dir_size / DIRENTRY;
 	mc.seek(dir_offset, SEEK_SET);
 	theSplashWindow->setProgressMessage("Reading dat archive data");
-	for (uint32_t d = 0; d < num_entries; d++) {
+	for (uint32_t d = 0; d < num_entries; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_entries));
 
@@ -130,7 +137,8 @@ bool ADatArchive::open(MemChunk& mc) {
 		compsize = wxINT32_SWAP_ON_BE(compsize);
 
 		// Check offset+size
-		if ((unsigned)(offset + compsize) > mc.getSize()) {
+		if ((unsigned)(offset + compsize) > mc.getSize())
+		{
 			wxLogMessage("ADatArchive::open: dat archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -159,7 +167,8 @@ bool ADatArchive::open(MemChunk& mc) {
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < all_entries.size(); a++) {
+	for (size_t a = 0; a < all_entries.size(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_entries)));
 
@@ -167,13 +176,15 @@ bool ADatArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
 			MemChunk xdata;
 			if (Compression::ZlibInflate(edata, xdata, (int)entry->exProp("FullSize")))
 				entry->importMemChunk(xdata);
-			else {
+			else
+			{
 				wxLogMessage("Entry %s couldn't be inflated", CHR(entry->getName()));
 				entry->importMemChunk(edata);
 			}
@@ -204,7 +215,8 @@ bool ADatArchive::open(MemChunk& mc) {
  * Writes the dat archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ADatArchive::write(MemChunk& mc, bool update) {
+bool ADatArchive::write(MemChunk& mc, bool update)
+{
 	// Clear current data
 	mc.clear();
 	MemChunk directory;
@@ -226,23 +238,28 @@ bool ADatArchive::write(MemChunk& mc, bool update) {
 	mc.write(&version, 4);
 
 	// Write entry data
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Skip folders
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
 
 		// Create compressed version of the lump
-		MemChunk * entry = NULL;
-		if (Compression::ZlibDeflate(entries[a]->getMCData(), compressed, 9)) {
+		MemChunk* entry = NULL;
+		if (Compression::ZlibDeflate(entries[a]->getMCData(), compressed, 9))
+		{
 			entry = &compressed;
-		} else {
+		}
+		else
+		{
 			entry = &(entries[a]->getMCData());
 			wxLogMessage("Entry %s couldn't be deflated", CHR(entries[a]->getName()));
 		}
 
 		// Update entry
 		int offset = mc.currentPos();
-		if (update) {
+		if (update)
+		{
 			entries[a]->setState(0);
 			entries[a]->exProp("Offset") = (int)offset;
 		}
@@ -254,7 +271,8 @@ bool ADatArchive::write(MemChunk& mc, bool update) {
 		// Check entry name
 		string name = entries[a]->getPath(true);
 		name.Remove(0, 1);	// Remove leading /
-		if (name.Len() > 128) {
+		if (name.Len() > 128)
+		{
 			wxLogMessage("Warning: Entry %s path is too long (> 128 characters), putting it in the root directory", CHR(name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
@@ -290,7 +308,7 @@ bool ADatArchive::write(MemChunk& mc, bool update) {
 		// Step 2: Write entry data //
 		//////////////////////////////
 
-		mc.write(entry->getData(), entry->getSize());		
+		mc.write(entry->getData(), entry->getSize());
 	}
 
 	// Write directory
@@ -311,7 +329,8 @@ bool ADatArchive::write(MemChunk& mc, bool update) {
  * Writes the dat archive to a file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ADatArchive::write(string filename, bool update) {
+bool ADatArchive::write(string filename, bool update)
+{
 	// Write to a MemChunk, then export it to a file
 	MemChunk mc;
 	if (write(mc, true))
@@ -324,23 +343,26 @@ bool ADatArchive::write(string filename, bool update) {
  * Loads an entry's data from the dat file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ADatArchive::loadEntryData(ArchiveEntry* entry) {
+bool ADatArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check entry is ok
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
 
 	// Open archive file
 	wxFile file(filename);
-	
+
 	// Check it opened
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("ADatArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
 		return false;
 	}
@@ -358,7 +380,8 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry) {
 /* ADatArchive::detectNamespace
  * Returns the namespace that [entry] is within
  *******************************************************************/
-string ADatArchive::detectNamespace(ArchiveEntry* entry) {
+string ADatArchive::detectNamespace(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return "global";
@@ -386,7 +409,8 @@ string ADatArchive::detectNamespace(ArchiveEntry* entry) {
 /* ADatArchive::isADatArchive
  * Checks if the given data is a valid Anachronox dat archive
  *******************************************************************/
-bool ADatArchive::isADatArchive(MemChunk& mc) {
+bool ADatArchive::isADatArchive(MemChunk& mc)
+{
 	// Check it opened ok
 	if (mc.getSize() < 16)
 		return false;
@@ -425,7 +449,8 @@ bool ADatArchive::isADatArchive(MemChunk& mc) {
 /* ADatArchive::isADatArchive
  * Checks if the file at [filename] is a valid Anachronox dat archive
  *******************************************************************/
-bool ADatArchive::isADatArchive(string filename) {
+bool ADatArchive::isADatArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 

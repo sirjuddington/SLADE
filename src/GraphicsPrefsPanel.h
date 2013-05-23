@@ -5,7 +5,8 @@
 #include "PrefsPanelBase.h"
 #include <wx/clrpicker.h>
 
-class GraphicsPrefsPanel : public PrefsPanelBase {
+class GraphicsPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxColourPickerCtrl*	cp_colour1;
 	wxColourPickerCtrl*	cp_colour2;

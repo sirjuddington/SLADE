@@ -4,13 +4,15 @@
 
 #include <wx/dataview.h>
 
-class ThingTypeTreeView : public wxDataViewTreeCtrl {
+class ThingTypeTreeView : public wxDataViewTreeCtrl
+{
 private:
 	wxDataViewItem	root;
 	wxDialog*		parent_dialog;
 
 	// It's incredibly retarded that I actually have to do this
-	struct group_t {
+	struct group_t
+	{
 		string			name;
 		wxDataViewItem	item;
 		group_t(wxDataViewItem i, string name) { this->item = i; this->name = name; }

@@ -11,7 +11,8 @@
 #include <wx/textctrl.h>
 #include <wx/choice.h>
 
-class ArchivePanel : public wxPanel, public Listener, SActionHandler {
+class ArchivePanel : public wxPanel, public Listener, SActionHandler
+{
 protected:
 	Archive*			archive;
 	ArchiveEntryList*	entry_list;
@@ -38,15 +39,16 @@ protected:
 	EntryPanel* map_area;
 	EntryPanel* audio_area;
 
-	enum NewEntries {
-		ENTRY_EMPTY = 0,
-		ENTRY_PALETTE,
-		ENTRY_ANIMATED,
-		ENTRY_SWITCHES,
+	enum NewEntries
+	{
+	    ENTRY_EMPTY = 0,
+	    ENTRY_PALETTE,
+	    ENTRY_ANIMATED,
+	    ENTRY_SWITCHES,
 	};
 
 public:
-	ArchivePanel(wxWindow *parent, Archive* archive);
+	ArchivePanel(wxWindow* parent, Archive* archive);
 	~ArchivePanel();
 
 	Archive*		getArchive() { return archive; }
@@ -104,7 +106,7 @@ public:
 	bool	crc32();
 
 	// Needed for some console commands
-	EntryPanel *			currentArea() { return cur_area;}
+	EntryPanel* 			currentArea() { return cur_area;}
 	ArchiveEntry*			currentEntry();
 	vector<ArchiveEntry*>	currentEntries();
 	ArchiveTreeNode*		currentDir();
@@ -143,7 +145,8 @@ public:
 	void			onBtnUpDir(wxCommandEvent& e);
 };
 
-class EntryDataUS : public UndoStep {
+class EntryDataUS : public UndoStep
+{
 private:
 	MemChunk	data;
 	string		path;
@@ -151,7 +154,8 @@ private:
 	Archive*	archive;
 
 public:
-	EntryDataUS(ArchiveEntry* entry) {
+	EntryDataUS(ArchiveEntry* entry)
+	{
 		archive = entry->getParent();
 		path = entry->getPath();
 		index = entry->getParentDir()->entryIndex(entry);
@@ -160,11 +164,13 @@ public:
 
 	bool swapData();
 
-	bool doUndo() {
+	bool doUndo()
+	{
 		return swapData();
 	}
 
-	bool doRedo() {
+	bool doRedo()
+	{
 		return swapData();
 	}
 };

@@ -32,9 +32,10 @@ struct doom64sector_t
 	uint16_t	flags;
 };
 
-class MapSector : public MapObject {
-friend class SLADEMap;
-friend class MapSide;
+class MapSector : public MapObject
+{
+	friend class SLADEMap;
+	friend class MapSide;
 private:
 	// Basic data
 	string		f_tex;

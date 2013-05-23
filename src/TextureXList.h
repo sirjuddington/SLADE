@@ -7,10 +7,11 @@
 #include "PatchTable.h"
 
 // Enum for different texturex formats
-enum TextureXFormat {
-    TXF_NORMAL,
-    TXF_STRIFE11,
-    TXF_NAMELESS,
+enum TextureXFormat
+{
+	TXF_NORMAL,
+	TXF_STRIFE11,
+	TXF_NAMELESS,
 	TXF_TEXTURES,
 	TXF_JAGUAR,
 };
@@ -19,13 +20,15 @@ enum TextureXFormat {
 #define TX_WORLDPANNING	0x8000
 
 // TEXTUREx texture patch
-struct tx_patch_t {
+struct tx_patch_t
+{
 	int16_t		left;
 	int16_t		top;
 	uint16_t	patch;
 };
 
-class TextureXList {
+class TextureXList
+{
 private:
 	vector<CTexture*>	textures;
 	uint8_t				txformat;

@@ -4,16 +4,17 @@
 
 #include <wx/dialog.h>
 
-class ModifyOffsetsDialog : public wxDialog {
+class ModifyOffsetsDialog : public wxDialog
+{
 private:
-	wxChoice	*combo_aligntype;
+	wxChoice*	combo_aligntype;
 
-	wxTextCtrl	*entry_xoff;
-	wxTextCtrl	*entry_yoff;
-	wxCheckBox	*cbox_relative;
+	wxTextCtrl*	entry_xoff;
+	wxTextCtrl*	entry_yoff;
+	wxCheckBox*	cbox_relative;
 
-	wxRadioButton	*opt_set;
-	wxRadioButton	*opt_auto;
+	wxRadioButton*	opt_set;
+	wxRadioButton*	opt_auto;
 
 public:
 	ModifyOffsetsDialog();

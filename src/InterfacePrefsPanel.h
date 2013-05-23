@@ -4,7 +4,8 @@
 
 #include "PrefsPanelBase.h"
 
-class InterfacePrefsPanel : public PrefsPanelBase {
+class InterfacePrefsPanel : public PrefsPanelBase
+{
 private:
 	wxCheckBox*	cb_size_as_string;
 	wxCheckBox* cb_filter_dirs;

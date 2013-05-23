@@ -14,17 +14,20 @@ EXTERN_CVAR(Int, thing_drawtype)
 EXTERN_CVAR(Bool, vertex_round)
 EXTERN_CVAR(Float, line_width)
 
-MCASelboxFader::MCASelboxFader(long start, fpoint2_t tl, fpoint2_t br) : MCAnimation(start) {
+MCASelboxFader::MCASelboxFader(long start, fpoint2_t tl, fpoint2_t br) : MCAnimation(start)
+{
 	// Init variables
 	this->tl = tl;
 	this->br = br;
 	fade = 1.0f;
 }
 
-MCASelboxFader::~MCASelboxFader() {
+MCASelboxFader::~MCASelboxFader()
+{
 }
 
-bool MCASelboxFader::update(long time) {
+bool MCASelboxFader::update(long time)
+{
 	// Determine fade amount (1.0-0.0 over 150ms)
 	fade = 1.0f - ((time - starttime) * 0.006f);
 
@@ -35,7 +38,8 @@ bool MCASelboxFader::update(long time) {
 		return true;
 }
 
-void MCASelboxFader::draw() {
+void MCASelboxFader::draw()
+{
 	glDisable(GL_TEXTURE_2D);
 
 	rgba_t col;
@@ -65,7 +69,8 @@ void MCASelboxFader::draw() {
 }
 
 
-MCAThingSelection::MCAThingSelection(long start, double x, double y, double radius, bool select) : MCAnimation(start) {
+MCAThingSelection::MCAThingSelection(long start, double x, double y, double radius, bool select) : MCAnimation(start)
+{
 	// Init variables
 	this->x = x;
 	this->y = y;
@@ -78,10 +83,12 @@ MCAThingSelection::MCAThingSelection(long start, double x, double y, double radi
 		this->radius += 8;
 }
 
-MCAThingSelection::~MCAThingSelection() {
+MCAThingSelection::~MCAThingSelection()
+{
 }
 
-bool MCAThingSelection::update(long time) {
+bool MCAThingSelection::update(long time)
+{
 	// Determine fade amount (0.0-1.0 over 150ms)
 	fade = 1.0f - ((time - starttime) * 0.004f);
 
@@ -92,19 +99,22 @@ bool MCAThingSelection::update(long time) {
 		return true;
 }
 
-void MCAThingSelection::draw() {
+void MCAThingSelection::draw()
+{
 	// Setup colour
 	rgba_t col;
 	if (select)
 		col.set(255, 255, 255, 255*fade, 1);
-	else {
+	else
+	{
 		col = ColourConfiguration::getColour("map_selection");
 		col.a *= fade;
 	}
 	col.set_gl();
 
 	// Get texture if needed
-	if (!thing_overlay_square) {
+	if (!thing_overlay_square)
+	{
 		// Get thing selection texture
 		GLTexture* tex = NULL;
 		if (thing_drawtype == TDT_ROUND || thing_drawtype == TDT_SPRITE)
@@ -135,13 +145,15 @@ void MCAThingSelection::draw() {
 
 
 
-MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool select) : MCAnimation(start) {
+MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool select) : MCAnimation(start)
+{
 	// Init variables
 	this->select = select;
 	this->fade = 1.0f;
 
 	// Go through list of lines
-	for (unsigned a = 0; a < lines.size(); a++) {
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
 		if (!lines[a]) continue;
 
 		// Add line
@@ -155,10 +167,12 @@ MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool sel
 	}
 }
 
-MCALineSelection::~MCALineSelection() {
+MCALineSelection::~MCALineSelection()
+{
 }
 
-bool MCALineSelection::update(long time) {
+bool MCALineSelection::update(long time)
+{
 	// Determine fade amount (0.0-1.0 over 150ms)
 	fade = 1.0f - ((time - starttime) * 0.004f);
 
@@ -169,12 +183,14 @@ bool MCALineSelection::update(long time) {
 		return true;
 }
 
-void MCALineSelection::draw() {
+void MCALineSelection::draw()
+{
 	// Setup colour
 	rgba_t col;
 	if (select)
 		col.set(255, 255, 255, 255*fade, 1);
-	else {
+	else
+	{
 		col = ColourConfiguration::getColour("map_selection");
 		col.a *= fade;
 	}
@@ -183,7 +199,8 @@ void MCALineSelection::draw() {
 	// Draw lines
 	glLineWidth(line_width*5);
 	glBegin(GL_LINES);
-	for (unsigned a = 0; a < lines.size(); a++) {
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
 		glVertex2d(lines[a].tl.x, lines[a].tl.y);
 		glVertex2d(lines[a].br.x, lines[a].br.y);
 		glVertex2d(tabs[a].tl.x, tabs[a].tl.y);
@@ -194,23 +211,27 @@ void MCALineSelection::draw() {
 
 
 
-MCAVertexSelection::MCAVertexSelection(long start, vector<MapVertex*>& verts, double size, bool select) : MCAnimation(start) {
+MCAVertexSelection::MCAVertexSelection(long start, vector<MapVertex*>& verts, double size, bool select) : MCAnimation(start)
+{
 	// Init variables
 	this->size = size;
 	this->select = select;
 	this->fade = 1.0f;
 
 	// Setup vertices list
-	for (unsigned a = 0; a < verts.size(); a++) {
+	for (unsigned a = 0; a < verts.size(); a++)
+	{
 		if (!verts[a]) continue;
 		vertices.push_back(fpoint2_t(verts[a]->xPos(), verts[a]->yPos()));
 	}
 }
 
-MCAVertexSelection::~MCAVertexSelection() {
+MCAVertexSelection::~MCAVertexSelection()
+{
 }
 
-bool MCAVertexSelection::update(long time) {
+bool MCAVertexSelection::update(long time)
+{
 	// Determine fade amount (0.0-1.0 over 150ms)
 	fade = 1.0f - ((time - starttime) * 0.004f);
 
@@ -221,12 +242,14 @@ bool MCAVertexSelection::update(long time) {
 		return true;
 }
 
-void MCAVertexSelection::draw() {
+void MCAVertexSelection::draw()
+{
 	// Setup colour
 	rgba_t col;
 	if (select)
 		col.set(255, 255, 255, 255*fade, 1);
-	else {
+	else
+	{
 		col = ColourConfiguration::getColour("map_selection");
 		col.a *= fade;
 	}
@@ -234,14 +257,16 @@ void MCAVertexSelection::draw() {
 
 	// Setup point sprites if supported
 	bool point = false;
-	if (OpenGL::pointSpriteSupport()) {
+	if (OpenGL::pointSpriteSupport())
+	{
 		// Get appropriate vertex texture
 		GLTexture* tex;
 		if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex_r");
 		else tex = theMapEditor->textureManager().getEditorImage("vertex_s");
 
 		// If it was found, enable point sprites
-		if (tex) {
+		if (tex)
+		{
 			glEnable(GL_TEXTURE_2D);
 			tex->bind();
 			glEnable(GL_POINT_SPRITE);
@@ -251,7 +276,8 @@ void MCAVertexSelection::draw() {
 	}
 
 	// No point sprites, use regular points
-	if (!point) {
+	if (!point)
+	{
 		if (vertex_round)	glEnable(GL_POINT_SMOOTH);
 		else				glDisable(GL_POINT_SMOOTH);
 	}
@@ -266,7 +292,8 @@ void MCAVertexSelection::draw() {
 		glVertex2d(vertices[a].x, vertices[a].y);
 	glEnd();
 
-	if (point) {
+	if (point)
+	{
 		glDisable(GL_POINT_SPRITE);
 		glDisable(GL_TEXTURE_2D);
 	}
@@ -275,7 +302,8 @@ void MCAVertexSelection::draw() {
 
 
 
-MCASectorSelection::MCASectorSelection(long start, vector<Polygon2D*>& polys, bool select) : MCAnimation(start) {
+MCASectorSelection::MCASectorSelection(long start, vector<Polygon2D*>& polys, bool select) : MCAnimation(start)
+{
 	// Init variables
 	this->select = select;
 	this->fade = 1.0f;
@@ -285,10 +313,12 @@ MCASectorSelection::MCASectorSelection(long start, vector<Polygon2D*>& polys, bo
 		this->polygons.push_back(polys[a]);
 }
 
-MCASectorSelection::~MCASectorSelection() {
+MCASectorSelection::~MCASectorSelection()
+{
 }
 
-bool MCASectorSelection::update(long time) {
+bool MCASectorSelection::update(long time)
+{
 	// Determine fade amount (0.0-1.0 over 150ms)
 	fade = 1.0f - ((time - starttime) * 0.004f);
 
@@ -299,12 +329,14 @@ bool MCASectorSelection::update(long time) {
 		return true;
 }
 
-void MCASectorSelection::draw() {
+void MCASectorSelection::draw()
+{
 	// Setup colour
 	rgba_t col;
 	if (select)
 		col.set(255, 255, 255, 180*fade, 1);
-	else {
+	else
+	{
 		col = ColourConfiguration::getColour("map_selection");
 		col.a *= fade*0.75;
 	}
@@ -317,7 +349,8 @@ void MCASectorSelection::draw() {
 
 
 
-MCA3dWallSelection::MCA3dWallSelection(long start, fpoint3_t points[4], bool select) : MCAnimation(start, true) {
+MCA3dWallSelection::MCA3dWallSelection(long start, fpoint3_t points[4], bool select) : MCAnimation(start, true)
+{
 	// Init variables
 	this->select = select;
 	this->fade = 1.0f;
@@ -327,10 +360,12 @@ MCA3dWallSelection::MCA3dWallSelection(long start, fpoint3_t points[4], bool sel
 	this->points[3] = points[3];
 }
 
-MCA3dWallSelection::~MCA3dWallSelection() {
+MCA3dWallSelection::~MCA3dWallSelection()
+{
 }
 
-bool MCA3dWallSelection::update(long time) {
+bool MCA3dWallSelection::update(long time)
+{
 	// Determine fade amount (0.0-1.0 over 150ms)
 	fade = 1.0f - ((time - starttime) * 0.004f);
 
@@ -341,12 +376,14 @@ bool MCA3dWallSelection::update(long time) {
 		return true;
 }
 
-void MCA3dWallSelection::draw() {
+void MCA3dWallSelection::draw()
+{
 	// Setup colour
 	rgba_t col;
 	if (select)
 		col.set(255, 255, 255, 90*fade, 1);
-	else {
+	else
+	{
 		col = ColourConfiguration::getColour("map_3d_selection");
 		col.a *= fade*0.75;
 	}
@@ -372,7 +409,8 @@ void MCA3dWallSelection::draw() {
 
 
 
-MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, plane_t plane, bool select) : MCAnimation(start, true) {
+MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, plane_t plane, bool select) : MCAnimation(start, true)
+{
 	// Init variables
 	this->sector = sector;
 	this->plane = plane;
@@ -380,10 +418,12 @@ MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, plane_t pl
 	this->fade = 1.0f;
 }
 
-MCA3dFlatSelection::~MCA3dFlatSelection() {
+MCA3dFlatSelection::~MCA3dFlatSelection()
+{
 }
 
-bool MCA3dFlatSelection::update(long time) {
+bool MCA3dFlatSelection::update(long time)
+{
 	// Determine fade amount (0.0-1.0 over 150ms)
 	fade = 1.0f - ((time - starttime) * 0.004f);
 
@@ -394,7 +434,8 @@ bool MCA3dFlatSelection::update(long time) {
 		return true;
 }
 
-void MCA3dFlatSelection::draw() {
+void MCA3dFlatSelection::draw()
+{
 	if (!sector)
 		return;
 
@@ -402,7 +443,8 @@ void MCA3dFlatSelection::draw() {
 	rgba_t col;
 	if (select)
 		col.set(255, 255, 255, 60*fade, 1);
-	else {
+	else
+	{
 		col = ColourConfiguration::getColour("map_3d_selection");
 		col.a *= fade*0.75*0.5;
 	}
@@ -422,17 +464,20 @@ void MCA3dFlatSelection::draw() {
 }
 
 
-MCAHilightFade::MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init) : MCAnimation(start) {
+MCAHilightFade::MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init) : MCAnimation(start)
+{
 	this->object = object;
 	this->renderer = renderer;
 	this->init_fade = fade_init;
 	this->fade = fade_init;
 }
 
-MCAHilightFade::~MCAHilightFade() {
+MCAHilightFade::~MCAHilightFade()
+{
 }
 
-bool MCAHilightFade::update(long time) {
+bool MCAHilightFade::update(long time)
+{
 	// Determine fade amount (1.0-0.0 over 150ms)
 	fade = init_fade - ((time - starttime) * 0.006f);
 
@@ -443,8 +488,10 @@ bool MCAHilightFade::update(long time) {
 		return true;
 }
 
-void MCAHilightFade::draw() {
-	switch (object->getObjType()) {
+void MCAHilightFade::draw()
+{
+	switch (object->getObjType())
+	{
 	case MOBJ_LINE:
 		renderer->renderLineHilight(object->getIndex(), fade); break;
 	case MOBJ_SECTOR:
@@ -459,7 +506,8 @@ void MCAHilightFade::draw() {
 }
 
 
-MCAHilightFade3D::MCAHilightFade3D(long start, int item_index, uint8_t item_type, MapRenderer3D* renderer, float fade_init) : MCAnimation(start, true) {
+MCAHilightFade3D::MCAHilightFade3D(long start, int item_index, uint8_t item_type, MapRenderer3D* renderer, float fade_init) : MCAnimation(start, true)
+{
 	this->item_index = item_index;
 	this->item_type = item_type;
 	this->renderer = renderer;
@@ -467,10 +515,12 @@ MCAHilightFade3D::MCAHilightFade3D(long start, int item_index, uint8_t item_type
 	this->fade = fade_init;
 }
 
-MCAHilightFade3D::~MCAHilightFade3D() {
+MCAHilightFade3D::~MCAHilightFade3D()
+{
 }
 
-bool MCAHilightFade3D::update(long time) {
+bool MCAHilightFade3D::update(long time)
+{
 	// Determine fade amount (1.0-0.0 over 150ms)
 	fade = init_fade - ((time - starttime) * 0.006f);
 
@@ -481,6 +531,7 @@ bool MCAHilightFade3D::update(long time) {
 		return true;
 }
 
-void MCAHilightFade3D::draw() {
+void MCAHilightFade3D::draw()
+{
 	renderer->renderHilight(selection_3d_t(item_index, item_type), fade);
 }

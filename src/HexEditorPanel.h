@@ -4,7 +4,8 @@
 
 #include <wx/grid.h>
 
-class HexTable : public wxGridTableBase {
+class HexTable : public wxGridTableBase
+{
 private:
 	MemChunk data;
 
@@ -36,7 +37,8 @@ public:
 	double		getDoubleValue(uint32_t offset);
 };
 
-class HexEditorPanel : public wxPanel {
+class HexEditorPanel : public wxPanel
+{
 private:
 	wxGrid*		grid_hex;
 	HexTable*	table_hex;

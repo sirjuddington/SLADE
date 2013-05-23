@@ -6,7 +6,8 @@
 #include "ListenerAnnouncer.h"
 
 class UndoManager;
-class UndoListView : public VirtualListView, public Listener {
+class UndoListView : public VirtualListView, public Listener
+{
 private:
 	UndoManager*	manager;
 
@@ -24,7 +25,8 @@ public:
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 };
 
-class UndoManagerHistoryPanel : public wxPanel {
+class UndoManagerHistoryPanel : public wxPanel
+{
 private:
 	UndoManager*	manager;
 	UndoListView*	list_levels;
@@ -36,7 +38,7 @@ public:
 	void	setManager(UndoManager* manager);
 	void	populateList();
 	void	updateList();
-	
+
 	// Events
 	void	onItemRightClick(wxCommandEvent& e);
 };

@@ -42,7 +42,8 @@
 /* DockPanel::DockPanel
  * DockPanel class constructor
  *******************************************************************/
-DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1) {
+DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1)
+{
 	// Init variables
 	current_layout = 0;
 
@@ -53,32 +54,39 @@ DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1) {
 /* DockPanel::~DockPanel
  * DockPanel class destructor
  *******************************************************************/
-DockPanel::~DockPanel() {
+DockPanel::~DockPanel()
+{
 }
 
 /* DockPanel::onSize
  * Called when the panel is resized
  *******************************************************************/
-void DockPanel::onSize(wxSizeEvent& e) {
+void DockPanel::onSize(wxSizeEvent& e)
+{
 	// Get parent's AUI manager (if it exists)
 	wxAuiManager* mgr = wxAuiManager::GetManager(GetParent());
-	if (!mgr) {
+	if (!mgr)
+	{
 		e.Skip();
 		return;
 	}
 
 	// Check if floating
-	if (mgr->GetPane(this).IsFloating()) {
+	if (mgr->GetPane(this).IsFloating())
+	{
 		if (current_layout != 0) layoutNormal();
 		current_layout = 0;
 	}
-	else {
+	else
+	{
 		// Not floating, layout horizontally or vertically depending on size
-		if (GetSize().x >= GetSize().y) {
+		if (GetSize().x >= GetSize().y)
+		{
 			if (current_layout != 1) layoutHorizontal();
 			current_layout = 1;
 		}
-		else {
+		else
+		{
 			if (current_layout != 2) layoutVertical();
 			current_layout = 2;
 		}

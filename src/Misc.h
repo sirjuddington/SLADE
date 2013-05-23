@@ -6,7 +6,8 @@
 #include "Archive.h"
 #include "ArchiveEntry.h"
 
-enum {
+enum
+{
 	PAL_NOHACK = 0,
 	PAL_ALPHAHACK,
 	PAL_HERETICHACK,
@@ -20,14 +21,15 @@ enum {
 	PAL_SODENDHACK,
 };
 
-namespace Misc {
+namespace Misc
+{
 	bool		loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index = 0);
 	int			detectPaletteHack(ArchiveEntry* entry);
 	bool		loadPaletteFromArchive(Palette8bit* pal, Archive* archive, int lump = PAL_NOHACK);
 	string		sizeAsString(uint32_t size);
 	string		lumpNameToFileName(string lump);
 	string		fileNameToLumpName(string file);
-	uint32_t	crc(const uint8_t *buf, uint32_t len);
+	uint32_t	crc(const uint8_t* buf, uint32_t len);
 	hsl_t		rgbToHsl(double r, double g, double b);
 	rgba_t		hslToRgb(double h, double s, double t);
 	lab_t		rgbToLab(double r, double g, double b);

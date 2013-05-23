@@ -10,7 +10,8 @@
 class SImage;
 
 // Basic patch
-class CTPatch {
+class CTPatch
+{
 protected:
 	string			name;
 	int16_t			offset_x;
@@ -37,7 +38,8 @@ public:
 // Extended patch (for TEXTURES)
 #define	PTYPE_PATCH		0
 #define PTYPE_GRAPHIC	1
-class CTPatchEx : public CTPatch {
+class CTPatchEx : public CTPatch
+{
 private:
 	uint8_t			type;			// 0=patch, 1=graphic
 	bool			flip_x;
@@ -93,8 +95,9 @@ class Palette8bit;
 #define TEXTYPE_FLAT		4
 #define TEXTYPE_HIRES		5
 
-class CTexture : public Announcer {
-friend class TextureXList;
+class CTexture : public Announcer
+{
+	friend class TextureXList;
 private:
 	// Basic info
 	string				name;

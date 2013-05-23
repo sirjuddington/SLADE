@@ -3,7 +3,8 @@
 #define __S_TOP_WINDOW_H__
 
 class SToolBar;
-class STopWindow : public wxFrame {
+class STopWindow : public wxFrame
+{
 protected:
 	vector<wxMenu*>	custom_menus;
 	int				custom_menus_begin;

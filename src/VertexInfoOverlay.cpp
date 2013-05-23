@@ -6,15 +6,18 @@
 #include "MathStuff.h"
 #include "ColourConfiguration.h"
 
-VertexInfoOverlay::VertexInfoOverlay() {
+VertexInfoOverlay::VertexInfoOverlay()
+{
 	// Init variables
 	pos_frac = false;
 }
 
-VertexInfoOverlay::~VertexInfoOverlay() {
+VertexInfoOverlay::~VertexInfoOverlay()
+{
 }
 
-void VertexInfoOverlay::update(MapVertex* vertex) {
+void VertexInfoOverlay::update(MapVertex* vertex)
+{
 	if (!vertex)
 		return;
 
@@ -28,7 +31,8 @@ void VertexInfoOverlay::update(MapVertex* vertex) {
 		info += S_FMT(" (%d)", vertex->getId());
 }
 
-void VertexInfoOverlay::draw(int bottom, int right, float alpha) {
+void VertexInfoOverlay::draw(int bottom, int right, float alpha)
+{
 	// Don't bother if completely faded
 	if (alpha <= 0.0f)
 		return;

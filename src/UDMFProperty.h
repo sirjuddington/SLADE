@@ -5,7 +5,8 @@
 #include "Property.h"
 
 class ParseTreeNode;
-class UDMFProperty {
+class UDMFProperty
+{
 private:
 	string				property;
 	string				name;
@@ -36,7 +37,8 @@ public:
 
 	string	getStringRep();
 
-	enum {
+	enum
+	{
 		TYPE_BOOL = 0,
 		TYPE_INT,
 		TYPE_FLOAT,

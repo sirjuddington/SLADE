@@ -9,7 +9,8 @@
 #include "GfxCanvas.h"
 #include "ListView.h"
 
-class SwitchesEntryPanel : public EntryPanel, public SActionHandler {
+class SwitchesEntryPanel : public EntryPanel, public SActionHandler
+{
 private:
 	SwitchesList	switches;
 	SwitchesEntry*	se_current;
@@ -55,6 +56,7 @@ public:
 	void	onTypeChanged(wxCommandEvent& e);
 	void	onOffNameChanged(wxCommandEvent& e);
 	void	onOnNameChanged(wxCommandEvent& e);
-	void	onBtnNew(wxCommandEvent& e);};
+	void	onBtnNew(wxCommandEvent& e);
+};
 
 #endif//SWITCHESENTRYPANEL_H

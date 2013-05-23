@@ -4,7 +4,8 @@
 
 #include <wx/listctrl.h>
 
-enum {
+enum
+{
 	LV_STATUS_NORMAL,
 	LV_STATUS_MODIFIED,
 	LV_STATUS_NEW,
@@ -13,7 +14,8 @@ enum {
 	LV_STATUS_DISABLED,
 };
 
-class ListView : public wxListCtrl {
+class ListView : public wxListCtrl
+{
 private:
 	bool		icons;
 	bool		update_width;

@@ -4,7 +4,8 @@
 
 class Announcer;
 
-class Listener {
+class Listener
+{
 private:
 	vector<Announcer*>	announcers;
 	bool				deaf;
@@ -22,7 +23,8 @@ public:
 	void	setDeaf(bool d) { deaf = d; }
 };
 
-class Announcer {
+class Announcer
+{
 private:
 	vector<Listener*>	listeners;
 	bool				muted;

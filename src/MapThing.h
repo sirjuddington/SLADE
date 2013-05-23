@@ -37,8 +37,9 @@ struct doom64thing_t
 	short	tid;
 };
 
-class MapThing : public MapObject {
-friend class SLADEMap;
+class MapThing : public MapObject
+{
+	friend class SLADEMap;
 private:
 	// Basic data
 	short		type;

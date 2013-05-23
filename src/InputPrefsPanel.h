@@ -6,7 +6,8 @@
 #include "KeyBind.h"
 #include <wx/treelist.h>
 
-class InputKeyCtrl : public wxTextCtrl {
+class InputKeyCtrl : public wxTextCtrl
+{
 private:
 	keypress_t key;
 
@@ -21,7 +22,8 @@ public:
 	void	onEnter(wxCommandEvent& e);
 };
 
-class InputPrefsPanel : public PrefsPanelBase {
+class InputPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxTreeListCtrl*	list_binds;
 	wxButton*		btn_add;

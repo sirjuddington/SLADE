@@ -16,7 +16,8 @@ struct wad2entry_t
 	char name[16];               // 1 to 16 characters, '\0'-padded
 };
 
-class Wad2Archive : public TreelessArchive {
+class Wad2Archive : public TreelessArchive
+{
 private:
 	bool	wad3;
 

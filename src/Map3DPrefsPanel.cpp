@@ -16,14 +16,15 @@ EXTERN_CVAR(Bool, render_3d_sky)
 //CVAR(Int, render_3d_things, 1, CVAR_SAVE)
 //CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 
-Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Map Editor 3D Mode Preferences");
-	wxStaticBoxSizer *fsizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Map Editor 3D Mode Preferences");
+	wxStaticBoxSizer* fsizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(fsizer, 1, wxEXPAND|wxALL, 4);
 
 	wxGridBagSizer* gbsizer = new wxGridBagSizer(4, 4);
@@ -74,22 +75,27 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
 	cb_distance_unlimited->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &Map3DPrefsPanel::onCBDistUnlimitedChanged, this);
 }
 
-Map3DPrefsPanel::~Map3DPrefsPanel() {
+Map3DPrefsPanel::~Map3DPrefsPanel()
+{
 }
 
-void Map3DPrefsPanel::init() {
-	if (render_max_dist < 0) {
+void Map3DPrefsPanel::init()
+{
+	if (render_max_dist < 0)
+	{
 		cb_distance_unlimited->SetValue(true);
 		slider_max_render_dist->SetValue(6);
 	}
-	else {
+	else
+	{
 		slider_max_render_dist->SetValue(render_max_dist / 500);
 		cb_distance_unlimited->SetValue(false);
 	}
 
 	if (render_max_thing_dist < 0)
 		cb_max_thing_dist_lock->SetValue(true);
-	else {
+	else
+	{
 		slider_max_thing_dist->SetValue(render_max_thing_dist / 500);
 		cb_max_thing_dist_lock->SetValue(false);
 	}
@@ -102,30 +108,36 @@ void Map3DPrefsPanel::init() {
 	updateDistanceControls();
 }
 
-void Map3DPrefsPanel::updateDistanceControls() {
+void Map3DPrefsPanel::updateDistanceControls()
+{
 	// Render distance
-	if (cb_distance_unlimited->GetValue()) {
+	if (cb_distance_unlimited->GetValue())
+	{
 		label_render_dist->SetLabel("");
 		slider_max_render_dist->Enable(false);
 	}
-	else {
+	else
+	{
 		label_render_dist->SetLabel(S_FMT("%d", slider_max_render_dist->GetValue() * 500));
 		slider_max_render_dist->Enable();
 	}
 
 	// Thing distance
-	if (cb_max_thing_dist_lock->GetValue()) {
+	if (cb_max_thing_dist_lock->GetValue())
+	{
 		label_thing_dist->SetLabel("");
 		slider_max_thing_dist->Enable(false);
 		slider_max_thing_dist->SetValue(slider_max_render_dist->GetValue());
 	}
-	else {
+	else
+	{
 		label_thing_dist->SetLabel(S_FMT("%d", slider_max_thing_dist->GetValue() * 500));
 		slider_max_thing_dist->Enable();
 	}
 }
 
-void Map3DPrefsPanel::applyPreferences() {
+void Map3DPrefsPanel::applyPreferences()
+{
 	// Max render distance
 	if (cb_distance_unlimited->GetValue())
 		render_max_dist = -1.0f;
@@ -146,21 +158,25 @@ void Map3DPrefsPanel::applyPreferences() {
 	render_3d_sky = cb_render_sky->GetValue();
 }
 
-void Map3DPrefsPanel::onSliderMaxRenderDistChanged(wxCommandEvent& e) {
+void Map3DPrefsPanel::onSliderMaxRenderDistChanged(wxCommandEvent& e)
+{
 	if (cb_max_thing_dist_lock->GetValue())
 		slider_max_thing_dist->SetValue(slider_max_render_dist->GetValue());
 
 	updateDistanceControls();
 }
 
-void Map3DPrefsPanel::onSliderMaxThingDistChanged(wxCommandEvent& e) {
+void Map3DPrefsPanel::onSliderMaxThingDistChanged(wxCommandEvent& e)
+{
 	updateDistanceControls();
 }
 
-void Map3DPrefsPanel::onCBDistUnlimitedChanged(wxCommandEvent& e) {
+void Map3DPrefsPanel::onCBDistUnlimitedChanged(wxCommandEvent& e)
+{
 	updateDistanceControls();
 }
 
-void Map3DPrefsPanel::onCBLockThingDistChanged(wxCommandEvent& e) {
+void Map3DPrefsPanel::onCBLockThingDistChanged(wxCommandEvent& e)
+{
 	updateDistanceControls();
 }

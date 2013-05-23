@@ -23,9 +23,11 @@ public:
 	void		setOff(string o)	{ off = o; }
 	void		setOn(string o)		{ on = o; }
 	void		setType(uint16_t t)	{ type = t; }
-	void		setStatus(int s)	{ status = s; }};
+	void		setStatus(int s)	{ status = s; }
+};
 
-class SwitchesList {
+class SwitchesList
+{
 private:
 	vector<SwitchesEntry*>		entries;
 

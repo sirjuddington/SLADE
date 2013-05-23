@@ -5,20 +5,23 @@
 #include "Archive.h"
 
 // Struct to hold namespace info
-struct wad_ns_pair_t {
+struct wad_ns_pair_t
+{
 	ArchiveEntry*	start;	// eg. P_START
 	int				start_index;
 	ArchiveEntry*	end;	// eg. P_END
 	int				end_index;
 	string			name;	// eg. "P" (since P or PP is a special case will be set to "patches")
 
-	wad_ns_pair_t(ArchiveEntry* start, ArchiveEntry* end) {
+	wad_ns_pair_t(ArchiveEntry* start, ArchiveEntry* end)
+	{
 		this->start = start;
 		this->end = end;
 	}
 };
 
-class WadArchive : public TreelessArchive {
+class WadArchive : public TreelessArchive
+{
 private:
 	bool					iwad;
 	vector<wad_ns_pair_t>	namespaces;
@@ -74,11 +77,13 @@ public:
 	static bool isWadArchive(MemChunk& mc);
 	static bool isWadArchive(string filename);
 
-	static bool exportEntriesAsWad(string filename, vector<ArchiveEntry*> entries) {
+	static bool exportEntriesAsWad(string filename, vector<ArchiveEntry*> entries)
+	{
 		WadArchive wad;
 
 		// Add entries to wad archive
-		for (size_t a = 0; a < entries.size(); a++) {
+		for (size_t a = 0; a < entries.size(); a++)
+		{
 			// Add each entry to the wad archive
 			wad.addEntry(entries[a], entries.size(), NULL, true);
 		}
@@ -89,7 +94,8 @@ public:
 	friend class WadJArchive;
 };
 
-enum MapLumpNames {
+enum MapLumpNames
+{
 	LUMP_THINGS,
 	LUMP_VERTEXES,
 	LUMP_LINEDEFS,

@@ -55,16 +55,19 @@ CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
  *******************************************************************/
 VirtualListView::VirtualListView(wxWindow* parent)
 #ifdef __WXMSW__
-: wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_VIRTUAL|wxLC_EDIT_LABELS) {
+	: wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_VIRTUAL|wxLC_EDIT_LABELS)
+{
 #else
-: wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_VIRTUAL) {
+	: wxListCtrl(parent, -1, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_VIRTUAL)
+{
 #endif
 	item_attr = new wxListItemAttr();
 	last_focus = 0;
 	col_search = 0;
 	memset(cols_editable, 0, 100);
 
-	if (list_font_monospace) {
+	if (list_font_monospace)
+	{
 		wxFont lfont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
 		lfont.SetFamily(wxFONTFAMILY_MODERN);
 		item_attr->SetFont(lfont);
@@ -84,14 +87,16 @@ VirtualListView::VirtualListView(wxWindow* parent)
 /* VirtualListView::~VirtualListView
  * VirtualListView class destructor
  *******************************************************************/
-VirtualListView::~VirtualListView() {
+VirtualListView::~VirtualListView()
+{
 	delete item_attr;
 }
 
 /* VirtualListView::sendSelectionChangedEvent
  * Creates and sends an EVT_VLV_SELECTION_CHANGED wxwidgets event
  *******************************************************************/
-void VirtualListView::sendSelectionChangedEvent() {
+void VirtualListView::sendSelectionChangedEvent()
+{
 	wxCommandEvent evt(EVT_VLV_SELECTION_CHANGED, GetId());
 	ProcessWindowEvent(evt);
 }
@@ -100,7 +105,8 @@ void VirtualListView::sendSelectionChangedEvent() {
  * Updates the list's minimum requested width to allow the
  * widget to be shown with no horizontal scrollbar
  *******************************************************************/
-void VirtualListView::updateWidth() {
+void VirtualListView::updateWidth()
+{
 	// Get total column width
 	int width = 8;
 	for (int a = 0; a < GetColumnCount(); a++)
@@ -116,7 +122,8 @@ void VirtualListView::updateWidth() {
 /* VirtualListView::selectItem
  * Selects (or deselects) [item], depending on [select]
  *******************************************************************/
-void VirtualListView::selectItem(long item, bool select) {
+void VirtualListView::selectItem(long item, bool select)
+{
 	// Check item id is in range
 	if (item >= GetItemCount())
 		return;
@@ -132,9 +139,11 @@ void VirtualListView::selectItem(long item, bool select) {
  * Selects/deselects all items within the range [start]->[end],
  * depending on [select]
  *******************************************************************/
-void VirtualListView::selectItems(long start, long end, bool select) {
+void VirtualListView::selectItems(long start, long end, bool select)
+{
 	// Check/correct indices
-	if (start > end) {
+	if (start > end)
+	{
 		long temp = start;
 		start = end;
 		end = temp;
@@ -143,7 +152,8 @@ void VirtualListView::selectItems(long start, long end, bool select) {
 	if (end >= GetItemCount()) end = GetItemCount() - 1;
 
 	// Go through range
-	for (long a = start; a <= end; a++) {
+	for (long a = start; a <= end; a++)
+	{
 		// Select/deselect the item
 		if (select)
 			SetItemState(a, 0xFFFF, wxLIST_STATE_SELECTED);
@@ -155,7 +165,8 @@ void VirtualListView::selectItems(long start, long end, bool select) {
 /* VirtualListView::selectAll
  * Selects all list items
  *******************************************************************/
-void VirtualListView::selectAll() {
+void VirtualListView::selectAll()
+{
 	for (int a = 0; a < GetItemCount(); a++)
 		SetItemState(a, 0xFFFF, wxLIST_STATE_SELECTED);
 
@@ -165,7 +176,8 @@ void VirtualListView::selectAll() {
 /* VirtualListView::clearSelection
  * Deselects all list items
  *******************************************************************/
-void VirtualListView::clearSelection() {
+void VirtualListView::clearSelection()
+{
 	for (int a = 0; a < GetItemCount(); a++)
 		SetItemState(a, 0x0000, wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
 }
@@ -173,13 +185,15 @@ void VirtualListView::clearSelection() {
 /* VirtualListView::getSelection
  * Returns a list of all selected item indices
  *******************************************************************/
-vector<long> VirtualListView::getSelection() {
+vector<long> VirtualListView::getSelection()
+{
 	// Init return array
 	vector<long> ret;
 
 	// Go through all items
 	long item = -1;
-	while (true) {
+	while (true)
+	{
 		// Get the next item in the list that is selected
 		item = GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 
@@ -197,17 +211,20 @@ vector<long> VirtualListView::getSelection() {
 /* VirtualListView::getFirstSelected
  * Returns the first selected item index
  *******************************************************************/
-long VirtualListView::getFirstSelected() {
+long VirtualListView::getFirstSelected()
+{
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
 
 /* VirtualListView::getLastSelected
  * Returns the last selected item index
  *******************************************************************/
-long VirtualListView::getLastSelected() {
+long VirtualListView::getLastSelected()
+{
 	// Go through all items
 	long item = -1;
-	while (true) {
+	while (true)
+	{
 		// Get the next item in the list that is selected
 		long index = GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 
@@ -225,13 +242,15 @@ long VirtualListView::getLastSelected() {
 /* VirtualListView::focusItem
  * Sets the focus of [item]
  *******************************************************************/
-void VirtualListView::focusItem(long item, bool focus) {
+void VirtualListView::focusItem(long item, bool focus)
+{
 	// Check item id is in range
 	if (item >= GetItemCount())
 		return;
 
 	// Select/deselect the item
-	if (focus) {
+	if (focus)
+	{
 		SetItemState(item, 0xFFFF, wxLIST_STATE_FOCUSED);
 		last_focus = item;
 	}
@@ -242,7 +261,8 @@ void VirtualListView::focusItem(long item, bool focus) {
 /* VirtualListView::getFocus
  * Returns the index of the currently focused item
  *******************************************************************/
-long VirtualListView::getFocus() {
+long VirtualListView::getFocus()
+{
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 }
 
@@ -251,7 +271,8 @@ long VirtualListView::getFocus() {
 /* VirtualListView::onColumnResize
  * Called when a column is resized
  *******************************************************************/
-void VirtualListView::onColumnResize(wxListEvent& e) {
+void VirtualListView::onColumnResize(wxListEvent& e)
+{
 	// Update width etc
 	updateWidth();
 	if (GetParent())
@@ -261,10 +282,12 @@ void VirtualListView::onColumnResize(wxListEvent& e) {
 /* VirtualListView::onMouseLeftDown
  * Called when the list is left clicked
  *******************************************************************/
-void VirtualListView::onMouseLeftDown(wxMouseEvent& e) {
+void VirtualListView::onMouseLeftDown(wxMouseEvent& e)
+{
 #ifndef __WXMSW__
 	// Default handler for double-click
-	if (e.ButtonDClick()) {
+	if (e.ButtonDClick())
+	{
 		e.Skip();
 		return;
 	}
@@ -272,8 +295,10 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e) {
 	// Get item at click position
 	int flags = 0;
 	long item = this->HitTest(wxPoint(e.GetX(), e.GetY()), flags);
-	if (flags & wxLIST_HITTEST_ONITEM) {
-		if (e.GetModifiers() == wxMOD_SHIFT) {
+	if (flags & wxLIST_HITTEST_ONITEM)
+	{
+		if (e.GetModifiers() == wxMOD_SHIFT)
+		{
 			// Shift+left click: Add all items between the focused item and the item that was clicked to the selection
 			long focus = getFocus();
 			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
@@ -281,14 +306,16 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e) {
 			focusItem(item);
 			sendSelectionChangedEvent();
 		}
-		else if (e.GetModifiers() == wxMOD_CMD) {
+		else if (e.GetModifiers() == wxMOD_CMD)
+		{
 			// Ctrl+left click: Toggle the selection status of the clicked item
 			bool selected = !!(GetItemState(item, wxLIST_STATE_SELECTED) & wxLIST_STATE_SELECTED);
 			selectItem(item, !selected);
 			focusItem(item, !selected);
 			sendSelectionChangedEvent();
 		}
-		else if (e.GetModifiers() == wxMOD_NONE)  {
+		else if (e.GetModifiers() == wxMOD_NONE)
+		{
 			// Just a left click, select+focus the item
 			clearSelection();
 			selectItem(item);
@@ -308,12 +335,16 @@ void VirtualListView::onMouseLeftDown(wxMouseEvent& e) {
 /* VirtualListView::onKeyDown
  * Called when a key is pressed within the list
  *******************************************************************/
-void VirtualListView::onKeyDown(wxKeyEvent& e) {
-	if (e.GetKeyCode() == WXK_UP) {
-		if (e.GetModifiers() == wxMOD_SHIFT) {
+void VirtualListView::onKeyDown(wxKeyEvent& e)
+{
+	if (e.GetKeyCode() == WXK_UP)
+	{
+		if (e.GetModifiers() == wxMOD_SHIFT)
+		{
 			long focus = getFocus();
 			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
-			if (focus > 0) {
+			if (focus > 0)
+			{
 				focusItem(focus, false);
 				selectItem(focus-1);
 				focusItem(focus-1);
@@ -321,10 +352,12 @@ void VirtualListView::onKeyDown(wxKeyEvent& e) {
 				sendSelectionChangedEvent();
 			}
 		}
-		else if (e.GetModifiers() == wxMOD_NONE) {
+		else if (e.GetModifiers() == wxMOD_NONE)
+		{
 			long focus = getFocus();
 			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
-			if (focus > 0) {
+			if (focus > 0)
+			{
 				clearSelection();
 				focusItem(focus, false);
 				selectItem(focus-1);
@@ -335,11 +368,14 @@ void VirtualListView::onKeyDown(wxKeyEvent& e) {
 		}
 		search = "";
 	}
-	else if (e.GetKeyCode() == WXK_DOWN) {
-		if (e.GetModifiers() == wxMOD_SHIFT) {
+	else if (e.GetKeyCode() == WXK_DOWN)
+	{
+		if (e.GetModifiers() == wxMOD_SHIFT)
+		{
 			long focus = getFocus();
 			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
-			if (focus < GetItemCount() - 1) {
+			if (focus < GetItemCount() - 1)
+			{
 				focusItem(focus, false);
 				selectItem(focus+1);
 				focusItem(focus+1);
@@ -347,10 +383,12 @@ void VirtualListView::onKeyDown(wxKeyEvent& e) {
 				sendSelectionChangedEvent();
 			}
 		}
-		else if (e.GetModifiers() == wxMOD_NONE) {
+		else if (e.GetModifiers() == wxMOD_NONE)
+		{
 			long focus = getFocus();
 			if (focus < 0) focus = last_focus;		// If no current focus, go with last focused item
-			if (focus < GetItemCount() - 1) {
+			if (focus < GetItemCount() - 1)
+			{
 				clearSelection();
 				focusItem(focus, false);
 				selectItem(focus+1);
@@ -365,7 +403,8 @@ void VirtualListView::onKeyDown(wxKeyEvent& e) {
 		e.Skip();
 }
 
-int vlv_chars[] = {
+int vlv_chars[] =
+{
 	'.', ',', '_', '-', '+', '=', '`', '~',
 	'!', '@', '#', '$', '(', ')', '[', ']',
 	'{', '}', ':', ';', '/', '\\', '<', '>',
@@ -377,8 +416,10 @@ int n_vlv_chars = 30;
 /* VirtualListView::focusOnIndex
  * Selects an entry by its given index and makes sure it is visible
  *******************************************************************/
-void VirtualListView::focusOnIndex(long index) {
-	if (index < GetItemCount()) {
+void VirtualListView::focusOnIndex(long index)
+{
+	if (index < GetItemCount())
+	{
 		clearSelection();
 		selectItem(index);
 		focusItem(index);
@@ -391,13 +432,16 @@ void VirtualListView::focusOnIndex(long index) {
  * Used by VirtualListView::onKeyChar, returns true if an entry
  * matching search is found, false otherwise
  *******************************************************************/
-bool VirtualListView::lookForSearchEntryFrom(long focus) {
+bool VirtualListView::lookForSearchEntryFrom(long focus)
+{
 	long index = focus;
 	bool looped = false;
 	bool gotmatch = false;
-	while ((!looped && index < GetItemCount()) || (looped && index < focus)) {
+	while ((!looped && index < GetItemCount()) || (looped && index < focus))
+	{
 		string name = getItemText(index, col_search);
-		if (name.Upper().StartsWith(search)) {
+		if (name.Upper().StartsWith(search))
+		{
 			// Matches, update selection+focus
 			focusOnIndex(index);
 			return true;
@@ -405,7 +449,8 @@ bool VirtualListView::lookForSearchEntryFrom(long focus) {
 
 		// No match, next item; look in the above entries
 		// if no matches were found below.
-		if (++index == GetItemCount() && !looped) {
+		if (++index == GetItemCount() && !looped)
+		{
 			looped = true;
 			index = 0;
 		}
@@ -417,7 +462,8 @@ bool VirtualListView::lookForSearchEntryFrom(long focus) {
 /* VirtualListView::onKeyChar
  * Called when a 'character' key is pressed within the list
  *******************************************************************/
-void VirtualListView::onKeyChar(wxKeyEvent& e) {
+void VirtualListView::onKeyChar(wxKeyEvent& e)
+{
 	// Check the key pressed is actually a character (a-z, 0-9 etc)
 	bool isRealChar = false;
 	if (e.GetKeyCode() >= 'a' && e.GetKeyCode() <= 'z')			// Lowercase
@@ -426,16 +472,20 @@ void VirtualListView::onKeyChar(wxKeyEvent& e) {
 		isRealChar = true;
 	else if (e.GetKeyCode() >= '0' && e.GetKeyCode() <= '9')	// Number
 		isRealChar = true;
-	else {
-		for (int a = 0; a < n_vlv_chars; a++) {
-			if (e.GetKeyCode() == vlv_chars[a]) {
+	else
+	{
+		for (int a = 0; a < n_vlv_chars; a++)
+		{
+			if (e.GetKeyCode() == vlv_chars[a])
+			{
 				isRealChar = true;
 				break;
 			}
 		}
 	}
 
-	if (isRealChar) {
+	if (isRealChar)
+	{
 		// Get currently focused item (or first if nothing is focused)
 		long focus = getFocus();
 		if (focus < 0) focus = 0;
@@ -446,20 +496,22 @@ void VirtualListView::onKeyChar(wxKeyEvent& e) {
 
 		// Search for match from the current focus, and if failed
 		// start a new search from after the current focus.
-		if (!lookForSearchEntryFrom(focus)) {
+		if (!lookForSearchEntryFrom(focus))
+		{
 			search = S_FMT("%c", e.GetKeyCode());
 			search.MakeUpper();
 			lookForSearchEntryFrom(focus+1);
 		}
 	}
-	else {
+	else
+	{
 		search = "";
 
 		// Only want to do default action on navigation key
 		if (e.GetKeyCode() == WXK_UP || e.GetKeyCode() == WXK_DOWN ||
-			e.GetKeyCode() == WXK_PAGEUP || e.GetKeyCode() == WXK_PAGEDOWN ||
-			e.GetKeyCode() == WXK_HOME || e.GetKeyCode() == WXK_END ||
-			e.GetKeyCode() == WXK_TAB)
+		        e.GetKeyCode() == WXK_PAGEUP || e.GetKeyCode() == WXK_PAGEDOWN ||
+		        e.GetKeyCode() == WXK_HOME || e.GetKeyCode() == WXK_END ||
+		        e.GetKeyCode() == WXK_TAB)
 			e.Skip();
 	}
 }
@@ -467,7 +519,8 @@ void VirtualListView::onKeyChar(wxKeyEvent& e) {
 /* VirtualListView::onLabelEditBegin
  * Called when an item label is clicked twice to edit it
  *******************************************************************/
-void VirtualListView::onLabelEditBegin(wxListEvent& e) {
+void VirtualListView::onLabelEditBegin(wxListEvent& e)
+{
 	/*
 	apparently it's only possible to label edit on the first column
 	(e.GetColumn here returns -1)
@@ -488,7 +541,8 @@ void VirtualListView::onLabelEditBegin(wxListEvent& e) {
 /* VirtualListView::onLabelEditEnd
  * Called when an item label edit event finishes
  *******************************************************************/
-void VirtualListView::onLabelEditEnd(wxListEvent& e) {
+void VirtualListView::onLabelEditEnd(wxListEvent& e)
+{
 	if (!e.IsEditCancelled())
 		labelEdited(e.GetColumn(), e.GetIndex(), e.GetLabel());
 }

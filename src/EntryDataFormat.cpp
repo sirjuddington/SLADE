@@ -51,7 +51,8 @@ EntryDataFormat*	edf_text = NULL;
 /* EntryDataFormat::EntryDataFormat
  * EntryDataFormat class constructor
  *******************************************************************/
-EntryDataFormat::EntryDataFormat(string id) {
+EntryDataFormat::EntryDataFormat(string id)
+{
 	// Init variables
 	size_min = 0;
 	this->id = id;
@@ -63,21 +64,24 @@ EntryDataFormat::EntryDataFormat(string id) {
 /* EntryDataFormat::~EntryDataFormat
  * EntryDataFormat class destructor
  *******************************************************************/
-EntryDataFormat::~EntryDataFormat() {
+EntryDataFormat::~EntryDataFormat()
+{
 }
 
 /* EntryDataFormat::isThisFormat
  * To be overridden by specific data types, returns true if the data
  * in [mc] matches the data format
  *******************************************************************/
-int EntryDataFormat::isThisFormat(MemChunk& mc) {
+int EntryDataFormat::isThisFormat(MemChunk& mc)
+{
 	return EDF_TRUE;
 }
 
 /* EntryDataFormat::copyToFormat
  * Copies data format properties to [target]
  *******************************************************************/
-void EntryDataFormat::copyToFormat(EntryDataFormat& target) {
+void EntryDataFormat::copyToFormat(EntryDataFormat& target)
+{
 	target.patterns = patterns;
 	target.size_min = size_min;
 }
@@ -91,7 +95,8 @@ void EntryDataFormat::copyToFormat(EntryDataFormat& target) {
  * Returns the entry data format matching [id], or the 'any' type
  * if no match found
  *******************************************************************/
-EntryDataFormat* EntryDataFormat::getFormat(string id) {
+EntryDataFormat* EntryDataFormat::getFormat(string id)
+{
 	EDFMap::iterator i = data_formats.find(id);
 	if (i == data_formats.end())
 		return edf_any;
@@ -102,21 +107,24 @@ EntryDataFormat* EntryDataFormat::getFormat(string id) {
 /* EntryDataFormat::anyFormat
  * Returns the 'any' data format
  *******************************************************************/
-EntryDataFormat* EntryDataFormat::anyFormat() {
+EntryDataFormat* EntryDataFormat::anyFormat()
+{
 	return edf_any;
 }
 
 /* EntryDataFormat::textFormat
  * Returns the 'text' data format
  *******************************************************************/
-EntryDataFormat* EntryDataFormat::textFormat() {
+EntryDataFormat* EntryDataFormat::textFormat()
+{
 	return edf_text;
 }
 
 /* EntryDataFormat::readDataFormatDefinition
  * Parses a user data format definition (unimplemented, currently)
  *******************************************************************/
-bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc) {
+bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
+{
 	// Parse the definition
 	Parser p;
 	p.parseText(mc);
@@ -129,7 +137,8 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc) {
 		return false;
 
 	// Go through all parsed types
-	for (unsigned a = 0; a < pt_formats->nChildren(); a++) {
+	for (unsigned a = 0; a < pt_formats->nChildren(); a++)
+	{
 		// Get child as ParseTreeNode
 		ParseTreeNode* formatnode = (ParseTreeNode*)pt_formats->getChild(a);
 
@@ -137,7 +146,8 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc) {
 		EntryDataFormat* edf = new EntryDataFormat(formatnode->getName().Lower());
 
 		// Copy from existing type if inherited
-		if (!formatnode->getInherit().IsEmpty()) {
+		if (!formatnode->getInherit().IsEmpty())
+		{
 			/*
 			EntryType* parent_type = EntryType::getType(formatnode->getInherit());
 
@@ -153,7 +163,8 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc) {
 
 // Special format that always returns false on detection
 // Used when a format is requested that doesn't exist
-class AnyDataFormat : public EntryDataFormat {
+class AnyDataFormat : public EntryDataFormat
+{
 public:
 	AnyDataFormat() : EntryDataFormat("any") {}
 	~AnyDataFormat() {}
@@ -173,7 +184,8 @@ public:
  * Initialises all built-in data formats (this is currently all
  * formats, as externally defined formats are not implemented yet)
  *******************************************************************/
-void EntryDataFormat::initBuiltinFormats() {
+void EntryDataFormat::initBuiltinFormats()
+{
 	// Create the 'any' format
 	edf_any = new AnyDataFormat();
 

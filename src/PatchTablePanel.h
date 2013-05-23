@@ -8,7 +8,8 @@
 
 class TextureXEditor;
 
-class PatchTableListView : public VirtualListView, Listener {
+class PatchTableListView : public VirtualListView, Listener
+{
 private:
 	PatchTable*		patch_table;
 
@@ -24,7 +25,8 @@ public:
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 };
 
-class PatchTablePanel : public wxPanel, public Listener {
+class PatchTablePanel : public wxPanel, public Listener
+{
 private:
 	PatchTable*			patch_table;
 	PatchTableListView*	list_patches;

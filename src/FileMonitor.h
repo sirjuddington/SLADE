@@ -5,7 +5,8 @@
 #include <wx/timer.h>
 #include <wx/process.h>
 
-class FileMonitor : public wxTimer {
+class FileMonitor : public wxTimer
+{
 private:
 	wxProcess*	process;
 
@@ -28,7 +29,8 @@ public:
 };
 
 class Archive;
-class DB2MapFileMonitor : public FileMonitor {
+class DB2MapFileMonitor : public FileMonitor
+{
 private:
 	Archive*	archive;
 	string		map_name;

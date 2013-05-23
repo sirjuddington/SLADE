@@ -4,8 +4,10 @@
 
 #include <wx/file.h>
 
-namespace NodeBuilders {
-	struct builder_t {
+namespace NodeBuilders
+{
+	struct builder_t
+	{
 		string			id;
 		string			name;
 		string			path;

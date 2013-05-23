@@ -7,34 +7,38 @@
 
 class GLTexture;
 class Polygon2D;
-class MapRenderer3D : public Listener {
+class MapRenderer3D : public Listener
+{
 public:
 	// Structs
-	enum {
-		// Common flags
-		TRANS	= 2,
+	enum
+	{
+	    // Common flags
+	    TRANS	= 2,
 
-		// Quad/flat flags
-		SKY		= 4,
+	    // Quad/flat flags
+	    SKY		= 4,
 
-		// Quad flags
-		BACK	= 8,
-		UPPER	= 16,
-		LOWER	= 32,
-		MIDTEX	= 64,
+	    // Quad flags
+	    BACK	= 8,
+	    UPPER	= 16,
+	    LOWER	= 32,
+	    MIDTEX	= 64,
 
-		// Flat flags
-		CEIL	= 8,
+	    // Flat flags
+	    CEIL	= 8,
 
-		// Thing flags
-		ICON	= 4,
-		DRAWN	= 8,
+	    // Thing flags
+	    ICON	= 4,
+	    DRAWN	= 8,
 	};
-	struct gl_vertex_t {
+	struct gl_vertex_t
+	{
 		float x, y, z;
 		float tx, ty;
 	};
-	struct quad_3d_t {
+	struct quad_3d_t
+	{
 		gl_vertex_t	points[4];
 		rgba_t		colour;
 		uint8_t		light;
@@ -42,20 +46,23 @@ public:
 		uint8_t		flags;
 		float		alpha;
 
-		quad_3d_t() {
+		quad_3d_t()
+		{
 			colour.set(255, 255, 255, 255, 0);
 			texture = NULL;
 			flags = 0;
 		}
 	};
-	struct line_3d_t {
+	struct line_3d_t
+	{
 		vector<quad_3d_t>	quads;
 		long				updated_time;
 		bool				visible;
 
 		line_3d_t() { updated_time = 0; visible = true; }
 	};
-	struct thing_3d_t {
+	struct thing_3d_t
+	{
 		uint8_t		flags;
 		ThingType*	type;
 		MapSector*	sector;
@@ -64,7 +71,8 @@ public:
 		GLTexture*	sprite;
 		long		updated_time;
 
-		thing_3d_t() {
+		thing_3d_t()
+		{
 			flags = 0;
 			type = NULL;
 			sector = NULL;
@@ -73,7 +81,8 @@ public:
 			updated_time = 0;
 		}
 	};
-	struct flat_3d_t {
+	struct flat_3d_t
+	{
 		uint8_t		flags;
 		uint8_t		light;
 		rgba_t		colour;
@@ -83,7 +92,8 @@ public:
 		MapSector*	sector;
 		long		updated_time;
 
-		flat_3d_t() {
+		flat_3d_t()
+		{
 			light = 255;
 			texture = NULL;
 			updated_time = 0;
@@ -208,7 +218,8 @@ private:
 	GLuint	vbo_walls;
 
 	// Sky
-	struct gl_vertex_ex_t {
+	struct gl_vertex_ex_t
+	{
 		float x, y, z;
 		float tx, ty;
 		float alpha;

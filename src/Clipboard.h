@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-enum ClipboardType {
+enum ClipboardType
+{
 	CLIPBOARD_ENTRY_TREE,
 	CLIPBOARD_COMPOSITE_TEXTURE,
 	CLIPBOARD_PATCH,
@@ -14,7 +15,8 @@ enum ClipboardType {
 	CLIPBOARD_UNKNOWN,
 };
 
-class ClipboardItem {
+class ClipboardItem
+{
 private:
 	int			type;
 
@@ -25,7 +27,8 @@ public:
 	int	getType() { return type; }
 };
 
-class EntryTreeClipboardItem : public ClipboardItem {
+class EntryTreeClipboardItem : public ClipboardItem
+{
 private:
 	ArchiveTreeNode*	tree;
 
@@ -37,7 +40,8 @@ public:
 };
 
 class CTexture;
-class TextureClipboardItem : public ClipboardItem {
+class TextureClipboardItem : public ClipboardItem
+{
 private:
 	CTexture*				texture;
 	vector<ArchiveEntry*>	patch_entries;
@@ -55,7 +59,8 @@ class MapSide;
 class MapLine;
 class MapSector;
 class SLADEMap;
-class MapArchClipboardItem : public ClipboardItem {
+class MapArchClipboardItem : public ClipboardItem
+{
 private:
 	vector<MapVertex*>	vertices;
 	vector<MapSide*>	sides;
@@ -73,7 +78,8 @@ public:
 };
 
 class MapThing;
-class MapThingsClipboardItem : public ClipboardItem {
+class MapThingsClipboardItem : public ClipboardItem
+{
 private:
 	vector<MapThing*>	things;
 
@@ -87,7 +93,8 @@ public:
 	void	getThings(vector<MapThing*>& list);
 };
 
-class Clipboard {
+class Clipboard
+{
 private:
 	vector<ClipboardItem*>	items;
 	static Clipboard*		instance;
@@ -97,7 +104,8 @@ public:
 	~Clipboard();
 
 	// Singleton implementation
-	static Clipboard*	getInstance() {
+	static Clipboard*	getInstance()
+	{
 		if (!instance)
 			instance = new Clipboard();
 

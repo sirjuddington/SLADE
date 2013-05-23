@@ -8,7 +8,8 @@
 #include <wx/imaglist.h>
 
 class BaseResourceChooser;
-class MapEditorConfigDialog : public wxDialog {
+class MapEditorConfigDialog : public wxDialog
+{
 private:
 	wxChoice*					choice_game_config;
 	wxChoice*					choice_port_config;

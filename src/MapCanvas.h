@@ -21,7 +21,8 @@ class ThingType;
 class GLTexture;
 class MapRenderer2D;
 class MapThing;
-class MapCanvas : public OGLCanvas, public KeyBindHandler, public SActionHandler {
+class MapCanvas : public OGLCanvas, public KeyBindHandler, public SActionHandler
+{
 private:
 	MapEditor*				editor;
 	vector<MCAnimation*>	animations;
@@ -35,7 +36,8 @@ private:
 	int						mode_last;
 
 	// Mouse stuff
-	enum {
+	enum
+	{
 		MSTATE_NORMAL = 0,
 		MSTATE_SELECTION,
 		MSTATE_PANNING,
@@ -97,7 +99,7 @@ private:
 	float	fade_lines;
 
 public:
-	MapCanvas(wxWindow *parent, int id, MapEditor* editor);
+	MapCanvas(wxWindow* parent, int id, MapEditor* editor);
 	~MapCanvas();
 
 	bool	overlayActive();

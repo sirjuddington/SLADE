@@ -43,14 +43,15 @@
 /* ColourPrefsPanel::ColourPrefsPanel
  * ColourPrefsPanel class constructor
  *******************************************************************/
-ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Colour Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Colour Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Configurations list
@@ -81,20 +82,23 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
 /* ColourPrefsPanel::~ColourPrefsPanel
  * ColourPrefsPanel class destructor
  *******************************************************************/
-ColourPrefsPanel::~ColourPrefsPanel() {
+ColourPrefsPanel::~ColourPrefsPanel()
+{
 }
 
 /* ColourPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void ColourPrefsPanel::init() {
+void ColourPrefsPanel::init()
+{
 	refreshPropGrid();
 }
 
 /* ColourPrefsPanel::refreshPropGrid
  * Refreshes the colour configuration wxPropertyGrid
  *******************************************************************/
-void ColourPrefsPanel::refreshPropGrid() {
+void ColourPrefsPanel::refreshPropGrid()
+{
 	// Clear grid
 	pg_colours->Clear();
 
@@ -104,7 +108,8 @@ void ColourPrefsPanel::refreshPropGrid() {
 	std::sort(colours.begin(), colours.end());
 
 	// Add colours to property grid
-	for (unsigned a = 0; a < colours.size(); a++) {
+	for (unsigned a = 0; a < colours.size(); a++)
+	{
 		// Get colour definition
 		cc_col_t cdef = ColourConfiguration::getColDef(colours[a]);
 
@@ -133,12 +138,14 @@ void ColourPrefsPanel::refreshPropGrid() {
 /* ColourPrefsPanel::applyPreferences
  * Applies preferences from the panel controls
  *******************************************************************/
-void ColourPrefsPanel::applyPreferences() {
+void ColourPrefsPanel::applyPreferences()
+{
 	// Get list of all colours
 	vector<string> colours;
 	ColourConfiguration::getColourNames(colours);
 
-	for (unsigned a = 0; a < colours.size(); a++) {
+	for (unsigned a = 0; a < colours.size(); a++)
+	{
 		// Get colour definition
 		cc_col_t cdef = ColourConfiguration::getColDef(colours[a]);
 
@@ -150,7 +157,8 @@ void ColourPrefsPanel::applyPreferences() {
 		wxIntProperty* p_alpha = (wxIntProperty*)pg_colours->GetProperty(cdef_path + ".alpha");
 		wxBoolProperty* p_add = (wxBoolProperty*)pg_colours->GetProperty(cdef_path + ".additive");
 
-		if (p_alpha && p_add) {
+		if (p_alpha && p_add)
+		{
 			// Getting the colour out of a wxColourProperty is retarded
 			wxVariant v = pg_colours->GetPropertyValue(cdef_path);
 			wxColour col;
@@ -190,7 +198,8 @@ void ColourPrefsPanel::applyPreferences() {
 /* ColourPrefsPanel::onChoicePresetSelected
  * Called when the 'preset' dropdown choice is changed
  *******************************************************************/
-void ColourPrefsPanel::onChoicePresetSelected(wxCommandEvent& e) {
+void ColourPrefsPanel::onChoicePresetSelected(wxCommandEvent& e)
+{
 	string config = choice_configs->GetStringSelection();
 	ColourConfiguration::readConfiguration(config);
 	refreshPropGrid();

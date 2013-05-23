@@ -4,7 +4,8 @@
 
 #include "PrefsPanelBase.h"
 
-class ACSPrefsPanel : public PrefsPanelBase {
+class ACSPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxTextCtrl*	text_accpath;
 	wxButton*	btn_browse_accpath;

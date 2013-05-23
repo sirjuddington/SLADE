@@ -44,7 +44,8 @@
 /* FileMonitor::FileMonitor
  * FileMonitor class constructor
  *******************************************************************/
-FileMonitor::FileMonitor(string filename) {
+FileMonitor::FileMonitor(string filename)
+{
 	// Init variables
 	this->filename = filename;
 	file_modified = wxFileModificationTime(filename);
@@ -62,17 +63,20 @@ FileMonitor::FileMonitor(string filename) {
 /* FileMonitor::~FileMonitor
  * FileMonitor class destructor
  *******************************************************************/
-FileMonitor::~FileMonitor() {
+FileMonitor::~FileMonitor()
+{
 	delete process;
 }
 
 /* FileMonitor::Notify
  * Override of wxTimer::Notify, called each time the timer updates
  *******************************************************************/
-void FileMonitor::Notify() {
+void FileMonitor::Notify()
+{
 	// Check if the file has been modified since last update
 	time_t modified = wxFileModificationTime(filename);
-	if (modified > file_modified) {
+	if (modified > file_modified)
+	{
 		// Modified, update modification time and run any custom code
 		file_modified = modified;
 		fileModified();
@@ -82,7 +86,8 @@ void FileMonitor::Notify() {
 /* FileMonitor::onEndProcess
  * Called when the process is terminated
  *******************************************************************/
-void FileMonitor::onEndProcess(wxProcessEvent& e) {
+void FileMonitor::onEndProcess(wxProcessEvent& e)
+{
 	// Call any custom code for when the external process terminates
 	processTerminated();
 
@@ -102,7 +107,8 @@ void FileMonitor::onEndProcess(wxProcessEvent& e) {
 /* DB2MapFileMonitor::DB2MapFileMonitor
  * DB2MapFileMonitor class constructor
  *******************************************************************/
-DB2MapFileMonitor::DB2MapFileMonitor(string filename, Archive* archive, string map_name) : FileMonitor(filename) {
+DB2MapFileMonitor::DB2MapFileMonitor(string filename, Archive* archive, string map_name) : FileMonitor(filename)
+{
 	// Init variables
 	this->archive = archive;
 	this->map_name = map_name;
@@ -111,13 +117,15 @@ DB2MapFileMonitor::DB2MapFileMonitor(string filename, Archive* archive, string m
 /* DB2MapFileMonitor::~DB2MapFileMonitor
  * DB2MapFileMonitor class destructor
  *******************************************************************/
-DB2MapFileMonitor::~DB2MapFileMonitor() {
+DB2MapFileMonitor::~DB2MapFileMonitor()
+{
 }
 
 /* DB2MapFileMonitor::fileModified
  * Called when the external wad file has been modified
  *******************************************************************/
-void DB2MapFileMonitor::fileModified() {
+void DB2MapFileMonitor::fileModified()
+{
 	// Check stuff
 	if (!archive)
 		return;
@@ -128,10 +136,13 @@ void DB2MapFileMonitor::fileModified() {
 
 	// Get map info for target archive
 	vector<Archive::mapdesc_t> maps = archive->detectMaps();
-	for (unsigned a = 0; a < maps.size(); a++) {
-		if (S_CMPNOCASE(maps[a].name, map_name)) {
+	for (unsigned a = 0; a < maps.size(); a++)
+	{
+		if (S_CMPNOCASE(maps[a].name, map_name))
+		{
 			// Check for simple case (map is in zip archive)
-			if (maps[a].archive) {
+			if (maps[a].archive)
+			{
 				maps[a].head->unlock();
 				maps[a].head->importFile(filename);
 				maps[a].head->lock();
@@ -141,7 +152,8 @@ void DB2MapFileMonitor::fileModified() {
 			// Delete existing map entries
 			ArchiveEntry* entry = maps[a].head;
 			bool done = false;
-			while (!done) {
+			while (!done)
+			{
 				ArchiveEntry* next = entry->nextEntry();
 
 				if (entry == maps[a].end)
@@ -154,7 +166,8 @@ void DB2MapFileMonitor::fileModified() {
 
 			// Now re-add map entries from the temp archive
 			unsigned index = archive->entryIndex(entry);
-			for (unsigned b = 0; b < wad->numEntries(); b++) {
+			for (unsigned b = 0; b < wad->numEntries(); b++)
+			{
 				ArchiveEntry* ne = archive->addEntry(wad->getEntry(b), index, NULL, true);
 				if (index <= archive->numEntries()) index++;
 				ne->lock();
@@ -169,14 +182,18 @@ void DB2MapFileMonitor::fileModified() {
 /* DB2MapFileMonitor::processTerminated
  * Called when the Doom Builder 2 process is terminated
  *******************************************************************/
-void DB2MapFileMonitor::processTerminated() {
+void DB2MapFileMonitor::processTerminated()
+{
 	// Get map info for target archive
 	vector<Archive::mapdesc_t> maps = archive->detectMaps();
-	for (unsigned a = 0; a < maps.size(); a++) {
-		if (S_CMPNOCASE(maps[a].name, map_name)) {
+	for (unsigned a = 0; a < maps.size(); a++)
+	{
+		if (S_CMPNOCASE(maps[a].name, map_name))
+		{
 			// Unlock map entries
 			ArchiveEntry* entry = maps[a].head;
-			while (true) {
+			while (true)
+			{
 				entry->unlock();
 				if (entry == maps[a].end) break;
 				entry = entry->nextEntry();
