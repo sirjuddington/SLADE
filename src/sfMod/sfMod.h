@@ -123,12 +123,8 @@ public:
 
 
 private:
-#if SFML_VERSION_MAJOR >= 2
   bool onGetData(sf::SoundStream::Chunk& data);
   void onSeek   (sf::Time timeOffset);
-#else
-  bool OnGetData(sf::SoundStream::Chunk& data);
-#endif
 
 
   ModPlugFile* file_;

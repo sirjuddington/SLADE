@@ -131,11 +131,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	mouse_warp = false;
 
 #ifdef USE_SFML_RENDERWINDOW
-#if SFML_VERSION_MAJOR < 2
-	UseVerticalSync(false);
-#else
 	setVerticalSyncEnabled(false);
-#endif
 #endif
 
 	// Bind Events
@@ -1487,21 +1483,8 @@ void MapCanvas::update(long frametime)
 
 void MapCanvas::mouseToCenter()
 {
-#if SFML_VERSION_MAJOR > 1
 	wxRect rect = GetScreenRect();
 	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width*0.5), rect.y + int(rect.height*0.5)));
-#else
-	mouse_warp = true;
-	WarpPointer(GetSize().x * 0.5, GetSize().y * 0.5);
-#endif
-	/*
-	wxRect rect = GetScreenRect();
-	#if SFML_VERSION_MAJOR < 2
-	sf::Window::SetCursorPosition(sf::Window::GetWidth()/2, sf::Window::GetHeight()/2);
-	#else
-	sf::Mouse::setPosition(sf::Vector2i(rect.x + rect.width*0.5, rect.y + rect.height*0.5));
-	#endif
-	*/
 }
 
 void MapCanvas::lockMouse(bool lock)
@@ -1521,11 +1504,7 @@ void MapCanvas::lockMouse(bool lock)
 // TODO: check if sfml cursor show/hide is even really needed
 #ifndef __WXGTK__
 #ifdef USE_SFML_RENDERWINDOW
-#if SFML_VERSION_MAJOR < 2
-		ShowMouseCursor(false);
-#else
 		setMouseCursorVisible(false);
-#endif
 #endif
 #endif
 	}
@@ -1536,11 +1515,7 @@ void MapCanvas::lockMouse(bool lock)
 
 #ifndef __WXGTK__
 #ifdef USE_SFML_RENDERWINDOW
-#if SFML_VERSION_MAJOR < 2
-		ShowMouseCursor(false);
-#else
 		setMouseCursorVisible(false);
-#endif
 #endif
 #endif
 	}
@@ -2005,7 +1980,6 @@ void MapCanvas::onKeyBindPress(string name)
 
 	// Screenshot
 #ifdef USE_SFML_RENDERWINDOW
-#if SFML_VERSION_MAJOR >= 2
 	else if (name == "map_screenshot")
 	{
 		// Capture shot
@@ -2033,7 +2007,6 @@ void MapCanvas::onKeyBindPress(string name)
 		// Editor message
 		editor->addEditorMessage(S_FMT("Screenshot taken (%s)", CHR(filename)));
 	}
-#endif
 #endif
 
 	// Send to editor first
@@ -3274,35 +3247,6 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
 	e.Skip();
 }
 
-#if SFML_VERSION_MAJOR < 2
-void MapCanvas::onIdle(wxIdleEvent& e)
-{
-	// Get time since last redraw
-	long frametime = (sfclock.GetElapsedTime() * 1000) - last_time;
-
-	if (frametime < fr_idle)
-		return;
-
-	last_time = (sfclock.GetElapsedTime() * 1000);
-	update(frametime);
-	Refresh();
-}
-
-void MapCanvas::onRTimer(wxTimerEvent& e)
-{
-	// Get time since last redraw
-	long frametime = (sfclock.GetElapsedTime() * 1000) - last_time;
-
-	if (frametime > fr_idle)
-	{
-		last_time = (sfclock.GetElapsedTime() * 1000);
-		update(frametime);
-		Refresh();
-	}
-
-	timer.Start(-1, true);
-}
-#else
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
 	// Get time since last redraw
@@ -3330,7 +3274,6 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 
 	timer.Start(-1, true);
 }
-#endif
 
 void MapCanvas::onFocus(wxFocusEvent& e)
 {

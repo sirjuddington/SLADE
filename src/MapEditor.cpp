@@ -4294,31 +4294,13 @@ CONSOLE_COMMAND(m_show_item, 1, true)
 
 // testing stuff
 
-// Be nice once SFML2 is finally released so we don't need this >_>
-long getSFMLElapsedTime(sf::Clock& clock)
-{
-#if SFML_VERSION_MAJOR < 2	// SFML 1.6: uppercase G, returns time in seconds as a float
-	return clock.GetElapsedTime() * 1000;
-#else						// SFML 2.0: lowercase G, returns a Time object
-	return clock.getElapsedTime().asMilliseconds();
-#endif
-}
-void resetSFMLClock(sf::Clock& clock)
-{
-#if SFML_VERSION_MAJOR < 2
-	clock.Reset();
-#else
-	clock.restart();
-#endif
-}
-
 CONSOLE_COMMAND(m_test_sector, 0, false)
 {
 	sf::Clock clock;
 	SLADEMap& map = theMapEditor->mapEditor().getMap();
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.sectorAt(map.getThing(a)->xPos(), map.getThing(a)->yPos());
-	long ms = getSFMLElapsedTime(clock);
+	long ms = clock.getElapsedTime().asMilliseconds();
 	wxLogMessage("Took %dms", ms);
 }
 
@@ -4332,33 +4314,33 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 	// Vertices
 	for (unsigned a = 0; a < map.nVertices(); a++)
 		map.getVertex(a)->backup(backup);
-	wxLogMessage("Vertices: %dms", getSFMLElapsedTime(clock));
+	wxLogMessage("Vertices: %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Lines
-	resetSFMLClock(clock);
+	clock.restart();
 	for (unsigned a = 0; a < map.nLines(); a++)
 		map.getLine(a)->backup(backup);
-	wxLogMessage("Lines: %dms", getSFMLElapsedTime(clock));
+	wxLogMessage("Lines: %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Sides
-	resetSFMLClock(clock);
+	clock.restart();
 	for (unsigned a = 0; a < map.nSides(); a++)
 		map.getSide(a)->backup(backup);
-	wxLogMessage("Sides: %dms", getSFMLElapsedTime(clock));
+	wxLogMessage("Sides: %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Sectors
-	resetSFMLClock(clock);
+	clock.restart();
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		map.getSector(a)->backup(backup);
-	wxLogMessage("Sectors: %dms", getSFMLElapsedTime(clock));
+	wxLogMessage("Sectors: %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Things
-	resetSFMLClock(clock);
+	clock.restart();
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.getThing(a)->backup(backup);
-	wxLogMessage("Things: %dms", getSFMLElapsedTime(clock));
+	wxLogMessage("Things: %dms", clock.getElapsedTime().asMilliseconds());
 
-	wxLogMessage("Total: %dms", getSFMLElapsedTime(totalClock));
+	wxLogMessage("Total: %dms", totalClock.getElapsedTime().asMilliseconds());
 }
 
 CONSOLE_COMMAND(m_vertex_attached, 1, false)

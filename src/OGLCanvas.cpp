@@ -143,17 +143,11 @@ void OGLCanvas::createSFML()
 #else
 	handle = GetHandle();
 #endif
-
-
-#if SFML_VERSION_MAJOR < 2
-	sf::RenderWindow::Create(handle);
-#else
 	// Context settings
 	sf::ContextSettings settings;
 	settings.depthBits = 32;
 	settings.stencilBits = 8;
 	sf::RenderWindow::create(handle, settings);
-#endif
 #endif
 }
 
@@ -163,12 +157,6 @@ void OGLCanvas::createSFML()
 void OGLCanvas::init()
 {
 	OpenGL::init();
-
-#ifdef USE_SFML_RENDERWINDOW
-#if SFML_VERSION_MAJOR < 2
-	PreserveOpenGLStates(true);
-#endif
-#endif
 
 	glViewport(0, 0, GetSize().x, GetSize().y);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -280,18 +268,12 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 	{
 		// Set context to this window
 #ifdef USE_SFML_RENDERWINDOW
-#if SFML_VERSION_MAJOR < 2
-		sf::RenderWindow::SetActive();
-		Drawing::setRenderTarget(this);
-		SetView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
-#else
 		sf::RenderWindow::setActive();
 		Drawing::setRenderTarget(this);
 		setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
-#endif//SFML_VERSION_MAJOR
 #else
 		setContext();
-#endif//USE_SFML_RENDERWINDOW
+#endif
 
 		// Init if needed
 		if (!init_done)

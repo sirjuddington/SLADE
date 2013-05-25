@@ -464,11 +464,7 @@ void MapRenderer3D::renderMap()
 	// Check elapsed time
 	if (render_max_dist_adaptive)
 	{
-#if SFML_VERSION_MAJOR < 2	// SFML 1.6: uppercase G, returns time in seconds as a float
-		long ms = clock.GetElapsedTime() * 1000;
-#else						// SFML 2.0: lowercase G, returns a Time object
 		long ms = clock.getElapsedTime().asMilliseconds();
-#endif
 		if (ms > render_adaptive_ms)
 		{
 			render_max_dist = render_max_dist - 100;

@@ -248,84 +248,6 @@ bool AudioEntryPanel::open()
 	return true;
 }
 
-#if SFML_VERSION_MAJOR < 2
-/* AudioEntryPanel::openAudio
- * Opens an audio file for playback (SFML 1.x)
- *******************************************************************/
-bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
-{
-	// Stop if sound currently playing
-	sound.Stop();
-	music.Stop();
-
-	// (Re)create sound buffer
-	if (sound_buffer)
-		delete sound_buffer;
-	sound_buffer = new sf::SoundBuffer();
-	audio_type = AUTYPE_INVALID;
-
-	// Load into buffer
-	if (sound_buffer->LoadFromMemory((const char*)audio.getData(), audio.getSize()))
-	{
-		// Bind to sound
-		sound.SetBuffer(*sound_buffer);
-		audio_type = AUTYPE_SOUND;
-
-		// Enable play controls
-		setAudioDuration(sound_buffer->GetDuration()*100);
-		btn_play->Enable();
-		btn_pause->Enable();
-		btn_stop->Enable();
-
-		return true;
-	}
-	else if (music.OpenFromMemory((const char*)audio.getData(), audio.getSize()))
-	{
-		// Couldn't open the audio as a sf::SoundBuffer, try sf::Music instead
-		audio_type = AUTYPE_MUSIC;
-
-		// Enable play controls
-		btn_play->Enable();
-		btn_stop->Enable();
-
-		// sf::Music can't seek or pause
-		setAudioDuration(0);
-		btn_pause->Enable(false);
-
-		return true;
-	}
-	else
-	{
-		// Couldn't open as sound or music, try the wxMediaCtrl
-
-		// Dump audio to temp file
-		audio.exportFile(filename);
-
-		// Attempt to open with wxMediaCtrl
-		if (media_ctrl->Load(filename))
-		{
-			// Loaded successfully
-			audio_type = AUTYPE_MEDIA;
-
-			// Enable play controls
-			setAudioDuration(media_ctrl->Length());
-			btn_play->Enable(true);
-			btn_pause->Enable(true);
-			btn_stop->Enable(true);
-
-			return true;
-		}
-	}
-
-	// Unable to open audio, disable play controls
-	slider_seek->Enable(false);
-	btn_play->Enable(false);
-	btn_pause->Enable(false);
-	btn_stop->Enable(false);
-
-	return false;
-}
-#else
 /* AudioEntryPanel::openAudio
  * Opens an audio file for playback (SFML 2.x+)
  *******************************************************************/
@@ -405,7 +327,6 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 
 	return false;
 }
-#endif
 
 /* AudioEntryPanel::openMidi
  * Opens a MIDI file for playback
@@ -513,16 +434,6 @@ void AudioEntryPanel::startStream()
 
 	switch (audio_type)
 	{
-#if SFML_VERSION_MAJOR < 2
-	case AUTYPE_SOUND:
-		sound.Play(); break;
-	case AUTYPE_MUSIC:
-		music.Play(); break;
-#ifndef NOLIBMODPLUG
-	case AUTYPE_MOD:
-		mod.Play(); break;
-#endif
-#else
 	case AUTYPE_SOUND:
 		sound.play(); break;
 	case AUTYPE_MUSIC:
@@ -530,7 +441,6 @@ void AudioEntryPanel::startStream()
 #ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.play(); break;
-#endif
 #endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->play(); break;
@@ -546,16 +456,6 @@ void AudioEntryPanel::stopStream()
 {
 	switch (audio_type)
 	{
-#if SFML_VERSION_MAJOR < 2
-	case AUTYPE_SOUND:
-		sound.Pause(); break;
-	case AUTYPE_MUSIC:
-		music.Pause(); break;
-#ifndef NOLIBMODPLUG
-	case AUTYPE_MOD:
-		mod.Pause(); break;
-#endif
-#else
 	case AUTYPE_SOUND:
 		sound.pause(); break;
 	case AUTYPE_MUSIC:
@@ -563,7 +463,6 @@ void AudioEntryPanel::stopStream()
 #ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.pause(); break;
-#endif
 #endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->pause(); break;
@@ -580,16 +479,6 @@ void AudioEntryPanel::resetStream()
 
 	switch (audio_type)
 	{
-#if SFML_VERSION_MAJOR < 2
-	case AUTYPE_SOUND:
-		sound.Stop(); break;
-	case AUTYPE_MUSIC:
-		music.Stop(); break;
-#ifndef NOLIBMODPLUG
-	case AUTYPE_MOD:
-		mod.Stop(); break;
-#endif
-#else
 	case AUTYPE_SOUND:
 		sound.stop(); break;
 	case AUTYPE_MUSIC:
@@ -597,7 +486,6 @@ void AudioEntryPanel::resetStream()
 #ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.stop(); break;
-#endif
 #endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->stop(); break;
@@ -655,16 +543,12 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	switch (audio_type)
 	{
 	case AUTYPE_SOUND:
-#if SFML_VERSION_MAJOR < 2
-		pos = sound.GetPlayingOffset() * 100; break;
-#else
 		pos = sound.getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MUSIC:
 		pos = music.getPlayingOffset().asMilliseconds(); break;
 #ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		pos = mod.getPlayingOffset().asMilliseconds(); break;
-#endif
 #endif
 	case AUTYPE_MIDI:
 		pos = theMIDIPlayer->getPosition(); break;
@@ -677,18 +561,10 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 
 	// Stop the timer if playback has reached the end
 	if (pos >= slider_seek->GetMax() ||
-#if SFML_VERSION_MAJOR < 2
-	        (audio_type == AUTYPE_SOUND && sound.GetStatus() == sf::Sound::Stopped) ||
-	        (audio_type == AUTYPE_MUSIC && music.GetStatus() == sf::Sound::Stopped) ||
-#ifndef NOLIBMODPLUG
-	        (audio_type == AUTYPE_MOD && mod.GetStatus() == sf::Sound::Stopped) ||
-#endif
-#else
 	        (audio_type == AUTYPE_SOUND && sound.getStatus() == sf::Sound::Stopped) ||
 	        (audio_type == AUTYPE_MUSIC && music.getStatus() == sf::Sound::Stopped) ||
 #ifndef NOLIBMODPLUG
 	        (audio_type == AUTYPE_MOD && mod.getStatus() == sf::Sound::Stopped) ||
-#endif
 #endif
 	        (audio_type == AUTYPE_MEDIA && media_ctrl->GetState() == wxMEDIASTATE_STOPPED))
 		timer_seek->Stop();
@@ -701,10 +577,6 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 {
 	switch (audio_type)
 	{
-#if SFML_VERSION_MAJOR < 2
-	case AUTYPE_SOUND:
-		sound.SetPlayingOffset(slider_seek->GetValue() * 0.01); break;
-#else
 	case AUTYPE_SOUND:
 		sound.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
 	case AUTYPE_MUSIC:
@@ -712,7 +584,6 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 #ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
-#endif
 #endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->setPosition(slider_seek->GetValue()); break;
@@ -730,20 +601,17 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 
 	switch (audio_type)
 	{
-#if SFML_VERSION_MAJOR < 2
-	case AUTYPE_SOUND:
-		sound.SetVolume(snd_volume); break;
-	case AUTYPE_MUSIC:
-		music.SetVolume(snd_volume); break;
-#else
 	case AUTYPE_SOUND:
 		sound.setVolume(snd_volume); break;
 	case AUTYPE_MUSIC:
 		music.setVolume(snd_volume); break;
-#endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->setVolume(snd_volume); break;
 	case AUTYPE_MEDIA:
 		media_ctrl->SetVolume(snd_volume*0.01); break;
+#ifndef NOLIBMODPLUG
+	case AUTYPE_MOD:
+		mod.setVolume(snd_volume); break;
+#endif
 	}
 }
