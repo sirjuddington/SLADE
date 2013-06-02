@@ -45,7 +45,8 @@
  * SwitchesEntryPanel class constructor
  *******************************************************************/
 SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
-: EntryPanel(parent, "switches") {
+	: EntryPanel(parent, "switches")
+{
 	se_current = NULL;
 	se_modified = false;
 
@@ -113,14 +114,16 @@ SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
 /* SwitchesEntryPanel::~SwitchesEntryPanel
  * SwitchesEntryPanel class destructor
  *******************************************************************/
-SwitchesEntryPanel::~SwitchesEntryPanel() {
+SwitchesEntryPanel::~SwitchesEntryPanel()
+{
 }
 
 /* SwitchesEntryPanel::handleAction
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
  *******************************************************************/
-bool SwitchesEntryPanel::handleAction(string id) {
+bool SwitchesEntryPanel::handleAction(string id)
+{
 	// Don't handle actions if hidden
 	if (!isActivePanel())
 		return false;
@@ -129,19 +132,23 @@ bool SwitchesEntryPanel::handleAction(string id) {
 	if (!id.StartsWith("swch_"))
 		return false;
 
-	if (id == "swch_new") {
+	if (id == "swch_new")
+	{
 		add();
 	}
 
-	else if (id == "swch_delete") {
+	else if (id == "swch_delete")
+	{
 		remove();
 	}
 
-	else if (id == "swch_up") {
+	else if (id == "swch_up")
+	{
 		moveUp();
 	}
 
-	else if (id == "swch_down") {
+	else if (id == "swch_down")
+	{
 		moveDown();
 	}
 
@@ -157,7 +164,8 @@ bool SwitchesEntryPanel::handleAction(string id) {
 /* SwitchesEntryPanel::loadEntry
  * Loads an entry into the SWITCHES entry panel
  *******************************************************************/
-bool SwitchesEntryPanel::loadEntry(ArchiveEntry* entry) {
+bool SwitchesEntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	// Do nothing if entry is already open
 	if (this->entry == entry && !isModified())
 		return true;
@@ -181,13 +189,16 @@ bool SwitchesEntryPanel::loadEntry(ArchiveEntry* entry) {
 /* SwitchesEntryPanel::saveEntry
  * Saves any changes made to the entry
  *******************************************************************/
-bool SwitchesEntryPanel::saveEntry() {
+bool SwitchesEntryPanel::saveEntry()
+{
 	MemChunk mc;
 	mc.seek(0, SEEK_SET);
 	switches_t swch;
-	for (uint32_t a = 0; a < switches.nEntries(); a++) {
+	for (uint32_t a = 0; a < switches.nEntries(); a++)
+	{
 		SwitchesEntry* ent = switches.getEntry(a);
-		for (size_t i = 0; i < 9; ++i) {
+		for (size_t i = 0; i < 9; ++i)
+		{
 			if (ent->getOff().length() > i)
 				swch.off[i] = ent->getOff()[i];
 			else swch.off[i] = 0;
@@ -201,7 +212,8 @@ bool SwitchesEntryPanel::saveEntry() {
 	memset(&swch, 0, 20);
 	mc.write(&swch, 20);
 	bool success = entry->importMemChunk(mc);
-	if (success) {
+	if (success)
+	{
 		for (uint32_t a = 0; a < switches.nEntries(); a++)
 			list_entries->setItemStatus(a, LV_STATUS_NORMAL);
 	}
@@ -211,8 +223,9 @@ bool SwitchesEntryPanel::saveEntry() {
 /* SwitchesEntryPanel::revertEntry
  * Undoes any changes made to the entry
  *******************************************************************/
-bool SwitchesEntryPanel::revertEntry() {
-	ArchiveEntry * reload = entry;
+bool SwitchesEntryPanel::revertEntry()
+{
+	ArchiveEntry* reload = entry;
 	entry = NULL;
 	return loadEntry(reload);
 }
@@ -220,13 +233,15 @@ bool SwitchesEntryPanel::revertEntry() {
 /* SwitchesEntryPanel::insertListItem
  * Adds an entry to the list
  *******************************************************************/
-void SwitchesEntryPanel::insertListItem(SwitchesEntry* ent, uint32_t pos) {
+void SwitchesEntryPanel::insertListItem(SwitchesEntry* ent, uint32_t pos)
+{
 	if (ent == NULL) return;
 	string cols[] = { ent->getOff(), ent->getOn(),
-		ent->getType() == SWCH_COMM ? "Commercial"
-		: ent->getType() == SWCH_FULL ? "Registered"
-		: ent->getType() == SWCH_DEMO ? "Shareware"
-		: "BugBugBug" };
+	                  ent->getType() == SWCH_COMM ? "Commercial"
+	                  : ent->getType() == SWCH_FULL ? "Registered"
+	                  : ent->getType() == SWCH_DEMO ? "Shareware"
+	                  : "BugBugBug"
+	                };
 	list_entries->addItem(pos, wxArrayString(3, cols));
 	list_entries->setItemStatus(pos, ent->getStatus());
 }
@@ -234,14 +249,17 @@ void SwitchesEntryPanel::insertListItem(SwitchesEntry* ent, uint32_t pos) {
 /* SwitchesEntryPanel::updateListItem
  * Updates an entry to the list
  *******************************************************************/
-void SwitchesEntryPanel::updateListItem(SwitchesEntry* ent, uint32_t pos) {
+void SwitchesEntryPanel::updateListItem(SwitchesEntry* ent, uint32_t pos)
+{
 	if (ent == NULL) return;
 	string cols[] = { ent->getOff(), ent->getOn(),
-		ent->getType() == SWCH_COMM ? "Commercial"
-		: ent->getType() == SWCH_FULL ? "Registered"
-		: ent->getType() == SWCH_DEMO ? "Shareware"
-		: "BugBugBug" };
-	for (size_t a = 0; a < 3; ++a) {
+	                  ent->getType() == SWCH_COMM ? "Commercial"
+	                  : ent->getType() == SWCH_FULL ? "Registered"
+	                  : ent->getType() == SWCH_DEMO ? "Shareware"
+	                  : "BugBugBug"
+	                };
+	for (size_t a = 0; a < 3; ++a)
+	{
 		list_entries->setItemText(pos, a, cols[a]);
 	}
 	list_entries->setItemStatus(pos, ent->getStatus());
@@ -250,7 +268,8 @@ void SwitchesEntryPanel::updateListItem(SwitchesEntry* ent, uint32_t pos) {
 /* SwitchesEntryPanel::populateEntryList
  * Clears and adds all entries to the entry list
  *******************************************************************/
-void SwitchesEntryPanel::populateEntryList() {
+void SwitchesEntryPanel::populateEntryList()
+{
 	// Clear current list
 	list_entries->ClearAll();
 
@@ -261,7 +280,8 @@ void SwitchesEntryPanel::populateEntryList() {
 
 	// Add each switch to the list
 	list_entries->enableSizeUpdate(false);
-	for (uint32_t a = 0; a < switches.nEntries(); a++) {
+	for (uint32_t a = 0; a < switches.nEntries(); a++)
+	{
 		insertListItem(switches.getEntry(a), a);
 	}
 
@@ -273,7 +293,8 @@ void SwitchesEntryPanel::populateEntryList() {
 /* SwitchesEntryPanel::applyChanges
  * Saves changes to list
  *******************************************************************/
-void SwitchesEntryPanel::applyChanges() {
+void SwitchesEntryPanel::applyChanges()
+{
 	if (se_current == NULL)
 		return;
 
@@ -290,9 +311,12 @@ void SwitchesEntryPanel::applyChanges() {
 	else se_current->setType(SWCH_STOP);
 
 	// Find entry
-	for (uint32_t a = 0; a < switches.nEntries(); a++) {
-		if (switches.getEntry(a) == se_current) {
-			if (se_current->getStatus() == LV_STATUS_NORMAL) {
+	for (uint32_t a = 0; a < switches.nEntries(); a++)
+	{
+		if (switches.getEntry(a) == se_current)
+		{
+			if (se_current->getStatus() == LV_STATUS_NORMAL)
+			{
 				se_current->setStatus(LV_STATUS_MODIFIED);
 			}
 			updateListItem(se_current, a);
@@ -306,14 +330,18 @@ void SwitchesEntryPanel::applyChanges() {
 /* SwitchesEntryPanel::updateControls
  * Update the content of the control fields
  *******************************************************************/
-void SwitchesEntryPanel::updateControls() {
-	if (se_current == NULL) {
+void SwitchesEntryPanel::updateControls()
+{
+	if (se_current == NULL)
+	{
 		text_offname->Clear();
 		text_onname->Clear();
 		rbtn_shareware->SetValue(false);
 		rbtn_registered->SetValue(false);
 		rbtn_commercial->SetValue(false);
-	} else {
+	}
+	else
+	{
 		text_offname->ChangeValue(se_current->getOff());
 		text_onname->ChangeValue(se_current->getOn());
 		rbtn_shareware->SetValue(se_current->getType() == SWCH_DEMO);
@@ -325,7 +353,8 @@ void SwitchesEntryPanel::updateControls() {
 /* SwitchesEntryPanel::add
  * Insert new switch after selected switches
  *******************************************************************/
-void SwitchesEntryPanel::add() {
+void SwitchesEntryPanel::add()
+{
 	// Get selected switch
 	wxArrayInt selection = list_entries->selectedItems();
 	uint32_t index = list_entries->GetItemCount();
@@ -334,7 +363,7 @@ void SwitchesEntryPanel::add() {
 
 	// Create new switch
 	switches_t swch = { "????????", "????????", SWCH_DEMO };
-	SwitchesEntry * se = new SwitchesEntry(swch);
+	SwitchesEntry* se = new SwitchesEntry(swch);
 	se->setStatus(LV_STATUS_NEW);
 
 	// Insert it in list
@@ -351,7 +380,8 @@ void SwitchesEntryPanel::add() {
 /* SwitchesEntryPanel::remove
  * Removes any selected animations
  *******************************************************************/
-void SwitchesEntryPanel::remove() {
+void SwitchesEntryPanel::remove()
+{
 	// Get selected animations
 	wxArrayInt selection = list_entries->selectedItems();
 
@@ -362,7 +392,8 @@ void SwitchesEntryPanel::remove() {
 	list_entries->enableSizeUpdate(false);
 
 	// Go through selection backwards
-	for (int a = selection.size() - 1; a >= 0; a--) {
+	for (int a = selection.size() - 1; a >= 0; a--)
+	{
 		// Remove animation from list
 		switches.removeEntry(selection[a]);
 		list_entries->DeleteItem(selection[a]);
@@ -379,11 +410,12 @@ void SwitchesEntryPanel::remove() {
 /* SwitchesEntryPanel::moveUp
  * Moves all selected animations up
  *******************************************************************/
-void SwitchesEntryPanel::moveUp() {
+void SwitchesEntryPanel::moveUp()
+{
 	// Get selected animations
 	wxArrayInt selection = list_entries->selectedItems();
 
-	// Do nothing if nothing is selected or if the 
+	// Do nothing if nothing is selected or if the
 	// first selected item is at the top of the list
 	if (selection.size() == 0 || selection[0] == 0)
 		return;
@@ -391,7 +423,8 @@ void SwitchesEntryPanel::moveUp() {
 	list_entries->enableSizeUpdate(false);
 
 	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++) {
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
 		// Swap selected animation with the one above it
 		switches.swapEntries(selection[a], selection[a] - 1);
 		updateListItem(switches.getEntry(selection[a]), selection[a]);
@@ -414,11 +447,12 @@ void SwitchesEntryPanel::moveUp() {
 /* SwitchesEntryPanel::moveDown
  * Moves all selected animations down
  *******************************************************************/
-void SwitchesEntryPanel::moveDown() {
+void SwitchesEntryPanel::moveDown()
+{
 	// Get selected animations
 	wxArrayInt selection = list_entries->selectedItems();
 
-	// Do nothing if nothing is selected or if the 
+	// Do nothing if nothing is selected or if the
 	// last selected item is at the end of the list
 	if (selection.size() == 0 || selection.back() == list_entries->GetItemCount()-1)
 		return;
@@ -426,7 +460,8 @@ void SwitchesEntryPanel::moveDown() {
 	list_entries->enableSizeUpdate(false);
 
 	// Go through selection backwards
-	for (int a = selection.size()-1; a >= 0; a--) {
+	for (int a = selection.size()-1; a >= 0; a--)
+	{
 		// Swap selected animation with the one below it
 		switches.swapEntries(selection[a], selection[a] + 1);
 		updateListItem(switches.getEntry(selection[a]), selection[a]);
@@ -453,11 +488,15 @@ void SwitchesEntryPanel::moveDown() {
 /* SwitchesEntryPanel::onListSelect
  * Called when an item on the animation list is selected
  *******************************************************************/
-void SwitchesEntryPanel::onListSelect(wxListEvent& e) {
+void SwitchesEntryPanel::onListSelect(wxListEvent& e)
+{
 	// Do nothing if multiple animations are selected
-	if (list_entries->GetSelectedItemCount() > 1) {
+	if (list_entries->GetSelectedItemCount() > 1)
+	{
 		se_current = NULL;
-	} else {
+	}
+	else
+	{
 		// Get selected texture
 		SwitchesEntry* se = switches.getEntry(e.GetIndex());
 
@@ -475,7 +514,8 @@ void SwitchesEntryPanel::onListSelect(wxListEvent& e) {
 /* SwitchesEntryPanel::onListRightClick
  * Called when an item on the animation list is right clicked
  *******************************************************************/
-void SwitchesEntryPanel::onListRightClick(wxListEvent& e) {
+void SwitchesEntryPanel::onListRightClick(wxListEvent& e)
+{
 	// Create context menu
 	wxMenu context;
 	theApp->getAction("swch_delete")->addToMenu(&context);
@@ -491,10 +531,12 @@ void SwitchesEntryPanel::onListRightClick(wxListEvent& e) {
 /* SwitchesEntryPanel::onTypeChanged
  * Called when the 'flat' and 'texture' radio buttons are toggled
  *******************************************************************/
-void SwitchesEntryPanel::onTypeChanged(wxCommandEvent& e) {
+void SwitchesEntryPanel::onTypeChanged(wxCommandEvent& e)
+{
 	if ((rbtn_shareware->GetValue()  && se_current->getType() != SWCH_DEMO) ||
-		(rbtn_registered->GetValue() && se_current->getType() != SWCH_FULL) ||
-		(rbtn_commercial->GetValue() && se_current->getType() != SWCH_COMM)) {
+	        (rbtn_registered->GetValue() && se_current->getType() != SWCH_FULL) ||
+	        (rbtn_commercial->GetValue() && se_current->getType() != SWCH_COMM))
+	{
 		se_modified = true;
 		setModified(true);
 	}
@@ -503,16 +545,19 @@ void SwitchesEntryPanel::onTypeChanged(wxCommandEvent& e) {
 /* SwitchesEntryPanel::onOffNameChanged
  * Called when the first name entry box is changed
  *******************************************************************/
-void SwitchesEntryPanel::onOffNameChanged(wxCommandEvent& e) {
+void SwitchesEntryPanel::onOffNameChanged(wxCommandEvent& e)
+{
 	// Change texture name
-	if (se_current) {
+	if (se_current)
+	{
 		string tmpstr = text_offname->GetValue();
 		tmpstr.MakeUpper();
 		tmpstr.Truncate(8);
 		size_t ip = text_offname->GetInsertionPoint();
 		text_offname->ChangeValue(tmpstr);
 		text_offname->SetInsertionPoint(ip);
-		if (tmpstr.CmpNoCase(se_current->getOff())) {
+		if (tmpstr.CmpNoCase(se_current->getOff()))
+		{
 			se_modified = true;
 			setModified(true);
 		}
@@ -522,16 +567,19 @@ void SwitchesEntryPanel::onOffNameChanged(wxCommandEvent& e) {
 /* SwitchesEntryPanel::onOnNameChanged
  * Called when the last name entry box is changed
  *******************************************************************/
-void SwitchesEntryPanel::onOnNameChanged(wxCommandEvent& e) {
+void SwitchesEntryPanel::onOnNameChanged(wxCommandEvent& e)
+{
 	// Change texture name
-	if (se_current) {
+	if (se_current)
+	{
 		string tmpstr = text_onname->GetValue();
 		tmpstr.MakeUpper();
 		tmpstr.Truncate(8);
 		size_t ip = text_onname->GetInsertionPoint();
 		text_onname->ChangeValue(tmpstr);
 		text_onname->SetInsertionPoint(ip);
-		if (tmpstr.CmpNoCase(se_current->getOn())) {
+		if (tmpstr.CmpNoCase(se_current->getOn()))
+		{
 			se_modified = true;
 			setModified(true);
 		}
@@ -541,7 +589,8 @@ void SwitchesEntryPanel::onOnNameChanged(wxCommandEvent& e) {
 /* SwitchesEntryPanel::onBtnNew
  * Called when the 'New Animation' button is clicked
  *******************************************************************/
-void SwitchesEntryPanel::onBtnNew(wxCommandEvent& e) {
+void SwitchesEntryPanel::onBtnNew(wxCommandEvent& e)
+{
 	add();
 }
 

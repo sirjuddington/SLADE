@@ -3,7 +3,8 @@
 #define __VERTEX_INFO_OVERLAY_H__
 
 class MapVertex;
-class VertexInfoOverlay {
+class VertexInfoOverlay
+{
 private:
 	string	info;
 	bool	pos_frac;

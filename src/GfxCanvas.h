@@ -7,7 +7,8 @@
 #include "GLTexture.h"
 
 // Enumeration for view types
-enum {
+enum
+{
 	GFXVIEW_DEFAULT,
 	GFXVIEW_CENTERED,
 	GFXVIEW_SPRITE,
@@ -15,7 +16,8 @@ enum {
 	GFXVIEW_TILED,
 };
 
-class GfxCanvas : public OGLCanvas, Listener {
+class GfxCanvas : public OGLCanvas, Listener
+{
 private:
 	SImage*		image;
 	int			view_type;	// 0=default, 1=centered, 2=sprite offsets, 3=hud offsets, 4=tiled
@@ -38,7 +40,7 @@ public:
 	SImage*	getImage() { return image; }
 
 	void	setViewType(int type) { view_type = type; }
-	int		getViewType(){ return view_type; }
+	int		getViewType() { return view_type; }
 	void	setScale(double scale) { this->scale = scale; }
 	bool	allowDrag() { return allow_drag; }
 	void	allowDrag(bool allow) { allow_drag = allow; }
@@ -53,7 +55,7 @@ public:
 
 	void	zoomToFit(bool mag = true, float padding = 0.0f);
 	void	resetOffsets() { offset.x = offset.y = 0; }
-	
+
 	bool		onImage(int x, int y);
 	point2_t	imageCoords(int x, int y);
 

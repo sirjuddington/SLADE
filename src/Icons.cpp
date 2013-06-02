@@ -37,7 +37,8 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-struct icon_t {
+struct icon_t
+{
 	wxImage	image;
 	string	name;
 };
@@ -52,7 +53,8 @@ wxBitmap icon_empty;
 /* loadIcons
  * Loads all icons from slade.pk3 (in the icons/ dir)
  *******************************************************************/
-bool loadIcons() {
+bool loadIcons()
+{
 	string tempfile = appPath("sladetemp", DIR_TEMP);
 
 	// Get slade.pk3
@@ -66,7 +68,8 @@ bool loadIcons() {
 	ArchiveTreeNode* dir_icons = res_archive->getDir("icons/");
 
 	// Go through each entry in the directory
-	for (size_t a = 0; a < dir_icons->numEntries(false); a++) {
+	for (size_t a = 0; a < dir_icons->numEntries(false); a++)
+	{
 		ArchiveEntry* entry = dir_icons->getEntry(a);
 
 		// Export entry data to a temporary file
@@ -91,8 +94,10 @@ bool loadIcons() {
  * Returns the icon matching <name> as a wxBitmap (for toolbars etc),
  * or an empty bitmap if no icon matching <name> was found
  *******************************************************************/
-wxBitmap getIcon(string name) {
-	for (size_t a = 0; a < icons.size(); a++) {
+wxBitmap getIcon(string name)
+{
+	for (size_t a = 0; a < icons.size(); a++)
+	{
 		if (icons[a].name.Cmp(name) == 0)
 			return wxBitmap(icons[a].image);
 	}

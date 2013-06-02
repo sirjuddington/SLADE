@@ -6,7 +6,8 @@
 #include "TextEditor.h"
 #include <wx/choice.h>
 
-class TextEntryPanel : public EntryPanel {
+class TextEntryPanel : public EntryPanel
+{
 private:
 	TextEditor*	text_area;
 	wxButton*	btn_find_replace;

@@ -9,7 +9,8 @@
 #include <wx/spinctrl.h>
 #include <wx/choice.h>
 
-class GfxEntryPanel : public EntryPanel, public SActionHandler {
+class GfxEntryPanel : public EntryPanel, public SActionHandler
+{
 private:
 	bool			alph;
 	bool			trns;
@@ -48,7 +49,7 @@ public:
 
 	// SAction handler
 	bool	handleAction(string id);
-	bool	fillCustomMenu(wxMenu * custom);
+	bool	fillCustomMenu(wxMenu* custom);
 
 	void	onZoomChanged(wxCommandEvent& e);
 	void	onXOffsetChanged(wxSpinEvent& e);

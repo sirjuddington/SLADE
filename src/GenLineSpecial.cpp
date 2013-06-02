@@ -91,61 +91,66 @@
 #define LockedKindShift			5
 #define LockedSpeedShift		3
 
-namespace BoomGenLineSpecial {
-	static const char *Triggers[]=
+namespace BoomGenLineSpecial
+{
+	static const char* Triggers[]=
 	{"W1","WR","S1","SR","G1","GR","D1","DR",};
 
-	static const char *FloorTargets[]=
+	static const char* FloorTargets[]=
 	{"to Highest N Floor","to Lowest N Floor","to Next N Floor","to Lowest N Ceiling","to Ceiling","by Lower Tex","24 Units","32 Units",};
 
-	static const char *Directions[]=
+	static const char* Directions[]=
 	{"Down","Up",};
 
-	static const char *Speeds[]=
+	static const char* Speeds[]=
 	{"Slow","Normal","Fast","Turbo",};
 
-	static const char *Changers[]=
+	static const char* Changers[]=
 	{"","Zero Type/Copy Tex","Copy Tex","Copy Type/Copy Tex",};
 
-	static const char *Models[]=
+	static const char* Models[]=
 	{"Trigger","Numeric",};
 
-	static const char *Crushers[]=
+	static const char* Crushers[]=
 	{"","Cr",};
 
-	static const char *CeilingTargets[]=
+	static const char* CeilingTargets[]=
 	{"to Highest N Ceiling","to Lowest N Ceiling","to Next N Ceiling","to Lowest N Floor","to Floor","by Upper Tex","24 Units","32 Units",};
 
-	static const char *Doors1[]=
+	static const char* Doors1[]=
 	{"OpnD","Opn","ClsD","Cls",};
 
-	static const char *Doors2[]=
+	static const char* Doors2[]=
 	{"Cls","","Opn","",};
 
-	static const char *Delays[]=
+	static const char* Delays[]=
 	{"1","4","9","30",};
 
-	static const char *LockedDelays[]=
+	static const char* LockedDelays[]=
 	{"4",};
 
-	static const char *Locks[]=
-	{"Any Key","Red Card","Blue Card","Yellow Card","Red Skull","Blue Skull","Yellow Skull","All 6 Keys",
-	 "Any Key","Red Key","Blue Key","Yellow Key","Red Key","Blue Key","Yellow Key","All 3 Keys",};
+	static const char* Locks[]=
+	{
+		"Any Key","Red Card","Blue Card","Yellow Card","Red Skull","Blue Skull","Yellow Skull","All 6 Keys",
+		"Any Key","Red Key","Blue Key","Yellow Key","Red Key","Blue Key","Yellow Key","All 3 Keys",
+	};
 
-	static const char *LiftTargets[]=
+	static const char* LiftTargets[]=
 	{"to Lowest N Floor","to Next N Floor","to Lowest N Ceiling","Perpetual",};
 
-	static const char *LiftDelays[]=
+	static const char* LiftDelays[]=
 	{"1","3","5","10",};
 
-	static const char *Steps[]=
+	static const char* Steps[]=
 	{"4","8","16","24",};
 
-	string parseLineType(int type) {
+	string parseLineType(int type)
+	{
 		string type_string;
 
 		// Floor type
-		if (type>=0x6000) {
+		if (type>=0x6000)
+		{
 			int trigger = type & TriggerType;
 			int speed = (type & FloorSpeed) >> FloorSpeedShift;
 			int direction = (type & FloorDirection) >> FloorDirectionShift;
@@ -157,7 +162,7 @@ namespace BoomGenLineSpecial {
 			type_string += Triggers[trigger];
 			if (change == 0 && model == 1)
 				type_string += "M";
-			
+
 			type_string += " Floor ";
 
 			// Direction, target, speed
@@ -173,7 +178,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Ceiling type
-		else if (type>=0x4000) {
+		else if (type>=0x4000)
+		{
 			int trigger = type & TriggerType;
 			int speed = (type & CeilingSpeed) >> CeilingSpeedShift;
 			int direction = (type & CeilingDirection) >> CeilingDirectionShift;
@@ -185,7 +191,7 @@ namespace BoomGenLineSpecial {
 			type_string += Triggers[trigger];
 			if (change == 0 && model == 1)
 				type_string += "M";
-			
+
 			type_string += " Ceiling ";
 
 			// Direction, target, speed
@@ -201,7 +207,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Door type
-		else if (type>=0x3c00) {
+		else if (type>=0x3c00)
+		{
 			int trigger = type & TriggerType;
 			int kind = (type & DoorKind) >> DoorKindShift;
 			int delay = (type & DoorDelay) >> DoorDelayShift;
@@ -215,12 +222,13 @@ namespace BoomGenLineSpecial {
 			type_string += " Door ";
 
 			// Door kind
-			switch (kind) {
-				case 0: type_string += S_FMT("Open Wait %s Close", Delays[delay]); break;
-				case 1: type_string += "Open Stay"; break;
-				case 2: type_string += S_FMT("Close Wait %s Open", Delays[delay]); break;
-				case 3: type_string += "Close Stay"; break;
-				default: break;
+			switch (kind)
+			{
+			case 0: type_string += S_FMT("Open Wait %s Close", Delays[delay]); break;
+			case 1: type_string += "Open Stay"; break;
+			case 2: type_string += S_FMT("Close Wait %s Open", Delays[delay]); break;
+			case 3: type_string += "Close Stay"; break;
+			default: break;
 			}
 
 			// Door speed
@@ -228,7 +236,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Locked Door type
-		else if (type>=0x3800) {
+		else if (type>=0x3800)
+		{
 			int trigger = type & TriggerType;
 			int key = (type & LockedKey) >> LockedKeyShift;
 			int num = (type & LockedNKeys) >> LockedNKeysShift;
@@ -244,12 +253,13 @@ namespace BoomGenLineSpecial {
 			type_string += S_FMT("%s ", Locks[num*8+key]);
 
 			// Door kind
-			switch (kind) {
-				case 0: type_string += "Open Wait 4 Close"; break;
-				case 1: type_string += "Open Stay"; break;
-				case 2: type_string += "Close Wait 4 Open"; break;
-				case 3: type_string += "Close Stay"; break;
-				default: break;
+			switch (kind)
+			{
+			case 0: type_string += "Open Wait 4 Close"; break;
+			case 1: type_string += "Open Stay"; break;
+			case 2: type_string += "Close Wait 4 Open"; break;
+			case 3: type_string += "Close Stay"; break;
+			default: break;
 			}
 
 			// Door speed
@@ -257,7 +267,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Lift type
-		else if (type>=0x3400) {
+		else if (type>=0x3400)
+		{
 			int trigger = type & TriggerType;
 			int target = (type & LiftTarget) >> LiftTargetShift;
 			int delay = (type & LiftDelay) >> LiftDelayShift;
@@ -281,7 +292,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Stairs type
-		else if (type>=0x3000) {
+		else if (type>=0x3000)
+		{
 			int trigger = type & TriggerType;
 			int direction = (type & StairDirection) >> StairDirectionShift;
 			int step = (type & StairStep) >> StairStepShift;
@@ -301,7 +313,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Crusher type
-		else if (type>=0x2F80) {
+		else if (type>=0x2F80)
+		{
 			int trigger = type & TriggerType;
 			int speed = (type & CrusherSpeed) >> CrusherSpeedShift;
 
@@ -321,7 +334,8 @@ namespace BoomGenLineSpecial {
 		return type_string;
 	}
 
-	int getLineTypeProperties(int type, int* props) {
+	int getLineTypeProperties(int type, int* props)
+	{
 		if (!props)
 			return -1;
 
@@ -329,7 +343,8 @@ namespace BoomGenLineSpecial {
 		props[0] = type & TriggerType;
 
 		// Floor
-		if (type>=0x6000) {
+		if (type>=0x6000)
+		{
 			props[1] = (type & FloorSpeed) >> FloorSpeedShift;
 			props[2] = (type & FloorModel) >> FloorModelShift;
 			props[3] = (type & FloorDirection) >> FloorDirectionShift;
@@ -341,7 +356,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Ceiling
-		else if (type>=0x4000) {
+		else if (type>=0x4000)
+		{
 			props[1] = (type & CeilingSpeed) >> CeilingSpeedShift;
 			props[2] = (type & CeilingModel) >> CeilingModelShift;
 			props[3] = (type & CeilingDirection) >> CeilingDirectionShift;
@@ -353,7 +369,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Door
-		else if (type>=0x3c00) {
+		else if (type>=0x3c00)
+		{
 			props[1] = (type & DoorSpeed) >> DoorSpeedShift;
 			props[2] = (type & DoorKind) >> DoorKindShift;
 			props[3] = (type & DoorMonster) >> DoorMonsterShift;
@@ -363,7 +380,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Locked Door
-		else if (type>=0x3800) {
+		else if (type>=0x3800)
+		{
 			props[1] = (type & LockedSpeed) >> LockedSpeedShift;
 			props[2] = (type & LockedKind) >> LockedKindShift;
 			props[3] = (type & LockedKey) >> LockedKeyShift;
@@ -373,7 +391,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Lift
-		else if (type>=0x3400) {
+		else if (type>=0x3400)
+		{
 			props[1] = (type & LiftSpeed) >> LiftSpeedShift;
 			props[2] = (type & LiftMonster) >> LiftMonsterShift;
 			props[3] = (type & LiftDelay) >> LiftDelayShift;
@@ -383,7 +402,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Stairs
-		else if (type>=0x3000) {
+		else if (type>=0x3000)
+		{
 			props[1] = (type & StairSpeed) >> StairSpeedShift;
 			props[2] = (type & StairMonster) >> StairMonsterShift;
 			props[3] = (type & StairStep) >> StairStepShift;
@@ -394,7 +414,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Crusher
-		else if (type>=0x2F80) {
+		else if (type>=0x2F80)
+		{
 			props[1] = (type & CrusherSpeed) >> CrusherSpeedShift;
 			props[2] = (type & CrusherMonster) >> CrusherMonsterShift;
 			props[3] = (type & CrusherSilent) >> CrusherSilentShift;
@@ -405,11 +426,13 @@ namespace BoomGenLineSpecial {
 		return -1;
 	}
 
-	int generateSpecial(int type, int* props) {
+	int generateSpecial(int type, int* props)
+	{
 		int special = 0;
 
 		// Floor
-		if (type == GS_FLOOR) {
+		if (type == GS_FLOOR)
+		{
 			special = GenFloorBase;
 			special += (props[0] << TriggerTypeShift);
 			special += (props[1] << FloorSpeedShift);
@@ -421,7 +444,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Ceiling
-		else if (type == GS_CEILING) {
+		else if (type == GS_CEILING)
+		{
 			special = GenCeilingBase;
 			special += (props[0] << TriggerTypeShift);
 			special += (props[1] << CeilingSpeedShift);
@@ -433,7 +457,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Door
-		else if (type == GS_DOOR) {
+		else if (type == GS_DOOR)
+		{
 			special = GenDoorBase;
 			special += (props[0] << TriggerTypeShift);
 			special += (props[1] << DoorSpeedShift);
@@ -443,7 +468,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Locked Door
-		else if (type == GS_LOCKED_DOOR) {
+		else if (type == GS_LOCKED_DOOR)
+		{
 			special = GenLockedBase;
 			special += (props[0] << TriggerTypeShift);
 			special += (props[1] << LockedSpeedShift);
@@ -453,7 +479,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Lift
-		else if (type == GS_LIFT) {
+		else if (type == GS_LIFT)
+		{
 			special = GenLiftBase;
 			special += (props[0] << TriggerTypeShift);
 			special += (props[1] << LiftSpeedShift);
@@ -463,7 +490,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Stairs
-		else if (type == GS_STAIRS) {
+		else if (type == GS_STAIRS)
+		{
 			special = GenStairsBase;
 			special += (props[0] << TriggerTypeShift);
 			special += (props[1] << StairSpeedShift);
@@ -474,7 +502,8 @@ namespace BoomGenLineSpecial {
 		}
 
 		// Crusher
-		else if (type == GS_CRUSHER) {
+		else if (type == GS_CRUSHER)
+		{
 			special = GenCrusherBase;
 			special += (props[0] << TriggerTypeShift);
 			special += (props[1] << CrusherSpeedShift);

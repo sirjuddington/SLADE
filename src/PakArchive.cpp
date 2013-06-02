@@ -46,26 +46,30 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* PakArchive::PakArchive
  * PakArchive class constructor
  *******************************************************************/
-PakArchive::PakArchive() : Archive(ARCHIVE_PAK) {
+PakArchive::PakArchive() : Archive(ARCHIVE_PAK)
+{
 }
 
 /* PakArchive::~PakArchive
  * PakArchive class destructor
  *******************************************************************/
-PakArchive::~PakArchive() {
+PakArchive::~PakArchive()
+{
 }
 
 /* PakArchive::getFileExtensionString
  * Returns the file extension string to use in the file open dialog
  *******************************************************************/
-string PakArchive::getFileExtensionString() {
+string PakArchive::getFileExtensionString()
+{
 	return "Pak Files (*.pak)|*.pak";
 }
 
 /* PakArchive::getFormat
  * Returns the string id for the pak EntryDataFormat
  *******************************************************************/
-string PakArchive::getFormat() {
+string PakArchive::getFormat()
+{
 	return "archive_pak";
 }
 
@@ -73,7 +77,8 @@ string PakArchive::getFormat() {
  * Reads pak format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool PakArchive::open(MemChunk& mc) {
+bool PakArchive::open(MemChunk& mc)
+{
 	// Check given data is valid
 	if (mc.getSize() < 12)
 		return false;
@@ -88,7 +93,8 @@ bool PakArchive::open(MemChunk& mc) {
 	mc.read(&dir_size, 4);
 
 	// Check it
-	if (pack[0] != 'P' || pack[1] != 'A' || pack[2] != 'C' || pack[3] != 'K') {
+	if (pack[0] != 'P' || pack[1] != 'A' || pack[2] != 'C' || pack[3] != 'K')
+	{
 		wxLogMessage("PakArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid pak header";
 		return false;
@@ -101,7 +107,8 @@ bool PakArchive::open(MemChunk& mc) {
 	size_t num_entries = dir_size / 64;
 	mc.seek(dir_offset, SEEK_SET);
 	theSplashWindow->setProgressMessage("Reading pak archive data");
-	for (uint32_t d = 0; d < num_entries; d++) {
+	for (uint32_t d = 0; d < num_entries; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_entries));
 
@@ -118,7 +125,8 @@ bool PakArchive::open(MemChunk& mc) {
 		size = wxINT32_SWAP_ON_BE(size);
 
 		// Check offset+size
-		if ((unsigned)(offset + size) > mc.getSize()) {
+		if ((unsigned)(offset + size) > mc.getSize())
+		{
 			wxLogMessage("PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -146,7 +154,8 @@ bool PakArchive::open(MemChunk& mc) {
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < all_entries.size(); a++) {
+	for (size_t a = 0; a < all_entries.size(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_entries)));
 
@@ -154,7 +163,8 @@ bool PakArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
 			entry->importMemChunk(edata);
@@ -185,7 +195,8 @@ bool PakArchive::open(MemChunk& mc) {
  * Writes the pak archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool PakArchive::write(MemChunk& mc, bool update) {
+bool PakArchive::write(MemChunk& mc, bool update)
+{
 	// Clear current data
 	mc.clear();
 
@@ -196,7 +207,8 @@ bool PakArchive::write(MemChunk& mc, bool update) {
 	// Process entry list
 	long dir_offset = 12;
 	long dir_size = 0;
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Ignore folder entries
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
@@ -219,13 +231,15 @@ bool PakArchive::write(MemChunk& mc, bool update) {
 	// Write directory
 	mc.seek(dir_offset, SEEK_SET);
 	long offset = 12;
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Skip folders
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
 
 		// Update entry
-		if (update) {
+		if (update)
+		{
 			entries[a]->setState(0);
 			entries[a]->exProp("Offset") = (int)offset;
 		}
@@ -233,7 +247,8 @@ bool PakArchive::write(MemChunk& mc, bool update) {
 		// Check entry name
 		string name = entries[a]->getPath(true);
 		name.Remove(0, 1);	// Remove leading /
-		if (name.Len() > 56) {
+		if (name.Len() > 56)
+		{
 			wxLogMessage("Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", CHR(name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
@@ -260,7 +275,8 @@ bool PakArchive::write(MemChunk& mc, bool update) {
 
 	// Write entry data
 	mc.seek(12, SEEK_SET);
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Skip folders
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
@@ -276,23 +292,26 @@ bool PakArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the pak file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool PakArchive::loadEntryData(ArchiveEntry* entry) {
+bool PakArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check entry is ok
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
 
 	// Open archive file
 	wxFile file(filename);
-	
+
 	// Check it opened
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("PakArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
 		return false;
 	}
@@ -310,7 +329,8 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry) {
 /* PakArchive::detectNamespace
  * Returns the namespace that [entry] is within
  *******************************************************************/
-string PakArchive::detectNamespace(ArchiveEntry* entry) {
+string PakArchive::detectNamespace(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return "global";
@@ -338,7 +358,8 @@ string PakArchive::detectNamespace(ArchiveEntry* entry) {
 /* PakArchive::isPakArchive
  * Checks if the given data is a valid Quake pak archive
  *******************************************************************/
-bool PakArchive::isPakArchive(MemChunk& mc) {
+bool PakArchive::isPakArchive(MemChunk& mc)
+{
 	// Check given data is valid
 	if (mc.getSize() < 12)
 		return false;
@@ -371,7 +392,8 @@ bool PakArchive::isPakArchive(MemChunk& mc) {
 /* PakArchive::isPakArchive
  * Checks if the file at [filename] is a valid Quake pak archive
  *******************************************************************/
-bool PakArchive::isPakArchive(string filename) {
+bool PakArchive::isPakArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 

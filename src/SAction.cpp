@@ -50,7 +50,8 @@ int SAction::n_groups = 0;
 /* SAction::SAction
  * SAction class constructor
  *******************************************************************/
-SAction::SAction(string id, string text, string icon, string helptext, string shortcut, int type, int custom_wxid, int radio_group) {
+SAction::SAction(string id, string text, string icon, string helptext, string shortcut, int type, int custom_wxid, int radio_group)
+{
 	// Init variables
 	this->id = id;
 	this->text = text;
@@ -72,14 +73,16 @@ SAction::SAction(string id, string text, string icon, string helptext, string sh
 /* SAction::~SAction
  * SAction class destructor
  *******************************************************************/
-SAction::~SAction() {
+SAction::~SAction()
+{
 }
 
 /* SAction::addToMenu
  * Adds this action to [menu]. If [text_override] is not "NO", it
  * will be used instead of the action's text as the menu item label
  *******************************************************************/
-bool SAction::addToMenu(wxMenu* menu, string text_override) {
+bool SAction::addToMenu(wxMenu* menu, string text_override)
+{
 	// Can't add to nonexistant menu
 	if (!menu)
 		return false;
@@ -106,7 +109,8 @@ bool SAction::addToMenu(wxMenu* menu, string text_override) {
  * Adds this action to [toolbar]. If [icon_override] is not "NO", it
  * will be used instead of the action's icon as the tool icon
  *******************************************************************/
-bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override) {
+bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override)
+{
 	// Can't add to nonexistant toolbar
 	if (!toolbar)
 		return false;
@@ -131,7 +135,8 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override) {
  * Adds this action to [toolbar]. If [icon_override] is not "NO", it
  * will be used instead of the action's icon as the tool icon
  *******************************************************************/
-bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override) {
+bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override)
+{
 	// Can't add to nonexistant toolbar
 	if (!toolbar)
 		return false;

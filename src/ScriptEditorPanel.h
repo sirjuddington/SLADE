@@ -7,7 +7,8 @@
 #include <wx/treelist.h>
 
 class ArchiveEntry;
-class ScriptEditorPanel : public wxPanel, SActionHandler {
+class ScriptEditorPanel : public wxPanel, SActionHandler
+{
 private:
 	string			script_text;
 	ArchiveEntry*	entry_script;

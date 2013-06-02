@@ -11,7 +11,8 @@
 
 wxDECLARE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
-class ArchiveEntryList : public VirtualListView, public Listener, public SActionHandler {
+class ArchiveEntryList : public VirtualListView, public Listener, public SActionHandler
+{
 private:
 	Archive*			archive;
 	vector<unsigned>	filter;

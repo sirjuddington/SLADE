@@ -36,7 +36,8 @@
  * Creates a wxMenuItem from the given parameters, including giving
  * it an icon from slade.pk3 if specified
  *******************************************************************/
-wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help, string icon) {
+wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help, string icon)
+{
 	wxMenuItem* item = new wxMenuItem(menu, id, label, help);
 
 	if (!icon.IsEmpty())

@@ -41,14 +41,16 @@
 /* Listener::Listener
  * Listener class constructor
  *******************************************************************/
-Listener::Listener() {
+Listener::Listener()
+{
 	deaf = false;
 }
 
 /* Listener::~Listener
  * Listener class destructor
  *******************************************************************/
-Listener::~Listener() {
+Listener::~Listener()
+{
 	for (size_t a = 0; a < announcers.size(); a++)
 		announcers[a]->removeListener(this);
 }
@@ -56,7 +58,8 @@ Listener::~Listener() {
 /* Listener::listenTo
  * Subscribes this listener to an announcer
  *******************************************************************/
-void Listener::listenTo(Announcer* a) {
+void Listener::listenTo(Announcer* a)
+{
 	a->addListener(this);
 	announcers.push_back(a);
 }
@@ -64,9 +67,12 @@ void Listener::listenTo(Announcer* a) {
 /* Listener::stopListening
  * 'Unsubscribes' this listener from an announcer
  *******************************************************************/
-void Listener::stopListening(Announcer* a) {
-	for (size_t i = 0; i < announcers.size(); i++) {
-		if (announcers[i] == a) {
+void Listener::stopListening(Announcer* a)
+{
+	for (size_t i = 0; i < announcers.size(); i++)
+	{
+		if (announcers[i] == a)
+		{
 			announcers.erase(announcers.begin() + i);
 			return;
 		}
@@ -78,7 +84,8 @@ void Listener::stopListening(Announcer* a) {
  * announces an event. Does nothing by default, is to be overridden
  * by whatever class inherits from Listener
  *******************************************************************/
-void Listener::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {
+void Listener::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+{
 }
 
 
@@ -89,14 +96,16 @@ void Listener::onAnnouncement(Announcer* announcer, string event_name, MemChunk&
 /* Announcer::Announcer
  * Announcer class constructor
  *******************************************************************/
-Announcer::Announcer() {
+Announcer::Announcer()
+{
 	muted = false;
 }
 
 /* Announcer::~Announcer
  * Announcer class destructor
  *******************************************************************/
-Announcer::~Announcer() {
+Announcer::~Announcer()
+{
 	for (size_t a = 0; a < listeners.size(); a++)
 		listeners[a]->stopListening(this);
 }
@@ -104,16 +113,20 @@ Announcer::~Announcer() {
 /* Announcer::addListener
  * Adds a listener to the list
  *******************************************************************/
-void Announcer::addListener(Listener* l) {
+void Announcer::addListener(Listener* l)
+{
 	listeners.push_back(l);
 }
 
 /* Announcer::removeListener
  * Removes a listener from the list
  *******************************************************************/
-void Announcer::removeListener(Listener* l) {
-	for (size_t a = 0; a < listeners.size(); a++) {
-		if (listeners[a] == l) {
+void Announcer::removeListener(Listener* l)
+{
+	for (size_t a = 0; a < listeners.size(); a++)
+	{
+		if (listeners[a] == l)
+		{
 			listeners.erase(listeners.begin() + a);
 			return;
 		}
@@ -124,11 +137,13 @@ void Announcer::removeListener(Listener* l) {
  * 'Announces' an event to all listeners currently in the listeners
  * list, ie all Listeners that are 'listening' to this announcer.
  *******************************************************************/
-void Announcer::announce(string event_name, MemChunk& event_data) {
+void Announcer::announce(string event_name, MemChunk& event_data)
+{
 	if (isMuted())
 		return;
 
-	for (size_t a = 0; a < listeners.size(); a++) {
+	for (size_t a = 0; a < listeners.size(); a++)
+	{
 		if (!listeners[a]->isDeaf())
 			listeners[a]->onAnnouncement(this, event_name, event_data);
 	}
@@ -139,7 +154,8 @@ void Announcer::announce(string event_name, MemChunk& event_data) {
  * list, ie all Listeners that are 'listening' to this announcer.
  * For announcements that don't require any extra data
  *******************************************************************/
-void Announcer::announce(string event_name) {
+void Announcer::announce(string event_name)
+{
 	MemChunk mc;
 	announce(event_name, mc);
 }

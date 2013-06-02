@@ -6,12 +6,14 @@
 
 class MapLine;
 class MapSide;
-class LineTextureOverlay : public MCOverlay {
+class LineTextureOverlay : public MCOverlay
+{
 private:
 	vector<MapLine*>	lines;
 	int					selected_side;
 
-	struct tex_inf_t {
+	struct tex_inf_t
+	{
 		point2_t		position;
 		bool			hover;
 		vector<string>	textures;
@@ -19,11 +21,12 @@ private:
 
 		tex_inf_t() { hover = false; changed = false; }
 
-		void checkHover(int x, int y, int halfsize) {
+		void checkHover(int x, int y, int halfsize)
+		{
 			if (x >= position.x - halfsize &&
-				x <= position.x + halfsize &&
-				y >= position.y - halfsize &&
-				y <= position.y + halfsize)
+			        x <= position.x + halfsize &&
+			        y >= position.y - halfsize &&
+			        y <= position.y + halfsize)
 				hover = true;
 			else
 				hover = false;
@@ -31,13 +34,14 @@ private:
 	};
 
 	// Texture info
-	enum {
-		FRONT_UPPER = 0,
-		FRONT_MIDDLE,
-		FRONT_LOWER,
-		BACK_UPPER,
-		BACK_MIDDLE,
-		BACK_LOWER,
+	enum
+	{
+	    FRONT_UPPER = 0,
+	    FRONT_MIDDLE,
+	    FRONT_LOWER,
+	    BACK_UPPER,
+	    BACK_MIDDLE,
+	    BACK_LOWER,
 	};
 	tex_inf_t	textures[6];
 	bool		side1;

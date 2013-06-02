@@ -7,7 +7,8 @@
 #include "Misc.h"
 #include "ListenerAnnouncer.h"
 
-class PaletteChooser : public wxChoice, public Announcer {
+class PaletteChooser : public wxChoice, public Announcer
+{
 private:
 	Palette8bit	pal_global;
 

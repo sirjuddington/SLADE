@@ -2,7 +2,8 @@
 #ifndef __TEXTLANGUAGE_H__
 #define __TEXTLANGUAGE_H__
 
-class TLFunction {
+class TLFunction
+{
 private:
 	string			name;
 	vector<string>	arg_sets;
@@ -22,7 +23,8 @@ public:
 	point2_t	getArgTextExtent(int arg, int arg_set = 0);
 };
 
-class TextLanguage {
+class TextLanguage
+{
 private:
 	string				id;				// Used internally
 	string				name;			// The language 'name' (will show up in the language selection dropdown, etc)

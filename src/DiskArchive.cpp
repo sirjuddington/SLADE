@@ -39,9 +39,9 @@
 
 struct diskentry_t
 {
-   char name[64];
-   size_t offset;
-   size_t length;
+	char name[64];
+	size_t offset;
+	size_t length;
 };
 
 /*******************************************************************
@@ -57,26 +57,30 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* DiskArchive::DiskArchive
  * DiskArchive class constructor
  *******************************************************************/
-DiskArchive::DiskArchive() : Archive(ARCHIVE_DISK) {
+DiskArchive::DiskArchive() : Archive(ARCHIVE_DISK)
+{
 }
 
 /* DiskArchive::~DiskArchive
  * DiskArchive class destructor
  *******************************************************************/
-DiskArchive::~DiskArchive() {
+DiskArchive::~DiskArchive()
+{
 }
 
 /* DiskArchive::getFileExtensionString
  * Returns the file extension string to use in the file open dialog
  *******************************************************************/
-string DiskArchive::getFileExtensionString() {
+string DiskArchive::getFileExtensionString()
+{
 	return "Nerve Disk Files (*.disk)|*.disk";
 }
 
 /* DiskArchive::getFormat
  * Returns the string id for the disk EntryDataFormat
  *******************************************************************/
-string DiskArchive::getFormat() {
+string DiskArchive::getFormat()
+{
 	return "archive_disk";
 }
 
@@ -84,7 +88,8 @@ string DiskArchive::getFormat() {
  * Reads disk format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool DiskArchive::open(MemChunk& mc) {
+bool DiskArchive::open(MemChunk& mc)
+{
 	size_t mcsize = mc.getSize();
 
 	// Check given data is valid
@@ -107,7 +112,8 @@ bool DiskArchive::open(MemChunk& mc) {
 
 	// Read the directory
 	theSplashWindow->setProgressMessage("Reading disk archive data");
-	for (uint32_t d = 0; d < num_entries; d++) {
+	for (uint32_t d = 0; d < num_entries; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_entries));
 
@@ -123,7 +129,8 @@ bool DiskArchive::open(MemChunk& mc) {
 		dent.offset += start_offset;
 
 		// Check offset+size
-		if (dent.offset + dent.length > mcsize) {
+		if (dent.offset + dent.length > mcsize)
+		{
 			wxLogMessage("DiskArchive::open: Disk archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -154,7 +161,8 @@ bool DiskArchive::open(MemChunk& mc) {
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < all_entries.size(); a++) {
+	for (size_t a = 0; a < all_entries.size(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_entries)));
 
@@ -162,7 +170,8 @@ bool DiskArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = all_entries[a];
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
 			entry->importMemChunk(edata);
@@ -193,7 +202,8 @@ bool DiskArchive::open(MemChunk& mc) {
  * Writes the disk archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool DiskArchive::write(MemChunk& mc, bool update) {
+bool DiskArchive::write(MemChunk& mc, bool update)
+{
 	// Clear current data
 	mc.clear();
 
@@ -204,7 +214,8 @@ bool DiskArchive::write(MemChunk& mc, bool update) {
 	// Process entry list
 	uint32_t num_entries = 0;
 	uint32_t size_entries = 0;
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Ignore folder entries
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
@@ -225,13 +236,15 @@ bool DiskArchive::write(MemChunk& mc, bool update) {
 	mc.write(&num_entries, 4);
 
 	// Write directory
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Skip folders
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
 
 		// Update entry
-		if (update) {
+		if (update)
+		{
 			entries[a]->setState(0);
 			entries[a]->exProp("Offset") = (int)offset;
 		}
@@ -240,7 +253,8 @@ bool DiskArchive::write(MemChunk& mc, bool update) {
 		string name = entries[a]->getPath(true);
 		name.Replace("/", "\\");
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
-		if (name.Len() > 58) {
+		if (name.Len() > 58)
+		{
 			wxLogMessage("Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", CHR(name));
 			wxFileName fn(name);
 			name = fn.GetFullName();
@@ -279,7 +293,8 @@ bool DiskArchive::write(MemChunk& mc, bool update) {
 	mc.write(&size_entries, 4);
 
 	// Write entry data
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Skip folders
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
@@ -295,23 +310,26 @@ bool DiskArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the disk file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool DiskArchive::loadEntryData(ArchiveEntry* entry) {
+bool DiskArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check entry is ok
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the entry's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
 
 	// Open archive file
 	wxFile file(filename);
-	
+
 	// Check it opened
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("DiskArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
 		return false;
 	}
@@ -329,7 +347,8 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry) {
 /* DiskArchive::detectNamespace
  * Returns the namespace that [entry] is within
  *******************************************************************/
-string DiskArchive::detectNamespace(ArchiveEntry* entry) {
+string DiskArchive::detectNamespace(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return "global";
@@ -357,7 +376,8 @@ string DiskArchive::detectNamespace(ArchiveEntry* entry) {
 /* DiskArchive::isDiskArchive
  * Checks if the given data is a valid Nerve disk archive
  *******************************************************************/
-bool DiskArchive::isDiskArchive(MemChunk& mc) {
+bool DiskArchive::isDiskArchive(MemChunk& mc)
+{
 	// Check given data is valid
 	size_t mcsize = mc.getSize();
 	if (mcsize < 80)
@@ -376,7 +396,8 @@ bool DiskArchive::isDiskArchive(MemChunk& mc) {
 		return false;
 
 	// Read the directory
-	for (uint32_t d = 0; d < num_entries; d++) {
+	for (uint32_t d = 0; d < num_entries; d++)
+	{
 		// Read entry info
 		diskentry_t entry;
 		mc.read(&entry, 72);
@@ -404,7 +425,8 @@ bool DiskArchive::isDiskArchive(MemChunk& mc) {
 /* DiskArchive::isDiskArchive
  * Checks if the file at [filename] is a valid Quake disk archive
  *******************************************************************/
-bool DiskArchive::isDiskArchive(string filename) {
+bool DiskArchive::isDiskArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 
@@ -429,7 +451,8 @@ bool DiskArchive::isDiskArchive(string filename) {
 		return false;
 
 	// Read the directory
-	for (uint32_t d = 0; d < num_entries; d++) {
+	for (uint32_t d = 0; d < num_entries; d++)
+	{
 		// Read entry info
 		diskentry_t entry;
 		file.Read(&entry, 72);

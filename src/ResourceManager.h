@@ -10,8 +10,9 @@ class ResourceManager;
 class CTexture;
 
 // This base class is probably not really needed
-class Resource {
-friend class ResourceManager;
+class Resource
+{
+	friend class ResourceManager;
 private:
 	string	type;
 
@@ -22,8 +23,9 @@ public:
 	virtual int	length() { return 0; }
 };
 
-class EntryResource : public Resource {
-friend class ResourceManager;
+class EntryResource : public Resource
+{
+	friend class ResourceManager;
 private:
 	vector<ArchiveEntry*>	entries;
 
@@ -37,10 +39,12 @@ public:
 	int		length();
 };
 
-class TextureResource : public Resource {
-friend class ResourceManager;
+class TextureResource : public Resource
+{
+	friend class ResourceManager;
 public:
-	struct tex_res_t {
+	struct tex_res_t
+	{
 		CTexture*	tex;
 		Archive*	parent;
 	};
@@ -60,7 +64,8 @@ private:
 typedef std::map<string, EntryResource> EntryResourceMap;
 typedef std::map<string, TextureResource> TextureResourceMap;
 
-class ResourceManager : public Listener, public Announcer {
+class ResourceManager : public Listener, public Announcer
+{
 private:
 	EntryResourceMap	palettes;
 	EntryResourceMap	patches;
@@ -76,7 +81,8 @@ public:
 	ResourceManager();
 	~ResourceManager();
 
-	static ResourceManager*	getInstance() {
+	static ResourceManager*	getInstance()
+	{
 		if (!instance)
 			instance = new ResourceManager();
 

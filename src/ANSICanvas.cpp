@@ -49,12 +49,13 @@
  * ANSICanvas class constructor
  *******************************************************************/
 ANSICanvas::ANSICanvas(wxWindow* parent, int id)
-: OGLCanvas(parent, id) {
+	: OGLCanvas(parent, id)
+{
 	// Get the all-important font data
 	Archive* res_archive = theArchiveManager->programResourceArchive();
 	if (!res_archive)
 		return;
-	ArchiveEntry * ansi_font = res_archive->entryAtPath("vga-rom-font.16");
+	ArchiveEntry* ansi_font = res_archive->entryAtPath("vga-rom-font.16");
 	if (!ansi_font || ansi_font->getSize()%256)
 		return;
 
@@ -73,7 +74,8 @@ ANSICanvas::ANSICanvas(wxWindow* parent, int id)
 /* ANSICanvas::~ANSICanvas
  * ANSICanvas class destructor
  *******************************************************************/
-ANSICanvas::~ANSICanvas() {
+ANSICanvas::~ANSICanvas()
+{
 	delete tex_image;
 	delete[] picdata;
 	// fontdata belongs to the ansi_font ArchiveEntry
@@ -83,8 +85,10 @@ ANSICanvas::~ANSICanvas() {
 /* ANSICanvas::writeRGBAData
  * Converts image data into RGBA format
  *******************************************************************/
-void ANSICanvas::writeRGBAData(uint8_t* dest) {
-	for (size_t i = 0; i < width*height; ++i) {
+void ANSICanvas::writeRGBAData(uint8_t* dest)
+{
+	for (size_t i = 0; i < width*height; ++i)
+	{
 		size_t j = i<<2;
 		rgba_t c = CodePages::ansiColor(picdata[i]);
 		dest[j+0] = c.r; dest[j+1] = c.g; dest[j+2] = c.b; dest[j+3] = 0xFF;
@@ -94,7 +98,8 @@ void ANSICanvas::writeRGBAData(uint8_t* dest) {
 /* ANSICanvas::draw
  * Draws the image
  *******************************************************************/
-void ANSICanvas::draw() {
+void ANSICanvas::draw()
+{
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
 
@@ -128,7 +133,8 @@ void ANSICanvas::draw() {
  * Draws the image (reloads the image as a texture each time, will
  * change this later...)
  *******************************************************************/
-void ANSICanvas::drawImage() {
+void ANSICanvas::drawImage()
+{
 	// Check image is valid
 	if (!picdata)
 		return;
@@ -140,7 +146,7 @@ void ANSICanvas::drawImage() {
 	glEnable(GL_TEXTURE_2D);
 
 	// Load texture data
-	uint8_t * RGBAData = new uint8_t[width*height*4];
+	uint8_t* RGBAData = new uint8_t[width*height*4];
 	writeRGBAData(RGBAData);
 	tex_image->loadRawData(RGBAData, width, height);
 
@@ -172,19 +178,22 @@ void ANSICanvas::drawImage() {
 /* ANSICanvas::drawCharacter
  * Draws a single character. This is called from the parent ANSIPanel
  *******************************************************************/
-void ANSICanvas::drawCharacter(size_t index) {
+void ANSICanvas::drawCharacter(size_t index)
+{
 	if (!ansidata)
 		return;
 
 	// Setup some variables
 	uint8_t chara = ansidata[index<<1];		// Character
 	uint8_t color = ansidata[(index<<1)+1];	// Colour
-	uint8_t * pic = picdata + ((index/NUMCOLS)*width*char_height) + ((index%NUMCOLS)*char_width);	// Position on canvas to draw
-	const uint8_t * fnt = fontdata + (char_height * chara);	// Position of character in font image
+	uint8_t* pic = picdata + ((index/NUMCOLS)*width*char_height) + ((index%NUMCOLS)*char_width);	// Position on canvas to draw
+	const uint8_t* fnt = fontdata + (char_height * chara);	// Position of character in font image
 
 	// Draw character (including background)
-	for (int y = 0; y < char_height; ++y) {
-		for (int x = 0; x < char_width; ++x) {
+	for (int y = 0; y < char_height; ++y)
+	{
+		for (int x = 0; x < char_width; ++x)
+		{
 			pic[x+(y*width)] = (fnt[y]&(1<<(char_width-1-x))) ? (color&15) : ((color&112)>>4);
 		}
 	}

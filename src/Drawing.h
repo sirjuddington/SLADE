@@ -11,8 +11,10 @@
 class GLTexture;
 class FontManager;
 
-namespace Drawing {
-	enum {
+namespace Drawing
+{
+	enum
+	{
 		// Text fonts
 		FONT_NORMAL = 0,
 		FONT_CONDENSED,

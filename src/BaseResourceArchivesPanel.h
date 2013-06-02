@@ -2,7 +2,8 @@
 #ifndef __BASERESOURCEARCHIVESPANEL__
 #define __BASERESOURCEARCHIVESPANEL__
 
-class BaseResourceArchivesPanel : public wxPanel {
+class BaseResourceArchivesPanel : public wxPanel
+{
 private:
 	wxListBox*	list_base_archive_paths;
 	wxButton*	btn_add;

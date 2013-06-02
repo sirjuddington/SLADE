@@ -12,7 +12,8 @@ class MapObject;
 class MapObjectPropsPanel;
 class SToolBar;
 class ScriptEditorPanel;
-class MapEditorWindow : public STopWindow, public SActionHandler {
+class MapEditorWindow : public STopWindow, public SActionHandler
+{
 private:
 	MapCanvas*				map_canvas;
 	MapEditor				editor;
@@ -32,7 +33,8 @@ public:
 	~MapEditorWindow();
 
 	// Singleton implementation
-	static MapEditorWindow* getInstance() {
+	static MapEditorWindow* getInstance()
+	{
 		if (!instance)
 			instance = new MapEditorWindow();
 
@@ -70,7 +72,8 @@ public:
 // Define for less cumbersome MapEditorWindow::getInstance()
 #define theMapEditor MapEditorWindow::getInstance()
 
-enum ThingDrawTypes {
+enum ThingDrawTypes
+{
 	TDT_SQUARE,
 	TDT_ROUND,
 	TDT_SPRITE,

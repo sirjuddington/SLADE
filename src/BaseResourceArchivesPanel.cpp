@@ -49,7 +49,8 @@ EXTERN_CVAR(String, dir_last)
  * BaseResourceArchivesPanel class constructor
  *******************************************************************/
 BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
-: wxPanel(parent, -1) {
+	: wxPanel(parent, -1)
+{
 	// Setup sizer
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(hbox);
@@ -57,7 +58,8 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
 	// Init paths list
 	//int sel_index = -1;
 	list_base_archive_paths = new wxListBox(this, -1);
-	for (size_t a = 0; a < theArchiveManager->numBaseResourcePaths(); a++) {
+	for (size_t a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
+	{
 		list_base_archive_paths->Append(theArchiveManager->getBaseResourcePath(a));
 	}
 
@@ -88,13 +90,15 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
 /* BaseResourceArchivesPanel::~BaseResourceArchivesPanel
  * BaseResourceArchivesPanel class destructor
  *******************************************************************/
-BaseResourceArchivesPanel::~BaseResourceArchivesPanel() {
+BaseResourceArchivesPanel::~BaseResourceArchivesPanel()
+{
 }
 
 /* BaseResourceArchivesPanel::getSelectedPath
  * Returns the currently selected base resource path
  *******************************************************************/
-int BaseResourceArchivesPanel::getSelectedPath() {
+int BaseResourceArchivesPanel::getSelectedPath()
+{
 	return list_base_archive_paths->GetSelection();
 }
 
@@ -106,7 +110,8 @@ int BaseResourceArchivesPanel::getSelectedPath() {
 /* BaseResourceArchivesPanel::onBtnAdd
  * Called when the 'Add Archive' button is clicked
  *******************************************************************/
-void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e) {
+void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e)
+{
 	// Create extensions string
 	string extensions = theArchiveManager->getArchiveExtensionsString();
 
@@ -114,13 +119,15 @@ void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e) {
 	wxFileDialog dialog_open(this, "Choose file(s) to open", dir_last, wxEmptyString, extensions, wxFD_OPEN|wxFD_MULTIPLE|wxFD_FILE_MUST_EXIST, wxDefaultPosition);
 
 	// Run the dialog & check that the user didn't cancel
-	if (dialog_open.ShowModal() == wxID_OK) {
+	if (dialog_open.ShowModal() == wxID_OK)
+	{
 		// Get an array of selected filenames
 		wxArrayString files;
 		dialog_open.GetPaths(files);
 
 		// Add each to the paths list
-		for (size_t a = 0; a < files.size(); a++) {
+		for (size_t a = 0; a < files.size(); a++)
+		{
 			if (theArchiveManager->addBaseResourcePath(files[a]))
 				list_base_archive_paths->Append(files[a]);
 		}
@@ -133,7 +140,8 @@ void BaseResourceArchivesPanel::onBtnAdd(wxCommandEvent& e) {
 /* BaseResourceArchivesPanel::onBtnRemove
  * Called when the 'Remove Archive' button is clicked
  *******************************************************************/
-void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e) {
+void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
+{
 	// Get the selected item index and remove it
 	int index = list_base_archive_paths->GetSelection();
 	list_base_archive_paths->Delete(index);

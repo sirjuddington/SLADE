@@ -5,7 +5,8 @@
 #include "OGLCanvas.h"
 #include "BrowserItem.h"
 
-class BrowserCanvas : public OGLCanvas {
+class BrowserCanvas : public OGLCanvas
+{
 private:
 	vector<BrowserItem*>	items;
 	vector<int>				items_filter;
@@ -29,13 +30,14 @@ public:
 	BrowserCanvas(wxWindow* parent);
 	~BrowserCanvas();
 
-	enum {
-		ITEMS_NORMAL = 0,
-		ITEMS_TILES = 1,
+	enum
+	{
+	    ITEMS_NORMAL = 0,
+	    ITEMS_TILES = 1,
 
-		NAMES_NORMAL = 0,
-		NAMES_INDEX,
-		NAMES_NONE,
+	    NAMES_NORMAL = 0,
+	    NAMES_INDEX,
+	    NAMES_NONE,
 	};
 
 	vector<BrowserItem*>&	itemList() { return items; }

@@ -49,7 +49,8 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 /* Wad2Archive::Wad2Archive
  * Wad2Archive class constructor
  *******************************************************************/
-Wad2Archive::Wad2Archive() : TreelessArchive(ARCHIVE_WAD2) {
+Wad2Archive::Wad2Archive() : TreelessArchive(ARCHIVE_WAD2)
+{
 	// Init variables
 	wad3 = false;
 }
@@ -57,20 +58,23 @@ Wad2Archive::Wad2Archive() : TreelessArchive(ARCHIVE_WAD2) {
 /* Wad2Archive::~Wad2Archive
  * Wad2Archive class destructor
  *******************************************************************/
-Wad2Archive::~Wad2Archive() {
+Wad2Archive::~Wad2Archive()
+{
 }
 
 /* Wad2Archive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string Wad2Archive::getFileExtensionString() {
+string Wad2Archive::getFileExtensionString()
+{
 	return "WAD2 Files (*.wad)|*.wad";
 }
 
 /* Wad2Archive::getFormat
  * Returns the EntryDataFormat id of this archive type
  *******************************************************************/
-string Wad2Archive::getFormat() {
+string Wad2Archive::getFormat()
+{
 	return "archive_wad2";
 }
 
@@ -78,7 +82,8 @@ string Wad2Archive::getFormat() {
  * Reads wad format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool Wad2Archive::open(MemChunk& mc) {
+bool Wad2Archive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -98,7 +103,8 @@ bool Wad2Archive::open(MemChunk& mc) {
 
 	// Check the header
 	if (wad_type[0] != 'W' || wad_type[1] != 'A' || wad_type[2] != 'D' ||
-			(wad_type[3] != '2' && wad_type[3] != '3')) {
+	        (wad_type[3] != '2' && wad_type[3] != '3'))
+	{
 		wxLogMessage("Wad2Archive::open: Invalid header");
 		Global::error = "Invalid wad2 header";
 		return false;
@@ -112,7 +118,8 @@ bool Wad2Archive::open(MemChunk& mc) {
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
 	theSplashWindow->setProgressMessage("Reading wad archive data");
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -127,7 +134,8 @@ bool Wad2Archive::open(MemChunk& mc) {
 
 		// If the lump data goes past the end of the file,
 		// the wadfile is invalid
-		if ((unsigned)(info.offset + info.dsize) > mc.getSize()) {
+		if ((unsigned)(info.offset + info.dsize) > mc.getSize())
+		{
 			wxLogMessage("Wad2Archive::open: Wad2 archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -150,7 +158,8 @@ bool Wad2Archive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -158,7 +167,8 @@ bool Wad2Archive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, (int)entry->exProp("Offset"), entry->getSize());
 			entry->importMemChunk(edata);
@@ -193,11 +203,13 @@ bool Wad2Archive::open(MemChunk& mc) {
  * Writes the wad archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool Wad2Archive::write(MemChunk& mc, bool update) {
+bool Wad2Archive::write(MemChunk& mc, bool update)
+{
 	// Determine directory offset & individual lump offsets
 	uint32_t dir_offset = 12;
 	ArchiveEntry* entry = NULL;
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		entry->exProp("Offset") = (int)dir_offset;
 		dir_offset += entry->getSize();
@@ -219,13 +231,15 @@ bool Wad2Archive::write(MemChunk& mc, bool update) {
 	mc.write(&dir_offset, 4);
 
 	// Write the lumps
-	for (uint32_t l = 0; l < num_lumps; l++) {
+	for (uint32_t l = 0; l < num_lumps; l++)
+	{
 		entry = getEntry(l);
 		mc.write(entry->getData(), entry->getSize());
 	}
 
 	// Write the directory
-	for (uint32_t l = 0; l < num_lumps; l++) {
+	for (uint32_t l = 0; l < num_lumps; l++)
+	{
 		entry = getEntry(l);
 
 		// Setup directory entry
@@ -237,7 +251,7 @@ bool Wad2Archive::write(MemChunk& mc, bool update) {
 		info.size = entry->getSize();
 		info.offset = (int)entry->exProp("Offset");
 		info.type = (int)entry->exProp("W2Type");
-		
+
 		// Write it
 		mc.write(&info, 32);
 
@@ -252,14 +266,16 @@ bool Wad2Archive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the wadfile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool Wad2Archive::loadEntryData(ArchiveEntry* entry) {
+bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -268,7 +284,8 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("Wad2Archive::loadEntryData: Failed to open wadfile %s", filename.c_str());
 		return false;
 	}
@@ -288,7 +305,8 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry) {
  * directory and rename the entry if necessary to be wad2-friendly
  * (16 characters max and no file extension)
  *******************************************************************/
-ArchiveEntry* Wad2Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* Wad2Archive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -319,7 +337,8 @@ ArchiveEntry* Wad2Archive::addEntry(ArchiveEntry* entry, unsigned position, Arch
  * Override of Archive::renameEntry enforce wad2-friendly entry names
  * (16 characters max and uppercase if forced)
  *******************************************************************/
-bool Wad2Archive::renameEntry(ArchiveEntry* entry, string name) {
+bool Wad2Archive::renameEntry(ArchiveEntry* entry, string name)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
@@ -341,7 +360,8 @@ bool Wad2Archive::renameEntry(ArchiveEntry* entry, string name) {
 /* Wad2Archive::isWad2Archive
  * Checks if the given data is a valid Quake wad2 archive
  *******************************************************************/
-bool Wad2Archive::isWad2Archive(MemChunk& mc) {
+bool Wad2Archive::isWad2Archive(MemChunk& mc)
+{
 	// Check size
 	if (mc.getSize() < 12)
 		return false;
@@ -376,7 +396,8 @@ bool Wad2Archive::isWad2Archive(MemChunk& mc) {
 /* Wad2Archive::isWad2Archive
  * Checks if the file at [filename] is a valid Quake wad2 archive
  *******************************************************************/
-bool Wad2Archive::isWad2Archive(string filename) {
+bool Wad2Archive::isWad2Archive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 

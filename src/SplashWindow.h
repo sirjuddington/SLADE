@@ -5,7 +5,8 @@
 #include <wx/minifram.h>
 #include <wx/timer.h>
 
-class SplashWindow : public wxMiniFrame {
+class SplashWindow : public wxMiniFrame
+{
 private:
 	string		message;
 	string		message_progress;
@@ -24,13 +25,15 @@ public:
 	~SplashWindow();
 
 	// Singleton implementation
-	static SplashWindow* getInstance() {
+	static SplashWindow* getInstance()
+	{
 		if (!instance)
 			instance = new SplashWindow();
 
 		return instance;
 	}
-	static void deleteInstance() {
+	static void deleteInstance()
+	{
 		if (instance)
 			delete instance;
 		instance = NULL;
@@ -46,7 +49,7 @@ public:
 	void	forceRedraw();
 
 	// Events
-	void	onPaint(wxPaintEvent &e);
+	void	onPaint(wxPaintEvent& e);
 };
 
 // Define for less cumbersome SplashWindow::getInstance()

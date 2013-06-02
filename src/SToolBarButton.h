@@ -3,7 +3,8 @@
 #define __S_TOOL_BAR_BUTTON_H__
 
 class SAction;
-class SToolBarButton : public wxControl {
+class SToolBarButton : public wxControl
+{
 private:
 	//string		action;
 	SAction*	action;
@@ -14,10 +15,11 @@ public:
 	SToolBarButton(wxWindow* parent, string action, string icon = "");
 	~SToolBarButton();
 
-	enum {
-		STATE_NORMAL,
-		STATE_MOUSEOVER,
-		STATE_MOUSEDOWN,
+	enum
+	{
+	    STATE_NORMAL,
+	    STATE_MOUSEOVER,
+	    STATE_MOUSEDOWN,
 	};
 
 	// Events

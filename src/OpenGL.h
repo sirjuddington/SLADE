@@ -4,7 +4,8 @@
 
 #include <wx/glcanvas.h>
 
-namespace OpenGL {
+namespace OpenGL
+{
 	wxGLContext*	getContext(wxGLCanvas* canvas);
 	bool			init();
 	bool			np2TexSupport();

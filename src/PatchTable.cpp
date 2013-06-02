@@ -40,7 +40,8 @@
 /* PatchTable::PatchTable
  * PatchTable class constructor
  *******************************************************************/
-PatchTable::PatchTable(Archive* parent) {
+PatchTable::PatchTable(Archive* parent)
+{
 	this->parent = parent;
 	patch_invalid.name = "INVALID_PATCH";
 }
@@ -48,14 +49,16 @@ PatchTable::PatchTable(Archive* parent) {
 /* PatchTable::~PatchTable
  * PatchTable class destructor
  *******************************************************************/
-PatchTable::~PatchTable() {
+PatchTable::~PatchTable()
+{
 }
 
 /* PatchTable::patch
  * Returns the patch at [index], or an 'invalid' patch if [index] is
  * out of bounds
  *******************************************************************/
-patch_t& PatchTable::patch(size_t index) {
+patch_t& PatchTable::patch(size_t index)
+{
 	// Check index
 	if (index >= patches.size())
 		return patch_invalid;
@@ -68,9 +71,11 @@ patch_t& PatchTable::patch(size_t index) {
  * Returns the patch matching [name], or an 'invalid' patch if no
  * match is found
  *******************************************************************/
-patch_t& PatchTable::patch(string name) {
+patch_t& PatchTable::patch(string name)
+{
 	// Go through list
-	for (unsigned a = 0; a < patches.size(); a++) {
+	for (unsigned a = 0; a < patches.size(); a++)
+	{
 		if (S_CMP(patches[a].name, name))
 			return patches[a];
 	}
@@ -82,7 +87,8 @@ patch_t& PatchTable::patch(string name) {
  * Returns the name of the patch at [index], or an empty string if
  * [index] is out of bounds
  *******************************************************************/
-string PatchTable::patchName(size_t index) {
+string PatchTable::patchName(size_t index)
+{
 	// Check index
 	if (index >= patches.size())
 		return wxEmptyString;
@@ -95,7 +101,8 @@ string PatchTable::patchName(size_t index) {
  * Returns the entry associated with the patch at [index], or NULL if
  * [index] is out of bounds
  *******************************************************************/
-ArchiveEntry* PatchTable::patchEntry(size_t index) {
+ArchiveEntry* PatchTable::patchEntry(size_t index)
+{
 	// Check index
 	if (index >= patches.size())
 		return NULL;
@@ -111,9 +118,11 @@ ArchiveEntry* PatchTable::patchEntry(size_t index) {
  * Returns the entry associated with the patch matching [name], or
  * NULL if no match found
  *******************************************************************/
-ArchiveEntry* PatchTable::patchEntry(string name) {
+ArchiveEntry* PatchTable::patchEntry(string name)
+{
 	// Search for patch by name
-	for (size_t a = 0; a < patches.size(); a++) {
+	for (size_t a = 0; a < patches.size(); a++)
+	{
 		if (!patches[a].name.CmpNoCase(name))
 			return patchEntry(a);
 	}
@@ -126,9 +135,11 @@ ArchiveEntry* PatchTable::patchEntry(string name) {
  * Returns the index of the patch matching [name], or -1 if no
  * match found
  *******************************************************************/
-int32_t PatchTable::patchIndex(string name) {
+int32_t PatchTable::patchIndex(string name)
+{
 	// Search for patch by name
-	for (size_t a = 0; a < patches.size(); a++) {
+	for (size_t a = 0; a < patches.size(); a++)
+	{
 		if (!patches[a].name.CmpNoCase(name))
 			return a;
 	}
@@ -141,9 +152,11 @@ int32_t PatchTable::patchIndex(string name) {
  * Returns the index of the patch associated with [entry], or NULL
  * if no match found
  *******************************************************************/
-int32_t PatchTable::patchIndex(ArchiveEntry* entry) {
+int32_t PatchTable::patchIndex(ArchiveEntry* entry)
+{
 	// Search for patch by entry
-	for (size_t a = 0; a < patches.size(); a++) {
+	for (size_t a = 0; a < patches.size(); a++)
+	{
 		if (theResourceManager->getPatchEntry(patches[a].name, "patches", parent) == entry)
 			return a;
 	}
@@ -156,7 +169,8 @@ int32_t PatchTable::patchIndex(ArchiveEntry* entry) {
  * Removes the patch at [index]. Returns false if [index] is out of
  * range, true otherwise
  *******************************************************************/
-bool PatchTable::removePatch(unsigned index) {
+bool PatchTable::removePatch(unsigned index)
+{
 	// Check index
 	if (index >= patches.size())
 		return false;
@@ -176,7 +190,8 @@ bool PatchTable::removePatch(unsigned index) {
  * [parent] and resource archives. Returns false if [index] is out
  * of range or no matching entry was found, true otherwise
  *******************************************************************/
-bool PatchTable::replacePatch(unsigned index, string newname) {
+bool PatchTable::replacePatch(unsigned index, string newname)
+{
 	// Check index
 	if (index >= patches.size())
 		return false;
@@ -193,10 +208,13 @@ bool PatchTable::replacePatch(unsigned index, string newname) {
 /* PatchTable::addPatch
  * Adds a new patch with [name] to the end of the list
  *******************************************************************/
-bool PatchTable::addPatch(string name, bool allow_dup) {
+bool PatchTable::addPatch(string name, bool allow_dup)
+{
 	// Check patch doesn't already exist
-	if (!allow_dup) {
-		for (unsigned a = 0; a < patches.size(); a++) {
+	if (!allow_dup)
+	{
+		for (unsigned a = 0; a < patches.size(); a++)
+		{
 			if (S_CMP(name, patches[a].name))
 				return false;
 		}
@@ -218,7 +236,8 @@ bool PatchTable::addPatch(string name, bool allow_dup) {
 /* PatchTable::loadPNAMES
  * Loads a PNAMES entry, returns true on success, false otherwise
  *******************************************************************/
-bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent) {
+bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent)
+{
 	// Check entry was given
 	if (!pnames)
 		return false;
@@ -236,18 +255,21 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent) {
 	// Read number of pnames
 	uint32_t n_pnames = 0;
 	pnames->seek(0, SEEK_SET);
-	if (!pnames->read(&n_pnames, 4)) {
+	if (!pnames->read(&n_pnames, 4))
+	{
 		wxLogMessage("Error: PNAMES lump is corrupt");
 		return false;
 	}
 
 	// Read pnames content
-	for (uint32_t a = 0; a < n_pnames; a++) {
+	for (uint32_t a = 0; a < n_pnames; a++)
+	{
 		char pname[9] = "";
 		pname[8] = 0;
 
 		// Try to read pname
-		if (!pnames->read(&pname, 8)) {
+		if (!pnames->read(&pname, 8))
+		{
 			wxLogMessage("Error: PNAMES entry %i is corrupt", a);
 			return false;
 		}
@@ -270,7 +292,8 @@ bool PatchTable::loadPNAMES(ArchiveEntry* pnames, Archive* parent) {
  * Writes the patch table to the entry [pnames]. Returns false if
  * no entry was given, true otherwise
  *******************************************************************/
-bool PatchTable::writePNAMES(ArchiveEntry* pnames) {
+bool PatchTable::writePNAMES(ArchiveEntry* pnames)
+{
 	// Check entry was given
 	if (!pnames)
 		return false;
@@ -286,7 +309,8 @@ bool PatchTable::writePNAMES(ArchiveEntry* pnames) {
 	pndata.write(&npnames, 4);
 
 	// Write patch names
-	for (unsigned a = 0; a < patches.size(); a++) {
+	for (unsigned a = 0; a < patches.size(); a++)
+	{
 		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };	// Init name to all zeros for XWE compatibility
 		strncpy(name, CHR(patches[a].name), patches[a].name.Len());
 
@@ -305,7 +329,8 @@ bool PatchTable::writePNAMES(ArchiveEntry* pnames) {
 /* PatchTable::clearPatchUsage
  * Clears all patch use count data
  *******************************************************************/
-void PatchTable::clearPatchUsage() {
+void PatchTable::clearPatchUsage()
+{
 	for (size_t a = 0; a < patches.size(); a++)
 		patches[a].used_in.clear();
 
@@ -316,7 +341,8 @@ void PatchTable::clearPatchUsage() {
 /* PatchTable::updatePatchUsage
  * Updates patch usage data for [tex]
  *******************************************************************/
-void PatchTable::updatePatchUsage(CTexture* tex) {
+void PatchTable::updatePatchUsage(CTexture* tex)
+{
 	// Remove texture from all patch usage tables
 	for (unsigned a = 0; a < patches.size(); a++)
 		patches[a].removeTextureUsage(tex->getName());

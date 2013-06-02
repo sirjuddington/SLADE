@@ -8,10 +8,11 @@ class ArchivePanel;
 class GfxEntryPanel;
 
 // Console helpers
-namespace CH {
-	Archive*				getCurrentArchive();
-	ArchivePanel*			getCurrentArchivePanel();
-	GfxEntryPanel*			getCurrentGfxPanel();
+namespace CH
+{
+	Archive*		getCurrentArchive();
+	ArchivePanel*	getCurrentArchivePanel();
+	GfxEntryPanel*	getCurrentGfxPanel();
 }
 
 #endif // __CONSOLEHELPERS_H__

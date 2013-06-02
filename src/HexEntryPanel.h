@@ -5,7 +5,8 @@
 #include "EntryPanel.h"
 #include "HexEditorPanel.h"
 
-class HexEntryPanel : public EntryPanel {
+class HexEntryPanel : public EntryPanel
+{
 private:
 	HexEditorPanel*	hex_editor;
 

@@ -4,7 +4,8 @@
 
 #include "PrefsPanelBase.h"
 
-class MapEditorPrefsPanel : public PrefsPanelBase {
+class MapEditorPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxCheckBox*	cb_scroll_smooth;
 	wxCheckBox*	cb_selection_clear_click;

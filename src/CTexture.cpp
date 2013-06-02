@@ -45,7 +45,8 @@
 /* CTPatch::CTPatch
  * CTPatch class default constructor
  *******************************************************************/
-CTPatch::CTPatch() {
+CTPatch::CTPatch()
+{
 	this->offset_x = 0;
 	this->offset_y = 0;
 }
@@ -53,7 +54,8 @@ CTPatch::CTPatch() {
 /* CTPatch::CTPatch
  * CTPatch class constructor w/initial values
  *******************************************************************/
-CTPatch::CTPatch(string name, int16_t offset_x, int16_t offset_y) {
+CTPatch::CTPatch(string name, int16_t offset_x, int16_t offset_y)
+{
 	this->name = name;
 	this->offset_x = offset_x;
 	this->offset_y = offset_y;
@@ -62,8 +64,10 @@ CTPatch::CTPatch(string name, int16_t offset_x, int16_t offset_y) {
 /* CTPatch::CTPatch
  * CTPatch class constructor copying another CTPatch
  *******************************************************************/
-CTPatch::CTPatch(CTPatch* copy) {
-	if (copy) {
+CTPatch::CTPatch(CTPatch* copy)
+{
+	if (copy)
+	{
 		name = copy->name;
 		offset_x = copy->offset_x;
 		offset_y = copy->offset_y;
@@ -73,13 +77,15 @@ CTPatch::CTPatch(CTPatch* copy) {
 /* CTPatch::~CTPatch
  * CTPatch class destructor
  *******************************************************************/
-CTPatch::~CTPatch() {
+CTPatch::~CTPatch()
+{
 }
 
 /* CTPatch::searchEntry
  * Search for a patch's entry in the given archive or its parents
  *******************************************************************/
-void CTPatch::searchEntry(Archive* parent) {
+void CTPatch::searchEntry(Archive* parent)
+{
 	/*
 	// Attempt to find patch entry
 	Archive::search_options_t options;	options.match_name = name;
@@ -124,7 +130,8 @@ void CTPatch::searchEntry(Archive* parent) {
  * resource manager. Entries in [parent] will be prioritised over
  * entries in any other open archive
  *******************************************************************/
-ArchiveEntry* CTPatch::getPatchEntry(Archive* parent) {
+ArchiveEntry* CTPatch::getPatchEntry(Archive* parent)
+{
 	// Default patches should be in patches namespace
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "patches", parent);
 
@@ -145,7 +152,8 @@ ArchiveEntry* CTPatch::getPatchEntry(Archive* parent) {
 /* CTPatchEx::CTPatchEx
  * CTPatchEx class default constructor
  *******************************************************************/
-CTPatchEx::CTPatchEx() {
+CTPatchEx::CTPatchEx()
+{
 	flip_x = false;
 	flip_y = false;
 	use_offsets = false;
@@ -160,7 +168,8 @@ CTPatchEx::CTPatchEx() {
  * CTPatchEx class constructor w/basic initial values
  *******************************************************************/
 CTPatchEx::CTPatchEx(string name, int16_t offset_x, int16_t offset_y, uint8_t type)
-: CTPatch(name, offset_x, offset_y) {
+	: CTPatch(name, offset_x, offset_y)
+{
 	flip_x = false;
 	flip_y = false;
 	use_offsets = false;
@@ -174,8 +183,10 @@ CTPatchEx::CTPatchEx(string name, int16_t offset_x, int16_t offset_y, uint8_t ty
 /* CTPatchEx::CTPatchEx
  * CTPatchEx class constructor copying a regular CTPatch
  *******************************************************************/
-CTPatchEx::CTPatchEx(CTPatch* copy) {
-	if (copy) {
+CTPatchEx::CTPatchEx(CTPatch* copy)
+{
+	if (copy)
+	{
 		flip_x = false;
 		flip_y = false;
 		use_offsets = false;
@@ -193,8 +204,10 @@ CTPatchEx::CTPatchEx(CTPatch* copy) {
 /* CTPatchEx::CTPatchEx
  * CTPatchEx class constructor copying another CTPatchEx
  *******************************************************************/
-CTPatchEx::CTPatchEx(CTPatchEx* copy) {
-	if (copy) {
+CTPatchEx::CTPatchEx(CTPatchEx* copy)
+{
+	if (copy)
+	{
 		flip_x = copy->flip_x;
 		flip_y = copy->flip_y;
 		use_offsets = copy->useOffsets();
@@ -214,7 +227,8 @@ CTPatchEx::CTPatchEx(CTPatchEx* copy) {
 /* CTPatchEx::~CTPatchEx
  * CTPatchEx class destructor
  *******************************************************************/
-CTPatchEx::~CTPatchEx() {
+CTPatchEx::~CTPatchEx()
+{
 }
 
 /* CTPatchEx::getPatchEntry
@@ -222,9 +236,11 @@ CTPatchEx::~CTPatchEx() {
  * resource manager. Entries in [parent] will be prioritised over
  * entries in any other open archive
  *******************************************************************/
-ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent) {
+ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent)
+{
 	// 'Patch' type: patches > graphics
-	if (type == PTYPE_PATCH) {
+	if (type == PTYPE_PATCH)
+	{
 		ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "patches", parent);
 		if (!entry) entry = theResourceManager->getFlatEntry(name, parent);
 		if (!entry) entry = theResourceManager->getPatchEntry(name, "graphics", parent);
@@ -232,7 +248,8 @@ ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent) {
 	}
 
 	// 'Graphic' type: graphics > patches
-	if (type == PTYPE_GRAPHIC) {
+	if (type == PTYPE_GRAPHIC)
+	{
 		ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "graphics", parent);
 		if (!entry) entry = theResourceManager->getPatchEntry(name, "patches", parent);
 		if (!entry) entry = theResourceManager->getFlatEntry(name, parent);
@@ -245,7 +262,8 @@ ArchiveEntry* CTPatchEx::getPatchEntry(Archive* parent) {
 /* CTPatchEx::parse
  * Parses a ZDoom TEXTURES format patch definition
  *******************************************************************/
-bool CTPatchEx::parse(Tokenizer& tz, uint8_t type) {
+bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
+{
 	// Read basic info
 	this->type = type;
 	name = tz.getToken().Upper();
@@ -255,13 +273,15 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type) {
 	offset_y = tz.getInteger();
 
 	// Check if there is any extended info
-	if (tz.peekToken() == "{") {
+	if (tz.peekToken() == "{")
+	{
 		// Skip {
 		tz.getToken();
 
 		// Parse extended info
 		string property = tz.getToken();
-		while (property != "}") {
+		while (property != "}")
+		{
 			// FlipX
 			if (S_CMPNOCASE(property, "FlipX"))
 				flip_x = true;
@@ -279,12 +299,14 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type) {
 				rotation = tz.getInteger();
 
 			// Translation
-			if (S_CMPNOCASE(property, "Translation")) {
+			if (S_CMPNOCASE(property, "Translation"))
+			{
 				// Add first translation string
 				translation.parse(tz.getToken());
 
 				// Add any subsequent translations (separated by commas)
-				while (tz.peekToken() == ",") {
+				while (tz.peekToken() == ",")
+				{
 					tz.getToken();	// Skip ,
 					translation.parse(tz.getToken());
 				}
@@ -293,7 +315,8 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type) {
 			}
 
 			// Blend
-			if (S_CMPNOCASE(property, "Blend")) {
+			if (S_CMPNOCASE(property, "Blend"))
+			{
 				double val;
 				wxColour col;
 				blendtype = 2;
@@ -302,29 +325,34 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type) {
 				string first = tz.getToken();
 
 				// If no second value, it's just a colour string
-				if (tz.peekToken() != ",") {
+				if (tz.peekToken() != ",")
+				{
 					col.Set(first);
 					colour.set(col.Red(), col.Green(), col.Blue());
 				}
-				else {
+				else
+				{
 					// Second value could be alpha or green
 					tz.getToken();	// Skip ,
 					double second = tz.getDouble();
 
 					// If no third value, it's an alpha value
-					if (tz.peekToken() != ",") {
+					if (tz.peekToken() != ",")
+					{
 						col.Set(first);
 						colour.set(col.Red(), col.Green(), col.Blue(), second*255);
 						blendtype = 3;
 					}
-					else {
+					else
+					{
 						// Third value exists, must be R,G,B,A format
 						tz.getToken();	// Skip ,
 						first.ToDouble(&val);
 						colour.r = val*255;
 						colour.g = second*255;
 						colour.b = tz.getDouble()*255;
-						if (tz.peekToken() != ",") {
+						if (tz.peekToken() != ",")
+						{
 							wxLogMessage("Invalid TEXTURES definition, expected ',', got '%s'", CHR(tz.getToken()));
 							return false;
 						}
@@ -355,7 +383,8 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type) {
  * Returns a text representation of the patch in ZDoom TEXTURES
  * format
  *******************************************************************/
-string CTPatchEx::asText() {
+string CTPatchEx::asText()
+{
 	// Init text string
 	string typestring = "Patch";
 	if (type == PTYPE_GRAPHIC) typestring = "Graphic";
@@ -376,12 +405,14 @@ string CTPatchEx::asText() {
 		text += "\t\tUseOffsets\n";
 	if (rotation != 0)
 		text += S_FMT("\t\tRotate %d\n", rotation);
-	if (blendtype == 1 && !translation.isEmpty()) {
+	if (blendtype == 1 && !translation.isEmpty())
+	{
 		text += "\t\tTranslation ";
 		text += translation.asText();
 		text += "\n";
 	}
-	if (blendtype >= 2) {
+	if (blendtype >= 2)
+	{
 		wxColour col(colour.r, colour.g, colour.b);
 		text += S_FMT("\t\tBlend \"%s\"", CHR(col.GetAsString(wxC2S_HTML_SYNTAX)));
 
@@ -409,7 +440,8 @@ string CTPatchEx::asText() {
 /* CTexture::CTexture
  * CTexture class constructor
  *******************************************************************/
-CTexture::CTexture(bool extended) {
+CTexture::CTexture(bool extended)
+{
 	this->width = 0;
 	this->height = 0;
 	this->name = "";
@@ -431,7 +463,8 @@ CTexture::CTexture(bool extended) {
 /* CTexture::~CTexture
  * CTexture class destructor
  *******************************************************************/
-CTexture::~CTexture() {
+CTexture::~CTexture()
+{
 	for (unsigned a = 0; a < patches.size(); a++)
 		delete patches[a];
 }
@@ -441,7 +474,8 @@ CTexture::~CTexture() {
  * the current texture type (extended/regular) will be kept,
  * otherwise it will be converted to the type of [tex]
  *******************************************************************/
-void CTexture::copyTexture(CTexture* tex, bool keep_type) {
+void CTexture::copyTexture(CTexture* tex, bool keep_type)
+{
 	// Check texture was given
 	if (!tex)
 		return;
@@ -465,10 +499,12 @@ void CTexture::copyTexture(CTexture* tex, bool keep_type) {
 	this->type = tex->type;
 
 	// Copy patches
-	for (unsigned a = 0; a < tex->nPatches(); a++) {
+	for (unsigned a = 0; a < tex->nPatches(); a++)
+	{
 		CTPatch* patch = tex->getPatch(a);
 
-		if (extended) {
+		if (extended)
+		{
 			if (tex->extended)
 				patches.push_back(new CTPatchEx((CTPatchEx*)patch));
 			else
@@ -482,7 +518,8 @@ void CTexture::copyTexture(CTexture* tex, bool keep_type) {
 /* CTexture::getPatch
  * Returns the patch at [index], or NULL if [index] is out of bounds
  *******************************************************************/
-CTPatch* CTexture::getPatch(size_t index) {
+CTPatch* CTexture::getPatch(size_t index)
+{
 	// Check index
 	if (index >= patches.size())
 		return NULL;
@@ -494,7 +531,8 @@ CTPatch* CTexture::getPatch(size_t index) {
 /* CTexture::getIndex
  * Returns the index of this texture within its parent list
  *******************************************************************/
-int CTexture::getIndex() {
+int CTexture::getIndex()
+{
 	// Check if a parent TextureXList exists
 	if (!in_list)
 		return index;
@@ -506,7 +544,8 @@ int CTexture::getIndex() {
 /* CTexture::clear
  * Clears all texture data
  *******************************************************************/
-void CTexture::clear() {
+void CTexture::clear()
+{
 	this->name = "";
 	this->width = 0;
 	this->height = 0;
@@ -529,7 +568,8 @@ void CTexture::clear() {
  * Adds a patch to the texture with the given attributes, at [index].
  * If [index] is -1, the patch is added to the end of the list.
  *******************************************************************/
-bool CTexture::addPatch(string patch, int16_t offset_x, int16_t offset_y, int index) {
+bool CTexture::addPatch(string patch, int16_t offset_x, int16_t offset_y, int index)
+{
 	// Create new patch
 	CTPatch* np;
 	if (extended)
@@ -553,7 +593,8 @@ bool CTexture::addPatch(string patch, int16_t offset_x, int16_t offset_y, int in
  * Removes the patch at [index]. Returns false if [index] is invalid,
  * true otherwise
  *******************************************************************/
-bool CTexture::removePatch(size_t index) {
+bool CTexture::removePatch(size_t index)
+{
 	// Check index
 	if (index >= patches.size())
 		return false;
@@ -572,12 +613,15 @@ bool CTexture::removePatch(size_t index) {
  * Removes all instances of [patch] from the texture. Returns true if
  * any were removed, false otherwise
  *******************************************************************/
-bool CTexture::removePatch(string patch) {
+bool CTexture::removePatch(string patch)
+{
 	// Go through patches
 	bool removed = false;
 	vector<CTPatch*>::iterator i = patches.begin();
-	while (i != patches.end()) {
-		if (S_CMP((*i)->getName(), patch)) {
+	while (i != patches.end())
+	{
+		if (S_CMP((*i)->getName(), patch))
+		{
 			delete (*i);
 			patches.erase(i);
 			removed = true;
@@ -597,7 +641,8 @@ bool CTexture::removePatch(string patch) {
  * associated ArchiveEntry with [newentry]. Returns false if [index]
  * is out of bounds, true otherwise
  *******************************************************************/
-bool CTexture::replacePatch(size_t index, string newpatch) {
+bool CTexture::replacePatch(size_t index, string newpatch)
+{
 	// Check index
 	if (index >= patches.size())
 		return false;
@@ -616,7 +661,8 @@ bool CTexture::replacePatch(size_t index, string newpatch) {
  * at [offset_x],[offset_y] from the original. Returns false if
  * [index] is out of bounds, true otherwise
  *******************************************************************/
-bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y) {
+bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
+{
 	// Check index
 	if (index >= patches.size())
 		return false;
@@ -644,7 +690,8 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y) 
  * Swaps the patches at [p1] and [p2]. Returns false if either index
  * is invalid, true otherwise
  *******************************************************************/
-bool CTexture::swapPatches(size_t p1, size_t p2) {
+bool CTexture::swapPatches(size_t p1, size_t p2)
+{
 	// Check patch indices are correct
 	if (p1 >= patches.size() || p2 >= patches.size())
 		return false;
@@ -663,9 +710,11 @@ bool CTexture::swapPatches(size_t p1, size_t p2) {
 /* CTexture::parse
  * Parses a TEXTURES format texture definition
  *******************************************************************/
-bool CTexture::parse(Tokenizer& tz, string type) {
+bool CTexture::parse(Tokenizer& tz, string type)
+{
 	// Check if optional
-	if (S_CMPNOCASE(tz.peekToken(), "optional")) {
+	if (S_CMPNOCASE(tz.peekToken(), "optional"))
+	{
 		tz.getToken();	// Skip it
 		optional = true;
 	}
@@ -680,14 +729,17 @@ bool CTexture::parse(Tokenizer& tz, string type) {
 	height = tz.getInteger();
 
 	// Check for extended info
-	if (tz.peekToken() == "{") {
+	if (tz.peekToken() == "{")
+	{
 		tz.getToken();	// Skip {
 
 		// Read properties
 		string property = tz.getToken();
-		while (property != "}") {
+		while (property != "}")
+		{
 			// Check if end of text is reached (error)
-			if (property.IsEmpty()) {
+			if (property.IsEmpty())
+			{
 				wxLogMessage("Error parsing texture %s: End of text found, missing } perhaps?", CHR(name));
 				return false;
 			}
@@ -701,7 +753,8 @@ bool CTexture::parse(Tokenizer& tz, string type) {
 				scale_y = tz.getFloat();
 
 			// Offset
-			if (S_CMPNOCASE(property, "Offset")) {
+			if (S_CMPNOCASE(property, "Offset"))
+			{
 				offset_x = tz.getInteger();
 				tz.getToken();	// Skip ,
 				offset_y = tz.getInteger();
@@ -720,14 +773,16 @@ bool CTexture::parse(Tokenizer& tz, string type) {
 				null_texture = true;
 
 			// Patch
-			if (S_CMPNOCASE(property, "Patch")) {
+			if (S_CMPNOCASE(property, "Patch"))
+			{
 				CTPatchEx* patch = new CTPatchEx();
 				patch->parse(tz);
 				patches.push_back(patch);
 			}
 
 			// Graphic
-			if (S_CMPNOCASE(property, "Graphic")) {
+			if (S_CMPNOCASE(property, "Graphic"))
+			{
 				CTPatchEx* patch = new CTPatchEx();
 				patch->parse(tz, PTYPE_GRAPHIC);
 				patches.push_back(patch);
@@ -745,7 +800,8 @@ bool CTexture::parse(Tokenizer& tz, string type) {
  * Returns a string representation of the texture, in ZDoom TEXTURES
  * format
  *******************************************************************/
-string CTexture::asText() {
+string CTexture::asText()
+{
 	// Can't write non-extended texture as text
 	if (!extended)
 		return "";
@@ -784,7 +840,8 @@ string CTexture::asText() {
 /* CTexture::convertExtended
  * Converts the texture to 'extended' (ZDoom TEXTURES) format
  *******************************************************************/
-bool CTexture::convertExtended() {
+bool CTexture::convertExtended()
+{
 	// Don't convert if already extended
 	if (extended)
 		return true;
@@ -794,7 +851,8 @@ bool CTexture::convertExtended() {
 	if (scale_y == 0) scale_y = 1;
 
 	// Convert all patches over to extended format
-	for (unsigned a = 0; a < patches.size(); a++) {
+	for (unsigned a = 0; a < patches.size(); a++)
+	{
 		CTPatchEx* expatch = new CTPatchEx(patches[a]);
 		delete patches[a];
 		patches[a] = expatch;
@@ -809,7 +867,8 @@ bool CTexture::convertExtended() {
 /* CTexture::convertRegular
  * Converts the texture to 'regular' (TEXTURE1/2) format
  *******************************************************************/
-bool CTexture::convertRegular() {
+bool CTexture::convertRegular()
+{
 	// Don't convert if already regular
 	if (!extended)
 		return true;
@@ -825,7 +884,8 @@ bool CTexture::convertRegular() {
 		scale_y *= 8;
 
 	// Convert all patches over to normal format
-	for (unsigned a = 0; a < patches.size(); a++) {
+	for (unsigned a = 0; a < patches.size(); a++)
+	{
 		CTPatch* npatch = new CTPatch(patches[a]->getName(), patches[a]->xOffset(), patches[a]->yOffset());
 		delete patches[a];
 		patches[a] = npatch;
@@ -841,7 +901,8 @@ bool CTexture::convertRegular() {
  * Generates a SImage representation of this texture, using patches
  * from [parent] primarily, and the palette [pal]
  *******************************************************************/
-bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool force_rgba) {
+bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool force_rgba)
+{
 	// Init image
 	image.clear();
 	image.resize(width, height);
@@ -850,11 +911,13 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
 	SImage p_img(PALMASK);
 	si_drawprops_t dp;
 	dp.src_alpha = false;
-	if (extended) {
+	if (extended)
+	{
 		// Extended texture
 
 		// Add each patch to image
-		for (unsigned a = 0; a < patches.size(); a++) {
+		for (unsigned a = 0; a < patches.size(); a++)
+		{
 			CTPatchEx* patch = (CTPatchEx*)patches[a];
 
 			// Load patch entry
@@ -864,7 +927,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
 			// Handle offsets
 			int ofs_x = patch->xOffset();
 			int ofs_y = patch->yOffset();
-			if (patch->useOffsets()) {
+			if (patch->useOffsets())
+			{
 				ofs_x -= p_img.offset().x;
 				ofs_y -= p_img.offset().y;
 			}
@@ -893,19 +957,23 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
 				dp.src_alpha = true;
 			else if (patch->getStyle() == "Translucent" || patch->getStyle() == "CopyNewAlpha")
 				dp.alpha = patch->getAlpha();
-			else if (patch->getStyle() == "Add") {
+			else if (patch->getStyle() == "Add")
+			{
 				dp.blend = ADD;
 				dp.alpha = patch->getAlpha();
 			}
-			else if (patch->getStyle() == "Subtract") {
+			else if (patch->getStyle() == "Subtract")
+			{
 				dp.blend = SUBTRACT;
 				dp.alpha = patch->getAlpha();
 			}
-			else if (patch->getStyle() == "ReverseSubtract") {
+			else if (patch->getStyle() == "ReverseSubtract")
+			{
 				dp.blend = REVERSE_SUBTRACT;
 				dp.alpha = patch->getAlpha();
 			}
-			else if (patch->getStyle() == "Modulate") {
+			else if (patch->getStyle() == "Modulate")
+			{
 				dp.blend = MODULATE;
 				dp.alpha = patch->getAlpha();
 			}
@@ -921,11 +989,13 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
 			image.drawImage(p_img, ofs_x, ofs_y, dp, pal, pal);
 		}
 	}
-	else {
+	else
+	{
 		// Normal texture
 
 		// Add each patch to image
-		for (unsigned a = 0; a < patches.size(); a++) {
+		for (unsigned a = 0; a < patches.size(); a++)
+		{
 			CTPatch* patch = patches[a];
 			if (Misc::loadImageFromEntry(&p_img, patch->getPatchEntry(parent)))
 				image.drawImage(p_img, patch->xOffset(), patch->yOffset(), dp, pal, pal);
@@ -939,7 +1009,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
  * Loads the image for the patch at [pindex] into [image]. Can deal
  * with textures-as-patches
  *******************************************************************/
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette8bit* pal) {
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette8bit* pal)
+{
 	// Check patch index
 	if (pindex >= patches.size())
 		return false;
@@ -948,10 +1019,13 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 
 	// If the texture is extended, search for textures-as-patches first
 	// (as long as the patch name is different from this texture's name)
-	if (extended && !(S_CMPNOCASE(patch->getName(), name))) {
+	if (extended && !(S_CMPNOCASE(patch->getName(), name)))
+	{
 		// Search the texture list we're in first
-		if (in_list) {
-			for (unsigned a = 0; a < in_list->nTextures(); a++) {
+		if (in_list)
+		{
+			for (unsigned a = 0; a < in_list->nTextures(); a++)
+			{
 				CTexture* tex = in_list->getTexture(a);
 
 				// Don't look past this texture in the list
@@ -959,7 +1033,8 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 					break;
 
 				// Check for name match
-				if (S_CMPNOCASE(tex->getName(), patch->getName())) {
+				if (S_CMPNOCASE(tex->getName(), patch->getName()))
+				{
 					// Load texture to image
 					return tex->toImage(image, parent, pal);
 				}

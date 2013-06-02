@@ -10,7 +10,8 @@ using std::max;
 // with some useful functions for each of them
 
 // point2_t: A 2d coordinate
-struct point2_t {
+struct point2_t
+{
 	int x, y;
 
 	point2_t() { x = y = 0; }
@@ -19,32 +20,38 @@ struct point2_t {
 	void set(int X, int Y) { x = X; y = Y; }
 	void set(point2_t p) { x = p.x; y = p.y; }
 
-	point2_t operator+(point2_t point) {
+	point2_t operator+(point2_t point)
+	{
 		return point2_t(point.x + x, point.y + y);
 	}
 
-	point2_t operator-(point2_t point) {
+	point2_t operator-(point2_t point)
+	{
 		return point2_t(x - point.x, y - point.y);
 	}
 
-	point2_t operator*(double num) {
+	point2_t operator*(double num)
+	{
 		return point2_t((int)((double)x * num), (int)((double)y * num));
 	}
 
-	point2_t operator/(double num) {
+	point2_t operator/(double num)
+	{
 		if (num == 0)
 			return point2_t(0, 0);
 		else
 			return point2_t((int)((double)x / num), (int)((double)y / num));
 	}
 
-	bool operator==(point2_t rhs) {
+	bool operator==(point2_t rhs)
+	{
 		return (x == rhs.x && y == rhs.y);
 	}
 };
 
 // fpoint2_t: A 2d coordinate (or vector) with floating-point precision
-struct fpoint2_t {
+struct fpoint2_t
+{
 	double x, y;
 
 	fpoint2_t() { x = y = 0.0f; }
@@ -55,11 +62,13 @@ struct fpoint2_t {
 	void set(fpoint2_t p) { x = p.x; y = p.y; }
 	void set(point2_t p) { x = p.x; y = p.y; }
 
-	double magnitude() {
+	double magnitude()
+	{
 		return sqrt((x * x) + (y * y));
 	}
 
-	fpoint2_t normalized() {
+	fpoint2_t normalized()
+	{
 		float mag = magnitude();
 		if (mag == 0.0f)
 			return fpoint2_t(0.0f, 0.0f);
@@ -67,46 +76,56 @@ struct fpoint2_t {
 			return fpoint2_t(x / mag, y / mag);
 	}
 
-	void normalize() {
+	void normalize()
+	{
 		double mag = magnitude();
-		if (mag == 0) {
+		if (mag == 0)
+		{
 			x = 0;
 			y = 0;
 		}
-		else {
+		else
+		{
 			x /= mag;
 			y /= mag;
 		}
 	}
 
-	double dot(fpoint2_t vec) {
+	double dot(fpoint2_t vec)
+	{
 		return x*vec.x + y*vec.y;
 	}
 
-	double cross(fpoint2_t p2) {
+	double cross(fpoint2_t p2)
+	{
 		return (x*p2.y) - (y*p2.x);
 	}
 
-	fpoint2_t operator+(fpoint2_t point) {
+	fpoint2_t operator+(fpoint2_t point)
+	{
 		return fpoint2_t(point.x + x, point.y + y);
 	}
 
-	fpoint2_t operator-(fpoint2_t point) {
+	fpoint2_t operator-(fpoint2_t point)
+	{
 		return fpoint2_t(x - point.x, y - point.y);
 	}
 
-	fpoint2_t operator*(double num) {
+	fpoint2_t operator*(double num)
+	{
 		return fpoint2_t(x * num, y * num);
 	}
 
-	fpoint2_t operator/(double num) {
+	fpoint2_t operator/(double num)
+	{
 		if (num == 0.0f)
 			return fpoint2_t(0.0f, 0.0f);
 		else
 			return fpoint2_t(x / num, y / num);
 	}
 
-	bool operator==(fpoint2_t rhs) {
+	bool operator==(fpoint2_t rhs)
+	{
 		return (x == rhs.x && y == rhs.y);
 	}
 };
@@ -124,15 +143,18 @@ struct fpoint3_t
 	void set(double X, double Y, double Z) { x = X; y = Y; z = Z; }
 	void set(fpoint3_t p) { x = p.x; y = p.y; z = p.z; }
 
-	double magnitude() {
+	double magnitude()
+	{
 		return sqrt((x * x) + (y * y) + (z * z));
 	}
 
-	double dot(fpoint3_t vec) {
+	double dot(fpoint3_t vec)
+	{
 		return x*vec.x + y*vec.y + z*vec.z;
 	}
 
-	fpoint3_t normalize() {
+	fpoint3_t normalize()
+	{
 		double mag = magnitude();
 		if (mag == 0)
 			return fpoint3_t(0, 0, 0);
@@ -140,7 +162,8 @@ struct fpoint3_t
 			return fpoint3_t(x / mag, y / mag, z / mag);
 	}
 
-	double distance_to(fpoint3_t point) {
+	double distance_to(fpoint3_t point)
+	{
 		double dist_x = point.x - x;
 		double dist_y = point.y - y;
 		double dist_z = point.z - z;
@@ -148,26 +171,31 @@ struct fpoint3_t
 		return sqrt((dist_x * dist_x) + (dist_y * dist_y) + (dist_z * dist_z));
 	}
 
-	fpoint3_t operator+(fpoint3_t point) {
+	fpoint3_t operator+(fpoint3_t point)
+	{
 		return fpoint3_t(point.x + x, point.y + y, point.z + z);
 	}
 
-	fpoint3_t operator-(fpoint3_t point) {
+	fpoint3_t operator-(fpoint3_t point)
+	{
 		return fpoint3_t(x - point.x, y - point.y, z - point.z);
 	}
 
-	fpoint3_t operator*(double num) {
+	fpoint3_t operator*(double num)
+	{
 		return fpoint3_t(x * num, y * num, z * num);
 	}
 
-	fpoint3_t operator/(double num) {
+	fpoint3_t operator/(double num)
+	{
 		if (num == 0)
 			return fpoint3_t(0, 0, 0);
 		else
 			return fpoint3_t(x / num, y / num, z / num);
 	}
 
-	fpoint3_t cross(fpoint3_t p2) {
+	fpoint3_t cross(fpoint3_t p2)
+	{
 		fpoint3_t cross_product;
 
 		cross_product.x = ((y * p2.z) - (z * p2.y));
@@ -177,21 +205,24 @@ struct fpoint3_t
 		return cross_product;
 	}
 
-	fpoint2_t get2d() {
+	fpoint2_t get2d()
+	{
 		return fpoint2_t(x, y);
 	}
 };
 
 
 // rgba_t: A 32-bit colour definition
-struct rgba_t {
+struct rgba_t
+{
 	uint8_t r, g, b, a;
 	char blend; // 0=normal, 1=additive
 
 	// Constructors
 	rgba_t() { r = 0; g = 0; b = 0; a = 0; blend = -1; }
 
-	rgba_t(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1) {
+	rgba_t(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1)
+	{
 		r = R;
 		g = G;
 		b = B;
@@ -200,7 +231,8 @@ struct rgba_t {
 	}
 
 	// Functions
-	void set(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1) {
+	void set(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1)
+	{
 		r = R;
 		g = G;
 		b = B;
@@ -208,7 +240,8 @@ struct rgba_t {
 		blend = BLEND;
 	}
 
-	void set(rgba_t colour) {
+	void set(rgba_t colour)
+	{
 		r = colour.r;
 		g = colour.g;
 		b = colour.b;
@@ -226,7 +259,8 @@ struct rgba_t {
 	double db() { return (double)b / 255.0; }
 	double da() { return (double)a / 255.0; }
 
-	bool equals(rgba_t rhs, bool alpha = false) {
+	bool equals(rgba_t rhs, bool alpha = false)
+	{
 		bool col_equal = (r == rhs.r && g == rhs.g && b == rhs.b);
 
 		if (alpha)
@@ -235,12 +269,14 @@ struct rgba_t {
 			return col_equal;
 	}
 
-	void set_gl(bool set_blend = true) {
+	void set_gl(bool set_blend = true)
+	{
 		// Colour
 		glColor4ub(r, g, b, a);
 
 		// Blend
-		if (set_blend) {
+		if (set_blend)
+		{
 			if (blend == 0)
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			else if (blend == 1)
@@ -249,7 +285,8 @@ struct rgba_t {
 	}
 
 	// Amplify/fade colour components by given amounts
-	rgba_t amp(int R, int G, int B, int A) {
+	rgba_t amp(int R, int G, int B, int A)
+	{
 		int nr = r + R;
 		int ng = g + G;
 		int nb = b + B;
@@ -268,7 +305,8 @@ struct rgba_t {
 	}
 
 	// Amplify/fade colour components by factors
-	rgba_t ampf(float fr, float fg, float fb, float fa) {
+	rgba_t ampf(float fr, float fg, float fb, float fa)
+	{
 		int nr = (int)(r * fr);
 		int ng = (int)(g * fg);
 		int nb = (int)(b * fb);
@@ -286,8 +324,10 @@ struct rgba_t {
 		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend);
 	}
 
-	void write(uint8_t* ptr) {
-		if (ptr) {
+	void write(uint8_t* ptr)
+	{
+		if (ptr)
+		{
 			ptr[0] = r;
 			ptr[1] = g;
 			ptr[2] = b;
@@ -296,7 +336,8 @@ struct rgba_t {
 	}
 
 	// Returns a copy of this colour as greyscale (using 'common' component coefficients)
-	rgba_t greyscale() {
+	rgba_t greyscale()
+	{
 		uint8_t l = r*0.3+g*0.59+b*0.11;
 		return rgba_t(l, l, l, a, blend);
 	}
@@ -313,11 +354,13 @@ struct rgba_t {
 #define COL_CYAN	rgba_t(0, 255, 255, 255, 0)
 
 // hsl_t: Represents a colour in HSL format, generally used for calculations
-struct hsl_t {
+struct hsl_t
+{
 	double h, s, l;
 
 	hsl_t() { h = s = l = 0; }
-	hsl_t(double h, double s, double l) {
+	hsl_t(double h, double s, double l)
+	{
 		this->h = h;
 		this->s = s;
 		this->l = l;
@@ -325,11 +368,13 @@ struct hsl_t {
 };
 
 // lab_t: Represents a colour in CIE-L*a*b format, generally used for calculations
-struct lab_t {
+struct lab_t
+{
 	double l, a, b;
 
 	lab_t() { l = a = b = 0; }
-	lab_t(double l, double a, double b) {
+	lab_t(double l, double a, double b)
+	{
 		this->l = l;
 		this->a = a;
 		this->b = b;
@@ -337,48 +382,57 @@ struct lab_t {
 };
 
 // rect_t: A rectangle (int points)
-struct rect_t {
+struct rect_t
+{
 	point2_t tl, br;
 
 	// Constructors
 	rect_t() { tl.set(0, 0); br.set(0, 0); }
 
-	rect_t(point2_t TL, point2_t BR) {
+	rect_t(point2_t TL, point2_t BR)
+	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	rect_t(int x1, int y1, int x2, int y2) {
+	rect_t(int x1, int y1, int x2, int y2)
+	{
 		tl.set(x1, y1);
 		br.set(x2, y2);
 	}
 
-	rect_t(int x, int y, int width, int height, int align) {
+	rect_t(int x, int y, int width, int height, int align)
+	{
 		// Top-left
-		if (align == 0) {
+		if (align == 0)
+		{
 			tl.set(x, y);
 			br.set(x + width, y + height);
 		}
 
 		// Centered
-		else if (align == 1) {
+		else if (align == 1)
+		{
 			tl.set(x - (width / 2), y - (height / 2));
 			br.set(x + (width / 2), y + (height / 2));
 		}
 	}
 
 	// Functions
-	void set(point2_t TL, point2_t BR) {
+	void set(point2_t TL, point2_t BR)
+	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	void set(int x1, int y1, int x2, int y2) {
+	void set(int x1, int y1, int x2, int y2)
+	{
 		tl.set(x1, y1);
 		br.set(x2, y2);
 	}
 
-	void set(rect_t rect) {
+	void set(rect_t rect)
+	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
@@ -401,34 +455,41 @@ struct rect_t {
 
 	point2_t middle() { return point2_t(left() + (awidth() / 2), top() + (aheight() / 2)); }
 
-	void expand(int x, int y) {
-		if (x1() < x2()) {
+	void expand(int x, int y)
+	{
+		if (x1() < x2())
+		{
 			tl.x -= x;
 			br.x += x;
 		}
-		else {
+		else
+		{
 			tl.x += x;
 			br.x -= x;
 		}
 
-		if (y1() < y2()) {
+		if (y1() < y2())
+		{
 			tl.y -= y;
 			br.y += y;
 		}
-		else {
+		else
+		{
 			tl.y += y;
 			br.y -= y;
 		}
 	}
 
-	double length() {
+	double length()
+	{
 		double dist_x = x2() - x1();
 		double dist_y = y2() - y1();
 
 		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool within(int x, int y) {
+	bool within(int x, int y)
+	{
 		if (x >= left() && x <= right() && y >= top() && y <= bottom())
 			return true;
 		else
@@ -438,68 +499,81 @@ struct rect_t {
 
 
 // frect_t: A rectangle (float points)
-struct frect_t {
+struct frect_t
+{
 	fpoint2_t tl, br;
 
 	// Constructors
 	frect_t() { tl.set(0, 0); br.set(0, 0); }
 
-	frect_t(rect_t rect) {
+	frect_t(rect_t rect)
+	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
 
-	frect_t(fpoint2_t TL, fpoint2_t BR) {
+	frect_t(fpoint2_t TL, fpoint2_t BR)
+	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	frect_t(point2_t TL, point2_t BR) {
+	frect_t(point2_t TL, point2_t BR)
+	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	frect_t(double x1, double y1, double x2, double y2) {
+	frect_t(double x1, double y1, double x2, double y2)
+	{
 		tl.set(x1, y1);
 		br.set(x2, y2);
 	}
 
-	frect_t(double x, double y, double width, double height, int align) {
+	frect_t(double x, double y, double width, double height, int align)
+	{
 		// Top-left
-		if (align == 0) {
+		if (align == 0)
+		{
 			tl.set(x, y);
 			br.set(x + width, y + height);
 		}
 
 		// Centered
-		else if (align == 1) {
+		else if (align == 1)
+		{
 			tl.set(x - (width / 2), y - (height / 2));
 			br.set(x + (width / 2), y + (height / 2));
 		}
 	}
 
 	// Functions
-	void set(rect_t rect) {
+	void set(rect_t rect)
+	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
 
-	void set(fpoint2_t TL, fpoint2_t BR) {
+	void set(fpoint2_t TL, fpoint2_t BR)
+	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	void set(point2_t TL, point2_t BR) {
+	void set(point2_t TL, point2_t BR)
+	{
 		tl.set(TL);
 		br.set(BR);
 	}
 
-	void set(double x1, double y1, double x2, double y2) {
+	void set(double x1, double y1, double x2, double y2)
+	{
 		tl.set(x1, y1);
 		br.set(x2, y2);
 	}
 
-	void set(frect_t rect) {
+	void set(frect_t rect)
+	{
 		tl.set(rect.tl);
 		br.set(rect.br);
 	}
@@ -522,34 +596,41 @@ struct frect_t {
 
 	fpoint2_t middle() { return fpoint2_t(left() + (awidth() / 2), top() + (aheight() / 2)); }
 
-	void expand(double x, double y) {
-		if (x1() < x2()) {
+	void expand(double x, double y)
+	{
+		if (x1() < x2())
+		{
 			tl.x -= x;
 			br.x += x;
 		}
-		else {
+		else
+		{
 			tl.x += x;
 			br.x -= x;
 		}
 
-		if (y1() < y2()) {
+		if (y1() < y2())
+		{
 			tl.y -= y;
 			br.y += y;
 		}
-		else {
+		else
+		{
 			tl.y += y;
 			br.y -= y;
 		}
 	}
 
-	double length() {
+	double length()
+	{
 		double dist_x = x2() - x1();
 		double dist_y = y2() - y1();
 
 		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool within(double x, double y) {
+	bool within(double x, double y)
+	{
 		if (x >= left() && x <= right() && y >= top() && y <= bottom())
 			return true;
 		else
@@ -559,15 +640,18 @@ struct frect_t {
 
 
 // plane_t: A 3d plane
-struct plane_t {
+struct plane_t
+{
 	float a, b, c, d;
 
-	fpoint3_t normal() {
+	fpoint3_t normal()
+	{
 		fpoint3_t norm(a, b, c);
 		return norm.normalize();
 	}
 
-	void normalize() {
+	void normalize()
+	{
 		fpoint3_t vec(a, b, c);
 		float mag = vec.magnitude();
 		a = a / mag;
@@ -576,27 +660,32 @@ struct plane_t {
 		d = d / mag;
 	}
 
-	float height_at(float x, float y) {
+	float height_at(float x, float y)
+	{
 		return ((-a * x) + (-b * y) + d) / c;
 	}
 };
 
 
 // bbox_t: A simple bounding box with related functions
-struct bbox_t {
+struct bbox_t
+{
 	fpoint2_t	min;
 	fpoint2_t	max;
 
 	bbox_t() { reset(); }
 
-	void reset() {
+	void reset()
+	{
 		min.set(0, 0);
 		max.set(0, 0);
 	}
 
-	void extend(double x, double y) {
+	void extend(double x, double y)
+	{
 		// Init bbox if it has been reset last
-		if (min.x == 0 && min.y == 0 && max.x == 0 && max.y == 0) {
+		if (min.x == 0 && min.y == 0 && max.x == 0 && max.y == 0)
+		{
 			min.set(x, y);
 			max.set(x, y);
 			return;
@@ -613,19 +702,23 @@ struct bbox_t {
 			max.y = y;
 	}
 
-	bool point_within(double x, double y) {
+	bool point_within(double x, double y)
+	{
 		return (x >= min.x && x <= max.x && y >= min.y && y <= max.y);
 	}
 
-	bool is_within(fpoint2_t bmin, fpoint2_t bmax) {
+	bool is_within(fpoint2_t bmin, fpoint2_t bmax)
+	{
 		return (min.x >= bmin.x && max.x <= bmax.x && min.y >= bmin.y && max.y <= bmax.y);
 	}
 
-	bool is_valid() {
+	bool is_valid()
+	{
 		return ((max.x - min.x > 0) && (max.y - min.y) > 0);
 	}
 
-	fpoint2_t size() {
+	fpoint2_t size()
+	{
 		return fpoint2_t(max.x - min.x, max.y - min.y);
 	}
 };
@@ -641,7 +734,8 @@ struct patch_header_t
 };
 
 // oldpatch_header_t: The header of an alpha/beta Doom-format gfx image
-struct oldpatch_header_t {
+struct oldpatch_header_t
+{
 	uint8_t width;
 	uint8_t height;
 	int8_t left;
@@ -649,7 +743,8 @@ struct oldpatch_header_t {
 };
 
 // jagpic_header_t: The header of a Jaguar Doom-format gfx image
-struct jagpic_header_t {
+struct jagpic_header_t
+{
 	short	width;
 	short	height;
 	short	depth;
@@ -667,7 +762,8 @@ struct psxpic_header_t
 };
 
 // rottpatch_header_t: The header of a rott-format gfx image
-struct rottpatch_header_t {
+struct rottpatch_header_t
+{
 	short	origsize;
 	short	width;
 	short	height;
@@ -677,7 +773,8 @@ struct rottpatch_header_t {
 };
 
 // imgz_header: The header of a ZDoom imgz image
-struct imgz_header_t {
+struct imgz_header_t
+{
 	uint8_t  magic[4];
 	uint16_t width;
 	uint16_t height;

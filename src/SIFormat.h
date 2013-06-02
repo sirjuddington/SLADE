@@ -4,7 +4,8 @@
 
 #include "SImage.h"
 
-class SIFormat {
+class SIFormat
+{
 protected:
 	string	id;
 	string	name;
@@ -21,13 +22,15 @@ protected:
 
 public:
 	// Conversion options stuff
-	enum {
-		MASK_NONE = 0,
-		MASK_COLOUR,
-		MASK_ALPHA,
-		MASK_BRIGHTNESS,
+	enum
+	{
+	    MASK_NONE = 0,
+	    MASK_COLOUR,
+	    MASK_ALPHA,
+	    MASK_BRIGHTNESS,
 	};
-	struct convert_options_t {
+	struct convert_options_t
+	{
 		Palette8bit*	pal_current;
 		Palette8bit*	pal_target;
 		int				mask_source;
@@ -36,7 +39,8 @@ public:
 		bool			transparency;
 		int				col_format;
 
-		convert_options_t() {
+		convert_options_t()
+		{
 			pal_current = pal_target = NULL;
 			mask_source = MASK_ALPHA;
 			transparency = true;
@@ -57,7 +61,8 @@ public:
 	// Reading
 	virtual SImage::info_t	getInfo(MemChunk& mc, int index = 0) = 0;
 
-	bool loadImage(SImage& image, MemChunk& data, int index = 0) {
+	bool loadImage(SImage& image, MemChunk& data, int index = 0)
+	{
 		// Check format
 		if (!isThisFormat(data))
 			return false;
@@ -66,7 +71,8 @@ public:
 		bool ok = readImage(image, data, index);
 
 		// Set image properties if successful
-		if (ok) {
+		if (ok)
+		{
 			image.format = this;
 			image.imgindex = index;
 		}
@@ -80,17 +86,19 @@ public:
 	}
 
 	// Writing
-	enum {
-		NOTWRITABLE,	// Format cannot be written
-		WRITABLE,		// Format can be written
-		CONVERTIBLE,	// Format can be written but a conversion is required
+	enum
+	{
+	    NOTWRITABLE,	// Format cannot be written
+	    WRITABLE,		// Format can be written
+	    CONVERTIBLE,	// Format can be written but a conversion is required
 	};
 	virtual int		canWrite(SImage& image) { return NOTWRITABLE; }
 	virtual bool	canWriteType(SIType type) { return false; }
 	virtual bool	convertWritable(SImage& image, convert_options_t opt) { return false; }
-	virtual bool	writeOffset(SImage& image, ArchiveEntry * entry, point2_t offset) { return false; }
+	virtual bool	writeOffset(SImage& image, ArchiveEntry* entry, point2_t offset) { return false; }
 
-	bool saveImage(SImage& image, MemChunk& out, Palette8bit* pal = NULL, int index = 0) {
+	bool saveImage(SImage& image, MemChunk& out, Palette8bit* pal = NULL, int index = 0)
+	{
 		// Attempt to write image data
 		bool ok = writeImage(image, out, pal, index);
 

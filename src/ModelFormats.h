@@ -1,14 +1,17 @@
 #ifndef MODELFORMATS_H
 #define MODELFORMATS_H
 
-class DMDModelDataFormat : public EntryDataFormat {
+class DMDModelDataFormat : public EntryDataFormat
+{
 public:
 	DMDModelDataFormat() : EntryDataFormat("mesh_dmd") {};
 	~DMDModelDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for DMDM header
 			if (mc[0] == 'D' && mc[1] == 'M' && mc[2] == 'D' && mc[3] == 'M')
 				return EDF_TRUE;
@@ -17,14 +20,17 @@ public:
 	}
 };
 
-class MDLModelDataFormat : public EntryDataFormat {
+class MDLModelDataFormat : public EntryDataFormat
+{
 public:
 	MDLModelDataFormat() : EntryDataFormat("mesh_mdl") {};
 	~MDLModelDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for IDPO header
 			if (mc[0] == 'I' && mc[1] == 'D' && mc[2] == 'P' && mc[3] == 'O')
 				return EDF_TRUE;
@@ -33,14 +39,17 @@ public:
 	}
 };
 
-class MD2ModelDataFormat : public EntryDataFormat {
+class MD2ModelDataFormat : public EntryDataFormat
+{
 public:
 	MD2ModelDataFormat() : EntryDataFormat("mesh_md2") {};
 	~MD2ModelDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for IDP2 header
 			if (mc[0] == 'I' && mc[1] == 'D' && mc[2] == 'P' && mc[3] == '2')
 				return EDF_TRUE;
@@ -49,14 +58,17 @@ public:
 	}
 };
 
-class MD3ModelDataFormat : public EntryDataFormat {
+class MD3ModelDataFormat : public EntryDataFormat
+{
 public:
 	MD3ModelDataFormat() : EntryDataFormat("mesh_md3") {};
 	~MD3ModelDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for IDP3 header
 			if (mc[0] == 'I' && mc[1] == 'D' && mc[2] == 'P' && mc[3] == '3')
 				return EDF_TRUE;
@@ -65,15 +77,18 @@ public:
 	}
 };
 
-class VOXVoxelDataFormat : public EntryDataFormat {
+class VOXVoxelDataFormat : public EntryDataFormat
+{
 public:
 	VOXVoxelDataFormat() : EntryDataFormat("voxel_vox") {};
 	~VOXVoxelDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size: 12 bytes for dimensions and 768 for palette,
 		// so 780 bytes for an empty voxel object.
-		if (mc.getSize() > 780) {
+		if (mc.getSize() > 780)
+		{
 			uint32_t x, y, z;
 			mc.seek(0, SEEK_SET);
 			mc.read(&x, 4); x = wxINT32_SWAP_ON_BE(x);
@@ -86,16 +101,19 @@ public:
 	}
 };
 
-class KVXVoxelDataFormat : public EntryDataFormat {
+class KVXVoxelDataFormat : public EntryDataFormat
+{
 public:
 	KVXVoxelDataFormat() : EntryDataFormat("voxel_kvx") {};
 	~KVXVoxelDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size: 28 bytes for dimensions and pivot,
 		// 4 minimum for offset info, and 768 for palette,
 		// so 800 bytes for an empty voxel object.
-		if (mc.getSize() > 800) {
+		if (mc.getSize() > 800)
+		{
 			// We'll need a certain number of variables
 			uint32_t szd, szx, szy, szz;
 			int32_t szofx, szofxy, szvxd;
@@ -107,7 +125,8 @@ public:
 			mc.seek(0, SEEK_SET);
 
 			// Start validation loop
-			for (int miplevel = 0; miplevel < 5; miplevel++) {
+			for (int miplevel = 0; miplevel < 5; miplevel++)
+			{
 				mc.read(&szd, 4); szd = wxINT32_SWAP_ON_BE(szd); parsed += 4;
 				// Check that data doesn't run out of bounds
 				if (parsed + szd > endofvox)
@@ -132,7 +151,7 @@ public:
 				parsed += szd;
 				mc.seek(parsed, SEEK_SET);
 
-				// We're at the end of a mip level, 
+				// We're at the end of a mip level,
 				// have we reached the palette yet?
 				if (parsed == endofvox)
 					return EDF_TRUE;

@@ -58,11 +58,13 @@ EXTERN_CVAR(Float, col_greyscale_b);
 /* Palette8bit::Palette8bit
  * Palette8bit class constructor
  *******************************************************************/
-Palette8bit::Palette8bit() {
+Palette8bit::Palette8bit()
+{
 	index_trans = -1;
 
 	// Init palette (to greyscale)
-	for (int a = 0; a < 256; a++) {
+	for (int a = 0; a < 256; a++)
+	{
 		colours[a].set(a, a, a, 255);
 		colours_lab[a].l = (double)a / 255.0;
 		colours_hsl[a].l = (double)a / 255.0;
@@ -72,13 +74,15 @@ Palette8bit::Palette8bit() {
 /* Palette8bit::~Palette8bit
  * Palette8bit class destructor
  *******************************************************************/
-Palette8bit::~Palette8bit() {
+Palette8bit::~Palette8bit()
+{
 }
 
 /* Palette8bit::loadMem
  * Reads colour information from raw data (MemChunk)
  *******************************************************************/
-bool Palette8bit::loadMem(MemChunk& mc) {
+bool Palette8bit::loadMem(MemChunk& mc)
+{
 	// Check that the given data has at least 1 colour (3 bytes)
 	if (mc.getSize() < 3)
 		return false;
@@ -86,11 +90,13 @@ bool Palette8bit::loadMem(MemChunk& mc) {
 	// Read in colours
 	mc.seek(0, SEEK_SET);
 	int c = 0;
-	for (size_t a = 0; a < mc.getSize(); a += 3) {
+	for (size_t a = 0; a < mc.getSize(); a += 3)
+	{
 		uint8_t rgb[3] = {0, 0, 0};
 
 		// Read RGB value
-		if (mc.read(rgb, 3)) {
+		if (mc.read(rgb, 3))
+		{
 			// Set colour in palette
 			colours[c].set(rgb[0], rgb[1], rgb[2], 255);
 			colours_lab[c] = Misc::rgbToLab((double)rgb[0]/255.0, (double)rgb[1]/255.0, (double)rgb[2]/255.0);
@@ -109,14 +115,16 @@ bool Palette8bit::loadMem(MemChunk& mc) {
 /* Palette8bit::loadMem
  * Reads colour information from raw data
  *******************************************************************/
-bool Palette8bit::loadMem(const uint8_t* data, uint32_t size) {
+bool Palette8bit::loadMem(const uint8_t* data, uint32_t size)
+{
 	// Check that the given data has at least 1 colour (3 bytes)
 	if (size < 3)
 		return false;
 
 	// Read in colours
 	int c = 0;
-	for (size_t a = 0; a < size; a += 3) {
+	for (size_t a = 0; a < size; a += 3)
+	{
 		// Set colour in palette
 		colours[c].set(data[a], data[a+1], data[a+2], 255);
 		colours_lab[c] = Misc::rgbToLab((double)data[a]/255.0, (double)data[a+1]/255.0, (double)data[a+2]/255.0);
@@ -133,24 +141,29 @@ bool Palette8bit::loadMem(const uint8_t* data, uint32_t size) {
 /* Palette8bit::loadMem
  * Reads colour information from a palette format (MemChunk)
  *******************************************************************/
-bool Palette8bit::loadMem(MemChunk& mc, int format) {
+bool Palette8bit::loadMem(MemChunk& mc, int format)
+{
 
 	// Raw data
-	if (format == FORMAT_RAW) {
+	if (format == FORMAT_RAW)
+	{
 		return loadMem(mc);
 	}
 
 	// Image
-	else if (format == FORMAT_IMAGE) {
+	else if (format == FORMAT_IMAGE)
+	{
 		SImage image;
 		image.open(mc);
 		// Verify validity and only accept square images
-		if (!image.isValid()) {
+		if (!image.isValid())
+		{
 			wxLogMessage("Palette information cannot be loaded from an invalid image");
 			return false;
 		}
 		int side = image.getHeight();
-		if (side != image.getWidth() || side%16) {
+		if (side != image.getWidth() || side%16)
+		{
 			wxLogMessage("Palette information cannot be loaded from a non-square image");
 			return false;
 		}
@@ -158,7 +171,8 @@ bool Palette8bit::loadMem(MemChunk& mc, int format) {
 		int cell = side / 16;
 
 		// Add colors to the palette
-		for (size_t a = 0; a < 256; ++a) {
+		for (size_t a = 0; a < 256; ++a)
+		{
 			// Find position in grid
 			int x = (a % 16) * cell;
 			int y = (a / 16) * cell;
@@ -170,19 +184,21 @@ bool Palette8bit::loadMem(MemChunk& mc, int format) {
 			// Validate color cell
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
 				for (int c = y; c < (y + (cell > 3 ? cell - 1 : cell)); ++c)
-					if (!col.equals(image.getPixel(b, c))) {
+					if (!col.equals(image.getPixel(b, c)))
+					{
 						wxLogMessage("Image does not seem to be a valid palette, color discrepancy in cell %u at [%u, %u]", a, b, c);
 						return false;
 					}
 
-					// Color is validated, so add it
-					setColour(a, col);
+			// Color is validated, so add it
+			setColour(a, col);
 		}
 		return true;
 	}
 
 	// Text formats
-	else if (format == FORMAT_CSV || format == FORMAT_JASC || format == FORMAT_GIMP) {
+	else if (format == FORMAT_CSV || format == FORMAT_JASC || format == FORMAT_GIMP)
+	{
 
 		if (memchr(mc.getData(), 0, mc.getSize() -1))
 			return false; // Not text
@@ -192,18 +208,24 @@ bool Palette8bit::loadMem(MemChunk& mc, int format) {
 		tz.openMem(&mc, "Palette Import");
 
 		// Parse headers
-		if (format == FORMAT_JASC) {
-			if (!tz.checkToken("JASC-PAL") || !tz.checkToken("0100")) {
+		if (format == FORMAT_JASC)
+		{
+			if (!tz.checkToken("JASC-PAL") || !tz.checkToken("0100"))
+			{
 				wxLogMessage("Invalid JASC palette (unknown header)");
 				return false;
 			}
 			int count = tz.getInteger();
-			if (count > 256 || count < 0) {
+			if (count > 256 || count < 0)
+			{
 				wxLogMessage("Invalid JASC palette (wrong count)");
 				return false;
 			}
-		} else if (format == FORMAT_GIMP) {
-			if (!tz.checkToken("GIMP") || !tz.checkToken("Palette")) {
+		}
+		else if (format == FORMAT_GIMP)
+		{
+			if (!tz.checkToken("GIMP") || !tz.checkToken("Palette"))
+			{
 				wxLogMessage("Invalid GIMP palette (unknown header)");
 				return false;
 			}
@@ -212,7 +234,8 @@ bool Palette8bit::loadMem(MemChunk& mc, int format) {
 		string s1, s2, s3;
 		rgba_t col(0, 0, 0, 255, -1);
 		int c = 0;
-		do {
+		do
+		{
 			// Get the first token. If it begins with #, it's a comment in GIMP. Ignore.
 			// Since the lexer expects ## for comments, not just #, tell it explicitly to skip.
 			s1 = tz.getToken(); if (format == FORMAT_CSV) tz.checkToken(",");
@@ -231,7 +254,8 @@ bool Palette8bit::loadMem(MemChunk& mc, int format) {
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
 			col.r = atoi(CHR(s1)); col.g = atoi(CHR(s2)); col.b = atoi(CHR(s3));
 			setColour(c++, col);
-		} while (c < 256 && !tz.peekToken().IsEmpty());
+		}
+		while (c < 256 && !tz.peekToken().IsEmpty());
 
 		return true;
 
@@ -245,21 +269,24 @@ bool Palette8bit::loadMem(MemChunk& mc, int format) {
 /* Palette8bit::saveMem
  * Writes colour information to a MemChunk
  *******************************************************************/
-bool Palette8bit::saveMem(MemChunk& mc, int format, string name) {
+bool Palette8bit::saveMem(MemChunk& mc, int format, string name)
+{
 	// Clear memchunk
 	mc.clear();
 
 	// Write to requested format
 
 	// Raw data
-	if (format == FORMAT_RAW) {
+	if (format == FORMAT_RAW)
+	{
 		mc.reSize(768);
 		for (unsigned a = 0; a < 256; a++)
 			mc.write(&colours[a], 3);
 	}
 
 	// CSV
-	else if (format == FORMAT_CSV) {
+	else if (format == FORMAT_CSV)
+	{
 		string csv;
 		for (unsigned a = 0; a < 256; a++)
 			csv += S_FMT("%d, %d, %d\n", colours[a].r, colours[a].g, colours[a].b);
@@ -267,7 +294,8 @@ bool Palette8bit::saveMem(MemChunk& mc, int format, string name) {
 	}
 
 	// JASC palette
-	else if (format == FORMAT_JASC) {
+	else if (format == FORMAT_JASC)
+	{
 		string jasc = "JASC-PAL\n0100\n256\n";
 		for (unsigned a = 0; a < 256; a++)
 			jasc += S_FMT("%d %d %d\n", colours[a].r, colours[a].g, colours[a].b);
@@ -275,7 +303,8 @@ bool Palette8bit::saveMem(MemChunk& mc, int format, string name) {
 	}
 
 	// GIMP palette
-	else if (format == FORMAT_GIMP) {
+	else if (format == FORMAT_GIMP)
+	{
 		string gimp = S_FMT("GIMP Palette\nName: %s\n#\n", CHR(name));
 		for (unsigned a = 0; a < 256; a++)
 			gimp += S_FMT("%d\t%d\t%d\tIndex %u\n", colours[a].r, colours[a].g, colours[a].b, a);
@@ -283,23 +312,27 @@ bool Palette8bit::saveMem(MemChunk& mc, int format, string name) {
 	}
 
 	// Image
-	else if (format == FORMAT_IMAGE) {
+	else if (format == FORMAT_IMAGE)
+	{
 		SImage image;
 
 		// Generate palette image
 		image.create(128, 128, PALMASK, this);
 		unsigned xoff = 0;
 		unsigned yoff = 0;
-		for (unsigned a = 0; a < 256; a++) {
+		for (unsigned a = 0; a < 256; a++)
+		{
 			// Draw colour square
-			for (unsigned y = 0; y < 8; y++) {
+			for (unsigned y = 0; y < 8; y++)
+			{
 				for (unsigned x = 0; x < 8; x++)
 					image.setPixel(xoff+x, yoff+y, a, 255);
 			}
-			
+
 			// Go to next square
 			xoff += 8;
-			if (xoff >= 128) {
+			if (xoff >= 128)
+			{
 				xoff = 0;
 				yoff += 8;
 			}
@@ -320,7 +353,8 @@ bool Palette8bit::saveMem(MemChunk& mc, int format, string name) {
  * Writes colour information to a file at [filename]. Returns false
  * if the file could not be opened/created, true otherwise
  *******************************************************************/
-bool Palette8bit::saveFile(string filename, int format) {
+bool Palette8bit::saveFile(string filename, int format)
+{
 	// Get palette name
 	wxFileName fn(filename);
 	string name = fn.GetName();
@@ -338,7 +372,8 @@ bool Palette8bit::saveFile(string filename, int format) {
  * Reads colour information from a file at [filename]. Returns false
  * if the file could not be opened/parsed, true otherwise
  *******************************************************************/
-bool Palette8bit::loadFile(string filename, int format) {
+bool Palette8bit::loadFile(string filename, int format)
+{
 	// Get palette name
 	wxFileName fn(filename);
 	string name = fn.GetName();
@@ -365,7 +400,8 @@ bool Palette8bit::loadFile(string filename, int format) {
 /* Palette8bit::setColour
  * Sets the colour at [index]
  *******************************************************************/
-void Palette8bit::setColour(uint8_t index, rgba_t col) {
+void Palette8bit::setColour(uint8_t index, rgba_t col)
+{
 	colours[index].set(col);
 	colours_lab[index] = Misc::rgbToLab(col.dr(), col.dg(), col.db());
 	colours_hsl[index] = Misc::rgbToHsl(col.dr(), col.dg(), col.db());
@@ -374,7 +410,8 @@ void Palette8bit::setColour(uint8_t index, rgba_t col) {
 /* Palette8bit::setColour
  * Sets the colour at [index]'s red component
  *******************************************************************/
-void Palette8bit::setColourR(uint8_t index, uint8_t val) {
+void Palette8bit::setColourR(uint8_t index, uint8_t val)
+{
 	colours[index].r = val;
 	colours_lab[index] = Misc::rgbToLab(colours[index].dr(), colours[index].dg(), colours[index].db());
 	colours_hsl[index] = Misc::rgbToHsl(colours[index].dr(), colours[index].dg(), colours[index].db());
@@ -383,7 +420,8 @@ void Palette8bit::setColourR(uint8_t index, uint8_t val) {
 /* Palette8bit::setColour
  * Sets the colour at [index]'s green component
  *******************************************************************/
-void Palette8bit::setColourG(uint8_t index, uint8_t val) {
+void Palette8bit::setColourG(uint8_t index, uint8_t val)
+{
 	colours[index].g = val;
 	colours_lab[index] = Misc::rgbToLab(colours[index].dr(), colours[index].dg(), colours[index].db());
 	colours_hsl[index] = Misc::rgbToHsl(colours[index].dr(), colours[index].dg(), colours[index].db());
@@ -392,7 +430,8 @@ void Palette8bit::setColourG(uint8_t index, uint8_t val) {
 /* Palette8bit::setColour
  * Sets the colour at [index]'s blue component
  *******************************************************************/
-void Palette8bit::setColourB(uint8_t index, uint8_t val) {
+void Palette8bit::setColourB(uint8_t index, uint8_t val)
+{
 	colours[index].b = val;
 	colours_lab[index] = Misc::rgbToLab(colours[index].dr(), colours[index].dg(), colours[index].db());
 	colours_hsl[index] = Misc::rgbToHsl(colours[index].dr(), colours[index].dg(), colours[index].db());
@@ -401,7 +440,8 @@ void Palette8bit::setColourB(uint8_t index, uint8_t val) {
 /* Palette8bit::copyPalette8bit
  * Copies the given palette into this one
  *******************************************************************/
-void Palette8bit::copyPalette(Palette8bit* copy) {
+void Palette8bit::copyPalette(Palette8bit* copy)
+{
 	if (!copy)
 		return;
 
@@ -415,8 +455,10 @@ void Palette8bit::copyPalette(Palette8bit* copy) {
  * Returns the index of the colour in the palette matching [colour],
  * or -1 if no match is found
  *******************************************************************/
-short Palette8bit::findColour(rgba_t colour) {
-	for (int a = 0; a < 256; a++) {
+short Palette8bit::findColour(rgba_t colour)
+{
+	for (int a = 0; a < 256; a++)
+	{
 		if (colours[a].equals(colour))
 			return a;
 	}
@@ -427,38 +469,39 @@ short Palette8bit::findColour(rgba_t colour) {
 double Palette8bit::colourDiff(rgba_t& rgb, hsl_t& hsl, lab_t& lab, int index, int match)
 {
 	double d1, d2, d3;
-	switch(match) {
-		default:
-		case MATCH_OLD:		// Directly with integer values
-			d1 = rgb.r - colours[index].r;
-			d2 = rgb.g - colours[index].g;
-			d3 = rgb.b - colours[index].b;
-			break;
-		case MATCH_RGB:		// With doubles, more precise
-			d1 = rgb.dr() - colours[index].dr();
-			d2 = rgb.dg() - colours[index].dg();
-			d3 = rgb.db() - colours[index].db();
-			d1*=col_match_r;
-			d2*=col_match_g;
-			d3*=col_match_b;
-			break;
-		case MATCH_HSL:
-			d1 = hsl.h - colours_hsl[index].h;
-			// Hue wraps around!
-			if (d1 >  0.5) d1-= 1.0;
-			if (d1 < -0.5) d1+= 1.0;
-			d2 = hsl.s - colours_hsl[index].s;
-			d3 = hsl.l - colours_hsl[index].l;
-			d1*=col_match_h;
-			d2*=col_match_s;
-			d3*=col_match_l;
-			break;
-		case MATCH_C76:
-			return CIE::CIE76(lab, colours_lab[index]);
-		case MATCH_C94:
-			return CIE::CIE94(lab, colours_lab[index]);
-		case MATCH_C2K:
-			return CIE::CIEDE2000(lab, colours_lab[index]);
+	switch(match)
+	{
+	default:
+	case MATCH_OLD:		// Directly with integer values
+		d1 = rgb.r - colours[index].r;
+		d2 = rgb.g - colours[index].g;
+		d3 = rgb.b - colours[index].b;
+		break;
+	case MATCH_RGB:		// With doubles, more precise
+		d1 = rgb.dr() - colours[index].dr();
+		d2 = rgb.dg() - colours[index].dg();
+		d3 = rgb.db() - colours[index].db();
+		d1*=col_match_r;
+		d2*=col_match_g;
+		d3*=col_match_b;
+		break;
+	case MATCH_HSL:
+		d1 = hsl.h - colours_hsl[index].h;
+		// Hue wraps around!
+		if (d1 >  0.5) d1-= 1.0;
+		if (d1 < -0.5) d1+= 1.0;
+		d2 = hsl.s - colours_hsl[index].s;
+		d3 = hsl.l - colours_hsl[index].l;
+		d1*=col_match_h;
+		d2*=col_match_s;
+		d3*=col_match_l;
+		break;
+	case MATCH_C76:
+		return CIE::CIE76(lab, colours_lab[index]);
+	case MATCH_C94:
+		return CIE::CIE94(lab, colours_lab[index]);
+	case MATCH_C2K:
+		return CIE::CIEDE2000(lab, colours_lab[index]);
 	}
 	return (d1*d1)+(d2*d2)+(d3*d3);
 }
@@ -466,7 +509,8 @@ double Palette8bit::colourDiff(rgba_t& rgb, hsl_t& hsl, lab_t& lab, int index, i
 /* Palette8bit::nearestColour
  * Returns the index of the closest colour in the palette to [colour]
  *******************************************************************/
-short Palette8bit::nearestColour(rgba_t colour, int match) {
+short Palette8bit::nearestColour(rgba_t colour, int match)
+{
 	double min_d = 999999;
 	short index = 0;
 	hsl_t chsl = Misc::rgbToHsl(colour);
@@ -476,13 +520,15 @@ short Palette8bit::nearestColour(rgba_t colour, int match) {
 		match = col_match;
 
 	double delta;
-	for (short a = 0; a < 256; a++) {
+	for (short a = 0; a < 256; a++)
+	{
 		delta = colourDiff(colour, chsl, clab, a, match);
 
 		// Exact match?
 		if (delta == 0.0)
 			return a;
-		else if (delta < min_d) {
+		else if (delta < min_d)
+		{
 			min_d = delta;
 			index = a;
 		}
@@ -494,15 +540,19 @@ short Palette8bit::nearestColour(rgba_t colour, int match) {
 /* Palette8bit::countColours
  * Returns the number of unique colors in a palette
  *******************************************************************/
-size_t Palette8bit::countColours() {
-	rgba_t * usedcolours = new rgba_t[256];
+size_t Palette8bit::countColours()
+{
+	rgba_t* usedcolours = new rgba_t[256];
 	memset(usedcolours, 0, 256*sizeof(rgba_t));
 	size_t used = 0;
 
-	for (int a = 0; a < 256; a++) {
+	for (int a = 0; a < 256; a++)
+	{
 		bool found = false;
-		for (size_t b = 0; b < used; b++) {
-			if (colours[a].equals(usedcolours[b])) {
+		for (size_t b = 0; b < used; b++)
+		{
+			if (colours[a].equals(usedcolours[b]))
+			{
 				found = true;
 				break;
 			}
@@ -517,7 +567,8 @@ size_t Palette8bit::countColours() {
 /* Palette8bit::applyTranslation
  * Applies the translation [trans] to this palette
  *******************************************************************/
-void Palette8bit::applyTranslation(Translation* trans) {
+void Palette8bit::applyTranslation(Translation* trans)
+{
 	// Check translation was given
 	if (!trans)
 		return;
@@ -527,15 +578,18 @@ void Palette8bit::applyTranslation(Translation* trans) {
 	temp.copyPalette(this);
 
 	// Go through each translation component
-	for (unsigned a = 0; a < trans->nRanges(); a++) {
+	for (unsigned a = 0; a < trans->nRanges(); a++)
+	{
 		TransRange* r = trans->getRange(a);
 
 		// Palette range translation
-		if (r->getType() == TRANS_PALETTE) {
+		if (r->getType() == TRANS_PALETTE)
+		{
 			TransRangePalette* tp = (TransRangePalette*)r;
 
 			// Do remap
-			for (unsigned i = tp->oStart(); i <= tp->oEnd(); i++) {
+			for (unsigned i = tp->oStart(); i <= tp->oEnd(); i++)
+			{
 				// Figure out how far along the range this colour is
 				double range_frac = 0;
 				if (tp->oStart() != tp->oEnd())
@@ -550,11 +604,13 @@ void Palette8bit::applyTranslation(Translation* trans) {
 		}
 
 		// Colour range
-		else if (r->getType() == TRANS_COLOUR) {
+		else if (r->getType() == TRANS_COLOUR)
+		{
 			TransRangeColour* tc = (TransRangeColour*)r;
 
 			// Do remap
-			for (unsigned i = tc->oStart(); i <= tc->oEnd(); i++) {
+			for (unsigned i = tc->oStart(); i <= tc->oEnd(); i++)
+			{
 				// Figure out how far along the range this colour is
 				double range_frac = 0;
 				if (tc->oStart() != tc->oEnd())
@@ -574,11 +630,13 @@ void Palette8bit::applyTranslation(Translation* trans) {
 		}
 
 		// Desaturated colour range
-		else if (r->getType() == TRANS_DESAT) {
+		else if (r->getType() == TRANS_DESAT)
+		{
 			TransRangeDesat* td = (TransRangeDesat*)r;
 
 			// Do remap
-			for (unsigned i = td->oStart(); i <= td->oEnd(); i++) {
+			for (unsigned i = td->oStart(); i <= td->oEnd(); i++)
+			{
 				// Get greyscale colour
 				float grey = (colours[i].r*0.3f + colours[i].g*0.59f + colours[i].b*0.11f) / 255.0f;
 
@@ -603,7 +661,8 @@ void Palette8bit::applyTranslation(Translation* trans) {
 /* Palette8bit::colourise
  * Colourises the palette to [colour]
  *******************************************************************/
-void Palette8bit::colourise(rgba_t colour, int start, int end) {
+void Palette8bit::colourise(rgba_t colour, int start, int end)
+{
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
 		start = 0;
@@ -611,7 +670,8 @@ void Palette8bit::colourise(rgba_t colour, int start, int end) {
 		end = 255;
 
 	// Colourise all colours in the range
-	for (int i = start; i <= end; ++i) {
+	for (int i = start; i <= end; ++i)
+	{
 		rgba_t ncol(colours[i].r, colours[i].g, colours[i].b, colours[i].a, colours[i].blend);
 		double grey = (ncol.r*col_greyscale_r + ncol.g*col_greyscale_g + ncol.b*col_greyscale_b) / 255.0f;
 		if (grey > 1.0) grey = 1.0;
@@ -625,7 +685,8 @@ void Palette8bit::colourise(rgba_t colour, int start, int end) {
 /* Palette8bit::tint
  * Tints the palette to [colour] by [amount]
  *******************************************************************/
-void Palette8bit::tint(rgba_t colour, float amount, int start, int end) {
+void Palette8bit::tint(rgba_t colour, float amount, int start, int end)
+{
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
 		start = 0;
@@ -639,16 +700,17 @@ void Palette8bit::tint(rgba_t colour, float amount, int start, int end) {
 		amount = 1.;
 
 	// Tint all colours in the range
-	for (int i = start; i <= end; ++i) {
+	for (int i = start; i <= end; ++i)
+	{
 		float inv_amt = 1.0f - amount;
 		// Might want to do something about the precision loss here and elsewhere:
 		// it's possible for 0xFFFFFF shifting to 0xFF0000 to become 0xFExxxx...
 		// I'll leave this working exactly the same as the SImage function for now.
 		float round_delta = /*roundup ? 0.4999999 :*/ 0.0;
 		rgba_t ncol(colours[i].r*inv_amt + colour.r*amount + round_delta,
-					colours[i].g*inv_amt + colour.g*amount + round_delta,
-					colours[i].b*inv_amt + colour.b*amount + round_delta,
-					colours[i].a, colours[i].blend);
+		            colours[i].g*inv_amt + colour.g*amount + round_delta,
+		            colours[i].b*inv_amt + colour.b*amount + round_delta,
+		            colours[i].a, colours[i].blend);
 		setColour(i, ncol);
 	}
 }
@@ -658,9 +720,11 @@ void Palette8bit::tint(rgba_t colour, float amount, int start, int end) {
  * This one uses a different method to tint the colours, which is
  * taken from Carmack's own dcolors.c.
  *******************************************************************/
-void Palette8bit::idtint(int r, int g, int b, int shift, int steps) {
+void Palette8bit::idtint(int r, int g, int b, int shift, int steps)
+{
 	// Tint all colours in the range
-	for (int i = 0; i <= 255; ++i) {
+	for (int i = 0; i <= 255; ++i)
+	{
 		// Compute the colour differences
 		int dr = r - colours[i].r;
 		int dg = g - colours[i].g;
@@ -678,7 +742,8 @@ void Palette8bit::idtint(int r, int g, int b, int shift, int steps) {
 /* Palette8bit::saturate
  * Saturate the palette by [amount] (in range 0--2)
  *******************************************************************/
-void Palette8bit::saturate(float amount, int start, int end) {
+void Palette8bit::saturate(float amount, int start, int end)
+{
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
 		start = 0;
@@ -692,7 +757,8 @@ void Palette8bit::saturate(float amount, int start, int end) {
 		amount = 2.;
 
 	// Saturate all colours in the range
-	for (int i = start; i <= end; ++i) {
+	for (int i = start; i <= end; ++i)
+	{
 		colours_hsl[i].s *= amount;
 		if (colours_hsl[i].s > 1.)
 			colours_hsl[i].s = 1.;
@@ -704,7 +770,8 @@ void Palette8bit::saturate(float amount, int start, int end) {
 /* Palette8bit::illuminate
  * Darken or brighten the palette by [amount] (in range 0--2)
  *******************************************************************/
-void Palette8bit::illuminate(float amount, int start, int end) {
+void Palette8bit::illuminate(float amount, int start, int end)
+{
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
 		start = 0;
@@ -718,7 +785,8 @@ void Palette8bit::illuminate(float amount, int start, int end) {
 		amount = 2.;
 
 	// Illuminate all colours in the range
-	for (int i = start; i <= end; ++i) {
+	for (int i = start; i <= end; ++i)
+	{
 		colours_hsl[i].l *= amount;
 		if (colours_hsl[i].l > 1.)
 			colours_hsl[i].l = 1.;
@@ -730,7 +798,8 @@ void Palette8bit::illuminate(float amount, int start, int end) {
 /* Palette8bit::shift
  * Shift the hue of the palette by [amount] (in range 0--1)
  *******************************************************************/
-void Palette8bit::shift(float amount, int start, int end) {
+void Palette8bit::shift(float amount, int start, int end)
+{
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
 		start = 0;
@@ -744,7 +813,8 @@ void Palette8bit::shift(float amount, int start, int end) {
 		amount = 1.;
 
 	// Shift all colours in the range
-	for (int i = start; i <= end; ++i) {
+	for (int i = start; i <= end; ++i)
+	{
 		colours_hsl[i].h += amount;
 		if (colours_hsl[i].h >= 1.)
 			colours_hsl[i].h -= 1.;
@@ -756,7 +826,8 @@ void Palette8bit::shift(float amount, int start, int end) {
 /* Palette8bit::invert
  * Inverts the colours of the palette
  *******************************************************************/
-void Palette8bit::invert(int start, int end) {
+void Palette8bit::invert(int start, int end)
+{
 	// Handle default values: a range of (-1, -1) means the entire palette
 	if (start < 0 || start > 255)
 		start = 0;
@@ -764,7 +835,8 @@ void Palette8bit::invert(int start, int end) {
 		end = 255;
 
 	// Inverts all colours in the range
-	for (int i = start; i <= end; ++i) {
+	for (int i = start; i <= end; ++i)
+	{
 		colours[i].r = 255 - colours[i].r;
 		colours[i].g = 255 - colours[i].g;
 		colours[i].b = 255 - colours[i].b;

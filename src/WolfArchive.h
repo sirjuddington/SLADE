@@ -4,12 +4,14 @@
 
 #include "Archive.h"
 
-struct WolfHandle {
+struct WolfHandle
+{
 	uint32_t offset;
 	uint16_t size;
 };
 
-class WolfArchive : public TreelessArchive {
+class WolfArchive : public TreelessArchive
+{
 private:
 	uint16_t	spritestart;
 	uint16_t	soundstart;

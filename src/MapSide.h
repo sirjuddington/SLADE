@@ -27,9 +27,10 @@ struct doom64side_t
 	short		sector;
 };
 
-class MapSide : public MapObject {
-friend class SLADEMap;
-friend class MapLine;
+class MapSide : public MapObject
+{
+	friend class SLADEMap;
+	friend class MapLine;
 private:
 	// Basic data
 	MapSector*	sector;

@@ -2,8 +2,10 @@
 #ifndef __GEN_LINE_SPECIAL_H__
 #define __GEN_LINE_SPECIAL_H__
 
-namespace BoomGenLineSpecial {
-	enum {
+namespace BoomGenLineSpecial
+{
+	enum
+	{
 		// Special types
 		GS_FLOOR = 0,
 		GS_CEILING,

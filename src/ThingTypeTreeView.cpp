@@ -4,7 +4,8 @@
 #include "ThingTypeTreeView.h"
 #include "GameConfiguration.h"
 
-ThingTypeTreeView::ThingTypeTreeView(wxWindow* parent) : wxDataViewTreeCtrl(parent, -1) {
+ThingTypeTreeView::ThingTypeTreeView(wxWindow* parent) : wxDataViewTreeCtrl(parent, -1)
+{
 	parent_dialog = NULL;
 
 	// Create root item
@@ -12,9 +13,10 @@ ThingTypeTreeView::ThingTypeTreeView(wxWindow* parent) : wxDataViewTreeCtrl(pare
 
 	// Populate tree
 	vector<tt_t> specials = theGameConfiguration->allThingTypes();
-	for (unsigned a = 0; a < specials.size(); a++) {
+	for (unsigned a = 0; a < specials.size(); a++)
+	{
 		AppendItem(getGroup(specials[a].type->getGroup()),
-					S_FMT("%d: %s", specials[a].number, CHR(specials[a].type->getName())), -1);
+		           S_FMT("%d: %s", specials[a].number, CHR(specials[a].type->getName())), -1);
 	}
 
 	// Bind events
@@ -24,10 +26,12 @@ ThingTypeTreeView::ThingTypeTreeView(wxWindow* parent) : wxDataViewTreeCtrl(pare
 	Expand(root);
 }
 
-ThingTypeTreeView::~ThingTypeTreeView() {
+ThingTypeTreeView::~ThingTypeTreeView()
+{
 }
 
-int ThingTypeTreeView::typeNumber(wxDataViewItem item) {
+int ThingTypeTreeView::typeNumber(wxDataViewItem item)
+{
 	string num = GetItemText(item).BeforeFirst(':');
 	long s;
 	num.ToLong(&s);
@@ -35,15 +39,19 @@ int ThingTypeTreeView::typeNumber(wxDataViewItem item) {
 	return s;
 }
 
-void ThingTypeTreeView::showType(int type) {
+void ThingTypeTreeView::showType(int type)
+{
 	// Go through item groups
-	for (unsigned a = 0; a < groups.size(); a++) {
+	for (unsigned a = 0; a < groups.size(); a++)
+	{
 		// Go through group items
-		for (int b = 0; b < GetChildCount(groups[a].item); b++) {
+		for (int b = 0; b < GetChildCount(groups[a].item); b++)
+		{
 			wxDataViewItem item = GetNthChild(groups[a].item, b);
 
 			// Select+show if match
-			if (typeNumber(item) == type) {
+			if (typeNumber(item) == type)
+			{
 				Select(item);
 				EnsureVisible(item);
 				return;
@@ -52,7 +60,8 @@ void ThingTypeTreeView::showType(int type) {
 	}
 }
 
-int ThingTypeTreeView::selectedType() {
+int ThingTypeTreeView::selectedType()
+{
 	wxDataViewItem item = GetSelection();
 	if (item.IsOk())
 		return typeNumber(item);
@@ -60,9 +69,11 @@ int ThingTypeTreeView::selectedType() {
 		return -1;
 }
 
-wxDataViewItem ThingTypeTreeView::getGroup(string group) {
+wxDataViewItem ThingTypeTreeView::getGroup(string group)
+{
 	// Check if group was already made
-	for (unsigned a = 0; a < groups.size(); a++) {
+	for (unsigned a = 0; a < groups.size(); a++)
+	{
 		if (group == groups[a].name)
 			return groups[a].item;
 	}
@@ -73,20 +84,24 @@ wxDataViewItem ThingTypeTreeView::getGroup(string group) {
 	// Create group needed
 	wxDataViewItem current = root;
 	string fullpath = "";
-	for (unsigned p = 0; p < path.size(); p++) {
+	for (unsigned p = 0; p < path.size(); p++)
+	{
 		if (p > 0) fullpath += "/";
 		fullpath += path[p];
 
 		bool found = false;
-		for (unsigned a = 0; a < groups.size(); a++) {
-			if (groups[a].name == fullpath) {
+		for (unsigned a = 0; a < groups.size(); a++)
+		{
+			if (groups[a].name == fullpath)
+			{
 				current = groups[a].item;
 				found = true;
 				break;
 			}
 		}
 
-		if (!found) {
+		if (!found)
+		{
 			current = AppendContainer(current, path[p], -1, 1);
 			groups.push_back(group_t(current, fullpath));
 		}
@@ -96,11 +111,13 @@ wxDataViewItem ThingTypeTreeView::getGroup(string group) {
 }
 
 
-void ThingTypeTreeView::onItemEdit(wxDataViewEvent& e) {
+void ThingTypeTreeView::onItemEdit(wxDataViewEvent& e)
+{
 	e.Veto();
 }
 
-void ThingTypeTreeView::onItemActivated(wxDataViewEvent& e) {
+void ThingTypeTreeView::onItemActivated(wxDataViewEvent& e)
+{
 	if (parent_dialog)
 		parent_dialog->EndModal(wxID_OK);
 }
@@ -109,7 +126,8 @@ void ThingTypeTreeView::onItemActivated(wxDataViewEvent& e) {
 
 
 
-int ThingTypeTreeView::showDialog(wxWindow* parent, int init) {
+int ThingTypeTreeView::showDialog(wxWindow* parent, int init)
+{
 	wxDialog dlg(parent, -1, "Thing Type", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
 
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

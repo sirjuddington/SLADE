@@ -6,7 +6,8 @@
 #include "ListenerAnnouncer.h"
 #include "PatchTable.h"
 
-class PatchBrowserItem : public BrowserItem {
+class PatchBrowserItem : public BrowserItem
+{
 private:
 	Archive*	archive;
 	uint8_t		type;		// 0=patch, 1=ctexture
@@ -21,7 +22,8 @@ public:
 };
 
 class TextureXList;
-class PatchBrowser : public BrowserWindow, Listener {
+class PatchBrowser : public BrowserWindow, Listener
+{
 private:
 	PatchTable*		patch_table;
 

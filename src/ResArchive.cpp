@@ -45,20 +45,23 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* ResArchive::ResArchive
  * ResArchive class constructor
  *******************************************************************/
-ResArchive::ResArchive() : Archive(ARCHIVE_RES) {
+ResArchive::ResArchive() : Archive(ARCHIVE_RES)
+{
 	// Init variables
 }
 
 /* ResArchive::~ResArchive
  * ResArchive class destructor
  *******************************************************************/
-ResArchive::~ResArchive() {
+ResArchive::~ResArchive()
+{
 }
 
 /* ResArchive::getEntryOffset
  * Returns the file byte offset for [entry]
  *******************************************************************/
-uint32_t ResArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t ResArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return 0;
@@ -69,7 +72,8 @@ uint32_t ResArchive::getEntryOffset(ArchiveEntry* entry) {
 /* ResArchive::setEntryOffset
  * Sets the file byte offset for [entry]
  *******************************************************************/
-void ResArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
+void ResArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return;
@@ -80,14 +84,16 @@ void ResArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
 /* ResArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string ResArchive::getFileExtensionString() {
+string ResArchive::getFileExtensionString()
+{
 	return "Res Files (*.res)|*.res";
 }
 
 /* ResArchive::getFormat
  * Returns the EntryDataFormat id of this archive type
  *******************************************************************/
-string ResArchive::getFormat() {
+string ResArchive::getFormat()
+{
 	return "archive_res";
 }
 
@@ -95,14 +101,17 @@ string ResArchive::getFormat() {
  * Reads a res directory from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps, ArchiveTreeNode* parent) {
-	if (!parent) {
+bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps, ArchiveTreeNode* parent)
+{
+	if (!parent)
+	{
 		wxLogMessage("ReadDir: No parent node");
 		Global::error = "Archive is invalid and/or corrupt";
 		return false;
 	}
 	mc.seek(dir_offset, SEEK_SET);
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -121,7 +130,8 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		mc.read(&size, 4);		// Size
 
 		// Check the identifier
-		if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 'S' || magic[3] != 0) {
+		if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 'S' || magic[3] != 0)
+		{
 			wxLogMessage("ResArchive::readDir: Entry %s (%i@0x%x) has invalid directory entry", name, size, offset);
 			Global::error = "Archive is invalid and/or corrupt";
 			return false;
@@ -140,7 +150,8 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 
 		// If the lump data goes past the end of the file,
 		// the resfile is invalid
-		if (offset + size > mc.getSize()) {
+		if (offset + size > mc.getSize())
+		{
 			wxLogMessage("ResArchive::readDirectory: Res archive is invalid or corrupt, offset overflow");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -154,7 +165,8 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 		nlump->setState(0);
 
 		// Read entry data if it isn't zero-sized
-		if (nlump->getSize() > 0) {
+		if (nlump->getSize() > 0)
+		{
 			// Read the entry data
 			MemChunk edata;
 			mc.exportMemChunk(edata, offset, size);
@@ -163,9 +175,11 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 
 		// What if the entry is a directory?
 		size_t d_o, n_l;
-		if (isResArchive(nlump->getMCData(), d_o, n_l)) {
-			ArchiveTreeNode * ndir = createDir(name, parent);
-			if (ndir) {
+		if (isResArchive(nlump->getMCData(), d_o, n_l))
+		{
+			ArchiveTreeNode* ndir = createDir(name, parent);
+			if (ndir)
+			{
 				theSplashWindow->setProgressMessage(S_FMT("Reading res archive data: %s directory", name));
 				// Save offset to restore it once the recursion is done
 				size_t myoffset = mc.currentPos();
@@ -176,8 +190,10 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 				delete nlump;
 			}
 			else return false;
-		// Not a directory, then add to entry list
-		} else {
+			// Not a directory, then add to entry list
+		}
+		else
+		{
 			parent->addEntry(nlump);
 			// Detect entry type
 			EntryType::detectEntryType(nlump);
@@ -195,7 +211,8 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
  * Reads res format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ResArchive::open(MemChunk& mc) {
+bool ResArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -214,13 +231,15 @@ bool ResArchive::open(MemChunk& mc) {
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
 	// Check the header
-	if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 's' || magic[3] != '!') {
+	if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 's' || magic[3] != '!')
+	{
 		wxLogMessage("ResArchive::openFile: File %s has invalid header", filename.c_str());
 		Global::error = "Invalid res header";
 		return false;
 	}
 
-	if (dir_size % RESDIRENTRYSIZE) {
+	if (dir_size % RESDIRENTRYSIZE)
+	{
 		wxLogMessage("ResArchive::openFile: File %s has invalid directory size", filename.c_str());
 		Global::error = "Invalid res directory size";
 		return false;
@@ -254,53 +273,54 @@ bool ResArchive::open(MemChunk& mc) {
  * Writes the res archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ResArchive::write(MemChunk& mc, bool update) {
-/*	// Determine directory offset & individual lump offsets
-	uint32_t dir_offset = 12;
-	ArchiveEntry* entry = NULL;
-	for (uint32_t l = 0; l < numEntries(); l++) {
-		entry = getEntry(l);
-		setEntryOffset(entry, dir_offset);
-		dir_offset += entry->getSize();
-	}
-
-	// Clear/init MemChunk
-	mc.clear();
-	mc.seek(0, SEEK_SET);
-	mc.reSize(dir_offset + numEntries() * 16);
-
-	// Write the header
-	uint32_t num_lumps = numEntries();
-	mc.write("Res!", 4);
-	mc.write(&num_lumps, 4);
-	mc.write(&dir_offset, 4);
-
-	// Write the lumps
-	for (uint32_t l = 0; l < num_lumps; l++) {
-		entry = getEntry(l);
-		mc.write(entry->getData(), entry->getSize());
-	}
-
-	// Write the directory
-	for (uint32_t l = 0; l < num_lumps; l++) {
-		entry = getEntry(l);
-		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-		long offset = getEntryOffset(entry);
-		long size = entry->getSize();
-
-		for (size_t c = 0; c < entry->getName().length() && c < 8; c++)
-			name[c] = entry->getName()[c];
-
-		mc.write(&offset, 4);
-		mc.write(&size, 4);
-		mc.write(name, 8);
-
-		if (update) {
-			entry->setState(0);
-			entry->exProp("Offset") = (int)offset;
+bool ResArchive::write(MemChunk& mc, bool update)
+{
+	/*	// Determine directory offset & individual lump offsets
+		uint32_t dir_offset = 12;
+		ArchiveEntry* entry = NULL;
+		for (uint32_t l = 0; l < numEntries(); l++) {
+			entry = getEntry(l);
+			setEntryOffset(entry, dir_offset);
+			dir_offset += entry->getSize();
 		}
-	}
-*/
+
+		// Clear/init MemChunk
+		mc.clear();
+		mc.seek(0, SEEK_SET);
+		mc.reSize(dir_offset + numEntries() * 16);
+
+		// Write the header
+		uint32_t num_lumps = numEntries();
+		mc.write("Res!", 4);
+		mc.write(&num_lumps, 4);
+		mc.write(&dir_offset, 4);
+
+		// Write the lumps
+		for (uint32_t l = 0; l < num_lumps; l++) {
+			entry = getEntry(l);
+			mc.write(entry->getData(), entry->getSize());
+		}
+
+		// Write the directory
+		for (uint32_t l = 0; l < num_lumps; l++) {
+			entry = getEntry(l);
+			char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+			long offset = getEntryOffset(entry);
+			long size = entry->getSize();
+
+			for (size_t c = 0; c < entry->getName().length() && c < 8; c++)
+				name[c] = entry->getName()[c];
+
+			mc.write(&offset, 4);
+			mc.write(&size, 4);
+			mc.write(name, 8);
+
+			if (update) {
+				entry->setState(0);
+				entry->exProp("Offset") = (int)offset;
+			}
+		}
+	*/
 	return true;
 }
 
@@ -308,14 +328,16 @@ bool ResArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the resfile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool ResArchive::loadEntryData(ArchiveEntry* entry) {
+bool ResArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -324,7 +346,8 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("ResArchive::loadEntryData: Failed to open resfile %s", filename.c_str());
 		return false;
 	}
@@ -344,7 +367,8 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry) {
  * directory, update namespaces if needed and rename the entry if
  * necessary to be res-friendly (14 characters max)
  *******************************************************************/
-ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -375,7 +399,8 @@ ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
  * If [copy] is true a copy of the entry is added. Returns the added
  * entry or NULL if the entry is invalid
  *******************************************************************/
-ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	// Namespace not found, add to global namespace (ie end of archive)
 	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
 }
@@ -384,7 +409,8 @@ ArchiveEntry* ResArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * Override of Archive::renameEntry to update namespaces if needed
  * and rename the entry if necessary to be res-friendly (14 chars max)
  *******************************************************************/
-bool ResArchive::renameEntry(ArchiveEntry* entry, string name) {
+bool ResArchive::renameEntry(ArchiveEntry* entry, string name)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
@@ -402,7 +428,8 @@ bool ResArchive::renameEntry(ArchiveEntry* entry, string name) {
  * Returns the first entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* ResArchive::findFirst(search_options_t& options) {
+ArchiveEntry* ResArchive::findFirst(search_options_t& options)
+{
 	// Init search variables
 	int start = 0;
 	int end = numEntries();
@@ -410,17 +437,20 @@ ArchiveEntry* ResArchive::findFirst(search_options_t& options) {
 
 	// Begin search
 	ArchiveEntry* entry = NULL;
-	for (int a = start; a < end; a++) {
+	for (int a = start; a < end; a++)
+	{
 		entry = getEntry(a);
 
 		// Check type
-		if (options.match_type) {
+		if (options.match_type)
+		{
 			if (options.match_type != entry->getType())
 				continue;
 		}
 
 		// Check name
-		if (!options.match_name.IsEmpty()) {
+		if (!options.match_name.IsEmpty())
+		{
 			if (!options.match_name.Matches(entry->getName().Lower()))
 				continue;
 		}
@@ -437,7 +467,8 @@ ArchiveEntry* ResArchive::findFirst(search_options_t& options) {
  * Returns the last entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* ResArchive::findLast(search_options_t& options) {
+ArchiveEntry* ResArchive::findLast(search_options_t& options)
+{
 	// Init search variables
 	int start = 0;
 	int end = numEntries();
@@ -445,17 +476,20 @@ ArchiveEntry* ResArchive::findLast(search_options_t& options) {
 
 	// Begin search (bottom-up)
 	ArchiveEntry* entry = NULL;
-	for (int a = end - 1; a >= start; a--) {
+	for (int a = end - 1; a >= start; a--)
+	{
 		entry = getEntry(a);
 
 		// Check type
-		if (options.match_type) {
+		if (options.match_type)
+		{
 			if (options.match_type != entry->getType())
 				continue;
 		}
 
 		// Check name
-		if (!options.match_name.IsEmpty()) {
+		if (!options.match_name.IsEmpty())
+		{
 			if (!options.match_name.Matches(entry->getName().Lower()))
 				continue;
 		}
@@ -471,7 +505,8 @@ ArchiveEntry* ResArchive::findLast(search_options_t& options) {
 /* ResArchive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> ResArchive::findAll(search_options_t& options) {
+vector<ArchiveEntry*> ResArchive::findAll(search_options_t& options)
+{
 	// Init search variables
 	int start = 0;
 	int end = numEntries();
@@ -480,17 +515,20 @@ vector<ArchiveEntry*> ResArchive::findAll(search_options_t& options) {
 
 	// Begin search
 	ArchiveEntry* entry = NULL;
-	for (int a = start; a < end; a++) {
+	for (int a = start; a < end; a++)
+	{
 		entry = getEntry(a);
 
 		// Check type
-		if (options.match_type) {
+		if (options.match_type)
+		{
 			if (options.match_type != entry->getType())
 				continue;
 		}
 
 		// Check name
-		if (!options.match_name.IsEmpty()) {
+		if (!options.match_name.IsEmpty())
+		{
 			if (!options.match_name.Matches(entry->getName().Lower()))
 				continue;
 		}
@@ -507,11 +545,13 @@ vector<ArchiveEntry*> ResArchive::findAll(search_options_t& options) {
 /* ResArchive::isResArchive
  * Checks if the given data is a valid A&A res archive
  *******************************************************************/
-bool ResArchive::isResArchive(MemChunk& mc) {
+bool ResArchive::isResArchive(MemChunk& mc)
+{
 	size_t dummy1, dummy2;
 	return isResArchive(mc, dummy1, dummy2);
 }
-bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lumps) {
+bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lumps)
+{
 	// Check size
 	if (mc.getSize() < 12)
 		return false;
@@ -554,7 +594,8 @@ bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lump
 /* ResArchive::isResArchive
  * Checks if the file at [filename] is a valid A&A res archive
  *******************************************************************/
-bool ResArchive::isResArchive(string filename) {
+bool ResArchive::isResArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 

@@ -3,13 +3,15 @@
 #define __TOKENIZER_H__
 #include "MemChunk.h"
 
-enum CommentTypes {
+enum CommentTypes
+{
 	CCOMMENTS = 1<<0,		// If true C comments are skipped (// and /* */)
 	HCOMMENTS = 1<<1,		// If true hash comments are skipped (##)
 	SCOMMENTS = 1<<2,		// If true shell comments are skipped (;)
 };
 
-class Tokenizer {
+class Tokenizer
+{
 private:
 	char*		current;		// Current position
 	char*		start;			// Start of text
@@ -43,7 +45,7 @@ public:
 	bool	openString(string text, uint32_t offset = 0, uint32_t length = 0, string source = "unknown");
 	bool	openMem(const char* mem, uint32_t length, string source);
 	bool	openMem(const uint8_t* mem, uint32_t length, string source);
-	bool	openMem(MemChunk * mc, string source);
+	bool	openMem(MemChunk* mc, string source);
 	bool	isWhitespace(char p);
 	bool	isSpecialCharacter(char p);
 	bool	incrementCurrent();

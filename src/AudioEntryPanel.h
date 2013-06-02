@@ -11,7 +11,8 @@
 #include "sfMod/sfMod.h"
 #endif
 
-class AudioEntryPanel : public EntryPanel {
+class AudioEntryPanel : public EntryPanel
+{
 private:
 	string	prevfile;
 	int		audio_type;
@@ -32,7 +33,8 @@ private:
 	sfMod::Mod			mod;
 #endif
 
-	enum {
+	enum
+	{
 		AUTYPE_INVALID,
 		AUTYPE_SOUND,
 		AUTYPE_MUSIC,

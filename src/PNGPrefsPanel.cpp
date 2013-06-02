@@ -47,14 +47,15 @@ EXTERN_CVAR(String, path_deflopt)
 /* PNGPrefsPanel::PNGPrefsPanel
  * PNGPrefsPanel class constructor
  *******************************************************************/
-PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "PNG Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "PNG Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// PNG tools paths
@@ -95,13 +96,15 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
 /* PNGPrefsPanel::~PNGPrefsPanel
  * PNGPrefsPanel class destructor
  *******************************************************************/
-PNGPrefsPanel::~PNGPrefsPanel() {
+PNGPrefsPanel::~PNGPrefsPanel()
+{
 }
 
 /* PNGPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void PNGPrefsPanel::init() {
+void PNGPrefsPanel::init()
+{
 	text_pngoutpath->SetValue(wxString(path_pngout));
 	text_pngcrushpath->SetValue(wxString(path_pngcrush));
 	text_defloptpath->SetValue(wxString(path_deflopt));
@@ -110,7 +113,8 @@ void PNGPrefsPanel::init() {
 /* PNGPrefsPanel::applyPreferences
  * Applies preferences from the panel controls
  *******************************************************************/
-void PNGPrefsPanel::applyPreferences() {
+void PNGPrefsPanel::applyPreferences()
+{
 	path_pngout   = text_pngoutpath->GetValue();
 	path_pngcrush = text_pngcrushpath->GetValue();
 	path_deflopt  = text_defloptpath->GetValue();
@@ -124,7 +128,8 @@ void PNGPrefsPanel::applyPreferences() {
 /* PNGPrefsPanel::onBtnBrowsePNGoutPath
  * Called when the 'Browse' for PNGout path button is clicked
  *******************************************************************/
-void PNGPrefsPanel::onBtnBrowsePNGoutPath(wxCommandEvent& e) {
+void PNGPrefsPanel::onBtnBrowsePNGoutPath(wxCommandEvent& e)
+{
 	// Setup acc executable file string
 	string pngout_exe = "pngout";
 #ifdef WIN32
@@ -140,7 +145,8 @@ void PNGPrefsPanel::onBtnBrowsePNGoutPath(wxCommandEvent& e) {
 /* PNGPrefsPanel::onBtnBrowsePNGCrushPath
  * Called when the 'Browse' for PNGout path button is clicked
  *******************************************************************/
-void PNGPrefsPanel::onBtnBrowsePNGCrushPath(wxCommandEvent& e) {
+void PNGPrefsPanel::onBtnBrowsePNGCrushPath(wxCommandEvent& e)
+{
 	// Setup acc executable file string
 	string pngcrush_exe = "pngcrush";
 #ifdef WIN32
@@ -156,7 +162,8 @@ void PNGPrefsPanel::onBtnBrowsePNGCrushPath(wxCommandEvent& e) {
 /* PNGPrefsPanel::onBtnBrowseDeflOptPath
  * Called when the 'Browse' for PNGout path button is clicked
  *******************************************************************/
-void PNGPrefsPanel::onBtnBrowseDeflOptPath(wxCommandEvent& e) {
+void PNGPrefsPanel::onBtnBrowseDeflOptPath(wxCommandEvent& e)
+{
 	// Setup acc executable file string
 	string deflopt_exe = "DeflOpt";
 #ifdef WIN32

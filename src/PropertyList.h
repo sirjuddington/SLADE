@@ -5,7 +5,8 @@
 #include "Property.h"
 #include <map>
 
-class PropertyList {
+class PropertyList
+{
 private:
 	std::map<string, Property>	properties;
 

@@ -51,14 +51,15 @@ EXTERN_CVAR(Bool, elist_type_bgcol)
 /* InterfacePrefsPanel::InterfacePrefsPanel
  * InterfacePrefsPanel class constructor
  *******************************************************************/
-InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Interface Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Interface Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Show entry size as string instead of a number
@@ -93,13 +94,15 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 /* InterfacePrefsPanel::~InterfacePrefsPanel
  * InterfacePrefsPanel class destructor
  *******************************************************************/
-InterfacePrefsPanel::~InterfacePrefsPanel() {
+InterfacePrefsPanel::~InterfacePrefsPanel()
+{
 }
 
 /* InterfacePrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void InterfacePrefsPanel::init() {
+void InterfacePrefsPanel::init()
+{
 	cb_size_as_string->SetValue(size_as_string);
 	cb_filter_dirs->SetValue(!elist_filter_dirs);
 	cb_list_monospace->SetValue(list_font_monospace);
@@ -112,7 +115,8 @@ void InterfacePrefsPanel::init() {
 /* InterfacePrefsPanel::applyPreferences
  * Applies preference values from the controls to CVARs
  *******************************************************************/
-void InterfacePrefsPanel::applyPreferences() {
+void InterfacePrefsPanel::applyPreferences()
+{
 	size_as_string = cb_size_as_string->GetValue();
 	elist_filter_dirs = !cb_filter_dirs->GetValue();
 	list_font_monospace = cb_list_monospace->GetValue();

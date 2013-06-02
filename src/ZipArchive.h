@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class ZipArchive : public Archive {
+class ZipArchive : public Archive
+{
 public:
 	ZipArchive();
 	~ZipArchive();

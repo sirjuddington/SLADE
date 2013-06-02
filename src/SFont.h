@@ -9,8 +9,9 @@
 #define SF_ALIGN_RIGHT	1
 #define SF_ALIGN_CENTER	2
 
-class SFontChar {
-friend class SFont;
+class SFontChar
+{
+	friend class SFont;
 private:
 	uint16_t	width;
 	uint16_t	height;
@@ -21,7 +22,8 @@ public:
 	~SFontChar();
 };
 
-class SFont {
+class SFont
+{
 private:
 	SFontChar*	characters[256];
 	GLTexture	texture;

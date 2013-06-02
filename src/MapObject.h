@@ -6,7 +6,8 @@
 
 class SLADEMap;
 
-enum {
+enum
+{
 	MOBJ_UNKNOWN = 0,
 	MOBJ_VERTEX,
 	MOBJ_LINE,
@@ -15,7 +16,8 @@ enum {
 	MOBJ_THING,
 };
 
-struct mobj_backup_t {
+struct mobj_backup_t
+{
 	PropertyList	properties;
 	PropertyList	props_internal;
 	unsigned		id;
@@ -24,8 +26,9 @@ struct mobj_backup_t {
 	mobj_backup_t() { id = 0; type = 0; }
 };
 
-class MapObject {
-friend class SLADEMap;
+class MapObject
+{
+	friend class SLADEMap;
 private:
 	uint8_t			type;
 

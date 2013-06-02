@@ -55,14 +55,15 @@ EXTERN_CVAR(Bool, txed_calltips_parenthesis)
 /* TextEditorPrefsPanel::TextEditorPrefsPanel
  * TextEditorPrefsPanel class constructor
  *******************************************************************/
-TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create main sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Text Editor Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Text Editor Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Tab width
@@ -114,13 +115,15 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 /* TextEditorPrefsPanel::~TextEditorPrefsPanel
  * TextEditorPrefsPanel class destructor
  *******************************************************************/
-TextEditorPrefsPanel::~TextEditorPrefsPanel() {
+TextEditorPrefsPanel::~TextEditorPrefsPanel()
+{
 }
 
 /* TextEditorPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void TextEditorPrefsPanel::init() {
+void TextEditorPrefsPanel::init()
+{
 	cb_auto_indent->SetValue(txed_auto_indent);
 	cb_trim_whitespace->SetValue(txed_trim_whitespace);
 	cb_syntax_hilight->SetValue(txed_syntax_hilight);
@@ -135,7 +138,8 @@ void TextEditorPrefsPanel::init() {
 /* TextEditorPrefsPanel::applyPreferences
  * Applies preference values from the controls to CVARs
  *******************************************************************/
-void TextEditorPrefsPanel::applyPreferences() {
+void TextEditorPrefsPanel::applyPreferences()
+{
 	txed_auto_indent = cb_auto_indent->GetValue();
 	txed_trim_whitespace = cb_trim_whitespace->GetValue();
 	txed_syntax_hilight = cb_syntax_hilight->GetValue();

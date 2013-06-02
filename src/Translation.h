@@ -8,15 +8,17 @@
 
 class Translation;
 
-class TransRange {
-friend class Translation;
+class TransRange
+{
+	friend class Translation;
 protected:
 	uint8_t	type;
 	uint8_t	o_start;
 	uint8_t	o_end;
 
 public:
-	TransRange(uint8_t type) {
+	TransRange(uint8_t type)
+	{
 		this->type = type;
 		this->o_start = 0;
 		this->o_end = 0;
@@ -32,15 +34,17 @@ public:
 	virtual string	asText() { return ""; }
 };
 
-class TransRangePalette : public TransRange {
-friend class Translation;
+class TransRangePalette : public TransRange
+{
+	friend class Translation;
 private:
 	uint8_t	d_start;
 	uint8_t	d_end;
 
 public:
 	TransRangePalette() : TransRange(TRANS_PALETTE) { d_start = d_end = 0; }
-	TransRangePalette(TransRangePalette* copy) : TransRange(TRANS_PALETTE) {
+	TransRangePalette(TransRangePalette* copy) : TransRange(TRANS_PALETTE)
+	{
 		o_start = copy->o_start;
 		o_end = copy->o_end;
 		d_start = copy->d_start;
@@ -56,14 +60,16 @@ public:
 	string	asText() { return S_FMT("%d:%d=%d:%d", o_start, o_end, d_start, d_end); }
 };
 
-class TransRangeColour : public TransRange {
-friend class Translation;
+class TransRangeColour : public TransRange
+{
+	friend class Translation;
 private:
 	rgba_t d_start, d_end;
 
 public:
 	TransRangeColour() : TransRange(TRANS_COLOUR) { d_start = COL_BLACK; d_end = COL_WHITE; }
-	TransRangeColour(TransRangeColour* copy) : TransRange(TRANS_COLOUR) {
+	TransRangeColour(TransRangeColour* copy) : TransRange(TRANS_COLOUR)
+	{
 		o_start = copy->o_start;
 		o_end = copy->o_end;
 		d_start.set(copy->d_start);
@@ -76,23 +82,26 @@ public:
 	void	setDStart(rgba_t col) { d_start.set(col); }
 	void	setDEnd(rgba_t col) { d_end.set(col); }
 
-	string asText() {
+	string asText()
+	{
 		return S_FMT("%d:%d=[%d,%d,%d]:[%d,%d,%d]",
-						o_start, o_end,
-						d_start.r, d_start.g, d_start.b,
-						d_end.r, d_end.g, d_end.b);
+		             o_start, o_end,
+		             d_start.r, d_start.g, d_start.b,
+		             d_end.r, d_end.g, d_end.b);
 	}
 };
 
-class TransRangeDesat : public TransRange {
-friend class Translation;
+class TransRangeDesat : public TransRange
+{
+	friend class Translation;
 private:
 	float d_sr, d_sg, d_sb;
 	float d_er, d_eg, d_eb;
 
 public:
 	TransRangeDesat() : TransRange(TRANS_DESAT) { d_sr = d_sg = d_sb = 0; d_er = d_eg = d_eb = 2; }
-	TransRangeDesat(TransRangeDesat* copy) : TransRange(TRANS_DESAT) {
+	TransRangeDesat(TransRangeDesat* copy) : TransRange(TRANS_DESAT)
+	{
 		o_start = copy->o_start;
 		o_end = copy->o_end;
 		d_sr = copy->d_sr;
@@ -113,13 +122,15 @@ public:
 	void	setDStart(float r, float g, float b) { d_sr = r; d_sg = g; d_sb = b; }
 	void	setDEnd(float r, float g, float b) { d_er = r; d_eg = g; d_eb = b; }
 
-	string asText() {
+	string asText()
+	{
 		return S_FMT("%d:%d=%%[%1.2f,%1.2f,%1.2f]:[%1.2f,%1.2f,%1.2f]",
-						o_start, o_end, d_sr, d_sg, d_sb, d_er, d_eg, d_eb);
+		             o_start, o_end, d_sr, d_sg, d_sb, d_er, d_eg, d_eb);
 	}
 };
 
-class Translation {
+class Translation
+{
 private:
 	vector<TransRange*>	translations;
 

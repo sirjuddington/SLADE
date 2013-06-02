@@ -11,7 +11,8 @@
  * ACTIONSPECIAL CLASS FUNCTIONS
  *******************************************************************/
 
-ActionSpecial::ActionSpecial(string name, string group) {
+ActionSpecial::ActionSpecial(string name, string group)
+{
 	// Init variables
 	this->name = name;
 	this->group = group;
@@ -25,7 +26,8 @@ ActionSpecial::ActionSpecial(string name, string group) {
 	args[4].name = "Arg5";
 }
 
-void ActionSpecial::copy(ActionSpecial* copy) {
+void ActionSpecial::copy(ActionSpecial* copy)
+{
 	// Check AS to copy was given
 	if (!copy) return;
 
@@ -39,14 +41,16 @@ void ActionSpecial::copy(ActionSpecial* copy) {
 		this->args[a] = copy->args[a];
 }
 
-void ActionSpecial::reset() {
+void ActionSpecial::reset()
+{
 	// Reset variables
 	name = "Unknown";
 	group = "";
 	tagged = 0;
 
 	// Reset args
-	for (unsigned a = 0; a < 5; a++) {
+	for (unsigned a = 0; a < 5; a++)
+	{
 		args[a].name = S_FMT("Arg%d", a+1);
 		args[a].type = ARGT_NUMBER;
 		args[a].custom_flags.clear();
@@ -54,10 +58,12 @@ void ActionSpecial::reset() {
 	}
 }
 
-void ActionSpecial::parse(ParseTreeNode* node) {
+void ActionSpecial::parse(ParseTreeNode* node)
+{
 	// Go through all child nodes/values
 	ParseTreeNode* child = NULL;
-	for (unsigned a = 0; a < node->nChildren(); a++) {
+	for (unsigned a = 0; a < node->nChildren(); a++)
+	{
 		child = (ParseTreeNode*)node->getChild(a);
 		string name = child->getName();
 		int arg = -1;
@@ -79,7 +85,8 @@ void ActionSpecial::parse(ParseTreeNode* node) {
 			arg = 4;
 
 		// Tagged
-		else if (S_CMPNOCASE(name, "tagged")) {
+		else if (S_CMPNOCASE(name, "tagged"))
+		{
 			string str = child->getStringValue();
 			if (S_CMPNOCASE(str, "no")) this->tagged = AS_TT_NO;
 			else if (S_CMPNOCASE(str, "sector")) this->tagged = AS_TT_SECTOR;
@@ -110,16 +117,19 @@ void ActionSpecial::parse(ParseTreeNode* node) {
 		}
 
 		// Parse arg definition if it was one
-		if (arg >= 0) {
+		if (arg >= 0)
+		{
 			// Check for simple definition
-			if (child->isLeaf()) {
+			if (child->isLeaf())
+			{
 				// Set name
 				args[arg].name = child->getStringValue();
 
 				// Set description (if specified)
 				if (child->nValues() > 1) args[arg].desc = child->getStringValue(1);
 			}
-			else {
+			else
+			{
 				// Extended arg definition
 
 				// Name
@@ -147,11 +157,13 @@ void ActionSpecial::parse(ParseTreeNode* node) {
 	}
 }
 
-string ActionSpecial::getArgsString(int args[5]) {
+string ActionSpecial::getArgsString(int args[5])
+{
 	string ret;
 
 	// Add each arg to the string
-	for (unsigned a = 0; a < 5; a++) {
+	for (unsigned a = 0; a < 5; a++)
+	{
 		// Skip if the arg name is undefined and the arg value is 0
 		if (args[a] == 0 && this->args[a].name.StartsWith("Arg"))
 			continue;
@@ -169,7 +181,8 @@ string ActionSpecial::getArgsString(int args[5]) {
 	return ret;
 }
 
-string ActionSpecial::stringDesc() {
+string ActionSpecial::stringDesc()
+{
 	// Init string
 	string ret = S_FMT("\"%s\" in group \"%s\"", CHR(name), CHR(group));
 
@@ -181,7 +194,8 @@ string ActionSpecial::stringDesc() {
 
 	// Add args
 	ret += "\nArgs: ";
-	for (unsigned a = 0; a < 5; a++) {
+	for (unsigned a = 0; a < 5; a++)
+	{
 		ret += args[a].name + ": ";
 
 		if (args[a].type == ARGT_NUMBER)

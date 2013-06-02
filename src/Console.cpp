@@ -48,19 +48,22 @@ Console* Console::instance = NULL;
 /* Console::Console
  * Console class constructor
  *******************************************************************/
-Console::Console() {
+Console::Console()
+{
 }
 
 /* Console::!Console
  * Console class destructor
  *******************************************************************/
-Console::~Console() {
+Console::~Console()
+{
 }
 
 /* Console::addCommand
  * Adds a ConsoleCommand to the Console
  *******************************************************************/
-void Console::addCommand(ConsoleCommand &c) {
+void Console::addCommand(ConsoleCommand& c)
+{
 	// Add the command to the list
 	commands.push_back(c);
 
@@ -71,7 +74,8 @@ void Console::addCommand(ConsoleCommand &c) {
 /* Console::execute
  * Attempts to execute the command line given
  *******************************************************************/
-void Console::execute(string command) {
+void Console::execute(string command)
+{
 	wxLogMessage(S_FMT("> %s", command.c_str()));
 
 	// Don't bother doing anything else with an empty command
@@ -95,15 +99,18 @@ void Console::execute(string command) {
 	// Get all args
 	string arg = tz.getToken();
 	vector<string> args;
-	while (arg != "") {
+	while (arg != "")
+	{
 		args.push_back(arg);
 		arg = tz.getToken();
 	}
 
 	// Check that it is a valid command
-	for (size_t a = 0; a < commands.size(); a++) {
+	for (size_t a = 0; a < commands.size(); a++)
+	{
 		// Found it, execute and return
-		if (commands[a].getName() == cmd_name) {
+		if (commands[a].getName() == cmd_name)
+		{
 			commands[a].execute(args);
 			return;
 		}
@@ -111,10 +118,13 @@ void Console::execute(string command) {
 
 	// Check if it is a cvar
 	CVar* cvar = get_cvar(cmd_name);
-	if (cvar) {
+	if (cvar)
+	{
 		// Arg(s) given, set cvar value
-		if (args.size() > 0) {
-			if (cvar->type == CVAR_BOOLEAN) {
+		if (args.size() > 0)
+		{
+			if (cvar->type == CVAR_BOOLEAN)
+			{
 				if (args[0] == "0" || args[0] == "false")
 					*((CBoolCVar*)cvar) = false;
 				else
@@ -130,7 +140,8 @@ void Console::execute(string command) {
 
 		// Print cvar value
 		string value = "";
-		if (cvar->type == CVAR_BOOLEAN) {
+		if (cvar->type == CVAR_BOOLEAN)
+		{
 			if (cvar->GetValue().Bool)
 				value = "true";
 			else
@@ -152,7 +163,8 @@ void Console::execute(string command) {
 	}
 
 	// Toggle global debug mode
-	if (cmd_name == "debug") {
+	if (cmd_name == "debug")
+	{
 		Global::debug = !Global::debug;
 		if (Global::debug)
 			logMessage("Debugging stuff enabled");
@@ -170,7 +182,8 @@ void Console::execute(string command) {
 /* Console::logMessage
  * Prints a message to the console log
  *******************************************************************/
-void Console::logMessage(string message) {
+void Console::logMessage(string message)
+{
 	// Add a newline to the end of the message if there isn't one
 	if (message.size() == 0 || message.Last() != '\n')
 		message.Append("\n");
@@ -186,7 +199,8 @@ void Console::logMessage(string message) {
 /* Console::lastLogLine
  * Returns the last line added to the console log
  *******************************************************************/
-string Console::lastLogLine() {
+string Console::lastLogLine()
+{
 	// Init blank string
 	string lastLine = "";
 
@@ -200,7 +214,8 @@ string Console::lastLogLine() {
 /* Console::lastCommand
  * Returns the last command sent to the console
  *******************************************************************/
-string Console::lastCommand() {
+string Console::lastCommand()
+{
 	// Init blank string
 	string lastCmd = "";
 
@@ -215,7 +230,8 @@ string Console::lastCommand() {
  * Returns the entire console log as one string, each message
  * separated by a newline
  *******************************************************************/
-string Console::dumpLog() {
+string Console::dumpLog()
+{
 	string ret = "";
 
 	for (size_t a = 0; a < log.size(); a++)
@@ -228,7 +244,8 @@ string Console::dumpLog() {
  * Returns the previous command at [index] from the last entered (ie,
  * index=0 will be the directly previous command)
  *******************************************************************/
-string Console::prevCommand(int index) {
+string Console::prevCommand(int index)
+{
 	// Check index
 	if (index < 0 || (unsigned)index >= cmd_log.size())
 		return "";
@@ -239,7 +256,8 @@ string Console::prevCommand(int index) {
 /* Console::command
  * Returns the ConsoleCommand at the specified index
  *******************************************************************/
-ConsoleCommand& Console::command(size_t index) {
+ConsoleCommand& Console::command(size_t index)
+{
 	if (index < commands.size())
 		return commands[index];
 	else
@@ -249,7 +267,8 @@ ConsoleCommand& Console::command(size_t index) {
 /* ConsoleCommand::ConsoleCommand
  * ConsoleCommand class constructor
  *******************************************************************/
-ConsoleCommand::ConsoleCommand(string name, void(*commandFunc)(vector<string>), int min_args = 0, bool show_in_list) {
+ConsoleCommand::ConsoleCommand(string name, void(*commandFunc)(vector<string>), int min_args = 0, bool show_in_list)
+{
 	// Init variables
 	this->name = name;
 	this->commandFunc = commandFunc;
@@ -263,7 +282,8 @@ ConsoleCommand::ConsoleCommand(string name, void(*commandFunc)(vector<string>), 
 /* ConsoleCommand::execute
  * Executes the console command
  *******************************************************************/
-void ConsoleCommand::execute(vector<string> args) {
+void ConsoleCommand::execute(vector<string> args)
+{
 	// Only execute if we have the minimum args specified
 	if (args.size() >= min_args)
 		commandFunc(args);
@@ -280,17 +300,20 @@ void ConsoleCommand::execute(vector<string> args) {
  * A simple command to print the first given argument to the console.
  * Subsequent arguments are ignored.
  *******************************************************************/
-CONSOLE_COMMAND (echo, 1, true) {
+CONSOLE_COMMAND (echo, 1, true)
+{
 	theConsole->logMessage(args[0]);
 }
 
 /* Console Command - "cmdlist"
  * Lists all valid console commands
  *******************************************************************/
-CONSOLE_COMMAND (cmdlist, 0, true) {
+CONSOLE_COMMAND (cmdlist, 0, true)
+{
 	theConsole->logMessage(S_FMT("%d Valid Commands:", theConsole->numCommands()));
 
-	for (int a = 0; a < theConsole->numCommands(); a++) {
+	for (int a = 0; a < theConsole->numCommands(); a++)
+	{
 		if (theConsole->command(a).showInList() || Global::debug)
 			theConsole->logMessage(S_FMT("\"%s\"", theConsole->command(a).getName().c_str()));
 	}
@@ -299,7 +322,8 @@ CONSOLE_COMMAND (cmdlist, 0, true) {
 /* Console Command - "cvarlist"
  * Lists all cvars
  *******************************************************************/
-CONSOLE_COMMAND (cvarlist, 0, true) {
+CONSOLE_COMMAND (cvarlist, 0, true)
+{
 	// Get sorted list of cvars
 	vector<string> list;
 	get_cvar_list(list);
@@ -312,7 +336,8 @@ CONSOLE_COMMAND (cvarlist, 0, true) {
 		theConsole->logMessage(list[a]);
 }
 
-CONSOLE_COMMAND (testmatch, 0, false) {
+CONSOLE_COMMAND (testmatch, 0, false)
+{
 	bool match = args[0].Matches(args[1]);
 	if (match)
 		theConsole->logMessage("Match");
@@ -328,7 +353,8 @@ CONSOLE_COMMAND (testmatch, 0, false) {
 #if 0
 #include "Parser.h"
 
-CONSOLE_COMMAND (langfuncsplit, 1) {
+CONSOLE_COMMAND (langfuncsplit, 1)
+{
 	MemChunk mc;
 	if (!mc.importFile(args[0]))
 		return;
@@ -338,7 +364,8 @@ CONSOLE_COMMAND (langfuncsplit, 1) {
 		return;
 
 	ParseTreeNode* root = p.parseTreeRoot();
-	for (unsigned a = 0; a < root->nChildren(); a++) {
+	for (unsigned a = 0; a < root->nChildren(); a++)
+	{
 		ParseTreeNode* node = (ParseTreeNode*)root->getChild(a);
 
 		// Get function definition line (eg "Function(arg1, arg2, arg3)")
@@ -355,7 +382,8 @@ CONSOLE_COMMAND (langfuncsplit, 1) {
 		tz2.openString(funcline);
 		tz2.getToken();	// Skip function name
 		string token = tz2.getToken();
-		while (token != "") {
+		while (token != "")
+		{
 			if (token != ",")
 				args.push_back(token);
 			token = tz2.getToken();
@@ -363,9 +391,11 @@ CONSOLE_COMMAND (langfuncsplit, 1) {
 
 		// Print to console
 		string lmsg = node->getName();
-		if (args.size() > 0) {
+		if (args.size() > 0)
+		{
 			lmsg += " = ";
-			for (unsigned arg = 0; arg < args.size(); arg++) {
+			for (unsigned arg = 0; arg < args.size(); arg++)
+			{
 				if (arg > 0)
 					lmsg += ", ";
 				lmsg += "\"" + args[arg] + "\"";

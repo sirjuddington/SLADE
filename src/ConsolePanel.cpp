@@ -40,8 +40,9 @@
 /* ConsolePanel::ConsolePanel
  * ConsolePanel class constructor
  *******************************************************************/
-ConsolePanel::ConsolePanel(wxWindow *parent, int id)
-: wxPanel(parent, id) {
+ConsolePanel::ConsolePanel(wxWindow* parent, int id)
+	: wxPanel(parent, id)
+{
 	// Init variables
 	cmd_log_index = 0;
 
@@ -62,15 +63,17 @@ ConsolePanel::ConsolePanel(wxWindow *parent, int id)
 /* ConsolePanel::~ConsolePanel
  * ConsolePanel class destructor
  *******************************************************************/
-ConsolePanel::~ConsolePanel() {
+ConsolePanel::~ConsolePanel()
+{
 }
 
 /* ConsolePanel::initLayout
  * Sets up the panel layout
  *******************************************************************/
-void ConsolePanel::initLayout() {
+void ConsolePanel::initLayout()
+{
 	// Create and set the sizer for the panel
-	wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(vbox);
 
 	// Create and add the message log textbox
@@ -94,9 +97,11 @@ void ConsolePanel::initLayout() {
 /* ConsolePanel::onAnnouncement
  * Handles any announcement events
  *******************************************************************/
-void ConsolePanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {
+void ConsolePanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+{
 	// New console log message added
-	if (event_name == "console_logmessage") {
+	if (event_name == "console_logmessage")
+	{
 		text_log->AppendText(theConsole->lastLogLine());
 	}
 }
@@ -109,7 +114,8 @@ void ConsolePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
 /* ConsolePanel::onCommandEnter
  * Called when the enter key is pressed in the command text box
  *******************************************************************/
-void ConsolePanel::onCommandEnter(wxCommandEvent& e) {
+void ConsolePanel::onCommandEnter(wxCommandEvent& e)
+{
 	theConsole->execute(e.GetString());
 	text_command->Clear();
 	cmd_log_index = 0;
@@ -118,14 +124,17 @@ void ConsolePanel::onCommandEnter(wxCommandEvent& e) {
 /* ConsolePanel::onCommandKeyDown
  * Called when a key is pressed in the command text box
  *******************************************************************/
-void ConsolePanel::onCommandKeyDown(wxKeyEvent& e) {
-	if (e.GetKeyCode() == WXK_UP) {
+void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
+{
+	if (e.GetKeyCode() == WXK_UP)
+	{
 		text_command->SetValue(theConsole->prevCommand(cmd_log_index));
 		text_command->SetInsertionPointEnd();
 		if (cmd_log_index < theConsole->numPrevCommands()-1)
 			cmd_log_index++;
 	}
-	else if (e.GetKeyCode() == WXK_DOWN) {
+	else if (e.GetKeyCode() == WXK_DOWN)
+	{
 		cmd_log_index--;
 		text_command->SetValue(theConsole->prevCommand(cmd_log_index));
 		text_command->SetInsertionPointEnd();

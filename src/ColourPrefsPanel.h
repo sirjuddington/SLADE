@@ -5,7 +5,8 @@
 #include "PrefsPanelBase.h"
 #include <wx/propgrid/propgrid.h>
 
-class ColourPrefsPanel : public PrefsPanelBase {
+class ColourPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxChoice*			choice_configs;
 	wxButton*			btn_saveconfig;

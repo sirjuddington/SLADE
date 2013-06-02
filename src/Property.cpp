@@ -41,7 +41,8 @@
 /* Property::Property
  * Property class default constructor
  *******************************************************************/
-Property::Property(uint8_t type) {
+Property::Property(uint8_t type)
+{
 	// Set property type
 	this->type = type;
 	this->has_value = false;
@@ -59,7 +60,8 @@ Property::Property(uint8_t type) {
 		value.Boolean = true;
 	else if (type == PROP_UINT)
 		value.Unsigned = 0;
-	else {
+	else
+	{
 		// Invalid type given, default to boolean
 		type = PROP_BOOL;
 		value.Boolean = true;
@@ -69,7 +71,8 @@ Property::Property(uint8_t type) {
 /* Property::Property
  * Property class copy constructor
  *******************************************************************/
-Property::Property(const Property& copy) {
+Property::Property(const Property& copy)
+{
 	this->type = copy.type;
 	this->value = copy.value;
 	this->val_string = copy.val_string;
@@ -79,7 +82,8 @@ Property::Property(const Property& copy) {
 /* Property::Property
  * Property class constructor (boolean)
  *******************************************************************/
-Property::Property(bool value) {
+Property::Property(bool value)
+{
 	// Init boolean property
 	this->type = PROP_BOOL;
 	this->value.Boolean = value;
@@ -89,7 +93,8 @@ Property::Property(bool value) {
 /* Property::Property
  * Property class constructor (integer)
  *******************************************************************/
-Property::Property(int value) {
+Property::Property(int value)
+{
 	// Init integer property
 	this->type = PROP_INT;
 	this->value.Integer = value;
@@ -99,7 +104,8 @@ Property::Property(int value) {
 /* Property::Property
  * Property class constructor (floating point)
  *******************************************************************/
-Property::Property(double value) {
+Property::Property(double value)
+{
 	// Init float property
 	this->type = PROP_FLOAT;
 	this->value.Floating = value;
@@ -109,7 +115,8 @@ Property::Property(double value) {
 /* Property::Property
  * Property class constructor (string)
  *******************************************************************/
-Property::Property(string value) {
+Property::Property(string value)
+{
 	// Init string property
 	this->type = PROP_STRING;
 	this->val_string = value;
@@ -119,7 +126,8 @@ Property::Property(string value) {
 /* Property::Property
  * Property class constructor (unsigned)
  *******************************************************************/
-Property::Property(unsigned value) {
+Property::Property(unsigned value)
+{
 	// Init string property
 	this->type = PROP_UINT;
 	this->value.Unsigned = value;
@@ -129,7 +137,8 @@ Property::Property(unsigned value) {
 /* Property::~Property
  * Property class destructor
  *******************************************************************/
-Property::~Property() {
+Property::~Property()
+{
 }
 
 /* Property::getBoolValue
@@ -137,7 +146,8 @@ Property::~Property() {
  * true, a warning message is written to the log if the property is
  * not of boolean type
  *******************************************************************/
-bool Property::getBoolValue(bool warn_wrong_type) {
+bool Property::getBoolValue(bool warn_wrong_type)
+{
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
 		return true;
@@ -159,7 +169,8 @@ bool Property::getBoolValue(bool warn_wrong_type) {
 		return !!value.Unsigned;
 	else if (type == PROP_FLOAT)
 		return !!((int)value.Floating);
-	else if (type == PROP_STRING) {
+	else if (type == PROP_STRING)
+	{
 		// Anything except "0", "no" or "false" is considered true
 		if (!val_string.Cmp("0") || !val_string.CmpNoCase("no") || !val_string.CmpNoCase("false"))
 			return false;
@@ -176,7 +187,8 @@ bool Property::getBoolValue(bool warn_wrong_type) {
  * true, a warning message is written to the log if the property is
  * not of integer type
  *******************************************************************/
-int Property::getIntValue(bool warn_wrong_type) {
+int Property::getIntValue(bool warn_wrong_type)
+{
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
 		return 1;
@@ -210,7 +222,8 @@ int Property::getIntValue(bool warn_wrong_type) {
  * true, a warning message is written to the log if the property is
  * not of floating point type
  *******************************************************************/
-double Property::getFloatValue(bool warn_wrong_type) {
+double Property::getFloatValue(bool warn_wrong_type)
+{
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
 		return 1;
@@ -244,7 +257,8 @@ double Property::getFloatValue(bool warn_wrong_type) {
  * true, a warning message is written to the log if the property is
  * not of string type
  *******************************************************************/
-string Property::getStringValue(bool warn_wrong_type) {
+string Property::getStringValue(bool warn_wrong_type)
+{
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
 		return "1";
@@ -264,7 +278,8 @@ string Property::getStringValue(bool warn_wrong_type) {
 		return S_FMT("%d", value.Integer);
 	else if (type == PROP_UINT)
 		return S_FMT("%d", value.Unsigned);
-	else if (type == PROP_BOOL) {
+	else if (type == PROP_BOOL)
+	{
 		if (value.Boolean)
 			return "true";
 		else
@@ -282,7 +297,8 @@ string Property::getStringValue(bool warn_wrong_type) {
  * is true, a warning message is written to the log if the property is
  * not of integer type
  *******************************************************************/
-unsigned Property::getUnsignedValue(bool warn_wrong_type) {
+unsigned Property::getUnsignedValue(bool warn_wrong_type)
+{
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
 		return 1;
@@ -315,7 +331,8 @@ unsigned Property::getUnsignedValue(bool warn_wrong_type) {
  * Sets the property to [val], and changes its type to boolean
  * if necessary
  *******************************************************************/
-void Property::setValue(bool val) {
+void Property::setValue(bool val)
+{
 	// Change type if necessary
 	if (type != PROP_BOOL)
 		changeType(PROP_BOOL);
@@ -329,7 +346,8 @@ void Property::setValue(bool val) {
  * Sets the property to [val], and changes its type to integer
  * if necessary
  *******************************************************************/
-void Property::setValue(int val) {
+void Property::setValue(int val)
+{
 	// Change type if necessary
 	if (type != PROP_INT)
 		changeType(PROP_INT);
@@ -343,7 +361,8 @@ void Property::setValue(int val) {
  * Sets the property to [val], and changes its type to floating
  * point if necessary
  *******************************************************************/
-void Property::setValue(double val) {
+void Property::setValue(double val)
+{
 	// Change type if necessary
 	if (type != PROP_FLOAT)
 		changeType(PROP_FLOAT);
@@ -357,7 +376,8 @@ void Property::setValue(double val) {
  * Sets the property to [val], and changes its type to string
  * if necessary
  *******************************************************************/
-void Property::setValue(string val) {
+void Property::setValue(string val)
+{
 	// Change type if necessary
 	if (type != PROP_STRING)
 		changeType(PROP_STRING);
@@ -371,7 +391,8 @@ void Property::setValue(string val) {
  * Sets the property to [val], and changes its type to unsigned int
  * if necessary
  *******************************************************************/
-void Property::setValue(unsigned val) {
+void Property::setValue(unsigned val)
+{
 	// Change type if necessary
 	if (type != PROP_UINT)
 		changeType(PROP_UINT);
@@ -384,7 +405,8 @@ void Property::setValue(unsigned val) {
 /* Property::changeType
  * Changes the property's value type and gives it a default value
  *******************************************************************/
-void Property::changeType(uint8_t newtype) {
+void Property::changeType(uint8_t newtype)
+{
 	// Do nothing if changing to same type
 	if (type == newtype)
 		return;
@@ -414,8 +436,10 @@ void Property::changeType(uint8_t newtype) {
 /* Property::typeString
  * Returns a string representing the property's value type
  *******************************************************************/
-string Property::typeString() {
-	switch (type) {
+string Property::typeString()
+{
+	switch (type)
+	{
 	case PROP_BOOL:
 		return "Boolean";
 	case PROP_INT:

@@ -13,7 +13,8 @@
 #include "SectorSpecialDialog.h"
 
 
-void MOPGProperty::resetValue() {
+void MOPGProperty::resetValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -24,12 +25,15 @@ void MOPGProperty::resetValue() {
 
 
 MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name)
-: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_BOOL) {
+	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_BOOL)
+{
 }
 
-void MOPGBoolProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -38,8 +42,10 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects) {
 	bool first = objects[0]->boolProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->boolProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->boolProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -56,7 +62,8 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGBoolProperty::applyValue() {
+void MOPGBoolProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -73,12 +80,15 @@ void MOPGBoolProperty::applyValue() {
 
 
 MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name)
-: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_INT) {
+	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_INT)
+{
 }
 
-void MOPGIntProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -87,8 +97,10 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects) {
 	int first = objects[0]->intProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->intProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->intProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -105,7 +117,8 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGIntProperty::applyValue() {
+void MOPGIntProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -122,12 +135,15 @@ void MOPGIntProperty::applyValue() {
 
 
 MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name)
-: wxFloatProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_FLOAT) {
+	: wxFloatProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_FLOAT)
+{
 }
 
-void MOPGFloatProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -136,8 +152,10 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects) {
 	double first = objects[0]->floatProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->floatProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->floatProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -154,7 +172,8 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGFloatProperty::applyValue() {
+void MOPGFloatProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -171,12 +190,15 @@ void MOPGFloatProperty::applyValue() {
 
 
 MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name)
-: wxStringProperty(label, name, ""), MOPGProperty(MOPGProperty::TYPE_STRING) {
+	: wxStringProperty(label, name, ""), MOPGProperty(MOPGProperty::TYPE_STRING)
+{
 }
 
-void MOPGStringProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -185,8 +207,10 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects) {
 	string first = objects[0]->stringProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->stringProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->stringProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -203,7 +227,8 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGStringProperty::applyValue() {
+void MOPGStringProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -220,7 +245,8 @@ void MOPGStringProperty::applyValue() {
 
 
 MOPGActionSpecialProperty::MOPGActionSpecialProperty(const wxString& label, const wxString& name)
-: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ASPECIAL) {
+	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ASPECIAL)
+{
 	// Init variables
 	args[0] = NULL;
 	args[1] = NULL;
@@ -232,17 +258,21 @@ MOPGActionSpecialProperty::MOPGActionSpecialProperty(const wxString& label, cons
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
-void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Reset arg property names
-	for (unsigned a = 0; a < 5; a++) {
-		if (args[a]) {
+	for (unsigned a = 0; a < 5; a++)
+	{
+		if (args[a])
+		{
 			args[a]->SetLabel(S_FMT("Arg%d", a+1));
 			args[a]->SetHelpString("");
 		}
 	}
 
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -251,8 +281,10 @@ void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects) {
 	int first = objects[0]->intProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->intProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->intProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -270,7 +302,8 @@ void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set arg property names
 	ActionSpecial* as = theGameConfiguration->actionSpecial(first);
-	for (unsigned a = 0; a < 5; a++) {
+	for (unsigned a = 0; a < 5; a++)
+	{
 		if (!args[a])
 			continue;
 
@@ -279,12 +312,14 @@ void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects) {
 	}
 }
 
-void MOPGActionSpecialProperty::addArgProperty(wxPGProperty* prop, int index) {
+void MOPGActionSpecialProperty::addArgProperty(wxPGProperty* prop, int index)
+{
 	if (index < 5)
 		args[index] = prop;
 }
 
-void MOPGActionSpecialProperty::applyValue() {
+void MOPGActionSpecialProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -299,20 +334,24 @@ void MOPGActionSpecialProperty::applyValue() {
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
-wxString MOPGActionSpecialProperty::ValueToString(wxVariant &value, int argFlags) const {
+wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
+{
 	// Get value as integer
 	int special = value.GetInteger();
 
 	if (special == 0)
 		return "0: None";
-	else {
+	else
+	{
 		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
 		return S_FMT("%d: %s", special, CHR(as->getName()));
 	}
 }
 
-bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED) {
+bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
+{
+	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	{
 		int special = -1;
 		ActionSpecialDialog dlg(window);
 		dlg.setSpecial(GetValue().GetInteger());
@@ -327,7 +366,8 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 
 
 MOPGThingTypeProperty::MOPGThingTypeProperty(const wxString& label, const wxString& name)
-: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_TTYPE) {
+	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_TTYPE)
+{
 	// Init variables
 	args[0] = NULL;
 	args[1] = NULL;
@@ -339,17 +379,21 @@ MOPGThingTypeProperty::MOPGThingTypeProperty(const wxString& label, const wxStri
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
-void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Reset arg property names
-	for (unsigned a = 0; a < 5; a++) {
-		if (args[a]) {
+	for (unsigned a = 0; a < 5; a++)
+	{
+		if (args[a])
+		{
 			args[a]->SetLabel(S_FMT("Arg%d", a+1));
 			args[a]->SetHelpString("");
 		}
 	}
 
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -358,8 +402,10 @@ void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects) {
 	int first = objects[0]->intProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->intProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->intProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -377,7 +423,8 @@ void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects) {
 
 	// Set arg property names
 	ThingType* tt = theGameConfiguration->thingType(first);
-	for (unsigned a = 0; a < 5; a++) {
+	for (unsigned a = 0; a < 5; a++)
+	{
 		if (!args[a])
 			continue;
 
@@ -386,12 +433,14 @@ void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects) {
 	}
 }
 
-void MOPGThingTypeProperty::addArgProperty(wxPGProperty* prop, int index) {
+void MOPGThingTypeProperty::addArgProperty(wxPGProperty* prop, int index)
+{
 	if (index < 5)
 		args[index] = prop;
 }
 
-void MOPGThingTypeProperty::applyValue() {
+void MOPGThingTypeProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -406,7 +455,8 @@ void MOPGThingTypeProperty::applyValue() {
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
-wxString MOPGThingTypeProperty::ValueToString(wxVariant &value, int argFlags) const {
+wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) const
+{
 	// Get value as integer
 	int type = value.GetInteger();
 
@@ -414,8 +464,10 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant &value, int argFlags) co
 	return S_FMT("%d: %s", type, CHR(tt->getName()));
 }
 
-bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED) {
+bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
+{
+	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	{
 		// Get type to select initially (if any)
 		int init_type = -1;
 		if (!IsValueUnspecified())
@@ -423,7 +475,8 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 
 		// Open thing browser
 		ThingTypeBrowser browser(theMapEditor, init_type);
-		if (browser.ShowModal() == wxID_OK) {
+		if (browser.ShowModal() == wxID_OK)
+		{
 			// Set the value if a type was selected
 			int type = browser.getSelectedType();
 			if (type >= 0) SetValue(type);
@@ -435,14 +488,17 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 
 
 MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString& name, int index)
-: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_LFLAG) {
+	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_LFLAG)
+{
 	// Init variables
 	this->index = index;
 }
 
-void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -451,8 +507,10 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects) {
 	bool first = theGameConfiguration->lineFlagSet(index, (MapLine*)objects[0]);
 
 	// Check whether all objects share the same flag setting
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (theGameConfiguration->lineFlagSet(index, (MapLine*)objects[a]) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (theGameConfiguration->lineFlagSet(index, (MapLine*)objects[a]) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -469,7 +527,8 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGLineFlagProperty::applyValue() {
+void MOPGLineFlagProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -486,14 +545,17 @@ void MOPGLineFlagProperty::applyValue() {
 
 
 MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxString& name, int index)
-: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_LFLAG) {
+	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_LFLAG)
+{
 	// Init variables
 	this->index = index;
 }
 
-void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -502,8 +564,10 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects) {
 	bool first = theGameConfiguration->thingFlagSet(index, (MapThing*)objects[0]);
 
 	// Check whether all objects share the same flag setting
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (theGameConfiguration->thingFlagSet(index, (MapThing*)objects[a]) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (theGameConfiguration->thingFlagSet(index, (MapThing*)objects[a]) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -520,7 +584,8 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGThingFlagProperty::applyValue() {
+void MOPGThingFlagProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -537,7 +602,8 @@ void MOPGThingFlagProperty::applyValue() {
 
 
 MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name)
-: wxEditEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_ANGLE) {
+	: wxEditEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_ANGLE)
+{
 	// Set to combo box editor
 	//SetEditor(wxPGEditor_ComboBox);
 
@@ -564,9 +630,11 @@ MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name
 	SetChoices(wxPGChoices(labels, values));
 }
 
-void MOPGAngleProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -575,8 +643,10 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects) {
 	int first = objects[0]->intProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->intProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->intProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -593,7 +663,8 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGAngleProperty::applyValue() {
+void MOPGAngleProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -608,10 +679,12 @@ void MOPGAngleProperty::applyValue() {
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
-wxString MOPGAngleProperty::ValueToString(wxVariant &value, int argFlags) const {
+wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
+{
 	int angle = value.GetInteger();
 
-	switch (angle) {
+	switch (angle)
+	{
 	case 0:		return "0: East"; break;
 	case 45:	return "45: Northeast"; break;
 	case 90:	return "90: North"; break;
@@ -627,12 +700,15 @@ wxString MOPGAngleProperty::ValueToString(wxVariant &value, int argFlags) const 
 
 
 MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name)
-: wxColourProperty(label, name), MOPGProperty(MOPGProperty::TYPE_COLOUR) {
+	: wxColourProperty(label, name), MOPGProperty(MOPGProperty::TYPE_COLOUR)
+{
 }
 
-void MOPGColourProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -641,8 +717,10 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects) {
 	int first = objects[0]->intProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->intProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->intProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -659,7 +737,8 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGColourProperty::applyValue() {
+void MOPGColourProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -679,7 +758,8 @@ void MOPGColourProperty::applyValue() {
 
 
 MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, const wxString& name)
-: wxStringProperty(label, name), MOPGProperty(MOPGProperty::TYPE_TEXTURE) {
+	: wxStringProperty(label, name), MOPGProperty(MOPGProperty::TYPE_TEXTURE)
+{
 	// Init variables
 	this->textype = textype;
 
@@ -687,9 +767,11 @@ MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, con
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
-void MOPGTextureProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -698,8 +780,10 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects) {
 	string first = objects[0]->stringProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->stringProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->stringProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -716,7 +800,8 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGTextureProperty::applyValue() {
+void MOPGTextureProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -731,8 +816,10 @@ void MOPGTextureProperty::applyValue() {
 		objects[a]->setStringProperty(GetName(), m_value.GetString());
 }
 
-bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED) {
+bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
+{
+	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	{
 		// Get current texture (if any)
 		string tex_current = "";
 		if (!IsValueUnspecified())
@@ -752,7 +839,8 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 
 
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name)
-: wxEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_SPAC) {
+	: wxEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_SPAC)
+{
 	// Set to combo box editor
 	SetEditor(wxPGEditor_ComboBox);
 
@@ -761,9 +849,11 @@ MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wx
 	SetChoices(wxPGChoices(labels));
 }
 
-void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -773,8 +863,10 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects) {
 	string first = theGameConfiguration->spacTriggerString((MapLine*)objects[0], map_format);
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (theGameConfiguration->spacTriggerString((MapLine*)objects[a], map_format) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (theGameConfiguration->spacTriggerString((MapLine*)objects[a], map_format) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -791,7 +883,8 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGSPACTriggerProperty::applyValue() {
+void MOPGSPACTriggerProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -804,20 +897,23 @@ void MOPGSPACTriggerProperty::applyValue() {
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
 		theGameConfiguration->setLineSpacTrigger(GetChoiceSelection(), (MapLine*)objects[a]);
-		//objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+	//objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
 
 
 MOPGTagProperty::MOPGTagProperty(const wxString& label, const wxString& name)
-: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ID) {
+	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ID)
+{
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
-void MOPGTagProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGTagProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -826,8 +922,10 @@ void MOPGTagProperty::openObjects(vector<MapObject*>& objects) {
 	int first = objects[0]->intProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->intProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->intProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -844,7 +942,8 @@ void MOPGTagProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGTagProperty::applyValue() {
+void MOPGTagProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -859,8 +958,10 @@ void MOPGTagProperty::applyValue() {
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
-bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED) {
+bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
+{
+	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	{
 		vector<MapObject*>& objects = parent->getObjects();
 		if (objects.size() == 0)
 			return false;
@@ -886,14 +987,17 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 
 
 MOPGSectorSpecialProperty::MOPGSectorSpecialProperty(const wxString& label, const wxString& name)
-: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_SSPECIAL) {
+	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_SSPECIAL)
+{
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
-void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects) {
+void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
+{
 	// Set unspecified if no objects given
-	if (objects.size() == 0) {
+	if (objects.size() == 0)
+	{
 		SetValueToUnspecified();
 		return;
 	}
@@ -902,8 +1006,10 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects) {
 	int first = objects[0]->intProperty(GetName());
 
 	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++) {
-		if (objects[a]->intProperty(GetName()) != first) {
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		if (objects[a]->intProperty(GetName()) != first)
+		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
 			return;
@@ -920,7 +1026,8 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects) {
 	noupdate = false;
 }
 
-void MOPGSectorSpecialProperty::applyValue() {
+void MOPGSectorSpecialProperty::applyValue()
+{
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
 		return;
@@ -935,8 +1042,10 @@ void MOPGSectorSpecialProperty::applyValue() {
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
-bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED) {
+bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
+{
+	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	{
 		SectorSpecialDialog dlg(theMapEditor);
 		int map_format = theMapEditor->currentMapDesc().format;
 		dlg.setup(m_value.GetInteger(), map_format);

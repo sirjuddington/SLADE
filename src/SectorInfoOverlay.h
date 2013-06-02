@@ -3,7 +3,8 @@
 #define __SECTOR_INFO_OVERLAY_H__
 
 class MapSector;
-class SectorInfoOverlay {
+class SectorInfoOverlay
+{
 private:
 	//string	info;
 	//string	height;

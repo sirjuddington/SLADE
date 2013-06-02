@@ -60,7 +60,8 @@ typedef std::map<int, vector<ArchiveEntry*> > CRCMap;
  * Removes any patches and associated entries from [archive] that
  * are not used in any texture definitions
  *******************************************************************/
-bool ArchiveOperations::removeUnusedPatches(Archive* archive) {
+bool ArchiveOperations::removeUnusedPatches(Archive* archive)
+{
 	if (!archive)
 		return false;
 
@@ -83,7 +84,8 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive) {
 
 	// Open texturex entries to update patch usage
 	vector<TextureXList*> tx_lists;
-	for (unsigned a = 0; a < tx_entries.size(); a++) {
+	for (unsigned a = 0; a < tx_entries.size(); a++)
+	{
 		TextureXList* texturex = new TextureXList();
 		texturex->readTEXTUREXData(tx_entries[a], ptable);
 		for (unsigned t = 0; t < texturex->nTextures(); t++)
@@ -94,11 +96,13 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive) {
 	// Go through patch table
 	unsigned removed = 0;
 	vector<ArchiveEntry*> to_remove;
-	for (unsigned a = 0; a < ptable.nPatches(); a++) {
+	for (unsigned a = 0; a < ptable.nPatches(); a++)
+	{
 		patch_t& p = ptable.patch(a);
 
 		// Check if used in any texture
-		if (p.used_in.size() == 0) {
+		if (p.used_in.size() == 0)
+		{
 			// Unused
 
 			// If its entry is in the archive, flag it to be removed
@@ -118,7 +122,8 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive) {
 	}
 
 	// Remove unused patch entries
-	for (unsigned a = 0; a < to_remove.size(); a++) {
+	for (unsigned a = 0; a < to_remove.size(); a++)
+	{
 		wxLogMessage("Removed entry %s", to_remove[a]->getName());
 		archive->removeEntry(to_remove[a]);
 	}
@@ -144,16 +149,18 @@ bool ArchiveOperations::removeUnusedPatches(Archive* archive) {
  * Checks [archive] for multiple entries of the same name, and
  * displays a list of duplicate entry names if any are found
  *******************************************************************/
-bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive) {
+bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
+{
 	StrIntMap map_namecounts;
 	PathMap map_entries;
-	
+
 	// Get list of all entries in archive
 	vector<ArchiveEntry*> entries;
 	archive->getEntryTreeAsList(entries);
 
 	// Go through list
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Skip directory entries
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
@@ -168,27 +175,35 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive) {
 	// Generate string of duplicate entry names
 	string dups;
 	// Treeless archives such as WADs can just include a simple list of duplicated names and how often they appear
-	if (archive->isTreeless()) {
+	if (archive->isTreeless())
+	{
 		StrIntMap::iterator i = map_namecounts.begin();
-		while (i != map_namecounts.end()) {
-			if (i->second > 1) {
+		while (i != map_namecounts.end())
+		{
+			if (i->second > 1)
+			{
 				string name = i->first;
 				name.Remove(0, 1);
 				dups += S_FMT("%s appears %d times\n", CHR(name), i->second);
 			}
 			i++;
 		}
-	// Hierarchized archives, however, need to compare only the name (not the whole path) and to display the full
-	// path of each entry with a duplicated name, so that they might be found more easily than by having the user
-	// recurse through the entire directory tree -- such a task is something a program should do instead.
-	} else {
+		// Hierarchized archives, however, need to compare only the name (not the whole path) and to display the full
+		// path of each entry with a duplicated name, so that they might be found more easily than by having the user
+		// recurse through the entire directory tree -- such a task is something a program should do instead.
+	}
+	else
+	{
 		PathMap::iterator i = map_entries.begin();
-		while (i != map_entries.end()) {
-			if (i->second.size() > 1) {
+		while (i != map_entries.end())
+		{
+			if (i->second.size() > 1)
+			{
 				string name;
 				dups += S_FMT("\n%i entries are named %s\t", i->second.size(), CHR(i->first));
 				vector<ArchiveEntry*>::iterator j = i->second.begin();
-				while (j != i->second.end()) {
+				while (j != i->second.end())
+				{
 					name = (*j)->getPath(true); name.Remove(0, 1);
 					dups += S_FMT("\t%s", CHR(name));
 					++j;
@@ -199,7 +214,8 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive) {
 	}
 
 	// If no duplicates exist, do nothing
-	if (dups.IsEmpty()) {
+	if (dups.IsEmpty())
+	{
 		wxMessageBox("No duplicated entry names exist");
 		return false;
 	}
@@ -217,7 +233,8 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive) {
  * Compare the archive's entries with those sharing the same name
  * and namespace in the base resource archive, deleting duplicates
  *******************************************************************/
-void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive) {
+void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
+{
 	// Do nothing if there is no base resource archive,
 	// or if the archive *is* the base resource archive.
 	Archive* bra = theArchiveManager->baseResourceArchive();
@@ -235,7 +252,8 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive) {
 	size_t count = 0;
 
 	// Go through list
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Skip directory entries
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
@@ -248,9 +266,10 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive) {
 		search.match_namespace = archive->detectNamespace(entries[a]);
 		search.match_name = entries[a]->getName();
 		other = bra->findLast(search);
-		
+
 		// If there is one, and it is identical, remove it
-		if (other != NULL && (other->getMCData().crc() == entries[a]->getMCData().crc())) {
+		if (other != NULL && (other->getMCData().crc() == entries[a]->getMCData().crc()))
+		{
 			++count;
 			dups += S_FMT("%s\n", CHR(search.match_name));
 			archive->removeEntry(entries[a], true);
@@ -260,13 +279,14 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive) {
 
 
 	// If no duplicates exist, do nothing
-	if (count == 0) {
+	if (count == 0)
+	{
 		wxMessageBox("No duplicated entries exist");
 		return;
 	}
 
 	string message = S_FMT("The following %d entr%s duplicated from the base resource archive and deleted:",
-		count, (count > 1) ? "ies were" : "y was");
+						   count, (count > 1) ? "ies were" : "y was");
 
 	// Display list of deleted duplicate entries
 	ExtMessageDialog msg(theMainWindow, (count > 1) ? "Deleted Entries" : "Deleted Entry");
@@ -279,16 +299,18 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive) {
  * Checks [archive] for multiple entries with the same data, and
  * displays a list of the duplicate entries' names if any are found
  *******************************************************************/
-bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive) {
+bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
+{
 	CRCMap map_entries;
-	
+
 	// Get list of all entries in archive
 	vector<ArchiveEntry*> entries;
 	archive->getEntryTreeAsList(entries);
 	string dups = "";
 
 	// Go through list
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Skip directory entries
 		if (entries[a]->getType() == EntryType::folderType())
 			continue;
@@ -303,12 +325,15 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive) {
 
 	// Now iterate through the dupes to list the name of the duplicated entries
 	CRCMap::iterator i = map_entries.begin();
-	while (i != map_entries.end()) {
-		if (i->second.size() > 1) {
+	while (i != map_entries.end())
+	{
+		if (i->second.size() > 1)
+		{
 			string name = i->second[0]->getPath(true); name.Remove(0, 1);
 			dups += S_FMT("\n%s\t(%8x) duplicated by", CHR(name), i->first);
 			vector<ArchiveEntry*>::iterator j = i->second.begin() + 1;
-			while (j != i->second.end()) {
+			while (j != i->second.end())
+			{
 				name = (*j)->getPath(true); name.Remove(0, 1);
 				dups += S_FMT("\t%s", CHR(name));
 				++j;
@@ -318,7 +343,8 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive) {
 	}
 
 	// If no duplicates exist, do nothing
-	if (dups.IsEmpty()) {
+	if (dups.IsEmpty())
+	{
 		wxMessageBox("No duplicated entry data exist");
 		return false;
 	}
@@ -336,7 +362,8 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive) {
 
 // Hardcoded doom defaults for now
 int n_tex_anim = 13;
-string tex_anim_start[] = {
+string tex_anim_start[] =
+{
 	"BLODGR1",
 	"SLADRIP1",
 	"BLODRIP1",
@@ -351,7 +378,8 @@ string tex_anim_start[] = {
 	"WFALL1",
 	"DBRAIN1",
 };
-string tex_anim_end[] = {
+string tex_anim_end[] =
+{
 	"BLODGR4",
 	"SLADRIP3",
 	"BLODRIP4",
@@ -368,7 +396,8 @@ string tex_anim_end[] = {
 };
 
 int n_flat_anim = 9;
-string flat_anim_start[] = {
+string flat_anim_start[] =
+{
 	"NUKAGE1",
 	"FWATER1",
 	"SWATER1",
@@ -379,7 +408,8 @@ string flat_anim_start[] = {
 	"SLIME05",
 	"SLIME09",
 };
-string flat_anim_end[] = {
+string flat_anim_end[] =
+{
 	"NUKAGE3",
 	"FWATER4",
 	"SWATER4",
@@ -391,12 +421,14 @@ string flat_anim_end[] = {
 	"SLIME12",
 };
 
-struct texused_t {
+struct texused_t
+{
 	bool used;
 	texused_t() { used = false; }
 };
 WX_DECLARE_STRING_HASH_MAP(texused_t, TexUsedMap);
-void ArchiveOperations::removeUnusedTextures(Archive* archive) {
+void ArchiveOperations::removeUnusedTextures(Archive* archive)
+{
 	// Check archive was given
 	if (!archive)
 		return;
@@ -414,10 +446,12 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 	// Go through and add used textures to list
 	doomside_t sdef;
 	string tex_lower, tex_middle, tex_upper;
-	for (unsigned a = 0; a < sidedefs.size(); a++) {
+	for (unsigned a = 0; a < sidedefs.size(); a++)
+	{
 		int nsides = sidedefs[a]->getSize() / 30;
 		sidedefs[a]->seek(0, SEEK_SET);
-		for (int s = 0; s < nsides; s++) {
+		for (int s = 0; s < nsides; s++)
+		{
 			// Read side data
 			sidedefs[a]->read(&sdef, 30);
 
@@ -442,21 +476,26 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 	// Go through and add used textures to list
 	Tokenizer tz;
 	tz.setSpecialCharacters("{};=");
-	for (unsigned a = 0; a < udmfmaps.size(); a++) {
+	for (unsigned a = 0; a < udmfmaps.size(); a++)
+	{
 		// Open in tokenizer
 		tz.openMem(udmfmaps[a]->getData(), udmfmaps[a]->getSize(), "UDMF TEXTMAP");
 
 		// Go through text tokens
 		string token = tz.getToken();
-		while (!token.IsEmpty()) {
+		while (!token.IsEmpty())
+		{
 			// Check for sidedef definition
-			if (token == "sidedef") {
+			if (token == "sidedef")
+			{
 				tz.getToken();	// Skip {
 
 				token = tz.getToken();
-				while (token != "}") {
+				while (token != "}")
+				{
 					// Check for texture property
-					if (token == "texturetop" || token == "texturemiddle" || token == "texturebottom") {
+					if (token == "texturetop" || token == "texturemiddle" || token == "texturebottom")
+					{
 						tz.getToken();	// Skip =
 						used_textures[tz.getToken()].used = true;
 					}
@@ -482,18 +521,22 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 	// Go through texture lists
 	PatchTable ptable;	// Dummy patch table, patch info not needed here
 	wxArrayString unused_tex;
-	for (unsigned a = 0; a < tx_entries.size(); a++) {
+	for (unsigned a = 0; a < tx_entries.size(); a++)
+	{
 		TextureXList txlist;
 		txlist.readTEXTUREXData(tx_entries[a], ptable);
 
 		// Go through textures
 		bool anim = false;
-		for (unsigned t = 1; t < txlist.nTextures(); t++) {
+		for (unsigned t = 1; t < txlist.nTextures(); t++)
+		{
 			string texname = txlist.getTexture(t)->getName();
 
 			// Check for animation start
-			for (int b = 0; b < n_tex_anim; b++) {
-				if (texname == tex_anim_start[b]) {
+			for (int b = 0; b < n_tex_anim; b++)
+			{
+				if (texname == tex_anim_start[b])
+				{
 					anim = true;
 					break;
 				}
@@ -501,8 +544,10 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 
 			// Check for animation end
 			bool thisend = false;
-			for (int b = 0; b < n_tex_anim; b++) {
-				if (texname == tex_anim_end[b]) {
+			for (int b = 0; b < n_tex_anim; b++)
+			{
+				if (texname == tex_anim_end[b])
+				{
 					anim = false;
 					thisend = true;
 					break;
@@ -517,14 +562,16 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 
 	// Pop up a dialog with a checkbox list of unused textures
 	wxMultiChoiceDialog dialog(theMainWindow, "The following textures are not used in any map,\nselect which textures to delete", "Delete Unused Textures", unused_tex);
-	
+
 	// Determine which textures to check initially
 	wxArrayInt selection;
-	for (unsigned a = 0; a < unused_tex.size(); a++) {
+	for (unsigned a = 0; a < unused_tex.size(); a++)
+	{
 		bool swtex = false;
 
 		// Check for switch texture
-		if (unused_tex[a].StartsWith("SW1")) {
+		if (unused_tex[a].StartsWith("SW1"))
+		{
 			// Get counterpart switch name
 			string swname = unused_tex[a];
 			swname.Replace("SW1", "SW2", false);
@@ -533,7 +580,8 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 			if (used_textures[swname].used)
 				swtex = true;
 		}
-		else if (unused_tex[a].StartsWith("SW2")) {
+		else if (unused_tex[a].StartsWith("SW2"))
+		{
 			// Get counterpart switch name
 			string swname = unused_tex[a];
 			swname.Replace("SW2", "SW1", false);
@@ -547,24 +595,28 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 			selection.Add(a);
 	}
 	dialog.SetSelections(selection);
-	
+
 	int n_removed = 0;
-	if (dialog.ShowModal() == wxID_OK) {
+	if (dialog.ShowModal() == wxID_OK)
+	{
 		// Get selected textures
 		selection = dialog.GetSelections();
 
 		// Go through texture lists
-		for (unsigned a = 0; a < tx_entries.size(); a++) {
+		for (unsigned a = 0; a < tx_entries.size(); a++)
+		{
 			TextureXList txlist;
 			txlist.readTEXTUREXData(tx_entries[a], ptable);
 
 			// Go through selected textures to delete
-			for (unsigned t = 0; t < selection.size(); t++) {
+			for (unsigned t = 0; t < selection.size(); t++)
+			{
 				// Get texture index
 				int index = txlist.textureIndex(unused_tex[selection[t]]);
 
 				// Delete it from the list (if found)
-				if (index >= 0) {
+				if (index >= 0)
+				{
 					txlist.removeTexture(index);
 					n_removed++;
 				}
@@ -578,7 +630,8 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive) {
 	wxMessageBox(S_FMT("Removed %d unused textures", n_removed));
 }
 
-void ArchiveOperations::removeUnusedFlats(Archive* archive) {
+void ArchiveOperations::removeUnusedFlats(Archive* archive)
+{
 	// Check archive was given
 	if (!archive)
 		return;
@@ -596,10 +649,12 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive) {
 	// Go through and add used flats to list
 	doomsector_t sec;
 	string tex_floor, tex_ceil;
-	for (unsigned a = 0; a < sectors.size(); a++) {
+	for (unsigned a = 0; a < sectors.size(); a++)
+	{
 		int nsec = sectors[a]->getSize() / 26;
 		sectors[a]->seek(0, SEEK_SET);
-		for (int s = 0; s < nsec; s++) {
+		for (int s = 0; s < nsec; s++)
+		{
 			// Read sector data
 			sectors[a]->read(&sec, 26);
 
@@ -622,21 +677,26 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive) {
 	// Go through and add used flats to list
 	Tokenizer tz;
 	tz.setSpecialCharacters("{};=");
-	for (unsigned a = 0; a < udmfmaps.size(); a++) {
+	for (unsigned a = 0; a < udmfmaps.size(); a++)
+	{
 		// Open in tokenizer
 		tz.openMem(udmfmaps[a]->getData(), udmfmaps[a]->getSize(), "UDMF TEXTMAP");
 
 		// Go through text tokens
 		string token = tz.getToken();
-		while (!token.IsEmpty()) {
+		while (!token.IsEmpty())
+		{
 			// Check for sector definition
-			if (token == "sector") {
+			if (token == "sector")
+			{
 				tz.getToken();	// Skip {
 
 				token = tz.getToken();
-				while (token != "}") {
+				while (token != "}")
+				{
 					// Check for texture property
-					if (token == "texturefloor" || token == "textureceiling") {
+					if (token == "texturefloor" || token == "textureceiling")
+					{
 						tz.getToken();	// Skip =
 						used_textures[tz.getToken()].used = true;
 					}
@@ -663,15 +723,18 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive) {
 	// Create list of all unused flats
 	wxArrayString unused_tex;
 	bool anim = false;
-	for (unsigned a = 0; a < flats.size(); a++) {
+	for (unsigned a = 0; a < flats.size(); a++)
+	{
 		// Skip markers
 		if (flats[a]->getSize() == 0)
 			continue;
 
 		// Check for animation start
 		string flatname = flats[a]->getName(true);
-		for (int b = 0; b < n_flat_anim; b++) {
-			if (flatname == flat_anim_start[b]) {
+		for (int b = 0; b < n_flat_anim; b++)
+		{
+			if (flatname == flat_anim_start[b])
+			{
 				anim = true;
 				wxLogMessage("%s anim start", CHR(flatname));
 				break;
@@ -680,8 +743,10 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive) {
 
 		// Check for animation end
 		bool thisend = false;
-		for (int b = 0; b < n_flat_anim; b++) {
-			if (flatname == flat_anim_end[b]) {
+		for (int b = 0; b < n_flat_anim; b++)
+		{
+			if (flatname == flat_anim_end[b])
+			{
 				anim = false;
 				thisend = true;
 				wxLogMessage("%s anim end", CHR(flatname));
@@ -696,7 +761,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive) {
 
 	// Pop up a dialog with a checkbox list of unused textures
 	wxMultiChoiceDialog dialog(theMainWindow, "The following textures are not used in any map,\nselect which textures to delete", "Delete Unused Textures", unused_tex);
-	
+
 	// Select all flats initially
 	wxArrayInt selection;
 	for (unsigned a = 0; a < unused_tex.size(); a++)
@@ -704,11 +769,13 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive) {
 	dialog.SetSelections(selection);
 
 	int n_removed = 0;
-	if (dialog.ShowModal() == wxID_OK) {
+	if (dialog.ShowModal() == wxID_OK)
+	{
 		// Go through selected flats
 		selection = dialog.GetSelections();
 		opt.match_namespace = "flats";
-		for (unsigned a = 0; a < selection.size(); a++) {
+		for (unsigned a = 0; a < selection.size(); a++)
+		{
 			opt.match_name = unused_tex[selection[a]];
 			ArchiveEntry* entry = archive->findFirst(opt);
 			archive->removeEntry(entry);
@@ -720,17 +787,20 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive) {
 }
 
 
-CONSOLE_COMMAND(test_cleantex, 0, false) {
+CONSOLE_COMMAND(test_cleantex, 0, false)
+{
 	Archive* current = theMainWindow->getCurrentArchive();
 	if (current) ArchiveOperations::removeUnusedTextures(current);
 }
 
-CONSOLE_COMMAND(test_cleanflats, 0, false) {
+CONSOLE_COMMAND(test_cleanflats, 0, false)
+{
 	Archive* current = theMainWindow->getCurrentArchive();
 	if (current) ArchiveOperations::removeUnusedFlats(current);
 }
 
-size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype) {
+size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype)
+{
 	if (entry == NULL) return 0;
 
 	size_t size = entry->getSize();
@@ -741,8 +811,10 @@ size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype) {
 	memcpy(things, entry->getData(), size);
 
 	// Perform replacement
-	for (size_t t = 0; t < numthings; ++t) {
-		if (things[t].type == oldtype) {
+	for (size_t t = 0; t < numthings; ++t)
+	{
+		if (things[t].type == oldtype)
+		{
 			things[t].type = newtype;
 			++changed;
 		}
@@ -754,7 +826,8 @@ size_t replaceThingsDoom(ArchiveEntry* entry, int oldtype, int newtype) {
 
 	return changed;
 }
-size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype) {
+size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype)
+{
 	if (entry == NULL)
 		return 0;
 
@@ -766,8 +839,10 @@ size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype) {
 	memcpy(things, entry->getData(), size);
 
 	// Perform replacement
-	for (size_t t = 0; t < numthings; ++t) {
-		if (things[t].type == oldtype) {
+	for (size_t t = 0; t < numthings; ++t)
+	{
+		if (things[t].type == oldtype)
+		{
 			things[t].type = newtype;
 			++changed;
 		}
@@ -779,7 +854,8 @@ size_t replaceThingsDoom64(ArchiveEntry* entry, int oldtype, int newtype) {
 
 	return changed;
 }
-size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype) {
+size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
+{
 	if (entry == NULL)
 		return 0;
 
@@ -791,8 +867,10 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype) {
 	memcpy(things, entry->getData(), size);
 
 	// Perform replacement
-	for (size_t t = 0; t < numthings; ++t) {
-		if (things[t].type == oldtype) {
+	for (size_t t = 0; t < numthings; ++t)
+	{
+		if (things[t].type == oldtype)
+		{
 			things[t].type = newtype;
 			++changed;
 		}
@@ -804,18 +882,21 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype) {
 
 	return changed;
 }
-size_t replaceThingsUDMF(ArchiveEntry* entry, int oldtype, int newtype){
+size_t replaceThingsUDMF(ArchiveEntry* entry, int oldtype, int newtype)
+{
 	if (entry == NULL) return 0;
 
 	size_t changed = 0;
 	// TODO: parse and replace code
 	// Import the changes if needed
-	if (changed > 0) {
+	if (changed > 0)
+	{
 		//entry->importMemChunk(mc);
 	}
 	return changed;
 }
-size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newtype) {
+size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newtype)
+{
 	size_t changed = 0;
 	// Check archive was given
 	if (!archive)
@@ -825,20 +906,27 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 	vector<Archive::mapdesc_t> maps = archive->detectMaps();
 	string report = "";
 
-	for (size_t a = 0; a < maps.size(); ++a) {
+	for (size_t a = 0; a < maps.size(); ++a)
+	{
 		size_t achanged = 0;
 		// Is it an embedded wad?
-		if (maps[a].archive) {
+		if (maps[a].archive)
+		{
 			// Attempt to open entry as wad archive
 			Archive* temp_archive = new WadArchive();
-			if (temp_archive->open(maps[a].head)) {
+			if (temp_archive->open(maps[a].head))
+			{
 				achanged = ArchiveOperations::replaceThings(temp_archive, oldtype, newtype);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true))) {
+				if (!(temp_archive->write(mc, true)))
+				{
 					achanged = 0;
-				} else {
+				}
+				else
+				{
 					temp_archive->close();
-					if (!(maps[a].head->importMemChunk(mc))) {
+					if (!(maps[a].head->importMemChunk(mc)))
+					{
 						achanged = 0;
 					}
 				}
@@ -847,21 +935,30 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			// Cleanup
 			delete temp_archive;
 
-		} else {
+		}
+		else
+		{
 			// Find the map entry to modify
 			ArchiveEntry* mapentry = maps[a].head;
 			ArchiveEntry* things = NULL;
-			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN) {
-				while (mapentry && mapentry != maps[a].end) {
-					if (mapentry->getType() == EntryType::getType("map_things")) {
+			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
+			{
+				while (mapentry && mapentry != maps[a].end)
+				{
+					if (mapentry->getType() == EntryType::getType("map_things"))
+					{
 						things = mapentry;
 						break;
 					}
 					mapentry = mapentry->nextEntry();
 				}
-			} else if (maps[a].format == MAP_UDMF) {
-				while (mapentry && mapentry != maps[a].end) {
-					if (mapentry->getType() == EntryType::getType("udmf_textmap")) {
+			}
+			else if (maps[a].format == MAP_UDMF)
+			{
+				while (mapentry && mapentry != maps[a].end)
+				{
+					if (mapentry->getType() == EntryType::getType("udmf_textmap"))
+					{
 						things = mapentry;
 						break;
 					}
@@ -870,8 +967,10 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 			}
 
 			// Did we get a map entry?
-			if (things) {
-				switch(maps[a].format) {
+			if (things)
+			{
+				switch(maps[a].format)
+				{
 				case MAP_DOOM:
 					achanged = replaceThingsDoom(things, oldtype, newtype);
 					break;
@@ -897,16 +996,19 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 	return changed;
 }
 
-CONSOLE_COMMAND(replacethings, 2, true) {
+CONSOLE_COMMAND(replacethings, 2, true)
+{
 	Archive* current = theMainWindow->getCurrentArchive();
 	long oldtype, newtype;
 
-	if (current && args[0].ToLong(&oldtype) && args[1].ToLong(&newtype)) {
+	if (current && args[0].ToLong(&oldtype) && args[1].ToLong(&newtype))
+	{
 		ArchiveOperations::replaceThings(current, oldtype, newtype);
 	}
 }
 
-size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool tag, int oldtag, int newtag) {
+size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool tag, int oldtag, int newtag)
+{
 	if (entry == NULL) return 0;
 
 	size_t size = entry->getSize();
@@ -917,9 +1019,12 @@ size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool t
 	memcpy(lines, entry->getData(), size);
 
 	// Perform replacement
-	for (size_t l = 0; l < numlines; ++l) {
-		if (lines[l].type == oldtype) {
-			if (!tag || lines[l].sector_tag == oldtag) {
+	for (size_t l = 0; l < numlines; ++l)
+	{
+		if (lines[l].type == oldtype)
+		{
+			if (!tag || lines[l].sector_tag == oldtag)
+			{
 				lines[l].type = newtype;
 				if (tag)
 					lines[l].sector_tag = newtag;
@@ -934,20 +1039,23 @@ size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool t
 
 	return changed;
 }
-size_t replaceSpecialsDoom64(ArchiveEntry* entry, int oldtype, int newtype, bool tag, int oldtag, int newtag) {
+size_t replaceSpecialsDoom64(ArchiveEntry* entry, int oldtype, int newtype, bool tag, int oldtag, int newtag)
+{
 	return 0;
 }
 size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int oldtype, int newtype,
 							bool arg0, bool arg1, bool arg2, bool arg3, bool arg4,
 							int oldarg0, int oldarg1, int oldarg2, int oldarg3, int oldarg4,
-							int newarg0, int newarg1, int newarg2, int newarg3, int newarg4) {
+							int newarg0, int newarg1, int newarg2, int newarg3, int newarg4)
+{
 	if (l_entry == NULL && t_entry == NULL)
 		return 0;
 
 	size_t size = 0;
 	size_t changed = 0;
 
-	if (l_entry) {
+	if (l_entry)
+	{
 		size = l_entry->getSize();
 		size_t numlines = size / sizeof(hexenline_t);
 
@@ -956,13 +1064,16 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 		size_t lchanged = 0;
 
 		// Perform replacement
-		for (size_t l = 0; l < numlines; ++l) {
-			if (lines[l].type == oldtype) {
+		for (size_t l = 0; l < numlines; ++l)
+		{
+			if (lines[l].type == oldtype)
+			{
 				if ((!arg0 || lines[l].args[0] == oldarg0) &&
-					(!arg1 || lines[l].args[1] == oldarg1) &&
-					(!arg2 || lines[l].args[2] == oldarg2) &&
-					(!arg3 || lines[l].args[3] == oldarg3) &&
-					(!arg4 || lines[l].args[4] == oldarg4)) {
+						(!arg1 || lines[l].args[1] == oldarg1) &&
+						(!arg2 || lines[l].args[2] == oldarg2) &&
+						(!arg3 || lines[l].args[3] == oldarg3) &&
+						(!arg4 || lines[l].args[4] == oldarg4))
+				{
 					lines[l].type = newtype;
 					if (arg0) lines[l].args[0] = newarg0;
 					if (arg1) lines[l].args[1] = newarg1;
@@ -974,14 +1085,16 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 			}
 		}
 		// Import the changes if needed
-		if (lchanged > 0) {
+		if (lchanged > 0)
+		{
 			l_entry->importMem(lines, size);
 			changed += lchanged;
 		}
 		delete[] lines;
 	}
 
-	if (t_entry) {
+	if (t_entry)
+	{
 		size = t_entry->getSize();
 		size_t numthings = size / sizeof(hexenthing_t);
 
@@ -990,13 +1103,16 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 		size_t tchanged = 0;
 
 		// Perform replacement
-		for (size_t t = 0; t < numthings; ++t) {
-			if (things[t].type == oldtype) {
+		for (size_t t = 0; t < numthings; ++t)
+		{
+			if (things[t].type == oldtype)
+			{
 				if ((!arg0 || things[t].args[0] == oldarg0) &&
-					(!arg1 || things[t].args[1] == oldarg1) &&
-					(!arg2 || things[t].args[2] == oldarg2) &&
-					(!arg3 || things[t].args[3] == oldarg3) &&
-					(!arg4 || things[t].args[4] == oldarg4)) {
+						(!arg1 || things[t].args[1] == oldarg1) &&
+						(!arg2 || things[t].args[2] == oldarg2) &&
+						(!arg3 || things[t].args[3] == oldarg3) &&
+						(!arg4 || things[t].args[4] == oldarg4))
+				{
 					things[t].type = newtype;
 					if (arg0) things[t].args[0] = newarg0;
 					if (arg1) things[t].args[1] = newarg1;
@@ -1008,7 +1124,8 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 			}
 		}
 		// Import the changes if needed
-		if (tchanged > 0) {
+		if (tchanged > 0)
+		{
 			t_entry->importMem(things, size);
 			changed += tchanged;
 		}
@@ -1018,25 +1135,28 @@ size_t replaceSpecialsHexen(ArchiveEntry* l_entry, ArchiveEntry* t_entry, int ol
 	return changed;
 }
 size_t replaceSpecialsUDMF(ArchiveEntry* entry, int oldtype, int newtype,
-							bool arg0, bool arg1, bool arg2, bool arg3, bool arg4,
-							int oldarg0, int oldarg1, int oldarg2, int oldarg3, int oldarg4,
-							int newarg0, int newarg1, int newarg2, int newarg3, int newarg4){
+						   bool arg0, bool arg1, bool arg2, bool arg3, bool arg4,
+						   int oldarg0, int oldarg1, int oldarg2, int oldarg3, int oldarg4,
+						   int newarg0, int newarg1, int newarg2, int newarg3, int newarg4)
+{
 	if (entry == NULL) return 0;
 
 	size_t changed = 0;
 	// TODO: parse and replace code
 	// Import the changes if needed
-	if (changed > 0) {
+	if (changed > 0)
+	{
 		//entry->importMemChunk(mc);
 	}
 	return changed;
 }
-size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int newtype, bool lines, bool things, 
-										  bool arg0, int oldarg0, int newarg0,
-										  bool arg1, int oldarg1, int newarg1,
-										  bool arg2, int oldarg2, int newarg2,
-										  bool arg3, int oldarg3, int newarg3,
-										  bool arg4, int oldarg4, int newarg4) {
+size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int newtype, bool lines, bool things,
+		bool arg0, int oldarg0, int newarg0,
+		bool arg1, int oldarg1, int newarg1,
+		bool arg2, int oldarg2, int newarg2,
+		bool arg3, int oldarg3, int newarg3,
+		bool arg4, int oldarg4, int newarg4)
+{
 	size_t changed = 0;
 	// Check archive was given
 	if (!archive)
@@ -1046,21 +1166,28 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 	vector<Archive::mapdesc_t> maps = archive->detectMaps();
 	string report = "";
 
-	for (size_t a = 0; a < maps.size(); ++a) {
+	for (size_t a = 0; a < maps.size(); ++a)
+	{
 		size_t achanged = 0;
 		// Is it an embedded wad?
-		if (maps[a].archive) {
+		if (maps[a].archive)
+		{
 			// Attempt to open entry as wad archive
 			Archive* temp_archive = new WadArchive();
-			if (temp_archive->open(maps[a].head)) {
+			if (temp_archive->open(maps[a].head))
+			{
 				achanged = ArchiveOperations::replaceSpecials(temp_archive, oldtype, newtype, lines, things,
-					arg0, oldarg0, newarg0, arg1, oldarg1, newarg1, arg2, oldarg2, newarg2, arg3, oldarg3, newarg3, arg4, oldarg4, newarg4);
+						   arg0, oldarg0, newarg0, arg1, oldarg1, newarg1, arg2, oldarg2, newarg2, arg3, oldarg3, newarg3, arg4, oldarg4, newarg4);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true))) {
+				if (!(temp_archive->write(mc, true)))
+				{
 					achanged = 0;
-				} else {
+				}
+				else
+				{
 					temp_archive->close();
-					if (!(maps[a].head->importMemChunk(mc))) {
+					if (!(maps[a].head->importMemChunk(mc)))
+					{
 						achanged = 0;
 					}
 				}
@@ -1069,26 +1196,36 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 			// Cleanup
 			delete temp_archive;
 
-		} else {
+		}
+		else
+		{
 			// Find the map entry to modify
 			ArchiveEntry* mapentry = maps[a].head;
 			ArchiveEntry* t_entry = NULL;
 			ArchiveEntry* l_entry = NULL;
-			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN) {
-				while (mapentry && mapentry != maps[a].end) {
-					if (things && mapentry->getType() == EntryType::getType("map_things")) {
+			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
+			{
+				while (mapentry && mapentry != maps[a].end)
+				{
+					if (things && mapentry->getType() == EntryType::getType("map_things"))
+					{
 						t_entry = mapentry;
 						if (l_entry || !lines) break;
 					}
-					if (lines && mapentry->getType() == EntryType::getType("map_linedefs")) {
+					if (lines && mapentry->getType() == EntryType::getType("map_linedefs"))
+					{
 						l_entry = mapentry;
 						if (t_entry || !things) break;
 					}
 					mapentry = mapentry->nextEntry();
 				}
-			} else if (maps[a].format == MAP_UDMF) {
-				while (mapentry && mapentry != maps[a].end) {
-					if (mapentry->getType() == EntryType::getType("udmf_textmap")) {
+			}
+			else if (maps[a].format == MAP_UDMF)
+			{
+				while (mapentry && mapentry != maps[a].end)
+				{
+					if (mapentry->getType() == EntryType::getType("udmf_textmap"))
+					{
 						l_entry = t_entry = mapentry;
 						break;
 					}
@@ -1097,8 +1234,10 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 			}
 
 			// Did we get a map entry?
-			if (l_entry || t_entry) {
-				switch(maps[a].format) {
+			if (l_entry || t_entry)
+			{
+				switch(maps[a].format)
+				{
 				case MAP_DOOM:
 					if (arg1 || arg2 || arg3 || arg4) // Do nothing if Hexen specials are being modified
 						break;
@@ -1108,7 +1247,7 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 					if (oldtype > 255 || newtype > 255) // Do nothing if Doom specials are being modified
 						break;
 					achanged = replaceSpecialsHexen(l_entry, t_entry, oldtype, newtype, arg0, arg1, arg2, arg3, arg4,
-						oldarg0, oldarg1, oldarg2, oldarg3, oldarg4, newarg0, newarg1, newarg2, newarg3, newarg4);
+													oldarg0, oldarg1, oldarg2, oldarg3, oldarg4, newarg0, newarg1, newarg2, newarg3, newarg4);
 					break;
 				case MAP_DOOM64:
 					if (arg1 || arg2 || arg3 || arg4) // Do nothing if Hexen specials are being modified
@@ -1117,7 +1256,7 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 					break;
 				case MAP_UDMF:
 					achanged = replaceSpecialsUDMF(l_entry, oldtype, newtype, arg0, arg1, arg2, arg3, arg4,
-							oldarg0, oldarg1, oldarg2, oldarg3, oldarg4, newarg0, newarg1, newarg2, newarg3, newarg4);
+												   oldarg0, oldarg1, oldarg2, oldarg3, oldarg4, newarg0, newarg1, newarg2, newarg3, newarg4);
 					break;
 				default:
 					wxLogMessage("Unknown map format for " + maps[a].head->getName());
@@ -1132,7 +1271,8 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 	return changed;
 }
 
-CONSOLE_COMMAND(replacespecials, 2, true) {
+CONSOLE_COMMAND(replacespecials, 2, true)
+{
 	Archive* current = theMainWindow->getCurrentArchive();
 	long oldtype, newtype;
 	bool arg0 = false, arg1 = false, arg2 = false, arg3 = false, arg4 = false;
@@ -1143,44 +1283,52 @@ CONSOLE_COMMAND(replacespecials, 2, true) {
 	size_t newtail = fullarg - 1;
 	bool run = false;
 
-	if (fullarg > 2 && (fullarg % 2 == 0)) {
-		switch (fullarg) {
-			case 12:
-				arg4 = args[oldtail--].ToLong(&oldarg4) && args[newtail--].ToLong(&newarg4);
-			case 10:
-				arg3 = args[oldtail--].ToLong(&oldarg3) && args[newtail--].ToLong(&newarg3);
-			case  8:
-				arg2 = args[oldtail--].ToLong(&oldarg2) && args[newtail--].ToLong(&newarg2);
-			case  6:
-				arg1 = args[oldtail--].ToLong(&oldarg1) && args[newtail--].ToLong(&newarg1);
-			case  4:
-				arg0 = args[oldtail--].ToLong(&oldarg0) && args[newtail--].ToLong(&newarg0);
-			case  2:
-				run  = args[oldtail--].ToLong(&oldtype) && args[newtail--].ToLong(&newtype);
-				break;
-			default:
-				wxLogMessage("Invalid number of arguments: %d", fullarg);
+	if (fullarg > 2 && (fullarg % 2 == 0))
+	{
+		switch (fullarg)
+		{
+		case 12:
+			arg4 = args[oldtail--].ToLong(&oldarg4) && args[newtail--].ToLong(&newarg4);
+		case 10:
+			arg3 = args[oldtail--].ToLong(&oldarg3) && args[newtail--].ToLong(&newarg3);
+		case  8:
+			arg2 = args[oldtail--].ToLong(&oldarg2) && args[newtail--].ToLong(&newarg2);
+		case  6:
+			arg1 = args[oldtail--].ToLong(&oldarg1) && args[newtail--].ToLong(&newarg1);
+		case  4:
+			arg0 = args[oldtail--].ToLong(&oldarg0) && args[newtail--].ToLong(&newarg0);
+		case  2:
+			run  = args[oldtail--].ToLong(&oldtype) && args[newtail--].ToLong(&newtype);
+			break;
+		default:
+			wxLogMessage("Invalid number of arguments: %d", fullarg);
 		}
 	}
 
-	if (current && run) {
+	if (current && run)
+	{
 		ArchiveOperations::replaceSpecials(current, oldtype, newtype, true, true,
-			arg0, oldarg0, newarg0, arg1, oldarg1, newarg1, arg2, oldarg2, newarg2,
-			arg3, oldarg3, newarg3, arg4, oldarg4, newarg4);
+										   arg0, oldarg0, newarg0, arg1, oldarg1, newarg1, arg2, oldarg2, newarg2,
+										   arg3, oldarg3, newarg3, arg4, oldarg4, newarg4);
 	}
 }
 
-bool replaceTextureString(char * str, string oldtex, string newtex) {
+bool replaceTextureString(char* str, string oldtex, string newtex)
+{
 	bool go = true;
-	for (unsigned c = 0; c < 8; ++c) {
+	for (unsigned c = 0; c < 8; ++c)
+	{
 		if (str[c] != oldtex[c] && oldtex[c] != '?' && oldtex[c] != '*')
 			go = false;
 		if (oldtex[c] == '*')
 			break;
 	}
-	if (go) {
-		for (unsigned i = 0; i < 8; ++i) {
-			if (i < newtex.Len()) {
+	if (go)
+	{
+		for (unsigned i = 0; i < 8; ++i)
+		{
+			if (i < newtex.Len())
+			{
 				// Keep the rest of the name as-is?
 				if (newtex[i] == '*') break;
 				// Keep just this character as-is?
@@ -1194,7 +1342,8 @@ bool replaceTextureString(char * str, string oldtex, string newtex) {
 	}
 	return go;
 }
-size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling) {
+size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling)
+{
 	if (entry == NULL) return 0;
 
 	size_t size = entry->getSize();
@@ -1206,7 +1355,8 @@ size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 	memcpy(sectors, entry->getData(), size);
 
 	// Perform replacement
-	for (size_t s = 0; s < numsectors; ++s) {
+	for (size_t s = 0; s < numsectors; ++s)
+	{
 		fchanged = cchanged = false;
 		if (floor)
 			fchanged = replaceTextureString(sectors[s].f_tex, oldtex, newtex);
@@ -1222,7 +1372,8 @@ size_t replaceFlatsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 
 	return changed;
 }
-size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, bool lower, bool middle, bool upper) {
+size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, bool lower, bool middle, bool upper)
+{
 	if (entry == NULL) return 0;
 
 	size_t size = entry->getSize();
@@ -1235,7 +1386,8 @@ size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 	char compare[9]; compare[8] = 0;
 
 	// Perform replacement
-	for (size_t s = 0; s < numsides; ++s) {
+	for (size_t s = 0; s < numsides; ++s)
+	{
 		lchanged = mchanged = uchanged = false;
 		if (lower)
 			lchanged = replaceTextureString(sides[s].tex_lower, oldtex, newtex);
@@ -1253,7 +1405,8 @@ size_t replaceWallsDoomHexen(ArchiveEntry* entry, string oldtex, string newtex, 
 
 	return changed;
 }
-size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling) {
+size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling)
+{
 	if (entry == NULL) return 0;
 
 	size_t size = entry->getSize();
@@ -1268,13 +1421,16 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	memcpy(sectors, entry->getData(), size);
 
 	// Perform replacement
-	for (size_t s = 0; s < numsectors; ++s) {
+	for (size_t s = 0; s < numsectors; ++s)
+	{
 		fchanged = cchanged = false;
-		if (floor && oldhash == sectors[s].f_tex) {
+		if (floor && oldhash == sectors[s].f_tex)
+		{
 			sectors[s].f_tex = newhash;
 			fchanged = true;
 		}
-		if (ceiling && oldhash == sectors[s].c_tex) {
+		if (ceiling && oldhash == sectors[s].c_tex)
+		{
 			sectors[s].c_tex = newhash;
 			cchanged = true;
 		}
@@ -1288,7 +1444,8 @@ size_t replaceFlatsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 
 	return changed;
 }
-size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, bool lower, bool middle, bool upper) {
+size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, bool lower, bool middle, bool upper)
+{
 	if (entry == NULL) return 0;
 
 	size_t size = entry->getSize();
@@ -1303,17 +1460,21 @@ size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 	memcpy(sides, entry->getData(), size);
 
 	// Perform replacement
-	for (size_t s = 0; s < numsides; ++s) {
+	for (size_t s = 0; s < numsides; ++s)
+	{
 		lchanged = mchanged = uchanged = false;
-		if (lower && oldhash == sides[s].tex_lower) {
+		if (lower && oldhash == sides[s].tex_lower)
+		{
 			sides[s].tex_lower = newhash;
 			lchanged = true;
 		}
-		if (middle && oldhash == sides[s].tex_middle) {
+		if (middle && oldhash == sides[s].tex_middle)
+		{
 			sides[s].tex_middle = newhash;
 			mchanged = true;
 		}
-		if (upper && oldhash == sides[s].tex_upper) {
+		if (upper && oldhash == sides[s].tex_upper)
+		{
 			sides[s].tex_upper = newhash;
 			uchanged = true;
 		}
@@ -1327,18 +1488,21 @@ size_t replaceWallsDoom64(ArchiveEntry* entry, string oldtex, string newtex, boo
 
 	return changed;
 }
-size_t replaceTexturesUDMF(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling, bool lower, bool middle, bool upper){
+size_t replaceTexturesUDMF(ArchiveEntry* entry, string oldtex, string newtex, bool floor, bool ceiling, bool lower, bool middle, bool upper)
+{
 	if (entry == NULL) return 0;
 
 	size_t changed = 0;
 	// TODO: parse and replace code
 	// Import the changes if needed
-	if (changed > 0) {
+	if (changed > 0)
+	{
 		//entry->importMemChunk(mc);
 	}
 	return changed;
 }
-size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, string newtex, bool floor, bool ceiling, bool lower, bool middle, bool upper){
+size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, string newtex, bool floor, bool ceiling, bool lower, bool middle, bool upper)
+{
 	size_t changed = 0;
 	// Check archive was given
 	if (!archive)
@@ -1348,20 +1512,27 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 	vector<Archive::mapdesc_t> maps = archive->detectMaps();
 	string report = "";
 
-	for (size_t a = 0; a < maps.size(); ++a) {
+	for (size_t a = 0; a < maps.size(); ++a)
+	{
 		size_t achanged = 0;
 		// Is it an embedded wad?
-		if (maps[a].archive) {
+		if (maps[a].archive)
+		{
 			// Attempt to open entry as wad archive
 			Archive* temp_archive = new WadArchive();
-			if (temp_archive->open(maps[a].head)) {
+			if (temp_archive->open(maps[a].head))
+			{
 				achanged = ArchiveOperations::replaceTextures(temp_archive, oldtex, newtex, floor, ceiling, lower, middle, upper);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true))) {
+				if (!(temp_archive->write(mc, true)))
+				{
 					achanged = 0;
-				} else {
+				}
+				else
+				{
 					temp_archive->close();
-					if (!(maps[a].head->importMemChunk(mc))) {
+					if (!(maps[a].head->importMemChunk(mc)))
+					{
 						achanged = 0;
 					}
 				}
@@ -1370,26 +1541,36 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 			// Cleanup
 			delete temp_archive;
 
-		} else {
+		}
+		else
+		{
 			// Find the map entry to modify
 			ArchiveEntry* mapentry = maps[a].head;
 			ArchiveEntry* sectors = NULL;
 			ArchiveEntry* sides = NULL;
-			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN) {
-				while (mapentry && mapentry != maps[a].end) {
-					if ((floor || ceiling) && (mapentry->getType() == EntryType::getType("map_sectors"))) {
+			if (maps[a].format == MAP_DOOM || maps[a].format == MAP_DOOM64 || maps[a].format == MAP_HEXEN)
+			{
+				while (mapentry && mapentry != maps[a].end)
+				{
+					if ((floor || ceiling) && (mapentry->getType() == EntryType::getType("map_sectors")))
+					{
 						sectors = mapentry;
 						if (sides || !(lower || middle || upper)) break;
 					}
-					if ((lower || middle || upper) && (mapentry->getType() == EntryType::getType("map_sidedefs"))) {
+					if ((lower || middle || upper) && (mapentry->getType() == EntryType::getType("map_sidedefs")))
+					{
 						sides = mapentry;
 						if (sectors || !(floor || ceiling)) break;
 					}
 					mapentry = mapentry->nextEntry();
 				}
-			} else if (maps[a].format == MAP_UDMF) {
-				while (mapentry && mapentry != maps[a].end) {
-					if (mapentry->getType() == EntryType::getType("udmf_textmap")) {
+			}
+			else if (maps[a].format == MAP_UDMF)
+			{
+				while (mapentry && mapentry != maps[a].end)
+				{
+					if (mapentry->getType() == EntryType::getType("udmf_textmap"))
+					{
 						sectors = sides = mapentry;
 						break;
 					}
@@ -1398,8 +1579,10 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 			}
 
 			// Did we get a map entry?
-			if (sectors || sides) {
-				switch(maps[a].format) {
+			if (sectors || sides)
+			{
+				switch(maps[a].format)
+				{
 				case MAP_DOOM:
 				case MAP_HEXEN:
 					achanged = 0;
@@ -1431,10 +1614,12 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 	return changed;
 }
 
-CONSOLE_COMMAND(replacetextures, 2, true) {
+CONSOLE_COMMAND(replacetextures, 2, true)
+{
 	Archive* current = theMainWindow->getCurrentArchive();
 
-	if (current) {
+	if (current)
+	{
 		ArchiveOperations::replaceTextures(current, args[0], args[1], true, true, true, true, true);
 	}
 }

@@ -3,7 +3,8 @@
 #include "MapThing.h"
 #include "MainApp.h"
 
-MapThing::MapThing(SLADEMap* parent) : MapObject(MOBJ_THING, parent) {
+MapThing::MapThing(SLADEMap* parent) : MapObject(MOBJ_THING, parent)
+{
 	// Init variables
 	this->x = 0;
 	this->y = 0;
@@ -11,7 +12,8 @@ MapThing::MapThing(SLADEMap* parent) : MapObject(MOBJ_THING, parent) {
 	this->angle = 0;
 }
 
-MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject(MOBJ_THING, parent) {
+MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject(MOBJ_THING, parent)
+{
 	// Init variables
 	this->x = x;
 	this->y = y;
@@ -19,10 +21,12 @@ MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject
 	this->angle = 0;
 }
 
-MapThing::~MapThing() {
+MapThing::~MapThing()
+{
 }
 
-int MapThing::intProperty(string key) {
+int MapThing::intProperty(string key)
+{
 	if (key == "type")
 		return type;
 	else if (key == "x")
@@ -35,7 +39,8 @@ int MapThing::intProperty(string key) {
 		return MapObject::intProperty(key);
 }
 
-double MapThing::floatProperty(string key) {
+double MapThing::floatProperty(string key)
+{
 	if (key == "x")
 		return x;
 	else if (key == "y")
@@ -44,7 +49,8 @@ double MapThing::floatProperty(string key) {
 		return MapObject::floatProperty(key);
 }
 
-void MapThing::setIntProperty(string key, int value) {
+void MapThing::setIntProperty(string key, int value)
+{
 	// Update modified time
 	setModified();
 
@@ -60,7 +66,8 @@ void MapThing::setIntProperty(string key, int value) {
 		return MapObject::setIntProperty(key, value);
 }
 
-void MapThing::setFloatProperty(string key, double value) {
+void MapThing::setFloatProperty(string key, double value)
+{
 	// Update modified time
 	setModified();
 
@@ -72,7 +79,8 @@ void MapThing::setFloatProperty(string key, double value) {
 		return MapObject::setFloatProperty(key, value);
 }
 
-void MapThing::copy(MapObject* c) {
+void MapThing::copy(MapObject* c)
+{
 	// Don't copy a non-thing
 	if (c->getObjType() != MOBJ_THING)
 		return;
@@ -88,7 +96,8 @@ void MapThing::copy(MapObject* c) {
 	MapObject::copy(c);
 }
 
-void MapThing::setAnglePoint(fpoint2_t point) {
+void MapThing::setAnglePoint(fpoint2_t point)
+{
 	// Calculate direction vector
 	fpoint2_t vec(point.x - x, point.y - y);
 	double mag = sqrt((vec.x * vec.x) + (vec.y * vec.y));
@@ -119,7 +128,8 @@ void MapThing::setAnglePoint(fpoint2_t point) {
 	//setIntProperty("angle", angle);
 }
 
-void MapThing::writeBackup(mobj_backup_t* backup) {
+void MapThing::writeBackup(mobj_backup_t* backup)
+{
 	// Type
 	backup->props_internal["type"] = type;
 
@@ -131,7 +141,8 @@ void MapThing::writeBackup(mobj_backup_t* backup) {
 	backup->props_internal["angle"] = angle;
 }
 
-void MapThing::readBackup(mobj_backup_t* backup) {
+void MapThing::readBackup(mobj_backup_t* backup)
+{
 	// Type
 	type = backup->props_internal["type"].getIntValue();
 

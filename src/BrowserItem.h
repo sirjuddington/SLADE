@@ -5,8 +5,9 @@
 #include "GLTexture.h"
 
 class BrowserWindow;
-class BrowserItem {
-friend class BrowserWindow;
+class BrowserItem
+{
+	friend class BrowserWindow;
 protected:
 	string			type;
 	string			name;

@@ -7,7 +7,8 @@
 // An event to indicate when the selection has changed
 wxDECLARE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 
-class VirtualListView : public wxListCtrl {
+class VirtualListView : public wxListCtrl
+{
 private:
 	long	last_focus;
 	string	search;

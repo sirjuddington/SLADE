@@ -2,10 +2,12 @@
 #ifndef __POLYGON_2D_H__
 #define __POLYGON_2D_H__
 
-struct gl_vertex_t {
+struct gl_vertex_t
+{
 	float x, y, z;
 	float tx, ty;
-	gl_vertex_t(float x = 0.0f, float y = 0.0f, float z = 0.0f) {
+	gl_vertex_t(float x = 0.0f, float y = 0.0f, float z = 0.0f)
+	{
 		this->x = x;
 		this->y = y;
 		this->z = z;
@@ -14,7 +16,8 @@ struct gl_vertex_t {
 	}
 };
 
-struct gl_polygon_t {
+struct gl_polygon_t
+{
 	gl_vertex_t*	vertices;
 	unsigned		n_vertices;
 	unsigned		vbo_offset;
@@ -26,7 +29,8 @@ struct gl_polygon_t {
 
 class GLTexture;
 class MapSector;
-class Polygon2D {
+class Polygon2D
+{
 private:
 	// Polygon data
 	vector<gl_polygon_t*>	subpolys;
@@ -75,18 +79,21 @@ public:
 };
 
 
-class PolygonSplitter {
+class PolygonSplitter
+{
 friend class Polygon2D;
 private:
 	// Structs
-	struct edge_t {
+	struct edge_t
+	{
 		int		v1, v2;
 		bool	ok;
 		bool	done;
 		bool	inpoly;
 		int		sister;
 	};
-	struct vertex_t {
+	struct vertex_t
+	{
 		double 			x, y;
 		vector<int>		edges_in;
 		vector<int>		edges_out;
@@ -94,7 +101,8 @@ private:
 		double			distance;
 		vertex_t(double x=0, double y=0) { this->x = x; this->y = y; ok = true; }
 	};
-	struct poly_outline_t {
+	struct poly_outline_t
+	{
 		vector<int>	edges;
 		bbox_t		bbox;
 		bool		clockwise;

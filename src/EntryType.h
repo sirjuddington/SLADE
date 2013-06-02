@@ -6,7 +6,8 @@
 #include "EntryDataFormat.h"
 class ArchiveEntry;
 
-class EntryType {
+class EntryType
+{
 private:
 	// Type info
 	string		id;

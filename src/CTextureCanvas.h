@@ -11,7 +11,8 @@
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 
-class CTextureCanvas : public OGLCanvas, Listener {
+class CTextureCanvas : public OGLCanvas, Listener
+{
 private:
 	CTexture*			texture;
 	Archive*			parent;

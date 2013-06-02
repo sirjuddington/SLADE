@@ -4,16 +4,19 @@
 #include "SLADEMap.h"
 #include "MathStuff.h"
 
-SectorBuilder::SectorBuilder() {
+SectorBuilder::SectorBuilder()
+{
 	// Init variables
 	vertex_right = NULL;
 	map = NULL;
 }
 
-SectorBuilder::~SectorBuilder() {
+SectorBuilder::~SectorBuilder()
+{
 }
 
-MapLine* SectorBuilder::getEdgeLine(unsigned index) {
+MapLine* SectorBuilder::getEdgeLine(unsigned index)
+{
 	// Check index
 	if (index >= sector_edges.size())
 		return NULL;
@@ -21,7 +24,8 @@ MapLine* SectorBuilder::getEdgeLine(unsigned index) {
 	return sector_edges[index].line;
 }
 
-bool SectorBuilder::edgeIsFront(unsigned index) {
+bool SectorBuilder::edgeIsFront(unsigned index)
+{
 	// Check index
 	if (index >= sector_edges.size())
 		return true;
@@ -29,7 +33,8 @@ bool SectorBuilder::edgeIsFront(unsigned index) {
 	return sector_edges[index].front;
 }
 
-bool SectorBuilder::edgeSideCreated(unsigned index) {
+bool SectorBuilder::edgeSideCreated(unsigned index)
+{
 	// Check index
 	if (index >= sector_edges.size())
 		return false;
@@ -37,11 +42,13 @@ bool SectorBuilder::edgeSideCreated(unsigned index) {
 	return sector_edges[index].side_created;
 }
 
-SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge) {
+SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge)
+{
 	// Get relevant vertices
 	MapVertex* vertex = edge.line->v2();		// Vertex to be tested
 	MapVertex* vertex_prev = edge.line->v1();	// 'Previous' vertex
-	if (!edge.front) {
+	if (!edge.front)
+	{
 		vertex = edge.line->v1();
 		vertex_prev = edge.line->v2();
 	}
@@ -49,7 +56,8 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge) {
 	// Find next connected line with the lowest angle
 	double min_angle = 2*PI;
 	edge_t next;
-	for (unsigned a = 0; a < vertex->nConnectedLines(); a++) {
+	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
+	{
 		MapLine* line = vertex->connectedLine(a);
 
 		// Ignore original line
@@ -65,18 +73,20 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge) {
 		bool front = true;
 		if (line->v1() == vertex)
 			vertex_next = line->v2();
-		else {
+		else
+		{
 			vertex_next = line->v1();
 			front = false;
 		}
 
 		// Determine angle between lines
 		double angle = MathStuff::angle2DRad(fpoint2_t(vertex_prev->xPos(), vertex_prev->yPos()),
-											fpoint2_t(vertex->xPos(), vertex->yPos()),
-											fpoint2_t(vertex_next->xPos(), vertex_next->yPos()));
+		                                     fpoint2_t(vertex->xPos(), vertex->yPos()),
+		                                     fpoint2_t(vertex_next->xPos(), vertex_next->yPos()));
 
 		// Check if minimum angle
-		if (angle < min_angle) {
+		if (angle < min_angle)
+		{
 			min_angle = angle;
 			next.line = line;
 			next.front = front;
@@ -87,7 +97,8 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge) {
 	return next;
 }
 
-bool SectorBuilder::traceOutline(MapLine* line, bool front) {
+bool SectorBuilder::traceOutline(MapLine* line, bool front)
+{
 	// Check line was given
 	if (!line)
 		return false;
@@ -98,10 +109,11 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front) {
 	edge_t edge(line, front);
 	o_edges.push_back(edge);
 	double edge_sum = 0;
-	
+
 	// Begin tracing
 	vertex_right = edge.line->v1();
-	for (unsigned a = 0; a < 10000; a++) {
+	for (unsigned a = 0; a < 10000; a++)
+	{
 		// Update edge sum (for clockwise detection)
 		if (edge.front)
 			edge_sum += (edge.line->x1()*edge.line->y2() - edge.line->x2()*edge.line->y1());
@@ -118,7 +130,8 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front) {
 		edge_t edge_next = nextEdge(edge);
 
 		// Check if no valid next edge was found
-		if (!edge_next.line) {
+		if (!edge_next.line)
+		{
 			// Go back along the current line
 			edge_next.line = edge.line;
 			edge_next.front = !edge.front;
@@ -130,7 +143,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front) {
 
 		// Check if we're back to the start
 		if (edge_next.line == o_edges[0].line &&
-			edge_next.front == o_edges[0].front)
+		        edge_next.front == o_edges[0].front)
 			break;
 
 		// Add edge to outline
@@ -155,21 +168,24 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front) {
 	return true;
 }
 
-int SectorBuilder::nearestEdge(double x, double y) {
+int SectorBuilder::nearestEdge(double x, double y)
+{
 	// Init variables
 	double min_dist = 99999999;
 	int nearest = -1;
 
 	// Go through edges
 	double dist;
-	for (unsigned a = 0; a < o_edges.size(); a++) {
+	for (unsigned a = 0; a < o_edges.size(); a++)
+	{
 		// Get distance to edge
 		dist = MathStuff::distanceToLineFast(x, y,
-			o_edges[a].line->x1(), o_edges[a].line->y1(),
-			o_edges[a].line->x2(), o_edges[a].line->y2());
+		                                     o_edges[a].line->x1(), o_edges[a].line->y1(),
+		                                     o_edges[a].line->x2(), o_edges[a].line->y2());
 
 		// Check if minimum
-		if (dist < min_dist) {
+		if (dist < min_dist)
+		{
 			min_dist = dist;
 			nearest = a;
 		}
@@ -179,9 +195,11 @@ int SectorBuilder::nearestEdge(double x, double y) {
 	return nearest;
 }
 
-bool SectorBuilder::pointWithinOutline(double x, double y) {
+bool SectorBuilder::pointWithinOutline(double x, double y)
+{
 	// Check with bounding box
-	if (!o_bbox.point_within(x, y)) {
+	if (!o_bbox.point_within(x, y))
+	{
 		// If the point is not within the bbox and the outline is clockwise,
 		// it can't be within the outline
 		if (o_clockwise)
@@ -195,11 +213,12 @@ bool SectorBuilder::pointWithinOutline(double x, double y) {
 
 	// Find nearest edge
 	int nearest = nearestEdge(x, y);
-	if (nearest >= 0) {
+	if (nearest >= 0)
+	{
 		// Check what side of the edge the point is on
 		double side = MathStuff::lineSide(x, y,
-			o_edges[nearest].line->x1(), o_edges[nearest].line->y1(),
-			o_edges[nearest].line->x2(), o_edges[nearest].line->y2());
+		                                  o_edges[nearest].line->x1(), o_edges[nearest].line->y1(),
+		                                  o_edges[nearest].line->x2(), o_edges[nearest].line->y2());
 
 		// Return true if it is on the correct side
 		if (side >= 0 && o_edges[nearest].front)
@@ -212,9 +231,11 @@ bool SectorBuilder::pointWithinOutline(double x, double y) {
 	return false;
 }
 
-void SectorBuilder::discardOutsideVertices() {
+void SectorBuilder::discardOutsideVertices()
+{
 	// Go through valid vertices list
-	for (unsigned a = 0; a < vertex_valid.size(); a++) {
+	for (unsigned a = 0; a < vertex_valid.size(); a++)
+	{
 		// Skip if already discarded
 		if (!vertex_valid[a])
 			continue;
@@ -225,7 +246,8 @@ void SectorBuilder::discardOutsideVertices() {
 	}
 }
 
-SectorBuilder::edge_t SectorBuilder::findOuterEdge() {
+SectorBuilder::edge_t SectorBuilder::findOuterEdge()
+{
 	// Check we have a rightmost vertex
 	if (!vertex_right)
 		return edge_t(NULL);
@@ -240,7 +262,8 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge() {
 
 	// Go through map lines
 	MapLine* line = NULL;
-	for (unsigned a = 0; a < map->nLines(); a++) {
+	for (unsigned a = 0; a < map->nLines(); a++)
+	{
 		line = map->getLine(a);
 
 		// Ignore if the line is completely left of the vertex
@@ -253,7 +276,7 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge() {
 
 		// Ignore if the line doesn't intersect the y value
 		if ((line->y1() < vr_y && line->y2() < vr_y) ||
-			(line->y1() > vr_y && line->y2() > vr_y))
+		        (line->y1() > vr_y && line->y2() > vr_y))
 			continue;
 
 		// Get x intercept
@@ -261,7 +284,8 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge() {
 		double int_x = line->x1() + ((line->x2() - line->x1()) * int_frac);
 
 		// Check if closest
-		if (int_x - vr_x < min_dist) {
+		if (int_x - vr_x < min_dist)
+		{
 			min_dist = int_x - vr_x;
 			nearest = line;
 		}
@@ -281,16 +305,19 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge() {
 		return edge_t(nearest, false);
 }
 
-SectorBuilder::edge_t SectorBuilder::findInnerEdge() {
+SectorBuilder::edge_t SectorBuilder::findInnerEdge()
+{
 	// Find rightmost non-discarded vertex
 	vertex_right = NULL;
-	for (unsigned a = 0; a < vertex_valid.size(); a++) {
+	for (unsigned a = 0; a < vertex_valid.size(); a++)
+	{
 		// Ignore if discarded
 		if (!vertex_valid[a])
 			continue;
 
 		// Set rightmost if no current rightmost vertex
-		if (!vertex_right) {
+		if (!vertex_right)
+		{
 			vertex_right = map->getVertex(a);
 			continue;
 		}
@@ -309,7 +336,8 @@ SectorBuilder::edge_t SectorBuilder::findInnerEdge() {
 	// the right side of the bbox
 	MapLine* eline = NULL;
 	double min_angle = 999999;
-	for (unsigned a = 0; a < vertex_right->nConnectedLines(); a++) {
+	for (unsigned a = 0; a < vertex_right->nConnectedLines(); a++)
+	{
 		MapLine* line = vertex_right->connectedLine(a);
 
 		// Ignore if zero-length
@@ -325,11 +353,12 @@ SectorBuilder::edge_t SectorBuilder::findInnerEdge() {
 
 		// Determine angle
 		double angle = MathStuff::angle2DRad(fpoint2_t(vertex_right->xPos() + 32, vertex_right->yPos()),
-			fpoint2_t(vertex_right->xPos(), vertex_right->yPos()),
-			fpoint2_t(opposite->xPos(), opposite->yPos()));
+		                                     fpoint2_t(vertex_right->xPos(), vertex_right->yPos()),
+		                                     fpoint2_t(opposite->xPos(), opposite->yPos()));
 
 		// Check if minimum
-		if (angle < min_angle) {
+		if (angle < min_angle)
+		{
 			min_angle = angle;
 			eline = line;
 		}
@@ -337,7 +366,8 @@ SectorBuilder::edge_t SectorBuilder::findInnerEdge() {
 
 	// If no line was found, something is wrong
 	// (the vertex may have no attached lines)
-	if (!eline) {
+	if (!eline)
+	{
 		// Discard vertex and try again
 		vertex_valid[vertex_right->getIndex()] = false;
 		return findInnerEdge();
@@ -350,12 +380,15 @@ SectorBuilder::edge_t SectorBuilder::findInnerEdge() {
 		return edge_t(eline, false);
 }
 
-MapSector* SectorBuilder::findCopySector() {
+MapSector* SectorBuilder::findCopySector()
+{
 	// Go through new sector edges
 	MapSector* sector_copy = NULL;
-	for (unsigned a = 0; a < sector_edges.size(); a++) {
+	for (unsigned a = 0; a < sector_edges.size(); a++)
+	{
 		// Check if the edge's corresponding MapSide has a front sector
-		if (sector_edges[a].line->frontSector()) {
+		if (sector_edges[a].line->frontSector())
+		{
 			// Set sector to copy
 			sector_copy = sector_edges[a].line->frontSector();
 
@@ -365,7 +398,8 @@ MapSector* SectorBuilder::findCopySector() {
 		}
 
 		// Check if the edge's corresponding MapSide has a back sector
-		if (sector_edges[a].line->backSector()) {
+		if (sector_edges[a].line->backSector())
+		{
 			// Set sector to copy
 			sector_copy = sector_edges[a].line->backSector();
 
@@ -378,16 +412,20 @@ MapSector* SectorBuilder::findCopySector() {
 	return sector_copy;
 }
 
-MapSector* SectorBuilder::findExistingSector() {
+MapSector* SectorBuilder::findExistingSector()
+{
 	// Go through new sector edges
-	for (unsigned a = 0; a < sector_edges.size(); a++) {
+	for (unsigned a = 0; a < sector_edges.size(); a++)
+	{
 		// Check if the edge's corresponding MapSide has a front sector
-		if (sector_edges[a].front && sector_edges[a].line->frontSector()) {
+		if (sector_edges[a].front && sector_edges[a].line->frontSector())
+		{
 			return sector_edges[a].line->frontSector();
 		}
 
 		// Check if the edge's corresponding MapSide has a back sector
-		if (!sector_edges[a].front && sector_edges[a].line->backSector()) {
+		if (!sector_edges[a].front && sector_edges[a].line->backSector())
+		{
 			return sector_edges[a].line->backSector();
 		}
 	}
@@ -395,7 +433,8 @@ MapSector* SectorBuilder::findExistingSector() {
 	return NULL;
 }
 
-bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front) {
+bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front)
+{
 	// Check info was given
 	if (!line || !map)
 		return false;
@@ -411,7 +450,8 @@ bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front) {
 		vertex_valid.push_back(true);
 
 	// Find outmost outline
-	for (unsigned a = 0; a < 10000; a++) {
+	for (unsigned a = 0; a < 10000; a++)
+	{
 		// Trace outline
 		if (!traceOutline(line, front))
 			break;
@@ -422,12 +462,13 @@ bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front) {
 		// If it is clockwise, we've found the outmost outline
 		if (o_clockwise)
 			break;
-		
+
 		// Otherwise, find the next edge outside the outline
 		edge_t next = findOuterEdge();
 
 		// If none was found, we're outside the map
-		if (!next.line) {
+		if (!next.line)
+		{
 			//sector_edges.clear();
 			error = "Outside map area";
 			return false;
@@ -438,7 +479,8 @@ bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front) {
 		front = next.front;
 
 		// Check for possible infinite loop
-		if (a == 9999) {
+		if (a == 9999)
+		{
 			error = "Invalid map geometry";
 			return false;
 		}
@@ -446,7 +488,8 @@ bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front) {
 
 	// Trace all inner outlines, by tracing from the rightmost vertex
 	// until all vertices have been discarded
-	for (unsigned a = 0; a < 10000; a++) {
+	for (unsigned a = 0; a < 10000; a++)
+	{
 		// Get inner edge
 		edge_t edge = findInnerEdge();
 
@@ -462,7 +505,8 @@ bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front) {
 		discardOutsideVertices();
 
 		// Check for possible infinite loop
-		if (a == 9999) {
+		if (a == 9999)
+		{
 			error = "Invalid map geometry";
 			return false;
 		}
@@ -471,9 +515,11 @@ bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front) {
 	return true;
 }
 
-void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy) {
+void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
+{
 	// Create the sector if needed
-	if (!sector) {
+	if (!sector)
+	{
 		sector = map->createSector();
 		if (!sector_copy)
 			sector_copy = findCopySector();		// Find potential sector to copy if none specified
@@ -486,18 +532,22 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy) {
 		sector_edges[a].side_created = map->setLineSector(sector_edges[a].line->getIndex(), sector->getIndex(), sector_edges[a].front);
 }
 
-void SectorBuilder::drawResult() {
+void SectorBuilder::drawResult()
+{
 	glDisable(GL_TEXTURE_2D);
 	rgba_t(255, 255, 255, 255, 0).set_gl();
 
 	// Go through sector edges
-	for (unsigned a = 0; a < sector_edges.size(); a++) {
+	for (unsigned a = 0; a < sector_edges.size(); a++)
+	{
 		// Setup colour
-		if (sector_edges[a].front) {
+		if (sector_edges[a].front)
+		{
 			glLineWidth(2.0f);
 			glColor3f(0.0f, 1.0f, 0.0f);
 		}
-		else {
+		else
+		{
 			glLineWidth(3.0f);
 			glColor3f(0.0f, 0.0f, 1.0f);
 		}

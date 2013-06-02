@@ -5,13 +5,15 @@
 #include <wx/dataview.h>
 #include <wx/notebook.h>
 
-class ActionSpecialTreeView : public wxDataViewTreeCtrl {
+class ActionSpecialTreeView : public wxDataViewTreeCtrl
+{
 private:
 	wxDataViewItem	root;
 	wxDialog*		parent_dialog;
 
 	// It's incredibly retarded that I actually have to do this
-	struct astv_group_t {
+	struct astv_group_t
+	{
 		string			name;
 		wxDataViewItem	item;
 		astv_group_t(wxDataViewItem i, string name) { this->item = i; this->name = name; }
@@ -35,7 +37,8 @@ public:
 };
 
 class GenLineSpecialPanel;
-class ActionSpecialDialog : public wxDialog {
+class ActionSpecialDialog : public wxDialog
+{
 private:
 	wxNotebook*				nb_tabs;
 	ActionSpecialTreeView*	tree_specials;

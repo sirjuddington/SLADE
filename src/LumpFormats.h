@@ -1,12 +1,14 @@
 #ifndef LUMPFORMATS_H
 #define LUMPFORMATS_H
 
-class TextureXDataFormat : public EntryDataFormat {
+class TextureXDataFormat : public EntryDataFormat
+{
 public:
 	TextureXDataFormat() : EntryDataFormat("texturex") {};
 	~TextureXDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
 		if (mc.getSize() < 4)
 			return EDF_FALSE;
@@ -22,12 +24,14 @@ public:
 	}
 };
 
-class PNamesDataFormat : public EntryDataFormat {
+class PNamesDataFormat : public EntryDataFormat
+{
 public:
 	PNamesDataFormat() : EntryDataFormat("pnames") {};
 	~PNamesDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// It's a pretty simple format alright
 		uint32_t number = READ_L32(mc, 0);
 		if ((int32_t) number < 0)
@@ -38,13 +42,16 @@ public:
 	}
 };
 
-class BoomAnimatedDataFormat : public EntryDataFormat {
+class BoomAnimatedDataFormat : public EntryDataFormat
+{
 public:
 	BoomAnimatedDataFormat() : EntryDataFormat("animated") {};
 	~BoomAnimatedDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
-		if (mc.getSize() > sizeof(animated_t)) {
+	int isThisFormat(MemChunk& mc)
+	{
+		if (mc.getSize() > sizeof(animated_t))
+		{
 			size_t numentries = mc.getSize()/sizeof(animated_t);
 			// The last entry can be incomplete, as it may stop right
 			// after the declaration of its type. So if the size is not
@@ -59,13 +66,16 @@ public:
 	}
 };
 
-class BoomSwitchesDataFormat : public EntryDataFormat {
+class BoomSwitchesDataFormat : public EntryDataFormat
+{
 public:
 	BoomSwitchesDataFormat() : EntryDataFormat("switches") {};
 	~BoomSwitchesDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
-		if (mc.getSize() > sizeof(switches_t)) {
+	int isThisFormat(MemChunk& mc)
+	{
+		if (mc.getSize() > sizeof(switches_t))
+		{
 			size_t numentries = mc.getSize()/sizeof(switches_t);
 
 			// Check that the last entry ends on a SWCH_STOP type
@@ -76,14 +86,17 @@ public:
 	}
 };
 
-class ZNodesDataFormat : public EntryDataFormat {
+class ZNodesDataFormat : public EntryDataFormat
+{
 public:
 	ZNodesDataFormat() : EntryDataFormat("znod") {};
 	~ZNodesDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for ZNOD header
 			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
 				return EDF_TRUE;
@@ -92,14 +105,17 @@ public:
 	}
 };
 
-class ZGLNodesDataFormat : public EntryDataFormat {
+class ZGLNodesDataFormat : public EntryDataFormat
+{
 public:
 	ZGLNodesDataFormat() : EntryDataFormat("zgln") {};
 	~ZGLNodesDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for ZGLN header
 			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
 				return EDF_TRUE;
@@ -108,14 +124,17 @@ public:
 	}
 };
 
-class ZGLNodes2DataFormat : public EntryDataFormat {
+class ZGLNodes2DataFormat : public EntryDataFormat
+{
 public:
 	ZGLNodes2DataFormat() : EntryDataFormat("zgl2") {};
 	~ZGLNodes2DataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for ZGL2 header
 			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == '2')
 				return EDF_TRUE;
@@ -124,14 +143,17 @@ public:
 	}
 };
 
-class XNodesDataFormat : public EntryDataFormat {
+class XNodesDataFormat : public EntryDataFormat
+{
 public:
 	XNodesDataFormat() : EntryDataFormat("xnod") {};
 	~XNodesDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for XNOD header
 			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
 				return EDF_TRUE;
@@ -140,14 +162,17 @@ public:
 	}
 };
 
-class XGLNodesDataFormat : public EntryDataFormat {
+class XGLNodesDataFormat : public EntryDataFormat
+{
 public:
 	XGLNodesDataFormat() : EntryDataFormat("xgln") {};
 	~XGLNodesDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for XGLN header
 			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
 				return EDF_TRUE;
@@ -156,14 +181,17 @@ public:
 	}
 };
 
-class XGLNodes2DataFormat : public EntryDataFormat {
+class XGLNodes2DataFormat : public EntryDataFormat
+{
 public:
 	XGLNodes2DataFormat() : EntryDataFormat("xgl2") {};
 	~XGLNodes2DataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 4) {
+		if (mc.getSize() > 4)
+		{
 			// Check for XGL2 header
 			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == '2')
 				return EDF_TRUE;
@@ -172,21 +200,26 @@ public:
 	}
 };
 
-class ACS0DataFormat : public EntryDataFormat {
+class ACS0DataFormat : public EntryDataFormat
+{
 public:
 	ACS0DataFormat() : EntryDataFormat("acs0") {};
 	~ACS0DataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 32) {
+		if (mc.getSize() > 32)
+		{
 			// Check for ACS header
-			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S' && mc[3] == 0) {
+			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S' && mc[3] == 0)
+			{
 				uint32_t diroffs = READ_L32(mc, 4);
 				if (diroffs > mc.getSize())
 					return EDF_FALSE;
 				else if (mc[diroffs - 4] == 'A' && mc[diroffs - 3] == 'C' &&
-						 mc[diroffs - 2] == 'S' && mc[diroffs - 1] != 0) {
+				         mc[diroffs - 2] == 'S' && mc[diroffs - 1] != 0)
+				{
 					return EDF_FALSE;
 				}
 				return EDF_TRUE;
@@ -196,24 +229,32 @@ public:
 	}
 };
 
-class ACSeDataFormat : public EntryDataFormat {
+class ACSeDataFormat : public EntryDataFormat
+{
 public:
 	ACSeDataFormat() : EntryDataFormat("acsl") {};
 	~ACSeDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 32) {
+		if (mc.getSize() > 32)
+		{
 			// Check for ACS header
-			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S') {
-				if (mc[3] == 'e') {
+			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S')
+			{
+				if (mc[3] == 'e')
+				{
 					return EDF_TRUE;
-				} else if (mc[3] == 0) {
+				}
+				else if (mc[3] == 0)
+				{
 					uint32_t diroffs = READ_L32(mc, 4);
 					if (diroffs > mc.getSize())
 						return EDF_FALSE;
 					else if (mc[diroffs - 4] == 'A' && mc[diroffs - 3] == 'C' &&
-							 mc[diroffs - 2] == 'S' && mc[diroffs - 1] == 'e') {
+					         mc[diroffs - 2] == 'S' && mc[diroffs - 1] == 'e')
+					{
 						return EDF_TRUE;
 					}
 					return EDF_FALSE;
@@ -224,24 +265,32 @@ public:
 	}
 };
 
-class ACSEDataFormat : public EntryDataFormat {
+class ACSEDataFormat : public EntryDataFormat
+{
 public:
 	ACSEDataFormat() : EntryDataFormat("acse") {};
 	~ACSEDataFormat() {}
 
-	int isThisFormat(MemChunk& mc) {
+	int isThisFormat(MemChunk& mc)
+	{
 		// Check size
-		if (mc.getSize() > 32) {
+		if (mc.getSize() > 32)
+		{
 			// Check for ACS header
-			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S') {
-				if (mc[3] == 'E') {
+			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S')
+			{
+				if (mc[3] == 'E')
+				{
 					return EDF_TRUE;
-				} else if (mc[3] == 0) {
+				}
+				else if (mc[3] == 0)
+				{
 					uint32_t diroffs = READ_L32(mc, 4);
 					if (diroffs > mc.getSize())
 						return EDF_FALSE;
 					else if (mc[diroffs - 4] == 'A' && mc[diroffs - 3] == 'C' &&
-							 mc[diroffs - 2] == 'S' && mc[diroffs - 1] == 'E') {
+					         mc[diroffs - 2] == 'S' && mc[diroffs - 1] == 'E')
+					{
 						return EDF_TRUE;
 					}
 					return EDF_FALSE;

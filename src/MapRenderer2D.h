@@ -6,7 +6,8 @@
 
 class ThingType;
 class GLTexture;
-class MapRenderer2D {
+class MapRenderer2D
+{
 private:
 	SLADEMap*	map;
 	GLTexture*	tex_last;
@@ -24,12 +25,13 @@ private:
 	GLuint	list_lines;
 
 	// Visibility
-	enum {
-		VIS_LEFT	= 1,
-		VIS_RIGHT	= 2,
-		VIS_ABOVE	= 4,
-		VIS_BELOW	= 8,
-		VIS_SMALL	= 16,
+	enum
+	{
+	    VIS_LEFT	= 1,
+	    VIS_RIGHT	= 2,
+	    VIS_ABOVE	= 4,
+	    VIS_BELOW	= 8,
+	    VIS_SMALL	= 16,
 	};
 	vector<uint8_t>	vis_v;
 	vector<uint8_t>	vis_l;
@@ -37,11 +39,13 @@ private:
 	vector<uint8_t>	vis_s;
 
 	// Structs
-	struct glvert_t {
+	struct glvert_t
+	{
 		GLfloat x, y;
 		GLfloat r, g, b, a;
 	};
-	struct glline_t {
+	struct glline_t
+	{
 		glvert_t v1, v2;	// The line itself
 		glvert_t dv1, dv2;	// Direction tab
 	};

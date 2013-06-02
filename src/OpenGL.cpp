@@ -39,7 +39,8 @@ CVAR(Bool, gl_point_sprite, true, CVAR_SAVE)
 CVAR(Bool, gl_tweak_accuracy, true, CVAR_SAVE)
 CVAR(Bool, gl_vbo, true, CVAR_SAVE)
 
-namespace OpenGL {
+namespace OpenGL
+{
 	wxGLContext*	context = NULL;
 	bool			initialised = false;
 	double			version = 0;
@@ -58,9 +59,12 @@ namespace OpenGL {
 /* OpenGL::getContext
  * Returns the global OpenGL context, and creates it if needed
  *******************************************************************/
-wxGLContext* OpenGL::getContext(wxGLCanvas* canvas) {
-	if (!context) {
-		if (canvas->IsShown()) {
+wxGLContext* OpenGL::getContext(wxGLCanvas* canvas)
+{
+	if (!context)
+	{
+		if (canvas->IsShown())
+		{
 			context = new wxGLContext(canvas);
 			context->SetCurrent(*canvas);
 			init();
@@ -75,7 +79,8 @@ wxGLContext* OpenGL::getContext(wxGLCanvas* canvas) {
 /* OpenGL::init
  * Initialises general OpenGL variables and settings
  *******************************************************************/
-bool OpenGL::init() {
+bool OpenGL::init()
+{
 	if (initialised)
 		return true;
 
@@ -119,7 +124,8 @@ bool OpenGL::init() {
  * Returns true if the installed OpenGL version supports non-power-
  * of-two textures, false otherwise
  *******************************************************************/
-bool OpenGL::np2TexSupport() {
+bool OpenGL::np2TexSupport()
+{
 	return GLEW_ARB_texture_non_power_of_two && gl_tex_enable_np2;
 }
 
@@ -127,7 +133,8 @@ bool OpenGL::np2TexSupport() {
  * Returns true if the installed OpenGL version supports point
  * sprites, false otherwise
  *******************************************************************/
-bool OpenGL::pointSpriteSupport() {
+bool OpenGL::pointSpriteSupport()
+{
 	return GLEW_ARB_point_sprite && gl_point_sprite;
 }
 
@@ -135,7 +142,8 @@ bool OpenGL::pointSpriteSupport() {
  * Returns true if the installed OpenGL version supports vertex
  * buffer objects, false otherwise
  *******************************************************************/
-bool OpenGL::vboSupport() {
+bool OpenGL::vboSupport()
+{
 	return GLEW_ARB_vertex_buffer_object && gl_vbo;
 }
 
@@ -143,11 +151,14 @@ bool OpenGL::vboSupport() {
  * Returns true if [dim] is a valid texture dimension on the system
  * OpenGL version
  *******************************************************************/
-bool OpenGL::validTexDimension(unsigned dim) {
+bool OpenGL::validTexDimension(unsigned dim)
+{
 	if (dim > max_tex_size)
 		return false;
-	else if (!np2TexSupport()) {
-		for (uint8_t a = 0; a < n_pow_two; a++) {
+	else if (!np2TexSupport())
+	{
+		for (uint8_t a = 0; a < n_pow_two; a++)
+		{
 			if (dim == pow_two[a])
 				return true;
 		}
@@ -161,8 +172,10 @@ bool OpenGL::validTexDimension(unsigned dim) {
 /* OpenGL::maxPointSize
  * Returns the implementation-dependant maximum size for GL_POINTS
  *******************************************************************/
-float OpenGL::maxPointSize() {
-	if (max_point_size < 0) {
+float OpenGL::maxPointSize()
+{
+	if (max_point_size < 0)
+	{
 		GLfloat sizes[2];
 		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, sizes);
 		max_point_size = sizes[1];
@@ -175,14 +188,16 @@ float OpenGL::maxPointSize() {
 /* OpenGL::maxTextureSize
  * Returns the maximum texture size
  *******************************************************************/
-unsigned OpenGL::maxTextureSize() {
+unsigned OpenGL::maxTextureSize()
+{
 	return max_tex_size;
 }
 
 /* OpenGL::isInitialised
  * Returns true if OpenGL has been initialised
  *******************************************************************/
-bool OpenGL::isInitialised() {
+bool OpenGL::isInitialised()
+{
 	return initialised;
 }
 
@@ -191,10 +206,12 @@ bool OpenGL::isInitialised() {
  * inaccuracies when rendering 2d textures, but tends to cause fonts
  * to blur when using FTGL
  *******************************************************************/
-bool OpenGL::accuracyTweak() {
+bool OpenGL::accuracyTweak()
+{
 	return gl_tweak_accuracy;
 }
 
-int* OpenGL::getWxGLAttribs() {
+int* OpenGL::getWxGLAttribs()
+{
 	return wx_gl_attrib;
 }

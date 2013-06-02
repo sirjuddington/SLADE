@@ -59,33 +59,39 @@ CVAR(String, path_db2, "", CVAR_SAVE)
  * STRUCTS
  *******************************************************************/
 // Define some png chunk structures
-struct ihdr_t {
+struct ihdr_t
+{
 	uint32_t id;
 	uint32_t width;
 	uint32_t height;
 	uint8_t cinfo[5];
 };
 
-struct grab_chunk_t {
+struct grab_chunk_t
+{
 	char name[4];
 	int32_t xoff;
 	int32_t yoff;
 };
 
-struct alph_chunk_t {
+struct alph_chunk_t
+{
 	char name[4];
 };
 
-struct trns_chunk_t {
+struct trns_chunk_t
+{
 	char name[4];
 	uint8_t entries[256];
 };
 
-struct trans_chunk_t {
+struct trans_chunk_t
+{
 	char name[5];
 };
 
-struct chunk_size_t {
+struct chunk_size_t
+{
 	uint32_t size;
 };
 
@@ -99,7 +105,8 @@ struct chunk_size_t {
  * colour format if possible. Returns false if the conversion failed,
  * true otherwise
  *******************************************************************/
-bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFormat::convert_options_t opt, int target_colformat) {
+bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFormat::convert_options_t opt, int target_colformat)
+{
 	// Init variables
 	SImage image;
 
@@ -109,7 +116,8 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
 		return false;
 
 	// Check format and target colour type are compatible
-	if (target_colformat >= 0 && !fmt->canWriteType((SIType)target_colformat)) {
+	if (target_colformat >= 0 && !fmt->canWriteType((SIType)target_colformat))
+	{
 		if (target_colformat == RGBA)
 			wxLogMessage("Format \"%s\" cannot be written as RGBA data", CHR(fmt->getName()));
 		else if (target_colformat == PALMASK)
@@ -123,13 +131,14 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
 
 	// Check if we can write the image to the target format
 	int writable = fmt->canWrite(image);
-	if (writable == SIFormat::NOTWRITABLE) {
+	if (writable == SIFormat::NOTWRITABLE)
+	{
 		wxLogMessage("Entry \"%s\" could not be converted to target format \"%s\"", CHR(entry->getName()), CHR(fmt->getName()));
 		return false;
 	}
 	else if (writable == SIFormat::CONVERTIBLE)
 		fmt->convertWritable(image, opt);
-		
+
 	// Now we apply the target colour format (if any)
 	if (target_colformat == PALMASK)
 		image.convertPaletted(opt.pal_target, opt.pal_current);
@@ -146,7 +155,8 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
  * Changes the offsets of the given gfx entry. Returns false if the
  * entry is invalid or not an offset-supported format, true otherwise
  *******************************************************************/
-bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point2_t offsets, bool xc, bool yc, bool relative) {
+bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point2_t offsets, bool xc, bool yc, bool relative)
+{
 	if (entry == NULL || entry->getType() == NULL)
 		return false;
 
@@ -154,7 +164,8 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 	EntryType* type = entry->getType();
 	string entryformat = type->getFormat();
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" ||
-		entryformat == "img_doom_alpha" || "img_doom_beta" || entryformat == "img_png")) {
+	        entryformat == "img_doom_alpha" || "img_doom_beta" || entryformat == "img_png"))
+	{
 		wxLogMessage(S_FMT("Entry \"%s\" is of type \"%s\" which does not support offsets", CHR(entry->getName()), CHR(entry->getType()->getName())));
 		return false;
 	}
@@ -170,43 +181,53 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 		//patch_header_t* header = (patch_header_t*)entry->getData(true);
 
 		// Apply new offsets
-		if (auto_type >= 0) {
+		if (auto_type >= 0)
+		{
 			// Auto Offsets selected
 			int w = wxINT16_SWAP_ON_BE(header.width);
 			int h = wxINT16_SWAP_ON_BE(header.height);
 
-			if (auto_type == 0) {			// Monster
+			if (auto_type == 0)  			// Monster
+			{
 				header.left = w * 0.5;
 				header.top = h - 4;
 			}
-			else if (auto_type == 1) {		// Monster (GL-friendly)
+			else if (auto_type == 1)  		// Monster (GL-friendly)
+			{
 				header.left = w * 0.5;
 				header.top = h;
 			}
-			else if (auto_type == 2) {		// Projectile
+			else if (auto_type == 2)  		// Projectile
+			{
 				header.left = w * 0.5;
 				header.top = h * 0.5;
 			}
-			else if (auto_type == 3) {		// Weapon (fullscreen)
+			else if (auto_type == 3)  		// Weapon (fullscreen)
+			{
 				header.left = -160 + (w * 0.5);
 				header.top = -200 + h;
 			}
-			else if (auto_type == 4) {		// Weapon (Doom status bar)
+			else if (auto_type == 4)  		// Weapon (Doom status bar)
+			{
 				header.left = -160 + (w * 0.5);
 				header.top = -200 + 32 + h;
 			}
-			else if (auto_type == 5) {		// Weapon (Heretic status bar)
+			else if (auto_type == 5)  		// Weapon (Heretic status bar)
+			{
 				header.left = -160 + (w * 0.5);
 				header.top = -200 + 42 + h;
 			}
-			else if (auto_type == 6) {		// Weapon (Hexen status bar)
+			else if (auto_type == 6)  		// Weapon (Hexen status bar)
+			{
 				header.left = -160 + (w * 0.5);
 				header.top = -200 + 38 + h;
 			}
 		}
-		else {
+		else
+		{
 			// Set Offsets selected
-			if (relative) {
+			if (relative)
+			{
 				offsets.x += header.left;
 				offsets.y += header.top;
 			}
@@ -224,34 +245,41 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 	}
 
 	// Doom alpha gfx format
-	else if (entryformat == "img_doom_alpha") {
+	else if (entryformat == "img_doom_alpha")
+	{
 		// Get patch header
 		entry->seek(0, SEEK_SET);
 		oldpatch_header_t header;
 		entry->read(&header, 4);
 
 		// Apply new offsets
-		if (auto_type >= 0) {
+		if (auto_type >= 0)
+		{
 			// Auto Offsets selected
 			int w = header.width;
 			int h = header.height;
 
-			if (auto_type == 0) {			// Monster
+			if (auto_type == 0)  			// Monster
+			{
 				header.left = w * 0.5;
 				header.top = h - 4;
 			}
-			else if (auto_type == 1) {		// Projectile
+			else if (auto_type == 1)  		// Projectile
+			{
 				header.left = w * 0.5;
 				header.top = h * 0.5;
 			}
-			else if (auto_type == 2) {		// Weapon
+			else if (auto_type == 2)  		// Weapon
+			{
 				header.left = -160 + (w * 0.5);
 				header.top = -200 + h;
 			}
 		}
-		else {
+		else
+		{
 			// Set Offsets selected
-			if (relative) {
+			if (relative)
+			{
 				offsets.x += header.left;
 				offsets.y += header.top;
 			}
@@ -269,7 +297,8 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 	}
 
 	// PNG format
-	else if (entryformat == "img_png") {
+	else if (entryformat == "img_png")
+	{
 		// Read width and height from IHDR chunk
 		const uint8_t* data = entry->getData(true);
 		const ihdr_t* ihdr = (ihdr_t*)(data + 12);
@@ -280,10 +309,12 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 		uint32_t grab_start = 0;
 		int32_t xoff = 0;
 		int32_t yoff = 0;
-		for (uint32_t a = 0; a < entry->getSize(); a++) {
+		for (uint32_t a = 0; a < entry->getSize(); a++)
+		{
 			// Check for 'grAb' header
 			if (data[a] == 'g' && data[a + 1] == 'r' &&
-				data[a + 2] == 'A' && data[a + 3] == 'b') {
+			        data[a + 2] == 'A' && data[a + 3] == 'b')
+			{
 				grab_start = a - 4;
 				grab_chunk_t* grab = (grab_chunk_t*)(data + a);
 				xoff = wxINT32_SWAP_ON_LE(grab->xoff);
@@ -293,29 +324,35 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 
 			// Stop when we get to the 'IDAT' chunk
 			if (data[a] == 'I' && data[a + 1] == 'D' &&
-				data[a + 2] == 'A' && data[a + 3] == 'T')
+			        data[a + 2] == 'A' && data[a + 3] == 'T')
 				break;
 		}
 
 		// Apply new offsets
-		if (auto_type >= 0) {
+		if (auto_type >= 0)
+		{
 			// Auto Offsets selected
-			if (auto_type == 0) {			// Monster
+			if (auto_type == 0)  			// Monster
+			{
 				xoff = w * 0.5;
 				yoff = h - 4;
 			}
-			else if (auto_type == 1) {		// Projectile
+			else if (auto_type == 1)  		// Projectile
+			{
 				xoff = w * 0.5;
 				yoff = h * 0.5;
 			}
-			else if (auto_type == 2) {		// Weapon
+			else if (auto_type == 2)  		// Weapon
+			{
 				xoff = -160 + (w * 0.5);
 				yoff = -200 + h;
 			}
 		}
-		else {
+		else
+		{
 			// Set Offsets selected
-			if (relative) {
+			if (relative)
+			{
 				offsets.x += xoff;
 				offsets.y += yoff;
 			}
@@ -346,12 +383,14 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 		npng.write(data, 33);
 
 		// If no existing grAb chunk was found, write new one here
-		if (grab_start == 0) {
+		if (grab_start == 0)
+		{
 			npng.write(&csize, 4);
 			npng.write(&gc, 12);
 			npng.write(&dcrc, 4);
 		}
-		else {
+		else
+		{
 			// Otherwise write any other data before the existing grAb chunk
 			uint32_t to_write = grab_start - 33;
 			npng.write(data + 33, to_write);
@@ -382,7 +421,8 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 /* EntryOperations::openExternal
  * Opens [entry] in the default OS program for its data type
  *******************************************************************/
-bool EntryOperations::openExternal(ArchiveEntry* entry) {
+bool EntryOperations::openExternal(ArchiveEntry* entry)
+{
 	if (!entry)
 		return false;
 
@@ -407,17 +447,20 @@ bool EntryOperations::openExternal(ArchiveEntry* entry) {
  * resource archives. Sets up a FileMonitor to update the map in the
  * archive if any changes are made to it in DB2
  *******************************************************************/
-bool EntryOperations::openMapDB2(ArchiveEntry* entry) {
+bool EntryOperations::openMapDB2(ArchiveEntry* entry)
+{
 #ifdef __WXMSW__	// Windows only
 	string path = path_db2;
 
-	if (path.IsEmpty()) {
+	if (path.IsEmpty())
+	{
 		// Check for DB2 location registry key
 		wxRegKey key(wxRegKey::HKLM, "SOFTWARE\\CodeImp\\Doom Builder");
 		key.QueryValue("Location", path);
 
 		// Can't proceed if DB2 isn't installed
-		if (path.IsEmpty()) {
+		if (path.IsEmpty())
+		{
 			wxMessageBox("Doom Builder 2 must be installed to use this feature.", "Doom Builder 2 Not Found");
 			return false;
 		}
@@ -436,18 +479,22 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry) {
 	// Export the map to a temp .wad file
 	string filename = appPath(entry->getParent()->getFilename(false) + "-" + entry->getName(true) + ".wad", DIR_TEMP);
 	filename.Replace("/", "-");
-	if (map.archive) {
+	if (map.archive)
+	{
 		entry->exportFile(filename);
 		entry->lock();
 	}
-	else {
+	else
+	{
 		// Write map entries to temporary wad archive
-		if (map.head) {
+		if (map.head)
+		{
 			WadArchive archive;
 
 			// Add map entries to archive
 			ArchiveEntry* e = map.head;
-			while (true) {
+			while (true)
+			{
 				archive.addEntry(e, "", true);
 				e->lock();
 				if (e == map.end) break;
@@ -470,7 +517,8 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry) {
 		cmd += S_FMT(" -resource pk3 \"%s\"", CHR(base->getFilename()));
 
 	// Add resource archives to command line
-	for (int a = 0; a < theArchiveManager->numArchives(); ++a) {
+	for (int a = 0; a < theArchiveManager->numArchives(); ++a)
+	{
 		Archive* archive = theArchiveManager->getArchive(a);
 
 		// Check archive type (only wad and zip supported by db2)
@@ -493,7 +541,8 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry) {
 /* EntryOperations::modifyalPhChunk
  * Add or remove the alPh chunk from a PNG entry
  *******************************************************************/
-bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value) {
+bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value)
+{
 	if (!entry || !entry->getType())
 		return false;
 
@@ -502,7 +551,8 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value) {
 		return false;
 
 	// Check entry type
-	if (!(entry->getType()->getFormat() == "img_png")) {
+	if (!(entry->getType()->getFormat() == "img_png"))
+	{
 		wxLogMessage(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", CHR(entry->getName()), CHR(entry->getType()->getName())));
 		return false;
 	}
@@ -513,17 +563,19 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value) {
 
 	// Find existing alPh chunk
 	uint32_t alph_start = 0;
-	for (uint32_t a = 0; a < entry->getSize(); a++) {
+	for (uint32_t a = 0; a < entry->getSize(); a++)
+	{
 		// Check for 'alPh' header
 		if (data[a] == 'a' && data[a + 1] == 'l' &&
-			data[a + 2] == 'P' && data[a + 3] == 'h') {
+		        data[a + 2] == 'P' && data[a + 3] == 'h')
+		{
 			alph_start = a - 4;
 			break;
 		}
 
 		// Stop when we get to the 'IDAT' chunk
 		if (data[a] == 'I' && data[a + 1] == 'D' &&
-			data[a + 2] == 'A' && data[a + 3] == 'T')
+		        data[a + 2] == 'A' && data[a + 3] == 'T')
 			break;
 	}
 
@@ -597,7 +649,8 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value) {
  * Add or remove the tRNS chunk from a PNG entry
  * Returns true if the entry was altered
  *******************************************************************/
-bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value) {
+bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
+{
 	// Avoid NULL pointers, they're annoying.
 	if (!entry || !entry->getType())
 		return false;
@@ -607,7 +660,8 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value) {
 		return false;
 
 	// Check entry type
-	if (!(entry->getType()->getFormat() == "img_png")) {
+	if (!(entry->getType()->getFormat() == "img_png"))
+	{
 		wxLogMessage(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName().c_str(), entry->getTypeString().c_str()));
 		return false;
 	}
@@ -622,11 +676,13 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value) {
 	uint32_t trns_start = 0;
 	uint32_t trns_size	= 0;
 	uint32_t idat_start = 0;
-	for (uint32_t a = 0; a < entry->getSize(); a++) {
+	for (uint32_t a = 0; a < entry->getSize(); a++)
+	{
 
 		// Check for 'tRNS' header
 		if (data[a] == 't' && data[a + 1] == 'R' &&
-			data[a + 2] == 'N' && data[a + 3] == 'S') {
+		        data[a + 2] == 'N' && data[a + 3] == 'S')
+		{
 			trns_start = a - 4;
 			trans_chunk_t* trns = (trans_chunk_t*)(data + a);
 			trns_size = 12 + READ_B32(data, a-4);
@@ -634,7 +690,7 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value) {
 
 		// Stop when we get to the 'IDAT' chunk
 		if (data[a] == 'I' && data[a + 1] == 'D' &&
-			data[a + 2] == 'A' && data[a + 3] == 'T')
+		        data[a + 2] == 'A' && data[a + 3] == 'T')
 		{
 			idat_start = a - 4;
 			break;
@@ -715,28 +771,32 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value) {
 /* EntryOperations::getalPhChunk
  * Tell whether a PNG entry has an alPh chunk or not
  *******************************************************************/
-bool EntryOperations::getalPhChunk(ArchiveEntry* entry) {
+bool EntryOperations::getalPhChunk(ArchiveEntry* entry)
+{
 	if (!entry || !entry->getType())
 		return false;
 
 	// Check entry type
-	if (entry->getType()->getFormat() != "img_png") {
+	if (entry->getType()->getFormat() != "img_png")
+	{
 		wxLogMessage(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName().c_str(), entry->getTypeString().c_str()));
 		return false;
 	}
 
 	// Find existing alPh chunk
 	const uint8_t* data = entry->getData(true);
-	for (uint32_t a = 0; a < entry->getSize(); a++) {
+	for (uint32_t a = 0; a < entry->getSize(); a++)
+	{
 		// Check for 'alPh' header
 		if (data[a] == 'a' && data[a + 1] == 'l' &&
-			data[a + 2] == 'P' && data[a + 3] == 'h') {
+		        data[a + 2] == 'P' && data[a + 3] == 'h')
+		{
 			return true;
 		}
 
 		// Stop when we get to the 'IDAT' chunk
 		if (data[a] == 'I' && data[a + 1] == 'D' &&
-			data[a + 2] == 'A' && data[a + 3] == 'T')
+		        data[a + 2] == 'A' && data[a + 3] == 'T')
 			break;
 	}
 	return false;
@@ -745,12 +805,14 @@ bool EntryOperations::getalPhChunk(ArchiveEntry* entry) {
 /* EntryOperations::gettRNSChunk
  * Add or remove the tRNS chunk from a PNG entry
  *******************************************************************/
-bool EntryOperations::gettRNSChunk(ArchiveEntry* entry) {
+bool EntryOperations::gettRNSChunk(ArchiveEntry* entry)
+{
 	if (!entry || !entry->getType())
 		return false;
 
 	// Check entry type
-	if (entry->getType()->getFormat() != "img_png") {
+	if (entry->getType()->getFormat() != "img_png")
+	{
 		wxLogMessage(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName().c_str(), entry->getTypeString().c_str()));
 		return false;
 	}
@@ -758,17 +820,19 @@ bool EntryOperations::gettRNSChunk(ArchiveEntry* entry) {
 	// tRNS chunks are only valid for paletted PNGs, and the chunk must before the first IDAT.
 	// Specs say it should be after a PLTE chunk, but that's not always the case (e.g., sgrna7a3.png).
 	const uint8_t* data = entry->getData(true);
-	for (uint32_t a = 0; a < entry->getSize(); a++) {
+	for (uint32_t a = 0; a < entry->getSize(); a++)
+	{
 
 		// Check for 'tRNS' header
 		if (data[a] == 't' && data[a + 1] == 'R' &&
-			data[a + 2] == 'N' && data[a + 3] == 'S') {
+		        data[a + 2] == 'N' && data[a + 3] == 'S')
+		{
 			return true;
 		}
 
 		// Stop when we get to the 'IDAT' chunk
 		if (data[a] == 'I' && data[a + 1] == 'D' &&
-			data[a + 2] == 'A' && data[a + 3] == 'T')
+		        data[a + 2] == 'A' && data[a + 3] == 'T')
 			break;
 	}
 	return false;
@@ -778,22 +842,26 @@ bool EntryOperations::gettRNSChunk(ArchiveEntry* entry) {
  * Tell whether a PNG entry has a grAb chunk or not and loads the
  * offset values in the given references
  *******************************************************************/
-bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, point2_t &offsets) {
+bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, point2_t& offsets)
+{
 	if (!entry || !entry->getType())
 		return false;
 
 	// Check entry type
-	if (entry->getType()->getFormat() != "img_png") {
+	if (entry->getType()->getFormat() != "img_png")
+	{
 		wxLogMessage(S_FMT("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName().c_str(), entry->getTypeString().c_str()));
 		return false;
 	}
 
 	// Find existing grAb chunk
 	const uint8_t* data = entry->getData(true);
-	for (uint32_t a = 0; a < entry->getSize(); a++) {
+	for (uint32_t a = 0; a < entry->getSize(); a++)
+	{
 		// Check for 'grAb' header
 		if (data[a] == 'g' && data[a + 1] == 'r' &&
-			data[a + 2] == 'A' && data[a + 3] == 'b') {
+		        data[a + 2] == 'A' && data[a + 3] == 'b')
+		{
 			offsets.x = READ_B32(data, a + 4);
 			offsets.y = READ_B32(data, a + 8);
 			return true;
@@ -801,7 +869,7 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, point2_t &offsets) {
 
 		// Stop when we get to the 'IDAT' chunk
 		if (data[a] == 'I' && data[a + 1] == 'D' &&
-			data[a + 2] == 'A' && data[a + 3] == 'T')
+		        data[a + 2] == 'A' && data[a + 3] == 'T')
 			break;
 	}
 	return false;
@@ -812,7 +880,8 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, point2_t &offsets) {
  * exists. If not, the user is prompted to create or import texturex
  * entries
  *******************************************************************/
-bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries) {
+bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries)
+{
 	// Check any entries were given
 	if (entries.size() == 0)
 		return true;
@@ -828,7 +897,8 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries) {
 	ArchiveEntry* pnames = parent->findLast(opt);
 
 	// Check it exists
-	if (!pnames) {
+	if (!pnames)
+	{
 		// Create texture entries
 		if (!TextureXEditor::setupTextureEntries(parent))
 			return false;
@@ -837,7 +907,8 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries) {
 
 		// If the archive already has ZDoom TEXTURES, it might still
 		// not have a PNAMES lump; so create an empty one.
-		if (!pnames) {
+		if (!pnames)
+		{
 			pnames = new ArchiveEntry("PNAMES.lmp", 4);
 			uint32_t nada = 0;
 			pnames->write(&nada, 4);
@@ -847,7 +918,8 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries) {
 	}
 
 	// Check it isn't locked (texturex editor open or iwad)
-	if (pnames->isLocked()) {
+	if (pnames->isLocked())
+	{
 		if (parent->isReadOnly())
 			wxMessageBox("Cannot perform this action on an IWAD", "Error", wxICON_ERROR);
 		else
@@ -861,15 +933,18 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries) {
 	ptable.loadPNAMES(pnames);
 
 	// Add entry names to patch table
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Check entry type
-		if (!(entries[a]->getType()->extraProps().propertyExists("image"))) {
+		if (!(entries[a]->getType()->extraProps().propertyExists("image")))
+		{
 			wxLogMessage("Entry %s is not a valid image", entries[a]->getName());
 			continue;
 		}
 
 		// Check entry name
-		if (entries[a]->getName(true).Length() > 8) {
+		if (entries[a]->getName(true).Length() > 8)
+		{
 			wxLogMessage("Entry %s has too long a name to add to the patch table (name must be 8 characters max)", entries[a]->getName());
 			continue;
 		}
@@ -885,7 +960,8 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries) {
  * Same as addToPatchTable, but also creates a single-patch texture
  * from each added patch
  *******************************************************************/
-bool EntryOperations::createTexture(vector<ArchiveEntry*> entries) {
+bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
+{
 	// Check any entries were given
 	if (entries.size() == 0)
 		return true;
@@ -915,7 +991,8 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries) {
 		return false;
 
 	// Check entries aren't locked (texture editor open or iwad)
-	if (pnames->isLocked() || texturex->isLocked()) {
+	if (pnames->isLocked() || texturex->isLocked())
+	{
 		if (parent->isReadOnly())
 			wxMessageBox("Cannot perform this action on an IWAD", "Error", wxICON_ERROR);
 		else
@@ -934,16 +1011,19 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries) {
 
 	// Create textures from entries
 	SImage image;
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Check entry type
-		if (!(entries[a]->getType()->extraProps().propertyExists("image"))) {
+		if (!(entries[a]->getType()->extraProps().propertyExists("image")))
+		{
 			wxLogMessage("Entry %s is not a valid image", entries[a]->getName());
 			continue;
 		}
 
 		// Check entry name
 		string name = entries[a]->getName(true);
-		if (name.Length() > 8) {
+		if (name.Length() > 8)
+		{
 			wxLogMessage("Entry %s has too long a name to add to the patch table (name must be 8 characters max)", entries[a]->getName());
 			continue;
 		}
@@ -984,7 +1064,8 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries) {
  * Converts multiple TEXTURE1/2 entries to a single ZDoom text-based
  * TEXTURES entry
  *******************************************************************/
-bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries) {
+bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
+{
 	// Check any entries were given
 	if (entries.size() == 0)
 		return false;
@@ -1019,7 +1100,8 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries) {
 
 	// Create new TEXTURES entry and write to it
 	ArchiveEntry* textures = parent->addNewEntry("TEXTURES", parent->entryIndex(entries[0]));
-	if (textures) {
+	if (textures)
+	{
 		bool ok = tx.writeTEXTURESData(textures);
 		EntryType::detectEntryType(textures);
 		textures->setExtensionByType();
@@ -1035,7 +1117,8 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries) {
  * entry previous to it, otherwise it is imported to a same-name
  * compiled library entry in the acs namespace
  *******************************************************************/
-bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* target, wxFrame* parent) {
+bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* target, wxFrame* parent)
+{
 	// Check entry was given
 	if (!entry)
 		return false;
@@ -1045,14 +1128,16 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		return false;
 
 	// Check entry is text
-	if (!EntryDataFormat::getFormat("text")->isThisFormat(entry->getMCData())) {
+	if (!EntryDataFormat::getFormat("text")->isThisFormat(entry->getMCData()))
+	{
 		wxMessageBox("Error: Entry does not appear to be text", "Error", wxOK|wxCENTRE|wxICON_ERROR);
 		return false;
 	}
 
 	// Check if the ACC path is set up
 	string accpath = path_acc;
-	if (accpath.IsEmpty() || !wxFileExists(accpath)) {
+	if (accpath.IsEmpty() || !wxFileExists(accpath))
+	{
 		wxMessageBox("Error: ACC path not defined, please configure in SLADE preferences", "Error", wxOK|wxCENTRE|wxICON_ERROR);
 		PreferencesDialog::openPreferences(parent, "ACS");
 		return false;
@@ -1067,7 +1152,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	string opt;
 	if (hexen)
 		opt += " -h";
-	if (!include_paths.IsEmpty()) {
+	if (!include_paths.IsEmpty())
+	{
 		for (unsigned a = 0; a < include_paths.size(); a++)
 			opt += S_FMT(" -i \"%s\"", CHR(include_paths[a]));
 	}
@@ -1078,7 +1164,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	sopt.search_subdirs = true;
 	vector<ArchiveEntry*> entries = theArchiveManager->findAllResourceEntries(sopt);
 	wxArrayString lib_paths;
-	for (unsigned a = 0; a < entries.size(); a++) {
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
 		// Ignore SCRIPTS
 		if (S_CMPNOCASE(entries[a]->getName(true), "SCRIPTS"))
 			continue;
@@ -1107,17 +1194,20 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 
 	// Delete source file
 	wxRemoveFile(srcfile);
-	
+
 	// Delete library files
 	for (unsigned a = 0; a < lib_paths.size(); a++)
 		wxRemoveFile(lib_paths[a]);
 
 	// Check it compiled successfully
-	if (wxFileExists(ofile)) {
+	if (wxFileExists(ofile))
+	{
 		// If no target entry was given, find one
-		if (!target) {
+		if (!target)
+		{
 			// Check if the script is a map script (BEHAVIOR)
-			if (S_CMPNOCASE(entry->getName(), "SCRIPTS")) {
+			if (S_CMPNOCASE(entry->getName(), "SCRIPTS"))
+			{
 				// Get entry before SCRIPTS
 				ArchiveEntry* prev = entry->prevEntry();
 
@@ -1128,7 +1218,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				// Import compiled script
 				prev->importFile(ofile);
 			}
-			else {
+			else
+			{
 				// Otherwise, treat it as a library
 
 				// See if the compiled library already exists as an entry
@@ -1151,7 +1242,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		// Delete compiled script file
 		wxRemoveFile(ofile);
 	}
-	else {
+	else
+	{
 		// Read acs.err to string
 		wxFile file(appPath("acs.err", DIR_TEMP));
 		char* buf = new char[file.Length()];
@@ -1174,14 +1266,16 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
  * Converts [entry] to a PNG image (if possible) and saves the PNG
  * data to a file [filename]. Does not alter the entry data itself
  *******************************************************************/
-bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename) {
+bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename)
+{
 	// Check entry was given
 	if (!entry)
 		return false;
 
 	// Create image from entry
 	SImage image;
-	if (!Misc::loadImageFromEntry(&image, entry)) {
+	if (!Misc::loadImageFromEntry(&image, entry))
+	{
 		wxLogMessage("Error converting %s: %s", CHR(entry->getName()), CHR(Global::error));
 		return false;
 	}
@@ -1189,7 +1283,8 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename) {
 	// Write png data
 	MemChunk png;
 	SIFormat* fmt_png = SIFormat::getFormat("png");
-	if (!fmt_png->saveImage(image, png, theMainWindow->getPaletteChooser()->getSelectedPalette(entry))) {
+	if (!fmt_png->saveImage(image, png, theMainWindow->getPaletteChooser()->getSelectedPalette(entry)))
+	{
 		wxLogMessage("Error converting %s", CHR(entry->getName()));
 		return false;
 	}
@@ -1201,7 +1296,8 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename) {
 /* EntryOperations::optimizePNG
  * Attempts to optimize [entry] using external PNG optimizers.
  *******************************************************************/
-bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
+bool EntryOperations::optimizePNG(ArchiveEntry* entry)
+{
 	// Check entry was given
 	if (!entry)
 		return false;
@@ -1211,7 +1307,8 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 		return false;
 
 	// Check entry is PNG
-	if (!EntryDataFormat::getFormat("img_png")->isThisFormat(entry->getMCData())) {
+	if (!EntryDataFormat::getFormat("img_png")->isThisFormat(entry->getMCData()))
+	{
 		wxMessageBox("Error: Entry does not appear to be PNG", "Error", wxOK|wxCENTRE|wxICON_ERROR);
 		return false;
 	}
@@ -1221,8 +1318,9 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 	string pngpatho = path_pngout;
 	string pngpathd = path_deflopt;
 	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) &&
-		(pngpatho.IsEmpty() || !wxFileExists(pngpatho)) &&
-		(pngpathd.IsEmpty() || !wxFileExists(pngpathd))) {
+	        (pngpatho.IsEmpty() || !wxFileExists(pngpatho)) &&
+	        (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
+	{
 		wxMessageBox("Error: PNG tools path not defined, please configure in SLADE preferences", "Error", wxOK|wxCENTRE|wxICON_ERROR);
 		return false;
 	}
@@ -1239,7 +1337,8 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 	bool crushed = false, outed = false;
 
 	// Run PNGCrush
-	if (!pngpathc.IsEmpty() && wxFileExists(pngpathc)) {
+	if (!pngpathc.IsEmpty() && wxFileExists(pngpathc))
+	{
 		wxFileName fn(pngpathc);
 		fn.SetExt("opt");
 		string pngfile = fn.GetFullPath();
@@ -1251,24 +1350,29 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 		output.Empty(); errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);
 
-		if (wxFileExists(optfile)) {
+		if (wxFileExists(optfile))
+		{
 			entry->importFile(optfile);
 			wxRemoveFile(optfile);
 			wxRemoveFile(pngfile);
 			crushed = true;
-		} else errormessages += "PNGCrush failed to create optimized file.\n";
+		}
+		else errormessages += "PNGCrush failed to create optimized file.\n";
 		crushsize = entry->getSize();
 
 		// send app output to console if wanted
-		if (0) {
+		if (0)
+		{
 			string crushlog = "";
-			if (errors.GetCount()) {
+			if (errors.GetCount())
+			{
 				crushlog += "PNGCrush error messages:\n";
 				for (size_t i = 0; i < errors.GetCount(); ++i)
 					crushlog += errors[i] + "\n";
 				errormessages += crushlog;
 			}
-			if (output.GetCount()) {
+			if (output.GetCount())
+			{
 				crushlog += "PNGCrush output messages:\n";
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					crushlog += output[i] + "\n";
@@ -1278,7 +1382,8 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 	}
 
 	// Run PNGOut
-	if (!pngpatho.IsEmpty() && wxFileExists(pngpatho)) {
+	if (!pngpatho.IsEmpty() && wxFileExists(pngpatho))
+	{
 		wxFileName fn(pngpatho);
 		fn.SetExt("opt");
 		string pngfile = fn.GetFullPath();
@@ -1290,26 +1395,31 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 		output.Empty(); errors.Empty();
 		wxExecute(command, output, errors, wxEXEC_SYNC);
 
-		if (wxFileExists(optfile)) {
+		if (wxFileExists(optfile))
+		{
 			entry->importFile(optfile);
 			wxRemoveFile(optfile);
 			wxRemoveFile(pngfile);
 			outed = true;
-		} else if (!crushed)
+		}
+		else if (!crushed)
 			// Don't treat it as an error if PNGout couldn't create a smaller file than PNGCrush
 			errormessages += "PNGout failed to create optimized file.\n";
 		outsize = entry->getSize();
 
 		// send app output to console if wanted
-		if (0) {
+		if (0)
+		{
 			string pngoutlog = "";
-			if (errors.GetCount()) {
+			if (errors.GetCount())
+			{
 				pngoutlog += "PNGOut error messages:\n";
 				for (size_t i = 0; i < errors.GetCount(); ++i)
 					pngoutlog += errors[i] + "\n";
 				errormessages += pngoutlog;
 			}
-			if (output.GetCount()) {
+			if (output.GetCount())
+			{
 				pngoutlog += "PNGOut output messages:\n";
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					pngoutlog += output[i] + "\n";
@@ -1319,7 +1429,8 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 	}
 
 	// Run deflopt
-	if (!pngpathd.IsEmpty() && wxFileExists(pngpathd)) {
+	if (!pngpathd.IsEmpty() && wxFileExists(pngpathd))
+	{
 		wxFileName fn(pngpathd);
 		fn.SetExt("png");
 		string pngfile = fn.GetFullPath();
@@ -1334,15 +1445,18 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 		deflsize = entry->getSize();
 
 		// send app output to console if wanted
-		if (0) {
+		if (0)
+		{
 			string defloptlog = "";
-			if (errors.GetCount()) {
+			if (errors.GetCount())
+			{
 				defloptlog += "DeflOpt error messages:\n";
 				for (size_t i = 0; i < errors.GetCount(); ++i)
 					defloptlog += errors[i] + "\n";
 				errormessages += defloptlog;
 			}
-			if (output.GetCount()) {
+			if (output.GetCount())
+			{
 				defloptlog += "DeflOpt output messages:\n";
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					defloptlog += output[i] + "\n";
@@ -1357,10 +1471,11 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 	if (grabchunk) modifyGfxOffsets(entry, -1, offsets, true, true, false);
 
 	wxLogMessage("PNG %s size %i =PNGCrush=> %i =PNGout=> %i =DeflOpt=> %i =+grAb/alPh=> %i",
-		CHR(entry->getName()), oldsize, crushsize, outsize, deflsize, entry->getSize());
+	             CHR(entry->getName()), oldsize, crushsize, outsize, deflsize, entry->getSize());
 
 
-	if (!crushed && !outed && !errormessages.IsEmpty()) {
+	if (!crushed && !outed && !errormessages.IsEmpty())
+	{
 		ExtMessageDialog dlg(NULL, "Optimizing Report");
 		dlg.setMessage("The following issues were encountered while optimizing:");
 		dlg.setExt(errormessages);
@@ -1372,11 +1487,12 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry) {
 	return true;
 }
 
-void fixpngsrc(ArchiveEntry * entry) {
+void fixpngsrc(ArchiveEntry* entry)
+{
 	if (!entry)
 		return;
-	const uint8_t * source = entry->getData();
-	uint8_t * data = new uint8_t[entry->getSize()];
+	const uint8_t* source = entry->getData();
+	uint8_t* data = new uint8_t[entry->getSize()];
 	memcpy(data, source, entry->getSize());
 
 	// Last check that it's a PNG
@@ -1388,18 +1504,22 @@ void fixpngsrc(ArchiveEntry * entry) {
 	// Loop through each chunk and recompute CRC
 	uint32_t pointer = 8;
 	bool neededchange = false;
-	while (pointer < entry->getSize()) {
-		if (pointer + 12 > entry->getSize()) {
+	while (pointer < entry->getSize())
+	{
+		if (pointer + 12 > entry->getSize())
+		{
 			wxLogMessage("Entry %s cannot be repaired.", CHR(entry->getName()));
 			return;
 		}
 		uint32_t chsz = READ_B32(data, pointer);
-		if (pointer + 12 + chsz > entry->getSize()) {
+		if (pointer + 12 + chsz > entry->getSize())
+		{
 			wxLogMessage("Entry %s cannot be repaired.", CHR(entry->getName()));
 			return;
 		}
 		uint32_t crc = Misc::crc(data + pointer + 4, 4 + chsz);
-		if (crc != READ_B32(data, pointer + 8 + chsz)) {
+		if (crc != READ_B32(data, pointer + 8 + chsz))
+		{
 			wxLogMessage("Chunk %c%c%c%c has bad CRC", data[pointer+4], data[pointer+5], data[pointer+6], data[pointer+7]);
 			neededchange = true;
 			data[pointer +  8 + chsz] = crc >> 24;
@@ -1410,7 +1530,8 @@ void fixpngsrc(ArchiveEntry * entry) {
 		pointer += (chsz + 12);
 	}
 	// Import new data with fixed CRC
-	if (neededchange) {
+	if (neededchange)
+	{
 		entry->importMem(data, entry->getSize());
 	}
 	delete[] data;
@@ -1421,13 +1542,16 @@ void fixpngsrc(ArchiveEntry * entry) {
  * CONSOLE COMMANDS
  *******************************************************************/
 
-CONSOLE_COMMAND(fixpngcrc, 0, true) {
-	vector<ArchiveEntry *> selection = theMainWindow->getCurrentEntrySelection();
-	if (selection.size() == 0) {
+CONSOLE_COMMAND(fixpngcrc, 0, true)
+{
+	vector<ArchiveEntry*> selection = theMainWindow->getCurrentEntrySelection();
+	if (selection.size() == 0)
+	{
 		wxLogMessage("No entry selected");
 		return;
 	}
-	for (size_t a = 0; a < selection.size(); ++a) {
+	for (size_t a = 0; a < selection.size(); ++a)
+	{
 		if (selection[a]->getType()->getFormat() == "img_png")
 			fixpngsrc(selection[a]);
 	}

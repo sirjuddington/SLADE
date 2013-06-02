@@ -58,13 +58,15 @@ CVAR(Bool, hud_wide, 0, CVAR_SAVE)
 CVAR(Bool, hud_bob, 0, CVAR_SAVE)
 
 #ifdef USE_SFML_RENDERWINDOW
-namespace Drawing {
+namespace Drawing
+{
 	sf::RenderWindow*	render_target = NULL;
 };
 #endif
 
 
-class FontManager {
+class FontManager
+{
 private:
 #ifdef USE_SFML_RENDERWINDOW
 	sf::Font	font_normal;
@@ -85,7 +87,8 @@ private:
 
 public:
 	FontManager() {}
-	~FontManager() {
+	~FontManager()
+	{
 #ifndef USE_SFML_RENDERWINDOW
 		if (font_normal)		{ delete font_normal;			font_normal = NULL;			}
 		if (font_condensed)		{ delete font_condensed;		font_condensed = NULL;		}
@@ -96,7 +99,8 @@ public:
 #endif
 	}
 
-	static FontManager*	getInstance() {
+	static FontManager*	getInstance()
+	{
 		if (!instance)
 			instance = new FontManager();
 
@@ -120,45 +124,11 @@ FontManager* FontManager::instance = NULL;
 
 #ifdef USE_SFML_RENDERWINDOW
 
-#if SFML_VERSION_MAJOR < 2
-/* FontManager::initFonts
- * Loads all needed fonts for rendering. SFML 1.x implementation
- *******************************************************************/
-int FontManager::initFonts() {
-	// --- Load general fonts ---
-	int ret = 0;
-
-	// Normal
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) ++ret, font_normal.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
-
-	// Condensed
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry) ++ret, font_condensed.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
-
-	// Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry) ++ret, font_bold.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
-
-	// Condensed Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry) ++ret, font_boldcondensed.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
-
-	// Monospace
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry) ++ret, font_mono.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 12);
-
-	// Small
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) ++ret, font_small.LoadFromMemory((const char*)entry->getData(), entry->getSize(), 8);
-
-	return ret;
-}
-#else
 /* FontManager::initFonts
  * Loads all needed fonts for rendering. SFML 2.x implementation
  *******************************************************************/
-int FontManager::initFonts() {
+int FontManager::initFonts()
+{
 	// --- Load general fonts ---
 	int ret = 0;
 
@@ -184,92 +154,110 @@ int FontManager::initFonts() {
 
 	return ret;
 }
-#endif//SFML_VERSION_MAJOR
 
 #else
 /* FontManager::initFonts
  * Loads all needed fonts for rendering. Non-SFML implementation
  *******************************************************************/
-int FontManager::initFonts() {
+int FontManager::initFonts()
+{
 	// --- Load general fonts ---
 	int ret = 0;
 
 	// Normal
 	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) {
+	if (entry)
+	{
 		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
 		font_normal->FaceSize(12);
 
 		// Check it loaded ok
-		if (font_normal->Error()) {
+		if (font_normal->Error())
+		{
 			delete font_normal;
 			font_normal = NULL;
-		} else ++ ret;
+		}
+		else ++ ret;
 	}
 
 	// Condensed
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry) {
+	if (entry)
+	{
 		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
 		font_condensed->FaceSize(12);
 
 		// Check it loaded ok
-		if (font_condensed->Error()) {
+		if (font_condensed->Error())
+		{
 			delete font_condensed;
 			font_condensed = NULL;
-		} else ++ ret;
+		}
+		else ++ ret;
 	}
 
 	// Bold
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry) {
+	if (entry)
+	{
 		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
 		font_bold->FaceSize(12);
 
 		// Check it loaded ok
-		if (font_bold->Error()) {
+		if (font_bold->Error())
+		{
 			delete font_bold;
 			font_bold = NULL;
-		} else ++ ret;
+		}
+		else ++ ret;
 	}
 
 	// Condensed bold
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry) {
+	if (entry)
+	{
 		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
 		font_boldcondensed->FaceSize(12);
 
 		// Check it loaded ok
-		if (font_boldcondensed->Error()) {
+		if (font_boldcondensed->Error())
+		{
 			delete font_boldcondensed;
 			font_boldcondensed = NULL;
-		} else ++ ret;
+		}
+		else ++ ret;
 	}
 
 	// Monospace
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry) {
+	if (entry)
+	{
 		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
 		font_mono->FaceSize(12);
 
 		// Check it loaded ok
-		if (font_mono->Error()) {
+		if (font_mono->Error())
+		{
 			delete font_mono;
 			font_mono = NULL;
-		} else ++ ret;
+		}
+		else ++ ret;
 	}
 
 	// Small
 	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) {
+	if (entry)
+	{
 		font_small = new FTTextureFont(entry->getData(), entry->getSize());
 		font_small->FaceSize(8);
 
 		// Check it loaded ok
-		if (font_small->Error()) {
+		if (font_small->Error())
+		{
 			delete font_small;
 			font_small = NULL;
-		} else ++ ret;
+		}
+		else ++ ret;
 	}
 
 	return ret;
@@ -280,8 +268,10 @@ int FontManager::initFonts() {
  * Returns a font
  *******************************************************************/
 #ifdef USE_SFML_RENDERWINDOW
-sf::Font* FontManager::getFont(int font) {
-	switch (font) {
+sf::Font* FontManager::getFont(int font)
+{
+	switch (font)
+	{
 	case Drawing::FONT_NORMAL:			return &font_normal;
 	case Drawing::FONT_CONDENSED:		return &font_condensed;
 	case Drawing::FONT_BOLD:			return &font_bold;
@@ -293,8 +283,10 @@ sf::Font* FontManager::getFont(int font) {
 	return NULL;
 }
 #else // USE_SFML_RENDERWINDOW
-FTFont* FontManager::getFont(int font) {
-	switch (font) {
+FTFont* FontManager::getFont(int font)
+{
+	switch (font)
+	{
 	case Drawing::FONT_NORMAL:			return font_normal;
 	case Drawing::FONT_CONDENSED:		return font_condensed;
 	case Drawing::FONT_BOLD:			return font_bold;
@@ -311,14 +303,16 @@ FTFont* FontManager::getFont(int font) {
 /* Drawing::initFonts
  * Creates a FontManager if needed and let it init its own fonts
  *******************************************************************/
-void Drawing::initFonts() {
+void Drawing::initFonts()
+{
 	theFontManager->initFonts();
 }
 
 /* Drawing::drawLine
  * Draws a line from [start] to [end]
  *******************************************************************/
-void Drawing::drawLine(fpoint2_t start, fpoint2_t end) {
+void Drawing::drawLine(fpoint2_t start, fpoint2_t end)
+{
 	glBegin(GL_LINES);
 	glVertex2d(start.x, start.y);
 	glVertex2d(end.x, end.y);
@@ -328,7 +322,8 @@ void Drawing::drawLine(fpoint2_t start, fpoint2_t end) {
 /* Drawing::drawLine
  * Draws a line from [x1,y1] to [x2,y2]
  *******************************************************************/
-void Drawing::drawLine(double x1, double y1, double x2, double y2) {
+void Drawing::drawLine(double x1, double y1, double x2, double y2)
+{
 	glBegin(GL_LINES);
 	glVertex2d(x1, y1);
 	glVertex2d(x2, y2);
@@ -338,7 +333,8 @@ void Drawing::drawLine(double x1, double y1, double x2, double y2) {
 /* Drawing::drawLineTabbed
  * Draws a line from [start] to [end]
  *******************************************************************/
-void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double tab_max) {
+void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double tab_max)
+{
 	// Draw line
 	glBegin(GL_LINES);
 	glVertex2d(start.x, start.y);
@@ -369,7 +365,8 @@ void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double 
 /* Drawing::drawLineTabbed
  * Draws a line from [x1,y1] to [x2,y2]
  *******************************************************************/
-void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double tab, double tab_max) {
+void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double tab, double tab_max)
+{
 	// Draw line
 	glBegin(GL_LINES);
 	glVertex2d(x1, y1);
@@ -400,7 +397,8 @@ void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double 
 /* Drawing::drawRect
  * Draws a rectangle from [tl] to [br]
  *******************************************************************/
-void Drawing::drawRect(fpoint2_t tl, fpoint2_t br) {
+void Drawing::drawRect(fpoint2_t tl, fpoint2_t br)
+{
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl.x, tl.y);
 	glVertex2d(tl.x, br.y);
@@ -412,7 +410,8 @@ void Drawing::drawRect(fpoint2_t tl, fpoint2_t br) {
 /* Drawing::drawRect
  * Draws a rectangle from [x1,y1] to [x2,y2]
  *******************************************************************/
-void Drawing::drawRect(double x1, double y1, double x2, double y2) {
+void Drawing::drawRect(double x1, double y1, double x2, double y2)
+{
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2);
@@ -424,7 +423,8 @@ void Drawing::drawRect(double x1, double y1, double x2, double y2) {
 /* Drawing::drawFilledRect
  * Draws a filled rectangle from [tl] to [br]
  *******************************************************************/
-void Drawing::drawFilledRect(fpoint2_t tl, fpoint2_t br) {
+void Drawing::drawFilledRect(fpoint2_t tl, fpoint2_t br)
+{
 	glBegin(GL_QUADS);
 	glVertex2d(tl.x, tl.y);
 	glVertex2d(tl.x, br.y);
@@ -436,7 +436,8 @@ void Drawing::drawFilledRect(fpoint2_t tl, fpoint2_t br) {
 /* Drawing::drawFilledRect
  * Draws a filled rectangle from [x1,y1] to [x2,y2]
  *******************************************************************/
-void Drawing::drawFilledRect(double x1, double y1, double x2, double y2) {
+void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
+{
 	glBegin(GL_QUADS);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2);
@@ -445,11 +446,13 @@ void Drawing::drawFilledRect(double x1, double y1, double x2, double y2) {
 	glEnd();
 }
 
-void Drawing::drawBorderedRect(fpoint2_t tl, fpoint2_t br, rgba_t colour, rgba_t border_colour) {
+void Drawing::drawBorderedRect(fpoint2_t tl, fpoint2_t br, rgba_t colour, rgba_t border_colour)
+{
 	drawBorderedRect(tl.x, tl.y, br.x, br.y, colour, border_colour);
 }
 
-void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_t colour, rgba_t border_colour) {
+void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_t colour, rgba_t border_colour)
+{
 	// Rect
 	colour.set_gl(false);
 	glBegin(GL_QUADS);
@@ -475,7 +478,8 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_
  * texture will be zoomed to fit the rectangle. Returns the resulting
  * texture rectangle coordinates
  *******************************************************************/
-frect_t Drawing::fitTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale) {
+frect_t Drawing::fitTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale)
+{
 	// Ignore null texture
 	if (!tex)
 		return frect_t();
@@ -500,9 +504,9 @@ frect_t Drawing::fitTextureWithin(GLTexture* tex, double x1, double y1, double x
 
 	// Return the fitted rectangle
 	return frect_t(x1 + width*0.5 - (scale*tex->getWidth()*0.5),
-					y1 + height*0.5 - (scale*tex->getHeight()*0.5),
-					x1 + width*0.5 + (scale*tex->getWidth()*0.5),
-					y1 + height*0.5 + (scale*tex->getHeight()*0.5));
+	               y1 + height*0.5 - (scale*tex->getHeight()*0.5),
+	               x1 + width*0.5 + (scale*tex->getWidth()*0.5),
+	               y1 + height*0.5 + (scale*tex->getHeight()*0.5));
 }
 
 /* Drawing::drawTextureWithin
@@ -510,7 +514,8 @@ frect_t Drawing::fitTextureWithin(GLTexture* tex, double x1, double y1, double x
  * and keeping the correct aspect ratio. If [upscale] is true the
  * texture will be zoomed to fit the rectangle
  *******************************************************************/
-void Drawing::drawTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale) {
+void Drawing::drawTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale)
+{
 	// Ignore null texture
 	if (!tex)
 		return;
@@ -542,65 +547,6 @@ void Drawing::drawTextureWithin(GLTexture* tex, double x1, double y1, double x2,
 }
 
 #ifdef USE_SFML_RENDERWINDOW
-#if SFML_VERSION_MAJOR < 2
-/*******************************************************************
- * SFML 1.x TEXT FUNCTION IMPLEMENTATIONS
- *******************************************************************/
-
-/* Drawing::drawText
- * Draws [text] at [x,y]. If [bounds] is not null, the bounding
- * coordinates of the rendered text string are written to it.
- *******************************************************************/
-void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds) {
-	// Setup SFML string
-	sf::String sf_str(CHR(text));
-	sf_str.SetPosition(x, y);
-	sf_str.SetColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
-
-	// Set font
-	sf::Font * f = theFontManager->getFont(font);
-	sf_str.SetFont(*f);
-	sf_str.SetSize(f->GetCharacterSize());
-
-	// Setup alignment
-	if (alignment != ALIGN_LEFT) {
-		float width = sf_str.GetRect().GetWidth();
-
-		if (alignment == ALIGN_CENTER)
-			sf_str.Move(-MathStuff::round(width*0.5), 0.0f);
-		else
-			sf_str.Move(-width, 0.0f);
-	}
-
-	// Set bounds rect
-	if (bounds) {
-		sf::FloatRect rect = sf_str.GetRect();
-		bounds->set(rect.Left, rect.Top, rect.Right, rect.Bottom);
-	}
-
-	// Draw the string
-	if (render_target)
-		render_target->Draw(sf_str);
-}
-
-/* Drawing::textExtents
- * Returns the width and height of [text] when drawn with [font]
- *******************************************************************/
-fpoint2_t Drawing::textExtents(string text, int font) {
-	// Setup SFML string
-	sf::String sf_str(CHR(text));
-
-	// Set font
-	sf::Font * f = theFontManager->getFont(font);
-	sf_str.SetFont(*f);
-	sf_str.SetSize(f->GetCharacterSize());
-
-	// Return width and height of text
-	sf::FloatRect rect = sf_str.GetRect();
-	return fpoint2_t(rect.GetWidth(), rect.GetHeight());
-}
-
-#else
 /*******************************************************************
  * SFML 2.x TEXT FUNCTION IMPLEMENTATIONS
  *******************************************************************/
@@ -609,7 +555,8 @@ fpoint2_t Drawing::textExtents(string text, int font) {
  * Draws [text] at [x,y]. If [bounds] is not null, the bounding
  * coordinates of the rendered text string are written to it.
  *******************************************************************/
-void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds) {
+void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds)
+{
 	// Setup SFML string
 	sf::Text sf_str;
 	sf_str.setString(CHR(text));
@@ -617,7 +564,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 
 	// Set font
-	sf::Font * f = theFontManager->getFont(font);
+	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
 		sf_str.setCharacterSize(8);
@@ -625,7 +572,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 		sf_str.setCharacterSize(12);
 
 	// Setup alignment
-	if (alignment != ALIGN_LEFT) {
+	if (alignment != ALIGN_LEFT)
+	{
 		float width = sf_str.getLocalBounds().width;
 
 		if (alignment == ALIGN_CENTER)
@@ -635,13 +583,15 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	}
 
 	// Set bounds rect
-	if (bounds) {
+	if (bounds)
+	{
 		sf::FloatRect rect = sf_str.getGlobalBounds();
 		bounds->set(rect.left, rect.top, rect.left+rect.width, rect.top+rect.height);
 	}
 
 	// Draw the string
-	if (render_target) {
+	if (render_target)
+	{
 		// Push related states
 		glPushMatrix();
 		glMatrixMode(GL_TEXTURE);
@@ -662,13 +612,14 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 /* Drawing::textExtents
  * Returns the width and height of [text] when drawn with [font]
  *******************************************************************/
-fpoint2_t Drawing::textExtents(string text, int font) {
+fpoint2_t Drawing::textExtents(string text, int font)
+{
 	// Setup SFML string
 	sf::Text sf_str;
 	sf_str.setString(CHR(text));
 
 	// Set font
-	sf::Font * f = theFontManager->getFont(font);
+	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
 		sf_str.setCharacterSize(8);
@@ -679,7 +630,6 @@ fpoint2_t Drawing::textExtents(string text, int font) {
 	sf::FloatRect rect = sf_str.getGlobalBounds();
 	return fpoint2_t(rect.width, rect.height);
 }
-#endif//SFML_VERSION_MAJOR
 
 #else
 /*******************************************************************
@@ -690,7 +640,8 @@ fpoint2_t Drawing::textExtents(string text, int font) {
  * Draws [text] at [x,y]. If [bounds] is not null, the bounding
  * coordinates of the rendered text string are written to it.
  *******************************************************************/
-void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds) {
+void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds)
+{
 	// Get desired font
 	FTFont* ftgl_font = theFontManager->getFont(font);
 
@@ -704,7 +655,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	int ypos = y;
 	float width = bbox.Upper().X() - bbox.Lower().X();
 	float height = bbox.Upper().Y() - bbox.Lower().Y();
-	if (alignment != ALIGN_LEFT) {
+	if (alignment != ALIGN_LEFT)
+	{
 		if (alignment == ALIGN_CENTER)
 			xpos -= MathStuff::round(width*0.5);
 		else
@@ -712,7 +664,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	}
 
 	// Set bounds rect
-	if (bounds) {
+	if (bounds)
+	{
 		bbox = ftgl_font->BBox(CHR(text), -1, FTPoint(xpos, ypos));
 		bounds->set(bbox.Lower().X(), bbox.Lower().Y(), bbox.Upper().X(), bbox.Upper().Y());
 	}
@@ -730,7 +683,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 /* Drawing::textExtents
  * Returns the width and height of [text] when drawn with [font]
  *******************************************************************/
-fpoint2_t Drawing::textExtents(string text, int font) {
+fpoint2_t Drawing::textExtents(string text, int font)
+{
 	// Get desired font
 	FTFont* ftgl_font = theFontManager->getFont(font);
 
@@ -748,7 +702,8 @@ fpoint2_t Drawing::textExtents(string text, int font) {
 /* Drawing::drawHud
  * Draws doom hud offset guide lines, from the center
  *******************************************************************/
-void Drawing::drawHud() {
+void Drawing::drawHud()
+{
 	// Determine some variables
 	int hw = 160;
 	int hh = 100;
@@ -762,33 +717,38 @@ void Drawing::drawHud() {
 	// Draw statusbar line if needed
 	glLineWidth(1.0f);
 	glColor4f(0.0f, 0.0f, 0.0f, 0.5f);
-	if (hud_statusbar) {
+	if (hud_statusbar)
+	{
 		drawLine(-hw, 68, hw, 68);	// Doom's status bar: 32 pixels tall
 		drawLine(-hw, 62, hw, 62);	// Hexen: 38 pixels
 		drawLine(-hw, 58, hw, 58);	// Heretic: 42 pixels
 	}
 
 	// Draw center lines if needed
-	if (hud_center) {
+	if (hud_center)
+	{
 		drawLine(-hw, 0, hw, 0);
 		drawLine(0, -hh, 0, hh);
 	}
 
 	// Draw normal screen edge guides if widescreen
-	if (hud_wide) {
+	if (hud_wide)
+	{
 		drawLine(-160, -100, -160, 100);
 		drawLine(160, -100, 160, 100);
 	}
 
 	// Draw weapon bobbing guides
-	if (hud_bob) {
+	if (hud_bob)
+	{
 		glLineWidth(0.8f);
 		drawRect(-hw - 16, -hh - 16, hw + 16, hh + 16);
 	}
 }
 
 #ifdef USE_SFML_RENDERWINDOW
-void Drawing::setRenderTarget(sf::RenderWindow* target) {
+void Drawing::setRenderTarget(sf::RenderWindow* target)
+{
 	render_target = target;
 }
 #endif
@@ -796,19 +756,22 @@ void Drawing::setRenderTarget(sf::RenderWindow* target) {
 
 // The following functions are taken from CodeLite (http://codelite.org)
 
-wxColour Drawing::getPanelBGColour() {
+wxColour Drawing::getPanelBGColour()
+{
 #ifdef __WXGTK__
 	static bool     intitialized(false);
 	static wxColour bgColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
 
-	if( !intitialized ) {
+	if( !intitialized )
+	{
 		// try to get the background colour from a menu
-		GtkWidget *menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		GtkStyle   *def = gtk_rc_get_style( menu );
+		GtkWidget* menu = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		GtkStyle*   def = gtk_rc_get_style( menu );
 		if(!def)
 			def = gtk_widget_get_default_style();
 
-		if(def) {
+		if(def)
+		{
 			GdkColor col = def->bg[GTK_STATE_NORMAL];
 			bgColour = wxColour(col);
 		}
@@ -821,59 +784,63 @@ wxColour Drawing::getPanelBGColour() {
 #endif
 }
 
-wxColour Drawing::getMenuTextColour() {
-/*#ifdef __WXGTK__
-	static bool     intitialized(false);
-	static wxColour textColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT));
+wxColour Drawing::getMenuTextColour()
+{
+	/*#ifdef __WXGTK__
+		static bool     intitialized(false);
+		static wxColour textColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT));
 
-	if( !intitialized ) {
-		// try to get the text colour from a menu
-		GtkWidget *menuBar = gtk_menu_new();
-		GtkStyle   *def = gtk_rc_get_style( menuBar );
-		if(!def)
-			def = gtk_widget_get_default_style();
+		if( !intitialized ) {
+			// try to get the text colour from a menu
+			GtkWidget *menuBar = gtk_menu_new();
+			GtkStyle   *def = gtk_rc_get_style( menuBar );
+			if(!def)
+				def = gtk_widget_get_default_style();
 
-		if(def) {
-			GdkColor col = def->text[GTK_STATE_NORMAL];
-			textColour = wxColour(col);
+			if(def) {
+				GdkColor col = def->text[GTK_STATE_NORMAL];
+				textColour = wxColour(col);
+			}
+			gtk_widget_destroy( menuBar );
+			intitialized = true;
 		}
-		gtk_widget_destroy( menuBar );
-		intitialized = true;
-	}
-	return textColour;
-#else*/
+		return textColour;
+	#else*/
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
 //#endif
 }
 
-wxColour Drawing::getMenuBarBGColour() {
-/*
-#ifdef __WXGTK__
-	static bool     intitialized(false);
-	static wxColour textColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUBAR));
+wxColour Drawing::getMenuBarBGColour()
+{
+	/*
+	#ifdef __WXGTK__
+		static bool     intitialized(false);
+		static wxColour textColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUBAR));
 
-	if( !intitialized ) {
-		// try to get the background colour from a menu
-		GtkWidget *menuBar = gtk_menu_bar_new();
-		GtkStyle   *def = gtk_rc_get_style( menuBar );
-		if(!def)
-			def = gtk_widget_get_default_style();
+		if( !intitialized ) {
+			// try to get the background colour from a menu
+			GtkWidget *menuBar = gtk_menu_bar_new();
+			GtkStyle   *def = gtk_rc_get_style( menuBar );
+			if(!def)
+				def = gtk_widget_get_default_style();
 
-		if(def) {
-			GdkColor col = def->bg[GTK_STATE_NORMAL];
-			textColour = wxColour(col);
+			if(def) {
+				GdkColor col = def->bg[GTK_STATE_NORMAL];
+				textColour = wxColour(col);
+			}
+			gtk_widget_destroy( menuBar );
+			intitialized = true;
 		}
-		gtk_widget_destroy( menuBar );
-		intitialized = true;
-	}
-	return textColour;
-#else*/
+		return textColour;
+	#else*/
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
 //#endif
 }
 
-wxColour Drawing::lightColour(const wxColour& colour, float percent) {
-	if(percent == 0) {
+wxColour Drawing::lightColour(const wxColour& colour, float percent)
+{
+	if(percent == 0)
+	{
 		return colour;
 	}
 
@@ -888,8 +855,10 @@ wxColour Drawing::lightColour(const wxColour& colour, float percent) {
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 
-wxColour Drawing::darkColour(const wxColour& colour, float percent) {
-	if(percent == 0) {
+wxColour Drawing::darkColour(const wxColour& colour, float percent)
+{
+	if(percent == 0)
+	{
 		return colour;
 	}
 

@@ -4,7 +4,8 @@
 
 #include "ListenerAnnouncer.h"
 
-class ConsoleCommand {
+class ConsoleCommand
+{
 private:
 	string	name;
 	void	(*commandFunc)(vector<string>);
@@ -24,7 +25,8 @@ public:
 	inline bool operator>(ConsoleCommand c) const { return name > c.getName(); }
 };
 
-class Console : public Announcer {
+class Console : public Announcer
+{
 private:
 	vector<ConsoleCommand> commands;
 
@@ -37,21 +39,23 @@ public:
 	Console();
 	~Console();
 
-	static Console* getInstance() {
+	static Console* getInstance()
+	{
 		if (!instance)
 			instance = new Console();
 
 		return instance;
 	}
 
-	static void deleteInstance() {
+	static void deleteInstance()
+	{
 		if (instance) delete instance;
 	}
 
 	int numCommands() { return (int) commands.size(); }
 	ConsoleCommand& command(size_t index);
 
-	void	addCommand(ConsoleCommand &c);
+	void	addCommand(ConsoleCommand& c);
 	void	execute(string command);
 	void	logMessage(string message);
 	string	lastLogLine();

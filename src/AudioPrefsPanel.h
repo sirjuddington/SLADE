@@ -4,7 +4,8 @@
 
 #include "PrefsPanelBase.h"
 
-class AudioPrefsPanel : public PrefsPanelBase {
+class AudioPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxCheckBox*	cb_snd_autoplay;
 	wxTextCtrl*	text_soundfont_path;

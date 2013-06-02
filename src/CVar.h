@@ -4,46 +4,51 @@
 
 // CVar classes, a lot of ideas taken from the ZDoom source
 
-enum CVarType {
+enum CVarType
+{
 	CVAR_BOOLEAN,
 	CVAR_INTEGER,
 	CVAR_FLOAT,
 	CVAR_STRING,
 };
 
-union CVarValue {
+union CVarValue
+{
 	int Int;
 	bool Bool;
 	double Float;
 	const char* String;
 };
 
-enum CVarProperty {
+enum CVarProperty
+{
 	CVAR_SAVE	= 1,	// set if cvar is saved to config file
 	CVAR_SECRET	= 2,	// set if cvar is not listed when cvarlist command called
 	CVAR_LOCKED = 4,	// set if cvar cannot be changed by the user during runtime
 };
 
 
-class CVar {
+class CVar
+{
 public:
 	uint16_t	flags;
 	CVarType	type;
 	string		name;
-	CVar		*next;
+	CVar*		next;
 
-	CVar(){ next = NULL; }
-	virtual ~CVar(){}
+	CVar() { next = NULL; }
+	virtual ~CVar() {}
 
 	virtual CVarValue GetValue() { CVarValue val; val.Int = 0; return val; }
 };
 
-class CIntCVar : public CVar {
+class CIntCVar : public CVar
+{
 public:
 	int value;
 
 	CIntCVar(string NAME, int defval, uint16_t FLAGS);
-	~CIntCVar(){}
+	~CIntCVar() {}
 
 	// Operators so the cvar name can be used like a normal variable
 	inline operator int () const { return value; }
@@ -53,12 +58,13 @@ public:
 	CVarValue GetValue() { CVarValue val; val.Int = value; return val; }
 };
 
-class CBoolCVar : public CVar {
+class CBoolCVar : public CVar
+{
 public:
 	bool value;
 
 	CBoolCVar(string NAME, bool defval, uint16_t FLAGS);
-	~CBoolCVar(){}
+	~CBoolCVar() {}
 
 	inline operator bool () const { return value; }
 	inline bool operator *() const { return value; }
@@ -67,12 +73,13 @@ public:
 	CVarValue GetValue() { CVarValue val; val.Bool = value; return val; }
 };
 
-class CFloatCVar : public CVar {
+class CFloatCVar : public CVar
+{
 public:
 	double value;
 
 	CFloatCVar(string NAME, double defval, uint16_t FLAGS);
-	~CFloatCVar(){}
+	~CFloatCVar() {}
 
 	inline operator double () const { return value; }
 	inline double operator *() const { return value; }
@@ -87,12 +94,13 @@ void read_cvar(string name, string value);
 CVar* get_cvar(string name);
 void get_cvar_list(vector<string>& list);
 
-class CStringCVar : public CVar {
+class CStringCVar : public CVar
+{
 public:
 	string value;
 
 	CStringCVar(string NAME, string defval, uint16_t FLAGS);
-	~CStringCVar(){}
+	~CStringCVar() {}
 
 	inline operator string () const { return value; }
 	inline string operator *() const { return value; }

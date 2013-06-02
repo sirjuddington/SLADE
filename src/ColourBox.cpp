@@ -54,7 +54,8 @@ DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
  * ColourBox class constructor
  *******************************************************************/
 ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha)
-: wxPanel(parent, id, wxDefaultPosition, wxSize(32, 24), wxSUNKEN_BORDER){
+	: wxPanel(parent, id, wxDefaultPosition, wxSize(32, 24), wxSUNKEN_BORDER)
+{
 	alpha = enable_alpha;
 	palette = NULL;
 	colour = COL_BLACK;
@@ -69,7 +70,8 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha)
  * Alternate ColourBox class constructor
  *******************************************************************/
 ColourBox::ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha)
-: wxPanel(parent, id, wxDefaultPosition, wxSize(32, 24), wxSUNKEN_BORDER){
+	: wxPanel(parent, id, wxDefaultPosition, wxSize(32, 24), wxSUNKEN_BORDER)
+{
 	alpha = enable_alpha;
 	palette = NULL;
 	colour = col;
@@ -83,13 +85,15 @@ ColourBox::ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha)
 /* ColourBox::~ColourBox
  * ColourBox class destructor
  *******************************************************************/
-ColourBox::~ColourBox() {
+ColourBox::~ColourBox()
+{
 }
 
 /* ColourBox::sendChangeEvent
  * Generates and sends a wxEVT_COLOURBOX_CHANGED event
  *******************************************************************/
-void ColourBox::sendChangeEvent() {
+void ColourBox::sendChangeEvent()
+{
 	wxCommandEvent e(wxEVT_COLOURBOX_CHANGED, GetId());
 	e.SetEventObject(this);
 	GetEventHandler()->ProcessEvent(e);
@@ -103,13 +107,15 @@ void ColourBox::sendChangeEvent() {
 /* ColourBox::onPaint
  * Called when the colour box needs to be (re)drawn
  *******************************************************************/
-void ColourBox::onPaint(wxPaintEvent& e) {
+void ColourBox::onPaint(wxPaintEvent& e)
+{
 	wxPaintDC dc(this);
 
 	dc.SetBrush(wxBrush(wxColour(colour.r, colour.g, colour.b)));
 	dc.DrawRectangle(0, 0, GetClientSize().x, GetClientSize().y);
 
-	if (alpha) {
+	if (alpha)
+	{
 		int a_point = colour.fa() * (GetClientSize().x - 2);
 
 		dc.SetBrush(wxBrush(wxColour(0, 0, 0)));
@@ -126,11 +132,14 @@ void ColourBox::onPaint(wxPaintEvent& e) {
  * colour selection dialog, or a palette dialog if a palette has been
  * given to the colour box
  *******************************************************************/
-void ColourBox::onMouseLeftDown(wxMouseEvent& e) {
-	if (!palette) {
+void ColourBox::onMouseLeftDown(wxMouseEvent& e)
+{
+	if (!palette)
+	{
 		wxColour col = wxGetColourFromUser(GetParent(), wxColour(colour.r, colour.g, colour.b));
 
-		if (col.Ok()) {
+		if (col.Ok())
+		{
 			colour.r = col.Red();
 			colour.g = col.Green();
 			colour.b = col.Blue();
@@ -138,11 +147,14 @@ void ColourBox::onMouseLeftDown(wxMouseEvent& e) {
 			Refresh();
 		}
 	}
-	else {
+	else
+	{
 		PaletteDialog pd(palette);
-		if (pd.ShowModal() == wxID_OK) {
+		if (pd.ShowModal() == wxID_OK)
+		{
 			rgba_t col = pd.getSelectedColour();
-			if (col.a > 0) {
+			if (col.a > 0)
+			{
 				colour = col;
 				sendChangeEvent();
 				Refresh();
@@ -156,21 +168,23 @@ void ColourBox::onMouseLeftDown(wxMouseEvent& e) {
  * dialog with a slider control to select the colour alpha value,
  * if alpha is enabled
  *******************************************************************/
-void ColourBox::onMouseRightDown(wxMouseEvent& e) {
+void ColourBox::onMouseRightDown(wxMouseEvent& e)
+{
 	// Do nothing if alpha disabled
 	if (!alpha)
 		return;
 
 	// Popup a dialog with a slider control for alpha
 	wxDialog dlg(NULL, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
-	wxBoxSizer *box = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* box = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(box);
-	wxSlider *slider = new wxSlider(&dlg, -1, colour.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+	wxSlider* slider = new wxSlider(&dlg, -1, colour.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
 	box->Add(slider, 1, wxEXPAND|wxALL, 4);
 	box->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 4);
 	dlg.SetInitialSize();
 
-	if (dlg.ShowModal() == wxID_OK) {
+	if (dlg.ShowModal() == wxID_OK)
+	{
 		colour.a = slider->GetValue();
 		sendChangeEvent();
 		Refresh();

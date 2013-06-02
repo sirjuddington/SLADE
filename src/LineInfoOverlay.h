@@ -3,7 +3,8 @@
 #define __LINE_INFO_OVERLAY_H__
 
 class MapLine;
-class LineInfoOverlay {
+class LineInfoOverlay
+{
 private:
 	//string	index;
 	//string	length;
@@ -11,7 +12,8 @@ private:
 	//string	args;
 	vector<string>	info;
 
-	struct side_t {
+	struct side_t
+	{
 		bool	exists;
 		string	info;
 		string	offsets;

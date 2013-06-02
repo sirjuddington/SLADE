@@ -2,7 +2,8 @@
 #ifndef __ARGS_H__
 #define __ARGS_H__
 
-enum {
+enum
+{
 	ARGT_NUMBER = 0,
 	ARGT_YESNO,
 	ARGT_NOYES,
@@ -10,12 +11,14 @@ enum {
 	ARGT_CUSTOM,
 };
 
-struct arg_val_t {
+struct arg_val_t
+{
 	int		value;
 	string	name;
 };
 
-struct arg_t {
+struct arg_t
+{
 	string				name;
 	string				desc;
 	int					type;
@@ -24,9 +27,11 @@ struct arg_t {
 
 	arg_t() { name = ""; type = 0; }
 
-	string valueString(int value) {
+	string valueString(int value)
+	{
 		// Yes/No
-		if (type == ARGT_YESNO) {
+		if (type == ARGT_YESNO)
+		{
 			if (value > 0)
 				return "Yes";
 			else
@@ -34,7 +39,8 @@ struct arg_t {
 		}
 
 		// No/Yes
-		else if (type == ARGT_NOYES) {
+		else if (type == ARGT_NOYES)
+		{
 			if (value > 0)
 				return "No";
 			else
@@ -43,8 +49,10 @@ struct arg_t {
 
 
 		// Custom
-		else if (type == ARGT_CUSTOM) {
-			for (unsigned a = 0; a < custom_values.size(); a++) {
+		else if (type == ARGT_CUSTOM)
+		{
+			for (unsigned a = 0; a < custom_values.size(); a++)
+			{
 				if (custom_values[a].value == value)
 					return custom_values[a].name;
 			}

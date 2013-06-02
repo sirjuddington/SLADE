@@ -8,7 +8,8 @@
 #include "TextLanguage.h"
 #include "TextStyle.h"
 
-class FindReplaceDialog : public wxMiniFrame {
+class FindReplaceDialog : public wxMiniFrame
+{
 private:
 	wxTextCtrl*	text_find;
 	wxTextCtrl*	text_replace;
@@ -37,7 +38,8 @@ public:
 	void	onKeyDown(wxKeyEvent& e);
 };
 
-class TextEditor : public wxStyledTextCtrl {
+class TextEditor : public wxStyledTextCtrl
+{
 private:
 	TextLanguage*		language;
 	FindReplaceDialog*	dlg_fr;
@@ -51,7 +53,8 @@ private:
 	string		autocomp_list;
 
 	// Jump To stuff
-	struct jp_t {
+	struct jp_t
+	{
 		string	name;
 		int		line;
 	};

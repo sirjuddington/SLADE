@@ -5,7 +5,8 @@
 #include "PrefsPanelBase.h"
 #include <wx/spinctrl.h>
 
-class Map3DPrefsPanel : public PrefsPanelBase {
+class Map3DPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxSlider*		slider_max_render_dist;
 	wxCheckBox*		cb_distance_unlimited;

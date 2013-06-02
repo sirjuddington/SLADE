@@ -10,7 +10,8 @@
 
 class TextureXEditor;
 
-class TextureEditorPanel : public wxPanel, SActionHandler {
+class TextureEditorPanel : public wxPanel, SActionHandler
+{
 protected:
 	TextureXEditor*	tx_editor;
 	CTexture*		tex_current;

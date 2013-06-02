@@ -8,7 +8,8 @@
 #include "GameConfiguration.h"
 
 
-MapTexBrowserItem::MapTexBrowserItem(string name, int type, unsigned index) : BrowserItem(name, index) {
+MapTexBrowserItem::MapTexBrowserItem(string name, int type, unsigned index) : BrowserItem(name, index)
+{
 	if (type == 0)
 		this->type = "texture";
 	else if (type == 1)
@@ -19,10 +20,12 @@ MapTexBrowserItem::MapTexBrowserItem(string name, int type, unsigned index) : Br
 		blank = true;
 }
 
-MapTexBrowserItem::~MapTexBrowserItem() {
+MapTexBrowserItem::~MapTexBrowserItem()
+{
 }
 
-bool MapTexBrowserItem::loadImage() {
+bool MapTexBrowserItem::loadImage()
+{
 	GLTexture* tex = NULL;
 
 	// Get texture or flat depending on type
@@ -31,7 +34,8 @@ bool MapTexBrowserItem::loadImage() {
 	else if (type == "flat")
 		tex = theMapEditor->textureManager().getFlat(name, false);
 
-	if (tex) {
+	if (tex)
+	{
 		image = tex;
 		return true;
 	}
@@ -39,7 +43,8 @@ bool MapTexBrowserItem::loadImage() {
 		return false;
 }
 
-string MapTexBrowserItem::itemInfo() {
+string MapTexBrowserItem::itemInfo()
+{
 	string info;
 
 	// Check for blank texture
@@ -63,7 +68,8 @@ string MapTexBrowserItem::itemInfo() {
 
 
 
-MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture) : BrowserWindow(parent) {
+MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture) : BrowserWindow(parent)
+{
 	// Init variables
 	this->type = type;
 	setSortType(1);
@@ -72,7 +78,8 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture)
 	SetTitle("Browse Map Textures");
 
 	// Textures
-	if (type == 0 || theGameConfiguration->mixTexFlats()) {
+	if (type == 0 || theGameConfiguration->mixTexFlats())
+	{
 		// No texture '-'
 		addItem(new MapTexBrowserItem("-", 0, 0), "Textures");
 
@@ -83,11 +90,14 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture)
 			addItem(new MapTexBrowserItem(textures[a].tex->getName(), 0, textures[a].tex->getIndex()+1), "Textures/TEXTUREx");
 
 		// Texture namespace patches (TX_)
-		if (theGameConfiguration->txTextures()) {
+		if (theGameConfiguration->txTextures())
+		{
 			vector<ArchiveEntry*> patches;
 			theResourceManager->getAllPatchEntries(patches, NULL);
-			for (unsigned a = 0; a < patches.size(); a++) {
-				if (patches[a]->isInNamespace("textures")) {
+			for (unsigned a = 0; a < patches.size(); a++)
+			{
+				if (patches[a]->isInNamespace("textures"))
+				{
 					// Determine texture path if it's in a pk3
 					string path = patches[a]->getPath();
 					if (path.StartsWith("/textures/"))
@@ -102,10 +112,12 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture)
 	}
 
 	// Flats
-	if (type == 1 || theGameConfiguration->mixTexFlats()) {
+	if (type == 1 || theGameConfiguration->mixTexFlats())
+	{
 		vector<ArchiveEntry*> flats;
 		theResourceManager->getAllFlatEntries(flats, NULL);
-		for (unsigned a = 0; a < flats.size(); a++) {
+		for (unsigned a = 0; a < flats.size(); a++)
+		{
 			ArchiveEntry* entry = flats[a];
 
 			// Determine flat path if it's in a pk3
@@ -126,5 +138,6 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture)
 		selectItem(texture);
 }
 
-MapTextureBrowser::~MapTextureBrowser() {
+MapTextureBrowser::~MapTextureBrowser()
+{
 }

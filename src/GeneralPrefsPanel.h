@@ -4,7 +4,8 @@
 
 #include "PrefsPanelBase.h"
 
-class GeneralPrefsPanel : public PrefsPanelBase {
+class GeneralPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxCheckBox*	cb_gl_np2;
 	wxCheckBox*	cb_archive_load;

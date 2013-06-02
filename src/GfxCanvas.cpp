@@ -51,7 +51,8 @@ CVAR(Bool, gfx_arc, false, CVAR_SAVE)
  * GfxCanvas class constructor
  *******************************************************************/
 GfxCanvas::GfxCanvas(wxWindow* parent, int id)
-: OGLCanvas(parent, id) {
+	: OGLCanvas(parent, id)
+{
 	// Init variables
 	image = new SImage();
 	view_type = GFXVIEW_DEFAULT;
@@ -78,7 +79,8 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id)
 /* GfxCanvas::~GfxCanvas
  * GfxCanvas class destructor
  *******************************************************************/
-GfxCanvas::~GfxCanvas() {
+GfxCanvas::~GfxCanvas()
+{
 	delete image;
 	delete tex_image;
 }
@@ -86,7 +88,8 @@ GfxCanvas::~GfxCanvas() {
 /* GfxCanvas::draw
  * Draws the image/background/etc
  *******************************************************************/
-void GfxCanvas::draw() {
+void GfxCanvas::draw()
+{
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
 
@@ -114,7 +117,8 @@ void GfxCanvas::draw() {
 		glTranslated(offset.x, offset.y, 0);
 
 	// Pan if offsets
-	if (view_type == GFXVIEW_CENTERED || view_type == GFXVIEW_SPRITE || view_type == GFXVIEW_HUD) {
+	if (view_type == GFXVIEW_CENTERED || view_type == GFXVIEW_SPRITE || view_type == GFXVIEW_HUD)
+	{
 		int mid_x = GetSize().x / 2;
 		int mid_y = GetSize().y / 2;
 		glTranslated(mid_x, mid_y, 0);
@@ -134,8 +138,10 @@ void GfxCanvas::draw() {
 /* GfxCanvas::drawOffsetLines
  * Draws the offset center lines
  *******************************************************************/
-void GfxCanvas::drawOffsetLines() {
-	if (view_type == GFXVIEW_SPRITE) {
+void GfxCanvas::drawOffsetLines()
+{
+	if (view_type == GFXVIEW_SPRITE)
+	{
 		COL_BLACK.set_gl();
 
 		glBegin(GL_LINES);
@@ -145,7 +151,8 @@ void GfxCanvas::drawOffsetLines() {
 		glVertex2d(0, 9999);
 		glEnd();
 	}
-	else if (view_type == GFXVIEW_HUD) {
+	else if (view_type == GFXVIEW_HUD)
+	{
 		double yscale = (gfx_arc ? scale * 1.2 : scale);
 		glPushMatrix();
 		glEnable(GL_LINE_SMOOTH);
@@ -160,7 +167,8 @@ void GfxCanvas::drawOffsetLines() {
  * Draws the image (reloads the image as a texture each time, will
  * change this later...)
  *******************************************************************/
-void GfxCanvas::drawImage() {
+void GfxCanvas::drawImage()
+{
 	// Check image is valid
 	if (!image->isValid())
 		return;
@@ -177,7 +185,8 @@ void GfxCanvas::drawImage() {
 		glTranslated(-(image->getWidth() * 0.5), -(image->getHeight() * 0.5), 0);	// Pan to center image
 	else if (view_type == GFXVIEW_SPRITE)
 		glTranslated(-image->offset().x, -image->offset().y, 0);	// Pan by offsets
-	else if (view_type == GFXVIEW_HUD) {
+	else if (view_type == GFXVIEW_HUD)
+	{
 		glTranslated(-160, -100, 0);								// Pan to hud 'top left'
 		glTranslated(-image->offset().x, -image->offset().y, 0);	// Pan by offsets
 	}
@@ -186,7 +195,8 @@ void GfxCanvas::drawImage() {
 	glEnable(GL_TEXTURE_2D);
 
 	// Update texture if needed
-	if (update_texture) {
+	if (update_texture)
+	{
 		tex_image->loadImage(image, &palette);
 		update_texture = false;
 	}
@@ -196,18 +206,21 @@ void GfxCanvas::drawImage() {
 	double y = (double)image->getHeight();
 
 	// If tiled view
-	if (view_type == GFXVIEW_TILED) {
+	if (view_type == GFXVIEW_TILED)
+	{
 		// Draw tiled image
 		rgba_t(255, 255, 255, 255, 0).set_gl();
 		tex_image->draw2dTiled(GetSize().x / scale, GetSize().y / scale);
 	}
-	else if (drag_origin.x < 0) {	// If not dragging
+	else if (drag_origin.x < 0)  	// If not dragging
+	{
 		// Draw the image
 		rgba_t(255, 255, 255, 255, 0).set_gl();
 		tex_image->draw2d();
 
 		// Draw hilight
-		if (image_hilight && gfx_hilight_mouseover) {
+		if (image_hilight && gfx_hilight_mouseover)
+		{
 			rgba_t(255, 255, 255, 80, 1).set_gl();
 			tex_image->draw2d();
 
@@ -215,7 +228,8 @@ void GfxCanvas::drawImage() {
 			rgba_t(255, 255, 255, 255, 0).set_gl();
 		}
 	}
-	else {	// Dragging
+	else  	// Dragging
+	{
 		// Draw the original
 		rgba_t(0, 0, 0, 180, 0).set_gl();
 		tex_image->draw2d();
@@ -232,7 +246,8 @@ void GfxCanvas::drawImage() {
 	glDisable(GL_TEXTURE_2D);
 
 	// Draw outline
-	if (gfx_show_border) {
+	if (gfx_show_border)
+	{
 		rgba_t(0, 0, 0, 64).set_gl();
 		glBegin(GL_LINE_LOOP);
 		glVertex2d(0, 0);
@@ -249,7 +264,8 @@ void GfxCanvas::drawImage() {
 /* GfxCanvas::updateImageTexture
  * Forces (Re)Generation of the image texture
  *******************************************************************/
-void GfxCanvas::updateImageTexture() {
+void GfxCanvas::updateImageTexture()
+{
 	update_texture = true;
 	Refresh();
 }
@@ -260,7 +276,8 @@ void GfxCanvas::updateImageTexture() {
  * if needed). Leaves a border around the image if <padding> is
  * specified (0.0f = no border, 1.0f = border 100% of canvas size)
  *******************************************************************/
-void GfxCanvas::zoomToFit(bool mag, float padding) {
+void GfxCanvas::zoomToFit(bool mag, float padding)
+{
 	// Determine padding
 	double pad = (double)MIN(GetSize().x, GetSize().y) * padding;
 
@@ -283,7 +300,8 @@ void GfxCanvas::zoomToFit(bool mag, float padding) {
 /* GfxCanvas::onImage
  * Returns true if the given coordinates are 'on' top of the image
  *******************************************************************/
-bool GfxCanvas::onImage(int x, int y) {
+bool GfxCanvas::onImage(int x, int y)
+{
 	if (view_type == GFXVIEW_TILED)
 		return false;
 
@@ -291,19 +309,23 @@ bool GfxCanvas::onImage(int x, int y) {
 	double left = GetSize().x * 0.5 + offset.x;
 	double top = GetSize().y * 0.5 + offset.y;
 
-	if (view_type == GFXVIEW_DEFAULT) {
+	if (view_type == GFXVIEW_DEFAULT)
+	{
 		left = 0;
 		top = 0;
 	}
-	else if (view_type == GFXVIEW_CENTERED) {
+	else if (view_type == GFXVIEW_CENTERED)
+	{
 		left -= (double)image->getWidth() * 0.5 * scale;
 		top -= (double)image->getHeight() * 0.5 * scale;
 	}
-	else if (view_type == GFXVIEW_SPRITE) {
+	else if (view_type == GFXVIEW_SPRITE)
+	{
 		left -= image->offset().x * scale;
 		top -= image->offset().y * scale;
 	}
-	else if (view_type == GFXVIEW_HUD) {
+	else if (view_type == GFXVIEW_HUD)
+	{
 		left -= 160 * scale;
 		top -= 100 * scale;
 		left -= image->offset().x * scale;
@@ -321,24 +343,29 @@ bool GfxCanvas::onImage(int x, int y) {
  * Returns the image coordinates at [x,y] in screen coordinates, or
  * [-1, -1] if not on the image
  *******************************************************************/
-point2_t GfxCanvas::imageCoords(int x, int y) {
+point2_t GfxCanvas::imageCoords(int x, int y)
+{
 	// Determine top-left coordinates of image in screen coords
 	double left = GetSize().x * 0.5 + offset.x;
 	double top = GetSize().y * 0.5 + offset.y;
 
-	if (view_type == GFXVIEW_DEFAULT) {
+	if (view_type == GFXVIEW_DEFAULT)
+	{
 		left = 0;
 		top = 0;
 	}
-	else if (view_type == GFXVIEW_CENTERED) {
+	else if (view_type == GFXVIEW_CENTERED)
+	{
 		left -= (double)image->getWidth() * 0.5 * scale;
 		top -= (double)image->getHeight() * 0.5 * scale;
 	}
-	else if (view_type == GFXVIEW_SPRITE) {
+	else if (view_type == GFXVIEW_SPRITE)
+	{
 		left -= image->offset().x * scale;
 		top -= image->offset().y * scale;
 	}
-	else if (view_type == GFXVIEW_HUD) {
+	else if (view_type == GFXVIEW_HUD)
+	{
 		left -= 160 * scale;
 		top -= 100 * scale;
 		left -= image->offset().x * scale;
@@ -350,7 +377,8 @@ point2_t GfxCanvas::imageCoords(int x, int y) {
 	double bottom = top + image->getHeight() * scale;
 
 	// Check if the pointer is within the image
-	if (x >= left && x <= right && y >= top && y <= bottom) {
+	if (x >= left && x <= right && y >= top && y <= bottom)
+	{
 		// Determine where in the image it is
 		double w = right - left;
 		double h = bottom - top;
@@ -366,13 +394,15 @@ point2_t GfxCanvas::imageCoords(int x, int y) {
 /* GfxCanvas::endOffsetDrag
  * Finishes an offset drag
  *******************************************************************/
-void GfxCanvas::endOffsetDrag() {
+void GfxCanvas::endOffsetDrag()
+{
 	// Get offset
 	int x = (drag_pos.x - drag_origin.x) / scale;
 	int y = (drag_pos.y - drag_origin.y) / scale;
 
 	// If there was a change
-	if (x != 0 || y != 0) {
+	if (x != 0 || y != 0)
+	{
 		// Set image offsets
 		image->setXOffset(image->offset().x - x);
 		image->setYOffset(image->offset().y - y);
@@ -391,7 +421,8 @@ void GfxCanvas::endOffsetDrag() {
  * Called when an announcement is recieved from the image that this
  * GfxCanvas is displaying
  *******************************************************************/
-void GfxCanvas::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {
+void GfxCanvas::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+{
 	if (announcer == image && event_name.Cmp("image_changed") == 0)
 		update_texture = true;
 }
@@ -404,15 +435,18 @@ void GfxCanvas::onAnnouncement(Announcer* announcer, string event_name, MemChunk
 /* GfxCanvas::onMouseLeftDown
  * Called when the left button is pressed within the canvas
  *******************************************************************/
-void GfxCanvas::onMouseLeftDown(wxMouseEvent& e) {
+void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
+{
 	int x = e.GetPosition().x;
 	int y = e.GetPosition().y;
 	bool on_image = onImage(x, y-2);
 
 	// Left mouse down
-	if (e.LeftDown()) {
+	if (e.LeftDown())
+	{
 		// Begin drag if mouse is over image and dragging allowed
-		if (on_image && allow_drag) {
+		if (on_image && allow_drag)
+		{
 			drag_origin.set(x, y);
 			drag_pos.set(x, y);
 			Refresh();
@@ -425,9 +459,11 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e) {
 /* GfxCanvas::onMouseLeftUp
  * Called when the left button is released within the canvas
  *******************************************************************/
-void GfxCanvas::onMouseLeftUp(wxMouseEvent& e) {
+void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
+{
 	// Stop dragging
-	if (drag_origin.x >= 0) {
+	if (drag_origin.x >= 0)
+	{
 		endOffsetDrag();
 		Refresh();
 	}
@@ -436,22 +472,26 @@ void GfxCanvas::onMouseLeftUp(wxMouseEvent& e) {
 /* GfxCanvas::onMouseMovement
  * Called when the mouse pointer is moved within the canvas
  *******************************************************************/
-void GfxCanvas::onMouseMovement(wxMouseEvent& e) {
+void GfxCanvas::onMouseMovement(wxMouseEvent& e)
+{
 	bool refresh = false;
 
 	// Check if the mouse is over the image
 	bool on_image = onImage(e.GetX(), e.GetY()-2);
-	if (on_image != image_hilight) {
+	if (on_image != image_hilight)
+	{
 		image_hilight = on_image;
 		refresh = true;
 	}
 
 	// Drag
-	if (e.LeftIsDown()) {
+	if (e.LeftIsDown())
+	{
 		drag_pos.set(e.GetPosition().x, e.GetPosition().y);
 		refresh = true;
 	}
-	else if (e.MiddleIsDown()) {
+	else if (e.MiddleIsDown())
+	{
 		offset = offset + point2_t(e.GetPosition().x - mouse_prev.x, e.GetPosition().y - mouse_prev.y);
 		refresh = true;
 	}
@@ -465,7 +505,8 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e) {
 /* GfxCanvas::onMouseLeaving
  * Called when the mouse pointer leaves the gfx canvas
  *******************************************************************/
-void GfxCanvas::onMouseLeaving(wxMouseEvent& e) {
+void GfxCanvas::onMouseLeaving(wxMouseEvent& e)
+{
 	image_hilight = false;
 	Refresh();
 }
@@ -473,23 +514,28 @@ void GfxCanvas::onMouseLeaving(wxMouseEvent& e) {
 /* GfxCanvas::onKeyDown
  * Called when a key is pressed while the canvas has focus
  *******************************************************************/
-void GfxCanvas::onKeyDown(wxKeyEvent& e) {
-	if (e.GetKeyCode() == WXK_UP) {
+void GfxCanvas::onKeyDown(wxKeyEvent& e)
+{
+	if (e.GetKeyCode() == WXK_UP)
+	{
 		offset.y += 8;
 		Refresh();
 	}
 
-	else if (e.GetKeyCode() == WXK_DOWN) {
+	else if (e.GetKeyCode() == WXK_DOWN)
+	{
 		offset.y -= 8;
 		Refresh();
 	}
 
-	else if (e.GetKeyCode() == WXK_LEFT) {
+	else if (e.GetKeyCode() == WXK_LEFT)
+	{
 		offset.x += 8;
 		Refresh();
 	}
 
-	else if (e.GetKeyCode() == WXK_RIGHT) {
+	else if (e.GetKeyCode() == WXK_RIGHT)
+	{
 		offset.x -= 8;
 		Refresh();
 	}

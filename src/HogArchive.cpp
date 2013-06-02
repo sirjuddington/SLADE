@@ -47,19 +47,22 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* HogArchive::HogArchive
  * HogArchive class constructor
  *******************************************************************/
-HogArchive::HogArchive() : TreelessArchive(ARCHIVE_HOG) {
+HogArchive::HogArchive() : TreelessArchive(ARCHIVE_HOG)
+{
 }
 
 /* HogArchive::~HogArchive
  * HogArchive class destructor
  *******************************************************************/
-HogArchive::~HogArchive() {
+HogArchive::~HogArchive()
+{
 }
 
 /* HogArchive::getEntryOffset
  * Returns the file byte offset for [entry]
  *******************************************************************/
-uint32_t HogArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t HogArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return 0;
@@ -70,7 +73,8 @@ uint32_t HogArchive::getEntryOffset(ArchiveEntry* entry) {
 /* HogArchive::setEntryOffset
  * Sets the file byte offset for [entry]
  *******************************************************************/
-void HogArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
+void HogArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return;
@@ -81,14 +85,16 @@ void HogArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
 /* HogArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string HogArchive::getFileExtensionString() {
+string HogArchive::getFileExtensionString()
+{
 	return "Hog Files (*.hog)|*.hog";
 }
 
 /* HogArchive::getFormat
  * Returns the EntryDataFormat id of this archive type
  *******************************************************************/
-string HogArchive::getFormat() {
+string HogArchive::getFormat()
+{
 	return "archive_hog";
 }
 
@@ -96,7 +102,8 @@ string HogArchive::getFormat() {
  * Reads hog format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool HogArchive::open(MemChunk& mc) {
+bool HogArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -117,13 +124,15 @@ bool HogArchive::open(MemChunk& mc) {
 	theSplashWindow->setProgressMessage("Reading hog archive data");
 	size_t iter_offset = 3;
 	uint32_t num_lumps = 0;
-	while (iter_offset < archive_size) {
+	while (iter_offset < archive_size)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)iter_offset / (float)archive_size));
 
 		// If the lump data goes past the end of the file,
 		// the hogfile is invalid
-		if (iter_offset + 17 > archive_size) {
+		if (iter_offset + 17 > archive_size)
+		{
 			wxLogMessage("HogArchive::open: hog archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -155,7 +164,8 @@ bool HogArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -163,7 +173,8 @@ bool HogArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -194,15 +205,18 @@ bool HogArchive::open(MemChunk& mc) {
  * Writes the hog archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool HogArchive::write(MemChunk& mc, bool update) {
+bool HogArchive::write(MemChunk& mc, bool update)
+{
 	// Determine individual lump offsets
 	uint32_t offset = 3;
 	ArchiveEntry* entry = NULL;
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		offset += 17;
 		entry = getEntry(l);
 		setEntryOffset(entry, offset);
-		if (update) {
+		if (update)
+		{
 			entry->setState(0);
 			entry->exProp("Offset") = (int)offset;
 		}
@@ -219,13 +233,15 @@ bool HogArchive::write(MemChunk& mc, bool update) {
 	mc.write(header, 3);
 
 	// Write the lumps
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		mc.write(entry->getData(), entry->getSize());
 	}
 
 	// Write the directory
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		char name[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		long size = wxINT32_SWAP_ON_BE(entry->getSize());
@@ -245,14 +261,16 @@ bool HogArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the hogfile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool HogArchive::loadEntryData(ArchiveEntry* entry) {
+bool HogArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -261,7 +279,8 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("HogArchive::loadEntryData: Failed to open hogfile %s", filename.c_str());
 		return false;
 	}
@@ -281,7 +300,8 @@ bool HogArchive::loadEntryData(ArchiveEntry* entry) {
  * directory, update namespaces if needed and rename the entry if
  * necessary to be hog-friendly (12 characters max with extension)
  *******************************************************************/
-ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -310,7 +330,8 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 /* HogArchive::addEntry
  * Since hog files have no namespaces, just call the other function.
  *******************************************************************/
-ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
 }
 
@@ -319,7 +340,8 @@ ArchiveEntry* HogArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * and rename the entry if necessary to be hog-friendly (twelve
  * characters max)
  *******************************************************************/
-bool HogArchive::renameEntry(ArchiveEntry* entry, string name) {
+bool HogArchive::renameEntry(ArchiveEntry* entry, string name)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
@@ -335,7 +357,8 @@ bool HogArchive::renameEntry(ArchiveEntry* entry, string name) {
 /* HogArchive::isHogArchive
  * Checks if the given data is a valid Descent hog archive
  *******************************************************************/
-bool HogArchive::isHogArchive(MemChunk& mc) {
+bool HogArchive::isHogArchive(MemChunk& mc)
+{
 	// Check size
 	size_t size = mc.getSize();
 	if (size < 3)
@@ -347,7 +370,8 @@ bool HogArchive::isHogArchive(MemChunk& mc) {
 
 	// Iterate through files to see if the size seems okay
 	size_t offset = 3;
-	while (offset < size) {
+	while (offset < size)
+	{
 		// Enough room for the header?
 		if (offset + 17 > size)
 			return false;
@@ -362,7 +386,8 @@ bool HogArchive::isHogArchive(MemChunk& mc) {
 /* HogArchive::isHogArchive
  * Checks if the file at [filename] is a valid Descent hog archive
  *******************************************************************/
-bool HogArchive::isHogArchive(string filename) {
+bool HogArchive::isHogArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 
@@ -384,7 +409,8 @@ bool HogArchive::isHogArchive(string filename) {
 
 	// Iterate through files to see if the size seems okay
 	size_t offset = 3;
-	while (offset < size) {
+	while (offset < size)
+	{
 		// Enough room for the header?
 		if (offset + 17 > size)
 			return false;

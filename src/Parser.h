@@ -7,7 +7,8 @@
 #include "Property.h"
 
 class Parser;
-class ParseTreeNode : public STreeNode {
+class ParseTreeNode : public STreeNode
+{
 private:
 	string				name;
 	string				inherit;
@@ -16,7 +17,8 @@ private:
 	Parser*				parser;
 
 protected:
-	STreeNode*	createChild(string name) {
+	STreeNode*	createChild(string name)
+	{
 		ParseTreeNode* ret = new ParseTreeNode();
 		ret->setName(name);
 		ret->parser = parser;
@@ -41,7 +43,8 @@ public:
 	bool	parse(Tokenizer& tz);
 };
 
-class Parser {
+class Parser
+{
 private:
 	ParseTreeNode*	pt_root;
 	vector<string>	defines;

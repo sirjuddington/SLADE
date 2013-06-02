@@ -44,7 +44,8 @@ UndoManager*	current_undo_manager = NULL;
 /* UndoLevel::UndoLevel
  * UndoLevel class constructor
  *******************************************************************/
-UndoLevel::UndoLevel(string name) {
+UndoLevel::UndoLevel(string name)
+{
 	// Init variables
 	this->name = name;
 }
@@ -52,7 +53,8 @@ UndoLevel::UndoLevel(string name) {
 /* UndoLevel::~UndoLevel
  * UndoLevel class destructor
  *******************************************************************/
-UndoLevel::~UndoLevel() {
+UndoLevel::~UndoLevel()
+{
 	for (unsigned a = 0; a < undo_steps.size(); a++)
 		delete undo_steps[a];
 }
@@ -60,10 +62,12 @@ UndoLevel::~UndoLevel() {
 /* UndoLevel::doUndo
  * Performs all undo steps for this level
  *******************************************************************/
-bool UndoLevel::doUndo() {
+bool UndoLevel::doUndo()
+{
 	//wxLogMessage("Performing undo \"%s\" (%d steps)", CHR(name), undo_steps.size());
 	bool ok = true;
-	for (int a = (int)undo_steps.size() - 1; a >= 0; a--) {
+	for (int a = (int)undo_steps.size() - 1; a >= 0; a--)
+	{
 		if (!undo_steps[a]->doUndo())
 			ok = false;
 	}
@@ -74,10 +78,12 @@ bool UndoLevel::doUndo() {
 /* UndoLevel::doRedo
  * Performs all redo steps for this level
  *******************************************************************/
-bool UndoLevel::doRedo() {
+bool UndoLevel::doRedo()
+{
 	//wxLogMessage("Performing redo \"%s\" (%d steps)", CHR(name), undo_steps.size());
 	bool ok = true;
-	for (unsigned a = 0; a < undo_steps.size(); a++) {
+	for (unsigned a = 0; a < undo_steps.size(); a++)
+	{
 		if (!undo_steps[a]->doRedo())
 			ok = false;
 	}
@@ -88,14 +94,16 @@ bool UndoLevel::doRedo() {
 /* UndoLevel::readFile
  * Reads the undo level from a file
  *******************************************************************/
-bool UndoLevel::readFile(string filename) {
+bool UndoLevel::readFile(string filename)
+{
 	return true;
 }
 
 /* UndoLevel::writeFile
  * Writes the undo level to a file
  *******************************************************************/
-bool UndoLevel::writeFile(string filename) {
+bool UndoLevel::writeFile(string filename)
+{
 	return true;
 }
 
@@ -107,7 +115,8 @@ bool UndoLevel::writeFile(string filename) {
 /* UndoManager::UndoManager
  * UndoManager class constructor
  *******************************************************************/
-UndoManager::UndoManager(SLADEMap* map) {
+UndoManager::UndoManager(SLADEMap* map)
+{
 	// Init variables
 	current_level = NULL;
 	current_level_index = -1;
@@ -118,7 +127,8 @@ UndoManager::UndoManager(SLADEMap* map) {
 /* UndoManager::~UndoManager
  * UndoManager class destructor
  *******************************************************************/
-UndoManager::~UndoManager() {
+UndoManager::~UndoManager()
+{
 	for (unsigned a = 0; a < undo_levels.size(); a++)
 		delete undo_levels[a];
 }
@@ -126,7 +136,8 @@ UndoManager::~UndoManager() {
 /* UndoManager::beginRecord
  * Begins 'recording' a new undo level
  *******************************************************************/
-void UndoManager::beginRecord(string name) {
+void UndoManager::beginRecord(string name)
+{
 	// Can't if currently in an undo/redo operation
 	if (undo_running)
 		return;
@@ -146,13 +157,15 @@ void UndoManager::beginRecord(string name) {
 /* UndoManager::endRecord
  * Finishes 'recording' the current undo level and adds it
  *******************************************************************/
-void UndoManager::endRecord(bool success) {
+void UndoManager::endRecord(bool success)
+{
 	// Do nothing if not currently recording or in an undo/redo operation
 	if (!current_level || undo_running)
 		return;
 
 	// If failed, delete current undo level
-	if (!success) {
+	if (!success)
+	{
 		//wxLogMessage("Recording undo level \"%s\" failed", CHR(current_level->getName()));
 		delete current_level;
 		current_level = NULL;
@@ -160,7 +173,8 @@ void UndoManager::endRecord(bool success) {
 	}
 
 	// Remove any undo levels after the current
-	while ((int)undo_levels.size() - 1 > current_level_index) {
+	while ((int)undo_levels.size() - 1 > current_level_index)
+	{
 		//wxLogMessage("Removing undo level \"%s\"", CHR(undo_levels.back()->getName()));
 		delete undo_levels.back();
 		undo_levels.pop_back();
@@ -181,7 +195,8 @@ void UndoManager::endRecord(bool success) {
 /* UndoManager::currentlyRecording
  * Returns true if this manager is currently recording an undo level
  *******************************************************************/
-bool UndoManager::currentlyRecording() {
+bool UndoManager::currentlyRecording()
+{
 	return (current_level != NULL);
 }
 
@@ -189,11 +204,13 @@ bool UndoManager::currentlyRecording() {
  * Records the UndoStep [step] to the current undo level, if it is
  * currently being recorded. Returns false if not currently recording
  *******************************************************************/
-bool UndoManager::recordUndoStep(UndoStep* step) {
+bool UndoManager::recordUndoStep(UndoStep* step)
+{
 	// Do nothing if not recording or step not given
 	if (!step)
 		return false;
-	else if (!current_level) {
+	else if (!current_level)
+	{
 		delete step;
 		return false;
 	}
@@ -207,7 +224,8 @@ bool UndoManager::recordUndoStep(UndoStep* step) {
 /* UndoManager::undo
  * Performs an undo operation
  *******************************************************************/
-string UndoManager::undo() {
+string UndoManager::undo()
+{
 	// Can't while currently recording
 	if (current_level)
 		return "";
@@ -233,7 +251,8 @@ string UndoManager::undo() {
 /* UndoManager::redo
  * Performs a redo operation
  *******************************************************************/
-string UndoManager::redo() {
+string UndoManager::redo()
+{
 	// Can't while currently recording
 	if (current_level)
 		return "";
@@ -256,12 +275,14 @@ string UndoManager::redo() {
 	return level->getName();
 }
 
-void UndoManager::getAllLevels(vector<string>& list) {
+void UndoManager::getAllLevels(vector<string>& list)
+{
 	for (unsigned a = 0; a < undo_levels.size(); a++)
 		list.push_back(undo_levels[a]->getName());
 }
 
-void UndoManager::clear() {
+void UndoManager::clear()
+{
 	// Clean up undo levels
 	for (unsigned a = 0; a < undo_levels.size(); a++)
 		delete undo_levels[a];
@@ -282,7 +303,8 @@ void UndoManager::clear() {
  * Returns true if the current undo manager is currently recording
  * an undo level
  *******************************************************************/
-bool UndoRedo::currentlyRecording() {
+bool UndoRedo::currentlyRecording()
+{
 	if (current_undo_manager)
 		return current_undo_manager->currentlyRecording();
 	else
@@ -293,14 +315,16 @@ bool UndoRedo::currentlyRecording() {
  * Returns the 'current' undo manager, this is usually the manager
  * that is currently recording an undo level
  *******************************************************************/
-UndoManager* UndoRedo::currentManager() {
+UndoManager* UndoRedo::currentManager()
+{
 	return current_undo_manager;
 }
 
 /* UndoRedo::currentMap
  * Returns the 'current' map, associated with the current undo manager
  *******************************************************************/
-SLADEMap* UndoRedo::currentMap() {
+SLADEMap* UndoRedo::currentMap()
+{
 	if (current_undo_manager)
 		return current_undo_manager->getMap();
 	else

@@ -45,7 +45,8 @@
  * AnimatedEntryPanel class constructor
  *******************************************************************/
 AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
-: EntryPanel(parent, "animated") {
+	: EntryPanel(parent, "animated")
+{
 	ae_current = NULL;
 	ae_modified = false;
 
@@ -142,14 +143,16 @@ AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 /* AnimatedEntryPanel::~AnimatedEntryPanel
  * AnimatedEntryPanel class destructor
  *******************************************************************/
-AnimatedEntryPanel::~AnimatedEntryPanel() {
+AnimatedEntryPanel::~AnimatedEntryPanel()
+{
 }
 
 /* AnimatedEntryPanel::handleAction
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
  *******************************************************************/
-bool AnimatedEntryPanel::handleAction(string id) {
+bool AnimatedEntryPanel::handleAction(string id)
+{
 	// Don't handle actions if hidden
 	if (!isActivePanel())
 		return false;
@@ -158,19 +161,23 @@ bool AnimatedEntryPanel::handleAction(string id) {
 	if (!id.StartsWith("anim_"))
 		return false;
 
-	if (id == "anim_new") {
+	if (id == "anim_new")
+	{
 		add();
 	}
 
-	else if (id == "anim_delete") {
+	else if (id == "anim_delete")
+	{
 		remove();
 	}
 
-	else if (id == "anim_up") {
+	else if (id == "anim_up")
+	{
 		moveUp();
 	}
 
-	else if (id == "anim_down") {
+	else if (id == "anim_down")
+	{
 		moveDown();
 	}
 
@@ -186,7 +193,8 @@ bool AnimatedEntryPanel::handleAction(string id) {
 /* AnimatedEntryPanel::loadEntry
  * Loads an entry into the ANIMATED entry panel
  *******************************************************************/
-bool AnimatedEntryPanel::loadEntry(ArchiveEntry* entry) {
+bool AnimatedEntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	// Do nothing if entry is already open
 	if (this->entry == entry && !isModified())
 		return true;
@@ -210,13 +218,16 @@ bool AnimatedEntryPanel::loadEntry(ArchiveEntry* entry) {
 /* AnimatedEntryPanel::saveEntry
  * Saves any changes made to the entry
  *******************************************************************/
-bool AnimatedEntryPanel::saveEntry() {
+bool AnimatedEntryPanel::saveEntry()
+{
 	MemChunk mc;
 	mc.seek(0, SEEK_SET);
 	animated_t anim;
-	for (uint32_t a = 0; a < animated.nEntries(); a++) {
+	for (uint32_t a = 0; a < animated.nEntries(); a++)
+	{
 		AnimatedEntry* ent = animated.getEntry(a);
-		for (size_t i = 0; i < 9; ++i) {
+		for (size_t i = 0; i < 9; ++i)
+		{
 			if (ent->getFirst().length() > i)
 				anim.first[i] = ent->getFirst()[i];
 			else anim.first[i] = 0;
@@ -232,7 +243,8 @@ bool AnimatedEntryPanel::saveEntry() {
 	anim.type = 255;
 	mc.write(&anim, 1);
 	bool success = entry->importMemChunk(mc);
-	if (success) {
+	if (success)
+	{
 		for (uint32_t a = 0; a < animated.nEntries(); a++)
 			list_entries->setItemStatus(a, LV_STATUS_NORMAL);
 	}
@@ -242,8 +254,9 @@ bool AnimatedEntryPanel::saveEntry() {
 /* AnimatedEntryPanel::revertEntry
  * Undoes any changes made to the entry
  *******************************************************************/
-bool AnimatedEntryPanel::revertEntry() {
-	ArchiveEntry * reload = entry;
+bool AnimatedEntryPanel::revertEntry()
+{
+	ArchiveEntry* reload = entry;
 	entry = NULL;
 	return loadEntry(reload);
 }
@@ -251,12 +264,14 @@ bool AnimatedEntryPanel::revertEntry() {
 /* AnimatedEntryPanel::insertListItem
  * Adds an entry to the list
  *******************************************************************/
-void AnimatedEntryPanel::insertListItem(AnimatedEntry* ent, uint32_t pos) {
+void AnimatedEntryPanel::insertListItem(AnimatedEntry* ent, uint32_t pos)
+{
 	if (ent == NULL) return;
 	string cols[] = { ent->getType() ? "Texture" : "Flat",
-		ent->getFirst(), ent->getLast(),
-		ent->getSpeed() < 65535 ? S_FMT("%d tics", ent->getSpeed()) : "Swirl",
-		ent->getDecals()? "Allowed" : " " };
+	                  ent->getFirst(), ent->getLast(),
+	                  ent->getSpeed() < 65535 ? S_FMT("%d tics", ent->getSpeed()) : "Swirl",
+	                  ent->getDecals()? "Allowed" : " "
+	                };
 	list_entries->addItem(pos, wxArrayString(5, cols));
 	list_entries->setItemStatus(pos, ent->getStatus());
 }
@@ -264,13 +279,16 @@ void AnimatedEntryPanel::insertListItem(AnimatedEntry* ent, uint32_t pos) {
 /* AnimatedEntryPanel::updateListItem
  * Updates an entry to the list
  *******************************************************************/
-void AnimatedEntryPanel::updateListItem(AnimatedEntry* ent, uint32_t pos) {
+void AnimatedEntryPanel::updateListItem(AnimatedEntry* ent, uint32_t pos)
+{
 	if (ent == NULL) return;
 	string cols[] = { ent->getType() ? "Texture" : "Flat",
-		ent->getFirst(), ent->getLast(),
-		ent->getSpeed() < 65535 ? S_FMT("%d tics", ent->getSpeed()) : "Swirl",
-		ent->getDecals()? "Allowed" : " " };
-	for (size_t a = 0; a < 5; ++a) {
+	                  ent->getFirst(), ent->getLast(),
+	                  ent->getSpeed() < 65535 ? S_FMT("%d tics", ent->getSpeed()) : "Swirl",
+	                  ent->getDecals()? "Allowed" : " "
+	                };
+	for (size_t a = 0; a < 5; ++a)
+	{
 		list_entries->setItemText(pos, a, cols[a]);
 	}
 	list_entries->setItemStatus(pos, ent->getStatus());
@@ -279,7 +297,8 @@ void AnimatedEntryPanel::updateListItem(AnimatedEntry* ent, uint32_t pos) {
 /* AnimatedEntryPanel::populateEntryList
  * Clears and adds all entries to the entry list
  *******************************************************************/
-void AnimatedEntryPanel::populateEntryList() {
+void AnimatedEntryPanel::populateEntryList()
+{
 	// Clear current list
 	list_entries->ClearAll();
 
@@ -303,7 +322,8 @@ void AnimatedEntryPanel::populateEntryList() {
 /* AnimatedEntryPanel::applyChanges
  * Saves changes to list
  *******************************************************************/
-void AnimatedEntryPanel::applyChanges() {
+void AnimatedEntryPanel::applyChanges()
+{
 	if (ae_current == NULL)
 		return;
 
@@ -311,7 +331,7 @@ void AnimatedEntryPanel::applyChanges() {
 
 	ae_current->setFirst(text_firstname->GetValue());
 	ae_current->setLast(text_lastname->GetValue());
-	long val; 
+	long val;
 	if (text_speed->GetValue().ToLong(&val))
 		ae_current->setSpeed((uint32_t) val);
 	if (rbtn_texture->GetValue())
@@ -322,9 +342,12 @@ void AnimatedEntryPanel::applyChanges() {
 		ae_current->setSpeed(65536);
 
 	// Find entry
-	for (uint32_t a = 0; a < animated.nEntries(); a++) {
-		if (animated.getEntry(a) == ae_current) {
-			if (ae_current->getStatus() == LV_STATUS_NORMAL) {
+	for (uint32_t a = 0; a < animated.nEntries(); a++)
+	{
+		if (animated.getEntry(a) == ae_current)
+		{
+			if (ae_current->getStatus() == LV_STATUS_NORMAL)
+			{
 				ae_current->setStatus(LV_STATUS_MODIFIED);
 			}
 			updateListItem(ae_current, a);
@@ -337,8 +360,10 @@ void AnimatedEntryPanel::applyChanges() {
 /* AnimatedEntryPanel::updateControls
  * Update the content of the control fields
  *******************************************************************/
-void AnimatedEntryPanel::updateControls() {
-	if (ae_current == NULL) {
+void AnimatedEntryPanel::updateControls()
+{
+	if (ae_current == NULL)
+	{
 		text_firstname->Clear();
 		text_lastname->Clear();
 		text_speed->Clear();
@@ -346,7 +371,9 @@ void AnimatedEntryPanel::updateControls() {
 		rbtn_texture->SetValue(false);
 		cbox_decals->SetValue(false);
 		cbox_swirl->SetValue(false);
-	} else {
+	}
+	else
+	{
 		text_firstname->ChangeValue(ae_current->getFirst());
 		text_lastname->ChangeValue(ae_current->getLast());
 		text_speed->ChangeValue(S_FMT("%d", ae_current->getSpeed()));
@@ -354,10 +381,13 @@ void AnimatedEntryPanel::updateControls() {
 		rbtn_texture->SetValue(!!ae_current->getType());
 		cbox_decals->SetValue(ae_current->getDecals());
 		cbox_swirl->SetValue(ae_current->getSpeed() > 65535);
-		if (rbtn_flat->GetValue()) {
+		if (rbtn_flat->GetValue())
+		{
 			cbox_decals->Disable();
 			cbox_decals->SetValue(false);
-		} else {
+		}
+		else
+		{
 			cbox_decals->Enable();
 		}
 	}
@@ -366,7 +396,8 @@ void AnimatedEntryPanel::updateControls() {
 /* AnimatedEntryPanel::add
  * Insert new animation after selected animations
  *******************************************************************/
-void AnimatedEntryPanel::add() {
+void AnimatedEntryPanel::add()
+{
 	// Get selected animations
 	wxArrayInt selection = list_entries->selectedItems();
 	uint32_t index = list_entries->GetItemCount();
@@ -375,7 +406,7 @@ void AnimatedEntryPanel::add() {
 
 	// Create new animation
 	animated_t anim = { 0, "????????", "????????", 8 };
-	AnimatedEntry * ae = new AnimatedEntry(anim);
+	AnimatedEntry* ae = new AnimatedEntry(anim);
 	ae->setStatus(LV_STATUS_NEW);
 
 	// Insert it in list
@@ -392,7 +423,8 @@ void AnimatedEntryPanel::add() {
 /* AnimatedEntryPanel::remove
  * Removes any selected animations
  *******************************************************************/
-void AnimatedEntryPanel::remove() {
+void AnimatedEntryPanel::remove()
+{
 	// Get selected animations
 	wxArrayInt selection = list_entries->selectedItems();
 
@@ -403,7 +435,8 @@ void AnimatedEntryPanel::remove() {
 	list_entries->enableSizeUpdate(false);
 
 	// Go through selection backwards
-	for (int a = selection.size() - 1; a >= 0; a--) {
+	for (int a = selection.size() - 1; a >= 0; a--)
+	{
 		// Remove animation from list
 		animated.removeEntry(selection[a]);
 		list_entries->DeleteItem(selection[a]);
@@ -420,11 +453,12 @@ void AnimatedEntryPanel::remove() {
 /* AnimatedEntryPanel::moveUp
  * Moves all selected animations up
  *******************************************************************/
-void AnimatedEntryPanel::moveUp() {
+void AnimatedEntryPanel::moveUp()
+{
 	// Get selected animations
 	wxArrayInt selection = list_entries->selectedItems();
 
-	// Do nothing if nothing is selected or if the 
+	// Do nothing if nothing is selected or if the
 	// first selected item is at the top of the list
 	if (selection.size() == 0 || selection[0] == 0)
 		return;
@@ -432,7 +466,8 @@ void AnimatedEntryPanel::moveUp() {
 	list_entries->enableSizeUpdate(false);
 
 	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++) {
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
 		// Swap selected animation with the one above it
 		animated.swapEntries(selection[a], selection[a] - 1);
 		updateListItem(animated.getEntry(selection[a]), selection[a]);
@@ -455,11 +490,12 @@ void AnimatedEntryPanel::moveUp() {
 /* AnimatedEntryPanel::moveDown
  * Moves all selected animations down
  *******************************************************************/
-void AnimatedEntryPanel::moveDown() {
+void AnimatedEntryPanel::moveDown()
+{
 	// Get selected animations
 	wxArrayInt selection = list_entries->selectedItems();
 
-	// Do nothing if nothing is selected or if the 
+	// Do nothing if nothing is selected or if the
 	// last selected item is at the end of the list
 	if (selection.size() == 0 || selection.back() == list_entries->GetItemCount()-1)
 		return;
@@ -467,7 +503,8 @@ void AnimatedEntryPanel::moveDown() {
 	list_entries->enableSizeUpdate(false);
 
 	// Go through selection backwards
-	for (int a = selection.size()-1; a >= 0; a--) {
+	for (int a = selection.size()-1; a >= 0; a--)
+	{
 		// Swap selected animation with the one below it
 		animated.swapEntries(selection[a], selection[a] + 1);
 		updateListItem(animated.getEntry(selection[a]), selection[a]);
@@ -494,11 +531,15 @@ void AnimatedEntryPanel::moveDown() {
 /* AnimatedEntryPanel::onListSelect
  * Called when an item on the animation list is selected
  *******************************************************************/
-void AnimatedEntryPanel::onListSelect(wxListEvent& e) {
+void AnimatedEntryPanel::onListSelect(wxListEvent& e)
+{
 	// Do nothing if multiple animations are selected
-	if (list_entries->GetSelectedItemCount() > 1) {
+	if (list_entries->GetSelectedItemCount() > 1)
+	{
 		ae_current = NULL;
-	} else {
+	}
+	else
+	{
 		// Get selected texture
 		AnimatedEntry* ae = animated.getEntry(e.GetIndex());
 
@@ -516,7 +557,8 @@ void AnimatedEntryPanel::onListSelect(wxListEvent& e) {
 /* AnimatedEntryPanel::onListRightClick
  * Called when an item on the animation list is right clicked
  *******************************************************************/
-void AnimatedEntryPanel::onListRightClick(wxListEvent& e) {
+void AnimatedEntryPanel::onListRightClick(wxListEvent& e)
+{
 	// Create context menu
 	wxMenu context;
 	theApp->getAction("anim_delete")->addToMenu(&context);
@@ -532,17 +574,22 @@ void AnimatedEntryPanel::onListRightClick(wxListEvent& e) {
 /* AnimatedEntryPanel::onTypeChanged
  * Called when the 'flat' and 'texture' radio buttons are toggled
  *******************************************************************/
-void AnimatedEntryPanel::onTypeChanged(wxCommandEvent& e) {
-	if (rbtn_texture->GetValue() != !!ae_current->getType()) {
+void AnimatedEntryPanel::onTypeChanged(wxCommandEvent& e)
+{
+	if (rbtn_texture->GetValue() != !!ae_current->getType())
+	{
 		ae_modified = true;
 		setModified(true);
 	}
 
 	// Enable the decals checkbox for textures
-	if (rbtn_texture->GetValue()) {
+	if (rbtn_texture->GetValue())
+	{
 		cbox_decals->Enable();
 		cbox_decals->SetValue(true);
-	} else {
+	}
+	else
+	{
 		cbox_decals->Disable();
 		cbox_decals->SetValue(false);
 	}
@@ -551,8 +598,10 @@ void AnimatedEntryPanel::onTypeChanged(wxCommandEvent& e) {
 /* AnimatedEntryPanel::onSwirlChanged
  * Called when the 'swirl' checkbox is toggled
  *******************************************************************/
-void AnimatedEntryPanel::onSwirlChanged(wxCommandEvent& e) {
-	if (cbox_swirl->GetValue() != ae_current->getSpeed() > 65535) {
+void AnimatedEntryPanel::onSwirlChanged(wxCommandEvent& e)
+{
+	if (cbox_swirl->GetValue() != ae_current->getSpeed() > 65535)
+	{
 		ae_modified = true;
 		setModified(true);
 
@@ -568,12 +617,15 @@ void AnimatedEntryPanel::onSwirlChanged(wxCommandEvent& e) {
 /* AnimatedEntryPanel::onDecalsChanged
  * Called when the 'decals' checkbox is toggled
  *******************************************************************/
-void AnimatedEntryPanel::onDecalsChanged(wxCommandEvent& e) {
+void AnimatedEntryPanel::onDecalsChanged(wxCommandEvent& e)
+{
 	// Only textures can have decals
-	if (rbtn_flat->GetValue()) {
+	if (rbtn_flat->GetValue())
+	{
 		cbox_decals->SetValue(false);
 	}
-	if (cbox_decals->GetValue() != ae_current->getDecals()) {
+	if (cbox_decals->GetValue() != ae_current->getDecals())
+	{
 		ae_modified = true;
 		setModified(true);
 		ae_current->setDecals(cbox_decals->GetValue());
@@ -583,16 +635,19 @@ void AnimatedEntryPanel::onDecalsChanged(wxCommandEvent& e) {
 /* AnimatedEntryPanel::onFirstNameChanged
  * Called when the first name entry box is changed
  *******************************************************************/
-void AnimatedEntryPanel::onFirstNameChanged(wxCommandEvent& e) {
+void AnimatedEntryPanel::onFirstNameChanged(wxCommandEvent& e)
+{
 	// Change texture name
-	if (ae_current) {
+	if (ae_current)
+	{
 		string tmpstr = text_firstname->GetValue();
 		tmpstr.MakeUpper();
 		tmpstr.Truncate(8);
 		size_t ip = text_firstname->GetInsertionPoint();
 		text_firstname->ChangeValue(tmpstr);
 		text_firstname->SetInsertionPoint(ip);
-		if (tmpstr.CmpNoCase(ae_current->getFirst())) {
+		if (tmpstr.CmpNoCase(ae_current->getFirst()))
+		{
 			ae_modified = true;
 			setModified(true);
 		}
@@ -602,16 +657,19 @@ void AnimatedEntryPanel::onFirstNameChanged(wxCommandEvent& e) {
 /* AnimatedEntryPanel::onLastNameChanged
  * Called when the last name entry box is changed
  *******************************************************************/
-void AnimatedEntryPanel::onLastNameChanged(wxCommandEvent& e) {
+void AnimatedEntryPanel::onLastNameChanged(wxCommandEvent& e)
+{
 	// Change texture name
-	if (ae_current) {
+	if (ae_current)
+	{
 		string tmpstr = text_lastname->GetValue();
 		tmpstr.MakeUpper();
 		tmpstr.Truncate(8);
 		size_t ip = text_lastname->GetInsertionPoint();
 		text_lastname->ChangeValue(tmpstr);
 		text_lastname->SetInsertionPoint(ip);
-		if (tmpstr.CmpNoCase(ae_current->getLast())) {
+		if (tmpstr.CmpNoCase(ae_current->getLast()))
+		{
 			ae_modified = true;
 			setModified(true);
 		}
@@ -621,16 +679,21 @@ void AnimatedEntryPanel::onLastNameChanged(wxCommandEvent& e) {
 /* AnimatedEntryPanel::onSpeedChanged
  * Called when the speed entry box is changed
  *******************************************************************/
-void AnimatedEntryPanel::onSpeedChanged(wxCommandEvent& e) {
+void AnimatedEntryPanel::onSpeedChanged(wxCommandEvent& e)
+{
 	// Change texture name
-	if (ae_current) {
+	if (ae_current)
+	{
 		string tmpstr = text_speed->GetValue();
 		long tmpval;
-		if (tmpstr.ToLong(&tmpval) && ae_current->getSpeed() != tmpval) {
+		if (tmpstr.ToLong(&tmpval) && ae_current->getSpeed() != tmpval)
+		{
 			//ae_modified = true;
 			setModified(true);
 			ae_current->setSpeed(tmpval);
-		} else {
+		}
+		else
+		{
 			size_t ip = text_speed->GetInsertionPoint();
 			text_speed->ChangeValue(S_FMT("%d", ae_current->getSpeed()));
 			text_speed->SetInsertionPoint(ip);
@@ -641,7 +704,8 @@ void AnimatedEntryPanel::onSpeedChanged(wxCommandEvent& e) {
 /* AnimatedEntryPanel::onBtnNew
  * Called when the 'New Animation' button is clicked
  *******************************************************************/
-void AnimatedEntryPanel::onBtnNew(wxCommandEvent& e) {
+void AnimatedEntryPanel::onBtnNew(wxCommandEvent& e)
+{
 	add();
 }
 

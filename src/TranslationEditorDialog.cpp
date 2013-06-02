@@ -47,7 +47,8 @@
 /* GradientBox::GradientBox
  * GradientBox class constructor
  *******************************************************************/
-GradientBox::GradientBox(wxWindow* parent, int steps) : OGLCanvas(parent, -1) {
+GradientBox::GradientBox(wxWindow* parent, int steps) : OGLCanvas(parent, -1)
+{
 	// Init variables
 	col_start = COL_BLACK;
 	col_end = COL_WHITE;
@@ -60,13 +61,15 @@ GradientBox::GradientBox(wxWindow* parent, int steps) : OGLCanvas(parent, -1) {
 /* GradientBox::~GradientBox
  * GradientBox class destructor
  *******************************************************************/
-GradientBox::~GradientBox() {
+GradientBox::~GradientBox()
+{
 }
 
 /* GradientBox::draw
  * Called when the canvas needs to be redrawn
  *******************************************************************/
-void GradientBox::draw() {
+void GradientBox::draw()
+{
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
 
@@ -87,7 +90,8 @@ void GradientBox::draw() {
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Draw gradient
-	if (steps < 0) {
+	if (steps < 0)
+	{
 		// No steps defined, draw smooth gradient
 		glBegin(GL_QUADS);
 		col_start.set_gl();
@@ -112,12 +116,14 @@ void GradientBox::draw() {
  * TranslationEditorDialog class constructor
  *******************************************************************/
 TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* pal, string title, SImage* preview_image)
-: wxDialog(parent, -1, title) {
+	: wxDialog(parent, -1, title)
+{
 	// Init variables
 	palette = pal;
 
 	// Setup preview image
-	if (preview_image) {
+	if (preview_image)
+	{
 		image_preview.copyImage(preview_image);
 		if (preview_image->hasPalette())
 			palette = preview_image->getPalette();
@@ -138,8 +144,8 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	// --- Top half (translation origin) ---
 
 	// Translations list
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Translation Ranges");
-	wxStaticBoxSizer *framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Translation Ranges");
+	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
 	sizer->Add(framesizer, wxGBPosition(0, 0), wxDefaultSpan, wxEXPAND);
 
 	list_translations = new wxListBox(this, -1);
@@ -333,13 +339,15 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 /* TranslationEditorDialog::~TranslationEditorDialog
  * TranslationEditorDialog class destructor
  *******************************************************************/
-TranslationEditorDialog::~TranslationEditorDialog() {
+TranslationEditorDialog::~TranslationEditorDialog()
+{
 }
 
 /* TranslationEditorDialog::openTranslation
  * Opens the translation [trans] for preview/modification
  *******************************************************************/
-void TranslationEditorDialog::openTranslation(Translation& trans) {
+void TranslationEditorDialog::openTranslation(Translation& trans)
+{
 	// Read translation
 	translation.copy(trans);
 
@@ -349,7 +357,8 @@ void TranslationEditorDialog::openTranslation(Translation& trans) {
 		list_translations->Append(translation.getRange(a)->asText());
 
 	// Select+open first range if it exists
-	if (list_translations->GetCount() > 0) {
+	if (list_translations->GetCount() > 0)
+	{
 		list_translations->SetSelection(0);
 		openRange(0);
 	}
@@ -361,7 +370,8 @@ void TranslationEditorDialog::openTranslation(Translation& trans) {
 /* TranslationEditorDialog::openRange
  * Opens the translation range [index] from the current translation
  *******************************************************************/
-void TranslationEditorDialog::openRange(int index) {
+void TranslationEditorDialog::openRange(int index)
+{
 	// Check index
 	if (index < 0 || index >= (int)translation.nRanges())
 		return;
@@ -374,7 +384,8 @@ void TranslationEditorDialog::openRange(int index) {
 	pal_canvas_original->Refresh();
 
 	// Check translation range type
-	if (tr->getType() == TRANS_PALETTE) {
+	if (tr->getType() == TRANS_PALETTE)
+	{
 		// Palette range
 		TransRangePalette* tpr = (TransRangePalette*)tr;
 
@@ -383,17 +394,20 @@ void TranslationEditorDialog::openRange(int index) {
 		showPaletteTarget();
 
 		// Set target range selection
-		if (tpr->dStart() <= tpr->dEnd()) {
+		if (tpr->dStart() <= tpr->dEnd())
+		{
 			pal_canvas_target->setSelection(tpr->dStart(), tpr->dEnd());
 			cb_target_reverse->SetValue(false);
 		}
-		else {
+		else
+		{
 			pal_canvas_target->setSelection(tpr->dEnd(), tpr->dStart());
 			cb_target_reverse->SetValue(true);
 		}
 		pal_canvas_target->Refresh();
 	}
-	else if (tr->getType() == TRANS_COLOUR) {
+	else if (tr->getType() == TRANS_COLOUR)
+	{
 		// Colour gradient
 		TransRangeColour* tcr = (TransRangeColour*)tr;
 
@@ -412,7 +426,8 @@ void TranslationEditorDialog::openRange(int index) {
 		// Update UI
 		gb_gradient->Refresh();
 	}
-	else if (tr->getType() == TRANS_DESAT) {
+	else if (tr->getType() == TRANS_DESAT)
+	{
 		// Desaturated colour gradient
 		TransRangeDesat* tdr = (TransRangeDesat*)tr;
 
@@ -443,7 +458,8 @@ void TranslationEditorDialog::openRange(int index) {
 /* TranslationEditorDialog::updateListItem
  * Updates the translation range [index] in the list
  *******************************************************************/
-void TranslationEditorDialog::updateListItem(int index) {
+void TranslationEditorDialog::updateListItem(int index)
+{
 	// Check index
 	if (index < 0 || index >= (int)list_translations->GetCount())
 		return;
@@ -452,7 +468,8 @@ void TranslationEditorDialog::updateListItem(int index) {
 	TransRange* tr = translation.getRange(index);
 
 	// Update list item text
-	if (tr) {
+	if (tr)
+	{
 		list_translations->Delete(index);
 		list_translations->Insert(tr->asText(), index);
 		list_translations->SetSelection(index);
@@ -463,19 +480,22 @@ void TranslationEditorDialog::updateListItem(int index) {
  * Sets the current translation range's destination starting colour
  * to [col]
  *******************************************************************/
-void TranslationEditorDialog::setStartColour(rgba_t col) {
+void TranslationEditorDialog::setStartColour(rgba_t col)
+{
 	// Get currently selected translation range
 	TransRange* tr = translation.getRange(list_translations->GetSelection());
 
 	// Check its type
-	if (tr->getType() == TRANS_COLOUR) {
+	if (tr->getType() == TRANS_COLOUR)
+	{
 		// Colour range
 		TransRangeColour* tcr = (TransRangeColour*)tr;
 
 		// Set destination start colour
 		tcr->setDStart(col);
 	}
-	else if (tr->getType() == TRANS_DESAT) {
+	else if (tr->getType() == TRANS_DESAT)
+	{
 		// Desaturated colour range
 		TransRangeDesat* tdr = (TransRangeDesat*)tr;
 
@@ -501,19 +521,22 @@ void TranslationEditorDialog::setStartColour(rgba_t col) {
  * Sets the current translation range's destination ending colour
  * to [col]
  *******************************************************************/
-void TranslationEditorDialog::setEndColour(rgba_t col) {
+void TranslationEditorDialog::setEndColour(rgba_t col)
+{
 	// Get currently selected translation range
 	TransRange* tr = translation.getRange(list_translations->GetSelection());
 
 	// Check its type
-	if (tr->getType() == TRANS_COLOUR) {
+	if (tr->getType() == TRANS_COLOUR)
+	{
 		// Colour range
 		TransRangeColour* tcr = (TransRangeColour*)tr;
 
 		// Set destination end colour
 		tcr->setDEnd(col);
 	}
-	else if (tr->getType() == TRANS_DESAT) {
+	else if (tr->getType() == TRANS_DESAT)
+	{
 		// Desaturated colour range
 		TransRangeDesat* tdr = (TransRangeDesat*)tr;
 
@@ -538,9 +561,11 @@ void TranslationEditorDialog::setEndColour(rgba_t col) {
 /* TranslationEditorDialog::showPaletteTarget
  * Shows the palette range translation target controls
  *******************************************************************/
-void TranslationEditorDialog::showPaletteTarget() {
+void TranslationEditorDialog::showPaletteTarget()
+{
 	// Swap gradient panel for palette panel
-	if (panel_target_gradient->IsShown()) {
+	if (panel_target_gradient->IsShown())
+	{
 		panel_target_gradient->Show(false);
 		GetSizer()->Replace(panel_target_gradient, panel_target_palette, true);
 		panel_target_palette->Show(true);
@@ -555,9 +580,11 @@ void TranslationEditorDialog::showPaletteTarget() {
 /* TranslationEditorDialog::showGradientTarget
  * Shows the colour gradient translation target controls
  *******************************************************************/
-void TranslationEditorDialog::showGradientTarget() {
+void TranslationEditorDialog::showGradientTarget()
+{
 	// Swap palette panel for gradient panel
-	if (panel_target_palette->IsShown()) {
+	if (panel_target_palette->IsShown())
+	{
 		panel_target_palette->Show(false);
 		GetSizer()->Replace(panel_target_palette, panel_target_gradient, true);
 		panel_target_gradient->Show(true);
@@ -573,7 +600,8 @@ void TranslationEditorDialog::showGradientTarget() {
  * Updates the image and resulting palette previews according to the
  * current translation
  *******************************************************************/
-void TranslationEditorDialog::updatePreviews() {
+void TranslationEditorDialog::updatePreviews()
+{
 	// Update palette preview
 	pal_canvas_preview->setPalette(palette);
 	pal_canvas_preview->getPalette().applyTranslation(&translation);
@@ -613,7 +641,8 @@ void TranslationEditorDialog::updatePreviews() {
 /* TranslationEditorDialog::onSize
  * Called when the dialog is resized
  *******************************************************************/
-void TranslationEditorDialog::onSize(wxSizeEvent& e) {
+void TranslationEditorDialog::onSize(wxSizeEvent& e)
+{
 	// Update image preview
 	gfx_preview->zoomToFit(true, 0.05f);
 
@@ -623,7 +652,8 @@ void TranslationEditorDialog::onSize(wxSizeEvent& e) {
 /* TranslationEditorDialog::onTranslationListItemSelected
  * Called when a translation range list item is selected
  *******************************************************************/
-void TranslationEditorDialog::onTranslationListItemSelected(wxCommandEvent& e) {
+void TranslationEditorDialog::onTranslationListItemSelected(wxCommandEvent& e)
+{
 	// Open what was selected
 	openRange(e.GetInt());
 }
@@ -632,13 +662,15 @@ void TranslationEditorDialog::onTranslationListItemSelected(wxCommandEvent& e) {
  * Called when the 'palette range' translation type radio button is
  * selected
  *******************************************************************/
-void TranslationEditorDialog::onRBPaletteSelected(wxCommandEvent& e) {
+void TranslationEditorDialog::onRBPaletteSelected(wxCommandEvent& e)
+{
 	// Swap to target palette panel
 	showPaletteTarget();
 
 	// If a range is selected
 	int index = list_translations->GetSelection();
-	if (index >= 0) {
+	if (index >= 0)
+	{
 		// Remove it
 		translation.removeRange(index);
 
@@ -649,11 +681,13 @@ void TranslationEditorDialog::onRBPaletteSelected(wxCommandEvent& e) {
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target range
-		if (cb_target_reverse->GetValue()) {
+		if (cb_target_reverse->GetValue())
+		{
 			tr->setDEnd(pal_canvas_target->getSelectionStart());
 			tr->setDStart(pal_canvas_target->getSelectionEnd());
 		}
-		else {
+		else
+		{
 			tr->setDStart(pal_canvas_target->getSelectionStart());
 			tr->setDEnd(pal_canvas_target->getSelectionEnd());
 		}
@@ -669,13 +703,15 @@ void TranslationEditorDialog::onRBPaletteSelected(wxCommandEvent& e) {
  * Called when the 'colour gradient' translation type radio button is
  * selected
  *******************************************************************/
-void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e) {
+void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e)
+{
 	// Swap to target colour panel
 	showGradientTarget();
 
 	// If a range is selected
 	int index = list_translations->GetSelection();
-	if (index >= 0) {
+	if (index >= 0)
+	{
 		// Remove it
 		translation.removeRange(index);
 
@@ -702,13 +738,15 @@ void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e) {
  * Called when the 'desaturated colour gradient' translation type
  * radio button is selected
  *******************************************************************/
-void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e) {
+void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
+{
 	// Swap to target colour panel
 	showGradientTarget();
 
 	// If a range is selected
 	int index = list_translations->GetSelection();
-	if (index >= 0) {
+	if (index >= 0)
+	{
 		// Remove it
 		translation.removeRange(index);
 
@@ -722,11 +760,11 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e) {
 		wxColour sc = cp_range_begin->GetColour();
 		wxColour ec = cp_range_end->GetColour();
 		tr->setDStart(MathStuff::clamp(sc.Red() / 127.0f, 0, 2),
-						MathStuff::clamp(sc.Green() / 127.0f, 0, 2),
-						MathStuff::clamp(sc.Blue() / 127.0f, 0, 2));
+		              MathStuff::clamp(sc.Green() / 127.0f, 0, 2),
+		              MathStuff::clamp(sc.Blue() / 127.0f, 0, 2));
 		tr->setDEnd(MathStuff::clamp(ec.Red() / 127.0f, 0, 2),
-						MathStuff::clamp(ec.Green() / 127.0f, 0, 2),
-						MathStuff::clamp(ec.Blue() / 127.0f, 0, 2));
+		            MathStuff::clamp(ec.Green() / 127.0f, 0, 2),
+		            MathStuff::clamp(ec.Blue() / 127.0f, 0, 2));
 
 		// Update UI
 		updateListItem(index);
@@ -738,7 +776,8 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e) {
 /* TranslationEditorDialog::onBeginColourChanged
  * Called when the target gradient start colour is changed
  *******************************************************************/
-void TranslationEditorDialog::onBeginColourChanged(wxColourPickerEvent& e) {
+void TranslationEditorDialog::onBeginColourChanged(wxColourPickerEvent& e)
+{
 	// Set start colour to selected colour
 	wxColour col = cp_range_begin->GetColour();
 	setStartColour(rgba_t(col.Red(), col.Green(), col.Blue()));
@@ -747,7 +786,8 @@ void TranslationEditorDialog::onBeginColourChanged(wxColourPickerEvent& e) {
 /* TranslationEditorDialog::onEndColourChanged
  * Called when the target gradient end colour is changed
  *******************************************************************/
-void TranslationEditorDialog::onEndColourChanged(wxColourPickerEvent& e) {
+void TranslationEditorDialog::onEndColourChanged(wxColourPickerEvent& e)
+{
 	// Set end colour to selected colour
 	wxColour col = cp_range_end->GetColour();
 	setEndColour(rgba_t(col.Red(), col.Green(), col.Blue()));
@@ -757,12 +797,14 @@ void TranslationEditorDialog::onEndColourChanged(wxColourPickerEvent& e) {
  * Called when the left mouse button is released in the origin
  * palette range canvas
  *******************************************************************/
-void TranslationEditorDialog::onPalOriginLeftUp(wxMouseEvent& e) {
+void TranslationEditorDialog::onPalOriginLeftUp(wxMouseEvent& e)
+{
 	// Get current translation range
 	TransRange* tr = translation.getRange(list_translations->GetSelection());
 
 	// Update its origin range
-	if (tr) {
+	if (tr)
+	{
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 	}
@@ -776,18 +818,22 @@ void TranslationEditorDialog::onPalOriginLeftUp(wxMouseEvent& e) {
  * Called when the left mouse button is released in the target
  * palette range canvas
  *******************************************************************/
-void TranslationEditorDialog::onPalTargetLeftUp(wxMouseEvent& e) {
+void TranslationEditorDialog::onPalTargetLeftUp(wxMouseEvent& e)
+{
 	// Get current translation range
 	TransRange* tr = translation.getRange(list_translations->GetSelection());
 
 	// Update its target range if it's a palette translation
-	if (tr && tr->getType() == TRANS_PALETTE) {
+	if (tr && tr->getType() == TRANS_PALETTE)
+	{
 		TransRangePalette* tpr = (TransRangePalette*)tr;
-		if (cb_target_reverse->GetValue()) {
+		if (cb_target_reverse->GetValue())
+		{
 			tpr->setDEnd(pal_canvas_target->getSelectionStart());
 			tpr->setDStart(pal_canvas_target->getSelectionEnd());
 		}
-		else {
+		else
+		{
 			tpr->setDStart(pal_canvas_target->getSelectionStart());
 			tpr->setDEnd(pal_canvas_target->getSelectionEnd());
 		}
@@ -801,7 +847,8 @@ void TranslationEditorDialog::onPalTargetLeftUp(wxMouseEvent& e) {
 /* TranslationEditorDialog::onBtnAdd
  * Called when the 'Add Translation' button is clicked
  *******************************************************************/
-void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e) {
+void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e)
+{
 	// Get index to add at
 	int index = list_translations->GetSelection()+1;
 
@@ -825,7 +872,8 @@ void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e) {
 /* TranslationEditorDialog::onBtnRemove
  * Called when the 'Remove Translation' button is clicked
  *******************************************************************/
-void TranslationEditorDialog::onBtnRemove(wxCommandEvent& e) {
+void TranslationEditorDialog::onBtnRemove(wxCommandEvent& e)
+{
 	// Do nothing if there is only one translation
 	if (translation.nRanges() == 1)
 		return;
@@ -842,7 +890,8 @@ void TranslationEditorDialog::onBtnRemove(wxCommandEvent& e) {
 	// Update UI
 	if (index >= (int)list_translations->GetCount())
 		index--;
-	if (index >= 0) {
+	if (index >= 0)
+	{
 		list_translations->SetSelection(index);
 		openRange(index);
 	}
@@ -852,7 +901,8 @@ void TranslationEditorDialog::onBtnRemove(wxCommandEvent& e) {
 /* TranslationEditorDialog::onBtnUp
  * Called when the 'Move Up' button is clicked
  *******************************************************************/
-void TranslationEditorDialog::onBtnUp(wxCommandEvent& e) {
+void TranslationEditorDialog::onBtnUp(wxCommandEvent& e)
+{
 	// Get selection
 	int index = list_translations->GetSelection();
 
@@ -876,7 +926,8 @@ void TranslationEditorDialog::onBtnUp(wxCommandEvent& e) {
 /* TranslationEditorDialog::onBtnDown
  * Called when the 'Move Down' button is clicked
  *******************************************************************/
-void TranslationEditorDialog::onBtnDown(wxCommandEvent& e) {
+void TranslationEditorDialog::onBtnDown(wxCommandEvent& e)
+{
 	// Get selection
 	int index = list_translations->GetSelection();
 
@@ -900,16 +951,18 @@ void TranslationEditorDialog::onBtnDown(wxCommandEvent& e) {
 /* TranslationEditorDialog::onBtnLoad
  * Called when the 'Load Translation' button is clicked
  *******************************************************************/
-void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e) {
+void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
+{
 	// Get user directory
 	string dir = appPath("translations", DIR_USER);
 
 	// Create open file dialog
 	wxFileDialog dialog_open(this, "Load Translation from File", dir, wxEmptyString,
-			"Text Files (*.txt)|*.txt", wxFD_OPEN|wxFD_FILE_MUST_EXIST, wxDefaultPosition);
+	                         "Text Files (*.txt)|*.txt", wxFD_OPEN|wxFD_FILE_MUST_EXIST, wxDefaultPosition);
 
 	// Run the dialog & check that the user didn't cancel
-	if (dialog_open.ShowModal() == wxID_OK) {
+	if (dialog_open.ShowModal() == wxID_OK)
+	{
 		// Get the selected filename
 		string filename = dialog_open.GetPath();
 
@@ -920,7 +973,8 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e) {
 		// Parse translation
 		Translation trans;
 		string token = tz.getToken();
-		while (!token.IsEmpty()) {
+		while (!token.IsEmpty())
+		{
 			// Parse translation range
 			trans.parse(token);
 
@@ -939,7 +993,8 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e) {
 /* TranslationEditorDialog::onBtnSave
  * Called when the 'Save Translation' button is clicked
  *******************************************************************/
-void TranslationEditorDialog::onBtnSave(wxCommandEvent& e) {
+void TranslationEditorDialog::onBtnSave(wxCommandEvent& e)
+{
 	// If the directory doesn't exist create it
 	string dir = appPath("translations", DIR_USER);
 	if (!wxDirExists(dir))
@@ -947,10 +1002,11 @@ void TranslationEditorDialog::onBtnSave(wxCommandEvent& e) {
 
 	// Create save file dialog
 	wxFileDialog dialog_save(this, "Save Translation to File", dir, wxEmptyString,
-			"Text File (*.txt)|*.txt", wxFD_SAVE|wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
+	                         "Text File (*.txt)|*.txt", wxFD_SAVE|wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
 
 	// Run the dialog & check that the user didn't cancel
-	if (dialog_save.ShowModal() == wxID_OK) {
+	if (dialog_save.ShowModal() == wxID_OK)
+	{
 		// Get translation as text string
 		string str = translation.asText();
 
@@ -968,7 +1024,8 @@ void TranslationEditorDialog::onBtnSave(wxCommandEvent& e) {
 /* TranslationEditorDialog::onGfxPreviewMouseMotion
  * Called when the mouse pointer is moved over the gfx preview canvas
  *******************************************************************/
-void TranslationEditorDialog::onGfxPreviewMouseMotion(wxMouseEvent& e) {
+void TranslationEditorDialog::onGfxPreviewMouseMotion(wxMouseEvent& e)
+{
 	// Get the image coordinates at the mouse pointer
 	point2_t pos = gfx_preview->imageCoords(e.GetX(), e.GetY()-2);
 
@@ -981,7 +1038,8 @@ void TranslationEditorDialog::onGfxPreviewMouseMotion(wxMouseEvent& e) {
 		index = -1;
 
 	// Update preview palette if necessary
-	if (index != pal_canvas_preview->getSelectionStart()) {
+	if (index != pal_canvas_preview->getSelectionStart())
+	{
 		pal_canvas_preview->setSelection(index);
 		pal_canvas_preview->Refresh();
 	}
@@ -992,18 +1050,22 @@ void TranslationEditorDialog::onGfxPreviewMouseMotion(wxMouseEvent& e) {
 /* TranslationEditorDialog::onCBTargetReverse
  * Called when the 'Reverse Target Range' checkbox is (un)checked
  *******************************************************************/
-void TranslationEditorDialog::onCBTargetReverse(wxCommandEvent& e) {
+void TranslationEditorDialog::onCBTargetReverse(wxCommandEvent& e)
+{
 	// Get current translation range
 	TransRange* tr = translation.getRange(list_translations->GetSelection());
 
 	// Update its target range if it's a palette translation
-	if (tr && tr->getType() == TRANS_PALETTE) {
+	if (tr && tr->getType() == TRANS_PALETTE)
+	{
 		TransRangePalette* tpr = (TransRangePalette*)tr;
-		if (cb_target_reverse->GetValue()) {
+		if (cb_target_reverse->GetValue())
+		{
 			tpr->setDEnd(pal_canvas_target->getSelectionStart());
 			tpr->setDStart(pal_canvas_target->getSelectionEnd());
 		}
-		else {
+		else
+		{
 			tpr->setDStart(pal_canvas_target->getSelectionStart());
 			tpr->setDEnd(pal_canvas_target->getSelectionEnd());
 		}

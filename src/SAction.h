@@ -7,11 +7,12 @@ class wxAuiToolBar;
 class wxToolBar;
 class MainApp;
 
-class SAction {
+class SAction
+{
 friend class MainApp;
 private:
 	string		id;		// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,
-						// where xxxx is some 4 letter identifier for the SActionHandler that handles this action
+	// where xxxx is some 4 letter identifier for the SActionHandler that handles this action
 	int			wx_id;
 	string		text;
 	string		icon;
@@ -22,13 +23,14 @@ private:
 	bool		toggled;
 
 	static int	n_groups;
-	
+
 public:
 	// Enum for action types
-	enum {
-		NORMAL,
-		CHECK,
-		RADIO,
+	enum
+	{
+	    NORMAL,
+	    CHECK,
+	    RADIO,
 	};
 
 	SAction(string id, string text, string icon = "", string helptext = "", string shortcut = "", int type = NORMAL, int custom_wxid = -1, int radio_group = -1);
@@ -48,7 +50,8 @@ public:
 	bool	addToToolbar(wxToolBar* toolbar, string icon_override = "NO");
 
 	// Static functions
-	static int	newGroup() {
+	static int newGroup()
+	{
 		int group = n_groups;
 		n_groups++;
 		return group;

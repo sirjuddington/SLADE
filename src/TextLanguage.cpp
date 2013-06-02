@@ -50,21 +50,24 @@ vector<TextLanguage*>	text_languages;
 /* TLFunction::TLFunction
  * TLFunction class constructor
  *******************************************************************/
-TLFunction::TLFunction(string name) {
+TLFunction::TLFunction(string name)
+{
 	this->name = name;
 }
 
 /* TLFunction::~TLFunction
  * TLFunction class destructor
  *******************************************************************/
-TLFunction::~TLFunction() {
+TLFunction::~TLFunction()
+{
 }
 
 /* TLFunction::getArgSet
  * Returns the arg set [index], or an empty string if [index] is
  * out of bounds
  *******************************************************************/
-string TLFunction::getArgSet(unsigned index) {
+string TLFunction::getArgSet(unsigned index)
+{
 	// Check index
 	if (index >= arg_sets.size())
 		return "";
@@ -76,7 +79,8 @@ string TLFunction::getArgSet(unsigned index) {
  * Returns a string representation of arg set [arg_set] that can be
  * used directly in a scintilla calltip
  *******************************************************************/
-string TLFunction::generateCallTipString(int arg_set) {
+string TLFunction::generateCallTipString(int arg_set)
+{
 	// Check requested arg set exists
 	if (arg_set < 0 || (unsigned)arg_set >= arg_sets.size())
 		return "<invalid argset index>";
@@ -98,7 +102,8 @@ string TLFunction::generateCallTipString(int arg_set) {
 /* TLFunction::getArgTextExtent
  * Returns the start and end position of [arg] within [arg_set]
  *******************************************************************/
-point2_t TLFunction::getArgTextExtent(int arg, int arg_set) {
+point2_t TLFunction::getArgTextExtent(int arg, int arg_set)
+{
 	point2_t extent(-1, -1);
 
 	// Check requested arg set exists
@@ -107,14 +112,16 @@ point2_t TLFunction::getArgTextExtent(int arg, int arg_set) {
 
 	// Get start position of args list
 	int start_pos = name.Length() + 1;
-	if (arg_sets.size() > 1) {
+	if (arg_sets.size() > 1)
+	{
 		string temp = S_FMT("\001 %d of %d \002 ", arg_set+1, arg_sets.size());
 		start_pos += temp.Length();
 	}
 
 	// Check arg
 	string args = arg_sets[arg_set];
-	if (arg < 0) {
+	if (arg < 0)
+	{
 		extent.set(start_pos, start_pos + args.Length());
 		return extent;
 	}
@@ -123,9 +130,11 @@ point2_t TLFunction::getArgTextExtent(int arg, int arg_set) {
 	int current_arg = 0;
 	extent.x = start_pos;
 	extent.y = start_pos + args.Length();
-	for (unsigned a = 0; a < args.Length(); a++) {
+	for (unsigned a = 0; a < args.Length(); a++)
+	{
 		// Check for ,
-		if (args.at(a) == ',') {
+		if (args.at(a) == ',')
+		{
 			// ',' found, so increment current arg
 			current_arg++;
 
@@ -134,7 +143,8 @@ point2_t TLFunction::getArgTextExtent(int arg, int arg_set) {
 				extent.x = start_pos + a+1;
 
 			// If we've reached the end of the arg we want
-			if (current_arg > arg) {
+			if (current_arg > arg)
+			{
 				extent.y = start_pos + a;
 				break;
 			}
@@ -152,7 +162,8 @@ point2_t TLFunction::getArgTextExtent(int arg, int arg_set) {
 /* TextLanguage::TextLanguage
  * TextLanguage class constructor
  *******************************************************************/
-TextLanguage::TextLanguage(string id) {
+TextLanguage::TextLanguage(string id)
+{
 	// Init variables
 	this->id = id;
 
@@ -163,9 +174,11 @@ TextLanguage::TextLanguage(string id) {
 /* TextLanguage::~TextLanguage
  * TextLanguage class destructor
  *******************************************************************/
-TextLanguage::~TextLanguage() {
+TextLanguage::~TextLanguage()
+{
 	// Remove from languages list
-	for (size_t a = 0; a < text_languages.size(); a++) {
+	for (size_t a = 0; a < text_languages.size(); a++)
+	{
 		if (text_languages[a] == this)
 			text_languages.erase(text_languages.begin() + a);
 	}
@@ -174,7 +187,8 @@ TextLanguage::~TextLanguage() {
 /* TextLanguage::copyTo
  * Copies all language info to [copy]
  *******************************************************************/
-void TextLanguage::copyTo(TextLanguage* copy) {
+void TextLanguage::copyTo(TextLanguage* copy)
+{
 	// Copy general attributes
 	copy->line_comment = line_comment;
 	copy->comment_begin = comment_begin;
@@ -194,7 +208,8 @@ void TextLanguage::copyTo(TextLanguage* copy) {
 		copy->constants.push_back(constants[a]);
 
 	// Copy functions
-	for (unsigned a = 0; a < functions.size(); a++) {
+	for (unsigned a = 0; a < functions.size(); a++)
+	{
 		TLFunction* f = functions[a];
 		for (unsigned b = 0; b < f->nArgSets(); b++)
 			copy->addFunction(f->getName(), f->getArgSet(b));
@@ -204,7 +219,8 @@ void TextLanguage::copyTo(TextLanguage* copy) {
 /* TextLanguage::addKeyword
  * Adds a new keyword to the language, if it doesn't exist already
  *******************************************************************/
-void TextLanguage::addKeyword(string keyword) {
+void TextLanguage::addKeyword(string keyword)
+{
 	// Add only if it doesn't already exist
 	if (std::find(keywords.begin(), keywords.end(), keyword) == keywords.end())
 		keywords.push_back(keyword);
@@ -213,7 +229,8 @@ void TextLanguage::addKeyword(string keyword) {
 /* TextLanguage::addConstant
  * Adds a new constant to the language, if it doesn't exist already
  *******************************************************************/
-void TextLanguage::addConstant(string constant) {
+void TextLanguage::addConstant(string constant)
+{
 	// Add only if it doesn't already exist
 	if (std::find(constants.begin(), constants.end(), constant) == constants.end())
 		constants.push_back(constant);
@@ -224,12 +241,14 @@ void TextLanguage::addConstant(string constant) {
  * exists, [args] will be added to it as a new arg set, otherwise
  * a new function will be added
  *******************************************************************/
-void TextLanguage::addFunction(string name, string args) {
+void TextLanguage::addFunction(string name, string args)
+{
 	// Check if the function exists
 	TLFunction* func = getFunction(name);
 
 	// If it doesn't, create it
-	if (!func) {
+	if (!func)
+	{
 		func = new TLFunction(name);
 		functions.push_back(func);
 	}
@@ -243,7 +262,8 @@ void TextLanguage::addFunction(string name, string args) {
  * spaces, which can be sent directly to scintilla for syntax
  * hilighting
  *******************************************************************/
-string TextLanguage::getKeywordsList() {
+string TextLanguage::getKeywordsList()
+{
 	// Init return string
 	string ret = "";
 
@@ -259,7 +279,8 @@ string TextLanguage::getKeywordsList() {
  * spaces, which can be sent directly to scintilla for syntax
  * hilighting
  *******************************************************************/
-string TextLanguage::getConstantsList() {
+string TextLanguage::getConstantsList()
+{
 	// Init return string
 	string ret = "";
 
@@ -275,7 +296,8 @@ string TextLanguage::getConstantsList() {
  * spaces, which can be sent directly to scintilla for syntax
  * hilighting
  *******************************************************************/
-string TextLanguage::getFunctionsList() {
+string TextLanguage::getFunctionsList()
+{
 	// Init return string
 	string ret = "";
 
@@ -290,19 +312,23 @@ string TextLanguage::getFunctionsList() {
  * Returns a string containing all keywords, constants and functions
  * that can be used directly in scintilla for an autocompletion list
  *******************************************************************/
-string TextLanguage::getAutocompletionList(string start) {
+string TextLanguage::getAutocompletionList(string start)
+{
 	// Firstly, add all functions, constants and keywords to a wxArrayString
 	wxArrayString list;
 	start = start.Lower();
-	for (unsigned a = 0; a < keywords.size(); a++) {
+	for (unsigned a = 0; a < keywords.size(); a++)
+	{
 		if (keywords[a].Lower().StartsWith(start))
 			list.Add(keywords[a] + "?1");
 	}
-	for (unsigned a = 0; a < constants.size(); a++) {
+	for (unsigned a = 0; a < constants.size(); a++)
+	{
 		if (constants[a].Lower().StartsWith(start))
 			list.Add(constants[a] + "?2");
 	}
-	for (unsigned a = 0; a < functions.size(); a++) {
+	for (unsigned a = 0; a < functions.size(); a++)
+	{
 		if (functions[a]->getName().Lower().StartsWith(start))
 			list.Add(functions[a]->getName() + "?3");
 	}
@@ -318,7 +344,8 @@ string TextLanguage::getAutocompletionList(string start) {
 	return ret;
 }
 
-wxArrayString TextLanguage::getKeywordsSorted() {
+wxArrayString TextLanguage::getKeywordsSorted()
+{
 	// Get list
 	wxArrayString list;
 	for (unsigned a = 0; a < keywords.size(); a++)
@@ -330,7 +357,8 @@ wxArrayString TextLanguage::getKeywordsSorted() {
 	return list;
 }
 
-wxArrayString TextLanguage::getConstantsSorted() {
+wxArrayString TextLanguage::getConstantsSorted()
+{
 	// Get list
 	wxArrayString list;
 	for (unsigned a = 0; a < constants.size(); a++)
@@ -342,7 +370,8 @@ wxArrayString TextLanguage::getConstantsSorted() {
 	return list;
 }
 
-wxArrayString TextLanguage::getFunctionsSorted() {
+wxArrayString TextLanguage::getFunctionsSorted()
+{
 	// Get list
 	wxArrayString list;
 	for (unsigned a = 0; a < functions.size(); a++)
@@ -358,8 +387,10 @@ wxArrayString TextLanguage::getFunctionsSorted() {
  * Returns true if [word] is a keyword in this language, false
  * otherwise
  *******************************************************************/
-bool TextLanguage::isKeyword(string word) {
-	for (unsigned a = 0; a < keywords.size(); a++) {
+bool TextLanguage::isKeyword(string word)
+{
+	for (unsigned a = 0; a < keywords.size(); a++)
+	{
 		if (keywords[a] == word)
 			return true;
 	}
@@ -371,8 +402,10 @@ bool TextLanguage::isKeyword(string word) {
  * Returns true if [word] is a constant in this language, false
  * otherwise
  *******************************************************************/
-bool TextLanguage::isConstant(string word) {
-	for (unsigned a = 0; a < constants.size(); a++) {
+bool TextLanguage::isConstant(string word)
+{
+	for (unsigned a = 0; a < constants.size(); a++)
+	{
 		if (constants[a] == word)
 			return true;
 	}
@@ -384,8 +417,10 @@ bool TextLanguage::isConstant(string word) {
  * Returns true if [word] is a function in this language, false
  * otherwise
  *******************************************************************/
-bool TextLanguage::isFunction(string word) {
-	for (unsigned a = 0; a < functions.size(); a++) {
+bool TextLanguage::isFunction(string word)
+{
+	for (unsigned a = 0; a < functions.size(); a++)
+	{
 		if (functions[a]->getName() == word)
 			return true;
 	}
@@ -397,16 +432,21 @@ bool TextLanguage::isFunction(string word) {
  * Returns the function definition matching [name], or NULL if no
  * matching function exists
  *******************************************************************/
-TLFunction* TextLanguage::getFunction(string name) {
+TLFunction* TextLanguage::getFunction(string name)
+{
 	// Find function matching [name]
-	if (case_sensitive) {
-		for (unsigned a = 0; a < functions.size(); a++) {
+	if (case_sensitive)
+	{
+		for (unsigned a = 0; a < functions.size(); a++)
+		{
 			if (functions[a]->getName() == name)
 				return functions[a];
 		}
 	}
-	else {
-		for (unsigned a = 0; a < functions.size(); a++) {
+	else
+	{
+		for (unsigned a = 0; a < functions.size(); a++)
+		{
 			if (S_CMPNOCASE(functions[a]->getName(), name))
 				return functions[a];
 		}
@@ -425,11 +465,13 @@ TLFunction* TextLanguage::getFunction(string name) {
  * Reads in a text definition of a language. See slade.pk3 for
  * formatting examples
  *******************************************************************/
-bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source) {
+bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
+{
 	Tokenizer tz;
 
 	// Open the given text data
-	if (!tz.openMem(&mc, source)) {
+	if (!tz.openMem(&mc, source))
+	{
 		wxLogMessage("Unable to open file");
 		return false;
 	}
@@ -440,14 +482,16 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source) {
 		return false;
 
 	// Get parsed data
-	for (unsigned a = 0; a < root.nChildren(); a++) {
+	for (unsigned a = 0; a < root.nChildren(); a++)
+	{
 		ParseTreeNode* node = (ParseTreeNode*)root.getChild(a);
 
 		// Create language
 		TextLanguage* lang = new TextLanguage(node->getName());
 
 		// Check for inheritance
-		if (!node->getInherit().IsEmpty()) {
+		if (!node->getInherit().IsEmpty())
+		{
 			TextLanguage* inherit = getLanguage(node->getInherit());
 			if (inherit)
 				inherit->copyTo(lang);
@@ -456,7 +500,8 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source) {
 		}
 
 		// Parse language info
-		for (unsigned c = 0; c < node->nChildren(); c++) {
+		for (unsigned c = 0; c < node->nChildren(); c++)
+		{
 			ParseTreeNode* child = (ParseTreeNode*)node->getChild(c);
 
 			// Language name
@@ -496,19 +541,23 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source) {
 				lang->f_lookup_url = child->getStringValue();
 
 			// Jump blocks
-			else if (S_CMPNOCASE(child->getName(), "blocks")) {
+			else if (S_CMPNOCASE(child->getName(), "blocks"))
+			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->jump_blocks.push_back(child->getStringValue(v));
 			}
 
 			// Keywords
-			else if (S_CMPNOCASE(child->getName(), "keywords")) {
+			else if (S_CMPNOCASE(child->getName(), "keywords"))
+			{
 				// Go through values
-				for (unsigned v = 0; v < child->nValues(); v++) {
+				for (unsigned v = 0; v < child->nValues(); v++)
+				{
 					string val = child->getStringValue(v);
 
 					// Check for '$override'
-					if (S_CMPNOCASE(val, "$override")) {
+					if (S_CMPNOCASE(val, "$override"))
+					{
 						// Clear any inherited keywords
 						lang->clearKeywords();
 					}
@@ -520,13 +569,16 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source) {
 			}
 
 			// Constants
-			else if (S_CMPNOCASE(child->getName(), "constants")) {
+			else if (S_CMPNOCASE(child->getName(), "constants"))
+			{
 				// Go through values
-				for (unsigned v = 0; v < child->nValues(); v++) {
+				for (unsigned v = 0; v < child->nValues(); v++)
+				{
 					string val = child->getStringValue(v);
 
 					// Check for '$override'
-					if (S_CMPNOCASE(val, "$override")) {
+					if (S_CMPNOCASE(val, "$override"))
+					{
 						// Clear any inherited constants
 						lang->clearConstants();
 					}
@@ -538,16 +590,19 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source) {
 			}
 
 			// Functions
-			else if (S_CMPNOCASE(child->getName(), "functions")) {
+			else if (S_CMPNOCASE(child->getName(), "functions"))
+			{
 				// Go through children (functions)
-				for (unsigned f = 0; f < child->nChildren(); f++) {
+				for (unsigned f = 0; f < child->nChildren(); f++)
+				{
 					ParseTreeNode* child_func = (ParseTreeNode*)child->getChild(f);
 
 					// Add function
 					lang->addFunction(child_func->getName(), child_func->getStringValue(0));
 
 					// Add args
-					for (unsigned v = 1; v < child_func->nValues(); v++) {
+					for (unsigned v = 1; v < child_func->nValues(); v++)
+					{
 						lang->addFunction(child_func->getName(), child_func->getStringValue(v));
 					}
 				}
@@ -561,16 +616,19 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source) {
 /* TextLanguage::loadLanguages
  * Loads all text language definitions from slade.pk3
  *******************************************************************/
-bool TextLanguage::loadLanguages() {
+bool TextLanguage::loadLanguages()
+{
 	// Get slade resource archive
 	Archive* res_archive = theArchiveManager->programResourceArchive();
 
 	// Read language definitions from resource archive
-	if (res_archive) {
+	if (res_archive)
+	{
 		// Get 'config/languages' directlry
 		ArchiveTreeNode* dir = res_archive->getDir("config/languages");
 
-		if (dir) {
+		if (dir)
+		{
 			// Read all entries in this dir
 			for (unsigned a = 0; a < dir->numEntries(); a++)
 				readLanguageDefinition(dir->getEntry(a)->getMCData(), dir->getEntry(a)->getName());
@@ -586,9 +644,11 @@ bool TextLanguage::loadLanguages() {
  * Returns the language definition matching [id], or NULL if no
  * match found
  *******************************************************************/
-TextLanguage* TextLanguage::getLanguage(string id) {
+TextLanguage* TextLanguage::getLanguage(string id)
+{
 	// Find text language matching [id]
-	for (unsigned a = 0; a < text_languages.size(); a++) {
+	for (unsigned a = 0; a < text_languages.size(); a++)
+	{
 		if (text_languages[a]->id == id)
 			return text_languages[a];
 	}
@@ -601,7 +661,8 @@ TextLanguage* TextLanguage::getLanguage(string id) {
  * Returns the language definition at [index], or NULL if [index] is
  * out of bounds
  *******************************************************************/
-TextLanguage* TextLanguage::getLanguage(unsigned index) {
+TextLanguage* TextLanguage::getLanguage(unsigned index)
+{
 	// Check index
 	if (index >= text_languages.size())
 		return NULL;
@@ -613,9 +674,11 @@ TextLanguage* TextLanguage::getLanguage(unsigned index) {
  * Returns the language definition matching [name], or NULL if no
  * match found
  *******************************************************************/
-TextLanguage* TextLanguage::getLanguageByName(string name) {
+TextLanguage* TextLanguage::getLanguageByName(string name)
+{
 	// Find text language matching [name]
-	for (unsigned a = 0; a < text_languages.size(); a++) {
+	for (unsigned a = 0; a < text_languages.size(); a++)
+	{
 		if (S_CMPNOCASE(text_languages[a]->name, name))
 			return text_languages[a];
 	}
@@ -627,7 +690,8 @@ TextLanguage* TextLanguage::getLanguageByName(string name) {
 /* TextLanguage::getLanguageNames
  * Returns a list of all language names
  *******************************************************************/
-wxArrayString TextLanguage::getLanguageNames() {
+wxArrayString TextLanguage::getLanguageNames()
+{
 	wxArrayString ret;
 
 	for (unsigned a = 0; a < text_languages.size(); a++)

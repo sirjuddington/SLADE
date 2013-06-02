@@ -4,7 +4,8 @@
 #include "UDMFProperty.h"
 #include "Parser.h"
 
-UDMFProperty::UDMFProperty() {
+UDMFProperty::UDMFProperty()
+{
 	has_default = false;
 	flag = false;
 	trigger = false;
@@ -12,26 +13,31 @@ UDMFProperty::UDMFProperty() {
 	show_always = false;
 }
 
-UDMFProperty::~UDMFProperty() {
+UDMFProperty::~UDMFProperty()
+{
 }
 
-void UDMFProperty::parse(ParseTreeNode* node, string group) {
+void UDMFProperty::parse(ParseTreeNode* node, string group)
+{
 	// Set group and property name
 	this->group = group;
 	this->property = node->getName();
 
 	// Check for basic definition
-	if (node->nChildren() == 0) {
+	if (node->nChildren() == 0)
+	{
 		name = node->getStringValue();
 		return;
 	}
 
 	// Otherwise, read node data
-	for (unsigned a = 0; a < node->nChildren(); a++) {
+	for (unsigned a = 0; a < node->nChildren(); a++)
+	{
 		ParseTreeNode* prop = (ParseTreeNode*)node->getChild(a);
 
 		// Property type
-		if (S_CMPNOCASE(prop->getName(), "type")) {
+		if (S_CMPNOCASE(prop->getName(), "type"))
+		{
 			if (S_CMPNOCASE(prop->getStringValue(), "bool"))
 				type = TYPE_BOOL;
 			else if (S_CMPNOCASE(prop->getStringValue(), "int"))
@@ -63,13 +69,15 @@ void UDMFProperty::parse(ParseTreeNode* node, string group) {
 			name = prop->getStringValue();
 
 		// Default value
-		else if (S_CMPNOCASE(prop->getName(), "default")) {
-			switch (type) {
+		else if (S_CMPNOCASE(prop->getName(), "default"))
+		{
+			switch (type)
+			{
 			case TYPE_BOOL: 	default_value = prop->getBoolValue(); break;
 			case TYPE_INT:		default_value = prop->getIntValue(); break;
 			case TYPE_FLOAT:	default_value = prop->getFloatValue(); break;
 			case TYPE_STRING:	default_value = prop->getStringValue(); break;
-			//case TYPE_COLOUR:	default_value = prop->getIntValue(); wxLogMessage("Colour default value %d (%s)", prop->getIntValue(), CHR(prop->getStringValue())); break;
+				//case TYPE_COLOUR:	default_value = prop->getIntValue(); wxLogMessage("Colour default value %d (%s)", prop->getIntValue(), CHR(prop->getStringValue())); break;
 			case TYPE_ASPECIAL:	default_value = prop->getIntValue(); break;
 			case TYPE_SSPECIAL:	default_value = prop->getIntValue(); break;
 			case TYPE_TTYPE:	default_value = prop->getIntValue(); break;
@@ -82,7 +90,8 @@ void UDMFProperty::parse(ParseTreeNode* node, string group) {
 
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work if the value parsed was hex
 			// (or it could be to do with the colour type? who knows)
-			if (type == TYPE_COLOUR) {
+			if (type == TYPE_COLOUR)
+			{
 				long val;
 				prop->getStringValue().ToLong(&val, 0);
 				default_value = (int)val;
@@ -100,20 +109,25 @@ void UDMFProperty::parse(ParseTreeNode* node, string group) {
 			trigger = true;
 
 		// Possible values
-		else if (S_CMPNOCASE(prop->getName(), "values")) {
-			if (type == TYPE_BOOL) {
+		else if (S_CMPNOCASE(prop->getName(), "values"))
+		{
+			if (type == TYPE_BOOL)
+			{
 				for (unsigned b = 0; b < prop->nValues(); b++)
 					values.push_back(prop->getBoolValue(b));
 			}
-			else if (type == TYPE_INT || type == TYPE_ASPECIAL || type == TYPE_SSPECIAL || type == TYPE_TTYPE) {
+			else if (type == TYPE_INT || type == TYPE_ASPECIAL || type == TYPE_SSPECIAL || type == TYPE_TTYPE)
+			{
 				for (unsigned b = 0; b < prop->nValues(); b++)
 					values.push_back(prop->getIntValue(b));
 			}
-			else if (type == TYPE_FLOAT) {
+			else if (type == TYPE_FLOAT)
+			{
 				for (unsigned b = 0; b < prop->nValues(); b++)
 					values.push_back(prop->getFloatValue(b));
 			}
-			else {
+			else
+			{
 				for (unsigned b = 0; b < prop->nValues(); b++)
 					values.push_back(prop->getStringValue(b));
 			}
@@ -125,10 +139,12 @@ void UDMFProperty::parse(ParseTreeNode* node, string group) {
 	}
 }
 
-string UDMFProperty::getStringRep() {
+string UDMFProperty::getStringRep()
+{
 	string ret = S_FMT("Property \"%s\": name = \"%s\", group = \"%s\"", CHR(property), CHR(name), CHR(group));
 
-	switch (type) {
+	switch (type)
+	{
 	case TYPE_BOOL: ret += ", type = bool"; break;
 	case TYPE_INT: ret += ", type = int"; break;
 	case TYPE_FLOAT: ret += ", type = float"; break;
@@ -144,8 +160,10 @@ string UDMFProperty::getStringRep() {
 	default: ret += ", ******unknown type********"; break;
 	};
 
-	if (has_default) {
-		if (type == TYPE_BOOL) {
+	if (has_default)
+	{
+		if (type == TYPE_BOOL)
+		{
 			if ((bool)default_value)
 				ret += ", default = true";
 			else
@@ -166,9 +184,11 @@ string UDMFProperty::getStringRep() {
 	if (trigger)
 		ret += ", is trigger";
 
-	if (values.size() > 0) {
+	if (values.size() > 0)
+	{
 		ret += "\nPossible values: ";
-		for (unsigned a = 0; a < values.size(); a++) {
+		for (unsigned a = 0; a < values.size(); a++)
+		{
 			ret += values[a].getStringValue();
 			if (a < values.size() - 1)
 				ret += ", ";

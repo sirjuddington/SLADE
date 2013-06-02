@@ -12,7 +12,8 @@
 
 class SToolBar;
 class UndoManagerHistoryPanel;
-class MainWindow : public STopWindow, SActionHandler {
+class MainWindow : public STopWindow, SActionHandler
+{
 private:
 	ArchiveManagerPanel*		panel_archivemanager;
 	UndoManagerHistoryPanel*	panel_undo_history;
@@ -33,7 +34,8 @@ public:
 	~MainWindow();
 
 	// Singleton implementation
-	static MainWindow* getInstance() {
+	static MainWindow* getInstance()
+	{
 		if (!instance)
 			instance = new MainWindow();
 
@@ -60,8 +62,8 @@ public:
 	void	openEntry(ArchiveEntry* entry);
 
 	// Events
-	void	onMenuItemClicked(wxCommandEvent &e);
-	void	onHTMLLinkClicked(wxHtmlLinkEvent &e);
+	void	onMenuItemClicked(wxCommandEvent& e);
+	void	onHTMLLinkClicked(wxHtmlLinkEvent& e);
 	void	onClose(wxCloseEvent& e);
 	void	onTabChanged(wxAuiNotebookEvent& e);
 	void	onSize(wxSizeEvent& e);

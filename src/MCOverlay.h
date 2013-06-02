@@ -2,7 +2,8 @@
 #ifndef __MC_OVERLAY_H__
 #define __MC_OVERLAY_H__
 
-class MCOverlay {
+class MCOverlay
+{
 private:
 
 protected:

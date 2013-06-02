@@ -47,19 +47,22 @@ EXTERN_CVAR(Bool, archive_load_data)
 /* GrpArchive::GrpArchive
  * GrpArchive class constructor
  *******************************************************************/
-GrpArchive::GrpArchive() : TreelessArchive(ARCHIVE_GRP) {
+GrpArchive::GrpArchive() : TreelessArchive(ARCHIVE_GRP)
+{
 }
 
 /* GrpArchive::~GrpArchive
  * GrpArchive class destructor
  *******************************************************************/
-GrpArchive::~GrpArchive() {
+GrpArchive::~GrpArchive()
+{
 }
 
 /* GrpArchive::getEntryOffset
  * Returns the file byte offset for [entry]
  *******************************************************************/
-uint32_t GrpArchive::getEntryOffset(ArchiveEntry* entry) {
+uint32_t GrpArchive::getEntryOffset(ArchiveEntry* entry)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return 0;
@@ -70,7 +73,8 @@ uint32_t GrpArchive::getEntryOffset(ArchiveEntry* entry) {
 /* GrpArchive::setEntryOffset
  * Sets the file byte offset for [entry]
  *******************************************************************/
-void GrpArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
+void GrpArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return;
@@ -81,14 +85,16 @@ void GrpArchive::setEntryOffset(ArchiveEntry* entry, uint32_t offset) {
 /* GrpArchive::getFileExtensionString
  * Gets the wxWidgets file dialog filter string for the archive type
  *******************************************************************/
-string GrpArchive::getFileExtensionString() {
+string GrpArchive::getFileExtensionString()
+{
 	return "Grp Files (*.grp)|*.grp";
 }
 
 /* GrpArchive::getFormat
  * Returns the EntryDataFormat id of this archive type
  *******************************************************************/
-string GrpArchive::getFormat() {
+string GrpArchive::getFormat()
+{
 	return "archive_grp";
 }
 
@@ -96,7 +102,8 @@ string GrpArchive::getFormat() {
  * Reads grp format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GrpArchive::open(MemChunk& mc) {
+bool GrpArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -115,7 +122,8 @@ bool GrpArchive::open(MemChunk& mc) {
 	ken_magic[12] = 0;
 
 	// Check the header
-	if (!(S_CMP(wxString::FromAscii(ken_magic), "KenSilverman"))) {
+	if (!(S_CMP(wxString::FromAscii(ken_magic), "KenSilverman")))
+	{
 		wxLogMessage("GrpArchive::openFile: File %s has invalid header", filename.c_str());
 		Global::error = "Invalid grp header";
 		return false;
@@ -129,7 +137,8 @@ bool GrpArchive::open(MemChunk& mc) {
 
 	// Read the directory
 	theSplashWindow->setProgressMessage("Reading grp archive data");
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -150,7 +159,8 @@ bool GrpArchive::open(MemChunk& mc) {
 
 		// If the lump data goes past the end of the file,
 		// the grpfile is invalid
-		if (offset + size > mc.getSize()) {
+		if (offset + size > mc.getSize())
+		{
 			wxLogMessage("GrpArchive::open: grp archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
@@ -170,7 +180,8 @@ bool GrpArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -178,7 +189,8 @@ bool GrpArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
 			entry->importMemChunk(edata);
@@ -213,7 +225,8 @@ bool GrpArchive::open(MemChunk& mc) {
  * Writes the grp archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GrpArchive::write(MemChunk& mc, bool update) {
+bool GrpArchive::write(MemChunk& mc, bool update)
+{
 	// Clear/init MemChunk
 	mc.clear();
 	mc.seek(0, SEEK_SET);
@@ -226,7 +239,8 @@ bool GrpArchive::write(MemChunk& mc, bool update) {
 	mc.write(&num_lumps, 4);
 
 	// Write the directory
-	for (uint32_t l = 0; l < num_lumps; l++) {
+	for (uint32_t l = 0; l < num_lumps; l++)
+	{
 		entry = getEntry(l);
 		char name[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		long size = entry->getSize();
@@ -237,7 +251,8 @@ bool GrpArchive::write(MemChunk& mc, bool update) {
 		mc.write(name, 12);
 		mc.write(&size, 4);
 
-		if (update) {
+		if (update)
+		{
 			long offset = getEntryOffset(entry);
 			entry->setState(0);
 			entry->exProp("Offset") = (int)offset;
@@ -245,7 +260,8 @@ bool GrpArchive::write(MemChunk& mc, bool update) {
 	}
 
 	// Write the lumps
-	for (uint32_t l = 0; l < num_lumps; l++) {
+	for (uint32_t l = 0; l < num_lumps; l++)
+	{
 		entry = getEntry(l);
 		mc.write(entry->getData(), entry->getSize());
 	}
@@ -257,14 +273,16 @@ bool GrpArchive::write(MemChunk& mc, bool update) {
  * Loads an entry's data from the grpfile
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GrpArchive::loadEntryData(ArchiveEntry* entry) {
+bool GrpArchive::loadEntryData(ArchiveEntry* entry)
+{
 	// Check the entry is valid and part of this archive
 	if (!checkEntry(entry))
 		return false;
 
 	// Do nothing if the lump's size is zero,
 	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded()) {
+	if (entry->getSize() == 0 || entry->isLoaded())
+	{
 		entry->setLoaded();
 		return true;
 	}
@@ -273,7 +291,8 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry) {
 	wxFile file(filename);
 
 	// Check if opening the file failed
-	if (!file.IsOpened()) {
+	if (!file.IsOpened())
+	{
 		wxLogMessage("GrpArchive::loadEntryData: Failed to open grpfile %s", filename.c_str());
 		return false;
 	}
@@ -293,7 +312,8 @@ bool GrpArchive::loadEntryData(ArchiveEntry* entry) {
  * directory, update namespaces if needed and rename the entry if
  * necessary to be grp-friendly (12 characters max with extension)
  *******************************************************************/
-ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy) {
+ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, ArchiveTreeNode* dir, bool copy)
+{
 	// Check entry
 	if (!entry)
 		return NULL;
@@ -322,7 +342,8 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, unsigned position, Archi
 /* GrpArchive::addEntry
  * Since GRP files have no namespaces, just call the other function.
  *******************************************************************/
-ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy) {
+ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, string add_namespace, bool copy)
+{
 	return addEntry(entry, 0xFFFFFFFF, NULL, copy);
 }
 
@@ -331,7 +352,8 @@ ArchiveEntry* GrpArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * and rename the entry if necessary to be grp-friendly (twelve
  * characters max)
  *******************************************************************/
-bool GrpArchive::renameEntry(ArchiveEntry* entry, string name) {
+bool GrpArchive::renameEntry(ArchiveEntry* entry, string name)
+{
 	// Check entry
 	if (!checkEntry(entry))
 		return false;
@@ -347,7 +369,8 @@ bool GrpArchive::renameEntry(ArchiveEntry* entry, string name) {
 /* GrpArchive::isGrpArchive
  * Checks if the given data is a valid Duke Nukem 3D grp archive
  *******************************************************************/
-bool GrpArchive::isGrpArchive(MemChunk& mc) {
+bool GrpArchive::isGrpArchive(MemChunk& mc)
+{
 	// Check size
 	if (mc.getSize() < 16)
 		return false;
@@ -372,7 +395,8 @@ bool GrpArchive::isGrpArchive(MemChunk& mc) {
 	// Compute total size
 	uint32_t totalsize = (1 + num_lumps) * 16;
 	uint32_t size = 0;
-	for (uint32_t a = 0; a < num_lumps; ++a) {
+	for (uint32_t a = 0; a < num_lumps; ++a)
+	{
 		mc.read(ken_magic, 12);
 		mc.read(&size, 4);
 		totalsize += size;
@@ -389,7 +413,8 @@ bool GrpArchive::isGrpArchive(MemChunk& mc) {
 /* GrpArchive::isGrpArchive
  * Checks if the file at [filename] is a valid DN3D grp archive
  *******************************************************************/
-bool GrpArchive::isGrpArchive(string filename) {
+bool GrpArchive::isGrpArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 
@@ -421,7 +446,8 @@ bool GrpArchive::isGrpArchive(string filename) {
 	// Compute total size
 	uint32_t totalsize = (1 + num_lumps) * 16;
 	uint32_t size = 0;
-	for (uint32_t a = 0; a < num_lumps; ++a) {
+	for (uint32_t a = 0; a < num_lumps; ++a)
+	{
 		file.Read(ken_magic, 12);
 		file.Read(&size, 4);
 		totalsize += size;
@@ -442,8 +468,9 @@ bool GrpArchive::isGrpArchive(string filename) {
 #include "Console.h"
 #include "MainWindow.h"
 
-CONSOLE_COMMAND(lookupdat, 0, false) {
-	ArchiveEntry * entry = theMainWindow->getCurrentEntry();
+CONSOLE_COMMAND(lookupdat, 0, false)
+{
+	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
 
 	if (!entry)
 		return;
@@ -452,8 +479,8 @@ CONSOLE_COMMAND(lookupdat, 0, false) {
 	if (mc.getSize() == 0)
 		return;
 
-	ArchiveEntry * nentry = NULL;
-	uint32_t * data = NULL;
+	ArchiveEntry* nentry = NULL;
+	uint32_t* data = NULL;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(0, SEEK_SET);
 
@@ -469,7 +496,8 @@ CONSOLE_COMMAND(lookupdat, 0, false) {
 		return;
 
 	data = new uint32_t[numlookup * 256];
-	for (int i = 0; i < numlookup; ++i)	{
+	for (int i = 0; i < numlookup; ++i)
+	{
 		mc.read(&dummy, 1);
 		mc.read(data, numlookup * 256);
 	}
@@ -494,8 +522,9 @@ CONSOLE_COMMAND(lookupdat, 0, false) {
 	mc.clear();
 }
 
-CONSOLE_COMMAND(palettedat, 0, false) {
-	ArchiveEntry * entry = theMainWindow->getCurrentEntry();
+CONSOLE_COMMAND(palettedat, 0, false)
+{
+	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
 
 	if (!entry)
 		return;
@@ -506,8 +535,8 @@ CONSOLE_COMMAND(palettedat, 0, false) {
 	if (mc.getSize() < 66306)
 		return;
 
-	ArchiveEntry * nentry = NULL;
-	uint32_t * data = NULL;
+	ArchiveEntry* nentry = NULL;
+	uint32_t* data = NULL;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(0, SEEK_SET);
 
@@ -535,8 +564,9 @@ CONSOLE_COMMAND(palettedat, 0, false) {
 	mc.clear();
 }
 
-CONSOLE_COMMAND(tablesdat, 0, false) {
-	ArchiveEntry * entry = theMainWindow->getCurrentEntry();
+CONSOLE_COMMAND(tablesdat, 0, false)
+{
+	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
 
 	if (!entry)
 		return;
@@ -547,8 +577,8 @@ CONSOLE_COMMAND(tablesdat, 0, false) {
 	if (mc.getSize() != 8448)
 		return;
 
-	ArchiveEntry * nentry = NULL;
-	uint32_t * data = NULL;
+	ArchiveEntry* nentry = NULL;
+	uint32_t* data = NULL;
 	int index = entry->getParent()->entryIndex(entry, entry->getParentDir());
 	mc.seek(5376, SEEK_SET);
 

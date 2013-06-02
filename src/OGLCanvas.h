@@ -16,9 +16,11 @@
 
 class wxPanel;
 #ifdef USE_SFML_RENDERWINDOW
-class OGLCanvas : public wxControl, public sf::RenderWindow {
+class OGLCanvas : public wxControl, public sf::RenderWindow
+{
 #else
-class OGLCanvas : public wxGLCanvas {
+class OGLCanvas : public wxGLCanvas
+{
 #endif
 protected:
 	bool		init_done;
@@ -42,12 +44,8 @@ public:
 	wxWindow*		toPanel(wxWindow* parent);
 
 #ifdef USE_SFML_RENDERWINDOW
-#if SFML_VERSION_MAJOR >= 2
 	void	SwapBuffers() { display(); }
-#else
-	void	SwapBuffers() { Display(); }
-#endif//SFML_VERSION_MAJOR
-#endif//USE_SFML_RENDERWINDOW
+#endif
 
 	void	onPaint(wxPaintEvent& e);
 	void	onEraseBackground(wxEraseEvent& e);

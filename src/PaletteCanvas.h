@@ -6,7 +6,8 @@
 #include "Palette.h"
 #include <wx/colordlg.h>
 
-class PaletteCanvas : public OGLCanvas {
+class PaletteCanvas : public OGLCanvas
+{
 private:
 	int		sel_begin;
 	int		sel_end;

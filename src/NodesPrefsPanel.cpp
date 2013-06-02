@@ -48,20 +48,22 @@ EXTERN_CVAR(String, nodebuilder_options)
 /* NodesPrefsPanel::NodesPrefsPanel
  * NodesPrefsPanel class constructor
  *******************************************************************/
-NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
+NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+{
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox *frame = new wxStaticBox(this, -1, "Node Builder Preferences");
-	wxStaticBoxSizer *sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	wxStaticBox* frame = new wxStaticBox(this, -1, "Node Builder Preferences");
+	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Nodebuilder list
 	wxArrayString builders;
 	unsigned sel = 0;
-	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++) {
+	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++)
+	{
 		builders.Add(NodeBuilders::getBuilder(a).name);
 		if (nodebuilder_id == NodeBuilders::getBuilder(a).id)
 			sel = a;
@@ -100,16 +102,20 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent) {
 /* NodesPrefsPanel::~NodesPrefsPanel
  * NodesPrefsPanel class destructor
  *******************************************************************/
-NodesPrefsPanel::~NodesPrefsPanel() {
+NodesPrefsPanel::~NodesPrefsPanel()
+{
 }
 
 /* NodesPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void NodesPrefsPanel::init() {
+void NodesPrefsPanel::init()
+{
 	unsigned sel = 0;
-	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++) {
-		if (nodebuilder_id == NodeBuilders::getBuilder(a).id) {
+	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++)
+	{
+		if (nodebuilder_id == NodeBuilders::getBuilder(a).id)
+		{
 			sel = a;
 			break;
 		}
@@ -122,7 +128,8 @@ void NodesPrefsPanel::init() {
  * Populates the options CheckListBox with options for the currently
  * selected node builder
  *******************************************************************/
-void NodesPrefsPanel::populateOptions(string options) {
+void NodesPrefsPanel::populateOptions(string options)
+{
 	// Get current builder
 	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder->GetSelection());
 
@@ -133,7 +140,8 @@ void NodesPrefsPanel::populateOptions(string options) {
 	clb_options->Clear();
 
 	// Add builder options
-	for (unsigned a = 0; a < builder.option_desc.size(); a++) {
+	for (unsigned a = 0; a < builder.option_desc.size(); a++)
+	{
 		clb_options->Append(builder.option_desc[a]);
 		if (!options.IsEmpty() && options.Contains(S_FMT(" %s ", CHR(builder.options[a]))))
 			clb_options->Check(a);
@@ -143,15 +151,18 @@ void NodesPrefsPanel::populateOptions(string options) {
 /* NodesPrefsPanel::applyPreferences
  * Applies preferences from the panel controls
  *******************************************************************/
-void NodesPrefsPanel::applyPreferences() {
+void NodesPrefsPanel::applyPreferences()
+{
 	// Set nodebuilder
 	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder->GetSelection());
 	nodebuilder_id = builder.id;
 
 	// Set options string
 	string opt = " ";
-	for (unsigned a = 0; a < clb_options->GetCount(); a++) {
-		if (clb_options->IsChecked(a)) {
+	for (unsigned a = 0; a < clb_options->GetCount(); a++)
+	{
+		if (clb_options->IsChecked(a))
+		{
 			opt += builder.options[a];
 			opt += " ";
 		}
@@ -167,14 +178,16 @@ void NodesPrefsPanel::applyPreferences() {
 /* NodesPrefsPanel::onChoiceBuilderChanged
  * Called when the node builder dropdown is changed
  *******************************************************************/
-void NodesPrefsPanel::onChoiceBuilderChanged(wxCommandEvent& e) {
+void NodesPrefsPanel::onChoiceBuilderChanged(wxCommandEvent& e)
+{
 	populateOptions("");
 }
 
 /* NodesPrefsPanel::onBtnBrowse
  * Called when the browse path button is clicked
  *******************************************************************/
-void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e) {
+void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
+{
 	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder->GetSelection());
 
 	// Setup extension

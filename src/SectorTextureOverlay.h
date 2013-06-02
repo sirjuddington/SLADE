@@ -5,7 +5,8 @@
 #include "MCOverlay.h"
 
 class MapSector;
-class SectorTextureOverlay : public MCOverlay {
+class SectorTextureOverlay : public MCOverlay
+{
 private:
 	vector<MapSector*>	sectors;
 	bool				hover_ceil;

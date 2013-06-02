@@ -111,13 +111,8 @@ sfMod::Mod::~Mod()
 
 void sfMod::Mod::Release()
 {
-#if SFML_VERSION_MAJOR < 2
-  if (GetStatus() != sf::SoundStream::Stopped)
-    Stop();
-#else
   if (getStatus() != sf::SoundStream::Stopped)
     stop();
-#endif
 
   if (file_ != NULL) {
     ModPlug_Unload(file_);
@@ -134,13 +129,8 @@ void sfMod::Mod::Release()
 
 bool sfMod::Mod::LoadFromFile(const std::string& filename)
 {
-#if SFML_VERSION_MAJOR < 2
-  if (GetStatus() != sf::SoundStream::Stopped)
-    Stop();
-#else
   if (getStatus() != sf::SoundStream::Stopped)
     stop();
-#endif
 
   if (file_ != NULL) {
     ModPlug_Unload(file_);
@@ -177,24 +167,15 @@ bool sfMod::Mod::LoadFromFile(const std::string& filename)
   ModPlug_Settings settings;
   ModPlug_GetSettings(&settings);
 
-#if SFML_VERSION_MAJOR < 2
-  Initialize(settings.mChannels, settings.mFrequency);
-#else
   initialize(settings.mChannels, settings.mFrequency);
-#endif
 
   return true;
 }
 
 bool sfMod::Mod::LoadFromMemory(const std::string& data)
 {
-#if SFML_VERSION_MAJOR < 2
-  if (GetStatus() != sf::SoundStream::Stopped)
-    Stop();
-#else
   if (getStatus() != sf::SoundStream::Stopped)
     stop();
-#endif
 
   if (file_ != NULL) {
     ModPlug_Unload(file_);
@@ -214,24 +195,15 @@ bool sfMod::Mod::LoadFromMemory(const std::string& data)
   ModPlug_Settings settings;
   ModPlug_GetSettings(&settings);
 
-#if SFML_VERSION_MAJOR < 2
-  Initialize(settings.mChannels, settings.mFrequency);
-#else
   initialize(settings.mChannels, settings.mFrequency);
-#endif
 
   return true;
 }
 
 bool sfMod::Mod::LoadFromMemory(const void* data, unsigned int size)
 {
-#if SFML_VERSION_MAJOR < 2
-  if (GetStatus() != sf::SoundStream::Stopped)
-    Stop();
-#else
   if (getStatus() != sf::SoundStream::Stopped)
     stop();
-#endif
 
   if (file_ != NULL) {
     ModPlug_Unload(file_);
@@ -251,11 +223,7 @@ bool sfMod::Mod::LoadFromMemory(const void* data, unsigned int size)
   ModPlug_Settings settings;
   ModPlug_GetSettings(&settings);
 
-#if SFML_VERSION_MAJOR < 2
-  Initialize(settings.mChannels, settings.mFrequency);
-#else
   initialize(settings.mChannels, settings.mFrequency);
-#endif
 
   return true;
 }
@@ -397,22 +365,6 @@ void sfMod::Mod::UnloadMixerCallback()
   ModPlug_UnloadMixerCallback(file_);
 }
 
-#if SFML_VERSION_MAJOR < 2
-bool sfMod::Mod::OnGetData(sf::SoundStream::Chunk& data)
-{
-  int read = ModPlug_Read(file_, reinterpret_cast<void*>(&buffer_[0]),
-                          SFMOD_BUFFERSIZE);
-
-  if (read == 0)
-    return false;
-
-
-  data.NbSamples = static_cast<size_t>(read / 2);
-  data.Samples = &buffer_[0];
-
-  return true;
-}
-#else
 bool sfMod::Mod::onGetData(sf::SoundStream::Chunk& data)
 {
   int read = ModPlug_Read(file_, reinterpret_cast<void*>(&buffer_[0]),
@@ -427,13 +379,10 @@ bool sfMod::Mod::onGetData(sf::SoundStream::Chunk& data)
 
   return true;
 }
-#endif
 
-#if SFML_VERSION_MAJOR >= 2
 void sfMod::Mod::onSeek(sf::Time timeOffset)
 {
   ModPlug_Seek(file_, static_cast<int>(timeOffset.asMilliseconds()));
 }
-#endif
 
 #endif//NOLIBMODPLUG

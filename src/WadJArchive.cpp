@@ -55,18 +55,18 @@ bool JaguarDecode(MemChunk& mc)
 	int len;
 	int pos;
 	int i;
-	uint8_t *source;
+	uint8_t* source;
 
 	// Get data
 	size_t isize = mc.getSize();
-	const uint8_t *istart = mc.getData();
-	const uint8_t *input = istart;
-	const uint8_t *iend = input + isize;
-	
+	const uint8_t* istart = mc.getData();
+	const uint8_t* input = istart;
+	const uint8_t* iend = input + isize;
+
 	// It seems that encoded lumps are given their actual uncompressed size in the directory.
-	uint8_t *ostart = new uint8_t[isize + 1];
-	uint8_t *output = ostart;
-	uint8_t *oend = output + isize + 1;
+	uint8_t* ostart = new uint8_t[isize + 1];
+	uint8_t* output = ostart;
+	uint8_t* oend = output + isize + 1;
 	uint8_t idbyte = 0;
 
 	size_t length = 0;
@@ -84,7 +84,8 @@ bool JaguarDecode(MemChunk& mc)
 			pos = pos | (*input >> LENSHIFT);
 			source = output - pos - 1;
 			len = (*input++ & 0xf)+1;
-			if (len==1) {
+			if (len==1)
+			{
 				okay = true;
 				break;
 			}
@@ -94,7 +95,9 @@ bool JaguarDecode(MemChunk& mc)
 
 			for (i=0 ; i<len ; i++)
 				*output++ = *source++;
-		} else {
+		}
+		else
+		{
 			length++;
 			*output++ = *input++;
 		}
@@ -116,20 +119,23 @@ bool JaguarDecode(MemChunk& mc)
  * WadJArchive class constructor
  *******************************************************************/
 WadJArchive::WadJArchive()
-: WadArchive() {
+	: WadArchive()
+{
 }
 
 /* WadJArchive::~WadJArchive
  * WadJArchive class destructor
  *******************************************************************/
-WadJArchive::~WadJArchive() {
+WadJArchive::~WadJArchive()
+{
 }
 
 /* WadJArchive::open
  * Reads wad format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool WadJArchive::open(MemChunk& mc) {
+bool WadJArchive::open(MemChunk& mc)
+{
 	// Check data was given
 	if (!mc.hasData())
 		return false;
@@ -147,7 +153,8 @@ bool WadJArchive::open(MemChunk& mc) {
 	dir_offset = wxINT32_SWAP_ON_LE(dir_offset);
 
 	// Check the header
-	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D') {
+	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
+	{
 		wxLogMessage("WadJArchive::openFile: File %s has invalid header", filename.c_str());
 		Global::error = "Invalid wad header";
 		return false;
@@ -159,7 +166,8 @@ bool WadJArchive::open(MemChunk& mc) {
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
 	theSplashWindow->setProgressMessage("Reading wad archive data");
-	for (uint32_t d = 0; d < num_lumps; d++) {
+	for (uint32_t d = 0; d < num_lumps; d++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress(((float)d / (float)num_lumps));
 
@@ -183,11 +191,14 @@ bool WadJArchive::open(MemChunk& mc) {
 
 		// Look for encryption shenanigans
 		size_t actualsize = size;
-		if (jaguarencrypt) {
-			if (d < num_lumps - 1) {
+		if (jaguarencrypt)
+		{
+			if (d < num_lumps - 1)
+			{
 				size_t pos = mc.currentPos();
 				uint32_t nextoffset = 0;
-				for (int i = 0; i + d < num_lumps; ++i) {
+				for (int i = 0; i + d < num_lumps; ++i)
+				{
 					mc.read(&nextoffset, 4);
 					if (nextoffset != 0) break;
 					mc.seek(12, SEEK_CUR);
@@ -196,17 +207,20 @@ bool WadJArchive::open(MemChunk& mc) {
 				if (nextoffset == 0) nextoffset = dir_offset;
 				mc.seek(pos, SEEK_SET);
 				actualsize = nextoffset - offset;
-			} else {
+			}
+			else
+			{
 				if (offset > dir_offset)
 					actualsize = mc.getSize() - offset;
-				else 
+				else
 					actualsize = dir_offset - offset;
 			}
 		}
 
 		// If the lump data goes past the end of the file,
 		// the wadfile is invalid
-		if (offset + actualsize > mc.getSize()) {
+		if (offset + actualsize > mc.getSize())
+		{
 			wxLogMessage("WadJArchive::open: Wad archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
 			setMuted(false);
@@ -236,7 +250,8 @@ bool WadJArchive::open(MemChunk& mc) {
 	// Detect all entry types
 	MemChunk edata;
 	theSplashWindow->setProgressMessage("Detecting entry types");
-	for (size_t a = 0; a < numEntries(); a++) {
+	for (size_t a = 0; a < numEntries(); a++)
+	{
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 
@@ -244,15 +259,17 @@ bool WadJArchive::open(MemChunk& mc) {
 		ArchiveEntry* entry = getEntry(a);
 
 		// Read entry data if it isn't zero-sized
-		if (entry->getSize() > 0) {
+		if (entry->getSize() > 0)
+		{
 			// Read the entry data
 			edata.clear();
 			mc.exportMemChunk(edata, getEntryOffset(entry), entry->getSize());
-			if (entry->isEncrypted()) {
+			if (entry->isEncrypted())
+			{
 				if (entry->exProps().propertyExists("FullSize")
-					&& (unsigned)(int)(entry->exProp("FullSize")) >  entry->getSize())
+				        && (unsigned)(int)(entry->exProp("FullSize")) >  entry->getSize())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
-				if (!JaguarDecode(edata)) 
+				if (!JaguarDecode(edata))
 					wxLogMessage("%i: %s (following %s), did not decode properly", a, CHR(entry->getName()), a>0?CHR(getEntry(a-1)->getName()):"nothing");
 			}
 			entry->importMemChunk(edata);
@@ -292,11 +309,13 @@ bool WadJArchive::open(MemChunk& mc) {
  * Writes the wad archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool WadJArchive::write(MemChunk& mc, bool update) {
+bool WadJArchive::write(MemChunk& mc, bool update)
+{
 	// Determine directory offset & individual lump offsets
 	uint32_t dir_offset = 12;
 	ArchiveEntry* entry = NULL;
-	for (uint32_t l = 0; l < numEntries(); l++) {
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
 		entry = getEntry(l);
 		setEntryOffset(entry, dir_offset);
 		dir_offset += entry->getSize();
@@ -319,13 +338,15 @@ bool WadJArchive::write(MemChunk& mc, bool update) {
 	mc.write(&dir_offset, 4);
 
 	// Write the lumps
-	for (uint32_t l = 0; l < num_lumps; l++) {
+	for (uint32_t l = 0; l < num_lumps; l++)
+	{
 		entry = getEntry(l);
 		mc.write(entry->getData(), entry->getSize());
 	}
 
 	// Write the directory
-	for (uint32_t l = 0; l < num_lumps; l++) {
+	for (uint32_t l = 0; l < num_lumps; l++)
+	{
 		entry = getEntry(l);
 		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		long offset = wxINT32_SWAP_ON_LE(getEntryOffset(entry));
@@ -338,7 +359,8 @@ bool WadJArchive::write(MemChunk& mc, bool update) {
 		mc.write(&size, 4);
 		mc.write(name, 8);
 
-		if (update) {
+		if (update)
+		{
 			entry->setState(0);
 			entry->exProp("Offset") = (int)wxINT32_SWAP_ON_LE(offset);
 		}
@@ -350,7 +372,8 @@ bool WadJArchive::write(MemChunk& mc, bool update) {
 /* WadJArchive::detectNamespace
  * Hack to account for Jaguar Doom's silly sprite scheme
  *******************************************************************/
-string WadJArchive::detectNamespace(ArchiveEntry* entry) {
+string WadJArchive::detectNamespace(ArchiveEntry* entry)
+{
 	ArchiveEntry* nextentry = getEntry(entryIndex(entry) + 1);
 	if (nextentry && S_CMPNOCASE(nextentry->getName(), "."))
 		return "sprites";
@@ -361,7 +384,8 @@ string WadJArchive::detectNamespace(ArchiveEntry* entry) {
 /* WadJArchive::isWadJArchive
  * Checks if the given data is a valid Jaguar Doom wad archive
  *******************************************************************/
-bool WadJArchive::isWadJArchive(MemChunk& mc) {
+bool WadJArchive::isWadJArchive(MemChunk& mc)
+{
 	// Check size
 	if (mc.getSize() < 12)
 		return false;
@@ -397,7 +421,8 @@ bool WadJArchive::isWadJArchive(MemChunk& mc) {
 /* WadJArchive::isWadJArchive
  * Checks if the file at [filename] is a valid Jaguar Doom wad archive
  *******************************************************************/
-bool WadJArchive::isWadJArchive(string filename) {
+bool WadJArchive::isWadJArchive(string filename)
+{
 	// Open file for reading
 	wxFile file(filename);
 

@@ -8,20 +8,23 @@
 #define KPM_ALT		0x02
 #define KPM_SHIFT	0x04
 
-struct keypress_t {
+struct keypress_t
+{
 	string	key;
 	bool	alt;
 	bool	ctrl;
 	bool	shift;
 
-	keypress_t(string key, bool alt, bool ctrl, bool shift) {
+	keypress_t(string key, bool alt, bool ctrl, bool shift)
+	{
 		this->key = key;
 		this->alt = alt;
 		this->ctrl = ctrl;
 		this->shift = shift;
 	}
 
-	keypress_t(string key = "", int modifiers = 0) {
+	keypress_t(string key = "", int modifiers = 0)
+	{
 		this->key = key;
 		ctrl = alt = shift = false;
 		if (modifiers & KPM_CTRL)
@@ -32,7 +35,8 @@ struct keypress_t {
 			shift = true;
 	}
 
-	string as_string() {
+	string as_string()
+	{
 		if (key.IsEmpty())
 			return "";
 
@@ -50,7 +54,8 @@ struct keypress_t {
 	}
 };
 
-class KeyBind {
+class KeyBind
+{
 private:
 	string				name;
 	vector<keypress_t>	keys;
@@ -94,7 +99,8 @@ public:
 };
 
 
-class KeyBindHandler {
+class KeyBindHandler
+{
 public:
 	KeyBindHandler();
 	~KeyBindHandler();

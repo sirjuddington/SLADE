@@ -2,7 +2,8 @@
 #ifndef __MC_ANIMATIONS_H__
 #define __MC_ANIMATIONS_H__
 
-class MCAnimation {
+class MCAnimation
+{
 protected:
 	long	starttime;
 	bool	mode_3d;
@@ -17,7 +18,8 @@ public:
 	virtual void draw() {}
 };
 
-class MCASelboxFader : public MCAnimation {
+class MCASelboxFader : public MCAnimation
+{
 private:
 	fpoint2_t	tl;
 	fpoint2_t	br;
@@ -31,7 +33,8 @@ public:
 	void draw();
 };
 
-class MCAThingSelection : public MCAnimation {
+class MCAThingSelection : public MCAnimation
+{
 private:
 	double	x;
 	double	y;
@@ -48,7 +51,8 @@ public:
 };
 
 class MapLine;
-class MCALineSelection : public MCAnimation {
+class MCALineSelection : public MCAnimation
+{
 private:
 	vector<frect_t>	lines;
 	vector<frect_t>	tabs;
@@ -64,7 +68,8 @@ public:
 };
 
 class MapVertex;
-class MCAVertexSelection : public MCAnimation {
+class MCAVertexSelection : public MCAnimation
+{
 private:
 	vector<fpoint2_t>	vertices;
 	double				size;
@@ -80,7 +85,8 @@ public:
 };
 
 class Polygon2D;
-class MCASectorSelection : public MCAnimation {
+class MCASectorSelection : public MCAnimation
+{
 private:
 	vector<Polygon2D*>	polygons;
 	bool				select;
@@ -94,7 +100,8 @@ public:
 	void draw();
 };
 
-class MCA3dWallSelection : public MCAnimation {
+class MCA3dWallSelection : public MCAnimation
+{
 private:
 	fpoint3_t	points[4];
 	bool		select;
@@ -109,7 +116,8 @@ public:
 };
 
 class MapSector;
-class MCA3dFlatSelection : public MCAnimation {
+class MCA3dFlatSelection : public MCAnimation
+{
 private:
 	MapSector*	sector;
 	plane_t		plane;
@@ -126,7 +134,8 @@ public:
 
 class MapRenderer2D;
 class MapObject;
-class MCAHilightFade : public MCAnimation {
+class MCAHilightFade : public MCAnimation
+{
 private:
 	MapObject*		object;
 	float			fade;
@@ -142,7 +151,8 @@ public:
 };
 
 class MapRenderer3D;
-class MCAHilightFade3D : public MCAnimation {
+class MCAHilightFade3D : public MCAnimation
+{
 private:
 	int				item_index;
 	uint8_t			item_type;

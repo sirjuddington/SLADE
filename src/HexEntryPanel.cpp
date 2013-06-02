@@ -40,7 +40,8 @@
 /* HexEntryPanel::HexEntryPanel
  * HexEntryPanel class constructor
  *******************************************************************/
-HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex") {
+HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
+{
 	// Create hex editor
 	hex_editor = new HexEditorPanel(this);
 	sizer_main->Add(hex_editor, 1, wxEXPAND);
@@ -55,13 +56,15 @@ HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex") {
 /* HexEntryPanel::~HexEntryPanel
  * HexEntryPanel class destructor
  *******************************************************************/
-HexEntryPanel::~HexEntryPanel() {
+HexEntryPanel::~HexEntryPanel()
+{
 }
 
 /* HexEntryPanel::loadEntry
  * Loads an entry to the panel
  *******************************************************************/
-bool HexEntryPanel::loadEntry(ArchiveEntry* entry) {
+bool HexEntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	// Check entry exists
 	if (!entry)
 		return false;
@@ -73,6 +76,7 @@ bool HexEntryPanel::loadEntry(ArchiveEntry* entry) {
 /* HexEntryPanel::saveEntry
  * Saves changes to the entry
  *******************************************************************/
-bool HexEntryPanel::saveEntry() {
+bool HexEntryPanel::saveEntry()
+{
 	return true;
 }

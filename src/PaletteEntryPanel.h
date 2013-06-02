@@ -18,12 +18,13 @@
  *   the full complement of 34 including one unused (a legacy of the Doom
  *   beta version which used a green colormap for the light amp visors).
  */
-class PaletteEntryPanel : public EntryPanel, public SActionHandler {
+class PaletteEntryPanel : public EntryPanel, public SActionHandler
+{
 private:
 	PaletteCanvas*			pal_canvas;
 	vector<Palette8bit*>	palettes;
 	uint32_t				cur_palette;
-	
+
 	wxButton*				btn_nextpal;
 	wxButton*				btn_prevpal;
 	wxStaticText*			text_curpal;
@@ -39,7 +40,7 @@ public:
 	bool	saveEntry();
 	string	statusString();
 	void	refreshPanel();
-	
+
 	bool	showPalette(uint32_t index);
 	bool	addCustomPalette();
 	bool	exportAs();
@@ -63,8 +64,8 @@ public:
 
 	// SAction handler
 	bool	handleAction(string id);
-	bool	fillCustomMenu(wxMenu * custom);
-	
+	bool	fillCustomMenu(wxMenu* custom);
+
 	// Events
 	void	onBtnNextPal(wxCommandEvent& e);
 	void	onBtnPrevPal(wxCommandEvent& e);

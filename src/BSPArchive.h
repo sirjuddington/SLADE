@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class BSPArchive : public Archive {
+class BSPArchive : public Archive
+{
 private:
 
 public:

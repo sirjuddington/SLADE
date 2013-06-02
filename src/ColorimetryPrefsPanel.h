@@ -5,7 +5,8 @@
 #include "PrefsPanelBase.h"
 #include <wx/spinctrl.h>
 
-class ColorimetryPrefsPanel : public PrefsPanelBase {
+class ColorimetryPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxSpinCtrlDouble*	spin_grey_r;
 	wxSpinCtrlDouble*	spin_grey_g;

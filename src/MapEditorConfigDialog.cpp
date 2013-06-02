@@ -12,7 +12,8 @@
 #include "Icons.h"
 #include <wx/statline.h>
 
-MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist) : wxDialog(parent, -1, "Launch Map Editor") {
+MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist) : wxDialog(parent, -1, "Launch Map Editor")
+{
 	// Init variables
 	this->archive = archive;
 	canvas_preview = NULL;
@@ -52,7 +53,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	img_list->Add(getIcon("t_close"));
 
 	// Map section
-	if (show_maplist) {
+	if (show_maplist)
+	{
 		frame = new wxStaticBox(this, -1, "Maps");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 		sizer->Add(framesizer, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -66,7 +68,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		btn_new_map = new wxButton(this, -1, "New Map");
 		framesizer->Add(btn_new_map, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
 	}
-	else {
+	else
+	{
 		list_maps = NULL;
 		btn_new_map = NULL;
 	}
@@ -90,9 +93,11 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	// Populate resource archive list
 	int index = 0;
-	for (int a = 0; a < theArchiveManager->numArchives(); a++) {
+	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	{
 		Archive* arch = theArchiveManager->getArchive(a);
-		if (arch != archive) {
+		if (arch != archive)
+		{
 			list_resources->Append(arch->getFilename(false));
 			if (theArchiveManager->archiveIsResource(arch))
 				list_resources->Check(index);
@@ -112,7 +117,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 
 	// Right side (map preview)
-	if (show_maplist) {
+	if (show_maplist)
+	{
 		frame = new wxStaticBox(this, -1, "Preview");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 		mainsizer->Add(framesizer, 0, wxEXPAND|wxALL, 4);
@@ -133,7 +139,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	// Bind events
 	choice_game_config->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &MapEditorConfigDialog::onChoiceGameConfigChanged, this);
 	choice_port_config->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &MapEditorConfigDialog::onChoicePortConfigChanged, this);
-	if (show_maplist) {
+	if (show_maplist)
+	{
 		list_maps->Bind(wxEVT_COMMAND_LIST_ITEM_ACTIVATED, &MapEditorConfigDialog::onMapActivated, this);
 		list_maps->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &MapEditorConfigDialog::onMapSelected, this);
 		btn_new_map->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnNewMap, this);
@@ -150,17 +157,20 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		list_maps->selectItem(0);
 }
 
-MapEditorConfigDialog::~MapEditorConfigDialog() {
+MapEditorConfigDialog::~MapEditorConfigDialog()
+{
 	delete img_list;
 }
 
-void MapEditorConfigDialog::populateGameList() {
+void MapEditorConfigDialog::populateGameList()
+{
 	// Clear current list
 	choice_game_config->Clear();
 
 	// Populate list
 	int selection = 0;
-	for (unsigned a = 0; a < theGameConfiguration->nGameConfigs(); a++) {
+	for (unsigned a = 0; a < theGameConfiguration->nGameConfigs(); a++)
+	{
 		choice_game_config->Append(theGameConfiguration->gameConfig(a).title);
 		if (game_current == theGameConfiguration->gameConfig(a).name)
 			selection = a;
@@ -170,7 +180,8 @@ void MapEditorConfigDialog::populateGameList() {
 	choice_game_config->SetSelection(selection);
 }
 
-void MapEditorConfigDialog::populatePortList() {
+void MapEditorConfigDialog::populatePortList()
+{
 	// Clear current list
 	choice_port_config->Clear();
 	ports_list.clear();
@@ -182,8 +193,10 @@ void MapEditorConfigDialog::populatePortList() {
 	int selection = 0;
 	int index = 1;
 	choice_port_config->Append("None");
-	for (unsigned a = 0; a < theGameConfiguration->nPortConfigs(); a++) {
-		if (theGameConfiguration->portSupportsGame(a, game)) {
+	for (unsigned a = 0; a < theGameConfiguration->nPortConfigs(); a++)
+	{
+		if (theGameConfiguration->portSupportsGame(a, game))
+		{
 			ports_list.push_back(a);
 			choice_port_config->Append(theGameConfiguration->portConfig(a).title);
 			if (port_current == theGameConfiguration->portConfig(a).name)
@@ -191,12 +204,13 @@ void MapEditorConfigDialog::populatePortList() {
 			index++;
 		}
 	}
-	
+
 	// Select current port (if any)
 	choice_port_config->SetSelection(selection);
 }
 
-void MapEditorConfigDialog::populateMapList() {
+void MapEditorConfigDialog::populateMapList()
+{
 	// Do nothing if map list isn't active
 	if (!list_maps)
 		return;
@@ -225,7 +239,8 @@ void MapEditorConfigDialog::populateMapList() {
 
 	// Add maps matching the current game configuration
 	int index = 0;
-	for (unsigned a = 0; a < maps.size(); a++) {
+	for (unsigned a = 0; a < maps.size(); a++)
+	{
 		// Setup format string
 		string fmt = "D";
 		if (maps[a].format == MAP_DOOM64)		fmt = "64";
@@ -251,7 +266,8 @@ void MapEditorConfigDialog::populateMapList() {
 	list_maps->selectItem(selection);
 }
 
-Archive::mapdesc_t MapEditorConfigDialog::selectedMap() {
+Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
+{
 	// Get selected map
 	int selection = -1;
 	wxArrayInt sel = list_maps->selectedItems();
@@ -265,7 +281,8 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap() {
 		return maps[selection];
 }
 
-bool MapEditorConfigDialog::configMatchesMap(Archive::mapdesc_t map) {
+bool MapEditorConfigDialog::configMatchesMap(Archive::mapdesc_t map)
+{
 	// Get currently selected game/port
 	int game = choice_game_config->GetSelection();
 	int port = -1;
@@ -275,14 +292,16 @@ bool MapEditorConfigDialog::configMatchesMap(Archive::mapdesc_t map) {
 	return theGameConfiguration->mapFormatSupported(map.format, game, port);
 }
 
-string MapEditorConfigDialog::selectedGame() {
+string MapEditorConfigDialog::selectedGame()
+{
 	if (choice_game_config->GetCount() == 0)
 		return "";
 
 	return theGameConfiguration->gameConfig(choice_game_config->GetSelection()).name;
 }
 
-string MapEditorConfigDialog::selectedPort() {
+string MapEditorConfigDialog::selectedPort()
+{
 	if (choice_port_config->GetSelection() == 0 || choice_port_config->GetCount() == 0)
 		return "";
 
@@ -291,7 +310,8 @@ string MapEditorConfigDialog::selectedPort() {
 
 
 
-void MapEditorConfigDialog::onChoiceGameConfigChanged(wxCommandEvent& e) {
+void MapEditorConfigDialog::onChoiceGameConfigChanged(wxCommandEvent& e)
+{
 	// Refresh ports combo box
 	populatePortList();
 
@@ -302,7 +322,8 @@ void MapEditorConfigDialog::onChoiceGameConfigChanged(wxCommandEvent& e) {
 	port_current = selectedPort();
 }
 
-void MapEditorConfigDialog::onChoicePortConfigChanged(wxCommandEvent& e) {
+void MapEditorConfigDialog::onChoicePortConfigChanged(wxCommandEvent& e)
+{
 	// Refresh map list
 	populateMapList();
 
@@ -310,11 +331,13 @@ void MapEditorConfigDialog::onChoicePortConfigChanged(wxCommandEvent& e) {
 	port_current = selectedPort();
 }
 
-void MapEditorConfigDialog::onMapActivated(wxListEvent& e) {
+void MapEditorConfigDialog::onMapActivated(wxListEvent& e)
+{
 	EndModal(wxID_OK);
 }
 
-void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e) {
+void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
+{
 	// Create simple dialog to select map name
 	wxDialog dlg(this, -1, "Create New Map");
 
@@ -336,12 +359,15 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e) {
 	hbox->Add(cbo_mapname, 1, wxEXPAND);
 
 	// Add possible map names to the combo box
-	for (unsigned a = 0; a < theGameConfiguration->nMapNames(); a++) {
+	for (unsigned a = 0; a < theGameConfiguration->nMapNames(); a++)
+	{
 		// Check if map already exists
 		string mapname = theGameConfiguration->mapName(a);
 		bool exists = false;
-		for (unsigned m = 0; m < maps.size(); m++) {
-			if (S_CMPNOCASE(maps[m].name, mapname)) {
+		for (unsigned m = 0; m < maps.size(); m++)
+		{
+			if (S_CMPNOCASE(maps[m].name, mapname))
+			{
 				exists = true;
 				break;
 			}
@@ -385,14 +411,17 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e) {
 	// Show it
 	dlg.SetInitialSize(wxSize(250, -1));
 	dlg.CenterOnParent();
-	if (dlg.ShowModal() == wxID_OK) {
+	if (dlg.ShowModal() == wxID_OK)
+	{
 		string mapname = cbo_mapname->GetValue();
 		if (mapname.IsEmpty())
 			return;
 
 		// Check the map name isn't already taken
-		for (unsigned a = 0; a < maps.size(); a++) {
-			if (S_CMPNOCASE(maps[a].name, mapname)) {
+		for (unsigned a = 0; a < maps.size(); a++)
+		{
+			if (S_CMPNOCASE(maps[a].name, mapname))
+			{
 				wxMessageBox("Map " + mapname + " already exists", "Error");
 				return;
 			}
@@ -408,17 +437,20 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e) {
 			map_format = MAP_DOOM64;
 
 		// Check archive type
-		if (archive->getType() == ARCHIVE_WAD) {
+		if (archive->getType() == ARCHIVE_WAD)
+		{
 			// Create new (empty) map at the end of the wad
 			ArchiveEntry* head = archive->addNewEntry(mapname);
 			ArchiveEntry* end = NULL;
 
-			if (map_format == MAP_UDMF) {
+			if (map_format == MAP_UDMF)
+			{
 				// UDMF
 				archive->addNewEntry("TEXTMAP");
 				end = archive->addNewEntry("ENDMAP");
 			}
-			else {
+			else
+			{
 				// Doom(64) / Hexen
 				archive->addNewEntry("THINGS");
 				archive->addNewEntry("LINEDEFS");
@@ -435,7 +467,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e) {
 			populateMapList();
 			list_maps->selectItem(list_maps->GetItemCount()-1);
 		}
-		else if (archive->getType() == ARCHIVE_ZIP) {
+		else if (archive->getType() == ARCHIVE_ZIP)
+		{
 			// Create new wad archive for the map
 			Archive* wad = new WadArchive();
 
@@ -443,12 +476,14 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e) {
 			ArchiveEntry* head = wad->addNewEntry(mapname);
 			ArchiveEntry* end = NULL;
 
-			if (map_format == MAP_UDMF) {
+			if (map_format == MAP_UDMF)
+			{
 				// UDMF
 				wad->addNewEntry("TEXTMAP");
 				end = wad->addNewEntry("ENDMAP");
 			}
-			else {
+			else
+			{
 				// Doom(64) / Hexen
 				wad->addNewEntry("THINGS");
 				wad->addNewEntry("LINEDEFS");
@@ -460,7 +495,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e) {
 				if (map_format == MAP_HEXEN)
 					end = wad->addNewEntry("BEHAVIOR");
 				// Doom 64
-				else if (map_format == MAP_DOOM64) {
+				else if (map_format == MAP_DOOM64)
+				{
 					wad->addNewEntry("LIGHTS");
 					end = wad->addNewEntry("MACROS");
 				}
@@ -482,20 +518,24 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e) {
 	}
 }
 
-void MapEditorConfigDialog::onBtnOpenResource(wxCommandEvent& e) {
+void MapEditorConfigDialog::onBtnOpenResource(wxCommandEvent& e)
+{
 	SFileDialog::fd_info_t info;
-	if (SFileDialog::openFile(info, "Open Resource Archive", theArchiveManager->getArchiveExtensionsString(), this)) {
+	if (SFileDialog::openFile(info, "Open Resource Archive", theArchiveManager->getArchiveExtensionsString(), this))
+	{
 		theSplashWindow->show("Opening Resource Archive", true);
 		Archive* na = theArchiveManager->openArchive(info.filenames[0], true, true);
 		theSplashWindow->hide();
-		if (na) {
+		if (na)
+		{
 			list_resources->Append(na->getFilename(false));
 			list_resources->Check(list_resources->GetCount()-1);
 		}
 	}
 }
 
-void MapEditorConfigDialog::onBtnRecent(wxCommandEvent& e) {
+void MapEditorConfigDialog::onBtnRecent(wxCommandEvent& e)
+{
 	// Build list of recent wad filename strings
 	wxArrayString recent;
 	for (unsigned a = 0; a < theArchiveManager->numRecentFiles(); a++)
@@ -503,16 +543,19 @@ void MapEditorConfigDialog::onBtnRecent(wxCommandEvent& e) {
 
 	// Show dialog
 	wxSingleChoiceDialog dlg(this, "Select a recent Archive to open", "Open Recent", recent);
-	if (dlg.ShowModal() == wxID_OK) {
+	if (dlg.ShowModal() == wxID_OK)
+	{
 		Archive* na = theArchiveManager->openArchive(theArchiveManager->recentFile(dlg.GetSelection()), true, true);
-		if (na) {
+		if (na)
+		{
 			list_resources->Append(na->getFilename(false));
 			list_resources->Check(list_resources->GetCount()-1);
 		}
 	}
 }
 
-void MapEditorConfigDialog::onMapSelected(wxListEvent& e) {
+void MapEditorConfigDialog::onMapSelected(wxListEvent& e)
+{
 	if (!canvas_preview)
 		return;
 

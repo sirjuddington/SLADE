@@ -2,7 +2,8 @@
 #ifndef __LUA_H__
 #define __LUA_H__
 
-namespace Lua {
+namespace Lua
+{
 	bool	init();
 	void	close();
 	bool	run(string program);

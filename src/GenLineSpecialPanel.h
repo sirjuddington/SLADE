@@ -6,7 +6,8 @@
 #include <wx/choice.h>
 #include <wx/gbsizer.h>
 
-class GenLineSpecialPanel : public wxPanel {
+class GenLineSpecialPanel : public wxPanel
+{
 private:
 	wxChoice*		choice_type;
 	wxChoice*		choice_props[7];

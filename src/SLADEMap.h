@@ -10,22 +10,25 @@
 #include "Archive.h"
 #include "PropertyList.h"
 
-struct mobj_holder_t {
+struct mobj_holder_t
+{
 	MapObject*	mobj;
 	bool		in_map;
 
 	mobj_holder_t() { mobj = NULL; in_map = false; }
 	mobj_holder_t(MapObject* mobj, bool in_map) { this->mobj = mobj; this->in_map = in_map; }
 
-	void set(MapObject* object, bool in_map) {
+	void set(MapObject* object, bool in_map)
+	{
 		this->mobj = object;
 		this->in_map = in_map;
 	}
 };
 
 class ParseTreeNode;
-class SLADEMap {
-friend class MapEditor;
+class SLADEMap
+{
+	friend class MapEditor;
 private:
 	vector<MapLine*>	lines;
 	vector<MapSide*>	sides;
@@ -106,12 +109,13 @@ public:
 	~SLADEMap();
 
 	// Map entry ordering
-	enum MapEntries {
-		THINGS = 0,
-		LINEDEFS,
-		SIDEDEFS,
-		VERTEXES,
-		SECTORS
+	enum MapEntries
+	{
+	    THINGS = 0,
+	    LINEDEFS,
+	    SIDEDEFS,
+	    VERTEXES,
+	    SECTORS
 	};
 
 	string		mapName() { return name; }

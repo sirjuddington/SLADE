@@ -7,7 +7,8 @@
 #include <wx/log.h>
 #include <wx/stopwatch.h>
 
-class SLADELog : public wxLog {
+class SLADELog : public wxLog
+{
 protected:
 // wxWidgets thinks it's funny to have incompatible log interfaces between release numbers...
 #if (wxMAJOR_VERSION < 2 || (wxMAJOR_VERSION == 2 && wxMINOR_VERSION < 9))
@@ -28,7 +29,8 @@ public:
 class MainWindow;
 class SActionHandler;
 
-class MainApp : public wxApp {
+class MainApp : public wxApp
+{
 friend class SAction;
 friend class SActionHandler;
 private:
@@ -69,19 +71,24 @@ public:
 #define theApp ((MainApp*)wxTheApp)
 
 // Basic 'interface' class for classes that handle SActions (yay multiple inheritance)
-class SActionHandler {
+class SActionHandler
+{
 friend class MainApp;
 protected:
 	virtual bool	handleAction(string id) { return false; }
 
 public:
-	SActionHandler() {
+	SActionHandler()
+	{
 		theApp->action_handlers.push_back(this);
 	}
 
-	~SActionHandler() {
-		for (unsigned a = 0; a < theApp->action_handlers.size(); a++) {
-			if (theApp->action_handlers[a] == this) {
+	~SActionHandler()
+	{
+		for (unsigned a = 0; a < theApp->action_handlers.size(); a++)
+		{
+			if (theApp->action_handlers[a] == this)
+			{
 				theApp->action_handlers.erase(theApp->action_handlers.begin() + a);
 				a--;
 			}

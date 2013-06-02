@@ -1,7 +1,9 @@
 
-class SIFHalfLifeTex : public SIFormat {
+class SIFHalfLifeTex : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, index);
 
@@ -12,7 +14,8 @@ protected:
 
 		// Determine data offset
 		size_t data_offset = READ_L32(data.getData(), 24+(index<<2));
-		if (!info.width || !info.height || !data_offset || data.getSize() < data_offset + (info.width*info.height)) {
+		if (!info.width || !info.height || !data_offset || data.getSize() < data_offset + (info.width*info.height))
+		{
 			Global::error = "HLT file: invalid data for mip level";
 			return false;
 		}
@@ -20,17 +23,20 @@ protected:
 		// Let's build the palette now
 		Palette8bit palette;
 		size_t pal_offset = READ_L32(data.getData(), 36) + ((READ_L32(data.getData(), 16) >> 3) * (READ_L32(data.getData(), 20) >> 3));
-		if (data.getSize() < pal_offset + 5) {
+		if (data.getSize() < pal_offset + 5)
+		{
 			Global::error = "HLT file: invalid palette offset";
 			return false;
 		}
 		size_t palsize = READ_L16(data.getData(), pal_offset);
-		if (palsize == 0 || palsize > 256 || data.getSize() < (pal_offset + 2 + (palsize*3))) {
+		if (palsize == 0 || palsize > 256 || data.getSize() < (pal_offset + 2 + (palsize*3)))
+		{
 			wxLogMessage("palsize %d, paloffset %d, entry size %d", palsize, pal_offset, data.getSize());
 			Global::error = "HLT file: invalid palette size";
 			return false;
 		}
-		for (size_t c = 0; c < palsize; ++c) {
+		for (size_t c = 0; c < palsize; ++c)
+		{
 			rgba_t color;
 			color.r = data[(c*3)+pal_offset+2];
 			color.g = data[(c*3)+pal_offset+3];
@@ -49,21 +55,24 @@ protected:
 	}
 
 public:
-	SIFHalfLifeTex() : SIFormat("hlt") {
+	SIFHalfLifeTex() : SIFormat("hlt")
+	{
 		name = "Half-Life Texture";
 		extension = "hlt";
 		reliability = 20;
 	}
 	~SIFHalfLifeTex() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_hlt")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Get image info
@@ -77,9 +86,11 @@ public:
 	}
 };
 
-class SIFSCSprite : public SIFormat {
+class SIFSCSprite : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get width & height
 		SImage::info_t info = getInfo(data, index);
 		if (info.format != id)
@@ -95,15 +106,18 @@ protected:
 		// Read pixel data
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
-		for (int h = 0, i = 4; h < info.width; ++h, i+=2) {
+		for (int h = 0, i = 4; h < info.width; ++h, i+=2)
+		{
 			int colstart = READ_L16(data.getData(), i);
-			if (colstart) {
+			if (colstart)
+			{
 				int start		= data[colstart];
 				int stop		= data[colstart+1];
 				int colheight	= start - stop;
 				int startheight = info.height - start;
 
-				for (int z = 0; z < colheight; ++z) {
+				for (int z = 0; z < colheight; ++z)
+				{
 					int mypixel = ((z+startheight)*info.width)+h;
 					if (mypixel >= info.width*info.height || unsigned(colstart+2+z) >= data.getSize())
 						return false;
@@ -120,21 +134,24 @@ protected:
 	}
 
 public:
-	SIFSCSprite() : SIFormat("scsprite") {
+	SIFSCSprite() : SIFormat("scsprite")
+	{
 		name = "Shadowcaster Sprite";
 		extension = "dat";
 		reliability = 110;
 	}
 	~SIFSCSprite() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_scsprite")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Get image width
@@ -144,7 +161,8 @@ public:
 			return info;
 
 		// Get image height
-		for (int j = 0; j < info.width; ++j) {
+		for (int j = 0; j < info.width; ++j)
+		{
 			int colstart = READ_L16(mc.getData(), ((j<<1)+4));
 
 			// Columns with a null offset are skipped
@@ -174,9 +192,11 @@ public:
 // The same as Doom_Arah, except for the value of the transparent
 // index. Since the zerotransparent hack didn't survive the SIF
 // rewrite, here it is in all its copy/pasted glory.
-class SIFSCGfx : public SIFormat {
+class SIFSCGfx : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Setup variables
 		patch_header_t header;
 		data.read(&header, 8, 0);
@@ -208,21 +228,24 @@ protected:
 	}
 
 public:
-	SIFSCGfx() : SIFormat("scgfx") {
+	SIFSCGfx() : SIFormat("scgfx")
+	{
 		name = "Shadowcaster Gfx";
 		extension = "dat";
 		reliability = 100;
 	}
 	~SIFSCGfx() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_scgfx")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Read header
@@ -242,9 +265,11 @@ public:
 };
 
 #define SCWALLOFFSET 130 // Headers contain 129 bytes of junk.
-class SIFSCWall : public SIFormat {
+class SIFSCWall : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Determine width and height
 		int height = data[0]*4;
 		int width = 64;
@@ -260,8 +285,10 @@ protected:
 		memset(img_mask, 255, height<<6);
 		int pixelreader = SCWALLOFFSET;
 		int brush = 0;
-		for (int x = 0; x < width; ++x) {
-			for (int y = 0; y < height; ++y, ++pixelreader) {
+		for (int x = 0; x < width; ++x)
+		{
+			for (int y = 0; y < height; ++y, ++pixelreader)
+			{
 				brush = (y*64)+x;
 				img_data[brush] = data[pixelreader];
 				/* Problem: not all textures ought to be transparent.
@@ -279,21 +306,24 @@ protected:
 	}
 
 public:
-	SIFSCWall() : SIFormat("scwall") {
+	SIFSCWall() : SIFormat("scwall")
+	{
 		name = "Shadowcaster Wall";
 		extension = "dat";
 		reliability = 101;
 	}
 	~SIFSCWall() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_scwall")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Get image properties
@@ -306,9 +336,11 @@ public:
 	}
 };
 
-class SIFAnaMip : public SIFormat {
+class SIFAnaMip : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, index);
 
@@ -327,21 +359,24 @@ protected:
 	}
 
 public:
-	SIFAnaMip() : SIFormat("mipimage") {
+	SIFAnaMip() : SIFormat("mipimage")
+	{
 		name = "Amulets & Armor";
 		extension = "dat";
 		reliability = 100;
 	}
 	~SIFAnaMip() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_mipimage")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Get image info
@@ -358,9 +393,11 @@ public:
 	}
 };
 
-class SIFBuildTile : public SIFormat {
+class SIFBuildTile : public SIFormat
+{
 private:
-	unsigned getTileInfo(SImage::info_t& info, MemChunk& mc, int index) {
+	unsigned getTileInfo(SImage::info_t& info, MemChunk& mc, int index)
+	{
 		// Get tile info
 		uint32_t firsttile = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.getData())[2]);
 		uint32_t lasttile  = wxUINT32_SWAP_ON_BE(((uint32_t*)mc.getData())[3]);
@@ -376,9 +413,11 @@ private:
 
 		// Compute the address where our tile's graphic data starts
 		size_t datastart = (info.numimages * 8) + 16;
-		if (index > 0) {
+		if (index > 0)
+		{
 			// We can skip these steps if looking at the first tile in the ART file.
-			for (int i = 0; i < index; ++i) {
+			for (int i = 0; i < index; ++i)
+			{
 				int width = READ_L16(mc.getData(), (x_offs+(i<<1)));
 				int height = READ_L16(mc.getData(), (y_offs+(i<<1)));
 				datastart += (width * height);
@@ -413,7 +452,8 @@ private:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get info and data start
 		SImage::info_t info;
 		unsigned datastart = getTileInfo(info, data, index);
@@ -429,9 +469,10 @@ protected:
 		uint8_t* img_data = imageData(image);
 		uint8_t* img_mask = imageMask(image);
 		data.read(img_data, info.width*info.height, datastart);
-		
+
 		// Create mask
-		for (int a = 0; a < info.width*info.height; a++) {
+		for (int a = 0; a < info.width*info.height; a++)
+		{
 			if (img_data[a] == 0xFF)
 				img_mask[a] = 0;
 			else
@@ -441,7 +482,7 @@ protected:
 		// Convert from column-major to row-major
 		image.rotate(270);
 		image.mirror(true);
-		
+
 		// Set offsets
 		image.setXOffset(info.offset_x);
 		image.setYOffset(info.offset_y);
@@ -450,21 +491,24 @@ protected:
 	}
 
 public:
-	SIFBuildTile() : SIFormat("arttile") {
+	SIFBuildTile() : SIFormat("arttile")
+	{
 		name = "Build ART";
 		extension = "art";
 		reliability = 100;
 	}
 	~SIFBuildTile() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_arttile")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		// Get info
@@ -474,9 +518,11 @@ public:
 	}
 };
 
-class SIFHeretic2M8 : public SIFormat {
+class SIFHeretic2M8 : public SIFormat
+{
 private:
-	unsigned getLevelInfo(SImage::info_t& info, MemChunk& mc, int index) {
+	unsigned getLevelInfo(SImage::info_t& info, MemChunk& mc, int index)
+	{
 		// Check size
 		if (mc.getSize() < 1040)
 			return 0;
@@ -498,7 +544,8 @@ private:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get miplevel info and offset
 		SImage::info_t info;
 		unsigned datastart = getLevelInfo(info, data, index);
@@ -509,7 +556,8 @@ protected:
 
 		// Build palette
 		Palette8bit palette;
-		for (size_t c = 0; c < 256; ++c) {
+		for (size_t c = 0; c < 256; ++c)
+		{
 			rgba_t color;
 			color.r = data[(c*3)+0x104];
 			color.g = data[(c*3)+0x105];
@@ -528,21 +576,24 @@ protected:
 	}
 
 public:
-	SIFHeretic2M8() : SIFormat("m8") {
+	SIFHeretic2M8() : SIFormat("m8")
+	{
 		name = "Heretic 2 8bpp";
 		extension = "dat";
 		reliability = 80;
 	}
 	~SIFHeretic2M8() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_m8")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		getLevelInfo(info, mc, index);
@@ -551,9 +602,11 @@ public:
 	}
 };
 
-class SIFHeretic2M32 : public SIFormat {
+class SIFHeretic2M32 : public SIFormat
+{
 private:
-	unsigned getLevelInfo(SImage::info_t& info, MemChunk& mc, int index) {
+	unsigned getLevelInfo(SImage::info_t& info, MemChunk& mc, int index)
+	{
 		// Check size
 		if (mc.getSize() < 968)
 			return 0;
@@ -574,7 +627,8 @@ private:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get miplevel info and offset
 		SImage::info_t info;
 		unsigned datastart = getLevelInfo(info, data, index);
@@ -594,21 +648,24 @@ protected:
 	}
 
 public:
-	SIFHeretic2M32() : SIFormat("m32") {
+	SIFHeretic2M32() : SIFormat("m32")
+	{
 		name = "Heretic 2 32bpp";
 		extension = "dat";
 		reliability = 80;
 	}
 	~SIFHeretic2M32() {}
 
-	bool isThisFormat(MemChunk& mc) {
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_m32")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
 
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
 
 		getLevelInfo(info, mc, index);
@@ -617,9 +674,11 @@ public:
 	}
 };
 
-class SIFWolfPic : public SIFormat {
+class SIFWolfPic : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, index);
 
@@ -638,7 +697,8 @@ protected:
 		uint8_t* brush = img_data;
 		uint8_t* dataend = img_data + data.getSize() - 4;
 
-		while (pixel < entryend) {
+		while (pixel < entryend)
+		{
 			*brush = *pixel++;
 			brush += 4;
 			if (brush >= dataend)
@@ -647,25 +707,28 @@ protected:
 
 		return true;
 	}
-	
+
 public:
-	SIFWolfPic() : SIFormat("wolfpic") {
+	SIFWolfPic() : SIFormat("wolfpic")
+	{
 		name = "Wolf3d Pic";
 		extension = "dat";
 		reliability = 200;
 	}
 	~SIFWolfPic() {}
-	
-	bool isThisFormat(MemChunk& mc) {
+
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_wolfpic")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
-	
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
-		
+
 		// Read dimensions
 		info.width = READ_L16(mc.getData(), 0);
 		info.height = READ_L16(mc.getData(), 2);
@@ -673,14 +736,16 @@ public:
 		// Setup other info
 		info.colformat = PALMASK;
 		info.format = id;
-		
+
 		return info;
 	}
 };
 
-class SIFWolfSprite : public SIFormat {
+class SIFWolfSprite : public SIFormat
+{
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) {
+	bool readImage(SImage& image, MemChunk& data, int index)
+	{
 		// Get image info
 		SImage::info_t info = getInfo(data, index);
 
@@ -690,14 +755,17 @@ protected:
 		uint8_t* img_mask = imageMask(image);
 
 		// Read data
-		const uint16_t* cmdptr = (const uint16_t *)(data.getData() + 4);
+		const uint16_t* cmdptr = (const uint16_t*)(data.getData() + 4);
 		uint32_t i, x, y;
-		for (x = 0 ; x < (unsigned)info.width ; ++x ) {
-			const int16_t * linecmds = (const int16_t *)(data.getData() + wxINT16_SWAP_ON_BE( *cmdptr ));
+		for (x = 0 ; x < (unsigned)info.width ; ++x )
+		{
+			const int16_t* linecmds = (const int16_t*)(data.getData() + wxINT16_SWAP_ON_BE( *cmdptr ));
 			cmdptr++;
-			for (; wxINT16_SWAP_ON_BE(*linecmds); linecmds += 3) {
+			for (; wxINT16_SWAP_ON_BE(*linecmds); linecmds += 3)
+			{
 				i = (wxINT16_SWAP_ON_BE(linecmds[2])>>1) + wxINT16_SWAP_ON_BE(linecmds[1]);
-				for (y = (uint32_t)(wxINT16_SWAP_ON_BE(linecmds[2])>>1); y < (uint32_t)(wxINT16_SWAP_ON_BE(linecmds[0]) / 2); ++y, ++i) {
+				for (y = (uint32_t)(wxINT16_SWAP_ON_BE(linecmds[2])>>1); y < (uint32_t)(wxINT16_SWAP_ON_BE(linecmds[0]) / 2); ++y, ++i)
+				{
 					img_data[y * info.width + x] = data[i];
 					img_mask[y * info.width + x] = 255;
 				}
@@ -706,25 +774,28 @@ protected:
 
 		return true;
 	}
-	
+
 public:
-	SIFWolfSprite() : SIFormat("wolfsprite") {
+	SIFWolfSprite() : SIFormat("wolfsprite")
+	{
 		name = "Wolf3d Sprite";
 		extension = "dat";
 		reliability = 200;
 	}
 	~SIFWolfSprite() {}
-	
-	bool isThisFormat(MemChunk& mc) {
+
+	bool isThisFormat(MemChunk& mc)
+	{
 		if (EntryDataFormat::getFormat("img_wolfsprite")->isThisFormat(mc) >= EDF_PROBABLY)
 			return true;
 		else
 			return false;
 	}
-	
-	SImage::info_t getInfo(MemChunk& mc, int index) {
+
+	SImage::info_t getInfo(MemChunk& mc, int index)
+	{
 		SImage::info_t info;
-		
+
 		// Read dimensions
 		uint8_t leftpix, rightpix;
 		leftpix = mc[0];
@@ -737,7 +808,7 @@ public:
 		info.offset_y = info.height;
 		info.colformat = PALMASK;
 		info.format = id;
-		
+
 		return info;
 	}
 };

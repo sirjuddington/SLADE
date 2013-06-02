@@ -5,7 +5,8 @@
 #include "PrefsPanelBase.h"
 #include <wx/notebook.h>
 
-class MapDisplayPrefsPanel : public PrefsPanelBase {
+class MapDisplayPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxNotebook*	nb_pages;
 

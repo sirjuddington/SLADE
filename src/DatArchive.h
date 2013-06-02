@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class DatArchive : public TreelessArchive {
+class DatArchive : public TreelessArchive
+{
 private:
 	int						sprites[2];
 	int						flats[2];

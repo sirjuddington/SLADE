@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class BZip2Archive : public TreelessArchive {
+class BZip2Archive : public TreelessArchive
+{
 
 public:
 	BZip2Archive();

@@ -24,15 +24,17 @@ public:
 	uint32_t	getSpeed()	{ return speed; }
 	bool		getDecals()	{ return decals; }
 	int			getStatus()	{ return status; }
-	void		setFirst(string f)	{ first = f; }
-	void		setLast(string l)	{ last = l; }
-	void		setType(uint8_t t)	{ type = t; }
-	void		setSpeed(uint32_t s){ speed = s; }
-	void		setDecals(bool d)	{ decals = d; }
-	void		setStatus(int s)	{ status = s; }
+
+	void		setFirst(string f)		{ first = f; }
+	void		setLast(string l)		{ last = l; }
+	void		setType(uint8_t t)		{ type = t; }
+	void		setSpeed(uint32_t s)	{ speed = s; }
+	void		setDecals(bool d)		{ decals = d; }
+	void		setStatus(int s)		{ status = s; }
 };
 
-class AnimatedList {
+class AnimatedList
+{
 private:
 	vector<AnimatedEntry*>		entries;
 

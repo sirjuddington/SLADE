@@ -5,7 +5,8 @@
 #include "OGLCanvas.h"
 #include "GLTexture.h"
 
-class ANSICanvas : public OGLCanvas, Listener {
+class ANSICanvas : public OGLCanvas, Listener
+{
 private:
 	size_t			width, height;
 	uint8_t*		picdata;

@@ -9,32 +9,38 @@
 #include "MapEditor.h"
 #include "GameConfiguration.h"
 
-QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor) {
+QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
+{
 	// Init variables
 	allow_3d_mlook = true;
 	current_index = 0;
 	anim_offset = 0;
 	this->editor = editor;
 
-	if (editor) {
+	if (editor)
+	{
 		vector<selection_3d_t> sel;
 		editor->get3dSelectionOrHilight(sel);
 
 		// Cancel if no selection
-		if (sel.empty()) {
+		if (sel.empty())
+		{
 			active = false;
 			return;
 		}
 
 		// Cancel if only things selected
 		bool ok = false;
-		for (unsigned a = 0; a < sel.size(); a++) {
-			if (sel[a].type != MapEditor::SEL_THING) {
+		for (unsigned a = 0; a < sel.size(); a++)
+		{
+			if (sel[a].type != MapEditor::SEL_THING)
+			{
 				ok = true;
 				break;
 			}
 		}
-		if (!ok) {
+		if (!ok)
+		{
 			active = false;
 			return;
 		}
@@ -42,10 +48,13 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor) {
 		// Determine texture type
 		sel_type = 2;
 		int initial = 0;
-		if (!theGameConfiguration->mixTexFlats()) {
+		if (!theGameConfiguration->mixTexFlats())
+		{
 			sel_type = 0;
-			for (unsigned a = 0; a < sel.size(); a++) {
-				if (sel[a].type != MapEditor::SEL_THING && sel[a].type != MapEditor::SEL_CEILING && sel[a].type != MapEditor::SEL_FLOOR) {
+			for (unsigned a = 0; a < sel.size(); a++)
+			{
+				if (sel[a].type != MapEditor::SEL_THING && sel[a].type != MapEditor::SEL_CEILING && sel[a].type != MapEditor::SEL_FLOOR)
+				{
 					sel_type = 1;
 					initial = a;
 					break;
@@ -86,12 +95,16 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor) {
 	}
 }
 
-QuickTextureOverlay3d::~QuickTextureOverlay3d() {
+QuickTextureOverlay3d::~QuickTextureOverlay3d()
+{
 }
 
-void QuickTextureOverlay3d::setTexture(string name) {
-	for (unsigned a = 0; a < textures.size(); a++) {
-		if (S_CMPNOCASE(textures[a].name, name)) {
+void QuickTextureOverlay3d::setTexture(string name)
+{
+	for (unsigned a = 0; a < textures.size(); a++)
+	{
+		if (S_CMPNOCASE(textures[a].name, name))
+		{
 			current_index = a;
 			anim_offset = a;
 			return;
@@ -99,7 +112,8 @@ void QuickTextureOverlay3d::setTexture(string name) {
 	}
 }
 
-void QuickTextureOverlay3d::applyTexture() {
+void QuickTextureOverlay3d::applyTexture()
+{
 	// Check editor is associated
 	if (!editor)
 		return;
@@ -109,28 +123,34 @@ void QuickTextureOverlay3d::applyTexture() {
 	editor->get3dSelectionOrHilight(selection);
 
 	// Go through items
-	if (!selection.empty()) {
-		for (unsigned a = 0; a < selection.size(); a++) {
+	if (!selection.empty())
+	{
+		for (unsigned a = 0; a < selection.size(); a++)
+		{
 			// Thing (skip)
 			if (selection[a].type == MapEditor::SEL_THING)
 				continue;
 
 			// Floor
-			else if (selection[a].type == MapEditor::SEL_FLOOR && (sel_type == 0 || sel_type == 2)) {
+			else if (selection[a].type == MapEditor::SEL_FLOOR && (sel_type == 0 || sel_type == 2))
+			{
 				MapSector* sector = editor->getMap().getSector(selection[a].index);
 				if (sector) sector->setStringProperty("texturefloor", textures[current_index].name);
 			}
 
 			// Ceiling
-			else if (selection[a].type == MapEditor::SEL_CEILING && (sel_type == 0 || sel_type == 2)) {
+			else if (selection[a].type == MapEditor::SEL_CEILING && (sel_type == 0 || sel_type == 2))
+			{
 				MapSector* sector = editor->getMap().getSector(selection[a].index);
 				if (sector) sector->setStringProperty("textureceiling", textures[current_index].name);
 			}
 
 			// Wall
-			else if (sel_type > 0) {
+			else if (sel_type > 0)
+			{
 				MapSide* side = editor->getMap().getSide(selection[a].index);
-				if (side) {
+				if (side)
+				{
 					// Upper
 					if (selection[a].type == MapEditor::SEL_SIDE_TOP)
 						side->setStringProperty("texturetop", textures[current_index].name);
@@ -146,7 +166,8 @@ void QuickTextureOverlay3d::applyTexture() {
 	}
 }
 
-void QuickTextureOverlay3d::update(long frametime) {
+void QuickTextureOverlay3d::update(long frametime)
+{
 	double target = current_index;
 	float mult = (float)frametime / 10.0f;
 	if (anim_offset < target - 0.01)
@@ -157,7 +178,8 @@ void QuickTextureOverlay3d::update(long frametime) {
 		anim_offset = current_index;
 }
 
-void QuickTextureOverlay3d::draw(int width, int height, float fade) {
+void QuickTextureOverlay3d::draw(int width, int height, float fade)
+{
 	// Don't draw if invisible
 	if (fade < 0.001f)
 		return;
@@ -173,9 +195,11 @@ void QuickTextureOverlay3d::draw(int width, int height, float fade) {
 	// Draw textures
 	double x = ((double)width * 0.5) - (anim_offset * 136.0);
 	glColor4f(1.0f, 1.0f, 1.0f, fade);
-	for (unsigned a = 0; a < textures.size(); a++) {
+	for (unsigned a = 0; a < textures.size(); a++)
+	{
 		// Skip until first texture to show on left
-		if (x < -96) {
+		if (x < -96)
+		{
 			x += 136;
 			continue;
 		}
@@ -190,9 +214,11 @@ void QuickTextureOverlay3d::draw(int width, int height, float fade) {
 	}
 }
 
-void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom, double size, float fade) {
+void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom, double size, float fade)
+{
 	// Get texture if needed
-	if (!textures[index].texture) {
+	if (!textures[index].texture)
+	{
 		if (sel_type == 1)
 			textures[index].texture = theMapEditor->textureManager().getTexture(textures[index].name, false);
 		else if (sel_type == 0)
@@ -204,7 +230,7 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 	// Draw name
 	double brightness = 0.5 + (size - 1.0);
 	Drawing::drawText(textures[index].name, x, bottom + 2, rgba_t(brightness*255, brightness*255, brightness*255, brightness*255*fade),
-						index == current_index ? Drawing::FONT_BOLD : Drawing::FONT_NORMAL, Drawing::ALIGN_CENTER);
+	                  index == current_index ? Drawing::FONT_BOLD : Drawing::FONT_NORMAL, Drawing::ALIGN_CENTER);
 
 	// Draw texture
 	frect_t rect = Drawing::fitTextureWithin(textures[index].texture, x - 48*size, bottom - (96*size), x + 48*size, bottom, 0, 2);
@@ -218,7 +244,8 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 	glEnd();
 }
 
-double QuickTextureOverlay3d::determineSize(double x, int width) {
+double QuickTextureOverlay3d::determineSize(double x, int width)
+{
 	double mid = (double)width * 0.5;
 	if (x < mid - 384 || x > mid + 384)
 		return 1.0;
@@ -228,8 +255,10 @@ double QuickTextureOverlay3d::determineSize(double x, int width) {
 	return 1 + (0.5 * mult * mult);
 }
 
-void QuickTextureOverlay3d::close(bool cancel) {
-	if (editor) {
+void QuickTextureOverlay3d::close(bool cancel)
+{
+	if (editor)
+	{
 		editor->endUndoRecord(true);
 		editor->lockHilight(false);
 		if (cancel)
@@ -239,19 +268,26 @@ void QuickTextureOverlay3d::close(bool cancel) {
 	active = false;
 }
 
-void QuickTextureOverlay3d::mouseMotion(int x, int y) {
+void QuickTextureOverlay3d::mouseMotion(int x, int y)
+{
 }
 
-void QuickTextureOverlay3d::mouseLeftClick() {
+void QuickTextureOverlay3d::mouseLeftClick()
+{
 }
 
-void QuickTextureOverlay3d::mouseRightClick() {
+void QuickTextureOverlay3d::mouseRightClick()
+{
 }
 
-void QuickTextureOverlay3d::doSearch() {
-	if (!search.empty()) {
-		for (unsigned a = 0; a < textures.size(); a++) {
-			if (textures[a].name.Lower().StartsWith(search.Lower())) {
+void QuickTextureOverlay3d::doSearch()
+{
+	if (!search.empty())
+	{
+		for (unsigned a = 0; a < textures.size(); a++)
+		{
+			if (textures[a].name.Lower().StartsWith(search.Lower()))
+			{
 				current_index = a;
 				applyTexture();
 				return;
@@ -260,23 +296,27 @@ void QuickTextureOverlay3d::doSearch() {
 	}
 }
 
-void QuickTextureOverlay3d::keyDown(string key) {
+void QuickTextureOverlay3d::keyDown(string key)
+{
 	// Up texture
-	if ((key == "right" || key == "mwheeldown") && current_index < textures.size() - 1) {
+	if ((key == "right" || key == "mwheeldown") && current_index < textures.size() - 1)
+	{
 		current_index++;
 		search = "";
 		applyTexture();
 	}
 
 	// Down texture
-	else if ((key == "left" || key == "mwheelup") && current_index > 0) {
+	else if ((key == "left" || key == "mwheelup") && current_index > 0)
+	{
 		current_index--;
 		search = "";
 		applyTexture();
 	}
 
 	// Character (search)
-	else if (key.length() == 1) {
+	else if (key.length() == 1)
+	{
 		search += key;
 		doSearch();
 	}

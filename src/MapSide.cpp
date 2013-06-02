@@ -6,7 +6,8 @@
 #include "SLADEMap.h"
 #include "MainApp.h"
 
-MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, parent) {
+MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
+{
 	// Init variables
 	this->sector = sector;
 	this->parent = NULL;
@@ -17,16 +18,19 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, par
 	if (sector) sector->connected_sides.push_back(this);
 }
 
-MapSide::MapSide(SLADEMap* parent) : MapObject(MOBJ_SIDE, parent) {
+MapSide::MapSide(SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
+{
 	// Init variables
 	this->sector = NULL;
 	this->parent = NULL;
 }
 
-MapSide::~MapSide() {
+MapSide::~MapSide()
+{
 }
 
-void MapSide::copy(MapObject* c) {
+void MapSide::copy(MapObject* c)
+{
 	if (c->getObjType() != MOBJ_SIDE)
 		return;
 
@@ -41,7 +45,8 @@ void MapSide::copy(MapObject* c) {
 	MapObject::copy(c);
 }
 
-void MapSide::setSector(MapSector* sector) {
+void MapSide::setSector(MapSector* sector)
+{
 	// Remove side from current sector, if any
 	if (this->sector)
 		this->sector->disconnectSide(this);
@@ -54,8 +59,10 @@ void MapSide::setSector(MapSector* sector) {
 	sector->connectSide(this);
 }
 
-int MapSide::intProperty(string key) {
-	if (key == "sector") {
+int MapSide::intProperty(string key)
+{
+	if (key == "sector")
+	{
 		if (sector)
 			return sector->getIndex();
 		else
@@ -69,7 +76,8 @@ int MapSide::intProperty(string key) {
 		return MapObject::intProperty(key);
 }
 
-void MapSide::setIntProperty(string key, int value) {
+void MapSide::setIntProperty(string key, int value)
+{
 	// Update modified time
 	setModified();
 
@@ -83,7 +91,8 @@ void MapSide::setIntProperty(string key, int value) {
 		MapObject::setIntProperty(key, value);
 }
 
-string MapSide::stringProperty(string key) {
+string MapSide::stringProperty(string key)
+{
 	if (key == "texturetop")
 		return tex_upper;
 	else if (key == "texturemiddle")
@@ -94,7 +103,8 @@ string MapSide::stringProperty(string key) {
 		return MapObject::stringProperty(key);
 }
 
-void MapSide::setStringProperty(string key, string value) {
+void MapSide::setStringProperty(string key, string value)
+{
 	// Update modified time
 	setModified();
 
@@ -108,7 +118,8 @@ void MapSide::setStringProperty(string key, string value) {
 		MapObject::setStringProperty(key, value);
 }
 
-void MapSide::writeBackup(mobj_backup_t* backup) {
+void MapSide::writeBackup(mobj_backup_t* backup)
+{
 	// Sector
 	if (sector)
 		backup->props_internal["sector"] = sector->getId();
@@ -127,16 +138,19 @@ void MapSide::writeBackup(mobj_backup_t* backup) {
 	//wxLogMessage("Side %d backup sector #%d", id, sector->getIndex());
 }
 
-void MapSide::readBackup(mobj_backup_t* backup) {
+void MapSide::readBackup(mobj_backup_t* backup)
+{
 	// Sector
 	MapObject* s = parent_map->getObjectById(backup->props_internal["sector"]);
-	if (s) {
+	if (s)
+	{
 		sector->disconnectSide(this);
 		sector = (MapSector*)s;
 		sector->connectSide(this);
 		//wxLogMessage("Side %d load backup sector #%d", id, s->getIndex());
 	}
-	else {
+	else
+	{
 		if (sector)
 			sector->disconnectSide(this);
 		sector = NULL;

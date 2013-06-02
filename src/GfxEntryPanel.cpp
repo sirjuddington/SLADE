@@ -54,7 +54,8 @@ EXTERN_CVAR(Bool, gfx_arc)
  A simple dialog for the 'Colourise' function, allows the user to
  select a colour and shows a preview of the colourised image
  */
-class GfxColouriseDialog : public wxDialog {
+class GfxColouriseDialog : public wxDialog
+{
 private:
 	GfxCanvas*			gfx_preview;
 	ArchiveEntry*		entry;
@@ -63,7 +64,8 @@ private:
 
 public:
 	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
-	: wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+		: wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+	{
 		// Init variables
 		this->entry = entry;
 		this->palette = pal;
@@ -114,13 +116,15 @@ public:
 		CenterOnParent();
 	}
 
-	rgba_t getColour() {
+	rgba_t getColour()
+	{
 		wxColour col = cp_colour->GetColour();
 		return rgba_t(col.Red(), col.Green(), col.Blue());
 	}
 
 	// Events
-	void onColourChanged(wxColourPickerEvent& e) {
+	void onColourChanged(wxColourPickerEvent& e)
+	{
 		Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
 		wxColour col = cp_colour->GetColour();
 		gfx_preview->getImage()->colourise(rgba_t(col.Red(), col.Green(), col.Blue()), palette);
@@ -128,7 +132,8 @@ public:
 		gfx_preview->Refresh();
 	}
 
-	void onResize(wxSizeEvent& e) {
+	void onResize(wxSizeEvent& e)
+	{
 		wxDialog::OnSize(e);
 		gfx_preview->zoomToFit(true, 0.05f);
 		e.Skip();
@@ -142,7 +147,8 @@ public:
  A simple dialog for the 'Tint' function, allows the user to select
  tint colour+amount and shows a preview of the tinted image
  */
-class GfxTintDialog : public wxDialog {
+class GfxTintDialog : public wxDialog
+{
 private:
 	GfxCanvas*			gfx_preview;
 	ArchiveEntry*		entry;
@@ -153,7 +159,8 @@ private:
 
 public:
 	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
-	: wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+		: wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+	{
 		// Init variables
 		this->entry = entry;
 		this->palette = pal;
@@ -218,17 +225,20 @@ public:
 		label_amount->SetLabel("50% ");
 	}
 
-	rgba_t getColour() {
+	rgba_t getColour()
+	{
 		wxColour col = cp_colour->GetColour();
 		return rgba_t(col.Red(), col.Green(), col.Blue());
 	}
 
-	float getAmount() {
+	float getAmount()
+	{
 		return (float)slider_amount->GetValue()*0.01f;
 	}
 
 	// Events
-	void onColourChanged(wxColourPickerEvent& e) {
+	void onColourChanged(wxColourPickerEvent& e)
+	{
 		Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
 		wxColour col = cp_colour->GetColour();
 		gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
@@ -236,7 +246,8 @@ public:
 		gfx_preview->Refresh();
 	}
 
-	void onAmountChanged(wxCommandEvent& e) {
+	void onAmountChanged(wxCommandEvent& e)
+	{
 		Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
 		wxColour col = cp_colour->GetColour();
 		gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
@@ -245,7 +256,8 @@ public:
 		label_amount->SetLabel(S_FMT("%d%% ", slider_amount->GetValue()));
 	}
 
-	void onResize(wxSizeEvent& e) {
+	void onResize(wxSizeEvent& e)
+	{
 		wxDialog::OnSize(e);
 		gfx_preview->zoomToFit(true, 0.05f);
 		e.Skip();
@@ -253,13 +265,16 @@ public:
 };
 
 
-class GfxCropDialog : public wxDialog {
+class GfxCropDialog : public wxDialog
+{
 private:
-	class CropCanvas : public OGLCanvas {
+	class CropCanvas : public OGLCanvas
+	{
 	public:
 		CropCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {}
 
-		void draw() {
+		void draw()
+		{
 			drawCheckeredBackground();
 			SwapBuffers();
 		}
@@ -269,7 +284,8 @@ private:
 
 public:
 	GfxCropDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
-	: wxDialog(parent, -1, "Crop", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) {
+		: wxDialog(parent, -1, "Crop", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+	{
 		// Set dialog icon
 		wxIcon icon;
 		icon.CopyFromBitmap(getIcon("t_settings"));
@@ -292,8 +308,7 @@ public:
 		CenterOnParent();
 	}
 
-	~GfxCropDialog() {
-	}
+	~GfxCropDialog() {}
 };
 
 
@@ -305,7 +320,8 @@ public:
  * GfxEntryPanel class constructor
  *******************************************************************/
 GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
-: EntryPanel(parent, "gfx") {
+	: EntryPanel(parent, "gfx")
+{
 	// Init variables
 	prev_translation.addRange(TRANS_PALETTE, 0);
 
@@ -391,18 +407,22 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 /* GfxEntryPanel::~GfxEntryPanel
  * GfxEntryPanel class destructor
  *******************************************************************/
-GfxEntryPanel::~GfxEntryPanel() {
+GfxEntryPanel::~GfxEntryPanel()
+{
 }
 
 /* GfxEntryPanel::loadEntry
  * Loads an entry into the entry panel if it is a valid image format
  *******************************************************************/
-bool GfxEntryPanel::loadEntry(ArchiveEntry* entry) {
+bool GfxEntryPanel::loadEntry(ArchiveEntry* entry)
+{
 	return loadEntry(entry, 0);
 }
-bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index) {
+bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
+{
 	// Check entry was given
-	if (entry == NULL) {
+	if (entry == NULL)
+	{
 		Global::error = "no entry to load";
 		return false;
 	}
@@ -424,10 +444,12 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index) {
 /* GfxEntryPanel::saveEntry
  * Saves any changes to the entry
  *******************************************************************/
-bool GfxEntryPanel::saveEntry() {
+bool GfxEntryPanel::saveEntry()
+{
 	// Write new image data if modified
 	bool ok = true;
-	if (image_data_modified) {
+	if (image_data_modified)
+	{
 		SImage* image = getImage();
 		SIFormat* format = image->getFormat();
 
@@ -438,9 +460,11 @@ bool GfxEntryPanel::saveEntry() {
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::NOTWRITABLE)
 			error = S_FMT("Writing unsupported for format \"%s\"", CHR(format->getName()));
-		else {
+		else
+		{
 			// Convert image if necessary (using default options)
-			if (writable == SIFormat::CONVERTIBLE) {
+			if (writable == SIFormat::CONVERTIBLE)
+			{
 				format->convertWritable(*image, SIFormat::convert_options_t());
 				wxLogMessage("Image converted for writing");
 			}
@@ -461,7 +485,8 @@ bool GfxEntryPanel::saveEntry() {
 		EntryOperations::modifyGfxOffsets(entry, -1, point2_t(spin_xoffset->GetValue(), spin_yoffset->GetValue()), true, true, false);
 
 	// Apply alPh/tRNS options
-	if (entry->getType()->getFormat() == "img_png") {
+	if (entry->getType()->getFormat() == "img_png")
+	{
 		bool alph = EntryOperations::getalPhChunk(entry);
 		bool trns = EntryOperations::gettRNSChunk(entry);
 
@@ -477,7 +502,8 @@ bool GfxEntryPanel::saveEntry() {
 /* GfxEntryPanel::extractAll
  * Extract all sub-images as individual PNGs
  *******************************************************************/
-bool GfxEntryPanel::extractAll() {
+bool GfxEntryPanel::extractAll()
+{
 	if (getImage()->getSize() < 2)
 		return false;
 
@@ -492,13 +518,15 @@ bool GfxEntryPanel::extractAll() {
 
 	// Loop through subimages and get things done
 	int pos = 0;
-	for (int i = 0; i < getImage()->getSize(); ++i) {
+	for (int i = 0; i < getImage()->getSize(); ++i)
+	{
 		string newname = S_FMT("%s_%i.png", CHR(name), i);
 		Misc::loadImageFromEntry(getImage(), entry, i);
 
 		// Only process images that actually contain some pixels
-		if (getImage()->getWidth() && getImage()->getHeight()) {
-			ArchiveEntry * newimg = parent->addNewEntry(newname, index+pos+1, entry->getParentDir());
+		if (getImage()->getWidth() && getImage()->getHeight())
+		{
+			ArchiveEntry* newimg = parent->addNewEntry(newname, index+pos+1, entry->getParentDir());
 			if (newimg == NULL) return false;
 			SIFormat::getFormat("png")->saveImage(*getImage(), newimg->getMCData(), gfx_canvas->getPalette());
 			EntryType::detectEntryType(newimg);
@@ -515,7 +543,8 @@ bool GfxEntryPanel::extractAll() {
 /* GfxEntryPanel::refresh
  * Reloads image data and force refresh
  *******************************************************************/
-void GfxEntryPanel::refresh() {
+void GfxEntryPanel::refresh()
+{
 	// Setup palette
 	theMainWindow->getPaletteChooser()->setGlobalFromArchive(entry->getParent(), Misc::detectPaletteHack(entry));
 	updateImagePalette();
@@ -531,7 +560,8 @@ void GfxEntryPanel::refresh() {
 	int MENU_GFXEP_TRANSLATE = theApp->getAction("pgfx_translate")->getWxId();
 
 	// Set PNG check menus
-	if (this->entry->getType() != NULL && this->entry->getType()->getFormat() == "img_png") {
+	if (this->entry->getType() != NULL && this->entry->getType()->getFormat() == "img_png")
+	{
 		// Check for alph
 		alph = EntryOperations::getalPhChunk(this->entry);
 		menu_custom->Enable(MENU_GFXEP_ALPH, true);
@@ -544,7 +574,9 @@ void GfxEntryPanel::refresh() {
 
 		// Disable 'Export as PNG' (it already is :P)
 		menu_custom->Enable(theApp->getAction("arch_gfx_exportpng")->getWxId(), false);
-	} else {
+	}
+	else
+	{
 		menu_custom->Enable(MENU_GFXEP_ALPH, false);
 		menu_custom->Enable(MENU_GFXEP_TRNS, false);
 		menu_custom->Check(MENU_GFXEP_ALPH, false);
@@ -589,7 +621,8 @@ void GfxEntryPanel::refresh() {
  * Returns a string with extended editing/entry info for the status
  * bar
  *******************************************************************/
-string GfxEntryPanel::statusString() {
+string GfxEntryPanel::statusString()
+{
 	// Setup status string
 	SImage* image = getImage();
 	string status = S_FMT("%dx%d", image->getWidth(), image->getHeight());
@@ -601,7 +634,8 @@ string GfxEntryPanel::statusString() {
 		status += ", 8bpp";
 
 	// PNG stuff
-	if (entry->getType()->getFormat() == "img_png") {
+	if (entry->getType()->getFormat() == "img_png")
+	{
 		// alPh
 		if (EntryOperations::getalPhChunk(entry))
 			status += ", alPh";
@@ -617,7 +651,8 @@ string GfxEntryPanel::statusString() {
 /* GfxEntryPanel::refreshPanel
  * Redraws the panel
  *******************************************************************/
-void GfxEntryPanel::refreshPanel() {
+void GfxEntryPanel::refreshPanel()
+{
 	if (entry && getImage() && !image_data_modified)
 		loadEntry(entry, getImage()->getIndex());
 	Update();
@@ -628,7 +663,8 @@ void GfxEntryPanel::refreshPanel() {
  * Sets the gfx canvas' palette to what is selected in the palette
  * chooser, and refreshes the gfx canvas
  *******************************************************************/
-void GfxEntryPanel::updateImagePalette() {
+void GfxEntryPanel::updateImagePalette()
+{
 	gfx_canvas->setPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
 	gfx_canvas->updateImageTexture();
 }
@@ -636,7 +672,8 @@ void GfxEntryPanel::updateImagePalette() {
 /* GfxEntryPanel::detectOffsetType
  * Detects the offset view type of the current entry
  *******************************************************************/
-int GfxEntryPanel::detectOffsetType() {
+int GfxEntryPanel::detectOffsetType()
+{
 	if (!entry)
 		return GFXVIEW_DEFAULT;
 
@@ -646,7 +683,8 @@ int GfxEntryPanel::detectOffsetType() {
 	// Check what section of the archive the entry is in
 	string section = entry->getParent()->detectNamespace(entry);
 
-	if (section == "sprites") {
+	if (section == "sprites")
+	{
 		SImage* img = getImage();
 		int left = -img->offset().x;
 		int right = -img->offset().x + img->getWidth();
@@ -660,11 +698,13 @@ int GfxEntryPanel::detectOffsetType() {
 	}
 
 	// Check for png image
-	if (entry->getType()->getFormat() == "img_png") {
+	if (entry->getType()->getFormat() == "img_png")
+	{
 		if (getImage()->offset().x == 0 &&
-			getImage()->offset().y == 0)
+		        getImage()->offset().y == 0)
 			return GFXVIEW_DEFAULT;
-		else {
+		else
+		{
 			SImage* img = getImage();
 			int left = -img->offset().x;
 			int right = -img->offset().x + img->getWidth();
@@ -685,26 +725,29 @@ int GfxEntryPanel::detectOffsetType() {
  * Sets the view type of the gfx canvas depending on what is selected
  * in the offset type combo box
  *******************************************************************/
-void GfxEntryPanel::applyViewType() {
+void GfxEntryPanel::applyViewType()
+{
 	// Tile checkbox overrides offset type selection
 	if (cb_tile->IsChecked())
 		gfx_canvas->setViewType(GFXVIEW_TILED);
-	else {
+	else
+	{
 		// Set gfx canvas view type depending on the offset combobox selection
 		int sel = choice_offset_type->GetSelection();
-		switch (sel) {
-			case 0:
-				gfx_canvas->setViewType(detectOffsetType());
-				break;
-			case 1:
-				gfx_canvas->setViewType(GFXVIEW_DEFAULT);
-				break;
-			case 2:
-				gfx_canvas->setViewType(GFXVIEW_SPRITE);
-				break;
-			case 3:
-				gfx_canvas->setViewType(GFXVIEW_HUD);
-				break;
+		switch (sel)
+		{
+		case 0:
+			gfx_canvas->setViewType(detectOffsetType());
+			break;
+		case 1:
+			gfx_canvas->setViewType(GFXVIEW_DEFAULT);
+			break;
+		case 2:
+			gfx_canvas->setViewType(GFXVIEW_SPRITE);
+			break;
+		case 3:
+			gfx_canvas->setViewType(GFXVIEW_HUD);
+			break;
 		}
 	}
 
@@ -716,7 +759,8 @@ void GfxEntryPanel::applyViewType() {
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
  *******************************************************************/
-bool GfxEntryPanel::handleAction(string id) {
+bool GfxEntryPanel::handleAction(string id)
+{
 	// Don't handle actions if hidden
 	if (!isActivePanel())
 		return false;
@@ -726,7 +770,8 @@ bool GfxEntryPanel::handleAction(string id) {
 		return false;
 
 	// Mirror
-	if (id == "pgfx_mirror") {
+	if (id == "pgfx_mirror")
+	{
 		// Mirror X
 		getImage()->mirror(false);
 
@@ -740,7 +785,8 @@ bool GfxEntryPanel::handleAction(string id) {
 	}
 
 	// Flip
-	else if (id == "pgfx_flip") {
+	else if (id == "pgfx_flip")
+	{
 		// Mirror Y
 		getImage()->mirror(true);
 
@@ -754,13 +800,15 @@ bool GfxEntryPanel::handleAction(string id) {
 	}
 
 	// Rotate
-	else if (id == "pgfx_rotate") {
+	else if (id == "pgfx_rotate")
+	{
 		// Prompt for rotation angle
 		string angles[] = { "90", "180", "270" };
 		int choice = wxGetSingleChoiceIndex("Select rotation angle", "Rotate", 3, angles, 0);
 
 		// Rotate image
-		switch (choice) {
+		switch (choice)
+		{
 		case 0:
 			getImage()->rotate(90);
 			break;
@@ -783,7 +831,8 @@ bool GfxEntryPanel::handleAction(string id) {
 	}
 
 	// Translate
-	else if (id == "pgfx_translate") {
+	else if (id == "pgfx_translate")
+	{
 		// Create translation editor dialog
 		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", gfx_canvas->getImage());
@@ -792,7 +841,8 @@ bool GfxEntryPanel::handleAction(string id) {
 		ted.openTranslation(prev_translation);
 
 		// Show the dialog
-		if (ted.ShowModal() == wxID_OK) {
+		if (ted.ShowModal() == wxID_OK)
+		{
 			// Apply translation to image
 			getImage()->applyTranslation(&ted.getTranslation(), pal);
 
@@ -809,12 +859,14 @@ bool GfxEntryPanel::handleAction(string id) {
 	}
 
 	// Colourise
-	else if (id == "pgfx_colourise") {
+	else if (id == "pgfx_colourise")
+	{
 		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry, pal);
 
 		// Show colourise dialog
-		if (gcd.ShowModal() == wxID_OK) {
+		if (gcd.ShowModal() == wxID_OK)
+		{
 			// Colourise image
 			getImage()->colourise(gcd.getColour(), pal);
 
@@ -830,12 +882,14 @@ bool GfxEntryPanel::handleAction(string id) {
 	}
 
 	// Tint
-	else if (id == "pgfx_tint") {
+	else if (id == "pgfx_tint")
+	{
 		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 		GfxTintDialog gtd(theMainWindow, entry, pal);
 
 		// Show tint dialog
-		if (gtd.ShowModal() == wxID_OK) {
+		if (gtd.ShowModal() == wxID_OK)
+		{
 			// Tint image
 			getImage()->tint(gtd.getColour(), gtd.getAmount(), pal);
 
@@ -851,24 +905,28 @@ bool GfxEntryPanel::handleAction(string id) {
 	}
 
 	// Crop
-	else if (id == "pgfx_crop") {
+	else if (id == "pgfx_crop")
+	{
 		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 		GfxCropDialog gcd(theMainWindow, entry, pal);
 
 		// Show crop dialog
-		if (gcd.ShowModal() == wxID_OK) {
+		if (gcd.ShowModal() == wxID_OK)
+		{
 			// stuff
 		}
 	}
 
 	// alPh/tRNS
-	else if (id == "pgfx_alph" || id == "pgfx_trns") {
+	else if (id == "pgfx_alph" || id == "pgfx_trns")
+	{
 		setModified();
 		Refresh();
 	}
 
 	// Extract all
-	else if (id == "pgfx_extract") {
+	else if (id == "pgfx_extract")
+	{
 		extractAll();
 	}
 
@@ -886,7 +944,8 @@ bool GfxEntryPanel::handleAction(string id) {
  * and ArchivePanel::onEntryListRightClick to fill the context
  * menu with context-appropriate stuff
  *******************************************************************/
-bool GfxEntryPanel::fillCustomMenu(wxMenu * custom) {
+bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
+{
 	theApp->getAction("pgfx_mirror")->addToMenu(custom);
 	theApp->getAction("pgfx_flip")->addToMenu(custom);
 	theApp->getAction("pgfx_rotate")->addToMenu(custom);
@@ -916,7 +975,8 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu * custom) {
 /* GfxEntryPanel::sliderZoomChanged
  * Called when the zoom slider is changed
  *******************************************************************/
-void GfxEntryPanel::onZoomChanged(wxCommandEvent& e) {
+void GfxEntryPanel::onZoomChanged(wxCommandEvent& e)
+{
 	// Get zoom value
 	int zoom_percent = slider_zoom->GetValue();
 
@@ -935,7 +995,8 @@ void GfxEntryPanel::onZoomChanged(wxCommandEvent& e) {
 /* GfxEntryPanel::textXOffsetChanged
  * Called when enter is pressed within the x offset text entry
  *******************************************************************/
-void GfxEntryPanel::onXOffsetChanged(wxSpinEvent& e) {
+void GfxEntryPanel::onXOffsetChanged(wxSpinEvent& e)
+{
 	// Change the image x-offset
 	int offset = spin_xoffset->GetValue();
 	getImage()->setXOffset(offset);
@@ -950,7 +1011,8 @@ void GfxEntryPanel::onXOffsetChanged(wxSpinEvent& e) {
 /* GfxEntryPanel::textYOffsetChanged
  * Called when enter is pressed within the y offset text entry
  *******************************************************************/
-void GfxEntryPanel::onYOffsetChanged(wxSpinEvent& e) {
+void GfxEntryPanel::onYOffsetChanged(wxSpinEvent& e)
+{
 	// Change image y-offset
 	int offset = spin_yoffset->GetValue();
 	getImage()->setYOffset(offset);
@@ -965,14 +1027,16 @@ void GfxEntryPanel::onYOffsetChanged(wxSpinEvent& e) {
 /* GfxEntryPanel::comboOffsetTypeChanged
  * Called when the 'type' combo box selection is changed
  *******************************************************************/
-void GfxEntryPanel::onOffsetTypeChanged(wxCommandEvent& e) {
+void GfxEntryPanel::onOffsetTypeChanged(wxCommandEvent& e)
+{
 	applyViewType();
 }
 
 /* GfxEntryPanel::cbTileChecked
  * Called when the 'Tile' checkbox is checked/unchecked
  *******************************************************************/
-void GfxEntryPanel::onTileChanged(wxCommandEvent& e) {
+void GfxEntryPanel::onTileChanged(wxCommandEvent& e)
+{
 	choice_offset_type->Enable(!cb_tile->IsChecked());
 	applyViewType();
 }
@@ -980,7 +1044,8 @@ void GfxEntryPanel::onTileChanged(wxCommandEvent& e) {
 /* GfxEntryPanel::onARCChanged
  * Called when the 'Aspect Ratio' checkbox is checked/unchecked
  *******************************************************************/
-void GfxEntryPanel::onARCChanged(wxCommandEvent& e) {
+void GfxEntryPanel::onARCChanged(wxCommandEvent& e)
+{
 	gfx_arc = cb_arc->IsChecked();
 	gfx_canvas->Refresh();
 }
@@ -988,7 +1053,8 @@ void GfxEntryPanel::onARCChanged(wxCommandEvent& e) {
 /* GfxEntryPanel::gfxOffsetChanged
  * Called when the gfx canvas image offsets are changed
  *******************************************************************/
-void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e) {
+void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e)
+{
 	// Update spin controls
 	spin_xoffset->SetValue(gfx_canvas->getImage()->offset().x);
 	spin_yoffset->SetValue(gfx_canvas->getImage()->offset().y);
@@ -1000,11 +1066,13 @@ void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e) {
 /* GfxEntryPanel::onAnnouncement
  * Handles any announcements
  *******************************************************************/
-void GfxEntryPanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {
+void GfxEntryPanel::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+{
 	if (announcer != theMainWindow->getPaletteChooser())
 		return;
 
-	if (event_name == "main_palette_changed") {
+	if (event_name == "main_palette_changed")
+	{
 		updateImagePalette();
 		gfx_canvas->Refresh();
 	}
@@ -1013,9 +1081,11 @@ void GfxEntryPanel::onAnnouncement(Announcer* announcer, string event_name, MemC
 /* GfxEntryPanel::onBtnNextImg
  * Called when the 'next image' button is clicked
  *******************************************************************/
-void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e) {
+void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e)
+{
 	int num = gfx_canvas->getImage()->getSize();
-	if (num > 1) {
+	if (num > 1)
+	{
 		if (cur_index < num - 1)
 			loadEntry(entry, cur_index + 1);
 		else
@@ -1026,9 +1096,11 @@ void GfxEntryPanel::onBtnNextImg(wxCommandEvent& e) {
 /* GfxEntryPanel::onBtnPrevImg
  * Called when the 'previous image' button is clicked
  *******************************************************************/
-void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e) {
+void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
+{
 	int num = gfx_canvas->getImage()->getSize();
-	if (num > 1) {
+	if (num > 1)
+	{
 		if (cur_index > 0)
 			loadEntry(entry, cur_index - 1);
 		else
@@ -1049,49 +1121,59 @@ void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e) {
 #include "ArchivePanel.h"
 #include "MainWindow.h"
 
-GfxEntryPanel * CH::getCurrentGfxPanel() {
+GfxEntryPanel* CH::getCurrentGfxPanel()
+{
 	EntryPanel* panel = theActivePanel;
-	if (panel) {
-		if (!(panel->getName().CmpNoCase("gfx"))) {
-			return (GfxEntryPanel *)panel;
+	if (panel)
+	{
+		if (!(panel->getName().CmpNoCase("gfx")))
+		{
+			return (GfxEntryPanel*)panel;
 		}
 	}
 	return NULL;
 }
 
-CONSOLE_COMMAND(rotate, 1, true) {
+CONSOLE_COMMAND(rotate, 1, true)
+{
 	double val;
 	string bluh = args[0];
-	if (!bluh.ToDouble(&val)) {
+	if (!bluh.ToDouble(&val))
+	{
 		if (!bluh.CmpNoCase("l") || !bluh.CmpNoCase("left"))
 			val = 90.;
 		else if (!bluh.CmpNoCase("f") || !bluh.CmpNoCase("flip"))
 			val = 180.;
 		else if (!bluh.CmpNoCase("r") || !bluh.CmpNoCase("right"))
 			val = 270.;
-		else {
+		else
+		{
 			wxLogMessage("Invalid parameter: %s is not a number.", bluh.mb_str());
 			return;
 		}
 	}
 	int angle = (int)val;
-	if (angle % 90) {
+	if (angle % 90)
+	{
 		wxLogMessage("Invalid parameter: %i is not a multiple of 90.", angle);
 		return;
 	}
 
-	ArchivePanel * foo = CH::getCurrentArchivePanel();
-	if (!foo) {
+	ArchivePanel* foo = CH::getCurrentArchivePanel();
+	if (!foo)
+	{
 		wxLogMessage("No active panel.");
 		return;
 	}
-	ArchiveEntry * bar = foo->currentEntry();
-	if (!bar) {
+	ArchiveEntry* bar = foo->currentEntry();
+	if (!bar)
+	{
 		wxLogMessage("No active entry.");
 		return;
 	}
-	GfxEntryPanel * meep = CH::getCurrentGfxPanel();
-	if (!meep) {
+	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
+	if (!meep)
+	{
 		wxLogMessage("No image selected.");
 		return;
 	}
@@ -1109,31 +1191,36 @@ CONSOLE_COMMAND(rotate, 1, true) {
 	}
 }
 
-CONSOLE_COMMAND (mirror, 1, true) {
+CONSOLE_COMMAND (mirror, 1, true)
+{
 	bool vertical;
 	string bluh = args[0];
 	if (!bluh.CmpNoCase("y") || !bluh.CmpNoCase("v") ||
-		!bluh.CmpNoCase("vert") || !bluh.CmpNoCase("vertical"))
+	        !bluh.CmpNoCase("vert") || !bluh.CmpNoCase("vertical"))
 		vertical = true;
 	else if (!bluh.CmpNoCase("x") || !bluh.CmpNoCase("h") ||
-		!bluh.CmpNoCase("horz") || !bluh.CmpNoCase("horizontal"))
+	         !bluh.CmpNoCase("horz") || !bluh.CmpNoCase("horizontal"))
 		vertical = false;
-	else {
+	else
+	{
 		wxLogMessage("Invalid parameter: %s is not a known value.", bluh.mb_str());
 		return;
-		}
-	ArchivePanel * foo = CH::getCurrentArchivePanel();
-	if (!foo) {
+	}
+	ArchivePanel* foo = CH::getCurrentArchivePanel();
+	if (!foo)
+	{
 		wxLogMessage("No active panel.");
 		return;
 	}
-	ArchiveEntry * bar = foo->currentEntry();
-	if (!bar) {
+	ArchiveEntry* bar = foo->currentEntry();
+	if (!bar)
+	{
 		wxLogMessage("No active entry.");
 		return;
 	}
-	GfxEntryPanel * meep = CH::getCurrentGfxPanel();
-	if (!meep) {
+	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
+	if (!meep)
+	{
 		wxLogMessage("No image selected.");
 		return;
 	}
@@ -1147,22 +1234,26 @@ CONSOLE_COMMAND (mirror, 1, true) {
 	}
 }
 
-CONSOLE_COMMAND (crop, 4, true) {
+CONSOLE_COMMAND (crop, 4, true)
+{
 	long x1, y1, x2, y2;
 	if (args[0].ToLong(&x1) && args[1].ToLong(&y1) && args[2].ToLong(&x2) && args[3].ToLong(&y2))
 	{
-		ArchivePanel * foo = CH::getCurrentArchivePanel();
-		if (!foo) {
+		ArchivePanel* foo = CH::getCurrentArchivePanel();
+		if (!foo)
+		{
 			wxLogMessage("No active panel.");
 			return;
 		}
-		GfxEntryPanel * meep = CH::getCurrentGfxPanel();
-		if (!meep) {
+		GfxEntryPanel* meep = CH::getCurrentGfxPanel();
+		if (!meep)
+		{
 			wxLogMessage("No image selected.");
 			return;
 		}
-		ArchiveEntry * bar = foo->currentEntry();
-		if (!bar) {
+		ArchiveEntry* bar = foo->currentEntry();
+		if (!bar)
+		{
 			wxLogMessage("No active entry.");
 			return;
 		}
@@ -1177,19 +1268,23 @@ CONSOLE_COMMAND (crop, 4, true) {
 	}
 }
 
-CONSOLE_COMMAND(imgconv, 0, true) {
-	ArchivePanel * foo = CH::getCurrentArchivePanel();
-	if (!foo) {
+CONSOLE_COMMAND(imgconv, 0, true)
+{
+	ArchivePanel* foo = CH::getCurrentArchivePanel();
+	if (!foo)
+	{
 		wxLogMessage("No active panel.");
 		return;
 	}
-	ArchiveEntry * bar = foo->currentEntry();
-	if (!bar) {
+	ArchiveEntry* bar = foo->currentEntry();
+	if (!bar)
+	{
 		wxLogMessage("No active entry.");
 		return;
 	}
-	GfxEntryPanel * meep = CH::getCurrentGfxPanel();
-	if (!meep) {
+	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
+	if (!meep)
+	{
 		wxLogMessage("No image selected.");
 		return;
 	}

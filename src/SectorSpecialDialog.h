@@ -4,14 +4,15 @@
 
 #include "ListView.h"
 
-class SectorSpecialDialog : public wxDialog {
+class SectorSpecialDialog : public wxDialog
+{
 private:
 	ListView*	lv_specials;
 	wxChoice*	choice_damage;
 	wxCheckBox*	cb_secret;
 	wxCheckBox*	cb_friction;
 	wxCheckBox*	cb_pushpull;
-	
+
 public:
 	SectorSpecialDialog(wxWindow* parent);
 	~SectorSpecialDialog();

@@ -23,6 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *******************************************************************/
 
+
 /*******************************************************************
  * INCLUDES
  *******************************************************************/
@@ -31,6 +32,7 @@
 #include "AnimatedList.h"
 #include "ListView.h"
 
+
 /*******************************************************************
  * ANIMATEDENTRY CLASS FUNCTIONS
  *******************************************************************/
@@ -38,7 +40,8 @@
 /* AnimatedEntry::AnimatedEntry
  * AnimatedEntry class constructor
  *******************************************************************/
-AnimatedEntry::AnimatedEntry(animated_t entry) {
+AnimatedEntry::AnimatedEntry(animated_t entry)
+{
 	// Init variables
 	this->first = wxString::From8BitData(entry.first, 8);
 	this->last = wxString::From8BitData(entry.last, 8);
@@ -51,8 +54,10 @@ AnimatedEntry::AnimatedEntry(animated_t entry) {
 /* AnimatedEntry::~AnimatedEntry
  * AnimatedEntry class destructor
  *******************************************************************/
-AnimatedEntry::~AnimatedEntry() {
+AnimatedEntry::~AnimatedEntry()
+{
 }
+
 
 /*******************************************************************
  * ANIMATEDLIST CLASS FUNCTIONS
@@ -61,13 +66,15 @@ AnimatedEntry::~AnimatedEntry() {
 /* AnimatedList::AnimatedList
  * AnimatedList class constructor
  *******************************************************************/
-AnimatedList::AnimatedList() {
+AnimatedList::AnimatedList()
+{
 }
 
 /* AnimatedList::~AnimatedList
  * AnimatedList class destructor
  *******************************************************************/
-AnimatedList::~AnimatedList() {
+AnimatedList::~AnimatedList()
+{
 	clear();
 }
 
@@ -75,7 +82,8 @@ AnimatedList::~AnimatedList() {
  * Returns the AnimatedEntry at [index], or NULL if [index] is out of
  * range
  *******************************************************************/
-AnimatedEntry* AnimatedList::getEntry(size_t index) {
+AnimatedEntry* AnimatedList::getEntry(size_t index)
+{
 	// Check index range
 	if (index > nEntries())
 		return NULL;
@@ -87,10 +95,12 @@ AnimatedEntry* AnimatedList::getEntry(size_t index) {
  * Returns an AnimatedEntry matching [name], or NULL if no match
  * found; looks for name at both the first and the last frames
  *******************************************************************/
-AnimatedEntry* AnimatedList::getEntry(string name) {
-	for (size_t a = 0; a < nEntries(); a++) {
+AnimatedEntry* AnimatedList::getEntry(string name)
+{
+	for (size_t a = 0; a < nEntries(); a++)
+	{
 		if (entries[a]->getFirst().CmpNoCase(name) == 0 ||
-			entries[a]->getLast().CmpNoCase(name) == 0)
+		        entries[a]->getLast().CmpNoCase(name) == 0)
 			return entries[a];
 	}
 
@@ -101,7 +111,8 @@ AnimatedEntry* AnimatedList::getEntry(string name) {
 /* AnimatedList::clear
  * Clears all entries
  *******************************************************************/
-void AnimatedList::clear() {
+void AnimatedList::clear()
+{
 	for (size_t a = 0; a < entries.size(); a++)
 		delete entries[a];
 	entries.clear();
@@ -112,26 +123,29 @@ void AnimatedList::clear() {
  * Reads in a Boom-format ANIMATED entry. Returns true on success,
  * false otherwise
  *******************************************************************/
-bool AnimatedList::readANIMATEDData(ArchiveEntry* animated) {
+bool AnimatedList::readANIMATEDData(ArchiveEntry* animated)
+{
 	// Check entries were actually given
 	if (!animated || animated->getSize() == 0)
 		return false;
 
-	uint8_t * data = new uint8_t[animated->getSize()];
+	uint8_t* data = new uint8_t[animated->getSize()];
 	memcpy(data, animated->getData(), animated->getSize());
-	uint8_t * cursor = data;
-	uint8_t * eodata = cursor + animated->getSize();
-	animated_t * type;
+	uint8_t* cursor = data;
+	uint8_t* eodata = cursor + animated->getSize();
+	animated_t* type;
 
-	while (cursor < eodata && *cursor != ANIM_STOP) {
+	while (cursor < eodata && *cursor != ANIM_STOP)
+	{
 		// reads an entry
-		if (cursor + sizeof(animated_t) > eodata) {
+		if (cursor + sizeof(animated_t) > eodata)
+		{
 			wxLogMessage("Error: ANIMATED entry is corrupt");
 			delete[] data;
 			return false;
 		}
-		type = (animated_t *) cursor;
-		AnimatedEntry * entry = new AnimatedEntry(*type);
+		type = (animated_t*) cursor;
+		AnimatedEntry* entry = new AnimatedEntry(*type);
 		cursor += sizeof(animated_t);
 
 		// Add texture to list
@@ -144,12 +158,16 @@ bool AnimatedList::readANIMATEDData(ArchiveEntry* animated) {
 /* AnimatedList::addEntry
  * Adds an entry at the given position
  *******************************************************************/
-bool AnimatedList::addEntry(AnimatedEntry* entry, size_t pos) {
+bool AnimatedList::addEntry(AnimatedEntry* entry, size_t pos)
+{
 	if (entry == NULL)
 		return false;
-	if (pos >= nEntries()) {
+	if (pos >= nEntries())
+	{
 		entries.push_back(entry);
-	} else {
+	}
+	else
+	{
 		vector<AnimatedEntry*>::iterator it = entries.begin() + pos;
 		entries.insert(it, entry);
 	}
@@ -159,10 +177,14 @@ bool AnimatedList::addEntry(AnimatedEntry* entry, size_t pos) {
 /* AnimatedList::removeEntry
  * Removes the entry at the given position
  *******************************************************************/
-bool AnimatedList::removeEntry(size_t pos) {
-	if (pos >= nEntries()) {
+bool AnimatedList::removeEntry(size_t pos)
+{
+	if (pos >= nEntries())
+	{
 		entries.pop_back();
-	} else {
+	}
+	else
+	{
 		vector<AnimatedEntry*>::iterator it = entries.begin() + pos;
 		entries.erase(it);
 	}
@@ -172,14 +194,18 @@ bool AnimatedList::removeEntry(size_t pos) {
 /* AnimatedList::swapEntries
  * Swaps the entries at the given positions
  *******************************************************************/
-bool AnimatedList::swapEntries(size_t pos1, size_t pos2) {
-	if (pos1 >= nEntries()) {
+bool AnimatedList::swapEntries(size_t pos1, size_t pos2)
+{
+	if (pos1 >= nEntries())
+	{
 		pos1 = nEntries() - 1;
 	}
-	if (pos2 >= nEntries()) {
+	if (pos2 >= nEntries())
+	{
 		pos2 = nEntries() - 1;
 	}
-	if (pos1 == pos2) {
+	if (pos1 == pos2)
+	{
 		return false;
 	}
 	AnimatedEntry* swap = entries[pos1];
@@ -192,26 +218,29 @@ bool AnimatedList::swapEntries(size_t pos1, size_t pos2) {
  * Converts ANIMATED data in [entry] to ANIMDEFS format, written to
  * [animdata]
  *******************************************************************/
-bool AnimatedList::convertAnimated(ArchiveEntry* entry, MemChunk * animdata) {
-	const uint8_t * cursor = entry->getData(true);
-	const uint8_t * eodata = cursor + entry->getSize();
-	const animated_t * animation;
+bool AnimatedList::convertAnimated(ArchiveEntry* entry, MemChunk* animdata)
+{
+	const uint8_t* cursor = entry->getData(true);
+	const uint8_t* eodata = cursor + entry->getSize();
+	const animated_t* animation;
 	string conversion;
 
-	while (cursor < eodata && *cursor != ANIM_STOP) {
+	while (cursor < eodata && *cursor != ANIM_STOP)
+	{
 		// reads an entry
-		if (cursor + sizeof(animated_t) > eodata) {
+		if (cursor + sizeof(animated_t) > eodata)
+		{
 			wxLogMessage("Error: ANIMATED entry is corrupt");
 			return false;
 		}
-		animation = (animated_t *) cursor;
+		animation = (animated_t*) cursor;
 		cursor += sizeof(animated_t);
 
 		// Create animation string
 		conversion = S_FMT("%s\tOptional\t%-8s\tRange\t%-8s\tTics %i%s",
-			(animation->type ? "Texture" : "Flat"),
-			animation->first, animation->last, animation->speed,
-			(animation->type == ANIM_DECALS ? " AllowDecals\n" : "\n"));
+		                   (animation->type ? "Texture" : "Flat"),
+		                   animation->first, animation->last, animation->speed,
+		                   (animation->type == ANIM_DECALS ? " AllowDecals\n" : "\n"));
 
 		// Write string to animdata
 		animdata->reSize(animdata->getSize() + conversion.length(), true);

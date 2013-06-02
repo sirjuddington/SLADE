@@ -4,7 +4,8 @@
 
 #include "Palette.h"
 
-class PaletteManager {
+class PaletteManager
+{
 private:
 	vector<Palette8bit*>	palettes;
 	vector<string>			pal_names;
@@ -17,7 +18,8 @@ public:
 	PaletteManager();
 	~PaletteManager();
 
-	static PaletteManager*	getInstance() {
+	static PaletteManager*	getInstance()
+	{
 		if (!instance)
 			instance = new PaletteManager();
 

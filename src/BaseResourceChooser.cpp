@@ -51,7 +51,8 @@ EXTERN_CVAR(Int, base_resource)
  * BaseResourceChooser class constructor
  *******************************************************************/
 BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change)
-: wxChoice(parent, -1, wxDefaultPosition, wxSize(128, -1)) {
+	: wxChoice(parent, -1, wxDefaultPosition, wxSize(128, -1))
+{
 	// Init Variables
 	this->load_change = load_change;
 
@@ -68,14 +69,16 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change)
 /* BaseResourceChooser::~BaseResourceChooser
  * BaseResourceChooser class destructor
  *******************************************************************/
-BaseResourceChooser::~BaseResourceChooser() {
+BaseResourceChooser::~BaseResourceChooser()
+{
 }
 
 /* BaseResourceChooser::populateChoices
  * Clears and repopulates the choice list with base resource paths
  * from the ArchiveManager
  *******************************************************************/
-void BaseResourceChooser::populateChoices() {
+void BaseResourceChooser::populateChoices()
+{
 	// Clear current items
 	Clear();
 
@@ -83,7 +86,8 @@ void BaseResourceChooser::populateChoices() {
 	AppendString("<none>");
 
 	// Populate with base resource paths
-	for (unsigned a = 0; a < theArchiveManager->numBaseResourcePaths(); a++) {
+	for (unsigned a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
+	{
 		wxFileName fn(theArchiveManager->getBaseResourcePath(a));
 		AppendString(fn.GetFullName());
 	}
@@ -95,7 +99,8 @@ void BaseResourceChooser::populateChoices() {
 /* BaseResourceChooser::onAnnouncement
  * Called when an announcement is received from the ArchiveManager
  *******************************************************************/
-void BaseResourceChooser::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data) {
+void BaseResourceChooser::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+{
 	// Check the announcer
 	if (announcer != theArchiveManager)
 		return;
@@ -117,7 +122,8 @@ void BaseResourceChooser::onAnnouncement(Announcer* announcer, string event_name
 /* BaseResourceChooser::onChoiceChanged
  * Called when the selection is changed
  *******************************************************************/
-void BaseResourceChooser::onChoiceChanged(wxCommandEvent& e) {
+void BaseResourceChooser::onChoiceChanged(wxCommandEvent& e)
+{
 	// Open the selected base resource
 	if (load_change)
 		theArchiveManager->openBaseResource(GetSelection() - 1);

@@ -5,14 +5,15 @@
 #include "ListenerAnnouncer.h"
 #include <wx/textctrl.h>
 
-class ConsolePanel : public wxPanel, Listener {
+class ConsolePanel : public wxPanel, Listener
+{
 private:
 	wxTextCtrl*	text_log;
 	wxTextCtrl*	text_command;
 	int			cmd_log_index;
 
 public:
-	ConsolePanel(wxWindow *parent, int id);
+	ConsolePanel(wxWindow* parent, int id);
 	~ConsolePanel();
 
 	void initLayout();

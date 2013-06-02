@@ -52,7 +52,8 @@ wxRegEx re_float("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NO
 /* ParseTreeNode::ParseTreeNode
  * ParseTreeNode class constructor
  *******************************************************************/
-ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser) : STreeNode(parent) {
+ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser) : STreeNode(parent)
+{
 	allowDup(true);
 	this->parser = parser;
 }
@@ -60,10 +61,12 @@ ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser) : STreeNode(
 /* ParseTreeNode::~ParseTreeNode
  * ParseTreeNode class destructor
  *******************************************************************/
-ParseTreeNode::~ParseTreeNode() {
+ParseTreeNode::~ParseTreeNode()
+{
 }
 
-Property ParseTreeNode::getValue(unsigned index) {
+Property ParseTreeNode::getValue(unsigned index)
+{
 	// Check index
 	if (index >= values.size())
 		return Property(false);
@@ -75,7 +78,8 @@ Property ParseTreeNode::getValue(unsigned index) {
  * Returns the node's value at [index] as a string. If [index] is
  * out of range, returns an empty string
  *******************************************************************/
-string ParseTreeNode::getStringValue(unsigned index) {
+string ParseTreeNode::getStringValue(unsigned index)
+{
 	// Check index
 	if (index >= values.size())
 		return wxEmptyString;
@@ -87,7 +91,8 @@ string ParseTreeNode::getStringValue(unsigned index) {
  * Returns the node's value at [index] as an integer. If [index] is
  * out of range, returns 0
  *******************************************************************/
-int ParseTreeNode::getIntValue(unsigned index) {
+int ParseTreeNode::getIntValue(unsigned index)
+{
 	// Check index
 	if (index >= values.size())
 		return 0;
@@ -99,7 +104,8 @@ int ParseTreeNode::getIntValue(unsigned index) {
  * Returns the node's value at [index] as a boolean. If [index] is
  * out of range, returns false
  *******************************************************************/
-bool ParseTreeNode::getBoolValue(unsigned index) {
+bool ParseTreeNode::getBoolValue(unsigned index)
+{
 	// Check index
 	if (index >= values.size())
 		return false;
@@ -111,7 +117,8 @@ bool ParseTreeNode::getBoolValue(unsigned index) {
  * Returns the node's value at [index] as a float. If [index] is
  * out of range, returns 0.0f
  *******************************************************************/
-double ParseTreeNode::getFloatValue(unsigned index) {
+double ParseTreeNode::getFloatValue(unsigned index)
+{
 	// Check index
 	if (index >= values.size())
 		return 0.0f;
@@ -129,36 +136,44 @@ double ParseTreeNode::getFloatValue(unsigned index) {
  * All values are read as strings, but can be retrieved as string,
  * int, bool or float.
  *******************************************************************/
-bool ParseTreeNode::parse(Tokenizer& tz) {
+bool ParseTreeNode::parse(Tokenizer& tz)
+{
 	// Get first token
 	string token = tz.getToken();
 
 	// Keep parsing until final } is reached (or end of file)
-	while (!(S_CMP(token, "}")) && !token.IsEmpty()) {
+	while (!(S_CMP(token, "}")) && !token.IsEmpty())
+	{
 		// Check for preprocessor stuff
-		if (parser) {
+		if (parser)
+		{
 			// #define
-			if (S_CMPNOCASE(token, "#define")) {
+			if (S_CMPNOCASE(token, "#define"))
+			{
 				parser->define(tz.getToken());
 				token = tz.getToken();
 				continue;
 			}
 
 			// #if(n)def
-			if (S_CMPNOCASE(token, "#ifdef") || S_CMPNOCASE(token, "#ifndef")) {
+			if (S_CMPNOCASE(token, "#ifdef") || S_CMPNOCASE(token, "#ifndef"))
+			{
 				bool test = true;
 				if (S_CMPNOCASE(token, "#ifndef"))
 					test = false;
 				string define = tz.getToken();
-				if (parser->defined(define) == test) {
+				if (parser->defined(define) == test)
+				{
 					// Continue
 					token = tz.getToken();
 					continue;
 				}
-				else {
+				else
+				{
 					// Skip section
 					int skip = 0;
-					while (true) {
+					while (true)
+					{
 						token = tz.getToken();
 						if (S_CMPNOCASE(token, "#endif"))
 							skip--;
@@ -169,7 +184,8 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 
 						if (skip < 0)
 							break;
-						if (token.IsEmpty()) {
+						if (token.IsEmpty())
+						{
 							wxLogMessage("Error: found end of file within #if(n)def block");
 							break;
 						}
@@ -180,21 +196,24 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 			}
 
 			// #include (ignore)
-			if (S_CMPNOCASE(token, "#include")) {
+			if (S_CMPNOCASE(token, "#include"))
+			{
 				tz.skipToken();	// Skip include path
 				token = tz.getToken();
 				continue;
 			}
 
 			// #endif (ignore)
-			if (S_CMPNOCASE(token, "#endif")) {
+			if (S_CMPNOCASE(token, "#endif"))
+			{
 				token = tz.getToken();
 				continue;
 			}
 		}
 
 		// If it's a special character (ie not a valid name), parsing fails
-		if (tz.isSpecialCharacter(token.at(0))) {
+		if (tz.isSpecialCharacter(token.at(0)))
+		{
 			wxLogMessage("Parsing error: Unexpected special character '%s' in %s (line %d)", CHR(token), CHR(tz.getName()), tz.lineNo());
 			return false;
 		}
@@ -207,14 +226,16 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 
 		// Check for type+name pair
 		string type = "";
-		if (next != "=" && next != "{" && next != ";" && next != ":") {
+		if (next != "=" && next != "{" && next != ";" && next != ":")
+		{
 			type = name;
 			name = tz.getToken();
 			next = tz.peekToken();
 		}
 
 		// Assignment
-		if (S_CMP(next, "=")) {
+		if (S_CMP(next, "="))
+		{
 			// Skip =
 			tz.skipToken();
 
@@ -225,20 +246,22 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 			// Check type of assignment list
 			token = tz.getToken();
 			string list_end = ";";
-			if (token == "{") {
+			if (token == "{")
+			{
 				list_end = "}";
 				token = tz.getToken();
 			}
 
 			// Parse until ; or }
-			while (1) {
+			while (1)
+			{
 				// Check for list end
 				if (S_CMP(token, list_end) && !tz.quotedString())
 					break;
 
 				// Setup value
 				Property value;
-				
+
 				// Detect value type
 				if (tz.quotedString())					// Quoted string
 					value = token;
@@ -247,18 +270,21 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 				else if (S_CMPNOCASE(token, "false"))	// Boolean (false)
 					value = false;
 				else if (re_int1.Matches(token) ||		// Integer
-						re_int2.Matches(token)) {
+				         re_int2.Matches(token))
+				{
 					long val;
 					token.ToLong(&val);
 					value = (int)val;
 				}
-				else if (re_int3.Matches(token)) {		// Hex (0xXXXXXX)
+				else if (re_int3.Matches(token))  		// Hex (0xXXXXXX)
+				{
 					long val;
 					token.ToLong(&val, 0);
 					value = (int)val;
 					//wxLogMessage("%s: %s is hex %d", CHR(name), CHR(token), value.getIntValue());
 				}
-				else if (re_float.Matches(token)) {		// Floating point
+				else if (re_float.Matches(token))  		// Floating point
+				{
 					double val;
 					token.ToDouble(&val);
 					value = (double)val;
@@ -266,14 +292,15 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 				}
 				else									// Unknown, just treat as string
 					value = token;
-				
+
 				// Add value
 				child->values.push_back(value);
 
 				// Check for ,
 				if (S_CMP(tz.peekToken(), ","))
 					tz.skipToken();	// Skip it
-				else if (!(S_CMP(tz.peekToken(), list_end))) {
+				else if (!(S_CMP(tz.peekToken(), list_end)))
+				{
 					string t = tz.getToken();
 					string n = tz.getName();
 					wxLogMessage("Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)", CHR(list_end), CHR(t), CHR(n), tz.lineNo());
@@ -285,7 +312,8 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 		}
 
 		// Child node
-		else if (S_CMP(next, "{")) {
+		else if (S_CMP(next, "{"))
+		{
 			// Add child node
 			ParseTreeNode* child = (ParseTreeNode*)addChild(name);
 			child->type = type;
@@ -299,7 +327,8 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 		}
 
 		// Child node (with no values/children)
-		else if (S_CMP(next, ";")) {
+		else if (S_CMP(next, ";"))
+		{
 			// Add child node
 			ParseTreeNode* child = (ParseTreeNode*)addChild(name);
 			child->type = type;
@@ -309,7 +338,8 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 		}
 
 		// Child node + inheritance
-		else if (S_CMP(next, ":")) {
+		else if (S_CMP(next, ":"))
+		{
 			// Skip :
 			tz.skipToken();
 
@@ -317,7 +347,8 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 			string inherit = tz.getToken();
 
 			// Check for opening brace
-			if (tz.checkToken("{")) {
+			if (tz.checkToken("{"))
+			{
 				// Add child node
 				ParseTreeNode* child = (ParseTreeNode*)addChild(name);
 				child->type = type;
@@ -332,7 +363,8 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 		}
 
 		// Unexpected token
-		else {
+		else
+		{
 			wxLogMessage("Parsing error: \"%s\" unexpected in %s (line %d)", CHR(next), CHR(tz.getName()), tz.lineNo());
 			return false;
 		}
@@ -352,7 +384,8 @@ bool ParseTreeNode::parse(Tokenizer& tz) {
 /* Parser::Parser
  * Parser class constructor
  *******************************************************************/
-Parser::Parser() {
+Parser::Parser()
+{
 	// Create parse tree root node
 	pt_root = new ParseTreeNode(NULL, this);
 }
@@ -360,7 +393,8 @@ Parser::Parser() {
 /* Parser::~Parser
  * Parser class destructor
  *******************************************************************/
-Parser::~Parser() {
+Parser::~Parser()
+{
 	// Clean up
 	delete pt_root;
 }
@@ -395,11 +429,13 @@ Parser::~Parser() {
  * 		</base>
  * 	</root>
  *******************************************************************/
-bool Parser::parseText(MemChunk& mc, string source) {
+bool Parser::parseText(MemChunk& mc, string source)
+{
 	Tokenizer tz;
 
 	// Open the given text data
-	if (!tz.openMem(&mc, source)) {
+	if (!tz.openMem(&mc, source))
+	{
 		wxLogMessage("Unable to open text data for parsing");
 		return false;
 	}
@@ -407,10 +443,12 @@ bool Parser::parseText(MemChunk& mc, string source) {
 	// Do parsing
 	return pt_root->parse(tz);
 }
-bool Parser::parseText(string& text, string source) {
+bool Parser::parseText(string& text, string source)
+{
 	// Open the given text data
 	Tokenizer tz;
-	if (!tz.openString(text, 0, 0, source)) {
+	if (!tz.openString(text, 0, 0, source))
+	{
 		wxLogMessage("Unable to open text data for parsing");
 		return false;
 	}
@@ -422,15 +460,18 @@ bool Parser::parseText(string& text, string source) {
 /* Parser::define
  * Adds [def] to the defines list
  *******************************************************************/
-void Parser::define(string def) {
+void Parser::define(string def)
+{
 	defines.push_back(def);
 }
 
 /* Parser::defined
  * Returns true if [def] is in the defines list
  *******************************************************************/
-bool Parser::defined(string def) {
-	for (unsigned a = 0; a < defines.size(); a++) {
+bool Parser::defined(string def)
+{
+	for (unsigned a = 0; a < defines.size(); a++)
+	{
 		if (S_CMPNOCASE(defines[a], def))
 			return true;
 	}
@@ -450,7 +491,8 @@ CONSOLE_COMMAND (testparse, 0) {
 }
 */
 
-CONSOLE_COMMAND (testregex, 2, false) {
+CONSOLE_COMMAND (testregex, 2, false)
+{
 	wxRegEx re(args[0]);
 	if (re.Matches(args[1]))
 		theConsole->logMessage("Matches");

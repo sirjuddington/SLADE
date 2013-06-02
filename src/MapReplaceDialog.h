@@ -6,7 +6,8 @@
 #include <wx/spinctrl.h>
 
 class Archive;
-class ThingTypeReplacePanel : public wxPanel {
+class ThingTypeReplacePanel : public wxPanel
+{
 private:
 	wxSpinCtrl*	spin_from;
 	wxSpinCtrl*	spin_to;
@@ -20,7 +21,8 @@ public:
 	void	doReplace(Archive* archive);
 };
 
-class SpecialReplacePanel : public wxPanel {
+class SpecialReplacePanel : public wxPanel
+{
 private:
 	wxSpinCtrl* spin_from;
 	wxSpinCtrl*	spin_to;
@@ -37,7 +39,8 @@ public:
 	void doReplace(Archive* archive);
 };
 
-class TextureReplacePanel : public wxPanel {
+class TextureReplacePanel : public wxPanel
+{
 private:
 	wxTextCtrl*	text_from;
 	wxTextCtrl*	text_to;
@@ -54,7 +57,8 @@ public:
 	void doReplace(Archive* archive);
 };
 
-class MapReplaceDialog : public wxDialog {
+class MapReplaceDialog : public wxDialog
+{
 private:
 	Archive*	archive;
 

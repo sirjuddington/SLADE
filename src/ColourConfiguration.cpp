@@ -9,7 +9,8 @@
 typedef std::map<string, cc_col_t> ColourHashMap;
 ColourHashMap	cc_colours;
 
-rgba_t ColourConfiguration::getColour(string name) {
+rgba_t ColourConfiguration::getColour(string name)
+{
 	cc_col_t& col = cc_colours[name];
 	if (col.exists)
 		return col.colour;
@@ -17,11 +18,13 @@ rgba_t ColourConfiguration::getColour(string name) {
 		return COL_WHITE;
 }
 
-cc_col_t ColourConfiguration::getColDef(string name) {
+cc_col_t ColourConfiguration::getColDef(string name)
+{
 	return cc_colours[name];
 }
 
-void ColourConfiguration::setColour(string name, int red, int green, int blue, int alpha, int blend) {
+void ColourConfiguration::setColour(string name, int red, int green, int blue, int alpha, int blend)
+{
 	cc_col_t& col = cc_colours[name];
 	if (red >= 0)
 		col.colour.r = red;
@@ -36,7 +39,8 @@ void ColourConfiguration::setColour(string name, int red, int green, int blue, i
 	col.exists = true;
 }
 
-bool ColourConfiguration::readConfiguration(MemChunk& mc) {
+bool ColourConfiguration::readConfiguration(MemChunk& mc)
+{
 	// Parse text
 	Parser parser;
 	parser.parseText(mc);
@@ -47,11 +51,13 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc) {
 		return false;
 
 	// Read all colour definitions
-	for (unsigned a = 0; a < colours->nChildren(); a++) {
+	for (unsigned a = 0; a < colours->nChildren(); a++)
+	{
 		ParseTreeNode* def = (ParseTreeNode*)colours->getChild(a);
 
 		// Read properties
-		for (unsigned b = 0; b < def->nChildren(); b++) {
+		for (unsigned b = 0; b < def->nChildren(); b++)
+		{
 			ParseTreeNode* prop = (ParseTreeNode*)def->getChild(b);
 			cc_col_t& col = cc_colours[def->getName()];
 			col.exists = true;
@@ -73,7 +79,8 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc) {
 				col.colour.a = prop->getIntValue();
 
 			// Additive
-			else if (prop->getName() == "additive") {
+			else if (prop->getName() == "additive")
+			{
 				if (prop->getBoolValue())
 					col.colour.blend = 1;
 				else
@@ -88,16 +95,19 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc) {
 	return true;
 }
 
-bool ColourConfiguration::writeConfiguration(MemChunk& mc) {
+bool ColourConfiguration::writeConfiguration(MemChunk& mc)
+{
 	string cfgstring = "colours\n{\n";
 
 	ColourHashMap::iterator i = cc_colours.begin();
 
 	// Go through all properties
-	while (i != cc_colours.end()) {
+	while (i != cc_colours.end())
+	{
 		// Skip if it doesn't 'exist'
 		cc_col_t cc = i->second;
-		if (!cc.exists) {
+		if (!cc.exists)
+		{
 			i++;
 			continue;
 		}
@@ -135,12 +145,14 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc) {
 	return true;
 }
 
-bool ColourConfiguration::init() {
+bool ColourConfiguration::init()
+{
 	// Load default configuration
 	loadDefaults();
 
 	// Check for saved colour configuration
-	if (wxFileExists(appPath("colours.cfg", DIR_USER))) {
+	if (wxFileExists(appPath("colours.cfg", DIR_USER)))
+	{
 		MemChunk ccfg;
 		ccfg.importFile(appPath("colours.cfg", DIR_USER));
 		readConfiguration(ccfg);
@@ -149,7 +161,8 @@ bool ColourConfiguration::init() {
 	return true;
 }
 
-void ColourConfiguration::loadDefaults() {
+void ColourConfiguration::loadDefaults()
+{
 	// Read default colours
 	Archive* pres = theArchiveManager->programResourceArchive();
 	ArchiveEntry* entry_default_cc = pres->entryAtPath("config/colours/default.txt");
@@ -157,13 +170,15 @@ void ColourConfiguration::loadDefaults() {
 		readConfiguration(entry_default_cc->getMCData());
 }
 
-bool ColourConfiguration::readConfiguration(string name) {
+bool ColourConfiguration::readConfiguration(string name)
+{
 	// TODO: search custom folder
 
 	// Search resource pk3
 	Archive* res = theArchiveManager->programResourceArchive();
 	ArchiveTreeNode* dir = res->getDir("config/colours");
-	for (unsigned a = 0; a < dir->numEntries(); a++) {
+	for (unsigned a = 0; a < dir->numEntries(); a++)
+	{
 		if (S_CMPNOCASE(dir->getEntry(a)->getName(true), name))
 			return readConfiguration(dir->getEntry(a)->getMCData());
 	}
@@ -171,7 +186,8 @@ bool ColourConfiguration::readConfiguration(string name) {
 	return false;
 }
 
-void ColourConfiguration::getConfigurationNames(vector<string>& names) {
+void ColourConfiguration::getConfigurationNames(vector<string>& names)
+{
 	// TODO: search custom folder
 
 	// Search resource pk3
@@ -181,9 +197,11 @@ void ColourConfiguration::getConfigurationNames(vector<string>& names) {
 		names.push_back(dir->getEntry(a)->getName(true));
 }
 
-void ColourConfiguration::getColourNames(vector<string>& list) {
+void ColourConfiguration::getColourNames(vector<string>& list)
+{
 	ColourHashMap::iterator i = cc_colours.begin();
-	while (i != cc_colours.end()) {
+	while (i != cc_colours.end())
+	{
 		list.push_back(i->first);
 		i++;
 	}
@@ -192,9 +210,11 @@ void ColourConfiguration::getColourNames(vector<string>& list) {
 
 
 
-CONSOLE_COMMAND(ccfg, 1, false) {
+CONSOLE_COMMAND(ccfg, 1, false)
+{
 	// Check for 'list'
-	if (S_CMPNOCASE(args[0], "list")) {
+	if (S_CMPNOCASE(args[0], "list"))
+	{
 		// Get (sorted) list of colour names
 		vector<string> list;
 		ColourConfiguration::getColourNames(list);
@@ -205,9 +225,11 @@ CONSOLE_COMMAND(ccfg, 1, false) {
 		for (unsigned a = 0; a < list.size(); a++)
 			theConsole->logMessage(list[a]);
 	}
-	else {
+	else
+	{
 		// Check for enough args to set the colour
-		if (args.size() >= 4) {
+		if (args.size() >= 4)
+		{
 			// Read RGB
 			long red, green, blue;
 			args[1].ToLong(&red);
@@ -234,6 +256,7 @@ CONSOLE_COMMAND(ccfg, 1, false) {
 	}
 }
 
-CONSOLE_COMMAND(load_ccfg, 1, false) {
+CONSOLE_COMMAND(load_ccfg, 1, false)
+{
 	ColourConfiguration::readConfiguration(args[0]);
 }

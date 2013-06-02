@@ -5,7 +5,8 @@
 #include "EntryPanel.h"
 #include "ANSICanvas.h"
 
-class ANSIEntryPanel : public EntryPanel {
+class ANSIEntryPanel : public EntryPanel
+{
 private:
 	ANSICanvas*		ansi_canvas;
 	uint8_t*		ansi_chardata;

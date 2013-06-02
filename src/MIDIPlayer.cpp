@@ -55,7 +55,8 @@ EXTERN_CVAR(Int, snd_volume)
 /* MIDIPlayer::MIDIPlayer
  * MIDIPlayer class constructor
  *******************************************************************/
-MIDIPlayer::MIDIPlayer() {
+MIDIPlayer::MIDIPlayer()
+{
 	// Init variables
 	fs_initialised = false;
 	fs_soundfont_id = FLUID_FAILED;
@@ -67,7 +68,8 @@ MIDIPlayer::MIDIPlayer() {
 #endif
 
 	// Init soundfont path
-	if (fs_soundfont_path == "") {
+	if (fs_soundfont_path == "")
+	{
 #ifdef __WXGTK__
 		fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2";
 #else
@@ -86,7 +88,8 @@ MIDIPlayer::MIDIPlayer() {
 /* MIDIPlayer::~MIDIPlayer
  * MIDIPlayer class destructor
  *******************************************************************/
-MIDIPlayer::~MIDIPlayer() {
+MIDIPlayer::~MIDIPlayer()
+{
 	delete_fluid_audio_driver(fs_adriver);
 	delete_fluid_player(fs_player);
 	delete_fluid_synth(fs_synth);
@@ -96,7 +99,8 @@ MIDIPlayer::~MIDIPlayer() {
 /* MIDIPlayer::initFluidsynth
  * Initialises fluidsynth
  *******************************************************************/
-bool MIDIPlayer::initFluidsynth() {
+bool MIDIPlayer::initFluidsynth()
+{
 	// Don't re-init
 	if (fs_initialised)
 		return true;
@@ -107,13 +111,15 @@ bool MIDIPlayer::initFluidsynth() {
 		fluid_settings_setstr(fs_settings, "audio.driver", wxString(fs_driver).ToAscii());
 
 	// Create fluidsynth objects
-    fs_synth = new_fluid_synth(fs_settings);
-    fs_player = new_fluid_player(fs_synth);
-    fs_adriver = new_fluid_audio_driver(fs_settings, fs_synth);
+	fs_synth = new_fluid_synth(fs_settings);
+	fs_player = new_fluid_player(fs_synth);
+	fs_adriver = new_fluid_audio_driver(fs_settings, fs_synth);
 
 	// Check init succeeded
-	if (fs_synth) {
-		if (fs_adriver) {
+	if (fs_synth)
+	{
+		if (fs_adriver)
+		{
 			setVolume(snd_volume);
 			fs_initialised = true;
 			return true;
@@ -131,7 +137,8 @@ bool MIDIPlayer::initFluidsynth() {
 /* MIDIPlayer::reloadSoundfont
  * Reloads the current soundfont
  *******************************************************************/
-bool MIDIPlayer::reloadSoundfont() {
+bool MIDIPlayer::reloadSoundfont()
+{
 	// Can't do anything if fluidsynth isn't initialised for whatever reason
 	if (!fs_initialised)
 		return false;
@@ -150,7 +157,8 @@ bool MIDIPlayer::reloadSoundfont() {
  * Opens the MIDI file at [filename] for playback. Returns true if
  * successful, false otherwise
  *******************************************************************/
-bool MIDIPlayer::openFile(string filename) {
+bool MIDIPlayer::openFile(string filename)
+{
 	if (!fs_initialised)
 		return false;
 
@@ -160,7 +168,8 @@ bool MIDIPlayer::openFile(string filename) {
 	fs_player = new_fluid_player(fs_synth);
 
 	// Open midi
-	if (fs_player) {
+	if (fs_player)
+	{
 		fluid_player_add(fs_player, CHR(filename));
 		return true;
 	}
@@ -172,7 +181,8 @@ bool MIDIPlayer::openFile(string filename) {
  * Begins playback of the currently loaded MIDI stream. Returns true
  * if successful, false otherwise
  *******************************************************************/
-bool MIDIPlayer::play() {
+bool MIDIPlayer::play()
+{
 	if (!fs_initialised)
 		return false;
 
@@ -182,7 +192,8 @@ bool MIDIPlayer::play() {
 /* MIDIPlayer::pause
  * Pauses playback of the currently loaded MIDI stream
  *******************************************************************/
-bool MIDIPlayer::pause() {
+bool MIDIPlayer::pause()
+{
 	if (!fs_initialised)
 		return false;
 
@@ -192,7 +203,8 @@ bool MIDIPlayer::pause() {
 /* MIDIPlayer::stop
  * Stops playback of the currently loaded MIDI stream
  *******************************************************************/
-bool MIDIPlayer::stop() {
+bool MIDIPlayer::stop()
+{
 	if (!fs_initialised)
 		return false;
 
@@ -204,7 +216,8 @@ bool MIDIPlayer::stop() {
 /* MIDIPlayer::isPlaying
  * Returns true if the MIDI stream is currently playing, false if not
  *******************************************************************/
-bool MIDIPlayer::isPlaying() {
+bool MIDIPlayer::isPlaying()
+{
 	if (!fs_initialised)
 		return false;
 
@@ -214,7 +227,8 @@ bool MIDIPlayer::isPlaying() {
 /* MIDIPlayer::getPosition
  * Returns the current position of the playing MIDI stream
  *******************************************************************/
-int MIDIPlayer::getPosition() {
+int MIDIPlayer::getPosition()
+{
 	// Cannot currently seek in fluidsynth
 	return 0;
 }
@@ -222,7 +236,8 @@ int MIDIPlayer::getPosition() {
 /* MIDIPlayer::setPosition
  * Seeks to [pos] in the currently loaded MIDI stream
  *******************************************************************/
-bool MIDIPlayer::setPosition(int pos) {
+bool MIDIPlayer::setPosition(int pos)
+{
 	// Cannot currently seek in fluidsynth
 	return false;
 }
@@ -231,7 +246,8 @@ bool MIDIPlayer::setPosition(int pos) {
  * Returns the length (or maximum position) of the currently loaded
  * MIDI stream
  *******************************************************************/
-int MIDIPlayer::getLength() {
+int MIDIPlayer::getLength()
+{
 	// Cannot currently get length in fluidsynth
 	return 0;
 }
@@ -239,7 +255,8 @@ int MIDIPlayer::getLength() {
 /* MIDIPlayer::setVolume
  * Sets the volume of the midi player
  *******************************************************************/
-bool MIDIPlayer::setVolume(int volume) {
+bool MIDIPlayer::setVolume(int volume)
+{
 	if (!fs_initialised)
 		return false;
 

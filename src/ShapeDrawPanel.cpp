@@ -8,7 +8,8 @@ CVAR(Bool, shapedraw_centered, false, CVAR_SAVE)
 CVAR(Bool, shapedraw_lockratio, false, CVAR_SAVE)
 CVAR(Int, shapedraw_sides, 16, CVAR_SAVE)
 
-ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1) {
+ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1)
+{
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -61,16 +62,19 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1) {
 	spin_sides->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &ShapeDrawPanel::onSidesChanged, this);
 }
 
-ShapeDrawPanel::~ShapeDrawPanel() {
+ShapeDrawPanel::~ShapeDrawPanel()
+{
 }
 
-void ShapeDrawPanel::showShapeOptions(int shape) {
+void ShapeDrawPanel::showShapeOptions(int shape)
+{
 	// Remove all extra options
 	GetSizer()->Detach(panel_sides);
 	panel_sides->Show(false);
 
 	// Polygon/Ellipse options
-	if (shape == 1) {
+	if (shape == 1)
+	{
 		// Sides
 		GetSizer()->Add(panel_sides, 0, wxEXPAND|wxTOP, 4);
 		panel_sides->Show(true);
@@ -80,19 +84,23 @@ void ShapeDrawPanel::showShapeOptions(int shape) {
 }
 
 
-void ShapeDrawPanel::onShapeChanged(wxCommandEvent& e) {
+void ShapeDrawPanel::onShapeChanged(wxCommandEvent& e)
+{
 	shapedraw_shape = choice_shape->GetSelection();
 	showShapeOptions(shapedraw_shape);
 }
 
-void ShapeDrawPanel::onCenteredChecked(wxCommandEvent& e) {
+void ShapeDrawPanel::onCenteredChecked(wxCommandEvent& e)
+{
 	shapedraw_centered = cb_centered->GetValue();
 }
 
-void ShapeDrawPanel::onLockRatioChecked(wxCommandEvent& e) {
+void ShapeDrawPanel::onLockRatioChecked(wxCommandEvent& e)
+{
 	shapedraw_lockratio = cb_lockratio->GetValue();
 }
 
-void ShapeDrawPanel::onSidesChanged(wxSpinEvent& e) {
+void ShapeDrawPanel::onSidesChanged(wxSpinEvent& e)
+{
 	shapedraw_sides = spin_sides->GetValue();
 }

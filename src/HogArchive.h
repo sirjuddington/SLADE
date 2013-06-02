@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class HogArchive : public TreelessArchive {
+class HogArchive : public TreelessArchive
+{
 public:
 	HogArchive();
 	~HogArchive();

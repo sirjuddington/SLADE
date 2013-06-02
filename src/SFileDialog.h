@@ -2,8 +2,10 @@
 #ifndef __S_FILE_DIALOG_H__
 #define __S_FILE_DIALOG_H__
 
-namespace SFileDialog {
-	struct fd_info_t {
+namespace SFileDialog
+{
+	struct fd_info_t
+	{
 		wxArrayString	filenames;
 		string			extension;
 		int				ext_index;

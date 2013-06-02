@@ -4,7 +4,8 @@
 
 #include "Archive.h"
 
-class GrpArchive : public TreelessArchive {
+class GrpArchive : public TreelessArchive
+{
 public:
 	GrpArchive();
 	~GrpArchive();

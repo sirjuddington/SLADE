@@ -9,7 +9,8 @@ class wxPGProperty;
 class MapObject;
 class UDMFProperty;
 class MOPGProperty;
-class MapObjectPropsPanel : public wxPanel {
+class MapObjectPropsPanel : public wxPanel
+{
 private:
 	wxNotebook*				tabs_sections;
 	wxPropertyGrid*			pg_properties;

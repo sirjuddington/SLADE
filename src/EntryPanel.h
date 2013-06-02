@@ -6,7 +6,8 @@
 #include "ListenerAnnouncer.h"
 #include "UndoRedo.h"
 
-class EntryPanel : public wxPanel, public Listener {
+class EntryPanel : public wxPanel, public Listener
+{
 private:
 	bool			modified;
 	wxStaticBox*	frame;

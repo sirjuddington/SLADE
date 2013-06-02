@@ -6,7 +6,8 @@
 #include "ListenerAnnouncer.h"
 #include <map>
 
-struct map_tex_t {
+struct map_tex_t
+{
 	GLTexture*	texture;
 	map_tex_t() { texture = NULL; }
 	~map_tex_t() { if (texture && texture != &(GLTexture::missingTex())) delete texture; }
@@ -16,7 +17,8 @@ typedef std::map<string, map_tex_t> MapTexHashMap;
 
 class Archive;
 class Palette8bit;
-class MapTextureManager : public Listener {
+class MapTextureManager : public Listener
+{
 private:
 	Archive*		archive;
 	MapTexHashMap	textures;

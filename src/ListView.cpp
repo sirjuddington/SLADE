@@ -46,7 +46,8 @@
  * ListView class constructor
  *******************************************************************/
 ListView::ListView(wxWindow* parent, int id, long style)
-: wxListCtrl(parent, id, wxDefaultPosition, wxDefaultSize, style) {
+	: wxListCtrl(parent, id, wxDefaultPosition, wxDefaultSize, style)
+{
 	icons = true;
 	update_width = true;
 }
@@ -54,13 +55,15 @@ ListView::ListView(wxWindow* parent, int id, long style)
 /* ListView::~ListView
  * ListView class destructor
  *******************************************************************/
-ListView::~ListView() {
+ListView::~ListView()
+{
 }
 
 /* ListView::addItem
  * Adds an item to the list at [index] with [text]
  *******************************************************************/
-bool ListView::addItem(int index, string text) {
+bool ListView::addItem(int index, string text)
+{
 	// Check index
 	if (index < 0) index = 0;
 	if (index > GetItemCount()) index = GetItemCount();
@@ -82,7 +85,8 @@ bool ListView::addItem(int index, string text) {
  * Adds an item to the list at [index], with [text] in the columns;
  * text[0] goes in column 0, etc
  *******************************************************************/
-bool ListView::addItem(int index, wxArrayString text) {
+bool ListView::addItem(int index, wxArrayString text)
+{
 	// Check index
 	if (index < 0) index = 0;
 	if (index > GetItemCount()) index = GetItemCount();
@@ -103,7 +107,8 @@ bool ListView::addItem(int index, wxArrayString text) {
 }
 
 // Compare two integers
-int cmp_int(int* a, int* b) {
+int cmp_int(int* a, int* b)
+{
 	if (*a > *b) return 1;
 	else if (*a < *b) return -1;
 	else return 0;
@@ -112,7 +117,8 @@ int cmp_int(int* a, int* b) {
 /* ListView::deleteItems
  * Deletes all items at indices [items]
  *******************************************************************/
-bool ListView::deleteItems(wxArrayInt items) {
+bool ListView::deleteItems(wxArrayInt items)
+{
 	// Sort items list
 	items.Sort(cmp_int);
 
@@ -123,7 +129,8 @@ bool ListView::deleteItems(wxArrayInt items) {
 	return true;
 }
 
-rgba_t ListView::getDisabledColour() {
+rgba_t ListView::getDisabledColour()
+{
 	wxColour fg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
 	wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX);
 
@@ -142,13 +149,15 @@ rgba_t ListView::getDisabledColour() {
  * LV_STATUS_LOCKED - orange
  * LV_STATUS_ERROR - red
  *******************************************************************/
-bool ListView::setItemStatus(int item, int status) {
+bool ListView::setItemStatus(int item, int status)
+{
 	// Check item id is in range
 	if (item >= GetItemCount())
 		return false;
 
 	// If given a negative item id, set all items in the list to the given status
-	if (item < 0) {
+	if (item < 0)
+	{
 		for (int a = 0; a < GetItemCount(); a++)
 			setItemStatus(a, status);
 
@@ -156,23 +165,24 @@ bool ListView::setItemStatus(int item, int status) {
 	}
 
 	// Set item text colour to given status colour
-	switch(status) {
-		case LV_STATUS_NORMAL:
-			SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
-			break;
-		case LV_STATUS_MODIFIED:
-			SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("modified")));
-			break;
-		case LV_STATUS_NEW:
-			SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("new")));
-			break;
-		case LV_STATUS_LOCKED:
-			SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("locked")));
-			break;
-		case LV_STATUS_ERROR:
-			SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("error")));
-		case LV_STATUS_DISABLED:
-			SetItemTextColour(item, WXCOL(getDisabledColour()));
+	switch(status)
+	{
+	case LV_STATUS_NORMAL:
+		SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
+		break;
+	case LV_STATUS_MODIFIED:
+		SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("modified")));
+		break;
+	case LV_STATUS_NEW:
+		SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("new")));
+		break;
+	case LV_STATUS_LOCKED:
+		SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("locked")));
+		break;
+	case LV_STATUS_ERROR:
+		SetItemTextColour(item, WXCOL(ColourConfiguration::getColour("error")));
+	case LV_STATUS_DISABLED:
+		SetItemTextColour(item, WXCOL(getDisabledColour()));
 	}
 
 	return true;
@@ -181,7 +191,8 @@ bool ListView::setItemStatus(int item, int status) {
 /* ListView::setItemText
  * Sets the text of [item] at [column] to [text]
  *******************************************************************/
-bool ListView::setItemText(int item, int column, string text) {
+bool ListView::setItemText(int item, int column, string text)
+{
 	// Check if column is in range
 	if (column < 0 || column >= GetColumnCount())
 		return false;
@@ -191,7 +202,8 @@ bool ListView::setItemText(int item, int column, string text) {
 		return false;
 
 	// If negative item given, apply to all items
-	if (item < 0) {
+	if (item < 0)
+	{
 		for (int a = 0; a < GetItemCount(); a++)
 			setItemText(a, column, text);
 
@@ -214,7 +226,8 @@ bool ListView::setItemText(int item, int column, string text) {
 /* ListView::clearSelection
  * Deselects all list items
  *******************************************************************/
-void ListView::clearSelection() {
+void ListView::clearSelection()
+{
 	for (int a = 0; a < GetItemCount(); a++)
 		SetItemState(a, 0x0000, wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
 }
@@ -222,13 +235,15 @@ void ListView::clearSelection() {
 /* ListView::selectItem
  * Selects [item]. Sets the focus to [item] if [focus] is true
  *******************************************************************/
-bool ListView::selectItem(int item, bool focus) {
+bool ListView::selectItem(int item, bool focus)
+{
 	// Check item id is in range
 	if (item >= GetItemCount())
 		return false;
 
 	// If negative item given, select all items
-	if (item < 0) {
+	if (item < 0)
+	{
 		for (int a = 0; a < GetItemCount(); a++)
 			SetItemState(a, 0xFFFF, wxLIST_STATE_SELECTED);
 
@@ -247,13 +262,15 @@ bool ListView::selectItem(int item, bool focus) {
 /* ListView::deSelectItem
  * Deselects [item]
  *******************************************************************/
-bool ListView::deSelectItem(int item) {
+bool ListView::deSelectItem(int item)
+{
 	// Check item id is in range
 	if (item >= GetItemCount())
 		return false;
 
 	// If negative item given, deselect all items
-	if (item < 0) {
+	if (item < 0)
+	{
 		clearSelection();
 		return true;
 	}
@@ -267,13 +284,15 @@ bool ListView::deSelectItem(int item) {
 /* ListView::selectedItems
  * Returns a list with the indices of all selected items
  *******************************************************************/
-wxArrayInt ListView::selectedItems() {
+wxArrayInt ListView::selectedItems()
+{
 	// Init return array
 	wxArrayInt ret;
 
 	// Go through all items
 	long item = -1;
-	while (true) {
+	while (true)
+	{
 		// Get the next item in the list that is selected
 		item = GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 
@@ -292,7 +311,8 @@ wxArrayInt ListView::selectedItems() {
  * Ensures [item] can be seen. If not, the list is scrolled so that
  * it is. (probably not really needed)
  *******************************************************************/
-bool ListView::showItem(int item) {
+bool ListView::showItem(int item)
+{
 	// Check item id is in range
 	if (item < 0 || item >= GetItemCount())
 		return false;
@@ -305,7 +325,8 @@ bool ListView::showItem(int item) {
 /* ListView::swapItems
  * Swaps [item1] with [item2]
  *******************************************************************/
-bool ListView::swapItems(int item1, int item2) {
+bool ListView::swapItems(int item1, int item2)
+{
 	// Check item id's are in range
 	if (item1 < 0 || item1 >= GetItemCount() || item2 < 0 || item2 >= GetItemCount())
 		return false;
@@ -340,10 +361,13 @@ bool ListView::swapItems(int item1, int item2) {
  * itself, this is here and should be called whenever a change is
  * made to the list that could change its size
  *******************************************************************/
-bool ListView::updateSize() {
+bool ListView::updateSize()
+{
 	// Update column widths if enabled
-	if (update_width) {
-		for (int a = 0; a < GetColumnCount(); a++) {
+	if (update_width)
+	{
+		for (int a = 0; a < GetColumnCount(); a++)
+		{
 			// Get header width
 			int maxsize = 0;
 			SetColumnWidth(a, (a == GetColumnCount() -1 ? wxLIST_AUTOSIZE : wxLIST_AUTOSIZE_USEHEADER));
@@ -362,10 +386,11 @@ bool ListView::updateSize() {
 		}
 
 		// Add extra width to the first column in linux as wxLIST_AUTOSIZE seems to ignore listitem images on wxGTK
-		if (icons) {
-			#ifdef __WXGTK__
+		if (icons)
+		{
+#ifdef __WXGTK__
 			SetColumnWidth(0, GetColumnWidth(0) + 20);
-			#endif
+#endif
 		}
 	}
 

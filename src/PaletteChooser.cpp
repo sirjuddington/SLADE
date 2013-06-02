@@ -43,7 +43,8 @@
  * PaletteChooser class constructor
  *******************************************************************/
 PaletteChooser::PaletteChooser(wxWindow* parent, int id)
-: wxChoice(parent, id) { //, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY|wxCB_DROPDOWN) {
+	: wxChoice(parent, id)   //, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY|wxCB_DROPDOWN) {
+{
 	// Init variables
 	pal_global.copyPalette(thePaletteManager->globalPalette());
 
@@ -67,13 +68,15 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id)
 /* PaletteChooser::~PaletteChooser
  * PaletteChooser class destructor
  *******************************************************************/
-PaletteChooser::~PaletteChooser() {
+PaletteChooser::~PaletteChooser()
+{
 }
 
 /* PaletteChooser::onPaletteChanged
  * Called when the current image palette chooser is changed
  *******************************************************************/
-void PaletteChooser::onPaletteChanged(wxCommandEvent& e) {
+void PaletteChooser::onPaletteChanged(wxCommandEvent& e)
+{
 	announce("main_palette_changed");
 }
 
@@ -82,7 +85,8 @@ void PaletteChooser::onPaletteChanged(wxCommandEvent& e) {
  * [archive], or if it doesn't exist, the PaletteManager's global
  * palette
  *******************************************************************/
-void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump) {
+void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
+{
 	if (!archive)
 		pal_global.copyPalette(thePaletteManager->globalPalette());
 
@@ -93,7 +97,8 @@ void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump) {
 /* PaletteChooser::getSelectedPalette
  * Returns the selected palette (from the PaletteManager)
  *******************************************************************/
-Palette8bit* PaletteChooser::getSelectedPalette(ArchiveEntry* entry) {
+Palette8bit* PaletteChooser::getSelectedPalette(ArchiveEntry* entry)
+{
 	if (GetSelection() > 0)
 		return thePaletteManager->getPalette(GetSelection() - 1);
 	else if (entry)
@@ -104,7 +109,8 @@ Palette8bit* PaletteChooser::getSelectedPalette(ArchiveEntry* entry) {
 /* PaletteChooser::globalSelected
  * Returns true if the 'Archive/Global Palette' entry is selected
  *******************************************************************/
-bool PaletteChooser::globalSelected() {
+bool PaletteChooser::globalSelected()
+{
 	return (GetSelection() == 0);
 }
 
@@ -112,10 +118,13 @@ bool PaletteChooser::globalSelected() {
  * Selects the palette matching [name], or the default palette if
  * no match was found
  *******************************************************************/
-void PaletteChooser::selectPalette(string name) {
+void PaletteChooser::selectPalette(string name)
+{
 	// Go through palettes list
-	for (unsigned a = 0; a < GetCount(); a++) {
-		if (S_CMPNOCASE(GetString(a), name)) {
+	for (unsigned a = 0; a < GetCount(); a++)
+	{
+		if (S_CMPNOCASE(GetString(a), name))
+		{
 			SetSelection(a);
 			return;
 		}
@@ -132,7 +141,8 @@ void PaletteChooser::selectPalette(string name) {
  * custom palette, without this function, requires exiting and
  * restarting the app to appear in the list.
  *******************************************************************/
-void PaletteChooser::addPalette(string name) {
+void PaletteChooser::addPalette(string name)
+{
 	// We want it to be just before the "Greyscale" choice
 	if (GetCount() > 2)
 		Insert(name, GetCount() - 1);

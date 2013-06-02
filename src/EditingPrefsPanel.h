@@ -4,7 +4,8 @@
 
 #include "PrefsPanelBase.h"
 
-class EditingPrefsPanel : public PrefsPanelBase {
+class EditingPrefsPanel : public PrefsPanelBase
+{
 private:
 	wxCheckBox*	cb_wad_force_uppercase;
 	wxChoice*	choice_entry_mod;

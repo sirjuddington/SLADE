@@ -8,7 +8,8 @@
 #include "Translation.h"
 #include "GfxCanvas.h"
 
-class GradientBox : public OGLCanvas {
+class GradientBox : public OGLCanvas
+{
 private:
 	rgba_t	col_start;
 	rgba_t	col_end;
@@ -26,7 +27,8 @@ public:
 };
 
 class ArchiveEntry;
-class TranslationEditorDialog : public wxDialog {
+class TranslationEditorDialog : public wxDialog
+{
 private:
 	Palette8bit*	palette;
 	Translation		translation;

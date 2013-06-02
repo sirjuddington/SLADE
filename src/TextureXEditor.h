@@ -11,7 +11,8 @@
 #include "PatchBrowser.h"
 #include <wx/aui/auibook.h>
 
-class TextureXEditor : public wxPanel, public Listener {
+class TextureXEditor : public wxPanel, public Listener
+{
 private:
 	Archive*					archive;			// The archive this editor is handling
 	ArchiveEntry*				pnames;				// The PNAMES entry to modify (can be null)
