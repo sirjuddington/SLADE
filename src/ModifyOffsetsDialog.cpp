@@ -128,7 +128,7 @@ point2_t ModifyOffsetsDialog::getOffset() {
  *******************************************************************/
 int	ModifyOffsetsDialog::getAlignType() {
 	if (opt_auto->GetValue())
-		return combo_aligntype->GetSelection();
+		return combo_aligntype->GetSelection()-1;
 	else
 		return -1;
 }
