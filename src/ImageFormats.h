@@ -613,7 +613,7 @@ public:
 
 		// Check the size matches
 		size_t rawsize = (sizeof(psxpic_header_t) + (header->width * header->height));
-		if (mc.getSize() < rawsize && mc.getSize() >= rawsize + 4)
+		if (mc.getSize() < rawsize || mc.getSize() >= rawsize + 4)
 			return EDF_FALSE;
 
 		return EDF_TRUE;
