@@ -359,9 +359,9 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	btn_nextimg = new wxBitmapButton(this, -1, getIcon("t_right"));
 	btn_previmg = new wxBitmapButton(this, -1, getIcon("t_left"));
 	text_curimg = new wxStaticText(this, -1, "Image XX/XX");
-	sizer_bottom->Add(btn_previmg, 0, wxEXPAND|wxRIGHT, 4);
-	sizer_bottom->Add(btn_nextimg, 0, wxEXPAND|wxRIGHT, 4);
-	sizer_bottom->Add(text_curimg, 0, wxALIGN_CENTER, 0);
+	btn_nextimg->Show(false);
+	btn_previmg->Show(false);
+	text_curimg->Show(false);
 
 	// Palette chooser
 	listenTo(theMainWindow->getPaletteChooser());
@@ -435,6 +435,26 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 	// Attempt to load the image
 	if (!Misc::loadImageFromEntry(getImage(), this->entry, index))
 		return false;
+
+	// Only show next/prev image buttons if the entry contains multiple images
+	if (getImage()->getSize() > 1)
+	{
+		btn_nextimg->Show();
+		btn_previmg->Show();
+		text_curimg->Show();
+		sizer_bottom->Add(btn_previmg, 0, wxEXPAND|wxRIGHT, 4);
+		sizer_bottom->Add(btn_nextimg, 0, wxEXPAND|wxRIGHT, 4);
+		sizer_bottom->Add(text_curimg, 0, wxALIGN_CENTER, 0);
+	}
+	else
+	{
+		btn_nextimg->Show(false);
+		btn_previmg->Show(false);
+		text_curimg->Show(false);
+		sizer_bottom->Detach(btn_nextimg);
+		sizer_bottom->Detach(btn_previmg);
+		sizer_bottom->Detach(text_curimg);
+	}
 
 	// Refresh everything
 	refresh();
