@@ -3126,6 +3126,7 @@ void MapEditor::changeSectorLight3d(int amount)
 	beginUndoRecordLocked("Change Sector Light", true, false, false);
 
 	// Go through items
+	vector<MapSector*> processed_sectors;
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
@@ -3134,13 +3135,21 @@ void MapEditor::changeSectorLight3d(int amount)
 			// Get side
 			MapSide* side = map.getSide(items[a].index);
 			if (!side) continue;
+			MapSector* sector = side->getSector();
+			if (!sector) continue;
+
+			// Ignore if sector already processed
+			if (VECTOR_EXISTS(processed_sectors, sector))
+				continue;
+			else
+				processed_sectors.push_back(sector);
 
 			// Check for decrease when light = 255
-			if (side->getSector()->getLight(0) == 255 && amount < -1)
+			if (sector->getLight(0) == 255 && amount < -1)
 				amount++;
 
 			// Change sector light level
-			side->getSector()->changeLight(amount);
+			sector->changeLight(amount);
 		}
 
 		// Flat
@@ -3156,6 +3165,12 @@ void MapEditor::changeSectorLight3d(int amount)
 				s->changeLight(amount, 2);
 			else
 			{
+				// Ignore if sector already processed
+				if (VECTOR_EXISTS(processed_sectors, s))
+					continue;
+				else
+					processed_sectors.push_back(s);
+
 				// Check for decrease when light = 255
 				if (s->getLight(0) == 255 && amount < -1)
 					amount++;
@@ -3216,16 +3231,7 @@ void MapEditor::changeOffset3d(int amount, bool x)
 			if (link_3d_offset)
 			{
 				// Check we haven't processed this side already
-				bool d = false;
-				for (unsigned b = 0; b < done.size(); b++)
-				{
-					if (done[b] == items[a].index)
-					{
-						d = true;
-						break;
-					}
-				}
-				if (d)
+				if (VECTOR_EXISTS(done, items[a].index))
 					continue;
 
 				// Change the appropriate offset
@@ -3350,17 +3356,8 @@ void MapEditor::changeSectorHeight3d(int amount)
 			MapSector* sector = map.getSide(items[a].index)->getSector();
 
 			// Check this sector's ceiling hasn't already been changed
-			bool done = false;
 			int index = sector->getIndex();
-			for (unsigned b = 0; b < ceilings.size(); b++)
-			{
-				if (ceilings[b] == index)
-				{
-					done = true;
-					break;
-				}
-			}
-			if (done)
+			if (VECTOR_EXISTS(ceilings, index))
 				continue;
 
 			// Change height
@@ -3620,11 +3617,18 @@ void MapEditor::toggleUnpegged3d(bool lower)
 	undo_manager_3d->beginRecord(undo_type);
 
 	// Go through items
+	vector<MapLine*> processed_lines;
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Get line
 		MapLine* line = map.getSide(items[a].index)->getParentLine();
 		if (!line) continue;
+
+		// Skip if line already processed
+		if (VECTOR_EXISTS(processed_lines, line))
+			continue;
+		else
+			processed_lines.push_back(line);
 
 		// Toggle flag
 		recordPropertyChangeUndoStep(line);
