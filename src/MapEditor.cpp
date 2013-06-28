@@ -4246,6 +4246,7 @@ void MapEditor::recordPropertyChangeUndoStep(MapObject* object)
 void MapEditor::doUndo()
 {
 	// Undo
+	int time = theApp->runTimer() - 1;
 	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
 	string undo_name = manager->undo();
 
@@ -4256,7 +4257,8 @@ void MapEditor::doUndo()
 
 		// Refresh stuff
 		//updateTagged();
-		//theMapEditor->forceRefresh(true);
+		map.geometry_updated = theApp->runTimer();
+		map.updateGeometryInfo(time);
 		last_undo_level = "";
 	}
 }
@@ -4264,6 +4266,7 @@ void MapEditor::doUndo()
 void MapEditor::doRedo()
 {
 	// Redo
+	int time = theApp->runTimer() - 1;
 	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
 	string undo_name = manager->redo();
 
@@ -4274,7 +4277,8 @@ void MapEditor::doRedo()
 
 		// Refresh stuff
 		//updateTagged();
-		//theMapEditor->forceRefresh(true);
+		map.geometry_updated = theApp->runTimer();
+		map.updateGeometryInfo(time);
 		last_undo_level = "";
 	}
 }

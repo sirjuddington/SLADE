@@ -2799,6 +2799,37 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 	return cv;
 }
 
+void SLADEMap::updateGeometryInfo(long modified_time)
+{
+	for (unsigned a = 0; a < vertices.size(); a++)
+	{
+		if (vertices[a]->modifiedTime() > modified_time)
+		{
+			for (unsigned l = 0; l < vertices[a]->connected_lines.size(); l++)
+			{
+				MapLine* line = vertices[a]->connected_lines[l];
+
+				// Update line geometry
+				line->resetInternals();
+
+				// Update front sector
+				if (line->frontSector())
+				{
+					line->frontSector()->resetPolygon();
+					line->frontSector()->updateBBox();
+				}
+
+				// Update back sector
+				if (line->backSector())
+				{
+					line->backSector()->resetPolygon();
+					line->backSector()->updateBBox();
+				}
+			}
+		}
+	}
+}
+
 void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 {
 	// Find sectors with matching tag
