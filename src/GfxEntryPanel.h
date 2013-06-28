@@ -29,6 +29,7 @@ private:
 	wxStaticText*	text_curimg;
 	int				cur_index;
 	Translation		prev_translation;
+	bool			offset_changing;
 
 public:
 	GfxEntryPanel(wxWindow* parent);

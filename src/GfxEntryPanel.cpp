@@ -324,6 +324,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 {
 	// Init variables
 	prev_translation.addRange(TRANS_PALETTE, 0);
+	offset_changing = false;
 
 	// Add gfx canvas
 	gfx_canvas = new GfxCanvas(this, -1);
@@ -997,6 +998,9 @@ void GfxEntryPanel::onZoomChanged(wxCommandEvent& e)
  *******************************************************************/
 void GfxEntryPanel::onXOffsetChanged(wxSpinEvent& e)
 {
+	if (offset_changing)
+		return;
+
 	// Change the image x-offset
 	int offset = spin_xoffset->GetValue();
 	getImage()->setXOffset(offset);
@@ -1013,6 +1017,9 @@ void GfxEntryPanel::onXOffsetChanged(wxSpinEvent& e)
  *******************************************************************/
 void GfxEntryPanel::onYOffsetChanged(wxSpinEvent& e)
 {
+	if (offset_changing)
+		return;
+
 	// Change image y-offset
 	int offset = spin_yoffset->GetValue();
 	getImage()->setYOffset(offset);
@@ -1056,8 +1063,10 @@ void GfxEntryPanel::onARCChanged(wxCommandEvent& e)
 void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e)
 {
 	// Update spin controls
+	offset_changing = true;
 	spin_xoffset->SetValue(gfx_canvas->getImage()->offset().x);
 	spin_yoffset->SetValue(gfx_canvas->getImage()->offset().y);
+	offset_changing = false;
 
 	// Set changed
 	setModified();
