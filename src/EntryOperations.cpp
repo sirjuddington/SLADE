@@ -264,15 +264,35 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 				header.left = w * 0.5;
 				header.top = h - 4;
 			}
-			else if (auto_type == 1)  		// Projectile
+			else if (auto_type == 1)  		// Monster (GL-friendly)
+			{
+				header.left = w * 0.5;
+				header.top = h;
+			}
+			else if (auto_type == 2)  		// Projectile
 			{
 				header.left = w * 0.5;
 				header.top = h * 0.5;
 			}
-			else if (auto_type == 2)  		// Weapon
+			else if (auto_type == 3)  		// Weapon (fullscreen)
 			{
 				header.left = -160 + (w * 0.5);
 				header.top = -200 + h;
+			}
+			else if (auto_type == 4)  		// Weapon (Doom status bar)
+			{
+				header.left = -160 + (w * 0.5);
+				header.top = -200 + 32 + h;
+			}
+			else if (auto_type == 5)  		// Weapon (Heretic status bar)
+			{
+				header.left = -160 + (w * 0.5);
+				header.top = -200 + 42 + h;
+			}
+			else if (auto_type == 6)  		// Weapon (Hexen status bar)
+			{
+				header.left = -160 + (w * 0.5);
+				header.top = -200 + 38 + h;
 			}
 		}
 		else
@@ -337,15 +357,35 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 				xoff = w * 0.5;
 				yoff = h - 4;
 			}
-			else if (auto_type == 1)  		// Projectile
+			else if (auto_type == 1)  		// Monster (GL-friendly)
+			{
+				xoff = w * 0.5;
+				yoff = h;
+			}
+			else if (auto_type == 2)  		// Projectile
 			{
 				xoff = w * 0.5;
 				yoff = h * 0.5;
 			}
-			else if (auto_type == 2)  		// Weapon
+			else if (auto_type == 3)  		// Weapon (Fullscreen)
 			{
 				xoff = -160 + (w * 0.5);
 				yoff = -200 + h;
+			}
+			else if (auto_type == 4)  		// Weapon (Doom status bar)
+			{
+				xoff = -160 + (w * 0.5);
+				yoff = -200 + 32 + h;
+			}
+			else if (auto_type == 5)  		// Weapon (Heretic status bar)
+			{
+				xoff = -160 + (w * 0.5);
+				yoff = -200 + 42 + h;
+			}
+			else if (auto_type == 6)  		// Weapon (Hexen status bar)
+			{
+				xoff = -160 + (w * 0.5);
+				yoff = -200 + 38 + h;
 			}
 		}
 		else
