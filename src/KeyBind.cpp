@@ -511,6 +511,7 @@ void KeyBind::initBinds()
 	group = "Map Editor 3D Mode";
 	addBind("me3d_toggle_fog", keypress_t("F"), "Toggle fog", group);
 	addBind("me3d_toggle_fullbright", keypress_t("B"), "Toggle full brightness", group);
+	addBind("me3d_adjust_brightness", keypress_t("B", KPM_SHIFT), "Adjust brightness", group);
 	addBind("me3d_toggle_gravity", keypress_t("G"), "Toggle camera gravity", group);
 	addBind("me3d_release_mouse", keypress_t("tab"), "Release mouse cursor", group);
 	addBind("me3d_clear_selection", keypress_t("C"), "Clear selection", group);

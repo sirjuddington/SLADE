@@ -19,6 +19,7 @@ CVAR(Bool, render_3d_sky, true, CVAR_SAVE)
 CVAR(Int, render_3d_things, 1, CVAR_SAVE)
 CVAR(Int, render_3d_things_style, 1, CVAR_SAVE)
 CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
+CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
 
 EXTERN_CVAR(Bool, flats_use_vbo)
 
@@ -350,6 +351,9 @@ void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
 	// Force 255 light in fullbright mode
 	if (fullbright)
 		light = 255;
+
+	// Apply brightness
+	light = MathStuff::clamp(light * render_3d_brightness, 0, 255);
 
 	// Setup fog
 	if (fog && light != last_light)
