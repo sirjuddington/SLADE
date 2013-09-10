@@ -38,7 +38,7 @@ using std::vector;
 #define VECTOR_EXISTS(vec, val) find(vec.begin(), vec.end(), val) != vec.end()
 
 // A macro to add a value to a vector if the value doesn't already exist in the vector
-#define VECTOR_ADD_UNIQUE(vec, val) if (!(vector_exists(vec, val))) vec.push_back(val)
+#define VECTOR_ADD_UNIQUE(vec, val) if (!(VECTOR_EXISTS(vec, val))) vec.push_back(val)
 
 // A macro to remove an item with a given value from a vector
 #define VECTOR_REMOVE(vec, val) vec.erase(find(vec.begin(), vec.end(), val))

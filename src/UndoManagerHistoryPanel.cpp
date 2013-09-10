@@ -91,7 +91,7 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 	sizer->Add(list_levels, 1, wxEXPAND|wxALL, 4);
 
 #if (wxMAJOR_VERSION >= 2 && wxMINOR_VERSION >= 9 && wxRELEASE_NUMBER >= 4)
-	list_levels->AppendColumn("Action", 0, 160);
+	list_levels->AppendColumn("Action", wxLIST_FORMAT_LEFT, 160);
 #else
 	list_levels->InsertColumn(list_levels->GetColumnCount(), "Action", 0, 160);
 #endif
