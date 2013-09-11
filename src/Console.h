@@ -20,6 +20,7 @@ public:
 	string	getName() { return name; }
 	bool	showInList() { return show_in_list; }
 	void	execute(vector<string> args);
+	size_t	minArgs() { return min_args; }
 
 	inline bool operator<(ConsoleCommand c) const { return name < c.getName(); }
 	inline bool operator>(ConsoleCommand c) const { return name > c.getName(); }

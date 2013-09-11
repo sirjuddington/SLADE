@@ -289,7 +289,7 @@ void ConsoleCommand::execute(vector<string> args)
 	if (args.size() >= min_args)
 		commandFunc(args);
 	else
-		theConsole->logMessage("Missing command arguments");
+		theConsole->logMessage(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", CHR(name)));
 }
 
 
@@ -315,8 +315,9 @@ CONSOLE_COMMAND (cmdlist, 0, true)
 
 	for (int a = 0; a < theConsole->numCommands(); a++)
 	{
-		if (theConsole->command(a).showInList() || Global::debug)
-			theConsole->logMessage(S_FMT("\"%s\"", theConsole->command(a).getName().c_str()));
+		ConsoleCommand& cmd = theConsole->command(a);
+		if (cmd.showInList() || Global::debug)
+			theConsole->logMessage(S_FMT("\"%s\" (%d args)", CHR(cmd.getName()), cmd.minArgs()));
 	}
 }
 
@@ -337,6 +338,9 @@ CONSOLE_COMMAND (cvarlist, 0, true)
 		theConsole->logMessage(list[a]);
 }
 
+/* Console Command - "cmdhelp"
+* Opens the wiki page for a console command
+*******************************************************************/
 CONSOLE_COMMAND(cmdhelp, 1, true)
 {
 	// Check command exists
