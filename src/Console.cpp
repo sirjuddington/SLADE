@@ -32,6 +32,7 @@
 #include "Tokenizer.h"
 #include "CVar.h"
 #include <wx/log.h>
+#include <wx/utils.h>
 #include <algorithm>
 
 
@@ -334,6 +335,23 @@ CONSOLE_COMMAND (cvarlist, 0, true)
 	// Write list to console
 	for (unsigned a = 0; a < list.size(); a++)
 		theConsole->logMessage(list[a]);
+}
+
+CONSOLE_COMMAND(cmdhelp, 1, true)
+{
+	// Check command exists
+	for (int a = 0; a < theConsole->numCommands(); a++)
+	{
+		if (theConsole->command(a).getName().Lower() == args[0].Lower())
+		{
+			string url = S_FMT("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", CHR(args[0]));
+			wxLaunchDefaultBrowser(url);
+			return;
+		}
+	}
+
+	// No command found
+	theConsole->logMessage(S_FMT("No command \"%s\" exists", CHR(args[0])));
 }
 
 CONSOLE_COMMAND (testmatch, 0, false)
