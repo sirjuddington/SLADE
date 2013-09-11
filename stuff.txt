@@ -10,7 +10,6 @@ TODO List ---------------------------------------------------------------
 --- Bugs ---
 - Wall/flat scale not working in 3d mode
 - Undo/redo only works in WADs (no effect on ZIP entries)
-- Toolbar not resizing properly when going from double+ height to single
 
 
 --- Map Editor 3.1 ---
