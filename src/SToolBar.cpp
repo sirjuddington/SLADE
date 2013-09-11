@@ -365,10 +365,10 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 	Refresh();
 
 	// Check if the toolbar height changed
-	if (min_height != GetBestSize().y)
+	if (min_height != (n_rows+1) * 32)//GetBestSize().y)
 	{
 		// Update minimum height
-		min_height = GetBestSize().y;
+		min_height = (n_rows+1) * 32;//GetBestSize().y;
 
 		// Generate layout update event
 		if (generate_event)
