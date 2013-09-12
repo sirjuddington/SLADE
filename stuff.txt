@@ -21,19 +21,10 @@ TODO List ---------------------------------------------------------------
 	- Invalid sector references (maybe not, shouldn't really happen)
 	- Intersecting lines
 	- Overlapping lines
-- 3d mode
-	- Offsets/scaling copy+paste
-	- (Z)MAPINFO parsing for sky texture
-	- Line transparency (udmf+zdoom)
-	- Slopes preview
 - Editing:
-	- Proper UDMF/Hexen/Doom64 Map saving (BEHAVIOR, SCRIPTS, DIALOGUE, LIGHTS, MACROS, etc.)
 	- Rotate/scale objects ('edit' mode similar to db2 would be nice, perhaps not a mode though)
 	- Proper split/merge checks on paste lines
-- Script editor
-	- Other script types (DIALOGUE etc)
 - Better UDMF property handling, proper support for unknown properties read with the map
-- (Possibly) better line/thing flag handling
 - Tag edit mode for TIDs/LineIDs(?)
 - Need to separate editor defaults from udmf defaults (eg. thing skill flags are all false by default in udmf)
 
@@ -41,6 +32,10 @@ TODO List ---------------------------------------------------------------
 --- Map Editor post-3.1 ---
 - Optimise Polygon2D splitting somehow, it creates many unneeded splits
 - 3d mode
+	- Offsets/scaling copy+paste
+	- (Z)MAPINFO parsing for sky texture
+	- Line transparency (udmf+zdoom)
+	- Slopes preview
 	- Auto-align Y
 	- Better vis checking
 	- 3d floors preview
@@ -49,6 +44,7 @@ TODO List ---------------------------------------------------------------
 	- Compiler output pane
 	- Error pane rather than just displaying error output
 	- Ability to edit/compile library scripts
+	- Other script types (DIALOGUE etc)
 
 
 --- Minor Problems/Annoyances ---
