@@ -86,6 +86,7 @@ TODO List ---------------------------------------------------------------
 		- Byte pattern to look for at a certain offset in the file (ideally allow multiple of these), something like:
 		  pattern = 10, 255, 255, 255, 0; = look for 255,255,255,0 at offset 10 in file
 		- Call inbuilt tests for more complex detection algorithms (wad files, doom gfx, etc)
+		- Convert inbuilt tests to lua? (might be slow, but would allow for all entry types to be user-defined)
 - General optimisation:
 	- Entry type detection (maybe move the initial detection to a background thread)
 	- Gfx conversion
