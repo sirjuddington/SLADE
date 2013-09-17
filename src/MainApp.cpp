@@ -69,7 +69,7 @@ namespace Global
 {
 	string error = "";
 
-	string version = "3.1.0 alpha"
+	string version = "3.1.0 beta 1"
 #ifdef SVN_REVISION_STRING
 	                 " (r" SVN_REVISION_STRING ")"
 #endif
