@@ -1,4 +1,3 @@
-
 --------------------------- SLADE - stuff.txt ---------------------------
               Big list of unimplemented features, requests,
             TODOs, ideas, and other general development notes
@@ -27,6 +26,7 @@ TODO List ---------------------------------------------------------------
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
 - Need to separate editor defaults from udmf defaults (eg. thing skill flags are all false by default in udmf)
+- Run map (possibly 'run archive' for something more general also)
 
 
 --- Map Editor post-3.1 ---
