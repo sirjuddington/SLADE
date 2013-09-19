@@ -666,7 +666,7 @@ bool MainWindow::handleAction(string id)
 	// Help->Online Documentation
 	if (id == "main_onlinedocs")
 	{
-		wxLaunchDefaultBrowser("http://slade-editor.wikia.com");
+		wxLaunchDefaultBrowser("http://slade.mancubus.net/wiki");
 		return true;
 	}
 
