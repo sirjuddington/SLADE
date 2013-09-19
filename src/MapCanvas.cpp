@@ -1501,24 +1501,11 @@ void MapCanvas::lockMouse(bool lock)
 		img.SetMask(true);
 		img.SetMaskColour(0, 0, 0);
 		SetCursor(wxCursor(img));
-
-// TODO: check if sfml cursor show/hide is even really needed
-#ifndef __WXGTK__
-#ifdef USE_SFML_RENDERWINDOW
-		setMouseCursorVisible(false);
-#endif
-#endif
 	}
 	else
 	{
 		// Show cursor
 		SetCursor(wxNullCursor);
-
-#ifndef __WXGTK__
-#ifdef USE_SFML_RENDERWINDOW
-		setMouseCursorVisible(false);
-#endif
-#endif
 	}
 }
 

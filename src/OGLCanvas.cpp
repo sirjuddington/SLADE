@@ -254,15 +254,15 @@ wxWindow* OGLCanvas::toPanel(wxWindow* parent)
  *******************************************************************/
 void OGLCanvas::onPaint(wxPaintEvent& e)
 {
-	wxPaintDC(this);
+	wxPaintDC dc(this);
 
-#ifdef __WXGTK__
+//#ifdef __WXGTK__
 	if (recreate)
 	{
 		createSFML();
 		recreate = false;
 	}
-#endif
+//#endif
 
 	if (IsShown())
 	{
