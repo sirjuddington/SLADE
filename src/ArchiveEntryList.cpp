@@ -66,7 +66,7 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	filter_active = false;
 	filter_name = "";
 	filter_category = "";
-	current_dir = false;
+	current_dir = NULL;
 	show_dir_back = false;
 
 	// Create dummy 'up folder' entry

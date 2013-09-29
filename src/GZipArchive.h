@@ -32,8 +32,8 @@ public:
 	bool		loadEntryData(ArchiveEntry* entry);
 
 	// Entry addition/removal
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false) { return false ; }
-	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) { return false ; }
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false) { return NULL; }
+	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) { return NULL; }
 	bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true) { return false ; }
 
 	// Entry modification
