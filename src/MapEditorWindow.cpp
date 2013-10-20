@@ -97,6 +97,7 @@ MapEditorWindow::MapEditorWindow()
  *******************************************************************/
 MapEditorWindow::~MapEditorWindow()
 {
+	wxAuiManager::GetManager(this)->UnInit();
 }
 
 /* MapEditorWindow::loadLayout

@@ -546,7 +546,7 @@ bool TarArchive::isTarArchive(MemChunk& mc)
 		// Read tar header
 		tar_header header;
 		mc.read(&header, 512);
-		if (string(wxString::FromAscii(header.magic, 5)).CmpNoCase(TMAGIC))
+		if (string(wxString::From8BitData(header.magic, 5)).CmpNoCase(TMAGIC))
 		{
 			if (TarMakeChecksum(&header) == 0)
 			{
