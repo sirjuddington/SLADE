@@ -107,6 +107,7 @@ MainWindow::MainWindow()
  *******************************************************************/
 MainWindow::~MainWindow()
 {
+	m_mgr->UnInit();
 }
 
 /* MainWindow::loadLayout

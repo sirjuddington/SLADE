@@ -649,8 +649,7 @@ public:
 		if (mc.getSize() > 35)
 		{
 			// Check for header text using official signature string
-			string header(wxString::FromAscii(mc.getData(), 27));
-			if (header == "SNES-SPC700 Sound File Data")
+			if (memcmp(mc.getData(), "SNES-SPC700 Sound File Data", 27) == 0)
 				return EDF_TRUE;
 		}
 		return EDF_FALSE;
