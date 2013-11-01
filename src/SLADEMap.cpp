@@ -2133,8 +2133,6 @@ bool SLADEMap::writeDoom64Map(vector<ArchiveEntry*>& map_entries)
 	return true;
 }
 
-//#include <SFML/System.hpp>
-
 bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 {
 	// Check entry was given
@@ -2295,7 +2293,6 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 
 	return true;
 }
-
 
 void SLADEMap::clearMap()
 {

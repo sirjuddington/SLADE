@@ -95,7 +95,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;FreeImage.lib;wxbase29u.lib;wxmsw29u_core.lib;wxmsw29u_aui.lib;wxmsw29u_gl.lib;wxmsw29u_html.lib;wxmsw29u_adv.lib;wxmsw29u_stc.lib;wxmsw29u_propgrid.lib;wxmsw29u_media.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;wxscintilla.lib;sfml-graphics-s.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;sfml-main.lib;winmm.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;FreeImage.lib;wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_aui.lib;wxmsw30u_gl.lib;wxmsw30u_html.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;wxscintilla.lib;sfml-graphics-s.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;sfml-main.lib;winmm.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -294,6 +294,7 @@
     <ClCompile Include="src\mus2mid\mus2mid.cpp" />
     <ClCompile Include="src\NodeBuilders.cpp" />
     <ClCompile Include="src\NodesPrefsPanel.cpp" />
+    <ClCompile Include="src\ObjectEdit.cpp" />
     <ClCompile Include="src\PakArchive.cpp" />
     <ClCompile Include="src\PaletteDialog.cpp" />
     <ClCompile Include="src\Clipboard.cpp" />
@@ -567,6 +568,7 @@
     <ClInclude Include="src\mus2mid\mus2mid.h" />
     <ClInclude Include="src\NodeBuilders.h" />
     <ClInclude Include="src\NodesPrefsPanel.h" />
+    <ClInclude Include="src\ObjectEdit.h" />
     <ClInclude Include="src\PakArchive.h" />
     <ClInclude Include="src\PaletteDialog.h" />
     <ClInclude Include="src\Clipboard.h" />

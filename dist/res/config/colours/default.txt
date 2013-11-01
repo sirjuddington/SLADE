@@ -170,4 +170,12 @@ colours {
 		rgb = 30, 100, 255;
 		alpha = 180;
 	}
+
+	map_object_edit {
+		name = "Object Edit";
+		group = "Map Editor";
+		rgb = 220, 140, 0;
+		alpha = 170;
+		additive = true;
+	}
 }

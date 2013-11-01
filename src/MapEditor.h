@@ -3,6 +3,7 @@
 #define __MAP_EDITOR_H__
 
 #include "SLADEMap.h"
+#include "ObjectEdit.h"
 #include "GameConfiguration.h"
 
 struct selection_3d_t
@@ -59,6 +60,13 @@ private:
 	fpoint2_t	move_vec;
 	vector<int>	move_items;
 	int			move_item_closest;
+
+	// Object edit
+	//vector<MapObject*>	edit_objects;
+	//bbox_t				edit_bbox;
+	//fpoint2_t			edit_midpoint;
+	//vector<MapLine*>	edit_objects_lines;
+	ObjectEditGroup	edit_object_group;
 
 	// Object properties and copy/paste
 	MapThing*	copy_thing;
@@ -225,6 +233,11 @@ public:
 	void		setShapeDrawOrigin(fpoint2_t point, bool nearest = false);
 	void		updateShapeDraw(fpoint2_t point);
 	void		endLineDraw(bool apply = true);
+
+	// Object edit
+	ObjectEditGroup*	getObjectEditGroup() { return &edit_object_group; }
+	bool				beginObjectEdit();
+	void				endObjectEdit(bool accept);
 
 	// Copy/paste
 	void	copy();

@@ -277,6 +277,24 @@ bool MapSector::getVertices(vector<MapVertex*>& list)
 	return true;
 }
 
+bool MapSector::getVertices(vector<MapObject*>& list)
+{
+	// Go through connected sides
+	MapLine* line;
+	for (unsigned a = 0; a < connected_sides.size(); a++)
+	{
+		line = connected_sides[a]->getParentLine();
+
+		// Add the side's parent line's vertices to the list if they doesn't already exist
+		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
+			list.push_back(line->v1());
+		if (line->v2() && std::find(list.begin(), list.end(), line->v2()) == list.end())
+			list.push_back(line->v2());
+	}
+
+	return true;
+}
+
 uint8_t MapSector::getLight(int where)
 {
 	// Check for UDMF+ZDoom namespace

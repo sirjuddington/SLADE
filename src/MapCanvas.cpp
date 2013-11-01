@@ -130,6 +130,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	overlay_current = NULL;
 	mouse_locked = false;
 	mouse_warp = false;
+	edit_state = 0;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -751,7 +752,7 @@ void MapCanvas::drawMap2d()
 			renderer_2d->renderVertices(fade_vertices);
 
 		// Selection if needed
-		if (mouse_state != MSTATE_MOVE && !overlayActive())
+		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
 			renderer_2d->renderVertexSelection(editor->getSelection(), anim_flash_level);
 
 		// Hilight if needed
@@ -766,7 +767,7 @@ void MapCanvas::drawMap2d()
 		renderer_2d->renderLines(true);				// Lines
 
 		// Selection if needed
-		if (mouse_state != MSTATE_MOVE && !overlayActive())
+		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
 			renderer_2d->renderLineSelection(editor->getSelection(), anim_flash_level);
 
 		// Hilight if needed
@@ -781,7 +782,7 @@ void MapCanvas::drawMap2d()
 		renderer_2d->renderLines(line_tabs_always, fade_lines);	// Lines
 
 		// Selection if needed
-		if (mouse_state != MSTATE_MOVE && !overlayActive())
+		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
 			renderer_2d->renderFlatSelection(editor->getSelection(), anim_flash_level);
 
 		splitter.testRender();	// Testing
@@ -803,7 +804,7 @@ void MapCanvas::drawMap2d()
 		renderer_2d->renderThings(fade_things, force_dir);		// Things
 
 		// Selection if needed
-		if (mouse_state != MSTATE_MOVE && !overlayActive())
+		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
 			renderer_2d->renderThingSelection(editor->getSelection(), anim_flash_level);
 
 		// Hilight if needed
@@ -838,6 +839,51 @@ void MapCanvas::drawMap2d()
 	// Draw line drawing lines if needed
 	if (mouse_state == MSTATE_LINE_DRAW)
 		drawLineDrawLines();
+
+	// Draw object edit objects if needed
+	if (mouse_state == MSTATE_EDIT)
+	{
+		// Map objects
+		renderer_2d->renderObjectEditGroup(editor->getObjectEditGroup());
+
+		// Bounding box
+		COL_WHITE.set_gl();
+		rgba_t col = ColourConfiguration::getColour("map_object_edit");
+		glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
+		bbox_t bbox = editor->getObjectEditGroup()->getBBox();
+		bbox.min.x -= 4 / view_scale_inter;
+		bbox.min.y -= 4 / view_scale_inter;
+		bbox.max.x += 4 / view_scale_inter;
+		bbox.max.y += 4 / view_scale_inter;
+
+		// Left
+		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_L || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_BL)
+			glLineWidth(4.0f);
+		else
+			glLineWidth(2.0f);
+		Drawing::drawLine(bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
+
+		// Bottom
+		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_B || edit_state == ESTATE_SIZE_BL || edit_state == ESTATE_SIZE_BR)
+			glLineWidth(4.0f);
+		else
+			glLineWidth(2.0f);
+		Drawing::drawLine(bbox.min.x, bbox.min.y, bbox.max.x, bbox.min.y);
+
+		// Right
+		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_R || edit_state == ESTATE_SIZE_TR || edit_state == ESTATE_SIZE_BR)
+			glLineWidth(4.0f);
+		else
+			glLineWidth(2.0f);
+		Drawing::drawLine(bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
+
+		// Top
+		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_T || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_TR)
+			glLineWidth(4.0f);
+		else
+			glLineWidth(2.0f);
+		Drawing::drawLine(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y);
+	}
 
 	// Draw sectorbuilder test stuff
 	//sbuilder.drawResult();
@@ -1509,6 +1555,91 @@ void MapCanvas::lockMouse(bool lock)
 	}
 }
 
+void MapCanvas::determineObjectEditState()
+{
+	// Get object edit bbox
+	bbox_t bbox = editor->getObjectEditGroup()->getBBox();
+	int bbox_pad = 8;
+	int left = screenX(bbox.min.x) - bbox_pad;
+	int right = screenX(bbox.max.x) + bbox_pad;
+	int top = screenY(bbox.max.y) - bbox_pad;
+	int bottom = screenY(bbox.min.y) + bbox_pad;
+
+	// Check mouse position relative to bbox
+	if (mouse_pos.x < left || mouse_pos.x > right || mouse_pos.y < top || mouse_pos.y > bottom)
+	{
+		// Outside bbox
+		this->SetCursor(wxNullCursor);
+		edit_state = ESTATE_NONE;
+	}
+	else
+	{
+		// Inside bbox
+		if (mouse_pos.x < left + bbox_pad && bbox.width() > 0)
+		{
+			// Left side
+			if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
+			{
+				// Top left
+				this->SetCursor(wxCursor(wxCURSOR_SIZENWSE));
+				edit_state = ESTATE_SIZE_TL;
+			}
+			else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
+			{
+				// Bottom left
+				this->SetCursor(wxCursor(wxCURSOR_SIZENESW));
+				edit_state = ESTATE_SIZE_BL;
+			}
+			else
+			{
+				// Left
+				this->SetCursor(wxCursor(wxCURSOR_SIZEWE));
+				edit_state = ESTATE_SIZE_L;
+			}
+		}
+		else if (mouse_pos.x > right - bbox_pad && bbox.width() > 0)
+		{
+			// Right side
+			if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
+			{
+				// Top right
+				this->SetCursor(wxCursor(wxCURSOR_SIZENESW));
+				edit_state = ESTATE_SIZE_TR;
+			}
+			else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
+			{
+				// Bottom right
+				this->SetCursor(wxCursor(wxCURSOR_SIZENWSE));
+				edit_state = ESTATE_SIZE_BR;
+			}
+			else
+			{
+				// Right
+				this->SetCursor(wxCursor(wxCURSOR_SIZEWE));
+				edit_state = ESTATE_SIZE_R;
+			}
+		}
+		else if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
+		{
+			// Top
+			this->SetCursor(wxCursor(wxCURSOR_SIZENS));
+			edit_state = ESTATE_SIZE_T;
+		}
+		else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
+		{
+			// Bottom
+			this->SetCursor(wxCursor(wxCURSOR_SIZENS));
+			edit_state = ESTATE_SIZE_B;
+		}
+		else
+		{
+			// Middle
+			this->SetCursor(wxCursor(wxCURSOR_SIZING));
+			edit_state = ESTATE_MOVE;
+		}
+	}
+}
+
 void MapCanvas::itemSelected(int index, bool selected)
 {
 	// Things mode
@@ -1998,8 +2129,11 @@ void MapCanvas::onKeyBindPress(string name)
 #endif
 
 	// Send to editor first
-	if (editor->handleKeyBind(name, mouse_pos_m))
-		return;
+	if (mouse_state == MSTATE_NORMAL)
+	{
+		if (editor->handleKeyBind(name, mouse_pos_m))
+			return;
+	}
 
 	// Handle keybinds depending on mode
 	if (editor->editMode() == MapEditor::MODE_3D)
@@ -2167,6 +2301,28 @@ void MapCanvas::keyBinds2d(string name)
 		}
 	}
 
+	// --- Object Edit ---
+	else if (mouse_state == MSTATE_EDIT)
+	{
+		// Accept edit
+		if (name == "map_edit_accept")
+		{
+			editor->endObjectEdit(true);
+			mouse_state = MSTATE_NORMAL;
+			renderer_2d->forceUpdate();
+			this->SetCursor(wxNullCursor);
+		}
+
+		// Cancel edit
+		else if (name == "map_edit_cancel" || name == "me2d_begin_object_edit")
+		{
+			editor->endObjectEdit(false);
+			mouse_state = MSTATE_NORMAL;
+			renderer_2d->forceUpdate();
+			this->SetCursor(wxNullCursor);
+		}
+	}
+
 	// --- Normal mouse state ---
 	else if (mouse_state == MSTATE_NORMAL)
 	{
@@ -2218,6 +2374,16 @@ void MapCanvas::keyBinds2d(string name)
 			if (editor->beginMove(mouse_pos_m))
 			{
 				mouse_state = MSTATE_MOVE;
+				renderer_2d->forceUpdate();
+			}
+		}
+
+		// Edit items
+		else if (name == "me2d_begin_object_edit")
+		{
+			if (editor->beginObjectEdit())
+			{
+				mouse_state = MSTATE_EDIT;
 				renderer_2d->forceUpdate();
 			}
 		}
@@ -3062,6 +3228,10 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 			// Begin selection box fade animation
 			animations.push_back(new MCASelboxFader(theApp->runTimer(), mouse_downpos_m, mouse_pos_m));
 		}
+
+		// If we're in object edit mode
+		if (mouse_state == MSTATE_EDIT)
+			editor->getObjectEditGroup()->resetPositions();
 	}
 
 	// Right button
@@ -3177,6 +3347,39 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 	// Update mouse variables
 	mouse_pos.set(e.GetX(), e.GetY());
 	mouse_pos_m.set(translateX(e.GetX()), translateY(e.GetY()));
+
+	// Object edit
+	if (mouse_state == MSTATE_EDIT)
+	{
+		// Do dragging if left mouse is down
+		if (e.LeftIsDown() && edit_state != ESTATE_NONE)
+		{
+			// Get dragged offsets (grid snapped)
+			double xoff = editor->snapToGrid(mouse_pos_m.x - mouse_downpos_m.x);
+			double yoff = editor->snapToGrid(mouse_pos_m.y - mouse_downpos_m.y);
+
+			if (edit_state == ESTATE_MOVE)
+			{
+				// Move objects
+				editor->getObjectEditGroup()->doMove(xoff, yoff);
+			}
+			else
+			{
+				// Scale objects
+				editor->getObjectEditGroup()->doScale(xoff, yoff,
+					(edit_state == ESTATE_SIZE_L || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_BL),	// Left?
+					(edit_state == ESTATE_SIZE_T || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_TR),	// Top?
+					(edit_state == ESTATE_SIZE_R || edit_state == ESTATE_SIZE_TR || edit_state == ESTATE_SIZE_BR),	// Right?
+					(edit_state == ESTATE_SIZE_B || edit_state == ESTATE_SIZE_BL || edit_state == ESTATE_SIZE_BR));	// Bottom?
+			}
+		}
+		else
+		{
+			determineObjectEditState();
+		}
+
+		return;
+	}
 
 	// Check if we want to start a selection box
 	if (mouse_selbegin && fpoint2_t(mouse_pos.x - mouse_downpos.x, mouse_pos.y - mouse_downpos.y).magnitude() > 16)
