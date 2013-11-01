@@ -52,6 +52,17 @@ private:
 		DSTATE_LINE = 0,
 		DSTATE_SHAPE_ORIGIN,
 		DSTATE_SHAPE_EDGE,
+
+		ESTATE_NONE = 0,
+		ESTATE_MOVE,
+		ESTATE_SIZE_L,
+		ESTATE_SIZE_R,
+		ESTATE_SIZE_T,
+		ESTATE_SIZE_B,
+		ESTATE_SIZE_TL,
+		ESTATE_SIZE_BL,
+		ESTATE_SIZE_TR,
+		ESTATE_SIZE_BR,
 	};
 	point2_t	mouse_pos;			// 'Raw' mouse position
 	point2_t	mouse_downpos;
@@ -64,6 +75,7 @@ private:
 	int			draw_state;
 	bool		mouse_locked;
 	bool		mouse_warp;
+	int			edit_state;
 
 	// Info overlays
 	int					last_hilight;
@@ -136,6 +148,7 @@ public:
 	// Mouse
 	void	mouseToCenter();
 	void	lockMouse(bool lock);
+	void	determineObjectEditState();
 
 	void	itemSelected(int index, bool selected = true);
 	void	itemsSelected(vector<int>& items, bool selected = true);

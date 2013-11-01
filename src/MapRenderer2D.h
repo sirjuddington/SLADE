@@ -6,6 +6,7 @@
 
 class ThingType;
 class GLTexture;
+class ObjectEditGroup;
 class MapRenderer2D
 {
 private:
@@ -116,6 +117,9 @@ public:
 
 	// Paste
 	void	renderPasteThings(vector<MapThing*>& things, fpoint2_t pos);
+
+	// Object Edit
+	void	renderObjectEditGroup(ObjectEditGroup* group);
 
 
 	// VBOs

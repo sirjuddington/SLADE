@@ -721,6 +721,16 @@ struct bbox_t
 	{
 		return fpoint2_t(max.x - min.x, max.y - min.y);
 	}
+
+	double width()
+	{
+		return max.x - min.x;
+	}
+
+	double height()
+	{
+		return max.y - min.y;
+	}
 };
 
 

@@ -2610,6 +2610,87 @@ void MapEditor::endLineDraw(bool apply)
 
 #pragma endregion
 
+#pragma region OBJECT EDIT
+
+bool MapEditor::beginObjectEdit()
+{
+	vector<MapObject*> edit_objects;
+
+	// Things mode
+	if (edit_mode == MODE_THINGS)
+	{
+		// Get selected things
+		getSelectedObjects(edit_objects);
+
+		// Setup object group
+		edit_object_group.clear();
+		for (unsigned a = 0; a < edit_objects.size(); a++)
+			edit_object_group.addThing((MapThing*)edit_objects[a]);
+
+		// Filter objects
+		edit_object_group.filterObjects(true);
+	}
+	else
+	{
+		// Vertices mode
+		if (edit_mode == MODE_VERTICES)
+		{
+			// Get selected vertices
+			getSelectedObjects(edit_objects);
+		}
+
+		// Lines mode
+		else if (edit_mode == MODE_LINES)
+		{
+			// Get vertices of selected lines
+			for (unsigned a = 0; a < selection.size(); a++)
+			{
+				MapLine* l = map.getLine(selection[a]);
+				VECTOR_ADD_UNIQUE(edit_objects, l->v1());
+				VECTOR_ADD_UNIQUE(edit_objects, l->v2());
+			}
+		}
+
+		// Sectors mode
+		else if (edit_mode == MODE_SECTORS)
+		{
+			// Get vertices of selected sectors
+			for (unsigned a = 0; a < selection.size(); a++)
+			{
+				MapSector* s = map.getSector(selection[a]);
+				s->getVertices(edit_objects);
+			}
+		}
+
+		// Setup object group
+		edit_object_group.clear();
+		for (unsigned a = 0; a < edit_objects.size(); a++)
+			edit_object_group.addVertex((MapVertex*)edit_objects[a]);
+		edit_object_group.addConnectedLines();
+
+		// Filter objects
+		edit_object_group.filterObjects(true);
+	}
+
+	return true;
+}
+
+void MapEditor::endObjectEdit(bool accept)
+{
+	// Apply change if accepted
+	if (accept)
+	{
+		beginUndoRecord("Object Edit", true, false, false);
+		edit_object_group.applyEdit();
+		endUndoRecord();
+	}
+
+	// Un-filter objects
+	edit_object_group.filterObjects(false);
+}
+
+#pragma endregion
+
 #pragma region COPY / PASTE
 
 void MapEditor::copyProperties(MapObject* object)
