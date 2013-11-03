@@ -3354,9 +3354,16 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 		// Do dragging if left mouse is down
 		if (e.LeftIsDown() && edit_state != ESTATE_NONE)
 		{
-			// Get dragged offsets (grid snapped)
-			double xoff = editor->snapToGrid(mouse_pos_m.x - mouse_downpos_m.x);
-			double yoff = editor->snapToGrid(mouse_pos_m.y - mouse_downpos_m.y);
+			// Get dragged offsets
+			double xoff = mouse_pos_m.x - mouse_downpos_m.x;
+			double yoff = mouse_pos_m.y - mouse_downpos_m.y;
+
+			// Snap to grid if shift not held down
+			if (!e.ShiftDown())
+			{
+				xoff = editor->snapToGrid(xoff);
+				yoff = editor->snapToGrid(yoff);
+			}
 
 			if (edit_state == ESTATE_MOVE)
 			{
