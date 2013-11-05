@@ -2643,11 +2643,12 @@ bool MapEditor::beginObjectEdit()
 		else if (edit_mode == MODE_LINES)
 		{
 			// Get vertices of selected lines
-			for (unsigned a = 0; a < selection.size(); a++)
+			vector<MapLine*> lines;
+			getSelectedLines(lines);
+			for (unsigned a = 0; a < lines.size(); a++)
 			{
-				MapLine* l = map.getLine(selection[a]);
-				VECTOR_ADD_UNIQUE(edit_objects, l->v1());
-				VECTOR_ADD_UNIQUE(edit_objects, l->v2());
+				VECTOR_ADD_UNIQUE(edit_objects, lines[a]->v1());
+				VECTOR_ADD_UNIQUE(edit_objects, lines[a]->v2());
 			}
 		}
 
@@ -2655,11 +2656,10 @@ bool MapEditor::beginObjectEdit()
 		else if (edit_mode == MODE_SECTORS)
 		{
 			// Get vertices of selected sectors
-			for (unsigned a = 0; a < selection.size(); a++)
-			{
-				MapSector* s = map.getSector(selection[a]);
-				s->getVertices(edit_objects);
-			}
+			vector<MapSector*> sectors;
+			getSelectedSectors(sectors);
+			for (unsigned a = 0; a < sectors.size(); a++)
+				sectors[a]->getVertices(edit_objects);
 		}
 
 		// Setup object group
