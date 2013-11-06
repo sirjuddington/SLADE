@@ -95,16 +95,6 @@ void TextureEditorPanel::setupLayout()
 
 	hbox->AddStretchSpacer();
 
-	// Offset view type menu
-	string otypes[] = { "None", "Sprite", "HUD" };
-	choice_viewtype = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, otypes);
-	label_viewtype = new wxStaticText(this, -1, "Offset Type:");
-	hbox->Add(label_viewtype, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(choice_viewtype, 0, wxEXPAND|wxRIGHT, 8);
-	choice_viewtype->SetSelection(0);
-	choice_viewtype->Show(false); // Only show this on ZTextureEditorPanel
-	label_viewtype->Show(false);
-
 	// 'Apply Scale' checkbox
 	cb_tex_scale = new wxCheckBox(this, -1, "Apply Scale");
 	cb_tex_scale->SetValue(false);
@@ -115,12 +105,6 @@ void TextureEditorPanel::setupLayout()
 	cb_tex_arc->SetValue(tx_arc);
 	hbox->Add(cb_tex_arc, 0, wxEXPAND|wxRIGHT, 4);
 
-	// 'Truecolour Preview' checkbox
-	cb_blend_rgba = new wxCheckBox(this, -1, "Truecolour Preview");
-	cb_blend_rgba->SetValue(false);
-	hbox->Add(cb_blend_rgba, 0, wxEXPAND|wxRIGHT, 4);
-	cb_blend_rgba->Show(false);	// Only show this on ZTextureEditorPanel
-
 	// 'Show Outside' checkbox
 	cb_draw_outside = new wxCheckBox(this, -1, "Show Outside");
 	cb_draw_outside->SetValue(true);
@@ -130,6 +114,28 @@ void TextureEditorPanel::setupLayout()
 	tex_canvas = new CTextureCanvas(this, -1);
 	tex_canvas->setViewType(0);
 	vbox->Add(tex_canvas, 1, wxEXPAND|wxALL, 4);
+
+	// Add extra view controls
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	vbox->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 4);
+
+	// Offset view type menu
+	string otypes[] = { "None", "Sprite", "HUD" };
+	choice_viewtype = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, otypes);
+	label_viewtype = new wxStaticText(this, -1, "Offset Type:");
+	hbox->Add(label_viewtype, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+	hbox->Add(choice_viewtype, 0, wxEXPAND | wxRIGHT, 8);
+	choice_viewtype->SetSelection(0);
+	choice_viewtype->Show(false); // Only show this on ZTextureEditorPanel
+	label_viewtype->Show(false);
+
+	hbox->AddStretchSpacer();
+
+	// 'Truecolour Preview' checkbox
+	cb_blend_rgba = new wxCheckBox(this, -1, "Truecolour Preview");
+	cb_blend_rgba->SetValue(false);
+	hbox->Add(cb_blend_rgba, 0, wxEXPAND);
+	cb_blend_rgba->Show(false);	// Only show this on ZTextureEditorPanel
 
 	// Add texture controls
 	vbox->Add(createTextureControls(this), 0, wxEXPAND);

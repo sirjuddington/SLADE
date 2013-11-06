@@ -43,6 +43,7 @@ private:
 	wxButton*			btn_move_up;
 	wxButton*			btn_move_down;
 	wxStaticText*		label_tx_format;
+	wxButton*			btn_save;
 
 public:
 	TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor);
@@ -89,6 +90,7 @@ public:
 	void	onBtnCopy(wxCommandEvent& e);
 	void	onBtnPaste(wxCommandEvent& e);
 	void	onShow(wxShowEvent& e);
+	void	onBtnSave(wxCommandEvent& e);
 };
 
 #endif//__TEXTUREX_PANEL_H__

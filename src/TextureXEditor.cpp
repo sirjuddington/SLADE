@@ -203,17 +203,17 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	tabs->SetArtProvider(new clAuiTabArt());
 	sizer->Add(tabs, 1, wxEXPAND|wxALL, 4);
 
-	// Bottom bar
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
+	//// Bottom bar
+	//wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	//sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 
-	// Add save changes button
-	btn_save = new wxButton(this, -1, "Save Changes");
-	hbox->AddStretchSpacer();
-	hbox->Add(btn_save, 0, wxEXPAND|wxALL, 4);
+	//// Add save changes button
+	//btn_save = new wxButton(this, -1, "Save Changes");
+	//hbox->AddStretchSpacer();
+	//hbox->Add(btn_save, 0, wxEXPAND|wxALL, 4);
 
 	// Bind events
-	btn_save->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXEditor::onSaveClicked, this);
+	//btn_save->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXEditor::onSaveClicked, this);
 	Bind(wxEVT_SHOW, &TextureXEditor::onShow, this);
 
 	// Palette chooser
