@@ -769,14 +769,10 @@ bool Archive::save(string filename)
 			// Create backup
 			if (wxFileName::FileExists(this->filename))
 			{
-				string bakfile = this->filename + ".bak";
-
-				// Remove old backup file
-				wxRemoveFile(bakfile);
-
 				// Copy current file contents to new backup file
+				string bakfile = this->filename + ".bak";
 				wxLogMessage("Creating backup %s", bakfile.c_str());
-				wxCopyFile(this->filename, bakfile);
+				wxCopyFile(this->filename, bakfile, true);
 			}
 
 			// Write it to the file
