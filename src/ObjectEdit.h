@@ -2,6 +2,9 @@
 #ifndef __OBJECT_EDIT_H__
 #define __OBJECT_EDIT_H__
 
+class MapVertex;
+class MapLine;
+class MapThing;
 class ObjectEditGroup
 {
 public:
@@ -51,14 +54,16 @@ public:
 	// Modification
 	void	doMove(double xoff, double yoff);
 	void	doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom);
+	void	doAll(double xoff, double yoff, double xscale, double yscale, double rotation);
 	void	applyEdit();
 
 private:
 	vector<vertex_t>	vertices;
 	vector<line_t>		lines;
 	vector<thing_t>		things;
-	bbox_t				bbox;
-	bbox_t				old_bbox;
+	bbox_t				bbox;			// Current
+	bbox_t				old_bbox;		// Before drag operation
+	bbox_t				original_bbox;	// From first init
 	double				xoff_prev;
 	double				yoff_prev;
 };

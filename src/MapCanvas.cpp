@@ -53,6 +53,7 @@
 #include "SectorSpecialDialog.h"
 #include "UndoRedo.h"
 #include "QuickTextureOverlay3d.h"
+#include "ObjectEditPanel.h"
 
 
 /*******************************************************************
@@ -3324,7 +3325,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 			double xrel = e.GetX() - int(GetSize().x * 0.5);
 			double yrel = e.GetY() - int(GetSize().y * 0.5);
 
-			renderer_3d->cameraTurn(xrel*0.1);
+			renderer_3d->cameraTurn(-xrel*0.1);
 			renderer_3d->cameraPitch(-yrel*0.003);
 
 			mouseToCenter();
@@ -3369,6 +3370,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 			{
 				// Move objects
 				editor->getObjectEditGroup()->doMove(xoff, yoff);
+				theMapEditor->objectEditPanel()->update(editor->getObjectEditGroup());
 			}
 			else
 			{
@@ -3378,6 +3380,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 					(edit_state == ESTATE_SIZE_T || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_TR),	// Top?
 					(edit_state == ESTATE_SIZE_R || edit_state == ESTATE_SIZE_TR || edit_state == ESTATE_SIZE_BR),	// Right?
 					(edit_state == ESTATE_SIZE_B || edit_state == ESTATE_SIZE_BL || edit_state == ESTATE_SIZE_BR));	// Bottom?
+				theMapEditor->objectEditPanel()->update(editor->getObjectEditGroup());
 			}
 		}
 		else

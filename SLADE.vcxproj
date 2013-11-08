@@ -295,6 +295,7 @@
     <ClCompile Include="src\NodeBuilders.cpp" />
     <ClCompile Include="src\NodesPrefsPanel.cpp" />
     <ClCompile Include="src\ObjectEdit.cpp" />
+    <ClCompile Include="src\ObjectEditPanel.cpp" />
     <ClCompile Include="src\PakArchive.cpp" />
     <ClCompile Include="src\PaletteDialog.cpp" />
     <ClCompile Include="src\Clipboard.cpp" />
@@ -569,6 +570,7 @@
     <ClInclude Include="src\NodeBuilders.h" />
     <ClInclude Include="src\NodesPrefsPanel.h" />
     <ClInclude Include="src\ObjectEdit.h" />
+    <ClInclude Include="src\ObjectEditPanel.h" />
     <ClInclude Include="src\PakArchive.h" />
     <ClInclude Include="src\PaletteDialog.h" />
     <ClInclude Include="src\Clipboard.h" />

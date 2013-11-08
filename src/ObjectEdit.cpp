@@ -2,6 +2,7 @@
 #include "Main.h"
 #include "SLADEMap.h"
 #include "ObjectEdit.h"
+#include "MathStuff.h"
 
 ObjectEditGroup::ObjectEditGroup()
 {
@@ -27,6 +28,7 @@ void ObjectEditGroup::addVertex(MapVertex* vertex, bool ignored)
 	{
 		bbox.extend(v.position.x, v.position.y);
 		old_bbox.extend(v.position.x, v.position.y);
+		original_bbox.extend(v.position.x, v.position.y);
 	}
 }
 
@@ -79,6 +81,7 @@ void ObjectEditGroup::addThing(MapThing* thing)
 	// Update bbox
 	bbox.extend(t.position.x, t.position.y);
 	old_bbox.extend(t.position.x, t.position.y);
+	original_bbox.extend(t.position.x, t.position.y);
 }
 
 bool ObjectEditGroup::hasLine(MapLine* line)
@@ -110,6 +113,7 @@ void ObjectEditGroup::clear()
 	things.clear();
 	bbox.reset();
 	old_bbox.reset();
+	original_bbox.reset();
 	xoff_prev = yoff_prev = 0;
 }
 
@@ -277,6 +281,71 @@ void ObjectEditGroup::doScale(double xoff, double yoff, bool left, bool top, boo
 
 	xoff_prev = xoff;
 	yoff_prev = yoff;
+}
+
+void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double yscale, double rotation)
+{
+	// Update bbox
+	bbox = original_bbox;
+	bbox.max.x = original_bbox.min.x + (original_bbox.width() * xscale);
+	bbox.max.y = original_bbox.min.y + (original_bbox.height() * yscale);
+	bbox.min.x += xoff;
+	bbox.max.x += xoff;
+	bbox.min.y += yoff;
+	bbox.max.y += yoff;
+	old_bbox = bbox;
+	fpoint2_t bbox_midpoint(bbox.min.x + (bbox.width() * 0.5), bbox.min.y + (bbox.height() * 0.5));
+
+	// Update vertices
+	for (unsigned a = 0; a < vertices.size(); a++)
+	{
+		// Skip ignored
+		if (vertices[a].ignored)
+			continue;
+
+		// Scale
+		vertices[a].position.x = original_bbox.min.x + ((vertices[a].map_vertex->xPos() - original_bbox.min.x) * xscale);
+		vertices[a].position.y = original_bbox.min.y + ((vertices[a].map_vertex->yPos() - original_bbox.min.y) * yscale);
+
+		// Move
+		vertices[a].position.x += xoff;
+		vertices[a].position.y += yoff;
+
+		// Rotate
+		if (rotation != 0)
+			vertices[a].position = MathStuff::rotatePoint(bbox_midpoint, vertices[a].position, -rotation);
+
+		vertices[a].old_position = vertices[a].position;
+	}
+
+	// Update things
+	for (unsigned a = 0; a < things.size(); a++)
+	{
+		// Scale
+		things[a].position.x = original_bbox.min.x + ((things[a].map_thing->xPos() - original_bbox.min.x) * xscale);
+		things[a].position.y = original_bbox.min.y + ((things[a].map_thing->yPos() - original_bbox.min.y) * yscale);
+
+		// Move
+		things[a].position.x += xoff;
+		things[a].position.y += yoff;
+
+		// Rotate
+		if (rotation != 0)
+			things[a].position = MathStuff::rotatePoint(bbox_midpoint, things[a].position, -rotation);
+
+		things[a].old_position = things[a].position;
+	}
+
+	// Update bbox again for rotation if needed
+	if (rotation != 0)
+	{
+		bbox.reset();
+		for (unsigned a = 0; a < vertices.size(); a++)
+			bbox.extend(vertices[a].position.x, vertices[a].position.y);
+		for (unsigned a = 0; a < things.size(); a++)
+			bbox.extend(things[a].position.x, things[a].position.y);
+		old_bbox = bbox;
+	}
 }
 
 void ObjectEditGroup::applyEdit()

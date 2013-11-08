@@ -12,6 +12,8 @@ class MapObject;
 class MapObjectPropsPanel;
 class SToolBar;
 class ScriptEditorPanel;
+class ObjectEditPanel;
+class ObjectEditGroup;
 class MapEditorWindow : public STopWindow, public SActionHandler
 {
 private:
@@ -21,6 +23,7 @@ private:
 	MapObjectPropsPanel*	panel_obj_props;
 	ScriptEditorPanel*		panel_script_editor;
 	Archive::mapdesc_t		mdesc_current;
+	ObjectEditPanel*		panel_obj_edit;
 
 	// Singleton instance
 	static MapEditorWindow*		instance;
@@ -59,6 +62,10 @@ public:
 	void	refreshToolBar();
 
 	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
+	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }
+	
+	void	showObjectEditPanel(ObjectEditGroup* group);
+	void	hideObjectEditPanel();
 
 	// SAction handler
 	bool	handleAction(string id);

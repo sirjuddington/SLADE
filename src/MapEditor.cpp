@@ -2672,6 +2672,8 @@ bool MapEditor::beginObjectEdit()
 		edit_object_group.filterObjects(true);
 	}
 
+	theMapEditor->showObjectEditPanel(&edit_object_group);
+
 	return true;
 }
 
@@ -2687,6 +2689,8 @@ void MapEditor::endObjectEdit(bool accept)
 
 	// Un-filter objects
 	edit_object_group.filterObjects(false);
+
+	theMapEditor->hideObjectEditPanel();
 }
 
 #pragma endregion

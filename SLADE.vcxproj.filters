@@ -1086,6 +1086,9 @@
     <ClCompile Include="src\ObjectEdit.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\ObjectEditPanel.cpp">
+      <Filter>Map Editor\UI Elements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -1946,6 +1949,9 @@
     </ClInclude>
     <ClInclude Include="src\ObjectEdit.h">
       <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ObjectEditPanel.h">
+      <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

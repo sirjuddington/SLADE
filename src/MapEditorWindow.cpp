@@ -43,6 +43,7 @@
 #include "NodeBuilders.h"
 #include "ShapeDrawPanel.h"
 #include "ScriptEditorPanel.h"
+#include "ObjectEditPanel.h"
 #include <wx/aui/aui.h>
 
 
@@ -314,6 +315,28 @@ void MapEditorWindow::setupLayout()
 	p_inf.Caption("Script Editor");
 	p_inf.Name("script_editor");
 	m_mgr->AddPane(panel_script_editor, p_inf);
+
+
+	// --- Object Edit Panel ---
+	panel_obj_edit = new ObjectEditPanel(this);
+
+	// Setup panel info & add panel
+	msize = panel_obj_edit->GetBestSize();
+	p_inf.DefaultPane();
+	p_inf.Bottom();
+	p_inf.Dock();
+	p_inf.CloseButton(false);
+	p_inf.CaptionVisible(false);
+	p_inf.Resizable(false);
+	p_inf.Layer(2);
+	p_inf.BestSize(msize.x, msize.y);
+	p_inf.FloatingSize(msize.x, msize.y);
+	p_inf.FloatingPosition(140, 140);
+	p_inf.MinSize(msize.x, msize.y);
+	p_inf.Show(false);
+	p_inf.Caption("Object Edit");
+	p_inf.Name("object_edit");
+	m_mgr->AddPane(panel_obj_edit, p_inf);
 
 
 	// Load previously saved window layout
@@ -644,6 +667,31 @@ void MapEditorWindow::forceRefresh(bool renderer)
 void MapEditorWindow::refreshToolBar()
 {
 	toolbar->Refresh();
+}
+
+void MapEditorWindow::showObjectEditPanel(ObjectEditGroup* group)
+{
+	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
+	wxAuiPaneInfo& p_inf = m_mgr->GetPane("object_edit");
+
+	panel_obj_edit->init(group);
+	p_inf.Show(true);
+	map_canvas->SetFocus();
+
+	//p_inf.MinSize(200, 128);
+	m_mgr->Update();
+}
+
+void MapEditorWindow::hideObjectEditPanel()
+{
+	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
+	wxAuiPaneInfo& p_inf = m_mgr->GetPane("object_edit");
+
+	p_inf.Show(false);
+	map_canvas->SetFocus();
+
+	//p_inf.MinSize(200, 128);
+	m_mgr->Update();
 }
 
 /* MapEditorWindow::handleAction
