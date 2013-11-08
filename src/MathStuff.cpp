@@ -115,6 +115,10 @@ double MathStuff::lineSide(double x, double y, double x1, double y1, double x2, 
 	return -((y-y1)*(x2-x1) - (x-x1)*(y2-y1));
 }
 
+/* MathStuff::closestPointOnLine
+ * Returns the closest point to [x,y] along the line from [x1,y1] to
+ * [x2,y2]
+ *******************************************************************/
 fpoint2_t MathStuff::closestPointOnLine(double x, double y, double x1, double y1, double x2, double y2)
 {
 	// Get line length
@@ -241,6 +245,10 @@ bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y
 	return false;
 }
 
+/* MathStuff::distanceRayLine
+ * Returns the distance between the ray [r1 -> r2] and the line
+ * segment [x1,y1]-[x2,y2]
+ *******************************************************************/
 double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, double x1, double y1, double x2, double y2)
 {
 	// Calculate the intersection distance from the ray
@@ -255,21 +263,11 @@ double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, double x1, double 
 	if((u_ray >= 0)/* && (u_ray <= 1024) */&& (u_line >= 0) && (u_line <= 1)) return u_ray; else return -1;
 }
 
+/* MathStuff::angle2DRad
+ * Returns the angle between the 2d points [p1], [p2] and [p3]
+ *******************************************************************/
 double MathStuff::angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3)
 {
-	/*
-	double dot = (p1.x - p2.x) * (p3.x - p2.x) + (p1.y - p2.y) * (p3.y - p2.y);
-	double cross = (p1.x - p2.x) * (p3.y - p2.y) - (p1.y - p2.y) * (p3.x - p2.x);
-
-	if (dot == 0 && cross == 0)
-		return 0;
-	else {
-		double angle = atan2(dot, cross);
-		//if (angle < 0) angle += (2*PI);
-		return angle*rad2deg;
-	}
-	*/
-
 	// From: http://stackoverflow.com/questions/3486172/angle-between-3-points
 	// modified not to bother converting to degrees
 	fpoint2_t ab(p2.x - p1.x, p2.y - p1.y);
@@ -317,6 +315,10 @@ double MathStuff::angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3)
 	return rs;
 }
 
+/* MathStuff::rotatePoint
+ * Rotates [point] around [origin] by [angle] and returns the newly
+ * rotated point
+ *******************************************************************/
 fpoint2_t MathStuff::rotatePoint(fpoint2_t origin, fpoint2_t point, double angle)
 {
 	// Translate to origin
@@ -324,16 +326,19 @@ fpoint2_t MathStuff::rotatePoint(fpoint2_t origin, fpoint2_t point, double angle
 	double y = point.y - origin.y;
 
 	// Maths yay
-	double rot = (PI * 2.0) * ((360.0 - angle) / 360.0);
-	double srot = sin(rot);
-	double crot = cos(rot);
-	x = crot * x - srot * y;
-	y = srot * x + crot * y;
+	double srot = sin(angle * deg2rad);
+	double crot = cos(angle * deg2rad);
+	double nx = crot * x - srot * y;
+	double ny = srot * x + crot * y;
 
 	// Return rotated point
-	return fpoint2_t(x + origin.x, y + origin.y);
+	return fpoint2_t(nx + origin.x, ny + origin.y);
 }
 
+/* MathStuff::distanceRayLine
+ * Rotates [vector] around [axis] by [angle] and returns the
+ * resulting rotated vector
+ *******************************************************************/
 fpoint3_t MathStuff::rotateVector3D(fpoint3_t vector, fpoint3_t axis, double angle)
 {
 	fpoint3_t rvec;
@@ -360,21 +365,33 @@ fpoint3_t MathStuff::rotateVector3D(fpoint3_t vector, fpoint3_t axis, double ang
 	return rvec;
 }
 
+/* MathStuff::degToRad
+ * Converts [angle] from degrees to radians
+ *******************************************************************/
 double MathStuff::degToRad(double angle)
 {
-	return (angle * PI) / 180;
+	return angle * deg2rad;
 }
 
+/* MathStuff::radtoDeg
+ * Converts [angle] from radians to degrees
+ *******************************************************************/
 double MathStuff::radToDeg(double angle)
 {
 	return angle * rad2deg;
 }
 
+/* MathStuff::vectorAngle
+ * Converts [angle] from degrees to radians
+ *******************************************************************/
 fpoint2_t MathStuff::vectorAngle(double angle_rad)
 {
 	return fpoint2_t(cos(-angle_rad), -sin(-angle_rad));
 }
 
+/* MathStuff::distanceRayPlane
+ * Returns the distance along the ray [r_o -> r_v] to [plane]
+ *******************************************************************/
 double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane)
 {
 	fpoint3_t p_normal = plane.normal();
