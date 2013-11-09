@@ -115,6 +115,7 @@ void ObjectEditGroup::clear()
 	old_bbox.reset();
 	original_bbox.reset();
 	xoff_prev = yoff_prev = 0;
+	rotation = 0;
 }
 
 void ObjectEditGroup::filterObjects(bool filter)
@@ -137,15 +138,24 @@ void ObjectEditGroup::filterObjects(bool filter)
 
 void ObjectEditGroup::resetPositions()
 {
+	bbox.reset();
+
 	// Vertices
 	for (unsigned a = 0; a < vertices.size(); a++)
+	{
 		vertices[a].old_position = vertices[a].position;
+		bbox.extend(vertices[a].position.x, vertices[a].position.y);
+	}
 
 	// Things
 	for (unsigned a = 0; a < things.size(); a++)
+	{
 		things[a].old_position = things[a].position;
+		bbox.extend(things[a].position.x, things[a].position.y);
+	}
 
 	old_bbox = bbox;
+	rotation = 0;
 }
 
 void ObjectEditGroup::getVerticesToDraw(vector<fpoint2_t>& list)
@@ -283,18 +293,52 @@ void ObjectEditGroup::doScale(double xoff, double yoff, bool left, bool top, boo
 	yoff_prev = yoff;
 }
 
+void ObjectEditGroup::doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45)
+{
+	// Get midpoint
+	fpoint2_t mid(old_bbox.min.x + old_bbox.width() * 0.5, old_bbox.min.y + old_bbox.height() * 0.5);
+
+	// Determine angle
+	double angle = MathStuff::angle2DRad(p1, mid, p2);
+	rotation = MathStuff::radToDeg(angle);
+
+	// Lock to 45 degree increments if needed
+	if (lock45)
+	{
+		rotation = ceil(rotation / 45.0 - 0.5) * 45.0;
+		if (rotation > 325 || rotation < 0)
+			rotation = 0;
+	}
+
+	// Rotate vertices
+	for (unsigned a = 0; a < vertices.size(); a++)
+		vertices[a].position = MathStuff::rotatePoint(mid, vertices[a].old_position, rotation);
+
+	// Rotate things
+	for (unsigned a = 0; a < things.size(); a++)
+		things[a].position = MathStuff::rotatePoint(mid, things[a].old_position, rotation);
+}
+
 void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double yscale, double rotation)
 {
 	// Update bbox
 	bbox = original_bbox;
-	bbox.max.x = original_bbox.min.x + (original_bbox.width() * xscale);
-	bbox.max.y = original_bbox.min.y + (original_bbox.height() * yscale);
+	
+	// Apply offsets
 	bbox.min.x += xoff;
 	bbox.max.x += xoff;
 	bbox.min.y += yoff;
 	bbox.max.y += yoff;
+
+	// Apply scale (from center)
+	double xgrow = (bbox.width() * xscale) - bbox.width();
+	double ygrow = (bbox.height() * yscale) - bbox.height();
+	bbox.min.x -= (xgrow * 0.5);
+	bbox.max.x += (xgrow * 0.5);
+	bbox.min.y -= (ygrow * 0.5);
+	bbox.max.y += (ygrow * 0.5);
 	old_bbox = bbox;
-	fpoint2_t bbox_midpoint(bbox.min.x + (bbox.width() * 0.5), bbox.min.y + (bbox.height() * 0.5));
+
 
 	// Update vertices
 	for (unsigned a = 0; a < vertices.size(); a++)
@@ -304,8 +348,8 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 			continue;
 
 		// Scale
-		vertices[a].position.x = original_bbox.min.x + ((vertices[a].map_vertex->xPos() - original_bbox.min.x) * xscale);
-		vertices[a].position.y = original_bbox.min.y + ((vertices[a].map_vertex->yPos() - original_bbox.min.y) * yscale);
+		vertices[a].position.x = original_bbox.mid_x() + ((vertices[a].map_vertex->xPos() - original_bbox.mid_x()) * xscale);
+		vertices[a].position.y = original_bbox.mid_y() + ((vertices[a].map_vertex->yPos() - original_bbox.mid_y()) * yscale);
 
 		// Move
 		vertices[a].position.x += xoff;
@@ -313,10 +357,11 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 
 		// Rotate
 		if (rotation != 0)
-			vertices[a].position = MathStuff::rotatePoint(bbox_midpoint, vertices[a].position, -rotation);
+			vertices[a].position = MathStuff::rotatePoint(bbox.mid(), vertices[a].position, rotation);
 
 		vertices[a].old_position = vertices[a].position;
 	}
+
 
 	// Update things
 	for (unsigned a = 0; a < things.size(); a++)
@@ -331,7 +376,7 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 
 		// Rotate
 		if (rotation != 0)
-			things[a].position = MathStuff::rotatePoint(bbox_midpoint, things[a].position, -rotation);
+			things[a].position = MathStuff::rotatePoint(bbox.mid(), things[a].position, rotation);
 
 		things[a].old_position = things[a].position;
 	}

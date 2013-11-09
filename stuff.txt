@@ -11,6 +11,7 @@ TODO List ---------------------------------------------------------------
 - Undo/redo only works in WADs (no effect on ZIP entries)
 - Editing raw vertex position in properties dialog doesn't update flats correctly
 - Can hilight floors/ceilings from the wrong side in 3d mode
+- Modifying map architecture doesn't afffect things in 3d mode (heights stay the same)
 
 
 --- Map Editor 3.1 ---
@@ -23,7 +24,6 @@ TODO List ---------------------------------------------------------------
 	- Intersecting lines
 	- Overlapping lines
 - Editing:
-	- Rotation during object edit (via dragging)
 	- Proper split/merge checks on paste lines / object edit
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)

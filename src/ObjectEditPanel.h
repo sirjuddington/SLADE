@@ -23,7 +23,7 @@ public:
 	~ObjectEditPanel();
 
 	void	init(ObjectEditGroup* group);
-	void	update(ObjectEditGroup* group);
+	void	update(ObjectEditGroup* group, bool lock_rotation = false);
 
 	void	onBtnApplyClicked(wxCommandEvent& e);
 };

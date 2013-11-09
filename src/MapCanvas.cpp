@@ -132,6 +132,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	mouse_locked = false;
 	mouse_warp = false;
 	edit_state = 0;
+	edit_rotate = false;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -681,6 +682,99 @@ void MapCanvas::drawPasteLines()
 	glEnd();
 }
 
+void MapCanvas::drawObjectEdit()
+{
+	ObjectEditGroup* group = editor->getObjectEditGroup();
+
+	// Map objects
+	renderer_2d->renderObjectEditGroup(group);
+
+	// Bounding box
+	COL_WHITE.set_gl();
+	rgba_t col = ColourConfiguration::getColour("map_object_edit");
+	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
+	bbox_t bbox = group->getBBox();
+	bbox.min.x -= 4 / view_scale_inter;
+	bbox.min.y -= 4 / view_scale_inter;
+	bbox.max.x += 4 / view_scale_inter;
+	bbox.max.y += 4 / view_scale_inter;
+
+	if (edit_rotate)
+	{
+		// Rotate
+
+		// Bbox
+		fpoint2_t mid(bbox.min.x + bbox.width() * 0.5, bbox.min.y + bbox.height() * 0.5);
+		fpoint2_t bl = MathStuff::rotatePoint(mid, bbox.min, group->getRotation());
+		fpoint2_t tl = MathStuff::rotatePoint(mid, fpoint2_t(bbox.min.x, bbox.max.y), group->getRotation());
+		fpoint2_t tr = MathStuff::rotatePoint(mid, bbox.max, group->getRotation());
+		fpoint2_t br = MathStuff::rotatePoint(mid, fpoint2_t(bbox.max.x, bbox.min.y), group->getRotation());
+		glLineWidth(2.0f);
+		Drawing::drawLine(tl, bl);
+		Drawing::drawLine(bl, br);
+		Drawing::drawLine(br, tr);
+		Drawing::drawLine(tr, tl);
+
+		// Top Left
+		double rad = 4 / view_scale_inter;
+		glLineWidth(1.0f);
+		if (edit_state == ESTATE_SIZE_TL)
+			Drawing::drawFilledRect(tl.x - rad, tl.y - rad, tl.x + rad, tl.y + rad);
+		else
+			Drawing::drawRect(tl.x - rad, tl.y - rad, tl.x + rad, tl.y + rad);
+
+		// Bottom Left
+		if (edit_state == ESTATE_SIZE_BL)
+			Drawing::drawFilledRect(bl.x - rad, bl.y - rad, bl.x + rad, bl.y + rad);
+		else
+			Drawing::drawRect(bl.x - rad, bl.y - rad, bl.x + rad, bl.y + rad);
+
+		// Top Right
+		if (edit_state == ESTATE_SIZE_TR)
+			Drawing::drawFilledRect(tr.x - rad, tr.y - rad, tr.x + rad, tr.y + rad);
+		else
+			Drawing::drawRect(tr.x - rad, tr.y - rad, tr.x + rad, tr.y + rad);
+
+		// Bottom Right
+		if (edit_state == ESTATE_SIZE_BR)
+			Drawing::drawFilledRect(br.x - rad, br.y - rad, br.x + rad, br.y + rad);
+		else
+			Drawing::drawRect(br.x - rad, br.y - rad, br.x + rad, br.y + rad);
+	}
+	else
+	{
+		// Move/scale
+
+		// Left
+		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_L || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_BL)
+			glLineWidth(4.0f);
+		else
+			glLineWidth(2.0f);
+		Drawing::drawLine(bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
+
+		// Bottom
+		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_B || edit_state == ESTATE_SIZE_BL || edit_state == ESTATE_SIZE_BR)
+			glLineWidth(4.0f);
+		else
+			glLineWidth(2.0f);
+		Drawing::drawLine(bbox.min.x, bbox.min.y, bbox.max.x, bbox.min.y);
+
+		// Right
+		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_R || edit_state == ESTATE_SIZE_TR || edit_state == ESTATE_SIZE_BR)
+			glLineWidth(4.0f);
+		else
+			glLineWidth(2.0f);
+		Drawing::drawLine(bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
+
+		// Top
+		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_T || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_TR)
+			glLineWidth(4.0f);
+		else
+			glLineWidth(2.0f);
+		Drawing::drawLine(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y);
+	}
+}
+
 /* MapCanvas::draw
  * Draw the 2d map
  *******************************************************************/
@@ -843,48 +937,7 @@ void MapCanvas::drawMap2d()
 
 	// Draw object edit objects if needed
 	if (mouse_state == MSTATE_EDIT)
-	{
-		// Map objects
-		renderer_2d->renderObjectEditGroup(editor->getObjectEditGroup());
-
-		// Bounding box
-		COL_WHITE.set_gl();
-		rgba_t col = ColourConfiguration::getColour("map_object_edit");
-		glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
-		bbox_t bbox = editor->getObjectEditGroup()->getBBox();
-		bbox.min.x -= 4 / view_scale_inter;
-		bbox.min.y -= 4 / view_scale_inter;
-		bbox.max.x += 4 / view_scale_inter;
-		bbox.max.y += 4 / view_scale_inter;
-
-		// Left
-		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_L || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_BL)
-			glLineWidth(4.0f);
-		else
-			glLineWidth(2.0f);
-		Drawing::drawLine(bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
-
-		// Bottom
-		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_B || edit_state == ESTATE_SIZE_BL || edit_state == ESTATE_SIZE_BR)
-			glLineWidth(4.0f);
-		else
-			glLineWidth(2.0f);
-		Drawing::drawLine(bbox.min.x, bbox.min.y, bbox.max.x, bbox.min.y);
-
-		// Right
-		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_R || edit_state == ESTATE_SIZE_TR || edit_state == ESTATE_SIZE_BR)
-			glLineWidth(4.0f);
-		else
-			glLineWidth(2.0f);
-		Drawing::drawLine(bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
-
-		// Top
-		if (edit_state == ESTATE_MOVE || edit_state == ESTATE_SIZE_T || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_TR)
-			glLineWidth(4.0f);
-		else
-			glLineWidth(2.0f);
-		Drawing::drawLine(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y);
-	}
+		drawObjectEdit();
 
 	// Draw sectorbuilder test stuff
 	//sbuilder.drawResult();
@@ -1565,6 +1618,7 @@ void MapCanvas::determineObjectEditState()
 	int right = screenX(bbox.max.x) + bbox_pad;
 	int top = screenY(bbox.max.y) - bbox_pad;
 	int bottom = screenY(bbox.min.y) + bbox_pad;
+	edit_rotate = ((modifiers_current & wxMOD_CONTROL) > 0);
 
 	// Check mouse position relative to bbox
 	if (mouse_pos.x < left || mouse_pos.x > right || mouse_pos.y < top || mouse_pos.y > bottom)
@@ -1582,16 +1636,16 @@ void MapCanvas::determineObjectEditState()
 			if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
 			{
 				// Top left
-				this->SetCursor(wxCursor(wxCURSOR_SIZENWSE));
+				this->SetCursor(wxCursor(edit_rotate ? wxCURSOR_CROSS : wxCURSOR_SIZENWSE));
 				edit_state = ESTATE_SIZE_TL;
 			}
 			else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
 			{
 				// Bottom left
-				this->SetCursor(wxCursor(wxCURSOR_SIZENESW));
+				this->SetCursor(wxCursor(edit_rotate ? wxCURSOR_CROSS : wxCURSOR_SIZENESW));
 				edit_state = ESTATE_SIZE_BL;
 			}
-			else
+			else if (!edit_rotate)
 			{
 				// Left
 				this->SetCursor(wxCursor(wxCURSOR_SIZEWE));
@@ -1604,29 +1658,29 @@ void MapCanvas::determineObjectEditState()
 			if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
 			{
 				// Top right
-				this->SetCursor(wxCursor(wxCURSOR_SIZENESW));
+				this->SetCursor(wxCursor(edit_rotate ? wxCURSOR_CROSS : wxCURSOR_SIZENESW));
 				edit_state = ESTATE_SIZE_TR;
 			}
 			else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
 			{
 				// Bottom right
-				this->SetCursor(wxCursor(wxCURSOR_SIZENWSE));
+				this->SetCursor(wxCursor(edit_rotate ? wxCURSOR_CROSS : wxCURSOR_SIZENWSE));
 				edit_state = ESTATE_SIZE_BR;
 			}
-			else
+			else if (!edit_rotate)
 			{
 				// Right
 				this->SetCursor(wxCursor(wxCURSOR_SIZEWE));
 				edit_state = ESTATE_SIZE_R;
 			}
 		}
-		else if (mouse_pos.y < top + bbox_pad && bbox.height() > 0)
+		else if (mouse_pos.y < top + bbox_pad && bbox.height() > 0 && !edit_rotate)
 		{
 			// Top
 			this->SetCursor(wxCursor(wxCURSOR_SIZENS));
 			edit_state = ESTATE_SIZE_T;
 		}
-		else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0)
+		else if (mouse_pos.y > bottom - bbox_pad && bbox.height() > 0 && !edit_rotate)
 		{
 			// Bottom
 			this->SetCursor(wxCursor(wxCURSOR_SIZENS));
@@ -1635,8 +1689,8 @@ void MapCanvas::determineObjectEditState()
 		else
 		{
 			// Middle
-			this->SetCursor(wxCursor(wxCURSOR_SIZING));
-			edit_state = ESTATE_MOVE;
+			this->SetCursor(edit_rotate ? wxNullCursor : wxCursor(wxCURSOR_SIZING));
+			edit_state = edit_rotate ? ESTATE_NONE : ESTATE_MOVE;
 		}
 	}
 }
@@ -3029,6 +3083,10 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		splitter.doSplitting(&temp);
 	}
 
+	// Update cursor in object edit mode
+	//if (mouse_state == MSTATE_EDIT)
+	//	determineObjectEditState();
+
 	e.Skip();
 }
 
@@ -3039,6 +3097,10 @@ void MapCanvas::onKeyUp(wxKeyEvent& e)
 
 	// Let keybind system handle it
 	KeyBind::keyReleased(KeyBind::keyName(e.GetKeyCode()));
+
+	// Update cursor in object edit mode
+	//if (mouse_state == MSTATE_EDIT)
+	//	determineObjectEditState();
 
 	e.Skip();
 }
@@ -3355,32 +3417,41 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 		// Do dragging if left mouse is down
 		if (e.LeftIsDown() && edit_state != ESTATE_NONE)
 		{
-			// Get dragged offsets
-			double xoff = mouse_pos_m.x - mouse_downpos_m.x;
-			double yoff = mouse_pos_m.y - mouse_downpos_m.y;
-
-			// Snap to grid if shift not held down
-			if (!e.ShiftDown())
+			if (edit_rotate)
 			{
-				xoff = editor->snapToGrid(xoff);
-				yoff = editor->snapToGrid(yoff);
-			}
-
-			if (edit_state == ESTATE_MOVE)
-			{
-				// Move objects
-				editor->getObjectEditGroup()->doMove(xoff, yoff);
-				theMapEditor->objectEditPanel()->update(editor->getObjectEditGroup());
+				// Rotate
+				editor->getObjectEditGroup()->doRotate(mouse_downpos_m, mouse_pos_m, !e.ShiftDown());
+				theMapEditor->objectEditPanel()->update(editor->getObjectEditGroup(), true);
 			}
 			else
 			{
-				// Scale objects
-				editor->getObjectEditGroup()->doScale(xoff, yoff,
-					(edit_state == ESTATE_SIZE_L || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_BL),	// Left?
-					(edit_state == ESTATE_SIZE_T || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_TR),	// Top?
-					(edit_state == ESTATE_SIZE_R || edit_state == ESTATE_SIZE_TR || edit_state == ESTATE_SIZE_BR),	// Right?
-					(edit_state == ESTATE_SIZE_B || edit_state == ESTATE_SIZE_BL || edit_state == ESTATE_SIZE_BR));	// Bottom?
-				theMapEditor->objectEditPanel()->update(editor->getObjectEditGroup());
+				// Get dragged offsets
+				double xoff = mouse_pos_m.x - mouse_downpos_m.x;
+				double yoff = mouse_pos_m.y - mouse_downpos_m.y;
+
+				// Snap to grid if shift not held down
+				if (!e.ShiftDown())
+				{
+					xoff = editor->snapToGrid(xoff);
+					yoff = editor->snapToGrid(yoff);
+				}
+
+				if (edit_state == ESTATE_MOVE)
+				{
+					// Move objects
+					editor->getObjectEditGroup()->doMove(xoff, yoff);
+					theMapEditor->objectEditPanel()->update(editor->getObjectEditGroup());
+				}
+				else
+				{
+					// Scale objects
+					editor->getObjectEditGroup()->doScale(xoff, yoff,
+						(edit_state == ESTATE_SIZE_L || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_BL),	// Left?
+						(edit_state == ESTATE_SIZE_T || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_TR),	// Top?
+						(edit_state == ESTATE_SIZE_R || edit_state == ESTATE_SIZE_TR || edit_state == ESTATE_SIZE_BR),	// Right?
+						(edit_state == ESTATE_SIZE_B || edit_state == ESTATE_SIZE_BL || edit_state == ESTATE_SIZE_BR));	// Bottom?
+					theMapEditor->objectEditPanel()->update(editor->getObjectEditGroup());
+				}
 			}
 		}
 		else

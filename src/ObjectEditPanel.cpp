@@ -68,8 +68,8 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 {
 	// Set initial values from group
 	bbox_t bbox = group->getBBox();
-	old_x = bbox.min.x;
-	old_y = bbox.min.y;
+	old_x = bbox.mid_x();
+	old_y = bbox.mid_y();
 	old_width = bbox.width();
 	old_height = bbox.height();
 
@@ -81,11 +81,11 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 	combo_rotation->Select(0);
 }
 
-void ObjectEditPanel::update(ObjectEditGroup* group)
+void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation)
 {
 	bbox_t bbox = group->getBBox();
-	int xoff = bbox.min.x - old_x;
-	int yoff = bbox.min.y - old_y;
+	int xoff = bbox.mid_x() - old_x;
+	int yoff = bbox.mid_y() - old_y;
 	double xscale = bbox.width() / old_width;
 	double yscale = bbox.height() / old_height;
 
@@ -93,6 +93,7 @@ void ObjectEditPanel::update(ObjectEditGroup* group)
 	text_yoff->SetValue(S_FMT("%d", yoff));
 	text_scalex->SetValue(S_FMT("%d", int(100 * xscale)));
 	text_scaley->SetValue(S_FMT("%d", int(100 * yscale)));
+	combo_rotation->SetValue(S_FMT("%1.2f", group->getRotation()));
 }
 
 void ObjectEditPanel::onBtnApplyClicked(wxCommandEvent& e)

@@ -36,6 +36,7 @@ public:
 	~ObjectEditGroup();
 
 	bbox_t	getBBox() { return bbox; }
+	double	getRotation() { return rotation; }
 
 	void		addVertex(MapVertex* v, bool ignored = false);
 	void		addConnectedLines();
@@ -54,6 +55,7 @@ public:
 	// Modification
 	void	doMove(double xoff, double yoff);
 	void	doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom);
+	void	doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45);
 	void	doAll(double xoff, double yoff, double xscale, double yscale, double rotation);
 	void	applyEdit();
 
@@ -66,6 +68,7 @@ private:
 	bbox_t				original_bbox;	// From first init
 	double				xoff_prev;
 	double				yoff_prev;
+	double				rotation;
 };
 
 #endif//__OBJECT_EDIT_H__

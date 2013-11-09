@@ -731,6 +731,21 @@ struct bbox_t
 	{
 		return max.y - min.y;
 	}
+
+	fpoint2_t mid()
+	{
+		return fpoint2_t(mid_x(), mid_y());
+	}
+
+	double mid_x()
+	{
+		return min.x + ((max.x - min.x) * 0.5);
+	}
+
+	double mid_y()
+	{
+		return min.y + ((max.y - min.y) * 0.5);
+	}
 };
 
 

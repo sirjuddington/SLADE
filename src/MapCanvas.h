@@ -76,6 +76,7 @@ private:
 	bool		mouse_locked;
 	bool		mouse_warp;
 	int			edit_state;
+	bool		edit_rotate;
 
 	// Info overlays
 	int					last_hilight;
@@ -136,6 +137,7 @@ public:
 	void	drawThingQuickAngleLines();
 	void	drawLineDrawLines();
 	void	drawPasteLines();
+	void	drawObjectEdit();
 	void	drawMap2d();
 	void	drawMap3d();
 	void	draw();
