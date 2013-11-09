@@ -17,30 +17,26 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Shape
 	string shapes[] = { "Rectangle", "Ellipse" };
 	choice_shape = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 2, shapes);
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(this, -1, "Shape:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(choice_shape, 1, wxEXPAND);
+	sizer_main = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(sizer_main, 0, wxEXPAND|wxALL, 4);
+	sizer_main->Add(new wxStaticText(this, -1, "Shape:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
+	sizer_main->Add(choice_shape, 0, wxEXPAND|wxRIGHT, 8);
 
 	// Centered
 	cb_centered = new wxCheckBox(this, -1, "Centered");
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(cb_centered, 0, wxEXPAND|wxRIGHT, 4);
+	sizer_main->Add(cb_centered, 0, wxEXPAND|wxRIGHT, 8);
 
 	// Lock ratio (1:1)
 	cb_lockratio = new wxCheckBox(this, -1, "1:1 Size");
-	hbox->Add(cb_lockratio, 0, wxEXPAND);
+	sizer_main->Add(cb_lockratio, 0, wxEXPAND|wxRIGHT, 8);
 
 	// Sides
 	panel_sides = new wxPanel(this, -1);
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
-	panel_sides->SetSizer(vbox);
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, 1, wxEXPAND|wxALL, 4);
+	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
+	panel_sides->SetSizer(hbox2);
 	spin_sides = new wxSpinCtrl(panel_sides, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER|wxALIGN_LEFT, 12, 1000);
-	hbox->Add(new wxStaticText(panel_sides, -1, "Sides:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(spin_sides, 1, wxEXPAND);
+	hbox2->Add(new wxStaticText(panel_sides, -1, "Sides:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
+	hbox2->Add(spin_sides, 1, wxEXPAND);
 
 	// Set control values
 	choice_shape->SetSelection(shapedraw_shape);
@@ -69,14 +65,14 @@ ShapeDrawPanel::~ShapeDrawPanel()
 void ShapeDrawPanel::showShapeOptions(int shape)
 {
 	// Remove all extra options
-	GetSizer()->Detach(panel_sides);
+	sizer_main->Detach(panel_sides);
 	panel_sides->Show(false);
 
 	// Polygon/Ellipse options
 	if (shape == 1)
 	{
 		// Sides
-		GetSizer()->Add(panel_sides, 0, wxEXPAND|wxTOP, 4);
+		sizer_main->Add(panel_sides, 0, wxEXPAND|wxRIGHT, 8);
 		panel_sides->Show(true);
 	}
 

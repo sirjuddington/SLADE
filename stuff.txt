@@ -14,6 +14,14 @@ TODO List ---------------------------------------------------------------
 - Modifying map architecture doesn't afffect things in 3d mode (heights stay the same)
 
 
+--- Minor Problems/Annoyances ---
+- Long calltips can extend off the edge of the screen
+- Incorrect ctrl+tab behaviour with tabs
+- Focus find+replace window on opening it
+- Esc to close find+replace window
+- Shape draw and object edit bars cause the view offset to change
+
+
 --- Map Editor 3.1 ---
 - Checks:
 	- When error is found, zoom/scroll to the error in question and bring up fullscreen overlay
@@ -47,12 +55,6 @@ TODO List ---------------------------------------------------------------
 	- Ability to edit/compile library scripts
 	- Other script types (DIALOGUE etc)
 
-
---- Minor Problems/Annoyances ---
-- Long calltips can extend off the edge of the screen
-- Incorrect ctrl+tab behaviour with tabs
-- Focus find+replace window on opening it
-- Esc to close find+replace window
 
 --- Editor Features ---
 - Generic entry data view (for VERTEXES, LINEDEFS, SIDEDEFS, SECTORS, THINGS, DEMO*, TEXTUREX/PNAMES, ...)

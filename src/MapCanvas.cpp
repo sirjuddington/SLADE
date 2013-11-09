@@ -2268,6 +2268,7 @@ void MapCanvas::keyBinds2d(string name)
 		{
 			mouse_state = MSTATE_NORMAL;
 			editor->endLineDraw();
+			theMapEditor->showShapeDrawPanel(false);
 		}
 
 		// Cancel line draw
@@ -2275,6 +2276,7 @@ void MapCanvas::keyBinds2d(string name)
 		{
 			mouse_state = MSTATE_NORMAL;
 			editor->endLineDraw(false);
+			theMapEditor->showShapeDrawPanel(false);
 		}
 	}
 
@@ -2459,6 +2461,7 @@ void MapCanvas::keyBinds2d(string name)
 		{
 			draw_state = DSTATE_SHAPE_ORIGIN;
 			mouse_state = MSTATE_LINE_DRAW;
+			theMapEditor->showShapeDrawPanel();
 		}
 
 		// Create object
@@ -3179,6 +3182,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 				{
 					// Finish shape draw
 					editor->endLineDraw(true);
+					theMapEditor->showShapeDrawPanel(false);
 					mouse_state = MSTATE_NORMAL;
 				}
 			}

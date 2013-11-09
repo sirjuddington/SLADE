@@ -10,6 +10,7 @@ private:
 	wxChoice*	choice_shape;
 	wxCheckBox*	cb_centered;
 	wxCheckBox*	cb_lockratio;
+	wxBoxSizer*	sizer_main;
 
 	wxSpinCtrl*		spin_sides;
 	wxPanel*		panel_sides;

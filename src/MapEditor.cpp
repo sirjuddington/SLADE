@@ -2244,6 +2244,7 @@ bool MapEditor::addLineDrawPoint(fpoint2_t point, bool nearest)
 	{
 		// End line drawing
 		endLineDraw(true);
+		theMapEditor->showShapeDrawPanel(false);
 		return true;
 	}
 
@@ -2254,6 +2255,7 @@ bool MapEditor::addLineDrawPoint(fpoint2_t point, bool nearest)
 	if (draw_points.size() > 1 && point.x == draw_points[0].x && point.y == draw_points[0].y)
 	{
 		endLineDraw(true);
+		theMapEditor->showShapeDrawPanel(false);
 		return true;
 	}
 
@@ -2265,6 +2267,7 @@ void MapEditor::removeLineDrawPoint()
 	if(draw_points.empty())
 	{
 		endLineDraw(false);
+		theMapEditor->showShapeDrawPanel(false);
 	}
 	else
 	{

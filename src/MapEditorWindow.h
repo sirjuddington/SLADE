@@ -66,6 +66,7 @@ public:
 	
 	void	showObjectEditPanel(ObjectEditGroup* group);
 	void	hideObjectEditPanel();
+	void	showShapeDrawPanel(bool show = true);
 
 	// SAction handler
 	bool	handleAction(string id);

@@ -573,8 +573,7 @@ void MainApp::initActions()
 	new SAction("mapw_mode_things", "Things Mode", "t_things", "Change to things editing mode", "", SAction::RADIO, -1, group_mode);
 	new SAction("mapw_showconsole", "&Console", "t_console", "Toggle the Console window", "Ctrl+2");
 	new SAction("mapw_showproperties", "&Item Properties", "t_properties", "Toggle the Item Properties window", "Ctrl+1");
-	new SAction("mapw_showdrawoptions", "&Shape Draw Options", "t_settings", "Toggle the Shape Drawing Options window", "Ctrl+3");
-	new SAction("mapw_showscripteditor", "Script &Editor", "e_text", "Toggle the Script Editor window", "Ctrl+4");
+	new SAction("mapw_showscripteditor", "Script &Editor", "e_text", "Toggle the Script Editor window", "Ctrl+3");
 	int group_flat_type = SAction::newGroup();
 	new SAction("mapw_flat_none", "Wireframe", "t_flat_w", "Don't show flats (wireframe)", "", SAction::RADIO, -1, group_flat_type);
 	new SAction("mapw_flat_untextured", "Untextured", "t_flat_u", "Show untextured flats", "", SAction::RADIO, -1, group_flat_type);
