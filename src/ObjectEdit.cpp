@@ -144,7 +144,9 @@ void ObjectEditGroup::resetPositions()
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		vertices[a].old_position = vertices[a].position;
-		bbox.extend(vertices[a].position.x, vertices[a].position.y);
+
+		if (!vertices[a].ignored)
+			bbox.extend(vertices[a].position.x, vertices[a].position.y);
 	}
 
 	// Things
@@ -312,7 +314,10 @@ void ObjectEditGroup::doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45)
 
 	// Rotate vertices
 	for (unsigned a = 0; a < vertices.size(); a++)
-		vertices[a].position = MathStuff::rotatePoint(mid, vertices[a].old_position, rotation);
+	{
+		if (!vertices[a].ignored)
+			vertices[a].position = MathStuff::rotatePoint(mid, vertices[a].old_position, rotation);
+	}
 
 	// Rotate things
 	for (unsigned a = 0; a < things.size(); a++)
@@ -386,7 +391,10 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 	{
 		bbox.reset();
 		for (unsigned a = 0; a < vertices.size(); a++)
-			bbox.extend(vertices[a].position.x, vertices[a].position.y);
+		{
+			if (!vertices[a].ignored)
+				bbox.extend(vertices[a].position.x, vertices[a].position.y);
+		}
 		for (unsigned a = 0; a < things.size(); a++)
 			bbox.extend(things[a].position.x, things[a].position.y);
 		old_bbox = bbox;
