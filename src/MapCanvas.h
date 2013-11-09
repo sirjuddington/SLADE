@@ -110,12 +110,17 @@ private:
 	float	fade_things;
 	float	fade_flats;
 	float	fade_lines;
+	float	anim_help_fade;
+
+	// Feature help text
+	vector<string>	feature_help_lines;
 
 public:
 	MapCanvas(wxWindow* parent, int id, MapEditor* editor);
 	~MapCanvas();
 
 	bool	overlayActive();
+	bool	helpActive();
 
 	double	translateX(double x, bool inter = false);
 	double	translateY(double y, bool inter = false);
@@ -133,6 +138,7 @@ public:
 	// Drawing
 	void	drawGrid();
 	void	drawEditorMessages();
+	void	drawFeatureHelpText();
 	void	drawSelectionNumbers();
 	void	drawThingQuickAngleLines();
 	void	drawLineDrawLines();

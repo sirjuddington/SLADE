@@ -75,6 +75,7 @@ CVAR(Bool, camera_3d_show_distance, false, CVAR_SAVE)
 CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
+CVAR(Bool, map_show_help, true, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -133,6 +134,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	mouse_warp = false;
 	edit_state = 0;
 	edit_rotate = false;
+	anim_help_fade = 0;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -185,6 +187,19 @@ bool MapCanvas::overlayActive()
 		return false;
 	else
 		return overlay_current->isActive();
+}
+
+bool MapCanvas::helpActive()
+{
+	// Disable if no help
+	if (feature_help_lines.empty())
+		return false;
+
+	// Enable depending on current state
+	if (mouse_state == MSTATE_EDIT || mouse_state == MSTATE_LINE_DRAW)
+		return true;
+
+	return false;
 }
 
 /* MapCanvas::translateX
@@ -535,6 +550,42 @@ void MapCanvas::drawEditorMessages()
 
 		// Draw message
 		Drawing::drawText(editor->getEditorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
+		yoff += 16;
+	}
+}
+
+void MapCanvas::drawFeatureHelpText()
+{
+	// Check if any text
+	if (feature_help_lines.empty())
+		return;
+
+	// Draw title
+	frect_t bounds;
+	rgba_t col = ColourConfiguration::getColour("map_editor_message");
+	col.a = col.a * anim_help_fade;
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 1, 3, rgba_t(0, 0, 0, 200 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 2, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT, &bounds);
+
+	// Draw underline
+	glDisable(GL_TEXTURE_2D);
+	glLineWidth(1.0f);
+	col.set_gl();
+	glBegin(GL_LINES);
+	glVertex2d(bounds.right() + 8, bounds.bottom() + 1);
+	glVertex2d(bounds.left() + 16, bounds.bottom() + 1);
+	glVertex2d(bounds.left() + 16, bounds.bottom() + 1);
+	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
+	glVertex2d(bounds.left() - 48, bounds.bottom() + 1);
+	glEnd();
+
+	// Draw help text
+	int yoff = 22;
+	for (unsigned a = 1; a < feature_help_lines.size(); a++)
+	{
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff + 1, rgba_t(0, 0, 0, 200 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 2, yoff, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+
 		yoff += 16;
 	}
 }
@@ -1209,6 +1260,9 @@ void MapCanvas::draw()
 	// Editor messages
 	drawEditorMessages();
 
+	// Help text
+	drawFeatureHelpText();
+
 	SwapBuffers();
 }
 
@@ -1546,6 +1600,27 @@ void MapCanvas::update(long frametime)
 		}
 	}
 
+	// Fader for help text
+	bool help_fade_anim = true;
+	if (helpActive())
+	{
+		anim_help_fade += 0.07f*mult;
+		if (anim_help_fade > 1.0f)
+		{
+			anim_help_fade = 1.0f;
+			help_fade_anim = false;
+		}
+	}
+	else
+	{
+		anim_help_fade -= 0.05f*mult;
+		if (anim_help_fade < 0.0f)
+		{
+			anim_help_fade = 0.0f;
+			help_fade_anim = false;
+		}
+	}
+
 	// Update overlay animation (if active)
 	if (overlayActive())
 		overlay_current->update(frametime);
@@ -1568,12 +1643,12 @@ void MapCanvas::update(long frametime)
 	// Determine the framerate limit
 #ifdef USE_SFML_RENDERWINDOW
 	// SFML RenderWindow can handle high framerates better than wxGLCanvas, or something like that
-	if (mode_anim || fade_anim || overlay_fade_anim || anim_running)
+	if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
 		fr_idle = 2;
 	else	// No high-priority animations running, throttle framerate
 		fr_idle = map_bg_ms;
 #else
-	if (mode_anim || fade_anim || overlay_fade_anim || anim_running)
+	if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
 		fr_idle = 5;
 	else	// No high-priority animations running, throttle framerate
 		fr_idle = map_bg_ms;
@@ -2442,6 +2517,17 @@ void MapCanvas::keyBinds2d(string name)
 			{
 				mouse_state = MSTATE_EDIT;
 				renderer_2d->forceUpdate();
+
+				// Setup help text
+				string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+				string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+				string key_toggle = KeyBind::getBind("me2d_begin_object_edit").keysAsString();
+				feature_help_lines.clear();
+				feature_help_lines.push_back("Object Edit");
+				feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
+				feature_help_lines.push_back(S_FMT("%s or %s = Cancel", CHR(key_cancel), CHR(key_toggle)));
+				feature_help_lines.push_back("Shift = Disable grid snapping");
+				feature_help_lines.push_back("Ctrl = Rotate");
 			}
 		}
 
@@ -2454,6 +2540,17 @@ void MapCanvas::keyBinds2d(string name)
 		{
 			draw_state = DSTATE_LINE;
 			mouse_state = MSTATE_LINE_DRAW;
+
+			// Setup help text
+			string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+			feature_help_lines.clear();
+			feature_help_lines.push_back("Line Drawing");
+			feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
+			feature_help_lines.push_back(S_FMT("%s = Cancel", CHR(key_cancel)));
+			feature_help_lines.push_back("Left Click = Draw point");
+			feature_help_lines.push_back("Right Click = Undo previous point");
+			feature_help_lines.push_back("Shift = Snap to nearest vertex");
 		}
 
 		// Begin shape drawing
@@ -2462,6 +2559,16 @@ void MapCanvas::keyBinds2d(string name)
 			draw_state = DSTATE_SHAPE_ORIGIN;
 			mouse_state = MSTATE_LINE_DRAW;
 			theMapEditor->showShapeDrawPanel();
+
+			// Setup help text
+			string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+			feature_help_lines.clear();
+			feature_help_lines.push_back("Shape Drawing");
+			feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
+			feature_help_lines.push_back(S_FMT("%s = Cancel", CHR(key_cancel)));
+			feature_help_lines.push_back("Left Click = Draw point");
+			feature_help_lines.push_back("Right Click = Undo previous point");
 		}
 
 		// Create object
