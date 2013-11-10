@@ -465,4 +465,11 @@ entry_types
 		match_ext = "txt", "diz", "1st", "doc", "nfo";
 		match_name = "readme", "*info", "*defs";
 	}
+
+	patchinf : text
+    {
+            name = "Patchinfo";
+            match_name = "patchinf";
+            text_language = "zd_patchinf";
+    }
 }
