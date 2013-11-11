@@ -63,6 +63,7 @@ private:
 	bool				pressed;
 	string				description;
 	string				group;
+	bool				ignore_shift;
 
 public:
 	KeyBind(string name);
@@ -84,7 +85,7 @@ public:
 	static KeyBind&			getBind(string name);
 	static wxArrayString	getBinds(keypress_t key);
 	static bool				isPressed(string name);
-	static bool				addBind(string name, keypress_t key, string desc = "", string group = "");
+	static bool				addBind(string name, keypress_t key, string desc = "", string group = "", bool ignore_shift = false);
 	static string			keyName(int key);
 	static string			mbName(int button);
 	static bool				keyPressed(keypress_t key);

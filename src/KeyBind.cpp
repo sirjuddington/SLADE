@@ -118,7 +118,7 @@ bool KeyBind::isPressed(string name)
 	return getBind(name).pressed;
 }
 
-bool KeyBind::addBind(string name, keypress_t key, string desc, string group)
+bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bool ignore_shift)
 {
 	// Find keybind
 	KeyBind* bind = NULL;
@@ -136,6 +136,7 @@ bool KeyBind::addBind(string name, keypress_t key, string desc, string group)
 	{
 		keybinds.push_back(KeyBind(name));
 		bind = &keybinds.back();
+		bind->ignore_shift = ignore_shift;
 	}
 
 	// Set keybind description/group
@@ -297,7 +298,7 @@ bool KeyBind::keyPressed(keypress_t key)
 			keypress_t& kp = kb.keys[a];
 
 			// Check for match with keypress
-			if (kp.shift == key.shift &&
+			if ((kp.shift == key.shift || kb.ignore_shift) &&
 			        kp.alt == key.alt &&
 			        kp.ctrl == key.ctrl &&
 			        kp.key == key.key)
@@ -528,14 +529,14 @@ void KeyBind::initBinds()
 
 	// Map Editor 3D Camera (me3d_camera*)
 	group = "Map Editor 3D Mode Camera";
-	addBind("me3d_camera_forward", keypress_t("W"), "Camera forward", group);
-	addBind("me3d_camera_back", keypress_t("S"), "Camera backward", group);
-	addBind("me3d_camera_left", keypress_t("A"), "Camera strafe left", group);
-	addBind("me3d_camera_right", keypress_t("D"), "Camera strafe right", group);
-	addBind("me3d_camera_up", keypress_t("up"), "Camera move up", group);
-	addBind("me3d_camera_down", keypress_t("down"), "Camera move down", group);
-	addBind("me3d_camera_turn_left", keypress_t("left"), "Camera turn left", group);
-	addBind("me3d_camera_turn_right", keypress_t("right"), "Camera turn right", group);
+	addBind("me3d_camera_forward", keypress_t("W"), "Camera forward", group, true);
+	addBind("me3d_camera_back", keypress_t("S"), "Camera backward", group, true);
+	addBind("me3d_camera_left", keypress_t("A"), "Camera strafe left", group, true);
+	addBind("me3d_camera_right", keypress_t("D"), "Camera strafe right", group, true);
+	addBind("me3d_camera_up", keypress_t("up"), "Camera move up", group, true);
+	addBind("me3d_camera_down", keypress_t("down"), "Camera move down", group, true);
+	addBind("me3d_camera_turn_left", keypress_t("left"), "Camera turn left", group, true);
+	addBind("me3d_camera_turn_right", keypress_t("right"), "Camera turn right", group, true);
 
 	// Map Editor 3D Light (me3d_light*)
 	group = "Map Editor 3D Mode Light";
