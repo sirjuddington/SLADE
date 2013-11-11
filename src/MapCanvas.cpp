@@ -1458,60 +1458,62 @@ bool MapCanvas::update3d(double mult)
 
 	// --- Check for held-down keys ---
 	bool moving = false;
+	bool fast = (modifiers_current & wxMOD_SHIFT) > 0;
+	double speed = fast ? mult * 8 : mult * 4;
 
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward"))
 	{
-		renderer_3d->cameraMove(mult*4, !camera_3d_gravity);
+		renderer_3d->cameraMove(speed, !camera_3d_gravity);
 		moving = true;
 	}
 
 	// Camera backward
 	if (KeyBind::isPressed("me3d_camera_back"))
 	{
-		renderer_3d->cameraMove(-mult*4, !camera_3d_gravity);
+		renderer_3d->cameraMove(-speed, !camera_3d_gravity);
 		moving = true;
 	}
 
 	// Camera left (strafe)
 	if (KeyBind::isPressed("me3d_camera_left"))
 	{
-		renderer_3d->cameraStrafe(-mult*4);
+		renderer_3d->cameraStrafe(-speed);
 		moving = true;
 	}
 
 	// Camera right (strafe)
 	if (KeyBind::isPressed("me3d_camera_right"))
 	{
-		renderer_3d->cameraStrafe(mult*4);
+		renderer_3d->cameraStrafe(speed);
 		moving = true;
 	}
 
 	// Camera up
 	if (KeyBind::isPressed("me3d_camera_up"))
 	{
-		renderer_3d->cameraMoveUp(mult*4);
+		renderer_3d->cameraMoveUp(speed);
 		moving = true;
 	}
 
 	// Camera down
 	if (KeyBind::isPressed("me3d_camera_down"))
 	{
-		renderer_3d->cameraMoveUp(-mult*4);
+		renderer_3d->cameraMoveUp(-speed);
 		moving = true;
 	}
 
 	// Camera turn left
 	if (KeyBind::isPressed("me3d_camera_turn_left"))
 	{
-		renderer_3d->cameraTurn(-mult);
+		renderer_3d->cameraTurn(fast ? mult*2 : mult);
 		moving = true;
 	}
 
 	// Camera turn right
 	if (KeyBind::isPressed("me3d_camera_turn_right"))
 	{
-		renderer_3d->cameraTurn(mult);
+		renderer_3d->cameraTurn(fast ? -mult*2 : -mult);
 		moving = true;
 	}
 
@@ -2795,38 +2797,6 @@ void MapCanvas::keyBinds3d(string name)
 		if (overlay_current) delete overlay_current;
 		QuickTextureOverlay3d* qto = new QuickTextureOverlay3d(editor);
 		overlay_current = qto;
-
-		/*
-				// Get hilight or first selected wall/flat
-				selection_3d_t item = editor->hilightItem3d();
-				if (item.index < 0 || item.type == MapEditor::SEL_THING) {
-					vector<selection_3d_t>& sel = editor->get3dSelection();
-					for (unsigned a = 0; a < sel.size(); a++) {
-						if (sel[a].index >= 0 && sel[a].type != MapEditor::SEL_THING) {
-							item = sel[a];
-							break;
-						}
-					}
-				}
-
-				// Get initial texture
-				if (item.index >= 0 && item.type != MapEditor::SEL_THING) {
-					string init_tex;
-
-					if (item.type == MapEditor::SEL_FLOOR)
-						init_tex = editor->getMap().getSector(item.index)->floorTexture();
-					else if (item.type == MapEditor::SEL_CEILING)
-						init_tex = editor->getMap().getSector(item.index)->ceilingTexture();
-					else if (item.type == MapEditor::SEL_SIDE_BOTTOM)
-						init_tex = editor->getMap().getSide(item.index)->stringProperty("texturebottom");
-					else if (item.type == MapEditor::SEL_SIDE_MIDDLE)
-						init_tex = editor->getMap().getSide(item.index)->stringProperty("texturemiddle");
-					else
-						init_tex = editor->getMap().getSide(item.index)->stringProperty("texturetop");
-
-					qto->setTexture(init_tex);
-				}
-		*/
 
 		renderer_3d->enableHilight(false);
 		renderer_3d->enableSelection(false);
