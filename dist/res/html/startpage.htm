@@ -1,17 +1,43 @@
 <html>
 <head>
 <title>SLADE - It's a Doom Editor</title>
+<style type="text/css">
+body, table, td, th, div, a {
+	font-family: verdana, ubuntu, sans-serif;
+	font-size: 10pt;
+}
+A, A:link, A:visited, A:active {
+	color: #0022aa;
+	text-decoration: none;
+}
+A:hover {
+	color: #5588ff;
+}
+th {
+	background-color: #aaabdd;
+	font-size: 11pt;
+	padding: 2px;
+}
+table.box {
+	background-color: #dddfff;
+	border-top: 4px;
+	border-left: 4px;
+	border-right: 4px;
+	border-bottom: 2px;
+	border-style: solid;
+	border-color: #dddfff;
+}
+</style>
 </head>
 <body>
 <center>
 
 <img src="logo.png"/>
 
-<!-- wheeee tables within tables -->
 <table width="800" cellspacing="8">
-<tr><td width="50%" valign="top">
+<tr><td width="40%" valign="top">
 
-<table cellspacing="0" width="100%" cellpadding="4" bgcolor="#dddfff">
+<table cellspacing="0" width="100%" cellpadding="4" class="box">
 <tr>
 <th bgcolor="#aaabdd">Get Started</th>
 </tr>
@@ -24,9 +50,9 @@
 </tr>
 </table>
 
-</td><td valign="top">
+</td><td rowspan=2 valign="top">
 
-<table cellspacing="0" width="100%" cellpadding="4" bgcolor="#dddfff">
+<table cellspacing="0" width="100%" cellpadding="4" class="box">
 <tr>
 <th bgcolor="#aaabdd">Recent Files</th>
 </tr>
@@ -40,20 +66,7 @@
 </td></tr>
 <tr><td valign="top">
 
-<table cellspacing="0" width="100%" cellpadding="4" bgcolor="#dddfff">
-<tr>
-<th bgcolor="#aaabdd">Tip of the Day <a href="action://reloadstartpage">+</a></th>
-</tr>
-<tr>
-<td>
-#totd#
-</td>
-</tr>
-</table>
-
-</td><td valign="top">
-
-<table cellspacing="0" width="100%" cellpadding="4" bgcolor="#dddfff">
+<table cellspacing="0" width="100%" cellpadding="4" class="box">
 <tr>
 <th bgcolor="#aaabdd">Links</th>
 </tr>
@@ -68,7 +81,22 @@
 </table>
 
 </td></tr>
+<tr><td valign="top" colspan="2">
+
+<table cellspacing="0" width="100%" cellpadding="4" class="box">
+<tr>
+<th bgcolor="#aaabdd">Tip of the Day <a href="action://reloadstartpage">+</a></th>
+</tr>
+<tr>
+<td>
+#totd#
+</td>
+</tr>
 </table>
+
+</td></tr>
+</table>
+
 </center>
 </body>
 </html>
