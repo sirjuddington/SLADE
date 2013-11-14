@@ -11,7 +11,7 @@ TODO List ---------------------------------------------------------------
 - Undo/redo only works in WADs (no effect on ZIP entries)
 - Editing raw vertex position in properties dialog doesn't update flats correctly
 - Can hilight floors/ceilings from the wrong side in 3d mode
-- Modifying map architecture doesn't afffect things in 3d mode (heights stay the same)
+- Modifying map architecture doesn't affect things in 3d mode (heights stay the same)
 
 
 --- Minor Problems/Annoyances ---
@@ -37,6 +37,18 @@ TODO List ---------------------------------------------------------------
 - Tag edit mode for TIDs/LineIDs(?)
 - Need to separate editor defaults from udmf defaults (eg. thing skill flags are all false by default in udmf)
 - Run map (possibly 'run archive' for something more general also)
+
+
+--- Other 3.1 ---
+- Look into using wxWebView to show documentation in a tab
+- Change start page to use wxWebView
+- Create simple 'first-time-setup' wizard to set up settings that are important
+	- Temp folder
+	- Base resource archives
+	- External exe paths (node builders, acc, etc.)
+	- Soundfont
+- Automatically email stack trace on crash (if possible)
+- Entry list submenus could do with cleaning up
 
 
 --- Map Editor post-3.1 ---
@@ -115,46 +127,6 @@ TODO List ---------------------------------------------------------------
 - Better way to get the currently selected entries would be nice
 - Should probably write my own lexer for TextEditor since the default cpp/cppnocase ones are somewhat limited
 - Multithreaded entry type detection?
-
-
-
-Changes since 3.0.2 -----------------------------------------------------
-To keep track of resource editor changes (in case I decide to release a 3.0.3 after all)
-
-- Added ability to open maps with Doom Builder 2 (if it is installed)
-- Added ability to export a texture to a single graphic entry
-- Added console commands to list/set cvars
-- Gfx offsets are preserved on import
-- Added palette editing functionality
-- If alt is held down when moving a patch with the arrow keys, a duplicate patch will be added and moved'
-- Added ability to quickly jump to items in the patch browser by typing the first few letters of the patch name
-- Added word wrapping checkbox to text entry panel
-- Keybinds are now configurable in the preferences dialog
-- Added colour configuration to preferences dialog
-- In the gfx conversion dialog, the transparent colour can now be set by left-clicking on the current preview image
-- Multiple entry name filters can now be entered (separated by commas) eg: "MAP01, MAP02"
-- Implemented basic 'remove unused textures' and 'remove unused patches' actions
-- Added mp3 and tracker module playback
-- Changed the browser to use a proper font for item names
-- Browser background changed to the checkered texture used in most other gfx views (optional)
-- Added 'zoom' slider to the browser window
-- Removed the maps list from the open archives tab on the archive manager
-- Merged the Archives and Recent Files tabs into one
-- Implemented a custom toolbar, replacing the ugly wxAUI ones
-- Added ability to directly generate new PLAYPAL, ANIMATED and SWITCHES lumps instead of having to create an empty lump and then import content in it
-- Implemented notebook tab art class from CodeLite, now tabs look a fair bit nicer, especially in linux
-- New maintenance option: cleaning out entries that are identical duplicates of an IWAD lump
-- Texture editor: implemented support for "UseOffsets" property
-- Added "Edit Level Script" button to MapEntryPanel and FraggleScript language
-- Added playback of Wolfenstein digitized sounds (VSWAP)
-- Added new maintenance option: check for duplicated entry content with a CRC-32 check for each entry
-- 'Replace In Maps' stuff
-- Added COLORMAP lump generation
-- Various additions and improvements to texture editor for ZDoom TEXTURES format
-- Added option to colour entry list item background by entry type
-- Improved entry type detection speed
-- Console command batches (run all commands contained in a file or a lump)
-
 
 
 Unimplemented Feature Requests ------------------------------------------

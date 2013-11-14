@@ -4,7 +4,6 @@
 
 #include "ArchiveManagerPanel.h"
 #include <wx/aui/auibook.h>
-#include <wx/html/htmlwin.h>
 #include <wx/aui/aui.h>
 #include "PaletteChooser.h"
 #include "MainApp.h"
@@ -12,13 +11,14 @@
 
 class SToolBar;
 class UndoManagerHistoryPanel;
+class wxWebView;
 class MainWindow : public STopWindow, SActionHandler
 {
 private:
 	ArchiveManagerPanel*		panel_archivemanager;
 	UndoManagerHistoryPanel*	panel_undo_history;
 	wxAuiNotebook*				notebook_tabs;
-	wxHtmlWindow*				html_startpage;
+	wxWebView*					html_startpage;
 	wxAuiManager*				m_mgr;
 	int							lasttipindex;
 	PaletteChooser*				palette_chooser;
@@ -63,7 +63,7 @@ public:
 
 	// Events
 	void	onMenuItemClicked(wxCommandEvent& e);
-	void	onHTMLLinkClicked(wxHtmlLinkEvent& e);
+	void	onHTMLLinkClicked(wxEvent& e);
 	void	onClose(wxCloseEvent& e);
 	void	onTabChanged(wxAuiNotebookEvent& e);
 	void	onSize(wxSizeEvent& e);

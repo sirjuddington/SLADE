@@ -40,6 +40,7 @@
 #include "TranslationEditorDialog.h"
 #include <wx/dialog.h>
 #include <wx/clrpicker.h>
+#include <wx/filename.h>
 #include "ConsoleHelpers.h"
 
 

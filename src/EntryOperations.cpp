@@ -43,6 +43,10 @@
 #include <wx/filename.h>
 #include <wx/utils.h>
 
+#ifdef __WXMSW__
+#include <wx/msw/registry.h>
+#endif
+
 
 /*******************************************************************
  * VARIABLES

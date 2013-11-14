@@ -48,6 +48,7 @@
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
+#include <wx/webview.h>
 
 
 /*******************************************************************
@@ -195,7 +196,7 @@ void MainWindow::setupLayout()
 	m_mgr->AddPane(notebook_tabs, p_inf);
 
 	// Create Start Page (temporary)
-	html_startpage = new wxHtmlWindow(notebook_tabs, -1, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_NEVER, "startpage");
+	html_startpage = wxWebView::New(notebook_tabs, -1, wxEmptyString);
 	html_startpage->SetName("startpage");
 	if (show_start_page)
 	{
@@ -367,7 +368,7 @@ void MainWindow::setupLayout()
 	Layout();
 
 	// Bind events
-	html_startpage->Bind(wxEVT_COMMAND_HTML_LINK_CLICKED, &MainWindow::onHTMLLinkClicked, this);
+	html_startpage->Bind(wxEVT_WEBVIEW_NAVIGATING, &MainWindow::onHTMLLinkClicked, this);
 	Bind(wxEVT_SIZE, &MainWindow::onSize, this);
 	Bind(wxEVT_CLOSE_WINDOW, &MainWindow::onClose, this);
 	Bind(wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
@@ -392,7 +393,7 @@ void MainWindow::createStartPage()
 	// Can't do anything without html entry
 	if (!entry_html)
 	{
-		html_startpage->SetPage("<html><head><title>SLADE</title></head><body><center><h1>Something is wrong with slade.pk3 :(</h1><center></body></html>");
+		html_startpage->SetPage("<html><head><title>SLADE</title></head><body><center><h1>Something is wrong with slade.pk3 :(</h1><center></body></html>", wxEmptyString);
 		return;
 	}
 
@@ -423,7 +424,7 @@ void MainWindow::createStartPage()
 
 	// Generate recent files string
 	string recent;
-	for (unsigned a = 0; a < 4; a++)
+	for (unsigned a = 0; a < 10; a++)
 	{
 		if (a >= theArchiveManager->numRecentFiles())
 			break;	// No more recent files
@@ -447,11 +448,13 @@ void MainWindow::createStartPage()
 	outfile.Close();
 
 	// Load page
-	html_startpage->LoadPage(html_file);
+	html_startpage->ClearHistory();
+	html_startpage->LoadURL(html_file);
+	html_startpage->Reload();
 
 	// Clean up
-	wxRemoveFile(html_file);
-	wxRemoveFile(appPath("logo.png", DIR_TEMP));
+	//wxRemoveFile(html_file);
+	//wxRemoveFile(appPath("logo.png", DIR_TEMP));
 }
 
 /* MainWindow::exitProgram
@@ -684,15 +687,20 @@ bool MainWindow::handleAction(string id)
  * Called when a link is clicked on the HTML Window, so that
  * external (http) links are opened in the default browser
  *******************************************************************/
-void MainWindow::onHTMLLinkClicked(wxHtmlLinkEvent& e)
+void MainWindow::onHTMLLinkClicked(wxEvent& e)
 {
-	string href = e.GetLinkInfo().GetHref();
+	wxWebViewEvent& ev = (wxWebViewEvent&)e;
+	string href = ev.GetURL();
 
 	if (href.StartsWith("http://"))
-		wxLaunchDefaultBrowser(e.GetLinkInfo().GetHref());
+	{
+		wxLaunchDefaultBrowser(ev.GetURL());
+		ev.Veto();
+	}
 	else if (href.StartsWith("recent://"))
 	{
 		// Recent file
+		href.RemoveLast(1);
 		string rs = href.Right(1);
 		unsigned long index = 0;
 		rs.ToULong(&index);
@@ -703,6 +711,7 @@ void MainWindow::onHTMLLinkClicked(wxHtmlLinkEvent& e)
 	else if (href.StartsWith("action://"))
 	{
 		// Action
+		href.RemoveLast(1);
 		if (href.EndsWith("open"))
 			theApp->doAction("aman_open");
 		else if (href.EndsWith("newwad"))
@@ -712,8 +721,6 @@ void MainWindow::onHTMLLinkClicked(wxHtmlLinkEvent& e)
 		else if (href.EndsWith("reloadstartpage"))
 			createStartPage();
 	}
-	else
-		html_startpage->OnLinkClicked(e.GetLinkInfo());
 }
 
 /* MainWindow::onClose

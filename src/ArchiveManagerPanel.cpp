@@ -34,7 +34,6 @@
 #include "ArchiveManagerPanel.h"
 #include "ArchiveManager.h"
 #include "ArchivePanel.h"
-//#include "MapEditorWindow.h"
 #include "ZipArchive.h"
 #include "BaseResourceArchivesPanel.h"
 #include "TextureXEditor.h"
@@ -42,6 +41,7 @@
 #include "MainWindow.h"
 #include "Icons.h"
 #include "cl_notebook_art/cl_aui_notebook_art.h"
+#include <wx/filename.h>
 
 
 /*******************************************************************
