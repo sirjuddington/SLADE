@@ -447,6 +447,10 @@ void MainWindow::createStartPage()
 	outfile.Write(html);
 	outfile.Close();
 
+#ifdef __WXGTK__
+	html_file = "file://" + html_file;
+#endif
+
 	// Load page
 	html_startpage->ClearHistory();
 	html_startpage->LoadURL(html_file);
@@ -692,6 +696,9 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	wxWebViewEvent& ev = (wxWebViewEvent&)e;
 	string href = ev.GetURL();
 
+	if (href.EndsWith("/"))
+		href.RemoveLast(1);
+
 	if (href.StartsWith("http://"))
 	{
 		wxLaunchDefaultBrowser(ev.GetURL());
@@ -700,18 +707,17 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	else if (href.StartsWith("recent://"))
 	{
 		// Recent file
-		href.RemoveLast(1);
 		string rs = href.Right(1);
 		unsigned long index = 0;
 		rs.ToULong(&index);
 		index++;
 
 		panel_archivemanager->handleAction(S_FMT("aman_recent%d", index));
+		createStartPage();
 	}
 	else if (href.StartsWith("action://"))
 	{
 		// Action
-		href.RemoveLast(1);
 		if (href.EndsWith("open"))
 			theApp->doAction("aman_open");
 		else if (href.EndsWith("newwad"))
@@ -720,6 +726,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 			theApp->doAction("aman_newzip");
 		else if (href.EndsWith("reloadstartpage"))
 			createStartPage();
+		html_startpage->Reload();
 	}
 }
 
