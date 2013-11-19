@@ -5,6 +5,6 @@
 #include <wx/bitmap.h>
 
 bool		loadIcons();
-wxBitmap	getIcon(string name);
+wxBitmap	getIcon(string name, bool large = false);
 
 #endif//__ICONS_H__

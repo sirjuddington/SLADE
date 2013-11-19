@@ -40,6 +40,7 @@
 struct icon_t
 {
 	wxImage	image;
+	wxImage image_large;
 	string	name;
 };
 vector<icon_t>	icons;
@@ -87,6 +88,42 @@ bool loadIcons()
 		wxRemoveFile(tempfile);
 	}
 
+	// Go through large icons
+	ArchiveTreeNode* dir_icons_large = res_archive->getDir("icons/large/");
+	for (size_t a = 0; a < dir_icons_large->numEntries(false); a++)
+	{
+		ArchiveEntry* entry = dir_icons_large->getEntry(a);
+
+		// Export entry data to a temporary file
+		entry->exportFile(tempfile);
+
+		// Create / setup icon
+		bool found = false;
+		string name = entry->getName(true);
+		for (unsigned i = 0; i < icons.size(); i++)
+		{
+			if (icons[i].name == name)
+			{
+				icons[i].image_large.LoadFile(tempfile);
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			icon_t n_icon;
+			n_icon.image_large.LoadFile(tempfile);	// Load image from temp file
+			n_icon.name = entry->getName(true);	// Set icon name
+
+			// Add the icon
+			icons.push_back(n_icon);
+		}
+
+		// Delete the temporary file
+		wxRemoveFile(tempfile);
+	}
+
 	return true;
 }
 
@@ -94,12 +131,22 @@ bool loadIcons()
  * Returns the icon matching <name> as a wxBitmap (for toolbars etc),
  * or an empty bitmap if no icon matching <name> was found
  *******************************************************************/
-wxBitmap getIcon(string name)
+wxBitmap getIcon(string name, bool large)
 {
 	for (size_t a = 0; a < icons.size(); a++)
 	{
 		if (icons[a].name.Cmp(name) == 0)
-			return wxBitmap(icons[a].image);
+		{
+			if (large)
+			{
+				if (icons[a].image_large.IsOk())
+					return wxBitmap(icons[a].image_large);
+				else
+					return wxBitmap(icons[a].image);
+			}
+			else
+				return wxBitmap(icons[a].image);
+		}
 	}
 
 	wxLogMessage("Icon \"%s\" does not exist", name.c_str());
