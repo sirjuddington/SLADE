@@ -1871,15 +1871,15 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		else
 			wxLogMessage("Entry editor %s does not exist, using default editor", entry->getType()->getEditor().c_str());
 
-		// Show the new entry panel
-		if (!showEntryPanel(new_area))
-			return false;
-
 		// Load the entry into the panel
-		if (!cur_area->openEntry(entry))
+		if (!new_area->openEntry(entry))
 		{
 			wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error.c_str()), "Error", wxOK|wxICON_ERROR);
 		}
+
+		// Show the new entry panel
+		if (!showEntryPanel(new_area))
+			return false;
 	}
 	return true;
 }
