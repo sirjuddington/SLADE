@@ -242,7 +242,7 @@ void MapEditorWindow::setupLayout()
 	else theApp->toggleAction("mapw_flat_textured");
 
 	// Add toolbar
-	m_mgr->AddPane(toolbar, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, 30).Resizable(false).PaneBorder(false).Name("toolbar"));
+	m_mgr->AddPane(toolbar, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, SToolBar::getBarHeight()).Resizable(false).PaneBorder(false).Name("toolbar"));
 
 
 	// Status bar

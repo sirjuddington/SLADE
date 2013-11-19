@@ -2,6 +2,7 @@
 #ifndef __S_TOOL_BAR_H__
 #define __S_TOOL_BAR_H__
 
+class SToolBarButton;
 class SToolBarGroup : public wxPanel
 {
 private:
@@ -17,8 +18,11 @@ public:
 	void	hide(bool hide = true);
 	void	redraw();
 
-	void	addActionButton(string action, string icon = "");
-	void	addCustomControl(wxWindow* control);
+	SToolBarButton*	addActionButton(string action, string icon = "", bool show_name = false);
+	SToolBarButton*	addActionButton(string action_id, string action_name, string icon, string help_text, bool show_name = false);
+	void			addCustomControl(wxWindow* control);
+
+	void	onButtonClicked(wxCommandEvent& e);
 };
 
 class SToolBar : public wxPanel
@@ -29,6 +33,7 @@ private:
 	vector<wxWindow*>		vlines;
 	int						min_height;
 	int						n_rows;
+	bool					draw_border;
 
 public:
 	SToolBar(wxWindow* parent);
@@ -42,6 +47,7 @@ public:
 	void	updateLayout(bool force = false, bool generate_event = true);
 	void	enableGroup(string name, bool enable = true);
 	int		calculateNumRows(int width);
+	void	drawBorder(bool draw = true) { draw_border = draw; }
 
 	// Events
 	void	onSize(wxSizeEvent& e);
@@ -49,6 +55,11 @@ public:
 	void	onFocus(wxFocusEvent& e);
 	void	onMouseEvent(wxMouseEvent& e);
 	void	onContextMenu(wxCommandEvent& e);
+	void	onButtonClick(wxCommandEvent& e);
+	void	onEraseBackground(wxEraseEvent& e);
+
+	// Static
+	static int	getBarHeight();
 };
 
 DECLARE_EVENT_TYPE(wxEVT_STOOLBAR_LAYOUT_UPDATED, -1)

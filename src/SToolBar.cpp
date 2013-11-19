@@ -8,6 +8,7 @@
 
 CVAR(Bool, show_toolbar_names, false, CVAR_SAVE)
 CVAR(String, toolbars_hidden, "", CVAR_SAVE)
+CVAR(Int, toolbar_size, 16, CVAR_SAVE)
 DEFINE_EVENT_TYPE(wxEVT_STOOLBAR_LAYOUT_UPDATED)
 
 class SToolBarSeparator : public wxControl
@@ -16,7 +17,7 @@ public:
 	SToolBarSeparator(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 	{
 		// Set size
-		int size = 22;
+		int size = toolbar_size + 6;
 		SetSizeHints(4, size, 4, size);
 		SetMinSize(wxSize(4, size));
 		SetSize(4, size);
@@ -43,10 +44,11 @@ public:
 		dc.Clear();
 
 		// Draw separator lines
-		dc.GradientFillLinear(wxRect(1, 0, 1, 11), col_background, col_dark, wxSOUTH);
-		dc.GradientFillLinear(wxRect(1, 11, 1, 11), col_background, col_dark, wxNORTH);
-		dc.GradientFillLinear(wxRect(2, 0, 1, 11), col_background, col_light, wxSOUTH);
-		dc.GradientFillLinear(wxRect(2, 11, 1, 11), col_background, col_light, wxNORTH);
+		int height = (toolbar_size / 16.0) * 11;
+		dc.GradientFillLinear(wxRect(1, 0, 1, height), col_background, col_dark, wxSOUTH);
+		dc.GradientFillLinear(wxRect(1, height, 1, height), col_background, col_dark, wxNORTH);
+		dc.GradientFillLinear(wxRect(2, 0, 1, height), col_background, col_light, wxSOUTH);
+		dc.GradientFillLinear(wxRect(2, height, 1, height), col_background, col_light, wxNORTH);
 	}
 };
 
@@ -137,17 +139,35 @@ void SToolBarGroup::hide(bool hide)
 	toolbars_hidden = tb_hidden;
 }
 
-void SToolBarGroup::addActionButton(string action, string icon)
+SToolBarButton* SToolBarGroup::addActionButton(string action, string icon, bool show_name)
 {
 	// Get sizer
 	wxSizer* sizer = GetSizer();
 
 	// Create button
-	SToolBarButton* button = new SToolBarButton(this, action, icon);
+	SToolBarButton* button = new SToolBarButton(this, action, icon, show_name);
 
 	// Add it to the group
-	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+	return button;
 }
+
+SToolBarButton* SToolBarGroup::addActionButton(string action_id, string action_name, string icon, string help_text, bool show_name)
+{
+	// Get sizer
+	wxSizer* sizer = GetSizer();
+
+	// Create button
+	SToolBarButton* button = new SToolBarButton(this, action_id, action_name, icon, help_text, show_name);
+	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SToolBarGroup::onButtonClicked, this, button->GetId());
+
+	// Add it to the group
+	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+	return button;
+}
+
 
 void SToolBarGroup::addCustomControl(wxWindow* control)
 {
@@ -155,7 +175,7 @@ void SToolBarGroup::addCustomControl(wxWindow* control)
 	control->SetParent(this);
 
 	// Add it to the group
-	GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 2);
+	GetSizer()->Add(control, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 1);
 }
 
 void SToolBarGroup::redraw()
@@ -167,6 +187,17 @@ void SToolBarGroup::redraw()
 		children[a]->Refresh();
 	}
 }
+
+void SToolBarGroup::onButtonClicked(wxCommandEvent& e)
+{
+	// No idea why the event doesn't propagate as it's supposed to,
+	// shouldn't need to do this
+	wxCommandEvent ev(wxEVT_STOOLBAR_BUTTON_CLICKED, GetId());
+	ev.SetEventObject(this);
+	ev.SetString(e.GetString());
+	ProcessWindowEvent(ev);
+}
+
 
 
 class STBSizer : public wxWrapSizer
@@ -194,6 +225,7 @@ SToolBar::SToolBar(wxWindow* parent) : wxPanel(parent, -1)
 	// Init variables
 	min_height = 0;
 	n_rows = 0;
+	draw_border = true;
 
 	// Set background colour
 	SetBackgroundColour(Drawing::getMenuBarBGColour());
@@ -209,6 +241,7 @@ SToolBar::SToolBar(wxWindow* parent) : wxPanel(parent, -1)
 	Bind(wxEVT_RIGHT_DOWN, &SToolBar::onMouseEvent, this);
 	Bind(wxEVT_LEFT_DOWN, &SToolBar::onMouseEvent, this);
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &SToolBar::onContextMenu, this);
+	Bind(wxEVT_ERASE_BACKGROUND, &SToolBar::onEraseBackground, this);
 }
 
 SToolBar::~SToolBar()
@@ -225,6 +258,8 @@ void SToolBar::addGroup(SToolBarGroup* group)
 
 	// Update layout
 	updateLayout(true);
+
+	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SToolBar::onButtonClick, this, group->GetId());
 }
 
 void SToolBar::deleteGroup(string name)
@@ -365,10 +400,11 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 	Refresh();
 
 	// Check if the toolbar height changed
-	if (min_height != (n_rows+1) * 32)//GetBestSize().y)
+	int h = toolbar_size + 14;
+	if (min_height != (n_rows+1) * h)
 	{
 		// Update minimum height
-		min_height = (n_rows+1) * 32;//GetBestSize().y;
+		min_height = (n_rows+1) * h;
 
 		// Generate layout update event
 		if (generate_event)
@@ -452,9 +488,14 @@ void SToolBar::onPaint(wxPaintEvent& e)
 	dc.SetBackground(wxBrush(col_background));
 	dc.Clear();
 
-	// Draw top
-	dc.SetPen(wxPen(col_light));
-	dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
+	if (draw_border)
+	{
+		// Draw top
+		dc.SetPen(wxPen(col_light));
+		dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
+
+		
+	}
 
 	// Draw bottom
 	dc.SetPen(wxPen(col_dark));
@@ -522,4 +563,22 @@ void SToolBar::onContextMenu(wxCommandEvent& e)
 		// Update layout
 		updateLayout(true);
 	}
+}
+
+int SToolBar::getBarHeight()
+{
+	return toolbar_size + 14;
+}
+
+void SToolBar::onButtonClick(wxCommandEvent& e)
+{
+	// See SToolBarGroup::onButtonClicked
+	wxCommandEvent ev(wxEVT_STOOLBAR_BUTTON_CLICKED, GetId());
+	ev.SetEventObject(this);
+	ev.SetString(e.GetString());
+	ProcessWindowEvent(ev);
+}
+
+void SToolBar::onEraseBackground(wxEraseEvent& e)
+{
 }

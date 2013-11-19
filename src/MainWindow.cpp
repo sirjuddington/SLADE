@@ -198,6 +198,7 @@ void MainWindow::setupLayout()
 	// Create Start Page (temporary)
 	html_startpage = wxWebView::New(notebook_tabs, -1, wxEmptyString);
 	html_startpage->SetName("startpage");
+	html_startpage->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
 	if (show_start_page)
 	{
 		notebook_tabs->AddPage(html_startpage,"Start Page");
@@ -353,7 +354,7 @@ void MainWindow::setupLayout()
 	toolbar->enableGroup("_entry", false);
 
 	// Add toolbar
-	m_mgr->AddPane(toolbar, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, 30).Resizable(false).PaneBorder(false).Name("toolbar"));
+	m_mgr->AddPane(toolbar, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, SToolBar::getBarHeight()).Resizable(false).PaneBorder(false).Name("toolbar"));
 
 
 	// -- Status Bar --

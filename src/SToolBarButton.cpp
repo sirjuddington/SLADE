@@ -9,30 +9,86 @@
 #include <wx/graphics.h>
 
 CVAR(Bool, toolbar_button_flat, true, CVAR_SAVE)
+EXTERN_CVAR(Int, toolbar_size);
+wxDEFINE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);
 
-SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon)
+SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, bool show_name)
 	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
 {
 	// Init variables
 	this->action = theApp->getAction(action);
 	this->state = STATE_NORMAL;
+	this->show_name = show_name;
+	this->action_id = this->action->getId();
+	this->action_name = this->action->getText();
+	this->help_text = this->action->getHelpText();
+
+	// Determine width of name text if shown
+	int name_width = 0;
+	if (show_name)
+	{
+		string name = this->action->getText();
+		name.Replace("&", "");
+		name_width = GetTextExtent(name).GetWidth() + 2;
+	}
 
 	// Set size
-	int size = 22;
-	SetSizeHints(size, size, size, size);
-	SetMinSize(wxSize(size, size));
-	SetSize(size, size);
+	int size = toolbar_size + 6;
+	SetSizeHints(size+name_width, size, size+name_width, size);
+	SetMinSize(wxSize(size+name_width, size));
+	SetSize(size+name_width, size);
 
 	// Load icon
 	if (icon.IsEmpty())
-		this->icon = getIcon(this->action->getIconName());
+		this->icon = getIcon(this->action->getIconName(), toolbar_size > 16);
 	else
-		this->icon = getIcon(icon);
+		this->icon = getIcon(icon, toolbar_size > 16);
 
 	// Set tooltip
-	string tip = this->action->getText();
-	tip.Replace("&", "");
-	SetToolTip(tip);
+	if (!show_name)
+	{
+		string tip = this->action->getText();
+		tip.Replace("&", "");
+		SetToolTip(tip);
+	}
+
+	// Bind events
+	Bind(wxEVT_PAINT, &SToolBarButton::onPaint, this);
+	Bind(wxEVT_ENTER_WINDOW, &SToolBarButton::onMouseEvent, this);
+	Bind(wxEVT_LEAVE_WINDOW, &SToolBarButton::onMouseEvent, this);
+	Bind(wxEVT_LEFT_DOWN, &SToolBarButton::onMouseEvent, this);
+	Bind(wxEVT_LEFT_UP, &SToolBarButton::onMouseEvent, this);
+	Bind(wxEVT_KILL_FOCUS, &SToolBarButton::onFocus, this);
+	Bind(wxEVT_LEFT_DCLICK, &SToolBarButton::onMouseEvent, this);
+	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
+}
+
+SToolBarButton::SToolBarButton(wxWindow* parent, string action_id, string action_name, string icon, string help_text, bool show_name)
+	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
+{
+	// Init variables
+	this->action = NULL;
+	this->action_id = action_id;
+	this->action_name = action_name;
+	this->help_text = help_text;
+	this->state = STATE_NORMAL;
+	this->show_name = show_name;
+
+	// Determine width of name text if shown
+	int name_width = show_name ? GetTextExtent(action_name).GetWidth() + 2 : 0;
+
+	// Set size
+	int size = toolbar_size + 6;
+	SetSizeHints(size+name_width, size, size+name_width, size);
+	SetMinSize(wxSize(size+name_width, size));
+	SetSize(size+name_width, size);
+
+	// Load icon
+	this->icon = getIcon(icon, toolbar_size > 16);
+
+	// Set tooltip
+	if (!show_name)
+		SetToolTip(action_name);
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SToolBarButton::onPaint, this);
@@ -47,6 +103,15 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon)
 
 SToolBarButton::~SToolBarButton()
 {
+}
+
+void SToolBarButton::sendClickedEvent()
+{
+	// Generate event
+	wxCommandEvent ev(wxEVT_STOOLBAR_BUTTON_CLICKED, GetId());
+	ev.SetEventObject(this);
+	ev.SetString(action_id);
+	ProcessWindowEvent(ev);
 }
 
 void SToolBarButton::onPaint(wxPaintEvent& e)
@@ -66,8 +131,20 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	if (!gc)
 		return;
 
+	// Get width of name text if shown
+	int name_width = 0;
+	int name_height = 0;
+	string name = action_name;
+	if (show_name)
+	{
+		name.Replace("&", "");
+		wxSize name_size = dc.GetTextExtent(name);
+		name_width = name_size.GetWidth() + 2;
+		name_height = name_size.y;
+	}
+
 	// Draw toggled border/background
-	if (action->isToggled())
+	if (action && action->isToggled())
 	{
 		// Use greyscale version of hilight colour
 		uint8_t r = col_hilight.Red();
@@ -83,19 +160,15 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(Drawing::darkColour(col_toggle, 5.0f)));
-			gc->DrawRectangle(1, 1, 20, 20);
+			gc->DrawRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4);
 		}
 		else
 		{
 			// Draw border
+			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(Drawing::lightColour(col_toggle, 5.0f), 1));
-			gc->DrawRoundedRectangle(2, 2, 18, 18, 2);
-
-			// Draw outer border
-			gc->SetBrush(wxBrush(col_toggle, wxBRUSHSTYLE_TRANSPARENT));
-			gc->SetPen(wxPen(Drawing::darkColour(col_toggle, 5.0f)));
-			gc->DrawRoundedRectangle(1, 1, 20, 20, 2);
+			gc->SetPen(wxPen(col_hilight));
+			gc->DrawRoundedRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4, 2);
 		}
 	}
 
@@ -116,19 +189,15 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
 			gc->SetPen(wxPen(col_hilight));
-			gc->DrawRectangle(1, 1, 20, 20);
+			gc->DrawRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4);
 		}
 		else
 		{
 			// Draw border
+			col_trans.Set(col_trans.Red(), col_trans.Green(), col_trans.Blue(), 80);
 			gc->SetBrush(col_trans);
-			gc->SetPen(wxPen(Drawing::lightColour(col_hilight, 5.0f), 1));
-			gc->DrawRoundedRectangle(2, 2, 18, 18, 2);
-
-			// Draw outer border
-			gc->SetBrush(wxBrush(col_hilight, wxBRUSHSTYLE_TRANSPARENT));
-			gc->SetPen(wxPen(Drawing::darkColour(col_hilight, 5.0f)));
-			gc->DrawRoundedRectangle(1, 1, 20, 20, 2);
+			gc->SetPen(wxPen(col_hilight));
+			gc->DrawRoundedRectangle(1, 1, toolbar_size+4+name_width, toolbar_size+4, 2);
 		}
 	}
 
@@ -143,12 +212,22 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		wxColor::MakeGrey(&r, &g, &b);
 
 		// Draw disabled icon
-		gc->DrawBitmap(icon.ConvertToDisabled(r), 3, 3, 16, 16);
+		gc->DrawBitmap(icon.ConvertToDisabled(r), 3, 3, toolbar_size, toolbar_size);
 	}
 
 	// Otherwise draw normal icon
 	else
-		gc->DrawBitmap(icon, 3, 3, 16, 16);
+		gc->DrawBitmap(icon, 3, 3, toolbar_size, toolbar_size);
+
+	if (show_name)
+	{
+		gc->SetFont(wxSystemSettings::GetFont(wxSystemFont::wxSYS_DEFAULT_GUI_FONT), wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_MENUTEXT));
+
+		int top = ((double)GetSize().y * 0.5) - ((double)name_height * 0.5);
+
+		//int adjust = (toolbar_size - 16) * 0.5;
+		gc->DrawText(name, toolbar_size + 5, top);
+	}
 
 	delete gc;
 }
@@ -165,7 +244,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 
 		// Set status bar help text
 		if (parent_window)
-			parent_window->SetStatusText(action->getHelpText());
+			parent_window->SetStatusText(help_text);
 	}
 
 	// Mouse leave
@@ -183,9 +262,15 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	if (e.GetEventType() == wxEVT_LEFT_DOWN || e.GetEventType() == wxEVT_LEFT_DCLICK)
 	{
 		state = STATE_MOUSEDOWN;
-		if (action->isRadio()) GetParent()->Refresh();
 
-		theApp->doAction(action->getId());
+		if (action)
+		{
+			if (action->isRadio())
+				GetParent()->Refresh();
+			theApp->doAction(action->getId());
+		}
+		else
+			sendClickedEvent();
 	}
 
 	// Left button up
