@@ -42,6 +42,7 @@ EXTERN_CVAR(Bool, swap_epanel_bars)
 EXTERN_CVAR(Bool, context_submenus)
 EXTERN_CVAR(Bool, list_font_monospace)
 EXTERN_CVAR(Bool, elist_type_bgcol)
+EXTERN_CVAR(Int, toolbar_size)
 
 
 /*******************************************************************
@@ -89,6 +90,14 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	// Show startpage
 	cb_start_page = new wxCheckBox(this, -1, "Show Start Page on Startup");
 	sizer->Add(cb_start_page, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Toolbar size
+	string sizes[] ={ "Small (16)", "Medium (24)", "Large (32)" };
+	choice_toolbar_size = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	hbox->Add(new wxStaticText(this, -1, "Toolbar icon size:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(choice_toolbar_size, 0, wxEXPAND|wxRIGHT, 4);
 }
 
 /* InterfacePrefsPanel::~InterfacePrefsPanel
@@ -110,6 +119,13 @@ void InterfacePrefsPanel::init()
 	cb_swap_epanel_bars->SetValue(swap_epanel_bars);
 	cb_context_submenus->SetValue(context_submenus);
 	cb_elist_bgcol->SetValue(elist_type_bgcol);
+
+	if (toolbar_size <= 16)
+		choice_toolbar_size->Select(0);
+	else if (toolbar_size <= 24)
+		choice_toolbar_size->Select(1);
+	else
+		choice_toolbar_size->Select(2);
 }
 
 /* InterfacePrefsPanel::applyPreferences
@@ -124,4 +140,11 @@ void InterfacePrefsPanel::applyPreferences()
 	swap_epanel_bars = cb_swap_epanel_bars->GetValue();
 	context_submenus = cb_context_submenus->GetValue();
 	elist_type_bgcol = cb_elist_bgcol->GetValue();
+
+	if (choice_toolbar_size->GetSelection() == 0)
+		toolbar_size = 16;
+	else if (choice_toolbar_size->GetSelection() == 1)
+		toolbar_size = 24;
+	else
+		toolbar_size = 32;
 }
