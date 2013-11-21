@@ -227,6 +227,9 @@ SToolBar::SToolBar(wxWindow* parent) : wxPanel(parent, -1)
 	n_rows = 0;
 	draw_border = true;
 
+	// Enable double buffering to avoid flickering
+	SetDoubleBuffered(true);
+
 	// Set background colour
 	SetBackgroundColour(Drawing::getMenuBarBGColour());
 
