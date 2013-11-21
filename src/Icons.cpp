@@ -90,38 +90,41 @@ bool loadIcons()
 
 	// Go through large icons
 	ArchiveTreeNode* dir_icons_large = res_archive->getDir("icons/large/");
-	for (size_t a = 0; a < dir_icons_large->numEntries(false); a++)
+	if (dir_icons_large)
 	{
-		ArchiveEntry* entry = dir_icons_large->getEntry(a);
-
-		// Export entry data to a temporary file
-		entry->exportFile(tempfile);
-
-		// Create / setup icon
-		bool found = false;
-		string name = entry->getName(true);
-		for (unsigned i = 0; i < icons.size(); i++)
+		for (size_t a = 0; a < dir_icons_large->numEntries(false); a++)
 		{
-			if (icons[i].name == name)
+			ArchiveEntry* entry = dir_icons_large->getEntry(a);
+
+			// Export entry data to a temporary file
+			entry->exportFile(tempfile);
+
+			// Create / setup icon
+			bool found = false;
+			string name = entry->getName(true);
+			for (unsigned i = 0; i < icons.size(); i++)
 			{
-				icons[i].image_large.LoadFile(tempfile);
-				found = true;
-				break;
+				if (icons[i].name == name)
+				{
+					icons[i].image_large.LoadFile(tempfile);
+					found = true;
+					break;
+				}
 			}
+
+			if (!found)
+			{
+				icon_t n_icon;
+				n_icon.image_large.LoadFile(tempfile);	// Load image from temp file
+				n_icon.name = entry->getName(true);	// Set icon name
+
+				// Add the icon
+				icons.push_back(n_icon);
+			}
+
+			// Delete the temporary file
+			wxRemoveFile(tempfile);
 		}
-
-		if (!found)
-		{
-			icon_t n_icon;
-			n_icon.image_large.LoadFile(tempfile);	// Load image from temp file
-			n_icon.name = entry->getName(true);	// Set icon name
-
-			// Add the icon
-			icons.push_back(n_icon);
-		}
-
-		// Delete the temporary file
-		wxRemoveFile(tempfile);
 	}
 
 	return true;

@@ -65,7 +65,7 @@ EntryPanel::EntryPanel(wxWindow* parent, string id)
 	// Add toolbar
 	toolbar = new SToolBar(this);
 	toolbar->drawBorder(false);
-	framesizer->Add(toolbar, 0, wxEXPAND);
+	framesizer->Add(toolbar, 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
 	framesizer->AddSpacer(2);
 
 	// Default entry toolbar group

@@ -483,7 +483,7 @@ void SToolBar::onPaint(wxPaintEvent& e)
 	wxColour col_background = Drawing::getMenuBarBGColour();
 	wxColour col_light = Drawing::lightColour(col_background, 1.5f);
 	wxColour col_dark = Drawing::darkColour(col_background, 1.5f);
-
+	
 	// Draw background
 	dc.SetBackground(wxBrush(col_background));
 	dc.Clear();

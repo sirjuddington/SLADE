@@ -138,7 +138,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	if (show_name)
 	{
 		name.Replace("&", "");
-		wxSize name_size = dc.GetTextExtent(name);
+		wxSize name_size = GetTextExtent(name);
 		name_width = name_size.GetWidth() + 2;
 		name_height = name_size.y;
 	}
@@ -221,12 +221,13 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 	if (show_name)
 	{
-		gc->SetFont(wxSystemSettings::GetFont(wxSystemFont::wxSYS_DEFAULT_GUI_FONT), wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_MENUTEXT));
+		//gc->SetFont(this->GetFont(), wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT));
 
 		int top = ((double)GetSize().y * 0.5) - ((double)name_height * 0.5);
 
 		//int adjust = (toolbar_size - 16) * 0.5;
-		gc->DrawText(name, toolbar_size + 5, top);
+		//gc->DrawText(name, toolbar_size + 5, top);
+		dc.DrawText(name, toolbar_size + 5, top);
 	}
 
 	delete gc;
