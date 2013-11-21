@@ -2522,14 +2522,14 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		theApp->getAction("arch_view_hex")->addToMenu(&context);
 	}
 
-	// Add gfx-related menu items if gfx are selected
-	if (gfx_selected)
+	// Add gfx-related menu items if gfx are selected (multi-select only)
+	if (gfx_selected && selection.size() > 1)
 	{
 		wxMenu* gfx;
 		if (context_submenus)
 		{
 			gfx = new wxMenu();
-			context.AppendSubMenu(gfx, "Gfx");
+			context.AppendSubMenu(gfx, "Graphics");
 		}
 		else
 		{

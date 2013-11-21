@@ -1039,11 +1039,12 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	theApp->getAction("pgfx_mirror")->addToMenu(custom);
 	theApp->getAction("pgfx_flip")->addToMenu(custom);
 	theApp->getAction("pgfx_rotate")->addToMenu(custom);
+	theApp->getAction("pgfx_convert")->addToMenu(custom);
 	custom->AppendSeparator();
 	theApp->getAction("pgfx_translate")->addToMenu(custom);
 	theApp->getAction("pgfx_colourise")->addToMenu(custom);
 	theApp->getAction("pgfx_tint")->addToMenu(custom);
-	theApp->getAction("pgfx_crop")->addToMenu(custom);
+	//theApp->getAction("pgfx_crop")->addToMenu(custom);
 	custom->AppendSeparator();
 	theApp->getAction("pgfx_alph")->addToMenu(custom);
 	theApp->getAction("pgfx_trns")->addToMenu(custom);
