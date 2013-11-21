@@ -42,6 +42,8 @@
 #include <wx/clrpicker.h>
 #include <wx/filename.h>
 #include "ConsoleHelpers.h"
+#include "SToolBar.h"
+#include "ModifyOffsetsDialog.h"
 
 
 /*******************************************************************
@@ -334,14 +336,25 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	gfx_canvas->allowDrag(true);
 	gfx_canvas->allowScroll(true);
 
-	// Zoom slider
-	slider_zoom = new wxSlider(this, -1, 100, 20, 800);
-	slider_zoom->SetLineSize(10);
-	slider_zoom->SetPageSize(100);
-	label_current_zoom = new wxStaticText(this, -1, "100%");
-	sizer_bottom->Add(new wxStaticText(this, -1, "Zoom:"), 0, wxALIGN_CENTER_VERTICAL, 0);
-	sizer_bottom->Add(slider_zoom, 1, wxEXPAND, 0);
-	sizer_bottom->Add(label_current_zoom, 0, wxALIGN_CENTER_VERTICAL, 0);
+	// Offsets
+	spin_xoffset = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, SHRT_MIN, SHRT_MAX, 0);
+	spin_yoffset = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, SHRT_MIN, SHRT_MAX, 0);
+	spin_xoffset->SetMinSize(wxSize(64, -1));
+	spin_yoffset->SetMinSize(wxSize(64, -1));
+	sizer_bottom->Add(new wxStaticText(this, -1, "Offsets:"), 0, wxALIGN_CENTER_VERTICAL, 0);
+	sizer_bottom->Add(spin_xoffset, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 4);
+	sizer_bottom->Add(spin_yoffset, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+
+	// Gfx (offset) type
+	string offset_types[] ={ "Auto", "Graphic", "Sprite", "HUD" };
+	choice_offset_type = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
+	choice_offset_type->SetSelection(0);
+	sizer_bottom->Add(choice_offset_type, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+
+	// Auto offset
+	btn_auto_offset = new wxBitmapButton(this, -1, getIcon("t_offset"));
+	btn_auto_offset->SetToolTip("Modify Offsets...");
+	sizer_bottom->Add(btn_auto_offset, 0, wxALIGN_CENTER_VERTICAL);
 
 	sizer_bottom->AddStretchSpacer();
 
@@ -367,22 +380,6 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	// Palette chooser
 	listenTo(theMainWindow->getPaletteChooser());
 
-	// Offsets
-	spin_xoffset = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, SHRT_MIN, SHRT_MAX, 0);
-	spin_yoffset = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, SHRT_MIN, SHRT_MAX, 0);
-	spin_xoffset->SetMinSize(wxSize(64, -1));
-	spin_yoffset->SetMinSize(wxSize(64, -1));
-	sizer_top->AddStretchSpacer();
-	sizer_top->Add(new wxStaticText(this, -1, "Offsets:"), 0, wxALIGN_CENTER_VERTICAL, 0);
-	sizer_top->Add(spin_xoffset, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 4);
-	sizer_top->Add(spin_yoffset, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-
-	// Gfx (offset) type
-	string offset_types[] = { "Auto", "Graphic", "Sprite", "HUD" };
-	choice_offset_type = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, offset_types);
-	choice_offset_type->SetSelection(0);
-	sizer_top->Add(choice_offset_type, 0, wxALIGN_CENTER_VERTICAL, 0);
-
 	// Custom menu
 	menu_custom = new wxMenu();
 	fillCustomMenu(menu_custom);
@@ -390,6 +387,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 
 	// Custom toolbar
 	custom_toolbar_actions = "pgfx_mirror;pgfx_flip;pgfx_rotate;pgfx_translate;pgfx_colourise;pgfx_tint";
+	setupToolbar();
 
 	// Bind Events
 	slider_zoom->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &GfxEntryPanel::onZoomChanged, this);
@@ -401,6 +399,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas->GetId());
 	btn_nextimg->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxEntryPanel::onBtnNextImg, this);
 	btn_previmg->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxEntryPanel::onBtnPrevImg, this);
+	btn_auto_offset->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxEntryPanel::onBtnAutoOffset, this);
 
 	// Apply layout
 	Layout();
@@ -498,13 +497,24 @@ bool GfxEntryPanel::saveEntry()
 		}
 
 		if (ok)
+		{
+			// Set modified
 			entry->setState(1);
+
+			// Re-detect type
+			EntryType* oldtype = entry->getType();
+			EntryType::detectEntryType(entry);
+
+			// Update extension if type changed
+			if (oldtype != entry->getType())
+				entry->setExtensionByType();
+		}
 		else
 			wxMessageBox(wxString("Cannot save changes to image: ") + error, "Error", wxICON_ERROR);
 	}
 	// Otherwise just set offsets
 	else
-		EntryOperations::modifyGfxOffsets(entry, -1, point2_t(spin_xoffset->GetValue(), spin_yoffset->GetValue()), true, true, false);
+		EntryOperations::setGfxOffsets(entry, spin_xoffset->GetValue(), spin_yoffset->GetValue());
 
 	// Apply alPh/tRNS options
 	if (entry->getType()->getFormat() == "img_png")
@@ -518,7 +528,38 @@ bool GfxEntryPanel::saveEntry()
 			EntryOperations::modifytRNSChunk(entry, !trns);
 	}
 
+	if (ok)
+		setModified(false);
+
 	return ok;
+}
+
+void GfxEntryPanel::setupToolbar()
+{
+	// Zoom
+	SToolBarGroup* g_zoom = new SToolBarGroup(toolbar, "Zoom", true);
+	slider_zoom = new wxSlider(g_zoom, -1, 100, 20, 800);
+	slider_zoom->SetLineSize(10);
+	slider_zoom->SetPageSize(100);
+	label_current_zoom = new wxStaticText(g_zoom, -1, "100%");
+	g_zoom->addCustomControl(slider_zoom);
+	g_zoom->addCustomControl(label_current_zoom);
+	toolbar->addGroup(g_zoom);
+
+	// Image operations
+	SToolBarGroup* g_image = new SToolBarGroup(toolbar, "Image");
+	g_image->addActionButton("pgfx_mirror", "");
+	g_image->addActionButton("pgfx_flip", "");
+	g_image->addActionButton("pgfx_rotate", "");
+	g_image->addActionButton("pgfx_convert", "");
+	toolbar->addGroup(g_image);
+
+	// Colour operations
+	SToolBarGroup* g_colour = new SToolBarGroup(toolbar, "Colour");
+	g_colour->addActionButton("pgfx_translate", "");
+	g_colour->addActionButton("pgfx_colourise", "");
+	g_colour->addActionButton("pgfx_tint", "");
+	toolbar->addGroup(g_colour);
 }
 
 /* GfxEntryPanel::extractAll
@@ -619,11 +660,11 @@ void GfxEntryPanel::refresh()
 	// Apply offset view type
 	applyViewType();
 
-	// Enable save changes button depending on if the entry is locked
-	if (entry->isLocked())
-		btn_save->Enable(false);
-	else
-		btn_save->Enable(true);
+	//// Enable save changes button depending on if the entry is locked
+	//if (entry->isLocked())
+	//	btn_save->Enable(false);
+	//else
+	//	btn_save->Enable(true);
 
 	// Reset display offsets in graphics mode
 	if (gfx_canvas->getViewType() != GFXVIEW_SPRITE)
@@ -675,8 +716,8 @@ string GfxEntryPanel::statusString()
  *******************************************************************/
 void GfxEntryPanel::refreshPanel()
 {
-	if (entry && getImage() && !image_data_modified)
-		loadEntry(entry, getImage()->getIndex());
+	//if (entry && getImage() && !image_data_modified)
+	//	loadEntry(entry, getImage()->getIndex());
 	Update();
 	Refresh();
 }
@@ -952,6 +993,33 @@ bool GfxEntryPanel::handleAction(string id)
 		extractAll();
 	}
 
+	// Convert
+	else if (id == "pgfx_convert")
+	{
+		GfxConvDialog dlg;
+		dlg.SetParent(this);
+		dlg.CenterOnParent();
+		dlg.openEntry(entry);
+
+		dlg.ShowModal();
+
+		if (dlg.itemModified(0))
+		{
+			// Get image and conversion info
+			SImage* image = dlg.getItemImage(0);
+			SIFormat* format = dlg.getItemFormat(0);
+
+			// Write converted image back to entry
+			format->saveImage(*image, entry_data, dlg.getItemPalette(0));
+			image_data_modified = true;
+			setModified();
+
+			// Refresh
+			getImage()->open(entry_data);
+			gfx_canvas->Refresh();
+		}
+	}
+
 	// Unknown action
 	else
 		return false;
@@ -1019,11 +1087,8 @@ void GfxEntryPanel::onZoomChanged(wxCommandEvent& e)
  *******************************************************************/
 void GfxEntryPanel::onXOffsetChanged(wxSpinEvent& e)
 {
-	if (offset_changing)
-		return;
-
 	// Change the image x-offset
-	int offset = spin_xoffset->GetValue();
+	int offset = e.GetPosition();
 	getImage()->setXOffset(offset);
 
 	// Update variables
@@ -1038,11 +1103,8 @@ void GfxEntryPanel::onXOffsetChanged(wxSpinEvent& e)
  *******************************************************************/
 void GfxEntryPanel::onYOffsetChanged(wxSpinEvent& e)
 {
-	if (offset_changing)
-		return;
-
 	// Change image y-offset
-	int offset = spin_yoffset->GetValue();
+	int offset = e.GetPosition();
 	getImage()->setYOffset(offset);
 
 	// Update variables
@@ -1084,10 +1146,8 @@ void GfxEntryPanel::onARCChanged(wxCommandEvent& e)
 void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e)
 {
 	// Update spin controls
-	offset_changing = true;
-	spin_xoffset->SetValue(gfx_canvas->getImage()->offset().x);
-	spin_yoffset->SetValue(gfx_canvas->getImage()->offset().y);
-	offset_changing = false;
+	spin_xoffset->SetValue(getImage()->offset().x);
+	spin_yoffset->SetValue(getImage()->offset().y);
 
 	// Set changed
 	setModified();
@@ -1135,6 +1195,29 @@ void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 			loadEntry(entry, cur_index - 1);
 		else
 			loadEntry(entry, num - 1);
+	}
+}
+
+void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
+{
+	ModifyOffsetsDialog dlg;
+	dlg.SetParent(this);
+	dlg.CenterOnParent();
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		// Calculate new offsets
+		point2_t offsets = dlg.calculateOffsets(spin_xoffset->GetValue(), spin_yoffset->GetValue(),
+			gfx_canvas->getImage()->getWidth(), gfx_canvas->getImage()->getHeight());
+
+		// Change offsets
+		spin_xoffset->SetValue(offsets.x);
+		spin_yoffset->SetValue(offsets.y);
+		getImage()->setXOffset(offsets.x);
+		getImage()->setYOffset(offsets.y);
+		refreshPanel();
+		
+		// Set changed
+		setModified();
 	}
 }
 

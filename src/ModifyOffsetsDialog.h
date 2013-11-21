@@ -26,6 +26,7 @@ public:
 	bool		relativeOffset();
 	bool		xOffChange();
 	bool		yOffChange();
+	point2_t	calculateOffsets(int xoff, int yoff, int width, int height);
 
 	// Events
 	void		onOptSet(wxCommandEvent& e);

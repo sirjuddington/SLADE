@@ -33,12 +33,7 @@
 #include "EntryPanel.h"
 #include "MainWindow.h"
 #include "ArchivePanel.h"
-
-
-/*******************************************************************
- * VARIABLES
- *******************************************************************/
-CVAR(Bool, swap_epanel_bars, false, CVAR_SAVE)
+#include "SToolBarButton.h"
 
 
 /*******************************************************************
@@ -67,39 +62,29 @@ EntryPanel::EntryPanel(wxWindow* parent, string id)
 	sizer->Add(framesizer, 1, wxEXPAND|wxALL, 4);
 	Show(false);
 
+	// Add toolbar
+	toolbar = new SToolBar(this);
+	toolbar->drawBorder(false);
+	framesizer->Add(toolbar, 0, wxEXPAND);
+	framesizer->AddSpacer(2);
+
+	// Default entry toolbar group
+	SToolBarGroup* tb_group = new SToolBarGroup(toolbar, "Entry");
+	stb_save = tb_group->addActionButton("save", "Save", "t_save", "Save any changes made to the entry", true);
+	stb_revert = tb_group->addActionButton("revert", "Revert", "t_revert", "Revert any changes made to the entry", true);
+	toolbar->addGroup(tb_group);
+	toolbar->enableGroup("Entry", false);
+
 	// Setup sizer positions
 	sizer_top = new wxBoxSizer(wxHORIZONTAL);
 	sizer_bottom = new wxBoxSizer(wxHORIZONTAL);
 	sizer_main = new wxBoxSizer(wxVERTICAL);
-	if (swap_epanel_bars)
-	{
-		framesizer->Add(sizer_bottom, 0, wxEXPAND|wxALL, 4);
-		framesizer->Add(sizer_main, 1, wxEXPAND|wxLEFT|wxRIGHT, 4);
-		framesizer->Add(sizer_top, 0, wxEXPAND|wxALL, 4);
-	}
-	else
-	{
-		framesizer->Add(sizer_top, 0, wxEXPAND|wxALL, 4);
-		framesizer->Add(sizer_main, 1, wxEXPAND|wxLEFT|wxRIGHT, 4);
-		framesizer->Add(sizer_bottom, 0, wxEXPAND|wxALL, 4);
-	}
-
-	// Create generic EntryPanel buttons
-	btn_save = new wxButton(this, -1, "Save");
-	btn_revert = new wxButton(this, -1, "Revert");
-	btn_edit_ext = new wxButton(this, -1, "Edit Externally");
-
-	sizer_top->Add(btn_save, 0, wxEXPAND|wxRIGHT, 4);
-	sizer_top->Add(btn_revert, 0, wxEXPAND|wxRIGHT, 4);
-	sizer_top->Add(btn_edit_ext, 0, wxEXPAND|wxRIGHT, 4);
+	framesizer->Add(sizer_top, 0, wxEXPAND|wxALL, 4);
+	framesizer->Add(sizer_main, 1, wxEXPAND|wxLEFT|wxRIGHT, 4);
+	framesizer->Add(sizer_bottom, 0, wxEXPAND|wxALL, 4);
 
 	// Bind button events
-	btn_save->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &EntryPanel::onBtnSave, this);
-	btn_revert->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &EntryPanel::onBtnRevert, this);
-	btn_edit_ext->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &EntryPanel::onBtnEditExt, this);
-
-	// Disable unimplemented buttons
-	btn_edit_ext->Show(false);
+	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &EntryPanel::onToolbarButton, this, toolbar->GetId());
 }
 
 /* EntryPanel::~EntryPanel
@@ -130,6 +115,8 @@ void EntryPanel::setModified(bool c)
 			modified = c;
 	}
 	if (modified) callRefresh();
+
+	toolbar->enableGroup("Entry", modified);
 }
 
 /* EntryPanel::openEntry
@@ -145,6 +132,9 @@ bool EntryPanel::openEntry(ArchiveEntry* entry)
 		return false;
 	}
 
+	// Set unmodified
+	setModified(false);
+
 	// Copy current entry content
 	entry_data.clear();
 	entry_data.importMem(entry->getData(true), entry->getSize());
@@ -154,6 +144,8 @@ bool EntryPanel::openEntry(ArchiveEntry* entry)
 	{
 		this->entry = entry;
 		updateStatus();
+		toolbar->updateLayout(true);
+		Layout();
 		return true;
 	}
 	else
@@ -267,10 +259,10 @@ void EntryPanel::addCustomToolBar()
 		return;
 
 	// Split list of toolbar actions
-	wxArrayString actions = wxSplit(custom_toolbar_actions, ';');
+	//wxArrayString actions = wxSplit(custom_toolbar_actions, ';');
 
 	// Add to main window
-	theMainWindow->addCustomToolBar("Current Entry", actions);
+	//theMainWindow->addCustomToolBar("Current Entry", actions);
 }
 
 /* EntryPanel::removeCustomMenu
@@ -282,7 +274,6 @@ void EntryPanel::removeCustomToolBar()
 	theMainWindow->removeCustomToolBar("Current Entry");
 }
 
-
 /* EntryPanel::isActivePanel
  * Returns true if the entry panel is the Archive Manager Panel's
  * current area. This is needed because the wx function IsShown()
@@ -292,6 +283,15 @@ void EntryPanel::removeCustomToolBar()
 bool EntryPanel::isActivePanel()
 {
 	return (IsShown() && theActivePanel == this);
+}
+
+/* EntryPanel::updateToolbar
+ * Updates the toolbar layout
+ *******************************************************************/
+void EntryPanel::updateToolbar()
+{
+	toolbar->updateLayout(true);
+	Layout();
 }
 
 /*******************************************************************
@@ -336,4 +336,43 @@ void EntryPanel::onBtnRevert(wxCommandEvent& e)
 void EntryPanel::onBtnEditExt(wxCommandEvent& e)
 {
 	wxLogMessage("External edit not implemented");
+}
+
+/* EntryPanel::onToolbarButton
+* Called when a button on the toolbar is clicked
+*******************************************************************/
+void EntryPanel::onToolbarButton(wxCommandEvent& e)
+{
+	string button = e.GetString();
+
+	// Save
+	if (button == "save")
+	{
+		if (modified)
+		{
+			if (undo_manager)
+			{
+				undo_manager->beginRecord("Save Entry Modifications");
+				undo_manager->recordUndoStep(new EntryDataUS(entry));
+			}
+
+			if (saveEntry())
+			{
+				modified = false;
+				if (undo_manager)
+					undo_manager->endRecord(true);
+			}
+			else if (undo_manager)
+				undo_manager->endRecord(false);
+		}
+	}
+
+	// Revert
+	else if (button == "revert")
+	{
+		revertEntry();
+	}
+
+	else
+		toolbarButtonClick(button);
 }

@@ -280,9 +280,8 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	choice_category->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ArchivePanel::onChoiceCategoryChanged, this);
 	Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
 	btn_updir->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onBtnUpDir, this);
-	((DefaultEntryPanel*)default_area)->getEditTextButton()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onDEPEditAsText, this);
-	((DefaultEntryPanel*)default_area)->getViewHexButton()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onDEPViewAsHex, this);
-	((MapEntryPanel*)map_area)->getEditTextButton()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onMEPEditAsText, this);
+	//((DefaultEntryPanel*)default_area)->getEditTextButton()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onDEPEditAsText, this);
+	//((DefaultEntryPanel*)default_area)->getViewHexButton()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onDEPViewAsHex, this);
 
 	// Do a quick check to see if we need the path display
 	if (archive->getRoot()->nChildren() == 0)
@@ -1402,7 +1401,7 @@ bool ArchivePanel::gfxModifyOffsets()
 	for (uint32_t a = 0; a < selection.size(); a++)
 	{
 		undo_manager->recordUndoStep(new EntryDataUS(selection[a]));
-		EntryOperations::modifyGfxOffsets(selection[a], mod.getAlignType(), mod.getOffset(), mod.xOffChange(), mod.yOffChange(), mod.relativeOffset());
+		EntryOperations::modifyGfxOffsets(selection[a], &mod);
 	}
 	theActivePanel->callRefresh();
 
@@ -1880,6 +1879,8 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		// Show the new entry panel
 		if (!showEntryPanel(new_area))
 			return false;
+		else
+			new_area->updateToolbar();
 	}
 	return true;
 }
@@ -2032,8 +2033,8 @@ bool ArchivePanel::handleAction(string id)
 	if (!IsShown())
 		return false;
 
-	// We're only interested in "arch_" actions
-	if (!id.StartsWith("arch_"))
+	// We're only interested in "arch_" actions (and some others)
+	if (!id.StartsWith("arch_") && !id.StartsWith("pmap_"))
 		return false;
 
 
@@ -2205,6 +2206,18 @@ bool ArchivePanel::handleAction(string id)
 		convertTextures();
 	else if (id == "arch_map_opendb2")
 		mapOpenDb2();
+
+	// Map Editor Panel
+	else if (id == "pmap_open_text")
+	{
+		// Edit Level Script
+
+		// Get entry to edit
+		ArchiveEntry* entry = map_area->getEntry();
+
+		// Open in text editor
+		openEntryAsText(entry);
+	}
 
 	// Unknown action
 	else

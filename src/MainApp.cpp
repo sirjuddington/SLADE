@@ -500,6 +500,7 @@ void MainApp::initActions()
 	new SAction("pgfx_trns", "tRNS Chunk", "", "Add/Remove tRNS chunk to/from the PNG", "", SAction::CHECK);
 	new SAction("pgfx_extract", "Extract All", "", "Extract all images in this entry to separate PNGs");
 	new SAction("pgfx_crop", "Crop", "t_settings", "Crop the graphic");
+	new SAction("pgfx_convert", "Convert to...", "t_convert", "Open the Gfx Conversion Dialog for the entry");
 
 	// ArchiveEntryList
 	new SAction("aelt_sizecol", "Size", "", "Show the size column", "", SAction::CHECK);
@@ -557,6 +558,9 @@ void MainApp::initActions()
 	new SAction("ppal_report", "Write Report", "e_text", "Write an info report on this palette");
 	new SAction("ppal_generate", "Generate Palettes", "e_palette", "Generate full range of palettes from the first");
 	new SAction("ppal_colormap", "Generate Colormaps", "e_colormap", "Generate colormap lump from the first palette");
+
+	// MapEntryPanel
+	new SAction("pmap_open_text", "Edit Level Script", "e_text", "Open the map header as text (to edit fragglescript, etc.)");
 
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "t_save", "Save any changes to the current map", "Ctrl+S");

@@ -6,12 +6,14 @@
 #include "SIFormat.h"
 
 class wxFrame;
+class ModifyOffsetsDialog;
 namespace EntryOperations
 {
 	bool	openExternal(ArchiveEntry* entry);
 	bool	openMapDB2(ArchiveEntry* entry);
 	bool	gfxConvert(ArchiveEntry* entry, string target_format, SIFormat::convert_options_t opt, int target_colformat = -1);
-	bool	modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point2_t offsets, bool xc, bool yc, bool relative);
+	bool	modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog);
+	bool	setGfxOffsets(ArchiveEntry* entry, int x, int y);
 	bool	modifyalPhChunk(ArchiveEntry* entry, bool value);
 	bool	modifytRNSChunk(ArchiveEntry* entry, bool value);
 	bool	getalPhChunk(ArchiveEntry* entry);

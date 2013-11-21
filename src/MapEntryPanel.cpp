@@ -66,16 +66,14 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 	map_canvas = new MapPreviewCanvas(this);
 	sizer_main->Add(map_canvas->toPanel(this), 1, wxEXPAND, 0);
 
-	// Add 'Save Map Image' button
-	btn_saveimg = new wxButton(this, -1, "Save Map Image");
-	sizer_top->Add(btn_saveimg, 0, wxEXPAND|wxRIGHT, 4);
+	// Setup map toolbar buttons
+	SToolBarGroup* group = new SToolBarGroup(toolbar, "Map");
+	group->addActionButton("save_image", "Save Map Image", "t_export", "Save map overview to an image", true);
+	group->addActionButton("pmap_open_text", "", true);
+	toolbar->addGroup(group);
 
-	// Add 'Edit Level Script' button
-	btn_script = new wxButton(this, -1, "Edit Level Script");
-	sizer_top->Add(btn_script, 0, wxEXPAND|wxRIGHT, 4);
-
-	// Bind events
-	btn_saveimg->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEntryPanel::onBtnSaveImage, this);
+	// Remove save/revert buttons
+	toolbar->deleteGroup("Entry");
 
 	// Layout
 	Layout();
@@ -174,10 +172,14 @@ bool MapEntryPanel::createImage()
 	return true;
 }
 
-/* MapEntryPanel::onBtnSaveImage
- * Called when the 'Save Map Image' button is clicked
+/* MapEntryPanel::toolbarButtonClick
+ * Called when a (EntryPanel) toolbar button is clicked
  *******************************************************************/
-void MapEntryPanel::onBtnSaveImage(wxCommandEvent& e)
+void MapEntryPanel::toolbarButtonClick(string action_id)
 {
-	createImage();
+	// Save Map Image
+	if (action_id == "save_image")
+	{
+		createImage();
+	}
 }

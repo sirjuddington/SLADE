@@ -43,7 +43,7 @@
  * ModifyOffsetsDialog class constructor
  *******************************************************************/
 ModifyOffsetsDialog::ModifyOffsetsDialog()
-	:	wxDialog(NULL, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+	:	wxDialog(NULL, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
 	// Create main sizer
 	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
@@ -58,22 +58,8 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	m_vbox->Add(hbox, 0, wxEXPAND|wxALL, 4);
 
-	// 'Set Offsets'
-	opt_set = new wxRadioButton(this, -1, "Set Offsets", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	hbox->Add(opt_set, 1, wxEXPAND|wxALL, 4);
-
-	entry_xoff = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
-	entry_yoff = new wxTextCtrl(this, -2, "", wxDefaultPosition, wxSize(40, -1));
-	cbox_relative = new wxCheckBox(this, -1, "Relative");
-	hbox->Add(entry_xoff, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(entry_yoff, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(cbox_relative, 0, wxEXPAND|wxALL, 4);
-
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	m_vbox->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
 	// 'Auto Offsets'
-	opt_auto = new wxRadioButton(this, -1, "Automatic Offsets");
+	opt_auto = new wxRadioButton(this, -1, "Automatic Offsets", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	hbox->Add(opt_auto, 1, wxEXPAND|wxALL, 4);
 
 	string offtypes[] =
@@ -89,8 +75,24 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 
 	combo_aligntype = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 7, offtypes);
 	combo_aligntype->Select(0);
-	combo_aligntype->Enable(false);
 	hbox->Add(combo_aligntype, 0, wxEXPAND|wxALL, 4);
+
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	m_vbox->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// 'Set Offsets'
+	opt_set = new wxRadioButton(this, -1, "Set Offsets");
+	hbox->Add(opt_set, 1, wxEXPAND|wxALL, 4);
+
+	entry_xoff = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
+	entry_yoff = new wxTextCtrl(this, -2, "", wxDefaultPosition, wxSize(40, -1));
+	cbox_relative = new wxCheckBox(this, -1, "Relative");
+	hbox->Add(entry_xoff, 0, wxEXPAND|wxALL, 4);
+	hbox->Add(entry_yoff, 0, wxEXPAND|wxALL, 4);
+	hbox->Add(cbox_relative, 0, wxEXPAND|wxALL, 4);
+	entry_xoff->Enable(false);
+	entry_yoff->Enable(false);
+	cbox_relative->Enable(false);
 
 	// Add default dialog buttons
 	m_vbox->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 4);
@@ -133,7 +135,7 @@ point2_t ModifyOffsetsDialog::getOffset()
 int	ModifyOffsetsDialog::getAlignType()
 {
 	if (opt_auto->GetValue())
-		return combo_aligntype->GetSelection()-1;
+		return combo_aligntype->GetSelection();
 	else
 		return -1;
 }
@@ -177,6 +179,84 @@ bool ModifyOffsetsDialog::yOffChange()
 		return false;
 	else
 		return true;
+}
+
+point2_t ModifyOffsetsDialog::calculateOffsets(int xoff, int yoff, int width, int height)
+{
+	int type = getAlignType();
+	point2_t offset = getOffset();
+	int x = xoff;
+	int y = yoff;
+
+	if (type >= 0)
+	{
+		// Monster
+		if (type == 0)
+		{
+			x = width * 0.5;
+			y = height - 4;
+		}
+
+		// Monster (GL-friendly)
+		else if (type == 1)
+		{
+			x = width * 0.5;
+			y = height;
+		}
+
+		// Projectile
+		else if (type == 2)
+		{
+			x = width * 0.5;
+			y = height * 0.5;
+		}
+
+		// Weapon (Fullscreen)
+		else if (type == 3)
+		{
+			x = -160 + (width * 0.5);
+			y = -200 + height;
+		}
+
+		// Weapon (Doom status bar)
+		else if (type == 4)
+		{
+			x = -160 + (width * 0.5);
+			y = -200 + 32 + height;
+		}
+
+		// Weapon (Heretic status bar)
+		else if (type == 5)
+		{
+			x = -160 + (width * 0.5);
+			y = -200 + 42 + height;
+		}
+
+		// Weapon (Hexen status bar)
+		else if (type == 6)
+		{
+			x = -160 + (width * 0.5);
+			y = -200 + 38 + height;
+		}
+	}
+	else
+	{
+		// Relative offset
+		if (relativeOffset())
+		{
+			if (xOffChange()) x = xoff + offset.x;
+			if (yOffChange()) y = yoff + offset.y;
+		}
+		
+		// Set offset
+		else
+		{
+			if (xOffChange()) x = offset.x;
+			if (yOffChange()) y = offset.y;
+		}
+	}
+
+	return point2_t(x, y);
 }
 
 

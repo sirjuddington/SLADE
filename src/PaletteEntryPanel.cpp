@@ -39,12 +39,14 @@
 #include <wx/dialog.h>
 #include <wx/clrpicker.h>
 
+
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
 CVAR(Float, col_greyscale_r, 0.299, CVAR_SAVE)
 CVAR(Float, col_greyscale_g, 0.587, CVAR_SAVE)
 CVAR(Float, col_greyscale_b, 0.114, CVAR_SAVE)
+
 
 /*******************************************************************
  * PALETTECOLOURISEDIALOG CLASS
@@ -570,30 +572,30 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent)
 	pal_canvas->allowSelection(1);
 	sizer_main->Add(pal_canvas->toPanel(this), 1, wxEXPAND, 0);
 
-	// Enable default entry buttons except external editor
-	btn_save->Enable(true);
-	btn_revert->Enable(true);
-	btn_edit_ext->Enable(false);
-
-	// Add palette selection buttons
-	btn_nextpal = new wxBitmapButton(this, -1, getIcon("t_right"));
-	btn_prevpal = new wxBitmapButton(this, -1, getIcon("t_left"));
-	text_curpal = new wxStaticText(this, -1, "Palette XX/XX");
-	sizer_bottom->Add(btn_prevpal, 0, wxEXPAND|wxRIGHT, 4);
-	sizer_bottom->Add(btn_nextpal, 0, wxEXPAND|wxRIGHT, 4);
-	sizer_bottom->Add(text_curpal, 0, wxALIGN_CENTER_VERTICAL, 4);
-
 	// Setup custom menu
 	menu_custom = new wxMenu();
 	fillCustomMenu(menu_custom);
 	custom_menu_name = "Palette";
 
-	// Setup custom toolbar
-	custom_toolbar_actions = "ppal_addcustom;ppal_exportas;ppal_importfrom;ppal_tweak;ppal_test;ppal_generate;ppal_duplicate;ppal_remove;ppal_removeothers;ppal_moveup;ppal_movedown";
+	// --- Setup custom toolbar groups ---
+
+	// Palette
+	SToolBarGroup* group_palette = new SToolBarGroup(toolbar, "Palette", true);
+	group_palette->addActionButton("pal_prev", "Previous Palette", "t_left", "");
+	text_curpal = new wxStaticText(group_palette, -1, "XX/XX");
+	group_palette->addCustomControl(text_curpal);
+	group_palette->addActionButton("pal_next", "Next Palette", "t_right", "");
+	toolbar->addGroup(group_palette);
+
+	// Current Palette
+	string actions = "ppal_moveup;ppal_movedown;ppal_duplicate;ppal_remove;ppal_removeothers";
+	toolbar->addActionGroup("Palette Organisation", wxSplit(actions, ';'));
+
+	// Palette Operations
+	actions = "ppal_addcustom;ppal_exportas;ppal_importfrom;ppal_tweak;ppal_test;ppal_generate";
+	toolbar->addActionGroup("Palette Operations", wxSplit(actions, ';'));
 
 	// Bind events
-	btn_nextpal->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PaletteEntryPanel::onBtnNextPal, this);
-	btn_prevpal->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PaletteEntryPanel::onBtnPrevPal, this);
 	pal_canvas->Bind(wxEVT_LEFT_DOWN, &PaletteEntryPanel::onPalCanvasMouseEvent, this);
 	pal_canvas->Bind(wxEVT_RIGHT_DOWN, &PaletteEntryPanel::onPalCanvasMouseEvent, this);
 
@@ -699,7 +701,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	pal_canvas->getPalette().copyPalette(palettes[index]);
 
 	// Set current palette text
-	text_curpal->SetLabel(S_FMT("Palette %d/%d", index+1, palettes.size()));
+	text_curpal->SetLabel(S_FMT("%d/%d", index+1, palettes.size()));
 
 	// Refresh
 	Layout();
@@ -724,6 +726,30 @@ void PaletteEntryPanel::refreshPanel()
 	}
 	Update();
 	Refresh();
+}
+
+/* PaletteEntryPanel::toolbarButtonClick
+ * Called when a (EntryPanel) toolbar button is clicked
+ *******************************************************************/
+void PaletteEntryPanel::toolbarButtonClick(string action_id)
+{
+	// Prev. palette
+	if (action_id == "pal_prev")
+	{
+		if (cur_palette == 0)
+			cur_palette = palettes.size();
+		if (showPalette(cur_palette - 1))
+			cur_palette--;
+	}
+
+	// Next palette
+	else if (action_id == "pal_next")
+	{
+		if (cur_palette + 1 == palettes.size())
+			cur_palette = -1;
+		if (showPalette(cur_palette + 1))
+			cur_palette++;
+	}
 }
 
 /* PaletteEntryPanel::addCustomPalette
@@ -1444,28 +1470,6 @@ void PaletteEntryPanel::analysePalettes()
 /*******************************************************************
  * PALETTEENTRYPANEL CLASS EVENTS
  *******************************************************************/
-
-/* PaletteEntryPanel::onBtnNextPal
- * Called when the 'next palette' button is clicked
- *******************************************************************/
-void PaletteEntryPanel::onBtnNextPal(wxCommandEvent& e)
-{
-	if (cur_palette + 1 == palettes.size())
-		cur_palette = -1;
-	if (showPalette(cur_palette + 1))
-		cur_palette++;
-}
-
-/* PaletteEntryPanel::onBtnPrevPal
- * Called when the 'previous palette' button is clicked
- *******************************************************************/
-void PaletteEntryPanel::onBtnPrevPal(wxCommandEvent& e)
-{
-	if (cur_palette == 0)
-		cur_palette = palettes.size();
-	if (showPalette(cur_palette - 1))
-		cur_palette--;
-}
 
 /* PaletteEntryPanel::onPalCanvasMouseEvent
  * Called when a mouse event happens within the palette canvas (eg.

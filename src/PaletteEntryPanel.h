@@ -25,8 +25,6 @@ private:
 	vector<Palette8bit*>	palettes;
 	uint32_t				cur_palette;
 
-	wxButton*				btn_nextpal;
-	wxButton*				btn_prevpal;
 	wxStaticText*			text_curpal;
 
 	// A helper for generatePalettes() which has no reason to be called outside
@@ -40,6 +38,7 @@ public:
 	bool	saveEntry();
 	string	statusString();
 	void	refreshPanel();
+	void	toolbarButtonClick(string action_id);
 
 	bool	showPalette(uint32_t index);
 	bool	addCustomPalette();
@@ -67,8 +66,6 @@ public:
 	bool	fillCustomMenu(wxMenu* custom);
 
 	// Events
-	void	onBtnNextPal(wxCommandEvent& e);
-	void	onBtnPrevPal(wxCommandEvent& e);
 	void	onPalCanvasMouseEvent(wxMouseEvent& e);
 };
 

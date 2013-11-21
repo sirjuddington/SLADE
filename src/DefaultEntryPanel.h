@@ -11,8 +11,6 @@ private:
 
 	wxStaticText*	label_type;
 	wxStaticText*	label_size;
-	wxButton*		btn_edit_text;
-	wxButton*		btn_view_hex;
 
 	// Actions
 	wxStaticBox*	frame_actions;
@@ -23,9 +21,6 @@ private:
 public:
 	DefaultEntryPanel(wxWindow* parent);
 	~DefaultEntryPanel();
-
-	wxButton*	getEditTextButton() { return btn_edit_text; }
-	wxButton*	getViewHexButton() { return btn_view_hex; }
 
 	bool	loadEntry(ArchiveEntry* entry);
 	bool	loadEntries(vector<ArchiveEntry*>& entries);

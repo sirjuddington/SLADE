@@ -50,9 +50,10 @@ AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 	ae_current = NULL;
 	ae_modified = false;
 
-	// Add 'New animation' button to top sizer
-	butn_new = new wxButton(this, -1, "New Animation");
-	sizer_top->Add(butn_new, 0, wxEXPAND, 0);
+	// Setup toolbar
+	SToolBarGroup* group = new SToolBarGroup(toolbar, "Animated");
+	group->addActionButton("new_anim", "New Animation", "t_animation_new", "Create a new animation definition", true);
+	toolbar->addGroup(group);
 
 	// Setup panel sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -137,7 +138,6 @@ AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 	text_firstname->Bind(wxEVT_COMMAND_TEXT_UPDATED, &AnimatedEntryPanel::onFirstNameChanged, this);
 	text_lastname->Bind(wxEVT_COMMAND_TEXT_UPDATED, &AnimatedEntryPanel::onLastNameChanged, this);
 	text_speed->Bind(wxEVT_COMMAND_TEXT_UPDATED, &AnimatedEntryPanel::onSpeedChanged, this);
-	butn_new->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &AnimatedEntryPanel::onBtnNew, this);
 }
 
 /* AnimatedEntryPanel::~AnimatedEntryPanel
@@ -524,6 +524,19 @@ void AnimatedEntryPanel::moveDown()
 	setModified(true);
 }
 
+/* PaletteEntryPanel::toolbarButtonClick
+* Called when a (EntryPanel) toolbar button is clicked
+*******************************************************************/
+void AnimatedEntryPanel::toolbarButtonClick(string action_id)
+{
+	// New animation
+	if (action_id == "new_anim")
+	{
+		add();
+	}
+}
+
+
 /*******************************************************************
  * ANIMATEDENTRYPANEL EVENTS
  *******************************************************************/
@@ -699,14 +712,6 @@ void AnimatedEntryPanel::onSpeedChanged(wxCommandEvent& e)
 			text_speed->SetInsertionPoint(ip);
 		}
 	}
-}
-
-/* AnimatedEntryPanel::onBtnNew
- * Called when the 'New Animation' button is clicked
- *******************************************************************/
-void AnimatedEntryPanel::onBtnNew(wxCommandEvent& e)
-{
-	add();
 }
 
 /* TODO, MAYBE:

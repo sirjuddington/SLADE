@@ -19,7 +19,6 @@ private:
 	ListView*		list_entries;
 	wxTextCtrl*		text_offname;
 	wxTextCtrl*		text_onname;
-	wxButton*		butn_new;
 	wxButton*		butn_delete;
 	GfxCanvas*		off_canvas;
 	GfxCanvas*		on_canvas;
@@ -46,6 +45,7 @@ public:
 	void	moveDown();
 	void	remove();
 	void	add();
+	void	toolbarButtonClick(string action_id);
 
 	// SAction handler
 	bool	handleAction(string id);
@@ -56,7 +56,6 @@ public:
 	void	onTypeChanged(wxCommandEvent& e);
 	void	onOffNameChanged(wxCommandEvent& e);
 	void	onOnNameChanged(wxCommandEvent& e);
-	void	onBtnNew(wxCommandEvent& e);
 };
 
 #endif//SWITCHESENTRYPANEL_H

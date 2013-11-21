@@ -94,9 +94,8 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	sizer_gb->Add(slider_volume, wxGBPosition(1, 5));
 
 	// Disable general entrypanel buttons
-	btn_save->Disable();
-	btn_revert->Disable();
 	media_ctrl->Show(false);
+	toolbar->Show(false);
 
 	// Bind events
 	btn_play->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &AudioEntryPanel::onBtnPlay, this);

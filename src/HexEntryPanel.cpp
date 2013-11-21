@@ -46,9 +46,8 @@ HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
 	hex_editor = new HexEditorPanel(this);
 	sizer_main->Add(hex_editor, 1, wxEXPAND);
 
-	// Disable save/revert buttons
-	btn_save->Enable(false);
-	btn_revert->Enable(false);
+	// Hide toolbar
+	toolbar->Show(false);
 
 	Layout();
 }

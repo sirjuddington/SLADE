@@ -40,6 +40,7 @@
 #include "FileMonitor.h"
 #include "WadArchive.h"
 #include "PreferencesDialog.h"
+#include "ModifyOffsetsDialog.h"
 #include <wx/filename.h>
 #include <wx/utils.h>
 
@@ -156,10 +157,11 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
 }
 
 /* EntryOperations::modifyGfxOffsets
- * Changes the offsets of the given gfx entry. Returns false if the
- * entry is invalid or not an offset-supported format, true otherwise
+ * Changes the offsets of the given gfx entry, based on settings
+ * selected in [dialog]. Returns false if the entry is invalid or
+ * not an offset-supported format, true otherwise
  *******************************************************************/
-bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point2_t offsets, bool xc, bool yc, bool relative)
+bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog* dialog)
 {
 	if (entry == NULL || entry->getType() == NULL)
 		return false;
@@ -182,66 +184,13 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 		patch_header_t header;
 		entry->seek(0, SEEK_SET);
 		entry->read(&header, 8);
-		//patch_header_t* header = (patch_header_t*)entry->getData(true);
+
+		// Calculate new offsets
+		point2_t offsets = dialog->calculateOffsets(header.left, header.top, header.width, header.height);
 
 		// Apply new offsets
-		if (auto_type >= 0)
-		{
-			// Auto Offsets selected
-			int w = wxINT16_SWAP_ON_BE(header.width);
-			int h = wxINT16_SWAP_ON_BE(header.height);
-
-			if (auto_type == 0)  			// Monster
-			{
-				header.left = w * 0.5;
-				header.top = h - 4;
-			}
-			else if (auto_type == 1)  		// Monster (GL-friendly)
-			{
-				header.left = w * 0.5;
-				header.top = h;
-			}
-			else if (auto_type == 2)  		// Projectile
-			{
-				header.left = w * 0.5;
-				header.top = h * 0.5;
-			}
-			else if (auto_type == 3)  		// Weapon (fullscreen)
-			{
-				header.left = -160 + (w * 0.5);
-				header.top = -200 + h;
-			}
-			else if (auto_type == 4)  		// Weapon (Doom status bar)
-			{
-				header.left = -160 + (w * 0.5);
-				header.top = -200 + 32 + h;
-			}
-			else if (auto_type == 5)  		// Weapon (Heretic status bar)
-			{
-				header.left = -160 + (w * 0.5);
-				header.top = -200 + 42 + h;
-			}
-			else if (auto_type == 6)  		// Weapon (Hexen status bar)
-			{
-				header.left = -160 + (w * 0.5);
-				header.top = -200 + 38 + h;
-			}
-		}
-		else
-		{
-			// Set Offsets selected
-			if (relative)
-			{
-				offsets.x += header.left;
-				offsets.y += header.top;
-			}
-
-			if (xc)
-				header.left = wxINT16_SWAP_ON_BE((int16_t) offsets.x);
-
-			if (yc)
-				header.top = wxINT16_SWAP_ON_BE((int16_t) offsets.y);
-		}
+		header.left = wxINT16_SWAP_ON_BE((int16_t)offsets.x);
+		header.top = wxINT16_SWAP_ON_BE((int16_t)offsets.y);
 
 		// Write new header to entry
 		entry->seek(0, SEEK_SET);
@@ -256,64 +205,12 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 		oldpatch_header_t header;
 		entry->read(&header, 4);
 
+		// Calculate new offsets
+		point2_t offsets = dialog->calculateOffsets(header.left, header.top, header.width, header.height);
+
 		// Apply new offsets
-		if (auto_type >= 0)
-		{
-			// Auto Offsets selected
-			int w = header.width;
-			int h = header.height;
-
-			if (auto_type == 0)  			// Monster
-			{
-				header.left = w * 0.5;
-				header.top = h - 4;
-			}
-			else if (auto_type == 1)  		// Monster (GL-friendly)
-			{
-				header.left = w * 0.5;
-				header.top = h;
-			}
-			else if (auto_type == 2)  		// Projectile
-			{
-				header.left = w * 0.5;
-				header.top = h * 0.5;
-			}
-			else if (auto_type == 3)  		// Weapon (fullscreen)
-			{
-				header.left = -160 + (w * 0.5);
-				header.top = -200 + h;
-			}
-			else if (auto_type == 4)  		// Weapon (Doom status bar)
-			{
-				header.left = -160 + (w * 0.5);
-				header.top = -200 + 32 + h;
-			}
-			else if (auto_type == 5)  		// Weapon (Heretic status bar)
-			{
-				header.left = -160 + (w * 0.5);
-				header.top = -200 + 42 + h;
-			}
-			else if (auto_type == 6)  		// Weapon (Hexen status bar)
-			{
-				header.left = -160 + (w * 0.5);
-				header.top = -200 + 38 + h;
-			}
-		}
-		else
-		{
-			// Set Offsets selected
-			if (relative)
-			{
-				offsets.x += header.left;
-				offsets.y += header.top;
-			}
-
-			if (xc)
-				header.left = (int8_t) offsets.x;
-
-			if (yc)
-				header.top = (int8_t) offsets.y;
-		}
+		header.left = (int8_t)offsets.x;
+		header.top = (int8_t)offsets.y;
 
 		// Write new header to entry
 		entry->seek(0, SEEK_SET);
@@ -352,65 +249,144 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, int auto_type, point
 				break;
 		}
 
-		// Apply new offsets
-		if (auto_type >= 0)
-		{
-			// Auto Offsets selected
-			if (auto_type == 0)  			// Monster
-			{
-				xoff = w * 0.5;
-				yoff = h - 4;
-			}
-			else if (auto_type == 1)  		// Monster (GL-friendly)
-			{
-				xoff = w * 0.5;
-				yoff = h;
-			}
-			else if (auto_type == 2)  		// Projectile
-			{
-				xoff = w * 0.5;
-				yoff = h * 0.5;
-			}
-			else if (auto_type == 3)  		// Weapon (Fullscreen)
-			{
-				xoff = -160 + (w * 0.5);
-				yoff = -200 + h;
-			}
-			else if (auto_type == 4)  		// Weapon (Doom status bar)
-			{
-				xoff = -160 + (w * 0.5);
-				yoff = -200 + 32 + h;
-			}
-			else if (auto_type == 5)  		// Weapon (Heretic status bar)
-			{
-				xoff = -160 + (w * 0.5);
-				yoff = -200 + 42 + h;
-			}
-			else if (auto_type == 6)  		// Weapon (Hexen status bar)
-			{
-				xoff = -160 + (w * 0.5);
-				yoff = -200 + 38 + h;
-			}
-		}
-		else
-		{
-			// Set Offsets selected
-			if (relative)
-			{
-				offsets.x += xoff;
-				offsets.y += yoff;
-			}
-
-			if (xc)
-				xoff = offsets.x;
-
-			if (yc)
-				yoff = offsets.y;
-		}
+		// Calculate new offsets
+		point2_t offsets = dialog->calculateOffsets(xoff, yoff, w, h);
+		xoff = offsets.x;
+		yoff = offsets.y;
 
 		// Create new grAb chunk
 		uint32_t csize = wxUINT32_SWAP_ON_LE(8);
 		grab_chunk_t gc = { { 'g', 'r', 'A', 'b' }, wxINT32_SWAP_ON_LE(xoff), wxINT32_SWAP_ON_LE(yoff) };
+		uint32_t dcrc = wxUINT32_SWAP_ON_LE(Misc::crc((uint8_t*)&gc, 12));
+
+		// Build new PNG from the original w/ the new grAb chunk
+		MemChunk npng;
+		uint32_t rest_start = 33;
+
+		// Init new png data size
+		if (grab_start == 0)
+			npng.reSize(entry->getSize() + 20);
+		else
+			npng.reSize(entry->getSize());
+
+		// Write PNG header and IHDR chunk
+		npng.write(data, 33);
+
+		// If no existing grAb chunk was found, write new one here
+		if (grab_start == 0)
+		{
+			npng.write(&csize, 4);
+			npng.write(&gc, 12);
+			npng.write(&dcrc, 4);
+		}
+		else
+		{
+			// Otherwise write any other data before the existing grAb chunk
+			uint32_t to_write = grab_start - 33;
+			npng.write(data + 33, to_write);
+			rest_start = grab_start + 20;
+
+			// And now write the new grAb chunk
+			npng.write(&csize, 4);
+			npng.write(&gc, 12);
+			npng.write(&dcrc, 4);
+		}
+
+		// Write the rest of the PNG data
+		uint32_t to_write = entry->getSize() - rest_start;
+		npng.write(data + rest_start, to_write);
+
+		// Load new png data to the entry
+		entry->importMemChunk(npng);
+
+		// Set its type back to png
+		entry->setType(type);
+	}
+	else
+		return false;
+
+	return true;
+}
+
+/* EntryOperations::setGfxOffsets
+ * Changes the offsets of the given gfx entry. Returns false if the
+ * entry is invalid or not an offset-supported format, true otherwise
+ *******************************************************************/
+bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
+{
+	if (entry == NULL || entry->getType() == NULL)
+		return false;
+
+	// Check entry type
+	EntryType* type = entry->getType();
+	string entryformat = type->getFormat();
+	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" ||
+		entryformat == "img_doom_alpha" || "img_doom_beta" || entryformat == "img_png"))
+	{
+		wxLogMessage(S_FMT("Entry \"%s\" is of type \"%s\" which does not support offsets", CHR(entry->getName()), CHR(entry->getType()->getName())));
+		return false;
+	}
+
+	// Doom gfx format, normal and beta version.
+	// Also arah format from alpha 0.2 because it uses the same header format.
+	if (entryformat == "img_doom" || entryformat == "img_doom_beta" || entryformat == "image_doom_arah")
+	{
+		// Get patch header
+		patch_header_t header;
+		entry->seek(0, SEEK_SET);
+		entry->read(&header, 8);
+
+		// Apply new offsets
+		header.left = wxINT16_SWAP_ON_BE((int16_t)x);
+		header.top = wxINT16_SWAP_ON_BE((int16_t)y);
+
+		// Write new header to entry
+		entry->seek(0, SEEK_SET);
+		entry->write(&header, 8);
+	}
+
+	// Doom alpha gfx format
+	else if (entryformat == "img_doom_alpha")
+	{
+		// Get patch header
+		entry->seek(0, SEEK_SET);
+		oldpatch_header_t header;
+		entry->read(&header, 4);
+
+		// Apply new offsets
+		header.left = (int8_t)x;
+		header.top = (int8_t)y;
+
+		// Write new header to entry
+		entry->seek(0, SEEK_SET);
+		entry->write(&header, 4);
+	}
+
+	// PNG format
+	else if (entryformat == "img_png")
+	{
+		// Find existing grAb chunk
+		const uint8_t* data = entry->getData(true);
+		uint32_t grab_start = 0;
+		for (uint32_t a = 0; a < entry->getSize(); a++)
+		{
+			// Check for 'grAb' header
+			if (data[a] == 'g' && data[a + 1] == 'r' &&
+				data[a + 2] == 'A' && data[a + 3] == 'b')
+			{
+				grab_start = a - 4;
+				break;
+			}
+
+			// Stop when we get to the 'IDAT' chunk
+			if (data[a] == 'I' && data[a + 1] == 'D' &&
+				data[a + 2] == 'A' && data[a + 3] == 'T')
+				break;
+		}
+
+		// Create new grAb chunk
+		uint32_t csize = wxUINT32_SWAP_ON_LE(8);
+		grab_chunk_t gc ={ { 'g', 'r', 'A', 'b' }, wxINT32_SWAP_ON_LE(x), wxINT32_SWAP_ON_LE(y) };
 		uint32_t dcrc = wxUINT32_SWAP_ON_LE(Misc::crc((uint8_t*)&gc, 12));
 
 		// Build new PNG from the original w/ the new grAb chunk
@@ -1512,7 +1488,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 
 	// Rewrite special chunks
 	if (alphchunk) modifyalPhChunk(entry, true);
-	if (grabchunk) modifyGfxOffsets(entry, -1, offsets, true, true, false);
+	if (grabchunk) setGfxOffsets(entry, offsets.x, offsets.y);
 
 	wxLogMessage("PNG %s size %i =PNGCrush=> %i =PNGout=> %i =DeflOpt=> %i =+grAb/alPh=> %i",
 	             CHR(entry->getName()), oldsize, crushsize, outsize, deflsize, entry->getSize());
@@ -1530,6 +1506,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 
 	return true;
 }
+
 
 void fixpngsrc(ArchiveEntry* entry)
 {

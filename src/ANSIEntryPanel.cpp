@@ -32,11 +32,12 @@
 #include "CodePages.h"
 #include "ANSIEntryPanel.h"
 
+
 /*******************************************************************
  * CONSTANTS
  *******************************************************************/
-
 #define DATASIZE 4000
+
 
 /*******************************************************************
  * ANSIENTRYPANEL CLASS FUNCTIONS
@@ -48,16 +49,13 @@
 ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
 {
 	// Get the VGA font
-
 	ansi_chardata = new uint8_t[DATASIZE];
 	ansi_canvas = new ANSICanvas(this, -1);
 	sizer_main->Add(ansi_canvas->toPanel(this), 1, wxEXPAND, 0);
 
-	// Disable save/revert buttons
-	btn_save->Enable(false);
-	btn_revert->Enable(false);
+	// Hide toolbar (no reason for it on this panel, yet)
+	toolbar->Show(false);
 
-//	SetInitialSize(wxDefaultSize);
 	Layout();
 }
 

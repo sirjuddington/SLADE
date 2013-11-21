@@ -53,14 +53,15 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	text_area = new TextEditor(this, -1);
 	sizer_main->Add(text_area, 1, wxEXPAND, 0);
 
-	// Add 'Text Language' choice
+	// Add 'Text Language' choice to toolbar
+	SToolBarGroup* group_language = new SToolBarGroup(toolbar, "Text Language", true);
 	languages = TextLanguage::getLanguageNames();
 	languages.Sort();
 	languages.Insert("None", 0, 1);
-	choice_text_language = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, languages);
+	choice_text_language = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
 	choice_text_language->Select(0);
-	sizer_bottom->Add(new wxStaticText(this, -1, "Text Language:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	sizer_bottom->Add(choice_text_language, 0, wxEXPAND);
+	group_language->addCustomControl(choice_text_language);
+	toolbar->addGroup(group_language);
 
 	// Add 'Word Wrap' checkbox to top sizer
 	sizer_top->AddStretchSpacer();
@@ -85,6 +86,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 
 	// Custom toolbar
 	custom_toolbar_actions = "arch_scripts_compileacs;arch_scripts_compilehacs";
+	toolbar->addActionGroup("Scripts", wxSplit(custom_toolbar_actions, ';'));
 
 	Layout();
 }
@@ -104,12 +106,6 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	// Load entry into the text editor
 	if (!text_area->loadEntry(entry))
 		return false;
-
-	// Enable save changes button depending on if the entry is locked
-	if (entry->isLocked())
-		btn_save->Enable(false);
-	else
-		btn_save->Enable(true);
 
 	// Scroll to previous position (if any)
 	if (entry->exProps().propertyExists("TextPosition"))

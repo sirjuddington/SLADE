@@ -25,7 +25,6 @@ private:
 	wxRadioButton*	rbtn_texture;
 	wxCheckBox*		cbox_decals;
 	wxCheckBox*		cbox_swirl;
-	wxButton*		butn_new;
 	wxButton*		butn_delete;
 	GfxCanvas*		preview_canvas;
 
@@ -48,6 +47,7 @@ public:
 	void	moveDown();
 	void	remove();
 	void	add();
+	void	toolbarButtonClick(string action_id);
 
 	// SAction handler
 	bool	handleAction(string id);
@@ -61,7 +61,6 @@ public:
 	void	onFirstNameChanged(wxCommandEvent& e);
 	void	onLastNameChanged(wxCommandEvent& e);
 	void	onSpeedChanged(wxCommandEvent& e);
-	void	onBtnNew(wxCommandEvent& e);
 };
 
 #endif//ANIMATEDENTRYPANEL_H

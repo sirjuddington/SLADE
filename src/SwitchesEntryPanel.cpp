@@ -50,9 +50,10 @@ SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
 	se_current = NULL;
 	se_modified = false;
 
-	// Add 'New switch' button to top sizer
-	butn_new = new wxButton(this, -1, "New Switch");
-	sizer_top->Add(butn_new, 0, wxEXPAND, 0);
+	// Setup toolbar
+	SToolBarGroup* group = new SToolBarGroup(toolbar, "Switches");
+	group->addActionButton("new_switch", "New Switch", "t_switch_new", "Create a new switch definition", true);
+	toolbar->addGroup(group);
 
 	// Setup panel sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -108,7 +109,6 @@ SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
 	rbtn_commercial->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &SwitchesEntryPanel::onTypeChanged, this);
 	text_offname->Bind(wxEVT_COMMAND_TEXT_UPDATED, &SwitchesEntryPanel::onOffNameChanged, this);
 	text_onname->Bind(wxEVT_COMMAND_TEXT_UPDATED, &SwitchesEntryPanel::onOnNameChanged, this);
-	butn_new->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SwitchesEntryPanel::onBtnNew, this);
 }
 
 /* SwitchesEntryPanel::~SwitchesEntryPanel
@@ -481,6 +481,19 @@ void SwitchesEntryPanel::moveDown()
 	setModified(true);
 }
 
+/* PaletteEntryPanel::toolbarButtonClick
+* Called when a (EntryPanel) toolbar button is clicked
+*******************************************************************/
+void SwitchesEntryPanel::toolbarButtonClick(string action_id)
+{
+	// New switch
+	if (action_id == "new_switch")
+	{
+		add();
+	}
+}
+
+
 /*******************************************************************
  * SWITCHESENTRYPANEL EVENTS
  *******************************************************************/
@@ -584,14 +597,6 @@ void SwitchesEntryPanel::onOnNameChanged(wxCommandEvent& e)
 			setModified(true);
 		}
 	}
-}
-
-/* SwitchesEntryPanel::onBtnNew
- * Called when the 'New Animation' button is clicked
- *******************************************************************/
-void SwitchesEntryPanel::onBtnNew(wxCommandEvent& e)
-{
-	add();
 }
 
 /* TODO, MAYBE:

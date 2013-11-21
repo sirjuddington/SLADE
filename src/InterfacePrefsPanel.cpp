@@ -83,10 +83,6 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	cb_context_submenus = new wxCheckBox(this, -1, "Group related entry context menu items into submenus");
 	sizer->Add(cb_context_submenus, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
-	// Swap entry panel bars
-	cb_swap_epanel_bars = new wxCheckBox(this, -1, "Swap top and bottom bars in entry editors");
-	sizer->Add(cb_swap_epanel_bars, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
 	// Show startpage
 	cb_start_page = new wxCheckBox(this, -1, "Show Start Page on Startup");
 	sizer->Add(cb_start_page, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -116,7 +112,6 @@ void InterfacePrefsPanel::init()
 	cb_filter_dirs->SetValue(!elist_filter_dirs);
 	cb_list_monospace->SetValue(list_font_monospace);
 	cb_start_page->SetValue(show_start_page);
-	cb_swap_epanel_bars->SetValue(swap_epanel_bars);
 	cb_context_submenus->SetValue(context_submenus);
 	cb_elist_bgcol->SetValue(elist_type_bgcol);
 
@@ -137,7 +132,6 @@ void InterfacePrefsPanel::applyPreferences()
 	elist_filter_dirs = !cb_filter_dirs->GetValue();
 	list_font_monospace = cb_list_monospace->GetValue();
 	show_start_page = cb_start_page->GetValue();
-	swap_epanel_bars = cb_swap_epanel_bars->GetValue();
 	context_submenus = cb_context_submenus->GetValue();
 	elist_type_bgcol = cb_elist_bgcol->GetValue();
 

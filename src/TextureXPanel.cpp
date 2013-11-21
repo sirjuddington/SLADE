@@ -1010,70 +1010,25 @@ bool TextureXPanel::modifyOffsets()
 
 	// Create modify offsets dialog
 	ModifyOffsetsDialog mod;
+	mod.SetParent(this);
+	mod.CenterOnParent();
 
 	// Run the dialog
 	if (mod.ShowModal() == wxID_CANCEL)
 		return false;
 
-	Archive* archive = tx_entry->getParent();
-	bool force_rgba = texture_editor->getBlendRGBA();
-	bool relative = mod.relativeOffset();
-	bool xc = mod.xOffChange();
-	bool yc = mod.yOffChange();
-	point2_t offsets = mod.getOffset();
-	int align = mod.getAlignType();
-
 	// Go through selection
 	vector<long> selec_num = list_textures->getSelection();
 	for (unsigned a = 0; a < selec_num.size(); ++a)
 	{
+		// Get texture
 		CTexture* ctex = texturex.getTexture(selec_num[a]);
-		int16_t ofx = offsets.x;
-		int16_t ofy = offsets.y;
-		int w = ctex->getWidth();
-		int h = ctex->getHeight();
 
-		switch (align)
-		{
-		case 0: // Auto Offsets selected: Monster
-			ctex->setOffsetX(w * 0.5);
-			ctex->setOffsetY(h - 4);
-			break;
-		case 1: // Auto Offsets selected: Monster (GL-friendly)
-			ctex->setOffsetX(w * 0.5);
-			ctex->setOffsetY(h);
-			break;
-		case 2: // Auto Offsets selected: Projectile
-			ctex->setOffsetX(w * 0.5);
-			ctex->setOffsetY(h * 0.5);
-			break;
-		case 3: // Auto Offsets selected: Weapon
-			ctex->setOffsetX(-160 + (w * 0.5));
-			ctex->setOffsetY(-200 + h);
-			break;
-		case 4: // Auto Offsets selected: Weapon (Doom status bar)
-			ctex->setOffsetX(-160 + (w * 0.5));
-			ctex->setOffsetY(-200 + 32 + h);
-			break;
-		case 5: // Auto Offsets selected: Weapon (Heretic status bar)
-			ctex->setOffsetX(-160 + (w * 0.5));
-			ctex->setOffsetY(-200 + 42 + h);
-			break;
-		case 6: // Auto Offsets selected: Weapon (Hexen status bar)
-			ctex->setOffsetX(-160 + (w * 0.5));
-			ctex->setOffsetY(-200 + 38 + h);
-			break;
-		default: // Set Offsets selected
-			if (relative)
-			{
-				ofx += ctex->getOffsetX();
-				ofy += ctex->getOffsetY();
-			}
-			ctex->setOffsetX(ofx);
-			ctex->setOffsetY(ofy);
-			break;
+		// Calculate and apply new offsets
+		point2_t offsets = mod.calculateOffsets(ctex->getOffsetX(), ctex->getOffsetY(), ctex->getWidth(), ctex->getHeight());
+		ctex->setOffsetX(offsets.x);
+		ctex->setOffsetX(offsets.y);
 
-		}
 		ctex->setState(1);
 	}
 

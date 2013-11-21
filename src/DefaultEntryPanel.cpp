@@ -80,22 +80,19 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent)
 
 	sizer_main->AddStretchSpacer(1);
 
-	// Hide default buttons
-	btn_save->Enable(false);
-	btn_revert->Enable(false);
-
-	// Add 'Edit as Text' button
-	btn_edit_text = new wxButton(this, -1, "Edit as Text");
-	sizer_top->Add(btn_edit_text, 0, wxEXPAND|wxRIGHT, 4);
-
-	// Add 'View as Hex' button
-	btn_view_hex = new wxButton(this, -1, "View as Hex");
-	sizer_top->Add(btn_view_hex, 0, wxEXPAND|wxRIGHT, 4);
-
 	// Bind events
 	btn_gfx_convert->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DefaultEntryPanel::onBtnGfxConvert, this);
 	btn_gfx_modify_offsets->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DefaultEntryPanel::onBtnGfxModifyOffsets, this);
 	btn_texture_edit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DefaultEntryPanel::onBtnTextureEdit, this);
+
+	// Hide save/revert toolbar
+	toolbar->deleteGroup("Entry");
+
+	// Setup toolbar
+	SToolBarGroup* group = new SToolBarGroup(toolbar, "View As");
+	group->addActionButton("arch_view_text", "", true);
+	group->addActionButton("arch_view_hex", "", true);
+	toolbar->addGroup(group);
 
 	Layout();
 }
@@ -115,9 +112,6 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 	// Update labels
 	label_type->SetLabel(S_FMT("Entry Type: %s", CHR(entry->getTypeString())));
 	label_size->SetLabel(S_FMT("Entry Size: %d bytes", entry->getSize()));
-
-	// Show edit buttons
-	btn_edit_text->Show(true);
 
 	// Setup actions frame
 	btn_gfx_convert->Show(false);
@@ -157,9 +151,6 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 	for (unsigned a = 0; a < entries.size(); a++)
 		size += entries[a]->getSize();
 	label_size->SetLabel(S_FMT("Total Size: %s", CHR(Misc::sizeAsString(size))));
-
-	// Hide edit buttons
-	btn_edit_text->Show(false);
 
 	// Setup actions frame
 	btn_gfx_convert->Show(false);
@@ -233,8 +224,7 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 
 	// Apply offsets to selected entries
 	for (uint32_t a = 0; a < entries.size(); a++)
-		EntryOperations::modifyGfxOffsets(entries[a], mod.getAlignType(), mod.getOffset(),
-		                                  mod.xOffChange(), mod.yOffChange(), mod.relativeOffset());
+		EntryOperations::modifyGfxOffsets(entries[a], &mod);
 	theActivePanel->callRefresh();
 }
 

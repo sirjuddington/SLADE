@@ -494,12 +494,10 @@ void SToolBar::onPaint(wxPaintEvent& e)
 		dc.SetPen(wxPen(col_light));
 		dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
 
-		
+		// Draw bottom
+		dc.SetPen(wxPen(col_dark));
+		dc.DrawLine(wxPoint(0, GetSize().y-1), wxPoint(GetSize().x+1, GetSize().y-1));
 	}
-
-	// Draw bottom
-	dc.SetPen(wxPen(col_dark));
-	dc.DrawLine(wxPoint(0, GetSize().y-1), wxPoint(GetSize().x+1, GetSize().y-1));
 }
 
 void SToolBar::onFocus(wxFocusEvent& e)

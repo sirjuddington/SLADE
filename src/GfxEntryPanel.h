@@ -23,6 +23,7 @@ private:
 	wxSpinCtrl*		spin_yoffset;
 	wxCheckBox*		cb_tile;
 	wxCheckBox*		cb_arc;
+	wxButton*		btn_auto_offset;
 
 	wxButton*		btn_nextimg;
 	wxButton*		btn_previmg;
@@ -40,6 +41,7 @@ public:
 	bool	loadEntry(ArchiveEntry* entry); // override for EntryPanel::loadEntry
 	bool	loadEntry(ArchiveEntry* entry, int index);
 	bool	saveEntry();
+	void	setupToolbar();
 	void	updateImagePalette();
 	int		detectOffsetType();
 	void	applyViewType();
@@ -62,6 +64,7 @@ public:
 	void	onBtnNextImg(wxCommandEvent& e);
 	void	onBtnPrevImg(wxCommandEvent& e);
 	void	onCustomMenu(wxCommandEvent& e);
+	void	onBtnAutoOffset(wxCommandEvent& e);
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 
 	SImage*	getImage() { if (gfx_canvas) return gfx_canvas->getImage(); else return NULL; }
