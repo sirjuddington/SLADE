@@ -538,7 +538,7 @@ void GfxEntryPanel::setupToolbar()
 {
 	// Zoom
 	SToolBarGroup* g_zoom = new SToolBarGroup(toolbar, "Zoom", true);
-	slider_zoom = new wxSlider(g_zoom, -1, 100, 20, 800);
+	slider_zoom = new wxSlider(g_zoom, -1, 100, 20, 800, wxDefaultPosition, wxSize(200, -1));
 	slider_zoom->SetLineSize(10);
 	slider_zoom->SetPageSize(100);
 	label_current_zoom = new wxStaticText(g_zoom, -1, "100%");
