@@ -26,7 +26,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	// Left side sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	mainsizer->Add(sizer, 0, wxEXPAND);
+	mainsizer->Add(sizer, 0, wxEXPAND|wxALL, 6);
 
 	// Game configuration dropdown
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -121,7 +121,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	{
 		frame = new wxStaticBox(this, -1, "Preview");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		mainsizer->Add(framesizer, 0, wxEXPAND|wxALL, 4);
+		mainsizer->Add(framesizer, 0, wxEXPAND|wxALL, 10);
 
 		// Add map preview
 		canvas_preview = new MapPreviewCanvas(this);
@@ -131,7 +131,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 
 	// Dialog buttons
-	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
+	sizer->AddSpacer(4);
+	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 6);
 
 	// Populate map list
 	populateMapList();

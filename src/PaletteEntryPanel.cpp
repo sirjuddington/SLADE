@@ -74,8 +74,10 @@ public:
 		SetIcon(icon);
 
 		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
 
 		// Add colour chooser
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -90,7 +92,7 @@ public:
 		sizer->Add(pal_preview, 1, wxEXPAND|wxALL, 4);
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM|wxTOP, 4);
 
 		// Setup preview
 		pal_preview->allowSelection(2);
@@ -170,8 +172,10 @@ public:
 		SetIcon(icon);
 
 		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
 
 		// Add colour chooser
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -196,7 +200,7 @@ public:
 		sizer->Add(pal_preview, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM|wxTOP, 4);
 
 		// Setup preview
 		pal_preview->allowSelection(2);
@@ -297,8 +301,10 @@ public:
 		SetIcon(icon);
 
 		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 
@@ -337,7 +343,7 @@ public:
 		sizer->Add(pal_preview, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM|wxTOP, 4);
 
 		// Setup preview
 		pal_preview->allowSelection(2);
@@ -447,15 +453,17 @@ public:
 		SetIcon(icon);
 
 		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
 
 		// Add preview
 		pal_preview = new PaletteCanvas(this, -1);
 		sizer->Add(pal_preview, 1, wxEXPAND|wxALL, 4);
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM|wxTOP, 4);
 
 		// Setup preview
 		pal_preview->allowSelection(2);
@@ -524,8 +532,10 @@ public:
 		SetIcon(icon);
 
 		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
 
 		// Add buttons
 		rb_doom = new wxRadioButton(this, -1, "Doom (14 Palettes)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
@@ -533,7 +543,7 @@ public:
 		rb_hexen = new wxRadioButton(this, -1, "Hexen (28 Palettes)");
 		sizer->Add(rb_hexen, 0, wxEXPAND|wxALL, 4);
 
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM|wxTOP, 4);
 
 		// Init layout
 		Layout();
@@ -591,8 +601,12 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent)
 	string actions = "ppal_moveup;ppal_movedown;ppal_duplicate;ppal_remove;ppal_removeothers";
 	toolbar->addActionGroup("Palette Organisation", wxSplit(actions, ';'));
 
+	// Colour Operations
+	actions = "ppal_colourise;ppal_tint;ppal_invert;ppal_tweak";
+	toolbar->addActionGroup("Colours", wxSplit(actions, ';'));
+
 	// Palette Operations
-	actions = "ppal_addcustom;ppal_exportas;ppal_importfrom;ppal_tweak;ppal_test;ppal_generate";
+	actions = "ppal_addcustom;ppal_exportas;ppal_importfrom;ppal_test;ppal_generate";
 	toolbar->addActionGroup("Palette Operations", wxSplit(actions, ';'));
 
 	// Bind events

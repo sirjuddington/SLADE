@@ -113,10 +113,10 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "S
 		tree_prefs->ExpandNode(page);
 
 	// Add preferences treebook
-	sizer->Add(tree_prefs, 1, wxEXPAND|wxALL, 4);
+	sizer->Add(tree_prefs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
 	// Add buttons
-	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL|wxAPPLY), 0, wxEXPAND|wxALL, 4);
+	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL|wxAPPLY), 0, wxEXPAND|wxALL, 10);
 
 	// Bind events
 	Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PreferencesDialog::onButtonClicked, this);

@@ -209,8 +209,11 @@ bool GfxConvDialog::nextItem()
  *******************************************************************/
 void GfxConvDialog::setupLayout()
 {
+	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(msizer);
+
 	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
-	SetSizer(m_vbox);
+	msizer->Add(m_vbox, 1, wxEXPAND|wxALL, 6);
 
 	// Add current format label
 	label_current_format = new wxStaticText(this, -1, "Current Format:");

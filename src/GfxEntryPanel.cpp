@@ -79,8 +79,10 @@ public:
 		SetIcon(icon);
 
 		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
 
 		// Add colour chooser
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -95,7 +97,7 @@ public:
 		sizer->Add(gfx_preview, 1, wxEXPAND|wxALL, 4);
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
 
 		// Setup preview
 		gfx_preview->setViewType(GFXVIEW_CENTERED);
@@ -174,8 +176,10 @@ public:
 		SetIcon(icon);
 
 		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
 
 		// Add colour chooser
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -200,7 +204,7 @@ public:
 		sizer->Add(gfx_preview, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
 
 		// Setup preview
 		gfx_preview->setViewType(GFXVIEW_CENTERED);
@@ -295,15 +299,17 @@ public:
 		SetIcon(icon);
 
 		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
 
 		// Add preview
 		canvas_preview = new CropCanvas(this);
 		sizer->Add(canvas_preview, 1, wxEXPAND|wxALL, 4);
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
 
 		// Setup dialog size
 		SetInitialSize(wxSize(-1, -1));
@@ -997,7 +1003,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_convert")
 	{
 		GfxConvDialog dlg;
-		dlg.SetParent(this);
+		dlg.SetParent(theMainWindow);
 		dlg.CenterOnParent();
 		dlg.openEntry(entry);
 
@@ -1199,10 +1205,13 @@ void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 	}
 }
 
+/* GfxEntryPanel::onBtnAutoOffset
+* Called when the 'modify offsets' button is clicked
+*******************************************************************/
 void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 {
 	ModifyOffsetsDialog dlg;
-	dlg.SetParent(this);
+	dlg.SetParent(theMainWindow);
 	dlg.CenterOnParent();
 	if (dlg.ShowModal() == wxID_OK)
 	{

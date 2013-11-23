@@ -52,9 +52,10 @@ PaletteDialog::PaletteDialog(Palette8bit* palette)
 	pal_canvas->getPalette().copyPalette(palette);
 	pal_canvas->SetInitialSize(wxSize(400, 400));
 	pal_canvas->allowSelection(1);
-	m_vbox->Add(pal_canvas, 1, wxEXPAND|wxALL, 4);
+	m_vbox->Add(pal_canvas, 1, wxEXPAND|wxALL, 10);
 
-	m_vbox->Add(CreateStdDialogButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 4);
+	m_vbox->AddSpacer(4);
+	m_vbox->Add(CreateStdDialogButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 	// Bind events
 	pal_canvas->Bind(wxEVT_LEFT_DCLICK, &PaletteDialog::onLeftDoubleClick, this);

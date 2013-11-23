@@ -46,8 +46,10 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 	:	wxDialog(NULL, -1, "Modify Gfx Offset(s)", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
 	// Create main sizer
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
 	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
-	SetSizer(m_vbox);
+	sizer->Add(m_vbox, 1, wxEXPAND|wxALL, 6);
 
 	// Set dialog icon
 	wxIcon icon;

@@ -137,7 +137,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	// Create sizer
 	wxBoxSizer* mainsizer = new wxBoxSizer(wxVERTICAL);
 	wxGridBagSizer* sizer = new wxGridBagSizer(4, 4);
-	mainsizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
+	mainsizer->Add(sizer, 1, wxEXPAND|wxALL, 10);
 	SetSizer(mainsizer);
 
 

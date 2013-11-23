@@ -189,7 +189,7 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
 
 	// Add tabs
 	nb_tabs = new wxNotebook(this, -1);
-	sizer->Add(nb_tabs, 1, wxEXPAND|wxALL, 4);
+	sizer->Add(nb_tabs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
 	// Thing type tab
 	panel_thing = new ThingTypeReplacePanel(nb_tabs);
@@ -210,7 +210,8 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
 	hbox->AddStretchSpacer();
 	hbox->Add(btn_replace, 0, wxEXPAND|wxRIGHT, 4);
 	hbox->Add(btn_done, 0, wxEXPAND, 4);
-	sizer->Add(hbox, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 4);
+	sizer->AddSpacer(4);
+	sizer->Add(hbox, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 10);
 
 	// Setup dialog layout
 	SetInitialSize(wxSize(-1, -1));
