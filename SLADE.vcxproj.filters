@@ -151,6 +151,9 @@
     <Filter Include="External\libmodplug">
       <UniqueIdentifier>{d4a54f03-4a85-41e3-8cc0-f8268538d3bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Dialogs\SetupWizard">
+      <UniqueIdentifier>{90dc0f0c-92e7-414e-a30b-76c8c288e615}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GfxConvDialog.cpp">
@@ -1089,6 +1092,18 @@
     <ClCompile Include="src\ObjectEditPanel.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\Dialogs\SetupWizard\BaseResourceWizardPage.cpp">
+      <Filter>Dialogs\SetupWizard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\SetupWizard\SetupWizardDialog.cpp">
+      <Filter>Dialogs\SetupWizard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\SetupWizard\TempFolderWizardPage.cpp">
+      <Filter>Dialogs\SetupWizard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp">
+      <Filter>Dialogs\SetupWizard</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -1952,6 +1967,21 @@
     </ClInclude>
     <ClInclude Include="src\ObjectEditPanel.h">
       <Filter>Map Editor\UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\SetupWizard\BaseResourceWizardPage.h">
+      <Filter>Dialogs\SetupWizard</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\SetupWizard\SetupWizardDialog.h">
+      <Filter>Dialogs\SetupWizard</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\SetupWizard\TempFolderWizardPage.h">
+      <Filter>Dialogs\SetupWizard</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\SetupWizard\WizardPageBase.h">
+      <Filter>Dialogs\SetupWizard</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\SetupWizard\NodeBuildersWizardPage.h">
+      <Filter>Dialogs\SetupWizard</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

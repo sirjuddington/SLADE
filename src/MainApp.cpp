@@ -47,6 +47,7 @@
 #include "GameConfiguration.h"
 #include "NodeBuilders.h"
 #include "Lua.h"
+#include "Dialogs\SetupWizard\SetupWizardDialog.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>
@@ -90,9 +91,11 @@ string	dir_user = "";
 string	dir_app = "";
 bool	exiting = false;
 string	current_action = "";
-CVAR(Bool, temp_use_appdir, false, CVAR_SAVE)
 CVAR(String, dir_last, "", CVAR_SAVE)
 CVAR(Int, log_verbosity, 1, CVAR_SAVE)
+CVAR(Int, temp_location, 0, CVAR_SAVE)
+CVAR(String, temp_location_custom, "", CVAR_SAVE)
+CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -239,10 +242,12 @@ string appPath(string filename, int dir)
 	{
 		// Get temp path
 		string dir_temp;
-		if (temp_use_appdir)
-			dir_temp = dir_app + sep + "temp";
-		else
+		if (temp_location == 0)
 			dir_temp = wxStandardPaths::Get().GetTempDir().Append(sep).Append("SLADE3");
+		else if (temp_location == 1)
+			dir_temp = dir_temp = dir_app + sep + "temp";
+		else
+			dir_temp = temp_location_custom;
 
 		// Create folder if necessary
 		if (!wxDirExists(dir_temp) && temp_fail_count < 2)
@@ -250,7 +255,6 @@ string appPath(string filename, int dir)
 			if (!wxMkdir(dir_temp))
 			{
 				wxLogMessage("Unable to create temp directory \"%s\"", CHR(dir_temp));
-				temp_use_appdir = !temp_use_appdir;
 				temp_fail_count++;
 				return appPath(filename, dir);
 			}
@@ -734,6 +738,14 @@ bool MainApp::OnInit()
 	// Init game configuration
 	theGameConfiguration->init();
 
+	// Show Setup Wizard if needed
+	if (!setup_wizard_run)
+	{
+		SetupWizardDialog dlg(theMainWindow);
+		dlg.ShowModal();
+		setup_wizard_run = true;
+	}
+
 	// Bind events
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainApp::onMenu, this);
 
@@ -1026,4 +1038,10 @@ CONSOLE_COMMAND (crash, 0, false)
 		uint8_t* test = NULL;
 		test[123] = 5;
 	}
+}
+
+CONSOLE_COMMAND(setup_wizard, 0, false)
+{
+	SetupWizardDialog dlg(theMainWindow);
+	dlg.ShowModal();
 }

@@ -13,7 +13,7 @@ private:
 	wxCheckListBox*	clb_options;
 
 public:
-	NodesPrefsPanel(wxWindow* parent);
+	NodesPrefsPanel(wxWindow* parent, bool frame = true);
 	~NodesPrefsPanel();
 
 	void	init();

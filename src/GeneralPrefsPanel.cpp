@@ -38,7 +38,6 @@
 EXTERN_CVAR(Bool, close_archive_with_tab)
 EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Bool, gl_tex_enable_np2)
-EXTERN_CVAR(Bool, temp_use_appdir)
 
 
 /*******************************************************************
@@ -70,12 +69,6 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	// Enable np2 textures
 	cb_gl_np2 = new wxCheckBox(this, -1, "Enable Non-power-of-two textures if supported");
 	sizer->Add(cb_gl_np2, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Use app dir for temp files
-#ifdef WIN32
-	cb_temp_dir = new wxCheckBox(this, -1, "Write temp files to SLADE directory rather than system temp folder");
-	sizer->Add(cb_temp_dir, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-#endif
 }
 
 /* GeneralPrefsPanel::~GeneralPrefsPanel
@@ -93,10 +86,6 @@ void GeneralPrefsPanel::init()
 	cb_archive_load->SetValue(archive_load_data);
 	cb_archive_close_tab->SetValue(close_archive_with_tab);
 	cb_gl_np2->SetValue(gl_tex_enable_np2);
-
-#ifdef WIN32
-	cb_temp_dir->SetValue(temp_use_appdir);
-#endif
 }
 
 /* GeneralPrefsPanel::applyPreferences
@@ -107,24 +96,4 @@ void GeneralPrefsPanel::applyPreferences()
 	archive_load_data = cb_archive_load->GetValue();
 	close_archive_with_tab = cb_archive_close_tab->GetValue();
 	gl_tex_enable_np2 = cb_gl_np2->GetValue();
-#ifdef WIN32
-	temp_use_appdir = cb_temp_dir->GetValue();
-#else
-	temp_use_appdir = false;
-#endif
-
-	// Create temp dir if necessary
-	if (temp_use_appdir)
-	{
-		string dir_temp = appPath("", DIR_TEMP);
-		if (!wxDirExists(dir_temp))
-		{
-			if (!wxMkdir(dir_temp))
-			{
-				// Unable to create it, just use system temp dir
-				wxMessageBox(S_FMT("Unable to create temp directory \"%s\"", dir_temp.c_str()), "Error", wxICON_ERROR);
-				temp_use_appdir = false;
-			}
-		}
-	}
 }

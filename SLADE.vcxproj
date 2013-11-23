@@ -175,6 +175,10 @@
     <ClCompile Include="src\Compression.cpp" />
     <ClCompile Include="src\Conversions.cpp" />
     <ClCompile Include="src\DatArchive.cpp" />
+    <ClCompile Include="src\Dialogs\SetupWizard\BaseResourceWizardPage.cpp" />
+    <ClCompile Include="src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp" />
+    <ClCompile Include="src\Dialogs\SetupWizard\SetupWizardDialog.cpp" />
+    <ClCompile Include="src\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
     <ClCompile Include="src\DiskArchive.cpp" />
     <ClCompile Include="src\DockPanel.cpp" />
     <ClCompile Include="src\Drawing.cpp" />
@@ -456,6 +460,11 @@
     <ClInclude Include="src\ConsoleHelpers.h" />
     <ClInclude Include="src\Conversions.h" />
     <ClInclude Include="src\DatArchive.h" />
+    <ClInclude Include="src\Dialogs\SetupWizard\BaseResourceWizardPage.h" />
+    <ClInclude Include="src\Dialogs\SetupWizard\NodeBuildersWizardPage.h" />
+    <ClInclude Include="src\Dialogs\SetupWizard\SetupWizardDialog.h" />
+    <ClInclude Include="src\Dialogs\SetupWizard\TempFolderWizardPage.h" />
+    <ClInclude Include="src\Dialogs\SetupWizard\WizardPageBase.h" />
     <ClInclude Include="src\DiskArchive.h" />
     <ClInclude Include="src\DockPanel.h" />
     <ClInclude Include="src\Drawing.h" />

@@ -48,16 +48,22 @@ EXTERN_CVAR(String, nodebuilder_options)
 /* NodesPrefsPanel::NodesPrefsPanel
  * NodesPrefsPanel class constructor
  *******************************************************************/
-NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBase(parent)
 {
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox* frame = new wxStaticBox(this, -1, "Node Builder Preferences");
-	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
+	wxSizer* sizer;
+	if (useframe)
+	{
+		wxStaticBox* frame = new wxStaticBox(this, -1, "Node Builder Preferences");
+		sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+		psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
+	}
+	else
+		sizer = psizer;
 
 	// Nodebuilder list
 	wxArrayString builders;
