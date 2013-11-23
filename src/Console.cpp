@@ -153,7 +153,7 @@ void Console::execute(string command)
 		else if (cvar->type == CVAR_FLOAT)
 			value = S_FMT("%1.4f", cvar->GetValue().Float);
 		else
-			value = cvar->GetValue().String;
+			value = ((CStringCVar*)cvar)->value;
 
 		logMessage(S_FMT("\"%s\" = \"%s\"", CHR(cmd_name), CHR(value)));
 
