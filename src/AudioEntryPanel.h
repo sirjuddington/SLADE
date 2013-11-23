@@ -55,6 +55,7 @@ public:
 	bool	openAudio(MemChunk& audio, string filename);
 	bool	openMidi(string filename);
 	bool	openMod(MemChunk& data);
+	bool	openMedia(string filename);
 	void	startStream();
 	void	stopStream();
 	void	resetStream();

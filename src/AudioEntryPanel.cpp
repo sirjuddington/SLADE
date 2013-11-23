@@ -227,9 +227,9 @@ bool AudioEntryPanel::open()
 	if (entry->getType()->getFormat() == "midi" || entry->getType()->getFormat() == "mus" ||
 	        entry->getType()->getFormat() == "gmid")
 	{
+		audio_type = AUTYPE_MIDI;
 		convdata.exportFile(path.GetFullPath());
 		openMidi(path.GetFullPath());
-		audio_type = AUTYPE_MIDI;
 	}
 
 	// MOD format
@@ -302,20 +302,8 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 		// Dump audio to temp file
 		audio.exportFile(filename);
 
-		// Attempt to open with wxMediaCtrl
-		if (media_ctrl->Load(filename))
-		{
-			// Loaded successfully
-			audio_type = AUTYPE_MEDIA;
-
-			// Enable play controls
-			setAudioDuration(media_ctrl->Length());
-			btn_play->Enable(true);
-			btn_pause->Enable(true);
-			btn_stop->Enable(true);
-
+		if (openMedia(filename))
 			return true;
-		}
 	}
 
 	// Unable to open audio, disable play controls
@@ -336,61 +324,41 @@ bool AudioEntryPanel::openMidi(string filename)
 	// Enable volume control
 	slider_volume->Enable(true);
 
-	// Disable controls if we cannot play the midi
-	if (!theMIDIPlayer->isInitialised())
-	{
-		btn_play->Enable(false);
-		btn_pause->Enable(false);
-		btn_stop->Enable(false);
-		setAudioDuration(0);
-
-		return false;
-	}
-
-	// Warn if no soundfont is loaded
-	if (!theMIDIPlayer->isSoundfontLoaded())
-	{
-		// Disable play controls
-		btn_play->Enable(false);
-		btn_pause->Enable(false);
-		btn_stop->Enable(false);
-		setAudioDuration(0);
-
-		// Popup message
-		if (!nosf_warned)
-		{
-			wxMessageBox("No soundfont is currently set up for playing MIDIs. See the audio settings in Editor->Preferences", "Can't play MIDI", wxICON_ERROR);
-			nosf_warned = true;
-		}
-
-		return false;
-	}
-
 	// Attempt to open midi
-	if (theMIDIPlayer->openFile(filename))
+	if (theMIDIPlayer->isInitialised() && theMIDIPlayer->isSoundfontLoaded())
 	{
-		// Enable play controls
-		btn_play->Enable();
-		btn_pause->Enable();
-		btn_stop->Enable();
+		if (theMIDIPlayer->openFile(filename))
+		{
+			// Enable play controls
+			btn_play->Enable();
+			btn_pause->Enable();
+			btn_stop->Enable();
 
-		// Setup seekbar
-		setAudioDuration(theMIDIPlayer->getLength());
+			// Setup seekbar
+			setAudioDuration(theMIDIPlayer->getLength());
 
-		return true;
+			return true;
+		}
 	}
 	else
 	{
-		// Disable play controls
-		btn_play->Enable(false);
-		btn_pause->Enable(false);
-		btn_stop->Enable(false);
-		setAudioDuration(0);
-
-		return false;
+		// MIDI Player not initialised (no soundfont set), attempt to open with wxMediaCtrl
+		if (openMedia(filename))
+			return true;
 	}
+
+	// Disable play controls
+	btn_play->Enable(false);
+	btn_pause->Enable(false);
+	btn_stop->Enable(false);
+	setAudioDuration(0);
+
+	return false;
 }
 
+/* AudioEntryPanel::openMod
+* Opens a Module file for playback
+*******************************************************************/
 bool AudioEntryPanel::openMod(MemChunk& data)
 {
 #ifndef NOLIBMODPLUG
@@ -420,6 +388,29 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 		return false;
 	}
 #endif
+	return false;
+}
+
+/* AudioEntryPanel::openMedia
+* Opens audio file [filename] in the wxMediaCtrl
+*******************************************************************/
+bool AudioEntryPanel::openMedia(string filename)
+{
+	// Attempt to open with wxMediaCtrl
+	if (media_ctrl->Load(filename))
+	{
+		// Loaded successfully
+		audio_type = AUTYPE_MEDIA;
+
+		// Enable play controls
+		setAudioDuration(media_ctrl->Length());
+		btn_play->Enable(true);
+		btn_pause->Enable(true);
+		btn_stop->Enable(true);
+
+		return true;
+	}
+	
 	return false;
 }
 
