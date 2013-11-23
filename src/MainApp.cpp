@@ -47,7 +47,7 @@
 #include "GameConfiguration.h"
 #include "NodeBuilders.h"
 #include "Lua.h"
-#include "Dialogs\SetupWizard\SetupWizardDialog.h"
+#include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>
@@ -229,7 +229,6 @@ string appPath(string filename, int dir)
 	string sep = "\\";
 #else
 	string sep = "/";
-	temp_use_appdir = false;
 #endif
 
 	if (dir == DIR_DATA)
