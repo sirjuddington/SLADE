@@ -20,6 +20,7 @@ TODO List ---------------------------------------------------------------
 - Focus find+replace window on opening it
 - Esc to close find+replace window
 - Shape draw and object edit bars cause the view offset to change
+- No way to accept/cancel object edit while bar is focused
 
 
 --- Map Editor 3.1 ---
@@ -53,6 +54,7 @@ TODO List ---------------------------------------------------------------
 	- Better vis checking
 	- 3d floors preview
 	- Portals preview
+	- Aspect ratio correction
 - Script editor
 	- Compiler output pane
 	- Error pane rather than just displaying error output
@@ -78,6 +80,14 @@ TODO List ---------------------------------------------------------------
 
 --- Text Editor ---
 - 'Tabs as Spaces' option
+- Better Find+Replace
+	- Make it a bar rather than popup
+	- Enter to find next
+	- Esc to cancel
+
+--- Texture Editor ---
+- Make 'grid' size optional
+- Snap to grid for dragging patches
 
 --- Gfx Editor ---
 - Basic pixel-drawing tools
