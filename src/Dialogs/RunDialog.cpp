@@ -190,7 +190,7 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 	if (exe)
 	{
 		// Get exe path
-		string path = exe->path;
+		string path = S_FMT("\"%s\"", CHR(exe->path));
 		if (path.IsEmpty())
 			return "";
 
