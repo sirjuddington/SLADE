@@ -44,6 +44,7 @@
 #include "ShapeDrawPanel.h"
 #include "ScriptEditorPanel.h"
 #include "ObjectEditPanel.h"
+#include "Dialogs/RunDialog.h"
 #include <wx/aui/aui.h>
 
 
@@ -181,6 +182,7 @@ void MapEditorWindow::setupLayout()
 	theApp->getAction("mapw_save")->addToMenu(menu_map);
 	theApp->getAction("mapw_saveas")->addToMenu(menu_map);
 	theApp->getAction("mapw_rename")->addToMenu(menu_map);
+	theApp->getAction("mapw_run_map")->addToMenu(menu_map);
 	menu->Append(menu_map, "&Map");
 
 	// Edit menu
@@ -240,6 +242,11 @@ void MapEditorWindow::setupLayout()
 	if (flat_drawtype == 0) theApp->toggleAction("mapw_flat_none");
 	else if (flat_drawtype == 1) theApp->toggleAction("mapw_flat_untextured");
 	else theApp->toggleAction("mapw_flat_textured");
+
+	// Extra toolbar
+	SToolBarGroup* tbg_misc = new SToolBarGroup(toolbar, "_Misc");
+	tbg_misc->addActionButton("mapw_run_map");
+	toolbar->addGroup(tbg_misc);
 
 	// Add toolbar
 	m_mgr->AddPane(toolbar, wxAuiPaneInfo().Top().CaptionVisible(false).MinSize(-1, SToolBar::getBarHeight()).Resizable(false).PaneBorder(false).Name("toolbar"));
@@ -513,7 +520,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		wxLogMessage("Nodebuilder path not set up, no nodes were built");
 }
 
-bool MapEditorWindow::saveMap()
+WadArchive* MapEditorWindow::writeMap()
 {
 	// Get map data entries
 	vector<ArchiveEntry*> map_data;
@@ -533,7 +540,7 @@ bool MapEditorWindow::saveMap()
 	// Check script language
 	bool acs = false;
 	if (theGameConfiguration->scriptLanguage() == "acs_hexen" ||
-	        theGameConfiguration->scriptLanguage() == "acs_zdoom")
+		theGameConfiguration->scriptLanguage() == "acs_zdoom")
 		acs = true;
 
 	// Add map data to temporary wad
@@ -548,6 +555,17 @@ bool MapEditorWindow::saveMap()
 	if (mdesc_current.format == MAP_UDMF)
 		wad->addNewEntry("ENDMAP");
 
+	// Build nodes
+	buildNodes(wad);
+
+	return wad;
+}
+
+bool MapEditorWindow::saveMap()
+{
+	// Write map to temp wad
+	WadArchive* wad = writeMap();
+
 	// Check for map archive
 	Archive* tempwad = NULL;
 	Archive::mapdesc_t map = mdesc_current;
@@ -561,9 +579,6 @@ bool MapEditorWindow::saveMap()
 		else
 			return false;
 	}
-
-	// Build nodes
-	buildNodes(wad);
 
 	// Unlock current map entries
 	lockMapEntries(false);
@@ -865,6 +880,35 @@ bool MapEditorWindow::handleAction(string id)
 		return true;
 	}
 
+	// Run Map
+	else if (id == "mapw_run_map")
+	{
+		Archive* archive = mdesc_current.head->getParent();
+		RunDialog dlg(this, archive);
+		if (dlg.ShowModal() == wxID_OK)
+		{
+			WadArchive* wad = writeMap();
+			if (wad)
+				wad->save(appPath("sladetemp_run.wad", DIR_TEMP));
+
+			string command = dlg.getSelectedCommandLine(archive, mdesc_current.name, wad->getFilename());
+			if (!command.IsEmpty())
+			{
+				// Set working directory
+				string wd = wxGetCwd();
+				wxSetWorkingDirectory(dlg.getSelectedExeDir());
+
+				// Run
+				wxExecute(command, wxEXEC_ASYNC);
+
+				// Restore working directory
+				wxSetWorkingDirectory(wd);
+			}
+		}
+
+		return true;
+	}
+	
 	return false;
 }
 

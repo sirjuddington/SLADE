@@ -323,6 +323,7 @@ void MainWindow::setupLayout()
 	tbg_archive->addActionButton("arch_importfiles");
 	tbg_archive->addActionButton("arch_texeditor");
 	tbg_archive->addActionButton("arch_mapeditor");
+	tbg_archive->addActionButton("arch_run");
 	toolbar->addGroup(tbg_archive);
 
 	// Create Entry toolbar

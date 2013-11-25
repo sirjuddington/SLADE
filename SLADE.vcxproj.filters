@@ -1104,6 +1104,15 @@
     <ClCompile Include="src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp">
       <Filter>Dialogs\SetupWizard</Filter>
     </ClCompile>
+    <ClCompile Include="src\Dialogs\RunDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Executables.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceArchiveChooser.cpp">
+      <Filter>UI Elements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -1982,6 +1991,15 @@
     </ClInclude>
     <ClInclude Include="src\Dialogs\SetupWizard\NodeBuildersWizardPage.h">
       <Filter>Dialogs\SetupWizard</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\RunDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Executables.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ResourceArchiveChooser.h">
+      <Filter>UI Elements</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

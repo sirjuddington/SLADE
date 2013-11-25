@@ -748,6 +748,19 @@ struct bbox_t
 	}
 };
 
+// key_value_t: Simple key-value pair (string-string)
+struct key_value_t
+{
+	string	key;
+	string	value;
+
+	key_value_t(string key, string value = "")
+	{
+		this->key = key;
+		this->value = value;
+	}
+};
+
 
 // patch_header_t: The header of a Doom-format gfx image
 struct patch_header_t

@@ -10,6 +10,7 @@
 #include "SplashWindow.h"
 #include "ColourConfiguration.h"
 #include "Icons.h"
+#include "ResourceArchiveChooser.h"
 #include <wx/statline.h>
 
 MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist) : wxDialog(parent, -1, "Launch Map Editor")
@@ -86,34 +87,37 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	choice_base_resource = new BaseResourceChooser(this);
 	hbox->Add(choice_base_resource, 1, wxEXPAND, 0);
 
-	// Resource archive list
-	list_resources = new wxCheckListBox(this, -1);
-	framesizer->Add(list_resources, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	list_resources->SetInitialSize(wxSize(350, 100));
+	rac_resources = new ResourceArchiveChooser(this, archive);
+	framesizer->Add(rac_resources, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
-	// Populate resource archive list
-	int index = 0;
-	for (int a = 0; a < theArchiveManager->numArchives(); a++)
-	{
-		Archive* arch = theArchiveManager->getArchive(a);
-		if (arch != archive)
-		{
-			list_resources->Append(arch->getFilename(false));
-			if (theArchiveManager->archiveIsResource(arch))
-				list_resources->Check(index);
-			index++;
-		}
-	}
+	//// Resource archive list
+	//list_resources = new wxCheckListBox(this, -1);
+	//framesizer->Add(list_resources, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	//list_resources->SetInitialSize(wxSize(350, 100));
 
-	// 'Open Resource' button
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	btn_open_resource = new wxButton(this, -1, "Open Archive");
-	hbox->Add(btn_open_resource, 0, wxEXPAND|wxRIGHT, 4);
+	//// Populate resource archive list
+	//int index = 0;
+	//for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	//{
+	//	Archive* arch = theArchiveManager->getArchive(a);
+	//	if (arch != archive)
+	//	{
+	//		list_resources->Append(arch->getFilename(false));
+	//		if (theArchiveManager->archiveIsResource(arch))
+	//			list_resources->Check(index);
+	//		index++;
+	//	}
+	//}
 
-	// 'Open Recent' button
-	btn_recent = new wxButton(this, -1, "Open Recent");
-	hbox->Add(btn_recent, 0, wxEXPAND, 0);
+	//// 'Open Resource' button
+	//hbox = new wxBoxSizer(wxHORIZONTAL);
+	//framesizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	//btn_open_resource = new wxButton(this, -1, "Open Archive");
+	//hbox->Add(btn_open_resource, 0, wxEXPAND|wxRIGHT, 4);
+
+	//// 'Open Recent' button
+	//btn_recent = new wxButton(this, -1, "Open Recent");
+	//hbox->Add(btn_recent, 0, wxEXPAND, 0);
 
 
 	// Right side (map preview)
@@ -146,8 +150,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		list_maps->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &MapEditorConfigDialog::onMapSelected, this);
 		btn_new_map->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnNewMap, this);
 	}
-	btn_open_resource->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnOpenResource, this);
-	btn_recent->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnRecent, this);
+	//btn_open_resource->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnOpenResource, this);
+	//btn_recent->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnRecent, this);
 
 	Layout();
 	mainsizer->Fit(this);
@@ -519,41 +523,41 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 	}
 }
 
-void MapEditorConfigDialog::onBtnOpenResource(wxCommandEvent& e)
-{
-	SFileDialog::fd_info_t info;
-	if (SFileDialog::openFile(info, "Open Resource Archive", theArchiveManager->getArchiveExtensionsString(), this))
-	{
-		theSplashWindow->show("Opening Resource Archive", true);
-		Archive* na = theArchiveManager->openArchive(info.filenames[0], true, true);
-		theSplashWindow->hide();
-		if (na)
-		{
-			list_resources->Append(na->getFilename(false));
-			list_resources->Check(list_resources->GetCount()-1);
-		}
-	}
-}
-
-void MapEditorConfigDialog::onBtnRecent(wxCommandEvent& e)
-{
-	// Build list of recent wad filename strings
-	wxArrayString recent;
-	for (unsigned a = 0; a < theArchiveManager->numRecentFiles(); a++)
-		recent.Add(theArchiveManager->recentFile(a));
-
-	// Show dialog
-	wxSingleChoiceDialog dlg(this, "Select a recent Archive to open", "Open Recent", recent);
-	if (dlg.ShowModal() == wxID_OK)
-	{
-		Archive* na = theArchiveManager->openArchive(theArchiveManager->recentFile(dlg.GetSelection()), true, true);
-		if (na)
-		{
-			list_resources->Append(na->getFilename(false));
-			list_resources->Check(list_resources->GetCount()-1);
-		}
-	}
-}
+//void MapEditorConfigDialog::onBtnOpenResource(wxCommandEvent& e)
+//{
+//	SFileDialog::fd_info_t info;
+//	if (SFileDialog::openFile(info, "Open Resource Archive", theArchiveManager->getArchiveExtensionsString(), this))
+//	{
+//		theSplashWindow->show("Opening Resource Archive", true);
+//		Archive* na = theArchiveManager->openArchive(info.filenames[0], true, true);
+//		theSplashWindow->hide();
+//		if (na)
+//		{
+//			list_resources->Append(na->getFilename(false));
+//			list_resources->Check(list_resources->GetCount()-1);
+//		}
+//	}
+//}
+//
+//void MapEditorConfigDialog::onBtnRecent(wxCommandEvent& e)
+//{
+//	// Build list of recent wad filename strings
+//	wxArrayString recent;
+//	for (unsigned a = 0; a < theArchiveManager->numRecentFiles(); a++)
+//		recent.Add(theArchiveManager->recentFile(a));
+//
+//	// Show dialog
+//	wxSingleChoiceDialog dlg(this, "Select a recent Archive to open", "Open Recent", recent);
+//	if (dlg.ShowModal() == wxID_OK)
+//	{
+//		Archive* na = theArchiveManager->openArchive(theArchiveManager->recentFile(dlg.GetSelection()), true, true);
+//		if (na)
+//		{
+//			list_resources->Append(na->getFilename(false));
+//			list_resources->Check(list_resources->GetCount()-1);
+//		}
+//	}
+//}
 
 void MapEditorConfigDialog::onMapSelected(wxListEvent& e)
 {

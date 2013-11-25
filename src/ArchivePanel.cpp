@@ -62,6 +62,7 @@
 #include "MapEditorConfigDialog.h"
 #include "PaletteManager.h"
 #include "MapReplaceDialog.h"
+#include "Dialogs/RunDialog.h"
 #include <wx/aui/auibook.h>
 #include <wx/aui/auibar.h>
 #include <wx/filename.h>
@@ -2217,6 +2218,30 @@ bool ArchivePanel::handleAction(string id)
 
 		// Open in text editor
 		openEntryAsText(entry);
+	}
+
+	// Run archive
+	else if (id == "arch_run")
+	{
+		RunDialog dlg(this, archive);
+		if (dlg.ShowModal() == wxID_OK)
+		{
+			string command = dlg.getSelectedCommandLine(archive, "");
+			if (!command.IsEmpty())
+			{
+				// Set working directory
+				string wd = wxGetCwd();
+				wxSetWorkingDirectory(dlg.getSelectedExeDir());
+
+				// Run
+				wxExecute(command, wxEXEC_ASYNC);
+
+				// Restore working directory
+				wxSetWorkingDirectory(wd);
+			}
+		}
+
+		return true;
 	}
 
 	// Unknown action

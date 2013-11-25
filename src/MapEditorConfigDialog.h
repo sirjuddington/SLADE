@@ -8,6 +8,7 @@
 #include <wx/imaglist.h>
 
 class BaseResourceChooser;
+class ResourceArchiveChooser;
 class MapEditorConfigDialog : public wxDialog
 {
 private:
@@ -15,9 +16,10 @@ private:
 	wxChoice*					choice_port_config;
 	BaseResourceChooser*		choice_base_resource;
 	ListView*					list_maps;
-	wxCheckListBox*				list_resources;
-	wxButton*					btn_open_resource;
-	wxButton*					btn_recent;
+	ResourceArchiveChooser*		rac_resources;
+	//wxCheckListBox*				list_resources;
+	//wxButton*					btn_open_resource;
+	//wxButton*					btn_recent;
 	wxButton*					btn_new_map;
 	MapPreviewCanvas*			canvas_preview;
 	wxImageList*				img_list;
@@ -46,8 +48,8 @@ public:
 	void	onChoicePortConfigChanged(wxCommandEvent& e);
 	void	onMapActivated(wxListEvent& e);
 	void	onBtnNewMap(wxCommandEvent& e);
-	void	onBtnOpenResource(wxCommandEvent& e);
-	void	onBtnRecent(wxCommandEvent& e);
+	//void	onBtnOpenResource(wxCommandEvent& e);
+	//void	onBtnRecent(wxCommandEvent& e);
 	void	onMapSelected(wxListEvent& e);
 };
 

@@ -36,19 +36,11 @@ TODO List ---------------------------------------------------------------
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
 - Need to separate editor defaults from udmf defaults (eg. thing skill flags are all false by default in udmf)
-- Run map (possibly 'run archive' for something more general also)
 
 
 --- Other 3.1 ---
 - Look into using wxWebView to show documentation in a tab
-- Change start page to use wxWebView
-- Create simple 'first-time-setup' wizard to set up settings that are important
-	- Temp folder
-	- Base resource archives
-	- External exe paths (node builders, acc, etc.)
-	- Soundfont
 - Automatically email stack trace on crash (if possible)
-- Entry list submenus could do with cleaning up
 
 
 --- Map Editor post-3.1 ---

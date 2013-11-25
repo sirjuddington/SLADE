@@ -14,6 +14,7 @@ class SToolBar;
 class ScriptEditorPanel;
 class ObjectEditPanel;
 class ObjectEditGroup;
+class WadArchive;
 class MapEditorWindow : public STopWindow, public SActionHandler
 {
 private:
@@ -52,14 +53,15 @@ public:
 	void	loadLayout();
 	void	saveLayout();
 
-	void	setupLayout();
-	bool	openMap(Archive::mapdesc_t map);
-	void	loadMapScripts(Archive::mapdesc_t map);
-	bool	saveMap();
-	bool	saveMapAs();
-	void	closeMap();
-	void	forceRefresh(bool renderer = false);
-	void	refreshToolBar();
+	void		setupLayout();
+	bool		openMap(Archive::mapdesc_t map);
+	void		loadMapScripts(Archive::mapdesc_t map);
+	WadArchive*	writeMap();
+	bool		saveMap();
+	bool		saveMapAs();
+	void		closeMap();
+	void		forceRefresh(bool renderer = false);
+	void		refreshToolBar();
 
 	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
 	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }
