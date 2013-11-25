@@ -771,15 +771,9 @@ void TextureXPanel::renameTexture()
 
 	if (!tx_entry) return;
 
-	saveTEXTUREX();
-
-	Archive* archive = tx_entry->getParent();
-
 	// Go through selection
 	for (unsigned a = 0; a < selec_num.size(); ++a)
-	{
 		selection.push_back(texturex.getTexture(selec_num[a]));
-	}
 
 	// Check any are selected
 	if (selection.size() == 1)
@@ -787,14 +781,17 @@ void TextureXPanel::renameTexture()
 		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
-
 			// Prompt for a new name
 			string new_name = wxGetTextFromUser("Enter new texture name: (* = unchanged)", "Rename", selection[a]->getName());
 			if (wad_force_uppercase) new_name.MakeUpper();
 
 			// Rename entry (if needed)
 			if (!new_name.IsEmpty() && selection[a]->getName() != new_name)
+			{
 				selection[a]->setName(new_name);
+				selection[a]->setState(1);
+				modified = true;
+			}
 		}
 	}
 	else if (selection.size() > 1)
@@ -821,7 +818,11 @@ void TextureXPanel::renameTexture()
 			{
 				// Rename the entry (if needed)
 				if (selection[a]->getName() != names[a])
-					selection[a]->setName(names[a]);		// Change name
+				{
+					selection[a]->setName(names[a]);
+					selection[a]->setState(1);
+					modified = true;
+				}
 			}
 		}
 	}
@@ -839,7 +840,7 @@ void TextureXPanel::exportTexture()
 
 	if (!tx_entry) return;
 
-	saveTEXTUREX();
+	//saveTEXTUREX();
 
 	Archive* archive = tx_entry->getParent();
 	bool force_rgba = texture_editor->getBlendRGBA();
@@ -934,7 +935,7 @@ void TextureXPanel::extractTexture()
 
 	if (!tx_entry) return;
 
-	saveTEXTUREX();
+	//saveTEXTUREX();
 
 	Archive* archive = tx_entry->getParent();
 	bool force_rgba = texture_editor->getBlendRGBA();
@@ -1006,7 +1007,7 @@ void TextureXPanel::extractTexture()
 bool TextureXPanel::modifyOffsets()
 {
 	if (!tx_entry) return false;
-	saveTEXTUREX();
+	//saveTEXTUREX();
 
 	// Create modify offsets dialog
 	ModifyOffsetsDialog mod;
