@@ -743,6 +743,11 @@ bool ArchiveEntryList::handleAction(string id)
 		SetSingleStyle(wxLC_VRULES, elist_vrules);
 		Refresh();
 	}
+	else if (id == "aelt_bgcolour")
+	{
+		elist_type_bgcol = !elist_type_bgcol;
+		Refresh();
+	}
 
 	// Unknown action
 	else
@@ -767,10 +772,12 @@ void ArchiveEntryList::onColumnHeaderRightClick(wxListEvent& e)
 	theApp->getAction("aelt_typecol")->addToMenu(&popup);
 	theApp->getAction("aelt_hrules")->addToMenu(&popup);
 	theApp->getAction("aelt_vrules")->addToMenu(&popup);
+	theApp->getAction("aelt_bgcolour")->addToMenu(&popup);
 	popup.Check(theApp->getAction("aelt_sizecol")->getWxId(), elist_colsize_show);
 	popup.Check(theApp->getAction("aelt_typecol")->getWxId(), elist_coltype_show);
 	popup.Check(theApp->getAction("aelt_hrules")->getWxId(), elist_hrules);
 	popup.Check(theApp->getAction("aelt_vrules")->getWxId(), elist_vrules);
+	popup.Check(theApp->getAction("aelt_bgcolour")->getWxId(), elist_type_bgcol);
 
 	// Pop it up
 	PopupMenu(&popup);

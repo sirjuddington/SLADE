@@ -512,6 +512,7 @@ void MainApp::initActions()
 	new SAction("aelt_typecol", "Type", "", "Show the type column", "", SAction::CHECK);
 	new SAction("aelt_hrules", "Horizontal Rules", "", "Show horizontal rules between entries", "", SAction::CHECK);
 	new SAction("aelt_vrules", "Vertical Rules", "", "Show vertical rules between columns", "", SAction::CHECK);
+	new SAction("aelt_bgcolour", "Colour by Type", "", "Colour item background by entry type", "", SAction::CHECK);
 
 	// TextureEditorPanel
 	new SAction("txed_new", "New Texture", "t_tex_new", "Create a new, empty texture");
