@@ -332,7 +332,16 @@ uint8_t MapSector::getLight(int where)
 		return l;
 	}
 	else
-		return light;
+	{
+		// Clamp light level
+		int l = light;
+		if (l > 255)
+			l = 255;
+		if (l < 0)
+			l = 0;
+
+		return l;
+	}
 }
 
 void MapSector::changeLight(int amount, int where)
@@ -421,7 +430,17 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		if (fullbright)
 			return rgba_t(255, 255, 255, 255);
 		else
-			return rgba_t(light, light, light, 255);
+		{
+			int l = light;
+
+			// Clamp light level
+			if (l > 255)
+				l = 255;
+			if (l < 0)
+				l = 0;
+
+			return rgba_t(l, l, l, 255);
+		}
 	}
 }
 
