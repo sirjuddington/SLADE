@@ -9,11 +9,13 @@ class RunDialog : public wxDialog
 private:
 	wxChoice*				choice_game_exes;
 	wxButton*				btn_add_game;
+	wxButton*				btn_remove_game;
 	wxTextCtrl*				text_exe_path;
 	wxButton*				btn_browse_exe;
 	wxChoice*				choice_config;
 	wxButton*				btn_add_config;
 	wxButton*				btn_edit_config;
+	wxButton*				btn_remove_config;
 	wxButton*				btn_run;
 	wxButton*				btn_cancel;
 	ResourceArchiveChooser*	rac_resources;
@@ -38,6 +40,7 @@ public:
 	void	onBtnCancel(wxCommandEvent& e);
 	void	onChoiceGameExe(wxCommandEvent& e);
 	void	onChoiceConfig(wxCommandEvent& e);
+	void	onBtnRemoveGame(wxCommandEvent& e);
 };
 
 #endif//__RUN_DIALOG_H__

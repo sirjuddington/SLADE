@@ -12,6 +12,7 @@ namespace Executables
 		string				exe_name;
 		string				path;
 		vector<key_value_t>	configs;
+		bool				custom;
 	};
 
 	game_exe_t*		getGameExe(string id);
@@ -22,8 +23,9 @@ namespace Executables
 	string			writeExecutables();
 
 	void	init();
-	void	parse(Parser* p);
+	void	parse(Parser* p, bool custom);
 	void	addGameExe(string name);
+	bool	removeGameExe(unsigned index);
 }
 
 #endif//__EXECUTABLES_H__

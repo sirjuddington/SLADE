@@ -86,7 +86,7 @@ void Executables::init()
 	// Parse base executables config
 	Parser p;
 	p.parseText(entry->getMCData(), "slade.pk3 - executables.cfg");
-	parse(&p);
+	parse(&p, false);
 
 	// Parse user executables config
 	Parser p2;
@@ -94,11 +94,11 @@ void Executables::init()
 	if (mc.importFile(appPath("executables.cfg", DIR_USER)))
 	{
 		p2.parseText(mc, "user execuatbles.cfg");
-		parse(&p2);
+		parse(&p2, true);
 	}
 }
 
-void Executables::parse(Parser* p)
+void Executables::parse(Parser* p, bool custom)
 {
 	ParseTreeNode* n = (ParseTreeNode*)p->parseTreeRoot()->getChild("executables");
 	for (unsigned a = 0; a < n->nChildren(); a++)
@@ -110,6 +110,7 @@ void Executables::parse(Parser* p)
 		{
 			// Create if new
 			game_exe_t nexe;
+			nexe.custom = custom;
 			game_exes.push_back(nexe);
 			exe = &(game_exes.back());
 		}
@@ -167,4 +168,18 @@ void Executables::addGameExe(string name)
 	game.id = name;
 
 	game_exes.push_back(game);
+}
+
+bool Executables::removeGameExe(unsigned index)
+{
+	if (index < game_exes.size())
+	{
+		if (game_exes[index].custom)
+		{
+			game_exes.erase(game_exes.begin() + index);
+			return true;
+		}
+	}
+
+	return false;
 }

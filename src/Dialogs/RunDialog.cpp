@@ -84,15 +84,17 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	gb_sizer->Add(choice_game_exes, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
 	btn_add_game = new wxBitmapButton(this, -1, getIcon("t_plus"));
 	gb_sizer->Add(btn_add_game, wxGBPosition(0, 3));
+	btn_remove_game = new wxBitmapButton(this, -1, getIcon("t_minus"));
+	gb_sizer->Add(btn_remove_game, wxGBPosition(0, 4));
 
 	// Executable path
 	gb_sizer->Add(new wxStaticText(this, -1, "Path:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_exe_path = new wxTextCtrl(this, -1, "");
 	text_exe_path->Enable(false);
-	gb_sizer->Add(text_exe_path, wxGBPosition(1, 1), wxGBSpan(1, 2), wxEXPAND);
+	gb_sizer->Add(text_exe_path, wxGBPosition(1, 1), wxGBSpan(1, 3), wxEXPAND);
 	btn_browse_exe = new wxBitmapButton(this, -1, getIcon("t_open"));
 	btn_browse_exe->SetToolTip("Browse...");
-	gb_sizer->Add(btn_browse_exe, wxGBPosition(1, 3));
+	gb_sizer->Add(btn_browse_exe, wxGBPosition(1, 4));
 
 	// Configuration
 	gb_sizer->Add(new wxStaticText(this, -1, "Run Configuration:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
@@ -103,11 +105,14 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	gb_sizer->Add(btn_edit_config, wxGBPosition(2, 2));
 	btn_add_config = new wxBitmapButton(this, -1, getIcon("t_plus"));
 	gb_sizer->Add(btn_add_config, wxGBPosition(2, 3));
+	btn_remove_config = new wxBitmapButton(this, -1, getIcon("t_minus"));
+	btn_remove_config->Enable(false);
+	gb_sizer->Add(btn_remove_config, wxGBPosition(2, 4));
 
 	// Extra parameters
 	gb_sizer->Add(new wxStaticText(this, -1, "Extra Parameters:"), wxGBPosition(3, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_extra_params = new wxTextCtrl(this, -1, run_last_extra);
-	gb_sizer->Add(text_extra_params, wxGBPosition(3, 1), wxGBSpan(1, 3), wxEXPAND);
+	gb_sizer->Add(text_extra_params, wxGBPosition(3, 1), wxGBSpan(1, 4), wxEXPAND);
 
 	// Resources
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Resources");
@@ -148,6 +153,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 
 	// Bind Events
 	btn_add_game->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnAddGame, this);
+	btn_remove_game->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnRemoveGame, this);
 	btn_browse_exe->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnBrowseExe, this);
 	btn_edit_config->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnEditConfig, this);
 	btn_add_config->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnAddConfig, this);
@@ -179,8 +185,15 @@ void RunDialog::openGameExe(unsigned index)
 		for (unsigned a = 0; a < exe->configs.size(); a++)
 			choice_config->AppendString(exe->configs[a].key);
 
-		choice_config->SetSelection(0);
 		text_exe_path->SetValue(exe->path);
+		btn_remove_game->Enable(exe->custom);
+		if (choice_config->GetCount() == 0)
+			btn_edit_config->Enable(false);
+		else
+		{
+			choice_config->SetSelection(0);
+			btn_edit_config->Enable();
+		}
 	}
 }
 
@@ -338,13 +351,21 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 		return;
 	}
 
+	// Update cvars
 	run_last_extra = text_extra_params->GetValue();
+	run_last_config = choice_config->GetSelection();
+	run_last_exe = getSelectedExeId();
+
 	EndModal(wxID_OK);
 }
 
 void RunDialog::onBtnCancel(wxCommandEvent& e)
 {
+	// Update cvars
 	run_last_extra = text_extra_params->GetValue();
+	run_last_config = choice_config->GetSelection();
+	run_last_exe = getSelectedExeId();
+
 	EndModal(wxID_CANCEL);
 }
 
@@ -357,4 +378,21 @@ void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 void RunDialog::onChoiceConfig(wxCommandEvent& e)
 {
 	run_last_config = choice_config->GetSelection();
+	btn_edit_config->Enable(true);
+}
+
+void RunDialog::onBtnRemoveGame(wxCommandEvent& e)
+{
+	if (Executables::removeGameExe(choice_game_exes->GetSelection()))
+	{
+		choice_game_exes->Clear();
+		for (unsigned a = 0; a < Executables::nGameExes(); a++)
+			choice_game_exes->AppendString(Executables::getGameExe(a)->name);
+
+		if (choice_game_exes->GetCount() > 0)
+		{
+			choice_game_exes->Select(0);
+			openGameExe(0);
+		}
+	}
 }
