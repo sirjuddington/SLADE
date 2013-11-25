@@ -64,17 +64,17 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	toolbar->addGroup(group_language);
 
 	// Add 'Word Wrap' checkbox to top sizer
-	sizer_top->AddStretchSpacer();
+	sizer_bottom->AddStretchSpacer();
 	cb_wordwrap = new wxCheckBox(this, -1, "Word Wrapping");
-	sizer_top->Add(cb_wordwrap, 0, wxEXPAND, 0);
+	sizer_bottom->Add(cb_wordwrap, 0, wxEXPAND, 0);
 
 	// Add 'Jump To' button to top sizer
 	btn_jump_to = new wxButton(this, -1, "Jump To");
-	sizer_top->Add(btn_jump_to, 0, wxEXPAND|wxRIGHT, 4);
+	sizer_bottom->Add(btn_jump_to, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Add 'Find/Replace' button to top sizer
 	btn_find_replace = new wxButton(this, -1, "Find + Replace");
-	sizer_top->Add(btn_find_replace, 0, wxEXPAND, 0);
+	sizer_bottom->Add(btn_find_replace, 0, wxEXPAND, 0);
 
 	// Bind events
 	choice_text_language->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &TextEntryPanel::onChoiceLanguageChanged, this);
