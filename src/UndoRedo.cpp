@@ -64,7 +64,7 @@ UndoLevel::~UndoLevel()
  *******************************************************************/
 bool UndoLevel::doUndo()
 {
-	//wxLogMessage("Performing undo \"%s\" (%d steps)", CHR(name), undo_steps.size());
+	LOG_MESSAGE(3, "Performing undo \"%s\" (%d steps)", CHR(name), undo_steps.size());
 	bool ok = true;
 	for (int a = (int)undo_steps.size() - 1; a >= 0; a--)
 	{
@@ -80,7 +80,7 @@ bool UndoLevel::doUndo()
  *******************************************************************/
 bool UndoLevel::doRedo()
 {
-	//wxLogMessage("Performing redo \"%s\" (%d steps)", CHR(name), undo_steps.size());
+	LOG_MESSAGE(3, "Performing redo \"%s\" (%d steps)", CHR(name), undo_steps.size());
 	bool ok = true;
 	for (unsigned a = 0; a < undo_steps.size(); a++)
 	{
@@ -238,7 +238,8 @@ string UndoManager::undo()
 	undo_running = true;
 	current_undo_manager = this;
 	UndoLevel* level = undo_levels[current_level_index];
-	level->doUndo();
+	if (!level->doUndo())
+		LOG_MESSAGE(3, "Undo operation \"%s\" failed", CHR(level->getName()));
 	undo_running = false;
 	current_undo_manager = NULL;
 	current_level_index--;

@@ -45,7 +45,7 @@ public:
 	bool	swapEntries(unsigned index1, unsigned index2);
 
 	ArchiveTreeNode*	clone();
-	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF);
+	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
 };
 
 // Define archive types

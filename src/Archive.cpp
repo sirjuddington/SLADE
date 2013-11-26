@@ -32,6 +32,7 @@
 #include "MainApp.h"
 #include "Misc.h"
 #include "UndoRedo.h"
+#include "Clipboard.h"
 #include <wx/filename.h>
 #include <wx/dir.h>
 
@@ -332,7 +333,7 @@ ArchiveTreeNode* ArchiveTreeNode::clone()
  * at [position] within this node. Returns false if [node] is invalid,
  * true otherwise
  *******************************************************************/
-bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position)
+bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 {
 	// Check node was given to merge
 	if (!node)
@@ -346,7 +347,9 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position)
 			string name = Misc::lumpNameToFileName(node->getEntry(a)->getName());
 			node->getEntry(a)->setName(name);
 		}
-		addEntry(new ArchiveEntry(*(node->getEntry(a))), position);
+		ArchiveEntry* nentry = new ArchiveEntry(*(node->getEntry(a)));
+		addEntry(nentry, position);
+		nentry->setState(state);
 
 		if (position < entries.size())
 			position++;
@@ -357,6 +360,7 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position)
 	{
 		ArchiveTreeNode* child = (ArchiveTreeNode*)STreeNode::addChild(node->getChild(a)->getName());
 		child->merge((ArchiveTreeNode*)node->getChild(a));
+		child->getDirEntry()->setState(state);
 	}
 
 	return true;
@@ -409,6 +413,48 @@ public:
 		}
 
 		return false;
+	}
+};
+
+class DirRenameUS : public UndoStep
+{
+private:
+	Archive*	archive;
+	string		path;
+	string		old_name;
+	string		new_name;
+	int			prev_state;
+
+public:
+	DirRenameUS(ArchiveTreeNode* dir, string new_name) : UndoStep()
+	{
+		this->archive = dir->getArchive();
+		this->new_name = new_name;
+		this->old_name = dir->getName();
+		this->path = dir->getParent()->getPath() + new_name;
+		this->prev_state = dir->getDirEntry()->getState();
+	}
+
+	void swapNames()
+	{
+		ArchiveTreeNode* dir = archive->getDir(path);
+		archive->renameDir(dir, old_name);
+		old_name = new_name;
+		new_name = dir->getName();
+		path = dir->getPath();
+	}
+
+	bool doUndo()
+	{
+		swapNames();
+		archive->getDir(path)->getDirEntry()->setState(prev_state);
+		return true;
+	}
+
+	bool doRedo()
+	{
+		swapNames();
+		return true;
 	}
 };
 
@@ -504,6 +550,80 @@ public:
 			return deleteEntry();
 		else
 			return createEntry();
+	}
+};
+
+
+class DirCreateDeleteUS : public UndoStep
+{
+private:
+	bool					created;
+	Archive*				archive;
+	string					path;
+	unsigned				index;
+	EntryTreeClipboardItem*	cb_tree;
+
+public:
+	DirCreateDeleteUS(bool created, ArchiveTreeNode* dir)
+	{
+		this->created = created;
+		this->archive = dir->getArchive();
+		this->path = dir->getPath();
+		cb_tree = NULL;
+
+		if (path.StartsWith("/"))
+			path.Remove(0, 1);
+
+		// Backup child entries and subdirs if deleting
+		if (!created)
+		{
+			// Get child entries
+			vector<ArchiveEntry*> entries;
+			for (unsigned a = 0; a < dir->numEntries(); a++)
+				entries.push_back(dir->getEntry(a));
+
+			// Get subdirectories
+			vector<ArchiveTreeNode*> subdirs;
+			for (unsigned a = 0; a < dir->nChildren(); a++)
+				subdirs.push_back((ArchiveTreeNode*)dir->getChild(a));
+
+			// Backup to clipboard item
+			if (!entries.empty() || !subdirs.empty())
+				cb_tree = new EntryTreeClipboardItem(entries, subdirs);
+		}
+	}
+
+	~DirCreateDeleteUS()
+	{
+		if (cb_tree)
+			delete cb_tree;
+	}
+
+	bool doUndo()
+	{
+		if (created)
+			return archive->removeDir(path);
+		else
+		{
+			// Create directory
+			ArchiveTreeNode* dir = archive->createDir(path);
+
+			// Restore entries/subdirs if needed
+			if (dir && cb_tree)
+				dir->merge(cb_tree->getTree(), 0, 0);
+
+			dir->getDirEntry()->setState(0);
+
+			return !!dir;
+		}
+	}
+
+	bool doRedo()
+	{
+		if (!created)
+			return archive->removeDir(path);
+		else
+			return archive->createDir(path) != NULL;
 	}
 };
 
@@ -904,7 +1024,18 @@ ArchiveTreeNode* Archive::getDir(string path, ArchiveTreeNode* base)
 {
 	// Check if base dir was given
 	if (!base)
-		base = dir_root;	// None given, use root
+	{
+		// None given, use root
+		base = dir_root;
+
+		// If empty directory, just return the root
+		if (path == "/" || path == "")
+			return dir_root;
+
+		// Remove starting '/'
+		if (path.StartsWith("/"))
+			path.Remove(0, 1);
+	}
 
 	return (ArchiveTreeNode*)base->getChild(path);
 }
@@ -930,6 +1061,10 @@ ArchiveTreeNode* Archive::createDir(string path, ArchiveTreeNode* base)
 
 	// Create the directory
 	ArchiveTreeNode* dir = (ArchiveTreeNode*)((STreeNode*)base)->addChild(path);
+
+	// Record undo step
+	if (UndoRedo::currentlyRecording())
+		UndoRedo::currentManager()->recordUndoStep(new DirCreateDeleteUS(true, dir));
 
 	// Set the archive state to modified
 	setModified(true);
@@ -961,6 +1096,10 @@ bool Archive::removeDir(string path, ArchiveTreeNode* base)
 	if (!dir || dir == getRoot())
 		return false;
 
+	// Record undo step
+	if (UndoRedo::currentlyRecording())
+		UndoRedo::currentManager()->recordUndoStep(new DirCreateDeleteUS(false, dir));
+
 	// Remove the directory from its parent
 	if (dir->getParent())
 		dir->getParent()->removeChild(dir);
@@ -991,6 +1130,9 @@ bool Archive::renameDir(ArchiveTreeNode* dir, string new_name)
 	// Rename the directory if needed
 	if (!(S_CMPNOCASE(dir->getName(), new_name)))
 	{
+		if (UndoRedo::currentlyRecording())
+			UndoRedo::currentManager()->recordUndoStep(new DirRenameUS(dir, new_name));
+
 		dir->setName(new_name);
 		dir->getDirEntry()->setState(1);
 	}

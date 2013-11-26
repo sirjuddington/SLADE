@@ -72,7 +72,7 @@ namespace Global
 {
 	string error = "";
 
-	string version = "3.1.0 beta 1"
+	string version = "3.1.0 beta 2"
 #ifdef SVN_REVISION_STRING
 	                 " (r" SVN_REVISION_STRING ")"
 #endif
@@ -85,6 +85,8 @@ namespace Global
 #else
 	bool debug = false;
 #endif
+
+	double ppi_scale = 1.0;
 }
 
 string	dir_data = "";
@@ -673,6 +675,10 @@ bool MainApp::OnInit()
 
 	// Init lua
 	Lua::init();
+
+	// Calculate scaling factor (from system ppi)
+	wxMemoryDC dc;
+	Global::ppi_scale = (double)(dc.GetPPI().x) / 96.0;
 
 	// Show splash screen
 	theSplashWindow->init();

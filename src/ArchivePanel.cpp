@@ -631,7 +631,9 @@ bool ArchivePanel::newDirectory()
 	name = fn.GetFullName();
 
 	// Add the directory to the archive
+	undo_manager->beginRecord("Create Directory");
 	ArchiveTreeNode* dir = archive->createDir(name, entry_list->getCurrentDir());
+	undo_manager->endRecord(!!dir);
 
 	// Return whether the directory was created ok
 	return !!dir;

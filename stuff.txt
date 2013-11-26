@@ -8,10 +8,10 @@ TODO List ---------------------------------------------------------------
 
 --- Bugs ---
 - Wall/flat scale not working in 3d mode
-- Undo/redo only works in WADs (no effect on ZIP entries)
 - Editing raw vertex position in properties dialog doesn't update flats correctly
 - Can hilight floors/ceilings from the wrong side in 3d mode
 - Modifying map architecture doesn't affect things in 3d mode (heights stay the same)
+- Undo for rename via label edit
 
 
 --- Minor Problems/Annoyances ---
@@ -115,6 +115,7 @@ TODO List ---------------------------------------------------------------
 - Better backup system
 - More drag-and-drop support
 - Rewrite VirtualListView with item filtering/sorting in mind
+- Need to do something with folder order - either always order alphabetically, or allow reordering
 
 
 --- Internal / Dev ---

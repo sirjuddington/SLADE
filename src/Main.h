@@ -108,6 +108,7 @@ namespace Global
 	extern string version;
 	extern int log_verbosity;
 	extern bool debug;
+	extern double ppi_scale;
 };
 
 
