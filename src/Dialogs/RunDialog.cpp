@@ -25,7 +25,7 @@ private:
 	wxTextCtrl*	text_params;
 	
 public:
-	RunConfigDialog(wxWindow* parent, string title, string name, string params) : wxDialog(parent, -1, title)
+	RunConfigDialog(wxWindow* parent, string title, string name, string params, bool custom = true) : wxDialog(parent, -1, title)
 	{
 		// Setup sizer
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -37,6 +37,7 @@ public:
 		// Config name
 		gb_sizer->Add(new wxStaticText(this, -1, "Config Name:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		text_name = new wxTextCtrl(this, -1, name);
+		text_name->Enable(custom);
 		gb_sizer->Add(text_name, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 		// Config params
@@ -53,6 +54,7 @@ public:
 
 		label_help->SetLabel("%i - Base resource archive\n%r - Resource archive(s)\n%a - Current archive\n%mn - Map name\n%mw - Map number (eg. E1M1 = 1 1, MAP02 = 02)");
 		label_help->Wrap(300);
+		text_params->SetInsertionPoint(0);
 	}
 	~RunConfigDialog() {}
 
@@ -157,6 +159,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	btn_browse_exe->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnBrowseExe, this);
 	btn_edit_config->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnEditConfig, this);
 	btn_add_config->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnAddConfig, this);
+	btn_remove_config->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnRemoveConfig, this);
 	btn_run->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnRun, this);
 	btn_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnCancel, this);
 	choice_game_exes->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &RunDialog::onChoiceGameExe, this);
@@ -193,6 +196,7 @@ void RunDialog::openGameExe(unsigned index)
 		{
 			choice_config->SetSelection(0);
 			btn_edit_config->Enable();
+			btn_remove_config->Enable(exe->configs_custom[0]);
 		}
 	}
 }
@@ -314,11 +318,14 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 		return;
 
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
+	string init_params = "";
+	if (choice_config->GetSelection() >= 0)
+		init_params = exe->configs[choice_config->GetSelection()].value;
 
-	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", CHR(exe->name)), "", "");
+	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", CHR(exe->name)), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		exe->configs.push_back(key_value_t(dlg.getName(), dlg.getParams()));
+		Executables::addGameExeConfig(choice_game_exes->GetSelection(), dlg.getName(), dlg.getParams());
 		choice_config->AppendString(dlg.getName());
 		choice_config->Select(choice_config->GetCount() - 1);
 	}
@@ -333,8 +340,9 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	int index = choice_config->GetSelection();
 	string name = exe->configs[index].key;
 	string params = exe->configs[index].value;
+	bool custom = exe->configs_custom[index];
 
-	RunConfigDialog dlg(this, "Edit Run Config", name, params);
+	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		exe->configs[index].key = dlg.getName();
@@ -379,6 +387,8 @@ void RunDialog::onChoiceConfig(wxCommandEvent& e)
 {
 	run_last_config = choice_config->GetSelection();
 	btn_edit_config->Enable(true);
+	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
+	btn_remove_config->Enable(exe->configs_custom[choice_config->GetSelection()]);
 }
 
 void RunDialog::onBtnRemoveGame(wxCommandEvent& e)
@@ -395,4 +405,10 @@ void RunDialog::onBtnRemoveGame(wxCommandEvent& e)
 			openGameExe(0);
 		}
 	}
+}
+
+void RunDialog::onBtnRemoveConfig(wxCommandEvent& e)
+{
+	if (Executables::removeGameExeConfig(choice_game_exes->GetSelection(), choice_config->GetSelection()))
+		openGameExe(choice_game_exes->GetSelection());
 }

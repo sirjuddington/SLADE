@@ -137,7 +137,10 @@ void Executables::parse(Parser* p, bool custom)
 
 				// Create if new
 				if (!found)
+				{
 					exe->configs.push_back(key_value_t(prop->getName(), prop->getStringValue()));
+					exe->configs_custom.push_back(custom);
+				}
 			}
 
 			// Name
@@ -176,10 +179,40 @@ bool Executables::removeGameExe(unsigned index)
 	{
 		if (game_exes[index].custom)
 		{
-			game_exes.erase(game_exes.begin() + index);
+			VECTOR_REMOVE_AT(game_exes, index);
 			return true;
 		}
 	}
 
 	return false;
+}
+
+void Executables::addGameExeConfig(unsigned exe_index, string config_name, string config_params, bool custom)
+{
+	// Check index
+	if (exe_index >= game_exes.size())
+		return;
+
+	game_exes[exe_index].configs.push_back(key_value_t(config_name, config_params));
+	game_exes[exe_index].configs_custom.push_back(custom);
+}
+
+bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
+{
+	// Check indices
+	if (exe_index >= game_exes.size())
+		return false;
+	if (config_index >= game_exes[exe_index].configs.size())
+		return false;
+
+	// Check config is custom
+	if (game_exes[exe_index].configs_custom[config_index])
+	{
+		VECTOR_REMOVE_AT(game_exes[exe_index].configs, config_index);
+		VECTOR_REMOVE_AT(game_exes[exe_index].configs_custom, config_index);
+
+		return true;
+	}
+	else
+		return false;
 }

@@ -41,6 +41,7 @@ public:
 	void	onChoiceGameExe(wxCommandEvent& e);
 	void	onChoiceConfig(wxCommandEvent& e);
 	void	onBtnRemoveGame(wxCommandEvent& e);
+	void	onBtnRemoveConfig(wxCommandEvent& e);
 };
 
 #endif//__RUN_DIALOG_H__
