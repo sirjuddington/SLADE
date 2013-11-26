@@ -460,16 +460,19 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	}
 
 	bool ok = false;
-	if (omap.format == MAP_DOOM)
-		ok = readDoomMap(omap);
-	else if (omap.format == MAP_HEXEN)
-		ok = readHexenMap(omap);
-	else if (omap.format == MAP_DOOM64)
-		ok = readDoom64Map(omap);
-	else if (omap.format == MAP_UDMF)
+	if (omap.head)
 	{
-		ok = readUDMFMap(omap);
+		if (omap.format == MAP_DOOM)
+			ok = readDoomMap(omap);
+		else if (omap.format == MAP_HEXEN)
+			ok = readHexenMap(omap);
+		else if (omap.format == MAP_DOOM64)
+			ok = readDoom64Map(omap);
+		else if (omap.format == MAP_UDMF)
+			ok = readUDMFMap(omap);
 	}
+	else
+		ok = true;
 
 	if (tempwad)
 		delete tempwad;

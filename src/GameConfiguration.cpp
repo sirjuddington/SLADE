@@ -1855,6 +1855,9 @@ enum StateSprites
 
 bool GameConfiguration::parseDecorateDefs(Archive* archive)
 {
+	if (!archive)
+		return false;
+
 	// Get base decorate file
 	Archive::search_options_t opt;
 	opt.match_name = "decorate";

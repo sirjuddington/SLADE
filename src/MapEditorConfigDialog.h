@@ -26,13 +26,14 @@ private:
 	string						game_current;
 	string						port_current;
 	int							map_format;
+	bool						creating;
 
 	Archive*					archive;
 	vector<Archive::mapdesc_t>	maps;
 	vector<int>					ports_list;
 
 public:
-	MapEditorConfigDialog(wxWindow* parent, Archive* archive = NULL, bool show_maps = true);
+	MapEditorConfigDialog(wxWindow* parent, Archive* archive = NULL, bool show_maps = true, bool creating = false);
 	~MapEditorConfigDialog();
 
 	void				populateGameList();

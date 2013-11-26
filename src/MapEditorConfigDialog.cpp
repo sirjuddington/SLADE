@@ -13,13 +13,103 @@
 #include "ResourceArchiveChooser.h"
 #include <wx/statline.h>
 
-MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist) : wxDialog(parent, -1, "Launch Map Editor")
+
+class NewMapDialog : public wxDialog
+{
+private:
+	wxComboBox*	cbo_mapname;
+	wxChoice*	choice_mapformat;
+
+public:
+	NewMapDialog(wxWindow* parent, int game, int port, vector<Archive::mapdesc_t>& maps) : wxDialog(parent, -1, "New Map")
+	{
+		// Setup dialog
+		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(sizer);
+
+		// Check if the game configuration allows any map name
+		int flags = 0;
+		if (!theGameConfiguration->anyMapName())
+			flags = wxCB_READONLY;
+
+		// Create map name combo box
+		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxTOP|wxRIGHT, 10);
+		sizer->AddSpacer(4);
+		cbo_mapname = new wxComboBox(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, flags);
+		cbo_mapname->SetMaxLength(8);
+		hbox->Add(new wxStaticText(this, -1, "Map Name:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
+		hbox->Add(cbo_mapname, 1, wxEXPAND);
+
+		// Add possible map names to the combo box
+		for (unsigned a = 0; a < theGameConfiguration->nMapNames(); a++)
+		{
+			// Check if map already exists
+			string mapname = theGameConfiguration->mapName(a);
+			bool exists = false;
+			for (unsigned m = 0; m < maps.size(); m++)
+			{
+				if (S_CMPNOCASE(maps[m].name, mapname))
+				{
+					exists = true;
+					break;
+				}
+			}
+
+			if (!exists)
+				cbo_mapname->Append(mapname);
+		}
+
+		// Set inital map name selection
+		if (theGameConfiguration->nMapNames() > 0)
+			cbo_mapname->SetSelection(0);
+
+		// Create map format combo box
+		choice_mapformat = new wxChoice(this, -1);
+		hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
+		sizer->AddSpacer(4);
+		hbox->Add(new wxStaticText(this, -1, "Map Format:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
+		hbox->Add(choice_mapformat, 1, wxEXPAND);
+
+		// Add possible map formats to the combo box
+		if (theGameConfiguration->mapFormatSupported(MAP_DOOM, game, port))
+			choice_mapformat->Append("Doom");
+		if (theGameConfiguration->mapFormatSupported(MAP_HEXEN, game, port))
+			choice_mapformat->Append("Hexen");
+		if (theGameConfiguration->mapFormatSupported(MAP_UDMF, game, port))
+			choice_mapformat->Append("UDMF");
+		if (theGameConfiguration->mapFormatSupported(MAP_DOOM64, game, port))
+			choice_mapformat->Append("Doom64");
+		choice_mapformat->SetSelection(0);
+
+		// Add dialog buttons
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+
+		Layout();
+		sizer->Fit(this);
+		CenterOnParent();
+	}
+
+	string getMapName()
+	{
+		return cbo_mapname->GetValue();
+	}
+
+	string getMapFormat()
+	{
+		return choice_mapformat->GetStringSelection();
+	}
+};
+
+MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating) : wxDialog(parent, -1, "Launch Map Editor")
 {
 	// Init variables
 	this->archive = archive;
 	canvas_preview = NULL;
 	game_current = theGameConfiguration->currentGame();
 	port_current = theGameConfiguration->currentPort();
+	this->creating = creating;
 
 	// Setup main sizer
 	wxBoxSizer* mainsizer = new wxBoxSizer(wxHORIZONTAL);
@@ -273,6 +363,39 @@ void MapEditorConfigDialog::populateMapList()
 
 Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 {
+	if (creating)
+	{
+		// Get selected game/port index
+		int sel_port = choice_port_config->GetSelection() - 1;
+		if (sel_port >= 0)
+			sel_port = ports_list[sel_port];
+		int sel_game = choice_game_config->GetSelection();
+
+		// Show new map dialog
+		vector<Archive::mapdesc_t> temp;
+		NewMapDialog dlg(this, sel_game, sel_port, temp);
+		if (dlg.ShowModal() == wxID_OK)
+		{
+			// Get selected map name
+			Archive::mapdesc_t mdesc;
+			mdesc.name = dlg.getMapName();
+
+			// Get selected map format
+			int map_format = MAP_DOOM;
+			if (dlg.getMapFormat() == "Hexen")
+				map_format = MAP_HEXEN;
+			else if (dlg.getMapFormat() == "UDMF")
+				map_format = MAP_UDMF;
+			else if (dlg.getMapFormat() == "Doom64")
+				map_format = MAP_DOOM64;
+			mdesc.format = map_format;
+
+			return mdesc;
+		}
+
+		return Archive::mapdesc_t();
+	}
+
 	// Get selected map
 	int selection = -1;
 	wxArrayInt sel = list_maps->selectedItems();
@@ -343,82 +466,21 @@ void MapEditorConfigDialog::onMapActivated(wxListEvent& e)
 
 void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 {
-	// Create simple dialog to select map name
-	wxDialog dlg(this, -1, "Create New Map");
-
-	// Setup dialog
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	dlg.SetSizer(sizer);
-
-	// Check if the game configuration allows any map name
-	int flags = 0;
-	if (!theGameConfiguration->anyMapName())
-		flags = wxCB_READONLY;
-
-	// Create map name combo box
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	wxComboBox* cbo_mapname  = new wxComboBox(&dlg, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, flags);
-	cbo_mapname->SetMaxLength(8);
-	hbox->Add(new wxStaticText(&dlg, -1, "Map Name:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
-	hbox->Add(cbo_mapname, 1, wxEXPAND);
-
-	// Add possible map names to the combo box
-	for (unsigned a = 0; a < theGameConfiguration->nMapNames(); a++)
-	{
-		// Check if map already exists
-		string mapname = theGameConfiguration->mapName(a);
-		bool exists = false;
-		for (unsigned m = 0; m < maps.size(); m++)
-		{
-			if (S_CMPNOCASE(maps[m].name, mapname))
-			{
-				exists = true;
-				break;
-			}
-		}
-
-		if (!exists)
-			cbo_mapname->Append(mapname);
-	}
-
-	// Set inital map name selection
-	if (theGameConfiguration->nMapNames() > 0)
-		cbo_mapname->SetSelection(0);
-
-	// Create map format combo box
-	wxChoice* choice_mapformat = new wxChoice(&dlg, -1);
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	hbox->Add(new wxStaticText(&dlg, -1, "Map Format:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
-	hbox->Add(choice_mapformat, 1, wxEXPAND);
-
 	// Get selected game/port index
 	int sel_port = choice_port_config->GetSelection() - 1;
 	if (sel_port >= 0)
 		sel_port = ports_list[sel_port];
 	int sel_game = choice_game_config->GetSelection();
 
-	// Add possible map formats to the combo box
-	if (theGameConfiguration->mapFormatSupported(MAP_DOOM, sel_game, sel_port))
-		choice_mapformat->Append("Doom");
-	if (theGameConfiguration->mapFormatSupported(MAP_HEXEN, sel_game, sel_port))
-		choice_mapformat->Append("Hexen");
-	if (theGameConfiguration->mapFormatSupported(MAP_UDMF, sel_game, sel_port))
-		choice_mapformat->Append("UDMF");
-	if (theGameConfiguration->mapFormatSupported(MAP_DOOM64, sel_game, sel_port))
-		choice_mapformat->Append("Doom64");
-	choice_mapformat->SetSelection(0);
-
-	// Add dialog buttons
-	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	// Create new map dialog
+	NewMapDialog dlg(this, sel_game, sel_port, maps);
 
 	// Show it
 	dlg.SetInitialSize(wxSize(250, -1));
 	dlg.CenterOnParent();
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		string mapname = cbo_mapname->GetValue();
+		string mapname = dlg.getMapName();
 		if (mapname.IsEmpty())
 			return;
 
@@ -434,11 +496,11 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 
 		// Get selected map format
 		int map_format = MAP_DOOM;
-		if (choice_mapformat->GetStringSelection() == "Hexen")
+		if (dlg.getMapFormat() == "Hexen")
 			map_format = MAP_HEXEN;
-		else if (choice_mapformat->GetStringSelection() == "UDMF")
+		else if (dlg.getMapFormat() == "UDMF")
 			map_format = MAP_UDMF;
-		else if (choice_mapformat->GetStringSelection() == "Doom64")
+		else if (dlg.getMapFormat() == "Doom64")
 			map_format = MAP_DOOM64;
 
 		// Check archive type

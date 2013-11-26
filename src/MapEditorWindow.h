@@ -54,6 +54,7 @@ public:
 	void	saveLayout();
 
 	void		setupLayout();
+	bool		createMap();
 	bool		openMap(Archive::mapdesc_t map);
 	void		loadMapScripts(Archive::mapdesc_t map);
 	WadArchive*	writeMap();

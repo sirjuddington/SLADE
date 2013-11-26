@@ -41,6 +41,7 @@
 #include "MainWindow.h"
 #include "Icons.h"
 #include "cl_notebook_art/cl_aui_notebook_art.h"
+#include "MapEditorWindow.h"
 #include <wx/filename.h>
 
 
@@ -1364,6 +1365,13 @@ bool ArchiveManagerPanel::handleAction(string id)
 	// File->New Zip
 	else if (id == "aman_newzip")
 		createNewArchive(ARCHIVE_ZIP);
+
+	// File->New Map
+	else if (id == "aman_newmap")
+	{
+		if (!theMapEditor->createMap())
+			theMapEditor->Show(false);
+	}
 
 	// File->Open
 	else if (id == "aman_open")

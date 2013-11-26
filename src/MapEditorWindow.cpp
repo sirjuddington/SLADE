@@ -45,6 +45,7 @@
 #include "ScriptEditorPanel.h"
 #include "ObjectEditPanel.h"
 #include "Dialogs/RunDialog.h"
+#include "MapEditorConfigDialog.h"
 #include <wx/aui/aui.h>
 
 
@@ -371,10 +372,24 @@ void MapEditorWindow::lockMapEntries(bool lock)
 	}
 }
 
+bool MapEditorWindow::createMap()
+{
+	MapEditorConfigDialog dialog(this, NULL, false, true);
+	if (dialog.ShowModal() == wxID_OK)
+	{
+		theGameConfiguration->openConfig(dialog.selectedGame(), dialog.selectedPort());
+		return openMap(dialog.selectedMap());
+	}
+
+	return false;
+}
+
 bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 {
 	// Get map parent archive
-	Archive* archive = map.head->getParent();
+	Archive* archive = NULL;
+	if (map.head)
+		archive = map.head->getParent();
 
 	// Set texture manager archive
 	tex_man.setArchive(archive);
@@ -404,7 +419,10 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 		map_canvas->Refresh();
 
 		// Set window title
-		SetTitle(S_FMT("SLADE - %s of %s", CHR(map.name), CHR(archive->getFilename(false))));
+		if (archive)
+			SetTitle(S_FMT("SLADE - %s of %s", CHR(map.name), CHR(archive->getFilename(false))));
+		else
+			SetTitle(S_FMT("SLADE - %s (UNSAVED)", CHR(map.name)));
 	}
 
 	return ok;
@@ -414,6 +432,10 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 {
 	// Don't bother if no scripting language specified
 	if (theGameConfiguration->scriptLanguage().IsEmpty())
+		return;
+
+	// Don't bother if new map
+	if (!map.head)
 		return;
 
 	// Check for pk3 map
@@ -563,6 +585,10 @@ WadArchive* MapEditorWindow::writeMap()
 
 bool MapEditorWindow::saveMap()
 {
+	// Check for newly created map
+	if (!mdesc_current.head)
+		return saveMapAs();
+
 	// Write map to temp wad
 	WadArchive* wad = writeMap();
 

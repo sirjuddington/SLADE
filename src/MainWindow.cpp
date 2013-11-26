@@ -259,6 +259,7 @@ void MainWindow::setupLayout()
 	wxMenu* fileNewMenu = new wxMenu("");
 	theApp->getAction("aman_newwad")->addToMenu(fileNewMenu, "&Wad Archive");
 	theApp->getAction("aman_newzip")->addToMenu(fileNewMenu, "&Zip Archive");
+	theApp->getAction("aman_newmap")->addToMenu(fileNewMenu, "&Map");
 	wxMenu* fileMenu = new wxMenu("");
 	fileMenu->AppendSubMenu(fileNewMenu, "&New", "Create a new Archive");
 	theApp->getAction("aman_open")->addToMenu(fileMenu);
@@ -726,6 +727,11 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 			theApp->doAction("aman_newwad");
 		else if (href.EndsWith("newzip"))
 			theApp->doAction("aman_newzip");
+		else if (href.EndsWith("newmap"))
+		{
+			theApp->doAction("aman_newmap");
+			return;
+		}
 		else if (href.EndsWith("reloadstartpage"))
 			createStartPage();
 		html_startpage->Reload();
