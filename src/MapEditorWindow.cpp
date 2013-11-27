@@ -319,7 +319,7 @@ void MapEditorWindow::setupLayout()
 	p_inf.FloatingSize(500, 400);
 	p_inf.FloatingPosition(150, 150);
 	p_inf.MinSize(300, 300);
-	p_inf.Show(true);
+	p_inf.Show(false);
 	p_inf.Caption("Script Editor");
 	p_inf.Name("script_editor");
 	m_mgr->AddPane(panel_script_editor, p_inf);
@@ -557,7 +557,7 @@ WadArchive* MapEditorWindow::writeMap()
 		map_data.push_back(udmf);
 	}
 	else // TODO: doom64
-		return false;
+		return NULL;
 
 	// Check script language
 	bool acs = false;
@@ -591,6 +591,8 @@ bool MapEditorWindow::saveMap()
 
 	// Write map to temp wad
 	WadArchive* wad = writeMap();
+	if (!wad)
+		return false;
 
 	// Check for map archive
 	Archive* tempwad = NULL;
