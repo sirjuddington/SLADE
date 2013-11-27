@@ -34,7 +34,7 @@ public:
 		wxPaintDC dc(this);
 
 		// Get system colours needed
-		wxColour col_background = Drawing::getMenuBarBGColour();
+		wxColour col_background = Drawing::getPanelBGColour();
 		rgba_t bg(col_background.Red(), col_background.Green(), col_background.Blue());
 		wxColour col_light = WXCOL(bg.amp(50, 50, 50, 0));
 		wxColour col_dark = WXCOL(bg.amp(-50, -50, -50, 0));
@@ -73,7 +73,7 @@ public:
 		wxPaintDC dc(this);
 
 		// Get system colours needed
-		wxColour col_background = Drawing::getMenuBarBGColour();
+		wxColour col_background = Drawing::getPanelBGColour();
 		wxColour col_light = Drawing::lightColour(col_background, 1.5f);
 		wxColour col_dark = Drawing::darkColour(col_background, 1.5f);
 
@@ -99,7 +99,7 @@ SToolBarGroup::SToolBarGroup(wxWindow* parent, string name, bool force_name) : w
 		hidden = false;
 
 	// Set colours
-	SetBackgroundColour(Drawing::getMenuBarBGColour());
+	SetBackgroundColour(Drawing::getPanelBGColour());
 
 	// Create sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -228,10 +228,18 @@ SToolBar::SToolBar(wxWindow* parent) : wxPanel(parent, -1)
 	draw_border = true;
 
 	// Enable double buffering to avoid flickering
+#ifdef __WXMSW__
+	// In Windows, only enable on Vista or newer
+	int win_vers;
+	wxGetOsVersion(&win_vers);
+	if (win_vers >= 6)
+		SetDoubleBuffered(true);
+#else
 	SetDoubleBuffered(true);
+#endif
 
 	// Set background colour
-	SetBackgroundColour(Drawing::getMenuBarBGColour());
+	SetBackgroundColour(Drawing::getPanelBGColour());
 
 	// Create sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -483,7 +491,7 @@ void SToolBar::onPaint(wxPaintEvent& e)
 	wxPaintDC dc(this);
 
 	// Get system colours needed
-	wxColour col_background = Drawing::getMenuBarBGColour();
+	wxColour col_background = Drawing::getPanelBGColour();
 	wxColour col_light = Drawing::lightColour(col_background, 1.5f);
 	wxColour col_dark = Drawing::darkColour(col_background, 1.5f);
 	

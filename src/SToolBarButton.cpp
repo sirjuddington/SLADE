@@ -119,7 +119,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	wxPaintDC dc(this);
 
 	// Get system colours needed
-	wxColour col_background = Drawing::getMenuBarBGColour();
+	wxColour col_background = Drawing::getPanelBGColour();//Drawing::getMenuBarBGColour();
 	wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 
 	// Draw background
@@ -221,12 +221,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 
 	if (show_name)
 	{
-		//gc->SetFont(this->GetFont(), wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT));
-
 		int top = ((double)GetSize().y * 0.5) - ((double)name_height * 0.5);
-
-		//int adjust = (toolbar_size - 16) * 0.5;
-		//gc->DrawText(name, toolbar_size + 5, top);
 		dc.DrawText(name, toolbar_size + 5, top);
 	}
 

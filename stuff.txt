@@ -12,6 +12,7 @@ TODO List ---------------------------------------------------------------
 - Can hilight floors/ceilings from the wrong side in 3d mode
 - Modifying map architecture doesn't affect things in 3d mode (heights stay the same)
 - Undo for rename via label edit
+- Saving text entries with accented characters
 
 
 --- Minor Problems/Annoyances ---
