@@ -31,10 +31,7 @@ MapObject::~MapObject()
 
 unsigned MapObject::getIndex()
 {
-	if (parent_map)
-		return parent_map->objectIndex(this);
-	else
-		return index;
+	return index;
 }
 
 string MapObject::getTypeName()

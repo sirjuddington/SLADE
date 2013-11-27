@@ -118,146 +118,6 @@ MapObject* SLADEMap::getObject(uint8_t type, unsigned index)
 	return NULL;
 }
 
-int	SLADEMap::vertexIndex(MapVertex* v)
-{
-	// Check vertex was given
-	if (!v)
-		return -1;
-
-	// Check if item index is valid
-	if (v->index >= 0)
-		return v->index;
-
-	// Find vertex
-	for (unsigned a = 0; a < vertices.size(); a++)
-	{
-		if (vertices[a] == v)
-		{
-			v->index = a;
-			return a;
-		}
-	}
-
-	// Not found
-	return -1;
-}
-
-int	SLADEMap::sideIndex(MapSide* s)
-{
-	// Check side was given
-	if (!s)
-		return -1;
-
-	// Check if item index is valid
-	if (s->index >= 0)
-		return s->index;
-
-	// Find side
-	for (unsigned a = 0; a < sides.size(); a++)
-	{
-		if (sides[a] == s)
-		{
-			s->index = a;
-			return a;
-		}
-	}
-
-	// Not found
-	return -1;
-}
-
-int	SLADEMap::lineIndex(MapLine* l)
-{
-	// Check line was given
-	if (!l)
-		return -1;
-
-	// Check if item index is valid
-	if (l->index >= 0)
-		return l->index;
-
-	// Find line
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		if (lines[a] == l)
-		{
-			l->index = a;
-			return a;
-		}
-	}
-
-	// Not found
-	return -1;
-}
-
-int	SLADEMap::sectorIndex(MapSector* s)
-{
-	// Check sector was given
-	if (!s)
-		return -1;
-
-	// Check if item index is valid
-	if (s->index >= 0)
-		return s->index;
-
-	// Find sector
-	for (unsigned a = 0; a < sectors.size(); a++)
-	{
-		if (sectors[a] == s)
-		{
-			s->index = a;
-			return a;
-		}
-	}
-
-	// Not found
-	return -1;
-}
-
-int	SLADEMap::thingIndex(MapThing* t)
-{
-	// Check thing was given
-	if (!t)
-		return -1;
-
-	// Check if item index is valid
-	if (t->index >= 0)
-		return t->index;
-
-	// Find thing
-	for (unsigned a = 0; a < things.size(); a++)
-	{
-		if (things[a] == t)
-		{
-			t->index = a;
-			return a;
-		}
-	}
-
-	// Not found
-	return -1;
-}
-
-int SLADEMap::objectIndex(MapObject* o)
-{
-	// Check object was given
-	if (!o)
-		return -1;
-
-	// Get index depending on type
-	switch (o->getObjType())
-	{
-	case MOBJ_VERTEX: return vertexIndex((MapVertex*)o); break;
-	case MOBJ_LINE: return lineIndex((MapLine*)o); break;
-	case MOBJ_SIDE: return sideIndex((MapSide*)o); break;
-	case MOBJ_SECTOR: return sectorIndex((MapSector*)o); break;
-	case MOBJ_THING: return thingIndex((MapThing*)o); break;
-	default: return o->index; break;
-	}
-
-	return -1;
-}
-
 void SLADEMap::refreshIndices()
 {
 	// Vertex indices
@@ -2324,7 +2184,7 @@ bool SLADEMap::removeVertex(MapVertex* vertex)
 	if (!vertex)
 		return false;
 
-	return removeVertex(vertexIndex(vertex));
+	return removeVertex(vertex->index);
 }
 
 bool SLADEMap::removeVertex(unsigned index)
@@ -2356,7 +2216,7 @@ bool SLADEMap::removeLine(MapLine* line)
 	if (!line)
 		return false;
 
-	return removeLine(lineIndex(line));
+	return removeLine(line->index);
 }
 
 bool SLADEMap::removeLine(unsigned index)
@@ -2398,7 +2258,7 @@ bool SLADEMap::removeSide(MapSide* side, bool remove_from_line)
 	if (!side)
 		return false;
 
-	return removeSide(sideIndex(side), remove_from_line);
+	return removeSide(side->index, remove_from_line);
 }
 
 bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
@@ -2451,7 +2311,7 @@ bool SLADEMap::removeSector(MapSector* sector)
 	if (!sector)
 		return false;
 
-	return removeSector(sectorIndex(sector));
+	return removeSector(sector->index);
 }
 
 bool SLADEMap::removeSector(unsigned index)
@@ -2480,7 +2340,7 @@ bool SLADEMap::removeThing(MapThing* thing)
 	if (!thing)
 		return false;
 
-	return removeThing(thingIndex(thing));
+	return removeThing(thing->index);
 }
 
 bool SLADEMap::removeThing(unsigned index)
@@ -3695,8 +3555,8 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 
 		if (lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
 		{
-			wxLogMessage("Vertex at (%1.2f,%1.2f) splits line %d", vertex->x, vertex->y, a);
-			splitLine(a, vertexIndex(vertex));
+			LOG_MESSAGE(2, "Vertex at (%1.2f,%1.2f) splits line %d", vertex->x, vertex->y, a);
+			splitLine(a, vertex->index);
 		}
 	}
 }

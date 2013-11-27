@@ -905,7 +905,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 
 	// Create image from entry
 	SImage image;
-	if (!texture->toImage(image, NULL, texture_editor->getPalette()), force_rgba)
+	if (!texture->toImage(image, NULL, texture_editor->getPalette(), force_rgba))
 	{
 		wxLogMessage("Error converting %s: %s", CHR(texture->getName()), CHR(Global::error));
 		return false;

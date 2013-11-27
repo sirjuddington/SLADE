@@ -134,7 +134,7 @@ public:
 	size_t		nThings() { return things.size(); }
 	long		geometryUpdated() { return geometry_updated; }
 
-	// MapObject id hashing stuff (used for undo/redo)
+	// MapObject id stuff (used for undo/redo)
 	void				addMapObject(MapObject* object);
 	void				removeMapObject(MapObject* object);
 	MapObject*			getObjectById(unsigned id) { return all_objects[id].mobj; }
@@ -145,17 +145,8 @@ public:
 	void				restoreObjectById(unsigned id);
 	void				removeObjectById(unsigned id);
 
-	// Map structure indices
-	int		vertexIndex(MapVertex* v);
-	int		sideIndex(MapSide* s);
-	int		lineIndex(MapLine* l);
-	int		sectorIndex(MapSector* s);
-	int		thingIndex(MapThing* t);
-	int		objectIndex(MapObject* o);
 	void	refreshIndices();
-
 	bool	readMap(Archive::mapdesc_t map);
-
 	void	clearMap();
 
 	// Map loading

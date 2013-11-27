@@ -1398,8 +1398,8 @@ void MapEditor::endMove(bool accept)
 			for (unsigned a = 0; a < move_items.size(); a++)
 			{
 				MapLine* line = map.getLine(move_items[a]);
-				if (line->v1()) move_verts[map.vertexIndex(line->v1())] = true;
-				if (line->v2()) move_verts[map.vertexIndex(line->v2())] = true;
+				if (line->v1()) move_verts[line->v1()->getIndex()] = true;
+				if (line->v2()) move_verts[line->v2()->getIndex()] = true;
 			}
 		}
 		else if (edit_mode == MODE_SECTORS)
@@ -1409,7 +1409,7 @@ void MapEditor::endMove(bool accept)
 				map.getSector(move_items[a])->getVertices(sv);
 
 			for (unsigned a = 0; a < sv.size(); a++)
-				move_verts[map.vertexIndex(sv[a])] = true;
+				move_verts[sv[a]->getIndex()] = true;
 		}
 
 		// Move vertices
@@ -1510,10 +1510,9 @@ void MapEditor::splitLine(double x, double y, double min_dist)
 
 	// Create vertex there
 	MapVertex* vertex = map.createVertex(closest.x, closest.y);
-	int vindex = map.vertexIndex(vertex);
 
 	// Do line split
-	map.splitLine(lindex, vindex);
+	map.splitLine(lindex, vertex->getIndex());
 
 	// Finish recording undo level
 	endUndoRecord();

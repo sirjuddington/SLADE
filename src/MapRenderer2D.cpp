@@ -1799,8 +1799,8 @@ void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_v
 		{
 			MapLine* line = v->connectedLine(l);
 
-			if (line->v1() == v) lines_drawn[map->lineIndex(line)] |= 1;
-			if (line->v2() == v) lines_drawn[map->lineIndex(line)] |= 2;
+			if (line->v1() == v) lines_drawn[line->getIndex()] |= 1;
+			if (line->v2() == v) lines_drawn[line->getIndex()] |= 2;
 		}
 	}
 
@@ -1811,7 +1811,7 @@ void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_v
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
-		uint8_t drawn = lines_drawn[map->lineIndex(line)];
+		uint8_t drawn = lines_drawn[line->getIndex()];
 
 		// Skip if not attached to any moving vertices
 		if (drawn == 0)
@@ -1870,8 +1870,8 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 		{
 			MapLine* line = v->connectedLine(l);
 
-			if (line->v1() == v) lines_drawn[map->lineIndex(line)] |= 1;
-			if (line->v2() == v) lines_drawn[map->lineIndex(line)] |= 2;
+			if (line->v1() == v) lines_drawn[line->getIndex()] |= 1;
+			if (line->v2() == v) lines_drawn[line->getIndex()] |= 2;
 		}
 
 		// Check second vertex
@@ -1880,8 +1880,8 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 		{
 			MapLine* line = v->connectedLine(l);
 
-			if (line->v1() == v) lines_drawn[map->lineIndex(line)] |= 1;
-			if (line->v2() == v) lines_drawn[map->lineIndex(line)] |= 2;
+			if (line->v1() == v) lines_drawn[line->getIndex()] |= 1;
+			if (line->v2() == v) lines_drawn[line->getIndex()] |= 2;
 		}
 	}
 
@@ -1892,7 +1892,7 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
-		uint8_t drawn = lines_drawn[map->lineIndex(line)];
+		uint8_t drawn = lines_drawn[line->getIndex()];
 
 		// Skip if not attached to any moving vertices
 		if (drawn == 0)
@@ -1943,7 +1943,7 @@ void MapRenderer2D::renderMovingSectors(vector<int>& sectors, fpoint2_t move_vec
 		// Go through connected sides
 		vector<MapSide*>& sides = map->getSector(sectors[a])->connectedSides();
 		for (unsigned s = 0; s < sides.size(); s++)
-			lines_moved[map->lineIndex(sides[s]->getParentLine())] = 1;	// Mark parent line as moved
+			lines_moved[sides[s]->getParentLine()->getIndex()] = 1;	// Mark parent line as moved
 	}
 
 	// Build list of moving lines
@@ -2444,7 +2444,6 @@ void MapRenderer2D::updateVisibility(fpoint2_t view_tl, fpoint2_t view_br)
 void MapRenderer2D::forceUpdate(float line_alpha)
 {
 	// Update variables
-	this->view_scale = view_scale;
 	this->view_scale_inv = 1.0 / view_scale;
 	tex_flats.clear();
 

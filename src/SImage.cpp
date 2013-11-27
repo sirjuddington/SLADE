@@ -859,9 +859,9 @@ bool SImage::maskFromBrightness(Palette8bit* pal)
 		for (int a = 0; a < width * height; a++)
 		{
 			// Set alpha from pixel colour brightness value
-			data[c+3] = (double)data[c++]*0.3 + (double)data[c++]*0.59 + (double)data[c++]*0.11;
+			data[c+3] = (double)data[c]*0.3 + (double)data[c+1]*0.59 + (double)data[c+2]*0.11;
 			// Skip alpha
-			c++;
+			c += 4;
 		}
 	}
 	// ALPHAMASK type is already a brightness mask

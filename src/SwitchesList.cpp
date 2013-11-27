@@ -80,7 +80,7 @@ SwitchesList::~SwitchesList()
 SwitchesEntry* SwitchesList::getEntry(size_t index)
 {
 	// Check index range
-	if (index < 0 || index > nEntries())
+	if (index >= nEntries())
 		return NULL;
 
 	return entries[index];

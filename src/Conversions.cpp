@@ -151,7 +151,7 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out)
 
 	// Ensure data ends on even byte boundary
 	if (header.samples % 2 != 0)
-		out.write('\0', 1);
+		out.write("\0", 1);
 
 	return true;
 }
@@ -539,7 +539,7 @@ bool Conversions::wolfSndToWav(MemChunk& in, MemChunk& out)
 
 	// Ensure data ends on even byte boundary
 	if (numsamples % 2 != 0)
-		out.write('\0', 1);
+		out.write("\0", 1);
 
 	return true;
 }
@@ -608,7 +608,7 @@ bool Conversions::jagSndToWav(MemChunk& in, MemChunk& out)
 
 	// Ensure data ends on even byte boundary
 	if (header.samples % 2 != 0)
-		out.write('\0', 1);
+		out.write("\0", 1);
 
 	return true;
 }

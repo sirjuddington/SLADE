@@ -1290,7 +1290,7 @@ bool ArchiveManagerPanel::closeSelection()
 
 	// Don't continue if there are no selected items
 	if (selection.size() == 0)
-		true;
+		return true;
 
 	// Get the list of selected archives
 	vector<Archive*> selected_archives;

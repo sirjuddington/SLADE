@@ -1570,7 +1570,7 @@ ArchiveEntry* Archive::findFirst(search_options_t& options)
 		// Check namespace
 		if (!options.match_namespace.IsEmpty())
 		{
-			if (!S_CMPNOCASE(detectNamespace(entry), options.match_namespace))
+			if (!(S_CMPNOCASE(detectNamespace(entry), options.match_namespace)))
 				continue;
 		}
 
@@ -1659,7 +1659,7 @@ ArchiveEntry* Archive::findLast(search_options_t& options)
 		// Check namespace
 		if (!options.match_namespace.IsEmpty())
 		{
-			if (!S_CMPNOCASE(detectNamespace(entry), options.match_namespace))
+			if (!(S_CMPNOCASE(detectNamespace(entry), options.match_namespace)))
 				continue;
 		}
 
@@ -1719,7 +1719,7 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
 		// Check namespace
 		if (!options.match_namespace.IsEmpty())
 		{
-			if (!S_CMPNOCASE(detectNamespace(entry), options.match_namespace))
+			if (!(S_CMPNOCASE(detectNamespace(entry), options.match_namespace)))
 				continue;
 		}
 

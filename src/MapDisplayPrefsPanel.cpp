@@ -204,7 +204,7 @@ void MapDisplayPrefsPanel::init()
 	cb_line_smooth->SetValue(line_smooth);
 	cb_line_tabs_always->SetValue(line_tabs_always);
 	choice_thing_drawtype->SetSelection(thing_drawtype);
-	cb_thing_force_dir = cb_thing_force_dir;
+	cb_thing_force_dir->SetValue(thing_force_dir);
 	cb_thing_overlay_square->SetValue(thing_overlay_square);
 	cb_flat_ignore_light->SetValue(flat_ignore_light);
 	cb_sector_hilight_fill->SetValue(sector_hilight_fill);

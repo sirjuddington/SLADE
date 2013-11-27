@@ -216,7 +216,7 @@ public:
 	virtual ~TreelessArchive() {}
 
 	// Entry retrieval/info
-	virtual ArchiveEntry*		getEntry(string name, bool cut_ext = false, ArchiveTreeNode* dir = NULL) { return Archive::getEntry(name, NULL); }
+	virtual ArchiveEntry*		getEntry(string name, bool cut_ext = false, ArchiveTreeNode* dir = NULL) { return Archive::getEntry(name); }
 	virtual ArchiveEntry*		getEntry(unsigned index, ArchiveTreeNode* dir = NULL) { return Archive::getEntry(index, NULL); }
 	virtual int					entryIndex(ArchiveEntry* entry, ArchiveTreeNode* dir = NULL) { return Archive::entryIndex(entry, NULL); }
 
