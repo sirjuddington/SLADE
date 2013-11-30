@@ -483,14 +483,14 @@ void MapLine::readBackup(mobj_backup_t* backup)
 	// Vertices
 	MapObject* v1 = parent_map->getObjectById(backup->props_internal["v1"]);
 	MapObject* v2 = parent_map->getObjectById(backup->props_internal["v2"]);
-	if (v1 && v1 != vertex1)
+	if (v1)
 	{
 		vertex1->disconnectLine(this);
 		vertex1 = (MapVertex*)v1;
 		vertex1->connectLine(this);
 		resetInternals();
 	}
-	if (v2 && v2 != vertex2)
+	if (v2)
 	{
 		vertex2->disconnectLine(this);
 		vertex2 = (MapVertex*)v2;

@@ -25,6 +25,18 @@ struct mobj_holder_t
 	}
 };
 
+struct mobj_cd_t
+{
+	unsigned	id;
+	bool		created;
+
+	mobj_cd_t(unsigned id, bool created)
+	{
+		this->id = id;
+		this->created = created;
+	}
+};
+
 class ParseTreeNode;
 class SLADEMap
 {
@@ -45,6 +57,7 @@ private:
 	vector<mobj_holder_t>	all_objects;
 	vector<unsigned>		deleted_objects;
 	vector<unsigned>		created_objects;
+	vector<mobj_cd_t>		created_deleted_objects;
 
 	// The last time the map geometry was updated
 	long	geometry_updated;
@@ -138,12 +151,10 @@ public:
 	void				addMapObject(MapObject* object);
 	void				removeMapObject(MapObject* object);
 	MapObject*			getObjectById(unsigned id) { return all_objects[id].mobj; }
-	void				clearCreatedObjectIds() { created_objects.clear(); }
-	vector<unsigned>&	createdObjectIds() { return created_objects; }
-	void				clearDeletedObjectIds() { deleted_objects.clear(); }
-	vector<unsigned>&	deletedObjectIds() { return deleted_objects; }
 	void				restoreObjectById(unsigned id);
 	void				removeObjectById(unsigned id);
+	vector<mobj_cd_t>&	createdDeletedObjectIds() { return created_deleted_objects; }
+	void				clearCreatedDeletedOjbectIds() { created_deleted_objects.clear(); }
 
 	void	refreshIndices();
 	bool	readMap(Archive::mapdesc_t map);
@@ -223,6 +234,10 @@ public:
 	bool		setLineSector(unsigned line, unsigned sector, bool front = true);
 	void		splitLinesByLine(MapLine* split_line);
 	int			mergeLine(unsigned line);
+
+	// Merge
+	void	mergeArch(vector<MapVertex*> vertices);
+	void	correctSectors(vector<MapLine*> lines);
 
 	// Checks
 	void	mapOpenChecks();

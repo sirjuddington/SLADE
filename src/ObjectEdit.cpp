@@ -420,3 +420,12 @@ void ObjectEditGroup::applyEdit()
 	for (unsigned a = 0; a < things.size(); a++)
 		map->moveThing(things[a].map_thing->getIndex(), things[a].position.x, things[a].position.y);
 }
+
+void ObjectEditGroup::getVertices(vector<MapVertex*>& list)
+{
+	for (unsigned a = 0; a < vertices.size(); a++)
+	{
+		if (!vertices[a].ignored)
+			list.push_back(vertices[a].map_vertex);
+	}
+}

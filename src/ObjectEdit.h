@@ -37,6 +37,7 @@ public:
 
 	bbox_t	getBBox() { return bbox; }
 	double	getRotation() { return rotation; }
+	void	getVertices(vector<MapVertex*>& list);
 
 	void		addVertex(MapVertex* v, bool ignored = false);
 	void		addConnectedLines();

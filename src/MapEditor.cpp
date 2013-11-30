@@ -67,37 +67,33 @@ public:
 	}
 };
 
-class MapObjectDeleteUS : public UndoStep
+class MapObjectCreateDeleteUS : public UndoStep
 {
 private:
-	vector<unsigned>	object_ids;
+	vector<mobj_cd_t>	objects;
 
 public:
-	MapObjectDeleteUS()
+	MapObjectCreateDeleteUS()
 	{
-		// Get recently deleted object ids from map
-		vector<unsigned>& deleted_objects = UndoRedo::currentMap()->deletedObjectIds();
-		for (unsigned a = 0; a < deleted_objects.size(); a++)
-			object_ids.push_back(deleted_objects[a]);
-
-		if (Global::log_verbosity >= 2)
-		{
-			string msg = "Deleted ids: ";
-			for (unsigned a = 0; a < object_ids.size(); a++)
-				msg += S_FMT("%d, ", object_ids[a]);
-			wxLogMessage(msg);
-		}
+		// Get recently created and deleted object ids from map
+		// (in the order they were created/deleted)
+		vector<mobj_cd_t>& cd_objects = UndoRedo::currentMap()->createdDeletedObjectIds();
+		for (unsigned a = 0; a < cd_objects.size(); a++)
+			objects.push_back(cd_objects[a]);
 	}
 
-	~MapObjectDeleteUS() {}
+	~MapObjectCreateDeleteUS() {}
 
 	bool doUndo()
 	{
-		// Restore deleted objects
-		for (unsigned a = 0; a < object_ids.size(); a++)
+		// Undo creation/deletion
+		for (int a = objects.size() - 1; a >= 0; a--)
 		{
-			UndoRedo::currentMap()->restoreObjectById(object_ids[a]);
-			//wxLogMessage("Restored object id %d (%s)", object_ids[a], CHR(UndoRedo::currentMap()->getObjectById(object_ids[a])->getTypeName()));
+			if (objects[a].created)
+				UndoRedo::currentMap()->removeObjectById(objects[a].id);
+			else
+				UndoRedo::currentMap()->restoreObjectById(objects[a].id);
+			//LOG_MESSAGE(4, "Restored object id %d (%d: %s)", object_ids[a], UndoRedo::currentMap()->getObjectById(object_ids[a])->getIndex(), CHR(UndoRedo::currentMap()->getObjectById(object_ids[a])->getTypeName()));
 		}
 
 		return true;
@@ -105,58 +101,14 @@ public:
 
 	bool doRedo()
 	{
-		// Remove objects
-		for (unsigned a = 0; a < object_ids.size(); a++)
+		// Redo creation/deletion
+		for (unsigned a = 0; a < objects.size(); a++)
 		{
-			UndoRedo::currentMap()->removeObjectById(object_ids[a]);
-			//wxLogMessage("Removed object id %d (%s)", object_ids[a], CHR(UndoRedo::currentMap()->getObjectById(object_ids[a])->getTypeName()));
-		}
-
-		return true;
-	}
-};
-
-class MapObjectCreateUS : public UndoStep
-{
-private:
-	vector<unsigned>	object_ids;
-
-public:
-	MapObjectCreateUS()
-	{
-		// Get recently created object ids from map
-		vector<unsigned>& created_objects = UndoRedo::currentMap()->createdObjectIds();
-		for (unsigned a = 0; a < created_objects.size(); a++)
-			object_ids.push_back(created_objects[a]);
-
-		if (Global::log_verbosity >= 2)
-		{
-			string msg = "Created ids: ";
-			for (unsigned a = 0; a < object_ids.size(); a++)
-				msg += S_FMT("%d, ", object_ids[a]);
-			wxLogMessage(msg);
-		}
-	}
-
-	~MapObjectCreateUS() {}
-
-	bool doUndo()
-	{
-		// Remove objects
-		for (unsigned a = 0; a < object_ids.size(); a++)
-		{
-			UndoRedo::currentMap()->removeObjectById(object_ids[a]);
-		}
-
-		return true;
-	}
-
-	bool doRedo()
-	{
-		// Restore objects
-		for (unsigned a = 0; a < object_ids.size(); a++)
-		{
-			UndoRedo::currentMap()->restoreObjectById(object_ids[a]);
+			if (!objects[a].created)
+				UndoRedo::currentMap()->removeObjectById(objects[a].id);
+			else
+				UndoRedo::currentMap()->restoreObjectById(objects[a].id);
+			//LOG_MESSAGE(4, "Removed object id %d (%s)", object_ids[a], CHR(UndoRedo::currentMap()->getObjectById(object_ids[a])->getTypeName()));
 		}
 
 		return true;
@@ -1366,6 +1318,12 @@ void MapEditor::endMove(bool accept)
 {
 	long move_time = theApp->runTimer();
 
+	// Un-filter objects
+	for (unsigned a = 0; a < map.nLines(); a++)
+		map.getLine(a)->filter(false);
+	for (unsigned a = 0; a < map.nThings(); a++)
+		map.getThing(a)->filter(false);
+
 	// Move depending on edit mode
 	if (edit_mode == MODE_THINGS && accept)
 	{
@@ -1413,30 +1371,28 @@ void MapEditor::endMove(bool accept)
 		}
 
 		// Move vertices
-		vector<fpoint2_t> merge_points;
-		vector<unsigned> moved_lines;
+		vector<MapVertex*> moved_verts;
 		for (unsigned a = 0; a < map.nVertices(); a++)
 		{
 			if (!move_verts[a])
 				continue;
 			fpoint2_t np(map.getVertex(a)->xPos() + move_vec.x, map.getVertex(a)->yPos() + move_vec.y);
 			map.moveVertex(a, np.x, np.y);
-			merge_points.push_back(np);
+			moved_verts.push_back(map.getVertex(a));
 		}
 
 		//endUndoRecord(true);
 		//beginUndoRecord("Stitch And Merge");
 
-		mergeLines(move_time, merge_points);
+		//mergeLines(move_time, merge_points);
+		map.mergeArch(moved_verts);
 
 		endUndoRecord(true);
 	}
 
-	// Un-filter objects
-	for (unsigned a = 0; a < map.nLines(); a++)
-		map.getLine(a)->filter(false);
-	for (unsigned a = 0; a < map.nThings(); a++)
-		map.getThing(a)->filter(false);
+	// Clear selection
+	if (accept)
+		clearSelection();
 
 	// Clear moving items
 	move_items.clear();
@@ -2444,165 +2400,13 @@ void MapEditor::endLineDraw(bool apply)
 			}
 		}
 
-		// Create a list of line sides (edges) to perform sector creation with
-		vector<me_ls_t> edges;
+		// Build new sectors
+		vector<MapLine*> new_lines;
 		for (unsigned a = nl_start; a < map.nLines(); a++)
-		{
-			edges.push_back(me_ls_t(map.getLine(a), true));
-			fpoint2_t mid = map.getLine(a)->midPoint();
-			if (map.sectorAt(mid.x, mid.y) >= 0)
-				edges.push_back(me_ls_t(map.getLine(a), false));
-		}
-
-		// Build sectors
-		SectorBuilder builder;
-		int runs = 0;
-		unsigned ns_start = map.nSectors();
-		unsigned nsd_start = map.nSides();
-		vector<MapSector*> sectors_reused;
-		for (unsigned a = 0; a < edges.size(); a++)
-		{
-			// Skip if edge is ignored
-			if (edges[a].ignore)
-				continue;
-
-			// Run sector builder on current edge
-			bool ok = builder.traceSector(&map, edges[a].line, edges[a].front);
-			runs++;
-
-			// Ignore any subsequent edges that were part of the sector created
-			for (unsigned e = a; e < edges.size(); e++)
-			{
-				if (edges[e].ignore)
-					continue;
-
-				for (unsigned b = 0; b < builder.nEdges(); b++)
-				{
-					if (edges[e].line == builder.getEdgeLine(b) &&
-							edges[e].front == builder.edgeIsFront(b))
-						edges[e].ignore = true;
-				}
-			}
-
-			// Don't create sector if trace failed
-			if (!ok)
-				continue;
-
-			// Check if we traced over an existing sector (or part of one)
-			MapSector* sector = builder.findExistingSector();
-			if (sector)
-			{
-				// Check if it's already been (re)used
-				bool reused = false;
-				for (unsigned s = 0; s < sectors_reused.size(); s++)
-				{
-					if (sectors_reused[s] == sector)
-					{
-						reused = true;
-						break;
-					}
-				}
-
-				// If we can reuse the sector, do so
-				if (!reused)
-					sectors_reused.push_back(sector);
-				else
-					sector = NULL;
-			}
-
-			// Create sector
-			builder.createSector(sector);
-		}
-
-		//wxLogMessage("Ran sector builder %d times", runs);
-
-		// Check if any new lines need to be flipped
-		for (unsigned a = nl_start; a < map.nLines(); a++)
-		{
-			MapLine* line = map.getLine(a);
-			if (line->backSector() && !line->frontSector())
-				line->flip(true);
-		}
-
-		// Find an adjacent sector to copy properties from
-		MapSector* sector_copy = NULL;
-		for (unsigned a = nl_start; a < map.nLines(); a++)
-		{
-			// Check front sector
-			MapSector* sector = map.getLine(a)->frontSector();
-			if (sector && sector->getIndex() < ns_start)
-			{
-				// Copy this sector if it isn't newly created
-				sector_copy = sector;
-				break;
-			}
-
-			// Check back sector
-			sector = map.getLine(a)->backSector();
-			if (sector && sector->getIndex() < ns_start)
-			{
-				// Copy this sector if it isn't newly created
-				sector_copy = sector;
-				break;
-			}
-		}
-
-		// Go through newly created sectors
-		for (unsigned a = ns_start; a < map.nSectors(); a++)
-		{
-			MapSector* sector = map.getSector(a);
-
-			// Skip if sector already has properties
-			if (!sector->getCeilingTex().IsEmpty())
-				continue;
-
-			// Copy from adjacent sector if any
-			if (sector_copy)
-			{
-				sector->copy(sector_copy);
-				continue;
-			}
-
-			// Otherwise, use defaults from game configuration
-			theGameConfiguration->applyDefaults(sector);
-		}
-
-		// Update line textures
-		for (unsigned a = nsd_start; a < map.nSides(); a++)
-		{
-			MapSide* side = map.getSide(a);
-
-			// Clear any unneeded textures
-			MapLine* line = side->getParentLine();
-			line->clearUnneededTextures();
-
-			// Set middle texture if needed
-			if (side == line->s1() && !line->s2() && side->stringProperty("texturemiddle") == "-")
-			{
-				//wxLogMessage("midtex");
-				// Find adjacent texture (any)
-				string tex = map.getAdjacentLineTexture(line->v1());
-				if (tex == "-")
-					tex = map.getAdjacentLineTexture(line->v2());
-
-				// If no adjacent texture, get default from game configuration
-				if (tex == "-")
-					tex = theGameConfiguration->getDefaultString(MOBJ_SIDE, "texturemiddle");
-
-				// Set texture
-				side->setStringProperty("texturemiddle", tex);
-			}
-		}
-
-		// Remove any extra sectors
-		map.removeDetachedSectors();
+			new_lines.push_back(map.getLine(a));
+		map.correctSectors(new_lines);
 
 		// End recording undo level
-		/*MapObject::beginPropBackup(-1);
-		undo_manager->recordUndoStep(new MapObjectCreateUS());
-		undo_manager->recordUndoStep(new MapObjectDeleteUS());
-		undo_manager->recordUndoStep(new MultiMapObjectPropertyChangeUS());
-		undo_manager->endRecord(true);*/
 		endUndoRecord(true);
 	}
 
@@ -2681,16 +2485,31 @@ bool MapEditor::beginObjectEdit()
 
 void MapEditor::endObjectEdit(bool accept)
 {
+	// Un-filter objects
+	edit_object_group.filterObjects(false);
+
 	// Apply change if accepted
 	if (accept)
 	{
-		beginUndoRecord("Object Edit", true, false, false);
+		// Begin recording undo level
+		beginUndoRecord("Object Edit");
+
+		// Apply changes
 		edit_object_group.applyEdit();
+
+		// Do merge
+		if (edit_mode != MODE_THINGS)
+		{
+			vector<MapVertex*> vertices;
+			edit_object_group.getVertices(vertices);
+			map.mergeArch(vertices);
+		}
+
+		// Clear selection
+		clearSelection();
+
 		endUndoRecord();
 	}
-
-	// Un-filter objects
-	edit_object_group.filterObjects(false);
 
 	theMapEditor->hideObjectEditPanel();
 }
@@ -2912,13 +2731,8 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 			beginUndoRecord("Paste Map Architecture");
 			long move_time = theApp->runTimer();
 			MapArchClipboardItem* p = (MapArchClipboardItem*)theClipboard->getItem(a);
-			vector<MapVertex*> newVerts = p->pasteToMap(&map, mouse_pos);
-			vector<fpoint2_t> merge_points;
-			for (unsigned a = 0; a < newVerts.size(); a++)
-			{
-				merge_points.push_back(fpoint2_t(newVerts[a]->xPos(), newVerts[a]->yPos()));
-			}
-			mergeLines(move_time, merge_points);
+			vector<MapVertex*> new_verts = p->pasteToMap(&map, mouse_pos);
+			map.mergeArch(new_verts);
 			addEditorMessage(S_FMT("Pasted %s", CHR(p->getInfo())));
 			endUndoRecord(true);
 		}
@@ -4287,10 +4101,8 @@ void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 	// Init map/objects for recording
 	if (undo_modified)
 		MapObject::beginPropBackup(theApp->runTimer());
-	if (undo_deleted)
-		map.clearDeletedObjectIds();
-	if (undo_created)
-		map.clearCreatedObjectIds();
+	if (undo_deleted || undo_created)
+		map.clearCreatedDeletedOjbectIds();
 
 	last_undo_level = "";
 }
@@ -4312,12 +4124,10 @@ void MapEditor::endUndoRecord(bool success)
 	{
 		// Record necessary undo steps
 		MapObject::beginPropBackup(-1);
-		if (undo_created)
-			manager->recordUndoStep(new MapObjectCreateUS());
-		if (undo_deleted)
-			manager->recordUndoStep(new MapObjectDeleteUS());
 		if (undo_modified)
 			manager->recordUndoStep(new MultiMapObjectPropertyChangeUS());
+		if (undo_created || undo_deleted)
+			manager->recordUndoStep(new MapObjectCreateDeleteUS());
 
 		// End recording
 		manager->endRecord(success);
@@ -4344,6 +4154,7 @@ void MapEditor::doUndo()
 
 		// Refresh stuff
 		//updateTagged();
+		map.rebuildConnectedLines();
 		map.geometry_updated = theApp->runTimer();
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
@@ -4364,6 +4175,7 @@ void MapEditor::doRedo()
 
 		// Refresh stuff
 		//updateTagged();
+		map.rebuildConnectedLines();
 		map.geometry_updated = theApp->runTimer();
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
