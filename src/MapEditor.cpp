@@ -708,16 +708,16 @@ void MapEditor::selectionUpdated()
 	last_undo_level = "";
 }
 
-void MapEditor::clearSelection()
+void MapEditor::clearSelection(bool animate)
 {
 	if (edit_mode == MODE_3D)
 	{
-		if (canvas) canvas->itemsSelected3d(selection_3d, false);
+		if (animate && canvas) canvas->itemsSelected3d(selection_3d, false);
 		selection_3d.clear();
 	}
 	else
 	{
-		if (canvas) canvas->itemsSelected(selection, false);
+		if (animate && canvas) canvas->itemsSelected(selection, false);
 		selection.clear();
 		theMapEditor->propsPanel()->openObject(NULL);
 	}

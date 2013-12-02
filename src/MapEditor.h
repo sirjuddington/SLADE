@@ -172,7 +172,7 @@ public:
 	bool		updateHilight(fpoint2_t mouse_pos, double dist_scale = 1.0);
 	void		updateTagged();
 	void		selectionUpdated();
-	void		clearSelection();
+	void		clearSelection(bool animate = false);
 	void		selectAll();
 	bool		selectCurrent(bool clear_none = true);
 	bool		selectWithin(double xmin, double ymin, double xmax, double ymax, bool add = false);
