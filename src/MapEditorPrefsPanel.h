@@ -9,6 +9,7 @@ class MapEditorPrefsPanel : public PrefsPanelBase
 private:
 	wxCheckBox*	cb_scroll_smooth;
 	wxCheckBox*	cb_selection_clear_click;
+	wxCheckBox* cb_merge_undo_step;
 
 public:
 	MapEditorPrefsPanel(wxWindow* parent);

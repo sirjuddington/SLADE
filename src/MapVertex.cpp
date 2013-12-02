@@ -1,6 +1,7 @@
 
 #include "Main.h"
 #include "MapVertex.h"
+#include "MapLine.h"
 #include "MainApp.h"
 
 MapVertex::MapVertex(SLADEMap* parent) : MapObject(MOBJ_VERTEX, parent)
@@ -47,9 +48,17 @@ void MapVertex::setIntProperty(string key, int value)
 	setModified();
 
 	if (key == "x")
+	{
 		x = value;
+		for (unsigned a = 0; a < connected_lines.size(); a++)
+			connected_lines[a]->resetInternals();
+	}
 	else if (key == "y")
+	{
 		y = value;
+		for (unsigned a = 0; a < connected_lines.size(); a++)
+			connected_lines[a]->resetInternals();
+	}
 	else
 		return MapObject::setIntProperty(key, value);
 }

@@ -218,7 +218,7 @@ bool UndoManager::recordUndoStep(UndoStep* step)
 	// Add step to current undo level
 	current_level->addStep(step);
 
-	return true;
+	return step->isOk();
 }
 
 /* UndoManager::undo

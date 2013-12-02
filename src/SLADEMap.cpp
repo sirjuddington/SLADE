@@ -3695,8 +3695,13 @@ int SLADEMap::mergeLine(unsigned line)
 	return merged;
 }
 
-void SLADEMap::mergeArch(vector<MapVertex*> vertices)
+bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 {
+	unsigned n_vertices = vertices.size();
+	unsigned n_lines = lines.size();
+	MapVertex* last_vertex = vertices.back();
+	MapLine* last_line = lines.back();
+
 	// Merge vertices
 	vector<MapVertex*> merged_vertices;
 	for (unsigned a = 0; a < vertices.size(); a++)
@@ -3809,8 +3814,17 @@ void SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		}
 	}
 
+	// Check if anything was actually merged
+	bool merged = false;
+	if (vertices.size() != n_vertices || lines.size() != n_lines)
+		merged = true;
+	if (vertices.back() != last_vertex || lines.back() != last_line)
+		merged = true;
+
 	// Correct sector references
 	correctSectors(connected_lines);
+
+	return merged;
 }
 
 struct me_ls_t

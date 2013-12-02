@@ -16,6 +16,7 @@ public:
 	virtual bool	doRedo() { return true; }
 	virtual bool	writeFile(MemChunk& mc) { return true; }
 	virtual bool	readFile(MemChunk& mc) { return true; }
+	virtual bool	isOk() { return true; }
 };
 
 class UndoLevel
