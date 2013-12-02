@@ -75,7 +75,7 @@ public:
 	void	trimWhitespace();
 
 	// Find/Replace
-	void	showFindReplaceDialog() { dlg_fr->Show(); dlg_fr->CenterOnParent(); }
+	void	showFindReplaceDialog() { dlg_fr->Show(); dlg_fr->CenterOnParent(); dlg_fr->Raise(); }
 	bool	findNext(string find);
 	bool	replaceCurrent(string find, string replace);
 	int		replaceAll(string find, string replace);
