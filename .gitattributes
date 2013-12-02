@@ -6,6 +6,8 @@
 *.cpp text
 *.h text
 *.sln text eol=crlf
+*.vcxproj text eol=crlf
+*.vcxproj.filters text eol=crlf
 
 ###############################################################################
 # Set default behavior for command prompt diff.
