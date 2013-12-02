@@ -181,10 +181,7 @@ bool TextEntryPanel::saveEntry()
 		text_area->trimWhitespace();
 
 	// Write raw text to the entry
-	//wxCharBuffer text_raw = text_area->GetTextRaw();
-	//entry->importMem(text_raw, text_raw.length());
-	wxCharBuffer buf = text_area->GetText().mb_str();
-	entry->importMem(buf, buf.length());
+	text_area->getRawText(entry->getMCData());
 
 	// Re-detect entry type
 	EntryType::detectEntryType(entry);

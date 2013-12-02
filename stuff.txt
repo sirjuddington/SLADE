@@ -33,8 +33,6 @@ TODO List ---------------------------------------------------------------
 	- Invalid sector references (maybe not, shouldn't really happen)
 	- Intersecting lines
 	- Overlapping lines
-- Editing:
-	- Proper split/merge checks on paste lines / object edit
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
 - Need to separate editor defaults from udmf defaults (eg. thing skill flags are all false by default in udmf)

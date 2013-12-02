@@ -342,7 +342,8 @@ bool TextEditor::loadEntry(ArchiveEntry* entry)
 		return true;
 
 	// Get character entry data
-	string text = wxString::From8BitData((const char*)entry->getData(), entry->getSize());
+	//string text = wxString::From8BitData((const char*)entry->getData(), entry->getSize());
+	string text = wxString::FromUTF8((const char*)entry->getData(), entry->getSize());
 
 	// Load text into editor
 	SetText(text);
@@ -360,8 +361,8 @@ bool TextEditor::loadEntry(ArchiveEntry* entry)
 void TextEditor::getRawText(MemChunk& mc)
 {
 	mc.clear();
-	const char* raw_text = GetTextRaw();
-	mc.importMem((const uint8_t*)raw_text, GetTextLength());
+	string text = GetText();
+	mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
 }
 
 /* TextEditor::trimWhitespace
