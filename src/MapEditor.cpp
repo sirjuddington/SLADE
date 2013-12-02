@@ -15,6 +15,8 @@
 #include "UndoRedo.h"
 
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536 };
+CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE);
+
 
 EXTERN_CVAR(Int, shapedraw_sides)
 EXTERN_CVAR(Int, shapedraw_shape)
@@ -113,6 +115,11 @@ public:
 
 		return true;
 	}
+
+	bool isOk()
+	{
+		return !objects.empty();
+	}
 };
 
 class MultiMapObjectPropertyChangeUS : public UndoStep
@@ -180,6 +187,11 @@ public:
 		}
 
 		return true;
+	}
+
+	bool isOk()
+	{
+		return !backups.empty();
 	}
 };
 
@@ -1340,7 +1352,7 @@ void MapEditor::endMove(bool accept)
 	else if (accept)
 	{
 		// Any other edit mode we're technically moving vertices
-		beginUndoRecord("Move Vertices");//, true, false, false);
+		beginUndoRecord(S_FMT("Move %s", CHR(getModeString())));
 
 		// Get list of vertices being moved
 		bool* move_verts = new bool[map.nVertices()];
@@ -1381,13 +1393,18 @@ void MapEditor::endMove(bool accept)
 			moved_verts.push_back(map.getVertex(a));
 		}
 
-		//endUndoRecord(true);
-		//beginUndoRecord("Stitch And Merge");
+		// Begin extra 'Merge' undo step if wanted
+		bool merge = true;
+		if (map_merge_undo_step)
+		{
+			endUndoRecord(true);
+			beginUndoRecord("Merge");
+		}
 
 		//mergeLines(move_time, merge_points);
-		map.mergeArch(moved_verts);
+		merge = map.mergeArch(moved_verts);
 
-		endUndoRecord(true);
+		endUndoRecord(merge);
 	}
 
 	// Clear selection
@@ -2492,23 +2509,31 @@ void MapEditor::endObjectEdit(bool accept)
 	if (accept)
 	{
 		// Begin recording undo level
-		beginUndoRecord("Object Edit");
+		beginUndoRecord(S_FMT("Edit %s", CHR(getModeString())));
 
 		// Apply changes
 		edit_object_group.applyEdit();
 
 		// Do merge
+		bool merge = true;
 		if (edit_mode != MODE_THINGS)
 		{
+			// Begin extra 'Merge' undo step if wanted
+			if (map_merge_undo_step)
+			{
+				endUndoRecord(true);
+				beginUndoRecord("Merge");
+			}
+
 			vector<MapVertex*> vertices;
 			edit_object_group.getVertices(vertices);
-			map.mergeArch(vertices);
+			merge = map.mergeArch(vertices);
 		}
 
 		// Clear selection
 		clearSelection();
 
-		endUndoRecord();
+		endUndoRecord(merge);
 	}
 
 	theMapEditor->hideObjectEditPanel();
@@ -4124,13 +4149,15 @@ void MapEditor::endUndoRecord(bool success)
 	{
 		// Record necessary undo steps
 		MapObject::beginPropBackup(-1);
+		bool modified = false;
+		bool created_deleted = false;
 		if (undo_modified)
-			manager->recordUndoStep(new MultiMapObjectPropertyChangeUS());
+			modified = manager->recordUndoStep(new MultiMapObjectPropertyChangeUS());
 		if (undo_created || undo_deleted)
-			manager->recordUndoStep(new MapObjectCreateDeleteUS());
+			created_deleted = manager->recordUndoStep(new MapObjectCreateDeleteUS());
 
 		// End recording
-		manager->endRecord(success);
+		manager->endRecord(success && (modified || created_deleted));
 	}
 }
 

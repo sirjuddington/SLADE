@@ -236,7 +236,7 @@ public:
 	int			mergeLine(unsigned line);
 
 	// Merge
-	void	mergeArch(vector<MapVertex*> vertices);
+	bool	mergeArch(vector<MapVertex*> vertices);
 	void	correctSectors(vector<MapLine*> lines);
 
 	// Checks
