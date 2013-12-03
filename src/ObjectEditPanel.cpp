@@ -8,6 +8,7 @@
 #include "ObjectEdit.h"
 #include "Icons.h"
 #include "MapEditorWindow.h"
+#include "KeyBind.h"
 
 ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 {
@@ -50,11 +51,26 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	sizer->Add(new wxStaticText(this, -1, "Rotation:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	sizer->Add(combo_rotation, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
 
+	// Preview button
+	btn_preview = new wxBitmapButton(this, -1, getIcon("t_run"));
+	btn_preview->SetToolTip("Preview");
+	btn_preview->SetDefault();
+	sizer->Add(btn_preview, 0, wxEXPAND|wxRIGHT, 4);
+
+	// Cancel button
+	btn_cancel = new wxBitmapButton(this, -1, getIcon("t_close"));
+	btn_cancel->SetToolTip("Cancel");
+	sizer->Add(btn_cancel, 0, wxEXPAND|wxRIGHT, 4);
+
 	// Apply button
 	btn_apply = new wxBitmapButton(this, -1, getIcon("i_tick"));
 	sizer->Add(btn_apply, 0, wxEXPAND);
+	btn_apply->SetToolTip("Apply");
+
+	// Bind events
+	btn_preview->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ObjectEditPanel::onBtnPreviewClicked, this);
+	btn_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ObjectEditPanel::onBtnCancelClicked, this);
 	btn_apply->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ObjectEditPanel::onBtnApplyClicked, this);
-	btn_apply->SetDefault();
 
 	// Init layout
 	Layout();
@@ -98,6 +114,11 @@ void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation)
 
 void ObjectEditPanel::onBtnApplyClicked(wxCommandEvent& e)
 {
+	KeyBind::pressBind("map_edit_accept");
+}
+
+void ObjectEditPanel::onBtnPreviewClicked(wxCommandEvent& e)
+{
 	double xoff, yoff, xscale, yscale, rotation;
 	text_xoff->GetValue().ToDouble(&xoff);
 	text_yoff->GetValue().ToDouble(&yoff);
@@ -106,4 +127,9 @@ void ObjectEditPanel::onBtnApplyClicked(wxCommandEvent& e)
 	combo_rotation->GetValue().ToDouble(&rotation);
 
 	theMapEditor->mapEditor().getObjectEditGroup()->doAll(xoff, yoff, xscale / 100.0, yscale / 100.0, rotation);
+}
+
+void ObjectEditPanel::onBtnCancelClicked(wxCommandEvent& e)
+{
+	KeyBind::pressBind("map_edit_cancel");
 }

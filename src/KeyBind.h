@@ -93,6 +93,7 @@ public:
 	static keypress_t		asKeyPress(int keycode, int modifiers);
 	static void				allKeyBinds(vector<KeyBind*>& list);
 	static void				releaseAll();
+	static void				pressBind(string name);
 
 	static void		initBinds();
 	static string	writeBinds();

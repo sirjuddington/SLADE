@@ -349,6 +349,21 @@ bool KeyBind::keyReleased(string key)
 	return released;
 }
 
+void KeyBind::pressBind(string name)
+{
+	for (unsigned a = 0; a < keybinds.size(); a++)
+	{
+		if (keybinds[a].name == name)
+		{
+			// Send key pressed event to keybind handlers
+			for (unsigned b = 0; b < kb_handlers.size(); b++)
+				kb_handlers[b]->onKeyBindPress(name);
+
+			return;
+		}
+	}
+}
+
 keypress_t KeyBind::asKeyPress(int keycode, int modifiers)
 {
 	return keypress_t(keyName(keycode),

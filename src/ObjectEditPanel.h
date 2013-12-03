@@ -11,7 +11,9 @@ private:
 	wxTextCtrl*	text_scalex;
 	wxTextCtrl*	text_scaley;
 	wxComboBox*	combo_rotation;
+	wxButton*	btn_preview;
 	wxButton*	btn_apply;
+	wxButton*	btn_cancel;
 
 	double	old_x;
 	double	old_y;
@@ -25,7 +27,9 @@ public:
 	void	init(ObjectEditGroup* group);
 	void	update(ObjectEditGroup* group, bool lock_rotation = false);
 
+	void	onBtnPreviewClicked(wxCommandEvent& e);
 	void	onBtnApplyClicked(wxCommandEvent& e);
+	void	onBtnCancelClicked(wxCommandEvent& e);
 };
 
 #endif//__OBJECT_EDIT_PANEL_H__
