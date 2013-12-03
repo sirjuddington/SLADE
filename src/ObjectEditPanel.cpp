@@ -52,7 +52,7 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	sizer->Add(combo_rotation, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
 
 	// Preview button
-	btn_preview = new wxBitmapButton(this, -1, getIcon("t_run"));
+	btn_preview = new wxBitmapButton(this, -1, getIcon("i_eye"));
 	btn_preview->SetToolTip("Preview");
 	btn_preview->SetDefault();
 	sizer->Add(btn_preview, 0, wxEXPAND|wxRIGHT, 4);
