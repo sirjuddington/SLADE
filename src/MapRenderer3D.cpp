@@ -8,6 +8,8 @@
 #include "ColourConfiguration.h"
 #include "ResourceManager.h"
 #include "MainWindow.h"
+#include "OpenGL.h"
+#include <SFML/System.hpp>
 
 CVAR(Float, render_max_dist, 2000, CVAR_SAVE)
 CVAR(Float, render_max_thing_dist, 2000, CVAR_SAVE)

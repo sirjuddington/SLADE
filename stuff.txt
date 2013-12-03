@@ -18,7 +18,6 @@ TODO List ---------------------------------------------------------------
 - Incorrect ctrl+tab behaviour with tabs
 - Focus find+replace window on opening it
 - Esc to close find+replace window
-- Shape draw and object edit bars cause the view offset to change
 
 
 --- Map Editor 3.1 ---

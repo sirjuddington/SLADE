@@ -82,6 +82,10 @@ ObjectEditPanel::~ObjectEditPanel()
 
 void ObjectEditPanel::init(ObjectEditGroup* group)
 {
+	// Check group was given
+	if (!group)
+		return;
+
 	// Set initial values from group
 	bbox_t bbox = group->getBBox();
 	old_x = bbox.mid_x();

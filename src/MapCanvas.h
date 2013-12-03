@@ -126,6 +126,7 @@ public:
 	double	translateY(double y, bool inter = false);
 	int		screenX(double x);
 	int		screenY(double y);
+	void	setTopY(double y);
 
 	void	setView(double x, double y);
 	void	pan(double x, double y);

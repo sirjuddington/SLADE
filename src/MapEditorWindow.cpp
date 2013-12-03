@@ -29,6 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
+#include "MapCanvas.h"
 #include "MapEditorWindow.h"
 #include "MainApp.h"
 #include "ConsolePanel.h"
@@ -712,53 +713,49 @@ void MapEditorWindow::refreshToolBar()
 	toolbar->Refresh();
 }
 
-void MapEditorWindow::showObjectEditPanel(ObjectEditGroup* group)
+void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 {
+	// Get panel
 	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
 	wxAuiPaneInfo& p_inf = m_mgr->GetPane("object_edit");
 
-	panel_obj_edit->init(group);
-	p_inf.Show(true);
-	map_canvas->SetFocus();
+	// Save current y offset
+	double top = map_canvas->translateY(0);
 
-	//p_inf.MinSize(200, 128);
+	// Enable/disable panel
+	if (show) panel_obj_edit->init(group);
+	p_inf.Show(show);
+
+	// Update layout
+	map_canvas->Enable(false);
 	m_mgr->Update();
-}
 
-void MapEditorWindow::hideObjectEditPanel()
-{
-	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
-	wxAuiPaneInfo& p_inf = m_mgr->GetPane("object_edit");
-
-	p_inf.Show(false);
+	// Restore y offset
+	map_canvas->setTopY(top);
+	map_canvas->Enable(true);
 	map_canvas->SetFocus();
-
-	//p_inf.MinSize(200, 128);
-	m_mgr->Update();
 }
 
 void MapEditorWindow::showShapeDrawPanel(bool show)
 {
-	if (show)
-	{
-		wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
-		wxAuiPaneInfo& p_inf = m_mgr->GetPane("shape_draw");
+	// Get panel
+	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
+	wxAuiPaneInfo& p_inf = m_mgr->GetPane("shape_draw");
 
-		p_inf.Show(true);
-		map_canvas->SetFocus();
+	// Save current y offset
+	double top = map_canvas->translateY(0);
 
-		m_mgr->Update();
-	}
-	else
-	{
-		wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
-		wxAuiPaneInfo& p_inf = m_mgr->GetPane("shape_draw");
+	// Enable/disable panel
+	p_inf.Show(show);
 
-		p_inf.Show(false);
-		map_canvas->SetFocus();
+	// Update layout
+	map_canvas->Enable(false);
+	m_mgr->Update();
 
-		m_mgr->Update();
-	}
+	// Restore y offset
+	map_canvas->setTopY(top);
+	map_canvas->Enable(true);
+	map_canvas->SetFocus();
 }
 
 /* MapEditorWindow::handleAction

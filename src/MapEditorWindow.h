@@ -2,7 +2,6 @@
 #ifndef __MAPEDITORWINDOW_H__
 #define __MAPEDITORWINDOW_H__
 
-#include "MapCanvas.h"
 #include "MapEditor.h"
 #include "MapTextureManager.h"
 #include "MainApp.h"
@@ -15,6 +14,7 @@ class ScriptEditorPanel;
 class ObjectEditPanel;
 class ObjectEditGroup;
 class WadArchive;
+class MapCanvas;
 class MapEditorWindow : public STopWindow, public SActionHandler
 {
 private:
@@ -67,8 +67,7 @@ public:
 	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
 	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }
 	
-	void	showObjectEditPanel(ObjectEditGroup* group);
-	void	hideObjectEditPanel();
+	void	showObjectEditPanel(bool show, ObjectEditGroup* group);
 	void	showShapeDrawPanel(bool show = true);
 
 	// SAction handler

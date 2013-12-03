@@ -2495,7 +2495,7 @@ bool MapEditor::beginObjectEdit()
 		edit_object_group.filterObjects(true);
 	}
 
-	theMapEditor->showObjectEditPanel(&edit_object_group);
+	theMapEditor->showObjectEditPanel(true, &edit_object_group);
 
 	return true;
 }
@@ -2536,7 +2536,7 @@ void MapEditor::endObjectEdit(bool accept)
 		endUndoRecord(merge);
 	}
 
-	theMapEditor->hideObjectEditPanel();
+	theMapEditor->showObjectEditPanel(false, NULL);
 }
 
 #pragma endregion
