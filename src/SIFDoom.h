@@ -285,7 +285,7 @@ protected:
 				out.write(&npix, 1);
 
 				// Write unused byte
-				uint8_t temp = 0;
+				uint8_t temp = (npix > 0) ? columns[c].posts[p].pixels[0] : 0;
 				out.write(&temp, 1);
 
 				// Write pixels
@@ -293,6 +293,7 @@ protected:
 					out.write(&columns[c].posts[p].pixels[a], 1);
 
 				// Write unused byte
+				temp = (npix > 0) ? columns[c].posts[p].pixels.back() : 0;
 				out.write(&temp, 1);
 			}
 
