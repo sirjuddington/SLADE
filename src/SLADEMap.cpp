@@ -3745,16 +3745,17 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			if ((line1->vertex1 == line2->vertex1 && line1->vertex2 == line2->vertex2) ||
 				(line1->vertex1 == line2->vertex2 && line1->vertex2 == line2->vertex1))
 			{
-				// Prioritise removing 2-sided lines
-				if (line1->side2 && !line2->side2)
-				{
-					VECTOR_ADD_UNIQUE(remove_lines, line1);
-					break;
-				}
-				else
-				{
-					VECTOR_ADD_UNIQUE(remove_lines, line2);
-				}
+				VECTOR_ADD_UNIQUE(remove_lines, mergeOverlappingLines(line2, line1));
+				//// Prioritise removing 2-sided lines
+				//if (line1->side2 && !line2->side2)
+				//{
+				//	VECTOR_ADD_UNIQUE(remove_lines, line1);
+				//	break;
+				//}
+				//else
+				//{
+				//	VECTOR_ADD_UNIQUE(remove_lines, line2);
+				//}
 			}
 		}
 	}
@@ -3830,6 +3831,8 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		merged = true;
 	if (vertices.back() != last_vertex || lines.back() != last_line)
 		merged = true;
+	if (!remove_lines.empty())
+		merged = true;
 
 	// Correct sector references
 	if (merged)
@@ -3846,6 +3849,35 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	}
 
 	return merged;
+}
+
+MapLine* SLADEMap::mergeOverlappingLines(MapLine* line1, MapLine* line2)
+{
+	// Determine which line to remove (prioritise 2s)
+	MapLine* remove, *keep;
+	if (line1->side2 && !line2->side2)
+	{
+		remove = line1;
+		keep = line2;
+	}
+	else
+	{
+		remove = line2;
+		keep = line1;
+	}
+
+	// Front-facing overlap
+	if (remove->vertex1 == keep->vertex1)
+	{
+		// Set keep front sector to remove front sector
+		setLineSector(keep->index, remove->side1->sector->index);
+	}
+	else
+	{
+		setLineSector(keep->index, remove->side2->sector->index);
+	}
+
+	return remove;
 }
 
 struct me_ls_t
@@ -3923,9 +3955,12 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 			}
 		}
 
+		// Check if sector traced is already valid
+		bool valid = builder.isValidSector();
+
 		// Check if we traced over an existing sector (or part of one)
 		MapSector* sector = builder.findExistingSector(sides_correct);
-		if (sector)
+		if (sector && !valid)
 		{
 			// Check if it's already been (re)used
 			bool reused = false;
@@ -3946,7 +3981,8 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Create sector
-		builder.createSector(sector);
+		if (!valid)
+			builder.createSector(sector);
 	}
 
 	// Remove any sides that weren't part of a sector

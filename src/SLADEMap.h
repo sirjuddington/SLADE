@@ -236,8 +236,9 @@ public:
 	int			mergeLine(unsigned line);
 
 	// Merge
-	bool	mergeArch(vector<MapVertex*> vertices);
-	void	correctSectors(vector<MapLine*> lines, bool existing_only = false);
+	bool		mergeArch(vector<MapVertex*> vertices);
+	MapLine*	mergeOverlappingLines(MapLine* line1, MapLine* line2);
+	void		correctSectors(vector<MapLine*> lines, bool existing_only = false);
 
 	// Checks
 	void	mapOpenChecks();

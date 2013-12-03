@@ -440,7 +440,28 @@ MapSector* SectorBuilder::findExistingSector(vector<MapSide*>& sides_ignore)
 		}
 	}
 
-	return NULL;
+	if (sector_priority)
+		return sector_priority;
+	else
+		return sector;
+}
+
+bool SectorBuilder::isValidSector()
+{
+	MapSector* sector = NULL;
+	for (unsigned a = 0; a < sector_edges.size(); a++)
+	{
+		MapSector* ssector;
+		if (sector_edges[a].front)
+			ssector = sector_edges[a].line->frontSector();
+		else
+			ssector = sector_edges[a].line->backSector();
+
+		if (sector && sector != ssector)
+			return false;
+	}
+
+	return sector != NULL;
 }
 
 bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front)

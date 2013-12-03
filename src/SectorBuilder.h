@@ -56,6 +56,7 @@ public:
 	edge_t		findInnerEdge();
 	MapSector*	findCopySector();
 	MapSector*	findExistingSector(vector<MapSide*>& sides_ignore);
+	bool		isValidSector();
 
 	bool	traceSector(SLADEMap* map, MapLine* line, bool front = true);
 	void	createSector(MapSector* sector = NULL, MapSector* sector_copy = NULL);
