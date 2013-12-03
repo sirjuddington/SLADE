@@ -1409,7 +1409,7 @@ void MapEditor::endMove(bool accept)
 
 	// Clear selection
 	if (accept)
-		clearSelection();
+		clearSelection(false);
 
 	// Clear moving items
 	move_items.clear();
@@ -2531,7 +2531,7 @@ void MapEditor::endObjectEdit(bool accept)
 		}
 
 		// Clear selection
-		clearSelection();
+		clearSelection(false);
 
 		endUndoRecord(merge);
 	}
