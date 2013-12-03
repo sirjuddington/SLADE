@@ -3591,12 +3591,17 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 	else
 		side = lines[line]->side2;
 
+	// Do nothing if already the same sector
+	if (side && side->sector == sectors[sector])
+		return true;
+
 	// Create side if needed
 	if (!side)
 	{
 		side = createSide(sectors[sector]);
 
 		// Add to line
+		lines[line]->setModified();
 		side->parent = lines[line];
 		if (front)
 			lines[line]->side1 = side;
@@ -3605,7 +3610,6 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 
 		// Set appropriate line flags
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
-		lines[line]->setModified();
 		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
 		theGameConfiguration->setLineBasicFlag("twosided", lines[line], current_format, twosided);
 
@@ -3782,7 +3786,8 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		l1x2 = line1->x2();
 		l1y2 = line1->y2();
 
-		for (unsigned b = 0; b < lines.size(); b++)
+		unsigned n_lines = lines.size();
+		for (unsigned b = 0; b < n_lines; b++)
 		{
 			MapLine* line2 = lines[b];
 
@@ -3810,6 +3815,11 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				connected_lines.push_back(lines.back());
 				splitLine(line2->getIndex(), nv->getIndex());
 				connected_lines.push_back(lines.back());
+
+				LOG_MESSAGE(4, "Lines %d and %d intersect", line1->getIndex(), line2->getIndex());
+
+				a--;
+				break;
 			}
 		}
 	}
@@ -3822,7 +3832,18 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		merged = true;
 
 	// Correct sector references
-	correctSectors(connected_lines);
+	if (merged)
+		correctSectors(connected_lines, true);
+	else
+	{
+		for (unsigned a = 0; a < connected_lines.size(); a++)
+		{
+			MapSector* s1 = getLineSideSector(connected_lines[a], true);
+			MapSector* s2 = getLineSideSector(connected_lines[a], false);
+			if (s1) setLineSector(connected_lines[a]->index, s1->index, true);
+			if (s2) setLineSector(connected_lines[a]->index, s2->index, false);
+		}
+	}
 
 	return merged;
 }
@@ -3835,16 +3856,37 @@ struct me_ls_t
 	me_ls_t(MapLine* line, bool front) { this->line = line; this->front = front; ignore = false; }
 };
 
-void SLADEMap::correctSectors(vector<MapLine*> lines)
+void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 {
 	// Create a list of line sides (edges) to perform sector creation with
 	vector<me_ls_t> edges;
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
-		edges.push_back(me_ls_t(lines[a], true));
-		fpoint2_t mid = lines[a]->midPoint();
-		if (sectorAt(mid.x, mid.y) >= 0)
-			edges.push_back(me_ls_t(lines[a], false));
+		if (existing_only)
+		{
+			// Add only existing sides as edges
+			// (or front side if line has none)
+			if (lines[a]->side1 || (!lines[a]->side1 && !lines[a]->side2))
+				edges.push_back(me_ls_t(lines[a], true));
+			if (lines[a]->side2)
+				edges.push_back(me_ls_t(lines[a], false));
+		}
+		else
+		{
+			edges.push_back(me_ls_t(lines[a], true));
+			fpoint2_t mid = lines[a]->midPoint();
+			if (sectorAt(mid.x, mid.y) >= 0)
+				edges.push_back(me_ls_t(lines[a], false));
+		}
+	}
+
+	vector<MapSide*> sides_correct;
+	for (unsigned a = 0; a < edges.size(); a++)
+	{
+		if (edges[a].front && edges[a].line->side1)
+			sides_correct.push_back(edges[a].line->side1);
+		else if (!edges[a].front && edges[a].line->side2)
+			sides_correct.push_back(edges[a].line->side2);
 	}
 
 	// Build sectors
@@ -3882,7 +3924,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines)
 		}
 
 		// Check if we traced over an existing sector (or part of one)
-		MapSector* sector = builder.findExistingSector();
+		MapSector* sector = builder.findExistingSector(sides_correct);
 		if (sector)
 		{
 			// Check if it's already been (re)used

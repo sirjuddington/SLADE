@@ -237,7 +237,7 @@ public:
 
 	// Merge
 	bool	mergeArch(vector<MapVertex*> vertices);
-	void	correctSectors(vector<MapLine*> lines);
+	void	correctSectors(vector<MapLine*> lines, bool existing_only = false);
 
 	// Checks
 	void	mapOpenChecks();

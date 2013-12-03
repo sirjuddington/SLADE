@@ -412,21 +412,31 @@ MapSector* SectorBuilder::findCopySector()
 	return sector_copy;
 }
 
-MapSector* SectorBuilder::findExistingSector()
+MapSector* SectorBuilder::findExistingSector(vector<MapSide*>& sides_ignore)
 {
 	// Go through new sector edges
+	MapSector* sector = NULL;
+	MapSector* sector_priority = NULL;
 	for (unsigned a = 0; a < sector_edges.size(); a++)
 	{
 		// Check if the edge's corresponding MapSide has a front sector
 		if (sector_edges[a].front && sector_edges[a].line->frontSector())
 		{
-			return sector_edges[a].line->frontSector();
+			//return sector_edges[a].line->frontSector();
+			if (VECTOR_EXISTS(sides_ignore, sector_edges[a].line->s1()))
+				sector = sector_edges[a].line->frontSector();
+			else
+				sector_priority = sector_edges[a].line->frontSector();
 		}
 
 		// Check if the edge's corresponding MapSide has a back sector
 		if (!sector_edges[a].front && sector_edges[a].line->backSector())
 		{
-			return sector_edges[a].line->backSector();
+			//return sector_edges[a].line->backSector();
+			if (VECTOR_EXISTS(sides_ignore, sector_edges[a].line->s2()))
+				sector = sector_edges[a].line->backSector();
+			else
+				sector_priority = sector_edges[a].line->backSector();
 		}
 	}
 
