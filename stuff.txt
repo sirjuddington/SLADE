@@ -10,7 +10,6 @@ TODO List ---------------------------------------------------------------
 - Wall/flat scale not working in 3d mode
 - Modifying map architecture doesn't affect things in 3d mode (heights stay the same)
 - Undo for rename via label edit
-- View as text and save does not set entry to modified
 
 
 --- Minor Problems/Annoyances ---
