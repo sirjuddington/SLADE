@@ -242,6 +242,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	entry_list = new ArchiveEntryList(this);
 	entry_list->setArchive(archive);
 	entry_list->SetDropTarget(new APEntryListDropTarget(this, entry_list));
+	entry_list->setUndoManager(undo_manager);
 	framesizer->Add(entry_list, 1, wxEXPAND | wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 
