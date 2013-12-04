@@ -236,6 +236,13 @@ int MapCanvas::screenY(double y)
 	return MathStuff::round((GetSize().y * 0.5) - ((y - view_yoff_inter) * view_scale_inter));
 }
 
+void MapCanvas::setTopY(double y)
+{
+	double top_y = translateY(0);
+	setView(view_xoff, view_yoff - (top_y - y));
+	view_yoff_inter = view_yoff;
+}
+
 void MapCanvas::setView(double x, double y)
 {
 	// Set new view
@@ -1120,6 +1127,9 @@ void MapCanvas::drawMap3d()
  *******************************************************************/
 void MapCanvas::draw()
 {
+	if (!IsEnabled())
+		return;
+
 	// Setup the viewport
 	glViewport(0, 0, GetSize().x, GetSize().y);
 

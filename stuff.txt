@@ -8,10 +8,8 @@ TODO List ---------------------------------------------------------------
 
 --- Bugs ---
 - Wall/flat scale not working in 3d mode
-- Can hilight floors/ceilings from the wrong side in 3d mode
 - Modifying map architecture doesn't affect things in 3d mode (heights stay the same)
 - Undo for rename via label edit
-- Saving text entries with accented characters
 
 
 --- Minor Problems/Annoyances ---
@@ -19,8 +17,6 @@ TODO List ---------------------------------------------------------------
 - Incorrect ctrl+tab behaviour with tabs
 - Focus find+replace window on opening it
 - Esc to close find+replace window
-- Shape draw and object edit bars cause the view offset to change
-- No way to accept/cancel object edit while bar is focused
 
 
 --- Map Editor 3.1 ---

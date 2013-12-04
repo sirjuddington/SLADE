@@ -8,6 +8,7 @@
 #include "MapVertex.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
+#include "OpenGL.h"
 
 EXTERN_CVAR(Bool, thing_overlay_square)
 EXTERN_CVAR(Int, thing_drawtype)

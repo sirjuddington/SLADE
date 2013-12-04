@@ -182,6 +182,8 @@ bool TextEntryPanel::saveEntry()
 
 	// Write raw text to the entry
 	text_area->getRawText(entry->getMCData());
+	if (entry->getState() == 0)
+		entry->setState(1);
 
 	// Re-detect entry type
 	EntryType::detectEntryType(entry);

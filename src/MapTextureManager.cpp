@@ -6,6 +6,7 @@
 #include "MainWindow.h"
 #include "ArchiveManager.h"
 #include "MapEditorWindow.h"
+#include "OpenGL.h"
 
 CVAR(Int, map_tex_filter, 0, CVAR_SAVE)
 

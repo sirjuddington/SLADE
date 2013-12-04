@@ -8,6 +8,8 @@
 #include "ColourConfiguration.h"
 #include "ResourceManager.h"
 #include "MainWindow.h"
+#include "OpenGL.h"
+#include <SFML/System.hpp>
 
 CVAR(Float, render_max_dist, 2000, CVAR_SAVE)
 CVAR(Float, render_max_thing_dist, 2000, CVAR_SAVE)
@@ -2208,12 +2210,16 @@ selection_3d_t MapRenderer3D::determineHilight()
 		dist = MathStuff::distanceRayPlane(cam_position, cam_dir3d, floors[a].plane);
 		if (dist >= 0 && dist < min_dist)
 		{
-			// Check if intersection is within sector
-			if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+			// Check if on the correct side of the plane
+			if (cam_position.z > floors[a].plane.height_at(cam_position.x, cam_position.y))
 			{
-				current.index = a;
-				current.type = MapEditor::SEL_FLOOR;
-				min_dist = dist;
+				// Check if intersection is within sector
+				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				{
+					current.index = a;
+					current.type = MapEditor::SEL_FLOOR;
+					min_dist = dist;
+				}
 			}
 		}
 
@@ -2221,12 +2227,16 @@ selection_3d_t MapRenderer3D::determineHilight()
 		dist = MathStuff::distanceRayPlane(cam_position, cam_dir3d, ceilings[a].plane);
 		if (dist >= 0 && dist < min_dist)
 		{
-			// Check if intersection is within sector
-			if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+			// Check if on the correct side of the plane
+			if (cam_position.z < ceilings[a].plane.height_at(cam_position.x, cam_position.y))
 			{
-				current.index = a;
-				current.type = MapEditor::SEL_CEILING;
-				min_dist = dist;
+				// Check if intersection is within sector
+				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				{
+					current.index = a;
+					current.type = MapEditor::SEL_CEILING;
+					min_dist = dist;
+				}
 			}
 		}
 	}

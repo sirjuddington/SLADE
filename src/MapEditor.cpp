@@ -82,6 +82,25 @@ public:
 		vector<mobj_cd_t>& cd_objects = UndoRedo::currentMap()->createdDeletedObjectIds();
 		for (unsigned a = 0; a < cd_objects.size(); a++)
 			objects.push_back(cd_objects[a]);
+
+		if (Global::log_verbosity >= 4)
+		{
+			string ids;
+			for (unsigned a = 0; a < cd_objects.size(); a++)
+			{
+				if (cd_objects[a].created)
+					ids += S_FMT("%d, ", cd_objects[a].id);
+			}
+			LOG_MESSAGE(4, "Created: %s", CHR(ids));
+
+			ids = "";
+			for (unsigned a = 0; a < cd_objects.size(); a++)
+			{
+				if (!cd_objects[a].created)
+					ids += S_FMT("%d, ", cd_objects[a].id);
+			}
+			LOG_MESSAGE(4, "Deleted: %s", CHR(ids));
+		}
 	}
 
 	~MapObjectCreateDeleteUS() {}
@@ -95,7 +114,6 @@ public:
 				UndoRedo::currentMap()->removeObjectById(objects[a].id);
 			else
 				UndoRedo::currentMap()->restoreObjectById(objects[a].id);
-			//LOG_MESSAGE(4, "Restored object id %d (%d: %s)", object_ids[a], UndoRedo::currentMap()->getObjectById(object_ids[a])->getIndex(), CHR(UndoRedo::currentMap()->getObjectById(object_ids[a])->getTypeName()));
 		}
 
 		return true;
@@ -110,7 +128,6 @@ public:
 				UndoRedo::currentMap()->removeObjectById(objects[a].id);
 			else
 				UndoRedo::currentMap()->restoreObjectById(objects[a].id);
-			//LOG_MESSAGE(4, "Removed object id %d (%s)", object_ids[a], CHR(UndoRedo::currentMap()->getObjectById(object_ids[a])->getTypeName()));
 		}
 
 		return true;
@@ -179,7 +196,7 @@ public:
 
 	bool doRedo()
 	{
-		LOG_MESSAGE(2, S_FMT("Restore %d objects", backups.size()));
+		//LOG_MESSAGE(2, S_FMT("Restore %d objects", backups.size()));
 		for (unsigned a = 0; a < backups.size(); a++)
 		{
 			MapObject* obj = UndoRedo::currentMap()->getObjectById(backups[a]->id);
@@ -1401,15 +1418,14 @@ void MapEditor::endMove(bool accept)
 			beginUndoRecord("Merge");
 		}
 
-		//mergeLines(move_time, merge_points);
 		merge = map.mergeArch(moved_verts);
 
-		endUndoRecord(merge);
+		endUndoRecord(merge || !map_merge_undo_step);
 	}
 
 	// Clear selection
 	if (accept)
-		clearSelection();
+		clearSelection(false);
 
 	// Clear moving items
 	move_items.clear();
@@ -2495,7 +2511,7 @@ bool MapEditor::beginObjectEdit()
 		edit_object_group.filterObjects(true);
 	}
 
-	theMapEditor->showObjectEditPanel(&edit_object_group);
+	theMapEditor->showObjectEditPanel(true, &edit_object_group);
 
 	return true;
 }
@@ -2531,12 +2547,12 @@ void MapEditor::endObjectEdit(bool accept)
 		}
 
 		// Clear selection
-		clearSelection();
+		clearSelection(false);
 
-		endUndoRecord(merge);
+		endUndoRecord(merge || !map_merge_undo_step);
 	}
 
-	theMapEditor->hideObjectEditPanel();
+	theMapEditor->showObjectEditPanel(false, NULL);
 }
 
 #pragma endregion

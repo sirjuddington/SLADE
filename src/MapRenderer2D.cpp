@@ -9,6 +9,7 @@
 #include "GLTexture.h"
 #include "Polygon2D.h"
 #include "ObjectEdit.h"
+#include "OpenGL.h"
 
 CVAR(Bool, vertex_round, true, CVAR_SAVE)
 CVAR(Int, vertex_size, 7, CVAR_SAVE)
