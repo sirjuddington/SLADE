@@ -2,30 +2,70 @@
 <head>
 <title>SLADE - It's a Doom Editor</title>
 <style type="text/css">
-body, table, td, th, div, a {
-	font-family: verdana, ubuntu, sans-serif;
-	font-size: 10pt;
+
+body, table, td {
+  font-family: verdana, ubuntu, sans-serif;
+  font-size: 10pt;
+  background: #fff;
 }
+
 A, A:link, A:visited, A:active {
-	color: #0022aa;
+  color: #0022aa;
 	text-decoration: none;
 }
+
 A:hover {
 	color: #5588ff;
 }
-th {
-	background-color: #aaabdd;
-	font-size: 11pt;
-	padding: 2px;
+
+div.main {
+  width: 800px;
+  text-align: left;
 }
-table.box {
-	background-color: #dddfff;
-	border-top: 4px;
-	border-left: 4px;
-	border-right: 4px;
-	border-bottom: 2px;
-	border-style: solid;
-	border-color: #dddfff;
+
+div.box, #boxstretch {
+  background-color: #dddfff;
+  padding: 4px;
+  border-style: solid;
+  border-color: #7788bb;
+  border-top: 0px;
+  border-width: 2px;
+  /*border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;*/
+  margin-bottom: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+#boxstretch {
+  height: 100%;
+}
+
+div.boxhead {
+  color: #fff;
+  background-color: #999acc;
+  background-image: url('header-back.png');
+  background-repeat: repeat-x;
+  background-size: contain;
+  /*background: linear-gradient(#bbbbdd, #999acc);*/
+  font-size: 11pt;
+  font-weight: bold;
+  text-align: center;
+	padding: 4px;
+  border-style: solid;
+  border-color: #7788bb;
+  /*border-bottom: 2px;
+  /*border-top-left-radius: 10px;
+  border-top-right-radius: 10px;*/
+  border-width: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
+  margin-top: 2px;
+}
+
+div.boxshadow {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0,0,0,0));
+  height: 6px;
 }
 </style>
 </head>
@@ -34,69 +74,59 @@ table.box {
 
 <img src="logo.png"/>
 
-<table width="800" cellspacing="8">
-<tr><td width="40%" valign="top">
+<center>
+<div class='main'>
 
-<table cellspacing="0" width="100%" cellpadding="4" class="box">
-<tr>
-<th bgcolor="#aaabdd">Get Started</th>
-</tr>
-<tr>
-<td>
+<table width=100%>
+<tr><td width='30%'>
+
+<div class='boxhead'>
+Get Started
+</div>
+<div class='box'>
 <a href="action://open">Open Archive</a><br/>
 <a href="action://newwad">Create Wad Archive</a><br/>
 <a href="action://newzip">Create Zip Archive</a><br/>
 <a href="action://newmap">Create New Map</a>
-</td>
-</tr>
-</table>
+</div>
 
-</td><td rowspan=2 valign="top">
+</td><td rowspan = 2 valign=top>
 
-<table cellspacing="0" width="100%" cellpadding="4" class="box">
-<tr>
-<th bgcolor="#aaabdd">Recent Files</th>
-</tr>
-<tr>
-<td>
+<div class='boxhead'>
+Recent Files
+</div>
+<div id='boxstretch'>
 #recent#
-</td>
-</tr>
-</table>
+</div>
 
 </td></tr>
-<tr><td valign="top">
+<tr><td width='30%'>
 
-<table cellspacing="0" width="100%" cellpadding="4" class="box">
-<tr>
-<th bgcolor="#aaabdd">Links</th>
-</tr>
-<tr>
-<td>
+<div class='boxhead'>
+Links
+</div>
+<div class='box'>
 <a href="http://slade.mancubus.net">SLADE Homepage</a><br/>
 <a href="http://slade.mancubus.net/index.php?page=downloads">SLADE Downloads</a><br/>
 <a href="http://slade.mancubus.net/forum">SLADE Forums</a><br/>
 <a href="http://slade.mancubus.net/wiki">SLADE Wiki</a>
-</td>
-</tr>
-</table>
+</div>
 
 </td></tr>
-<tr><td valign="top" colspan="2">
+<tr><td colspan=2>
 
-<table cellspacing="0" width="100%" cellpadding="4" class="box">
-<tr>
-<th bgcolor="#aaabdd">Tip of the Day <a href="action://reloadstartpage">+</a></th>
-</tr>
-<tr>
-<td>
+<div class='boxhead'>
+Tip Of The Day <a href="action://reloadstartpage">+</a>
+</div>
+<div class='box'>
 #totd#
-</td>
-</tr>
-</table>
+</div>
 
 </td></tr>
 </table>
+
+</div>
+</center>
 
 </center>
 </body>
