@@ -7,7 +7,6 @@
 TODO List ---------------------------------------------------------------
 
 --- Bugs ---
-- Wall/flat scale not working in 3d mode
 - Modifying map architecture doesn't affect things in 3d mode (heights stay the same)
 
 
