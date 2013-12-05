@@ -148,9 +148,13 @@ private:
 
 	// Defaults
 	PropertyList	defaults_line;
+	PropertyList	defaults_line_udmf;
 	PropertyList	defaults_side;
+	PropertyList	defaults_side_udmf;
 	PropertyList	defaults_sector;
+	PropertyList	defaults_sector_udmf;
 	PropertyList	defaults_thing;
+	PropertyList	defaults_thing_udmf;
 
 	// Singleton instance
 	static GameConfiguration*	instance;
@@ -264,7 +268,7 @@ public:
 	int		getDefaultInt(int type, string property);
 	double	getDefaultFloat(int type, string property);
 	bool	getDefaultBool(int type, string property);
-	void	applyDefaults(MapObject* object);
+	void	applyDefaults(MapObject* object, bool udmf = false);
 
 	// Misc
 	void	setLightLevelInterval(int interval);

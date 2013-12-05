@@ -28,7 +28,6 @@ TODO List ---------------------------------------------------------------
 	- Overlapping lines
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
-- Need to separate editor defaults from udmf defaults (eg. thing skill flags are all false by default in udmf)
 
 
 --- Other 3.1 ---

@@ -817,7 +817,10 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
 						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
-						defaults_line[def->getName()] = def->getValue();
+						if (S_CMPNOCASE(def->getType(), "udmf"))
+							defaults_line_udmf[def->getName()] = def->getValue();
+						else	
+							defaults_line[def->getName()] = def->getValue();
 					}
 				}
 
@@ -827,7 +830,10 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
 						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
-						defaults_side[def->getName()] = def->getValue();
+						if (S_CMPNOCASE(def->getType(), "udmf"))
+							defaults_side_udmf[def->getName()] = def->getValue();
+						else
+							defaults_side[def->getName()] = def->getValue();
 					}
 				}
 
@@ -837,7 +843,10 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
 						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
-						defaults_sector[def->getName()] = def->getValue();
+						if (S_CMPNOCASE(def->getType(), "udmf"))
+							defaults_sector_udmf[def->getName()] = def->getValue();
+						else
+							defaults_sector[def->getName()] = def->getValue();
 					}
 				}
 
@@ -847,7 +856,10 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 					for (unsigned c = 0; c < block->nChildren(); c++)
 					{
 						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
-						defaults_thing[def->getName()] = def->getValue();
+						if (S_CMPNOCASE(def->getType(), "udmf"))
+							defaults_thing_udmf[def->getName()] = def->getValue();
+						else
+							defaults_thing[def->getName()] = def->getValue();
 					}
 				}
 
@@ -2779,7 +2791,7 @@ bool GameConfiguration::getDefaultBool(int type, string property)
 	}
 }
 
-void GameConfiguration::applyDefaults(MapObject* object)
+void GameConfiguration::applyDefaults(MapObject* object, bool udmf)
 {
 	// Get all defaults for the object type
 	vector<string> prop_names;
@@ -2790,6 +2802,11 @@ void GameConfiguration::applyDefaults(MapObject* object)
 	{
 		defaults_line.allProperties(prop_vals);
 		defaults_line.allPropertyNames(prop_names);
+		if (udmf)
+		{
+			defaults_line_udmf.allProperties(prop_vals);
+			defaults_line_udmf.allPropertyNames(prop_names);
+		}
 	}
 
 	// Side defaults
@@ -2797,6 +2814,11 @@ void GameConfiguration::applyDefaults(MapObject* object)
 	{
 		defaults_side.allProperties(prop_vals);
 		defaults_side.allPropertyNames(prop_names);
+		if (udmf)
+		{
+			defaults_side_udmf.allProperties(prop_vals);
+			defaults_side_udmf.allPropertyNames(prop_names);
+		}
 	}
 
 	// Sector defaults
@@ -2804,6 +2826,11 @@ void GameConfiguration::applyDefaults(MapObject* object)
 	{
 		defaults_sector.allProperties(prop_vals);
 		defaults_sector.allPropertyNames(prop_names);
+		if (udmf)
+		{
+			defaults_sector_udmf.allProperties(prop_vals);
+			defaults_sector_udmf.allPropertyNames(prop_names);
+		}
 	}
 
 	// Thing defaults
@@ -2811,6 +2838,11 @@ void GameConfiguration::applyDefaults(MapObject* object)
 	{
 		defaults_thing.allProperties(prop_vals);
 		defaults_thing.allPropertyNames(prop_names);
+		if (udmf)
+		{
+			defaults_thing_udmf.allProperties(prop_vals);
+			defaults_thing_udmf.allPropertyNames(prop_names);
+		}
 	}
 
 	// Apply defaults to object
@@ -2824,6 +2856,7 @@ void GameConfiguration::applyDefaults(MapObject* object)
 			object->setFloatProperty(prop_names[a], prop_vals[a].getFloatValue());
 		else if (prop_vals[a].getType() == PROP_STRING)
 			object->setStringProperty(prop_names[a], prop_vals[a].getStringValue());
+		LOG_MESSAGE(3, "Applied default property %s = %s", CHR(prop_names[a]), CHR(prop_vals[a].getStringValue()));
 	}
 }
 

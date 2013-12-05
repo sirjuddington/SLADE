@@ -1985,7 +1985,7 @@ void MapEditor::createThing(double x, double y)
 		thing->setFloatProperty("y", y);
 	}
 	else
-		theGameConfiguration->applyDefaults(thing);	// No thing properties to copy, get defaults from game configuration
+		theGameConfiguration->applyDefaults(thing, map.currentFormat() == MAP_UDMF);	// No thing properties to copy, get defaults from game configuration
 
 	// End undo step
 	endUndoRecord(true);
@@ -2029,7 +2029,7 @@ void MapEditor::createSector(double x, double y)
 	{
 		MapSector* n_sector = map.getSector(map.nSectors()-1);
 		if (n_sector->getCeilingTex().IsEmpty())
-			theGameConfiguration->applyDefaults(n_sector);
+			theGameConfiguration->applyDefaults(n_sector, map.currentFormat() == MAP_UDMF);
 	}
 
 	// Editor message

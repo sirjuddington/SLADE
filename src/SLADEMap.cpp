@@ -4044,7 +4044,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Otherwise, use defaults from game configuration
-		theGameConfiguration->applyDefaults(sectors[a]);
+		theGameConfiguration->applyDefaults(sectors[a], current_format == MAP_UDMF);
 	}
 
 	// Update line textures
