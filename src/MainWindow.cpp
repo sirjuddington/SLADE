@@ -392,7 +392,6 @@ void MainWindow::createStartPage()
 	ArchiveEntry* entry_html = res_archive->entryAtPath("html/startpage.htm");
 	ArchiveEntry* entry_logo = res_archive->entryAtPath("logo.png");
 	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
-	ArchiveEntry* entry_header = res_archive->entryAtPath("html/header-back.png");
 
 	// Can't do anything without html entry
 	if (!entry_html)
@@ -450,7 +449,6 @@ void MainWindow::createStartPage()
 
 	// Write html and images to temp folder
 	if (entry_logo) entry_logo->exportFile(appPath("logo.png", DIR_TEMP));
-	if (entry_header) entry_header->exportFile(appPath("header-back.png", DIR_TEMP));
 	string html_file = appPath("startpage.htm", DIR_TEMP);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
