@@ -2707,6 +2707,13 @@ void SLADEMap::updateGeometryInfo(long modified_time)
 	}
 }
 
+bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2)
+{
+	double x, y;
+	return MathStuff::linesIntersect(line1->vertex1->x, line1->vertex1->y, line1->vertex2->x, line1->vertex2->y,
+		line2->vertex1->x, line2->vertex1->y, line2->vertex2->x, line2->vertex2->y, x, y);
+}
+
 void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 {
 	// Find sectors with matching tag

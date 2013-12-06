@@ -1113,6 +1113,9 @@
     <ClCompile Include="src\ResourceArchiveChooser.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\MapChecks.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2000,6 +2003,9 @@
     </ClInclude>
     <ClInclude Include="src\ResourceArchiveChooser.h">
       <Filter>UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MapChecks.h">
+      <Filter>Map Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

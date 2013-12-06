@@ -13,6 +13,7 @@
 #include "SectorBuilder.h"
 #include "Clipboard.h"
 #include "UndoRedo.h"
+#include "MapChecks.h"
 
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE);
@@ -4233,6 +4234,76 @@ CONSOLE_COMMAND(m_show_item, 1, true)
 {
 	int index = atoi(CHR(args[0]));
 	theMapEditor->mapEditor().showItem(index);
+}
+
+CONSOLE_COMMAND(m_check_missing_tex, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	vector<MapChecks::missing_tex_t> missing = MapChecks::checkMissingTextures(map);
+
+	theConsole->logMessage(S_FMT("%d missing textures", missing.size()));
+
+	for (unsigned a = 0; a < missing.size(); a++)
+	{
+		string line = S_FMT("Line %d missing ", missing[a].line->getIndex());
+		switch (missing[a].part)
+		{
+		case TEX_FRONT_UPPER: line += "front upper texture"; break;
+		case TEX_FRONT_MIDDLE: line += "front middle texture"; break;
+		case TEX_FRONT_LOWER: line += "front lower texture"; break;
+		case TEX_BACK_UPPER: line += "back upper texture"; break;
+		case TEX_BACK_MIDDLE: line += "back middle texture"; break;
+		case TEX_BACK_LOWER: line += "back lower texture"; break;
+		default: break;
+		}
+
+		theConsole->logMessage(line);
+	}
+}
+
+CONSOLE_COMMAND(m_check_special_tags, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	vector<MapLine*> lines = MapChecks::checkSpecialTags(map);
+
+	theConsole->logMessage(S_FMT("%d Line(s) missing tags", lines.size()));
+
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		int special = lines[a]->getSpecial();
+		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+		theConsole->logMessage(S_FMT("Line %d: Special %d (%s) requires a tag", lines[a]->getIndex(), special, as->getName()));
+	}
+}
+
+CONSOLE_COMMAND(m_check_intersecting_lines, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	vector<MapChecks::intersect_line_t> lines = MapChecks::checkIntersectingLines(map);
+
+	theConsole->logMessage(S_FMT("%d Line(s) intersecting", lines.size()));
+
+	for (unsigned a = 0; a < lines.size(); a++)
+		theConsole->logMessage(S_FMT("Lines %d and %d are intersecting", lines[a].line1->getIndex(), lines[a].line2->getIndex()));
+}
+
+CONSOLE_COMMAND(m_check_overlapping_lines, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	vector<MapChecks::intersect_line_t> lines = MapChecks::checkOverlappingLines(map);
+
+	theConsole->logMessage(S_FMT("%d Line(s) overlapping", lines.size()));
+
+	for (unsigned a = 0; a < lines.size(); a++)
+		theConsole->logMessage(S_FMT("Lines %d and %d are overlapping", lines[a].line1->getIndex(), lines[a].line2->getIndex()));
+}
+
+CONSOLE_COMMAND(m_check_all, 0, true)
+{
+	theConsole->execute("m_check_missing_tex");
+	theConsole->execute("m_check_special_tags");
+	theConsole->execute("m_check_intersecting_lines");
+	theConsole->execute("m_check_overlapping_lines");
 }
 
 #pragma endregion

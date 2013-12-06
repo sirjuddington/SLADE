@@ -279,6 +279,7 @@
     <ClCompile Include="src\lzma\C\XzEnc.c" />
     <ClCompile Include="src\lzma\C\XzIn.c" />
     <ClCompile Include="src\Map3DPrefsPanel.cpp" />
+    <ClCompile Include="src\MapChecks.cpp" />
     <ClCompile Include="src\MapDisplayPrefsPanel.cpp" />
     <ClCompile Include="src\MapEditor.cpp" />
     <ClCompile Include="src\MapEditorConfigDialog.cpp" />
@@ -454,6 +455,7 @@
     <ClInclude Include="src\BZip2Archive.h" />
     <ClInclude Include="src\bzip2\bzlib.h" />
     <ClInclude Include="src\bzip2\bzlib_private.h" />
+    <ClInclude Include="src\MapChecks.h" />
     <ClInclude Include="src\cl_notebook_art\cl_aui_notebook_art.h" />
     <ClInclude Include="src\CodePages.h" />
     <ClInclude Include="src\ColorimetryPrefsPanel.h" />

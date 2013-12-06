@@ -26,6 +26,8 @@ TODO List ---------------------------------------------------------------
 	- Invalid sector references (maybe not, shouldn't really happen)
 	- Intersecting lines
 	- Overlapping lines
+	- Stuck things
+	- Unknown textures/specials/things
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
 
