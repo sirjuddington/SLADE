@@ -1117,6 +1117,9 @@
     <ClCompile Include="src\MapChecks.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\MobjPropertyList.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2008,6 +2011,9 @@
     <ClInclude Include="src\MapChecksDialog.h" />
     <ClInclude Include="src\MapChecks.h">
       <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MobjPropertyList.h">
+      <Filter>Map Editor\SLADEMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

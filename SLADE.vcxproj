@@ -297,6 +297,7 @@
     <ClCompile Include="src\MathStuff.cpp" />
     <ClCompile Include="src\MCAnimations.cpp" />
     <ClCompile Include="src\MIDIPlayer.cpp" />
+    <ClCompile Include="src\MobjPropertyList.cpp" />
     <ClCompile Include="src\ModifyOffsetsDialog.cpp" />
     <ClCompile Include="src\MOPGProperty.cpp" />
     <ClCompile Include="src\mus2mid\mus2mid.cpp" />
@@ -581,6 +582,7 @@
     <ClInclude Include="src\MCOverlay.h" />
     <ClInclude Include="src\MIDIPlayer.h" />
     <ClInclude Include="src\MiscFormats.h" />
+    <ClInclude Include="src\MobjPropertyList.h" />
     <ClInclude Include="src\ModelFormats.h" />
     <ClInclude Include="src\ModifyOffsetsDialog.h" />
     <ClInclude Include="src\MOPGProperty.h" />
