@@ -135,6 +135,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	edit_state = 0;
 	edit_rotate = false;
 	anim_help_fade = 0;
+	panning = false;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -1454,7 +1455,7 @@ bool MapCanvas::update2d(double mult)
 	renderer_2d->setScale(view_scale_inter);
 
 	// Check if framerate shouldn't be throttled
-	if (mouse_state == MSTATE_SELECTION || mouse_state == MSTATE_PANNING || view_anim || anim_mode_crossfade)
+	if (mouse_state == MSTATE_SELECTION || panning || view_anim || anim_mode_crossfade)
 		return true;
 	else
 		return false;
@@ -2340,10 +2341,10 @@ void MapCanvas::keyBinds2dView(string name)
 		viewFitToMap();
 
 	// Pan view
-	else if (name == "me2d_pan_view" && mouse_state == MSTATE_NORMAL)
+	else if (name == "me2d_pan_view")
 	{
 		mouse_downpos.set(mouse_pos);
-		mouse_state = MSTATE_PANNING;
+		panning = true;
 		editor->clearHilight();
 		SetCursor(wxCURSOR_SIZING);
 	}
@@ -2824,9 +2825,9 @@ void MapCanvas::keyBinds3d(string name)
 
 void MapCanvas::onKeyBindRelease(string name)
 {
-	if (name == "me2d_pan_view" && mouse_state == MSTATE_PANNING)
+	if (name == "me2d_pan_view" && panning)
 	{
-		mouse_state = MSTATE_NORMAL;
+		panning = false;
 		editor->updateHilight(mouse_pos_m);
 		SetCursor(wxNullCursor);
 	}
@@ -3348,7 +3349,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	}
 
 	// Any other mouse button (let keybind system handle it)
-	else if (mouse_state == MSTATE_NORMAL)
+	else// if (mouse_state == MSTATE_NORMAL)
 		KeyBind::keyPressed(keypress_t(KeyBind::mbName(e.GetButton()), e.AltDown(), e.CmdDown(), e.ShiftDown()));
 
 	// Set focus
@@ -3500,7 +3501,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 	}
 
 	// Panning
-	if (mouse_state == MSTATE_PANNING)
+	if (panning)
 		pan((mouse_pos.x - e.GetX()) / view_scale, -((mouse_pos.y - e.GetY()) / view_scale));
 
 	// Update mouse variables
@@ -3622,9 +3623,9 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 void MapCanvas::onMouseLeave(wxMouseEvent& e)
 {
 	// Stop panning
-	if (mouse_state == MSTATE_PANNING)
+	if (panning)
 	{
-		mouse_state = MSTATE_NORMAL;
+		panning = false;
 		SetCursor(wxNullCursor);
 	}
 
