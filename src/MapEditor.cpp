@@ -297,6 +297,8 @@ void MapEditor::setEditMode(int mode)
 	case MODE_3D:		addEditorMessage("3d mode"); break;
 	default: break;
 	};
+
+	updateStatusText();
 }
 
 void MapEditor::setSectorEditMode(int mode)
@@ -313,6 +315,8 @@ void MapEditor::setSectorEditMode(int mode)
 		addEditorMessage("Sectors mode (Floors)");
 	else
 		addEditorMessage("Sectors mode (Ceilings)");
+
+	updateStatusText();
 }
 
 bool MapEditor::openMap(Archive::mapdesc_t map)
@@ -350,6 +354,8 @@ bool MapEditor::openMap(Archive::mapdesc_t map)
 
 	link_3d_light = true;
 	link_3d_offset = true;
+
+	updateStatusText();
 
 	return true;
 }
@@ -1227,15 +1233,18 @@ void MapEditor::incrementGrid()
 		gridsize = 20;
 
 	addEditorMessage(S_FMT("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
+	updateStatusText();
 }
 
 void MapEditor::decrementGrid()
 {
 	gridsize--;
-	if (gridsize < 0)
-		gridsize = 0;
+	int mingrid = (map.currentFormat() == MAP_UDMF) ? 0 : 4;
+	if (gridsize < mingrid)
+		gridsize = mingrid;
 
 	addEditorMessage(S_FMT("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
+	updateStatusText();
 }
 
 double MapEditor::snapToGrid(double position)
@@ -4125,6 +4134,46 @@ void MapEditor::updateDisplay()
 		canvas->updateInfoOverlay();
 		canvas->Refresh();
 	}
+}
+
+void MapEditor::updateStatusText()
+{
+	// Edit mode
+	string mode = "Mode: ";
+	switch (edit_mode)
+	{
+	case MODE_VERTICES: mode += "Vertices"; break;
+	case MODE_LINES: mode += "Lines"; break;
+	case MODE_SECTORS: mode += "Sectors"; break;
+	case MODE_THINGS: mode += "Things"; break;
+	case MODE_3D: mode += "3D"; break;
+	}
+
+	if (edit_mode == MODE_SECTORS)
+	{
+		switch (sector_mode)
+		{
+		case SECTOR_BOTH: mode += " (Normal)"; break;
+		case SECTOR_FLOOR: mode += " (Floors)"; break;
+		case SECTOR_CEILING: mode += " (Ceilings)"; break;
+		}
+	}
+
+	theMapEditor->SetStatusText(mode, 1);
+
+	// Grid
+	string grid;
+	if (gridSize() < 1)
+		grid = S_FMT("Grid: %1.2fx%1.2f", gridSize(), gridSize());
+	else
+		grid = S_FMT("Grid: %dx%d", (int)gridSize(), (int)gridSize());
+
+	if (grid_snap)
+		grid += " (Snapping ON)";
+	else
+		grid += " (Snapping OFF)";
+
+	theMapEditor->SetStatusText(grid, 2);
 }
 
 #pragma region UNDO / REDO

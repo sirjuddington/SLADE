@@ -255,7 +255,9 @@ void MapEditorWindow::setupLayout()
 
 
 	// Status bar
-	CreateStatusBar();
+	CreateStatusBar(4);
+	int status_widths[4] = { -1, 160, 180, 160 };
+	SetStatusWidths(4, status_widths);
 
 	// -- Console Panel --
 	ConsolePanel* panel_console = new ConsolePanel(this, -1);

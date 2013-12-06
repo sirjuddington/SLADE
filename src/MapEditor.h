@@ -275,6 +275,7 @@ public:
 	string	getModeString();
 	bool	handleKeyBind(string key, fpoint2_t position);
 	void	updateDisplay();
+	void	updateStatusText();
 };
 
 #endif//__MAP_EDITOR_H__
