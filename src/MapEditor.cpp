@@ -1333,8 +1333,13 @@ void MapEditor::doMove(fpoint2_t mouse_pos)
 	if (move_items.size() == 1 && (edit_mode == MODE_VERTICES || edit_mode == MODE_THINGS))
 	{
 		// Get new position
-		double nx = snapToGrid(mouse_pos.x);
-		double ny = snapToGrid(mouse_pos.y);
+		double nx = mouse_pos.x;
+		double ny = mouse_pos.y;
+		if (grid_snap)
+		{
+			nx = snapToGrid(nx);
+			ny = snapToGrid(ny);
+		}
 
 		// Update move vector
 		if (edit_mode == MODE_VERTICES)
@@ -1350,7 +1355,10 @@ void MapEditor::doMove(fpoint2_t mouse_pos)
 	double dy = mouse_pos.y - move_origin.y;
 
 	// Update move vector
-	move_vec.set(snapToGrid(dx), snapToGrid(dy));
+	if (grid_snap)
+		move_vec.set(snapToGrid(dx), snapToGrid(dy));
+	else
+		move_vec.set(dx, dy);
 }
 
 void MapEditor::endMove(bool accept)
@@ -3942,6 +3950,17 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		// Decrement grid
 		else if (key == "me2d_grid_dec")
 			decrementGrid();
+
+		// Toggle grid snap
+		else if (key == "me2d_grid_toggle_snap")
+		{
+			grid_snap = !grid_snap;
+			if (grid_snap)
+				addEditorMessage("Grid Snapping On");
+			else
+				addEditorMessage("Grid Snapping Off");
+			updateStatusText();
+		}
 
 		// Select all
 		else if (key == "select_all")

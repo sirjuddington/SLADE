@@ -475,6 +475,7 @@ void KeyBind::initBinds()
 	addBind("me2d_down", keypress_t("down"), "Scroll down", group);
 	addBind("me2d_grid_inc", keypress_t("["), "Increment grid level", group);
 	addBind("me2d_grid_dec", keypress_t("]"), "Decrement grid level", group);
+	addBind("me2d_grid_toggle_snap", keypress_t("G", KPM_SHIFT), "Toggle Grid Snap", group);
 	addBind("me2d_mode_vertices", keypress_t("V"), "Vertices mode", group);
 	addBind("me2d_mode_lines", keypress_t("L"), "Lines mode", group);
 	addBind("me2d_mode_sectors", keypress_t("S"), "Sectors mode", group);
