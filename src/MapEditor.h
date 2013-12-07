@@ -193,7 +193,7 @@ public:
 	// Grid
 	void	incrementGrid();
 	void	decrementGrid();
-	double	snapToGrid(double position);
+	double	snapToGrid(double position, bool force = true);
 
 	// Item moving
 	vector<int>&	movingItems() { return move_items; }

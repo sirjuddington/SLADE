@@ -1247,8 +1247,16 @@ void MapEditor::decrementGrid()
 	updateStatusText();
 }
 
-double MapEditor::snapToGrid(double position)
+double MapEditor::snapToGrid(double position, bool force)
 {
+	if (!force && !grid_snap)
+	{
+		if (map.currentFormat() == MAP_UDMF)
+			return position;
+		else
+			return ceil(position - 0.5);
+	}
+
 	return ceil(position / gridSize() - 0.5) * gridSize();
 }
 

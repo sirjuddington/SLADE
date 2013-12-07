@@ -76,6 +76,7 @@ CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 CVAR(Bool, map_show_help, true, CVAR_SAVE)
+CVAR(Int, map_crosshair, 0, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -525,6 +526,59 @@ void MapCanvas::drawGrid()
 	}
 
 	glDisable(GL_LINE_STIPPLE);
+
+	// Draw crosshair if needed
+	if (map_crosshair > 0)
+	{
+		double x = editor->snapToGrid(mouse_pos_m.x, false);
+		double y = editor->snapToGrid(mouse_pos_m.y, false);
+		rgba_t col = ColourConfiguration::getColour("map_64grid");
+
+		// Small
+		glLineWidth(2.0f);
+		if (map_crosshair == 1)
+		{
+			col = col.ampf(1.0f, 1.0f, 1.0f, 2.0f);
+			rgba_t col2 = col.ampf(1.0f, 1.0f, 1.0f, 0.0f);
+			double size = editor->gridSize();
+			double one = 1.0 / view_scale_inter;
+
+			glBegin(GL_LINES);
+			col.set_gl(false);
+			glVertex2d(x + one, y);
+			col2.set_gl(false);
+			glVertex2d(x + size, y);
+
+			col.set_gl(false);
+			glVertex2d(x - one, y);
+			col2.set_gl(false);
+			glVertex2d(x - size, y);
+
+			col.set_gl(false);
+			glVertex2d(x, y + one);
+			col2.set_gl(false);
+			glVertex2d(x, y + size);
+
+			col.set_gl(false);
+			glVertex2d(x, y - one);
+			col2.set_gl(false);
+			glVertex2d(x, y - size);
+			glEnd();
+		}
+
+		// Full
+		else if (map_crosshair == 2)
+		{
+			col.set_gl();
+
+			glBegin(GL_LINES);
+			glVertex2d(x, view_tl.y);
+			glVertex2d(x, view_br.y);
+			glVertex2d(view_tl.x, y);
+			glVertex2d(view_br.x, y);
+			glEnd();
+		}
+	}
 }
 
 void MapCanvas::drawEditorMessages()
