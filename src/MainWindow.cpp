@@ -392,6 +392,7 @@ void MainWindow::createStartPage()
 	ArchiveEntry* entry_html = res_archive->entryAtPath("html/startpage.htm");
 	ArchiveEntry* entry_logo = res_archive->entryAtPath("logo.png");
 	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
+	ArchiveEntry* entry_boxback = res_archive->entryAtPath("html/box-title-back.png");
 
 	// Can't do anything without html entry
 	if (!entry_html)
@@ -430,11 +431,7 @@ void MainWindow::createStartPage()
 	for (unsigned a = 0; a < 11; a++)
 	{
 		if (a >= theArchiveManager->numRecentFiles())
-		{
-			recent += "<br/>\n";
-			continue;
-		}
-			//break;	// No more recent files
+			break;	// No more recent files
 
 		// Add line break if needed
 		if (a > 0) recent += "<br/>\n";
@@ -449,6 +446,7 @@ void MainWindow::createStartPage()
 
 	// Write html and images to temp folder
 	if (entry_logo) entry_logo->exportFile(appPath("logo.png", DIR_TEMP));
+	if (entry_boxback) entry_boxback->exportFile(appPath("box-title-back.png", DIR_TEMP));
 	string html_file = appPath("startpage.htm", DIR_TEMP);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
