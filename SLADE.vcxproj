@@ -280,7 +280,7 @@
     <ClCompile Include="src\lzma\C\XzIn.c" />
     <ClCompile Include="src\Map3DPrefsPanel.cpp" />
     <ClCompile Include="src\MapChecks.cpp" />
-    <ClCompile Include="src\MapChecksDialog.cpp" />
+    <ClCompile Include="src\MapChecksPanel.cpp" />
     <ClCompile Include="src\MapDisplayPrefsPanel.cpp" />
     <ClCompile Include="src\MapEditor.cpp" />
     <ClCompile Include="src\MapEditorConfigDialog.cpp" />
@@ -563,7 +563,7 @@
     <ClInclude Include="src\lzma\C\XzEnc.h" />
     <ClInclude Include="src\Map3DPrefsPanel.h" />
     <ClInclude Include="src\MapChecks.h" />
-    <ClInclude Include="src\MapChecksDialog.h" />
+    <ClInclude Include="src\MapChecksPanel.h" />
     <ClInclude Include="src\MapDisplayPrefsPanel.h" />
     <ClInclude Include="src\MapEditor.h" />
     <ClInclude Include="src\MapEditorConfigDialog.h" />

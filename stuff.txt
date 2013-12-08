@@ -19,17 +19,12 @@ TODO List ---------------------------------------------------------------
 
 --- Map Editor 3.1 ---
 - Checks:
-	- When error is found, zoom/scroll to the error in question and bring up fullscreen overlay
-		asking whether to fix or not (and possibly fix options)
-	- Missing textures
-	- Specials with 0 tag that require a tag
-	- Invalid sector references (maybe not, shouldn't really happen)
-	- Intersecting lines
-	- Overlapping lines
 	- Stuck things
 	- Unknown textures/specials/things
+	- Mismatching tags
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
+- Show line lenghts on line draw, object edit
 
 
 --- Other 3.1 ---
@@ -53,6 +48,16 @@ TODO List ---------------------------------------------------------------
 	- Error pane rather than just displaying error output
 	- Ability to edit/compile library scripts
 	- Other script types (DIALOGUE etc)
+
+
+--- Features for 3.1.1 ---
+- Resource editor:
+	- Edit entries externally
+- Map editor:
+	- Slopes preview
+	- Offsets/scaling copy+paste
+	- (Z)MAPINFO parsing for sky texture
+	- Line transparency (udmf+zdoom)
 
 
 --- Editor Features ---

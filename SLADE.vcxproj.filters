@@ -1113,12 +1113,14 @@
     <ClCompile Include="src\ResourceArchiveChooser.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
-    <ClCompile Include="src\MapChecksDialog.cpp" />
     <ClCompile Include="src\MapChecks.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\MobjPropertyList.cpp">
       <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MapChecksPanel.cpp">
+      <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2008,12 +2010,14 @@
     <ClInclude Include="src\ResourceArchiveChooser.h">
       <Filter>UI Elements</Filter>
     </ClInclude>
-    <ClInclude Include="src\MapChecksDialog.h" />
     <ClInclude Include="src\MapChecks.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\MobjPropertyList.h">
       <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MapChecksPanel.h">
+      <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
