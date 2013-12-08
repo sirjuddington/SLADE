@@ -741,6 +741,11 @@ void MapEditorWindow::refreshToolBar()
 	toolbar->Refresh();
 }
 
+void MapEditorWindow::editObjectProperties(vector<MapObject*>& objects)
+{
+	map_canvas->editObjectProperties(objects);
+}
+
 void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 {
 	// Get panel

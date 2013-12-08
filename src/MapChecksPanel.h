@@ -18,6 +18,9 @@ private:
 	wxListBox*		lb_errors;
 	wxButton*		btn_check;
 	wxStaticText*	label_status;
+	wxButton*		btn_fix1;
+	wxButton*		btn_fix2;
+	wxButton*		btn_edit_object;
 
 public:
 	MapChecksPanel(wxWindow* parent, SLADEMap* map);
@@ -32,6 +35,9 @@ public:
 	// Events
 	void	onBtnCheck(wxCommandEvent& e);
 	void	onListBoxItem(wxCommandEvent& e);
+	void	onBtnFix1(wxCommandEvent& e);
+	void	onBtnFix2(wxCommandEvent& e);
+	void	onBtnEditObject(wxCommandEvent& e);
 };
 
 #endif//__MAP_CHECKS_DIALOG_H__

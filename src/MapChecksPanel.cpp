@@ -19,7 +19,7 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	SetSizer(sizer);
 
 	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
-	sizer->Add(gb_sizer, 0, wxEXPAND|wxALL, 10);
+	sizer->Add(gb_sizer, 0, wxEXPAND|wxALL, 4);
 
 	// Check missing textures
 	cb_missing_tex = new wxCheckBox(this, -1, "Check for missing textures");
@@ -39,11 +39,21 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 
 	// Error list
 	lb_errors = new wxListBox(this, -1);
-	sizer->Add(lb_errors, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+	sizer->Add(lb_errors, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Fix buttons
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	btn_edit_object = new wxButton(this, -1, "Edit Object Properties");
+	hbox->Add(btn_edit_object, 0, wxEXPAND|wxRIGHT, 4);
+	btn_fix1 = new wxButton(this, -1, "(Fix1)");
+	hbox->Add(btn_fix1, 0, wxEXPAND|wxRIGHT, 4);
+	btn_fix2 = new wxButton(this, -1, "(Fix2)");
+	hbox->Add(btn_fix2, 0, wxEXPAND);
 
 	// Status text
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 	label_status = new wxStaticText(this, -1, "");
 	hbox->Add(label_status, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 
@@ -54,12 +64,19 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	// Bind events
 	btn_check->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapChecksPanel::onBtnCheck, this);
 	lb_errors->Bind(wxEVT_LISTBOX, &MapChecksPanel::onListBoxItem, this);
+	btn_edit_object->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapChecksPanel::onBtnEditObject, this);
+	btn_fix1->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapChecksPanel::onBtnFix1, this);
+	btn_fix2->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapChecksPanel::onBtnFix2, this);
 
 	// Check all by default
 	cb_missing_tex->SetValue(true);
 	cb_special_tags->SetValue(true);
 	cb_intersecting->SetValue(true);
 	cb_overlapping->SetValue(true);
+
+	btn_fix1->Show(false);
+	btn_fix2->Show(false);
+	btn_edit_object->Enable(false);
 }
 
 MapChecksPanel::~MapChecksPanel()
@@ -144,6 +161,9 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 	lb_errors->Show(false);
 	lb_errors->Clear();
 	objects.clear();
+	btn_fix1->Show(false);
+	btn_fix2->Show(false);
+	btn_edit_object->Enable(false);
 
 	if (cb_missing_tex->GetValue())
 		checkMissingTextures();
@@ -189,5 +209,27 @@ void MapChecksPanel::onListBoxItem(wxCommandEvent& e)
 		}
 
 		theMapEditor->mapEditor().showItem(obj->getIndex());
+		btn_edit_object->Enable(true);
+	}
+}
+
+void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
+{
+
+}
+
+void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
+{
+
+}
+
+void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
+{
+	int selected = lb_errors->GetSelection();
+	if (selected >= 0 && selected < (int)objects.size())
+	{
+		vector<MapObject*> list;
+		list.push_back(objects[selected]);
+		theMapEditor->editObjectProperties(list);
 	}
 }

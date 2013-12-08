@@ -65,6 +65,7 @@ public:
 	void		closeMap();
 	void		forceRefresh(bool renderer = false);
 	void		refreshToolBar();
+	void		editObjectProperties(vector<MapObject*>& objects);
 
 	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
 	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }
