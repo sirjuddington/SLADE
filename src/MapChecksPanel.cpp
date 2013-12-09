@@ -37,6 +37,18 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_overlapping = new wxCheckBox(this, -1, "Check for overlapping lines");
 	gb_sizer->Add(cb_overlapping, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
+	// Check unknown textures
+	cb_unknown_tex = new wxCheckBox(this, -1, "Check for unknown wall textures");
+	gb_sizer->Add(cb_unknown_tex, wxGBPosition(2, 0), wxDefaultSpan, wxEXPAND);
+
+	// Check unknown textures
+	cb_unknown_flats = new wxCheckBox(this, -1, "Check for unknown flats");
+	gb_sizer->Add(cb_unknown_flats, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
+
+	// Check overlapping things
+	cb_overlapping_things = new wxCheckBox(this, -1, "Check for overlapping things");
+	gb_sizer->Add(cb_overlapping_things, wxGBPosition(3, 0), wxDefaultSpan, wxEXPAND);
+
 	// Error list
 	lb_errors = new wxListBox(this, -1);
 	sizer->Add(lb_errors, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -73,6 +85,8 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_special_tags->SetValue(true);
 	cb_intersecting->SetValue(true);
 	cb_overlapping->SetValue(true);
+	cb_unknown_flats->SetValue(true);
+	cb_unknown_tex->SetValue(true);
 
 	btn_fix1->Show(false);
 	btn_fix2->Show(false);
@@ -156,6 +170,75 @@ void MapChecksPanel::checkOverlappingLines()
 	}
 }
 
+void MapChecksPanel::checkUnknownTextures()
+{
+	// Do check
+	updateStatusText("Checking for unknown textures...");
+	vector<MapChecks::missing_tex_t> unknown = MapChecks::checkUnknownTextures(map, &(theMapEditor->textureManager()));
+
+	for (unsigned a = 0; a < unknown.size(); a++)
+	{
+		string line = S_FMT("Line %d has unknown ", unknown[a].line->getIndex());
+		switch (unknown[a].part)
+		{
+		case TEX_FRONT_UPPER:
+			line += S_FMT("front upper texture \"%s\"", unknown[a].line->s1()->stringProperty("texturetop"));
+			break;
+		case TEX_FRONT_MIDDLE:
+			line += S_FMT("front middle texture \"%s\"", unknown[a].line->s1()->stringProperty("texturemiddle"));
+			break;
+		case TEX_FRONT_LOWER:
+			S_FMT("front lower texture \"%s\"", unknown[a].line->s1()->stringProperty("texturebottom"));
+			break;
+		case TEX_BACK_UPPER:
+			S_FMT("back upper texture \"%s\"", unknown[a].line->s2()->stringProperty("texturetop"));
+			break;
+		case TEX_BACK_MIDDLE:
+			S_FMT("back middle texture \"%s\"", unknown[a].line->s2()->stringProperty("texturemiddle"));
+			break;
+		case TEX_BACK_LOWER:
+			S_FMT("back lower texture \"%s\"", unknown[a].line->s2()->stringProperty("texturebottom"));
+			break;
+		default: break;
+		}
+
+		lb_errors->Append(line);
+		objects.push_back(unknown[a].line);
+	}
+}
+
+void MapChecksPanel::checkUnknownFlats()
+{
+	// Do check
+	updateStatusText("Checking for unknown flats...");
+	vector<MapChecks::unknown_ftex_t> unknown = MapChecks::checkUnknownFlats(map, &(theMapEditor->textureManager()));
+
+	for (unsigned a = 0; a < unknown.size(); a++)
+	{
+		if (unknown[a].floor)
+			lb_errors->Append(S_FMT("Sector %d has unknown floor texture \"%s\"", unknown[a].sector->getIndex(), unknown[a].sector->getFloorTex()));
+		else
+			lb_errors->Append(S_FMT("Sector %d has unknown ceiling texture \"%s\"", unknown[a].sector->getIndex(), unknown[a].sector->getCeilingTex()));
+
+		objects.push_back(unknown[a].sector);
+	}
+}
+
+void MapChecksPanel::checkOverlappingThings()
+{
+	// Do check
+	updateStatusText("Checking for overlapping things...");
+	vector<MapChecks::overlap_thing_t> things = MapChecks::checkOverlappingThings(map);
+
+	for (unsigned a = 0; a < things.size(); a++)
+	{
+		lb_errors->Append(S_FMT("Things %d and %d are overlapping", things[a].thing1->getIndex(), things[a].thing2->getIndex()));
+		objects.push_back(things[a].thing1);
+	}
+}
+
+
+
 void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 {
 	lb_errors->Show(false);
@@ -176,6 +259,15 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 
 	if (cb_overlapping->GetValue())
 		checkOverlappingLines();
+
+	if (cb_unknown_tex->GetValue())
+		checkUnknownTextures();
+
+	if (cb_unknown_flats->GetValue())
+		checkUnknownFlats();
+
+	if (cb_overlapping_things->GetValue())
+		checkOverlappingThings();
 
 	lb_errors->Show(true);
 

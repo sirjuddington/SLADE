@@ -15,6 +15,9 @@ private:
 	wxCheckBox*		cb_special_tags;
 	wxCheckBox*		cb_intersecting;
 	wxCheckBox*		cb_overlapping;
+	wxCheckBox*		cb_unknown_tex;
+	wxCheckBox*		cb_unknown_flats;
+	wxCheckBox*		cb_overlapping_things;
 	wxListBox*		lb_errors;
 	wxButton*		btn_check;
 	wxStaticText*	label_status;
@@ -31,6 +34,9 @@ public:
 	void	checkSpecialTags();
 	void	checkIntersectingLines();
 	void	checkOverlappingLines();
+	void	checkUnknownTextures();
+	void	checkUnknownFlats();
+	void	checkOverlappingThings();
 
 	// Events
 	void	onBtnCheck(wxCommandEvent& e);
