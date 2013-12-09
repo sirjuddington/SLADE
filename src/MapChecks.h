@@ -2,59 +2,35 @@
 #ifndef __MAP_CHECKS_H__
 #define __MAP_CHECKS_H__
 
-class MapLine;
-class MapThing;
-class MapSector;
+class SLADEMap;
 class MapTextureManager;
-namespace MapChecks
+class MapObject;
+
+class MapCheck
 {
-	struct missing_tex_t
-	{
-		MapLine*	line;
-		int			part;
-		missing_tex_t(MapLine* line, int part) { this->line = line; this->part = part; }
-	};
+protected:
+	SLADEMap* map;
 
-	struct intersect_line_t
-	{
-		MapLine* line1;
-		MapLine* line2;
-		intersect_line_t(MapLine* line1, MapLine* line2)
-		{
-			this->line1 = line1;
-			this->line2 = line2;
-		}
-	};
+public:
+	MapCheck(SLADEMap* map) { this->map = map; }
+	~MapCheck() {}
 
-	struct overlap_thing_t
-	{
-		MapThing*	thing1;
-		MapThing*	thing2;
-		overlap_thing_t(MapThing* thing1, MapThing* thing2)
-		{
-			this->thing1 = thing1;
-			this->thing2 = thing2;
-		}
-	};
+	virtual void		doCheck() = 0;
+	virtual unsigned	nProblems() = 0;
+	virtual string		problemDesc(unsigned index) = 0;
+	virtual bool		fixProblem(unsigned index, unsigned fix_type) = 0;
+	virtual MapObject*	getObject(unsigned index) = 0;
+	virtual string		progressText() { return "Checking..."; }
+	virtual string		fixText(unsigned fix_type) { return ""; }
 
-	struct unknown_ftex_t
-	{
-		MapSector*	sector;
-		bool		floor;
-		unknown_ftex_t(MapSector* sector, bool floor)
-		{
-			this->sector = sector;
-			this->floor = floor;
-		}
-	};
-
-	vector<missing_tex_t>		checkMissingTextures(SLADEMap* map);
-	vector<MapLine*>			checkSpecialTags(SLADEMap* map);
-	vector<intersect_line_t>	checkIntersectingLines(SLADEMap* map);
-	vector<intersect_line_t>	checkOverlappingLines(SLADEMap* map);
-	vector<overlap_thing_t>		checkOverlappingThings(SLADEMap* map);
-	vector<missing_tex_t>		checkUnknownTextures(SLADEMap* map, MapTextureManager* texman);
-	vector<unknown_ftex_t>		checkUnknownFlats(SLADEMap* map, MapTextureManager* texman);
-}
+	static MapCheck*	missingTextureCheck(SLADEMap* map);
+	static MapCheck*	specialTagCheck(SLADEMap* map);
+	static MapCheck*	intersectingLineCheck(SLADEMap* map);
+	static MapCheck*	overlappingLineCheck(SLADEMap* map);
+	static MapCheck*	overlappingThingCheck(SLADEMap* map);
+	static MapCheck*	unknownTextureCheck(SLADEMap* map, MapTextureManager* texman);
+	static MapCheck*	unknownFlatCheck(SLADEMap* map, MapTextureManager* texman);
+	static MapCheck*	unknownThingTypeCheck(SLADEMap* map);
+};
 
 #endif//__MAP_CHECKS_H__

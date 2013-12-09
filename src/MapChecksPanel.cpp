@@ -45,9 +45,13 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_unknown_flats = new wxCheckBox(this, -1, "Check for unknown flats");
 	gb_sizer->Add(cb_unknown_flats, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
 
+	// Check unknown thing types
+	cb_unknown_things = new wxCheckBox(this, -1, "Check for unknown thing types");
+	gb_sizer->Add(cb_unknown_things, wxGBPosition(3, 0), wxDefaultSpan, wxEXPAND);
+
 	// Check overlapping things
 	cb_overlapping_things = new wxCheckBox(this, -1, "Check for overlapping things");
-	gb_sizer->Add(cb_overlapping_things, wxGBPosition(3, 0), wxDefaultSpan, wxEXPAND);
+	gb_sizer->Add(cb_overlapping_things, wxGBPosition(3, 1), wxDefaultSpan, wxEXPAND);
 
 	// Error list
 	lb_errors = new wxListBox(this, -1);
@@ -87,6 +91,7 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_overlapping->SetValue(true);
 	cb_unknown_flats->SetValue(true);
 	cb_unknown_tex->SetValue(true);
+	cb_unknown_things->SetValue(true);
 
 	btn_fix1->Show(false);
 	btn_fix2->Show(false);
@@ -104,170 +109,56 @@ void MapChecksPanel::updateStatusText(string text)
 	Refresh();
 }
 
-void MapChecksPanel::checkMissingTextures()
-{
-	// Do check
-	updateStatusText("Checking for missing textures...");
-	vector<MapChecks::missing_tex_t> missing = MapChecks::checkMissingTextures(map);
-
-	for (unsigned a = 0; a < missing.size(); a++)
-	{
-		string line = S_FMT("Line %d missing ", missing[a].line->getIndex());
-		switch (missing[a].part)
-		{
-		case TEX_FRONT_UPPER: line += "front upper texture"; break;
-		case TEX_FRONT_MIDDLE: line += "front middle texture"; break;
-		case TEX_FRONT_LOWER: line += "front lower texture"; break;
-		case TEX_BACK_UPPER: line += "back upper texture"; break;
-		case TEX_BACK_MIDDLE: line += "back middle texture"; break;
-		case TEX_BACK_LOWER: line += "back lower texture"; break;
-		default: break;
-		}
-
-		lb_errors->Append(line);
-		objects.push_back(missing[a].line);
-	}
-}
-
-void MapChecksPanel::checkSpecialTags()
-{
-	// Do check
-	updateStatusText("Checking for missing special tags...");
-	vector<MapLine*> lines = MapChecks::checkSpecialTags(map);
-
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		int special = lines[a]->getSpecial();
-		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
-		lb_errors->Append(S_FMT("Line %d: Special %d (%s) requires a tag", lines[a]->getIndex(), special, as->getName()));
-		objects.push_back(lines[a]);
-	}
-}
-
-void MapChecksPanel::checkIntersectingLines()
-{
-	// Do check
-	updateStatusText("Checking for intersecting lines...");
-	vector<MapChecks::intersect_line_t> lines = MapChecks::checkIntersectingLines(map);
-
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		lb_errors->Append(S_FMT("Lines %d and %d are intersecting", lines[a].line1->getIndex(), lines[a].line2->getIndex()));
-		objects.push_back(lines[a].line1);
-	}
-}
-
-void MapChecksPanel::checkOverlappingLines()
-{
-	// Do check
-	updateStatusText("Checking for overlapping lines...");
-	vector<MapChecks::intersect_line_t> lines = MapChecks::checkOverlappingLines(map);
-
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		lb_errors->Append(S_FMT("Lines %d and %d are overlapping", lines[a].line1->getIndex(), lines[a].line2->getIndex()));
-		objects.push_back(lines[a].line1);
-	}
-}
-
-void MapChecksPanel::checkUnknownTextures()
-{
-	// Do check
-	updateStatusText("Checking for unknown textures...");
-	vector<MapChecks::missing_tex_t> unknown = MapChecks::checkUnknownTextures(map, &(theMapEditor->textureManager()));
-
-	for (unsigned a = 0; a < unknown.size(); a++)
-	{
-		string line = S_FMT("Line %d has unknown ", unknown[a].line->getIndex());
-		switch (unknown[a].part)
-		{
-		case TEX_FRONT_UPPER:
-			line += S_FMT("front upper texture \"%s\"", unknown[a].line->s1()->stringProperty("texturetop"));
-			break;
-		case TEX_FRONT_MIDDLE:
-			line += S_FMT("front middle texture \"%s\"", unknown[a].line->s1()->stringProperty("texturemiddle"));
-			break;
-		case TEX_FRONT_LOWER:
-			S_FMT("front lower texture \"%s\"", unknown[a].line->s1()->stringProperty("texturebottom"));
-			break;
-		case TEX_BACK_UPPER:
-			S_FMT("back upper texture \"%s\"", unknown[a].line->s2()->stringProperty("texturetop"));
-			break;
-		case TEX_BACK_MIDDLE:
-			S_FMT("back middle texture \"%s\"", unknown[a].line->s2()->stringProperty("texturemiddle"));
-			break;
-		case TEX_BACK_LOWER:
-			S_FMT("back lower texture \"%s\"", unknown[a].line->s2()->stringProperty("texturebottom"));
-			break;
-		default: break;
-		}
-
-		lb_errors->Append(line);
-		objects.push_back(unknown[a].line);
-	}
-}
-
-void MapChecksPanel::checkUnknownFlats()
-{
-	// Do check
-	updateStatusText("Checking for unknown flats...");
-	vector<MapChecks::unknown_ftex_t> unknown = MapChecks::checkUnknownFlats(map, &(theMapEditor->textureManager()));
-
-	for (unsigned a = 0; a < unknown.size(); a++)
-	{
-		if (unknown[a].floor)
-			lb_errors->Append(S_FMT("Sector %d has unknown floor texture \"%s\"", unknown[a].sector->getIndex(), unknown[a].sector->getFloorTex()));
-		else
-			lb_errors->Append(S_FMT("Sector %d has unknown ceiling texture \"%s\"", unknown[a].sector->getIndex(), unknown[a].sector->getCeilingTex()));
-
-		objects.push_back(unknown[a].sector);
-	}
-}
-
-void MapChecksPanel::checkOverlappingThings()
-{
-	// Do check
-	updateStatusText("Checking for overlapping things...");
-	vector<MapChecks::overlap_thing_t> things = MapChecks::checkOverlappingThings(map);
-
-	for (unsigned a = 0; a < things.size(); a++)
-	{
-		lb_errors->Append(S_FMT("Things %d and %d are overlapping", things[a].thing1->getIndex(), things[a].thing2->getIndex()));
-		objects.push_back(things[a].thing1);
-	}
-}
-
-
 
 void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 {
+	MapTextureManager* texman = &(theMapEditor->textureManager());
+
+	// Clear interface
 	lb_errors->Show(false);
 	lb_errors->Clear();
-	objects.clear();
 	btn_fix1->Show(false);
 	btn_fix2->Show(false);
 	btn_edit_object->Enable(false);
+	check_items.clear();
 
+	// Clear previous checks
+	for (unsigned a = 0; a < active_checks.size(); a++)
+		delete active_checks[a];
+	active_checks.clear();
+
+	// Setup checks
 	if (cb_missing_tex->GetValue())
-		checkMissingTextures();
-
+		active_checks.push_back(MapCheck::missingTextureCheck(map));
 	if (cb_special_tags->GetValue())
-		checkSpecialTags();
-
+		active_checks.push_back(MapCheck::specialTagCheck(map));
 	if (cb_intersecting->GetValue())
-		checkIntersectingLines();
-
+		active_checks.push_back(MapCheck::intersectingLineCheck(map));
 	if (cb_overlapping->GetValue())
-		checkOverlappingLines();
-
+		active_checks.push_back(MapCheck::overlappingLineCheck(map));
 	if (cb_unknown_tex->GetValue())
-		checkUnknownTextures();
-
+		active_checks.push_back(MapCheck::unknownTextureCheck(map, texman));
 	if (cb_unknown_flats->GetValue())
-		checkUnknownFlats();
-
+		active_checks.push_back(MapCheck::unknownFlatCheck(map, texman));
+	if (cb_unknown_things->GetValue())
+		active_checks.push_back(MapCheck::unknownThingTypeCheck(map));
 	if (cb_overlapping_things->GetValue())
-		checkOverlappingThings();
+		active_checks.push_back(MapCheck::overlappingThingCheck(map));
+
+	// Run checks
+	for (unsigned a = 0; a < active_checks.size(); a++)
+	{
+		// Check
+		updateStatusText(active_checks[a]->progressText());
+		active_checks[a]->doCheck();
+
+		// Add results to list
+		for (unsigned b = 0; b < active_checks[a]->nProblems(); b++)
+		{
+			lb_errors->Append(active_checks[a]->problemDesc(b));
+			check_items.push_back(check_item_t(active_checks[a], b));
+		}
+	}
 
 	lb_errors->Show(true);
 
@@ -280,9 +171,9 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 void MapChecksPanel::onListBoxItem(wxCommandEvent& e)
 {
 	int selected = lb_errors->GetSelection();
-	if (selected >= 0 && selected < (int)objects.size())
+	if (selected >= 0 && selected < (int)check_items.size())
 	{
-		MapObject* obj = objects[selected];
+		MapObject* obj = check_items[selected].check->getObject(check_items[selected].index);
 		switch (obj->getObjType())
 		{
 		case MOBJ_VERTEX:
@@ -318,10 +209,10 @@ void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 {
 	int selected = lb_errors->GetSelection();
-	if (selected >= 0 && selected < (int)objects.size())
+	if (selected >= 0 && selected < (int)check_items.size())
 	{
 		vector<MapObject*> list;
-		list.push_back(objects[selected]);
+		list.push_back(check_items[selected].check->getObject(check_items[selected].index));
 		theMapEditor->editObjectProperties(list);
 	}
 }

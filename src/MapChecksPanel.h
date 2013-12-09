@@ -3,13 +3,12 @@
 #define __MAP_CHECKS_DIALOG_H__
 
 class SLADEMap;
-class MapObject;
+class MapCheck;
 class MapChecksPanel : public wxPanel
 {
 private:
-	SLADEMap*			map;
-	vector<MapObject*>	objects;
-	vector<fpoint2_t>	positions;
+	SLADEMap*					map;
+	vector<MapCheck*>	active_checks;
 
 	wxCheckBox*		cb_missing_tex;
 	wxCheckBox*		cb_special_tags;
@@ -17,6 +16,7 @@ private:
 	wxCheckBox*		cb_overlapping;
 	wxCheckBox*		cb_unknown_tex;
 	wxCheckBox*		cb_unknown_flats;
+	wxCheckBox*		cb_unknown_things;
 	wxCheckBox*		cb_overlapping_things;
 	wxListBox*		lb_errors;
 	wxButton*		btn_check;
@@ -25,18 +25,23 @@ private:
 	wxButton*		btn_fix2;
 	wxButton*		btn_edit_object;
 
+	struct check_item_t
+	{
+		MapCheck* check;
+		unsigned index;
+		check_item_t(MapCheck* check, unsigned index)
+		{
+			this->check = check;
+			this->index = index;
+		}
+	};
+	vector<check_item_t>	check_items;
+
 public:
 	MapChecksPanel(wxWindow* parent, SLADEMap* map);
 	~MapChecksPanel();
 
 	void	updateStatusText(string text);
-	void	checkMissingTextures();
-	void	checkSpecialTags();
-	void	checkIntersectingLines();
-	void	checkOverlappingLines();
-	void	checkUnknownTextures();
-	void	checkUnknownFlats();
-	void	checkOverlappingThings();
 
 	// Events
 	void	onBtnCheck(wxCommandEvent& e);

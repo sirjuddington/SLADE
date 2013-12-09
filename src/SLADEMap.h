@@ -195,7 +195,7 @@ public:
 	vector<fpoint2_t>	cutLines(double x1, double y1, double x2, double y2);
 	MapVertex*			lineCrossVertex(double x1, double y1, double x2, double y2);
 	void				updateGeometryInfo(long modified_time);
-	bool				linesIntersect(MapLine* line1, MapLine* line2);
+	bool				linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
 
 	// Tags/Ids
 	void	getSectorsByTag(int tag, vector<MapSector*>& list);

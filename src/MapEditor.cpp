@@ -4315,129 +4315,92 @@ CONSOLE_COMMAND(m_show_item, 1, true)
 CONSOLE_COMMAND(m_check_missing_tex, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	vector<MapChecks::missing_tex_t> missing = MapChecks::checkMissingTextures(map);
+	MapCheck* check = MapCheck::missingTextureCheck(map);
 
-	theConsole->logMessage(S_FMT("%d missing textures", missing.size()));
+	theConsole->logMessage(S_FMT("%d missing textures", check->nProblems()));
 
-	for (unsigned a = 0; a < missing.size(); a++)
-	{
-		string line = S_FMT("Line %d missing ", missing[a].line->getIndex());
-		switch (missing[a].part)
-		{
-		case TEX_FRONT_UPPER: line += "front upper texture"; break;
-		case TEX_FRONT_MIDDLE: line += "front middle texture"; break;
-		case TEX_FRONT_LOWER: line += "front lower texture"; break;
-		case TEX_BACK_UPPER: line += "back upper texture"; break;
-		case TEX_BACK_MIDDLE: line += "back middle texture"; break;
-		case TEX_BACK_LOWER: line += "back lower texture"; break;
-		default: break;
-		}
-
-		theConsole->logMessage(line);
-	}
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
 }
 
 CONSOLE_COMMAND(m_check_special_tags, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	vector<MapLine*> lines = MapChecks::checkSpecialTags(map);
+	MapCheck* check = MapCheck::specialTagCheck(map);
+	check->doCheck();
 
-	theConsole->logMessage(S_FMT("%d Line(s) missing tags", lines.size()));
+	theConsole->logMessage(S_FMT("%d Line(s) missing tags", check->nProblems()));
 
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		int special = lines[a]->getSpecial();
-		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
-		theConsole->logMessage(S_FMT("Line %d: Special %d (%s) requires a tag", lines[a]->getIndex(), special, as->getName()));
-	}
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
 }
 
 CONSOLE_COMMAND(m_check_intersecting_lines, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	vector<MapChecks::intersect_line_t> lines = MapChecks::checkIntersectingLines(map);
+	MapCheck* check = MapCheck::intersectingLineCheck(map);
 
-	theConsole->logMessage(S_FMT("%d Line(s) intersecting", lines.size()));
+	theConsole->logMessage(S_FMT("%d Line(s) intersecting", check->nProblems()));
 
-	for (unsigned a = 0; a < lines.size(); a++)
-		theConsole->logMessage(S_FMT("Lines %d and %d are intersecting", lines[a].line1->getIndex(), lines[a].line2->getIndex()));
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
 }
 
 CONSOLE_COMMAND(m_check_overlapping_lines, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	vector<MapChecks::intersect_line_t> lines = MapChecks::checkOverlappingLines(map);
+	MapCheck* check = MapCheck::overlappingLineCheck(map);
 
-	theConsole->logMessage(S_FMT("%d Line(s) overlapping", lines.size()));
+	theConsole->logMessage(S_FMT("%d Line(s) overlapping", check->nProblems()));
 
-	for (unsigned a = 0; a < lines.size(); a++)
-		theConsole->logMessage(S_FMT("Lines %d and %d are overlapping", lines[a].line1->getIndex(), lines[a].line2->getIndex()));
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
 }
 
 CONSOLE_COMMAND(m_check_overlapping_things, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	vector<MapChecks::overlap_thing_t> things = MapChecks::checkOverlappingThings(map);
+	MapCheck* check = MapCheck::overlappingThingCheck(map);
 
-	theConsole->logMessage(S_FMT("%d Thing(s) overlapping", things.size()));
+	theConsole->logMessage(S_FMT("%d Thing(s) overlapping", check->nProblems()));
 
-	for (unsigned a = 0; a < things.size(); a++)
-		theConsole->logMessage(S_FMT("Things %d and %d are overlapping", things[a].thing1->getIndex(), things[a].thing2->getIndex()));
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
 }
 
 CONSOLE_COMMAND(m_check_unknown_textures, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapTextureManager* texman = &(theMapEditor->textureManager());
-	vector<MapChecks::missing_tex_t> unknown = MapChecks::checkUnknownTextures(map, texman);
+	MapCheck* check = MapCheck::unknownTextureCheck(map, texman);
 
-	theConsole->logMessage(S_FMT("%d Unknown wall textures"));
+	theConsole->logMessage(S_FMT("%d Unknown wall textures", check->nProblems()));
 
-	for (unsigned a = 0; a < unknown.size(); a++)
-	{
-		string line = S_FMT("Line %d has unknown ", unknown[a].line->getIndex());
-		switch (unknown[a].part)
-		{
-		case TEX_FRONT_UPPER:
-			line += S_FMT("front upper texture \"%s\"", unknown[a].line->s1()->stringProperty("texturetop"));
-			break;
-		case TEX_FRONT_MIDDLE:
-			line += S_FMT("front middle texture \"%s\"", unknown[a].line->s1()->stringProperty("texturemiddle"));
-			break;
-		case TEX_FRONT_LOWER:
-			S_FMT("front lower texture \"%s\"", unknown[a].line->s1()->stringProperty("texturebottom"));
-			break;
-		case TEX_BACK_UPPER:
-			S_FMT("back upper texture \"%s\"", unknown[a].line->s2()->stringProperty("texturetop"));
-			break;
-		case TEX_BACK_MIDDLE:
-			S_FMT("back middle texture \"%s\"", unknown[a].line->s2()->stringProperty("texturemiddle"));
-			break;
-		case TEX_BACK_LOWER:
-			S_FMT("back lower texture \"%s\"", unknown[a].line->s2()->stringProperty("texturebottom"));
-			break;
-		default: break;
-		}
-
-		theConsole->logMessage(line);
-	}
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
 }
 
 CONSOLE_COMMAND(m_check_unknown_flats, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapTextureManager* texman = &(theMapEditor->textureManager());
-	vector<MapChecks::unknown_ftex_t> unknown = MapChecks::checkUnknownFlats(map, texman);
+	MapCheck* check = MapCheck::unknownFlatCheck(map, texman);
 
-	theConsole->logMessage(S_FMT("%d Unknown flats"));
+	theConsole->logMessage(S_FMT("%d Unknown flats", check->nProblems()));
 
-	for (unsigned a = 0; a < unknown.size(); a++)
-	{
-		if (unknown[a].floor)
-			theConsole->logMessage(S_FMT("Sector %d has unknown floor texture \"%s\"", unknown[a].sector->getIndex(), unknown[a].sector->getFloorTex()));
-		else
-			theConsole->logMessage(S_FMT("Sector %d has unknown ceiling texture \"%s\"", unknown[a].sector->getIndex(), unknown[a].sector->getCeilingTex()));
-	}
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_unknown_things, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::unknownThingTypeCheck(map);
+
+	theConsole->logMessage(S_FMT("%d Unknown thing(s)", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
 }
 
 CONSOLE_COMMAND(m_check_all, 0, true)
@@ -4449,6 +4412,7 @@ CONSOLE_COMMAND(m_check_all, 0, true)
 	theConsole->execute("m_check_overlapping_things");
 	theConsole->execute("m_check_unknown_textures");
 	theConsole->execute("m_check_unknown_flats");
+	theConsole->execute("m_check_unknown_things");
 }
 
 #pragma endregion

@@ -5,3 +5,5 @@
 *.sdf
 *.suo
 *.opensdf
+*.obj
+*.tlog

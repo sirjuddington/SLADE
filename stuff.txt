@@ -20,7 +20,6 @@ TODO List ---------------------------------------------------------------
 --- Map Editor 3.1 ---
 - Checks:
 	- Stuck things
-	- Unknown textures/specials/things
 	- Mismatching tags
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
