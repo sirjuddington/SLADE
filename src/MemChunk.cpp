@@ -123,12 +123,17 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 	// Resize data
 	if (preserve_data)
 	{
-		uint8_t* ndata = (uint8_t*)realloc(data, new_size);
+		//uint8_t* ndata = (uint8_t*)realloc(data, new_size);
+		uint8_t* ndata = new uint8_t[new_size];
 		if (ndata)
+		{
+			memcpy(ndata, data, size*sizeof(uint8_t));
+			delete[] data;
 			data = ndata;
+		}
 		else
 		{
-			wxLogMessage("MemChunk::reSize: Realloc of %d bytes failed", new_size);
+			wxLogMessage("MemChunk::reSize: Allocation of %d bytes failed", new_size);
 			return false;
 		}
 	}
