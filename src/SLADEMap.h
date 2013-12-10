@@ -235,6 +235,7 @@ public:
 	bool		setLineSector(unsigned line, unsigned sector, bool front = true);
 	void		splitLinesByLine(MapLine* split_line);
 	int			mergeLine(unsigned line);
+	bool		correctLineSectors(MapLine* line);
 
 	// Merge
 	bool		mergeArch(vector<MapVertex*> vertices);

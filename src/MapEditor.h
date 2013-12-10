@@ -207,6 +207,7 @@ public:
 	void	pasteProperties();
 	void	splitLine(double x, double y, double min_dist = 64);
 	void	flipLines(bool sides = true);
+	void	correctLineSectors();
 	void	changeSectorHeight(int amount, bool floor = true, bool ceiling = true);
 	void	changeSectorLight(bool up, bool fine);
 	void	joinSectors(bool remove_lines);

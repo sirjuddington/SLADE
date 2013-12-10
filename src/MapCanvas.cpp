@@ -3101,6 +3101,13 @@ bool MapCanvas::handleAction(string id)
 		return true;
 	}
 
+	// Correct sectors
+	else if (id == "mapw_line_correctsectors")
+	{
+		editor->correctLineSectors();
+		return true;
+	}
+
 	// --- Thing context menu ---
 
 	// Change thing type
@@ -3488,6 +3495,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 					theApp->getAction("mapw_line_changetexture")->addToMenu(&menu_context);
 					theApp->getAction("mapw_line_changespecial")->addToMenu(&menu_context);
 					theApp->getAction("mapw_line_tagedit")->addToMenu(&menu_context);
+					theApp->getAction("mapw_line_correctsectors")->addToMenu(&menu_context);
 				}
 			}
 			else if (editor->editMode() == MapEditor::MODE_THINGS)

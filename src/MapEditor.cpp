@@ -1556,6 +1556,35 @@ void MapEditor::flipLines(bool sides)
 	updateDisplay();
 }
 
+void MapEditor::correctLineSectors()
+{
+	// Get selected/hilighted line(s)
+	vector<MapLine*> lines;
+	getSelectedLines(lines);
+
+	if (lines.empty())
+		return;
+
+	beginUndoRecord("Correct Line Sectors");
+
+	bool changed = false;
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		if (map.correctLineSectors(lines[a]))
+			changed = true;
+	}
+
+	endUndoRecord(changed);
+
+	// Update display
+	if (changed)
+	{
+		addEditorMessage("Corrected Sector references");
+		canvas->forceRefreshRenderer();
+		updateDisplay();
+	}
+}
+
 #pragma endregion
 
 #pragma region SECTORS
