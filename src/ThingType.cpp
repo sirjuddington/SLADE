@@ -16,6 +16,7 @@ ThingType::ThingType(string name)
 	this->fullbright = false;
 	this->decoration = false;
 	this->decorate = false;
+	this->solid = false;
 
 	// Init args
 	args[0].name = "Arg1";
@@ -45,6 +46,7 @@ void ThingType::copy(ThingType* copy)
 	this->translation = copy->translation;
 	this->palette = copy->palette;
 	this->decoration = copy->decoration;
+	this->solid = copy->solid;
 
 	// Copy args
 	for (unsigned a = 0; a < 5; a++)
@@ -92,6 +94,7 @@ void ThingType::reset()
 	this->height = -1;
 	this->fullbright = false;
 	this->decoration = false;
+	this->solid = false;
 
 	// Reset args
 	for (unsigned a = 0; a < 5; a++)
@@ -168,6 +171,10 @@ void ThingType::parse(ParseTreeNode* node)
 		// Decoration
 		else if (S_CMPNOCASE(name, "decoration"))
 			this->decoration = child->getBoolValue();
+
+		// Solid
+		else if (S_CMPNOCASE(name, "solid"))
+			this->solid = child->getBoolValue();
 
 		// Translation
 		else if (S_CMPNOCASE(name, "translation"))

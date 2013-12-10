@@ -25,6 +25,7 @@ private:
 	string	palette;
 	arg_t	args[5];
 	bool	decorate;
+	bool	solid;
 
 public:
 	ThingType(string name = "Unknown");
@@ -42,6 +43,7 @@ public:
 	bool	isFullbright() { return fullbright; }
 	bool	shrinkOnZoom() { return shrink; }
 	bool	isDecoration() { return decoration; }
+	bool	isSolid() { return solid; }
 	string	getSprite() { return sprite; }
 	string	getIcon() { return icon; }
 	string	getTranslation() { return translation; }

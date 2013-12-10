@@ -1992,6 +1992,13 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						else if (S_CMPNOCASE(token, "//$NotAngled"))
 							found_props["angled"] = false;
 
+						// Monster
+						else if (S_CMPNOCASE(token, "monster"))
+						{
+							found_props["solid"] = true;		// Solid
+							found_props["decoration"] = false;	// Not a decoration
+						}
+
 						// Hanging
 						else if (S_CMPNOCASE(token, "+spawnceiling"))
 							found_props["hanging"] = true;
@@ -2014,6 +2021,10 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 							found_props["translation"] = tz.getToken();
 							// TODO: multiple translation strings
 						}
+
+						// Solid
+						else if (S_CMPNOCASE(token, "+solid"))
+							found_props["solid"] = true;
 
 						// States
 						if (!sprite_given && S_CMPNOCASE(token, "states"))
@@ -2111,6 +2122,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				if (found_props["decoration"].hasValue()) tt->decoration = found_props["decoration"].getBoolValue();
 				if (found_props["icon"].hasValue()) tt->icon = found_props["icon"].getStringValue();
 				if (found_props["translation"].hasValue()) tt->translation = found_props["translation"].getStringValue();
+				if (found_props["solid"].hasValue()) tt->solid = found_props["solid"].getBoolValue();
 			}
 		}
 
