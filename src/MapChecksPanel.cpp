@@ -109,6 +109,96 @@ void MapChecksPanel::updateStatusText(string text)
 	Refresh();
 }
 
+void MapChecksPanel::showCheckItem(unsigned index)
+{
+	if (index < check_items.size())
+	{
+		// Set edit mode to object type
+		MapObject* obj = check_items[index].check->getObject(check_items[index].index);
+		switch (obj->getObjType())
+		{
+		case MOBJ_VERTEX:
+			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_VERTICES);
+			break;
+		case MOBJ_LINE:
+			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_LINES);
+			break;
+		case MOBJ_SECTOR:
+			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_SECTORS);
+			break;
+		case MOBJ_THING:
+			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_THINGS);
+			break;
+		default: break;
+		}
+
+		// Scroll to object
+		theMapEditor->mapEditor().showItem(obj->getIndex());
+
+		// Update UI
+		btn_edit_object->Enable(true);
+
+		if (check_items[index].check->fixText(0) != "")
+		{
+			// Show first fix button
+			btn_fix1->SetLabel(check_items[index].check->fixText(0));
+			btn_fix1->Show(true);
+		}
+		else
+			btn_fix1->Show(false);
+
+		if (check_items[index].check->fixText(1) != "")
+		{
+			// Show second fix button
+			btn_fix2->SetLabel(check_items[index].check->fixText(1));
+			btn_fix2->Show(true);
+		}
+		else
+			btn_fix2->Show(false);
+	}
+	else
+	{
+		btn_edit_object->Enable(false);
+		btn_fix1->Show(false);
+		btn_fix2->Show(false);
+	}
+
+	Layout();
+}
+
+void MapChecksPanel::refreshList()
+{
+	int selected = lb_errors->GetSelection();
+	lb_errors->Clear();
+	check_items.clear();
+
+	for (unsigned a = 0; a < active_checks.size(); a++)
+	{
+		for (unsigned b = 0; b < active_checks[a]->nProblems(); b++)
+		{
+			lb_errors->Append(active_checks[a]->problemDesc(b));
+			check_items.push_back(check_item_t(active_checks[a], b));
+		}
+	}
+
+	// Re-select
+	if (selected < 0 && lb_errors->GetCount() > 0)
+	{
+		lb_errors->Select(0);
+		lb_errors->EnsureVisible(0);
+	}
+	else if (selected >= 0 && selected < (int)lb_errors->GetCount())
+	{
+		lb_errors->Select(selected);
+		lb_errors->EnsureVisible(selected);
+	}
+	else if (selected >= (int)lb_errors->GetCount() && lb_errors->GetCount() > 0)
+	{
+		lb_errors->Select(lb_errors->GetCount() - 1);
+		lb_errors->EnsureVisible(lb_errors->GetCount());
+	}
+}
+
 
 void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 {
@@ -173,37 +263,36 @@ void MapChecksPanel::onListBoxItem(wxCommandEvent& e)
 	int selected = lb_errors->GetSelection();
 	if (selected >= 0 && selected < (int)check_items.size())
 	{
-		MapObject* obj = check_items[selected].check->getObject(check_items[selected].index);
-		switch (obj->getObjType())
-		{
-		case MOBJ_VERTEX:
-			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_VERTICES);
-			break;
-		case MOBJ_LINE:
-			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_LINES);
-			break;
-		case MOBJ_SECTOR:
-			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_SECTORS);
-			break;
-		case MOBJ_THING:
-			theMapEditor->mapEditor().setEditMode(MapEditor::MODE_THINGS);
-			break;
-		default: break;
-		}
-
-		theMapEditor->mapEditor().showItem(obj->getIndex());
-		btn_edit_object->Enable(true);
+		showCheckItem(selected);
 	}
 }
 
 void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 {
-
+	int selected = lb_errors->GetSelection();
+	if (selected >= 0 && selected < (int)check_items.size())
+	{
+		bool fixed = check_items[selected].check->fixProblem(check_items[selected].index, 0, &(theMapEditor->mapEditor()));
+		if (fixed)
+		{
+			refreshList();
+			showCheckItem(lb_errors->GetSelection());
+		}
+	}
 }
 
 void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 {
-
+	int selected = lb_errors->GetSelection();
+	if (selected >= 0 && selected < (int)check_items.size())
+	{
+		bool fixed = check_items[selected].check->fixProblem(check_items[selected].index, 1, &(theMapEditor->mapEditor()));
+		if (fixed)
+		{
+			refreshList();
+			showCheckItem(lb_errors->GetSelection());
+		}
+	}
 }
 
 void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)

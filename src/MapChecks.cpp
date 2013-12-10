@@ -1,9 +1,14 @@
 
 #include "Main.h"
+#include "WxStuff.h"
 #include "SLADEMap.h"
 #include "MapChecks.h"
 #include "GameConfiguration.h"
 #include "MapTextureManager.h"
+#include "MapTextureBrowser.h"
+#include "MapEditorWindow.h"
+#include "ThingTypeBrowser.h"
+
 
 class MissingTextureCheck : public MapCheck
 {
@@ -104,8 +109,56 @@ public:
 			return "";
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
+		if (index >= lines.size())
+			return false;
+
+		if (fix_type == 0)
+		{
+			// Browse textures
+			MapTextureBrowser browser(theMapEditor, 0, "-");
+			if (browser.ShowModal() == wxID_OK)
+			{
+				editor->beginUndoRecord("Change Texture", true, false, false);
+
+				// Set texture if one selected
+				string texture = browser.getSelectedItem()->getName();
+				switch (parts[index])
+				{
+				case TEX_FRONT_UPPER:
+					lines[index]->setStringProperty("side1.texturetop", texture);
+					break;
+				case TEX_FRONT_MIDDLE:
+					lines[index]->setStringProperty("side1.texturemiddle", texture);
+					break;
+				case TEX_FRONT_LOWER:
+					lines[index]->setStringProperty("side1.texturebottom", texture);
+					break;
+				case TEX_BACK_UPPER:
+					lines[index]->setStringProperty("side2.texturetop", texture);
+					break;
+				case TEX_BACK_MIDDLE:
+					lines[index]->setStringProperty("side2.texturemiddle", texture);
+					break;
+				case TEX_BACK_LOWER:
+					lines[index]->setStringProperty("side2.texturebottom", texture);
+					break;
+				default:
+					return false;
+				}
+
+				editor->endUndoRecord();
+
+				// Remove problem
+				lines.erase(lines.begin() + index);
+				parts.erase(parts.begin() + index);
+				return true;
+			}
+
+			return false;
+		}
+
 		return false;
 	}
 
@@ -120,6 +173,14 @@ public:
 	string progressText()
 	{
 		return "Checking for missing textures...";
+	}
+
+	string fixText(unsigned fix_type)
+	{
+		if (fix_type == 0)
+			return "Browse Texture...";
+
+		return "";
 	}
 };
 
@@ -164,8 +225,11 @@ public:
 		return S_FMT("Line %d: Special %d (%s) requires a tag", lines[index]->getIndex(), special, as->getName());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
+		// Begin tag edit
+		theApp->doAction("mapw_line_tagedit");
+
 		return false;
 	}
 
@@ -180,6 +244,14 @@ public:
 	string progressText()
 	{
 		return "Checking for missing special tags...";
+	}
+
+	string fixText(unsigned fix_type)
+	{
+		if (fix_type == 0)
+			return "Set Tagged...";
+
+		return "";
 	}
 };
 
@@ -204,27 +276,41 @@ private:
 public:
 	LinesIntersectCheck(SLADEMap* map) : MapCheck(map) {}
 
-	void doCheck()
+	void checkIntersections(vector<MapLine*> lines)
 	{
 		double x, y;
 		MapLine* line1;
 		MapLine* line2;
 
+		// Clear existing intersections
+		intersections.clear();
+
 		// Go through lines
-		for (unsigned a = 0; a < map->nLines(); a++)
+		for (unsigned a = 0; a < lines.size(); a++)
 		{
-			line1 = map->getLine(a);
+			line1 = lines[a];
 
 			// Go through uncompared lines
-			for (unsigned b = a + 1; b < map->nLines(); b++)
+			for (unsigned b = a + 1; b < lines.size(); b++)
 			{
-				line2 = map->getLine(b);
+				line2 = lines[b];
 
 				// Check intersection
 				if (map->linesIntersect(line1, line2, x, y))
 					intersections.push_back(line_intersect_t(line1, line2, x, y));
 			}
 		}
+	}
+
+	void doCheck()
+	{
+		// Get all map lines
+		vector<MapLine*> all_lines;
+		for (unsigned a = 0; a < map->nLines(); a++)
+			all_lines.push_back(map->getLine(a));
+
+		// Check for intersections
+		checkIntersections(all_lines);
 	}
 
 	unsigned nProblems()
@@ -242,8 +328,52 @@ public:
 			intersections[index].intersect_point.x, intersections[index].intersect_point.y);
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
+		if (index >= intersections.size())
+			return false;
+
+		if (fix_type == 0)
+		{
+			MapLine* line1 = intersections[index].line1;
+			MapLine* line2 = intersections[index].line2;
+
+			editor->beginUndoRecord("Split Lines");
+
+			// Create split vertex
+			MapVertex* nv = map->createVertex(intersections[index].intersect_point.x, intersections[index].intersect_point.y, -1);
+
+			// Split first line
+			map->splitLine(line1->getIndex(), nv->getIndex());
+			MapLine* nl1 = map->getLine(map->nLines() - 1);
+
+			// Split second line
+			map->splitLine(line2->getIndex(), nv->getIndex());
+			MapLine* nl2 = map->getLine(map->nLines() - 1);
+
+			// Remove intersection
+			intersections.erase(intersections.begin() + index);
+
+			editor->endUndoRecord();
+
+			// Create list of lines to re-check
+			vector<MapLine*> lines;
+			lines.push_back(line1);
+			lines.push_back(line2);
+			lines.push_back(nl1);
+			lines.push_back(nl2);
+			for (unsigned a = 0; a < intersections.size(); a++)
+			{
+				VECTOR_ADD_UNIQUE(lines, intersections[a].line1);
+				VECTOR_ADD_UNIQUE(lines, intersections[a].line2);
+			}
+
+			// Re-check intersections
+			checkIntersections(lines);
+
+			return true;
+		}
+
 		return false;
 	}
 
@@ -258,6 +388,14 @@ public:
 	string progressText()
 	{
 		return "Checking for intersecting lines...";
+	}
+
+	string fixText(unsigned fix_type)
+	{
+		if (fix_type == 0)
+			return "Split Lines";
+
+		return "";
 	}
 };
 
@@ -313,8 +451,37 @@ public:
 		return S_FMT("Lines %d and %d are overlapping", overlaps[index].line1->getIndex(), overlaps[index].line2->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
+		if (index >= overlaps.size())
+			return false;
+
+		if (fix_type == 0)
+		{
+			MapLine* line1 = overlaps[index].line1;
+			MapLine* line2 = overlaps[index].line2;
+
+			editor->beginUndoRecord("Merge Lines");
+
+			// Remove first line and correct sectors
+			map->removeLine(line1);
+			map->correctLineSectors(line2);
+
+			editor->endUndoRecord();
+
+			// Remove any overlaps for line1 (since it was removed)
+			for (unsigned a = 0; a < overlaps.size(); a++)
+			{
+				if (overlaps[a].line1 == line1 || overlaps[a].line2 == line1)
+				{
+					overlaps.erase(overlaps.begin() + a);
+					a--;
+				}
+			}
+
+			return true;
+		}
+
 		return false;
 	}
 
@@ -329,6 +496,14 @@ public:
 	string progressText()
 	{
 		return "Checking for overlapping lines...";
+	}
+
+	string fixText(unsigned fix_type)
+	{
+		if (fix_type == 0)
+			return "Merge Lines";
+
+		return "";
 	}
 };
 
@@ -403,7 +578,7 @@ public:
 		return S_FMT("Things %d and %d are overlapping", overlaps[index].thing1->getIndex(), overlaps[index].thing2->getIndex());
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
 		return false;
 	}
@@ -543,8 +718,55 @@ public:
 		return line;
 	}
 
-	bool fixProblem(unsigned index, unsigned fix_type)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
+		if (index >= lines.size())
+			return false;
+
+		if (fix_type == 0)
+		{
+			// Browse textures
+			MapTextureBrowser browser(theMapEditor, 0, "-");
+			if (browser.ShowModal() == wxID_OK)
+			{
+				// Set texture if one selected
+				string texture = browser.getSelectedItem()->getName();
+				editor->beginUndoRecord("Change Texture", true, false, false);
+				switch (parts[index])
+				{
+				case TEX_FRONT_UPPER:
+					lines[index]->setStringProperty("side1.texturetop", texture);
+					break;
+				case TEX_FRONT_MIDDLE:
+					lines[index]->setStringProperty("side1.texturemiddle", texture);
+					break;
+				case TEX_FRONT_LOWER:
+					lines[index]->setStringProperty("side1.texturebottom", texture);
+					break;
+				case TEX_BACK_UPPER:
+					lines[index]->setStringProperty("side2.texturetop", texture);
+					break;
+				case TEX_BACK_MIDDLE:
+					lines[index]->setStringProperty("side2.texturemiddle", texture);
+					break;
+				case TEX_BACK_LOWER:
+					lines[index]->setStringProperty("side2.texturebottom", texture);
+					break;
+				default:
+					return false;
+				}
+
+				editor->endUndoRecord();
+
+				// Remove problem
+				lines.erase(lines.begin() + index);
+				parts.erase(parts.begin() + index);
+				return true;
+			}
+
+			return false;
+		}
+
 		return false;
 	}
 
@@ -559,6 +781,14 @@ public:
 	string progressText()
 	{
 		return "Checking for unknown wall textures...";
+	}
+
+	string fixText(unsigned fix_type)
+	{
+		if (fix_type == 0)
+			return "Browse Texture...";
+
+		return "";
 	}
 };
 
@@ -615,8 +845,36 @@ public:
 			return S_FMT("Sector %d has unknown ceiling texture \"%s\"", sector->getIndex(), sector->getCeilingTex());
 	}
 
-	virtual bool fixProblem(unsigned index, unsigned fix_type)
+	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
+		if (index >= sectors.size())
+			return false;
+
+		if (fix_type == 0)
+		{
+			// Browse textures
+			MapTextureBrowser browser(theMapEditor, 1);
+			if (browser.ShowModal() == wxID_OK)
+			{
+				// Set texture if one selected
+				string texture = browser.getSelectedItem()->getName();
+				editor->beginUndoRecord("Change Texture");
+				if (floor[index])
+					sectors[index]->setStringProperty("texturefloor", texture);
+				else
+					sectors[index]->setStringProperty("textureceiling", texture);
+
+				editor->endUndoRecord();
+
+				// Remove problem
+				sectors.erase(sectors.begin() + index);
+				floor.erase(floor.begin() + index);
+				return true;
+			}
+
+			return false;
+		}
+
 		return false;
 	}
 
@@ -631,6 +889,14 @@ public:
 	string progressText()
 	{
 		return "Checking for unknown flats...";
+	}
+
+	string fixText(unsigned fix_type)
+	{
+		if (fix_type == 0)
+			return "Browse Texture...";
+
+		return "";
 	}
 };
 
@@ -665,8 +931,25 @@ public:
 		return S_FMT("Thing %d has unknown type %d", things[index]->getIndex(), things[index]->getType());
 	}
 
-	virtual bool fixProblem(unsigned index, unsigned fix_type)
+	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
+		if (index >= things.size())
+			return false;
+
+		if (fix_type == 0)
+		{
+			ThingTypeBrowser browser(theMapEditor);
+			if (browser.ShowModal() == wxID_OK)
+			{
+				editor->beginUndoRecord("Change Thing Type");
+				things[index]->setIntProperty("type", browser.getSelectedType());
+				things.erase(things.begin() + index);
+				editor->endUndoRecord();
+
+				return true;
+			}
+		}
+
 		return false;
 	}
 
@@ -681,6 +964,14 @@ public:
 	virtual string progressText()
 	{
 		return "Checking for unknown thing types...";
+	}
+
+	string fixText(unsigned fix_type)
+	{
+		if (fix_type == 0)
+			return "Browse Type...";
+
+		return "";
 	}
 };
 

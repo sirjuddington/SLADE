@@ -198,7 +198,7 @@ bool MapCanvas::helpActive()
 		return false;
 
 	// Enable depending on current state
-	if (mouse_state == MSTATE_EDIT || mouse_state == MSTATE_LINE_DRAW)
+	if (mouse_state == MSTATE_EDIT || mouse_state == MSTATE_LINE_DRAW || mouse_state == MSTATE_TAG_SECTORS)
 		return true;
 
 	return false;
@@ -3097,7 +3097,19 @@ bool MapCanvas::handleAction(string id)
 	{
 		int type = editor->beginTagEdit();
 		if (type > 0)
+		{
 			mouse_state = MSTATE_TAG_SECTORS;
+
+			// Setup help text
+			string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+			feature_help_lines.clear();
+			feature_help_lines.push_back("Tag Edit");
+			feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
+			feature_help_lines.push_back(S_FMT("%s = Cancel", CHR(key_cancel)));
+			feature_help_lines.push_back("Left Click = Toggle tagged sector");
+		}
+
 		return true;
 	}
 

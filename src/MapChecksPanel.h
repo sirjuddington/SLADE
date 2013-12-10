@@ -42,6 +42,8 @@ public:
 	~MapChecksPanel();
 
 	void	updateStatusText(string text);
+	void	showCheckItem(unsigned index);
+	void	refreshList();
 
 	// Events
 	void	onBtnCheck(wxCommandEvent& e);
