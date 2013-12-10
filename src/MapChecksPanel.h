@@ -44,6 +44,7 @@ public:
 	void	updateStatusText(string text);
 	void	showCheckItem(unsigned index);
 	void	refreshList();
+	void	reset();
 
 	// Events
 	void	onBtnCheck(wxCommandEvent& e);

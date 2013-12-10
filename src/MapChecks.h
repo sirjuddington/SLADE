@@ -22,7 +22,7 @@ public:
 	virtual bool		fixProblem(unsigned index, unsigned fix_type, MapEditor* editor) = 0;
 	virtual MapObject*	getObject(unsigned index) = 0;
 	virtual string		progressText() { return "Checking..."; }
-	virtual string		fixText(unsigned fix_type) { return ""; }
+	virtual string		fixText(unsigned fix_type, unsigned index) { return ""; }
 
 	static MapCheck*	missingTextureCheck(SLADEMap* map);
 	static MapCheck*	specialTagCheck(SLADEMap* map);

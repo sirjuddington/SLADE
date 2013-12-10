@@ -443,6 +443,9 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 		// Lock map entries
 		lockMapEntries();
 
+		// Reset map checks panel
+		panel_checks->reset();
+
 		this->Show(true);
 		map_canvas->viewFitToMap();
 		map_canvas->Refresh();

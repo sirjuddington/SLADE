@@ -138,19 +138,21 @@ void MapChecksPanel::showCheckItem(unsigned index)
 		// Update UI
 		btn_edit_object->Enable(true);
 
-		if (check_items[index].check->fixText(0) != "")
+		string fix1 = check_items[index].check->fixText(0, check_items[index].index);
+		if (fix1 != "")
 		{
 			// Show first fix button
-			btn_fix1->SetLabel(check_items[index].check->fixText(0));
+			btn_fix1->SetLabel(fix1);
 			btn_fix1->Show(true);
 		}
 		else
 			btn_fix1->Show(false);
 
-		if (check_items[index].check->fixText(1) != "")
+		string fix2 = check_items[index].check->fixText(1, check_items[index].index);
+		if (fix2 != "")
 		{
 			// Show second fix button
-			btn_fix2->SetLabel(check_items[index].check->fixText(1));
+			btn_fix2->SetLabel(fix2);
 			btn_fix2->Show(true);
 		}
 		else
@@ -197,6 +199,25 @@ void MapChecksPanel::refreshList()
 		lb_errors->Select(lb_errors->GetCount() - 1);
 		lb_errors->EnsureVisible(lb_errors->GetCount());
 	}
+}
+
+void MapChecksPanel::reset()
+{
+	// Clear interface
+	lb_errors->Show(false);
+	lb_errors->Clear();
+	btn_fix1->Show(false);
+	btn_fix2->Show(false);
+	btn_edit_object->Enable(false);
+	check_items.clear();
+
+	// Clear previous checks
+	for (unsigned a = 0; a < active_checks.size(); a++)
+		delete active_checks[a];
+	active_checks.clear();
+
+	refreshList();
+	lb_errors->Show(true);
 }
 
 

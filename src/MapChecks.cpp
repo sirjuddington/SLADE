@@ -175,7 +175,7 @@ public:
 		return "Checking for missing textures...";
 	}
 
-	string fixText(unsigned fix_type)
+	string fixText(unsigned fix_type, unsigned index)
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -246,7 +246,7 @@ public:
 		return "Checking for missing special tags...";
 	}
 
-	string fixText(unsigned fix_type)
+	string fixText(unsigned fix_type, unsigned index)
 	{
 		if (fix_type == 0)
 			return "Set Tagged...";
@@ -390,7 +390,7 @@ public:
 		return "Checking for intersecting lines...";
 	}
 
-	string fixText(unsigned fix_type)
+	string fixText(unsigned fix_type, unsigned index)
 	{
 		if (fix_type == 0)
 			return "Split Lines";
@@ -498,7 +498,7 @@ public:
 		return "Checking for overlapping lines...";
 	}
 
-	string fixText(unsigned fix_type)
+	string fixText(unsigned fix_type, unsigned index)
 	{
 		if (fix_type == 0)
 			return "Merge Lines";
@@ -527,26 +527,29 @@ public:
 
 	void doCheck()
 	{
+		ThingType* tt1, *tt2;
 		double r1, r2;
 
 		// Go through things
 		for (unsigned a = 0; a < map->nThings(); a++)
 		{
 			MapThing* thing1 = map->getThing(a);
-			r1 = theGameConfiguration->thingType(thing1->getType())->getRadius() - 1;
+			tt1 = theGameConfiguration->thingType(thing1->getType());
+			r1 = tt1->getRadius() - 1;
 
 			// Ignore if no radius
-			if (r1 < 0)
+			if (r1 < 0 || !tt1->isSolid())
 				continue;
 
 			// Go through uncompared things
 			for (unsigned b = a + 1; b < map->nThings(); b++)
 			{
 				MapThing* thing2 = map->getThing(b);
-				r2 = theGameConfiguration->thingType(thing2->getType())->getRadius() - 1;
+				tt2 = theGameConfiguration->thingType(thing2->getType());
+				r2 = tt2->getRadius() - 1;
 
 				// Ignore if no radius
-				if (r2 < 0)
+				if (r2 < 0 || !tt2->isSolid())
 					continue;
 
 				// TODO: Check flags
@@ -580,6 +583,36 @@ public:
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
+		if (index >= overlaps.size())
+			return false;
+
+		// Get thing to remove (depending on fix)
+		MapThing* thing = NULL;
+		if (fix_type == 0)
+			thing = overlaps[index].thing1;
+		else if (fix_type == 1)
+			thing = overlaps[index].thing2;
+
+		if (thing)
+		{
+			// Remove thing
+			editor->beginUndoRecord("Delete Thing", false, false, true);
+			map->removeThing(thing);
+			editor->endUndoRecord();
+
+			// Clear any overlaps involving the removed thing
+			for (unsigned a = 0; a < overlaps.size(); a++)
+			{
+				if (overlaps[a].thing1 == thing || overlaps[a].thing2 == thing)
+				{
+					overlaps.erase(overlaps.begin() + a);
+					a--;
+				}
+			}
+
+			return true;
+		}
+
 		return false;
 	}
 
@@ -594,6 +627,19 @@ public:
 	string progressText()
 	{
 		return "Checking for overlapping things...";
+	}
+
+	string fixText(unsigned fix_type, unsigned index)
+	{
+		if (index >= overlaps.size())
+			return "";
+
+		if (fix_type == 0)
+			return S_FMT("Delete Thing #%d", overlaps[index].thing1->getIndex());
+		if (fix_type == 1)
+			return S_FMT("Delete Thing #%d", overlaps[index].thing2->getIndex());
+
+		return "";
 	}
 };
 
@@ -783,7 +829,7 @@ public:
 		return "Checking for unknown wall textures...";
 	}
 
-	string fixText(unsigned fix_type)
+	string fixText(unsigned fix_type, unsigned index)
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -891,7 +937,7 @@ public:
 		return "Checking for unknown flats...";
 	}
 
-	string fixText(unsigned fix_type)
+	string fixText(unsigned fix_type, unsigned index)
 	{
 		if (fix_type == 0)
 			return "Browse Texture...";
@@ -966,7 +1012,7 @@ public:
 		return "Checking for unknown thing types...";
 	}
 
-	string fixText(unsigned fix_type)
+	string fixText(unsigned fix_type, unsigned index)
 	{
 		if (fix_type == 0)
 			return "Browse Type...";
