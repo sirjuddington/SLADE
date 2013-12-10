@@ -32,6 +32,7 @@ public:
 	static MapCheck*	unknownTextureCheck(SLADEMap* map, MapTextureManager* texman);
 	static MapCheck*	unknownFlatCheck(SLADEMap* map, MapTextureManager* texman);
 	static MapCheck*	unknownThingTypeCheck(SLADEMap* map);
+	static MapCheck*	stuckThingsCheck(SLADEMap* map);
 };
 
 #endif//__MAP_CHECKS_H__

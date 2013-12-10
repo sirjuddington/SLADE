@@ -19,7 +19,6 @@ TODO List ---------------------------------------------------------------
 
 --- Map Editor 3.1 ---
 - Checks:
-	- Stuck things
 	- Mismatching tags
 	- Invalid sector references
 - Better UDMF property handling, proper support for unknown properties read with the map

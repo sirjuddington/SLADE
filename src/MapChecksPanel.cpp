@@ -53,6 +53,10 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_overlapping_things = new wxCheckBox(this, -1, "Check for overlapping things");
 	gb_sizer->Add(cb_overlapping_things, wxGBPosition(3, 1), wxDefaultSpan, wxEXPAND);
 
+	// Check stuck things
+	cb_stuck_things = new wxCheckBox(this, -1, "Check for stuck things");
+	gb_sizer->Add(cb_stuck_things, wxGBPosition(4, 0), wxDefaultSpan, wxEXPAND);
+
 	// Error list
 	lb_errors = new wxListBox(this, -1);
 	sizer->Add(lb_errors, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -92,6 +96,7 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_unknown_flats->SetValue(true);
 	cb_unknown_tex->SetValue(true);
 	cb_unknown_things->SetValue(true);
+	cb_stuck_things->SetValue(true);
 
 	btn_fix1->Show(false);
 	btn_fix2->Show(false);
@@ -255,6 +260,8 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 		active_checks.push_back(MapCheck::unknownThingTypeCheck(map));
 	if (cb_overlapping_things->GetValue())
 		active_checks.push_back(MapCheck::overlappingThingCheck(map));
+	if (cb_stuck_things->GetValue())
+		active_checks.push_back(MapCheck::stuckThingsCheck(map));
 
 	// Run checks
 	for (unsigned a = 0; a < active_checks.size(); a++)

@@ -4345,6 +4345,7 @@ CONSOLE_COMMAND(m_check_missing_tex, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapCheck* check = MapCheck::missingTextureCheck(map);
+	check->doCheck();
 
 	theConsole->logMessage(S_FMT("%d missing textures", check->nProblems()));
 
@@ -4368,6 +4369,7 @@ CONSOLE_COMMAND(m_check_intersecting_lines, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapCheck* check = MapCheck::intersectingLineCheck(map);
+	check->doCheck();
 
 	theConsole->logMessage(S_FMT("%d Line(s) intersecting", check->nProblems()));
 
@@ -4379,6 +4381,7 @@ CONSOLE_COMMAND(m_check_overlapping_lines, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapCheck* check = MapCheck::overlappingLineCheck(map);
+	check->doCheck();
 
 	theConsole->logMessage(S_FMT("%d Line(s) overlapping", check->nProblems()));
 
@@ -4390,6 +4393,7 @@ CONSOLE_COMMAND(m_check_overlapping_things, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapCheck* check = MapCheck::overlappingThingCheck(map);
+	check->doCheck();
 
 	theConsole->logMessage(S_FMT("%d Thing(s) overlapping", check->nProblems()));
 
@@ -4402,6 +4406,7 @@ CONSOLE_COMMAND(m_check_unknown_textures, 0, true)
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapTextureManager* texman = &(theMapEditor->textureManager());
 	MapCheck* check = MapCheck::unknownTextureCheck(map, texman);
+	check->doCheck();
 
 	theConsole->logMessage(S_FMT("%d Unknown wall textures", check->nProblems()));
 
@@ -4414,6 +4419,7 @@ CONSOLE_COMMAND(m_check_unknown_flats, 0, true)
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapTextureManager* texman = &(theMapEditor->textureManager());
 	MapCheck* check = MapCheck::unknownFlatCheck(map, texman);
+	check->doCheck();
 
 	theConsole->logMessage(S_FMT("%d Unknown flats", check->nProblems()));
 
@@ -4425,8 +4431,21 @@ CONSOLE_COMMAND(m_check_unknown_things, 0, true)
 {
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapCheck* check = MapCheck::unknownThingTypeCheck(map);
+	check->doCheck();
 
 	theConsole->logMessage(S_FMT("%d Unknown thing(s)", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_stuck_things, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::stuckThingsCheck(map);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Stuck thing(s)", check->nProblems()));
 
 	for (unsigned a = 0; a < check->nProblems(); a++)
 		theConsole->logMessage(check->problemDesc(a));
@@ -4442,6 +4461,7 @@ CONSOLE_COMMAND(m_check_all, 0, true)
 	theConsole->execute("m_check_unknown_textures");
 	theConsole->execute("m_check_unknown_flats");
 	theConsole->execute("m_check_unknown_things");
+	theConsole->execute("m_check_stuck_things");
 }
 
 #pragma endregion

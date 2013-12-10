@@ -8,6 +8,8 @@
 #include "MapTextureBrowser.h"
 #include "MapEditorWindow.h"
 #include "ThingTypeBrowser.h"
+#include "MathStuff.h"
+#include <SFML/System.hpp>
 
 
 class MissingTextureCheck : public MapCheck
@@ -1021,6 +1023,103 @@ public:
 	}
 };
 
+class StuckThingsCheck : public MapCheck
+{
+private:
+	vector<MapLine*> lines;
+	vector<MapThing*> things;
+
+public:
+	StuckThingsCheck(SLADEMap* map) : MapCheck(map) {}
+
+	virtual void doCheck()
+	{
+		double radius;
+
+		// Get list of lines to check
+		vector<MapLine*> check_lines;
+		MapLine* line;
+		for (unsigned a = 0; a < map->nLines(); a++)
+		{
+			line = map->getLine(a);
+
+			// Skip if line is 2-sided and not blocking
+			if (line->s2() && !theGameConfiguration->lineBasicFlagSet("blocking", line, map->currentFormat()))
+				continue;
+
+			check_lines.push_back(line);
+		}
+
+		// Go through things
+		for (unsigned a = 0; a < map->nThings(); a++)
+		{
+			MapThing* thing = map->getThing(a);
+			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+
+			// Skip if not a solid thing
+			if (!tt->isSolid())
+				continue;
+
+			radius = tt->getRadius() - 1;
+
+			// Go through lines
+			for (unsigned b = 0; b < check_lines.size(); b++)
+			{
+				line = check_lines[b];
+
+				// Check intersection
+				if (MathStuff::boxLineIntersect(thing->xPos() - radius, thing->yPos() - radius,
+					thing->xPos() + radius, thing->yPos() + radius,
+					line->x1(), line->y1(), line->x2(), line->y2()))
+				{
+					things.push_back(thing);
+					lines.push_back(line);
+					break;
+				}
+			}
+		}
+	}
+
+	virtual unsigned nProblems()
+	{
+		return things.size();
+	}
+
+	virtual string problemDesc(unsigned index)
+	{
+		if (index >= things.size())
+			return "";
+
+		return S_FMT("Thing %d is stuck inside line %d", things[index]->getIndex(), lines[index]->getIndex());
+	}
+
+	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	{
+		return false;
+	}
+
+	virtual MapObject* getObject(unsigned index)
+	{
+		if (index >= things.size())
+			return NULL;
+
+		return things[index];
+	}
+
+	virtual string progressText()
+	{
+		return "Checking for things stuck in lines...";
+	}
+
+	virtual string fixText(unsigned fix_type, unsigned index)
+	{
+		if (fix_type == 0)
+			return "Move Thing";
+
+		return "";
+	}
+};
+
 MapCheck* MapCheck::missingTextureCheck(SLADEMap* map)
 {
 	return new MissingTextureCheck(map);
@@ -1059,4 +1158,9 @@ MapCheck* MapCheck::unknownFlatCheck(SLADEMap* map, MapTextureManager* texman)
 MapCheck* MapCheck::unknownThingTypeCheck(SLADEMap* map)
 {
 	return new UnknownThingTypesCheck(map);
+}
+
+MapCheck* MapCheck::stuckThingsCheck(SLADEMap* map)
+{
+	return new StuckThingsCheck(map);
 }

@@ -18,6 +18,7 @@ private:
 	wxCheckBox*		cb_unknown_flats;
 	wxCheckBox*		cb_unknown_things;
 	wxCheckBox*		cb_overlapping_things;
+	wxCheckBox*		cb_stuck_things;
 	wxListBox*		lb_errors;
 	wxButton*		btn_check;
 	wxStaticText*	label_status;

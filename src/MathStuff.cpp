@@ -404,6 +404,66 @@ double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane)
 	return ((plane.d - r_o.dot(p_normal)) / cos_a);
 }
 
+/* MathStuff::boxLineIntersect
+ * Returns true if the box from [box_x1,box_y1] to [box_x2,box_y2]
+ * intersects with the line from [line_x1,line_y1] to
+ * [line_x2,line_y2]. Box values must be from min to max.
+ * Taken from http://stackoverflow.com/a/100165
+ *******************************************************************/
+bool MathStuff::boxLineIntersect(double box_x1, double box_y1, double box_x2, double box_y2,
+						double line_x1, double line_y1, double line_x2, double line_y2)
+{
+	// Find min and max X for the segment
+	double minX = line_x1;
+	double maxX = line_x2;
+	if (line_x1 > line_x2)
+	{
+		minX = line_x2;
+		maxX = line_x1;
+	}
+
+	// Find the intersection of the segment's and rectangle's x-projections
+	if (maxX > box_x2)
+		maxX = box_x2;
+	if (minX < box_x1)
+		minX = box_x1;
+
+	// If their projections do not intersect return false
+	if (minX > maxX)
+		return false;
+
+	// Find corresponding min and max Y for min and max X we found before
+	double minY = line_y1;
+	double maxY = line_y2;
+	double dx = line_x2 - line_x1;
+
+	if (abs(dx) > 0.0000001)
+	{
+		double a = (line_y2 - line_y1) / dx;
+		double b = line_y1 - a * line_x1;
+		minY = a * minX + b;
+		maxY = a * maxX + b;
+	}
+	if (minY > maxY)
+	{
+		double tmp = maxY;
+		maxY = minY;
+		minY = tmp;
+	}
+
+	// Find the intersection of the segment's and rectangle's y-projections
+	if (maxY > box_y2)
+		maxY = box_y2;
+	if (minY < box_y1)
+		minY = box_y1;
+
+	// If Y-projections do not intersect return false
+	if (minY > maxY)
+		return false;
+
+	return true;
+}
+
 
 
 CONSOLE_COMMAND(angle2d, 6, false)
