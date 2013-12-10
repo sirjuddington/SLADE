@@ -1021,7 +1021,7 @@ bool GfxEntryPanel::handleAction(string id)
 			setModified();
 
 			// Refresh
-			getImage()->open(entry_data);
+			getImage()->open(entry_data, 0, format->getId());
 			gfx_canvas->Refresh();
 		}
 	}

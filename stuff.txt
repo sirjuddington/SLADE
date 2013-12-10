@@ -21,6 +21,7 @@ TODO List ---------------------------------------------------------------
 - Checks:
 	- Stuck things
 	- Mismatching tags
+	- Invalid sector references
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
 - Show line lenghts on line draw, object edit
