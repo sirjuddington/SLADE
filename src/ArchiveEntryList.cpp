@@ -33,6 +33,7 @@
 #include "ArchiveEntryList.h"
 #include "Icons.h"
 #include "ColourConfiguration.h"
+#include "UndoRedo.h"
 #include <wx/imaglist.h>
 
 
@@ -68,6 +69,7 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	filter_category = "";
 	current_dir = NULL;
 	show_dir_back = false;
+	undo_manager = NULL;
 
 	// Create dummy 'up folder' entry
 	entry_dir_back = new ArchiveEntry();
@@ -679,12 +681,18 @@ vector<ArchiveTreeNode*> ArchiveEntryList::getSelectedDirectories()
  *******************************************************************/
 void ArchiveEntryList::labelEdited(int col, int index, string new_label)
 {
+	if (undo_manager)
+		undo_manager->beginRecord("Rename Entry");
+
 	// Rename the entry
 	ArchiveEntry* entry = getEntry(index);
 	if (entry->getParent())
 		entry->getParent()->renameEntry(entry, new_label);
 	else
 		entry->rename(new_label);
+
+	if (undo_manager)
+		undo_manager->endRecord(true);
 }
 
 /* ArchiveEntryList::onAnnouncement

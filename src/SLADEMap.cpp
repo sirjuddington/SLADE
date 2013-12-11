@@ -2707,6 +2707,12 @@ void SLADEMap::updateGeometryInfo(long modified_time)
 	}
 }
 
+bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y)
+{
+	return MathStuff::linesIntersect(line1->vertex1->x, line1->vertex1->y, line1->vertex2->x, line1->vertex2->y,
+		line2->vertex1->x, line2->vertex1->y, line2->vertex2->x, line2->vertex2->y, x, y);
+}
+
 void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 {
 	// Find sectors with matching tag
@@ -3119,11 +3125,20 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 	// and return the appropriate sector
 	if (index >= 0)
 	{
+		LOG_MESSAGE(3, "Closest line %d", index);
 		MapLine* l = lines[index];
-		if (MathStuff::lineSide(mid.x, mid.y, l->x1(), l->y1(), l->x2(), l->y2()) >= 0)
-			return l->frontSector();
-		else
-			return l->backSector();
+
+		// Check if we can trace back from the front side
+		SectorBuilder builder;
+		builder.traceSector(this, l, true);
+		for (unsigned a = 0; a < builder.nEdges(); a++)
+		{
+			if (builder.getEdgeLine(a) == line && builder.edgeIsFront(a) == front)
+				return l->frontSector();
+		}
+
+		// Can't trace back from front side, must be back side
+		return l->backSector();
 	}
 
 	return NULL;
@@ -3578,6 +3593,7 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 	}
 }
 
+// Returns true if new side was created
 bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 {
 	// Check indices
@@ -3593,7 +3609,7 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 
 	// Do nothing if already the same sector
 	if (side && side->sector == sectors[sector])
-		return true;
+		return false;
 
 	// Create side if needed
 	if (!side)
@@ -3676,27 +3692,44 @@ int SLADEMap::mergeLine(unsigned line)
 
 	// Correct sector references
 	if (merged > 0)
-	{
-		// Front side
-		MapSector* s1 = getLineSideSector(ml, true);
-		if (s1)
-			setLineSector(ml->getIndex(), s1->getIndex(), true);
-		else if (ml->s1())
-			removeSide(ml->s1());
-
-		// Back side
-		MapSector* s2 = getLineSideSector(ml, false);
-		if (s2)
-			setLineSector(ml->getIndex(), s2->getIndex(), false);
-		else if (ml->s2())
-			removeSide(ml->s2());
-
-		// Flip if needed
-		if (!ml->s1() && ml->s2())
-			ml->flip();
-	}
+		correctLineSectors(ml);
 
 	return merged;
+}
+
+bool SLADEMap::correctLineSectors(MapLine* line)
+{
+	bool changed = false;
+	MapSector* s1_current = line->side1 ? line->side1->sector : NULL;
+	MapSector* s2_current = line->side2 ? line->side2->sector : NULL;
+
+	// Front side
+	MapSector* s1 = getLineSideSector(line, true);
+	if (s1 != s1_current)
+	{
+		if (s1)
+			setLineSector(line->index, s1->index, true);
+		else if (line->side1)
+			removeSide(line->side1);
+		changed = true;
+	}
+
+	// Back side
+	MapSector* s2 = getLineSideSector(line, false);
+	if (s2 != s2_current)
+	{
+		if (s2)
+			setLineSector(line->index, s2->index, false);
+		else if (line->side2)
+			removeSide(line->side2);
+		changed = true;
+	}
+
+	// Flip if needed
+	if (changed && !line->side1 && line->side2)
+		line->flip();
+
+	return changed;
 }
 
 bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
@@ -4044,7 +4077,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Otherwise, use defaults from game configuration
-		theGameConfiguration->applyDefaults(sectors[a]);
+		theGameConfiguration->applyDefaults(sectors[a], current_format == MAP_UDMF);
 	}
 
 	// Update line textures

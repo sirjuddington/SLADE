@@ -11,6 +11,7 @@
 
 wxDECLARE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
+class UndoManager;
 class ArchiveEntryList : public VirtualListView, public Listener, public SActionHandler
 {
 private:
@@ -22,6 +23,7 @@ private:
 	ArchiveTreeNode*	current_dir;
 	ArchiveEntry*		entry_dir_back;
 	bool				show_dir_back;
+	UndoManager*		undo_manager;
 
 protected:
 	// Virtual wxListCtrl overrides
@@ -39,6 +41,7 @@ public:
 	void	showDirBack(bool db) { show_dir_back = db; }
 
 	void	setArchive(Archive* archive);
+	void	setUndoManager(UndoManager* manager) { undo_manager = manager; }
 
 	void	setupColumns();
 	int		columnType(int column) const;

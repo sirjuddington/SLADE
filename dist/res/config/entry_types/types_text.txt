@@ -285,6 +285,7 @@ entry_types
 	{
 		name = "UDMF Map Data";
 		match_name = "textmap";
+		colour = 60, 255, 100;
 	}
 
 	xhairs : text

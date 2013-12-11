@@ -2,7 +2,7 @@
 #ifndef __MAP_OBJECT_H__
 #define __MAP_OBJECT_H__
 
-#include "PropertyList.h"
+#include "MobjPropertyList.h"
 
 class SLADEMap;
 
@@ -18,10 +18,10 @@ enum
 
 struct mobj_backup_t
 {
-	PropertyList	properties;
-	PropertyList	props_internal;
-	unsigned		id;
-	uint8_t			type;
+	MobjPropertyList	properties;
+	MobjPropertyList	props_internal;
+	unsigned			id;
+	uint8_t				type;
 
 	mobj_backup_t() { id = 0; type = 0; }
 };
@@ -33,13 +33,13 @@ private:
 	uint8_t			type;
 
 protected:
-	unsigned		index;
-	SLADEMap*		parent_map;
-	PropertyList	properties;
-	bool			filtered;
-	long			modified_time;
-	unsigned		id;
-	mobj_backup_t*	obj_backup;
+	unsigned			index;
+	SLADEMap*			parent_map;
+	MobjPropertyList	properties;
+	bool				filtered;
+	long				modified_time;
+	unsigned			id;
+	mobj_backup_t*		obj_backup;
 
 public:
 	MapObject(int type = MOBJ_UNKNOWN, SLADEMap* parent = NULL);
@@ -54,8 +54,8 @@ public:
 	string		getTypeName();
 	void		setModified();
 
-	PropertyList&	props()				{ return properties; }
-	bool			hasProp(string key)	{ return properties[key].hasValue(); }
+	MobjPropertyList&	props()				{ return properties; }
+	bool				hasProp(string key)	{ return properties[key].hasValue(); }
 
 	// Generic property modification
 	virtual bool	boolProperty(string key);

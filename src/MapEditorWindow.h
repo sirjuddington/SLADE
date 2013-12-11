@@ -15,6 +15,7 @@ class ObjectEditPanel;
 class ObjectEditGroup;
 class WadArchive;
 class MapCanvas;
+class MapChecksPanel;
 class MapEditorWindow : public STopWindow, public SActionHandler
 {
 private:
@@ -25,6 +26,7 @@ private:
 	ScriptEditorPanel*		panel_script_editor;
 	Archive::mapdesc_t		mdesc_current;
 	ObjectEditPanel*		panel_obj_edit;
+	MapChecksPanel*			panel_checks;
 
 	// Singleton instance
 	static MapEditorWindow*		instance;
@@ -63,6 +65,7 @@ public:
 	void		closeMap();
 	void		forceRefresh(bool renderer = false);
 	void		refreshToolBar();
+	void		editObjectProperties(vector<MapObject*>& objects);
 
 	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
 	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }

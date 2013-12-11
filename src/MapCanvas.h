@@ -40,7 +40,7 @@ private:
 	{
 		MSTATE_NORMAL = 0,
 		MSTATE_SELECTION,
-		MSTATE_PANNING,
+		//MSTATE_PANNING,
 		MSTATE_MOVE,
 		MSTATE_THING_ANGLE,
 		MSTATE_LINE_DRAW,
@@ -77,6 +77,7 @@ private:
 	bool		mouse_warp;
 	int			edit_state;
 	bool		edit_rotate;
+	bool		panning;
 
 	// Info overlays
 	int					last_hilight;
@@ -167,6 +168,7 @@ public:
 	void	forceRefreshRenderer();
 	void	changeEditMode(int mode);
 	void	changeFlatType(int type);
+	void	editObjectProperties(vector<MapObject*>& objects);
 
 	// Keybind/action handlers (that use UI features - anything else goes to MapEditor)
 	void	changeThingType();

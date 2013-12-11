@@ -24,6 +24,7 @@ EXTERN_CVAR(Bool, map_animate_selection)
 EXTERN_CVAR(Bool, map_animate_tagged)
 EXTERN_CVAR(Bool, line_fade)
 EXTERN_CVAR(Bool, flat_fade)
+EXTERN_CVAR(Int, map_crosshair)
 
 MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
@@ -69,6 +70,14 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	cb_animate_tagged = new wxCheckBox(panel, -1, "Animated tag indicator");
 	sizer->Add(cb_animate_tagged, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
+	// Crosshair
+	string ch[] ={ "None", "Small", "Full" };
+	choice_crosshair = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, ch);
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	hbox->Add(new wxStaticText(panel, -1, "Cursor Crosshair:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(choice_crosshair, 1, wxEXPAND);
+
 
 	// Vertices tab
 	panel = new wxPanel(nb_pages, -1);
@@ -79,7 +88,7 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	sz_border->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Vertex size
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 	hbox->Add(new wxStaticText(panel, -1, "Vertex size: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	slider_vertex_size = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
@@ -220,6 +229,7 @@ void MapDisplayPrefsPanel::init()
 	slider_line_width->SetValue(line_width * 10);
 	slider_thing_shadow->SetValue(thing_shadow * 10);
 	slider_flat_brightness->SetValue(flat_brightness * 10);
+	choice_crosshair->Select(map_crosshair);
 }
 
 void MapDisplayPrefsPanel::applyPreferences()
@@ -244,4 +254,5 @@ void MapDisplayPrefsPanel::applyPreferences()
 	things_always = choice_things_always->GetSelection();
 	line_fade = cb_line_fade->GetValue();
 	flat_fade = cb_flat_fade->GetValue();
+	map_crosshair = choice_crosshair->GetSelection();
 }

@@ -193,7 +193,7 @@ public:
 	// Grid
 	void	incrementGrid();
 	void	decrementGrid();
-	double	snapToGrid(double position);
+	double	snapToGrid(double position, bool force = true);
 
 	// Item moving
 	vector<int>&	movingItems() { return move_items; }
@@ -207,6 +207,7 @@ public:
 	void	pasteProperties();
 	void	splitLine(double x, double y, double min_dist = 64);
 	void	flipLines(bool sides = true);
+	void	correctLineSectors();
 	void	changeSectorHeight(int amount, bool floor = true, bool ceiling = true);
 	void	changeSectorLight(bool up, bool fine);
 	void	joinSectors(bool remove_lines);
@@ -275,6 +276,7 @@ public:
 	string	getModeString();
 	bool	handleKeyBind(string key, fpoint2_t position);
 	void	updateDisplay();
+	void	updateStatusText();
 };
 
 #endif//__MAP_EDITOR_H__

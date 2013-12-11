@@ -596,10 +596,12 @@ void MainApp::initActions()
 	new SAction("mapw_showconsole", "&Console", "t_console", "Toggle the Console window", "Ctrl+2");
 	new SAction("mapw_showproperties", "&Item Properties", "t_properties", "Toggle the Item Properties window", "Ctrl+1");
 	new SAction("mapw_showscripteditor", "Script &Editor", "e_text", "Toggle the Script Editor window", "Ctrl+3");
+	new SAction("mapw_showchecks", "Map Checks", "i_tick", "Toggle the Map Checks window", "Ctrl+4");
 	new SAction("mapw_run_map", "Run Map", "t_run", "Run the current map", "Ctrl+Shift+R");
 	new SAction("mapw_line_changetexture", "Change Texture", "", "Change the currently selected or hilighted line texture(s)");
 	new SAction("mapw_line_changespecial", "Change Special", "", "Change the currently selected or hilighted line special");
 	new SAction("mapw_line_tagedit", "Edit Tagged", "", "Select sectors/things to tag to this line's special");
+	new SAction("mapw_line_correctsectors", "Correct Sectors", "i_tick", "Correct line sector references");
 	new SAction("mapw_thing_changetype", "Change Type", "", "Change the currently selected or hilighted thing type(s)");
 	new SAction("mapw_thing_create", "Create Thing Here", "", "Creates a new thing at the cursor position");
 	new SAction("mapw_sector_changetexture", "Change Texture", "", "Change the currently selected or hilighted sector texture(s)");

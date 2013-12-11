@@ -14,6 +14,7 @@ private:
 	wxCheckBox*	cb_animate_hilight;
 	wxCheckBox*	cb_animate_selection;
 	wxCheckBox*	cb_animate_tagged;
+	wxChoice*	choice_crosshair;
 
 	wxSlider*	slider_vertex_size;
 	wxCheckBox*	cb_vertex_round;

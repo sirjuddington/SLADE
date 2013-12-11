@@ -24,7 +24,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v110_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -68,7 +68,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase29ud.lib;wxmsw29ud_core.lib;wxmsw29ud_gl.lib;wxmsw29ud_aui.lib;wxmsw29ud_html.lib;wxmsw29ud_adv.lib;wxmsw29ud_stc.lib;wxmsw29ud_propgrid.lib;wxmsw29ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -279,6 +279,8 @@
     <ClCompile Include="src\lzma\C\XzEnc.c" />
     <ClCompile Include="src\lzma\C\XzIn.c" />
     <ClCompile Include="src\Map3DPrefsPanel.cpp" />
+    <ClCompile Include="src\MapChecks.cpp" />
+    <ClCompile Include="src\MapChecksPanel.cpp" />
     <ClCompile Include="src\MapDisplayPrefsPanel.cpp" />
     <ClCompile Include="src\MapEditor.cpp" />
     <ClCompile Include="src\MapEditorConfigDialog.cpp" />
@@ -295,6 +297,7 @@
     <ClCompile Include="src\MathStuff.cpp" />
     <ClCompile Include="src\MCAnimations.cpp" />
     <ClCompile Include="src\MIDIPlayer.cpp" />
+    <ClCompile Include="src\MobjPropertyList.cpp" />
     <ClCompile Include="src\ModifyOffsetsDialog.cpp" />
     <ClCompile Include="src\MOPGProperty.cpp" />
     <ClCompile Include="src\mus2mid\mus2mid.cpp" />
@@ -559,6 +562,8 @@
     <ClInclude Include="src\lzma\C\XzCrc64.h" />
     <ClInclude Include="src\lzma\C\XzEnc.h" />
     <ClInclude Include="src\Map3DPrefsPanel.h" />
+    <ClInclude Include="src\MapChecks.h" />
+    <ClInclude Include="src\MapChecksPanel.h" />
     <ClInclude Include="src\MapDisplayPrefsPanel.h" />
     <ClInclude Include="src\MapEditor.h" />
     <ClInclude Include="src\MapEditorConfigDialog.h" />
@@ -577,6 +582,7 @@
     <ClInclude Include="src\MCOverlay.h" />
     <ClInclude Include="src\MIDIPlayer.h" />
     <ClInclude Include="src\MiscFormats.h" />
+    <ClInclude Include="src\MobjPropertyList.h" />
     <ClInclude Include="src\ModelFormats.h" />
     <ClInclude Include="src\ModifyOffsetsDialog.h" />
     <ClInclude Include="src\MOPGProperty.h" />

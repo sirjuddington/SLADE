@@ -149,17 +149,18 @@ void Polygon2D::updateTextureCoords(double scale_x, double scale_y, double offse
 	{
 		for (unsigned a = 0; a < subpolys[p]->n_vertices; a++)
 		{
-			x = (scale_x*offset_x) + subpolys[p]->vertices[a].x;
-			y = (scale_y*offset_y) - subpolys[p]->vertices[a].y;
+			x = subpolys[p]->vertices[a].x;
+			y = subpolys[p]->vertices[a].y;
 
 			// Apply rotation if any
-			/* (doesn't want to work)
 			if (rotation != 0) {
 				fpoint2_t np = MathStuff::rotatePoint(fpoint2_t(0, 0), fpoint2_t(x, y), rotation);
 				x = np.x;
 				y = np.y;
 			}
-			*/
+
+			x = (scale_x*offset_x) + x;
+			y = (scale_y*offset_y) - y;
 
 			// Set texture coordinate for vertex
 			subpolys[p]->vertices[a].tx = x * owidth;

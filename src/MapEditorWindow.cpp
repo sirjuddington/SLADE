@@ -47,6 +47,7 @@
 #include "ObjectEditPanel.h"
 #include "Dialogs/RunDialog.h"
 #include "MapEditorConfigDialog.h"
+#include "MapChecksPanel.h"
 #include <wx/aui/aui.h>
 
 
@@ -158,6 +159,11 @@ void MapEditorWindow::saveLayout()
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("script_editor"));
 	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
 
+	// Map checks pane
+	file.Write("\"map_checks\" ");
+	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("map_checks"));
+	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
+
 	// Close file
 	file.Close();
 }
@@ -184,6 +190,7 @@ void MapEditorWindow::setupLayout()
 	theApp->getAction("mapw_save")->addToMenu(menu_map);
 	theApp->getAction("mapw_saveas")->addToMenu(menu_map);
 	theApp->getAction("mapw_rename")->addToMenu(menu_map);
+	menu_map->AppendSeparator();
 	theApp->getAction("mapw_run_map")->addToMenu(menu_map);
 	menu->Append(menu_map, "&Map");
 
@@ -201,6 +208,7 @@ void MapEditorWindow::setupLayout()
 	theApp->getAction("mapw_showproperties")->addToMenu(menu_view);
 	theApp->getAction("mapw_showconsole")->addToMenu(menu_view);
 	theApp->getAction("mapw_showscripteditor")->addToMenu(menu_view);
+	theApp->getAction("mapw_showchecks")->addToMenu(menu_view);
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
@@ -255,7 +263,9 @@ void MapEditorWindow::setupLayout()
 
 
 	// Status bar
-	CreateStatusBar();
+	CreateStatusBar(4);
+	int status_widths[4] = { -1, 160, 180, 160 };
+	SetStatusWidths(4, status_widths);
 
 	// -- Console Panel --
 	ConsolePanel* panel_console = new ConsolePanel(this, -1);
@@ -331,7 +341,7 @@ void MapEditorWindow::setupLayout()
 
 	// Setup panel info & add panel
 	msize = panel_obj_edit->GetBestSize();
-	p_inf.DefaultPane();
+
 	p_inf.Bottom();
 	p_inf.Dock();
 	p_inf.CloseButton(false);
@@ -346,6 +356,24 @@ void MapEditorWindow::setupLayout()
 	p_inf.Caption("Object Edit");
 	p_inf.Name("object_edit");
 	m_mgr->AddPane(panel_obj_edit, p_inf);
+
+
+	// --- Map Checks Panel ---
+	panel_checks = new MapChecksPanel(this, &(editor.getMap()));
+
+	// Setup panel info & add panel
+	p_inf.DefaultPane();
+	p_inf.Left();
+	p_inf.Dock();
+	p_inf.BestSize(400, 300);
+	p_inf.FloatingSize(500, 400);
+	p_inf.FloatingPosition(160, 160);
+	p_inf.MinSize(300, 300);
+	p_inf.Show(false);
+	p_inf.Caption("Map Checks");
+	p_inf.Name("map_checks");
+	p_inf.Layer(0);
+	m_mgr->AddPane(panel_checks, p_inf);
 
 
 	// Load previously saved window layout
@@ -414,6 +442,9 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 
 		// Lock map entries
 		lockMapEntries();
+
+		// Reset map checks panel
+		panel_checks->reset();
 
 		this->Show(true);
 		map_canvas->viewFitToMap();
@@ -713,6 +744,11 @@ void MapEditorWindow::refreshToolBar()
 	toolbar->Refresh();
 }
 
+void MapEditorWindow::editObjectProperties(vector<MapObject*>& objects)
+{
+	map_canvas->editObjectProperties(objects);
+}
+
 void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 {
 	// Get panel
@@ -768,7 +804,7 @@ bool MapEditorWindow::handleAction(string id)
 	if (!IsShown())
 		return false;
 
-	// File->Save
+	// Map->Save
 	if (id == "mapw_save")
 	{
 		// Save map
@@ -781,7 +817,7 @@ bool MapEditorWindow::handleAction(string id)
 		return true;
 	}
 
-	// File->Save As
+	// Map->Save As
 	if (id == "mapw_saveas")
 	{
 		saveMapAs();
@@ -901,6 +937,29 @@ bool MapEditorWindow::handleAction(string id)
 		}
 
 		p_inf.MinSize(200, 128);
+		m_mgr->Update();
+		return true;
+	}
+
+	// View->Map Checks
+	else if (id == "mapw_showchecks")
+	{
+		wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
+		wxAuiPaneInfo& p_inf = m_mgr->GetPane("map_checks");
+
+		// Toggle window and focus
+		if (p_inf.IsShown())
+		{
+			p_inf.Show(false);
+			map_canvas->SetFocus();
+		}
+		else
+		{
+			p_inf.Show(true);
+			p_inf.window->SetFocus();
+		}
+
+		//p_inf.MinSize(200, 128);
 		m_mgr->Update();
 		return true;
 	}

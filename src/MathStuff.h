@@ -27,6 +27,8 @@ namespace MathStuff
 	double		radToDeg(double angle);
 	fpoint2_t	vectorAngle(double angle_rad);
 	double		distanceRayPlane(fpoint3_t ray_origin, fpoint3_t ray_dir, plane_t plane);
+	bool		boxLineIntersect(double box_x1, double box_y1, double box_x2, double box_y2,
+									double line_x1, double line_y1, double line_x2, double line_y2);
 }
 
 #endif//__MATHSTUFF_H__

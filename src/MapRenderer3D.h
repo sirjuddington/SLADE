@@ -132,7 +132,9 @@ public:
 	void	cameraSet(fpoint3_t position, fpoint2_t direction);
 	void	cameraSetPosition(fpoint3_t position);
 	void	cameraApplyGravity(double mult);
-	double	camPitch() { return cam_pitch; }
+
+	double		camPitch() { return cam_pitch; }
+	fpoint3_t	camPosition() { return cam_position; }
 
 	// -- Rendering --
 	void	setupView(int width, int height);

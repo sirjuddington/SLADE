@@ -13,6 +13,7 @@
 #include "SectorBuilder.h"
 #include "Clipboard.h"
 #include "UndoRedo.h"
+#include "MapChecks.h"
 
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE);
@@ -296,6 +297,8 @@ void MapEditor::setEditMode(int mode)
 	case MODE_3D:		addEditorMessage("3d mode"); break;
 	default: break;
 	};
+
+	updateStatusText();
 }
 
 void MapEditor::setSectorEditMode(int mode)
@@ -312,6 +315,8 @@ void MapEditor::setSectorEditMode(int mode)
 		addEditorMessage("Sectors mode (Floors)");
 	else
 		addEditorMessage("Sectors mode (Ceilings)");
+
+	updateStatusText();
 }
 
 bool MapEditor::openMap(Archive::mapdesc_t map)
@@ -349,6 +354,8 @@ bool MapEditor::openMap(Archive::mapdesc_t map)
 
 	link_3d_light = true;
 	link_3d_offset = true;
+
+	updateStatusText();
 
 	return true;
 }
@@ -1226,19 +1233,30 @@ void MapEditor::incrementGrid()
 		gridsize = 20;
 
 	addEditorMessage(S_FMT("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
+	updateStatusText();
 }
 
 void MapEditor::decrementGrid()
 {
 	gridsize--;
-	if (gridsize < 0)
-		gridsize = 0;
+	int mingrid = (map.currentFormat() == MAP_UDMF) ? 0 : 4;
+	if (gridsize < mingrid)
+		gridsize = mingrid;
 
 	addEditorMessage(S_FMT("Grid Size: %dx%d", (int)gridSize(), (int)gridSize()));
+	updateStatusText();
 }
 
-double MapEditor::snapToGrid(double position)
+double MapEditor::snapToGrid(double position, bool force)
 {
+	if (!force && !grid_snap)
+	{
+		if (map.currentFormat() == MAP_UDMF)
+			return position;
+		else
+			return ceil(position - 0.5);
+	}
+
 	return ceil(position / gridSize() - 0.5) * gridSize();
 }
 
@@ -1323,8 +1341,13 @@ void MapEditor::doMove(fpoint2_t mouse_pos)
 	if (move_items.size() == 1 && (edit_mode == MODE_VERTICES || edit_mode == MODE_THINGS))
 	{
 		// Get new position
-		double nx = snapToGrid(mouse_pos.x);
-		double ny = snapToGrid(mouse_pos.y);
+		double nx = mouse_pos.x;
+		double ny = mouse_pos.y;
+		if (grid_snap)
+		{
+			nx = snapToGrid(nx);
+			ny = snapToGrid(ny);
+		}
 
 		// Update move vector
 		if (edit_mode == MODE_VERTICES)
@@ -1340,7 +1363,10 @@ void MapEditor::doMove(fpoint2_t mouse_pos)
 	double dy = mouse_pos.y - move_origin.y;
 
 	// Update move vector
-	move_vec.set(snapToGrid(dx), snapToGrid(dy));
+	if (grid_snap)
+		move_vec.set(snapToGrid(dx), snapToGrid(dy));
+	else
+		move_vec.set(dx, dy);
 }
 
 void MapEditor::endMove(bool accept)
@@ -1528,6 +1554,35 @@ void MapEditor::flipLines(bool sides)
 	// Update display
 	canvas->forceRefreshRenderer();
 	updateDisplay();
+}
+
+void MapEditor::correctLineSectors()
+{
+	// Get selected/hilighted line(s)
+	vector<MapLine*> lines;
+	getSelectedLines(lines);
+
+	if (lines.empty())
+		return;
+
+	beginUndoRecord("Correct Line Sectors");
+
+	bool changed = false;
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		if (map.correctLineSectors(lines[a]))
+			changed = true;
+	}
+
+	endUndoRecord(changed);
+
+	// Update display
+	if (changed)
+	{
+		addEditorMessage("Corrected Sector references");
+		canvas->forceRefreshRenderer();
+		updateDisplay();
+	}
 }
 
 #pragma endregion
@@ -1985,7 +2040,7 @@ void MapEditor::createThing(double x, double y)
 		thing->setFloatProperty("y", y);
 	}
 	else
-		theGameConfiguration->applyDefaults(thing);	// No thing properties to copy, get defaults from game configuration
+		theGameConfiguration->applyDefaults(thing, map.currentFormat() == MAP_UDMF);	// No thing properties to copy, get defaults from game configuration
 
 	// End undo step
 	endUndoRecord(true);
@@ -2029,7 +2084,7 @@ void MapEditor::createSector(double x, double y)
 	{
 		MapSector* n_sector = map.getSector(map.nSectors()-1);
 		if (n_sector->getCeilingTex().IsEmpty())
-			theGameConfiguration->applyDefaults(n_sector);
+			theGameConfiguration->applyDefaults(n_sector, map.currentFormat() == MAP_UDMF);
 	}
 
 	// Editor message
@@ -3933,6 +3988,17 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		else if (key == "me2d_grid_dec")
 			decrementGrid();
 
+		// Toggle grid snap
+		else if (key == "me2d_grid_toggle_snap")
+		{
+			grid_snap = !grid_snap;
+			if (grid_snap)
+				addEditorMessage("Grid Snapping On");
+			else
+				addEditorMessage("Grid Snapping Off");
+			updateStatusText();
+		}
+
 		// Select all
 		else if (key == "select_all")
 			selectAll();
@@ -4126,6 +4192,46 @@ void MapEditor::updateDisplay()
 	}
 }
 
+void MapEditor::updateStatusText()
+{
+	// Edit mode
+	string mode = "Mode: ";
+	switch (edit_mode)
+	{
+	case MODE_VERTICES: mode += "Vertices"; break;
+	case MODE_LINES: mode += "Lines"; break;
+	case MODE_SECTORS: mode += "Sectors"; break;
+	case MODE_THINGS: mode += "Things"; break;
+	case MODE_3D: mode += "3D"; break;
+	}
+
+	if (edit_mode == MODE_SECTORS)
+	{
+		switch (sector_mode)
+		{
+		case SECTOR_BOTH: mode += " (Normal)"; break;
+		case SECTOR_FLOOR: mode += " (Floors)"; break;
+		case SECTOR_CEILING: mode += " (Ceilings)"; break;
+		}
+	}
+
+	theMapEditor->SetStatusText(mode, 1);
+
+	// Grid
+	string grid;
+	if (gridSize() < 1)
+		grid = S_FMT("Grid: %1.2fx%1.2f", gridSize(), gridSize());
+	else
+		grid = S_FMT("Grid: %dx%d", (int)gridSize(), (int)gridSize());
+
+	if (grid_snap)
+		grid += " (Snapping ON)";
+	else
+		grid += " (Snapping OFF)";
+
+	theMapEditor->SetStatusText(grid, 2);
+}
+
 #pragma region UNDO / REDO
 
 void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
@@ -4233,6 +4339,129 @@ CONSOLE_COMMAND(m_show_item, 1, true)
 {
 	int index = atoi(CHR(args[0]));
 	theMapEditor->mapEditor().showItem(index);
+}
+
+CONSOLE_COMMAND(m_check_missing_tex, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::missingTextureCheck(map);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d missing textures", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_special_tags, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::specialTagCheck(map);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Line(s) missing tags", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_intersecting_lines, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::intersectingLineCheck(map);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Line(s) intersecting", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_overlapping_lines, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::overlappingLineCheck(map);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Line(s) overlapping", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_overlapping_things, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::overlappingThingCheck(map);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Thing(s) overlapping", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_unknown_textures, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapTextureManager* texman = &(theMapEditor->textureManager());
+	MapCheck* check = MapCheck::unknownTextureCheck(map, texman);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Unknown wall textures", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_unknown_flats, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapTextureManager* texman = &(theMapEditor->textureManager());
+	MapCheck* check = MapCheck::unknownFlatCheck(map, texman);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Unknown flats", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_unknown_things, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::unknownThingTypeCheck(map);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Unknown thing(s)", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_stuck_things, 0, true)
+{
+	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+	MapCheck* check = MapCheck::stuckThingsCheck(map);
+	check->doCheck();
+
+	theConsole->logMessage(S_FMT("%d Stuck thing(s)", check->nProblems()));
+
+	for (unsigned a = 0; a < check->nProblems(); a++)
+		theConsole->logMessage(check->problemDesc(a));
+}
+
+CONSOLE_COMMAND(m_check_all, 0, true)
+{
+	theConsole->execute("m_check_missing_tex");
+	theConsole->execute("m_check_special_tags");
+	theConsole->execute("m_check_intersecting_lines");
+	theConsole->execute("m_check_overlapping_lines");
+	theConsole->execute("m_check_overlapping_things");
+	theConsole->execute("m_check_unknown_textures");
+	theConsole->execute("m_check_unknown_flats");
+	theConsole->execute("m_check_unknown_things");
+	theConsole->execute("m_check_stuck_things");
 }
 
 #pragma endregion

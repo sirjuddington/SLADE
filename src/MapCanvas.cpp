@@ -76,6 +76,7 @@ CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
 CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 CVAR(Bool, map_show_help, true, CVAR_SAVE)
+CVAR(Int, map_crosshair, 0, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -135,6 +136,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	edit_state = 0;
 	edit_rotate = false;
 	anim_help_fade = 0;
+	panning = false;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -196,7 +198,7 @@ bool MapCanvas::helpActive()
 		return false;
 
 	// Enable depending on current state
-	if (mouse_state == MSTATE_EDIT || mouse_state == MSTATE_LINE_DRAW)
+	if (mouse_state == MSTATE_EDIT || mouse_state == MSTATE_LINE_DRAW || mouse_state == MSTATE_TAG_SECTORS)
 		return true;
 
 	return false;
@@ -524,6 +526,59 @@ void MapCanvas::drawGrid()
 	}
 
 	glDisable(GL_LINE_STIPPLE);
+
+	// Draw crosshair if needed
+	if (map_crosshair > 0)
+	{
+		double x = editor->snapToGrid(mouse_pos_m.x, false);
+		double y = editor->snapToGrid(mouse_pos_m.y, false);
+		rgba_t col = ColourConfiguration::getColour("map_64grid");
+
+		// Small
+		glLineWidth(2.0f);
+		if (map_crosshair == 1)
+		{
+			col = col.ampf(1.0f, 1.0f, 1.0f, 2.0f);
+			rgba_t col2 = col.ampf(1.0f, 1.0f, 1.0f, 0.0f);
+			double size = editor->gridSize();
+			double one = 1.0 / view_scale_inter;
+
+			glBegin(GL_LINES);
+			col.set_gl(false);
+			glVertex2d(x + one, y);
+			col2.set_gl(false);
+			glVertex2d(x + size, y);
+
+			col.set_gl(false);
+			glVertex2d(x - one, y);
+			col2.set_gl(false);
+			glVertex2d(x - size, y);
+
+			col.set_gl(false);
+			glVertex2d(x, y + one);
+			col2.set_gl(false);
+			glVertex2d(x, y + size);
+
+			col.set_gl(false);
+			glVertex2d(x, y - one);
+			col2.set_gl(false);
+			glVertex2d(x, y - size);
+			glEnd();
+		}
+
+		// Full
+		else if (map_crosshair == 2)
+		{
+			col.set_gl();
+
+			glBegin(GL_LINES);
+			glVertex2d(x, view_tl.y);
+			glVertex2d(x, view_br.y);
+			glVertex2d(view_tl.x, y);
+			glVertex2d(view_br.x, y);
+			glEnd();
+		}
+	}
 }
 
 void MapCanvas::drawEditorMessages()
@@ -1454,7 +1509,7 @@ bool MapCanvas::update2d(double mult)
 	renderer_2d->setScale(view_scale_inter);
 
 	// Check if framerate shouldn't be throttled
-	if (mouse_state == MSTATE_SELECTION || mouse_state == MSTATE_PANNING || view_anim || anim_mode_crossfade)
+	if (mouse_state == MSTATE_SELECTION || panning || view_anim || anim_mode_crossfade)
 		return true;
 	else
 		return false;
@@ -1530,6 +1585,10 @@ bool MapCanvas::update3d(double mult)
 	// Apply gravity to camera if needed
 	if (camera_3d_gravity)
 		renderer_3d->cameraApplyGravity(mult);
+
+	// Update status bar
+	fpoint3_t pos = renderer_3d->camPosition();
+	theMapEditor->SetStatusText(S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z), 3);
 
 	return moving;
 }
@@ -2202,6 +2261,63 @@ void MapCanvas::changeTexture3d(selection_3d_t first)
 	}
 }
 
+void MapCanvas::editObjectProperties(vector<MapObject*>& list)
+{
+	// Determine selection type
+	string type = "Object";
+	if (editor->editMode() == MapEditor::MODE_VERTICES)
+		type = "Vertex";
+	else if (editor->editMode() == MapEditor::MODE_LINES)
+		type = "Line";
+	else if (editor->editMode() == MapEditor::MODE_SECTORS)
+		type = "Sector";
+	else if (editor->editMode() == MapEditor::MODE_THINGS)
+		type = "Thing";
+
+	// Begin recording undo level
+	editor->undoManager()->beginRecord(S_FMT("Property Edit (%s)", CHR(type)));
+	for (unsigned a = 0; a < list.size(); a++)
+		editor->recordPropertyChangeUndoStep(list[a]);
+
+	string selsize = "";
+	if (list.size() == 1)
+		type += S_FMT(" #%d", list[0]->getIndex());
+	else if (list.size() > 1)
+		selsize = S_FMT("(%d selected)", list.size());
+
+	// Create dialog for properties panel
+	wxDialog dlg(theMapEditor, -1, S_FMT("%s Properties %s", CHR(type), CHR(selsize)), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
+	dlg.SetInitialSize(wxSize(500, 500));
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	dlg.SetSizer(sizer);
+
+	// Create properties panel
+	MapObjectPropsPanel* panel_props = new MapObjectPropsPanel(&dlg);
+	panel_props->showApplyButton(false);
+	sizer->Add(panel_props, 1, wxEXPAND|wxALL, 4);
+
+	// Add dialog buttons
+	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Open current selection
+	panel_props->openObjects(list);
+
+	// Open the dialog and apply changes if OK was clicked
+	dlg.CenterOnParent();
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		panel_props->applyChanges();
+		renderer_2d->forceUpdate(fade_lines);
+		Refresh();
+
+		if (editor->editMode() == MapEditor::MODE_THINGS)
+			editor->copyProperties(list[0]);
+	}
+
+	// End undo level
+	editor->undoManager()->endRecord(true);
+}
+
 void MapCanvas::onKeyBindPress(string name)
 {
 	// Check if an overlay is active
@@ -2336,10 +2452,10 @@ void MapCanvas::keyBinds2dView(string name)
 		viewFitToMap();
 
 	// Pan view
-	else if (name == "me2d_pan_view" && mouse_state == MSTATE_NORMAL)
+	else if (name == "me2d_pan_view")
 	{
 		mouse_downpos.set(mouse_pos);
-		mouse_state = MSTATE_PANNING;
+		panning = true;
 		editor->clearHilight();
 		SetCursor(wxCURSOR_SIZING);
 	}
@@ -2820,9 +2936,9 @@ void MapCanvas::keyBinds3d(string name)
 
 void MapCanvas::onKeyBindRelease(string name)
 {
-	if (name == "me2d_pan_view" && mouse_state == MSTATE_PANNING)
+	if (name == "me2d_pan_view" && panning)
 	{
-		mouse_state = MSTATE_NORMAL;
+		panning = false;
 		editor->updateHilight(mouse_pos_m);
 		SetCursor(wxNullCursor);
 	}
@@ -2919,59 +3035,7 @@ bool MapCanvas::handleAction(string id)
 		vector<MapObject*> list;
 		editor->getSelectedObjects(list);
 
-		// Determine selection type
-		string type = "Object";
-		if (editor->editMode() == MapEditor::MODE_VERTICES)
-			type = "Vertex";
-		else if (editor->editMode() == MapEditor::MODE_LINES)
-			type = "Line";
-		else if (editor->editMode() == MapEditor::MODE_SECTORS)
-			type = "Sector";
-		else if (editor->editMode() == MapEditor::MODE_THINGS)
-			type = "Thing";
-
-		// Begin recording undo level
-		editor->undoManager()->beginRecord(S_FMT("Property Edit (%s)", CHR(type)));
-		for (unsigned a = 0; a < list.size(); a++)
-			editor->recordPropertyChangeUndoStep(list[a]);
-
-		string selsize = "";
-		if (list.size() == 1)
-			type += S_FMT(" #%d", list[0]->getIndex());
-		else if (list.size() > 1)
-			selsize = S_FMT("(%d selected)", list.size());
-
-		// Create dialog for properties panel
-		wxDialog dlg(theMapEditor, -1, S_FMT("%s Properties %s", CHR(type), CHR(selsize)), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
-		dlg.SetInitialSize(wxSize(500, 500));
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		dlg.SetSizer(sizer);
-
-		// Create properties panel
-		MapObjectPropsPanel* panel_props = new MapObjectPropsPanel(&dlg);
-		panel_props->showApplyButton(false);
-		sizer->Add(panel_props, 1, wxEXPAND|wxALL, 4);
-
-		// Add dialog buttons
-		sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-		// Open current selection
-		panel_props->openObjects(list);
-
-		// Open the dialog and apply changes if OK was clicked
-		dlg.CenterOnParent();
-		if (dlg.ShowModal() == wxID_OK)
-		{
-			panel_props->applyChanges();
-			renderer_2d->forceUpdate(fade_lines);
-			Refresh();
-
-			if (editor->editMode() == MapEditor::MODE_THINGS)
-				editor->copyProperties(list[0]);
-		}
-
-		// End undo level
-		editor->undoManager()->endRecord(true);
+		editObjectProperties(list);
 
 		return true;
 	}
@@ -3033,7 +3097,26 @@ bool MapCanvas::handleAction(string id)
 	{
 		int type = editor->beginTagEdit();
 		if (type > 0)
+		{
 			mouse_state = MSTATE_TAG_SECTORS;
+
+			// Setup help text
+			string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+			feature_help_lines.clear();
+			feature_help_lines.push_back("Tag Edit");
+			feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
+			feature_help_lines.push_back(S_FMT("%s = Cancel", CHR(key_cancel)));
+			feature_help_lines.push_back("Left Click = Toggle tagged sector");
+		}
+
+		return true;
+	}
+
+	// Correct sectors
+	else if (id == "mapw_line_correctsectors")
+	{
+		editor->correctLineSectors();
 		return true;
 	}
 
@@ -3344,7 +3427,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	}
 
 	// Any other mouse button (let keybind system handle it)
-	else if (mouse_state == MSTATE_NORMAL)
+	else// if (mouse_state == MSTATE_NORMAL)
 		KeyBind::keyPressed(keypress_t(KeyBind::mbName(e.GetButton()), e.AltDown(), e.CmdDown(), e.ShiftDown()));
 
 	// Set focus
@@ -3424,6 +3507,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 					theApp->getAction("mapw_line_changetexture")->addToMenu(&menu_context);
 					theApp->getAction("mapw_line_changespecial")->addToMenu(&menu_context);
 					theApp->getAction("mapw_line_tagedit")->addToMenu(&menu_context);
+					theApp->getAction("mapw_line_correctsectors")->addToMenu(&menu_context);
 				}
 			}
 			else if (editor->editMode() == MapEditor::MODE_THINGS)
@@ -3483,6 +3567,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 
 			mouseToCenter();
 			fr_idle = 0;
+
 			return;
 		}
 	}
@@ -3495,12 +3580,25 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 	}
 
 	// Panning
-	if (mouse_state == MSTATE_PANNING)
+	if (panning)
 		pan((mouse_pos.x - e.GetX()) / view_scale, -((mouse_pos.y - e.GetY()) / view_scale));
 
 	// Update mouse variables
 	mouse_pos.set(e.GetX(), e.GetY());
 	mouse_pos_m.set(translateX(e.GetX()), translateY(e.GetY()));
+
+	// Update coordinates on status bar
+	double mx = mouse_pos_m.x;
+	double my = mouse_pos_m.y;
+	if (editor->gridSnap())
+	{
+		mx = editor->snapToGrid(mx);
+		my = editor->snapToGrid(my);
+	}
+	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
+		theMapEditor->SetStatusText(S_FMT("Position: (%1.3f, %1.3f)", mx, my), 3);
+	else
+		theMapEditor->SetStatusText(S_FMT("Position: (%d, %d)", (int)mx, (int)my), 3);
 
 	// Object edit
 	if (mouse_state == MSTATE_EDIT)
@@ -3604,9 +3702,9 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 void MapCanvas::onMouseLeave(wxMouseEvent& e)
 {
 	// Stop panning
-	if (mouse_state == MSTATE_PANNING)
+	if (panning)
 	{
-		mouse_state = MSTATE_NORMAL;
+		panning = false;
 		SetCursor(wxNullCursor);
 	}
 
