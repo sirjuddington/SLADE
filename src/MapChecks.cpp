@@ -1032,7 +1032,7 @@ private:
 public:
 	StuckThingsCheck(SLADEMap* map) : MapCheck(map) {}
 
-	virtual void doCheck()
+	void doCheck()
 	{
 		double radius;
 
@@ -1080,12 +1080,12 @@ public:
 		}
 	}
 
-	virtual unsigned nProblems()
+	unsigned nProblems()
 	{
 		return things.size();
 	}
 
-	virtual string problemDesc(unsigned index)
+	string problemDesc(unsigned index)
 	{
 		if (index >= things.size())
 			return "";
@@ -1093,12 +1093,12 @@ public:
 		return S_FMT("Thing %d is stuck inside line %d", things[index]->getIndex(), lines[index]->getIndex());
 	}
 
-	virtual bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
 		return false;
 	}
 
-	virtual MapObject* getObject(unsigned index)
+	MapObject* getObject(unsigned index)
 	{
 		if (index >= things.size())
 			return NULL;
@@ -1106,15 +1106,164 @@ public:
 		return things[index];
 	}
 
-	virtual string progressText()
+	string progressText()
 	{
 		return "Checking for things stuck in lines...";
 	}
 
-	virtual string fixText(unsigned fix_type, unsigned index)
+	string fixText(unsigned fix_type, unsigned index)
 	{
 		if (fix_type == 0)
 			return "Move Thing";
+
+		return "";
+	}
+};
+
+class SectorReferenceCheck : public MapCheck
+{
+private:
+	struct sector_ref_t
+	{
+		MapLine* line;
+		bool front;
+		MapSector* sector;
+		sector_ref_t(MapLine* line, bool front, MapSector* sector)
+		{
+			this->line = line;
+			this->front = front;
+			this->sector = sector;
+		}
+	};
+	vector<sector_ref_t> invalid_refs;
+
+public:
+	SectorReferenceCheck(SLADEMap* map) : MapCheck(map) {}
+
+	void checkLine(MapLine* line)
+	{
+		// Get 'correct' sectors
+		MapSector* s1 = map->getLineSideSector(line, true);
+		MapSector* s2 = map->getLineSideSector(line, false);
+
+		// Check front sector
+		if (s1 != line->frontSector())
+			invalid_refs.push_back(sector_ref_t(line, true, s1));
+
+		// Check back sector
+		if (s2 != line->backSector())
+			invalid_refs.push_back(sector_ref_t(line, false, s2));
+	}
+
+	void doCheck()
+	{
+		// Go through map lines
+		for (unsigned a = 0; a < map->nLines(); a++)
+			checkLine(map->getLine(a));
+	}
+
+	unsigned nProblems()
+	{
+		return invalid_refs.size();
+	}
+
+	string problemDesc(unsigned index)
+	{
+		if (index >= invalid_refs.size())
+			return "";
+
+		string side, sector;
+		MapSector* s1 = invalid_refs[index].line->frontSector();
+		MapSector* s2 = invalid_refs[index].line->backSector();
+		if (invalid_refs[index].front)
+		{
+			side = "front";
+			sector = s1 ? S_FMT("%d", s1->getIndex()) : "(none)";
+		}
+		else
+		{
+			side = "back";
+			sector = s2 ? S_FMT("%d", s2->getIndex()) : "(none)";
+		}
+
+		return S_FMT("Line %d has potentially wrong %s sector %s", invalid_refs[index].line->getIndex(), CHR(side), CHR(sector));
+	}
+
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	{
+		if (index >= invalid_refs.size())
+			return false;
+
+		if (fix_type == 0)
+		{
+			editor->beginUndoRecord("Correct Line Sector");
+
+			// Set sector
+			sector_ref_t ref = invalid_refs[index];
+			if (ref.sector)
+				map->setLineSector(ref.line->getIndex(), ref.sector->getIndex(), ref.front);
+			else
+			{
+				// Remove side if no sector
+				if (ref.front && ref.line->s1())
+					map->removeSide(ref.line->s1());
+				else if (!ref.front && ref.line->s2())
+					map->removeSide(ref.line->s2());
+			}
+
+			// Flip line if needed
+			if (!ref.line->s1() && ref.line->s2())
+				ref.line->flip();
+
+			editor->endUndoRecord();
+
+			// Remove problem (and any others for the line)
+			for (unsigned a = 0; a < invalid_refs.size(); a++)
+			{
+				if (invalid_refs[a].line == ref.line)
+				{
+					invalid_refs.erase(invalid_refs.begin() + a);
+					a--;
+				}
+			}
+
+			// Re-check line
+			checkLine(ref.line);
+
+			editor->updateDisplay();
+
+			return true;
+		}
+
+		return false;
+	}
+
+	MapObject* getObject(unsigned index)
+	{
+		if (index < invalid_refs.size())
+			return invalid_refs[index].line;
+
+		return NULL;
+	}
+
+	string progressText()
+	{
+		return "Checking sector references...";
+	}
+
+	string fixText(unsigned fix_type, unsigned index)
+	{
+		if (fix_type == 0)
+		{
+			if (index >= invalid_refs.size())
+				return "Fix Sector reference";
+
+			MapSector* sector = invalid_refs[index].sector;
+			if (sector)
+				return S_FMT("Set to Sector #%d", sector->getIndex());
+			else
+				return S_FMT("Clear Sector");
+		}
 
 		return "";
 	}
@@ -1163,4 +1312,9 @@ MapCheck* MapCheck::unknownThingTypeCheck(SLADEMap* map)
 MapCheck* MapCheck::stuckThingsCheck(SLADEMap* map)
 {
 	return new StuckThingsCheck(map);
+}
+
+MapCheck* MapCheck::sectorReferenceCheck(SLADEMap* map)
+{
+	return new SectorReferenceCheck(map);
 }

@@ -24,6 +24,7 @@ TODO List ---------------------------------------------------------------
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
 - Show line lenghts on line draw, object edit
+- Need to look at automatically updating vbos etc with geometry changes (not just using 'forceUpdate')
 
 
 --- Other 3.1 ---
@@ -47,6 +48,10 @@ TODO List ---------------------------------------------------------------
 	- Error pane rather than just displaying error output
 	- Ability to edit/compile library scripts
 	- Other script types (DIALOGUE etc)
+- Find & Replace
+	- Thing types
+	- Action specials
+	- Textures
 
 
 --- Features for 3.1.1 ---
