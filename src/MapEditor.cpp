@@ -1552,7 +1552,6 @@ void MapEditor::flipLines(bool sides)
 	undo_manager->endRecord(true);
 
 	// Update display
-	canvas->forceRefreshRenderer();
 	updateDisplay();
 }
 
@@ -1580,7 +1579,6 @@ void MapEditor::correctLineSectors()
 	if (changed)
 	{
 		addEditorMessage("Corrected Sector references");
-		canvas->forceRefreshRenderer();
 		updateDisplay();
 	}
 }
@@ -2095,9 +2093,6 @@ void MapEditor::createSector(double x, double y)
 	}
 	else
 		addEditorMessage("Sector creation failed: " + builder.getError());
-
-	// Refresh map canvas
-	canvas->forceRefreshRenderer();
 }
 
 #pragma endregion
@@ -2212,9 +2207,6 @@ void MapEditor::deleteObject()
 
 		// Remove detached vertices
 		map.removeDetachedVertices();
-
-		// Refresh map view
-		theMapEditor->forceRefresh(true);
 	}
 
 	// Things mode
