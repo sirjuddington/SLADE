@@ -345,7 +345,7 @@ void MapEditorConfigDialog::populateMapList()
 
 		// Create list item
 		wxListItem li;
-		li.SetId(index++);
+		li.SetId(index);
 		li.SetText(S_FMT("(%s) %s", CHR(fmt), CHR(maps[a].name)));
 		if (theGameConfiguration->mapFormatSupported(maps[a].format, game, port))
 			li.SetImage(0);
@@ -354,7 +354,7 @@ void MapEditorConfigDialog::populateMapList()
 
 		// Add to list
 		list_maps->InsertItem(li);
-		list_maps->SetItemImage(index, 0);
+		list_maps->SetItemImage(index++, 0);
 	}
 
 	// Restore selection

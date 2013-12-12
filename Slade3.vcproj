@@ -102,8 +102,8 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Checking svnrevision.h..."
-				CommandLine="&quot;$(OutDir)\updaterevision.exe&quot; src src/svnrevision.h"
+				Description="Checking gitinfo.h..."
+				CommandLine="&quot;$(OutDir)\updaterevision.exe&quot; src/gitinfo.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -122,7 +122,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="libmodplug\libmodplug"
+				AdditionalIncludeDirectories="src;libmodplug\libmodplug"
 				PreprocessorDefinitions="WIN32;USE_SFML_RENDERWINDOW;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;GLEW_STATIC;SFML_STATIC;NDEBUG;UPDATEREVISION"
 				GeneratePreprocessedFile="0"
 				StringPooling="true"
@@ -144,7 +144,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBCMT"
-				AdditionalDependencies="winmm.lib comctl32.lib rpcrt4.lib wsock32.lib user32.lib shell32.lib advapi32.lib comdlg32.lib gdi32.lib ole32.lib oleaut32.lib fluidsynth.lib FreeImage.lib wxbase29u.lib wxmsw29u_core.lib wxmsw29u_aui.lib wxmsw29u_gl.lib wxmsw29u_html.lib wxmsw29u_adv.lib wxmsw29u_stc.lib wxmsw29u_media.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregexu.lib wxexpat.lib wxscintilla.lib sfml-graphics-s.lib sfml-window-s.lib sfml-audio-s.lib sfml-system-s.lib sfml-main.lib"
+				AdditionalDependencies="winmm.lib comctl32.lib rpcrt4.lib wsock32.lib user32.lib shell32.lib advapi32.lib comdlg32.lib gdi32.lib ole32.lib oleaut32.lib fluidsynth.lib FreeImage.lib wxbase30u.lib wxmsw30u_core.lib wxmsw30u_aui.lib wxmsw30u_gl.lib wxmsw30u_html.lib wxmsw30u_adv.lib wxmsw30u_stc.lib wxmsw30u_media.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregexu.lib wxexpat.lib wxscintilla.lib sfml-graphics-s.lib sfml-window-s.lib sfml-audio-s.lib sfml-system-s.lib sfml-main.lib"
 				LinkIncremental="1"
 				GenerateManifest="true"
 				GenerateDebugInformation="true"
@@ -237,6 +237,14 @@
 			</File>
 			<File
 				RelativePath=".\src\PaletteDialog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Dialogs\RunDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Dialogs\RunDialog.h"
 				>
 			</File>
 			<File
@@ -403,6 +411,46 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="SetupWizard"
+				>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\BaseResourceWizardPage.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\BaseResourceWizardPage.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\NodeBuildersWizardPage.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\SetupWizardDialog.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\SetupWizardDialog.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\TempFolderWizardPage.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\TempFolderWizardPage.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\SetupWizard\WizardPageBase.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="General"
@@ -429,6 +477,14 @@
 			</File>
 			<File
 				RelativePath=".\src\Drawing.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Executables.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Executables.h"
 				>
 			</File>
 			<File
@@ -953,6 +1009,10 @@
 							>
 						</File>
 						<File
+							RelativePath=".\dist\res\config\languages\zdaemon.txt"
+							>
+						</File>
+						<File
 							RelativePath=".\dist\res\config\languages\zdoom.txt"
 							>
 						</File>
@@ -975,6 +1035,14 @@
 		<Filter
 			Name="Map Editor"
 			>
+			<File
+				RelativePath=".\src\MapChecks.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\MapChecks.h"
+				>
+			</File>
 			<File
 				RelativePath=".\src\MapEditor.cpp"
 				>
@@ -1024,11 +1092,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\ScriptEditorPanel.cpp"
+				RelativePath=".\src\ObjectEdit.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ScriptEditorPanel.h"
+				RelativePath=".\src\ObjectEdit.h"
 				>
 			</File>
 			<File
@@ -1067,6 +1135,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\MapChecksPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\MapChecksPanel.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\MapTextureBrowser.cpp"
 					>
 				</File>
@@ -1080,6 +1156,22 @@
 				</File>
 				<File
 					RelativePath=".\src\MCAnimations.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\ObjectEditPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\ObjectEditPanel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\ScriptEditorPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\ScriptEditorPanel.h"
 					>
 				</File>
 				<File
@@ -1267,6 +1359,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\MobjPropertyList.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\MobjPropertyList.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\SLADEMap.cpp"
 					>
 				</File>
@@ -1325,6 +1425,10 @@
 				<Filter
 					Name="Configurations"
 					>
+					<File
+						RelativePath=".\dist\res\config\executables.cfg"
+						>
+					</File>
 					<File
 						RelativePath=".\dist\res\config\nodebuilders.cfg"
 						>
@@ -2093,6 +2197,14 @@
 			</File>
 			<File
 				RelativePath=".\src\PaletteChooser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ResourceArchiveChooser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ResourceArchiveChooser.h"
 				>
 			</File>
 			<File

@@ -61,7 +61,7 @@
 #include <FreeImage.h>
 
 #ifdef UPDATEREVISION
-#include "svnrevision.h"
+#include "gitinfo.h"
 #endif
 
 
@@ -73,8 +73,8 @@ namespace Global
 	string error = "";
 
 	string version = "3.1.0 beta 2"
-#ifdef SVN_REVISION_STRING
-	                 " (r" SVN_REVISION_STRING ")"
+#ifdef GIT_DESCRIPTION
+	                 " (" GIT_DESCRIPTION ")"
 #endif
 	                 "";
 
