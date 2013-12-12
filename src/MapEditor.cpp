@@ -4341,127 +4341,77 @@ CONSOLE_COMMAND(m_show_item, 1, true)
 	theMapEditor->mapEditor().showItem(index);
 }
 
-CONSOLE_COMMAND(m_check_missing_tex, 0, true)
+CONSOLE_COMMAND(m_check, 0, true)
 {
-	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	MapCheck* check = MapCheck::missingTextureCheck(map);
-	check->doCheck();
+	if (args.empty())
+	{
+		theConsole->logMessage("Usage: m_check <check1> <check2> ...");
+		theConsole->logMessage("Available map checks:");
+		theConsole->logMessage("missing_tex: Check for missing textures");
+		theConsole->logMessage("special_tags: Check for missing action special tags");
+		theConsole->logMessage("intersecting_lines: Check for intersecting lines");
+		theConsole->logMessage("overlapping_lines: Check for overlapping lines");
+		theConsole->logMessage("overlapping_things: Check for overlapping things");
+		theConsole->logMessage("unknown_textures: Check for unknown wall textures");
+		theConsole->logMessage("unknown_flats: Check for unknown floor/ceiling textures");
+		theConsole->logMessage("unknown_things: Check for unknown thing types");
+		theConsole->logMessage("stuck_things: Check for things stuck in walls");
+		theConsole->logMessage("sector_references: Check for wrong sector references");
+		theConsole->logMessage("all: Run all checks");
 
-	theConsole->logMessage(S_FMT("%d missing textures", check->nProblems()));
+		return;
+	}
 
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
-
-CONSOLE_COMMAND(m_check_special_tags, 0, true)
-{
-	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	MapCheck* check = MapCheck::specialTagCheck(map);
-	check->doCheck();
-
-	theConsole->logMessage(S_FMT("%d Line(s) missing tags", check->nProblems()));
-
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
-
-CONSOLE_COMMAND(m_check_intersecting_lines, 0, true)
-{
-	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	MapCheck* check = MapCheck::intersectingLineCheck(map);
-	check->doCheck();
-
-	theConsole->logMessage(S_FMT("%d Line(s) intersecting", check->nProblems()));
-
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
-
-CONSOLE_COMMAND(m_check_overlapping_lines, 0, true)
-{
-	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	MapCheck* check = MapCheck::overlappingLineCheck(map);
-	check->doCheck();
-
-	theConsole->logMessage(S_FMT("%d Line(s) overlapping", check->nProblems()));
-
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
-
-CONSOLE_COMMAND(m_check_overlapping_things, 0, true)
-{
-	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	MapCheck* check = MapCheck::overlappingThingCheck(map);
-	check->doCheck();
-
-	theConsole->logMessage(S_FMT("%d Thing(s) overlapping", check->nProblems()));
-
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
-
-CONSOLE_COMMAND(m_check_unknown_textures, 0, true)
-{
 	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
 	MapTextureManager* texman = &(theMapEditor->textureManager());
-	MapCheck* check = MapCheck::unknownTextureCheck(map, texman);
-	check->doCheck();
 
-	theConsole->logMessage(S_FMT("%d Unknown wall textures", check->nProblems()));
+	// Get checks to run
+	vector<MapCheck*> checks;
+	for (unsigned a = 0; a < args.size(); a++)
+	{
+		string id = args[a].Lower();
+		unsigned n = checks.size();
 
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
+		if (id == "missing_tex" || id == "all")
+			checks.push_back(MapCheck::missingTextureCheck(map));
+		if (id == "special_tags" || id == "all")
+			checks.push_back(MapCheck::specialTagCheck(map));
+		if (id == "intersecting_lines" || id == "all")
+			checks.push_back(MapCheck::intersectingLineCheck(map));
+		if (id == "overlapping_lines" || id == "all")
+			checks.push_back(MapCheck::overlappingLineCheck(map));
+		if (id == "overlapping_things" || id == "all")
+			checks.push_back(MapCheck::overlappingThingCheck(map));
+		if (id == "unknown_textures" || id == "all")
+			checks.push_back(MapCheck::unknownTextureCheck(map, texman));
+		if (id == "unknown_flats" || id == "all")
+			checks.push_back(MapCheck::unknownFlatCheck(map, texman));
+		if (id == "unknown_things" || id == "all")
+			checks.push_back(MapCheck::unknownThingTypeCheck(map));
+		if (id == "stuck_things" || id == "all")
+			checks.push_back(MapCheck::stuckThingsCheck(map));
+		if (id == "sector_references" || id == "all")
+			checks.push_back(MapCheck::sectorReferenceCheck(map));
+		
+		if (n == checks.size())
+			theConsole->logMessage(S_FMT("Unknown check \"%s\"", CHR(id)));
+	}
 
-CONSOLE_COMMAND(m_check_unknown_flats, 0, true)
-{
-	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	MapTextureManager* texman = &(theMapEditor->textureManager());
-	MapCheck* check = MapCheck::unknownFlatCheck(map, texman);
-	check->doCheck();
+	// Run checks
+	for (unsigned a = 0; a < checks.size(); a++)
+	{
+		// Run
+		theConsole->logMessage(checks[a]->progressText());
+		checks[a]->doCheck();
 
-	theConsole->logMessage(S_FMT("%d Unknown flats", check->nProblems()));
+		// Check if no problems found
+		if (checks[a]->nProblems() == 0)
+			theConsole->logMessage(checks[a]->problemDesc(0));
 
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
-
-CONSOLE_COMMAND(m_check_unknown_things, 0, true)
-{
-	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	MapCheck* check = MapCheck::unknownThingTypeCheck(map);
-	check->doCheck();
-
-	theConsole->logMessage(S_FMT("%d Unknown thing(s)", check->nProblems()));
-
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
-
-CONSOLE_COMMAND(m_check_stuck_things, 0, true)
-{
-	SLADEMap* map = &(theMapEditor->mapEditor().getMap());
-	MapCheck* check = MapCheck::stuckThingsCheck(map);
-	check->doCheck();
-
-	theConsole->logMessage(S_FMT("%d Stuck thing(s)", check->nProblems()));
-
-	for (unsigned a = 0; a < check->nProblems(); a++)
-		theConsole->logMessage(check->problemDesc(a));
-}
-
-CONSOLE_COMMAND(m_check_all, 0, true)
-{
-	theConsole->execute("m_check_missing_tex");
-	theConsole->execute("m_check_special_tags");
-	theConsole->execute("m_check_intersecting_lines");
-	theConsole->execute("m_check_overlapping_lines");
-	theConsole->execute("m_check_overlapping_things");
-	theConsole->execute("m_check_unknown_textures");
-	theConsole->execute("m_check_unknown_flats");
-	theConsole->execute("m_check_unknown_things");
-	theConsole->execute("m_check_stuck_things");
+		// List problem details
+		for (unsigned b = 0; b < checks[a]->nProblems(); b++)
+			theConsole->logMessage(checks[a]->problemDesc(b));
+	}
 }
 
 #pragma endregion
