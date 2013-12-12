@@ -41,7 +41,7 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-const int NUMCOLS = 16;
+CVAR(Int, hex_grid_width, 16, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -55,6 +55,7 @@ const int NUMCOLS = 16;
  *******************************************************************/
 HexTable::HexTable()
 {
+	view_type = 0;
 }
 
 /* HexTable::~HexTable
@@ -69,7 +70,7 @@ HexTable::~HexTable()
  *******************************************************************/
 int HexTable::GetNumberRows()
 {
-	return (data.getSize() / NUMCOLS) + 1;
+	return (data.getSize() / hex_grid_width) + 1;
 }
 
 /* HexTable::GetNumberCols
@@ -77,20 +78,33 @@ int HexTable::GetNumberRows()
  *******************************************************************/
 int HexTable::GetNumberCols()
 {
-	return NUMCOLS;
+	return hex_grid_width;
 }
 
 /* HexTable::GetValue
- * Returns the value of the byte at [row],[col] as a hex string
+ * Returns the value of the byte at [row],[col] as a string
  *******************************************************************/
 string HexTable::GetValue(int row, int col)
 {
-	if (unsigned(row*NUMCOLS+col) >= data.getSize())
+	if (unsigned(row*hex_grid_width+col) >= data.getSize())
 		return "";
 	else
 	{
-		uint8_t val = data[row*NUMCOLS + col];
-		return S_FMT("%02X", val);
+		uint8_t val = data[row*hex_grid_width + col];
+
+		// Hex
+		if (view_type == 0)
+			return S_FMT("%02X", val);
+
+		// Dec
+		else if (view_type == 1)
+			return S_FMT("%d", val);
+
+		// ASCII
+		else if (view_type == 2)
+			return wxString::FromAscii((char)val);
+
+		return "";
 	}
 }
 
@@ -117,7 +131,7 @@ bool HexTable::loadData(MemChunk& mc)
  *******************************************************************/
 uint32_t HexTable::getOffset(int row, int col)
 {
-	return row*NUMCOLS + col;
+	return row*hex_grid_width + col;
 }
 
 /* HexTable::getUByteValue
@@ -244,12 +258,31 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
+	// 'Show As'
+	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(vbox, 0, wxEXPAND|wxALL, 4);
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, 4);
+
+	// Hex
+	rb_view_hex = new wxRadioButton(this, -1, "Hex", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	hbox->Add(new wxStaticText(this, -1, "View as: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(rb_view_hex, 0, wxEXPAND|wxRIGHT, 4);
+
+	// Decimal
+	rb_view_dec = new wxRadioButton(this, -1, "Decimal");
+	hbox->Add(rb_view_dec, 0, wxEXPAND|wxRIGHT, 4);
+
+	// ASCII
+	rb_view_ascii = new wxRadioButton(this, -1, "ASCII");
+	hbox->Add(rb_view_ascii, 0, wxEXPAND|wxRIGHT, 4);
+
 	// Create hex table
 	table_hex = new HexTable();
 
 	// Create hex grid
 	grid_hex = new wxGrid(this, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS|wxBORDER_SUNKEN);
-	sizer->Add(grid_hex, 0, wxEXPAND|wxALL, 4);
+	vbox->Add(grid_hex, 0, wxEXPAND);
 
 	// Setup hex grid
 	grid_hex->SetDefaultRowSize(26, true);
@@ -260,10 +293,10 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 	grid_hex->DisableDragGridSize();
 	grid_hex->SetDefaultCellAlignment(wxALIGN_CENTER, wxALIGN_CENTER);
 	grid_hex->SetTable(table_hex);
-	grid_hex->SetInitialSize(wxSize(27*NUMCOLS+8, -1));
+	grid_hex->SetInitialSize(wxSize(27*hex_grid_width+8, -1));
 
 	// Info frames
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(vbox, 1, wxEXPAND|wxALL);
 
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Values (General)");
@@ -329,6 +362,9 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Bind events
 	grid_hex->Bind(wxEVT_GRID_SELECT_CELL, &HexEditorPanel::onCellSelected, this);
 	btn_go_to_offset->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &HexEditorPanel::onBtnGoToOffset, this);
+	rb_view_hex->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &HexEditorPanel::onRBViewType, this);
+	rb_view_dec->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &HexEditorPanel::onRBViewType, this);
+	rb_view_ascii->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &HexEditorPanel::onRBViewType, this);
 
 	SetInitialSize(wxDefaultSize);
 	Layout();
@@ -479,11 +515,28 @@ void HexEditorPanel::onBtnGoToOffset(wxCommandEvent& e)
 	if (ofs >= 0)
 	{
 		// Determine row/col of offset
-		int row = ofs / NUMCOLS;
-		int col = ofs % NUMCOLS;
+		int row = ofs / hex_grid_width;
+		int col = ofs % hex_grid_width;
 
 		// Go to that cell
 		grid_hex->GoToCell(row, col);
 		grid_hex->SetFocus();
 	}
+}
+
+/* HexEditorPanel::onRBViewType
+ * Called when one of the 'View As' radio buttons is selected
+ *******************************************************************/
+void HexEditorPanel::onRBViewType(wxCommandEvent& e)
+{
+	// Set view type
+	if (rb_view_hex->GetValue())
+		table_hex->setViewType(0);
+	else if (rb_view_dec->GetValue())
+		table_hex->setViewType(1);
+	else
+		table_hex->setViewType(2);
+
+	// Refresh
+	grid_hex->Refresh();
 }

@@ -7,7 +7,8 @@
 class HexTable : public wxGridTableBase
 {
 private:
-	MemChunk data;
+	MemChunk	data;
+	int			view_type;
 
 public:
 	HexTable();
@@ -23,6 +24,7 @@ public:
 
 	bool		loadData(MemChunk& mc);
 	uint32_t	getOffset(int row, int col);
+	void		setViewType(int type) { view_type = type; }
 
 	// Get values
 	uint8_t		getUByteValue(uint32_t offset);
@@ -40,9 +42,12 @@ public:
 class HexEditorPanel : public wxPanel
 {
 private:
-	wxGrid*		grid_hex;
-	HexTable*	table_hex;
-	wxButton*	btn_go_to_offset;
+	wxGrid*			grid_hex;
+	HexTable*		table_hex;
+	wxButton*		btn_go_to_offset;
+	wxRadioButton*	rb_view_hex;
+	wxRadioButton*	rb_view_dec;
+	wxRadioButton*	rb_view_ascii;
 
 	// Info labels
 	wxStaticText*	label_offset;
@@ -74,6 +79,7 @@ public:
 
 	void	onCellSelected(wxGridEvent& e);
 	void	onBtnGoToOffset(wxCommandEvent& e);
+	void	onRBViewType(wxCommandEvent& e);
 };
 
 #endif//__HEX_EDITOR_PANEL_H__
