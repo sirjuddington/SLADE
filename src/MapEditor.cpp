@@ -4403,6 +4403,9 @@ CONSOLE_COMMAND(m_check, 0, true)
 		// List problem details
 		for (unsigned b = 0; b < checks[a]->nProblems(); b++)
 			theConsole->logMessage(checks[a]->problemDesc(b));
+
+		// Clean up
+		delete checks[a];
 	}
 }
 
