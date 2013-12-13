@@ -576,6 +576,10 @@ public:
 		int offset_x = READ_B16(mc, 4);
 		int offset_y = READ_B16(mc, 6);
 
+		//width and height should not be 0
+		if ((width == 0) || (height == 0))
+			return EDF_FALSE;
+
 		// Read column offsets
 		if (size < (8 + (width * 6)))
 			return EDF_FALSE;
