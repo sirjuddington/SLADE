@@ -526,7 +526,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 				done = true;
 			}
 			else
-				LOG_MESSAGE(2, S_FMT("Couldn't find entry to #include: %s", CHR(name)));
+				LOG_MESSAGE(2, "Couldn't find entry to #include: %s", CHR(name));
 
 			// Look in resource pack
 			if (use_res && !done && theArchiveManager->programResourceArchive())
@@ -1924,7 +1924,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 			// Check for no editor number (ie can't be placed in the map)
 			if (tz.peekToken() == "{")
 			{
-				LOG_MESSAGE(2, S_FMT("Not adding actor %s, no editor number", CHR(name)));
+				LOG_MESSAGE(2, "Not adding actor %s, no editor number", CHR(name));
 
 				// Skip actor definition
 				tz.skipToken();
@@ -1954,7 +1954,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						// Title
 						else if (S_CMPNOCASE(token, "//$Title"))
 						{
-							name = tz.getToken();
+							name = tz.getLine();
 							title_given = true;
 						}
 
@@ -1963,16 +1963,11 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 							name = tz.getToken();
 
 						// Category
-						else if (S_CMPNOCASE(token, "//$Category"))
-							group = tz.getToken();
+						else if (S_CMPNOCASE(token, "//$Group") || S_CMPNOCASE(token, "//$Category"))
+							group = tz.getLine();
 
 						// Sprite
-						else if (S_CMPNOCASE(token, "//$EditorSprite"))
-						{
-							found_props["sprite"] = tz.getToken();
-							sprite_given = true;
-						}
-						else if (S_CMPNOCASE(token, "//$Sprite"))
+						else if (S_CMPNOCASE(token, "//$EditorSprite") || S_CMPNOCASE(token, "//$Sprite"))
 						{
 							found_props["sprite"] = tz.getToken();
 							sprite_given = true;
@@ -2018,8 +2013,15 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						// Translation
 						else if (S_CMPNOCASE(token, "translation"))
 						{
-							found_props["translation"] = tz.getToken();
-							// TODO: multiple translation strings
+							string translation = "\"";
+							translation += tz.getToken();
+							while (tz.peekToken() == ",")
+							{
+								translation += tz.getToken(); // ,
+								translation += tz.getToken(); // next range
+							}
+							translation += "\"";
+							found_props["translation"] = translation;
 						}
 
 						// Solid
@@ -2033,7 +2035,9 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 
 							int statecounter = 0;
 							string spritestate;
+							string laststate;
 							int priority = 0;
+							int lastpriority = 0;
 
 							token = tz.getToken();
 							while (token != "}")
@@ -2041,29 +2045,54 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 								// Idle, See, Inactive, Spawn, and finally first defined
 								if (priority < SS_IDLE)
 								{
-									spritestate = token;
+									string myspritestate = token;
 									token = tz.getToken();
 									while (token.Cmp(":") && token.Cmp("}"))
 									{
-										spritestate = token;
+										myspritestate = token;
 										token = tz.getToken();
 									}
 									if (S_CMPNOCASE(token, "}"))
 										break;
 									string sb = tz.getToken(); // Sprite base
 									string sf = tz.getToken(); // Sprite frame(s)
-									string sprite = sb + sf.Left(1) + "?";
 									int mypriority = 0;
-									if (statecounter++ == 0)						mypriority = SS_FIRSTDEFINED;
-									if (S_CMPNOCASE(spritestate, "spawn"))			mypriority = SS_SPAWN;
-									else if (S_CMPNOCASE(spritestate, "inactive"))	mypriority = SS_INACTIVE;
-									else if (S_CMPNOCASE(spritestate, "see"))		mypriority = SS_SEE;
-									else if (S_CMPNOCASE(spritestate, "idle"))		mypriority = SS_IDLE;
+									// If the same state is given several names, 
+									// don't read the next name as a sprite name!
+									if (!sf.Cmp(":"))
+									{
+										if (S_CMPNOCASE(myspritestate, "spawn"))			mypriority = SS_SPAWN;
+										else if (S_CMPNOCASE(myspritestate, "inactive"))	mypriority = SS_INACTIVE;
+										else if (S_CMPNOCASE(myspritestate, "see"))			mypriority = SS_SEE;
+										else if (S_CMPNOCASE(myspritestate, "idle"))		mypriority = SS_IDLE;
+										if (mypriority > lastpriority)
+										{
+											laststate = myspritestate;
+											lastpriority = mypriority;
+										}
+										continue;
+									}
+									else
+									{
+										spritestate = myspritestate;
+										if (statecounter++ == 0)						mypriority = SS_FIRSTDEFINED;
+										if (S_CMPNOCASE(spritestate, "spawn"))			mypriority = SS_SPAWN;
+										else if (S_CMPNOCASE(spritestate, "inactive"))	mypriority = SS_INACTIVE;
+										else if (S_CMPNOCASE(spritestate, "see"))		mypriority = SS_SEE;
+										else if (S_CMPNOCASE(spritestate, "idle"))		mypriority = SS_IDLE;
+										if (lastpriority > mypriority)
+										{
+											spritestate = laststate;
+											mypriority = lastpriority;
+										}
+									}
+									string sprite = sb + sf.Left(1) + "?";
 									if (mypriority > priority)
 									{
 										priority = mypriority;
 										found_props["sprite"] = sprite;
-										LOG_MESSAGE(2, S_FMT("Actor %s found sprite %s from state %s", CHR(name), CHR(sprite), CHR(spritestate)));
+										LOG_MESSAGE(2, "Actor %s found sprite %s from state %s", CHR(name), CHR(sprite), CHR(spritestate));
+										lastpriority = -1;
 									}
 								}
 								else
@@ -2078,10 +2107,10 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						token = tz.getToken();
 					}
 
-					LOG_MESSAGE(2, S_FMT("Parsed actor %s: %d", CHR(name), type));
+					LOG_MESSAGE(2, "Parsed actor %s: %d", CHR(name), type);
 				}
 				else
-					LOG_MESSAGE(1, S_FMT("Warning: Invalid actor definition for %s", CHR(name)));
+					LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", CHR(name));
 
 				// Create thing type object if needed
 				if (!thing_types[type].type)
@@ -2107,13 +2136,24 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 					}
 
 					if (group_defaults)
+					{
 						tt->copy(group_defaults);
+					}
 				}
 
 				// Setup thing
 				tt->name = name;
 				tt->group = group.empty() ? "Decorate" : group;
-				if (found_props["sprite"].hasValue()) tt->sprite = found_props["sprite"].getStringValue();
+				if (found_props["sprite"].hasValue())
+				{
+					if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
+					{
+						if (!found_props["icon"].hasValue())
+							tt->icon = "tnt1a0";
+					}
+					else
+						tt->sprite = found_props["sprite"].getStringValue();
+				}
 				if (found_props["radius"].hasValue()) tt->radius = found_props["radius"].getIntValue();
 				if (found_props["height"].hasValue()) tt->height = found_props["height"].getIntValue();
 				if (found_props["hanging"].hasValue()) tt->hanging = found_props["hanging"].getBoolValue();
@@ -2168,7 +2208,7 @@ bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_for
 	// Get current flags
 	int flags = line->intProperty("flags");
 
-	// Impassible
+	// Impassable
 	if (flag == "blocking")
 		return !!(flags & 1);
 
@@ -2246,7 +2286,7 @@ void GameConfiguration::setLineBasicFlag(string flag, MapLine* line, int map_for
 	int flags = line->intProperty("flags");
 	int fval = 0;
 
-	// Impassible
+	// Impassable
 	if (flag == "blocking")
 		fval = 1;
 
@@ -3016,4 +3056,9 @@ CONSOLE_COMMAND(dumpactionspecials, 0, false)
 CONSOLE_COMMAND(dumpudmfprops, 0, false)
 {
 	theGameConfiguration->dumpUDMFProperties();
+}
+
+CONSOLE_COMMAND(dumpthingtypes, 0, false)
+{
+	theGameConfiguration->dumpThingTypes();
 }
