@@ -1063,7 +1063,7 @@ void TextEditor::onFRDBtnFindNext(wxCommandEvent& e)
 
 	// Do find
 	if (!findNext(find))
-		wxLogMessage(S_FMT("No text matching \"%s\" found.", CHR(find)));
+		wxLogMessage("No text matching \"%s\" found.", CHR(find));
 }
 
 /* TextEditor::onFRDBtnReplace

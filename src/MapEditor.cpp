@@ -197,7 +197,7 @@ public:
 
 	bool doRedo()
 	{
-		//LOG_MESSAGE(2, S_FMT("Restore %d objects", backups.size()));
+		//LOG_MESSAGE(2, "Restore %d objects", backups.size());
 		for (unsigned a = 0; a < backups.size(); a++)
 		{
 			MapObject* obj = UndoRedo::currentMap()->getObjectById(backups[a]->id);
@@ -2467,7 +2467,7 @@ void MapEditor::endLineDraw(bool apply)
 		{
 			// Check for intersections
 			vector<fpoint2_t> intersect = map.cutLines(draw_points[a].x, draw_points[a].y, draw_points[a+1].x, draw_points[a+1].y);
-			LOG_MESSAGE(2, S_FMT("%d intersect points", intersect.size()));
+			LOG_MESSAGE(2, "%d intersect points", intersect.size());
 
 			// Create line normally if no intersections
 			if (intersect.size() == 0)

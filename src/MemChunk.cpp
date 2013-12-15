@@ -288,7 +288,7 @@ bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size)
 	wxFile file(filename, wxFile::write);
 	if (!file.IsOpened())
 	{
-		wxLogMessage(S_FMT("Unable to write to file %s", filename.c_str()));
+		wxLogMessage("Unable to write to file %s", filename.c_str());
 		Global::error = "Unable to open file for writing";
 		return false;
 	}
