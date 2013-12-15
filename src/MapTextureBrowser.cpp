@@ -52,7 +52,7 @@ string MapTexBrowserItem::itemInfo()
 		return "No Texture";
 
 	// Add dimensions if known
-	if (image)
+	if (image || loadImage())
 		info += S_FMT("%dx%d", image->getWidth(), image->getHeight());
 	else
 		info += "Unknown size";
