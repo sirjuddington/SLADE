@@ -106,9 +106,9 @@ public:
 	string problemDesc(unsigned index)
 	{
 		if (index < lines.size())
-			return S_FMT("Line %d missing %s texture", lines[index]->getIndex(), texName(parts[index]));
+			return S_FMT("Line %d missing %s", lines[index]->getIndex(), texName(parts[index]));
 		else
-			return "";
+			return "No missing textures found";
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
@@ -220,7 +220,7 @@ public:
 	string problemDesc(unsigned index)
 	{
 		if (index >= lines.size())
-			return "";
+			return "No missing special tags found";
 
 		int special = lines[index]->getSpecial();
 		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
@@ -323,7 +323,7 @@ public:
 	string problemDesc(unsigned index)
 	{
 		if (index >= intersections.size())
-			return "";
+			return "No intersecting lines found";
 
 		return S_FMT("Lines %d and %d are intersecting at (%1.2f, %1.2f)",
 			intersections[index].line1->getIndex(), intersections[index].line2->getIndex(),
@@ -448,7 +448,7 @@ public:
 	string problemDesc(unsigned index)
 	{
 		if (index >= overlaps.size())
-			return "";
+			return "No overlapping lines found";
 
 		return S_FMT("Lines %d and %d are overlapping", overlaps[index].line1->getIndex(), overlaps[index].line2->getIndex());
 	}
@@ -578,7 +578,7 @@ public:
 	string problemDesc(unsigned index)
 	{
 		if (index >= overlaps.size())
-			return "";
+			return "No overlapping things found";
 
 		return S_FMT("Things %d and %d are overlapping", overlaps[index].thing1->getIndex(), overlaps[index].thing2->getIndex());
 	}
@@ -737,7 +737,7 @@ public:
 	string problemDesc(unsigned index)
 	{
 		if (index >= lines.size())
-			return "";
+			return "No unknown wall textures found";
 
 		string line = S_FMT("Line %d has unknown ", lines[index]->getIndex());
 		switch (parts[index])
@@ -884,7 +884,7 @@ public:
 	virtual string problemDesc(unsigned index)
 	{
 		if (index >= sectors.size())
-			return "";
+			return "No unknown flats found";
 
 		MapSector* sector = sectors[index];
 		if (floor[index])
@@ -974,7 +974,7 @@ public:
 	virtual string problemDesc(unsigned index)
 	{
 		if (index >= things.size())
-			return "";
+			return "No unknown thing types found";
 
 		return S_FMT("Thing %d has unknown type %d", things[index]->getIndex(), things[index]->getType());
 	}
@@ -1088,7 +1088,7 @@ public:
 	string problemDesc(unsigned index)
 	{
 		if (index >= things.size())
-			return "";
+			return "No stuck things found";
 
 		return S_FMT("Thing %d is stuck inside line %d", things[index]->getIndex(), lines[index]->getIndex());
 	}
@@ -1195,7 +1195,7 @@ public:
 	string problemDesc(unsigned index)
 	{
 		if (index >= invalid_refs.size())
-			return "";
+			return "No wrong sector references found";
 
 		string side, sector;
 		MapSector* s1 = invalid_refs[index].line->frontSector();

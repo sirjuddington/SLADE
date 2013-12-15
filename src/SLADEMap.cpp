@@ -120,6 +120,11 @@ MapObject* SLADEMap::getObject(uint8_t type, unsigned index)
 	return NULL;
 }
 
+void SLADEMap::setGeometryUpdated()
+{
+	geometry_updated = theApp->runTimer();
+}
+
 void SLADEMap::refreshIndices()
 {
 	// Vertex indices
@@ -3104,6 +3109,10 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 	else
 		dir = mid + dir;
 
+	// Rotate very slightly to avoid some common cases where
+	// the ray will cross a vertex exactly
+	dir = MathStuff::rotatePoint(mid, dir, 0.01);
+
 	// Find closest line intersecting front/back vector
 	double dist;
 	double min_dist = 99999999;
@@ -3125,8 +3134,21 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 	// and return the appropriate sector
 	if (index >= 0)
 	{
-		LOG_MESSAGE(3, "Closest line %d", index);
+		//LOG_MESSAGE(3, "Closest line %d", index);
 		MapLine* l = lines[index];
+
+		// Check side of line
+		MapSector* sector = NULL;
+		if (MathStuff::lineSide(mid.x, mid.y, l->x1(), l->y1(), l->x2(), l->y2()) >= 0)
+			sector = l->frontSector();
+		else
+			sector = l->backSector();
+
+		// Just return the sector if it already matches
+		if (front && sector == line->frontSector())
+			return sector;
+		if (!front && sector == line->backSector())
+			return sector;
 
 		// Check if we can trace back from the front side
 		SectorBuilder builder;
@@ -3628,6 +3650,10 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
 		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
 		theGameConfiguration->setLineBasicFlag("twosided", lines[line], current_format, twosided);
+
+		// Invalidate sector polygon
+		sectors[sector]->resetPolygon();
+		setGeometryUpdated();
 
 		return true;
 	}

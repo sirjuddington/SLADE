@@ -456,6 +456,8 @@ void MapLine::flip(bool sides)
 	}
 
 	resetInternals();
+	if (parent_map)
+		parent_map->setGeometryUpdated();
 }
 
 void MapLine::writeBackup(mobj_backup_t* backup)

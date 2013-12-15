@@ -101,7 +101,7 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_unknown_tex->SetValue(true);
 	cb_unknown_things->SetValue(true);
 	cb_stuck_things->SetValue(true);
-	cb_sector_refs->SetValue(true);
+	//cb_sector_refs->SetValue(true);
 
 	btn_fix1->Show(false);
 	btn_fix2->Show(false);
