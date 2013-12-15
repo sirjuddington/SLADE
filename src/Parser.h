@@ -55,8 +55,8 @@ public:
 
 	ParseTreeNode*	parseTreeRoot() { return pt_root; }
 
-	bool	parseText(MemChunk& mc, string source = "memory chunk");
-	bool	parseText(string& text, string source = "string");
+	bool	parseText(MemChunk& mc, string source = "memory chunk", bool debug = false);
+	bool	parseText(string& text, string source = "string", bool debug = false);
 	void	define(string def);
 	bool	defined(string def);
 };

@@ -288,7 +288,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 					double val;
 					token.ToDouble(&val);
 					value = (double)val;
-					//LOG_MESSAGE(3, S_FMT("%s: %s is float %1.3f", CHR(name), CHR(token), val));
+					//LOG_MESSAGE(3, "%s: %s is float %1.3f", CHR(name), CHR(token), val);
 				}
 				else									// Unknown, just treat as string
 					value = token;
@@ -429,9 +429,10 @@ Parser::~Parser()
  * 		</base>
  * 	</root>
  *******************************************************************/
-bool Parser::parseText(MemChunk& mc, string source)
+bool Parser::parseText(MemChunk& mc, string source, bool debug)
 {
 	Tokenizer tz;
+	if (debug) tz.enableDebug(debug);
 
 	// Open the given text data
 	if (!tz.openMem(&mc, source))
@@ -443,10 +444,12 @@ bool Parser::parseText(MemChunk& mc, string source)
 	// Do parsing
 	return pt_root->parse(tz);
 }
-bool Parser::parseText(string& text, string source)
+bool Parser::parseText(string& text, string source, bool debug)
 {
-	// Open the given text data
 	Tokenizer tz;
+	if (debug) tz.enableDebug(debug);
+
+	// Open the given text data
 	if (!tz.openString(text, 0, 0, source))
 	{
 		wxLogMessage("Unable to open text data for parsing");
