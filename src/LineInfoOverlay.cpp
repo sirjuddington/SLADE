@@ -45,11 +45,11 @@ void LineInfoOverlay::update(MapLine* line)
 		info.push_back(S_FMT("Special: %d (%s)", as_id, CHR(theGameConfiguration->actionSpecialName(as_id))));
 
 	// Line trigger
-	if (map_format == MAP_HEXEN || theMapEditor->currentMapDesc().format == MAP_UDMF)
+	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
 		info.push_back(S_FMT("Trigger: %s", CHR(theGameConfiguration->spacTriggerString(line, map_format))));
 
 	// Line args (or sector tag)
-	if (map_format == MAP_HEXEN || theMapEditor->currentMapDesc().format == MAP_UDMF)
+	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
 	{
 		int args[5];
 		args[0] = line->intProperty("arg0");
@@ -67,7 +67,8 @@ void LineInfoOverlay::update(MapLine* line)
 		info.push_back(S_FMT("Sector Tag: %d", line->intProperty("arg0")));
 
 	// Line flags
-	//info.push_back(S_FMT("Flags: %s", CHR(theGameConfiguration->lineFlagsString(line))));
+	if (map_format != MAP_UDMF)
+		info.push_back(S_FMT("Flags: %s", CHR(theGameConfiguration->lineFlagsString(line))));
 
 	// Front side
 	MapSide* s = line->s1();
