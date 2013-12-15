@@ -304,7 +304,7 @@ void Tokenizer::skipMultilineComment()
 /* Tokenizer::readToken
  * Reads the next 'token' from the text & moves past it
  *******************************************************************/
-void Tokenizer::readToken()
+void Tokenizer::readToken(bool toeol)
 {
 	token_current.clear();
 	bool ready = false;
@@ -409,7 +409,7 @@ void Tokenizer::readToken()
 	else
 	{
 		// Read token (don't include whitespace)
-		while (!isWhitespace(current[0]))
+		while (!((!toeol && isWhitespace(current[0])) || current[0] == '\n'))
 		{
 			// Return if special character found
 			if (isSpecialCharacter(current[0]))
@@ -447,6 +447,17 @@ void Tokenizer::skipToken()
 string Tokenizer::getToken()
 {
 	readToken();
+	return token_current;
+}
+
+/* Tokenizer::getLine
+ * Gets the rest of the line (including whitespace) as a single token
+ * and moves past it, returns a blank string if we're at the end of 
+ * the text
+ *******************************************************************/
+string Tokenizer::getLine()
+{
+	readToken(true);
 	return token_current;
 }
 
