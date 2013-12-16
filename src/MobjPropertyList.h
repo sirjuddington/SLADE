@@ -6,26 +6,20 @@
 
 class MobjPropertyList
 {
-private:
+public:
 	struct prop_t
 	{
 		string		name;
 		Property	value;
 
-		prop_t(string name)
-		{
-			this->name = name;
-		}
-
+		prop_t(string name) { this->name = name; }
 		prop_t(string name, Property value)
 		{
 			this->name = name;
 			this->value = value;
 		}
 	};
-	vector<prop_t>	properties;
 
-public:
 	MobjPropertyList();
 	~MobjPropertyList();
 
@@ -42,16 +36,19 @@ public:
 		return properties.back().value;
 	}
 
+	vector<prop_t>&	allProperties() { return properties; }
+
 	void	clear() { properties.clear(); }
 	bool	propertyExists(string key);
 	bool	removeProperty(string key);
 	void	copyTo(MobjPropertyList& list);
 	void	addFlag(string key);
-	void	allProperties(vector<Property>& list);
-	void	allPropertyNames(vector<string>& list);
 	bool	isEmpty() { return properties.empty(); }
 
 	string	toString(bool condensed = false);
+
+private:
+	vector<prop_t>	properties;
 };
 
 #endif//__MOBJ_PROPERTY_LIST_H__

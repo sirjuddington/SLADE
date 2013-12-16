@@ -18,6 +18,7 @@ private:
 	Property			default_value;
 	vector<Property>	values;
 	bool				show_always;
+	bool				internal_only;
 
 public:
 	UDMFProperty();
@@ -32,6 +33,7 @@ public:
 	bool		isFlag() { return flag; }
 	bool		isTrigger() { return trigger; }
 	bool		showAlways() { return show_always; }
+	bool		internalOnly() { return internal_only; }
 
 	void	parse(ParseTreeNode* node, string group);
 

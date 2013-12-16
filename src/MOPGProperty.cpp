@@ -27,6 +27,7 @@ void MOPGProperty::resetValue()
 MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name)
 	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_BOOL)
 {
+	propname = name;
 }
 
 void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
@@ -82,6 +83,7 @@ void MOPGBoolProperty::applyValue()
 MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name)
 	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_INT)
 {
+	propname = name;
 }
 
 void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
@@ -137,6 +139,7 @@ void MOPGIntProperty::applyValue()
 MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name)
 	: wxFloatProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_FLOAT)
 {
+	propname = name;
 }
 
 void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
@@ -192,6 +195,7 @@ void MOPGFloatProperty::applyValue()
 MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name)
 	: wxStringProperty(label, name, ""), MOPGProperty(MOPGProperty::TYPE_STRING)
 {
+	propname = name;
 }
 
 void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
@@ -253,6 +257,7 @@ MOPGActionSpecialProperty::MOPGActionSpecialProperty(const wxString& label, cons
 	args[2] = NULL;
 	args[3] = NULL;
 	args[4] = NULL;
+	propname = name;
 
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
@@ -374,6 +379,7 @@ MOPGThingTypeProperty::MOPGThingTypeProperty(const wxString& label, const wxStri
 	args[2] = NULL;
 	args[3] = NULL;
 	args[4] = NULL;
+	propname = name;
 
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
@@ -492,6 +498,7 @@ MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString
 {
 	// Init variables
 	this->index = index;
+	propname = name;
 }
 
 void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
@@ -549,6 +556,7 @@ MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxStri
 {
 	// Init variables
 	this->index = index;
+	propname = name;
 }
 
 void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
@@ -604,6 +612,7 @@ void MOPGThingFlagProperty::applyValue()
 MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name)
 	: wxEditEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_ANGLE)
 {
+	propname = name;
 	// Set to combo box editor
 	//SetEditor(wxPGEditor_ComboBox);
 
@@ -702,6 +711,7 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
 MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name)
 	: wxColourProperty(label, name), MOPGProperty(MOPGProperty::TYPE_COLOUR)
 {
+	propname = name;
 }
 
 void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
@@ -762,6 +772,7 @@ MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, con
 {
 	// Init variables
 	this->textype = textype;
+	propname = name;
 
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
@@ -841,6 +852,8 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name)
 	: wxEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_SPAC)
 {
+	propname = name;
+
 	// Set to combo box editor
 	SetEditor(wxPGEditor_ComboBox);
 
@@ -905,6 +918,8 @@ void MOPGSPACTriggerProperty::applyValue()
 MOPGTagProperty::MOPGTagProperty(const wxString& label, const wxString& name)
 	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ID)
 {
+	propname = name;
+
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
@@ -989,6 +1004,8 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 MOPGSectorSpecialProperty::MOPGSectorSpecialProperty(const wxString& label, const wxString& name)
 	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_SSPECIAL)
 {
+	propname = name;
+
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
