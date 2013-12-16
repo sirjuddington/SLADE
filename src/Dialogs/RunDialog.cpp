@@ -219,7 +219,8 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 		}
 
 		// IWAD
-		path.Replace("%i", S_FMT("\"%s\"", CHR(theArchiveManager->baseResourceArchive()->getFilename())));
+		Archive* bra = theArchiveManager->baseResourceArchive();
+		path.Replace("%i", S_FMT("\"%s\"", bra ? CHR(bra->getFilename()) : ""));
 
 		// Resources
 		path.Replace("%r", getSelectedResourceList());
