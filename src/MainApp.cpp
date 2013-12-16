@@ -792,7 +792,7 @@ int MainApp::OnExit()
 	f.Close();
 
 	// Close the map editor if it's open
-	theMapEditor->Close();
+	MapEditorWindow::deleteInstance();
 
 	// Close all open archives
 	theArchiveManager->closeAll();
