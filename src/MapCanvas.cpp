@@ -3753,7 +3753,11 @@ void MapCanvas::onFocus(wxFocusEvent& e)
 	{
 		if (editor->editMode() == MapEditor::MODE_3D)
 			lockMouse(true);
+		timer.Start(-1, true);
 	}
 	else if (e.GetEventType() == wxEVT_KILL_FOCUS)
+	{
+		timer.Stop();
 		lockMouse(false);
+	}
 }
