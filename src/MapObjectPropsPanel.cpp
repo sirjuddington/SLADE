@@ -6,8 +6,10 @@
 #include "SLADEMap.h"
 #include "MOPGProperty.h"
 #include "MapEditorWindow.h"
+#include "Icons.h"
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
+#include <wx/gbsizer.h>
 
 CVAR(Bool, mobj_props_show_all, false, CVAR_SAVE)
 
@@ -16,6 +18,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Init variables
 	last_type = -1;
+	group_custom = NULL;
 
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -44,14 +47,21 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// Add buttons
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Add button
+	btn_add = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add->SetToolTip("Add Property");
+	hbox->Add(btn_add, 0, wxEXPAND|wxRIGHT, 4);
 	hbox->AddStretchSpacer(1);
 
 	// Reset button
-	btn_reset = new wxButton(this, -1, "Reset");
+	btn_reset = new wxBitmapButton(this, -1, getIcon("t_close"));
+	btn_reset->SetToolTip("Discard Changes");
 	hbox->Add(btn_reset, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Apply button
-	btn_apply = new wxButton(this, -1, "Apply Changes");
+	btn_apply = new wxBitmapButton(this, -1, getIcon("i_tick"));
+	btn_apply->SetToolTip("Apply Changes");
 	hbox->Add(btn_apply, 0, wxEXPAND);
 
 	wxPGCell cell;
@@ -62,6 +72,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	btn_apply->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapObjectPropsPanel::onBtnApply, this);
 	btn_reset->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapObjectPropsPanel::onBtnReset, this);
 	cb_show_all->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &MapObjectPropsPanel::onShowAllToggled, this);
+	btn_add->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapObjectPropsPanel::onBtnAdd, this);
 
 	// Hide side property grids
 	pg_props_side1->Show(false);
@@ -700,6 +711,46 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	else
 		setupType(objects[0]->getObjType());
 
+	// Find any custom properties
+	for (unsigned a = 0; a < objects.size(); a++)
+	{
+		// Go through object properties
+		vector<MobjPropertyList::prop_t> objprops = objects[a]->props().allProperties();
+		for (unsigned b = 0; b < objprops.size(); b++)
+		{
+			// Check if property is already on the list
+			bool exists = false;
+			for (unsigned c = 0; c < properties.size(); c++)
+			{
+				if (properties[c]->getPropName() == objprops[b].name)
+				{
+					exists = true;
+					break;
+				}
+			}
+
+			if (!exists)
+			{
+				// Create custom group if needed
+				if (!group_custom)
+					group_custom = pg_properties->Append(new wxPropertyCategory("Custom"));
+
+				// Add property
+				switch (objprops[b].value.getType())
+				{
+				case PROP_BOOL:
+					addBoolProperty(group_custom, objprops[b].name, objprops[b].name); break;
+				case PROP_INT:
+					addIntProperty(group_custom, objprops[b].name, objprops[b].name); break;
+				case PROP_FLOAT:
+					addFloatProperty(group_custom, objprops[b].name, objprops[b].name); break;
+				default:
+					addStringProperty(group_custom, objprops[b].name, objprops[b].name); break;
+				}
+			}
+		}
+	}
+
 	// Generic properties
 	for (unsigned a = 0; a < properties.size(); a++)
 		properties[a]->openObjects(objects);
@@ -774,4 +825,87 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 
 	// Refresh the list
 	openObjects(objects);
+}
+
+void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
+{
+	wxDialog dlg(this, -1, "Add UDMF Property");
+	
+	// Setup dialog sizer
+	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+	dlg.SetSizer(msizer);
+	wxGridBagSizer* sizer = new wxGridBagSizer(10, 10);
+	msizer->Add(sizer, 1, wxEXPAND|wxALL, 10);
+
+	// Name
+	wxTextCtrl* text_name = new wxTextCtrl(&dlg, -1, "");
+	sizer->Add(new wxStaticText(&dlg, -1, "Name:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(text_name, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
+
+	// Type
+	string types[] ={ "Boolean", "String", "Integer", "Float", "Angle", "Texture (Wall)", "Texture (Flat)", "Colour" };
+	wxChoice* choice_type = new wxChoice(&dlg, -1, wxDefaultPosition, wxDefaultSize, 7, types);
+	choice_type->SetSelection(0);
+	sizer->Add(new wxStaticText(&dlg, -1, "Type:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(choice_type, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
+
+	// Buttons
+	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Show dialog
+	dlg.Layout();
+	dlg.Fit();
+	dlg.CenterOnParent();
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		// Create custom group if needed
+		if (!group_custom)
+			group_custom = pg_properties->Append(new wxPropertyCategory("Custom"));
+
+		// Get name entered
+		string propname = text_name->GetValue().Lower();
+		if (propname == "" || propname.Contains(" "))	// TODO: Proper regex check
+		{
+			wxMessageBox("Invalid property name", "Error");
+			return;
+		}
+
+		// Check if existing
+		for (unsigned a = 0; a < properties.size(); a++)
+		{
+			if (properties[a]->getPropName() == propname)
+			{
+				wxMessageBox(S_FMT("Property \"%s\" already exists", CHR(propname)), "Error");
+				return;
+			}
+		}
+
+		// Add property
+		if (choice_type->GetSelection() == 0)
+			addBoolProperty(group_custom, propname, propname);
+		else if (choice_type->GetSelection() == 1)
+			addStringProperty(group_custom, propname, propname);
+		else if (choice_type->GetSelection() == 2)
+			addIntProperty(group_custom, propname, propname);
+		else if (choice_type->GetSelection() == 3)
+			addFloatProperty(group_custom, propname, propname);
+		else if (choice_type->GetSelection() == 4)
+		{
+			MOPGAngleProperty* prop_angle = new MOPGAngleProperty(propname, propname);
+			prop_angle->setParent(this);
+			properties.push_back(prop_angle);
+			pg_properties->AppendIn(group_custom, prop_angle);
+		}
+		else if (choice_type->GetSelection() == 5)
+			addTextureProperty(group_custom, propname, propname, 0);
+		else if (choice_type->GetSelection() == 6)
+			addTextureProperty(group_custom, propname, propname, 1);
+		else if (choice_type->GetSelection() == 7)
+		{
+			MOPGColourProperty* prop_col = new MOPGColourProperty(propname, propname);
+			prop_col->setParent(this);
+			properties.push_back(prop_col);
+			pg_properties->AppendIn(group_custom, prop_col);
+		}
+	}
 }

@@ -24,6 +24,8 @@ private:
 	wxButton*				btn_reset;
 	wxButton*				btn_apply;
 	wxCheckBox*				cb_show_all;
+	wxButton*				btn_add;
+	wxPGProperty*			group_custom;
 
 	MOPGProperty*	addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
 	MOPGProperty*	addIntProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
@@ -55,6 +57,7 @@ public:
 	void	onBtnApply(wxCommandEvent& e);
 	void	onBtnReset(wxCommandEvent& e);
 	void	onShowAllToggled(wxCommandEvent& e);
+	void	onBtnAdd(wxCommandEvent& e);
 };
 
 #endif//__MAP_OBJECT_PROPS_PANEL_H__

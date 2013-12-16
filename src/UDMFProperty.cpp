@@ -11,6 +11,7 @@ UDMFProperty::UDMFProperty()
 	trigger = false;
 	type = -1;
 	show_always = false;
+	internal_only = false;
 }
 
 UDMFProperty::~UDMFProperty()
