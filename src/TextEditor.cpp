@@ -344,6 +344,9 @@ bool TextEditor::loadEntry(ArchiveEntry* entry)
 	// Get character entry data
 	//string text = wxString::From8BitData((const char*)entry->getData(), entry->getSize());
 	string text = wxString::FromUTF8((const char*)entry->getData(), entry->getSize());
+	// If opening as UTF8 failed for some reason, try again as 8-bit data
+	if (text.length() == 0)
+		text = wxString::From8BitData((const char*)entry->getData(), entry->getSize());
 
 	// Load text into editor
 	SetText(text);
