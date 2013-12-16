@@ -520,6 +520,9 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 			// Get the entry
 			bool done = false;
 			ArchiveEntry* entry_inc = entry->getParent()->entryAtPath(name);
+			// DECORATE paths start from the root, not from the #including entry's directory
+			if (!entry_inc)
+				entry_inc = entry->getParent()->entryAtPath(inc_name);
 			if (entry_inc)
 			{
 				buildConfig(entry_inc, out);
@@ -625,6 +628,10 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 
 void GameConfiguration::readThingTypes(ParseTreeNode* node, ThingType* group_defaults)
 {
+	// Check if we're clearing all existing specials
+	if (node->getChild("clearexisting"))
+		thing_types.clear();
+
 	// --- Determine current 'group' ---
 	ParseTreeNode* group = node;
 	string groupname = "";
@@ -975,12 +982,16 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 	{
 		node = (ParseTreeNode*)base->getChild(a);
 
-		// Skip game/port section
+		// Skip read game/port section
 		if (node == node_game || node == node_port)
 			continue;
 
+		// A TC configuration may override the base game
+		if (S_CMPNOCASE(node->getName(), "game"))
+			readGameSection(node, false);
+
 		// Action specials section
-		if (S_CMPNOCASE(node->getName(), "action_specials"))
+		else if (S_CMPNOCASE(node->getName(), "action_specials"))
 			readActionSpecials(node);
 
 		// Thing types section
@@ -1937,14 +1948,15 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				tz.getInteger(&type);
 				string group;
 				PropertyList found_props;
+				bool title_given = false;
+				bool sprite_given = false;
+				bool group_given = false;
 
 				// Check for actor definition open
 				token = tz.getToken();
 				if (token == "{")
 				{
 					token = tz.getToken();
-					bool title_given = false;
-					bool sprite_given = false;
 					while (token != "}")
 					{
 						// Check for subsection
@@ -1964,7 +1976,10 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 
 						// Category
 						else if (S_CMPNOCASE(token, "//$Group") || S_CMPNOCASE(token, "//$Category"))
+						{
 							group = tz.getLine();
+							group_given = true;
+						}
 
 						// Sprite
 						else if (S_CMPNOCASE(token, "//$EditorSprite") || S_CMPNOCASE(token, "//$Sprite"))
@@ -2112,6 +2127,8 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				else
 					LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", CHR(name));
 
+				bool defined = false;
+
 				// Create thing type object if needed
 				if (!thing_types[type].type)
 				{
@@ -2120,6 +2137,8 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 					thing_types[type].number = type;
 					thing_types[type].type->decorate = true;
 				}
+				else
+					defined = true;
 				ThingType* tt = thing_types[type].type;
 
 				// Get group defaults (if any)
@@ -2142,17 +2161,22 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				}
 
 				// Setup thing
-				tt->name = name;
-				tt->group = group.empty() ? "Decorate" : group;
-				if (found_props["sprite"].hasValue())
+				if (!defined || title_given)
+					tt->name = name;
+				if (!defined || group_given)
+					tt->group = group.empty() ? "Decorate" : group;
+				if (!defined || sprite_given)
 				{
-					if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
+					if (found_props["sprite"].hasValue())
 					{
-						if (!found_props["icon"].hasValue())
-							tt->icon = "tnt1a0";
+						if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
+						{
+							if (!found_props["icon"].hasValue())
+								tt->icon = "tnt1a0";
+						}
+						else
+							tt->sprite = found_props["sprite"].getStringValue();
 					}
-					else
-						tt->sprite = found_props["sprite"].getStringValue();
 				}
 				if (found_props["radius"].hasValue()) tt->radius = found_props["radius"].getIntValue();
 				if (found_props["height"].hasValue()) tt->height = found_props["height"].getIntValue();
