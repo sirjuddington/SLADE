@@ -120,6 +120,11 @@ MapObject* SLADEMap::getObject(uint8_t type, unsigned index)
 	return NULL;
 }
 
+void SLADEMap::setGeometryUpdated()
+{
+	geometry_updated = theApp->runTimer();
+}
+
 void SLADEMap::refreshIndices()
 {
 	// Vertex indices
@@ -3645,6 +3650,10 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
 		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
 		theGameConfiguration->setLineBasicFlag("twosided", lines[line], current_format, twosided);
+
+		// Invalidate sector polygon
+		sectors[sector]->resetPolygon();
+		setGeometryUpdated();
 
 		return true;
 	}

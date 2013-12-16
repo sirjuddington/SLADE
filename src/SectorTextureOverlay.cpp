@@ -202,7 +202,6 @@ void SectorTextureOverlay::close(bool cancel)
 				sectors[a]->setStringProperty("textureceiling", tex_ceil[0]);
 		}
 		theMapEditor->mapEditor().endUndoRecord();
-		theMapEditor->forceRefresh(true);
 	}
 }
 

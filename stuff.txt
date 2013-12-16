@@ -25,7 +25,6 @@ TODO List ---------------------------------------------------------------
 - Better UDMF property handling, proper support for unknown properties read with the map
 - Tag edit mode for TIDs/LineIDs(?)
 - Show line lenghts on line draw, object edit
-- Need to look at automatically updating vbos etc with geometry changes (not just using 'forceUpdate')
 
 
 --- Other 3.1 ---

@@ -146,6 +146,7 @@ public:
 	size_t		nSectors() { return sectors.size(); }
 	size_t		nThings() { return things.size(); }
 	long		geometryUpdated() { return geometry_updated; }
+	void		setGeometryUpdated();
 
 	// MapObject id stuff (used for undo/redo)
 	void				addMapObject(MapObject* object);
