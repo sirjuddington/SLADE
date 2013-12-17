@@ -1096,7 +1096,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, false, sx, sy);
-		if (line->backSector()->getFloorTex() == sky_flat) quad.flags |= SKY;
+		// No, the sky hack is only for ceilings!
+		// if (line->backSector()->getFloorTex() == sky_flat) quad.flags |= SKY;
 		quad.flags |= LOWER;
 
 		// Add quad
@@ -1193,7 +1194,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, !upeg, sx, sy);
-		if (line->backSector()->getCeilingTex() == sky_flat) quad.flags |= SKY;
+		// Sky hack only applies if both sectors have a sky ceiling
+		if (line->frontSector()->getCeilingTex() == sky_flat && line->backSector()->getCeilingTex() == sky_flat) quad.flags |= SKY;
 		quad.flags |= UPPER;
 
 		// Add quad
