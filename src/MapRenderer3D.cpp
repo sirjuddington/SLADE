@@ -1058,6 +1058,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	int lowceil = min(ceiling1, ceiling2);
 	int highfloor = max(floor1, floor2);
 	string sky_flat = theGameConfiguration->skyFlat();
+	string hidden_tex = map->currentFormat() == MAP_DOOM64 ? "?" : "-";
+	bool show_midtex = (map->currentFormat() != MAP_DOOM64) || (line->intProperty("flags") & 512);
 
 	// Front lower
 	if (floor2 > floor1)
@@ -1103,7 +1105,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 	// Front middle
 	string midtex1 = line->stringProperty("side1.texturemiddle");
-	if (!midtex1.IsEmpty() && midtex1 != "-")
+	if (!midtex1.IsEmpty() && midtex1 != hidden_tex && show_midtex)
 	{
 		quad_3d_t quad;
 
@@ -1243,7 +1245,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 	// Back middle
 	string midtex2 = line->stringProperty("side2.texturemiddle");
-	if (!midtex2.IsEmpty() && midtex2 != "-")
+	if (!midtex2.IsEmpty() && midtex2 != hidden_tex && show_midtex)
 	{
 		quad_3d_t quad;
 
