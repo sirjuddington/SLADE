@@ -1009,7 +1009,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 				if (!(S_CMPNOCASE(value->getType(), "flag")))
 					continue;
 
-				long flag_val;
+				unsigned long flag_val;
 				string flag_name, flag_udmf;
 
 				if (value->nValues() == 0)
@@ -1034,7 +1034,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 				else
 				{
 					// Short definition
-					value->getName().ToLong(&flag_val);
+					value->getName().ToULong(&flag_val);
 					flag_name = value->getStringValue();
 				}
 
