@@ -1007,6 +1007,72 @@ CONSOLE_COMMAND(replacethings, 2, true)
 	}
 }
 
+CONSOLE_COMMAND(convertmapchex1to3, 0, false)
+{
+	Archive* current = theMainWindow->getCurrentArchive();
+	long rep[23][2] = 
+	{				//  #	Chex 1 actor			==>	Chex 3 actor			(unwanted replacement)
+		{25, 78},	//  0	ChexTallFlower2			==> PropFlower1				(PropGlobeStand)
+		{28, 79},	//  1	ChexTallFlower			==>	PropFlower2				(PropPhone)
+		{30, 74},	//  2	ChexCavernStalagmite	==>	PropStalagmite			(PropPineTree)
+		{31, 50},	//  3	ChexSubmergedPlant		==>	PropHydroponicPlant		(PropGreyRock)
+		{32, 73},	//  4	ChexCavernColumn		==>	PropPillar				(PropBarrel)
+		{34, 80},	//  5	ChexChemicalFlask		==>	PropBeaker				(PropCandlestick)
+		{35, 36},	//  6	ChexGasTank				==>	PropOxygenTank			(PropCandelabra)
+		{43, 9061},	//  7	ChexOrangeTree			==>	TreeOrange				(PropTorchTree)
+		{45, 70},	//  8	ChexCivilian1			==>	PropCaptive1			(PropGreenTorch)
+		{47, 9060},	//  9	ChexAppleTree			==>	TreeApple				(PropStalagtite)
+		{54, 9058},	// 10	ChexBananaTree			==>	TreeBanana				(PropSpaceship -- must go before its own replacement)
+		{48, 54},	// 11	ChexSpaceship			==>	PropSpaceship			(PropTechPillar -- must go after banana tree replacement)
+		{55, 42},	// 12	ChexLightColumn			==>	LabCoil					(PropShortBlueTorch)
+		{56, 26},	// 13	ChexCivilian2			==>	PropCaptive2			(PropShortGreenTorch)
+		{57, 52},	// 14	ChexCivilian3			==>	PropCaptive3			(PropShortRedTorch)
+		{3002, 58},	// 15	F.CycloptisCommonus		==>	F.CycloptisCommonusV3	(FlemoidusStridicus)
+		{3003, 69},	// 16	Flembrane				==>	FlembraneV3				(FlemoidusMaximus)
+		{33, 53},	// 17	ChexMineCart			==> PropBazoikCart			(none, but the sprite is modified otherwise)
+		{27, 81},	// 18	"HeadOnAStick"			==> PropSmallBrush
+		{53, 75},	// 19	"Meat5"					==> PropStalagtite2
+		{49, 63},	// 20	Redundant bats
+		{51, 59},	// 21	Redundant hanging plant #1
+		{50, 61},	// 22	Redundant hanging plant #2
+	};
+	for (int i = 0; i < 23; ++i)
+	{
+		ArchiveOperations::replaceThings(current, rep[i][0], rep[i][1]);
+	}
+}
+
+CONSOLE_COMMAND(convertmapchex2to3, 0, false)
+{
+	Archive* current = theMainWindow->getCurrentArchive();
+	long rep[20][2] = 
+	{
+		{3001, 9057},	//  0	Quadrumpus
+		{3002, 9050},	//  1	Larva
+		{27, 81},		//  2	"HeadOnAStick"		==> PropSmallBrush
+		{70, 49},		//  3	"BurningBarrel"		==> PropStool
+		{36, 9055},		//  4	Chex Warrior 
+		{52, 9054},		//  5	Tutanhkamen
+		{53, 9053},		//  6	Ramses
+		{30, 9052},		//  7	Thinker
+		{31, 9051},		//  8	David
+		{54, 76},		//  9	Triceratops
+		{32, 23},		// 10	Chef -- replaced by a dead lost soul in Chex 3
+		{33, 9056},		// 11	Big spoon
+		{34, 35},		// 12	Street light
+		{62, 9053},		// 13	Ramses again
+		{56, 49},		// 14	Barstool again
+		{57, 77},		// 15	T-rex		
+		{49, 63},		// 16	Redundant bats
+		{51, 59},		// 17	Redundant hanging plant #1
+		{50, 61},		// 18	Redundant hanging plant #2
+	};
+	for (int i = 0; i < 19; ++i)
+	{
+		ArchiveOperations::replaceThings(current, rep[i][0], rep[i][1]);
+	}
+}
+
 size_t replaceSpecialsDoom(ArchiveEntry* entry, int oldtype, int newtype, bool tag, int oldtag, int newtag)
 {
 	if (entry == NULL) return 0;
