@@ -13,7 +13,6 @@ TODO List ---------------------------------------------------------------
 --- Minor Problems/Annoyances ---
 - Long calltips can extend off the edge of the screen
 - Incorrect ctrl+tab behaviour with tabs
-- Focus find+replace window on opening it
 - Esc to close find+replace window
 
 

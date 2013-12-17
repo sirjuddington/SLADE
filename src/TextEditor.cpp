@@ -140,6 +140,7 @@ FindReplaceDialog::~FindReplaceDialog()
 void FindReplaceDialog::onClose(wxCloseEvent& e)
 {
 	Show(false);
+	m_parent->SetFocus();
 }
 
 /* FindReplaceDialog::onKeyDown
