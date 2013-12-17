@@ -1437,6 +1437,14 @@
 						Name="Games"
 						>
 						<File
+							RelativePath=".\dist\res\config\games\chex1.cfg"
+							>
+						</File>
+						<File
+							RelativePath=".\dist\res\config\games\chex3.cfg"
+							>
+						</File>
+						<File
 							RelativePath=".\dist\res\config\games\doom1.cfg"
 							>
 						</File>
@@ -1446,10 +1454,6 @@
 						</File>
 						<File
 							RelativePath=".\dist\res\config\games\doom64.cfg"
-							>
-						</File>
-						<File
-							RelativePath=".\dist\res\config\games\doomu.cfg"
 							>
 						</File>
 						<File
@@ -1529,6 +1533,14 @@
 							</File>
 							<File
 								RelativePath=".\dist\res\config\games\include\specials_strife.cfg"
+								>
+							</File>
+							<File
+								RelativePath=".\dist\res\config\games\include\things_chex1.cfg"
+								>
+							</File>
+							<File
+								RelativePath=".\dist\res\config\games\include\things_chex3.cfg"
 								>
 							</File>
 							<File
