@@ -447,6 +447,18 @@ void MainApp::initActions()
 	new SAction("aman_recent6", "<insert recent file name>", "");
 	new SAction("aman_recent7", "<insert recent file name>", "");
 	new SAction("aman_recent8", "<insert recent file name>", "");
+	new SAction("aman_recent9", "<insert recent file name>", "");
+	new SAction("aman_recent10", "<insert recent file name>", "");
+	new SAction("aman_recent11", "<insert recent file name>", "");
+	new SAction("aman_recent12", "<insert recent file name>", "");
+	new SAction("aman_recent13", "<insert recent file name>", "");
+	new SAction("aman_recent14", "<insert recent file name>", "");
+	new SAction("aman_recent15", "<insert recent file name>", "");
+	new SAction("aman_recent16", "<insert recent file name>", "");
+	new SAction("aman_recent17", "<insert recent file name>", "");
+	new SAction("aman_recent18", "<insert recent file name>", "");
+	new SAction("aman_recent19", "<insert recent file name>", "");
+	new SAction("aman_recent20", "<insert recent file name>", "");
 
 	// ArchivePanel
 	new SAction("arch_newentry", "New Entry", "t_newentry", "Create a new empty entry");
