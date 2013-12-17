@@ -1379,7 +1379,6 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal)
  *******************************************************************/
 bool SImage::applyTranslation(string tr, Palette8bit* pal)
 {
-	wxLogMessage("applying translation " + tr);
 	// Some hardcoded translations from ZDoom
 	if (!tr.CmpNoCase("\"doom0\""))			tr = "\"112:127=96:111\"";
 	else if (!tr.CmpNoCase("\"doom1\""))	tr = "\"112:127=64:79\"";
