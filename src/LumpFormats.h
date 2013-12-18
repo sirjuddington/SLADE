@@ -209,7 +209,7 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 32)
+		if (mc.getSize() > 15)
 		{
 			// Check for ACS header
 			if (mc[0] == 'A' && mc[1] == 'C' && mc[2] == 'S' && mc[3] == 0)
