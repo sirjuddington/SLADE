@@ -1137,6 +1137,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Setup quad coordinates
 		double top = lowceil + yoff1;
 		double bottom = top - (quad.texture->getHeight() * sy);
+		if ((map->currentFormat() == MAP_DOOM64) || (udmf_zdoom && line->boolProperty("wrapmidtex")))
+			bottom = highfloor;
 		if (lpeg)
 		{
 			bottom = highfloor + yoff1;
