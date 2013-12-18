@@ -544,6 +544,12 @@ public:
 				continue;
 
 			// Go through uncompared things
+			int map_format = map->currentFormat();
+			bool udmf_zdoom = (map_format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"));
+			int min_skill = udmf_zdoom ? 1 : 2;
+			int max_skill = udmf_zdoom ? 17 : 5;
+			int max_class = udmf_zdoom ? 17 : 4;
+
 			for (unsigned b = a + 1; b < map->nThings(); b++)
 			{
 				MapThing* thing2 = map->getThing(b);
@@ -554,7 +560,53 @@ public:
 				if (r2 < 0 || !tt2->isSolid())
 					continue;
 
-				// TODO: Check flags
+				// Check flags
+				// Case #1: different skill levels
+				bool shareflag = false;
+				for (int s = min_skill; s < max_skill; ++s)
+				{
+					string skill = S_FMT("skill%d", s);
+					if (theGameConfiguration->thingBasicFlagSet(skill, thing1, map_format) && 
+						theGameConfiguration->thingBasicFlagSet(skill, thing2, map_format))
+					{
+						shareflag = true;
+						s = max_skill;
+					}
+				}
+				if (!shareflag)
+					continue;
+
+				// Case #2: different game modes (single, coop, dm)
+				shareflag = false;
+				if (theGameConfiguration->thingBasicFlagSet("coop", thing1, map_format) && 
+					theGameConfiguration->thingBasicFlagSet("coop", thing2, map_format))
+				{
+					shareflag = true;
+				}
+				if (!shareflag && 
+					theGameConfiguration->thingBasicFlagSet("dm", thing1, map_format) && 
+					theGameConfiguration->thingBasicFlagSet("dm", thing2, map_format))
+				{
+					shareflag = true;
+				}
+				if (!shareflag && 
+					theGameConfiguration->thingBasicFlagSet("single", thing1, map_format) && 
+					theGameConfiguration->thingBasicFlagSet("single", thing2, map_format))
+				{
+					// Case #3: things flagged for single player with different class filters
+					for (int c = 1; c < max_class; ++c)
+					{
+						string pclass = S_FMT("class%d", c);
+						if (theGameConfiguration->thingBasicFlagSet(pclass, thing1, map_format) && 
+							theGameConfiguration->thingBasicFlagSet(pclass, thing2, map_format))
+						{
+							shareflag = true;
+							c = max_class;
+						}
+					}
+				}
+				if (!shareflag)
+					continue;
 
 				// Check x non-overlap
 				if (thing2->xPos() + r2 < thing1->xPos() - r1 || thing2->xPos() - r2 > thing1->xPos() + r1)

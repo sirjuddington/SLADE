@@ -1460,11 +1460,105 @@ bool GameConfiguration::thingFlagSet(unsigned index, MapThing* thing)
 		return false;
 
 	// Check if flag is set
-	int flags = thing->intProperty("flags");
+	unsigned long flags = thing->intProperty("flags");
 	if (flags & flags_thing[index].flag)
 		return true;
 	else
 		return false;
+}
+
+bool GameConfiguration::thingFlagSet(string flag, MapThing* thing, int map_format)
+{
+	// If UDMF, just get the bool value
+	if (map_format == MAP_UDMF)
+		return thing->boolProperty(flag);
+
+	// Get current flags
+	unsigned long flags = thing->intProperty("flags");
+
+	// Iterate through flags
+	for (size_t i = 0; i < flags_thing.size(); ++i)
+	{
+		if (flags_thing[i].udmf == flag)
+			return !!(flags & flags_thing[i].flag);
+	}
+	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+	return false;
+}
+
+bool GameConfiguration::thingBasicFlagSet(string flag, MapThing* thing, int map_format)
+{
+	// If UDMF, just get the bool value
+	if (map_format == MAP_UDMF)
+		return thing->boolProperty(flag);
+
+	// Get current flags
+	unsigned long flags = thing->intProperty("flags");
+
+	// ZDoom uses Hexen-style flags
+	bool hexen = (currentGame() == "hexen") || (currentPort() == "zdoom");
+
+	// Easy Skill
+	if (flag == "skill2" || flag == "skill1")
+		return !!(flags & 1);
+
+	// Medium Skill
+	else if (flag == "skill3")
+		return !!(flags & 2);
+
+	// Hard Skill
+	else if (flag == "skill4" || flag == "skill5")
+		return !!(flags & 4);
+
+	// Game mode flags
+	else if (flag == "single")
+	{
+		// Single Player
+		if (hexen)
+			return !!(flags & 256);
+		// *Not* Multiplayer
+		else
+			return !(flags & 16);
+	}
+	else if (flag == "coop")
+	{
+		// Coop
+		if (hexen)
+			return !!(flags & 512);
+		// *Not* Not In Coop
+		else if (isBoom())
+			return !(flags & 64);
+		else
+			return true;
+	}
+	else if (flag == "dm")
+	{
+		// Deathmatch
+		if (hexen)
+			return !!(flags & 1024);
+		// *Not* Not In DM
+		else if (isBoom())
+			return !(flags & 32);
+		else
+			return true;
+	}
+
+	// Hexen class flags
+	else if (hexen && flag.StartsWith("class"))
+	{
+		// Fighter
+		if (flag == "class1")
+			return !!(flags & 32);
+		// Cleric
+		else if (flag == "class2")
+			return !!(flags & 64);
+		// Mage
+		else if (flag == "class3")
+			return !!(flags & 128);
+	}
+
+	// Not basic
+	return thingFlagSet(flag, thing, map_format);
 }
 
 string GameConfiguration::thingFlagsString(int flags)
@@ -1495,7 +1589,7 @@ void GameConfiguration::setThingFlag(unsigned index, MapThing* thing, bool set)
 		return;
 
 	// Determine new flags value
-	int flags = thing->intProperty("flags");
+	unsigned long flags = thing->intProperty("flags");
 	if (set)
 		flags |= flags_thing[index].flag;
 	else
@@ -1503,6 +1597,151 @@ void GameConfiguration::setThingFlag(unsigned index, MapThing* thing, bool set)
 
 	// Update thing flags
 	thing->setIntProperty("flags", flags);
+}
+
+void GameConfiguration::setThingFlag(string flag, MapThing* thing, int map_format, bool set)
+{
+	// If UDMF, just set the bool value
+	if (map_format == MAP_UDMF)
+	{
+		thing->setBoolProperty(flag, set);
+		return;
+	}
+
+	// Iterate through flags
+	unsigned long flag_val = 0;
+	for (size_t i = 0; i < flags_thing.size(); ++i)
+	{
+		if (flags_thing[i].udmf == flag)
+		{
+			flag_val = flags_thing[i].flag;
+			break;
+		}
+	}
+
+	if (flag_val == 0)
+	{
+		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+		return;
+	}
+
+	// Determine new flags value
+	unsigned long flags = thing->intProperty("flags");
+	if (set)
+		flags |= flag_val;
+	else
+		flags = (flags & ~flag_val);
+
+	// Update thing flags
+	thing->setIntProperty("flags", flags);
+}
+
+void GameConfiguration::setThingBasicFlag(string flag, MapThing* thing, int map_format, bool set)
+{
+	// If UDMF, just get the bool value
+	if (map_format == MAP_UDMF)
+	{
+		thing->setBoolProperty(flag, set);
+		return;
+	}
+
+	// Seek flag value
+	unsigned long flag_val = 0;
+
+	// ZDoom uses Hexen-style flags
+	bool hexen = (currentGame() == "Hexen") || (currentPort() == "ZDoom");
+
+	// Easy Skill
+	if (flag == "skill2" || flag == "skill1")
+		flag_val = 1;
+
+	// Medium Skill
+	else if (flag == "skill3")
+		flag_val = 2;
+
+	// Hard Skill
+	else if (flag == "skill4" || flag == "skill5")
+		flag_val = 4;
+
+	// Game mode flags
+	else if (flag == "single")
+	{
+		// Single Player
+		if (hexen)
+			flag_val = 256;
+		// *Not* Multiplayer
+		else
+		{
+			flag_val = 16;
+			set = !set;
+		}
+	}
+	else if (flag == "coop")
+	{
+		// Coop
+		if (hexen)
+			flag_val = 512;
+		// *Not* Not In Coop
+		else if (isBoom())
+		{
+			flag_val = 64;
+			set = !set;
+		}
+		// Multiplayer
+		else
+			flag_val = 0;
+	}
+	else if (flag == "dm")
+	{
+		// Deathmatch
+		if (hexen)
+			flag_val = 1024;
+		// *Not* Not In DM
+		else if (isBoom())
+		{
+			flag_val = 32;
+			set = !set;
+		}
+		// Multiplayer
+		else
+			flag_val = 0;
+	}
+
+	// Hexen class flags
+	else if (flag.StartsWith("class"))
+	{
+		if (hexen)
+		{
+			// Fighter
+			if (flag == "class1")
+				flag_val = 32;
+			// Cleric
+			else if (flag == "class2")
+				flag_val = 64;
+			// Mage
+			else if (flag == "class3")
+				flag_val = 128;
+		}
+		else
+			flag_val = 0;
+	}
+
+	if (flag_val)
+	{
+		// Determine new flags value
+		unsigned long flags = thing->intProperty("flags");
+		if (set)
+			flags |= flag_val;
+		else
+			flags = (flags & ~flag_val);
+
+		// Update thing flags
+		thing->setIntProperty("flags", flags);
+		return;
+	}
+
+	// Not basic
+	thingFlagSet(flag, thing, map_format);
 }
 
 // This is used to have the same priority order as DB2
@@ -1856,11 +2095,30 @@ bool GameConfiguration::lineFlagSet(unsigned index, MapLine* line)
 		return false;
 
 	// Check if flag is set
-	int flags = line->intProperty("flags");
+	unsigned long flags = line->intProperty("flags");
 	if (flags & flags_line[index].flag)
 		return true;
 	else
 		return false;
+}
+
+bool GameConfiguration::lineFlagSet(string flag, MapLine* line, int map_format)
+{
+	// If UDMF, just get the bool value
+	if (map_format == MAP_UDMF)
+		return line->boolProperty(flag);
+
+	// Get current flags
+	unsigned long flags = line->intProperty("flags");
+
+	// Iterate through flags
+	for (size_t i = 0; i < flags_line.size(); ++i)
+	{
+		if (flags_line[i].udmf == flag)
+			return !!(flags & flags_line[i].flag);
+	}
+	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+	return false;
 }
 
 bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_format)
@@ -1870,7 +2128,7 @@ bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_for
 		return line->boolProperty(flag);
 
 	// Get current flags
-	int flags = line->intProperty("flags");
+	unsigned long flags = line->intProperty("flags");
 
 	// Impassable
 	if (flag == "blocking")
@@ -1888,8 +2146,8 @@ bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_for
 	else if (flag == "dontpegbottom")
 		return !!(flags & 16);
 
-	// Unknown
-	return false;
+	// Not basic
+	return lineFlagSet(flag, line, map_format);
 }
 
 string GameConfiguration::lineFlagsString(MapLine* line)
@@ -1898,12 +2156,12 @@ string GameConfiguration::lineFlagsString(MapLine* line)
 		return "";
 
 	// Get raw flags
-	int flags = line->intProperty("flags");
+	unsigned long flags = line->intProperty("flags");
 	// TODO: UDMF flags
 
 	// Check against all flags
 	string ret = "";
-	for (unsigned a = 0; a < flags_line.size(); a++)
+	for (unsigned long a = 0; a < flags_line.size(); a++)
 	{
 		if (flags & flags_line[a].flag)
 		{
@@ -1927,11 +2185,48 @@ void GameConfiguration::setLineFlag(unsigned index, MapLine* line, bool set)
 		return;
 
 	// Determine new flags value
-	int flags = line->intProperty("flags");
+	unsigned long flags = line->intProperty("flags");
 	if (set)
 		flags |= flags_line[index].flag;
 	else
 		flags = (flags & ~flags_line[index].flag);
+
+	// Update line flags
+	line->setIntProperty("flags", flags);
+}
+
+void GameConfiguration::setLineFlag(string flag, MapLine* line, int map_format, bool set)
+{
+	// If UDMF, just set the bool value
+	if (map_format == MAP_UDMF)
+	{
+		line->setBoolProperty(flag, set);
+		return;
+	}
+
+	// Iterate through flags
+	unsigned long flag_val = 0;
+	for (size_t i = 0; i < flags_line.size(); ++i)
+	{
+		if (flags_line[i].udmf == flag)
+		{
+			flag_val = flags_line[i].flag;
+			break;
+		}
+	}
+
+	if (flag_val == 0)
+	{
+		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+		return;
+	}
+
+	// Determine new flags value
+	unsigned long flags = line->intProperty("flags");
+	if (set)
+		flags |= flag_val;
+	else
+		flags = (flags & ~flag_val);
 
 	// Update line flags
 	line->setIntProperty("flags", flags);
@@ -1947,8 +2242,8 @@ void GameConfiguration::setLineBasicFlag(string flag, MapLine* line, int map_for
 	}
 
 	// Get current flags
-	int flags = line->intProperty("flags");
-	int fval = 0;
+	unsigned long flags = line->intProperty("flags");
+	unsigned long fval = 0;
 
 	// Impassable
 	if (flag == "blocking")
@@ -1967,10 +2262,15 @@ void GameConfiguration::setLineBasicFlag(string flag, MapLine* line, int map_for
 		fval = 16;
 
 	// Set/unset flag
-	if (set)
-		line->setIntProperty("flags", flags|fval);
-	else
-		line->setIntProperty("flags", flags & ~fval);
+	if (fval)
+	{
+		if (set)
+			line->setIntProperty("flags", flags|fval);
+		else
+			line->setIntProperty("flags", flags & ~fval);
+	}
+	// Not basic
+	else setLineFlag(flag, line, map_format, set);
 }
 
 string GameConfiguration::spacTriggerString(MapLine* line, int map_format)

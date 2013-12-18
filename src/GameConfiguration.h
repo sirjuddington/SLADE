@@ -227,8 +227,12 @@ public:
 	int		nThingFlags() { return flags_thing.size(); }
 	string	thingFlag(unsigned flag_index);
 	bool	thingFlagSet(unsigned flag_index, MapThing* thing);
+	bool	thingFlagSet(string udmf_name, MapThing* thing, int map_format);
+	bool	thingBasicFlagSet(string flag, MapThing* line, int map_format);
 	string	thingFlagsString(int flags);
 	void	setThingFlag(unsigned flag_index, MapThing* thing, bool set = true);
+	void	setThingFlag(string udmf_name, MapThing* thing, int map_format, bool set = true);
+	void	setThingBasicFlag(string flag, MapThing* line, int map_format, bool set = true);
 
 	// DECORATE
 	bool	parseDecorateDefs(Archive* archive);
@@ -237,9 +241,11 @@ public:
 	int		nLineFlags() { return flags_line.size(); }
 	string	lineFlag(unsigned flag_index);
 	bool	lineFlagSet(unsigned flag_index, MapLine* line);
+	bool	lineFlagSet(string udmf_name, MapLine* line, int map_format);
 	bool	lineBasicFlagSet(string flag, MapLine* line, int map_format);
 	string	lineFlagsString(MapLine* line);
 	void	setLineFlag(unsigned flag_index, MapLine* line, bool set = true);
+	void	setLineFlag(string udmf_name, MapLine* line, int map_format, bool set = true);
 	void	setLineBasicFlag(string flag, MapLine* line, int map_format, bool set = true);
 
 	// Line action (SPAC) triggers
