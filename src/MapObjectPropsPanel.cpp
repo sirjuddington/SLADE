@@ -711,41 +711,46 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	else
 		setupType(objects[0]->getObjType());
 
-	// Find any custom properties
-	for (unsigned a = 0; a < objects.size(); a++)
+	// Find any custom properties (UDMF only)
+	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 	{
-		// Go through object properties
-		vector<MobjPropertyList::prop_t> objprops = objects[a]->props().allProperties();
-		for (unsigned b = 0; b < objprops.size(); b++)
+		for (unsigned a = 0; a < objects.size(); a++)
 		{
-			// Check if property is already on the list
-			bool exists = false;
-			for (unsigned c = 0; c < properties.size(); c++)
+			// Go through object properties
+			vector<MobjPropertyList::prop_t> objprops = objects[a]->props().allProperties();
+			for (unsigned b = 0; b < objprops.size(); b++)
 			{
-				if (properties[c]->getPropName() == objprops[b].name)
+				// Check if property is already on the list
+				bool exists = false;
+				for (unsigned c = 0; c < properties.size(); c++)
 				{
-					exists = true;
-					break;
+					if (properties[c]->getPropName() == objprops[b].name)
+					{
+						exists = true;
+						break;
+					}
 				}
-			}
 
-			if (!exists)
-			{
-				// Create custom group if needed
-				if (!group_custom)
-					group_custom = pg_properties->Append(new wxPropertyCategory("Custom"));
-
-				// Add property
-				switch (objprops[b].value.getType())
+				if (!exists)
 				{
-				case PROP_BOOL:
-					addBoolProperty(group_custom, objprops[b].name, objprops[b].name); break;
-				case PROP_INT:
-					addIntProperty(group_custom, objprops[b].name, objprops[b].name); break;
-				case PROP_FLOAT:
-					addFloatProperty(group_custom, objprops[b].name, objprops[b].name); break;
-				default:
-					addStringProperty(group_custom, objprops[b].name, objprops[b].name); break;
+					// Create custom group if needed
+					if (!group_custom)
+						group_custom = pg_properties->Append(new wxPropertyCategory("Custom"));
+
+					//LOG_MESSAGE(2, "Add custom property \"%s\"", CHR(objprops[b].name));
+
+					// Add property
+					switch (objprops[b].value.getType())
+					{
+					case PROP_BOOL:
+						addBoolProperty(group_custom, objprops[b].name, objprops[b].name); break;
+					case PROP_INT:
+						addIntProperty(group_custom, objprops[b].name, objprops[b].name); break;
+					case PROP_FLOAT:
+						addFloatProperty(group_custom, objprops[b].name, objprops[b].name); break;
+					default:
+						addStringProperty(group_custom, objprops[b].name, objprops[b].name); break;
+					}
 				}
 			}
 		}
