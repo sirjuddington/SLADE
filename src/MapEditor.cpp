@@ -1161,7 +1161,7 @@ void MapEditor::getSelectedObjects(vector<MapObject*>& list)
 				list.push_back(map.getThing(selection[a]));
 		}
 	}
-	else
+	else if (hilight_item >= 0)
 	{
 		if (edit_mode == MODE_VERTICES)
 			list.push_back(map.getVertex(hilight_item));
@@ -2557,6 +2557,9 @@ bool MapEditor::beginObjectEdit()
 		// Filter objects
 		edit_object_group.filterObjects(true);
 	}
+
+	if (edit_object_group.empty())
+		return false;
 
 	theMapEditor->showObjectEditPanel(true, &edit_object_group);
 

@@ -701,6 +701,28 @@ void MapCanvas::drawThingQuickAngleLines()
 	glEnd();
 }
 
+void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
+{
+	// Determine distance in screen scale
+	double tdist = 20 / view_scale_inter;
+
+	// Determine line midpoint and front vector
+	fpoint2_t mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
+	fpoint2_t vec(-(p2.y - p1.y), p2.x - p1.x);
+	vec.normalize();
+
+	// Determine point to place the text
+	fpoint2_t tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
+
+	// Determine text half-height for vertical alignment
+	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1.x, p1.y, p2.x, p2.y)));
+	double hh = Drawing::textExtents(length).y * 0.5;
+
+	// Draw text
+	Drawing::drawText(length, screenX(tp.x), screenY(tp.y) - hh, col, Drawing::FONT_NORMAL, Drawing::ALIGN_CENTER);
+	glDisable(GL_TEXTURE_2D);
+}
+
 void MapCanvas::drawLineDrawLines()  	// Best function name ever
 {
 	// Get line draw colour
@@ -738,10 +760,18 @@ void MapCanvas::drawLineDrawLines()  	// Best function name ever
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
-			Drawing::drawLineTabbed(editor->lineDrawPoint(a), editor->lineDrawPoint(a+1));
+		{
+			fpoint2_t p1 = editor->lineDrawPoint(a);
+			fpoint2_t p2 = editor->lineDrawPoint(a+1);
+			Drawing::drawLineTabbed(p1, p2);
+			drawLineLength(p1, p2, col);
+		}
 	}
 	if (npoints > 0 && draw_state == DSTATE_LINE)
+	{
 		Drawing::drawLineTabbed(editor->lineDrawPoint(npoints-1), end);
+		drawLineLength(editor->lineDrawPoint(npoints-1), end, col);
+	}
 
 	// Draw points
 	glPointSize(vertex_size);
@@ -798,13 +828,19 @@ void MapCanvas::drawPasteLines()
 void MapCanvas::drawObjectEdit()
 {
 	ObjectEditGroup* group = editor->getObjectEditGroup();
+	rgba_t col = ColourConfiguration::getColour("map_object_edit");
 
 	// Map objects
 	renderer_2d->renderObjectEditGroup(group);
 
+	// Line lengths
+	vector<ObjectEditGroup::line_t> lines;
+	group->getLinesToDraw(lines);
+	for (unsigned a = 0; a < lines.size(); a++)
+		drawLineLength(lines[a].v1->position, lines[a].v2->position, col);
+
 	// Bounding box
 	COL_WHITE.set_gl();
-	rgba_t col = ColourConfiguration::getColour("map_object_edit");
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
 	bbox_t bbox = group->getBBox();
 	bbox.min.x -= 4 / view_scale_inter;
@@ -1208,7 +1244,7 @@ void MapCanvas::draw()
 	glDisable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0f, GetSize().x, GetSize().y, 0.0f, -1.0f, 1.0f);
+	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -3187,6 +3223,8 @@ void MapCanvas::onSize(wxSizeEvent& e)
 
 	// Update map item visibility
 	renderer_2d->updateVisibility(view_tl, view_br);
+
+	e.Skip();
 }
 
 void MapCanvas::onKeyDown(wxKeyEvent& e)

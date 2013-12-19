@@ -596,6 +596,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 		glPushMatrix();
 		glMatrixMode(GL_TEXTURE);
 		glPushMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
 		glPushAttrib(GL_VIEWPORT_BIT);
 		render_target->resetGLStates();
 
@@ -604,6 +606,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 
 		// Pop related states
 		glPopAttrib();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
 		glMatrixMode(GL_TEXTURE);
 		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
