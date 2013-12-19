@@ -47,6 +47,7 @@ public:
 	void		clear();
 	void		filterObjects(bool filter);
 	void		resetPositions();
+	bool		empty() { return vertices.empty() && things.empty(); }
 
 	// Drawing
 	void	getVerticesToDraw(vector<fpoint2_t>& list);
