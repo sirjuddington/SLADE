@@ -596,6 +596,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 		glPushMatrix();
 		glMatrixMode(GL_TEXTURE);
 		glPushMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
 		glPushAttrib(GL_VIEWPORT_BIT);
 		render_target->resetGLStates();
 
@@ -604,6 +606,8 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 
 		// Pop related states
 		glPopAttrib();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
 		glMatrixMode(GL_TEXTURE);
 		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
@@ -656,7 +660,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	int xpos = x;
 	int ypos = y;
 	float width = bbox.Upper().X() - bbox.Lower().X();
-	float height = bbox.Upper().Y() - bbox.Lower().Y();
+	float height = ftgl_font->LineHeight();
 	if (alignment != ALIGN_LEFT)
 	{
 		if (alignment == ALIGN_CENTER)
@@ -669,7 +673,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	if (bounds)
 	{
 		bbox = ftgl_font->BBox(CHR(text), -1, FTPoint(xpos, ypos));
-		bounds->set(bbox.Lower().X(), bbox.Lower().Y(), bbox.Upper().X(), bbox.Upper().Y());
+		bounds->set(bbox.Lower().X(), bbox.Lower().Y(), bbox.Upper().X(), bbox.Lower().Y() + height);
 	}
 
 	// Draw the string
@@ -696,7 +700,7 @@ fpoint2_t Drawing::textExtents(string text, int font)
 
 	// Return width and height of text
 	FTBBox bbox = ftgl_font->BBox(CHR(text), -1);
-	return fpoint2_t(bbox.Upper().X() - bbox.Lower().X(), bbox.Upper().Y() - bbox.Lower().Y());
+	return fpoint2_t(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
 }
 
 #endif

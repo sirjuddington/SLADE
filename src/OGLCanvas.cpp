@@ -170,6 +170,7 @@ void OGLCanvas::init()
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FOG);
+	glEnable(GL_ALPHA_TEST);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -256,13 +257,11 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 {
 	wxPaintDC dc(this);
 
-//#ifdef __WXGTK__
 	if (recreate)
 	{
 		createSFML();
 		recreate = false;
 	}
-//#endif
 
 	if (IsShown())
 	{
@@ -329,10 +328,8 @@ void OGLCanvas::onTimer(wxTimerEvent& e)
 
 void OGLCanvas::onResize(wxSizeEvent& e)
 {
-	// Recreate SFML RenderWindow if GTK
-#ifdef __WXGTK__
+	// Recreate SFML RenderWindow
 	recreate = true;
-#endif
 
 	e.Skip();
 }

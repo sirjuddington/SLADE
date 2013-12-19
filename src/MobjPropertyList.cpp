@@ -138,19 +138,19 @@ string MobjPropertyList::toString(bool condensed)
 /* MobjPropertyList::allProperties
 * Adds all existing properties to [list]
 *******************************************************************/
-void MobjPropertyList::allProperties(vector<Property>& list)
-{
-	// Add all properties to the list
-	for (unsigned a = 0; a < properties.size(); ++a)
-		list.push_back(properties[a].value);
-}
+//void MobjPropertyList::allProperties(vector<Property>& list)
+//{
+//	// Add all properties to the list
+//	for (unsigned a = 0; a < properties.size(); ++a)
+//		list.push_back(properties[a].value);
+//}
 
 /* MobjPropertyList::allPropertyNames
 * Adds all existing property names to [list]
 *******************************************************************/
-void MobjPropertyList::allPropertyNames(vector<string>& list)
-{
-	// Add all properties to the list
-	for (unsigned a = 0; a < properties.size(); ++a)
-		list.push_back(properties[a].name);
-}
+//void MobjPropertyList::allPropertyNames(vector<string>& list)
+//{
+//	// Add all properties to the list
+//	for (unsigned a = 0; a < properties.size(); ++a)
+//		list.push_back(properties[a].name);
+//}

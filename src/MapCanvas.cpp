@@ -168,7 +168,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 #endif
 
-	timer.Start(1, true);
+	timer.Start(10, true);
 }
 
 /* MapCanvas::~MapCanvas
@@ -243,6 +243,29 @@ void MapCanvas::setTopY(double y)
 	double top_y = translateY(0);
 	setView(view_xoff, view_yoff - (top_y - y));
 	view_yoff_inter = view_yoff;
+}
+
+void MapCanvas::setOverlayCoords(bool set)
+{
+	if (set)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		if (OpenGL::accuracyTweak())
+			glTranslatef(0.375f, 0.375f, 0);
+	}
+	else
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+	}
 }
 
 void MapCanvas::setView(double x, double y)
@@ -701,6 +724,28 @@ void MapCanvas::drawThingQuickAngleLines()
 	glEnd();
 }
 
+void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
+{
+	// Determine distance in screen scale
+	double tdist = 20 / view_scale_inter;
+
+	// Determine line midpoint and front vector
+	fpoint2_t mid(p1.x + (p2.x - p1.x) * 0.5, p1.y + (p2.y - p1.y) * 0.5);
+	fpoint2_t vec(-(p2.y - p1.y), p2.x - p1.x);
+	vec.normalize();
+
+	// Determine point to place the text
+	fpoint2_t tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
+
+	// Determine text half-height for vertical alignment
+	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1.x, p1.y, p2.x, p2.y)));
+	double hh = Drawing::textExtents(length).y * 0.5;
+
+	// Draw text
+	Drawing::drawText(length, screenX(tp.x), screenY(tp.y) - hh, col, Drawing::FONT_NORMAL, Drawing::ALIGN_CENTER);
+	glDisable(GL_TEXTURE_2D);
+}
+
 void MapCanvas::drawLineDrawLines()  	// Best function name ever
 {
 	// Get line draw colour
@@ -738,10 +783,25 @@ void MapCanvas::drawLineDrawLines()  	// Best function name ever
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
-			Drawing::drawLineTabbed(editor->lineDrawPoint(a), editor->lineDrawPoint(a+1));
+		{
+			fpoint2_t p1 = editor->lineDrawPoint(a);
+			fpoint2_t p2 = editor->lineDrawPoint(a+1);
+			Drawing::drawLineTabbed(p1, p2);
+		}
 	}
 	if (npoints > 0 && draw_state == DSTATE_LINE)
 		Drawing::drawLineTabbed(editor->lineDrawPoint(npoints-1), end);
+
+	// Draw line lengths
+	setOverlayCoords(true);
+	if (npoints > 1)
+	{
+		for (int a = 0; a < npoints - 1; a++)
+			drawLineLength(editor->lineDrawPoint(a), editor->lineDrawPoint(a+1), col);
+	}
+	if (npoints > 0 && draw_state == DSTATE_LINE)
+		drawLineLength(editor->lineDrawPoint(npoints-1), end, col);
+	setOverlayCoords(false);
 
 	// Draw points
 	glPointSize(vertex_size);
@@ -798,13 +858,21 @@ void MapCanvas::drawPasteLines()
 void MapCanvas::drawObjectEdit()
 {
 	ObjectEditGroup* group = editor->getObjectEditGroup();
+	rgba_t col = ColourConfiguration::getColour("map_object_edit");
 
 	// Map objects
 	renderer_2d->renderObjectEditGroup(group);
 
+	// Line lengths
+	vector<ObjectEditGroup::line_t> lines;
+	group->getLinesToDraw(lines);
+	setOverlayCoords(true);
+	for (unsigned a = 0; a < lines.size(); a++)
+		drawLineLength(lines[a].v1->position, lines[a].v2->position, col);
+	setOverlayCoords(false);
+
 	// Bounding box
 	COL_WHITE.set_gl();
-	rgba_t col = ColourConfiguration::getColour("map_object_edit");
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
 	bbox_t bbox = group->getBBox();
 	bbox.min.x -= 4 / view_scale_inter;
@@ -1208,7 +1276,7 @@ void MapCanvas::draw()
 	glDisable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0f, GetSize().x, GetSize().y, 0.0f, -1.0f, 1.0f);
+	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -1308,7 +1376,7 @@ void MapCanvas::draw()
 		glEnable(GL_TEXTURE_2D);
 		if (frametime_last > 0)
 		{
-			int fps = 1.0 / (frametime_last/1000.0);
+			int fps = MathStuff::round(1.0 / (frametime_last/1000.0));
 			fps_avg.push_back(fps);
 			if (fps_avg.size() > 20) fps_avg.erase(fps_avg.begin());
 		}
@@ -1329,6 +1397,8 @@ void MapCanvas::draw()
 	drawFeatureHelpText();
 
 	SwapBuffers();
+
+	glFinish();
 }
 
 bool MapCanvas::update2d(double mult)
@@ -1719,10 +1789,10 @@ void MapCanvas::update(long frametime)
 	else	// No high-priority animations running, throttle framerate
 		fr_idle = map_bg_ms;
 #else
-	if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
-		fr_idle = 5;
-	else	// No high-priority animations running, throttle framerate
-		fr_idle = map_bg_ms;
+	//if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
+		fr_idle = 10;
+	//else	// No high-priority animations running, throttle framerate
+	//	fr_idle = map_bg_ms;
 #endif
 
 	frametime_last = frametime;
@@ -3206,6 +3276,8 @@ void MapCanvas::onSize(wxSizeEvent& e)
 
 	// Update map item visibility
 	renderer_2d->updateVisibility(view_tl, view_br);
+
+	e.Skip();
 }
 
 void MapCanvas::onKeyDown(wxKeyEvent& e)
@@ -3772,7 +3844,11 @@ void MapCanvas::onFocus(wxFocusEvent& e)
 	{
 		if (editor->editMode() == MapEditor::MODE_3D)
 			lockMouse(true);
+		timer.Start(-1, true);
 	}
 	else if (e.GetEventType() == wxEVT_KILL_FOCUS)
+	{
+		timer.Stop();
 		lockMouse(false);
+	}
 }

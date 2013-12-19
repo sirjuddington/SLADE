@@ -15,6 +15,7 @@ protected:
 	MapObjectPropsPanel*	parent;
 	bool					noupdate;
 	UDMFProperty*			udmf_prop;
+	string					propname;
 
 public:
 	MOPGProperty(int type) { this->type = type; noupdate = false; udmf_prop = NULL; }
@@ -38,9 +39,10 @@ public:
 		TYPE_ID,
 	};
 
-	int		getType() { return type; }
-	void	setParent(MapObjectPropsPanel* parent) { this->parent = parent; }
-	void	setUDMFProp(UDMFProperty* prop) { this->udmf_prop = prop; }
+	int				getType() { return type; }
+	string			getPropName() { return propname; }
+	void			setParent(MapObjectPropsPanel* parent) { this->parent = parent; }
+	void			setUDMFProp(UDMFProperty* prop) { this->udmf_prop = prop; }
 
 	virtual void	openObjects(vector<MapObject*>& objects) = 0;
 	virtual void	applyValue() {}

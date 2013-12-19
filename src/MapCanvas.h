@@ -128,6 +128,7 @@ public:
 	int		screenX(double x);
 	int		screenY(double y);
 	void	setTopY(double y);
+	void	setOverlayCoords(bool set = true);
 
 	void	setView(double x, double y);
 	void	pan(double x, double y);
@@ -143,6 +144,7 @@ public:
 	void	drawFeatureHelpText();
 	void	drawSelectionNumbers();
 	void	drawThingQuickAngleLines();
+	void	drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col);
 	void	drawLineDrawLines();
 	void	drawPasteLines();
 	void	drawObjectEdit();
