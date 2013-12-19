@@ -168,7 +168,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 #endif
 
-	timer.Start(1, true);
+	timer.Start(10, true);
 }
 
 /* MapCanvas::~MapCanvas
@@ -243,6 +243,29 @@ void MapCanvas::setTopY(double y)
 	double top_y = translateY(0);
 	setView(view_xoff, view_yoff - (top_y - y));
 	view_yoff_inter = view_yoff;
+}
+
+void MapCanvas::setOverlayCoords(bool set)
+{
+	if (set)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		if (OpenGL::accuracyTweak())
+			glTranslatef(0.375f, 0.375f, 0);
+	}
+	else
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+	}
 }
 
 void MapCanvas::setView(double x, double y)
@@ -764,14 +787,21 @@ void MapCanvas::drawLineDrawLines()  	// Best function name ever
 			fpoint2_t p1 = editor->lineDrawPoint(a);
 			fpoint2_t p2 = editor->lineDrawPoint(a+1);
 			Drawing::drawLineTabbed(p1, p2);
-			drawLineLength(p1, p2, col);
 		}
 	}
 	if (npoints > 0 && draw_state == DSTATE_LINE)
-	{
 		Drawing::drawLineTabbed(editor->lineDrawPoint(npoints-1), end);
-		drawLineLength(editor->lineDrawPoint(npoints-1), end, col);
+
+	// Draw line lengths
+	setOverlayCoords(true);
+	if (npoints > 1)
+	{
+		for (int a = 0; a < npoints - 1; a++)
+			drawLineLength(editor->lineDrawPoint(a), editor->lineDrawPoint(a+1), col);
 	}
+	if (npoints > 0 && draw_state == DSTATE_LINE)
+		drawLineLength(editor->lineDrawPoint(npoints-1), end, col);
+	setOverlayCoords(false);
 
 	// Draw points
 	glPointSize(vertex_size);
@@ -836,8 +866,10 @@ void MapCanvas::drawObjectEdit()
 	// Line lengths
 	vector<ObjectEditGroup::line_t> lines;
 	group->getLinesToDraw(lines);
+	setOverlayCoords(true);
 	for (unsigned a = 0; a < lines.size(); a++)
 		drawLineLength(lines[a].v1->position, lines[a].v2->position, col);
+	setOverlayCoords(false);
 
 	// Bounding box
 	COL_WHITE.set_gl();
@@ -1758,7 +1790,7 @@ void MapCanvas::update(long frametime)
 		fr_idle = map_bg_ms;
 #else
 	//if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
-		fr_idle = 5;
+		fr_idle = 10;
 	//else	// No high-priority animations running, throttle framerate
 	//	fr_idle = map_bg_ms;
 #endif
