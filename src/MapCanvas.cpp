@@ -1344,7 +1344,7 @@ void MapCanvas::draw()
 		glEnable(GL_TEXTURE_2D);
 		if (frametime_last > 0)
 		{
-			int fps = 1.0 / (frametime_last/1000.0);
+			int fps = MathStuff::round(1.0 / (frametime_last/1000.0));
 			fps_avg.push_back(fps);
 			if (fps_avg.size() > 20) fps_avg.erase(fps_avg.begin());
 		}
@@ -1365,6 +1365,8 @@ void MapCanvas::draw()
 	drawFeatureHelpText();
 
 	SwapBuffers();
+
+	glFinish();
 }
 
 bool MapCanvas::update2d(double mult)
@@ -1755,10 +1757,10 @@ void MapCanvas::update(long frametime)
 	else	// No high-priority animations running, throttle framerate
 		fr_idle = map_bg_ms;
 #else
-	if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
+	//if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
 		fr_idle = 5;
-	else	// No high-priority animations running, throttle framerate
-		fr_idle = map_bg_ms;
+	//else	// No high-priority animations running, throttle framerate
+	//	fr_idle = map_bg_ms;
 #endif
 
 	frametime_last = frametime;
