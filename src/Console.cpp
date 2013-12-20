@@ -77,7 +77,7 @@ void Console::addCommand(ConsoleCommand& c)
  *******************************************************************/
 void Console::execute(string command)
 {
-	wxLogMessage(S_FMT("> %s", command.c_str()));
+	wxLogMessage("> %s", command.c_str());
 
 	// Don't bother doing anything else with an empty command
 	if (command.size() == 0)

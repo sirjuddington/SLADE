@@ -520,13 +520,16 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 			// Get the entry
 			bool done = false;
 			ArchiveEntry* entry_inc = entry->getParent()->entryAtPath(name);
+			// DECORATE paths start from the root, not from the #including entry's directory
+			if (!entry_inc)
+				entry_inc = entry->getParent()->entryAtPath(inc_name);
 			if (entry_inc)
 			{
 				buildConfig(entry_inc, out);
 				done = true;
 			}
 			else
-				LOG_MESSAGE(2, S_FMT("Couldn't find entry to #include: %s", CHR(name)));
+				LOG_MESSAGE(2, "Couldn't find entry to #include: %s", CHR(name));
 
 			// Look in resource pack
 			if (use_res && !done && theArchiveManager->programResourceArchive())
@@ -542,7 +545,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 
 			// Okay, we've exhausted all possibilities
 			if (!done)
-				wxLogMessage("Error: Attempting to #include nonexistant entry \"%s\"", CHR(name));
+				wxLogMessage("Error: Attempting to #include nonexistant entry \"%s\" from entry %s", CHR(name), CHR(entry->getName()));
 		}
 		else
 			out.Append(line + "\n");
@@ -625,6 +628,10 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 
 void GameConfiguration::readThingTypes(ParseTreeNode* node, ThingType* group_defaults)
 {
+	// Check if we're clearing all existing specials
+	if (node->getChild("clearexisting"))
+		thing_types.clear();
+
 	// --- Determine current 'group' ---
 	ParseTreeNode* group = node;
 	string groupname = "";
@@ -975,12 +982,16 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 	{
 		node = (ParseTreeNode*)base->getChild(a);
 
-		// Skip game/port section
+		// Skip read game/port section
 		if (node == node_game || node == node_port)
 			continue;
 
+		// A TC configuration may override the base game
+		if (S_CMPNOCASE(node->getName(), "game"))
+			readGameSection(node, false);
+
 		// Action specials section
-		if (S_CMPNOCASE(node->getName(), "action_specials"))
+		else if (S_CMPNOCASE(node->getName(), "action_specials"))
 			readActionSpecials(node);
 
 		// Thing types section
@@ -998,7 +1009,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 				if (!(S_CMPNOCASE(value->getType(), "flag")))
 					continue;
 
-				long flag_val;
+				unsigned long flag_val;
 				string flag_name, flag_udmf;
 
 				if (value->nValues() == 0)
@@ -1023,7 +1034,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 				else
 				{
 					// Short definition
-					value->getName().ToLong(&flag_val);
+					value->getName().ToULong(&flag_val);
 					flag_name = value->getStringValue();
 				}
 
@@ -1224,366 +1235,6 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 
 	return true;
 }
-
-/*
-bool GameConfiguration::readConfiguration(string& cfg, string source) {
-	// Clear current configuration
-	setDefaults();
-	name = "Invalid Configuration";
-	action_specials.clear();
-	thing_types.clear();
-	flags_thing.clear();
-	flags_line.clear();
-	udmf_vertex_props.clear();
-	udmf_linedef_props.clear();
-	udmf_sidedef_props.clear();
-	udmf_sector_props.clear();
-	udmf_thing_props.clear();
-
-	// Parse the full configuration
-	Parser parser;
-	parser.parseText(cfg, source);
-
-	// Process parsed data
-	ParseTreeNode* base = parser.parseTreeRoot();
-
-	// 'Game' section (this is required for it to be a valid game configuration)
-	ParseTreeNode* node_game = (ParseTreeNode*)base->getChild("game");
-	if (!node_game) {
-		wxLogMessage("Error: Invalid game configuration, 'game' section required but not found");
-		return false;
-	}
-	for (unsigned a = 0; a < node_game->nChildren(); a++) {
-		ParseTreeNode* node = (ParseTreeNode*)node_game->getChild(a);
-
-		// Game name
-		if (S_CMPNOCASE(node->getName(), "name"))
-			this->name = node->getStringValue();
-
-		// Allow any map name
-		else if (S_CMPNOCASE(node->getName(), "map_name_any"))
-			any_map_name = node->getBoolValue();
-
-		// Map format
-		else if (S_CMPNOCASE(node->getName(), "map_format")) {
-			if (S_CMPNOCASE(node->getStringValue(), "doom"))
-				map_formats[MAP_DOOM] = true;
-			else if (S_CMPNOCASE(node->getStringValue(), "hexen"))
-				map_formats[MAP_HEXEN] = true;
-			else if (S_CMPNOCASE(node->getStringValue(), "doom64"))
-				map_formats[MAP_DOOM64] = true;
-			else if (S_CMPNOCASE(node->getStringValue(), "udmf"))
-				map_formats[MAP_UDMF] = true;
-			else {
-				wxLogMessage("Warning: Unknown/unsupported map format \"%s\", defaulting to doom format", CHR(node->getStringValue()));
-				//map_format = MAP_DOOM;
-			}
-		}
-
-		// Boom extensions
-		else if (S_CMPNOCASE(node->getName(), "boom"))
-			boom = node->getBoolValue();
-
-		// UDMF namespace
-		else if (S_CMPNOCASE(node->getName(), "udmf_namespace"))
-			udmf_namespace = node->getStringValue();
-
-		// Mixed Textures and Flats
-		else if (S_CMPNOCASE(node->getName(), "mix_tex_flats"))
-			mix_tex_flats = node->getBoolValue();
-
-		// TX_/'textures' namespace enabled
-		else if (S_CMPNOCASE(node->getName(), "tx_textures"))
-			tx_textures = node->getBoolValue();
-
-		// Sky flat
-		else if (S_CMPNOCASE(node->getName(), "sky_flat"))
-			sky_flat = node->getStringValue();
-
-		// Scripting language
-		else if (S_CMPNOCASE(node->getName(), "script_language"))
-			script_language = node->getStringValue().Lower();
-
-		// Light levels interval
-		else if (S_CMPNOCASE(node->getName(), "light_level_interval"))
-			setLightLevelInterval(node->getIntValue());
-	}
-
-	// Go through all other config sections
-	ParseTreeNode* node = NULL;
-	for (unsigned a = 0; a < base->nChildren(); a++) {
-		node = (ParseTreeNode*)base->getChild(a);
-
-		// Skip game section
-		if (node == node_game)
-			continue;
-
-		// Action specials section
-		if (S_CMPNOCASE(node->getName(), "action_specials"))
-			readActionSpecials(node);
-
-		// Thing types section
-		else if (S_CMPNOCASE(node->getName(), "thing_types"))
-			readThingTypes(node);
-
-		// Line flags section
-		else if (S_CMPNOCASE(node->getName(), "line_flags")) {
-			for (unsigned c = 0; c < node->nChildren(); c++) {
-				ParseTreeNode* value = (ParseTreeNode*)node->getChild(c);
-
-				// Check for 'flag' type
-				if (!(S_CMPNOCASE(value->getType(), "flag")))
-					continue;
-
-				long flag_val;
-				value->getName().ToLong(&flag_val);
-
-				// Check if the flag value already exists
-				bool exists = false;
-				for (unsigned f = 0; f < flags_line.size(); f++) {
-					if (flags_line[f].flag == flag_val) {
-						exists = true;
-						flags_line[f].name = value->getStringValue();
-						break;
-					}
-				}
-
-				// Add flag otherwise
-				if (!exists)
-					flags_line.push_back(flag_t(flag_val, value->getStringValue()));
-			}
-		}
-
-		// Line triggers section
-		else if (S_CMPNOCASE(node->getName(), "line_triggers")) {
-			for (unsigned c = 0; c < node->nChildren(); c++) {
-				ParseTreeNode* value = (ParseTreeNode*)node->getChild(c);
-
-				// Check for 'trigger' type
-				if (!(S_CMPNOCASE(value->getType(), "trigger")))
-					continue;
-
-				long flag_val;
-				value->getName().ToLong(&flag_val);
-
-				// Check if the flag value already exists
-				bool exists = false;
-				for (unsigned f = 0; f < triggers_line.size(); f++) {
-					if (triggers_line[f].flag == flag_val) {
-						exists = true;
-						triggers_line[f].name = value->getStringValue();
-						break;
-					}
-				}
-
-				// Add flag otherwise
-				if (!exists)
-					triggers_line.push_back(flag_t(flag_val, value->getStringValue()));
-			}
-		}
-
-		// Thing flags section
-		else if (S_CMPNOCASE(node->getName(), "thing_flags")) {
-			for (unsigned c = 0; c < node->nChildren(); c++) {
-				ParseTreeNode* value = (ParseTreeNode*)node->getChild(c);
-
-				// Check for 'flag' type
-				if (!(S_CMPNOCASE(value->getType(), "flag")))
-					continue;
-
-				long flag_val;
-				value->getName().ToLong(&flag_val);
-
-				// Check if the flag value already exists
-				bool exists = false;
-				for (unsigned f = 0; f < flags_thing.size(); f++) {
-					if (flags_thing[f].flag == flag_val) {
-						exists = true;
-						flags_thing[f].name = value->getStringValue();
-						break;
-					}
-				}
-
-				// Add flag otherwise
-				if (!exists)
-					flags_thing.push_back(flag_t(flag_val, value->getStringValue()));
-			}
-		}
-
-		// Sector types section
-		else if (S_CMPNOCASE(node->getName(), "sector_types")) {
-			for (unsigned c = 0; c < node->nChildren(); c++) {
-				ParseTreeNode* value = (ParseTreeNode*)node->getChild(c);
-
-				// Check for 'type'
-				if (!(S_CMPNOCASE(value->getType(), "type")))
-					continue;
-
-				long type_val;
-				value->getName().ToLong(&type_val);
-
-				// Check if the sector type already exists
-				bool exists = false;
-				for (unsigned t = 0; t < sector_types.size(); t++) {
-					if (sector_types[t].type == type_val) {
-						exists = true;
-						sector_types[t].name = value->getStringValue();
-						break;
-					}
-				}
-
-				// Add type otherwise
-				if (!exists)
-					sector_types.push_back(sectype_t(type_val, value->getStringValue()));
-			}
-		}
-
-		// UDMF properties section
-		else if (S_CMPNOCASE(node->getName(), "udmf_properties")) {
-			// Parse vertex block properties (if any)
-			ParseTreeNode* block = (ParseTreeNode*)node->getChild("vertex");
-			if (block) readUDMFProperties(block, udmf_vertex_props);
-
-			// Parse linedef block properties (if any)
-			block = (ParseTreeNode*)node->getChild("linedef");
-			if (block) readUDMFProperties(block, udmf_linedef_props);
-
-			// Parse sidedef block properties (if any)
-			block = (ParseTreeNode*)node->getChild("sidedef");
-			if (block) readUDMFProperties(block, udmf_sidedef_props);
-
-			// Parse sector block properties (if any)
-			block = (ParseTreeNode*)node->getChild("sector");
-			if (block) readUDMFProperties(block, udmf_sector_props);
-
-			// Parse thing block properties (if any)
-			block = (ParseTreeNode*)node->getChild("thing");
-			if (block) readUDMFProperties(block, udmf_thing_props);
-		}
-
-		// Defaults section
-		else if (S_CMPNOCASE(node->getName(), "defaults")) {
-			// Go through defaults blocks
-			for (unsigned b = 0; b < node->nChildren(); b++) {
-				ParseTreeNode* block = (ParseTreeNode*)node->getChild(b);
-
-				// Linedef defaults
-				if (S_CMPNOCASE(block->getName(), "linedef")) {
-					for (unsigned c = 0; c < block->nChildren(); c++) {
-						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
-						defaults_line[def->getName()] = def->getValue();
-					}
-				}
-
-				// Sidedef defaults
-				else if (S_CMPNOCASE(block->getName(), "sidedef")) {
-					for (unsigned c = 0; c < block->nChildren(); c++) {
-						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
-						defaults_side[def->getName()] = def->getValue();
-					}
-				}
-
-				// Sector defaults
-				else if (S_CMPNOCASE(block->getName(), "sector")) {
-					for (unsigned c = 0; c < block->nChildren(); c++) {
-						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
-						defaults_sector[def->getName()] = def->getValue();
-					}
-				}
-
-				// Thing defaults
-				else if (S_CMPNOCASE(block->getName(), "thing")) {
-					for (unsigned c = 0; c < block->nChildren(); c++) {
-						ParseTreeNode* def = (ParseTreeNode*)block->getChild(c);
-						defaults_thing[def->getName()] = def->getValue();
-					}
-				}
-
-				else
-					wxLogMessage("Unknown defaults block \"%s\"", CHR(block->getName()));
-			}
-		}
-
-		// Maps section
-		else if (S_CMPNOCASE(node->getName(), "maps")) {
-			// Go through map blocks
-			for (unsigned b = 0; b < node->nChildren(); b++) {
-				ParseTreeNode* block = (ParseTreeNode*)node->getChild(b);
-
-				// Map definition
-				if (S_CMPNOCASE(block->getType(), "map")) {
-					gc_mapinfo_t map;
-					map.mapname = block->getName();
-
-					// Go through map properties
-					for (unsigned c = 0; c < block->nChildren(); c++) {
-						ParseTreeNode* prop = (ParseTreeNode*)block->getChild(c);
-
-						// Sky texture
-						if (S_CMPNOCASE(prop->getName(), "sky")) {
-							// Primary sky texture
-							map.sky1 = prop->getStringValue();
-
-							// Secondary sky texture
-							if (prop->nValues() > 1)
-								map.sky2 = prop->getStringValue(1);
-						}
-					}
-
-					maps.push_back(map);
-				}
-			}
-		}
-
-		// Unknown/unexpected section
-		else
-			wxLogMessage("Warning: Unexpected game configuration section \"%s\", skipping", CHR(node->getName()));
-	}
-
-	wxLogMessage("Read game configuration \"%s\"", CHR(this->name));
-	return true;
-}
-*/
-
-/*
-bool GameConfiguration::openEmbeddedConfig(ArchiveEntry* entry) {
-// Check entry was given
-if (!entry)
-	return false;
-
-// Build configuration string from entry (process #includes, etc)
-string cfg;
-buildConfig(entry, cfg);
-
-if (readConfiguration(cfg, entry->getName())) {
-	string name = readConfigName(entry->getMCData());
-
-	// Add to list if valid
-	if (!name.IsEmpty()) {
-		gconf_t gc;
-		gc.filename = entry->getParent()->getFilename();
-		gc.title = name;
-		game_configs.push_back(gc);
-	}
-
-	return true;
-}
-return false;
-}
-
-bool GameConfiguration::removeEmbeddedConfig(string name) {
-if (game_configs.size() > lastDefaultConfig) {
-	vector<gconf_t>::iterator it, stop = game_configs.begin() + lastDefaultConfig;
-	for (it = game_configs.end() - 1; it >= stop; --it) {
-		if (!name.Cmp(it->filename)) {
-			game_configs.erase(it);
-			return true;
-		}
-	}
-}
-return false;
-}
-*/
 
 bool GameConfiguration::openConfig(string game, string port)
 {
@@ -1809,11 +1460,105 @@ bool GameConfiguration::thingFlagSet(unsigned index, MapThing* thing)
 		return false;
 
 	// Check if flag is set
-	int flags = thing->intProperty("flags");
+	unsigned long flags = thing->intProperty("flags");
 	if (flags & flags_thing[index].flag)
 		return true;
 	else
 		return false;
+}
+
+bool GameConfiguration::thingFlagSet(string flag, MapThing* thing, int map_format)
+{
+	// If UDMF, just get the bool value
+	if (map_format == MAP_UDMF)
+		return thing->boolProperty(flag);
+
+	// Get current flags
+	unsigned long flags = thing->intProperty("flags");
+
+	// Iterate through flags
+	for (size_t i = 0; i < flags_thing.size(); ++i)
+	{
+		if (flags_thing[i].udmf == flag)
+			return !!(flags & flags_thing[i].flag);
+	}
+	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+	return false;
+}
+
+bool GameConfiguration::thingBasicFlagSet(string flag, MapThing* thing, int map_format)
+{
+	// If UDMF, just get the bool value
+	if (map_format == MAP_UDMF)
+		return thing->boolProperty(flag);
+
+	// Get current flags
+	unsigned long flags = thing->intProperty("flags");
+
+	// ZDoom uses Hexen-style flags
+	bool hexen = (currentGame() == "hexen") || (currentPort() == "zdoom");
+
+	// Easy Skill
+	if (flag == "skill2" || flag == "skill1")
+		return !!(flags & 1);
+
+	// Medium Skill
+	else if (flag == "skill3")
+		return !!(flags & 2);
+
+	// Hard Skill
+	else if (flag == "skill4" || flag == "skill5")
+		return !!(flags & 4);
+
+	// Game mode flags
+	else if (flag == "single")
+	{
+		// Single Player
+		if (hexen)
+			return !!(flags & 256);
+		// *Not* Multiplayer
+		else
+			return !(flags & 16);
+	}
+	else if (flag == "coop")
+	{
+		// Coop
+		if (hexen)
+			return !!(flags & 512);
+		// *Not* Not In Coop
+		else if (isBoom())
+			return !(flags & 64);
+		else
+			return true;
+	}
+	else if (flag == "dm")
+	{
+		// Deathmatch
+		if (hexen)
+			return !!(flags & 1024);
+		// *Not* Not In DM
+		else if (isBoom())
+			return !(flags & 32);
+		else
+			return true;
+	}
+
+	// Hexen class flags
+	else if (hexen && flag.StartsWith("class"))
+	{
+		// Fighter
+		if (flag == "class1")
+			return !!(flags & 32);
+		// Cleric
+		else if (flag == "class2")
+			return !!(flags & 64);
+		// Mage
+		else if (flag == "class3")
+			return !!(flags & 128);
+	}
+
+	// Not basic
+	return thingFlagSet(flag, thing, map_format);
 }
 
 string GameConfiguration::thingFlagsString(int flags)
@@ -1844,7 +1589,7 @@ void GameConfiguration::setThingFlag(unsigned index, MapThing* thing, bool set)
 		return;
 
 	// Determine new flags value
-	int flags = thing->intProperty("flags");
+	unsigned long flags = thing->intProperty("flags");
 	if (set)
 		flags |= flags_thing[index].flag;
 	else
@@ -1852,6 +1597,151 @@ void GameConfiguration::setThingFlag(unsigned index, MapThing* thing, bool set)
 
 	// Update thing flags
 	thing->setIntProperty("flags", flags);
+}
+
+void GameConfiguration::setThingFlag(string flag, MapThing* thing, int map_format, bool set)
+{
+	// If UDMF, just set the bool value
+	if (map_format == MAP_UDMF)
+	{
+		thing->setBoolProperty(flag, set);
+		return;
+	}
+
+	// Iterate through flags
+	unsigned long flag_val = 0;
+	for (size_t i = 0; i < flags_thing.size(); ++i)
+	{
+		if (flags_thing[i].udmf == flag)
+		{
+			flag_val = flags_thing[i].flag;
+			break;
+		}
+	}
+
+	if (flag_val == 0)
+	{
+		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+		return;
+	}
+
+	// Determine new flags value
+	unsigned long flags = thing->intProperty("flags");
+	if (set)
+		flags |= flag_val;
+	else
+		flags = (flags & ~flag_val);
+
+	// Update thing flags
+	thing->setIntProperty("flags", flags);
+}
+
+void GameConfiguration::setThingBasicFlag(string flag, MapThing* thing, int map_format, bool set)
+{
+	// If UDMF, just get the bool value
+	if (map_format == MAP_UDMF)
+	{
+		thing->setBoolProperty(flag, set);
+		return;
+	}
+
+	// Seek flag value
+	unsigned long flag_val = 0;
+
+	// ZDoom uses Hexen-style flags
+	bool hexen = (currentGame() == "Hexen") || (currentPort() == "ZDoom");
+
+	// Easy Skill
+	if (flag == "skill2" || flag == "skill1")
+		flag_val = 1;
+
+	// Medium Skill
+	else if (flag == "skill3")
+		flag_val = 2;
+
+	// Hard Skill
+	else if (flag == "skill4" || flag == "skill5")
+		flag_val = 4;
+
+	// Game mode flags
+	else if (flag == "single")
+	{
+		// Single Player
+		if (hexen)
+			flag_val = 256;
+		// *Not* Multiplayer
+		else
+		{
+			flag_val = 16;
+			set = !set;
+		}
+	}
+	else if (flag == "coop")
+	{
+		// Coop
+		if (hexen)
+			flag_val = 512;
+		// *Not* Not In Coop
+		else if (isBoom())
+		{
+			flag_val = 64;
+			set = !set;
+		}
+		// Multiplayer
+		else
+			flag_val = 0;
+	}
+	else if (flag == "dm")
+	{
+		// Deathmatch
+		if (hexen)
+			flag_val = 1024;
+		// *Not* Not In DM
+		else if (isBoom())
+		{
+			flag_val = 32;
+			set = !set;
+		}
+		// Multiplayer
+		else
+			flag_val = 0;
+	}
+
+	// Hexen class flags
+	else if (flag.StartsWith("class"))
+	{
+		if (hexen)
+		{
+			// Fighter
+			if (flag == "class1")
+				flag_val = 32;
+			// Cleric
+			else if (flag == "class2")
+				flag_val = 64;
+			// Mage
+			else if (flag == "class3")
+				flag_val = 128;
+		}
+		else
+			flag_val = 0;
+	}
+
+	if (flag_val)
+	{
+		// Determine new flags value
+		unsigned long flags = thing->intProperty("flags");
+		if (set)
+			flags |= flag_val;
+		else
+			flags = (flags & ~flag_val);
+
+		// Update thing flags
+		thing->setIntProperty("flags", flags);
+		return;
+	}
+
+	// Not basic
+	thingFlagSet(flag, thing, map_format);
 }
 
 // This is used to have the same priority order as DB2
@@ -1924,7 +1814,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 			// Check for no editor number (ie can't be placed in the map)
 			if (tz.peekToken() == "{")
 			{
-				LOG_MESSAGE(2, S_FMT("Not adding actor %s, no editor number", CHR(name)));
+				LOG_MESSAGE(2, "Not adding actor %s, no editor number", CHR(name));
 
 				// Skip actor definition
 				tz.skipToken();
@@ -1937,14 +1827,15 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				tz.getInteger(&type);
 				string group;
 				PropertyList found_props;
+				bool title_given = false;
+				bool sprite_given = false;
+				bool group_given = false;
 
 				// Check for actor definition open
 				token = tz.getToken();
 				if (token == "{")
 				{
 					token = tz.getToken();
-					bool title_given = false;
-					bool sprite_given = false;
 					while (token != "}")
 					{
 						// Check for subsection
@@ -1954,7 +1845,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						// Title
 						else if (S_CMPNOCASE(token, "//$Title"))
 						{
-							name = tz.getToken();
+							name = tz.getLine();
 							title_given = true;
 						}
 
@@ -1963,16 +1854,14 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 							name = tz.getToken();
 
 						// Category
-						else if (S_CMPNOCASE(token, "//$Category"))
-							group = tz.getToken();
+						else if (S_CMPNOCASE(token, "//$Group") || S_CMPNOCASE(token, "//$Category"))
+						{
+							group = tz.getLine();
+							group_given = true;
+						}
 
 						// Sprite
-						else if (S_CMPNOCASE(token, "//$EditorSprite"))
-						{
-							found_props["sprite"] = tz.getToken();
-							sprite_given = true;
-						}
-						else if (S_CMPNOCASE(token, "//$Sprite"))
+						else if (S_CMPNOCASE(token, "//$EditorSprite") || S_CMPNOCASE(token, "//$Sprite"))
 						{
 							found_props["sprite"] = tz.getToken();
 							sprite_given = true;
@@ -2018,8 +1907,15 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						// Translation
 						else if (S_CMPNOCASE(token, "translation"))
 						{
-							found_props["translation"] = tz.getToken();
-							// TODO: multiple translation strings
+							string translation = "\"";
+							translation += tz.getToken();
+							while (tz.peekToken() == ",")
+							{
+								translation += tz.getToken(); // ,
+								translation += tz.getToken(); // next range
+							}
+							translation += "\"";
+							found_props["translation"] = translation;
 						}
 
 						// Solid
@@ -2033,7 +1929,9 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 
 							int statecounter = 0;
 							string spritestate;
+							string laststate;
 							int priority = 0;
+							int lastpriority = 0;
 
 							token = tz.getToken();
 							while (token != "}")
@@ -2041,29 +1939,54 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 								// Idle, See, Inactive, Spawn, and finally first defined
 								if (priority < SS_IDLE)
 								{
-									spritestate = token;
+									string myspritestate = token;
 									token = tz.getToken();
 									while (token.Cmp(":") && token.Cmp("}"))
 									{
-										spritestate = token;
+										myspritestate = token;
 										token = tz.getToken();
 									}
 									if (S_CMPNOCASE(token, "}"))
 										break;
 									string sb = tz.getToken(); // Sprite base
 									string sf = tz.getToken(); // Sprite frame(s)
-									string sprite = sb + sf.Left(1) + "?";
 									int mypriority = 0;
-									if (statecounter++ == 0)						mypriority = SS_FIRSTDEFINED;
-									if (S_CMPNOCASE(spritestate, "spawn"))			mypriority = SS_SPAWN;
-									else if (S_CMPNOCASE(spritestate, "inactive"))	mypriority = SS_INACTIVE;
-									else if (S_CMPNOCASE(spritestate, "see"))		mypriority = SS_SEE;
-									else if (S_CMPNOCASE(spritestate, "idle"))		mypriority = SS_IDLE;
+									// If the same state is given several names, 
+									// don't read the next name as a sprite name!
+									if (!sf.Cmp(":"))
+									{
+										if (S_CMPNOCASE(myspritestate, "spawn"))			mypriority = SS_SPAWN;
+										else if (S_CMPNOCASE(myspritestate, "inactive"))	mypriority = SS_INACTIVE;
+										else if (S_CMPNOCASE(myspritestate, "see"))			mypriority = SS_SEE;
+										else if (S_CMPNOCASE(myspritestate, "idle"))		mypriority = SS_IDLE;
+										if (mypriority > lastpriority)
+										{
+											laststate = myspritestate;
+											lastpriority = mypriority;
+										}
+										continue;
+									}
+									else
+									{
+										spritestate = myspritestate;
+										if (statecounter++ == 0)						mypriority = SS_FIRSTDEFINED;
+										if (S_CMPNOCASE(spritestate, "spawn"))			mypriority = SS_SPAWN;
+										else if (S_CMPNOCASE(spritestate, "inactive"))	mypriority = SS_INACTIVE;
+										else if (S_CMPNOCASE(spritestate, "see"))		mypriority = SS_SEE;
+										else if (S_CMPNOCASE(spritestate, "idle"))		mypriority = SS_IDLE;
+										if (lastpriority > mypriority)
+										{
+											spritestate = laststate;
+											mypriority = lastpriority;
+										}
+									}
+									string sprite = sb + sf.Left(1) + "?";
 									if (mypriority > priority)
 									{
 										priority = mypriority;
 										found_props["sprite"] = sprite;
-										LOG_MESSAGE(2, S_FMT("Actor %s found sprite %s from state %s", CHR(name), CHR(sprite), CHR(spritestate)));
+										LOG_MESSAGE(2, "Actor %s found sprite %s from state %s", CHR(name), CHR(sprite), CHR(spritestate));
+										lastpriority = -1;
 									}
 								}
 								else
@@ -2078,10 +2001,12 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						token = tz.getToken();
 					}
 
-					LOG_MESSAGE(2, S_FMT("Parsed actor %s: %d", CHR(name), type));
+					LOG_MESSAGE(2, "Parsed actor %s: %d", CHR(name), type);
 				}
 				else
-					LOG_MESSAGE(1, S_FMT("Warning: Invalid actor definition for %s", CHR(name)));
+					LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", CHR(name));
+
+				bool defined = false;
 
 				// Create thing type object if needed
 				if (!thing_types[type].type)
@@ -2091,6 +2016,8 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 					thing_types[type].number = type;
 					thing_types[type].type->decorate = true;
 				}
+				else
+					defined = true;
 				ThingType* tt = thing_types[type].type;
 
 				// Get group defaults (if any)
@@ -2107,13 +2034,29 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 					}
 
 					if (group_defaults)
+					{
 						tt->copy(group_defaults);
+					}
 				}
 
 				// Setup thing
-				tt->name = name;
-				tt->group = group.empty() ? "Decorate" : group;
-				if (found_props["sprite"].hasValue()) tt->sprite = found_props["sprite"].getStringValue();
+				if (!defined || title_given)
+					tt->name = name;
+				if (!defined || group_given)
+					tt->group = group.empty() ? "Decorate" : group;
+				if (!defined || sprite_given)
+				{
+					if (found_props["sprite"].hasValue())
+					{
+						if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
+						{
+							if (!found_props["icon"].hasValue())
+								tt->icon = "tnt1a0";
+						}
+						else
+							tt->sprite = found_props["sprite"].getStringValue();
+					}
+				}
 				if (found_props["radius"].hasValue()) tt->radius = found_props["radius"].getIntValue();
 				if (found_props["height"].hasValue()) tt->height = found_props["height"].getIntValue();
 				if (found_props["hanging"].hasValue()) tt->hanging = found_props["hanging"].getBoolValue();
@@ -2152,11 +2095,30 @@ bool GameConfiguration::lineFlagSet(unsigned index, MapLine* line)
 		return false;
 
 	// Check if flag is set
-	int flags = line->intProperty("flags");
+	unsigned long flags = line->intProperty("flags");
 	if (flags & flags_line[index].flag)
 		return true;
 	else
 		return false;
+}
+
+bool GameConfiguration::lineFlagSet(string flag, MapLine* line, int map_format)
+{
+	// If UDMF, just get the bool value
+	if (map_format == MAP_UDMF)
+		return line->boolProperty(flag);
+
+	// Get current flags
+	unsigned long flags = line->intProperty("flags");
+
+	// Iterate through flags
+	for (size_t i = 0; i < flags_line.size(); ++i)
+	{
+		if (flags_line[i].udmf == flag)
+			return !!(flags & flags_line[i].flag);
+	}
+	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+	return false;
 }
 
 bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_format)
@@ -2166,9 +2128,9 @@ bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_for
 		return line->boolProperty(flag);
 
 	// Get current flags
-	int flags = line->intProperty("flags");
+	unsigned long flags = line->intProperty("flags");
 
-	// Impassible
+	// Impassable
 	if (flag == "blocking")
 		return !!(flags & 1);
 
@@ -2184,8 +2146,8 @@ bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_for
 	else if (flag == "dontpegbottom")
 		return !!(flags & 16);
 
-	// Unknown
-	return false;
+	// Not basic
+	return lineFlagSet(flag, line, map_format);
 }
 
 string GameConfiguration::lineFlagsString(MapLine* line)
@@ -2194,12 +2156,12 @@ string GameConfiguration::lineFlagsString(MapLine* line)
 		return "";
 
 	// Get raw flags
-	int flags = line->intProperty("flags");
+	unsigned long flags = line->intProperty("flags");
 	// TODO: UDMF flags
 
 	// Check against all flags
 	string ret = "";
-	for (unsigned a = 0; a < flags_line.size(); a++)
+	for (unsigned long a = 0; a < flags_line.size(); a++)
 	{
 		if (flags & flags_line[a].flag)
 		{
@@ -2223,11 +2185,48 @@ void GameConfiguration::setLineFlag(unsigned index, MapLine* line, bool set)
 		return;
 
 	// Determine new flags value
-	int flags = line->intProperty("flags");
+	unsigned long flags = line->intProperty("flags");
 	if (set)
 		flags |= flags_line[index].flag;
 	else
 		flags = (flags & ~flags_line[index].flag);
+
+	// Update line flags
+	line->setIntProperty("flags", flags);
+}
+
+void GameConfiguration::setLineFlag(string flag, MapLine* line, int map_format, bool set)
+{
+	// If UDMF, just set the bool value
+	if (map_format == MAP_UDMF)
+	{
+		line->setBoolProperty(flag, set);
+		return;
+	}
+
+	// Iterate through flags
+	unsigned long flag_val = 0;
+	for (size_t i = 0; i < flags_line.size(); ++i)
+	{
+		if (flags_line[i].udmf == flag)
+		{
+			flag_val = flags_line[i].flag;
+			break;
+		}
+	}
+
+	if (flag_val == 0)
+	{
+		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+		return;
+	}
+
+	// Determine new flags value
+	unsigned long flags = line->intProperty("flags");
+	if (set)
+		flags |= flag_val;
+	else
+		flags = (flags & ~flag_val);
 
 	// Update line flags
 	line->setIntProperty("flags", flags);
@@ -2243,10 +2242,10 @@ void GameConfiguration::setLineBasicFlag(string flag, MapLine* line, int map_for
 	}
 
 	// Get current flags
-	int flags = line->intProperty("flags");
-	int fval = 0;
+	unsigned long flags = line->intProperty("flags");
+	unsigned long fval = 0;
 
-	// Impassible
+	// Impassable
 	if (flag == "blocking")
 		fval = 1;
 
@@ -2263,10 +2262,15 @@ void GameConfiguration::setLineBasicFlag(string flag, MapLine* line, int map_for
 		fval = 16;
 
 	// Set/unset flag
-	if (set)
-		line->setIntProperty("flags", flags|fval);
-	else
-		line->setIntProperty("flags", flags & ~fval);
+	if (fval)
+	{
+		if (set)
+			line->setIntProperty("flags", flags|fval);
+		else
+			line->setIntProperty("flags", flags & ~fval);
+	}
+	// Not basic
+	else setLineFlag(flag, line, map_format, set);
 }
 
 string GameConfiguration::spacTriggerString(MapLine* line, int map_format)
@@ -3016,4 +3020,9 @@ CONSOLE_COMMAND(dumpactionspecials, 0, false)
 CONSOLE_COMMAND(dumpudmfprops, 0, false)
 {
 	theGameConfiguration->dumpUDMFProperties();
+}
+
+CONSOLE_COMMAND(dumpthingtypes, 0, false)
+{
+	theGameConfiguration->dumpThingTypes();
 }

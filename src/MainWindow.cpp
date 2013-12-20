@@ -712,7 +712,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	else if (href.StartsWith("recent://"))
 	{
 		// Recent file
-		string rs = href.Right(1);
+		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
 		index++;

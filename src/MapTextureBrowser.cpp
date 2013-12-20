@@ -52,7 +52,7 @@ string MapTexBrowserItem::itemInfo()
 		return "No Texture";
 
 	// Add dimensions if known
-	if (image)
+	if (image || loadImage())
 		info += S_FMT("%dx%d", image->getWidth(), image->getHeight());
 	else
 		info += "Unknown size";
@@ -87,7 +87,19 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture)
 		vector<TextureResource::tex_res_t> textures;
 		theResourceManager->getAllTextures(textures, NULL);
 		for (unsigned a = 0; a < textures.size(); a++)
-			addItem(new MapTexBrowserItem(textures[a].tex->getName(), 0, textures[a].tex->getIndex()+1), "Textures/TEXTUREx");
+		{
+			CTexture * tex = textures[a].tex;
+			if (tex->isExtended())
+			{
+				if (!(tex->getType().CmpNoCase("texture")) || !(tex->getType().CmpNoCase("walltexture")))
+					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), "Textures/TEXTURES");
+				else if (!(tex->getType().CmpNoCase("flat")))
+					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), "Flats/TEXTURES");
+				// Ignore graphics, patches and sprites
+			}
+			else
+				addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), "Textures/TEXTUREx");
+		}
 
 		// Texture namespace patches (TX_)
 		if (theGameConfiguration->txTextures())
@@ -105,7 +117,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture)
 					else
 						path = "";
 
-					addItem(new MapTexBrowserItem(patches[a]->getName(true), 0, a), "Textures/Textures (TX)" + path);
+					addItem(new MapTexBrowserItem(patches[a]->getName(true), 0, a), "Textures/Single File (TX)" + path);
 				}
 			}
 		}

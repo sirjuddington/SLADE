@@ -39,6 +39,7 @@
 #include "Translation.h"
 #include "MathStuff.h"
 #include "Tokenizer.h"
+#include "ArchiveManager.h"
 
 #undef BOOL
 #include <FreeImage.h>
@@ -1402,6 +1403,13 @@ bool SImage::applyTranslation(string tr, Palette8bit* pal)
 	else if (!tr.CmpNoCase("\"strife4\""))	tr = "\"32:63=0:31\", \"80:95=128:143\", \"128:143=80:95\", \"192:223=160:191\"";
 	else if (!tr.CmpNoCase("\"strife5\""))	tr = "\"32:63=0:31\", \"80:95=16:31\", \"128:143=96:111\", \"192:223=32:63\"";
 	else if (!tr.CmpNoCase("\"strife6\""))	tr = "\"32:63=0:31\", \"80:95=64:79\", \"128:143=144:159\", \"192=1\", \"193:223=1:31\"";
+	else if (!tr.CmpNoCase("\"chex0\""))	tr = "\"192:207=112:127\"";
+	else if (!tr.CmpNoCase("\"chex1\""))	tr = "\"192:207=96:111\"";
+	else if (!tr.CmpNoCase("\"chex2\""))	tr = "\"192:207=64:79\"";
+	else if (!tr.CmpNoCase("\"chex3\""))	tr = "\"192:207=32:47\"";
+	else if (!tr.CmpNoCase("\"chex4\""))	tr = "\"192:207=88:103\"";
+	else if (!tr.CmpNoCase("\"chex5\""))	tr = "\"192:207=56:71\"";
+	else if (!tr.CmpNoCase("\"chex6\""))	tr = "\"192:207=176:191\"";
 	// Some more from Eternity
 	else if (!tr.CmpNoCase("\"tomato\""))	tr = "\"112:113=171:171\", \"114:114=172:172\", \"115:122=173:187\", \"123:124=188:189\", \"125:126=45:47\", \"127:127=1:1\"";
 	else if (!tr.CmpNoCase("\"dirt\""))		tr = "\"112:117=128:133\", \"118:120=135:137\", \"121:123=139:143\", \"124:125=237:239\", \"126:127=1:2\"";
@@ -1417,6 +1425,21 @@ bool SImage::applyTranslation(string tr, Palette8bit* pal)
 
 	Translation trans;
 	trans.clear();
+	string table;
+	if (tr.StartsWith("\"$@", &table))
+	{
+		table.RemoveLast(1); // remove the closing '\"'
+		Archive *bra = theArchiveManager->baseResourceArchive();
+		if (bra)
+		{
+			ArchiveEntry *trantbl = bra->getEntry(table);
+			if (trantbl && trantbl->getSize() == 256)
+			{
+				trans.read(trantbl->getData());
+				return applyTranslation(&trans, pal);
+			}
+		}
+	}
 	Tokenizer tz;
 	tz.openString(tr);
 	string token = tz.getToken();

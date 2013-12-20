@@ -59,7 +59,15 @@ string map_lumps[NUMMAPLUMPS] =
 	"BEHAVIOR",
 	"LEAFS",
 	"LIGHTS",
-	"MACROS"
+	"MACROS",
+	"GL_MAP01",
+	"GL_VERT",
+	"GL_SEGS",
+	"GL_SSECT",
+	"GL_NODES",
+	"GL_PVS",
+	"TEXTMAP",
+	"ZNODES"
 };
 
 // Special namespaces (at the moment these are just mapping to zdoom's "zip as wad" namespace folders)
@@ -800,12 +808,27 @@ Archive::mapdesc_t WadArchive::getMapInfo(ArchiveEntry* maphead)
 		map.name = maphead->getName();
 		map.format = MAP_UDMF;
 
-		// Skip entries until we find ENDMAP
+		// All entries until we find ENDMAP
 		ArchiveEntry* entry = maphead->nextEntry();
 		while (true)
 		{
 			if (!entry || S_CMPNOCASE(entry->getName(), "ENDMAP"))
 				break;
+
+			// Check for unknown map lumps
+			bool known = false;
+			for (unsigned a = 0; a < NUMMAPLUMPS; a++)
+			{
+				if (S_CMPNOCASE(entry->getName(), map_lumps[a]))
+				{
+					known = true;
+					a = NUMMAPLUMPS;
+				}
+			}
+			if (!known)
+				map.unk.push_back(entry);
+
+			// Next entry
 			entry = entry->nextEntry();
 		}
 
@@ -834,6 +857,17 @@ Archive::mapdesc_t WadArchive::getMapInfo(ArchiveEntry* maphead)
 				mapentry = true;
 				existing_map_lumps[a] = 1;
 				break;
+			}
+			else if (a == LUMP_GL_HEADER)
+			{
+				string name = maphead->getName(true);
+				name.Prepend("GL_");
+				if (S_CMPNOCASE(entry->getName(), name))
+				{
+					mapentry = true;
+					existing_map_lumps[a] = 1;
+					break;
+				}
 			}
 		}
 
@@ -896,35 +930,14 @@ vector<Archive::mapdesc_t> WadArchive::detectMaps()
 		if (entry->getName() == "TEXTMAP" && entry->prevEntry())
 		{
 			// Get map info
-			mapdesc_t md;
-			md.head = entry->prevEntry(); // Header lump
-			md.name = entry->prevEntry()->getName(); // Map title
-			md.format = MAP_UDMF;
-
-			// Skip lumps until we find the ENDMAP marker
-			bool done = false;
-			while (!done)
-			{
-				// If we've somehow reached the end of the wad without finding ENDMAP,
-				// log an error and return
-				if (!entry)
-				{
-					wxLogMessage("UDMF Map with no ENDMAP marker in %s", filename.c_str());
-					return maps;
-				}
-
-				// If ENDMAP marker is here, exit the loop, otherwise skip to next lump
-				if (entry->getName() == "ENDMAP")
-					done = true;
-				else
-					entry = entry->nextEntry();
-			}
-
-			// Set end lump
-			md.end = entry;
+			mapdesc_t md = getMapInfo(entry->prevEntry());
 
 			// Add to map list
-			maps.push_back(md);
+			if (md.head != NULL)
+			{
+				entry = md.end;
+				maps.push_back(md);
+			}
 
 			// Current index is ENDMAP, we don't want to check for a doom/hexen format
 			// map so just go to the next index and continue the loop
@@ -932,12 +945,12 @@ vector<Archive::mapdesc_t> WadArchive::detectMaps()
 			continue;
 		}
 
-
-
 		// Doom/Hexen format map check **************************************************
+		// TODO maybe get rid of code duplication by calling getMapInfo() here too?
 
 		// Array to keep track of what doom/hexen map lumps have been found
-		uint8_t existing_map_lumps[NUMMAPLUMPS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		uint8_t existing_map_lumps[NUMMAPLUMPS];
+		memset(existing_map_lumps, 0, NUMMAPLUMPS);
 
 		// Check if the current lump is a doom/hexen map lump
 		bool maplump_found = false;

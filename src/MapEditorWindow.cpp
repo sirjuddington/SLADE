@@ -596,10 +596,19 @@ WadArchive* MapEditorWindow::writeMap()
 	if (theGameConfiguration->scriptLanguage() == "acs_hexen" ||
 		theGameConfiguration->scriptLanguage() == "acs_zdoom")
 		acs = true;
+	bool dialogue = false;
+	if (theGameConfiguration->scriptLanguage() == "usdf" ||
+		theGameConfiguration->scriptLanguage() == "zsdf")
+		dialogue = true;
 
 	// Add map data to temporary wad
 	WadArchive* wad = new WadArchive();
 	wad->addNewEntry("MAP01");
+	// Handle fragglescript and similar content in the map header
+	if (mdesc_current.head->getSize())
+	{
+		wad->getEntry("MAP01")->importMemChunk(mdesc_current.head->getMCData());
+	}
 	for (unsigned a = 0; a < map_data.size(); a++)
 		wad->addEntry(map_data[a]);
 	if (acs) // BEHAVIOR
@@ -642,6 +651,16 @@ bool MapEditorWindow::saveMap()
 
 	// Unlock current map entries
 	lockMapEntries(false);
+
+	// Put back unknown lumps if UDMF -- this isn't handled by writeMap() or writeUDMFMap(), so do it now.
+	if (map.unk.size())
+	{
+		for (size_t s = 0; s < map.unk.size(); ++s)
+		{
+			ArchiveEntry * clone = wad->addNewEntry(map.unk[s]->getName(), wad->numEntries() - 1);
+			if (clone) clone->importMemChunk(map.unk[s]->getMCData());
+		}
+	}
 
 	// Delete current map entries
 	ArchiveEntry* entry = map.end;

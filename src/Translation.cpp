@@ -219,6 +219,45 @@ void Translation::parse(string def)
 	}
 }
 
+/* Translation::read
+ * Read an entry as a translation table. We're only looking for 
+ * translations where the original range and the target range have 
+ * the same length, so theindex value is only ever increased by 1. 
+ * This should be enough to handle Hexen. Asymmetric translations
+ * or reversed translations would need a lot more heuristics to be
+ * handled appropriately. And of course, we're not handling any sort
+ * of palettized translations to RGB gradients. In short, converting
+ * a translation string to a translation table would be lossy.
+ *******************************************************************/
+void Translation::read(const uint8_t * data)
+{
+	int i = 0;
+	uint8_t val, o_start, o_end, d_start, d_end;
+	o_start = 0;
+	d_start = val = data[0];
+	while (i < 255)
+	{
+		++i;
+		if ((data[i] != (val + 1)) || (i == 255))
+		{
+			o_end = i - 1;
+			d_end = val;
+			// Only keep actual translations
+			if (o_start != d_start && o_end != d_end)
+			{
+				TransRangePalette* tr = new TransRangePalette();
+				tr->o_start = o_start; tr->o_end = o_end;
+				tr->d_start = d_start; tr->d_end = d_end;
+				translations.push_back(tr);
+			}
+			o_start = i;
+			d_start = data[i];
+		}
+		val = data[i];
+	}
+	LOG_MESSAGE(2, "Translation table analyzed as " + asText());
+}
+
 /* Translation::asText
  * Returns a string representation of the translation
  * (in zdoom format)

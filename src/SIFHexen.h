@@ -92,7 +92,7 @@ protected:
 
 		if (image.countColours() > 16)
 		{
-			wxLogMessage(S_FMT("Cannot convert to planar format, too many colors (%d)"), image.countColours());
+			wxLogMessage("Cannot convert to planar format, too many colors (%d)", image.countColours());
 			return false;
 		}
 
@@ -290,7 +290,7 @@ protected:
 
 		if (image.countColours() > 16)
 		{
-			wxLogMessage(S_FMT("Cannot convert to 4-bit format, too many colors (%d)"), image.countColours());
+			wxLogMessage("Cannot convert to 4-bit format, too many colors (%d)", image.countColours());
 			return false;
 		}
 
