@@ -74,6 +74,8 @@
       <File Name="src/Dialogs/SetupWizard/TempFolderWizardPage.h"/>
       <File Name="src/Dialogs/SetupWizard/WizardPageBase.h"/>
     </VirtualDirectory>
+    <File Name="src/Dialogs/RunDialog.cpp"/>
+    <File Name="src/Dialogs/RunDialog.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="General">
     <File Name="src/Clipboard.cpp"/>
@@ -139,6 +141,8 @@
     <File Name="src/Lua.h"/>
     <File Name="src/UndoRedo.cpp"/>
     <File Name="src/UndoRedo.h"/>
+    <File Name="src/Executables.cpp"/>
+    <File Name="src/Executables.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Main Editor">
     <VirtualDirectory Name="UI Elements">
@@ -212,6 +216,8 @@
       <File Name="src/SLADEMap.cpp"/>
       <File Name="src/MapObject.cpp"/>
       <File Name="src/MapObject.h"/>
+      <File Name="src/MobjPropertyList.cpp"/>
+      <File Name="src/MobjPropertyList.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="UI Elements">
       <File Name="src/MapCanvas.cpp"/>
@@ -261,6 +267,8 @@
       <File Name="src/GenLineSpecialPanel.h"/>
       <File Name="src/ObjectEditPanel.cpp"/>
       <File Name="src/ObjectEditPanel.h"/>
+      <File Name="src/MapChecksPanel.cpp"/>
+      <File Name="src/MapChecksPanel.h"/>
     </VirtualDirectory>
     <File Name="src/MapEditorWindow.h"/>
     <File Name="src/MapEditorWindow.cpp"/>
@@ -291,6 +299,8 @@
     <File Name="src/MapRenderer2D.cpp"/>
     <File Name="src/ObjectEdit.cpp"/>
     <File Name="src/ObjectEdit.h"/>
+    <File Name="src/MapChecks.cpp"/>
+    <File Name="src/MapChecks.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Resources">
     <VirtualDirectory Name="Archive">
@@ -469,6 +479,8 @@
     <File Name="src/STopWindow.h"/>
     <File Name="src/UndoManagerHistoryPanel.cpp"/>
     <File Name="src/UndoManagerHistoryPanel.h"/>
+    <File Name="src/ResourceArchiveChooser.cpp"/>
+    <File Name="src/ResourceArchiveChooser.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
