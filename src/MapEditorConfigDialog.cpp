@@ -12,6 +12,7 @@
 #include "Icons.h"
 #include "ResourceArchiveChooser.h"
 #include <wx/statline.h>
+#include <wx/gbsizer.h>
 
 
 class NewMapDialog : public wxDialog
@@ -24,8 +25,18 @@ public:
 	NewMapDialog(wxWindow* parent, int game, int port, vector<Archive::mapdesc_t>& maps) : wxDialog(parent, -1, "New Map")
 	{
 		// Setup dialog
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
+		wxGridBagSizer* sizer = new wxGridBagSizer(4, 4);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 10);
+
+		// Open selected game configuration if no map names are currently loaded
+		if (theGameConfiguration->nMapNames() == 0)
+		{
+			string gname = theGameConfiguration->gameConfig(game).name;
+			string pname = theGameConfiguration->portConfig(port).name;
+			theGameConfiguration->openConfig(gname, pname);
+		}
 
 		// Check if the game configuration allows any map name
 		int flags = 0;
@@ -33,13 +44,10 @@ public:
 			flags = wxCB_READONLY;
 
 		// Create map name combo box
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxTOP|wxRIGHT, 10);
-		sizer->AddSpacer(4);
 		cbo_mapname = new wxComboBox(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, flags);
 		cbo_mapname->SetMaxLength(8);
-		hbox->Add(new wxStaticText(this, -1, "Map Name:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
-		hbox->Add(cbo_mapname, 1, wxEXPAND);
+		sizer->Add(new wxStaticText(this, -1, "Map Name:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+		sizer->Add(cbo_mapname, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 		// Add possible map names to the combo box
 		for (unsigned a = 0; a < theGameConfiguration->nMapNames(); a++)
@@ -66,11 +74,8 @@ public:
 
 		// Create map format combo box
 		choice_mapformat = new wxChoice(this, -1);
-		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT, 10);
-		sizer->AddSpacer(4);
-		hbox->Add(new wxStaticText(this, -1, "Map Format:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
-		hbox->Add(choice_mapformat, 1, wxEXPAND);
+		sizer->Add(new wxStaticText(this, -1, "Map Format:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+		sizer->Add(choice_mapformat, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
 		// Add possible map formats to the combo box
 		if (theGameConfiguration->mapFormatSupported(MAP_DOOM, game, port))
@@ -84,7 +89,8 @@ public:
 		choice_mapformat->SetSelection(0);
 
 		// Add dialog buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND);
+		sizer->AddGrowableCol(1, 1);
 
 		Layout();
 		sizer->Fit(this);
