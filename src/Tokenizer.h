@@ -30,7 +30,7 @@ private:
 	bool		decorate;		// Whether to parse doom builder //$ decorate comments
 
 
-	void	readToken();
+	void	readToken(bool toeol = false);
 
 public:
 	Tokenizer(bool c_comments = true, bool h_comments = true, bool s_comments = false);
@@ -54,6 +54,7 @@ public:
 	void	skipToken();
 	string	getToken();
 	string	peekToken();
+	string	getLine();
 	bool	checkToken(string check);
 	int		getInteger();
 	float	getFloat();

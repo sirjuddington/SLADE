@@ -167,7 +167,7 @@ void SLADEMap::restoreObjectById(unsigned id)
 	MapObject* object = all_objects[id].mobj;
 	if (!object)
 	{
-		LOG_MESSAGE(2, S_FMT("restoreObjectById: Invalid object id %d", id));
+		LOG_MESSAGE(2, "restoreObjectById: Invalid object id %d", id);
 		return;
 	}
 
@@ -253,7 +253,7 @@ void SLADEMap::removeObjectById(unsigned id)
 	MapObject* object = all_objects[id].mobj;
 	if (!object)
 	{
-		LOG_MESSAGE(2, S_FMT("removeObjectById: Invalid object id %d", id));
+		LOG_MESSAGE(2, "removeObjectById: Invalid object id %d", id);
 		return;
 	}
 
@@ -2607,10 +2607,10 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(fpoint2_t(x, y));
-			LOG_MESSAGE(3, S_FMT("Intersection point %1.9f,%1.9f valid with line %d", x, y, a));
+			LOG_MESSAGE(3, "Intersection point %1.9f,%1.9f valid with line %d", x, y, a);
 		}
 		else if (x != x1 || y != y1)
-			LOG_MESSAGE(3, S_FMT("Intersection point %1.20f,%1.20f invalid", x, y));
+			LOG_MESSAGE(3, "Intersection point %1.20f,%1.20f invalid", x, y);
 	}
 
 	// Return if no intersections

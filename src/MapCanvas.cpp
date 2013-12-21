@@ -3061,27 +3061,45 @@ bool MapCanvas::handleAction(string id)
 
 	// 'None' (wireframe) flat type
 	else if (id == "mapw_flat_none")
+	{
 		flat_drawtype = 0;
+		return true;
+	}
 
 	// 'Untextured' flat type
 	else if (id == "mapw_flat_untextured")
+	{
 		flat_drawtype = 1;
+		return true;
+	}
 
 	// 'Textured' flat type
 	else if (id == "mapw_flat_textured")
+	{
 		flat_drawtype = 2;
+		return true;
+	}
 
 	// Normal sector edit mode
 	else if (id == "mapw_sectormode_normal")
+	{
 		editor->setSectorEditMode(MapEditor::SECTOR_BOTH);
+		return true;
+	}
 
 	// Floors sector edit mode
 	else if (id == "mapw_sectormode_floor")
+	{
 		editor->setSectorEditMode(MapEditor::SECTOR_FLOOR);
+		return true;
+	}
 
 	// Ceilings sector edit mode
 	else if (id == "mapw_sectormode_ceiling")
+	{
 		editor->setSectorEditMode(MapEditor::SECTOR_CEILING);
+		return true;
+	}
 
 	// --- Context menu ---
 
@@ -3096,6 +3114,7 @@ bool MapCanvas::handleAction(string id)
 		if (sector)
 			pos.z = sector->getFloorHeight() + 40;
 		renderer_3d->cameraSetPosition(pos);
+		return true;
 	}
 
 	// Edit item properties

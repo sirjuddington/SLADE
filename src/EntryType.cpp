@@ -107,23 +107,23 @@ void EntryType::addToList()
  *******************************************************************/
 void EntryType::dump()
 {
-	wxLogMessage(S_FMT("Type %s \"%s\", format %s, extension %s", CHR(id), CHR(name), CHR(format->getId()), CHR(extension)));
-	wxLogMessage(S_FMT("Size limit: %d-%d", size_limit[0], size_limit[1]));
+	wxLogMessage("Type %s \"%s\", format %s, extension %s", CHR(id), CHR(name), CHR(format->getId()), CHR(extension));
+	wxLogMessage("Size limit: %d-%d", size_limit[0], size_limit[1]);
 
 	for (size_t a = 0; a < match_archive.size(); a++)
-		wxLogMessage(S_FMT("Match Archive: \"%s\"", CHR(match_archive[a])));
+		wxLogMessage("Match Archive: \"%s\"", CHR(match_archive[a]));
 
 	for (size_t a = 0; a < match_extension.size(); a++)
-		wxLogMessage(S_FMT("Match Extension: \"%s\"", CHR(match_extension[a])));
+		wxLogMessage("Match Extension: \"%s\"", CHR(match_extension[a]));
 
 	for (size_t a = 0; a < match_name.size(); a++)
-		wxLogMessage(S_FMT("Match Name: \"%s\"", CHR(match_name[a])));
+		wxLogMessage("Match Name: \"%s\"", CHR(match_name[a]));
 
 	for (size_t a = 0; a < match_size.size(); a++)
-		wxLogMessage(S_FMT("Match Size: %d", match_size[a]));
+		wxLogMessage("Match Size: %d", match_size[a]);
 
 	for (size_t a = 0; a < size_multiple.size(); a++)
-		wxLogMessage(S_FMT("Size Multiple: %d", size_multiple[a]));
+		wxLogMessage("Size Multiple: %d", size_multiple[a]);
 
 	wxLogMessage("---");
 }

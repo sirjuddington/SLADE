@@ -100,6 +100,8 @@ public:
 		uint8_t			format;		// See MapTypes enum
 		bool			archive;	// True if head is an archive (for maps in zips)
 
+		vector<ArchiveEntry*> unk;	// Unknown map lumps (must be preserved for UDMF compliance)
+
 		mapdesc_t()
 		{
 			head = end = NULL;

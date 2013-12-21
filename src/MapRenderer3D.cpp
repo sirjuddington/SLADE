@@ -1058,6 +1058,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	int lowceil = min(ceiling1, ceiling2);
 	int highfloor = max(floor1, floor2);
 	string sky_flat = theGameConfiguration->skyFlat();
+	string hidden_tex = map->currentFormat() == MAP_DOOM64 ? "?" : "-";
+	bool show_midtex = (map->currentFormat() != MAP_DOOM64) || (line->intProperty("flags") & 512);
 
 	// Front lower
 	if (floor2 > floor1)
@@ -1094,7 +1096,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, false, sx, sy);
-		if (line->backSector()->getFloorTex() == sky_flat) quad.flags |= SKY;
+		// No, the sky hack is only for ceilings!
+		// if (line->backSector()->getFloorTex() == sky_flat) quad.flags |= SKY;
 		quad.flags |= LOWER;
 
 		// Add quad
@@ -1103,7 +1106,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 	// Front middle
 	string midtex1 = line->stringProperty("side1.texturemiddle");
-	if (!midtex1.IsEmpty() && midtex1 != "-")
+	if (!midtex1.IsEmpty() && midtex1 != hidden_tex && show_midtex)
 	{
 		quad_3d_t quad;
 
@@ -1134,6 +1137,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Setup quad coordinates
 		double top = lowceil + yoff1;
 		double bottom = top - (quad.texture->getHeight() * sy);
+		if ((map->currentFormat() == MAP_DOOM64) || (udmf_zdoom && line->boolProperty("wrapmidtex")))
+			bottom = highfloor;
 		if (lpeg)
 		{
 			bottom = highfloor + yoff1;
@@ -1191,7 +1196,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, !upeg, sx, sy);
-		if (line->backSector()->getCeilingTex() == sky_flat) quad.flags |= SKY;
+		// Sky hack only applies if both sectors have a sky ceiling
+		if (line->frontSector()->getCeilingTex() == sky_flat && line->backSector()->getCeilingTex() == sky_flat) quad.flags |= SKY;
 		quad.flags |= UPPER;
 
 		// Add quad
@@ -1243,7 +1249,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 	// Back middle
 	string midtex2 = line->stringProperty("side2.texturemiddle");
-	if (!midtex2.IsEmpty() && midtex2 != "-")
+	if (!midtex2.IsEmpty() && midtex2 != hidden_tex && show_midtex)
 	{
 		quad_3d_t quad;
 

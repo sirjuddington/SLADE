@@ -139,6 +139,7 @@ public:
 	~Translation();
 
 	void	parse(string def);
+	void	read(const uint8_t * data);
 	string	asText();
 	void	clear();
 	void	copy(Translation& copy);

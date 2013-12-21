@@ -821,7 +821,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 	theSplashWindow->setProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
-		//wxLogMessage(s_fmt("Entry %d/%d", a, numEntries()));
+		//wxLogMessage("Entry %d/%d", a, numEntries());
 		// Update splash window progress
 		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
 

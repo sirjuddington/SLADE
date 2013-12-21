@@ -190,7 +190,7 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 
 	Archive* new_archive = getArchive(filename);
 
-	wxLogMessage(S_FMT("Opening archive %s", filename));
+	wxLogMessage("Opening archive %s", filename);
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -1045,12 +1045,12 @@ void ArchiveManager::onAnnouncement(Announcer* announcer, string event_name, Mem
  *******************************************************************/
 CONSOLE_COMMAND (list_archives, 0, true)
 {
-	wxLogMessage(S_FMT("%d Open Archives:", theArchiveManager->numArchives()));
+	wxLogMessage("%d Open Archives:", theArchiveManager->numArchives());
 
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
 		Archive* archive = theArchiveManager->getArchive(a);
-		wxLogMessage(S_FMT("%d: \"%s\"", a + 1, archive->getFilename().c_str()));
+		wxLogMessage("%d: \"%s\"", a + 1, archive->getFilename().c_str());
 	}
 }
 

@@ -46,6 +46,15 @@ public:
 
 		return instance;
 	}
+	static void deleteInstance()
+	{
+		if (instance)
+		{
+			instance->Close();
+			delete instance;
+		}
+		instance = NULL;
+	}
 
 	MapEditor&			mapEditor() { return editor; }
 	MapTextureManager&	textureManager() { return tex_man; }

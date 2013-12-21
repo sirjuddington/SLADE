@@ -140,6 +140,7 @@ FindReplaceDialog::~FindReplaceDialog()
 void FindReplaceDialog::onClose(wxCloseEvent& e)
 {
 	Show(false);
+	m_parent->SetFocus();
 }
 
 /* FindReplaceDialog::onKeyDown
@@ -344,6 +345,9 @@ bool TextEditor::loadEntry(ArchiveEntry* entry)
 	// Get character entry data
 	//string text = wxString::From8BitData((const char*)entry->getData(), entry->getSize());
 	string text = wxString::FromUTF8((const char*)entry->getData(), entry->getSize());
+	// If opening as UTF8 failed for some reason, try again as 8-bit data
+	if (text.length() == 0)
+		text = wxString::From8BitData((const char*)entry->getData(), entry->getSize());
 
 	// Load text into editor
 	SetText(text);
@@ -1063,7 +1067,7 @@ void TextEditor::onFRDBtnFindNext(wxCommandEvent& e)
 
 	// Do find
 	if (!findNext(find))
-		wxLogMessage(S_FMT("No text matching \"%s\" found.", CHR(find)));
+		wxLogMessage("No text matching \"%s\" found.", CHR(find));
 }
 
 /* TextEditor::onFRDBtnReplace
