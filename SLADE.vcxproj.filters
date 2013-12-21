@@ -2171,6 +2171,18 @@
     <None Include="dist\res\config\ports\include\things_zdoom.cfg">
       <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
     </None>
+    <None Include="dist\res\config\games\chex1.cfg">
+      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
+    </None>
+    <None Include="dist\res\config\games\chex3.cfg">
+      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
+    </None>
+    <None Include="dist\res\config\games\include\things_chex1.cfg">
+      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
+    </None>
+    <None Include="dist\res\config\games\include\things_chex3.cfg">
+      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />

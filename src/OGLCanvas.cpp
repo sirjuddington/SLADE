@@ -328,8 +328,10 @@ void OGLCanvas::onTimer(wxTimerEvent& e)
 
 void OGLCanvas::onResize(wxSizeEvent& e)
 {
+#if (SFML_VERSION_MAJOR >= 2 && SFML_VERSION_MINOR >= 1) || __WXGTK__
 	// Recreate SFML RenderWindow
 	recreate = true;
+#endif
 
 	e.Skip();
 }
