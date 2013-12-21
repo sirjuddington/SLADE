@@ -38,6 +38,7 @@ CVAR(Bool, gl_tex_enable_np2, true, CVAR_SAVE)
 CVAR(Bool, gl_point_sprite, true, CVAR_SAVE)
 CVAR(Bool, gl_tweak_accuracy, true, CVAR_SAVE)
 CVAR(Bool, gl_vbo, true, CVAR_SAVE)
+CVAR(Int, gl_depth_buffer_size, 16, CVAR_SAVE)
 
 namespace OpenGL
 {
@@ -48,7 +49,7 @@ namespace OpenGL
 	unsigned		pow_two[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
 	uint8_t			n_pow_two = 16;
 	float			max_point_size = -1.0f;
-	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 32, 0 };
+	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0 };
 }
 
 
@@ -213,5 +214,8 @@ bool OpenGL::accuracyTweak()
 
 int* OpenGL::getWxGLAttribs()
 {
+	// Set specified depth buffer size
+	wx_gl_attrib[3] = gl_depth_buffer_size;
+
 	return wx_gl_attrib;
 }
