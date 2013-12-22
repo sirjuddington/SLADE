@@ -754,6 +754,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
 	ep->SetName("entry");
 	ep->Show(true);
 	ep->addCustomMenu();
+	ep->updateToolbar();
 
 	// Select the new tab
 	for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
