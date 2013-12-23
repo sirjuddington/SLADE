@@ -412,7 +412,7 @@ void Tokenizer::readToken(bool toeol)
 		while (!((!toeol && isWhitespace(current[0])) || current[0] == '\n'))
 		{
 			// Return if special character found
-			if (isSpecialCharacter(current[0]))
+			if (!toeol && isSpecialCharacter(current[0]))
 				return;
 
 			// Add current character to the token
