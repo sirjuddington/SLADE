@@ -15,7 +15,7 @@
 #include <wx/textfile.h>
 #include <wx/filename.h>
 #include <wx/dir.h>
-
+#include <wx/colour.h>
 
 /*******************************************************************
  * VARIABLES
@@ -1904,6 +1904,15 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						else if (S_CMPNOCASE(token, "//$Icon"))
 							found_props["icon"] = tz.getToken();
 
+						// DB2 Color
+						else if (S_CMPNOCASE(token, "//$Color"))
+							found_props["color"] = tz.getToken();
+
+						// SLADE 3 Colour (overrides DB2 color)
+						// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
+						else if (S_CMPNOCASE(token, "//$Colour"))
+							found_props["colour"] = tz.getLine();
+
 						// Translation
 						else if (S_CMPNOCASE(token, "translation"))
 						{
@@ -2066,6 +2075,62 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				if (found_props["icon"].hasValue()) tt->icon = found_props["icon"].getStringValue();
 				if (found_props["translation"].hasValue()) tt->translation = found_props["translation"].getStringValue();
 				if (found_props["solid"].hasValue()) tt->solid = found_props["solid"].getBoolValue();
+				if (found_props["colour"].hasValue())
+				{
+					wxColour wxc(found_props["colour"].getStringValue());
+					if (wxc.IsOk())
+					{
+						tt->colour.r = wxc.Red(); tt->colour.g = wxc.Green(); tt->colour.b = wxc.Blue();
+					}
+				}
+				else if (found_props["color"].hasValue())
+				{
+					// Translate DB2 color indices to RGB values
+					int color = found_props["color"].getIntValue();
+					switch (color)
+					{
+					case  0:	// DimGray			ARGB value of #FF696969
+						tt->colour.r = 0x69; tt->colour.g = 0x69; tt->colour.b = 0x69; break;
+					case  1:	// RoyalBlue		ARGB value of #FF4169E1
+						tt->colour.r = 0x41; tt->colour.g = 0x69; tt->colour.b = 0xE1; break;
+					case  2:	// ForestGreen		ARGB value of #FF228B22
+						tt->colour.r = 0x22; tt->colour.g = 0x8B; tt->colour.b = 0x22; break;
+					case  3:	// LightSeaGreen	ARGB value of #FF20B2AA
+						tt->colour.r = 0x20; tt->colour.g = 0xB2; tt->colour.b = 0xAA; break;
+					case  4:	// Firebrick		ARGB value of #FFB22222
+						tt->colour.r = 0xB2; tt->colour.g = 0x22; tt->colour.b = 0x22; break;
+					case  5:	// DarkViolet		ARGB value of #FF9400D3
+						tt->colour.r = 0x94; tt->colour.g = 0x00; tt->colour.b = 0xD3; break;
+					case  6:	// DarkGoldenrod	ARGB value of #FFB8860B
+						tt->colour.r = 0xB8; tt->colour.g = 0x86; tt->colour.b = 0x0B; break;
+					case  7:	// Silver			ARGB value of #FFC0C0C0
+						tt->colour.r = 0xC0; tt->colour.g = 0xC0; tt->colour.b = 0xC0; break;
+					case  8:	// Gray				ARGB value of #FF808080
+						tt->colour.r = 0x80; tt->colour.g = 0x80; tt->colour.b = 0x80; break;
+					case  9:	// DeepSkyBlue		ARGB value of #FF00BFFF
+						tt->colour.r = 0x00; tt->colour.g = 0xBF; tt->colour.b = 0xFF; break;
+					case 10:	// LimeGreen		ARGB value of #FF32CD32
+						tt->colour.r = 0x32; tt->colour.g = 0xCD; tt->colour.b = 0x32; break;
+					case 11:	// PaleTurquoise	ARGB value of #FFAFEEEE
+						tt->colour.r = 0xAF; tt->colour.g = 0xEE; tt->colour.b = 0xEE; break;
+					case 12:	// Tomato			ARGB value of #FFFF6347
+						tt->colour.r = 0xFF; tt->colour.g = 0x63; tt->colour.b = 0x47; break;
+					case 13:	// Violet			ARGB value of #FFEE82EE
+						tt->colour.r = 0xEE; tt->colour.g = 0x82; tt->colour.b = 0xEE; break;
+					case 14:	// Yellow			ARGB value of #FFFFFF00
+						tt->colour.r = 0xFF; tt->colour.g = 0xFF; tt->colour.b = 0x00; break;
+					case 15:	// WhiteSmoke		ARGB value of #FFF5F5F5
+						tt->colour.r = 0xF5; tt->colour.g = 0xF5; tt->colour.b = 0xF5; break;
+					case 16:	// LightPink		ARGB value of #FFFFB6C1
+						tt->colour.r = 0xFF; tt->colour.g = 0xB6; tt->colour.b = 0xC1; break;
+					case 17:	// DarkOrange		ARGB value of #FFFF8C00
+						tt->colour.r = 0xFF; tt->colour.g = 0x8C; tt->colour.b = 0x00; break;
+					case 18:	// DarkKhaki		ARGB value of #FFBDB76B
+						tt->colour.r = 0xBD; tt->colour.g = 0xB7; tt->colour.b = 0x6B; break;
+					case 19:	// Goldenrod		ARGB value of #FFDAA520
+						tt->colour.r = 0xDA; tt->colour.g = 0xA5; tt->colour.b = 0x20; break;
+					}
+				}
 			}
 		}
 

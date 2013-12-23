@@ -1017,6 +1017,7 @@ bool GfxEntryPanel::handleAction(string id)
 
 			// Write converted image back to entry
 			format->saveImage(*image, entry_data, dlg.getItemPalette(0));
+			entry->importMemChunk(entry_data);
 			image_data_modified = true;
 			setModified();
 
