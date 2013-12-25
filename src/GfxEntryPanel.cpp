@@ -392,7 +392,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	custom_menu_name = "Graphic";
 
 	// Custom toolbar
-	custom_toolbar_actions = "pgfx_mirror;pgfx_flip;pgfx_rotate;pgfx_translate;pgfx_colourise;pgfx_tint";
+	custom_toolbar_actions = "pgfx_mirror;pgfx_flip;pgfx_rotate;pgfx_translate;pgfx_colourise;pgfx_tint;pgfx_pngopt";
 	setupToolbar();
 
 	// Bind Events
@@ -566,6 +566,12 @@ void GfxEntryPanel::setupToolbar()
 	g_colour->addActionButton("pgfx_colourise", "");
 	g_colour->addActionButton("pgfx_tint", "");
 	toolbar->addGroup(g_colour);
+
+	// Misc operations
+	SToolBarGroup* g_png = new SToolBarGroup(toolbar, "PNG");
+	g_png->addActionButton("pgfx_pngopt", "");
+	toolbar->addGroup(g_png);
+	toolbar->enableGroup("PNG", false);
 }
 
 /* GfxEntryPanel::extractAll
@@ -623,10 +629,12 @@ void GfxEntryPanel::refresh()
 	spin_yoffset->SetValue(getImage()->offset().y);
 
 	// Get some needed menu ids
+	int MENU_GFXEP_PNGOPT = theApp->getAction("pgfx_pngopt")->getWxId();
 	int MENU_GFXEP_ALPH = theApp->getAction("pgfx_alph")->getWxId();
 	int MENU_GFXEP_TRNS = theApp->getAction("pgfx_trns")->getWxId();
 	int MENU_GFXEP_EXTRACT = theApp->getAction("pgfx_extract")->getWxId();
 	int MENU_GFXEP_TRANSLATE = theApp->getAction("pgfx_translate")->getWxId();
+	int MENU_ARCHGFX_EXPORTPNG = theApp->getAction("arch_gfx_exportpng")->getWxId();
 
 	// Set PNG check menus
 	if (this->entry->getType() != NULL && this->entry->getType()->getFormat() == "img_png")
@@ -642,7 +650,11 @@ void GfxEntryPanel::refresh()
 		menu_custom->Check(MENU_GFXEP_TRNS, trns);
 
 		// Disable 'Export as PNG' (it already is :P)
-		menu_custom->Enable(theApp->getAction("arch_gfx_exportpng")->getWxId(), false);
+		menu_custom->Enable(MENU_ARCHGFX_EXPORTPNG, false);
+
+		// Add 'Optimize PNG' option
+		menu_custom->Enable(MENU_GFXEP_PNGOPT, true);
+		toolbar->enableGroup("PNG", true);
 	}
 	else
 	{
@@ -650,7 +662,9 @@ void GfxEntryPanel::refresh()
 		menu_custom->Enable(MENU_GFXEP_TRNS, false);
 		menu_custom->Check(MENU_GFXEP_ALPH, false);
 		menu_custom->Check(MENU_GFXEP_TRNS, false);
-		menu_custom->Enable(theApp->getAction("arch_gfx_exportpng")->getWxId(), true);
+		menu_custom->Enable(MENU_GFXEP_PNGOPT, false);
+		menu_custom->Enable(MENU_ARCHGFX_EXPORTPNG, true);
+		toolbar->enableGroup("PNG", false);
 	}
 
 	// Set multi-image format stuff thingies
@@ -993,6 +1007,14 @@ bool GfxEntryPanel::handleAction(string id)
 		Refresh();
 	}
 
+	// Optimize PNG
+	else if (id == "pgfx_pngopt")
+	{
+		EntryOperations::optimizePNG(entry);
+		setModified();
+		Refresh();
+	}
+
 	// Extract all
 	else if (id == "pgfx_extract")
 	{
@@ -1055,6 +1077,7 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	custom->AppendSeparator();
 	theApp->getAction("pgfx_alph")->addToMenu(custom);
 	theApp->getAction("pgfx_trns")->addToMenu(custom);
+	theApp->getAction("pgfx_pngopt")->addToMenu(custom);
 	custom->AppendSeparator();
 	theApp->getAction("arch_gfx_exportpng")->addToMenu(custom);
 	theApp->getAction("pgfx_extract")->addToMenu(custom);
