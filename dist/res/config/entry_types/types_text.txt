@@ -110,7 +110,7 @@ entry_types
 	{
 		name = "OpenGL defs";
 		match_extorname = 1;
-		match_name = "gldefs", "doomdefs", "hticdefs", "hexndefs", "strfdefs";
+		match_name = "gldefs", "doomdefs", "hticdefs", "hexndefs", "strfdefs", "glbdefs";
 		match_ext = "gl", "bm";
 		text_language = "z_gldefs";
 	}
@@ -343,6 +343,14 @@ entry_types
 		name = "Main Configuration";
 		match_name = "maincfg";
 	}
+	
+	// ZDaemon text lumps
+	patchinf : text
+    {
+            name = "Patchinfo";
+            match_name = "patchinf";
+            text_language = "zd_patchinf";
+    }
 
 	// Catchall for various misc text lumps
 	misctext : text
@@ -466,11 +474,4 @@ entry_types
 		match_ext = "txt", "diz", "1st", "doc", "nfo";
 		match_name = "readme", "*info", "*defs";
 	}
-
-	patchinf : text
-    {
-            name = "Patchinfo";
-            match_name = "patchinf";
-            text_language = "zd_patchinf";
-    }
 }
