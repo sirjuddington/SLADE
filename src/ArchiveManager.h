@@ -94,6 +94,7 @@ public:
 	bool			deleteBookmark(ArchiveEntry* entry);
 	bool			deleteBookmark(unsigned index);
 	bool			deleteBookmarksInArchive(Archive* archive);
+	bool			deleteBookmarksInDir(ArchiveTreeNode* node);
 	ArchiveEntry*	getBookmark(unsigned index);
 	unsigned		numBookmarks() { return bookmarks.size(); }
 

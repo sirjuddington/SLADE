@@ -856,6 +856,9 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	// Go through the selected entries
 	for (int a = selected_entries.size() - 1; a >= 0; a--)
 	{
+		// Remove from bookmarks
+		theArchiveManager->deleteBookmark(selected_entries[a]);
+
 		// Remove the current selected entry if it isn't a directory
 		if (selected_entries[a]->getType() != EntryType::folderType())
 			archive->removeEntry(selected_entries[a]);
@@ -864,6 +867,9 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	// Go through the selected directories
 	for (int a = selected_dirs.size() - 1; a >= 0; a--)
 	{
+		// Remove from bookmarks
+		theArchiveManager->deleteBookmarksInDir(selected_dirs[a]);
+
 		// Remove the selected directory from the archive
 		archive->removeDir(selected_dirs[a]->getName(), entry_list->getCurrentDir());
 	}
