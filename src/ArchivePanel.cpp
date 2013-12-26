@@ -1390,6 +1390,102 @@ bool ArchivePanel::gfxRemap()
 	return true;
 }
 
+/* ArchivePanel::gfxColourise
+ * Opens the Colourise dialog to batch-colour selected gfx entries
+ *******************************************************************/
+bool ArchivePanel::gfxColourise()
+{
+	// Get selected entries
+	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+
+	// Create colourise dialog
+	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	GfxColouriseDialog gcd(this, selection[0], pal);
+
+	// Run dialog
+	if (gcd.ShowModal() == wxID_OK)
+	{
+		// Begin recording undo level
+		undo_manager->beginRecord("Gfx Colourise");
+
+		// Apply translation to all entry images
+		SImage temp;
+		MemChunk mc;
+		for (unsigned a = 0; a < selection.size(); a++)
+		{
+			ArchiveEntry* entry = selection[a];
+			if (Misc::loadImageFromEntry(&temp, entry))
+			{
+				// Apply translation
+				temp.colourise(gcd.getColour(), pal);
+
+				// Create undo step
+				undo_manager->recordUndoStep(new EntryDataUS(entry));
+
+				// Write modified image data
+				if (!temp.getFormat()->saveImage(temp, mc, pal))
+					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", CHR(entry->getName()));
+				else
+					entry->importMemChunk(mc);
+			}
+		}
+
+		// Finish recording undo level
+		undo_manager->endRecord(true);
+	}
+	theActivePanel->callRefresh();
+
+	return true;
+}
+
+/* ArchivePanel::gfxTint
+ * Opens the Tint dialog to batch-colour selected gfx entries
+ *******************************************************************/
+bool ArchivePanel::gfxTint()
+{
+	// Get selected entries
+	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+
+	// Create colourise dialog
+	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+	GfxTintDialog gtd(this, selection[0], pal);
+
+	// Run dialog
+	if (gtd.ShowModal() == wxID_OK)
+	{
+		// Begin recording undo level
+		undo_manager->beginRecord("Gfx Tint");
+
+		// Apply translation to all entry images
+		SImage temp;
+		MemChunk mc;
+		for (unsigned a = 0; a < selection.size(); a++)
+		{
+			ArchiveEntry* entry = selection[a];
+			if (Misc::loadImageFromEntry(&temp, entry))
+			{
+				// Apply translation
+				temp.tint(gtd.getColour(), gtd.getAmount(), pal);
+
+				// Create undo step
+				undo_manager->recordUndoStep(new EntryDataUS(entry));
+
+				// Write modified image data
+				if (!temp.getFormat()->saveImage(temp, mc, pal))
+					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", CHR(entry->getName()));
+				else
+					entry->importMemChunk(mc);
+			}
+		}
+
+		// Finish recording undo level
+		undo_manager->endRecord(true);
+	}
+	theActivePanel->callRefresh();
+
+	return true;
+}
+
 /* ArchivePanel::gfxModifyOffsets
  * Opens the Modify Offsets dialog to mass-modify offsets of any
  * selected, offset-compatible gfx entries
@@ -2188,6 +2284,10 @@ bool ArchivePanel::handleAction(string id)
 		gfxConvert();
 	else if (id == "arch_gfx_translate")
 		gfxRemap();
+	else if (id == "arch_gfx_colourise")
+		gfxColourise();
+	else if (id == "arch_gfx_tint")
+		gfxTint();
 	else if (id == "arch_gfx_offsets")
 		gfxModifyOffsets();
 	else if (id == "arch_gfx_addptable")
@@ -2572,6 +2672,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		theApp->getAction("arch_gfx_convert")->addToMenu(gfx);
 		theApp->getAction("arch_gfx_translate")->addToMenu(gfx);
+		theApp->getAction("arch_gfx_colourise")->addToMenu(gfx);
+		theApp->getAction("arch_gfx_tint")->addToMenu(gfx);
 		theApp->getAction("arch_gfx_offsets")->addToMenu(gfx);
 		theApp->getAction("arch_gfx_addptable")->addToMenu(gfx);
 		theApp->getAction("arch_gfx_addtexturex")->addToMenu(gfx);

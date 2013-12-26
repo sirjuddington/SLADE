@@ -1075,3 +1075,199 @@ void TranslationEditorDialog::onCBTargetReverse(wxCommandEvent& e)
 	updateListItem(list_translations->GetSelection());
 	updatePreviews();
 }
+
+
+
+/*******************************************************************
+* GFXCOLOURISEDIALOG FUNCTIONS
+*******************************************************************/
+GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
+: wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
+	// Init variables
+	this->entry = entry;
+	this->palette = pal;
+
+	// Set dialog icon
+	wxIcon icon;
+	icon.CopyFromBitmap(getIcon("t_colourise"));
+	SetIcon(icon);
+
+	// Setup main sizer
+	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(msizer);
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
+
+	// Add colour chooser
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
+
+	cp_colour = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
+	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(cp_colour, 0, wxEXPAND);
+
+	// Add preview
+	gfx_preview = new GfxCanvas(this, -1);
+	sizer->Add(gfx_preview, 1, wxEXPAND|wxALL, 4);
+
+	// Add buttons
+	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
+
+	// Setup preview
+	gfx_preview->setViewType(GFXVIEW_CENTERED);
+	gfx_preview->setPalette(pal);
+	gfx_preview->SetInitialSize(wxSize(192, 192));
+	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
+	wxColour col = cp_colour->GetColour();
+	gfx_preview->getImage()->colourise(rgba_t(col.Red(), col.Green(), col.Blue()), pal);
+	gfx_preview->updateImageTexture();
+
+	// Init layout
+	Layout();
+
+	// Bind events
+	cp_colour->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &GfxColouriseDialog::onColourChanged, this);
+	Bind(wxEVT_SIZE, &GfxColouriseDialog::onResize, this);
+
+	// Setup dialog size
+	SetInitialSize(wxSize(-1, -1));
+	SetMinSize(GetSize());
+	CenterOnParent();
+}
+
+rgba_t GfxColouriseDialog::getColour()
+{
+	wxColour col = cp_colour->GetColour();
+	return rgba_t(col.Red(), col.Green(), col.Blue());
+}
+
+// Events
+void GfxColouriseDialog::onColourChanged(wxColourPickerEvent& e)
+{
+	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
+	wxColour col = cp_colour->GetColour();
+	gfx_preview->getImage()->colourise(rgba_t(col.Red(), col.Green(), col.Blue()), palette);
+	gfx_preview->updateImageTexture();
+	gfx_preview->Refresh();
+}
+
+void GfxColouriseDialog::onResize(wxSizeEvent& e)
+{
+	wxDialog::OnSize(e);
+	gfx_preview->zoomToFit(true, 0.05f);
+	e.Skip();
+}
+
+
+/*******************************************************************
+* GFXTINTDIALOG FUNCTIONS
+*******************************************************************/
+
+GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
+: wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+{
+	// Init variables
+	this->entry = entry;
+	this->palette = pal;
+
+	// Set dialog icon
+	wxIcon icon;
+	icon.CopyFromBitmap(getIcon("t_tint"));
+	SetIcon(icon);
+
+	// Setup main sizer
+	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(msizer);
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
+
+	// Add colour chooser
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
+
+	cp_colour = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
+	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(cp_colour, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
+
+	// Add 'amount' slider
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	slider_amount = new wxSlider(this, -1, 50, 0, 100);
+	label_amount = new wxStaticText(this, -1, "100%");
+	hbox->Add(new wxStaticText(this, -1, "Amount:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(slider_amount, 1, wxEXPAND|wxRIGHT, 4);
+	hbox->Add(label_amount, 0, wxALIGN_CENTER_VERTICAL);
+
+	// Add preview
+	gfx_preview = new GfxCanvas(this, -1);
+	sizer->Add(gfx_preview, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Add buttons
+	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
+
+	// Setup preview
+	gfx_preview->setViewType(GFXVIEW_CENTERED);
+	gfx_preview->setPalette(pal);
+	gfx_preview->SetInitialSize(wxSize(256, 256));
+	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
+	wxColour col = cp_colour->GetColour();
+	gfx_preview->getImage()->tint(getColour(), getAmount(), pal);
+	gfx_preview->updateImageTexture();
+
+	// Init layout
+	Layout();
+
+	// Bind events
+	cp_colour->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &GfxTintDialog::onColourChanged, this);
+	slider_amount->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &GfxTintDialog::onAmountChanged, this);
+	Bind(wxEVT_SIZE, &GfxTintDialog::onResize, this);
+
+	// Setup dialog size
+	SetInitialSize(wxSize(-1, -1));
+	SetMinSize(GetSize());
+	CenterOnParent();
+
+	// Set values
+	label_amount->SetLabel("50% ");
+}
+
+rgba_t GfxTintDialog::getColour()
+{
+	wxColour col = cp_colour->GetColour();
+	return rgba_t(col.Red(), col.Green(), col.Blue());
+}
+
+float GfxTintDialog::getAmount()
+{
+	return (float)slider_amount->GetValue()*0.01f;
+}
+
+// Events
+void GfxTintDialog::onColourChanged(wxColourPickerEvent& e)
+{
+	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
+	wxColour col = cp_colour->GetColour();
+	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
+	gfx_preview->updateImageTexture();
+	gfx_preview->Refresh();
+}
+
+void GfxTintDialog::onAmountChanged(wxCommandEvent& e)
+{
+	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
+	wxColour col = cp_colour->GetColour();
+	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
+	gfx_preview->updateImageTexture();
+	gfx_preview->Refresh();
+	label_amount->SetLabel(S_FMT("%d%% ", slider_amount->GetValue()));
+}
+
+void GfxTintDialog::onResize(wxSizeEvent& e)
+{
+	wxDialog::OnSize(e);
+	gfx_preview->zoomToFit(true, 0.05f);
+	e.Skip();
+}
+
