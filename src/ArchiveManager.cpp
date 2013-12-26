@@ -995,6 +995,48 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 		return false;
 }
 
+/* ArchiveManager::deleteBookmarksInDir
+ * Removes any bookmarked entries in [node] from the list
+ *******************************************************************/
+bool ArchiveManager::deleteBookmarksInDir(ArchiveTreeNode* node)
+{
+	// Go through bookmarks
+	Archive * archive = node->getArchive();
+	bool removed = deleteBookmark(node->getDirEntry());
+	for (unsigned a = 0; a < bookmarks.size(); ++a)
+	{
+		// Check bookmarked entry's parent archive
+		if (bookmarks[a]->getParent() == archive)
+		{
+			// Now check if the bookmarked entry is within 
+			// the removed dir or one of its descendants
+			ArchiveTreeNode* anode = bookmarks[a]->getParentDir();
+			bool remove = false;
+			while (anode != archive->getRoot() && !remove)
+			{
+				if (anode == node)
+					remove = true;
+				else anode = (ArchiveTreeNode*)anode->getParent();
+			}
+			if (remove)
+			{
+				bookmarks.erase(bookmarks.begin() + a);
+				--a;
+				removed = true;
+			}
+		}
+	}
+
+	if (removed)
+	{
+		// Announce
+		announce("bookmarks_changed");
+		return true;
+	}
+	else
+		return false;
+}
+
 /* ArchiveManager::getBookmark
  * Returns the bookmarked entry at [index]
  *******************************************************************/

@@ -98,4 +98,54 @@ public:
 	void	onCBTargetReverse(wxCommandEvent& e);
 };
 
+
+/*******************************************************************
+ * GFXCOLOURISEDIALOG CLASS
+ *******************************************************************
+ A simple dialog for the 'Colourise' function, allows the user to
+ select a colour and shows a preview of the colourised image
+ */
+class GfxColouriseDialog : public wxDialog
+{
+private:
+	GfxCanvas*			gfx_preview;
+	ArchiveEntry*		entry;
+	Palette8bit*		palette;
+	wxColourPickerCtrl*	cp_colour;
+
+public:
+	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
+	rgba_t getColour();
+	void onColourChanged(wxColourPickerEvent& e);
+	void onResize(wxSizeEvent& e);
+};
+
+
+/*******************************************************************
+ * GFXTINTDIALOG CLASS
+ *******************************************************************
+ A simple dialog for the 'Tint' function, allows the user to select
+ tint colour+amount and shows a preview of the tinted image
+ */
+class GfxTintDialog : public wxDialog
+{
+private:
+	GfxCanvas*			gfx_preview;
+	ArchiveEntry*		entry;
+	Palette8bit*		palette;
+	wxColourPickerCtrl*	cp_colour;
+	wxSlider*			slider_amount;
+	wxStaticText*		label_amount;
+
+public:
+	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
+	rgba_t getColour();
+	float getAmount();
+	void onColourChanged(wxColourPickerEvent& e);
+	void onAmountChanged(wxCommandEvent& e);
+	void onResize(wxSizeEvent& e);
+};
+
+
+
 #endif//__TRANSLATION_EDITOR_DIALOG_H__

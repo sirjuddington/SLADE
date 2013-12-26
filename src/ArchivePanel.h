@@ -91,6 +91,8 @@ public:
 	// Other entry actions
 	bool	gfxConvert();
 	bool	gfxRemap();
+	bool	gfxColourise();
+	bool	gfxTint();
 	bool	gfxModifyOffsets();
 	bool	gfxExportPNG();
 	bool	basConvert();

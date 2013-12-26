@@ -100,7 +100,7 @@ entry_types
 	transtable : colormap
 	{
 		name = "Translation Table";
-		match_name = "trantbl*", "tranmap", "cr???*", "*mask", "colort??";
+		match_name = "trantbl*", "tranmap", "cr???*", "*mask", "colort??", "tr_*";
 		extra = image;
 		export_ext = "lmp";
 		category = "Data";

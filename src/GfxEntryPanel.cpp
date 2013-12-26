@@ -51,227 +51,6 @@
  *******************************************************************/
 EXTERN_CVAR(Bool, gfx_arc)
 
-/*******************************************************************
- * GFXCOLOURISEDIALOG CLASS
- *******************************************************************
- A simple dialog for the 'Colourise' function, allows the user to
- select a colour and shows a preview of the colourised image
- */
-class GfxColouriseDialog : public wxDialog
-{
-private:
-	GfxCanvas*			gfx_preview;
-	ArchiveEntry*		entry;
-	Palette8bit*		palette;
-	wxColourPickerCtrl*	cp_colour;
-
-public:
-	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
-		: wxDialog(parent, -1, "Colourise", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-	{
-		// Init variables
-		this->entry = entry;
-		this->palette = pal;
-
-		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("t_colourise"));
-		SetIcon(icon);
-
-		// Setup main sizer
-		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(msizer);
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
-
-		// Add colour chooser
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-
-		cp_colour = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-		hbox->Add(cp_colour, 0, wxEXPAND);
-
-		// Add preview
-		gfx_preview = new GfxCanvas(this, -1);
-		sizer->Add(gfx_preview, 1, wxEXPAND|wxALL, 4);
-
-		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
-
-		// Setup preview
-		gfx_preview->setViewType(GFXVIEW_CENTERED);
-		gfx_preview->setPalette(pal);
-		gfx_preview->SetInitialSize(wxSize(192, 192));
-		Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-		wxColour col = cp_colour->GetColour();
-		gfx_preview->getImage()->colourise(rgba_t(col.Red(), col.Green(), col.Blue()), pal);
-		gfx_preview->updateImageTexture();
-
-		// Init layout
-		Layout();
-
-		// Bind events
-		cp_colour->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &GfxColouriseDialog::onColourChanged, this);
-		Bind(wxEVT_SIZE, &GfxColouriseDialog::onResize, this);
-
-		// Setup dialog size
-		SetInitialSize(wxSize(-1, -1));
-		SetMinSize(GetSize());
-		CenterOnParent();
-	}
-
-	rgba_t getColour()
-	{
-		wxColour col = cp_colour->GetColour();
-		return rgba_t(col.Red(), col.Green(), col.Blue());
-	}
-
-	// Events
-	void onColourChanged(wxColourPickerEvent& e)
-	{
-		Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-		wxColour col = cp_colour->GetColour();
-		gfx_preview->getImage()->colourise(rgba_t(col.Red(), col.Green(), col.Blue()), palette);
-		gfx_preview->updateImageTexture();
-		gfx_preview->Refresh();
-	}
-
-	void onResize(wxSizeEvent& e)
-	{
-		wxDialog::OnSize(e);
-		gfx_preview->zoomToFit(true, 0.05f);
-		e.Skip();
-	}
-};
-
-
-/*******************************************************************
- * GFXTINTDIALOG CLASS
- *******************************************************************
- A simple dialog for the 'Tint' function, allows the user to select
- tint colour+amount and shows a preview of the tinted image
- */
-class GfxTintDialog : public wxDialog
-{
-private:
-	GfxCanvas*			gfx_preview;
-	ArchiveEntry*		entry;
-	Palette8bit*		palette;
-	wxColourPickerCtrl*	cp_colour;
-	wxSlider*			slider_amount;
-	wxStaticText*		label_amount;
-
-public:
-	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
-		: wxDialog(parent, -1, "Tint", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-	{
-		// Init variables
-		this->entry = entry;
-		this->palette = pal;
-
-		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("t_tint"));
-		SetIcon(icon);
-
-		// Setup main sizer
-		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(msizer);
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
-
-		// Add colour chooser
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-
-		cp_colour = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-		hbox->Add(cp_colour, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
-
-		// Add 'amount' slider
-		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-		slider_amount = new wxSlider(this, -1, 50, 0, 100);
-		label_amount = new wxStaticText(this, -1, "100%");
-		hbox->Add(new wxStaticText(this, -1, "Amount:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-		hbox->Add(slider_amount, 1, wxEXPAND|wxRIGHT, 4);
-		hbox->Add(label_amount, 0, wxALIGN_CENTER_VERTICAL);
-
-		// Add preview
-		gfx_preview = new GfxCanvas(this, -1);
-		sizer->Add(gfx_preview, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
-
-		// Setup preview
-		gfx_preview->setViewType(GFXVIEW_CENTERED);
-		gfx_preview->setPalette(pal);
-		gfx_preview->SetInitialSize(wxSize(256, 256));
-		Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-		wxColour col = cp_colour->GetColour();
-		gfx_preview->getImage()->tint(getColour(), getAmount(), pal);
-		gfx_preview->updateImageTexture();
-
-		// Init layout
-		Layout();
-
-		// Bind events
-		cp_colour->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &GfxTintDialog::onColourChanged, this);
-		slider_amount->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &GfxTintDialog::onAmountChanged, this);
-		Bind(wxEVT_SIZE, &GfxTintDialog::onResize, this);
-
-		// Setup dialog size
-		SetInitialSize(wxSize(-1, -1));
-		SetMinSize(GetSize());
-		CenterOnParent();
-
-		// Set values
-		label_amount->SetLabel("50% ");
-	}
-
-	rgba_t getColour()
-	{
-		wxColour col = cp_colour->GetColour();
-		return rgba_t(col.Red(), col.Green(), col.Blue());
-	}
-
-	float getAmount()
-	{
-		return (float)slider_amount->GetValue()*0.01f;
-	}
-
-	// Events
-	void onColourChanged(wxColourPickerEvent& e)
-	{
-		Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-		wxColour col = cp_colour->GetColour();
-		gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
-		gfx_preview->updateImageTexture();
-		gfx_preview->Refresh();
-	}
-
-	void onAmountChanged(wxCommandEvent& e)
-	{
-		Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-		wxColour col = cp_colour->GetColour();
-		gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
-		gfx_preview->updateImageTexture();
-		gfx_preview->Refresh();
-		label_amount->SetLabel(S_FMT("%d%% ", slider_amount->GetValue()));
-	}
-
-	void onResize(wxSizeEvent& e)
-	{
-		wxDialog::OnSize(e);
-		gfx_preview->zoomToFit(true, 0.05f);
-		e.Skip();
-	}
-};
-
-
 class GfxCropDialog : public wxDialog
 {
 private:
@@ -392,7 +171,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	custom_menu_name = "Graphic";
 
 	// Custom toolbar
-	custom_toolbar_actions = "pgfx_mirror;pgfx_flip;pgfx_rotate;pgfx_translate;pgfx_colourise;pgfx_tint";
+	custom_toolbar_actions = "pgfx_mirror;pgfx_flip;pgfx_rotate;pgfx_translate;pgfx_colourise;pgfx_tint;pgfx_pngopt";
 	setupToolbar();
 
 	// Bind Events
@@ -566,6 +345,12 @@ void GfxEntryPanel::setupToolbar()
 	g_colour->addActionButton("pgfx_colourise", "");
 	g_colour->addActionButton("pgfx_tint", "");
 	toolbar->addGroup(g_colour);
+
+	// Misc operations
+	SToolBarGroup* g_png = new SToolBarGroup(toolbar, "PNG");
+	g_png->addActionButton("pgfx_pngopt", "");
+	toolbar->addGroup(g_png);
+	toolbar->enableGroup("PNG", false);
 }
 
 /* GfxEntryPanel::extractAll
@@ -623,10 +408,12 @@ void GfxEntryPanel::refresh()
 	spin_yoffset->SetValue(getImage()->offset().y);
 
 	// Get some needed menu ids
+	int MENU_GFXEP_PNGOPT = theApp->getAction("pgfx_pngopt")->getWxId();
 	int MENU_GFXEP_ALPH = theApp->getAction("pgfx_alph")->getWxId();
 	int MENU_GFXEP_TRNS = theApp->getAction("pgfx_trns")->getWxId();
 	int MENU_GFXEP_EXTRACT = theApp->getAction("pgfx_extract")->getWxId();
 	int MENU_GFXEP_TRANSLATE = theApp->getAction("pgfx_translate")->getWxId();
+	int MENU_ARCHGFX_EXPORTPNG = theApp->getAction("arch_gfx_exportpng")->getWxId();
 
 	// Set PNG check menus
 	if (this->entry->getType() != NULL && this->entry->getType()->getFormat() == "img_png")
@@ -642,7 +429,11 @@ void GfxEntryPanel::refresh()
 		menu_custom->Check(MENU_GFXEP_TRNS, trns);
 
 		// Disable 'Export as PNG' (it already is :P)
-		menu_custom->Enable(theApp->getAction("arch_gfx_exportpng")->getWxId(), false);
+		menu_custom->Enable(MENU_ARCHGFX_EXPORTPNG, false);
+
+		// Add 'Optimize PNG' option
+		menu_custom->Enable(MENU_GFXEP_PNGOPT, true);
+		toolbar->enableGroup("PNG", true);
 	}
 	else
 	{
@@ -650,7 +441,9 @@ void GfxEntryPanel::refresh()
 		menu_custom->Enable(MENU_GFXEP_TRNS, false);
 		menu_custom->Check(MENU_GFXEP_ALPH, false);
 		menu_custom->Check(MENU_GFXEP_TRNS, false);
-		menu_custom->Enable(theApp->getAction("arch_gfx_exportpng")->getWxId(), true);
+		menu_custom->Enable(MENU_GFXEP_PNGOPT, false);
+		menu_custom->Enable(MENU_ARCHGFX_EXPORTPNG, true);
+		toolbar->enableGroup("PNG", false);
 	}
 
 	// Set multi-image format stuff thingies
@@ -993,6 +786,14 @@ bool GfxEntryPanel::handleAction(string id)
 		Refresh();
 	}
 
+	// Optimize PNG
+	else if (id == "pgfx_pngopt")
+	{
+		EntryOperations::optimizePNG(entry);
+		setModified();
+		Refresh();
+	}
+
 	// Extract all
 	else if (id == "pgfx_extract")
 	{
@@ -1055,6 +856,7 @@ bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 	custom->AppendSeparator();
 	theApp->getAction("pgfx_alph")->addToMenu(custom);
 	theApp->getAction("pgfx_trns")->addToMenu(custom);
+	theApp->getAction("pgfx_pngopt")->addToMenu(custom);
 	custom->AppendSeparator();
 	theApp->getAction("arch_gfx_exportpng")->addToMenu(custom);
 	theApp->getAction("pgfx_extract")->addToMenu(custom);
