@@ -172,6 +172,14 @@ GameConfiguration::gconf_t GameConfiguration::readBasicGameConfig(MemChunk& mc)
 					conf.supported_formats[MAP_UDMF] = true;
 			}
 		}
+		// Filters
+		ParseTreeNode* node_filters = (ParseTreeNode*)node_game->getChild("filters");
+		if (node_filters)
+		{
+			for (unsigned a = 0; a < node_filters->nValues(); a++)
+				conf.filters.push_back(node_filters->getStringValue(a).Lower());
+		}
+
 	}
 
 	return conf;
@@ -419,6 +427,23 @@ bool GameConfiguration::portSupportsGame(unsigned port, string game)
 	for (unsigned b = 0; b < port_configs[port].supported_games.size(); b++)
 	{
 		if (port_configs[port].supported_games[b] == game)
+			return true;
+	}
+
+	// Not supported
+	return false;
+}
+
+bool GameConfiguration::gameSupportsFilter(string game, string filter)
+{
+	gconf_t config = gameConfig(game);
+	if (&config == &gconf_none)
+		return false;
+
+	// Check if filter is supported
+	for (unsigned b = 0; b < config.filters.size(); b++)
+	{
+		if (S_CMPNOCASE(config.filters[b], filter))
 			return true;
 	}
 
@@ -1769,6 +1794,8 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 	if (decorate_entries.empty())
 		return false;
 
+	LOG_MESSAGE(2, "Parsing DECORATE entries found in archive %s", CHR(archive->getFilename()));
+
 	//ArchiveEntry* decorate_base = archive->getEntry("DECORATE", true);
 	//if (!decorate_base)
 	//	return false;
@@ -1811,10 +1838,14 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				tz.skipToken(); // Skip replace actor
 			}
 
+			// Skip "native" keyword if present
+			if (S_CMPNOCASE(tz.peekToken(), "native"))
+				tz.skipToken();
+
 			// Check for no editor number (ie can't be placed in the map)
 			if (tz.peekToken() == "{")
 			{
-				LOG_MESSAGE(2, "Not adding actor %s, no editor number", CHR(name));
+				LOG_MESSAGE(3, "Not adding actor %s, no editor number", CHR(name));
 
 				// Skip actor definition
 				tz.skipToken();
@@ -1830,6 +1861,12 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				bool title_given = false;
 				bool sprite_given = false;
 				bool group_given = false;
+				bool filters_present = false;
+				bool available = false;
+
+				// Skip "native" keyword if present
+				if (S_CMPNOCASE(tz.peekToken(), "native"))
+					tz.skipToken();
 
 				// Check for actor definition open
 				token = tz.getToken();
@@ -1847,6 +1884,14 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						{
 							name = tz.getLine();
 							title_given = true;
+						}
+
+						// Game filter
+						else if (S_CMPNOCASE(token, "game"))
+						{
+							filters_present = true;
+							if (gameSupportsFilter(currentGame(), tz.getToken()))
+								available = true;
 						}
 
 						// Tag
@@ -1874,6 +1919,14 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						// Height
 						else if (S_CMPNOCASE(token, "height"))
 							found_props["height"] = tz.getInteger();
+
+						// Scale
+						else if (S_CMPNOCASE(token, "scale"))
+							found_props["scalex"] = found_props["scaley"] = tz.getFloat();
+						else if (S_CMPNOCASE(token, "xscale"))
+							found_props["scalex"] = tz.getFloat();
+						else if (S_CMPNOCASE(token, "yscale"))
+							found_props["scaley"] = tz.getFloat();
 
 						// Angled
 						else if (S_CMPNOCASE(token, "//$Angled"))
@@ -1958,11 +2011,29 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 									if (S_CMPNOCASE(token, "}"))
 										break;
 									string sb = tz.getToken(); // Sprite base
+
+									// Handle removed states
+									if (S_CMPNOCASE(sb, "Stop"))
+										continue;
+									// Handle direct gotos, like ZDoom's dead monsters
+									if (S_CMPNOCASE(sb, "Goto"))
+									{
+										tz.skipToken();
+										// Skip scope and state
+										if (tz.peekToken() == ":")
+										{
+											tz.skipToken();	// first :
+											tz.skipToken(); // second :
+											tz.skipToken(); // state name
+										}
+										continue;
+									}
 									string sf = tz.getToken(); // Sprite frame(s)
 									int mypriority = 0;
 									// If the same state is given several names, 
 									// don't read the next name as a sprite name!
-									if (!sf.Cmp(":"))
+									// If "::" is encountered, it's a scope operator.
+									if ((!sf.Cmp(":")) && tz.peekToken().Cmp(":"))
 									{
 										if (S_CMPNOCASE(myspritestate, "spawn"))			mypriority = SS_SPAWN;
 										else if (S_CMPNOCASE(myspritestate, "inactive"))	mypriority = SS_INACTIVE;
@@ -1989,13 +2060,16 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 											mypriority = lastpriority;
 										}
 									}
-									string sprite = sb + sf.Left(1) + "?";
-									if (mypriority > priority)
+									if (sb.length() == 4)
 									{
-										priority = mypriority;
-										found_props["sprite"] = sprite;
-										LOG_MESSAGE(2, "Actor %s found sprite %s from state %s", CHR(name), CHR(sprite), CHR(spritestate));
-										lastpriority = -1;
+										string sprite = sb + sf.Left(1) + "?";
+										if (mypriority > priority)
+										{
+											priority = mypriority;
+											found_props["sprite"] = sprite;
+											LOG_MESSAGE(3, "Actor %s found sprite %s from state %s", CHR(name), CHR(sprite), CHR(spritestate));
+											lastpriority = -1;
+										}
 									}
 								}
 								else
@@ -2010,13 +2084,209 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						token = tz.getToken();
 					}
 
-					LOG_MESSAGE(2, "Parsed actor %s: %d", CHR(name), type);
+					LOG_MESSAGE(3, "Parsed actor %s: %d", CHR(name), type);
 				}
 				else
 					LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", CHR(name));
 
-				bool defined = false;
+				// Ignore actors filtered for other games, 
+				// and actors with a negative or null type
+				if (type > 0 && (available || !filters_present))
+				{
+					bool defined = false;
 
+					// Create thing type object if needed
+					if (!thing_types[type].type)
+					{
+						thing_types[type].type = new ThingType();
+						thing_types[type].index = thing_types.size();
+						thing_types[type].number = type;
+						thing_types[type].type->decorate = true;
+					}
+					else
+						defined = true;
+					ThingType* tt = thing_types[type].type;
+
+					// Get group defaults (if any)
+					if (!group.empty())
+					{
+						ThingType* group_defaults = NULL;
+						for (unsigned a = 0; a < tt_group_defaults.size(); a++)
+						{
+							if (S_CMPNOCASE(group, tt_group_defaults[a]->group))
+							{
+								group_defaults = tt_group_defaults[a];
+								break;
+							}
+						}
+
+						if (group_defaults)
+						{
+							tt->copy(group_defaults);
+						}
+					}
+
+					// Setup thing
+					if (!defined || title_given)
+						tt->name = name;
+					if (!defined || group_given)
+						tt->group = group.empty() ? "Decorate" : group;
+					if (!defined || sprite_given)
+					{
+						if (found_props["sprite"].hasValue())
+						{
+							if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
+							{
+								if (!found_props["icon"].hasValue())
+									tt->icon = "tnt1a0";
+							}
+							else
+								tt->sprite = found_props["sprite"].getStringValue();
+						}
+					}
+					if (found_props["radius"].hasValue()) tt->radius = found_props["radius"].getIntValue();
+					if (found_props["height"].hasValue()) tt->height = found_props["height"].getIntValue();
+					if (found_props["scalex"].hasValue()) tt->scaleX = found_props["scalex"].getFloatValue();
+					if (found_props["scaley"].hasValue()) tt->scaleY = found_props["scaley"].getFloatValue();
+					if (found_props["hanging"].hasValue()) tt->hanging = found_props["hanging"].getBoolValue();
+					if (found_props["angled"].hasValue()) tt->angled = found_props["angled"].getBoolValue();
+					if (found_props["bright"].hasValue()) tt->fullbright = found_props["bright"].getBoolValue();
+					if (found_props["decoration"].hasValue()) tt->decoration = found_props["decoration"].getBoolValue();
+					if (found_props["icon"].hasValue()) tt->icon = found_props["icon"].getStringValue();
+					if (found_props["translation"].hasValue()) tt->translation = found_props["translation"].getStringValue();
+					if (found_props["solid"].hasValue()) tt->solid = found_props["solid"].getBoolValue();
+					if (found_props["colour"].hasValue())
+					{
+						wxColour wxc(found_props["colour"].getStringValue());
+						if (wxc.IsOk())
+						{
+							tt->colour.r = wxc.Red(); tt->colour.g = wxc.Green(); tt->colour.b = wxc.Blue();
+						}
+					}
+					else if (found_props["color"].hasValue())
+					{
+						// Translate DB2 color indices to RGB values
+						int color = found_props["color"].getIntValue();
+						switch (color)
+						{
+						case  0:	// DimGray			ARGB value of #FF696969
+							tt->colour.r = 0x69; tt->colour.g = 0x69; tt->colour.b = 0x69; break;
+						case  1:	// RoyalBlue		ARGB value of #FF4169E1
+							tt->colour.r = 0x41; tt->colour.g = 0x69; tt->colour.b = 0xE1; break;
+						case  2:	// ForestGreen		ARGB value of #FF228B22
+							tt->colour.r = 0x22; tt->colour.g = 0x8B; tt->colour.b = 0x22; break;
+						case  3:	// LightSeaGreen	ARGB value of #FF20B2AA
+							tt->colour.r = 0x20; tt->colour.g = 0xB2; tt->colour.b = 0xAA; break;
+						case  4:	// Firebrick		ARGB value of #FFB22222
+							tt->colour.r = 0xB2; tt->colour.g = 0x22; tt->colour.b = 0x22; break;
+						case  5:	// DarkViolet		ARGB value of #FF9400D3
+							tt->colour.r = 0x94; tt->colour.g = 0x00; tt->colour.b = 0xD3; break;
+						case  6:	// DarkGoldenrod	ARGB value of #FFB8860B
+							tt->colour.r = 0xB8; tt->colour.g = 0x86; tt->colour.b = 0x0B; break;
+						case  7:	// Silver			ARGB value of #FFC0C0C0
+							tt->colour.r = 0xC0; tt->colour.g = 0xC0; tt->colour.b = 0xC0; break;
+						case  8:	// Gray				ARGB value of #FF808080
+							tt->colour.r = 0x80; tt->colour.g = 0x80; tt->colour.b = 0x80; break;
+						case  9:	// DeepSkyBlue		ARGB value of #FF00BFFF
+							tt->colour.r = 0x00; tt->colour.g = 0xBF; tt->colour.b = 0xFF; break;
+						case 10:	// LimeGreen		ARGB value of #FF32CD32
+							tt->colour.r = 0x32; tt->colour.g = 0xCD; tt->colour.b = 0x32; break;
+						case 11:	// PaleTurquoise	ARGB value of #FFAFEEEE
+							tt->colour.r = 0xAF; tt->colour.g = 0xEE; tt->colour.b = 0xEE; break;
+						case 12:	// Tomato			ARGB value of #FFFF6347
+							tt->colour.r = 0xFF; tt->colour.g = 0x63; tt->colour.b = 0x47; break;
+						case 13:	// Violet			ARGB value of #FFEE82EE
+							tt->colour.r = 0xEE; tt->colour.g = 0x82; tt->colour.b = 0xEE; break;
+						case 14:	// Yellow			ARGB value of #FFFFFF00
+							tt->colour.r = 0xFF; tt->colour.g = 0xFF; tt->colour.b = 0x00; break;
+						case 15:	// WhiteSmoke		ARGB value of #FFF5F5F5
+							tt->colour.r = 0xF5; tt->colour.g = 0xF5; tt->colour.b = 0xF5; break;
+						case 16:	// LightPink		ARGB value of #FFFFB6C1
+							tt->colour.r = 0xFF; tt->colour.g = 0xB6; tt->colour.b = 0xC1; break;
+						case 17:	// DarkOrange		ARGB value of #FFFF8C00
+							tt->colour.r = 0xFF; tt->colour.g = 0x8C; tt->colour.b = 0x00; break;
+						case 18:	// DarkKhaki		ARGB value of #FFBDB76B
+							tt->colour.r = 0xBD; tt->colour.g = 0xB7; tt->colour.b = 0x6B; break;
+						case 19:	// Goldenrod		ARGB value of #FFDAA520
+							tt->colour.r = 0xDA; tt->colour.g = 0xA5; tt->colour.b = 0x20; break;
+						}
+					}
+				}
+			}
+		}
+		// Old DECORATE definitions might be found
+		else
+		{
+			string name;
+			string sprite;
+			string group;
+			bool spritefound = false;
+			char frame;
+			bool framefound = false;
+			int type = -1;
+			PropertyList found_props;
+			if (tz.peekToken() == "{")
+				name = token;
+			// DamageTypes aren't old DECORATE format, but we handle them here to skip over them
+			else if ((S_CMPNOCASE(token, "pickup")) || (S_CMPNOCASE(token, "breakable")) 
+				|| (S_CMPNOCASE(token, "projectile")) || (S_CMPNOCASE(token, "damagetype")))
+			{
+				group = token;
+				name = tz.getToken();
+			}
+			tz.skipToken();	// skip '{'
+			do
+			{
+				token = tz.getToken();
+				if (S_CMPNOCASE(token, "DoomEdNum"))
+				{
+					tz.getInteger(&type);
+				}
+				else if (S_CMPNOCASE(token, "Sprite"))
+				{
+					sprite = tz.getToken();
+					spritefound = true;
+				}
+				else if (S_CMPNOCASE(token, "Frames"))
+				{
+					token = tz.getToken();
+					unsigned pos = 0;
+					if (token.length() > 0)
+					{
+						if ((token[0] < 'a' || token[0] > 'z') && (token[0] < 'A' || token[0] > ']'))
+						{
+							pos = token.find(':') + 1;
+							if (token.length() <= pos)
+								pos = token.length() + 1;
+							else if ((token.length() >= pos + 2) && token[pos + 1] == '*')
+								found_props["bright"] = true;
+						}
+					}
+					if (pos < token.length())
+					{
+						frame = token[pos];
+						framefound = true;
+					}
+				}
+				else if (S_CMPNOCASE(token, "Radius"))
+					found_props["radius"] = tz.getInteger();
+				else if (S_CMPNOCASE(token, "Height"))
+					found_props["height"] = tz.getInteger();
+				else if (S_CMPNOCASE(token, "Solid"))
+					found_props["solid"] = true;
+				else if (S_CMPNOCASE(token, "SpawnCeiling"))
+					found_props["hanging"] = true;
+				else if (S_CMPNOCASE(token, "Scale"))
+					found_props["scale"] = tz.getFloat();
+				else if (S_CMPNOCASE(token, "Translation1"))
+					found_props["translation"] = S_FMT("doom%d", tz.getInteger());
+			}
+			while (token != "}");
+
+			// Add only if a DoomEdNum is present
+			if (type > 0)
+			{
+				bool defined = false;
 				// Create thing type object if needed
 				if (!thing_types[type].type)
 				{
@@ -2029,109 +2299,33 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 					defined = true;
 				ThingType* tt = thing_types[type].type;
 
-				// Get group defaults (if any)
-				if (!group.empty())
-				{
-					ThingType* group_defaults = NULL;
-					for (unsigned a = 0; a < tt_group_defaults.size(); a++)
-					{
-						if (S_CMPNOCASE(group, tt_group_defaults[a]->group))
-						{
-							group_defaults = tt_group_defaults[a];
-							break;
-						}
-					}
-
-					if (group_defaults)
-					{
-						tt->copy(group_defaults);
-					}
-				}
-
 				// Setup thing
-				if (!defined || title_given)
-					tt->name = name;
-				if (!defined || group_given)
-					tt->group = group.empty() ? "Decorate" : group;
-				if (!defined || sprite_given)
+				if (!defined)
 				{
-					if (found_props["sprite"].hasValue())
+					tt->name = name;
+					tt->group = "Decorate";
+					if (group.length())
+						tt->group += "/" + group;
+					tt->angled = false;
+					if (spritefound && framefound)
 					{
-						if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
-						{
-							if (!found_props["icon"].hasValue())
-								tt->icon = "tnt1a0";
-						}
+						sprite = sprite + frame + '?';
+						if (S_CMPNOCASE(sprite, "tnt1a?"))
+							tt->icon = "tnt1a0";
 						else
-							tt->sprite = found_props["sprite"].getStringValue();
+							tt->sprite = sprite;
 					}
 				}
 				if (found_props["radius"].hasValue()) tt->radius = found_props["radius"].getIntValue();
 				if (found_props["height"].hasValue()) tt->height = found_props["height"].getIntValue();
+				if (found_props["scale"].hasValue()) tt->scaleX = tt->scaleY = found_props["scale"].getFloatValue();
 				if (found_props["hanging"].hasValue()) tt->hanging = found_props["hanging"].getBoolValue();
-				if (found_props["angled"].hasValue()) tt->angled = found_props["angled"].getBoolValue();
 				if (found_props["bright"].hasValue()) tt->fullbright = found_props["bright"].getBoolValue();
-				if (found_props["decoration"].hasValue()) tt->decoration = found_props["decoration"].getBoolValue();
-				if (found_props["icon"].hasValue()) tt->icon = found_props["icon"].getStringValue();
 				if (found_props["translation"].hasValue()) tt->translation = found_props["translation"].getStringValue();
-				if (found_props["solid"].hasValue()) tt->solid = found_props["solid"].getBoolValue();
-				if (found_props["colour"].hasValue())
-				{
-					wxColour wxc(found_props["colour"].getStringValue());
-					if (wxc.IsOk())
-					{
-						tt->colour.r = wxc.Red(); tt->colour.g = wxc.Green(); tt->colour.b = wxc.Blue();
-					}
-				}
-				else if (found_props["color"].hasValue())
-				{
-					// Translate DB2 color indices to RGB values
-					int color = found_props["color"].getIntValue();
-					switch (color)
-					{
-					case  0:	// DimGray			ARGB value of #FF696969
-						tt->colour.r = 0x69; tt->colour.g = 0x69; tt->colour.b = 0x69; break;
-					case  1:	// RoyalBlue		ARGB value of #FF4169E1
-						tt->colour.r = 0x41; tt->colour.g = 0x69; tt->colour.b = 0xE1; break;
-					case  2:	// ForestGreen		ARGB value of #FF228B22
-						tt->colour.r = 0x22; tt->colour.g = 0x8B; tt->colour.b = 0x22; break;
-					case  3:	// LightSeaGreen	ARGB value of #FF20B2AA
-						tt->colour.r = 0x20; tt->colour.g = 0xB2; tt->colour.b = 0xAA; break;
-					case  4:	// Firebrick		ARGB value of #FFB22222
-						tt->colour.r = 0xB2; tt->colour.g = 0x22; tt->colour.b = 0x22; break;
-					case  5:	// DarkViolet		ARGB value of #FF9400D3
-						tt->colour.r = 0x94; tt->colour.g = 0x00; tt->colour.b = 0xD3; break;
-					case  6:	// DarkGoldenrod	ARGB value of #FFB8860B
-						tt->colour.r = 0xB8; tt->colour.g = 0x86; tt->colour.b = 0x0B; break;
-					case  7:	// Silver			ARGB value of #FFC0C0C0
-						tt->colour.r = 0xC0; tt->colour.g = 0xC0; tt->colour.b = 0xC0; break;
-					case  8:	// Gray				ARGB value of #FF808080
-						tt->colour.r = 0x80; tt->colour.g = 0x80; tt->colour.b = 0x80; break;
-					case  9:	// DeepSkyBlue		ARGB value of #FF00BFFF
-						tt->colour.r = 0x00; tt->colour.g = 0xBF; tt->colour.b = 0xFF; break;
-					case 10:	// LimeGreen		ARGB value of #FF32CD32
-						tt->colour.r = 0x32; tt->colour.g = 0xCD; tt->colour.b = 0x32; break;
-					case 11:	// PaleTurquoise	ARGB value of #FFAFEEEE
-						tt->colour.r = 0xAF; tt->colour.g = 0xEE; tt->colour.b = 0xEE; break;
-					case 12:	// Tomato			ARGB value of #FFFF6347
-						tt->colour.r = 0xFF; tt->colour.g = 0x63; tt->colour.b = 0x47; break;
-					case 13:	// Violet			ARGB value of #FFEE82EE
-						tt->colour.r = 0xEE; tt->colour.g = 0x82; tt->colour.b = 0xEE; break;
-					case 14:	// Yellow			ARGB value of #FFFFFF00
-						tt->colour.r = 0xFF; tt->colour.g = 0xFF; tt->colour.b = 0x00; break;
-					case 15:	// WhiteSmoke		ARGB value of #FFF5F5F5
-						tt->colour.r = 0xF5; tt->colour.g = 0xF5; tt->colour.b = 0xF5; break;
-					case 16:	// LightPink		ARGB value of #FFFFB6C1
-						tt->colour.r = 0xFF; tt->colour.g = 0xB6; tt->colour.b = 0xC1; break;
-					case 17:	// DarkOrange		ARGB value of #FFFF8C00
-						tt->colour.r = 0xFF; tt->colour.g = 0x8C; tt->colour.b = 0x00; break;
-					case 18:	// DarkKhaki		ARGB value of #FFBDB76B
-						tt->colour.r = 0xBD; tt->colour.g = 0xB7; tt->colour.b = 0x6B; break;
-					case 19:	// Goldenrod		ARGB value of #FFDAA520
-						tt->colour.r = 0xDA; tt->colour.g = 0xA5; tt->colour.b = 0x20; break;
-					}
-				}
+				LOG_MESSAGE(3, "Parsed %s %s: %d", group.length() ? CHR(group) : "decoration", CHR(name), type);
 			}
+			else
+				LOG_MESSAGE(3, "Not adding %s %s, no editor number", group.length() ? CHR(group) : "decoration", CHR(name));
 		}
 
 		token = tz.getToken();

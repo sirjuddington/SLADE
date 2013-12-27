@@ -90,11 +90,12 @@ private:
 	// Basic game configuration info
 	struct gconf_t
 	{
-		string	name;
-		string	title;
-		string	filename;
-		bool	supported_formats[4];
-		bool	user;
+		string			name;
+		string			title;
+		string			filename;
+		bool			supported_formats[4];
+		bool			user;
+		vector<string>	filters;
 		gconf_t() { for (int a = 0; a < 4; a++) supported_formats[a] = false; user = true; }
 		bool operator>(const gconf_t& right) const { return title > right.title; }
 		bool operator<(const gconf_t& right) const { return title < right.title; }
@@ -195,6 +196,7 @@ public:
 	pconf_t			portConfig(unsigned index);
 	pconf_t			portConfig(string id);
 	bool			portSupportsGame(unsigned port, string game);
+	bool			gameSupportsFilter(string game, string filter);
 	bool			mapFormatSupported(int map_format, int game, int port = -1);
 	unsigned		nMapNames() { return maps.size(); }
 	string			mapName(unsigned index);

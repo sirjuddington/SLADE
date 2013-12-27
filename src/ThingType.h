@@ -14,6 +14,8 @@ private:
 	rgba_t	colour;
 	int		radius;
 	int		height;
+	float	scaleX;
+	float	scaleY;
 	bool	angled;
 	bool	hanging;
 	bool	shrink;
@@ -38,6 +40,8 @@ public:
 	rgba_t	getColour() { return colour; }
 	int		getRadius() { return radius; }
 	int		getHeight() { return height; }
+	float	getScaleX()	{ return scaleX; }
+	float	getScaleY()	{ return scaleY; }
 	bool	isAngled() { return angled; }
 	bool	isHanging() { return hanging; }
 	bool	isFullbright() { return fullbright; }

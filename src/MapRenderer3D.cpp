@@ -1620,8 +1620,8 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Determine coordinates
-		halfwidth = tex->getWidth() * 0.5;
-		theight = tex->getHeight();
+		halfwidth = things[a].type->getScaleX() * tex->getWidth() * 0.5;
+		theight = things[a].type->getScaleY() * tex->getHeight();
 		if (things[a].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size*0.5;
