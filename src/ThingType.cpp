@@ -13,6 +13,8 @@ ThingType::ThingType(string name)
 	this->colour = rgba_t(170, 170, 180, 255, 0);
 	this->radius = 20;
 	this->height = -1;
+	this->scaleX = 1.0;
+	this->scaleY = 1.0;
 	this->fullbright = false;
 	this->decoration = false;
 	this->decorate = false;
@@ -37,6 +39,8 @@ void ThingType::copy(ThingType* copy)
 	this->colour = copy->colour;
 	this->radius = copy->radius;
 	this->height = copy->height;
+	this->scaleX = copy->scaleX;
+	this->scaleY = copy->scaleY;
 	this->angled = copy->angled;
 	this->hanging = copy->hanging;
 	this->fullbright = copy->fullbright;
@@ -92,6 +96,8 @@ void ThingType::reset()
 	this->colour = COL_WHITE;
 	this->radius = 20;
 	this->height = -1;
+	this->scaleX = 1.0;
+	this->scaleY = 1.0;
 	this->fullbright = false;
 	this->decoration = false;
 	this->solid = false;
@@ -147,6 +153,18 @@ void ThingType::parse(ParseTreeNode* node)
 		// Height
 		else if (S_CMPNOCASE(name, "height"))
 			this->height = child->getIntValue();
+
+		// Scale
+		else if (S_CMPNOCASE(name, "scale"))
+			this->scaleX = this->scaleY = child->getFloatValue();
+
+		// ScaleX
+		else if (S_CMPNOCASE(name, "scalex"))
+			this->scaleX = child->getFloatValue();
+
+		// ScaleY
+		else if (S_CMPNOCASE(name, "scaley"))
+			this->scaleY = child->getFloatValue();
 
 		// Colour
 		else if (S_CMPNOCASE(name, "colour"))

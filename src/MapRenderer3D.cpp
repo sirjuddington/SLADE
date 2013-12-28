@@ -1526,7 +1526,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 		things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(things[index].type->getIcon())));
 		things[index].flags |= ICON;
 	}
-	else theight = things[index].sprite->getHeight();
+	else theight = things[index].type->getScaleY() * things[index].sprite->getHeight();
 	if (!things[index].sprite)
 	{
 		// Icon not found either, use unknown icon
@@ -1620,8 +1620,8 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Determine coordinates
-		halfwidth = tex->getWidth() * 0.5;
-		theight = tex->getHeight();
+		halfwidth = things[a].type->getScaleX() * tex->getWidth() * 0.5;
+		theight = things[a].type->getScaleY() * tex->getHeight();
 		if (things[a].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size*0.5;
@@ -2442,8 +2442,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 			return;
 
 		// Determine coordinates
-		double halfwidth = things[hilight.index].sprite->getWidth() * 0.5;
-		double theight = things[hilight.index].sprite->getHeight();
+		double halfwidth = things[hilight.index].type->getScaleX() * things[hilight.index].sprite->getWidth() * 0.5;
+		double theight = things[hilight.index].type->getScaleY() * things[hilight.index].sprite->getHeight();
 		if (things[hilight.index].flags & ICON)
 		{
 			halfwidth = render_thing_icon_size*0.5;

@@ -1341,7 +1341,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	        (pngpatho.IsEmpty() || !wxFileExists(pngpatho)) &&
 	        (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
 	{
-		wxMessageBox("Error: PNG tools path not defined, please configure in SLADE preferences", "Error", wxOK|wxCENTRE|wxICON_ERROR);
+		wxLogMessage("PNG tool paths not defined or invalid, no optimization done.");
 		return false;
 	}
 
@@ -1372,9 +1372,13 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 
 		if (wxFileExists(optfile))
 		{
-			entry->importFile(optfile);
-			wxRemoveFile(optfile);
-			wxRemoveFile(pngfile);
+			if (optfile.size() < oldsize)
+			{
+				entry->importFile(optfile);
+				wxRemoveFile(optfile);
+				wxRemoveFile(pngfile);
+			}
+			else errormessages += "PNGCrush failed to reduce file size further.\n";
 			crushed = true;
 		}
 		else errormessages += "PNGCrush failed to create optimized file.\n";
@@ -1417,9 +1421,13 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 
 		if (wxFileExists(optfile))
 		{
-			entry->importFile(optfile);
-			wxRemoveFile(optfile);
-			wxRemoveFile(pngfile);
+			if (optfile.size() < oldsize)
+			{
+				entry->importFile(optfile);
+				wxRemoveFile(optfile);
+				wxRemoveFile(pngfile);
+			}
+			else errormessages += "PNGout failed to reduce file size further.\n";
 			outed = true;
 		}
 		else if (!crushed)
