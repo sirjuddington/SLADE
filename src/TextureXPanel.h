@@ -64,7 +64,7 @@ public:
 	void		newTextureFromPatch();
 	void		newTextureFromFile();
 	void		removeTexture();
-	void		renameTexture();
+	void		renameTexture(bool each = false);
 	void		exportTexture();
 	bool		exportAsPNG(CTexture* texture, string filename, bool force_rgba);
 	void		extractTexture();

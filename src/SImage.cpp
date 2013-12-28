@@ -1002,6 +1002,34 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 	return true;
 }
 
+/* SImage::setWidth
+ * Change the width of the image to the given value, adjusting the
+ * height automatically
+ *******************************************************************/
+void SImage::setWidth(int w)
+{
+	int numpixels = width * height;
+	if ((numpixels > w) && ((numpixels % w) == 0))
+	{
+		width = w;
+		height = numpixels/w;
+	}
+}
+
+/* SImage::setHeight
+ * Change the height of the image to the given value, adjusting the
+ * height automatically
+ *******************************************************************/
+void SImage::setHeight(int h)
+{
+	int numpixels = width * height;
+	if ((numpixels > h) && ((numpixels % h) == 0))
+	{
+		height = h;
+		width = numpixels/h;
+	}
+}
+
 /* SImage::rotate
  * Rotates the image with an angle of 90°, 180° or 270°. Why not
  * use FreeImage_Rotate instead? So as not to bother converting
