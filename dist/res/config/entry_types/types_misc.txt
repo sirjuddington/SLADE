@@ -88,10 +88,10 @@ entry_types
 		match_name = "colormap", "*map", "tinttab", "xlatab", "lights", "*lite?", "*lite";
 		match_ext = "cmp";
 		match_extorname = 1;
-		size = 256, 8192, 8320, 8704, 8448, 8776, 15104, 65536;
+		size = 256, 8192, 8320, 8704, 8448, 8776, 15104, 16384, 16896, 65536;
 		reliability = 120;
 		extra = image;
-		export_ext = "lmp";
+		export_ext = "cmp";
 		category = "Data";
 		icon = "e_colormap";
 		colour = 255, 180, 0;

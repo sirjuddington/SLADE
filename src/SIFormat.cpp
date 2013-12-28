@@ -169,6 +169,7 @@ uint32_t valid_flat_size[][3] =
 	{  64,	65,	0 },	// Heretic flat size variant
 	{  64, 128,	0 },	// Hexen flat size variant
 	{ 128, 128,	1 },	// |
+	{ 256,  66,	0 },	// Blake Stone colormap
 	{ 256, 200,	0 },	// Rise of the Triad sky
 	{ 256, 256,	1 },	// hires flat size
 	{ 320, 200,	0 },	// full screen format
