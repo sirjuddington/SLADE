@@ -241,6 +241,12 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
 		sizer_bottom->Detach(text_curimg);
 	}
 
+	// Hack for colormaps to be 256-wide
+	if (S_CMPNOCASE(entry->getType()->getName(), "colormap"))
+	{
+		getImage()->setWidth(256);
+	}
+
 	// Refresh everything
 	refresh();
 

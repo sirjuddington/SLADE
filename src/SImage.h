@@ -112,6 +112,9 @@ public:
 	void			setYOffset(int offset);
 	void			setPalette(Palette8bit* pal) { palette.copyPalette(pal); has_palette = true; }
 
+	void			setWidth(int w);
+	void			setHeight(int h);
+
 	// Misc
 	void	clear();
 	void	create(int width, int height, SIType type, Palette8bit* pal = NULL, int index = 0, int numimages = 1);
