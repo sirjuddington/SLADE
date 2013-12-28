@@ -32,10 +32,44 @@
 #include "SplashWindow.h"
 #include <wx/log.h>
 #include <wx/filename.h>
+#include <wx/dir.h>
 
 /*******************************************************************
  * ADDITIONAL FUNCTIONS
  *******************************************************************/
+
+/* findFileCasing
+ * Returns the full path of a given file with the correct casing for
+ * the filename. On Windws systems, filenames are case-insensitive,
+ * so the source filename is returned as-is. On other systems, we
+ * instead take only the path (assumed to be correct, since we got
+ * it from attempting to open a file that does exist) and then we
+ * iterate through all of the directory's files until we find the
+ * first one whose name matches.
+ *******************************************************************/
+string findFileCasing(wxFileName filename)
+{
+#ifdef _WIN32
+	return filename.GetFullPath();
+#else
+	string path = filename.GetPath();
+	wxDir dir(path);
+	if (!dir.IsOpened())
+	{
+		wxLogMessage("Error: No directory at path %s. This shouldn't happen.");
+		return "";
+	}
+
+	string found;
+	bool cont = dir.GetFirst(&found);
+	while (cont)
+	{
+		if (S_CMPNOCASE(found, filename.GetFullName()))
+			return (dir.GetNameWithSep() + found);
+		cont = dir.GetNext(&found);
+	}
+#endif
+}
 
 /* WolfConstant
  * Returns a Wolf constant depending on the size of the archive.
@@ -344,8 +378,8 @@ bool WolfArchive::open(string filename)
 		fn1.SetName("MAPHEAD");
 		fn2.SetName("GAMEMAPS");
 		MemChunk data, head;
-		head.importFile(fn1.GetFullPath());
-		data.importFile(fn2.GetFullPath());
+		head.importFile(findFileCasing(fn1));
+		data.importFile(findFileCasing(fn2));
 		opened = openMaps(head, data);
 	}
 	else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT")
@@ -354,8 +388,8 @@ bool WolfArchive::open(string filename)
 		fn1.SetName("AUDIOHED");
 		fn2.SetName("AUDIOT");
 		MemChunk data, head;
-		head.importFile(fn1.GetFullPath());
-		data.importFile(fn2.GetFullPath());
+		head.importFile(findFileCasing(fn1));
+		data.importFile(findFileCasing(fn2));
 		opened = openAudio(head, data);
 	}
 	else if (fn1.GetName().MakeUpper() == "VGAHEAD" || fn1.GetName().MakeUpper() == "VGAGRAPH" || fn1.GetName().MakeUpper() == "VGADICT")
@@ -366,9 +400,9 @@ bool WolfArchive::open(string filename)
 		fn2.SetName("VGAGRAPH");
 		fn3.SetName("VGADICT");
 		MemChunk data, head, dict;
-		head.importFile(fn1.GetFullPath());
-		data.importFile(fn2.GetFullPath());
-		dict.importFile(fn3.GetFullPath());
+		head.importFile(findFileCasing(fn1));
+		data.importFile(findFileCasing(fn2));
+		dict.importFile(findFileCasing(fn3));
 		opened = openGraph(head, data, dict);
 	}
 	else
