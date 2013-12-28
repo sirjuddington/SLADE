@@ -763,7 +763,7 @@ void TextureXPanel::paste()
 /* TextureXPanel::renameTexture
  * Create standalone image entries of any selected textures
  *******************************************************************/
-void TextureXPanel::renameTexture()
+void TextureXPanel::renameTexture(bool each)
 {
 	// Get selected textures
 	vector<long> selec_num = list_textures->getSelection();
@@ -776,7 +776,7 @@ void TextureXPanel::renameTexture()
 		selection.push_back(texturex.getTexture(selec_num[a]));
 
 	// Check any are selected
-	if (selection.size() == 1)
+	if (each || selection.size() == 1)
 	{
 		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
 		for (unsigned a = 0; a < selection.size(); a++)
@@ -1078,6 +1078,8 @@ bool TextureXPanel::handleAction(string id)
 		extractTexture();
 	else if (id == "txed_rename")
 		renameTexture();
+	else if (id == "txed_rename_each")
+		renameTexture(true);
 	else if (id == "txed_offsets")
 		modifyOffsets();
 	else
@@ -1128,6 +1130,8 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 	theApp->getAction("txed_delete")->addToMenu(&context);
 	context.AppendSeparator();
 	theApp->getAction("txed_rename")->addToMenu(&context);
+	if (list_textures->getSelection().size() > 1)
+		theApp->getAction("txed_rename_each")->addToMenu(&context);
 	if (texturex.getFormat() == TXF_TEXTURES)
 		theApp->getAction("txed_offsets")->addToMenu(&context);
 	theApp->getAction("txed_export")->addToMenu(texport, "Archive (as image)");
