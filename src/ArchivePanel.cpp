@@ -75,6 +75,9 @@
 CVAR(Int, autosave_entry_changes, 2, CVAR_SAVE)	// 0=no, 1=yes, 2=ask
 CVAR(Bool, confirm_entry_delete, true, CVAR_SAVE)
 CVAR(Bool, context_submenus, true, CVAR_SAVE)
+EXTERN_CVAR(String, path_pngout);
+EXTERN_CVAR(String, path_pngcrush);
+EXTERN_CVAR(String, path_deflopt);
 wxMenu* menu_archive = NULL;
 wxMenu* menu_entry = NULL;
 wxAuiToolBar* tb_archive = NULL;
@@ -1826,6 +1829,18 @@ bool ArchivePanel::compileACS(bool hexen)
  *******************************************************************/
 bool ArchivePanel::optimizePNG()
 {
+	// Check if the PNG tools path are set up, at least one of them should be
+	string pngpathc = path_pngcrush;
+	string pngpatho = path_pngout;
+	string pngpathd = path_deflopt;
+	if ((pngpathc.IsEmpty() || !wxFileExists(pngpathc)) &&
+	        (pngpatho.IsEmpty() || !wxFileExists(pngpatho)) &&
+	        (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
+	{
+		wxMessageBox("Error: PNG tool paths not defined or invalid, please configure in SLADE preferences", "Error", wxOK|wxCENTRE|wxICON_ERROR);
+		return false;
+	}
+
 	// Get selected entries
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 

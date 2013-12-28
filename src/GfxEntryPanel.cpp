@@ -789,8 +789,10 @@ bool GfxEntryPanel::handleAction(string id)
 	// Optimize PNG
 	else if (id == "pgfx_pngopt")
 	{
-		EntryOperations::optimizePNG(entry);
-		setModified();
+		if (EntryOperations::optimizePNG(entry))
+			setModified();
+		else
+			wxMessageBox("Warning: Couldn't optimize this image, check console log for info", "Warning", wxOK|wxCENTRE|wxICON_WARNING);
 		Refresh();
 	}
 
