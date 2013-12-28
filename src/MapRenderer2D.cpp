@@ -28,6 +28,7 @@ CVAR(Bool, map_animate_tagged, true, CVAR_SAVE)
 CVAR(Float, arrow_alpha, 1.0f, CVAR_SAVE)
 CVAR(Bool, arrow_colour, false, CVAR_SAVE)
 CVAR(Bool, flats_use_vbo, true, CVAR_SAVE)
+CVAR(Int, halo_width, 5, CVAR_SAVE)
 
 CVAR(Bool, test_ssplit, false, CVAR_SAVE)
 
@@ -1208,6 +1209,7 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 		radius += 6;
 	else
 		radius *= 1.1 + (0.2*fade);
+	radius += halo_width * view_scale_inv;
 
 	// Setup hilight thing texture
 	GLTexture* tex = NULL;
@@ -1260,6 +1262,7 @@ void MapRenderer2D::renderThingSelection(vector<int>& selection, float fade)
 		// Adjust radius if the overlay isn't square
 		if (!thing_overlay_square)
 			radius += 8;
+		radius += halo_width * view_scale_inv;
 
 		// Draw it
 		renderThingOverlay(thing->xPos(), thing->yPos(), radius*(0.8+(0.2*fade)), point);
@@ -1296,6 +1299,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 		// Adjust radius if the overlay isn't square
 		if (!thing_overlay_square)
 			radius += 8;
+		radius += halo_width * view_scale_inv;
 
 		// Draw it
 		renderThingOverlay(thing->xPos(), thing->yPos(), radius, point);
@@ -1332,6 +1336,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 		// Adjust radius if the overlay isn't square
 		if (!thing_overlay_square)
 			radius += 12;
+		radius += halo_width * view_scale_inv;
 
 		// Draw it
 		renderThingOverlay(thing->xPos(), thing->yPos(), radius, point);
