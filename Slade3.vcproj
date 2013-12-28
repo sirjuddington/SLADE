@@ -1468,6 +1468,10 @@
 							RelativePath=".\dist\res\config\games\strife.cfg"
 							>
 						</File>
+						<File
+							RelativePath=".\dist\res\config\games\urbanbrawl.cfg"
+							>
+						</File>
 						<Filter
 							Name="Include"
 							>
@@ -1533,6 +1537,10 @@
 							</File>
 							<File
 								RelativePath=".\dist\res\config\games\include\specials_strife.cfg"
+								>
+							</File>
+							<File
+								RelativePath=".\dist\res\config\games\include\things_action2.cfg"
 								>
 							</File>
 							<File
