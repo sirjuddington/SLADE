@@ -39,6 +39,8 @@ void ThingType::copy(ThingType* copy)
 	this->colour = copy->colour;
 	this->radius = copy->radius;
 	this->height = copy->height;
+	this->scaleX = copy->scaleX;
+	this->scaleY = copy->scaleY;
 	this->angled = copy->angled;
 	this->hanging = copy->hanging;
 	this->fullbright = copy->fullbright;
@@ -94,6 +96,8 @@ void ThingType::reset()
 	this->colour = COL_WHITE;
 	this->radius = 20;
 	this->height = -1;
+	this->scaleX = 1.0;
+	this->scaleY = 1.0;
 	this->fullbright = false;
 	this->decoration = false;
 	this->solid = false;

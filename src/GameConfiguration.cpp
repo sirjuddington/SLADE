@@ -2131,13 +2131,13 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						tt->name = name;
 					if (!defined || group_given)
 						tt->group = group.empty() ? "Decorate" : group;
-					if (!defined || sprite_given)
+					if (!defined || sprite_given || tt->sprite.IsEmpty())
 					{
 						if (found_props["sprite"].hasValue())
 						{
 							if (S_CMPNOCASE(found_props["sprite"].getStringValue(), "tnt1a?"))
 							{
-								if (!found_props["icon"].hasValue())
+								if ((!(found_props["icon"].hasValue())) && tt->icon.IsEmpty())
 									tt->icon = "tnt1a0";
 							}
 							else
