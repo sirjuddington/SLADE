@@ -29,6 +29,8 @@ CVAR(Float, arrow_alpha, 1.0f, CVAR_SAVE)
 CVAR(Bool, arrow_colour, false, CVAR_SAVE)
 CVAR(Bool, flats_use_vbo, true, CVAR_SAVE)
 CVAR(Int, halo_width, 5, CVAR_SAVE)
+CVAR(Float, arrowhead_angle, 0.7854f, CVAR_SAVE)
+CVAR(Float, arrowhead_length, 25.f, CVAR_SAVE)
 
 CVAR(Bool, test_ssplit, false, CVAR_SAVE)
 
@@ -486,6 +488,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 
 	// Go through tagged lines
 	double x1, y1, x2, y2;
+	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		// Render line
@@ -506,6 +509,13 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
 		glEnd();
+
+		// Action lines
+		if (object)
+		{
+			renderArrow(line->midPoint(), object->midPoint(), col);
+			glLineWidth(line_width*3);
+		}
 	}
 }
 
@@ -525,6 +535,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 
 	// Go through tagging lines
 	double x1, y1, x2, y2;
+	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		// Render line
@@ -545,8 +556,56 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
 		glEnd();
+
+		// Action lines
+		if (object)
+		{
+			renderArrow(object->midPoint(), line->midPoint(), col);
+			glLineWidth(line_width*5);
+		}
 	}
 }
+
+void MapRenderer2D::renderArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway)
+{
+	fpoint2_t a1l, a1r, a2l, a2r;
+	fpoint2_t vector = p1 - p2;
+	double angle = atan2(-vector.y, vector.x);
+	a1l = a1r = p1;
+	a1l.x += arrowhead_length * sin(angle - arrowhead_angle); a1l.y += arrowhead_length * cos(angle - arrowhead_angle);
+	a1r.x -= arrowhead_length * sin(angle + arrowhead_angle); a1r.y -= arrowhead_length * cos(angle + arrowhead_angle);
+	if (twoway)
+	{
+		vector = p2 - p1;
+		angle = atan2(-vector.y, vector.x);
+		a2l = a2r = p2;
+		a2l.x += arrowhead_length * sin(angle - arrowhead_angle); a2l.y += arrowhead_length * cos(angle - arrowhead_angle);
+		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle); a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
+	}
+	color.set_gl();
+	glLineWidth(line_width*2);
+	glBegin(GL_LINES);
+	glVertex2d(p1.x, p1.y);
+	glVertex2d(p2.x, p2.y);
+	glVertex2d(p1.x, p1.y);
+	glVertex2d(a1l.x, a1l.y);
+	glVertex2d(p1.x, p1.y);
+	glVertex2d(a1r.x, a1r.y);
+	glEnd();
+	if (twoway)
+	{
+		glBegin(GL_LINES);
+		glVertex2d(p2.x, p2.y);
+		glVertex2d(a2l.x, a2l.y);
+		glEnd();
+		glBegin(GL_LINES);
+		glVertex2d(p2.x, p2.y);
+		glVertex2d(a2r.x, a2r.y);
+		glEnd();
+	}
+	color.set_gl();
+}
+
 
 bool MapRenderer2D::setupThingOverlay()
 {
@@ -1309,6 +1368,19 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	if (point)
 		glDisable(GL_POINT_SPRITE);
 	glDisable(GL_TEXTURE_2D);
+
+	// Draw action lines
+	// Because gl state is in texture mode above, we cannot merge the loops
+	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
+	if (object)
+	{
+		fpoint2_t dst = object->midPoint();
+		for (unsigned a = 0; a < things.size(); a++)
+		{
+			MapThing* thing = things[a];
+			renderArrow(thing->midPoint(), dst, col);
+		}
+	}
 }
 
 void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
@@ -1346,6 +1418,19 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	if (point)
 		glDisable(GL_POINT_SPRITE);
 	glDisable(GL_TEXTURE_2D);
+
+	// Draw action lines
+	// Because gl state is in texture mode above, we cannot merge the loops
+	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
+	if (object)
+	{
+		fpoint2_t src = object->midPoint();
+		for (unsigned a = 0; a < things.size(); a++)
+		{
+			MapThing* thing = things[a];
+			renderArrow(src, thing->midPoint(), col);
+		}
+	}
 }
 
 void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
@@ -1768,6 +1853,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 
 	// Render each sector polygon
 	glDisable(GL_TEXTURE_2D);
+	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
 		sectors[a]->getPolygon()->render();
@@ -1778,9 +1864,9 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 
 		// Draw hilight
 		MapLine* line = NULL;
-		for (unsigned a = 0; a < lines.size(); a++)
+		for (unsigned b = 0; b < lines.size(); b++)
 		{
-			line = lines[a];
+			line = lines[b];
 			if (!line) continue;
 
 			// Draw line
@@ -1789,6 +1875,10 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 			glVertex2d(line->v2()->xPos(), line->v2()->yPos());
 			glEnd();
 		}
+
+		// Action lines
+		if (object)
+			renderArrow(sectors[a]->midPoint(), object->midPoint(), col);
 	}
 }
 

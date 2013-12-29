@@ -101,6 +101,7 @@ entry_types
 	{
 		name = "Translation Table";
 		match_name = "trantbl*", "tranmap", "cr???*", "*mask", "colort??", "tr_*";
+		match_extorname = 1;
 		extra = image;
 		export_ext = "lmp";
 		category = "Data";
