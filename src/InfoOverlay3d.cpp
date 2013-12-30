@@ -8,6 +8,8 @@
 #include "ColourConfiguration.h"
 #include "Drawing.h"
 
+EXTERN_CVAR(Bool, use_zeth_icons)
+
 InfoOverlay3D::InfoOverlay3D()
 {
 }
@@ -325,7 +327,10 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		texture = theMapEditor->textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
 		if (!texture)
 		{
-			texture = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(tt->getIcon())));
+			if (use_zeth_icons && tt->getZeth() >= 0)
+				texture = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt->getZeth()));
+			if (!texture)
+				texture = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(tt->getIcon())));
 			thing_icon = true;
 		}
 		texname = "";

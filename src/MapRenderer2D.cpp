@@ -35,6 +35,8 @@ CVAR(Bool, action_lines, true, CVAR_SAVE)
 
 CVAR(Bool, test_ssplit, false, CVAR_SAVE)
 
+EXTERN_CVAR(Bool, use_zeth_icons)
+
 // Texture coordinates for rendering square things (since we can't just rotate these)
 float sq_thing_tc[] = { 0.0f, 1.0f,
 						0.0f, 0.0f,
@@ -696,7 +698,12 @@ void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType
 
 	// Check for custom thing icon
 	if (!tt->getIcon().IsEmpty() && !thing_force_dir && !things_angles)
-		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(tt->getIcon())));
+	{
+		if (use_zeth_icons && tt->getZeth() >= 0)
+			tex = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt->getZeth()));
+		if (!tex)
+			tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(tt->getIcon())));
+	}
 
 	if (!tex)
 	{
@@ -762,24 +769,6 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 
 	// Attempt to get sprite texture
 	tex = theMapEditor->textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
-
-	// Check for ? ending (0 or 1)
-	/*
-	if (!tex && tt->getSprite().EndsWith("?")) {
-		string sprite = tt->getSprite();
-		sprite.RemoveLast(1);
-		sprite = sprite + "0";
-		tex = theMapEditor->textureManager().getSprite(sprite, tt->getTranslation(), tt->getPalette());
-		if (!tex) {
-			sprite.RemoveLast(1);
-			sprite = sprite + "1";
-			tex = theMapEditor->textureManager().getSprite(sprite, tt->getTranslation(), tt->getPalette());
-		}
-
-		if (tex)
-			tt->setSprite(sprite);
-	}
-	*/
 
 	// If sprite not found, just draw as a normal, round thing
 	if (!tex)

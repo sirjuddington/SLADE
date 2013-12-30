@@ -31,6 +31,7 @@ public:
 	    // Thing flags
 	    ICON	= 4,
 	    DRAWN	= 8,
+		ZETH	= 16,
 	};
 	struct gl_vertex_t
 	{

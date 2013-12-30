@@ -23,6 +23,7 @@
 GameConfiguration* GameConfiguration::instance = NULL;
 CVAR(String, game_configuration, "", CVAR_SAVE)
 CVAR(String, port_configuration, "", CVAR_SAVE)
+CVAR(Bool, debug_configuration, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -1343,9 +1344,12 @@ bool GameConfiguration::openConfig(string game, string port)
 		}
 	}
 
-	/*wxFile test("full.cfg", wxFile::write);
-	test.Write(full_config);
-	test.Close();*/
+	if (debug_configuration)
+	{
+		wxFile test("full.cfg", wxFile::write);
+		test.Write(full_config);
+		test.Close();
+	}
 
 	// Read fully built configuration
 	bool ok = true;

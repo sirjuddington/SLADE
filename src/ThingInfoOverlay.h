@@ -12,6 +12,7 @@ private:
 	string			translation;
 	string			palette;
 	string			icon;
+	int				zeth;
 
 public:
 	ThingInfoOverlay();

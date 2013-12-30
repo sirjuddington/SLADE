@@ -24,7 +24,7 @@ CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
 
 EXTERN_CVAR(Bool, flats_use_vbo)
-
+EXTERN_CVAR(Bool, use_zeth_icons)
 
 MapRenderer3D::MapRenderer3D(SLADEMap* map)
 {
@@ -1523,7 +1523,13 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	if (!things[index].sprite)
 	{
 		// Sprite not found, try an icon
-		things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(things[index].type->getIcon())));
+		if (use_zeth_icons && things[index].type->getZeth() >= 0)
+		{
+			things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", things[index].type->getZeth()));
+			things[index].flags |= ZETH;
+		}
+		if (!things[index].sprite)
+			things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(things[index].type->getIcon())));
 		things[index].flags |= ICON;
 	}
 	else theight = things[index].type->getScaleY() * things[index].sprite->getHeight();
@@ -1635,7 +1641,9 @@ void MapRenderer3D::renderThings()
 
 		// Set colour/brightness
 		light = 255;
-		if (things[a].type->isFullbright())
+		// If a thing is defined as fullbright but the sprite is missing,
+		// we'll fallback on the icon, which needs to be colored as appropriate.
+		if (things[a].type->isFullbright() && !(things[a].flags & ICON))
 			col.set(255, 255, 255, 255);
 		else
 		{
@@ -1643,9 +1651,14 @@ void MapRenderer3D::renderThings()
 			if (things[a].sector)
 				light = things[a].sector->getLight();
 
-			// Icon, use thing icon colour
+			// Icon, use thing icon colour (not for Zeth icons, though)
 			if (things[a].flags & ICON)
-				col.set(things[a].type->getColour());
+			{
+				if (things[a].flags & ZETH)
+					col.set(255, 255, 255, 255);
+				else
+					col.set(things[a].type->getColour());
+			}
 
 			// Otherwise use sector colour
 			else if (things[a].sector)
