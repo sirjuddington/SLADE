@@ -539,7 +539,7 @@ void MainWindow::openMapEditor(Archive* archive)
 			return;
 
 		// Attempt to load selected game configuration
-		if (!theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort()))
+		if (!theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort(), md.format))
 		{
 			wxMessageBox("An error occurred loading the game configuration, see the console log for details", "Error", wxICON_ERROR);
 			return;

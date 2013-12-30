@@ -939,7 +939,7 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 	}
 }
 
-bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignore_game, bool clear)
+bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t format, bool ignore_game, bool clear)
 {
 	// Clear current configuration
 	if (clear)
@@ -961,6 +961,14 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 
 	// Parse the full configuration
 	Parser parser;
+	switch (format)
+	{
+	case MAP_DOOM:		parser.define("MAP_DOOM");		break;
+	case MAP_HEXEN:		parser.define("MAP_HEXEN");		break;
+	case MAP_DOOM64:	parser.define("MAP_DOOM64");	break;
+	case MAP_UDMF:		parser.define("MAP_UDMF");		break;
+	default:			parser.define("MAP_UNKNOWN");	break;
+	}
 	parser.parseText(cfg, source);
 
 	// Process parsed data
@@ -1262,7 +1270,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, bool ignor
 	return true;
 }
 
-bool GameConfiguration::openConfig(string game, string port)
+bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 {
 	string full_config;
 
@@ -1353,7 +1361,7 @@ bool GameConfiguration::openConfig(string game, string port)
 
 	// Read fully built configuration
 	bool ok = true;
-	if (readConfiguration(full_config))
+	if (readConfiguration(full_config, "full.cfg", format))
 	{
 		current_game = game;
 		current_port = port;
@@ -1380,7 +1388,7 @@ bool GameConfiguration::openConfig(string game, string port)
 
 		// Read embedded config
 		string config = wxString::FromAscii(cfg_entries[a]->getData(), cfg_entries[a]->getSize());
-		if (!readConfiguration(config, cfg_entries[a]->getName(), true, false))
+		if (!readConfiguration(config, cfg_entries[a]->getName(), format, true, false))
 			wxLogMessage("Error reading embedded game configuration, not loaded");
 	}
 
