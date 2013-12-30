@@ -31,6 +31,7 @@ CVAR(Bool, flats_use_vbo, true, CVAR_SAVE)
 CVAR(Int, halo_width, 5, CVAR_SAVE)
 CVAR(Float, arrowhead_angle, 0.7854f, CVAR_SAVE)
 CVAR(Float, arrowhead_length, 25.f, CVAR_SAVE)
+CVAR(Bool, action_lines, true, CVAR_SAVE)
 
 CVAR(Bool, test_ssplit, false, CVAR_SAVE)
 
@@ -511,7 +512,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Action lines
-		if (object)
+		if (object && action_lines)
 		{
 			renderArrow(line->midPoint(), object->midPoint(), col);
 			glLineWidth(line_width*3);
@@ -558,7 +559,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Action lines
-		if (object)
+		if (object && action_lines)
 		{
 			renderArrow(object->midPoint(), line->midPoint(), col);
 			glLineWidth(line_width*5);
@@ -1372,7 +1373,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	// Draw action lines
 	// Because gl state is in texture mode above, we cannot merge the loops
 	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
-	if (object)
+	if (object && action_lines)
 	{
 		fpoint2_t dst = object->midPoint();
 		for (unsigned a = 0; a < things.size(); a++)
@@ -1422,7 +1423,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	// Draw action lines
 	// Because gl state is in texture mode above, we cannot merge the loops
 	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
-	if (object)
+	if (object && action_lines)
 	{
 		fpoint2_t src = object->midPoint();
 		for (unsigned a = 0; a < things.size(); a++)
@@ -1877,7 +1878,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 		}
 
 		// Action lines
-		if (object)
+		if (object && action_lines)
 			renderArrow(sectors[a]->midPoint(), object->midPoint(), col);
 	}
 }
