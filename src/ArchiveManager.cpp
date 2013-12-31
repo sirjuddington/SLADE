@@ -43,6 +43,7 @@
  *******************************************************************/
 ArchiveManager* ArchiveManager::instance = NULL;
 CVAR(Int, base_resource, -1, CVAR_SAVE)
+CVAR(Int, max_recent_files, 25, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -861,7 +862,7 @@ void ArchiveManager::addRecentFile(string path)
 	recent_files.insert(recent_files.begin(), path);
 
 	// Keep it trimmed
-	while (recent_files.size() > MAX_RECENT_FILES)
+	while (recent_files.size() > max_recent_files)
 		recent_files.pop_back();
 
 	// Announce
