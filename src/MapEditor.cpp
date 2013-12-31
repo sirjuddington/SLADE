@@ -678,7 +678,7 @@ void MapEditor::updateTagged()
 					map.getThingsById(arg5, tagged_things);
 					break;
 				case AS_TT_LINE_NEGATIVE:
-					map.getLinesById(abs(tag), tagged_lines);
+					if (tag) map.getLinesById(abs(tag), tagged_lines);
 					break;
 				case AS_TT_1LINEID_2LINE:
 					map.getLinesById(arg2, tagged_lines);

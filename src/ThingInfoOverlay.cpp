@@ -8,6 +8,8 @@
 #include "Drawing.h"
 #include "MapEditorWindow.h"
 
+EXTERN_CVAR(Bool, use_zeth_icons)
+
 ThingInfoOverlay::ThingInfoOverlay()
 {
 }
@@ -96,6 +98,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 	translation = tt->getTranslation();
 	palette = tt->getPalette();
 	icon = tt->getIcon();
+	zeth = tt->getZeth();
 }
 
 void ThingInfoOverlay::draw(int bottom, int right, float alpha)
@@ -139,7 +142,10 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	GLTexture* tex = theMapEditor->textureManager().getSprite(sprite, translation, palette);
 	if (!tex)
 	{
-		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(icon)));
+		if (use_zeth_icons && zeth >= 0)
+			tex = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", zeth));
+		if (!tex)
+			tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(icon)));
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);

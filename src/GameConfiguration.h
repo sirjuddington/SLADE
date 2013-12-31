@@ -211,8 +211,8 @@ public:
 	void	readThingTypes(ParseTreeNode* node, ThingType* group_defaults = NULL);
 	void	readUDMFProperties(ParseTreeNode* node, UDMFPropMap& plist);
 	void	readGameSection(ParseTreeNode* node_game, bool port_section = false);
-	bool	readConfiguration(string& cfg, string source = "", bool ignore_game = false, bool clear = true);
-	bool	openConfig(string game, string port = "");
+	bool	readConfiguration(string& cfg, string source = "", uint8_t format = MAP_UNKNOWN, bool ignore_game = false, bool clear = true);
+	bool	openConfig(string game, string port = "", uint8_t format = MAP_UNKNOWN);
 	//bool	openEmbeddedConfig(ArchiveEntry* entry);
 	//bool	removeEmbeddedConfig(string name);
 

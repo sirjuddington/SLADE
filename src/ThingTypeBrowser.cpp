@@ -8,6 +8,7 @@
 
 
 CVAR(Bool, browser_thing_tiles, true, CVAR_SAVE)
+CVAR(Bool, use_zeth_icons, false, CVAR_SAVE)
 
 ThingBrowserItem::ThingBrowserItem(string name, ThingType* type, unsigned index) : BrowserItem(name, index)
 {
@@ -23,6 +24,11 @@ bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
 	GLTexture* tex = theMapEditor->textureManager().getSprite(type->getSprite(), type->getTranslation(), type->getPalette());
+	if (!tex && use_zeth_icons && type->getZeth() >= 0)
+	{
+		// Sprite not found, try the Zeth icon
+		tex = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", type->getZeth()));
+	}
 	if (!tex)
 	{
 		// Sprite not found, try an icon

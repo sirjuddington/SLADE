@@ -19,6 +19,7 @@ ThingType::ThingType(string name)
 	this->decoration = false;
 	this->decorate = false;
 	this->solid = false;
+	this->zeth = -1;
 
 	// Init args
 	args[0].name = "Arg1";
@@ -51,6 +52,7 @@ void ThingType::copy(ThingType* copy)
 	this->palette = copy->palette;
 	this->decoration = copy->decoration;
 	this->solid = copy->solid;
+	this->zeth = copy->zeth;
 
 	// Copy args
 	for (unsigned a = 0; a < 5; a++)
@@ -101,6 +103,7 @@ void ThingType::reset()
 	this->fullbright = false;
 	this->decoration = false;
 	this->solid = false;
+	this->zeth = -1;
 
 	// Reset args
 	for (unsigned a = 0; a < 5; a++)
@@ -211,6 +214,9 @@ void ThingType::parse(ParseTreeNode* node)
 		else if (S_CMPNOCASE(name, "palette"))
 			this->palette = child->getStringValue();
 
+		// Zeth icon
+		else if (S_CMPNOCASE(name, "zeth"))
+			this->zeth = child->getIntValue();
 
 
 		// Parse arg definition if it was one

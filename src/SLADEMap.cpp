@@ -40,6 +40,8 @@
 #include "SectorBuilder.h"
 #include <wx/colour.h>
 
+#define IDEQ(x) (((x) != 0) && ((x) == id))
+
 
 SLADEMap::SLADEMap()
 {
@@ -2780,77 +2782,77 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list)
 			case AS_TT_SECTOR:
 			case AS_TT_SECTOR_OR_BACK:
 			case AS_TT_SECTOR_AND_BACK:
-				fits = (tag == id && type == SECTORS);
+				fits = (IDEQ(tag) && type == SECTORS);
 				break;
 			case AS_TT_LINE_NEGATIVE:
 				tag = abs(tag);
 			case AS_TT_LINE:
-				fits = (tag == id && type == LINEDEFS);
+				fits = (IDEQ(tag) && type == LINEDEFS);
 				break;
 			case AS_TT_THING:
-				fits = (tag == id && type == THINGS);
+				fits = (IDEQ(tag) && type == THINGS);
 				break;
 			case AS_TT_1THING_2SECTOR:
 				arg2 = things[a]->intProperty("arg1");
-				fits = (type == THINGS ? (tag == id) : (arg2 == id && type == SECTORS));
+				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SECTORS));
 				break;
 			case AS_TT_1THING_3SECTOR:
 				arg3 = things[a]->intProperty("arg2");
-				fits = (type == THINGS ? (tag == id) : (arg3 == id && type == SECTORS));
+				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg3) && type == SECTORS));
 				break;
 			case AS_TT_1THING_2THING:
 				arg2 = things[a]->intProperty("arg1");
-				fits = (type == THINGS && (tag == id || arg2 == id));
+				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case AS_TT_1THING_4THING:
 				arg4 = things[a]->intProperty("arg3");
-				fits = (type == THINGS && (tag == id || arg4 == id));
+				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg4)));
 				break;
 			case AS_TT_1THING_2THING_3THING:
 				arg2 = things[a]->intProperty("arg1");
 				arg3 = things[a]->intProperty("arg2");
-				fits = (type == THINGS && (tag == id || arg2 == id || arg3 == id));
+				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3)));
 				break;
 			case AS_TT_1SECTOR_2THING_3THING_5THING:
 				arg2 = things[a]->intProperty("arg1");
 				arg3 = things[a]->intProperty("arg2");
 				arg5 = things[a]->intProperty("arg4");
-				fits = (type == SECTORS ? (tag == id) : (type == THINGS &&
-						(arg2 == id || arg3 == id || arg5 == id)));
+				fits = (type == SECTORS ? (IDEQ(tag)) : (type == THINGS &&
+						(IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case AS_TT_1LINEID_2LINE:
 				arg2 = things[a]->intProperty("arg1");
-				fits = (type == LINEDEFS && arg2 == id);
+				fits = (type == LINEDEFS && IDEQ(arg2));
 				break;
 			case AS_TT_4THING:
 				arg4 = things[a]->intProperty("arg3");
-				fits = (type == THINGS && arg4 == id);
+				fits = (type == THINGS && IDEQ(arg4));
 				break;
 			case AS_TT_5THING:
 				arg5 = things[a]->intProperty("arg4");
-				fits = (type == THINGS && arg5 == id);
+				fits = (type == THINGS && IDEQ(arg5));
 				break;
 			case AS_TT_1LINE_2SECTOR:
 				arg2 = things[a]->intProperty("arg1");
-				fits = (type == LINEDEFS ? (tag == id) : (arg2 == id && type == SECTORS));
+				fits = (type == LINEDEFS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SECTORS));
 				break;
 			case AS_TT_1SECTOR_2SECTOR:
 				arg2 = things[a]->intProperty("arg1");
-				fits = (type == SECTORS && (tag == id || arg2 == id));
+				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR:
 				arg2 = things[a]->intProperty("arg1");
 				arg3 = things[a]->intProperty("arg2");
 				arg4 = things[a]->intProperty("arg3");
-				fits = (type == SECTORS && (tag == id || arg2 == id || arg3 == id || arg4 == id));
+				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg4)));
 				break;
 			case AS_TT_SECTOR_2IS3_LINE:
 				arg2 = things[a]->intProperty("arg1");
-				fits = (tag == id && (arg2 == 3 ? type == LINEDEFS : type == SECTORS));
+				fits = (IDEQ(tag) && (arg2 == 3 ? type == LINEDEFS : type == SECTORS));
 				break;
 			case AS_TT_1SECTOR_2THING:
 				arg2 = things[a]->intProperty("arg1");
-				fits = (type == SECTORS ? (tag == id) : (arg2 == id && type == THINGS));
+				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
 			default:
 				break;
@@ -2877,77 +2879,77 @@ void SLADEMap::getTaggingLinesById(int id, int type, vector<MapLine*>& list)
 			case AS_TT_SECTOR:
 			case AS_TT_SECTOR_OR_BACK:
 			case AS_TT_SECTOR_AND_BACK:
-				fits = (tag == id && type == SECTORS);
+				fits = (IDEQ(tag) && type == SECTORS);
 				break;
 			case AS_TT_LINE_NEGATIVE:
 				tag = abs(tag);
 			case AS_TT_LINE:
-				fits = (tag == id && type == LINEDEFS);
+				fits = (IDEQ(tag) && type == LINEDEFS);
 				break;
 			case AS_TT_THING:
-				fits = (tag == id && type == THINGS);
+				fits = (IDEQ(tag) && type == THINGS);
 				break;
 			case AS_TT_1THING_2SECTOR:
 				arg2 = lines[a]->intProperty("arg1");
-				fits = (type == THINGS ? (tag == id) : (arg2 == id && type == SECTORS));
+				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SECTORS));
 				break;
 			case AS_TT_1THING_3SECTOR:
 				arg3 = lines[a]->intProperty("arg2");
-				fits = (type == THINGS ? (tag == id) : (arg3 == id && type == SECTORS));
+				fits = (type == THINGS ? IDEQ(tag) : (IDEQ(arg3) && type == SECTORS));
 				break;
 			case AS_TT_1THING_2THING:
 				arg2 = lines[a]->intProperty("arg1");
-				fits = (type == THINGS && (tag == id || arg2 == id));
+				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case AS_TT_1THING_4THING:
 				arg4 = lines[a]->intProperty("arg3");
-				fits = (type == THINGS && (tag == id || arg4 == id));
+				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg4)));
 				break;
 			case AS_TT_1THING_2THING_3THING:
 				arg2 = lines[a]->intProperty("arg1");
 				arg3 = lines[a]->intProperty("arg2");
-				fits = (type == THINGS && (tag == id || arg2 == id || arg3 == id));
+				fits = (type == THINGS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3)));
 				break;
 			case AS_TT_1SECTOR_2THING_3THING_5THING:
 				arg2 = lines[a]->intProperty("arg1");
 				arg3 = lines[a]->intProperty("arg2");
 				arg5 = lines[a]->intProperty("arg4");
-				fits = (type == SECTORS ? (tag == id) : (type == THINGS &&
-						(arg2 == id || arg3 == id || arg5 == id)));
+				fits = (type == SECTORS ? (IDEQ(tag)) : (type == THINGS &&
+						(IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case AS_TT_1LINEID_2LINE:
 				arg2 = lines[a]->intProperty("arg1");
-				fits = (type == LINEDEFS && arg2 == id);
+				fits = (type == LINEDEFS && IDEQ(arg2));
 				break;
 			case AS_TT_4THING:
 				arg4 = lines[a]->intProperty("arg3");
-				fits = (type == THINGS && arg4 == id);
+				fits = (type == THINGS && IDEQ(arg4));
 				break;
 			case AS_TT_5THING:
 				arg5 = lines[a]->intProperty("arg4");
-				fits = (type == THINGS && arg5 == id);
+				fits = (type == THINGS && IDEQ(arg5));
 				break;
 			case AS_TT_1LINE_2SECTOR:
 				arg2 = lines[a]->intProperty("arg1");
-				fits = (type == LINEDEFS ? (tag == id) : (arg2 == id && type == SECTORS));
+				fits = (type == LINEDEFS ? (IDEQ(tag)) : (IDEQ(arg2) && type == SECTORS));
 				break;
 			case AS_TT_1SECTOR_2SECTOR:
 				arg2 = lines[a]->intProperty("arg1");
-				fits = (type == SECTORS && (tag == id || arg2 == id));
+				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2)));
 				break;
 			case AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR:
 				arg2 = lines[a]->intProperty("arg1");
 				arg3 = lines[a]->intProperty("arg2");
 				arg4 = lines[a]->intProperty("arg3");
-				fits = (type == SECTORS && (tag == id || arg2 == id || arg3 == id || arg4 == id));
+				fits = (type == SECTORS && (IDEQ(tag) || IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg4)));
 				break;
 			case AS_TT_SECTOR_2IS3_LINE:
 				arg2 = lines[a]->intProperty("arg1");
-				fits = (tag == id && (arg2 == 3 ? type == LINEDEFS : type == SECTORS));
+				fits = (IDEQ(tag) && (arg2 == 3 ? type == LINEDEFS : type == SECTORS));
 				break;
 			case AS_TT_1SECTOR_2THING:
 				arg2 = lines[a]->intProperty("arg1");
-				fits = (type == SECTORS ? (tag == id) : (arg2 == id && type == THINGS));
+				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
 			default:
 				break;

@@ -21,6 +21,7 @@ private:
 	bool	shrink;
 	bool	fullbright;
 	bool	decoration;
+	int		zeth;
 	string	sprite;
 	string	icon;
 	string	translation;
@@ -48,6 +49,7 @@ public:
 	bool	shrinkOnZoom() { return shrink; }
 	bool	isDecoration() { return decoration; }
 	bool	isSolid() { return solid; }
+	int		getZeth() { return zeth; }
 	string	getSprite() { return sprite; }
 	string	getIcon() { return icon; }
 	string	getTranslation() { return translation; }

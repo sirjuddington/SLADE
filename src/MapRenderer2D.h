@@ -68,6 +68,7 @@ public:
 	~MapRenderer2D();
 
 	// Main drawing stuff
+	void	renderArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway=false);
 
 	// Vertices
 	bool	setupVertexRendering(float size_scale);
