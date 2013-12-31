@@ -135,7 +135,7 @@ void save_cvars(wxFile& file)
 				file.Write(S_FMT("%1.5f\n", cvars[c]->GetValue().Float));
 
 			if (cvars[c]->type == CVAR_STRING)
-				file.Write(S_FMT("\"%s\"\n", CHR(((CStringCVar*)cvars[c])->value)));
+				file.Write(S_FMT("\"%s\"\n", CHR(((CStringCVar*)cvars[c])->value)), wxConvUTF8);
 		}
 	}
 
@@ -162,7 +162,7 @@ void read_cvar(string name, string value)
 				*((CFloatCVar*) cvars[c]) = atof(CHR(value));
 
 			if (cvars[c]->type == CVAR_STRING)
-				*((CStringCVar*) cvars[c]) = value;
+				*((CStringCVar*) cvars[c]) = wxString::FromUTF8(value);
 		}
 	}
 }
