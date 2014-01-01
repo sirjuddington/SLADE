@@ -2730,14 +2730,25 @@ void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 	}
 }
 
-void SLADEMap::getThingsById(int id, vector<MapThing*>& list)
+void SLADEMap::getThingsById(int id, vector<MapThing*>& list, unsigned start, int type)
+{
+	// Find things with matching id
+	for (unsigned a = start; a < things.size(); a++)
+	{
+		if (things[a]->intProperty("id") == id && (type == 0 || things[a]->type == type))
+			list.push_back(things[a]);
+	}
+}
+
+MapThing* SLADEMap::getFirstThingWithId(int id)
 {
 	// Find things with matching id
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		if (things[a]->intProperty("id") == id)
-			list.push_back(things[a]);
+			return things[a];
 	}
+	return NULL;
 }
 
 void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list)
@@ -2752,6 +2763,34 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 			{
 				list.push_back(things[a]);
 			}
+		}
+	}
+}
+
+void SLADEMap::getPathedThings(vector<MapThing*>& list)
+{
+	// Find things that need to be pathed
+	/* They include:
+		- Interpolation points (9070; next TID = args3+(args4*256), 
+		path to other interpolation points, tag interpolation specials (9075)
+		- Patrol points (9024; next TID = args0), path to other patrol points,
+		tag patrol specials (9047)
+		- Actor mover (9074; next TID = args0+(args1*256), path to 
+		interpolation points, tag args4
+		- Moving camera (9072; next TID = args0+(args1*256), path to
+		interpolation points, tag args3
+		- Path follower (9071; next TID = args0+(args1*256), path to
+		interpolation points
+		- Dragon (254; next TID = id), path to thing with same TID,
+		then recursively to every thing with TID = any arg.
+	*/
+	for (unsigned a = 0; a < things.size(); a++)
+	{
+		if ((things[a]->type >= 9070 && things[a]->type <= 9075 && things[a]->type != 9073) || things[a]->type == 9024)
+			list.push_back(things[a]);
+		if (things[a]->type == 254)
+		{
+			list.push_back(things[a]);
 		}
 	}
 }

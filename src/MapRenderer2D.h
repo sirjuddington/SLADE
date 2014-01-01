@@ -101,6 +101,7 @@ public:
 	void	renderThingSelection(vector<int>& selection, float fade = 1.0f);
 	void	renderTaggedThings(vector<MapThing*>& things, float fade);
 	void	renderTaggingThings(vector<MapThing*>& things, float fade);
+	void	renderPathedThings(vector<MapThing*>& things);
 
 	// Flats (sectors)
 	void	renderFlats(int type = 0, bool texture = true, float alpha = 1.0f);

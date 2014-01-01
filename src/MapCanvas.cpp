@@ -1103,6 +1103,7 @@ void MapCanvas::drawMap2d()
 		if (editor->taggingThings().size() > 0)
 			renderer_2d->renderTaggingThings(editor->taggingThings(), anim_flash_level);
 	}
+	renderer_2d->renderPathedThings(editor->pathedThings());
 
 	// Draw selection numbers if needed
 	//if (editor->selectionSize() > 0)

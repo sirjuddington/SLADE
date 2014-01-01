@@ -1423,6 +1423,72 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	}
 }
 
+void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
+{
+	// Find things that need to be pathed
+	/* They include:
+		- Interpolation points (9070; next TID = args3+(args4*256), 
+		path to other interpolation points, tag interpolation specials (9075)
+		- Patrol points (9024; next TID = args0), path to other patrol points,
+		tag patrol specials (9047)
+		- Actor mover (9074; next TID = args0+(args1*256), path to 
+		interpolation points, tag args4
+		- Moving camera (9072; next TID = args0+(args1*256), path to
+		interpolation points, tag args3
+		- Path follower (9071; next TID = args0+(args1*256), path to
+		interpolation points
+		- Dragon (254; next TID = id), path to thing with same TID,
+		then recursively to every thing with TID = any arg.
+	*/
+	rgba_t col(0, 255, 255, 255, 0);
+	rgba_t col2(0, 192, 192, 255, 0);
+	for (unsigned a = 0; a < things.size(); ++a)
+	{
+		MapThing* thing = things[a];
+		int tid = -1, tid2 = -1;
+		switch (thing->getType())
+		{
+		case 9070:
+				tid = thing->intProperty("arg3") + 256 * thing->intProperty("arg4");
+		case 9071:
+		case 9072:
+		case 9074:
+			{
+				if (tid < 0) tid = thing->intProperty("arg0") + 256 * thing->intProperty("arg1");
+				for (unsigned b = a + 1; b < things.size(); ++b)
+				{
+					MapThing* thing2 = things[b];
+					if (thing2->getType() == 9070)
+					{
+						int tid2 = thing2->intProperty("arg3") + 256 * thing2->intProperty("arg4");
+						if (thing2->intProperty("id") == tid)
+							renderArrow(thing2->midPoint(), thing->midPoint(), col, tid2 == thing->intProperty("id"));
+						else if (thing->intProperty("id") == tid2)
+							renderArrow(thing->midPoint(), thing2->midPoint(), col);
+					}
+				}
+			}
+			break;
+		case 9024:
+			{
+				int tid = thing->intProperty("arg0");
+				for (unsigned b = a + 1; b < things.size(); ++b)
+				{
+					MapThing* thing2 = things[b];
+					if (thing2->getType() == 9024 && thing2->intProperty("id") == tid)
+					{
+						renderArrow(thing2->midPoint(), thing->midPoint(), col, 
+							thing2->intProperty("arg0") == thing->intProperty("id"));
+					}
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 {
 	// Don't bother if (practically) invisible

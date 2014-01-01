@@ -55,6 +55,9 @@ private:
 	vector<MapLine*>	tagging_lines;
 	vector<MapThing*>	tagging_things;
 
+	// Pathed things
+	vector<MapThing*>	pathed_things;
+
 	// Moving
 	fpoint2_t	move_origin;
 	fpoint2_t	move_vec;
@@ -149,6 +152,7 @@ public:
 	vector<MapThing*>&	taggedThings() { return tagged_things; }
 	vector<MapLine*>&	taggingLines() { return tagging_lines; }
 	vector<MapThing*>&	taggingThings() { return tagging_things; }
+	vector<MapThing*>&	pathedThings() { return pathed_things; }
 	bool				hilightLocked() { return hilight_locked; }
 	void				lockHilight(bool lock = true) { hilight_locked = lock; }
 	bool				gridSnap() { return grid_snap; }

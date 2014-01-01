@@ -559,6 +559,10 @@ void MapEditor::updateTagged()
 	tagging_lines.clear();
 	tagging_things.clear();
 
+	// FIXME: should be done elsewhere
+	pathed_things.clear();
+	map.getPathedThings(pathed_things);
+
 	// Special
 	if (hilight_item >= 0)
 	{
