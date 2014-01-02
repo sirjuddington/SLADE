@@ -37,6 +37,7 @@ namespace Drawing
 	void drawLine(double x1, double y1, double x2, double y2);
 	void drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab = 0.1, double tab_max = 16);
 	void drawLineTabbed(double x1, double y1, double x2, double y2, double tab = 0.1, double tab_max = 16);
+	void drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color = COL_WHITE, bool twoway = false, double arrowhead_angle = 0.7854f, double arrowhead_length = 25.f);
 	void drawRect(fpoint2_t tl, fpoint2_t br);
 	void drawRect(double x1, double y1, double x2, double y2);
 	void drawFilledRect(fpoint2_t tl, fpoint2_t br);
