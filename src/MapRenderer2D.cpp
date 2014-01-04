@@ -1426,9 +1426,9 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 					{
 						int tid2 = thing2->intProperty("arg3") + 256 * thing2->intProperty("arg4");
 						if (thing2->intProperty("id") == tid)
-							renderArrow(thing2->midPoint(), thing->midPoint(), col, tid2 == thing->intProperty("id"));
+							Drawing::drawArrow(thing2->midPoint(), thing->midPoint(), col, tid2 == thing->intProperty("id"));
 						else if (thing->intProperty("id") == tid2)
-							renderArrow(thing->midPoint(), thing2->midPoint(), col);
+							Drawing::drawArrow(thing->midPoint(), thing2->midPoint(), col);
 					}
 				}
 			}
@@ -1441,7 +1441,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 					MapThing* thing2 = things[b];
 					if (thing2->getType() == 9024 && thing2->intProperty("id") == tid)
 					{
-						renderArrow(thing2->midPoint(), thing->midPoint(), col, 
+						Drawing::drawArrow(thing2->midPoint(), thing->midPoint(), col, 
 							thing2->intProperty("arg0") == thing->intProperty("id"));
 					}
 				}
