@@ -394,6 +394,45 @@ void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double 
 	glEnd();
 }
 
+void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, double arrowhead_angle, double arrowhead_length)
+{
+	fpoint2_t a1l, a1r, a2l, a2r;
+	fpoint2_t vector = p1 - p2;
+	double angle = atan2(-vector.y, vector.x);
+	a1l = a1r = p1;
+	a1l.x += arrowhead_length * sin(angle - arrowhead_angle); a1l.y += arrowhead_length * cos(angle - arrowhead_angle);
+	a1r.x -= arrowhead_length * sin(angle + arrowhead_angle); a1r.y -= arrowhead_length * cos(angle + arrowhead_angle);
+	if (twoway)
+	{
+		vector = p2 - p1;
+		angle = atan2(-vector.y, vector.x);
+		a2l = a2r = p2;
+		a2l.x += arrowhead_length * sin(angle - arrowhead_angle); a2l.y += arrowhead_length * cos(angle - arrowhead_angle);
+		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle); a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
+	}
+	color.set_gl();
+	glBegin(GL_LINES);
+	glVertex2d(p1.x, p1.y);
+	glVertex2d(p2.x, p2.y);
+	glVertex2d(p1.x, p1.y);
+	glVertex2d(a1l.x, a1l.y);
+	glVertex2d(p1.x, p1.y);
+	glVertex2d(a1r.x, a1r.y);
+	glEnd();
+	if (twoway)
+	{
+		glBegin(GL_LINES);
+		glVertex2d(p2.x, p2.y);
+		glVertex2d(a2l.x, a2l.y);
+		glEnd();
+		glBegin(GL_LINES);
+		glVertex2d(p2.x, p2.y);
+		glVertex2d(a2r.x, a2r.y);
+		glEnd();
+	}
+	color.set_gl();
+}
+
 /* Drawing::drawRect
  * Draws a rectangle from [tl] to [br]
  *******************************************************************/

@@ -10,6 +10,7 @@
 #include "Polygon2D.h"
 #include "ObjectEdit.h"
 #include "OpenGL.h"
+#include "Drawing.h"
 
 CVAR(Bool, vertex_round, true, CVAR_SAVE)
 CVAR(Int, vertex_size, 7, CVAR_SAVE)
@@ -516,7 +517,8 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		// Action lines
 		if (object && action_lines)
 		{
-			renderArrow(line->midPoint(), object->midPoint(), col);
+			glLineWidth(line_width*1.5f);
+			Drawing::drawArrow(line->midPoint(), object->midPoint(), col, false, arrowhead_angle, arrowhead_length);
 			glLineWidth(line_width*3);
 		}
 	}
@@ -563,52 +565,12 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		// Action lines
 		if (object && action_lines)
 		{
-			renderArrow(object->midPoint(), line->midPoint(), col);
+			glLineWidth(line_width*1.5f);
+			Drawing::drawArrow(object->midPoint(), line->midPoint(), col, false, arrowhead_angle, arrowhead_length);
 			glLineWidth(line_width*5);
 		}
 	}
 }
-
-void MapRenderer2D::renderArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway)
-{
-	fpoint2_t a1l, a1r, a2l, a2r;
-	fpoint2_t vector = p1 - p2;
-	double angle = atan2(-vector.y, vector.x);
-	a1l = a1r = p1;
-	a1l.x += arrowhead_length * sin(angle - arrowhead_angle); a1l.y += arrowhead_length * cos(angle - arrowhead_angle);
-	a1r.x -= arrowhead_length * sin(angle + arrowhead_angle); a1r.y -= arrowhead_length * cos(angle + arrowhead_angle);
-	if (twoway)
-	{
-		vector = p2 - p1;
-		angle = atan2(-vector.y, vector.x);
-		a2l = a2r = p2;
-		a2l.x += arrowhead_length * sin(angle - arrowhead_angle); a2l.y += arrowhead_length * cos(angle - arrowhead_angle);
-		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle); a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
-	}
-	color.set_gl();
-	glLineWidth(line_width*2);
-	glBegin(GL_LINES);
-	glVertex2d(p1.x, p1.y);
-	glVertex2d(p2.x, p2.y);
-	glVertex2d(p1.x, p1.y);
-	glVertex2d(a1l.x, a1l.y);
-	glVertex2d(p1.x, p1.y);
-	glVertex2d(a1r.x, a1r.y);
-	glEnd();
-	if (twoway)
-	{
-		glBegin(GL_LINES);
-		glVertex2d(p2.x, p2.y);
-		glVertex2d(a2l.x, a2l.y);
-		glEnd();
-		glBegin(GL_LINES);
-		glVertex2d(p2.x, p2.y);
-		glVertex2d(a2r.x, a2r.y);
-		glEnd();
-	}
-	color.set_gl();
-}
-
 
 bool MapRenderer2D::setupThingOverlay()
 {
@@ -1365,10 +1327,11 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	if (object && action_lines)
 	{
 		fpoint2_t dst = object->midPoint();
+		glLineWidth(line_width*1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			MapThing* thing = things[a];
-			renderArrow(thing->midPoint(), dst, col);
+			Drawing::drawArrow(thing->midPoint(), dst, col, false, arrowhead_angle, arrowhead_length);
 		}
 	}
 }
@@ -1415,10 +1378,11 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	if (object && action_lines)
 	{
 		fpoint2_t src = object->midPoint();
+		glLineWidth(line_width*1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			MapThing* thing = things[a];
-			renderArrow(src, thing->midPoint(), col);
+			Drawing::drawArrow(src, thing->midPoint(), col, false, arrowhead_angle, arrowhead_length);
 		}
 	}
 }
@@ -1934,7 +1898,18 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 
 		// Action lines
 		if (object && action_lines)
-			renderArrow(sectors[a]->midPoint(), object->midPoint(), col);
+		{
+			// Skip if the tagged sector is adjacent
+			if (object->getObjType() == MOBJ_LINE)
+			{
+				MapLine* line = (MapLine*)object;
+				if (line->frontSector() == sectors[a] || line->backSector() == sectors[a])
+					continue;
+			}
+
+			glLineWidth(line_width*1.5f);
+			Drawing::drawArrow(sectors[a]->midPoint(), object->midPoint(), col, false, arrowhead_angle, arrowhead_length);
+		}
 	}
 }
 
