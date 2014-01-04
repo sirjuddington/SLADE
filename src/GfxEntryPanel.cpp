@@ -795,8 +795,10 @@ bool GfxEntryPanel::handleAction(string id)
 	// Optimize PNG
 	else if (id == "pgfx_pngopt")
 	{
+		// This is a special case. If we set the entry as modified, SLADE will prompt
+		// to save it, rewriting the entry and cancelling the optimization done...
 		if (EntryOperations::optimizePNG(entry))
-			setModified();
+			setModified(false);
 		else
 			wxMessageBox("Warning: Couldn't optimize this image, check console log for info", "Warning", wxOK|wxCENTRE|wxICON_WARNING);
 		Refresh();
@@ -811,24 +813,54 @@ bool GfxEntryPanel::handleAction(string id)
 	// Convert
 	else if (id == "pgfx_convert")
 	{
-		GfxConvDialog dlg;
-		dlg.SetParent(theMainWindow);
-		dlg.CenterOnParent();
-		dlg.openEntry(entry);
+		GfxConvDialog gcd;
+		gcd.SetParent(theMainWindow);
+		gcd.CenterOnParent();
+		gcd.openEntry(entry);
 
-		dlg.ShowModal();
+		gcd.ShowModal();
 
-		if (dlg.itemModified(0))
+		if (gcd.itemModified(0))
 		{
 			// Get image and conversion info
-			SImage* image = dlg.getItemImage(0);
-			SIFormat* format = dlg.getItemFormat(0);
+			SImage* image = gcd.getItemImage(0);
+			SIFormat* format = gcd.getItemFormat(0);
 
 			// Write converted image back to entry
-			format->saveImage(*image, entry_data, dlg.getItemPalette(0));
-			entry->importMemChunk(entry_data);
+			format->saveImage(*image, entry_data, gcd.getItemPalette(0));
+			// This makes the "save" button (and the setModified stuff) redundant and confusing!
+			// The alternative is to save to entry effectively (uncomment the importMemChunk line)
+			// but remove the setModified and image_data_modified lines, and add a call to refresh
+			// to get the PNG tRNS status back in sync.
+			//entry->importMemChunk(entry_data);
 			image_data_modified = true;
 			setModified();
+
+			// Fix tRNS status if we converted to paletted PNG
+			int MENU_GFXEP_PNGOPT = theApp->getAction("pgfx_pngopt")->getWxId();
+			int MENU_GFXEP_ALPH = theApp->getAction("pgfx_alph")->getWxId();
+			int MENU_GFXEP_TRNS = theApp->getAction("pgfx_trns")->getWxId();
+			int MENU_ARCHGFX_EXPORTPNG = theApp->getAction("arch_gfx_exportpng")->getWxId();
+			if (format->getName() == "PNG")
+			{
+				ArchiveEntry temp;
+				temp.importMemChunk(entry_data);
+				temp.setType(EntryType::getType("png"));
+				menu_custom->Enable(MENU_GFXEP_ALPH, true);
+				menu_custom->Enable(MENU_GFXEP_TRNS, true);
+				menu_custom->Check(MENU_GFXEP_TRNS, EntryOperations::gettRNSChunk(&temp));
+				menu_custom->Enable(MENU_ARCHGFX_EXPORTPNG, false);
+				menu_custom->Enable(MENU_GFXEP_PNGOPT, true);
+				toolbar->enableGroup("PNG", true);
+			}
+			else
+			{
+				menu_custom->Enable(MENU_GFXEP_ALPH, false);
+				menu_custom->Enable(MENU_GFXEP_TRNS, false);
+				menu_custom->Enable(MENU_ARCHGFX_EXPORTPNG, true);
+				menu_custom->Enable(MENU_GFXEP_PNGOPT, false);
+				toolbar->enableGroup("PNG", false);
+			}
 
 			// Refresh
 			getImage()->open(entry_data, 0, format->getId());
