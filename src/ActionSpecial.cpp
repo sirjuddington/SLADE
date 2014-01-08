@@ -86,35 +86,7 @@ void ActionSpecial::parse(ParseTreeNode* node)
 
 		// Tagged
 		else if (S_CMPNOCASE(name, "tagged"))
-		{
-			string str = child->getStringValue();
-			if (S_CMPNOCASE(str, "no")) this->tagged = AS_TT_NO;
-			else if (S_CMPNOCASE(str, "sector")) this->tagged = AS_TT_SECTOR;
-			else if (S_CMPNOCASE(str, "line")) this->tagged = AS_TT_LINE;
-			else if (S_CMPNOCASE(str, "lineid")) this->tagged = AS_TT_LINEID;
-			else if (S_CMPNOCASE(str, "lineid_hi5")) this->tagged = AS_TT_LINEID_HI5;
-			else if (S_CMPNOCASE(str, "thing")) this->tagged = AS_TT_THING;
-			else if (S_CMPNOCASE(str, "sector_back")) this->tagged = AS_TT_SECTOR_BACK;
-			else if (S_CMPNOCASE(str, "sector_or_back")) this->tagged = AS_TT_SECTOR_OR_BACK;
-			else if (S_CMPNOCASE(str, "sector_and_back")) this->tagged = AS_TT_SECTOR_AND_BACK;
-			else if (S_CMPNOCASE(str, "line_negative")) this->tagged = AS_TT_LINE_NEGATIVE;
-			else if (S_CMPNOCASE(str, "ex_1thing_2sector")) this->tagged = AS_TT_1THING_2SECTOR;
-			else if (S_CMPNOCASE(str, "ex_1thing_3sector")) this->tagged = AS_TT_1THING_3SECTOR;
-			else if (S_CMPNOCASE(str, "ex_1thing_2thing")) this->tagged = AS_TT_1THING_2THING;
-			else if (S_CMPNOCASE(str, "ex_1thing_4thing")) this->tagged = AS_TT_1THING_4THING;
-			else if (S_CMPNOCASE(str, "ex_1thing_2thing_3thing")) this->tagged = AS_TT_1THING_2THING_3THING;
-			else if (S_CMPNOCASE(str, "ex_1sector_2thing_3thing_5thing")) this->tagged = AS_TT_1SECTOR_2THING_3THING_5THING;
-			else if (S_CMPNOCASE(str, "ex_1lineid_2line")) this->tagged = AS_TT_1LINEID_2LINE;
-			else if (S_CMPNOCASE(str, "ex_4thing")) this->tagged = AS_TT_4THING;
-			else if (S_CMPNOCASE(str, "ex_5thing")) this->tagged = AS_TT_5THING;
-			else if (S_CMPNOCASE(str, "ex_1line_2sector")) this->tagged = AS_TT_1LINE_2SECTOR;
-			else if (S_CMPNOCASE(str, "ex_1sector_2sector")) this->tagged = AS_TT_1SECTOR_2SECTOR;
-			else if (S_CMPNOCASE(str, "ex_1sector_2sector_3sector_4_sector")) this->tagged = AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR;
-			else if (S_CMPNOCASE(str, "ex_sector_2is3_line")) this->tagged = AS_TT_SECTOR_2IS3_LINE;
-			else if (S_CMPNOCASE(str, "ex_1sector_2thing")) this->tagged = AS_TT_1SECTOR_2THING;
-			else
-				this->tagged = child->getIntValue();
-		}
+			this->tagged = GameConfiguration::parseTagged(child);
 
 		// Parse arg definition if it was one
 		if (arg >= 0)

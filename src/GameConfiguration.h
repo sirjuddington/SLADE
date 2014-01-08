@@ -287,6 +287,7 @@ public:
 	string			spacTriggerString(MapLine* line, int map_format);
 	wxArrayString	allSpacTriggers();
 	void			setLineSpacTrigger(unsigned trigger_index, MapLine* line);
+	static int		parseTagged(ParseTreeNode* tagged);
 
 	// UDMF properties
 	UDMFProperty*	getUDMFProperty(string name, int type);
