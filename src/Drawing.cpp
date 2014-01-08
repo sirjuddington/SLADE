@@ -395,24 +395,24 @@ void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double 
 }
 
 /* Drawing::drawArrow
- * Draws a line from [p1] to [p2] with an arrowhead at the [p2] end.
- * If [twoway] is true, an arrowhead is also drawn at the [p1] end
+ * Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
+ * If [twoway] is true, an arrowhead is also drawn at the [p2] end
  *******************************************************************/
-void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, double arrowhead_angle, double arrowhead_length)
+void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, double ah_angle, double ah_length)
 {
 	fpoint2_t a1l, a1r, a2l, a2r;
 	fpoint2_t vector = p1 - p2;
 	double angle = atan2(-vector.y, vector.x);
 	a1l = a1r = p1;
-	a1l.x += arrowhead_length * sin(angle - arrowhead_angle); a1l.y += arrowhead_length * cos(angle - arrowhead_angle);
-	a1r.x -= arrowhead_length * sin(angle + arrowhead_angle); a1r.y -= arrowhead_length * cos(angle + arrowhead_angle);
+	a1l.x += ah_length * sin(angle - ah_angle); a1l.y += ah_length * cos(angle - ah_angle);
+	a1r.x -= ah_length * sin(angle + ah_angle); a1r.y -= ah_length * cos(angle + ah_angle);
 	if (twoway)
 	{
 		vector = p2 - p1;
 		angle = atan2(-vector.y, vector.x);
 		a2l = a2r = p2;
-		a2l.x += arrowhead_length * sin(angle - arrowhead_angle); a2l.y += arrowhead_length * cos(angle - arrowhead_angle);
-		a2r.x -= arrowhead_length * sin(angle + arrowhead_angle); a2r.y -= arrowhead_length * cos(angle + arrowhead_angle);
+		a2l.x += ah_length * sin(angle - ah_angle); a2l.y += ah_length * cos(angle - ah_angle);
+		a2r.x -= ah_length * sin(angle + ah_angle); a2r.y -= ah_length * cos(angle + ah_angle);
 	}
 	color.set_gl();
 	glBegin(GL_LINES);
@@ -434,7 +434,6 @@ void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, d
 		glVertex2d(a2r.x, a2r.y);
 		glEnd();
 	}
-	color.set_gl();
 }
 
 /* Drawing::drawRect

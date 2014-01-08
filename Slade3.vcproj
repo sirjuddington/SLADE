@@ -2332,6 +2332,11 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dist\res\html\startpage.htm"
+				DeploymentContent="true"
+				>
+			</File>
+			<File
 				RelativePath=".\stuff.txt"
 				>
 			</File>

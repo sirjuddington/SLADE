@@ -5,8 +5,6 @@
 #include "ListenerAnnouncer.h"
 #include "Archive.h"
 
-#define MAX_RECENT_FILES 25
-
 class ArchiveManager : public Announcer, Listener
 {
 private:

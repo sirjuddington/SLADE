@@ -2730,14 +2730,26 @@ void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 	}
 }
 
-void SLADEMap::getThingsById(int id, vector<MapThing*>& list)
+void SLADEMap::getThingsById(int id, vector<MapThing*>& list, unsigned start, int type)
 {
 	// Find things with matching id
-	for (unsigned a = 0; a < things.size(); a++)
+	for (unsigned a = start; a < things.size(); a++)
 	{
-		if (things[a]->intProperty("id") == id)
+		if (things[a]->intProperty("id") == id && (type == 0 || things[a]->type == type))
 			list.push_back(things[a]);
 	}
+}
+
+MapThing* SLADEMap::getFirstThingWithId(int id)
+{
+	// Find things with matching id, but ignore dragons, we don't want them!
+	for (unsigned a = 0; a < things.size(); a++)
+	{
+		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		if (things[a]->intProperty("id") == id && !(tt->getFlags() & THING_DRAGON))
+			return things[a];
+	}
+	return NULL;
 }
 
 void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list)
@@ -2756,6 +2768,41 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 	}
 }
 
+WX_DECLARE_HASH_MAP(int, int, wxIntegerHash, wxIntegerEqual, UsedValuesMap);
+void SLADEMap::getDragonTargets(MapThing* first, vector<MapThing*>& list)
+{
+	UsedValuesMap used;
+	list.clear();
+	list.push_back(first);
+	unsigned i = 0;
+	while (i < list.size())
+	{
+		string prop = "arg_";
+		for (int a = 0; a < 5; ++a)
+		{
+			prop[3] = ('0' + a);
+			int val = list[i]->intProperty(prop);
+			if (val && used[val] == 0)
+			{
+				used[val] = 1;
+				getThingsById(val, list);
+			}
+		}
+		++i;
+	}
+}
+
+void SLADEMap::getPathedThings(vector<MapThing*>& list)
+{
+	// Find things that need to be pathed
+	for (unsigned a = 0; a < things.size(); a++)
+	{
+		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		if (tt->getFlags() & THING_PATHED|THING_DRAGON)
+			list.push_back(things[a]);
+	}
+}
+
 void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
 {
 	// Find lines with matching id
@@ -2766,15 +2813,16 @@ void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
 	}
 }
 
-void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list)
+void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype)
 {
 	// Find things with special affecting matching id
-	int needs_tag, tag, arg2, arg3, arg4, arg5;
+	int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		if (things[a]->intProperty("special"))
+		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		if (tt->needsTag() || (things[a]->intProperty("special") && !(tt->getFlags() & THING_SCRIPT)))
 		{
-			needs_tag = theGameConfiguration->actionSpecial(things[a]->intProperty("special"))->needsTag();
+			needs_tag = tt->needsTag() ? tt->needsTag() : theGameConfiguration->actionSpecial(things[a]->intProperty("special"))->needsTag();
 			tag = things[a]->intProperty("arg0");
 			bool fits = false;
 			switch (needs_tag)
@@ -2855,6 +2903,13 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list)
 				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
 			default:
+				// Kind of a hack here. Patrol points and interpolation points only tag
+				// certain thing types with the same TID as themselves. Fortunately,
+				// the thing types in question are in the 9000 range, and the TagTypes
+				// enum is quite unlikely to reach that far. :p
+				tid = things[a]->intProperty("id");
+				ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+				fits = ((needs_tag == ttype) && (IDEQ(tid)) && (tt->needsTag() == needs_tag));
 				break;
 			}
 			if (fits) list.push_back(things[a]);

@@ -2,6 +2,7 @@
 #include "Main.h"
 #include "ThingType.h"
 #include "Parser.h"
+#include "GameConfiguration.h"
 
 ThingType::ThingType(string name)
 {
@@ -20,6 +21,10 @@ ThingType::ThingType(string name)
 	this->decorate = false;
 	this->solid = false;
 	this->zeth = -1;
+	this->nexttype = 0;
+	this->nextargs = 0;
+	this->flags = 0;
+	this->tagged = 0;
 
 	// Init args
 	args[0].name = "Arg1";
@@ -53,6 +58,10 @@ void ThingType::copy(ThingType* copy)
 	this->decoration = copy->decoration;
 	this->solid = copy->solid;
 	this->zeth = copy->zeth;
+	this->nexttype = copy->nexttype;
+	this->nextargs = copy->nextargs;
+	this->flags = copy->flags;
+	this->tagged = copy->tagged;
 
 	// Copy args
 	for (unsigned a = 0; a < 5; a++)
@@ -104,6 +113,10 @@ void ThingType::reset()
 	this->decoration = false;
 	this->solid = false;
 	this->zeth = -1;
+	this->nexttype = 0;
+	this->nextargs = 0;
+	this->flags = 0;
+	this->tagged = 0;
 
 	// Reset args
 	for (unsigned a = 0; a < 5; a++)
@@ -218,6 +231,27 @@ void ThingType::parse(ParseTreeNode* node)
 		else if (S_CMPNOCASE(name, "zeth"))
 			this->zeth = child->getIntValue();
 
+		// Pathed things stuff
+		else if (S_CMPNOCASE(name, "nexttype"))
+		{
+			this->nexttype = child->getIntValue();
+			this->flags |= THING_PATHED;
+		}
+		else if (S_CMPNOCASE(name, "nextargs"))
+		{
+			this->nextargs = child->getIntValue();
+			this->flags |= THING_PATHED;
+		}
+
+		// Hexen's critters are weird
+		else if (S_CMPNOCASE(name, "dragon"))
+			this->flags |= THING_DRAGON;
+		else if (S_CMPNOCASE(name, "script"))
+			this->flags |= THING_SCRIPT;
+
+		// Some things tag other things directly
+		else if (S_CMPNOCASE(name, "tagged"))
+			this->tagged = GameConfiguration::parseTagged(child);
 
 		// Parse arg definition if it was one
 		if (arg >= 0)

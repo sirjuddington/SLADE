@@ -199,11 +199,14 @@ public:
 	bool				linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
 
 	// Tags/Ids
+	MapThing* getFirstThingWithId(int id);
 	void	getSectorsByTag(int tag, vector<MapSector*>& list);
-	void	getThingsById(int id, vector<MapThing*>& list);
+	void	getThingsById(int id, vector<MapThing*>& list, unsigned start = 0, int type = 0);
 	void	getLinesById(int id, vector<MapLine*>& list);
 	void	getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list);
-	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list);
+	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype = 0);
+	void	getPathedThings(vector<MapThing*>& list);
+	void	getDragonTargets(MapThing* first, vector<MapThing*>& list);
 	void	getTaggingLinesById(int id, int type, vector<MapLine*>& list);
 	int		findUnusedSectorTag();
 	int		findUnusedThingId();
