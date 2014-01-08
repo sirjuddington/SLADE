@@ -2837,7 +2837,7 @@ void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
 	}
 }
 
-void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list)
+void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype)
 {
 	// Find things with special affecting matching id
 	int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
@@ -2933,8 +2933,7 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list)
 				// enum is quite unlikely to reach that far. :p
 				tid = things[a]->intProperty("id");
 				ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
-				fits = ((tt->needsTag() == needs_tag) && (IDEQ(tid)));
-				DPrintf("tid %d, type %d, needstag %d, id %d, fits %s", tid, things[a]->getType(), needs_tag, id, fits ? "true":"false");
+				fits = ((needs_tag == ttype) && (IDEQ(tid)) && (tt->needsTag() == needs_tag));
 				break;
 			}
 			if (fits) list.push_back(things[a]);

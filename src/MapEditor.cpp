@@ -567,7 +567,7 @@ void MapEditor::updateTagged()
 	if (hilight_item >= 0)
 	{
 		// Gather affecting objects
-		int type, tag = 0;
+		int type, tag = 0, ttype = 0;
 		if (edit_mode == MODE_LINES)
 		{
 			type = SLADEMap::LINEDEFS;
@@ -577,6 +577,7 @@ void MapEditor::updateTagged()
 		{
 			type = SLADEMap::THINGS;
 			tag = map.getThing(hilight_item)->intProperty("id");
+			ttype = map.getThing(hilight_item)->getType();
 		}
 		else if (edit_mode == MODE_SECTORS)
 		{
@@ -586,7 +587,7 @@ void MapEditor::updateTagged()
 		if (tag)
 		{
 			map.getTaggingLinesById(tag, type, tagging_lines);
-			map.getTaggingThingsById(tag, type, tagging_things);
+			map.getTaggingThingsById(tag, type, tagging_things, ttype);
 		}
 
 		// Gather affected objects
