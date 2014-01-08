@@ -2742,10 +2742,11 @@ void SLADEMap::getThingsById(int id, vector<MapThing*>& list, unsigned start, in
 
 MapThing* SLADEMap::getFirstThingWithId(int id)
 {
-	// Find things with matching id
+	// Find things with matching id, but ignore dragons, we don't want them!
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		if (things[a]->intProperty("id") == id)
+		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		if (things[a]->intProperty("id") == id && !(tt->getFlags() & THING_DRAGON))
 			return things[a];
 	}
 	return NULL;
@@ -2771,59 +2772,34 @@ WX_DECLARE_HASH_MAP(int, int, wxIntegerHash, wxIntegerEqual, UsedValuesMap);
 void SLADEMap::getDragonTargets(MapThing* first, vector<MapThing*>& list)
 {
 	UsedValuesMap used;
-	vector<MapThing*> things;
-	things.clear();
-	things.push_back(first);
-	vector<MapThing*>::iterator thing = things.begin();
-	while (thing < things.end())
+	list.clear();
+	list.push_back(first);
+	unsigned i = 0;
+	while (i < list.size())
 	{
 		string prop = "arg_";
-		for (int i = 0; i < 5; ++i)
+		for (int a = 0; a < 5; ++a)
 		{
-			prop[3] = ('0' + i);
-			int val = (*thing)->intProperty(prop);
+			prop[3] = ('0' + a);
+			int val = list[i]->intProperty(prop);
 			if (val && used[val] == 0)
 			{
 				used[val] = 1;
-				getThingsById(val, things);
+				getThingsById(val, list);
 			}
 		}
-		thing++;
+		++i;
 	}
 }
 
 void SLADEMap::getPathedThings(vector<MapThing*>& list)
 {
 	// Find things that need to be pathed
-	/* They include:
-		- Interpolation points (9070; next TID = args3+(args4*256), 
-		path to other interpolation points, tag interpolation specials (9075)
-		- Patrol points (9024; next TID = args0), path to other patrol points,
-		tag patrol specials (9047)
-		- Actor mover (9074; next TID = args0+(args1*256), path to 
-		interpolation points, tag args4
-		- Moving camera (9072; next TID = args0+(args1*256), path to
-		interpolation points, tag args3
-		- Path follower (9071; next TID = args0+(args1*256), path to
-		interpolation points
-		- Dragon (254; next TID = id), path to thing with same TID,
-		then recursively to every thing with TID = any arg.
-	*/
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
-		if (tt->getFlags() & THING_PATHED)
+		if (tt->getFlags() & THING_PATHED|THING_DRAGON)
 			list.push_back(things[a]);
-		if (tt->getFlags() & THING_DRAGON && things[a]->intProperty("id") > 0)
-		{
-			MapThing* thing = getFirstThingWithId(things[a]->intProperty("id"));
-			if (thing != NULL)
-			{
-				tt = theGameConfiguration->thingType(thing->getType());
-				if (!(tt->getFlags() & THING_PATHED))
-					list.push_back(thing);
-			}
-		}
 	}
 }
 

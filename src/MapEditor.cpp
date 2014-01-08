@@ -356,6 +356,7 @@ bool MapEditor::openMap(Archive::mapdesc_t map)
 	link_3d_offset = true;
 
 	updateStatusText();
+	updateThingLists();
 
 	return true;
 }
@@ -549,6 +550,12 @@ MapObject* MapEditor::getHilightedObject()
 
 #pragma region TAGGING
 
+void MapEditor::updateThingLists()
+{
+	pathed_things.clear();
+	map.getPathedThings(pathed_things);
+}
+
 void MapEditor::updateTagged()
 {
 	// Clear tagged lists
@@ -558,10 +565,6 @@ void MapEditor::updateTagged()
 
 	tagging_lines.clear();
 	tagging_things.clear();
-
-	// FIXME: should be done elsewhere
-	pathed_things.clear();
-	map.getPathedThings(pathed_things);
 
 	// Special
 	if (hilight_item >= 0)
@@ -4296,6 +4299,7 @@ void MapEditor::endUndoRecord(bool success)
 		// End recording
 		manager->endRecord(success && (modified || created_deleted));
 	}
+	updateThingLists();
 }
 
 void MapEditor::recordPropertyChangeUndoStep(MapObject* object)
@@ -4323,6 +4327,7 @@ void MapEditor::doUndo()
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
 	}
+	updateThingLists();
 }
 
 void MapEditor::doRedo()
@@ -4344,6 +4349,7 @@ void MapEditor::doRedo()
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
 	}
+	updateThingLists();
 }
 
 #pragma endregion

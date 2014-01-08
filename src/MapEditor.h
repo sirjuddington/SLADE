@@ -281,6 +281,7 @@ public:
 	bool	handleKeyBind(string key, fpoint2_t position);
 	void	updateDisplay();
 	void	updateStatusText();
+	void	updateThingLists();
 };
 
 #endif//__MAP_EDITOR_H__
