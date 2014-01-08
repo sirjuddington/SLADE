@@ -69,7 +69,7 @@ MapRenderer2D::~MapRenderer2D()
 	if (list_lines > 0)			glDeleteLists(list_lines, 1);
 }
 
-bool MapRenderer2D::setupVertexRendering(float size_scale)
+bool MapRenderer2D::setupVertexRendering(float size_scale, bool overlay)
 {
 	// Setup rendering properties
 	float vs = vertex_size*size_scale;
@@ -83,8 +83,16 @@ bool MapRenderer2D::setupVertexRendering(float size_scale)
 	{
 		// Get appropriate vertex texture
 		GLTexture* tex;
-		if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex_r");
-		else tex = theMapEditor->textureManager().getEditorImage("vertex_s");
+		if (overlay)
+		{
+			if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex/hilight_r");
+			else tex = theMapEditor->textureManager().getEditorImage("vertex/hilight_s");
+		}
+		else
+		{
+			if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex/round");
+			else tex = theMapEditor->textureManager().getEditorImage("vertex/square");
+		}
 
 		// If it was found, enable point sprites
 		if (tex)
@@ -202,7 +210,7 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
 	col.set_gl();
 
 	// Setup rendering properties
-	bool point = setupVertexRendering(1.7f);
+	bool point = setupVertexRendering(1.8f + (0.6f * fade), true);
 
 	// Draw vertex
 	glBegin(GL_POINTS);
@@ -229,11 +237,11 @@ void MapRenderer2D::renderVertexSelection(vector<int>& selection, float fade)
 
 	// Set selection colour
 	rgba_t col = ColourConfiguration::getColour("map_selection");
-	col.a *= fade;
+	col.a = 255;//*= fade;
 	col.set_gl();
 
 	// Setup rendering properties
-	bool point = setupVertexRendering(1.5f);
+	bool point = setupVertexRendering(1.8f, true);
 
 	// Draw selected vertices
 	glBegin(GL_POINTS);

@@ -394,6 +394,10 @@ void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double 
 	glEnd();
 }
 
+/* Drawing::drawArrow
+ * Draws a line from [p1] to [p2] with an arrowhead at the [p2] end.
+ * If [twoway] is true, an arrowhead is also drawn at the [p1] end
+ *******************************************************************/
 void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, double arrowhead_angle, double arrowhead_length)
 {
 	fpoint2_t a1l, a1r, a2l, a2r;

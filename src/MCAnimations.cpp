@@ -225,6 +225,9 @@ MCAVertexSelection::MCAVertexSelection(long start, vector<MapVertex*>& verts, do
 		if (!verts[a]) continue;
 		vertices.push_back(fpoint2_t(verts[a]->xPos(), verts[a]->yPos()));
 	}
+
+	if (!select)
+		this->size = size * 1.8f;
 }
 
 MCAVertexSelection::~MCAVertexSelection()
@@ -262,8 +265,19 @@ void MCAVertexSelection::draw()
 	{
 		// Get appropriate vertex texture
 		GLTexture* tex;
-		if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex_r");
-		else tex = theMapEditor->textureManager().getEditorImage("vertex_s");
+		//if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex_r");
+		//else tex = theMapEditor->textureManager().getEditorImage("vertex_s");
+
+		if (select)
+		{
+			if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex/round");
+			else tex = theMapEditor->textureManager().getEditorImage("vertex/square");
+		}
+		else
+		{
+			if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex/hilight_r");
+			else tex = theMapEditor->textureManager().getEditorImage("vertex/hilight_s");
+		}
 
 		// If it was found, enable point sprites
 		if (tex)

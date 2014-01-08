@@ -79,7 +79,7 @@ entry_types
 		format = img_jpeg;
 		export_ext = "jpg";
 		editor = gfx;
-		extra = image;
+		extra = image, patch;
 		image_format = "image";
 	}
 

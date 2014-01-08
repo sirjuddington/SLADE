@@ -68,7 +68,7 @@ public:
 	~MapRenderer2D();
 
 	// Vertices
-	bool	setupVertexRendering(float size_scale);
+	bool	setupVertexRendering(float size_scale, bool overlay = false);
 	void	renderVertices(float alpha = 1.0f);
 	void	renderVerticesVBO();
 	void	renderVerticesImmediate();
