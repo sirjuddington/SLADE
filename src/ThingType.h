@@ -4,6 +4,13 @@
 
 #include "Args.h"
 
+enum ThingFlags
+{
+	THING_PATHED	= 1<<0,	// Things that work in paths (ZDoom's interpolation points and patrol points)
+	THING_DRAGON	= 1<<1,	// Dragon makes its own paths, without using special things
+	THING_SCRIPT	= 1<<2,	// Special is actually a script number (like Hexen's Heresiarch)
+};
+
 class ParseTreeNode;
 class ThingType
 {
@@ -29,6 +36,10 @@ private:
 	arg_t	args[5];
 	bool	decorate;
 	bool	solid;
+	int		nexttype;
+	int		nextargs;
+	int		flags;
+	int		tagged;
 
 public:
 	ThingType(string name = "Unknown");
@@ -50,6 +61,10 @@ public:
 	bool	isDecoration() { return decoration; }
 	bool	isSolid() { return solid; }
 	int		getZeth() { return zeth; }
+	int		getFlags() { return flags; }
+	int		getNextType() { return nexttype; }
+	int		getNextArgs() { return nextargs; }
+	int		needsTag() { return tagged; }
 	string	getSprite() { return sprite; }
 	string	getIcon() { return icon; }
 	string	getTranslation() { return translation; }

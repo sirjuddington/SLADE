@@ -5,7 +5,7 @@
 #include "Main.h"
 #include "ActionSpecial.h"
 #include "Parser.h"
-
+#include "GameConfiguration.h"
 
 /*******************************************************************
  * ACTIONSPECIAL CLASS FUNCTIONS

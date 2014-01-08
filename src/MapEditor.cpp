@@ -594,7 +594,7 @@ void MapEditor::updateTagged()
 		{
 			MapSector* back = NULL;
 			MapSector* front = NULL;
-			int needs_tag, tag, arg2, arg3, arg4, arg5;
+			int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
 			// Line specials have front and possibly back sectors
 			if (edit_mode == MODE_LINES)
 			{
@@ -607,18 +607,27 @@ void MapEditor::updateTagged()
 				arg3 = line->intProperty("arg2");
 				arg4 = line->intProperty("arg3");
 				arg5 = line->intProperty("arg4");
+				tid = 0;
 
 				// Hexen and UDMF things can have specials too
 			}
 			else /* edit_mode == MODE_THINGS */
 			{
 				MapThing* thing = map.getThing(hilight_item);
-				needs_tag = theGameConfiguration->actionSpecial(thing->intProperty("special"))->needsTag();
-				tag = thing->intProperty("arg0");
-				arg2 = thing->intProperty("arg1");
-				arg3 = thing->intProperty("arg2");
-				arg4 = thing->intProperty("arg3");
-				arg5 = thing->intProperty("arg4");
+				if (theGameConfiguration->thingType(thing->getType())->getFlags() & THING_SCRIPT)
+					needs_tag = AS_TT_NO;
+				else
+				{
+					needs_tag = theGameConfiguration->thingType(thing->getType())->needsTag();
+					if (!needs_tag)
+						needs_tag = theGameConfiguration->actionSpecial(thing->intProperty("special"))->needsTag();
+					tag = thing->intProperty("arg0");
+					arg2 = thing->intProperty("arg1");
+					arg3 = thing->intProperty("arg2");
+					arg4 = thing->intProperty("arg3");
+					arg5 = thing->intProperty("arg4");
+					tid = thing->intProperty("id");
+				}
 			}
 
 			// Sector tag
@@ -669,31 +678,31 @@ void MapEditor::updateTagged()
 						map.getThingsByIdInSectorTag(thingtag, sectag, tagged_things);
 				}	break;
 				case AS_TT_1THING_2THING_3THING:
-					map.getThingsById(arg3, tagged_things);
+					if (arg3) map.getThingsById(arg3, tagged_things);
 				case AS_TT_1THING_2THING:
-					map.getThingsById(arg2, tagged_things);
+					if (arg2) map.getThingsById(arg2, tagged_things);
 				case AS_TT_1THING_4THING:
-					map.getThingsById(tag, tagged_things);
+					if (tag ) map.getThingsById(tag, tagged_things);
 				case AS_TT_4THING:
 					if (needs_tag == AS_TT_1THING_4THING || needs_tag == AS_TT_4THING)
-						map.getThingsById(arg4, tagged_things);
+						if (arg4) map.getThingsById(arg4, tagged_things);
 					break;
 				case AS_TT_5THING:
-					map.getThingsById(arg5, tagged_things);
+					if (arg5) map.getThingsById(arg5, tagged_things);
 					break;
 				case AS_TT_LINE_NEGATIVE:
-					if (tag) map.getLinesById(abs(tag), tagged_lines);
+					if (tag ) map.getLinesById(abs(tag), tagged_lines);
 					break;
 				case AS_TT_1LINEID_2LINE:
-					map.getLinesById(arg2, tagged_lines);
+					if (arg2) map.getLinesById(arg2, tagged_lines);
 					break;
 				case AS_TT_1LINE_2SECTOR:
-					map.getLinesById(tag, tagged_lines);
-					map.getSectorsByTag(arg2, tagged_sectors);
+					if (tag ) map.getLinesById(tag, tagged_lines);
+					if (arg2) map.getSectorsByTag(arg2, tagged_sectors);
 					break;
 				case AS_TT_1SECTOR_2THING_3THING_5THING:
 					if (arg5) map.getThingsById(arg5, tagged_things);
-					map.getThingsById(arg3, tagged_things);
+					if (arg3) map.getThingsById(arg3, tagged_things);
 				case AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR:
 					if (arg4) map.getSectorsByTag(arg4, tagged_sectors);
 					if (arg3) map.getSectorsByTag(arg3, tagged_sectors);
@@ -702,10 +711,16 @@ void MapEditor::updateTagged()
 					if (tag ) map.getSectorsByTag(tag , tagged_sectors);
 					break;
 				case AS_TT_SECTOR_2IS3_LINE:
-					if (arg2 == 3) map.getLinesById(tag, tagged_lines);
-					else map.getSectorsByTag(tag, tagged_sectors);
+					if (tag)
+					{
+						if (arg2 == 3) map.getLinesById(tag, tagged_lines);
+						else map.getSectorsByTag(tag, tagged_sectors);
+					}
 					break;
 				default:
+					// This is to handle interpolation specials and patrol specials
+					if (tid) map.getThingsById(tid, tagged_things, 0, needs_tag);
+					
 					break;
 				}
 			}

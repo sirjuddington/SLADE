@@ -206,6 +206,7 @@ public:
 	void	getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list);
 	void	getTaggingThingsById(int id, int type, vector<MapThing*>& list);
 	void	getPathedThings(vector<MapThing*>& list);
+	void	getDragonTargets(MapThing* first, vector<MapThing*>& list);
 	void	getTaggingLinesById(int id, int type, vector<MapLine*>& list);
 	int		findUnusedSectorTag();
 	int		findUnusedThingId();

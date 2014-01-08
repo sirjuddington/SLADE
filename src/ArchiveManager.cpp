@@ -862,7 +862,7 @@ void ArchiveManager::addRecentFile(string path)
 	recent_files.insert(recent_files.begin(), path);
 
 	// Keep it trimmed
-	while (recent_files.size() > max_recent_files)
+	while (recent_files.size() > (unsigned)max_recent_files)
 		recent_files.pop_back();
 
 	// Announce

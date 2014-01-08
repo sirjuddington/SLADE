@@ -1409,46 +1409,50 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 	for (unsigned a = 0; a < things.size(); ++a)
 	{
 		MapThing* thing = things[a];
+		ThingType* tt = theGameConfiguration->thingType(thing->getType());
 		int tid = -1, tid2 = -1;
-		switch (thing->getType())
+		int nexttype = tt->getNextType();
+		int nextargs = tt->getNextArgs();
+		if (nextargs)
 		{
-		case 9070:
-				tid = thing->intProperty("arg3") + 256 * thing->intProperty("arg4");
-		case 9071:
-		case 9072:
-		case 9074:
+			int pos = nextargs % 10;
+			string na = "arg_";
+			na[3] = ('0' + pos - 1);
+			tid = thing->intProperty(na);
+		}
+		if (nextargs >= 10)
+		{
+			int pos = nextargs / 10;
+			string na = "arg_";
+			na[3] = ('0' + pos - 1);
+			tid += (256 * thing->intProperty(na));
+		}
+		for (unsigned b = a + 1; b < things.size(); ++b)
+		{
+			MapThing* thing2 = things[b];
+			if (thing2->getType() == nexttype)
 			{
-				if (tid < 0) tid = thing->intProperty("arg0") + 256 * thing->intProperty("arg1");
-				for (unsigned b = a + 1; b < things.size(); ++b)
+				ThingType* tt2 = theGameConfiguration->thingType(thing2->getType());
+				nextargs = tt2->getNextArgs();
+				if (nextargs)
 				{
-					MapThing* thing2 = things[b];
-					if (thing2->getType() == 9070)
-					{
-						int tid2 = thing2->intProperty("arg3") + 256 * thing2->intProperty("arg4");
-						if (thing2->intProperty("id") == tid)
-							Drawing::drawArrow(thing2->midPoint(), thing->midPoint(), col, tid2 == thing->intProperty("id"));
-						else if (thing->intProperty("id") == tid2)
-							Drawing::drawArrow(thing->midPoint(), thing2->midPoint(), col);
-					}
+					int pos = nextargs % 10;
+					string na = "arg_";
+					na[3] = ('0' + pos - 1);
+					tid2 = thing2->intProperty(na);
 				}
-			}
-			break;
-		case 9024:
-			{
-				int tid = thing->intProperty("arg0");
-				for (unsigned b = a + 1; b < things.size(); ++b)
+				if (nextargs >= 10)
 				{
-					MapThing* thing2 = things[b];
-					if (thing2->getType() == 9024 && thing2->intProperty("id") == tid)
-					{
-						Drawing::drawArrow(thing2->midPoint(), thing->midPoint(), col, 
-							thing2->intProperty("arg0") == thing->intProperty("id"));
-					}
+					int pos = nextargs / 10;
+					string na = "arg_";
+					na[3] = ('0' + pos - 1);
+					tid2 += (256 * thing2->intProperty(na));
 				}
+				if (thing2->intProperty("id") == tid)
+					Drawing::drawArrow(thing2->midPoint(), thing->midPoint(), col, tid2 == thing->intProperty("id"));
+				else if (thing->intProperty("id") == tid2)
+					Drawing::drawArrow(thing->midPoint(), thing2->midPoint(), col);
 			}
-			break;
-		default:
-			break;
 		}
 	}
 }

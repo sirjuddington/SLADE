@@ -2767,6 +2767,31 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 	}
 }
 
+WX_DECLARE_HASH_MAP(int, int, wxIntegerHash, wxIntegerEqual, UsedValuesMap);
+void SLADEMap::getDragonTargets(MapThing* first, vector<MapThing*>& list)
+{
+	UsedValuesMap used;
+	vector<MapThing*> things;
+	things.clear();
+	things.push_back(first);
+	vector<MapThing*>::iterator thing = things.begin();
+	while (thing < things.end())
+	{
+		string prop = "arg_";
+		for (int i = 0; i < 5; ++i)
+		{
+			prop[3] = ('0' + i);
+			int val = (*thing)->intProperty(prop);
+			if (val && used[val] == 0)
+			{
+				used[val] = 1;
+				getThingsById(val, things);
+			}
+		}
+		thing++;
+	}
+}
+
 void SLADEMap::getPathedThings(vector<MapThing*>& list)
 {
 	// Find things that need to be pathed
@@ -2786,11 +2811,18 @@ void SLADEMap::getPathedThings(vector<MapThing*>& list)
 	*/
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		if ((things[a]->type >= 9070 && things[a]->type <= 9075 && things[a]->type != 9073) || things[a]->type == 9024)
+		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		if (tt->getFlags() & THING_PATHED)
 			list.push_back(things[a]);
-		if (things[a]->type == 254)
+		if (tt->getFlags() & THING_DRAGON && things[a]->intProperty("id") > 0)
 		{
-			list.push_back(things[a]);
+			MapThing* thing = getFirstThingWithId(things[a]->intProperty("id"));
+			if (thing != NULL)
+			{
+				tt = theGameConfiguration->thingType(thing->getType());
+				if (!(tt->getFlags() & THING_PATHED))
+					list.push_back(thing);
+			}
 		}
 	}
 }
@@ -2808,12 +2840,13 @@ void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
 void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list)
 {
 	// Find things with special affecting matching id
-	int needs_tag, tag, arg2, arg3, arg4, arg5;
+	int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		if (things[a]->intProperty("special"))
+		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+		if (tt->needsTag() || (things[a]->intProperty("special") && !(tt->getFlags() & THING_SCRIPT)))
 		{
-			needs_tag = theGameConfiguration->actionSpecial(things[a]->intProperty("special"))->needsTag();
+			needs_tag = tt->needsTag() ? tt->needsTag() : theGameConfiguration->actionSpecial(things[a]->intProperty("special"))->needsTag();
 			tag = things[a]->intProperty("arg0");
 			bool fits = false;
 			switch (needs_tag)
@@ -2894,6 +2927,14 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list)
 				fits = (type == SECTORS ? (IDEQ(tag)) : (IDEQ(arg2) && type == THINGS));
 				break;
 			default:
+				// Kind of a hack here. Patrol points and interpolation points only tag
+				// certain thing types with the same TID as themselves. Fortunately,
+				// the thing types in question are in the 9000 range, and the TagTypes
+				// enum is quite unlikely to reach that far. :p
+				tid = things[a]->intProperty("id");
+				ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
+				fits = ((tt->needsTag() == needs_tag) && (IDEQ(tid)));
+				DPrintf("tid %d, type %d, needstag %d, id %d, fits %s", tid, things[a]->getType(), needs_tag, id, fits ? "true":"false");
 				break;
 			}
 			if (fits) list.push_back(things[a]);

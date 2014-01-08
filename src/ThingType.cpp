@@ -2,6 +2,7 @@
 #include "Main.h"
 #include "ThingType.h"
 #include "Parser.h"
+#include "GameConfiguration.h"
 
 ThingType::ThingType(string name)
 {
@@ -20,6 +21,10 @@ ThingType::ThingType(string name)
 	this->decorate = false;
 	this->solid = false;
 	this->zeth = -1;
+	this->nexttype = 0;
+	this->nextargs = 0;
+	this->flags = 0;
+	this->tagged = 0;
 
 	// Init args
 	args[0].name = "Arg1";
@@ -53,6 +58,10 @@ void ThingType::copy(ThingType* copy)
 	this->decoration = copy->decoration;
 	this->solid = copy->solid;
 	this->zeth = copy->zeth;
+	this->nexttype = copy->nexttype;
+	this->nextargs = copy->nextargs;
+	this->flags = copy->flags;
+	this->tagged = copy->tagged;
 
 	// Copy args
 	for (unsigned a = 0; a < 5; a++)
@@ -104,6 +113,10 @@ void ThingType::reset()
 	this->decoration = false;
 	this->solid = false;
 	this->zeth = -1;
+	this->nexttype = 0;
+	this->nextargs = 0;
+	this->flags = 0;
+	this->tagged = 0;
 
 	// Reset args
 	for (unsigned a = 0; a < 5; a++)
@@ -218,6 +231,55 @@ void ThingType::parse(ParseTreeNode* node)
 		else if (S_CMPNOCASE(name, "zeth"))
 			this->zeth = child->getIntValue();
 
+		// Pathed things stuff
+		else if (S_CMPNOCASE(name, "nexttype"))
+		{
+			this->nexttype = child->getIntValue();
+			this->flags |= THING_PATHED;
+		}
+		else if (S_CMPNOCASE(name, "nextargs"))
+		{
+			this->nextargs = child->getIntValue();
+			this->flags |= THING_PATHED;
+		}
+
+		// Hexen's critters are weird
+		else if (S_CMPNOCASE(name, "dragon"))
+			this->flags |= THING_DRAGON;
+		else if (S_CMPNOCASE(name, "script"))
+			this->flags |= THING_SCRIPT;
+
+		// Some things tag other things directly
+		else if (S_CMPNOCASE(name, "tagged"))
+		{
+			string str = child->getStringValue();
+			if (S_CMPNOCASE(str, "no")) this->tagged = AS_TT_NO;
+			else if (S_CMPNOCASE(str, "sector")) this->tagged = AS_TT_SECTOR;
+			else if (S_CMPNOCASE(str, "line")) this->tagged = AS_TT_LINE;
+			else if (S_CMPNOCASE(str, "lineid")) this->tagged = AS_TT_LINEID;
+			else if (S_CMPNOCASE(str, "lineid_hi5")) this->tagged = AS_TT_LINEID_HI5;
+			else if (S_CMPNOCASE(str, "thing")) this->tagged = AS_TT_THING;
+			else if (S_CMPNOCASE(str, "sector_back")) this->tagged = AS_TT_SECTOR_BACK;
+			else if (S_CMPNOCASE(str, "sector_or_back")) this->tagged = AS_TT_SECTOR_OR_BACK;
+			else if (S_CMPNOCASE(str, "sector_and_back")) this->tagged = AS_TT_SECTOR_AND_BACK;
+			else if (S_CMPNOCASE(str, "line_negative")) this->tagged = AS_TT_LINE_NEGATIVE;
+			else if (S_CMPNOCASE(str, "ex_1thing_2sector")) this->tagged = AS_TT_1THING_2SECTOR;
+			else if (S_CMPNOCASE(str, "ex_1thing_3sector")) this->tagged = AS_TT_1THING_3SECTOR;
+			else if (S_CMPNOCASE(str, "ex_1thing_2thing")) this->tagged = AS_TT_1THING_2THING;
+			else if (S_CMPNOCASE(str, "ex_1thing_4thing")) this->tagged = AS_TT_1THING_4THING;
+			else if (S_CMPNOCASE(str, "ex_1thing_2thing_3thing")) this->tagged = AS_TT_1THING_2THING_3THING;
+			else if (S_CMPNOCASE(str, "ex_1sector_2thing_3thing_5thing")) this->tagged = AS_TT_1SECTOR_2THING_3THING_5THING;
+			else if (S_CMPNOCASE(str, "ex_1lineid_2line")) this->tagged = AS_TT_1LINEID_2LINE;
+			else if (S_CMPNOCASE(str, "ex_4thing")) this->tagged = AS_TT_4THING;
+			else if (S_CMPNOCASE(str, "ex_5thing")) this->tagged = AS_TT_5THING;
+			else if (S_CMPNOCASE(str, "ex_1line_2sector")) this->tagged = AS_TT_1LINE_2SECTOR;
+			else if (S_CMPNOCASE(str, "ex_1sector_2sector")) this->tagged = AS_TT_1SECTOR_2SECTOR;
+			else if (S_CMPNOCASE(str, "ex_1sector_2sector_3sector_4_sector")) this->tagged = AS_TT_1SECTOR_2SECTOR_3SECTOR_4SECTOR;
+			else if (S_CMPNOCASE(str, "ex_sector_2is3_line")) this->tagged = AS_TT_SECTOR_2IS3_LINE;
+			else if (S_CMPNOCASE(str, "ex_1sector_2thing")) this->tagged = AS_TT_1SECTOR_2THING;
+			else
+				this->tagged = child->getIntValue();
+		}
 
 		// Parse arg definition if it was one
 		if (arg >= 0)
