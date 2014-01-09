@@ -62,6 +62,11 @@ private:
 	// The last time the map geometry was updated
 	long	geometry_updated;
 
+	// Usage counts
+	std::map<string, int>	usage_tex;
+	std::map<string, int>	usage_flat;
+	std::map<int, int>		usage_thing_type;
+
 	// Doom format
 	bool	addVertex(doomvertex_t& v);
 	bool	addSide(doomside_t& s);
@@ -257,6 +262,17 @@ public:
 	// Cleanup/Extra
 	void	rebuildConnectedLines();
 	void	rebuildConnectedSides();
+
+	// Usage counts
+	void	clearTexUsage() { usage_tex.clear(); }
+	void	clearFlatUsage() { usage_flat.clear(); }
+	void	clearThingTypeUsage() { usage_thing_type.clear(); }
+	void	updateTexUsage(string tex, int adjust);
+	void	updateFlatUsage(string flat, int adjust);
+	void	updateThingTypeUsage(int type, int adjust);
+	int		texUsageCount(string tex);
+	int		flatUsageCount(string tex);
+	int		thingTypeUsageCount(int type);
 };
 
 #endif //__SLADEMAP_H__

@@ -397,6 +397,11 @@ bool SLADEMap::addSide(doomside_t& s)
 	ns->offset_x = s.x_offset;
 	ns->offset_y = s.y_offset;
 
+	// Update texture counts
+	usage_tex[ns->tex_upper] += 1;
+	usage_tex[ns->tex_middle] += 1;
+	usage_tex[ns->tex_lower] += 1;
+
 	// Add side
 	sides.push_back(ns);
 	return true;
@@ -413,6 +418,11 @@ bool SLADEMap::addSide(doom64side_t& s)
 	ns->tex_middle = theResourceManager->getTextureName(s.tex_middle);
 	ns->offset_x = s.x_offset;
 	ns->offset_y = s.y_offset;
+
+	// Update texture counts
+	usage_tex[ns->tex_upper] += 1;
+	usage_tex[ns->tex_middle] += 1;
+	usage_tex[ns->tex_lower] += 1;
 
 	// Add side
 	sides.push_back(ns);
@@ -552,6 +562,10 @@ bool SLADEMap::addSector(doomsector_t& s)
 	ns->special = s.special;
 	ns->tag = s.tag;
 
+	// Update texture counts
+	usage_flat[ns->f_tex] += 1;
+	usage_flat[ns->c_tex] += 1;
+
 	// Add sector
 	sectors.push_back(ns);
 	return true;
@@ -576,6 +590,10 @@ bool SLADEMap::addSector(doom64sector_t& s)
 	ns->properties["color_ceiling"] = s.color[2];
 	ns->properties["color_upper"] = s.color[3];
 	ns->properties["color_lower"] = s.color[4];
+
+	// Update texture counts
+	usage_flat[ns->f_tex] += 1;
+	usage_flat[ns->c_tex] += 1;
 
 	// Add sector
 	sectors.push_back(ns);
@@ -1269,6 +1287,11 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 		//wxLogMessage("Property %s type %s (%s)", CHR(prop->getName()), CHR(prop->getValue().typeString()), CHR(prop->getValue().getStringValue()));
 	}
 
+	// Update texture counts
+	usage_tex[ns->tex_upper] += 1;
+	usage_tex[ns->tex_middle] += 1;
+	usage_tex[ns->tex_lower] += 1;
+
 	// Add side to map
 	sides.push_back(ns);
 
@@ -1338,6 +1361,8 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 
 	// Create new sector
 	MapSector* ns = new MapSector(prop_ftex->getStringValue(), prop_ctex->getStringValue(), this);
+	usage_flat[ns->f_tex] += 1;
+	usage_flat[ns->c_tex] += 1;
 
 	// Set defaults
 	ns->f_height = 0;
@@ -2198,6 +2223,11 @@ void SLADEMap::clearMap()
 
 	// Object id 0 is always null
 	all_objects.push_back(mobj_holder_t(NULL, false));
+
+	// Clear usage counts
+	usage_flat.clear();
+	usage_tex.clear();
+	usage_thing_type.clear();
 }
 
 bool SLADEMap::removeVertex(MapVertex* vertex)
@@ -2319,6 +2349,11 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 		}
 	}
 
+	// Update texture usage
+	usage_tex[sides[index]->tex_lower] -= 1;
+	usage_tex[sides[index]->tex_middle] -= 1;
+	usage_tex[sides[index]->tex_upper] -= 1;
+
 	// Remove the side
 	removeMapObject(sides[index]);
 	sides[index] = sides.back();
@@ -2347,6 +2382,10 @@ bool SLADEMap::removeSector(unsigned index)
 	// Clear connected sides' sectors
 	//for (unsigned a = 0; a < sectors[index]->connected_sides.size(); a++)
 	//	sectors[index]->connected_sides[a]->sector = NULL;
+
+	// Update texture usage
+	usage_flat[sectors[index]->f_tex] -= 1;
+	usage_flat[sectors[index]->c_tex] -= 1;
 
 	// Remove the sector
 	removeMapObject(sectors[index]);
@@ -3415,6 +3454,7 @@ MapSide* SLADEMap::createSide(MapSector* sector)
 	side->tex_middle = "-";
 	side->tex_upper = "-";
 	side->tex_lower = "-";
+	usage_tex["-"] += 3;
 
 	// Add to sides
 	sides.push_back(side);
@@ -3552,6 +3592,11 @@ void SLADEMap::splitLine(unsigned line, unsigned vertex)
 		// Add side
 		s1->index = sides.size();
 		sides.push_back(s1);
+
+		// Update texture counts
+		usage_tex[s1->tex_upper] += 1;
+		usage_tex[s1->tex_middle] += 1;
+		usage_tex[s1->tex_lower] += 1;
 	}
 	if (l->side2)
 	{
@@ -3568,6 +3613,11 @@ void SLADEMap::splitLine(unsigned line, unsigned vertex)
 		// Add side
 		s2->index = sides.size();
 		sides.push_back(s2);
+
+		// Update texture counts
+		usage_tex[s2->tex_upper] += 1;
+		usage_tex[s2->tex_middle] += 1;
+		usage_tex[s2->tex_lower] += 1;
 	}
 
 	// Create and add new line
@@ -4291,4 +4341,34 @@ void SLADEMap::rebuildConnectedSides()
 		if (sides[a]->sector)
 			sides[a]->sector->connected_sides.push_back(sides[a]);
 	}
+}
+
+void SLADEMap::updateTexUsage(string tex, int adjust)
+{
+	usage_tex[tex] += adjust;
+}
+
+void SLADEMap::updateFlatUsage(string flat, int adjust)
+{
+	usage_flat[flat] += adjust;
+}
+
+void SLADEMap::updateThingTypeUsage(int type, int adjust)
+{
+	usage_thing_type[type] += adjust;
+}
+
+int SLADEMap::texUsageCount(string tex)
+{
+	return usage_tex[tex];
+}
+
+int SLADEMap::flatUsageCount(string tex)
+{
+	return usage_flat[tex];
+}
+
+int SLADEMap::thingTypeUsageCount(int type)
+{
+	return usage_thing_type[type];
 }

@@ -34,6 +34,14 @@ void MapSide::copy(MapObject* c)
 	if (c->getObjType() != MOBJ_SIDE)
 		return;
 
+	// Update texture counts (decrement previous)
+	if (parent_map)
+	{
+		parent_map->updateTexUsage(tex_lower, -1);
+		parent_map->updateTexUsage(tex_middle, -1);
+		parent_map->updateTexUsage(tex_upper, -1);
+	}
+
 	// Copy properties
 	MapSide* side = (MapSide*)c;
 	this->tex_lower = side->tex_lower;
@@ -41,6 +49,14 @@ void MapSide::copy(MapObject* c)
 	this->tex_upper = side->tex_upper;
 	this->offset_x = side->offset_x;
 	this->offset_y = side->offset_y;
+
+	// Update texture counts (increment new)
+	if (parent_map)
+	{
+		parent_map->updateTexUsage(tex_lower, 1);
+		parent_map->updateTexUsage(tex_middle, 1);
+		parent_map->updateTexUsage(tex_upper, 1);
+	}
 
 	MapObject::copy(c);
 }
@@ -109,11 +125,23 @@ void MapSide::setStringProperty(string key, string value)
 	setModified();
 
 	if (key == "texturetop")
+	{
+		if (parent_map) parent_map->updateTexUsage(tex_upper, -1);
 		tex_upper = value;
+		if (parent_map) parent_map->updateTexUsage(tex_upper, 1);
+	}
 	else if (key == "texturemiddle")
+	{
+		if (parent_map) parent_map->updateTexUsage(tex_middle, -1);
 		tex_middle = value;
+		if (parent_map) parent_map->updateTexUsage(tex_middle, 1);
+	}
 	else if (key == "texturebottom")
+	{
+		if (parent_map) parent_map->updateTexUsage(tex_lower, -1);
 		tex_lower = value;
+		if (parent_map) parent_map->updateTexUsage(tex_lower, 1);
+	}
 	else
 		MapObject::setStringProperty(key, value);
 }
@@ -156,10 +184,20 @@ void MapSide::readBackup(mobj_backup_t* backup)
 		sector = NULL;
 	}
 
+	// Update texture counts (decrement previous)
+	parent_map->updateTexUsage(tex_upper, -1);
+	parent_map->updateTexUsage(tex_middle, -1);
+	parent_map->updateTexUsage(tex_lower, -1);
+
 	// Textures
 	tex_upper = backup->props_internal["texturetop"].getStringValue();
 	tex_middle = backup->props_internal["texturemiddle"].getStringValue();
 	tex_lower = backup->props_internal["texturebottom"].getStringValue();
+
+	// Update texture counts (increment new)
+	parent_map->updateTexUsage(tex_upper, 1);
+	parent_map->updateTexUsage(tex_middle, 1);
+	parent_map->updateTexUsage(tex_lower, 1);
 
 	// Offsets
 	offset_x = backup->props_internal["offsetx"].getIntValue();

@@ -35,6 +35,13 @@ void MapSector::copy(MapObject* s)
 	if (s->getObjType() != MOBJ_SECTOR)
 		return;
 
+	// Update texture counts (decrement previous)
+	if (parent_map)
+	{
+		parent_map->updateFlatUsage(f_tex, -1);
+		parent_map->updateFlatUsage(c_tex, -1);
+	}
+
 	// Basic variables
 	MapSector* sector = (MapSector*)s;
 	this->f_tex = sector->f_tex;
@@ -44,6 +51,13 @@ void MapSector::copy(MapObject* s)
 	this->light = sector->light;
 	this->special = sector->special;
 	this->tag = sector->tag;
+
+	// Update texture counts (increment new)
+	if (parent_map)
+	{
+		parent_map->updateFlatUsage(f_tex, 1);
+		parent_map->updateFlatUsage(c_tex, 1);
+	}
 
 	// Other properties
 	MapObject::copy(s);
@@ -81,9 +95,17 @@ void MapSector::setStringProperty(string key, string value)
 	setModified();
 
 	if (key == "texturefloor")
+	{
+		if (parent_map) parent_map->updateFlatUsage(f_tex, -1);
 		f_tex = value;
+		if (parent_map) parent_map->updateFlatUsage(f_tex, 1);
+	}
 	else if (key == "textureceiling")
+	{
+		if (parent_map) parent_map->updateFlatUsage(c_tex, -1);
 		c_tex = value;
+		if (parent_map) parent_map->updateFlatUsage(c_tex, 1);
+	}
 	else
 		return MapObject::setStringProperty(key, value);
 }
@@ -481,6 +503,10 @@ void MapSector::writeBackup(mobj_backup_t* backup)
 
 void MapSector::readBackup(mobj_backup_t* backup)
 {
+	// Update texture counts (decrement previous)
+	parent_map->updateFlatUsage(f_tex, -1);
+	parent_map->updateFlatUsage(c_tex, -1);
+
 	f_tex = backup->props_internal["texturefloor"].getStringValue();
 	c_tex = backup->props_internal["textureceiling"].getStringValue();
 	f_height = backup->props_internal["heightfloor"].getIntValue();
@@ -488,4 +514,8 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	light = backup->props_internal["lightlevel"].getIntValue();
 	special = backup->props_internal["special"].getIntValue();
 	tag = backup->props_internal["id"].getIntValue();
+
+	// Update texture counts (increment new)
+	parent_map->updateFlatUsage(f_tex, 1);
+	parent_map->updateFlatUsage(c_tex, 1);
 }
