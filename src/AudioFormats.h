@@ -1,4 +1,3 @@
-
 #ifndef AUDIOFORMATS_H
 #define AUDIOFORMATS_H
 
@@ -15,7 +14,7 @@ size_t checkForTags(MemChunk& mc)
 	if (mc[0] == 0)
 	{
 		// Completely arbitrary limit to how long to seek for data.
-		size_t limit = min(1200, mc.getSize()/16);
+		size_t limit = MIN(1200, mc.getSize()/16);
 		while ((s < limit) && (mc[s] == 0))
 			++s;
 	}
