@@ -382,7 +382,7 @@ void LineTextureOverlay::browseTexture(tex_inf_t& tex, string position)
 		texture = "-";
 
 	// Open texture browser
-	MapTextureBrowser browser(theMapEditor, 0, texture);
+	MapTextureBrowser browser(theMapEditor, 0, texture, &(theMapEditor->mapEditor().getMap()));
 	browser.SetTitle(S_FMT("Browse %s Texture", CHR(position)));
 	if (browser.ShowModal() == wxID_OK)
 	{

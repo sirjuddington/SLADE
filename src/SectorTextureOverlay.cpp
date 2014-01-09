@@ -266,7 +266,7 @@ void SectorTextureOverlay::browseFloorTexture()
 		texture = tex_floor[0];
 
 	// Open texture browser
-	MapTextureBrowser browser(theMapEditor, 1, texture);
+	MapTextureBrowser browser(theMapEditor, 1, texture, &(theMapEditor->mapEditor().getMap()));
 	browser.SetTitle("Browse Floor Texture");
 	if (browser.ShowModal() == wxID_OK)
 	{
@@ -287,7 +287,7 @@ void SectorTextureOverlay::browseCeilingTexture()
 		texture = tex_ceil[0];
 
 	// Open texture browser
-	MapTextureBrowser browser(theMapEditor, 1, texture);
+	MapTextureBrowser browser(theMapEditor, 1, texture, &(theMapEditor->mapEditor().getMap()));
 	browser.SetTitle("Browse Ceiling Texture");
 	if (browser.ShowModal() == wxID_OK)
 	{

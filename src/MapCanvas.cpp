@@ -2199,7 +2199,7 @@ void MapCanvas::changeSectorTexture()
 	editor->lockHilight();
 
 	// Open texture browser
-	MapTextureBrowser browser(theMapEditor, 1, texture);
+	MapTextureBrowser browser(theMapEditor, 1, texture, &(theMapEditor->mapEditor().getMap()));
 	browser.SetTitle(browser_title);
 	if (browser.ShowModal() == wxID_OK)
 	{
@@ -2262,7 +2262,7 @@ void MapCanvas::changeTexture3d(selection_3d_t first)
 		tex = editor->getMap().getSide(first.index)->stringProperty("texturetop");
 
 	// Open texture browser
-	MapTextureBrowser browser(theMapEditor, type, tex);
+	MapTextureBrowser browser(theMapEditor, type, tex, &(theMapEditor->mapEditor().getMap()));
 	browser.SetTitle("Browse Texture");
 	if (browser.ShowModal() == wxID_OK)
 	{

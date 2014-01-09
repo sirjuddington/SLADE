@@ -119,7 +119,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(theMapEditor, 0, "-");
+			MapTextureBrowser browser(theMapEditor, 0, "-", map);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				editor->beginUndoRecord("Change Texture", true, false, false);
@@ -826,7 +826,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(theMapEditor, 0, "-");
+			MapTextureBrowser browser(theMapEditor, 0, "-", map);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
@@ -953,7 +953,7 @@ public:
 		if (fix_type == 0)
 		{
 			// Browse textures
-			MapTextureBrowser browser(theMapEditor, 1);
+			MapTextureBrowser browser(theMapEditor, 1, "", map);
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
