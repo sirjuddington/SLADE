@@ -582,6 +582,7 @@ void ZTextureEditorPanel::onTexScaleXChanged(wxSpinDoubleEvent& e)
 
 	// Update UI
 	updateTextureScaleLabel();
+	tex_canvas->redraw();
 
 	tex_modified = true;
 }
@@ -597,6 +598,7 @@ void ZTextureEditorPanel::onTexScaleYChanged(wxSpinDoubleEvent& e)
 
 	// Update UI
 	updateTextureScaleLabel();
+	tex_canvas->redraw();
 
 	tex_modified = true;
 }
@@ -610,6 +612,9 @@ void ZTextureEditorPanel::onTexOffsetXChanged(wxSpinEvent& e)
 	if (tex_current)
 		tex_current->setOffsetX(spin_tex_offsetx->GetValue());
 
+	// Update UI
+	tex_canvas->redraw();
+
 	tex_modified = true;
 }
 
@@ -621,6 +626,9 @@ void ZTextureEditorPanel::onTexOffsetYChanged(wxSpinEvent& e)
 	// Set texture's y offset
 	if (tex_current)
 		tex_current->setOffsetY(spin_tex_offsety->GetValue());
+
+	// Update UI
+	tex_canvas->redraw();
 
 	tex_modified = true;
 }
