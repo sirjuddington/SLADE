@@ -33,6 +33,8 @@ CVAR(Int, halo_width, 5, CVAR_SAVE)
 CVAR(Float, arrowhead_angle, 0.7854f, CVAR_SAVE)
 CVAR(Float, arrowhead_length, 25.f, CVAR_SAVE)
 CVAR(Bool, action_lines, true, CVAR_SAVE)
+CVAR(String, arrow_pathed_color, "#22FFFF", CVAR_SAVE)
+CVAR(String, arrow_dragon_color, "#FF2222", CVAR_SAVE)
 
 CVAR(Bool, test_ssplit, false, CVAR_SAVE)
 
@@ -1391,6 +1393,114 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 		{
 			MapThing* thing = things[a];
 			Drawing::drawArrow(src, thing->midPoint(), col, false, arrowhead_angle, arrowhead_length);
+		}
+	}
+}
+
+void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
+{
+	// Skip if action lines are not desired
+	if (!action_lines)
+		return;
+
+	// Find things that need to be pathed
+	wxColour col(arrow_pathed_color);
+	rgba_t pathedcol(col.Red(), col.Green(), col.Blue(), col.Alpha());
+	col.Set(arrow_dragon_color);
+	rgba_t dragoncol(col.Red(), col.Green(), col.Blue(), col.Alpha());
+	glLineWidth(line_width*1.5f);
+	for (unsigned a = 0; a < things.size(); ++a)
+	{
+		MapThing* thing = things[a];
+		ThingType* tt = theGameConfiguration->thingType(thing->getType());
+		if (tt->getFlags() & THING_DRAGON)
+		{
+			MapThing* first = map->getFirstThingWithId(thing->intProperty("id"));
+			if (first)
+			{
+				Drawing::drawArrow(first->midPoint(), thing->midPoint(), dragoncol, false, arrowhead_angle, arrowhead_length);
+				vector<MapThing*> dragon_things;
+				dragon_things.clear();
+				map->getDragonTargets(first, dragon_things);
+				for (unsigned d = 0; d < dragon_things.size(); ++d)
+				{
+					int id1 = dragon_things[d]->intProperty("id");
+					int a11 = dragon_things[d]->intProperty("arg0");
+					int a12 = dragon_things[d]->intProperty("arg1");
+					int a13 = dragon_things[d]->intProperty("arg2");
+					int a14 = dragon_things[d]->intProperty("arg3");
+					int a15 = dragon_things[d]->intProperty("arg4");
+					ThingType* tt1 = theGameConfiguration->thingType(dragon_things[d]->getType());
+					for (unsigned e = d + 1; e < dragon_things.size(); ++e)
+					{
+						int id2 = dragon_things[e]->intProperty("id");
+						int a21 = dragon_things[e]->intProperty("arg0");
+						int a22 = dragon_things[e]->intProperty("arg1");
+						int a23 = dragon_things[e]->intProperty("arg2");
+						int a24 = dragon_things[e]->intProperty("arg3");
+						int a25 = dragon_things[e]->intProperty("arg4");
+						ThingType* tt2 = theGameConfiguration->thingType(dragon_things[e]->getType());
+						bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
+						bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
+						if (!((tt1->getFlags()|tt2->getFlags()) & THING_DRAGON))
+						{
+							if (l1to2)
+								Drawing::drawArrow(dragon_things[e]->midPoint(), dragon_things[d]->midPoint(), 
+													dragoncol, l2to1, arrowhead_angle, arrowhead_length);
+							else if (l2to1)
+								Drawing::drawArrow(dragon_things[d]->midPoint(), dragon_things[e]->midPoint(), 
+													dragoncol, false, arrowhead_angle, arrowhead_length);
+						}
+					}
+				}
+			}
+			continue;
+		}
+		int tid = -1, tid2 = -1;
+		int nexttype = tt->getNextType();
+		int nextargs = tt->getNextArgs();
+		if (nextargs)
+		{
+			int pos = nextargs % 10;
+			string na = "arg_";
+			na[3] = ('0' + pos - 1);
+			tid = thing->intProperty(na);
+		}
+		if (nextargs >= 10)
+		{
+			int pos = nextargs / 10;
+			string na = "arg_";
+			na[3] = ('0' + pos - 1);
+			tid += (256 * thing->intProperty(na));
+		}
+		for (unsigned b = a + 1; b < things.size(); ++b)
+		{
+			MapThing* thing2 = things[b];
+			if (thing2->getType() == nexttype)
+			{
+				ThingType* tt2 = theGameConfiguration->thingType(thing2->getType());
+				nextargs = tt2->getNextArgs();
+				if (nextargs)
+				{
+					int pos = nextargs % 10;
+					string na = "arg_";
+					na[3] = ('0' + pos - 1);
+					tid2 = thing2->intProperty(na);
+				}
+				if (nextargs >= 10)
+				{
+					int pos = nextargs / 10;
+					string na = "arg_";
+					na[3] = ('0' + pos - 1);
+					tid2 += (256 * thing2->intProperty(na));
+				}
+				if (thing2->intProperty("id") == tid)
+					Drawing::drawArrow(thing2->midPoint(), thing->midPoint(), pathedcol, 
+										tid2 == thing->intProperty("id"), arrowhead_angle, arrowhead_length);
+				else if (thing->intProperty("id") == tid2)
+					Drawing::drawArrow(thing->midPoint(), thing2->midPoint(), pathedcol, 
+										false, arrowhead_angle, arrowhead_length);
+			}
 		}
 	}
 }
