@@ -61,6 +61,7 @@ CTextureCanvas::CTextureCanvas(wxWindow* parent, int id)
 	show_grid = false;
 	blend_rgba = false;
 	view_type = 0;
+	tex_scale = false;
 
 	// Bind events
 	Bind(wxEVT_MOTION, &CTextureCanvas::onMouseEvent, this);
