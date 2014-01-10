@@ -1603,7 +1603,9 @@ void MapRenderer3D::renderThings()
 
 		// Update thing if needed
 		if (things[a].updated_time < thing->modifiedTime() ||
-		        (things[a].sector && things[a].updated_time < things[a].sector->modifiedTime()))
+		        (things[a].sector && (
+				things[a].updated_time < things[a].sector->modifiedTime() ||
+				things[a].updated_time < things[a].sector->geometryUpdatedTime())))
 		{
 			updateThing(a, thing);
 			update++;
