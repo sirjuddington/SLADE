@@ -1965,6 +1965,9 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	}
 	else
 	{
+		// Save changes if needed
+		saveEntryChanges();
+
 		// Close the current entry
 		cur_area->closeEntry();
 
