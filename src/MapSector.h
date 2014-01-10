@@ -51,6 +51,7 @@ private:
 	bbox_t				bbox;
 	Polygon2D			polygon;
 	bool				poly_needsupdate;
+	long				geometry_updated;
 
 public:
 	MapSector(SLADEMap* parent = NULL);
@@ -87,6 +88,7 @@ public:
 	uint8_t				getLight(int where = 0);
 	void				changeLight(int amount, int where = 0);
 	rgba_t				getColour(int where = 0, bool fullbright = false);
+	long				geometryUpdatedTime() { return geometry_updated; }
 
 	void	connectSide(MapSide* side);
 	void	disconnectSide(MapSide* side);

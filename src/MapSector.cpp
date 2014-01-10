@@ -13,6 +13,7 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 {
 	// Init variables
 	poly_needsupdate = true;
+	geometry_updated = theApp->runTimer();
 }
 
 MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
@@ -23,6 +24,7 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	this->special = 0;
 	this->tag = 0;
 	poly_needsupdate = true;
+	geometry_updated = theApp->runTimer();
 }
 
 MapSector::~MapSector()
@@ -164,6 +166,8 @@ void MapSector::updateBBox()
 		bbox.extend(line->v1()->xPos(), line->v1()->yPos());
 		bbox.extend(line->v2()->xPos(), line->v2()->yPos());
 	}
+
+	geometry_updated = theApp->runTimer();
 }
 
 bbox_t MapSector::boundingBox()
@@ -472,6 +476,7 @@ void MapSector::connectSide(MapSide* side)
 	poly_needsupdate = true;
 	bbox.reset();
 	setModified();
+	geometry_updated = theApp->runTimer();
 }
 
 void MapSector::disconnectSide(MapSide* side)
@@ -488,6 +493,7 @@ void MapSector::disconnectSide(MapSide* side)
 	setModified();
 	poly_needsupdate = true;
 	bbox.reset();
+	geometry_updated = theApp->runTimer();
 }
 
 void MapSector::writeBackup(mobj_backup_t* backup)
