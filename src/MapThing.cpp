@@ -124,8 +124,7 @@ void MapThing::setAnglePoint(fpoint2_t point)
 		angle = 315;
 
 	// Set thing angle
-	this->angle = angle;
-	//setIntProperty("angle", angle);
+	setIntProperty("angle", angle);
 }
 
 void MapThing::writeBackup(mobj_backup_t* backup)
