@@ -1818,11 +1818,17 @@ void MapCanvas::lockMouse(bool lock)
 		img.SetMask(true);
 		img.SetMaskColour(0, 0, 0);
 		SetCursor(wxCursor(img));
+#ifdef USE_SFML_RENDERWINDOW
+		setMouseCursorVisible(false);
+#endif
 	}
 	else
 	{
 		// Show cursor
 		SetCursor(wxNullCursor);
+#ifdef USE_SFML_RENDERWINDOW
+		setMouseCursorVisible(true);
+#endif
 	}
 }
 
