@@ -269,6 +269,7 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 #ifdef USE_SFML_RENDERWINDOW
 		sf::RenderWindow::setActive();
 		Drawing::setRenderTarget(this);
+		resetGLStates();
 		setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
 #else
 		setContext();
