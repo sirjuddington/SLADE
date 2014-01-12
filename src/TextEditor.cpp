@@ -985,9 +985,6 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 {
 	e.Skip();
 
-// CharPositionFromPointClose() does not seem to exist in 2.9.0.
-#if (wxMAJOR_VERSION >= 2 && wxMINOR_VERSION >= 9 && wxRELEASE_NUMBER > 0)
-
 	// No language, no checks
 	if (!language)
 		return;
@@ -1036,7 +1033,6 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 			CallTipCancel();
 		}
 	}
-#endif
 }
 
 /* TextEditor::onFocusLoss

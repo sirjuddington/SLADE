@@ -70,11 +70,7 @@ EXTERN_CVAR(String, dir_last)
  * instead, the filters are always shown if any are defined.
  *******************************************************************/
 			WMFileBrowser::WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id)
-#if (wxMAJOR_VERSION >= 3 || (wxMAJOR_VERSION == 2 && wxMINOR_VERSION >= 9 && wxRELEASE_NUMBER >= 4))
 			: wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr, wxDefaultPosition, wxDefaultSize, 0,
-#else
-			: wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr, wxDefaultPosition, wxDefaultSize, wxDIRCTRL_SHOW_FILTERS,
-#endif
 			"Any Supported Archive File (*.wad; *.zip; *.pk3; *.pke; *.lib; *.dat)|*.wad;*.zip;*.pk3;*.pke;*.lib;*.dat|Doom Wad files (*.wad)|*.wad|Zip files (*.zip)|*.zip|Pk3 (zip) files (*.pk3)|*.pk3|All Files (*.*)|*.*")
 {
 	// Set the parent
@@ -1736,8 +1732,6 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 {
 	// Get tab that is closing
 	int tabindex = e.GetSelection();
-	if (wxMAJOR_VERSION == 2 && wxMINOR_VERSION <= 9 && wxRELEASE_NUMBER < 2)	// For wxWidgets 2.9.1 and earlier compatibility
-		tabindex = e.GetInt();
 	if (tabindex < 0)
 		return;
 

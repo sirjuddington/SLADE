@@ -10,20 +10,15 @@
 class SLADELog : public wxLog
 {
 protected:
-// wxWidgets thinks it's funny to have incompatible log interfaces between release numbers...
-#if (wxMAJOR_VERSION < 2 || (wxMAJOR_VERSION == 2 && wxMINOR_VERSION < 9))
-#error This will not compile with wxWidgets older than 2.9.0 !
-#elif (wxMAJOR_VERSION > 2 || (wxMAJOR_VERSION == 2 && wxMINOR_VERSION >= 9 && wxRELEASE_NUMBER > 0))
-	void DoLogText(const wxString& msg);
+// wx2.9.x is no longer supported.
+#if (wxMAJOR_VERSION < 3)
+#error This will not compile with wxWidgets older than 3.0.0 !
 #endif
+	void DoLogText(const wxString& msg);
 
 public:
 	SLADELog() {}
 	~SLADELog() {}
-
-#if (wxMAJOR_VERSION == 2 && wxMINOR_VERSION == 9 && wxRELEASE_NUMBER == 0)
-	void DoLogString(const wxString& msg, time_t t);
-#endif
 };
 
 class MainWindow;

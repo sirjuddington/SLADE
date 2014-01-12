@@ -18,13 +18,8 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 	framesizer->Add(lv_specials, 1, wxEXPAND|wxALL, 4);
 	sizer->Add(framesizer, 1, wxEXPAND|wxALL, 8);
 
-#if (wxMAJOR_VERSION >= 2 && wxMINOR_VERSION >= 9 && wxRELEASE_NUMBER >= 4)
 	lv_specials->AppendColumn("#");
 	lv_specials->AppendColumn("Name");
-#else
-	lv_specials->InsertColumn(lv_specials->GetColumnCount(), "#");
-	lv_specials->InsertColumn(lv_specials->GetColumnCount(), "Name");
-#endif
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
 	for (unsigned a = 0; a < types.size(); a++)
 	{

@@ -273,14 +273,8 @@ string appPath(string filename, int dir)
  * SLADELOG CLASS FUNCTIONS
  *******************************************************************/
 
-// How fun. DoLogString() does not work with 2.9.1, and DoLogText() with 2.9.0.
-#if (wxMAJOR_VERSION == 2 && wxMINOR_VERSION == 9 && wxRELEASE_NUMBER == 0)
-void SLADELog::DoLogString(const wxString& msg, time_t time)
-{
-#else
 void SLADELog::DoLogText(const wxString& msg)
 {
-#endif
 	if (!exiting)
 		theConsole->logMessage(msg);
 }
