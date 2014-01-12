@@ -17,10 +17,12 @@ private:
 	uint32_t			width;
 	uint32_t			height;
 	vector<gl_tex_t>	tex;
+	int					filter;
 	bool				loaded;
 	bool				allow_split;
-	int					filter;
 	bool				tiling;
+	double				scale_x;
+	double				scale_y;
 
 	// Some generic/global textures
 	static GLTexture	tex_background;	// Checkerboard background texture
@@ -49,11 +51,14 @@ public:
 	uint32_t	getWidth() { return width; }
 	uint32_t	getHeight() { return height; }
 	int			getFilter() { return filter; }
+	double		getScaleX() { return scale_x; }
+	double		getScaleY() { return scale_y; }
 	bool		isTiling() { return tiling; }
 	GLuint		glId() { if (!tex.empty()) return tex[0].id; else return 0; }
 
 	void		setFilter(int filter) { this->filter = filter; }
 	void		setTiling(bool tiling) { this->tiling = tiling; }
+	void		setScale(double sx, double sy) { this->scale_x = sx; this->scale_y = sy; }
 
 	bool	loadImage(SImage* image, Palette8bit* pal = NULL);
 	bool	loadRawData(const uint8_t* data, uint32_t width, uint32_t height);

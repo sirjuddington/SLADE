@@ -399,7 +399,7 @@ z_textures {
 	keywords = {
 		texture, patch, sprite, graphic, walltexture, flat, optional,
 		XScale, YScale, offset, worldpanning, NoDecals, NullTexture,
-		FlipX, FlipY, Rotate, Translation, Blend, Alpha, Style
+		FlipX, FlipY, Rotate, Translation, Blend, Alpha, Style, define
 	}
 
 	constants = {

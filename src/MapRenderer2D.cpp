@@ -1591,8 +1591,8 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 			// Get scaling/offset info
 			double ox = 0;
 			double oy = 0;
-			double sx = 1;
-			double sy = 1;
+			double sx = tex->getScaleX();
+			double sy = tex->getScaleY();
 			double rot = 0;
 			// Check for UDMF + ZDoom extensions
 			if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
@@ -1602,8 +1602,8 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				{
 					ox = sector->floatProperty("xpanningfloor");
 					oy = sector->floatProperty("ypanningfloor");
-					sx = sector->floatProperty("xscalefloor");
-					sy = sector->floatProperty("yscalefloor");
+					sx *= sector->floatProperty("xscalefloor");
+					sy *= sector->floatProperty("yscalefloor");
 					rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
@@ -1611,8 +1611,8 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				{
 					ox = sector->floatProperty("xpanningceiling");
 					oy = sector->floatProperty("ypanningceiling");
-					sx = sector->floatProperty("xscaleceiling");
-					sy = sector->floatProperty("yscaleceiling");
+					sx *= sector->floatProperty("xscaleceiling");
+					sy *= sector->floatProperty("yscaleceiling");
 					rot = sector->floatProperty("rotationceiling");
 				}
 			}
@@ -1722,8 +1722,8 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			// Get scaling/offset info
 			double ox = 0;
 			double oy = 0;
-			double sx = 1;
-			double sy = 1;
+			double sx = tex->getScaleX();
+			double sy = tex->getScaleY();
 			double rot = 0;
 			// Check for UDMF + ZDoom extensions
 			if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
@@ -1733,8 +1733,8 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 				{
 					ox = sector->floatProperty("xpanningfloor");
 					oy = sector->floatProperty("ypanningfloor");
-					sx = sector->floatProperty("xscalefloor");
-					sy = sector->floatProperty("yscalefloor");
+					sx *= sector->floatProperty("xscalefloor");
+					sy *= sector->floatProperty("yscalefloor");
 					rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
@@ -1742,8 +1742,8 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 				{
 					ox = sector->floatProperty("xpanningceiling");
 					oy = sector->floatProperty("ypanningceiling");
-					sx = sector->floatProperty("xscaleceiling");
-					sy = sector->floatProperty("yscaleceiling");
+					sx *= sector->floatProperty("xscaleceiling");
+					sy *= sector->floatProperty("yscaleceiling");
 					rot = sector->floatProperty("rotationceiling");
 				}
 			}

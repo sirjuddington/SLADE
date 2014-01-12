@@ -100,6 +100,25 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 			mtex.texture = new GLTexture(false);
 			mtex.texture->setFilter(filter);
 			mtex.texture->loadImage(&image, pal);
+
+			// Handle hires texture scale
+			if (textypefound == TEXTYPE_HIRES)
+			{
+				ArchiveEntry* ref = theResourceManager->getTextureEntry(name, "textures", archive);
+				if (ref)
+				{
+					SImage imgref;
+					if (Misc::loadImageFromEntry(&imgref, ref))
+					{
+						int w, h, sw, sh;
+						w = image.getWidth();
+						h = image.getHeight();
+						sw = imgref.getWidth();
+						sh = imgref.getHeight();
+						mtex.texture->setScale((double)sw/(double)w, (double)sh/(double)h);
+					}
+				}
+			}
 		}
 	}
 
@@ -114,6 +133,9 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 			mtex.texture = new GLTexture(false);
 			mtex.texture->setFilter(filter);
 			mtex.texture->loadImage(&image, pal);
+			double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
+			double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
+			mtex.texture->setScale(1.0/sx, 1.0/sy);
 		}
 	}
 
