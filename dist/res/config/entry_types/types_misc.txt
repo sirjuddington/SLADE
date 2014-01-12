@@ -85,10 +85,10 @@ entry_types
 	colormap : gfx_raw
 	{
 		name = "Colormap";
-		match_name = "colormap", "*map", "tinttab", "xlatab", "lights", "*lite?", "*lite";
+		match_name = "colormap", "menucmap", "*map", "tinttab", "xlatab", "lights", "*lite?", "*lite";
 		match_ext = "cmp";
 		match_extorname = 1;
-		size = 256, 8192, 8320, 8704, 8448, 8776, 15104, 16384, 16896, 65536;
+		size = 256, 4096, 8192, 8320, 8704, 8448, 8776, 15104, 16384, 16896, 65536;
 		reliability = 120;
 		extra = image;
 		export_ext = "cmp";

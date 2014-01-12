@@ -10,7 +10,12 @@ protected:
 		// Setup variables
 		uint16_t* col_offsets = NULL;
 		size_t hdr_size = sizeof(rottpatch_header_t);
-		if (mask) hdr_size += 2;
+		short translevel = 255;
+		if (mask) 
+		{
+			translevel = READ_L16(data, hdr_size);
+			hdr_size += 2;
+		}
 
 		// Read column offsets
 		col_offsets = new uint16_t[info.width];
@@ -28,7 +33,6 @@ protected:
 		{
 			// Get current column offset
 			uint16_t col_offset = col_offsets[c];
-			//if (transparent) wxLogMessage("Column %i, offset at %i, offset %i", c, (c<<1) + hdr_size, col_offset);
 
 			// Check column offset is valid
 			if (col_offset >= (unsigned)data.getSize())
@@ -42,55 +46,44 @@ protected:
 			while (1)
 			{
 				// Get row offset
-				//if (transparent) wxLogMessage("Row number %i at offset %i", *bits, bits - gfx_data);
 				uint8_t row = *bits++;
 
 				if (row == 0xFF) // End of column?
 					break;
 
-				// This apparently triggers translucency mode, but I'm not sure how it works
-				if (mask && *bits == 254)
+				// Get no. of pixels
+				uint8_t n_pix = *bits++;
+				for (uint8_t p = 0; p < n_pix; p++)
 				{
-					Global::error = "Sorry, masked ROTT patches with translucency are not yet supported";
-					return false;
-				}
-				else
-				{
+					// Get pixel position
+					int pos = ((row + p)*info.width + c);
 
-					// Get no. of pixels
-					uint8_t n_pix = *bits++;
-					//if (transparent) wxLogMessage("Post %i, row = %i, numpixels = %i, offset %i", counter++, row, n_pix, bits - gfx_data);
+					// Stop if we're outside the image
+					if (pos > info.width*info.height)
+						break;
 
-					if (n_pix >= info.height && row != 0 && row < info.height)
+					// Stop if for some reason we're outside the gfx data
+					if (bits > data.getData() + data.getSize())
+						break;
+
+					// Fail if bogus data gives a negative pos (this corrupts the heap!)
+					if (pos < 0)
+						return false;
+
+					// Write pixel data
+					if (mask && *bits == 254)
 					{
-						wxLogMessage("Hack triggered!");
-						bits+=2;
-						continue;
+						img_data[pos] = 0;
+						img_mask[pos] = translevel;
 					}
-
-					for (uint8_t p = 0; p < n_pix; p++)
+					else
 					{
-						// Get pixel position
-						int pos = ((row + p)*info.width + c);
-						//if (transparent) wxLogMessage("Pixel %i: pos %i, offset %i", p, pos, bits - gfx_data);
-
-						// Stop if we're outside the image
-						if (pos > info.width*info.height)
-							break;
-
-						// Stop if for some reason we're outside the gfx data
-						if (bits > data.getData() + data.getSize())
-							break;
-
-						// Fail if bogus data gives a negative pos (this corrupts the heap!)
-						if (pos < 0)
-							return false;
-
-						// Write pixel data
 						img_data[pos] = *bits++;
 						img_mask[pos] = 0xFF;
 					}
 				}
+				if (mask && *bits == 254)
+					++bits;
 			}
 		}
 
@@ -127,8 +120,8 @@ public:
 		const rottpatch_header_t* header = (const rottpatch_header_t*)mc.getData();
 		info.width = wxINT16_SWAP_ON_BE(header->width);
 		info.height = wxINT16_SWAP_ON_BE(header->height);
-		info.offset_x = wxINT16_SWAP_ON_BE(header->left);
-		info.offset_y = wxINT16_SWAP_ON_BE(header->top);
+		info.offset_x = wxINT16_SWAP_ON_BE(header->left) + (wxINT16_SWAP_ON_BE(header->origsize)/2);
+		info.offset_y = wxINT16_SWAP_ON_BE(header->top) + wxINT16_SWAP_ON_BE(header->origsize);
 
 		// Setup other info
 		info.colformat = PALMASK;
