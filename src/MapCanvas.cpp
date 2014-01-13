@@ -712,6 +712,7 @@ void MapCanvas::drawSelectionNumbers()
 	string text;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
+	setOverlayCoords();
 	bool outline = (editor->selectionSize() <= map_max_selection_numbers * 0.5);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
@@ -749,6 +750,7 @@ void MapCanvas::drawSelectionNumbers()
 	}
 	Drawing::enableTextStateReset();
 	Drawing::setTextState(false);
+	setOverlayCoords(false);
 }
 
 void MapCanvas::drawThingQuickAngleLines()

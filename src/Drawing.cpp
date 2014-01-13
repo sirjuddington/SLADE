@@ -738,11 +738,14 @@ fpoint2_t Drawing::textExtents(string text, int font)
 
 void Drawing::enableTextStateReset(bool enable)
 {
+#ifdef USE_SFML_RENDERWINDOW
 	text_state_reset = enable;
+#endif
 }
 
 void Drawing::setTextState(bool set)
 {
+#ifdef USE_SFML_RENDERWINDOW
 	if (set)
 	{
 		// Push related states
@@ -765,6 +768,7 @@ void Drawing::setTextState(bool set)
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
 	}
+#endif
 }
 
 /* Drawing::drawHud
