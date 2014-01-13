@@ -615,20 +615,6 @@ void TranslationEditorDialog::updatePreviews()
 	gfx_preview->updateImageTexture();
 	gfx_preview->Refresh();
 
-	/*
-	if (entry_preview) {
-		// Re-load preview entry
-		Misc::loadImageFromEntry(gfx_preview->getImage(), entry_preview);
-
-		// Apply translation
-		gfx_preview->getImage()->applyTranslation(&translation, palette);
-
-		// Update UI
-		gfx_preview->updateImageTexture();
-		gfx_preview->Refresh();
-	}
-	*/
-
 	// Update text string
 	text_string->SetValue(translation.asText());
 }

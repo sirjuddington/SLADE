@@ -145,18 +145,18 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 		// Create+add new data format
 		EntryDataFormat* edf = new EntryDataFormat(formatnode->getName().Lower());
 
+		/*
 		// Copy from existing type if inherited
 		if (!formatnode->getInherit().IsEmpty())
 		{
-			/*
 			EntryType* parent_type = EntryType::getType(formatnode->getInherit());
 
 			if (parent_type != EntryType::unknownType())
 				parent_type->copyToType(ntype);
 			else
 				wxLogMessage("Warning: Entry type %s inherits from unknown type %s", CHR(ntype->getId()), CHR(typenode->getInherit()));
-			*/
 		}
+		*/
 	}
 	return true;
 }

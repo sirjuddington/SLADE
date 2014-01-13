@@ -51,7 +51,6 @@ public:
 	void	onEraseBackground(wxEraseEvent& e);
 	void	onTimer(wxTimerEvent& e);
 	void	onResize(wxSizeEvent& e);
-	//void	onIdle(wxIdleEvent& e);
 };
 
 #endif //__OGLCANVAS_H__

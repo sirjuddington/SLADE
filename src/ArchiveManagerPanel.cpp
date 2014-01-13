@@ -1670,25 +1670,6 @@ void ArchiveManagerPanel::onListBookmarksRightClick(wxListEvent& e)
  *******************************************************************/
 void ArchiveManagerPanel::onArchiveTabChanging(wxAuiNotebookEvent& e)
 {
-	/*
-	// Page is about to change, remove any custom menus if needed
-	int selection = notebook_archives->GetSelection();
-
-	// ArchivePanel
-	if (isArchivePanel(selection)) {
-		ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(selection);
-		ap->removeMenus();
-	}
-
-	// EntryPanel
-	wxWindow* page = notebook_archives->GetPage(selection);
-	if (page && page->GetName() == "entry") {
-		EntryPanel* ep = (EntryPanel*)page;
-		ep->removeCustomMenu();
-		ep->removeCustomToolBar();
-	}
-	*/
-
 	e.Skip();
 }
 
