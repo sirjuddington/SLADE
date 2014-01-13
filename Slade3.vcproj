@@ -977,10 +977,6 @@
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\0_zdoombase.txt"
-							>
-						</File>
-						<File
 							RelativePath=".\dist\res\config\languages\acs.txt"
 							>
 						</File>

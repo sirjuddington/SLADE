@@ -649,8 +649,8 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	// Get scaling/offset info
 	double ox = 0;
 	double oy = 0;
-	double sx = 1;
-	double sy = 1;
+	double sx = floor ? floors[index].texture->getScaleX() : ceilings[index].texture->getScaleX();
+	double sy = floor ? floors[index].texture->getScaleY() : ceilings[index].texture->getScaleY();
 	double rot = 0;
 
 	// Check for UDMF + ZDoom extensions
@@ -660,16 +660,16 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 		{
 			ox = sector->floatProperty("xpanningfloor");
 			oy = sector->floatProperty("ypanningfloor");
-			sx = sector->floatProperty("xscalefloor");
-			sy = sector->floatProperty("yscalefloor");
+			sx *= sector->floatProperty("xscalefloor");
+			sy *= sector->floatProperty("yscalefloor");
 			rot = sector->floatProperty("rotationfloor");
 		}
 		else
 		{
 			ox = sector->floatProperty("xpanningceiling");
 			oy = sector->floatProperty("ypanningceiling");
-			sx = sector->floatProperty("xscaleceiling");
-			sy = sector->floatProperty("yscaleceiling");
+			sx *= sector->floatProperty("xscaleceiling");
+			sy *= sector->floatProperty("yscaleceiling");
 			rot = sector->floatProperty("rotationceiling");
 		}
 	}
@@ -965,6 +965,9 @@ void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int lengt
 		y2 = top + quad->texture->getHeight();
 		y1 = y2 - height;
 	}
+
+	sx *= quad->texture->getScaleX();
+	sy *= quad->texture->getScaleY();
 
 	// Set texture coordinates
 	quad->points[0].tx = x1 / (quad->texture->getWidth() * sx);

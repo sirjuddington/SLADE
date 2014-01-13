@@ -401,7 +401,8 @@ void TextureXEditor::saveChanges()
 
 	// Save TEXTUREx entries
 	for (unsigned a = 0; a < texture_editors.size(); a++)
-		texture_editors[a]->saveTEXTUREX();
+		if (texture_editors[a]->isModified())
+			texture_editors[a]->saveTEXTUREX();
 
 	// Save PNAMES if it exists
 	if (patch_table.nPatches() > 0)

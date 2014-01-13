@@ -93,6 +93,15 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	slider_volume->SetValue(snd_volume);
 	sizer_gb->Add(slider_volume, wxGBPosition(1, 5));
 
+	// Set volume
+	sound.setVolume(snd_volume);
+	music.setVolume(snd_volume);
+	theMIDIPlayer->setVolume(snd_volume);
+	media_ctrl->SetVolume(snd_volume*0.01);
+#ifndef NOLIBMODPLUG
+	mod.setVolume(snd_volume);
+#endif
+
 	// Disable general entrypanel buttons
 	media_ctrl->Show(false);
 	toolbar->Show(false);

@@ -54,6 +54,8 @@ GLTexture::GLTexture(bool allow_split)
 	this->allow_split = allow_split;
 	this->filter = NEAREST;
 	this->tiling = true;
+	this->scale_x = 1.0;
+	this->scale_y = 1.0;
 }
 
 /* GLTexture::~GLTexture
@@ -152,6 +154,8 @@ bool GLTexture::loadData(const uint8_t* data, uint32_t width, uint32_t height, b
 	loaded = true;
 	this->width = width;
 	this->height = height;
+	this->scale_x = 1.0;
+	this->scale_y = 1.0;
 	tex.push_back(ntex);
 
 	return true;
@@ -213,6 +217,7 @@ bool GLTexture::loadRawData(const uint8_t* data, uint32_t w, uint32_t h)
 		// Update variables
 		width = w;
 		height = h;
+		scale_x = scale_y = 1.0;
 
 		return true;
 	}
@@ -272,6 +277,7 @@ bool GLTexture::loadImage(SImage* image, Palette8bit* pal)
 		// Update variables
 		width = image->getWidth();
 		height = image->getHeight();
+		scale_x = scale_y = 1.0;
 
 		return true;
 	}
@@ -348,6 +354,7 @@ bool GLTexture::loadImagePortion(SImage* image, rect_t rect, Palette8bit* pal, b
 		// Free buffer
 		delete[] buf;
 	}
+	scale_x = scale_y = 1.0;
 
 	// Generate texture from rgba data
 	return loadData(portion.getData(), rect.width(), rect.height(), add);
@@ -367,6 +374,7 @@ bool GLTexture::clear()
 	width = 0;
 	height = 0;
 	loaded = false;
+	scale_x = scale_y = 1.0;
 
 	return true;
 }
@@ -431,6 +439,7 @@ bool GLTexture::genChequeredTexture(uint8_t block_size, rgba_t col1, rgba_t col2
 
 	// Clean up
 	delete[] data;
+	scale_x = scale_y = 1.0;
 
 	return true;
 }

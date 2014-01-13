@@ -707,6 +707,14 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* entry)
 				addTexture(tex);
 		}
 
+		// Old HIRESTEX "Define"
+		if (S_CMPNOCASE(token, "Define"))
+		{
+			CTexture* tex = new CTexture();
+			if (tex->parseDefine(tz))
+				addTexture(tex);
+		}
+
 		token = tz.getToken();
 	}
 

@@ -69,6 +69,10 @@ string MapTexBrowserItem::itemInfo()
 	else
 		info += ", Flat";
 
+	// Add scaling info
+	if (image->getScaleX() != 1.0 || image->getScaleY() != 1.0)
+		info += ", Scaled";
+
 	// Add usage count
 	info += S_FMT(", Used %d times", usage_count);
 
@@ -103,16 +107,19 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
 			CTexture * tex = textures[a].tex;
+			string parent = textures[a].parent->getFilename(false);
 			if (tex->isExtended())
 			{
-				if (!(tex->getType().CmpNoCase("texture")) || !(tex->getType().CmpNoCase("walltexture")))
-					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), "Textures/TEXTURES");
-				else if (!(tex->getType().CmpNoCase("flat")))
-					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), "Flats/TEXTURES");
+				if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))
+					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), S_FMT("Textures/TEXTURES/%s", parent));
+				else if (S_CMPNOCASE(tex->getType(), "define"))
+					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), S_FMT("Textures/HIRESTEX/%s", parent));
+				else if (S_CMPNOCASE(tex->getType(), "flat"))
+					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), S_FMT("Flats/TEXTURES/%s", parent));
 				// Ignore graphics, patches and sprites
 			}
 			else
-				addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), "Textures/TEXTUREx");
+				addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), S_FMT("Textures/TEXTUREx/%s", parent));
 		}
 
 		// Texture namespace patches (TX_)
@@ -122,16 +129,20 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 			theResourceManager->getAllPatchEntries(patches, NULL);
 			for (unsigned a = 0; a < patches.size(); a++)
 			{
-				if (patches[a]->isInNamespace("textures"))
+				if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
 				{
 					// Determine texture path if it's in a pk3
 					string path = patches[a]->getPath();
 					if (path.StartsWith("/textures/"))
 						path.Remove(0, 9);
+					else if (path.StartsWith("/hires/"))
+						path.Remove(0, 6);
 					else
 						path = "";
 
-					addItem(new MapTexBrowserItem(patches[a]->getName(true), 0, a), "Textures/Single File (TX)" + path);
+					path = patches[a]->getParent()->getFilename(false) + path;
+
+					addItem(new MapTexBrowserItem(patches[a]->getName(true), 0, a), "Textures/Single File (TX)/" + path);
 				}
 			}
 		}
@@ -148,12 +159,14 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 
 			// Determine flat path if it's in a pk3
 			string path = entry->getPath();
-			if (path.StartsWith("/flats/"))
+			if (path.StartsWith("/flats/") || path.StartsWith("/hires/"))
 				path.Remove(0, 6);
 			else
 				path = "";
 
-			addItem(new MapTexBrowserItem(entry->getName(true), 1, entry->getParentDir()->entryIndex(entry)), "Flats" + path);
+			path = flats[a]->getParent()->getFilename(false) + path;
+
+			addItem(new MapTexBrowserItem(entry->getName(true), 1, entry->getParentDir()->entryIndex(entry)), "Flats/" + path);
 		}
 	}
 
@@ -200,9 +213,9 @@ void MapTextureBrowser::updateUsage()
 	{
 		MapTexBrowserItem* item = (MapTexBrowserItem*)items[i];
 		if (type == 0)
-			item->setUsage(map->texUsageCount(item->getName()));
+			item->setUsage(map->texUsageCount(item->getName().Upper()));
 		else
-			item->setUsage(map->flatUsageCount(item->getName()));
+			item->setUsage(map->flatUsageCount(item->getName().Upper()));
 	}
 
 	if (!map)
