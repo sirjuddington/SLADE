@@ -161,7 +161,7 @@ MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool sel
 		this->lines.push_back(frect_t(lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2()));
 
 		// Calculate line direction tab
-		fpoint2_t mid = lines[a]->midPoint();
+		fpoint2_t mid = lines[a]->getPoint(MOBJ_POINT_MID);
 		fpoint2_t tab = lines[a]->dirTabPoint();
 
 		this->tabs.push_back(frect_t(mid.x, mid.y, tab.x, tab.y));

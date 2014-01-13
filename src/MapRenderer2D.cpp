@@ -353,7 +353,7 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 		// Direction tab
 		if (show_direction)
 		{
-			fpoint2_t mid = line->midPoint();
+			fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
 			fpoint2_t tab = line->dirTabPoint();
 			glVertex2d(mid.x, mid.y);
 			glVertex2d(tab.x, tab.y);
@@ -434,7 +434,7 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 	glEnd();
 
 	// Direction tab
-	fpoint2_t mid = line->midPoint();
+	fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
 	fpoint2_t tab = line->dirTabPoint();
 	glBegin(GL_LINES);
 	glVertex2d(mid.x, mid.y);
@@ -478,7 +478,7 @@ void MapRenderer2D::renderLineSelection(vector<int>& selection, float fade)
 		glVertex2d(x2, y2);
 
 		// Direction tab
-		fpoint2_t mid = line->midPoint();
+		fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
 		fpoint2_t tab = line->dirTabPoint();
 		glVertex2d(mid.x, mid.y);
 		glVertex2d(tab.x, tab.y);
@@ -517,7 +517,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Direction tab
-		fpoint2_t mid = line->midPoint();
+		fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
 		fpoint2_t tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
@@ -528,7 +528,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 		if (object && action_lines)
 		{
 			glLineWidth(line_width*1.5f);
-			Drawing::drawArrow(line->midPoint(), object->midPoint(), col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(line->getPoint(MOBJ_POINT_WITHIN), object->getPoint(MOBJ_POINT_WITHIN), col, false, arrowhead_angle, arrowhead_length);
 			glLineWidth(line_width*3);
 		}
 	}
@@ -565,7 +565,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		glEnd();
 
 		// Direction tab
-		fpoint2_t mid = line->midPoint();
+		fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
 		fpoint2_t tab = line->dirTabPoint();
 		glBegin(GL_LINES);
 		glVertex2d(mid.x, mid.y);
@@ -576,7 +576,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 		if (object && action_lines)
 		{
 			glLineWidth(line_width*1.5f);
-			Drawing::drawArrow(object->midPoint(), line->midPoint(), col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(object->getPoint(MOBJ_POINT_WITHIN), line->getPoint(MOBJ_POINT_WITHIN), col, false, arrowhead_angle, arrowhead_length);
 			glLineWidth(line_width*5);
 		}
 	}
@@ -1336,12 +1336,12 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
 	if (object && action_lines)
 	{
-		fpoint2_t dst = object->midPoint();
+		fpoint2_t dst = object->getPoint(MOBJ_POINT_WITHIN);
 		glLineWidth(line_width*1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			MapThing* thing = things[a];
-			Drawing::drawArrow(thing->midPoint(), dst, col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(thing->getPoint(MOBJ_POINT_WITHIN), dst, col, false, arrowhead_angle, arrowhead_length);
 		}
 	}
 }
@@ -1387,12 +1387,12 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	MapObject* object = theMapEditor->mapEditor().getHilightedObject();
 	if (object && action_lines)
 	{
-		fpoint2_t src = object->midPoint();
+		fpoint2_t src = object->getPoint(MOBJ_POINT_WITHIN);
 		glLineWidth(line_width*1.5f);
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			MapThing* thing = things[a];
-			Drawing::drawArrow(src, thing->midPoint(), col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(src, thing->getPoint(MOBJ_POINT_WITHIN), col, false, arrowhead_angle, arrowhead_length);
 		}
 	}
 }
@@ -1418,7 +1418,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			MapThing* first = map->getFirstThingWithId(thing->intProperty("id"));
 			if (first)
 			{
-				Drawing::drawArrow(first->midPoint(), thing->midPoint(), dragoncol, false, arrowhead_angle, arrowhead_length);
+				Drawing::drawArrow(first->getPoint(MOBJ_POINT_MID), thing->getPoint(MOBJ_POINT_MID), dragoncol, false, arrowhead_angle, arrowhead_length);
 				vector<MapThing*> dragon_things;
 				dragon_things.clear();
 				map->getDragonTargets(first, dragon_things);
@@ -1445,10 +1445,10 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 						if (!((tt1->getFlags()|tt2->getFlags()) & THING_DRAGON))
 						{
 							if (l1to2)
-								Drawing::drawArrow(dragon_things[e]->midPoint(), dragon_things[d]->midPoint(), 
+								Drawing::drawArrow(dragon_things[e]->getPoint(MOBJ_POINT_MID), dragon_things[d]->getPoint(MOBJ_POINT_MID),
 													dragoncol, l2to1, arrowhead_angle, arrowhead_length);
 							else if (l2to1)
-								Drawing::drawArrow(dragon_things[d]->midPoint(), dragon_things[e]->midPoint(), 
+								Drawing::drawArrow(dragon_things[d]->getPoint(MOBJ_POINT_MID), dragon_things[e]->getPoint(MOBJ_POINT_MID),
 													dragoncol, false, arrowhead_angle, arrowhead_length);
 						}
 					}
@@ -1495,10 +1495,10 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 					tid2 += (256 * thing2->intProperty(na));
 				}
 				if (thing2->intProperty("id") == tid)
-					Drawing::drawArrow(thing2->midPoint(), thing->midPoint(), pathedcol, 
+					Drawing::drawArrow(thing2->getPoint(MOBJ_POINT_MID), thing->getPoint(MOBJ_POINT_MID), pathedcol,
 										tid2 == thing->intProperty("id"), arrowhead_angle, arrowhead_length);
 				else if (thing->intProperty("id") == tid2)
-					Drawing::drawArrow(thing->midPoint(), thing2->midPoint(), pathedcol, 
+					Drawing::drawArrow(thing->getPoint(MOBJ_POINT_MID), thing2->getPoint(MOBJ_POINT_MID), pathedcol,
 										false, arrowhead_angle, arrowhead_length);
 			}
 		}
@@ -1839,6 +1839,12 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 		glLineWidth(1.0f);
 		map->getSector(index)->getPolygon()->renderWireframe();
 	}
+
+	//// TEST draw text point
+	//glPointSize(8.0f);
+	//glBegin(GL_POINTS);
+	//glVertex2d(map->getSector(index)->getPoint(MOBJ_POINT_WITHIN).x, map->getSector(index)->getPoint(MOBJ_POINT_WITHIN).y);
+	//glEnd();
 }
 
 void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
@@ -1960,7 +1966,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 			}
 
 			glLineWidth(line_width*1.5f);
-			Drawing::drawArrow(sectors[a]->midPoint(), object->midPoint(), col, false, arrowhead_angle, arrowhead_length);
+			Drawing::drawArrow(sectors[a]->getPoint(MOBJ_POINT_WITHIN), object->getPoint(MOBJ_POINT_WITHIN), col, false, arrowhead_angle, arrowhead_length);
 		}
 	}
 }
@@ -2498,7 +2504,7 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		// Direction tab if needed
 		if (show_direction)
 		{
-			fpoint2_t mid = line->midPoint();
+			fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
 			fpoint2_t tab = line->dirTabPoint();
 			lines[v+2].x = mid.x;
 			lines[v+2].y = mid.y;

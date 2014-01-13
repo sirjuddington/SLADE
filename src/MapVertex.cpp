@@ -22,6 +22,11 @@ MapVertex::~MapVertex()
 {
 }
 
+fpoint2_t MapVertex::getPoint(uint8_t point)
+{
+	return fpoint2_t(x, y);
+}
+
 int MapVertex::intProperty(string key)
 {
 	if (key == "x")

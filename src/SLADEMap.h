@@ -202,6 +202,7 @@ public:
 	MapVertex*			lineCrossVertex(double x1, double y1, double x2, double y2);
 	void				updateGeometryInfo(long modified_time);
 	bool				linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
+	void				findSectorTextPoint(MapSector* sector);
 
 	// Tags/Ids
 	MapThing* getFirstThingWithId(int id);

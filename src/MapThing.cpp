@@ -25,6 +25,11 @@ MapThing::~MapThing()
 {
 }
 
+fpoint2_t MapThing::getPoint(uint8_t point)
+{
+	return fpoint2_t(x, y);
+}
+
 int MapThing::intProperty(string key)
 {
 	if (key == "type")

@@ -61,6 +61,7 @@ CVAR(Bool, hud_bob, 0, CVAR_SAVE)
 namespace Drawing
 {
 	sf::RenderWindow*	render_target = NULL;
+	bool				text_state_reset = true;
 };
 #endif
 
@@ -634,26 +635,14 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	// Draw the string
 	if (render_target)
 	{
-		// Push related states
-		glPushMatrix();
-		glMatrixMode(GL_TEXTURE);
-		glPushMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glPushAttrib(GL_VIEWPORT_BIT);
-		render_target->resetGLStates();
+		if (text_state_reset)
+			setTextState(true);
 
 		// Draw
 		render_target->draw(sf_str);
 
-		// Pop related states
-		glPopAttrib();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_TEXTURE);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
+		if (text_state_reset)
+			setTextState(false);
 	}
 }
 
@@ -746,6 +735,41 @@ fpoint2_t Drawing::textExtents(string text, int font)
 }
 
 #endif
+
+void Drawing::enableTextStateReset(bool enable)
+{
+#ifdef USE_SFML_RENDERWINDOW
+	text_state_reset = enable;
+#endif
+}
+
+void Drawing::setTextState(bool set)
+{
+#ifdef USE_SFML_RENDERWINDOW
+	if (set)
+	{
+		// Push related states
+		glPushMatrix();
+		glMatrixMode(GL_TEXTURE);
+		glPushMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glPushAttrib(GL_VIEWPORT_BIT);
+		render_target->resetGLStates();
+	}
+	else
+	{
+		// Pop related states
+		glPopAttrib();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_TEXTURE);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+	}
+#endif
+}
 
 /* Drawing::drawHud
  * Draws doom hud offset guide lines, from the center

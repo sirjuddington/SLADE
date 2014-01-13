@@ -147,11 +147,20 @@ void MapSector::setIntProperty(string key, int value)
 		MapObject::setIntProperty(key, value);
 }
 
-fpoint2_t MapSector::midPoint()
+fpoint2_t MapSector::getPoint(uint8_t point)
 {
-	bbox_t bbox = boundingBox();
-	return fpoint2_t(bbox.min.x + ((bbox.max.x-bbox.min.x)*0.5),
-	                 bbox.min.y + ((bbox.max.y-bbox.min.y)*0.5));
+	if (point == MOBJ_POINT_MID)
+	{
+		bbox_t bbox = boundingBox();
+		return fpoint2_t(bbox.min.x + ((bbox.max.x-bbox.min.x)*0.5),
+			bbox.min.y + ((bbox.max.y-bbox.min.y)*0.5));
+	}
+	else
+	{
+		if (text_point.x == 0 && text_point.y == 0 && parent_map)
+			parent_map->findSectorTextPoint(this);
+		return text_point;
+	}
 }
 
 void MapSector::updateBBox()
@@ -167,6 +176,7 @@ void MapSector::updateBBox()
 		bbox.extend(line->v2()->xPos(), line->v2()->yPos());
 	}
 
+	text_point.set(0, 0);
 	geometry_updated = theApp->runTimer();
 }
 

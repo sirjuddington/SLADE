@@ -108,7 +108,7 @@ public:
 	void	setS1(MapSide* side);
 	void	setS2(MapSide* side);
 
-	fpoint2_t	midPoint();
+	fpoint2_t	getPoint(uint8_t point);
 	double		getLength();
 	bool		doubleSector();
 	fpoint2_t	frontVector();
