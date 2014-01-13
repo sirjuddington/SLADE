@@ -75,6 +75,9 @@
 CVAR(Int, autosave_entry_changes, 2, CVAR_SAVE)	// 0=no, 1=yes, 2=ask
 CVAR(Bool, confirm_entry_delete, true, CVAR_SAVE)
 CVAR(Bool, context_submenus, true, CVAR_SAVE)
+CVAR(String, last_colour, "RGB(255, 0, 0)", CVAR_SAVE)
+CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVAR_SAVE)
+CVAR(Int, last_tint_amount, 50, CVAR_SAVE)
 EXTERN_CVAR(String, path_pngout);
 EXTERN_CVAR(String, path_pngcrush);
 EXTERN_CVAR(String, path_deflopt);
@@ -1404,6 +1407,7 @@ bool ArchivePanel::gfxColourise()
 	// Create colourise dialog
 	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 	GfxColouriseDialog gcd(this, selection[0], pal);
+	gcd.setColour(last_colour);
 
 	// Run dialog
 	if (gcd.ShowModal() == wxID_OK)
@@ -1436,6 +1440,8 @@ bool ArchivePanel::gfxColourise()
 		// Finish recording undo level
 		undo_manager->endRecord(true);
 	}
+	rgba_t gcdcol = gcd.getColour();
+	last_colour = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	theActivePanel->callRefresh();
 
 	return true;
@@ -1452,6 +1458,7 @@ bool ArchivePanel::gfxTint()
 	// Create colourise dialog
 	Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 	GfxTintDialog gtd(this, selection[0], pal);
+	gtd.setValues(last_tint_colour, last_tint_amount);
 
 	// Run dialog
 	if (gtd.ShowModal() == wxID_OK)
@@ -1484,6 +1491,9 @@ bool ArchivePanel::gfxTint()
 		// Finish recording undo level
 		undo_manager->endRecord(true);
 	}
+	rgba_t gtdcol = gtd.getColour();
+	last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
+	last_tint_amount = (int)(gtd.getAmount() * 100.0f);
 	theActivePanel->callRefresh();
 
 	return true;

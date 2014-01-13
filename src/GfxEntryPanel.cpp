@@ -50,6 +50,9 @@
  * VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, gfx_arc)
+EXTERN_CVAR(String, last_colour)
+EXTERN_CVAR(String, last_tint_colour)
+EXTERN_CVAR(Int, last_tint_amount)
 
 class GfxCropDialog : public wxDialog
 {
@@ -731,6 +734,7 @@ bool GfxEntryPanel::handleAction(string id)
 	{
 		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry, pal);
+		gcd.setColour(last_colour);
 
 		// Show colourise dialog
 		if (gcd.ShowModal() == wxID_OK)
@@ -747,6 +751,8 @@ bool GfxEntryPanel::handleAction(string id)
 			Refresh();
 			setModified();
 		}
+		rgba_t gcdcol = gcd.getColour();
+		last_colour = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
 	}
 
 	// Tint
@@ -754,6 +760,7 @@ bool GfxEntryPanel::handleAction(string id)
 	{
 		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
 		GfxTintDialog gtd(theMainWindow, entry, pal);
+		gtd.setValues(last_tint_colour, last_tint_amount);
 
 		// Show tint dialog
 		if (gtd.ShowModal() == wxID_OK)
@@ -770,6 +777,9 @@ bool GfxEntryPanel::handleAction(string id)
 			Refresh();
 			setModified();
 		}
+		rgba_t gtdcol = gtd.getColour();
+		last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
+		last_tint_amount = (int)(gtd.getAmount() * 100.0);
 	}
 
 	// Crop

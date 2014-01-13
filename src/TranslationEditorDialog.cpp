@@ -281,7 +281,6 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	gfx_preview = new GfxCanvas(this, -1);
 	gfx_preview->setPalette(palette);
 	gfx_preview->setViewType(GFXVIEW_CENTERED);
-	//if (entry_preview) Misc::loadImageFromEntry(gfx_preview->getImage(), entry_preview);
 	gfx_preview->getImage()->copyImage(&image_preview);
 	framesizer->Add(gfx_preview->toPanel(this), 1, wxEXPAND|wxALL, 4);
 
@@ -1128,6 +1127,15 @@ rgba_t GfxColouriseDialog::getColour()
 	return rgba_t(col.Red(), col.Green(), col.Blue());
 }
 
+void GfxColouriseDialog::setColour(string col)
+{
+	wxColour colour(col);
+	cp_colour->SetColour(colour);
+	gfx_preview->getImage()->colourise(rgba_t(colour.Red(), colour.Green(), colour.Blue()), palette);
+	gfx_preview->updateImageTexture();
+	gfx_preview->Refresh();
+}
+
 // Events
 void GfxColouriseDialog::onColourChanged(wxColourPickerEvent& e)
 {
@@ -1228,6 +1236,17 @@ rgba_t GfxTintDialog::getColour()
 float GfxTintDialog::getAmount()
 {
 	return (float)slider_amount->GetValue()*0.01f;
+}
+
+void GfxTintDialog::setValues(string col, int val)
+{
+	wxColour colour(col);
+	cp_colour->SetColour(colour);
+	slider_amount->SetValue(val);
+	label_amount->SetLabel(S_FMT("%d%% ", slider_amount->GetValue()));
+	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
+	gfx_preview->updateImageTexture();
+	gfx_preview->Refresh();
 }
 
 // Events
