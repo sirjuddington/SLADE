@@ -14,6 +14,10 @@ enum
 	MOBJ_SIDE,
 	MOBJ_SECTOR,
 	MOBJ_THING,
+
+	MOBJ_POINT_MID = 0,
+	MOBJ_POINT_WITHIN,
+	MOBJ_POINT_TEXT
 };
 
 struct mobj_backup_t
@@ -67,8 +71,7 @@ public:
 	virtual void	setFloatProperty(string key, double value);
 	virtual void	setStringProperty(string key, string value);
 
-	virtual fpoint2_t	midPoint() { return fpoint2_t(0,0); }
-	virtual fpoint2_t	textPoint() { return fpoint2_t(0,0); }
+	virtual fpoint2_t	getPoint(uint8_t point) { return fpoint2_t(0,0); }
 
 	void	filter(bool f = true) { filtered = f; }
 

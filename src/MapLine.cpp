@@ -270,9 +270,10 @@ void MapLine::setS2(MapSide* side)
 	}
 }
 
-fpoint2_t MapLine::midPoint()
+fpoint2_t MapLine::getPoint(uint8_t point)
 {
-	return fpoint2_t(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
+	//if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
+		return fpoint2_t(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
 }
 
 double MapLine::getLength()
@@ -314,7 +315,7 @@ fpoint2_t MapLine::frontVector()
 fpoint2_t MapLine::dirTabPoint()
 {
 	// Calculate midpoint
-	fpoint2_t mid = midPoint();
+	fpoint2_t mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
 
 	// Calculate tab length
 	double tablen = getLength() * 0.1;

@@ -52,6 +52,7 @@ private:
 	Polygon2D			polygon;
 	bool				poly_needsupdate;
 	long				geometry_updated;
+	fpoint2_t			text_point;
 
 public:
 	MapSector(SLADEMap* parent = NULL);
@@ -74,7 +75,7 @@ public:
 	void	setFloatProperty(string key, double value);
 	void	setIntProperty(string key, int value);
 
-	fpoint2_t			midPoint();
+	fpoint2_t			getPoint(uint8_t point);
 	void				resetBBox() { bbox.reset(); }
 	bbox_t				boundingBox();
 	vector<MapSide*>&	connectedSides() { return connected_sides; }

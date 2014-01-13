@@ -2759,6 +2759,59 @@ bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double&
 		line2->vertex1->x, line2->vertex1->y, line2->vertex2->x, line2->vertex2->y, x, y);
 }
 
+void SLADEMap::findSectorTextPoint(MapSector* sector)
+{
+	// Check sector
+	if (!sector)
+		return;
+
+	// Check if actual sector midpoint can be used
+	sector->text_point = sector->getPoint(MOBJ_POINT_MID);
+	if (sector->isWithin(sector->text_point.x, sector->text_point.y))
+		return;
+
+	if (sector->connected_sides.size() == 0)
+		return;
+
+	// Find nearest line to sector midpoint (that is also part of the sector)
+	double min_dist = 9999999999;
+	MapSide* mid_side = sector->connected_sides[0];
+	for (unsigned a = 0; a < sector->connected_sides.size(); a++)
+	{
+		MapLine* l = sector->connected_sides[a]->parent;
+		double dist = MathStuff::distanceToLineFast(sector->text_point.x, sector->text_point.y, l->x1(), l->y1(), l->x2(), l->y2());
+
+		if (dist < min_dist)
+		{
+			min_dist = dist;
+			mid_side = sector->connected_sides[a];
+		}
+	}
+
+	// Calculate ray
+	fpoint2_t r_o = mid_side->parent->getPoint(MOBJ_POINT_MID);
+	fpoint2_t r_d = mid_side->parent->frontVector();
+	if (mid_side == mid_side->parent->side1)
+		r_d.set(-r_d.x, -r_d.y);
+
+	// Find nearest intersecting line
+	min_dist = 9999999999;
+	for (unsigned a = 0; a < sector->connected_sides.size(); a++)
+	{
+		if (sector->connected_sides[a] == mid_side)
+			continue;
+
+		MapLine* line = sector->connected_sides[a]->parent;
+		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->x1(), line->y1(), line->x2(), line->y2());
+
+		if (dist > 0 && dist < min_dist)
+			min_dist = dist;
+	}
+
+	// Set text point to halfway between the two lines
+	sector->text_point.set(r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5));
+}
+
 void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 {
 	// Find sectors with matching tag
@@ -3198,7 +3251,7 @@ string SLADEMap::getAdjacentLineTexture(MapVertex* vertex, int tex_part)
 MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 {
 	// Get mid and direction points
-	fpoint2_t mid = line->midPoint();
+	fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
 	fpoint2_t dir = line->frontVector();
 	if (front)
 		dir = mid - dir;
@@ -4072,7 +4125,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		else
 		{
 			edges.push_back(me_ls_t(lines[a], true));
-			fpoint2_t mid = lines[a]->midPoint();
+			fpoint2_t mid = lines[a]->getPoint(MOBJ_POINT_MID);
 			if (sectorAt(mid.x, mid.y) >= 0)
 				edges.push_back(me_ls_t(lines[a], false));
 		}

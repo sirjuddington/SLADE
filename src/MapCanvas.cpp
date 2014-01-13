@@ -77,6 +77,8 @@ CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
 CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 CVAR(Bool, map_show_help, true, CVAR_SAVE)
 CVAR(Int, map_crosshair, 0, CVAR_SAVE)
+CVAR(Bool, map_show_selection_numbers, true, CVAR_SAVE)
+CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -609,6 +611,8 @@ void MapCanvas::drawEditorMessages()
 	// Go through editor messages
 	int yoff = 0;
 	if (map_showfps) yoff = 16;
+	Drawing::setTextState(true);
+	Drawing::enableTextStateReset(false);
 	for (unsigned a = 0; a < editor->numEditorMessages(); a++)
 	{
 		// Check message time
@@ -630,13 +634,18 @@ void MapCanvas::drawEditorMessages()
 		if (time > 1500)
 			col.a = 255 - (double((time - 1500) / 500.0) * 255);
 
-		// Draw message 'shadow'
-		Drawing::drawText(editor->getEditorMessage(a), 1, yoff+1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
+		// Draw message outline
+		Drawing::drawText(editor->getEditorMessage(a), 2, yoff+1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), 2, yoff-1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), -2, yoff-1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), -2, yoff+1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
 
 		// Draw message
 		Drawing::drawText(editor->getEditorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
 		yoff += 16;
 	}
+	Drawing::setTextState(false);
+	Drawing::enableTextStateReset(true);
 }
 
 void MapCanvas::drawFeatureHelpText()
@@ -649,7 +658,10 @@ void MapCanvas::drawFeatureHelpText()
 	frect_t bounds;
 	rgba_t col = ColourConfiguration::getColour("map_editor_message");
 	col.a = col.a * anim_help_fade;
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 1, 3, rgba_t(0, 0, 0, 200 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 3, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x, 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x, 3, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
 	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 2, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT, &bounds);
 
 	// Draw underline
@@ -666,13 +678,23 @@ void MapCanvas::drawFeatureHelpText()
 
 	// Draw help text
 	int yoff = 22;
+	Drawing::setTextState(true);
+	Drawing::enableTextStateReset(false);
 	for (unsigned a = 1; a < feature_help_lines.size(); a++)
 	{
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff + 1, rgba_t(0, 0, 0, 200 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		// Draw outline
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff + 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff - 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff - 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff + 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+
+		// Draw text
 		Drawing::drawText(feature_help_lines[a], GetSize().x - 2, yoff, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
 
 		yoff += 16;
 	}
+	Drawing::setTextState(false);
+	Drawing::enableTextStateReset(true);
 }
 
 void MapCanvas::drawSelectionNumbers()
@@ -687,18 +709,46 @@ void MapCanvas::drawSelectionNumbers()
 	rgba_t col = ColourConfiguration::getColour("map_editor_message");
 
 	// Go through selection
+	string text;
+	Drawing::enableTextStateReset(false);
+	Drawing::setTextState(true);
+	bool outline = (editor->selectionSize() <= map_max_selection_numbers * 0.5);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		fpoint2_t tp = selection[a]->textPoint();
+		if (a > map_max_selection_numbers)
+			break;
+
+		fpoint2_t tp = selection[a]->getPoint(MOBJ_POINT_TEXT);
 		tp.x = screenX(tp.x);
 		tp.y = screenY(tp.y);
 
-		// Draw text 'shadow'
-		Drawing::drawText(S_FMT("%d", a+1), tp.x+3, tp.y+3, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
+		text = S_FMT("%d", a+1);
+		fpoint2_t ts = Drawing::textExtents(text, Drawing::FONT_BOLD);
+		tp.x -= ts.x * 0.5;
+		tp.y -= ts.y * 0.5;
+
+		if (editor->editMode() == MapEditor::MODE_VERTICES)
+		{
+			tp.x += 8;
+			tp.y += 8;
+		}
+
+		// Draw text outline or shadow
+		if (outline)
+		{
+			Drawing::drawText(S_FMT("%d", a+1), tp.x+2, tp.y+1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
+			Drawing::drawText(S_FMT("%d", a+1), tp.x-2, tp.y+1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
+			Drawing::drawText(S_FMT("%d", a+1), tp.x-2, tp.y-1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
+			Drawing::drawText(S_FMT("%d", a+1), tp.x+2, tp.y-1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
+		}
+		else
+			Drawing::drawText(S_FMT("%d", a+1), tp.x+1, tp.y+1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
 
 		// Draw text
-		Drawing::drawText(S_FMT("%d", a+1), tp.x+2, tp.y+2, col, Drawing::FONT_BOLD);
+		Drawing::drawText(S_FMT("%d", a+1), tp.x, tp.y, col, Drawing::FONT_BOLD);
 	}
+	Drawing::enableTextStateReset();
+	Drawing::setTextState(false);
 }
 
 void MapCanvas::drawThingQuickAngleLines()
@@ -1106,8 +1156,8 @@ void MapCanvas::drawMap2d()
 	renderer_2d->renderPathedThings(editor->pathedThings());
 
 	// Draw selection numbers if needed
-	//if (editor->selectionSize() > 0)
-	//	drawSelectionNumbers();
+	if (editor->selectionSize() > 0 && mouse_state == MSTATE_NORMAL && map_show_selection_numbers)
+		drawSelectionNumbers();
 
 	// Draw thing quick angle lines if needed
 	if (mouse_state == MSTATE_THING_ANGLE)
@@ -2819,6 +2869,17 @@ void MapCanvas::keyBinds2d(string name)
 			// Begin paste if appropriate data exists
 			if (item)
 				mouse_state = MSTATE_PASTE;
+		}
+
+		// Toggle selection numbers
+		else if (name == "me2d_toggle_selection_numbers")
+		{
+			map_show_selection_numbers = !map_show_selection_numbers;
+
+			if (map_show_selection_numbers)
+				editor->addEditorMessage("Selection numbers enabled");
+			else
+				editor->addEditorMessage("Selection numbers disabled");
 		}
 
 

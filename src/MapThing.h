@@ -56,7 +56,7 @@ public:
 	double		yPos() { return y; }
 	void		setPos(double x, double y) { this->x = x; this->y = y; }
 
-	fpoint2_t	midPoint() { return fpoint2_t(x, y); }
+	fpoint2_t	getPoint(uint8_t point);
 
 	short	getType() { return type; }
 	short	getAngle() { return angle; }
