@@ -41,6 +41,8 @@ public:
 	void	saveChanges();
 	bool	close();
 	void	showTextureMenu(bool show = true);
+	void	setSelection(size_t index);
+	void	setSelection(ArchiveEntry* entry);
 
 	// Editing
 	bool	removePatch(unsigned index, bool delete_entry = false);
