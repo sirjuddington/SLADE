@@ -48,6 +48,7 @@
 #include "Dialogs/RunDialog.h"
 #include "MapEditorConfigDialog.h"
 #include "MapChecksPanel.h"
+#include "SplashWindow.h"
 #include <wx/aui/aui.h>
 
 
@@ -264,7 +265,7 @@ void MapEditorWindow::setupLayout()
 
 	// Status bar
 	CreateStatusBar(4);
-	int status_widths[4] = { -1, 160, 180, 160 };
+	int status_widths[4] = { -1, 160, 200, 160 };
 	SetStatusWidths(4, status_widths);
 
 	// -- Console Panel --
@@ -415,6 +416,13 @@ bool MapEditorWindow::createMap()
 
 bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 {
+	// Show blank map
+	this->Show(true);
+	map_canvas->Refresh();
+	Layout();
+	Update();
+	Refresh();
+
 	// Get map parent archive
 	Archive* archive = NULL;
 	if (map.head)
@@ -427,7 +435,9 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	closeMap();
 
 	// Attempt to open map
+	theSplashWindow->show("Loading Map", true, this);
 	bool ok = editor.openMap(map);
+	theSplashWindow->hide();
 
 	// Show window if opened ok
 	if (ok)
@@ -448,8 +458,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 		// Reset map checks panel
 		panel_checks->reset();
 
-		this->Show(true);
-		map_canvas->viewFitToMap();
+		map_canvas->viewFitToMap(true);
 		map_canvas->Refresh();
 
 		// Set window title

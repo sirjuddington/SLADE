@@ -203,6 +203,7 @@ public:
 	void				updateGeometryInfo(long modified_time);
 	bool				linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
 	void				findSectorTextPoint(MapSector* sector);
+	void				initSectorPolygons();
 
 	// Tags/Ids
 	MapThing* getFirstThingWithId(int id);
