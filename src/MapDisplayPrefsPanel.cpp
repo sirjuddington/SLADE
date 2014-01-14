@@ -25,6 +25,8 @@ EXTERN_CVAR(Bool, map_animate_tagged)
 EXTERN_CVAR(Bool, line_fade)
 EXTERN_CVAR(Bool, flat_fade)
 EXTERN_CVAR(Int, map_crosshair)
+EXTERN_CVAR(Bool, arrow_colour)
+EXTERN_CVAR(Float, arrow_alpha)
 
 MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
@@ -151,6 +153,10 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	cb_thing_force_dir = new wxCheckBox(panel, -1, "Always show thing angles");
 	sizer->Add(cb_thing_force_dir, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
+	// Colour angle arrows
+	cb_thing_arrow_colour = new wxCheckBox(panel, -1, "Colour thing angle arrows");
+	sizer->Add(cb_thing_arrow_colour, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
 	// Force square hilight/selection
 	cb_thing_overlay_square = new wxCheckBox(panel, -1, "Force square thing hilight/selection overlay");
 	sizer->Add(cb_thing_overlay_square, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -161,6 +167,13 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	hbox->Add(new wxStaticText(panel, -1, "Thing shadow opacity: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	slider_thing_shadow = new wxSlider(panel, -1, thing_shadow*10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	hbox->Add(slider_thing_shadow, 1, wxEXPAND);
+
+	// Arrow opacity
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
+	hbox->Add(new wxStaticText(panel, -1, "Thing angle arrow opacity: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
+	slider_thing_arrow_alpha = new wxSlider(panel, -1, thing_shadow*10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	hbox->Add(slider_thing_arrow_alpha, 1, wxEXPAND);
 
 	// When not in things mode
 	hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -215,6 +228,7 @@ void MapDisplayPrefsPanel::init()
 	choice_thing_drawtype->SetSelection(thing_drawtype);
 	cb_thing_force_dir->SetValue(thing_force_dir);
 	cb_thing_overlay_square->SetValue(thing_overlay_square);
+	cb_thing_arrow_colour->SetValue(arrow_colour);
 	cb_flat_ignore_light->SetValue(flat_ignore_light);
 	cb_sector_hilight_fill->SetValue(sector_hilight_fill);
 	cb_animate_hilight->SetValue(map_animate_hilight);
@@ -228,6 +242,7 @@ void MapDisplayPrefsPanel::init()
 	slider_vertex_size->SetValue(vertex_size);
 	slider_line_width->SetValue(line_width * 10);
 	slider_thing_shadow->SetValue(thing_shadow * 10);
+	slider_thing_arrow_alpha->SetValue(arrow_alpha * 10);
 	slider_flat_brightness->SetValue(flat_brightness * 10);
 	choice_crosshair->Select(map_crosshair);
 }
@@ -244,6 +259,8 @@ void MapDisplayPrefsPanel::applyPreferences()
 	thing_force_dir = cb_thing_force_dir->GetValue();
 	thing_overlay_square = cb_thing_overlay_square->GetValue();
 	thing_shadow = (float)slider_thing_shadow->GetValue() * 0.1f;
+	arrow_colour = cb_thing_arrow_colour->GetValue();
+	arrow_alpha = (float)slider_thing_shadow->GetValue() * 0.1f;
 	flat_brightness = (float)slider_flat_brightness->GetValue() * 0.1f;
 	flat_ignore_light = cb_flat_ignore_light->GetValue();
 	sector_hilight_fill = cb_sector_hilight_fill->GetValue();
