@@ -716,7 +716,7 @@ void MapCanvas::drawSelectionNumbers()
 	bool outline = (editor->selectionSize() <= map_max_selection_numbers * 0.5);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (a > map_max_selection_numbers)
+		if ((int)a > map_max_selection_numbers)
 			break;
 
 		fpoint2_t tp = selection[a]->getPoint(MOBJ_POINT_TEXT);
@@ -1013,6 +1013,10 @@ void MapCanvas::drawObjectEdit()
  *******************************************************************/
 void MapCanvas::drawMap2d()
 {
+	// Don't bother if there are no vertices or things
+	if (editor->getMap().nVertices() == 0 && editor->getMap().nThings() == 0)
+		return;
+
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

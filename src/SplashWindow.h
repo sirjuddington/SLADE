@@ -39,12 +39,13 @@ public:
 		instance = NULL;
 	}
 
+	float	getProgress() { return progress; }
 	void	setMessage(string message);
 	void	setProgressMessage(string message);
 	void	setProgress(float progress);
 
 	void	init();
-	void	show(string message, bool progress = false);
+	void	show(string message, bool progress = false, wxWindow* parent = NULL);
 	void	hide();
 	void	forceRedraw();
 

@@ -134,7 +134,7 @@ void SplashWindow::init()
  * Shows the splash window with [message]. If [progress] is true, a
  * progress bar will also be shown
  *******************************************************************/
-void SplashWindow::show(string message, bool progress)
+void SplashWindow::show(string message, bool progress, wxWindow* parent)
 {
 	// Setup progress bar
 	int rheight = height;
@@ -148,8 +148,10 @@ void SplashWindow::show(string message, bool progress)
 		show_progress = false;
 
 	// Set parent
-	if (theApp->isInitialised())
+	if (!parent && theApp->isInitialised())
 		SetParent(theMainWindow);
+	else
+		SetParent(parent);
 
 	// Show & init window
 #ifndef __WXGTK__
