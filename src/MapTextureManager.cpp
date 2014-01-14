@@ -75,7 +75,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	}
 
 	// Texture not found or unloaded, look for it
-	Palette8bit* pal = getResourcePalette();
+	//Palette8bit* pal = getResourcePalette();
 
 	// Look for stand-alone textures first
 	ArchiveEntry* etex = theResourceManager->getTextureEntry(name, "hires", archive);
@@ -93,7 +93,7 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 		{
 			mtex.texture = new GLTexture(false);
 			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, pal);
+			mtex.texture->loadImage(&image, palette);
 
 			// Handle hires texture scale
 			if (textypefound == TEXTYPE_HIRES)
@@ -122,11 +122,11 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	{
 		textypefound = TEXTYPE_WALLTEXTURE;
 		SImage image;
-		if (ctex->toImage(image, archive, pal))
+		if (ctex->toImage(image, archive, palette))
 		{
 			mtex.texture = new GLTexture(false);
 			mtex.texture->setFilter(filter);
-			mtex.texture->loadImage(&image, pal);
+			mtex.texture->loadImage(&image, palette);
 			double sx = ctex->getScaleX(); if (sx == 0) sx = 1.0;
 			double sy = ctex->getScaleY(); if (sy == 0) sy = 1.0;
 			mtex.texture->setScale(1.0/sx, 1.0/sy);
@@ -179,7 +179,7 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	}
 
 	// Flat not found, look for it
-	Palette8bit* pal = getResourcePalette();
+	//Palette8bit* pal = getResourcePalette();
 	if (!mtex.texture)
 	{
 		ArchiveEntry* entry = theResourceManager->getTextureEntry(name, "hires", archive);
@@ -194,7 +194,7 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 			{
 				mtex.texture = new GLTexture(false);
 				mtex.texture->setFilter(filter);
-				mtex.texture->loadImage(&image, pal);
+				mtex.texture->loadImage(&image, palette);
 			}
 		}
 	}
@@ -257,7 +257,7 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	bool found = false;
 	bool mirror = false;
 	SImage image;
-	Palette8bit* pal = getResourcePalette();
+	//Palette8bit* pal = getResourcePalette();
 	ArchiveEntry* entry = theResourceManager->getPatchEntry(name, "sprites", archive);
 	if (!entry) entry = theResourceManager->getPatchEntry(name, "", archive);
 	if (!entry && name.length() == 8)
@@ -275,13 +275,14 @@ GLTexture* MapTextureManager::getSprite(string name, string translation, string 
 	else  	// Try composite textures then
 	{
 		CTexture* ctex = theResourceManager->getTexture(name, archive);
-		if (ctex && ctex->toImage(image, archive, pal))
+		if (ctex && ctex->toImage(image, archive, this->palette))
 			found = true;
 	}
 
 	// We have a valid image either from an entry or a composite texture.
 	if (found)
 	{
+		Palette8bit* pal = this->palette;
 		// Apply translation
 		if (!translation.IsEmpty()) image.applyTranslation(translation, pal);
 		// Apply palette override
@@ -420,6 +421,7 @@ void MapTextureManager::refreshResources()
 	sprites.clear();
 	thePaletteChooser->setGlobalFromArchive(archive);
 	theMapEditor->forceRefresh(true);
+	palette = getResourcePalette();
 	//wxLogMessage("texture manager cleared");
 }
 
