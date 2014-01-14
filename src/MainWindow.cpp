@@ -63,6 +63,7 @@ CVAR(Int, mw_height, 768, CVAR_SAVE);
 CVAR(Int, mw_left, -1, CVAR_SAVE);
 CVAR(Int, mw_top, -1, CVAR_SAVE);
 CVAR(Bool, mw_maximized, true, CVAR_SAVE);
+CVAR(Int, tab_style, 1, CVAR_SAVE);
 
 
 /*******************************************************************
@@ -187,7 +188,10 @@ void MainWindow::setupLayout()
 
 	// -- Editor Area --
 	notebook_tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE|wxNO_BORDER|wxAUI_NB_WINDOWLIST_BUTTON|wxNB_FLAT);
-	notebook_tabs->SetArtProvider(new clAuiTabArt());
+	if (tab_style == 1)
+		notebook_tabs->SetArtProvider(new clAuiTabArt());
+	else if (tab_style == 2)
+		notebook_tabs->SetArtProvider(new clAuiSimpleTabArt());
 
 	// Setup panel info & add panel
 	p_inf.CenterPane();
