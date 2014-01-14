@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -1299,6 +1299,8 @@ bool SImage::setImageData(uint8_t* ndata, int nwidth, int nheight, SIType ntype)
  *******************************************************************/
 bool SImage::applyTranslation(Translation* tr, Palette8bit* pal)
 {
+	bool truecolor = false;
+
 	// Check image is ok
 	if (!data)
 		return false;
@@ -1311,6 +1313,13 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal)
 	if (has_palette || !pal)
 		pal = &palette;
 
+	uint8_t* newdata = NULL;
+	if (truecolor)
+	{
+		newdata = new uint8_t[width*height*4];
+		memset(newdata, 0, width*height*4);
+	}
+
 	// Go through pixels
 	for (int p = 0; p < width*height; p++)
 	{
@@ -1319,6 +1328,16 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal)
 		// No need to process transparent pixels
 		if (mask && mask[p] == 0)
 			continue;
+
+		if (truecolor)
+		{
+			int q = p*4;
+			rgba_t col = pal->colour(i);
+			newdata[q+0] = col.r;
+			newdata[q+1] = col.g;
+			newdata[q+2] = col.b;
+			newdata[q+3] = mask ? mask[p] : col.a;
+		}
 
 		// Go through each translation component
 		for (unsigned a = 0; a < tr->nRanges(); a++)
@@ -1343,6 +1362,15 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal)
 
 					// Apply new colour
 					data[p] = di;
+					if (truecolor)
+					{
+						int q = p*4;
+						rgba_t col = pal->colour(di);
+						newdata[q+0] = col.r;
+						newdata[q+1] = col.g;
+						newdata[q+2] = col.b;
+						newdata[q+3] = mask ? mask[p] : col.a;
+					}
 				}
 			}
 
@@ -1369,6 +1397,14 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal)
 
 					// Apply new colour
 					data[p] = di;
+					if (truecolor)
+					{
+						int q = p*4;
+						newdata[q+0] = r;
+						newdata[q+1] = g;
+						newdata[q+2] = b;
+						newdata[q+3] = mask ? mask[p] : 255;
+					}
 				}
 			}
 
@@ -1394,9 +1430,24 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal)
 
 					// Apply new colour
 					data[p] = di;
+					if (truecolor)
+					{
+						int q = p*4;
+						newdata[q+0] = r;
+						newdata[q+1] = g;
+						newdata[q+2] = b;
+						newdata[q+3] = mask ? mask[p] : 255;
+					}
 				}
 			}
 		}
+	}
+
+	if (truecolor)
+	{
+		clearData(true);
+		data = newdata;
+		type = RGBA;
 	}
 
 	return true;

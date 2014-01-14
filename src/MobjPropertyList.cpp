@@ -1,6 +1,6 @@
 /*******************************************************************
 * SLADE - It's a Doom Editor
-* Copyright (C) 2008-2012 Simon Judd
+* Copyright (C) 2008-2014 Simon Judd
 *
 * Email:       sirjuddington@gmail.com
 * Web:         http://slade.mancubus.net
