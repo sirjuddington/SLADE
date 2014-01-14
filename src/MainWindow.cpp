@@ -524,9 +524,9 @@ vector<ArchiveEntry*> MainWindow::getCurrentEntrySelection()
 /* MainWindow::openTextureEditor
  * Opens the texture editor for the current archive tab
  *******************************************************************/
-void MainWindow::openTextureEditor(Archive* archive)
+void MainWindow::openTextureEditor(Archive* archive, ArchiveEntry* entry)
 {
-	panel_archivemanager->openTextureTab(theArchiveManager->archiveIndex(archive));
+	panel_archivemanager->openTextureTab(theArchiveManager->archiveIndex(archive), entry);
 }
 
 /* MainWindow::openMapEditor

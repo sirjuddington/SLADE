@@ -43,7 +43,7 @@ EXTERN_CVAR(Bool, context_submenus)
 EXTERN_CVAR(Bool, list_font_monospace)
 EXTERN_CVAR(Bool, elist_type_bgcol)
 EXTERN_CVAR(Int, toolbar_size)
-
+EXTERN_CVAR(Int, tab_style)
 
 /*******************************************************************
  * INTERFACEPREFSPANEL CLASS FUNCTIONS
@@ -94,6 +94,15 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "Toolbar icon size:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 	hbox->Add(choice_toolbar_size, 0, wxEXPAND|wxRIGHT, 4);
+
+	// Tab style
+	string styles[] ={ "Glossy", "Flat", "Rounded" };
+	choice_tab_style = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, styles);
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	hbox->Add(new wxStaticText(this, -1, "Tab style:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(choice_tab_style, 0, wxEXPAND|wxRIGHT, 4);
+	sizer->Add(new wxStaticText(this, -1, "You need to quit and restart SLADE 3 for tab style changes to take effect."), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 }
 
 /* InterfacePrefsPanel::~InterfacePrefsPanel
@@ -121,6 +130,12 @@ void InterfacePrefsPanel::init()
 		choice_toolbar_size->Select(1);
 	else
 		choice_toolbar_size->Select(2);
+
+	if (tab_style < 0)
+		tab_style = 0;
+	else if (tab_style > 2)
+		tab_style = 2;
+	choice_tab_style->Select(tab_style);
 }
 
 /* InterfacePrefsPanel::applyPreferences
@@ -141,4 +156,6 @@ void InterfacePrefsPanel::applyPreferences()
 		toolbar_size = 24;
 	else
 		toolbar_size = 32;
+
+	tab_style = choice_tab_style->GetSelection();
 }

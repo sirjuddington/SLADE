@@ -57,7 +57,7 @@ public:
 	ArchiveEntry*			getCurrentEntry();
 	vector<ArchiveEntry*>	getCurrentEntrySelection();
 
-	void	openTextureEditor(Archive* archive);
+	void	openTextureEditor(Archive* archive, ArchiveEntry* entry = NULL);
 	void	openMapEditor(Archive* archive);
 	void	openEntry(ArchiveEntry* entry);
 
