@@ -40,8 +40,8 @@ void MapSector::copy(MapObject* s)
 	// Update texture counts (decrement previous)
 	if (parent_map)
 	{
-		parent_map->updateFlatUsage(f_tex.Upper(), -1);
-		parent_map->updateFlatUsage(c_tex.Upper(), -1);
+		parent_map->updateFlatUsage(f_tex, -1);
+		parent_map->updateFlatUsage(c_tex, -1);
 	}
 
 	// Basic variables
@@ -57,8 +57,8 @@ void MapSector::copy(MapObject* s)
 	// Update texture counts (increment new)
 	if (parent_map)
 	{
-		parent_map->updateFlatUsage(f_tex.Upper(), 1);
-		parent_map->updateFlatUsage(c_tex.Upper(), 1);
+		parent_map->updateFlatUsage(f_tex, 1);
+		parent_map->updateFlatUsage(c_tex, 1);
 	}
 
 	// Other properties
@@ -98,15 +98,15 @@ void MapSector::setStringProperty(string key, string value)
 
 	if (key == "texturefloor")
 	{
-		if (parent_map) parent_map->updateFlatUsage(f_tex.Upper(), -1);
+		if (parent_map) parent_map->updateFlatUsage(f_tex, -1);
 		f_tex = value;
-		if (parent_map) parent_map->updateFlatUsage(f_tex.Upper(), 1);
+		if (parent_map) parent_map->updateFlatUsage(f_tex, 1);
 	}
 	else if (key == "textureceiling")
 	{
-		if (parent_map) parent_map->updateFlatUsage(c_tex.Upper(), -1);
+		if (parent_map) parent_map->updateFlatUsage(c_tex, -1);
 		c_tex = value;
-		if (parent_map) parent_map->updateFlatUsage(c_tex.Upper(), 1);
+		if (parent_map) parent_map->updateFlatUsage(c_tex, 1);
 	}
 	else
 		return MapObject::setStringProperty(key, value);
@@ -520,8 +520,8 @@ void MapSector::writeBackup(mobj_backup_t* backup)
 void MapSector::readBackup(mobj_backup_t* backup)
 {
 	// Update texture counts (decrement previous)
-	parent_map->updateFlatUsage(f_tex.Upper(), -1);
-	parent_map->updateFlatUsage(c_tex.Upper(), -1);
+	parent_map->updateFlatUsage(f_tex, -1);
+	parent_map->updateFlatUsage(c_tex, -1);
 
 	f_tex = backup->props_internal["texturefloor"].getStringValue();
 	c_tex = backup->props_internal["textureceiling"].getStringValue();
@@ -532,6 +532,6 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	tag = backup->props_internal["id"].getIntValue();
 
 	// Update texture counts (increment new)
-	parent_map->updateFlatUsage(f_tex.Upper(), 1);
-	parent_map->updateFlatUsage(c_tex.Upper(), 1);
+	parent_map->updateFlatUsage(f_tex, 1);
+	parent_map->updateFlatUsage(c_tex, 1);
 }

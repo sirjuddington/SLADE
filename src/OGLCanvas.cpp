@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -292,29 +292,6 @@ void OGLCanvas::onEraseBackground(wxEraseEvent& e)
 {
 	// Do nothing
 }
-
-/* OGLCanvas::onIdle
- * Called when the gfx canvas is doing nothing
- *******************************************************************/
-/*
-void OGLCanvas::onIdle(wxIdleEvent& e) {
-	// If frame interval is negative, don't redraw automatically
-	if (frame_interval < 0)
-		return;
-
-	// Get time since last redraw
-	long frametime = theApp->runTimer() - last_time;
-
-	// Update/refresh if needed
-	if (frametime >= frame_interval) {
-		update(frametime);
-		Refresh();
-		last_time = theApp->runTimer();
-	}
-
-	e.Skip();
-}
-*/
 
 void OGLCanvas::onTimer(wxTimerEvent& e)
 {

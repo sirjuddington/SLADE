@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -37,6 +37,7 @@
  *******************************************************************/
 EXTERN_CVAR(Bool, wad_force_uppercase)
 EXTERN_CVAR(Int, autosave_entry_changes)
+EXTERN_CVAR(Bool, percent_encoding)
 
 
 /*******************************************************************
@@ -61,6 +62,10 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_wad_force_uppercase = new wxCheckBox(this, -1, "Force uppercase entry names in Wad Archives");
 	sizer->Add(cb_wad_force_uppercase, 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
 
+	// Percent encoding
+	cb_zip_percent_encoding = new wxCheckBox(this, -1, "Use percent encoding if needed outside of Wad Archives");
+	sizer->Add(cb_zip_percent_encoding, 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
+
 	// Unsaved entry changes
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxALL, 4);
@@ -83,6 +88,7 @@ EditingPrefsPanel::~EditingPrefsPanel()
 void EditingPrefsPanel::init()
 {
 	cb_wad_force_uppercase->SetValue(wad_force_uppercase);
+	cb_zip_percent_encoding->SetValue(percent_encoding);
 	choice_entry_mod->SetSelection(autosave_entry_changes);
 }
 
@@ -92,5 +98,6 @@ void EditingPrefsPanel::init()
 void EditingPrefsPanel::applyPreferences()
 {
 	wad_force_uppercase = cb_wad_force_uppercase->GetValue();
+	percent_encoding = cb_zip_percent_encoding->GetValue();
 	autosave_entry_changes = choice_entry_mod->GetSelection();
 }

@@ -28,7 +28,6 @@ public:
 	int16_t			yOffset() { return offset_y; }
 
 	void	setName(string name) { this->name = name; }
-	void	searchEntry(Archive* parent);
 	void	setOffsetX(int16_t offset) { offset_x = offset; }
 	void	setOffsetY(int16_t offset) { offset_y = offset; }
 

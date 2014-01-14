@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -1670,25 +1670,6 @@ void ArchiveManagerPanel::onListBookmarksRightClick(wxListEvent& e)
  *******************************************************************/
 void ArchiveManagerPanel::onArchiveTabChanging(wxAuiNotebookEvent& e)
 {
-	/*
-	// Page is about to change, remove any custom menus if needed
-	int selection = notebook_archives->GetSelection();
-
-	// ArchivePanel
-	if (isArchivePanel(selection)) {
-		ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(selection);
-		ap->removeMenus();
-	}
-
-	// EntryPanel
-	wxWindow* page = notebook_archives->GetPage(selection);
-	if (page && page->GetName() == "entry") {
-		EntryPanel* ep = (EntryPanel*)page;
-		ep->removeCustomMenu();
-		ep->removeCustomToolBar();
-	}
-	*/
-
 	e.Skip();
 }
 

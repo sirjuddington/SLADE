@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -858,55 +858,12 @@ wxColour Drawing::getPanelBGColour()
 
 wxColour Drawing::getMenuTextColour()
 {
-	/*#ifdef __WXGTK__
-		static bool     intitialized(false);
-		static wxColour textColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT));
-
-		if( !intitialized ) {
-			// try to get the text colour from a menu
-			GtkWidget *menuBar = gtk_menu_new();
-			GtkStyle   *def = gtk_rc_get_style( menuBar );
-			if(!def)
-				def = gtk_widget_get_default_style();
-
-			if(def) {
-				GdkColor col = def->text[GTK_STATE_NORMAL];
-				textColour = wxColour(col);
-			}
-			gtk_widget_destroy( menuBar );
-			intitialized = true;
-		}
-		return textColour;
-	#else*/
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENUTEXT);
-//#endif
 }
 
 wxColour Drawing::getMenuBarBGColour()
 {
-	/*
-	#ifdef __WXGTK__
-		static bool     intitialized(false);
-		static wxColour textColour(wxSystemSettings::GetColour(wxSYS_COLOUR_MENUBAR));
-
-		if( !intitialized ) {
-			// try to get the background colour from a menu
-			GtkWidget *menuBar = gtk_menu_bar_new();
-			GtkStyle   *def = gtk_rc_get_style( menuBar );
-			if(!def)
-				def = gtk_widget_get_default_style();
-
-			if(def) {
-				GdkColor col = def->bg[GTK_STATE_NORMAL];
-				textColour = wxColour(col);
-			}
-			gtk_widget_destroy( menuBar );
-			intitialized = true;
-		}
-		return textColour;
-	#else*/
 	return wxSystemSettings::GetColour(wxSYS_COLOUR_MENU);
-//#endif
 }
 
 wxColour Drawing::lightColour(const wxColour& colour, float percent)

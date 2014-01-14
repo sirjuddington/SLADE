@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -457,26 +457,3 @@ bool WadJArchive::isWadJArchive(string filename)
 	// If it's passed to here it's probably a wad file
 	return true;
 }
-
-/*
-#include "ConsoleHelpers.h"
-#include "Console.h"
-
-CONSOLE_COMMAND(decode, 0) {
-	vector<ArchiveEntry *> meep = theMainWindow->getCurrentEntrySelection();
-	if (meep.size() == 0) {
-		wxLogMessage("No entry selected");
-		return;
-	}
-
-	for (size_t a = 0; a < meep.size(); ++a) {
-		ArchiveEntry * beep = meep[a];
-		if ((beep != NULL) && (beep->isEncrypted() == ENC_JAGUAR)) {
-			MemChunk& mc = beep->getMCData();
-			if (JaguarDecode(mc) && beep->importMemChunk(mc))
-				beep->setEncryption(ENC_NONE);
-			mc.clear();
-		}
-	}
-}
-*/
