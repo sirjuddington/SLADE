@@ -1297,10 +1297,8 @@ bool SImage::setImageData(uint8_t* ndata, int nwidth, int nheight, SIType ntype)
 /* SImage::applyTranslation
  * Applies a palette translation to the image
  *******************************************************************/
-bool SImage::applyTranslation(Translation* tr, Palette8bit* pal)
+bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 {
-	bool truecolor = false;
-
 	// Check image is ok
 	if (!data)
 		return false;

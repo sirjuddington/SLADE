@@ -62,11 +62,15 @@ private:
 	PaletteCanvas*		pal_canvas_preview;
 	GfxCanvas*			gfx_preview;
 
+	// Truecolor
+	wxCheckBox*			cb_truecolor;
+
 public:
 	TranslationEditorDialog(wxWindow* parent, Palette8bit* pal, string title = "Edit Translation", SImage* preview_image = NULL);
 	~TranslationEditorDialog();
 
 	Translation&	getTranslation() { return translation; }
+	bool			getTruecolor();
 
 	void	openTranslation(Translation& trans);
 	void	openRange(int index);
@@ -95,6 +99,7 @@ public:
 	void	onBtnSave(wxCommandEvent& e);
 	void	onGfxPreviewMouseMotion(wxMouseEvent& e);
 	void	onCBTargetReverse(wxCommandEvent& e);
+	void	onCBTruecolor(wxCommandEvent& e);
 };
 
 

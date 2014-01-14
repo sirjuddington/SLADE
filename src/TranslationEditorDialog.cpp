@@ -307,6 +307,9 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	btn_save = new wxButton(this, -1, "Save to File");
 	buttonsizer->Insert(1, btn_save, 0, wxLEFT, 4);
 
+	// Truecolor checkbox
+	cb_truecolor = new wxCheckBox(this, -1, "Truecolor");
+	buttonsizer->Insert(2, cb_truecolor, 0, wxLEFT, 4);
 
 	// Bind events
 	Bind(wxEVT_SIZE, &TranslationEditorDialog::onSize, this);
@@ -326,6 +329,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	btn_save->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TranslationEditorDialog::onBtnSave, this);
 	gfx_preview->Bind(wxEVT_MOTION, &TranslationEditorDialog::onGfxPreviewMouseMotion, this);
 	cb_target_reverse->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TranslationEditorDialog::onCBTargetReverse, this);
+	cb_truecolor->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TranslationEditorDialog::onCBTruecolor, this);
 
 	// Setup layout
 	Layout();
@@ -608,7 +612,7 @@ void TranslationEditorDialog::updatePreviews()
 
 	// Update image preview
 	gfx_preview->getImage()->copyImage(&image_preview);
-	gfx_preview->getImage()->applyTranslation(&translation, palette);
+	gfx_preview->getImage()->applyTranslation(&translation, palette, cb_truecolor->GetValue());
 
 	// Update UI
 	gfx_preview->updateImageTexture();
@@ -618,6 +622,13 @@ void TranslationEditorDialog::updatePreviews()
 	text_string->SetValue(translation.asText());
 }
 
+/* TranslationEditorDialog::getTruecolor
+ * Returns whether the truecolor checkbox is checked
+ *******************************************************************/
+bool TranslationEditorDialog::getTruecolor()
+{
+	return cb_truecolor->GetValue();
+}
 
 /*******************************************************************
  * TRANSLATIONEDITORDIALOG CLASS EVENTS
@@ -1061,7 +1072,13 @@ void TranslationEditorDialog::onCBTargetReverse(wxCommandEvent& e)
 	updatePreviews();
 }
 
-
+/* TranslationEditorDialog::onCBTruecolor
+ * Called when the 'Truecolor' checkbox is (un)checked
+ *******************************************************************/
+void TranslationEditorDialog::onCBTruecolor(wxCommandEvent& e)
+{
+	updatePreviews();
+}
 
 /*******************************************************************
 * GFXCOLOURISEDIALOG FUNCTIONS

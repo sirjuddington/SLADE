@@ -156,7 +156,7 @@ public:
 	bool	crop(long x1, long y1, long x2, long y2);
 	bool	resize(int nwidth, int nheight);
 	bool	setImageData(uint8_t* ndata, int nwidth, int nheight, SIType ntype);
-	bool	applyTranslation(Translation* tr, Palette8bit* pal = NULL);
+	bool	applyTranslation(Translation* tr, Palette8bit* pal = NULL, bool truecolor = false);
 	bool	applyTranslation(string tr, Palette8bit* pal = NULL);
 	bool	drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, Palette8bit* pal);
 	bool	drawImage(SImage& img, int x, int y, si_drawprops_t& properties, Palette8bit* pal_src = NULL, Palette8bit* pal_dest = NULL);
