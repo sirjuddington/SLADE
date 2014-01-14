@@ -213,9 +213,9 @@ void MapTextureBrowser::updateUsage()
 	{
 		MapTexBrowserItem* item = (MapTexBrowserItem*)items[i];
 		if (type == 0)
-			item->setUsage(map->texUsageCount(item->getName().Upper()));
+			item->setUsage(map->texUsageCount(item->getName()));
 		else
-			item->setUsage(map->flatUsageCount(item->getName().Upper()));
+			item->setUsage(map->flatUsageCount(item->getName()));
 	}
 
 	if (!map)

@@ -32,7 +32,6 @@ class TranslationEditorDialog : public wxDialog
 private:
 	Palette8bit*	palette;
 	Translation		translation;
-	//ArchiveEntry*	entry_preview;
 	SImage			image_preview;
 
 	PaletteCanvas*	pal_canvas_original;
@@ -63,11 +62,15 @@ private:
 	PaletteCanvas*		pal_canvas_preview;
 	GfxCanvas*			gfx_preview;
 
+	// Truecolor
+	wxCheckBox*			cb_truecolor;
+
 public:
 	TranslationEditorDialog(wxWindow* parent, Palette8bit* pal, string title = "Edit Translation", SImage* preview_image = NULL);
 	~TranslationEditorDialog();
 
 	Translation&	getTranslation() { return translation; }
+	bool			getTruecolor();
 
 	void	openTranslation(Translation& trans);
 	void	openRange(int index);
@@ -96,6 +99,7 @@ public:
 	void	onBtnSave(wxCommandEvent& e);
 	void	onGfxPreviewMouseMotion(wxMouseEvent& e);
 	void	onCBTargetReverse(wxCommandEvent& e);
+	void	onCBTruecolor(wxCommandEvent& e);
 };
 
 
@@ -116,6 +120,7 @@ private:
 public:
 	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
 	rgba_t getColour();
+	void setColour(string col);
 	void onColourChanged(wxColourPickerEvent& e);
 	void onResize(wxSizeEvent& e);
 };
@@ -141,6 +146,7 @@ public:
 	GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
 	rgba_t getColour();
 	float getAmount();
+	void setValues(string col, int val);
 	void onColourChanged(wxColourPickerEvent& e);
 	void onAmountChanged(wxCommandEvent& e);
 	void onResize(wxSizeEvent& e);

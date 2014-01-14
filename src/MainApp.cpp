@@ -1,6 +1,6 @@
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -140,21 +140,6 @@ public:
 		string func_name = frame.GetName();
 		if (func_name.IsEmpty())
 			func_name = S_FMT("[unknown:%d]", address);
-
-		//string parameters = wxEmptyString;
-		/*
-		for (size_t a = 0; a < frame.GetParamCount(); a++) {
-			string type = wxEmptyString;
-			string name = wxEmptyString;
-			string value = wxEmptyString;
-			frame.GetParam(a, &type, &name, &value);
-
-			parameters.Append(s_fmt("%s %s = %s", type.c_str(), name.c_str(), value.c_str()));
-
-			if (a < frame.GetParamCount() - 1)
-				parameters.Append(", );
-		}
-		*/
 
 		stack_trace.Append(S_FMT("%d: %s%s\n", frame.GetLevel(), CHR(location), CHR(func_name)));
 	}

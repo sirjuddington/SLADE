@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -281,7 +281,6 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	gfx_preview = new GfxCanvas(this, -1);
 	gfx_preview->setPalette(palette);
 	gfx_preview->setViewType(GFXVIEW_CENTERED);
-	//if (entry_preview) Misc::loadImageFromEntry(gfx_preview->getImage(), entry_preview);
 	gfx_preview->getImage()->copyImage(&image_preview);
 	framesizer->Add(gfx_preview->toPanel(this), 1, wxEXPAND|wxALL, 4);
 
@@ -308,6 +307,9 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	btn_save = new wxButton(this, -1, "Save to File");
 	buttonsizer->Insert(1, btn_save, 0, wxLEFT, 4);
 
+	// Truecolor checkbox
+	cb_truecolor = new wxCheckBox(this, -1, "Truecolor");
+	buttonsizer->Insert(2, cb_truecolor, 0, wxLEFT, 4);
 
 	// Bind events
 	Bind(wxEVT_SIZE, &TranslationEditorDialog::onSize, this);
@@ -327,6 +329,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	btn_save->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TranslationEditorDialog::onBtnSave, this);
 	gfx_preview->Bind(wxEVT_MOTION, &TranslationEditorDialog::onGfxPreviewMouseMotion, this);
 	cb_target_reverse->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TranslationEditorDialog::onCBTargetReverse, this);
+	cb_truecolor->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TranslationEditorDialog::onCBTruecolor, this);
 
 	// Setup layout
 	Layout();
@@ -609,30 +612,23 @@ void TranslationEditorDialog::updatePreviews()
 
 	// Update image preview
 	gfx_preview->getImage()->copyImage(&image_preview);
-	gfx_preview->getImage()->applyTranslation(&translation, palette);
+	gfx_preview->getImage()->applyTranslation(&translation, palette, cb_truecolor->GetValue());
 
 	// Update UI
 	gfx_preview->updateImageTexture();
 	gfx_preview->Refresh();
 
-	/*
-	if (entry_preview) {
-		// Re-load preview entry
-		Misc::loadImageFromEntry(gfx_preview->getImage(), entry_preview);
-
-		// Apply translation
-		gfx_preview->getImage()->applyTranslation(&translation, palette);
-
-		// Update UI
-		gfx_preview->updateImageTexture();
-		gfx_preview->Refresh();
-	}
-	*/
-
 	// Update text string
 	text_string->SetValue(translation.asText());
 }
 
+/* TranslationEditorDialog::getTruecolor
+ * Returns whether the truecolor checkbox is checked
+ *******************************************************************/
+bool TranslationEditorDialog::getTruecolor()
+{
+	return cb_truecolor->GetValue();
+}
 
 /*******************************************************************
  * TRANSLATIONEDITORDIALOG CLASS EVENTS
@@ -1076,7 +1072,13 @@ void TranslationEditorDialog::onCBTargetReverse(wxCommandEvent& e)
 	updatePreviews();
 }
 
-
+/* TranslationEditorDialog::onCBTruecolor
+ * Called when the 'Truecolor' checkbox is (un)checked
+ *******************************************************************/
+void TranslationEditorDialog::onCBTruecolor(wxCommandEvent& e)
+{
+	updatePreviews();
+}
 
 /*******************************************************************
 * GFXCOLOURISEDIALOG FUNCTIONS
@@ -1140,6 +1142,15 @@ rgba_t GfxColouriseDialog::getColour()
 {
 	wxColour col = cp_colour->GetColour();
 	return rgba_t(col.Red(), col.Green(), col.Blue());
+}
+
+void GfxColouriseDialog::setColour(string col)
+{
+	wxColour colour(col);
+	cp_colour->SetColour(colour);
+	gfx_preview->getImage()->colourise(rgba_t(colour.Red(), colour.Green(), colour.Blue()), palette);
+	gfx_preview->updateImageTexture();
+	gfx_preview->Refresh();
 }
 
 // Events
@@ -1242,6 +1253,17 @@ rgba_t GfxTintDialog::getColour()
 float GfxTintDialog::getAmount()
 {
 	return (float)slider_amount->GetValue()*0.01f;
+}
+
+void GfxTintDialog::setValues(string col, int val)
+{
+	wxColour colour(col);
+	cp_colour->SetColour(colour);
+	slider_amount->SetValue(val);
+	label_amount->SetLabel(S_FMT("%d%% ", slider_amount->GetValue()));
+	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
+	gfx_preview->updateImageTexture();
+	gfx_preview->Refresh();
 }
 
 // Events

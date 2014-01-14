@@ -85,12 +85,6 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 		etex = theResourceManager->getTextureEntry(name, "textures", archive);
 		textypefound = TEXTYPE_TEXTURE;
 	}
-	/*
-	if (etex == NULL) {
-		etex = theResourceManager->getTextureEntry(name, "flats", archive);
-		textypefound = TEXTYPE_FLAT;
-	}
-	*/
 	if (etex)
 	{
 		SImage image;
@@ -204,21 +198,6 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 			}
 		}
 	}
-
-	/*
-	// Try composite textures then
-	if (!mtex.texture) {
-		CTexture* ctex = theResourceManager->getTexture(name, archive);
-		if (ctex) {
-			SImage image;
-			if (ctex->toImage(image, archive, pal)) {
-				mtex.texture = new GLTexture(false);
-				mtex.texture->setFilter(filter);
-				mtex.texture->loadImage(&image, pal);
-			}
-		}
-	}
-	*/
 
 	// Not found
 	if (!mtex.texture)

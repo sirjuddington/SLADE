@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -401,9 +401,9 @@ bool SLADEMap::addSide(doomside_t& s)
 	ns->offset_y = s.y_offset;
 
 	// Update texture counts
-	usage_tex[ns->tex_upper] += 1;
-	usage_tex[ns->tex_middle] += 1;
-	usage_tex[ns->tex_lower] += 1;
+	usage_tex[ns->tex_upper.Upper()] += 1;
+	usage_tex[ns->tex_middle.Upper()] += 1;
+	usage_tex[ns->tex_lower.Upper()] += 1;
 
 	// Add side
 	sides.push_back(ns);
@@ -423,9 +423,9 @@ bool SLADEMap::addSide(doom64side_t& s)
 	ns->offset_y = s.y_offset;
 
 	// Update texture counts
-	usage_tex[ns->tex_upper] += 1;
-	usage_tex[ns->tex_middle] += 1;
-	usage_tex[ns->tex_lower] += 1;
+	usage_tex[ns->tex_upper.Upper()] += 1;
+	usage_tex[ns->tex_middle.Upper()] += 1;
+	usage_tex[ns->tex_lower.Upper()] += 1;
 
 	// Add side
 	sides.push_back(ns);
@@ -566,8 +566,8 @@ bool SLADEMap::addSector(doomsector_t& s)
 	ns->tag = s.tag;
 
 	// Update texture counts
-	usage_flat[ns->f_tex] += 1;
-	usage_flat[ns->c_tex] += 1;
+	usage_flat[ns->f_tex.Upper()] += 1;
+	usage_flat[ns->c_tex.Upper()] += 1;
 
 	// Add sector
 	sectors.push_back(ns);
@@ -595,8 +595,8 @@ bool SLADEMap::addSector(doom64sector_t& s)
 	ns->properties["color_lower"] = s.color[4];
 
 	// Update texture counts
-	usage_flat[ns->f_tex] += 1;
-	usage_flat[ns->c_tex] += 1;
+	usage_flat[ns->f_tex.Upper()] += 1;
+	usage_flat[ns->c_tex.Upper()] += 1;
 
 	// Add sector
 	sectors.push_back(ns);
@@ -1388,9 +1388,9 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 	}
 
 	// Update texture counts
-	usage_tex[ns->tex_upper] += 1;
-	usage_tex[ns->tex_middle] += 1;
-	usage_tex[ns->tex_lower] += 1;
+	usage_tex[ns->tex_upper.Upper()] += 1;
+	usage_tex[ns->tex_middle.Upper()] += 1;
+	usage_tex[ns->tex_lower.Upper()] += 1;
 
 	// Add side to map
 	sides.push_back(ns);
@@ -1461,8 +1461,8 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 
 	// Create new sector
 	MapSector* ns = new MapSector(prop_ftex->getStringValue(), prop_ctex->getStringValue(), this);
-	usage_flat[ns->f_tex] += 1;
-	usage_flat[ns->c_tex] += 1;
+	usage_flat[ns->f_tex.Upper()] += 1;
+	usage_flat[ns->c_tex.Upper()] += 1;
 
 	// Set defaults
 	ns->f_height = 0;
@@ -2477,9 +2477,9 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 	}
 
 	// Update texture usage
-	usage_tex[sides[index]->tex_lower] -= 1;
-	usage_tex[sides[index]->tex_middle] -= 1;
-	usage_tex[sides[index]->tex_upper] -= 1;
+	usage_tex[sides[index]->tex_lower.Upper()] -= 1;
+	usage_tex[sides[index]->tex_middle.Upper()] -= 1;
+	usage_tex[sides[index]->tex_upper.Upper()] -= 1;
 
 	// Remove the side
 	removeMapObject(sides[index]);
@@ -2511,8 +2511,8 @@ bool SLADEMap::removeSector(unsigned index)
 	//	sectors[index]->connected_sides[a]->sector = NULL;
 
 	// Update texture usage
-	usage_flat[sectors[index]->f_tex] -= 1;
-	usage_flat[sectors[index]->c_tex] -= 1;
+	usage_flat[sectors[index]->f_tex.Upper()] -= 1;
+	usage_flat[sectors[index]->c_tex.Upper()] -= 1;
 
 	// Remove the sector
 	removeMapObject(sectors[index]);
@@ -3841,9 +3841,9 @@ void SLADEMap::splitLine(unsigned line, unsigned vertex)
 		sides.push_back(s1);
 
 		// Update texture counts
-		usage_tex[s1->tex_upper] += 1;
-		usage_tex[s1->tex_middle] += 1;
-		usage_tex[s1->tex_lower] += 1;
+		usage_tex[s1->tex_upper.Upper()] += 1;
+		usage_tex[s1->tex_middle.Upper()] += 1;
+		usage_tex[s1->tex_lower.Upper()] += 1;
 	}
 	if (l->side2)
 	{
@@ -3862,9 +3862,9 @@ void SLADEMap::splitLine(unsigned line, unsigned vertex)
 		sides.push_back(s2);
 
 		// Update texture counts
-		usage_tex[s2->tex_upper] += 1;
-		usage_tex[s2->tex_middle] += 1;
-		usage_tex[s2->tex_lower] += 1;
+		usage_tex[s2->tex_upper.Upper()] += 1;
+		usage_tex[s2->tex_middle.Upper()] += 1;
+		usage_tex[s2->tex_lower.Upper()] += 1;
 	}
 
 	// Create and add new line
@@ -4592,12 +4592,12 @@ void SLADEMap::rebuildConnectedSides()
 
 void SLADEMap::updateTexUsage(string tex, int adjust)
 {
-	usage_tex[tex] += adjust;
+	usage_tex[tex.Upper()] += adjust;
 }
 
 void SLADEMap::updateFlatUsage(string flat, int adjust)
 {
-	usage_flat[flat] += adjust;
+	usage_flat[flat.Upper()] += adjust;
 }
 
 void SLADEMap::updateThingTypeUsage(int type, int adjust)
@@ -4607,12 +4607,12 @@ void SLADEMap::updateThingTypeUsage(int type, int adjust)
 
 int SLADEMap::texUsageCount(string tex)
 {
-	return usage_tex[tex];
+	return usage_tex[tex.Upper()];
 }
 
 int SLADEMap::flatUsageCount(string tex)
 {
-	return usage_flat[tex];
+	return usage_flat[tex.Upper()];
 }
 
 int SLADEMap::thingTypeUsageCount(int type)

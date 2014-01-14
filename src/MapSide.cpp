@@ -37,9 +37,9 @@ void MapSide::copy(MapObject* c)
 	// Update texture counts (decrement previous)
 	if (parent_map)
 	{
-		parent_map->updateTexUsage(tex_lower.Upper(), -1);
-		parent_map->updateTexUsage(tex_middle.Upper(), -1);
-		parent_map->updateTexUsage(tex_upper.Upper(), -1);
+		parent_map->updateTexUsage(tex_lower, -1);
+		parent_map->updateTexUsage(tex_middle, -1);
+		parent_map->updateTexUsage(tex_upper, -1);
 	}
 
 	// Copy properties
@@ -53,9 +53,9 @@ void MapSide::copy(MapObject* c)
 	// Update texture counts (increment new)
 	if (parent_map)
 	{
-		parent_map->updateTexUsage(tex_lower.Upper(), 1);
-		parent_map->updateTexUsage(tex_middle.Upper(), 1);
-		parent_map->updateTexUsage(tex_upper.Upper(), 1);
+		parent_map->updateTexUsage(tex_lower, 1);
+		parent_map->updateTexUsage(tex_middle, 1);
+		parent_map->updateTexUsage(tex_upper, 1);
 	}
 
 	MapObject::copy(c);
@@ -126,21 +126,21 @@ void MapSide::setStringProperty(string key, string value)
 
 	if (key == "texturetop")
 	{
-		if (parent_map) parent_map->updateTexUsage(tex_upper.Upper(), -1);
+		if (parent_map) parent_map->updateTexUsage(tex_upper, -1);
 		tex_upper = value;
-		if (parent_map) parent_map->updateTexUsage(tex_upper.Upper(), 1);
+		if (parent_map) parent_map->updateTexUsage(tex_upper, 1);
 	}
 	else if (key == "texturemiddle")
 	{
-		if (parent_map) parent_map->updateTexUsage(tex_middle.Upper(), -1);
+		if (parent_map) parent_map->updateTexUsage(tex_middle, -1);
 		tex_middle = value;
-		if (parent_map) parent_map->updateTexUsage(tex_middle.Upper(), 1);
+		if (parent_map) parent_map->updateTexUsage(tex_middle, 1);
 	}
 	else if (key == "texturebottom")
 	{
-		if (parent_map) parent_map->updateTexUsage(tex_lower.Upper(), -1);
+		if (parent_map) parent_map->updateTexUsage(tex_lower, -1);
 		tex_lower = value;
-		if (parent_map) parent_map->updateTexUsage(tex_lower.Upper(), 1);
+		if (parent_map) parent_map->updateTexUsage(tex_lower, 1);
 	}
 	else
 		MapObject::setStringProperty(key, value);
@@ -185,9 +185,9 @@ void MapSide::readBackup(mobj_backup_t* backup)
 	}
 
 	// Update texture counts (decrement previous)
-	parent_map->updateTexUsage(tex_upper.Upper(), -1);
-	parent_map->updateTexUsage(tex_middle.Upper(), -1);
-	parent_map->updateTexUsage(tex_lower.Upper(), -1);
+	parent_map->updateTexUsage(tex_upper, -1);
+	parent_map->updateTexUsage(tex_middle, -1);
+	parent_map->updateTexUsage(tex_lower, -1);
 
 	// Textures
 	tex_upper = backup->props_internal["texturetop"].getStringValue();
@@ -195,9 +195,9 @@ void MapSide::readBackup(mobj_backup_t* backup)
 	tex_lower = backup->props_internal["texturebottom"].getStringValue();
 
 	// Update texture counts (increment new)
-	parent_map->updateTexUsage(tex_upper.Upper(), 1);
-	parent_map->updateTexUsage(tex_middle.Upper(), 1);
-	parent_map->updateTexUsage(tex_lower.Upper(), 1);
+	parent_map->updateTexUsage(tex_upper, 1);
+	parent_map->updateTexUsage(tex_middle, 1);
+	parent_map->updateTexUsage(tex_lower, 1);
 
 	// Offsets
 	offset_x = backup->props_internal["offsetx"].getIntValue();

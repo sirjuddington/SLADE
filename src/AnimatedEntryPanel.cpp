@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -112,18 +112,6 @@ AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 	ctrlsizer->Add(rowsizer, 1, wxTILE, 4);
 
 	framesizer->Add(ctrlsizer, 1, wxTILE, 4);
-
-
-	// Add preview canvas
-	/*wxBoxSizer* gfxsizer = new wxBoxSizer(wxHORIZONTAL);
-	preview_canvas = new GfxCanvas(this, -1);
-	gfxsizer->Add(preview_canvas->toPanel(this), 1, wxEXPAND|wxALL, 4);
-	preview_canvas->setViewType(GFXVIEW_DEFAULT);
-	preview_canvas->allowDrag(true);
-	preview_canvas->allowScroll(true);
-
-	framesizer->Add(gfxsizer, 1, wxTILE, 4);*/
-
 	sizer->Add(framesizer, 0, wxEXPAND|wxALL, 4);
 
 	Layout();

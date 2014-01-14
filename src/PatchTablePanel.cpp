@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -122,33 +122,6 @@ void PatchTableListView::updateItemAttr(long item) const
 {
 	// Just set normal text colour
 	item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
-
-	/*
-	// Init attributes (to error colour)
-	item_attr->SetTextColour(ListView::colourError());
-
-	// Check patch table exists
-	if (!patch_table)
-		return;
-
-	// Check index is ok
-	if (item < 0 || (unsigned)item > patch_table->nPatches())
-		return;
-
-	// Get associated patch
-	patch_t patch = patch_table->patch(item);
-
-	// Set normal colour if patch is ok
-	if (patch.entry)
-		item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
-	/*else {
-		// Attempt to find the patch's entry
-		patch_table->updatePatchEntry(item);
-
-		// If it was found set normal colour
-		if (patch.entry)
-			item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
-	}*/
 }
 
 /* PatchTableListView::updateList

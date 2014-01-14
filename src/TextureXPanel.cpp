@@ -1,7 +1,7 @@
 
 /*******************************************************************
  * SLADE - It's a Doom Editor
- * Copyright (C) 2008-2012 Simon Judd
+ * Copyright (C) 2008-2014 Simon Judd
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
@@ -1176,21 +1176,6 @@ void TextureXPanel::onTextureListKeyDown(wxKeyEvent& e)
 			removeTexture();
 			return;
 		}
-
-		/*
-		// Cut (Ctrl+X)
-		else if (e.GetModifiers() == wxMOD_CMD && e.GetKeyCode() == 'X') {
-			copy();
-			removeTexture();
-			return;
-		}
-
-		// Paste (Ctrl+V)
-		else if (e.GetModifiers() == wxMOD_CMD && e.GetKeyCode() == 'V') {
-			paste();
-			return;
-		}
-		*/
 
 		// Paste
 		else if (name == "paste")
