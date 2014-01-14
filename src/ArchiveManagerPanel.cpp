@@ -624,7 +624,7 @@ void ArchiveManagerPanel::closeTab(int archive_index)
  * Opens a new texture editor tab for the archive at <archive_index>
  * in the archive manager
  *******************************************************************/
-void ArchiveManagerPanel::openTextureTab(int archive_index)
+void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 {
 	Archive* archive = theArchiveManager->getArchive(archive_index);
 
@@ -643,6 +643,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index)
 			{
 				// Selected archive already has its texture editor open, so show that tab
 				notebook_archives->SetSelection(a);
+				txed->setSelection(entry);
 				return;
 			}
 		}
@@ -659,6 +660,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index)
 		notebook_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->getFilename(false).c_str()), true);
 		notebook_archives->SetPageBitmap(notebook_archives->GetPageCount() - 1, getIcon("e_texturex"));
 		txed->SetName("texture");
+		txed->setSelection(entry);
 		txed->Show(true);
 		// Select the new tab
 		for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)

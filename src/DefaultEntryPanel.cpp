@@ -233,5 +233,5 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
  *******************************************************************/
 void DefaultEntryPanel::onBtnTextureEdit(wxCommandEvent& e)
 {
-	theMainWindow->openTextureEditor(entry->getParent());
+	theMainWindow->openTextureEditor(entry->getParent(), entry);
 }

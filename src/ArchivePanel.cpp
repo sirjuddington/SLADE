@@ -2894,8 +2894,9 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 
 	// Texture list
 	else if (entry->getType()->getFormat() == "texturex" ||
+		     entry->getType() == EntryType::getType("pnames") ||
 	         entry->getType() == EntryType::getType("zdtextures"))
-		theMainWindow->openTextureEditor(archive);
+		theMainWindow->openTextureEditor(archive, entry);
 
 	// Map
 	// TODO: Needs to filter the game/port lists in the dialog by the map format

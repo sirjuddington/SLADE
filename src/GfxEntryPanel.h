@@ -57,6 +57,8 @@ public:
 	void	onZoomChanged(wxCommandEvent& e);
 	void	onXOffsetChanged(wxSpinEvent& e);
 	void	onYOffsetChanged(wxSpinEvent& e);
+	void	onTextXOffsetChanged(wxCommandEvent& e);
+	void	onTextYOffsetChanged(wxCommandEvent& e);
 	void	onOffsetTypeChanged(wxCommandEvent& e);
 	void	onTileChanged(wxCommandEvent& e);
 	void	onARCChanged(wxCommandEvent& e);

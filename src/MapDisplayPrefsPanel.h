@@ -29,7 +29,9 @@ private:
 	wxChoice*	choice_things_always;
 	wxCheckBox*	cb_thing_force_dir;
 	wxCheckBox*	cb_thing_overlay_square;
+	wxCheckBox*	cb_thing_arrow_colour;
 	wxSlider*	slider_thing_shadow;
+	wxSlider*	slider_thing_arrow_alpha;
 
 	wxSlider*	slider_flat_brightness;
 	wxCheckBox*	cb_flat_ignore_light;

@@ -79,7 +79,7 @@ public:
 	ArchivePanel*	getArchiveTab(Archive* archive);
 	void			openTab(Archive* archive);
 	void			closeTab(int archive_index);
-	void			openTextureTab(int archive_index);
+	void			openTextureTab(int archive_index, ArchiveEntry* entry = NULL);
 	TextureXEditor*	getTextureTab(int archive_index);
 	void			closeTextureTab(int archive_index);
 	void			openEntryTab(ArchiveEntry* entry);
