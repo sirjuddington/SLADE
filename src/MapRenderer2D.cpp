@@ -1420,104 +1420,164 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 	if (!action_lines)
 		return;
 
-	// Find things that need to be pathed
+	// Check if paths need updating
+	bool update = false;
+	if (thing_paths.size() != things.size())
+		update = true;
+	else
+	{
+		for (unsigned a = 0; a < things.size(); a++)
+		{
+			if (things[a]->modifiedTime() > thing_paths_updated)
+			{
+				update = true;
+				break;
+			}
+		}
+	}
+
+	// Get colours
 	wxColour col(arrow_pathed_color);
 	rgba_t pathedcol(col.Red(), col.Green(), col.Blue(), col.Alpha());
 	col.Set(arrow_dragon_color);
 	rgba_t dragoncol(col.Red(), col.Green(), col.Blue(), col.Alpha());
-	glLineWidth(line_width*1.5f);
-	for (unsigned a = 0; a < things.size(); ++a)
+
+	if (update)
 	{
-		MapThing* thing = things[a];
-		ThingType* tt = theGameConfiguration->thingType(thing->getType());
-		if (tt->getFlags() & THING_DRAGON)
+		thing_paths.clear();
+
+		// Find things that need to be pathed
+		for (unsigned a = 0; a < things.size(); ++a)
 		{
-			MapThing* first = map->getFirstThingWithId(thing->intProperty("id"));
-			if (first)
+			MapThing* thing = things[a];
+			tpath_t path;
+			path.from_index = 0;
+			path.to_index = 0;
+			
+			ThingType* tt = theGameConfiguration->thingType(thing->getType());
+
+			//// Dragon Path
+			//if (tt->getFlags() & THING_DRAGON)
+			//{
+			//	MapThing* first = map->getFirstThingWithId(thing->intProperty("id"));
+			//	if (first)
+			//	{
+			//		Drawing::drawArrow(first->getPoint(MOBJ_POINT_MID), thing->getPoint(MOBJ_POINT_MID), dragoncol, false, arrowhead_angle, arrowhead_length);
+			//		vector<MapThing*> dragon_things;
+			//		dragon_things.clear();
+			//		map->getDragonTargets(first, dragon_things);
+			//		for (unsigned d = 0; d < dragon_things.size(); ++d)
+			//		{
+			//			int id1 = dragon_things[d]->intProperty("id");
+			//			int a11 = dragon_things[d]->intProperty("arg0");
+			//			int a12 = dragon_things[d]->intProperty("arg1");
+			//			int a13 = dragon_things[d]->intProperty("arg2");
+			//			int a14 = dragon_things[d]->intProperty("arg3");
+			//			int a15 = dragon_things[d]->intProperty("arg4");
+			//			ThingType* tt1 = theGameConfiguration->thingType(dragon_things[d]->getType());
+			//			for (unsigned e = d + 1; e < dragon_things.size(); ++e)
+			//			{
+			//				int id2 = dragon_things[e]->intProperty("id");
+			//				int a21 = dragon_things[e]->intProperty("arg0");
+			//				int a22 = dragon_things[e]->intProperty("arg1");
+			//				int a23 = dragon_things[e]->intProperty("arg2");
+			//				int a24 = dragon_things[e]->intProperty("arg3");
+			//				int a25 = dragon_things[e]->intProperty("arg4");
+			//				ThingType* tt2 = theGameConfiguration->thingType(dragon_things[e]->getType());
+			//				bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
+			//				bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
+			//				if (!((tt1->getFlags()|tt2->getFlags()) & THING_DRAGON))
+			//				{
+			//					if (l1to2)
+			//						Drawing::drawArrow(dragon_things[e]->getPoint(MOBJ_POINT_MID), dragon_things[d]->getPoint(MOBJ_POINT_MID),
+			//						dragoncol, l2to1, arrowhead_angle, arrowhead_length);
+			//					else if (l2to1)
+			//						Drawing::drawArrow(dragon_things[d]->getPoint(MOBJ_POINT_MID), dragon_things[e]->getPoint(MOBJ_POINT_MID),
+			//						dragoncol, false, arrowhead_angle, arrowhead_length);
+			//				}
+			//			}
+			//		}
+			//	}
+			//	continue;
+			//}
+
+			// Normal Path
+			int tid = -1, tid2 = -1;
+			int nexttype = tt->getNextType();
+			int nextargs = tt->getNextArgs();
+			if (nextargs)
 			{
-				Drawing::drawArrow(first->getPoint(MOBJ_POINT_MID), thing->getPoint(MOBJ_POINT_MID), dragoncol, false, arrowhead_angle, arrowhead_length);
-				vector<MapThing*> dragon_things;
-				dragon_things.clear();
-				map->getDragonTargets(first, dragon_things);
-				for (unsigned d = 0; d < dragon_things.size(); ++d)
+				int pos = nextargs % 10;
+				string na = "arg_";
+				na[3] = ('0' + pos - 1);
+				tid = thing->intProperty(na);
+			}
+			if (nextargs >= 10)
+			{
+				int pos = nextargs / 10;
+				string na = "arg_";
+				na[3] = ('0' + pos - 1);
+				tid += (256 * thing->intProperty(na));
+			}
+			for (unsigned b = a + 1; b < things.size(); ++b)
+			{
+				MapThing* thing2 = things[b];
+				if (thing2->getType() == nexttype)
 				{
-					int id1 = dragon_things[d]->intProperty("id");
-					int a11 = dragon_things[d]->intProperty("arg0");
-					int a12 = dragon_things[d]->intProperty("arg1");
-					int a13 = dragon_things[d]->intProperty("arg2");
-					int a14 = dragon_things[d]->intProperty("arg3");
-					int a15 = dragon_things[d]->intProperty("arg4");
-					ThingType* tt1 = theGameConfiguration->thingType(dragon_things[d]->getType());
-					for (unsigned e = d + 1; e < dragon_things.size(); ++e)
+					ThingType* tt2 = theGameConfiguration->thingType(thing2->getType());
+					nextargs = tt2->getNextArgs();
+					if (nextargs)
 					{
-						int id2 = dragon_things[e]->intProperty("id");
-						int a21 = dragon_things[e]->intProperty("arg0");
-						int a22 = dragon_things[e]->intProperty("arg1");
-						int a23 = dragon_things[e]->intProperty("arg2");
-						int a24 = dragon_things[e]->intProperty("arg3");
-						int a25 = dragon_things[e]->intProperty("arg4");
-						ThingType* tt2 = theGameConfiguration->thingType(dragon_things[e]->getType());
-						bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
-						bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
-						if (!((tt1->getFlags()|tt2->getFlags()) & THING_DRAGON))
-						{
-							if (l1to2)
-								Drawing::drawArrow(dragon_things[e]->getPoint(MOBJ_POINT_MID), dragon_things[d]->getPoint(MOBJ_POINT_MID),
-													dragoncol, l2to1, arrowhead_angle, arrowhead_length);
-							else if (l2to1)
-								Drawing::drawArrow(dragon_things[d]->getPoint(MOBJ_POINT_MID), dragon_things[e]->getPoint(MOBJ_POINT_MID),
-													dragoncol, false, arrowhead_angle, arrowhead_length);
-						}
+						int pos = nextargs % 10;
+						string na = "arg_";
+						na[3] = ('0' + pos - 1);
+						tid2 = thing2->intProperty(na);
+					}
+					if (nextargs >= 10)
+					{
+						int pos = nextargs / 10;
+						string na = "arg_";
+						na[3] = ('0' + pos - 1);
+						tid2 += (256 * thing2->intProperty(na));
+					}
+					if (thing2->intProperty("id") == tid)
+					{
+						path.from_index = thing2->getIndex();
+						path.to_index = thing->getIndex();
+						path.type = (tid2 == thing->intProperty("id")) ? PATH_NORMAL_BOTH : PATH_NORMAL;
+						//Drawing::drawArrow(thing2->getPoint(MOBJ_POINT_MID), thing->getPoint(MOBJ_POINT_MID), pathedcol,
+						//tid2 == thing->intProperty("id"), arrowhead_angle, arrowhead_length);
+					}
+					else if (thing->intProperty("id") == tid2)
+					{
+						path.from_index = thing->getIndex();
+						path.to_index = thing2->getIndex();
+						path.type = PATH_NORMAL;
+						//Drawing::drawArrow(thing->getPoint(MOBJ_POINT_MID), thing2->getPoint(MOBJ_POINT_MID), pathedcol,
+						//false, arrowhead_angle, arrowhead_length);
 					}
 				}
 			}
+
+			thing_paths.push_back(path);
+		}
+
+		thing_paths_updated = theApp->runTimer();
+	}
+
+	// Setup GL stuff
+	glLineWidth(line_width*1.5f);
+
+	for (unsigned a = 0; a < thing_paths.size(); a++)
+	{
+		if (thing_paths[a].from_index == thing_paths[a].to_index)
 			continue;
-		}
-		int tid = -1, tid2 = -1;
-		int nexttype = tt->getNextType();
-		int nextargs = tt->getNextArgs();
-		if (nextargs)
+
+		if (thing_paths[a].type == PATH_NORMAL || thing_paths[a].type == PATH_NORMAL_BOTH)
 		{
-			int pos = nextargs % 10;
-			string na = "arg_";
-			na[3] = ('0' + pos - 1);
-			tid = thing->intProperty(na);
-		}
-		if (nextargs >= 10)
-		{
-			int pos = nextargs / 10;
-			string na = "arg_";
-			na[3] = ('0' + pos - 1);
-			tid += (256 * thing->intProperty(na));
-		}
-		for (unsigned b = a + 1; b < things.size(); ++b)
-		{
-			MapThing* thing2 = things[b];
-			if (thing2->getType() == nexttype)
-			{
-				ThingType* tt2 = theGameConfiguration->thingType(thing2->getType());
-				nextargs = tt2->getNextArgs();
-				if (nextargs)
-				{
-					int pos = nextargs % 10;
-					string na = "arg_";
-					na[3] = ('0' + pos - 1);
-					tid2 = thing2->intProperty(na);
-				}
-				if (nextargs >= 10)
-				{
-					int pos = nextargs / 10;
-					string na = "arg_";
-					na[3] = ('0' + pos - 1);
-					tid2 += (256 * thing2->intProperty(na));
-				}
-				if (thing2->intProperty("id") == tid)
-					Drawing::drawArrow(thing2->getPoint(MOBJ_POINT_MID), thing->getPoint(MOBJ_POINT_MID), pathedcol,
-										tid2 == thing->intProperty("id"), arrowhead_angle, arrowhead_length);
-				else if (thing->intProperty("id") == tid2)
-					Drawing::drawArrow(thing->getPoint(MOBJ_POINT_MID), thing2->getPoint(MOBJ_POINT_MID), pathedcol,
-										false, arrowhead_angle, arrowhead_length);
-			}
+			Drawing::drawArrow(map->getThing(thing_paths[a].from_index)->getPoint(MOBJ_POINT_MID),
+				map->getThing(thing_paths[a].to_index)->getPoint(MOBJ_POINT_MID),
+				pathedcol, thing_paths[a].type == PATH_NORMAL_BOTH, arrowhead_angle, arrowhead_length);
 		}
 	}
 }

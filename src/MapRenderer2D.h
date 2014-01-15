@@ -65,6 +65,23 @@ private:
 	vector<GLTexture*>	thing_sprites;
 	long				thing_sprites_updated;
 
+	// Thing paths
+	enum
+	{
+		PATH_NORMAL,
+		PATH_NORMAL_BOTH,
+		PATH_DRAGON,
+		PATH_DRAGON_BOTH
+	};
+	struct tpath_t
+	{
+		unsigned	from_index;
+		unsigned	to_index;
+		uint8_t		type;
+	};
+	vector<tpath_t>		thing_paths;
+	long				thing_paths_updated;
+
 public:
 	MapRenderer2D(SLADEMap* map);
 	~MapRenderer2D();
