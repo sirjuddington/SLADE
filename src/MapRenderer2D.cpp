@@ -729,18 +729,31 @@ void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType
 		glPopMatrix();
 }
 
-bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingType* tt, float alpha, bool fitradius)
+bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingType* tt, unsigned index, float alpha, bool fitradius)
 {
 	// Ignore if no type given (shouldn't happen)
 	if (!tt)
 		return false;
 
+	// Refresh sprites list if needed
+	if (thing_sprites.size() != map->nThings())
+	{
+		thing_sprites.clear();
+		for (unsigned a = 0; a < map->nThings(); a++)
+			thing_sprites.push_back(NULL);
+	}
+
 	// --- Determine texture to use ---
 	bool show_angle = false;
-	GLTexture* tex = NULL;
+	GLTexture* tex = thing_sprites[index];
 
 	// Attempt to get sprite texture
-	tex = theMapEditor->textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
+	if (!tex)
+	{
+		tex = theMapEditor->textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
+		thing_sprites[index] = tex;
+		thing_sprites_updated = theApp->runTimer();
+	}
 
 	// If sprite not found, just draw as a normal, round thing
 	if (!tex)
@@ -1085,8 +1098,12 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)  		// Drawtype 2: Sprites
 		{
+			// Reset thing sprite if modified
+			if (thing->modifiedTime() > thing_sprites_updated && thing_sprites.size() > a)
+				thing_sprites[a] = NULL;
+
 			// Check if we need to draw the direction arrow for this thing
-			if (renderSpriteThing(x, y, angle, tt, talpha))
+			if (renderSpriteThing(x, y, angle, tt, a, talpha))
 				things_arrows.push_back(a);
 		}
 		else if (thing_drawtype == TDT_ROUND)	// Drawtype 1: Round
@@ -1120,7 +1137,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			else
 				talpha = alpha;
 
-			if (renderSpriteThing(x, y, thing->getAngle(), tt, talpha, true))
+			if (renderSpriteThing(x, y, thing->getAngle(), tt, a, talpha, true))
 				things_arrows.push_back(a);
 		}
 	}
@@ -2170,7 +2187,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
-			renderSpriteThing(x, y, angle, tt, 1.0f);
+			renderSpriteThing(x, y, angle, tt, a, 1.0f);
 		else if (thing_drawtype == TDT_ROUND)	// Drawtype 1: Round
 			renderRoundThing(x, y, angle, tt, 1.0f);
 		else							// Drawtype 0 (or other): Square
@@ -2191,7 +2208,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 			y = thing->yPos() + move_vec.y;
 			angle = thing->getAngle();
 
-			renderSpriteThing(x, y, angle, tt, 1.0f, true);
+			renderSpriteThing(x, y, angle, tt, a, 1.0f, true);
 		}
 	}
 
@@ -2246,7 +2263,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
-			renderSpriteThing(x, y, angle, tt, 1.0f);
+			renderSpriteThing(x, y, angle, tt, a, 1.0f);
 		else if (thing_drawtype == TDT_ROUND)	// Drawtype 1: Round
 			renderRoundThing(x, y, angle, tt, 1.0f);
 		else							// Drawtype 0 (or other): Square
@@ -2267,7 +2284,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 			y = thing->yPos() + pos.y;
 			angle = thing->getAngle();
 
-			renderSpriteThing(x, y, angle, tt, 1.0f, true);
+			renderSpriteThing(x, y, angle, tt, a, 1.0f, true);
 		}
 	}
 
@@ -2386,7 +2403,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 
 			// Draw thing depending on 'things_drawtype' cvar
 			if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
-				renderSpriteThing(x, y, angle, tt, 1.0f);
+				renderSpriteThing(x, y, angle, tt, thing->getIndex(), 1.0f);
 			else if (thing_drawtype == TDT_ROUND)	// Drawtype 1: Round
 				renderRoundThing(x, y, angle, tt, 1.0f);
 			else							// Drawtype 0 (or other): Square
@@ -2407,7 +2424,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 				y = things[a].position.y;
 				angle = thing->getAngle();
 
-				renderSpriteThing(x, y, angle, tt, 1.0f, true);
+				renderSpriteThing(x, y, angle, tt, thing->getIndex(), 1.0f, true);
 			}
 		}
 
@@ -2631,6 +2648,7 @@ void MapRenderer2D::forceUpdate(float line_alpha)
 	// Update variables
 	this->view_scale_inv = 1.0 / view_scale;
 	tex_flats.clear();
+	thing_sprites.clear();
 
 	if (OpenGL::vboSupport())
 	{
