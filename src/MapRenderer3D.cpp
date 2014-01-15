@@ -116,7 +116,7 @@ void MapRenderer3D::refresh()
 	skytex1 = minf.sky1;
 	skytex2 = minf.sky2;
 	skycol_top.a = 0;
-	//wxLogMessage("sky1: %s, sky2: %s", CHR(skytex1), CHR(skytex2));
+	//wxLogMessage("sky1: %s, sky2: %s", skytex1, skytex2);
 }
 
 void MapRenderer3D::clearData()
@@ -1532,7 +1532,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 			things[index].flags |= ZETH;
 		}
 		if (!things[index].sprite)
-			things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(things[index].type->getIcon())));
+			things[index].sprite = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", things[index].type->getIcon()));
 		things[index].flags |= ICON;
 	}
 	else theight = things[index].type->getScaleY() * things[index].sprite->getHeight();

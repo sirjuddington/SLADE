@@ -61,6 +61,8 @@ private:
 
 	// The last time the map geometry was updated
 	long	geometry_updated;
+	// The last time the thing list was modified
+	long	things_updated;
 
 	// Usage counts
 	std::map<string, int>	usage_tex;
@@ -151,7 +153,9 @@ public:
 	size_t		nSectors() { return sectors.size(); }
 	size_t		nThings() { return things.size(); }
 	long		geometryUpdated() { return geometry_updated; }
+	long		thingsUpdated() { return things_updated; }
 	void		setGeometryUpdated();
+	void		setThingsUpdated();
 
 	// MapObject id stuff (used for undo/redo)
 	void				addMapObject(MapObject* object);

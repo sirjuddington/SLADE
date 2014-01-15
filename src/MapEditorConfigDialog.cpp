@@ -352,7 +352,7 @@ void MapEditorConfigDialog::populateMapList()
 		// Create list item
 		wxListItem li;
 		li.SetId(index);
-		li.SetText(S_FMT("(%s) %s", CHR(fmt), CHR(maps[a].name)));
+		li.SetText(S_FMT("(%s) %s", fmt, maps[a].name));
 		if (theGameConfiguration->mapFormatSupported(maps[a].format, game, port))
 			li.SetImage(0);
 		else

@@ -156,7 +156,7 @@ string ActionSpecial::getArgsString(int args[5])
 string ActionSpecial::stringDesc()
 {
 	// Init string
-	string ret = S_FMT("\"%s\" in group \"%s\"", CHR(name), CHR(group));
+	string ret = S_FMT("\"%s\" in group \"%s\"", name, group);
 
 	// Add tagged info
 	if (tagged)

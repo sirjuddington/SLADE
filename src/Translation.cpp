@@ -70,7 +70,7 @@ void Translation::parse(string def)
 	tz.setSpecialCharacters("[]:%,=");
 	tz.openString(def);
 
-	//wxLogMessage("Parse translation \"%s\"", CHR(def));
+	//wxLogMessage("Parse translation \"%s\"", def);
 
 	// Read original range
 	uint8_t o_start, o_end;
@@ -268,7 +268,7 @@ string Translation::asText()
 
 	// Go through translation ranges
 	for (unsigned a = 0; a < translations.size(); a++)
-		ret += S_FMT("\"%s\", ", CHR(translations[a]->asText()));	// Add range to string
+		ret += S_FMT("\"%s\", ", translations[a]->asText());	// Add range to string
 
 	// If any translations were defined, remove last ", "
 	if (!ret.IsEmpty())

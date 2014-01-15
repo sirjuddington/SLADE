@@ -456,7 +456,7 @@ void HexEditorPanel::onCellSelected(wxGridEvent& e)
 		label_byte->SetLabel(S_FMT("Signed Byte: %d", vbyte));
 		label_ubyte->SetLabel(S_FMT("Unsigned Byte: %u", vubyte));
 		if (vubyte <= 128)
-			label_ascii->SetLabel(S_FMT("ASCII: %s", CHR(CodePages::fromASCII(vubyte))));
+			label_ascii->SetLabel(S_FMT("ASCII: %s", CodePages::fromASCII(vubyte)));
 
 		if (size > 1)
 		{

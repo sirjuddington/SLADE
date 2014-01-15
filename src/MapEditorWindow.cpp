@@ -148,22 +148,22 @@ void MapEditorWindow::saveLayout()
 	// Console pane
 	file.Write("\"console\" ");
 	string pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
-	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
+	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Item info pane
 	file.Write("\"item_props\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("item_props"));
-	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
+	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Script editor pane
 	file.Write("\"script_editor\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("script_editor"));
-	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
+	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Map checks pane
 	file.Write("\"map_checks\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("map_checks"));
-	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
+	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Close file
 	file.Close();
@@ -463,9 +463,9 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 
 		// Set window title
 		if (archive)
-			SetTitle(S_FMT("SLADE - %s of %s", CHR(map.name), CHR(archive->getFilename(false))));
+			SetTitle(S_FMT("SLADE - %s of %s", map.name, archive->getFilename(false)));
 		else
-			SetTitle(S_FMT("SLADE - %s (UNSAVED)", CHR(map.name)));
+			SetTitle(S_FMT("SLADE - %s (UNSAVED)", map.name));
 	}
 
 	return ok;
@@ -563,15 +563,15 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	}
 
 	// Build command line
-	command.Replace("$f", S_FMT("\"%s\"", CHR(filename)));
-	command.Replace("$o", CHR(wxString(options)));
+	command.Replace("$f", S_FMT("\"%s\"", filename));
+	command.Replace("$o", wxString(options));
 
 	// Run nodebuilder
 	if (wxFileExists(builder.path))
 	{
 		wxArrayString out;
-		wxLogMessage("execute \"%s\"", CHR(command));
-		wxExecute(S_FMT("\"%s\" %s", CHR(builder.path), CHR(command)), out, wxEXEC_HIDE_CONSOLE);
+		wxLogMessage("execute \"%s\"", command);
+		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		Raise();
 		wxLogMessage("Nodebuilder output:");
 		for (unsigned a = 0; a < out.size(); a++)
@@ -746,7 +746,7 @@ bool MapEditorWindow::saveMapAs()
 	theArchiveManager->openArchive(info.filenames[0], true, true);
 
 	// Set window title
-	SetTitle(S_FMT("SLADE - %s of %s", CHR(mdesc_current.name), CHR(wad.getFilename(false))));
+	SetTitle(S_FMT("SLADE - %s of %s", mdesc_current.name, wad.getFilename(false)));
 
 	return true;
 }
@@ -1033,7 +1033,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 {
 	if (editor.getMap().isModified())
 	{
-		wxMessageDialog md(this, S_FMT("Save changes to map %s", CHR(currentMapDesc().name)), "Unsaved Changes", wxYES_NO|wxCANCEL);
+		wxMessageDialog md(this, S_FMT("Save changes to map %s", currentMapDesc().name), "Unsaved Changes", wxYES_NO|wxCANCEL);
 		int answer = md.ShowModal();
 		if (answer == wxID_YES)
 			saveMap();

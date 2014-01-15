@@ -737,7 +737,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 					if (!group_custom)
 						group_custom = pg_properties->Append(new wxPropertyCategory("Custom"));
 
-					//LOG_MESSAGE(2, "Add custom property \"%s\"", CHR(objprops[b].name));
+					//LOG_MESSAGE(2, "Add custom property \"%s\"", objprops[b].name);
 
 					// Add property
 					switch (objprops[b].value.getType())
@@ -880,7 +880,7 @@ void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 		{
 			if (properties[a]->getPropName() == propname)
 			{
-				wxMessageBox(S_FMT("Property \"%s\" already exists", CHR(propname)), "Error");
+				wxMessageBox(S_FMT("Property \"%s\" already exists", propname), "Error");
 				return;
 			}
 		}

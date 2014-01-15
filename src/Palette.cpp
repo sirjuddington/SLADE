@@ -305,7 +305,7 @@ bool Palette8bit::saveMem(MemChunk& mc, int format, string name)
 	// GIMP palette
 	else if (format == FORMAT_GIMP)
 	{
-		string gimp = S_FMT("GIMP Palette\nName: %s\n#\n", CHR(name));
+		string gimp = S_FMT("GIMP Palette\nName: %s\n#\n", name);
 		for (unsigned a = 0; a < 256; a++)
 			gimp += S_FMT("%d\t%d\t%d\tIndex %u\n", colours[a].r, colours[a].g, colours[a].b, a);
 		mc.importMem((const uint8_t*)((const char*)gimp.ToAscii()), gimp.Length());

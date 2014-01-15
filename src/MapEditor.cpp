@@ -92,7 +92,7 @@ public:
 				if (cd_objects[a].created)
 					ids += S_FMT("%d, ", cd_objects[a].id);
 			}
-			LOG_MESSAGE(4, "Created: %s", CHR(ids));
+			LOG_MESSAGE(4, "Created: %s", ids);
 
 			ids = "";
 			for (unsigned a = 0; a < cd_objects.size(); a++)
@@ -100,7 +100,7 @@ public:
 				if (!cd_objects[a].created)
 					ids += S_FMT("%d, ", cd_objects[a].id);
 			}
-			LOG_MESSAGE(4, "Deleted: %s", CHR(ids));
+			LOG_MESSAGE(4, "Deleted: %s", ids);
 		}
 	}
 
@@ -156,7 +156,7 @@ public:
 			if (bak)
 			{
 				backups.push_back(bak);
-				//wxLogMessage("%s #%d modified", CHR(objects[a]->getTypeName()), objects[a]->getIndex());
+				//wxLogMessage("%s #%d modified", objects[a]->getTypeName(), objects[a]->getIndex());
 			}
 		}
 
@@ -321,7 +321,7 @@ void MapEditor::setSectorEditMode(int mode)
 
 bool MapEditor::openMap(Archive::mapdesc_t map)
 {
-	wxLogMessage("Opening map %s", CHR(map.name));
+	wxLogMessage("Opening map %s", map.name);
 	if (!this->map.readMap(map))
 		return false;
 
@@ -554,6 +554,7 @@ void MapEditor::updateThingLists()
 {
 	pathed_things.clear();
 	map.getPathedThings(pathed_things);
+	map.setThingsUpdated();
 }
 
 void MapEditor::updateTagged()
@@ -809,7 +810,7 @@ void MapEditor::selectAll()
 			selection.push_back(a);
 	}
 
-	addEditorMessage(S_FMT("Selected all %d %s", selection.size(), CHR(getModeString())));
+	addEditorMessage(S_FMT("Selected all %d %s", selection.size(), getModeString()));
 
 	if (canvas)
 		canvas->itemsSelected(selection);
@@ -1033,9 +1034,9 @@ bool MapEditor::selectWithin(double xmin, double ymin, double xmax, double ymax,
 		selection.push_back(nsel[a]);
 
 	if (add)
-		addEditorMessage(S_FMT("Selected %d %s", asel.size(), CHR(getModeString())));
+		addEditorMessage(S_FMT("Selected %d %s", asel.size(), getModeString()));
 	else
-		addEditorMessage(S_FMT("Selected %d %s", selection.size(), CHR(getModeString())));
+		addEditorMessage(S_FMT("Selected %d %s", selection.size(), getModeString()));
 
 	// Animate newly selected items
 	if (canvas && nsel.size() > 0) canvas->itemsSelected(nsel);
@@ -1418,7 +1419,7 @@ void MapEditor::endMove(bool accept)
 	else if (accept)
 	{
 		// Any other edit mode we're technically moving vertices
-		beginUndoRecord(S_FMT("Move %s", CHR(getModeString())));
+		beginUndoRecord(S_FMT("Move %s", getModeString()));
 
 		// Get list of vertices being moved
 		bool* move_verts = new bool[map.nVertices()];
@@ -1670,7 +1671,7 @@ void MapEditor::changeSectorHeight(int amount, bool floor, bool ceiling)
 		inc = "decreased";
 	if (amount < 0)
 		amount = -amount;
-	addEditorMessage(S_FMT("%s height %s by %d", CHR(what), CHR(inc), amount));
+	addEditorMessage(S_FMT("%s height %s by %d", what, inc, amount));
 
 	// Update display
 	updateDisplay();
@@ -1715,7 +1716,7 @@ void MapEditor::changeSectorLight(bool up, bool fine)
 	// Add editor message
 	string dir = up ? "increased" : "decreased";
 	int amount = fine ? 1 : theGameConfiguration->lightLevelInterval();
-	addEditorMessage(S_FMT("Light level %s by %d", CHR(dir), amount));
+	addEditorMessage(S_FMT("Light level %s by %d", dir, amount));
 
 	// Update display
 	updateDisplay();
@@ -1827,9 +1828,9 @@ void MapEditor::changeThingType(int newtype)
 	// Add editor message
 	string type_name = theGameConfiguration->thingType(newtype)->getName();
 	if (selection.size() == 1)
-		addEditorMessage(S_FMT("Changed type to \"%s\"", CHR(type_name)));
+		addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
 	else
-		addEditorMessage(S_FMT("Changed %d things to type \"%s\"", selection.size(), CHR(type_name)));
+		addEditorMessage(S_FMT("Changed %d things to type \"%s\"", selection.size(), type_name));
 
 	// Update display
 	updateDisplay();
@@ -2598,7 +2599,7 @@ void MapEditor::endObjectEdit(bool accept)
 	if (accept)
 	{
 		// Begin recording undo level
-		beginUndoRecord(S_FMT("Edit %s", CHR(getModeString())));
+		beginUndoRecord(S_FMT("Edit %s", getModeString()));
 
 		// Apply changes
 		edit_object_group.applyEdit();
@@ -2814,7 +2815,7 @@ void MapEditor::copy()
 		theClipboard->addItem(c);
 
 		// Editor message
-		addEditorMessage(S_FMT("Copied %s", CHR(c->getInfo())));
+		addEditorMessage(S_FMT("Copied %s", c->getInfo()));
 	}
 
 	// Copy things
@@ -2830,7 +2831,7 @@ void MapEditor::copy()
 		theClipboard->addItem(c);
 
 		// Editor message
-		addEditorMessage(S_FMT("Copied %s", CHR(c->getInfo())));
+		addEditorMessage(S_FMT("Copied %s", c->getInfo()));
 	}
 }
 
@@ -2847,7 +2848,7 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 			MapArchClipboardItem* p = (MapArchClipboardItem*)theClipboard->getItem(a);
 			vector<MapVertex*> new_verts = p->pasteToMap(&map, mouse_pos);
 			map.mergeArch(new_verts);
-			addEditorMessage(S_FMT("Pasted %s", CHR(p->getInfo())));
+			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
 			endUndoRecord(true);
 		}
 
@@ -2857,7 +2858,7 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 			beginUndoRecord("Paste Things", false, true, false);
 			MapThingsClipboardItem* p = (MapThingsClipboardItem*)theClipboard->getItem(a);
 			p->pasteToMap(&map, mouse_pos);
-			addEditorMessage(S_FMT("Pasted %s", CHR(p->getInfo())));
+			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
 			endUndoRecord(true);
 		}
 	}
@@ -3334,9 +3335,9 @@ void MapEditor::changeOffset3d(int amount, bool x)
 		if (!x) axis = "Y";
 
 		if (amount > 0)
-			addEditorMessage(S_FMT("%s offset increased by %d", CHR(axis), amount));
+			addEditorMessage(S_FMT("%s offset increased by %d", axis, amount));
 		else
-			addEditorMessage(S_FMT("%s offset decreased by %d", CHR(axis), -amount));
+			addEditorMessage(S_FMT("%s offset decreased by %d", axis, -amount));
 	}
 }
 
@@ -4318,7 +4319,7 @@ void MapEditor::doUndo()
 	// Editor message
 	if (undo_name != "")
 	{
-		addEditorMessage(S_FMT("Undo: %s", CHR(undo_name)));
+		addEditorMessage(S_FMT("Undo: %s", undo_name));
 
 		// Refresh stuff
 		//updateTagged();
@@ -4340,7 +4341,7 @@ void MapEditor::doRedo()
 	// Editor message
 	if (undo_name != "")
 	{
-		addEditorMessage(S_FMT("Redo: %s", CHR(undo_name)));
+		addEditorMessage(S_FMT("Redo: %s", undo_name));
 
 		// Refresh stuff
 		//updateTagged();
@@ -4415,7 +4416,7 @@ CONSOLE_COMMAND(m_check, 0, true)
 			checks.push_back(MapCheck::sectorReferenceCheck(map));
 		
 		if (n == checks.size())
-			theConsole->logMessage(S_FMT("Unknown check \"%s\"", CHR(id)));
+			theConsole->logMessage(S_FMT("Unknown check \"%s\"", id));
 	}
 
 	// Run checks
@@ -4529,7 +4530,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	{
 		mobj_backup_t bak;
 		obj->backup(&bak);
-		theConsole->logMessage(S_FMT("Object %d: %s #%d", id, CHR(obj->getTypeName()), obj->getIndex()));
+		theConsole->logMessage(S_FMT("Object %d: %s #%d", id, obj->getTypeName(), obj->getIndex()));
 		theConsole->logMessage("Properties:");
 		theConsole->logMessage(bak.properties.toString());
 		theConsole->logMessage("Properties (internal):");

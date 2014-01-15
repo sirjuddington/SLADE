@@ -128,6 +128,11 @@ void SLADEMap::setGeometryUpdated()
 	geometry_updated = theApp->runTimer();
 }
 
+void SLADEMap::setThingsUpdated()
+{
+	things_updated = theApp->runTimer();
+}
+
 void SLADEMap::refreshIndices()
 {
 	// Vertex indices
@@ -1384,7 +1389,7 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 			ns->offset_y = prop->getIntValue();
 		else
 			ns->properties[prop->getName()] = prop->getValue();
-		//wxLogMessage("Property %s type %s (%s)", CHR(prop->getName()), CHR(prop->getValue().typeString()), CHR(prop->getValue().getStringValue()));
+		//wxLogMessage("Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(), prop->getValue().getStringValue());
 	}
 
 	// Update texture counts
@@ -2184,7 +2189,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 
 	// Write map namespace
 	tempfile.Write("// Written by SLADE3\n");
-	tempfile.Write(S_FMT("namespace=\"%s\";\n", CHR(udmf_namespace)));
+	tempfile.Write(S_FMT("namespace=\"%s\";\n", udmf_namespace));
 
 	//sf::Clock clock;
 
@@ -2253,11 +2258,11 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		// Basic properties
 		object_def += S_FMT("sector=%d;\n", sides[a]->sector->getIndex());
 		if (sides[a]->tex_upper != "-")
-			object_def += S_FMT("texturetop=\"%s\";\n", CHR(sides[a]->tex_upper));
+			object_def += S_FMT("texturetop=\"%s\";\n", sides[a]->tex_upper);
 		if (sides[a]->tex_middle != "-")
-			object_def += S_FMT("texturemiddle=\"%s\";\n", CHR(sides[a]->tex_middle));
+			object_def += S_FMT("texturemiddle=\"%s\";\n", sides[a]->tex_middle);
 		if (sides[a]->tex_lower != "-")
-			object_def += S_FMT("texturebottom=\"%s\";\n", CHR(sides[a]->tex_lower));
+			object_def += S_FMT("texturebottom=\"%s\";\n", sides[a]->tex_lower);
 		if (sides[a]->offset_x != 0)
 			object_def += S_FMT("offsetx=%d;\n", sides[a]->offset_x);
 		if (sides[a]->offset_y != 0)
@@ -2303,7 +2308,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def = S_FMT("sector//#%d\n{\n", a);
 
 		// Basic properties
-		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";", CHR(sectors[a]->f_tex), CHR(sectors[a]->c_tex));
+		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";", sectors[a]->f_tex, sectors[a]->c_tex);
 		if (sectors[a]->f_height != 0) object_def += S_FMT("heightfloor=%d;\n", sectors[a]->f_height);
 		if (sectors[a]->c_height != 0) object_def += S_FMT("heightceiling=%d;\n", sectors[a]->c_height);
 		if (sectors[a]->light != 0) object_def += S_FMT("lightlevel=%d;\n", sectors[a]->light);
@@ -2545,6 +2550,8 @@ bool SLADEMap::removeThing(unsigned index)
 	things[index]->index = index;
 	//things[index]->modified_time = theApp->runTimer();
 	things.pop_back();
+
+	things_updated = theApp->runTimer();
 
 	return true;
 }
@@ -3041,7 +3048,7 @@ void SLADEMap::getPathedThings(vector<MapThing*>& list)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
-		if (tt->getFlags() & THING_PATHED|THING_DRAGON)
+		if (tt->getFlags() & (THING_PATHED|THING_DRAGON))
 			list.push_back(things[a]);
 	}
 }
@@ -3684,6 +3691,7 @@ MapThing* SLADEMap::createThing(double x, double y)
 
 	// Add to things
 	things.push_back(nt);
+	things_updated = theApp->runTimer();
 
 	return nt;
 }

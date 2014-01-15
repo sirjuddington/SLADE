@@ -421,7 +421,7 @@ Archive* ArchiveManager::newArchive(uint8_t type)
 	// If the archive was created, set its filename and add it to the list
 	if (new_archive)
 	{
-		new_archive->setFilename(S_FMT("UNSAVED (%s)", CHR(format_str)));
+		new_archive->setFilename(S_FMT("UNSAVED (%s)", format_str));
 		addArchive(new_archive);
 	}
 
@@ -574,22 +574,22 @@ string ArchiveManager::getArchiveExtensionsString()
 	                    "vgahead.*;VGAHEAD.*;Vgahead.*;"
 	                    "vgadict.*;VGADICT.*;Vgadict.*";		extensions += ext_wolf +";";
 
-	extensions += S_FMT("|Doom Wad files (*.wad)|%s",			CHR(ext_wad));
-	extensions += S_FMT("|Zip files (*.zip)|%s",				CHR(ext_zip));
-	extensions += S_FMT("|Pk3 (zip) files (*.pk3)|%s",			CHR(ext_pk3));
-	extensions += S_FMT("|JDF (zip) files (*.jdf)|%s",			CHR(ext_jdf));
-	extensions += S_FMT("|Data (dat) files (*.dat)|%s",			CHR(ext_dat));
-	extensions += S_FMT("|CD/HD (cd/hd) files (*.cd; *.hd)|%s",	CHR(ext_chd));
-	extensions += S_FMT("|Library (lib) files (*.lib)|%s",		CHR(ext_lib));
-	extensions += S_FMT("|Resource (res) files (*.res)|%s",		CHR(ext_res));
-	extensions += S_FMT("|Quake Pak files (*.pak)|%s",			CHR(ext_pak));
-	extensions += S_FMT("|Build Grp files (*.grp)|%s",			CHR(ext_grp));
-	extensions += S_FMT("|Dark Forces Gob files (*.gob)|%s",	CHR(ext_gob));
-	extensions += S_FMT("|Dark Forces Lfd files (*.lfd)|%s",	CHR(ext_lfd));
-	extensions += S_FMT("|Descent Hog files (*.hog)|%s",		CHR(ext_hog));
-	extensions += S_FMT("|Blood Rff files (*.rff)|%s",			CHR(ext_rff));
-	extensions += S_FMT("|Wolfenstein 3D files|%s",				CHR(ext_wolf));
-	extensions += S_FMT("|Nerve Software Disk files|%s",		CHR(ext_disk));
+	extensions += S_FMT("|Doom Wad files (*.wad)|%s",			ext_wad);
+	extensions += S_FMT("|Zip files (*.zip)|%s",				ext_zip);
+	extensions += S_FMT("|Pk3 (zip) files (*.pk3)|%s",			ext_pk3);
+	extensions += S_FMT("|JDF (zip) files (*.jdf)|%s",			ext_jdf);
+	extensions += S_FMT("|Data (dat) files (*.dat)|%s",			ext_dat);
+	extensions += S_FMT("|CD/HD (cd/hd) files (*.cd; *.hd)|%s",	ext_chd);
+	extensions += S_FMT("|Library (lib) files (*.lib)|%s",		ext_lib);
+	extensions += S_FMT("|Resource (res) files (*.res)|%s",		ext_res);
+	extensions += S_FMT("|Quake Pak files (*.pak)|%s",			ext_pak);
+	extensions += S_FMT("|Build Grp files (*.grp)|%s",			ext_grp);
+	extensions += S_FMT("|Dark Forces Gob files (*.gob)|%s",	ext_gob);
+	extensions += S_FMT("|Dark Forces Lfd files (*.lfd)|%s",	ext_lfd);
+	extensions += S_FMT("|Descent Hog files (*.hog)|%s",		ext_hog);
+	extensions += S_FMT("|Blood Rff files (*.rff)|%s",			ext_rff);
+	extensions += S_FMT("|Wolfenstein 3D files|%s",				ext_wolf);
+	extensions += S_FMT("|Nerve Software Disk files|%s",		ext_disk);
 
 	return extensions;
 }
@@ -713,7 +713,7 @@ bool ArchiveManager::openBaseResource(int index)
 		return false;
 
 	// Attempt to open the file
-	theSplashWindow->show(S_FMT("Opening %s...", CHR(filename)), true);
+	theSplashWindow->show(S_FMT("Opening %s...", filename), true);
 	if (base_resource_archive->open(filename))
 	{
 		base_resource = index;

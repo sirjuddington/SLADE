@@ -154,17 +154,17 @@ void MainWindow::saveLayout()
 	// Console pane
 	file.Write("\"console\" ");
 	string pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("console"));
-	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
+	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Archive Manager pane
 	file.Write("\"archive_manager\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("archive_manager"));
-	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
+	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Undo History pane
 	file.Write("\"undo_history\" ");
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("undo_history"));
-	file.Write(S_FMT("\"%s\"\n", CHR(pinf)));
+	file.Write(S_FMT("\"%s\"\n", pinf));
 
 	// Close file
 	file.Close();
@@ -553,7 +553,7 @@ void MainWindow::openMapEditor(Archive* archive)
 		if (!theMapEditor->openMap(md))
 		{
 			theMapEditor->Hide();
-			wxMessageBox(S_FMT("Unable to open map %s: %s", CHR(md.name), CHR(Global::error)), "Invalid map error", wxICON_ERROR);
+			wxMessageBox(S_FMT("Unable to open map %s: %s", md.name, Global::error), "Invalid map error", wxICON_ERROR);
 		}
 	}
 }

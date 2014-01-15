@@ -294,7 +294,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		if (tt->getName() == "Unknown")
 			info2.push_back(S_FMT("Type: %d", thing->getType()));
 		else
-			info2.push_back(S_FMT("Type: %s", CHR(tt->getName())));
+			info2.push_back(S_FMT("Type: %s", tt->getName()));
 
 		// Args
 		if (theMapEditor->currentMapDesc().format == MAP_HEXEN ||
@@ -330,7 +330,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			if (use_zeth_icons && tt->getZeth() >= 0)
 				texture = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt->getZeth()));
 			if (!texture)
-				texture = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(tt->getIcon())));
+				texture = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", tt->getIcon()));
 			thing_icon = true;
 		}
 		texname = "";

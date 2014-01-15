@@ -107,17 +107,17 @@ void EntryType::addToList()
  *******************************************************************/
 void EntryType::dump()
 {
-	wxLogMessage("Type %s \"%s\", format %s, extension %s", CHR(id), CHR(name), CHR(format->getId()), CHR(extension));
+	wxLogMessage("Type %s \"%s\", format %s, extension %s", id, name, format->getId(),extension);
 	wxLogMessage("Size limit: %d-%d", size_limit[0], size_limit[1]);
 
 	for (size_t a = 0; a < match_archive.size(); a++)
-		wxLogMessage("Match Archive: \"%s\"", CHR(match_archive[a]));
+		wxLogMessage("Match Archive: \"%s\"", match_archive[a]);
 
 	for (size_t a = 0; a < match_extension.size(); a++)
-		wxLogMessage("Match Extension: \"%s\"", CHR(match_extension[a]));
+		wxLogMessage("Match Extension: \"%s\"", match_extension[a]);
 
 	for (size_t a = 0; a < match_name.size(); a++)
-		wxLogMessage("Match Name: \"%s\"", CHR(match_name[a]));
+		wxLogMessage("Match Name: \"%s\"", match_name[a]);
 
 	for (size_t a = 0; a < match_size.size(); a++)
 		wxLogMessage("Match Size: %d", match_size[a]);
@@ -408,7 +408,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 			if (parent_type != EntryType::unknownType())
 				parent_type->copyToType(ntype);
 			else
-				wxLogMessage("Warning: Entry type %s inherits from unknown type %s", CHR(ntype->getId()), CHR(typenode->getInherit()));
+				wxLogMessage("Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->getInherit());
 		}
 
 		// Go through all parsed fields
@@ -437,7 +437,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 
 				// Warn if undefined format
 				if (ntype->format == EntryDataFormat::anyFormat())
-					wxLogMessage("Warning: Entry type %s requires undefined format %s", CHR(ntype->getId()), CHR(format_string));
+					wxLogMessage("Warning: Entry type %s requires undefined format %s", ntype->getId(), format_string);
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "icon"))  			// Icon field
 			{
@@ -520,7 +520,7 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 				if (fieldnode->nValues() >= 3)
 					ntype->colour = rgba_t(fieldnode->getIntValue(0), fieldnode->getIntValue(1), fieldnode->getIntValue(2));
 				else
-					wxLogMessage("Not enough colour components defined for entry type %s", CHR(ntype->getId()));
+					wxLogMessage("Not enough colour components defined for entry type %s", ntype->getId());
 			}
 			else
 			{

@@ -154,7 +154,7 @@ bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
 			if (parent_type != EntryType::unknownType())
 				parent_type->copyToType(ntype);
 			else
-				wxLogMessage("Warning: Entry type %s inherits from unknown type %s", CHR(ntype->getId()), CHR(typenode->getInherit()));
+				wxLogMessage("Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->getInherit());
 		}
 		*/
 	}

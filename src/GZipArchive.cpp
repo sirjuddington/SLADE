@@ -167,7 +167,7 @@ bool GZipArchive::open(MemChunk& mc)
 			++mds;
 		}
 		while (c != 0 && size > mds);
-		wxLogMessage("Archive %s says:\n %s", CHR(getFilename(true)), CHR(comment));
+		wxLogMessage("Archive %s says:\n %s", getFilename(true), comment);
 	}
 
 	// Skip past CRC 16 check

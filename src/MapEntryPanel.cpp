@@ -150,11 +150,11 @@ bool MapEntryPanel::createImage()
 	else
 		map_canvas->createImage(temp, min<int>(map_image_width, map_canvas->GetSize().x),
 		                        min<int>(map_image_height, map_canvas->GetSize().y));
-	string name = S_FMT("%s_%s", CHR(entry->getParent()->getFilename(false)), CHR(entry->getName()));
+	string name = S_FMT("%s_%s", entry->getParent()->getFilename(false), entry->getName());
 	wxFileName fn(name);
 
 	// Create save file dialog
-	wxFileDialog dialog_save(this, S_FMT("Save Map Preview \"%s\"", name.c_str()),
+	wxFileDialog dialog_save(this, S_FMT("Save Map Preview \"%s\"", name),
 	                         dir_last, fn.GetFullName(), "PNG (*.PNG)|*.png",
 	                         wxFD_SAVE | wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
 

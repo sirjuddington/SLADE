@@ -185,7 +185,7 @@ bool ADatArchive::open(MemChunk& mc)
 				entry->importMemChunk(xdata);
 			else
 			{
-				wxLogMessage("Entry %s couldn't be inflated", CHR(entry->getName()));
+				wxLogMessage("Entry %s couldn't be inflated", entry->getName());
 				entry->importMemChunk(edata);
 			}
 		}
@@ -253,7 +253,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		else
 		{
 			entry = &(entries[a]->getMCData());
-			wxLogMessage("Entry %s couldn't be deflated", CHR(entries[a]->getName()));
+			wxLogMessage("Entry %s couldn't be deflated", entries[a]->getName());
 		}
 
 		// Update entry
@@ -273,7 +273,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1);	// Remove leading /
 		if (name.Len() > 128)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 128 characters), putting it in the root directory", CHR(name));
+			wxLogMessage("Warning: Entry %s path is too long (> 128 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 128)
@@ -363,7 +363,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("ADatArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
+		wxLogMessage("ADatArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 

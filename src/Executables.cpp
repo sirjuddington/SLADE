@@ -43,7 +43,7 @@ string Executables::writePaths()
 {
 	string ret;
 	for (unsigned a = 0; a < game_exes.size(); a++)
-		ret += S_FMT("\t%s \"%s\"\n", CHR(game_exes[a].id), CHR(game_exes[a].path));
+		ret += S_FMT("\t%s \"%s\"\n", game_exes[a].id, game_exes[a].path);
 	return ret;
 }
 
@@ -55,17 +55,17 @@ string Executables::writeExecutables()
 	for (unsigned a = 0; a < game_exes.size(); a++)
 	{
 		// ID
-		ret += S_FMT("\t%s\n\t{\n", CHR(game_exes[a].id));
+		ret += S_FMT("\t%s\n\t{\n", game_exes[a].id);
 
 		// Name
-		ret += S_FMT("\t\tname = \"%s\";\n", CHR(game_exes[a].name));
+		ret += S_FMT("\t\tname = \"%s\";\n", game_exes[a].name);
 
 		// Exe name
-		ret += S_FMT("\t\texe_name = \"%s\";\n\n", CHR(game_exes[a].exe_name));
+		ret += S_FMT("\t\texe_name = \"%s\";\n\n", game_exes[a].exe_name);
 
 		// Configs
 		for (unsigned b = 0; b < game_exes[a].configs.size(); b++)
-			ret += S_FMT("\t\tconfig \"%s\" = \"%s\";\n", CHR(game_exes[a].configs[b].key), CHR(game_exes[a].configs[b].value));
+			ret += S_FMT("\t\tconfig \"%s\" = \"%s\";\n", game_exes[a].configs[b].key, game_exes[a].configs[b].value);
 
 		ret += "\t}\n\n";
 	}
