@@ -554,6 +554,7 @@ void MapEditor::updateThingLists()
 {
 	pathed_things.clear();
 	map.getPathedThings(pathed_things);
+	map.setThingsUpdated();
 }
 
 void MapEditor::updateTagged()

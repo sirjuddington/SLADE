@@ -128,6 +128,11 @@ void SLADEMap::setGeometryUpdated()
 	geometry_updated = theApp->runTimer();
 }
 
+void SLADEMap::setThingsUpdated()
+{
+	things_updated = theApp->runTimer();
+}
+
 void SLADEMap::refreshIndices()
 {
 	// Vertex indices
@@ -2546,6 +2551,8 @@ bool SLADEMap::removeThing(unsigned index)
 	//things[index]->modified_time = theApp->runTimer();
 	things.pop_back();
 
+	things_updated = theApp->runTimer();
+
 	return true;
 }
 
@@ -3041,7 +3048,7 @@ void SLADEMap::getPathedThings(vector<MapThing*>& list)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		ThingType* tt = theGameConfiguration->thingType(things[a]->getType());
-		if (tt->getFlags() & THING_PATHED|THING_DRAGON)
+		if (tt->getFlags() & (THING_PATHED|THING_DRAGON))
 			list.push_back(things[a]);
 	}
 }
@@ -3684,6 +3691,7 @@ MapThing* SLADEMap::createThing(double x, double y)
 
 	// Add to things
 	things.push_back(nt);
+	things_updated = theApp->runTimer();
 
 	return nt;
 }
