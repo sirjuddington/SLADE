@@ -2953,6 +2953,9 @@ void SLADEMap::initSectorPolygons()
 
 void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 {
+	if (tag == 0)
+		return;
+
 	// Find sectors with matching tag
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
@@ -2963,6 +2966,9 @@ void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 
 void SLADEMap::getThingsById(int id, vector<MapThing*>& list, unsigned start, int type)
 {
+	if (id == 0)
+		return;
+
 	// Find things with matching id
 	for (unsigned a = start; a < things.size(); a++)
 	{
@@ -2973,6 +2979,9 @@ void SLADEMap::getThingsById(int id, vector<MapThing*>& list, unsigned start, in
 
 MapThing* SLADEMap::getFirstThingWithId(int id)
 {
+	if (id == 0)
+		return NULL;
+
 	// Find things with matching id, but ignore dragons, we don't want them!
 	for (unsigned a = 0; a < things.size(); a++)
 	{
@@ -2985,6 +2994,9 @@ MapThing* SLADEMap::getFirstThingWithId(int id)
 
 void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list)
 {
+	if (id==0 && tag==0)
+		return;
+
 	// Find things with matching id contained in sector with matching tag
 	for (unsigned a = 0; a < things.size(); a++)
 	{
@@ -3036,6 +3048,9 @@ void SLADEMap::getPathedThings(vector<MapThing*>& list)
 
 void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
 {
+	if (id == 0)
+		return;
+
 	// Find lines with matching id
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
