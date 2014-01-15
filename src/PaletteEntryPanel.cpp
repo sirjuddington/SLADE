@@ -778,7 +778,7 @@ bool PaletteEntryPanel::addCustomPalette()
 		return false;
 
 	// Write current palette to the user palettes directory
-	string path = appPath(S_FMT("palettes/%s.pal", CHR(name)), DIR_USER);
+	string path = appPath(S_FMT("palettes/%s.pal", name), DIR_USER);
 	palettes[cur_palette]->saveFile(path);
 
 	// Add to palette manager and main palette chooser
@@ -1463,7 +1463,7 @@ void PaletteEntryPanel::analysePalettes()
 #endif
 		}
 #ifdef GPALCOMPANALYSIS
-		report += S_FMT("Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, CHR(entry->getName(true)));
+		report += S_FMT("Deviation sigma: R %+003i G %+003i B %+003i\t%s\n", devR, devG, devB, entry->getName(true));
 		report += S_FMT("Min R %+003i Min G %+003i Min B %+003i Max R %+003i Max G %+003i Max B %+003i \nError count: %i\n",
 		                minR, minG, minB, maxR, maxG, maxB, wrongcount);
 #else

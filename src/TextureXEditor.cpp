@@ -560,7 +560,7 @@ bool TextureXEditor::checkTextures()
 					ArchiveEntry* fentry = theResourceManager->getFlatEntry(tex->getPatch(p)->getName());
 					CTexture* ptex = theResourceManager->getTexture(tex->getPatch(p)->getName());
 					if (!pentry && !fentry && !ptex)
-						problems += S_FMT("Texture %s contains invalid/unknown patch %s\n", CHR(tex->getName()), CHR(tex->getPatch(p)->getName()));
+						problems += S_FMT("Texture %s contains invalid/unknown patch %s\n", tex->getName(), tex->getPatch(p)->getName());
 				}
 			}
 			else
@@ -569,7 +569,7 @@ bool TextureXEditor::checkTextures()
 				for (unsigned p = 0; p < tex->nPatches(); p++)
 				{
 					if (patch_table.patchIndex(tex->getPatch(p)->getName()) == -1)
-						problems += S_FMT("Texture %s contains invalid/unknown patch %s\n", CHR(tex->getName()), CHR(tex->getPatch(p)->getName()));
+						problems += S_FMT("Texture %s contains invalid/unknown patch %s\n", tex->getName(), tex->getPatch(p)->getName());
 				}
 			}
 		}
@@ -584,7 +584,7 @@ bool TextureXEditor::checkTextures()
 
 		if (!entry)
 		{
-			problems += S_FMT("Patch %s cannot be found in any open archive\n", CHR(patch.name));
+			problems += S_FMT("Patch %s cannot be found in any open archive\n", patch.name);
 		}
 		else
 		{
@@ -594,7 +594,7 @@ bool TextureXEditor::checkTextures()
 			EntryType* type = entry->getType();
 
 			if (!type->extraProps().propertyExists("patch"))
-				problems += S_FMT("Patch %s is of type \"%s\", which is not a valid gfx format for patches. Convert it to either Doom Gfx or PNG\n", CHR(patch.name), CHR(type->getName()));
+				problems += S_FMT("Patch %s is of type \"%s\", which is not a valid gfx format for patches. Convert it to either Doom Gfx or PNG\n", patch.name, type->getName());
 		}
 	}
 

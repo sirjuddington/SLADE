@@ -535,14 +535,14 @@ void TextureXPanel::newTextureFromFile()
 			// If it's not a valid image type, ignore this file
 			if (!entry->getType()->extraProps().propertyExists("image"))
 			{
-				wxLogMessage("%s is not a valid image file", CHR(files[a]));
+				wxLogMessage("%s is not a valid image file", files[a]);
 				continue;
 			}
 
 			// Ask for name for texture
 			wxFileName fn(files[a]);
 			string name = fn.GetName().Upper().Truncate(8);
-			name = wxGetTextFromUser(S_FMT("Enter a texture name for %s:", CHR(fn.GetFullName())), "New Texture", name);
+			name = wxGetTextFromUser(S_FMT("Enter a texture name for %s:", fn.GetFullName()), "New Texture", name);
 			name = name.Truncate(8);
 
 			// Add patch to archive
@@ -907,7 +907,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	SImage image;
 	if (!texture->toImage(image, NULL, texture_editor->getPalette(), force_rgba))
 	{
-		wxLogMessage("Error converting %s: %s", CHR(texture->getName()), CHR(Global::error));
+		wxLogMessage("Error converting %s: %s", texture->getName(), Global::error);
 		return false;
 	}
 
@@ -916,7 +916,7 @@ bool TextureXPanel::exportAsPNG(CTexture* texture, string filename, bool force_r
 	SIFormat* fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, texture_editor->getPalette()))
 	{
-		wxLogMessage("Error converting %s", CHR(texture->getName()));
+		wxLogMessage("Error converting %s", texture->getName());
 		return false;
 	}
 
@@ -963,7 +963,7 @@ void TextureXPanel::extractTexture()
 			// If a filename was selected, export it
 			if (!exportAsPNG(selection[0], info.filenames[0], force_rgba))
 			{
-				wxMessageBox(S_FMT("Error: %s", CHR(Global::error)), "Error", wxOK|wxICON_ERROR);
+				wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxOK|wxICON_ERROR);
 				return;
 			}
 		}

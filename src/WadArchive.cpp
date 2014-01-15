@@ -267,8 +267,8 @@ void WadArchive::updateNamespaces()
 		ns.end_index = entryIndex(ns.end);
 
 		// Testing
-		//wxLogMessage("Namespace %s from %s (%d) to %s (%d)", CHR(ns.name),
-		//	CHR(ns.start->getName()), ns.start_index, CHR(ns.end->getName()), ns.end_index);
+		//wxLogMessage("Namespace %s from %s (%d) to %s (%d)", ns.name,
+		//	ns.start->getName(), ns.start_index, ns.end->getName(), ns.end_index);
 	}
 }
 
@@ -440,7 +440,7 @@ bool WadArchive::open(MemChunk& mc)
 				        && (unsigned)(int)(entry->exProp("FullSize")) >  entry->getSize())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
 				if (!JaguarDecode(edata))
-					wxLogMessage("%i: %s (following %s), did not decode properly", a, CHR(entry->getName()), a>0?CHR(getEntry(a-1)->getName()):"nothing");
+					wxLogMessage("%i: %s (following %s), did not decode properly", a, entry->getName(), a>0?getEntry(a-1)->getName():"nothing");
 			}
 			entry->importMemChunk(edata);
 		}

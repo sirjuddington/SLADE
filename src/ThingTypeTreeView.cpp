@@ -16,7 +16,7 @@ ThingTypeTreeView::ThingTypeTreeView(wxWindow* parent) : wxDataViewTreeCtrl(pare
 	for (unsigned a = 0; a < specials.size(); a++)
 	{
 		AppendItem(getGroup(specials[a].type->getGroup()),
-		           S_FMT("%d: %s", specials[a].number, CHR(specials[a].type->getName())), -1);
+		           S_FMT("%d: %s", specials[a].number, specials[a].type->getName()), -1);
 	}
 
 	// Bind events

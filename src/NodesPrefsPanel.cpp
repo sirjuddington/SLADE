@@ -149,7 +149,7 @@ void NodesPrefsPanel::populateOptions(string options)
 	for (unsigned a = 0; a < builder.option_desc.size(); a++)
 	{
 		clb_options->Append(builder.option_desc[a]);
-		if (!options.IsEmpty() && options.Contains(S_FMT(" %s ", CHR(builder.options[a]))))
+		if (!options.IsEmpty() && options.Contains(S_FMT(" %s ", builder.options[a])))
 			clb_options->Check(a);
 	}
 }
@@ -198,9 +198,9 @@ void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
 
 	// Setup extension
 #ifdef __WXMSW__
-	string ext = S_FMT("%s.exe|%s.exe|All Files (*.*)|*.*", CHR(builder.exe), CHR(builder.exe));
+	string ext = S_FMT("%s.exe|%s.exe|All Files (*.*)|*.*", builder.exe, builder.exe);
 #else
-	string ext = S_FMT("%s|%s|All Files (*.*)|*.*", CHR(builder.exe), CHR(builder.exe));
+	string ext = S_FMT("%s|%s|All Files (*.*)|*.*", builder.exe, builder.exe);
 #endif
 
 	// Browse for exe

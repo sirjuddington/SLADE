@@ -26,7 +26,7 @@ typedef wxString string;
 #define S_CMPNOCASE(s1, s2) s1.CmpNoCase(s2) == 0
 
 // Macro to convert a wxString to a c string
-#define CHR(s) ((const char*)(s).ToAscii())
+#define CHR(s) (static_cast<const char*>((s).ToAscii()))
 
 
 // Vectors

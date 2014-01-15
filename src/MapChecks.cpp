@@ -1263,7 +1263,7 @@ public:
 			sector = s2 ? S_FMT("%d", s2->getIndex()) : "(none)";
 		}
 
-		return S_FMT("Line %d has potentially wrong %s sector %s", invalid_refs[index].line->getIndex(), CHR(side), CHR(sector));
+		return S_FMT("Line %d has potentially wrong %s sector %s", invalid_refs[index].line->getIndex(), side, sector);
 	}
 
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)

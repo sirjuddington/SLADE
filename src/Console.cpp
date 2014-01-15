@@ -155,7 +155,7 @@ void Console::execute(string command)
 		else
 			value = ((CStringCVar*)cvar)->value;
 
-		logMessage(S_FMT("\"%s\" = \"%s\"", CHR(cmd_name), CHR(value)));
+		logMessage(S_FMT("\"%s\" = \"%s\"", cmd_name, value));
 
 		if (cmd_name == "log_verbosity")
 			Global::log_verbosity = cvar->GetValue().Int;
@@ -289,7 +289,7 @@ void ConsoleCommand::execute(vector<string> args)
 	if (args.size() >= min_args)
 		commandFunc(args);
 	else
-		theConsole->logMessage(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", CHR(name)));
+		theConsole->logMessage(S_FMT("Missing command arguments, type \"cmdhelp %s\" for more information", name));
 }
 
 
@@ -317,7 +317,7 @@ CONSOLE_COMMAND (cmdlist, 0, true)
 	{
 		ConsoleCommand& cmd = theConsole->command(a);
 		if (cmd.showInList() || Global::debug)
-			theConsole->logMessage(S_FMT("\"%s\" (%d args)", CHR(cmd.getName()), cmd.minArgs()));
+			theConsole->logMessage(S_FMT("\"%s\" (%d args)", cmd.getName(), cmd.minArgs()));
 	}
 }
 
@@ -348,14 +348,14 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 	{
 		if (theConsole->command(a).getName().Lower() == args[0].Lower())
 		{
-			string url = S_FMT("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", CHR(args[0]));
+			string url = S_FMT("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
 			wxLaunchDefaultBrowser(url);
 			return;
 		}
 	}
 
 	// No command found
-	theConsole->logMessage(S_FMT("No command \"%s\" exists", CHR(args[0])));
+	theConsole->logMessage(S_FMT("No command \"%s\" exists", args[0]));
 }
 
 CONSOLE_COMMAND (testmatch, 0, false)

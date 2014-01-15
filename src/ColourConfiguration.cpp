@@ -88,7 +88,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 			}
 
 			else
-				wxLogMessage("Warning: unknown colour definition property \"%s\"", CHR(prop->getName()));
+				wxLogMessage("Warning: unknown colour definition property \"%s\"", prop->getName());
 		}
 	}
 
@@ -113,13 +113,13 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 		}
 
 		// Colour definition name
-		cfgstring += S_FMT("\t%s\n\t{\n", CHR(i->first));
+		cfgstring += S_FMT("\t%s\n\t{\n", i->first);
 
 		// Full name
-		cfgstring += S_FMT("\t\tname = \"%s\";\n", CHR(cc.name));
+		cfgstring += S_FMT("\t\tname = \"%s\";\n", cc.name);
 
 		// Group
-		cfgstring += S_FMT("\t\tgroup = \"%s\";\n", CHR(cc.group));
+		cfgstring += S_FMT("\t\tgroup = \"%s\";\n", cc.group);
 
 		// Colour values
 		cfgstring += S_FMT("\t\trgb = %d, %d, %d;\n", cc.colour.r, cc.colour.g, cc.colour.b);
@@ -252,7 +252,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 
 		// Print colour
 		rgba_t col = ColourConfiguration::getColour(args[0]);
-		theConsole->logMessage(S_FMT("Colour \"%s\" = %d %d %d %d %d", CHR(args[0]), col.r, col.g, col.b, col.a, col.blend));
+		theConsole->logMessage(S_FMT("Colour \"%s\" = %d %d %d %d %d", args[0], col.r, col.g, col.b, col.a, col.blend));
 	}
 }
 

@@ -423,7 +423,7 @@ void GfxConvDialog::updatePreviewGfx()
 	getConvertOptions(opt);
 
 	// Do conversion
-	//wxLogMessage("Converting to %s", CHR(current_format.format->getName()));
+	//wxLogMessage("Converting to %s", current_format.format->getName());
 	current_format.format->convertWritable(*(gfx_target->getImage()), opt);
 
 

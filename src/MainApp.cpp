@@ -141,7 +141,7 @@ public:
 		if (func_name.IsEmpty())
 			func_name = S_FMT("[unknown:%d]", address);
 
-		stack_trace.Append(S_FMT("%d: %s%s\n", frame.GetLevel(), CHR(location), CHR(func_name)));
+		stack_trace.Append(S_FMT("%d: %s%s\n", frame.GetLevel(), location, func_name));
 	}
 };
 
@@ -167,11 +167,11 @@ public:
 		sizer->Add(new wxStaticText(this, -1, message), 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 4);
 
 		// Setup stack trace string
-		string trace = S_FMT("Version: %s\n", CHR(Global::version));
+		string trace = S_FMT("Version: %s\n", Global::version);
 		if (current_action.IsEmpty())
 			trace += "No current action\n";
 		else
-			trace += S_FMT("Current action: %s", CHR(current_action));
+			trace += S_FMT("Current action: %s", current_action);
 		trace += "\n";
 		trace += st.getTraceString();
 
@@ -241,7 +241,7 @@ string appPath(string filename, int dir)
 		{
 			if (!wxMkdir(dir_temp))
 			{
-				wxLogMessage("Unable to create temp directory \"%s\"", CHR(dir_temp));
+				wxLogMessage("Unable to create temp directory \"%s\"", dir_temp);
 				temp_fail_count++;
 				return appPath(filename, dir);
 			}
@@ -806,7 +806,7 @@ int MainApp::OnExit()
 	while (files)
 	{
 		if (!wxRemoveFile(appPath(filename, DIR_TEMP)))
-			wxLogMessage("Warning: Could not clean up temporary file \"%s\"", CHR(filename));
+			wxLogMessage("Warning: Could not clean up temporary file \"%s\"", filename);
 		files = temp.GetNext(&filename);
 	}
 
@@ -1011,7 +1011,7 @@ bool MainApp::doAction(string id)
 
 	// Warn if nothing handled it
 	if (!handled)
-		wxLogMessage("Warning: Action \"%s\" not handled", CHR(id));
+		wxLogMessage("Warning: Action \"%s\" not handled", id);
 
 	// Return true if handled
 	return handled;

@@ -32,7 +32,7 @@ bool ThingBrowserItem::loadImage()
 	if (!tex)
 	{
 		// Sprite not found, try an icon
-		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(type->getIcon())));
+		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", type->getIcon()));
 	}
 	if (!tex)
 	{

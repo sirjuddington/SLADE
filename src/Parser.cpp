@@ -214,7 +214,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// If it's a special character (ie not a valid name), parsing fails
 		if (tz.isSpecialCharacter(token.at(0)))
 		{
-			wxLogMessage("Parsing error: Unexpected special character '%s' in %s (line %d)", CHR(token), CHR(tz.getName()), tz.lineNo());
+			wxLogMessage("Parsing error: Unexpected special character '%s' in %s (line %d)", token, tz.getName(), tz.lineNo());
 			return false;
 		}
 
@@ -281,14 +281,14 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 					long val;
 					token.ToLong(&val, 0);
 					value = (int)val;
-					//wxLogMessage("%s: %s is hex %d", CHR(name), CHR(token), value.getIntValue());
+					//wxLogMessage("%s: %s is hex %d", name, token, value.getIntValue());
 				}
 				else if (re_float.Matches(token))  		// Floating point
 				{
 					double val;
 					token.ToDouble(&val);
 					value = (double)val;
-					//LOG_MESSAGE(3, "%s: %s is float %1.3f", CHR(name), CHR(token), val);
+					//LOG_MESSAGE(3, "%s: %s is float %1.3f", name, token, val);
 				}
 				else									// Unknown, just treat as string
 					value = token;
@@ -303,7 +303,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				{
 					string t = tz.getToken();
 					string n = tz.getName();
-					wxLogMessage("Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)", CHR(list_end), CHR(t), CHR(n), tz.lineNo());
+					wxLogMessage("Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)", list_end, t, n, tz.lineNo());
 					return false;
 				}
 
@@ -365,7 +365,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			wxLogMessage("Parsing error: \"%s\" unexpected in %s (line %d)", CHR(next), CHR(tz.getName()), tz.lineNo());
+			wxLogMessage("Parsing error: \"%s\" unexpected in %s (line %d)", next, tz.getName(), tz.lineNo());
 			return false;
 		}
 

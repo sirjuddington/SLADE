@@ -158,7 +158,7 @@ bool ZipArchive::open(string filename)
 			else
 			{
 				Global::error = S_FMT("Entry too large: %s is %u mb",
-				                      CHR(entry->GetName(wxPATH_UNIX)), entry->GetSize() / (1<<20));
+				                      entry->GetName(wxPATH_UNIX), entry->GetSize() / (1<<20));
 				setMuted(false);
 				return false;
 			}

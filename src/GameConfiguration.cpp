@@ -555,7 +555,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 				done = true;
 			}
 			else
-				LOG_MESSAGE(2, "Couldn't find entry to #include: %s", CHR(name));
+				LOG_MESSAGE(2, "Couldn't find entry to #include: %s", name);
 
 			// Look in resource pack
 			if (use_res && !done && theArchiveManager->programResourceArchive())
@@ -571,7 +571,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 
 			// Okay, we've exhausted all possibilities
 			if (!done)
-				wxLogMessage("Error: Attempting to #include nonexistant entry \"%s\" from entry %s", CHR(name), CHR(entry->getName()));
+				wxLogMessage("Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->getName());
 		}
 		else
 			out.Append(line + "\n");
@@ -804,7 +804,7 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 					map_formats[MAP_UDMF] = true;
 				}
 				else
-					wxLogMessage("Warning: Unknown/unsupported map format \"%s\"", CHR(node->getStringValue(v)));
+					wxLogMessage("Warning: Unknown/unsupported map format \"%s\"", node->getStringValue(v));
 			}
 		}
 
@@ -897,7 +897,7 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 				}
 
 				else
-					wxLogMessage("Unknown defaults block \"%s\"", CHR(block->getName()));
+					wxLogMessage("Unknown defaults block \"%s\"", block->getName());
 			}
 		}
 
@@ -1264,7 +1264,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t fo
 
 		// Unknown/unexpected section
 		else
-			wxLogMessage("Warning: Unexpected game configuration section \"%s\", skipping", CHR(node->getName()));
+			wxLogMessage("Warning: Unexpected game configuration section \"%s\", skipping", node->getName());
 	}
 
 	return true;
@@ -1287,14 +1287,14 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 					buildConfig(filename, full_config);
 				else
 				{
-					wxLogMessage("Error: Game configuration file \"%s\" not found", CHR(filename));
+					wxLogMessage("Error: Game configuration file \"%s\" not found", filename);
 					return false;
 				}
 			}
 			else
 			{
 				// Config is in program resource
-				string epath = S_FMT("config/games/%s.cfg", CHR(game_configs[a].filename));
+				string epath = S_FMT("config/games/%s.cfg", game_configs[a].filename);
 				Archive* archive = theArchiveManager->programResourceArchive();
 				ArchiveEntry* entry = archive->entryAtPath(epath);
 				if (entry)
@@ -1335,14 +1335,14 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 						buildConfig(filename, full_config);
 					else
 					{
-						wxLogMessage("Error: Port configuration file \"%s\" not found", CHR(filename));
+						wxLogMessage("Error: Port configuration file \"%s\" not found", filename);
 						return false;
 					}
 				}
 				else
 				{
 					// Config is in program resource
-					string epath = S_FMT("config/ports/%s.cfg", CHR(conf.filename));
+					string epath = S_FMT("config/ports/%s.cfg", conf.filename);
 					Archive* archive = theArchiveManager->programResourceArchive();
 					ArchiveEntry* entry = archive->entryAtPath(epath);
 					if (entry)
@@ -1367,7 +1367,7 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 		current_port = port;
 		game_configuration = game;
 		port_configuration = port;
-		wxLogMessage("Read game configuration \"%s\" + \"%s\"", CHR(current_game), CHR(current_port));
+		wxLogMessage("Read game configuration \"%s\" + \"%s\"", current_game, current_port);
 	}
 	else
 	{
@@ -1519,7 +1519,7 @@ bool GameConfiguration::thingFlagSet(string flag, MapThing* thing, int map_forma
 		if (flags_thing[i].udmf == flag)
 			return !!(flags & flags_thing[i].flag);
 	}
-	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", flag);
 	return false;
 }
 
@@ -1658,7 +1658,7 @@ void GameConfiguration::setThingFlag(string flag, MapThing* thing, int map_forma
 
 	if (flag_val == 0)
 	{
-		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", flag);
 		return;
 	}
 
@@ -1806,7 +1806,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 	if (decorate_entries.empty())
 		return false;
 
-	LOG_MESSAGE(2, "Parsing DECORATE entries found in archive %s", CHR(archive->getFilename()));
+	LOG_MESSAGE(2, "Parsing DECORATE entries found in archive %s", archive->getFilename());
 
 	//ArchiveEntry* decorate_base = archive->getEntry("DECORATE", true);
 	//if (!decorate_base)
@@ -1857,7 +1857,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 			// Check for no editor number (ie can't be placed in the map)
 			if (tz.peekToken() == "{")
 			{
-				LOG_MESSAGE(3, "Not adding actor %s, no editor number", CHR(name));
+				LOG_MESSAGE(3, "Not adding actor %s, no editor number", name);
 
 				// Skip actor definition
 				tz.skipToken();
@@ -2079,7 +2079,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 										{
 											priority = mypriority;
 											found_props["sprite"] = sprite;
-											LOG_MESSAGE(3, "Actor %s found sprite %s from state %s", CHR(name), CHR(sprite), CHR(spritestate));
+											LOG_MESSAGE(3, "Actor %s found sprite %s from state %s", name, sprite, spritestate);
 											lastpriority = -1;
 										}
 									}
@@ -2096,10 +2096,10 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						token = tz.getToken();
 					}
 
-					LOG_MESSAGE(3, "Parsed actor %s: %d", CHR(name), type);
+					LOG_MESSAGE(3, "Parsed actor %s: %d", name, type);
 				}
 				else
-					LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", CHR(name));
+					LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", name);
 
 				// Ignore actors filtered for other games, 
 				// and actors with a negative or null type
@@ -2334,10 +2334,10 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				if (found_props["hanging"].hasValue()) tt->hanging = found_props["hanging"].getBoolValue();
 				if (found_props["bright"].hasValue()) tt->fullbright = found_props["bright"].getBoolValue();
 				if (found_props["translation"].hasValue()) tt->translation = found_props["translation"].getStringValue();
-				LOG_MESSAGE(3, "Parsed %s %s: %d", group.length() ? CHR(group) : "decoration", CHR(name), type);
+				LOG_MESSAGE(3, "Parsed %s %s: %d", group.length() ? group : "decoration", name, type);
 			}
 			else
-				LOG_MESSAGE(3, "Not adding %s %s, no editor number", group.length() ? CHR(group) : "decoration", CHR(name));
+				LOG_MESSAGE(3, "Not adding %s %s, no editor number", group.length() ? group : "decoration", name);
 		}
 
 		token = tz.getToken();
@@ -2388,7 +2388,7 @@ bool GameConfiguration::lineFlagSet(string flag, MapLine* line, int map_format)
 		if (flags_line[i].udmf == flag)
 			return !!(flags & flags_line[i].flag);
 	}
-	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+	LOG_MESSAGE(2, "Flag %s does not exist in this configuration", flag);
 	return false;
 }
 
@@ -2488,7 +2488,7 @@ void GameConfiguration::setLineFlag(string flag, MapLine* line, int map_format, 
 
 	if (flag_val == 0)
 	{
-		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", CHR(flag));
+		LOG_MESSAGE(2, "Flag %s does not exist in this configuration", flag);
 		return;
 	}
 
@@ -2812,7 +2812,7 @@ string GameConfiguration::sectorTypeName(int type, int map_format)
 		// Just return flags in this case
 		string name = gen_flags[0];
 		for (unsigned a = 1; a < gen_flags.size(); a++)
-			name += S_FMT(" + %s", CHR(gen_flags[a]));
+			name += S_FMT(" + %s", gen_flags[a]);
 
 		return name;
 	}
@@ -2830,7 +2830,7 @@ string GameConfiguration::sectorTypeName(int type, int map_format)
 
 	// Add generalised flags to type name
 	for (unsigned a = 0; a < gen_flags.size(); a++)
-		name += S_FMT(" + %s", CHR(gen_flags[a]));
+		name += S_FMT(" + %s", gen_flags[a]);
 
 	return name;
 }
@@ -3143,7 +3143,7 @@ void GameConfiguration::applyDefaults(MapObject* object, bool udmf)
 			object->setFloatProperty(prop_names[a], prop_vals[a].getFloatValue());
 		else if (prop_vals[a].getType() == PROP_STRING)
 			object->setStringProperty(prop_names[a], prop_vals[a].getStringValue());
-		LOG_MESSAGE(3, "Applied default property %s = %s", CHR(prop_names[a]), CHR(prop_vals[a].getStringValue()));
+		LOG_MESSAGE(3, "Applied default property %s = %s", prop_names[a], prop_vals[a].getStringValue());
 	}
 }
 
@@ -3230,7 +3230,7 @@ void GameConfiguration::dumpActionSpecials()
 
 	while (i != action_specials.end())
 	{
-		wxLogMessage("Action special %d = %s", i->first, CHR(i->second.special->stringDesc()));
+		wxLogMessage("Action special %d = %s", i->first, i->second.special->stringDesc());
 		i++;
 	}
 }
@@ -3241,7 +3241,7 @@ void GameConfiguration::dumpThingTypes()
 
 	while (i != thing_types.end())
 	{
-		wxLogMessage("Thing type %d = %s", i->first, CHR(i->second.type->stringDesc()));
+		wxLogMessage("Thing type %d = %s", i->first, i->second.type->stringDesc());
 		i++;
 	}
 }

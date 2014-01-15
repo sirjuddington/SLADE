@@ -106,7 +106,7 @@ void AdvancedPrefsPanel::refreshPropGrid()
 		else if (cvar->type == CVAR_FLOAT)
 			pg_cvars->Append(new wxFloatProperty(cvars[a], cvars[a], cvar->GetValue().Float));
 		else if (cvar->type == CVAR_STRING)
-			pg_cvars->Append(new wxStringProperty(cvars[a], cvars[a], S_FMT("%s", CHR(((CStringCVar*)cvar)->value))));
+			pg_cvars->Append(new wxStringProperty(cvars[a], cvars[a], S_FMT("%s", ((CStringCVar*)cvar)->value)));
 	}
 
 	// Set all bool properties to use checkboxes
@@ -138,7 +138,7 @@ void AdvancedPrefsPanel::applyPreferences()
 			else if (cvar->type == CVAR_FLOAT)
 				pg_cvars->SetPropertyValue(cvars[a], cvar->GetValue().Float);
 			else if (cvar->type == CVAR_STRING)
-				pg_cvars->SetPropertyValue(cvars[a], S_FMT("%s", CHR(((CStringCVar*)cvar)->value)));
+				pg_cvars->SetPropertyValue(cvars[a], S_FMT("%s", ((CStringCVar*)cvar)->value));
 
 			continue;
 		}

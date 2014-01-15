@@ -249,7 +249,7 @@ bool PakArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1);	// Remove leading /
 		if (name.Len() > 56)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", CHR(name));
+			wxLogMessage("Warning: Entry %s path is too long (> 56 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 56)
@@ -312,7 +312,7 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("PakArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
+		wxLogMessage("PakArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 
