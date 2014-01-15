@@ -420,7 +420,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
 	{
 		// Get sector light colour
-		int intcol = intProperty("lightcolor");
+		int intcol = MapObject::intProperty("lightcolor");
 		wxColour wxcol(intcol);
 
 		// Ignore light level if fullbright
@@ -428,13 +428,13 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 			return rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255);
 
 		// Get sector light level
-		int ll = intProperty("lightlevel");
+		int ll = light;
 
 		// Get specific light level
 		if (where == 1)
 		{
 			// Floor
-			int fl = intProperty("lightfloor");
+			int fl = MapObject::intProperty("lightfloor");
 			if (boolProperty("lightfloorabsolute"))
 				ll = fl;
 			else
@@ -443,7 +443,7 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		else if (where == 2)
 		{
 			// Ceiling
-			int cl = intProperty("lightceiling");
+			int cl = MapObject::intProperty("lightceiling");
 			if (boolProperty("lightceilingabsolute"))
 				ll = cl;
 			else

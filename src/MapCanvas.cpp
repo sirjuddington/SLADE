@@ -1135,6 +1135,9 @@ void MapCanvas::drawMap2d()
 		renderer_2d->renderLines(line_tabs_always, fade_lines);	// Lines
 		renderer_2d->renderThings(fade_things, force_dir);		// Things
 
+		// Thing paths
+		renderer_2d->renderPathedThings(editor->pathedThings());
+
 		// Selection if needed
 		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
 			renderer_2d->renderThingSelection(editor->getSelection(), anim_flash_level);
@@ -1159,7 +1162,6 @@ void MapCanvas::drawMap2d()
 		if (editor->taggingThings().size() > 0)
 			renderer_2d->renderTaggingThings(editor->taggingThings(), anim_flash_level);
 	}
-	renderer_2d->renderPathedThings(editor->pathedThings());
 
 	// Draw selection numbers if needed
 	if (editor->selectionSize() > 0 && mouse_state == MSTATE_NORMAL && map_show_selection_numbers)
