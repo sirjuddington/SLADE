@@ -186,35 +186,6 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	rac_resources = new ResourceArchiveChooser(this, archive);
 	framesizer->Add(rac_resources, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
-	//// Resource archive list
-	//list_resources = new wxCheckListBox(this, -1);
-	//framesizer->Add(list_resources, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	//list_resources->SetInitialSize(wxSize(350, 100));
-
-	//// Populate resource archive list
-	//int index = 0;
-	//for (int a = 0; a < theArchiveManager->numArchives(); a++)
-	//{
-	//	Archive* arch = theArchiveManager->getArchive(a);
-	//	if (arch != archive)
-	//	{
-	//		list_resources->Append(arch->getFilename(false));
-	//		if (theArchiveManager->archiveIsResource(arch))
-	//			list_resources->Check(index);
-	//		index++;
-	//	}
-	//}
-
-	//// 'Open Resource' button
-	//hbox = new wxBoxSizer(wxHORIZONTAL);
-	//framesizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	//btn_open_resource = new wxButton(this, -1, "Open Archive");
-	//hbox->Add(btn_open_resource, 0, wxEXPAND|wxRIGHT, 4);
-
-	//// 'Open Recent' button
-	//btn_recent = new wxButton(this, -1, "Open Recent");
-	//hbox->Add(btn_recent, 0, wxEXPAND, 0);
-
 
 	// Right side (map preview)
 	if (show_maplist)
@@ -232,7 +203,13 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	// Dialog buttons
 	sizer->AddSpacer(4);
-	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 6);
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxBOTTOM, 6);
+	hbox->AddStretchSpacer();
+	btn_ok = new wxButton(this, -1, "OK");
+	hbox->Add(btn_ok, 0, wxEXPAND|wxRIGHT, 4);
+	btn_cancel = new wxButton(this, -1, "Cancel");
+	hbox->Add(btn_cancel, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Populate map list
 	populateMapList();
@@ -246,8 +223,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		list_maps->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &MapEditorConfigDialog::onMapSelected, this);
 		btn_new_map->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnNewMap, this);
 	}
-	//btn_open_resource->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnOpenResource, this);
-	//btn_recent->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnRecent, this);
+	btn_ok->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnOK, this);
+	btn_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnCancel, this);
 
 	Layout();
 	mainsizer->Fit(this);
@@ -360,7 +337,7 @@ void MapEditorConfigDialog::populateMapList()
 
 		// Add to list
 		list_maps->InsertItem(li);
-		list_maps->SetItemImage(index++, 0);
+		index++;
 	}
 
 	// Restore selection
@@ -467,7 +444,8 @@ void MapEditorConfigDialog::onChoicePortConfigChanged(wxCommandEvent& e)
 
 void MapEditorConfigDialog::onMapActivated(wxListEvent& e)
 {
-	EndModal(wxID_OK);
+	if (configMatchesMap(selectedMap()))
+		EndModal(wxID_OK);
 }
 
 void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
@@ -591,47 +569,23 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 	}
 }
 
-//void MapEditorConfigDialog::onBtnOpenResource(wxCommandEvent& e)
-//{
-//	SFileDialog::fd_info_t info;
-//	if (SFileDialog::openFile(info, "Open Resource Archive", theArchiveManager->getArchiveExtensionsString(), this))
-//	{
-//		theSplashWindow->show("Opening Resource Archive", true);
-//		Archive* na = theArchiveManager->openArchive(info.filenames[0], true, true);
-//		theSplashWindow->hide();
-//		if (na)
-//		{
-//			list_resources->Append(na->getFilename(false));
-//			list_resources->Check(list_resources->GetCount()-1);
-//		}
-//	}
-//}
-//
-//void MapEditorConfigDialog::onBtnRecent(wxCommandEvent& e)
-//{
-//	// Build list of recent wad filename strings
-//	wxArrayString recent;
-//	for (unsigned a = 0; a < theArchiveManager->numRecentFiles(); a++)
-//		recent.Add(theArchiveManager->recentFile(a));
-//
-//	// Show dialog
-//	wxSingleChoiceDialog dlg(this, "Select a recent Archive to open", "Open Recent", recent);
-//	if (dlg.ShowModal() == wxID_OK)
-//	{
-//		Archive* na = theArchiveManager->openArchive(theArchiveManager->recentFile(dlg.GetSelection()), true, true);
-//		if (na)
-//		{
-//			list_resources->Append(na->getFilename(false));
-//			list_resources->Check(list_resources->GetCount()-1);
-//		}
-//	}
-//}
-
 void MapEditorConfigDialog::onMapSelected(wxListEvent& e)
 {
 	if (!canvas_preview)
 		return;
 
+	Archive::mapdesc_t map = selectedMap();
 	canvas_preview->clearMap();
-	canvas_preview->openMap(selectedMap());
+	canvas_preview->openMap(map);
+	btn_ok->Enable(configMatchesMap(map));
+}
+
+void MapEditorConfigDialog::onBtnOK(wxCommandEvent& e)
+{
+	EndModal(wxID_OK);
+}
+
+void MapEditorConfigDialog::onBtnCancel(wxCommandEvent& e)
+{
+	EndModal(wxID_CANCEL);
 }

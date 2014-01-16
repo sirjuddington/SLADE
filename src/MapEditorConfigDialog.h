@@ -17,12 +17,11 @@ private:
 	BaseResourceChooser*		choice_base_resource;
 	ListView*					list_maps;
 	ResourceArchiveChooser*		rac_resources;
-	//wxCheckListBox*				list_resources;
-	//wxButton*					btn_open_resource;
-	//wxButton*					btn_recent;
 	wxButton*					btn_new_map;
 	MapPreviewCanvas*			canvas_preview;
 	wxImageList*				img_list;
+	wxButton*					btn_ok;
+	wxButton*					btn_cancel;
 	string						game_current;
 	string						port_current;
 	int							map_format;
@@ -49,9 +48,9 @@ public:
 	void	onChoicePortConfigChanged(wxCommandEvent& e);
 	void	onMapActivated(wxListEvent& e);
 	void	onBtnNewMap(wxCommandEvent& e);
-	//void	onBtnOpenResource(wxCommandEvent& e);
-	//void	onBtnRecent(wxCommandEvent& e);
 	void	onMapSelected(wxListEvent& e);
+	void	onBtnOK(wxCommandEvent& e);
+	void	onBtnCancel(wxCommandEvent& e);
 };
 
 #endif//__MAP_EDITOR_CONFIG_DIALOG_H__
