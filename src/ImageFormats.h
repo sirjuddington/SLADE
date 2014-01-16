@@ -874,14 +874,17 @@ public:
 		if (size < 4)
 			return EDF_FALSE;
 		int width = READ_L16(mc, 2);
-		if (width <= 0)
+		if (width <= 0 || width > (signed)(size/4))
 			return EDF_FALSE;
 		int height = 0;
 		// Error checking with average column height and proportion of empty columns
 		int avgcolheight = 0, pnumemptycol = 0;
 		for (int j = 0; j < width; ++j)
 		{
-			int offstart = READ_L16(mc, ((j<<1)+4));
+			int pos = (j<<1)+4;
+			if (pos+2 >= size)
+				return EDF_FALSE;
+			int offstart = READ_L16(mc, pos);
 			if (offstart == 0) continue;
 			if (offstart < 0 || size < offstart+2 || offstart < (width*2+4))
 				return EDF_FALSE;
