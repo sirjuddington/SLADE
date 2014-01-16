@@ -41,11 +41,6 @@ public:
 	// Detection
 	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
 
-	// Search
-	ArchiveEntry*			findFirst(search_options_t& options);
-	ArchiveEntry*			findLast(search_options_t& options);
-	vector<ArchiveEntry*>	findAll(search_options_t& options);
-
 	// Static functions
 	static bool isResArchive(MemChunk& mc);
 	static bool isResArchive(MemChunk& mc, size_t& d_o, size_t& n_l);
