@@ -742,6 +742,12 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 			createStartPage();
 		html_startpage->Reload();
 	}
+	else if (wxFileExists(href))
+	{
+		// Navigating to file, open it
+		theArchiveManager->openArchive(href);
+		ev.Veto();
+	}
 }
 
 /* MainWindow::onClose
