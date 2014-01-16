@@ -565,7 +565,7 @@ void TextStylePrefsPanel::onBtnSaveStyleSet(wxCommandEvent& e)
 	name.Replace(" ", "_");
 
 	// Write set to file
-	string filename = appPath(S_FMT("text_styles/%s.sss", CHR(name)), DIR_USER);
+	string filename = appPath(S_FMT("text_styles/%s.sss", name), DIR_USER);
 	ss_temp.writeFile(filename);
 }
 

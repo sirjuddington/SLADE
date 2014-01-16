@@ -184,7 +184,7 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 			{
 				string name = i->first;
 				name.Remove(0, 1);
-				dups += S_FMT("%s appears %d times\n", CHR(name), i->second);
+				dups += S_FMT("%s appears %d times\n", name, i->second);
 			}
 			i++;
 		}
@@ -200,12 +200,12 @@ bool ArchiveOperations::checkDuplicateEntryNames(Archive* archive)
 			if (i->second.size() > 1)
 			{
 				string name;
-				dups += S_FMT("\n%i entries are named %s\t", i->second.size(), CHR(i->first));
+				dups += S_FMT("\n%i entries are named %s\t", i->second.size(), i->first);
 				vector<ArchiveEntry*>::iterator j = i->second.begin();
 				while (j != i->second.end())
 				{
 					name = (*j)->getPath(true); name.Remove(0, 1);
-					dups += S_FMT("\t%s", CHR(name));
+					dups += S_FMT("\t%s", name);
 					++j;
 				}
 			}
@@ -271,7 +271,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		if (other != NULL && (other->getMCData().crc() == entries[a]->getMCData().crc()))
 		{
 			++count;
-			dups += S_FMT("%s\n", CHR(search.match_name));
+			dups += S_FMT("%s\n", search.match_name);
 			archive->removeEntry(entries[a], true);
 			entries[a] = NULL;
 		}
@@ -330,12 +330,12 @@ bool ArchiveOperations::checkDuplicateEntryContent(Archive* archive)
 		if (i->second.size() > 1)
 		{
 			string name = i->second[0]->getPath(true); name.Remove(0, 1);
-			dups += S_FMT("\n%s\t(%8x) duplicated by", CHR(name), i->first);
+			dups += S_FMT("\n%s\t(%8x) duplicated by", name, i->first);
 			vector<ArchiveEntry*>::iterator j = i->second.begin() + 1;
 			while (j != i->second.end())
 			{
 				name = (*j)->getPath(true); name.Remove(0, 1);
-				dups += S_FMT("\t%s", CHR(name));
+				dups += S_FMT("\t%s", name);
 				++j;
 			}
 		}
@@ -556,7 +556,7 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 
 			// Mark if unused and not part of an animation
 			if (!used_textures[texname].used && !anim && !thisend)
-				unused_tex.Add(CHR(txlist.getTexture(t)->getName()));
+				unused_tex.Add(txlist.getTexture(t)->getName());
 		}
 	}
 
@@ -736,7 +736,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			if (flatname == flat_anim_start[b])
 			{
 				anim = true;
-				wxLogMessage("%s anim start", CHR(flatname));
+				wxLogMessage("%s anim start", flatname);
 				break;
 			}
 		}
@@ -749,7 +749,7 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 			{
 				anim = false;
 				thisend = true;
-				wxLogMessage("%s anim end", CHR(flatname));
+				wxLogMessage("%s anim end", flatname);
 				break;
 			}
 		}
@@ -989,7 +989,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i things changed\n", CHR(maps[a].head->getName()), achanged);
+		report += S_FMT("%s:\t%i things changed\n", maps[a].head->getName(), achanged);
 		changed += achanged;
 	}
 	wxLogMessage(report);
@@ -1330,7 +1330,7 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i specials changed\n", CHR(maps[a].head->getName()), achanged);
+		report += S_FMT("%s:\t%i specials changed\n", maps[a].head->getName(), achanged);
 		changed += achanged;
 	}
 	wxLogMessage(report);
@@ -1673,7 +1673,7 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 				}
 			}
 		}
-		report += S_FMT("%s:\t%i elements changed\n", CHR(maps[a].head->getName()), achanged);
+		report += S_FMT("%s:\t%i elements changed\n", maps[a].head->getName(), achanged);
 		changed += achanged;
 	}
 	wxLogMessage(report);

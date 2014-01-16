@@ -276,7 +276,7 @@ bool GfxEntryPanel::saveEntry()
 		if (format == SIFormat::unknownFormat())
 			error = "Image is of unknown format";
 		else if (writable == SIFormat::NOTWRITABLE)
-			error = S_FMT("Writing unsupported for format \"%s\"", CHR(format->getName()));
+			error = S_FMT("Writing unsupported for format \"%s\"", format->getName());
 		else
 		{
 			// Convert image if necessary (using default options)
@@ -385,7 +385,7 @@ bool GfxEntryPanel::extractAll()
 	int pos = 0;
 	for (int i = 0; i < getImage()->getSize(); ++i)
 	{
-		string newname = S_FMT("%s_%i.png", CHR(name), i);
+		string newname = S_FMT("%s_%i.png", name, i);
 		Misc::loadImageFromEntry(getImage(), entry, i);
 
 		// Only process images that actually contain some pixels

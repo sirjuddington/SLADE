@@ -715,7 +715,7 @@ void TextEditor::openJumpToDialog()
 
 				// Numbered block, add block name
 				if (name.IsNumber())
-					name = S_FMT("%s %s", CHR(language->jumpBlock(a)), CHR(name));
+					name = S_FMT("%s %s", language->jumpBlock(a), name);
 				// Unnamed block, use block name
 				if (name == "{" || name == ";")
 					name = language->jumpBlock(a);
@@ -1063,7 +1063,7 @@ void TextEditor::onFRDBtnFindNext(wxCommandEvent& e)
 
 	// Do find
 	if (!findNext(find))
-		wxLogMessage("No text matching \"%s\" found.", CHR(find));
+		wxLogMessage("No text matching \"%s\" found.", find);
 }
 
 /* TextEditor::onFRDBtnReplace

@@ -124,9 +124,9 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
 	if (target_colformat >= 0 && !fmt->canWriteType((SIType)target_colformat))
 	{
 		if (target_colformat == RGBA)
-			wxLogMessage("Format \"%s\" cannot be written as RGBA data", CHR(fmt->getName()));
+			wxLogMessage("Format \"%s\" cannot be written as RGBA data", fmt->getName());
 		else if (target_colformat == PALMASK)
-			wxLogMessage("Format \"%s\" cannot be written as paletted data", CHR(fmt->getName()));
+			wxLogMessage("Format \"%s\" cannot be written as paletted data", fmt->getName());
 
 		return false;
 	}
@@ -138,7 +138,7 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
 	int writable = fmt->canWrite(image);
 	if (writable == SIFormat::NOTWRITABLE)
 	{
-		wxLogMessage("Entry \"%s\" could not be converted to target format \"%s\"", CHR(entry->getName()), CHR(fmt->getName()));
+		wxLogMessage("Entry \"%s\" could not be converted to target format \"%s\"", entry->getName(), fmt->getName());
 		return false;
 	}
 	else if (writable == SIFormat::CONVERTIBLE)
@@ -172,7 +172,7 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" ||
 	        entryformat == "img_doom_alpha" || "img_doom_beta" || entryformat == "img_png"))
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" which does not support offsets", CHR(entry->getName()), CHR(entry->getType()->getName()));
+		wxLogMessage("Entry \"%s\" is of type \"%s\" which does not support offsets", entry->getName(), entry->getType()->getName());
 		return false;
 	}
 
@@ -323,7 +323,7 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" ||
 		entryformat == "img_doom_alpha" || "img_doom_beta" || entryformat == "img_png"))
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" which does not support offsets", CHR(entry->getName()), CHR(entry->getType()->getName()));
+		wxLogMessage("Entry \"%s\" is of type \"%s\" which does not support offsets", entry->getName(), entry->getType()->getName());
 		return false;
 	}
 
@@ -527,14 +527,14 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 	}
 
 	// Generate Doom Builder command line
-	string cmd = S_FMT("%s \"%s\" -map %s", CHR(path), CHR(filename), CHR(entry->getName()));
+	string cmd = S_FMT("%s \"%s\" -map %s", path, filename, entry->getName());
 
 	// Add base resource archive to command line
 	Archive* base = theArchiveManager->baseResourceArchive();
 	if (base->getType() == ARCHIVE_WAD)
-		cmd += S_FMT(" -resource wad \"%s\"", CHR(base->getFilename()));
+		cmd += S_FMT(" -resource wad \"%s\"", base->getFilename());
 	else if (base->getType() == ARCHIVE_ZIP)
-		cmd += S_FMT(" -resource pk3 \"%s\"", CHR(base->getFilename()));
+		cmd += S_FMT(" -resource pk3 \"%s\"", base->getFilename());
 
 	// Add resource archives to command line
 	for (int a = 0; a < theArchiveManager->numArchives(); ++a)
@@ -543,13 +543,13 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 
 		// Check archive type (only wad and zip supported by db2)
 		if (archive->getType() == ARCHIVE_WAD)
-			cmd += S_FMT(" -resource wad \"%s\"", CHR(archive->getFilename()));
+			cmd += S_FMT(" -resource wad \"%s\"", archive->getFilename());
 		else if (archive->getType() == ARCHIVE_ZIP)
-			cmd += S_FMT(" -resource pk3 \"%s\"", CHR(archive->getFilename()));
+			cmd += S_FMT(" -resource pk3 \"%s\"", archive->getFilename());
 	}
 
 	// Run DB2
-	FileMonitor* fm = new DB2MapFileMonitor(filename, entry->getParent(), CHR(entry->getName(true)));
+	FileMonitor* fm = new DB2MapFileMonitor(filename, entry->getParent(), entry->getName(true));
 	wxExecute(cmd, wxEXEC_ASYNC, fm->getProcess());
 
 	return true;
@@ -573,7 +573,7 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value)
 	// Check entry type
 	if (!(entry->getType()->getFormat() == "img_png"))
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", CHR(entry->getName()), CHR(entry->getType()->getName()));
+		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getType()->getName());
 		return false;
 	}
 
@@ -1175,7 +1175,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	if (!include_paths.IsEmpty())
 	{
 		for (unsigned a = 0; a < include_paths.size(); a++)
-			opt += S_FMT(" -i \"%s\"", CHR(include_paths[a]));
+			opt += S_FMT(" -i \"%s\"", include_paths[a]);
 	}
 
 	// Find/export any resource libraries
@@ -1192,7 +1192,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		string path = appPath(entries[a]->getName(true) + ".acs", DIR_TEMP);
 		entries[a]->exportFile(path);
 		lib_paths.Add(path);
-		LOG_MESSAGE(2, "Exporting ACS library %s", CHR(entries[a]->getName()));
+		LOG_MESSAGE(2, "Exporting ACS library %s", entries[a]->getName());
 	}
 
 	// Export script to file
@@ -1296,7 +1296,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename)
 	SImage image;
 	if (!Misc::loadImageFromEntry(&image, entry))
 	{
-		wxLogMessage("Error converting %s: %s", CHR(entry->getName()), CHR(Global::error));
+		wxLogMessage("Error converting %s: %s", entry->getName(), Global::error);
 		return false;
 	}
 
@@ -1305,7 +1305,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename)
 	SIFormat* fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, theMainWindow->getPaletteChooser()->getSelectedPalette(entry)))
 	{
-		wxLogMessage("Error converting %s", CHR(entry->getName()));
+		wxLogMessage("Error converting %s", entry->getName());
 		return false;
 	}
 
@@ -1499,7 +1499,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	if (grabchunk) setGfxOffsets(entry, offsets.x, offsets.y);
 
 	wxLogMessage("PNG %s size %i =PNGCrush=> %i =PNGout=> %i =DeflOpt=> %i =+grAb/alPh=> %i",
-	             CHR(entry->getName()), oldsize, crushsize, outsize, deflsize, entry->getSize());
+	             entry->getName(), oldsize, crushsize, outsize, deflsize, entry->getSize());
 
 
 	if (!crushed && !outed && !errormessages.IsEmpty())
@@ -1537,13 +1537,13 @@ void fixpngsrc(ArchiveEntry* entry)
 	{
 		if (pointer + 12 > entry->getSize())
 		{
-			wxLogMessage("Entry %s cannot be repaired.", CHR(entry->getName()));
+			wxLogMessage("Entry %s cannot be repaired.", entry->getName());
 			return;
 		}
 		uint32_t chsz = READ_B32(data, pointer);
 		if (pointer + 12 + chsz > entry->getSize())
 		{
-			wxLogMessage("Entry %s cannot be repaired.", CHR(entry->getName()));
+			wxLogMessage("Entry %s cannot be repaired.", entry->getName());
 			return;
 		}
 		uint32_t crc = Misc::crc(data + pointer + 4, 4 + chsz);

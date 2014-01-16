@@ -207,7 +207,7 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 	if (exe)
 	{
 		// Get exe path
-		string path = S_FMT("\"%s\"", CHR(exe->path));
+		string path = S_FMT("\"%s\"", exe->path);
 		if (path.IsEmpty())
 			return "";
 
@@ -220,16 +220,16 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 
 		// IWAD
 		Archive* bra = theArchiveManager->baseResourceArchive();
-		path.Replace("%i", S_FMT("\"%s\"", bra ? CHR(bra->getFilename()) : ""));
+		path.Replace("%i", S_FMT("\"%s\"", bra ? bra->getFilename() : ""));
 
 		// Resources
 		path.Replace("%r", getSelectedResourceList());
 
 		// Archive (+ temp map if specified)
 		if (map_file.IsEmpty())
-			path.Replace("%a", S_FMT("\"%s\"", CHR(archive->getFilename())));
+			path.Replace("%a", S_FMT("\"%s\"", archive->getFilename()));
 		else
-			path.Replace("%a", S_FMT("\"%s\" \"%s\"", CHR(archive->getFilename()), CHR(map_file)));
+			path.Replace("%a", S_FMT("\"%s\" \"%s\"", archive->getFilename(), map_file));
 
 		// Map name
 		path.Replace("%mn", map_name);
@@ -256,7 +256,7 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 			path += text_extra_params->GetValue();
 		}
 
-		LOG_MESSAGE(2, "Run command: %s", CHR(path));
+		LOG_MESSAGE(2, "Run command: %s", path);
 		return path;
 	}
 
@@ -323,7 +323,7 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	if (choice_config->GetSelection() >= 0)
 		init_params = exe->configs[choice_config->GetSelection()].value;
 
-	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", CHR(exe->name)), "", init_params);
+	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", exe->name), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		Executables::addGameExeConfig(choice_game_exes->GetSelection(), dlg.getName(), dlg.getParams());

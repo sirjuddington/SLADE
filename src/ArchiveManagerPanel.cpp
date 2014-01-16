@@ -747,7 +747,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
 	}
 
 	// Create new tab for the EntryPanel
-	notebook_archives->AddPage(ep, S_FMT("%s/%s", CHR(entry->getParent()->getFilename(false)), CHR(entry->getName())), true);
+	notebook_archives->AddPage(ep, S_FMT("%s/%s", entry->getParent()->getFilename(false), entry->getName()), true);
 	notebook_archives->SetPageBitmap(notebook_archives->GetPageCount() - 1, getIcon(entry->getType()->getIcon()));
 	ep->SetName("entry");
 	ep->Show(true);

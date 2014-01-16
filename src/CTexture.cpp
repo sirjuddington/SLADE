@@ -309,7 +309,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 						colour.b = tz.getDouble()*255;
 						if (tz.peekToken() != ",")
 						{
-							wxLogMessage("Invalid TEXTURES definition, expected ',', got '%s'", CHR(tz.getToken()));
+							wxLogMessage("Invalid TEXTURES definition, expected ',', got '%s'", tz.getToken());
 							return false;
 						}
 						tz.getToken();	// Skip ,
@@ -344,7 +344,7 @@ string CTPatchEx::asText()
 	// Init text string
 	string typestring = "Patch";
 	if (type == PTYPE_GRAPHIC) typestring = "Graphic";
-	string text = S_FMT("\t%s %s, %d, %d\n", CHR(typestring), CHR(name), offset_x, offset_y);
+	string text = S_FMT("\t%s %s, %d, %d\n", typestring, name, offset_x, offset_y);
 
 	// Check if we need to write any extra properties
 	if (!flip_x && !flip_y && !use_offsets && rotation == 0 && blendtype == 0 && alpha == 1.0f && S_CMPNOCASE(style, "Copy"))
@@ -370,7 +370,7 @@ string CTPatchEx::asText()
 	if (blendtype >= 2)
 	{
 		wxColour col(colour.r, colour.g, colour.b);
-		text += S_FMT("\t\tBlend \"%s\"", CHR(col.GetAsString(wxC2S_HTML_SYNTAX)));
+		text += S_FMT("\t\tBlend \"%s\"", col.GetAsString(wxC2S_HTML_SYNTAX));
 
 		if (blendtype == 3)
 			text += S_FMT(", %1.1f\n", (double)colour.a / 255.0);
@@ -380,7 +380,7 @@ string CTPatchEx::asText()
 	if (alpha < 1.0f)
 		text += S_FMT("\t\tAlpha %1.2f\n", alpha);
 	if (!(S_CMPNOCASE(style, "Copy")))
-		text += S_FMT("\t\tStyle %s\n", CHR(style));
+		text += S_FMT("\t\tStyle %s\n", style);
 
 	// Write ending
 	text += "\t}\n";
@@ -721,7 +721,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			// Check if end of text is reached (error)
 			if (property.IsEmpty())
 			{
-				wxLogMessage("Error parsing texture %s: End of text found, missing } perhaps?", CHR(name));
+				wxLogMessage("Error parsing texture %s: End of text found, missing } perhaps?", name);
 				return false;
 			}
 
@@ -824,9 +824,9 @@ string CTexture::asText()
 	// Init text string
 	string text;
 	if (optional)
-		text = S_FMT("%s Optional %s, %d, %d\n{\n", CHR(type), CHR(name), width, height);
+		text = S_FMT("%s Optional %s, %d, %d\n{\n", type, name, width, height);
 	else
-		text = S_FMT("%s %s, %d, %d\n{\n", CHR(type), CHR(name), width, height);
+		text = S_FMT("%s %s, %d, %d\n{\n", type, name, width, height);
 
 	// Write texture properties
 	if (scale_x != 1.0)

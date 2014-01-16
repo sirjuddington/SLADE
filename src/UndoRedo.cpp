@@ -64,7 +64,7 @@ UndoLevel::~UndoLevel()
  *******************************************************************/
 bool UndoLevel::doUndo()
 {
-	LOG_MESSAGE(3, "Performing undo \"%s\" (%d steps)", CHR(name), undo_steps.size());
+	LOG_MESSAGE(3, "Performing undo \"%s\" (%d steps)", name, undo_steps.size());
 	bool ok = true;
 	for (int a = (int)undo_steps.size() - 1; a >= 0; a--)
 	{
@@ -80,7 +80,7 @@ bool UndoLevel::doUndo()
  *******************************************************************/
 bool UndoLevel::doRedo()
 {
-	LOG_MESSAGE(3, "Performing redo \"%s\" (%d steps)", CHR(name), undo_steps.size());
+	LOG_MESSAGE(3, "Performing redo \"%s\" (%d steps)", name, undo_steps.size());
 	bool ok = true;
 	for (unsigned a = 0; a < undo_steps.size(); a++)
 	{
@@ -150,7 +150,7 @@ void UndoManager::beginRecord(string name)
 		endRecord(true);
 
 	// Begin new UndoLevel
-	//wxLogMessage("Recording undo level \"%s\"", CHR(name));
+	//wxLogMessage("Recording undo level \"%s\"", name);
 	current_level = new UndoLevel(name);
 }
 
@@ -166,7 +166,7 @@ void UndoManager::endRecord(bool success)
 	// If failed, delete current undo level
 	if (!success)
 	{
-		//wxLogMessage("Recording undo level \"%s\" failed", CHR(current_level->getName()));
+		//wxLogMessage("Recording undo level \"%s\" failed", current_level->getName());
 		delete current_level;
 		current_level = NULL;
 		return;
@@ -175,13 +175,13 @@ void UndoManager::endRecord(bool success)
 	// Remove any undo levels after the current
 	while ((int)undo_levels.size() - 1 > current_level_index)
 	{
-		//wxLogMessage("Removing undo level \"%s\"", CHR(undo_levels.back()->getName()));
+		//wxLogMessage("Removing undo level \"%s\"", undo_levels.back()->getName());
 		delete undo_levels.back();
 		undo_levels.pop_back();
 	}
 
 	// Add current level to levels
-	//wxLogMessage("Recording undo level \"%s\" succeeded", CHR(current_level->getName()));
+	//wxLogMessage("Recording undo level \"%s\" succeeded", current_level->getName());
 	undo_levels.push_back(current_level);
 	current_level = NULL;
 	current_level_index = undo_levels.size() - 1;
@@ -239,7 +239,7 @@ string UndoManager::undo()
 	current_undo_manager = this;
 	UndoLevel* level = undo_levels[current_level_index];
 	if (!level->doUndo())
-		LOG_MESSAGE(3, "Undo operation \"%s\" failed", CHR(level->getName()));
+		LOG_MESSAGE(3, "Undo operation \"%s\" failed", level->getName());
 	undo_running = false;
 	current_undo_manager = NULL;
 	current_level_index--;

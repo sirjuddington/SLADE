@@ -430,7 +430,7 @@ bool TarArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1);	// Remove leading /
 		if (name.Len() > 99)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 99 characters), putting it in the root directory", CHR(name));
+			wxLogMessage("Warning: Entry %s path is too long (> 99 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 99)
@@ -491,7 +491,7 @@ bool TarArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("TarArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
+		wxLogMessage("TarArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 

@@ -349,7 +349,7 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 	else
 	{
 		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
-		return S_FMT("%d: %s", special, CHR(as->getName()));
+		return S_FMT("%d: %s", special, as->getName());
 	}
 }
 
@@ -467,7 +467,7 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 	int type = value.GetInteger();
 
 	ThingType* tt = theGameConfiguration->thingType(type);
-	return S_FMT("%d: %s", type, CHR(tt->getName()));
+	return S_FMT("%d: %s", type, tt->getName());
 }
 
 bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)

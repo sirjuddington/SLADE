@@ -849,7 +849,7 @@ bool ArchivePanel::deleteEntry(bool confirm)
 		else if (num > 0)
 			item = S_FMT("these %d items", num);
 
-		if (wxMessageBox(S_FMT("Are you sure you want to delete %s?", CHR(item)), "Delete Confirmation", wxYES_NO|wxICON_QUESTION) == wxNO)
+		if (wxMessageBox(S_FMT("Are you sure you want to delete %s?", item), "Delete Confirmation", wxYES_NO|wxICON_QUESTION) == wxNO)
 			return false;
 	}
 
@@ -1042,7 +1042,7 @@ bool ArchivePanel::crc32()
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		uint32_t crc = selection[a]->getMCData().crc();
-		checksums += S_FMT("%s:\t%x\n", CHR(selection[a]->getName()), crc);
+		checksums += S_FMT("%s:\t%x\n", selection[a]->getName(), crc);
 	}
 	wxLogMessage(checksums);
 	wxMessageBox(checksums);
@@ -1114,7 +1114,7 @@ bool ArchivePanel::importEntry()
 					wxMessageDialog md(this,
 					                   S_FMT("Image %s had offset [%d, %d], imported file has offset [%d, %d]. "
 					                         "Do you want to keep the old offset and override the new?",
-					                         CHR(selection[a]->getName()), offset.x, offset.y, noffset.x, noffset.y),
+					                         selection[a]->getName(), offset.x, offset.y, noffset.x, noffset.y),
 					                   "Conflicting Offsets", wxYES_NO);
 					int result = md.ShowModal();
 					if (result != wxID_YES)
@@ -1124,7 +1124,7 @@ bool ArchivePanel::importEntry()
 				if (ok && !si.getFormat()->writeOffset(si, selection[a], offset))
 					wxLogMessage("Old offset information [%d, %d] couldn't be "
 					             "preserved in the new image format for image %s.",
-					             offset.x, offset.y, CHR(selection[a]->getName()));
+					             offset.x, offset.y, selection[a]->getName());
 			}
 
 			// Set extension by type
@@ -1379,7 +1379,7 @@ bool ArchivePanel::gfxRemap()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", CHR(entry->getName()));
+					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -1431,7 +1431,7 @@ bool ArchivePanel::gfxColourise()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", CHR(entry->getName()));
+					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -1482,7 +1482,7 @@ bool ArchivePanel::gfxTint()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", CHR(entry->getName()));
+					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -1554,7 +1554,7 @@ bool ArchivePanel::gfxExportPNG()
 			// If a filename was selected, export it
 			if (!EntryOperations::exportAsPNG(selection[0], info.filenames[0]))
 			{
-				wxMessageBox(S_FMT("Error: %s", CHR(Global::error)), "Error", wxOK|wxICON_ERROR);
+				wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxOK|wxICON_ERROR);
 				return false;
 			}
 		}
@@ -1715,7 +1715,7 @@ bool ArchivePanel::wavDSndConvert()
 			// Attempt conversion
 			if (!Conversions::wavToDoomSnd(selection[a]->getMCData(), dsnd))
 			{
-				wxLogMessage("Error: Unable to convert entry %s: %s", CHR(selection[a]->getName()), CHR(Global::error));
+				wxLogMessage("Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
 				continue;
 			}
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));	// Create undo step
@@ -1773,7 +1773,7 @@ bool ArchivePanel::dSndWavConvert()
 		}
 		else
 		{
-			wxLogMessage("Error: Unable to convert entry %s: %s", CHR(selection[a]->getName()), CHR(Global::error));
+			wxLogMessage("Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
 			continue;
 		}
 	}
@@ -1968,7 +1968,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		// Check it exists (really should)
 		if (!dir)
 		{
-			wxLogMessage("Error: Trying to open nonexistant directory %s", CHR(name));
+			wxLogMessage("Error: Trying to open nonexistant directory %s", name);
 			return false;
 		}
 		entry_list->setDir(dir);
@@ -2922,7 +2922,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 				else
 				{
 					theMapEditor->Hide();
-					wxMessageBox(S_FMT("Unable to open map %s: %s", CHR(entry->getName()), CHR(Global::error)), "Invalid map error", wxICON_ERROR);
+					wxMessageBox(S_FMT("Unable to open map %s: %s", entry->getName(), Global::error), "Invalid map error", wxICON_ERROR);
 				}
 			}
 		}
@@ -3349,7 +3349,7 @@ CONSOLE_COMMAND(cd, 1, true)
 		}
 		else
 		{
-			wxLogMessage("Error: Trying to open nonexistant directory %s", CHR(args[0]));
+			wxLogMessage("Error: Trying to open nonexistant directory %s", args[0]);
 		}
 
 	}

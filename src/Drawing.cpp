@@ -905,7 +905,7 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 
 /*
 CONSOLE_COMMAND(d_testfont, 1) {
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath(S_FMT("fonts/%s.ttf", CHR(args[0])));
+	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath(S_FMT("fonts/%s.ttf", args[0]));
 	if (entry) {
 		if (Drawing::font_condensed) {
 			delete Drawing::font_condensed;

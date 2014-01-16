@@ -674,7 +674,7 @@ void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType
 		if (use_zeth_icons && tt->getZeth() >= 0)
 			tex = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", tt->getZeth()));
 		if (!tex)
-			tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(tt->getIcon())));
+			tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", tt->getIcon()));
 	}
 
 	if (!tex)
@@ -838,7 +838,7 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 
 	// Check for custom thing icon
 	if (!tt->getIcon().IsEmpty() && showicon && !thing_force_dir && !things_angles)
-		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/square/%s", CHR(tt->getIcon())));
+		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/square/%s", tt->getIcon()));
 
 	// Otherwise, no icon
 	int tc_start = 0;
@@ -1416,15 +1416,15 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 
 void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 {
-	// Skip if action lines are not desired
-	if (!action_lines)
+	// Skip if action lines are not desired, or if there's nothing to do
+	if (!action_lines || things.size() == 0)
 		return;
 
 	// Check if paths need updating
 	bool update = false;
-	if (thing_paths.size() != things.size())
+	if (thing_paths.size() == 0)
 		update = true;
-	else
+	else if (map->thingsUpdated() > thing_paths_updated)
 	{
 		for (unsigned a = 0; a < things.size(); a++)
 		{
@@ -1434,6 +1434,8 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 				break;
 			}
 		}
+		if (!update)
+			thing_paths_updated = theApp->runTimer();
 	}
 
 	// Get colours
@@ -1456,50 +1458,62 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			
 			ThingType* tt = theGameConfiguration->thingType(thing->getType());
 
-			//// Dragon Path
-			//if (tt->getFlags() & THING_DRAGON)
-			//{
-			//	MapThing* first = map->getFirstThingWithId(thing->intProperty("id"));
-			//	if (first)
-			//	{
-			//		Drawing::drawArrow(first->getPoint(MOBJ_POINT_MID), thing->getPoint(MOBJ_POINT_MID), dragoncol, false, arrowhead_angle, arrowhead_length);
-			//		vector<MapThing*> dragon_things;
-			//		dragon_things.clear();
-			//		map->getDragonTargets(first, dragon_things);
-			//		for (unsigned d = 0; d < dragon_things.size(); ++d)
-			//		{
-			//			int id1 = dragon_things[d]->intProperty("id");
-			//			int a11 = dragon_things[d]->intProperty("arg0");
-			//			int a12 = dragon_things[d]->intProperty("arg1");
-			//			int a13 = dragon_things[d]->intProperty("arg2");
-			//			int a14 = dragon_things[d]->intProperty("arg3");
-			//			int a15 = dragon_things[d]->intProperty("arg4");
-			//			ThingType* tt1 = theGameConfiguration->thingType(dragon_things[d]->getType());
-			//			for (unsigned e = d + 1; e < dragon_things.size(); ++e)
-			//			{
-			//				int id2 = dragon_things[e]->intProperty("id");
-			//				int a21 = dragon_things[e]->intProperty("arg0");
-			//				int a22 = dragon_things[e]->intProperty("arg1");
-			//				int a23 = dragon_things[e]->intProperty("arg2");
-			//				int a24 = dragon_things[e]->intProperty("arg3");
-			//				int a25 = dragon_things[e]->intProperty("arg4");
-			//				ThingType* tt2 = theGameConfiguration->thingType(dragon_things[e]->getType());
-			//				bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
-			//				bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
-			//				if (!((tt1->getFlags()|tt2->getFlags()) & THING_DRAGON))
-			//				{
-			//					if (l1to2)
-			//						Drawing::drawArrow(dragon_things[e]->getPoint(MOBJ_POINT_MID), dragon_things[d]->getPoint(MOBJ_POINT_MID),
-			//						dragoncol, l2to1, arrowhead_angle, arrowhead_length);
-			//					else if (l2to1)
-			//						Drawing::drawArrow(dragon_things[d]->getPoint(MOBJ_POINT_MID), dragon_things[e]->getPoint(MOBJ_POINT_MID),
-			//						dragoncol, false, arrowhead_angle, arrowhead_length);
-			//				}
-			//			}
-			//		}
-			//	}
-			//	continue;
-			//}
+			// Dragon Path
+			if (tt->getFlags() & THING_DRAGON)
+			{
+				MapThing* first = map->getFirstThingWithId(thing->intProperty("id"));
+				if (first)
+				{
+					path.from_index = thing->getIndex();
+					path.to_index = first->getIndex();
+					path.type = PATH_DRAGON;
+					thing_paths.push_back(path);
+
+					vector<MapThing*> dragon_things;
+					dragon_things.clear();
+					map->getDragonTargets(first, dragon_things);
+					for (unsigned d = 0; d < dragon_things.size(); ++d)
+					{
+						int id1 = dragon_things[d]->intProperty("id");
+						int a11 = dragon_things[d]->intProperty("arg0");
+						int a12 = dragon_things[d]->intProperty("arg1");
+						int a13 = dragon_things[d]->intProperty("arg2");
+						int a14 = dragon_things[d]->intProperty("arg3");
+						int a15 = dragon_things[d]->intProperty("arg4");
+						ThingType* tt1 = theGameConfiguration->thingType(dragon_things[d]->getType());
+						for (unsigned e = d + 1; e < dragon_things.size(); ++e)
+						{
+							int id2 = dragon_things[e]->intProperty("id");
+							int a21 = dragon_things[e]->intProperty("arg0");
+							int a22 = dragon_things[e]->intProperty("arg1");
+							int a23 = dragon_things[e]->intProperty("arg2");
+							int a24 = dragon_things[e]->intProperty("arg3");
+							int a25 = dragon_things[e]->intProperty("arg4");
+							ThingType* tt2 = theGameConfiguration->thingType(dragon_things[e]->getType());
+							bool l1to2 = ((a11 == id2) || (a12 == id2) || (a13 == id2) || (a14 == id2) || (a15 == id2));
+							bool l2to1 = ((a21 == id1) || (a22 == id1) || (a23 == id1) || (a24 == id1) || (a25 == id1));
+							if (!((tt1->getFlags()|tt2->getFlags()) & THING_DRAGON))
+							{
+								tpath_t dpath;
+								if (l1to2)
+								{
+									dpath.from_index = dragon_things[e]->getIndex();
+									dpath.to_index = dragon_things[d]->getIndex();
+									dpath.type = l2to1 ? PATH_DRAGON_BOTH : PATH_DRAGON;
+								}
+								else if (l2to1)
+								{
+									dpath.from_index = dragon_things[d]->getIndex();
+									dpath.to_index = dragon_things[e]->getIndex();
+									dpath.type = PATH_DRAGON;
+								}
+								thing_paths.push_back(dpath);
+							}
+						}
+					}
+				}
+				continue;
+			}
 
 			// Normal Path
 			int tid = -1, tid2 = -1;
@@ -1542,26 +1556,21 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 					}
 					if (thing2->intProperty("id") == tid)
 					{
-						path.from_index = thing2->getIndex();
-						path.to_index = thing->getIndex();
+						path.from_index = thing->getIndex();
+						path.to_index = thing2->getIndex();
 						path.type = (tid2 == thing->intProperty("id")) ? PATH_NORMAL_BOTH : PATH_NORMAL;
-						//Drawing::drawArrow(thing2->getPoint(MOBJ_POINT_MID), thing->getPoint(MOBJ_POINT_MID), pathedcol,
-						//tid2 == thing->intProperty("id"), arrowhead_angle, arrowhead_length);
 					}
 					else if (thing->intProperty("id") == tid2)
 					{
-						path.from_index = thing->getIndex();
-						path.to_index = thing2->getIndex();
+						path.from_index = thing2->getIndex();
+						path.to_index = thing->getIndex();
 						path.type = PATH_NORMAL;
-						//Drawing::drawArrow(thing->getPoint(MOBJ_POINT_MID), thing2->getPoint(MOBJ_POINT_MID), pathedcol,
-						//false, arrowhead_angle, arrowhead_length);
 					}
+					thing_paths.push_back(path);
 				}
 			}
 
-			thing_paths.push_back(path);
 		}
-
 		thing_paths_updated = theApp->runTimer();
 	}
 
@@ -1573,12 +1582,11 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 		if (thing_paths[a].from_index == thing_paths[a].to_index)
 			continue;
 
-		if (thing_paths[a].type == PATH_NORMAL || thing_paths[a].type == PATH_NORMAL_BOTH)
-		{
-			Drawing::drawArrow(map->getThing(thing_paths[a].from_index)->getPoint(MOBJ_POINT_MID),
-				map->getThing(thing_paths[a].to_index)->getPoint(MOBJ_POINT_MID),
-				pathedcol, thing_paths[a].type == PATH_NORMAL_BOTH, arrowhead_angle, arrowhead_length);
-		}
+		Drawing::drawArrow(map->getThing(thing_paths[a].to_index)->getPoint(MOBJ_POINT_MID),
+			map->getThing(thing_paths[a].from_index)->getPoint(MOBJ_POINT_MID),
+			(thing_paths[a].type == PATH_DRAGON_BOTH || thing_paths[a].type == PATH_DRAGON) ? dragoncol : pathedcol, 
+			(thing_paths[a].type == PATH_NORMAL_BOTH || thing_paths[a].type == PATH_DRAGON_BOTH), 
+			arrowhead_angle, arrowhead_length);
 	}
 }
 

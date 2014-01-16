@@ -255,7 +255,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The leading "GAME:\" part of the name means there is only 58 usable characters for path
 		if (name.Len() > 58)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", CHR(name));
+			wxLogMessage("Warning: Entry %s path is too long (> 58 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 57)
@@ -272,7 +272,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The names field are padded with FD for doom.disk, FE for doom2.disk. No idea whether
 		// a non-null padding is actually required, though. It probably should work with anything.
 		memset(dent.name, 0xFE, 64);
-		memcpy(dent.name, CHR(name), name.Length());
+		memcpy(dent.name, name, name.Length());
 		dent.name[name.Length()] = 0;
 
 		// Write entry offset
@@ -330,7 +330,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("DiskArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
+		wxLogMessage("DiskArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 

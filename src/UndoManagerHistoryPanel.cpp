@@ -30,7 +30,7 @@ string UndoListView::getItemText(long item, long column) const
 	{
 		int index = max - item - 1;
 		string name = manager->undoLevel(index)->getName();
-		return S_FMT("%d. %s", index+1, CHR(name));
+		return S_FMT("%d. %s", index+1, name);
 	}
 	else
 		return "Invalid Index";

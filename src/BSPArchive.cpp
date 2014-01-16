@@ -331,7 +331,7 @@ bool BSPArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("BSPArchive::loadEntryData: Unable to open archive file %s", CHR(filename));
+		wxLogMessage("BSPArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 

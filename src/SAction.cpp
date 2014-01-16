@@ -92,7 +92,7 @@ bool SAction::addToMenu(wxMenu* menu, string text_override)
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
 	if (!shortcut.IsEmpty())
-		item_text = S_FMT("%s\t%s", CHR(item_text), CHR(shortcut));
+		item_text = S_FMT("%s\t%s", item_text, shortcut);
 
 	// Append this action to the menu
 	if (type == NORMAL)

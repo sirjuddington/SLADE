@@ -377,7 +377,7 @@ void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
 		{
 			// Create texture in hashmap
 			string name = path + entry->getName(true);
-			LOG_MESSAGE(4, "Loading editor texture %s", CHR(name));
+			LOG_MESSAGE(4, "Loading editor texture %s", name);
 			map_tex_t& mtex = map[name];
 			mtex.texture = new GLTexture(false);
 			mtex.texture->setFilter(GLTexture::MIPMAP);

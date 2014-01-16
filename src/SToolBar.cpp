@@ -93,7 +93,7 @@ SToolBarGroup::SToolBarGroup(wxWindow* parent, string name, bool force_name) : w
 
 	// Check if hidden
 	string tb_hidden = toolbars_hidden;
-	if (tb_hidden.Contains(S_FMT("[%s]", CHR(name))))
+	if (tb_hidden.Contains(S_FMT("[%s]", name)))
 		hidden = true;
 	else
 		hidden = false;
@@ -112,7 +112,7 @@ SToolBarGroup::SToolBarGroup(wxWindow* parent, string name, bool force_name) : w
 		if (name.StartsWith("_"))
 			showname.Remove(0, 1);
 
-		wxStaticText* label = new wxStaticText(this, -1, S_FMT("%s:", CHR(showname)));
+		wxStaticText* label = new wxStaticText(this, -1, S_FMT("%s:", showname));
 		label->SetForegroundColour(Drawing::getMenuTextColour());
 		sizer->AddSpacer(4);
 		sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
@@ -134,7 +134,7 @@ void SToolBarGroup::hide(bool hide)
 	if (hide)
 		tb_hidden += "[" + name + "]";
 	else
-		tb_hidden.Replace(S_FMT("[%s]", CHR(name)), "");
+		tb_hidden.Replace(S_FMT("[%s]", name), "");
 
 	toolbars_hidden = tb_hidden;
 }

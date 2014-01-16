@@ -122,10 +122,10 @@ CONSOLE_COMMAND(lua_execfile, 1, true)
 {
 	if (!wxFile::Exists(args[0]))
 	{
-		wxLogMessage("File \"%s\" does not exist", CHR(args[0]));
+		wxLogMessage("File \"%s\" does not exist", args[0]);
 		return;
 	}
 
 	if (!Lua::runFile(args[0]))
-		wxLogMessage("Error loading lua script file \"%s\"", CHR(args[0]));
+		wxLogMessage("Error loading lua script file \"%s\"", args[0]);
 }

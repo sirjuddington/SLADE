@@ -2410,7 +2410,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 		type = "Thing";
 
 	// Begin recording undo level
-	editor->undoManager()->beginRecord(S_FMT("Property Edit (%s)", CHR(type)));
+	editor->undoManager()->beginRecord(S_FMT("Property Edit (%s)", type));
 	for (unsigned a = 0; a < list.size(); a++)
 		editor->recordPropertyChangeUndoStep(list[a]);
 
@@ -2421,7 +2421,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 		selsize = S_FMT("(%d selected)", list.size());
 
 	// Create dialog for properties panel
-	wxDialog dlg(theMapEditor, -1, S_FMT("%s Properties %s", CHR(type), CHR(selsize)), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
+	wxDialog dlg(theMapEditor, -1, S_FMT("%s Properties %s", type, selsize), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
 	dlg.SetInitialSize(wxSize(500, 500));
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
@@ -2513,11 +2513,11 @@ void MapCanvas::onKeyBindPress(string name)
 		date.SetToCurrent();
 		string timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		string filename = S_FMT("sladeshot-%s.png", CHR(timestamp));
+		string filename = S_FMT("sladeshot-%s.png", timestamp);
 		shot.saveToFile(CHR(appPath(filename, DIR_APP)));
 
 		// Editor message
-		editor->addEditorMessage(S_FMT("Screenshot taken (%s)", CHR(filename)));
+		editor->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
 	}
 #endif
 
@@ -2787,8 +2787,8 @@ void MapCanvas::keyBinds2d(string name)
 				string key_toggle = KeyBind::getBind("me2d_begin_object_edit").keysAsString();
 				feature_help_lines.clear();
 				feature_help_lines.push_back("Object Edit");
-				feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
-				feature_help_lines.push_back(S_FMT("%s or %s = Cancel", CHR(key_cancel), CHR(key_toggle)));
+				feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+				feature_help_lines.push_back(S_FMT("%s or %s = Cancel", key_cancel, key_toggle));
 				feature_help_lines.push_back("Shift = Disable grid snapping");
 				feature_help_lines.push_back("Ctrl = Rotate");
 			}
@@ -2809,8 +2809,8 @@ void MapCanvas::keyBinds2d(string name)
 			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
 			feature_help_lines.clear();
 			feature_help_lines.push_back("Line Drawing");
-			feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
-			feature_help_lines.push_back(S_FMT("%s = Cancel", CHR(key_cancel)));
+			feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+			feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
 			feature_help_lines.push_back("Left Click = Draw point");
 			feature_help_lines.push_back("Right Click = Undo previous point");
 			feature_help_lines.push_back("Shift = Snap to nearest vertex");
@@ -2828,8 +2828,8 @@ void MapCanvas::keyBinds2d(string name)
 			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
 			feature_help_lines.clear();
 			feature_help_lines.push_back("Shape Drawing");
-			feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
-			feature_help_lines.push_back(S_FMT("%s = Cancel", CHR(key_cancel)));
+			feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+			feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
 			feature_help_lines.push_back("Left Click = Draw point");
 			feature_help_lines.push_back("Right Click = Undo previous point");
 		}
@@ -3270,8 +3270,8 @@ bool MapCanvas::handleAction(string id)
 			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
 			feature_help_lines.clear();
 			feature_help_lines.push_back("Tag Edit");
-			feature_help_lines.push_back(S_FMT("%s = Accept", CHR(key_accept)));
-			feature_help_lines.push_back(S_FMT("%s = Cancel", CHR(key_cancel)));
+			feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+			feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
 			feature_help_lines.push_back("Left Click = Toggle tagged sector");
 		}
 

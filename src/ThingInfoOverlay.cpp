@@ -32,11 +32,11 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Index + type
 	ThingType* tt = theGameConfiguration->thingType(thing->getType());
-	string type = S_FMT("%s (Type %d)", CHR(tt->getName()), thing->getType());
+	string type = S_FMT("%s (Type %d)", tt->getName(), thing->getType());
 	if (Global::debug)
-		info.push_back(S_FMT("Thing #%d (%d): %s", thing->getIndex(), thing->getId(), CHR(type)));
+		info.push_back(S_FMT("Thing #%d (%d): %s", thing->getIndex(), thing->getId(), type));
 	else
-		info.push_back(S_FMT("Thing #%d: %s", thing->getIndex(), CHR(type)));
+		info.push_back(S_FMT("Thing #%d: %s", thing->getIndex(), type));
 
 	// Position
 	if (map_format != MAP_DOOM)
@@ -62,14 +62,14 @@ void ThingInfoOverlay::update(MapThing* thing)
 		dir = "South";
 	else if (angle == 315)
 		dir = "Southeast";
-	info.push_back(S_FMT("Direction: %s", CHR(dir)));
+	info.push_back(S_FMT("Direction: %s", dir));
 
 	// Special and Args (if in hexen format or udmf with thing args)
 	if (map_format == MAP_HEXEN ||
 	        (map_format == MAP_UDMF && theGameConfiguration->getUDMFProperty("arg0", MOBJ_THING)))
 	{
 		int as_id = thing->intProperty("special");
-		info.push_back(S_FMT("Special: %d (%s)", as_id, CHR(theGameConfiguration->actionSpecialName(as_id))));
+		info.push_back(S_FMT("Special: %d (%s)", as_id, theGameConfiguration->actionSpecialName(as_id)));
 		int args[5];
 		args[0] = thing->intProperty("arg0");
 		args[1] = thing->intProperty("arg1");
@@ -78,14 +78,14 @@ void ThingInfoOverlay::update(MapThing* thing)
 		args[4] = thing->intProperty("arg4");
 		string argstr = tt->getArgsString(args);
 		if (!argstr.IsEmpty())
-			info.push_back(S_FMT("%s", CHR(argstr)));
+			info.push_back(S_FMT("%s", argstr));
 		else
 			info.push_back("No Args");
 	}
 
 	// Flags
 	if (map_format != MAP_UDMF)
-		info.push_back(S_FMT("Flags: %s", CHR(theGameConfiguration->thingFlagsString(thing->intProperty("flags")))));
+		info.push_back(S_FMT("Flags: %s", theGameConfiguration->thingFlagsString(thing->intProperty("flags"))));
 
 	// TID (if in doom64/hexen/udmf format)
 	if (map_format != MAP_DOOM)
@@ -145,7 +145,7 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 		if (use_zeth_icons && zeth >= 0)
 			tex = theMapEditor->textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", zeth));
 		if (!tex)
-			tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", CHR(icon)));
+			tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", icon));
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);

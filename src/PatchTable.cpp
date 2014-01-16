@@ -312,7 +312,7 @@ bool PatchTable::writePNAMES(ArchiveEntry* pnames)
 	for (unsigned a = 0; a < patches.size(); a++)
 	{
 		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };	// Init name to all zeros for XWE compatibility
-		strncpy(name, CHR(patches[a].name), patches[a].name.Len());
+		strncpy(name, patches[a].name, patches[a].name.Len());
 
 		pndata.write(name, 8);
 	}

@@ -68,7 +68,7 @@ string ResourceArchiveChooser::getSelectedResourceList()
 	vector<Archive*> selected = getSelectedResourceArchives();
 	string ret;
 	for (unsigned a = 0; a < selected.size(); a++)
-		ret += S_FMT("\"%s\" ", CHR(selected[a]->getFilename()));
+		ret += S_FMT("\"%s\" ", selected[a]->getFilename());
 	return ret;
 }
 

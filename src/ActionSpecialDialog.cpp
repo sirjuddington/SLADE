@@ -21,7 +21,7 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	for (unsigned a = 0; a < specials.size(); a++)
 	{
 		AppendItem(getGroup(specials[a].special->getGroup()),
-		           S_FMT("%d: %s", specials[a].number, CHR(specials[a].special->getName())), -1);
+		           S_FMT("%d: %s", specials[a].number, specials[a].special->getName()), -1);
 	}
 
 	// Bind events

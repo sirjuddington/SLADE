@@ -297,10 +297,10 @@ void ThingType::parse(ParseTreeNode* node)
 string ThingType::stringDesc()
 {
 	// Init return string
-	string ret = S_FMT("\"%s\" in group \"%s\", colour %d,%d,%d, radius %d", CHR(name), CHR(group), colour.r, colour.g, colour.b, radius);
+	string ret = S_FMT("\"%s\" in group \"%s\", colour %d,%d,%d, radius %d", name, group, colour.r, colour.g, colour.b, radius);
 
 	// Add any extra info
-	if (!sprite.IsEmpty()) ret += S_FMT(", sprite \"%s\"", CHR(sprite));
+	if (!sprite.IsEmpty()) ret += S_FMT(", sprite \"%s\"", sprite);
 	if (!angled) ret += ", angle hidden";
 	if (hanging) ret += ", hanging";
 	if (fullbright) ret += ", fullbright";
