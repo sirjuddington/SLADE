@@ -162,7 +162,7 @@ void read_cvar(string name, string value)
 				*((CFloatCVar*) cvars[c]) = atof(CHR(value));
 
 			if (cvars[c]->type == CVAR_STRING)
-				*((CStringCVar*) cvars[c]) = wxString::FromUTF8(value);
+				*((CStringCVar*) cvars[c]) = wxString::FromUTF8(CHR(value));
 		}
 	}
 }

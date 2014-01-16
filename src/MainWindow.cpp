@@ -745,7 +745,8 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	else if (wxFileExists(href))
 	{
 		// Navigating to file, open it
-		theArchiveManager->openArchive(href);
+		if (href != appPath("startpage.htm", DIR_TEMP))
+			theArchiveManager->openArchive(href);
 		ev.Veto();
 	}
 }
