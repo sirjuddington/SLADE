@@ -324,7 +324,7 @@ bool ArchivePanel::saveEntryChanges()
 	// Ask if needed
 	if (autosave_entry_changes > 1)
 	{
-		int result = wxMessageBox(S_FMT("Save changes to entry \"%s\"?", cur_area->getEntry()->getName().c_str()),
+		int result = wxMessageBox(S_FMT("Save changes to entry \"%s\"?", cur_area->getEntry()->getName()),
 		                          "Unsaved Changes", wxYES_NO|wxICON_QUESTION);
 
 		// Stop if user clicked no
@@ -466,7 +466,7 @@ bool ArchivePanel::save()
 	if (!archive->save())
 	{
 		// If there was an error pop up a message box
-		wxMessageBox(S_FMT("Error:\n%s", Global::error.c_str()), "Error", wxICON_ERROR);
+		wxMessageBox(S_FMT("Error:\n%s", Global::error), "Error", wxICON_ERROR);
 		return false;
 	}
 
@@ -493,7 +493,7 @@ bool ArchivePanel::saveAs()
 		if (!archive->save(info.filenames[0]))
 		{
 			// If there was an error pop up a message box
-			wxMessageBox(S_FMT("Error:\n%s", Global::error.c_str()), "Error", wxICON_ERROR);
+			wxMessageBox(S_FMT("Error:\n%s", Global::error), "Error", wxICON_ERROR);
 			return false;
 		}
 	}
@@ -802,7 +802,7 @@ bool ArchivePanel::renameEntry(bool each)
 		string old_name = selected_dirs[a]->getName();
 
 		// Prompt for a new name
-		string new_name = wxGetTextFromUser("Enter new directory name:", S_FMT("Rename Directory %s", old_name.c_str()), old_name);
+		string new_name = wxGetTextFromUser("Enter new directory name:", S_FMT("Rename Directory %s", old_name), old_name);
 
 		// Do nothing if no name was entered
 		if (new_name.IsEmpty())
@@ -2002,12 +2002,12 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		else if (!entry->getType()->getEditor().Cmp("default"))
 			new_area = default_area;
 		else
-			wxLogMessage("Entry editor %s does not exist, using default editor", entry->getType()->getEditor().c_str());
+			wxLogMessage("Entry editor %s does not exist, using default editor", entry->getType()->getEditor());
 
 		// Load the entry into the panel
 		if (!new_area->openEntry(entry))
 		{
-			wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error.c_str()), "Error", wxOK|wxICON_ERROR);
+			wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error), "Error", wxOK|wxICON_ERROR);
 		}
 
 		// Show the new entry panel
@@ -2035,7 +2035,7 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 	// Load the current entry into the panel
 	if (!cur_area->openEntry(entry))
 	{
-		wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error.c_str()), "Error", wxOK|wxICON_ERROR);
+		wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error), "Error", wxOK|wxICON_ERROR);
 	}
 
 	return true;
@@ -2057,7 +2057,7 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 	// Load the current entry into the panel
 	if (!cur_area->openEntry(entry))
 	{
-		wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error.c_str()), "Error", wxOK|wxICON_ERROR);
+		wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error), "Error", wxOK|wxICON_ERROR);
 	}
 
 	return true;

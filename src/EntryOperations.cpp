@@ -682,7 +682,7 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
 	// Check entry type
 	if (!(entry->getType()->getFormat() == "img_png"))
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName().c_str(), entry->getTypeString().c_str());
+		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
 		return false;
 	}
 
@@ -799,7 +799,7 @@ bool EntryOperations::getalPhChunk(ArchiveEntry* entry)
 	// Check entry type
 	if (entry->getType()->getFormat() != "img_png")
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName().c_str(), entry->getTypeString().c_str());
+		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
 		return false;
 	}
 
@@ -833,7 +833,7 @@ bool EntryOperations::gettRNSChunk(ArchiveEntry* entry)
 	// Check entry type
 	if (entry->getType()->getFormat() != "img_png")
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName().c_str(), entry->getTypeString().c_str());
+		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
 		return false;
 	}
 
@@ -870,7 +870,7 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, point2_t& offsets)
 	// Check entry type
 	if (entry->getType()->getFormat() != "img_png")
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName().c_str(), entry->getTypeString().c_str());
+		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
 		return false;
 	}
 

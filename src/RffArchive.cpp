@@ -193,7 +193,7 @@ bool RffArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
 	{
-		wxLogMessage("RffArchive::openFile: File %s has invalid header", filename.c_str());
+		wxLogMessage("RffArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid rff header";
 		return false;
 	}
@@ -343,7 +343,7 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("RffArchive::loadEntryData: Failed to open rfffile %s", filename.c_str());
+		wxLogMessage("RffArchive::loadEntryData: Failed to open rfffile %s", filename);
 		return false;
 	}
 

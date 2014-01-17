@@ -288,7 +288,7 @@ bool LibArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("LibArchive::loadEntryData: Failed to open libfile %s", filename.c_str());
+		wxLogMessage("LibArchive::loadEntryData: Failed to open libfile %s", filename);
 		return false;
 	}
 

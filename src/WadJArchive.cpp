@@ -155,7 +155,7 @@ bool WadJArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
 	{
-		wxLogMessage("WadJArchive::openFile: File %s has invalid header", filename.c_str());
+		wxLogMessage("WadJArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid wad header";
 		return false;
 	}

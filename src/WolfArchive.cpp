@@ -971,7 +971,7 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("WolfArchive::loadEntryData: Failed to open datfile %s", filename.c_str());
+		wxLogMessage("WolfArchive::loadEntryData: Failed to open datfile %s", filename);
 		return false;
 	}
 

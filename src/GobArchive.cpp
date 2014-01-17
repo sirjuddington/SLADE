@@ -305,7 +305,7 @@ bool GobArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("GobArchive::loadEntryData: Failed to open gobfile %s", filename.c_str());
+		wxLogMessage("GobArchive::loadEntryData: Failed to open gobfile %s", filename);
 		return false;
 	}
 

@@ -77,7 +77,7 @@ void Console::addCommand(ConsoleCommand& c)
  *******************************************************************/
 void Console::execute(string command)
 {
-	wxLogMessage("> %s", command.c_str());
+	wxLogMessage("> %s", command);
 
 	// Don't bother doing anything else with an empty command
 	if (command.size() == 0)
@@ -176,7 +176,7 @@ void Console::execute(string command)
 	}
 
 	// Command not found
-	logMessage(S_FMT("Unknown command: \"%s\"", cmd_name.c_str()));
+	logMessage(S_FMT("Unknown command: \"%s\"", cmd_name));
 	return;
 }
 
