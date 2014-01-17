@@ -176,7 +176,7 @@ void Console::execute(string command)
 	}
 
 	// Command not found
-	logMessage(S_FMT("Unknown command: \"%s\"", cmd_name.c_str()));
+	logMessage(S_FMT("Unknown command: \"%s\"", cmd_name));
 	return;
 }
 
