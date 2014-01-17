@@ -1013,10 +1013,6 @@ void MapCanvas::drawObjectEdit()
  *******************************************************************/
 void MapCanvas::drawMap2d()
 {
-	// Don't bother if there are no vertices or things
-	if (editor->getMap().nVertices() == 0 && editor->getMap().nThings() == 0)
-		return;
-
 	// Setup the screen projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -1040,6 +1036,14 @@ void MapCanvas::drawMap2d()
 
 	// Translate to offsets
 	glTranslated(-view_xoff_inter, -view_yoff_inter, 0);
+
+	// Don't bother drawing anything (except the grid)
+	// if there are no vertices or things
+	if (editor->getMap().nVertices() == 0 && editor->getMap().nThings() == 0)
+	{
+		drawGrid();
+		return;
+	}
 
 	// Update visibility info if needed
 	if (!renderer_2d->visOK())
