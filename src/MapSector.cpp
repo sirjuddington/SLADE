@@ -12,6 +12,8 @@
 MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 {
 	// Init variables
+	this->special = 0;
+	this->tag = 0;
 	poly_needsupdate = true;
 	geometry_updated = theApp->runTimer();
 }

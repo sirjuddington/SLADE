@@ -23,6 +23,8 @@ MapSide::MapSide(SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
 	// Init variables
 	this->sector = NULL;
 	this->parent = NULL;
+	this->offset_x = 0;
+	this->offset_y = 0;
 }
 
 MapSide::~MapSide()
