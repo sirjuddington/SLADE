@@ -3425,7 +3425,8 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	//if (mouse_state == MSTATE_EDIT)
 	//	determineObjectEditState();
 
-	e.Skip();
+	if (e.GetKeyCode() != WXK_UP && e.GetKeyCode() != WXK_DOWN && e.GetKeyCode() != WXK_LEFT && e.GetKeyCode() != WXK_RIGHT)
+		e.Skip();
 }
 
 void MapCanvas::onKeyUp(wxKeyEvent& e)
