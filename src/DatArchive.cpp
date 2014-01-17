@@ -553,7 +553,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 		entry = getEntry(l);
 		if (nameoffsets[l])
 		{
-			mc.write(entry->getName(), entry->getName().length());
+			mc.write(CHR(entry->getName()), entry->getName().length());
 			mc.write(&zero, 1);
 		}
 	}
