@@ -745,14 +745,18 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 
 	// --- Determine texture to use ---
 	bool show_angle = false;
-	GLTexture* tex = thing_sprites[index];
+	GLTexture* tex = index < thing_sprites.size() ? thing_sprites[index] : NULL;
 
 	// Attempt to get sprite texture
 	if (!tex)
 	{
 		tex = theMapEditor->textureManager().getSprite(tt->getSprite(), tt->getTranslation(), tt->getPalette());
-		thing_sprites[index] = tex;
-		thing_sprites_updated = theApp->runTimer();
+
+		if (index < thing_sprites.size())
+		{
+			thing_sprites[index] = tex;
+			thing_sprites_updated = theApp->runTimer();
+		}
 	}
 
 	// If sprite not found, just draw as a normal, round thing
@@ -2331,7 +2335,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)		// Drawtype 2: Sprites
-			renderSpriteThing(x, y, angle, tt, a, 1.0f);
+			renderSpriteThing(x, y, angle, tt, wxUINT32_MAX, 1.0f);
 		else if (thing_drawtype == TDT_ROUND)	// Drawtype 1: Round
 			renderRoundThing(x, y, angle, tt, 1.0f);
 		else							// Drawtype 0 (or other): Square
@@ -2352,7 +2356,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 			y = thing->yPos() + pos.y;
 			angle = thing->getAngle();
 
-			renderSpriteThing(x, y, angle, tt, a, 1.0f, true);
+			renderSpriteThing(x, y, angle, tt, wxUINT32_MAX, 1.0f, true);
 		}
 	}
 
