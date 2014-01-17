@@ -272,7 +272,7 @@ bool DiskArchive::write(MemChunk& mc, bool update)
 		// The names field are padded with FD for doom.disk, FE for doom2.disk. No idea whether
 		// a non-null padding is actually required, though. It probably should work with anything.
 		memset(dent.name, 0xFE, 64);
-		memcpy(dent.name, name, name.Length());
+		memcpy(dent.name, CHR(name), name.Length());
 		dent.name[name.Length()] = 0;
 
 		// Write entry offset
