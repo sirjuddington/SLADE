@@ -4251,11 +4251,17 @@ MapLine* SLADEMap::mergeOverlappingLines(MapLine* line1, MapLine* line2)
 	if (remove->vertex1 == keep->vertex1)
 	{
 		// Set keep front sector to remove front sector
-		setLineSector(keep->index, remove->side1->sector->index);
+		if (remove->side1)
+			setLineSector(keep->index, remove->side1->sector->index);
+		else
+			setLineSector(keep->index, -1);
 	}
 	else
 	{
-		setLineSector(keep->index, remove->side2->sector->index);
+		if (remove->side2)
+			setLineSector(keep->index, remove->side2->sector->index);
+		else
+			setLineSector(keep->index, -1);
 	}
 
 	return remove;
