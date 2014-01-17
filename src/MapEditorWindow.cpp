@@ -404,11 +404,16 @@ void MapEditorWindow::lockMapEntries(bool lock)
 
 bool MapEditorWindow::createMap()
 {
-	MapEditorConfigDialog dialog(this, NULL, false, true);
+	MapEditorConfigDialog dialog(theMainWindow, NULL, false, true);
 	if (dialog.ShowModal() == wxID_OK)
 	{
 		theGameConfiguration->openConfig(dialog.selectedGame(), dialog.selectedPort());
-		return openMap(dialog.selectedMap());
+		Archive::mapdesc_t map = dialog.selectedMap();
+
+		if (map.name.IsEmpty())
+			return false;
+		else
+			return openMap(map);
 	}
 
 	return false;

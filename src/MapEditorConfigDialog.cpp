@@ -357,6 +357,7 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 		// Show new map dialog
 		vector<Archive::mapdesc_t> temp;
 		NewMapDialog dlg(this, sel_game, sel_port, temp);
+		dlg.SetInitialSize(wxSize(250, -1));
 		if (dlg.ShowModal() == wxID_OK)
 		{
 			// Get selected map name
