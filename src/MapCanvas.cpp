@@ -751,6 +751,8 @@ void MapCanvas::drawSelectionNumbers()
 	Drawing::enableTextStateReset();
 	Drawing::setTextState(false);
 	setOverlayCoords(false);
+
+	glDisable(GL_TEXTURE_2D);
 }
 
 void MapCanvas::drawThingQuickAngleLines()
@@ -1036,14 +1038,6 @@ void MapCanvas::drawMap2d()
 
 	// Translate to offsets
 	glTranslated(-view_xoff_inter, -view_yoff_inter, 0);
-
-	// Don't bother drawing anything (except the grid)
-	// if there are no vertices or things
-	if (editor->getMap().nVertices() == 0 && editor->getMap().nThings() == 0)
-	{
-		drawGrid();
-		return;
-	}
 
 	// Update visibility info if needed
 	if (!renderer_2d->visOK())
