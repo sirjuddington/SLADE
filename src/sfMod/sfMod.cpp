@@ -31,7 +31,7 @@
 
 #ifndef NOLIBMODPLUG
 
-#include "sfmod.h"
+#include "sfMod.h"
 #include "modplug.h"
 
 #include <fstream>
