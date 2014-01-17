@@ -533,18 +533,18 @@ private:
 
 		// Determine total number of images
 		int i = 9;
-		while (i < 25 && mc[i] != 0) ++i;
+		while ((i < 25) && (READ_L32(mc, (i<<2)) != 0)) ++i;
 		info.numimages = i - 9;
 
 		// Set other info
-		info.width = wxUINT32_SWAP_ON_BE(mc[index+9]);
-		info.height = wxUINT32_SWAP_ON_BE(mc[index+25]);
+		info.width = READ_L32(mc, ((index+9)<<2));
+		info.height = READ_L32(mc, ((index+25)<<2));
 		info.colformat = PALMASK;
 		info.has_palette = true;
 		info.format = id;
 
 		// Return offset to mip level
-		return wxUINT32_SWAP_ON_BE(mc[index+41]);
+		return READ_L32(mc, ((index+41)<<2));
 	}
 
 protected:
@@ -617,17 +617,17 @@ private:
 
 		// Determine total number of images
 		int i = 129;
-		while (i < 145 && mc[i] != 0) ++i;
+		while ((i < 145) && (READ_L32(mc, (i<<2)) != 0)) ++i;
 		info.numimages = i - 129;
 
 		// Set other info
-		info.width = wxUINT32_SWAP_ON_BE(mc[index+129]);
-		info.height = wxUINT32_SWAP_ON_BE(mc[index+145]);
+		info.width = READ_L32(mc, ((index+129)<<2));
+		info.height = READ_L32(mc, ((index+145)<<2));
 		info.colformat = RGBA;
 		info.format = id;
 
 		// Return offset to mip level
-		return wxUINT32_SWAP_ON_BE(mc[index+161]);
+		return READ_L32(mc, ((index+161)<<2));
 	}
 
 protected:
