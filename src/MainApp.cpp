@@ -861,14 +861,14 @@ void MainApp::readConfigFile()
 		if (!token.Cmp("base_resource_paths"))
 		{
 			// Skip {
-			token = wxString::FromUTF8(tz.getToken());
+			token = wxString::FromUTF8(CHR(tz.getToken()));
 
 			// Read paths until closing brace found
 			token = tz.getToken();
 			while (token.Cmp("}"))
 			{
 				theArchiveManager->addBaseResourcePath(token);
-				token = wxString::FromUTF8(tz.getToken());
+				token = wxString::FromUTF8(CHR(tz.getToken()));
 			}
 		}
 
@@ -879,11 +879,11 @@ void MainApp::readConfigFile()
 			token = tz.getToken();
 
 			// Read files until closing brace found
-			token = wxString::FromUTF8(tz.getToken());
+			token = wxString::FromUTF8(CHR(tz.getToken()));
 			while (token != "}")
 			{
 				theArchiveManager->addRecentFile(token);
-				token = wxString::FromUTF8(tz.getToken());
+				token = wxString::FromUTF8(CHR(tz.getToken()));
 			}
 		}
 
