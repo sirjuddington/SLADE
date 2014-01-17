@@ -314,7 +314,7 @@ bool WadArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
 	{
-		wxLogMessage("WadArchive::openFile: File %s has invalid header", filename.c_str());
+		wxLogMessage("WadArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid wad header";
 		return false;
 	}
@@ -565,7 +565,7 @@ bool WadArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("WadArchive::loadEntryData: Failed to open wadfile %s", filename.c_str());
+		wxLogMessage("WadArchive::loadEntryData: Failed to open wadfile %s", filename);
 		return false;
 	}
 
