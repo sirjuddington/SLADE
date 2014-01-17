@@ -673,7 +673,7 @@ bool MainWindow::handleAction(string id)
 		wxRemoveFile(icon_filename);
 
 		string year = wxNow().Right(4);
-		info.SetCopyright(S_FMT("(C) 2008-%s Simon Judd <sirjuddington@gmail.com>", year.c_str()));
+		info.SetCopyright(S_FMT("(C) 2008-%s Simon Judd <sirjuddington@gmail.com>", year));
 
 		wxAboutBox(info);
 

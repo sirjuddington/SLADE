@@ -657,7 +657,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 			return;
 		}
 
-		notebook_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->getFilename(false).c_str()), true);
+		notebook_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->getFilename(false)), true);
 		notebook_archives->SetPageBitmap(notebook_archives->GetPageCount() - 1, getIcon("e_texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);
@@ -818,7 +818,7 @@ void ArchiveManagerPanel::openFile(string filename)
 	if (!new_archive)
 	{
 		// If archive didn't open ok, show error message
-		wxMessageBox(S_FMT("Error opening %s:\n%s", filename.c_str(), Global::error.c_str()), "Error", wxICON_ERROR);
+		wxMessageBox(S_FMT("Error opening %s:\n%s", filename, Global::error), "Error", wxICON_ERROR);
 	}
 }
 
@@ -904,7 +904,7 @@ void ArchiveManagerPanel::saveAll()
 			if (!archive->save())
 			{
 				// If there was an error pop up a message box
-				wxMessageBox(S_FMT("Error: %s", Global::error.c_str()), "Error", wxICON_ERROR);
+				wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxICON_ERROR);
 			}
 		}
 		else
@@ -922,7 +922,7 @@ void ArchiveManagerPanel::saveAll()
 				if (!archive->save(filename))
 				{
 					// If there was an error pop up a message box
-					wxMessageBox(S_FMT("Error: %s", Global::error.c_str()), "Error", wxICON_ERROR);
+					wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxICON_ERROR);
 				}
 
 				// Save 'dir_last'
@@ -989,7 +989,7 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive)
 		if (!archive->save())
 		{
 			// If there was an error pop up a message box
-			wxMessageBox(S_FMT("Error: %s", Global::error.c_str()), "Error", wxICON_ERROR);
+			wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxICON_ERROR);
 			return false;
 		}
 
@@ -1023,7 +1023,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 		if (!archive->save(filename))
 		{
 			// If there was an error pop up a message box
-			wxMessageBox(S_FMT("Error: %s", Global::error.c_str()), "Error", wxICON_ERROR);
+			wxMessageBox(S_FMT("Error: %s", Global::error), "Error", wxICON_ERROR);
 			return false;
 		}
 

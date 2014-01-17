@@ -342,7 +342,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check that the entry belongs to this archive
 	if (entry->getParent() != this)
 	{
-		wxLogMessage("ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->getName().c_str());
+		wxLogMessage("ZipArchive::loadEntryData: Entry %s attempting to load data from wrong parent!", entry->getName());
 		return false;
 	}
 
@@ -360,7 +360,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 		zip_index = entry->exProp("ZipIndex");
 	else
 	{
-		wxLogMessage("ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->getName().c_str());
+		wxLogMessage("ZipArchive::loadEntryData: Entry %s has no zip entry index!", entry->getName());
 		return false;
 	}
 
@@ -368,7 +368,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxFFileInputStream in(filename);
 	if (!in.IsOk())
 	{
-		wxLogMessage("ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename.c_str());
+		wxLogMessage("ZipArchive::loadEntryData: Unable to open zip file \"%s\"!", filename);
 		return false;
 	}
 
@@ -376,7 +376,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	wxZipInputStream zip(in);
 	if (!zip.IsOk())
 	{
-		wxLogMessage("ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename.c_str());
+		wxLogMessage("ZipArchive::loadEntryData: Invalid zip file \"%s\"!", filename);
 		return false;
 	}
 
@@ -394,7 +394,7 @@ bool ZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Abort if entry doesn't exist in zip (some kind of error)
 	if (!zentry)
 	{
-		wxLogMessage("Error: ZipEntry for entry \"%s\" does not exist in zip", entry->getName().c_str());
+		wxLogMessage("Error: ZipEntry for entry \"%s\" does not exist in zip", entry->getName());
 		return false;
 	}
 

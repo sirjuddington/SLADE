@@ -891,7 +891,7 @@ bool Archive::save(string filename)
 			{
 				// Copy current file contents to new backup file
 				string bakfile = this->filename + ".bak";
-				wxLogMessage("Creating backup %s", bakfile.c_str());
+				wxLogMessage("Creating backup %s", bakfile);
 				wxCopyFile(this->filename, bakfile, true);
 			}
 

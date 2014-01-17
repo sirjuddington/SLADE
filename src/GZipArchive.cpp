@@ -336,7 +336,7 @@ bool GZipArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("GZipArchive::loadEntryData: Failed to open gzip file %s", filename.c_str());
+		wxLogMessage("GZipArchive::loadEntryData: Failed to open gzip file %s", filename);
 		return false;
 	}
 

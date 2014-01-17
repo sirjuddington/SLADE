@@ -134,7 +134,7 @@ public:
 	{
 		string location = "[unknown location] ";
 		if (frame.HasSourceLocation())
-			location = S_FMT("(%s:%d) ", frame.GetFileName().c_str(), frame.GetLine());
+			location = S_FMT("(%s:%d) ", frame.GetFileName(), frame.GetLine());
 
 		wxUIntPtr address = wxPtrToUInt(frame.GetAddress());
 		string func_name = frame.GetName();
@@ -344,7 +344,7 @@ bool MainApp::initDirectories()
 	{
 		if (!wxMkdir(dir_user))
 		{
-			wxMessageBox(S_FMT("Unable to create user directory \"%s\"", dir_user.c_str()), "Error", wxICON_ERROR);
+			wxMessageBox(S_FMT("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
 			return false;
 		}
 	}
@@ -369,8 +369,8 @@ void MainApp::initLogFile()
 	// Write logfile header
 	string year = wxNow().Right(4);
 	wxLogMessage("SLADE - It's a Doom Editor");
-	wxLogMessage("Version %s", Global::version.c_str());
-	wxLogMessage("Written by Simon Judd, 2008-%s", year.c_str());
+	wxLogMessage("Version %s", Global::version);
+	wxLogMessage("Written by Simon Judd, 2008-%s", year);
 #ifdef SFML_VERSION_MAJOR
 	wxLogMessage("Compiled with wxWidgets %i.%i.%i and SFML %i.%i", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER, SFML_VERSION_MAJOR, SFML_VERSION_MINOR);
 #else
@@ -861,14 +861,14 @@ void MainApp::readConfigFile()
 		if (!token.Cmp("base_resource_paths"))
 		{
 			// Skip {
-			token = wxString::FromUTF8(tz.getToken());
+			token = wxString::FromUTF8(CHR(tz.getToken()));
 
 			// Read paths until closing brace found
 			token = tz.getToken();
 			while (token.Cmp("}"))
 			{
 				theArchiveManager->addBaseResourcePath(token);
-				token = wxString::FromUTF8(tz.getToken());
+				token = wxString::FromUTF8(CHR(tz.getToken()));
 			}
 		}
 
@@ -879,11 +879,11 @@ void MainApp::readConfigFile()
 			token = tz.getToken();
 
 			// Read files until closing brace found
-			token = wxString::FromUTF8(tz.getToken());
+			token = wxString::FromUTF8(CHR(tz.getToken()));
 			while (token != "}")
 			{
 				theArchiveManager->addRecentFile(token);
-				token = wxString::FromUTF8(tz.getToken());
+				token = wxString::FromUTF8(CHR(tz.getToken()));
 			}
 		}
 

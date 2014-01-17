@@ -589,7 +589,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("DatArchive::loadEntryData: Failed to open datfile %s", filename.c_str());
+		wxLogMessage("DatArchive::loadEntryData: Failed to open datfile %s", filename);
 		return false;
 	}
 

@@ -233,14 +233,14 @@ bool ResArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'e' || magic[2] != 's' || magic[3] != '!')
 	{
-		wxLogMessage("ResArchive::openFile: File %s has invalid header", filename.c_str());
+		wxLogMessage("ResArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid res header";
 		return false;
 	}
 
 	if (dir_size % RESDIRENTRYSIZE)
 	{
-		wxLogMessage("ResArchive::openFile: File %s has invalid directory size", filename.c_str());
+		wxLogMessage("ResArchive::openFile: File %s has invalid directory size", filename);
 		Global::error = "Invalid res directory size";
 		return false;
 	}
@@ -348,7 +348,7 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("ResArchive::loadEntryData: Failed to open resfile %s", filename.c_str());
+		wxLogMessage("ResArchive::loadEntryData: Failed to open resfile %s", filename);
 		return false;
 	}
 

@@ -1093,7 +1093,7 @@ CONSOLE_COMMAND (list_archives, 0, true)
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
 		Archive* archive = theArchiveManager->getArchive(a);
-		wxLogMessage("%d: \"%s\"", a + 1, archive->getFilename().c_str());
+		wxLogMessage("%d: \"%s\"", a + 1, archive->getFilename());
 	}
 }
 

@@ -152,6 +152,6 @@ wxBitmap getIcon(string name, bool large)
 		}
 	}
 
-	wxLogMessage("Icon \"%s\" does not exist", name.c_str());
+	wxLogMessage("Icon \"%s\" does not exist", name);
 	return wxNullBitmap;
 }
