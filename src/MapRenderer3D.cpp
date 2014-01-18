@@ -327,14 +327,17 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 
 void MapRenderer3D::setupView(int width, int height)
 {
+	// Calculate aspect ratio
+	float aspect = (1.6f / 1.333333f) * ((float)width / (float)height);
+	float fovy = 2 * MathStuff::radToDeg(atan(tan(MathStuff::degToRad(90) / 2) / aspect));
+
 	// Setup projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	float aspect = (float)width / (float)height;
 	float max = render_max_dist * 1.5f;
 	if (max < 100) max = 20000;
-	gluPerspective(60.0f, aspect, 0.5f, max);
+	gluPerspective(fovy, aspect, 0.5f, max);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
