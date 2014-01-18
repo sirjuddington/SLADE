@@ -68,7 +68,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	// Tab width
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	spin_tab_width = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 100, txed_tab_width);
+	spin_tab_width = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 1, 100, txed_tab_width);
 	hbox->Add(new wxStaticText(this, -1, "Tab Indentation Width: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	hbox->Add(spin_tab_width, 1, wxEXPAND);
 	sizer->Add(hbox, 0, wxALL|wxEXPAND, 4);
@@ -86,7 +86,7 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	// Right margin
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	spin_right_margin = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 1000, txed_edge_column);
+	spin_right_margin = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0, 1000, txed_edge_column);
 	hbox->Add(new wxStaticText(this, -1, "Right Margin at Column: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	hbox->Add(spin_right_margin, 1, wxEXPAND);
 	sizer->Add(hbox, 0, wxALL|wxEXPAND, 4);

@@ -324,18 +324,18 @@ void GfxConvDialog::setupLayout()
 
 	// Bind events
 	Bind(wxEVT_SIZE, &GfxConvDialog::onResize, this);
-	btn_convert->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxConvDialog::onBtnConvert, this);
-	btn_convert_all->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxConvDialog::onBtnConvertAll, this);
-	btn_skip->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxConvDialog::onBtnSkip, this);
-	btn_skip_all->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxConvDialog::onBtnSkipAll, this);
-	combo_target_format->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GfxConvDialog::onTargetFormatChanged, this);
-	pal_chooser_current->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GfxConvDialog::onCurrentPaletteChanged, this);
-	pal_chooser_target->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GfxConvDialog::onTargetPaletteChanged, this);
-	slider_alpha_threshold->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &GfxConvDialog::onAlphaThresholdChanged, this);
-	cb_enable_transparency->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &GfxConvDialog::onEnableTransparencyChanged, this);
-	rb_transparency_colour->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &GfxConvDialog::onTransTypeChanged, this);
-	rb_transparency_existing->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &GfxConvDialog::onTransTypeChanged, this);
-	rb_transparency_brightness->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &GfxConvDialog::onTransTypeChanged, this);
+	btn_convert->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnConvert, this);
+	btn_convert_all->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnConvertAll, this);
+	btn_skip->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnSkip, this);
+	btn_skip_all->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnSkipAll, this);
+	combo_target_format->Bind(wxEVT_CHOICE, &GfxConvDialog::onTargetFormatChanged, this);
+	pal_chooser_current->Bind(wxEVT_CHOICE, &GfxConvDialog::onCurrentPaletteChanged, this);
+	pal_chooser_target->Bind(wxEVT_CHOICE, &GfxConvDialog::onTargetPaletteChanged, this);
+	slider_alpha_threshold->Bind(wxEVT_SLIDER, &GfxConvDialog::onAlphaThresholdChanged, this);
+	cb_enable_transparency->Bind(wxEVT_CHECKBOX, &GfxConvDialog::onEnableTransparencyChanged, this);
+	rb_transparency_colour->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
+	rb_transparency_existing->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
+	rb_transparency_brightness->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
 	Bind(wxEVT_COLOURBOX_CHANGED, &GfxConvDialog::onTransColourChanged, this, colbox_transparent->GetId());
 	gfx_current->Bind(wxEVT_LEFT_DOWN, &GfxConvDialog::onPreviewCurrentMouseDown, this);
 

@@ -150,8 +150,8 @@ void TextureEditorPanel::setupLayout()
 
 
 	// Bind events
-	slider_zoom->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &TextureEditorPanel::onZoomChanged, this);
-	cb_draw_outside->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextureEditorPanel::onDrawOutsideChanged, this);
+	slider_zoom->Bind(wxEVT_SLIDER, &TextureEditorPanel::onZoomChanged, this);
+	cb_draw_outside->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onDrawOutsideChanged, this);
 	tex_canvas->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas->Bind(wxEVT_LEFT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
@@ -159,21 +159,25 @@ void TextureEditorPanel::setupLayout()
 	tex_canvas->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
 	tex_canvas->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
-	text_tex_name->Bind(wxEVT_COMMAND_TEXT_UPDATED, &TextureEditorPanel::onTexNameChanged, this);
-	spin_tex_width->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onTexWidthChanged, this);
-	spin_tex_height->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onTexHeightChanged, this);
-	list_patches->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &TextureEditorPanel::onPatchListSelect, this);
-	list_patches->Bind(wxEVT_COMMAND_LIST_ITEM_DESELECTED, &TextureEditorPanel::onPatchListDeSelect, this);
-	btn_patch_add->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureEditorPanel::onBtnPatchAdd, this);
-	btn_patch_remove->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureEditorPanel::onBtnPatchRemove, this);
-	btn_patch_back->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureEditorPanel::onBtnPatchBack, this);
-	btn_patch_forward->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureEditorPanel::onBtnPatchForward, this);
-	btn_patch_replace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureEditorPanel::onBtnPatchReplace, this);
-	btn_patch_duplicate->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureEditorPanel::onBtnPatchDuplicate, this);
-	spin_patch_left->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onPatchPositionXChanged, this);
-	spin_patch_top->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onPatchPositionYChanged, this);
-	cb_tex_scale->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextureEditorPanel::onApplyScaleChanged, this);
-	cb_tex_arc->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextureEditorPanel::onARCChanged, this);
+	text_tex_name->Bind(wxEVT_TEXT, &TextureEditorPanel::onTexNameChanged, this);
+	spin_tex_width->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexWidthChanged, this);
+	spin_tex_height->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexHeightChanged, this);
+	spin_tex_width->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexWidthChanged, this);
+	spin_tex_height->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexHeightChanged, this);
+	list_patches->Bind(wxEVT_LIST_ITEM_SELECTED, &TextureEditorPanel::onPatchListSelect, this);
+	list_patches->Bind(wxEVT_LIST_ITEM_DESELECTED, &TextureEditorPanel::onPatchListDeSelect, this);
+	btn_patch_add->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnPatchAdd, this);
+	btn_patch_remove->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnPatchRemove, this);
+	btn_patch_back->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnPatchBack, this);
+	btn_patch_forward->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnPatchForward, this);
+	btn_patch_replace->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnPatchReplace, this);
+	btn_patch_duplicate->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnPatchDuplicate, this);
+	spin_patch_left->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onPatchPositionXChanged, this);
+	spin_patch_top->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onPatchPositionYChanged, this);
+	spin_patch_left->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onPatchPositionXChanged, this);
+	spin_patch_top->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onPatchPositionYChanged, this);
+	cb_tex_scale->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onApplyScaleChanged, this);
+	cb_tex_arc->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onARCChanged, this);
 
 	// Init layout
 	Layout();
@@ -205,15 +209,15 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(text_tex_name, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
 
 	// Size
-	spin_tex_width = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0, SHRT_MAX);
-	spin_tex_height = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0, SHRT_MAX);
+	spin_tex_width = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, SHRT_MAX);
+	spin_tex_height = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Size:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_width, wxGBPosition(1, 1), wxDefaultSpan);
 	gb_sizer->Add(spin_tex_height, wxGBPosition(1, 2), wxDefaultSpan);
 
 	// Scale
-	spin_tex_scalex = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0, UCHAR_MAX);
-	spin_tex_scaley = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0, UCHAR_MAX);
+	spin_tex_scalex = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, UCHAR_MAX);
+	spin_tex_scaley = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, UCHAR_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex, wxGBPosition(2, 1), wxDefaultSpan);
 	gb_sizer->Add(spin_tex_scaley, wxGBPosition(2, 2), wxDefaultSpan);
@@ -228,9 +232,9 @@ wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 
 
 	// Bind events
-	spin_tex_scalex->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onTexScaleXChanged, this);
-	spin_tex_scaley->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &TextureEditorPanel::onTexScaleYChanged, this);
-	cb_tex_world_panning->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextureEditorPanel::onTexWorldPanningChanged, this);
+	spin_tex_scalex->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexScaleXChanged, this);
+	spin_tex_scaley->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexScaleYChanged, this);
+	cb_tex_world_panning->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onTexWorldPanningChanged, this);
 
 	return panel;
 }
@@ -343,14 +347,14 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	// X Position
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	spin_patch_left = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, SHRT_MIN, SHRT_MAX);
+	spin_patch_left = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, SHRT_MIN, SHRT_MAX);
 	hbox->Add(new wxStaticText(panel, -1, "X Position:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 	hbox->Add(spin_patch_left, 1);
 
 	// Y Position
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	framesizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	spin_patch_top = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, SHRT_MIN, SHRT_MAX);
+	spin_patch_top = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, SHRT_MIN, SHRT_MAX);
 	hbox->Add(new wxStaticText(panel, -1, "Y Position:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 	hbox->Add(spin_patch_top, 1);
 
@@ -1057,7 +1061,7 @@ void TextureEditorPanel::onTexNameChanged(wxCommandEvent& e)
 /* TextureEditorPanel::onTexWidthChanged
  * Called when the texture width spin control is changed
  *******************************************************************/
-void TextureEditorPanel::onTexWidthChanged(wxSpinEvent& e)
+void TextureEditorPanel::onTexWidthChanged(wxCommandEvent& e)
 {
 	// Set texture's width
 	if (tex_current)
@@ -1073,7 +1077,7 @@ void TextureEditorPanel::onTexWidthChanged(wxSpinEvent& e)
 /* TextureEditorPanel::onTexHeightChanged
  * Called when the texture height spin control is changed
  *******************************************************************/
-void TextureEditorPanel::onTexHeightChanged(wxSpinEvent& e)
+void TextureEditorPanel::onTexHeightChanged(wxCommandEvent& e)
 {
 	// Set texture's height
 	if (tex_current)
@@ -1089,7 +1093,7 @@ void TextureEditorPanel::onTexHeightChanged(wxSpinEvent& e)
 /* TextureEditorPanel::onTexScaleXChanged
  * Called when the texture x scale spin control is changed
  *******************************************************************/
-void TextureEditorPanel::onTexScaleXChanged(wxSpinEvent& e)
+void TextureEditorPanel::onTexScaleXChanged(wxCommandEvent& e)
 {
 	// Set texture's x scale
 	if (tex_current)
@@ -1104,7 +1108,7 @@ void TextureEditorPanel::onTexScaleXChanged(wxSpinEvent& e)
 /* TextureEditorPanel::onTexScaleYChanged
  * Called when the texture y scale spin control is changed
  *******************************************************************/
-void TextureEditorPanel::onTexScaleYChanged(wxSpinEvent& e)
+void TextureEditorPanel::onTexScaleYChanged(wxCommandEvent& e)
 {
 	// Set texture's y scale
 	if (tex_current)
@@ -1205,7 +1209,7 @@ void TextureEditorPanel::onBtnPatchDuplicate(wxCommandEvent& e)
 /* TextureEditorPanel::onPatchPositionXChanged
  * Called when the patch x position spin control is changed
  *******************************************************************/
-void TextureEditorPanel::onPatchPositionXChanged(wxSpinEvent& e)
+void TextureEditorPanel::onPatchPositionXChanged(wxCommandEvent& e)
 {
 	// If anything other than 1 patch is selected, do nothing (shouldn't happen anyway)
 	if (list_patches->GetSelectedItemCount() != 1)
@@ -1227,7 +1231,7 @@ void TextureEditorPanel::onPatchPositionXChanged(wxSpinEvent& e)
 /* TextureEditorPanel::onPatchPositionYChanged
  * Called when the patch y position spin control is changed
  *******************************************************************/
-void TextureEditorPanel::onPatchPositionYChanged(wxSpinEvent& e)
+void TextureEditorPanel::onPatchPositionYChanged(wxCommandEvent& e)
 {
 	// If anything other than 1 patch is selected, do nothing (shouldn't happen anyway)
 	if (list_patches->GetSelectedItemCount() != 1)

@@ -25,7 +25,7 @@ public:
 	void	onShapeChanged(wxCommandEvent& e);
 	void	onCenteredChecked(wxCommandEvent& e);
 	void	onLockRatioChecked(wxCommandEvent& e);
-	void	onSidesChanged(wxSpinEvent& e);
+	void	onSidesChanged(wxCommandEvent& e);
 };
 
 #endif//__SHAPE_DRAW_PANEL_H__

@@ -40,7 +40,7 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 	rb_use_custom_dir->Bind(wxEVT_RADIOBUTTON, &TempFolderWizardPage::onRadioButtonChanged, this);
 	rb_use_system->Bind(wxEVT_RADIOBUTTON, &TempFolderWizardPage::onRadioButtonChanged, this);
 	rb_use_slade_dir->Bind(wxEVT_RADIOBUTTON, &TempFolderWizardPage::onRadioButtonChanged, this);
-	btn_browse_dir->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TempFolderWizardPage::onBtnBrowse, this);
+	btn_browse_dir->Bind(wxEVT_BUTTON, &TempFolderWizardPage::onBtnBrowse, this);
 }
 
 TempFolderWizardPage::~TempFolderWizardPage()

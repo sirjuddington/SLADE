@@ -93,9 +93,9 @@ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 	SetImageList(image_list, wxIMAGE_LIST_SMALL);
 
 	// Bind events
-	Bind(wxEVT_COMMAND_LIST_COL_RIGHT_CLICK, &ArchiveEntryList::onColumnHeaderRightClick, this);
-	Bind(wxEVT_COMMAND_LIST_COL_END_DRAG, &ArchiveEntryList::onColumnResize, this);
-	Bind(wxEVT_COMMAND_LIST_ITEM_ACTIVATED, &ArchiveEntryList::onListItemActivated, this);
+	Bind(wxEVT_LIST_COL_RIGHT_CLICK, &ArchiveEntryList::onColumnHeaderRightClick, this);
+	Bind(wxEVT_LIST_COL_END_DRAG, &ArchiveEntryList::onColumnResize, this);
+	Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchiveEntryList::onListItemActivated, this);
 
 	// Setup flags
 	SetSingleStyle(wxLC_HRULES, elist_hrules);

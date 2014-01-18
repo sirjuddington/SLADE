@@ -142,19 +142,19 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 
 
 	// Bind events
-	list_styles->Bind(wxEVT_COMMAND_LISTBOX_SELECTED, &TextStylePrefsPanel::onStyleSelected, this);
-	cb_override_font_face->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextStylePrefsPanel::onCBOverrideFontFace, this);
-	cb_override_font_size->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextStylePrefsPanel::onCBOverrideFontSize, this);
-	cb_override_font_bold->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextStylePrefsPanel::onCBOverrideFontBold, this);
-	cb_override_font_italic->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextStylePrefsPanel::onCBOverrideFontItalic, this);
-	cb_override_font_underlined->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextStylePrefsPanel::onCBOverrideFontUnderlined, this);
-	cb_override_foreground->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextStylePrefsPanel::onCBOverrideForeground, this);
-	cb_override_background->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextStylePrefsPanel::onCBOverrideBackground, this);
-	fp_font->Bind(wxEVT_COMMAND_FONTPICKER_CHANGED, &TextStylePrefsPanel::onFontChanged, this);
-	cp_foreground->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &TextStylePrefsPanel::onForegroundChanged, this);
-	cp_background->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &TextStylePrefsPanel::onBackgroundChanged, this);
-	btn_savestyleset->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextStylePrefsPanel::onBtnSaveStyleSet, this);
-	choice_styleset->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &TextStylePrefsPanel::onStyleSetSelected, this);
+	list_styles->Bind(wxEVT_LISTBOX, &TextStylePrefsPanel::onStyleSelected, this);
+	cb_override_font_face->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontFace, this);
+	cb_override_font_size->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontSize, this);
+	cb_override_font_bold->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontBold, this);
+	cb_override_font_italic->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontItalic, this);
+	cb_override_font_underlined->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFontUnderlined, this);
+	cb_override_foreground->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideForeground, this);
+	cb_override_background->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideBackground, this);
+	fp_font->Bind(wxEVT_FONTPICKER_CHANGED, &TextStylePrefsPanel::onFontChanged, this);
+	cp_foreground->Bind(wxEVT_COLOURPICKER_CHANGED, &TextStylePrefsPanel::onForegroundChanged, this);
+	cp_background->Bind(wxEVT_COLOURPICKER_CHANGED, &TextStylePrefsPanel::onBackgroundChanged, this);
+	btn_savestyleset->Bind(wxEVT_BUTTON, &TextStylePrefsPanel::onBtnSaveStyleSet, this);
+	choice_styleset->Bind(wxEVT_CHOICE, &TextStylePrefsPanel::onStyleSetSelected, this);
 
 	// Select default style
 	init_done = false;

@@ -96,10 +96,10 @@ public:
 	void	onTexCanvasDragEnd(wxCommandEvent& e);
 	void	onTexCanvasKeyDown(wxKeyEvent& e);
 	void	onTexNameChanged(wxCommandEvent& e);
-	void	onTexWidthChanged(wxSpinEvent& e);
-	void	onTexHeightChanged(wxSpinEvent& e);
-	void	onTexScaleXChanged(wxSpinEvent& e);
-	void	onTexScaleYChanged(wxSpinEvent& e);
+	void	onTexWidthChanged(wxCommandEvent& e);
+	void	onTexHeightChanged(wxCommandEvent& e);
+	void	onTexScaleXChanged(wxCommandEvent& e);
+	void	onTexScaleYChanged(wxCommandEvent& e);
 	void	onTexWorldPanningChanged(wxCommandEvent& e);
 	void	onPatchListSelect(wxListEvent& e);
 	void	onPatchListDeSelect(wxListEvent& e);
@@ -109,8 +109,8 @@ public:
 	void	onBtnPatchForward(wxCommandEvent& e);
 	void	onBtnPatchReplace(wxCommandEvent& e);
 	void	onBtnPatchDuplicate(wxCommandEvent& e);
-	void	onPatchPositionXChanged(wxSpinEvent& e);
-	void	onPatchPositionYChanged(wxSpinEvent& e);
+	void	onPatchPositionXChanged(wxCommandEvent& e);
+	void	onPatchPositionYChanged(wxCommandEvent& e);
 	void	onContextMenu(wxCommandEvent& e);
 	void	onApplyScaleChanged(wxCommandEvent& e);
 	void	onARCChanged(wxCommandEvent& e);

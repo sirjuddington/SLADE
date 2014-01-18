@@ -154,16 +154,16 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	}
 
 	// Bind Events
-	btn_add_game->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnAddGame, this);
-	btn_remove_game->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnRemoveGame, this);
-	btn_browse_exe->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnBrowseExe, this);
-	btn_edit_config->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnEditConfig, this);
-	btn_add_config->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnAddConfig, this);
-	btn_remove_config->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnRemoveConfig, this);
-	btn_run->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnRun, this);
-	btn_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &RunDialog::onBtnCancel, this);
-	choice_game_exes->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &RunDialog::onChoiceGameExe, this);
-	choice_config->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &RunDialog::onChoiceConfig, this);
+	btn_add_game->Bind(wxEVT_BUTTON, &RunDialog::onBtnAddGame, this);
+	btn_remove_game->Bind(wxEVT_BUTTON, &RunDialog::onBtnRemoveGame, this);
+	btn_browse_exe->Bind(wxEVT_BUTTON, &RunDialog::onBtnBrowseExe, this);
+	btn_edit_config->Bind(wxEVT_BUTTON, &RunDialog::onBtnEditConfig, this);
+	btn_add_config->Bind(wxEVT_BUTTON, &RunDialog::onBtnAddConfig, this);
+	btn_remove_config->Bind(wxEVT_BUTTON, &RunDialog::onBtnRemoveConfig, this);
+	btn_run->Bind(wxEVT_BUTTON, &RunDialog::onBtnRun, this);
+	btn_cancel->Bind(wxEVT_BUTTON, &RunDialog::onBtnCancel, this);
+	choice_game_exes->Bind(wxEVT_CHOICE, &RunDialog::onChoiceGameExe, this);
+	choice_config->Bind(wxEVT_CHOICE, &RunDialog::onChoiceConfig, this);
 
 	gb_sizer->AddGrowableCol(1, 1);
 	SetInitialSize(wxSize(500, 400));

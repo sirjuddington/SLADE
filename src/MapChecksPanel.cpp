@@ -86,11 +86,11 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	hbox->Add(btn_check, 0, wxEXPAND);
 
 	// Bind events
-	btn_check->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapChecksPanel::onBtnCheck, this);
+	btn_check->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnCheck, this);
 	lb_errors->Bind(wxEVT_LISTBOX, &MapChecksPanel::onListBoxItem, this);
-	btn_edit_object->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapChecksPanel::onBtnEditObject, this);
-	btn_fix1->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapChecksPanel::onBtnFix1, this);
-	btn_fix2->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapChecksPanel::onBtnFix2, this);
+	btn_edit_object->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnEditObject, this);
+	btn_fix1->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnFix1, this);
+	btn_fix2->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnFix2, this);
 
 	// Check all by default
 	cb_missing_tex->SetValue(true);

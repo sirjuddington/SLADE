@@ -378,7 +378,7 @@ void MainWindow::setupLayout()
 	html_startpage->Bind(wxEVT_WEBVIEW_NAVIGATING, &MainWindow::onHTMLLinkClicked, this);
 	Bind(wxEVT_SIZE, &MainWindow::onSize, this);
 	Bind(wxEVT_CLOSE_WINDOW, &MainWindow::onClose, this);
-	Bind(wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
+	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
 	Bind(wxEVT_MOVE, &MainWindow::onMove, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar->GetId());
 }
@@ -744,6 +744,8 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	}
 	else if (wxFileExists(href))
 	{
+		DPrintf(href);
+		DPrintf(appPath("startpage.htm", DIR_TEMP));
 		// Navigating to file, open it
 		if (href != appPath("startpage.htm", DIR_TEMP))
 			theArchiveManager->openArchive(href);

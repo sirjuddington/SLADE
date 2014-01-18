@@ -53,7 +53,7 @@ ConsolePanel::ConsolePanel(wxWindow* parent, int id)
 	listenTo(theConsole);
 
 	// Bind events
-	text_command->Bind(wxEVT_COMMAND_TEXT_ENTER, &ConsolePanel::onCommandEnter, this);
+	text_command->Bind(wxEVT_TEXT_ENTER, &ConsolePanel::onCommandEnter, this);
 	text_command->Bind(wxEVT_KEY_DOWN, &ConsolePanel::onCommandKeyDown, this);
 
 	// Load the current contents of the console log

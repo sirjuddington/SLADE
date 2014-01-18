@@ -97,8 +97,8 @@ NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBa
 	sizer->Add(clb_options, 1, wxEXPAND|wxALL, 4);
 
 	// Bind events
-	choice_nodebuilder->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &NodesPrefsPanel::onChoiceBuilderChanged, this);
-	btn_browse_path->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &NodesPrefsPanel::onBtnBrowse, this);
+	choice_nodebuilder->Bind(wxEVT_CHOICE, &NodesPrefsPanel::onChoiceBuilderChanged, this);
+	btn_browse_path->Bind(wxEVT_BUTTON, &NodesPrefsPanel::onBtnBrowse, this);
 
 	// Init
 	choice_nodebuilder->Select(sel);

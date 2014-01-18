@@ -222,16 +222,16 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	gbsizer->Add(btn_move_down, wxGBPosition(0, 5), wxDefaultSpan);
 
 	// Bind events
-	list_textures->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &TextureXPanel::onTextureListSelect, this);
-	list_textures->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &TextureXPanel::onTextureListRightClick, this);
+	list_textures->Bind(wxEVT_LIST_ITEM_SELECTED, &TextureXPanel::onTextureListSelect, this);
+	list_textures->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &TextureXPanel::onTextureListRightClick, this);
 	list_textures->Bind(wxEVT_KEY_DOWN, &TextureXPanel::onTextureListKeyDown, this);
-	btn_new_texture->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXPanel::onBtnNewTexture, this);
-	btn_new_from_patch->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXPanel::onBtnNewTextureFromPatch, this);
-	btn_new_from_file->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXPanel::onBtnNewTextureFromFile, this);
-	btn_remove_texture->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXPanel::onBtnRemoveTexture, this);
-	btn_move_up->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXPanel::onBtnMoveUp, this);
-	btn_move_down->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXPanel::onBtnMoveDown, this);
-	btn_save->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXPanel::onBtnSave, this);
+	btn_new_texture->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnNewTexture, this);
+	btn_new_from_patch->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnNewTextureFromPatch, this);
+	btn_new_from_file->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnNewTextureFromFile, this);
+	btn_remove_texture->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnRemoveTexture, this);
+	btn_move_up->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnMoveUp, this);
+	btn_move_down->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnMoveDown, this);
+	btn_save->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnSave, this);
 	Bind(wxEVT_SHOW, &TextureXPanel::onShow, this);
 }
 

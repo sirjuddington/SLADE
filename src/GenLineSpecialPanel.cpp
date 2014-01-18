@@ -16,7 +16,7 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	hbox->Add(new wxStaticText(this, -1, "Type:"), 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
 	string types[] = { "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" };
 	choice_type = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 7, types);
-	choice_type->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GenLineSpecialPanel::onChoiceTypeChanged, this);
+	choice_type->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
 	hbox->Add(choice_type, 1, wxEXPAND);
 
 	gb_sizer = new wxGridBagSizer(4, 4);
@@ -26,7 +26,7 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	string triggers[] = {"Cross (Once)","Cross (Repeatable)","Switch (Once)","Switch (Repeatable)","Shoot (Once)","Shoot (Repeatable)","Door (Once)","Door (Repeatable)"};
 	label_props[0] = new wxStaticText(this, -1, "Trigger:", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_VERTICAL);
 	choice_props[0] = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 8, triggers);
-	choice_props[0]->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GenLineSpecialPanel::onChoicePropertyChanged, this);
+	choice_props[0]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
 
 	// Other properties
 	for (unsigned a = 1; a < 7; a++)
@@ -35,7 +35,7 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		label_props[a]->Hide();
 		choice_props[a] = new wxChoice(this, -1);
 		choice_props[a]->Hide();
-		choice_props[a]->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GenLineSpecialPanel::onChoicePropertyChanged, this);
+		choice_props[a]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
 	}
 
 	// Default to floor type

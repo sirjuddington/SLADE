@@ -91,7 +91,7 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 	sizer->Add(list_levels, 1, wxEXPAND|wxALL, 4);
 
 	list_levels->AppendColumn("Action", wxLIST_FORMAT_LEFT, 160);
-	list_levels->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
+	list_levels->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 }
 
 UndoManagerHistoryPanel::~UndoManagerHistoryPanel()
