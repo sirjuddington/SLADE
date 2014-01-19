@@ -57,10 +57,10 @@ public:
 	// Events
 	void	onCBBlendRGBAChanged(wxCommandEvent& e);
 	void	onChoiceViewTypeSelected(wxCommandEvent& e);
-	void	onTexScaleXChanged(wxSpinDoubleEvent& e);
-	void	onTexScaleYChanged(wxSpinDoubleEvent& e);
-	void	onTexOffsetXChanged(wxSpinEvent& e);
-	void	onTexOffsetYChanged(wxSpinEvent& e);
+	void	onTexScaleXChanged(wxCommandEvent& e);
+	void	onTexScaleYChanged(wxCommandEvent& e);
+	void	onTexOffsetXChanged(wxCommandEvent& e);
+	void	onTexOffsetYChanged(wxCommandEvent& e);
 	void	onTexTypeChanged(wxCommandEvent& e);
 	void	onTexOptionalChanged(wxCommandEvent& e);
 	void	onTexWorldPanningChanged(wxCommandEvent& e);
@@ -70,14 +70,14 @@ public:
 	void	onPatchFlipYChanged(wxCommandEvent& e);
 	void	onPatchUseOfsChanged(wxCommandEvent& e);
 	void	onPatchRotationChanged(wxCommandEvent& e);
-	void	onPatchAlphaChanged(wxSpinDoubleEvent& e);
+	void	onPatchAlphaChanged(wxCommandEvent& e);
 	void	onPatchAlphaStyleChanged(wxCommandEvent& e);
 	void	onPCNormalSelected(wxCommandEvent& e);
 	void	onPCBlendSelected(wxCommandEvent& e);
 	void	onPCTintSelected(wxCommandEvent& e);
 	void	onPCTranslationSelected(wxCommandEvent& e);
 	void	onPatchColourChanged(wxColourPickerEvent& e);
-	void	onPatchTintAmountChanged(wxSpinDoubleEvent& e);
+	void	onPatchTintAmountChanged(wxCommandEvent& e);
 	void	onBtnEditTranslation(wxCommandEvent& e);
 	void	onTextTranslationEnter(wxCommandEvent& e);
 };

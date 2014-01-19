@@ -79,8 +79,8 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	sizer->Add(btn_reset_player, 0, wxEXPAND, 4);
 
 	// Bind events
-	btn_browse_soundfont->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &AudioPrefsPanel::onBtnBrowseSoundfont, this);
-	btn_reset_player->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &AudioPrefsPanel::onBtnResetPlayer, this);
+	btn_browse_soundfont->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnBrowseSoundfont, this);
+	btn_reset_player->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnResetPlayer, this);
 
 	Layout();
 }

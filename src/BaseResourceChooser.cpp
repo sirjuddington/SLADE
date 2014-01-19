@@ -63,7 +63,7 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change)
 	listenTo(theArchiveManager);
 
 	// Bind events
-	Bind(wxEVT_COMMAND_CHOICE_SELECTED, &BaseResourceChooser::onChoiceChanged, this);
+	Bind(wxEVT_CHOICE, &BaseResourceChooser::onChoiceChanged, this);
 }
 
 /* BaseResourceChooser::~BaseResourceChooser

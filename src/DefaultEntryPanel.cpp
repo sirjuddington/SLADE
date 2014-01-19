@@ -81,9 +81,9 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent)
 	sizer_main->AddStretchSpacer(1);
 
 	// Bind events
-	btn_gfx_convert->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DefaultEntryPanel::onBtnGfxConvert, this);
-	btn_gfx_modify_offsets->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DefaultEntryPanel::onBtnGfxModifyOffsets, this);
-	btn_texture_edit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DefaultEntryPanel::onBtnTextureEdit, this);
+	btn_gfx_convert->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnGfxConvert, this);
+	btn_gfx_modify_offsets->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnGfxModifyOffsets, this);
+	btn_texture_edit->Bind(wxEVT_BUTTON, &DefaultEntryPanel::onBtnTextureEdit, this);
 
 	// Hide save/revert toolbar
 	toolbar->deleteGroup("Entry");

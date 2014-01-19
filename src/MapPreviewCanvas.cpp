@@ -540,6 +540,30 @@ void MapPreviewCanvas::draw()
  *******************************************************************/
 void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 {
+	// Find extents of map
+	mep_vertex_t m_min(999999.0, 999999.0);
+	mep_vertex_t m_max(-999999.0, -999999.0);
+	for (unsigned a = 0; a < verts.size(); a++)
+	{
+		if (verts[a].x < m_min.x)
+			m_min.x = verts[a].x;
+		if (verts[a].x > m_max.x)
+			m_max.x = verts[a].x;
+		if (verts[a].y < m_min.y)
+			m_min.y = verts[a].y;
+		if (verts[a].y > m_max.y)
+			m_max.y = verts[a].y;
+	}
+	double mapwidth = m_max.x - m_min.x;
+	double mapheight = m_max.y - m_min.y;
+
+	if (width == 0) width = -5;
+	if (height == 0) height = -5;
+	if (width < 0)
+		width = mapwidth / abs(width);
+	if (height < 0)
+		height = mapheight / abs(height);
+
 	// Setup colours
 	wxColour wxc;
 	wxc.Set(map_image_col_background);	rgba_t col_save_background(wxc.Red(), wxc.Green(), wxc.Blue(), 255);
@@ -586,24 +610,7 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Zoom/offset to show full map
-	// Find extents of map
-	mep_vertex_t m_min(999999.0, 999999.0);
-	mep_vertex_t m_max(-999999.0, -999999.0);
-	for (unsigned a = 0; a < verts.size(); a++)
-	{
-		if (verts[a].x < m_min.x)
-			m_min.x = verts[a].x;
-		if (verts[a].x > m_max.x)
-			m_max.x = verts[a].x;
-		if (verts[a].y < m_min.y)
-			m_min.y = verts[a].y;
-		if (verts[a].y > m_max.y)
-			m_max.y = verts[a].y;
-	}
-
 	// Offset to center of map
-	double mapwidth = m_max.x - m_min.x;
-	double mapheight = m_max.y - m_min.y;
 	offset_x = m_min.x + (mapwidth * 0.5);
 	offset_y = m_min.y + (mapheight * 0.5);
 

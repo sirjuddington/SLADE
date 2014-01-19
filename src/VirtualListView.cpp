@@ -79,10 +79,10 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_KEY_DOWN, &VirtualListView::onKeyDown, this);
 #endif
 	Bind(wxEVT_LEFT_DOWN, &VirtualListView::onMouseLeftDown, this);
-	Bind(wxEVT_COMMAND_LIST_COL_END_DRAG, &VirtualListView::onColumnResize, this);
+	Bind(wxEVT_LIST_COL_END_DRAG, &VirtualListView::onColumnResize, this);
 	Bind(wxEVT_CHAR, &VirtualListView::onKeyChar, this);
-	Bind(wxEVT_COMMAND_LIST_BEGIN_LABEL_EDIT, &VirtualListView::onLabelEditBegin, this);
-	Bind(wxEVT_COMMAND_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
+	Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &VirtualListView::onLabelEditBegin, this);
+	Bind(wxEVT_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
 }
 
 /* VirtualListView::~VirtualListView

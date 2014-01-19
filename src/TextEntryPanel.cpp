@@ -77,12 +77,12 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	sizer_bottom->Add(btn_find_replace, 0, wxEXPAND, 0);
 
 	// Bind events
-	choice_text_language->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &TextEntryPanel::onChoiceLanguageChanged, this);
+	choice_text_language->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
 	text_area->Bind(wxEVT_STC_CHANGE, &TextEntryPanel::onTextModified, this);
-	btn_find_replace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextEntryPanel::onBtnFindReplace, this);
+	btn_find_replace->Bind(wxEVT_BUTTON, &TextEntryPanel::onBtnFindReplace, this);
 	text_area->Bind(wxEVT_STC_UPDATEUI, &TextEntryPanel::onUpdateUI, this);
-	cb_wordwrap->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TextEntryPanel::onWordWrapChanged, this);
-	btn_jump_to->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextEntryPanel::onBtnJumpTo, this);
+	cb_wordwrap->Bind(wxEVT_CHECKBOX, &TextEntryPanel::onWordWrapChanged, this);
+	btn_jump_to->Bind(wxEVT_BUTTON, &TextEntryPanel::onBtnJumpTo, this);
 
 	// Custom toolbar
 	custom_toolbar_actions = "arch_scripts_compileacs;arch_scripts_compilehacs";

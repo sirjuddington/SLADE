@@ -68,9 +68,9 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	btn_apply->SetToolTip("Apply");
 
 	// Bind events
-	btn_preview->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ObjectEditPanel::onBtnPreviewClicked, this);
-	btn_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ObjectEditPanel::onBtnCancelClicked, this);
-	btn_apply->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ObjectEditPanel::onBtnApplyClicked, this);
+	btn_preview->Bind(wxEVT_BUTTON, &ObjectEditPanel::onBtnPreviewClicked, this);
+	btn_cancel->Bind(wxEVT_BUTTON, &ObjectEditPanel::onBtnCancelClicked, this);
+	btn_apply->Bind(wxEVT_BUTTON, &ObjectEditPanel::onBtnApplyClicked, this);
 
 	// Init layout
 	Layout();

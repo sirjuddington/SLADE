@@ -20,14 +20,14 @@ ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent,
 
 	// From type
 	gbsizer->Add(new wxStaticText(this, -1, "Replace Type:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT);
-	spin_from = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 999999);
+	spin_from = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0, 999999);
 	gbsizer->Add(spin_from, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 	//btn_browse_from = new wxButton(this, -1, "...", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
 	//gbsizer->Add(btn_browse_from, wxGBPosition(0, 2), wxDefaultSpan, wxEXPAND);
 
 	// To type
 	gbsizer->Add(new wxStaticText(this, -1, "With Type:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT);
-	spin_to = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 999999);
+	spin_to = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0, 999999);
 	gbsizer->Add(spin_to, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 	//btn_browse_to = new wxButton(this, -1, "...", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
 	//gbsizer->Add(btn_browse_to, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND);
@@ -81,8 +81,8 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	{
 		// Create controls
 		cb_args[a] = new wxCheckBox(this, -1, S_FMT("Arg %d", a));
-		spin_args_from[a] = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 255);
-		spin_args_to[a] = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 255);
+		spin_args_from[a] = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0, 255);
+		spin_args_to[a] = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0, 255);
 
 		// Add to grid
 		gbsizer->Add(cb_args[a], wxGBPosition(a, 0), wxDefaultSpan, wxEXPAND);
@@ -221,8 +221,8 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
 	CenterOnParent();
 
 	// Bind events
-	btn_done->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapReplaceDialog::onBtnDone, this);
-	btn_replace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapReplaceDialog::onBtnReplace, this);
+	btn_done->Bind(wxEVT_BUTTON, &MapReplaceDialog::onBtnDone, this);
+	btn_replace->Bind(wxEVT_BUTTON, &MapReplaceDialog::onBtnReplace, this);
 }
 
 MapReplaceDialog::~MapReplaceDialog()

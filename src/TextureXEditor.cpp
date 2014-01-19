@@ -102,8 +102,8 @@ public:
 		m_vbox->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 4);
 
 		// Bind events
-		rb_new->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &CreateTextureXDialog::onRadioNewSelected, this);
-		rb_import_bra->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &CreateTextureXDialog::onRadioNewSelected, this);
+		rb_new->Bind(wxEVT_RADIOBUTTON, &CreateTextureXDialog::onRadioNewSelected, this);
+		rb_import_bra->Bind(wxEVT_RADIOBUTTON, &CreateTextureXDialog::onRadioNewSelected, this);
 
 		SetInitialSize(wxSize(-1, -1));
 		Layout();
@@ -205,7 +205,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	sizer->Add(tabs, 1, wxEXPAND|wxALL, 4);
 
 	// Bind events
-	//btn_save->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextureXEditor::onSaveClicked, this);
+	//btn_save->Bind(wxEVT_BUTTON, &TextureXEditor::onSaveClicked, this);
 	Bind(wxEVT_SHOW, &TextureXEditor::onShow, this);
 
 	// Palette chooser

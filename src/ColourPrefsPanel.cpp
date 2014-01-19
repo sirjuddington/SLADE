@@ -74,7 +74,7 @@ ColourPrefsPanel::ColourPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	refreshPropGrid();
 
 	// Bind events
-	choice_configs->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ColourPrefsPanel::onChoicePresetSelected, this);
+	choice_configs->Bind(wxEVT_CHOICE, &ColourPrefsPanel::onChoicePresetSelected, this);
 
 	Layout();
 }

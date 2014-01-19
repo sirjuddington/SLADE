@@ -215,16 +215,16 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	populateMapList();
 
 	// Bind events
-	choice_game_config->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &MapEditorConfigDialog::onChoiceGameConfigChanged, this);
-	choice_port_config->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &MapEditorConfigDialog::onChoicePortConfigChanged, this);
+	choice_game_config->Bind(wxEVT_CHOICE, &MapEditorConfigDialog::onChoiceGameConfigChanged, this);
+	choice_port_config->Bind(wxEVT_CHOICE, &MapEditorConfigDialog::onChoicePortConfigChanged, this);
 	if (show_maplist)
 	{
-		list_maps->Bind(wxEVT_COMMAND_LIST_ITEM_ACTIVATED, &MapEditorConfigDialog::onMapActivated, this);
-		list_maps->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &MapEditorConfigDialog::onMapSelected, this);
-		btn_new_map->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnNewMap, this);
+		list_maps->Bind(wxEVT_LIST_ITEM_ACTIVATED, &MapEditorConfigDialog::onMapActivated, this);
+		list_maps->Bind(wxEVT_LIST_ITEM_SELECTED, &MapEditorConfigDialog::onMapSelected, this);
+		btn_new_map->Bind(wxEVT_BUTTON, &MapEditorConfigDialog::onBtnNewMap, this);
 	}
-	btn_ok->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnOK, this);
-	btn_cancel->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapEditorConfigDialog::onBtnCancel, this);
+	btn_ok->Bind(wxEVT_BUTTON, &MapEditorConfigDialog::onBtnOK, this);
+	btn_cancel->Bind(wxEVT_BUTTON, &MapEditorConfigDialog::onBtnCancel, this);
 
 	Layout();
 	mainsizer->Fit(this);

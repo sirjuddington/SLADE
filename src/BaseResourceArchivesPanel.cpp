@@ -80,8 +80,8 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
 	hbox->Add(vbox, 0, wxEXPAND|wxALL, 4);
 
 	// Bind events
-	btn_add->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &BaseResourceArchivesPanel::onBtnAdd, this);
-	btn_remove->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &BaseResourceArchivesPanel::onBtnRemove, this);
+	btn_add->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnAdd, this);
+	btn_remove->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnRemove, this);
 
 	// Init layout
 	Layout();

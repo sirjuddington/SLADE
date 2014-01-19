@@ -55,10 +55,8 @@ public:
 	bool	fillCustomMenu(wxMenu* custom);
 
 	void	onZoomChanged(wxCommandEvent& e);
-	void	onXOffsetChanged(wxSpinEvent& e);
-	void	onYOffsetChanged(wxSpinEvent& e);
-	void	onTextXOffsetChanged(wxCommandEvent& e);
-	void	onTextYOffsetChanged(wxCommandEvent& e);
+	void	onXOffsetChanged(wxCommandEvent& e);
+	void	onYOffsetChanged(wxCommandEvent& e);
 	void	onOffsetTypeChanged(wxCommandEvent& e);
 	void	onTileChanged(wxCommandEvent& e);
 	void	onARCChanged(wxCommandEvent& e);

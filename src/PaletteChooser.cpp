@@ -62,7 +62,7 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id)
 	SetSelection(0);
 
 	// Bind events
-	Bind(wxEVT_COMMAND_CHOICE_SELECTED, &PaletteChooser::onPaletteChanged, this);
+	Bind(wxEVT_CHOICE, &PaletteChooser::onPaletteChanged, this);
 }
 
 /* PaletteChooser::~PaletteChooser

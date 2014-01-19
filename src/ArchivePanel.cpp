@@ -280,16 +280,16 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 
 	// Bind events
 	entry_list->Bind(EVT_VLV_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
-	entry_list->Bind(wxEVT_COMMAND_LIST_ITEM_FOCUSED, &ArchivePanel::onEntryListFocusChange, this);
+	entry_list->Bind(wxEVT_LIST_ITEM_FOCUSED, &ArchivePanel::onEntryListFocusChange, this);
 	entry_list->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
-	entry_list->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &ArchivePanel::onEntryListRightClick, this);
-	entry_list->Bind(wxEVT_COMMAND_LIST_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
-	text_filter->Bind(wxEVT_COMMAND_TEXT_UPDATED, &ArchivePanel::onTextFilterChanged, this);
-	choice_category->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ArchivePanel::onChoiceCategoryChanged, this);
+	entry_list->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchivePanel::onEntryListRightClick, this);
+	entry_list->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
+	text_filter->Bind(wxEVT_TEXT, &ArchivePanel::onTextFilterChanged, this);
+	choice_category->Bind(wxEVT_CHOICE, &ArchivePanel::onChoiceCategoryChanged, this);
 	Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
-	btn_updir->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onBtnUpDir, this);
-	//((DefaultEntryPanel*)default_area)->getEditTextButton()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onDEPEditAsText, this);
-	//((DefaultEntryPanel*)default_area)->getViewHexButton()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ArchivePanel::onDEPViewAsHex, this);
+	btn_updir->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnUpDir, this);
+	//((DefaultEntryPanel*)default_area)->getEditTextButton()->Bind(wxEVT_BUTTON, &ArchivePanel::onDEPEditAsText, this);
+	//((DefaultEntryPanel*)default_area)->getViewHexButton()->Bind(wxEVT_BUTTON, &ArchivePanel::onDEPViewAsHex, this);
 
 	// Do a quick check to see if we need the path display
 	if (archive->getRoot()->nChildren() == 0)

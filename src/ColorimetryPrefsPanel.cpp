@@ -89,13 +89,13 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 	// RGB weights for greyscale luminance
 	sizer->Add(new wxStaticText(this, -1, "RGB weights for greyscale luminance:"), 0, wxALL, 4);
 	hbox->Add(new wxStaticText(this, -1, "R:"), 0, wxALL, 4);
-	spin_grey_r = new wxSpinCtrlDouble(this, -1, "GreyscaleRed", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 1.0, 0.001, 0.001);
+	spin_grey_r = new wxSpinCtrlDouble(this, -1, "GreyscaleRed", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 1.0, 0.001, 0.001);
 	hbox->Add(spin_grey_r, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "G:"), 0, wxALL, 4);
-	spin_grey_g = new wxSpinCtrlDouble(this, -1, "GreyscaleGreen", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 1.0, 0.001, 0.001);
+	spin_grey_g = new wxSpinCtrlDouble(this, -1, "GreyscaleGreen", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 1.0, 0.001, 0.001);
 	hbox->Add(spin_grey_g, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "B:"), 0, wxALL, 4);
-	spin_grey_b = new wxSpinCtrlDouble(this, -1, "GreyscaleBlue", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 1.0, 0.001, 0.001);
+	spin_grey_b = new wxSpinCtrlDouble(this, -1, "GreyscaleBlue", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 1.0, 0.001, 0.001);
 	hbox->Add(spin_grey_b, 0, wxEXPAND|wxBOTTOM, 4);
 	string rbgweights[] = { "Default / Standard", "Carmack's Typo", "Linear RGB" };
 	choice_presets_grey = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, rbgweights);
@@ -116,22 +116,22 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 	// RGB and HSL weights for color matching
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->Add(new wxStaticText(this, -1, "R:"), 0, wxALL, 4);
-	spin_factor_r = new wxSpinCtrlDouble(this, -1, "RedFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_factor_r = new wxSpinCtrlDouble(this, -1, "RedFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_factor_r, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "G:"), 0, wxALL, 4);
-	spin_factor_g = new wxSpinCtrlDouble(this, -1, "GreenFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_factor_g = new wxSpinCtrlDouble(this, -1, "GreenFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_factor_g, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "B:"), 0, wxALL, 4);
-	spin_factor_b = new wxSpinCtrlDouble(this, -1, "BlueFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_factor_b = new wxSpinCtrlDouble(this, -1, "BlueFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_factor_b, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "H:"), 0, wxALL, 4);
-	spin_factor_h = new wxSpinCtrlDouble(this, -1, "HueFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_factor_h = new wxSpinCtrlDouble(this, -1, "HueFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_factor_h, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "S:"), 0, wxALL, 4);
-	spin_factor_s = new wxSpinCtrlDouble(this, -1, "SatFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_factor_s = new wxSpinCtrlDouble(this, -1, "SatFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_factor_s, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "L:"), 0, wxALL, 4);
-	spin_factor_l = new wxSpinCtrlDouble(this, -1, "LumFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_factor_l = new wxSpinCtrlDouble(this, -1, "LumFactor", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_factor_l, 0, wxEXPAND|wxBOTTOM, 4);
 	vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, 4);
 	sizer->Add(vbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -141,10 +141,10 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 	vbox = new wxBoxSizer(wxVERTICAL);
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->Add(new wxStaticText(this, -1, "X:"), 0, wxALL, 4);
-	spin_tristim_x = new wxSpinCtrlDouble(this, -1, "TriStimX", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 200.0, 100.0, 0.1);
+	spin_tristim_x = new wxSpinCtrlDouble(this, -1, "TriStimX", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 200.0, 100.0, 0.1);
 	hbox->Add(spin_tristim_x, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "Z:"), 0, wxALL, 4);
-	spin_tristim_z = new wxSpinCtrlDouble(this, -1, "TriStimZ", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 200.0, 100.0, 0.1);
+	spin_tristim_z = new wxSpinCtrlDouble(this, -1, "TriStimZ", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 200.0, 100.0, 0.1);
 	hbox->Add(spin_tristim_z, 0, wxEXPAND|wxBOTTOM, 4);
 	string tristimuli[] =
 	{
@@ -168,19 +168,19 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 	vbox = new wxBoxSizer(wxVERTICAL);
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->Add(new wxStaticText(this, -1, "KL:"), 0, wxALL, 4);
-	spin_cie_kl = new wxSpinCtrlDouble(this, -1, "KL", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_cie_kl = new wxSpinCtrlDouble(this, -1, "KL", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_cie_kl, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "K1:"), 0, wxALL, 4);
-	spin_cie_k1 = new wxSpinCtrlDouble(this, -1, "K1", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_cie_k1 = new wxSpinCtrlDouble(this, -1, "K1", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_cie_k1, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "K2:"), 0, wxALL, 4);
-	spin_cie_k2 = new wxSpinCtrlDouble(this, -1, "K2", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_cie_k2 = new wxSpinCtrlDouble(this, -1, "K2", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_cie_k2, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "KC:"), 0, wxALL, 4);
-	spin_cie_kc = new wxSpinCtrlDouble(this, -1, "KC", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_cie_kc = new wxSpinCtrlDouble(this, -1, "KC", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_cie_kc, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "KH:"), 0, wxALL, 4);
-	spin_cie_kh = new wxSpinCtrlDouble(this, -1, "KH", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS, 0.0, 10.0, 1.0, 0.1);
+	spin_cie_kh = new wxSpinCtrlDouble(this, -1, "KH", wxDefaultPosition, spinsize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 0.0, 10.0, 1.0, 0.1);
 	hbox->Add(spin_cie_kh, 0, wxEXPAND|wxBOTTOM, 4);
 	vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, 4);
 
@@ -188,9 +188,9 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 	sizer->Add(vbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Bind events
-	choice_presets_grey->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected, this);
-	choice_colmatch->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ColorimetryPrefsPanel::onChoiceColormatchSelected, this);
-	choice_presets_tristim->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ColorimetryPrefsPanel::onChoiceTristimPresetSelected, this);
+	choice_presets_grey->Bind(wxEVT_CHOICE, &ColorimetryPrefsPanel::onChoiceGreyscalePresetSelected, this);
+	choice_colmatch->Bind(wxEVT_CHOICE, &ColorimetryPrefsPanel::onChoiceColormatchSelected, this);
+	choice_presets_tristim->Bind(wxEVT_CHOICE, &ColorimetryPrefsPanel::onChoiceTristimPresetSelected, this);
 }
 
 /* ColorimetryPrefsPanel::~ColorimetryPrefsPanel

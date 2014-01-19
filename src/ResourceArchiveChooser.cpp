@@ -43,8 +43,8 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 	hbox->Add(btn_recent, 0, wxEXPAND, 0);
 
 	// Bind events
-	btn_open_resource->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ResourceArchiveChooser::onBtnOpenResource, this);
-	btn_recent->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ResourceArchiveChooser::onBtnRecent, this);
+	btn_open_resource->Bind(wxEVT_BUTTON, &ResourceArchiveChooser::onBtnOpenResource, this);
+	btn_recent->Bind(wxEVT_BUTTON, &ResourceArchiveChooser::onBtnRecent, this);
 
 	Layout();
 }

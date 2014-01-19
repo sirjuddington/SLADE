@@ -59,7 +59,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	populateWordList();
 
 	// Bind events
-	list_words->Bind(wxEVT_COMMAND_TREELIST_ITEM_ACTIVATED, &ScriptEditorPanel::onWordListActivate, this);
+	list_words->Bind(wxEVT_TREELIST_ITEM_ACTIVATED, &ScriptEditorPanel::onWordListActivate, this);
 }
 
 ScriptEditorPanel::~ScriptEditorPanel()

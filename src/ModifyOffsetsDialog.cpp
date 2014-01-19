@@ -101,8 +101,8 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 
 
 	// Bind events
-	opt_auto->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &ModifyOffsetsDialog::onOptAuto, this);
-	opt_set->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &ModifyOffsetsDialog::onOptSet, this);
+	opt_auto->Bind(wxEVT_RADIOBUTTON, &ModifyOffsetsDialog::onOptAuto, this);
+	opt_set->Bind(wxEVT_RADIOBUTTON, &ModifyOffsetsDialog::onOptSet, this);
 
 
 	// Apply layout and size
