@@ -206,7 +206,7 @@ z_menudef {
 	keyword_link = "http://zdoom.org/wiki/MENUDEF";
 	constant_link = "http://zdoom.org/wiki/MENUDEF";
 	function_link = "http://zdoom.org/wiki/MENUDEF";
-	blocks = "listmenu", "optionmenu", "optionvalue", "optionstring;
+	blocks = "listmenu", "optionmenu", "optionvalue", "optionstring";
 	
 	keywords = { 
 		ListMenu, OptionMenu, OptionValue, OptionString, 
