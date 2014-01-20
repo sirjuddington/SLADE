@@ -412,7 +412,13 @@
     <ClCompile Include="src\zlib\zutil.c" />
     <ClCompile Include="src\zreaders\ancientzip.cpp" />
     <ClCompile Include="src\zreaders\files.cpp" />
+    <ClCompile Include="src\zreaders\i_music.cpp" />
     <ClCompile Include="src\zreaders\m_alloc.cpp" />
+    <ClCompile Include="src\zreaders\music_hmi_midiout.cpp" />
+    <ClCompile Include="src\zreaders\music_midistream.cpp" />
+    <ClCompile Include="src\zreaders\music_mus_midiout.cpp" />
+    <ClCompile Include="src\zreaders\music_smf_midiout.cpp" />
+    <ClCompile Include="src\zreaders\music_xmi_midiout.cpp" />
     <ClCompile Include="src\ZTextureEditorPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -694,7 +700,11 @@
     <ClInclude Include="src\zlib\zutil.h" />
     <ClInclude Include="src\zreaders\ancientzip.h" />
     <ClInclude Include="src\zreaders\files.h" />
+    <ClInclude Include="src\zreaders\i_music.h" />
+    <ClInclude Include="src\zreaders\i_musicinterns.h" />
     <ClInclude Include="src\zreaders\m_alloc.h" />
+    <ClInclude Include="src\zreaders\m_swap.h" />
+    <ClInclude Include="src\zreaders\mus2midi.h" />
     <ClInclude Include="src\zreaders\tarray.h" />
     <ClInclude Include="src\zreaders\templates.h" />
     <ClInclude Include="src\ZTextureEditorPanel.h" />

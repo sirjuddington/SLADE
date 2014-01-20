@@ -32,7 +32,7 @@
 #include "Conversions.h"
 #include "ArchiveEntry.h"
 #include "mus2mid/mus2mid.h"
-
+#include "zreaders/i_music.h"
 
 /*******************************************************************
  * STRUCTS
@@ -242,6 +242,15 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 bool Conversions::musToMidi(MemChunk& in, MemChunk& out)
 {
 	return mus2mid(in, out);
+}
+
+/* Conversions::zmusToMidi
+ * Converts MIDI-like music data [in] to midi, written to [out],
+ * using ZDoom MIDI system
+ *******************************************************************/
+bool Conversions::zmusToMidi(MemChunk& in, MemChunk& out)
+{
+	return zmus2mid(in, out);
 }
 
 /* Conversions::vocToWav

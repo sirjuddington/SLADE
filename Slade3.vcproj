@@ -2406,11 +2406,47 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\zreaders\i_music.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\zreaders\i_music.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\zreaders\i_musicinterns.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\zreaders\m_alloc.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\src\zreaders\m_alloc.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\zreaders\mus2midi.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\zreaders\music_hmi_midiout.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\zreaders\music_midistream.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\zreaders\music_mus_midiout.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\zreaders\music_smf_midiout.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\zreaders\music_xmi_midiout.cpp"
 					>
 				</File>
 				<File

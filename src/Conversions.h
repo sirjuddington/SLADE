@@ -13,6 +13,7 @@ namespace Conversions
 	bool	vocToWav(MemChunk& in, MemChunk& out);
 	bool	bloodToWav(ArchiveEntry* in, MemChunk& out);
 	bool	musToMidi(MemChunk& in, MemChunk& out);
+	bool	zmusToMidi(MemChunk& in, MemChunk& out);
 	bool	gmidToMidi(MemChunk& in, MemChunk& out);
 };
 
