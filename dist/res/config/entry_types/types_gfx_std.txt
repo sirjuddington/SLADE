@@ -48,7 +48,7 @@ entry_types
 		format = img_pcx;
 		export_ext = "pcx";
 		editor = gfx;
-		extra = image;
+		extra = image, patch;
 		image_format = "image";
 	}
 
@@ -58,7 +58,7 @@ entry_types
 		format = img_tga;
 		export_ext = "tga";
 		editor = gfx;
-		extra = image;
+		extra = image, patch;
 		reliability = 225;
 		image_format = "image";
 	}
@@ -69,7 +69,7 @@ entry_types
 		format = img_tiff;
 		export_ext = "tif";
 		editor = gfx;
-		extra = image;
+		extra = image, patch;
 		image_format = "image";
 	}
 
