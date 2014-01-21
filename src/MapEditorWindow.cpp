@@ -621,7 +621,7 @@ WadArchive* MapEditorWindow::writeMap()
 	WadArchive* wad = new WadArchive();
 	wad->addNewEntry("MAP01");
 	// Handle fragglescript and similar content in the map header
-	if (mdesc_current.head->getSize())
+	if (mdesc_current.head->getSize() && !mdesc_current.archive)
 	{
 		wad->getEntry("MAP01")->importMemChunk(mdesc_current.head->getMCData());
 	}

@@ -183,10 +183,15 @@ void SLADEMap::restoreObjectById(unsigned id)
 	if (object->getObjType() == MOBJ_VERTEX)
 	{
 		// Add to map
-		MapVertex* current = vertices[object->index];
-		vertices[object->index] = (MapVertex*)object;
-		current->index = vertices.size();
-		vertices.push_back(current);
+		if (object->index < vertices.size())
+		{
+			MapVertex* current = vertices[object->index];
+			vertices[object->index] = (MapVertex*)object;
+			current->index = vertices.size();
+			vertices.push_back(current);
+		}
+		else
+			vertices.push_back((MapVertex*)object);
 
 		geometry_updated = theApp->runTimer();
 	}
@@ -204,10 +209,15 @@ void SLADEMap::restoreObjectById(unsigned id)
 		}
 
 		// Add to map
-		MapSide* current = sides[side->index];
-		sides[object->index] = side;
-		current->index = sides.size();
-		sides.push_back(current);
+		if (object->index < vertices.size())
+		{
+			MapSide* current = sides[side->index];
+			sides[object->index] = side;
+			current->index = sides.size();
+			sides.push_back(current);
+		}
+		else
+			sides.push_back(side);
 
 		geometry_updated = theApp->runTimer();
 	}
@@ -224,10 +234,15 @@ void SLADEMap::restoreObjectById(unsigned id)
 			line->vertex2->connected_lines.push_back(line);
 
 		// Add to map
-		MapLine* current = lines[line->index];
-		lines[line->index] = line;
-		current->index = lines.size();
-		lines.push_back(current);
+		if (object->index < vertices.size())
+		{
+			MapLine* current = lines[line->index];
+			lines[line->index] = line;
+			current->index = lines.size();
+			lines.push_back(current);
+		}
+		else
+			lines.push_back(line);
 
 		geometry_updated = theApp->runTimer();
 	}
@@ -236,22 +251,33 @@ void SLADEMap::restoreObjectById(unsigned id)
 	else if (object->getObjType() == MOBJ_SECTOR)
 	{
 		// Add to map
-		MapSector* current = sectors[object->index];
-		sectors[object->index] = (MapSector*)object;
-		current->index = sectors.size();
-		sectors.push_back(current);
+		if (object->index < vertices.size())
+		{
+			MapSector* current = sectors[object->index];
+			sectors[object->index] = (MapSector*)object;
+			current->index = sectors.size();
+			sectors.push_back(current);
+		}
+		else
+			sectors.push_back((MapSector*)object);
 	}
 
 	// Thing
 	else if (object->getObjType() == MOBJ_THING)
 	{
 		// Add to map
-		MapThing* current = things[object->index];
-		things[object->index] = (MapThing*)object;
-		current->index = things.size();
-		things.push_back(current);
+		if (object->index < vertices.size())
+		{
+			MapThing* current = things[object->index];
+			things[object->index] = (MapThing*)object;
+			current->index = things.size();
+			things.push_back(current);
+		}
+		else
+			things.push_back((MapThing*)object);
 	}
 
+	all_objects[id].in_map = true;
 	LOG_MESSAGE(4, "restore id %d index %d", object->id, object->index);
 }
 
@@ -264,12 +290,14 @@ void SLADEMap::removeObjectById(unsigned id)
 		LOG_MESSAGE(2, "removeObjectById: Invalid object id %d", id);
 		return;
 	}
+	unsigned oindex = object->getIndex();
 
 	// Vertex
 	if (object->getObjType() == MOBJ_VERTEX)
 	{
 		// Remove
-		vertices[object->getIndex()] = vertices.back();
+		vertices[oindex] = vertices.back();
+		vertices[oindex]->index = oindex;
 		vertices.pop_back();
 
 		geometry_updated = theApp->runTimer();
@@ -289,6 +317,7 @@ void SLADEMap::removeObjectById(unsigned id)
 
 		// Remove
 		sides[object->getIndex()] = sides.back();
+		sides[oindex]->index = oindex;
 		sides.pop_back();
 	}
 
@@ -305,6 +334,7 @@ void SLADEMap::removeObjectById(unsigned id)
 
 		// Remove
 		lines[object->getIndex()] = lines.back();
+		lines[oindex]->index = oindex;
 		lines.pop_back();
 
 		geometry_updated = theApp->runTimer();
@@ -315,6 +345,7 @@ void SLADEMap::removeObjectById(unsigned id)
 	{
 		// Remove
 		sectors[object->getIndex()] = sectors.back();
+		sectors[oindex]->index = oindex;
 		sectors.pop_back();
 	}
 
@@ -323,6 +354,7 @@ void SLADEMap::removeObjectById(unsigned id)
 	{
 		// Remove
 		things[object->getIndex()] = things.back();
+		things[oindex]->index = oindex;
 		things.pop_back();
 	}
 
