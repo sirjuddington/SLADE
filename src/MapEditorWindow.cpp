@@ -557,7 +557,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 
 		// Get new builder if one was selected
 		builder = NodeBuilders::getBuilder(nodebuilder_id);
-		string command = builder.command;
+		command = builder.command;
 
 		// Check again
 		if (!wxFileExists(builder.path))
@@ -737,18 +737,20 @@ bool MapEditorWindow::saveMapAs()
 		end = wad.addNewEntry("SECTORS");
 	}
 
-	// Update current map description
+	// Save map data
 	mdesc_current.head = head;
 	mdesc_current.archive = false;
 	mdesc_current.end = end;
-	//mdesc_current.format = theGameConfiguration->getMapFormat();
-
-	// Save map data
 	saveMap();
 
 	// Write wad to file
 	wad.save(info.filenames[0]);
-	theArchiveManager->openArchive(info.filenames[0], true, true);
+	Archive* archive = theArchiveManager->openArchive(info.filenames[0], true, true);
+
+	// Update current map description
+	mdesc_current.head = archive->getEntry(head->getName());
+	mdesc_current.archive = false;
+	mdesc_current.end = archive->getEntry(end->getName());
 
 	// Set window title
 	SetTitle(S_FMT("SLADE - %s of %s", mdesc_current.name, wad.getFilename(false)));

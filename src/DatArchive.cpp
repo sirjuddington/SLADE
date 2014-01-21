@@ -499,7 +499,7 @@ bool DatArchive::write(MemChunk& mc, bool update)
 		{
 			// This is a true name
 			previousname = name;
-			nameoffsets[l] = name_offset + name_size;
+			nameoffsets[l] = uint16_t(name_offset + name_size);
 			name_size += name.length() + 1;
 		}
 	}

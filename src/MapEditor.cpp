@@ -2055,8 +2055,8 @@ void MapEditor::createThing(double x, double y)
 	if (copy_thing)
 	{
 		// Copy properties from the last copied thing (except position)
-		double x = thing->xPos();
-		double y = thing->yPos();
+		//double x = thing->xPos();
+		//double y = thing->yPos();
 		thing->copy(copy_thing);
 		thing->setFloatProperty("x", x);
 		thing->setFloatProperty("y", y);

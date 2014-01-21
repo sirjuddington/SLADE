@@ -2592,6 +2592,14 @@ void MapCanvas::keyBinds2dView(string name)
 		editor->clearHilight();
 		SetCursor(wxCURSOR_SIZING);
 	}
+
+	// Increment grid
+	else if (name == "me2d_grid_inc")
+		editor->incrementGrid();
+
+	// Decrement grid
+	else if (name == "me2d_grid_dec")
+		editor->decrementGrid();
 }
 
 void MapCanvas::keyBinds2d(string name)

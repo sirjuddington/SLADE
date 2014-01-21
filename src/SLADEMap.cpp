@@ -3768,6 +3768,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 		// Change first vertex if needed
 		if (line->vertex1 == v2)
 		{
+			line->setModified();
 			line->vertex1 = v1;
 			line->length = -1;
 			v1->connectLine(line);
@@ -3776,6 +3777,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 		// Change second vertex if needed
 		if (line->vertex2 == v2)
 		{
+			line->setModified();
 			line->vertex2 = v1;
 			line->length = -1;
 			v1->connectLine(line);
@@ -3786,6 +3788,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	}
 
 	// Delete the vertex
+	LOG_MESSAGE(4, "Merging vertices %d and %d (removing %d)", vertex1, vertex2, vertex2);
 	removeMapObject(v2);
 	vertices[vertex2] = vertices.back();
 	vertices[vertex2]->index = vertex2;
@@ -3793,7 +3796,10 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 
 	// Delete any resulting zero-length lines
 	for (unsigned a = 0; a < zlines.size(); a++)
+	{
+		LOG_MESSAGE(4, "Removing zero-length line %d", zlines[a]->getIndex());
 		removeLine(zlines[a]);
+	}
 
 	geometry_updated = theApp->runTimer();
 }
@@ -4082,9 +4088,9 @@ bool SLADEMap::correctLineSectors(MapLine* line)
 
 bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 {
-	unsigned n_vertices = vertices.size();
+	unsigned n_vertices = nVertices();
 	unsigned n_lines = lines.size();
-	MapVertex* last_vertex = vertices.back();
+	MapVertex* last_vertex = this->vertices.back();
 	MapLine* last_line = lines.back();
 
 	// Merge vertices
@@ -4208,9 +4214,9 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 
 	// Check if anything was actually merged
 	bool merged = false;
-	if (vertices.size() != n_vertices || lines.size() != n_lines)
+	if (nVertices() != n_vertices || lines.size() != n_lines)
 		merged = true;
-	if (vertices.back() != last_vertex || lines.back() != last_line)
+	if (this->vertices.back() != last_vertex || lines.back() != last_line)
 		merged = true;
 	if (!remove_lines.empty())
 		merged = true;
@@ -4227,6 +4233,15 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			if (s1) setLineSector(connected_lines[a]->index, s1->index, true);
 			if (s2) setLineSector(connected_lines[a]->index, s2->index, false);
 		}
+	}
+
+	if (merged)
+	{
+		LOG_MESSAGE(4, "Architecture merged");
+	}
+	else
+	{
+		LOG_MESSAGE(4, "No Architecture merged");
 	}
 
 	return merged;

@@ -1161,7 +1161,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 
 			for (unsigned a = 0; a < things_arrows.size(); a++)
 			{
-				MapThing* thing = map->getThing(things_arrows[a]);
+				thing = map->getThing(things_arrows[a]);
 				if (arrow_colour)
 				{
 					ThingType* tt = theGameConfiguration->thingType(thing->getType());
@@ -1967,8 +1967,8 @@ void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
 		if (poly->hasPolygon())
 		{
 			map->getSector(selection[a])->getPolygon()->render();
-			for (unsigned a = 0; a < sides.size(); a++)
-				sides_selected.push_back(sides[a]);
+			for (unsigned s = 0; s < sides.size(); s++)
+				sides_selected.push_back(sides[s]);
 		}
 		else
 		{
@@ -2291,7 +2291,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 	bool point = setupThingOverlay();
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		MapThing* thing = map->getThing(things[a]);
+		thing = map->getThing(things[a]);
 		ThingType* tt = theGameConfiguration->thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
@@ -2367,7 +2367,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 	bool point = setupThingOverlay();
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		MapThing* thing = things[a];
+		thing = things[a];
 		ThingType* tt = theGameConfiguration->thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
@@ -2507,7 +2507,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 		bool point = setupThingOverlay();
 		for (unsigned a = 0; a < things.size(); a++)
 		{
-			MapThing* thing = things[a].map_thing;
+			thing = things[a].map_thing;
 			ThingType* tt = theGameConfiguration->thingType(thing->getType());
 			double radius = tt->getRadius();
 			if (tt->shrinkOnZoom()) radius = scaledRadius(radius);

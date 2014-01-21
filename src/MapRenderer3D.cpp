@@ -917,10 +917,10 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		sector->getLines(lines);
 		col1.set_gl(false);
 		glBegin(GL_LINES);
-		for (unsigned a = 0; a < lines.size(); a++)
+		for (unsigned l = 0; l < lines.size(); l++)
 		{
-			glVertex3d(lines[a]->x1(), lines[a]->y1(), 0);
-			glVertex3d(lines[a]->x2(), lines[a]->y2(), 0);
+			glVertex3d(lines[l]->x1(), lines[l]->y1(), 0);
+			glVertex3d(lines[l]->x2(), lines[l]->y2(), 0);
 		}
 		glEnd();
 
@@ -1600,12 +1600,9 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Check thing distance if needed
-		if (mdist > 0)
-		{
-			dist = MathStuff::distance(cam_position.x, cam_position.y, thing->xPos(), thing->yPos());
-			if (dist > mdist)
-				continue;
-		}
+		dist = MathStuff::distance(cam_position.x, cam_position.y, thing->xPos(), thing->yPos());
+		if (mdist > 0 && dist > mdist)
+			continue;
 
 		// Update thing if needed
 		if (things[a].updated_time < thing->modifiedTime() ||

@@ -503,9 +503,9 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 
 				// Add to category list if needed
 				bool exists = false;
-				for (unsigned b = 0; b < entry_categories.size(); b++)
+				for (unsigned c = 0; c < entry_categories.size(); c++)
 				{
-					if (S_CMPNOCASE(entry_categories[b], ntype->category))
+					if (S_CMPNOCASE(entry_categories[c], ntype->category))
 					{
 						exists = true;
 						break;

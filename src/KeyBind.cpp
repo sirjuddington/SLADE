@@ -451,6 +451,7 @@ void KeyBind::initBinds()
 	// Map Editor (map*)
 	group = "Map Editor General";
 	addBind("map_edit_accept", keypress_t("return"), "Accept edit", group);
+	addBind("map_edit_accept", keypress_t("num_enter"));
 	addBind("map_edit_cancel", keypress_t("escape"), "Cancel edit", group);
 	addBind("map_toggle_3d", keypress_t("Q"), "Toggle 3d mode", group);
 	addBind("map_screenshot", keypress_t("P", KPM_CTRL|KPM_SHIFT), "Take Screenshot", group);

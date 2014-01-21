@@ -496,10 +496,10 @@ void GameConfiguration::buildConfig(string filename, string& out)
 			Tokenizer tz;
 			tz.openString(line);
 			tz.getToken();	// Skip #include
-			string file = tz.getToken();
+			string fn = tz.getToken();
 
 			// Process the file
-			buildConfig(path + file, out);
+			buildConfig(path + fn, out);
 		}
 		else
 			out.Append(line + "\n");
