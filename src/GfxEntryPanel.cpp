@@ -178,18 +178,18 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	setupToolbar();
 
 	// Bind Events
-	slider_zoom->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &GfxEntryPanel::onZoomChanged, this);
-	spin_xoffset->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &GfxEntryPanel::onXOffsetChanged, this);
-	spin_yoffset->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &GfxEntryPanel::onYOffsetChanged, this);
-	spin_xoffset->Bind(wxEVT_COMMAND_TEXT_ENTER, &GfxEntryPanel::onTextXOffsetChanged, this);
-	spin_yoffset->Bind(wxEVT_COMMAND_TEXT_ENTER, &GfxEntryPanel::onTextYOffsetChanged, this);
-	choice_offset_type->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GfxEntryPanel::onOffsetTypeChanged, this);
-	cb_tile->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &GfxEntryPanel::onTileChanged, this);
-	cb_arc->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &GfxEntryPanel::onARCChanged, this);
+	slider_zoom->Bind(wxEVT_SLIDER, &GfxEntryPanel::onZoomChanged, this);
+	spin_xoffset->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onXOffsetChanged, this);
+	spin_yoffset->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onYOffsetChanged, this);
+	spin_xoffset->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onXOffsetChanged, this);
+	spin_yoffset->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onYOffsetChanged, this);
+	choice_offset_type->Bind(wxEVT_CHOICE, &GfxEntryPanel::onOffsetTypeChanged, this);
+	cb_tile->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onTileChanged, this);
+	cb_arc->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onARCChanged, this);
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas->GetId());
-	btn_nextimg->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxEntryPanel::onBtnNextImg, this);
-	btn_previmg->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxEntryPanel::onBtnPrevImg, this);
-	btn_auto_offset->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &GfxEntryPanel::onBtnAutoOffset, this);
+	btn_nextimg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnNextImg, this);
+	btn_previmg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnPrevImg, this);
+	btn_auto_offset->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
 
 	// Apply layout
 	Layout();
@@ -938,10 +938,10 @@ void GfxEntryPanel::onZoomChanged(wxCommandEvent& e)
 	gfx_canvas->Refresh();
 }
 
-/* GfxEntryPanel::onTextXOffsetChanged
- * Called when enter is pressed within the x offset text entry
+/* GfxEntryPanel::onXOffsetChanged
+ * Called when the X offset value is modified
  *******************************************************************/
-void GfxEntryPanel::onTextXOffsetChanged(wxCommandEvent& e)
+void GfxEntryPanel::onXOffsetChanged(wxCommandEvent& e)
 {
 	// Change the image x-offset
 	int offset = spin_xoffset->GetValue();
@@ -954,39 +954,13 @@ void GfxEntryPanel::onTextXOffsetChanged(wxCommandEvent& e)
 	gfx_canvas->Refresh();
 }
 
-void GfxEntryPanel::onXOffsetChanged(wxSpinEvent& e)
-{
-	// Change the image x-offset
-	int offset = e.GetPosition();
-	getImage()->setXOffset(offset);
-
-	// Update variables
-	setModified();
-
-	// Refresh canvas
-	gfx_canvas->Refresh();
-}
-
-/* GfxEntryPanel::onTextYOffsetChanged
- * Called when enter is pressed within the y offset text entry
+/* GfxEntryPanel::onYOffsetChanged
+ * Called when the Y offset value is modified
  *******************************************************************/
-void GfxEntryPanel::onTextYOffsetChanged(wxCommandEvent& e)
+void GfxEntryPanel::onYOffsetChanged(wxCommandEvent& e)
 {
 	// Change the image y-offset
 	int offset = spin_yoffset->GetValue();
-	getImage()->setYOffset(offset);
-
-	// Update variables
-	setModified();
-
-	// Refresh canvas
-	gfx_canvas->Refresh();
-}
-
-void GfxEntryPanel::onYOffsetChanged(wxSpinEvent& e)
-{
-	// Change image y-offset
-	int offset = e.GetPosition();
 	getImage()->setYOffset(offset);
 
 	// Update variables

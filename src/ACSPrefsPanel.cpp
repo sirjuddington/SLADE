@@ -89,9 +89,9 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	list_inc_paths->Append(wxSplit(path_acc_libs, ';'));
 
 	// Bind events
-	btn_browse_accpath->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ACSPrefsPanel::onBtnBrowseACCPath, this);
-	btn_incpath_add->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ACSPrefsPanel::onBtnAddIncPath, this);
-	btn_incpath_remove->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ACSPrefsPanel::onBtnRemoveIncPath, this);
+	btn_browse_accpath->Bind(wxEVT_BUTTON, &ACSPrefsPanel::onBtnBrowseACCPath, this);
+	btn_incpath_add->Bind(wxEVT_BUTTON, &ACSPrefsPanel::onBtnAddIncPath, this);
+	btn_incpath_remove->Bind(wxEVT_BUTTON, &ACSPrefsPanel::onBtnRemoveIncPath, this);
 }
 
 /* ACSPrefsPanel::~ACSPrefsPanel

@@ -103,7 +103,7 @@ public:
 		Layout();
 
 		// Bind events
-		cp_colour->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &PaletteColouriseDialog::onColourChanged, this);
+		cp_colour->Bind(wxEVT_COLOURPICKER_CHANGED, &PaletteColouriseDialog::onColourChanged, this);
 		pal_preview->Bind(wxEVT_LEFT_UP, &PaletteColouriseDialog::onPaletteLeftUp, this);
 
 		// Setup dialog size
@@ -211,8 +211,8 @@ public:
 		Layout();
 
 		// Bind events
-		cp_colour->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &PaletteTintDialog::onColourChanged, this);
-		slider_amount->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &PaletteTintDialog::onAmountChanged, this);
+		cp_colour->Bind(wxEVT_COLOURPICKER_CHANGED, &PaletteTintDialog::onColourChanged, this);
+		slider_amount->Bind(wxEVT_SLIDER, &PaletteTintDialog::onAmountChanged, this);
 		pal_preview->Bind(wxEVT_LEFT_UP, &PaletteTintDialog::onPaletteLeftUp, this);
 
 		// Setup dialog size
@@ -354,9 +354,9 @@ public:
 		Layout();
 
 		// Bind events
-		slider_hue->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &PaletteColourTweakDialog::onHueChanged, this);
-		slider_sat->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &PaletteColourTweakDialog::onSatChanged, this);
-		slider_lum->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &PaletteColourTweakDialog::onLumChanged, this);
+		slider_hue->Bind(wxEVT_SLIDER, &PaletteColourTweakDialog::onHueChanged, this);
+		slider_sat->Bind(wxEVT_SLIDER, &PaletteColourTweakDialog::onSatChanged, this);
+		slider_lum->Bind(wxEVT_SLIDER, &PaletteColourTweakDialog::onLumChanged, this);
 		pal_preview->Bind(wxEVT_LEFT_UP, &PaletteColourTweakDialog::onPaletteLeftUp, this);
 
 		// Setup dialog size

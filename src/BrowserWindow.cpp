@@ -198,11 +198,11 @@ BrowserWindow::BrowserWindow(wxWindow* parent) : wxDialog(parent, -1, "Browser",
 	choice_sort->SetSelection(0);
 
 	// Bind events
-	tree_items->Bind(wxEVT_COMMAND_TREELIST_SELECTION_CHANGED, &BrowserWindow::onTreeItemSelected, this);
-	choice_sort->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &BrowserWindow::onChoiceSortChanged, this);
+	tree_items->Bind(wxEVT_TREELIST_SELECTION_CHANGED, &BrowserWindow::onTreeItemSelected, this);
+	choice_sort->Bind(wxEVT_CHOICE, &BrowserWindow::onChoiceSortChanged, this);
 	canvas->Bind(wxEVT_LEFT_DCLICK, &BrowserWindow::onCanvasDClick, this);
-	text_filter->Bind(wxEVT_COMMAND_TEXT_UPDATED, &BrowserWindow::onTextFilterChanged, this);
-	slider_zoom->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &BrowserWindow::onZoomChanged, this);
+	text_filter->Bind(wxEVT_TEXT, &BrowserWindow::onTextFilterChanged, this);
+	slider_zoom->Bind(wxEVT_SLIDER, &BrowserWindow::onZoomChanged, this);
 	Bind(wxEVT_BROWSERCANVAS_SELECTION_CHANGED, &BrowserWindow::onCanvasSelectionChanged, this, canvas->GetId());
 
 	Layout();

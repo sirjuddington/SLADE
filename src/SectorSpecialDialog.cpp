@@ -67,7 +67,7 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Bind Events
-	lv_specials->Bind(wxEVT_COMMAND_LIST_ITEM_ACTIVATED, &SectorSpecialDialog::onSpecialsListViewItemActivated, this);
+	lv_specials->Bind(wxEVT_LIST_ITEM_ACTIVATED, &SectorSpecialDialog::onSpecialsListViewItemActivated, this);
 
 	SetInitialSize(wxSize(width, 400));
 	CenterOnParent();

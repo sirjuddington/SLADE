@@ -102,13 +102,13 @@ SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
 	Layout();
 
 	// Bind events
-	list_entries->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &SwitchesEntryPanel::onListSelect, this);
-	list_entries->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &SwitchesEntryPanel::onListRightClick, this);
-	rbtn_shareware->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &SwitchesEntryPanel::onTypeChanged, this);
-	rbtn_registered->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &SwitchesEntryPanel::onTypeChanged, this);
-	rbtn_commercial->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &SwitchesEntryPanel::onTypeChanged, this);
-	text_offname->Bind(wxEVT_COMMAND_TEXT_UPDATED, &SwitchesEntryPanel::onOffNameChanged, this);
-	text_onname->Bind(wxEVT_COMMAND_TEXT_UPDATED, &SwitchesEntryPanel::onOnNameChanged, this);
+	list_entries->Bind(wxEVT_LIST_ITEM_SELECTED, &SwitchesEntryPanel::onListSelect, this);
+	list_entries->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &SwitchesEntryPanel::onListRightClick, this);
+	rbtn_shareware->Bind(wxEVT_RADIOBUTTON, &SwitchesEntryPanel::onTypeChanged, this);
+	rbtn_registered->Bind(wxEVT_RADIOBUTTON, &SwitchesEntryPanel::onTypeChanged, this);
+	rbtn_commercial->Bind(wxEVT_RADIOBUTTON, &SwitchesEntryPanel::onTypeChanged, this);
+	text_offname->Bind(wxEVT_TEXT, &SwitchesEntryPanel::onOffNameChanged, this);
+	text_onname->Bind(wxEVT_TEXT, &SwitchesEntryPanel::onOnNameChanged, this);
 }
 
 /* SwitchesEntryPanel::~SwitchesEntryPanel

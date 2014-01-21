@@ -88,9 +88,9 @@ PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Bind events
-	btn_browse_pngoutpath->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PNGPrefsPanel::onBtnBrowsePNGoutPath, this);
-	btn_browse_pngcrushpath->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PNGPrefsPanel::onBtnBrowsePNGCrushPath, this);
-	btn_browse_defloptpath->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PNGPrefsPanel::onBtnBrowseDeflOptPath, this);
+	btn_browse_pngoutpath->Bind(wxEVT_BUTTON, &PNGPrefsPanel::onBtnBrowsePNGoutPath, this);
+	btn_browse_pngcrushpath->Bind(wxEVT_BUTTON, &PNGPrefsPanel::onBtnBrowsePNGCrushPath, this);
+	btn_browse_defloptpath->Bind(wxEVT_BUTTON, &PNGPrefsPanel::onBtnBrowseDeflOptPath, this);
 }
 
 /* PNGPrefsPanel::~PNGPrefsPanel

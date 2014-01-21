@@ -228,11 +228,11 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table) : wx
 	patch_canvas->allowScroll(true);
 
 	// Bind events
-	btn_add_patch->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PatchTablePanel::onBtnAddPatch, this);
-	btn_patch_from_file->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PatchTablePanel::onBtnPatchFromFile, this);
-	btn_remove_patch->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PatchTablePanel::onBtnRemovePatch, this);
-	btn_change_patch->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PatchTablePanel::onBtnChangePatch, this);
-	list_patches->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
+	btn_add_patch->Bind(wxEVT_BUTTON, &PatchTablePanel::onBtnAddPatch, this);
+	btn_patch_from_file->Bind(wxEVT_BUTTON, &PatchTablePanel::onBtnPatchFromFile, this);
+	btn_remove_patch->Bind(wxEVT_BUTTON, &PatchTablePanel::onBtnRemovePatch, this);
+	btn_change_patch->Bind(wxEVT_BUTTON, &PatchTablePanel::onBtnChangePatch, this);
+	list_patches->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
 
 	// Palette chooser
 	listenTo(theMainWindow->getPaletteChooser());

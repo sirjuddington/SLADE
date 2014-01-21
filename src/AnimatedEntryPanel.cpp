@@ -117,15 +117,15 @@ AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 	Layout();
 
 	// Bind events
-	list_entries->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &AnimatedEntryPanel::onListSelect, this);
-	list_entries->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &AnimatedEntryPanel::onListRightClick, this);
-	rbtn_flat->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &AnimatedEntryPanel::onTypeChanged, this);
-	rbtn_texture->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &AnimatedEntryPanel::onTypeChanged, this);
-	cbox_decals->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &AnimatedEntryPanel::onDecalsChanged, this);
-	cbox_swirl->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &AnimatedEntryPanel::onSwirlChanged, this);
-	text_firstname->Bind(wxEVT_COMMAND_TEXT_UPDATED, &AnimatedEntryPanel::onFirstNameChanged, this);
-	text_lastname->Bind(wxEVT_COMMAND_TEXT_UPDATED, &AnimatedEntryPanel::onLastNameChanged, this);
-	text_speed->Bind(wxEVT_COMMAND_TEXT_UPDATED, &AnimatedEntryPanel::onSpeedChanged, this);
+	list_entries->Bind(wxEVT_LIST_ITEM_SELECTED, &AnimatedEntryPanel::onListSelect, this);
+	list_entries->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &AnimatedEntryPanel::onListRightClick, this);
+	rbtn_flat->Bind(wxEVT_RADIOBUTTON, &AnimatedEntryPanel::onTypeChanged, this);
+	rbtn_texture->Bind(wxEVT_RADIOBUTTON, &AnimatedEntryPanel::onTypeChanged, this);
+	cbox_decals->Bind(wxEVT_CHECKBOX, &AnimatedEntryPanel::onDecalsChanged, this);
+	cbox_swirl->Bind(wxEVT_CHECKBOX, &AnimatedEntryPanel::onSwirlChanged, this);
+	text_firstname->Bind(wxEVT_TEXT, &AnimatedEntryPanel::onFirstNameChanged, this);
+	text_lastname->Bind(wxEVT_TEXT, &AnimatedEntryPanel::onLastNameChanged, this);
+	text_speed->Bind(wxEVT_TEXT, &AnimatedEntryPanel::onSpeedChanged, this);
 }
 
 /* AnimatedEntryPanel::~AnimatedEntryPanel

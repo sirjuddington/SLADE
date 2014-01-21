@@ -109,7 +109,7 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	hbox->Add(choice_browser_bg, 1, wxEXPAND);
 
 	// Bind events
-	choice_presets->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &GraphicsPrefsPanel::onChoicePresetSelected, this);
+	choice_presets->Bind(wxEVT_CHOICE, &GraphicsPrefsPanel::onChoicePresetSelected, this);
 }
 
 /* GraphicsPrefsPanel::~GraphicsPrefsPanel

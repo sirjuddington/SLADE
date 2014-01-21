@@ -355,7 +355,7 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 
 bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		int special = -1;
 		ActionSpecialDialog dlg(window);
@@ -472,7 +472,7 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 
 bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		// Get type to select initially (if any)
 		int init_type = -1;
@@ -829,7 +829,7 @@ void MOPGTextureProperty::applyValue()
 
 bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		// Get current texture (if any)
 		string tex_current = "";
@@ -975,7 +975,7 @@ void MOPGTagProperty::applyValue()
 
 bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		vector<MapObject*>& objects = parent->getObjects();
 		if (objects.size() == 0)
@@ -1061,7 +1061,7 @@ void MOPGSectorSpecialProperty::applyValue()
 
 bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
-	if (e.GetEventType() == wxEVT_COMMAND_BUTTON_CLICKED)
+	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		SectorSpecialDialog dlg(theMapEditor);
 		int map_format = theMapEditor->currentMapDesc().format;

@@ -361,10 +361,10 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Bind events
 	grid_hex->Bind(wxEVT_GRID_SELECT_CELL, &HexEditorPanel::onCellSelected, this);
-	btn_go_to_offset->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &HexEditorPanel::onBtnGoToOffset, this);
-	rb_view_hex->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &HexEditorPanel::onRBViewType, this);
-	rb_view_dec->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &HexEditorPanel::onRBViewType, this);
-	rb_view_ascii->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &HexEditorPanel::onRBViewType, this);
+	btn_go_to_offset->Bind(wxEVT_BUTTON, &HexEditorPanel::onBtnGoToOffset, this);
+	rb_view_hex->Bind(wxEVT_RADIOBUTTON, &HexEditorPanel::onRBViewType, this);
+	rb_view_dec->Bind(wxEVT_RADIOBUTTON, &HexEditorPanel::onRBViewType, this);
+	rb_view_ascii->Bind(wxEVT_RADIOBUTTON, &HexEditorPanel::onRBViewType, this);
 
 	SetInitialSize(wxDefaultSize);
 	Layout();

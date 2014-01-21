@@ -58,7 +58,7 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	hbox->Add(cb_render_dist_adaptive, 0, wxEXPAND|wxRIGHT, 10);
 
 	hbox->Add(new wxStaticText(this, -1, "Target framerate:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	spin_adaptive_fps = new wxSpinCtrl(this, -1, "30", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10, 100, 30);
+	spin_adaptive_fps = new wxSpinCtrl(this, -1, "30", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, 10, 100, 30);
 	hbox->Add(spin_adaptive_fps, 0, wxEXPAND);
 
 	fsizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND|wxTOP|wxBOTTOM, 4);
@@ -69,10 +69,10 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 
 	// Bind events
-	slider_max_render_dist->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &Map3DPrefsPanel::onSliderMaxRenderDistChanged, this);
-	slider_max_thing_dist->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &Map3DPrefsPanel::onSliderMaxThingDistChanged, this);
-	cb_max_thing_dist_lock->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &Map3DPrefsPanel::onCBLockThingDistChanged, this);
-	cb_distance_unlimited->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &Map3DPrefsPanel::onCBDistUnlimitedChanged, this);
+	slider_max_render_dist->Bind(wxEVT_SLIDER, &Map3DPrefsPanel::onSliderMaxRenderDistChanged, this);
+	slider_max_thing_dist->Bind(wxEVT_SLIDER, &Map3DPrefsPanel::onSliderMaxThingDistChanged, this);
+	cb_max_thing_dist_lock->Bind(wxEVT_CHECKBOX, &Map3DPrefsPanel::onCBLockThingDistChanged, this);
+	cb_distance_unlimited->Bind(wxEVT_CHECKBOX, &Map3DPrefsPanel::onCBDistUnlimitedChanged, this);
 }
 
 Map3DPrefsPanel::~Map3DPrefsPanel()

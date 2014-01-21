@@ -119,7 +119,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "S
 	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL|wxAPPLY), 0, wxEXPAND|wxALL, 10);
 
 	// Bind events
-	Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PreferencesDialog::onButtonClicked, this);
+	Bind(wxEVT_BUTTON, &PreferencesDialog::onButtonClicked, this);
 
 	// Setup layout
 	SetInitialSize(wxSize(-1, -1));
@@ -165,7 +165,7 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 	sizer->Add(btn_bra_open, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Bind events
-	btn_bra_open->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &PreferencesDialog::onBtnBRAOpenClicked, this);
+	btn_bra_open->Bind(wxEVT_BUTTON, &PreferencesDialog::onBtnBRAOpenClicked, this);
 
 	return panel;
 }

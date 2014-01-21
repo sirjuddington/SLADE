@@ -25,8 +25,8 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	}
 
 	// Bind events
-	Bind(wxEVT_COMMAND_DATAVIEW_ITEM_START_EDITING, &ActionSpecialTreeView::onItemEdit, this);
-	Bind(wxEVT_COMMAND_DATAVIEW_ITEM_ACTIVATED, &ActionSpecialTreeView::onItemActivated, this);
+	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, &ActionSpecialTreeView::onItemEdit, this);
+	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ActionSpecialTreeView::onItemActivated, this);
 
 	Expand(root);
 }

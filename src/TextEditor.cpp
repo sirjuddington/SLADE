@@ -204,11 +204,11 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	Bind(wxEVT_STC_DWELLEND, &TextEditor::onMouseDwellEnd, this);
 	Bind(wxEVT_LEFT_DOWN, &TextEditor::onMouseDown, this);
 	Bind(wxEVT_KILL_FOCUS, &TextEditor::onFocusLoss, this);
-	dlg_fr->getBtnFindNext()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextEditor::onFRDBtnFindNext, this);
-	dlg_fr->getBtnReplace()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextEditor::onFRDBtnReplace, this);
-	dlg_fr->getBtnReplaceAll()->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TextEditor::onFRDBtnReplaceAll, this);
-	dlg_fr->getTextFind()->Bind(wxEVT_COMMAND_TEXT_ENTER, &TextEditor::onFRDBtnFindNext, this);
-	dlg_fr->getTextReplace()->Bind(wxEVT_COMMAND_TEXT_ENTER, &TextEditor::onFRDBtnReplace, this);
+	dlg_fr->getBtnFindNext()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
+	dlg_fr->getBtnReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
+	dlg_fr->getBtnReplaceAll()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplaceAll, this);
+	dlg_fr->getTextFind()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
+	dlg_fr->getTextReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
 }
 
 /* TextEditor::~TextEditor

@@ -43,8 +43,8 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-CVAR(Int, map_image_width,  800, CVAR_SAVE)
-CVAR(Int, map_image_height, 600, CVAR_SAVE)
+CVAR(Int, map_image_width,  -5, CVAR_SAVE)
+CVAR(Int, map_image_height, -5, CVAR_SAVE)
 
 
 /*******************************************************************

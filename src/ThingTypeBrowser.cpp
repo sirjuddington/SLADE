@@ -79,7 +79,7 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 
 
 	// Bind events
-	cb_view_tiles->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ThingTypeBrowser::onViewTilesClicked, this);
+	cb_view_tiles->Bind(wxEVT_CHECKBOX, &ThingTypeBrowser::onViewTilesClicked, this);
 
 	Layout();
 }

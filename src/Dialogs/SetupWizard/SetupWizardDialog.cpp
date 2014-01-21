@@ -37,8 +37,8 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) : wxDialog(parent, -1, "F
 	showPage(0);
 
 	// Bind events
-	btn_next->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SetupWizardDialog::onBtnNext, this);
-	btn_prev->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SetupWizardDialog::onBtnPrev, this);
+	btn_next->Bind(wxEVT_BUTTON, &SetupWizardDialog::onBtnNext, this);
+	btn_prev->Bind(wxEVT_BUTTON, &SetupWizardDialog::onBtnPrev, this);
 }
 
 SetupWizardDialog::~SetupWizardDialog()

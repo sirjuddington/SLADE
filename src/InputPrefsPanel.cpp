@@ -29,7 +29,7 @@ InputKeyCtrl::InputKeyCtrl(wxWindow* parent, keypress_t init)
 	Bind(wxEVT_CHAR, &InputKeyCtrl::onKeyDown, this);
 	Bind(wxEVT_MIDDLE_DOWN, &InputKeyCtrl::onMouseDown, this);
 	Bind(wxEVT_MOUSEWHEEL, &InputKeyCtrl::onMouseDown, this);
-	Bind(wxEVT_COMMAND_TEXT_ENTER, &InputKeyCtrl::onEnter, this);
+	Bind(wxEVT_TEXT_ENTER, &InputKeyCtrl::onEnter, this);
 }
 
 void InputKeyCtrl::onKeyDown(wxKeyEvent& e)
@@ -111,13 +111,13 @@ InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Bind events
 	Bind(wxEVT_SIZE, &InputPrefsPanel::onSize, this);
-	list_binds->Bind(wxEVT_COMMAND_TREELIST_SELECTION_CHANGED, &InputPrefsPanel::onListSelectionChanged, this);
-	list_binds->Bind(wxEVT_COMMAND_TREELIST_ITEM_ACTIVATED, &InputPrefsPanel::onListItemActivated, this);
+	list_binds->Bind(wxEVT_TREELIST_SELECTION_CHANGED, &InputPrefsPanel::onListSelectionChanged, this);
+	list_binds->Bind(wxEVT_TREELIST_ITEM_ACTIVATED, &InputPrefsPanel::onListItemActivated, this);
 	//list_binds->Bind(wxEVT_KEY_DOWN, &InputPrefsPanel::onListKeyDown, this);
-	btn_change->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &InputPrefsPanel::onBtnChangeKey, this);
-	btn_add->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &InputPrefsPanel::onBtnAddKey, this);
-	btn_remove->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &InputPrefsPanel::onBtnRemoveKey, this);
-	btn_defaults->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &InputPrefsPanel::onBtnDefaults, this);
+	btn_change->Bind(wxEVT_BUTTON, &InputPrefsPanel::onBtnChangeKey, this);
+	btn_add->Bind(wxEVT_BUTTON, &InputPrefsPanel::onBtnAddKey, this);
+	btn_remove->Bind(wxEVT_BUTTON, &InputPrefsPanel::onBtnRemoveKey, this);
+	btn_defaults->Bind(wxEVT_BUTTON, &InputPrefsPanel::onBtnDefaults, this);
 
 	Layout();
 	initBindsList();

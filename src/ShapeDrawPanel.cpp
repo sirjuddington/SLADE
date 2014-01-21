@@ -34,7 +34,7 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1)
 	panel_sides = new wxPanel(this, -1);
 	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
 	panel_sides->SetSizer(hbox2);
-	spin_sides = new wxSpinCtrl(panel_sides, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER|wxALIGN_LEFT, 12, 1000);
+	spin_sides = new wxSpinCtrl(panel_sides, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_LEFT|wxTE_PROCESS_ENTER, 12, 1000);
 	hbox2->Add(new wxStaticText(panel_sides, -1, "Sides:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	hbox2->Add(spin_sides, 1, wxEXPAND);
 
@@ -52,10 +52,11 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1)
 	showShapeOptions(shapedraw_shape);
 
 	// Bind events
-	choice_shape->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ShapeDrawPanel::onShapeChanged, this);
-	cb_centered->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ShapeDrawPanel::onCenteredChecked, this);
-	cb_lockratio->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ShapeDrawPanel::onLockRatioChecked, this);
-	spin_sides->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &ShapeDrawPanel::onSidesChanged, this);
+	choice_shape->Bind(wxEVT_CHOICE, &ShapeDrawPanel::onShapeChanged, this);
+	cb_centered->Bind(wxEVT_CHECKBOX, &ShapeDrawPanel::onCenteredChecked, this);
+	cb_lockratio->Bind(wxEVT_CHECKBOX, &ShapeDrawPanel::onLockRatioChecked, this);
+	spin_sides->Bind(wxEVT_SPINCTRL, &ShapeDrawPanel::onSidesChanged, this);
+	spin_sides->Bind(wxEVT_TEXT_ENTER, &ShapeDrawPanel::onSidesChanged, this);
 }
 
 ShapeDrawPanel::~ShapeDrawPanel()
@@ -96,7 +97,7 @@ void ShapeDrawPanel::onLockRatioChecked(wxCommandEvent& e)
 	shapedraw_lockratio = cb_lockratio->GetValue();
 }
 
-void ShapeDrawPanel::onSidesChanged(wxSpinEvent& e)
+void ShapeDrawPanel::onSidesChanged(wxCommandEvent& e)
 {
 	shapedraw_sides = spin_sides->GetValue();
 }

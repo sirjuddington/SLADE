@@ -85,15 +85,15 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(text_tex_name, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
 
 	// Size
-	spin_tex_width = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0, SHRT_MAX);
-	spin_tex_height = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0, SHRT_MAX);
+	spin_tex_width = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, SHRT_MAX);
+	spin_tex_height = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Size:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_width, wxGBPosition(1, 1), wxDefaultSpan);
 	gb_sizer->Add(spin_tex_height, wxGBPosition(1, 2), wxDefaultSpan);
 
 	// Scale
-	spin_tex_scalex = new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0.1, 100, 1, 0.1);
-	spin_tex_scaley = new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0.1, 100, 1, 0.1);
+	spin_tex_scalex = new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0.1, 100, 1, 0.1);
+	spin_tex_scaley = new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0.1, 100, 1, 0.1);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_scalex, wxGBPosition(2, 1), wxDefaultSpan);
 	gb_sizer->Add(spin_tex_scaley, wxGBPosition(2, 2), wxDefaultSpan);
@@ -109,8 +109,8 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	gb_sizer->Add(choice_type, wxGBPosition(0, 4), wxGBSpan(1, 2), wxEXPAND);
 
 	// Offsets
-	spin_tex_offsetx = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, INT_MIN, INT_MAX);
-	spin_tex_offsety = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, INT_MIN, INT_MAX);
+	spin_tex_offsetx = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, INT_MIN, INT_MAX);
+	spin_tex_offsety = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, INT_MIN, INT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Offsets:"), wxGBPosition(1, 3), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tex_offsetx, wxGBPosition(1, 4), wxDefaultSpan);
 	gb_sizer->Add(spin_tex_offsety, wxGBPosition(1, 5), wxDefaultSpan);
@@ -127,15 +127,19 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 
 
 	// Bind events
-	spin_tex_scalex->Bind(wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, &ZTextureEditorPanel::onTexScaleXChanged, this);
-	spin_tex_scaley->Bind(wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, &ZTextureEditorPanel::onTexScaleYChanged, this);
-	spin_tex_offsetx->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &ZTextureEditorPanel::onTexOffsetXChanged, this);
-	spin_tex_offsety->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &ZTextureEditorPanel::onTexOffsetYChanged, this);
-	choice_type->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ZTextureEditorPanel::onTexTypeChanged, this);
-	cb_optional->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ZTextureEditorPanel::onTexOptionalChanged, this);
-	cb_worldpanning->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ZTextureEditorPanel::onTexWorldPanningChanged, this);
-	cb_nodecals->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ZTextureEditorPanel::onTexNoDecalsChanged, this);
-	cb_nulltexture->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ZTextureEditorPanel::onTexNullTextureChanged, this);
+	spin_tex_scalex->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onTexScaleXChanged, this);
+	spin_tex_scaley->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onTexScaleYChanged, this);
+	spin_tex_scalex->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTexScaleXChanged, this);
+	spin_tex_scaley->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTexScaleYChanged, this);
+	spin_tex_offsetx->Bind(wxEVT_SPINCTRL, &ZTextureEditorPanel::onTexOffsetXChanged, this);
+	spin_tex_offsety->Bind(wxEVT_SPINCTRL, &ZTextureEditorPanel::onTexOffsetYChanged, this);
+	spin_tex_offsetx->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTexOffsetXChanged, this);
+	spin_tex_offsety->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTexOffsetYChanged, this);
+	choice_type->Bind(wxEVT_CHOICE, &ZTextureEditorPanel::onTexTypeChanged, this);
+	cb_optional->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onTexOptionalChanged, this);
+	cb_worldpanning->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onTexWorldPanningChanged, this);
+	cb_nodecals->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onTexNoDecalsChanged, this);
+	cb_nulltexture->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onTexNullTextureChanged, this);
 
 
 
@@ -146,8 +150,8 @@ wxPanel* ZTextureEditorPanel::createTextureControls(wxWindow* parent)
 	choice_viewtype->Show(true);
 	label_viewtype->Show(true);
 	// Bind events
-	cb_blend_rgba->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ZTextureEditorPanel::onCBBlendRGBAChanged, this);
-	choice_viewtype->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ZTextureEditorPanel::onChoiceViewTypeSelected, this);
+	cb_blend_rgba->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onCBBlendRGBAChanged, this);
+	choice_viewtype->Bind(wxEVT_CHOICE, &ZTextureEditorPanel::onChoiceViewTypeSelected, this);
 
 
 	return panel;
@@ -260,12 +264,12 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	framesizer->Add(gb_sizer, 1, wxEXPAND|wxALL, 4);
 
 	// X Position
-	spin_patch_left = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, SHRT_MIN, SHRT_MAX);
+	spin_patch_left = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, SHRT_MIN, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "X Position:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_left, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
 	// Y Position
-	spin_patch_top = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, SHRT_MIN, SHRT_MAX);
+	spin_patch_top = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, SHRT_MIN, SHRT_MAX);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Y Position:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_patch_top, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
@@ -289,7 +293,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(choice_rotation, wxGBPosition(4, 1), wxDefaultSpan, wxEXPAND);
 
 	// Alpha
-	spin_alpha = new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0, 1, 1, 0.1);
+	spin_alpha = new wxSpinCtrlDouble(panel, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, 1, 1, 0.1);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Alpha:"), wxGBPosition(5, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_alpha, wxGBPosition(5, 1), wxDefaultSpan, wxEXPAND);
 
@@ -327,7 +331,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(cp_blend_col, wxGBPosition(3, 1), wxDefaultSpan, wxALIGN_RIGHT);
 
 	// Tint amount
-	spin_tint_amount = new wxSpinCtrlDouble(panel, 01, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT, 0, 1, 0, 0.1);
+	spin_tint_amount = new wxSpinCtrlDouble(panel, 01, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, 1, 0, 0.1);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Amount:"), wxGBPosition(4, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(spin_tint_amount, wxGBPosition(4, 1), wxDefaultSpan, wxEXPAND);
 
@@ -350,20 +354,22 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 
 
 	// Bind events
-	cb_flipx->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ZTextureEditorPanel::onPatchFlipXChanged, this);
-	cb_flipy->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ZTextureEditorPanel::onPatchFlipYChanged, this);
-	cb_useofs->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &ZTextureEditorPanel::onPatchUseOfsChanged, this);
-	choice_rotation->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ZTextureEditorPanel::onPatchRotationChanged, this);
-	spin_alpha->Bind(wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, &ZTextureEditorPanel::onPatchAlphaChanged, this);
-	choice_style->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &ZTextureEditorPanel::onPatchAlphaStyleChanged, this);
-	rb_pc_normal->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &ZTextureEditorPanel::onPCNormalSelected, this);
-	rb_pc_blend->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &ZTextureEditorPanel::onPCBlendSelected, this);
-	rb_pc_tint->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &ZTextureEditorPanel::onPCTintSelected, this);
-	rb_pc_translation->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &ZTextureEditorPanel::onPCTranslationSelected, this);
-	cp_blend_col->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &ZTextureEditorPanel::onPatchColourChanged, this);
-	spin_tint_amount->Bind(wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, &ZTextureEditorPanel::onPatchTintAmountChanged, this);
-	btn_edit_translation->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &ZTextureEditorPanel::onBtnEditTranslation, this);
-	text_translation->Bind(wxEVT_COMMAND_TEXT_ENTER, &ZTextureEditorPanel::onTextTranslationEnter, this);
+	cb_flipx->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onPatchFlipXChanged, this);
+	cb_flipy->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onPatchFlipYChanged, this);
+	cb_useofs->Bind(wxEVT_CHECKBOX, &ZTextureEditorPanel::onPatchUseOfsChanged, this);
+	choice_rotation->Bind(wxEVT_CHOICE, &ZTextureEditorPanel::onPatchRotationChanged, this);
+	spin_alpha->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onPatchAlphaChanged, this);
+	spin_alpha->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onPatchAlphaChanged, this);
+	choice_style->Bind(wxEVT_CHOICE, &ZTextureEditorPanel::onPatchAlphaStyleChanged, this);
+	rb_pc_normal->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCNormalSelected, this);
+	rb_pc_blend->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCBlendSelected, this);
+	rb_pc_tint->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCTintSelected, this);
+	rb_pc_translation->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCTranslationSelected, this);
+	cp_blend_col->Bind(wxEVT_COLOURPICKER_CHANGED, &ZTextureEditorPanel::onPatchColourChanged, this);
+	spin_tint_amount->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onPatchTintAmountChanged, this);
+	spin_tint_amount->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onPatchTintAmountChanged, this);
+	btn_edit_translation->Bind(wxEVT_BUTTON, &ZTextureEditorPanel::onBtnEditTranslation, this);
+	text_translation->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onTextTranslationEnter, this);
 
 	return panel;
 }
@@ -574,7 +580,7 @@ void ZTextureEditorPanel::onChoiceViewTypeSelected(wxCommandEvent& e)
 /* ZTextureEditorPanel::onTexScaleXChanged
  * Called when the texture x scale spin control is changed
  *******************************************************************/
-void ZTextureEditorPanel::onTexScaleXChanged(wxSpinDoubleEvent& e)
+void ZTextureEditorPanel::onTexScaleXChanged(wxCommandEvent& e)
 {
 	// Set texture's x scale
 	if (tex_current)
@@ -590,7 +596,7 @@ void ZTextureEditorPanel::onTexScaleXChanged(wxSpinDoubleEvent& e)
 /* ZTextureEditorPanel::onTexScaleYChanged
  * Called when the texture y scale spin control is changed
  *******************************************************************/
-void ZTextureEditorPanel::onTexScaleYChanged(wxSpinDoubleEvent& e)
+void ZTextureEditorPanel::onTexScaleYChanged(wxCommandEvent& e)
 {
 	// Set texture's y scale
 	if (tex_current)
@@ -606,7 +612,7 @@ void ZTextureEditorPanel::onTexScaleYChanged(wxSpinDoubleEvent& e)
 /* ZTextureEditorPanel::onTexOffsetXChanged
  * Called when the texture x offset spin control is changed
  *******************************************************************/
-void ZTextureEditorPanel::onTexOffsetXChanged(wxSpinEvent& e)
+void ZTextureEditorPanel::onTexOffsetXChanged(wxCommandEvent& e)
 {
 	// Set texture's x offset
 	if (tex_current)
@@ -621,7 +627,7 @@ void ZTextureEditorPanel::onTexOffsetXChanged(wxSpinEvent& e)
 /* ZTextureEditorPanel::onTexOffsetYChanged
  * Called when the texture y offset spin control is changed
  *******************************************************************/
-void ZTextureEditorPanel::onTexOffsetYChanged(wxSpinEvent& e)
+void ZTextureEditorPanel::onTexOffsetYChanged(wxCommandEvent& e)
 {
 	// Set texture's y offset
 	if (tex_current)
@@ -794,7 +800,7 @@ void ZTextureEditorPanel::onPatchRotationChanged(wxCommandEvent& e)
 /* ZTextureEditorPanel::onPatchAlphaChanged
  * Called when the patch alpha spin control is changed
  *******************************************************************/
-void ZTextureEditorPanel::onPatchAlphaChanged(wxSpinDoubleEvent& e)
+void ZTextureEditorPanel::onPatchAlphaChanged(wxCommandEvent& e)
 {
 	// Check texture is open
 	if (!tex_current)
@@ -968,7 +974,7 @@ void ZTextureEditorPanel::onPatchColourChanged(wxColourPickerEvent& e)
 /* ZTextureEditorPanel::onPatchTintAmountChanged
  * Called when the patch tint amount spin control is changed
  *******************************************************************/
-void ZTextureEditorPanel::onPatchTintAmountChanged(wxSpinDoubleEvent& e)
+void ZTextureEditorPanel::onPatchTintAmountChanged(wxCommandEvent& e)
 {
 	// Check texture is open
 	if (!tex_current)

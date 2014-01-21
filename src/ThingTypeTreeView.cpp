@@ -20,8 +20,8 @@ ThingTypeTreeView::ThingTypeTreeView(wxWindow* parent) : wxDataViewTreeCtrl(pare
 	}
 
 	// Bind events
-	Bind(wxEVT_COMMAND_DATAVIEW_ITEM_START_EDITING, &ThingTypeTreeView::onItemEdit, this);
-	Bind(wxEVT_COMMAND_DATAVIEW_ITEM_ACTIVATED, &ThingTypeTreeView::onItemActivated, this);
+	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, &ThingTypeTreeView::onItemEdit, this);
+	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ThingTypeTreeView::onItemActivated, this);
 
 	Expand(root);
 }

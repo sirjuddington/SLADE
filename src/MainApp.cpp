@@ -757,7 +757,7 @@ bool MainApp::OnInit()
 	}
 
 	// Bind events
-	Bind(wxEVT_COMMAND_MENU_SELECTED, &MainApp::onMenu, this);
+	Bind(wxEVT_MENU, &MainApp::onMenu, this);
 
 	return true;
 }

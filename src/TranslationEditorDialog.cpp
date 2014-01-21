@@ -313,23 +313,23 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 
 	// Bind events
 	Bind(wxEVT_SIZE, &TranslationEditorDialog::onSize, this);
-	list_translations->Bind(wxEVT_COMMAND_LISTBOX_SELECTED, &TranslationEditorDialog::onTranslationListItemSelected, this);
-	rb_type_palette->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &TranslationEditorDialog::onRBPaletteSelected, this);
-	rb_type_colour->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &TranslationEditorDialog::onRBColourSelected, this);
-	rb_type_desaturate->Bind(wxEVT_COMMAND_RADIOBUTTON_SELECTED, &TranslationEditorDialog::onRBDesaturateSelected, this);
-	cp_range_begin->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &TranslationEditorDialog::onBeginColourChanged, this);
-	cp_range_end->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &TranslationEditorDialog::onEndColourChanged, this);
+	list_translations->Bind(wxEVT_LISTBOX, &TranslationEditorDialog::onTranslationListItemSelected, this);
+	rb_type_palette->Bind(wxEVT_RADIOBUTTON, &TranslationEditorDialog::onRBPaletteSelected, this);
+	rb_type_colour->Bind(wxEVT_RADIOBUTTON, &TranslationEditorDialog::onRBColourSelected, this);
+	rb_type_desaturate->Bind(wxEVT_RADIOBUTTON, &TranslationEditorDialog::onRBDesaturateSelected, this);
+	cp_range_begin->Bind(wxEVT_COLOURPICKER_CHANGED, &TranslationEditorDialog::onBeginColourChanged, this);
+	cp_range_end->Bind(wxEVT_COLOURPICKER_CHANGED, &TranslationEditorDialog::onEndColourChanged, this);
 	pal_canvas_original->Bind(wxEVT_LEFT_UP, &TranslationEditorDialog::onPalOriginLeftUp, this);
 	pal_canvas_target->Bind(wxEVT_LEFT_UP, &TranslationEditorDialog::onPalTargetLeftUp, this);
-	btn_add->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TranslationEditorDialog::onBtnAdd, this);
-	btn_remove->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TranslationEditorDialog::onBtnRemove, this);
-	btn_up->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TranslationEditorDialog::onBtnUp, this);
-	btn_down->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TranslationEditorDialog::onBtnDown, this);
-	btn_load->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TranslationEditorDialog::onBtnLoad, this);
-	btn_save->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &TranslationEditorDialog::onBtnSave, this);
+	btn_add->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnAdd, this);
+	btn_remove->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnRemove, this);
+	btn_up->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnUp, this);
+	btn_down->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnDown, this);
+	btn_load->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnLoad, this);
+	btn_save->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnSave, this);
 	gfx_preview->Bind(wxEVT_MOTION, &TranslationEditorDialog::onGfxPreviewMouseMotion, this);
-	cb_target_reverse->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TranslationEditorDialog::onCBTargetReverse, this);
-	cb_truecolor->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &TranslationEditorDialog::onCBTruecolor, this);
+	cb_target_reverse->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTargetReverse, this);
+	cb_truecolor->Bind(wxEVT_CHECKBOX, &TranslationEditorDialog::onCBTruecolor, this);
 
 	// Setup layout
 	Layout();
@@ -1129,7 +1129,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 	Layout();
 
 	// Bind events
-	cp_colour->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &GfxColouriseDialog::onColourChanged, this);
+	cp_colour->Bind(wxEVT_COLOURPICKER_CHANGED, &GfxColouriseDialog::onColourChanged, this);
 	Bind(wxEVT_SIZE, &GfxColouriseDialog::onResize, this);
 
 	// Setup dialog size
@@ -1231,8 +1231,8 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit*
 	Layout();
 
 	// Bind events
-	cp_colour->Bind(wxEVT_COMMAND_COLOURPICKER_CHANGED, &GfxTintDialog::onColourChanged, this);
-	slider_amount->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &GfxTintDialog::onAmountChanged, this);
+	cp_colour->Bind(wxEVT_COLOURPICKER_CHANGED, &GfxTintDialog::onColourChanged, this);
+	slider_amount->Bind(wxEVT_SLIDER, &GfxTintDialog::onAmountChanged, this);
 	Bind(wxEVT_SIZE, &GfxTintDialog::onResize, this);
 
 	// Setup dialog size

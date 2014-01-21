@@ -69,10 +69,10 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	pg_properties->GetGrid()->SetUnspecifiedValueAppearance(cell);
 
 	// Bind events
-	btn_apply->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapObjectPropsPanel::onBtnApply, this);
-	btn_reset->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapObjectPropsPanel::onBtnReset, this);
-	cb_show_all->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &MapObjectPropsPanel::onShowAllToggled, this);
-	btn_add->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &MapObjectPropsPanel::onBtnAdd, this);
+	btn_apply->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnApply, this);
+	btn_reset->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnReset, this);
+	cb_show_all->Bind(wxEVT_CHECKBOX, &MapObjectPropsPanel::onShowAllToggled, this);
+	btn_add->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnAdd, this);
 
 	// Hide side property grids
 	pg_props_side1->Show(false);

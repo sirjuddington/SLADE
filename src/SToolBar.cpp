@@ -251,7 +251,7 @@ SToolBar::SToolBar(wxWindow* parent) : wxPanel(parent, -1)
 	Bind(wxEVT_KILL_FOCUS, &SToolBar::onFocus, this);
 	Bind(wxEVT_RIGHT_DOWN, &SToolBar::onMouseEvent, this);
 	Bind(wxEVT_LEFT_DOWN, &SToolBar::onMouseEvent, this);
-	Bind(wxEVT_COMMAND_MENU_SELECTED, &SToolBar::onContextMenu, this);
+	Bind(wxEVT_MENU, &SToolBar::onContextMenu, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBar::onEraseBackground, this);
 }
 

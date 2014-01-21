@@ -77,7 +77,7 @@ EXTERN_CVAR(String, dir_last)
 	this->parent = wm;
 
 	// Connect a custom event for when an item in the file tree is activated
-	GetTreeCtrl()->Connect(GetTreeCtrl()->GetId(), wxEVT_COMMAND_TREE_ITEM_ACTIVATED, wxTreeEventHandler(WMFileBrowser::onItemActivated));
+	GetTreeCtrl()->Connect(GetTreeCtrl()->GetId(), wxEVT_TREE_ITEM_ACTIVATED, wxTreeEventHandler(WMFileBrowser::onItemActivated));
 }
 
 /* WMFileBrowser::~WMFileBrowser
@@ -163,17 +163,17 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 	notebook_tabs->SetSelection(am_current_tab);
 
 	// Bind events
-	list_archives->Bind(wxEVT_COMMAND_LIST_ITEM_SELECTED, &ArchiveManagerPanel::onListArchivesChanged, this);
-	list_archives->Bind(wxEVT_COMMAND_LIST_ITEM_ACTIVATED, &ArchiveManagerPanel::onListArchivesActivated, this);
-	list_archives->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListArchivesRightClick, this);
-	list_recent->Bind(wxEVT_COMMAND_LIST_ITEM_ACTIVATED, &ArchiveManagerPanel::onListRecentActivated, this);
-	list_recent->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListRecentRightClick, this);
-	list_bookmarks->Bind(wxEVT_COMMAND_LIST_ITEM_ACTIVATED, &ArchiveManagerPanel::onListBookmarksActivated, this);
-	list_bookmarks->Bind(wxEVT_COMMAND_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListBookmarksRightClick, this);
-	notebook_archives->Bind(wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGING, &ArchiveManagerPanel::onArchiveTabChanging, this);
-	notebook_archives->Bind(wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onArchiveTabChanged, this);
-	notebook_archives->Bind(wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE, &ArchiveManagerPanel::onArchiveTabClose, this);
-	notebook_tabs->Bind(wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onAMTabChanged, this);
+	list_archives->Bind(wxEVT_LIST_ITEM_SELECTED, &ArchiveManagerPanel::onListArchivesChanged, this);
+	list_archives->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchiveManagerPanel::onListArchivesActivated, this);
+	list_archives->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListArchivesRightClick, this);
+	list_recent->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchiveManagerPanel::onListRecentActivated, this);
+	list_recent->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListRecentRightClick, this);
+	list_bookmarks->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchiveManagerPanel::onListBookmarksActivated, this);
+	list_bookmarks->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListBookmarksRightClick, this);
+	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGING, &ArchiveManagerPanel::onArchiveTabChanging, this);
+	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onArchiveTabChanged, this);
+	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &ArchiveManagerPanel::onArchiveTabClose, this);
+	notebook_tabs->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onAMTabChanged, this);
 
 	// Listen to the ArchiveManager
 	listenTo(theArchiveManager);

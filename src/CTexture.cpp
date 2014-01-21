@@ -819,7 +819,7 @@ string CTexture::asText()
 
 	// Define block
 	if (defined)
-		return S_FMT("define %s %d %d", name, def_width, def_height);
+		return S_FMT("define %s %d %d\n", name, def_width, def_height);
 
 	// Init text string
 	string text;
