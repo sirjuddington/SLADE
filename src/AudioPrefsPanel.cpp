@@ -40,7 +40,7 @@
 EXTERN_CVAR(Bool, snd_autoplay)
 EXTERN_CVAR(String, fs_soundfont_path)
 EXTERN_CVAR(String, dir_last)
-
+EXTERN_CVAR(Bool, dmx_padding)
 
 /*******************************************************************
  * AUDIOPREFSPANEL CLASS FUNCTIONS
@@ -63,6 +63,10 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	// Autoplay
 	cb_snd_autoplay = new wxCheckBox(this, -1, "Automatically play audio entries when opened");
 	sizer->Add(cb_snd_autoplay, 0, wxEXPAND|wxALL, 4);
+
+	// DMX Padding
+	cb_dmx_padding = new wxCheckBox(this, -1, "Use DMX padding when appropriate");
+	sizer->Add(cb_dmx_padding, 0, wxEXPAND|wxALL, 4);
 
 	// MIDI Soundfont path
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -107,6 +111,7 @@ void AudioPrefsPanel::init()
 void AudioPrefsPanel::applyPreferences()
 {
 	snd_autoplay = cb_snd_autoplay->GetValue();
+	dmx_padding = cb_dmx_padding->GetValue();
 	fs_soundfont_path = text_soundfont_path->GetValue();
 	if (!theMIDIPlayer->isSoundfontLoaded())
 		theMIDIPlayer->reloadSoundfont();

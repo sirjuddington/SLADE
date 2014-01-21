@@ -8,6 +8,7 @@ class AudioPrefsPanel : public PrefsPanelBase
 {
 private:
 	wxCheckBox*	cb_snd_autoplay;
+	wxCheckBox*	cb_dmx_padding;
 	wxTextCtrl*	text_soundfont_path;
 	wxButton*	btn_browse_soundfont;
 	wxButton*	btn_reset_player;
