@@ -36,7 +36,6 @@
 
 #include "i_musicinterns.h"
 #include "templates.h"
-//#include "doomdef.h"
 #include "m_swap.h"
 
 // MACROS ------------------------------------------------------------------
@@ -103,22 +102,10 @@ struct HMISong::TrackInfo
 	DWORD ReadVarLenHMP();
 };
 
-// EXTERNAL FUNCTION PROTOTYPES --------------------------------------------
-
-// PUBLIC FUNCTION PROTOTYPES ----------------------------------------------
-
-// PRIVATE FUNCTION PROTOTYPES ---------------------------------------------
-
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
 
 extern char MIDI_EventLengths[7];
 extern char MIDI_CommonLengths[15];
-
-// PRIVATE DATA DEFINITIONS ------------------------------------------------
-
-// PUBLIC DATA DEFINITIONS -------------------------------------------------
-
-// CODE --------------------------------------------------------------------
 
 //==========================================================================
 //
@@ -131,12 +118,6 @@ extern char MIDI_CommonLengths[15];
 HMISong::HMISong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 : MIDIStreamer(type), MusHeader(0), Tracks(0)
 {
-#ifdef _WIN32
-/*	if (ExitEvent == NULL)
-	{
-		return;
-	}*/
-#endif
 	if (len < 0x100)
 	{ // Way too small to be HMI.
 		return;

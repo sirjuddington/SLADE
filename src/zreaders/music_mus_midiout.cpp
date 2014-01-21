@@ -66,14 +66,14 @@ static const BYTE CtrlTranslate[15] =
 
 //==========================================================================
 //
-// MUSSong2 Constructor
+// MUSSong Constructor
 //
 // Performs some validity checks on the MUS file, buffers it, and creates
 // the playback thread control events.
 //
 //==========================================================================
 
-MUSSong2::MUSSong2 (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
+MUSSong::MUSSong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 : MIDIStreamer(type), MusHeader(0), MusBuffer(0)
 {
 	BYTE front[32];
@@ -132,11 +132,11 @@ MUSSong2::MUSSong2 (FILE *file, const BYTE *musiccache, int len, EMidiDevice typ
 
 //==========================================================================
 //
-// MUSSong2 Destructor
+// MUSSong Destructor
 //
 //==========================================================================
 
-MUSSong2::~MUSSong2 ()
+MUSSong::~MUSSong ()
 {
 	if (MusHeader != NULL)
 	{
@@ -146,38 +146,38 @@ MUSSong2::~MUSSong2 ()
 
 //==========================================================================
 //
-// MUSSong2 :: DoRestart
+// MUSSong :: DoRestart
 //
 // Rewinds the song.
 //
 //==========================================================================
 
-void MUSSong2::DoRestart()
+void MUSSong::DoRestart()
 {
 	MusP = 0;
 }
 
 //==========================================================================
 //
-// MUSSong2 :: CheckDone
+// MUSSong :: CheckDone
 //
 //==========================================================================
 
-bool MUSSong2::CheckDone()
+bool MUSSong::CheckDone()
 {
 	return MusP >= MaxMusP;
 }
 
 //==========================================================================
 //
-// MUSSong2 :: MakeEvents
+// MUSSong :: MakeEvents
 //
 // Translates MUS events into MIDI events and puts them into a MIDI stream
 // buffer. Returns the new position in the buffer.
 //
 //==========================================================================
 
-DWORD *MUSSong2::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
+DWORD *MUSSong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 {
 	DWORD tot_time = 0;
 	DWORD time = 0;

@@ -70,11 +70,11 @@ protected:
 
 // MUS file played with a MIDI stream ---------------------------------------
 
-class MUSSong2 : public MIDIStreamer
+class MUSSong : public MIDIStreamer
 {
 public:
-	MUSSong2(FILE *file, const BYTE *musiccache, int length, EMidiDevice type);
-	~MUSSong2();
+	MUSSong(FILE *file, const BYTE *musiccache, int length, EMidiDevice type);
+	~MUSSong();
 
 protected:
 	void DoRestart();
@@ -89,11 +89,11 @@ protected:
 
 // MIDI file played with a MIDI stream --------------------------------------
 
-class MIDISong2 : public MIDIStreamer
+class MIDISong : public MIDIStreamer
 {
 public:
-	MIDISong2(FILE *file, const BYTE *musiccache, int length, EMidiDevice type);
-	~MIDISong2();
+	MIDISong(FILE *file, const BYTE *musiccache, int length, EMidiDevice type);
+	~MIDISong();
 
 protected:
 	void CheckCaps(int tech);

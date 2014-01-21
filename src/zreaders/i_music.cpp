@@ -61,10 +61,10 @@ static MIDIStreamer *CreateMIDIStreamer(FILE *file, const BYTE *musiccache, int 
 	switch (miditype)
 	{
 	case MIDI_MUS:
-		return new MUSSong2(file, musiccache, len, devtype);
+		return new MUSSong(file, musiccache, len, devtype);
 
 	case MIDI_MIDI:
-		return new MIDISong2(file, musiccache, len, devtype);
+		return new MIDISong(file, musiccache, len, devtype);
 
 	case MIDI_HMI:
 		return new HMISong(file, musiccache, len, devtype);

@@ -53,7 +53,7 @@
 
 // TYPES -------------------------------------------------------------------
 
-struct MIDISong2::TrackInfo
+struct MIDISong::TrackInfo
 {
 	const BYTE *TrackBegin;
 	size_t TrackP;
@@ -82,13 +82,13 @@ char MIDI_CommonLengths[15] = { 0, 1, 2, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0 };
 
 //==========================================================================
 //
-// MIDISong2 Constructor
+// MIDISong Constructor
 //
 // Buffers the file and does some validation of the SMF header.
 //
 //==========================================================================
 
-MIDISong2::MIDISong2 (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
+MIDISong::MIDISong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 : MIDIStreamer(type), MusHeader(0), Tracks(0)
 {
 	int p;
@@ -172,11 +172,11 @@ MIDISong2::MIDISong2 (FILE *file, const BYTE *musiccache, int len, EMidiDevice t
 
 //==========================================================================
 //
-// MIDISong2 Destructor
+// MIDISong Destructor
 //
 //==========================================================================
 
-MIDISong2::~MIDISong2 ()
+MIDISong::~MIDISong ()
 {
 	if (Tracks != NULL)
 	{
@@ -190,14 +190,14 @@ MIDISong2::~MIDISong2 ()
 
 //==========================================================================
 //
-// MIDISong2 :: CheckCaps
+// MIDISong :: CheckCaps
 //
 // Find out if this is an FM synth or not for EMIDI's benefit.
 // (Do any released EMIDIs use track designations?)
 //
 //==========================================================================
 
-void MIDISong2::CheckCaps(int tech)
+void MIDISong::CheckCaps(int tech)
 {
 	DesignationMask = 0xFF0F;
 	if (tech == MOD_FMSYNTH)
@@ -212,13 +212,13 @@ void MIDISong2::CheckCaps(int tech)
 
 //==========================================================================
 //
-// MIDISong2 :: DoRestart
+// MIDISong :: DoRestart
 //
 // Rewinds every track.
 //
 //==========================================================================
 
-void MIDISong2 :: DoRestart()
+void MIDISong :: DoRestart()
 {
 	int i;
 
@@ -246,25 +246,25 @@ void MIDISong2 :: DoRestart()
 
 //==========================================================================
 //
-// MIDISong2 :: CheckDone
+// MIDISong :: CheckDone
 //
 //==========================================================================
 
-bool MIDISong2::CheckDone()
+bool MIDISong::CheckDone()
 {
 	return TrackDue == NULL;
 }
 
 //==========================================================================
 //
-// MIDISong2 :: MakeEvents
+// MIDISong :: MakeEvents
 //
 // Copies MIDI events from the SMF and puts them into a MIDI stream
 // buffer. Returns the new position in the buffer.
 //
 //==========================================================================
 
-DWORD *MIDISong2::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
+DWORD *MIDISong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 {
 	DWORD *start_events;
 	DWORD tot_time = 0;
@@ -306,13 +306,13 @@ DWORD *MIDISong2::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 
 //==========================================================================
 //
-// MIDISong2 :: AdvanceTracks
+// MIDISong :: AdvanceTracks
 //
 // Advances time for all tracks by the specified amount.
 //
 //==========================================================================
 
-void MIDISong2::AdvanceTracks(DWORD time)
+void MIDISong::AdvanceTracks(DWORD time)
 {
 	for (int i = 0; i < NumTracks; ++i)
 	{
@@ -326,13 +326,13 @@ void MIDISong2::AdvanceTracks(DWORD time)
 
 //==========================================================================
 //
-// MIDISong2 :: SendCommand
+// MIDISong :: SendCommand
 //
 // Places a single MIDIEVENT in the event buffer.
 //
 //==========================================================================
 
-DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay)
+DWORD *MIDISong::SendCommand (DWORD *events, TrackInfo *track, DWORD delay)
 {
 	DWORD len;
 	BYTE event, data1 = 0, data2 = 0;
@@ -610,13 +610,13 @@ DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay)
 
 //==========================================================================
 //
-// MIDISong2 :: ProcessInitialMetaEvents
+// MIDISong :: ProcessInitialMetaEvents
 //
 // Handle all the meta events at the start of each track.
 //
 //==========================================================================
 
-void MIDISong2::ProcessInitialMetaEvents ()
+void MIDISong::ProcessInitialMetaEvents ()
 {
 	TrackInfo *track;
 	int i;
@@ -662,13 +662,13 @@ void MIDISong2::ProcessInitialMetaEvents ()
 
 //==========================================================================
 //
-// MIDISong2 :: TrackInfo :: ReadVarLen
+// MIDISong :: TrackInfo :: ReadVarLen
 //
 // Reads a variable-length SMF number.
 //
 //==========================================================================
 
-DWORD MIDISong2::TrackInfo::ReadVarLen ()
+DWORD MIDISong::TrackInfo::ReadVarLen ()
 {
 	DWORD time = 0, t = 0x80;
 
@@ -682,14 +682,14 @@ DWORD MIDISong2::TrackInfo::ReadVarLen ()
 
 //==========================================================================
 //
-// MIDISong2 :: FindNextDue
+// MIDISong :: FindNextDue
 //
 // Scans every track for the next event to play. Returns NULL if all events
 // have been consumed.
 //
 //==========================================================================
 
-MIDISong2::TrackInfo *MIDISong2::FindNextDue ()
+MIDISong::TrackInfo *MIDISong::FindNextDue ()
 {
 	TrackInfo *track;
 	DWORD best;
