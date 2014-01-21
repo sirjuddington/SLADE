@@ -1798,16 +1798,26 @@ bool ArchivePanel::musMidiConvert()
 	// Go through selection
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		// Convert MUS -> MIDI if the entry is Doom MUS format
-		if (selection[a]->getType()->getFormat() == "mus")
+		// Convert MUS -> MIDI if the entry is a MIDI-like format
+		if (selection[a]->getType()->getFormat() == "mus" ||
+			selection[a]->getType()->getFormat() == "hmi" ||
+			selection[a]->getType()->getFormat() == "hmp" ||
+			selection[a]->getType()->getFormat() == "xmi" ||
+			selection[a]->getType()->getFormat() == "gmid")
 		{
 			MemChunk midi;
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));	// Create undo step
-			Conversions::musToMidi(selection[a]->getMCData(), midi);		// Convert
+			if (selection[a]->getType()->getFormat() == "mus")
+				Conversions::musToMidi(selection[a]->getMCData(), midi);	// Convert
+			else if (selection[a]->getType()->getFormat() == "gmid")
+				Conversions::gmidToMidi(selection[a]->getMCData(), midi);	// Convert
+			else
+				Conversions::zmusToMidi(selection[a]->getMCData(), midi);	// Convert
 			selection[a]->importMemChunk(midi);								// Load midi data
 			EntryType::detectEntryType(selection[a]);						// Update entry type
 			selection[a]->setExtensionByType();								// Update extension if necessary
 		}
+
 	}
 
 	// Finish recording undo level
@@ -2587,7 +2597,11 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!mus_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "mus")
+			if (selection[a]->getType()->getFormat() == "mus" ||
+				selection[a]->getType()->getFormat() == "hmi" ||
+				selection[a]->getType()->getFormat() == "hmp" ||
+				selection[a]->getType()->getFormat() == "xmi" ||
+				selection[a]->getType()->getFormat() == "gmid")
 				mus_selected = true;
 		}
 		if (!text_selected)

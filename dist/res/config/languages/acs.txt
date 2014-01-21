@@ -233,7 +233,8 @@ acs_z : acs {
 		APROP_Score, APROP_Notrigger, APROP_DamageFactor, APROP_MasterTID, 
 		APROP_TargetTID, APROP_TracerTID, APROP_Waterlevel, APROP_ScaleX, APROP_ScaleY, 
 		APROP_Dormant, APROP_Mass, APROP_Accuracy, APROP_Stamina, APROP_Height,
-		APROP_Radius, APROP_ReactionTime,
+		APROP_Radius, APROP_ReactionTime, APROP_AttackZOffset, APROP_MeleeRange,
+		APROP_ViewHeight,
 
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_Stencil, 
 		STYLE_OptFuzzy, STYLE_Translucent, STYLE_Add, STYLE_Shaded, 
@@ -361,14 +362,26 @@ acs_z : acs {
 
 		SECF_SILENT, SECF_NOFALLINGDAMAGE, SECF_FLOORDROP, SECF_NORESPAWN, 
 
-		BLOCKF_CREATURES, BLOCKF_MONSTERS, BLOCKF_PLAYERS, BLOCKF_FLOATERS, 
+		BLOCKF_CREATURES, BLOCKF_MONSTERS, BLOCKF_PLAYERS, BLOCKF_FLOATERS, BLOCKF_HITSCAN,
 		BLOCKF_PROJECTILES, BLOCKF_EVERYTHING, BLOCKF_RAILING, BLOCKF_USE, BLOCKF_SIGHT, 
 
 		FOGP_DENSITY, FOGP_OUTSIDEDENSITY, FOGP_SKYFOG, 
 
 		PRINTNAME_LEVELNAME, PRINTNAME_LEVEL, PRINTNAME_SKILL, 
 
-		CSF_NOFAKEFLOORS, CSF_NOBLOCKALL, 
+		CSF_NOFAKEFLOORS, CSF_NOBLOCKALL,
+
+		ATTN_IDLE, ATTN_NONE, ATTN_NORM, ATTN_STATIC,
+
+		CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL, CHAN_NOPAUSE,
+		CHAN_UI, CHAN_VOICE, CHAN_WEAPON,
+
+		FHF_NORANDOMPUFFZ,
+
+		SDF_ABSANGLE, SDF_PERMANENT,
+
+		SOUND_Active, SOUND_Attack, SOUND_Bounce, SOUND_CrushPain, SOUND_Death, SOUND_Howl,
+		SOUND_Pain, SOUND_See, SOUND_Use, SOUND_WallBounce
 	}
 
 	functions
@@ -469,7 +482,7 @@ acs_z : acs {
 		Light_RaiseByValue = "int tag, int value";
 		Light_Stop = "int tag";
 		Light_Strobe = "int tag, int upper, int lower, int u-tics, int l-tics";
-		Light_Strobe = "int tag, int u-tics, int l-tics";
+		Light_StrobeDoom = "int tag, int u-tics, int l-tics";
 		Line_AlignCeiling  = "int lineid, int side";
 		Line_AlignFloor = "int lineid, int side";
 		Line_SetBlocking = "int lineid, int setflags, int clearflags";
@@ -598,6 +611,8 @@ acs_z : acs {
 		CheckActorFloorTexture = "int tid, str texture";
 		CheckActorInventory = "int tid, str inventory_item";
 		CheckActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
+		CheckFlag = "int tid, int flag";
+		CheckFont = "str fontname";
 		CheckInventory = "str inventory_item";
 		CheckPlayerCamera = "int player";
 		CheckSight = "int source, int dest, [int flags]";
@@ -609,6 +624,7 @@ acs_z : acs {
 		Cos = "int angle";
 		CreateTranslation = "int transnumber, a:b=c:d, ...", "int transnumber, a:b=[red1,green1,blue1]:[red2,green2,blue2], ...";
 		Delay = "int tics";
+		DropItem = "int tid, str item, [int dropamount], [int chance]";
 		FadeRange = "int red1, int green1, int blue1, fixed amount1, int red2, int green2, int blue2, fixed amount2, fixed seconds";
 		FadeTo = "int red, int green, int blue, fixed amount, fixed seconds";
 		FixedDiv = "fixed a, fixed b";
@@ -618,6 +634,7 @@ acs_z : acs {
 		GameType;
 		GetActorAngle = "int tid";
 		GetActorCeilingZ = "int tid";
+		GetActorClass = "int tid";
 		GetActorFloorZ = "int tid";
 		GetActorLightLevel = "int tid";
 		GetActorPitch = "int tid";
@@ -634,6 +651,7 @@ acs_z : acs {
 		GetArmorType = "string armortype, int playernum";
 		GetChar = "str string, int index";
 		GetCVar = "str cvar";
+		GetCVarString = "str cvarname";
 		GetLevelInfo = "int levelinfo";
 		GetLineRowOffset;
 		GetLineUDMFFixed = "int lineid, string key";
@@ -655,17 +673,23 @@ acs_z : acs {
 		GetThingUDMFFixed = "int tid, string key";
 		GetThingUDMFInt = "int tid, string key";
 		GetUserArray = "int tid, str name, int pos";
+		GetUserCVar = "int playernum, str cvarname";
+		GetUserCVarString = "int playernum, str cvarname";
 		GetUserVariable = "int tid, str name";
+		GetWeapon;
 		GiveActorInventory = "int tid, str inventory_item, int amount";
 		GiveInventory = "str inventory_item, int amount";
 		HudMessage = "text; int type, int id, int color, fixed x, fixed y, fixed holdTime, alpha", "text; HUDMSG_FADEOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed fadetime, alpha", "text; HUDMSG_TYPEON, int id, int color, fixed x, fixed y, fixed holdTime, fixed typetime, fixed fadetime, alpha", "text; HUDMSG_FADEINOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed inTime, fixed outTime, alpha";
 		HudMessageBold = "text; int type, int id, int color, fixed x, fixed y, fixed holdTime, alpha", "text; HUDMSG_FADEOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed fadetime, alpha", "text; HUDMSG_TYPEON, int id, int color, fixed x, fixed y, fixed holdTime, fixed typetime, fixed fadetime, alpha", "text; HUDMSG_FADEINOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed inTime, fixed outTime, alpha";
 		IsTIDUsed = "int tid";
 		LineSide;
+		LineAttack = "int tid, fixed angle, fixed pitch, int damage, [str pufftype], [str damagetype], [fixed range], [int flags]";
 		LocalAmbientSound = "str sound, int volume";
 		LocalSetMusic = "str song, [int order]";
 		Log = "type:expression";
 		MorphActor = "int tid, [str playerclass, [str monsterclass, [int duration, [int style, [str morphflash, [str unmorphflash]]]]]]";
+		NamedScriptWait = "str script";
+		PlayActorSound = "int tid, int sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
 		PlayerClass = "int playernumber";
 		PlayerCount;
 		PlayerFrags;
@@ -673,6 +697,7 @@ acs_z : acs {
 		PlayerIsBot = "int playernumber";
 		PlayerNumber;
 		PlayMovie = "str moviename - but this function does not work anyway";
+		PlaySound = "int tid, str sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
 		PolyWait = "int polynum";
 		Print = "type:expression";
 		PrintBold = "type:expression";
@@ -695,6 +720,8 @@ acs_z : acs {
 		SetAmmoCapacity = "str typename, int maxamount";
 		SetCameraToTexture = "int cameratid, str texturename, int fov";
 		SetCeilingTrigger = "int tag, int height, int special [, int arg1 [, int arg2 [, int arg3 [, int arg4 [, int arg5]]]]]";
+		SetCVar = "str cvarname, int newvalue", "str cvarname, fixed newvalue", "str cvarname, bool newvalue";
+		SetCVarString = "str cvarname, str newvalue";
 		SetFloorTrigger = "int tag, int height, int special [, int arg1 [, int arg2 [, int arg3 [, int arg4 [, int arg5]]]]]";
 		SetFont = "str fontlump";
 		SetGravity = "fixed amount";
@@ -714,6 +741,8 @@ acs_z : acs {
 		SetSkyScrollSpeed = "int sky, float skyspeed";
 		SetThingSpecial = "int tid, int special [, int arg0 [, int arg1 [, int arg2 [, int arg3 [, int arg4]]]]]";
 		SetUserArray = "int tid, str name, int pos, int value";
+		SetUserCVar = "int playernum, str cvarname, int newvalue", "int playernum, str cvarname, fixed newvalue", "int playernum, str cvarname, bool newvalue";
+		SetUserCVarString = "int playernum, str cvarname, str newvalue";
 		SetUserVariable = "int tid, str name, int value";
 		SetWeapon = "str weaponname";
 		Sin = "int angle";
@@ -721,7 +750,9 @@ acs_z : acs {
 		SoundSequenceOnActor = "int tid, str sndseq";
 		SoundSequenceOnPolyobj = "int polynum, str sndseq";
 		SoundSequenceOnSector = "int tag, string seqname, int location";
-		Spawn = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
+		SoundVolume = "int tid, int channel, fixed volume";
+ 		Spawn = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
+		SpawnDecal = "int tid, str decalname, [int flags], [fixed angle], [fixed zoffset], [fixed distance]";
 		SpawnForced = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
 		SpawnProjectile = "int tid, string type, int angle, int speed, int vspeed, int gravity, int newtid";
 		SpawnSpot = "str classname, int spottid [, int tid [, int angle]]";
@@ -729,7 +760,10 @@ acs_z : acs {
 		SpawnSpotFacingForced = "str classname, int spottid [, int tid]";
 		SpawnSpotForced = "str classname, int spottid [, int tid [, int angle]]";
 		Sqrt = "int number";
-		StrCopy = "a:destination, string source[, int source_index]";
+		StopSound = "int tid, [int channel]";
+		StrCmp = "str string1, str string2, [int maxcomparenum]";
+		StrCpy = "a:destination, string source[, int source_index]";
+		StrIcmp = "str string1, str string2, [int maxcomparenum]";
 		StrLen = "str string";
 		StrParam = "type:expression";
 		TagWait = "int tag";
