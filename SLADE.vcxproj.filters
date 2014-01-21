@@ -1122,6 +1122,24 @@
     <ClCompile Include="src\MapChecksPanel.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\zreaders\i_music.cpp">
+      <Filter>External\ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zreaders\music_hmi_midiout.cpp">
+      <Filter>External\ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zreaders\music_midistream.cpp">
+      <Filter>External\ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zreaders\music_mus_midiout.cpp">
+      <Filter>External\ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zreaders\music_smf_midiout.cpp">
+      <Filter>External\ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\zreaders\music_xmi_midiout.cpp">
+      <Filter>External\ZReaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2018,6 +2036,18 @@
     </ClInclude>
     <ClInclude Include="src\MapChecksPanel.h">
       <Filter>Map Editor\UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zreaders\i_music.h">
+      <Filter>External\ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zreaders\i_musicinterns.h">
+      <Filter>External\ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zreaders\m_swap.h">
+      <Filter>External\ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\zreaders\mus2midi.h">
+      <Filter>External\ZReaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
