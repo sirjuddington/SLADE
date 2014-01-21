@@ -557,7 +557,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 
 		// Get new builder if one was selected
 		builder = NodeBuilders::getBuilder(nodebuilder_id);
-		string command = builder.command;
+		command = builder.command;
 
 		// Check again
 		if (!wxFileExists(builder.path))

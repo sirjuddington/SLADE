@@ -153,10 +153,10 @@ void Executables::parse(Parser* p, bool custom)
 		}
 
 		// Set path if loaded
-		for (unsigned p = 0; p < exe_paths.size(); p++)
+		for (unsigned pa = 0; pa < exe_paths.size(); pa++)
 		{
-			if (exe_paths[p].key == exe->id)
-				exe->path = exe_paths[p].value;
+			if (exe_paths[pa].key == exe->id)
+				exe->path = exe_paths[pa].value;
 		}
 	}
 }
