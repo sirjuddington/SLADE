@@ -10,7 +10,7 @@ z_animdefs {
 
 	keywords = {
 		texture, flat, tics, rand, range, fit, switch, sound, animateddoor,
-		pic, warp, warp2, on, off, opensound, closesound, cameratexture
+		pic, warp, warp2, on, off, opensound, closesound, cameratexture, worldpanning
 	}
 
 	constants = {
@@ -31,7 +31,7 @@ z_decaldef {
 		translucent, add, fuzzy, fullbright, lowerdecal, colors, animator, decal,
 		decalgroup, generator, stretcher, GoalX, GoalY, StretchStart, StretchTime, 
 		fader, DecayStart, DecayTime, Combiner, slider, DistX, DistY, SlideStart, 
-		SlideTime, colorchanger, FadeStart, FadeTime,
+		SlideTime, colorchanger, FadeStart, FadeTime, Color
 	}
 }
 
@@ -43,7 +43,7 @@ z_fontdefs {
 	function_link = "http://zdoom.org/wiki/FONTDEFS";
 
 	keywords = {
-		Template, NOTRANSLATION, SPACEWIDTH
+		Template, NOTRANSLATION, SPACEWIDTH, BASE, COUNT, CURSOR, FIRST
 	}
 
 	constants = {
@@ -72,12 +72,13 @@ z_gldefs {
 
 	keywords = {
 		PointLight, PulseLight, FlickerLight, FlickerLight2, SectorLight, Detail,
-		Object, Frame, Light, Skybox, brightmap, Glow, Flats, Walls, HardwareShader
+		Object, Frame, Light, Skybox, fliptop, brightmap, Glow, Flats, Walls, fullbright,
+		HardwareShader
 	}
 
 	constants = {
-		color, size, offset, subtractive, secondarySize, interval, chance, scale,
-		map, iwad, thiswad, disablefullbright, Texture, Shader, speed
+		color, size, offset, subtractive, secondarySize, interval, chance, dontlightself,
+		scale, map, iwad, thiswad, disablefullbright, Texture, Shader, speed
 	}
 }
 
@@ -125,7 +126,7 @@ z_mapinfo {
 	keyword_link = "http://zdoom.org/wiki/MAPINFO";
 	constant_link = "http://zdoom.org/wiki/MAPINFO";
 	function_link = "http://zdoom.org/wiki/MAPINFO";
-	blocks = "gameinfo", "skill", "map", "episode", "cluster";
+	blocks = "gameinfo", "skill", "map", "episode", "cluster", "automap", "automap_overlay";
 
 	keywords = {
 		// Generic
@@ -139,8 +140,8 @@ z_mapinfo {
 		
 		// Map
 		Map, DefaultMap, AddDefaultMap, GameDefaults, 
-		ActivateOwnDeathSpecials, AirControl, AirSupply, AllowCrouch, AllowJump, 
-		AllowMonsterTelefrags, AllowRespawn, AutoSquences, BaronSpecial,
+		ActivateOwnDeathSpecials, AirControl, AirSupply, AllowCrouch, AllowFreelook,
+		AllowJump, AllowMonsterTelefrags, AllowRespawn, AutoSequences, BaronSpecial,
 		BorderTexture, CDId, CDTrack, CheckSwitchRange, ClipMidTextures,
 		CyberdemonSpecial, DeathSequence, DefaultEnvironment, DefaultEnvironment,
 		DoubleSky, DSparilSpecial, EnterPic, EvenLighting, ExitPic, F1, Fade,
@@ -169,22 +170,29 @@ z_mapinfo {
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain, DefaultSkill,
-		ArmorFactor,
+		ArmorFactor, EasyKey,
 
 		// GameInfo definitions
-		GameInfo, AdvisoryTime, Border, BackpackType, BorderFlat, ChatSound, CreditPage, DefaultBloodColor,
-		DefaultBloodParticleColor, DrawReadThis, FinaleFlat, FinaleMusic, FinalPage, InfoPage, IntermissionCounter,
-		IntermissionMusic, NoLoopFinaleMusic, PageTime, QuitSound, SkyFlatName, StatusBar, TeleFogHeight, TitleMusic,
-		TitlePage, TitleTime, Translator, WeaponSlot, ArmorIcons, DimColor, DimAmount, DefInventoryMaxAmount,
-		DefaultRespawnTime, DefaultDropStyle, Endoom, Player5Start, PickupColor, QuitMessages, MenuFontColor_Title,
-		MenuFontColor_Label, MenuFontColor_Value, MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight,
-		MenuFontColor_Selection, MenuBackButton, PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX,
-		TextScreenY, DefaultEndSequence, MapArrow, NoRandomPlayerclass, 
+		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
+		BorderFlat, ChatSound, CreditPage, DefaultBloodColor, DefaultBloodParticleColor, DefKickback, DrawReadThis,
+		FinaleFlat, FinaleMusic, FinalePage, InfoPage, IntermissionCounter, IntermissionMusic, MapInfo, NoLoopFinaleMusic,
+		PageTime, QuitSound, SkyFlatName, StatusBar, TeleFogHeight, TitleMusic, TitlePage, TitleTime, Translator,
+		WeaponSlot, ArmorIcons, DimColor, DimAmount, DefInventoryMaxAmount, DefaultRespawnTime, DefaultDropStyle, Endoom,
+		Player5Start, PickupColor, QuitMessages, MenuFontColor_Title, MenuFontColor_Label, MenuFontColor_Value,
+		MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight, MenuFontColor_Selection, MenuBackButton,
+		PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX, TextScreenY, DefaultEndSequence, MapArrow,
+		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
 		DrawConditional, Music, Sound, Time, CastClass, CastName, AttackSound, FadeType, Background2, InitialDelay,
-		ScrollDirection, ScrollTime, Position, Text, TextColor, TextDelay, TextLump, TextSpeed, WipeType
+		ScrollDirection, ScrollTime, Position, Text, TextColor, TextDelay, TextLump, TextSpeed, WipeType,
+
+		// Automap
+		Automap, Automap_Overlay, AlmostBackgroundColor, Base, CeilingDiffWallColor, ExtraFloorWallColor, FloorDiffWallColor,
+		GridColor, InterTeleportColor, IntraTeleportColor, LockedColor, NotSeenColor, SecretSectorColor, SecretWallColor,
+		ShowLocks, SpecialWallColor, ThingColor, ThingColor_CountItem, ThingColor_Friend, ThingColor_Item, ThingColor_Monster,
+		ThingColor_NocountMonster, TwoSidedWallColor, WallColor, XHairColor, YourColor
 	}
 
 	constants = {
@@ -198,20 +206,22 @@ z_menudef {
 	keyword_link = "http://zdoom.org/wiki/MENUDEF";
 	constant_link = "http://zdoom.org/wiki/MENUDEF";
 	function_link = "http://zdoom.org/wiki/MENUDEF";
-	blocks = "listmenu", "optionmenu", "optionvalue";
+	blocks = "listmenu", "optionmenu", "optionvalue", "optionstring";
 	
 	keywords = { 
 		ListMenu, OptionMenu, OptionValue, OptionString, 
 		DefaultListMenu, DefaultOptionMenu, OptionMenuSettings, 
 		Font, Linespacing, LabelOffset, PlayerDisplay, Position, Selector, StaticText, 
 		StaticTextSwitchable, ScrollTop, SafeCommand, ColorPicker, Class, ScreenResolution, 
-		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command
+		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command,
+		NetgameMessage, StaticPatchCentered, StaticTextCentered, MouseWindow, CenterMenu,
+		Title, PlayerNameBox, ValueText, MapControl, Else
 	}
 	
 	functions { ifgame = "games ..."; ifoption = "options ..."; }
 	
 	constants = { 
-		doom, heretic, hexen, strife, chex, readthis, swapmenu, windows, 
+		doom, heretic, hexen, strife, chex, readthis, swapmenu, windows, unix, mac,
 		LoadMenu, SaveMenu, PlayerMenu, JoystickConfigMenu, 
 		GameplayMenu, CompatibilityMenu, VideoModeMenu, 
 	}
@@ -245,7 +255,7 @@ z_voxeldef {
 	function_link = "http://zdoom.org/wiki/VOXELDEF";
 
 	keywords = {
-		AngleOffset, Scale, Spin, DroppedSpin, PlacedSpin,
+		AngleOffset, Scale, Spin, DroppedSpin, PlacedSpin, OverridePalette,
 	}
 }
 
@@ -288,7 +298,8 @@ z_sbarinfo {
 		Base, completeborder, CreatePopup, Height, InterpolateHealth, InterpolateArmor, LowerHealthCap, MonospaceFonts,
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
-		InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, UsesAmmo, UsesSecondaryAmmo, WeaponAmmo, mugshot
+		InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
+		WeaponAmmo, mugshot
 	}
 
 	constants = {
@@ -297,10 +308,12 @@ z_sbarinfo {
 		reverserows, alwaysshow, noartibox, noarrows, alwaysshowcounter, translucent, Doom, Heretic, Hexen, HexenStrict, Strife,
 		playericon, armoricon, weaponicon, ammoicon1, ammoicon2, sigil, hexenarmor, xdeathface, animatedgodmode,
 		disablegrin, disableouch, disablepain, disablerampage, health, armorclass, ammo1, ammo2, frags, kills, monsters, items,
-		totalitems, secrets, score, totalsecrets, airtime, ammo, ammocapacity, poweruptime, globalvar, globalarray,
-		fillzeros, whennotzero, alternateonempty, artiflash, alwaysshowcounter, center, centerbottom, invulnerable,
-		levelname, levellump, skillname, playerclass, playername, ammo1tag, ammo2tag, weapontag, inventorytag,
-		normal, pain, ouch, rampage, god, animatedgod, grin, death, xdeath, health2, helathspecial, directional
+		totalitems, secrets, score, totalsecrets, airtime, ammo, ammocapacity, ammo1capacity, ammo2capacity, poweruptime, globalvar,
+		globalarray, accuracy, keys, savepercent, stamina, fillzeros, whennotzero, alternateonempty, artiflash, alwaysshowcounter,
+		center, centerbottom, invulnerable, keyslot, armortype, levelname, levellump, skillname, playerclass, playername, ammo1tag,
+		ammo2tag, weapontag, inventorytag, time, logtext, linebreaks, normal, pain, ouch, rampage, god, godanimated, grin, death,
+		xdeath, health2, healthspecial, directional, alignment, left, right, dontcap, prefix, itemflash, alticonfirst, alternateonfail,
+		forcescale, skipalticon, skipicon, skipready, skipspawn
 	}
 
 	functions {
@@ -319,8 +332,8 @@ z_sndinfo {
 	keywords = {
 		$random, $alias, $limit, $pitchshift, $pitchshiftrange, $playerreserve, $playersound, $playersounddup,
 		$playeralias, $playercompat, $ambient, $ifdoom, $ifheretic, $ifhexen, $ifstrife, $map, $musicvolume,
-		$registered, $archivepath, point, surround, world, $continuous, periodic, random,
-		$volume, $rolloff, $mididevice
+		$registered, $archivepath, point, surround, world, continuous, periodic, random,
+		$volume, $rolloff, $mididevice, $attenuation, $edfoverride, $musicalias, $singular
 	}
 
 	constants = {
@@ -379,7 +392,7 @@ z_terrain {
 		splash,
 		smallclass, smallclip, smallsound,
 		baseclass, chunkclass, chunkxvelshift, chunkyvelshift, chunkzvelshift, chunkbasezvel, sound,
-		terrain, footclip, liquid, friction, damagetype, damageamount, damagetimemask,
+		terrain, footclip, liquid, friction, damagetype, damageamount, damagetimemask, allowprotection,
 		floor, defaultterrain, noalert
 	}
 
@@ -399,7 +412,8 @@ z_textures {
 	keywords = {
 		texture, patch, sprite, graphic, walltexture, flat, optional,
 		XScale, YScale, offset, worldpanning, NoDecals, NullTexture,
-		FlipX, FlipY, Rotate, Translation, Blend, Alpha, Style, define
+		FlipX, FlipY, Rotate, Translation, Blend, Alpha, Style, define,
+		UseOffsets
 	}
 
 	constants = {

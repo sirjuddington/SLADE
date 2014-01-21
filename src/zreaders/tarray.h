@@ -47,7 +47,7 @@
 
 #include "m_alloc.h"
 
-class FArchive;
+//class FArchive;
 
 // TArray -------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ class FArchive;
 template <class T, class TT=T>
 class TArray
 {
-	template<class U, class UU> friend FArchive &operator<< (FArchive &arc, TArray<U,UU> &self);
+//	template<class U, class UU> friend FArchive &operator<< (FArchive &arc, TArray<U,UU> &self);
 
 public:
 	////////
@@ -929,5 +929,10 @@ protected:
 	const MapType &Map;
 	hash_t Position;
 };
+
+template <typename T, size_t N>
+char ( &_ArraySizeHelper( T (&array)[N] ))[N];
+
+#define countof( array ) (sizeof( _ArraySizeHelper( array ) ))
 
 #endif //__TARRAY_H__

@@ -45,6 +45,12 @@ add_executable(slade WIN32
 	zreaders/ancientzip.cpp
 	zreaders/files.cpp
 	zreaders/m_alloc.cpp
+	zreaders/i_music.cpp
+	zreaders/music_hmi_midiout.cpp
+	zreaders/music_midistream.cpp
+	zreaders/music_mus_midiout.cpp
+	zreaders/music_smf_midiout.cpp
+	zreaders/music_xmi_midiout.cpp
 	cl_notebook_art/cl_aui_notebook_art.cpp
 	sfMod/sfMod.cpp
 	${LUA_SOURCES}

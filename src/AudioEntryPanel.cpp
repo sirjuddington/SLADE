@@ -221,7 +221,13 @@ bool AudioEntryPanel::open()
 		Conversions::bloodToWav(entry, convdata);
 	else if (entry->getType()->getFormat() == "mus")  			// MUS -> MIDI
 	{
-		Conversions::musToMidi(mcdata, convdata);
+		Conversions::zmusToMidi(mcdata, convdata);
+		path.SetExt("mid");
+	}
+	else if (entry->getType()->getFormat() == "xmi" ||  			// HMI/HMP/XMI -> MIDI
+				entry->getType()->getFormat() == "hmi" || entry->getType()->getFormat() == "hmp")
+	{
+		Conversions::zmusToMidi(mcdata, convdata);
 		path.SetExt("mid");
 	}
 	else if (entry->getType()->getFormat() == "gmid")  			// GMID -> MIDI
@@ -234,7 +240,8 @@ bool AudioEntryPanel::open()
 
 	// MIDI format
 	if (entry->getType()->getFormat() == "midi" || entry->getType()->getFormat() == "mus" ||
-	        entry->getType()->getFormat() == "gmid")
+		entry->getType()->getFormat() == "gmid" || entry->getType()->getFormat() == "xmi" ||
+		entry->getType()->getFormat() == "hmp"  || entry->getType()->getFormat() == "hmi")
 	{
 		audio_type = AUTYPE_MIDI;
 		convdata.exportFile(path.GetFullPath());
