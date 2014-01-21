@@ -2426,6 +2426,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\zreaders\m_swap.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\zreaders\mus2midi.h"
 					>
 				</File>

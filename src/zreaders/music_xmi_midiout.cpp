@@ -36,7 +36,6 @@
 
 #include "i_musicinterns.h"
 #include "templates.h"
-//#include "doomdef.h"
 #include "m_swap.h"
 
 // MACROS ------------------------------------------------------------------
@@ -82,22 +81,10 @@ struct XMISong::TrackInfo
 	DWORD ReadDelay();
 };
 
-// EXTERNAL FUNCTION PROTOTYPES --------------------------------------------
-
-// PUBLIC FUNCTION PROTOTYPES ----------------------------------------------
-
-// PRIVATE FUNCTION PROTOTYPES ---------------------------------------------
-
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
 
 extern char MIDI_EventLengths[7];
 extern char MIDI_CommonLengths[15];
-
-// PRIVATE DATA DEFINITIONS ------------------------------------------------
-
-// PUBLIC DATA DEFINITIONS -------------------------------------------------
-
-// CODE --------------------------------------------------------------------
 
 //==========================================================================
 //
@@ -110,12 +97,6 @@ extern char MIDI_CommonLengths[15];
 XMISong::XMISong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 : MIDIStreamer(type), MusHeader(0), Songs(0)
 {
-#ifdef _WIN32
-	if (ExitEvent == NULL)
-	{
-		return;
-	}
-#endif
 	MusHeader = new BYTE[len];
 	SongLen = len;
 	if (file != NULL)
@@ -258,22 +239,6 @@ bool XMISong::SetMIDISubsong(int subsong)
 	}
 	CurrSong = &Songs[subsong];
 	return true;
-}
-
-//==========================================================================
-//
-// XMISong :: DoInitialSetup
-//
-// Sets the starting channel volumes.
-//
-//==========================================================================
-
-void XMISong::DoInitialSetup()
-{
-	for (int i = 0; i < 16; ++i)
-	{
-		ChannelVolumes[i] = 100;
-	}
 }
 
 //==========================================================================
@@ -474,7 +439,7 @@ DWORD *XMISong::SendCommand (DWORD *events, EventSource due, DWORD delay)
 					int depth = track->ForDepth - 1;
 					if (depth < MAX_FOR_DEPTH)
 					{
-						if (data2 < 64 || (track->ForLoops[depth].LoopCount == 0 && !m_Looping))
+						if (data2 < 64 || (track->ForLoops[depth].LoopCount == 0))
 						{ // throw away this loop.
 							track->ForLoops[depth].LoopCount = 1;
 						}
@@ -655,56 +620,4 @@ XMISong::EventSource XMISong::FindNextDue()
 	DWORD fake_delay = NoteOffs.Size() == 0 ? 0xFFFFFFFF : NoteOffs[0].Delay;
 
 	return (fake_delay <= real_delay) ? EVENT_Fake : EVENT_Real;
-}
-
-
-//==========================================================================
-//
-// XMISong :: GetOPLDumper
-//
-//==========================================================================
-/*
-MusInfo *XMISong::GetOPLDumper(const char *filename)
-{
-	return new XMISong(this, filename, MDEV_OPL);
-}
-*/
-//==========================================================================
-//
-// XMISong :: GetWaveDumper
-//
-//==========================================================================
-/*
-MusInfo *XMISong::GetWaveDumper(const char *filename, int rate)
-{
-	return new XMISong(this, filename, MDEV_GUS);
-}
-*/
-//==========================================================================
-//
-// XMISong File Dumping Constructor
-//
-//==========================================================================
-
-XMISong::XMISong(const XMISong *original, const char *filename, EMidiDevice type)
-: MIDIStreamer(filename, type)
-{
-	SongLen = original->SongLen;
-	MusHeader = new BYTE[original->SongLen];
-	memcpy(MusHeader, original->MusHeader, original->SongLen);
-	NumSongs = original->NumSongs;
-	Tempo = InitialTempo = original->InitialTempo;
-	Songs = new TrackInfo[NumSongs];
-	for (int i = 0; i < NumSongs; ++i)
-	{
-		TrackInfo *newtrack = &Songs[i];
-		const TrackInfo *oldtrack = &original->Songs[i];
-
-		newtrack->EventChunk = MusHeader + (oldtrack->EventChunk - original->MusHeader);
-		newtrack->EventLen = oldtrack->EventLen;
-		newtrack->EventP = 0;
-
-		newtrack->TimbreChunk = MusHeader + (oldtrack->TimbreChunk - original->MusHeader);
-		newtrack->TimbreLen = oldtrack->TimbreLen;
-	}
 }

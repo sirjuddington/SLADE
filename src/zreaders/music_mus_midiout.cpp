@@ -33,29 +33,13 @@
 
 // HEADER FILES ------------------------------------------------------------
 
-#if !defined(__FreeBSD__) && !defined(__APPLE__)
-#include <malloc.h>
-#else
-#include <stdlib.h>
-#endif
 #include "i_musicinterns.h"
 #include "templates.h"
-//#include "doomdef.h"
 #include "m_swap.h"
-
-// MACROS ------------------------------------------------------------------
-
-// TYPES -------------------------------------------------------------------
-
-// EXTERNAL FUNCTION PROTOTYPES --------------------------------------------
 
 // PUBLIC FUNCTION PROTOTYPES ----------------------------------------------
 
 int MUSHeaderSearch(const BYTE *head, int len);
-
-// PRIVATE FUNCTION PROTOTYPES ---------------------------------------------
-
-// EXTERNAL DATA DECLARATIONS ----------------------------------------------
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 
@@ -78,8 +62,6 @@ static const BYTE CtrlTranslate[15] =
 	121, // reset all controllers
 };
 
-// PUBLIC DATA DEFINITIONS -------------------------------------------------
-
 // CODE --------------------------------------------------------------------
 
 //==========================================================================
@@ -94,13 +76,6 @@ static const BYTE CtrlTranslate[15] =
 MUSSong2::MUSSong2 (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 : MIDIStreamer(type), MusHeader(0), MusBuffer(0)
 {
-#ifdef _WIN32
-	if (ExitEvent == NULL)
-	{
-		return;
-	}
-#endif
-
 	BYTE front[32];
 	int start;
 
@@ -171,23 +146,6 @@ MUSSong2::~MUSSong2 ()
 
 //==========================================================================
 //
-// MUSSong2 :: DoInitialSetup
-//
-// Sets up initial velocities and channel volumes.
-//
-//==========================================================================
-
-void MUSSong2::DoInitialSetup()
-{
-	for (int i = 0; i < 16; ++i)
-	{
-		LastVelocity[i] = 100;
-		ChannelVolumes[i] = 127;
-	}
-}
-
-//==========================================================================
-//
 // MUSSong2 :: DoRestart
 //
 // Rewinds the song.
@@ -210,35 +168,6 @@ bool MUSSong2::CheckDone()
 	return MusP >= MaxMusP;
 }
 
-//==========================================================================
-//
-// MUSSong2 :: Precache
-//
-// MUS songs contain information in their header for exactly this purpose.
-//
-//==========================================================================
-/*
-void MUSSong2::Precache()
-{
-	WORD *work = (WORD *)alloca(MusHeader->NumInstruments * sizeof(WORD));
-	const WORD *used = (WORD *)MusHeader + sizeof(MUSHeader) / sizeof(WORD);
-	int i, j;
-
-	for (i = j = 0; i < MusHeader->NumInstruments; ++i)
-	{
-		WORD instr = LittleShort(used[i]);
-		if (instr < 128)
-		{
-			work[j++] = instr;
-		}
-		else if (used[i] >= 135 && used[i] <= 181)
-		{ // Percussions are 100-based, not 128-based, eh?
-			work[j++] = instr - 100 + (1 << 14);
-		}
-	}
-	MIDI->PrecacheInstruments(&work[0], j);
-}
-*/
 //==========================================================================
 //
 // MUSSong2 :: MakeEvents
@@ -362,46 +291,6 @@ end:
 		events += 3;
 	}
 	return events;
-}
-
-//==========================================================================
-//
-// MUSSong2 :: GetOPLDumper
-//
-//==========================================================================
-/*
-MusInfo *MUSSong2::GetOPLDumper(const char *filename)
-{
-	return new MUSSong2(this, filename, MDEV_OPL);
-}
-*/
-//==========================================================================
-//
-// MUSSong2 :: GetWaveDumper
-//
-//==========================================================================
-/*
-MusInfo *MUSSong2::GetWaveDumper(const char *filename, int rate)
-{
-	return new MUSSong2(this, filename, MDEV_GUS);
-}
-*/
-//==========================================================================
-//
-// MUSSong2 File Dumping Constructor
-//
-//==========================================================================
-
-MUSSong2::MUSSong2(const MUSSong2 *original, const char *filename, EMidiDevice type)
-: MIDIStreamer(filename, type)
-{
-	int songstart = LittleShort(original->MusHeader->SongStart);
-	MaxMusP = original->MaxMusP;
-	MusHeader = (MUSHeader *)new BYTE[songstart + MaxMusP];
-	memcpy(MusHeader, original->MusHeader, songstart + MaxMusP);
-	MusBuffer = (BYTE *)MusHeader + songstart;
-	Division = 140;
-	InitialTempo = 1000000;
 }
 
 //==========================================================================

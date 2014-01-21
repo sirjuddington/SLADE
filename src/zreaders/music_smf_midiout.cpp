@@ -39,7 +39,6 @@
 
 #include "i_musicinterns.h"
 #include "templates.h"
-//#include "doomdef.h"
 #include "m_swap.h"
 
 // MACROS ------------------------------------------------------------------
@@ -76,22 +75,10 @@ struct MIDISong2::TrackInfo
 	DWORD ReadVarLen ();
 };
 
-// EXTERNAL FUNCTION PROTOTYPES --------------------------------------------
-
-// PUBLIC FUNCTION PROTOTYPES ----------------------------------------------
-
-// PRIVATE FUNCTION PROTOTYPES ---------------------------------------------
-
-// EXTERNAL DATA DECLARATIONS ----------------------------------------------
-
-// PRIVATE DATA DEFINITIONS ------------------------------------------------
-
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
 
 char MIDI_EventLengths[7] = { 2, 2, 2, 2, 1, 1, 2 };
 char MIDI_CommonLengths[15] = { 0, 1, 2, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0 };
-
-// CODE --------------------------------------------------------------------
 
 //==========================================================================
 //
@@ -107,12 +94,6 @@ MIDISong2::MIDISong2 (FILE *file, const BYTE *musiccache, int len, EMidiDevice t
 	int p;
 	int i;
 
-#ifdef _WIN32
-	if (ExitEvent == NULL)
-	{
-		return;
-	}
-#endif
 	MusHeader = new BYTE[len];
 	SongLen = len;
 	if (file != NULL)
@@ -226,27 +207,6 @@ void MIDISong2::CheckCaps(int tech)
 	else if (tech == MOD_MIDIPORT)
 	{
 		DesignationMask = 0x0001;
-	}
-}
-
-
-//==========================================================================
-//
-// MIDISong2 :: DoInitialSetup
-//
-// Sets the starting channel volumes.
-//
-//==========================================================================
-
-void MIDISong2 :: DoInitialSetup()
-{
-	for (int i = 0; i < 16; ++i)
-	{
-		// The ASS uses a default volume of 90, but all the other
-		// sources I can find say it's 100. Ideally, any song that
-		// cares about its volume is going to initialize it to
-		// whatever it wants and override this default.
-		ChannelVolumes[i] = 100;
 	}
 }
 
@@ -517,7 +477,7 @@ DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay)
 			case 117:	// EMIDI Loop End
 				if (track->LoopCount >= 0 && data2 == 127)
 				{
-					if (track->LoopCount == 0 && !m_Looping)
+					if (track->LoopCount == 0)
 					{
 						track->Finished = true;
 					}
@@ -559,7 +519,7 @@ DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay)
 					{
 						if (Tracks[i].LoopCount >= 0)
 						{
-							if (Tracks[i].LoopCount == 0 && !m_Looping)
+							if (Tracks[i].LoopCount == 0)
 							{
 								Tracks[i].Finished = true;
 							}
@@ -771,56 +731,4 @@ MIDISong2::TrackInfo *MIDISong2::FindNextDue ()
 		return track < &Tracks[NumTracks] ? track : NULL;
 	}
 	return NULL;
-}
-
-
-//==========================================================================
-//
-// MIDISong2 :: GetOPLDumper
-//
-//==========================================================================
-/*
-MusInfo *MIDISong2::GetOPLDumper(const char *filename)
-{
-	return new MIDISong2(this, filename, MDEV_OPL);
-}
-*/
-//==========================================================================
-//
-// MIDISong2 :: GetWaveDumper
-//
-//==========================================================================
-/*
-MusInfo *MIDISong2::GetWaveDumper(const char *filename, int rate)
-{
-	return new MIDISong2(this, filename, MDEV_GUS);
-}
-*/
-//==========================================================================
-//
-// MIDISong2 File Dumping Constructor
-//
-//==========================================================================
-
-MIDISong2::MIDISong2(const MIDISong2 *original, const char *filename, EMidiDevice type)
-: MIDIStreamer(filename, type)
-{
-	SongLen = original->SongLen;
-	MusHeader = new BYTE[original->SongLen];
-	memcpy(MusHeader, original->MusHeader, original->SongLen);
-	Format = original->Format;
-	NumTracks = original->NumTracks;
-	DesignationMask = 0;
-	Division = original->Division;
-	Tempo = InitialTempo = original->InitialTempo;
-	Tracks = new TrackInfo[NumTracks];
-	for (int i = 0; i < NumTracks; ++i)
-	{
-		TrackInfo *newtrack = &Tracks[i];
-		const TrackInfo *oldtrack = &original->Tracks[i];
-
-		newtrack->TrackBegin = MusHeader + (oldtrack->TrackBegin - original->MusHeader);
-		newtrack->TrackP = 0;
-		newtrack->MaxTrackP = oldtrack->MaxTrackP;
-	}
 }

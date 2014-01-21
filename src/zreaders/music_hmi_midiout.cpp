@@ -132,10 +132,10 @@ HMISong::HMISong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 : MIDIStreamer(type), MusHeader(0), Tracks(0)
 {
 #ifdef _WIN32
-	if (ExitEvent == NULL)
+/*	if (ExitEvent == NULL)
 	{
 		return;
-	}
+	}*/
 #endif
 	if (len < 0x100)
 	{ // Way too small to be HMI.
@@ -431,23 +431,6 @@ void HMISong::CheckCaps(int tech)
 				break;
 			}
 		}
-	}
-}
-
-
-//==========================================================================
-//
-// HMISong :: DoInitialSetup
-//
-// Sets the starting channel volumes.
-//
-//==========================================================================
-
-void HMISong :: DoInitialSetup()
-{
-	for (int i = 0; i < 16; ++i)
-	{
-		ChannelVolumes[i] = 100;
 	}
 }
 
@@ -976,54 +959,4 @@ HMISong::TrackInfo *HMISong::FindNextDue ()
 		return FakeTrack;
 	}
 	return track;
-}
-
-
-//==========================================================================
-//
-// HMISong :: GetOPLDumper
-//
-//==========================================================================
-/*
-MusInfo *HMISong::GetOPLDumper(const char *filename)
-{
-	return new HMISong(this, filename, MDEV_OPL);
-}
-*/
-//==========================================================================
-//
-// HMISong :: GetWaveDumper
-//
-//==========================================================================
-/*
-MusInfo *HMISong::GetWaveDumper(const char *filename, int rate)
-{
-	return new HMISong(this, filename, MDEV_GUS);
-}
-*/
-//==========================================================================
-//
-// HMISong File Dumping Constructor
-//
-//==========================================================================
-
-HMISong::HMISong(const HMISong *original, const char *filename, EMidiDevice type)
-: MIDIStreamer(filename, type)
-{
-	SongLen = original->SongLen;
-	MusHeader = new BYTE[original->SongLen];
-	memcpy(MusHeader, original->MusHeader, original->SongLen);
-	NumTracks = original->NumTracks;
-	Division = original->Division;
-	Tempo = InitialTempo = original->InitialTempo;
-	Tracks = new TrackInfo[NumTracks];
-	for (int i = 0; i < NumTracks; ++i)
-	{
-		TrackInfo *newtrack = &Tracks[i];
-		const TrackInfo *oldtrack = &original->Tracks[i];
-
-		newtrack->TrackBegin = MusHeader + (oldtrack->TrackBegin - original->MusHeader);
-		newtrack->TrackP = 0;
-		newtrack->MaxTrackP = oldtrack->MaxTrackP;
-	}
 }
