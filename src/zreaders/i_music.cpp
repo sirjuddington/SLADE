@@ -142,7 +142,7 @@ bool zmus2mid(MemChunk& musinput, MemChunk& midioutput)
 		if (streamer)
 		{
 			TArray<BYTE> bytes;
-			streamer->CreateSMF(bytes);
+			streamer->CreateSMF(bytes, 1);
 			return (bytes.Size() && midioutput.write(&bytes[0], bytes.Size()));
 		}
 	}
