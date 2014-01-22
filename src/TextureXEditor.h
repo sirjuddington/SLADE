@@ -43,6 +43,7 @@ public:
 	void	showTextureMenu(bool show = true);
 	void	setSelection(size_t index);
 	void	setSelection(ArchiveEntry* entry);
+	void	updateMenuStatus();
 
 	// Editing
 	bool	removePatch(unsigned index, bool delete_entry = false);

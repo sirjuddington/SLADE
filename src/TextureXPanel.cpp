@@ -1300,7 +1300,7 @@ void TextureXPanel::onBtnPaste(wxCommandEvent& e)
  *******************************************************************/
 void TextureXPanel::onShow(wxShowEvent& e)
 {
-	tx_editor->showTextureMenu(e.IsShown());
+	tx_editor->updateMenuStatus();
 }
 
 /* TextureXPanel::onBtnSave

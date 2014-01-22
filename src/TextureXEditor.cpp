@@ -200,7 +200,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	SetSizer(sizer);
 
 	// Add tabs
-	tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxNO_BORDER);
+	tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxAUI_NB_WINDOWLIST_BUTTON|wxBORDER_NONE);
 	tabs->SetArtProvider(new clAuiTabArt());
 	sizer->Add(tabs, 1, wxEXPAND|wxALL, 4);
 
@@ -642,6 +642,29 @@ void TextureXEditor::setSelection(ArchiveEntry* entry)
 	}
 }
 
+/* TextureXEditor::updateMenuStatus
+ * Checks if the Texture menu needs to be displayed or not 
+ *******************************************************************/
+void TextureXEditor::updateMenuStatus()
+{
+	wxWindow* current = tabs->GetPage(tabs->GetSelection());
+
+	// Check if the currently opened tab is a texturex list
+	bool tex = false;
+	for (unsigned a = 0; a < texture_editors.size(); a++)
+	{
+		if (texture_editors[a] == current)
+		{
+			tex = true;
+			break;
+		}
+	}
+
+	// Show/hide texture menu accordingly
+	showTextureMenu(tex);
+}
+
+
 /* TextureXEditor::onAnnouncement
  * Handles any announcements from the current texture
  *******************************************************************/
@@ -685,22 +708,7 @@ void TextureXEditor::onShow(wxShowEvent& e)
 		showTextureMenu(false);
 		return;
 	}
-
-	wxWindow* current = tabs->GetPage(tabs->GetSelection());
-
-	// Check if the currently opened tab is a texturex list
-	bool tex = false;
-	for (unsigned a = 0; a < texture_editors.size(); a++)
-	{
-		if (texture_editors[a] == current)
-		{
-			tex = true;
-			break;
-		}
-	}
-
-	// Show/hide texture menu accordingly
-	showTextureMenu(tex);
+	updateMenuStatus();
 }
 
 
