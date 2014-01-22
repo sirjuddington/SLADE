@@ -1431,6 +1431,10 @@ bool Archive::renameEntry(ArchiveEntry* entry, string name)
 	if (entry->isLocked())
 		return false;
 
+	// Check for directory
+	if (entry->getType() == EntryType::folderType())
+		return renameDir(getDir(entry->getPath(true)), name);
+
 	// Announce (before actually renaming in case old name is still needed)
 	MemChunk mc;
 	int index = entryIndex(entry);

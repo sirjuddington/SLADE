@@ -49,7 +49,6 @@
 #include <wx/dnd.h>
 #include <wx/statline.h>
 #include <wx/webview.h>
-#include <wx/filename.h>
 
 
 /*******************************************************************
@@ -268,6 +267,7 @@ void MainWindow::setupLayout()
 	wxMenu* fileMenu = new wxMenu("");
 	fileMenu->AppendSubMenu(fileNewMenu, "&New", "Create a new Archive");
 	theApp->getAction("aman_open")->addToMenu(fileMenu);
+	theApp->getAction("aman_opendir")->addToMenu(fileMenu);
 	fileMenu->AppendSeparator();
 	theApp->getAction("aman_save")->addToMenu(fileMenu);
 	theApp->getAction("aman_saveas")->addToMenu(fileMenu);
@@ -315,6 +315,7 @@ void MainWindow::setupLayout()
 	tbg_file->addActionButton("aman_newwad");
 	tbg_file->addActionButton("aman_newzip");
 	tbg_file->addActionButton("aman_open");
+	tbg_file->addActionButton("aman_opendir");
 	tbg_file->addActionButton("aman_save");
 	tbg_file->addActionButton("aman_saveas");
 	tbg_file->addActionButton("aman_saveall");
@@ -745,9 +746,10 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	}
 	else if (wxFileExists(href))
 	{
+		DPrintf(href);
+		DPrintf(appPath("startpage.htm", DIR_TEMP));
 		// Navigating to file, open it
-		string page = appPath("startpage.htm", DIR_TEMP);
-		if (wxFileName(href).GetLongPath() != wxFileName(page).GetLongPath())
+		if (href != appPath("startpage.htm", DIR_TEMP))
 			theArchiveManager->openArchive(href);
 		ev.Veto();
 	}
