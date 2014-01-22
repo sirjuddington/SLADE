@@ -35,6 +35,11 @@
 #include "zreaders/i_music.h"
 
 /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, dmx_padding, true, CVAR_SAVE)
+
+/*******************************************************************
  * STRUCTS
  *******************************************************************/
 // Some structs for wav conversion
@@ -115,6 +120,29 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out)
 	uint8_t* samples = new uint8_t[header.samples];
 	in.read(samples, header.samples);
 
+	// Detect if DMX padding is present
+	// It was discovered ca. 2013 that the original DMX sound format used in Doom
+	// contains 32 padding bytes that are ignored during playback: 16 leading pad
+	// bytes and 16 trailing ones. The leading bytes are identical copies of the 
+	// first actual sample, and trailing ones are copies of the last sample. The 
+	// header's sample count does include these padding bytes.
+	uint8_t samples_offset = 16;
+	if (header.samples > 33 && dmx_padding)
+	{
+		size_t e = header.samples - 16;
+		for (int i = 0; i < 16; ++i)
+		{
+			if (samples[i] != samples[16] || samples[e+i] != samples[e-1])
+			{
+				samples_offset = 0;
+				break;
+			}
+		}
+	} else samples_offset = 0;
+
+	if (samples_offset)
+		header.samples -= 32;
+
 
 	// --- Write WAV ---
 
@@ -147,11 +175,13 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out)
 	out.write("WAVE", 4);
 	out.write(&fmtchunk, sizeof(wav_fmtchunk_t));
 	out.write(&wdhdr, 8);
-	out.write(samples, header.samples);
+	out.write(samples+samples_offset, header.samples);
 
 	// Ensure data ends on even byte boundary
 	if (header.samples % 2 != 0)
 		out.write("\0", 1);
+
+	delete[] samples;
 
 	return true;
 }
@@ -218,6 +248,7 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	}
 
 	uint8_t* data = new uint8_t[chunk.size];
+	uint8_t padding[16];
 	in.read(data, chunk.size);
 
 
@@ -228,10 +259,24 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	ds_hdr.three = 3;
 	ds_hdr.samplerate = fmtchunk.samplerate;
 	ds_hdr.samples = chunk.size;
+	if (dmx_padding)
+		ds_hdr.samples += 32;
 	out.write(&ds_hdr, 8);
 
 	// Write data
+	if (dmx_padding)
+	{
+		memset(padding, data[0], 16);
+		out.write(padding, 16);
+	}
 	out.write(data, chunk.size);
+	if (dmx_padding)
+	{
+		memset(padding, data[chunk.size - 1], 16);
+		out.write(padding, 16);
+	}
+
+	delete[] data;
 
 	return true;
 }

@@ -14,8 +14,8 @@ private:
 	fluid_player_t*			fs_player;
 	fluid_audio_driver_t*	fs_adriver;
 
-	bool	fs_initialised;
-	int		fs_soundfont_id;
+	bool		fs_initialised;
+	vector<int>	fs_soundfont_ids;
 
 public:
 	MIDIPlayer();
@@ -31,7 +31,7 @@ public:
 	}
 
 	bool	isInitialised() { return fs_initialised; }
-	bool	isSoundfontLoaded() { return fs_soundfont_id != FLUID_FAILED; }
+	bool	isSoundfontLoaded() { return fs_soundfont_ids.size() > 0; }
 
 	void resetPlayer()
 	{
