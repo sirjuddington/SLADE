@@ -32,7 +32,7 @@
 #include "AudioPrefsPanel.h"
 #include "MIDIPlayer.h"
 #include <wx/filedlg.h>
-
+#include <wx/filename.h>
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -41,6 +41,7 @@ EXTERN_CVAR(Bool, snd_autoplay)
 EXTERN_CVAR(String, fs_soundfont_path)
 EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Bool, dmx_padding)
+CVAR(String, dir_last_soundfont, "", CVAR_SAVE)
 
 /*******************************************************************
  * AUDIOPREFSPANEL CLASS FUNCTIONS
@@ -127,12 +128,32 @@ void AudioPrefsPanel::applyPreferences()
  *******************************************************************/
 void AudioPrefsPanel::onBtnBrowseSoundfont(wxCommandEvent& e)
 {
+#ifdef WIN32
+	char separator = ';';
+#else
+	char separator = ':';
+#endif
+
+	string dir = dir_last_soundfont;
+	if (dir_last_soundfont.value.empty() && fs_soundfont_path.value.size())
+	{
+		wxArrayString paths = wxSplit(fs_soundfont_path, separator);
+		dir = wxFileName(paths[0]).GetPath();
+	}
+
 	// Open file dialog
-	wxFileDialog fd(this, "Browse for MIDI Soundfont", dir_last, "", "Soundfont files (*.sf2)|*.sf2");
+	wxFileDialog fd(this, "Browse for MIDI Soundfont", dir, "", "Soundfont files (*.sf2)|*.sf2", wxFD_MULTIPLE);
 	if (fd.ShowModal() == wxID_OK)
 	{
-		text_soundfont_path->SetValue(fd.GetPath());
-		dir_last = fd.GetDirectory();
+		wxArrayString paths;
+		string fullpath = "";
+		fd.GetPaths(paths);
+		for (size_t a = 0; a < paths.size(); ++a)
+			fullpath += paths[a] + separator;
+		if (paths.size())
+			fullpath.RemoveLast(1);
+		text_soundfont_path->SetValue(fullpath);
+		dir_last_soundfont = fd.GetDirectory();
 	}
 }
 

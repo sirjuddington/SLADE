@@ -746,10 +746,9 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	}
 	else if (wxFileExists(href))
 	{
-		DPrintf(href);
-		DPrintf(appPath("startpage.htm", DIR_TEMP));
 		// Navigating to file, open it
-		if (href != appPath("startpage.htm", DIR_TEMP))
+		string page = appPath("startpage.htm", DIR_TEMP);
+		if (wxFileName(href).GetLongPath() != wxFileName(page).GetLongPath())
 			theArchiveManager->openArchive(href);
 		ev.Veto();
 	}

@@ -59,7 +59,7 @@ MIDIPlayer::MIDIPlayer()
 {
 	// Init variables
 	fs_initialised = false;
-	fs_soundfont_id = FLUID_FAILED;
+	fs_soundfont_ids.clear();
 
 	// Set fluidsynth driver to alsa in linux (no idea why it defaults to jack)
 #ifndef __WXMSW__
@@ -71,7 +71,7 @@ MIDIPlayer::MIDIPlayer()
 	if (fs_soundfont_path == "")
 	{
 #ifdef __WXGTK__
-		fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2";
+		fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
 #else
 		wxLogMessage("Warning: No fluidsynth soundfont set, MIDI playback will not work");
 #endif
@@ -143,14 +143,36 @@ bool MIDIPlayer::reloadSoundfont()
 	if (!fs_initialised)
 		return false;
 
+#ifdef WIN32
+	char separator = ';';
+#else
+	char separator = ':';
+#endif
+
 	// Unload any current soundfont
-	if (fs_soundfont_id != FLUID_FAILED)
-		fluid_synth_sfunload(fs_synth, fs_soundfont_id, 1);
+	for (int a = fs_soundfont_ids.size() - 1; a >= 0; --a)
+	{
+		if (fs_soundfont_ids[a] != FLUID_FAILED)
+			fluid_synth_sfunload(fs_synth, fs_soundfont_ids[a], 1);
+		fs_soundfont_ids.pop_back();
+	}
 
-	// Load soundfont
-	fs_soundfont_id = fluid_synth_sfload(fs_synth, wxString(fs_soundfont_path).ToAscii(), 1);
+	// Load soundfonts
+	wxArrayString paths = wxSplit(fs_soundfont_path, separator);
+	bool retval = false;
+	for (int a = paths.size() - 1; a >= 0; --a)
+	{
+		string path = paths[a];
+		if (path.size())
+		{
+			int fs_id = fluid_synth_sfload(fs_synth, CHR(path), 1);
+			fs_soundfont_ids.push_back(fs_id);
+			if (fs_id != FLUID_FAILED)
+				retval = true;
+		}
+	}
 
-	return fs_soundfont_id != FLUID_FAILED;
+	return retval;
 }
 
 /* MIDIPlayer::openFile
