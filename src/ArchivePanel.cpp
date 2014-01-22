@@ -144,7 +144,6 @@ public:
 						wxMessageDialog dlg(parent, message, caption, wxCANCEL|wxYES_NO|wxCENTRE);
 						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
 						int result = dlg.ShowModal();
-						DPrintf("result: %d", result);
 
 						// User doesn't want to replace the entry
 						if (result == wxID_NO)			entry = NULL;
