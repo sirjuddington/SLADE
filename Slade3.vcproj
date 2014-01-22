@@ -1743,6 +1743,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\DirArchive.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\DirArchive.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\DiskArchive.cpp"
 					>
 				</File>

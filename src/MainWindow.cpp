@@ -49,7 +49,7 @@
 #include <wx/dnd.h>
 #include <wx/statline.h>
 #include <wx/webview.h>
-
+#include <wx/filename.h>
 
 /*******************************************************************
  * VARIABLES
@@ -187,7 +187,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Editor Area --
-	notebook_tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE|wxNO_BORDER|wxAUI_NB_WINDOWLIST_BUTTON|wxNB_FLAT);
+	notebook_tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE|wxBORDER_NONE|wxAUI_NB_WINDOWLIST_BUTTON|wxNB_FLAT);
 	if (tab_style == 1)
 		notebook_tabs->SetArtProvider(new clAuiTabArt());
 	else if (tab_style == 2)
