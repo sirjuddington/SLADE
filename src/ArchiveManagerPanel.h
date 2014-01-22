@@ -86,6 +86,7 @@ public:
 	void			closeEntryTabs(Archive* parent);
 	void			openFile(string filename);
 	void			openFiles(wxArrayString& files);
+	void			openDirAsArchive(string dir);
 
 	// General actions
 	bool	undo();

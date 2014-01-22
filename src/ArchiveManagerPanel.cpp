@@ -571,6 +571,8 @@ void ArchiveManagerPanel::openTab(Archive* archive)
 			icon = "e_wad";
 		else if (archive->getType() == ARCHIVE_ZIP)
 			icon = "e_zip";
+		else if (archive->getType() == ARCHIVE_FOLDER)
+			icon = "e_folder";
 
 		wp->SetName("archive");
 		notebook_archives->AddPage(wp, archive->getFilename(false), false);
@@ -835,6 +837,35 @@ void ArchiveManagerPanel::openFiles(wxArrayString& files)
 	}
 }
 
+/* ArchiveManagerPanel::openDirAsArchive
+* Opens a directory as an archive and initialises the UI for it
+*******************************************************************/
+void ArchiveManagerPanel::openDirAsArchive(string dir)
+{
+	// Show splash screen
+	theSplashWindow->show("Opening Directory...", true);
+
+	// test
+	wxStopWatch sw;
+	sw.Start();
+
+	// Open the file in the archive manager
+	Archive* new_archive = theArchiveManager->openDirArchive(dir);
+
+	sw.Pause();
+	wxLogMessage("Opening took %d ms", (int)sw.Time());
+
+	// Hide splash screen
+	theSplashWindow->hide();
+
+	// Check that the archive opened ok
+	if (!new_archive)
+	{
+		// If archive didn't open ok, show error message
+		wxMessageBox(S_FMT("Error opening directory %s:\n%s", dir, Global::error), "Error", wxICON_ERROR);
+	}
+}
+
 /* ArchiveManagerPanel::undo
  * Performs an undo operation on the currently selected tab, returns
  * true if the tab supports undo, false otherwise
@@ -1008,6 +1039,10 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 	// Check for null pointer
 	if (!archive)
 		return false;
+
+	// Check archive type
+	if (archive->getType() == ARCHIVE_FOLDER)
+		return true;	// Can't do save as for folder
 
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
@@ -1398,6 +1433,27 @@ bool ArchiveManagerPanel::handleAction(string id)
 
 			// Save 'dir_last'
 			dir_last = dialog_open.GetDirectory();
+		}
+	}
+
+	// File->Open Directory
+	else if (id == "aman_opendir")
+	{
+		// Open a directory browser dialog
+		wxDirDialog dialog_open(this, "Select a Directory to open", dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
+
+		// Run the dialog & check the user didn't cancel
+		if (dialog_open.ShowModal() == wxID_OK)
+		{
+			wxBeginBusyCursor();
+
+			// Open directory
+			openDirAsArchive(dialog_open.GetPath());
+
+			wxEndBusyCursor();
+
+			// Save 'dir_last'
+			dir_last = dialog_open.GetPath();
 		}
 	}
 

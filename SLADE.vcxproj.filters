@@ -1140,6 +1140,9 @@
     <ClCompile Include="src\zreaders\music_xmi_midiout.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
+    <ClCompile Include="src\DirArchive.cpp">
+      <Filter>Resources\Archive\Formats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2048,6 +2051,9 @@
     </ClInclude>
     <ClInclude Include="src\zreaders\mus2midi.h">
       <Filter>External\ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DirArchive.h">
+      <Filter>Resources\Archive\Formats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

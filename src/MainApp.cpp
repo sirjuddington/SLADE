@@ -404,6 +404,7 @@ void MainApp::initActions()
 	new SAction("aman_newzip", "New Zip Archive", "t_newzip", "Create a new Zip Archive", "Ctrl+Shift+Z");
 	new SAction("aman_newmap", "New Map", "t_mapeditor", "Create a new standalone map", "Ctrl+Shift+M");
 	new SAction("aman_open", "&Open", "t_open", "Open an existing Archive", "Ctrl+O");
+	new SAction("aman_opendir", "Open &Directory", "t_opendir", "Open a directory as an Archive");
 	new SAction("aman_save", "&Save", "t_save", "Save the currently open Archive", "Ctrl+S");
 	new SAction("aman_saveas", "Save &As", "t_saveas", "Save the currently open Archive to a new file", "Ctrl+Shift+S");
 	new SAction("aman_saveall", "Save All", "t_saveall", "Save all open Archives");

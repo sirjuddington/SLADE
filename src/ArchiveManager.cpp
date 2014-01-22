@@ -31,6 +31,7 @@
 #include "Main.h"
 #include "ArchiveManager.h"
 #include "Archives.h"
+#include "DirArchive.h"
 #include "Console.h"
 #include "SplashWindow.h"
 #include "ResourceManager.h"
@@ -187,6 +188,10 @@ Archive* ArchiveManager::getArchive(string filename)
  *******************************************************************/
 Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 {
+	// Check for directory
+	if (!wxFile::Exists(filename) && wxDirExists(filename))
+		return openDirArchive(filename, manage, silent);
+
 	open_silent = silent;
 
 	Archive* new_archive = getArchive(filename);
@@ -381,6 +386,62 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 			announce("archive_opened", mc);
 		}
 
+		return new_archive;
+	}
+	else
+	{
+		wxLogMessage("Error: " + Global::error);
+		delete new_archive;
+		return NULL;
+	}
+}
+
+/* ArchiveManager::openDirArchive
+ * Opens [dir] as a DirArchive and adds it to the list. Returns a
+ * pointer to the archive or NULL if an error occurred.
+ *******************************************************************/
+Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
+{
+	open_silent = silent;
+
+	Archive* new_archive = getArchive(dir);
+
+	wxLogMessage("Opening directory %s as archive", dir);
+
+	// If the archive is already open, just return it
+	if (new_archive)
+	{
+		// Announce open
+		MemChunk mc;
+		uint32_t index = archiveIndex(new_archive);
+		mc.write(&index, 4);
+		announce("archive_opened", mc);
+
+		return new_archive;
+	}
+
+	new_archive = new DirArchive();
+
+	// If it opened successfully, add it to the list if needed & return it,
+	// Otherwise, delete it and return NULL
+	if (new_archive->open(dir))
+	{
+		if (manage)
+		{
+			// Add the archive
+			addArchive(new_archive);
+
+			// Announce open
+			MemChunk mc;
+			uint32_t index = archiveIndex(new_archive);
+			mc.write(&index, 4);
+			announce("archive_opened", mc);
+
+			// Add to recent files
+			addRecentFile(dir);
+		}
+
+		// Return the opened archive
 		return new_archive;
 	}
 	else
@@ -839,7 +900,7 @@ string ArchiveManager::recentFile(unsigned index)
 void ArchiveManager::addRecentFile(string path)
 {
 	// Check the path is valid
-	if (!wxFileName::FileExists(path))
+	if (!(wxFileName::FileExists(path) || wxDirExists(path)))
 		return;
 
 	// Check if the file is already in the list
