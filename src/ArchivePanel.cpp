@@ -67,7 +67,7 @@
 #include <wx/aui/auibar.h>
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
-
+#include <wx/msgdlg.h>
 
 /*******************************************************************
  * VARIABLES
@@ -78,6 +78,7 @@ CVAR(Bool, context_submenus, true, CVAR_SAVE)
 CVAR(String, last_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(Int, last_tint_amount, 50, CVAR_SAVE)
+CVAR(Bool, auto_entry_replace, false, CVAR_SAVE)
 EXTERN_CVAR(String, path_pngout);
 EXTERN_CVAR(String, path_pngcrush);
 EXTERN_CVAR(String, path_deflopt);
@@ -112,6 +113,9 @@ public:
 		if (index < 0)
 			index = list->GetItemCount() - list->entriesBegin();
 
+		bool yes_to_all = false;
+		string caption = (filenames.size() > 1) ? "Overwrite entries" : "Overwrite entry";
+
 		// Import all dragged files, inserting after the item they were dragged onto
 		for (int a = filenames.size()-1; a >= 0; a--)
 		{
@@ -124,9 +128,34 @@ public:
 			else
 			{
 				wxFileName fn(filenames[a]);
+				ArchiveEntry* entry = NULL;
 
-				// Create new entry
-				ArchiveEntry* entry = parent->getArchive()->addNewEntry(fn.GetFullName(), index, list->getCurrentDir());
+				// Find entry to replace if needed
+				if (auto_entry_replace)
+				{
+					entry = parent->getArchive()->entryAtPath(list->getCurrentDir()->getPath() + fn.GetFullName());
+					// An entry with that name is already present, so ask about replacing it
+					if (entry && !yes_to_all)
+					{
+						// Since there is no standard "Yes/No to all" button or "Don't ask me again" checkbox,
+						// we will instead hack the Cancel button into being a "Yes to all" button. This is
+						// despite the existence of a wxID_YESTOALL return value...
+						string message = S_FMT("Overwrite existing entry %s%s", list->getCurrentDir()->getPath(), fn.GetFullName());
+						wxMessageDialog dlg(parent, message, caption, wxCANCEL|wxYES_NO|wxCENTRE);
+						dlg.SetYesNoCancelLabels(_("Yes"), _("No"), _("Yes to all"));
+						int result = dlg.ShowModal();
+						DPrintf("result: %d", result);
+
+						// User doesn't want to replace the entry
+						if (result == wxID_NO)			entry = NULL;
+						// User wants to replace all entries
+						if (result == wxID_CANCEL)		yes_to_all = true;
+					}
+				}
+
+				// Create new entry if needed
+				if (entry == NULL)
+					entry = parent->getArchive()->addNewEntry(fn.GetFullName(), index, list->getCurrentDir());
 
 				// Import the file to it
 				entry->importFile(filenames[a]);

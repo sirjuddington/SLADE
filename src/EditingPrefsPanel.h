@@ -9,6 +9,7 @@ class EditingPrefsPanel : public PrefsPanelBase
 private:
 	wxCheckBox*	cb_wad_force_uppercase;
 	wxCheckBox*	cb_zip_percent_encoding;
+	wxCheckBox*	cb_auto_entry_replace;
 	wxChoice*	choice_entry_mod;
 
 public:
