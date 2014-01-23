@@ -67,7 +67,6 @@
 #include <wx/aui/auibar.h>
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
-#include <wx/msgdlg.h>
 
 /*******************************************************************
  * VARIABLES
