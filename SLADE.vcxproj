@@ -233,6 +233,7 @@
     <ClCompile Include="src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp" />
     <ClCompile Include="src\Dialogs\SetupWizard\SetupWizardDialog.cpp" />
     <ClCompile Include="src\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
+    <ClCompile Include="src\DirArchive.cpp" />
     <ClCompile Include="src\DiskArchive.cpp" />
     <ClCompile Include="src\DockPanel.cpp" />
     <ClCompile Include="src\Drawing.cpp" />
@@ -531,6 +532,7 @@
     <ClInclude Include="src\Dialogs\SetupWizard\SetupWizardDialog.h" />
     <ClInclude Include="src\Dialogs\SetupWizard\TempFolderWizardPage.h" />
     <ClInclude Include="src\Dialogs\SetupWizard\WizardPageBase.h" />
+    <ClInclude Include="src\DirArchive.h" />
     <ClInclude Include="src\DiskArchive.h" />
     <ClInclude Include="src\DockPanel.h" />
     <ClInclude Include="src\Drawing.h" />
