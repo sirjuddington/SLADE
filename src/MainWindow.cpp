@@ -395,10 +395,17 @@ void MainWindow::createStartPage()
 	Archive* res_archive = theArchiveManager->programResourceArchive();
 	if (!res_archive)
 		return;
+
+	// Get entries to export
+	vector<ArchiveEntry*> export_entries;
 	ArchiveEntry* entry_html = res_archive->entryAtPath("html/startpage.htm");
-	ArchiveEntry* entry_logo = res_archive->entryAtPath("logo.png");
 	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
-	ArchiveEntry* entry_boxback = res_archive->entryAtPath("html/box-title-back.png");
+	export_entries.push_back(res_archive->entryAtPath("logo.png"));
+	export_entries.push_back(res_archive->entryAtPath("html/box-title-back.png"));
+	export_entries.push_back(res_archive->entryAtPath("icons/e_archive.png"));
+	export_entries.push_back(res_archive->entryAtPath("icons/e_wad.png"));
+	export_entries.push_back(res_archive->entryAtPath("icons/e_zip.png"));
+	export_entries.push_back(res_archive->entryAtPath("icons/e_folder.png"));
 
 	// Can't do anything without html entry
 	if (!entry_html)
@@ -434,7 +441,7 @@ void MainWindow::createStartPage()
 
 	// Generate recent files string
 	string recent;
-	for (unsigned a = 0; a < 11; a++)
+	for (unsigned a = 0; a < 10; a++)
 	{
 		if (a >= theArchiveManager->numRecentFiles())
 			break;	// No more recent files
@@ -442,8 +449,18 @@ void MainWindow::createStartPage()
 		// Add line break if needed
 		if (a > 0) recent += "<br/>\n";
 
+		// Determine icon
+		string fn = theArchiveManager->recentFile(a);
+		string icon = "e_archive";
+		if (fn.EndsWith(".wad"))
+			icon = "e_wad";
+		else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
+			icon = "e_zip";
+		else if (wxDirExists(fn))
+			icon = "e_folder";
+
 		// Add recent file link
-		recent += S_FMT("<a href=\"recent://%d\">%s</a>", a, theArchiveManager->recentFile(a));
+		recent += S_FMT("<a href=\"recent://%d\"><img src=\"%s.png\"> %s</a>", a, icon, fn);
 	}
 
 	// Insert tip and recent files into html
@@ -451,8 +468,8 @@ void MainWindow::createStartPage()
 	html.Replace("#totd#", tip);
 
 	// Write html and images to temp folder
-	if (entry_logo) entry_logo->exportFile(appPath("logo.png", DIR_TEMP));
-	if (entry_boxback) entry_boxback->exportFile(appPath("box-title-back.png", DIR_TEMP));
+	for (unsigned a = 0; a < export_entries.size(); a++)
+		export_entries[a]->exportFile(appPath(export_entries[a]->getName(), DIR_TEMP));
 	string html_file = appPath("startpage.htm", DIR_TEMP);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);

@@ -213,6 +213,14 @@ void ArchiveManagerPanel::createRecentPanel()
 	vbox->Add(new wxStaticText(panel_rf, -1, "Recent Files:"), 0, wxEXPAND);
 	list_recent = new ListView(panel_rf, -1);
 	vbox->Add(list_recent, 1, wxEXPAND|wxTOP, 4);
+
+	// Setup image list
+	wxImageList* list = new wxImageList(16, 16, false, 0);
+	list->Add(getIcon("e_archive"));
+	list->Add(getIcon("e_wad"));
+	list->Add(getIcon("e_zip"));
+	list->Add(getIcon("e_folder"));
+	list_recent->SetImageList(list, wxIMAGE_LIST_SMALL);
 }
 
 /* ArchiveManagerPanel::layoutNormal
@@ -269,7 +277,22 @@ void ArchiveManagerPanel::refreshRecentFileList()
 		updateRecentListItem(a);
 
 		if (a < 8)
-			menu_recent->Append(id_recent_start + a, theArchiveManager->recentFile(a));
+		{
+			// Get path and determine icon
+			string fn = theArchiveManager->recentFile(a);
+			string icon = "e_archive";
+			if (fn.EndsWith(".wad"))
+				icon = "e_wad";
+			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
+				icon = "e_zip";
+			else if (wxDirExists(fn))
+				icon = "e_folder";
+
+			// Create and add menu item
+			wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
+			mi->SetBitmap(getIcon(icon));
+			menu_recent->Append(mi);
+		}
 	}
 
 	// Update size
@@ -352,13 +375,23 @@ void ArchiveManagerPanel::updateOpenListItem(int index)
  *******************************************************************/
 void ArchiveManagerPanel::updateRecentListItem(int index)
 {
-
 	// Get path as wxFileName for processing
-	wxFileName fn(theArchiveManager->recentFile(index));
+	string path = theArchiveManager->recentFile(index);
+	wxFileName fn(path);
 
 	// Set item name
 	list_recent->setItemText(index, 0, fn.GetFullName());
 	list_recent->setItemText(index, 1, fn.GetPath());
+
+	// Set item icon
+	int icon = 0;
+	if (path.EndsWith(".wad"))
+		icon = 1;
+	else if (path.EndsWith(".zip") || path.EndsWith(".pk3") || path.EndsWith(".pke"))
+		icon = 2;
+	else if (wxDirExists(path))
+		icon = 3;
+	list_recent->SetItemImage(index, icon);
 }
 
 /* ArchiveManagerPanel::isArchivePanel
