@@ -366,7 +366,7 @@ void TextEditor::getRawText(MemChunk& mc)
 {
 	mc.clear();
 	string text = GetText();
-	mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
+	bool result = mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
 }
 
 /* TextEditor::trimWhitespace
@@ -712,6 +712,10 @@ void TextEditor::openJumpToDialog()
 				string name = tz.getToken();
 				for (int s = 0; s < skip; s++)
 					name = tz.getToken();
+
+				for (unsigned i = 0; i < language->nJBIgnore(); ++i)
+					if (S_CMPNOCASE(name, language->jBIgnore(i)))
+						name = tz.getToken();
 
 				// Numbered block, add block name
 				if (name.IsNumber())

@@ -63,6 +63,7 @@ CVAR(Int, mew_top, -1, CVAR_SAVE);
 CVAR(Bool, mew_maximized, true, CVAR_SAVE);
 CVAR(String, nodebuilder_id, "zdbsp", CVAR_SAVE);
 CVAR(String, nodebuilder_options, "", CVAR_SAVE);
+CVAR(Bool, save_archive_with_map, true, CVAR_SAVE);
 
 
 /*******************************************************************
@@ -575,7 +576,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	if (wxFileExists(builder.path))
 	{
 		wxArrayString out;
-		wxLogMessage("execute \"%s\"", command);
+		wxLogMessage("execute \"%s %s\"", builder.path, command);
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		Raise();
 		wxLogMessage("Nodebuilder output:");
@@ -612,6 +613,9 @@ WadArchive* MapEditorWindow::writeMap()
 	if (theGameConfiguration->scriptLanguage() == "acs_hexen" ||
 		theGameConfiguration->scriptLanguage() == "acs_zdoom")
 		acs = true;
+	// Force ACS on for Hexen map format, and off for Doom map format
+	if (mdesc_current.format == MAP_DOOM) acs = false;
+	if (mdesc_current.format == MAP_HEXEN) acs = true;
 	bool dialogue = false;
 	if (theGameConfiguration->scriptLanguage() == "usdf" ||
 		theGameConfiguration->scriptLanguage() == "zsdf")
@@ -849,7 +853,7 @@ bool MapEditorWindow::handleAction(string id)
 
 		// Save archive
 		Archive* a = currentMapDesc().head->getParent();
-		if (a) a->save();
+		if (a && save_archive_with_map) a->save();
 
 		return true;
 	}

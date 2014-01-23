@@ -170,7 +170,6 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 
 	return true;
 }
-
 /* TextEntryPanel::saveEntry
  * Saves any changes to the entry
  *******************************************************************/
@@ -181,7 +180,9 @@ bool TextEntryPanel::saveEntry()
 		text_area->trimWhitespace();
 
 	// Write raw text to the entry
-	text_area->getRawText(entry->getMCData());
+	MemChunk mc;
+	text_area->getRawText(mc);
+	entry->importMemChunk(mc);
 	if (entry->getState() == 0)
 		entry->setState(1);
 
