@@ -2066,15 +2066,15 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 	if (!entry)
 		return false;
 
-	// Show the text entry panel
-	if (!showEntryPanel(text_area))
-		return false;
-
 	// Load the current entry into the panel
-	if (!cur_area->openEntry(entry))
+	if (!text_area->openEntry(entry))
 	{
 		wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error), "Error", wxOK|wxICON_ERROR);
 	}
+
+	// Show the text entry panel
+	if (!showEntryPanel(text_area))
+		return false;
 
 	return true;
 }
@@ -2088,15 +2088,15 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 	if (!entry)
 		return false;
 
-	// Show the text entry panel
-	if (!showEntryPanel(hex_area))
-		return false;
-
 	// Load the current entry into the panel
-	if (!cur_area->openEntry(entry))
+	if (!hex_area->openEntry(entry))
 	{
 		wxMessageBox(S_FMT("Error loading entry:\n%s", Global::error), "Error", wxOK|wxICON_ERROR);
 	}
+
+	// Show the text entry panel
+	if (!showEntryPanel(hex_area))
+		return false;
 
 	return true;
 }

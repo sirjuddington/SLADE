@@ -366,7 +366,7 @@ void TextEditor::getRawText(MemChunk& mc)
 {
 	mc.clear();
 	string text = GetText();
-	mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
+	bool result = mc.importMem((const uint8_t*)text.ToUTF8().data(), text.ToUTF8().length());
 }
 
 /* TextEditor::trimWhitespace
