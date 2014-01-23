@@ -72,6 +72,50 @@ ArchiveManager::~ArchiveManager()
 	if (base_resource_archive) delete base_resource_archive;
 }
 
+/* ArchiveManager::validResDir
+ * Checks that the given directory is actually a suitable resource
+ * directory for SLADE 3, and not just a directory named 'res' that
+ * happens to be there (possibly because the user installed SLADE in
+ * the same folder as an installation of SLumpEd).
+ *******************************************************************/
+bool ArchiveManager::validResDir(string dir)
+{
+	// Assortment of resources that the program expects to find.
+	// If at least one is missing, then probably more are missing
+	// too, so the res folder cannot be used.
+	string paths[] = {
+		"animated.lmp",
+		"config/executables.cfg",
+		"config/nodebuilders.cfg",
+		"fonts/dejavu_sans.ttf",
+		"html/box-title-back.png",
+		"html/startpage.htm",
+		"icons/e_archive.png",
+		"icons/t_wiki.png",
+		"images/arrow.png",
+		"logo.png",
+		"palettes/doom .pal",
+		"s3dummy.lmp",
+		"slade.ico",
+		"switches.lmp",
+		"tips.txt",
+		"vga-rom-font.16",
+	};
+
+	for (size_t a = 0; a < 16; ++a)
+	{
+		wxFileName fn(dir + "/" + paths[a]);
+		if (!wxFileExists(fn.GetFullPath()))
+		{
+			wxLogMessage("Resource %s was not found in dir %s!\n"
+				"This resource folder cannot be used. "
+				"(Did you install SLADE 3 in a SLumpEd folder?)", paths[a], dir);
+			return false;
+		}
+	}
+	return true;
+}
+
 /* ArchiveManager::init
  * Initialised the ArchiveManager. Finds and opens the program
  * resource archive
@@ -86,7 +130,7 @@ bool ArchiveManager::init()
 	string resdir = appPath("res", DIR_APP);
 #endif
 
-	if (wxDirExists(resdir))
+	if (wxDirExists(resdir) && validResDir(resdir))
 	{
 		program_resource_archive->importDir(resdir);
 		res_archive_open = (program_resource_archive->numEntries() > 0);
