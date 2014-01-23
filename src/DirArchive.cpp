@@ -45,6 +45,30 @@
 EXTERN_CVAR(Bool, archive_load_data)
 
 
+class DirArchiveTraverser : public wxDirTraverser
+{
+private:
+	vector<string>&	paths;
+	vector<string>&	dirs;
+
+public:
+	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist) : paths(pathlist), dirs(dirlist) {}
+	~DirArchiveTraverser() {}
+
+	virtual wxDirTraverseResult OnFile(const wxString& filename)
+	{
+		paths.push_back(filename);
+		return wxDIR_CONTINUE;
+	}
+
+	virtual wxDirTraverseResult OnDir(const wxString& dirname)
+	{
+		dirs.push_back(dirname);
+		return wxDIR_CONTINUE;
+	}
+};
+
+
 /*******************************************************************
  * DIRARCHIVE CLASS FUNCTIONS
  *******************************************************************/
@@ -208,8 +232,11 @@ bool DirArchive::save(string filename)
 
 	// Get current directory structure
 	long time = theApp->runTimer();
-	wxArrayString files;
-	wxDir::GetAllFiles(this->filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
+	vector<string> files, dirs;
+	DirArchiveTraverser traverser(files, dirs);
+	wxDir dir(this->filename);
+	dir.Traverse(traverser, "", wxDIR_FILES|wxDIR_DIRS);
+	//wxDir::GetAllFiles(this->filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
 	LOG_MESSAGE(2, "GetAllFiles took %dms", theApp->runTimer() - time);
 
 	// Check for any files to remove
@@ -236,6 +263,28 @@ bool DirArchive::save(string filename)
 		}
 	}
 	LOG_MESSAGE(2, "Remove check took %dms", theApp->runTimer() - time);
+
+	// Check for any directories to remove
+	for (int a = dirs.size() - 1; a >= 0; a--)
+	{
+		// Check if dir path matches an existing dir
+		bool found = false;
+		for (unsigned e = 0; e < entry_paths.size(); e++)
+		{
+			if (dirs[a] == entry_paths[e])
+			{
+				found = true;
+				break;
+			}
+		}
+
+		// Dir on disk isn't part of the archive in memory
+		if (!found)
+		{
+			LOG_MESSAGE(2, "Removing directory %s", dirs[a]);
+			wxRmDir(dirs[a]);
+		}
+	}
 
 	// Go through entries
 	vector<string> files_written;
