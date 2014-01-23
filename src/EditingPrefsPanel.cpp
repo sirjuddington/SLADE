@@ -39,6 +39,7 @@ EXTERN_CVAR(Bool, wad_force_uppercase)
 EXTERN_CVAR(Int, autosave_entry_changes)
 EXTERN_CVAR(Bool, percent_encoding)
 EXTERN_CVAR(Bool, auto_entry_replace)
+EXTERN_CVAR(Bool, save_archive_with_map)
 
 /*******************************************************************
  * EDITINGPREFSPANEL CLASS FUNCTIONS
@@ -70,6 +71,10 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_auto_entry_replace = new wxCheckBox(this, -1, "Automatically replace entries with same name as drag-and-dropped files");
 	sizer->Add(cb_auto_entry_replace, 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
 
+	// Save archive when saving map
+	cb_save_archive_with_map = new wxCheckBox(this, -1, "Save the map's parent archive when saving a map");
+	sizer->Add(cb_save_archive_with_map, 0, wxEXPAND|wxLEFT|wxRIGHT, 4);
+
 	// Unsaved entry changes
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxALL, 4);
@@ -94,6 +99,7 @@ void EditingPrefsPanel::init()
 	cb_wad_force_uppercase->SetValue(wad_force_uppercase);
 	cb_zip_percent_encoding->SetValue(percent_encoding);
 	cb_auto_entry_replace->SetValue(auto_entry_replace);
+	cb_save_archive_with_map->SetValue(save_archive_with_map);
 	choice_entry_mod->SetSelection(autosave_entry_changes);
 }
 
@@ -105,5 +111,6 @@ void EditingPrefsPanel::applyPreferences()
 	wad_force_uppercase = cb_wad_force_uppercase->GetValue();
 	percent_encoding = cb_zip_percent_encoding->GetValue();
 	auto_entry_replace = cb_auto_entry_replace->GetValue();
+	save_archive_with_map = cb_save_archive_with_map->GetValue();
 	autosave_entry_changes = choice_entry_mod->GetSelection();
 }
