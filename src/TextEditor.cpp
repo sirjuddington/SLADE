@@ -713,6 +713,10 @@ void TextEditor::openJumpToDialog()
 				for (int s = 0; s < skip; s++)
 					name = tz.getToken();
 
+				for (unsigned i = 0; i < language->nJBIgnore(); ++i)
+					if (S_CMPNOCASE(name, language->jBIgnore(i)))
+						name = tz.getToken();
+
 				// Numbered block, add block name
 				if (name.IsNumber())
 					name = S_FMT("%s %s", language->jumpBlock(a), name);

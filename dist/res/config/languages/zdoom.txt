@@ -18,6 +18,24 @@ z_animdefs {
 	}
 }
 
+z_cvarinfo {
+	name = "ZDoom CvarInfo";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/CVARINFO";
+	constant_link = "http://zdoom.org/wiki/CVARINFO";
+	function_link = "http://zdoom.org/wiki/CVARINFO";
+
+	keywords = {
+		// Scopes
+		server, user,
+
+		noarchive,
+
+		// Types
+		bool, color, float, int, string
+	}
+}
+
 z_decaldef {
 	name = "ZDoom DecalDef";
 	case_sensitive = false;
@@ -408,6 +426,7 @@ z_textures {
 	constant_link = "http://zdoom.org/wiki/TEXTURES";
 	function_link = "http://zdoom.org/wiki/TEXTURES";
 	blocks = "texture", "sprite", "graphic", "walltexture", "flat", "remap", "define";
+	blocks_ignore = "optional";
 
 	keywords = {
 		texture, patch, sprite, graphic, walltexture, flat, optional,
