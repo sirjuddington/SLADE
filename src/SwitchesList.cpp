@@ -30,6 +30,7 @@
 #include "Misc.h"
 #include "SwitchesList.h"
 #include "ListView.h"
+#include "Tokenizer.h"
 
 /*******************************************************************
  * SWITCHESENTRY CLASS FUNCTIONS
@@ -213,12 +214,20 @@ bool SwitchesList::swapEntries(size_t pos1, size_t pos2)
  * Converts SWITCHES data in [entry] to ANIMDEFS format, written to
  * [animdata]
  *******************************************************************/
-bool SwitchesList::convertSwitches(ArchiveEntry* entry, MemChunk* animdata)
+bool SwitchesList::convertSwitches(ArchiveEntry* entry, MemChunk* animdata, bool animdefs)
 {
 	const uint8_t* cursor = entry->getData(true);
 	const uint8_t* eodata = cursor + entry->getSize();
 	const switches_t* switches;
 	string conversion;
+
+	if (!animdefs)
+	{
+		conversion = "#switches usable with each IWAD, 1=SW, 2=registered DOOM, 3=DOOM2\n"
+					 "[SWITCHES]\n#epi    texture1        texture2\n";
+		animdata->reSize(animdata->getSize() + conversion.length(), true);
+		animdata->write(conversion.To8BitData().data(), conversion.length());
+	}
 
 	while (cursor < eodata && *cursor != SWCH_STOP)
 	{
@@ -232,12 +241,85 @@ bool SwitchesList::convertSwitches(ArchiveEntry* entry, MemChunk* animdata)
 		cursor += sizeof(switches_t);
 
 		// Create animation string
-		conversion = S_FMT("Switch\tDoom %d\t\t%-8s\tOn Pic\t%-8s\tTics 0\n",
-		                   switches->type, switches->off, switches->on);
+		if (animdefs)
+		{
+			conversion = S_FMT("Switch\tDoom %d\t\t%-8s\tOn Pic\t%-8s\tTics 0\n",
+								switches->type, switches->off, switches->on);
+		}
+		else
+		{
+			conversion = S_FMT("%-8d%-12s%-12s\n",
+								switches->type, switches->off, switches->on);
+		}
 
 		// Write string to animdata
 		animdata->reSize(animdata->getSize() + conversion.length(), true);
 		animdata->write(conversion.To8BitData().data(), conversion.length());
 	}
 	return true;
+}
+
+/* SwitchesList::convertSwanTbls
+ * Converts SWANTBLS data in [entry] to binary format, written to
+ * [animdata]
+ *******************************************************************/
+bool SwitchesList::convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata)
+{
+	Tokenizer tz(HCOMMENTS);
+	tz.openMem(&(entry->getMCData()), entry->getName());
+
+	string token;
+	char buffer[20];
+	while ((token = tz.getToken()).length())
+	{
+		// We should only treat animated flats and textures, and ignore switches
+		if (S_CMP(token, "[SWITCHES]"))
+		{
+			do
+			{
+				int type = tz.getInteger();
+				string off = tz.getToken();
+				string on  = tz.getToken();
+				if (off.length() > 8)
+				{
+					wxLogMessage("Error: string %s is too long for a switch name!", off);
+					return false;
+				}
+				if (on.length() > 8)
+				{
+					wxLogMessage("Error: string %s is too long for a switch name!", on);
+					return false;
+				}
+
+				// reset buffer
+				int limit;
+				memset(buffer, 0, 20);
+
+				// Write off texture name
+				limit = MIN(8, off.length());
+				for (int a = 0; a < limit; ++a)
+					buffer[0+a] = off[a];
+
+				// Write first texture name
+				limit = MIN(8, on.length());
+				for (int a = 0; a < limit; ++a)
+					buffer[9+a] = on[a];
+
+				// Write switch type
+				buffer[18] = (uint8_t) (type % 256);
+				buffer[19] = (uint8_t) (type>>8) % 256;
+
+				// Save buffer to MemChunk
+				if (!animdata->reSize(animdata->getSize() + 20, true))
+					return false;
+				if (!animdata->write(buffer, 20))
+					return false;
+
+				// Look for possible end of loop
+				token = tz.peekToken();
+			} while (token.length() && token[0] != '[');
+		}
+	}
+	return true;
+	// Note that we do not terminate the list here!
 }

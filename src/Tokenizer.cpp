@@ -39,13 +39,13 @@
 /* Tokenizer::Tokenizer
  * Tokenizer class constructor
  *******************************************************************/
-Tokenizer::Tokenizer(bool c_comments, bool h_comments, bool s_comments)
+Tokenizer::Tokenizer(CommentTypes comments_style)
 {
 	// Initialize variables
 	current = NULL;
 	start = NULL;
 	size = 0;
-	comments = 0 | c_comments | h_comments << 1 | s_comments << 2;
+	comments = comments_style;
 	debug = false;
 	special = ";,:|={}/";	// Default special characters
 	name = "nothing";
@@ -349,9 +349,19 @@ void Tokenizer::readToken(bool toeol)
 		}
 
 		// Skip '##' comments
-		if (comments & HCOMMENTS)
+		if (comments & DCOMMENTS)
 		{
 			if (current + 1 != end && current[0] == '#' && current[1] == '#')
+			{
+				skipLineComment(); // Skip it
+				ready = false;
+			}
+		}
+
+		// Skip '#' comments
+		if (comments & HCOMMENTS)
+		{
+			if (current + 1 != end && current[0] == '#')
 			{
 				skipLineComment(); // Skip it
 				ready = false;

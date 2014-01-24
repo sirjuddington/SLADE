@@ -301,6 +301,14 @@ entry_types
 		match_name = "xhairs";
 	}
 	
+	// Boom swantbls.dat files
+	swantbls : text
+	{
+		name = "Boom Swan Tables";
+		match_name = "swantbls", "defswani";
+		export_ext = "dat";
+	}
+	
 	// Doomsday DED lumps and files
     ded : text
     {

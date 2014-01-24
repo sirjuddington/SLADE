@@ -52,7 +52,8 @@ public:
 	bool			swapEntries(size_t pos1, size_t pos2);
 
 	// Static functions
-	static bool convertAnimated(ArchiveEntry* entry, MemChunk* animdata);
+	static bool convertAnimated(ArchiveEntry* entry, MemChunk* animdata, bool animdefs);
+	static bool convertSwanTbls(ArchiveEntry* entry, MemChunk* animdata);
 };
 
 #endif //ANIMATEDLIST_H

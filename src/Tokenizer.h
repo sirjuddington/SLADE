@@ -5,9 +5,12 @@
 
 enum CommentTypes
 {
-	CCOMMENTS = 1<<0,		// If true C comments are skipped (// and /* */)
-	HCOMMENTS = 1<<1,		// If true hash comments are skipped (##)
-	SCOMMENTS = 1<<2,		// If true shell comments are skipped (;)
+	CCOMMENTS = 1<<0,		// C comments are skipped (// and /* */)
+	HCOMMENTS = 1<<1,		// hash comments are skipped (#)
+	DCOMMENTS = 1<<2,		// double hash comments are skipped (##)
+	SCOMMENTS = 1<<4,		// shell comments are skipped (;)
+
+	COMMENTS_DEFAULT = CCOMMENTS|DCOMMENTS,
 };
 
 class Tokenizer
@@ -33,7 +36,7 @@ private:
 	void	readToken(bool toeol = false);
 
 public:
-	Tokenizer(bool c_comments = true, bool h_comments = true, bool s_comments = false);
+	Tokenizer(CommentTypes comments_style = COMMENTS_DEFAULT);
 	~Tokenizer();
 
 	void	setSpecialCharacters(string special) { this->special = special; }

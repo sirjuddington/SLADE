@@ -95,7 +95,8 @@ public:
 	bool	gfxTint();
 	bool	gfxModifyOffsets();
 	bool	gfxExportPNG();
-	bool	basConvert();
+	bool	swanConvert();
+	bool	basConvert(bool animdefs=false);
 	bool	palConvert();
 	bool	reloadCurrentPanel();
 	bool	wavDSndConvert();
