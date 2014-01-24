@@ -34,6 +34,7 @@ private:
 	string				preprocessor;	// The beginning token for a preprocessor directive
 	bool				case_sensitive;
 	vector<string>		jump_blocks;	// The keywords to search for when creating jump to list (eg. 'script')
+	vector<string>		jb_ignore;		// The keywords to ignore when creating jump to list (eg. 'optional')
 
 	// Keywords
 	vector<string>		keywords;
@@ -96,6 +97,8 @@ public:
 
 	unsigned	nJumpBlocks() { return jump_blocks.size(); }
 	string		jumpBlock(unsigned index) { return jump_blocks[index]; }
+	unsigned	nJBIgnore() { return jb_ignore.size(); }
+	string		jBIgnore(unsigned index) { return jb_ignore[index]; }
 
 	void	clearKeywords() { keywords.clear(); }
 	void	clearConstants() { constants.clear(); }

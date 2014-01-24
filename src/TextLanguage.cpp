@@ -546,6 +546,11 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->jump_blocks.push_back(child->getStringValue(v));
 			}
+			else if (S_CMPNOCASE(child->getName(), "blocks_ignore"))
+			{
+				for (unsigned v = 0; v < child->nValues(); v++)
+					lang->jb_ignore.push_back(child->getStringValue(v));
+			}
 
 			// Keywords
 			else if (S_CMPNOCASE(child->getName(), "keywords"))

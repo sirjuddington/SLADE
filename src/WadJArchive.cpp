@@ -297,7 +297,7 @@ bool WadJArchive::open(MemChunk& mc)
 	// Setup variables
 	setMuted(false);
 	setModified(false);
-	if (iwad && iwad_lock) read_only = true;
+	//if (iwad && iwad_lock) read_only = true;
 	announce("opened");
 
 	theSplashWindow->setProgressMessage("");
