@@ -39,11 +39,11 @@
 
 // PUBLIC FUNCTION PROTOTYPES ----------------------------------------------
 
-int MUSHeaderSearch(const BYTE *head, int len);
+int MUSHeaderSearch(const uint8_t *head, int len);
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 
-static const BYTE CtrlTranslate[15] =
+static const uint8_t CtrlTranslate[15] =
 {
 	0,	// program change
 	0,	// bank select
@@ -73,10 +73,10 @@ static const BYTE CtrlTranslate[15] =
 //
 //==========================================================================
 
-MUSSong::MUSSong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
-: MIDIStreamer(type), MusHeader(0), MusBuffer(0)
+MUSSong::MUSSong (FILE *file, const uint8_t *musiccache, int len)
+: MIDIStreamer(), MusHeader(0), MusBuffer(0)
 {
-	BYTE front[32];
+	uint8_t front[32];
 	int start;
 
 	if (file == NULL)
@@ -89,7 +89,7 @@ MUSSong::MUSSong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 	}
 
 	// To tolerate sloppy wads (diescum.wad, I'm looking at you), we search
-	// the first 32 bytes of the file for a signature. My guess is that DMX
+	// the first 32 uint8_ts of the file for a signature. My guess is that DMX
 	// does no validation whatsoever and just assumes it was passed a valid
 	// MUS file, since where the header is offset affects how it plays.
 	start = MUSHeaderSearch(front, sizeof(front));
@@ -104,7 +104,7 @@ MUSSong::MUSSong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 	{ // It's too short.
 		return;
 	}
-	MusHeader = (MUSHeader *)new BYTE[len];
+	MusHeader = (MUSHeader *)new uint8_t[len];
 	if (file == NULL)
 	{
 		memcpy(MusHeader, musiccache + start, len);
@@ -112,7 +112,7 @@ MUSSong::MUSSong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 	else
 	{
 		memcpy(MusHeader, front + start, sizeof(front) - start);
-		if (fread((BYTE *)MusHeader + sizeof(front) - start, 1, len - (sizeof(front) - start), file) != (size_t)(len - (32 - start)))
+		if (fread((uint8_t *)MusHeader + sizeof(front) - start, 1, len - (sizeof(front) - start), file) != (size_t)(len - (32 - start)))
 		{
 			return;
 		}
@@ -124,7 +124,7 @@ MUSSong::MUSSong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
 		return;
 	}
 
-	MusBuffer = (BYTE *)MusHeader + LittleShort(MusHeader->SongStart);
+	MusBuffer = (uint8_t *)MusHeader + LittleShort(MusHeader->SongStart);
 	MaxMusP = MIN<int>(LittleShort(MusHeader->SongLen), len - LittleShort(MusHeader->SongStart));
 	Division = 140;
 	InitialTempo = 1000000;
@@ -140,7 +140,7 @@ MUSSong::~MUSSong ()
 {
 	if (MusHeader != NULL)
 	{
-		delete[] (BYTE *)MusHeader;
+		delete[] (uint8_t *)MusHeader;
 	}
 }
 
@@ -177,19 +177,19 @@ bool MUSSong::CheckDone()
 //
 //==========================================================================
 
-DWORD *MUSSong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
+uint32_t *MUSSong::MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t max_time)
 {
-	DWORD tot_time = 0;
-	DWORD time = 0;
+	uint32_t tot_time = 0;
+	uint32_t time = 0;
 
 	max_time = max_time * Division / Tempo;
 
 	while (events < max_event_p && tot_time <= max_time)
 	{
-		BYTE mid1, mid2;
-		BYTE channel;
-		BYTE t = 0, status;
-		BYTE mevent = MusBuffer[MusP++];
+		uint8_t mid1, mid2;
+		uint8_t channel;
+		uint8_t t = 0, status;
+		uint8_t mevent = MusBuffer[MusP++];
 		
 		if ((mevent & 0x70) != MUS_SCOREEND)
 		{
@@ -302,7 +302,7 @@ end:
 //
 //==========================================================================
 
-int MUSHeaderSearch(const BYTE *head, int len)
+int MUSHeaderSearch(const uint8_t *head, int len)
 {
 	len -= 4;
 	for (int i = 0; i <= len; ++i)

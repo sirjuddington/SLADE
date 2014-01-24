@@ -88,18 +88,18 @@
 
 struct HMISong::TrackInfo
 {
-	const BYTE *TrackBegin;
+	const uint8_t *TrackBegin;
 	size_t TrackP;
 	size_t MaxTrackP;
-	DWORD Delay;
-	DWORD PlayedTime;
-	WORD Designation[NUM_HMI_DESIGNATIONS];
+	uint32_t Delay;
+	uint32_t PlayedTime;
+	uint16_t Designation[NUM_HMI_DESIGNATIONS];
 	bool Enabled;
 	bool Finished;
-	BYTE RunningStatus;
+	uint8_t RunningStatus;
     
-	DWORD ReadVarLenHMI();
-	DWORD ReadVarLenHMP();
+	uint32_t ReadVarLenHMI();
+	uint32_t ReadVarLenHMP();
 };
 
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
@@ -115,14 +115,14 @@ extern char MIDI_CommonLengths[15];
 //
 //==========================================================================
 
-HMISong::HMISong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
-: MIDIStreamer(type), MusHeader(0), Tracks(0)
+HMISong::HMISong (FILE *file, const uint8_t *musiccache, int len)
+: MIDIStreamer(), MusHeader(0), Tracks(0)
 {
 	if (len < 0x100)
 	{ // Way too small to be HMI.
 		return;
 	}
-	MusHeader = new BYTE[len];
+	MusHeader = new uint8_t[len];
 	SongLen = len;
 	NumTracks = 0;
 	if (file != NULL)
@@ -468,12 +468,12 @@ bool HMISong::CheckDone()
 //
 //==========================================================================
 
-DWORD *HMISong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
+uint32_t *HMISong::MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t max_time)
 {
-	DWORD *start_events;
-	DWORD tot_time = 0;
-	DWORD time = 0;
-	DWORD delay;
+	uint32_t *start_events;
+	uint32_t tot_time = 0;
+	uint32_t time = 0;
+	uint32_t delay;
 
 	start_events = events;
 	while (TrackDue && events < max_event_p && tot_time <= max_time)
@@ -492,7 +492,7 @@ DWORD *HMISong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 			// Play all events for this tick.
 			do
 			{
-				DWORD *new_events = SendCommand(events, TrackDue, time);
+				uint32_t *new_events = SendCommand(events, TrackDue, time);
 				TrackDue = FindNextDue();
 				if (new_events != events)
 				{
@@ -516,7 +516,7 @@ DWORD *HMISong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 //
 //==========================================================================
 
-void HMISong::AdvanceTracks(DWORD time)
+void HMISong::AdvanceTracks(uint32_t time)
 {
 	for (int i = 0; i <= NumTracks; ++i)
 	{
@@ -537,10 +537,10 @@ void HMISong::AdvanceTracks(DWORD time)
 //
 //==========================================================================
 
-DWORD *HMISong::SendCommand (DWORD *events, TrackInfo *track, DWORD delay)
+uint32_t *HMISong::SendCommand (uint32_t *events, TrackInfo *track, uint32_t delay)
 {
-	DWORD len;
-	BYTE mevent, data1 = 0, data2 = 0;
+	uint32_t len;
+	uint8_t mevent, data1 = 0, data2 = 0;
 
 	// If the next event comes from the fake track, pop an entry off the note-off queue.
 	if (track == FakeTrack)
@@ -705,8 +705,8 @@ void HMISong::ProcessInitialMetaEvents ()
 {
 	TrackInfo *track;
 	int i;
-	BYTE event;
-	DWORD len;
+	uint8_t event;
+	uint32_t len;
 
 	for (i = 0; i < NumTracks; ++i)
 	{
@@ -751,7 +751,7 @@ void HMISong::ProcessInitialMetaEvents ()
 //
 //==========================================================================
 
-DWORD HMISong::ReadVarLenHMI(TrackInfo *track)
+uint32_t HMISong::ReadVarLenHMI(TrackInfo *track)
 {
 	return track->ReadVarLenHMI();
 }
@@ -762,7 +762,7 @@ DWORD HMISong::ReadVarLenHMI(TrackInfo *track)
 //
 //==========================================================================
 
-DWORD HMISong::ReadVarLenHMP(TrackInfo *track)
+uint32_t HMISong::ReadVarLenHMP(TrackInfo *track)
 {
 	return track->ReadVarLenHMP();
 }
@@ -775,9 +775,9 @@ DWORD HMISong::ReadVarLenHMP(TrackInfo *track)
 //
 //==========================================================================
 
-DWORD HMISong::TrackInfo::ReadVarLenHMI()
+uint32_t HMISong::TrackInfo::ReadVarLenHMI()
 {
-	DWORD time = 0, t = 0x80;
+	uint32_t time = 0, t = 0x80;
 
 	while ((t & 0x80) && TrackP < MaxTrackP)
 	{
@@ -797,10 +797,10 @@ DWORD HMISong::TrackInfo::ReadVarLenHMI()
 //
 //==========================================================================
 
-DWORD HMISong::TrackInfo::ReadVarLenHMP()
+uint32_t HMISong::TrackInfo::ReadVarLenHMP()
 {
-	DWORD time = 0;
-	BYTE t = 0;
+	uint32_t time = 0;
+	uint8_t t = 0;
 	int off = 0;
 
 	while (!(t & 0x80) && TrackP < MaxTrackP)
@@ -818,7 +818,7 @@ DWORD HMISong::TrackInfo::ReadVarLenHMP()
 //
 //==========================================================================
 
-void NoteOffQueue::AddNoteOff(DWORD delay, BYTE channel, BYTE key)
+void NoteOffQueue::AddNoteOff(uint32_t delay, uint8_t channel, uint8_t key)
 {
 	unsigned int i = Reserve(1);
 	while (i > 0 && (*this)[Parent(i)].Delay > delay)
@@ -854,7 +854,7 @@ bool NoteOffQueue::Pop(AutoNoteOff &item)
 //
 //==========================================================================
 
-void NoteOffQueue::AdvanceTime(DWORD time)
+void NoteOffQueue::AdvanceTime(uint32_t time)
 {
 	// Because the time is decreasing by the same amount for every entry,
 	// the heap property is maintained.
@@ -908,7 +908,7 @@ void NoteOffQueue::Heapify()
 HMISong::TrackInfo *HMISong::FindNextDue ()
 {
 	TrackInfo *track;
-	DWORD best;
+	uint32_t best;
 	int i;
 
 	// Give precedence to whichever track last had events taken from it.
