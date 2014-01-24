@@ -63,22 +63,22 @@ struct LoopInfo
 
 struct XMISong::TrackInfo
 {
-	const BYTE *EventChunk;
+	const uint8_t *EventChunk;
 	size_t EventLen;
 	size_t EventP;
 
-	const BYTE *TimbreChunk;
+	const uint8_t *TimbreChunk;
 	size_t TimbreLen;
 
-	DWORD Delay;
-	DWORD PlayedTime;
+	uint32_t Delay;
+	uint32_t PlayedTime;
 	bool Finished;
 
 	LoopInfo ForLoops[MAX_FOR_DEPTH];
 	int ForDepth;
     
-	DWORD ReadVarLen();
-	DWORD ReadDelay();
+	uint32_t ReadVarLen();
+	uint32_t ReadDelay();
 };
 
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
@@ -94,10 +94,10 @@ extern char MIDI_CommonLengths[15];
 //
 //==========================================================================
 
-XMISong::XMISong (FILE *file, const BYTE *musiccache, int len, EMidiDevice type)
-: MIDIStreamer(type), MusHeader(0), Songs(0)
+XMISong::XMISong (FILE *file, const uint8_t *musiccache, int len)
+: MIDIStreamer(), MusHeader(0), Songs(0)
 {
-	MusHeader = new BYTE[len];
+	MusHeader = new uint8_t[len];
 	SongLen = len;
 	if (file != NULL)
 	{
@@ -158,7 +158,7 @@ XMISong::~XMISong ()
 //
 //==========================================================================
 
-int XMISong::FindXMIDforms(const BYTE *chunk, int len, TrackInfo *songs) const
+int XMISong::FindXMIDforms(const uint8_t *chunk, int len, TrackInfo *songs) const
 {
 	int count = 0;
 
@@ -183,7 +183,7 @@ int XMISong::FindXMIDforms(const BYTE *chunk, int len, TrackInfo *songs) const
 			// Recurse to handle CAT chunks.
 			count += FindXMIDforms(chunk + p + 12, chunklen - 4, songs + count);
 		}
-		// IFF chunks are padded to even byte boundaries to avoid
+		// IFF chunks are padded to even uint8_t boundaries to avoid
 		// unaligned reads on 68k processors.
 		p += 8 + chunklen + (chunklen & 1);
 		// Avoid crashes from corrupt chunks which indicate a negative size.
@@ -200,7 +200,7 @@ int XMISong::FindXMIDforms(const BYTE *chunk, int len, TrackInfo *songs) const
 //
 //==========================================================================
 
-void XMISong::FoundXMID(const BYTE *chunk, int len, TrackInfo *song) const
+void XMISong::FoundXMID(const uint8_t *chunk, int len, TrackInfo *song) const
 {
 	for (int p = 0; p <= len - 8; )
 	{
@@ -283,12 +283,12 @@ bool XMISong::CheckDone()
 //
 //==========================================================================
 
-DWORD *XMISong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
+uint32_t *XMISong::MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t max_time)
 {
-	DWORD *start_events;
-	DWORD tot_time = 0;
-	DWORD time = 0;
-	DWORD delay;
+	uint32_t *start_events;
+	uint32_t tot_time = 0;
+	uint32_t time = 0;
+	uint32_t delay;
 
 	start_events = events;
 	while (EventDue != EVENT_None && events < max_event_p && tot_time <= max_time)
@@ -307,7 +307,7 @@ DWORD *XMISong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 			// Play all events for this tick.
 			do
 			{
-				DWORD *new_events = SendCommand(events, EventDue, time);
+				uint32_t *new_events = SendCommand(events, EventDue, time);
 				EventDue = FindNextDue();
 				if (new_events != events)
 				{
@@ -331,7 +331,7 @@ DWORD *XMISong::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 //
 //==========================================================================
 
-void XMISong::AdvanceSong(DWORD time)
+void XMISong::AdvanceSong(uint32_t time)
 {
 	if (time != 0)
 	{
@@ -352,10 +352,10 @@ void XMISong::AdvanceSong(DWORD time)
 //
 //==========================================================================
 
-DWORD *XMISong::SendCommand (DWORD *events, EventSource due, DWORD delay)
+uint32_t *XMISong::SendCommand (uint32_t *events, EventSource due, uint32_t delay)
 {
-	DWORD len;
-	BYTE event, data1 = 0, data2 = 0;
+	uint32_t len;
+	uint8_t event, data1 = 0, data2 = 0;
 
 	if (due == EVENT_Fake)
 	{
@@ -535,8 +535,8 @@ DWORD *XMISong::SendCommand (DWORD *events, EventSource due, DWORD delay)
 void XMISong::ProcessInitialMetaEvents ()
 {
 	TrackInfo *track = CurrSong;
-	BYTE event;
-	DWORD len;
+	uint8_t event;
+	uint32_t len;
 
 	while (!track->Finished &&
 			track->EventP < track->EventLen - 3 &&
@@ -565,9 +565,9 @@ void XMISong::ProcessInitialMetaEvents ()
 //
 //==========================================================================
 
-DWORD XMISong::TrackInfo::ReadVarLen()
+uint32_t XMISong::TrackInfo::ReadVarLen()
 {
-	DWORD time = 0, t = 0x80;
+	uint32_t time = 0, t = 0x80;
 
 	while ((t & 0x80) && EventP < EventLen)
 	{
@@ -582,13 +582,13 @@ DWORD XMISong::TrackInfo::ReadVarLen()
 // XMISong :: TrackInfo :: ReadDelay
 //
 // XMI does not use variable length numbers for delays. Instead, it uses
-// runs of bytes with the high bit clear.
+// runs of uint8_ts with the high bit clear.
 //
 //==========================================================================
 
-DWORD XMISong::TrackInfo::ReadDelay()
+uint32_t XMISong::TrackInfo::ReadDelay()
 {
-	DWORD time = 0, t;
+	uint32_t time = 0, t;
 
 	while (EventP < EventLen && !((t = EventChunk[EventP]) & 0x80))
 	{
@@ -616,8 +616,8 @@ XMISong::EventSource XMISong::FindNextDue()
 	}
 
 	// Which is due sooner? The current song or the note-offs?
-	DWORD real_delay = CurrSong->Finished ? 0xFFFFFFFF : CurrSong->Delay;
-	DWORD fake_delay = NoteOffs.Size() == 0 ? 0xFFFFFFFF : NoteOffs[0].Delay;
+	uint32_t real_delay = CurrSong->Finished ? 0xFFFFFFFF : CurrSong->Delay;
+	uint32_t fake_delay = NoteOffs.Size() == 0 ? 0xFFFFFFFF : NoteOffs[0].Delay;
 
 	return (fake_delay <= real_delay) ? EVENT_Fake : EVENT_Real;
 }

@@ -48,7 +48,7 @@ enum EMIDIType
 	MIDI_MUS
 };
 
-extern int MUSHeaderSearch(const BYTE *head, int len);
+extern int MUSHeaderSearch(const uint8_t *head, int len);
 
 //==========================================================================
 //
@@ -56,21 +56,21 @@ extern int MUSHeaderSearch(const BYTE *head, int len);
 //
 //==========================================================================
 
-static MIDIStreamer *CreateMIDIStreamer(FILE *file, const BYTE *musiccache, int len, EMidiDevice devtype, EMIDIType miditype)
+static MIDIStreamer *CreateMIDIStreamer(FILE *file, const uint8_t *musiccache, int len, EMIDIType miditype)
 {
 	switch (miditype)
 	{
 	case MIDI_MUS:
-		return new MUSSong(file, musiccache, len, devtype);
+		return new MUSSong(file, musiccache, len);
 
 	case MIDI_MIDI:
-		return new MIDISong(file, musiccache, len, devtype);
+		return new MIDISong(file, musiccache, len);
 
 	case MIDI_HMI:
-		return new HMISong(file, musiccache, len, devtype);
+		return new HMISong(file, musiccache, len);
 
 	case MIDI_XMI:
-		return new XMISong(file, musiccache, len, devtype);
+		return new XMISong(file, musiccache, len);
 
 	default:
 		return NULL;
@@ -83,11 +83,11 @@ static MIDIStreamer *CreateMIDIStreamer(FILE *file, const BYTE *musiccache, int 
 //
 //==========================================================================
 
-static EMIDIType IdentifyMIDIType(DWORD *id, int size)
+static EMIDIType IdentifyMIDIType(uint32_t *id, int size)
 {
 	// Check for MUS format
-	// Tolerate sloppy wads by searching up to 32 bytes for the header
-	if (MUSHeaderSearch((BYTE*)id, size) >= 0)
+	// Tolerate sloppy wads by searching up to 32 uint8_ts for the header
+	if (MUSHeaderSearch((uint8_t*)id, size) >= 0)
 	{
 		return MIDI_MUS;
 	}
@@ -135,15 +135,15 @@ static EMIDIType IdentifyMIDIType(DWORD *id, int size)
 
 bool zmus2mid(MemChunk& musinput, MemChunk& midioutput)
 {
-	EMIDIType type = IdentifyMIDIType((DWORD*)musinput.getData(), musinput.getSize());
+	EMIDIType type = IdentifyMIDIType((uint32_t*)musinput.getData(), musinput.getSize());
 	if (type != MIDI_NOTMIDI)
 	{
-		MIDIStreamer* streamer = CreateMIDIStreamer(NULL, musinput.getData(), musinput.getSize(), MDEV_FLUIDSYNTH, type);
+		MIDIStreamer* streamer = CreateMIDIStreamer(NULL, musinput.getData(), musinput.getSize(), type);
 		if (streamer)
 		{
-			TArray<BYTE> bytes;
-			streamer->CreateSMF(bytes, 1);
-			return (bytes.Size() && midioutput.write(&bytes[0], bytes.Size()));
+			TArray<uint8_t> uint8_ts;
+			streamer->CreateSMF(uint8_ts, 1);
+			return (uint8_ts.Size() && midioutput.write(&uint8_ts[0], uint8_ts.Size()));
 		}
 	}
 	return false;

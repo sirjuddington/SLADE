@@ -4,27 +4,16 @@
 #include "tarray.h"
 #include "i_music.h"
 
-enum EMidiDevice
-{
-	MDEV_DEFAULT = -1,
-	MDEV_MMAPI = 0,
-	MDEV_OPL = 1,
-	MDEV_FMOD = 2,
-	MDEV_TIMIDITY = 3,
-	MDEV_FLUIDSYNTH = 4,
-	MDEV_GUS = 5,
-};
-
 // Base class for streaming MUS and MIDI files ------------------------------
 
 class MIDIStreamer
 {
 public:
-	MIDIStreamer(EMidiDevice type);
+	MIDIStreamer();
 	~MIDIStreamer();
 
 	bool SetSubsong(int subsong);
-	void CreateSMF(TArray<BYTE> &file, int looplimit=0);
+	void CreateSMF(TArray<uint8_t> &file, int looplimit=0);
 
 protected:
 	int VolumeControllerChange(int channel, int volume);
@@ -36,7 +25,7 @@ protected:
 	virtual void DoRestart() = 0;
 	virtual bool CheckDone() = 0;
 	virtual bool SetMIDISubsong(int subsong);
-	virtual DWORD *MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time) = 0;
+	virtual uint32_t *MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t max_time) = 0;
 
 	enum
 	{
@@ -50,21 +39,11 @@ protected:
 		SONG_ERROR
 	};
 
-	DWORD Events[2][MAX_EVENTS*3];
-	MIDIHDR Buffer[2];
-	int BufferNum;
-	int EndQueued;
-	bool VolumeChanged;
-	bool Restarting;
-	bool InitialPlayback;
-	DWORD NewVolume;
+	uint32_t Events[2][MAX_EVENTS*3];
 	int Division;
 	int Tempo;
 	int InitialTempo;
-	BYTE ChannelVolumes[16];
-	DWORD Volume;
-	EMidiDevice DeviceType;
-	bool CallbackIsThreaded;
+	uint32_t Volume;
 	int LoopLimit;
 };
 
@@ -73,17 +52,17 @@ protected:
 class MUSSong : public MIDIStreamer
 {
 public:
-	MUSSong(FILE *file, const BYTE *musiccache, int length, EMidiDevice type);
+	MUSSong(FILE *file, const uint8_t *musiccache, int length);
 	~MUSSong();
 
 protected:
 	void DoRestart();
 	bool CheckDone();
-	DWORD *MakeEvents(DWORD *events, DWORD *max_events_p, DWORD max_time);
+	uint32_t *MakeEvents(uint32_t *events, uint32_t *max_events_p, uint32_t max_time);
 
 	MUSHeader *MusHeader;
-	BYTE *MusBuffer;
-	BYTE LastVelocity[16];
+	uint8_t *MusBuffer;
+	uint8_t LastVelocity[16];
 	size_t MusP, MaxMusP;
 };
 
@@ -92,44 +71,44 @@ protected:
 class MIDISong : public MIDIStreamer
 {
 public:
-	MIDISong(FILE *file, const BYTE *musiccache, int length, EMidiDevice type);
+	MIDISong(FILE *file, const uint8_t *musiccache, int length);
 	~MIDISong();
 
 protected:
 	void CheckCaps(int tech);
 	void DoRestart();
 	bool CheckDone();
-	DWORD *MakeEvents(DWORD *events, DWORD *max_events_p, DWORD max_time);
-	void AdvanceTracks(DWORD time);
+	uint32_t *MakeEvents(uint32_t *events, uint32_t *max_events_p, uint32_t max_time);
+	void AdvanceTracks(uint32_t time);
 
 	struct TrackInfo;
 
 	void ProcessInitialMetaEvents ();
-	DWORD *SendCommand (DWORD *event, TrackInfo *track, DWORD delay);
+	uint32_t *SendCommand (uint32_t *event, TrackInfo *track, uint32_t delay);
 	TrackInfo *FindNextDue ();
 
-	BYTE *MusHeader;
+	uint8_t *MusHeader;
 	int SongLen;
 	TrackInfo *Tracks;
 	TrackInfo *TrackDue;
 	int NumTracks;
 	int Format;
-	WORD DesignationMask;
+	uint16_t DesignationMask;
 };
 
 // HMI file played with a MIDI stream ---------------------------------------
 
 struct AutoNoteOff
 {
-	DWORD Delay;
-	BYTE Channel, Key;
+	uint32_t Delay;
+	uint8_t Channel, Key;
 };
 // Sorry, std::priority_queue, but I want to be able to modify the contents of the heap.
 class NoteOffQueue : public TArray<AutoNoteOff>
 {
 public:
-	void AddNoteOff(DWORD delay, BYTE channel, BYTE key);
-	void AdvanceTime(DWORD time);
+	void AddNoteOff(uint32_t delay, uint8_t channel, uint8_t key);
+	void AdvanceTime(uint32_t time);
 	bool Pop(AutoNoteOff &item);
 
 protected:
@@ -143,7 +122,7 @@ protected:
 class HMISong : public MIDIStreamer
 {
 public:
-	HMISong(FILE *file, const BYTE *musiccache, int length, EMidiDevice type);
+	HMISong(FILE *file, const uint8_t *musiccache, int length);
 	~HMISong();
 
 protected:
@@ -153,25 +132,25 @@ protected:
 
 	void DoRestart();
 	bool CheckDone();
-	DWORD *MakeEvents(DWORD *events, DWORD *max_events_p, DWORD max_time);
-	void AdvanceTracks(DWORD time);
+	uint32_t *MakeEvents(uint32_t *events, uint32_t *max_events_p, uint32_t max_time);
+	void AdvanceTracks(uint32_t time);
 
 	struct TrackInfo;
 
 	void ProcessInitialMetaEvents ();
-	DWORD *SendCommand (DWORD *event, TrackInfo *track, DWORD delay);
+	uint32_t *SendCommand (uint32_t *event, TrackInfo *track, uint32_t delay);
 	TrackInfo *FindNextDue ();
 
-	static DWORD ReadVarLenHMI(TrackInfo *);
-	static DWORD ReadVarLenHMP(TrackInfo *);
+	static uint32_t ReadVarLenHMI(TrackInfo *);
+	static uint32_t ReadVarLenHMP(TrackInfo *);
 
-	BYTE *MusHeader;
+	uint8_t *MusHeader;
 	int SongLen;
 	int NumTracks;
 	TrackInfo *Tracks;
 	TrackInfo *TrackDue;
 	TrackInfo *FakeTrack;
-	DWORD (*ReadVarLen)(TrackInfo *);
+	uint32_t (*ReadVarLen)(TrackInfo *);
 	NoteOffQueue NoteOffs;
 };
 
@@ -180,26 +159,26 @@ protected:
 class XMISong : public MIDIStreamer
 {
 public:
-	XMISong(FILE *file, const BYTE *musiccache, int length, EMidiDevice type);
+	XMISong(FILE *file, const uint8_t *musiccache, int length);
 	~XMISong();
 
 protected:
 	struct TrackInfo;
 	enum EventSource { EVENT_None, EVENT_Real, EVENT_Fake };
 
-	int FindXMIDforms(const BYTE *chunk, int len, TrackInfo *songs) const;
-	void FoundXMID(const BYTE *chunk, int len, TrackInfo *song) const;
+	int FindXMIDforms(const uint8_t *chunk, int len, TrackInfo *songs) const;
+	void FoundXMID(const uint8_t *chunk, int len, TrackInfo *song) const;
 	bool SetMIDISubsong(int subsong);
 	void DoRestart();
 	bool CheckDone();
-	DWORD *MakeEvents(DWORD *events, DWORD *max_events_p, DWORD max_time);
-	void AdvanceSong(DWORD time);
+	uint32_t *MakeEvents(uint32_t *events, uint32_t *max_events_p, uint32_t max_time);
+	void AdvanceSong(uint32_t time);
 
 	void ProcessInitialMetaEvents();
-	DWORD *SendCommand (DWORD *event, EventSource track, DWORD delay);
+	uint32_t *SendCommand (uint32_t *event, EventSource track, uint32_t delay);
 	EventSource FindNextDue();
 
-	BYTE *MusHeader;
+	uint8_t *MusHeader;
 	int SongLen;		// length of the entire file
 	int NumSongs;
 	TrackInfo *Songs;

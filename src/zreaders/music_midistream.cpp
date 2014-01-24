@@ -51,7 +51,7 @@
 
 // PRIVATE FUNCTION PROTOTYPES ---------------------------------------------
 
-static void WriteVarLen (TArray<BYTE> &file, DWORD value);
+static void WriteVarLen (TArray<uint8_t> &file, uint32_t value);
 
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
 
@@ -59,7 +59,7 @@ extern char MIDI_EventLengths[7];
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 
-static const BYTE StaticMIDIhead[] =
+static const uint8_t StaticMIDIhead[] =
 {
 	'M','T','h','d', 0, 0, 0, 6,
 	0, 0, // format 0: only one track
@@ -80,8 +80,8 @@ static const BYTE StaticMIDIhead[] =
 //
 //==========================================================================
 
-MIDIStreamer::MIDIStreamer(EMidiDevice type)
-: Division(0), InitialTempo(500000), DeviceType(type)
+MIDIStreamer::MIDIStreamer()
+: Division(0), InitialTempo(500000)
 {
 }
 
@@ -120,7 +120,6 @@ void MIDIStreamer::CheckCaps(int tech)
 
 int MIDIStreamer::VolumeControllerChange(int channel, int volume)
 {
-	ChannelVolumes[channel] = volume;
 	// If loops are limited, we can assume we're exporting this MIDI file,
 	// so we should not adjust the volume level.
 	return LoopLimit != 0 ? volume : ((volume + 1) * Volume) >> 16;
@@ -134,10 +133,10 @@ int MIDIStreamer::VolumeControllerChange(int channel, int volume)
 //
 //==========================================================================
 
-void MIDIStreamer::CreateSMF(TArray<BYTE> &file, int looplimit)
+void MIDIStreamer::CreateSMF(TArray<uint8_t> &file, int looplimit)
 {
-	DWORD delay = 0;
-	BYTE running_status = 255;
+	uint32_t delay = 0;
+	uint8_t running_status = 255;
 
 	// Always create songs aimed at GM devices.
 	CheckCaps(MOD_MIDIPORT);
@@ -155,35 +154,35 @@ void MIDIStreamer::CreateSMF(TArray<BYTE> &file, int looplimit)
 
 	while (!CheckDone())
 	{
-		DWORD *event_end = MakeEvents(Events[0], &Events[0][MAX_EVENTS*3], 1000000*600);
-		for (DWORD *event = Events[0]; event < event_end; )
+		uint32_t *event_end = MakeEvents(Events[0], &Events[0][MAX_EVENTS*3], 1000000*600);
+		for (uint32_t *event = Events[0]; event < event_end; )
 		{
 			delay += event[0];
 			if (MEVT_EVENTTYPE(event[2]) == MEVT_TEMPO)
 			{
 				WriteVarLen(file, delay);
 				delay = 0;
-				DWORD tempo = MEVT_EVENTPARM(event[2]);
+				uint32_t tempo = MEVT_EVENTPARM(event[2]);
 				file.Push(MIDI_META);
 				file.Push(MIDI_META_TEMPO);
 				file.Push(3);
-				file.Push(BYTE(tempo >> 16));
-				file.Push(BYTE(tempo >> 8));
-				file.Push(BYTE(tempo));
+				file.Push(uint8_t(tempo >> 16));
+				file.Push(uint8_t(tempo >> 8));
+				file.Push(uint8_t(tempo));
 				running_status = 255;
 			}
 			else if (MEVT_EVENTTYPE(event[2]) == MEVT_LONGMSG)
 			{
 				WriteVarLen(file, delay);
 				delay = 0;
-				DWORD len = MEVT_EVENTPARM(event[2]);
-				BYTE *bytes = (BYTE *)&event[3];
-				if (bytes[0] == MIDI_SYSEX)
+				uint32_t len = MEVT_EVENTPARM(event[2]);
+				uint8_t *uint8_ts = (uint8_t *)&event[3];
+				if (uint8_ts[0] == MIDI_SYSEX)
 				{
 					len--;
 					file.Push(MIDI_SYSEX);
 					WriteVarLen(file, len);
-					memcpy(&file[file.Reserve(len - 1)], bytes, len);
+					memcpy(&file[file.Reserve(len - 1)], uint8_ts, len);
 					running_status = 255;
 				}
 			}
@@ -191,16 +190,16 @@ void MIDIStreamer::CreateSMF(TArray<BYTE> &file, int looplimit)
 			{
 				WriteVarLen(file, delay);
 				delay = 0;
-				BYTE status = BYTE(event[2]);
+				uint8_t status = uint8_t(event[2]);
 				if (status != running_status)
 				{
 					running_status = status;
 					file.Push(status);
 				}
-				file.Push(BYTE((event[2] >> 8) & 0x7F));
+				file.Push(uint8_t((event[2] >> 8) & 0x7F));
 				if (MIDI_EventLengths[(status >> 4) & 7] == 2)
 				{
-					file.Push(BYTE((event[2] >> 16) & 0x7F));
+					file.Push(uint8_t((event[2] >> 16) & 0x7F));
 				}
 			}
 			// Advance to next event
@@ -222,11 +221,11 @@ void MIDIStreamer::CreateSMF(TArray<BYTE> &file, int looplimit)
 	file.Push(0);
 
 	// Fill in track length
-	DWORD len = file.Size() - 22;
-	file[18] = BYTE(len >> 24);
-	file[19] = BYTE(len >> 16);
-	file[20] = BYTE(len >> 8);
-	file[21] = BYTE(len & 255);
+	uint32_t len = file.Size() - 22;
+	file[18] = uint8_t(len >> 24);
+	file[19] = uint8_t(len >> 16);
+	file[20] = uint8_t(len >> 8);
+	file[21] = uint8_t(len & 255);
 
 	LoopLimit = 0;
 }
@@ -237,9 +236,9 @@ void MIDIStreamer::CreateSMF(TArray<BYTE> &file, int looplimit)
 //
 //==========================================================================
 
-static void WriteVarLen (TArray<BYTE> &file, DWORD value)
+static void WriteVarLen (TArray<uint8_t> &file, uint32_t value)
 {
-   DWORD buffer = value & 0x7F;
+   uint32_t buffer = value & 0x7F;
 
    while ( (value >>= 7) )
    {
@@ -249,7 +248,7 @@ static void WriteVarLen (TArray<BYTE> &file, DWORD value)
 
    for (;;)
    {
-	   file.Push(BYTE(buffer));
+	   file.Push(uint8_t(buffer));
 	   if (buffer & 0x80)
 	   {
 		   buffer >>= 8;
@@ -281,7 +280,7 @@ void MIDIStreamer::SetTempo(int new_tempo)
 // MIDIStreamer :: ClampLoopCount
 //
 // We use the XMIDI interpretation of loop count here, where 1 means it
-// plays that section once (in other words, no loop) rather than the EMIDI
+// plays that section once (in other uint16_ts, no loop) rather than the EMIDI
 // interpretation where 1 means to loop it once.
 //
 // If LoopLimit is 1, we limit all loops, since this pass over the song is
