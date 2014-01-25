@@ -296,7 +296,7 @@ bool DirArchive::save(string filename)
 		{
 			// Create if needed
 			if (!wxDirExists(path))
-				wxMkDir(path);
+				wxMkdir(path);
 
 			// Set unmodified
 			entries[a]->setState(0);
@@ -305,7 +305,7 @@ bool DirArchive::save(string filename)
 		}
 
 		// Check if entry needs to be (re)written
-		if (entries[a]->getState() == 0 && path == entries[a]->exProp("filePath"))
+		if (entries[a]->getState() == 0 && path == entries[a]->exProp("filePath").getStringValue())
 			continue;
 
 		// Write entry to file
