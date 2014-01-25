@@ -166,6 +166,7 @@ entry_types
 		format = snd_speaker;
 		export_ext = "lmp";
 		reliability = 100;
+		editor = audio;
 	}
 
 	snd_wav : sound

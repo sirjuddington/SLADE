@@ -29,6 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Archive.h"
+#include "MathStuff.h"
 #include "Conversions.h"
 #include "ArchiveEntry.h"
 #include "mus2mid/mus2mid.h"
@@ -78,6 +79,13 @@ struct jsnd_header_t
 	uint32_t unity;
 	uint32_t pitch;
 	uint32_t decay;
+};
+
+// For speaker sound conversion
+struct spksnd_header_t
+{
+	uint16_t zero;
+	uint16_t samples;
 };
 
 /*******************************************************************
@@ -696,6 +704,132 @@ bool Conversions::gmidToMidi(MemChunk& in, MemChunk& out)
 
 	// Write the rest of the file
 	out.write(in.getData() + offset, size - offset);
+
+	return true;
+}
+
+/* Conversions::spkSndToWav
+ * Converts Doom PC speaker sound data [in] to wav format, written 
+ * to [out]
+ *******************************************************************/
+#define ORIG_RATE 140.0
+#define FACTOR 315	// 315*140 = 44100
+#define FREQ 1193170.0
+#define RATE (ORIG_RATE * FACTOR)
+uint16_t counters[128] =
+{
+	   0, 6818, 6628, 6449, 6279, 6087, 5906, 5736,
+	5575, 5423, 5279, 5120, 4971, 4830, 4697, 4554,
+	4435, 4307, 4186, 4058, 3950, 3836, 3728, 3615,
+	3519, 3418, 3323, 3224, 3131, 3043, 2960, 2875,
+	2794, 2711, 2633, 2560, 2485, 2415, 2348, 2281,
+	2213, 2153, 2089, 2032, 1975, 1918, 1864, 1810,
+	1757, 1709, 1659, 1612, 1565, 1521, 1478, 1435,
+	1395, 1355, 1316, 1280, 1242, 1207, 1173, 1140,
+	1107, 1075, 1045, 1015,  986,  959,  931,  905,
+	 879,  854,  829,  806,  783,  760,  739,  718,
+	 697,  677,  658,  640,  621,  604,  586,  570,
+	 553,  538,  522,  507,  493,  479,  465,  452,
+	 439,  427,  415,  403,  391,  380,  369,  359,
+	 348,  339,  329,  319,  310,  302,  293,  285,
+	 276,  269,  261,  253,  246,  239,  232,  226,
+	 219,  213,  207,  201,  195,  190,  184,  179
+};
+bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out)
+{
+	// --- Read Doom sound ---
+
+	// Read doom sound header
+	spksnd_header_t header;
+	in.seek(0, SEEK_SET);
+	in.read(&header, 4);
+
+	// Format checks
+	if (header.zero != 0)  	// Check for magic number
+	{
+		Global::error = "Invalid Doom PC Speaker Sound";
+		return false;
+	}
+	if (header.samples > (in.getSize() - 4) || header.samples <= 4)  	// Check for sane values
+	{
+		Global::error = "Invalid Doom PC Speaker Sound";
+		return false;
+	}
+
+	// Read samples
+	uint8_t* osamples = new uint8_t[header.samples];
+	uint8_t* nsamples = new uint8_t[header.samples*FACTOR];
+	in.read(osamples, header.samples);
+
+	// Convert counter values to sample values
+	for (int s = 0; s < header.samples; ++s)
+	{
+		if (osamples[s] > 127)
+		{
+			wxLogMessage("Invalid PC Speaker counter value: %d > 127", osamples[s]);
+			delete[] osamples;
+			delete[] nsamples;
+			return false;
+		}
+		if (osamples[s] > 0)
+		{
+			// First, convert counter value to frequency in Hz
+			double f = FREQ / (double)counters[osamples[s]];
+			//double f = FREQ / (440.0 * pow((double)2.0, (96-osamples[s])/24));
+
+			// Then write a bunch of samples because WAVs at 140 Hz
+			// just plain don't work at all -- I know, I tried.
+			for (int i = 0; i < FACTOR; ++i)
+			{
+				// Finally, convert frequency into sample value
+				int pos = (s*FACTOR) + i;
+				double time   = (double)pos/(double)RATE;
+				double sample = 1.0 + sin(time * 2.0 * PI * f);
+				nsamples[pos] = (uint8_t)(sample*128.0);
+			}
+		}
+		else memset(nsamples + (s*FACTOR), 0, FACTOR);
+	}
+
+	// --- Write WAV ---
+
+	wav_chunk_t whdr, wdhdr;
+	wav_fmtchunk_t fmtchunk;
+
+	// Setup data header
+	char did[4] = { 'd', 'a', 't', 'a' };
+	memcpy(&wdhdr.id, &did, 4);
+	wdhdr.size = header.samples * FACTOR;
+
+	// Setup fmt chunk
+	char fid[4] = { 'f', 'm', 't', ' ' };
+	memcpy(&fmtchunk.header.id, &fid, 4);
+	fmtchunk.header.size = 16;
+	fmtchunk.tag = 1;
+	fmtchunk.channels = 1;
+	fmtchunk.samplerate = RATE;
+	fmtchunk.datarate = RATE;
+	fmtchunk.blocksize = 1;
+	fmtchunk.bps = 8;
+
+	// Setup main header
+	char wid[4] = { 'R', 'I', 'F', 'F' };
+	memcpy(&whdr.id, &wid, 4);
+	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+
+	// Write chunks
+	out.write(&whdr, 8);
+	out.write("WAVE", 4);
+	out.write(&fmtchunk, sizeof(wav_fmtchunk_t));
+	out.write(&wdhdr, 8);
+	out.write(nsamples, header.samples * FACTOR);
+
+	// Ensure data ends on even byte boundary
+	if (header.samples % 2 != 0)
+		out.write("\0", 1);
+
+	delete[] osamples;
+	delete[] nsamples;
 
 	return true;
 }
