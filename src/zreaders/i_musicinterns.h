@@ -186,3 +186,36 @@ protected:
 	NoteOffQueue NoteOffs;
 	EventSource EventDue;
 };
+
+
+// Stuff that doesn't exist on Linux apparently
+
+#ifndef MOD_MIDIPORT
+/* flags for wTechnology field of MIDIOUTCAPS structure */
+#define MOD_MIDIPORT    1  /* output port */
+#define MOD_SYNTH       2  /* generic internal synth */
+#define MOD_SQSYNTH     3  /* square wave internal synth */
+#define MOD_FMSYNTH     4  /* FM internal synth */
+#define MOD_MAPPER      5  /* MIDI mapper */
+#define MOD_WAVETABLE   6  /* hardware wavetable synth */
+#define MOD_SWSYNTH     7  /* software synth */
+#endif
+
+#ifndef MEVT_F_SHORT
+#define MEVT_F_SHORT        0x00000000L
+#define MEVT_F_LONG         0x80000000L
+#define MEVT_F_CALLBACK     0x40000000L
+
+#define MEVT_EVENTTYPE(x)   ((uint8_t)(((x)>>24)&0xFF))
+#define MEVT_EVENTPARM(x)   ((uint32_t)((x)&0x00FFFFFFL))
+
+#define MEVT_SHORTMSG       ((uint8_t)0x00)    /* parm = shortmsg for midiOutShortMsg */
+#define MEVT_TEMPO          ((uint8_t)0x01)    /* parm = new tempo in microsec/qn     */
+#define MEVT_NOP            ((uint8_t)0x02)    /* parm = unused; does nothing         */
+
+/* 0x04-0x7F reserved */
+
+#define MEVT_LONGMSG        ((uint8_t)0x80)    /* parm = bytes to send verbatim       */
+#define MEVT_COMMENT        ((uint8_t)0x82)    /* parm = comment data                 */
+#define MEVT_VERSION        ((uint8_t)0x84)    /* parm = MIDISTRMBUFFVER struct       */
+#endif
