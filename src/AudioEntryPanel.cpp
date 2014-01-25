@@ -211,6 +211,8 @@ bool AudioEntryPanel::open()
 	if (entry->getType()->getFormat() == "snd_doom" ||			// Doom Sound -> WAV
 	        entry->getType()->getFormat() == "snd_doom_mac")
 		Conversions::doomSndToWav(mcdata, convdata);
+	else if (entry->getType()->getFormat() == "snd_speaker")	// Doom PC Speaker Sound -> WAV
+		Conversions::spkSndToWav(mcdata, convdata);
 	else if (entry->getType()->getFormat() == "snd_wolf")		// Wolfenstein 3D Sound -> WAV
 		Conversions::wolfSndToWav(mcdata, convdata);
 	else if (entry->getType()->getFormat() == "snd_voc")		// Creative Voice File -> WAV
@@ -284,7 +286,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 	// Load into buffer
 	if (sound_buffer->loadFromMemory((const char*)audio.getData(), audio.getSize()))
 	{
-		wxLogMessage("opened as sound");
+		LOG_MESSAGE(3, "opened as sound");
 		// Bind to sound
 		sound.setBuffer(*sound_buffer);
 		audio_type = AUTYPE_SOUND;
@@ -299,13 +301,13 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 	}
 	else if (music.openFromMemory((const char*)audio.getData(), audio.getSize()))
 	{
-		wxLogMessage("opened as music");
+		LOG_MESSAGE(3, "opened as music");
 		// Couldn't open the audio as a sf::SoundBuffer, try sf::Music instead
 		audio_type = AUTYPE_MUSIC;
 
 		// Enable play controls
 		setAudioDuration(music.getDuration().asMilliseconds());
-		wxLogMessage("duration: %dms", music.getDuration().asMilliseconds());
+		//wxLogMessage("duration: %dms", music.getDuration().asMilliseconds());
 		btn_play->Enable();
 		btn_stop->Enable();
 
