@@ -260,7 +260,7 @@ void MapDisplayPrefsPanel::applyPreferences()
 	thing_overlay_square = cb_thing_overlay_square->GetValue();
 	thing_shadow = (float)slider_thing_shadow->GetValue() * 0.1f;
 	arrow_colour = cb_thing_arrow_colour->GetValue();
-	arrow_alpha = (float)slider_thing_shadow->GetValue() * 0.1f;
+	arrow_alpha = (float)slider_thing_arrow_alpha->GetValue() * 0.1f;
 	flat_brightness = (float)slider_flat_brightness->GetValue() * 0.1f;
 	flat_ignore_light = cb_flat_ignore_light->GetValue();
 	sector_hilight_fill = cb_sector_hilight_fill->GetValue();
