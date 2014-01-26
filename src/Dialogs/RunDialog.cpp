@@ -316,7 +316,11 @@ void RunDialog::onBtnBrowseExe(wxCommandEvent& e)
 	if (exe)
 	{
 		SFileDialog::fd_info_t info;
-		if (SFileDialog::openFile(info, "Browse for game executable", "Executable files (*.exe)|*.exe", this, exe->exe_name))
+#ifdef WIN32
+		if (SFileDialog::openFile(info, "Browse for game executable", "Executable files (*.exe)|*.exe;*.bat", this, exe->exe_name))
+#else
+		if (SFileDialog::openFile(info, "Browse for game executable", wxFileSelectorDefaultWildcardStr, this, exe->exe_name))
+#endif
 		{
 			text_exe_path->SetValue(info.filenames[0]);
 			exe->path = info.filenames[0];
