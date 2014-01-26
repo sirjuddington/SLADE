@@ -46,7 +46,7 @@
 #include "ModifyOffsetsDialog.h"
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
-
+#include <wx/arrstr.h>
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -668,6 +668,51 @@ void TextureXPanel::moveDown()
 	modified = true;
 }
 
+/* TextureXPanel::sort
+ * Sorts all selected textures
+ *******************************************************************/
+void TextureXPanel::sort()
+{
+	// Get selected textures
+	vector<long> selection = list_textures->getSelection();
+	// If no selection of multiple texture, sort everything instead
+	if (selection.size() < 2)
+	{
+		selection.clear();
+		selection.resize(texturex.nTextures());
+		for (size_t i = 0; i < texturex.nTextures(); ++i)
+			selection[i] = i;
+	}
+
+	// Fill a map with <texture name, texture index> pairs
+	std::map<string, size_t> tmap; tmap.clear();
+	for (size_t i = 0; i < selection.size(); ++i)
+	{
+		tmap[texturex.getTexture(selection[i])->getName()] = selection[i];
+	}
+
+	// And now, sort the textures based on the map
+	std::map<string, size_t>::iterator itr = tmap.begin();
+	for (size_t i = 0; i < selection.size(); ++i)
+	{
+		// If the texture isn't in its sorted place already
+		if (selection[i] != itr->second)
+		{
+			// Swap the texture in the spot with the sorted one
+			texturex.swapTextures(selection[i], itr->second);
+			// Update the position of the displaced texture in the tmap
+			tmap[texturex.getTexture(itr->second)->getName()] = itr->second;
+		}
+		itr++;
+	}
+
+	// Refresh
+	list_textures->updateList();
+
+	// Update variables
+	modified = true;
+}
+
 /* TextureXPanel::copy
  * Copies any selected textures to the clipboard
  *******************************************************************/
@@ -1063,6 +1108,8 @@ bool TextureXPanel::handleAction(string id)
 		moveUp();
 	else if (id == "txed_down")
 		moveDown();
+	else if (id == "txed_sort")
+		sort();
 	else if (id == "txed_copy")
 		copy();
 	else if (id == "txed_cut")
@@ -1144,6 +1191,7 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 	context.AppendSeparator();
 	theApp->getAction("txed_up")->addToMenu(&context);
 	theApp->getAction("txed_down")->addToMenu(&context);
+	theApp->getAction("txed_sort")->addToMenu(&context);
 
 	// Pop it up
 	PopupMenu(&context);

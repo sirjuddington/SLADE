@@ -71,6 +71,7 @@ public:
 	bool		modifyOffsets();
 	void		moveUp();
 	void		moveDown();
+	void		sort();
 	void		copy();
 	void		paste();
 
