@@ -675,7 +675,7 @@ void TextureXPanel::sort()
 {
 	// Get selected textures
 	vector<long> selection = list_textures->getSelection();
-	// If no selection of multiple texture, sort everything instead
+	// Without selection of multiple texture, sort everything instead
 	if (selection.size() < 2)
 	{
 		selection.clear();
@@ -684,11 +684,20 @@ void TextureXPanel::sort()
 			selection[i] = i;
 	}
 
+	// No sorting needed even after adding everything
+	if (selection.size() < 2)
+		return;
+
 	// Fill a map with <texture name, texture index> pairs
+	size_t * origindex = new size_t[texturex.nTextures()];
 	std::map<string, size_t> tmap; tmap.clear();
 	for (size_t i = 0; i < selection.size(); ++i)
 	{
-		tmap[texturex.getTexture(selection[i])->getName()] = selection[i];
+		// We want to be sure that each key is unique, so we add the position to the name string
+		string name = S_FMT("%-8s%8d", texturex.getTexture(selection[i])->getName(), selection[i]);
+		// x keeps the current position, while y keeps the original position
+		tmap[name] = selection[i];
+		origindex[selection[i]] = selection[i];
 	}
 
 	// And now, sort the textures based on the map
@@ -699,12 +708,19 @@ void TextureXPanel::sort()
 		if (selection[i] != itr->second)
 		{
 			// Swap the texture in the spot with the sorted one
+			size_t tmp = origindex[selection[i]];
+			origindex[selection[i]] = origindex[itr->second];
+			origindex[itr->second] = tmp;
 			texturex.swapTextures(selection[i], itr->second);
 			// Update the position of the displaced texture in the tmap
-			tmap[texturex.getTexture(itr->second)->getName()] = itr->second;
+			string name = S_FMT("%-8s%8d", texturex.getTexture(itr->second)->getName(), tmp);
+			tmap[name] = itr->second;
 		}
 		itr++;
 	}
+
+	// Cleanup
+	delete[] origindex;
 
 	// Refresh
 	list_textures->updateList();
