@@ -31,7 +31,6 @@ public:
 	// Detection
 	mapdesc_t			getMapInfo(ArchiveEntry* maphead);
 	vector<mapdesc_t>	detectMaps();
-	string				detectNamespace(ArchiveEntry* entry);
 
 	// Search
 	ArchiveEntry*			findFirst(search_options_t& options);

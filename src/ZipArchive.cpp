@@ -509,31 +509,6 @@ vector<Archive::mapdesc_t> ZipArchive::detectMaps()
 	return ret;
 }
 
-/* ZipArchive::detectNamespace
- * Returns the namespace that [entry] is within
- *******************************************************************/
-string ZipArchive::detectNamespace(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return "global";
-
-	// If the entry is in the root dir, it's in the global namespace
-	if (entry->getParentDir() == getRoot())
-		return "global";
-
-	// Get the entry's *first* parent directory after root (ie <root>/namespace/)
-	ArchiveTreeNode* dir = entry->getParentDir();
-	while (dir && dir->getParent() != getRoot())
-		dir = (ArchiveTreeNode*)dir->getParent();
-
-	// Namespace is the directory's name (in lowercase)
-	if (dir)
-		return dir->getName().Lower();
-	else
-		return "global"; // Error, just return global
-}
-
 /* ZipArchive::findFirst
  * Returns the first entry matching the search criteria in [options],
  * or NULL if no matching entry was found

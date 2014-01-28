@@ -35,7 +35,7 @@ public:
 	ArchiveEntry*	getEntry(unsigned index);
 	ArchiveEntry*	getEntry(string name, bool cut_ext = false);
 	unsigned		numEntries(bool inc_subdirs = false);
-	int				entryIndex(ArchiveEntry* entry);
+	int				entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
 
 	void	setName(string name) { dir_entry->name = name; }
 
@@ -158,6 +158,7 @@ public:
 	bool				canSave() { return parent || on_disk; }
 	virtual bool		paste(ArchiveTreeNode* tree, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* base = NULL);
 	virtual bool		importDir(string directory);
+	virtual bool		hasFlatHack() { return false; }
 
 	// Directory stuff
 	virtual ArchiveTreeNode*	getDir(string path, ArchiveTreeNode* base = NULL);
@@ -183,7 +184,8 @@ public:
 	// Detection
 	virtual mapdesc_t			getMapInfo(ArchiveEntry* maphead) { return mapdesc_t(); }
 	virtual vector<mapdesc_t>	detectMaps() = 0;
-	virtual string				detectNamespace(ArchiveEntry* entry) { return "global"; }
+	virtual string				detectNamespace(ArchiveEntry* entry);
+	virtual string				detectNamespace(size_t index, ArchiveTreeNode* dir = NULL);
 
 	// Search
 	struct search_options_t
@@ -241,6 +243,11 @@ public:
 
 	// Entry moving
 	virtual bool	moveEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL) { return Archive::moveEntry(entry, position, NULL); }
+
+	// Detection
+	virtual string				detectNamespace(ArchiveEntry* entry) { return "global"; }
+	virtual string				detectNamespace(size_t index, ArchiveTreeNode* dir = NULL) { return "global"; }
+
 };
 
 #endif//__ARCHIVE_H__

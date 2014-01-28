@@ -235,23 +235,21 @@ bool DatArchive::open(MemChunk& mc)
  *******************************************************************/
 string DatArchive::detectNamespace(ArchiveEntry* entry)
 {
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return "global";
+	return detectNamespace(entryIndex(entry));
+}
 
-	// Check if entry is within any markers
-	int index = entryIndex(entry);
-
+string DatArchive::detectNamespace(size_t index, ArchiveTreeNode * dir)
+{
 	// Textures
-	if (index > walls[0] && index < walls[1])
+	if (index > (unsigned)walls[0] && index < (unsigned)walls[1])
 		return "textures";
 
 	// Flats
-	if (index > flats[0] && index < flats[1])
+	if (index > (unsigned)flats[0] && index < (unsigned)flats[1])
 		return "flats";
 
 	// Sprites
-	if (index > sprites[0] && index < sprites[1])
+	if (index > (unsigned)sprites[0] && index < (unsigned)sprites[1])
 		return "sprites";
 
 	return "global";

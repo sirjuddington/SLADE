@@ -377,31 +377,6 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	return true;
 }
 
-/* ADatArchive::detectNamespace
- * Returns the namespace that [entry] is within
- *******************************************************************/
-string ADatArchive::detectNamespace(ArchiveEntry* entry)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return "global";
-
-	// If the entry is in the root dir, it's in the global namespace
-	if (entry->getParentDir() == getRoot())
-		return "global";
-
-	// Get the entry's *first* parent directory after root (ie <root>/namespace/)
-	ArchiveTreeNode* dir = entry->getParentDir();
-	while (dir && dir->getParent() != getRoot())
-		dir = (ArchiveTreeNode*)dir->getParent();
-
-	// Namespace is the directory's name (in lowercase)
-	if (dir)
-		return dir->getName().Lower();
-	else
-		return "global"; // Error, just return global
-}
-
 /*******************************************************************
  * ADATARCHIVE CLASS STATIC FUNCTIONS
  *******************************************************************/

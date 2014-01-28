@@ -130,14 +130,14 @@ string ArchiveTreeNode::getName()
  * Returns the index of [entry] within this directory, or -1 if
  * the entry doesn't exist
  *******************************************************************/
-int ArchiveTreeNode::entryIndex(ArchiveEntry* entry)
+int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 {
 	// Check entry was given
 	if (!entry)
 		return -1;
 
 	// Search for it
-	for (unsigned a = 0; a < entries.size(); a++)
+	for (unsigned a = startfrom; a < entries.size(); a++)
 	{
 		if (entries[a] == entry)
 			return (int)a;
@@ -1525,6 +1525,40 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 	}
 	else
 		return false;
+}
+
+/* Archive::detectNamespace
+ * Returns the namespace that [entry] is within
+ *******************************************************************/
+string Archive::detectNamespace(size_t index, ArchiveTreeNode * dir)
+{
+	if (dir && index < dir->numEntries())
+	{
+		return detectNamespace(dir->getEntry(index));
+	}
+	return "global";
+}
+
+string Archive::detectNamespace(ArchiveEntry* entry)
+{
+	// Check entry
+	if (!checkEntry(entry))
+		return "global";
+
+	// If the entry is in the root dir, it's in the global namespace
+	if (entry->getParentDir() == getRoot())
+		return "global";
+
+	// Get the entry's *first* parent directory after root (ie <root>/namespace/)
+	ArchiveTreeNode* dir = entry->getParentDir();
+	while (dir && dir->getParent() != getRoot())
+		dir = (ArchiveTreeNode*)dir->getParent();
+
+	// Namespace is the directory's name (in lowercase)
+	if (dir)
+		return dir->getName().Lower();
+	else
+		return "global"; // Error, just return global
 }
 
 /* Archive::findFirst
