@@ -465,6 +465,7 @@ void MainApp::initActions()
 	new SAction("arch_entry_paste", "Paste", "t_paste", "Paste the selected entries");
 	new SAction("arch_entry_moveup", "Move Up", "t_up", "Move the selected entries up");
 	new SAction("arch_entry_movedown", "Move Down", "t_down", "Move the selected entries down");
+	new SAction("arch_entry_sort", "Sort", "t_down", "Sort the entries in the list");
 	new SAction("arch_entry_import", "Import", "t_import", "Import a file to the selected entry");
 	new SAction("arch_entry_export", "Export", "t_export", "Export the selected entries to files");
 	new SAction("arch_entry_bookmark", "Bookmark", "t_bookmark", "Bookmark the current entry");
