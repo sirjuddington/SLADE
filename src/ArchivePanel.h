@@ -78,6 +78,7 @@ public:
 	bool	revertEntry();
 	bool	moveUp();
 	bool	moveDown();
+	bool	sort();
 	bool	bookmark();
 	bool	openTab();
 	bool	convertEntryTo();

@@ -197,13 +197,14 @@ void WadArchive::updateNamespaces()
 				ns_name = "t";
 
 			// Check if it's the end of an existing namespace
-			int index = entryIndex(entry);
+			// Remember entry is getEntry(a)? index is 'a'
+			//size_t index = entryIndex(entry);
 
 			bool found = false;
 			for (unsigned b = 0; b < namespaces.size(); b++)
 			{
 				// Can't close a namespace that starts afterwards
-				if (namespaces[b].start_index > index)
+				if (namespaces[b].start_index > a)
 					break;
 				// Can't close an already-closed namespace
 				if (namespaces[b].end != NULL)
@@ -212,7 +213,7 @@ void WadArchive::updateNamespaces()
 				{
 					found = true;
 					namespaces[b].end = entry;
-					namespaces[b].end_index = index;
+					namespaces[b].end_index = a;
 					break;
 				}
 			}
@@ -221,7 +222,7 @@ void WadArchive::updateNamespaces()
 			{
 				wad_ns_pair_t ns(getRoot()->getEntry(0), entry);
 				ns.start_index = 0;
-				ns.end_index = index;
+				ns.end_index = a;
 				ns.name = "f";
 				namespaces.push_back(ns);
 			}
@@ -270,6 +271,21 @@ void WadArchive::updateNamespaces()
 		//wxLogMessage("Namespace %s from %s (%d) to %s (%d)", ns.name,
 		//	ns.start->getName(), ns.start_index, ns.end->getName(), ns.end_index);
 	}
+}
+
+/* WadArchive::hasFlatHack
+ * Detects if the flat hack is used in this archive or not
+ *******************************************************************/
+bool WadArchive::hasFlatHack()
+{
+	for (size_t i = 0; i < namespaces.size(); ++i)
+	{
+		if (namespaces[i].name == "f")
+		{
+			return (namespaces[i].start_index == 0 && namespaces[i].start->getSize() != 0);
+		}
+	}
+	return false;
 }
 
 /* WadArchive::getFileExtensionString
@@ -1068,18 +1084,20 @@ vector<Archive::mapdesc_t> WadArchive::detectMaps()
  *******************************************************************/
 string WadArchive::detectNamespace(ArchiveEntry* entry)
 {
-	// Get entry index
-	int index = entryIndex(entry);
+	return detectNamespace(entryIndex(entry));
+}
 
+string WadArchive::detectNamespace(size_t index, ArchiveTreeNode * dir)
+{
 	// Go through namespaces
 	for (unsigned a = 0; a < namespaces.size(); a++)
 	{
 		// Get namespace start and end indices
-		int start = namespaces[a].start_index;
-		int end = namespaces[a].end_index;
+		size_t start = namespaces[a].start_index;
+		size_t end = namespaces[a].end_index;
 
 		// Check if the entry is within this namespace
-		if (start < index && index < end)
+		if (start <= index && index <= end)
 			return namespaces[a].name;
 	}
 

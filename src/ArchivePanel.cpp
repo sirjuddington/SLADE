@@ -210,6 +210,83 @@ public:
 	}
 };
 
+/*******************************************************************
+ * ARCHIVEPANEL ANCILLARY FUNCTIONS
+ *******************************************************************
+ Used by the entry sort function.
+ */
+
+/* initNamespaceVector
+ * Creates a vector of namespaces in a predefined order
+ */
+void initNamespaceVector(vector<string> &ns, bool flathack)
+{
+	ns.clear();
+	if (flathack)
+		ns.push_back("flats");
+	ns.push_back("global");
+	ns.push_back("colormaps");
+	ns.push_back("acs");
+	ns.push_back("maps");
+	ns.push_back("sounds");
+	ns.push_back("music");
+	ns.push_back("voices");
+	ns.push_back("voxels");
+	ns.push_back("graphics");
+	ns.push_back("sprites");
+	ns.push_back("patches");
+	ns.push_back("textures");
+	ns.push_back("hires");
+	if (!flathack)
+		ns.push_back("flats");
+}
+
+/* isInMap
+ * Checks through a mapdesc_t vector and returns which one, 
+ * if any, the entry index is in, -1 otherwise
+ */
+int isInMap(size_t index, vector<Archive::mapdesc_t> &maps)
+{
+	for (size_t m = 0; m < maps.size(); ++m)
+	{
+		size_t head_index = maps[m].head->getParentDir()->entryIndex(maps[m].head);
+		size_t end_index = maps[m].head->getParentDir()->entryIndex(maps[m].end, head_index);
+		if (index >= head_index && index <= end_index)
+			return m;
+	}
+	return -1;
+}
+
+/* getNamespaceNumber
+ * Returns the position of the given entry's detected 
+ * namespace in the namespace vector. Also hacks around
+ * a bit to put less entries in the global namespace
+ * and allow sorting a bit by categories.
+ */
+size_t getNamespaceNumber(ArchiveEntry * entry, size_t index, vector<string> &ns, vector<Archive::mapdesc_t> &maps)
+{
+	string ens = entry->getParent()->detectNamespace(index);
+	if (S_CMPNOCASE(ens, "global"))
+	{
+		if (maps.size() > 0 && isInMap(index, maps) >= 0)
+			ens = "maps";
+		else if (S_CMPNOCASE(entry->getType()->getCategory(), "Graphics"))
+			ens = "graphics";
+		else if (S_CMPNOCASE(entry->getType()->getCategory(), "Audio"))
+		{
+			if (S_CMPNOCASE(entry->getType()->getIcon(), "e_music"))
+				ens = "music";
+			else ens = "sounds";
+		}
+	}
+	for (size_t n = 0; n < ns.size(); ++n)
+		if (S_CMPNOCASE(ns[n], ens))
+			return n;
+
+	ns.push_back(ens);
+	return ns.size();
+}
+
 
 /*******************************************************************
  * ARCHIVEPANEL CLASS FUNCTIONS
@@ -408,6 +485,7 @@ void ArchivePanel::addMenus()
 		menu_entry->AppendSeparator();
 		theApp->getAction("arch_entry_moveup")->addToMenu(menu_entry);
 		theApp->getAction("arch_entry_movedown")->addToMenu(menu_entry);
+		theApp->getAction("arch_entry_sort")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
 		theApp->getAction("arch_entry_import")->addToMenu(menu_entry);
 		theApp->getAction("arch_entry_export")->addToMenu(menu_entry);
@@ -1022,6 +1100,187 @@ bool ArchivePanel::moveDown()
 	entry_list->EnsureVisible(entry_list->getEntryIndex(selection[selection.size() - 1]) + 4);
 
 	// Return success
+	return true;
+}
+
+/* ArchivePanel::sort
+ * Sorts all selected entries. If the selection is empty or only
+ * contains one single entry, sort the entire archive instead.
+ * Note that a simple sort is not desired for three reasons:
+ * 1. Map lumps have to remain in sequence
+ * 2. Namespaces should be respected
+ * 3. Marker lumps used as separators should also be respected
+ * The way we're doing that is more than a bit hacky, sorry.
+ * The basic idea is to assign to each entry a sortkey (thanks to
+ * ExProps for that) which is prefixed with namespace information.
+ * Also, the name of map lumps is replaced by the map name so that
+ * they stay together. Finally, the original index is appended so
+ * that duplicate names are disambiguated.
+ *******************************************************************/
+bool ArchivePanel::sort()
+{
+	// Get selected entries
+	vector<long> selection = entry_list->getSelection();
+	ArchiveTreeNode* dir = entry_list->getCurrentDir();
+
+	size_t start, stop;
+
+	// Without selection of multiple entries, sort everything instead
+	if (selection.size() < 2)
+	{
+		start = 0;
+		stop = dir->numEntries();
+	}
+	// We need sorting to be contiguous, otherwise it'll destroy maps
+	else
+	{
+		start = selection[0];
+		stop = selection[selection.size() - 1] + 1;
+	}
+
+	// Make sure everything in the range is selected
+	selection.clear();
+	selection.resize(stop - start);
+	for (size_t i = start; i < stop; ++i)
+		selection[i] = i;
+
+	// No sorting needed even after adding everything
+	if (selection.size() < 2)
+		return false;
+
+	vector<string> nspaces;
+	initNamespaceVector(nspaces, dir->getArchive()->hasFlatHack());
+	vector<Archive::mapdesc_t> maps = dir->getArchive()->detectMaps();
+
+	string ns = dir->getArchive()->detectNamespace(dir->getEntry(selection[0]));
+	size_t nsn = 0, lnsn = 0;
+
+	// Fill a map with <entry name, entry index> pairs
+	std::map<string, size_t> emap; emap.clear();
+	for (size_t i = 0; i < selection.size(); ++i)
+	{
+		bool ns_changed = false;
+		int mapindex = isInMap(selection[i], maps);
+		string mapname;
+		ArchiveEntry * entry = dir->getEntry(selection[i]);
+		// If this is a map entry, deal with it
+		if (maps.size() && mapindex > -1)
+		{
+			// Keep track of the name
+			mapname = maps[mapindex].name;
+
+			// If part of a map is selected, make sure the rest is selected as well
+			size_t head_index = maps[mapindex].head->getParentDir()->entryIndex(maps[mapindex].head);
+			size_t end_index = maps[mapindex].head->getParentDir()->entryIndex(maps[mapindex].end, head_index);
+			// Good thing we can rely on selection being contiguous
+			for (size_t a = head_index; a <= end_index; ++a)
+			{
+				bool selected = (a >= start && a < stop);
+				if (!selected) selection.push_back(a);
+			}
+			if (head_index < start) start = head_index;
+			if (end_index+1 > stop) stop = end_index+1;
+		}
+		else if (dir->getArchive()->detectNamespace(selection[i]) != ns)
+		{
+			ns = dir->getArchive()->detectNamespace(selection[i]);
+			nsn = getNamespaceNumber(entry, selection[i], nspaces, maps) * 1000;
+			ns_changed = true;
+		}
+		else if (mapindex < 0 && (entry->getSize() == 0))
+		{
+			nsn++;
+			ns_changed = true;
+		}
+
+		// Local namespace number is not necessarily computed namespace number.
+		// This is because the global namespace in wads is bloated and we want more
+		// categories than it actually has to offer.
+		lnsn = (nsn == 0 ? getNamespaceNumber(entry, selection[i], nspaces, maps)*1000 : nsn);
+		string name, ename = entry->getName().Upper();
+		// Want to get another hack in this stuff? Yeah, of course you do!
+		// This here hack will sort Doom II songs by their associated map.
+		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->getType()->getIcon(), "e_music"))
+		{
+			if		(ename == "D_RUNNIN")	ename = "D_MAP01";
+			else if (ename == "D_STALKS")	ename = "D_MAP02";
+			else if (ename == "D_COUNTD")	ename = "D_MAP03";
+			else if (ename == "D_BETWEE")	ename = "D_MAP04";
+			else if (ename == "D_DOOM"  )	ename = "D_MAP05";
+			else if (ename == "D_THE_DA")	ename = "D_MAP06";
+			else if (ename == "D_SHAWN" )	ename = "D_MAP07";
+			else if (ename == "D_DDTBLU")	ename = "D_MAP08";
+			else if (ename == "D_IN_CIT")	ename = "D_MAP09";
+			else if (ename == "D_DEAD"  )	ename = "D_MAP10";
+			else if (ename == "D_STLKS2")	ename = "D_MAP11";
+			else if (ename == "D_THEDA2")	ename = "D_MAP12";
+			else if (ename == "D_DOOM2" )	ename = "D_MAP13";
+			else if (ename == "D_DDTBL2")	ename = "D_MAP14";
+			else if (ename == "D_RUNNI2")	ename = "D_MAP15";
+			else if (ename == "D_DEAD2" )	ename = "D_MAP16";
+			else if (ename == "D_STLKS3")	ename = "D_MAP17";
+			else if (ename == "D_ROMERO")	ename = "D_MAP18";
+			else if (ename == "D_SHAWN2")	ename = "D_MAP19";
+			else if (ename == "D_MESSAG")	ename = "D_MAP20";
+			else if (ename == "D_COUNT2")	ename = "D_MAP21";
+			else if (ename == "D_DDTBL3")	ename = "D_MAP22";
+			else if (ename == "D_AMPIE" )	ename = "D_MAP23";
+			else if (ename == "D_THEDA3")	ename = "D_MAP24";
+			else if (ename == "D_ADRIAN")	ename = "D_MAP25";
+			else if (ename == "D_MESSG2")	ename = "D_MAP26";
+			else if (ename == "D_ROMER2")	ename = "D_MAP27";
+			else if (ename == "D_TENSE" )	ename = "D_MAP28";
+			else if (ename == "D_SHAWN3")	ename = "D_MAP29";
+			else if (ename == "D_OPENIN")	ename = "D_MAP30";
+			else if (ename == "D_EVIL"  )	ename = "D_MAP31";
+			else if (ename == "D_ULTIMA")	ename = "D_MAP32";
+			else if (ename == "D_READ_M")	ename = "D_MAP33";
+			else if (ename == "D_DM2TTL")	ename = "D_MAP34";
+			else if (ename == "D_DM2INT")	ename = "D_MAP35";
+		}
+		// All map lumps have the same sortkey name so they stay grouped
+		if (mapindex > -1)
+		{
+			name = S_FMT("%08d%-64s%8d", lnsn, mapname, selection[i]);
+		}
+		// Yet another hack! Make sure namespace start markers are first
+		else if (ns_changed)
+		{
+			name = S_FMT("%08d%-64s%8d", lnsn, wxEmptyString, selection[i]);
+		}
+		// Generic case: actually use the entry name to sort
+		else
+		{
+			name = S_FMT("%08d%-64s%8d", lnsn, ename, selection[i]);
+		}
+		// Let the entry remember how it was sorted this time
+		entry->exProp("sortkey") = name;
+		// Insert sortkey into entry map so it'll be sorted
+		emap[name] = selection[i];
+	}
+
+	// And now, sort the entries based on the map
+	undo_manager->beginRecord("Sort Entries");
+	std::map<string, size_t>::iterator itr = emap.begin();
+	for (size_t i = start; i < stop; ++i, itr++)
+	{
+		ArchiveEntry * entry = dir->getEntry(i);
+		// If the entry isn't in its sorted place already
+		if (i != (size_t)itr->second)
+		{
+			// Swap the texture in the spot with the sorted one
+			dir->swapEntries(i, itr->second);
+
+			// Update the position of the displaced texture in the emap
+			string name = entry->exProp("sortkey");
+			emap[name] = itr->second;
+		}
+	}
+	undo_manager->endRecord(true);
+
+	// Refresh
+	entry_list->updateList();
+
 	return true;
 }
 
@@ -2408,6 +2667,10 @@ bool ArchivePanel::handleAction(string id)
 	else if (id == "arch_entry_movedown")
 		moveDown();
 
+	// Entry->Sort
+	else if (id == "arch_entry_sort")
+		sort();
+
 	// Entry->Bookmark
 	else if (id == "arch_entry_bookmark")
 		bookmark();
@@ -2790,6 +3053,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	context.AppendSeparator();
 	theApp->getAction("arch_entry_moveup")->addToMenu(&context);
 	theApp->getAction("arch_entry_movedown")->addToMenu(&context);
+	theApp->getAction("arch_entry_sort")->addToMenu(&context);
 	context.AppendSeparator();
 	theApp->getAction("arch_entry_bookmark")->addToMenu(&context);
 	theApp->getAction("arch_entry_opentab")->addToMenu(&context);

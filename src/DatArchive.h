@@ -46,6 +46,7 @@ public:
 
 	// Detection
 	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
+	string				detectNamespace(size_t index, ArchiveTreeNode * dir = NULL);
 	string				detectNamespace(ArchiveEntry* entry);
 
 	static bool isDatArchive(MemChunk& mc);

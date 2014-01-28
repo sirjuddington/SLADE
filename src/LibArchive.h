@@ -33,7 +33,6 @@ public:
 
 	// Detection
 	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
-	string				detectNamespace(ArchiveEntry* entry) { return "global"; }
 
 	static bool isLibArchive(MemChunk& mc);
 	static bool isLibArchive(string filename);

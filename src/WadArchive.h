@@ -8,9 +8,9 @@
 struct wad_ns_pair_t
 {
 	ArchiveEntry*	start;	// eg. P_START
-	int				start_index;
+	size_t			start_index;
 	ArchiveEntry*	end;	// eg. P_END
-	int				end_index;
+	size_t			end_index;
 	string			name;	// eg. "P" (since P or PP is a special case will be set to "patches")
 
 	wad_ns_pair_t(ArchiveEntry* start, ArchiveEntry* end)
@@ -67,6 +67,8 @@ public:
 	mapdesc_t			getMapInfo(ArchiveEntry* maphead);
 	vector<mapdesc_t>	detectMaps();
 	string				detectNamespace(ArchiveEntry* entry);
+	string				detectNamespace(size_t index, ArchiveTreeNode * dir = NULL);
+	bool				hasFlatHack();
 
 	// Search
 	ArchiveEntry*			findFirst(search_options_t& options);

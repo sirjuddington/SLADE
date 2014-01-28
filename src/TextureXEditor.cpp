@@ -182,6 +182,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	menu_texture->AppendSeparator();
 	theApp->getAction("txed_up")->addToMenu(menu_texture);
 	theApp->getAction("txed_down")->addToMenu(menu_texture);
+	theApp->getAction("txed_sort")->addToMenu(menu_texture);
 	wxMenu* menu_patch = new wxMenu();
 	theApp->getAction("txed_patch_add")->addToMenu(menu_patch);
 	theApp->getAction("txed_patch_remove")->addToMenu(menu_patch);

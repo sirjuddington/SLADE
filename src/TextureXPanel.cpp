@@ -46,7 +46,7 @@
 #include "ModifyOffsetsDialog.h"
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
-
+#include <wx/arrstr.h>
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -668,6 +668,67 @@ void TextureXPanel::moveDown()
 	modified = true;
 }
 
+/* TextureXPanel::sort
+ * Sorts all selected textures
+ *******************************************************************/
+void TextureXPanel::sort()
+{
+	// Get selected textures
+	vector<long> selection = list_textures->getSelection();
+	// Without selection of multiple texture, sort everything instead
+	if (selection.size() < 2)
+	{
+		selection.clear();
+		selection.resize(texturex.nTextures());
+		for (size_t i = 0; i < texturex.nTextures(); ++i)
+			selection[i] = i;
+	}
+
+	// No sorting needed even after adding everything
+	if (selection.size() < 2)
+		return;
+
+	// Fill a map with <texture name, texture index> pairs
+	size_t * origindex = new size_t[texturex.nTextures()];
+	std::map<string, size_t> tmap; tmap.clear();
+	for (size_t i = 0; i < selection.size(); ++i)
+	{
+		// We want to be sure that each key is unique, so we add the position to the name string
+		string name = S_FMT("%-8s%8d", texturex.getTexture(selection[i])->getName(), selection[i]);
+		// x keeps the current position, while y keeps the original position
+		tmap[name] = selection[i];
+		origindex[selection[i]] = selection[i];
+	}
+
+	// And now, sort the textures based on the map
+	std::map<string, size_t>::iterator itr = tmap.begin();
+	for (size_t i = 0; i < selection.size(); ++i)
+	{
+		// If the texture isn't in its sorted place already
+		if (selection[i] != itr->second)
+		{
+			// Swap the texture in the spot with the sorted one
+			size_t tmp = origindex[selection[i]];
+			origindex[selection[i]] = origindex[itr->second];
+			origindex[itr->second] = tmp;
+			texturex.swapTextures(selection[i], itr->second);
+			// Update the position of the displaced texture in the tmap
+			string name = S_FMT("%-8s%8d", texturex.getTexture(itr->second)->getName(), tmp);
+			tmap[name] = itr->second;
+		}
+		itr++;
+	}
+
+	// Cleanup
+	delete[] origindex;
+
+	// Refresh
+	list_textures->updateList();
+
+	// Update variables
+	modified = true;
+}
+
 /* TextureXPanel::copy
  * Copies any selected textures to the clipboard
  *******************************************************************/
@@ -1063,6 +1124,8 @@ bool TextureXPanel::handleAction(string id)
 		moveUp();
 	else if (id == "txed_down")
 		moveDown();
+	else if (id == "txed_sort")
+		sort();
 	else if (id == "txed_copy")
 		copy();
 	else if (id == "txed_cut")
@@ -1144,6 +1207,7 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 	context.AppendSeparator();
 	theApp->getAction("txed_up")->addToMenu(&context);
 	theApp->getAction("txed_down")->addToMenu(&context);
+	theApp->getAction("txed_sort")->addToMenu(&context);
 
 	// Pop it up
 	PopupMenu(&context);
