@@ -94,7 +94,7 @@ bool ArchiveManager::validResDir(string dir)
 		"icons/t_wiki.png",
 		"images/arrow.png",
 		"logo.png",
-		"palettes/doom .pal",
+		"palettes/Doom .pal",
 		"s3dummy.lmp",
 		"slade.ico",
 		"switches.lmp",
