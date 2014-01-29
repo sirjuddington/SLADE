@@ -22,24 +22,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
 		vector<selection_3d_t> sel;
 		editor->get3dSelectionOrHilight(sel);
 
-		// Cancel if no selection
-		if (sel.empty())
-		{
-			active = false;
-			return;
-		}
-
-		// Cancel if only things selected
-		bool ok = false;
-		for (unsigned a = 0; a < sel.size(); a++)
-		{
-			if (sel[a].type != MapEditor::SEL_THING)
-			{
-				ok = true;
-				break;
-			}
-		}
-		if (!ok)
+		if (!ok(sel))
 		{
 			active = false;
 			return;
@@ -320,4 +303,23 @@ void QuickTextureOverlay3d::keyDown(string key)
 		search += key;
 		doSearch();
 	}
+}
+
+bool QuickTextureOverlay3d::ok(vector<selection_3d_t> &sel)
+{
+	// Cancel if no selection
+	if (sel.empty())
+		return false;
+
+	// Cancel if only things selected
+	bool ok = false;
+	for (unsigned a = 0; a < sel.size(); a++)
+	{
+		if (sel[a].type != MapEditor::SEL_THING)
+		{
+			ok = true;
+			break;
+		}
+	}
+	return ok;
 }

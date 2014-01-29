@@ -42,6 +42,8 @@ public:
 
 	void	doSearch();
 	void	keyDown(string key);
+
+	static bool	ok(vector<selection_3d_t> &sel);
 };
 
 #endif//__QUICK_TEXTURE_OVERLAY_3D_H__

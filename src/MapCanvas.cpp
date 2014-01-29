@@ -3072,13 +3072,19 @@ void MapCanvas::keyBinds3d(string name)
 	// Quick texture
 	else if (name == "me3d_quick_texture")
 	{
-		if (overlay_current) delete overlay_current;
-		QuickTextureOverlay3d* qto = new QuickTextureOverlay3d(editor);
-		overlay_current = qto;
+		vector<selection_3d_t> sel;
+		editor->get3dSelectionOrHilight(sel);
 
-		renderer_3d->enableHilight(false);
-		renderer_3d->enableSelection(false);
-		editor->lockHilight(true);
+		if (QuickTextureOverlay3d::ok(sel))
+		{
+			if (overlay_current) delete overlay_current;
+			QuickTextureOverlay3d* qto = new QuickTextureOverlay3d(editor);
+			overlay_current = qto;
+
+			renderer_3d->enableHilight(false);
+			renderer_3d->enableSelection(false);
+			editor->lockHilight(true);
+		}
 	}
 
 	// Send to map editor
