@@ -30,7 +30,7 @@ private:
 	sf::Sound			sound;
 	sf::Music			music;
 #ifndef NOLIBMODPLUG
-	sfMod::Mod			mod;
+	sfmod::Mod			mod;
 #endif
 
 	enum

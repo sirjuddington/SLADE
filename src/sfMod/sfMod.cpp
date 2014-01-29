@@ -1,11 +1,11 @@
 ////////////////////////////////
-// sfMod 1.0.2                //
-// Copyright Â© Kerli Low 2012 //
+// sfmod 1.1.0                //
+// Copyright © Kerli Low 2012 //
 ////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
 // License:                                                                 //
-// sfMod                                                                    //
+// sfmod                                                                    //
 // Copyright (c) 2012 Kerli Low                                             //
 // kerlilow@gmail.com                                                       //
 //                                                                          //
@@ -23,7 +23,7 @@
 //    would be appreciated but is not required.                             //
 //                                                                          //
 //    2. Altered source versions must be plainly marked as such, and must   //
-//    notbe misrepresented as being the original software.                  //
+//    not be misrepresented as being the original software.                 //
 //                                                                          //
 //    3. This notice may not be removed or altered from any source          //
 //    distribution.                                                         //
@@ -31,44 +31,44 @@
 
 #ifndef NOLIBMODPLUG
 
-#include "sfMod.h"
+#include "sfmod.h"
 #include "modplug.h"
 
 #include <fstream>
 
 
 
-namespace sfMod
+namespace sfmod
 {
   ModPlug_Settings settings;
-  ModPlug_Settings defaultSettings;
+  ModPlug_Settings defSettings;
 }
 
 
-void sfMod::InitSettings()
+void sfmod::initSettings()
 {
-  ModPlug_GetSettings(&sfMod::defaultSettings);
+  ModPlug_GetSettings(&sfmod::defSettings);
 
-  sfMod::settings = sfMod::defaultSettings;
+  sfmod::settings = sfmod::defSettings;
 }
 
-void sfMod::ApplySettings()
+void sfmod::applySettings()
 {
-  ModPlug_SetSettings(&sfMod::settings);
+  ModPlug_SetSettings(&sfmod::settings);
 }
 
-void sfMod::DefaultSettings()
+void sfmod::defaultSettings()
 {
-  ModPlug_SetSettings(&sfMod::defaultSettings);
+  ModPlug_SetSettings(&sfmod::defSettings);
 
-  sfMod::settings = sfMod::defaultSettings;
+  sfmod::settings = sfmod::defSettings;
 }
 
 
 ///////////////////////////////////////////////////////////
 // Mod class                                             //
 ///////////////////////////////////////////////////////////
-sfMod::Mod::Mod() : SoundStream()
+sfmod::Mod::Mod() : sf::SoundStream(), sfmod::Error()
 {
   file_ = NULL;
 
@@ -78,7 +78,8 @@ sfMod::Mod::Mod() : SoundStream()
   buffer_.resize(SFMOD_BUFFERSIZE / 2);
 }
 
-sfMod::Mod::Mod(const std::string& filename) : SoundStream()
+sfmod::Mod::Mod(const std::string& filename)
+  : sf::SoundStream(), sfmod::Error()
 {
   file_ = NULL;
 
@@ -87,10 +88,11 @@ sfMod::Mod::Mod(const std::string& filename) : SoundStream()
 
   buffer_.resize(SFMOD_BUFFERSIZE / 2);
 
-  LoadFromFile(filename);
+  loadFromFile(filename);
 }
 
-sfMod::Mod::Mod(const void* data, unsigned int size) : SoundStream()
+sfmod::Mod::Mod(const void* data, unsigned int size)
+  : sf::SoundStream(), sfmod::Error()
 {
   file_ = NULL;
 
@@ -99,17 +101,99 @@ sfMod::Mod::Mod(const void* data, unsigned int size) : SoundStream()
 
   buffer_.resize(SFMOD_BUFFERSIZE / 2);
 
-  LoadFromMemory(data, size);
+  loadFromMemory(data, size);
 }
 
 
-sfMod::Mod::~Mod()
+sfmod::Mod::~Mod()
 {
-  Release();
+  unload();
 }
 
 
-void sfMod::Mod::Release()
+bool sfmod::Mod::loadFromFile(const std::string& filename)
+{
+  unload();
+
+  std::string data;
+
+  std::ifstream file;
+  file.open(filename.c_str(), std::ios::binary);
+  if (!file.is_open()) {
+    setError("Failed to load module.");
+    return false;
+  }
+
+  file.seekg(0, std::ios::end);
+  unsigned int size = static_cast<unsigned int>(file.tellg());
+  file.seekg(0, std::ios::beg);
+
+  data.reserve(size);
+  for (unsigned int i = 0; i < size; ++i)
+    data += file.get();
+
+  file.close();
+
+  file_ = ModPlug_Load(data.c_str(), size);
+  if (file_ == NULL) {
+    setError("Failed to load module.");
+    return false;
+  }
+
+  name_   = ModPlug_GetName(file_);
+  length_ = ModPlug_GetLength(file_);
+
+  ModPlug_Settings settings;
+  ModPlug_GetSettings(&settings);
+
+  initialize(settings.mChannels, settings.mFrequency);
+
+  return true;
+}
+
+bool sfmod::Mod::loadFromMemory(const std::string& data)
+{
+  unload();
+
+  file_ = ModPlug_Load(data.c_str(), data.size());
+  if (file_ == NULL) {
+    setError("Failed to load module.");
+    return false;
+  }
+
+  name_   = ModPlug_GetName(file_);
+  length_ = ModPlug_GetLength(file_);
+
+  ModPlug_Settings settings;
+  ModPlug_GetSettings(&settings);
+
+  initialize(settings.mChannels, settings.mFrequency);
+
+  return true;
+}
+
+bool sfmod::Mod::loadFromMemory(const void* data, unsigned int size)
+{
+  unload();
+
+  file_ = ModPlug_Load(data, size);
+  if (file_ == NULL) {
+    setError("Failed to load module.");
+    return false;
+  }
+
+  name_   = ModPlug_GetName(file_);
+  length_ = ModPlug_GetLength(file_);
+
+  ModPlug_Settings settings;
+  ModPlug_GetSettings(&settings);
+
+  initialize(settings.mChannels, settings.mFrequency);
+
+  return true;
+}
+
+void sfmod::Mod::unload()
 {
   if (getStatus() != sf::SoundStream::Stopped)
     stop();
@@ -127,130 +211,28 @@ void sfMod::Mod::Release()
 }
 
 
-bool sfMod::Mod::LoadFromFile(const std::string& filename)
-{
-  if (getStatus() != sf::SoundStream::Stopped)
-    stop();
-
-  if (file_ != NULL) {
-    ModPlug_Unload(file_);
-    file_ = NULL;
-  }
-
-  name_   = "";
-  length_ = 0;
-
-  std::string data;
-
-  std::ifstream file;
-  file.open(filename.c_str(), std::ios::binary);
-  if (!file.is_open())
-    return false;
-
-  file.seekg(0, std::ios::end);
-  unsigned int size = static_cast<unsigned int>(file.tellg());
-  file.seekg(0, std::ios::beg);
-
-  data.reserve(size);
-  for (unsigned int i = 0; i < size; ++i)
-    data += file.get();
-
-  file.close();
-
-  file_ = ModPlug_Load(data.c_str(), size);
-  if (file_ == NULL)
-    return false;
-
-  name_   = ModPlug_GetName(file_);
-  length_ = ModPlug_GetLength(file_);
-
-  ModPlug_Settings settings;
-  ModPlug_GetSettings(&settings);
-
-  initialize(settings.mChannels, settings.mFrequency);
-
-  return true;
-}
-
-bool sfMod::Mod::LoadFromMemory(const std::string& data)
-{
-  if (getStatus() != sf::SoundStream::Stopped)
-    stop();
-
-  if (file_ != NULL) {
-    ModPlug_Unload(file_);
-    file_ = NULL;
-  }
-
-  name_   = "";
-  length_ = 0;
-
-  file_ = ModPlug_Load(data.c_str(), data.size());
-  if (file_ == NULL)
-    return false;
-
-  name_   = ModPlug_GetName(file_);
-  length_ = ModPlug_GetLength(file_);
-
-  ModPlug_Settings settings;
-  ModPlug_GetSettings(&settings);
-
-  initialize(settings.mChannels, settings.mFrequency);
-
-  return true;
-}
-
-bool sfMod::Mod::LoadFromMemory(const void* data, unsigned int size)
-{
-  if (getStatus() != sf::SoundStream::Stopped)
-    stop();
-
-  if (file_ != NULL) {
-    ModPlug_Unload(file_);
-    file_ = NULL;
-  }
-
-  name_   = "";
-  length_ = 0;
-
-  file_ = ModPlug_Load(data, size);
-  if (file_ == NULL)
-    return false;
-
-  name_   = ModPlug_GetName(file_);
-  length_ = ModPlug_GetLength(file_);
-
-  ModPlug_Settings settings;
-  ModPlug_GetSettings(&settings);
-
-  initialize(settings.mChannels, settings.mFrequency);
-
-  return true;
-}
-
-
-ModPlugFile* sfMod::Mod::GetModPlugFile() const
+ModPlugFile* sfmod::Mod::getModPlugFile() const
 {
   return file_;
 }
 
-const std::string& sfMod::Mod::GetName() const
+const std::string& sfmod::Mod::getName() const
 {
   return name_;
 }
 
-int sfMod::Mod::GetLength() const
+int sfmod::Mod::getLength() const
 {
   return length_;
 }
 
 
-int sfMod::Mod::GetModuleType() const
+int sfmod::Mod::getModuleType() const
 {
   return ModPlug_GetModuleType(file_);
 }
 
-std::string sfMod::Mod::GetSongComments() const
+std::string sfmod::Mod::getSongComments() const
 {
   char* comments = ModPlug_GetMessage(file_);
   if (comments == NULL)
@@ -260,65 +242,65 @@ std::string sfMod::Mod::GetSongComments() const
 }
 
 
-unsigned int sfMod::Mod::GetMasterVolume() const
+unsigned int sfmod::Mod::getMasterVolume() const
 {
   return ModPlug_GetMasterVolume(file_);
 }
 
 
-int sfMod::Mod::GetCurrentSpeed() const
+int sfmod::Mod::getCurrentSpeed() const
 {
   return ModPlug_GetCurrentSpeed(file_);
 }
 
-int sfMod::Mod::GetCurrentTempo() const
+int sfmod::Mod::getCurrentTempo() const
 {
   return ModPlug_GetCurrentTempo(file_);
 }
 
-int sfMod::Mod::GetCurrentOrder() const
+int sfmod::Mod::getCurrentOrder() const
 {
   return ModPlug_GetCurrentOrder(file_);
 }
 
-int sfMod::Mod::GetCurrentPattern() const
+int sfmod::Mod::getCurrentPattern() const
 {
   return ModPlug_GetCurrentPattern(file_);
 }
 
-int sfMod::Mod::GetCurrentRow() const
+int sfmod::Mod::getCurrentRow() const
 {
   return ModPlug_GetCurrentRow(file_);
 }
 
-int sfMod::Mod::GetPlayingChannels() const
+int sfmod::Mod::getPlayingChannels() const
 {
   return ModPlug_GetPlayingChannels(file_);
 }
 
 
-unsigned int sfMod::Mod::GetInstrumentCount() const
+unsigned int sfmod::Mod::getInstrumentCount() const
 {
   return ModPlug_NumInstruments(file_);
 }
 
-unsigned int sfMod::Mod::GetSampleCount() const
+unsigned int sfmod::Mod::getSampleCount() const
 {
   return ModPlug_NumSamples(file_);
 }
 
-unsigned int sfMod::Mod::GetPatternCount() const
+unsigned int sfmod::Mod::getPatternCount() const
 {
   return ModPlug_NumPatterns(file_);
 }
 
-unsigned int sfMod::Mod::GetChannelCount() const
+unsigned int sfmod::Mod::getChannelCount() const
 {
   return ModPlug_NumChannels(file_);
 }
 
 
-std::string sfMod::Mod::GetInstrumentName(unsigned int index) const
+std::string sfmod::Mod::getInstrumentName(unsigned int index) const
 {
   char buf[40] = {0};
 
@@ -327,7 +309,7 @@ std::string sfMod::Mod::GetInstrumentName(unsigned int index) const
   return std::string(buf);
 }
 
-std::string sfMod::Mod::GetSampleName(unsigned int index) const
+std::string sfmod::Mod::getSampleName(unsigned int index) const
 {
   char buf[40] = {0};
 
@@ -337,35 +319,36 @@ std::string sfMod::Mod::GetSampleName(unsigned int index) const
 }
 
 
-ModPlugNote* sfMod::Mod::GetPattern(int pattern, unsigned int* numrows) const
+ModPlugNote* sfmod::Mod::getPattern(int pattern, unsigned int* numrows) const
 {
   return ModPlug_GetPattern(file_, pattern, numrows);
 }
 
 
-void sfMod::Mod::SetMasterVolume(unsigned int volume)
+void sfmod::Mod::setMasterVolume(unsigned int volume)
 {
   ModPlug_SetMasterVolume(file_, volume);
 }
 
 
-void sfMod::Mod::SeekOrder(int order)
+void sfmod::Mod::seekOrder(int order)
 {
   ModPlug_SeekOrder(file_, order);
 }
 
 
-void sfMod::Mod::InitMixerCallback(ModPlugMixerProc proc)
+void sfmod::Mod::initMixerCallback(ModPlugMixerProc proc)
 {
   ModPlug_InitMixerCallback(file_, proc);
 }
 
-void sfMod::Mod::UnloadMixerCallback()
+void sfmod::Mod::unloadMixerCallback()
 {
   ModPlug_UnloadMixerCallback(file_);
 }
 
-bool sfMod::Mod::onGetData(sf::SoundStream::Chunk& data)
+
+bool sfmod::Mod::onGetData(sf::SoundStream::Chunk& data)
 {
   int read = ModPlug_Read(file_, reinterpret_cast<void*>(&buffer_[0]),
                           SFMOD_BUFFERSIZE);
@@ -373,14 +356,13 @@ bool sfMod::Mod::onGetData(sf::SoundStream::Chunk& data)
   if (read == 0)
     return false;
 
-
   data.sampleCount = static_cast<size_t>(read / 2);
-  data.samples = &buffer_[0];
+  data.samples     = &buffer_[0];
 
   return true;
 }
 
-void sfMod::Mod::onSeek(sf::Time timeOffset)
+void sfmod::Mod::onSeek(sf::Time timeOffset)
 {
   ModPlug_Seek(file_, static_cast<int>(timeOffset.asMilliseconds()));
 }

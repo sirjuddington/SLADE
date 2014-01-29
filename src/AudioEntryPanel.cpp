@@ -381,7 +381,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 {
 #ifndef NOLIBMODPLUG
 	// Attempt to load the mod
-	if (mod.LoadFromMemory(data.getData(), data.getSize()))
+	if (mod.loadFromMemory(data.getData(), data.getSize()))
 	{
 		audio_type = AUTYPE_MOD;
 
@@ -390,7 +390,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 		btn_play->Enable();
 		btn_pause->Enable();
 		btn_stop->Enable();
-		setAudioDuration(mod.GetLength());
+		setAudioDuration(mod.getLength());
 
 		return true;
 	}
