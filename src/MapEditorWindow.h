@@ -68,7 +68,7 @@ public:
 	bool		createMap();
 	bool		openMap(Archive::mapdesc_t map);
 	void		loadMapScripts(Archive::mapdesc_t map);
-	WadArchive*	writeMap();
+	WadArchive*	writeMap(string name="MAP01");
 	bool		saveMap();
 	bool		saveMapAs();
 	void		closeMap();

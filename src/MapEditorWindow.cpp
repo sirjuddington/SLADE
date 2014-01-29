@@ -591,7 +591,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		wxLogMessage("Nodebuilder path not set up, no nodes were built");
 }
 
-WadArchive* MapEditorWindow::writeMap()
+WadArchive* MapEditorWindow::writeMap(string name)
 {
 	// Get map data entries
 	vector<ArchiveEntry*> map_data;
@@ -623,11 +623,11 @@ WadArchive* MapEditorWindow::writeMap()
 
 	// Add map data to temporary wad
 	WadArchive* wad = new WadArchive();
-	wad->addNewEntry("MAP01");
+	wad->addNewEntry(name);
 	// Handle fragglescript and similar content in the map header
 	if (mdesc_current.head->getSize() && !mdesc_current.archive)
 	{
-		wad->getEntry("MAP01")->importMemChunk(mdesc_current.head->getMCData());
+		wad->getEntry(name)->importMemChunk(mdesc_current.head->getMCData());
 	}
 	for (unsigned a = 0; a < map_data.size(); a++)
 		wad->addEntry(map_data[a]);
@@ -1012,7 +1012,7 @@ bool MapEditorWindow::handleAction(string id)
 		RunDialog dlg(this, archive);
 		if (dlg.ShowModal() == wxID_OK)
 		{
-			WadArchive* wad = writeMap();
+			WadArchive* wad = writeMap(mdesc_current.name);
 			if (wad)
 				wad->save(appPath("sladetemp_run.wad", DIR_TEMP));
 
