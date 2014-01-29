@@ -1009,6 +1009,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	MapThing* thing = NULL;
 	double x, y, angle;
 	vector<int> things_arrows;
+	long last_update = thing_sprites_updated;
 
 	// Draw thing shadows if needed
 	if (thing_shadow > 0.01f && thing_drawtype != TDT_SPRITE)
@@ -1099,13 +1100,13 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 		// Get thing type properties from game configuration
 		ThingType* tt = theGameConfiguration->thingType(thing->getType());
 
+		// Reset thing sprite if modified
+		if (thing->modifiedTime() > last_update && thing_sprites.size() > a)
+			thing_sprites[a] = NULL;
+
 		// Draw thing depending on 'things_drawtype' cvar
 		if (thing_drawtype == TDT_SPRITE)  		// Drawtype 2: Sprites
 		{
-			// Reset thing sprite if modified
-			if (thing->modifiedTime() > thing_sprites_updated && thing_sprites.size() > a)
-				thing_sprites[a] = NULL;
-
 			// Check if we need to draw the direction arrow for this thing
 			if (renderSpriteThing(x, y, angle, tt, a, talpha))
 				things_arrows.push_back(a);
@@ -2280,7 +2281,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 			y = thing->yPos() + move_vec.y;
 			angle = thing->getAngle();
 
-			renderSpriteThing(x, y, angle, tt, a, 1.0f, true);
+			renderSpriteThing(x, y, angle, tt, things[a], 1.0f, true);
 		}
 	}
 
