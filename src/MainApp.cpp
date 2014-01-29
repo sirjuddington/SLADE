@@ -923,8 +923,11 @@ void MainApp::readConfigFile()
 			token = tz.getToken();
 			while (token != "}")
 			{
-				string path = tz.getToken();
-				Executables::setExePath(token, path);
+				if (token.length())
+				{
+					string path = tz.getToken();
+					Executables::setExePath(token, path);
+				}
 				token = tz.getToken();
 			}
 		}
