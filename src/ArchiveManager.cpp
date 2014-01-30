@@ -657,7 +657,7 @@ string ArchiveManager::getArchiveExtensionsString()
 	string extensions = "Any supported file|";
 	string ext_wad = "*.wad;*.WAD;*.Wad;*.rts;*.RTS;*.Rts";		extensions += ext_wad + ";";
 	string ext_zip = "*.zip;*.ZIP;*.Zip";						extensions += ext_zip + ";";
-	string ext_pk3 = "*.pk3;*.PK3;*.Pk3";						extensions += ext_pk3 + ";";
+	string ext_pk3 = "*.pk3;*.PK3;*.Pk3;*.pke;*.PKE;*.Pke";		extensions += ext_pk3 + ";";
 	string ext_jdf = "*.jdf;*.JDF;*.Jdf";						extensions += ext_jdf + ";";
 	string ext_dat = "*.dat;*.DAT;*.Dat";						extensions += ext_dat + ";";
 	string ext_chd = "*.cd;*.CD;*.Cd;*.hd;*.HD;*.Hd";			extensions += ext_chd + ";";

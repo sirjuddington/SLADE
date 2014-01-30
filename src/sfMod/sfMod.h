@@ -1,11 +1,11 @@
 ////////////////////////////////
-// sfMod 1.0.2                //
+// sfmod 1.1.0                //
 // Copyright © Kerli Low 2012 //
 ////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
 // License:                                                                 //
-// sfMod                                                                    //
+// sfmod                                                                    //
 // Copyright (c) 2012 Kerli Low                                             //
 // kerlilow@gmail.com                                                       //
 //                                                                          //
@@ -23,7 +23,7 @@
 //    would be appreciated but is not required.                             //
 //                                                                          //
 //    2. Altered source versions must be plainly marked as such, and must   //
-//    notbe misrepresented as being the original software.                  //
+//    not be misrepresented as being the original software.                 //
 //                                                                          //
 //    3. This notice may not be removed or altered from any source          //
 //    distribution.                                                         //
@@ -40,6 +40,8 @@
 #include <vector>
 #include <SFML/Audio.hpp>
 
+#include "sfMod/Error.h"
+
 
 
 // Forward declarations //
@@ -54,23 +56,23 @@ typedef void (*ModPlugMixerProc)(int*, unsigned long, unsigned long);
 
 
 
-namespace sfMod
+namespace sfmod
 {
   class Mod;
 
   // See bottom of file for more information on settings
   extern ModPlug_Settings settings;
 
-  void InitSettings   ();
-  void ApplySettings  ();
-  void DefaultSettings();
+  void initSettings   ();
+  void applySettings  ();
+  void defaultSettings();
 }
 
 
 ///////////////////////////////////////////////////////////
 // Mod class                                             //
 ///////////////////////////////////////////////////////////
-class sfMod::Mod : public sf::SoundStream
+class sfmod::Mod : public sf::SoundStream, public sfmod::Error
 {
 public:
   Mod();
@@ -79,47 +81,46 @@ public:
 
   ~Mod();
 
-  void Release();
+  bool loadFromFile  (const std::string& filename);
+  bool loadFromMemory(const std::string& data);
+  bool loadFromMemory(const void* data, unsigned int size);
+  void unload        ();
 
-  bool LoadFromFile  (const std::string& filename);
-  bool LoadFromMemory(const std::string& data);
-  bool LoadFromMemory(const void* data, unsigned int size);
-
-  ModPlugFile*       GetModPlugFile() const;
-  const std::string& GetName       () const;
-  int                GetLength     () const;
+  ModPlugFile*       getModPlugFile() const;
+  const std::string& getName       () const;
+  int                getLength     () const;
 
   // See bottom of file for a list of possible module types
-  int         GetModuleType  () const;
-  std::string GetSongComments() const;
+  int         getModuleType  () const;
+  std::string getSongComments() const;
 
-  unsigned int GetMasterVolume() const; // Range: 1-512
+  unsigned int getMasterVolume() const; // Range: 1-512
 
-  int GetCurrentSpeed   () const;
-  int GetCurrentTempo   () const;
-  int GetCurrentOrder   () const;
-  int GetCurrentPattern () const;
-  int GetCurrentRow     () const;
-  int GetPlayingChannels() const;
+  int getCurrentSpeed   () const;
+  int getCurrentTempo   () const;
+  int getCurrentOrder   () const;
+  int getCurrentPattern () const;
+  int getCurrentRow     () const;
+  int getPlayingChannels() const;
 
-  unsigned int GetInstrumentCount() const;
-  unsigned int GetSampleCount    () const;
-  unsigned int GetPatternCount   () const;
-  unsigned int GetChannelCount   () const;
+  unsigned int getInstrumentCount() const;
+  unsigned int getSampleCount    () const;
+  unsigned int getPatternCount   () const;
+  unsigned int getChannelCount   () const;
 
-  std::string GetInstrumentName(unsigned int index) const;
-  std::string GetSampleName    (unsigned int index) const;
+  std::string getInstrumentName(unsigned int index) const;
+  std::string getSampleName    (unsigned int index) const;
 
   // See bottom of file for more info on ModPlugNote
-  ModPlugNote* GetPattern(int pattern, unsigned int* numrows) const;
+  ModPlugNote* getPattern(int pattern, unsigned int* numrows) const;
 
-  void SetMasterVolume(unsigned int volume); // Range: 1-512
+  void setMasterVolume(unsigned int volume); // Range: 1-512
 
-  void SeekOrder(int order);
+  void seekOrder(int order);
 
   // See bottom of file for more info on mixer callbacks
-  void InitMixerCallback  (ModPlugMixerProc proc);
-  void UnloadMixerCallback();
+  void initMixerCallback  (ModPlugMixerProc proc);
+  void unloadMixerCallback();
 
 
 private:

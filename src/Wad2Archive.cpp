@@ -7,7 +7,7 @@
  * Web:         http://slade.mancubus.net
  * Filename:    Wad2Archive.cpp
  * Description: Wad2Archive, archive class to handle the Quake wad2
- *				format, which is also the same as the Unreal/Half-Life
+ *				format, which is also the same as the Half-Life
  *				wad3 format except for one character in the header.
  *
  * This program is free software; you can redistribute it and/or

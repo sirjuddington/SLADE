@@ -2506,6 +2506,10 @@
 				Name="sfMod"
 				>
 				<File
+					RelativePath=".\src\sfMod\Error.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\sfMod\modplug.h"
 					>
 				</File>
