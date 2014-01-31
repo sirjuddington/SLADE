@@ -5,6 +5,7 @@
 #include "Drawing.h"
 #include "MathStuff.h"
 #include "ColourConfiguration.h"
+#include "OpenGL.h"
 
 VertexInfoOverlay::VertexInfoOverlay()
 {

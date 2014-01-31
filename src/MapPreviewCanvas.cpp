@@ -509,13 +509,13 @@ void MapPreviewCanvas::draw()
 
 		// Set colour
 		if (line.special)
-			col_view_line_special.set_gl();
+			OpenGL::setColour(col_view_line_special);
 		else if (line.macro)
-			col_view_line_macro.set_gl();
+			OpenGL::setColour(col_view_line_macro);
 		else if (line.twosided)
-			col_view_line_2s.set_gl();
+			OpenGL::setColour(col_view_line_2s);
 		else
-			col_view_line_1s.set_gl();
+			OpenGL::setColour(col_view_line_1s);
 
 		// Draw line
 		glBegin(GL_LINES);
@@ -650,13 +650,13 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 
 		// Set colour
 		if (line.special)
-			col_save_line_special.set_gl();
+			OpenGL::setColour(col_save_line_special);
 		else if (line.macro)
-			col_save_line_macro.set_gl();
+			OpenGL::setColour(col_save_line_macro);
 		else if (line.twosided)
-			col_save_line_2s.set_gl();
+			OpenGL::setColour(col_save_line_2s);
 		else
-			col_save_line_1s.set_gl();
+			OpenGL::setColour(col_save_line_1s);
 
 		// Draw line
 		glBegin(GL_LINES);

@@ -7,6 +7,7 @@
 #include "ColourConfiguration.h"
 #include "Drawing.h"
 #include "MapEditorWindow.h"
+#include "OpenGL.h"
 
 EXTERN_CVAR(Bool, use_zeth_icons)
 
@@ -149,7 +150,7 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 		isicon = true;
 	}
 	glEnable(GL_TEXTURE_2D);
-	rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
+	OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 	if (tex)
 	{
 		double width = tex->getWidth();

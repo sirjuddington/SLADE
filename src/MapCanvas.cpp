@@ -488,7 +488,7 @@ void MapCanvas::drawGrid()
 		glEnable(GL_LINE_STIPPLE);
 	}
 
-	ColourConfiguration::getColour("map_grid").set_gl(false);
+	OpenGL::setColour(ColourConfiguration::getColour("map_grid"), false);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Determine smallest grid size to bother drawing
@@ -527,7 +527,7 @@ void MapCanvas::drawGrid()
 	// Draw 64 grid if it's not too small and we're not on a larger grid size
 	if (64 > grid_hidelevel && gridsize < 64)
 	{
-		ColourConfiguration::getColour("map_64grid").set_gl();
+		OpenGL::setColour(ColourConfiguration::getColour("map_64grid"));
 
 		// Vertical
 		int ofs = start_x % 64;
@@ -569,24 +569,24 @@ void MapCanvas::drawGrid()
 			double one = 1.0 / view_scale_inter;
 
 			glBegin(GL_LINES);
-			col.set_gl(false);
+			OpenGL::setColour(col, false);
 			glVertex2d(x + one, y);
-			col2.set_gl(false);
+			OpenGL::setColour(col2, false);
 			glVertex2d(x + size, y);
 
-			col.set_gl(false);
+			OpenGL::setColour(col, false);
 			glVertex2d(x - one, y);
-			col2.set_gl(false);
+			OpenGL::setColour(col2, false);
 			glVertex2d(x - size, y);
 
-			col.set_gl(false);
+			OpenGL::setColour(col, false);
 			glVertex2d(x, y + one);
-			col2.set_gl(false);
+			OpenGL::setColour(col2, false);
 			glVertex2d(x, y + size);
 
-			col.set_gl(false);
+			OpenGL::setColour(col, false);
 			glVertex2d(x, y - one);
-			col2.set_gl(false);
+			OpenGL::setColour(col2, false);
 			glVertex2d(x, y - size);
 			glEnd();
 		}
@@ -594,7 +594,7 @@ void MapCanvas::drawGrid()
 		// Full
 		else if (map_crosshair == 2)
 		{
-			col.set_gl();
+			OpenGL::setColour(col);
 
 			glBegin(GL_LINES);
 			glVertex2d(x, view_tl.y);
@@ -667,7 +667,7 @@ void MapCanvas::drawFeatureHelpText()
 	// Draw underline
 	glDisable(GL_TEXTURE_2D);
 	glLineWidth(1.0f);
-	col.set_gl();
+	OpenGL::setColour(col);
 	glBegin(GL_LINES);
 	glVertex2d(bounds.right() + 8, bounds.bottom() + 1);
 	glVertex2d(bounds.left() + 16, bounds.bottom() + 1);
@@ -765,7 +765,7 @@ void MapCanvas::drawThingQuickAngleLines()
 
 	// Get moving colour
 	rgba_t col = ColourConfiguration::getColour("map_moving");
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Draw lines
 	glLineWidth(2.0f);
@@ -804,7 +804,7 @@ void MapCanvas::drawLineDrawLines()  	// Best function name ever
 {
 	// Get line draw colour
 	rgba_t col = ColourConfiguration::getColour("map_linedraw");
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Determine end point
 	fpoint2_t end = mouse_pos_m;
@@ -893,7 +893,7 @@ void MapCanvas::drawPasteLines()
 
 	// Get line draw colour
 	rgba_t col = ColourConfiguration::getColour("map_linedraw");
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Draw
 	fpoint2_t pos = mouse_pos_m;
@@ -926,7 +926,7 @@ void MapCanvas::drawObjectEdit()
 	setOverlayCoords(false);
 
 	// Bounding box
-	COL_WHITE.set_gl();
+	OpenGL::setColour(COL_WHITE);
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
 	bbox_t bbox = group->getBBox();
 	bbox.min.x -= 4 / view_scale_inter;
@@ -1045,7 +1045,7 @@ void MapCanvas::drawMap2d()
 
 
 	// Draw flats if needed
-	COL_WHITE.set_gl();
+	OpenGL::setColour(COL_WHITE);
 	if (flat_drawtype > 0)
 	{
 		bool texture = false;
@@ -1069,6 +1069,7 @@ void MapCanvas::drawMap2d()
 	drawGrid();
 
 	// --- Draw map (depending on mode) ---
+	OpenGL::resetBlend();
 	if (editor->editMode() == MapEditor::MODE_VERTICES)
 	{
 		// Vertices mode
@@ -1185,7 +1186,7 @@ void MapCanvas::drawMap2d()
 	if (mouse_state == MSTATE_SELECTION)
 	{
 		// Outline
-		ColourConfiguration::getColour("map_selbox_outline").set_gl();
+		OpenGL::setColour(ColourConfiguration::getColour("map_selbox_outline"));
 		glLineWidth(2.0f);
 		glBegin(GL_LINE_LOOP);
 		glVertex2d(mouse_downpos_m.x, mouse_downpos_m.y);
@@ -1195,7 +1196,7 @@ void MapCanvas::drawMap2d()
 		glEnd();
 
 		// Fill
-		ColourConfiguration::getColour("map_selbox_fill").set_gl();
+		OpenGL::setColour(ColourConfiguration::getColour("map_selbox_fill"));
 		glBegin(GL_QUADS);
 		glVertex2d(mouse_downpos_m.x, mouse_downpos_m.y);
 		glVertex2d(mouse_downpos_m.x, mouse_pos_m.y);
@@ -1381,7 +1382,7 @@ void MapCanvas::draw()
 	{
 		// Get crosshair colour
 		rgba_t col = ColourConfiguration::getColour("map_3d_crosshair");
-		col.set_gl();
+		OpenGL::setColour(col);
 
 		glDisable(GL_TEXTURE_2D);
 		glEnable(GL_LINE_SMOOTH);
@@ -1393,25 +1394,25 @@ void MapCanvas::draw()
 
 		glBegin(GL_LINES);
 		// Right
-		col.set_gl(false);
+		OpenGL::setColour(col, false);
 		glVertex2d(midx+1, midy);
 		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
 		glVertex2d(midx+size, midy);
 
 		// Left
-		col.set_gl(false);
+		OpenGL::setColour(col, false);
 		glVertex2d(midx-1, midy);
 		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
 		glVertex2d(midx-size, midy);
 
 		// Bottom
-		col.set_gl(false);
+		OpenGL::setColour(col, false);
 		glVertex2d(midx, midy+1);
 		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
 		glVertex2d(midx, midy+size);
 
 		// Top
-		col.set_gl(false);
+		OpenGL::setColour(col, false);
 		glVertex2d(midx, midy-1);
 		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
 		glVertex2d(midx, midy-size);
@@ -1421,7 +1422,7 @@ void MapCanvas::draw()
 		if (renderer_3d->itemDistance() >= 0 && camera_3d_show_distance)
 		{
 			glEnable(GL_TEXTURE_2D);
-			col.set_gl(true);
+			OpenGL::setColour(col);
 			Drawing::drawText(S_FMT("%d", renderer_3d->itemDistance()), midx+5, midy+5, rgba_t(255, 255, 255, 200), Drawing::FONT_SMALL);
 			//Drawing::drawText(S_FMT("%1.2f", renderer_3d->camPitch()), midx+5, midy+30, rgba_t(255, 255, 255, 200), Drawing::FONT_SMALL);
 		}

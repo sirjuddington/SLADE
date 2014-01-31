@@ -216,9 +216,9 @@ private:
 	flat_3d_t**			flats;
 
 	// VBOs
-	GLuint	vbo_floors;
-	GLuint	vbo_ceilings;
-	GLuint	vbo_walls;
+	unsigned	vbo_floors;
+	unsigned	vbo_ceilings;
+	unsigned	vbo_walls;
 
 	// Sky
 	struct gl_vertex_ex_t

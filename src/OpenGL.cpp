@@ -50,6 +50,7 @@ namespace OpenGL
 	uint8_t			n_pow_two = 16;
 	float			max_point_size = -1.0f;
 	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0 };
+	int8_t			last_blend = BLEND_NORMAL;
 }
 
 
@@ -212,10 +213,80 @@ bool OpenGL::accuracyTweak()
 	return gl_tweak_accuracy;
 }
 
+/* OpenGL::getWxGLAttribs
+ * Returns the GL attributes array for use with wxGLCanvas
+ *******************************************************************/
 int* OpenGL::getWxGLAttribs()
 {
 	// Set specified depth buffer size
 	wx_gl_attrib[3] = gl_depth_buffer_size;
 
 	return wx_gl_attrib;
+}
+
+/* OpenGL::setColour
+ * Sets the colour to [col], and changes the colour blend mode if
+ * needed and [set_blend] is true
+ *******************************************************************/
+void OpenGL::setColour(rgba_t& col, bool set_blend)
+{
+	// Colour
+	glColor4ub(col.r, col.g, col.b, col.a);
+
+	// Blend
+	if (set_blend && col.blend != last_blend)
+	{
+		if (col.blend == BLEND_NORMAL)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		else if (col.blend == BLEND_ADDITIVE)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+		last_blend = col.blend;
+	}
+}
+
+/* OpenGL::setColour
+ * Sets the colour to [r,g,b,a], and changes the colour blend mode to
+ * [blend] if needed
+ *******************************************************************/
+void OpenGL::setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a, int8_t blend)
+{
+	// Colour
+	glColor4ub(r, g, b, a);
+
+	// Blend
+	if (blend != BLEND_IGNORE && blend != last_blend)
+	{
+		if (blend == BLEND_NORMAL)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		else if (blend == BLEND_ADDITIVE)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+		last_blend = blend;
+	}
+}
+
+/* OpenGL::setBlend
+ * Sets the colour blend mode to [blend] if needed
+ *******************************************************************/
+void OpenGL::setBlend(int blend)
+{
+	if (blend != BLEND_IGNORE && blend != last_blend)
+	{
+		if (blend == BLEND_NORMAL)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		else if (blend == BLEND_ADDITIVE)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+		last_blend = blend;
+	}
+}
+
+/* OpenGL::resetBlend
+ * Resets colour blending to defaults
+ *******************************************************************/
+void OpenGL::resetBlend()
+{
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	last_blend = BLEND_NORMAL;
 }

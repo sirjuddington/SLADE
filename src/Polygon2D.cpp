@@ -4,6 +4,7 @@
 #include "GLTexture.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
+#include "OpenGL.h"
 
 Polygon2D::Polygon2D()
 {
@@ -1023,7 +1024,7 @@ void PolygonSplitter::testRender()
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Draw vertices
-	rgba_t(255, 255, 255, 255, 0).set_gl();
+	OpenGL::setColour(255, 255, 255, 255, 0);
 	glBegin(GL_POINTS);
 	for (unsigned a = 0; a < vertices.size(); a++)
 		glVertex2d(vertices[a].x, vertices[a].y);

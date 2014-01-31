@@ -8,6 +8,7 @@
 #include "GLTexture.h"
 #include "MapEditor.h"
 #include "GameConfiguration.h"
+#include "OpenGL.h"
 
 QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
 {

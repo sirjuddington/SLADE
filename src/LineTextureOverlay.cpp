@@ -210,7 +210,7 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 
 	// Draw background
 	glDisable(GL_TEXTURE_2D);
-	col_bg.set_gl();
+	OpenGL::setColour(col_bg);
 	Drawing::drawFilledRect(0, 0, width, height);
 
 	// Draw textures
@@ -243,7 +243,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	// Draw background
 	int halfsize = size*0.5;
 	glEnable(GL_TEXTURE_2D);
-	rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
+	OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 	glPushMatrix();
 	glTranslated(tex.position.x - halfsize, tex.position.y - halfsize, 0);
 	GLTexture::bgTex().draw2dTiled(size, size);
@@ -253,13 +253,13 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	if (tex.textures.size() > 0)
 	{
 		// Draw first texture
-		rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
+		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 		tex_first = theMapEditor->textureManager().getTexture(tex.textures[0], theGameConfiguration->mixTexFlats());
 		Drawing::drawTextureWithin(tex_first, tex.position.x - halfsize, tex.position.y - halfsize,
 		                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
 
 		// Draw up to 4 subsequent textures (overlaid)
-		rgba_t(255, 255, 255, 127*alpha, 0).set_gl();
+		OpenGL::setColour(255, 255, 255, 127*alpha, 0);
 		for (unsigned a = 1; a < tex.textures.size() && a < 5; a++)
 		{
 			Drawing::drawTextureWithin(theMapEditor->textureManager().getTexture(tex.textures[a], theGameConfiguration->mixTexFlats()),
@@ -275,12 +275,12 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	// Draw outline
 	if (tex.hover)
 	{
-		rgba_t(col_sel.r, col_sel.g, col_sel.b, 255*alpha, 0).set_gl();
+		OpenGL::setColour(col_sel.r, col_sel.g, col_sel.b, 255*alpha, 0);
 		glLineWidth(3.0f);
 	}
 	else
 	{
-		rgba_t(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0).set_gl();
+		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0);
 		glLineWidth(1.5f);
 	}
 	Drawing::drawRect(tex.position.x-halfsize, tex.position.y-halfsize, tex.position.x+halfsize, tex.position.y+halfsize);

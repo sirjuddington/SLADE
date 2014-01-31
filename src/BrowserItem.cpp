@@ -33,6 +33,7 @@
 #include "BrowserItem.h"
 #include "Drawing.h"
 #include "SFont.h"
+#include "OpenGL.h"
 
 
 /*******************************************************************
@@ -170,7 +171,7 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 
 	// Draw
 	image->bind();
-	COL_WHITE.set_gl(false);
+	OpenGL::setColour(COL_WHITE, false);
 
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);	glVertex2d(left, top);

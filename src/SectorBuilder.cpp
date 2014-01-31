@@ -3,6 +3,7 @@
 #include "SectorBuilder.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
+#include "OpenGL.h"
 
 SectorBuilder::SectorBuilder()
 {
@@ -566,7 +567,7 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 void SectorBuilder::drawResult()
 {
 	glDisable(GL_TEXTURE_2D);
-	rgba_t(255, 255, 255, 255, 0).set_gl();
+	OpenGL::setColour(255, 255, 255, 255, 0);
 
 	// Go through sector edges
 	for (unsigned a = 0; a < sector_edges.size(); a++)

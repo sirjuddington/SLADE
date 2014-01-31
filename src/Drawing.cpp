@@ -34,6 +34,7 @@
 #include "Console.h"
 #include "MathStuff.h"
 #include "Misc.h"
+#include "OpenGL.h"
 #include <wx/settings.h>
 
 #ifdef USE_SFML_RENDERWINDOW
@@ -415,7 +416,7 @@ void Drawing::drawArrow(fpoint2_t p1, fpoint2_t p2, rgba_t color, bool twoway, d
 		a2l.x += ah_length * sin(angle - ah_angle); a2l.y += ah_length * cos(angle - ah_angle);
 		a2r.x -= ah_length * sin(angle + ah_angle); a2r.y -= ah_length * cos(angle + ah_angle);
 	}
-	color.set_gl();
+	OpenGL::setColour(color);
 	glBegin(GL_LINES);
 	glVertex2d(p1.x, p1.y);
 	glVertex2d(p2.x, p2.y);
@@ -497,7 +498,7 @@ void Drawing::drawBorderedRect(fpoint2_t tl, fpoint2_t br, rgba_t colour, rgba_t
 void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_t colour, rgba_t border_colour)
 {
 	// Rect
-	colour.set_gl(false);
+	OpenGL::setColour(colour, false);
 	glBegin(GL_QUADS);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2);
@@ -506,7 +507,7 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_
 	glEnd();
 
 	// Border
-	border_colour.set_gl(false);
+	OpenGL::setColour(border_colour, false);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(x1, y1);
 	glVertex2d(x1, y2-1);

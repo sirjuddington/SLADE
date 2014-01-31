@@ -10,6 +10,7 @@
 #include "MapEditorWindow.h"
 #include "ColourConfiguration.h"
 #include "GameConfiguration.h"
+#include "OpenGL.h"
 
 LineInfoOverlay::LineInfoOverlay()
 {
@@ -207,7 +208,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, str
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
-		rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
+		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 		glPushMatrix();
 		glTranslated(x, y-96, 0);
 		GLTexture::bgTex().draw2dTiled(80, 80);
@@ -219,14 +220,14 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, str
 		// Draw texture
 		if (tex)
 		{
-			rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
+			OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 			Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0);
 		}
 
 		glDisable(GL_TEXTURE_2D);
 
 		// Draw outline
-		rgba_t(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0).set_gl();
+		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0);
 		glDisable(GL_LINE_SMOOTH);
 		Drawing::drawRect(x, y-96, x+80, y-16);
 	}

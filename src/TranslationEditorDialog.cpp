@@ -94,10 +94,10 @@ void GradientBox::draw()
 	{
 		// No steps defined, draw smooth gradient
 		glBegin(GL_QUADS);
-		col_start.set_gl();
+		OpenGL::setColour(col_start);
 		glVertex2d(0, 0);
 		glVertex2d(0, GetSize().y);
-		col_end.set_gl();
+		OpenGL::setColour(col_end);
 		glVertex2d(GetSize().x, GetSize().y);
 		glVertex2d(GetSize().x, 0);
 		glEnd();

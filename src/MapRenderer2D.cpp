@@ -209,7 +209,7 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
 	// Set hilight colour
 	rgba_t col = ColourConfiguration::getColour("map_hilight");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup rendering properties
 	bool point = setupVertexRendering(1.8f + (0.6f * fade), true);
@@ -240,7 +240,7 @@ void MapRenderer2D::renderVertexSelection(vector<int>& selection, float fade)
 	// Set selection colour
 	rgba_t col = ColourConfiguration::getColour("map_selection");
 	col.a = 255;//*= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup rendering properties
 	bool point = setupVertexRendering(1.8f, true);
@@ -417,7 +417,7 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 	// Set hilight colour
 	rgba_t col = ColourConfiguration::getColour("map_hilight");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup rendering properties
 	glLineWidth(line_width*3);
@@ -455,7 +455,7 @@ void MapRenderer2D::renderLineSelection(vector<int>& selection, float fade)
 	// Set selection colour
 	rgba_t col = ColourConfiguration::getColour("map_selection");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup rendering properties
 	glLineWidth(line_width*4);
@@ -495,7 +495,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 	// Set hilight colour
 	rgba_t col = ColourConfiguration::getColour("map_tagged");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup rendering properties
 	glLineWidth(line_width*3);
@@ -543,7 +543,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 	// Set hilight colour
 	rgba_t col = ColourConfiguration::getColour("map_tagging");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup rendering properties
 	glLineWidth(line_width*5);
@@ -1152,7 +1152,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	{
 		rgba_t acol = COL_WHITE;
 		acol.a = 255*alpha*arrow_alpha;
-		acol.set_gl();
+		OpenGL::setColour(acol);
 		//glColor4f(1.0f, 1.0f, 1.0f, alpha * arrow_alpha);
 		GLTexture* tex_arrow = theMapEditor->textureManager().getEditorImage("arrow");
 		if (tex_arrow)
@@ -1170,7 +1170,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 					{
 						acol.set(tt->getColour());
 						acol.a = 255*alpha*arrow_alpha;
-						acol.set_gl(false);
+						OpenGL::setColour(acol, false);
 						//glColor4f(tt->getColour().fr(), tt->getColour().fg(), tt->getColour().fb(), alpha * arrow_alpha);
 					}
 				}
@@ -1210,7 +1210,7 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 	// Set hilight colour
 	rgba_t col = ColourConfiguration::getColour("map_hilight");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Get thing info
 	MapThing* thing = map->getThing(index);
@@ -1233,7 +1233,7 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 		glVertex2d(x + radius, y - radius);
 		glEnd();
 		col.a *= 0.5;
-		col.set_gl(false);
+		OpenGL::setColour(col, false);
 		glBegin(GL_QUADS);
 		glVertex2d(x - radius, y - radius);
 		glVertex2d(x - radius, y + radius);
@@ -1289,7 +1289,7 @@ void MapRenderer2D::renderThingSelection(vector<int>& selection, float fade)
 	// Set selection colour
 	rgba_t col = ColourConfiguration::getColour("map_selection");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup overlay rendering
 	bool point = setupThingOverlay();
@@ -1326,7 +1326,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	// Set hilight colour
 	rgba_t col = ColourConfiguration::getColour("map_tagged");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup overlay rendering
 	bool point = setupThingOverlay();
@@ -1377,7 +1377,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	// Set hilight colour
 	rgba_t col = ColourConfiguration::getColour("map_tagging");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup overlay rendering
 	bool point = setupThingOverlay();
@@ -1892,7 +1892,7 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 	// Set hilight colour
 	rgba_t col = ColourConfiguration::getColour("map_hilight");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Fill if cvar is set
 	if (sector_hilight_fill)
@@ -1950,7 +1950,7 @@ void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
 	// Set selection colour
 	rgba_t col = ColourConfiguration::getColour("map_selection");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Draw selection
 	glColor4f(col.fr(), col.fg(), col.fb(), col.fa() * 0.75f);
@@ -2017,7 +2017,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 	// Set colour
 	rgba_t col = ColourConfiguration::getColour("map_tagged");
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Render each sector polygon
 	glDisable(GL_TEXTURE_2D);
@@ -2093,7 +2093,7 @@ void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_v
 			continue;
 
 		// Set line colour
-		lineColour(line, true).set_gl(false);
+		OpenGL::setColour(lineColour(line, true), false);
 
 		// First vertex
 		if (drawn & 1)
@@ -2110,7 +2110,7 @@ void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_v
 	glEnd();
 
 	// Set 'moving' colour
-	ColourConfiguration::getColour("map_moving").set_gl();
+	OpenGL::setColour(ColourConfiguration::getColour("map_moving"));
 
 	// Draw moving vertex overlays
 	bool point = setupVertexRendering(1.5f);
@@ -2174,7 +2174,7 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 			continue;
 
 		// Set line colour
-		lineColour(line, true).set_gl(false);
+		OpenGL::setColour(lineColour(line, true), false);
 
 		// First vertex
 		if (drawn & 1)
@@ -2191,7 +2191,7 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 	glEnd();
 
 	// Set 'moving' colour
-	ColourConfiguration::getColour("map_moving").set_gl();
+	OpenGL::setColour(ColourConfiguration::getColour("map_moving"));
 
 	// Draw moving line overlays
 	glLineWidth(line_width*3);
@@ -2286,7 +2286,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 	}
 
 	// Set 'moving' colour
-	ColourConfiguration::getColour("map_moving").set_gl();
+	OpenGL::setColour(ColourConfiguration::getColour("map_moving"));
 
 	// Draw moving thing overlays
 	bool point = setupThingOverlay();
@@ -2362,7 +2362,7 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 	}
 
 	// Set 'drawing' colour
-	ColourConfiguration::getColour("map_linedraw").set_gl();
+	OpenGL::setColour(ColourConfiguration::getColour("map_linedraw"));
 
 	// Draw moving thing overlays
 	bool point = setupThingOverlay();
@@ -2397,7 +2397,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 	group->getLinesToDraw(lines);
 
 	// Set 'drawing' colour
-	ColourConfiguration::getColour("map_linedraw").set_gl();
+	OpenGL::setColour(ColourConfiguration::getColour("map_linedraw"));
 
 	// --- Lines ---
 
@@ -2406,14 +2406,14 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 	glLineWidth(line_width);
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
-		lineColour(lines[a].map_line, true).set_gl(false);
+		OpenGL::setColour(lineColour(lines[a].map_line, true), false);
 		glVertex2d(lines[a].v1->position.x, lines[a].v1->position.y);
 		glVertex2d(lines[a].v2->position.x, lines[a].v2->position.y);
 	}
 	glEnd();
 
 	// Edit overlay
-	ColourConfiguration::getColour("map_object_edit").set_gl();
+	OpenGL::setColour(ColourConfiguration::getColour("map_object_edit"));
 	glLineWidth(line_width*3);
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -2430,8 +2430,8 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 
 	// Setup rendering properties
 	bool point = setupVertexRendering(1.0f);
-	COL_WHITE.set_gl();
-	ColourConfiguration::getColour("map_object_edit").set_gl(false);
+	OpenGL::setColour(COL_WHITE);
+	OpenGL::setColour(ColourConfiguration::getColour("map_object_edit"), false);
 
 	// Render vertices
 	glBegin(GL_POINTS);
@@ -2502,7 +2502,7 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 		}
 
 		// Set 'moving' colour
-		ColourConfiguration::getColour("map_object_edit").set_gl();
+		OpenGL::setColour(ColourConfiguration::getColour("map_object_edit"));
 
 		// Draw moving thing overlays
 		bool point = setupThingOverlay();

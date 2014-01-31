@@ -1,6 +1,5 @@
 
-#ifndef __CVAR_H__
-#define __CVAR_H__
+#pragma once
 
 // CVar classes, a lot of ideas taken from the ZDoom source
 
@@ -111,5 +110,3 @@ public:
 	C##type##CVar name (#name, val, flags);
 
 #define EXTERN_CVAR(type, name) extern C##type##CVar name;
-
-#endif //__CVAR_H__

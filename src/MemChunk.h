@@ -1,6 +1,5 @@
 
-#ifndef __MEMCHUNK_H__
-#define __MEMCHUNK_H__
+#pragma once
 
 class MemChunk
 {
@@ -49,5 +48,3 @@ public:
 	bool		fillData(uint8_t val);
 	uint32_t	crc();
 };
-
-#endif //__MEMCHUNK_H__

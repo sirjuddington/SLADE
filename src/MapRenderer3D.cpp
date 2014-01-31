@@ -458,7 +458,7 @@ void MapRenderer3D::renderMap()
 	// Render sky
 	if (render_3d_sky)
 		renderSky();
-	COL_WHITE.set_gl();
+	OpenGL::setColour(COL_WHITE);
 
 	// Render walls
 	renderWalls();
@@ -535,7 +535,7 @@ void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float ab
 
 void MapRenderer3D::renderSky()
 {
-	COL_WHITE.set_gl();
+	OpenGL::setColour(COL_WHITE);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_FOG);
 	glDisable(GL_DEPTH_TEST);
@@ -568,7 +568,7 @@ void MapRenderer3D::renderSky()
 		// Render top cap
 		float size = 64.0f;
 		glDisable(GL_TEXTURE_2D);
-		skycol_top.set_gl(false);
+		OpenGL::setColour(skycol_top, false);
 		glBegin(GL_QUADS);
 		glVertex3f(cam_position.x-(size*10), cam_position.y-(size*10), cam_position.z+size);
 		glVertex3f(cam_position.x-(size*10), cam_position.y+(size*10), cam_position.z+size);
@@ -577,7 +577,7 @@ void MapRenderer3D::renderSky()
 		glEnd();
 
 		// Render bottom cap
-		skycol_bottom.set_gl(false);
+		OpenGL::setColour(skycol_bottom, false);
 		glBegin(GL_QUADS);
 		glVertex3f(cam_position.x-(size*10), cam_position.y-(size*10), cam_position.z-size);
 		glVertex3f(cam_position.x-(size*10), cam_position.y+(size*10), cam_position.z-size);
@@ -883,7 +883,7 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 	// Setup colour
 	rgba_t col1 = ColourConfiguration::getColour("map_3d_selection");
 	col1.a *= alpha;
-	col1.set_gl();
+	OpenGL::setColour(col1);
 	rgba_t col2 = col1;
 	col2.a *= 0.5;
 
@@ -915,7 +915,7 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		// Draw sector outline
 		vector<MapLine*> lines;
 		sector->getLines(lines);
-		col1.set_gl(false);
+		OpenGL::setColour(col1, false);
 		glBegin(GL_LINES);
 		for (unsigned l = 0; l < lines.size(); l++)
 		{
@@ -925,7 +925,7 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		glEnd();
 
 		// Render fill
-		col2.set_gl(false);
+		OpenGL::setColour(col2, false);
 		sector->getPolygon()->render();
 
 		glPopMatrix();
@@ -1439,7 +1439,7 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 	// Setup colour
 	rgba_t col1 = ColourConfiguration::getColour("map_3d_selection");
 	col1.a *= alpha;
-	col1.set_gl();
+	OpenGL::setColour(col1);
 	rgba_t col2 = col1;
 	col2.a *= 0.5;
 
@@ -1498,14 +1498,14 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 			continue;
 
 		// Render quad outline
-		col1.set_gl(false);
+		OpenGL::setColour(col1, false);
 		glBegin(GL_LINE_LOOP);
 		for (unsigned v = 0; v < 4; v++)
 			glVertex3f(quad->points[v].x, quad->points[v].y, quad->points[v].z);
 		glEnd();
 
 		// Render quad fill
-		col2.set_gl(false);
+		OpenGL::setColour(col2, false);
 		glBegin(GL_QUADS);
 		for (unsigned v = 0; v < 4; v++)
 			glVertex3f(quad->points[v].x, quad->points[v].y, quad->points[v].z);
@@ -1812,7 +1812,7 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 	// Setup colour
 	rgba_t col1 = ColourConfiguration::getColour("map_3d_selection");
 	col1.a *= alpha;
-	col1.set_gl();
+	OpenGL::setColour(col1);
 	rgba_t col2 = col1;
 	col2.a *= 0.5;
 
@@ -1849,7 +1849,7 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 
 		// Render outline
 		double z = things[selection[a].index].z;
-		col1.set_gl(false);
+		OpenGL::setColour(col1, false);
 		glBegin(GL_LINE_LOOP);
 		glVertex3f(x1, y1, z + theight);
 		glVertex3f(x1, y1, z);
@@ -1858,7 +1858,7 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 		glEnd();
 
 		// Render fill
-		col2.set_gl(false);
+		OpenGL::setColour(col2, false);
 		glBegin(GL_QUADS);
 		glVertex3f(x1, y1, z + theight);
 		glVertex3f(x1, y1, z);
@@ -2339,7 +2339,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 	glEnable(GL_LINE_SMOOTH);
 	rgba_t col_hilight = ColourConfiguration::getColour("map_3d_hilight");
 	col_hilight.a *= alpha;
-	col_hilight.set_gl();
+	OpenGL::setColour(col_hilight);
 
 	// Quad hilight
 	if (hilight.type == MapEditor::SEL_SIDE_BOTTOM || hilight.type == MapEditor::SEL_SIDE_MIDDLE || hilight.type == MapEditor::SEL_SIDE_TOP)
@@ -2398,7 +2398,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		{
 			glCullFace(GL_BACK);
 			col_hilight.a *= 0.3;
-			col_hilight.set_gl(false);
+			OpenGL::setColour(col_hilight, false);
 			glBegin(GL_QUADS);
 			for (unsigned a = 0; a < 4; a++)
 				glVertex3f(quad->points[a].x, quad->points[a].y, quad->points[a].z);
@@ -2442,7 +2442,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		if (render_3d_hilight > 1)
 		{
 			col_hilight.a *= 0.3;
-			col_hilight.set_gl(false);
+			OpenGL::setColour(col_hilight, false);
 			sector->getPolygon()->render();
 		}
 
@@ -2486,7 +2486,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		{
 			glCullFace(GL_BACK);
 			col_hilight.a *= 0.3;
-			col_hilight.set_gl(false);
+			OpenGL::setColour(col_hilight, false);
 			glBegin(GL_QUADS);
 			glVertex3f(x1, y1, z + theight);
 			glVertex3f(x1, y1, z);
@@ -2497,7 +2497,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 	}
 
 	//glEnable(GL_DEPTH_TEST);
-	COL_WHITE.set_gl();
+	OpenGL::setColour(COL_WHITE);
 }
 
 void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)

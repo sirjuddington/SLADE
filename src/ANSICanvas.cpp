@@ -155,14 +155,14 @@ void ANSICanvas::drawImage()
 	double y = (double)height;
 
 	// Draw the image
-	COL_WHITE.set_gl();
+	OpenGL::setColour(COL_WHITE);
 	tex_image->draw2d();
 
 	// Disable textures
 	glDisable(GL_TEXTURE_2D);
 
 	// Draw outline
-	rgba_t(0, 0, 0, 64).set_gl();
+	OpenGL::setColour(0, 0, 0, 64);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(0, 0);
 	glVertex2d(0, y);

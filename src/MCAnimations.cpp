@@ -48,7 +48,7 @@ void MCASelboxFader::draw()
 	// Outline
 	col.set(ColourConfiguration::getColour("map_selbox_outline"));
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 	glLineWidth(2.0f);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(tl.x, tl.y);
@@ -60,7 +60,7 @@ void MCASelboxFader::draw()
 	// Fill
 	col.set(ColourConfiguration::getColour("map_selbox_fill"));
 	col.a *= fade;
-	col.set_gl();
+	OpenGL::setColour(col);
 	glBegin(GL_QUADS);
 	glVertex2d(tl.x, tl.y);
 	glVertex2d(tl.x, br.y);
@@ -111,7 +111,7 @@ void MCAThingSelection::draw()
 		col = ColourConfiguration::getColour("map_selection");
 		col.a *= fade;
 	}
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Get texture if needed
 	if (!thing_overlay_square)
@@ -195,7 +195,7 @@ void MCALineSelection::draw()
 		col = ColourConfiguration::getColour("map_selection");
 		col.a *= fade;
 	}
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Draw lines
 	glLineWidth(line_width*5);
@@ -257,7 +257,7 @@ void MCAVertexSelection::draw()
 		col = ColourConfiguration::getColour("map_selection");
 		col.a *= fade;
 	}
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Setup point sprites if supported
 	bool point = false;
@@ -355,7 +355,7 @@ void MCASectorSelection::draw()
 		col = ColourConfiguration::getColour("map_selection");
 		col.a *= fade*0.75;
 	}
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Draw polygons
 	for (unsigned a = 0; a < polygons.size(); a++)
@@ -402,7 +402,7 @@ void MCA3dWallSelection::draw()
 		col = ColourConfiguration::getColour("map_3d_selection");
 		col.a *= fade*0.75;
 	}
-	col.set_gl();
+	OpenGL::setColour(col);
 
 	// Draw quad outline
 	glLineWidth(2.0f);
@@ -414,7 +414,7 @@ void MCA3dWallSelection::draw()
 
 	// Draw quad fill
 	col.a *= 0.5;
-	col.set_gl(false);
+	OpenGL::setColour(col, false);
 	glBegin(GL_QUADS);
 	for (unsigned a = 0; a < 4; a++)
 		glVertex3d(points[a].x, points[a].y, points[a].z);
@@ -463,7 +463,7 @@ void MCA3dFlatSelection::draw()
 		col = ColourConfiguration::getColour("map_3d_selection");
 		col.a *= fade*0.75*0.5;
 	}
-	col.set_gl();
+	OpenGL::setColour(col);
 	glDisable(GL_CULL_FACE);
 
 	// Set polygon to plane height

@@ -1,6 +1,5 @@
 
-#ifndef __STRUCTS_H__
-#define __STRUCTS_H__
+#pragma once
 
 #include <math.h>
 using std::min;
@@ -267,21 +266,6 @@ struct rgba_t
 			return col_equal && (a == rhs.a);
 		else
 			return col_equal;
-	}
-
-	void set_gl(bool set_blend = true)
-	{
-		// Colour
-		glColor4ub(r, g, b, a);
-
-		// Blend
-		if (set_blend)
-		{
-			if (blend == 0)
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			else if (blend == 1)
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		}
 	}
 
 	// Amplify/fade colour components by given amounts
@@ -830,5 +814,3 @@ struct imgz_header_t
 #define READ_B16(a, i) (a[i+1]+(a[i]<<8))
 #define READ_B24(a, i) (a[i+2]+(a[i+1]<<8)+(a[i]<<16))
 #define READ_B32(a, i) (a[i+3]+(a[i+2]<<8)+(a[i+1]<<16)+(a[i]<<24))
-
-#endif //__STRUCTS_H__

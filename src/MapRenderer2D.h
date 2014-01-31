@@ -2,11 +2,15 @@
 #ifndef __MAP_RENDERER_2D__
 #define __MAP_RENDERER_2D__
 
-#include "SLADEMap.h"
-
+// Forward declarations
 class ThingType;
 class GLTexture;
 class ObjectEditGroup;
+class SLADEMap;
+class MapLine;
+class MapSector;
+class MapThing;
+
 class MapRenderer2D
 {
 private:
@@ -17,13 +21,13 @@ private:
 	long		flats_updated;
 
 	// VBOs etc
-	GLuint	vbo_vertices;
-	GLuint	vbo_lines;
-	GLuint	vbo_flats;
+	unsigned	vbo_vertices;
+	unsigned	vbo_lines;
+	unsigned	vbo_flats;
 
 	// Display lists
-	GLuint	list_vertices;
-	GLuint	list_lines;
+	unsigned	list_vertices;
+	unsigned	list_lines;
 
 	// Visibility
 	enum
@@ -42,8 +46,8 @@ private:
 	// Structs
 	struct glvert_t
 	{
-		GLfloat x, y;
-		GLfloat r, g, b, a;
+		float x, y;
+		float r, g, b, a;
 	};
 	struct glline_t
 	{

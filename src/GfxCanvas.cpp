@@ -142,7 +142,7 @@ void GfxCanvas::drawOffsetLines()
 {
 	if (view_type == GFXVIEW_SPRITE)
 	{
-		COL_BLACK.set_gl();
+		OpenGL::setColour(COL_BLACK);
 
 		glBegin(GL_LINES);
 		glVertex2d(-9999, 0);
@@ -209,36 +209,36 @@ void GfxCanvas::drawImage()
 	if (view_type == GFXVIEW_TILED)
 	{
 		// Draw tiled image
-		rgba_t(255, 255, 255, 255, 0).set_gl();
+		OpenGL::setColour(255, 255, 255, 255, 0);
 		tex_image->draw2dTiled(GetSize().x / scale, GetSize().y / scale);
 	}
 	else if (drag_origin.x < 0)  	// If not dragging
 	{
 		// Draw the image
-		rgba_t(255, 255, 255, 255, 0).set_gl();
+		OpenGL::setColour(255, 255, 255, 255, 0);
 		tex_image->draw2d();
 
 		// Draw hilight
 		if (image_hilight && gfx_hilight_mouseover)
 		{
-			rgba_t(255, 255, 255, 80, 1).set_gl();
+			OpenGL::setColour(255, 255, 255, 80, 1);
 			tex_image->draw2d();
 
 			// Reset colour
-			rgba_t(255, 255, 255, 255, 0).set_gl();
+			OpenGL::setColour(255, 255, 255, 255, 0);
 		}
 	}
 	else  	// Dragging
 	{
 		// Draw the original
-		rgba_t(0, 0, 0, 180, 0).set_gl();
+		OpenGL::setColour(rgba_t(0, 0, 0, 180, 0));
 		tex_image->draw2d();
 
 		// Draw the dragged image
 		int off_x = (drag_pos.x - drag_origin.x) / scale;
 		int off_y = (drag_pos.y - drag_origin.y) / scale;
 		glTranslated(off_x, off_y, 0);
-		rgba_t(255, 255, 255, 255, 0).set_gl();
+		OpenGL::setColour(255, 255, 255, 255, 0);
 		tex_image->draw2d();
 	}
 
@@ -248,7 +248,7 @@ void GfxCanvas::drawImage()
 	// Draw outline
 	if (gfx_show_border)
 	{
-		rgba_t(0, 0, 0, 64).set_gl();
+		OpenGL::setColour(0, 0, 0, 64);
 		glBegin(GL_LINE_LOOP);
 		glVertex2d(0, 0);
 		glVertex2d(0, y);

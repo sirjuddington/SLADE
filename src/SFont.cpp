@@ -33,6 +33,7 @@
 #include "SFont.h"
 #include "SImage.h"
 #include "ArchiveManager.h"
+#include "OpenGL.h"
 
 
 /*******************************************************************
@@ -197,7 +198,7 @@ void SFont::drawCharacter(char c, rgba_t colour)
 		return;
 
 	// Set colour
-	colour.set_gl();
+	OpenGL::setColour(colour);
 
 	// Get character to draw
 	SFontChar* ch = characters[c];
@@ -227,7 +228,7 @@ void SFont::drawString(string str, rgba_t colour, uint8_t align)
 		return;
 
 	// Set colour
-	colour.set_gl();
+	OpenGL::setColour(colour);
 
 	// Determine string length (for alignment)
 	int total_width = 0;

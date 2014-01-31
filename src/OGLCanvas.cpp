@@ -200,7 +200,7 @@ void OGLCanvas::drawCheckeredBackground()
 
 	// Draw background
 	frect_t rect(0, 0, GetSize().x, GetSize().y);
-	COL_WHITE.set_gl();
+	OpenGL::setColour(COL_WHITE);
 	glBegin(GL_QUADS);
 	glTexCoord2d(rect.x1()*0.0625, rect.y1()*0.0625);	glVertex2d(rect.x1(), rect.y1());
 	glTexCoord2d(rect.x1()*0.0625, rect.y2()*0.0625);	glVertex2d(rect.x1(), rect.y2());
@@ -280,6 +280,7 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 			init();
 
 		// Draw content
+		OpenGL::resetBlend();
 		draw();
 	}
 }

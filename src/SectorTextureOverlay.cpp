@@ -49,7 +49,7 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 
 	// Draw background
 	glDisable(GL_TEXTURE_2D);
-	col_bg.set_gl();
+	OpenGL::setColour(col_bg);
 	Drawing::drawFilledRect(0, 0, width, height);
 
 	// Check if any sectors are open
@@ -108,7 +108,7 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 
 	// Draw background
 	glEnable(GL_TEXTURE_2D);
-	rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
+	OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 	glPushMatrix();
 	glTranslated(x, y, 0);
 	GLTexture::bgTex().draw2dTiled(size, size);
@@ -116,11 +116,11 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 
 	// Draw first texture
 	bool mixed = theGameConfiguration->mixTexFlats();
-	rgba_t(255, 255, 255, 255*alpha, 0).set_gl();
+	OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 	Drawing::drawTextureWithin(theMapEditor->textureManager().getFlat(textures[0], mixed), x, y, x + size, y + size, 0, 100);
 
 	// Draw up to 4 subsequent textures (overlaid)
-	rgba_t(255, 255, 255, 127*alpha, 0).set_gl();
+	OpenGL::setColour(255, 255, 255, 127*alpha, 0);
 	for (unsigned a = 1; a < textures.size() && a < 5; a++)
 		Drawing::drawTextureWithin(theMapEditor->textureManager().getFlat(textures[a], mixed), x, y, x + size, y + size, 0, 100);
 
@@ -129,12 +129,12 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	// Draw outline
 	if (hover)
 	{
-		rgba_t(col_sel.r, col_sel.g, col_sel.b, 255*alpha, 0).set_gl();
+		OpenGL::setColour(col_sel.r, col_sel.g, col_sel.b, 255*alpha, 0);
 		glLineWidth(3.0f);
 	}
 	else
 	{
-		rgba_t(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0).set_gl();
+		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0);
 		glLineWidth(1.5f);
 	}
 	Drawing::drawRect(x, y, x+size, y+size);

@@ -30,6 +30,7 @@
 #include "Main.h"
 #include "GLTexture.h"
 #include "OpenGL.h"
+#include "SImage.h"
 
 
 /*******************************************************************

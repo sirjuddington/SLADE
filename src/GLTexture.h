@@ -2,14 +2,15 @@
 #ifndef __GLTEXTURE_H__
 #define	__GLTEXTURE_H__
 
-#include "SImage.h"
-
 struct gl_tex_t
 {
-	GLuint		id;
+	unsigned	id;
 	uint32_t	width;
 	uint32_t	height;
 };
+
+class SImage;
+class Palette8bit;
 
 class GLTexture
 {
@@ -54,7 +55,7 @@ public:
 	double		getScaleX() { return scale_x; }
 	double		getScaleY() { return scale_y; }
 	bool		isTiling() { return tiling; }
-	GLuint		glId() { if (!tex.empty()) return tex[0].id; else return 0; }
+	unsigned	glId() { if (!tex.empty()) return tex[0].id; else return 0; }
 
 	void		setFilter(int filter) { this->filter = filter; }
 	void		setTiling(bool tiling) { this->tiling = tiling; }

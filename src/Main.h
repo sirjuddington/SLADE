@@ -1,6 +1,5 @@
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#pragma once
 
 #ifdef _WINDOWS
 #include <windows.h>
@@ -75,24 +74,6 @@ typename M::mapped_type findInMap(M& m, const typename M::key_type& k, typename 
 #include <wx/log.h>
 #define LOG_MESSAGE(level, ...) if (Global::log_verbosity >= level) wxLogMessage(__VA_ARGS__)
 
-// OpenGL
-#ifdef __WXMSW__
-// Windows GL headers
-#include "glew/glew.h"	// Use built-in GLEW so we don't need any extra dlls
-#include <gl/GL.h>
-#include <gl/GLU.h>
-#elif __APPLE__
-// OSX GL headers
-#include <GL/glew.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-// Unix GL headers
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
 // File handling
 #include <wx/file.h>
 
@@ -131,5 +112,3 @@ enum MapTypes
 	MAP_UDMF,
 	MAP_UNKNOWN,	// Needed for maps in zip archives
 };
-
-#endif //__MAIN_H__
