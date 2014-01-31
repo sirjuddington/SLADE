@@ -1280,6 +1280,7 @@ bool ArchivePanel::sort()
 
 	// Refresh
 	entry_list->updateList();
+	archive->setModified(true);
 
 	return true;
 }
