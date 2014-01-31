@@ -709,7 +709,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	}
 
 	// Draw the string
-	colour.set_gl();
+	OpenGL::setColour(colour);
 	glPushMatrix();
 	glTranslatef(xpos, ypos + ftgl_font->FaceSize(), 0.0f);
 	glTranslatef(-0.375f, -0.375f, 0);
