@@ -1,9 +1,45 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ThingType.cpp
+ * Description: ThingType class, represents a thing type
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "ThingType.h"
 #include "Parser.h"
 #include "GameConfiguration.h"
 
+
+/*******************************************************************
+ * THINGTYPE CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ThingType::ThingType
+ * ThingType class constructor
+ *******************************************************************/
 ThingType::ThingType(string name)
 {
 	// Init variables
@@ -34,6 +70,9 @@ ThingType::ThingType(string name)
 	args[4].name = "Arg5";
 }
 
+/* ThingType::copy
+ * Copies values from [copy]
+ *******************************************************************/
 void ThingType::copy(ThingType* copy)
 {
 	// Check TT was given
@@ -68,6 +107,10 @@ void ThingType::copy(ThingType* copy)
 		this->args[a] = copy->args[a];
 }
 
+/* ThingType::getArgsString
+ * Returns a string representation of the thing type's args given
+ * the values in [args]
+ *******************************************************************/
 string ThingType::getArgsString(int args[5])
 {
 	string ret;
@@ -92,6 +135,9 @@ string ThingType::getArgsString(int args[5])
 	return ret;
 }
 
+/* ThingType::reset
+ * Resets all values to defaults
+ *******************************************************************/
 void ThingType::reset()
 {
 	// Reset variables
@@ -128,6 +174,9 @@ void ThingType::reset()
 	}
 }
 
+/* ThingType::parse
+ * Reads an thing type definition from a parsed tree [node]
+ *******************************************************************/
 void ThingType::parse(ParseTreeNode* node)
 {
 	// Go through all child nodes/values
@@ -294,6 +343,9 @@ void ThingType::parse(ParseTreeNode* node)
 	}
 }
 
+/* ThingType::stringDesc
+ * Returns the thing type info as a string
+ *******************************************************************/
 string ThingType::stringDesc()
 {
 	// Init return string

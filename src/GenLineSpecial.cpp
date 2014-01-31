@@ -1,7 +1,39 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    GenLineSpecial.cpp
+ * Description: Stuff for handling Boom generalised line specials
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "GenLineSpecial.h"
 
+
+/*******************************************************************
+ * DEFINES
+ *******************************************************************/
 #define GenFloorBase			0x6000
 #define GenCeilingBase			0x4000
 #define GenDoorBase				0x3c00
@@ -91,6 +123,9 @@
 #define LockedKindShift			5
 #define LockedSpeedShift		3
 
+/*******************************************************************
+ * BOOMGENLNIESPECIAL NAMESPACE
+ *******************************************************************/
 namespace BoomGenLineSpecial
 {
 	static const char* Triggers[]=
@@ -144,6 +179,9 @@ namespace BoomGenLineSpecial
 	static const char* Steps[]=
 	{"4","8","16","24",};
 
+	/* parseLineType
+	 * Returns a string representation of the generalised line value [type]
+	 *******************************************************************/
 	string parseLineType(int type)
 	{
 		string type_string;
@@ -334,6 +372,9 @@ namespace BoomGenLineSpecial
 		return type_string;
 	}
 
+	/* getLineTypeProperties
+	 * Puts line type properties from [type] into [props]
+	 *******************************************************************/
 	int getLineTypeProperties(int type, int* props)
 	{
 		if (!props)
@@ -426,6 +467,10 @@ namespace BoomGenLineSpecial
 		return -1;
 	}
 
+	/* generateSpecial
+	 * Returns a generalised special value from base type [type] and
+	 * generalised properties [props]
+	 *******************************************************************/
 	int generateSpecial(int type, int* props)
 	{
 		int special = 0;

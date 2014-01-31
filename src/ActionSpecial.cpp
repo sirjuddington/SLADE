@@ -1,5 +1,30 @@
 
 /*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ActionSpecial.cpp
+ * Description: ActionSpecial class, represents an action special
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
@@ -7,10 +32,14 @@
 #include "Parser.h"
 #include "GameConfiguration.h"
 
+
 /*******************************************************************
  * ACTIONSPECIAL CLASS FUNCTIONS
  *******************************************************************/
 
+/* ActionSpecial::ActionSpecial
+ * ActionSpecial class constructor
+ *******************************************************************/
 ActionSpecial::ActionSpecial(string name, string group)
 {
 	// Init variables
@@ -26,6 +55,9 @@ ActionSpecial::ActionSpecial(string name, string group)
 	args[4].name = "Arg5";
 }
 
+/* ActionSpecial::copy
+ * Copies another ActionSpecial
+ *******************************************************************/
 void ActionSpecial::copy(ActionSpecial* copy)
 {
 	// Check AS to copy was given
@@ -41,6 +73,9 @@ void ActionSpecial::copy(ActionSpecial* copy)
 		this->args[a] = copy->args[a];
 }
 
+/* ActionSpecial::reset
+ * Resets all values to defaults
+ *******************************************************************/
 void ActionSpecial::reset()
 {
 	// Reset variables
@@ -58,6 +93,9 @@ void ActionSpecial::reset()
 	}
 }
 
+/* ActionSpecial::parse
+ * Reads an action special definition from a parsed tree [node]
+ *******************************************************************/
 void ActionSpecial::parse(ParseTreeNode* node)
 {
 	// Go through all child nodes/values
@@ -129,6 +167,10 @@ void ActionSpecial::parse(ParseTreeNode* node)
 	}
 }
 
+/* ActionSpecial::getArgsString
+ * Returns a string representation of the action special's args
+ * given the values in [args]
+ *******************************************************************/
 string ActionSpecial::getArgsString(int args[5])
 {
 	string ret;
@@ -153,6 +195,9 @@ string ActionSpecial::getArgsString(int args[5])
 	return ret;
 }
 
+/* ActionSpecial::stringDesc
+ * Returns the action special info as a string
+ *******************************************************************/
 string ActionSpecial::stringDesc()
 {
 	// Init string

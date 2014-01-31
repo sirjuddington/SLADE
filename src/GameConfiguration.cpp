@@ -1,5 +1,32 @@
 
 /*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    GameConfiguration.cpp
+ * Description: GameConfiguration class, handles all game configuration
+ *              related stuff - action specials, thing types, supported
+ *              formats, etc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
@@ -17,6 +44,7 @@
 #include <wx/dir.h>
 #include <wx/colour.h>
 
+
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
@@ -30,11 +58,17 @@ CVAR(Bool, debug_configuration, false, CVAR_SAVE)
  * GAMECONFIGURATION CLASS FUNCTIONS
  *******************************************************************/
 
+/* GameConfiguration::GameConfiguration
+ * GameConfiguration class constructor
+ *******************************************************************/
 GameConfiguration::GameConfiguration()
 {
 	setDefaults();
 }
 
+/* GameConfiguration::~GameConfiguration
+ * GameConfiguration class destructor
+ *******************************************************************/
 GameConfiguration::~GameConfiguration()
 {
 	// Clean up stuff
@@ -56,6 +90,9 @@ GameConfiguration::~GameConfiguration()
 		delete tt_group_defaults[a];
 }
 
+/* GameConfiguration::setDefaults
+ * Resets all game configuration values to defaults
+ *******************************************************************/
 void GameConfiguration::setDefaults()
 {
 	udmf_namespace = "";
@@ -81,11 +118,17 @@ void GameConfiguration::setDefaults()
 	as_generalized_m.setTagged(AS_TT_SECTOR_BACK);
 }
 
+/* GameConfiguration::udmfNamespace
+ * Returns the UDMF namespace for the game configuration
+ *******************************************************************/
 string GameConfiguration::udmfNamespace()
 {
 	return udmf_namespace.Lower();
 }
 
+/* GameConfiguration::lightLevelInterval
+ * Returns the light level interval for the game configuration
+ *******************************************************************/
 int GameConfiguration::lightLevelInterval()
 {
 	if (light_levels.size() == 0)
@@ -94,6 +137,10 @@ int GameConfiguration::lightLevelInterval()
 		return light_levels[1];
 }
 
+/* GameConfiguration::readConfigName
+ * Parses the game configuration definition in [mc] and returns the
+ * configuration name
+ *******************************************************************/
 string GameConfiguration::readConfigName(MemChunk& mc)
 {
 	Tokenizer tz;
@@ -129,6 +176,11 @@ string GameConfiguration::readConfigName(MemChunk& mc)
 	return "";
 }
 
+/* GameConfiguration::readBasicGameConfig
+ * Parses the game configuration definition in [mc] to a gconf_t,
+ * which contains only basic information about the game
+ * configuration (no thing types, specials etc)
+ *******************************************************************/
 GameConfiguration::gconf_t GameConfiguration::readBasicGameConfig(MemChunk& mc)
 {
 	// Parse configuration
@@ -186,6 +238,11 @@ GameConfiguration::gconf_t GameConfiguration::readBasicGameConfig(MemChunk& mc)
 	return conf;
 }
 
+/* GameConfiguration::readBasicPortConfig
+ * Parses the port configuration definition in [mc] to a pconf_t,
+ * which contains only basic information about the port
+ * configuration (no thing types, specials etc)
+ *******************************************************************/
 GameConfiguration::pconf_t GameConfiguration::readBasicPortConfig(MemChunk& mc)
 {
 	// Parse configuration
@@ -243,6 +300,11 @@ GameConfiguration::pconf_t GameConfiguration::readBasicPortConfig(MemChunk& mc)
 	return conf;
 }
 
+/* GameConfiguration::init
+ * Init all GameConfiguration related stuff - load game/port
+ * configurations defined in the user dir as well as the predefined
+ * ones from the program resource
+ *******************************************************************/
 void GameConfiguration::init()
 {
 	// Add game configurations from user dir
@@ -357,6 +419,9 @@ void GameConfiguration::init()
 		openConfig(game_configuration, port_configuration);
 }
 
+/* GameConfiguration::mapName
+ * Returns the map name at [index] for the game configuration
+ *******************************************************************/
 string GameConfiguration::mapName(unsigned index)
 {
 	// Check index
@@ -366,6 +431,9 @@ string GameConfiguration::mapName(unsigned index)
 	return maps[index].mapname;
 }
 
+/* GameConfiguration::mapInfo
+ * Returns map info for the map matching [name]
+ *******************************************************************/
 gc_mapinfo_t GameConfiguration::mapInfo(string name)
 {
 	for (unsigned a = 0; a < maps.size(); a++)
@@ -380,6 +448,9 @@ gc_mapinfo_t GameConfiguration::mapInfo(string name)
 		return gc_mapinfo_t();
 }
 
+/* GameConfiguration::gameConfig
+ * Returns the basic game configuration at [index]
+ *******************************************************************/
 GameConfiguration::gconf_t GameConfiguration::gameConfig(unsigned index)
 {
 	if (index >= game_configs.size())
@@ -388,6 +459,9 @@ GameConfiguration::gconf_t GameConfiguration::gameConfig(unsigned index)
 		return game_configs[index];
 }
 
+/* GameConfiguration::gameConfig
+ * Returns the basic game configuration matching [id]
+ *******************************************************************/
 GameConfiguration::gconf_t GameConfiguration::gameConfig(string id)
 {
 	for (unsigned a = 0; a < game_configs.size(); a++)
@@ -399,6 +473,9 @@ GameConfiguration::gconf_t GameConfiguration::gameConfig(string id)
 	return gconf_none;
 }
 
+/* GameConfiguration::portConfig
+ * Returns the basic port configuration at [index]
+ *******************************************************************/
 GameConfiguration::pconf_t GameConfiguration::portConfig(unsigned index)
 {
 	if (index >= port_configs.size())
@@ -407,6 +484,9 @@ GameConfiguration::pconf_t GameConfiguration::portConfig(unsigned index)
 		return port_configs[index];
 }
 
+/* GameConfiguration::portConfig
+ * Returns the basic port configuration matching [id]
+ *******************************************************************/
 GameConfiguration::pconf_t GameConfiguration::portConfig(string id)
 {
 	for (unsigned a = 0; a < port_configs.size(); a++)
@@ -418,6 +498,9 @@ GameConfiguration::pconf_t GameConfiguration::portConfig(string id)
 	return pconf_none;
 }
 
+/* GameConfiguration::portSupportsGame
+ * Checks if the port at index [port] supports the game [game]
+ *******************************************************************/
 bool GameConfiguration::portSupportsGame(unsigned port, string game)
 {
 	// Check index
@@ -435,6 +518,9 @@ bool GameConfiguration::portSupportsGame(unsigned port, string game)
 	return false;
 }
 
+/* GameConfiguration::gameSupportsFilter
+ * Checks if [game] supports [filter]
+ *******************************************************************/
 bool GameConfiguration::gameSupportsFilter(string game, string filter)
 {
 	gconf_t config = gameConfig(game);
@@ -452,6 +538,10 @@ bool GameConfiguration::gameSupportsFilter(string game, string filter)
 	return false;
 }
 
+/* GameConfiguration::mapFormatSupported
+ * Checks if the combination of [game] and [port] supports the map
+ * format [map_format]
+ *******************************************************************/
 bool GameConfiguration::mapFormatSupported(int map_format, int game, int port)
 {
 	if (map_format < 0 || map_format > 3)
@@ -583,6 +673,10 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 	wxRemoveFile(filename);
 }
 
+/* GameConfiguration::readActionSpecials
+ * Reads action special definitions from a parsed tree [node], using
+ * [group_defaults] for default values
+ *******************************************************************/
 void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults)
 {
 	// Check if we're clearing all existing specials
@@ -652,6 +746,10 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 	delete as_defaults;
 }
 
+/* GameConfiguration::readThingTypes
+ * Reads thing type definitions from a parsed tree [node], using
+ * [group_defaults] for default values
+ *******************************************************************/
 void GameConfiguration::readThingTypes(ParseTreeNode* node, ThingType* group_defaults)
 {
 	// Check if we're clearing all existing specials
@@ -726,6 +824,10 @@ void GameConfiguration::readThingTypes(ParseTreeNode* node, ThingType* group_def
 	//delete tt_defaults;
 }
 
+/* GameConfiguration::readUDMFProperties
+ * Reads UDMF property definitions from a parsed tree [node] into
+ * [plist]
+ *******************************************************************/
 void GameConfiguration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& plist)
 {
 	// Read block properties
@@ -763,6 +865,10 @@ void GameConfiguration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& pl
 	}
 }
 
+/* GameConfiguration::readGameSection
+ * Reads a game or port definition from a parsed tree [node]. If
+ * [port_section] is true it is a port definition
+ *******************************************************************/
 void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_section)
 {
 	for (unsigned a = 0; a < node_game->nChildren(); a++)
@@ -939,6 +1045,9 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 	}
 }
 
+/* GameConfiguration::readConfiguration
+ * Reads a full game configuration from [cfg]
+ *******************************************************************/
 bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t format, bool ignore_game, bool clear)
 {
 	// Clear current configuration
@@ -1270,6 +1379,10 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t fo
 	return true;
 }
 
+/* GameConfiguration::openConfig
+ * Opens the full game configuration [game]+[port], either from the
+ * user dir or program resource
+ *******************************************************************/
 bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 {
 	string full_config;
@@ -1395,6 +1508,9 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 	return ok;
 }
 
+/* GameConfiguration::actionSpecial
+ * Returns the action special definition for [id]
+ *******************************************************************/
 ActionSpecial* GameConfiguration::actionSpecial(unsigned id)
 {
 	as_t& as = action_specials[id];
@@ -1415,6 +1531,9 @@ ActionSpecial* GameConfiguration::actionSpecial(unsigned id)
 	}
 }
 
+/* GameConfiguration::actionSpecialName
+ * Returns the action special name for [special], if any
+ *******************************************************************/
 string GameConfiguration::actionSpecialName(int special)
 {
 	// Check special id is valid
@@ -1431,6 +1550,9 @@ string GameConfiguration::actionSpecialName(int special)
 		return "Unknown";
 }
 
+/* GameConfiguration::allActionSpecials
+ * Returns a list of all action specials defined in the configuration
+ *******************************************************************/
 vector<as_t> GameConfiguration::allActionSpecials()
 {
 	vector<as_t> ret;
@@ -1452,6 +1574,9 @@ vector<as_t> GameConfiguration::allActionSpecials()
 	return ret;
 }
 
+/* GameConfiguration::thingType
+ * Returns the thing type definition for [type]
+ *******************************************************************/
 ThingType* GameConfiguration::thingType(unsigned type)
 {
 	tt_t& ttype = thing_types[type];
@@ -1461,6 +1586,9 @@ ThingType* GameConfiguration::thingType(unsigned type)
 		return &ttype_unknown;
 }
 
+/* GameConfiguration::allThingTypes
+ * Returns a list of all thing types defined in the configuration
+ *******************************************************************/
 vector<tt_t> GameConfiguration::allThingTypes()
 {
 	vector<tt_t> ret;
@@ -1481,6 +1609,9 @@ vector<tt_t> GameConfiguration::allThingTypes()
 	return ret;
 }
 
+/* GameConfiguration::thingFlag
+ * Returns the name of the thing flag at [index]
+ *******************************************************************/
 string GameConfiguration::thingFlag(unsigned index)
 {
 	// Check index
@@ -1490,6 +1621,9 @@ string GameConfiguration::thingFlag(unsigned index)
 	return flags_thing[index].name;
 }
 
+/* GameConfiguration::thingFlagSet
+ * Returns true if the flag at [index] is set for [thing]
+ *******************************************************************/
 bool GameConfiguration::thingFlagSet(unsigned index, MapThing* thing)
 {
 	// Check index
@@ -1504,6 +1638,9 @@ bool GameConfiguration::thingFlagSet(unsigned index, MapThing* thing)
 		return false;
 }
 
+/* GameConfiguration::thingFlagSet
+ * Returns true if the flag matching [flag] is set for [thing]
+ *******************************************************************/
 bool GameConfiguration::thingFlagSet(string flag, MapThing* thing, int map_format)
 {
 	// If UDMF, just get the bool value
@@ -1523,6 +1660,9 @@ bool GameConfiguration::thingFlagSet(string flag, MapThing* thing, int map_forma
 	return false;
 }
 
+/* GameConfiguration::thingBasicFlagSet
+ * Returns true if the basic flag matching [flag] is set for [thing]
+ *******************************************************************/
 bool GameConfiguration::thingBasicFlagSet(string flag, MapThing* thing, int map_format)
 {
 	// If UDMF, just get the bool value
@@ -1598,6 +1738,9 @@ bool GameConfiguration::thingBasicFlagSet(string flag, MapThing* thing, int map_
 	return thingFlagSet(flag, thing, map_format);
 }
 
+/* GameConfiguration::thingFlagsString
+ * Returns a string of all thing flags set in [flags]
+ *******************************************************************/
 string GameConfiguration::thingFlagsString(int flags)
 {
 	// Check against all flags
@@ -1619,6 +1762,10 @@ string GameConfiguration::thingFlagsString(int flags)
 	return ret;
 }
 
+/* GameConfiguration::setThingFlag
+ * Sets thing flag at [index] for [thing]. If [set] is false, the
+ * flag is unset
+ *******************************************************************/
 void GameConfiguration::setThingFlag(unsigned index, MapThing* thing, bool set)
 {
 	// Check index
@@ -1636,6 +1783,10 @@ void GameConfiguration::setThingFlag(unsigned index, MapThing* thing, bool set)
 	thing->setIntProperty("flags", flags);
 }
 
+/* GameConfiguration::setThingFlag
+ * Sets thing flag matching [flag] (UDMF name) for [thing]. If [set]
+ * is false, the flag is unset
+ *******************************************************************/
 void GameConfiguration::setThingFlag(string flag, MapThing* thing, int map_format, bool set)
 {
 	// If UDMF, just set the bool value
@@ -1673,9 +1824,13 @@ void GameConfiguration::setThingFlag(string flag, MapThing* thing, int map_forma
 	thing->setIntProperty("flags", flags);
 }
 
+/* GameConfiguration::setThingBasicFlag
+ * Sets thing basic flag matching [flag] for [thing]. If [set] is
+ * false, the flag is unset
+ *******************************************************************/
 void GameConfiguration::setThingBasicFlag(string flag, MapThing* thing, int map_format, bool set)
 {
-	// If UDMF, just get the bool value
+	// If UDMF, just set the bool value
 	if (map_format == MAP_UDMF)
 	{
 		thing->setBoolProperty(flag, set);
@@ -1792,6 +1947,9 @@ enum StateSprites
 	SS_IDLE,
 };
 
+/* GameConfiguration::parseDecorateDefs
+ * Parses all DECORATE thing definitions in [archive]
+ *******************************************************************/
 bool GameConfiguration::parseDecorateDefs(Archive* archive)
 {
 	if (!archive)
@@ -2350,6 +2508,9 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 	return true;
 }
 
+/* GameConfiguration::lineFlag
+ * Returns the name of the line flag at [index]
+ *******************************************************************/
 string GameConfiguration::lineFlag(unsigned index)
 {
 	// Check index
@@ -2359,6 +2520,9 @@ string GameConfiguration::lineFlag(unsigned index)
 	return flags_line[index].name;
 }
 
+/* GameConfiguration::lineFlagSet
+ * Returns true if the flag at [index] is set for [line]
+ *******************************************************************/
 bool GameConfiguration::lineFlagSet(unsigned index, MapLine* line)
 {
 	// Check index
@@ -2373,6 +2537,10 @@ bool GameConfiguration::lineFlagSet(unsigned index, MapLine* line)
 		return false;
 }
 
+/* GameConfiguration::lineFlagSet
+ * Returns true if the flag matching [flag] (UDMF name) is set for
+ * [line]
+ *******************************************************************/
 bool GameConfiguration::lineFlagSet(string flag, MapLine* line, int map_format)
 {
 	// If UDMF, just get the bool value
@@ -2392,6 +2560,11 @@ bool GameConfiguration::lineFlagSet(string flag, MapLine* line, int map_format)
 	return false;
 }
 
+/* GameConfiguration::lineBasicFlagSet
+ * Returns true if the basic flag matching [flag] (UDMF name) is set
+ * for [line]. 'Basic' flags are flags that are available in some
+ * way or another in all game configurations
+ *******************************************************************/
 bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_format)
 {
 	// If UDMF, just get the bool value
@@ -2421,6 +2594,9 @@ bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_for
 	return lineFlagSet(flag, line, map_format);
 }
 
+/* GameConfiguration::lineFlagsString
+ * Returns a string containing all flags set on [line]
+ *******************************************************************/
 string GameConfiguration::lineFlagsString(MapLine* line)
 {
 	if (!line)
@@ -2449,6 +2625,10 @@ string GameConfiguration::lineFlagsString(MapLine* line)
 	return ret;
 }
 
+/* GameConfiguration::setLineFlag
+ * Sets line flag at [index] for [line]. If [set] is false, the flag
+ * is unset
+ *******************************************************************/
 void GameConfiguration::setLineFlag(unsigned index, MapLine* line, bool set)
 {
 	// Check index
@@ -2466,6 +2646,10 @@ void GameConfiguration::setLineFlag(unsigned index, MapLine* line, bool set)
 	line->setIntProperty("flags", flags);
 }
 
+/* GameConfiguration::setLineFlag
+ * Sets line flag matching [flag] (UDMF name) for [line]. If [set]
+ * is false, the flag is unset
+ *******************************************************************/
 void GameConfiguration::setLineFlag(string flag, MapLine* line, int map_format, bool set)
 {
 	// If UDMF, just set the bool value
@@ -2503,6 +2687,10 @@ void GameConfiguration::setLineFlag(string flag, MapLine* line, int map_format, 
 	line->setIntProperty("flags", flags);
 }
 
+/* GameConfiguration::setLineBasicFlag
+ * Sets line basic flag [flag] (UDMF name) for [line]. If [set]
+ * is false, the flag is unset
+ *******************************************************************/
 void GameConfiguration::setLineBasicFlag(string flag, MapLine* line, int map_format, bool set)
 {
 	// If UDMF, just set the bool value
@@ -2544,6 +2732,9 @@ void GameConfiguration::setLineBasicFlag(string flag, MapLine* line, int map_for
 	else setLineFlag(flag, line, map_format, set);
 }
 
+/* GameConfiguration::spacTriggerString
+ * Returns the hexen SPAC trigger for [line] as a string
+ *******************************************************************/
 string GameConfiguration::spacTriggerString(MapLine* line, int map_format)
 {
 	if (!line)
@@ -2599,6 +2790,9 @@ string GameConfiguration::spacTriggerString(MapLine* line, int map_format)
 	return "Unknown";
 }
 
+/* GameConfiguration::allSpacTriggers
+ * Returns a list of all defined SPAC triggers
+ *******************************************************************/
 wxArrayString GameConfiguration::allSpacTriggers()
 {
 	wxArrayString ret;
@@ -2609,6 +2803,9 @@ wxArrayString GameConfiguration::allSpacTriggers()
 	return ret;
 }
 
+/* GameConfiguration::setLineSpacTrigger
+ * Sets the SPAC trigger for [line] to the trigger at [index]
+ *******************************************************************/
 void GameConfiguration::setLineSpacTrigger(unsigned index, MapLine* line)
 {
 	// Check index
@@ -2630,6 +2827,10 @@ void GameConfiguration::setLineSpacTrigger(unsigned index, MapLine* line)
 	line->setIntProperty("flags", flags);
 }
 
+/* GameConfiguration::getUDMFProperty
+ * Returns the UDMF property definition matching [name] for
+ * MapObject type [type]
+ *******************************************************************/
 UDMFProperty* GameConfiguration::getUDMFProperty(string name, int type)
 {
 	if (type == MOBJ_VERTEX)
@@ -2646,6 +2847,9 @@ UDMFProperty* GameConfiguration::getUDMFProperty(string name, int type)
 		return NULL;
 }
 
+/* GameConfiguration::allUDMFProperties
+ * Returns all defined UDMF properties for MapObject type [type]
+ *******************************************************************/
 vector<udmfp_t> GameConfiguration::allUDMFProperties(int type)
 {
 	vector<udmfp_t> ret;
@@ -2681,6 +2885,10 @@ vector<udmfp_t> GameConfiguration::allUDMFProperties(int type)
 	return ret;
 }
 
+/* GameConfiguration::cleanObjectUDMFProperties
+ * Removes any UDMF properties in [object] that have default values
+ * (so they are not written to the UDMF map unnecessarily)
+ *******************************************************************/
 void GameConfiguration::cleanObjectUDMFProps(MapObject* object)
 {
 	// Get UDMF properties list for type
@@ -2743,6 +2951,10 @@ void GameConfiguration::cleanObjectUDMFProps(MapObject* object)
 	}
 }
 
+/* GameConfiguration::sectorTypeName
+ * Returns the name for sector type value [type], taking generalised
+ * types into account
+ *******************************************************************/
 string GameConfiguration::sectorTypeName(int type, int map_format)
 {
 	// Check for zero type
@@ -2835,13 +3047,9 @@ string GameConfiguration::sectorTypeName(int type, int map_format)
 	return name;
 }
 
-//vector<string> GameConfiguration::allSectorTypeNames() {
-//	vector<string> ret;
-//	for (unsigned a = 0; a < sector_types.size(); a++)
-//		ret.push_back(sector_types[a].name);
-//	return ret;
-//}
-
+/* GameConfiguration::sectorTypeByName
+ * Returns the sector type value matching [name]
+ *******************************************************************/
 int GameConfiguration::sectorTypeByName(string name)
 {
 	for (unsigned a = 0; a < sector_types.size(); a++)
@@ -2853,6 +3061,10 @@ int GameConfiguration::sectorTypeByName(string name)
 	return 0;
 }
 
+/* GameConfiguration::baseSectorType
+ * Returns the 'base' sector type for value [type] (strips generalised
+ * flags/type)
+ *******************************************************************/
 int GameConfiguration::baseSectorType(int type, int map_format)
 {
 	// No type
@@ -2869,6 +3081,10 @@ int GameConfiguration::baseSectorType(int type, int map_format)
 	return type;
 }
 
+/* GameConfiguration::sectorBoomDamage
+ * Returns the generalised 'damage' flag for [type]: 0=none, 1=5%,
+ * 2=10% 3=20%
+ *******************************************************************/
 int GameConfiguration::sectorBoomDamage(int type, int map_format)
 {
 	// No type
@@ -2901,6 +3117,9 @@ int GameConfiguration::sectorBoomDamage(int type, int map_format)
 	return 0;
 }
 
+/* GameConfiguration::sectorBoomSecret
+ * Returns true if the generalised 'secret' flag is set for [type]
+ *******************************************************************/
 bool GameConfiguration::sectorBoomSecret(int type, int map_format)
 {
 	// No type
@@ -2919,6 +3138,9 @@ bool GameConfiguration::sectorBoomSecret(int type, int map_format)
 	return false;
 }
 
+/* GameConfiguration::sectorBoomFriction
+* Returns true if the generalised 'friction' flag is set for [type]
+*******************************************************************/
 bool GameConfiguration::sectorBoomFriction(int type, int map_format)
 {
 	// No type
@@ -2937,6 +3159,10 @@ bool GameConfiguration::sectorBoomFriction(int type, int map_format)
 	return false;
 }
 
+/* GameConfiguration::sectorBoomPushPull
+ * Returns true if the generalised 'pusher/puller' flag is set for
+ * [type]
+ *******************************************************************/
 bool GameConfiguration::sectorBoomPushPull(int type, int map_format)
 {
 	// No type
@@ -2955,6 +3181,9 @@ bool GameConfiguration::sectorBoomPushPull(int type, int map_format)
 	return false;
 }
 
+/* GameConfiguration::boomSectorType
+ * Returns the generalised boom sector type built from parameters
+ *******************************************************************/
 int GameConfiguration::boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull, int map_format)
 {
 	int fulltype = base;
@@ -3010,6 +3239,10 @@ int GameConfiguration::boomSectorType(int base, int damage, bool secret, bool fr
 	return fulltype;
 }
 
+/* GameConfiguration::getDefaultString
+ * Returns the default string value for [property] of MapObject
+ * type [type]
+ *******************************************************************/
 string GameConfiguration::getDefaultString(int type, string property)
 {
 	switch (type)
@@ -3027,6 +3260,10 @@ string GameConfiguration::getDefaultString(int type, string property)
 	}
 }
 
+/* GameConfiguration::getDefaultInt
+ * Returns the default int value for [property] of MapObject
+ * type [type]
+ *******************************************************************/
 int GameConfiguration::getDefaultInt(int type, string property)
 {
 	switch (type)
@@ -3044,6 +3281,10 @@ int GameConfiguration::getDefaultInt(int type, string property)
 	}
 }
 
+/* GameConfiguration::getDefaultFloat
+ * Returns the default float value for [property] of MapObject
+ * type [type]
+ *******************************************************************/
 double GameConfiguration::getDefaultFloat(int type, string property)
 {
 	switch (type)
@@ -3061,6 +3302,10 @@ double GameConfiguration::getDefaultFloat(int type, string property)
 	}
 }
 
+/* GameConfiguration::getDefaultBool
+ * Returns the default boolean value for [property] of MapObject
+ * type [type]
+ *******************************************************************/
 bool GameConfiguration::getDefaultBool(int type, string property)
 {
 	switch (type)
@@ -3078,6 +3323,9 @@ bool GameConfiguration::getDefaultBool(int type, string property)
 	}
 }
 
+/* GameConfiguration::applyDefaults
+ * Apply defined default values to [object]
+ *******************************************************************/
 void GameConfiguration::applyDefaults(MapObject* object, bool udmf)
 {
 	// Get all defaults for the object type
@@ -3147,6 +3395,9 @@ void GameConfiguration::applyDefaults(MapObject* object, bool udmf)
 	}
 }
 
+/* GameConfiguration::setLightLevelInterval
+ * Builds the array of valid light levels from [interval]
+ *******************************************************************/
 void GameConfiguration::setLightLevelInterval(int interval)
 {
 	// Clear current
@@ -3162,6 +3413,10 @@ void GameConfiguration::setLightLevelInterval(int interval)
 	light_levels.push_back(255);
 }
 
+/* GameConfiguration::upLightLevel
+ * Returns [light_level] incremented to the next 'valid' light level
+ * (defined by the game light interval)
+ *******************************************************************/
 int GameConfiguration::upLightLevel(int light_level)
 {
 	// No defined levels
@@ -3177,6 +3432,10 @@ int GameConfiguration::upLightLevel(int light_level)
 	return light_levels.back();
 }
 
+/* GameConfiguration::downLightLevel
+ * Returns [light_level] decremented to the next 'valid' light level
+ * (defined by the game light interval)
+ *******************************************************************/
 int GameConfiguration::downLightLevel(int light_level)
 {
 	// No defined levels
@@ -3192,6 +3451,9 @@ int GameConfiguration::downLightLevel(int light_level)
 	return 0;
 }
 
+/* GameConfiguration::parseTagged
+ * Returns the tagged type of the parsed tree node [tagged]
+ *******************************************************************/
 int GameConfiguration::parseTagged(ParseTreeNode* tagged)
 {
 	string str = tagged->getStringValue();
@@ -3223,7 +3485,9 @@ int GameConfiguration::parseTagged(ParseTreeNode* tagged)
 		return tagged->getIntValue();
 }
 
-
+/* GameConfiguration::dumpActionSpecials
+ * Dumps all defined action specials to the log
+ *******************************************************************/
 void GameConfiguration::dumpActionSpecials()
 {
 	ASpecialMap::iterator i = action_specials.begin();
@@ -3235,6 +3499,9 @@ void GameConfiguration::dumpActionSpecials()
 	}
 }
 
+/* GameConfiguration::dumpThingTypes
+ * Dumps all defined thing types to the log
+ *******************************************************************/
 void GameConfiguration::dumpThingTypes()
 {
 	ThingTypeMap::iterator i = thing_types.begin();
@@ -3246,6 +3513,9 @@ void GameConfiguration::dumpThingTypes()
 	}
 }
 
+/* GameConfiguration::dumpValidMapNames
+ * Dumps all defined map names to the log
+ *******************************************************************/
 void GameConfiguration::dumpValidMapNames()
 {
 	wxLogMessage("Valid Map Names:");
@@ -3253,6 +3523,9 @@ void GameConfiguration::dumpValidMapNames()
 		wxLogMessage(maps[a].mapname);
 }
 
+/* GameConfiguration::dumpUDMFProperties
+ * Dumps all defined UDMF properties to the log
+ *******************************************************************/
 void GameConfiguration::dumpUDMFProperties()
 {
 	// Vertex
@@ -3301,6 +3574,10 @@ void GameConfiguration::dumpUDMFProperties()
 	}
 }
 
+
+/*******************************************************************
+* CONSOLE COMMANDS
+*******************************************************************/
 
 CONSOLE_COMMAND(testgc, 0, false)
 {

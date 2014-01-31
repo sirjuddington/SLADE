@@ -1,9 +1,45 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    UDMFProperty.cpp
+ * Description: UDMFProperty class, contains info about a UDMF property
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "UDMFProperty.h"
 #include "Parser.h"
 
+
+/*******************************************************************
+ * UDMFPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* UDMFProperty::UDMFProperty
+ * UDMFProperty class constructor
+ *******************************************************************/
 UDMFProperty::UDMFProperty()
 {
 	has_default = false;
@@ -14,10 +50,16 @@ UDMFProperty::UDMFProperty()
 	internal_only = false;
 }
 
+/* UDMFProperty::~UDMFProperty
+ * UDMFProperty class destructor
+ *******************************************************************/
 UDMFProperty::~UDMFProperty()
 {
 }
 
+/* UDMFProperty::parse
+ * Reads a UDMF property definition from a parsed tree [node]
+ *******************************************************************/
 void UDMFProperty::parse(ParseTreeNode* node, string group)
 {
 	// Set group and property name
@@ -140,6 +182,9 @@ void UDMFProperty::parse(ParseTreeNode* node, string group)
 	}
 }
 
+/* UDMFProperty::getStringRep
+ * Returns a string representation of the UDMF property definition
+ *******************************************************************/
 string UDMFProperty::getStringRep()
 {
 	string ret = S_FMT("Property \"%s\": name = \"%s\", group = \"%s\"", property, name, group);
