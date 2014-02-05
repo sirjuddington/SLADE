@@ -2,6 +2,9 @@
 #ifndef __MC_OVERLAY_H__
 #define __MC_OVERLAY_H__
 
+// MCOverlay is a base class for full-screen map editor overlays
+// that take input and mouse clicks when active
+
 class MCOverlay
 {
 private:

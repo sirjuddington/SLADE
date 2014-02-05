@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    SectorInfoOverlay.cpp
+ * Description: SectorInfoOverlay class - a map editor overlay that
+ *              displays information about the currently highlighted
+ *              sector in sectors mode
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "SectorInfoOverlay.h"
@@ -9,14 +39,28 @@
 #include "GameConfiguration.h"
 #include "OpenGL.h"
 
+
+/*******************************************************************
+ * SECTORINFOOVERLAY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SectorInfoOverlay::SectorInfoOverlay
+ * SectorInfoOverlay class constructor
+ *******************************************************************/
 SectorInfoOverlay::SectorInfoOverlay()
 {
 }
 
+/* SectorInfoOverlay::~SectorInfoOverlay
+ * SectorInfoOverlay class destructor
+ *******************************************************************/
 SectorInfoOverlay::~SectorInfoOverlay()
 {
 }
 
+/* SectorInfoOverlay::update
+ * Updates the overlay with info from [sector]
+ *******************************************************************/
 void SectorInfoOverlay::update(MapSector* sector)
 {
 	if (!sector)
@@ -48,6 +92,9 @@ void SectorInfoOverlay::update(MapSector* sector)
 	ctex = sector->getCeilingTex();
 }
 
+/* SectorInfoOverlay::draw
+ * Draws the overlay at [bottom] from 0 to [right]
+ *******************************************************************/
 void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 {
 	// Don't bother if invisible
@@ -95,6 +142,9 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	glEnable(GL_LINE_SMOOTH);
 }
 
+/* SectorInfoOverlay::drawTexture
+ * Draws a texture box with name underneath for [texture]
+ *******************************************************************/
 void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
 {
 	// Get colours

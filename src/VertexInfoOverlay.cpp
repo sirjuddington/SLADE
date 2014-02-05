@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    VertexInfoOverlay.cpp
+ * Description: VertexInfoOverlay class - a map editor overlay that
+ *              displays information about the currently highlighted
+ *              vertex in vertices mode
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "VertexInfoOverlay.h"
 #include "MapVertex.h"
@@ -7,16 +37,30 @@
 #include "ColourConfiguration.h"
 #include "OpenGL.h"
 
+
+/*******************************************************************
+ * VERTEXINFOOVERLAY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* VertexInfoOverlay::VertexInfoOverlay
+ * VertexInfoOverlay class constructor
+ *******************************************************************/
 VertexInfoOverlay::VertexInfoOverlay()
 {
 	// Init variables
 	pos_frac = false;
 }
 
+/* VertexInfoOverlay::~VertexInfoOverlay
+ * VertexInfoOverlay class destructor
+ *******************************************************************/
 VertexInfoOverlay::~VertexInfoOverlay()
 {
 }
 
+/* VertexInfoOverlay::update
+ * Updates the overlay with info from [vertex]
+ *******************************************************************/
 void VertexInfoOverlay::update(MapVertex* vertex)
 {
 	if (!vertex)
@@ -32,6 +76,9 @@ void VertexInfoOverlay::update(MapVertex* vertex)
 		info += S_FMT(" (%d)", vertex->getId());
 }
 
+/* VertexInfoOverlay::draw
+ * Draws the overlay at [bottom] from 0 to [right]
+ *******************************************************************/
 void VertexInfoOverlay::draw(int bottom, int right, float alpha)
 {
 	// Don't bother if completely faded

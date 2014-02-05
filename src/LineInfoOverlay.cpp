@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    LineInfoOverlay.cpp
+ * Description: LineInfoOverlay class - a map editor overlay that
+ *              displays information about the currently highlighted
+ *              line and its sides in lines mode
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "LineInfoOverlay.h"
@@ -12,14 +42,28 @@
 #include "GameConfiguration.h"
 #include "OpenGL.h"
 
+
+/*******************************************************************
+ * LINEINFOOVERLAY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* LineInfoOverlay::LineInfoOverlay
+ * LineInfoOverlay class constructor
+ *******************************************************************/
 LineInfoOverlay::LineInfoOverlay()
 {
 }
 
+/* LineInfoOverlay::~LineInfoOverlay
+ * LineInfoOverlay class destructor
+ *******************************************************************/
 LineInfoOverlay::~LineInfoOverlay()
 {
 }
 
+/* LineInfoOverlay::update
+ * Updates the overlay with info from [line]
+ *******************************************************************/
 void LineInfoOverlay::update(MapLine* line)
 {
 	if (!line)
@@ -108,6 +152,9 @@ void LineInfoOverlay::update(MapLine* line)
 	else side_back.exists = false;
 }
 
+/* LineInfoOverlay::draw
+ * Draws the overlay at [bottom] from 0 to [right]
+ *******************************************************************/
 void LineInfoOverlay::draw(int bottom, int right, float alpha)
 {
 	// Don't bother if invisible
@@ -178,6 +225,9 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	glEnable(GL_LINE_SMOOTH);
 }
 
+/* LineInfoOverlay::drawSide
+ * Draws side/texture info for [side]
+ *******************************************************************/
 void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side, int xstart)
 {
 	// Get colours
@@ -196,6 +246,9 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side,
 	drawTexture(alpha, xstart + 92 + 80, bottom - 32, side.tex_lower, "L");
 }
 
+/* LineInfoOverlay::drawTexture
+ * Draws a texture box with name underneath for [texture]
+ *******************************************************************/
 void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
 {
 	// Get colours

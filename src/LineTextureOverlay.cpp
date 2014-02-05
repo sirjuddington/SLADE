@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    LineTextureOverlay.cpp
+ * Description: LineTextureOverlay class - A full screen map editor
+ *              overlay that shows (a) lines textures and allows
+ *              the user to click a texture to browse for it
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "LineTextureOverlay.h"
@@ -10,6 +40,13 @@
 #include "MapTextureBrowser.h"
 
 
+/*******************************************************************
+ * LINETEXTUREOVERLAY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* LineTextureOverlay::LineTextureOverlay
+ * LineTextureOverlay class constructor
+ *******************************************************************/
 LineTextureOverlay::LineTextureOverlay()
 {
 	// Init variables
@@ -19,10 +56,17 @@ LineTextureOverlay::LineTextureOverlay()
 	selected_side = 0;
 }
 
+/* LineTextureOverlay::~LineTextureOverlay
+ * LineTextureOverlay class destructor
+ *******************************************************************/
 LineTextureOverlay::~LineTextureOverlay()
 {
 }
 
+/* LineTextureOverlay::addTexture
+ * Adds [texture] to the overlay if it doesn't already exist at the
+ * target part (front upper, etc)
+ *******************************************************************/
 void LineTextureOverlay::addTexture(tex_inf_t& inf, string texture)
 {
 	// Ignore if texture is blank ("-")
@@ -43,6 +87,9 @@ void LineTextureOverlay::addTexture(tex_inf_t& inf, string texture)
 		inf.textures.push_back(texture);
 }
 
+/* LineTextureOverlay::openLines
+ * 'Opens' all lines in [list], adds all textures from each
+ *******************************************************************/
 void LineTextureOverlay::openLines(vector<MapLine*>& list)
 {
 	// Clear current lines
@@ -92,6 +139,10 @@ void LineTextureOverlay::openLines(vector<MapLine*>& list)
 		selected_side = 1;
 }
 
+/* LineTextureOverlay::close
+ * Called when the user closes the overlay. Applies changes if
+ * [cancel] is false
+ *******************************************************************/
 void LineTextureOverlay::close(bool cancel)
 {
 	// Apply texture changes if not cancelled
@@ -135,10 +186,17 @@ void LineTextureOverlay::close(bool cancel)
 	active = false;
 }
 
+/* LineTextureOverlay::update
+ * Updates the overlay (animations, etc.)
+ *******************************************************************/
 void LineTextureOverlay::update(long frametime)
 {
 }
 
+/* LineTextureOverlay::updateLayout
+ * Updates the layout of the overlay to fit properly within [width],
+ * [height]
+ *******************************************************************/
 void LineTextureOverlay::updateLayout(int width, int height)
 {
 	// Determine layout stuff
@@ -196,6 +254,9 @@ void LineTextureOverlay::updateLayout(int width, int height)
 	last_height = height;
 }
 
+/* LineTextureOverlay::draw
+ * Draws the overlay to [width],[height]
+ *******************************************************************/
 void LineTextureOverlay::draw(int width, int height, float fade)
 {
 	// Update layout if needed
@@ -232,6 +293,9 @@ void LineTextureOverlay::draw(int width, int height, float fade)
 	}
 }
 
+/* LineTextureOverlay::drawTexture
+ * Draws the texture box from info in [tex]
+ *******************************************************************/
 void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, string position)
 {
 	// Get colours
@@ -301,6 +365,9 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	Drawing::drawText(str_texture, tex.position.x, tex.position.y + halfsize + 2, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
 }
 
+/* LineTextureOverlay::mouseMotion
+ * Called when the mouse cursor is moved
+ *******************************************************************/
 void LineTextureOverlay::mouseMotion(int x, int y)
 {
 	// Check textures for hover
@@ -319,6 +386,9 @@ void LineTextureOverlay::mouseMotion(int x, int y)
 	}
 }
 
+/* LineTextureOverlay::mouseLeftClick
+ * Called when the left mouse button is clicked
+ *******************************************************************/
 void LineTextureOverlay::mouseLeftClick()
 {
 	// Check for any hover
@@ -330,10 +400,16 @@ void LineTextureOverlay::mouseLeftClick()
 	else if (textures[BACK_LOWER].hover)	browseTexture(textures[BACK_LOWER], "Back Lower");
 }
 
+/* LineTextureOverlay::mouseRightClick
+ * Called when the right mouse button is clicked
+ *******************************************************************/
 void LineTextureOverlay::mouseRightClick()
 {
 }
 
+/* LineTextureOverlay::keyDown
+ * Called when a key is pressed
+ *******************************************************************/
 void LineTextureOverlay::keyDown(string key)
 {
 	// 'Select' front side
@@ -372,6 +448,9 @@ void LineTextureOverlay::keyDown(string key)
 	}
 }
 
+/* LineTextureOverlay::browseTexture
+ * Opens the texture browser for [tex]
+ *******************************************************************/
 void LineTextureOverlay::browseTexture(tex_inf_t& tex, string position)
 {
 	// Get initial texture

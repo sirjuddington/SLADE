@@ -1,4 +1,35 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MOPGProperty.cpp
+ * Description: MOPGProperty and child classes - specialisations of
+ *              wxProperty to handle various map object property
+ *              types, including display and modification of values,
+ *              for use with the MapObjectPropsPanel grid
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MOPGProperty.h"
@@ -13,6 +44,14 @@
 #include "SectorSpecialDialog.h"
 
 
+/*******************************************************************
+ * MOPGPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGProperty::resetValue
+ * Reloads the property value from the object(s) currently open in
+ * the parent MapObjectPropsPanel, if any
+ *******************************************************************/
 void MOPGProperty::resetValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -24,12 +63,23 @@ void MOPGProperty::resetValue()
 }
 
 
+/*******************************************************************
+ * MOPGBOOLPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGBoolProperty::MOPGBoolProperty
+ * MOPGBoolProperty class constructor
+ *******************************************************************/
 MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name)
 	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_BOOL)
 {
 	propname = name;
 }
 
+/* MOPGBoolProperty::openObjects
+ * Reads the value of this boolean property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -63,6 +113,10 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGBoolProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGBoolProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -80,12 +134,23 @@ void MOPGBoolProperty::applyValue()
 }
 
 
+/*******************************************************************
+ * MOPGINTPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGIntProperty::MOPGIntProperty
+ * MOPGIntProperty class constructor
+ *******************************************************************/
 MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name)
 	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_INT)
 {
 	propname = name;
 }
 
+/* MOPGIntProperty::openObjects
+ * Reads the value of this integer property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -119,6 +184,10 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGIntProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGIntProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -136,12 +205,23 @@ void MOPGIntProperty::applyValue()
 }
 
 
+/*******************************************************************
+ * MOPGFLOATPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGFloatProperty::MOPGFloatProperty
+ * MOPGFloatProperty class constructor
+ *******************************************************************/
 MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name)
 	: wxFloatProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_FLOAT)
 {
 	propname = name;
 }
 
+/* MOPGFloatProperty::openObjects
+ * Reads the value of this float property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -175,6 +255,10 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGFloatProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGFloatProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -192,12 +276,23 @@ void MOPGFloatProperty::applyValue()
 }
 
 
+/*******************************************************************
+ * MOPGSTRINGPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGStringProperty::MOPGStringProperty
+ * MOPGStringProperty class constructor
+ *******************************************************************/
 MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name)
 	: wxStringProperty(label, name, ""), MOPGProperty(MOPGProperty::TYPE_STRING)
 {
 	propname = name;
 }
 
+/* MOPGStringProperty::openObjects
+ * Reads the value of this string property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -231,6 +326,10 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGStringProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGStringProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -248,6 +347,17 @@ void MOPGStringProperty::applyValue()
 }
 
 
+/*******************************************************************
+ * MOPGACTIONSPECIALPROPERTY CLASS FUNCTIONS
+ *******************************************************************
+ * Property grid cell for action special properties, links to
+ * 5 other cells for the special args (which will update when the
+ * special value is changed)
+ */
+
+/* MOPGActionSpecialProperty::MOPGActionSpecialProperty
+ * MOPGActionSpecialProperty class constructor
+ *******************************************************************/
 MOPGActionSpecialProperty::MOPGActionSpecialProperty(const wxString& label, const wxString& name)
 	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ASPECIAL)
 {
@@ -263,6 +373,10 @@ MOPGActionSpecialProperty::MOPGActionSpecialProperty(const wxString& label, cons
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
+/* MOPGActionSpecialProperty::openObjects
+ * Reads the value of this action special property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Reset arg property names
@@ -317,12 +431,19 @@ void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects)
 	}
 }
 
+/* MOPGActionSpecialProperty::addArgProperty
+ * Adds a linked arg property [prop] at [index]
+ *******************************************************************/
 void MOPGActionSpecialProperty::addArgProperty(wxPGProperty* prop, int index)
 {
 	if (index < 5)
 		args[index] = prop;
 }
 
+/* MOPGActionSpecialProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGActionSpecialProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -339,6 +460,10 @@ void MOPGActionSpecialProperty::applyValue()
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
+/* MOPGActionSpecialProperty::ValueToString
+ * Returns the action special value as a string (contains the special
+ * name)
+ *******************************************************************/
 wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
 {
 	// Get value as integer
@@ -353,8 +478,12 @@ wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags
 	}
 }
 
+/* MOPGActionSpecialProperty::OnEvent
+ * Called when an event is raised for the control
+ *******************************************************************/
 bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
+	// '...' button clicked
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		int special = -1;
@@ -370,6 +499,16 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 }
 
 
+/*******************************************************************
+ * MOPGTHINGTYPEPROPERTY CLASS FUNCTIONS
+ *******************************************************************
+ * Behaves similarly to MOPGActionSpecialProperty, except for
+ * thing types
+ */
+
+/* MOPGThingTypeProperty::MOPGThingTypeProperty
+ * MOPGThingTypeProperty class constructor
+ *******************************************************************/
 MOPGThingTypeProperty::MOPGThingTypeProperty(const wxString& label, const wxString& name)
 	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_TTYPE)
 {
@@ -385,6 +524,10 @@ MOPGThingTypeProperty::MOPGThingTypeProperty(const wxString& label, const wxStri
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
+/* MOPGThingTypeProperty::openObjects
+ * Reads the value of this thing type property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Reset arg property names
@@ -439,12 +582,19 @@ void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects)
 	}
 }
 
+/* MOPGThingTypeProperty::addArgProperty
+ * Adds a linked arg property [prop] at [index]
+ *******************************************************************/
 void MOPGThingTypeProperty::addArgProperty(wxPGProperty* prop, int index)
 {
 	if (index < 5)
 		args[index] = prop;
 }
 
+/* MOPGThingTypeProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGThingTypeProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -461,6 +611,10 @@ void MOPGThingTypeProperty::applyValue()
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
+/* MOPGThingTypeProperty::ValueToString
+ * Returns the thing type value as a string (contains the thing
+ * type name)
+ *******************************************************************/
 wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) const
 {
 	// Get value as integer
@@ -470,6 +624,9 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 	return S_FMT("%d: %s", type, tt->getName());
 }
 
+/* MOPGThingTypeProperty::OnEvent
+ * Called when an event is raised for the control
+ *******************************************************************/
 bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
 	if (e.GetEventType() == wxEVT_BUTTON)
@@ -493,6 +650,13 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 }
 
 
+/*******************************************************************
+ * MOPGLINEFLAGPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGLineFlagProperty::MOPGLineFlagProperty
+ * MOPGLineFlagProperty class constructor
+ *******************************************************************/
 MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString& name, int index)
 	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_LFLAG)
 {
@@ -501,6 +665,10 @@ MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString
 	propname = name;
 }
 
+/* MOPGLineFlagProperty::openObjects
+ * Reads the value of this line flag property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -534,6 +702,10 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGLineFlagProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGLineFlagProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -551,6 +723,13 @@ void MOPGLineFlagProperty::applyValue()
 }
 
 
+/*******************************************************************
+ * MOPGTHINGFLAGPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGThingFlagProperty::MOPGThingFlagProperty
+ * MOPGThingFlagProperty class constructor
+ *******************************************************************/
 MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxString& name, int index)
 	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_LFLAG)
 {
@@ -559,6 +738,10 @@ MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxStri
 	propname = name;
 }
 
+/* MOPGThingFlagProperty::openObjects
+ * Reads the value of this thing flag property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -592,6 +775,10 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGThingFlagProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGThingFlagProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -609,6 +796,13 @@ void MOPGThingFlagProperty::applyValue()
 }
 
 
+/*******************************************************************
+ * MOPGANGLEPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGAngleProperty::MOPGAngleProperty
+ * MOPGAngleProperty class constructor
+ *******************************************************************/
 MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name)
 	: wxEditEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_ANGLE)
 {
@@ -639,6 +833,10 @@ MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name
 	SetChoices(wxPGChoices(labels, values));
 }
 
+/* MOPGAngleProperty::openObjects
+ * Reads the value of this angle property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -672,6 +870,10 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGAngleProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGAngleProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -688,6 +890,9 @@ void MOPGAngleProperty::applyValue()
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
+/* MOPGAngleProperty::ValueToString
+ * Returns the angle value as a string
+ *******************************************************************/
 wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
 {
 	int angle = value.GetInteger();
@@ -707,13 +912,23 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
 }
 
 
+/*******************************************************************
+ * MOPGCOLOURPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
 
+/* MOPGColourProperty::MOPGColourProperty
+ * MOPGColourProperty class constructor
+ *******************************************************************/
 MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name)
 	: wxColourProperty(label, name), MOPGProperty(MOPGProperty::TYPE_COLOUR)
 {
 	propname = name;
 }
 
+/* MOPGColourProperty::openObjects
+ * Reads the value of this colour property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -747,6 +962,10 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGColourProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGColourProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -767,6 +986,13 @@ void MOPGColourProperty::applyValue()
 }
 
 
+/*******************************************************************
+ * MOPGTEXTUREPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGTextureProperty::MOPGTextureProperty
+ * MOPGTextureProperty class constructor
+ *******************************************************************/
 MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, const wxString& name)
 	: wxStringProperty(label, name), MOPGProperty(MOPGProperty::TYPE_TEXTURE)
 {
@@ -778,6 +1004,10 @@ MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, con
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
+/* MOPGTextureProperty::openObjects
+ * Reads the value of this texture property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -811,6 +1041,10 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGTextureProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGTextureProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -827,8 +1061,12 @@ void MOPGTextureProperty::applyValue()
 		objects[a]->setStringProperty(GetName(), m_value.GetString());
 }
 
+/* MOPGTextureProperty::OnEvent
+ * Called when an event is raised for the control
+ *******************************************************************/
 bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
+	// '...' button clicked
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		// Get current texture (if any)
@@ -849,6 +1087,13 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 }
 
 
+/*******************************************************************
+ * MOPGSPACTRIGGERPROPERTY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MOPGSPACTriggerProperty::MOPGSPACTriggerProperty
+ * MOPGSPACTriggerProperty class constructor
+ *******************************************************************/
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name)
 	: wxEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_SPAC)
 {
@@ -862,6 +1107,10 @@ MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wx
 	SetChoices(wxPGChoices(labels));
 }
 
+/* MOPGSPACTriggerProperty::openObjects
+ * Reads the value of this SPAC trigger property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -896,6 +1145,10 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGSPACTriggerProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGSPACTriggerProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -914,7 +1167,16 @@ void MOPGSPACTriggerProperty::applyValue()
 }
 
 
+/*******************************************************************
+ * MOPGTAGPROPERTY CLASS FUNCTIONS
+ *******************************************************************
+ * Property grid cell to handle tag properties, the '...' button will
+ * set it to the next free tag or id depending on the object type
+ */
 
+/* MOPGTagProperty::MOPGTagProperty
+ * MOPGTagProperty class constructor
+ *******************************************************************/
 MOPGTagProperty::MOPGTagProperty(const wxString& label, const wxString& name)
 	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ID)
 {
@@ -924,6 +1186,10 @@ MOPGTagProperty::MOPGTagProperty(const wxString& label, const wxString& name)
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
+/* MOPGTagProperty::openObjects
+ * Reads the value of this tag/id property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGTagProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -957,6 +1223,10 @@ void MOPGTagProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGTagProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGTagProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -973,6 +1243,9 @@ void MOPGTagProperty::applyValue()
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
+/* MOPGTagProperty::OnEvent
+ * Called when an event is raised for the control
+ *******************************************************************/
 bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
 	if (e.GetEventType() == wxEVT_BUTTON)
@@ -1000,7 +1273,13 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 }
 
 
+/*******************************************************************
+ * MOPGSECTORSPECIAL CLASS FUNCTIONS
+ *******************************************************************/
 
+/* MOPGSectorSpecialProperty::MOPGSectorSpecialProperty
+ * MOPGSectorSpecialProperty class constructor
+ *******************************************************************/
 MOPGSectorSpecialProperty::MOPGSectorSpecialProperty(const wxString& label, const wxString& name)
 	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_SSPECIAL)
 {
@@ -1010,6 +1289,10 @@ MOPGSectorSpecialProperty::MOPGSectorSpecialProperty(const wxString& label, cons
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
+/* MOPGSectorSpecialProperty::openObjects
+ * Reads the value of this sector special property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
 void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 {
 	// Set unspecified if no objects given
@@ -1043,6 +1326,10 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGSectorSpecialProperty::applyValue
+ * Applies the current property value to all objects currently open
+ * in the parent MapObjectPropsPanel, if a value is specified
+ *******************************************************************/
 void MOPGSectorSpecialProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
@@ -1059,8 +1346,12 @@ void MOPGSectorSpecialProperty::applyValue()
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
+/* MOPGSectorSpecialProperty::OnEvent
+ * Called when an event is raised for the control
+ *******************************************************************/
 bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e)
 {
+	// '...' button clicked
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		SectorSpecialDialog dlg(theMapEditor);

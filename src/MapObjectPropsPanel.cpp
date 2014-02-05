@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapObjectPropsPanel.cpp
+ * Description: MapObjectPropsPanel class, a wx panel containing a
+ *              property grid for viewing/editing map object
+ *              properties
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapObjectPropsPanel.h"
@@ -11,9 +41,20 @@
 #include <wx/propgrid/advprops.h>
 #include <wx/gbsizer.h>
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Bool, mobj_props_show_all, false, CVAR_SAVE)
 
 
+/*******************************************************************
+ * MAPOBJECTPROPSPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapObjectPropsPanel::MapObjectPropsPanel
+ * MapObjectPropsPanel class constructor
+ *******************************************************************/
 MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Init variables
@@ -81,10 +122,17 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	Layout();
 }
 
+/* MapObjectPropsPanel::~MapObjectPropsPanel
+ * MapObjectPropsPanel class destructor
+ *******************************************************************/
 MapObjectPropsPanel::~MapObjectPropsPanel()
 {
 }
 
+/* MapObjectPropsPanel::addBoolProperty
+ * Adds a boolean property cell to the grid under [group] for the
+ * object property [propname]
+ *******************************************************************/
 MOPGProperty* MapObjectPropsPanel::addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop)
 {
 	// Create property
@@ -104,6 +152,10 @@ MOPGProperty* MapObjectPropsPanel::addBoolProperty(wxPGProperty* group, string l
 	return prop;
 }
 
+/* MapObjectPropsPanel::addIntProperty
+ * Adds an integer property cell to the grid under [group] for the
+ * object property [propname]
+ *******************************************************************/
 MOPGProperty* MapObjectPropsPanel::addIntProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop)
 {
 	// Create property
@@ -123,6 +175,10 @@ MOPGProperty* MapObjectPropsPanel::addIntProperty(wxPGProperty* group, string la
 	return prop;
 }
 
+/* MapObjectPropsPanel::addFloatProperty
+ * Adds a float property cell to the grid under [group] for the
+ * object property [propname]
+ *******************************************************************/
 MOPGProperty* MapObjectPropsPanel::addFloatProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop)
 {
 	// Create property
@@ -142,6 +198,10 @@ MOPGProperty* MapObjectPropsPanel::addFloatProperty(wxPGProperty* group, string 
 	return prop;
 }
 
+/* MapObjectPropsPanel::addStringProperty
+ * Adds a string property cell to the grid under [group] for the
+ * object property [propname]
+ *******************************************************************/
 MOPGProperty* MapObjectPropsPanel::addStringProperty(wxPGProperty* group, string label, string propname, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop)
 {
 	// Create property
@@ -161,6 +221,10 @@ MOPGProperty* MapObjectPropsPanel::addStringProperty(wxPGProperty* group, string
 	return prop;
 }
 
+/* MapObjectPropsPanel::addLineFlagProperty
+ * Adds a line flag property cell to the grid under [group] for the
+ * object property [propname]
+ *******************************************************************/
 MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop)
 {
 	// Create property
@@ -180,6 +244,10 @@ MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(wxPGProperty* group, stri
 	return prop;
 }
 
+/* MapObjectPropsPanel::addThingFlagProperty
+ * Adds a thing flag property cell to the grid under [group] for the
+ * object property [propname]
+ *******************************************************************/
 MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(wxPGProperty* group, string label, string propname, int index, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop)
 {
 	// Create property
@@ -199,6 +267,10 @@ MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(wxPGProperty* group, str
 	return prop;
 }
 
+/* MapObjectPropsPanel::addTextureProperty
+ * Adds a texture property cell to the grid under [group] for the
+ * object property [propname]
+ *******************************************************************/
 MOPGProperty* MapObjectPropsPanel::addTextureProperty(wxPGProperty* group, string label, string propname, int textype, bool readonly, wxPropertyGrid* grid, UDMFProperty* udmf_prop)
 {
 	// Create property
@@ -218,6 +290,9 @@ MOPGProperty* MapObjectPropsPanel::addTextureProperty(wxPGProperty* group, strin
 	return prop;
 }
 
+/* MapObjectPropsPanel::setBoolProperty
+ * Sets the boolean property cell [prop]'s value to [value]
+ *******************************************************************/
 bool MapObjectPropsPanel::setBoolProperty(wxPGProperty* prop, bool value, bool force_set)
 {
 	// Set if forcing
@@ -241,6 +316,10 @@ bool MapObjectPropsPanel::setBoolProperty(wxPGProperty* prop, bool value, bool f
 	return false;
 }
 
+/* MapObjectPropsPanel::addUDMFProperty
+ * Adds the UDMF property [prop] to the grid, under [basegroup]. Will
+ * add the correct property cell type for the UDMF property
+ *******************************************************************/
 void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, string basegroup, wxPropertyGrid* grid)
 {
 	// Check property was given
@@ -339,6 +418,9 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 	}*/
 }
 
+/* MapObjectPropsPanel::setupType
+ * Adds all relevant properties to the grid for [objtype]
+ *******************************************************************/
 void MapObjectPropsPanel::setupType(int objtype)
 {
 	// Nothing to do if it was already this type
@@ -589,6 +671,9 @@ void MapObjectPropsPanel::setupType(int objtype)
 	last_type = objtype;
 }
 
+/* MapObjectPropsPanel::setupTypeUDMF
+ * Adds all relevant UDMF properties to the grid for [objtype]
+ *******************************************************************/
 void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 {
 	// Nothing to do if it was already this type
@@ -678,6 +763,9 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 	last_type = objtype;
 }
 
+/* MapObjectPropsPanel::openObject
+ * Populates the grid with properties for [object]
+ *******************************************************************/
 void MapObjectPropsPanel::openObject(MapObject* object)
 {
 	// Do open multiple objects
@@ -686,6 +774,9 @@ void MapObjectPropsPanel::openObject(MapObject* object)
 	openObjects(list);
 }
 
+/* MapObjectPropsPanel::openObject
+ * Populates the grid with properties for all MapObjects in [objects]
+ *******************************************************************/
 void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 {
 	// Check any objects were given
@@ -797,11 +888,17 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	pg_props_side2->Refresh();
 }
 
+/* MapObjectPropsPanel::showApplyButton
+ * Shows/hides the 'Apply' button
+ *******************************************************************/
 void MapObjectPropsPanel::showApplyButton(bool show)
 {
 	btn_apply->Show(show);
 }
 
+/* MapObjectPropsPanel::applyChanges
+ * Applies any property changes to the opened object(s)
+ *******************************************************************/
 void MapObjectPropsPanel::applyChanges()
 {
 	// Go through all current properties and apply the current value
@@ -810,6 +907,13 @@ void MapObjectPropsPanel::applyChanges()
 }
 
 
+/*******************************************************************
+ * MAPOBJECTPROPSPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* MapObjectPropsPanel::onBtnApply
+ * Called when the apply button is clicked
+ *******************************************************************/
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
 	// Apply changes
@@ -819,6 +923,9 @@ void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 	theMapEditor->forceRefresh();
 }
 
+/* MapObjectPropsPanel::onBtnReset
+ * Called when the reset button is clicked
+ *******************************************************************/
 void MapObjectPropsPanel::onBtnReset(wxCommandEvent& e)
 {
 	// Go through all current properties and reset the value
@@ -826,6 +933,9 @@ void MapObjectPropsPanel::onBtnReset(wxCommandEvent& e)
 		properties[a]->resetValue();
 }
 
+/* MapObjectPropsPanel::onShowAllToggled
+ * Called when the 'show all' checkbox is toggled
+ *******************************************************************/
 void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 {
 	mobj_props_show_all = cb_show_all->GetValue();
@@ -834,6 +944,9 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 	openObjects(objects);
 }
 
+/* MapObjectPropsPanel::onBtnAdd
+ * Called when the add property button is clicked
+ *******************************************************************/
 void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 {
 	wxDialog dlg(this, -1, "Add UDMF Property");

@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    SectorTextureOverlay.cpp
+ * Description: SectorTextureOverlay class - A full screen map editor
+ *              overlay that shows (a) sector's textures and allows
+ *              the user to click a texture to browse for it
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapSector.h"
@@ -8,6 +38,14 @@
 #include "MapEditorWindow.h"
 #include "MapTextureBrowser.h"
 
+
+/*******************************************************************
+ * SECTORTEXTUREOVERLAY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SectorTextureOverlay::SectorTextureOverlay
+ * SectorTextureOverlay class constructor
+ *******************************************************************/
 SectorTextureOverlay::SectorTextureOverlay()
 {
 	// Init variables
@@ -21,10 +59,16 @@ SectorTextureOverlay::SectorTextureOverlay()
 	anim_ceil = 0;
 }
 
+/* SectorTextureOverlay::~SectorTextureOverlay
+ * SectorTextureOverlay class destructor
+ *******************************************************************/
 SectorTextureOverlay::~SectorTextureOverlay()
 {
 }
 
+/* SectorTextureOverlay::update
+ * Updates the overlay (animations, etc.)
+ *******************************************************************/
 void SectorTextureOverlay::update(long frametime)
 {
 	// Get frame time multiplier
@@ -39,6 +83,9 @@ void SectorTextureOverlay::update(long frametime)
 		anim_ceil = 0.0f;
 }
 
+/* SectorTextureOverlay::draw
+ * Draws the overlay to [width],[height]
+ *******************************************************************/
 void SectorTextureOverlay::draw(int width, int height, float fade)
 {
 	// Get colours
@@ -98,6 +145,9 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 	Drawing::drawText(ctex, middlex + border + tex_size*0.5, middley + tex_size*0.5 + 2, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
 }
 
+/* SectorTextureOverlay::drawTexture
+ * Draws the texture box for [textures]
+ *******************************************************************/
 void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vector<string>& textures, bool hover)
 {
 	// Get colours
@@ -140,6 +190,9 @@ void SectorTextureOverlay::drawTexture(float alpha, int x, int y, int size, vect
 	Drawing::drawRect(x, y, x+size, y+size);
 }
 
+/* SectorTextureOverlay::openSectors
+ * 'Opens' all sectors in [list], adds both textures from each
+ *******************************************************************/
 void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
 {
 	// Clear current sectors list (if any)
@@ -185,6 +238,10 @@ void SectorTextureOverlay::openSectors(vector<MapSector*>& list)
 	}
 }
 
+/* SectorTextureOverlay::close
+ * Called when the user closes the overlay. Applies changes if
+ * [cancel] is false
+ *******************************************************************/
 void SectorTextureOverlay::close(bool cancel)
 {
 	// Deactivate
@@ -205,6 +262,9 @@ void SectorTextureOverlay::close(bool cancel)
 	}
 }
 
+/* SectorTextureOverlay::mouseMotion
+ * Called when the mouse cursor is moved
+ *******************************************************************/
 void SectorTextureOverlay::mouseMotion(int x, int y)
 {
 	// Check if the mouse is over the floor texture
@@ -226,6 +286,9 @@ void SectorTextureOverlay::mouseMotion(int x, int y)
 		hover_ceil = false;
 }
 
+/* SectorTextureOverlay::mouseLeftClick
+ * Called when the left mouse button is clicked
+ *******************************************************************/
 void SectorTextureOverlay::mouseLeftClick()
 {
 	// Do nothing if no sectors open
@@ -241,10 +304,16 @@ void SectorTextureOverlay::mouseLeftClick()
 		browseCeilingTexture();
 }
 
+/* SectorTextureOverlay::mouseRightClick
+ * Called when the right mouse button is clicked
+ *******************************************************************/
 void SectorTextureOverlay::mouseRightClick()
 {
 }
 
+/* SectorTextureOverlay::keyDown
+ * Called when a key is pressed
+ *******************************************************************/
 void SectorTextureOverlay::keyDown(string key)
 {
 	// Browse floor texture
@@ -256,6 +325,9 @@ void SectorTextureOverlay::keyDown(string key)
 		browseCeilingTexture();
 }
 
+/* SectorTextureOverlay::browseFloorTexture
+ * Opens the texture browser for the floor texture
+ *******************************************************************/
 void SectorTextureOverlay::browseFloorTexture()
 {
 	// Get initial texture
@@ -277,6 +349,9 @@ void SectorTextureOverlay::browseFloorTexture()
 	}
 }
 
+/* SectorTextureOverlay::browseCeilingTexture
+ * Opens the texture browser for the ceiling texture
+ *******************************************************************/
 void SectorTextureOverlay::browseCeilingTexture()
 {
 	// Get initial texture

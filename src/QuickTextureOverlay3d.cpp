@@ -1,4 +1,36 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    QuickTextureOverlay.cpp
+ * Description: QuickTextureOverlay class - A full screen map editor
+ *              overlay that shows a scrollable list of textures
+ *              in 3d mode. The currently selected texture is applied
+ *              in real-time to the currently selected walls/flats,
+ *              giving a quick 'preview' of how it would look
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapEditorWindow.h"
@@ -10,6 +42,14 @@
 #include "GameConfiguration.h"
 #include "OpenGL.h"
 
+
+/*******************************************************************
+ * QUICKTEXTUREOVERLAY3D CLASS FUNCTIONS
+ *******************************************************************/
+
+/* QuickTextureOverlay3d::QuickTextureOverlay3d
+ * QuickTextureOverlay3d class constructor
+ *******************************************************************/
 QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
 {
 	// Init variables
@@ -79,10 +119,16 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
 	}
 }
 
+/* QuickTextureOverlay3d::~QuickTextureOverlay3d
+ * QuickTextureOverlay3d class destructor
+ *******************************************************************/
 QuickTextureOverlay3d::~QuickTextureOverlay3d()
 {
 }
 
+/* QuickTextureOverlay3d::setTexture
+ * Sets the currentl texture to [name], if it exists
+ *******************************************************************/
 void QuickTextureOverlay3d::setTexture(string name)
 {
 	for (unsigned a = 0; a < textures.size(); a++)
@@ -96,6 +142,9 @@ void QuickTextureOverlay3d::setTexture(string name)
 	}
 }
 
+/* QuickTextureOverlay3d::applyTexture
+ * Applies the current texture to all selected walls/flats
+ *******************************************************************/
 void QuickTextureOverlay3d::applyTexture()
 {
 	// Check editor is associated
@@ -150,6 +199,9 @@ void QuickTextureOverlay3d::applyTexture()
 	}
 }
 
+/* QuickTextureOverlay3d::update
+ * Updates the overlay (animations, etc.)
+ *******************************************************************/
 void QuickTextureOverlay3d::update(long frametime)
 {
 	double target = current_index;
@@ -162,6 +214,9 @@ void QuickTextureOverlay3d::update(long frametime)
 		anim_offset = current_index;
 }
 
+/* QuickTextureOverlay3d::draw
+ * Draws the overlay to [width],[height]
+ *******************************************************************/
 void QuickTextureOverlay3d::draw(int width, int height, float fade)
 {
 	// Don't draw if invisible
@@ -198,6 +253,9 @@ void QuickTextureOverlay3d::draw(int width, int height, float fade)
 	}
 }
 
+/* QuickTextureOverlay3d::drawTexture
+ * Draws the texture in the list at [index]
+ *******************************************************************/
 void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom, double size, float fade)
 {
 	// Get texture if needed
@@ -228,6 +286,10 @@ void QuickTextureOverlay3d::drawTexture(unsigned index, double x, double bottom,
 	glEnd();
 }
 
+/* QuickTextureOverlay3d::determineSize
+ * Calculates the size to draw a texture of [width] at position [x]
+ * (towards the middle of the screen is larger)
+ *******************************************************************/
 double QuickTextureOverlay3d::determineSize(double x, int width)
 {
 	double mid = (double)width * 0.5;
@@ -239,6 +301,10 @@ double QuickTextureOverlay3d::determineSize(double x, int width)
 	return 1 + (0.5 * mult * mult);
 }
 
+/* QuickTextureOverlay3d::close
+ * Called when the user closes the overlay. Applies changes if
+ * [cancel] is false
+ *******************************************************************/
 void QuickTextureOverlay3d::close(bool cancel)
 {
 	if (editor)
@@ -252,18 +318,30 @@ void QuickTextureOverlay3d::close(bool cancel)
 	active = false;
 }
 
+/* QuickTextureOverlay3d::mouseMotion
+ * Called when the mouse cursor is moved
+ *******************************************************************/
 void QuickTextureOverlay3d::mouseMotion(int x, int y)
 {
 }
 
+/* QuickTextureOverlay3d::mouseLeftClick
+ * Called when the left mouse button is clicked
+ *******************************************************************/
 void QuickTextureOverlay3d::mouseLeftClick()
 {
 }
 
+/* QuickTextureOverlay3d::mouseRightClick
+ * Called when the right mouse button is clicked
+ *******************************************************************/
 void QuickTextureOverlay3d::mouseRightClick()
 {
 }
 
+/* QuickTextureOverlay3d::doSearch
+ * Finds and selects the first texture matching the current search
+ *******************************************************************/
 void QuickTextureOverlay3d::doSearch()
 {
 	if (!search.empty())
@@ -280,6 +358,9 @@ void QuickTextureOverlay3d::doSearch()
 	}
 }
 
+/* QuickTextureOverlay3d::keyDown
+ * Called when a key is pressed
+ *******************************************************************/
 void QuickTextureOverlay3d::keyDown(string key)
 {
 	// Up texture
@@ -306,6 +387,9 @@ void QuickTextureOverlay3d::keyDown(string key)
 	}
 }
 
+/* QuickTextureOverlay3d::ok
+ * Returns true if [sel] is valid for quick texture selection
+ *******************************************************************/
 bool QuickTextureOverlay3d::ok(vector<selection_3d_t> &sel)
 {
 	// Cancel if no selection

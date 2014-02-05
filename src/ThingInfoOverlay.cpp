@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ThingInfoOverlay.cpp
+ * Description: ThingInfoOverlay class - a map editor overlay that
+ *              displays information about the currently highlighted
+ *              thing in things mode
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapThing.h"
@@ -9,16 +39,34 @@
 #include "MapEditorWindow.h"
 #include "OpenGL.h"
 
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Bool, use_zeth_icons)
 
+
+/*******************************************************************
+ * THINGINFOOVERLAY CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ThingInfoOverlay::ThingInfoOverlay
+ * ThingInfoOverlay class constructor
+ *******************************************************************/
 ThingInfoOverlay::ThingInfoOverlay()
 {
 }
 
+/* ThingInfoOverlay::~ThingInfoOverlay
+ * ThingInfoOverlay class destructor
+ *******************************************************************/
 ThingInfoOverlay::~ThingInfoOverlay()
 {
 }
 
+/* ThingInfoOverlay::update
+ * Updates the overlay with info from [thing]
+ *******************************************************************/
 void ThingInfoOverlay::update(MapThing* thing)
 {
 	if (!thing)
@@ -102,6 +150,9 @@ void ThingInfoOverlay::update(MapThing* thing)
 	zeth = tt->getZeth();
 }
 
+/* ThingInfoOverlay::draw
+ * Draws the overlay at [bottom] from 0 to [right]
+ *******************************************************************/
 void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 {
 	// Don't bother if invisible

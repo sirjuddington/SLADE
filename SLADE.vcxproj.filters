@@ -154,6 +154,9 @@
     <Filter Include="Dialogs\SetupWizard">
       <UniqueIdentifier>{90dc0f0c-92e7-414e-a30b-76c8c288e615}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Map Editor\UI Elements\Overlays\Info">
+      <UniqueIdentifier>{66f863ab-a91f-482f-bf99-9c3203845053}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GfxConvDialog.cpp">
@@ -720,15 +723,6 @@
     <ClCompile Include="src\MCAnimations.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
-    <ClCompile Include="src\VertexInfoOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LineInfoOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SectorInfoOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClCompile>
     <ClCompile Include="src\MapTextureManager.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
@@ -746,9 +740,6 @@
     </ClCompile>
     <ClCompile Include="src\ThingType.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ThingInfoOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClCompile>
     <ClCompile Include="src\glew\glew.c">
       <Filter>External\GLEW</Filter>
@@ -839,9 +830,6 @@
     </ClCompile>
     <ClCompile Include="src\InputPrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
-    <ClCompile Include="src\InfoOverlay3d.cpp">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClCompile>
     <ClCompile Include="src\ScriptEditorPanel.cpp">
       <Filter>Map Editor\Script Editor</Filter>
@@ -1142,6 +1130,21 @@
     </ClCompile>
     <ClCompile Include="src\DirArchive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InfoOverlay3d.cpp">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LineInfoOverlay.cpp">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SectorInfoOverlay.cpp">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThingInfoOverlay.cpp">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VertexInfoOverlay.cpp">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1737,15 +1740,6 @@
     <ClInclude Include="src\MCAnimations.h">
       <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
-    <ClInclude Include="src\VertexInfoOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LineInfoOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SectorInfoOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClInclude>
     <ClInclude Include="src\MapTextureManager.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
@@ -1766,9 +1760,6 @@
     </ClInclude>
     <ClInclude Include="src\ThingType.h">
       <Filter>Map Editor\GameConfiguration</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ThingInfoOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClInclude>
     <ClInclude Include="src\glew\glew.h">
       <Filter>External\GLEW</Filter>
@@ -1871,9 +1862,6 @@
     </ClInclude>
     <ClInclude Include="src\PrefsPanelBase.h">
       <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
-    <ClInclude Include="src\InfoOverlay3d.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClInclude>
     <ClInclude Include="src\ScriptEditorPanel.h">
       <Filter>Map Editor\Script Editor</Filter>
@@ -2054,6 +2042,21 @@
     </ClInclude>
     <ClInclude Include="src\DirArchive.h">
       <Filter>Resources\Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InfoOverlay3d.h">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LineInfoOverlay.h">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SectorInfoOverlay.h">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThingInfoOverlay.h">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexInfoOverlay.h">
+      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
