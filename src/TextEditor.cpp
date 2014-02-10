@@ -117,8 +117,8 @@ FindReplaceDialog::FindReplaceDialog(wxWindow* parent) : wxMiniFrame(parent, -1,
 
 
 	// Bind events
+	//Bind(wxEVT_CHAR_HOOK, &FindReplaceDialog::onKeyDown, this);
 	Bind(wxEVT_CLOSE_WINDOW, &FindReplaceDialog::onClose, this);
-	Bind(wxEVT_KEY_DOWN, &FindReplaceDialog::onKeyDown, this);
 
 
 	// Init layout
@@ -207,8 +207,9 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	dlg_fr->getBtnFindNext()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
 	dlg_fr->getBtnReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
 	dlg_fr->getBtnReplaceAll()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplaceAll, this);
-	dlg_fr->getTextFind()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
-	dlg_fr->getTextReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
+	//dlg_fr->getTextFind()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
+	//dlg_fr->getTextReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
+	dlg_fr->Bind(wxEVT_CHAR_HOOK, &TextEditor::onFRDKeyDown, this);
 }
 
 /* TextEditor::~TextEditor
@@ -674,6 +675,9 @@ void TextEditor::updateCalltip()
 	}
 }
 
+/* TextEditor::openJumpToDialog
+ * Initialises and opens the 'Jump To' dialog
+ *******************************************************************/
 void TextEditor::openJumpToDialog()
 {
 	// Can't do this without a language definition or defined blocks
@@ -1101,4 +1105,57 @@ void TextEditor::onFRDBtnReplaceAll(wxCommandEvent& e)
 	// Do replace all
 	int replaced = replaceAll(dlg_fr->getFindString(), dlg_fr->getReplaceString());
 	wxMessageBox(S_FMT("Replaced %d occurrences", replaced), "Replace All");
+}
+
+/* TextEditor::onFRDKeyDown
+ * Called when a key is pressed on the Find+Replace frame
+ *******************************************************************/
+void TextEditor::onFRDKeyDown(wxKeyEvent& e)
+{
+	// Esc (close)
+	if (e.GetKeyCode() == WXK_ESCAPE)
+		dlg_fr->Close();
+
+	// Enter
+	else if (e.GetKeyCode() == WXK_RETURN)
+	{
+		// Find Next
+		if (dlg_fr->getTextFind()->HasFocus())
+		{
+			// Check find string
+			string find = dlg_fr->getFindString();
+			if (find.IsEmpty())
+				return;
+
+			// Set search options
+			int flags = 0;
+			if (dlg_fr->matchCase()) flags |= wxSTC_FIND_MATCHCASE;
+			if (dlg_fr->matchWord()) flags |= wxSTC_FIND_WHOLEWORD;
+			SetSearchFlags(flags);
+
+			// Do find
+			if (!findNext(find))
+				wxLogMessage("No text matching \"%s\" found.", find);
+		}
+
+		// Replace
+		else if (dlg_fr->getTextReplace()->HasFocus())
+		{
+			// Set search options
+			int flags = 0;
+			if (dlg_fr->matchCase()) flags |= wxSTC_FIND_MATCHCASE;
+			if (dlg_fr->matchWord()) flags |= wxSTC_FIND_WHOLEWORD;
+			SetSearchFlags(flags);
+
+			// Do replace
+			replaceCurrent(dlg_fr->getFindString(), dlg_fr->getReplaceString());
+		}
+
+		else
+			e.Skip();
+	}
+
+	// Other
+	else
+		e.Skip();
 }
