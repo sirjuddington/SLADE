@@ -3461,6 +3461,8 @@ void MapCanvas::onKeyUp(wxKeyEvent& e)
 
 void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
+	editor->updateHilight(mouse_pos_m);
+
 	// Update mouse variables
 	mouse_downpos.set(e.GetX(), e.GetY());
 	mouse_downpos_m.set(translateX(e.GetX()), translateY(e.GetY()));
@@ -3921,8 +3923,11 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 	if (frametime > fr_idle)
 	{
 		last_time = (sfclock.getElapsedTime().asMilliseconds());
-		update(frametime);
-		Refresh();
+		if (theMapEditor->IsActive())
+		{
+			update(frametime);
+			Refresh();
+		}
 	}
 
 	timer.Start(-1, true);
@@ -3934,11 +3939,7 @@ void MapCanvas::onFocus(wxFocusEvent& e)
 	{
 		if (editor->editMode() == MapEditor::MODE_3D)
 			lockMouse(true);
-		timer.Start(-1, true);
 	}
 	else if (e.GetEventType() == wxEVT_KILL_FOCUS)
-	{
-		timer.Stop();
 		lockMouse(false);
-	}
 }
