@@ -410,6 +410,7 @@ void MainWindow::createStartPage()
 	// Can't do anything without html entry
 	if (!entry_html)
 	{
+		LOG_MESSAGE(1, "No start page resource found");
 		html_startpage->SetPage("<html><head><title>SLADE</title></head><body><center><h1>Something is wrong with slade.pk3 :(</h1><center></body></html>", wxEmptyString);
 		return;
 	}
@@ -482,7 +483,10 @@ void MainWindow::createStartPage()
 	// Load page
 	html_startpage->ClearHistory();
 	html_startpage->LoadURL(html_file);
+
+#ifdef __WXMSW__
 	html_startpage->Reload();
+#endif
 
 	// Clean up
 	//wxRemoveFile(html_file);
@@ -723,6 +727,10 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 {
 	wxWebViewEvent& ev = (wxWebViewEvent&)e;
 	string href = ev.GetURL();
+
+#ifdef __WXGTK__
+	href.Replace("file://", "");
+#endif
 
 	if (href.EndsWith("/"))
 		href.RemoveLast(1);
