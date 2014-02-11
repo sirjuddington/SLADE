@@ -1,4 +1,32 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapSector.cpp
+ * Description: MapSector class, represents a sector object in a map
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "MapSector.h"
 #include "MapLine.h"
@@ -9,6 +37,14 @@
 #include "MathStuff.h"
 #include <wx/colour.h>
 
+
+/*******************************************************************
+ * MAPSECTOR CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapSector::MapSector
+ * MapSector class constructor
+ *******************************************************************/
 MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 {
 	// Init variables
@@ -18,6 +54,9 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 	geometry_updated = theApp->runTimer();
 }
 
+/* MapSector::MapSector
+ * MapSector class constructor
+ *******************************************************************/
 MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 {
 	// Init variables
@@ -29,10 +68,16 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	geometry_updated = theApp->runTimer();
 }
 
+/* MapSector::~MapSector
+ * MapSector class destructor
+ *******************************************************************/
 MapSector::~MapSector()
 {
 }
 
+/* MapSector::copy
+ * Copies another map object [s]
+ *******************************************************************/
 void MapSector::copy(MapObject* s)
 {
 	// Don't copy a non-sector
@@ -67,6 +112,9 @@ void MapSector::copy(MapObject* s)
 	MapObject::copy(s);
 }
 
+/* MapSector::stringProperty
+ * Returns the value of the string property matching [key]
+ *******************************************************************/
 string MapSector::stringProperty(string key)
 {
 	if (key == "texturefloor")
@@ -77,6 +125,9 @@ string MapSector::stringProperty(string key)
 		return MapObject::stringProperty(key);
 }
 
+/* MapSector::intProperty
+ * Returns the value of the integer property matching [key]
+ *******************************************************************/
 int MapSector::intProperty(string key)
 {
 	if (key == "heightfloor")
@@ -93,6 +144,9 @@ int MapSector::intProperty(string key)
 		return MapObject::intProperty(key);
 }
 
+/* MapSector::setStringProperty
+ * Sets the string value of the property [key] to [value]
+ *******************************************************************/
 void MapSector::setStringProperty(string key, string value)
 {
 	// Update modified time
@@ -114,6 +168,9 @@ void MapSector::setStringProperty(string key, string value)
 		return MapObject::setStringProperty(key, value);
 }
 
+/* MapSector::setFloatProperty
+ * Sets the float value of the property [key] to [value]
+ *******************************************************************/
 void MapSector::setFloatProperty(string key, double value)
 {
 	// Check if flat offset/scale/rotation is changing (if UDMF + ZDoom)
@@ -130,6 +187,9 @@ void MapSector::setFloatProperty(string key, double value)
 	MapObject::setFloatProperty(key, value);
 }
 
+/* MapSector::setIntProperty
+ * Sets the integer value of the property [key] to [value]
+ *******************************************************************/
 void MapSector::setIntProperty(string key, int value)
 {
 	// Update modified time
@@ -149,6 +209,11 @@ void MapSector::setIntProperty(string key, int value)
 		MapObject::setIntProperty(key, value);
 }
 
+/* MapLine::getPoint
+ * Returns the object point [point]: MOBJ_POINT_MID = the absolute
+ * mid point of the sector, MOBJ_POINT_WITHIN/MOBJ_POINT_TEXT =
+ * a calculated point that is within the actual sector
+ *******************************************************************/
 fpoint2_t MapSector::getPoint(uint8_t point)
 {
 	if (point == MOBJ_POINT_MID)
@@ -165,6 +230,9 @@ fpoint2_t MapSector::getPoint(uint8_t point)
 	}
 }
 
+/* MapSector::updateBBox
+ * Calculates the sector's bounding box
+ *******************************************************************/
 void MapSector::updateBBox()
 {
 	// Reset bounding box
@@ -182,6 +250,9 @@ void MapSector::updateBBox()
 	geometry_updated = theApp->runTimer();
 }
 
+/* MapSector::boundingBox
+ * Returns the sector bounding box
+ *******************************************************************/
 bbox_t MapSector::boundingBox()
 {
 	// Update bbox if needed
@@ -191,6 +262,9 @@ bbox_t MapSector::boundingBox()
 	return bbox;
 }
 
+/* MapSector::getPolygon
+ * Returns the sector polygon, updating it if necessary
+ *******************************************************************/
 Polygon2D* MapSector::getPolygon()
 {
 	if (poly_needsupdate)
@@ -202,6 +276,9 @@ Polygon2D* MapSector::getPolygon()
 	return &polygon;
 }
 
+/* MapSector::isWithin
+ * Returns true if the point [x, y] is inside the sector
+ *******************************************************************/
 bool MapSector::isWithin(double x, double y)
 {
 	// Check with bbox first
@@ -246,6 +323,10 @@ bool MapSector::isWithin(double x, double y)
 		return false;
 }
 
+/* MapSector::distanceTo
+ * Returns the minimum distance from [x, y] to the closest line in
+ * the sector
+ *******************************************************************/
 double MapSector::distanceTo(double x, double y, double maxdist)
 {
 	// Init
@@ -284,6 +365,9 @@ double MapSector::distanceTo(double x, double y, double maxdist)
 	return min_dist;
 }
 
+/* MapSector::getLines
+ * Adds all lines that are part of the sector to [list]
+ *******************************************************************/
 bool MapSector::getLines(vector<MapLine*>& list)
 {
 	// Go through connected sides
@@ -297,6 +381,9 @@ bool MapSector::getLines(vector<MapLine*>& list)
 	return true;
 }
 
+/* MapSector::getVertices
+ * Adds all vertices that are part of the sector to [list]
+ *******************************************************************/
 bool MapSector::getVertices(vector<MapVertex*>& list)
 {
 	// Go through connected sides
@@ -315,6 +402,9 @@ bool MapSector::getVertices(vector<MapVertex*>& list)
 	return true;
 }
 
+/* MapSector::getVertices
+ * Adds all vertices that are part of the sector to [list]
+ *******************************************************************/
 bool MapSector::getVertices(vector<MapObject*>& list)
 {
 	// Go through connected sides
@@ -333,6 +423,10 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 	return true;
 }
 
+/* MapSector::getLight
+ * Returns the light level of the sector at [where] - 1 = floor,
+ * 2 = ceiling
+ *******************************************************************/
 uint8_t MapSector::getLight(int where)
 {
 	// Check for UDMF+ZDoom namespace
@@ -382,6 +476,9 @@ uint8_t MapSector::getLight(int where)
 	}
 }
 
+/* MapSector::changeLight
+ * Changes the sector light level by [amount]
+ *******************************************************************/
 void MapSector::changeLight(int amount, int where)
 {
 	// Get current light level
@@ -416,6 +513,10 @@ void MapSector::changeLight(int amount, int where)
 	}
 }
 
+/* MapSector::getLight
+ * Returns the colour of the sector at [where] - 1 = floor,
+ * 2 = ceiling. If [fullbright] is true, light level is ignored
+ *******************************************************************/
 rgba_t MapSector::getColour(int where, bool fullbright)
 {
 	// Check for UDMF+ZDoom namespace
@@ -482,6 +583,10 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	}
 }
 
+/* MapSector::connectSide
+ * Adds [side] to the list of 'connected sides' (sides that are part
+ * of this sector)
+ *******************************************************************/
 void MapSector::connectSide(MapSide* side)
 {
 	connected_sides.push_back(side);
@@ -491,6 +596,9 @@ void MapSector::connectSide(MapSide* side)
 	geometry_updated = theApp->runTimer();
 }
 
+/* MapSector::disconnectSide
+ * Removes [side] from the list of connected sides
+ *******************************************************************/
 void MapSector::disconnectSide(MapSide* side)
 {
 	for (unsigned a = 0; a < connected_sides.size(); a++)
@@ -508,6 +616,9 @@ void MapSector::disconnectSide(MapSide* side)
 	geometry_updated = theApp->runTimer();
 }
 
+/* MapSector::writeBackup
+ * Write all sector info to a mobj_backup_t struct
+ *******************************************************************/
 void MapSector::writeBackup(mobj_backup_t* backup)
 {
 	backup->props_internal["texturefloor"] = f_tex;
@@ -519,6 +630,9 @@ void MapSector::writeBackup(mobj_backup_t* backup)
 	backup->props_internal["id"] = tag;
 }
 
+/* MapSector::readBackup
+ * Reads all sector info from a mobj_backup_t struct
+ *******************************************************************/
 void MapSector::readBackup(mobj_backup_t* backup)
 {
 	// Update texture counts (decrement previous)

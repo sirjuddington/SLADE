@@ -1,11 +1,46 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapSide.cpp
+ * Description: MapSide class, represents a line side object in a map
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
 
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "MapSide.h"
 #include "MapSector.h"
 #include "SLADEMap.h"
 #include "MainApp.h"
 
+
+/*******************************************************************
+ * MAPSIDE CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapSide::MapSide
+ * MapSide class constructor
+ *******************************************************************/
 MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
 {
 	// Init variables
@@ -18,6 +53,9 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, par
 	if (sector) sector->connected_sides.push_back(this);
 }
 
+/* MapSide::MapSide
+ * MapSide class constructor
+ *******************************************************************/
 MapSide::MapSide(SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
 {
 	// Init variables
@@ -27,10 +65,16 @@ MapSide::MapSide(SLADEMap* parent) : MapObject(MOBJ_SIDE, parent)
 	this->offset_y = 0;
 }
 
+/* MapSide::~MapSide
+ * MapSide class destructor
+ *******************************************************************/
 MapSide::~MapSide()
 {
 }
 
+/* MapSide::copy
+ * Copies another MapSide object [c]
+ *******************************************************************/
 void MapSide::copy(MapObject* c)
 {
 	if (c->getObjType() != MOBJ_SIDE)
@@ -63,6 +107,9 @@ void MapSide::copy(MapObject* c)
 	MapObject::copy(c);
 }
 
+/* MapSide::setSector
+ * Sets the side's sector to [sector]
+ *******************************************************************/
 void MapSide::setSector(MapSector* sector)
 {
 	// Remove side from current sector, if any
@@ -77,6 +124,9 @@ void MapSide::setSector(MapSector* sector)
 	sector->connectSide(this);
 }
 
+/* MapSide::intProperty
+ * Returns the value of the integer property matching [key]
+ *******************************************************************/
 int MapSide::intProperty(string key)
 {
 	if (key == "sector")
@@ -94,6 +144,9 @@ int MapSide::intProperty(string key)
 		return MapObject::intProperty(key);
 }
 
+/* MapSide::setIntProperty
+ * Sets the integer value of the property [key] to [value]
+ *******************************************************************/
 void MapSide::setIntProperty(string key, int value)
 {
 	// Update modified time
@@ -109,6 +162,9 @@ void MapSide::setIntProperty(string key, int value)
 		MapObject::setIntProperty(key, value);
 }
 
+/* MapSide::stringProperty
+ * Returns the value of the string property matching [key]
+ *******************************************************************/
 string MapSide::stringProperty(string key)
 {
 	if (key == "texturetop")
@@ -121,6 +177,9 @@ string MapSide::stringProperty(string key)
 		return MapObject::stringProperty(key);
 }
 
+/* MapSide::setStringProperty
+ * Sets the string value of the property [key] to [value]
+ *******************************************************************/
 void MapSide::setStringProperty(string key, string value)
 {
 	// Update modified time
@@ -148,6 +207,9 @@ void MapSide::setStringProperty(string key, string value)
 		MapObject::setStringProperty(key, value);
 }
 
+/* MapSide::writeBackup
+ * Write all side info to a mobj_backup_t struct
+ *******************************************************************/
 void MapSide::writeBackup(mobj_backup_t* backup)
 {
 	// Sector
@@ -168,6 +230,9 @@ void MapSide::writeBackup(mobj_backup_t* backup)
 	//wxLogMessage("Side %d backup sector #%d", id, sector->getIndex());
 }
 
+/* MapSide::readBackup
+ * Reads all side info from a mobj_backup_t struct
+ *******************************************************************/
 void MapSide::readBackup(mobj_backup_t* backup)
 {
 	// Sector
