@@ -46,6 +46,7 @@ ActionSpecial::ActionSpecial(string name, string group)
 	this->name = name;
 	this->group = group;
 	this->tagged = 0;
+	this->arg_count = 0;
 
 	// Init args
 	args[0].name = "Arg1";
@@ -129,6 +130,10 @@ void ActionSpecial::parse(ParseTreeNode* node)
 		// Parse arg definition if it was one
 		if (arg >= 0)
 		{
+			// Update arg count
+			if (arg + 1 > this->arg_count)
+				this->arg_count = arg + 1;
+
 			// Check for simple definition
 			if (child->isLeaf())
 			{

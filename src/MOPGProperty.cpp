@@ -419,16 +419,7 @@ void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects)
 	SetValue(first);
 	noupdate = false;
 
-	// Set arg property names
-	ActionSpecial* as = theGameConfiguration->actionSpecial(first);
-	for (unsigned a = 0; a < 5; a++)
-	{
-		if (!args[a])
-			continue;
-
-		args[a]->SetLabel(as->getArg(a).name);
-		args[a]->SetHelpString(as->getArg(a).desc);
-	}
+	updateArgNames();
 }
 
 /* MOPGActionSpecialProperty::addArgProperty
@@ -454,10 +445,82 @@ void MOPGActionSpecialProperty::applyValue()
 	if (IsValueUnspecified())
 		return;
 
+	// Initialize any unset and meaningful args to 0
+	int special = m_value.GetInteger();
+	ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
+	{
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+
+		for (int argn = 0; argn < as->getArgCount(); argn++)
+		{
+			string key = S_FMT("arg%d", argn);
+			if (! objects[a]->hasProp(key))
+				objects[a]->setIntProperty(key, 0);
+		}
+	}
+}
+
+void MOPGActionSpecialProperty::updateArgNames()
+{
+	// Reset names if the value is unspecified
+	if (IsValueUnspecified())
+	{
+		for (unsigned a = 0; a < 5; a++)
+		{
+			if (!args[a])
+				continue;
+
+			args[a]->SetLabel(S_FMT("Arg%d", a+1));
+			args[a]->SetHelpString("");
+		}
+		return;
+	}
+
+	int special = m_value.GetInteger();
+	ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+	for (unsigned a = 0; a < 5; a++)
+	{
+		if (!args[a])
+			continue;
+
+		args[a]->SetLabel(as->getArg(a).name);
+		args[a]->SetHelpString(as->getArg(a).desc);
+	}
+}
+
+void MOPGActionSpecialProperty::updateArgVisibility()
+{
+	int argcount = 0;
+
+	if (parent->showAll())
+		return;
+
+	if (! IsValueUnspecified())
+	{
+		// Find out how many args the special uses.  (An unknown
+		// special effectively has zero.)
+		int special = m_value.GetInteger();
+		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+		argcount = as->getArgCount();
+	}
+
+	// Show any args that this special uses, hide the others, but never hide an
+	// arg with a value
+	for (unsigned a = 0; a < 5; a++)
+	{
+		if (! args[a])
+			continue;
+
+		args[a]->Hide(
+			a >= argcount
+			&& ! args[a]->IsValueUnspecified()
+			&& args[a]->GetValue().GetInteger() == 0
+		);
+	}
 }
 
 /* MOPGActionSpecialProperty::ValueToString
@@ -492,7 +555,12 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 		if (dlg.ShowModal() == wxID_OK)
 			special = dlg.selectedSpecial();
 
-		if (special >= 0) SetValue(special);
+		if (special >= 0)
+		{
+			SetValue(special);
+			updateArgNames();
+			updateArgVisibility();
+		}
 	}
 
 	return wxIntProperty::OnEvent(propgrid, window, e);

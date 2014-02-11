@@ -96,6 +96,8 @@ public:
 	void	openObjects(vector<MapObject*>& objects);
 	void	addArgProperty(wxPGProperty* prop, int index);
 	void	applyValue();
+	void	updateArgNames();
+	void	updateArgVisibility();
 
 	// wxPGProperty overrides
 	wxString	ValueToString(wxVariant& value, int argFlags = 0) const;
