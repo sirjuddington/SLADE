@@ -285,6 +285,9 @@ StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_D
 	ts_default.bold = 0;
 	ts_default.italic = 0;
 	ts_default.underlined = 0;
+	ts_selection.bg_defined = true;
+	ts_selection.background.set(150, 150, 150, 255);
+	ts_selection.fg_defined = false;
 
 	// Init name
 	this->name = name;
