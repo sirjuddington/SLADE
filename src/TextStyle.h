@@ -10,6 +10,10 @@ class TextStyle
 {
 	friend class StyleSet;
 private:
+	string			name;
+	string			description;
+	vector<int>		wx_styles;
+
 	string	font;
 	int		size;
 	rgba_t	foreground;
@@ -21,9 +25,12 @@ private:
 	int		underlined;
 
 public:
-	TextStyle();
+	TextStyle(string name, string description, int style_id = -1);
 	~TextStyle();
 
+	void	addWxStyleId(int style);
+
+	string	getDescription() { return description; }
 	string	getFontFace() { return font; }
 	int		getFontSize() { return size; }
 	bool	hasForeground() { return fg_defined; }
@@ -47,7 +54,7 @@ public:
 	rgba_t	getBackground() { return background; }
 
 	bool	parse(ParseTreeNode* node);
-	void	applyTo(wxStyledTextCtrl* stc, int style);
+	void	applyTo(wxStyledTextCtrl* stc);
 	bool	copyStyle(TextStyle* copy);
 	string	getDefinition(unsigned tabs = 0);
 };
@@ -57,26 +64,22 @@ class StyleSet
 private:
 	string		name;
 	TextStyle	ts_default;
-	TextStyle	ts_preprocessor;
-	TextStyle	ts_comment;
-	TextStyle	ts_string;
-	TextStyle	ts_character;
-	TextStyle	ts_keyword;
-	TextStyle	ts_constant;
-	TextStyle	ts_function;
-	TextStyle	ts_bracematch;
-	TextStyle	ts_bracebad;
+	TextStyle	ts_selection;
+
+	vector<TextStyle*>	styles;
 
 public:
 	StyleSet(string name = "Unnamed Style");
 	~StyleSet();
 
-	string	getName() { return name; }
+	string		getName() { return name; }
+	unsigned	nStyles() { return styles.size(); }
 
 	bool		parseSet(ParseTreeNode* root);
 	void		applyTo(wxStyledTextCtrl* stc);
 	bool		copySet(StyleSet* copy);
 	TextStyle*	getStyle(string name);
+	TextStyle*	getStyle(unsigned index);
 	bool		writeFile(string filename);
 
 	// Static functions for styleset management

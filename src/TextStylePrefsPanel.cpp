@@ -80,15 +80,9 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	// Style list
 	wxArrayString style_names;
 	style_names.Add("Default");
-	style_names.Add("Preprocessor");
-	style_names.Add("Comment");
-	style_names.Add("String");
-	style_names.Add("Character");
-	style_names.Add("Keyword");
-	style_names.Add("Constant");
-	style_names.Add("Function");
-	style_names.Add("Brace Match");
-	style_names.Add("Brace Mismatch");
+	style_names.Add("Selection");
+	for (unsigned a = 0; a < ss_current.nStyles(); a++)
+		style_names.Add(ss_current.getStyle(a)->getDescription());
 	list_styles = new wxListBox(this, -1, wxDefaultPosition, wxDefaultSize, style_names);
 	vbox->Add(list_styles, 1, wxEXPAND|wxBOTTOM, 4);
 
@@ -423,41 +417,26 @@ void TextStylePrefsPanel::applyPreferences()
 void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e)
 {
 	// Set style from current set depending on selection
-	switch (list_styles->GetSelection())
-	{
-	case 0:
+	//switch (list_styles->GetSelection())
+	//{
+	//case 0:
+	//	ts_current = ss_current.getStyle("default");
+	//	break;
+	//case 1:
+	//	ts_current = ss_current.getStyle("selection");
+	//	break;
+	//default:
+	//	break;
+	//}
+
+
+	int sel = list_styles->GetSelection();
+	if (sel == 0)
 		ts_current = ss_current.getStyle("default");
-		break;
-	case 1:
-		ts_current = ss_current.getStyle("preprocessor");
-		break;
-	case 2:
-		ts_current = ss_current.getStyle("comment");
-		break;
-	case 3:
-		ts_current = ss_current.getStyle("string");
-		break;
-	case 4:
-		ts_current = ss_current.getStyle("character");
-		break;
-	case 5:
-		ts_current = ss_current.getStyle("keyword");
-		break;
-	case 6:
-		ts_current = ss_current.getStyle("constant");
-		break;
-	case 7:
-		ts_current = ss_current.getStyle("function");
-		break;
-	case 8:
-		ts_current = ss_current.getStyle("bracematch");
-		break;
-	case 9:
-		ts_current = ss_current.getStyle("bracebad");
-		break;
-	default:
-		return;
-	}
+	else if (sel == 1)
+		ts_current = ss_current.getStyle("selection");
+	else
+		ts_current = ss_current.getStyle(sel - 2);
 
 	updateStyleControls();
 }

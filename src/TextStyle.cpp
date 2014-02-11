@@ -53,8 +53,14 @@ StyleSet*			ss_current = NULL;
 /* TextStyle::TextStyle
  * TextStyle class constructor
  *******************************************************************/
-TextStyle::TextStyle()
+TextStyle::TextStyle(string name, string description, int style_id)
 {
+	// Init variables
+	this->name = name;
+	this->description = description;
+	if (style_id >= 0)
+		wx_styles.push_back(style_id);
+
 	// Default (undefined) values
 	font = "";
 	size = -1;
@@ -70,6 +76,15 @@ TextStyle::TextStyle()
  *******************************************************************/
 TextStyle::~TextStyle()
 {
+}
+
+/* TextStyle::addWxStyleId
+ * Adds a wxSTC style id to the list (used for applying style to the
+ * wxStyledTextCtrl, in case this style replaces multiple)
+ *******************************************************************/
+void TextStyle::addWxStyleId(int style)
+{
+	wx_styles.push_back(style);
 }
 
 /* TextStyle::parse
@@ -126,44 +141,46 @@ bool TextStyle::parse(ParseTreeNode* node)
 }
 
 /* TextStyle::applyTo
- * Applies the style settings to [style] in the scintilla text
- * control [stc]
+ * Applies the style settings to the scintilla text control [stc]
  *******************************************************************/
-void TextStyle::applyTo(wxStyledTextCtrl* stc, int style)
+void TextStyle::applyTo(wxStyledTextCtrl* stc)
 {
-	// Set font face
-	if (!font.IsEmpty())
-		stc->StyleSetFaceName(style, font);
+	for (unsigned a = 0; a < wx_styles.size(); a++)
+	{
+		// Set font face
+		if (!font.IsEmpty())
+			stc->StyleSetFaceName(wx_styles[a], font);
 
-	// Set font size
-	if (size > 0)
-		stc->StyleSetSize(style, size);
+		// Set font size
+		if (size > 0)
+			stc->StyleSetSize(wx_styles[a], size);
 
-	// Set foreground
-	if (fg_defined)
-		stc->StyleSetForeground(style, WXCOL(foreground));
+		// Set foreground
+		if (fg_defined)
+			stc->StyleSetForeground(wx_styles[a], WXCOL(foreground));
 
-	// Set background
-	if (bg_defined)
-		stc->StyleSetBackground(style, WXCOL(background));
+		// Set background
+		if (bg_defined)
+			stc->StyleSetBackground(wx_styles[a], WXCOL(background));
 
-	// Set bold
-	if (bold > 0)
-		stc->StyleSetBold(style, true);
-	else if (bold == 0)
-		stc->StyleSetBold(style, false);
+		// Set bold
+		if (bold > 0)
+			stc->StyleSetBold(wx_styles[a], true);
+		else if (bold == 0)
+			stc->StyleSetBold(wx_styles[a], false);
 
-	// Set italic
-	if (italic > 0)
-		stc->StyleSetItalic(style, true);
-	else if (italic == 0)
-		stc->StyleSetItalic(style, false);
+		// Set italic
+		if (italic > 0)
+			stc->StyleSetItalic(wx_styles[a], true);
+		else if (italic == 0)
+			stc->StyleSetItalic(wx_styles[a], false);
 
-	// Set underlined
-	if (underlined > 0)
-		stc->StyleSetUnderline(style, true);
-	else if (underlined == 0)
-		stc->StyleSetUnderline(style, false);
+		// Set underlined
+		if (underlined > 0)
+			stc->StyleSetUnderline(wx_styles[a], true);
+		else if (underlined == 0)
+			stc->StyleSetUnderline(wx_styles[a], false);
+	}
 }
 
 /* TextStyle::copyStyle
@@ -255,7 +272,7 @@ string TextStyle::getDefinition(unsigned tabs)
 /* StyleSet::StyleSet
  * StyleSet class constructor
  *******************************************************************/
-StyleSet::StyleSet(string name)
+StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_DEFAULT), ts_selection("selection", "Selected Text")
 {
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
@@ -271,6 +288,21 @@ StyleSet::StyleSet(string name)
 
 	// Init name
 	this->name = name;
+
+	// Init styles
+	styles.push_back(new TextStyle("preprocessor",	"Preprocessor",		wxSTC_C_PREPROCESSOR));
+	styles.push_back(new TextStyle("comment",		"Comment",			wxSTC_C_COMMENT));
+	styles.back()->addWxStyleId(wxSTC_C_COMMENTLINE);
+	styles.push_back(new TextStyle("string",		"String",			wxSTC_C_STRING));
+	styles.push_back(new TextStyle("character",		"Character",		wxSTC_C_CHARACTER));
+	styles.push_back(new TextStyle("keyword",		"Keyword",			wxSTC_C_WORD));
+	styles.push_back(new TextStyle("constant",		"Constant",			wxSTC_C_GLOBALCLASS));
+	styles.push_back(new TextStyle("function",		"Function",			wxSTC_C_WORD2));
+	styles.push_back(new TextStyle("number",		"Number",			wxSTC_C_NUMBER));
+	styles.push_back(new TextStyle("operator",		"Operator",			wxSTC_C_OPERATOR));
+	styles.push_back(new TextStyle("bracematch",	"Brace Match",		wxSTC_STYLE_BRACELIGHT));
+	styles.push_back(new TextStyle("bracebad",		"Brace Mismatch",	wxSTC_STYLE_BRACEBAD));
+	styles.push_back(new TextStyle("linenum",		"Line Numbers",		wxSTC_STYLE_LINENUMBER));
 }
 
 /* StyleSet::~StyleSet
@@ -278,6 +310,8 @@ StyleSet::StyleSet(string name)
  *******************************************************************/
 StyleSet::~StyleSet()
 {
+	for (unsigned a = 0; a < styles.size(); a++)
+		delete styles[a];
 }
 
 /* StyleSet::parseSet
@@ -295,15 +329,12 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 
 	// Parse styles
 	ts_default.parse((ParseTreeNode*)root->getChild("default"));			// Default style
-	ts_preprocessor.parse((ParseTreeNode*)root->getChild("preprocessor"));	// Preprocessor style
-	ts_comment.parse((ParseTreeNode*)root->getChild("comment"));			// Comment style
-	ts_string.parse((ParseTreeNode*)root->getChild("string"));				// String style
-	ts_character.parse((ParseTreeNode*)root->getChild("character"));		// Character style
-	ts_keyword.parse((ParseTreeNode*)root->getChild("keyword"));			// Keyword style
-	ts_constant.parse((ParseTreeNode*)root->getChild("constant"));			// Constant style
-	ts_function.parse((ParseTreeNode*)root->getChild("function"));			// Function style
-	ts_bracematch.parse((ParseTreeNode*)root->getChild("bracematch"));		// Brace-match style
-	ts_bracebad.parse((ParseTreeNode*)root->getChild("bracebad"));			// Brace-mismatch style
+	ts_selection.parse((ParseTreeNode*)root->getChild("selection"));		// Selection style
+	for (unsigned a = 0; a < styles.size(); a++)							// Other styles
+	{
+		if (ParseTreeNode* node = (ParseTreeNode*)root->getChild(styles[a]->name))
+			styles[a]->parse(node);
+	}
 
 	return true;
 }
@@ -315,22 +346,26 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 void StyleSet::applyTo(wxStyledTextCtrl* stc)
 {
 	// Set default style
-	ts_default.applyTo(stc, wxSTC_STYLE_DEFAULT);
+	ts_default.applyTo(stc);
 
 	// Apply default style to all
 	stc->StyleClearAll();
 
 	// Apply other styles
-	ts_preprocessor.applyTo(stc, wxSTC_C_PREPROCESSOR);
-	ts_comment.applyTo(stc, wxSTC_C_COMMENT);
-	ts_comment.applyTo(stc, wxSTC_C_COMMENTLINE);
-	ts_string.applyTo(stc, wxSTC_C_STRING);
-	ts_character.applyTo(stc, wxSTC_C_CHARACTER);
-	ts_keyword.applyTo(stc, wxSTC_C_WORD);
-	ts_constant.applyTo(stc, wxSTC_C_GLOBALCLASS);
-	ts_function.applyTo(stc, wxSTC_C_WORD2);
-	ts_bracematch.applyTo(stc, wxSTC_STYLE_BRACELIGHT);
-	ts_bracebad.applyTo(stc, wxSTC_STYLE_BRACEBAD);
+	for (unsigned a = 0; a < styles.size(); a++)
+		styles[a]->applyTo(stc);
+
+	// Set selection background if customised
+	if (ts_selection.hasBackground())
+		stc->SetSelBackground(true, WXCOL(ts_selection.background));
+	else
+		stc->SetSelBackground(false, wxColour("red"));
+
+	// Set selection foreground if customised
+	if (ts_selection.hasForeground())
+		stc->SetSelForeground(true, WXCOL(ts_selection.foreground));
+	else
+		stc->SetSelForeground(false, wxColour("red"));
 
 	// Set caret colour to text foreground colour
 	stc->SetCaretForeground(WXCOL(ts_default.foreground));
@@ -346,15 +381,9 @@ bool StyleSet::copySet(StyleSet* copy)
 
 	// Copy all styles
 	ts_default.copyStyle(&(copy->ts_default));
-	ts_preprocessor.copyStyle(&(copy->ts_preprocessor));
-	ts_comment.copyStyle(&(copy->ts_comment));
-	ts_string.copyStyle(&(copy->ts_string));
-	ts_character.copyStyle(&(copy->ts_character));
-	ts_keyword.copyStyle(&(copy->ts_keyword));
-	ts_constant.copyStyle(&(copy->ts_constant));
-	ts_function.copyStyle(&(copy->ts_function));
-	ts_bracematch.copyStyle(&(copy->ts_bracematch));
-	ts_bracebad.copyStyle(&(copy->ts_bracebad));
+	ts_selection.copyStyle(&(copy->ts_selection));
+	for (unsigned a = 0; a < copy->styles.size(); a++)
+		styles[a]->copyStyle(copy->styles[a]);
 
 	return true;
 }
@@ -368,27 +397,30 @@ TextStyle* StyleSet::getStyle(string name)
 	// Return style matching name given
 	if (S_CMPNOCASE(name, "default"))
 		return &ts_default;
-	else if (S_CMPNOCASE(name, "preprocessor"))
-		return &ts_preprocessor;
-	else if (S_CMPNOCASE(name, "comment"))
-		return &ts_comment;
-	else if (S_CMPNOCASE(name, "string"))
-		return &ts_string;
-	else if (S_CMPNOCASE(name, "character"))
-		return &ts_character;
-	else if (S_CMPNOCASE(name, "keyword"))
-		return &ts_keyword;
-	else if (S_CMPNOCASE(name, "constant"))
-		return &ts_constant;
-	else if (S_CMPNOCASE(name, "function"))
-		return &ts_function;
-	else if (S_CMPNOCASE(name, "bracematch"))
-		return &ts_bracematch;
-	else if (S_CMPNOCASE(name, "bracebad"))
-		return &ts_bracebad;
+	else if (S_CMPNOCASE(name, "selection"))
+		return &ts_selection;
+	else
+	{
+		for (unsigned a = 0; a < styles.size(); a++)
+		{
+			if (styles[a]->name == name)
+				return styles[a];
+		}
+	}
 
 	// Not a valid style
 	return NULL;
+}
+
+/* StyleSet::getStyle
+ * Returns the extra text style at [index]
+ *******************************************************************/
+TextStyle* StyleSet::getStyle(unsigned index)
+{
+	if (index < styles.size())
+		return styles[index];
+	else
+		return NULL;
 }
 
 /* StyleSet::writeFile
@@ -413,50 +445,18 @@ bool StyleSet::writeFile(string filename)
 	file.Write(ts_default.getDefinition(2));
 	file.Write("\t}\n\n");
 
-	// Preprocessor style
-	file.Write("\tpreprocessor {\n");
-	file.Write(ts_preprocessor.getDefinition(2));
+	// Selection style
+	file.Write("\tselection {\n");
+	file.Write(ts_selection.getDefinition(2));
 	file.Write("\t}\n\n");
 
-	// Comment style
-	file.Write("\tcomment {\n");
-	file.Write(ts_comment.getDefinition(2));
-	file.Write("\t}\n\n");
-
-	// String style
-	file.Write("\tstring {\n");
-	file.Write(ts_string.getDefinition(2));
-	file.Write("\t}\n\n");
-
-	// Character style
-	file.Write("\tcharacter {\n");
-	file.Write(ts_character.getDefinition(2));
-	file.Write("\t}\n\n");
-
-	// Keyword style
-	file.Write("\tkeyword {\n");
-	file.Write(ts_keyword.getDefinition(2));
-	file.Write("\t}\n\n");
-
-	// Constant style
-	file.Write("\tconstant {\n");
-	file.Write(ts_constant.getDefinition(2));
-	file.Write("\t}\n\n");
-
-	// Function style
-	file.Write("\tfunction {\n");
-	file.Write(ts_function.getDefinition(2));
-	file.Write("\t}\n\n");
-
-	// BraceMatch style
-	file.Write("\tbracematch {\n");
-	file.Write(ts_bracematch.getDefinition(2));
-	file.Write("\t}\n\n");
-
-	// BraceBad style
-	file.Write("\tbracebad {\n");
-	file.Write(ts_bracebad.getDefinition(2));
-	file.Write("\t}\n\n");
+	// Other styles
+	for (unsigned a = 0; a < styles.size(); a++)
+	{
+		file.Write(S_FMT("\t%s {\n", styles[a]->name));
+		file.Write(styles[a]->getDefinition(2));
+		file.Write("\t}\n\n");
+	}
 
 	// Write end
 	file.Write("}\n");

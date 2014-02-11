@@ -206,6 +206,7 @@ void TextEntryPanel::refreshPanel()
 {
 	// Update text editor
 	text_area->setup();
+	text_area->Refresh();
 
 	Refresh();
 	Update();

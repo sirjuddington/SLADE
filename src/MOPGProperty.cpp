@@ -409,7 +409,7 @@ void MOPGIntWithArgsProperty::updateArgNames()
  *******************************************************************/
 void MOPGIntWithArgsProperty::updateArgVisibility()
 {
-	int argcount;
+	unsigned argcount;
 
 	if (parent->showAll())
 		argcount = 5;
