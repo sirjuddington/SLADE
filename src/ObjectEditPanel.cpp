@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ObjectEditPanel.cpp
+ * Description: A bar that shows up during object edit mode that
+ *              contains controls to manually enter the
+ *              scaling/offset/rotation values
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #undef min
@@ -10,6 +40,14 @@
 #include "MapEditorWindow.h"
 #include "KeyBind.h"
 
+
+/*******************************************************************
+ * OBJECTEDITPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ObjectEditPanel::ObjectEditPanel
+ * ObjectEditPanel class constructor
+ *******************************************************************/
 ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 {
 	// Setup sizer
@@ -76,10 +114,16 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	Layout();
 }
 
+/* ObjectEditPanel::~ObjectEditPanel
+ * ObjectEditPanel class destructor
+ *******************************************************************/
 ObjectEditPanel::~ObjectEditPanel()
 {
 }
 
+/* ObjectEditPanel::init
+ * Initialises the panel with values from [group]
+ *******************************************************************/
 void ObjectEditPanel::init(ObjectEditGroup* group)
 {
 	// Check group was given
@@ -101,6 +145,9 @@ void ObjectEditPanel::init(ObjectEditGroup* group)
 	combo_rotation->Select(0);
 }
 
+/* ObjectEditPanel::update
+ * Updates the panel with values from [group]
+ *******************************************************************/
 void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation)
 {
 	bbox_t bbox = group->getBBox();
@@ -116,11 +163,22 @@ void ObjectEditPanel::update(ObjectEditGroup* group, bool lock_rotation)
 	combo_rotation->SetValue(S_FMT("%1.2f", group->getRotation()));
 }
 
+
+/*******************************************************************
+ * OBJECTEDITPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* ObjectEditPanel::onBtnApplyClicked
+ * Called when the 'apply' button is clicked
+ *******************************************************************/
 void ObjectEditPanel::onBtnApplyClicked(wxCommandEvent& e)
 {
 	KeyBind::pressBind("map_edit_accept");
 }
 
+/* ObjectEditPanel::onBtnPreviewClicked
+ * Called when the 'preview' button is clicked
+ *******************************************************************/
 void ObjectEditPanel::onBtnPreviewClicked(wxCommandEvent& e)
 {
 	double xoff, yoff, xscale, yscale, rotation;
@@ -133,6 +191,9 @@ void ObjectEditPanel::onBtnPreviewClicked(wxCommandEvent& e)
 	theMapEditor->mapEditor().getObjectEditGroup()->doAll(xoff, yoff, xscale / 100.0, yscale / 100.0, rotation);
 }
 
+/* ObjectEditPanel::onBtnCancelClicked
+ * Called when the 'cancel' button is clicked
+ *******************************************************************/
 void ObjectEditPanel::onBtnCancelClicked(wxCommandEvent& e)
 {
 	KeyBind::pressBind("map_edit_cancel");

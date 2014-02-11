@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ThingTypeBrowser.cpp
+ * Description: Specialisation of BrowserWindow to show and browse
+ *              for thing types
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "ThingTypeBrowser.h"
@@ -7,19 +36,36 @@
 #include "Drawing.h"
 
 
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Bool, browser_thing_tiles, true, CVAR_SAVE)
 CVAR(Bool, use_zeth_icons, false, CVAR_SAVE)
 
+
+/*******************************************************************
+ * THINGBROWSERITEM CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ThingBrowserItem::ThingBrowserItem
+ * ThingBrowserItem class constructor
+ *******************************************************************/
 ThingBrowserItem::ThingBrowserItem(string name, ThingType* type, unsigned index) : BrowserItem(name, index)
 {
 	// Init variables
 	this->type = type;
 }
 
+/* ThingBrowserItem::~ThingBrowserItem
+ * ThingBrowserItem class destructor
+ *******************************************************************/
 ThingBrowserItem::~ThingBrowserItem()
 {
 }
 
+/* ThingBrowserItem::loadImage
+ * Loads the item image
+ *******************************************************************/
 bool ThingBrowserItem::loadImage()
 {
 	// Get sprite
@@ -50,7 +96,13 @@ bool ThingBrowserItem::loadImage()
 }
 
 
+/*******************************************************************
+ * THINGTYPEBROWSER CLASS FUNCTIONS
+ *******************************************************************/
 
+/* ThingTypeBrowser::ThingTypeBrowser
+ * ThingTypeBrowser class constructor
+ *******************************************************************/
 ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent)
 {
 	// Set window title
@@ -84,10 +136,16 @@ ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(p
 	Layout();
 }
 
+/* ThingTypeBrowser::~ThingTypeBrowser
+ * ThingTypeBrowser class destructor
+ *******************************************************************/
 ThingTypeBrowser::~ThingTypeBrowser()
 {
 }
 
+/* ThingTypeBrowser::setupViewOptions
+ * Sets up appropriate browser view options
+ *******************************************************************/
 void ThingTypeBrowser::setupViewOptions()
 {
 	if (browser_thing_tiles)
@@ -108,6 +166,9 @@ void ThingTypeBrowser::setupViewOptions()
 	canvas->showSelectedItem();
 }
 
+/* ThingTypeBrowser::getSelectedType
+ * Returns the currently selected thing type
+ *******************************************************************/
 int ThingTypeBrowser::getSelectedType()
 {
 	BrowserItem* selected = getSelectedItem();
@@ -121,6 +182,13 @@ int ThingTypeBrowser::getSelectedType()
 }
 
 
+/*******************************************************************
+ * THINGTYPEBROWSER CLASS EVENTS
+ *******************************************************************/
+
+/* ThingTypeBrowser::onViewTilesClicked
+ * Called when the 'Details View' checkbox is changed
+ *******************************************************************/
 void ThingTypeBrowser::onViewTilesClicked(wxCommandEvent& e)
 {
 	browser_thing_tiles = cb_view_tiles->GetValue();

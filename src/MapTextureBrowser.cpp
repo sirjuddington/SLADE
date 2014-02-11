@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapTextureBrowser.cpp
+ * Description: Specialisation of BrowserWindow to show and browse
+ *              for map textures/flats
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapTextureBrowser.h"
@@ -9,9 +38,19 @@
 #include "SLADEMap.h"
 
 
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Int, map_tex_sort, 2, CVAR_SAVE)
 
 
+/*******************************************************************
+ * MAPTEXBROWSERITEM CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapTexBrowserItem::MapTexBrowserItem
+ * MapTexBrowserItem class constructor
+ *******************************************************************/
 MapTexBrowserItem::MapTexBrowserItem(string name, int type, unsigned index) : BrowserItem(name, index)
 {
 	if (type == 0)
@@ -26,10 +65,16 @@ MapTexBrowserItem::MapTexBrowserItem(string name, int type, unsigned index) : Br
 	usage_count = 0;
 }
 
+/* MapTexBrowserItem::~MapTexBrowserItem
+ * MapTexBrowserItem class destructor
+ *******************************************************************/
 MapTexBrowserItem::~MapTexBrowserItem()
 {
 }
 
+/* MapTexBrowserItem::loadImage
+ * Loads the item image
+ *******************************************************************/
 bool MapTexBrowserItem::loadImage()
 {
 	GLTexture* tex = NULL;
@@ -49,6 +94,9 @@ bool MapTexBrowserItem::loadImage()
 		return false;
 }
 
+/* MapTexBrowserItem::itemInfo
+ * Returns a string with extra information about the texture/flat
+ *******************************************************************/
 string MapTexBrowserItem::itemInfo()
 {
 	string info;
@@ -80,7 +128,13 @@ string MapTexBrowserItem::itemInfo()
 }
 
 
+/*******************************************************************
+ * MAPTEXTUREBROWSER CLASS FUNCTIONS
+ *******************************************************************/
 
+/* MapTextureBrowser::MapTextureBrowser
+ * MapTextureBrowser class constructor
+ *******************************************************************/
 MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture, SLADEMap* map) : BrowserWindow(parent)
 {
 	// Init variables
@@ -177,10 +231,17 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		selectItem(texture);
 }
 
+/* MapTextureBrowser::~MapTextureBrowser
+ * MapTextureBrowser class destructor
+ *******************************************************************/
 MapTextureBrowser::~MapTextureBrowser()
 {
 }
 
+/* sortBIUsage
+ * Returns true if [left] has higher usage count than [right]. If
+ * both are equal it will go alphabetically by name
+ *******************************************************************/
 bool sortBIUsage(BrowserItem* left, BrowserItem* right)
 {
 	// Sort alphabetically if usage counts are equal
@@ -189,6 +250,10 @@ bool sortBIUsage(BrowserItem* left, BrowserItem* right)
 	else
 		return ((MapTexBrowserItem*)left)->usageCount() > ((MapTexBrowserItem*)right)->usageCount();
 }
+
+/* MapTextureBrowser::doSort
+ * Sort the current items depending on [sort_type]
+ *******************************************************************/
 void MapTextureBrowser::doSort(unsigned sort_type)
 {
 	map_tex_sort = sort_type;
@@ -206,6 +271,9 @@ void MapTextureBrowser::doSort(unsigned sort_type)
 	}
 }
 
+/* MapTextureBrowser::updateUsage
+ * Updates usage counts for all browser items
+ *******************************************************************/
 void MapTextureBrowser::updateUsage()
 {
 	vector<BrowserItem*>& items = canvas->itemList();

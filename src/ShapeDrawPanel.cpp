@@ -1,13 +1,54 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ShapeDrawPanel.cpp
+ * Description: A bar that shows up during shape drawing that
+ *              contains options for shape drawing
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "ShapeDrawPanel.h"
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Int, shapedraw_shape, 0, CVAR_SAVE)
 CVAR(Bool, shapedraw_centered, false, CVAR_SAVE)
 CVAR(Bool, shapedraw_lockratio, false, CVAR_SAVE)
 CVAR(Int, shapedraw_sides, 16, CVAR_SAVE)
 
+
+/*******************************************************************
+ * SHAPEDRAWPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ShapeDrawPanel::ShapeDrawPanel
+ * ShapeDrawPanel class constructor
+ *******************************************************************/
 ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
@@ -59,10 +100,16 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1)
 	spin_sides->Bind(wxEVT_TEXT_ENTER, &ShapeDrawPanel::onSidesChanged, this);
 }
 
+/* ShapeDrawPanel::~ShapeDrawPanel
+ * ShapeDrawPanel class destructor
+ *******************************************************************/
 ShapeDrawPanel::~ShapeDrawPanel()
 {
 }
 
+/* ShapeDrawPanel::showShapeOptions
+ * Shows option controls for [shape]
+ *******************************************************************/
 void ShapeDrawPanel::showShapeOptions(int shape)
 {
 	// Remove all extra options
@@ -81,22 +128,38 @@ void ShapeDrawPanel::showShapeOptions(int shape)
 }
 
 
+/*******************************************************************
+ * SHAPEDRAWPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* ShapeDrawPanel::onShapeChanged
+ * Called when the shape dropdown is changed
+ *******************************************************************/
 void ShapeDrawPanel::onShapeChanged(wxCommandEvent& e)
 {
 	shapedraw_shape = choice_shape->GetSelection();
 	showShapeOptions(shapedraw_shape);
 }
 
+/* ShapeDrawPanel::onCenteredChecked
+ * Called when the 'centered' checkbox is clicked
+ *******************************************************************/
 void ShapeDrawPanel::onCenteredChecked(wxCommandEvent& e)
 {
 	shapedraw_centered = cb_centered->GetValue();
 }
 
+/* ShapeDrawPanel::onLockRatioChecked
+ * Called when the 'lock ratio' checkbox is clicked
+ *******************************************************************/
 void ShapeDrawPanel::onLockRatioChecked(wxCommandEvent& e)
 {
 	shapedraw_lockratio = cb_lockratio->GetValue();
 }
 
+/* ShapeDrawPanel::onSidesChanged
+ * Called when the no. of sides spin control is changed
+ *******************************************************************/
 void ShapeDrawPanel::onSidesChanged(wxCommandEvent& e)
 {
 	shapedraw_sides = spin_sides->GetValue();

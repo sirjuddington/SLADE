@@ -385,6 +385,9 @@ void MapEditorWindow::setupLayout()
 	Layout();
 }
 
+/* MapEditorWindow::lockMapEntries
+ * Locks/unlocks the entries for the current map
+ *******************************************************************/
 void MapEditorWindow::lockMapEntries(bool lock)
 {
 	// Don't bother if no map is open
@@ -403,6 +406,9 @@ void MapEditorWindow::lockMapEntries(bool lock)
 	}
 }
 
+/* MapEditorWindow::createMap
+ * Opens the map editor launcher dialog to create a new map
+ *******************************************************************/
 bool MapEditorWindow::createMap()
 {
 	MapEditorConfigDialog dialog(theMainWindow, NULL, false, true);
@@ -420,6 +426,9 @@ bool MapEditorWindow::createMap()
 	return false;
 }
 
+/* MapEditorWindow::openMap
+ * Opens [map] in the editor
+ *******************************************************************/
 bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 {
 	// Show blank map
@@ -477,6 +486,9 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	return ok;
 }
 
+/* MapEditorWindow::loadMapScripts
+ * Loads any scripts from [map] into the script editor
+ *******************************************************************/
 void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 {
 	// Don't bother if no scripting language specified
@@ -526,6 +538,9 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 	panel_script_editor->openScripts(scripts, compiled);
 }
 
+/* MapEditorWindow::buildNodes
+ * Builds nodes for the maps in [wad]
+ *******************************************************************/
 bool nb_warned = false;
 void MapEditorWindow::buildNodes(Archive* wad)
 {
@@ -591,6 +606,9 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		wxLogMessage("Nodebuilder path not set up, no nodes were built");
 }
 
+/* MapEditorWindow::writeMap
+ * Writes the current map as [name] to a wad archive and returns it
+ *******************************************************************/
 WadArchive* MapEditorWindow::writeMap(string name)
 {
 	// Get map data entries
@@ -644,6 +662,10 @@ WadArchive* MapEditorWindow::writeMap(string name)
 	return wad;
 }
 
+/* MapEditorWindow::saveMap
+ * Saves the current map to its archive, or opens the 'save as'
+ * dialog if it doesn't currently belong to one
+ *******************************************************************/
 bool MapEditorWindow::saveMap()
 {
 	// Check for newly created map
@@ -716,6 +738,9 @@ bool MapEditorWindow::saveMap()
 	return true;
 }
 
+/* MapEditorWindow::saveMapAs
+ * Saves the current map to a new archive
+ *******************************************************************/
 bool MapEditorWindow::saveMapAs()
 {
 	// Show dialog
@@ -762,6 +787,9 @@ bool MapEditorWindow::saveMapAs()
 	return true;
 }
 
+/* MapEditorWindow::closeMap
+ * Closes/clears the current map
+ *******************************************************************/
 void MapEditorWindow::closeMap()
 {
 	// Close map in editor
@@ -774,22 +802,35 @@ void MapEditorWindow::closeMap()
 	mdesc_current.head = NULL;
 }
 
+/* MapEditorWindow::forceRefresh
+ * Forces a refresh of the map canvas, and the renderer if [renderer]
+ * is true
+ *******************************************************************/
 void MapEditorWindow::forceRefresh(bool renderer)
 {
 	if (renderer) map_canvas->forceRefreshRenderer();
 	map_canvas->Refresh();
 }
 
+/* MapEditorWindow::refreshToolbar
+ * Refreshes the toolbar
+ *******************************************************************/
 void MapEditorWindow::refreshToolBar()
 {
 	toolbar->Refresh();
 }
 
+/* MapEditorWindow::editObjectProperties
+ * Opens the property editor for [objects]
+ *******************************************************************/
 void MapEditorWindow::editObjectProperties(vector<MapObject*>& objects)
 {
 	map_canvas->editObjectProperties(objects);
 }
 
+/* MapEditorWindow::showObjectEditPanel
+ * Shows/hides the object edit panel (opens [group] if shown)
+ *******************************************************************/
 void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 {
 	// Get panel
@@ -813,6 +854,9 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	map_canvas->SetFocus();
 }
 
+/* MapEditorWindow::showShapeDrawPanel
+ * Shows/hides the shape drawing panel
+ *******************************************************************/
 void MapEditorWindow::showShapeDrawPanel(bool show)
 {
 	// Get panel
@@ -1036,6 +1080,11 @@ bool MapEditorWindow::handleAction(string id)
 	
 	return false;
 }
+
+
+/*******************************************************************
+ * MAPEDITORWINDOW CLASS EVENTS
+ *******************************************************************/
 
 /* MapEditorWindow::onClose
  * Called when the window is closed

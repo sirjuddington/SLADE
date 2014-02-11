@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MCAnimations.cpp
+ * Description: MCAnimation specialisation classes - simple
+ *              animations for the map editor that handle their
+ *              own tracking/updating/drawing
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MCAnimations.h"
@@ -10,11 +40,25 @@
 #include "MapRenderer3D.h"
 #include "OpenGL.h"
 
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Bool, thing_overlay_square)
 EXTERN_CVAR(Int, thing_drawtype)
 EXTERN_CVAR(Bool, vertex_round)
 EXTERN_CVAR(Float, line_width)
 
+
+/*******************************************************************
+ * MCASELBOXFADER CLASS FUNCTIONS
+ *******************************************************************
+ * Fading out animation for selection box ending
+ */
+
+/* MCASelboxFader::MCASelboxFader
+ * MCASelboxFader class constructor
+ *******************************************************************/
 MCASelboxFader::MCASelboxFader(long start, fpoint2_t tl, fpoint2_t br) : MCAnimation(start)
 {
 	// Init variables
@@ -23,10 +67,16 @@ MCASelboxFader::MCASelboxFader(long start, fpoint2_t tl, fpoint2_t br) : MCAnima
 	fade = 1.0f;
 }
 
+/* MCASelboxFader::~MCASelboxFader
+ * MCASelboxFader class destructor
+ *******************************************************************/
 MCASelboxFader::~MCASelboxFader()
 {
 }
 
+/* MCASelboxFader::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCASelboxFader::update(long time)
 {
 	// Determine fade amount (1.0-0.0 over 150ms)
@@ -39,6 +89,9 @@ bool MCASelboxFader::update(long time)
 		return true;
 }
 
+/* MCASelboxFader::draw
+ * Draws the animation
+ *******************************************************************/
 void MCASelboxFader::draw()
 {
 	glDisable(GL_TEXTURE_2D);
@@ -70,6 +123,15 @@ void MCASelboxFader::draw()
 }
 
 
+/*******************************************************************
+ * MCATHINGSELECTION CLASS FUNCTIONS
+ *******************************************************************
+ * Selection/deselection animation for things
+ */
+
+/* MCAThingSelection::MCAThingSelection
+ * MCAThingSelection class constructor
+ *******************************************************************/
 MCAThingSelection::MCAThingSelection(long start, double x, double y, double radius, bool select) : MCAnimation(start)
 {
 	// Init variables
@@ -84,10 +146,16 @@ MCAThingSelection::MCAThingSelection(long start, double x, double y, double radi
 		this->radius += 8;
 }
 
+/* MCAThingSelection::~MCAThingSelection
+ * MCAThingSelection class destructor
+ *******************************************************************/
 MCAThingSelection::~MCAThingSelection()
 {
 }
 
+/* MCAThingSelection::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCAThingSelection::update(long time)
 {
 	// Determine fade amount (0.0-1.0 over 150ms)
@@ -100,6 +168,9 @@ bool MCAThingSelection::update(long time)
 		return true;
 }
 
+/* MCAThingSelection::draw
+ * Draws the animation
+ *******************************************************************/
 void MCAThingSelection::draw()
 {
 	// Setup colour
@@ -145,7 +216,15 @@ void MCAThingSelection::draw()
 }
 
 
+/*******************************************************************
+ * MCALINESELECTION CLASS FUNCTIONS
+ *******************************************************************
+ * Selection/deselection animation for lines
+ */
 
+/* MCALineSelection::MCALineSelection
+ * MCALineSelection class constructor
+ *******************************************************************/
 MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool select) : MCAnimation(start)
 {
 	// Init variables
@@ -168,10 +247,16 @@ MCALineSelection::MCALineSelection(long start, vector<MapLine*>& lines, bool sel
 	}
 }
 
+/* MCALineSelection::~MCALineSelection
+ * MCALineSelection class destructor
+ *******************************************************************/
 MCALineSelection::~MCALineSelection()
 {
 }
 
+/* MCALineSelection::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCALineSelection::update(long time)
 {
 	// Determine fade amount (0.0-1.0 over 150ms)
@@ -184,6 +269,9 @@ bool MCALineSelection::update(long time)
 		return true;
 }
 
+/* MCALineSelection::draw
+ * Draws the animation
+ *******************************************************************/
 void MCALineSelection::draw()
 {
 	// Setup colour
@@ -211,7 +299,15 @@ void MCALineSelection::draw()
 }
 
 
+/*******************************************************************
+ * MCAVERTEXSELECTION CLASS FUNCTIONS
+ *******************************************************************
+ * Selection/deselection animation for vertices
+ */
 
+/* MCAVertexSelection::MCAVertexSelection
+ * MCAVertexSelection class constructor
+ *******************************************************************/
 MCAVertexSelection::MCAVertexSelection(long start, vector<MapVertex*>& verts, double size, bool select) : MCAnimation(start)
 {
 	// Init variables
@@ -230,10 +326,16 @@ MCAVertexSelection::MCAVertexSelection(long start, vector<MapVertex*>& verts, do
 		this->size = size * 1.8f;
 }
 
+/* MCAVertexSelection::~MCAVertexSelection
+ * MCAVertexSelection class destructor
+ *******************************************************************/
 MCAVertexSelection::~MCAVertexSelection()
 {
 }
 
+/* MCAVertexSelection::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCAVertexSelection::update(long time)
 {
 	// Determine fade amount (0.0-1.0 over 150ms)
@@ -246,6 +348,9 @@ bool MCAVertexSelection::update(long time)
 		return true;
 }
 
+/* MCAVertexSelection::draw
+ * Draws the animation
+ *******************************************************************/
 void MCAVertexSelection::draw()
 {
 	// Setup colour
@@ -315,8 +420,15 @@ void MCAVertexSelection::draw()
 }
 
 
+/*******************************************************************
+ * MCASECTORSELECTION CLASS FUNCTIONS
+ *******************************************************************
+ * Selection/deselection animation for sectors
+ */
 
-
+/* MCASectorSelection::MCASectorSelection
+ * MCASectorSelection class constructor
+ *******************************************************************/
 MCASectorSelection::MCASectorSelection(long start, vector<Polygon2D*>& polys, bool select) : MCAnimation(start)
 {
 	// Init variables
@@ -328,10 +440,16 @@ MCASectorSelection::MCASectorSelection(long start, vector<Polygon2D*>& polys, bo
 		this->polygons.push_back(polys[a]);
 }
 
+/* MCASectorSelection::~MCASectorSelection
+ * MCASectorSelection class destructor
+ *******************************************************************/
 MCASectorSelection::~MCASectorSelection()
 {
 }
 
+/* MCASectorSelection::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCASectorSelection::update(long time)
 {
 	// Determine fade amount (0.0-1.0 over 150ms)
@@ -344,6 +462,9 @@ bool MCASectorSelection::update(long time)
 		return true;
 }
 
+/* MCASectorSelection::draw
+ * Draws the animation
+ *******************************************************************/
 void MCASectorSelection::draw()
 {
 	// Setup colour
@@ -363,7 +484,15 @@ void MCASectorSelection::draw()
 }
 
 
+/*******************************************************************
+ * MCA3DWALLSELECTION CLASS FUNCTIONS
+ *******************************************************************
+ * Selection/deselection animation for 3d mode walls
+ */
 
+/* MCA3dWallSelection::MCA3dWallSelection
+ * MCA3dWallSelection class constructor
+ *******************************************************************/
 MCA3dWallSelection::MCA3dWallSelection(long start, fpoint3_t points[4], bool select) : MCAnimation(start, true)
 {
 	// Init variables
@@ -375,10 +504,16 @@ MCA3dWallSelection::MCA3dWallSelection(long start, fpoint3_t points[4], bool sel
 	this->points[3] = points[3];
 }
 
+/* MCA3dWallSelection::~MCA3dWallSelection
+ * MCA3dWallSelection class destructor
+ *******************************************************************/
 MCA3dWallSelection::~MCA3dWallSelection()
 {
 }
 
+/* MCA3dWallSelection::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCA3dWallSelection::update(long time)
 {
 	// Determine fade amount (0.0-1.0 over 150ms)
@@ -391,6 +526,9 @@ bool MCA3dWallSelection::update(long time)
 		return true;
 }
 
+/* MCA3dWallSelection::draw
+ * Draws the animation
+ *******************************************************************/
 void MCA3dWallSelection::draw()
 {
 	// Setup colour
@@ -422,8 +560,15 @@ void MCA3dWallSelection::draw()
 }
 
 
+/*******************************************************************
+ * MCA3DFLATSELECTION CLASS FUNCTIONS
+ *******************************************************************
+ * Selection/deselection animation for 3d mode flats
+ */
 
-
+/* MCA3dFlatSelection::MCA3dFlatSelection
+ * MCA3dFlatSelection class constructor
+ *******************************************************************/
 MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, plane_t plane, bool select) : MCAnimation(start, true)
 {
 	// Init variables
@@ -433,10 +578,16 @@ MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, plane_t pl
 	this->fade = 1.0f;
 }
 
+/* MCA3dFlatSelection::~MCA3dFlatSelection
+ * MCA3dFlatSelection class destructor
+ *******************************************************************/
 MCA3dFlatSelection::~MCA3dFlatSelection()
 {
 }
 
+/* MCA3dFlatSelection::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCA3dFlatSelection::update(long time)
 {
 	// Determine fade amount (0.0-1.0 over 150ms)
@@ -449,6 +600,9 @@ bool MCA3dFlatSelection::update(long time)
 		return true;
 }
 
+/* MCA3dFlatSelection::draw
+ * Draws the animation
+ *******************************************************************/
 void MCA3dFlatSelection::draw()
 {
 	if (!sector)
@@ -479,6 +633,15 @@ void MCA3dFlatSelection::draw()
 }
 
 
+/*******************************************************************
+ * MCAHILIGHTFADE CLASS FUNCTIONS
+ *******************************************************************
+ * Fading out animation for object hilights
+ */
+
+/* MCAHilightFade::MCAHilightFade
+ * MCAHilightFade class constructor
+ *******************************************************************/
 MCAHilightFade::MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init) : MCAnimation(start)
 {
 	this->object = object;
@@ -487,10 +650,16 @@ MCAHilightFade::MCAHilightFade(long start, MapObject* object, MapRenderer2D* ren
 	this->fade = fade_init;
 }
 
+/* MCAHilightFade::~MCAHilightFade
+ * MCAHilightFade class destructor
+ *******************************************************************/
 MCAHilightFade::~MCAHilightFade()
 {
 }
 
+/* MCAHilightFade::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCAHilightFade::update(long time)
 {
 	// Determine fade amount (1.0-0.0 over 150ms)
@@ -503,6 +672,9 @@ bool MCAHilightFade::update(long time)
 		return true;
 }
 
+/* MCAHilightFade::draw
+ * Draws the animation
+ *******************************************************************/
 void MCAHilightFade::draw()
 {
 	switch (object->getObjType())
@@ -521,6 +693,15 @@ void MCAHilightFade::draw()
 }
 
 
+/*******************************************************************
+ * MCAHILIGHTFADE3D CLASS FUNCTIONS
+ *******************************************************************
+ * Fading out animation for 3d mode wall/flat/thing hilights
+ */
+
+/* MCAHilightFade3D::MCAHilightFade3D
+ * MCAHilightFade3D class constructor
+ *******************************************************************/
 MCAHilightFade3D::MCAHilightFade3D(long start, int item_index, uint8_t item_type, MapRenderer3D* renderer, float fade_init) : MCAnimation(start, true)
 {
 	this->item_index = item_index;
@@ -530,10 +711,16 @@ MCAHilightFade3D::MCAHilightFade3D(long start, int item_index, uint8_t item_type
 	this->fade = fade_init;
 }
 
+/* MCAHilightFade3D::~MCAHilightFade3D
+ * MCAHilightFade3D class destructor
+ *******************************************************************/
 MCAHilightFade3D::~MCAHilightFade3D()
 {
 }
 
+/* MCAHilightFade3D::update
+ * Updates the animation based on [time] elapsed in ms
+ *******************************************************************/
 bool MCAHilightFade3D::update(long time)
 {
 	// Determine fade amount (1.0-0.0 over 150ms)
@@ -546,6 +733,9 @@ bool MCAHilightFade3D::update(long time)
 		return true;
 }
 
+/* MCAHilightFade3D::draw
+ * Draws the animation
+ *******************************************************************/
 void MCAHilightFade3D::draw()
 {
 	renderer->renderHilight(selection_3d_t(item_index, item_type), fade);

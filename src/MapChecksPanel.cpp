@@ -1,4 +1,35 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapChecksPanel.cpp
+ * Description: Panel for performing map checks - checks to run are
+ *              selected by checkboxes, check results are added to
+ *              a list. When a list item is hilighted the problem is
+ *              shown on the map view
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapChecksPanel.h"
@@ -9,6 +40,13 @@
 #include <wx/gbsizer.h>
 
 
+/*******************************************************************
+ * MAPCHECKSPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapChecksPanel::MapChecksPanel
+ * MapChecksPanel class constructor
+ *******************************************************************/
 MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent, -1)
 {
 	// Init
@@ -108,10 +146,16 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	btn_edit_object->Enable(false);
 }
 
+/* MapChecksPanel::~MapChecksPanel
+ * MapChecksPanel class destructor
+ *******************************************************************/
 MapChecksPanel::~MapChecksPanel()
 {
 }
 
+/* MapChecksPanel::updateStatusText
+ * Updates the check status label text
+ *******************************************************************/
 void MapChecksPanel::updateStatusText(string text)
 {
 	label_status->SetLabel(text);
@@ -119,6 +163,9 @@ void MapChecksPanel::updateStatusText(string text)
 	Refresh();
 }
 
+/* MapChecksPanel::showCheckItem
+ * Shows the selected problem on the map view and sets up fix buttons
+ *******************************************************************/
 void MapChecksPanel::showCheckItem(unsigned index)
 {
 	if (index < check_items.size())
@@ -178,6 +225,9 @@ void MapChecksPanel::showCheckItem(unsigned index)
 	Layout();
 }
 
+/* MapChecksPanel::refreshList
+ * Refreshes the problems list
+ *******************************************************************/
 void MapChecksPanel::refreshList()
 {
 	int selected = lb_errors->GetSelection();
@@ -211,6 +261,9 @@ void MapChecksPanel::refreshList()
 	}
 }
 
+/* MapChecksPanel::reset
+ * Resets all map checks and panel controls
+ *******************************************************************/
 void MapChecksPanel::reset()
 {
 	// Clear interface
@@ -231,6 +284,13 @@ void MapChecksPanel::reset()
 }
 
 
+/*******************************************************************
+ * MAPCHECKSPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* MapChecksPanel::onBtnCheck
+ * Called when the 'check' button is clicked
+ *******************************************************************/
 void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 {
 	MapTextureManager* texman = &(theMapEditor->textureManager());
@@ -293,6 +353,9 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 		updateStatusText("No problems found");
 }
 
+/* MapChecksPanel::onListBoxItem
+ * Called when a list item is selected
+ *******************************************************************/
 void MapChecksPanel::onListBoxItem(wxCommandEvent& e)
 {
 	int selected = lb_errors->GetSelection();
@@ -302,6 +365,9 @@ void MapChecksPanel::onListBoxItem(wxCommandEvent& e)
 	}
 }
 
+/* MapChecksPanel::onBtnFix1
+ * Called when the first fix button is clicked
+ *******************************************************************/
 void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 {
 	int selected = lb_errors->GetSelection();
@@ -316,6 +382,9 @@ void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 	}
 }
 
+/* MapChecksPanel::onBtnFix2
+ * Called when the second fix button is clicked
+ *******************************************************************/
 void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 {
 	int selected = lb_errors->GetSelection();
@@ -330,6 +399,9 @@ void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 	}
 }
 
+/* MapChecksPanel::onBtnEditObject
+ * Called when the 'edit object' button is clicked
+ *******************************************************************/
 void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 {
 	int selected = lb_errors->GetSelection();

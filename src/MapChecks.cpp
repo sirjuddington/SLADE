@@ -1,4 +1,32 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapChecks.cpp
+ * Description: Various handler classes for map error/problem checks
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "SLADEMap.h"
@@ -12,6 +40,11 @@
 #include <SFML/System.hpp>
 
 
+/*******************************************************************
+ * MISSINGTEXTURECHECK CLASS
+ *******************************************************************
+ * Checks for any missing textures on lines
+ */
 class MissingTextureCheck : public MapCheck
 {
 private:
@@ -186,6 +219,13 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * SPECIALTAGSCHECK CLASS
+ *******************************************************************
+ * Checks for lines with an action special that requires a tag (non-
+ * zero) but have no tag set
+ */
 class SpecialTagsCheck : public MapCheck
 {
 private:
@@ -257,6 +297,12 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * LINESINTERSECT CLASS
+ *******************************************************************
+ * Checks for any intersecting lines
+ */
 class LinesIntersectCheck : public MapCheck
 {
 private:
@@ -401,6 +447,12 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * LINESOVERLAPCHECK CLASS
+ *******************************************************************
+ * Checks for any overlapping lines (lines that share both vertices)
+ */
 class LinesOverlapCheck : public MapCheck
 {
 private:
@@ -509,6 +561,13 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * THINGSOVERLAPCHECK CLASS
+ *******************************************************************
+ * Checks for any overlapping things, taking radius and flags into
+ * account
+ */
 class ThingsOverlapCheck : public MapCheck
 {
 private:
@@ -697,6 +756,12 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * UNKNOWNTEXTURESCHECK CLASS
+ *******************************************************************
+ * Checks for any unknown/invalid textures on lines
+ */
 class UnknownTexturesCheck : public MapCheck
 {
 private:
@@ -892,6 +957,12 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * UNKNOWNFLATSCHECK CLASS
+ *******************************************************************
+ * Checks for any unknown/invalid flats on sectors
+ */
 class UnknownFlatsCheck : public MapCheck
 {
 private:
@@ -1000,6 +1071,12 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * UNKNOWNTHINGTYPESCHECK CLASS
+ *******************************************************************
+ * Checks for any things with an unknown type
+ */
 class UnknownThingTypesCheck : public MapCheck
 {
 private:
@@ -1075,6 +1152,13 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * STUCKTHINGSCHECK CLASS
+ *******************************************************************
+ * Checks for any missing things that are stuck inside (overlapping)
+ * solid lines
+ */
 class StuckThingsCheck : public MapCheck
 {
 private:
@@ -1197,6 +1281,12 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * SECTORREFERENCECHECK CLASS
+ *******************************************************************
+ * Checks for any possibly incorrect sidedef sector references
+ */
 class SectorReferenceCheck : public MapCheck
 {
 private:
@@ -1346,51 +1436,86 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * MAPCHECK STATIC FUNCTIONS
+ *******************************************************************/
+
+/* MapCheck::missingTextureCheck
+ * Returns a new MissingTextureCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::missingTextureCheck(SLADEMap* map)
 {
 	return new MissingTextureCheck(map);
 }
 
+/* MapCheck::specialTagCheck
+ * Returns a new SpecialTagsCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::specialTagCheck(SLADEMap* map)
 {
 	return new SpecialTagsCheck(map);
 }
 
+/* MapCheck::intersectingLineCheck
+ * Returns a new LinesIntersectCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::intersectingLineCheck(SLADEMap* map)
 {
 	return new LinesIntersectCheck(map);
 }
 
+/* MapCheck::overlappingLineCheck
+ * Returns a new LinesOverlapCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::overlappingLineCheck(SLADEMap* map)
 {
 	return new LinesOverlapCheck(map);
 }
 
+/* MapCheck::overlappingThingCheck
+ * Returns a new ThingsOverlapCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::overlappingThingCheck(SLADEMap* map)
 {
 	return new ThingsOverlapCheck(map);
 }
 
+/* MapCheck::unknownTextureCheck
+ * Returns a new UnknownTexturesCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::unknownTextureCheck(SLADEMap* map, MapTextureManager* texman)
 {
 	return new UnknownTexturesCheck(map, texman);
 }
 
+/* MapCheck::unknownFlatCheck
+ * Returns a new UnknownFlatsCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::unknownFlatCheck(SLADEMap* map, MapTextureManager* texman)
 {
 	return new UnknownFlatsCheck(map, texman);
 }
 
+/* MapCheck::unknownThingTypeCheck
+ * Returns a new UnknownThingTypesCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::unknownThingTypeCheck(SLADEMap* map)
 {
 	return new UnknownThingTypesCheck(map);
 }
 
+/* MapCheck::stuckThingsCheck
+ * Returns a new StuckThingsCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::stuckThingsCheck(SLADEMap* map)
 {
 	return new StuckThingsCheck(map);
 }
 
+/* MapCheck::sectorReferenceCheck
+ * Returns a new SectorReferenceCheck object for [map]
+ *******************************************************************/
 MapCheck* MapCheck::sectorReferenceCheck(SLADEMap* map)
 {
 	return new SectorReferenceCheck(map);

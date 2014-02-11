@@ -5,6 +5,8 @@
 #include <wx/dataview.h>
 #include <wx/notebook.h>
 
+// A wxDataViewTreeCtrl specialisation showing the
+// action specials and groups in a tree structure
 class ActionSpecialTreeView : public wxDataViewTreeCtrl
 {
 private:

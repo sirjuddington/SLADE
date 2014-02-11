@@ -1,10 +1,47 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ActionSpecialDialog.cpp
+ * Description: A dialog that allows selection of an action special
+ *              (and other related classes)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "ActionSpecialDialog.h"
 #include "GameConfiguration.h"
 #include "GenLineSpecialPanel.h"
 
+
+/*******************************************************************
+ * ACTIONSPECIALTREEVIEW CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ActionSpecialTreeView::ActionSpecialTreeView
+ * ActionSpecialTreeView class constructor
+ *******************************************************************/
 ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeCtrl(parent, -1)
 {
 	parent_dialog = NULL;
@@ -31,10 +68,16 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	Expand(root);
 }
 
+/* ActionSpecialTreeView::~ActionSpecialTreeView
+ * ActionSpecialTreeView class destructor
+ *******************************************************************/
 ActionSpecialTreeView::~ActionSpecialTreeView()
 {
 }
 
+/* ActionSpecialTreeView::specialNumber
+ * Returns the action special value for [item]
+ *******************************************************************/
 int ActionSpecialTreeView::specialNumber(wxDataViewItem item)
 {
 	string num = GetItemText(item).BeforeFirst(':');
@@ -44,6 +87,9 @@ int ActionSpecialTreeView::specialNumber(wxDataViewItem item)
 	return s;
 }
 
+/* ActionSpecialTreeView::showSpecial
+ * Finds the item for [special], selects it and ensures it is shown
+ *******************************************************************/
 void ActionSpecialTreeView::showSpecial(int special)
 {
 	// Go through item groups
@@ -66,6 +112,9 @@ void ActionSpecialTreeView::showSpecial(int special)
 	}
 }
 
+/* ActionSpecialTreeView::selectedSpecial
+ * Returns the currently selected action special value
+ *******************************************************************/
 int ActionSpecialTreeView::selectedSpecial()
 {
 	wxDataViewItem item = GetSelection();
@@ -75,6 +124,10 @@ int ActionSpecialTreeView::selectedSpecial()
 		return -1;
 }
 
+/* ActionSpecialTreeView::getGroup
+ * Returns the parent wxDataViewItem representing action special
+ * group [group]
+ *******************************************************************/
 wxDataViewItem ActionSpecialTreeView::getGroup(string group)
 {
 	// Check if group was already made
@@ -117,11 +170,21 @@ wxDataViewItem ActionSpecialTreeView::getGroup(string group)
 }
 
 
+/*******************************************************************
+ * ACTIONSPECIALTREEVIEW CLASS EVENTS
+ *******************************************************************/
+
+/* ActionSpecialTreeView::onItemEdit
+ * Called when a tree item label is edited
+ *******************************************************************/
 void ActionSpecialTreeView::onItemEdit(wxDataViewEvent& e)
 {
 	e.Veto();
 }
 
+/* ActionSpecialTreeView::onItemActivated
+ * Called when a tree item is activated
+ *******************************************************************/
 void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
 {
 	if (parent_dialog)
@@ -129,7 +192,13 @@ void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
 }
 
 
+/*******************************************************************
+ * ACTIONSPECIALDIALOG CLASS FUNCTIONS
+ *******************************************************************/
 
+/* ActionSpecialDialog::ActionSpecialDialog
+ * ActionSpecialDialog class constructor
+ *******************************************************************/
 ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent)
 	: wxDialog(parent, -1, "Select Action Special", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
@@ -168,10 +237,16 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent)
 	CenterOnParent();
 }
 
+/* ActionSpecialDialog::~ActionSpecialDialog
+ * ActionSpecialDialog class destructor
+ *******************************************************************/
 ActionSpecialDialog::~ActionSpecialDialog()
 {
 }
 
+/* ActionSpecialDialog::setSpecial
+ * Selects the item for special [special] in the specials tree
+ *******************************************************************/
 void ActionSpecialDialog::setSpecial(int special)
 {
 	// Check for boom generalised special
@@ -191,6 +266,9 @@ void ActionSpecialDialog::setSpecial(int special)
 	tree_specials->SetFocusFromKbd();
 }
 
+/* ActionSpecialDialog::selectedSpecial
+ * Returns the currently selected action special
+ *******************************************************************/
 int ActionSpecialDialog::selectedSpecial()
 {
 	if (theGameConfiguration->isBoom())

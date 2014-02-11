@@ -1,9 +1,46 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    SectorSpecialDialog.cpp
+ * Description: A dialog that allows selection of a sector special
+ *              (and other related classes)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "SectorSpecialDialog.h"
 #include "GameConfiguration.h"
 
+
+/*******************************************************************
+ * SECTORSPECIALDIALOG CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SectorSpecialDialog::SectorSpecialDialog
+ * SectorSpecialDialog class constructor
+ *******************************************************************/
 SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 	: wxDialog(parent, -1, "Select Sector Special", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
@@ -73,10 +110,16 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 	CenterOnParent();
 }
 
+/* SectorSpecialDialog::~SectorSpecialDialog
+ * SectorSpecialDialog class destructor
+ *******************************************************************/
 SectorSpecialDialog::~SectorSpecialDialog()
 {
 }
 
+/* SectorSpecialDialog::setup
+ * Sets up controls on the dialog to show [special]
+ *******************************************************************/
 void SectorSpecialDialog::setup(int special, int map_format)
 {
 	int base_type = theGameConfiguration->baseSectorType(special, map_format);
@@ -110,6 +153,9 @@ void SectorSpecialDialog::setup(int special, int map_format)
 	}
 }
 
+/* SectorSpecialDialog::getSelectedSpecial
+ * Returns the currently selected sector special
+ *******************************************************************/
 int SectorSpecialDialog::getSelectedSpecial(int map_format)
 {
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
@@ -127,6 +173,13 @@ int SectorSpecialDialog::getSelectedSpecial(int map_format)
 }
 
 
+/*******************************************************************
+ * SECTORSPECIALDIALOG CLASS EVENTS
+ *******************************************************************/
+
+/* SectorSpecialDialog::onSpecialsListViewItemActivated
+ * Called when an item in the sector specials tree is activated
+ *******************************************************************/
 void SectorSpecialDialog::onSpecialsListViewItemActivated(wxListEvent& e)
 {
 	EndModal(wxID_OK);

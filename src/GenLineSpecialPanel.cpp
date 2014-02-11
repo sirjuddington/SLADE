@@ -1,9 +1,46 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    GenLineSpecialPanel.cpp
+ * Description: Panel with controls to show/set a Boom generalised
+ *              line special
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "GenLineSpecial.h"
 #include "WxStuff.h"
 #include "GenLineSpecialPanel.h"
 
+
+/*******************************************************************
+ * GENLINESPECIALPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* GenLineSpecialPanel::GenLineSpecialPanel
+ * GenLineSpecialPanel class constructor
+ *******************************************************************/
 GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// --- Setup layout ---
@@ -44,10 +81,16 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	setupForType(0);
 }
 
+/* GenLineSpecialPanel::~GenLineSpecialPanel
+ * GenLineSpecialPanel class destructor
+ *******************************************************************/
 GenLineSpecialPanel::~GenLineSpecialPanel()
 {
 }
 
+/* GenLineSpecialPanel::setupForType
+ * Sets up generalised properties for special type [type]
+ *******************************************************************/
 void GenLineSpecialPanel::setupForType(int type)
 {
 	// Clear properties
@@ -329,6 +372,9 @@ void GenLineSpecialPanel::setupForType(int type)
 	Update();
 }
 
+/* GenLineSpecialPanel::setProp
+ * Sets the generalised property at [index] to [value]
+ *******************************************************************/
 void GenLineSpecialPanel::setProp(int prop, int value)
 {
 	if (prop < 0 || prop > 6)
@@ -367,6 +413,10 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 	}
 }
 
+/* GenLineSpecialPanel::loadSpecial
+ * Opens boom generalised line special [special], setting up controls
+ * as necessary
+ *******************************************************************/
 bool GenLineSpecialPanel::loadSpecial(int special)
 {
 	// Get special info
@@ -393,6 +443,9 @@ bool GenLineSpecialPanel::loadSpecial(int special)
 	return false;
 }
 
+/* GenLineSpecialPanel::getSpecial
+ * Returns the currently selected special
+ *******************************************************************/
 int GenLineSpecialPanel::getSpecial()
 {
 	int props[7];
@@ -402,11 +455,21 @@ int GenLineSpecialPanel::getSpecial()
 }
 
 
+/*******************************************************************
+ * GENLINESPECIALPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* GenLineSpecialPanel::onChoiceTypeChanged
+ * Called when the special type dropdown is changed
+ *******************************************************************/
 void GenLineSpecialPanel::onChoiceTypeChanged(wxCommandEvent& e)
 {
 	setupForType(choice_type->GetSelection());
 }
 
+/* GenLineSpecialPanel::onChoicePropertyChanged
+ * Called when a property dropdown is changed
+ *******************************************************************/
 void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e)
 {
 	int type = choice_type->GetSelection();

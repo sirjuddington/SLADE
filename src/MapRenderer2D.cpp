@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapRenderer2D.cpp
+ * Description: MapRenderer2D class - handles all rendering related
+ *              stuff for the map in 2d
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapRenderer2D.h"
@@ -12,6 +41,10 @@
 #include "OpenGL.h"
 #include "Drawing.h"
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Bool, vertex_round, true, CVAR_SAVE)
 CVAR(Int, vertex_size, 7, CVAR_SAVE)
 CVAR(Float, line_width, 1.5f, CVAR_SAVE)
@@ -36,10 +69,6 @@ CVAR(Bool, action_lines, true, CVAR_SAVE)
 CVAR(String, arrow_pathed_color, "#22FFFF", CVAR_SAVE)
 CVAR(String, arrow_dragon_color, "#FF2222", CVAR_SAVE)
 
-CVAR(Bool, test_ssplit, false, CVAR_SAVE)
-
-EXTERN_CVAR(Bool, use_zeth_icons)
-
 // Texture coordinates for rendering square things (since we can't just rotate these)
 float sq_thing_tc[] = { 0.0f, 1.0f,
 						0.0f, 0.0f,
@@ -47,6 +76,22 @@ float sq_thing_tc[] = { 0.0f, 1.0f,
 						1.0f, 1.0f
 					  };
 
+CVAR(Bool, test_ssplit, false, CVAR_SAVE)
+
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Bool, use_zeth_icons)
+
+
+/*******************************************************************
+ * MAPRENDERER2D CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapRenderer2D::MapRenderer2D
+ * MapRenderer2D class constructor
+ *******************************************************************/
 MapRenderer2D::MapRenderer2D(SLADEMap* map)
 {
 	// Init variables
@@ -62,6 +107,9 @@ MapRenderer2D::MapRenderer2D(SLADEMap* map)
 	this->n_things = 0;
 }
 
+/* MapRenderer2D::~MapRenderer2D
+ * MapRenderer2D class destructor
+ *******************************************************************/
 MapRenderer2D::~MapRenderer2D()
 {
 	if (vbo_vertices > 0)		glDeleteBuffers(1, &vbo_vertices);
@@ -71,6 +119,10 @@ MapRenderer2D::~MapRenderer2D()
 	if (list_lines > 0)			glDeleteLists(list_lines, 1);
 }
 
+/* MapRenderer2D::setupVertexRendering
+ * Sets up the renderer for vertices (point sprites, etc.). If
+ * [overlay] is true, use the point sprite for hilight/selection/etc
+ *******************************************************************/
 bool MapRenderer2D::setupVertexRendering(float size_scale, bool overlay)
 {
 	// Setup rendering properties
@@ -117,6 +169,9 @@ bool MapRenderer2D::setupVertexRendering(float size_scale, bool overlay)
 	return point;
 }
 
+/* MapRenderer2D::renderVertices
+ * Renders map vertices
+ *******************************************************************/
 void MapRenderer2D::renderVertices(float alpha)
 {
 	// Check there are any vertices to render
@@ -148,6 +203,10 @@ void MapRenderer2D::renderVertices(float alpha)
 	}
 }
 
+/* MapRenderer2D::renderVerticesImmediate
+ * Renders vertices in immediate mode (slower, but required for old
+ * video cards)
+ *******************************************************************/
 void MapRenderer2D::renderVerticesImmediate()
 {
 	if (list_vertices > 0 && map->nVertices() == n_vertices && map->geometryUpdated() <= vertices_updated)
@@ -169,6 +228,9 @@ void MapRenderer2D::renderVerticesImmediate()
 	}
 }
 
+/* MapRenderer2D::renderVerticesVBO
+ * Renders vertices using an OpenGL Vertex Buffer Object
+ *******************************************************************/
 void MapRenderer2D::renderVerticesVBO()
 {
 	// Do nothing if there are no vertices in the map
@@ -196,6 +258,9 @@ void MapRenderer2D::renderVerticesVBO()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+/* MapRenderer2D::renderVertexHilight
+ * Renders the vertex hilight overlay for vertex [index]
+ *******************************************************************/
 void MapRenderer2D::renderVertexHilight(int index, float fade)
 {
 	// Check hilight
@@ -227,6 +292,10 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
 	}
 }
 
+/* MapRenderer2D::renderVertexSelection
+ * Renders the vertex selection overlay for vertex indices in
+ * [selection]
+ *******************************************************************/
 void MapRenderer2D::renderVertexSelection(vector<int>& selection, float fade)
 {
 	// Check anything is selected
@@ -258,6 +327,9 @@ void MapRenderer2D::renderVertexSelection(vector<int>& selection, float fade)
 	}
 }
 
+/* MapRenderer2D::lineColour
+ * Returns the colour for [line]
+ *******************************************************************/
 rgba_t MapRenderer2D::lineColour(MapLine* line, bool ignore_filter)
 {
 	rgba_t col;
@@ -284,6 +356,9 @@ rgba_t MapRenderer2D::lineColour(MapLine* line, bool ignore_filter)
 	return col;
 }
 
+/* MapRenderer2D::renderLines
+ * Renders map lines, with direction tabs if [show_direction] is true
+ *******************************************************************/
 void MapRenderer2D::renderLines(bool show_direction, float alpha)
 {
 	// Check there are any lines to render
@@ -309,6 +384,9 @@ void MapRenderer2D::renderLines(bool show_direction, float alpha)
 		renderLinesImmediate(show_direction, alpha);
 }
 
+/* MapRenderer2D::renderLinesImmediate
+ * Renders map lines in immediate mode
+ *******************************************************************/
 void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 {
 	// Use display list if it's built
@@ -366,6 +444,9 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 	lines_updated = theApp->runTimer();
 }
 
+/* MapRenderer2D::renderLinesVBO
+ * Renders map lines using an OpenGL Vertex Buffer Object
+ *******************************************************************/
 void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 {
 	// Do nothing if there are no lines in the map
@@ -404,6 +485,9 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 	lines_dirs = show_direction;
 }
 
+/* MapRenderer2D::renderLineHilight
+ * Renders the line hilight overlay for line [index]
+ *******************************************************************/
 void MapRenderer2D::renderLineHilight(int index, float fade)
 {
 	// Check hilight
@@ -442,6 +526,9 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 	glEnd();
 }
 
+/* MapRenderer2D::renderLineSelection
+ * Renders the line selection overlay for line indices in [selection]
+ *******************************************************************/
 void MapRenderer2D::renderLineSelection(vector<int>& selection, float fade)
 {
 	// Check anything is selected
@@ -486,6 +573,9 @@ void MapRenderer2D::renderLineSelection(vector<int>& selection, float fade)
 	glEnd();
 }
 
+/* MapRenderer2D::renderTaggedLines
+ * Renders the tagged line overlay for lines in [lines]
+ *******************************************************************/
 void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 {
 	// Reset fade if tagged animation is disabled
@@ -534,6 +624,9 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 	}
 }
 
+/* MapRenderer2D::renderTaggingLines
+ * Renders the tagging line overlay for lines in [lines]
+ *******************************************************************/
 void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 {
 	// Reset fade if tagging animation is disabled
@@ -582,6 +675,9 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 	}
 }
 
+/* MapRenderer2D::setupThingOverlay
+ * Sets up the renderer for thing overlays (point sprites, etc.)
+ *******************************************************************/
 bool MapRenderer2D::setupThingOverlay()
 {
 	// Get hilight texture
@@ -613,6 +709,9 @@ bool MapRenderer2D::setupThingOverlay()
 	return point;
 }
 
+/* MapRenderer2D::renderThingOverlay
+ * Renders a thing overlay at [x,y] of size [radius]
+ *******************************************************************/
 void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool point)
 {
 	// Simplest case, thing_overlay_square is true and thing_drawtype is 1 or 2 (circles or sprites)
@@ -655,6 +754,9 @@ void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool p
 	}
 }
 
+/* MapRenderer2D::renderRoundThing
+ * Renders a round thing icon at [x,y]
+ *******************************************************************/
 void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType* tt, float alpha)
 {
 	// Ignore if no type given (shouldn't happen)
@@ -729,6 +831,10 @@ void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType
 		glPopMatrix();
 }
 
+/* MapRenderer2D::renderSpriteThing
+ * Renders a sprite thing icon at [x,y]. If [fitradius] is true, the
+ * sprite is drawn to fit within the thing's radius
+ *******************************************************************/
 bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingType* tt, unsigned index, float alpha, bool fitradius)
 {
 	// Ignore if no type given (shouldn't happen)
@@ -828,6 +934,9 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 	return show_angle;
 }
 
+/* MapRenderer2D::renderSquareThing
+ * Renders a square thing icon at [x,y]
+ *******************************************************************/
 bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingType* tt, float alpha, bool showicon, bool framed)
 {
 	// Ignore if no type given (shouldn't happen)
@@ -935,6 +1044,9 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 	return false;
 }
 
+/* MapRenderer2D::renderSimpleSquareThing
+ * Renders a simple square thing icon at [x,y]
+ *******************************************************************/
 void MapRenderer2D::renderSimpleSquareThing(double x, double y, double angle, ThingType* tt, float alpha)
 {
 	// Ignore if no type given (shouldn't happen)
@@ -984,6 +1096,9 @@ void MapRenderer2D::renderSimpleSquareThing(double x, double y, double angle, Th
 	glPopMatrix();
 }
 
+/* MapRenderer2D::renderThings
+ * Renders map things
+ *******************************************************************/
 void MapRenderer2D::renderThings(float alpha, bool force_dir)
 {
 	// Don't bother if (practically) invisible
@@ -994,6 +1109,9 @@ void MapRenderer2D::renderThings(float alpha, bool force_dir)
 	renderThingsImmediate(alpha);
 }
 
+/* MapRenderer2D::renderThingsImmediate
+ * Renders map things in immediate mode
+ *******************************************************************/
 void MapRenderer2D::renderThingsImmediate(float alpha)
 {
 	// Display lists aren't really good for this, better to check for
@@ -1197,6 +1315,9 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 	glDisable(GL_TEXTURE_2D);
 }
 
+/* MapRenderer2D::renderThingHilight
+ * Renders the thing hilight overlay for thing [index]
+ *******************************************************************/
 void MapRenderer2D::renderThingHilight(int index, float fade)
 {
 	// Check hilight
@@ -1276,6 +1397,10 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
 	glDisable(GL_TEXTURE_2D);
 }
 
+/* MapRenderer2D::renderThingSelection
+ * Renders the thing selection overlay for thing indices in
+ * [selection]
+ *******************************************************************/
 void MapRenderer2D::renderThingSelection(vector<int>& selection, float fade)
 {
 	// Check anything is selected
@@ -1317,6 +1442,9 @@ void MapRenderer2D::renderThingSelection(vector<int>& selection, float fade)
 	glDisable(GL_TEXTURE_2D);
 }
 
+/* MapRenderer2D::renderTaggedThings
+ * Renders the tagged thing overlay for things in [things]
+ *******************************************************************/
 void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 {
 	// Reset fade if tagged animation is disabled
@@ -1368,6 +1496,9 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 	}
 }
 
+/* MapRenderer2D::renderTaggingThings
+ * Renders the tagging thing overlay for things in [things]
+ *******************************************************************/
 void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 {
 	// Reset fade if tagging animation is disabled
@@ -1419,6 +1550,9 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 	}
 }
 
+/* MapRenderer2D::renderPathedThings
+ * Renders thing pathing lines/arrows for [things]
+ *******************************************************************/
 void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 {
 	// Skip if action lines are not desired, or if there's nothing to do
@@ -1595,6 +1729,9 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 	}
 }
 
+/* MapRenderer2D::renderFlats
+ * Renders map flats (sectors)
+ *******************************************************************/
 void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 {
 	// Don't bother if (practically) invisible
@@ -1609,11 +1746,17 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 	flats_updated = theApp->runTimer();
 }
 
+/* MapRenderer2D::sortPolyByTex
+ * Sorting function to sort polygons by their texture
+ *******************************************************************/
 bool sortPolyByTex(Polygon2D* left, Polygon2D* right)
 {
 	return left->getTexture()->glId() < right->getTexture()->glId();
 }
 
+/* MapRenderer2D::renderFlatsImmediate
+ * Renders map flats in immediate mode
+ *******************************************************************/
 void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 {
 	if (texture)
@@ -1724,6 +1867,9 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 		glDisable(GL_TEXTURE_2D);
 }
 
+/* MapRenderer2D::renderFlatsVBO
+ * Renders map flats using an OpenGL Vertex Buffer Object
+ *******************************************************************/
 void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 {
 	bool vbo_updated = false;
@@ -1879,6 +2025,9 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+/* MapRenderer2D::renderFlatHilight
+ * Renders the flat hilight overlay for sector [index]
+ *******************************************************************/
 void MapRenderer2D::renderFlatHilight(int index, float fade)
 {
 	// Check hilight
@@ -1937,6 +2086,10 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 	//glEnd();
 }
 
+/* MapRenderer2D::renderFlatSelection
+ * Renders the flat selection overlay for sector indices in
+ * [selection]
+ *******************************************************************/
 void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
 {
 	// Check anything is selected
@@ -2008,6 +2161,9 @@ void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
 	delete[] lines_drawn;
 }
 
+/* MapRenderer2D::renderTaggedFlats
+ * Renders the tagged flat overlay for sectors in [sectors]
+ *******************************************************************/
 void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 {
 	// Reset fade if tagged animation is disabled
@@ -2061,6 +2217,10 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 	}
 }
 
+/* MapRenderer2D::renderMovingVertices
+ * Renders the moving overlay for vertex indices in [vertices], to
+ * show movement by [move_vec]
+ *******************************************************************/
 void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_vec)
 {
 	uint8_t* lines_drawn = new uint8_t[map->nLines()];
@@ -2131,6 +2291,10 @@ void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_v
 	}
 }
 
+/* MapRenderer2D::renderMovingLines
+ * Renders the moving overlay for line indices in [lines], to show
+ * movement by [move_vec]
+ *******************************************************************/
 void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 {
 	uint8_t* lines_drawn = new uint8_t[map->nLines()];
@@ -2208,6 +2372,10 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 	delete[] lines_drawn;
 }
 
+/* MapRenderer2D::renderMovingSectors
+ * Renders the moving overlay for sector indices in [sectors], to
+ * show movement by [move_vec]
+ *******************************************************************/
 void MapRenderer2D::renderMovingSectors(vector<int>& sectors, fpoint2_t move_vec)
 {
 	// Determine what lines are being moved
@@ -2236,6 +2404,10 @@ void MapRenderer2D::renderMovingSectors(vector<int>& sectors, fpoint2_t move_vec
 	delete[] lines_moved;
 }
 
+/* MapRenderer2D::renderMovingThings
+ * Renders the moving overlay for thing indices in [things], to
+ * show movement by [move_vec]
+ *******************************************************************/
 void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 {
 	// Enable textures
@@ -2312,6 +2484,9 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 	}
 }
 
+/* MapRenderer2D::renderPasteThings
+ * Renders pasting overlay for [things] at [pos]
+ *******************************************************************/
 void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 {
 	// Enable textures
@@ -2388,6 +2563,9 @@ void MapRenderer2D::renderPasteThings(vector<MapThing*>& things, fpoint2_t pos)
 	}
 }
 
+/* MapRenderer2D::renderObjectEditGroup
+ * Renders object edit group overlay for [group]
+ *******************************************************************/
 void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 {
 	// Simple test
@@ -2529,6 +2707,9 @@ void MapRenderer2D::renderObjectEditGroup(ObjectEditGroup* group)
 	}
 }
 
+/* MapRenderer2D::updateVerticesVBO
+ * (Re)builds the map vertices VBO
+ *******************************************************************/
 void MapRenderer2D::updateVerticesVBO()
 {
 	// Create VBO if needed
@@ -2555,6 +2736,9 @@ void MapRenderer2D::updateVerticesVBO()
 	vertices_updated = theApp->runTimer();
 }
 
+/* MapRenderer2D::updateLinesVBO
+ * (Re)builds the map lines VBO
+ *******************************************************************/
 void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 {
 	// Create VBO if needed
@@ -2622,6 +2806,9 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 	lines_updated = theApp->runTimer();
 }
 
+/* MapRenderer2D::updateFlatsVBO
+ * (Re)builds the map flats VBO
+ *******************************************************************/
 void MapRenderer2D::updateFlatsVBO()
 {
 	if (!flats_use_vbo)
@@ -2659,6 +2846,9 @@ void MapRenderer2D::updateFlatsVBO()
 	flats_updated = theApp->runTimer();
 }
 
+/* MapRenderer2D::updateVisibility
+ * Updates map object visibility info depending on the current view
+ *******************************************************************/
 void MapRenderer2D::updateVisibility(fpoint2_t view_tl, fpoint2_t view_br)
 {
 	// Sector visibility
@@ -2715,7 +2905,9 @@ void MapRenderer2D::updateVisibility(fpoint2_t view_tl, fpoint2_t view_br)
 	}
 }
 
-
+/* MapRenderer2D::forceUpdate
+ * Updates all VBOs and other cached data
+ *******************************************************************/
 void MapRenderer2D::forceUpdate(float line_alpha)
 {
 	// Update variables
@@ -2745,6 +2937,10 @@ void MapRenderer2D::forceUpdate(float line_alpha)
 	renderLines(lines_dirs);
 }
 
+/* MapRenderer2D::scaledRadius
+ * Returns [radius] scaled such that it stays the same size on screen
+ * at all zoom levels
+ *******************************************************************/
 double MapRenderer2D::scaledRadius(int radius)
 {
 	if (radius > 16)
@@ -2756,6 +2952,9 @@ double MapRenderer2D::scaledRadius(int radius)
 		return (double)radius;
 }
 
+/* MapRenderer2D::visOK
+ * Returns true if the current visibility info is valid
+ *******************************************************************/
 bool MapRenderer2D::visOK()
 {
 	if (map->nSectors() != vis_s.size() ||

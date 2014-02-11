@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapEditor.cpp
+ * Description: MapEditor class - handles any map editing related
+ *              stuff
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "MapEditor.h"
 #include "ColourConfiguration.h"
@@ -15,10 +44,17 @@
 #include "UndoRedo.h"
 #include "MapChecks.h"
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE);
 
 
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Int, shapedraw_sides)
 EXTERN_CVAR(Int, shapedraw_shape)
 EXTERN_CVAR(Bool, shapedraw_centered)
@@ -27,6 +63,11 @@ EXTERN_CVAR(Bool, shapedraw_lockratio)
 
 #pragma region UNDO STEPS
 
+/*******************************************************************
+ * PROPERTYCHANGEUS CLASS
+ *******************************************************************
+ * UndoStep for when a MapObject has properties changed
+ */
 class PropertyChangeUS : public UndoStep
 {
 private:
@@ -70,6 +111,11 @@ public:
 	}
 };
 
+/*******************************************************************
+ * MAPOBJECTCREATEDELETEUS CLASS
+ *******************************************************************
+ * UndoStep for when a MapObject is either created or deleted
+ */
 class MapObjectCreateDeleteUS : public UndoStep
 {
 private:
@@ -140,6 +186,12 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * MULTIMAPOBJECTPROPERTYCHANGEUS CLASS
+ *******************************************************************
+ * UndoStep for when multiple MapObjects have properties changed
+ */
 class MultiMapObjectPropertyChangeUS : public UndoStep
 {
 private:
@@ -216,6 +268,13 @@ public:
 #pragma endregion
 
 
+/*******************************************************************
+ * MAPEDITOR CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapEditor::MapEditor
+ * MapEditor class constructor
+ *******************************************************************/
 MapEditor::MapEditor()
 {
 	// Init variables
@@ -236,6 +295,9 @@ MapEditor::MapEditor()
 	current_tag = 0;
 }
 
+/* MapEditor::~MapEditor
+ * MapEditor class destructor
+ *******************************************************************/
 MapEditor::~MapEditor()
 {
 	if (copy_thing) delete copy_thing;
@@ -258,6 +320,9 @@ MapEditor::~MapEditor()
 	delete undo_manager_3d;
 }
 
+/* MapEditor::setEditMode
+ * Changes the current edit mode to [mode]
+ *******************************************************************/
 void MapEditor::setEditMode(int mode)
 {
 	// Check if we are changing to the same mode
@@ -301,6 +366,9 @@ void MapEditor::setEditMode(int mode)
 	updateStatusText();
 }
 
+/* MapEditor::setSectorEditMode
+ * Changes the current sector edit mode to [mode]
+ *******************************************************************/
 void MapEditor::setSectorEditMode(int mode)
 {
 	// Set sector mode
@@ -319,6 +387,9 @@ void MapEditor::setSectorEditMode(int mode)
 	updateStatusText();
 }
 
+/* MapEditor::openMap
+ * Opens [map]
+ *******************************************************************/
 bool MapEditor::openMap(Archive::mapdesc_t map)
 {
 	wxLogMessage("Opening map %s", map.name);
@@ -361,6 +432,9 @@ bool MapEditor::openMap(Archive::mapdesc_t map)
 	return true;
 }
 
+/* MapEditor::clearMap
+ * Clears and resets the map
+ *******************************************************************/
 void MapEditor::clearMap()
 {
 	// Clear map
@@ -379,6 +453,10 @@ void MapEditor::clearMap()
 
 #pragma region GENERAL
 
+/* MapEditor::showItem
+ * Moves and zooms the view to show the object at [index], depending
+ * on the current edit mode
+ *******************************************************************/
 void MapEditor::showItem(int index)
 {
 	selection.clear();
@@ -399,6 +477,9 @@ void MapEditor::showItem(int index)
 	}
 }
 
+/* MapEditor::getModeString
+ * Returns a string representation of the current edit mode
+ *******************************************************************/
 string MapEditor::getModeString()
 {
 	switch (edit_mode)
@@ -416,6 +497,10 @@ string MapEditor::getModeString()
 
 #pragma region HILIGHT
 
+/* MapEditor::updateHilight
+ * Hilights the map object closest to [mouse_pos], and updates
+ * anything needed if the hilight is changed
+ *******************************************************************/
 bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 {
 	// Do nothing if hilight is locked
@@ -480,6 +565,9 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	return current != hilight_item;
 }
 
+/* MapEditor::getHilightedVertex
+ * Returns the currently hilighted MapVertex
+ *******************************************************************/
 MapVertex* MapEditor::getHilightedVertex()
 {
 	// Check edit mode is correct
@@ -493,6 +581,9 @@ MapVertex* MapEditor::getHilightedVertex()
 	return map.getVertex(hilight_item);
 }
 
+/* MapEditor::getHilightedLine
+ * Returns the currently hilighted MapLine
+ *******************************************************************/
 MapLine* MapEditor::getHilightedLine()
 {
 	// Check edit mode is correct
@@ -506,6 +597,9 @@ MapLine* MapEditor::getHilightedLine()
 	return map.getLine(hilight_item);
 }
 
+/* MapEditor::getHilightedSector
+ * Returns the currently hilighted MapSector
+ *******************************************************************/
 MapSector* MapEditor::getHilightedSector()
 {
 	// Check edit mode is correct
@@ -519,6 +613,9 @@ MapSector* MapEditor::getHilightedSector()
 	return map.getSector(hilight_item);
 }
 
+/* MapEditor::getHilightedThing
+ * Returns the currently hilighted MapThing
+ *******************************************************************/
 MapThing* MapEditor::getHilightedThing()
 {
 	// Check edit mode is correct
@@ -532,6 +629,9 @@ MapThing* MapEditor::getHilightedThing()
 	return map.getThing(hilight_item);
 }
 
+/* MapEditor::getHilightedObject
+ * Returns the currently hilighted MapObject
+ *******************************************************************/
 MapObject* MapEditor::getHilightedObject()
 {
 	if (edit_mode == MODE_VERTICES)
@@ -550,6 +650,9 @@ MapObject* MapEditor::getHilightedObject()
 
 #pragma region TAGGING
 
+/* MapEditor::updateThingLists
+ * Rebuilds thing info lists (pathed things, etc.)
+ *******************************************************************/
 void MapEditor::updateThingLists()
 {
 	pathed_things.clear();
@@ -557,6 +660,9 @@ void MapEditor::updateThingLists()
 	map.setThingsUpdated();
 }
 
+/* MapEditor::updateTagged
+ * Rebuilds tagged object lists based on the current hilight
+ *******************************************************************/
 void MapEditor::updateTagged()
 {
 	// Clear tagged lists
@@ -737,6 +843,9 @@ void MapEditor::updateTagged()
 
 #pragma region SELECTION
 
+/* MapEditor::selectionUpdated
+ * Called when the selection is updated, updates the properties panel
+ *******************************************************************/
 void MapEditor::selectionUpdated()
 {
 	// Open selected objects in properties panel
@@ -768,6 +877,9 @@ void MapEditor::selectionUpdated()
 	last_undo_level = "";
 }
 
+/* MapEditor::clearSelection
+ * Clears the current 2d/3d mode selection
+ *******************************************************************/
 void MapEditor::clearSelection(bool animate)
 {
 	if (edit_mode == MODE_3D)
@@ -783,6 +895,9 @@ void MapEditor::clearSelection(bool animate)
 	}
 }
 
+/* MapEditor::selectAll
+ * Selects all objects depending on edit mode
+ *******************************************************************/
 void MapEditor::selectAll()
 {
 	// Clear selection initially
@@ -818,6 +933,9 @@ void MapEditor::selectAll()
 	selectionUpdated();
 }
 
+/* MapEditor::selectCurrent
+ * Toggles selection on the currently hilighted object
+ *******************************************************************/
 bool MapEditor::selectCurrent(bool clear_none)
 {
 	// --- 3d mode ---
@@ -898,6 +1016,10 @@ bool MapEditor::selectCurrent(bool clear_none)
 	}
 }
 
+/* MapEditor::selectWithin
+ * Selects all objects within the box from [xmin,ymin] to [xmax,ymax].
+ * If [add] is false, the selection will be cleared first
+ *******************************************************************/
 bool MapEditor::selectWithin(double xmin, double ymin, double xmax, double ymax, bool add)
 {
 	// Select depending on editing mode
@@ -1046,6 +1168,9 @@ bool MapEditor::selectWithin(double xmin, double ymin, double xmax, double ymax,
 	return (nsel.size() > 0);
 }
 
+/* MapEditor::getSelectedVertices
+ * Adds all selected vertices to [list]
+ *******************************************************************/
 void MapEditor::getSelectedVertices(vector<MapVertex*>& list)
 {
 	if (edit_mode != MODE_VERTICES)
@@ -1067,6 +1192,9 @@ void MapEditor::getSelectedVertices(vector<MapVertex*>& list)
 		list.push_back(map.getVertex(hilight_item));
 }
 
+/* MapEditor::getSelectedLines
+ * Adds all selected lines to [list]
+ *******************************************************************/
 void MapEditor::getSelectedLines(vector<MapLine*>& list)
 {
 	if (edit_mode == MODE_LINES)
@@ -1106,6 +1234,9 @@ void MapEditor::getSelectedLines(vector<MapLine*>& list)
 	}
 }
 
+/* MapEditor::getSelectedSectors
+ * Adds all selected sectors to [list]
+ *******************************************************************/
 void MapEditor::getSelectedSectors(vector<MapSector*>& list)
 {
 	if (edit_mode != MODE_SECTORS)
@@ -1127,6 +1258,9 @@ void MapEditor::getSelectedSectors(vector<MapSector*>& list)
 		list.push_back(map.getSector(hilight_item));
 }
 
+/* MapEditor::getSelectedThings
+ * Adds all selected things to [list]
+ *******************************************************************/
 void MapEditor::getSelectedThings(vector<MapThing*>& list)
 {
 	if (edit_mode == MODE_3D)
@@ -1168,6 +1302,9 @@ void MapEditor::getSelectedThings(vector<MapThing*>& list)
 	}
 }
 
+/* MapEditor::getSelectedObjects
+ * Adds all selected objects to [list], depending on edit mode
+ *******************************************************************/
 void MapEditor::getSelectedObjects(vector<MapObject*>& list)
 {
 	// Go through selection
@@ -1198,6 +1335,9 @@ void MapEditor::getSelectedObjects(vector<MapObject*>& list)
 	}
 }
 
+/* MapEditor::selectItem3d
+ * Toggles selection on the currently hilighted 3d mode object
+ *******************************************************************/
 void MapEditor::selectItem3d(selection_3d_t item, int sel)
 {
 	// Go through selection
@@ -1230,6 +1370,9 @@ void MapEditor::selectItem3d(selection_3d_t item, int sel)
 	}
 }
 
+/* MapEditor::get3dSelectionOrHilight
+ * Adds all 3d mode selected objects to [list]
+ *******************************************************************/
 void MapEditor::get3dSelectionOrHilight(vector<selection_3d_t>& list)
 {
 	if (selection_3d.empty() && hilight_3d.index >= 0)
@@ -1245,11 +1388,17 @@ void MapEditor::get3dSelectionOrHilight(vector<selection_3d_t>& list)
 
 #pragma region GRID
 
+/* MapEditor::gridSize
+ * Returns the current grid size
+ *******************************************************************/
 double MapEditor::gridSize()
 {
 	return grid_sizes[gridsize];
 }
 
+/* MapEditor::incrementGrid
+ * Increments the grid size
+ *******************************************************************/
 void MapEditor::incrementGrid()
 {
 	gridsize++;
@@ -1260,6 +1409,9 @@ void MapEditor::incrementGrid()
 	updateStatusText();
 }
 
+/* MapEditor::decrementGrid
+ * Decrements the grid size
+ *******************************************************************/
 void MapEditor::decrementGrid()
 {
 	gridsize--;
@@ -1271,6 +1423,10 @@ void MapEditor::decrementGrid()
 	updateStatusText();
 }
 
+/* MapEditor::snapToGrid
+ * Returns the nearest grid point to [position], unless snap to grid
+ * is disabled. If [force] is true, grid snap setting is ignored
+ *******************************************************************/
 double MapEditor::snapToGrid(double position, bool force)
 {
 	if (!force && !grid_snap)
@@ -1291,6 +1447,9 @@ double MapEditor::snapToGrid(double position, bool force)
 
 #pragma region MOVE
 
+/* MapEditor::beginMode
+ * Begins a move operation, starting from [mouse_pos]
+ *******************************************************************/
 bool MapEditor::beginMove(fpoint2_t mouse_pos)
 {
 	// Check if we have any selection or hilight
@@ -1359,6 +1518,9 @@ bool MapEditor::beginMove(fpoint2_t mouse_pos)
 	return true;
 }
 
+/* MapEditor::doMove
+ * Updates the current move operation (moving from start to [move_pos])
+ *******************************************************************/
 void MapEditor::doMove(fpoint2_t mouse_pos)
 {
 	// Special case: single vertex or thing
@@ -1393,6 +1555,9 @@ void MapEditor::doMove(fpoint2_t mouse_pos)
 		move_vec.set(dx, dy);
 }
 
+/* MapEditor::endMove
+ * Ends a move operation and applies change if [accept] is true
+ *******************************************************************/
 void MapEditor::endMove(bool accept)
 {
 	long move_time = theApp->runTimer();
@@ -1484,6 +1649,9 @@ void MapEditor::endMove(bool accept)
 	map.refreshIndices();
 }
 
+/* MapEditor::mergeLines
+ * Currently unused
+ *******************************************************************/
 void MapEditor::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
 {
 
@@ -1531,6 +1699,9 @@ void MapEditor::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
 
 #pragma region LINES
 
+/* MapEditor::splitLine
+ * Splits the line closest to [x,y] at the closest point on the line
+ *******************************************************************/
 void MapEditor::splitLine(double x, double y, double min_dist)
 {
 	// Get the closest line
@@ -1557,6 +1728,9 @@ void MapEditor::splitLine(double x, double y, double min_dist)
 	endUndoRecord();
 }
 
+/* MapEditor::flipLines
+ * Flips all selected lines, and sides if [sides] is true
+ *******************************************************************/
 void MapEditor::flipLines(bool sides)
 {
 	// Get selected/hilighted line(s)
@@ -1579,6 +1753,9 @@ void MapEditor::flipLines(bool sides)
 	updateDisplay();
 }
 
+/* MapEditor::correctLineSectors
+ * Attempts to correct sector references on all selected lines
+ *******************************************************************/
 void MapEditor::correctLineSectors()
 {
 	// Get selected/hilighted line(s)
@@ -1611,6 +1788,10 @@ void MapEditor::correctLineSectors()
 
 #pragma region SECTORS
 
+/* MapEditor::changeSectorHeight
+ * Changes floor and/or ceiling heights on all selected sectors by
+ * [amount]
+ *******************************************************************/
 void MapEditor::changeSectorHeight(int amount, bool floor, bool ceiling)
 {
 	// Do nothing if not in sectors mode
@@ -1677,6 +1858,10 @@ void MapEditor::changeSectorHeight(int amount, bool floor, bool ceiling)
 	updateDisplay();
 }
 
+/* MapEditor::changeSectorLight
+ * Changes the light level for all selected sectors, increments if
+ * [up] is true, decrements otherwise
+ *******************************************************************/
 void MapEditor::changeSectorLight(bool up, bool fine)
 {
 	// Do nothing if not in sectors mode
@@ -1722,6 +1907,11 @@ void MapEditor::changeSectorLight(bool up, bool fine)
 	updateDisplay();
 }
 
+/* MapEditor::joinSectors
+ * Joins all selected sectors. If [remove_lines] is true, all
+ * resulting lines with both sides set to the joined sector are
+ * removed
+ *******************************************************************/
 void MapEditor::joinSectors(bool remove_lines)
 {
 	// Check edit mode
@@ -1805,6 +1995,9 @@ void MapEditor::joinSectors(bool remove_lines)
 
 #pragma region THINGS
 
+/* MapEditor::changeThingType
+ * Changes all selected things types to [newtype]
+ *******************************************************************/
 void MapEditor::changeThingType(int newtype)
 {
 	// Do nothing if not in things mode
@@ -1836,6 +2029,9 @@ void MapEditor::changeThingType(int newtype)
 	updateDisplay();
 }
 
+/* MapEditor::thingQuickAngle
+ * Sets the angle of all selected things to face toward [mouse_pos]
+ *******************************************************************/
 void MapEditor::thingQuickAngle(fpoint2_t mouse_pos)
 {
 	// Do nothing if not in things mode
@@ -1861,6 +2057,9 @@ void MapEditor::thingQuickAngle(fpoint2_t mouse_pos)
 
 #pragma region TAG EDIT
 
+/* MapEditor::beginTagEdit
+ * Begins a tag edit operation
+ *******************************************************************/
 int MapEditor::beginTagEdit()
 {
 	// Check lines mode
@@ -1894,6 +2093,10 @@ int MapEditor::beginTagEdit()
 	return 1;
 }
 
+/* MapEditor::tagSectorAt
+ * Applies the current tag edit tag to the sector at [x,y], or clears
+ * the sector tag if it is already the same
+ *******************************************************************/
 void MapEditor::tagSectorAt(double x, double y)
 {
 	int index = map.sectorAt(x, y);
@@ -1919,6 +2122,9 @@ void MapEditor::tagSectorAt(double x, double y)
 	addEditorMessage(S_FMT("Tagged sector %d", sector->getIndex()));
 }
 
+/* MapEditor::endTagEdit
+ * Ends the tag edit operation and applies changes if [accept] is true
+ *******************************************************************/
 void MapEditor::endTagEdit(bool accept)
 {
 	// Get selected lines
@@ -1966,6 +2172,9 @@ void MapEditor::endTagEdit(bool accept)
 
 #pragma region OBJECT CREATION
 
+/* MapEditor::createObject
+ * Creates an object (depending on edit mode) at [x,y]
+ *******************************************************************/
 void MapEditor::createObject(double x, double y)
 {
 	// Vertices mode
@@ -2017,6 +2226,9 @@ void MapEditor::createObject(double x, double y)
 	}
 }
 
+/* MapEditor::createVertex
+ * Creates a new vertex at [x,y]
+ *******************************************************************/
 void MapEditor::createVertex(double x, double y)
 {
 	// Snap coordinates to grid if necessary
@@ -2036,6 +2248,9 @@ void MapEditor::createVertex(double x, double y)
 		addEditorMessage(S_FMT("Created vertex at (%d, %d)", (int)vertex->xPos(), (int)vertex->yPos()));
 }
 
+/* MapEditor::createThing
+ * Creates a new thing at [x,y]
+ *******************************************************************/
 void MapEditor::createThing(double x, double y)
 {
 	// Snap coordinates to grid if necessary
@@ -2072,6 +2287,9 @@ void MapEditor::createThing(double x, double y)
 		addEditorMessage(S_FMT("Created thing at (%d, %d)", (int)thing->xPos(), (int)thing->yPos()));
 }
 
+/* MapEditor::createSector
+ * Creates a new sector at [x,y]
+ *******************************************************************/
 void MapEditor::createSector(double x, double y)
 {
 	// Find nearest line
@@ -2123,6 +2341,9 @@ void MapEditor::createSector(double x, double y)
 
 #pragma region OBJECT DELETION
 
+/* MapEditor::deleteObject
+ * Deletes all selected objects, depending on edit mode
+ *******************************************************************/
 void MapEditor::deleteObject()
 {
 	vector<MapObject*> objects_prop_change;
@@ -2269,6 +2490,9 @@ void MapEditor::deleteObject()
 
 #pragma region LINE DRAWING
 
+/* MapEditor::lineDrawPoint
+ * Returns the line drawing point at [index]
+ *******************************************************************/
 fpoint2_t MapEditor::lineDrawPoint(unsigned index)
 {
 	// Check index
@@ -2278,6 +2502,10 @@ fpoint2_t MapEditor::lineDrawPoint(unsigned index)
 	return draw_points[index];
 }
 
+/* MapEditor::addLineDrawPoint
+ * Adds a line drawing point at [point], or at the nearest vertex to
+ * [point] if [nearest] is true
+ *******************************************************************/
 bool MapEditor::addLineDrawPoint(fpoint2_t point, bool nearest)
 {
 	// Snap to nearest vertex if necessary
@@ -2321,6 +2549,10 @@ bool MapEditor::addLineDrawPoint(fpoint2_t point, bool nearest)
 	return false;
 }
 
+/* MapEditor::removeLineDrawPoint
+ * Removes the most recent line drawing point, or cancels line
+ * drawing if there are no points
+ *******************************************************************/
 void MapEditor::removeLineDrawPoint()
 {
 	if(draw_points.empty())
@@ -2334,6 +2566,10 @@ void MapEditor::removeLineDrawPoint()
 	}
 }
 
+/* MapEditor::setShapeDrawOrigin
+ * Sets the shape drawing origin to [point], or the nearest vertex to
+ * [point] if [nearest] is true
+ *******************************************************************/
 void MapEditor::setShapeDrawOrigin(fpoint2_t point, bool nearest)
 {
 	// Snap to nearest vertex if necessary
@@ -2357,6 +2593,10 @@ void MapEditor::setShapeDrawOrigin(fpoint2_t point, bool nearest)
 	draw_origin = point;
 }
 
+/* MapEditor::updateShapeDraw
+ * Builds the current shape as line drawing points using the shape
+ * draw origin and [point] for the size
+ *******************************************************************/
 void MapEditor::updateShapeDraw(fpoint2_t point)
 {
 	// Clear line draw points
@@ -2453,6 +2693,10 @@ struct me_ls_t
 	me_ls_t(MapLine* line, bool front) { this->line = line; this->front = front; ignore = false; }
 };
 
+/* MapEditor::endLineDraw
+ * Ends the line drawing operation and applies changes if [accept]
+ * is true
+ *******************************************************************/
 void MapEditor::endLineDraw(bool apply)
 {
 	// Check if we want to 'apply' the line draw (ie. create the lines)
@@ -2522,6 +2766,9 @@ void MapEditor::endLineDraw(bool apply)
 
 #pragma region OBJECT EDIT
 
+/* MapEditor::beginObjectEdit
+ * Begins an object edit operation
+ *******************************************************************/
 bool MapEditor::beginObjectEdit()
 {
 	vector<MapObject*> edit_objects;
@@ -2590,6 +2837,10 @@ bool MapEditor::beginObjectEdit()
 	return true;
 }
 
+/* MapEditor::endObjectEdit
+ * Ends the object edit operation and applies changes if [accept] is
+ * true
+ *******************************************************************/
 void MapEditor::endObjectEdit(bool accept)
 {
 	// Un-filter objects
@@ -2633,6 +2884,9 @@ void MapEditor::endObjectEdit(bool accept)
 
 #pragma region COPY / PASTE
 
+/* MapEditor::copyProperties
+ * Copies the properties from [object] to be used for paste/create
+ *******************************************************************/
 void MapEditor::copyProperties(MapObject* object)
 {
 	// Do nothing if no selection or hilight
@@ -2698,6 +2952,9 @@ void MapEditor::copyProperties(MapObject* object)
 	}
 }
 
+/* MapEditor::pasteProperties
+ * Pastes previously copied properties to all selected objects
+ *******************************************************************/
 void MapEditor::pasteProperties()
 {
 	// Do nothing if no selection or hilight
@@ -2790,6 +3047,9 @@ void MapEditor::pasteProperties()
 	updateDisplay();
 }
 
+/* MapEditor::copy
+ * Copies all selected objects
+ *******************************************************************/
 void MapEditor::copy()
 {
 	// Can't copy/paste vertices (no point)
@@ -2835,6 +3095,9 @@ void MapEditor::copy()
 	}
 }
 
+/* MapEditor::paste
+ * Pastes previously copied objects at [mouse_pos]
+ *******************************************************************/
 void MapEditor::paste(fpoint2_t mouse_pos)
 {
 	// Go through clipboard items
@@ -2870,6 +3133,10 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 
 #pragma region EDITING_3D
 
+/* MapEditor::set3dHilight
+ * Sets the 3d mode hilight (if [item] is different from the current
+ * hilight)
+ *******************************************************************/
 bool MapEditor::set3dHilight(selection_3d_t item)
 {
 	bool changed = false;
@@ -2884,6 +3151,9 @@ bool MapEditor::set3dHilight(selection_3d_t item)
 	return changed;
 }
 
+/* MapEditor::wallMatches
+ * Returns true if the texture [part] of [side] matches [tex]
+ *******************************************************************/
 bool MapEditor::wallMatches(MapSide* side, uint8_t part, string tex)
 {
 	// Check for blank texture where it isn't needed
@@ -2922,6 +3192,10 @@ bool MapEditor::wallMatches(MapSide* side, uint8_t part, string tex)
 	return true;
 }
 
+/* MapEditor::getAdjacentWalls3d
+ * Adds all adjacent walls to [item] to [list]. Adjacent meaning
+ * connected and sharing a texture
+ *******************************************************************/
 void MapEditor::getAdjacentWalls3d(selection_3d_t item, vector<selection_3d_t>& list)
 {
 	// Add item to list if needed
@@ -3040,6 +3314,9 @@ void MapEditor::getAdjacentWalls3d(selection_3d_t item, vector<selection_3d_t>& 
 	}
 }
 
+/* MapEditor::selectAdjacent3d
+ * Selects all adjacent walls or flats to [item]
+ *******************************************************************/
 void MapEditor::selectAdjacent3d(selection_3d_t item)
 {
 	// Check item
@@ -3121,6 +3398,9 @@ void MapEditor::selectAdjacent3d(selection_3d_t item)
 	}
 }
 
+/* MapEditor::changeSectorLight3d
+ * Changes the light level of selected sectors by [amount]
+ *******************************************************************/
 void MapEditor::changeSectorLight3d(int amount)
 {
 	// Get items to process
@@ -3209,6 +3489,10 @@ void MapEditor::changeSectorLight3d(int amount)
 	}
 }
 
+/* MapEditor::changeOffset3d
+ * Changes the offset of selected walls by [amount]. X axis if [x] is
+ * true, otherwise Y axis
+ *******************************************************************/
 void MapEditor::changeOffset3d(int amount, bool x)
 {
 	// Get items to process
@@ -3341,6 +3625,10 @@ void MapEditor::changeOffset3d(int amount, bool x)
 	}
 }
 
+/* MapEditor::changeSectorHeight3d
+ * Changes the height of the selected 3d mode flats by [amount]
+ * (walls selected will change ceiling height)
+ *******************************************************************/
 void MapEditor::changeSectorHeight3d(int amount)
 {
 	// Get items to process
@@ -3437,6 +3725,9 @@ void MapEditor::changeSectorHeight3d(int amount)
 	}
 }
 
+/* MapEditor::doAlignX3d
+ * Recursive function to align textures on the x axis
+ *******************************************************************/
 void MapEditor::doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done)
 {
 	// Check if this wall has already been processed
@@ -3486,6 +3777,9 @@ void MapEditor::doAlignX3d(MapSide* side, int offset, string tex, vector<selecti
 	}
 }
 
+/* MapEditor::autoAlignX3d
+ * Aligns X offsets beginning from the wall selection [start]
+ *******************************************************************/
 void MapEditor::autoAlignX3d(selection_3d_t start)
 {
 	// Check start is a wall
@@ -3521,6 +3815,9 @@ void MapEditor::autoAlignX3d(selection_3d_t start)
 	addEditorMessage("Auto-aligned on X axis");
 }
 
+/* MapEditor::resetWall3d
+ * Resets offsets and scaling for the currently selected wall(s)
+ *******************************************************************/
 void MapEditor::resetWall3d()
 {
 	// Get items to process
@@ -3608,6 +3905,10 @@ void MapEditor::resetWall3d()
 		addEditorMessage("Offsets reset");
 }
 
+/* MapEditor::toggleUnpegged3d
+ * Toggles the lower/upper unpegged flag for selected walls depending
+ * on [lower]
+ *******************************************************************/
 void MapEditor::toggleUnpegged3d(bool lower)
 {
 	// Get items to process
@@ -3670,6 +3971,9 @@ void MapEditor::toggleUnpegged3d(bool lower)
 		addEditorMessage("Upper Unpegged flag toggled");
 }
 
+/* MapEditor::copy3d
+ * Copies the currently hilighted 3d wall/flat/thing
+ *******************************************************************/
 void MapEditor::copy3d(int type)
 {
 	// Check hilight
@@ -3739,6 +4043,9 @@ void MapEditor::copy3d(int type)
 	}
 }
 
+/* MapEditor::paste3d
+ * Pastes previously copied wall/flat/thing info to selection
+ *******************************************************************/
 void MapEditor::paste3d(int type)
 {
 	// Get items to paste to
@@ -3840,6 +4147,9 @@ void MapEditor::paste3d(int type)
 	undo_manager_3d->endRecord(true);
 }
 
+/* MapEditor::changeThingZ3d
+ * Changes the Z height of selected 3d mode things by [amount]
+ *******************************************************************/
 void MapEditor::changeThingZ3d(int amount)
 {
 	// Ignore for doom format
@@ -3865,6 +4175,9 @@ void MapEditor::changeThingZ3d(int amount)
 	}
 }
 
+/* MapEditor::deleteThing3d
+ * Deletes any selected 3d mode things
+ *******************************************************************/
 void MapEditor::deleteThing3d()
 {
 	// Begin undo level
@@ -3881,6 +4194,10 @@ void MapEditor::deleteThing3d()
 	endUndoRecord();
 }
 
+/* MapEditor::changeScale3d
+ * Changes scaling for the currently selected walls/flats, x scale if
+ * [x] is true, y scale otherwise
+ *******************************************************************/
 void MapEditor::changeScale3d(double amount, bool x)
 {
 	// Get items to process
@@ -3954,6 +4271,9 @@ void MapEditor::changeScale3d(double amount, bool x)
 
 #pragma region EDITOR MESSAGES
 
+/* MapEditor::getEditorMessage
+ * Returns the current editor message at [index]
+ *******************************************************************/
 string MapEditor::getEditorMessage(int index)
 {
 	// Check index
@@ -3963,6 +4283,10 @@ string MapEditor::getEditorMessage(int index)
 	return editor_messages[index].message;
 }
 
+/* MapEditor::getEditorMessageTime
+ * Returns the amount of time the editor message at [index] has been
+ * active
+ *******************************************************************/
 long MapEditor::getEditorMessageTime(int index)
 {
 	// Check index
@@ -3972,6 +4296,9 @@ long MapEditor::getEditorMessageTime(int index)
 	return theApp->runTimer() - editor_messages[index].act_time;
 }
 
+/* MapEditor::addEditorMessage
+ * Adds an editor message, removing the oldest if needed
+ *******************************************************************/
 void MapEditor::addEditorMessage(string message)
 {
 	// Remove oldest message if there are too many active
@@ -3985,6 +4312,9 @@ void MapEditor::addEditorMessage(string message)
 	editor_messages.push_back(msg);
 }
 
+/* MapEditor::numEditorMessages
+ * Returns the number of currently active editor messages
+ *******************************************************************/
 unsigned MapEditor::numEditorMessages()
 {
 	return editor_messages.size();
@@ -3992,6 +4322,9 @@ unsigned MapEditor::numEditorMessages()
 
 #pragma endregion
 
+/* MapEditor::handleKeyBind
+ * Handles the keybind [key]
+ *******************************************************************/
 bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 {
 	// --- General keybinds ---
@@ -4196,6 +4529,10 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 	return handled;
 }
 
+/* MapEditor::updateDisplay
+ * Updates the map object properties panel and current info overlay
+ * from the current hilight/selection
+ *******************************************************************/
 void MapEditor::updateDisplay()
 {
 	// Update map object properties panel
@@ -4211,6 +4548,9 @@ void MapEditor::updateDisplay()
 	}
 }
 
+/* MapEditor::updateStatusText
+ * Updates the window status bar text (mode, grid, etc.)
+ *******************************************************************/
 void MapEditor::updateStatusText()
 {
 	// Edit mode
@@ -4253,6 +4593,11 @@ void MapEditor::updateStatusText()
 
 #pragma region UNDO / REDO
 
+/* MapEditor::beginUndoRecord
+ * Begins recording undo level [name]. [mod] is true if the operation
+ * about to begin will modify object properties, [create/del] are
+ * true if it will create or delete objects
+ *******************************************************************/
 void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 {
 	// Setup
@@ -4273,6 +4618,12 @@ void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 	last_undo_level = "";
 }
 
+/* MapEditor::beginUndoRecordLocked
+ * Same as beginUndoRecord, except that subsequent calls to this
+ * will not record another undo level if [name] is the same as last
+ * (used for repeated operations like offset changes etc. so that
+ * 5 offset changes to the same object only create 1 undo level)
+ *******************************************************************/
 void MapEditor::beginUndoRecordLocked(string name, bool mod, bool create, bool del)
 {
 	if (name != last_undo_level)
@@ -4282,6 +4633,9 @@ void MapEditor::beginUndoRecordLocked(string name, bool mod, bool create, bool d
 	}
 }
 
+/* MapEditor::endUndoRecord
+ * Finish recording undo level. Discarded if [success] is false
+ *******************************************************************/
 void MapEditor::endUndoRecord(bool success)
 {
 	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
@@ -4303,12 +4657,18 @@ void MapEditor::endUndoRecord(bool success)
 	updateThingLists();
 }
 
+/* MapEditor::recordPropertyChangeUndoStep
+ * Records an object property change undo step for [object]
+ *******************************************************************/
 void MapEditor::recordPropertyChangeUndoStep(MapObject* object)
 {
 	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
 	manager->recordUndoStep(new PropertyChangeUS(object));
 }
 
+/* MapEditor::doUndo
+ * Undoes the current undo level
+ *******************************************************************/
 void MapEditor::doUndo()
 {
 	// Undo
@@ -4331,6 +4691,9 @@ void MapEditor::doUndo()
 	updateThingLists();
 }
 
+/* MapEditor::doRedo
+ * Redoes the next undo level
+ *******************************************************************/
 void MapEditor::doRedo()
 {
 	// Redo
@@ -4356,6 +4719,10 @@ void MapEditor::doRedo()
 #pragma endregion
 
 #pragma region CONSOLE COMMANDS
+
+/*******************************************************************
+ * CONSOLE COMMANDS
+ *******************************************************************/
 
 CONSOLE_COMMAND(m_show_item, 1, true)
 {

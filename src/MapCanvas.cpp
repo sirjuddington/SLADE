@@ -7,7 +7,7 @@
  * Web:         http://slade.mancubus.net
  * Filename:    MapCanvas.cpp
  * Description: MapCanvas class, the OpenGL canvas widget that the
- *              2d map view is drawn on
+ *              2d/3d map view is drawn on
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -193,6 +193,9 @@ bool MapCanvas::overlayActive()
 		return overlay_current->isActive();
 }
 
+/* MapCanvas::helpActive
+ * Returns true if feature help text should be shown currently
+ *******************************************************************/
 bool MapCanvas::helpActive()
 {
 	// Disable if no help
@@ -230,16 +233,26 @@ double MapCanvas::translateY(double y, bool inter)
 		return double(-y / view_scale) + view_yoff + (double(GetSize().y * 0.5) / view_scale);
 }
 
+/* MapCanvas::screenX
+ * Translates [x] from map coordinates to canvas coordinates
+ *******************************************************************/
 int MapCanvas::screenX(double x)
 {
 	return MathStuff::round((GetSize().x * 0.5) + ((x - view_xoff_inter) * view_scale_inter));
 }
 
+/* MapCanvas::screenY
+ * Translates [y] from map coordinates to canvas coordinates
+ *******************************************************************/
 int MapCanvas::screenY(double y)
 {
 	return MathStuff::round((GetSize().y * 0.5) - ((y - view_yoff_inter) * view_scale_inter));
 }
 
+/* MapCanvas::setTopY
+ * Sets the view such that the map coordinate [y] is at the top
+ * of the canvas (0)
+ *******************************************************************/
 void MapCanvas::setTopY(double y)
 {
 	double top_y = translateY(0);
@@ -247,6 +260,9 @@ void MapCanvas::setTopY(double y)
 	view_yoff_inter = view_yoff;
 }
 
+/* MapCanvas::setOverlayCoords
+ * Sets/unsets the projection for rendering overlays (and text, etc.)
+ *******************************************************************/
 void MapCanvas::setOverlayCoords(bool set)
 {
 	if (set)
@@ -270,6 +286,9 @@ void MapCanvas::setOverlayCoords(bool set)
 	}
 }
 
+/* MapCanvas::setView
+ * Scrolls the view to be centered on map coordinates [x,y]
+ *******************************************************************/
 void MapCanvas::setView(double x, double y)
 {
 	// Set new view
@@ -286,12 +305,20 @@ void MapCanvas::setView(double x, double y)
 	renderer_2d->updateVisibility(view_tl, view_br);
 }
 
+/* MapCanvas::pan
+ * Scrolls the view relatively by [x,y]
+ *******************************************************************/
 void MapCanvas::pan(double x, double y)
 {
 	// Pan the view
 	setView(view_xoff + x, view_yoff + y);
 }
 
+/* MapCanvas::zoom
+ * Zooms the view by [amount]. If [towards_cursor] is true the view
+ * will be zoomed towards the current mouse cursor position,
+ * otherwise towards the center of the canvas
+ *******************************************************************/
 void MapCanvas::zoom(double amount, bool toward_cursor)
 {
 	// Get current mouse map coordinates
@@ -325,6 +352,10 @@ void MapCanvas::zoom(double amount, bool toward_cursor)
 	renderer_2d->updateVisibility(view_tl, view_br);
 }
 
+/* MapCanvas::viewFitToMap
+ * Centers the view to the center of the map, and zooms in or out so
+ * that the entire map is showing
+ *******************************************************************/
 void MapCanvas::viewFitToMap(bool snap)
 {
 	// Get the map bbox
@@ -368,6 +399,10 @@ void MapCanvas::viewFitToMap(bool snap)
 	renderer_2d->updateVisibility(view_tl, view_br);
 }
 
+/* MapCanvas::viewShowObject
+ * Centers the view on the currently selected objects, and zooms so
+ * that all objects are shown
+ *******************************************************************/
 void MapCanvas::viewShowObject()
 {
 	// Determine bbox of hilighted or selected object(s)
@@ -453,11 +488,18 @@ void MapCanvas::viewShowObject()
 	renderer_2d->updateVisibility(view_tl, view_br);
 }
 
+/* MapCanvas::viewMatchSpot
+ * Sets the view so that [mx,my] in map coordinates matches up with
+ * [sx,sy] in screen coordinates
+ *******************************************************************/
 void MapCanvas::viewMatchSpot(double mx, double my, double sx, double sy)
 {
 	setView(view_xoff_inter + mx - translateX(sx, true), view_yoff_inter + my - translateY(sy, true));
 }
 
+/* MapCanvas::set3dCameraThing
+ * Sets the 3d mode camera to use the position/direction of [thing]
+ *******************************************************************/
 void MapCanvas::set3dCameraThing(MapThing* thing)
 {
 	// Determine position
@@ -472,6 +514,9 @@ void MapCanvas::set3dCameraThing(MapThing* thing)
 	renderer_3d->cameraSet(pos, dir);
 }
 
+/* MapCanvas::drawGrid
+ * Draws the grid
+ *******************************************************************/
 void MapCanvas::drawGrid()
 {
 	// Get grid size
@@ -606,6 +651,9 @@ void MapCanvas::drawGrid()
 	}
 }
 
+/* MapCanvas::drawEditorMessage
+ * Draws any currently showing editor messages
+ *******************************************************************/
 void MapCanvas::drawEditorMessages()
 {
 	// Go through editor messages
@@ -648,6 +696,9 @@ void MapCanvas::drawEditorMessages()
 	Drawing::enableTextStateReset(true);
 }
 
+/* MapCanvas::drawFeatureHelpText
+ * Draws any feature help text currently showing
+ *******************************************************************/
 void MapCanvas::drawFeatureHelpText()
 {
 	// Check if any text
@@ -697,6 +748,9 @@ void MapCanvas::drawFeatureHelpText()
 	Drawing::enableTextStateReset(true);
 }
 
+/* MapCanvas::drawSelectionNumbers
+ * Draws numbers for selected map objects
+ *******************************************************************/
 void MapCanvas::drawSelectionNumbers()
 {
 	// Check if any selection exists
@@ -755,6 +809,9 @@ void MapCanvas::drawSelectionNumbers()
 	glDisable(GL_TEXTURE_2D);
 }
 
+/* MapCanvas::drawThingQuickAngleLines
+ * Draws directional lines for thing quick angle selection
+ *******************************************************************/
 void MapCanvas::drawThingQuickAngleLines()
 {
 	// Check if any selection exists
@@ -778,6 +835,9 @@ void MapCanvas::drawThingQuickAngleLines()
 	glEnd();
 }
 
+/* MapCanvas::drawLineLength
+ * Draws text showing the length from [p1] to [p2]
+ *******************************************************************/
 void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
 {
 	// Determine distance in screen scale
@@ -800,7 +860,10 @@ void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
 	glDisable(GL_TEXTURE_2D);
 }
 
-void MapCanvas::drawLineDrawLines()  	// Best function name ever
+/* MapCanvas::drawLineDrawLines
+ * Draws current line drawing lines (best function name ever)
+ *******************************************************************/
+void MapCanvas::drawLineDrawLines()
 {
 	// Get line draw colour
 	rgba_t col = ColourConfiguration::getColour("map_linedraw");
@@ -871,6 +934,9 @@ void MapCanvas::drawLineDrawLines()  	// Best function name ever
 	glEnd();
 }
 
+/* MapCanvas::drawPasteLines
+ * Draws lines currently being pasted
+ *******************************************************************/
 void MapCanvas::drawPasteLines()
 {
 	// Get clipboard item
@@ -909,6 +975,9 @@ void MapCanvas::drawPasteLines()
 	glEnd();
 }
 
+/* MapCanvas::drawObjectEdit
+ * Draws object edit objects, bounding box and text
+ *******************************************************************/
 void MapCanvas::drawObjectEdit()
 {
 	ObjectEditGroup* group = editor->getObjectEditGroup();
@@ -1010,8 +1079,8 @@ void MapCanvas::drawObjectEdit()
 	}
 }
 
-/* MapCanvas::draw
- * Draw the 2d map
+/* MapCanvas::drawMap2d
+ * Draws the 2d map
  *******************************************************************/
 void MapCanvas::drawMap2d()
 {
@@ -1253,6 +1322,9 @@ void MapCanvas::drawMap2d()
 	}
 }
 
+/* MapCanvas::drawMap3d
+ * Draws the 3d map
+ *******************************************************************/
 void MapCanvas::drawMap3d()
 {
 	// Setup 3d renderer view
@@ -1459,6 +1531,9 @@ void MapCanvas::draw()
 	glFinish();
 }
 
+/* MapCanvas::update2d
+ * Updates the current 2d map editor state (animations, hilight etc.)
+ *******************************************************************/
 bool MapCanvas::update2d(double mult)
 {
 	// Update hilight if needed
@@ -1643,6 +1718,9 @@ bool MapCanvas::update2d(double mult)
 		return false;
 }
 
+/* MapCanvas::update3d
+ * Updates the current 3d map editor state (animations, movement etc.)
+ *******************************************************************/
 bool MapCanvas::update3d(double mult)
 {
 	// Check if overlay active
@@ -1721,6 +1799,10 @@ bool MapCanvas::update3d(double mult)
 	return moving;
 }
 
+/* MapCanvas::update
+ * Updates the current map editor state (animations etc.), given time
+ * since the last frame [frametime]
+ *******************************************************************/
 void MapCanvas::update(long frametime)
 {
 	// Get frame time multiplier
@@ -1856,12 +1938,19 @@ void MapCanvas::update(long frametime)
 	frametime_last = frametime;
 }
 
+/* MapCanvas::mouseToCenter
+ * Moves the mouse cursor to the center of the canvas
+ *******************************************************************/
 void MapCanvas::mouseToCenter()
 {
 	wxRect rect = GetScreenRect();
 	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width*0.5), rect.y + int(rect.height*0.5)));
 }
 
+/* MapCanvas::lockMouse
+ * Locks/unlocks the mouse cursor. A locked cursor is invisible and
+ * will be moved to the center of the canvas every frame
+ *******************************************************************/
 void MapCanvas::lockMouse(bool lock)
 {
 	mouse_locked = lock;
@@ -1889,6 +1978,10 @@ void MapCanvas::lockMouse(bool lock)
 	}
 }
 
+/* MapCanvas::determineObjectEditState
+ * Determines the current object edit state depending on the mouse
+ * cursor position relative to the object edit bounding box
+ *******************************************************************/
 void MapCanvas::determineObjectEditState()
 {
 	// Get object edit bbox
@@ -1975,6 +2068,10 @@ void MapCanvas::determineObjectEditState()
 	}
 }
 
+/* MapCanvas::itemSelected
+ * Called when the item at [index] is selected or deselected (for
+ * select/deselect animations)
+ *******************************************************************/
 void MapCanvas::itemSelected(int index, bool selected)
 {
 	// Things mode
@@ -2032,6 +2129,10 @@ void MapCanvas::itemSelected(int index, bool selected)
 	}
 }
 
+/* MapCanvas::itemSelected
+ * Called when multiple [items] are selected or deselected (for
+ * select/deselect animations)
+ *******************************************************************/
 void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 {
 	// Things mode
@@ -2083,6 +2184,10 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 	}
 }
 
+/* MapCanvas::itemSelected3d
+ * Called when 3d mode [item] is selected or deselected (for
+ * select/deselect animations)
+ *******************************************************************/
 void MapCanvas::itemSelected3d(selection_3d_t item, bool selected)
 {
 	// Wall selected
@@ -2117,6 +2222,10 @@ void MapCanvas::itemSelected3d(selection_3d_t item, bool selected)
 	}
 }
 
+/* MapCanvas::itemSelected3d
+ * Called when multiple 3d mode [items] are selected or deselected
+ * (for select/deselect animations)
+ *******************************************************************/
 void MapCanvas::itemsSelected3d(vector<selection_3d_t>& items, bool selected)
 {
 	// Just do one animation per item in 3d mode
@@ -2124,6 +2233,9 @@ void MapCanvas::itemsSelected3d(vector<selection_3d_t>& items, bool selected)
 		itemSelected3d(items[a], selected);
 }
 
+/* MapCanvas::updateInfoOverlay
+ * Updates the current info overlay, depending on edit mode
+ *******************************************************************/
 void MapCanvas::updateInfoOverlay()
 {
 	// Update info overlay depending on edit mode
@@ -2136,12 +2248,18 @@ void MapCanvas::updateInfoOverlay()
 	}
 }
 
+/* MapCanvas::forceRefreshRenderer
+ * Forces a full refresh of the 2d/3d renderers
+ *******************************************************************/
 void MapCanvas::forceRefreshRenderer()
 {
 	renderer_2d->forceUpdate();
 	renderer_3d->clearData();
 }
 
+/* MapCanvas::changeEditMode
+ * Changes the edit mode to [mode]
+ *******************************************************************/
 void MapCanvas::changeEditMode(int mode)
 {
 	// Set edit mode
@@ -2196,6 +2314,9 @@ void MapCanvas::changeEditMode(int mode)
 	//	renderer_2d->forceUpdate(1.0f);
 }
 
+/* MapCanvas::changeThingType
+ * Opens the thing type browser for the currently selected thing(s)
+ *******************************************************************/
 void MapCanvas::changeThingType()
 {
 	// Determine the initial type
@@ -2223,6 +2344,11 @@ void MapCanvas::changeThingType()
 	editor->lockHilight(hl_lock);
 }
 
+/* MapCanvas::changeSectorTexture
+ * Depending on the current sector edit mode, either opens the
+ * sector texture overlay (normal) or browses for the ceiling or
+ * floor texture (ceiling/floor edit mode)
+ *******************************************************************/
 void MapCanvas::changeSectorTexture()
 {
 	// Determine the initial texture
@@ -2284,6 +2410,10 @@ void MapCanvas::changeSectorTexture()
 	renderer_2d->clearTextureCache();
 }
 
+/* MapCanvas::changeThingType3d
+ * Opens the thing type browser for the currently selected 3d mode
+ * thing(s)
+ *******************************************************************/
 void MapCanvas::changeThingType3d(selection_3d_t first)
 {
 	// Get first selected thing
@@ -2299,6 +2429,10 @@ void MapCanvas::changeThingType3d(selection_3d_t first)
 		editor->changeThingType(browser.getSelectedType());
 }
 
+/* MapCanvas::changeTexture3d
+ * Opens the texture browser for the currently selected 3d mode walls
+ * and/or floors
+ *******************************************************************/
 void MapCanvas::changeTexture3d(selection_3d_t first)
 {
 	// Check index
@@ -2395,6 +2529,10 @@ void MapCanvas::changeTexture3d(selection_3d_t first)
 	}
 }
 
+/* MapCanvas::editObjectProperties
+ * Opens a dialog containing a MapObjectPropsPanel to edit properties
+ * for all objects in [list]
+ *******************************************************************/
 void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 {
 	// Determine selection type
@@ -2452,6 +2590,9 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	editor->undoManager()->endRecord(true);
 }
 
+/* MapCanvas::onKeyBindPress
+ * Called when the key bind [name] is pressed
+ *******************************************************************/
 void MapCanvas::onKeyBindPress(string name)
 {
 	// Check if an overlay is active
@@ -2537,6 +2678,10 @@ void MapCanvas::onKeyBindPress(string name)
 	}
 }
 
+/* MapCanvas::keyBinds2dView
+ * Handles 2d mode view-related keybinds (can generally be used no
+ * matter the current editor state)
+ *******************************************************************/
 void MapCanvas::keyBinds2dView(string name)
 {
 	// Pan left
@@ -2603,6 +2748,9 @@ void MapCanvas::keyBinds2dView(string name)
 		editor->decrementGrid();
 }
 
+/* MapCanvas::keyBinds2d
+ * Handles 2d mode key binds
+ *******************************************************************/
 void MapCanvas::keyBinds2d(string name)
 {
 	// --- Line Drawing ---
@@ -2966,6 +3114,9 @@ void MapCanvas::keyBinds2d(string name)
 	}
 }
 
+/* MapCanvas::keyBinds3d
+ * Handles 3d mode key binds
+ *******************************************************************/
 void MapCanvas::keyBinds3d(string name)
 {
 	// Toggle fog
@@ -3093,6 +3244,9 @@ void MapCanvas::keyBinds3d(string name)
 		editor->handleKeyBind(name, mouse_pos_m);
 }
 
+/* MapCanvas::onKeyBindRelease
+ * Called when keybind [name] is released
+ *******************************************************************/
 void MapCanvas::onKeyBindRelease(string name)
 {
 	if (name == "me2d_pan_view" && panning)
@@ -3110,6 +3264,10 @@ void MapCanvas::onKeyBindRelease(string name)
 	}
 }
 
+/* MapCanvas::handleAction
+ * Handles an SAction [id]. Returns true if the action was handled
+ * here
+ *******************************************************************/
 bool MapCanvas::handleAction(string id)
 {
 	// Skip if not shown
@@ -3353,8 +3511,13 @@ bool MapCanvas::handleAction(string id)
 }
 
 
+/*******************************************************************
+ * MAPCANVAS CLASS EVENTS
+ *******************************************************************/
 
-
+/* MapCanvas::onSize
+ * Called when the canvas is resized
+ *******************************************************************/
 void MapCanvas::onSize(wxSizeEvent& e)
 {
 	// Update screen limits
@@ -3369,6 +3532,9 @@ void MapCanvas::onSize(wxSizeEvent& e)
 	e.Skip();
 }
 
+/* MapCanvas::onKeyDown
+ * Called when a key is pressed within the canvas
+ *******************************************************************/
 void MapCanvas::onKeyDown(wxKeyEvent& e)
 {
 	// Set current modifiers
@@ -3444,6 +3610,9 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		e.Skip();
 }
 
+/* MapCanvas::onKeyUp
+ * Called when a key is released within the canvas
+ *******************************************************************/
 void MapCanvas::onKeyUp(wxKeyEvent& e)
 {
 	// Set current modifiers
@@ -3459,6 +3628,9 @@ void MapCanvas::onKeyUp(wxKeyEvent& e)
 	e.Skip();
 }
 
+/* MapCanvas::onMouseDown
+ * Called when a mouse button is pressed within the canvas
+ *******************************************************************/
 void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
 	// Update mouse variables
@@ -3617,6 +3789,9 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	e.Skip();
 }
 
+/* MapCanvas::onMouseUp
+ * Called when a mouse button is released within the canvas
+ *******************************************************************/
 void MapCanvas::onMouseUp(wxMouseEvent& e)
 {
 	// Clear mouse down position
@@ -3724,6 +3899,9 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 	e.Skip();
 }
 
+/* MapCanvas::onMouseMotion
+ * Called when the mouse cursor is moved within the canvas
+ *******************************************************************/
 void MapCanvas::onMouseMotion(wxMouseEvent& e)
 {
 	// Ignore if it was generated by a mouse pointer warp
@@ -3856,6 +4034,9 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 	e.Skip();
 }
 
+/* MapCanvas::onMouseWheel
+ * Called when the mouse wheel is moved
+ *******************************************************************/
 void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
 	if (e.GetWheelRotation() > 0)
@@ -3880,6 +4061,9 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 	}
 }
 
+/* MapCanvas::onMouseLeave
+ * Called when the mouse cursor leaves the canvas
+ *******************************************************************/
 void MapCanvas::onMouseLeave(wxMouseEvent& e)
 {
 	// Stop panning
@@ -3892,6 +4076,9 @@ void MapCanvas::onMouseLeave(wxMouseEvent& e)
 	e.Skip();
 }
 
+/* MapCanvas::onMouseEnter
+ * Called when the mouse cursor enters the canvas
+ *******************************************************************/
 void MapCanvas::onMouseEnter(wxMouseEvent& e)
 {
 	// Set focus
@@ -3900,6 +4087,9 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
 	e.Skip();
 }
 
+/* MapCanvas::onIdle
+ * Called when the canvas is idle
+ *******************************************************************/
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
 	// Get time since last redraw
@@ -3913,6 +4103,9 @@ void MapCanvas::onIdle(wxIdleEvent& e)
 	Refresh();
 }
 
+/* MapCanvas::onRTimer
+ * Called when the canvas timer is triggered
+ *******************************************************************/
 void MapCanvas::onRTimer(wxTimerEvent& e)
 {
 	// Get time since last redraw
@@ -3928,6 +4121,9 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 	timer.Start(-1, true);
 }
 
+/* MapCanvas::onFocus
+ * Called when the canvas loses or gains focus
+ *******************************************************************/
 void MapCanvas::onFocus(wxFocusEvent& e)
 {
 	if (e.GetEventType() == wxEVT_SET_FOCUS)
