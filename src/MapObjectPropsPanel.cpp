@@ -856,6 +856,8 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Handle line sides
 	if (objects[0]->getObjType() == MOBJ_LINE)
 	{
+		((MOPGActionSpecialProperty*)pg_properties->GetProperty("special"))->updateArgVisibility();
+
 		// Enable/disable side properties
 		wxPGProperty* prop = pg_properties->GetProperty("sidefront");
 		if (prop && (prop->GetValue().GetInteger() >= 0 || prop->IsValueUnspecified()))
@@ -874,6 +876,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 			pg_props_side2->SetPropertyValueUnspecified(pg_props_side2->GetGrid()->GetRoot());
 		}
 	}
+	else if (objects[0]->getObjType() == MOBJ_THING)
+		((MOPGThingTypeProperty*)pg_properties->GetProperty("type"))->updateArgVisibility();
+
 
 	// Update internal objects list
 	if (&objects != &this->objects)
@@ -950,7 +955,7 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 {
 	wxDialog dlg(this, -1, "Add UDMF Property");
-	
+
 	// Setup dialog sizer
 	wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(msizer);

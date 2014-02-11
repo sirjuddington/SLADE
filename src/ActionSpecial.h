@@ -13,6 +13,7 @@ private:
 	string	group;
 	int		tagged;
 	arg_t	args[5];
+	int		arg_count;
 
 public:
 	ActionSpecial(string name = "Unknown", string group = "");
@@ -23,7 +24,7 @@ public:
 	string	getName() { return name; }
 	string	getGroup() { return group; }
 	int		needsTag() { return tagged; }
-	arg_t&	getArg(int index) { if (index >= 0 && index < 5) return args[index]; else return args[0]; }
+	const argspec_t getArgspec() { return argspec_t(args, arg_count); }
 
 	void	setName(string name) { this->name = name; }
 	void	setGroup(string group) { this->group = group; }

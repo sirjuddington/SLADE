@@ -2,12 +2,18 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
+.*.sw*
 *.sdf
 *.suo
 *.opensdf
 *.obj
 *.tlog
+/dist/CMake*
+/dist/Makefile
+/dist/cmake_install.cmake
 /dist/config
+/dist/slade
+/dist/src/
 /dist/*.dll
 /dist/*.pdb
 /dist/*.exe
