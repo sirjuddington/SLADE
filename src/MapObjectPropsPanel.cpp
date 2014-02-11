@@ -107,7 +107,10 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	wxPGCell cell;
 	cell.SetText("<multiple values>");
+	cell.SetFgCol(wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
 	pg_properties->GetGrid()->SetUnspecifiedValueAppearance(cell);
+	pg_props_side1->GetGrid()->SetUnspecifiedValueAppearance(cell);
+	pg_props_side2->GetGrid()->SetUnspecifiedValueAppearance(cell);
 
 	// Bind events
 	btn_apply->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnApply, this);
