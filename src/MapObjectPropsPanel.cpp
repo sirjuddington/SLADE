@@ -434,6 +434,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	pg_properties->Clear();
 	pg_props_side1->Clear();
 	pg_props_side2->Clear();
+	group_custom = NULL;
 	properties.clear();
 	btn_add->Show(false);
 
@@ -684,6 +685,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 	pg_properties->Clear();
 	pg_props_side1->Clear();
 	pg_props_side2->Clear();
+	group_custom = NULL;
 	properties.clear();
 	btn_add->Show();
 
