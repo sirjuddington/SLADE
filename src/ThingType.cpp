@@ -163,6 +163,7 @@ void ThingType::reset()
 	this->nextargs = 0;
 	this->flags = 0;
 	this->tagged = 0;
+	this->arg_count = 0;
 
 	// Reset args
 	for (unsigned a = 0; a < 5; a++)
@@ -305,6 +306,10 @@ void ThingType::parse(ParseTreeNode* node)
 		// Parse arg definition if it was one
 		if (arg >= 0)
 		{
+			// Update arg count
+			if (arg + 1 > arg_count)
+				arg_count = arg + 1;
+
 			// Check for simple definition
 			if (child->isLeaf())
 			{

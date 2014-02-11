@@ -71,7 +71,7 @@ void MOPGProperty::resetValue()
  * MOPGBoolProperty class constructor
  *******************************************************************/
 MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name)
-	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_BOOL)
+	: wxBoolProperty(label, name, false)
 {
 	propname = name;
 }
@@ -142,7 +142,7 @@ void MOPGBoolProperty::applyValue()
  * MOPGIntProperty class constructor
  *******************************************************************/
 MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name)
-	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_INT)
+	: wxIntProperty(label, name, 0)
 {
 	propname = name;
 }
@@ -153,10 +153,11 @@ MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name)
  *******************************************************************/
 void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 {
+	// Assume unspecified until we see otherwise
+	SetValueToUnspecified();
 	// Set unspecified if no objects given
 	if (objects.size() == 0)
 	{
-		SetValueToUnspecified();
 		return;
 	}
 
@@ -213,7 +214,7 @@ void MOPGIntProperty::applyValue()
  * MOPGFloatProperty class constructor
  *******************************************************************/
 MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name)
-	: wxFloatProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_FLOAT)
+	: wxFloatProperty(label, name, 0)
 {
 	propname = name;
 }
@@ -284,7 +285,7 @@ void MOPGFloatProperty::applyValue()
  * MOPGStringProperty class constructor
  *******************************************************************/
 MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name)
-	: wxStringProperty(label, name, ""), MOPGProperty(MOPGProperty::TYPE_STRING)
+	: wxStringProperty(label, name, "")
 {
 	propname = name;
 }
@@ -348,18 +349,18 @@ void MOPGStringProperty::applyValue()
 
 
 /*******************************************************************
- * MOPGACTIONSPECIALPROPERTY CLASS FUNCTIONS
+ * MOPGINTWITHARGSPROPERTY CLASS FUNCTIONS
  *******************************************************************
- * Property grid cell for action special properties, links to
- * 5 other cells for the special args (which will update when the
- * special value is changed)
+ * Superclass for shared functionality between action specials and things,
+ * which both have arguments.  Arguments that are used by the engine (i.e.
+ * those with names) should always be shown even if zero.
  */
 
-/* MOPGActionSpecialProperty::MOPGActionSpecialProperty
- * MOPGActionSpecialProperty class constructor
+/* MOPGIntWithArgsProperty::MOPGThingTypeProperty
+ * MOPGIntWithArgsProperty class constructor
  *******************************************************************/
-MOPGActionSpecialProperty::MOPGActionSpecialProperty(const wxString& label, const wxString& name)
-	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ASPECIAL)
+MOPGIntWithArgsProperty::MOPGIntWithArgsProperty(const wxString& label, const wxString& name)
+	: MOPGIntProperty(label, name)
 {
 	// Init variables
 	args[0] = NULL;
@@ -367,84 +368,90 @@ MOPGActionSpecialProperty::MOPGActionSpecialProperty(const wxString& label, cons
 	args[2] = NULL;
 	args[3] = NULL;
 	args[4] = NULL;
-	propname = name;
 
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
-/* MOPGActionSpecialProperty::openObjects
- * Reads the value of this action special property from [objects]
- * (if the value differs between objects, it is set to unspecified)
+/* MOPGIntWithArgsProperty::updateArgNames()
+ * Update the UI to show the names of the arguments for the current special or
+ * thing type.
  *******************************************************************/
-void MOPGActionSpecialProperty::openObjects(vector<MapObject*>& objects)
+void MOPGIntWithArgsProperty::updateArgNames()
 {
-	// Reset arg property names
-	for (unsigned a = 0; a < 5; a++)
+	// Reset names if the value is unspecified
+	if (IsValueUnspecified())
 	{
-		if (args[a])
+		for (unsigned a = 0; a < 5; a++)
 		{
+			if (!args[a])
+				continue;
+
 			args[a]->SetLabel(S_FMT("Arg%d", a+1));
 			args[a]->SetHelpString("");
 		}
-	}
-
-	// Set unspecified if no objects given
-	if (objects.size() == 0)
-	{
-		SetValueToUnspecified();
 		return;
 	}
 
-	// Get property of first object
-	int first = objects[0]->intProperty(GetName());
-
-	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++)
-	{
-		if (objects[a]->intProperty(GetName()) != first)
-		{
-			// Different value found, set unspecified
-			SetValueToUnspecified();
-			return;
-		}
-	}
-
-	// Set to common value
-	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
-		Hide(true);
-	else
-		Hide(false);
-	SetValue(first);
-	noupdate = false;
-
-	// Set arg property names
-	ActionSpecial* as = theGameConfiguration->actionSpecial(first);
+	argspec_t argspec = getArgspec();
 	for (unsigned a = 0; a < 5; a++)
 	{
 		if (!args[a])
 			continue;
 
-		args[a]->SetLabel(as->getArg(a).name);
-		args[a]->SetHelpString(as->getArg(a).desc);
+		args[a]->SetLabel(argspec.getArg(a).name);
+		args[a]->SetHelpString(argspec.getArg(a).desc);
 	}
 }
 
-/* MOPGActionSpecialProperty::addArgProperty
- * Adds a linked arg property [prop] at [index]
+/* MOPGIntWithArgsProperty::updateArgVisibility()
+ * Update the UI to show only the arguments that have names.
  *******************************************************************/
-void MOPGActionSpecialProperty::addArgProperty(wxPGProperty* prop, int index)
+void MOPGIntWithArgsProperty::updateArgVisibility()
 {
-	if (index < 5)
-		args[index] = prop;
+	int argcount;
+
+	if (parent->showAll())
+		argcount = 5;
+	else if (IsValueUnspecified())
+		argcount = 0;
+	else
+		argcount = getArgspec().count;
+
+	int default_value = 0;
+	if (udmf_prop)
+		default_value = udmf_prop->getDefaultValue().getIntValue();
+
+	// Show any args that this special uses, hide the others, but never hide an
+	// arg with a value
+	for (unsigned a = 0; a < 5; a++)
+	{
+		if (! args[a])
+			continue;
+
+		args[a]->Hide(
+			a >= argcount
+			&& ! args[a]->IsValueUnspecified()
+			&& args[a]->GetValue().GetInteger() == default_value
+		);
+	}
 }
 
-/* MOPGActionSpecialProperty::applyValue
+/* MOPGIntWithArgsProperty::openObjects
+ * Reads the value of this property from [objects]
+ * (if the value differs between objects, it is set to unspecified)
+ *******************************************************************/
+void MOPGIntWithArgsProperty::openObjects(vector<MapObject*>& objects)
+{
+	MOPGIntProperty::openObjects(objects);
+	updateArgNames();
+}
+
+/* MOPGIntWithArgsProperty::applyValue
  * Applies the current property value to all objects currently open
  * in the parent MapObjectPropsPanel, if a value is specified
  *******************************************************************/
-void MOPGActionSpecialProperty::applyValue()
+void MOPGIntWithArgsProperty::applyValue()
 {
 	// Do nothing if no parent (and thus no object list)
 	if (!parent || noupdate)
@@ -454,10 +461,50 @@ void MOPGActionSpecialProperty::applyValue()
 	if (IsValueUnspecified())
 		return;
 
+	// Initialize any unset and meaningful args to 0
+	const argspec_t argspec = getArgspec();
+
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent->getObjects();
 	for (unsigned a = 0; a < objects.size(); a++)
+	{
 		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+
+		for (int argn = 0; argn < argspec.count; argn++)
+		{
+			string key = S_FMT("arg%d", argn);
+			if (! objects[a]->hasProp(key))
+				objects[a]->setIntProperty(key, 0);
+		}
+	}
+}
+
+/* MOPGIntWithArgsProperty::addArgProperty
+ * Adds a linked arg property [prop] at [index]
+ *******************************************************************/
+void MOPGIntWithArgsProperty::addArgProperty(wxPGProperty* prop, int index)
+{
+	if (index < 5)
+		args[index] = prop;
+}
+
+
+/*******************************************************************
+ * MOPGACTIONSPECIALPROPERTY CLASS FUNCTIONS
+ *******************************************************************
+ * Property grid cell for action special properties, links to
+ * 5 other cells for the special args (which will update when the
+ * special value is changed)
+ */
+
+/* MOPGActionSpecialProperty::getArgspec
+ * Returns a little object describing the args for this thing type
+ *******************************************************************/
+const argspec_t MOPGActionSpecialProperty::getArgspec()
+{
+	int special = m_value.GetInteger();
+	ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+	return as->getArgspec();
 }
 
 /* MOPGActionSpecialProperty::ValueToString
@@ -492,7 +539,12 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 		if (dlg.ShowModal() == wxID_OK)
 			special = dlg.selectedSpecial();
 
-		if (special >= 0) SetValue(special);
+		if (special >= 0)
+		{
+			SetValue(special);
+			updateArgNames();
+			updateArgVisibility();
+		}
 	}
 
 	return wxIntProperty::OnEvent(propgrid, window, e);
@@ -506,109 +558,14 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
  * thing types
  */
 
-/* MOPGThingTypeProperty::MOPGThingTypeProperty
- * MOPGThingTypeProperty class constructor
+/* MOPGThingTypeProperty::getArgspec
+ * Returns a little object describing the args for this thing type
  *******************************************************************/
-MOPGThingTypeProperty::MOPGThingTypeProperty(const wxString& label, const wxString& name)
-	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_TTYPE)
+const argspec_t MOPGThingTypeProperty::getArgspec()
 {
-	// Init variables
-	args[0] = NULL;
-	args[1] = NULL;
-	args[2] = NULL;
-	args[3] = NULL;
-	args[4] = NULL;
-	propname = name;
-
-	// Set to text+button editor
-	SetEditor(wxPGEditor_TextCtrlAndButton);
-}
-
-/* MOPGThingTypeProperty::openObjects
- * Reads the value of this thing type property from [objects]
- * (if the value differs between objects, it is set to unspecified)
- *******************************************************************/
-void MOPGThingTypeProperty::openObjects(vector<MapObject*>& objects)
-{
-	// Reset arg property names
-	for (unsigned a = 0; a < 5; a++)
-	{
-		if (args[a])
-		{
-			args[a]->SetLabel(S_FMT("Arg%d", a+1));
-			args[a]->SetHelpString("");
-		}
-	}
-
-	// Set unspecified if no objects given
-	if (objects.size() == 0)
-	{
-		SetValueToUnspecified();
-		return;
-	}
-
-	// Get property of first object
-	int first = objects[0]->intProperty(GetName());
-
-	// Check whether all objects share the same value
-	for (unsigned a = 1; a < objects.size(); a++)
-	{
-		if (objects[a]->intProperty(GetName()) != first)
-		{
-			// Different value found, set unspecified
-			SetValueToUnspecified();
-			return;
-		}
-	}
-
-	// Set to common value
-	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
-		Hide(true);
-	else
-		Hide(false);
-	SetValue(first);
-	noupdate = false;
-
-	// Set arg property names
-	ThingType* tt = theGameConfiguration->thingType(first);
-	for (unsigned a = 0; a < 5; a++)
-	{
-		if (!args[a])
-			continue;
-
-		args[a]->SetLabel(tt->getArg(a).name);
-		args[a]->SetHelpString(tt->getArg(a).desc);
-	}
-}
-
-/* MOPGThingTypeProperty::addArgProperty
- * Adds a linked arg property [prop] at [index]
- *******************************************************************/
-void MOPGThingTypeProperty::addArgProperty(wxPGProperty* prop, int index)
-{
-	if (index < 5)
-		args[index] = prop;
-}
-
-/* MOPGThingTypeProperty::applyValue
- * Applies the current property value to all objects currently open
- * in the parent MapObjectPropsPanel, if a value is specified
- *******************************************************************/
-void MOPGThingTypeProperty::applyValue()
-{
-	// Do nothing if no parent (and thus no object list)
-	if (!parent || noupdate)
-		return;
-
-	// Do nothing if the value is unspecified
-	if (IsValueUnspecified())
-		return;
-
-	// Go through objects and set this value
-	vector<MapObject*>& objects = parent->getObjects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
+	int type = m_value.GetInteger();
+	ThingType* tt = theGameConfiguration->thingType(type);
+	return tt->getArgspec();
 }
 
 /* MOPGThingTypeProperty::ValueToString
@@ -658,7 +615,7 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
  * MOPGLineFlagProperty class constructor
  *******************************************************************/
 MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString& name, int index)
-	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_LFLAG)
+	: wxBoolProperty(label, name, false)
 {
 	// Init variables
 	this->index = index;
@@ -731,7 +688,7 @@ void MOPGLineFlagProperty::applyValue()
  * MOPGThingFlagProperty class constructor
  *******************************************************************/
 MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxString& name, int index)
-	: wxBoolProperty(label, name, false), MOPGProperty(MOPGProperty::TYPE_LFLAG)
+	: wxBoolProperty(label, name, false)
 {
 	// Init variables
 	this->index = index;
@@ -804,7 +761,7 @@ void MOPGThingFlagProperty::applyValue()
  * MOPGAngleProperty class constructor
  *******************************************************************/
 MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name)
-	: wxEditEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_ANGLE)
+	: wxEditEnumProperty(label, name)
 {
 	propname = name;
 	// Set to combo box editor
@@ -920,7 +877,7 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
  * MOPGColourProperty class constructor
  *******************************************************************/
 MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name)
-	: wxColourProperty(label, name), MOPGProperty(MOPGProperty::TYPE_COLOUR)
+	: wxColourProperty(label, name)
 {
 	propname = name;
 }
@@ -994,7 +951,7 @@ void MOPGColourProperty::applyValue()
  * MOPGTextureProperty class constructor
  *******************************************************************/
 MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, const wxString& name)
-	: wxStringProperty(label, name), MOPGProperty(MOPGProperty::TYPE_TEXTURE)
+	: wxStringProperty(label, name)
 {
 	// Init variables
 	this->textype = textype;
@@ -1095,7 +1052,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
  * MOPGSPACTriggerProperty class constructor
  *******************************************************************/
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name)
-	: wxEnumProperty(label, name), MOPGProperty(MOPGProperty::TYPE_SPAC)
+	: wxEnumProperty(label, name)
 {
 	propname = name;
 
@@ -1178,7 +1135,7 @@ void MOPGSPACTriggerProperty::applyValue()
  * MOPGTagProperty class constructor
  *******************************************************************/
 MOPGTagProperty::MOPGTagProperty(const wxString& label, const wxString& name)
-	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_ID)
+	: wxIntProperty(label, name, 0)
 {
 	propname = name;
 
@@ -1281,7 +1238,7 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
  * MOPGSectorSpecialProperty class constructor
  *******************************************************************/
 MOPGSectorSpecialProperty::MOPGSectorSpecialProperty(const wxString& label, const wxString& name)
-	: wxIntProperty(label, name, 0), MOPGProperty(MOPGProperty::TYPE_SSPECIAL)
+	: wxIntProperty(label, name, 0)
 {
 	propname = name;
 
