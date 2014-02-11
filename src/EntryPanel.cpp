@@ -102,6 +102,8 @@ EntryPanel::~EntryPanel()
  *******************************************************************/
 void EntryPanel::setModified(bool c)
 {
+	bool mod = modified;
+
 	if (!entry)
 	{
 		modified = c;
@@ -114,9 +116,12 @@ void EntryPanel::setModified(bool c)
 		else
 			modified = c;
 	}
-	if (modified) callRefresh();
 
-	toolbar->enableGroup("Entry", modified);
+	if (mod != modified)
+	{
+		toolbar->enableGroup("Entry", modified);
+		callRefresh();
+	}
 }
 
 /* EntryPanel::openEntry

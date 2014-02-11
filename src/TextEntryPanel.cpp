@@ -282,6 +282,7 @@ bool TextEntryPanel::redo()
 void TextEntryPanel::onTextModified(wxStyledTextEvent& e)
 {
 	setModified();
+	e.Skip();
 }
 
 /* TextEntryPanel::onBtnFindReplace
