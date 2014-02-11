@@ -131,8 +131,8 @@ void ActionSpecial::parse(ParseTreeNode* node)
 		if (arg >= 0)
 		{
 			// Update arg count
-			if (arg + 1 > this->arg_count)
-				this->arg_count = arg + 1;
+			if (arg + 1 > arg_count)
+				arg_count = arg + 1;
 
 			// Check for simple definition
 			if (child->isLeaf())

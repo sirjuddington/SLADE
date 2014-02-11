@@ -5,6 +5,8 @@
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
 
+#include "Args.h"
+
 class MapObject;
 class MapObjectPropsPanel;
 class UDMFProperty;
@@ -18,7 +20,7 @@ protected:
 	string					propname;
 
 public:
-	MOPGProperty(int type) { this->type = type; noupdate = false; udmf_prop = NULL; }
+	MOPGProperty() { noupdate = false; udmf_prop = NULL; }
 	~MOPGProperty() {}
 
 	enum
@@ -39,11 +41,11 @@ public:
 		TYPE_ID,
 	};
 
-	int				getType() { return type; }
 	string			getPropName() { return propname; }
 	void			setParent(MapObjectPropsPanel* parent) { this->parent = parent; }
 	void			setUDMFProp(UDMFProperty* prop) { this->udmf_prop = prop; }
 
+	virtual int		getType() = 0;
 	virtual void	openObjects(vector<MapObject*>& objects) = 0;
 	virtual void	applyValue() {}
 	virtual void	resetValue();
@@ -54,6 +56,7 @@ class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty
 public:
 	MOPGBoolProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_BOOL; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 };
@@ -63,6 +66,7 @@ class MOPGIntProperty : public MOPGProperty, public wxIntProperty
 public:
 	MOPGIntProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_INT; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 };
@@ -72,6 +76,7 @@ class MOPGFloatProperty : public MOPGProperty, public wxFloatProperty
 public:
 	MOPGFloatProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_FLOAT; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 };
@@ -81,40 +86,55 @@ class MOPGStringProperty : public MOPGProperty, public wxStringProperty
 public:
 	MOPGStringProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_STRING; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 };
 
-class MOPGActionSpecialProperty : public MOPGProperty, public wxIntProperty
+class MOPGIntWithArgsProperty : public MOPGIntProperty
 {
-private:
+protected:
 	wxPGProperty*	args[5];
 
+	virtual const argspec_t getArgspec() = 0;
+
 public:
-	MOPGActionSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
+	MOPGIntWithArgsProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
 	void	openObjects(vector<MapObject*>& objects);
-	void	addArgProperty(wxPGProperty* prop, int index);
 	void	applyValue();
+	void	addArgProperty(wxPGProperty* prop, int index);
+
 	void	updateArgNames();
 	void	updateArgVisibility();
+};
+
+class MOPGActionSpecialProperty : public MOPGIntWithArgsProperty
+{
+protected:
+	const argspec_t getArgspec();
+
+public:
+	MOPGActionSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL)
+		: MOPGIntWithArgsProperty(label, name) {}
+
+	int		getType() { return TYPE_ASPECIAL; }
 
 	// wxPGProperty overrides
 	wxString	ValueToString(wxVariant& value, int argFlags = 0) const;
 	bool 		OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
 };
 
-class MOPGThingTypeProperty : public MOPGProperty, public wxIntProperty
+class MOPGThingTypeProperty : public MOPGIntWithArgsProperty
 {
-private:
-	wxPGProperty*	args[5];
+protected:
+	const argspec_t getArgspec();
 
 public:
-	MOPGThingTypeProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
+	MOPGThingTypeProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL)
+		: MOPGIntWithArgsProperty(label, name) {}
 
-	void	openObjects(vector<MapObject*>& objects);
-	void	addArgProperty(wxPGProperty* prop, int index);
-	void	applyValue();
+	int		getType() { return TYPE_TTYPE; }
 
 	// wxPGProperty overrides
 	wxString	ValueToString(wxVariant& value, int argFlags = 0) const;
@@ -129,6 +149,7 @@ private:
 public:
 	MOPGLineFlagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL, int index = -1);
 
+	int		getType() { return TYPE_LFLAG; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 };
@@ -141,6 +162,7 @@ private:
 public:
 	MOPGThingFlagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL, int index = -1);
 
+	int		getType() { return TYPE_TFLAG; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 };
@@ -150,6 +172,7 @@ class MOPGAngleProperty : public MOPGProperty, public wxEditEnumProperty
 public:
 	MOPGAngleProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_ANGLE; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 
@@ -162,6 +185,7 @@ class MOPGColourProperty : public MOPGProperty, public wxColourProperty
 public:
 	MOPGColourProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_COLOUR; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 };
@@ -174,6 +198,7 @@ private:
 public:
 	MOPGTextureProperty(int textype = 0, const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_TEXTURE; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 
@@ -186,6 +211,7 @@ class MOPGSPACTriggerProperty : public MOPGProperty, public wxEnumProperty
 public:
 	MOPGSPACTriggerProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_SPAC; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 };
@@ -195,6 +221,7 @@ class MOPGTagProperty : public MOPGProperty, public wxIntProperty
 public:
 	MOPGTagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_ID; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 
@@ -207,6 +234,7 @@ class MOPGSectorSpecialProperty : public MOPGProperty, public wxIntProperty
 public:
 	MOPGSectorSpecialProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
+	int		getType() { return TYPE_SSPECIAL; }
 	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
 

@@ -876,6 +876,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 			pg_props_side2->SetPropertyValueUnspecified(pg_props_side2->GetGrid()->GetRoot());
 		}
 	}
+	else if (objects[0]->getObjType() == MOBJ_THING)
+		((MOPGThingTypeProperty*)pg_properties->GetProperty("type"))->updateArgVisibility();
+
 
 	// Update internal objects list
 	if (&objects != &this->objects)
