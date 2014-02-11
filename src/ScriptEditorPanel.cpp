@@ -1,4 +1,32 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ScriptEditorPanel.cpp
+ * Description: ScriptEditorPanel class - it's the script editor
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "ScriptEditorPanel.h"
@@ -9,6 +37,14 @@
 #include "MapEditorWindow.h"
 #include <wx/dataview.h>
 
+
+/*******************************************************************
+ * SCRIPTEDTIORPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ScriptEditorPanel::ScriptEditorPanel
+ * ScriptEditorPanel class constructor
+ *******************************************************************/
 ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	: wxPanel(parent, -1)
 {
@@ -62,12 +98,19 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	list_words->Bind(wxEVT_TREELIST_ITEM_ACTIVATED, &ScriptEditorPanel::onWordListActivate, this);
 }
 
+/* ScriptEditorPanel::~ScriptEditorPanel
+ * ScriptEditorPanel class destructor
+ *******************************************************************/
 ScriptEditorPanel::~ScriptEditorPanel()
 {
 	delete entry_script;
 	delete entry_compiled;
 }
 
+/* ScriptEditorPanel::openScripts
+ * Opens script text from entry [scripts], and compiled script data
+ * from [compiled]
+ *******************************************************************/
 bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled)
 {
 	// Clear current script data
@@ -82,6 +125,10 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	return text_editor->loadEntry(entry_script);
 }
 
+/* ScriptEditorPanel::populateWordList
+ * Adds all functions and constants in the script language definition
+ * to the word list
+ *******************************************************************/
 void ScriptEditorPanel::populateWordList()
 {
 	// Clear/refresh list
@@ -109,6 +156,10 @@ void ScriptEditorPanel::populateWordList()
 	}
 }
 
+/* ScriptEditorPanel::handleAction
+ * Handles the action [id]. Returns true if the action was handled,
+ * false otherwise
+ *******************************************************************/
 bool ScriptEditorPanel::handleAction(string name)
 {
 	// Compile Script
@@ -145,6 +196,14 @@ bool ScriptEditorPanel::handleAction(string name)
 	return true;
 }
 
+
+/*******************************************************************
+ * SCRIPTEDTIORPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* ScriptEditorPanel::onWordListActivate
+ * Called when a word list entry is activated (double-clicked)
+ *******************************************************************/
 void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 {
 	// Get word

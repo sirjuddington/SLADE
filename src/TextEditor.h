@@ -103,6 +103,7 @@ public:
 	void	onFRDBtnFindNext(wxCommandEvent& e);
 	void	onFRDBtnReplace(wxCommandEvent& e);
 	void	onFRDBtnReplaceAll(wxCommandEvent& e);
+	void	onFRDKeyDown(wxKeyEvent& e);
 };
 
 #endif //__TEXTEDITOR_H__

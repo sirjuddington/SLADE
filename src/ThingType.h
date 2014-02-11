@@ -34,6 +34,7 @@ private:
 	string	translation;
 	string	palette;
 	arg_t	args[5];
+	int		arg_count;
 	bool	decorate;
 	bool	solid;
 	int		nexttype;
@@ -69,7 +70,7 @@ public:
 	string	getIcon() { return icon; }
 	string	getTranslation() { return translation; }
 	string	getPalette() { return palette; }
-	arg_t&	getArg(int index) { if (index >= 0 && index < 5) return args[index]; else return args[0]; }
+	const argspec_t getArgspec() { return argspec_t(args, arg_count); }
 	string	getArgsString(int args[5]);
 	void	setSprite(string sprite) { this->sprite = sprite; }
 

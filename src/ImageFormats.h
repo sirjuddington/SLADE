@@ -33,11 +33,23 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() > 14)
+		if (mc.getSize() > 30)
 		{
 			// Check for BMP header
-			if (mc[0] == 'B' && mc[1] == 'M' && mc[6] == 0 && mc[7] == 0 && mc[8] == 0 && mc[9] == 0)
-				return EDF_TRUE;
+			if (mc[0] == 'B' && mc[1] == 'M')
+			{
+				// Check for DIB header, should be one of the following: 12, 40, 52, 56, 64, 108 or 124
+				size_t dibhdrsz = READ_L32(mc, 14);
+				if (dibhdrsz != 12 && dibhdrsz != 40 && dibhdrsz != 52 && dibhdrsz != 56 && 
+					dibhdrsz != 64 && dibhdrsz != 108 && dibhdrsz != 124)
+					return EDF_FALSE;
+				// Normally, file size is a DWORD at offset 2, and offsets 6 to 9 should be zero.
+				if (READ_L32(mc, 2) == mc.getSize() && READ_L32(mc, 6) == 0)
+					return EDF_TRUE;
+				// But I have found exceptions so I must allow some leeway here.
+				else if (mc.getSize() > 12 + dibhdrsz)
+					return EDF_MAYBE;
+			}
 		}
 
 		return EDF_FALSE;
@@ -444,16 +456,17 @@ public:
 	int isThisFormat(MemChunk& mc)
 	{
 		// Check size
-		if (mc.getSize() < 2)
+		if (mc.getSize() < 6)
 			return EDF_FALSE;
 
 		const uint8_t* data = mc.getData();
 		uint8_t qwidth = data[0]; // quarter of width
 		uint8_t height = data[1];
-		if (mc.getSize() != (2 + (4 * qwidth * height)) &&
+		if (qwidth == 0 || height == 0 ||
+			(mc.getSize() != (2 + (4 * qwidth * height)) &&
 		        // The TITLEPIC in the Doom Press-Release Beta has
 		        // two extraneous null bytes at the end, for padding.
-		        (qwidth != 80 || height != 200 || mc.getSize() != 64004))
+		        (qwidth != 80 || height != 200 || mc.getSize() != 64004)))
 			return EDF_FALSE;
 		return EDF_TRUE;
 	}

@@ -67,4 +67,17 @@ struct arg_t
 	}
 };
 
+struct argspec_t
+{
+private:
+	arg_t*	args;  // pointer to existing array of 5 elements
+
+public:
+	int		count;
+
+	argspec_t(arg_t _args[5], int _count) : args(_args), count(_count) {}
+
+	arg_t&	getArg(int index) { if (index >= 0 && index < 5) return args[index]; else return args[0]; }
+};
+
 #endif//__ARGS_H__

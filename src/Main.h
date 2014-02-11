@@ -28,7 +28,7 @@ typedef wxString string;
 
 // Macro to convert a wxString to a c string
 #define CHR(s) (static_cast<const char*>((s).ToAscii()))
-
+#define UTF8(s) (static_cast<const char*>((s).c_str()))
 
 // Vectors
 #include <vector>
