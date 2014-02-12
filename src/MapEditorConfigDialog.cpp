@@ -555,7 +555,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			}
 
 			// Add new map entry to the maps dir
-			ArchiveEntry* mapentry = archive->addNewEntry(mapname+".wad", 0xFFFFFFFF, archive->getDir("maps"));
+			//ArchiveEntry* mapentry = archive->addNewEntry(mapname+".wad", 0xFFFFFFFF, archive->createDir("maps"));
+			ArchiveEntry* mapentry = archive->addNewEntry(mapname + ".wad", "maps");
 			MemChunk mc;
 			wad->write(mc);
 			mapentry->importMemChunk(mc);

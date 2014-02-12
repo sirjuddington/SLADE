@@ -170,6 +170,7 @@ public:
 	virtual ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
 	virtual ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) { return addEntry(entry, 0xFFFFFFFF, NULL, false); } // By default, add to the 'global' namespace (ie root dir)
 	virtual ArchiveEntry*	addNewEntry(string name = "", unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL);
+	virtual ArchiveEntry*	addNewEntry(string name, string add_namespace);
 	virtual bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true);
 
 	// Entry moving

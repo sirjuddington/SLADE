@@ -1219,6 +1219,26 @@ ArchiveEntry* Archive::addNewEntry(string name, unsigned position, ArchiveTreeNo
 	return entry;
 }
 
+/* Archive::addNewEntry
+ * Creates a new entry with [name] and adds it to [namespace]
+ * within the archive
+ *******************************************************************/
+ArchiveEntry* Archive::addNewEntry(string name, string add_namespace)
+{
+	// Abort if read only
+	if (read_only)
+		return NULL;
+
+	// Create the new entry
+	ArchiveEntry* entry = new ArchiveEntry(name);
+
+	// Add it to the archive
+	addEntry(entry, add_namespace);
+
+	// Return the newly created entry
+	return entry;
+}
+
 /* Archive::removeEntry
  * Removes [entry] from the archive. If [delete_entry] is true, the
  * entry will also be deleted. Returns true if the removal succeeded
