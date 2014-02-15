@@ -341,7 +341,8 @@ void MapEditorConfigDialog::populateMapList()
 	}
 
 	// Restore selection
-	list_maps->selectItem(selection);
+	if (selection > -1)
+		list_maps->selectItem(selection);
 }
 
 Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
