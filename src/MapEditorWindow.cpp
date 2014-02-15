@@ -1096,7 +1096,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 {
 	if (editor.getMap().isModified())
 	{
-		wxMessageDialog md(this, S_FMT("Save changes to map %s", currentMapDesc().name), "Unsaved Changes", wxYES_NO|wxCANCEL);
+		wxMessageDialog md(this, S_FMT("Save changes to map %s?", currentMapDesc().name), "Unsaved Changes", wxYES_NO|wxCANCEL);
 		int answer = md.ShowModal();
 		if (answer == wxID_YES)
 			saveMap();
