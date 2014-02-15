@@ -34,6 +34,7 @@
 #include "MathStuff.h"
 #include "SLADEMap.h"
 #include "MainApp.h"
+#include "GameConfiguration.h"
 
 
 /*******************************************************************
@@ -539,23 +540,47 @@ int MapLine::needsTexture()
 	if (!side2)
 		return TEX_FRONT_MIDDLE;
 
+	// ZDoom's Plane_Align ensures a slope will hide the lower or upper texture
+	// of one side
+	bool aligned_floor = false;
+	bool aligned_ceiling = false;
+	if (special)
+	{
+		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
+		if (as->getName() == "Plane_Align")
+		{
+			int prop;
+			prop = intProperty("arg0");
+			aligned_floor = (prop == 1 || prop == 2);
+			prop = intProperty("arg1");
+			aligned_ceiling = (prop == 1 || prop == 2);
+		}
+	}
+
+
 	// Get sector heights
 	int floor_front = frontSector()->getFloorHeight();
 	int ceiling_front = frontSector()->getCeilingHeight();
 	int floor_back = backSector()->getFloorHeight();
 	int ceiling_back = backSector()->getCeilingHeight();
 
-	// Front lower
 	int tex = 0;
-	if (floor_front < floor_back)
+	if (aligned_floor)
+		;
+
+	// Front lower
+	else if (floor_front < floor_back)
 		tex |= TEX_FRONT_LOWER;
 
 	// Back lower
 	else if (floor_front > floor_back)
 		tex |= TEX_BACK_LOWER;
 
+	if (aligned_ceiling)
+		;
+
 	// Front upper
-	if (ceiling_front > ceiling_back)
+	else if (ceiling_front > ceiling_back)
 		tex |= TEX_FRONT_UPPER;
 
 	// Back upper
