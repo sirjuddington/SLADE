@@ -383,6 +383,9 @@ void MapEditorWindow::setupLayout()
 
 	m_mgr->Update();
 	Layout();
+
+	// Initial focus on the canvas, so shortcuts work
+	map_canvas->SetFocus();
 }
 
 /* MapEditorWindow::lockMapEntries
