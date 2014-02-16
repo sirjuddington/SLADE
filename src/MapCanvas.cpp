@@ -2575,12 +2575,13 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	panel_props->openObjects(list);
 
 	// Open the dialog and apply changes if OK was clicked
+	panel_props->SetFocus();
 	dlg.CenterOnParent();
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		panel_props->applyChanges();
 		renderer_2d->forceUpdate(fade_lines);
-		Refresh();
+		editor->updateDisplay();
 
 		if (editor->editMode() == MapEditor::MODE_THINGS)
 			editor->copyProperties(list[0]);

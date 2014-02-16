@@ -930,7 +930,7 @@ void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 	applyChanges();
 
 	// Refresh map view
-	theMapEditor->forceRefresh();
+	theMapEditor->forceRefresh(true);
 }
 
 /* MapObjectPropsPanel::onBtnReset

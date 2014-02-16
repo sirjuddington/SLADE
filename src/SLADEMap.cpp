@@ -3815,8 +3815,8 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 			v1->connectLine(line);
 		}
 
-		if (lines[a]->vertex1 == v1 && lines[a]->vertex2 == v1)
-			zlines.push_back(lines[a]);
+		if (line->vertex1 == v1 && line->vertex2 == v1)
+			zlines.push_back(line);
 	}
 
 	// Delete the vertex
