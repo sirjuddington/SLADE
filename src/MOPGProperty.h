@@ -94,19 +94,17 @@ public:
 class MOPGIntWithArgsProperty : public MOPGIntProperty
 {
 protected:
-	wxPGProperty*	args[5];
-
 	virtual const argspec_t getArgspec() = 0;
 
 public:
 	MOPGIntWithArgsProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
-	void	openObjects(vector<MapObject*>& objects);
 	void	applyValue();
-	void	addArgProperty(wxPGProperty* prop, int index);
+	bool	hasArgs();
+	void	updateArgs(wxPGProperty* args[5]);
 
-	void	updateArgNames();
-	void	updateArgVisibility();
+	// wxPGProperty overrides
+	void	OnSetValue();
 };
 
 class MOPGActionSpecialProperty : public MOPGIntWithArgsProperty

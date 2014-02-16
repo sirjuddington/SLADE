@@ -356,95 +356,68 @@ void MOPGStringProperty::applyValue()
  * those with names) should always be shown even if zero.
  */
 
-/* MOPGIntWithArgsProperty::MOPGThingTypeProperty
+/* MOPGIntWithArgsProperty::MOPGIntWithArgsProperty
  * MOPGIntWithArgsProperty class constructor
  *******************************************************************/
 MOPGIntWithArgsProperty::MOPGIntWithArgsProperty(const wxString& label, const wxString& name)
 	: MOPGIntProperty(label, name)
 {
-	// Init variables
-	args[0] = NULL;
-	args[1] = NULL;
-	args[2] = NULL;
-	args[3] = NULL;
-	args[4] = NULL;
-
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
 
-/* MOPGIntWithArgsProperty::updateArgNames()
- * Update the UI to show the names of the arguments for the current special or
- * thing type.
+/* MOPGIntWithArgsProperty::hasArgs()
+ * Return whether the selected special or thing type takes any arguments.
  *******************************************************************/
-void MOPGIntWithArgsProperty::updateArgNames()
+bool MOPGIntWithArgsProperty::hasArgs()
 {
-	// Reset names if the value is unspecified
-	if (IsValueUnspecified())
-	{
-		for (unsigned a = 0; a < 5; a++)
-		{
-			if (!args[a])
-				continue;
-
-			args[a]->SetLabel(S_FMT("Arg%d", a+1));
-			args[a]->SetHelpString("");
-		}
-		return;
-	}
-
-	argspec_t argspec = getArgspec();
-	for (unsigned a = 0; a < 5; a++)
-	{
-		if (!args[a])
-			continue;
-
-		args[a]->SetLabel(argspec.getArg(a).name);
-		args[a]->SetHelpString(argspec.getArg(a).desc);
-	}
+	return getArgspec().count > 0;
 }
 
-/* MOPGIntWithArgsProperty::updateArgVisibility()
- * Update the UI to show only the arguments that have names.
+/* MOPGIntWithArgsProperty::updateArgs()
+ * Update the UI to show the names of the arguments for the current special or
+ * thing type, and hide those that don't have names.
  *******************************************************************/
-void MOPGIntWithArgsProperty::updateArgVisibility()
+void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 {
+	argspec_t argspec = getArgspec();
+	int default_value = 0;
 	unsigned argcount;
+
+	if (udmf_prop)
+		default_value = udmf_prop->getDefaultValue().getIntValue();
 
 	if (parent->showAll())
 		argcount = 5;
 	else if (IsValueUnspecified())
 		argcount = 0;
 	else
-		argcount = getArgspec().count;
+		argcount = argspec.count;
 
-	int default_value = 0;
-	if (udmf_prop)
-		default_value = udmf_prop->getDefaultValue().getIntValue();
-
-	// Show any args that this special uses, hide the others, but never hide an
-	// arg with a value
 	for (unsigned a = 0; a < 5; a++)
 	{
 		if (! args[a])
 			continue;
 
+		if (IsValueUnspecified())
+		{
+			args[a]->SetLabel(S_FMT("Arg%d", a+1));
+			args[a]->SetHelpString("");
+		}
+		else
+		{
+			args[a]->SetLabel(argspec.getArg(a).name);
+			args[a]->SetHelpString(argspec.getArg(a).desc);
+		}
+
+		// Show any args that this special uses, hide the others, but never
+		// hide an arg with a value
 		args[a]->Hide(
 			a >= argcount
 			&& ! args[a]->IsValueUnspecified()
 			&& args[a]->GetValue().GetInteger() == default_value
 		);
 	}
-}
-
-/* MOPGIntWithArgsProperty::openObjects
- * Reads the value of this property from [objects]
- * (if the value differs between objects, it is set to unspecified)
- *******************************************************************/
-void MOPGIntWithArgsProperty::openObjects(vector<MapObject*>& objects)
-{
-	MOPGIntProperty::openObjects(objects);
-	updateArgNames();
 }
 
 /* MOPGIntWithArgsProperty::applyValue
@@ -479,13 +452,15 @@ void MOPGIntWithArgsProperty::applyValue()
 	}
 }
 
-/* MOPGIntWithArgsProperty::addArgProperty
- * Adds a linked arg property [prop] at [index]
+/* MOPGIntWithArgsProperty::OnSetValue
+ * Ask the parent to refresh the args display after the value changes
  *******************************************************************/
-void MOPGIntWithArgsProperty::addArgProperty(wxPGProperty* prop, int index)
+void MOPGIntWithArgsProperty::OnSetValue()
 {
-	if (index < 5)
-		args[index] = prop;
+	if (parent)
+		parent->updateArgs(this);
+
+	MOPGIntProperty::OnSetValue();
 }
 
 
@@ -540,11 +515,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 			special = dlg.selectedSpecial();
 
 		if (special >= 0)
-		{
 			SetValue(special);
-			updateArgNames();
-			updateArgVisibility();
-		}
 	}
 
 	return wxIntProperty::OnEvent(propgrid, window, e);
@@ -577,6 +548,10 @@ wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) co
 	// Get value as integer
 	int type = value.GetInteger();
 
+	if (type == 0)
+		return "0: None";
+
+
 	ThingType* tt = theGameConfiguration->thingType(type);
 	return S_FMT("%d: %s", type, tt->getName());
 }
@@ -599,7 +574,8 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 		{
 			// Set the value if a type was selected
 			int type = browser.getSelectedType();
-			if (type >= 0) SetValue(type);
+			if (type >= 0)
+				SetValue(type);
 		}
 	}
 
