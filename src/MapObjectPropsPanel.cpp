@@ -848,7 +848,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	{
 		// Enable/disable side properties
 		wxPGProperty* prop = pg_properties->GetProperty("sidefront");
-		if (prop && (prop->GetValue().GetInteger() >= 0 || prop->IsValueUnspecified()))
+		if (prop && (prop->IsValueUnspecified() || prop->GetValue().GetInteger() >= 0))
 			pg_props_side1->EnableProperty(pg_props_side1->GetGrid()->GetRoot());
 		else
 		{
@@ -856,7 +856,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 			pg_props_side1->SetPropertyValueUnspecified(pg_props_side1->GetGrid()->GetRoot());
 		}
 		prop = pg_properties->GetProperty("sideback");
-		if (prop && (prop->GetValue().GetInteger() >= 0 || prop->IsValueUnspecified()))
+		if (prop && (prop->IsValueUnspecified() || prop->GetValue().GetInteger() >= 0))
 			pg_props_side2->EnableProperty(pg_props_side2->GetGrid()->GetRoot());
 		else
 		{
