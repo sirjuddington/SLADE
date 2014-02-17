@@ -30,6 +30,9 @@ public:
 	int			getType() { return type; }
 	Property	getDefaultValue() { return default_value; }
 	bool		hasDefaultValue() { return has_default; }
+	bool		hasPossibleValues() { return !values.empty(); }
+	const vector<Property>
+				getPossibleValues() { return values; }
 	bool		isFlag() { return flag; }
 	bool		isTrigger() { return trigger; }
 	bool		showAlways() { return show_always; }

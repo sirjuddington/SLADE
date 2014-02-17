@@ -335,6 +335,31 @@ MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& na
 	propname = name;
 }
 
+/* MOPGStringProperty::setUDMFProp
+ * Load a list of possible choices from the given UDMF prop, if any
+ *******************************************************************/
+void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
+{
+	MOPGProperty::setUDMFProp(prop);
+
+	// If this is a soft enum (e.g. renderstyle can be "translucent" or "add",
+	// but we don't want to enforce that strictly), use a combobox populated
+	// with the possible values
+	if (prop && prop->hasPossibleValues())
+	{
+		const vector<Property> values = prop->getPossibleValues();
+		wxPGChoices choices = wxPGChoices();
+
+		for (unsigned n = 0; n < values.size(); n++)
+			choices.Add(values[n].getStringValue());
+
+		SetChoices(choices);
+		SetEditor(wxPGEditor_ComboBox);
+	}
+	else
+		SetEditor(wxPGEditor_TextCtrl);
+}
+
 /* MOPGStringProperty::openObjects
  * Reads the value of this string property from [objects]
  * (if the value differs between objects, it is set to unspecified)

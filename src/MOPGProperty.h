@@ -43,7 +43,7 @@ public:
 
 	string			getPropName() { return propname; }
 	void			setParent(MapObjectPropsPanel* parent) { this->parent = parent; }
-	void			setUDMFProp(UDMFProperty* prop) { this->udmf_prop = prop; }
+	virtual void	setUDMFProp(UDMFProperty* prop) { this->udmf_prop = prop; }
 
 	virtual int		getType() = 0;
 	virtual void	openObjects(vector<MapObject*>& objects) = 0;
@@ -89,6 +89,8 @@ class MOPGStringProperty : public MOPGProperty, public wxStringProperty
 {
 public:
 	MOPGStringProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
+
+	void	setUDMFProp(UDMFProperty* prop);
 
 	int		getType() { return TYPE_STRING; }
 	void	openObjects(vector<MapObject*>& objects);
