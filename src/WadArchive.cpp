@@ -342,6 +342,8 @@ bool WadArchive::open(MemChunk& mc)
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
+	vector<uint32_t> offsets;
+
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
 	theSplashWindow->setProgressMessage("Reading wad archive data");
@@ -363,6 +365,22 @@ bool WadArchive::open(MemChunk& mc)
 		// Byteswap values for big endian if needed
 		offset = wxINT32_SWAP_ON_BE(offset);
 		size = wxINT32_SWAP_ON_BE(size);
+
+		// Check to catch stupid shit
+		if (size > 0)
+		{
+			if (offset == 0)
+			{
+				LOG_MESSAGE(2, "No.");
+				continue;
+			}
+			if (VECTOR_EXISTS(offsets, offset))
+			{
+				LOG_MESSAGE(1, "Ignoring entry %d: %s, is a clone of a previous entry", d, name);
+				continue;
+			}
+			offsets.push_back(offset);
+		}
 
 		// Hack to open Operation: Rheingold WAD files
 		if (size == 0 && offset > mc.getSize())
@@ -440,7 +458,7 @@ bool WadArchive::open(MemChunk& mc)
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		theSplashWindow->setProgress((((float)a / (float)numEntries())));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);

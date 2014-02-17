@@ -146,7 +146,7 @@ Property::~Property()
  * true, a warning message is written to the log if the property is
  * not of boolean type
  *******************************************************************/
-bool Property::getBoolValue(bool warn_wrong_type)
+bool Property::getBoolValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
@@ -187,7 +187,7 @@ bool Property::getBoolValue(bool warn_wrong_type)
  * true, a warning message is written to the log if the property is
  * not of integer type
  *******************************************************************/
-int Property::getIntValue(bool warn_wrong_type)
+int Property::getIntValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
@@ -222,7 +222,7 @@ int Property::getIntValue(bool warn_wrong_type)
  * true, a warning message is written to the log if the property is
  * not of floating point type
  *******************************************************************/
-double Property::getFloatValue(bool warn_wrong_type)
+double Property::getFloatValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
@@ -257,7 +257,7 @@ double Property::getFloatValue(bool warn_wrong_type)
  * true, a warning message is written to the log if the property is
  * not of string type
  *******************************************************************/
-string Property::getStringValue(bool warn_wrong_type)
+string Property::getStringValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
@@ -297,7 +297,7 @@ string Property::getStringValue(bool warn_wrong_type)
  * is true, a warning message is written to the log if the property is
  * not of integer type
  *******************************************************************/
-unsigned Property::getUnsignedValue(bool warn_wrong_type)
+unsigned Property::getUnsignedValue(bool warn_wrong_type) const
 {
 	// If this is a flag, just return boolean 'true' (or equivalent)
 	if (type == PROP_FLAG)
@@ -436,7 +436,7 @@ void Property::changeType(uint8_t newtype)
 /* Property::typeString
  * Returns a string representing the property's value type
  *******************************************************************/
-string Property::typeString()
+string Property::typeString() const
 {
 	switch (type)
 	{

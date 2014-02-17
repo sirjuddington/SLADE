@@ -129,36 +129,46 @@ size_t WolfConstant(int name, size_t numlumps)
 }
 
 /* searchIMFName
- * Looks for the string naming the song, at no fixed place towards
- * the end of the file. Returns an empty string if nothing is found.
+ * Looks for the string naming the song towards the end of the file.
+ * Returns an empty string if nothing is found.
  *******************************************************************/
 string searchIMFName(MemChunk& mc)
 {
+	char tmp[17];
+	char tmp2[65];
+	tmp[16] = 0;
+	tmp2[64] = 0;
+
 	string ret = "";
-	if (mc.getSize() > 90)
+	string fullname = "";
+	if (mc.getSize() > 82)
 	{
-		size_t counter = mc.getSize() - 1;
-		size_t stop = counter - 88;
-		while (counter > stop)
+		uint16_t nameOffset = wxINT16_SWAP_ON_BE(*(uint16_t*)&mc[0])+4;
+		if (mc.getSize() > nameOffset+80)
 		{
-			if (mc[counter] == 'F' && mc[counter - 1] == 'M'
-					&& mc[counter - 2] == 'I' && mc[counter - 3] == '.')
-			{
-				size_t start = counter - 4;
-				while ((mc[start] >= 'A' && mc[start] <= 'Z') || mc[start] == '-'
-						|| (mc[start] >= '0' && mc[start] <= '9') || mc[start] == '!')
-				{
-					start--;
-				}
-				if (counter - start < 13 && mc[start] == '\\')
-				{
-					for (size_t i = 1; start + i <= counter; ++i)
-						ret += mc[start + i];
-				}
-				break;
-			}
-			counter--;
+			memcpy(tmp, &mc[nameOffset], 16);
+			tmp[strlen(tmp)] = 0;
+			ret = tmp;
+
+			memcpy(tmp2, &mc[nameOffset + 16], 64);
+			tmp[strlen(tmp2)] = 0;
+			fullname = tmp2;
 		}
+		// Shareware stubs
+		else if (*(uint16_t*)&mc[0] == 0)
+		{
+			nameOffset = 2;
+			memcpy(tmp, &mc[2], 16);
+			tmp[strlen(tmp)] = 0;
+			ret = tmp;
+
+			memcpy(tmp2, &mc[18], 64);
+			tmp[strlen(tmp2)] = 0;
+			fullname = tmp2;
+		}
+
+		if ((ret.length() > 12 || strncmp(tmp+ret.length()+1, "IMF", 3) != 0) && strncmp(tmp2+strlen(tmp2)-3, "IMF", 3) != 0)
+			return "";
 	}
 	return ret;
 }
@@ -372,11 +382,20 @@ bool WolfArchive::open(string filename)
 	// Find wolf archive type
 	wxFileName fn1(filename);
 	bool opened = false;
-	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS")
+	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS" || fn1.GetName().MakeUpper() == "MAPTEMP")
 	{
+		// MAPHEAD can be paried with either a GAMEMAPS (Carmack,RLEW) or MAPTEMP (RLEW)
 		wxFileName fn2(fn1);
-		fn1.SetName("MAPHEAD");
-		fn2.SetName("GAMEMAPS");
+		if (fn1.GetName().MakeUpper() == "MAPHEAD")
+		{
+			fn2.SetName("GAMEMAPS");
+			if (!wxFile::Exists(fn2.GetFullPath()))
+				fn2.SetName("MAPTEMP");
+		}
+		else
+		{
+			fn1.SetName("MAPHEAD");
+		}
 		MemChunk data, head;
 		head.importFile(findFileCasing(fn1));
 		data.importFile(findFileCasing(fn2));
@@ -603,6 +622,63 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 	theSplashWindow->setProgressMessage("Reading Wolf archive data");
 	const uint32_t* offsets = (const uint32_t*) head.getData();
 	MemChunk edata;
+
+	// First try to determine where data type changes
+	enum
+	{
+		SegmentPCSpeaker,
+		SegmentAdLib,
+		SegmentDigital,
+		SegmentMusic
+	};
+	int currentSeg = SegmentPCSpeaker;
+	static const char* const segPrefix[4] = {"PCS", "ADL", "SND", "MUS"};
+	unsigned int segEnds[4] = {0,0,0,num_lumps};
+	bool stripTags = true;
+	// Method 1: Look for !ID! tags
+	for (uint32_t d = 0; d < num_lumps && currentSeg != SegmentMusic; d++)
+	{
+		uint32_t offset = wxINT32_SWAP_ON_BE(offsets[d]);
+		uint32_t size = wxINT32_SWAP_ON_BE(offsets[d+1]) - offset;
+
+		// Read entry data if it isn't zero-sized
+		if (size >= 4)
+		{
+			data.exportMemChunk(edata, offset, size);
+
+			if (strncmp((const char*)&edata[size-4], "!ID!", 4) == 0)
+				segEnds[currentSeg++] = d;
+		}
+	}
+
+	if(currentSeg != SegmentMusic)
+	{
+		// Method 2: Heuristics - Find music and then assume there are the same number PC, Adlib, and Digital
+		stripTags = false;
+		uint32_t d = num_lumps;
+		while(d-- > 0)
+		{
+			uint32_t offset = wxINT32_SWAP_ON_BE(offsets[d]);
+			uint32_t size = wxINT32_SWAP_ON_BE(offsets[d+1]) - offset;
+
+			if(size <= 4)
+				break;
+
+			// Look to see if we have an IMF
+			data.exportMemChunk(edata, offset, size);
+
+			string name = searchIMFName(edata);
+			if(name == "")
+				break;
+		}
+		segEnds[SegmentDigital] = d;
+		segEnds[SegmentPCSpeaker] = d/3;
+		segEnds[SegmentAdLib] = segEnds[SegmentPCSpeaker]*2;
+	}
+
+	// Now we can actually process the chunks
+	currentSeg = 0;
+	uint32_t dOfs = 0; // So that each segment starts counting at 0
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
@@ -622,6 +698,18 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 			return false;
 		}
 
+		// See if we need to remove !ID! tag from final chunk
+		if (d == segEnds[currentSeg] && stripTags)
+		{
+			size -= 4;
+		}
+		else if(d == segEnds[currentSeg]+1)
+		{
+			dOfs = segEnds[currentSeg]+1;
+			++currentSeg;
+		}
+
+		//
 		// Read entry data if it isn't zero-sized
 		if (size > 0)
 		{
@@ -630,9 +718,11 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		}
 
 		// Wolf chunks have no names, so just give them a number
-		string name = searchIMFName(edata);
+		string name = "";
+		if (currentSeg == SegmentMusic)
+			name = searchIMFName(edata);
 		if (name == "")
-			name = S_FMT("LMP%05d", d);
+			name = S_FMT("%s%05d", segPrefix[currentSeg], d-dOfs);
 
 		// Create & setup lump
 		ArchiveEntry* nlump = new ArchiveEntry(name, size);
@@ -1053,19 +1143,24 @@ bool WolfArchive::isWolfArchive(string filename)
 {
 	// Find wolf archive type
 	wxFileName fn1(filename);
-	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS")
+	if (fn1.GetName().MakeUpper() == "MAPHEAD" || fn1.GetName().MakeUpper() == "GAMEMAPS" || fn1.GetName().MakeUpper() == "MAPTEMP")
 	{
 		wxFileName fn2(fn1);
 		fn1.SetName("MAPHEAD");
 		fn2.SetName("GAMEMAPS");
-		return (wxFile::Exists(fn1.GetFullPath()) && wxFile::Exists(fn2.GetFullPath()));
+		if (!(wxFile::Exists(findFileCasing(fn1)) && wxFile::Exists(findFileCasing(fn2))))
+		{
+			fn2.SetName("MAPTEMP");
+			return (wxFile::Exists(findFileCasing(fn1)) && wxFile::Exists(findFileCasing(fn2)));
+		}
+		return true;
 	}
 	else if (fn1.GetName().MakeUpper() == "AUDIOHED" || fn1.GetName().MakeUpper() == "AUDIOT")
 	{
 		wxFileName fn2(fn1);
 		fn1.SetName("AUDIOHED");
 		fn2.SetName("AUDIOT");
-		return (wxFile::Exists(fn1.GetFullPath()) && wxFile::Exists(fn2.GetFullPath()));
+		return (wxFile::Exists(findFileCasing(fn1)) && wxFile::Exists(findFileCasing(fn2)));
 	}
 	else if (fn1.GetName().MakeUpper() == "VGAHEAD" || fn1.GetName().MakeUpper() == "VGAGRAPH"
 			 || fn1.GetName().MakeUpper() == "VGADICT")
@@ -1075,8 +1170,8 @@ bool WolfArchive::isWolfArchive(string filename)
 		fn1.SetName("VGAHEAD");
 		fn2.SetName("VGAGRAPH");
 		fn3.SetName("VGADICT");
-		return (wxFile::Exists(fn1.GetFullPath()) && wxFile::Exists(fn2.GetFullPath())
-				&& wxFile::Exists(fn3.GetFullPath()));
+		return (wxFile::Exists(findFileCasing(fn1)) && wxFile::Exists(findFileCasing(fn2))
+				&& wxFile::Exists(findFileCasing(fn3)));
 	}
 
 	// else we have to deal with a VSWAP archive, which is the only self-contained type

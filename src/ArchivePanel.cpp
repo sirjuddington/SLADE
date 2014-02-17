@@ -1142,7 +1142,7 @@ bool ArchivePanel::sort()
 	selection.clear();
 	selection.resize(stop - start);
 	for (size_t i = start; i < stop; ++i)
-		selection[i] = i;
+		selection[i - start] = i;
 
 	// No sorting needed even after adding everything
 	if (selection.size() < 2)

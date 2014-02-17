@@ -674,7 +674,9 @@ string ArchiveManager::getArchiveExtensionsString()
 	                    "audiot.*;AUDIOT.*;Audiot.*;"
 	                    "audiohed.*;AUDIOHED.*;Audiohed.*;"
 	                    "gamemaps.*;GAMEMAPS.*;Gamemaps.*;"
+	                    "gfxtiles.*;GFXTILES.*;Gfxtiles.*;"
 	                    "maphead.*;MAPHEAD.*;Maphead.*"
+	                    "maptemp.*;MAPTEMP.*;Maptemp.*"
 	                    "vgagraph.*;VGAGRAPH.*;Vgagraph.*"
 	                    "vgahead.*;VGAHEAD.*;Vgahead.*;"
 	                    "vgadict.*;VGADICT.*;Vgadict.*";		extensions += ext_wolf +";";
