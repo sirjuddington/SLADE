@@ -901,11 +901,9 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 	// First determine which property owns the args.  Use the last one that has
 	// a specified and non-zero value.  ThingType always wins, though, because
 	// ThingTypes with args ignore their specials.
-	for (vector<MOPGProperty*>::iterator it = properties.begin();
-		it != properties.end();
-		it++)
+	for (unsigned a = 0; a < properties.size(); a++)
 	{
-		prop = *it;
+		prop = properties[a];
 
 		if (prop->getType() == MOPGProperty::TYPE_TTYPE
 			|| prop->getType() == MOPGProperty::TYPE_ASPECIAL)
@@ -973,12 +971,8 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 	mobj_props_show_all = cb_show_all->GetValue();
 
 	// Refresh each property's visibility
-	for (vector<MOPGProperty*>::iterator it = properties.begin();
-		it != properties.end();
-		it++)
-	{
-		(*it)->updateVisibility();
-	}
+	for (unsigned a = 0; a < properties.size(); a++)
+		properties[a]->updateVisibility();
 
 	updateArgs(NULL);
 }
