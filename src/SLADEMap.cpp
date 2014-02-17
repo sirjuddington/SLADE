@@ -175,7 +175,7 @@ void SLADEMap::restoreObjectById(unsigned id)
 	MapObject* object = all_objects[id].mobj;
 	if (!object)
 	{
-		LOG_MESSAGE(2, "restoreObjectById: Invalid object id %d", id);
+		LOG_MESSAGE(2, "restoreObjectById: Invalid object id %u", id);
 		return;
 	}
 
@@ -278,7 +278,7 @@ void SLADEMap::restoreObjectById(unsigned id)
 	}
 
 	all_objects[id].in_map = true;
-	LOG_MESSAGE(4, "restore id %d index %d", object->id, object->index);
+	LOG_MESSAGE(4, "restore id %u index %u", object->id, object->index);
 }
 
 void SLADEMap::removeObjectById(unsigned id)
@@ -287,7 +287,7 @@ void SLADEMap::removeObjectById(unsigned id)
 	MapObject* object = all_objects[id].mobj;
 	if (!object)
 	{
-		LOG_MESSAGE(2, "removeObjectById: Invalid object id %d", id);
+		LOG_MESSAGE(2, "removeObjectById: Invalid object id %u", id);
 		return;
 	}
 	unsigned oindex = object->getIndex();
@@ -358,7 +358,7 @@ void SLADEMap::removeObjectById(unsigned id)
 		things.pop_back();
 	}
 
-	LOG_MESSAGE(4, "remove id %d index %d", object->id, object->index);
+	LOG_MESSAGE(4, "remove id %u index %u", object->id, object->index);
 	removeMapObject(object);
 }
 
@@ -695,7 +695,7 @@ bool SLADEMap::readDoomVertexes(ArchiveEntry* entry)
 		addVertex(vert_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d vertices", vertices.size());
+	LOG_MESSAGE(3, "Read %lu vertices", vertices.size());
 
 	return true;
 }
@@ -725,7 +725,7 @@ bool SLADEMap::readDoomSidedefs(ArchiveEntry* entry)
 		addSide(side_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d sides", sides.size());
+	LOG_MESSAGE(3, "Read %lu sides", sides.size());
 
 	return true;
 }
@@ -753,10 +753,10 @@ bool SLADEMap::readDoomLinedefs(ArchiveEntry* entry)
 	{
 		theSplashWindow->setProgress(p + ((float)a / nl) * 0.2f);
 		if (!addLine(line_data[a]))
-			LOG_MESSAGE(2, "Line %d invalid, not added", a);
+			LOG_MESSAGE(2, "Line %lu invalid, not added", a);
 	}
 
-	LOG_MESSAGE(3, "Read %d lines", lines.size());
+	LOG_MESSAGE(3, "Read %lu lines", lines.size());
 
 	return true;
 }
@@ -786,7 +786,7 @@ bool SLADEMap::readDoomSectors(ArchiveEntry* entry)
 		addSector(sect_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d sectors", sectors.size());
+	LOG_MESSAGE(3, "Read %lu sectors", sectors.size());
 
 	return true;
 }
@@ -816,7 +816,7 @@ bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 		addThing(thng_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d things", things.size());
+	LOG_MESSAGE(3, "Read %lu things", things.size());
 
 	return true;
 }
@@ -1020,7 +1020,7 @@ bool SLADEMap::readHexenLinedefs(ArchiveEntry* entry)
 		addLine(line_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d lines", lines.size());
+	LOG_MESSAGE(3, "Read %lu lines", lines.size());
 
 	return true;
 }
@@ -1049,7 +1049,7 @@ bool SLADEMap::readHexenThings(ArchiveEntry* entry)
 		addThing(thng_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d things", things.size());
+	LOG_MESSAGE(3, "Read %lu things", things.size());
 
 	return true;
 }
@@ -1152,7 +1152,7 @@ bool SLADEMap::readDoom64Vertexes(ArchiveEntry* entry)
 		addVertex(vert_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d vertices", vertices.size());
+	LOG_MESSAGE(3, "Read %lu vertices", vertices.size());
 
 	return true;
 }
@@ -1181,7 +1181,7 @@ bool SLADEMap::readDoom64Sidedefs(ArchiveEntry* entry)
 		addSide(side_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d sides", sides.size());
+	LOG_MESSAGE(3, "Read %lu sides", sides.size());
 
 	return true;
 }
@@ -1210,7 +1210,7 @@ bool SLADEMap::readDoom64Linedefs(ArchiveEntry* entry)
 		addLine(line_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d lines", lines.size());
+	LOG_MESSAGE(3, "Read %lu lines", lines.size());
 
 	return true;
 }
@@ -1239,7 +1239,7 @@ bool SLADEMap::readDoom64Sectors(ArchiveEntry* entry)
 		addSector(sect_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d sectors", sectors.size());
+	LOG_MESSAGE(3, "Read %lu sectors", sectors.size());
 
 	return true;
 }
@@ -1268,7 +1268,7 @@ bool SLADEMap::readDoom64Things(ArchiveEntry* entry)
 		addThing(thng_data[a]);
 	}
 
-	LOG_MESSAGE(3, "Read %d things", things.size());
+	LOG_MESSAGE(3, "Read %lu things", things.size());
 
 	return true;
 }
@@ -1915,7 +1915,7 @@ bool SLADEMap::writeHexenLinedefs(ArchiveEntry* entry)
 
 		// Args
 		for (unsigned arg = 0; arg < 5; arg++)
-			line.args[arg] = lines[a]->intProperty(S_FMT("arg%d", arg));
+			line.args[arg] = lines[a]->intProperty(S_FMT("arg%u", arg));
 
 		// Sides
 		line.side1 = -1;
@@ -1958,7 +1958,7 @@ bool SLADEMap::writeHexenThings(ArchiveEntry* entry)
 
 		// Args
 		for (unsigned arg = 0; arg < 5; arg++)
-			thing.args[arg] = things[a]->intProperty(S_FMT("arg%d", arg));
+			thing.args[arg] = things[a]->intProperty(S_FMT("arg%u", arg));
 
 		entry->write(&thing, 20);
 	}
@@ -2232,7 +2232,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	string object_def;
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		object_def = S_FMT("thing//#%d\n{\n", a);
+		object_def = S_FMT("thing//#%u\n{\n", a);
 
 		// Basic properties
 		object_def += S_FMT("x=%1.3f;\ny=%1.3f;\ntype=%d;\n", things[a]->x, things[a]->y, things[a]->type);
@@ -2257,7 +2257,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	//clock.restart();
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
-		object_def = S_FMT("linedef//#%d\n{\n", a);
+		object_def = S_FMT("linedef//#%u\n{\n", a);
 
 		// Basic properties
 		object_def += S_FMT("v1=%d;\nv2=%d;\nsidefront=%d;\n", lines[a]->v1Index(), lines[a]->v2Index(), lines[a]->s1Index());
@@ -2285,10 +2285,10 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	//clock.restart();
 	for (unsigned a = 0; a < sides.size(); a++)
 	{
-		object_def = S_FMT("sidedef//#%d\n{\n", a);
+		object_def = S_FMT("sidedef//#%u\n{\n", a);
 
 		// Basic properties
-		object_def += S_FMT("sector=%d;\n", sides[a]->sector->getIndex());
+		object_def += S_FMT("sector=%u;\n", sides[a]->sector->getIndex());
 		if (sides[a]->tex_upper != "-")
 			object_def += S_FMT("texturetop=\"%s\";\n", sides[a]->tex_upper);
 		if (sides[a]->tex_middle != "-")
@@ -2316,7 +2316,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	//clock.restart();
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		object_def = S_FMT("vertex//#%d\n{\n", a);
+		object_def = S_FMT("vertex//#%u\n{\n", a);
 
 		// Basic properties
 		object_def += S_FMT("x=%1.3f;\ny=%1.3f;\n", vertices[a]->x, vertices[a]->y);
@@ -2337,7 +2337,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	//clock.restart();
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
-		object_def = S_FMT("sector//#%d\n{\n", a);
+		object_def = S_FMT("sector//#%u\n{\n", a);
 
 		// Basic properties
 		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";", sectors[a]->f_tex, sectors[a]->c_tex);
@@ -2441,7 +2441,7 @@ bool SLADEMap::removeLine(unsigned index)
 	if (index >= lines.size())
 		return false;
 
-	LOG_MESSAGE(4, "id %d  index %d  objindex %d", lines[index]->id, index, lines[index]->index);
+	LOG_MESSAGE(4, "id %u  index %u  objindex %u", lines[index]->id, index, lines[index]->index);
 
 	// Init
 	lines[index]->resetInternals();
@@ -2814,7 +2814,7 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(fpoint2_t(x, y));
-			LOG_MESSAGE(3, "Intersection point %1.9f,%1.9f valid with line %d", x, y, a);
+			LOG_MESSAGE(3, "Intersection point %1.9f,%1.9f valid with line %u", x, y, a);
 		}
 		else if (x != x1 || y != y1)
 			LOG_MESSAGE(3, "Intersection point %1.20f,%1.20f invalid", x, y);
@@ -3820,7 +3820,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	}
 
 	// Delete the vertex
-	LOG_MESSAGE(4, "Merging vertices %d and %d (removing %d)", vertex1, vertex2, vertex2);
+	LOG_MESSAGE(4, "Merging vertices %u and %u (removing %u)", vertex1, vertex2, vertex2);
 	removeMapObject(v2);
 	vertices[vertex2] = vertices.back();
 	vertices[vertex2]->index = vertex2;
@@ -3829,7 +3829,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	// Delete any resulting zero-length lines
 	for (unsigned a = 0; a < zlines.size(); a++)
 	{
-		LOG_MESSAGE(4, "Removing zero-length line %d", zlines[a]->getIndex());
+		LOG_MESSAGE(4, "Removing zero-length line %u", zlines[a]->getIndex());
 		removeLine(zlines[a]);
 	}
 
@@ -3969,7 +3969,7 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 
 		if (lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
 		{
-			LOG_MESSAGE(2, "Vertex at (%1.2f,%1.2f) splits line %d", vertex->x, vertex->y, a);
+			LOG_MESSAGE(2, "Vertex at (%1.2f,%1.2f) splits line %u", vertex->x, vertex->y, a);
 			splitLine(a, vertex->index);
 		}
 	}
@@ -4182,7 +4182,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	// Remove overlapping lines
 	for (unsigned a = 0; a < remove_lines.size(); a++)
 	{
-		LOG_MESSAGE(4, "Removing overlapping line %d (#%d)", remove_lines[a]->getId(), remove_lines[a]->getIndex());
+		LOG_MESSAGE(4, "Removing overlapping line %u (#%u)", remove_lines[a]->getId(), remove_lines[a]->getIndex());
 		removeLine(remove_lines[a]);
 	}
 	for (unsigned a = 0; a < connected_lines.size(); a++)
@@ -4236,7 +4236,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				splitLine(line2->getIndex(), nv->getIndex());
 				connected_lines.push_back(lines.back());
 
-				LOG_MESSAGE(4, "Lines %d and %d intersect", line1->getIndex(), line2->getIndex());
+				LOG_MESSAGE(4, "Lines %u and %u intersect", line1->getIndex(), line2->getIndex());
 
 				a--;
 				break;
