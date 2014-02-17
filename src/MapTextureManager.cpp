@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapTextureManager.cpp
+ * Description: Handles and keeps track of all OpenGL textures for
+ *              the map editor - textures, thing sprites, etc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "MapTextureManager.h"
 #include "ResourceManager.h"
@@ -8,8 +37,20 @@
 #include "MapEditorWindow.h"
 #include "OpenGL.h"
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Int, map_tex_filter, 0, CVAR_SAVE)
 
+
+/*******************************************************************
+ * MAPTEXTUREMANAGER CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapTextureManager::MapTextureManager
+ * MapTextureManager class constructor
+ *******************************************************************/
 MapTextureManager::MapTextureManager(Archive* archive)
 {
 	// Init variables
@@ -23,11 +64,18 @@ MapTextureManager::MapTextureManager(Archive* archive)
 	listenTo(thePaletteChooser);
 }
 
+/* MapTextureManager::~MapTextureManager
+ * MapTextureManager class destructor
+ *******************************************************************/
 MapTextureManager::~MapTextureManager()
 {
 	delete palette;
 }
 
+/* MapTextureManager::getResourcePalette
+ * Returns the current resource palette (depending on open archives
+ * and palette toolbar selection)
+ *******************************************************************/
 Palette8bit* MapTextureManager::getResourcePalette()
 {
 	if (thePaletteChooser->globalSelected())
@@ -44,6 +92,11 @@ Palette8bit* MapTextureManager::getResourcePalette()
 		return thePaletteChooser->getSelectedPalette();
 }
 
+/* MapTextureManager::getTexture
+ * Returns the texture matching [name]. Loads it from resources if
+ * necessary. If [mixed] is true, flats are also searched if no
+ * matching texture is found
+ *******************************************************************/
 GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 {
 	// Get texture matching name
@@ -148,6 +201,11 @@ GLTexture* MapTextureManager::getTexture(string name, bool mixed)
 	return mtex.texture;
 }
 
+/* MapTextureManager::getFlat
+ * Returns the flat matching [name]. Loads it from resources if
+ * necessary. If [mixed] is true, textures are also searched if no
+ * matching flat is found
+ *******************************************************************/
 GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 {
 	// Get flat matching name
@@ -214,6 +272,10 @@ GLTexture* MapTextureManager::getFlat(string name, bool mixed)
 	return mtex.texture;
 }
 
+/* MapTextureManager::getSprite
+ * Returns the sprite matching [name]. Loads it from resources if
+ * necessary. Sprite name also supports wildcards (?)
+ *******************************************************************/
 GLTexture* MapTextureManager::getSprite(string name, string translation, string palette)
 {
 	// Don't bother looking for nameless sprites
@@ -363,6 +425,10 @@ int MapTextureManager::getVerticalOffset(string name)
 	return 0;
 }
 
+/* MapTextureManager::importEditorImages
+ * Loads all editor images (thing icons, etc) from the program
+ * resource archive
+ *******************************************************************/
 void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
 {
 	SImage image;
@@ -393,6 +459,9 @@ void importEditorImages(MapTexHashMap& map, ArchiveTreeNode* dir, string path)
 	}
 }
 
+/* MapTextureManager::getEditorImage
+ * Returns the editor image matching [name]
+ *******************************************************************/
 GLTexture* MapTextureManager::getEditorImage(string name)
 {
 	if (!OpenGL::isInitialised())
@@ -413,6 +482,9 @@ GLTexture* MapTextureManager::getEditorImage(string name)
 	return editor_images[name].texture;
 }
 
+/* MapTextureManager::refreshResources
+ * Unloads all cached textures, flats and sprites
+ *******************************************************************/
 void MapTextureManager::refreshResources()
 {
 	// Just clear all cached textures
@@ -425,12 +497,18 @@ void MapTextureManager::refreshResources()
 	//wxLogMessage("texture manager cleared");
 }
 
+/* MapTextureManager::setArchive
+ * Sets the current archive to [archive], and refreshes all resources
+ *******************************************************************/
 void MapTextureManager::setArchive(Archive* archive)
 {
 	this->archive = archive;
 	refreshResources();
 }
 
+/* MapTextureManager::onAnnouncement
+ * Handles announcements from any announcers listened to
+ *******************************************************************/
 void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
 	// Only interested in the resource manager,

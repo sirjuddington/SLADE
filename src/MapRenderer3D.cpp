@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapRenderer3D.cpp
+ * Description: MapRenderer3D class - handles all rendering related
+ *              stuff for 3d mode
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapRenderer3D.h"
@@ -11,6 +40,10 @@
 #include "OpenGL.h"
 #include <SFML/System.hpp>
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Float, render_max_dist, 2000, CVAR_SAVE)
 CVAR(Float, render_max_thing_dist, 2000, CVAR_SAVE)
 CVAR(Int, render_thing_icon_size, 16, CVAR_SAVE)
@@ -23,9 +56,21 @@ CVAR(Int, render_3d_things_style, 1, CVAR_SAVE)
 CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
 
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Bool, flats_use_vbo)
 EXTERN_CVAR(Bool, use_zeth_icons)
 
+
+/*******************************************************************
+ * MAPRENDERER3D CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapRenderer3D::MapRenderer3D
+ * MapRenderer3D class constructor
+ *******************************************************************/
 MapRenderer3D::MapRenderer3D(SLADEMap* map)
 {
 	// Init variables
@@ -58,6 +103,9 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map)
 	listenTo(theResourceManager);
 }
 
+/* MapRenderer3D::~MapRenderer3D
+ * MapRenderer3D class destructor
+ *******************************************************************/
 MapRenderer3D::~MapRenderer3D()
 {
 	if (quads)				delete quads;
@@ -67,6 +115,9 @@ MapRenderer3D::~MapRenderer3D()
 	if (vbo_walls > 0)		glDeleteBuffers(1, &vbo_walls);
 }
 
+/* MapRenderer3D::init
+ * Initialises the 3d renderer
+ *******************************************************************/
 bool MapRenderer3D::init()
 {
 	// Check to enable zdoom udmf extensions
@@ -85,6 +136,9 @@ bool MapRenderer3D::init()
 	return true;
 }
 
+/* MapRenderer3D::refresh
+ * Clears VBOs and cached data
+ *******************************************************************/
 void MapRenderer3D::refresh()
 {
 	// Clear any existing map data
@@ -119,6 +173,9 @@ void MapRenderer3D::refresh()
 	//wxLogMessage("sky1: %s, sky2: %s", skytex1, skytex2);
 }
 
+/* MapRenderer3D::clearData
+ * Clears all cached rendering data
+ *******************************************************************/
 void MapRenderer3D::clearData()
 {
 	// Clear map structures
@@ -131,6 +188,9 @@ void MapRenderer3D::clearData()
 	refresh();
 }
 
+/* MapRenderer3D::buildSkyCircle
+ * Generates the array of points (circular) used for the sky
+ *******************************************************************/
 void MapRenderer3D::buildSkyCircle()
 {
 	double rot = 0;
@@ -141,6 +201,9 @@ void MapRenderer3D::buildSkyCircle()
 	}
 }
 
+/* MapRenderer3D::getQuad
+ * Returns the wall quad for wall selection [item]
+ *******************************************************************/
 MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item)
 {
 	// Check item type
@@ -188,6 +251,9 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(selection_3d_t item)
 	return NULL;
 }
 
+/* MapRenderer3D::getFlat
+ * Returns the flat for sector flat selection [item]
+ *******************************************************************/
 MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(selection_3d_t item)
 {
 	// Check index
@@ -207,6 +273,10 @@ MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(selection_3d_t item)
 		return NULL;
 }
 
+/* MapRenderer3D::cameraMove
+ * Moves the camera the direction it is facing by [distance]. If [z]
+ * is false it will only be moved along x/y axes
+ *******************************************************************/
 void MapRenderer3D::cameraMove(double distance, bool z)
 {
 	// Move along direction vector
@@ -223,6 +293,9 @@ void MapRenderer3D::cameraMove(double distance, bool z)
 	}
 }
 
+/* MapRenderer3D::cameraTurn
+ * Rotates the camera by [angle] around the z axis
+ *******************************************************************/
 void MapRenderer3D::cameraTurn(double angle)
 {
 	// Find rotated view point
@@ -237,11 +310,17 @@ void MapRenderer3D::cameraTurn(double angle)
 	cameraUpdateVectors();
 }
 
+/* MapRenderer3D::cameraMoveUp
+ * Moves the camera along the z axis by [distance]
+ *******************************************************************/
 void MapRenderer3D::cameraMoveUp(double distance)
 {
 	cam_position.z += distance;
 }
 
+/* MapRenderer3D::cameraStrafe
+ * Moves the camera along the strafe axis by [distance]
+ *******************************************************************/
 void MapRenderer3D::cameraStrafe(double distance)
 {
 	// Move along strafe vector
@@ -249,6 +328,9 @@ void MapRenderer3D::cameraStrafe(double distance)
 	cam_position.y += cam_strafe.y * distance;
 }
 
+/* MapRenderer3D::cameraPitch
+ * Rotates the camera view around the strafe axis by [amount]
+ *******************************************************************/
 void MapRenderer3D::cameraPitch(double amount)
 {
 	// Pitch camera
@@ -265,6 +347,9 @@ void MapRenderer3D::cameraPitch(double amount)
 	cameraUpdateVectors();
 }
 
+/* MapRenderer3D::cameraUpdateVectors
+ * Updates the strafe and direction vectors for the camera
+ *******************************************************************/
 void MapRenderer3D::cameraUpdateVectors()
 {
 	// Normalize direction
@@ -279,6 +364,9 @@ void MapRenderer3D::cameraUpdateVectors()
 	cam_dir3d = cam_dir3d.normalize();
 }
 
+/* MapRenderer3D::cameraSet
+ * Sets the camera position to [position], facing [direction]
+ *******************************************************************/
 void MapRenderer3D::cameraSet(fpoint3_t position, fpoint2_t direction)
 {
 	// Set camera position/direction
@@ -290,11 +378,17 @@ void MapRenderer3D::cameraSet(fpoint3_t position, fpoint2_t direction)
 	cameraUpdateVectors();
 }
 
+/* MapRenderer3D::cameraSetPosition
+ * Moves the camera to [position]
+ *******************************************************************/
 void MapRenderer3D::cameraSetPosition(fpoint3_t position)
 {
 	cam_position = position;
 }
 
+/* MapRenderer3D::cameraApplyGravity
+ * Applies gravity to the camera
+ *******************************************************************/
 void MapRenderer3D::cameraApplyGravity(double mult)
 {
 	// Get current sector
@@ -325,6 +419,9 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 	}
 }
 
+/* MapRenderer3D::setupView
+ * Sets up the OpenGL view/projection for rendering
+ *******************************************************************/
 void MapRenderer3D::setupView(int width, int height)
 {
 	// Calculate aspect ratio
@@ -351,6 +448,10 @@ void MapRenderer3D::setupView(int width, int height)
 	          up.x, up.y, up.z);
 }
 
+/* MapRenderer3D::setLight
+ * Sets the OpenGL colour+fog for rendering an object using [colour]
+ * and [light] level
+ *******************************************************************/
 void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
 {
 	// Force 255 light in fullbright mode
@@ -382,6 +483,9 @@ void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
 	glColor4f(colour.fr()*mult, colour.fg()*mult, colour.fb()*mult, colour.fa()*alpha);
 }
 
+/* MapRenderer3D::renderMap
+ * Renders the map in 3d
+ *******************************************************************/
 void MapRenderer3D::renderMap()
 {
 	// Setup GL stuff
@@ -495,6 +599,10 @@ void MapRenderer3D::renderMap()
 	glDisable(GL_FOG);
 }
 
+/* MapRenderer3D::renderSkySlice
+ * Renders a cylindrical 'slice' of the sky between [top] and
+ * [bottom] on the z axis
+ *******************************************************************/
 void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float abottom, float size, float tx, float ty)
 {
 	float tc_x = 0.0f;
@@ -533,6 +641,9 @@ void MapRenderer3D::renderSkySlice(float top, float bottom, float atop, float ab
 	glEnd();
 }
 
+/* MapRenderer3D::renderSky
+ * Renders the sky
+ *******************************************************************/
 void MapRenderer3D::renderSky()
 {
 	OpenGL::setColour(COL_WHITE);
@@ -640,6 +751,10 @@ void MapRenderer3D::renderSky()
 	glEnable(GL_TEXTURE_2D);
 }
 
+/* MapRenderer3D::updateFlatTexCoords
+ * Updates the vertex texture coordinates of all polygons for sector
+ * [index]
+ *******************************************************************/
 void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 {
 	// Check index
@@ -685,6 +800,9 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	sector->getPolygon()->updateTextureCoords(sx, sy, ox, oy, rot);
 }
 
+/* MapRenderer3D::updateSector
+ * Updates cached rendering data for sector [index]
+ *******************************************************************/
 void MapRenderer3D::updateSector(unsigned index)
 {
 	// Check index
@@ -748,6 +866,9 @@ void MapRenderer3D::updateSector(unsigned index)
 	}
 }
 
+/* MapRenderer3D::renderFlat
+ * Renders [flat]
+ *******************************************************************/
 void MapRenderer3D::renderFlat(flat_3d_t* flat)
 {
 	// Skip if no sector (for whatever reason)
@@ -820,6 +941,9 @@ void MapRenderer3D::renderFlat(flat_3d_t* flat)
 		glEnable(GL_ALPHA_TEST);
 }
 
+/* MapRenderer3D::renderFlats
+ * Renders all currently visible flats
+ *******************************************************************/
 void MapRenderer3D::renderFlats()
 {
 	// Check for map
@@ -867,6 +991,9 @@ void MapRenderer3D::renderFlats()
 	}
 }
 
+/* MapRenderer3D::renderFlatSelection
+ * Renders selection overlay for all selected flats
+ *******************************************************************/
 void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float alpha)
 {
 	if (!render_selection)
@@ -934,6 +1061,9 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 	glCullFace(GL_BACK);
 }
 
+/* MapRenderer3D::setupQuad
+ * Sets up coordinates for a quad
+ *******************************************************************/
 void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom)
 {
 	// Left
@@ -949,6 +1079,9 @@ void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double 
 	quad->points[1].z = quad->points[2].z = bottom;
 }
 
+/* MapRenderer3D::setupQuadTexCoords
+ * Calculates texture coordinates for a quad
+ *******************************************************************/
 void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int length, double left, double top, bool pegbottom, double sx, double sy)
 {
 	// Check texture
@@ -983,6 +1116,9 @@ void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int lengt
 	quad->points[3].ty = y1 / (quad->texture->getHeight() * sy);
 }
 
+/* MapRenderer3D::updateLine
+ * Updates cached rendering data for line [index]
+ *******************************************************************/
 void MapRenderer3D::updateLine(unsigned index)
 {
 	// Check index
@@ -1357,6 +1493,9 @@ void MapRenderer3D::updateLine(unsigned index)
 	lines[index].updated_time = theApp->runTimer();
 }
 
+/* MapRenderer3D::renderQuad
+ * Renders [quad]
+ *******************************************************************/
 void MapRenderer3D::renderQuad(MapRenderer3D::quad_3d_t* quad, float alpha)
 {
 	// Setup special rendering options
@@ -1386,6 +1525,9 @@ void MapRenderer3D::renderQuad(MapRenderer3D::quad_3d_t* quad, float alpha)
 		glAlphaFunc(GL_GREATER, 0.0f);
 }
 
+/* MapRenderer3D::renderWalls
+ * Renders all currently visible wall quads
+ *******************************************************************/
 void MapRenderer3D::renderWalls()
 {
 	// Init
@@ -1422,6 +1564,9 @@ void MapRenderer3D::renderWalls()
 	glDisable(GL_TEXTURE_2D);
 }
 
+/* MapRenderer3D::renderWallSelection
+ * Renders selection overlay for all selected wall quads
+ *******************************************************************/
 void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float alpha)
 {
 	if (!render_selection)
@@ -1513,6 +1658,9 @@ void MapRenderer3D::renderWallSelection(vector<selection_3d_t>& selection, float
 	}
 }
 
+/* MapRenderer3D::updateThing
+ * Updates cached data for [thing] (at [index])
+ *******************************************************************/
 void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 {
 	// Check index
@@ -1571,6 +1719,9 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	things[index].updated_time = theApp->runTimer();
 }
 
+/* MapRenderer3D::renderThings
+ * Renders all currently visible things
+ *******************************************************************/
 void MapRenderer3D::renderThings()
 {
 	// Init
@@ -1796,6 +1947,9 @@ void MapRenderer3D::renderThings()
 	}
 }
 
+/* MapRenderer3D::renderThingSelection
+ * Renders selection overlay for all selected things
+ *******************************************************************/
 void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, float alpha)
 {
 	// Do nothing if no things visible
@@ -1868,6 +2022,9 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 	}
 }
 
+/* MapRenderer3D::updateFlatsVBO
+ * (Re)builds the flats Vertex Buffer Object
+ *******************************************************************/
 void MapRenderer3D::updateFlatsVBO()
 {
 	if (!flats_use_vbo)
@@ -1940,10 +2097,18 @@ void MapRenderer3D::updateFlatsVBO()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+/* MapRenderer3D::updateWallsVBO
+ * (Re)builds the walls Vertex Buffer Object (or would, if it were
+ * used for wall rendering)
+ *******************************************************************/
 void MapRenderer3D::updateWallsVBO()
 {
 }
 
+/* MapRenderer3D::quickVisDiscard
+ * Runs a quick check of all sector bounding boxes against the
+ * current view to hide any that are outside it
+ *******************************************************************/
 void MapRenderer3D::quickVisDiscard()
 {
 	// Create sector distance array if needed
@@ -2009,6 +2174,10 @@ void MapRenderer3D::quickVisDiscard()
 	}
 }
 
+/* MapRenderer3D::calcDistFade
+ * Calculates and returns the faded alpha value for [distance] from
+ * the camera
+ *******************************************************************/
 float MapRenderer3D::calcDistFade(double distance, double max)
 {
 	if (max <= 0)
@@ -2021,6 +2190,9 @@ float MapRenderer3D::calcDistFade(double distance, double max)
 		return 1.0f;
 }
 
+/* MapRenderer3D::checkVisibleQuads
+ * Checks and hides any quads that are not currently in view
+ *******************************************************************/
 void MapRenderer3D::checkVisibleQuads()
 {
 	// Create quads array if empty
@@ -2098,6 +2270,9 @@ void MapRenderer3D::checkVisibleQuads()
 	}
 }
 
+/* MapRenderer3D::checkVisibleFlats
+ * Checks and hides any flats that are not currently in view
+ *******************************************************************/
 void MapRenderer3D::checkVisibleFlats()
 {
 	// Create flats array if empty
@@ -2156,6 +2331,10 @@ void MapRenderer3D::checkVisibleFlats()
 	}
 }
 
+/* MapRenderer3D::determineHilight
+ * Finds the closest wall/flat/thing to the camera along the view
+ * vector
+ *******************************************************************/
 selection_3d_t MapRenderer3D::determineHilight()
 {
 	// Init
@@ -2325,6 +2504,9 @@ selection_3d_t MapRenderer3D::determineHilight()
 	return current;
 }
 
+/* MapRenderer3D::renderHilight
+ * Renders the hilight overlay for the currently hilighted object
+ *******************************************************************/
 void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 {
 	// Do nothing if no item hilighted
@@ -2500,6 +2682,9 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 	OpenGL::setColour(COL_WHITE);
 }
 
+/* MapRenderer3D::onAnnouncements
+ * Handles any announcements from the palette or resource manager
+ *******************************************************************/
 void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
 	if (announcer != thePaletteChooser && announcer != theResourceManager)

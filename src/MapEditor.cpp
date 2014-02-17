@@ -2312,11 +2312,17 @@ void MapEditor::createSector(double x, double y)
 	else
 		ok = builder.traceSector(&map, line, false);
 
-	// Create sector from builder result
+	// Do nothing if sector was already valid
+	if (builder.isValidSector())
+		return;
+
+	// Create sector from builder result if needed
 	if (ok)
 	{
 		beginUndoRecord("Create Sector", true, true, false);
 		builder.createSector(NULL, sector_copy);
+		if (canvas)
+			canvas->itemSelected(map.nSectors() - 1);
 	}
 
 	// Set some sector defaults from game configuration if needed

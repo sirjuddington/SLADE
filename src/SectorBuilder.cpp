@@ -1,10 +1,49 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    SectorBuilder.cpp
+ * Description: SectorBuilder class - handles sector creation from
+ *              lines. Traces sector outlines to build an 'edge'
+ *              list (edge is basically a side of a line), which
+ *              is then used to create the appropriate sides etc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "SectorBuilder.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
 #include "OpenGL.h"
 
+
+/*******************************************************************
+ * SECTORBUILDER CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SectorBuilder::SectorBuilder
+ * SectorBuilder class constructor
+ *******************************************************************/
 SectorBuilder::SectorBuilder()
 {
 	// Init variables
@@ -12,10 +51,16 @@ SectorBuilder::SectorBuilder()
 	map = NULL;
 }
 
+/* SectorBuilder::~SectorBuilder
+ * SectorBuilder class destructor
+ *******************************************************************/
 SectorBuilder::~SectorBuilder()
 {
 }
 
+/* SectorBuilder::getEdgeLine
+ * Returns the line for the edge at [index]
+ *******************************************************************/
 MapLine* SectorBuilder::getEdgeLine(unsigned index)
 {
 	// Check index
@@ -25,6 +70,10 @@ MapLine* SectorBuilder::getEdgeLine(unsigned index)
 	return sector_edges[index].line;
 }
 
+/* SectorBuilder::edgeIsFront
+ * Returns true if the edge at [index] is on the front side of its
+ * line
+ *******************************************************************/
 bool SectorBuilder::edgeIsFront(unsigned index)
 {
 	// Check index
@@ -34,6 +83,10 @@ bool SectorBuilder::edgeIsFront(unsigned index)
 	return sector_edges[index].front;
 }
 
+/* SectorBuilder::edgeSideCreated
+ * Returns true if the MapSide for the edge at [index] has been
+ * created
+ *******************************************************************/
 bool SectorBuilder::edgeSideCreated(unsigned index)
 {
 	// Check index
@@ -43,6 +96,10 @@ bool SectorBuilder::edgeSideCreated(unsigned index)
 	return sector_edges[index].side_created;
 }
 
+/* SectorBuilder::nextEdge
+ * Finds the next adjacent edge to [edge], ie the adjacent edge that
+ * creates the smallest angle
+ *******************************************************************/
 SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge)
 {
 	// Get relevant vertices
@@ -98,6 +155,10 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge)
 	return next;
 }
 
+/* SectorBuilder::traceOutline
+ * Traces the sector outline from lines beginning at [line], on
+ * either the front or back side ([front])
+ *******************************************************************/
 bool SectorBuilder::traceOutline(MapLine* line, bool front)
 {
 	// Check line was given
@@ -169,6 +230,9 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 	return true;
 }
 
+/* SectorBuilder::nearestEdge
+ * Returns the index of the edge closest to [x,y]
+ *******************************************************************/
 int SectorBuilder::nearestEdge(double x, double y)
 {
 	// Init variables
@@ -196,6 +260,9 @@ int SectorBuilder::nearestEdge(double x, double y)
 	return nearest;
 }
 
+/* SectorBuilder::pointWithinOutline
+ * Returns true if the point [x,y] is within the current outline
+ *******************************************************************/
 bool SectorBuilder::pointWithinOutline(double x, double y)
 {
 	// Check with bounding box
@@ -232,6 +299,9 @@ bool SectorBuilder::pointWithinOutline(double x, double y)
 	return false;
 }
 
+/* SectorBuilder::discardOutsideVertices
+ * Discards any vertices outside of the current outline
+ *******************************************************************/
 void SectorBuilder::discardOutsideVertices()
 {
 	// Go through valid vertices list
@@ -247,6 +317,10 @@ void SectorBuilder::discardOutsideVertices()
 	}
 }
 
+/* SectorBuilder::findOuterEdge
+ * Finds the next closest edge outside of the current outline (that
+ * isn't part of the current outline)
+ *******************************************************************/
 SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 {
 	// Check we have a rightmost vertex
@@ -306,6 +380,10 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 		return edge_t(nearest, false);
 }
 
+/* SectorBuilder::SectorBuilder
+ * Find the closest edge within the current outline (that isn't part
+ * of the current outline)
+ *******************************************************************/
 SectorBuilder::edge_t SectorBuilder::findInnerEdge()
 {
 	// Find rightmost non-discarded vertex
@@ -381,6 +459,10 @@ SectorBuilder::edge_t SectorBuilder::findInnerEdge()
 		return edge_t(eline, false);
 }
 
+/* SectorBuilder::findCopySector
+ * Finds an appropriate existing sector to copy properties from, for
+ * the new sector being built
+ *******************************************************************/
 MapSector* SectorBuilder::findCopySector()
 {
 	// Go through new sector edges
@@ -413,6 +495,10 @@ MapSector* SectorBuilder::findCopySector()
 	return sector_copy;
 }
 
+/* SectorBuilder::findExistingSector
+ * Finds any existing sector that is already part of the traced new
+ * sector
+ *******************************************************************/
 MapSector* SectorBuilder::findExistingSector(vector<MapSide*>& sides_ignore)
 {
 	// Go through new sector edges
@@ -447,24 +533,45 @@ MapSector* SectorBuilder::findExistingSector(vector<MapSide*>& sides_ignore)
 		return sector;
 }
 
+/* SectorBuilder::isValidSector
+ * Checks if the traced sector is valid (ie. all edges are currently
+ * the same (existing) sector)
+ *******************************************************************/
 bool SectorBuilder::isValidSector()
 {
-	MapSector* sector = NULL;
-	for (unsigned a = 0; a < sector_edges.size(); a++)
+	if (sector_edges.empty())
+		return false;
+
+	// Get first edge's sector
+	MapSector* sector = sector_edges[0].front ? sector_edges[0].line->frontSector() : sector_edges[0].line->backSector();
+	if (!sector)
+		return false;	// Sector is invalid if any edge has no current sector
+
+	// Go through subsequent edges
+	for (unsigned a = 1; a < sector_edges.size(); a++)
 	{
+		// Get edge sector
 		MapSector* ssector;
 		if (sector_edges[a].front)
 			ssector = sector_edges[a].line->frontSector();
 		else
 			ssector = sector_edges[a].line->backSector();
 
-		if (sector && sector != ssector)
+		// Check if different
+		if (sector != ssector)
 			return false;
 	}
+
+	// Check the entire sector was traced
+	if (sector && (sector->connectedSides().size() != sector_edges.size()))
+		return false;
 
 	return sector != NULL;
 }
 
+/* SectorBuilder::traceSector
+ * Traces all edges to build a closed sector starting from [line]
+ *******************************************************************/
 bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front)
 {
 	// Check info was given
@@ -547,6 +654,10 @@ bool SectorBuilder::traceSector(SLADEMap* map, MapLine* line, bool front)
 	return true;
 }
 
+/* SectorBuilder::createSector
+ * Sets all traced edges to [sector], or creates a new sector using
+ * properties from [sector_copy] if none given
+ *******************************************************************/
 void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 {
 	// Create the sector if needed
@@ -564,6 +675,9 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 		sector_edges[a].side_created = map->setLineSector(sector_edges[a].line->getIndex(), sector->getIndex(), sector_edges[a].front);
 }
 
+/* SectorBuilder::drawResult
+ * Draws lines showing the currently traced edges
+ *******************************************************************/
 void SectorBuilder::drawResult()
 {
 	glDisable(GL_TEXTURE_2D);

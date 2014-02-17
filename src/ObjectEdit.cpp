@@ -1,19 +1,66 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ObjectEdit.cpp
+ * Description: ObjectEditGroup class - used for the object edit
+ *              feature in the map editor, takes a bunch of vertices
+ *              or things and applies rotation/translation/scaling
+ *              to them. Also keeps track of any connected lines
+ *              for visual purposes
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "SLADEMap.h"
 #include "ObjectEdit.h"
 #include "MathStuff.h"
 
+
+/*******************************************************************
+ * OBJECTEDITGROUP CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ObjectEditGroup::ObjectEditGroup
+ * ObjectEditGroup class constructor
+ *******************************************************************/
 ObjectEditGroup::ObjectEditGroup()
 {
 	xoff_prev = 0;
 	yoff_prev = 0;
 }
 
+/* ObjectEditGroup::~ObjectEditGroup
+ * ObjectEditGroup class destructor
+ *******************************************************************/
 ObjectEditGroup::~ObjectEditGroup()
 {
 }
 
+/* ObjectEditGroup::addVertex
+ * Adds [vertex] to the group. If [ignored] is set, the vertex won't
+ * be modified by the object edit
+ *******************************************************************/
 void ObjectEditGroup::addVertex(MapVertex* vertex, bool ignored)
 {
 	// Add vertex
@@ -32,6 +79,9 @@ void ObjectEditGroup::addVertex(MapVertex* vertex, bool ignored)
 	}
 }
 
+/* ObjectEditGroup::addConnectedLines
+ * Builds a list of all lines connected to the group vertices
+ *******************************************************************/
 void ObjectEditGroup::addConnectedLines()
 {
 	unsigned n_vertices = vertices.size();
@@ -68,6 +118,9 @@ void ObjectEditGroup::addConnectedLines()
 	}
 }
 
+/* ObjectEditGroup::addThing
+ * Adds [thing] to the group
+ *******************************************************************/
 void ObjectEditGroup::addThing(MapThing* thing)
 {
 	// Add thing
@@ -84,6 +137,9 @@ void ObjectEditGroup::addThing(MapThing* thing)
 	original_bbox.extend(t.position.x, t.position.y);
 }
 
+/* ObjectEditGroup::hasLine
+ * Returns true if [line] is connected to the group vertices
+ *******************************************************************/
 bool ObjectEditGroup::hasLine(MapLine* line)
 {
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -95,6 +151,9 @@ bool ObjectEditGroup::hasLine(MapLine* line)
 	return false;
 }
 
+/* ObjectEditGroup::findVertex
+ * Returns the group info about [vertex]
+ *******************************************************************/
 ObjectEditGroup::vertex_t* ObjectEditGroup::findVertex(MapVertex* vertex)
 {
 	for (unsigned a = 0; a < vertices.size(); a++)
@@ -106,6 +165,9 @@ ObjectEditGroup::vertex_t* ObjectEditGroup::findVertex(MapVertex* vertex)
 	return NULL;
 }
 
+/* ObjectEditGroup::clear
+ * Clears all group items
+ *******************************************************************/
 void ObjectEditGroup::clear()
 {
 	vertices.clear();
@@ -118,6 +180,9 @@ void ObjectEditGroup::clear()
 	rotation = 0;
 }
 
+/* ObjectEditGroup::filterObjects
+ * Sets filtering on all group objects to [filter]
+ *******************************************************************/
 void ObjectEditGroup::filterObjects(bool filter)
 {
 	// Vertices
@@ -136,6 +201,10 @@ void ObjectEditGroup::filterObjects(bool filter)
 		things[a].map_thing->filter(filter);
 }
 
+/* ObjectEditGroup::resetPositions
+ * Resets the position of all group objects to their original
+ * positions (ie. current position on the actual map)
+ *******************************************************************/
 void ObjectEditGroup::resetPositions()
 {
 	bbox.reset();
@@ -160,6 +229,9 @@ void ObjectEditGroup::resetPositions()
 	rotation = 0;
 }
 
+/* ObjectEditGroup::getVerticesToDraw
+ * Fills [list] with the positions of all group vertices
+ *******************************************************************/
 void ObjectEditGroup::getVerticesToDraw(vector<fpoint2_t>& list)
 {
 	for (unsigned a = 0; a < vertices.size(); a++)
@@ -169,18 +241,27 @@ void ObjectEditGroup::getVerticesToDraw(vector<fpoint2_t>& list)
 	}
 }
 
+/* ObjectEditGroup::getLinesToDraw
+ * Fills [list] with all lines in the group
+ *******************************************************************/
 void ObjectEditGroup::getLinesToDraw(vector<line_t>& list)
 {
 	for (unsigned a = 0; a < lines.size(); a++)
 		list.push_back(lines[a]);
 }
 
+/* ObjectEditGroup::getThingsToDraw
+ * Fills [list] with all things in the group
+ *******************************************************************/
 void ObjectEditGroup::getThingsToDraw(vector<thing_t>& list)
 {
 	for (unsigned a = 0; a < things.size(); a++)
 		list.push_back(things[a]);
 }
 
+/* ObjectEditGroup::doMove
+ * Moves all group objects by [xoff,yoff]
+ *******************************************************************/
 void ObjectEditGroup::doMove(double xoff, double yoff)
 {
 	if (xoff == xoff_prev && yoff == yoff_prev)
@@ -214,6 +295,11 @@ void ObjectEditGroup::doMove(double xoff, double yoff)
 	yoff_prev = yoff;
 }
 
+/* ObjectEditGroup::doScale
+ * Modifies the group bounding box by [xoff]/[yoff], and scales all
+ * objects to fit within the resulting bbox. This is used when
+ * dragging bbox edges via the mouse
+ *******************************************************************/
 void ObjectEditGroup::doScale(double xoff, double yoff, bool left, bool top, bool right, bool bottom)
 {
 	if (xoff == xoff_prev && yoff == yoff_prev)
@@ -295,6 +381,11 @@ void ObjectEditGroup::doScale(double xoff, double yoff, bool left, bool top, boo
 	yoff_prev = yoff;
 }
 
+/* ObjectEditGroup::doRotate
+ * Rotates all objects in the group. The rotation angle is calculated
+ * from [p1]->mid and mid->[p2]. This is used when rotating via the
+ * mouse ([p1] is the drag origin and [p2] is the current point)
+ *******************************************************************/
 void ObjectEditGroup::doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45)
 {
 	// Get midpoint
@@ -324,6 +415,10 @@ void ObjectEditGroup::doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45)
 		things[a].position = MathStuff::rotatePoint(mid, things[a].old_position, rotation);
 }
 
+/* ObjectEditGroup::doAll
+ * Moves all group objects by [xoff,yoff], scales all group objects
+ * by [xscale,yscale] and rotates all group objects by [rotation]
+ *******************************************************************/
 void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double yscale, double rotation)
 {
 	// Update bbox
@@ -401,6 +496,10 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 	}
 }
 
+/* ObjectEditGroup::applyEdit
+ * Applies new group object positions to the actual map objects
+ * being edited
+ *******************************************************************/
 void ObjectEditGroup::applyEdit()
 {
 	// Get map
@@ -421,6 +520,9 @@ void ObjectEditGroup::applyEdit()
 		map->moveThing(things[a].map_thing->getIndex(), things[a].position.x, things[a].position.y);
 }
 
+/* ObjectEditGroup::getVertices
+ * Adds all group vertices to [list]
+ *******************************************************************/
 void ObjectEditGroup::getVertices(vector<MapVertex*>& list)
 {
 	for (unsigned a = 0; a < vertices.size(); a++)

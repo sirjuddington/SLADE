@@ -1087,6 +1087,9 @@ string WadArchive::detectNamespace(ArchiveEntry* entry)
 	return detectNamespace(entryIndex(entry));
 }
 
+/* WadArchive::detectNamespace
+ * Returns the namespace that the entry at [index] in [dir] is within
+ *******************************************************************/
 string WadArchive::detectNamespace(size_t index, ArchiveTreeNode * dir)
 {
 	// Go through namespaces

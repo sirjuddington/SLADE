@@ -1,9 +1,42 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    NodeBuilders.cpp
+ * Description: NodeBuilders namespace - functions for handling
+ *              node builder definitions
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "ArchiveManager.h"
 #include "NodeBuilders.h"
 #include "Parser.h"
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 namespace NodeBuilders
 {
 	vector<builder_t>	builders;
@@ -12,6 +45,14 @@ namespace NodeBuilders
 	vector<string>		builder_paths;
 }
 
+
+/*******************************************************************
+ * NODEBUILDERS NAMESPACE FUNCTIONS
+ *******************************************************************/
+
+/* NodeBuilders::init
+ * Loads all node builder definitions from the program resource
+ *******************************************************************/
 void NodeBuilders::init()
 {
 	// Init invalid builder
@@ -71,12 +112,18 @@ void NodeBuilders::init()
 		getBuilder(builder_paths[a]).path = builder_paths[a+1];
 }
 
+/* NodeBuilders::addBUilderPath
+ * Adds [path] for [builder]
+ *******************************************************************/
 void NodeBuilders::addBuilderPath(string builder, string path)
 {
 	builder_paths.push_back(builder);
 	builder_paths.push_back(path);
 }
 
+/* NodeBuilders::saveBuilderPaths
+ * Writes builder paths to [file]
+ *******************************************************************/
 void NodeBuilders::saveBuilderPaths(wxFile& file)
 {
 	file.Write("nodebuilder_paths\n{\n");
@@ -85,11 +132,17 @@ void NodeBuilders::saveBuilderPaths(wxFile& file)
 	file.Write("}\n");
 }
 
+/* NodeBuilders::nNodeBuilders
+ * Returns the number of node builders defined
+ *******************************************************************/
 unsigned NodeBuilders::nNodeBuilders()
 {
 	return builders.size();
 }
 
+/* NodeBuilders::getBuilder
+ * Returns the node builder definition matching [id]
+ *******************************************************************/
 NodeBuilders::builder_t& NodeBuilders::getBuilder(string id)
 {
 	for (unsigned a = 0; a < builders.size(); a++)
@@ -101,6 +154,9 @@ NodeBuilders::builder_t& NodeBuilders::getBuilder(string id)
 	return invalid;
 }
 
+/* NodeBuilders::getBuilder
+ * Returns the node builder definition at [index]
+ *******************************************************************/
 NodeBuilders::builder_t& NodeBuilders::getBuilder(unsigned index)
 {
 	// Check index
