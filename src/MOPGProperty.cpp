@@ -105,12 +105,27 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getBoolValue() == first)
+	SetValue(first);
+	updateVisibility();
+	noupdate = false;
+}
+
+/* MOPGBoolProperty::updateVisibility
+ * Default to hiding this property if set to its default value.
+ *******************************************************************/
+void MOPGBoolProperty::updateVisibility()
+{
+	if (
+		!parent->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop
+		&& !udmf_prop->showAlways()
+		&& udmf_prop->getDefaultValue().getBoolValue()
+			== GetValue().GetBool()
+	)
 		Hide(true);
 	else
 		Hide(false);
-	SetValue(first);
-	noupdate = false;
 }
 
 /* MOPGBoolProperty::applyValue
@@ -177,12 +192,27 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+	SetValue(first);
+	updateVisibility();
+	noupdate = false;
+}
+
+/* MOPGIntProperty::updateVisibility
+ * Default to hiding this property if set to its default value.
+ *******************************************************************/
+void MOPGIntProperty::updateVisibility()
+{
+	if (
+		!parent->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop
+		&& !udmf_prop->showAlways()
+		&& udmf_prop->getDefaultValue().getIntValue()
+			== GetValue().GetInteger()
+	)
 		Hide(true);
 	else
 		Hide(false);
-	SetValue(first);
-	noupdate = false;
 }
 
 /* MOPGIntProperty::applyValue
@@ -248,12 +278,27 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getFloatValue() == first)
+	SetValue(first);
+	updateVisibility();
+	noupdate = false;
+}
+
+/* MOPGFloatProperty::updateVisibility
+ * Default to hiding this property if set to its default value.
+ *******************************************************************/
+void MOPGFloatProperty::updateVisibility()
+{
+	if (
+		!parent->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop
+		&& !udmf_prop->showAlways()
+		&& udmf_prop->getDefaultValue().getFloatValue()
+			== GetValue().GetDouble()
+	)
 		Hide(true);
 	else
 		Hide(false);
-	SetValue(first);
-	noupdate = false;
 }
 
 /* MOPGFloatProperty::applyValue
@@ -319,12 +364,27 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getStringValue() == first)
+	SetValue(first);
+	updateVisibility();
+	noupdate = false;
+}
+
+/* MOPGStringProperty::updateVisibility
+ * Default to hiding this property if set to its default value.
+ *******************************************************************/
+void MOPGStringProperty::updateVisibility()
+{
+	if (
+		!parent->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop
+		&& !udmf_prop->showAlways()
+		&& udmf_prop->getDefaultValue().getStringValue()
+			== GetValue().GetString()
+	)
 		Hide(true);
 	else
 		Hide(false);
-	SetValue(first);
-	noupdate = false;
 }
 
 /* MOPGStringProperty::applyValue
@@ -591,11 +651,10 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
  * MOPGLineFlagProperty class constructor
  *******************************************************************/
 MOPGLineFlagProperty::MOPGLineFlagProperty(const wxString& label, const wxString& name, int index)
-	: wxBoolProperty(label, name, false)
+	: MOPGBoolProperty(label, name)
 {
 	// Init variables
 	this->index = index;
-	propname = name;
 }
 
 /* MOPGLineFlagProperty::openObjects
@@ -627,11 +686,8 @@ void MOPGLineFlagProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getBoolValue() == first)
-		Hide(true);
-	else
-		Hide(false);
 	SetValue(first);
+	updateVisibility();
 	noupdate = false;
 }
 
@@ -664,11 +720,10 @@ void MOPGLineFlagProperty::applyValue()
  * MOPGThingFlagProperty class constructor
  *******************************************************************/
 MOPGThingFlagProperty::MOPGThingFlagProperty(const wxString& label, const wxString& name, int index)
-	: wxBoolProperty(label, name, false)
+	: MOPGBoolProperty(label, name)
 {
 	// Init variables
 	this->index = index;
-	propname = name;
 }
 
 /* MOPGThingFlagProperty::openObjects
@@ -700,11 +755,8 @@ void MOPGThingFlagProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getBoolValue() == first)
-		Hide(true);
-	else
-		Hide(false);
 	SetValue(first);
+	updateVisibility();
 	noupdate = false;
 }
 
@@ -795,12 +847,27 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+	SetValue(first);
+	updateVisibility();
+	noupdate = false;
+}
+
+/* MOPGAngleProperty::updateVisibility
+ * Default to hiding this property if set to its default value.
+ *******************************************************************/
+void MOPGAngleProperty::updateVisibility()
+{
+	if (
+		!parent->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop
+		&& !udmf_prop->showAlways()
+		&& udmf_prop->getDefaultValue().getIntValue()
+			== GetValue().GetInteger()
+	)
 		Hide(true);
 	else
 		Hide(false);
-	SetValue(first);
-	noupdate = false;
 }
 
 /* MOPGAngleProperty::applyValue
@@ -892,7 +959,16 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 	wxVariant var_value;
 	var_value << col;
 	SetValue(var_value);
+	updateVisibility();
 	noupdate = false;
+}
+
+/* MOPGColourProperty::updateVisibility
+ * Colours have no default and are always visible.
+ *******************************************************************/
+void MOPGColourProperty::updateVisibility()
+{
+	Hide(false);
 }
 
 /* MOPGColourProperty::applyValue
@@ -927,11 +1003,10 @@ void MOPGColourProperty::applyValue()
  * MOPGTextureProperty class constructor
  *******************************************************************/
 MOPGTextureProperty::MOPGTextureProperty(int textype, const wxString& label, const wxString& name)
-	: wxStringProperty(label, name)
+	: MOPGStringProperty(label, name)
 {
 	// Init variables
 	this->textype = textype;
-	propname = name;
 
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
@@ -966,32 +1041,9 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
-		Hide(true);
-	else
-		Hide(false);
 	SetValue(first);
+	updateVisibility();
 	noupdate = false;
-}
-
-/* MOPGTextureProperty::applyValue
- * Applies the current property value to all objects currently open
- * in the parent MapObjectPropsPanel, if a value is specified
- *******************************************************************/
-void MOPGTextureProperty::applyValue()
-{
-	// Do nothing if no parent (and thus no object list)
-	if (!parent || noupdate)
-		return;
-
-	// Do nothing if the value is unspecified
-	if (IsValueUnspecified())
-		return;
-
-	// Go through objects and set this value
-	vector<MapObject*>& objects = parent->getObjects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setStringProperty(GetName(), m_value.GetString());
 }
 
 /* MOPGTextureProperty::OnEvent
@@ -1070,12 +1122,27 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
+	SetValue(first);
+	updateVisibility();
+	noupdate = false;
+}
+
+/* MOPGSPACTriggerProperty::updateVisibility
+ * Default to hiding this property if set to its default value.
+ *******************************************************************/
+void MOPGSPACTriggerProperty::updateVisibility()
+{
+	if (
+		!parent->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop
+		&& !udmf_prop->showAlways()
+		&& udmf_prop->getDefaultValue().getIntValue()
+			== GetValue().GetInteger()
+	)
 		Hide(true);
 	else
 		Hide(false);
-	SetValue(first);
-	noupdate = false;
 }
 
 /* MOPGSPACTriggerProperty::applyValue
@@ -1111,10 +1178,8 @@ void MOPGSPACTriggerProperty::applyValue()
  * MOPGTagProperty class constructor
  *******************************************************************/
 MOPGTagProperty::MOPGTagProperty(const wxString& label, const wxString& name)
-	: wxIntProperty(label, name, 0)
+	: MOPGIntProperty(label, name)
 {
-	propname = name;
-
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
@@ -1148,32 +1213,9 @@ void MOPGTagProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
-		Hide(true);
-	else
-		Hide(false);
 	SetValue(first);
+	updateVisibility();
 	noupdate = false;
-}
-
-/* MOPGTagProperty::applyValue
- * Applies the current property value to all objects currently open
- * in the parent MapObjectPropsPanel, if a value is specified
- *******************************************************************/
-void MOPGTagProperty::applyValue()
-{
-	// Do nothing if no parent (and thus no object list)
-	if (!parent || noupdate)
-		return;
-
-	// Do nothing if the value is unspecified
-	if (IsValueUnspecified())
-		return;
-
-	// Go through objects and set this value
-	vector<MapObject*>& objects = parent->getObjects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
 /* MOPGTagProperty::OnEvent
@@ -1214,10 +1256,8 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
  * MOPGSectorSpecialProperty class constructor
  *******************************************************************/
 MOPGSectorSpecialProperty::MOPGSectorSpecialProperty(const wxString& label, const wxString& name)
-	: wxIntProperty(label, name, 0)
+	: MOPGIntProperty(label, name)
 {
-	propname = name;
-
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
@@ -1251,32 +1291,9 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate = true;
-	if (!parent->showAll() && udmf_prop && !udmf_prop->showAlways() && udmf_prop->getDefaultValue().getIntValue() == first)
-		Hide(true);
-	else
-		Hide(false);
 	SetValue(first);
+	updateVisibility();
 	noupdate = false;
-}
-
-/* MOPGSectorSpecialProperty::applyValue
- * Applies the current property value to all objects currently open
- * in the parent MapObjectPropsPanel, if a value is specified
- *******************************************************************/
-void MOPGSectorSpecialProperty::applyValue()
-{
-	// Do nothing if no parent (and thus no object list)
-	if (!parent || noupdate)
-		return;
-
-	// Do nothing if the value is unspecified
-	if (IsValueUnspecified())
-		return;
-
-	// Go through objects and set this value
-	vector<MapObject*>& objects = parent->getObjects();
-	for (unsigned a = 0; a < objects.size(); a++)
-		objects[a]->setIntProperty(GetName(), m_value.GetInteger());
 }
 
 /* MOPGSectorSpecialProperty::OnEvent

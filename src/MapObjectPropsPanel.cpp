@@ -972,8 +972,15 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 {
 	mobj_props_show_all = cb_show_all->GetValue();
 
-	// Refresh the list
-	openObjects(objects);
+	// Refresh each property's visibility
+	for (vector<MOPGProperty*>::iterator it = properties.begin();
+		it != properties.end();
+		it++)
+	{
+		(*it)->updateVisibility();
+	}
+
+	updateArgs(NULL);
 }
 
 /* MapObjectPropsPanel::onBtnAdd
