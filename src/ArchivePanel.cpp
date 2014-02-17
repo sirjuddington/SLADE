@@ -300,6 +300,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 {
 	// Init variables
 	undo_manager = new UndoManager();
+	is_closing = false;
 
 	// Set archive
 	this->archive = archive;
