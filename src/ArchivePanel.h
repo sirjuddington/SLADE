@@ -22,7 +22,6 @@ protected:
 	wxBitmapButton*		btn_updir;
 	wxSizer*			sizer_path_controls;
 	UndoManager*		undo_manager;
-	bool				is_closing;
 
 	// Entry panels
 	EntryPanel*	cur_area;
@@ -57,8 +56,6 @@ public:
 	bool			saveEntryChanges();
 	void			addMenus();
 	void			removeMenus();
-	bool			isClosing() { return is_closing; }
-	void			markAsClosing() { is_closing = true; }
 
 	// Editing actions - return success
 
