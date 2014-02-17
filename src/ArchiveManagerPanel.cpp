@@ -1262,7 +1262,7 @@ void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string event_name
 	{
 		uint32_t index = -1;
 		event_data.read(&index, 4);
-		if (!theArchiveManager->openSilent()) openTab(index);
+		openTab(index);
 	}
 
 	// If an archive was saved
