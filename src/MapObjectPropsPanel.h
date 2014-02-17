@@ -2,6 +2,7 @@
 #ifndef __MAP_OBJECT_PROPS_PANEL_H__
 #define __MAP_OBJECT_PROPS_PANEL_H__
 
+#include "MOPGProperty.h"
 #include <wx/notebook.h>
 
 class wxPropertyGrid;
@@ -21,6 +22,7 @@ private:
 	wxStaticText*			label_item;
 	vector<MapObject*>		objects;
 	vector<MOPGProperty*>	properties;
+	wxPGProperty*			args[5];
 	wxButton*				btn_reset;
 	wxButton*				btn_apply;
 	wxCheckBox*				cb_show_all;
@@ -51,6 +53,7 @@ public:
 	void	openObject(MapObject* object);
 	void	openObjects(vector<MapObject*>& objects);
 	void	showApplyButton(bool show = true);
+	void	updateArgs(MOPGIntWithArgsProperty* source);
 	void	applyChanges();
 
 	// Events

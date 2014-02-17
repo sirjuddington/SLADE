@@ -53,11 +53,11 @@ public:
 	inline string operator= (string val) { setValue(val); return val; }
 	inline unsigned operator= (unsigned val) { setValue(val); return val; }
 
-	bool		getBoolValue(bool warn_wrong_type = false);
-	int			getIntValue(bool warn_wrong_type = false);
-	double		getFloatValue(bool warn_wrong_type = false);
-	string		getStringValue(bool warn_wrong_type = false);
-	unsigned	getUnsignedValue(bool warn_wrong_type = false);
+	bool		getBoolValue(bool warn_wrong_type = false) const;
+	int			getIntValue(bool warn_wrong_type = false) const;
+	double		getFloatValue(bool warn_wrong_type = false) const;
+	string		getStringValue(bool warn_wrong_type = false) const;
+	unsigned	getUnsignedValue(bool warn_wrong_type = false) const;
 
 	void	setValue(bool val);
 	void	setValue(int val);
@@ -65,7 +65,7 @@ public:
 	void	setValue(string val);
 	void	setValue(unsigned val);
 
-	string	typeString();
+	string	typeString() const;
 };
 
 #endif//__PROPERTY_H__
