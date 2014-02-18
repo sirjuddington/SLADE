@@ -2811,10 +2811,12 @@ void ArchivePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
 	if (announcer == archive && event_name == "directory_added")
 	{
 		// Show path controls (if they aren't already)
-		if (!GetSizer()->IsShown(sizer_path_controls))
+		wxSizer* sizer = GetSizer();
+		wxSizerItem* item = sizer->GetItem(sizer_path_controls, true);
+		if (!item->IsShown())
 		{
-			sizer_path_controls->Show(true);
-			Layout();
+			item->Show(true);
+			sizer->Layout();
 		}
 	}
 
