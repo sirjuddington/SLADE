@@ -249,7 +249,7 @@ public:
 
 	bool doRedo()
 	{
-		//LOG_MESSAGE(2, "Restore %d objects", backups.size());
+		//LOG_MESSAGE(2, "Restore %lu objects", backups.size());
 		for (unsigned a = 0; a < backups.size(); a++)
 		{
 			MapObject* obj = UndoRedo::currentMap()->getObjectById(backups[a]->id);
@@ -925,7 +925,7 @@ void MapEditor::selectAll()
 			selection.push_back(a);
 	}
 
-	addEditorMessage(S_FMT("Selected all %d %s", selection.size(), getModeString()));
+	addEditorMessage(S_FMT("Selected all %lu %s", selection.size(), getModeString()));
 
 	if (canvas)
 		canvas->itemsSelected(selection);
@@ -1156,9 +1156,9 @@ bool MapEditor::selectWithin(double xmin, double ymin, double xmax, double ymax,
 		selection.push_back(nsel[a]);
 
 	if (add)
-		addEditorMessage(S_FMT("Selected %d %s", asel.size(), getModeString()));
+		addEditorMessage(S_FMT("Selected %lu %s", asel.size(), getModeString()));
 	else
-		addEditorMessage(S_FMT("Selected %d %s", selection.size(), getModeString()));
+		addEditorMessage(S_FMT("Selected %lu %s", selection.size(), getModeString()));
 
 	// Animate newly selected items
 	if (canvas && nsel.size() > 0) canvas->itemsSelected(nsel);
@@ -1986,9 +1986,9 @@ void MapEditor::joinSectors(bool remove_lines)
 
 	// Editor message
 	if (nlines == 0)
-		addEditorMessage(S_FMT("Joined %d Sectors", selection.size()));
+		addEditorMessage(S_FMT("Joined %lu Sectors", selection.size()));
 	else
-		addEditorMessage(S_FMT("Joined %d Sectors (removed %d Lines)", selection.size(), nlines));
+		addEditorMessage(S_FMT("Joined %lu Sectors (removed %d Lines)", selection.size(), nlines));
 }
 
 #pragma endregion
@@ -2023,7 +2023,7 @@ void MapEditor::changeThingType(int newtype)
 	if (selection.size() == 1)
 		addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
 	else
-		addEditorMessage(S_FMT("Changed %d things to type \"%s\"", selection.size(), type_name));
+		addEditorMessage(S_FMT("Changed %lu things to type \"%s\"", selection.size(), type_name));
 
 	// Update display
 	updateDisplay();
@@ -2112,14 +2112,14 @@ void MapEditor::tagSectorAt(double x, double y)
 			// Un-tag
 			tagged_sectors[a] = tagged_sectors.back();
 			tagged_sectors.pop_back();
-			addEditorMessage(S_FMT("Untagged sector %d", sector->getIndex()));
+			addEditorMessage(S_FMT("Untagged sector %u", sector->getIndex()));
 			return;
 		}
 	}
 
 	// Tag
 	tagged_sectors.push_back(sector);
-	addEditorMessage(S_FMT("Tagged sector %d", sector->getIndex()));
+	addEditorMessage(S_FMT("Tagged sector %u", sector->getIndex()));
 }
 
 /* MapEditor::endTagEdit
@@ -2192,7 +2192,7 @@ void MapEditor::createObject(double x, double y)
 			endUndoRecord(true);
 
 			// Editor message
-			addEditorMessage(S_FMT("Created %d line(s)", selection.size() - 1));
+			addEditorMessage(S_FMT("Created %lu line(s)", selection.size() - 1));
 
 			// Clear selection
 			clearSelection();
@@ -2336,7 +2336,7 @@ void MapEditor::createSector(double x, double y)
 	// Editor message
 	if (ok)
 	{
-		addEditorMessage(S_FMT("Created sector #%d", map.nSectors() - 1));
+		addEditorMessage(S_FMT("Created sector #%lu", map.nSectors() - 1));
 		endUndoRecord(true);
 	}
 	else
@@ -2380,7 +2380,7 @@ void MapEditor::deleteObject()
 		if (verts.size() == 1)
 			addEditorMessage(S_FMT("Deleted vertex #%d", index));
 		else if (verts.size() > 1)
-			addEditorMessage(S_FMT("Deleted %d vertices", verts.size()));
+			addEditorMessage(S_FMT("Deleted %lu vertices", verts.size()));
 	}
 
 	// Lines mode
@@ -2407,7 +2407,7 @@ void MapEditor::deleteObject()
 		if (lines.size() == 1)
 			addEditorMessage(S_FMT("Deleted line #%d", index));
 		else if (lines.size() > 1)
-			addEditorMessage(S_FMT("Deleted %d lines", lines.size()));
+			addEditorMessage(S_FMT("Deleted %lu lines", lines.size()));
 	}
 
 	// Sectors mode
@@ -2454,7 +2454,7 @@ void MapEditor::deleteObject()
 		if (sectors.size() == 1)
 			addEditorMessage(S_FMT("Deleted sector #%d", index));
 		else if (sectors.size() > 1)
-			addEditorMessage(S_FMT("Deleted %d sector", sectors.size()));
+			addEditorMessage(S_FMT("Deleted %lu sector", sectors.size()));
 
 		// Remove detached vertices
 		map.removeDetachedVertices();
@@ -2481,7 +2481,7 @@ void MapEditor::deleteObject()
 		if (things.size() == 1)
 			addEditorMessage(S_FMT("Deleted thing #%d", index));
 		else if (things.size() > 1)
-			addEditorMessage(S_FMT("Deleted %d things", things.size()));
+			addEditorMessage(S_FMT("Deleted %lu things", things.size()));
 	}
 
 	// Record undo step
@@ -2733,7 +2733,7 @@ void MapEditor::endLineDraw(bool apply)
 		{
 			// Check for intersections
 			vector<fpoint2_t> intersect = map.cutLines(draw_points[a].x, draw_points[a].y, draw_points[a+1].x, draw_points[a+1].y);
-			LOG_MESSAGE(2, "%d intersect points", intersect.size());
+			LOG_MESSAGE(2, "%lu intersect points", intersect.size());
 
 			// Create line normally if no intersections
 			if (intersect.size() == 0)
@@ -4828,7 +4828,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.sectorAt(map.getThing(a)->xPos(), map.getThing(a)->yPos());
 	long ms = clock.getElapsedTime().asMilliseconds();
-	wxLogMessage("Took %dms", ms);
+	wxLogMessage("Took %ldms", ms);
 }
 
 CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
@@ -4877,7 +4877,7 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	{
 		wxLogMessage("Attached lines:");
 		for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
-			wxLogMessage("Line #%d", vertex->connectedLine(a)->getIndex());
+			wxLogMessage("Line #%lu", vertex->connectedLine(a)->getIndex());
 	}
 }
 
@@ -4903,7 +4903,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	{
 		mobj_backup_t bak;
 		obj->backup(&bak);
-		theConsole->logMessage(S_FMT("Object %d: %s #%d", id, obj->getTypeName(), obj->getIndex()));
+		theConsole->logMessage(S_FMT("Object %d: %s #%lu", id, obj->getTypeName(), obj->getIndex()));
 		theConsole->logMessage("Properties:");
 		theConsole->logMessage(bak.properties.toString());
 		theConsole->logMessage("Properties (internal):");

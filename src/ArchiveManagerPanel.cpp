@@ -116,6 +116,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 	: DockPanel(parent)
 {
 	notebook_archives = nb_archives;
+	pending_closed_archive = NULL;
 
 	// Create main sizer
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
@@ -627,8 +628,7 @@ void ArchiveManagerPanel::closeTab(int archive_index)
 	Archive* archive = theArchiveManager->getArchive(archive_index);
 	ArchivePanel* ap = getArchiveTab(archive);
 
-	// Close the tab, unless it's already in mid-close
-	if (ap && !ap->isClosing())
+	if (ap)
 		notebook_archives->DeletePage(notebook_archives->GetPageIndex(ap));
 }
 
@@ -1802,7 +1802,6 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 	if (close_archive_with_tab && isArchivePanel(tabindex))
 	{
 		ArchivePanel* ap = (ArchivePanel*)page;
-		ap->markAsClosing();
 		Archive* archive = ap->getArchive();
 
 		vector<Archive*> deps = theArchiveManager->getDependentArchives(archive);
@@ -1817,8 +1816,7 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 			}
 		}
 
-		for (unsigned a = 0; a < deps.size(); a++)
-			pending_closed_archives.push_back(deps[a]);
+		pending_closed_archive = archive;
 
 		e.Skip();
 		return;
@@ -1840,10 +1838,12 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
  *******************************************************************/
 void ArchiveManagerPanel::onArchiveTabClosed(wxAuiNotebookEvent& e)
 {
-	// Actually close all the archives the CLOSE event decided to close
-	for (unsigned a = 0; a < pending_closed_archives.size(); a++)
-		theArchiveManager->closeArchive(pending_closed_archives[a]);
-	pending_closed_archives.clear();
+	// Actually close the archive the CLOSE event decided to close
+	if (pending_closed_archive)
+	{
+		theArchiveManager->closeArchive(pending_closed_archive);
+		pending_closed_archive = NULL;
+	}
 
 	e.Skip();
 }

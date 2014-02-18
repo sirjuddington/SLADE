@@ -495,7 +495,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 			for (unsigned a = 0; a < 5; a++)
 			{
 				// Add arg property
-				MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_special, S_FMT("Arg%d", a+1), S_FMT("arg%d", a));
+				MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_special, S_FMT("Arg%u", a+1), S_FMT("arg%u", a));
 
 				// Link to action special
 				args[a] = prop;
@@ -524,7 +524,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 
 		// Add flags
 		for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
-			addLineFlagProperty(g_flags, theGameConfiguration->lineFlag(a), S_FMT("flag%d", a), a);
+			addLineFlagProperty(g_flags, theGameConfiguration->lineFlag(a), S_FMT("flag%u", a), a);
 
 		// --- Sides ---
 		pg_props_side1->Show(true);
@@ -660,7 +660,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 			wxPGProperty* g_args = pg_properties->Append(new wxPropertyCategory("Args"));
 			for (unsigned a = 0; a < 5; a++)
 			{
-				MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_args, S_FMT("Arg%d", a+1), S_FMT("arg%d", a));
+				MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_args, S_FMT("Arg%u", a+1), S_FMT("arg%u", a));
 				args[a] = prop;
 			}
 		}
@@ -670,7 +670,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 
 		// Add flags
 		for (int a = 0; a < theGameConfiguration->nThingFlags(); a++)
-			addThingFlagProperty(g_flags, theGameConfiguration->thingFlag(a), S_FMT("flag%d", a), a);
+			addThingFlagProperty(g_flags, theGameConfiguration->thingFlag(a), S_FMT("flag%u", a), a);
 	}
 
 	// Set all bool properties to use checkboxes
@@ -748,7 +748,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 	// Remember arg properties for passing to type/special properties (or set
 	// to NULL if args don't exist)
 	for (unsigned arg = 0; arg < 5; arg++)
-		args[arg] = pg_properties->GetProperty(S_FMT("arg%d", arg));
+		args[arg] = pg_properties->GetProperty(S_FMT("arg%u", arg));
 
 	last_type = objtype;
 }
@@ -848,7 +848,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	{
 		// Enable/disable side properties
 		wxPGProperty* prop = pg_properties->GetProperty("sidefront");
-		if (prop && (prop->GetValue().GetInteger() >= 0 || prop->IsValueUnspecified()))
+		if (prop && (prop->IsValueUnspecified() || prop->GetValue().GetInteger() >= 0))
 			pg_props_side1->EnableProperty(pg_props_side1->GetGrid()->GetRoot());
 		else
 		{
@@ -856,7 +856,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 			pg_props_side1->SetPropertyValueUnspecified(pg_props_side1->GetGrid()->GetRoot());
 		}
 		prop = pg_properties->GetProperty("sideback");
-		if (prop && (prop->GetValue().GetInteger() >= 0 || prop->IsValueUnspecified()))
+		if (prop && (prop->IsValueUnspecified() || prop->GetValue().GetInteger() >= 0))
 			pg_props_side2->EnableProperty(pg_props_side2->GetGrid()->GetRoot());
 		else
 		{

@@ -520,7 +520,8 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 			populateMapList();
 			list_maps->selectItem(list_maps->GetItemCount()-1);
 		}
-		else if (archive->getType() == ARCHIVE_ZIP)
+		else if (archive->getType() == ARCHIVE_ZIP
+			|| archive->getType() == ARCHIVE_FOLDER)
 		{
 			// Create new wad archive for the map
 			Archive* wad = new WadArchive();
