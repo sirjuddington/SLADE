@@ -226,20 +226,13 @@ void MapEditorWindow::setupLayout()
 	tbg_map->addActionButton("mapw_rename");
 	toolbar->addGroup(tbg_map);
 
-	// Edit toolbar
-	/*
-	SToolBarGroup* tbg_edit = new SToolBarGroup(toolbar, "_Edit");
-	tbg_edit->addActionButton("mapw_undo");
-	tbg_edit->addActionButton("mapw_redo");
-	toolbar->addGroup(tbg_edit);
-	*/
-
 	// Mode toolbar
 	SToolBarGroup* tbg_mode = new SToolBarGroup(toolbar, "_Mode");
 	tbg_mode->addActionButton("mapw_mode_vertices");
 	tbg_mode->addActionButton("mapw_mode_lines");
 	tbg_mode->addActionButton("mapw_mode_sectors");
 	tbg_mode->addActionButton("mapw_mode_things");
+	tbg_mode->addActionButton("mapw_mode_3d");
 	theApp->toggleAction("mapw_mode_lines");	// Lines mode by default
 	toolbar->addGroup(tbg_mode);
 
@@ -254,6 +247,13 @@ void MapEditorWindow::setupLayout()
 	if (flat_drawtype == 0) theApp->toggleAction("mapw_flat_none");
 	else if (flat_drawtype == 1) theApp->toggleAction("mapw_flat_untextured");
 	else theApp->toggleAction("mapw_flat_textured");
+
+	// Edit toolbar
+	SToolBarGroup* tbg_edit = new SToolBarGroup(toolbar, "_Edit");
+	tbg_edit->addActionButton("mapw_draw_lines");
+	tbg_edit->addActionButton("mapw_draw_shape");
+	tbg_edit->addActionButton("mapw_edit_objects");
+	toolbar->addGroup(tbg_edit);
 
 	// Extra toolbar
 	SToolBarGroup* tbg_misc = new SToolBarGroup(toolbar, "_Misc");

@@ -2591,6 +2591,69 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	editor->undoManager()->endRecord(true);
 }
 
+/* MapCanvas::beginLineDraw
+ * Sets up and begins line drawing
+ *******************************************************************/
+void MapCanvas::beginLineDraw()
+{
+	draw_state = DSTATE_LINE;
+	mouse_state = MSTATE_LINE_DRAW;
+
+	// Setup help text
+	string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+	string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+	feature_help_lines.clear();
+	feature_help_lines.push_back("Line Drawing");
+	feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+	feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
+	feature_help_lines.push_back("Left Click = Draw point");
+	feature_help_lines.push_back("Right Click = Undo previous point");
+	feature_help_lines.push_back("Shift = Snap to nearest vertex");
+}
+
+/* MapCanvas::beginShapeDraw
+ * Sets up and begins shape drawing
+ *******************************************************************/
+void MapCanvas::beginShapeDraw()
+{
+	draw_state = DSTATE_SHAPE_ORIGIN;
+	mouse_state = MSTATE_LINE_DRAW;
+	theMapEditor->showShapeDrawPanel();
+
+	// Setup help text
+	string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+	string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+	feature_help_lines.clear();
+	feature_help_lines.push_back("Shape Drawing");
+	feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+	feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
+	feature_help_lines.push_back("Left Click = Draw point");
+	feature_help_lines.push_back("Right Click = Undo previous point");
+}
+
+/* MapCanvas::beginObjectEdit
+ * Sets up and begins object edit
+ *******************************************************************/
+void MapCanvas::beginObjectEdit()
+{
+	if (editor->beginObjectEdit())
+	{
+		mouse_state = MSTATE_EDIT;
+		renderer_2d->forceUpdate();
+
+		// Setup help text
+		string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+		string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+		string key_toggle = KeyBind::getBind("me2d_begin_object_edit").keysAsString();
+		feature_help_lines.clear();
+		feature_help_lines.push_back("Object Edit");
+		feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+		feature_help_lines.push_back(S_FMT("%s or %s = Cancel", key_cancel, key_toggle));
+		feature_help_lines.push_back("Shift = Disable grid snapping");
+		feature_help_lines.push_back("Ctrl = Rotate");
+	}
+}
+
 /* MapCanvas::onKeyBindPress
  * Called when the key bind [name] is pressed
  *******************************************************************/
@@ -2931,24 +2994,7 @@ void MapCanvas::keyBinds2d(string name)
 
 		// Edit items
 		else if (name == "me2d_begin_object_edit")
-		{
-			if (editor->beginObjectEdit())
-			{
-				mouse_state = MSTATE_EDIT;
-				renderer_2d->forceUpdate();
-
-				// Setup help text
-				string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
-				string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
-				string key_toggle = KeyBind::getBind("me2d_begin_object_edit").keysAsString();
-				feature_help_lines.clear();
-				feature_help_lines.push_back("Object Edit");
-				feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
-				feature_help_lines.push_back(S_FMT("%s or %s = Cancel", key_cancel, key_toggle));
-				feature_help_lines.push_back("Shift = Disable grid snapping");
-				feature_help_lines.push_back("Ctrl = Rotate");
-			}
-		}
+			beginObjectEdit();
 
 		// Split line
 		else if (name == "me2d_split_line")
@@ -2956,39 +3002,11 @@ void MapCanvas::keyBinds2d(string name)
 
 		// Begin line drawing
 		else if (name == "me2d_begin_linedraw")
-		{
-			draw_state = DSTATE_LINE;
-			mouse_state = MSTATE_LINE_DRAW;
-
-			// Setup help text
-			string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
-			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
-			feature_help_lines.clear();
-			feature_help_lines.push_back("Line Drawing");
-			feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
-			feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
-			feature_help_lines.push_back("Left Click = Draw point");
-			feature_help_lines.push_back("Right Click = Undo previous point");
-			feature_help_lines.push_back("Shift = Snap to nearest vertex");
-		}
+			beginLineDraw();
 
 		// Begin shape drawing
 		else if (name == "me2d_begin_shapedraw")
-		{
-			draw_state = DSTATE_SHAPE_ORIGIN;
-			mouse_state = MSTATE_LINE_DRAW;
-			theMapEditor->showShapeDrawPanel();
-
-			// Setup help text
-			string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
-			string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
-			feature_help_lines.clear();
-			feature_help_lines.push_back("Shape Drawing");
-			feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
-			feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
-			feature_help_lines.push_back("Left Click = Draw point");
-			feature_help_lines.push_back("Right Click = Undo previous point");
-		}
+			beginShapeDraw();
 
 		// Create object
 		else if (name == "me2d_create_object")
@@ -3307,6 +3325,13 @@ bool MapCanvas::handleAction(string id)
 		return true;
 	}
 
+	// 3d mode
+	else if (id == "mapw_mode_3d")
+	{
+		changeEditMode(MapEditor::MODE_3D);
+		return true;
+	}
+
 	// 'None' (wireframe) flat type
 	else if (id == "mapw_flat_none")
 	{
@@ -3349,6 +3374,27 @@ bool MapCanvas::handleAction(string id)
 		return true;
 	}
 
+	// Begin line drawing
+	else if (id == "mapw_draw_lines" && mouse_state == MSTATE_NORMAL)
+	{
+		beginLineDraw();
+		return true;
+	}
+
+	// Begin shape drawing
+	else if (id == "mapw_draw_shape" && mouse_state == MSTATE_NORMAL)
+	{
+		beginShapeDraw();
+		return true;
+	}
+
+	// Begin object edit
+	else if (id == "mapw_edit_objects" && mouse_state == MSTATE_NORMAL)
+	{
+		beginObjectEdit();
+		return true;
+	}
+
 	// --- Context menu ---
 
 	// Move 3d mode camera
@@ -3374,6 +3420,15 @@ bool MapCanvas::handleAction(string id)
 
 		editObjectProperties(list);
 
+		return true;
+	}
+
+	// --- Vertex context menu ---
+
+	// Create vertex
+	else if (id == "mapw_vertex_create")
+	{
+		editor->createVertex(mouse_downpos_m.x, mouse_downpos_m.y);
 		return true;
 	}
 
@@ -3457,6 +3512,13 @@ bool MapCanvas::handleAction(string id)
 		return true;
 	}
 
+	// Flip
+	else if (id == "mapw_line_flip")
+	{
+		editor->flipLines();
+		return true;
+	}
+
 	// --- Thing context menu ---
 
 	// Change thing type
@@ -3505,6 +3567,27 @@ bool MapCanvas::handleAction(string id)
 				editor->endUndoRecord();
 			}
 		}
+	}
+
+	// Create sector
+	else if (id == "mapw_sector_create")
+	{
+		editor->createSector(mouse_downpos_m.x, mouse_downpos_m.y);
+		return true;
+	}
+
+	// Merge sectors
+	else if (id == "mapw_sector_join")
+	{
+		editor->joinSectors(false);
+		return true;
+	}
+
+	// Join sectors
+	else if (id == "mapw_sector_join_keep")
+	{
+		editor->joinSectors(true);
+		return true;
 	}
 
 	// Not handled here
@@ -3858,7 +3941,12 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 			// Mode-specific
 			bool object_selected = (editor->selectionSize() > 0 || editor->hilightItem() >= 0);
-			if (editor->editMode() == MapEditor::MODE_LINES)
+			if (editor->editMode() == MapEditor::MODE_VERTICES)
+			{
+				menu_context.AppendSeparator();
+				theApp->getAction("mapw_vertex_create")->addToMenu(&menu_context);
+			}
+			else if (editor->editMode() == MapEditor::MODE_LINES)
 			{
 				if (object_selected)
 				{
@@ -3866,6 +3954,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 					theApp->getAction("mapw_line_changetexture")->addToMenu(&menu_context);
 					theApp->getAction("mapw_line_changespecial")->addToMenu(&menu_context);
 					theApp->getAction("mapw_line_tagedit")->addToMenu(&menu_context);
+					theApp->getAction("mapw_line_flip")->addToMenu(&menu_context);
 					theApp->getAction("mapw_line_correctsectors")->addToMenu(&menu_context);
 				}
 			}
@@ -3884,7 +3973,14 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 				{
 					theApp->getAction("mapw_sector_changetexture")->addToMenu(&menu_context);
 					theApp->getAction("mapw_sector_changespecial")->addToMenu(&menu_context);
+					if (editor->getSelection().size() > 1)
+					{
+						theApp->getAction("mapw_sector_join")->addToMenu(&menu_context);
+						theApp->getAction("mapw_sector_join_keep")->addToMenu(&menu_context);
+					}
 				}
+
+				theApp->getAction("mapw_sector_create")->addToMenu(&menu_context);
 			}
 
 			// Properties

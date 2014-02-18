@@ -77,7 +77,7 @@ public:
 	string	keysAsString();
 
 	int			nKeys() { return keys.size(); }
-	keypress_t	getKey(unsigned index) { if (keys.size() == 0) return keypress_t(); else return keys[index]; }
+	keypress_t	getKey(unsigned index) { if (index >= keys.size()) return keypress_t(); else return keys[index]; }
 	int			nDefaults() { return defaults.size(); }
 	keypress_t	getDefault(unsigned index) { return defaults[index]; }
 
