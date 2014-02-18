@@ -228,6 +228,7 @@ void InputPrefsPanel::changeKey(wxTreeListItem item)
 	dlg.Fit();
 	dlg.SetMinSize(GetBestSize());
 	dlg.CenterOnParent();
+	key_ctrl->SetFocus();
 
 	// Show dialog
 	if (dlg.ShowModal() == wxID_OK)
