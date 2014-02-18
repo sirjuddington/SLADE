@@ -182,7 +182,7 @@ public:
 		sizer->Add(text_stack, 1, wxEXPAND|wxALL, 4);
 
 		// Dump stack trace to a file (just in case)
-		wxFile file(appPath("slade3_crash.log", DIR_APP), wxFile::write);
+		wxFile file(appPath("slade3_crash.log", DIR_USER), wxFile::write);
 		file.Write(trace);
 		file.Close();
 

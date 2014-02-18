@@ -24,6 +24,8 @@ private:
 	vector<ArchiveEntry*>	bookmarks;
 	static ArchiveManager*	instance;
 
+	void		getDependentArchivesInternal(Archive* archive, vector<Archive*>& vec);
+
 public:
 	ArchiveManager();
 	~ArchiveManager();
@@ -62,6 +64,8 @@ public:
 	void		closeAll();
 	int			numArchives() { return (int)open_archives.size(); }
 	int			archiveIndex(Archive* archive);
+	vector<Archive*>
+				getDependentArchives(Archive* archive);
 	Archive*	programResourceArchive() { return program_resource_archive; }
 	string		getArchiveExtensionsString();
 	bool		archiveIsResource(Archive* archive);
