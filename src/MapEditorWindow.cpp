@@ -171,21 +171,24 @@ void MapEditorWindow::saveLayout()
 }
 
 /* MapEditorWindow::setupLayout
- * Sets up the basic map editor window layout
+ * Sets up the basic map editor window menu bar
  *******************************************************************/
-void MapEditorWindow::setupLayout()
+void MapEditorWindow::setupMenu()
 {
-	// Create the wxAUI manager & related things
-	wxAuiManager* m_mgr = new wxAuiManager(this);
-	wxAuiPaneInfo p_inf;
-
-	// Map canvas
-	map_canvas = new MapCanvas(this, -1, &editor);
-	p_inf.CenterPane();
-	m_mgr->AddPane(map_canvas, p_inf);
-
-	// --- Menus ---
-	wxMenuBar* menu = new wxMenuBar();
+	// Get menu bar
+	wxMenuBar* menu = GetMenuBar();
+	if (menu)
+	{
+		// Clear existing menu bar
+		unsigned n_menus = menu->GetMenuCount();
+		for (unsigned a = 0; a < n_menus; a++)
+		{
+			wxMenu* sm = menu->Remove(0);
+			delete sm;
+		}
+	}
+	else	// Create new menu bar
+		menu = new wxMenuBar();
 
 	// Map menu
 	wxMenu* menu_map = new wxMenu("");
@@ -201,6 +204,10 @@ void MapEditorWindow::setupLayout()
 	theApp->getAction("mapw_undo")->addToMenu(menu_editor);
 	theApp->getAction("mapw_redo")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
+	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor);
+	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor);
+	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor);
+	menu_editor->AppendSeparator();
 	theApp->getAction("mapw_preferences")->addToMenu(menu_editor);
 	theApp->getAction("mapw_setbra")->addToMenu(menu_editor);
 	menu->Append(menu_editor, "&Edit");
@@ -214,6 +221,24 @@ void MapEditorWindow::setupLayout()
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
+}
+
+/* MapEditorWindow::setupLayout
+ * Sets up the basic map editor window layout
+ *******************************************************************/
+void MapEditorWindow::setupLayout()
+{
+	// Create the wxAUI manager & related things
+	wxAuiManager* m_mgr = new wxAuiManager(this);
+	wxAuiPaneInfo p_inf;
+
+	// Map canvas
+	map_canvas = new MapCanvas(this, -1, &editor);
+	p_inf.CenterPane();
+	m_mgr->AddPane(map_canvas, p_inf);
+
+	// --- Menus ---
+	setupMenu();
 
 
 	// --- Toolbars ---

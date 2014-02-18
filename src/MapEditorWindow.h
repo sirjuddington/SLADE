@@ -64,6 +64,7 @@ public:
 	void	loadLayout();
 	void	saveLayout();
 
+	void		setupMenu();
 	void		setupLayout();
 	bool		createMap();
 	bool		openMap(Archive::mapdesc_t map);

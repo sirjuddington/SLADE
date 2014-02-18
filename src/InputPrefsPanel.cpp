@@ -2,6 +2,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "InputPrefsPanel.h"
+#include "MapEditorWindow.h"
 #include <wx/listctrl.h>
 
 class BindListItemData : public wxClientData
@@ -338,6 +339,9 @@ void InputPrefsPanel::applyPreferences()
 		// Next item
 		item = list_binds->GetNextItem(item);
 	}
+
+	// Update map editor menus
+	theMapEditor->setupMenu();
 }
 
 
