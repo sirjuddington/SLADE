@@ -1,10 +1,43 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    InputPrefsPanel.cpp
+ * Description: Panel containing controls to view/modify input key
+ *              binds
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "InputPrefsPanel.h"
 #include "MapEditorWindow.h"
 #include <wx/listctrl.h>
 
+
+/*******************************************************************
+ * BINDLISTITEMDATA CLASS
+ *******************************************************************/
 class BindListItemData : public wxClientData
 {
 public:
@@ -18,6 +51,14 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * INPUTKEYCTRL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* InputKeyCtrl::InputKeyCtrl
+ * InputKeyCtrl class constructor
+ *******************************************************************/
 InputKeyCtrl::InputKeyCtrl(wxWindow* parent, keypress_t init)
 	: wxTextCtrl(parent, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_TAB|wxTE_PROCESS_ENTER)
 {
@@ -33,6 +74,9 @@ InputKeyCtrl::InputKeyCtrl(wxWindow* parent, keypress_t init)
 	Bind(wxEVT_TEXT_ENTER, &InputKeyCtrl::onEnter, this);
 }
 
+/* InputKeyCtrl::onKeyDown
+ * Called when a key is pressed in the control
+ *******************************************************************/
 void InputKeyCtrl::onKeyDown(wxKeyEvent& e)
 {
 	// Ignore if modifier key
@@ -46,6 +90,9 @@ void InputKeyCtrl::onKeyDown(wxKeyEvent& e)
 	SetValue(key.as_string());
 }
 
+/* InputKeyCtrl::onMouseDown
+ * Called when a mouse button is clicked in the control
+ *******************************************************************/
 void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 {
 	// Middle button
@@ -67,12 +114,23 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 	SetValue(key.as_string());
 }
 
+/* InputKeyCtrl::onEnter
+ * Called when the enter key is preessed in the control
+ *******************************************************************/
 void InputKeyCtrl::onEnter(wxCommandEvent& e)
 {
 	key.key = "return";
 	SetValue(key.as_string());
 }
 
+
+/*******************************************************************
+ * INPUTPREFSPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* InputPrefsPanel::InputPrefsPanel
+ * InputPrefsPanel class constructor
+ *******************************************************************/
 InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
@@ -125,6 +183,9 @@ InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	updateBindsList();
 }
 
+/* InputPrefsPanel::~InputPrefsPanel
+ * InputPrefsPanel class destructor
+ *******************************************************************/
 InputPrefsPanel::~InputPrefsPanel()
 {
 }
@@ -137,6 +198,9 @@ void InputPrefsPanel::init()
 	updateBindsList();
 }
 
+/* InputPrefsPanel::getListGroupItem
+ * Returns the wxTreeListItem for keybind group [group]
+ *******************************************************************/
 wxTreeListItem InputPrefsPanel::getListGroupItem(string group)
 {
 	// Go through items
@@ -153,6 +217,9 @@ wxTreeListItem InputPrefsPanel::getListGroupItem(string group)
 	return list_binds->AppendItem(list_binds->GetRootItem(), group);
 }
 
+/* InputPrefsPanel::initBindsList
+ * Populates the keybinds tree list
+ *******************************************************************/
 void InputPrefsPanel::initBindsList()
 {
 	// Get list of all keybinds
@@ -180,6 +247,9 @@ void InputPrefsPanel::initBindsList()
 	}
 }
 
+/* InputPrefsPanel::updateBindsList
+ * Updates all keybind list items
+ *******************************************************************/
 void InputPrefsPanel::updateBindsList()
 {
 	// Get first list item
@@ -200,6 +270,9 @@ void InputPrefsPanel::updateBindsList()
 	}
 }
 
+/* InputPrefsPanel::changeKey
+ * Changes the key for the keybind at [item]
+ *******************************************************************/
 void InputPrefsPanel::changeKey(wxTreeListItem item)
 {
 	// Get item keybind info
@@ -239,6 +312,9 @@ void InputPrefsPanel::changeKey(wxTreeListItem item)
 	}
 }
 
+/* InputPrefsPanel::addKey
+ * Adds a new key to the currently selected keybind
+ *******************************************************************/
 void InputPrefsPanel::addKey()
 {
 	// Get selected item
@@ -268,6 +344,9 @@ void InputPrefsPanel::addKey()
 	}
 }
 
+/* InputPrefsPanel::removeKey
+ * Removes the keybind key at [item]
+ *******************************************************************/
 void InputPrefsPanel::removeKey(wxTreeListItem item)
 {
 	// Get item keybind info
@@ -303,6 +382,9 @@ void InputPrefsPanel::removeKey(wxTreeListItem item)
 	updateBindsList();
 }
 
+/* InputPrefsPanel::applyPreferences
+ * Applies keybind values from the control
+ *******************************************************************/
 void InputPrefsPanel::applyPreferences()
 {
 	// Go through all list items
@@ -346,6 +428,13 @@ void InputPrefsPanel::applyPreferences()
 }
 
 
+/*******************************************************************
+ * INPUTPREFSPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* InputPrefsPanel::onSize
+ * Called when the panel is resized
+ *******************************************************************/
 void InputPrefsPanel::onSize(wxSizeEvent& e)
 {
 	// Update list column sizes
@@ -354,6 +443,9 @@ void InputPrefsPanel::onSize(wxSizeEvent& e)
 	e.Skip();
 }
 
+/* InputPrefsPanel::onListSelectionChanged
+ * Called when the selection on the keybinds list is changed
+ *******************************************************************/
 void InputPrefsPanel::onListSelectionChanged(wxTreeListEvent& e)
 {
 	// Get selected item
@@ -381,6 +473,9 @@ void InputPrefsPanel::onListSelectionChanged(wxTreeListEvent& e)
 	btn_defaults->Enable(kbp);
 }
 
+/* InputPrefsPanel::onListItemActivated
+ * Called when a keybind list item is activated
+ *******************************************************************/
 void InputPrefsPanel::onListItemActivated(wxTreeListEvent& e)
 {
 	// Get selected item
@@ -391,6 +486,9 @@ void InputPrefsPanel::onListItemActivated(wxTreeListEvent& e)
 		changeKey(item);
 }
 
+/* InputPrefsPanel::onBtnChangeKey
+ * Called when the 'Set Key' button is clicked
+ *******************************************************************/
 void InputPrefsPanel::onBtnChangeKey(wxCommandEvent& e)
 {
 	// Get selected item
@@ -401,16 +499,25 @@ void InputPrefsPanel::onBtnChangeKey(wxCommandEvent& e)
 		changeKey(item);
 }
 
+/* InputPrefsPanel::onBtnAddKey
+ * Called when the 'Add Key' button is clicked
+ *******************************************************************/
 void InputPrefsPanel::onBtnAddKey(wxCommandEvent& e)
 {
 	addKey();
 }
 
+/* InputPrefsPanel::onBtnRemoveKey
+ * Called when the 'Remove Key' button is clicked
+ *******************************************************************/
 void InputPrefsPanel::onBtnRemoveKey(wxCommandEvent& e)
 {
 	removeKey(list_binds->GetSelection());
 }
 
+/* InputPrefsPanel::onBtnDefaults
+ * Called when the 'Reset to Default' button is clicked
+ *******************************************************************/
 void InputPrefsPanel::onBtnDefaults(wxCommandEvent& e)
 {
 	// Get selected item
@@ -442,6 +549,9 @@ void InputPrefsPanel::onBtnDefaults(wxCommandEvent& e)
 	updateBindsList();
 }
 
+/* InputPrefsPanel::onListKeyDown
+ * Called when a key is pressed in the keybind list
+ *******************************************************************/
 void InputPrefsPanel::onListKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_DELETE)

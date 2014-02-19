@@ -1,12 +1,53 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapDisplayPrefsPanel.cpp
+ * Description: Panel containing preference controls for the map
+ *              editor
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapEditorPrefsPanel.h"
 
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Bool, scroll_smooth)
 EXTERN_CVAR(Bool, selection_clear_click)
 EXTERN_CVAR(Bool, map_merge_undo_step)
 
+
+/*******************************************************************
+ * MAPEDITORPREFSPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapEditorPrefsPanel::MapEditorPrefsPanel
+ * MapEditorPrefsPanel class constructor
+ *******************************************************************/
 MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
@@ -33,6 +74,9 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	Layout();
 }
 
+/* MapEditorPrefsPanel::~MapEditorPrefsPanel
+ * MapEditorPrefsPanel class destructor
+ *******************************************************************/
 MapEditorPrefsPanel::~MapEditorPrefsPanel()
 {
 }
@@ -47,6 +91,9 @@ void MapEditorPrefsPanel::init()
 	cb_merge_undo_step->SetValue(map_merge_undo_step);
 }
 
+/* MapEditorPrefsPanel::applyPreferences
+ * Applies preference values from the controls to CVARs
+ *******************************************************************/
 void MapEditorPrefsPanel::applyPreferences()
 {
 	scroll_smooth = cb_scroll_smooth->GetValue();

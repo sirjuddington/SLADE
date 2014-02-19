@@ -122,7 +122,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "S
 	Bind(wxEVT_BUTTON, &PreferencesDialog::onButtonClicked, this);
 
 	// Setup layout
-	SetInitialSize(wxSize(-1, -1));
+	SetInitialSize(wxSize(800, 600));
 	Layout();
 	Fit();
 	SetMinSize(GetBestSize());
