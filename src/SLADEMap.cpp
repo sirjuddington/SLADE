@@ -44,6 +44,13 @@
 #define IDEQ(x) (((x) != 0) && ((x) == id))
 
 
+/*******************************************************************
+ * SLADEMAP CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SLADEMap::SLADEMap
+ * SLADEMap class constructor
+ *******************************************************************/
 SLADEMap::SLADEMap()
 {
 	// Init variables
@@ -57,11 +64,17 @@ SLADEMap::SLADEMap()
 	setOpenedTime();
 }
 
+/* SLADEMap::~SLADEMap
+ * SLADEMap class destructor
+ *******************************************************************/
 SLADEMap::~SLADEMap()
 {
 	clearMap();
 }
 
+/* SLADEMap::getVertex
+ * Returns the vertex at [index], or NULL if [index] is invalid
+ *******************************************************************/
 MapVertex* SLADEMap::getVertex(unsigned index)
 {
 	// Check index
@@ -71,6 +84,9 @@ MapVertex* SLADEMap::getVertex(unsigned index)
 	return vertices[index];
 }
 
+/* SLADEMap::getSide
+ * Returns the side at [index], or NULL if [index] is invalid
+ *******************************************************************/
 MapSide* SLADEMap::getSide(unsigned index)
 {
 	// Check index
@@ -80,6 +96,9 @@ MapSide* SLADEMap::getSide(unsigned index)
 	return sides[index];
 }
 
+/* SLADEMap::getLine
+ * Returns the line at [index], or NULL if [index] is invalid
+ *******************************************************************/
 MapLine* SLADEMap::getLine(unsigned index)
 {
 	// Check index
@@ -89,6 +108,9 @@ MapLine* SLADEMap::getLine(unsigned index)
 	return lines[index];
 }
 
+/* SLADEMap::getSector
+ * Returns the sector at [index], or NULL if [index] is invalid
+ *******************************************************************/
 MapSector* SLADEMap::getSector(unsigned index)
 {
 	// Check index
@@ -98,6 +120,9 @@ MapSector* SLADEMap::getSector(unsigned index)
 	return sectors[index];
 }
 
+/* SLADEMap::getThing
+ * Returns the thing at [index], or NULL if [index] is invalid
+ *******************************************************************/
 MapThing* SLADEMap::getThing(unsigned index)
 {
 	// Check index
@@ -107,6 +132,10 @@ MapThing* SLADEMap::getThing(unsigned index)
 	return things[index];
 }
 
+/* SLADEMap::getObject
+ * Returns the object of [type] at [index], or NULL if [index] is
+ * invalid
+ *******************************************************************/
 MapObject* SLADEMap::getObject(uint8_t type, unsigned index)
 {
 	if (type == MOBJ_VERTEX)
@@ -123,16 +152,25 @@ MapObject* SLADEMap::getObject(uint8_t type, unsigned index)
 	return NULL;
 }
 
+/* SLADEMap::setGeometryUpdated
+ * Sets the geometry last updated time to now
+ *******************************************************************/
 void SLADEMap::setGeometryUpdated()
 {
 	geometry_updated = theApp->runTimer();
 }
 
+/* SLADEMap::setThingsUpdated
+ * Sets the things last updated time to now
+ *******************************************************************/
 void SLADEMap::setThingsUpdated()
 {
 	things_updated = theApp->runTimer();
 }
 
+/* SLADEMap::refreshIndices
+ * Refreshes all map object indices
+ *******************************************************************/
 void SLADEMap::refreshIndices()
 {
 	// Vertex indices
@@ -156,6 +194,9 @@ void SLADEMap::refreshIndices()
 		things[a]->index = a;
 }
 
+/* SLADEMap::addMapObject
+ * Adds [object] to the map objects list
+ *******************************************************************/
 void SLADEMap::addMapObject(MapObject* object)
 {
 	all_objects.push_back(mobj_holder_t(object, true));
@@ -163,12 +204,19 @@ void SLADEMap::addMapObject(MapObject* object)
 	created_deleted_objects.push_back(mobj_cd_t(object->id, true));
 }
 
+/* SLADEMap::removeMapObject
+ * Removes [object] from the map (keeps it in the objects list, but
+ * removes the 'in map' flag)
+ *******************************************************************/
 void SLADEMap::removeMapObject(MapObject* object)
 {
 	all_objects[object->id].in_map = false;
 	created_deleted_objects.push_back(mobj_cd_t(object->id, false));
 }
 
+/* SLADEMap::restoreObjectById
+ * Restores the map object with [id] at its last index in the map
+ *******************************************************************/
 void SLADEMap::restoreObjectById(unsigned id)
 {
 	// Get map object to restore
@@ -281,6 +329,9 @@ void SLADEMap::restoreObjectById(unsigned id)
 	LOG_MESSAGE(4, "restore id %u index %u", object->id, object->index);
 }
 
+/* SLADEMap::removeObjectById
+ * Removes the map object with [id] from the map
+ *******************************************************************/
 void SLADEMap::removeObjectById(unsigned id)
 {
 	// Get map object to remove
@@ -362,6 +413,9 @@ void SLADEMap::removeObjectById(unsigned id)
 	removeMapObject(object);
 }
 
+/* SLADEMap::readMap
+ * Reads map data using info in [map]
+ *******************************************************************/
 bool SLADEMap::readMap(Archive::mapdesc_t map)
 {
 	Archive::mapdesc_t omap = map;
@@ -411,6 +465,9 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	return ok;
 }
 
+/* SLADEMap::addVertex
+ * Adds a vertex to the map from a doom vertex definition [v]
+ *******************************************************************/
 bool SLADEMap::addVertex(doomvertex_t& v)
 {
 	MapVertex* nv = new MapVertex(v.x, v.y, this);
@@ -418,6 +475,9 @@ bool SLADEMap::addVertex(doomvertex_t& v)
 	return true;
 }
 
+/* SLADEMap::addVertex
+ * Adds a vertex to the map from a doom64 vertex definition [v]
+ *******************************************************************/
 bool SLADEMap::addVertex(doom64vertex_t& v)
 {
 	MapVertex* nv = new MapVertex((double)v.x/65536, (double)v.y/65536, this);
@@ -425,6 +485,9 @@ bool SLADEMap::addVertex(doom64vertex_t& v)
 	return true;
 }
 
+/* SLADEMap::addSide
+ * Adds a side to the map from a doom sidedef definition [s]
+ *******************************************************************/
 bool SLADEMap::addSide(doomside_t& s)
 {
 	// Create side
@@ -447,6 +510,9 @@ bool SLADEMap::addSide(doomside_t& s)
 	return true;
 }
 
+/* SLADEMap::addSide
+ * Adds a side to the map from a doom64 sidedef definition [s]
+ *******************************************************************/
 bool SLADEMap::addSide(doom64side_t& s)
 {
 	// Create side
@@ -469,6 +535,9 @@ bool SLADEMap::addSide(doom64side_t& s)
 	return true;
 }
 
+/* SLADEMap::addLine
+ * Adds a line to the map from a doom linedef definition [l]
+ *******************************************************************/
 bool SLADEMap::addLine(doomline_t& l)
 {
 	// Get relevant sides
@@ -528,6 +597,9 @@ bool SLADEMap::addLine(doomline_t& l)
 	return true;
 }
 
+/* SLADEMap::addLine
+ * Adds a line to the map from a doom64 linedef definition [l]
+ *******************************************************************/
 bool SLADEMap::addLine(doom64line_t& l)
 {
 	// Get relevant sides
@@ -590,6 +662,9 @@ bool SLADEMap::addLine(doom64line_t& l)
 	return true;
 }
 
+/* SLADEMap::addSector
+ * Adds a sector to the map from a doom sector definition [s]
+ *******************************************************************/
 bool SLADEMap::addSector(doomsector_t& s)
 {
 	// Create sector
@@ -611,6 +686,9 @@ bool SLADEMap::addSector(doomsector_t& s)
 	return true;
 }
 
+/* SLADEMap::addSector
+ * Adds a sector to the map from a doom64 sector definition [s]
+ *******************************************************************/
 bool SLADEMap::addSector(doom64sector_t& s)
 {
 	// Create sector
@@ -640,6 +718,9 @@ bool SLADEMap::addSector(doom64sector_t& s)
 	return true;
 }
 
+/* SLADEMap::addThing
+ * Adds a thing to the map from a doom thing definition [t]
+ *******************************************************************/
 bool SLADEMap::addThing(doomthing_t& t)
 {
 	// Create thing
@@ -654,6 +735,9 @@ bool SLADEMap::addThing(doomthing_t& t)
 	return true;
 }
 
+/* SLADEMap::addThing
+ * Adds a thing to the map from a doom64 thing definition [t]
+ *******************************************************************/
 bool SLADEMap::addThing(doom64thing_t& t)
 {
 	// Create thing
@@ -670,6 +754,9 @@ bool SLADEMap::addThing(doom64thing_t& t)
 	return true;
 }
 
+/* SLADEMap::readDoomVertexes
+ * Reads in doom format vertex definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoomVertexes(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -700,6 +787,9 @@ bool SLADEMap::readDoomVertexes(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoomSidedefs
+ * Reads in doom format sidedef definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoomSidedefs(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -730,6 +820,9 @@ bool SLADEMap::readDoomSidedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoomLinedefs
+ * Reads in doom format linedef definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoomLinedefs(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -761,6 +854,9 @@ bool SLADEMap::readDoomLinedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoomSectors
+ * Reads in doom format sector definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoomSectors(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -791,6 +887,9 @@ bool SLADEMap::readDoomSectors(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoomThings
+ * Reads in doom format thing definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -821,6 +920,9 @@ bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoomMap
+ * Reads a doom format map using info in [map]
+ *******************************************************************/
 bool SLADEMap::readDoomMap(Archive::mapdesc_t map)
 {
 	LOG_MESSAGE(2, "Reading Doom format map");
@@ -898,6 +1000,9 @@ bool SLADEMap::readDoomMap(Archive::mapdesc_t map)
 	return true;
 }
 
+/* SLADEMap::addLine
+ * Adds a line to the map from a hexen linedef definition [l]
+ *******************************************************************/
 bool SLADEMap::addLine(hexenline_t& l)
 {
 	// Get relevant sides
@@ -974,6 +1079,9 @@ bool SLADEMap::addLine(hexenline_t& l)
 	return true;
 }
 
+/* SLADEMap::addThing
+ * Adds a thing to the map from a hexen thing definition [t]
+ *******************************************************************/
 bool SLADEMap::addThing(hexenthing_t& t)
 {
 	// Create thing
@@ -996,6 +1104,9 @@ bool SLADEMap::addThing(hexenthing_t& t)
 	return true;
 }
 
+/* SLADEMap::readHexenLinedefs
+ * Reads in hexen format linedef definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readHexenLinedefs(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -1025,6 +1136,9 @@ bool SLADEMap::readHexenLinedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readHexenThings
+ * Reads in hexen format thing definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readHexenThings(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -1054,6 +1168,9 @@ bool SLADEMap::readHexenThings(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readHexenMap
+ * Reads a hexen format using info in [map]
+ *******************************************************************/
 bool SLADEMap::readHexenMap(Archive::mapdesc_t map)
 {
 	LOG_MESSAGE(2, "Reading Hexen format map");
@@ -1128,6 +1245,9 @@ bool SLADEMap::readHexenMap(Archive::mapdesc_t map)
 	return true;
 }
 
+/* SLADEMap::readDoom64Vertexes
+ * Reads in doom64 format vertex definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoom64Vertexes(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -1157,6 +1277,9 @@ bool SLADEMap::readDoom64Vertexes(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoom64Sidedefs
+ * Reads in doom64 format sidedef definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoom64Sidedefs(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -1186,6 +1309,9 @@ bool SLADEMap::readDoom64Sidedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoom64Linedefs
+ * Reads in doom64 format linedef definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoom64Linedefs(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -1215,6 +1341,9 @@ bool SLADEMap::readDoom64Linedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoom64Sectors
+ * Reads in doom64 format sector definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoom64Sectors(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -1244,6 +1373,9 @@ bool SLADEMap::readDoom64Sectors(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoom64Things
+ * Reads in doom64 format thing definitions from [entry]
+ *******************************************************************/
 bool SLADEMap::readDoom64Things(ArchiveEntry* entry)
 {
 	if (!entry)
@@ -1273,6 +1405,9 @@ bool SLADEMap::readDoom64Things(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::readDoom64Map
+ * Reads a doom64 format using info in [map]
+ *******************************************************************/
 bool SLADEMap::readDoom64Map(Archive::mapdesc_t map)
 {
 	LOG_MESSAGE(2, "Reading Doom 64 format map");
@@ -1347,6 +1482,9 @@ bool SLADEMap::readDoom64Map(Archive::mapdesc_t map)
 	return true;
 }
 
+/* SLADEMap::addVertex
+ * Adds a vertex to the map from parsed UDMF vertex definition [def]
+ *******************************************************************/
 bool SLADEMap::addVertex(ParseTreeNode* def)
 {
 	// Check for required properties
@@ -1377,6 +1515,9 @@ bool SLADEMap::addVertex(ParseTreeNode* def)
 	return true;
 }
 
+/* SLADEMap::addSide
+ * Adds a side to the map from parsed UDMF side definition [def]
+ *******************************************************************/
 bool SLADEMap::addSide(ParseTreeNode* def)
 {
 	// Check for required properties
@@ -1435,6 +1576,9 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 	return true;
 }
 
+/* SLADEMap::addLine
+ * Adds a line to the map from parsed UDMF line definition [def]
+ *******************************************************************/
 bool SLADEMap::addLine(ParseTreeNode* def)
 {
 	// Check for required properties
@@ -1488,6 +1632,9 @@ bool SLADEMap::addLine(ParseTreeNode* def)
 	return true;
 }
 
+/* SLADEMap::addSector
+ * Adds a sector to the map from parsed UDMF sector definition [def]
+ *******************************************************************/
 bool SLADEMap::addSector(ParseTreeNode* def)
 {
 	// Check for required properties
@@ -1538,6 +1685,9 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 	return true;
 }
 
+/* SLADEMap::addThing
+ * Adds a thing to the map from parsed UDMF thing definition [def]
+ *******************************************************************/
 bool SLADEMap::addThing(ParseTreeNode* def)
 {
 	// Check for required properties
@@ -1573,6 +1723,9 @@ bool SLADEMap::addThing(ParseTreeNode* def)
 	return true;
 }
 
+/* SLADEMap::readDoomMap
+ * Reads a UDMF format map using info in [map]
+ *******************************************************************/
 bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 {
 	// Get TEXTMAP entry (will always be after the 'head' entry)
@@ -1691,6 +1844,9 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 	return true;
 }
 
+/* SLADEMap::writeDoomVertexes
+ * Writes doom format vertex definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoomVertexes(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -1715,6 +1871,9 @@ bool SLADEMap::writeDoomVertexes(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoomSidedefs
+ * Writes doom format sidedef definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoomSidedefs(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -1755,6 +1914,9 @@ bool SLADEMap::writeDoomSidedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoomLinedefs
+ * Writes doom format linedef definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoomLinedefs(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -1791,6 +1953,9 @@ bool SLADEMap::writeDoomLinedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoomSectors
+ * Writes doom format sector definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoomSectors(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -1827,6 +1992,9 @@ bool SLADEMap::writeDoomSectors(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoomThings
+ * Writes doom format thing definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoomThings(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -1857,6 +2025,9 @@ bool SLADEMap::writeDoomThings(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoomMap
+ * Writes doom format map entries and adds them to [map_entries]
+ *******************************************************************/
 bool SLADEMap::writeDoomMap(vector<ArchiveEntry*>& map_entries)
 {
 	// Init entry list
@@ -1890,6 +2061,9 @@ bool SLADEMap::writeDoomMap(vector<ArchiveEntry*>& map_entries)
 	return true;
 }
 
+/* SLADEMap::writeHexenLinedefs
+ * Writes hexen format linedef definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeHexenLinedefs(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -1929,6 +2103,9 @@ bool SLADEMap::writeHexenLinedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeHexenThings
+ * Writes hexen format thing definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeHexenThings(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -1966,6 +2143,9 @@ bool SLADEMap::writeHexenThings(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeHexenMap
+ * Writes hexen format map entries and adds them to [map_entries]
+ *******************************************************************/
 bool SLADEMap::writeHexenMap(vector<ArchiveEntry*>& map_entries)
 {
 	// Init entry list
@@ -1996,11 +2176,12 @@ bool SLADEMap::writeHexenMap(vector<ArchiveEntry*>& map_entries)
 	writeDoomSectors(entry);
 	map_entries.push_back(entry);
 
-	// TODO: write BEHAVIOR and SCRIPTS
-
 	return true;
 }
 
+/* SLADEMap::writeDoom64Vertexes
+ * Writes doom64 format vertex definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoom64Vertexes(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -2025,6 +2206,9 @@ bool SLADEMap::writeDoom64Vertexes(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoom64Sidedefs
+ * Writes doom64 format sidedef definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoom64Sidedefs(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -2061,6 +2245,9 @@ bool SLADEMap::writeDoom64Sidedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoom64Linedefs
+ * Writes doom64 format linedef definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoom64Linedefs(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -2097,6 +2284,9 @@ bool SLADEMap::writeDoom64Linedefs(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoom64Sectors
+ * Writes doom64 format sector definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoom64Sectors(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -2140,6 +2330,9 @@ bool SLADEMap::writeDoom64Sectors(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoom64Things
+ * Writes doom64 format thing definitions to [entry]
+ *******************************************************************/
 bool SLADEMap::writeDoom64Things(ArchiveEntry* entry)
 {
 	// Check entry was given
@@ -2172,6 +2365,9 @@ bool SLADEMap::writeDoom64Things(ArchiveEntry* entry)
 	return true;
 }
 
+/* SLADEMap::writeDoom64Map
+ * Writes doom64 format map entries and adds them to [map_entries]
+ *******************************************************************/
 bool SLADEMap::writeDoom64Map(vector<ArchiveEntry*>& map_entries)
 {
 	// Init entry list
@@ -2207,6 +2403,9 @@ bool SLADEMap::writeDoom64Map(vector<ArchiveEntry*>& map_entries)
 	return true;
 }
 
+/* SLADEMap::writeUDMFMap
+ * Writes map as UDMF format text to [textmap]
+ *******************************************************************/
 bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 {
 	// Check entry was given
@@ -2368,6 +2567,9 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	return true;
 }
 
+/* SLADEMap::clearMap
+ * Clears all map data
+ *******************************************************************/
 void SLADEMap::clearMap()
 {
 	// Clear vectors
@@ -2394,6 +2596,9 @@ void SLADEMap::clearMap()
 	usage_thing_type.clear();
 }
 
+/* SLADEMap::removeVertex
+ * Removes [vertex] from the map
+ *******************************************************************/
 bool SLADEMap::removeVertex(MapVertex* vertex)
 {
 	// Check vertex was given
@@ -2403,6 +2608,9 @@ bool SLADEMap::removeVertex(MapVertex* vertex)
 	return removeVertex(vertex->index);
 }
 
+/* SLADEMap::removeVertex
+ * Removes the vertex at [index] from the map
+ *******************************************************************/
 bool SLADEMap::removeVertex(unsigned index)
 {
 	// Check index
@@ -2426,6 +2634,9 @@ bool SLADEMap::removeVertex(unsigned index)
 	return true;
 }
 
+/* SLADEMap::removeLine
+ * Removes [line] from the map
+ *******************************************************************/
 bool SLADEMap::removeLine(MapLine* line)
 {
 	// Check line was given
@@ -2435,6 +2646,9 @@ bool SLADEMap::removeLine(MapLine* line)
 	return removeLine(line->index);
 }
 
+/* SLADEMap::removeLine
+ * Removes the line at [index] from the map
+ *******************************************************************/
 bool SLADEMap::removeLine(unsigned index)
 {
 	// Check index
@@ -2470,6 +2684,9 @@ bool SLADEMap::removeLine(unsigned index)
 	return true;
 }
 
+/* SLADEMap::removeSide
+ * Removes [side] from the map
+ *******************************************************************/
 bool SLADEMap::removeSide(MapSide* side, bool remove_from_line)
 {
 	// Check side was given
@@ -2479,6 +2696,9 @@ bool SLADEMap::removeSide(MapSide* side, bool remove_from_line)
 	return removeSide(side->index, remove_from_line);
 }
 
+/* SLADEMap::removeSide
+ * Removes the side at [index] from the map
+ *******************************************************************/
 bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 {
 	// Check index
@@ -2528,6 +2748,9 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 	return true;
 }
 
+/* SLADEMap::removeSector
+ * Removes [sector] from the map
+ *******************************************************************/
 bool SLADEMap::removeSector(MapSector* sector)
 {
 	// Check sector was given
@@ -2537,6 +2760,9 @@ bool SLADEMap::removeSector(MapSector* sector)
 	return removeSector(sector->index);
 }
 
+/* SLADEMap::removeSector
+ * Removes the sector at [index] from the map
+ *******************************************************************/
 bool SLADEMap::removeSector(unsigned index)
 {
 	// Check index
@@ -2561,6 +2787,9 @@ bool SLADEMap::removeSector(unsigned index)
 	return true;
 }
 
+/* SLADEMap::removeThing
+ * Removes [thing] from the map
+ *******************************************************************/
 bool SLADEMap::removeThing(MapThing* thing)
 {
 	// Check thing was given
@@ -2570,6 +2799,9 @@ bool SLADEMap::removeThing(MapThing* thing)
 	return removeThing(thing->index);
 }
 
+/* SLADEMap::removeThing
+ * Removes the thing at [index] from the map
+ *******************************************************************/
 bool SLADEMap::removeThing(unsigned index)
 {
 	// Check index
@@ -2588,6 +2820,10 @@ bool SLADEMap::removeThing(unsigned index)
 	return true;
 }
 
+/* SLADEMap::nearestVertex
+ * Returns the index of the vertex closest to [x,y], or -1 if none
+ * found. Igonres any vertices further away than [min]
+ *******************************************************************/
 int SLADEMap::nearestVertex(double x, double y, double min)
 {
 	// Go through vertices
@@ -2626,6 +2862,10 @@ int SLADEMap::nearestVertex(double x, double y, double min)
 	return index;
 }
 
+/* SLADEMap::nearestLine
+ * Returns the index of the line closest to [x,y], or -1 if none is
+ * found. Ignores lines further away than [mindist]
+ *******************************************************************/
 int SLADEMap::nearestLine(double x, double y, double mindist)
 {
 	// Go through lines
@@ -2656,6 +2896,10 @@ int SLADEMap::nearestLine(double x, double y, double mindist)
 	return index;
 }
 
+/* SLADEMap::nearestThing
+ * Returns the index of the thing closest to [x,y], or -1 if none
+ * found. Igonres any thing further away than [min]
+ *******************************************************************/
 int SLADEMap::nearestThing(double x, double y, double min)
 {
 	// Go through things
@@ -2694,6 +2938,10 @@ int SLADEMap::nearestThing(double x, double y, double min)
 	return index;
 }
 
+/* SLADEMap::nearestThingMulti
+ * Same as nearestThing, but returns a list of indices for the case
+ * where there are multiple things at the same point
+ *******************************************************************/
 vector<int> SLADEMap::nearestThingMulti(double x, double y)
 {
 	// Go through things
@@ -2725,6 +2973,10 @@ vector<int> SLADEMap::nearestThingMulti(double x, double y)
 	return ret;
 }
 
+/* SLADEMap::sectorAt
+ * Returns the index of the sector at [x,y], or -1 if not within a
+ * sector
+ *******************************************************************/
 int SLADEMap::sectorAt(double x, double y)
 {
 	// Go through sectors
@@ -2739,6 +2991,9 @@ int SLADEMap::sectorAt(double x, double y)
 	return -1;
 }
 
+/* SLADEMap::getMapBBox
+ * Returns a bounding box for the entire map
+ *******************************************************************/
 bbox_t SLADEMap::getMapBBox()
 {
 	bbox_t bbox;
@@ -2767,6 +3022,9 @@ bbox_t SLADEMap::getMapBBox()
 	return bbox;
 }
 
+/* SLADEMap::vertexAt
+ * Returns the vertex at [x,y], or NULL if none there
+ *******************************************************************/
 MapVertex* SLADEMap::vertexAt(double x, double y)
 {
 	// Go through all vertices
@@ -2798,6 +3056,11 @@ bool sortVPosYDesc(const fpoint2_t& left, const fpoint2_t& right)
 	return left.y > right.y;
 }
 
+/* SLADEMap::cutLines
+ * Returns a list of points that the 'cutting' line from [x1,y1] to
+ * [x2,y2] crosses any existing lines on the map. The list is sorted
+ * along the direction of the 'cutting' line
+ *******************************************************************/
 vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 {
 	// Init
@@ -2847,6 +3110,10 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 	return intersect_points;
 }
 
+/* SLADEMap::lineCrossVertex
+ * Returns the first vertex that the line from [x1,y1] to [x2,y2]
+ * crosses over
+ *******************************************************************/
 MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 {
 	// Create bbox for line
@@ -2888,6 +3155,10 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 	return cv;
 }
 
+/* SLADEMap::updateGeometryInfo
+ * Updates geometry info (polygons/bbox/etc) for anything modified
+ * since [modified_time]
+ *******************************************************************/
 void SLADEMap::updateGeometryInfo(long modified_time)
 {
 	for (unsigned a = 0; a < vertices.size(); a++)
@@ -2919,12 +3190,21 @@ void SLADEMap::updateGeometryInfo(long modified_time)
 	}
 }
 
+/* SLADEMap::linesIntersect
+ * Returns true if [line1] and [line2] intersect. If an intersection
+ * occurs, [x] and [y] are set to the intersection point
+ *******************************************************************/
 bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y)
 {
 	return MathStuff::linesIntersect(line1->vertex1->x, line1->vertex1->y, line1->vertex2->x, line1->vertex2->y,
 		line2->vertex1->x, line2->vertex1->y, line2->vertex2->x, line2->vertex2->y, x, y);
 }
 
+/* SLADEMap::findSectorTextPoint
+ * Finds the 'text point' for [sector]. This is a point within the
+ * sector that is reasonably close to the middle of the sector bbox
+ * while still being within the sector itself
+ *******************************************************************/
 void SLADEMap::findSectorTextPoint(MapSector* sector)
 {
 	// Check sector
@@ -2978,6 +3258,9 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 	sector->text_point.set(r_o.x + (r_d.x * min_dist * 0.5), r_o.y + (r_d.y * min_dist * 0.5));
 }
 
+/* SLADEMap::initSectorPolygons
+ * Forces building of polygons for all sectors
+ *******************************************************************/
 void SLADEMap::initSectorPolygons()
 {
 	theSplashWindow->setProgressMessage("Building sector polygons");
@@ -2990,6 +3273,9 @@ void SLADEMap::initSectorPolygons()
 	theSplashWindow->setProgress(1.0f);
 }
 
+/* SLADEMap::getSectorsByTag
+ * Adds all sectors with tag [tag] to [list]
+ *******************************************************************/
 void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 {
 	if (tag == 0)
@@ -3003,6 +3289,10 @@ void SLADEMap::getSectorsByTag(int tag, vector<MapSector*>& list)
 	}
 }
 
+/* SLADEMap::getThingsById
+ * Adds all things with TID [id] to [list]. If [type] is not 0, only
+ * checks things of that type
+ *******************************************************************/
 void SLADEMap::getThingsById(int id, vector<MapThing*>& list, unsigned start, int type)
 {
 	if (id == 0)
@@ -3016,6 +3306,9 @@ void SLADEMap::getThingsById(int id, vector<MapThing*>& list, unsigned start, in
 	}
 }
 
+/* SLADEMap::getFirstThingWithId
+ * Returns the first thing in the map with TID [id]
+ *******************************************************************/
 MapThing* SLADEMap::getFirstThingWithId(int id)
 {
 	if (id == 0)
@@ -3031,6 +3324,10 @@ MapThing* SLADEMap::getFirstThingWithId(int id)
 	return NULL;
 }
 
+/* SLADEMap::getSectorsByTag
+ * Adds all things with TID [id] that are also within a sector with
+ * tag [tag] to [list]
+ *******************************************************************/
 void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list)
 {
 	if (id==0 && tag==0)
@@ -3050,6 +3347,9 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 	}
 }
 
+/* SLADEMap::getDragonTargets
+ * Gets dragon targets (needs better description)
+ *******************************************************************/
 WX_DECLARE_HASH_MAP(int, int, wxIntegerHash, wxIntegerEqual, UsedValuesMap);
 void SLADEMap::getDragonTargets(MapThing* first, vector<MapThing*>& list)
 {
@@ -3074,6 +3374,9 @@ void SLADEMap::getDragonTargets(MapThing* first, vector<MapThing*>& list)
 	}
 }
 
+/* SLADEMap::getPathedThings
+ * Adds all things with a 'pathed' type to [list]
+ *******************************************************************/
 void SLADEMap::getPathedThings(vector<MapThing*>& list)
 {
 	// Find things that need to be pathed
@@ -3085,6 +3388,9 @@ void SLADEMap::getPathedThings(vector<MapThing*>& list)
 	}
 }
 
+/* SLADEMap::getLinesById
+ * Adds all lines with [id] to [list]
+ *******************************************************************/
 void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
 {
 	if (id == 0)
@@ -3098,6 +3404,9 @@ void SLADEMap::getLinesById(int id, vector<MapLine*>& list)
 	}
 }
 
+/* SLADEMap::getTaggingThingsById
+ * Adds all things with special affecting matching id to [list]
+ *******************************************************************/
 void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, int ttype)
 {
 	// Find things with special affecting matching id
@@ -3202,6 +3511,9 @@ void SLADEMap::getTaggingThingsById(int id, int type, vector<MapThing*>& list, i
 	}
 }
 
+/* SLADEMap::getTaggingLinesById
+ * Adds all lines with special affecting matching id to [list]
+ *******************************************************************/
 void SLADEMap::getTaggingLinesById(int id, int type, vector<MapLine*>& list)
 {
 	// Find lines with special affecting matching id
@@ -3299,6 +3611,9 @@ void SLADEMap::getTaggingLinesById(int id, int type, vector<MapLine*>& list)
 	}
 }
 
+/* SLADEMap::findUnusedSectorTag
+ * Returns the lowest unused sector tag
+ *******************************************************************/
 int SLADEMap::findUnusedSectorTag()
 {
 	int tag = 1;
@@ -3314,6 +3629,9 @@ int SLADEMap::findUnusedSectorTag()
 	return tag;
 }
 
+/* SLADEMap::findUnusedThingId
+ * Returns the lowest unused thing id
+ *******************************************************************/
 int SLADEMap::findUnusedThingId()
 {
 	int tag = 1;
@@ -3329,6 +3647,9 @@ int SLADEMap::findUnusedThingId()
 	return tag;
 }
 
+/* SLADEMap::findUnusedLineId
+ * Returns the lowest unused line id
+ *******************************************************************/
 int SLADEMap::findUnusedLineId()
 {
 	int tag = 1;
@@ -3375,6 +3696,10 @@ int SLADEMap::findUnusedLineId()
 	return tag;
 }
 
+/* SLADEMap::getAdjecentLineTexture
+ * Returns the first texture at [tex_part] found on lines connected
+ * to [vertex]
+ *******************************************************************/
 string SLADEMap::getAdjacentLineTexture(MapVertex* vertex, int tex_part)
 {
 	// Go through adjacent lines
@@ -3441,6 +3766,10 @@ string SLADEMap::getAdjacentLineTexture(MapVertex* vertex, int tex_part)
 	return tex;
 }
 
+/* SLADEMap::getLineSideSector
+ * Returns the sector on the front or back side of [line] (ignoring
+ * the line side itself, used for correcting sector refs)
+ *******************************************************************/
 MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 {
 	// Get mid and direction points
@@ -3508,6 +3837,10 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 	return NULL;
 }
 
+/* SLADEMap::getModifiedObjects
+ * Returns a list of objects of [type] that have a modified time
+ * later than [since]
+ *******************************************************************/
 vector<MapObject*> SLADEMap::getModifiedObjects(long since, int type)
 {
 	vector<MapObject*> modified_objects;
@@ -3565,6 +3898,10 @@ vector<MapObject*> SLADEMap::getModifiedObjects(long since, int type)
 	return modified_objects;
 }
 
+/* SLADEMap::getAllModifiedObjects
+ * Returns a list of objects that have a modified time later than
+ * [since]
+ *******************************************************************/
 vector<MapObject*> SLADEMap::getAllModifiedObjects(long since)
 {
 	vector<MapObject*> modified_objects;
@@ -3578,6 +3915,9 @@ vector<MapObject*> SLADEMap::getAllModifiedObjects(long since)
 	return modified_objects;
 }
 
+/* SLADEMap::getLastModifiedTime
+ * Returns the newest modified time on any map object
+ *******************************************************************/
 long SLADEMap::getLastModifiedTime()
 {
 	long mod_time = 0;
@@ -3591,6 +3931,10 @@ long SLADEMap::getLastModifiedTime()
 	return mod_time;
 }
 
+/* SLADEMap::isModified
+ * Returns true if any map object has been modified since it was
+ * opened or last saved
+ *******************************************************************/
 bool SLADEMap::isModified()
 {
 	if (getLastModifiedTime() > opened_time)
@@ -3599,11 +3943,18 @@ bool SLADEMap::isModified()
 		return false;
 }
 
+/* SLADEMap::setOpenedTime
+ * Sets the map opened time to now
+ *******************************************************************/
 void SLADEMap::setOpenedTime()
 {
 	opened_time = theApp->runTimer();
 }
 
+/* SLADEMap::createVertex
+ * Creates a new vertex at [x,y] and returns it. Splits any lines
+ * within [split_dist] from the position
+ *******************************************************************/
 MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 {
 	// Round position to integral if fractional positions are disabled
@@ -3649,6 +4000,10 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 	return nv;
 }
 
+/* SLADEMap::createLine
+ * Creates a new line and needed vertices from [x1,y1] to [x2,y2] and
+ * returns it
+ *******************************************************************/
 MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double split_dist)
 {
 	// Round coordinates to integral if fractional positions are disabled
@@ -3676,6 +4031,9 @@ MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double
 	return createLine(vertex1, vertex2);
 }
 
+/* SLADEMap::createLine
+ * Creates a new line between [vertex1] and [vertex2] and returns it
+ *******************************************************************/
 MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force)
 {
 	// Check both vertices were given
@@ -3710,6 +4068,9 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 	return nl;
 }
 
+/* SLADEMap::createThing
+ * Creates a new thing at [x,y] and returns it
+ *******************************************************************/
 MapThing* SLADEMap::createThing(double x, double y)
 {
 	// Create the thing
@@ -3728,6 +4089,9 @@ MapThing* SLADEMap::createThing(double x, double y)
 	return nt;
 }
 
+/* SLADEMap::createSector
+ * Creates a new sector and returns it
+ *******************************************************************/
 MapSector* SLADEMap::createSector()
 {
 	// Create the sector
@@ -3742,6 +4106,9 @@ MapSector* SLADEMap::createSector()
 	return ns;
 }
 
+/* SLADEMap::createSide
+ * Creates a new side and returns it
+ *******************************************************************/
 MapSide* SLADEMap::createSide(MapSector* sector)
 {
 	// Check sector
@@ -3764,6 +4131,9 @@ MapSide* SLADEMap::createSide(MapSector* sector)
 	return side;
 }
 
+/* SLADEMap::moveVertex
+ * Moves [vertex] to new position [nx,ny]
+ *******************************************************************/
 void SLADEMap::moveVertex(unsigned vertex, double nx, double ny)
 {
 	// Check index
@@ -3783,6 +4153,10 @@ void SLADEMap::moveVertex(unsigned vertex, double nx, double ny)
 	geometry_updated = theApp->runTimer();
 }
 
+/* SLADEMap::mergeVertices
+ * Merges vertices at index [vertex1] and [vertex2], removing the
+ * second
+ *******************************************************************/
 void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 {
 	// Check indices
@@ -3836,6 +4210,10 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 	geometry_updated = theApp->runTimer();
 }
 
+/* SLADEMap::mergeVerticesPoint
+ * Merges all vertices at [x,1] and returns the resulting single
+ * vertex
+ *******************************************************************/
 MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 {
 	// Go through all vertices
@@ -3864,6 +4242,9 @@ MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 	return getVertex(merge);
 }
 
+/* SLADEMap::splitLine
+ * Splits [line] at [vertex]
+ *******************************************************************/
 void SLADEMap::splitLine(unsigned line, unsigned vertex)
 {
 	// Check indices
@@ -3944,6 +4325,9 @@ void SLADEMap::splitLine(unsigned line, unsigned vertex)
 	geometry_updated = theApp->runTimer();
 }
 
+/* SLADEMap::moveThing
+ * Moves the thing at index [thing] to new position [nx,ny]
+ *******************************************************************/
 void SLADEMap::moveThing(unsigned thing, double nx, double ny)
 {
 	// Check index
@@ -3957,6 +4341,9 @@ void SLADEMap::moveThing(unsigned thing, double nx, double ny)
 	t->y = ny;
 }
 
+/* SLADEMap::splitLinesAt
+ * Splits any lines withing [split_dist] from [vertex]
+ *******************************************************************/
 void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 {
 	// Check if this vertex splits any lines (if needed)
@@ -3975,7 +4362,10 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 	}
 }
 
-// Returns true if new side was created
+/* SLADEMap::setLineSector
+ * Sets the front or back side of the line at index [line] to be
+ * part of [sector]. Returns true if a new side was created
+ *******************************************************************/
 bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 {
 	// Check indices
@@ -4026,6 +4416,9 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 	}
 }
 
+/* SLADEMap::splitLinesByLine
+ * Not used
+ *******************************************************************/
 void SLADEMap::splitLinesByLine(MapLine* split_line)
 {
 	double ix, iy;
@@ -4047,6 +4440,10 @@ void SLADEMap::splitLinesByLine(MapLine* split_line)
 	}
 }
 
+/* SLADEMap::mergeLine
+ * Removes any lines overlapping the line at index [line]. Returns
+ * the number of lines removed
+ *******************************************************************/
 int SLADEMap::mergeLine(unsigned line)
 {
 	// Check index
@@ -4083,6 +4480,10 @@ int SLADEMap::mergeLine(unsigned line)
 	return merged;
 }
 
+/* SLADEMap::correctLineSectors
+ * Attempts to set [line]'s side sector references to the correct
+ * sectors. Returns true if any side sector was changed
+ *******************************************************************/
 bool SLADEMap::correctLineSectors(MapLine* line)
 {
 	bool changed = false;
@@ -4118,6 +4519,10 @@ bool SLADEMap::correctLineSectors(MapLine* line)
 	return changed;
 }
 
+/* SLADEMap::mergeArch
+ * Merges any map architecture (lines and vertices) connected to
+ * vertices in [vertices]
+ *******************************************************************/
 bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 {
 	unsigned n_vertices = nVertices();
@@ -4130,13 +4535,71 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	for (unsigned a = 0; a < vertices.size(); a++)
 		VECTOR_ADD_UNIQUE(merged_vertices, mergeVerticesPoint(vertices[a]->x, vertices[a]->y));
 
+	// Get all connected lines
+	vector<MapLine*> connected_lines;
+	for (unsigned a = 0; a < merged_vertices.size(); a++)
+	{
+		for (unsigned l = 0; l < merged_vertices[a]->connected_lines.size(); l++)
+			VECTOR_ADD_UNIQUE(connected_lines, merged_vertices[a]->connected_lines[l]);
+	}
+
+	// Split lines (by lines)
+	double l1x1, l1y1, l1x2, l1y2;
+	double l2x1, l2y1, l2x2, l2y2;
+	for (unsigned a = 0; a < connected_lines.size(); a++)
+	{
+		MapLine* line1 = connected_lines[a];
+		l1x1 = line1->x1();
+		l1y1 = line1->y1();
+		l1x2 = line1->x2();
+		l1y2 = line1->y2();
+
+		unsigned n_lines = lines.size();
+		for (unsigned b = 0; b < n_lines; b++)
+		{
+			MapLine* line2 = lines[b];
+
+			// Can't intersect if they share a vertex
+			if (line1->vertex1 == line2->vertex1 ||
+				line1->vertex1 == line2->vertex2 ||
+				line2->vertex1 == line1->vertex2 ||
+				line2->vertex2 == line1->vertex2)
+				continue;
+
+			l2x1 = line2->x1();
+			l2y1 = line2->y1();
+			l2x2 = line2->x2();
+			l2y2 = line2->y2();
+
+			// Check for intersection
+			double x, y;
+			if (MathStuff::linesIntersect(l1x1, l1y1, l1x2, l1y2, l2x1, l2y1, l2x2, l2y2, x, y))
+			{
+				// Create split vertex
+				MapVertex* nv = createVertex(x, y);
+				merged_vertices.push_back(nv);
+
+				// Split lines
+				splitLine(line1->getIndex(), nv->getIndex());
+				connected_lines.push_back(lines.back());
+				splitLine(line2->getIndex(), nv->getIndex());
+				connected_lines.push_back(lines.back());
+
+				LOG_MESSAGE(4, "Lines %u and %u intersect", line1->getIndex(), line2->getIndex());
+
+				a--;
+				break;
+			}
+		}
+	}
+
 	// Split lines (by vertices)
 	int nl_start = lines.size();
 	for (unsigned a = 0; a < merged_vertices.size(); a++)
 		splitLinesAt(merged_vertices[a], 0.1);
 
-	// Get all connected lines
-	vector<MapLine*> connected_lines;
+	// Refresh connected lines
+	connected_lines.clear();
 	for (unsigned a = 0; a < merged_vertices.size(); a++)
 	{
 		for (unsigned l = 0; l < merged_vertices[a]->connected_lines.size(); l++)
@@ -4195,55 +4658,6 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		}
 	}
 
-	// Split lines (by lines)
-	double l1x1, l1y1, l1x2, l1y2;
-	double l2x1, l2y1, l2x2, l2y2;
-	for (unsigned a = 0; a < connected_lines.size(); a++)
-	{
-		MapLine* line1 = connected_lines[a];
-		l1x1 = line1->x1();
-		l1y1 = line1->y1();
-		l1x2 = line1->x2();
-		l1y2 = line1->y2();
-
-		unsigned n_lines = lines.size();
-		for (unsigned b = 0; b < n_lines; b++)
-		{
-			MapLine* line2 = lines[b];
-
-			// Can't intersect if they share a vertex
-			if (line1->vertex1 == line2->vertex1 ||
-				line1->vertex1 == line2->vertex2 ||
-				line2->vertex1 == line1->vertex2 ||
-				line2->vertex2 == line1->vertex2)
-				continue;
-
-			l2x1 = line2->x1();
-			l2y1 = line2->y1();
-			l2x2 = line2->x2();
-			l2y2 = line2->y2();
-
-			// Check for intersection
-			double x, y;
-			if (MathStuff::linesIntersect(l1x1, l1y1, l1x2, l1y2, l2x1, l2y1, l2x2, l2y2, x, y))
-			{
-				// Create split vertex
-				MapVertex* nv = createVertex(x, y);
-
-				// Split lines
-				splitLine(line1->getIndex(), nv->getIndex());
-				connected_lines.push_back(lines.back());
-				splitLine(line2->getIndex(), nv->getIndex());
-				connected_lines.push_back(lines.back());
-
-				LOG_MESSAGE(4, "Lines %u and %u intersect", line1->getIndex(), line2->getIndex());
-
-				a--;
-				break;
-			}
-		}
-	}
-
 	// Check if anything was actually merged
 	bool merged = false;
 	if (nVertices() != n_vertices || lines.size() != n_lines)
@@ -4279,6 +4693,9 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	return merged;
 }
 
+/* SLADEMap::mergeOverlappingLines
+ * Merges [line1] and [line2], returning the resulting line
+ *******************************************************************/
 MapLine* SLADEMap::mergeOverlappingLines(MapLine* line1, MapLine* line2)
 {
 	// Determine which line to remove (prioritise 2s)
@@ -4314,6 +4731,7 @@ MapLine* SLADEMap::mergeOverlappingLines(MapLine* line1, MapLine* line2)
 	return remove;
 }
 
+// Used for sector correction
 struct me_ls_t
 {
 	MapLine*	line;
@@ -4322,6 +4740,9 @@ struct me_ls_t
 	me_ls_t(MapLine* line, bool front) { this->line = line; this->front = front; ignore = false; }
 };
 
+/* SLADEMap::correctSectors
+ * Corrects/builds sectors for all lines in [lines]
+ *******************************************************************/
 void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 {
 	// Create a list of line sides (edges) to perform sector creation with
@@ -4510,6 +4931,9 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 	removeDetachedSectors();
 }
 
+/* SLADEMap::mapOpenChecks
+ * Performs checks for when a map is first opened
+ *******************************************************************/
 void SLADEMap::mapOpenChecks()
 {
 	int rverts = removeDetachedVertices();
@@ -4519,6 +4943,10 @@ void SLADEMap::mapOpenChecks()
 	wxLogMessage("Removed %d detached vertices, %d detached sides and %d detached sectors", rverts, rsides, rsec);
 }
 
+/* SLADEMap::removeDetachedVertices
+ * Removes any vertices not attached to any lines. Returns the number
+ * of vertices removed
+ *******************************************************************/
 int SLADEMap::removeDetachedVertices()
 {
 	int count = 0;
@@ -4536,6 +4964,10 @@ int SLADEMap::removeDetachedVertices()
 	return count;
 }
 
+/* SLADEMap::removeDetachedSides
+ * Removes any sides that have no parent line. Returns the number of
+ * sides removed
+ *******************************************************************/
 int SLADEMap::removeDetachedSides()
 {
 	int count = 0;
@@ -4553,6 +4985,10 @@ int SLADEMap::removeDetachedSides()
 	return count;
 }
 
+/* SLADEMap::removeDetachedSectors
+ * Removes any sectors that are not referenced by any sides. Returns
+ * the number of sectors removed
+ *******************************************************************/
 int SLADEMap::removeDetachedSectors()
 {
 	int count = 0;
@@ -4570,6 +5006,10 @@ int SLADEMap::removeDetachedSectors()
 	return count;
 }
 
+/* SLADEMap::removeZeroLengthLines
+ * Removes any lines that have identical first and second vertices.
+ * Returns the number of lines removed
+ *******************************************************************/
 int SLADEMap::removeZeroLengthLines()
 {
 	int count = 0;
@@ -4586,6 +5026,9 @@ int SLADEMap::removeZeroLengthLines()
 	return count;
 }
 
+/* SLADEMap::convertToHexen
+ * Converts the map to hexen format (not implemented)
+ *******************************************************************/
 bool SLADEMap::convertToHexen()
 {
 	// Already hexen format
@@ -4594,6 +5037,9 @@ bool SLADEMap::convertToHexen()
 	return false;
 }
 
+/* SLADEMap::convertToUDMF
+ * Converts the map to UDMF format (not implemented)
+ *******************************************************************/
 bool SLADEMap::convertToUDMF()
 {
 	// Already UDMF format
@@ -4638,6 +5084,9 @@ bool SLADEMap::convertToUDMF()
 	return true;
 }
 
+/* SLADEMap::rebuildConnectedLines
+ * Rebuilds the connected lines lists for all map vertices
+ *******************************************************************/
 void SLADEMap::rebuildConnectedLines()
 {
 	// Clear vertex connected lines lists
@@ -4652,6 +5101,9 @@ void SLADEMap::rebuildConnectedLines()
 	}
 }
 
+/* SLADEMap::rebuildConnectedSides
+ * Rebuilds the connected sides lists for all map sectors
+ *******************************************************************/
 void SLADEMap::rebuildConnectedSides()
 {
 	// Clear sector connected sides lists
@@ -4666,31 +5118,49 @@ void SLADEMap::rebuildConnectedSides()
 	}
 }
 
+/* SLADEMap::updateTexUsage
+ * Adjusts the usage count for texture [tex] by [adjust]
+ *******************************************************************/
 void SLADEMap::updateTexUsage(string tex, int adjust)
 {
 	usage_tex[tex.Upper()] += adjust;
 }
 
+/* SLADEMap::updateFlatUsage
+ * Adjusts the usage count for flat [flat] by [adjust]
+ *******************************************************************/
 void SLADEMap::updateFlatUsage(string flat, int adjust)
 {
 	usage_flat[flat.Upper()] += adjust;
 }
 
+/* SLADEMap::updateThingTypeUsage
+ * Adjusts the usage count for thing type [type] by [adjust]
+ *******************************************************************/
 void SLADEMap::updateThingTypeUsage(int type, int adjust)
 {
 	usage_thing_type[type] += adjust;
 }
 
+/* SLADEMap::texUsageCount
+ * Returns the usage count for the texture [tex]
+ *******************************************************************/
 int SLADEMap::texUsageCount(string tex)
 {
 	return usage_tex[tex.Upper()];
 }
 
+/* SLADEMap::flatUsageCount
+ * Returns the usage count for the flat [tex]
+ *******************************************************************/
 int SLADEMap::flatUsageCount(string tex)
 {
 	return usage_flat[tex.Upper()];
 }
 
+/* SLADEMap::thingTypeUsageCount
+ * Returns the usage count for the thing type [type]
+ *******************************************************************/
 int SLADEMap::thingTypeUsageCount(int type)
 {
 	return usage_thing_type[type];
