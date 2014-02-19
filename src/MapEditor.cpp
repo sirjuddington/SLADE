@@ -119,71 +119,129 @@ public:
 class MapObjectCreateDeleteUS : public UndoStep
 {
 private:
-	vector<mobj_cd_t>	objects;
+	//vector<mobj_cd_t>	objects;
+
+	vector<unsigned>	vertices;
+	vector<unsigned>	lines;
+	vector<unsigned>	sides;
+	vector<unsigned>	sectors;
+	vector<unsigned>	things;
 
 public:
 	MapObjectCreateDeleteUS()
 	{
-		// Get recently created and deleted object ids from map
-		// (in the order they were created/deleted)
-		vector<mobj_cd_t>& cd_objects = UndoRedo::currentMap()->createdDeletedObjectIds();
-		for (unsigned a = 0; a < cd_objects.size(); a++)
-			objects.push_back(cd_objects[a]);
-
-		if (Global::log_verbosity >= 4)
-		{
-			string ids;
-			for (unsigned a = 0; a < cd_objects.size(); a++)
-			{
-				if (cd_objects[a].created)
-					ids += S_FMT("%d, ", cd_objects[a].id);
-			}
-			LOG_MESSAGE(4, "Created: %s", ids);
-
-			ids = "";
-			for (unsigned a = 0; a < cd_objects.size(); a++)
-			{
-				if (!cd_objects[a].created)
-					ids += S_FMT("%d, ", cd_objects[a].id);
-			}
-			LOG_MESSAGE(4, "Deleted: %s", ids);
-		}
+		SLADEMap* map = UndoRedo::currentMap();
+		map->getObjectIdList(MOBJ_VERTEX, vertices);
+		map->getObjectIdList(MOBJ_LINE, lines);
+		map->getObjectIdList(MOBJ_SIDE, sides);
+		map->getObjectIdList(MOBJ_SECTOR, sectors);
+		map->getObjectIdList(MOBJ_THING, things);
 	}
 
 	~MapObjectCreateDeleteUS() {}
 
+	void swapLists()
+	{
+		// Backup
+		vector<unsigned> vertices;
+		vector<unsigned> lines;
+		vector<unsigned> sides;
+		vector<unsigned> sectors;
+		vector<unsigned> things;
+		SLADEMap* map = UndoRedo::currentMap();
+		map->getObjectIdList(MOBJ_VERTEX, vertices);
+		map->getObjectIdList(MOBJ_LINE, lines);
+		map->getObjectIdList(MOBJ_SIDE, sides);
+		map->getObjectIdList(MOBJ_SECTOR, sectors);
+		map->getObjectIdList(MOBJ_THING, things);
+
+		// Restore
+		map->restoreObjectIdList(MOBJ_VERTEX, this->vertices);
+		map->restoreObjectIdList(MOBJ_LINE, this->lines);
+		map->restoreObjectIdList(MOBJ_SIDE, this->sides);
+		map->restoreObjectIdList(MOBJ_SECTOR, this->sectors);
+		map->restoreObjectIdList(MOBJ_THING, this->things);
+		this->vertices = vertices;
+		this->lines = lines;
+		this->sides = sides;
+		this->sectors = sectors;
+		this->things = things;
+	}
+
 	bool doUndo()
 	{
-		// Undo creation/deletion
-		for (int a = objects.size() - 1; a >= 0; a--)
-		{
-			if (objects[a].created)
-				UndoRedo::currentMap()->removeObjectById(objects[a].id);
-			else
-				UndoRedo::currentMap()->restoreObjectById(objects[a].id);
-		}
-
+		swapLists();
 		return true;
 	}
 
 	bool doRedo()
 	{
-		// Redo creation/deletion
-		for (unsigned a = 0; a < objects.size(); a++)
-		{
-			if (!objects[a].created)
-				UndoRedo::currentMap()->removeObjectById(objects[a].id);
-			else
-				UndoRedo::currentMap()->restoreObjectById(objects[a].id);
-		}
-
+		swapLists();
 		return true;
 	}
 
-	bool isOk()
-	{
-		return !objects.empty();
-	}
+	//MapObjectCreateDeleteUS()
+	//{
+	//	// Get recently created and deleted object ids from map
+	//	// (in the order they were created/deleted)
+	//	vector<mobj_cd_t>& cd_objects = UndoRedo::currentMap()->createdDeletedObjectIds();
+	//	for (unsigned a = 0; a < cd_objects.size(); a++)
+	//		objects.push_back(cd_objects[a]);
+
+	//	if (Global::log_verbosity >= 4)
+	//	{
+	//		string ids;
+	//		for (unsigned a = 0; a < cd_objects.size(); a++)
+	//		{
+	//			if (cd_objects[a].created)
+	//				ids += S_FMT("%d, ", cd_objects[a].id);
+	//		}
+	//		LOG_MESSAGE(4, "Created: %s", ids);
+
+	//		ids = "";
+	//		for (unsigned a = 0; a < cd_objects.size(); a++)
+	//		{
+	//			if (!cd_objects[a].created)
+	//				ids += S_FMT("%d, ", cd_objects[a].id);
+	//		}
+	//		LOG_MESSAGE(4, "Deleted: %s", ids);
+	//	}
+	//}
+
+	//~MapObjectCreateDeleteUS() {}
+
+	//bool doUndo()
+	//{
+	//	// Undo creation/deletion
+	//	for (int a = objects.size() - 1; a >= 0; a--)
+	//	{
+	//		if (objects[a].created)
+	//			UndoRedo::currentMap()->removeObjectById(objects[a].id);
+	//		else
+	//			UndoRedo::currentMap()->restoreObjectById(objects[a].id);
+	//	}
+
+	//	return true;
+	//}
+
+	//bool doRedo()
+	//{
+	//	// Redo creation/deletion
+	//	for (unsigned a = 0; a < objects.size(); a++)
+	//	{
+	//		if (!objects[a].created)
+	//			UndoRedo::currentMap()->removeObjectById(objects[a].id);
+	//		else
+	//			UndoRedo::currentMap()->restoreObjectById(objects[a].id);
+	//	}
+
+	//	return true;
+	//}
+
+	//bool isOk()
+	//{
+	//	return !objects.empty();
+	//}
 };
 
 
@@ -4619,7 +4677,8 @@ void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 	if (undo_modified)
 		MapObject::beginPropBackup(theApp->runTimer());
 	if (undo_deleted || undo_created)
-		map.clearCreatedDeletedOjbectIds();
+		manager->recordUndoStep(new MapObjectCreateDeleteUS());
+		//map.clearCreatedDeletedOjbectIds();
 
 	last_undo_level = "";
 }
@@ -4651,11 +4710,11 @@ void MapEditor::endUndoRecord(bool success)
 		// Record necessary undo steps
 		MapObject::beginPropBackup(-1);
 		bool modified = false;
-		bool created_deleted = false;
+		bool created_deleted = undo_deleted || undo_created;// false;
 		if (undo_modified)
 			modified = manager->recordUndoStep(new MultiMapObjectPropertyChangeUS());
-		if (undo_created || undo_deleted)
-			created_deleted = manager->recordUndoStep(new MapObjectCreateDeleteUS());
+		//if (undo_created || undo_deleted)
+		//	created_deleted = manager->recordUndoStep(new MapObjectCreateDeleteUS());
 
 		// End recording
 		manager->endRecord(success && (modified || created_deleted));
@@ -4690,6 +4749,7 @@ void MapEditor::doUndo()
 		// Refresh stuff
 		//updateTagged();
 		map.rebuildConnectedLines();
+		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
@@ -4715,6 +4775,7 @@ void MapEditor::doRedo()
 		// Refresh stuff
 		//updateTagged();
 		map.rebuildConnectedLines();
+		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();
 		map.updateGeometryInfo(time);
 		last_undo_level = "";

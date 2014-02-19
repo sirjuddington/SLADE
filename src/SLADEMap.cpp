@@ -214,203 +214,313 @@ void SLADEMap::removeMapObject(MapObject* object)
 	created_deleted_objects.push_back(mobj_cd_t(object->id, false));
 }
 
-/* SLADEMap::restoreObjectById
- * Restores the map object with [id] at its last index in the map
+///* SLADEMap::restoreObjectById
+// * Restores the map object with [id] at its last index in the map
+// *******************************************************************/
+//void SLADEMap::restoreObjectById(unsigned id)
+//{
+//	// Get map object to restore
+//	MapObject* object = all_objects[id].mobj;
+//	if (!object)
+//	{
+//		LOG_MESSAGE(2, "restoreObjectById: Invalid object id %u", id);
+//		return;
+//	}
+//
+//	// Vertex
+//	if (object->getObjType() == MOBJ_VERTEX)
+//	{
+//		// Add to map
+//		if (object->index < vertices.size())
+//		{
+//			MapVertex* current = vertices[object->index];
+//			vertices[object->index] = (MapVertex*)object;
+//			current->index = vertices.size();
+//			vertices.push_back(current);
+//		}
+//		else
+//			vertices.push_back((MapVertex*)object);
+//
+//		geometry_updated = theApp->runTimer();
+//	}
+//
+//	// Side
+//	else if (object->getObjType() == MOBJ_SIDE)
+//	{
+//		MapSide* side = (MapSide*)object;
+//
+//		// Connect to sector
+//		if (side->sector)
+//		{
+//			side->sector->connected_sides.push_back(side);
+//			side->sector->poly_needsupdate = true;
+//		}
+//
+//		// Add to map
+//		if (object->index < vertices.size())
+//		{
+//			MapSide* current = sides[side->index];
+//			sides[object->index] = side;
+//			current->index = sides.size();
+//			sides.push_back(current);
+//		}
+//		else
+//			sides.push_back(side);
+//
+//		geometry_updated = theApp->runTimer();
+//	}
+//
+//	// Line
+//	else if (object->getObjType() == MOBJ_LINE)
+//	{
+//		MapLine* line = (MapLine*)object;
+//
+//		// Connect to vertices
+//		if (line->vertex1)
+//			line->vertex1->connected_lines.push_back(line);
+//		if (line->vertex2)
+//			line->vertex2->connected_lines.push_back(line);
+//
+//		// Add to map
+//		if (object->index < vertices.size())
+//		{
+//			MapLine* current = lines[line->index];
+//			lines[line->index] = line;
+//			current->index = lines.size();
+//			lines.push_back(current);
+//		}
+//		else
+//			lines.push_back(line);
+//
+//		geometry_updated = theApp->runTimer();
+//	}
+//
+//	// Sector
+//	else if (object->getObjType() == MOBJ_SECTOR)
+//	{
+//		// Add to map
+//		if (object->index < vertices.size())
+//		{
+//			MapSector* current = sectors[object->index];
+//			sectors[object->index] = (MapSector*)object;
+//			current->index = sectors.size();
+//			sectors.push_back(current);
+//		}
+//		else
+//			sectors.push_back((MapSector*)object);
+//	}
+//
+//	// Thing
+//	else if (object->getObjType() == MOBJ_THING)
+//	{
+//		// Add to map
+//		if (object->index < vertices.size())
+//		{
+//			MapThing* current = things[object->index];
+//			things[object->index] = (MapThing*)object;
+//			current->index = things.size();
+//			things.push_back(current);
+//		}
+//		else
+//			things.push_back((MapThing*)object);
+//	}
+//
+//	all_objects[id].in_map = true;
+//	LOG_MESSAGE(4, "restore id %u index %u", object->id, object->index);
+//}
+//
+///* SLADEMap::removeObjectById
+// * Removes the map object with [id] from the map
+// *******************************************************************/
+//void SLADEMap::removeObjectById(unsigned id)
+//{
+//	// Get map object to remove
+//	MapObject* object = all_objects[id].mobj;
+//	if (!object)
+//	{
+//		LOG_MESSAGE(2, "removeObjectById: Invalid object id %u", id);
+//		return;
+//	}
+//	unsigned oindex = object->getIndex();
+//
+//	// Vertex
+//	if (object->getObjType() == MOBJ_VERTEX)
+//	{
+//		// Remove
+//		vertices[oindex] = vertices.back();
+//		vertices[oindex]->index = oindex;
+//		vertices.pop_back();
+//
+//		geometry_updated = theApp->runTimer();
+//	}
+//
+//	// Side
+//	else if (object->getObjType() == MOBJ_SIDE)
+//	{
+//		MapSide* side = (MapSide*)object;
+//
+//		// Disconnect from sector
+//		if (side->sector)
+//		{
+//			side->sector->disconnectSide(side);
+//			side->sector->poly_needsupdate = true;
+//		}
+//
+//		// Remove
+//		sides[object->getIndex()] = sides.back();
+//		sides[oindex]->index = oindex;
+//		sides.pop_back();
+//	}
+//
+//	// Line
+//	else if (object->getObjType() == MOBJ_LINE)
+//	{
+//		MapLine* line = (MapLine*)object;
+//
+//		// Disconnect from vertices
+//		if (line->vertex1)
+//			line->vertex1->disconnectLine(line);
+//		if (line->vertex2)
+//			line->vertex2->disconnectLine(line);
+//
+//		// Remove
+//		lines[object->getIndex()] = lines.back();
+//		lines[oindex]->index = oindex;
+//		lines.pop_back();
+//
+//		geometry_updated = theApp->runTimer();
+//	}
+//
+//	// Sector
+//	else if (object->getObjType() == MOBJ_SECTOR)
+//	{
+//		// Remove
+//		sectors[object->getIndex()] = sectors.back();
+//		sectors[oindex]->index = oindex;
+//		sectors.pop_back();
+//	}
+//
+//	// Thing
+//	else if (object->getObjType() == MOBJ_THING)
+//	{
+//		// Remove
+//		things[object->getIndex()] = things.back();
+//		things[oindex]->index = oindex;
+//		things.pop_back();
+//	}
+//
+//	LOG_MESSAGE(4, "remove id %u index %u", object->id, object->index);
+//	removeMapObject(object);
+//}
+
+/* SLADEMap::getObjectIdList
+ * Adds all object ids of [type] currently in the map to [list]
  *******************************************************************/
-void SLADEMap::restoreObjectById(unsigned id)
+void SLADEMap::getObjectIdList(uint8_t type, vector<unsigned>& list)
 {
-	// Get map object to restore
-	MapObject* object = all_objects[id].mobj;
-	if (!object)
+	if (type == MOBJ_VERTEX)
 	{
-		LOG_MESSAGE(2, "restoreObjectById: Invalid object id %u", id);
-		return;
+		for (unsigned a = 0; a < vertices.size(); a++)
+			list.push_back(vertices[a]->id);
 	}
-
-	// Vertex
-	if (object->getObjType() == MOBJ_VERTEX)
+	else if (type == MOBJ_LINE)
 	{
-		// Add to map
-		if (object->index < vertices.size())
-		{
-			MapVertex* current = vertices[object->index];
-			vertices[object->index] = (MapVertex*)object;
-			current->index = vertices.size();
-			vertices.push_back(current);
-		}
-		else
-			vertices.push_back((MapVertex*)object);
-
-		geometry_updated = theApp->runTimer();
+		for (unsigned a = 0; a < lines.size(); a++)
+			list.push_back(lines[a]->id);
 	}
-
-	// Side
-	else if (object->getObjType() == MOBJ_SIDE)
+	else if (type == MOBJ_SIDE)
 	{
-		MapSide* side = (MapSide*)object;
-
-		// Connect to sector
-		if (side->sector)
-		{
-			side->sector->connected_sides.push_back(side);
-			side->sector->poly_needsupdate = true;
-		}
-
-		// Add to map
-		if (object->index < vertices.size())
-		{
-			MapSide* current = sides[side->index];
-			sides[object->index] = side;
-			current->index = sides.size();
-			sides.push_back(current);
-		}
-		else
-			sides.push_back(side);
-
-		geometry_updated = theApp->runTimer();
+		for (unsigned a = 0; a < sides.size(); a++)
+			list.push_back(sides[a]->id);
 	}
-
-	// Line
-	else if (object->getObjType() == MOBJ_LINE)
+	else if (type == MOBJ_SECTOR)
 	{
-		MapLine* line = (MapLine*)object;
-
-		// Connect to vertices
-		if (line->vertex1)
-			line->vertex1->connected_lines.push_back(line);
-		if (line->vertex2)
-			line->vertex2->connected_lines.push_back(line);
-
-		// Add to map
-		if (object->index < vertices.size())
-		{
-			MapLine* current = lines[line->index];
-			lines[line->index] = line;
-			current->index = lines.size();
-			lines.push_back(current);
-		}
-		else
-			lines.push_back(line);
-
-		geometry_updated = theApp->runTimer();
+		for (unsigned a = 0; a < sectors.size(); a++)
+			list.push_back(sectors[a]->id);
 	}
-
-	// Sector
-	else if (object->getObjType() == MOBJ_SECTOR)
+	else if (type == MOBJ_THING)
 	{
-		// Add to map
-		if (object->index < vertices.size())
-		{
-			MapSector* current = sectors[object->index];
-			sectors[object->index] = (MapSector*)object;
-			current->index = sectors.size();
-			sectors.push_back(current);
-		}
-		else
-			sectors.push_back((MapSector*)object);
+		for (unsigned a = 0; a < things.size(); a++)
+			list.push_back(things[a]->id);
 	}
-
-	// Thing
-	else if (object->getObjType() == MOBJ_THING)
-	{
-		// Add to map
-		if (object->index < vertices.size())
-		{
-			MapThing* current = things[object->index];
-			things[object->index] = (MapThing*)object;
-			current->index = things.size();
-			things.push_back(current);
-		}
-		else
-			things.push_back((MapThing*)object);
-	}
-
-	all_objects[id].in_map = true;
-	LOG_MESSAGE(4, "restore id %u index %u", object->id, object->index);
 }
 
-/* SLADEMap::removeObjectById
- * Removes the map object with [id] from the map
+/* SLADEMap::restoreObjectIdList
+ * Add all object ids in [list] to the map as [type], clearing any
+ * objects of [type] currently in the map
  *******************************************************************/
-void SLADEMap::removeObjectById(unsigned id)
+void SLADEMap::restoreObjectIdList(uint8_t type, vector<unsigned>& list)
 {
-	// Get map object to remove
-	MapObject* object = all_objects[id].mobj;
-	if (!object)
+	if (type == MOBJ_VERTEX)
 	{
-		LOG_MESSAGE(2, "removeObjectById: Invalid object id %u", id);
-		return;
-	}
-	unsigned oindex = object->getIndex();
+		// Clear
+		for (unsigned a = 0; a < vertices.size(); a++)
+			all_objects[vertices[a]->id].in_map = false;
+		vertices.clear();
 
-	// Vertex
-	if (object->getObjType() == MOBJ_VERTEX)
-	{
-		// Remove
-		vertices[oindex] = vertices.back();
-		vertices[oindex]->index = oindex;
-		vertices.pop_back();
-
-		geometry_updated = theApp->runTimer();
-	}
-
-	// Side
-	else if (object->getObjType() == MOBJ_SIDE)
-	{
-		MapSide* side = (MapSide*)object;
-
-		// Disconnect from sector
-		if (side->sector)
+		// Restore
+		for (unsigned a = 0; a < list.size(); a++)
 		{
-			side->sector->disconnectSide(side);
-			side->sector->poly_needsupdate = true;
+			all_objects[list[a]].in_map = true;
+			vertices.push_back((MapVertex*)all_objects[list[a]].mobj);
 		}
-
-		// Remove
-		sides[object->getIndex()] = sides.back();
-		sides[oindex]->index = oindex;
-		sides.pop_back();
 	}
-
-	// Line
-	else if (object->getObjType() == MOBJ_LINE)
+	else if (type == MOBJ_LINE)
 	{
-		MapLine* line = (MapLine*)object;
+		// Clear
+		for (unsigned a = 0; a < lines.size(); a++)
+			all_objects[lines[a]->id].in_map = false;
+		lines.clear();
 
-		// Disconnect from vertices
-		if (line->vertex1)
-			line->vertex1->disconnectLine(line);
-		if (line->vertex2)
-			line->vertex2->disconnectLine(line);
-
-		// Remove
-		lines[object->getIndex()] = lines.back();
-		lines[oindex]->index = oindex;
-		lines.pop_back();
-
-		geometry_updated = theApp->runTimer();
+		// Restore
+		for (unsigned a = 0; a < list.size(); a++)
+		{
+			all_objects[list[a]].in_map = true;
+			lines.push_back((MapLine*)all_objects[list[a]].mobj);
+		}
 	}
-
-	// Sector
-	else if (object->getObjType() == MOBJ_SECTOR)
+	else if (type == MOBJ_SIDE)
 	{
-		// Remove
-		sectors[object->getIndex()] = sectors.back();
-		sectors[oindex]->index = oindex;
-		sectors.pop_back();
-	}
+		// Clear
+		for (unsigned a = 0; a < sides.size(); a++)
+			all_objects[sides[a]->id].in_map = false;
+		sides.clear();
 
-	// Thing
-	else if (object->getObjType() == MOBJ_THING)
+		// Restore
+		for (unsigned a = 0; a < list.size(); a++)
+		{
+			all_objects[list[a]].in_map = true;
+			sides.push_back((MapSide*)all_objects[list[a]].mobj);
+		}
+	}
+	else if (type == MOBJ_SECTOR)
 	{
-		// Remove
-		things[object->getIndex()] = things.back();
-		things[oindex]->index = oindex;
-		things.pop_back();
-	}
+		// Clear
+		for (unsigned a = 0; a < sectors.size(); a++)
+			all_objects[sectors[a]->id].in_map = false;
+		sectors.clear();
 
-	LOG_MESSAGE(4, "remove id %u index %u", object->id, object->index);
-	removeMapObject(object);
+		// Restore
+		for (unsigned a = 0; a < list.size(); a++)
+		{
+			all_objects[list[a]].in_map = true;
+			sectors.push_back((MapSector*)all_objects[list[a]].mobj);
+		}
+	}
+	else if (type == MOBJ_THING)
+	{
+		// Clear
+		for (unsigned a = 0; a < things.size(); a++)
+			all_objects[things[a]->id].in_map = false;
+		things.clear();
+
+		// Restore
+		for (unsigned a = 0; a < list.size(); a++)
+		{
+			all_objects[list[a]].in_map = true;
+			things.push_back((MapThing*)all_objects[list[a]].mobj);
+		}
+	}
 }
 
 /* SLADEMap::readMap
