@@ -599,9 +599,9 @@ void MainApp::initActions()
 	new SAction("mapw_showscripteditor", "Script &Editor", "e_text", "Toggle the Script Editor window", "Ctrl+3");
 	new SAction("mapw_showchecks", "Map Checks", "i_tick", "Toggle the Map Checks window", "Ctrl+4");
 	new SAction("mapw_run_map", "Run Map", "t_run", "Run the current map", "Ctrl+Shift+R");
-	new SAction("mapw_draw_lines", "Draw Lines", "t_lines", "Begin line drawing");
-	new SAction("mapw_draw_shape", "Draw Shape", "t_sectors", "Begin shape drawing");
-	new SAction("mapw_edit_objects", "Edit Object(s)", "t_settings", "Edit currently selected object(s)");
+	new SAction("mapw_draw_lines", "Draw Lines", "t_linedraw", "Begin line drawing");
+	new SAction("mapw_draw_shape", "Draw Shape", "t_shapedraw", "Begin shape drawing");
+	new SAction("mapw_edit_objects", "Edit Object(s)", "t_objectedit", "Edit currently selected object(s)");
 	new SAction("mapw_vertex_create", "Create Vertex Here", "", "Create a new vertex at the cursor position");
 	new SAction("mapw_line_changetexture", "Change Texture", "", "Change the currently selected or hilighted line texture(s)");
 	new SAction("mapw_line_changespecial", "Change Special", "", "Change the currently selected or hilighted line special");
