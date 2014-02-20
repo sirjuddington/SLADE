@@ -463,6 +463,7 @@ void SLADEMap::restoreObjectIdList(uint8_t type, vector<unsigned>& list)
 		{
 			all_objects[list[a]].in_map = true;
 			vertices.push_back((MapVertex*)all_objects[list[a]].mobj);
+			vertices.back()->index = vertices.size() - 1;
 		}
 	}
 	else if (type == MOBJ_LINE)
@@ -477,6 +478,7 @@ void SLADEMap::restoreObjectIdList(uint8_t type, vector<unsigned>& list)
 		{
 			all_objects[list[a]].in_map = true;
 			lines.push_back((MapLine*)all_objects[list[a]].mobj);
+			lines.back()->index = lines.size() - 1;
 		}
 	}
 	else if (type == MOBJ_SIDE)
@@ -491,6 +493,7 @@ void SLADEMap::restoreObjectIdList(uint8_t type, vector<unsigned>& list)
 		{
 			all_objects[list[a]].in_map = true;
 			sides.push_back((MapSide*)all_objects[list[a]].mobj);
+			sides.back()->index = sides.size() - 1;
 		}
 	}
 	else if (type == MOBJ_SECTOR)
@@ -505,6 +508,7 @@ void SLADEMap::restoreObjectIdList(uint8_t type, vector<unsigned>& list)
 		{
 			all_objects[list[a]].in_map = true;
 			sectors.push_back((MapSector*)all_objects[list[a]].mobj);
+			sectors.back()->index = sectors.size() - 1;
 		}
 	}
 	else if (type == MOBJ_THING)
@@ -519,6 +523,7 @@ void SLADEMap::restoreObjectIdList(uint8_t type, vector<unsigned>& list)
 		{
 			all_objects[list[a]].in_map = true;
 			things.push_back((MapThing*)all_objects[list[a]].mobj);
+			things.back()->index = things.size() - 1;
 		}
 	}
 }
