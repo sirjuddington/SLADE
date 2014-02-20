@@ -20,13 +20,17 @@ struct selection_3d_t
 
 class MapCanvas;
 class UndoManager;
+class MapObjectCreateDeleteUS;
 class MapEditor
 {
 private:
 	SLADEMap			map;
 	MapCanvas*			canvas;
-	UndoManager*		undo_manager;
-	UndoManager*		undo_manager_3d;
+
+	// Undo/Redo stuff
+	UndoManager*				undo_manager;
+	UndoManager*				undo_manager_3d;
+	MapObjectCreateDeleteUS*	us_create_delete;
 
 	// Editor state
 	uint8_t		edit_mode;

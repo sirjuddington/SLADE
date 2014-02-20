@@ -140,6 +140,11 @@ public:
 
 	~MapObjectCreateDeleteUS() {}
 
+	bool isValid(vector<unsigned>& list)
+	{
+		return !(list.size() == 1 && list[0] == 0);
+	}
+
 	void swapLists()
 	{
 		// Backup
@@ -149,23 +154,38 @@ public:
 		vector<unsigned> sectors;
 		vector<unsigned> things;
 		SLADEMap* map = UndoRedo::currentMap();
-		map->getObjectIdList(MOBJ_VERTEX, vertices);
-		map->getObjectIdList(MOBJ_LINE, lines);
-		map->getObjectIdList(MOBJ_SIDE, sides);
-		map->getObjectIdList(MOBJ_SECTOR, sectors);
-		map->getObjectIdList(MOBJ_THING, things);
+		if (isValid(this->vertices))	map->getObjectIdList(MOBJ_VERTEX, vertices);
+		if (isValid(this->lines))		map->getObjectIdList(MOBJ_LINE, lines);
+		if (isValid(this->sides))		map->getObjectIdList(MOBJ_SIDE, sides);
+		if (isValid(this->sectors))		map->getObjectIdList(MOBJ_SECTOR, sectors);
+		if (isValid(this->things))		map->getObjectIdList(MOBJ_THING, things);
 
 		// Restore
-		map->restoreObjectIdList(MOBJ_VERTEX, this->vertices);
-		map->restoreObjectIdList(MOBJ_LINE, this->lines);
-		map->restoreObjectIdList(MOBJ_SIDE, this->sides);
-		map->restoreObjectIdList(MOBJ_SECTOR, this->sectors);
-		map->restoreObjectIdList(MOBJ_THING, this->things);
-		this->vertices = vertices;
-		this->lines = lines;
-		this->sides = sides;
-		this->sectors = sectors;
-		this->things = things;
+		if (isValid(this->vertices))
+		{
+			map->restoreObjectIdList(MOBJ_VERTEX, this->vertices);
+			this->vertices = vertices;
+		}
+		if (isValid(this->lines))
+		{
+			map->restoreObjectIdList(MOBJ_LINE, this->lines);
+			this->lines = lines;
+		}
+		if (isValid(this->sides))
+		{
+			map->restoreObjectIdList(MOBJ_SIDE, this->sides);
+			this->sides = sides;
+		}
+		if (isValid(this->sectors))
+		{
+			map->restoreObjectIdList(MOBJ_SECTOR, this->sectors);
+			this->sectors = sectors;
+		}
+		if (isValid(this->things))
+		{
+			map->restoreObjectIdList(MOBJ_THING, this->things);
+			this->things = things;
+		}
 	}
 
 	bool doUndo()
@@ -177,6 +197,79 @@ public:
 	bool doRedo()
 	{
 		swapLists();
+		return true;
+	}
+
+	void checkChanges()
+	{
+		SLADEMap* map = UndoRedo::currentMap();
+		MapVertex* lv = map->getVertex(map->nVertices() - 1);
+		MapLine* ll = map->getLine(map->nLines() - 1);
+		MapSide* lsd = map->getSide(map->nSides() - 1);
+		MapSector* ls = map->getSector(map->nSectors() - 1);
+		MapThing* lt = map->getThing(map->nThings() - 1);
+
+		// Check vertices changed
+		if (map->nVertices() == vertices.size() &&
+			(!lv || lv->getId() == vertices.back()))
+		{
+			// No change, clear
+			vertices.clear();
+			vertices.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No vertices added/deleted");
+		}
+
+		// Check lines changed
+		if (map->nLines() == lines.size() &&
+			(!ll || ll->getId() == lines.back()))
+		{
+			// No change, clear
+			lines.clear();
+			lines.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No lines added/deleted");
+		}
+
+		// Check sides changed
+		if (map->nSides() == sides.size() &&
+			(!lsd || lsd->getId() == sides.back()))
+		{
+			// No change, clear
+			sides.clear();
+			sides.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No sides added/deleted");
+		}
+
+		// Check sectors changed
+		if (map->nSectors() == sectors.size() &&
+			(!ls || ls->getId() == sectors.back()))
+		{
+			// No change, clear
+			sectors.clear();
+			sectors.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No sectors added/deleted");
+		}
+
+		// Check things changed
+		if (map->nThings() == things.size() &&
+			(!lt || lt->getId() == things.back()))
+		{
+			// No change, clear
+			things.clear();
+			things.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No things added/deleted");
+		}
+	}
+
+	bool isOk()
+	{
+		// Check for any changes at all
+		if (vertices.size() == 1 && vertices[0] == 0 &&
+			lines.size() == 1 && lines[0] == 0 &&
+			sides.size() == 1 && sides[0] == 0 &&
+			sectors.size() == 1 && sectors[0] == 0 &&
+			things.size() == 1 && things[0] == 0)
+			return false;
+
 		return true;
 	}
 
@@ -351,6 +444,7 @@ MapEditor::MapEditor()
 	undo_manager = new UndoManager(&map);
 	undo_manager_3d = new UndoManager(&map);
 	current_tag = 0;
+	us_create_delete = NULL;
 }
 
 /* MapEditor::~MapEditor
@@ -4677,8 +4771,11 @@ void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 	if (undo_modified)
 		MapObject::beginPropBackup(theApp->runTimer());
 	if (undo_deleted || undo_created)
-		manager->recordUndoStep(new MapObjectCreateDeleteUS());
+	{
+		us_create_delete = new MapObjectCreateDeleteUS();
+		//manager->recordUndoStep(new MapObjectCreateDeleteUS());
 		//map.clearCreatedDeletedOjbectIds();
+	}
 
 	last_undo_level = "";
 }
@@ -4710,16 +4807,20 @@ void MapEditor::endUndoRecord(bool success)
 		// Record necessary undo steps
 		MapObject::beginPropBackup(-1);
 		bool modified = false;
-		bool created_deleted = undo_deleted || undo_created;// false;
+		bool created_deleted = false;
 		if (undo_modified)
 			modified = manager->recordUndoStep(new MultiMapObjectPropertyChangeUS());
-		//if (undo_created || undo_deleted)
-		//	created_deleted = manager->recordUndoStep(new MapObjectCreateDeleteUS());
+		if (undo_created || undo_deleted)
+		{
+			us_create_delete->checkChanges();
+			created_deleted = manager->recordUndoStep(us_create_delete);
+		}
 
 		// End recording
 		manager->endRecord(success && (modified || created_deleted));
 	}
 	updateThingLists();
+	us_create_delete = NULL;
 }
 
 /* MapEditor::recordPropertyChangeUndoStep
