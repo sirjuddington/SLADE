@@ -98,8 +98,8 @@ bool SAction::addToMenu(wxMenu* menu, string text_override)
 		if (shortcut.StartsWith("kb:"))
 		{
 			keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
-			if (kp.key != "")
-				item_text = S_FMT("%s\t%s", item_text, kp.as_string());
+			//if (kp.key != "")
+			//	item_text = S_FMT("%s\t%s", item_text, kp.as_string());
 		}
 		else
 			item_text = S_FMT("%s\t%s", item_text, shortcut);
