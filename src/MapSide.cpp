@@ -50,7 +50,7 @@ MapSide::MapSide(MapSector* sector, SLADEMap* parent) : MapObject(MOBJ_SIDE, par
 	this->offset_y = 0;
 
 	// Add to parent sector
-	if (sector) sector->connected_sides.push_back(this);
+	if (sector) sector->connectSide(this);
 }
 
 /* MapSide::MapSide

@@ -650,4 +650,9 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	// Update texture counts (increment new)
 	parent_map->updateFlatUsage(f_tex, 1);
 	parent_map->updateFlatUsage(c_tex, 1);
+
+	// Update geometry info
+	poly_needsupdate = true;
+	bbox.reset();
+	geometry_updated = theApp->runTimer();
 }
