@@ -2121,16 +2121,26 @@ void MapEditor::joinSectors(bool remove_lines)
 
 	// Remove any changed lines that now have the target sector on both sides (if needed)
 	int nlines = 0;
+	vector<MapVertex*> verts;
 	if (remove_lines)
 	{
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
 			if (lines[a]->frontSector() == target && lines[a]->backSector() == target)
 			{
+				VECTOR_ADD_UNIQUE(verts, lines[a]->v1());
+				VECTOR_ADD_UNIQUE(verts, lines[a]->v2());
 				map.removeLine(lines[a]);
 				nlines++;
 			}
 		}
+	}
+
+	// Remove any resulting detached vertices
+	for (unsigned a = 0; a < verts.size(); a++)
+	{
+		if (verts[a]->nConnectedLines() == 0)
+			map.removeVertex(verts[a]);
 	}
 
 	// Finish recording undo level
