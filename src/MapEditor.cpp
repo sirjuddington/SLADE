@@ -4777,6 +4777,9 @@ void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 		//map.clearCreatedDeletedOjbectIds();
 	}
 
+	// Make sure all modified objects will be picked up
+	wxMilliSleep(5);
+
 	last_undo_level = "";
 }
 
