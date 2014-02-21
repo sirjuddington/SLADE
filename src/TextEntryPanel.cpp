@@ -281,7 +281,8 @@ bool TextEntryPanel::redo()
  *******************************************************************/
 void TextEntryPanel::onTextModified(wxStyledTextEvent& e)
 {
-	setModified();
+	if (!isModified() && text_area->CanUndo())
+		setModified();
 	e.Skip();
 }
 
