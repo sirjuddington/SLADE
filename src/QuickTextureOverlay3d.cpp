@@ -102,9 +102,17 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditor* editor)
 		// Get all available texture names (sorted alphabetically)
 		vector<string> tex_names;
 		if (sel_type > 0)
-			theResourceManager->getAllTextureNames(tex_names);
+		{
+			vector<map_texinfo_t>& ti = theMapEditor->textureManager().getAllTexturesInfo();
+			for (unsigned a = 0; a < ti.size(); a++)
+				tex_names.push_back(ti[a].name);
+		}
 		if (sel_type == 0 || sel_type == 2)
-			theResourceManager->getAllFlatNames(tex_names);
+		{
+			vector<map_texinfo_t>& ti = theMapEditor->textureManager().getAllFlatsInfo();
+			for (unsigned a = 0; a < ti.size(); a++)
+				tex_names.push_back(ti[a].name);
+		}
 		std::sort(tex_names.begin(), tex_names.end());
 
 		// Init textures
