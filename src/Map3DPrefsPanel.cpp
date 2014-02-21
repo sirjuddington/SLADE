@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    Map3DPrefsPanel.cpp
+ * Description: Panel containing preference controls for the map
+ *              editor 3d mode
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "Map3DPrefsPanel.h"
@@ -6,16 +35,23 @@
 #include <wx/statline.h>
 
 
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Float, render_max_dist)
 EXTERN_CVAR(Float, render_max_thing_dist)
-//CVAR(Int, render_thing_icon_size, 16, CVAR_SAVE)
-//CVAR(Bool, render_fog_quality, true, CVAR_SAVE)
 EXTERN_CVAR(Bool, render_max_dist_adaptive)
 EXTERN_CVAR(Int, render_adaptive_ms)
 EXTERN_CVAR(Bool, render_3d_sky)
-//CVAR(Int, render_3d_things, 1, CVAR_SAVE)
-//CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 
+
+/*******************************************************************
+ * MAP3DPREFSPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* Map3DPrefsPanel::Map3DPrefsPanel
+ * Map3DPrefsPanel class constructor
+ *******************************************************************/
 Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
@@ -75,10 +111,16 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_distance_unlimited->Bind(wxEVT_CHECKBOX, &Map3DPrefsPanel::onCBDistUnlimitedChanged, this);
 }
 
+/* Map3DPrefsPanel::~Map3DPrefsPanel
+ * Map3DPrefsPanel class destructor
+ *******************************************************************/
 Map3DPrefsPanel::~Map3DPrefsPanel()
 {
 }
 
+/* Map3DPrefsPanel::init
+ * Initialises panel controls
+ *******************************************************************/
 void Map3DPrefsPanel::init()
 {
 	if (render_max_dist < 0)
@@ -108,6 +150,9 @@ void Map3DPrefsPanel::init()
 	updateDistanceControls();
 }
 
+/* Map3DPrefsPanel::updateDistanceControls
+ * Updates render distance controls (value labels, locking, etc.)
+ *******************************************************************/
 void Map3DPrefsPanel::updateDistanceControls()
 {
 	// Render distance
@@ -136,6 +181,9 @@ void Map3DPrefsPanel::updateDistanceControls()
 	}
 }
 
+/* Map3DPrefsPanel::applyPreferences
+ * Applies preference values from the controls to CVARs
+ *******************************************************************/
 void Map3DPrefsPanel::applyPreferences()
 {
 	// Max render distance
@@ -158,6 +206,14 @@ void Map3DPrefsPanel::applyPreferences()
 	render_3d_sky = cb_render_sky->GetValue();
 }
 
+
+/*******************************************************************
+ * MAP3DPREFSPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* Map3DPrefsPanel::onSliderMaxRenderDistChanged
+ * Called when the render distance slider is changed
+ *******************************************************************/
 void Map3DPrefsPanel::onSliderMaxRenderDistChanged(wxCommandEvent& e)
 {
 	if (cb_max_thing_dist_lock->GetValue())
@@ -166,16 +222,25 @@ void Map3DPrefsPanel::onSliderMaxRenderDistChanged(wxCommandEvent& e)
 	updateDistanceControls();
 }
 
+/* Map3DPrefsPanel::onSliderMaxThingDistChanged
+ * Called when the thing render distance slider is changed
+ *******************************************************************/
 void Map3DPrefsPanel::onSliderMaxThingDistChanged(wxCommandEvent& e)
 {
 	updateDistanceControls();
 }
 
+/* Map3DPrefsPanel::onCBDistUnlimitedChanged
+ * Called when the 'Unlimited' render distance checkbox is clicked
+ *******************************************************************/
 void Map3DPrefsPanel::onCBDistUnlimitedChanged(wxCommandEvent& e)
 {
 	updateDistanceControls();
 }
 
+/* Map3DPrefsPanel::onCBLockThingDistChanged
+ * Called when the 'Lock' thing render distance checkbox is clicked
+ *******************************************************************/
 void Map3DPrefsPanel::onCBLockThingDistChanged(wxCommandEvent& e)
 {
 	updateDistanceControls();

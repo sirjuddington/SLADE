@@ -1,58 +1,58 @@
 /*******************************************************************
-* SLADE - It's a Doom Editor
-* Copyright (C) 2008-2014 Simon Judd
-*
-* Email:       sirjuddington@gmail.com
-* Web:         http://slade.mancubus.net
-* Filename:    MobjPropertyList.cpp
-* Description: A special version of the PropertyList class that
-*              uses a vector rather than a map to store properties
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*******************************************************************/
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MobjPropertyList.cpp
+ * Description: A special version of the PropertyList class that
+ *              uses a vector rather than a map to store properties
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
 
 
 /*******************************************************************
-* INCLUDES
-*******************************************************************/
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "MobjPropertyList.h"
 
 
 /*******************************************************************
-* MOBJPROPERTYLIST CLASS FUNCTIONS
-*******************************************************************/
+ * MOBJPROPERTYLIST CLASS FUNCTIONS
+ *******************************************************************/
 
 /* MobjPropertyList::MobjPropertyList
-* MobjPropertyList class constructor
-*******************************************************************/
+ * MobjPropertyList class constructor
+ *******************************************************************/
 MobjPropertyList::MobjPropertyList()
 {
 }
 
 /* MobjPropertyList::~MobjPropertyList
-* MobjPropertyList class destructor
-*******************************************************************/
+ * MobjPropertyList class destructor
+ *******************************************************************/
 MobjPropertyList::~MobjPropertyList()
 {
 }
 
 /* MobjPropertyList::propertyExists
-* Returns true if a property with the given name exists, false
-* otherwise
-*******************************************************************/
+ * Returns true if a property with the given name exists, false
+ * otherwise
+ *******************************************************************/
 bool MobjPropertyList::propertyExists(string key)
 {
 	for (unsigned a = 0; a < properties.size(); ++a)
@@ -65,9 +65,9 @@ bool MobjPropertyList::propertyExists(string key)
 }
 
 /* MobjPropertyList::removeProperty
-* Removes a property value, returns true if [key] was removed
-* or false if key didn't exist
-*******************************************************************/
+ * Removes a property value, returns true if [key] was removed
+ * or false if key didn't exist
+ *******************************************************************/
 bool MobjPropertyList::removeProperty(string key)
 {
 	//return properties.erase(key) > 0;
@@ -85,8 +85,8 @@ bool MobjPropertyList::removeProperty(string key)
 }
 
 /* MobjPropertyList::copyTo
-* Copies all properties to [list]
-*******************************************************************/
+ * Copies all properties to [list]
+ *******************************************************************/
 void MobjPropertyList::copyTo(MobjPropertyList& list)
 {
 	// Clear given list
@@ -97,8 +97,8 @@ void MobjPropertyList::copyTo(MobjPropertyList& list)
 }
 
 /* MobjPropertyList::addFlag
-* Adds a 'flag' property [key]
-*******************************************************************/
+ * Adds a 'flag' property [key]
+ *******************************************************************/
 void MobjPropertyList::addFlag(string key)
 {
 	Property flag;
@@ -106,8 +106,8 @@ void MobjPropertyList::addFlag(string key)
 }
 
 /* MobjPropertyList::toString
-* Returns a string representation of the property list
-*******************************************************************/
+ * Returns a string representation of the property list
+ *******************************************************************/
 string MobjPropertyList::toString(bool condensed)
 {
 	// Init return string
@@ -134,23 +134,3 @@ string MobjPropertyList::toString(bool condensed)
 
 	return ret;
 }
-
-/* MobjPropertyList::allProperties
-* Adds all existing properties to [list]
-*******************************************************************/
-//void MobjPropertyList::allProperties(vector<Property>& list)
-//{
-//	// Add all properties to the list
-//	for (unsigned a = 0; a < properties.size(); ++a)
-//		list.push_back(properties[a].value);
-//}
-
-/* MobjPropertyList::allPropertyNames
-* Adds all existing property names to [list]
-*******************************************************************/
-//void MobjPropertyList::allPropertyNames(vector<string>& list)
-//{
-//	// Add all properties to the list
-//	for (unsigned a = 0; a < properties.size(); ++a)
-//		list.push_back(properties[a].name);
-//}

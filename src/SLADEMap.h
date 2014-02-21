@@ -161,10 +161,13 @@ public:
 	void				addMapObject(MapObject* object);
 	void				removeMapObject(MapObject* object);
 	MapObject*			getObjectById(unsigned id) { return all_objects[id].mobj; }
-	void				restoreObjectById(unsigned id);
-	void				removeObjectById(unsigned id);
-	vector<mobj_cd_t>&	createdDeletedObjectIds() { return created_deleted_objects; }
-	void				clearCreatedDeletedOjbectIds() { created_deleted_objects.clear(); }
+	//void				restoreObjectById(unsigned id);
+	//void				removeObjectById(unsigned id);
+	//vector<mobj_cd_t>&	createdDeletedObjectIds() { return created_deleted_objects; }
+	//void				clearCreatedDeletedOjbectIds() { created_deleted_objects.clear(); }
+
+	void				getObjectIdList(uint8_t type, vector<unsigned>& list);
+	void				restoreObjectIdList(uint8_t type, vector<unsigned>& list);
 
 	void	refreshIndices();
 	bool	readMap(Archive::mapdesc_t map);

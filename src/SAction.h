@@ -21,6 +21,7 @@ private:
 	int			type;
 	int			group;
 	bool		toggled;
+	string		keybind;
 
 	static int	n_groups;
 

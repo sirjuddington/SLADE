@@ -13,6 +13,18 @@ struct map_tex_t
 	~map_tex_t() { if (texture && texture != &(GLTexture::missingTex())) delete texture; }
 };
 
+struct map_texinfo_t
+{
+	string			name;
+	uint8_t			category;
+
+	map_texinfo_t(string name, uint8_t category)
+	{
+		this->name = name;
+		this->category = category;
+	}
+};
+
 typedef std::map<string, map_tex_t> MapTexHashMap;
 
 class Archive;
@@ -20,20 +32,33 @@ class Palette8bit;
 class MapTextureManager : public Listener
 {
 private:
-	Archive*		archive;
-	MapTexHashMap	textures;
-	MapTexHashMap	flats;
-	MapTexHashMap	sprites;
-	MapTexHashMap	editor_images;
-	bool			editor_images_loaded;
-	Palette8bit*	palette;
+	Archive*				archive;
+	MapTexHashMap			textures;
+	MapTexHashMap			flats;
+	MapTexHashMap			sprites;
+	MapTexHashMap			editor_images;
+	bool					editor_images_loaded;
+	Palette8bit*			palette;
+	vector<map_texinfo_t>	tex_info;
+	vector<map_texinfo_t>	flat_info;
 
 public:
+	enum
+	{
+		// Texture categories
+		TC_NONE = 0,
+		TC_TEXTUREX,
+		TC_TX,
+		TC_TEXTURES,
+		TC_HIRES
+	};
+
 	MapTextureManager(Archive* archive = NULL);
 	~MapTextureManager();
 
 	void	setArchive(Archive* archive);
 	void	refreshResources();
+	void	buildTexInfoList();
 
 	Palette8bit*	getResourcePalette();
 	GLTexture*		getTexture(string name, bool mixed);
@@ -41,6 +66,9 @@ public:
 	GLTexture*		getSprite(string name, string translation = "", string palette = "");
 	GLTexture*		getEditorImage(string name);
 	int				getVerticalOffset(string name);
+	
+	vector<map_texinfo_t>&	getAllTexturesInfo() { return tex_info; }
+	vector<map_texinfo_t>&	getAllFlatsInfo() { return flat_info; }
 
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 };

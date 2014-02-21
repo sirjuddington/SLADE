@@ -594,11 +594,40 @@ bool ArchiveManager::closeArchive(int index)
 	//theGameConfiguration->removeEmbeddedConfig(open_archives[index].archive->getFilename());
 
 	// Close any open child archives
-	for (size_t a = 0; a < open_archives[index].open_children.size(); a++)
+	// Clear out the open_children vector first, lest the children try to
+	// remove themselves from it
+	vector<Archive*> open_children = open_archives[index].open_children;
+	open_archives[index].open_children.clear();
+	for (size_t a = 0; a < open_children.size(); a++)
 	{
-		int ci = archiveIndex(open_archives[index].open_children[a]);
+		int ci = archiveIndex(open_children[a]);
 		if (ci >= 0)
 			closeArchive(ci);
+	}
+
+	// Remove ourselves from our parent's open-child list
+	ArchiveEntry* parent = open_archives[index].archive->getParent();
+	if (parent)
+	{
+		Archive* gp = parent->getParent();
+		if (gp)
+		{
+			int pi = archiveIndex(gp);
+			if (pi >= 0)
+			{
+				vector<Archive*>& children = open_archives[pi].open_children;
+				for (vector<Archive*>::iterator it = children.begin();
+					it < children.end();
+					it++)
+				{
+					if (*it == open_archives[index].archive)
+					{
+						children.erase(it, it + 1);
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	// Close the archive
@@ -679,6 +708,31 @@ int ArchiveManager::archiveIndex(Archive* archive)
 
 	// If we get to here the archive wasn't found, so return -1
 	return -1;
+}
+
+/* ArchiveManager::getDependentArchives
+ * Returns all open archives that live inside this one, recursively.
+ *******************************************************************/
+// This is the recursive bit, separate from the public entry point
+void ArchiveManager::getDependentArchivesInternal(Archive* archive, vector<Archive*>& vec)
+{
+	Archive* child;
+	int ai = archiveIndex(archive);
+
+	for (size_t a = 0; a < open_archives[ai].open_children.size(); a++)
+	{
+		child = open_archives[ai].open_children[a];
+		vec.push_back(child);
+
+		getDependentArchivesInternal(child, vec);
+	}
+}
+
+vector<Archive*> ArchiveManager::getDependentArchives(Archive* archive)
+{
+	vector<Archive*> vec;
+	getDependentArchivesInternal(archive, vec);
+	return vec;
 }
 
 /* ArchiveManager::getArchiveExtensionsString

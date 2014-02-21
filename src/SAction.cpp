@@ -34,6 +34,7 @@
 #include "SAction.h"
 #include "Icons.h"
 #include "MainApp.h"
+#include "KeyBind.h"
 #include <wx/aui/auibar.h>
 
 
@@ -61,6 +62,7 @@ SAction::SAction(string id, string text, string icon, string helptext, string sh
 	this->shortcut = shortcut;
 	this->group = radio_group;
 	this->toggled = false;
+	this->keybind = keybind;
 
 	// Add to MainApp
 	theApp->actions.push_back(this);
@@ -92,7 +94,16 @@ bool SAction::addToMenu(wxMenu* menu, string text_override)
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
 	if (!shortcut.IsEmpty())
-		item_text = S_FMT("%s\t%s", item_text, shortcut);
+	{
+		if (shortcut.StartsWith("kb:"))
+		{
+			keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
+			//if (kp.key != "")
+			//	item_text = S_FMT("%s\t%s", item_text, kp.as_string());
+		}
+		else
+			item_text = S_FMT("%s\t%s", item_text, shortcut);
+	}
 
 	// Append this action to the menu
 	if (type == NORMAL)

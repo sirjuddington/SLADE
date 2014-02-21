@@ -119,71 +119,222 @@ public:
 class MapObjectCreateDeleteUS : public UndoStep
 {
 private:
-	vector<mobj_cd_t>	objects;
+	//vector<mobj_cd_t>	objects;
+
+	vector<unsigned>	vertices;
+	vector<unsigned>	lines;
+	vector<unsigned>	sides;
+	vector<unsigned>	sectors;
+	vector<unsigned>	things;
 
 public:
 	MapObjectCreateDeleteUS()
 	{
-		// Get recently created and deleted object ids from map
-		// (in the order they were created/deleted)
-		vector<mobj_cd_t>& cd_objects = UndoRedo::currentMap()->createdDeletedObjectIds();
-		for (unsigned a = 0; a < cd_objects.size(); a++)
-			objects.push_back(cd_objects[a]);
-
-		if (Global::log_verbosity >= 4)
-		{
-			string ids;
-			for (unsigned a = 0; a < cd_objects.size(); a++)
-			{
-				if (cd_objects[a].created)
-					ids += S_FMT("%d, ", cd_objects[a].id);
-			}
-			LOG_MESSAGE(4, "Created: %s", ids);
-
-			ids = "";
-			for (unsigned a = 0; a < cd_objects.size(); a++)
-			{
-				if (!cd_objects[a].created)
-					ids += S_FMT("%d, ", cd_objects[a].id);
-			}
-			LOG_MESSAGE(4, "Deleted: %s", ids);
-		}
+		SLADEMap* map = UndoRedo::currentMap();
+		map->getObjectIdList(MOBJ_VERTEX, vertices);
+		map->getObjectIdList(MOBJ_LINE, lines);
+		map->getObjectIdList(MOBJ_SIDE, sides);
+		map->getObjectIdList(MOBJ_SECTOR, sectors);
+		map->getObjectIdList(MOBJ_THING, things);
 	}
 
 	~MapObjectCreateDeleteUS() {}
 
+	bool isValid(vector<unsigned>& list)
+	{
+		return !(list.size() == 1 && list[0] == 0);
+	}
+
+	void swapLists()
+	{
+		// Backup
+		vector<unsigned> vertices;
+		vector<unsigned> lines;
+		vector<unsigned> sides;
+		vector<unsigned> sectors;
+		vector<unsigned> things;
+		SLADEMap* map = UndoRedo::currentMap();
+		if (isValid(this->vertices))	map->getObjectIdList(MOBJ_VERTEX, vertices);
+		if (isValid(this->lines))		map->getObjectIdList(MOBJ_LINE, lines);
+		if (isValid(this->sides))		map->getObjectIdList(MOBJ_SIDE, sides);
+		if (isValid(this->sectors))		map->getObjectIdList(MOBJ_SECTOR, sectors);
+		if (isValid(this->things))		map->getObjectIdList(MOBJ_THING, things);
+
+		// Restore
+		if (isValid(this->vertices))
+		{
+			map->restoreObjectIdList(MOBJ_VERTEX, this->vertices);
+			this->vertices = vertices;
+		}
+		if (isValid(this->lines))
+		{
+			map->restoreObjectIdList(MOBJ_LINE, this->lines);
+			this->lines = lines;
+		}
+		if (isValid(this->sides))
+		{
+			map->restoreObjectIdList(MOBJ_SIDE, this->sides);
+			this->sides = sides;
+		}
+		if (isValid(this->sectors))
+		{
+			map->restoreObjectIdList(MOBJ_SECTOR, this->sectors);
+			this->sectors = sectors;
+		}
+		if (isValid(this->things))
+		{
+			map->restoreObjectIdList(MOBJ_THING, this->things);
+			this->things = things;
+		}
+	}
+
 	bool doUndo()
 	{
-		// Undo creation/deletion
-		for (int a = objects.size() - 1; a >= 0; a--)
-		{
-			if (objects[a].created)
-				UndoRedo::currentMap()->removeObjectById(objects[a].id);
-			else
-				UndoRedo::currentMap()->restoreObjectById(objects[a].id);
-		}
-
+		swapLists();
 		return true;
 	}
 
 	bool doRedo()
 	{
-		// Redo creation/deletion
-		for (unsigned a = 0; a < objects.size(); a++)
+		swapLists();
+		return true;
+	}
+
+	void checkChanges()
+	{
+		SLADEMap* map = UndoRedo::currentMap();
+		MapVertex* lv = map->getVertex(map->nVertices() - 1);
+		MapLine* ll = map->getLine(map->nLines() - 1);
+		MapSide* lsd = map->getSide(map->nSides() - 1);
+		MapSector* ls = map->getSector(map->nSectors() - 1);
+		MapThing* lt = map->getThing(map->nThings() - 1);
+
+		// Check vertices changed
+		if (map->nVertices() == vertices.size() &&
+			(!lv || lv->getId() == vertices.back()))
 		{
-			if (!objects[a].created)
-				UndoRedo::currentMap()->removeObjectById(objects[a].id);
-			else
-				UndoRedo::currentMap()->restoreObjectById(objects[a].id);
+			// No change, clear
+			vertices.clear();
+			vertices.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No vertices added/deleted");
 		}
 
-		return true;
+		// Check lines changed
+		if (map->nLines() == lines.size() &&
+			(!ll || ll->getId() == lines.back()))
+		{
+			// No change, clear
+			lines.clear();
+			lines.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No lines added/deleted");
+		}
+
+		// Check sides changed
+		if (map->nSides() == sides.size() &&
+			(!lsd || lsd->getId() == sides.back()))
+		{
+			// No change, clear
+			sides.clear();
+			sides.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No sides added/deleted");
+		}
+
+		// Check sectors changed
+		if (map->nSectors() == sectors.size() &&
+			(!ls || ls->getId() == sectors.back()))
+		{
+			// No change, clear
+			sectors.clear();
+			sectors.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No sectors added/deleted");
+		}
+
+		// Check things changed
+		if (map->nThings() == things.size() &&
+			(!lt || lt->getId() == things.back()))
+		{
+			// No change, clear
+			things.clear();
+			things.push_back(0);
+			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No things added/deleted");
+		}
 	}
 
 	bool isOk()
 	{
-		return !objects.empty();
+		// Check for any changes at all
+		if (vertices.size() == 1 && vertices[0] == 0 &&
+			lines.size() == 1 && lines[0] == 0 &&
+			sides.size() == 1 && sides[0] == 0 &&
+			sectors.size() == 1 && sectors[0] == 0 &&
+			things.size() == 1 && things[0] == 0)
+			return false;
+
+		return true;
 	}
+
+	//MapObjectCreateDeleteUS()
+	//{
+	//	// Get recently created and deleted object ids from map
+	//	// (in the order they were created/deleted)
+	//	vector<mobj_cd_t>& cd_objects = UndoRedo::currentMap()->createdDeletedObjectIds();
+	//	for (unsigned a = 0; a < cd_objects.size(); a++)
+	//		objects.push_back(cd_objects[a]);
+
+	//	if (Global::log_verbosity >= 4)
+	//	{
+	//		string ids;
+	//		for (unsigned a = 0; a < cd_objects.size(); a++)
+	//		{
+	//			if (cd_objects[a].created)
+	//				ids += S_FMT("%d, ", cd_objects[a].id);
+	//		}
+	//		LOG_MESSAGE(4, "Created: %s", ids);
+
+	//		ids = "";
+	//		for (unsigned a = 0; a < cd_objects.size(); a++)
+	//		{
+	//			if (!cd_objects[a].created)
+	//				ids += S_FMT("%d, ", cd_objects[a].id);
+	//		}
+	//		LOG_MESSAGE(4, "Deleted: %s", ids);
+	//	}
+	//}
+
+	//~MapObjectCreateDeleteUS() {}
+
+	//bool doUndo()
+	//{
+	//	// Undo creation/deletion
+	//	for (int a = objects.size() - 1; a >= 0; a--)
+	//	{
+	//		if (objects[a].created)
+	//			UndoRedo::currentMap()->removeObjectById(objects[a].id);
+	//		else
+	//			UndoRedo::currentMap()->restoreObjectById(objects[a].id);
+	//	}
+
+	//	return true;
+	//}
+
+	//bool doRedo()
+	//{
+	//	// Redo creation/deletion
+	//	for (unsigned a = 0; a < objects.size(); a++)
+	//	{
+	//		if (!objects[a].created)
+	//			UndoRedo::currentMap()->removeObjectById(objects[a].id);
+	//		else
+	//			UndoRedo::currentMap()->restoreObjectById(objects[a].id);
+	//	}
+
+	//	return true;
+	//}
+
+	//bool isOk()
+	//{
+	//	return !objects.empty();
+	//}
 };
 
 
@@ -249,7 +400,7 @@ public:
 
 	bool doRedo()
 	{
-		//LOG_MESSAGE(2, "Restore %d objects", backups.size());
+		//LOG_MESSAGE(2, "Restore %lu objects", backups.size());
 		for (unsigned a = 0; a < backups.size(); a++)
 		{
 			MapObject* obj = UndoRedo::currentMap()->getObjectById(backups[a]->id);
@@ -293,6 +444,7 @@ MapEditor::MapEditor()
 	undo_manager = new UndoManager(&map);
 	undo_manager_3d = new UndoManager(&map);
 	current_tag = 0;
+	us_create_delete = NULL;
 }
 
 /* MapEditor::~MapEditor
@@ -925,7 +1077,7 @@ void MapEditor::selectAll()
 			selection.push_back(a);
 	}
 
-	addEditorMessage(S_FMT("Selected all %d %s", selection.size(), getModeString()));
+	addEditorMessage(S_FMT("Selected all %lu %s", selection.size(), getModeString()));
 
 	if (canvas)
 		canvas->itemsSelected(selection);
@@ -1156,9 +1308,9 @@ bool MapEditor::selectWithin(double xmin, double ymin, double xmax, double ymax,
 		selection.push_back(nsel[a]);
 
 	if (add)
-		addEditorMessage(S_FMT("Selected %d %s", asel.size(), getModeString()));
+		addEditorMessage(S_FMT("Selected %lu %s", asel.size(), getModeString()));
 	else
-		addEditorMessage(S_FMT("Selected %d %s", selection.size(), getModeString()));
+		addEditorMessage(S_FMT("Selected %lu %s", selection.size(), getModeString()));
 
 	// Animate newly selected items
 	if (canvas && nsel.size() > 0) canvas->itemsSelected(nsel);
@@ -1969,16 +2121,26 @@ void MapEditor::joinSectors(bool remove_lines)
 
 	// Remove any changed lines that now have the target sector on both sides (if needed)
 	int nlines = 0;
+	vector<MapVertex*> verts;
 	if (remove_lines)
 	{
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
 			if (lines[a]->frontSector() == target && lines[a]->backSector() == target)
 			{
+				VECTOR_ADD_UNIQUE(verts, lines[a]->v1());
+				VECTOR_ADD_UNIQUE(verts, lines[a]->v2());
 				map.removeLine(lines[a]);
 				nlines++;
 			}
 		}
+	}
+
+	// Remove any resulting detached vertices
+	for (unsigned a = 0; a < verts.size(); a++)
+	{
+		if (verts[a]->nConnectedLines() == 0)
+			map.removeVertex(verts[a]);
 	}
 
 	// Finish recording undo level
@@ -1986,9 +2148,9 @@ void MapEditor::joinSectors(bool remove_lines)
 
 	// Editor message
 	if (nlines == 0)
-		addEditorMessage(S_FMT("Joined %d Sectors", selection.size()));
+		addEditorMessage(S_FMT("Joined %lu Sectors", selection.size()));
 	else
-		addEditorMessage(S_FMT("Joined %d Sectors (removed %d Lines)", selection.size(), nlines));
+		addEditorMessage(S_FMT("Joined %lu Sectors (removed %d Lines)", selection.size(), nlines));
 }
 
 #pragma endregion
@@ -2023,7 +2185,7 @@ void MapEditor::changeThingType(int newtype)
 	if (selection.size() == 1)
 		addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
 	else
-		addEditorMessage(S_FMT("Changed %d things to type \"%s\"", selection.size(), type_name));
+		addEditorMessage(S_FMT("Changed %lu things to type \"%s\"", selection.size(), type_name));
 
 	// Update display
 	updateDisplay();
@@ -2112,14 +2274,14 @@ void MapEditor::tagSectorAt(double x, double y)
 			// Un-tag
 			tagged_sectors[a] = tagged_sectors.back();
 			tagged_sectors.pop_back();
-			addEditorMessage(S_FMT("Untagged sector %d", sector->getIndex()));
+			addEditorMessage(S_FMT("Untagged sector %u", sector->getIndex()));
 			return;
 		}
 	}
 
 	// Tag
 	tagged_sectors.push_back(sector);
-	addEditorMessage(S_FMT("Tagged sector %d", sector->getIndex()));
+	addEditorMessage(S_FMT("Tagged sector %u", sector->getIndex()));
 }
 
 /* MapEditor::endTagEdit
@@ -2192,7 +2354,7 @@ void MapEditor::createObject(double x, double y)
 			endUndoRecord(true);
 
 			// Editor message
-			addEditorMessage(S_FMT("Created %d line(s)", selection.size() - 1));
+			addEditorMessage(S_FMT("Created %lu line(s)", selection.size() - 1));
 
 			// Clear selection
 			clearSelection();
@@ -2336,7 +2498,7 @@ void MapEditor::createSector(double x, double y)
 	// Editor message
 	if (ok)
 	{
-		addEditorMessage(S_FMT("Created sector #%d", map.nSectors() - 1));
+		addEditorMessage(S_FMT("Created sector #%lu", map.nSectors() - 1));
 		endUndoRecord(true);
 	}
 	else
@@ -2380,7 +2542,7 @@ void MapEditor::deleteObject()
 		if (verts.size() == 1)
 			addEditorMessage(S_FMT("Deleted vertex #%d", index));
 		else if (verts.size() > 1)
-			addEditorMessage(S_FMT("Deleted %d vertices", verts.size()));
+			addEditorMessage(S_FMT("Deleted %lu vertices", verts.size()));
 	}
 
 	// Lines mode
@@ -2407,7 +2569,7 @@ void MapEditor::deleteObject()
 		if (lines.size() == 1)
 			addEditorMessage(S_FMT("Deleted line #%d", index));
 		else if (lines.size() > 1)
-			addEditorMessage(S_FMT("Deleted %d lines", lines.size()));
+			addEditorMessage(S_FMT("Deleted %lu lines", lines.size()));
 	}
 
 	// Sectors mode
@@ -2454,7 +2616,7 @@ void MapEditor::deleteObject()
 		if (sectors.size() == 1)
 			addEditorMessage(S_FMT("Deleted sector #%d", index));
 		else if (sectors.size() > 1)
-			addEditorMessage(S_FMT("Deleted %d sector", sectors.size()));
+			addEditorMessage(S_FMT("Deleted %lu sector", sectors.size()));
 
 		// Remove detached vertices
 		map.removeDetachedVertices();
@@ -2481,7 +2643,7 @@ void MapEditor::deleteObject()
 		if (things.size() == 1)
 			addEditorMessage(S_FMT("Deleted thing #%d", index));
 		else if (things.size() > 1)
-			addEditorMessage(S_FMT("Deleted %d things", things.size()));
+			addEditorMessage(S_FMT("Deleted %lu things", things.size()));
 	}
 
 	// Record undo step
@@ -2733,7 +2895,7 @@ void MapEditor::endLineDraw(bool apply)
 		{
 			// Check for intersections
 			vector<fpoint2_t> intersect = map.cutLines(draw_points[a].x, draw_points[a].y, draw_points[a+1].x, draw_points[a+1].y);
-			LOG_MESSAGE(2, "%d intersect points", intersect.size());
+			LOG_MESSAGE(2, "%lu intersect points", intersect.size());
 
 			// Create line normally if no intersections
 			if (intersect.size() == 0)
@@ -4619,7 +4781,14 @@ void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 	if (undo_modified)
 		MapObject::beginPropBackup(theApp->runTimer());
 	if (undo_deleted || undo_created)
-		map.clearCreatedDeletedOjbectIds();
+	{
+		us_create_delete = new MapObjectCreateDeleteUS();
+		//manager->recordUndoStep(new MapObjectCreateDeleteUS());
+		//map.clearCreatedDeletedOjbectIds();
+	}
+
+	// Make sure all modified objects will be picked up
+	wxMilliSleep(5);
 
 	last_undo_level = "";
 }
@@ -4655,12 +4824,16 @@ void MapEditor::endUndoRecord(bool success)
 		if (undo_modified)
 			modified = manager->recordUndoStep(new MultiMapObjectPropertyChangeUS());
 		if (undo_created || undo_deleted)
-			created_deleted = manager->recordUndoStep(new MapObjectCreateDeleteUS());
+		{
+			us_create_delete->checkChanges();
+			created_deleted = manager->recordUndoStep(us_create_delete);
+		}
 
 		// End recording
 		manager->endRecord(success && (modified || created_deleted));
 	}
 	updateThingLists();
+	us_create_delete = NULL;
 }
 
 /* MapEditor::recordPropertyChangeUndoStep
@@ -4690,6 +4863,7 @@ void MapEditor::doUndo()
 		// Refresh stuff
 		//updateTagged();
 		map.rebuildConnectedLines();
+		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
@@ -4715,6 +4889,7 @@ void MapEditor::doRedo()
 		// Refresh stuff
 		//updateTagged();
 		map.rebuildConnectedLines();
+		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
@@ -4828,7 +5003,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.sectorAt(map.getThing(a)->xPos(), map.getThing(a)->yPos());
 	long ms = clock.getElapsedTime().asMilliseconds();
-	wxLogMessage("Took %dms", ms);
+	wxLogMessage("Took %ldms", ms);
 }
 
 CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
@@ -4877,7 +5052,7 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	{
 		wxLogMessage("Attached lines:");
 		for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
-			wxLogMessage("Line #%d", vertex->connectedLine(a)->getIndex());
+			wxLogMessage("Line #%lu", vertex->connectedLine(a)->getIndex());
 	}
 }
 
@@ -4903,7 +5078,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	{
 		mobj_backup_t bak;
 		obj->backup(&bak);
-		theConsole->logMessage(S_FMT("Object %d: %s #%d", id, obj->getTypeName(), obj->getIndex()));
+		theConsole->logMessage(S_FMT("Object %d: %s #%lu", id, obj->getTypeName(), obj->getIndex()));
 		theConsole->logMessage("Properties:");
 		theConsole->logMessage(bak.properties.toString());
 		theConsole->logMessage("Properties (internal):");

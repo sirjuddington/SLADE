@@ -45,6 +45,7 @@ private:
 	wxButton*			btn_browser_open;
 	wxMenu*				menu_recent;
 	Archive*			current_maps;
+	Archive*			pending_closed_archive;
 
 public:
 	ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_archives);
@@ -96,6 +97,7 @@ public:
 	bool	saveEntryChanges(Archive* archive);
 	bool	saveArchive(Archive* archive);
 	bool	saveArchiveAs(Archive* archive);
+	bool	beforeCloseArchive(Archive* archive);
 	bool	closeArchive(Archive* archive);
 
 	void	createNewArchive(uint8_t type);
@@ -134,6 +136,7 @@ public:
 	void	onArchiveTabChanging(wxAuiNotebookEvent& e);
 	void	onArchiveTabChanged(wxAuiNotebookEvent& e);
 	void	onArchiveTabClose(wxAuiNotebookEvent& e);
+	void	onArchiveTabClosed(wxAuiNotebookEvent& e);
 	void	onAMTabChanged(wxAuiNotebookEvent& e);
 };
 

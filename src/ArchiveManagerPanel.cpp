@@ -50,7 +50,6 @@
  *******************************************************************/
 CVAR(Bool, close_archive_with_tab, true, CVAR_SAVE)
 CVAR(Int, am_current_tab, 0, CVAR_SAVE)
-int tab_closing = false;	// Hacky workaround to prevent crash on closing a tab when close_archive_with_tab is true
 
 
 /*******************************************************************
@@ -117,6 +116,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 	: DockPanel(parent)
 {
 	notebook_archives = nb_archives;
+	pending_closed_archive = NULL;
 
 	// Create main sizer
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
@@ -173,6 +173,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGING, &ArchiveManagerPanel::onArchiveTabChanging, this);
 	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onArchiveTabChanged, this);
 	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &ArchiveManagerPanel::onArchiveTabClose, this);
+	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSED, &ArchiveManagerPanel::onArchiveTabClosed, this);
 	notebook_tabs->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onAMTabChanged, this);
 
 	// Listen to the ArchiveManager
@@ -624,35 +625,11 @@ void ArchiveManagerPanel::openTab(Archive* archive)
  *******************************************************************/
 void ArchiveManagerPanel::closeTab(int archive_index)
 {
-	// Don't close if this tab is already closing
-	if (tab_closing - 1 == archive_index)
-		return;
-
 	Archive* archive = theArchiveManager->getArchive(archive_index);
+	ArchivePanel* ap = getArchiveTab(archive);
 
-	if (archive)
-	{
-		// Go through all tabs
-		for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
-		{
-			// Check page type is "archive"
-			if (notebook_archives->GetPage(a)->GetName().CmpNoCase("archive"))
-				continue;
-
-			// Check for archive match
-			ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(a);
-			if (ap->getArchive() == archive)
-			{
-				// Remove custom menu
-				ap->removeMenus();
-
-				// Close the tab
-				notebook_archives->DeletePage(a);
-
-				return;
-			}
-		}
-	}
+	if (ap)
+		notebook_archives->DeletePage(notebook_archives->GetPageIndex(ap));
 }
 
 /* ArchiveManagerPanel::openTextureTab
@@ -1103,11 +1080,11 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 	return true;
 }
 
-/* ArchiveManagerPanel::closeArchive
+/* ArchiveManagerPanel::beforeCloseArchive
  * Checks for any unsaved changes and prompts the user to save if
- * needed before closing [archive]
+ * needed, but doesn't actually close the archive
  *******************************************************************/
-bool ArchiveManagerPanel::closeArchive(Archive* archive)
+bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 {
 	// Check for NULL pointers -- this can happen, for example,
 	// with onArchiveTabClose() when closing a texture editor tab.
@@ -1142,8 +1119,20 @@ bool ArchiveManagerPanel::closeArchive(Archive* archive)
 			return false;	// User selected cancel, don't close the archive
 	}
 
-	// Close the archive
-	return theArchiveManager->closeArchive(archive);
+	return true;
+}
+
+/* ArchiveManagerPanel::closeArchive
+ * Checks for any unsaved changes and prompts the user to save if
+ * needed before closing [archive]
+ *******************************************************************/
+bool ArchiveManagerPanel::closeArchive(Archive* archive)
+{
+	if (!archive)
+		return false;
+
+	return beforeCloseArchive(archive)
+		&& theArchiveManager->closeArchive(archive);
 }
 
 /* ArchiveManagerPanel::getSelectedArchives
@@ -1804,28 +1793,56 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 {
 	// Get tab that is closing
 	int tabindex = e.GetSelection();
+	wxWindow* page = notebook_archives->GetPage(tabindex);
+
 	if (tabindex < 0)
 		return;
 
 	// Close the tab's archive if needed
-	if (close_archive_with_tab)
+	if (close_archive_with_tab && isArchivePanel(tabindex))
 	{
-		Archive* archive = getArchive(tabindex);
-		if (archive)
+		ArchivePanel* ap = (ArchivePanel*)page;
+		Archive* archive = ap->getArchive();
+
+		vector<Archive*> deps = theArchiveManager->getDependentArchives(archive);
+		deps.insert(deps.begin(), archive);
+		// Iterate in reverse order so the deepest-nested is closed first
+		for (unsigned a = deps.size(); a > 0; a--)
 		{
-			tab_closing = theArchiveManager->archiveIndex(archive) + 1;
-			if (!closeArchive(archive))
+			if (!beforeCloseArchive(deps[a - 1]))
+			{
 				e.Veto();
+				return;
+			}
 		}
-		tab_closing = 0;
+
+		pending_closed_archive = archive;
+
+		e.Skip();
+		return;
 	}
 
 	// Check for texture editor
-	if (notebook_archives->GetPage(tabindex)->GetName() == "texture")
+	if (page->GetName() == "texture")
 	{
-		TextureXEditor* txed = (TextureXEditor*)(notebook_archives->GetPage(tabindex));
+		TextureXEditor* txed = (TextureXEditor*)page;
 		if (!txed->close())
 			e.Veto();
+	}
+
+	e.Skip();
+}
+
+/* ArchiveManagerPanel::onArchiveTabClosed
+ * Called after a tab has been closed by clicking on a close button
+ *******************************************************************/
+void ArchiveManagerPanel::onArchiveTabClosed(wxAuiNotebookEvent& e)
+{
+	// Actually close the archive the CLOSE event decided to close
+	if (pending_closed_archive)
+	{
+		theArchiveManager->closeArchive(pending_closed_archive);
+		pending_closed_archive = NULL;
 	}
 
 	e.Skip();

@@ -494,7 +494,86 @@ void MapTextureManager::refreshResources()
 	thePaletteChooser->setGlobalFromArchive(archive);
 	theMapEditor->forceRefresh(true);
 	palette = getResourcePalette();
+	buildTexInfoList();
 	//wxLogMessage("texture manager cleared");
+}
+
+/* MapTextureManager::buildTexInfoList
+ * (Re)builds lists with information about all currently available
+ * resource textures and flats
+ *******************************************************************/
+void MapTextureManager::buildTexInfoList()
+{
+	// Clear
+	tex_info.clear();
+	flat_info.clear();
+
+	// --- Textures ---
+
+	// Composite textures
+	vector<TextureResource::tex_res_t> textures;
+	theResourceManager->getAllTextures(textures, NULL);
+	for (unsigned a = 0; a < textures.size(); a++)
+	{
+		CTexture * tex = textures[a].tex;
+		string parent = textures[a].parent->getFilename(false);
+		if (tex->isExtended())
+		{
+			if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))
+				tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES));
+			else if (S_CMPNOCASE(tex->getType(), "define"))
+				tex_info.push_back(map_texinfo_t(tex->getName(), TC_HIRES));
+			else if (S_CMPNOCASE(tex->getType(), "flat"))
+				flat_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES));
+			// Ignore graphics, patches and sprites
+		}
+		else
+			tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTUREX));
+	}
+
+	// Texture namespace patches (TX_)
+	if (theGameConfiguration->txTextures())
+	{
+		vector<ArchiveEntry*> patches;
+		theResourceManager->getAllPatchEntries(patches, NULL);
+		for (unsigned a = 0; a < patches.size(); a++)
+		{
+			if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
+			{
+				// Determine texture path if it's in a pk3
+				string path = patches[a]->getPath();
+				if (path.StartsWith("/textures/"))
+					path.Remove(0, 9);
+				else if (path.StartsWith("/hires/"))
+					path.Remove(0, 6);
+				else
+					path = "";
+
+				path = patches[a]->getParent()->getFilename(false) + path;
+
+				tex_info.push_back(map_texinfo_t(patches[a]->getName(true), TC_TX));
+			}
+		}
+	}
+
+	// Flats
+	vector<ArchiveEntry*> flats;
+	theResourceManager->getAllFlatEntries(flats, NULL);
+	for (unsigned a = 0; a < flats.size(); a++)
+	{
+		ArchiveEntry* entry = flats[a];
+
+		// Determine flat path if it's in a pk3
+		string path = entry->getPath();
+		if (path.StartsWith("/flats/") || path.StartsWith("/hires/"))
+			path.Remove(0, 6);
+		else
+			path = "";
+
+		path = flats[a]->getParent()->getFilename(false) + path;
+
+		flat_info.push_back(map_texinfo_t(entry->getName(true), TC_NONE));
+	}
 }
 
 /* MapTextureManager::setArchive

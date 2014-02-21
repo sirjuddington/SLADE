@@ -171,6 +171,9 @@ public:
 	void	changeEditMode(int mode);
 	void	changeFlatType(int type);
 	void	editObjectProperties(vector<MapObject*>& objects);
+	void	beginLineDraw();
+	void	beginShapeDraw();
+	void	beginObjectEdit();
 
 	// Keybind/action handlers (that use UI features - anything else goes to MapEditor)
 	void	changeThingType();

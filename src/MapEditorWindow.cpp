@@ -171,21 +171,24 @@ void MapEditorWindow::saveLayout()
 }
 
 /* MapEditorWindow::setupLayout
- * Sets up the basic map editor window layout
+ * Sets up the basic map editor window menu bar
  *******************************************************************/
-void MapEditorWindow::setupLayout()
+void MapEditorWindow::setupMenu()
 {
-	// Create the wxAUI manager & related things
-	wxAuiManager* m_mgr = new wxAuiManager(this);
-	wxAuiPaneInfo p_inf;
-
-	// Map canvas
-	map_canvas = new MapCanvas(this, -1, &editor);
-	p_inf.CenterPane();
-	m_mgr->AddPane(map_canvas, p_inf);
-
-	// --- Menus ---
-	wxMenuBar* menu = new wxMenuBar();
+	// Get menu bar
+	wxMenuBar* menu = GetMenuBar();
+	if (menu)
+	{
+		// Clear existing menu bar
+		unsigned n_menus = menu->GetMenuCount();
+		for (unsigned a = 0; a < n_menus; a++)
+		{
+			wxMenu* sm = menu->Remove(0);
+			delete sm;
+		}
+	}
+	else	// Create new menu bar
+		menu = new wxMenuBar();
 
 	// Map menu
 	wxMenu* menu_map = new wxMenu("");
@@ -201,6 +204,10 @@ void MapEditorWindow::setupLayout()
 	theApp->getAction("mapw_undo")->addToMenu(menu_editor);
 	theApp->getAction("mapw_redo")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
+	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor);
+	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor);
+	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor);
+	menu_editor->AppendSeparator();
 	theApp->getAction("mapw_preferences")->addToMenu(menu_editor);
 	theApp->getAction("mapw_setbra")->addToMenu(menu_editor);
 	menu->Append(menu_editor, "&Edit");
@@ -214,6 +221,24 @@ void MapEditorWindow::setupLayout()
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
+}
+
+/* MapEditorWindow::setupLayout
+ * Sets up the basic map editor window layout
+ *******************************************************************/
+void MapEditorWindow::setupLayout()
+{
+	// Create the wxAUI manager & related things
+	wxAuiManager* m_mgr = new wxAuiManager(this);
+	wxAuiPaneInfo p_inf;
+
+	// Map canvas
+	map_canvas = new MapCanvas(this, -1, &editor);
+	p_inf.CenterPane();
+	m_mgr->AddPane(map_canvas, p_inf);
+
+	// --- Menus ---
+	setupMenu();
 
 
 	// --- Toolbars ---
@@ -226,20 +251,13 @@ void MapEditorWindow::setupLayout()
 	tbg_map->addActionButton("mapw_rename");
 	toolbar->addGroup(tbg_map);
 
-	// Edit toolbar
-	/*
-	SToolBarGroup* tbg_edit = new SToolBarGroup(toolbar, "_Edit");
-	tbg_edit->addActionButton("mapw_undo");
-	tbg_edit->addActionButton("mapw_redo");
-	toolbar->addGroup(tbg_edit);
-	*/
-
 	// Mode toolbar
 	SToolBarGroup* tbg_mode = new SToolBarGroup(toolbar, "_Mode");
 	tbg_mode->addActionButton("mapw_mode_vertices");
 	tbg_mode->addActionButton("mapw_mode_lines");
 	tbg_mode->addActionButton("mapw_mode_sectors");
 	tbg_mode->addActionButton("mapw_mode_things");
+	tbg_mode->addActionButton("mapw_mode_3d");
 	theApp->toggleAction("mapw_mode_lines");	// Lines mode by default
 	toolbar->addGroup(tbg_mode);
 
@@ -254,6 +272,13 @@ void MapEditorWindow::setupLayout()
 	if (flat_drawtype == 0) theApp->toggleAction("mapw_flat_none");
 	else if (flat_drawtype == 1) theApp->toggleAction("mapw_flat_untextured");
 	else theApp->toggleAction("mapw_flat_textured");
+
+	// Edit toolbar
+	SToolBarGroup* tbg_edit = new SToolBarGroup(toolbar, "_Edit");
+	tbg_edit->addActionButton("mapw_draw_lines");
+	tbg_edit->addActionButton("mapw_draw_shape");
+	tbg_edit->addActionButton("mapw_edit_objects");
+	toolbar->addGroup(tbg_edit);
 
 	// Extra toolbar
 	SToolBarGroup* tbg_misc = new SToolBarGroup(toolbar, "_Misc");
