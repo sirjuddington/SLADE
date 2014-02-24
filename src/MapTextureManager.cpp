@@ -516,19 +516,19 @@ void MapTextureManager::buildTexInfoList()
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
 		CTexture * tex = textures[a].tex;
-		string parent = textures[a].parent->getFilename(false);
+		Archive* parent = textures[a].parent;
 		if (tex->isExtended())
 		{
 			if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))
-				tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES));
+				tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES, parent));
 			else if (S_CMPNOCASE(tex->getType(), "define"))
-				tex_info.push_back(map_texinfo_t(tex->getName(), TC_HIRES));
+				tex_info.push_back(map_texinfo_t(tex->getName(), TC_HIRES, parent));
 			else if (S_CMPNOCASE(tex->getType(), "flat"))
-				flat_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES));
+				flat_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTURES, parent));
 			// Ignore graphics, patches and sprites
 		}
 		else
-			tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTUREX));
+			tex_info.push_back(map_texinfo_t(tex->getName(), TC_TEXTUREX, parent, "", tex->getIndex() + 1));
 	}
 
 	// Texture namespace patches (TX_)
@@ -549,9 +549,7 @@ void MapTextureManager::buildTexInfoList()
 				else
 					path = "";
 
-				path = patches[a]->getParent()->getFilename(false) + path;
-
-				tex_info.push_back(map_texinfo_t(patches[a]->getName(true), TC_TX));
+				tex_info.push_back(map_texinfo_t(patches[a]->getName(true), TC_TX, patches[a]->getParent(), path));
 			}
 		}
 	}
@@ -570,9 +568,7 @@ void MapTextureManager::buildTexInfoList()
 		else
 			path = "";
 
-		path = flats[a]->getParent()->getFilename(false) + path;
-
-		flat_info.push_back(map_texinfo_t(entry->getName(true), TC_NONE));
+		flat_info.push_back(map_texinfo_t(entry->getName(true), TC_NONE, flats[a]->getParent(), path));
 	}
 }
 

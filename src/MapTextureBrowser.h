@@ -5,6 +5,7 @@
 #include "BrowserWindow.h"
 
 class SLADEMap;
+class Archive;
 
 class MapTexBrowserItem : public BrowserItem
 {
@@ -31,6 +32,7 @@ public:
 	MapTextureBrowser(wxWindow* parent, int type = 0, string texture = "", SLADEMap* map = NULL);
 	~MapTextureBrowser();
 
+	string	determineTexturePath(Archive* archive, uint8_t category, string type, string path);
 	void	doSort(unsigned sort_type);
 	void	updateUsage();
 };

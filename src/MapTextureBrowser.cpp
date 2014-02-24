@@ -42,6 +42,7 @@
  * VARIABLES
  *******************************************************************/
 CVAR(Int, map_tex_sort, 2, CVAR_SAVE)
+CVAR(String, map_tex_treespec, "type,archive,category", CVAR_SAVE)
 
 
 /*******************************************************************
@@ -151,76 +152,29 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Textures
 	if (type == 0 || theGameConfiguration->mixTexFlats())
 	{
-		// No texture '-' (don't show if browsing for flats)
-		if (type == 0)
-			addItem(new MapTexBrowserItem("-", 0, 0), "Textures");
-
-		// Composite textures
-		vector<TextureResource::tex_res_t> textures;
-		theResourceManager->getAllTextures(textures, NULL);
+		vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
-			CTexture * tex = textures[a].tex;
-			string parent = textures[a].parent->getFilename(false);
-			if (tex->isExtended())
-			{
-				if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))
-					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), S_FMT("Textures/TEXTURES/%s", parent));
-				else if (S_CMPNOCASE(tex->getType(), "define"))
-					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), S_FMT("Textures/HIRESTEX/%s", parent));
-				else if (S_CMPNOCASE(tex->getType(), "flat"))
-					addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), S_FMT("Flats/TEXTURES/%s", parent));
-				// Ignore graphics, patches and sprites
-			}
-			else
-				addItem(new MapTexBrowserItem(tex->getName(), 0, tex->getIndex()+1), S_FMT("Textures/TEXTUREx/%s", parent));
-		}
-
-		// Texture namespace patches (TX_)
-		if (theGameConfiguration->txTextures())
-		{
-			vector<ArchiveEntry*> patches;
-			theResourceManager->getAllPatchEntries(patches, NULL);
-			for (unsigned a = 0; a < patches.size(); a++)
-			{
-				if (patches[a]->isInNamespace("textures") || patches[a]->isInNamespace("hires"))
-				{
-					// Determine texture path if it's in a pk3
-					string path = patches[a]->getPath();
-					if (path.StartsWith("/textures/"))
-						path.Remove(0, 9);
-					else if (path.StartsWith("/hires/"))
-						path.Remove(0, 6);
-					else
-						path = "";
-
-					path = patches[a]->getParent()->getFilename(false) + path;
-
-					addItem(new MapTexBrowserItem(patches[a]->getName(true), 0, a), "Textures/Single File (TX)/" + path);
-				}
-			}
+			// Add browser item
+			addItem(new MapTexBrowserItem(textures[a].name, 0, textures[a].index),
+				determineTexturePath(textures[a].archive, textures[a].category, "Textures", textures[a].path));
 		}
 	}
 
 	// Flats
 	if (type == 1 || theGameConfiguration->mixTexFlats())
 	{
-		vector<ArchiveEntry*> flats;
-		theResourceManager->getAllFlatEntries(flats, NULL);
+		vector<map_texinfo_t>& flats = theMapEditor->textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
-			ArchiveEntry* entry = flats[a];
+			// Determine tree path
+			string path = determineTexturePath(flats[a].archive, flats[a].category, "Flats", flats[a].path);
 
-			// Determine flat path if it's in a pk3
-			string path = entry->getPath();
-			if (path.StartsWith("/flats/") || path.StartsWith("/hires/"))
-				path.Remove(0, 6);
+			// Add browser item
+			if (flats[a].category == MapTextureManager::TC_TEXTURES)
+				addItem(new MapTexBrowserItem(flats[a].name, 0, flats[a].index), path);
 			else
-				path = "";
-
-			path = flats[a]->getParent()->getFilename(false) + path;
-
-			addItem(new MapTexBrowserItem(entry->getName(true), 1, entry->getParentDir()->entryIndex(entry)), "Flats/" + path);
+				addItem(new MapTexBrowserItem(flats[a].name, 1, flats[a].index), path);
 		}
 	}
 
@@ -236,6 +190,42 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
  *******************************************************************/
 MapTextureBrowser::~MapTextureBrowser()
 {
+}
+
+/* MapTextureBrowser::determineTexturePath
+ * Builds and returns the tree item path for [info]
+ *******************************************************************/
+string MapTextureBrowser::determineTexturePath(Archive* archive, uint8_t category, string type, string path)
+{
+	wxArrayString tree_spec = wxSplit(map_tex_treespec, ',');
+	string ret;
+	for (unsigned b = 0; b < tree_spec.size(); b++)
+	{
+		if (tree_spec[b] == "archive")
+			ret += archive->getFilename(false);
+		else if (tree_spec[b] == "type")
+			ret += type;
+		else if (tree_spec[b] == "category")
+		{
+			switch (category)
+			{
+			case MapTextureManager::TC_TEXTUREX:
+				ret += "TEXTUREx"; break;
+			case MapTextureManager::TC_TEXTURES:
+				ret += "TEXTURES"; break;
+			case MapTextureManager::TC_HIRES:
+				ret += "HIRESTEX"; break;
+			case MapTextureManager::TC_TX:
+				ret += "Single (TX)"; break;
+			default:
+				continue;
+			}
+		}
+
+		ret += "/";
+	}
+
+	return ret + path;
 }
 
 /* sortBIUsage

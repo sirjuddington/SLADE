@@ -13,21 +13,27 @@ struct map_tex_t
 	~map_tex_t() { if (texture && texture != &(GLTexture::missingTex())) delete texture; }
 };
 
+class Archive;
 struct map_texinfo_t
 {
 	string			name;
 	uint8_t			category;
+	string			path;
+	unsigned		index;
+	Archive*		archive;
 
-	map_texinfo_t(string name, uint8_t category)
+	map_texinfo_t(string name, uint8_t category, Archive* archive, string path = "", unsigned index = 0)
 	{
 		this->name = name;
 		this->category = category;
+		this->archive = archive;
+		this->path = path;
+		this->index = index;
 	}
 };
 
 typedef std::map<string, map_tex_t> MapTexHashMap;
 
-class Archive;
 class Palette8bit;
 class MapTextureManager : public Listener
 {
