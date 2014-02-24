@@ -10,6 +10,7 @@ private:
 	wxCheckBox*	cb_scroll_smooth;
 	wxCheckBox*	cb_selection_clear_click;
 	wxCheckBox* cb_merge_undo_step;
+	wxCheckBox*	cb_props_auto_apply;
 
 public:
 	MapEditorPrefsPanel(wxWindow* parent);
