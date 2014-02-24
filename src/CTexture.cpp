@@ -429,7 +429,7 @@ CTexture::~CTexture()
 }
 
 /* CTexture::copyTexture
- * Copies the texture [tex] to this texture. If keep_type is true,
+ * Copies the texture [tex] to this texture. If [keep_type] is true,
  * the current texture type (extended/regular) will be kept,
  * otherwise it will be converted to the type of [tex]
  *******************************************************************/
@@ -462,6 +462,22 @@ void CTexture::copyTexture(CTexture* tex, bool keep_type)
 	this->offset_x = tex->offset_x;
 	this->offset_y = tex->offset_y;
 	this->type = tex->type;
+
+	// Update scaling
+	if (extended)
+	{
+		if (scale_x == 0)
+			scale_x = 1;
+		if (scale_y == 0)
+			scale_y = 1;
+	}
+	else if (!extended && tex->extended)
+	{
+		if (scale_x == 1)
+			scale_x = 0;
+		if (scale_y == 1)
+			scale_y = 0;
+	}
 
 	// Copy patches
 	for (unsigned a = 0; a < tex->nPatches(); a++)
