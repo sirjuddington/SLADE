@@ -600,7 +600,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 			special = dlg.selectedSpecial();
 
 		if (special >= 0)
-			SetValue(special);
+			GetGrid()->ChangePropertyValue(this, special);
 	}
 
 	return wxIntProperty::OnEvent(propgrid, window, e);
@@ -660,7 +660,7 @@ bool MOPGThingTypeProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, 
 			// Set the value if a type was selected
 			int type = browser.getSelectedType();
 			if (type >= 0)
-				SetValue(type);
+				GetGrid()->ChangePropertyValue(this, type);
 		}
 	}
 
@@ -1087,7 +1087,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 		// Open map texture browser
 		MapTextureBrowser browser(theMapEditor, textype, tex_current, &(theMapEditor->mapEditor().getMap()));
 		if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
-			SetValue(browser.getSelectedItem()->getName());
+			GetGrid()->ChangePropertyValue(this, browser.getSelectedItem()->getName());
 
 		// Refresh text
 		RefreshEditor();
@@ -1265,7 +1265,7 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 		else if (objects[0]->getObjType() == MOBJ_LINE)
 			tag = objects[0]->getParentMap()->findUnusedLineId();
 
-		SetValue(tag);
+		GetGrid()->ChangePropertyValue(this, tag);
 		return true;
 	}
 
@@ -1333,7 +1333,7 @@ bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 		int map_format = theMapEditor->currentMapDesc().format;
 		dlg.setup(m_value.GetInteger(), map_format);
 		if (dlg.ShowModal() == wxID_OK)
-			SetValue(dlg.getSelectedSpecial(map_format));
+			GetGrid()->ChangePropertyValue(this, dlg.getSelectedSpecial(map_format));
 
 		return true;
 	}

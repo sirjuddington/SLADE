@@ -46,6 +46,7 @@
  * VARIABLES
  *******************************************************************/
 CVAR(Bool, mobj_props_show_all, false, CVAR_SAVE)
+CVAR(Bool, mobj_props_auto_apply, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -55,13 +56,14 @@ CVAR(Bool, mobj_props_show_all, false, CVAR_SAVE)
 /* MapObjectPropsPanel::MapObjectPropsPanel
  * MapObjectPropsPanel class constructor
  *******************************************************************/
-MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
+MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : wxPanel(parent, -1)
 {
 	// Init variables
 	last_type = -1;
 	group_custom = NULL;
 	for (unsigned a = 0; a < 5; a++)
 		args[a] = NULL;
+	this->no_apply = no_apply;
 
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -119,10 +121,20 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	btn_reset->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnReset, this);
 	cb_show_all->Bind(wxEVT_CHECKBOX, &MapObjectPropsPanel::onShowAllToggled, this);
 	btn_add->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnAdd, this);
+	pg_properties->Bind(wxEVT_PG_CHANGED, &MapObjectPropsPanel::onPropertyChanged, this);
+	pg_props_side1->Bind(wxEVT_PG_CHANGED, &MapObjectPropsPanel::onPropertyChanged, this);
+	pg_props_side2->Bind(wxEVT_PG_CHANGED, &MapObjectPropsPanel::onPropertyChanged, this);
 
 	// Hide side property grids
 	pg_props_side1->Show(false);
 	pg_props_side2->Show(false);
+
+	// Hide apply button if needed
+	if (no_apply || mobj_props_auto_apply)
+	{
+		btn_apply->Show(false);
+		btn_reset->Show(false);
+	}
 
 	Layout();
 }
@@ -445,6 +457,18 @@ void MapObjectPropsPanel::setupType(int objtype)
 	properties.clear();
 	btn_add->Show(false);
 
+	// Hide buttons if not needed
+	if (no_apply || mobj_props_auto_apply)
+	{
+		btn_apply->Show(false);
+		btn_reset->Show(false);
+	}
+	else if (!no_apply)
+	{
+		btn_apply->Show();
+		btn_reset->Show();
+	}
+
 	// Remove side1/2 tabs if they exist
 	while (tabs_sections->GetPageCount() > 1)
 		tabs_sections->RemovePage(1);
@@ -677,6 +701,8 @@ void MapObjectPropsPanel::setupType(int objtype)
 	pg_properties->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 
 	last_type = objtype;
+	
+	Layout();
 }
 
 /* MapObjectPropsPanel::setupTypeUDMF
@@ -697,6 +723,18 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 	group_custom = NULL;
 	properties.clear();
 	btn_add->Show();
+
+	// Hide buttons if not needed
+	if (no_apply || mobj_props_auto_apply)
+	{
+		btn_apply->Show(false);
+		btn_reset->Show(false);
+	}
+	else if (!no_apply)
+	{
+		btn_apply->Show();
+		btn_reset->Show();
+	}
 
 	// Remove side1/2 tabs if they exist
 	while (tabs_sections->GetPageCount() > 1)
@@ -751,6 +789,8 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		args[arg] = pg_properties->GetProperty(S_FMT("arg%u", arg));
 
 	last_type = objtype;
+
+	Layout();
 }
 
 /* MapObjectPropsPanel::openObject
@@ -879,14 +919,6 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	pg_properties->Refresh();
 	pg_props_side1->Refresh();
 	pg_props_side2->Refresh();
-}
-
-/* MapObjectPropsPanel::showApplyButton
- * Shows/hides the 'Apply' button
- *******************************************************************/
-void MapObjectPropsPanel::showApplyButton(bool show)
-{
-	btn_apply->Show(show);
 }
 
 /* MapObjectPropsPanel::updateArgs
@@ -1059,6 +1091,33 @@ void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 			prop_col->setParent(this);
 			properties.push_back(prop_col);
 			pg_properties->AppendIn(group_custom, prop_col);
+		}
+	}
+}
+
+/* MapObjectPropsPanel::onPropertyChanged
+ * Called when a property value is changed
+ *******************************************************************/
+void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
+{
+	// Ignore if no auto apply
+	if (no_apply || !mobj_props_auto_apply)
+	{
+		e.Skip();
+		return;
+	}
+
+	// Find property
+	string name = e.GetPropertyName();
+	for (unsigned a = 0; a < properties.size(); a++)
+	{
+		if (properties[a]->getPropName() == name)
+		{
+			// Found, apply value
+			theMapEditor->mapEditor().beginUndoRecordLocked("Modify Properties", true, false, false);
+			properties[a]->applyValue();
+			theMapEditor->mapEditor().endUndoRecord();
+			return;
 		}
 	}
 }

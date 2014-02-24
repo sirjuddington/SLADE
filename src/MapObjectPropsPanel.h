@@ -28,6 +28,7 @@ private:
 	wxCheckBox*				cb_show_all;
 	wxButton*				btn_add;
 	wxPGProperty*			group_custom;
+	bool					no_apply;
 
 	MOPGProperty*	addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
 	MOPGProperty*	addIntProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
@@ -44,7 +45,7 @@ private:
 	void	setupTypeUDMF(int objtype);
 
 public:
-	MapObjectPropsPanel(wxWindow* parent);
+	MapObjectPropsPanel(wxWindow* parent, bool no_apply = false);
 	~MapObjectPropsPanel();
 
 	vector<MapObject*>&	getObjects() { return objects; }
@@ -52,7 +53,6 @@ public:
 
 	void	openObject(MapObject* object);
 	void	openObjects(vector<MapObject*>& objects);
-	void	showApplyButton(bool show = true);
 	void	updateArgs(MOPGIntWithArgsProperty* source);
 	void	applyChanges();
 
@@ -61,6 +61,7 @@ public:
 	void	onBtnReset(wxCommandEvent& e);
 	void	onShowAllToggled(wxCommandEvent& e);
 	void	onBtnAdd(wxCommandEvent& e);
+	void	onPropertyChanged(wxPropertyGridEvent& e);
 };
 
 #endif//__MAP_OBJECT_PROPS_PANEL_H__

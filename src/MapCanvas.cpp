@@ -2564,8 +2564,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	dlg.SetSizer(sizer);
 
 	// Create properties panel
-	MapObjectPropsPanel* panel_props = new MapObjectPropsPanel(&dlg);
-	panel_props->showApplyButton(false);
+	MapObjectPropsPanel* panel_props = new MapObjectPropsPanel(&dlg, true);
 	sizer->Add(panel_props, 1, wxEXPAND|wxALL, 4);
 
 	// Add dialog buttons
