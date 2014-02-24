@@ -1075,6 +1075,9 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 		// Save 'dir_last'
 		wxFileName fn(filename);
 		dir_last = fn.GetPath(true);
+
+		// Add recent file
+		theArchiveManager->addRecentFile(filename);
 	}
 
 	return true;
