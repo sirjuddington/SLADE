@@ -29,8 +29,15 @@ string UndoListView::getItemText(long item, long column) const
 	if (item < max)
 	{
 		int index = max - item - 1;
-		string name = manager->undoLevel(index)->getName();
-		return S_FMT("%d. %s", index+1, name);
+		if (column == 0)
+		{
+			string name = manager->undoLevel(index)->getName();
+			return S_FMT("%d. %s", index + 1, name);
+		}
+		else
+		{
+			return manager->undoLevel(index)->getTimeStamp(false, true);
+		}
 	}
 	else
 		return "Invalid Index";
@@ -64,6 +71,7 @@ void UndoListView::setManager(UndoManager* manager)
 	listenTo(manager);
 
 	SetItemCount(manager->nUndoLevels());
+	Refresh();
 }
 
 void UndoListView::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
@@ -91,6 +99,7 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 	sizer->Add(list_levels, 1, wxEXPAND|wxALL, 4);
 
 	list_levels->AppendColumn("Action", wxLIST_FORMAT_LEFT, 160);
+	list_levels->AppendColumn("Time", wxLIST_FORMAT_RIGHT);
 	list_levels->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 }
 

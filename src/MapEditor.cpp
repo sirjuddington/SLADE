@@ -492,6 +492,12 @@ void MapEditor::setEditMode(int mode)
 	if (edit_mode == MODE_3D && mode != MODE_3D)
 		undo_manager_3d->clear();
 
+	// Set undo manager for history panel
+	if (mode == MODE_3D && edit_mode != MODE_3D)
+		theMapEditor->setUndoManager(undo_manager_3d);
+	else if (edit_mode == MODE_3D && mode != MODE_3D)
+		theMapEditor->setUndoManager(undo_manager);
+
 	// Set edit mode
 	edit_mode = mode;
 	sector_mode = SECTOR_BOTH;

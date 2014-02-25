@@ -48,6 +48,7 @@ UndoLevel::UndoLevel(string name)
 {
 	// Init variables
 	this->name = name;
+	this->timestamp = wxDateTime::Now();
 }
 
 /* UndoLevel::~UndoLevel
@@ -57,6 +58,20 @@ UndoLevel::~UndoLevel()
 {
 	for (unsigned a = 0; a < undo_steps.size(); a++)
 		delete undo_steps[a];
+}
+
+/* UndoLevel::getTimeStamp
+ * Returns a string representation of the time at which the undo
+ * level was recorded
+ *******************************************************************/
+string UndoLevel::getTimeStamp(bool date, bool time)
+{
+	if (date && !time)
+		return timestamp.FormatISODate();
+	else if (!date && time)
+		return timestamp.FormatISOTime();
+	else
+		return timestamp.FormatISOCombined();
 }
 
 /* UndoLevel::doUndo
@@ -276,12 +291,18 @@ string UndoManager::redo()
 	return level->getName();
 }
 
+/* UndoManager::getAllLevels
+ * Adds all undo level names to [list]
+ *******************************************************************/
 void UndoManager::getAllLevels(vector<string>& list)
 {
 	for (unsigned a = 0; a < undo_levels.size(); a++)
 		list.push_back(undo_levels[a]->getName());
 }
 
+/* UndoManager::clear
+ * Clears all undo levels and resets variables
+ *******************************************************************/
 void UndoManager::clear()
 {
 	// Clean up undo levels

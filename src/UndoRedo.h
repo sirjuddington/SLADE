@@ -3,6 +3,7 @@
 #define __UNDO_REDO_H__
 
 #include "ListenerAnnouncer.h"
+#include <wx/datetime.h>
 
 class UndoStep
 {
@@ -24,6 +25,7 @@ class UndoLevel
 private:
 	string				name;
 	vector<UndoStep*>	undo_steps;
+	wxDateTime			timestamp;
 
 public:
 	UndoLevel(string name);
@@ -33,6 +35,7 @@ public:
 	bool	doUndo();
 	bool	doRedo();
 	void	addStep(UndoStep* step) { undo_steps.push_back(step); }
+	string	getTimeStamp(bool date, bool time);
 
 	bool	writeFile(string filename);
 	bool	readFile(string filename);

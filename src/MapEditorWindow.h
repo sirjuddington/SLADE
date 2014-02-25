@@ -16,17 +16,20 @@ class ObjectEditGroup;
 class WadArchive;
 class MapCanvas;
 class MapChecksPanel;
+class UndoManagerHistoryPanel;
+class UndoManager;
 class MapEditorWindow : public STopWindow, public SActionHandler
 {
 private:
-	MapCanvas*				map_canvas;
-	MapEditor				editor;
-	MapTextureManager		tex_man;
-	MapObjectPropsPanel*	panel_obj_props;
-	ScriptEditorPanel*		panel_script_editor;
-	Archive::mapdesc_t		mdesc_current;
-	ObjectEditPanel*		panel_obj_edit;
-	MapChecksPanel*			panel_checks;
+	MapCanvas*					map_canvas;
+	MapEditor					editor;
+	MapTextureManager			tex_man;
+	MapObjectPropsPanel*		panel_obj_props;
+	ScriptEditorPanel*			panel_script_editor;
+	Archive::mapdesc_t			mdesc_current;
+	ObjectEditPanel*			panel_obj_edit;
+	MapChecksPanel*				panel_checks;
+	UndoManagerHistoryPanel*	panel_undo_history;
 
 	// Singleton instance
 	static MapEditorWindow*		instance;
@@ -76,6 +79,7 @@ public:
 	void		forceRefresh(bool renderer = false);
 	void		refreshToolBar();
 	void		editObjectProperties(vector<MapObject*>& objects);
+	void		setUndoManager(UndoManager* manager);
 
 	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
 	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }

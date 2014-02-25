@@ -72,7 +72,7 @@ namespace Global
 {
 	string error = "";
 
-	string version = "3.1.0 beta 4"
+	string version = "3.1.0 beta 3"
 #ifdef GIT_DESCRIPTION
 	                 " (" GIT_DESCRIPTION ")"
 #endif
@@ -594,10 +594,11 @@ void MainApp::initActions()
 	new SAction("mapw_sectormode_normal", "Normal (Both)", "t_sector_both", "Edit sector floors and ceilings", "", SAction::RADIO, -1, group_sector_mode);
 	new SAction("mapw_sectormode_floor", "Floors", "t_sector_floor", "Edit sector floors", "", SAction::RADIO, -1, group_sector_mode);
 	new SAction("mapw_sectormode_ceiling", "Ceilings", "t_sector_ceiling", "Edit sector ceilings", "", SAction::RADIO, -1, group_sector_mode);
-	new SAction("mapw_showconsole", "&Console", "t_console", "Toggle the Console window", "Ctrl+2");
 	new SAction("mapw_showproperties", "&Item Properties", "t_properties", "Toggle the Item Properties window", "Ctrl+1");
-	new SAction("mapw_showscripteditor", "Script &Editor", "e_text", "Toggle the Script Editor window", "Ctrl+3");
+	new SAction("mapw_showconsole", "&Console", "t_console", "Toggle the Console window", "Ctrl+2");
+	new SAction("mapw_showundohistory", "&Undo History", "t_undo", "Toggle the Undo History window", "Ctrl+3");
 	new SAction("mapw_showchecks", "Map Checks", "i_tick", "Toggle the Map Checks window", "Ctrl+4");
+	new SAction("mapw_showscripteditor", "Script &Editor", "e_text", "Toggle the Script Editor window", "Ctrl+5");
 	new SAction("mapw_run_map", "Run Map", "t_run", "Run the current map", "Ctrl+Shift+R");
 	new SAction("mapw_draw_lines", "Draw Lines", "t_linedraw", "Begin line drawing", "kb:me2d_begin_linedraw");
 	new SAction("mapw_draw_shape", "Draw Shape", "t_shapedraw", "Begin shape drawing", "kb:me2d_begin_shapedraw");

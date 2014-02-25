@@ -49,6 +49,7 @@
 #include "MapEditorConfigDialog.h"
 #include "MapChecksPanel.h"
 #include "SplashWindow.h"
+#include "UndoManagerHistoryPanel.h"
 #include <wx/aui/aui.h>
 
 
@@ -166,6 +167,11 @@ void MapEditorWindow::saveLayout()
 	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("map_checks"));
 	file.Write(S_FMT("\"%s\"\n", pinf));
 
+	// Undo history pane
+	file.Write("\"undo_history\" ");
+	pinf = m_mgr->SavePaneInfo(m_mgr->GetPane("undo_history"));
+	file.Write(S_FMT("\"%s\"\n", pinf));
+
 	// Close file
 	file.Close();
 }
@@ -216,8 +222,9 @@ void MapEditorWindow::setupMenu()
 	wxMenu* menu_view = new wxMenu("");
 	theApp->getAction("mapw_showproperties")->addToMenu(menu_view);
 	theApp->getAction("mapw_showconsole")->addToMenu(menu_view);
-	theApp->getAction("mapw_showscripteditor")->addToMenu(menu_view);
+	theApp->getAction("mapw_showundohistory")->addToMenu(menu_view);
 	theApp->getAction("mapw_showchecks")->addToMenu(menu_view);
+	theApp->getAction("mapw_showscripteditor")->addToMenu(menu_view);
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
@@ -401,6 +408,21 @@ void MapEditorWindow::setupLayout()
 	p_inf.Name("map_checks");
 	p_inf.Layer(0);
 	m_mgr->AddPane(panel_checks, p_inf);
+
+
+	// -- Undo History Panel --
+	panel_undo_history = new UndoManagerHistoryPanel(this, NULL);
+	panel_undo_history->setManager(editor.undoManager());
+
+	// Setup panel info & add panel
+	p_inf.DefaultPane();
+	p_inf.Right();
+	p_inf.BestSize(128, 480);
+	p_inf.Caption("Undo History");
+	p_inf.Name("undo_history");
+	p_inf.Show(false);
+	p_inf.Dock();
+	m_mgr->AddPane(panel_undo_history, p_inf);
 
 
 	// Load previously saved window layout
@@ -856,6 +878,14 @@ void MapEditorWindow::editObjectProperties(vector<MapObject*>& objects)
 	map_canvas->editObjectProperties(objects);
 }
 
+/* MapEditorWindow::setUndoManager
+ * Sets the undo manager to show in the undo history panel
+ *******************************************************************/
+void MapEditorWindow::setUndoManager(UndoManager* manager)
+{
+	panel_undo_history->setManager(manager);
+}
+
 /* MapEditorWindow::showObjectEditPanel
  * Shows/hides the object edit panel (opens [group] if shown)
  *******************************************************************/
@@ -1073,6 +1103,19 @@ bool MapEditorWindow::handleAction(string id)
 		}
 
 		//p_inf.MinSize(200, 128);
+		m_mgr->Update();
+		return true;
+	}
+
+	// View->Undo History
+	else if (id == "mapw_showundohistory")
+	{
+		wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
+		wxAuiPaneInfo& p_inf = m_mgr->GetPane("undo_history");
+
+		// Toggle window
+		p_inf.Show(!p_inf.IsShown());
+
 		m_mgr->Update();
 		return true;
 	}
