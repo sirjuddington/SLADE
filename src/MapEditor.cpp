@@ -490,7 +490,10 @@ void MapEditor::setEditMode(int mode)
 
 	// Clear 3d mode undo manager on exiting 3d mode
 	if (edit_mode == MODE_3D && mode != MODE_3D)
+	{
+		undo_manager->createMergedLevel(undo_manager_3d, "3D Mode Editing");
 		undo_manager_3d->clear();
+	}
 
 	// Set undo manager for history panel
 	if (mode == MODE_3D && edit_mode != MODE_3D)

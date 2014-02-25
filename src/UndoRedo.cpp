@@ -122,6 +122,19 @@ bool UndoLevel::writeFile(string filename)
 	return true;
 }
 
+/* UndoLevel::createMerged
+ * Adds all undo steps from all undo levels in [levels]
+ *******************************************************************/
+void UndoLevel::createMerged(vector<UndoLevel*>& levels)
+{
+	for (unsigned a = 0; a < levels.size(); a++)
+	{
+		for (unsigned b = 0; b < levels[a]->undo_steps.size(); b++)
+			undo_steps.push_back(levels[a]->undo_steps[b]);
+		levels[a]->undo_steps.clear();
+	}
+}
+
 
 /*******************************************************************
  * UNDOMANAGER CLASS FUNCTIONS
@@ -314,6 +327,27 @@ void UndoManager::clear()
 	current_level = NULL;
 	current_level_index = -1;
 	undo_running = false;
+}
+
+/* UndoManager::createMergedLevel
+ * Creates an undo level from all levels in [manager], called [name]
+ *******************************************************************/
+bool UndoManager::createMergedLevel(UndoManager* manager, string name)
+{
+	// Do nothing if no levels to merge
+	if (manager->undo_levels.empty())
+		return false;
+
+	// Create merged undo level from manager
+	UndoLevel* merged = new UndoLevel(name);
+	merged->createMerged(manager->undo_levels);
+
+	// Add undo level
+	undo_levels.push_back(merged);
+	current_level = NULL;
+	current_level_index = undo_levels.size() - 1;
+
+	return true;
 }
 
 

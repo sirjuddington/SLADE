@@ -39,6 +39,7 @@ public:
 
 	bool	writeFile(string filename);
 	bool	readFile(string filename);
+	void	createMerged(vector<UndoLevel*>& levels);
 };
 
 class SLADEMap;
@@ -69,6 +70,7 @@ public:
 	string	redo();
 
 	void	clear();
+	bool	createMergedLevel(UndoManager* manager, string name);
 };
 
 namespace UndoRedo
