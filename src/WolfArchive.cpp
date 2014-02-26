@@ -141,33 +141,28 @@ string searchIMFName(MemChunk& mc)
 
 	string ret = "";
 	string fullname = "";
-	if (mc.getSize() > 82)
+	if (mc.getSize() >= 88u)
 	{
-		uint16_t nameOffset = wxINT16_SWAP_ON_BE(*(uint16_t*)&mc[0])+4;
-		if (mc.getSize() > nameOffset+80)
-		{
-			memcpy(tmp, &mc[nameOffset], 16);
-			tmp[strlen(tmp)] = 0;
-			ret = tmp;
-
-			memcpy(tmp2, &mc[nameOffset + 16], 64);
-			tmp[strlen(tmp2)] = 0;
-			fullname = tmp2;
-		}
+		uint16_t nameOffset = READ_L16(mc, 0)+4u;
 		// Shareware stubs
-		else if (*(uint16_t*)&mc[0] == 0)
+		if (nameOffset == 4)
 		{
-			nameOffset = 2;
 			memcpy(tmp, &mc[2], 16);
-			tmp[strlen(tmp)] = 0;
 			ret = tmp;
 
 			memcpy(tmp2, &mc[18], 64);
-			tmp[strlen(tmp2)] = 0;
+			fullname = tmp2;
+		}
+		else if (mc.getSize() > nameOffset+80u)
+		{
+			memcpy(tmp, &mc[nameOffset], 16);
+			ret = tmp;
+
+			memcpy(tmp2, &mc[nameOffset + 16], 64);
 			fullname = tmp2;
 		}
 
-		if ((ret.length() > 12 || strncmp(tmp+ret.length()+1, "IMF", 3) != 0) && strncmp(tmp2+strlen(tmp2)-3, "IMF", 3) != 0)
+		if (ret.IsEmpty() || ret.length() > 12 || !fullname.EndsWith("IMF"))
 			return "";
 	}
 	return ret;
@@ -656,7 +651,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		// Method 2: Heuristics - Find music and then assume there are the same number PC, Adlib, and Digital
 		stripTags = false;
 		uint32_t d = num_lumps;
-		while(d-- > 0)
+		while(d-- > 3)
 		{
 			uint32_t offset = wxINT32_SWAP_ON_BE(offsets[d]);
 			uint32_t size = wxINT32_SWAP_ON_BE(offsets[d+1]) - offset;
