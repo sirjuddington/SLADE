@@ -866,16 +866,16 @@ public:
 			line += S_FMT("front middle texture \"%s\"", lines[index]->s1()->stringProperty("texturemiddle"));
 			break;
 		case TEX_FRONT_LOWER:
-			S_FMT("front lower texture \"%s\"", lines[index]->s1()->stringProperty("texturebottom"));
+			line += S_FMT("front lower texture \"%s\"", lines[index]->s1()->stringProperty("texturebottom"));
 			break;
 		case TEX_BACK_UPPER:
-			S_FMT("back upper texture \"%s\"", lines[index]->s2()->stringProperty("texturetop"));
+			line += S_FMT("back upper texture \"%s\"", lines[index]->s2()->stringProperty("texturetop"));
 			break;
 		case TEX_BACK_MIDDLE:
-			S_FMT("back middle texture \"%s\"", lines[index]->s2()->stringProperty("texturemiddle"));
+			line += S_FMT("back middle texture \"%s\"", lines[index]->s2()->stringProperty("texturemiddle"));
 			break;
 		case TEX_BACK_LOWER:
-			S_FMT("back lower texture \"%s\"", lines[index]->s2()->stringProperty("texturebottom"));
+			line += S_FMT("back lower texture \"%s\"", lines[index]->s2()->stringProperty("texturebottom"));
 			break;
 		default: break;
 		}
