@@ -41,6 +41,7 @@ public:
 
 	// Events
 	void	onItemRightClick(wxCommandEvent& e);
+	void	onMenu(wxCommandEvent& e);
 };
 
 #endif//__UNDO_MANAGER_HISTORY_PANEL_H__
