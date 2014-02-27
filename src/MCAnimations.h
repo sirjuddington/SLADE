@@ -43,7 +43,7 @@ private:
 	float	fade;
 
 public:
-	MCAThingSelection(long start, double x, double y, double radius, bool select = true);
+	MCAThingSelection(long start, double x, double y, double radius, double scale_inv, bool select = true);
 	~MCAThingSelection();
 
 	bool update(long time);

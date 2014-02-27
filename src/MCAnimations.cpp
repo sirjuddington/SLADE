@@ -48,6 +48,7 @@ EXTERN_CVAR(Bool, thing_overlay_square)
 EXTERN_CVAR(Int, thing_drawtype)
 EXTERN_CVAR(Bool, vertex_round)
 EXTERN_CVAR(Float, line_width)
+EXTERN_CVAR(Int, halo_width)
 
 
 /*******************************************************************
@@ -132,7 +133,7 @@ void MCASelboxFader::draw()
 /* MCAThingSelection::MCAThingSelection
  * MCAThingSelection class constructor
  *******************************************************************/
-MCAThingSelection::MCAThingSelection(long start, double x, double y, double radius, bool select) : MCAnimation(start)
+MCAThingSelection::MCAThingSelection(long start, double x, double y, double radius, double scale_inv, bool select) : MCAnimation(start)
 {
 	// Init variables
 	this->x = x;
@@ -144,6 +145,7 @@ MCAThingSelection::MCAThingSelection(long start, double x, double y, double radi
 	// Adjust radius
 	if (!thing_overlay_square)
 		this->radius += 8;
+	this->radius += halo_width * scale_inv;
 }
 
 /* MCAThingSelection::~MCAThingSelection

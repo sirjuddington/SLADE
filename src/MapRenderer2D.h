@@ -90,6 +90,8 @@ public:
 	MapRenderer2D(SLADEMap* map);
 	~MapRenderer2D();
 
+	double	viewScaleInv() { return view_scale_inv; }
+
 	// Vertices
 	bool	setupVertexRendering(float size_scale, bool overlay = false);
 	void	renderVertices(float alpha = 1.0f);
