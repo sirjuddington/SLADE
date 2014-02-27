@@ -1788,7 +1788,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 
 		if (texture)
 		{
-			if (!tex_flats[a] || sector->modifiedTime() > flats_updated)
+			if (!tex_flats[a] || sector->modifiedTime() > flats_updated - 100)
 			{
 				// Get the sector texture
 				if (type <= 1)
@@ -1935,7 +1935,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		first = false;
 		if (texture)
 		{
-			if (!tex_flats[a] || sector->modifiedTime() > flats_updated)
+			if (!tex_flats[a] || sector->modifiedTime() > flats_updated - 100)
 			{
 				// Get the sector texture
 				if (type <= 1)
