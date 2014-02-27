@@ -3327,6 +3327,8 @@ bool MapCanvas::handleAction(string id)
 	// 3d mode
 	else if (id == "mapw_mode_3d")
 	{
+		SetFocusFromKbd();
+		SetFocus();
 		changeEditMode(MapEditor::MODE_3D);
 		return true;
 	}
