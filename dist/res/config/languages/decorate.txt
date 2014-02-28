@@ -15,7 +15,8 @@ decorate : cstyle {
 		Raise, Heal, Crash, Crush, Wound, Greetings, Yes, No, Extreme, Bounce, Floor, Ceiling,
 		Wall, Creature, Loop, Stop, Wait, Fail, Goto, Ready, Deselect, Select, Fire, AltFire,
 		Hold, AltHold, Flash, AltFlash, Reload, Zoom, Pickup, Use, Drop, Bright, Fast, NoDelay,
-		Idle, Active, Inactive, Light, Offset, Action, Native,
+		Idle, Active, Inactive, Light, Offset, Action, Native, Const, Enum, Replaces, LightDone,
+		Super, Spray, GenericFreezeDeath, GenericCrush,
 
 		// Actor properties
 		
@@ -119,6 +120,10 @@ decorate : cstyle {
 	}
 
 	constants = {
+		// General constants
+		TRUE, FALSE,
+		
+		// Flags
 		ACTIVATEIMPACT, ACTIVATEMCROSS, ACTIVATEPCROSS, ACTLIKEBRIDGE, ADDITIVEPOISONDAMAGE,
 		ADDITIVEPOISONDURATION, ALLOWBOUNCEONACTORS, ALLOWPARTICLES, ALWAYSFAST,
 		ALWAYSPUFF, ALWAYSRESPAWN, ALWAYSTELEFRAG, AMBUSH, AVOIDMELEE, BLASTED, BLOCKEDBYSOLIDACTORS,
@@ -256,7 +261,7 @@ decorate : cstyle {
 	}
 
 	functions {
-		A_AlertMonsters;
+		A_AlertMonsters = "[float maxdist], [int flags]";
 		A_Burst = "string classname";
 		A_CentaurDefend;
 		A_Chase = "[string MeleeState], [string RangedState], [int Flags]";
@@ -361,9 +366,9 @@ decorate : cstyle {
 
 		A_TossGib;
 		A_Feathers;
-		A_SpawnDebris = "string type, bool translation";
+		A_SpawnDebris = "string type, bool translation, [float mult_h], [float mult_v]";
 		A_SpawnItem = "string type, int distance, float zpos, bool useammo, bool translation";
-		A_SpawnItemEx = "string type, float xoffset, float yoffset, float zoffset, float xvelocity, float yvelocity, float zvelocity, float angle, int flags, int failchance";
+		A_SpawnItemEx = "string type, [float xoffset], [float yoffset], [float zoffset], [float xvelocity], [float yvelocity], [float zvelocity], [float angle], [int flags], [int failchance], [int tid]";
 
 		A_CheckCeiling = "string state", "int offset";
 		A_CheckFloor =	"string state", "int offset";
@@ -428,7 +433,7 @@ decorate : cstyle {
 		A_SetArg = "int position, int value";
 		A_SetDamageType = "string damagetype";
 		A_SetPitch = "float pitch";
-		A_SetSpecial = "int special, int arg0, int arg1, int arg2, int arg3, int arg4";
+		A_SetSpecial = "int special, [int arg0], [int arg1], [int arg2], [int arg3], [int arg4]";
 		A_SetScale = "float scalex, [float scaley]";
 		A_SetMass = "int mass";
 		A_SetUserArray = "string name, int pos, int value";

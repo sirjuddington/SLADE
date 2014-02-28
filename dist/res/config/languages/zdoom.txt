@@ -14,7 +14,7 @@ z_animdefs {
 	}
 
 	constants = {
-		allowdecals, doom, heretic, hexen, strife
+		allowdecals, doom, heretic, hexen, strife, optional
 	}
 }
 
@@ -34,6 +34,11 @@ z_cvarinfo {
 		// Types
 		bool, color, float, int, string
 	}
+	
+	constants = {
+		//Boolean values
+		TRUE, FALSE
+	}
 }
 
 z_decaldef {
@@ -42,10 +47,10 @@ z_decaldef {
 	keyword_link = "http://zdoom.org/wiki/DECALDEF";
 	constant_link = "http://zdoom.org/wiki/DECALDEF";
 	function_link = "http://zdoom.org/wiki/DECALDEF";
-	blocks = "decal";
+	blocks = "decal", "decalgroup", "stretcher", "fader", "combiner", "slider", "colorchanger";
 
 	keywords = {
-		pic, shade, x-scale, y-scale, flipx, flipy, randomflipx, randomflipy, solid,
+		pic, shade, x, scale, y, scale, flipx, flipy, randomflipx, randomflipy, solid,
 		translucent, add, fuzzy, fullbright, lowerdecal, colors, animator, decal,
 		decalgroup, generator, stretcher, GoalX, GoalY, StretchStart, StretchTime, 
 		fader, DecayStart, DecayTime, Combiner, slider, DistX, DistY, SlideStart, 
@@ -111,6 +116,21 @@ z_keyconf {
 	keywords = {
 		alias, bind, defaultbind, addkeysection, addmenukey, addslotdefault,
 		weaponsection, setslot, clearplayerclasses, addplayerclass
+	}
+}
+
+z_language {
+	name = "ZDoom Language";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/LANGUAGE";
+	constant_link = "http://zdoom.org/wiki/LANGUAGE";
+	function_link = "http://zdoom.org/wiki/LANGUAGE";
+	blocks = "default";
+
+	keywords = {
+		default, csy, dan, de, dea, des, deu, ell, en, ena, enc, eng, eni, enu, enz, esm, 
+		esn, esp, eti, fin, fr, fra, frb, frc, frs, hun, isl, ita, its, nlb, nld, non, nor, 
+		plk, ptb, ptg, rus, sky, sv, trk
 	}
 }
 
@@ -324,19 +344,28 @@ z_sbarinfo {
 		nullimage, true, false, none, SlideInBottom, pushup, fade, fullscreen, normal, automap, inventory, inventoryfullscreen,
 		popuplog, popupkeys, popupstatus, forcescaled, fullscreenoffsets, reverse, wiggle, translatable, armor, vertical, horizontal,
 		reverserows, alwaysshow, noartibox, noarrows, alwaysshowcounter, translucent, Doom, Heretic, Hexen, HexenStrict, Strife,
-		playericon, armoricon, weaponicon, ammoicon1, ammoicon2, sigil, hexenarmor, xdeathface, animatedgodmode,
+		playericon, armoricon, weaponicon, ammoicon1, ammoicon2, sigil, xdeathface, animatedgodmode,
 		disablegrin, disableouch, disablepain, disablerampage, health, armorclass, ammo1, ammo2, frags, kills, monsters, items,
-		totalitems, secrets, score, totalsecrets, airtime, ammo, ammocapacity, ammo1capacity, ammo2capacity, poweruptime, globalvar,
+		totalitems, secrets, score, totalsecrets, airtime, ammocapacity, ammo1capacity, ammo2capacity, poweruptime, globalvar,
 		globalarray, accuracy, keys, savepercent, stamina, fillzeros, whennotzero, alternateonempty, artiflash, alwaysshowcounter,
 		center, centerbottom, invulnerable, keyslot, armortype, levelname, levellump, skillname, playerclass, playername, ammo1tag,
 		ammo2tag, weapontag, inventorytag, time, logtext, linebreaks, normal, pain, ouch, rampage, god, godanimated, grin, death,
-		xdeath, health2, healthspecial, directional, alignment, left, right, dontcap, prefix, itemflash, alticonfirst, alternateonfail,
-		forcescale, skipalticon, skipicon, skipready, skipspawn
+		xdeath, health2, healthspecial, directional, left, right, dontcap, prefix, itemflash, alticonfirst, alternateonfail,
+		forcescale, skipalticon, skipicon, skipready, skipspawn, auto, cooperative, singleplayer, teamgame, deathmatch, weaponslot,
+
+		//Some default fonts
+		BIGFONT, INDEXFONT, SMALLFONT, HUDFONT_DOOM, INDEXFONT_DOOM, HUDFONT_RAVEN, INDEXFONT_RAVEN
+
+		//Some default colors
+		Yellow, Red, Green, Blue, White, Black, untranslated
 	}
 
 	functions {
 		interpolate = "speed";
 		drawshadow = "[xOffset], [yOffset]";
+		alignment = "alignment";
+		ammo = "[class]";
+		hexenarmor = "[type], [slot]";
 	}
 }
 
@@ -351,7 +380,7 @@ z_sndinfo {
 		$random, $alias, $limit, $pitchshift, $pitchshiftrange, $playerreserve, $playersound, $playersounddup,
 		$playeralias, $playercompat, $ambient, $ifdoom, $ifheretic, $ifhexen, $ifstrife, $map, $musicvolume,
 		$registered, $archivepath, point, surround, world, continuous, periodic, random,
-		$volume, $rolloff, $mididevice, $attenuation, $edfoverride, $musicalias, $singular
+		$volume, $rolloff, $mididevice, $attenuation, $edfoverride, $musicalias, $singular, $endif
 	}
 
 	constants = {
@@ -419,6 +448,18 @@ z_terrain {
 	}
 }
 
+z_textcolors {
+	name = "ZDoom Textcolors";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/TEXTCOLO";
+	constant_link = "http://zdoom.org/wiki/TEXTCOLO";
+	function_link = "http://zdoom.org/wiki/TEXTCOLO";
+
+	keywords = {
+		Console, Flat
+	}
+}
+
 z_textures {
 	name = "ZDoom Textures";
 	case_sensitive = false;
@@ -439,5 +480,239 @@ z_textures {
 		Inverse, Gold, Red, Green, Ice, Desaturate, Copy, Translucent, 
 		Add, Subtract, ReverseSubtract, Modulate, CopyAlpha, Overlay,
 		CopyNewAlpha
+	}
+}
+
+
+z_xlat {
+	name = "ZDoom Map Translator";
+	case_sensitive = false;
+	keyword_link = "http://zdoom.org/wiki/Map_translator";
+	constant_link = "http://zdoom.org/wiki/Map_translator";
+	function_link = "http://zdoom.org/wiki/Map_translator";
+
+	keywords = {
+		include maxlinespecial, sector, enum, tag, lineflag, define, lineid
+	}
+
+	constants = {
+		clear, bitmask
+
+		USE, MONST, REP, WALK, SHOOT, MONWALK, FIRSTSIDE,
+		NoKey, RCard, BCard, YCard, RSkull, BSkull, YSkull, AnyKey, AllKeys, CardIsSkull,
+		C_SLOW, C_FAST, C_NORMAL, C_TURBO,
+		D_SLOW, D_FAST, D_NORMAL, D_TURBO,
+		ST_SLOW, ST_NORMAL, ST_FAST, ST_TURBO,
+		P_SLOW, P_NORMAL, P_FAST, P_TURBO,
+		F_SLOW, F_NORMAL, F_FAST, F_TURBO,
+		VDOORWAIT, PLATWAIT, DORATE, ELEVATORSPEED, SCROLL_UNIT, CEILWAIT,
+		
+		Init_Gravity, Init_Color, Init_Damage, Init_TransferSky
+	}
+
+	functions = {
+		unsupported;
+		
+		ACS_Execute = "int script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
+		ACS_ExecuteAlways = "int script, [int mapnum], [int arg1], [int arg2], [int arg3]";
+		ACS_ExecuteWithResult = "int script, [int s_arg1], [int s_arg2], [int s_arg3]";
+		ACS_LockedExecute = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
+		ACS_LockedExecuteDoor = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
+		ACS_Suspend = "int script, [int mapnum]";
+		ACS_Terminate = "int script, [int mapnum]";
+		Autosave;
+		Ceiling_CrushAndRaise = "int tag, int speed, int damage, [int crushmode]";
+		Ceiling_CrushAndRaiseA = "int tag, int downspeed, int upspeed, int damage, [cint rushmode]";
+		Ceiling_CrushAndRaiseDist = "int tag, int dist, int speed, int damage, [int crushmode]";
+		Ceiling_CrushAndRaiseSilentA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushRaiseAndStay = "int tag, int speed, int crush, [int crushmode]";
+		Ceiling_CrushRaiseAndStayA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushRaiseAndStaySilA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushStop = "int tag";
+		Ceiling_LowerAndCrush = "int tag, int speed, int damage, [int crushmode]";
+		Ceiling_LowerAndCrushDist = "int tag, int speed, int damage, int dist, [int crushmode]";
+		Ceiling_LowerByValue = "int tag, int speed, int value";
+		Ceiling_LowerByValueTimes8 = "int tag, int speed, int value";
+		Ceiling_LowerInstant = "int tag, int unused, int value";
+		Ceiling_LowerToFloor = "int tag, int speed";
+		Ceiling_LowerToHighestFloor = "int tag, int speed";
+		Ceiling_LowerToLowest = "int tag, int speed";
+		Ceiling_MoveToValue = "int tag, int speed, int value, int negative";
+		Ceiling_MoveToValueTimes8 = "int tag, int speed, int value, int negative";
+		Ceiling_RaiseByValue = "int tag, int speed, int value";
+		Ceiling_RaiseByValueTimes8 = "int tag, int speed, int value";
+		Ceiling_RaiseInstant = "int tag, int unused, int value";
+		Ceiling_RaiseToNearest = "int tag, int speed";
+		Ceiling_Waggle = "int tag, int amplitude, int frequency, int delay, int time";
+		ChangeCamera = "int tid, int who, int revert";
+		ChangeSkill = "int level";
+		ClearForceField = "int tag";
+		DamageThing = "int damage, [int mod]";
+		Door_Animated = "int tag, int speed, int delay, int lock";
+		Door_Close = "int tag, int speed, [int lighttag]";
+		Door_CloseWaitOpen = "int tag, int speed, int delay, [int lighttag]";
+		Door_LockedRaise = "int tag, int speed, int delay, int lock, [int lighttag]";
+		Door_Open = "int tag, int speed, [int lighttag]";
+		Door_Raise = "int tag, int speed, int delay, [int lighttag]";		
+		Elevator_LowerToNearest = "int tag, int speed";
+		Elevator_MoveToFloor = "int tag, int speed";
+		Elevator_RaiseToNearest = "int tag, int speed";
+		Exit_Normal = "int position";
+		Exit_Secret = "int position";
+		Floor_CrushStop = "int tag";
+		Floor_Donut = "int pillartag, int pillarspeed, int moatspeed";
+		Floor_LowerByValue = "int tag, int speed, int value";
+		Floor_LowerByValueTimes8 = "int tag, int speed, int value";
+		Floor_LowerInstant = "int tag, int unused, int value";
+		Floor_LowerToHighest = "int tag, int speed, int adjust, [int always]";
+		Floor_LowerToLowest = "int tag, int speed";
+		Floor_LowerToLowestTxTy = "int tag, int speed";
+		Floor_LowerToNearest = "int tag, int speed";
+		Floor_MoveToValue = "int tag, int speed, int value, int neg";
+		Floor_MoveToValueTimes8 = "int tag, int speed, int value, int neg";
+		Floor_RaiseAndCrush = "int tag, int speed, int crush, [int crushmode]";
+		Floor_RaiseAndCrushDoom = "int tag, int speed, int crush, [int crushmode]";
+		Floor_RaiseByTexture = "int tag, int speed";
+		Floor_RaiseByValue = "int tag, int speed, int value";
+		Floor_RaiseByValueTimes8 = "int tag, int speed, int value";
+		Floor_RaiseByValueTxTy = "int tag, int speed, int value";
+		Floor_RaiseInstant = "int tag, int unused, int value";
+		Floor_RaiseToHighest = "int tag, int speed";
+		Floor_RaiseToLowestCeiling = "int tag, int speed";
+		Floor_RaiseToNearest = "int tag, int speed";
+		Floor_TransferNumeric = "int tag";
+		Floor_TransferTrigger = "int tag";
+		Floor_Waggle = "int tag, int amp, int freq, int offset, int time";
+		FloorAndCeiling_LowerByValue = "int tag, int speed, int value";
+		FloorAndCeiling_LowerRaise = "int tag, int floor_speed, int ceiling_speed, [int boom1998]";
+		FloorAndCeiling_RaiseByValue = "int tag, int speed, int value";
+		ForceField;
+		FS_Execute = "int script, [int frontonly], [int lock], [int lockedmessage]";
+		Generic_Ceiling = "int tag, int speed, int height, int target, int flags";
+		Generic_Crusher = "int tag, int downspeed, int upspeed, int silent, int damage";
+		Generic_Crusher2 = "int tag, int downspeed, int upspeed, int silent, int damage";
+		Generic_Door = "int tag, int speed, int kind, int delay, int lock";
+		Generic_Floor = "int tag, int speed, int height, int target, int flags";
+		Generic_Lift = "int tag, int speed, int delay, int target, int height";
+		Generic_Stairs = "int tag, int speed, int step, int flags, int reset";
+		GlassBreak = "[int nojunk]";
+		HealThing = "amount, [int max]";
+		Light_ChangeToValue = "int tag, int value";
+		Light_Fade = "int tag, int value, int tics";
+		Light_Flicker = "int tag, int upper, int lower";
+		Light_ForceLightning = "int mode";
+		Light_Glow = "int tag, int upper, int lower, int tics";
+		Light_LowerByValue = "int tag, int value";
+		Light_MaxNeighbor = "int tag";
+		Light_MinNeighbor = "int tag";
+		Light_RaiseByValue = "int tag, int value";
+		Light_Stop = "int tag";
+		Light_Strobe = "int tag, int upper, int lower, int u-tics, int l-tics";
+		Light_StrobeDoom = "int tag, int u-tics, int l-tics";
+		Line_AlignCeiling  = "int lineid, int side";
+		Line_AlignFloor = "int lineid, int side";
+		Line_SetBlocking = "int lineid, int setflags, int clearflags";
+		Line_SetTextureOffset = "int id, int x, int y, int side, int flags";
+		Line_SetTextureScale = "int id, int x, int y, int side, int flags";
+		NoiseAlert = "int target_tid, int emitter_tid";
+		Pillar_Build = "int tag, int speed, int value";
+		Pillar_BuildAndCrush = "int tag, int speed, int value, int damage, int crushmode";
+		Pillar_Open = "int tag, int speed, int floor, int ceiling";
+		Plat_DownByValue = "int tag, int speed, int delay, int value";
+		Plat_DownWaitUpStay = "int tag, int speed, int delay";
+		Plat_DownWaitUpStayLip = "int tag, int speed, int delay, int lip, int sound";
+		Plat_PerpetualRaise = "int tag, int speed, int delay";
+		Plat_PerpetualRaiseLip = "int tag, int speed, int delay, int lip";
+		Plat_RaiseAndStayTx0 = "int tag, int speed, [int lockout]";
+		Plat_Stop = "int tag";
+		Plat_ToggleCeiling = "int tag";
+		Plat_UpByValue = "int tag, int speed, int delay, int value";
+		Plat_UpByValueStayTx = "int tag, int speed, int value";
+		Plat_UpNearestWaitDownStay = "int tag, int speed, int delay";
+		Plat_UpWaitDownStay = "int tag, int speed, int delay";
+		Polyobj_DoorSlide = "int po, int speed, int angle, int dist, int delay";
+		Polyobj_DoorSwing = "int po, int speed, int angle, int delay";
+		Polyobj_Move = "int po, int speed, int angle, int dist";
+		Polyobj_MoveTimes8 = "int po, int speed, int angle, int dist";
+		Polyobj_MoveTo = "int po, int speed, int x, int y";
+		Polyobj_MoveToSpot = "int po, int speed, int tid";
+		Polyobj_OR_Move = "int po, int speed, int angle, int distance";
+		Polyobj_OR_MoveTimes8 = "int po, int speed, int angle, int distance";
+		Polyobj_OR_MoveTo = "int po, int speed, int x, int y";
+		Polyobj_OR_MoveToSpot = "int po, int speed, int tid";
+		Polyobj_OR_RotateLeft = "int po, int speed";
+		Polyobj_OR_RotateRight = "int po, int speed, int angle";
+		Polyobj_RotateLeft = "int po, int speed, int angle";
+		Polyobj_RotateRight = "int po, int speed, int angle";
+		Polyobj_Stop = "int po";
+		Radius_Quake = "int intensity, int duration, int damrad, int tremrad, int tid";
+		Scroll_Ceiling = "int tag, int x-move, int y-move, int unused";
+		Scroll_Floor = "int tag, int x-move, int y-move, int mode";
+		Scroll_Texture_Both = "int lineid, int left, int right, int up, int down";
+		Scroll_Wall = "int lineid, int x, int y, int side, int flags";
+		Sector_ChangeFlags = "int tag, int set, int clear";
+		Sector_ChangeSound = "int tag, int newsequence";
+		Sector_SetCeilingPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
+		Sector_SetCeilingScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
+		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
+		Sector_SetColor = "int tag, int r, int g, int b, int desaturate";
+		Sector_SetCurrent = "int tag, int amount, int angle";
+		Sector_SetDamage = "int tag, int amount, int mod";
+		Sector_SetFade = "int tag, int r, int g, int b";
+		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
+		Sector_SetFloorScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
+		Sector_SetFloorScale2 = "int tag, int x-factor, int y-factor";
+		Sector_SetFriction = "int tag, int amount";
+		Sector_SetGravity = "int tag, int intpart, int fracpart";
+		Sector_SetLink = "int controltag, int linktag, int floor/ceiling, int movetype";
+		Sector_SetPlaneReflection = "int tag, int floor, int ceiling";
+		Sector_SetRotation = "int tag, int floor-angle, int ceiling-angle";
+		Sector_SetTranslucent = "int tag, int plane, int amount, int type";
+		Sector_SetWind = "int tag, int amount, int angle";
+		SendToCommunicator = "int voc_num, int front-only, int identify, int nolog";
+		SetGlobalFogParameter = "int type, int value";
+		SetPlayerProperty = "int allplayers, int value, int which";
+		Stairs_BuildDown = "int tag, int speed, int height, int delay, int reset";
+		Stairs_BuildDownSync = "int tag, int speed, int height, int reset";
+		Stairs_BuildUp = "int tag, int speed, int height, int delay, int reset";
+		Stairs_BuildUpDoom = "int tag, int speed, int height, int reset";
+		Stairs_BuildUpSync = "int tag, int speed, int height, int reset";
+		StartConversation = "int tid, [int facetalker]";
+		Teleport = "int tid, int tag, int nosourcefog";
+		Teleport_EndGame;
+		Teleport_Line = "int thisid, int destid, [int reversed]";
+		Teleport_NewMap = "int map, int pos, [int keepangle]";
+		Teleport_NoFog = "int tid, [int useang], [int sectortag], [int keepheight]";
+		Teleport_NoStop = "int tid, int sectortag, [int nosourcefog]";
+		Teleport_ZombieChanger = "int tid, int sectortag";
+		TeleportGroup = "int group_tid, int source_tid, int dest_tid, int move_source, int use_fog";
+		TeleportInSector = "int tag, int source_tid, int dest_tid, int use_fog, [int group_tid]";
+		TeleportOther = "int other_tid, int dest_tid, [int fog]";
+		Thing_Activate = "int tid";
+		Thing_ChangeTID = "int oldtid, int newtid";
+		Thing_Damage = "int tid, int amount, int mod";
+		Thing_Deactivate = "int tid";
+		Thing_Destroy = "int tid, [int extreme], [int sector_tag]";
+		Thing_Hate = "int hater, int hatee, [int flags]";
+		Thing_Move = "int tid, int mapspot, [int nofog]";
+		Thing_Projectile = "int tid, int type, int angle, int speed, int vspeed";
+		Thing_ProjectileAimed = "int tid, int type, int speed, int target, [int newtid]";
+		Thing_ProjectileGravity = "int tid, int type, int angle, int speed, int vspeed";
+		Thing_ProjectileIntercept = "int tid, int type, int speed, int target, int newtid";
+		Thing_Raise = "int tid";
+		Thing_Remove = "int tid";
+		Thing_SetConversation = "int tid, conv_id";
+		Thing_SetGoal = "int tid, int goal, int delay, [int chasegoal]";
+		Thing_SetSpecial = "int tid, int special, int arg1, int arg2, int arg3";
+		Thing_SetTranslation = "int tid, int translation_num";
+		Thing_Spawn = "int tid, int type, int angle, [int newtid]";
+		Thing_SpawnFacing = "int tid, int type, [int nofog], [int newtid]";
+		Thing_SpawnNoFog = "int tid, int type, int angle, [int newtid]";
+		Thing_Stop = "int tid";
+		ThrustThing = "int angle, int force, [int limit], [int tid]";
+		ThrustThingZ = "int tid, int zthrust, int dir, int set";
+		TranslucentLine = "int id, int amount, int transtype";
+		UsePuzzleItem = "int item, int script";
+		
 	}
 }
