@@ -274,17 +274,17 @@ decorate : cstyle {
 		A_DamageMaster = "int amount, [string type]";
 		A_DamageSiblings = "int amount, [string type]";
 		A_Die = "[string DamageType]";
-		A_ExtChase = "bool domelee, bool domissile, bool playactive, bool nightmarefast";
-		A_FaceTarget = "[float max_turn_allowed]";
-		A_FaceTracer = "[float max_turn_allowed, float max_pitch_allowed]";
-		A_FaceMaster = "[float max_turn_allowed, float max_pitch_allowed]";
+		A_ExtChase = "bool domelee, bool domissile, [bool playactive], [bool nightmarefast]";
+		A_FaceTarget = "[float max_turn_allowed], [float max_pitch_allowed]";
+		A_FaceTracer = "[float max_turn_allowed], [float max_pitch_allowed]";
+		A_FaceMaster = "[float max_turn_allowed], [float max_pitch_allowed]";
 		A_FastChase;
-		A_KillChildren = "string damagetype";
-		A_KillMaster = "string damagetype";
-		A_KillSiblings = "string damagetype";
+		A_KillChildren = "[string damagetype]";
+		A_KillMaster = "[string damagetype]";
+		A_KillSiblings = "[string damagetype]";
 		A_Look;
 		A_Look2;
-		A_LookEx = "int flags, fixed minseedist, fixed maxseedist, fixed maxheardist, fixed fov, state seestate";
+		A_LookEx = "[int flags], [fixed minseedist], [fixed maxseedist], [fixed maxheardist], [fixed fov], [state seestate]";
 		A_RaiseChildren;
 		A_RaiseMaster;
 		A_RaiseSiblings;
@@ -292,20 +292,20 @@ decorate : cstyle {
 		A_RemoveMaster;
 		A_RemoveSiblings = "[bool remove_alive_too]";
 		A_SentinelBob;
-		A_Teleport;
+		A_Teleport = "[string teleportstate], [string targettype], [string fogtype], [int flags], [float mindist], [float maxdist]";
 		A_TurretLook;
 		A_VileChase;
 		A_Wander;
-		A_Warp = "pointer destination, [float xofs], [float yofs], [float zofs], float [angle], int [flags], [state success_state]";
+		A_Warp = "pointer destination, [float xofs], [float yofs], [float zofs], [float angle], [int flags], [state success_state]";
 
 		A_RearrangePointers = "pointer newtarget, [pointer newmaster], [pointer newtracer], [int flags]";
 		A_TransferPointer = "pointer source, pointer recipient, pointer sourcefield, [pointer recipientfield], [int flags]";
 
 		A_CustomMissile = "string missiletype, [float spawnheight], [int spawnofs_horiz], [angle angle], [int aimflags], [angle pitch]";
-		A_CustomBulletAttack = "float horz_spread, float vert_spread, int numbullets, int dmgperbullet, string pufftype, [float range], [int flags]";
-		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [bool aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z]";
-		A_CustomMeleeAttack = "int damage, [string meleesound], [string misssound], [string damagetype], [bool bleed]";
-		A_CustomComboAttack = "string missiletype, float spawnheight, int damage, string meleesound, string damagetype, bool bleed";
+		A_CustomBulletAttack = "float horz_spread, float vert_spread, int numbullets, int dmgperbullet, [string pufftype], [float range], [int flags]";
+		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [bool aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [string spawnclass], [float spawnofs_z]";
+		A_CustomMeleeAttack = "[int damage], [string meleesound], [string misssound], [string damagetype], [bool bleed]";
+		A_CustomComboAttack = "string missiletype, float spawnheight, int damage, [string meleesound], [string damagetype], [bool bleed]";
 		A_MeleeAttack;
 		A_MissileAttack;
 		A_MonsterRefire = "int chancecontinue, string abortstate";
@@ -313,9 +313,9 @@ decorate : cstyle {
 		A_BasicAttack = "int meleedamage, string meleesound, string missiletype, float missileheight";
 		A_BulletAttack;
 		A_MonsterRail;
-		A_Blast = "[int flags, int strength, int radius, float speed, class blasteffect, sound blastsound]";
-		A_Explode = "[int dmg], [int radius], [bool hurtshooter], [bool alert], [int fulldmgradius], [int nails], [int naildmg]";
-		A_RadiusThrust = "int thrust, int radius, bool hurtshooter";
+		A_Blast = "[int flags], [int strength], [int radius], [float speed], [class blasteffect], [sound blastsound]";
+		A_Explode = "[int dmg], [int radius], [int flags], [bool alert], [int fulldmgradius], [int nails], [int naildmg], [string pufftype]";
+		A_RadiusThrust = "[int thrust], [int radius], [int flags], [int fullthrustdistance]";
 		A_RadiusGive = "class itemtype, int distance, int flags, [int amount]";
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
@@ -327,7 +327,7 @@ decorate : cstyle {
 		A_FreezeDeathChunks;
 		A_IceGuyDie;
 
-		A_PlaySound = "string soundname, [int slot], [float volume], [bool looping], [float attenuation]";
+		A_PlaySound = "[string soundname], [int slot], [float volume], [bool looping], [float attenuation]";
 		A_PlaySoundEx = "string soundname, string channel, [bool loop], [int attenuation]";
 		A_PlayWeaponSound = "string soundname";
 		A_ActiveSound;
@@ -345,8 +345,8 @@ decorate : cstyle {
 		A_BrainAwake;
 		A_BFGSound;
 
-		A_Print = "string text";
-		A_PrintBold = "string text_to_all_players";
+		A_Print = "string text, [float time], [string fontname]";
+		A_PrintBold = "string text_to_all_players, [float time], [string fontname]";
 		A_Log = "string text";
 		A_LogInt = "int number";
 
@@ -356,40 +356,40 @@ decorate : cstyle {
 		A_GetHurt;
 		A_KlaxonBlare;
 		A_CheckTerrain;
-		A_SetBlend = "color blendcolor, float alpha, int duration";
-		A_CheckPlayerDone = "string state";
-		A_PlayerSkinCheck;
-		A_SkullPop = "string className";
+		A_SetBlend = "color blendcolor, float alpha, int duration, [color fadecolor]";
+		A_CheckPlayerDone;
+		A_PlayerSkinCheck = "string state";
+		A_SkullPop = "[string className]";
 		A_Bang4Cloud;
 		A_DropFire;
 		A_RemoveForcefield;
 
 		A_TossGib;
 		A_Feathers;
-		A_SpawnDebris = "string type, bool translation, [float mult_h], [float mult_v]";
-		A_SpawnItem = "string type, int distance, float zpos, bool useammo, bool translation";
+		A_SpawnDebris = "string type, [bool translation], [float mult_h], [float mult_v]";
+		A_SpawnItem = "[string type], [float distance], [float zpos], [bool useammo], [bool translation]";
 		A_SpawnItemEx = "string type, [float xoffset], [float yoffset], [float zoffset], [float xvelocity], [float yvelocity], [float zvelocity], [float angle], [int flags], [int failchance], [int tid]";
 
 		A_CheckCeiling = "string state", "int offset";
 		A_CheckFloor =	"string state", "int offset";
-		A_CheckRange = "float distance, state label";
+		A_CheckRange = "float distance, state label", "float distance, int offset";
 		A_CheckSight = "string state", "int offset";
 		A_CheckSightOrRange = "float distance, string state", "float distance, int offset";
 
 		A_Jump = "int chance, string state, [...]", "int chance, int offset, [...]";
 		A_JumpIf = "condition, string state", "condition, int offset";
 		A_JumpIfArmorType = "string armortype, string state, [int minimum]", "string armortype, int offset, [int minimum]";
-		A_JumpIfCloser = "int distance, string state", "int distance, int offset";
+		A_JumpIfCloser = "float distance, string state", "float distance, int offset";
 		A_JumpIfHealthLower = "int health, string state", "int health, int offset";
-		A_JumpIfInventory = "string inventorytype, int amount, string state", "string inventorytype, int amount, int offset";
-		A_JumpIfInTargetInventory = "string item, int count, string state", "string item, int count, int offset";
-		A_JumpIfMasterCloser = "int distance, string state", "int distance, int offset";
+		A_JumpIfInventory = "string inventorytype, int amount, string state, [pointer owner]", "string inventorytype, int amount, int offset, [pointer owner]";
+		A_JumpIfInTargetInventory = "string item, int count, string state, [pointer forward]", "string item, int count, int offset, [pointer forward]";
+		A_JumpIfMasterCloser = "float distance, string state", "float distance, int offset";
 		A_JumpIfNoAmmo = "string state", "int offset";
 		A_JumpIfTargetInsideMeleeRange = "string state", "int offset";
 		A_JumpIfTargetOutsideMeleeRange = "string state", "int offset";
 		A_JumpIfTargetInLOS = "string state, [float fov], [int flags], [float dist_max], [float dist_close]", "int offset, [float fov], [int flags], [float dist_max], [float dist_close]";
 		A_JumpIfInTargetLOS = "string state, [float fov], [int flags], [float dist_max], [float dist_close]", "int offset, [float fov], [int flags], [float dist_max], [float dist_close]";
-		A_JumpIfTracerCloser = "int distance, string state", "int distance, int offset";
+		A_JumpIfTracerCloser = "float distance, string state", "float distance, int offset";
 		A_JumpIfTargetInsideMeleeRange = "string state", "int offset";
 		A_JumpIfTargetOutsideMeleeRange = "string state", "int offset";
 
@@ -422,29 +422,29 @@ decorate : cstyle {
 		A_ActiveAndUnblock;
 		A_SetShadow;
 		A_ClearShadow;
-		A_SetTranslucent = "float alpha, int mode";
+		A_SetTranslucent = "float alpha, [int mode]";
 		A_FadeIn = "[float increase_amount]";
 		A_FadeOut = "[float reduce_amount], [bool remove_when_zero]";
 		A_FadeTo = "float target, [float amount], [bool remove_when_target]";
 		A_QueueCorpse;
 		A_DeQueueCorpse;
-		A_Respawn = "[bool fog]";
-		A_SetAngle = "float angle";
+		A_Respawn = "[int flags]";
+		A_SetAngle = "[float angle]";
 		A_SetArg = "int position, int value";
 		A_SetDamageType = "string damagetype";
-		A_SetPitch = "float pitch";
+		A_SetPitch = "float pitch, [int flags]";
 		A_SetSpecial = "int special, [int arg0], [int arg1], [int arg2], [int arg3], [int arg4]";
 		A_SetScale = "float scalex, [float scaley]";
 		A_SetMass = "int mass";
 		A_SetUserArray = "string name, int pos, int value";
 		A_SetUserVar = "string name, int value";
 		A_ScaleVelocity = "float scale";
-		A_ChangeVelocity = "float x, float y, float z, int flags";
+		A_ChangeVelocity = "[float x], [float y], [float z], [int flags]";
 
 		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
 		A_Tracer;
 		A_Tracer2;
-		A_Fire;
+		A_Fire = "[float spawnheight]";
 		A_BishopMissileWeave;
 		A_CStaffMissileSlither;
 		A_RocketInFlight;
@@ -453,10 +453,10 @@ decorate : cstyle {
 		A_CountdownArg = "int arg, [string target_state]";
 		A_Stop;
 
-		A_GiveInventory = "string type, int count";
-		A_GiveToTarget = "string type, int count";
-		A_TakeInventory = "string type, int count, [int flags]";
-		A_TakeFromTarget = "string type, int count, [int flags]";
+		A_GiveInventory = "string type, [int count], [pointer giveto]";
+		A_GiveToTarget = "string type, [int count], [pointer forward]";
+		A_TakeInventory = "string type, [int count], [int flags], [pointer giveto]";
+		A_TakeFromTarget = "string type, [int count], [int flags], [pointer forward]";
 		A_DropInventory = "string type";
 		A_SelectWeapon = "string type";
 		A_GiveQuestItem = "int itemno";
@@ -479,14 +479,14 @@ decorate : cstyle {
 		A_Light2;
 		A_LightInverse;
 		A_Recoil = "float force";
-		A_ZoomFactor = "float zoom, [int flags]";
+		A_ZoomFactor = "[float zoom], [int flags]";
 		A_SetCrosshair = "int number";
 		A_Punch;
 		A_Saw = "[string fullsound], [string hitsound], [int damage], [string pufftype], [int flags], [float range], [float spread_xy], [float spread_z], [float lifesteal]";
 		A_CustomPunch = "int damage, [bool norandom], [int flags], [string pufftype], [float range], [float lifesteal]";
 		A_FireBullets = "angle spread_horz, angle spread_vert, int numbullets, int damage, [string pufftype], [int flags], [float range]";
-		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [int spawnofs_horz], [int spawnheight], [int aim], [angle pitch]";
-		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [int maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn]";
+		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [int spawnofs_horz], [float spawnheight], [int aim], [angle pitch]";
+		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn], [float spawnofs_z]";
 		A_FireAssaultGun;
 		A_FireBFG;
 		A_FireOldBFG;
@@ -520,10 +520,10 @@ decorate : cstyle {
 		A_SargAttack;
 		A_HeadAttack;
 		A_BruisAttack;
-		A_SkullAttack = "[int speed]";
+		A_SkullAttack = "[float speed]";
 		A_BspiAttack;
 		A_CyberAttack;
-		A_PainAttack = "[string spawntype]";
+		A_PainAttack = "[string spawntype], [float angle], [int flags], [int limit]";
 		A_DualPainAttack = "[string spawntype]";
 		A_PainDie = "[string spawntype]";
 		A_SkelFist;
@@ -532,7 +532,7 @@ decorate : cstyle {
 		A_FatAttack2 = "[string spawntype]";
 		A_FatAttack3 = "[string spawntype]";
 		A_VileTarget = "[string type]";
-		A_VileAttack = "string sound, int initialdamage, int blastdamage, int blastradius, float thrustfactor, string damagetype";
+		A_VileAttack = "[string sound], [int initialdamage], [int blastdamage], [int blastradius], [float thrustfactor], [string damagetype], [int flags]";
 		A_BrainSpit = "[string Actor]";
 		A_SpawnFly = "[string FogActor]";
 		A_SpawnSound;
@@ -543,7 +543,7 @@ decorate : cstyle {
 		A_SentinelRefire;
 		A_ShootGun;
 		A_BetaSkullAttack;
-		A_WolfAttack = "[int flags, sound whattoplay, float snipe_factor, int maxdamage, int blocksize, int pointblank, int longrange, float runspeed, class pufftype]";
+		A_WolfAttack = "[int flags], [sound whattoplay], [float snipe_factor], [int maxdamage], [int blocksize], [int pointblank], [int longrange], [float runspeed], [class pufftype]";
 
 		A_Hoof;
 		A_Metal;
@@ -589,7 +589,7 @@ decorate : cstyle {
 		A_StaffAttack = "int damage, class puff";
 		A_FireGoldWandPL1; A_FireGoldWandPL2;
 		A_FireCrossbowPL1; A_FireCrossbowPL2;
-		A_GauntletAttack;
+		A_GauntletAttack = "int power";
 		A_FireMacePL1; A_FireMacePL2; A_MacePL1Check; A_MaceBallImpact; A_MaceBallImpact2; A_DeathBallImpact;
 		A_FireBlasterPL1; A_SpawnRippers;
 		A_FireSkullRodPL1; A_FireSkullRodPL2; A_AddPlayerRain; A_HideInCeiling; A_SkullRodStorm; A_RainImpact;
@@ -649,7 +649,7 @@ decorate : cstyle {
 		A_InquisitorCheckLand; A_TossArm; A_ReaverRanged;
 		A_LoremasterChain;
 		A_WakeOracleSpectre;
-		A_ProgrammerMelee ; A_SpawnProgrammerBase; A_ProgrammerDeath; A_SpotLightning;
+		A_ProgrammerMelee; A_SpawnProgrammerBase; A_ProgrammerDeath; A_SpotLightning;
 		A_ReaverRanged;
 		A_Beacon;
 		A_SentinelAttack;
@@ -677,32 +677,32 @@ decorate : cstyle {
 		frandom = "float min, float max";
 		ACS_NamedExecute = "string script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
 		ACS_NamedExecuteAlways = "string script, [int mapnum], [int arg1], [int arg2], [int arg3]";
-		ACS_NamedExecuteWithResult = "string script, [int s_arg1], [int s_arg2], [int s_arg3]";
+		ACS_NamedExecuteWithResult = "string script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
 		ACS_NamedLockedExecute = "string script, [int mapnum], [int arg1], [int arg2], [int lock]";
 		ACS_NamedLockedExecuteDoor = "string script, [int mapnum], [int arg1], [int arg2], [int lock]";
 		ACS_NamedSuspend = "string script, [int mapnum]";
 		ACS_NamedTerminate = "string script, [int mapnum]";
-		CallACS = "string script, [int s_arg1], [int s_arg2], [int s_arg3]";
+		CallACS = "string script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
 		
 		// Internal use only, normally
 		A_Turn = "[float angle]";
-		A_LineEffect = "int boomspecial, int tag";
+		A_LineEffect = "[int boomspecial], [int tag]";
 		A_CallSpecial = "int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
 
 		// Action specials that can be called from within DECORATE:
 		ACS_Execute = "int script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
 		ACS_ExecuteAlways = "int script, [int mapnum], [int arg1], [int arg2], [int arg3]";
-		ACS_ExecuteWithResult = "int script, [int s_arg1], [int s_arg2], [int s_arg3]";
+		ACS_ExecuteWithResult = "int script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
 		ACS_LockedExecute = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
 		ACS_LockedExecuteDoor = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
 		ACS_Suspend = "int script, [int mapnum]";
 		ACS_Terminate = "int script, [int mapnum]";
 		Autosave;
 		Ceiling_CrushAndRaise = "int tag, int speed, int damage, [int crushmode]";
-		Ceiling_CrushAndRaiseA = "int tag, int downspeed, int upspeed, int damage, [cint rushmode]";
+		Ceiling_CrushAndRaiseA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
 		Ceiling_CrushAndRaiseDist = "int tag, int dist, int speed, int damage, [int crushmode]";
 		Ceiling_CrushAndRaiseSilentA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
-		Ceiling_CrushRaiseAndStay = "int tag, int speed, int crush, [int crushmode]";
+		Ceiling_CrushRaiseAndStay = "int tag, int speed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStayA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStaySilA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
 		Ceiling_CrushStop = "int tag";
@@ -745,10 +745,10 @@ decorate : cstyle {
 		Floor_LowerToLowest = "int tag, int speed";
 		Floor_LowerToLowestTxTy = "int tag, int speed";
 		Floor_LowerToNearest = "int tag, int speed";
-		Floor_MoveToValue = "int tag, int speed, int value, int neg";
-		Floor_MoveToValueTimes8 = "int tag, int speed, int value, int neg";
-		Floor_RaiseAndCrush = "int tag, int speed, int crush, [int crushmode]";
-		Floor_RaiseAndCrushDoom = "int tag, int speed, int crush, [int crushmode]";
+		Floor_MoveToValue = "int tag, int speed, int value, int negative";
+		Floor_MoveToValueTimes8 = "int tag, int speed, int value, int negative";
+		Floor_RaiseAndCrush = "int tag, int speed, int damage, [int crushmode]";
+		Floor_RaiseAndCrushDoom = "int tag, int speed, int damage, [int crushmode]";
 		Floor_RaiseByTexture = "int tag, int speed";
 		Floor_RaiseByValue = "int tag, int speed, int value";
 		Floor_RaiseByValueTimes8 = "int tag, int speed, int value";
@@ -817,7 +817,7 @@ decorate : cstyle {
 		Polyobj_OR_MoveTimes8 = "int po, int speed, int angle, int distance";
 		Polyobj_OR_MoveTo = "int po, int speed, int x, int y";
 		Polyobj_OR_MoveToSpot = "int po, int speed, int tid";
-		Polyobj_OR_RotateLeft = "int po, int speed";
+		Polyobj_OR_RotateLeft = "int po, int speed, int angle";
 		Polyobj_OR_RotateRight = "int po, int speed, int angle";
 		Polyobj_RotateLeft = "int po, int speed, int angle";
 		Polyobj_RotateRight = "int po, int speed, int angle";
@@ -833,7 +833,7 @@ decorate : cstyle {
 		Sector_SetCeilingScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
 		Sector_SetColor = "int tag, int r, int g, int b, int desaturate";
-		Sector_SetCurrent = "int tag, int amount, int angle";
+		Sector_SetCurrent = "int tag, int amount, int angle, int useline";
 		Sector_SetDamage = "int tag, int amount, int mod";
 		Sector_SetFade = "int tag, int r, int g, int b";
 		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
@@ -845,14 +845,14 @@ decorate : cstyle {
 		Sector_SetPlaneReflection = "int tag, int floor, int ceiling";
 		Sector_SetRotation = "int tag, int floor-angle, int ceiling-angle";
 		Sector_SetTranslucent = "int tag, int plane, int amount, int type";
-		Sector_SetWind = "int tag, int amount, int angle";
+		Sector_SetWind = "int tag, int amount, int angle, int useline";
 		SendToCommunicator = "int voc_num, int front-only, int identify, int nolog";
 		SetGlobalFogParameter = "int type, int value";
 		SetPlayerProperty = "int allplayers, int value, int which";
 		Stairs_BuildDown = "int tag, int speed, int height, int delay, int reset";
 		Stairs_BuildDownSync = "int tag, int speed, int height, int reset";
 		Stairs_BuildUp = "int tag, int speed, int height, int delay, int reset";
-		Stairs_BuildUpDoom = "int tag, int speed, int height, int reset";
+		Stairs_BuildUpDoom = "int tag, int speed, int height, int delay, int reset";
 		Stairs_BuildUpSync = "int tag, int speed, int height, int reset";
 		StartConversation = "int tid, [int facetalker]";
 		Teleport = "int tid, int tag, int nosourcefog";
