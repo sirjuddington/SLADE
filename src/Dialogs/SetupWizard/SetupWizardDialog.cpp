@@ -104,7 +104,7 @@ void SetupWizardDialog::onBtnPrev(wxCommandEvent& e)
 void SetupWizardDialog::showPage(unsigned index)
 {
 	// Check index
-	if (index < 0 || index >= pages.size())
+	if (index >= pages.size())
 		return;
 
 	// Swap pages

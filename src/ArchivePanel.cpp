@@ -646,7 +646,7 @@ bool ArchivePanel::newEntry(int type)
 
 	// Check for \ character (e.g., from Arch-Viles graphics). They have to be kept.
 	if (archive->getType() == ARCHIVE_WAD && name.length() <= 8
-	        && (name.find('\\') != wxNOT_FOUND) || (name.find('/') != wxNOT_FOUND))
+	        && (name.find('\\') != wxNOT_FOUND || name.find('/') != wxNOT_FOUND))
 	{
 	} // Don't process as a file name
 

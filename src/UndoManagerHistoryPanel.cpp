@@ -125,9 +125,7 @@ void UndoListView::setManager(UndoManager* manager)
 	this->manager = manager;
 	listenTo(manager);
 
-	SetItemCount(manager->nUndoLevels());
-	Refresh();
-	EnsureVisible(manager->getCurrentIndex());
+	updateFromManager();
 }
 
 /* UndoListView::onAnnouncement
@@ -138,11 +136,24 @@ void UndoListView::onAnnouncement(Announcer* announcer, string event_name, MemCh
 	if (announcer != manager)
 		return;
 
-	SetItemCount(manager->nUndoLevels());
-	Refresh();
-	EnsureVisible(manager->getCurrentIndex());
+	updateFromManager();
 }
 
+/* UndoListView::updateFromManager
+ * Updates visual representation
+ *******************************************************************/
+void UndoListView::updateFromManager()
+{
+	SetItemCount(manager->nUndoLevels());
+	Refresh();
+
+	const int currentIndex = manager->getCurrentIndex();
+
+	if (currentIndex >= 0)
+	{
+		EnsureVisible(currentIndex);
+	}
+}
 
 /*******************************************************************
  * UNDOMANAGERHISTORYPANEL CLASS FUNCTIONS
