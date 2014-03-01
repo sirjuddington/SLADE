@@ -52,6 +52,11 @@ TextureXList::TextureXList()
  *******************************************************************/
 TextureXList::~TextureXList()
 {
+	for (vector<CTexture*>::const_iterator tex = textures.begin(),
+		tex_end = textures.end(); tex != tex_end; ++tex)
+	{
+		delete *tex;
+	}
 }
 
 /* TextureXList::getTexture
