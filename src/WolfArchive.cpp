@@ -68,6 +68,8 @@ string findFileCasing(wxFileName filename)
 			return (dir.GetNameWithSep() + found);
 		cont = dir.GetNext(&found);
 	}
+
+	return "";
 #endif
 }
 
