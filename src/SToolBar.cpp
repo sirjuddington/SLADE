@@ -433,7 +433,12 @@ void SToolBar::enableGroup(string name, bool enable)
 	for (unsigned a = 0; a < groups.size(); a++)
 	{
 		if (S_CMPNOCASE(groups[a]->getName(), name))
-			groups[a]->Enable(enable);
+		{
+			if (groups[a]->IsEnabled() != enable)
+				groups[a]->Enable(enable);
+			else
+				return;
+		}
 	}
 
 	// Redraw

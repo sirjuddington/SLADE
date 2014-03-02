@@ -2404,9 +2404,10 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		}
 
 		// Show the new entry panel
+		bool changed = (cur_area != new_area);
 		if (!showEntryPanel(new_area))
 			return false;
-		else
+		else if (changed)
 			new_area->updateToolbar();
 	}
 	return true;
