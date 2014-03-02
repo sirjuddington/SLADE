@@ -354,7 +354,7 @@ z_sbarinfo {
 		forcescale, skipalticon, skipicon, skipready, skipspawn, auto, cooperative, singleplayer, teamgame, deathmatch, weaponslot,
 
 		//Some default fonts
-		BIGFONT, INDEXFONT, SMALLFONT, HUDFONT_DOOM, INDEXFONT_DOOM, HUDFONT_RAVEN, INDEXFONT_RAVEN
+		BIGFONT, INDEXFONT, SMALLFONT, HUDFONT_DOOM, INDEXFONT_DOOM, HUDFONT_RAVEN, INDEXFONT_RAVEN,
 
 		//Some default colors
 		Yellow, Red, Green, Blue, White, Black, untranslated
