@@ -11,6 +11,8 @@ class UndoListView : public VirtualListView, public Listener
 private:
 	UndoManager*	manager;
 
+	void	updateFromManager();
+
 protected:
 	// Virtual wxListCtrl overrides
 	string	getItemText(long item, long column) const;

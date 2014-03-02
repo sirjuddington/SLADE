@@ -381,7 +381,7 @@ bool ArchiveEntry::importFile(string filename, uint32_t offset, uint32_t size)
 		size = file.Length() - offset;
 
 	// Check offset/size bounds
-	if (offset + size > file.Length() || offset < 0)
+	if (offset + size > file.Length())
 		return false;
 
 	// Create temporary buffer and load file contents

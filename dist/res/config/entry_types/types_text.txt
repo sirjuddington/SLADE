@@ -139,6 +139,7 @@ entry_types
 	{
 		name = "Language";
 		match_name = "language";
+		text_language = "z_language";
 	}
 
 	loadacs : text
@@ -272,6 +273,7 @@ entry_types
 	{
 		name = "Text colors";
 		match_name = "textcolo", "textcolors";
+		text_language = "z_textcolors";
 	}
 
 	zdtextures : text
@@ -310,13 +312,13 @@ entry_types
 	}
 	
 	// Doomsday DED lumps and files
-    ded : text
-    {
-        name = "Doomsday Engine Defs";
+	ded : text
+	{
+		name = "Doomsday Engine Defs";
 		match_extorname = 1;
 		match_name = "dd_defns";
-        match_ext = "ded";
-    }
+		match_ext = "ded";
+	}
 
 
 	// EDGE DDF lumps and files
@@ -361,11 +363,11 @@ entry_types
 	
 	// ZDaemon text lumps
 	patchinf : text
-    {
-            name = "Patchinfo";
-            match_name = "patchinf";
-            text_language = "zd_patchinf";
-    }
+	{
+		name = "Patchinfo";
+		match_name = "patchinf";
+		text_language = "zd_patchinf";
+	}
 
 	// Catchall for various misc text lumps
 	misctext : text
@@ -401,7 +403,7 @@ entry_types
 	configfile : text
 	{
 		name = "Configuration";
-		match_ext = "cfg", "ini";
+		match_ext = "cfg", "ini", "inf";
 	}
 
 	html : text
@@ -476,10 +478,17 @@ entry_types
 		match_name = "shartit?";
 	}
 	
-	sourcecode : text
+	sourcecode_c : text
 	{
-		name = "Source Code";
-		match_ext = "c", "cpp", "cxx", "h", "hpp", "hxx", "java", "cs", "js", "bas", "py", "pl", "pm", "php", "pas", "p", "pp", "vb", "rb", "l", "m", "d", "e";
+		name = "Source Code (C Based)";
+		match_ext = "c", "cpp", "cxx", "h", "hpp", "hxx", "java", "cs", "js";
+		text_language = "cstyle";
+	}
+	
+	sourcecode_other : text
+	{
+		name = "Source Code (Other)";
+		match_ext = "bas", "py", "pl", "pm", "php", "pas", "p", "pp", "vb", "rb", "l", "m", "d", "e";
 	}
 
 	txt : text

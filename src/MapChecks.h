@@ -14,7 +14,7 @@ protected:
 
 public:
 	MapCheck(SLADEMap* map) { this->map = map; }
-	~MapCheck() {}
+	virtual ~MapCheck() {}
 
 	virtual void		doCheck() = 0;
 	virtual unsigned	nProblems() = 0;

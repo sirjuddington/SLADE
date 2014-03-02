@@ -599,11 +599,14 @@ public:
 		uint16_t* col_offsets = new uint16_t[width];
 		for (size_t w = 0; w < width; ++w)
 			col_offsets[w] = READ_B16(mc, 8+2*w);
-		if (size < unsigned(4 + col_offsets[width - 1]))
-			return EDF_FALSE;
 
-		// We can't test validity of pixel data here
-		return EDF_TRUE;
+		const int result = size < unsigned(4 + col_offsets[width - 1])
+			? EDF_FALSE
+			: EDF_TRUE;  // We can't test validity of pixel data here
+
+		delete[] col_offsets;
+
+		return result;
 	}
 };
 
