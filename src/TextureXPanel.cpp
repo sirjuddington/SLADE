@@ -1090,7 +1090,7 @@ bool TextureXPanel::modifyOffsets()
 		// Calculate and apply new offsets
 		point2_t offsets = mod.calculateOffsets(ctex->getOffsetX(), ctex->getOffsetY(), ctex->getWidth(), ctex->getHeight());
 		ctex->setOffsetX(offsets.x);
-		ctex->setOffsetX(offsets.y);
+		ctex->setOffsetY(offsets.y);
 
 		ctex->setState(1);
 	}
