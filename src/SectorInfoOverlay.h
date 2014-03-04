@@ -3,16 +3,15 @@
 #define __SECTOR_INFO_OVERLAY_H__
 
 class MapSector;
+class TextBox;
+
 class SectorInfoOverlay
 {
 private:
-	//string	info;
-	//string	height;
-	//string	light;
-	//string	tag;
-	vector<string>	info;
-	string			ftex;
-	string			ctex;
+	TextBox*	text_box;
+	string		ftex;
+	string		ctex;
+	int			last_size;
 
 public:
 	SectorInfoOverlay();

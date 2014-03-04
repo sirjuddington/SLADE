@@ -55,6 +55,8 @@ EXTERN_CVAR(Bool, use_zeth_icons)
  *******************************************************************/
 ThingInfoOverlay::ThingInfoOverlay()
 {
+	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16);
+	last_size = 100;
 }
 
 /* ThingInfoOverlay::~ThingInfoOverlay
@@ -62,6 +64,7 @@ ThingInfoOverlay::ThingInfoOverlay()
  *******************************************************************/
 ThingInfoOverlay::~ThingInfoOverlay()
 {
+	delete text_box;
 }
 
 /* ThingInfoOverlay::update
@@ -72,7 +75,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 	if (!thing)
 		return;
 
-	info.clear();
+	string info_text;
 	sprite = "";
 	translation = "";
 	palette = "";
@@ -83,14 +86,15 @@ void ThingInfoOverlay::update(MapThing* thing)
 	ThingType* tt = theGameConfiguration->thingType(thing->getType());
 	string type = S_FMT("%s (Type %d)", tt->getName(), thing->getType());
 	if (Global::debug)
-		info.push_back(S_FMT("Thing #%d (%d): %s", thing->getIndex(), thing->getId(), type));
+		info_text += S_FMT("Thing #%d (%d): %s\n", thing->getIndex(), thing->getId(), type);
 	else
-		info.push_back(S_FMT("Thing #%d: %s", thing->getIndex(), type));
+		info_text += S_FMT("Thing #%d: %s\n", thing->getIndex(), type);
 
 	// Position
 	if (map_format != MAP_DOOM)
-		info.push_back(S_FMT("Position: %d, %d, %d", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->floatProperty("height"))));
-	else info.push_back(S_FMT("Position: %d, %d", (int)thing->xPos(), (int)thing->yPos()));
+		info_text += S_FMT("Position: %d, %d, %d\n", (int)thing->xPos(), (int)thing->yPos(), (int)(thing->floatProperty("height")));
+	else
+		info_text += S_FMT("Position: %d, %d\n", (int)thing->xPos(), (int)thing->yPos());
 
 	// Direction
 	int angle = thing->intProperty("angle");
@@ -111,14 +115,14 @@ void ThingInfoOverlay::update(MapThing* thing)
 		dir = "South";
 	else if (angle == 315)
 		dir = "Southeast";
-	info.push_back(S_FMT("Direction: %s", dir));
+	info_text += S_FMT("Direction: %s\n", dir);
 
 	// Special and Args (if in hexen format or udmf with thing args)
 	if (map_format == MAP_HEXEN ||
 	        (map_format == MAP_UDMF && theGameConfiguration->getUDMFProperty("arg0", MOBJ_THING)))
 	{
 		int as_id = thing->intProperty("special");
-		info.push_back(S_FMT("Special: %d (%s)", as_id, theGameConfiguration->actionSpecialName(as_id)));
+		info_text += S_FMT("Special: %d (%s)\n", as_id, theGameConfiguration->actionSpecialName(as_id));
 		int args[5];
 		args[0] = thing->intProperty("arg0");
 		args[1] = thing->intProperty("arg1");
@@ -127,19 +131,19 @@ void ThingInfoOverlay::update(MapThing* thing)
 		args[4] = thing->intProperty("arg4");
 		string argstr = tt->getArgsString(args);
 		if (!argstr.IsEmpty())
-			info.push_back(S_FMT("%s", argstr));
+			info_text += S_FMT("%s\n", argstr);
 		else
-			info.push_back("No Args");
+			info_text += "No Args\n";
 	}
 
 	// Flags
 	if (map_format != MAP_UDMF)
-		info.push_back(S_FMT("Flags: %s", theGameConfiguration->thingFlagsString(thing->intProperty("flags"))));
+		info_text += S_FMT("Flags: %s", theGameConfiguration->thingFlagsString(thing->intProperty("flags")));
 
 	// TID (if in doom64/hexen/udmf format)
 	if (map_format != MAP_DOOM)
 	{
-		info.push_back(S_FMT("TID: %i", thing->intProperty("id")));
+		info_text += S_FMT("\nTID: %i", thing->intProperty("id"));
 	}
 
 	// Set sprite and translation
@@ -148,6 +152,9 @@ void ThingInfoOverlay::update(MapThing* thing)
 	palette = tt->getPalette();
 	icon = tt->getIcon();
 	zeth = tt->getZeth();
+
+	// Setup text box
+	text_box->setText(info_text);
 }
 
 /* ThingInfoOverlay::draw
@@ -164,7 +171,12 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Determine overlay height
-	int height = info.size() * 16 + 4;
+	if (last_size != right)
+	{
+		last_size = right;
+		text_box->setSize(right - 68);
+	}
+	int height = text_box->getHeight() + 4;
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
@@ -182,12 +194,7 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	Drawing::drawBorderedRect(0, bottom - height - 4, right, bottom+2, col_bg, col_border);
 
 	// Draw info text lines
-	int y = height;
-	for (unsigned a = 0; a < info.size(); a++)
-	{
-		Drawing::drawText(info[a], 2, bottom - y, col_fg, Drawing::FONT_CONDENSED);
-		y -= 16;
-	}
+	text_box->draw(2, bottom - height, col_fg);
 
 	// Draw sprite
 	bool isicon = false;

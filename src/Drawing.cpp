@@ -67,6 +67,9 @@ namespace Drawing
 #endif
 
 
+/*******************************************************************
+ * FONTMANAGER CLASS
+ *******************************************************************/
 class FontManager
 {
 private:
@@ -120,8 +123,9 @@ public:
 #define theFontManager FontManager::getInstance()
 FontManager* FontManager::instance = NULL;
 
+
 /*******************************************************************
- * FUNCTIONS
+ * FONTMANAGER CLASS FUNCTIONS
  *******************************************************************/
 
 #ifdef USE_SFML_RENDERWINDOW
@@ -301,6 +305,10 @@ FTFont* FontManager::getFont(int font)
 }
 #endif // USE_SFML_RENDERWINDOW
 
+
+/*******************************************************************
+ * DRAWING NAMESPACE FUNCTIONS
+ *******************************************************************/
 
 /* Drawing::initFonts
  * Creates a FontManager if needed and let it init its own fonts
@@ -820,6 +828,9 @@ void Drawing::drawHud()
 }
 
 #ifdef USE_SFML_RENDERWINDOW
+/* Drawing::setRenderTarget
+ * Sets the SFML render target to [target]
+ *******************************************************************/
 void Drawing::setRenderTarget(sf::RenderWindow* target)
 {
 	render_target = target;
@@ -903,6 +914,150 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 	return wxColour(rgb.r, rgb.g, rgb.b);
 }
 
+
+/*******************************************************************
+ * TEXTBOX CLASS FUNCTIONS
+ *******************************************************************/
+
+/* TextBox::TextBox
+ * TextBox class constructor
+ *******************************************************************/
+TextBox::TextBox(string text, int font, int width, int line_height)
+{
+	this->font = font;
+	this->width = width;
+	this->height = 0;
+	this->line_height = line_height;
+	setText(text);
+}
+
+/* TextBox::split
+ * Splits [text] into separate lines (split by newlines), also
+ * performs further splitting to word wrap the text within the box
+ *******************************************************************/
+void TextBox::split(string text)
+{
+	// Clear current text lines
+	lines.clear();
+
+	// Do nothing for empty string
+	if (text.IsEmpty())
+		return;
+
+	// Split at newlines
+	wxArrayString split = wxSplit(text, '\n');
+	for (unsigned a = 0; a < split.Count(); a++)
+		lines.push_back(split[a]);
+
+	// Don't bother wrapping if width is really small
+	if (width < 32)
+		return;
+
+	// Word wrap
+	unsigned line = 0;
+	while (line < lines.size())
+	{
+		// Ignore empty or single-character line
+		if (lines[line].length() < 2)
+		{
+			line++;
+			continue;
+		}
+
+		// Get line width
+		double width = Drawing::textExtents(lines[line], font).x;
+
+		// Continue to next line if within box
+		if (width < this->width)
+		{
+			line++;
+			continue;
+		}
+
+		// Halve length until it fits in the box
+		unsigned c = lines[line].length() - 1;
+		while (width >= this->width)
+		{
+			if (c <= 1)
+				break;
+
+			c *= 0.5;
+			width = Drawing::textExtents(lines[line].Mid(0, c), font).x;
+		}
+
+		// Increment length until it doesn't fit
+		while (width < this->width)
+		{
+			c++;
+			width = Drawing::textExtents(lines[line].Mid(0, c), font).x;
+		}
+		c--;
+
+		// Find previous space
+		int sc = c;
+		while (sc >= 0)
+		{
+			if (lines[line][sc] == ' ')
+				break;
+			sc--;
+		}
+		if (sc <= 0)
+			sc = c;
+		else
+			sc++;
+
+		// Split line
+		string nl = lines[line].Mid(sc);
+		lines[line] = lines[line].Mid(0, sc);
+		lines.insert(lines.begin() + line + 1, nl);
+		line++;
+	}
+
+	// Update height
+	if (line_height < 0)
+		height = Drawing::textExtents(lines[0], font).y * lines.size();
+	else
+		height = line_height * lines.size();
+}
+
+/* TextBox::setText
+ * Sets the text box text
+ *******************************************************************/
+void TextBox::setText(string text)
+{
+	this->text = text;
+	split(text);
+}
+
+/* TextBox::setSize
+ * Sets the text box width
+ *******************************************************************/
+void TextBox::setSize(int width)
+{
+	this->width = width;
+	split(this->text);
+}
+
+/* TextBox::draw
+ * Draws the text box
+ *******************************************************************/
+void TextBox::draw(int x, int y, rgba_t colour, int alignment)
+{
+	frect_t b;
+	Drawing::enableTextStateReset(false);
+	Drawing::setTextState(true);
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		Drawing::drawText(lines[a], x, y, colour, font, alignment, &b);
+
+		if (line_height < 0)
+			y += b.height();
+		else
+			y += line_height;
+	}
+	Drawing::enableTextStateReset(true);
+	Drawing::setTextState(false);
+}
 
 /*
 CONSOLE_COMMAND(d_testfont, 1) {

@@ -4,15 +4,18 @@
 
 class MapThing;
 class GLTexture;
+class TextBox;
+
 class ThingInfoOverlay
 {
 private:
-	vector<string>	info;
-	string			sprite;
-	string			translation;
-	string			palette;
-	string			icon;
-	int				zeth;
+	string		sprite;
+	string		translation;
+	string		palette;
+	string		icon;
+	int			zeth;
+	TextBox*	text_box;
+	int			last_size;
 
 public:
 	ThingInfoOverlay();

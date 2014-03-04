@@ -72,4 +72,29 @@ namespace Drawing
 	wxColour darkColour(const wxColour& colour, float percent);
 }
 
+// TextBox class
+class TextBox
+{
+private:
+	string			text;
+	vector<string>	lines;
+	int				font;
+	int				width;
+	int				height;
+	int				line_height;
+
+	void	split(string text);
+
+public:
+	TextBox(string text, int font, int width, int line_height = -1);
+	~TextBox() {}
+
+	int		getHeight() { return height; }
+	int		getWidth() { return width; }
+	void	setText(string text);
+	void	setSize(int width);
+	void	setLineHeight(int height) { line_height = height; }
+	void	draw(int x, int y, rgba_t colour = COL_WHITE, int alignment = Drawing::ALIGN_LEFT);
+};
+
 #endif//__DRAWING_H__

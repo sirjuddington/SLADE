@@ -52,6 +52,8 @@
  *******************************************************************/
 LineInfoOverlay::LineInfoOverlay()
 {
+	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16);
+	last_size = 100;
 }
 
 /* LineInfoOverlay::~LineInfoOverlay
@@ -59,6 +61,7 @@ LineInfoOverlay::LineInfoOverlay()
  *******************************************************************/
 LineInfoOverlay::~LineInfoOverlay()
 {
+	delete text_box;
 }
 
 /* LineInfoOverlay::update
@@ -69,29 +72,30 @@ void LineInfoOverlay::update(MapLine* line)
 	if (!line)
 		return;
 
-	info.clear();
+	//info.clear();
+	string info_text;
 	int map_format = theMapEditor->currentMapDesc().format;
 
 	// General line info
 	if (Global::debug)
-		info.push_back(S_FMT("Line #%d (%d)", line->getIndex(), line->getId()));
+		info_text += (S_FMT("Line #%d (%d)\n", line->getIndex(), line->getId()));
 	else
-		info.push_back(S_FMT("Line #%d", line->getIndex()));
-	info.push_back(S_FMT("Length: %d", MathStuff::round(line->getLength())));
+		info_text += (S_FMT("Line #%d\n", line->getIndex()));
+	info_text += (S_FMT("Length: %d\n", MathStuff::round(line->getLength())));
 
 	// Line special
 	int as_id = line->intProperty("special");
 	if (line->props().propertyExists("macro"))
 	{
 		int macro = line->intProperty("macro");
-		info.push_back(S_FMT("Macro: #%d", macro));
+		info_text += (S_FMT("Macro: #%d\n", macro));
 	}
 	else
-		info.push_back(S_FMT("Special: %d (%s)", as_id, theGameConfiguration->actionSpecialName(as_id)));
+		info_text += (S_FMT("Special: %d (%s)\n", as_id, theGameConfiguration->actionSpecialName(as_id)));
 
 	// Line trigger
 	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
-		info.push_back(S_FMT("Trigger: %s", theGameConfiguration->spacTriggerString(line, map_format)));
+		info_text += (S_FMT("Trigger: %s\n", theGameConfiguration->spacTriggerString(line, map_format)));
 
 	// Line args (or sector tag)
 	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
@@ -104,16 +108,19 @@ void LineInfoOverlay::update(MapLine* line)
 		args[4] = line->intProperty("arg4");
 		string argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args);
 		if (!argstr.IsEmpty())
-			info.push_back(S_FMT("%s", argstr));
+			info_text += (S_FMT("%s\n", argstr));
 		else
-			info.push_back("No Args");
+			info_text += ("No Args\n");
 	}
 	else
-		info.push_back(S_FMT("Sector Tag: %d", line->intProperty("arg0")));
+		info_text += (S_FMT("Sector Tag: %d", line->intProperty("arg0")));
 
 	// Line flags
 	if (map_format != MAP_UDMF)
-		info.push_back(S_FMT("Flags: %s", theGameConfiguration->lineFlagsString(line)));
+		info_text += (S_FMT("\nFlags: %s", theGameConfiguration->lineFlagsString(line)));
+
+	// Setup text box
+	text_box->setText(info_text);
 
 	// Front side
 	MapSide* s = line->s1();
@@ -166,7 +173,17 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Determine overlay height
-	int height = info.size() * 16 + 4;
+	int sides_width = 2;
+	if (side_front.exists)
+		sides_width += 256;
+	if (side_back.exists)
+		sides_width += 256;
+	if (last_size != right - sides_width)
+	{
+		last_size = right - sides_width;
+		text_box->setSize(right - sides_width);
+	}
+	int height = text_box->getHeight() + 4;
 
 	// Get colours
 	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
@@ -194,12 +211,7 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 	Drawing::drawBorderedRect(0, bottom-height-4, main_panel_end, bottom+2, col_bg, col_border);
 
 	// Draw info text lines
-	int y = height;
-	for (unsigned a = 0; a < info.size(); a++)
-	{
-		Drawing::drawText(info[a], 2, bottom - y, col_fg, Drawing::FONT_CONDENSED);
-		y -= 16;
-	}
+	text_box->draw(2, bottom - height, col_fg);
 
 	// Side info
 	int x = right - 256;

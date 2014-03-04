@@ -49,6 +49,8 @@
  *******************************************************************/
 SectorInfoOverlay::SectorInfoOverlay()
 {
+	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16);
+	last_size = 100;
 }
 
 /* SectorInfoOverlay::~SectorInfoOverlay
@@ -56,6 +58,7 @@ SectorInfoOverlay::SectorInfoOverlay()
  *******************************************************************/
 SectorInfoOverlay::~SectorInfoOverlay()
 {
+	delete text_box;
 }
 
 /* SectorInfoOverlay::update
@@ -66,30 +69,33 @@ void SectorInfoOverlay::update(MapSector* sector)
 	if (!sector)
 		return;
 
-	info.clear();
+	string info_text;
 
 	// Info (index + type)
 	int t = sector->intProperty("special");
 	string type = S_FMT("%s (Type %d)", theGameConfiguration->sectorTypeName(t, theMapEditor->currentMapDesc().format), t);
 	if (Global::debug)
-		info.push_back(S_FMT("Sector #%d (%d): %s", sector->getIndex(), sector->getId(), type));
+		info_text += S_FMT("Sector #%d (%d): %s\n", sector->getIndex(), sector->getId(), type);
 	else
-		info.push_back(S_FMT("Sector #%d: %s", sector->getIndex(), type));
+		info_text += S_FMT("Sector #%d: %s\n", sector->getIndex(), type);
 
 	// Height
 	int fh = sector->intProperty("heightfloor");
 	int ch = sector->intProperty("heightceiling");
-	info.push_back(S_FMT("Height: %d to %d (%d total)", fh, ch, ch - fh));
+	info_text += S_FMT("Height: %d to %d (%d total)\n", fh, ch, ch - fh);
 
 	// Brightness
-	info.push_back(S_FMT("Brightness: %d", sector->intProperty("lightlevel")));
+	info_text += S_FMT("Brightness: %d\n", sector->intProperty("lightlevel"));
 
 	// Tag
-	info.push_back(S_FMT("Tag: %d", sector->intProperty("id")));
+	info_text += S_FMT("Tag: %d", sector->intProperty("id"));
 
 	// Textures
 	ftex = sector->getFloorTex();
 	ctex = sector->getCeilingTex();
+
+	// Setup text box
+	text_box->setText(info_text);
 }
 
 /* SectorInfoOverlay::draw
@@ -106,7 +112,12 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Determine overlay height
-	int height = info.size() * 16 + 4;
+	if (last_size != right)
+	{
+		last_size = right;
+		text_box->setSize(right - 88 - 92);
+	}
+	int height = text_box->getHeight() + 4;
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
@@ -125,12 +136,7 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	Drawing::drawBorderedRect(right - 188, bottom - height - 4, right, bottom+2, col_bg, col_border);
 
 	// Draw info text lines
-	int y = height;
-	for (unsigned a = 0; a < info.size(); a++)
-	{
-		Drawing::drawText(info[a], 2, bottom - y, col_fg, Drawing::FONT_CONDENSED);
-		y -= 16;
-	}
+	text_box->draw(2, bottom - height, col_fg);
 
 	// Ceiling texture
 	drawTexture(alpha, right - 88, bottom - 4, ctex, "C");

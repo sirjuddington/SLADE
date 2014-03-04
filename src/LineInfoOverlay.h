@@ -3,14 +3,13 @@
 #define __LINE_INFO_OVERLAY_H__
 
 class MapLine;
+class TextBox;
+
 class LineInfoOverlay
 {
 private:
-	//string	index;
-	//string	length;
-	//string	special;
-	//string	args;
-	vector<string>	info;
+	TextBox*	text_box;
+	int			last_size;
 
 	struct side_t
 	{
