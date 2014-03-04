@@ -492,11 +492,11 @@ z_xlat {
 	function_link = "http://zdoom.org/wiki/Map_translator";
 
 	keywords = {
-		include maxlinespecial, sector, enum, tag, lineflag, define, lineid
+		include, maxlinespecial, sector, enum, tag, lineflag, define, lineid
 	}
 
 	constants = {
-		clear, bitmask
+		clear, bitmask,
 
 		USE, MONST, REP, WALK, SHOOT, MONWALK, FIRSTSIDE,
 		NoKey, RCard, BCard, YCard, RSkull, BSkull, YSkull, AnyKey, AllKeys, CardIsSkull,
@@ -510,7 +510,7 @@ z_xlat {
 		Init_Gravity, Init_Color, Init_Damage, Init_TransferSky
 	}
 
-	functions = {
+	functions {
 		unsupported;
 		
 		ACS_Execute = "int script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
