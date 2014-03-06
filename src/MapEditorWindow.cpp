@@ -225,6 +225,10 @@ void MapEditorWindow::setupMenu()
 	theApp->getAction("mapw_showundohistory")->addToMenu(menu_view);
 	theApp->getAction("mapw_showchecks")->addToMenu(menu_view);
 	theApp->getAction("mapw_showscripteditor")->addToMenu(menu_view);
+	menu_view->AppendSeparator();
+	theApp->getAction("mapw_show_fullmap")->addToMenu(menu_view);
+	theApp->getAction("mapw_show_item")->addToMenu(menu_view);
+	//theApp->getAction("mapw_toggle_selection_numbers")->addToMenu(menu_view);
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);

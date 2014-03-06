@@ -389,6 +389,7 @@
     <ClCompile Include="src\sfMod\sfMod.cpp" />
     <ClCompile Include="src\SFont.cpp" />
     <ClCompile Include="src\ShapeDrawPanel.cpp" />
+    <ClCompile Include="src\ShowItemDialog.cpp" />
     <ClCompile Include="src\SIFormat.cpp" />
     <ClCompile Include="src\SImageFormats.cpp" />
     <ClCompile Include="src\SToolBar.cpp" />
@@ -684,6 +685,7 @@
     <ClInclude Include="src\sfMod\modplug.h" />
     <ClInclude Include="src\sfMod\sfMod.h" />
     <ClInclude Include="src\ShapeDrawPanel.h" />
+    <ClInclude Include="src\ShowItemDialog.h" />
     <ClInclude Include="src\SIFDoom.h" />
     <ClInclude Include="src\SIFHexen.h" />
     <ClInclude Include="src\SIFImages.h" />

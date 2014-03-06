@@ -54,6 +54,7 @@
 #include "UndoRedo.h"
 #include "QuickTextureOverlay3d.h"
 #include "ObjectEditPanel.h"
+#include "ShowItemDialog.h"
 
 
 /*******************************************************************
@@ -3393,6 +3394,88 @@ bool MapCanvas::handleAction(string id)
 	else if (id == "mapw_edit_objects" && mouse_state == MSTATE_NORMAL)
 	{
 		beginObjectEdit();
+		return true;
+	}
+
+	// Show full map
+	else if (id == "mapw_show_fullmap")
+	{
+		viewFitToMap();
+		return true;
+	}
+
+	// Show item
+	else if (id == "mapw_show_item")
+	{
+		// Setup dialog
+		ShowItemDialog dlg(this);
+		switch (editor->editMode())
+		{
+		case MapEditor::MODE_VERTICES:
+			dlg.setType(MOBJ_VERTEX); break;
+		case MapEditor::MODE_LINES:
+			dlg.setType(MOBJ_LINE); break;
+		case MapEditor::MODE_SECTORS:
+			dlg.setType(MOBJ_SECTOR); break;
+		case MapEditor::MODE_THINGS:
+			dlg.setType(MOBJ_THING); break;
+		default:
+			return true;
+		}
+
+		// Show dialog
+		if (dlg.ShowModal() == wxID_OK)
+		{
+			// Get entered index
+			int index = dlg.getIndex();
+			if (index < 0)
+				return true;
+
+			// Set appropriate edit mode
+			bool side = false;
+			switch (dlg.getType())
+			{
+			case MOBJ_VERTEX:
+				editor->setEditMode(MapEditor::MODE_VERTICES); break;
+			case MOBJ_LINE:
+				editor->setEditMode(MapEditor::MODE_LINES); break;
+			case MOBJ_SIDE:
+				editor->setEditMode(MapEditor::MODE_LINES); side = true; break;
+			case MOBJ_SECTOR:
+				editor->setEditMode(MapEditor::MODE_SECTORS); break;
+			case MOBJ_THING:
+				editor->setEditMode(MapEditor::MODE_THINGS); break;
+			default:
+				break;
+			}
+
+			// If side, get its parent line
+			if (side)
+			{
+				MapSide* s = editor->getMap().getSide(index);
+				if (s && s->getParentLine())
+					index = s->getParentLine()->getIndex();
+				else
+					index = -1;
+			}
+
+			// Show the item
+			if (index > -1)
+				editor->showItem(index);
+		}
+
+		return true;
+	}
+
+	// Toggle selection numbers
+	else if (id == "mapw_toggle_selection_numbers")
+	{
+		map_show_selection_numbers = !map_show_selection_numbers;
+		if (map_show_selection_numbers)
+			editor->addEditorMessage("Selection numbers enabled");
+		else
+			editor->addEditorMessage("Selection numbers disabled");
+
 		return true;
 	}
 

@@ -1149,6 +1149,9 @@
     <ClCompile Include="src\MapTextureBrowser.cpp">
       <Filter>Map Editor\UI Elements\Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="src\ShowItemDialog.cpp">
+      <Filter>Map Editor\UI Elements\Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2059,6 +2062,9 @@
       <Filter>Map Editor\UI Elements\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="src\MapTextureBrowser.h">
+      <Filter>Map Editor\UI Elements\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ShowItemDialog.h">
       <Filter>Map Editor\UI Elements\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
