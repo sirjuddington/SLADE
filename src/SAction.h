@@ -43,6 +43,7 @@ public:
 	string	getIconName() { return icon; }
 	string	getHelpText() { return helptext; }
 	string	getShortcut() { return shortcut; }
+	string	getShortcutText();
 	bool	isToggled() { return toggled; }
 	bool	isRadio() { return type == RADIO; }
 

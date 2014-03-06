@@ -44,13 +44,21 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 	else
 		this->icon = getIcon(icon, toolbar_size > 16);
 
+	// Add shortcut to help text if it exists
+	string sc = this->action->getShortcutText();
+	if (!sc.IsEmpty())
+		help_text += S_FMT(" (Shortcut: %s)", sc);
+
 	// Set tooltip
 	if (!show_name)
 	{
 		string tip = this->action->getText();
 		tip.Replace("&", "");
+		if (!sc.IsEmpty()) tip += S_FMT(" (Shortcut: %s)", sc);
 		SetToolTip(tip);
 	}
+	else if (!sc.IsEmpty())
+		SetToolTip(S_FMT("Shortcut: %s", sc));
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SToolBarButton::onPaint, this);

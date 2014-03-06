@@ -79,6 +79,24 @@ SAction::~SAction()
 {
 }
 
+/* SAction::getShortcutText
+ * Returns the shortcut key for this action as a string, taking into
+ * account if the shortcut is a keybind
+ *******************************************************************/
+string SAction::getShortcutText()
+{
+	if (shortcut.StartsWith("kb:"))
+	{
+		keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
+		if (kp.key != "")
+			return kp.as_string();
+		else
+			return "INVALID KEYBIND";
+	}
+
+	return shortcut;
+}
+
 /* SAction::addToMenu
  * Adds this action to [menu]. If [text_override] is not "NO", it
  * will be used instead of the action's text as the menu item label
@@ -89,29 +107,36 @@ bool SAction::addToMenu(wxMenu* menu, string text_override)
 	if (!menu)
 		return false;
 
+	// Determine shortcut key
+	string sc = shortcut;
+	bool is_bind = false;
+	if (shortcut.StartsWith("kb:"))
+	{
+		is_bind = true;
+		keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
+		if (kp.key != "")
+			sc = kp.as_string();
+	}
+
 	// Setup menu item string
 	string item_text = text;
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
-	if (!shortcut.IsEmpty())
-	{
-		if (shortcut.StartsWith("kb:"))
-		{
-			keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
-			//if (kp.key != "")
-			//	item_text = S_FMT("%s\t%s", item_text, kp.as_string());
-		}
-		else
-			item_text = S_FMT("%s\t%s", item_text, shortcut);
-	}
+	if (!shortcut.IsEmpty() && !is_bind)
+		item_text = S_FMT("%s\t%s", item_text, shortcut);
 
 	// Append this action to the menu
+	string help = helptext;
+	if (!sc.IsEmpty()) help += S_FMT(" (Shortcut: %s)", sc);
 	if (type == NORMAL)
-		menu->Append(createMenuItem(menu, wx_id, item_text, helptext, icon));
+		menu->Append(createMenuItem(menu, wx_id, item_text, help, icon));
 	else if (type == CHECK)
-		menu->AppendCheckItem(wx_id, item_text, helptext);
+	{
+		wxMenuItem* item = menu->AppendCheckItem(wx_id, item_text, help);
+		item->Check(toggled);
+	}
 	else if (type == RADIO)
-		menu->AppendRadioItem(wx_id, item_text, helptext);
+		menu->AppendRadioItem(wx_id, item_text, help);
 
 	return true;
 }
@@ -132,12 +157,13 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override)
 		useicon = icon_override;
 
 	// Append this action to the toolbar
+	wxAuiToolBarItem* item = NULL;
 	if (type == NORMAL)
-		toolbar->AddTool(wx_id, text, getIcon(useicon), helptext);
+		item = toolbar->AddTool(wx_id, text, getIcon(useicon), helptext);
 	else if (type == CHECK)
-		toolbar->AddTool(wx_id, text, getIcon(useicon), helptext, wxITEM_CHECK);
+		item = toolbar->AddTool(wx_id, text, getIcon(useicon), helptext, wxITEM_CHECK);
 	else if (type == RADIO)
-		toolbar->AddTool(wx_id, text, getIcon(useicon), helptext, wxITEM_RADIO);
+		item = toolbar->AddTool(wx_id, text, getIcon(useicon), helptext, wxITEM_RADIO);
 
 	return true;
 }
