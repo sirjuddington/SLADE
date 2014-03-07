@@ -44,6 +44,7 @@
  *******************************************************************/
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
+CVAR(String, font_monospace, "Consolas,Lucida Console", CVAR_SAVE)
 
 
 /*******************************************************************
@@ -68,9 +69,23 @@ VirtualListView::VirtualListView(wxWindow* parent)
 
 	if (list_font_monospace)
 	{
+		// Get default font
 		wxFont lfont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
-		if (!lfont.SetFaceName("Consolas") && !lfont.SetFaceName("Lucida Console"))
-			lfont.SetFamily(wxFONTFAMILY_MODERN);
+
+		// Set face from cvar
+		bool set = false;
+		wxArrayString split = wxSplit(font_monospace, ',');
+		for (unsigned a = 0; a < split.size(); a++)
+		{
+			if (lfont.SetFaceName(split[a]))
+			{
+				set = true;
+				break;
+			}
+		}
+		if (!set) lfont.SetFamily(wxFONTFAMILY_MODERN);
+
+		// Set item font
 		item_attr->SetFont(lfont);
 	}
 
