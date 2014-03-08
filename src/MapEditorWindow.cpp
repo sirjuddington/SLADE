@@ -697,7 +697,7 @@ WadArchive* MapEditorWindow::writeMap(string name)
 	WadArchive* wad = new WadArchive();
 	wad->addNewEntry(name);
 	// Handle fragglescript and similar content in the map header
-	if (mdesc_current.head->getSize() && !mdesc_current.archive)
+	if (mdesc_current.head && mdesc_current.head->getSize() && !mdesc_current.archive)
 	{
 		wad->getEntry(name)->importMemChunk(mdesc_current.head->getMCData());
 	}
@@ -1127,7 +1127,9 @@ bool MapEditorWindow::handleAction(string id)
 	// Run Map
 	else if (id == "mapw_run_map")
 	{
-		Archive* archive = mdesc_current.head->getParent();
+		Archive* archive = NULL;
+		if (mdesc_current.head)
+			archive = mdesc_current.head->getParent();
 		RunDialog dlg(this, archive);
 		if (dlg.ShowModal() == wxID_OK)
 		{

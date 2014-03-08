@@ -226,10 +226,15 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 		path.Replace("%r", getSelectedResourceList());
 
 		// Archive (+ temp map if specified)
-		if (map_file.IsEmpty())
+		if (map_file.IsEmpty() && archive)
 			path.Replace("%a", S_FMT("\"%s\"", archive->getFilename()));
 		else
-			path.Replace("%a", S_FMT("\"%s\" \"%s\"", archive->getFilename(), map_file));
+		{
+			if (archive)
+				path.Replace("%a", S_FMT("\"%s\" \"%s\"", archive->getFilename(), map_file));
+			else
+				path.Replace("%a", S_FMT("\"%s\"", map_file));
+		}
 
 		// Running an archive yields no map name, so don't try to warp
 		if (map_name.IsEmpty())
