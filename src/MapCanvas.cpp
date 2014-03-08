@@ -703,7 +703,7 @@ void MapCanvas::drawEditorMessages()
 void MapCanvas::drawFeatureHelpText()
 {
 	// Check if any text
-	if (feature_help_lines.empty())
+	if (feature_help_lines.empty() || !map_show_help)
 		return;
 
 	// Draw title
