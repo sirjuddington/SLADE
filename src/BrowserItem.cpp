@@ -50,6 +50,7 @@ BrowserItem::BrowserItem(string name, unsigned index, string type)
 	this->type = type;
 	this->image = NULL;
 	this->blank = false;
+	this->text_box = NULL;
 }
 
 /* BrowserItem::~BrowserItem
@@ -57,6 +58,8 @@ BrowserItem::BrowserItem(string name, unsigned index, string type)
  *******************************************************************/
 BrowserItem::~BrowserItem()
 {
+	if (text_box)
+		delete text_box;
 }
 
 /* BrowserItem::loadImage
@@ -89,10 +92,16 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 	}
 	else if (viewtype == 1)
 	{
-		if (text_shadow) Drawing::drawText(name, x+size+9, y+(size*0.5)+1, COL_BLACK, font);
-		Drawing::drawText(name, x+size+8, y+(size*0.5), colour, font);
-		if (text_shadow) Drawing::drawText(S_FMT("%d", index), x+size+9, y+(size*0.5)-15, COL_BLACK, font);
-		Drawing::drawText(S_FMT("%d", index), x+size+8, y+(size*0.5)-16, colour, font);
+		// Create text box if needed
+		if (!text_box)
+			text_box = new TextBox(S_FMT("%d\n%s", index, name), font, 144, 16);
+		
+		int top = y;
+		top += ((size - text_box->getHeight()) * 0.5);
+
+		if (text_shadow)
+			text_box->draw(x + size + 9, top + 1, COL_BLACK);
+		text_box->draw(x + size + 8, top, colour);
 	}
 
 	// If the item is blank don't bother with the image

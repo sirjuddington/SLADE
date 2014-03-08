@@ -5,6 +5,7 @@
 #include "GLTexture.h"
 
 class BrowserWindow;
+class TextBox;
 class BrowserItem
 {
 	friend class BrowserWindow;
@@ -15,6 +16,7 @@ protected:
 	GLTexture*		image;
 	BrowserWindow*	parent;
 	bool			blank;
+	TextBox*		text_box;
 
 public:
 	BrowserItem(string name, unsigned index = 0, string type = "item");

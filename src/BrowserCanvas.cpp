@@ -521,20 +521,22 @@ bool BrowserCanvas::searchItemFrom(int from)
 
 int BrowserCanvas::longestItemTextWidth()
 {
-	// Just return it if it's already calculated
-	if (longest_text >= 0)
-		return longest_text;
+	return 144;
 
-	// Go through all items
-	for (unsigned a = 0; a < items.size(); a++)
-	{
-		string name = items[a]->getName();
-		int width = Drawing::textExtents(name, font).x;
-		if (width > longest_text)
-			longest_text = width;
-	}
+	//// Just return it if it's already calculated
+	//if (longest_text >= 0)
+	//	return longest_text;
 
-	return longest_text;
+	//// Go through all items
+	//for (unsigned a = 0; a < items.size(); a++)
+	//{
+	//	string name = items[a]->getName();
+	//	int width = Drawing::textExtents(name, font).x;
+	//	if (width > longest_text)
+	//		longest_text = width;
+	//}
+
+	//return longest_text;
 }
 
 
