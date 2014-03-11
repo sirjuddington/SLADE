@@ -1095,7 +1095,7 @@ void MainApp::onMenu(wxCommandEvent& e)
 		current_action = "";
 
 		// Check if triggering object is a menu item
-		if (e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
+		if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
 		{
 			wxMenuItem* item = (wxMenuItem*)e.GetEventObject();
 			if (s_action->type == SAction::CHECK)
