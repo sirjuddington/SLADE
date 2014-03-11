@@ -29,7 +29,7 @@ protected:
 	// Virtual wxListCtrl overrides
 	string	getItemText(long item, long column) const;
 	int		getItemIcon(long item) const;
-	void	updateItemAttr(long item) const;
+	void	updateItemAttr(long item, long column) const;
 
 public:
 	ArchiveEntryList(wxWindow* parent);

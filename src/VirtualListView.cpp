@@ -67,8 +67,10 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	memset(cols_editable, 0, 100);
 
 	// Set monospace font if configured
+	font_normal = new wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+	font_monospace = new wxFont(getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 	if (list_font_monospace)
-		item_attr->SetFont(getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+		item_attr->SetFont(*font_monospace);
 
 	// Bind events
 #ifndef __WXMSW__
@@ -87,6 +89,8 @@ VirtualListView::VirtualListView(wxWindow* parent)
 VirtualListView::~VirtualListView()
 {
 	delete item_attr;
+	delete font_monospace;
+	delete font_normal;
 }
 
 /* VirtualListView::sendSelectionChangedEvent

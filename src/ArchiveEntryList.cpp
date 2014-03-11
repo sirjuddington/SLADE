@@ -50,7 +50,14 @@ CVAR(Bool, elist_vrules, false, CVAR_SAVE)
 CVAR(Bool, elist_filter_dirs, false, CVAR_SAVE)
 CVAR(Bool, elist_type_bgcol, false, CVAR_SAVE)
 CVAR(Float, elist_type_bgcol_intensity, 0.18, CVAR_SAVE)
+CVAR(Bool, elist_name_monospace, false, CVAR_SAVE)
 wxDEFINE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
+
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Bool, list_font_monospace)
 
 
 /*******************************************************************
@@ -177,7 +184,7 @@ int ArchiveEntryList::getItemIcon(long item) const
  * Called when widget requests the attributes (text colour /
  * background colour / font) for [item]
  *******************************************************************/
-void ArchiveEntryList::updateItemAttr(long item) const
+void ArchiveEntryList::updateItemAttr(long item, long column) const
 {
 	// Get associated entry
 	ArchiveEntry* entry = getEntry(item);
@@ -190,6 +197,12 @@ void ArchiveEntryList::updateItemAttr(long item) const
 	// If entry doesn't exist, return error colour
 	if (!entry)
 		return;
+
+	// Set font
+	if (elist_name_monospace && !list_font_monospace)
+		item_attr->SetFont((column == 0) ? *font_monospace : *font_normal);
+	else
+		item_attr->SetFont(list_font_monospace ? *font_monospace : *font_normal);
 
 	// Set background colour defined in entry type (if any)
 	rgba_t col = entry->getType()->getColour();

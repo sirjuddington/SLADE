@@ -19,19 +19,22 @@ private:
 
 protected:
 	wxListItemAttr*	item_attr;
+	wxFont*			font_normal;
+	wxFont*			font_monospace;
 
 	virtual string	getItemText(long item, long column) const { return "UNDEFINED"; }
 	virtual int		getItemIcon(long item) const { return -1; }
-	virtual void	updateItemAttr(long item) const {}
+	virtual void	updateItemAttr(long item, long column) const {}
 
 	// Virtual wxListCtrl overrides
 	string			OnGetItemText(long item, long column) const { return getItemText(item, column); }
 	int				OnGetItemImage(long item) const { return getItemIcon(item); }
-	wxListItemAttr*	OnGetItemAttr(long item) const { updateItemAttr(item); return item_attr; }
+	wxListItemAttr*	OnGetItemAttr(long item) const { updateItemAttr(item, 0); return item_attr; }
+	wxListItemAttr*	OnGetItemColumnAttr(long item, long column) const { updateItemAttr(item, column); return item_attr; }
 
 public:
 	VirtualListView(wxWindow* parent);
-	~VirtualListView();
+	virtual ~VirtualListView();
 
 	void	setSearchColumn(int col) { col_search = col; }
 	void	setColumnEditable(int col, bool edit = true) { if (col >= 0 && col < 100) cols_editable[col] = edit; }
