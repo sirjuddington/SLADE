@@ -37,6 +37,7 @@
  *******************************************************************/
 EXTERN_CVAR(Bool, close_archive_with_tab)
 EXTERN_CVAR(Bool, archive_load_data)
+EXTERN_CVAR(Bool, auto_open_wads_root)
 
 
 /*******************************************************************
@@ -65,9 +66,10 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_archive_close_tab = new wxCheckBox(this, -1, "Close archive when its tab is closed");
 	sizer->Add(cb_archive_close_tab, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
-	//// Enable np2 textures
-	//cb_gl_np2 = new wxCheckBox(this, -1, "Enable Non-power-of-two textures if supported");
-	//sizer->Add(cb_gl_np2, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	// Auto open wads in root
+	cb_wads_root = new wxCheckBox(this, -1, "Auto open wad archives in root directory");
+	cb_wads_root->SetToolTip("When opening a zip or folder archive, automatically open all wad entries in the root directory");
+	sizer->Add(cb_wads_root, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 }
 
 /* GeneralPrefsPanel::~GeneralPrefsPanel
@@ -84,7 +86,7 @@ void GeneralPrefsPanel::init()
 {
 	cb_archive_load->SetValue(archive_load_data);
 	cb_archive_close_tab->SetValue(close_archive_with_tab);
-	//cb_gl_np2->SetValue(gl_tex_enable_np2);
+	cb_wads_root->SetValue(auto_open_wads_root);
 }
 
 /* GeneralPrefsPanel::applyPreferences
@@ -94,5 +96,5 @@ void GeneralPrefsPanel::applyPreferences()
 {
 	archive_load_data = cb_archive_load->GetValue();
 	close_archive_with_tab = cb_archive_close_tab->GetValue();
-	//gl_tex_enable_np2 = cb_gl_np2->GetValue();
+	auto_open_wads_root = cb_wads_root->GetValue();
 }

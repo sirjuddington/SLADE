@@ -45,6 +45,7 @@
 ArchiveManager* ArchiveManager::instance = NULL;
 CVAR(Int, base_resource, -1, CVAR_SAVE)
 CVAR(Int, max_recent_files, 25, CVAR_SAVE)
+CVAR(Bool, auto_open_wads_root, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -189,7 +190,7 @@ bool ArchiveManager::addArchive(Archive* archive)
 		theResourceManager->addArchive(archive);
 
 		// ZDoom also loads any WADs found in the root of a PK3 or directory
-		if (archive->getType() == ARCHIVE_ZIP || archive->getType() == ARCHIVE_FOLDER)
+		if ((archive->getType() == ARCHIVE_ZIP || archive->getType() == ARCHIVE_FOLDER) && auto_open_wads_root)
 		{
 			ArchiveTreeNode* root = archive->getRoot();
 			ArchiveEntry* entry;
