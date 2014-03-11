@@ -507,7 +507,9 @@ void MapEditor::setEditMode(int mode)
 
 	// Clear hilight and selection stuff
 	hilight_item = -1;
+	hilight_3d = -1;
 	selection.clear();
+	selection_3d.clear();
 	tagged_sectors.clear();
 	tagged_lines.clear();
 	tagged_things.clear();
