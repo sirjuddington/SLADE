@@ -1139,6 +1139,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	bool lpeg = theGameConfiguration->lineBasicFlagSet("dontpegbottom", line, map_format);
 	double xoff, yoff, sx, sy;
 	bool mixed = theGameConfiguration->mixTexFlats();
+	lines[index].line = line;
 
 	// Get first side info
 	int floor1 = line->frontSector()->getFloorHeight();
@@ -2231,6 +2232,8 @@ void MapRenderer3D::checkVisibleQuads()
 		// Update line if needed
 		update = false;
 		if (lines[a].updated_time < line->modifiedTime())	// Check line modified
+			update = true;
+		if (lines[a].line != line)
 			update = true;
 		if (!update && line->s1())
 		{

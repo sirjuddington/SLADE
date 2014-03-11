@@ -59,6 +59,7 @@ public:
 		vector<quad_3d_t>	quads;
 		long				updated_time;
 		bool				visible;
+		MapLine*			line;
 
 		line_3d_t() { updated_time = 0; visible = true; }
 	};
