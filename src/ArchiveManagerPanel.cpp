@@ -395,6 +395,38 @@ void ArchiveManagerPanel::updateRecentListItem(int index)
 	list_recent->SetItemImage(index, icon);
 }
 
+/* ArchiveManagerPanel::updateArchiveTabTitle
+ * Updates the title of the tab for the archive at <index>
+ *******************************************************************/
+void ArchiveManagerPanel::updateArchiveTabTitle(int index)
+{
+	Archive* archive = theArchiveManager->getArchive(index);
+
+	if (!archive)
+		return;
+
+	// Go through all tabs
+	for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
+	{
+		// Check page type is "archive"
+		if (notebook_archives->GetPage(a)->GetName().CmpNoCase("archive"))
+			continue;
+
+		// Check for archive match
+		ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(a);
+		if (ap->getArchive() == archive)
+		{
+			string title;
+			if (archive->isModified())
+				title = S_FMT("%s *", archive->getFilename(false));
+			else
+				title = archive->getFilename(false);
+			notebook_archives->SetPageText(a, title);
+			return;
+		}
+	}
+}
+
 /* ArchiveManagerPanel::isArchivePanel
  * Checks if the tab at [tab_index] is an ArchivePanel. Returns true
  * if it is, false if not
@@ -1263,6 +1295,7 @@ void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string event_name
 		int32_t index = -1;
 		event_data.read(&index, 4);
 		updateOpenListItem(index);
+		updateArchiveTabTitle(index);
 	}
 
 	// If an archive was modified
@@ -1271,6 +1304,7 @@ void ArchiveManagerPanel::onAnnouncement(Announcer* announcer, string event_name
 		int32_t index = -1;
 		event_data.read(&index, 4);
 		updateOpenListItem(index);
+		updateArchiveTabTitle(index);
 	}
 
 	// If a texture editor is to be opened

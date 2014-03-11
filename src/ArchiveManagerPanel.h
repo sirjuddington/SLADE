@@ -66,6 +66,7 @@ public:
 	void			updateOpenListItem(int index);
 	void			updateRecentListItem(int index);
 	void			updateBookmarkListItem(int index);
+	void			updateArchiveTabTitle(int index);
 	bool			isArchivePanel(int tab_index);
 	Archive*		getArchive(int tab_index);
 	int				currentTabIndex();
