@@ -35,7 +35,7 @@
 #include "ArchiveManager.h"
 #include "ArchivePanel.h"
 #include "ZipArchive.h"
-#include "BaseResourceArchivesPanel.h"
+#include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "TextureXEditor.h"
 #include "SplashWindow.h"
 #include "MainWindow.h"

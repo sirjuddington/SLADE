@@ -39,7 +39,7 @@
 #include "MainWindow.h"
 #include "FileMonitor.h"
 #include "WadArchive.h"
-#include "PreferencesDialog.h"
+#include "Dialogs/Preferences/PreferencesDialog.h"
 #include "ModifyOffsetsDialog.h"
 #include <wx/filename.h>
 #include <wx/utils.h>

@@ -2,7 +2,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "BaseResourceWizardPage.h"
-#include "BaseResourceArchivesPanel.h"
+#include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 
 BaseResourceWizardPage::BaseResourceWizardPage(wxWindow* parent) : WizardPageBase(parent)
 {

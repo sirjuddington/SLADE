@@ -396,29 +396,11 @@
     <ClCompile Include="src\AudioEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
-    <ClCompile Include="src\PreferencesDialog.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BaseResourceArchivesPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TextEditorPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\Conversions.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
-    <ClCompile Include="src\TextStylePrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\MIDIPlayer.cpp">
       <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="src\EditingPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GeneralPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
     <ClCompile Include="src\BrowserCanvas.cpp">
       <Filter>UI Elements\Browser</Filter>
@@ -435,9 +417,6 @@
     <ClCompile Include="src\SFont.cpp">
       <Filter>Resources\Graphics\Font</Filter>
     </ClCompile>
-    <ClCompile Include="src\ACSPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\ExtMessageDialog.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
@@ -453,23 +432,14 @@
     <ClCompile Include="src\MathStuff.cpp">
       <Filter>General\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="src\InterfacePrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\SAction.cpp">
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="src\TranslationEditorDialog.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src\PNGPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\mus2mid\mus2mid.cpp">
       <Filter>External\Mus2Mid</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GraphicsPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
     <ClCompile Include="src\bzip2\blocksort.c">
       <Filter>External\BZip2</Filter>
@@ -705,9 +675,6 @@
     <ClCompile Include="src\SIFormat.cpp">
       <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClCompile>
-    <ClCompile Include="src\AudioPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\Drawing.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -738,9 +705,6 @@
     <ClCompile Include="src\ActionSpecial.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClCompile>
-    <ClCompile Include="src\ColourPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\ThingType.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClCompile>
@@ -754,15 +718,6 @@
       <Filter>General\Utility</Filter>
     </ClCompile>
     <ClCompile Include="src\ColourPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MapDisplayPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MapEditorPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AdvancedPrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
     <ClCompile Include="src\UDMFProperty.cpp">
@@ -816,17 +771,11 @@
     <ClCompile Include="src\NodeBuilders.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="src\NodesPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\ShapeDrawPanel.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
     <ClCompile Include="src\MapRenderer3D.cpp">
       <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\InputPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
     <ClCompile Include="src\ScriptEditorPanel.cpp">
       <Filter>Map Editor\Script Editor</Filter>
@@ -834,14 +783,8 @@
     <ClCompile Include="src\CIEDeltaEquations.cpp">
       <Filter>General\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="src\ColorimetryPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\MapReplaceDialog.cpp">
       <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Map3DPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
     <ClCompile Include="src\Lua.cpp">
       <Filter>General</Filter>
@@ -1152,10 +1095,67 @@
     <ClCompile Include="src\ShowItemDialog.cpp">
       <Filter>Map Editor\UI Elements\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src\OpenGLPrefsPanel.cpp">
+    <ClCompile Include="src\Dialogs\Preferences\ACSPrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
-    <ClCompile Include="src\HudOffsetsPrefsPanel.cpp">
+    <ClCompile Include="src\Dialogs\Preferences\AdvancedPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\AudioPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\BaseResourceArchivesPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\ColorimetryPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\ColourPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\EditingPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\GeneralPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\GraphicsPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\HudOffsetsPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\InputPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\InterfacePrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\Map3DPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\MapDisplayPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\MapEditorPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\NodesPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\OpenGLPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\PNGPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\PreferencesDialog.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\TextEditorPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs\Preferences\TextStylePrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1425,29 +1425,11 @@
     <ClInclude Include="src\AudioEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClInclude>
-    <ClInclude Include="src\PreferencesDialog.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
-    <ClInclude Include="src\BaseResourceArchivesPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TextEditorPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\Conversions.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
-    <ClInclude Include="src\TextStylePrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\MIDIPlayer.h">
       <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EditingPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
-    <ClInclude Include="src\GeneralPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="src\BrowserCanvas.h">
       <Filter>UI Elements\Browser</Filter>
@@ -1460,9 +1442,6 @@
     </ClInclude>
     <ClInclude Include="src\ANSICanvas.h">
       <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ACSPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="src\ExtMessageDialog.h">
       <Filter>Dialogs</Filter>
@@ -1482,23 +1461,14 @@
     <ClInclude Include="src\MathStuff.h">
       <Filter>General\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\InterfacePrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\SAction.h">
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="src\TranslationEditorDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src\PNGPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\mus2mid\mus2mid.h">
       <Filter>External\Mus2Mid</Filter>
-    </ClInclude>
-    <ClInclude Include="src\GraphicsPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="src\bzip2\bzlib.h">
       <Filter>External\BZip2</Filter>
@@ -1725,9 +1695,6 @@
     <ClInclude Include="src\SIFQuake.h">
       <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClInclude>
-    <ClInclude Include="src\AudioPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\SIFJedi.h">
       <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClInclude>
@@ -1767,9 +1734,6 @@
     <ClInclude Include="src\Args.h">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClInclude>
-    <ClInclude Include="src\ColourPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\ThingType.h">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClInclude>
@@ -1789,15 +1753,6 @@
       <Filter>General\Utility</Filter>
     </ClInclude>
     <ClInclude Include="src\ColourPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MapDisplayPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MapEditorPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AdvancedPrefsPanel.h">
       <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="src\UDMFProperty.h">
@@ -1854,29 +1809,17 @@
     <ClInclude Include="src\NodeBuilders.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="src\NodesPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\ShapeDrawPanel.h">
       <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
     <ClInclude Include="src\MapRenderer3D.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="src\InputPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PrefsPanelBase.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\ScriptEditorPanel.h">
       <Filter>Map Editor\Script Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\MapReplaceDialog.h">
       <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Map3DPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="src\Lua.h">
       <Filter>General</Filter>
@@ -1955,9 +1898,6 @@
     </ClInclude>
     <ClInclude Include="src\lua\lzio.h">
       <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ColorimetryPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="src\UndoRedo.h">
       <Filter>General</Filter>
@@ -2073,10 +2013,70 @@
     <ClInclude Include="src\ShowItemDialog.h">
       <Filter>Map Editor\UI Elements\Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src\OpenGLPrefsPanel.h">
+    <ClInclude Include="src\Dialogs\Preferences\ACSPrefsPanel.h">
       <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
-    <ClInclude Include="src\HudOffsetsPrefsPanel.h">
+    <ClInclude Include="src\Dialogs\Preferences\AdvancedPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\AudioPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\BaseResourceArchivesPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\ColorimetryPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\ColourPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\EditingPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\GeneralPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\GraphicsPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\HudOffsetsPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\InputPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\InterfacePrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\Map3DPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\MapDisplayPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\MapEditorPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\NodesPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\OpenGLPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\PNGPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\PreferencesDialog.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\PrefsPanelBase.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\TextEditorPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Dialogs\Preferences\TextStylePrefsPanel.h">
       <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
   </ItemGroup>

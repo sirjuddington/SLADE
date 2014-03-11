@@ -2,7 +2,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "NodeBuildersWizardPage.h"
-#include "NodesPrefsPanel.h"
+#include "Dialogs/Preferences/NodesPrefsPanel.h"
 
 
 NodeBuildersWizardPage::NodeBuildersWizardPage(wxWindow* parent) : WizardPageBase(parent)
