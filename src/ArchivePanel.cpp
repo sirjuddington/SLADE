@@ -68,6 +68,7 @@
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
 
+
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
@@ -394,8 +395,6 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	choice_category->Bind(wxEVT_CHOICE, &ArchivePanel::onChoiceCategoryChanged, this);
 	Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
 	btn_updir->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnUpDir, this);
-	//((DefaultEntryPanel*)default_area)->getEditTextButton()->Bind(wxEVT_BUTTON, &ArchivePanel::onDEPEditAsText, this);
-	//((DefaultEntryPanel*)default_area)->getViewHexButton()->Bind(wxEVT_BUTTON, &ArchivePanel::onDEPViewAsHex, this);
 
 	// Do a quick check to see if we need the path display
 	if (archive->getRoot()->nChildren() == 0)
@@ -1063,10 +1062,11 @@ bool ArchivePanel::moveUp()
 	entry_list->clearSelection();
 	for (unsigned a = 0; a < selection.size(); a++)
 		entry_list->selectItem(selection[a] - 1);
+	ignore_focus_change = true;
 	entry_list->focusItem(focus - 1);
 
 	// Ensure top-most entry is visible
-	entry_list->EnsureVisible(entry_list->getEntryIndex(selection[0]) - 4);
+	entry_list->EnsureVisible(entry_list->getEntryIndex(selection[0]));
 
 	// Return success
 	return true;
@@ -1100,10 +1100,11 @@ bool ArchivePanel::moveDown()
 	entry_list->clearSelection();
 	for (unsigned a = 0; a < selection.size(); a++)
 		entry_list->selectItem(selection[a] + 1);
+	ignore_focus_change = true;
 	entry_list->focusItem(focus + 1);
 
 	// Ensure bottom-most entry is visible
-	entry_list->EnsureVisible(entry_list->getEntryIndex(selection[selection.size() - 1]) + 4);
+	entry_list->EnsureVisible(entry_list->getEntryIndex(selection[selection.size() - 1]));
 
 	// Return success
 	return true;
@@ -2920,6 +2921,13 @@ void ArchivePanel::onEntryListFocusChange(wxListEvent& e)
 	// Do nothing if not shown
 	if (!IsShown())
 		return;
+
+	// Ignore if needed (once)
+	if (ignore_focus_change)
+	{
+		ignore_focus_change = false;
+		return;
+	}
 
 	// Get selected entries
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();

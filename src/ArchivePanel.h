@@ -22,6 +22,7 @@ protected:
 	wxBitmapButton*		btn_updir;
 	wxSizer*			sizer_path_controls;
 	UndoManager*		undo_manager;
+	bool				ignore_focus_change;
 
 	// Entry panels
 	EntryPanel*	cur_area;
