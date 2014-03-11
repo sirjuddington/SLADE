@@ -255,6 +255,7 @@
     <ClCompile Include="src\HexEditorPanel.cpp" />
     <ClCompile Include="src\HexEntryPanel.cpp" />
     <ClCompile Include="src\HogArchive.cpp" />
+    <ClCompile Include="src\HudOffsetsPrefsPanel.cpp" />
     <ClCompile Include="src\InfoOverlay3d.cpp" />
     <ClCompile Include="src\InputPrefsPanel.cpp" />
     <ClCompile Include="src\InterfacePrefsPanel.cpp" />
@@ -359,6 +360,7 @@
     <ClCompile Include="src\NodesPrefsPanel.cpp" />
     <ClCompile Include="src\ObjectEdit.cpp" />
     <ClCompile Include="src\ObjectEditPanel.cpp" />
+    <ClCompile Include="src\OpenGLPrefsPanel.cpp" />
     <ClCompile Include="src\PakArchive.cpp" />
     <ClCompile Include="src\PaletteDialog.cpp" />
     <ClCompile Include="src\Clipboard.cpp" />
@@ -557,6 +559,7 @@
     <ClInclude Include="src\HexEditorPanel.h" />
     <ClInclude Include="src\HexEntryPanel.h" />
     <ClInclude Include="src\HogArchive.h" />
+    <ClInclude Include="src\HudOffsetsPrefsPanel.h" />
     <ClInclude Include="src\ImageFormats.h" />
     <ClInclude Include="src\InfoOverlay3d.h" />
     <ClInclude Include="src\InputPrefsPanel.h" />
@@ -653,6 +656,7 @@
     <ClInclude Include="src\NodesPrefsPanel.h" />
     <ClInclude Include="src\ObjectEdit.h" />
     <ClInclude Include="src\ObjectEditPanel.h" />
+    <ClInclude Include="src\OpenGLPrefsPanel.h" />
     <ClInclude Include="src\PakArchive.h" />
     <ClInclude Include="src\PaletteDialog.h" />
     <ClInclude Include="src\Clipboard.h" />

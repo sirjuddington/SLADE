@@ -5,8 +5,9 @@
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
- * Filename:    GeneralPrefsPanel.cpp
- * Description: Panel containing general preference controls
+ * Filename:    HudOffsetsPrefsPanel.cpp
+ * Description: Panel containing preference controls for the 'hud'
+ *              gfx offsets mode
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,70 +30,78 @@
  *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
-#include "GeneralPrefsPanel.h"
+#include "HudOffsetsPrefsPanel.h"
 
 
 /*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
-EXTERN_CVAR(Bool, close_archive_with_tab)
-EXTERN_CVAR(Bool, archive_load_data)
+EXTERN_CVAR(Bool, hud_bob)
+EXTERN_CVAR(Bool, hud_center)
+EXTERN_CVAR(Bool, hud_statusbar)
+EXTERN_CVAR(Bool, hud_wide)
 
 
 /*******************************************************************
- * GENERALPREFSPANEL CLASS FUNCTIONS
+ * HUDOFFSETSPREFSPANEL CLASS FUNCTIONS
  *******************************************************************/
 
-/* GeneralPrefsPanel::GeneralPrefsPanel
- * GeneralPrefsPanel class constructor
+/* HudOffsetsPrefsPanel::HudOffsetsPrefsPanel
+ * HudOffsetsPrefsPanel class constructor
  *******************************************************************/
-GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
+ HudOffsetsPrefsPanel::HudOffsetsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 {
 	// Create sizer
 	wxBoxSizer* psizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(psizer);
 
 	// Create frame+sizer
-	wxStaticBox* frame = new wxStaticBox(this, -1, "General Preferences");
+	wxStaticBox* frame = new wxStaticBox(this, -1, "HUD Offsets Preferences");
 	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
-	// Load on open archive
-	cb_archive_load = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened");
-	sizer->Add(cb_archive_load, 0, wxEXPAND|wxALL, 4);
+	// Show weapon bob line
+	cb_hud_bob = new wxCheckBox(this, -1, "Show weapon bob outline");
+	sizer->Add(cb_hud_bob, 0, wxEXPAND|wxALL, 4);
 
-	// Close archive with tab
-	cb_archive_close_tab = new wxCheckBox(this, -1, "Close archive when its tab is closed");
-	sizer->Add(cb_archive_close_tab, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	// Show center line
+	cb_hud_center = new wxCheckBox(this, -1, "Show center line");
+	sizer->Add(cb_hud_center, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
-	//// Enable np2 textures
-	//cb_gl_np2 = new wxCheckBox(this, -1, "Enable Non-power-of-two textures if supported");
-	//sizer->Add(cb_gl_np2, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	// Show status bar line
+	cb_hud_statusbar = new wxCheckBox(this, -1, "Show status bar lines");
+	sizer->Add(cb_hud_statusbar, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Show widescreen borders
+	cb_hud_wide = new wxCheckBox(this, -1, "Show widescreen borders");
+	sizer->Add(cb_hud_wide, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 }
 
-/* GeneralPrefsPanel::~GeneralPrefsPanel
- * GeneralPrefsPanel class destructor
+/* HudOffsetsPrefsPanel::~HudOffsetsPrefsPanel
+ * HudOffsetsPrefsPanel class destructor
  *******************************************************************/
-GeneralPrefsPanel::~GeneralPrefsPanel()
+HudOffsetsPrefsPanel::~HudOffsetsPrefsPanel()
 {
 }
 
-/* GeneralPrefsPanel::init
+/* HudOffsetsPrefsPanel::init
  * Initialises panel controls
  *******************************************************************/
-void GeneralPrefsPanel::init()
+void HudOffsetsPrefsPanel::init()
 {
-	cb_archive_load->SetValue(archive_load_data);
-	cb_archive_close_tab->SetValue(close_archive_with_tab);
-	//cb_gl_np2->SetValue(gl_tex_enable_np2);
+	cb_hud_bob->SetValue(hud_bob);
+	cb_hud_center->SetValue(hud_center);
+	cb_hud_statusbar->SetValue(hud_statusbar);
+	cb_hud_wide->SetValue(hud_wide);
 }
 
-/* GeneralPrefsPanel::applyPreferences
+/* HudOffsetsPrefsPanel::applyPreferences
  * Applies preference values from the controls to CVARs
  *******************************************************************/
-void GeneralPrefsPanel::applyPreferences()
+void HudOffsetsPrefsPanel::applyPreferences()
 {
-	archive_load_data = cb_archive_load->GetValue();
-	close_archive_with_tab = cb_archive_close_tab->GetValue();
-	//gl_tex_enable_np2 = cb_gl_np2->GetValue();
+	hud_bob = cb_hud_bob->GetValue();
+	hud_center = cb_hud_center->GetValue();
+	hud_statusbar = cb_hud_statusbar->GetValue();
+	hud_wide = cb_hud_wide->GetValue();
 }

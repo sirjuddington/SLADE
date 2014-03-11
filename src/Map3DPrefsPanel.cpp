@@ -43,6 +43,7 @@ EXTERN_CVAR(Float, render_max_thing_dist)
 EXTERN_CVAR(Bool, render_max_dist_adaptive)
 EXTERN_CVAR(Int, render_adaptive_ms)
 EXTERN_CVAR(Bool, render_3d_sky)
+EXTERN_CVAR(Bool, camera_3d_show_distance)
 
 
 /*******************************************************************
@@ -103,6 +104,10 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_render_sky = new wxCheckBox(this, -1, "Render sky preview");
 	fsizer->Add(cb_render_sky, 0, wxEXPAND|wxALL, 4);
 
+	// Show distance
+	cb_show_distance = new wxCheckBox(this, -1, "Show distance under crosshair");
+	fsizer->Add(cb_show_distance, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
 
 	// Bind events
 	slider_max_render_dist->Bind(wxEVT_SLIDER, &Map3DPrefsPanel::onSliderMaxRenderDistChanged, this);
@@ -146,6 +151,7 @@ void Map3DPrefsPanel::init()
 	int fps = 1.0 / (render_adaptive_ms/1000.0);
 	spin_adaptive_fps->SetValue(fps);
 	cb_render_sky->SetValue(render_3d_sky);
+	cb_show_distance->SetValue(camera_3d_show_distance);
 
 	updateDistanceControls();
 }
@@ -204,6 +210,7 @@ void Map3DPrefsPanel::applyPreferences()
 
 	// Other
 	render_3d_sky = cb_render_sky->GetValue();
+	camera_3d_show_distance = cb_show_distance->GetValue();
 }
 
 

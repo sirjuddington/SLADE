@@ -15,6 +15,9 @@ private:
 	wxCheckBox*	cb_animate_selection;
 	wxCheckBox*	cb_animate_tagged;
 	wxChoice*	choice_crosshair;
+	wxCheckBox*	cb_action_lines;
+	wxCheckBox*	cb_show_help;
+	wxChoice*	choice_tex_filter;
 
 	wxSlider*	slider_vertex_size;
 	wxCheckBox*	cb_vertex_round;
@@ -32,6 +35,8 @@ private:
 	wxCheckBox*	cb_thing_arrow_colour;
 	wxSlider*	slider_thing_shadow;
 	wxSlider*	slider_thing_arrow_alpha;
+	wxCheckBox*	cb_use_zeth_icons;
+	wxSlider*	slider_halo_width;
 
 	wxSlider*	slider_flat_brightness;
 	wxCheckBox*	cb_flat_ignore_light;
@@ -42,6 +47,11 @@ public:
 	MapDisplayPrefsPanel(wxWindow* parent);
 	~MapDisplayPrefsPanel();
 
+	void	setupGeneralTab();
+	void	setupVerticesTab();
+	void	setupLinesTab();
+	void	setupThingsTab();
+	void	setupFlatsTab();
 	void	init();
 	void	applyPreferences();
 };

@@ -51,6 +51,8 @@
 #include "TextEditorPrefsPanel.h"
 #include "NodesPrefsPanel.h"
 #include "InputPrefsPanel.h"
+#include "OpenGLPrefsPanel.h"
+#include "HudOffsetsPrefsPanel.h"
 #include "Icons.h"
 #include "MainWindow.h"
 #include <wx/gbsizer.h>
@@ -88,6 +90,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "S
 	// Setup preferences TreeBook
 	PrefsPanelBase* panel;
 	panel = new GeneralPrefsPanel(tree_prefs);		tree_prefs->AddPage(panel, "General", true); prefs_pages.push_back(panel);
+	panel = new OpenGLPrefsPanel(tree_prefs);		tree_prefs->AddSubPage(panel, "OpenGL"); prefs_pages.push_back(panel);
 	panel = new InterfacePrefsPanel(tree_prefs);	tree_prefs->AddPage(panel, "Interface"); prefs_pages.push_back(panel);
 	panel = new ColourPrefsPanel(tree_prefs);		tree_prefs->AddSubPage(panel, "Colours"); prefs_pages.push_back(panel);
 	panel = new InputPrefsPanel(tree_prefs);		tree_prefs->AddPage(panel, "Input"); prefs_pages.push_back(panel);
@@ -98,6 +101,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "S
 	panel = new GraphicsPrefsPanel(tree_prefs);		tree_prefs->AddPage(panel, "Graphics"); prefs_pages.push_back(panel);
 	panel = new PNGPrefsPanel(tree_prefs);			tree_prefs->AddSubPage(panel, "PNG"); prefs_pages.push_back(panel);
 	panel = new ColorimetryPrefsPanel(tree_prefs);	tree_prefs->AddSubPage(panel, "Colorimetry"); prefs_pages.push_back(panel);
+	panel = new HudOffsetsPrefsPanel(tree_prefs);	tree_prefs->AddSubPage(panel, "HUD Offsets View"); prefs_pages.push_back(panel);
 	panel = new AudioPrefsPanel(tree_prefs);		tree_prefs->AddPage(panel, "Audio"); prefs_pages.push_back(panel);
 	tree_prefs->AddPage(new wxPanel(tree_prefs, -1), "Scripting");
 	panel = new ACSPrefsPanel(tree_prefs);			tree_prefs->AddSubPage(panel, "ACS"); prefs_pages.push_back(panel);

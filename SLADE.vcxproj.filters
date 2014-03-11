@@ -1152,6 +1152,12 @@
     <ClCompile Include="src\ShowItemDialog.cpp">
       <Filter>Map Editor\UI Elements\Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="src\OpenGLPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HudOffsetsPrefsPanel.cpp">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2066,6 +2072,12 @@
     </ClInclude>
     <ClInclude Include="src\ShowItemDialog.h">
       <Filter>Map Editor\UI Elements\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenGLPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HudOffsetsPrefsPanel.h">
+      <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

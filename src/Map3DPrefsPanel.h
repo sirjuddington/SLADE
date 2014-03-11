@@ -17,6 +17,7 @@ private:
 	wxCheckBox*		cb_render_sky;
 	wxStaticText*	label_render_dist;
 	wxStaticText*	label_thing_dist;
+	wxCheckBox*		cb_show_distance;
 
 public:
 	Map3DPrefsPanel(wxWindow* parent);

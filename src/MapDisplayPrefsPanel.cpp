@@ -32,6 +32,7 @@
 #include "WxStuff.h"
 #include "MapDisplayPrefsPanel.h"
 #include <wx/statline.h>
+#include <wx/gbsizer.h>
 
 
 /*******************************************************************
@@ -60,6 +61,11 @@ EXTERN_CVAR(Bool, flat_fade)
 EXTERN_CVAR(Int, map_crosshair)
 EXTERN_CVAR(Bool, arrow_colour)
 EXTERN_CVAR(Float, arrow_alpha)
+EXTERN_CVAR(Bool, action_lines)
+EXTERN_CVAR(Bool, map_show_help)
+EXTERN_CVAR(Int, map_tex_filter)
+EXTERN_CVAR(Bool, use_zeth_icons)
+EXTERN_CVAR(Int, halo_width)
 
 
 /*******************************************************************
@@ -84,62 +90,100 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	nb_pages = new wxNotebook(this, -1);
 	fsizer->Add(nb_pages, 1, wxEXPAND|wxALL, 4);
 
+	// Setup tabs
+	setupGeneralTab();
+	setupVerticesTab();
+	setupLinesTab();
+	setupThingsTab();
+	setupFlatsTab();
 
-	// General tab
+	Layout();
+}
+
+/* MapDisplayPrefsPanel::~MapDisplayPrefsPanel
+ * MapDisplayPrefsPanel class destructor
+ *******************************************************************/
+MapDisplayPrefsPanel::~MapDisplayPrefsPanel()
+{
+}
+
+/* MapDisplayPrefsPanel::setupGeneralTab
+ * Sets up the general tab
+ *******************************************************************/
+void MapDisplayPrefsPanel::setupGeneralTab()
+{
+	// Add tab
 	wxPanel* panel = new wxPanel(nb_pages, -1);
 	nb_pages->AddPage(panel, "General", true);
+	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sz_border);
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
+	sz_border->Add(gb_sizer, 1, wxEXPAND|wxALL, 8);
+	int row = 0;
+
+	// Crosshair
+	string ch[] = { "None", "Small", "Full" };
+	choice_crosshair = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, ch);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Cursor Crosshair:"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL|wxRIGHT);
+	gb_sizer->Add(choice_crosshair, wxGBPosition(row++, 1), wxGBSpan(1, 2), wxEXPAND);
+
+	// Texture filter
+	string filters[] = { "None", "Linear", "Linear (Mipmapped)", "None (Mipmapped)" };
+	choice_tex_filter = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, filters);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Texture Filtering:"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL|wxRIGHT);
+	gb_sizer->Add(choice_tex_filter, wxGBPosition(row++, 1), wxGBSpan(1, 2), wxEXPAND);
+
+	// Dashed grid
+	cb_grid_dashed = new wxCheckBox(panel, -1, "Dashed grid");
+	gb_sizer->Add(cb_grid_dashed, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Always show line direction tabs
+	cb_line_tabs_always = new wxCheckBox(panel, -1, "Always show line direction tabs");
+	gb_sizer->Add(cb_line_tabs_always, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Animate hilighted object
+	cb_animate_hilight = new wxCheckBox(panel, -1, "Animated hilight");
+	gb_sizer->Add(cb_animate_hilight, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Animate selected objects
+	cb_animate_selection = new wxCheckBox(panel, -1, "Animated selection");
+	gb_sizer->Add(cb_animate_selection, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Animate tagged objects
+	cb_animate_tagged = new wxCheckBox(panel, -1, "Animated tag indicator");
+	gb_sizer->Add(cb_animate_tagged, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Show action lines
+	cb_action_lines = new wxCheckBox(panel, -1, "Show Action Lines");
+	cb_action_lines->SetToolTip("Show lines from an object with an action special to the tagged object(s) when highlighted");
+	gb_sizer->Add(cb_action_lines, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	// Show help text
+	cb_show_help = new wxCheckBox(panel, -1, "Show Help Text");
+	gb_sizer->Add(cb_show_help, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
+
+	gb_sizer->AddGrowableCol(1, 1);
+}
+
+/* MapDisplayPrefsPanel::setupVerticesTab
+ * Sets up the vertices tab
+ *******************************************************************/
+void MapDisplayPrefsPanel::setupVerticesTab()
+{
+	// Add tab
+	wxPanel* panel = new wxPanel(nb_pages, -1);
+	nb_pages->AddPage(panel, "Vertices");
 	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	sz_border->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
-	// Dashed grid
-	cb_grid_dashed = new wxCheckBox(panel, -1, "Dashed grid");
-	sizer->Add(cb_grid_dashed, 0, wxEXPAND|wxALL, 4);
-
-	// Always show line direction tabs
-	cb_line_tabs_always = new wxCheckBox(panel, -1, "Always show line direction tabs");
-	sizer->Add(cb_line_tabs_always, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Animate hilighted object
-	cb_animate_hilight = new wxCheckBox(panel, -1, "Animated hilight");
-	sizer->Add(cb_animate_hilight, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Animate selected objects
-	cb_animate_selection = new wxCheckBox(panel, -1, "Animated selection");
-	sizer->Add(cb_animate_selection, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Animate tagged objects
-	cb_animate_tagged = new wxCheckBox(panel, -1, "Animated tag indicator");
-	sizer->Add(cb_animate_tagged, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Crosshair
-	string ch[] ={ "None", "Small", "Full" };
-	choice_crosshair = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, ch);
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	hbox->Add(new wxStaticText(panel, -1, "Cursor Crosshair:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(choice_crosshair, 1, wxEXPAND);
-
-
-	// Vertices tab
-	panel = new wxPanel(nb_pages, -1);
-	nb_pages->AddPage(panel, "Vertices");
-	sz_border = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sz_border);
-	sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND|wxALL, 4);
-
 	// Vertex size
-	hbox = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 	hbox->Add(new wxStaticText(panel, -1, "Vertex size: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	slider_vertex_size = new wxSlider(panel, -1, vertex_size, 2, 16, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
 	hbox->Add(slider_vertex_size, 1, wxEXPAND);
-
-	// Round vertices
-	cb_vertex_round = new wxCheckBox(panel, -1, "Round vertices");
-	sizer->Add(cb_vertex_round, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// When not in vertices mode
 	hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -149,17 +193,26 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	choice_vertices_always = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, nonmodeshow);
 	hbox->Add(choice_vertices_always, 1, wxEXPAND);
 
+	// Round vertices
+	cb_vertex_round = new wxCheckBox(panel, -1, "Round vertices");
+	sizer->Add(cb_vertex_round, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+}
 
-	// Lines tab
-	panel = new wxPanel(nb_pages, -1);
+/* MapDisplayPrefsPanel::setupLinesTab
+ * Sets up the lines tab
+ *******************************************************************/
+void MapDisplayPrefsPanel::setupLinesTab()
+{
+	// Add tab
+	wxPanel* panel = new wxPanel(nb_pages, -1);
 	nb_pages->AddPage(panel, "Lines");
-	sz_border = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	sizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	sz_border->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Line width
-	hbox = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 	hbox->Add(new wxStaticText(panel, -1, "Line width: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	slider_line_width = new wxSlider(panel, -1, line_width*10, 10, 30, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
@@ -172,68 +225,83 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	// Fade when not in lines mode
 	cb_line_fade = new wxCheckBox(panel, -1, "Fade when not in lines mode");
 	sizer->Add(cb_line_fade, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+}
 
-
-	// Things tab
-	panel = new wxPanel(nb_pages, -1);
+/* MapDisplayPrefsPanel::setupThingsTab
+ * Sets up the things tab
+ *******************************************************************/
+void MapDisplayPrefsPanel::setupThingsTab()
+{
+	// Add tab
+	wxPanel* panel = new wxPanel(nb_pages, -1);
 	nb_pages->AddPage(panel, "Things");
-	sz_border = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, 1, wxEXPAND|wxALL, 4);
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
+	sz_border->Add(gb_sizer, 1, wxEXPAND|wxALL, 8);
+	int row = 0;
 
 	// Thing style
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(panel, -1, "Thing style: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Thing style: "), wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	string t_types[] = { "Square", "Round", "Sprite", "Square + Sprite", "Framed Sprite" };
 	choice_thing_drawtype = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 5, t_types);
-	hbox->Add(choice_thing_drawtype, 1, wxEXPAND);
+	gb_sizer->Add(choice_thing_drawtype, wxGBPosition(row++, 1), wxDefaultSpan, wxEXPAND);
+
+	// When not in things mode
+	gb_sizer->Add(new wxStaticText(panel, -1, "When not in things mode: "), wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	string nonmodeshow[] = { "Hide", "Show", "Fade" };
+	choice_things_always = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, nonmodeshow);
+	gb_sizer->Add(choice_things_always, wxGBPosition(row++, 1), wxDefaultSpan, wxEXPAND);
+
+	// Shadow opacity
+	gb_sizer->Add(new wxStaticText(panel, -1, "Thing shadow opacity: "), wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	slider_thing_shadow = new wxSlider(panel, -1, thing_shadow*10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	gb_sizer->Add(slider_thing_shadow, wxGBPosition(row++, 1), wxDefaultSpan, wxEXPAND);
+
+	// Arrow opacity
+	gb_sizer->Add(new wxStaticText(panel, -1, "Thing angle arrow opacity: "), wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	slider_thing_arrow_alpha = new wxSlider(panel, -1, thing_shadow*10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	gb_sizer->Add(slider_thing_arrow_alpha, wxGBPosition(row++, 1), wxDefaultSpan, wxEXPAND);
+
+	// Halo width
+	gb_sizer->Add(new wxStaticText(panel, -1, "Halo extra width: "), wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	slider_halo_width = new wxSlider(panel, -1, halo_width, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
+	gb_sizer->Add(slider_halo_width, wxGBPosition(row++, 1), wxDefaultSpan, wxEXPAND);
 
 	// Always show angles
 	cb_thing_force_dir = new wxCheckBox(panel, -1, "Always show thing angles");
-	sizer->Add(cb_thing_force_dir, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	gb_sizer->Add(cb_thing_force_dir, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Colour angle arrows
 	cb_thing_arrow_colour = new wxCheckBox(panel, -1, "Colour thing angle arrows");
-	sizer->Add(cb_thing_arrow_colour, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	gb_sizer->Add(cb_thing_arrow_colour, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Force square hilight/selection
 	cb_thing_overlay_square = new wxCheckBox(panel, -1, "Force square thing hilight/selection overlay");
-	sizer->Add(cb_thing_overlay_square, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	gb_sizer->Add(cb_thing_overlay_square, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
-	// Shadow opacity
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(panel, -1, "Thing shadow opacity: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
-	slider_thing_shadow = new wxSlider(panel, -1, thing_shadow*10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
-	hbox->Add(slider_thing_shadow, 1, wxEXPAND);
+	// Use zeth icons
+	cb_use_zeth_icons = new wxCheckBox(panel, -1, "Use ZETH thing type icons");
+	gb_sizer->Add(cb_use_zeth_icons, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
-	// Arrow opacity
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(panel, -1, "Thing angle arrow opacity: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
-	slider_thing_arrow_alpha = new wxSlider(panel, -1, thing_shadow*10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
-	hbox->Add(slider_thing_arrow_alpha, 1, wxEXPAND);
+	gb_sizer->AddGrowableCol(1, 1);
+}
 
-	// When not in things mode
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-	hbox->Add(new wxStaticText(panel, -1, "When not in things mode: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
-	choice_things_always = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, nonmodeshow);
-	hbox->Add(choice_things_always, 1, wxEXPAND);
-
-
-	// Sectors tab
-	panel = new wxPanel(nb_pages, -1);
+/* MapDisplayPrefsPanel::setupFlatsTab
+ * Sets up the sectors tab
+ *******************************************************************/
+void MapDisplayPrefsPanel::setupFlatsTab()
+{
+	// Add tab
+	wxPanel* panel = new wxPanel(nb_pages, -1);
 	nb_pages->AddPage(panel, "Sectors");
-	sz_border = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	sizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	sz_border->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
 	// Flat brightness
-	hbox = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 	hbox->Add(new wxStaticText(panel, -1, "Flat brightness: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	slider_flat_brightness = new wxSlider(panel, -1, flat_brightness*10, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS);
@@ -250,15 +318,6 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	// Fade when not in sectors mode
 	cb_flat_fade = new wxCheckBox(panel, -1, "Fade flats when not in sectors mode");
 	sizer->Add(cb_flat_fade, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	Layout();
-}
-
-/* MapDisplayPrefsPanel::~MapDisplayPrefsPanel
- * MapDisplayPrefsPanel class destructor
- *******************************************************************/
-MapDisplayPrefsPanel::~MapDisplayPrefsPanel()
-{
 }
 
 /* MapDisplayPrefsPanel::init
@@ -289,6 +348,11 @@ void MapDisplayPrefsPanel::init()
 	slider_thing_arrow_alpha->SetValue(arrow_alpha * 10);
 	slider_flat_brightness->SetValue(flat_brightness * 10);
 	choice_crosshair->Select(map_crosshair);
+	cb_action_lines->SetValue(action_lines);
+	cb_show_help->SetValue(map_show_help);
+	choice_tex_filter->Select(map_tex_filter);
+	cb_use_zeth_icons->SetValue(use_zeth_icons);
+	slider_halo_width->SetValue(halo_width);
 }
 
 /* MapDisplayPrefsPanel::applyPreferences
@@ -319,4 +383,9 @@ void MapDisplayPrefsPanel::applyPreferences()
 	line_fade = cb_line_fade->GetValue();
 	flat_fade = cb_flat_fade->GetValue();
 	map_crosshair = choice_crosshair->GetSelection();
+	action_lines = cb_action_lines->GetValue();
+	map_show_help = cb_show_help->GetValue();
+	map_tex_filter = choice_tex_filter->GetSelection();
+	use_zeth_icons = cb_use_zeth_icons->GetValue();
+	halo_width = slider_halo_width->GetValue();
 }
