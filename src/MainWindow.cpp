@@ -730,8 +730,11 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	string href = ev.GetURL();
 
 #ifdef __WXGTK__
-	href.Replace("file://", "");
+	if (!href.EndsWith("startpage.htm"))
+		href.Replace("file://", "");
 #endif
+
+	//LOG_MESSAGE(2, "URL %s", href);
 
 	if (href.EndsWith("/"))
 		href.RemoveLast(1);
@@ -751,6 +754,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 
 		panel_archivemanager->handleAction(S_FMT("aman_recent%lu", index));
 		createStartPage();
+		html_startpage->Reload();
 	}
 	else if (href.StartsWith("action://"))
 	{
