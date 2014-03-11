@@ -384,7 +384,9 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 
 	// Bind events
 	entry_list->Bind(EVT_VLV_SELECTION_CHANGED, &ArchivePanel::onEntryListSelectionChange, this);
+#ifndef __WXGTK__
 	entry_list->Bind(wxEVT_LIST_ITEM_FOCUSED, &ArchivePanel::onEntryListFocusChange, this);
+#endif
 	entry_list->Bind(wxEVT_KEY_DOWN, &ArchivePanel::onEntryListKeyDown, this);
 	entry_list->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchivePanel::onEntryListRightClick, this);
 	entry_list->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchivePanel::onEntryListActivated, this);
@@ -1040,6 +1042,7 @@ bool ArchivePanel::moveUp()
 {
 	// Get selection
 	vector<long> selection = entry_list->getSelection();
+	long focus = entry_list->getFocus();
 
 	// If nothing is selected, do nothing
 	if (selection.size() == 0)
@@ -1060,6 +1063,7 @@ bool ArchivePanel::moveUp()
 	entry_list->clearSelection();
 	for (unsigned a = 0; a < selection.size(); a++)
 		entry_list->selectItem(selection[a] - 1);
+	entry_list->focusItem(focus - 1);
 
 	// Ensure top-most entry is visible
 	entry_list->EnsureVisible(entry_list->getEntryIndex(selection[0]) - 4);
@@ -1075,6 +1079,7 @@ bool ArchivePanel::moveDown()
 {
 	// Get selection
 	vector<long> selection = entry_list->getSelection();
+	long focus = entry_list->getFocus();
 
 	// If nothing is selected, do nothing
 	if (selection.size() == 0)
@@ -1095,6 +1100,7 @@ bool ArchivePanel::moveDown()
 	entry_list->clearSelection();
 	for (unsigned a = 0; a < selection.size(); a++)
 		entry_list->selectItem(selection[a] + 1);
+	entry_list->focusItem(focus + 1);
 
 	// Ensure bottom-most entry is visible
 	entry_list->EnsureVisible(entry_list->getEntryIndex(selection[selection.size() - 1]) + 4);
