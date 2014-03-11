@@ -465,6 +465,7 @@ void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
 	if (drag_origin.x >= 0)
 	{
 		endOffsetDrag();
+		image_hilight = true;
 		Refresh();
 	}
 }
@@ -482,8 +483,16 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	{
 		image_hilight = on_image;
 		refresh = true;
-	}
 
+		// Update cursor if drag allowed
+		if (allow_drag)
+		{
+			if (on_image)
+				SetCursor(wxCursor(wxCURSOR_SIZING));
+			else if (!e.LeftIsDown())
+				SetCursor(wxNullCursor);
+		}
+	}
 	// Drag
 	if (e.LeftIsDown())
 	{
