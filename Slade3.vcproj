@@ -259,155 +259,175 @@
 				Name="Preferences"
 				>
 				<File
-					RelativePath=".\src\ACSPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\ACSPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ACSPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\ACSPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\AdvancedPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\AdvancedPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\AdvancedPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\AdvancedPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\AudioPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\AudioPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\AudioPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\AudioPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BaseResourceArchivesPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\BaseResourceArchivesPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BaseResourceArchivesPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\BaseResourceArchivesPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ColorimetryPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\ColorimetryPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ColorimetryPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\ColorimetryPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ColourPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\ColourPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ColourPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\ColourPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\EditingPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\EditingPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\EditingPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\EditingPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GeneralPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\GeneralPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GeneralPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\GeneralPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GraphicsPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\GraphicsPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GraphicsPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\GraphicsPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\InputPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\HudOffsetsPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\InputPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\HudOffsetsPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\InterfacePrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\InputPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\InterfacePrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\InputPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Map3DPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\InterfacePrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Map3DPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\InterfacePrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapDisplayPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\Map3DPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapDisplayPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\Map3DPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapEditorPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\MapDisplayPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapEditorPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\MapDisplayPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\NodesPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\MapEditorPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\NodesPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\MapEditorPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\PNGPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\NodesPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\PNGPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\NodesPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\PreferencesDialog.cpp"
+					RelativePath=".\src\Dialogs\Preferences\OpenGLPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\PreferencesDialog.h"
+					RelativePath=".\src\Dialogs\Preferences\OpenGLPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\TextEditorPrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\PNGPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\TextEditorPrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\PNGPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\TextStylePrefsPanel.cpp"
+					RelativePath=".\src\Dialogs\Preferences\PreferencesDialog.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\TextStylePrefsPanel.h"
+					RelativePath=".\src\Dialogs\Preferences\PreferencesDialog.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\Preferences\PrefsPanelBase.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\Preferences\TextEditorPrefsPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\Preferences\TextEditorPrefsPanel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\Preferences\TextStylePrefsPanel.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Dialogs\Preferences\TextStylePrefsPanel.h"
 					>
 				</File>
 			</Filter>
@@ -1107,14 +1127,6 @@
 				Name="UI Elements"
 				>
 				<File
-					RelativePath=".\src\ActionSpecialDialog.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\ActionSpecialDialog.h"
-					>
-				</File>
-				<File
 					RelativePath=".\src\GenLineSpecialPanel.cpp"
 					>
 				</File>
@@ -1136,14 +1148,6 @@
 				</File>
 				<File
 					RelativePath=".\src\MapChecksPanel.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\MapTextureBrowser.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\MapTextureBrowser.h"
 					>
 				</File>
 				<File
@@ -1171,27 +1175,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\SectorSpecialDialog.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\SectorSpecialDialog.h"
-					>
-				</File>
-				<File
 					RelativePath=".\src\ShapeDrawPanel.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\src\ShapeDrawPanel.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\ThingTypeBrowser.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\ThingTypeBrowser.h"
 					>
 				</File>
 				<File
@@ -1299,6 +1287,50 @@
 					</File>
 					<File
 						RelativePath=".\src\MOPGProperty.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Dialogs"
+					>
+					<File
+						RelativePath=".\src\ActionSpecialDialog.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\ActionSpecialDialog.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\MapTextureBrowser.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\MapTextureBrowser.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\SectorSpecialDialog.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\SectorSpecialDialog.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\ShowItemDialog.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\ShowItemDialog.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\ThingTypeBrowser.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\ThingTypeBrowser.h"
 						>
 					</File>
 				</Filter>
