@@ -481,7 +481,7 @@ void VirtualListView::onKeyChar(wxKeyEvent& e)
 		}
 	}
 
-	if (isRealChar)
+	if (isRealChar && e.GetModifiers() == 0)
 	{
 		// Get currently focused item (or first if nothing is focused)
 		long focus = getFocus();
@@ -503,13 +503,16 @@ void VirtualListView::onKeyChar(wxKeyEvent& e)
 	else
 	{
 		search = "";
-
+#ifdef __WXGTK__
+		e.Skip();
+#else
 		// Only want to do default action on navigation key
 		if (e.GetKeyCode() == WXK_UP || e.GetKeyCode() == WXK_DOWN ||
 		        e.GetKeyCode() == WXK_PAGEUP || e.GetKeyCode() == WXK_PAGEDOWN ||
 		        e.GetKeyCode() == WXK_HOME || e.GetKeyCode() == WXK_END ||
 		        e.GetKeyCode() == WXK_TAB)
 			e.Skip();
+#endif
 	}
 }
 
