@@ -23,12 +23,13 @@ protected:
 	wxFont*			font_monospace;
 
 	virtual string	getItemText(long item, long column) const { return "UNDEFINED"; }
-	virtual int		getItemIcon(long item) const { return -1; }
+	virtual int		getItemIcon(long item, long column) const { return -1; }
 	virtual void	updateItemAttr(long item, long column) const {}
 
 	// Virtual wxListCtrl overrides
 	string			OnGetItemText(long item, long column) const { return getItemText(item, column); }
-	int				OnGetItemImage(long item) const { return getItemIcon(item); }
+	int				OnGetItemImage(long item) const { return getItemIcon(item, 0); }
+	int				OnGetItemColumnImage(long item, long column) const { return getItemIcon(item, column); }
 	wxListItemAttr*	OnGetItemAttr(long item) const { updateItemAttr(item, 0); return item_attr; }
 	wxListItemAttr*	OnGetItemColumnAttr(long item, long column) const { updateItemAttr(item, column); return item_attr; }
 

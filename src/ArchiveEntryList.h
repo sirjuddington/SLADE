@@ -24,11 +24,15 @@ private:
 	ArchiveEntry*		entry_dir_back;
 	bool				show_dir_back;
 	UndoManager*		undo_manager;
+	int					col_index;
+	int					col_name;
+	int					col_size;
+	int					col_type;
 
 protected:
 	// Virtual wxListCtrl overrides
 	string	getItemText(long item, long column) const;
-	int		getItemIcon(long item) const;
+	int		getItemIcon(long item, long column) const;
 	void	updateItemAttr(long item, long column) const;
 
 public:

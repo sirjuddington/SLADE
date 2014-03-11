@@ -43,14 +43,17 @@
 CVAR(Int, elist_colname_width, 80, CVAR_SAVE)
 CVAR(Int, elist_colsize_width, 64, CVAR_SAVE)
 CVAR(Int, elist_coltype_width, 160, CVAR_SAVE)
+CVAR(Int, elist_colindex_width, 64, CVAR_SAVE)
 CVAR(Bool, elist_colsize_show, true, CVAR_SAVE)
 CVAR(Bool, elist_coltype_show, true, CVAR_SAVE)
+CVAR(Bool, elist_colindex_show, true, CVAR_SAVE)
 CVAR(Bool, elist_hrules, false, CVAR_SAVE)
 CVAR(Bool, elist_vrules, false, CVAR_SAVE)
 CVAR(Bool, elist_filter_dirs, false, CVAR_SAVE)
 CVAR(Bool, elist_type_bgcol, false, CVAR_SAVE)
 CVAR(Float, elist_type_bgcol_intensity, 0.18, CVAR_SAVE)
 CVAR(Bool, elist_name_monospace, false, CVAR_SAVE)
+CVAR(Bool, elist_alt_row_colour, false, CVAR_SAVE)
 wxDEFINE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 
 
@@ -137,7 +140,6 @@ string ArchiveEntryList::getItemText(long item, long column) const
 	else if (col == 1)
 	{
 		// Size column
-
 		if (entry->getType() == EntryType::folderType())
 		{
 			// Entry is a folder, return the number of entries+subdirectories in it
@@ -161,6 +163,14 @@ string ArchiveEntryList::getItemText(long item, long column) const
 	}
 	else if (col == 2)
 		return entry->getTypeString();	// Type column
+	else if (col == 3)
+	{
+		// Index column
+		if (entry->getType() == EntryType::folderType())
+			return "";
+		else
+			return S_FMT("%d", entry->getParentDir()->entryIndex(entry));
+	}
 	else
 		return "INVALID COLUMN";		// Invalid column
 }
@@ -168,8 +178,11 @@ string ArchiveEntryList::getItemText(long item, long column) const
 /* ArchiveEntryList::getItemIcon
  * Called when the widget requests the icon for [item]
  *******************************************************************/
-int ArchiveEntryList::getItemIcon(long item) const
+int ArchiveEntryList::getItemIcon(long item, long column) const
 {
+	if (column > 0)
+		return -1;
+
 	// Get associated entry
 	ArchiveEntry* entry = getEntry(item);
 
@@ -215,6 +228,13 @@ void ArchiveEntryList::updateItemAttr(long item, long column) const
 		bcol.b = (col.b * elist_type_bgcol_intensity) + (col_bg.Blue() * (1.0 - elist_type_bgcol_intensity));
 
 		item_attr->SetBackgroundColour(WXCOL(bcol));
+	}
+
+	// Alternating row colour
+	if (elist_alt_row_colour && item % 2 > 0)
+	{
+		wxColour dark = item_attr->GetBackgroundColour().ChangeLightness(95);
+		item_attr->SetBackgroundColour(dark);
 	}
 
 	// Set colour depending on entry state
@@ -272,21 +292,42 @@ void ArchiveEntryList::setupColumns()
 
 	// Create columns
 	int col_num = 0;
-	InsertColumn(col_num, "Name");
-	SetColumnWidth(col_num++, elist_colname_width);
+	col_index = -1;
+	col_name = 0;
+	col_size = -1;
+	col_type = -1;
+
+	// Index
+	if (elist_colindex_show)
+	{
+		AppendColumn("#");
+		SetColumnWidth(col_num, elist_colindex_width);
+		col_index = col_num++;
+	}
+
+	// Name (always)
+	AppendColumn("Name");
+	SetColumnWidth(col_num, elist_colname_width);
+	col_name = col_num++;
+
+	// Size
 	if (elist_colsize_show)
 	{
-		InsertColumn(col_num, "Size");
-		SetColumnWidth(col_num++, elist_colsize_width);
+		AppendColumn("Size");
+		SetColumnWidth(col_num, elist_colsize_width);
+		col_size = col_num++;
 	}
+
+	// Type
 	if (elist_coltype_show)
 	{
-		InsertColumn(col_num, "Type");
-		SetColumnWidth(col_num++, elist_coltype_width);
+		AppendColumn("Type");
+		SetColumnWidth(col_num, elist_coltype_width);
+		col_type = col_num++;
 	}
 
 	// Set editable
-	setColumnEditable(0);	// Name column
+	setColumnEditable(col_name);	// Name column
 }
 
 /* ArchiveEntryList::columnType
@@ -294,19 +335,16 @@ void ArchiveEntryList::setupColumns()
  *******************************************************************/
 int ArchiveEntryList::columnType(int column) const
 {
-	if (column == 0)
-		return 0;		// Name column is always 0
-	else if (column == 1)  			// Column 1 can be either size or type
-	{
-		if (elist_colsize_show)
-			return 1;
-		else
-			return 2;
-	}
-	else if (column == 2)			// Column 2 is always type (if it exists)
+	if (column == col_name)
+		return 0;
+	else if (column == col_size)
+		return 1;
+	else if (column == col_type)
 		return 2;
-	else
-		return -1;					// Invalid column
+	else if (column == col_index)
+		return 3;
+
+	return -1;
 }
 
 /* ArchiveEntryList::updateList
@@ -752,6 +790,14 @@ bool ArchiveEntryList::handleAction(string id)
 		if (GetParent())
 			GetParent()->Layout();
 	}
+	else if (id == "aelt_indexcol")
+	{
+		elist_colindex_show = !elist_colindex_show;
+		setupColumns();
+		updateWidth();
+		if (GetParent())
+			GetParent()->Layout();
+	}
 	else if (id == "aelt_hrules")
 	{
 		elist_hrules = !elist_hrules;
@@ -767,6 +813,11 @@ bool ArchiveEntryList::handleAction(string id)
 	else if (id == "aelt_bgcolour")
 	{
 		elist_type_bgcol = !elist_type_bgcol;
+		Refresh();
+	}
+	else if (id == "aelt_bgalt")
+	{
+		elist_alt_row_colour = !elist_alt_row_colour;
 		Refresh();
 	}
 
@@ -789,16 +840,20 @@ void ArchiveEntryList::onColumnHeaderRightClick(wxListEvent& e)
 {
 	// Create simple popup menu with options to toggle columns
 	wxMenu popup;
+	theApp->getAction("aelt_indexcol")->addToMenu(&popup);
 	theApp->getAction("aelt_sizecol")->addToMenu(&popup);
 	theApp->getAction("aelt_typecol")->addToMenu(&popup);
 	theApp->getAction("aelt_hrules")->addToMenu(&popup);
 	theApp->getAction("aelt_vrules")->addToMenu(&popup);
 	theApp->getAction("aelt_bgcolour")->addToMenu(&popup);
+	theApp->getAction("aelt_bgalt")->addToMenu(&popup);
+	popup.Check(theApp->getAction("aelt_indexcol")->getWxId(), elist_colindex_show);
 	popup.Check(theApp->getAction("aelt_sizecol")->getWxId(), elist_colsize_show);
 	popup.Check(theApp->getAction("aelt_typecol")->getWxId(), elist_coltype_show);
 	popup.Check(theApp->getAction("aelt_hrules")->getWxId(), elist_hrules);
 	popup.Check(theApp->getAction("aelt_vrules")->getWxId(), elist_vrules);
 	popup.Check(theApp->getAction("aelt_bgcolour")->getWxId(), elist_type_bgcol);
+	popup.Check(theApp->getAction("aelt_bgalt")->getWxId(), elist_alt_row_colour);
 
 	// Pop it up
 	PopupMenu(&popup);
@@ -810,13 +865,13 @@ void ArchiveEntryList::onColumnHeaderRightClick(wxListEvent& e)
 void ArchiveEntryList::onColumnResize(wxListEvent& e)
 {
 	// Save column widths
-	int col = 0;
-	elist_colname_width = GetColumnWidth(col++);
+	elist_colname_width = GetColumnWidth(col_name);
 	if (elist_colsize_show)
-		elist_colsize_width = GetColumnWidth(col++);
+		elist_colsize_width = GetColumnWidth(col_size);
 	if (elist_coltype_show)
-		elist_coltype_width = GetColumnWidth(col++);
-
+		elist_coltype_width = GetColumnWidth(col_type);
+	if (elist_colindex_show)
+		elist_colindex_width = GetColumnWidth(col_index);
 	e.Skip();
 }
 
