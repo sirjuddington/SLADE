@@ -32,6 +32,13 @@
 #include "WxStuff.h"
 #include "Icons.h"
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(String, font_monospace, "Consolas,Lucida Console", CVAR_SAVE)
+
+
 /* createMenuItem
  * Creates a wxMenuItem from the given parameters, including giving
  * it an icon from slade.pk3 if specified
@@ -44,4 +51,24 @@ wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help, stri
 		item->SetBitmap(getIcon(icon));
 
 	return item;
+}
+
+/* getMonospaceFont
+ * Returns a copy of the font [base] with a monospace face/family
+ *******************************************************************/
+wxFont getMonospaceFont(wxFont base)
+{
+	wxFont font(base.GetPointSize(), wxFONTFAMILY_MODERN, base.GetStyle(), base.GetWeight());
+
+	wxArrayString split = wxSplit(font_monospace, ',');
+	for (unsigned a = 0; a < split.size(); a++)
+	{
+		if (base.SetFaceName(split[a]))
+		{
+			font.SetFaceName(split[a]);
+			break;
+		}
+	}
+
+	return font;
 }

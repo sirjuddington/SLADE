@@ -22,5 +22,6 @@
 
 // Some misc wx-related functions
 wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help = wxEmptyString, string icon = wxEmptyString);
+wxFont		getMonospaceFont(wxFont base);
 
 #endif //__WXSTUFF_H__

@@ -34,12 +34,6 @@
 
 
 /*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(String, font_monospace)
-
-
-/*******************************************************************
  * CONSOLEPANEL CLASS FUNCTIONS
  *******************************************************************/
 
@@ -94,18 +88,7 @@ void ConsolePanel::initLayout()
 	Layout();
 
 	// Set console font to default+monospace
-	wxFont font = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
-	bool set = false;
-	wxArrayString split = wxSplit(font_monospace, ',');
-	for (unsigned a = 0; a < split.size(); a++)
-	{
-		if (font.SetFaceName(split[a]))
-		{
-			set = true;
-			break;
-		}
-	}
-	if (!set) font.SetFamily(wxFONTFAMILY_MODERN);
+	wxFont font = getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 	text_log->SetFont(font);
 	text_command->SetFont(font);
 }
