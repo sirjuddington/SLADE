@@ -99,9 +99,15 @@ string SAction::getShortcutText()
 
 /* SAction::addToMenu
  * Adds this action to [menu]. If [text_override] is not "NO", it
- * will be used instead of the action's text as the menu item label
+ * will be used instead of the action's text as the menu item label.
+ * If [popup] is true the shortcut key will always be added to the
+ * item label
  *******************************************************************/
 bool SAction::addToMenu(wxMenu* menu, string text_override)
+{
+	return addToMenu(menu, false, text_override);
+}
+bool SAction::addToMenu(wxMenu* menu, bool menubar, string text_override)
 {
 	// Can't add to nonexistant menu
 	if (!menu)
@@ -122,8 +128,8 @@ bool SAction::addToMenu(wxMenu* menu, string text_override)
 	string item_text = text;
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
-	if (!shortcut.IsEmpty() && !is_bind)
-		item_text = S_FMT("%s\t%s", item_text, shortcut);
+	if (!sc.IsEmpty() && (!is_bind || !menubar))
+		item_text = S_FMT("%s\t%s", item_text, sc);
 
 	// Append this action to the menu
 	string help = helptext;

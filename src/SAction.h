@@ -48,6 +48,7 @@ public:
 	bool	isRadio() { return type == RADIO; }
 
 	bool	addToMenu(wxMenu* menu, string text_override = "NO");
+	bool	addToMenu(wxMenu* menu, bool menubar, string text_override = "NO");
 	bool	addToToolbar(wxAuiToolBar* toolbar, string icon_override = "NO");
 	bool	addToToolbar(wxToolBar* toolbar, string icon_override = "NO");
 

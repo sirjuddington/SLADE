@@ -198,37 +198,37 @@ void MapEditorWindow::setupMenu()
 
 	// Map menu
 	wxMenu* menu_map = new wxMenu("");
-	theApp->getAction("mapw_save")->addToMenu(menu_map);
-	theApp->getAction("mapw_saveas")->addToMenu(menu_map);
-	theApp->getAction("mapw_rename")->addToMenu(menu_map);
+	theApp->getAction("mapw_save")->addToMenu(menu_map, true);
+	theApp->getAction("mapw_saveas")->addToMenu(menu_map, true);
+	theApp->getAction("mapw_rename")->addToMenu(menu_map, true);
 	menu_map->AppendSeparator();
-	theApp->getAction("mapw_run_map")->addToMenu(menu_map);
+	theApp->getAction("mapw_run_map")->addToMenu(menu_map, true);
 	menu->Append(menu_map, "&Map");
 
 	// Edit menu
 	wxMenu* menu_editor = new wxMenu("");
-	theApp->getAction("mapw_undo")->addToMenu(menu_editor);
-	theApp->getAction("mapw_redo")->addToMenu(menu_editor);
+	theApp->getAction("mapw_undo")->addToMenu(menu_editor, true);
+	theApp->getAction("mapw_redo")->addToMenu(menu_editor, true);
 	menu_editor->AppendSeparator();
-	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor);
-	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor);
-	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor);
+	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor, true);
+	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor, true);
+	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor, true);
 	menu_editor->AppendSeparator();
-	theApp->getAction("mapw_preferences")->addToMenu(menu_editor);
-	theApp->getAction("mapw_setbra")->addToMenu(menu_editor);
+	theApp->getAction("mapw_preferences")->addToMenu(menu_editor, true);
+	theApp->getAction("mapw_setbra")->addToMenu(menu_editor, true);
 	menu->Append(menu_editor, "&Edit");
 
 	// View menu
 	wxMenu* menu_view = new wxMenu("");
-	theApp->getAction("mapw_showproperties")->addToMenu(menu_view);
-	theApp->getAction("mapw_showconsole")->addToMenu(menu_view);
-	theApp->getAction("mapw_showundohistory")->addToMenu(menu_view);
-	theApp->getAction("mapw_showchecks")->addToMenu(menu_view);
-	theApp->getAction("mapw_showscripteditor")->addToMenu(menu_view);
+	theApp->getAction("mapw_showproperties")->addToMenu(menu_view, true);
+	theApp->getAction("mapw_showconsole")->addToMenu(menu_view, true);
+	theApp->getAction("mapw_showundohistory")->addToMenu(menu_view, true);
+	theApp->getAction("mapw_showchecks")->addToMenu(menu_view, true);
+	theApp->getAction("mapw_showscripteditor")->addToMenu(menu_view, true);
 	menu_view->AppendSeparator();
-	theApp->getAction("mapw_show_fullmap")->addToMenu(menu_view);
-	theApp->getAction("mapw_show_item")->addToMenu(menu_view);
-	//theApp->getAction("mapw_toggle_selection_numbers")->addToMenu(menu_view);
+	theApp->getAction("mapw_show_fullmap")->addToMenu(menu_view, true);
+	theApp->getAction("mapw_show_item")->addToMenu(menu_view, true);
+	//theApp->getAction("mapw_toggle_selection_numbers")->addToMenu(menu_view, true);
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
