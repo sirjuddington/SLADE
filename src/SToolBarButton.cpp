@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    SToolBarButton.cpp
+ * Description: SToolBarButton class - a simple toolbar button for
+ *              use on an SToolBar, can be displayed as an icon
+ *              or icon + text
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MainApp.h"
@@ -8,10 +38,27 @@
 #include "MainWindow.h"
 #include <wx/graphics.h>
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Bool, toolbar_button_flat, true, CVAR_SAVE)
-EXTERN_CVAR(Int, toolbar_size);
 wxDEFINE_EVENT(wxEVT_STOOLBAR_BUTTON_CLICKED, wxCommandEvent);
 
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Int, toolbar_size);
+
+
+/*******************************************************************
+ * STOOLBARBUTTON CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SToolBarButton::SToolBarButton
+ * SToolBarButton class constructor
+ *******************************************************************/
 SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, bool show_name)
 	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
 {
@@ -71,6 +118,9 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
 }
 
+/* SToolBarButton::SToolBarButton
+ * SToolBarButton class constructor
+ *******************************************************************/
 SToolBarButton::SToolBarButton(wxWindow* parent, string action_id, string action_name, string icon, string help_text, bool show_name)
 	: wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, "stbutton")
 {
@@ -109,10 +159,16 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action_id, string action
 	Bind(wxEVT_ERASE_BACKGROUND, &SToolBarButton::onEraseBackground, this);
 }
 
+/* SToolBarButton::~SToolBarButton
+ * SToolBarButton class destructor
+ *******************************************************************/
 SToolBarButton::~SToolBarButton()
 {
 }
 
+/* SToolBarButton::sendClickedEvent
+ * Sends a button clicked event
+ *******************************************************************/
 void SToolBarButton::sendClickedEvent()
 {
 	// Generate event
@@ -122,6 +178,9 @@ void SToolBarButton::sendClickedEvent()
 	ProcessWindowEvent(ev);
 }
 
+/* SToolBarButton::SToolBarButton
+ * Called when the button needs to be (re)drawn
+ *******************************************************************/
 void SToolBarButton::onPaint(wxPaintEvent& e)
 {
 	wxPaintDC dc(this);
@@ -236,6 +295,9 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	delete gc;
 }
 
+/* SToolBarButton::onMouseEvent
+ * Called when a mouse event happens within the control
+ *******************************************************************/
 void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 {
 	wxFrame* parent_window = (wxFrame*)wxGetTopLevelParent(this);
@@ -292,6 +354,9 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 	//e.Skip();
 }
 
+/* SToolBarButton::onFocus
+ * Called when the control gains or loses focus
+ *******************************************************************/
 void SToolBarButton::onFocus(wxFocusEvent& e)
 {
 	// Redraw
@@ -302,6 +367,9 @@ void SToolBarButton::onFocus(wxFocusEvent& e)
 	e.Skip();
 }
 
+/* SToolBarButton::onEraseBackground
+ * Called when the background needs erasing
+ *******************************************************************/
 void SToolBarButton::onEraseBackground(wxEraseEvent& e)
 {
 }

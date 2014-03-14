@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    SetupWizardDialog.cpp
+ * Description: Setup wizard dialog that is shown on the first run
+ *              to set up important editing preferences and settings
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "SetupWizardDialog.h"
@@ -7,6 +36,14 @@
 #include "NodeBuildersWizardPage.h"
 #include "Icons.h"
 
+
+/*******************************************************************
+ * SETUPWIZARDDIALOG CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SetupWizardDialog::SetupWizardDialog
+ * SetupWizardDialog class constructor
+ *******************************************************************/
 SetupWizardDialog::SetupWizardDialog(wxWindow* parent) : wxDialog(parent, -1, "First Time SLADE Setup", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
 	// Create pages
@@ -41,10 +78,16 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) : wxDialog(parent, -1, "F
 	btn_prev->Bind(wxEVT_BUTTON, &SetupWizardDialog::onBtnPrev, this);
 }
 
+/* SetupWizardDialog::~SetupWizardDialog
+ * SetupWizardDialog class destructor
+ *******************************************************************/
 SetupWizardDialog::~SetupWizardDialog()
 {
 }
 
+/* SetupWizardDialog::setupLayout
+ * Sets up the dialog layout
+ *******************************************************************/
 void SetupWizardDialog::setupLayout()
 {
 	// Setup main sizer
@@ -79,28 +122,9 @@ void SetupWizardDialog::setupLayout()
 	btn_prev->Enable(false);
 }
 
-void SetupWizardDialog::onBtnNext(wxCommandEvent& e)
-{
-	if (pages[current_page]->canGoNext())
-	{
-		pages[current_page]->applyChanges();
-
-		// Close if last page
-		if (current_page == pages.size() - 1)
-		{
-			EndModal(wxID_OK);
-			return;
-		}
-
-		showPage(current_page + 1);
-	}
-}
-
-void SetupWizardDialog::onBtnPrev(wxCommandEvent& e)
-{
-	showPage(current_page - 1);
-}
-
+/* SetupWizardDialog::showPage
+ * Shows the wizard page at [index]
+ *******************************************************************/
 void SetupWizardDialog::showPage(unsigned index)
 {
 	// Check index
@@ -135,4 +159,37 @@ void SetupWizardDialog::showPage(unsigned index)
 	Layout();
 	Update();
 	Refresh();
+}
+
+
+/*******************************************************************
+ * SETUPWIZARDDIALOG CLASS EVENTS
+ *******************************************************************/
+
+/* SetupWizardDialog::onBtnNext
+ * Called when the 'Next' button is clicked
+ *******************************************************************/
+void SetupWizardDialog::onBtnNext(wxCommandEvent& e)
+{
+	if (pages[current_page]->canGoNext())
+	{
+		pages[current_page]->applyChanges();
+
+		// Close if last page
+		if (current_page == pages.size() - 1)
+		{
+			EndModal(wxID_OK);
+			return;
+		}
+
+		showPage(current_page + 1);
+	}
+}
+
+/* SetupWizardDialog::onBtnPrev
+ * Called when the 'Previous' button is clicked
+ *******************************************************************/
+void SetupWizardDialog::onBtnPrev(wxCommandEvent& e)
+{
+	showPage(current_page - 1);
 }

@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    RunDialog.cpp
+ * Description: Allows selection of a game executable and configuration
+ *              to run an archive (map optional) and selected resource
+ *              archives
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "RunDialog.h"
@@ -13,11 +43,20 @@
 #include <wx/filename.h>
 
 
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(String, run_last_exe, "", CVAR_SAVE)
 CVAR(Int, run_last_config, 0, CVAR_SAVE)
 CVAR(String, run_last_extra, "", CVAR_SAVE)
 
 
+/*******************************************************************
+ * RUNCONFIGDIALOG CLASS
+ *******************************************************************
+ * Simple dialog for creating a run configuration (name and
+ * parameters)
+ */
 class RunConfigDialog : public wxDialog
 {
 private:
@@ -70,6 +109,13 @@ public:
 };
 
 
+/*******************************************************************
+ * RUNDIALOG CLASS FUNCTIONS
+ *******************************************************************/
+
+/* RunDialog::RunDialog
+ * RunDialog class constructor
+ *******************************************************************/
 RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 : wxDialog(parent, -1, "Run", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
@@ -171,10 +217,16 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	CenterOnParent();
 }
 
+/* RunDialog::~RunDialog
+ * RunDialog class destructor
+ *******************************************************************/
 RunDialog::~RunDialog()
 {
 }
 
+/* RunDialog::openGameExe
+ * Loads run configurations and sets up controls for game exe [index]
+ *******************************************************************/
 void RunDialog::openGameExe(unsigned index)
 {
 	// Clear
@@ -201,6 +253,10 @@ void RunDialog::openGameExe(unsigned index)
 	}
 }
 
+/* RunDialog::getSelectedCommandLine
+ * Returns a command line based on the currently selected run
+ * configuration and resources
+ *******************************************************************/
 string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, string map_file)
 {
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
@@ -279,11 +335,18 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 	return "";
 }
 
+/* RunDialog::getSelectedResourceList
+ * Returns a space-separated list of selected resource archive
+ * filenames
+ *******************************************************************/
 string RunDialog::getSelectedResourceList()
 {
 	return rac_resources->getSelectedResourceList();
 }
 
+/* RunDialog::getSelectedExeDir
+ * Returns the directory of the currently selected executable
+ *******************************************************************/
 string RunDialog::getSelectedExeDir()
 {
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
@@ -296,6 +359,9 @@ string RunDialog::getSelectedExeDir()
 	return "";
 }
 
+/* RunDialog::getSelectedExeId
+ * Returns the id of the currently selected game executable
+ *******************************************************************/
 string RunDialog::getSelectedExeId()
 {
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
@@ -305,6 +371,14 @@ string RunDialog::getSelectedExeId()
 		return "";
 }
 
+
+/*******************************************************************
+ * RUNDIALOG CLASS EVENTS
+ *******************************************************************/
+
+/* RunDialog::onBtnAddGame
+ * Called when the add game button is clicked
+ *******************************************************************/
 void RunDialog::onBtnAddGame(wxCommandEvent& e)
 {
 	string name = wxGetTextFromUser("Enter a name for the game executable");
@@ -314,6 +388,9 @@ void RunDialog::onBtnAddGame(wxCommandEvent& e)
 	openGameExe(Executables::nGameExes() - 1);
 }
  
+/* RunDialog::onBtnBrowseExe
+ * Called when the browse button is clicked
+ *******************************************************************/
 void RunDialog::onBtnBrowseExe(wxCommandEvent& e)
 {
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
@@ -333,6 +410,9 @@ void RunDialog::onBtnBrowseExe(wxCommandEvent& e)
 	}
 }
 
+/* RunDialog::onBtnAddConfig
+ * Called when the add config button is clicked
+ *******************************************************************/
 void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 {
 	if (choice_game_exes->GetSelection() < 0)
@@ -352,6 +432,9 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	}
 }
 
+/* RunDialog::onBtnEditConfig
+ * Called when the edit config button is clicked
+ *******************************************************************/
 void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 {
 	if (choice_game_exes->GetSelection() < 0 || choice_config->GetSelection() < 0)
@@ -372,6 +455,9 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	}
 }
 
+/* RunDialog::onBtnRun
+ * Called when the run button is clicked
+ *******************************************************************/
 void RunDialog::onBtnRun(wxCommandEvent& e)
 {
 	if (text_exe_path->GetValue() == "" || !wxFileExists(text_exe_path->GetValue()))
@@ -388,6 +474,9 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 	EndModal(wxID_OK);
 }
 
+/* RunDialog::onBtnCancel
+ * Called when the cancel button is clicked
+ *******************************************************************/
 void RunDialog::onBtnCancel(wxCommandEvent& e)
 {
 	// Update cvars
@@ -398,12 +487,18 @@ void RunDialog::onBtnCancel(wxCommandEvent& e)
 	EndModal(wxID_CANCEL);
 }
 
+/* RunDialog::onChoiceGameExe
+ * Called when the game executable dropdown selection changes
+ *******************************************************************/
 void RunDialog::onChoiceGameExe(wxCommandEvent& e)
 {
 	openGameExe(e.GetSelection());
 	run_last_exe = getSelectedExeId();
 }
 
+/* RunDialog::onChoiceConfig
+ * Called when the run configuration dropdown selection changes
+ *******************************************************************/
 void RunDialog::onChoiceConfig(wxCommandEvent& e)
 {
 	run_last_config = choice_config->GetSelection();
@@ -412,6 +507,9 @@ void RunDialog::onChoiceConfig(wxCommandEvent& e)
 	btn_remove_config->Enable(exe->configs_custom[choice_config->GetSelection()]);
 }
 
+/* RunDialog::onBtnRemoveGame
+ * Called when the remove game button is clicked
+ *******************************************************************/
 void RunDialog::onBtnRemoveGame(wxCommandEvent& e)
 {
 	if (Executables::removeGameExe(choice_game_exes->GetSelection()))
@@ -428,6 +526,9 @@ void RunDialog::onBtnRemoveGame(wxCommandEvent& e)
 	}
 }
 
+/* RunDialog::onBtnRemoveConfig
+ * Called when the remove config button is clicked
+ *******************************************************************/
 void RunDialog::onBtnRemoveConfig(wxCommandEvent& e)
 {
 	if (Executables::removeGameExeConfig(choice_game_exes->GetSelection(), choice_config->GetSelection()))

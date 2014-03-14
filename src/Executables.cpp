@@ -1,15 +1,56 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    Executables.cpp
+ * Description: Functions to handle game executable configurations
+ *              for the 'Run Archive/Map' dialog
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "Executables.h"
 #include "ArchiveManager.h"
 #include "Parser.h"
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 namespace Executables
 {
 	vector<game_exe_t>	game_exes;
 	vector<key_value_t>	exe_paths;
 }
 
+
+/*******************************************************************
+ * EXECUTABLES NAMESPACE FUNCTIONS
+ *******************************************************************/
+
+/* Executables::getGameExe
+ * Returns the game executable definition for [id]
+ *******************************************************************/
 Executables::game_exe_t* Executables::getGameExe(string id)
 {
 	for (unsigned a = 0; a < game_exes.size(); a++)
@@ -21,6 +62,9 @@ Executables::game_exe_t* Executables::getGameExe(string id)
 	return NULL;
 }
 
+/* Executables::getGameExe
+ * Returns the game executable definition at [index]
+ *******************************************************************/
 Executables::game_exe_t* Executables::getGameExe(unsigned index)
 {
 	if (index < game_exes.size())
@@ -29,16 +73,25 @@ Executables::game_exe_t* Executables::getGameExe(unsigned index)
 		return NULL;
 }
 
+/* Executables::nGameExes
+ * Returns the number of game executables defined
+ *******************************************************************/
 unsigned Executables::nGameExes()
 {
 	return game_exes.size();
 }
 
+/* Executables::setExePath
+ * Sets the path of executable [id] to [path]
+ *******************************************************************/
 void Executables::setExePath(string id, string path)
 {
 	exe_paths.push_back(key_value_t(id, path));
 }
 
+/* Executables::writePaths
+ * Writes all game executable paths as a string (for slade3.cfg)
+ *******************************************************************/
 string Executables::writePaths()
 {
 	string ret;
@@ -47,6 +100,9 @@ string Executables::writePaths()
 	return ret;
 }
 
+/* Executables::writeExecutables
+ * Writes all game executable definitions as text
+ *******************************************************************/
 string Executables::writeExecutables()
 {
 	string ret = "executables\n{\n";
@@ -75,6 +131,10 @@ string Executables::writeExecutables()
 	return ret;
 }
 
+/* Executables::init
+ * Reads all game executables definitions from the program resource
+ * and user dir
+ *******************************************************************/
 void Executables::init()
 {
 	// Load from pk3
@@ -98,6 +158,9 @@ void Executables::init()
 	}
 }
 
+/* Executables::parse
+ * Parses a game executables configuration from [p]
+ *******************************************************************/
 void Executables::parse(Parser* p, bool custom)
 {
 	ParseTreeNode* n = (ParseTreeNode*)p->parseTreeRoot()->getChild("executables");
@@ -161,6 +224,9 @@ void Executables::parse(Parser* p, bool custom)
 	}
 }
 
+/* Executables::addGameExe
+ * Adds a new game executable definition for game [name]
+ *******************************************************************/
 void Executables::addGameExe(string name)
 {
 	game_exe_t game;
@@ -173,6 +239,9 @@ void Executables::addGameExe(string name)
 	game_exes.push_back(game);
 }
 
+/* Executables::removeGameExe
+ * Removes the game executable definition at [index]
+ *******************************************************************/
 bool Executables::removeGameExe(unsigned index)
 {
 	if (index < game_exes.size())
@@ -187,6 +256,9 @@ bool Executables::removeGameExe(unsigned index)
 	return false;
 }
 
+/* Executables::addGameExeConfig
+ * Adds a run configuration for game executable at [exe_index]
+ *******************************************************************/
 void Executables::addGameExeConfig(unsigned exe_index, string config_name, string config_params, bool custom)
 {
 	// Check index
@@ -197,6 +269,10 @@ void Executables::addGameExeConfig(unsigned exe_index, string config_name, strin
 	game_exes[exe_index].configs_custom.push_back(custom);
 }
 
+/* Executables::removeGameExeConfig
+ * Removes run configuration at [config_index] in game exe definition
+ * at [exe_index]
+ *******************************************************************/
 bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
 {
 	// Check indices

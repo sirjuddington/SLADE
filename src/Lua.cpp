@@ -1,28 +1,48 @@
 
-/*
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    Lua.cpp
+ * Description: Lua scripting system (nothing much here yet)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
 
-Potential Lua functions
 
-Map Editor:
-getMapObjectProperty(type, index, property)
-getMapObjectProperty(id, property)
-getMapObjectModifiedTime(type, index)
-getMapObjectId(type, index)
-setMapObjectProperty(type, index, property, value)
-setMapObjectProperty(id, property, value)
-getNumObjects(type)
-
-*/
-
-
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "Lua.h"
 #include "lua/lua.hpp"
 #include "Console.h"
 #include <wx/file.h>
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 lua_State*	lua_state = NULL;
 
+
+/*******************************************************************
+ * LUA NAMESPACE FUNCTIONS
+ *******************************************************************/
 namespace Lua
 {
 	// --- Functions ---
@@ -66,6 +86,9 @@ namespace Lua
 	}*/
 }
 
+/* Lua::init
+ * Initialises lua and registers functions
+ *******************************************************************/
 bool Lua::init()
 {
 	// Init lua state
@@ -79,11 +102,17 @@ bool Lua::init()
 	return true;
 }
 
+/* Lua::close
+ * Close the lua state
+ *******************************************************************/
 void Lua::close()
 {
 	lua_close(lua_state);
 }
 
+/* Lua::run
+ * Runs a lua script [program]
+ *******************************************************************/
 bool Lua::run(string program)
 {
 	// Load string to Lua
@@ -98,6 +127,9 @@ bool Lua::run(string program)
 	return false;
 }
 
+/* Lua::runFile
+ * Runs a lua script from a text file [filename]
+ *******************************************************************/
 bool Lua::runFile(string filename)
 {
 	// Load file to Lua
@@ -112,6 +144,10 @@ bool Lua::runFile(string filename)
 	return false;
 }
 
+
+/*******************************************************************
+ * CONSOLE COMMANDS
+ *******************************************************************/
 
 CONSOLE_COMMAND(lua_exec, 1, true)
 {
@@ -129,3 +165,20 @@ CONSOLE_COMMAND(lua_execfile, 1, true)
 	if (!Lua::runFile(args[0]))
 		wxLogMessage("Error loading lua script file \"%s\"", args[0]);
 }
+
+
+
+/*
+
+Potential Lua functions
+
+Map Editor:
+getMapObjectProperty(type, index, property)
+getMapObjectProperty(id, property)
+getMapObjectModifiedTime(type, index)
+getMapObjectId(type, index)
+setMapObjectProperty(type, index, property, value)
+setMapObjectProperty(id, property, value)
+getNumObjects(type)
+
+*/

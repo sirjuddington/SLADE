@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapReplaceDialog.cpp
+ * Description: Dialog for 'Replace in Maps' functionality, allows
+ *              to replace all instances of a certain line special /
+ *              thing type / etc in all maps in an archive
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapReplaceDialog.h"
@@ -7,6 +37,13 @@
 #include <wx/statline.h>
 
 
+/*******************************************************************
+ * THINGTYPEREPLACEPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ThingTypeReplacePanel::ThingTypeReplacePanel
+ * ThingTypeReplacePanel class constructor
+ *******************************************************************/
 ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
@@ -33,10 +70,17 @@ ThingTypeReplacePanel::ThingTypeReplacePanel(wxWindow* parent) : wxPanel(parent,
 	//gbsizer->Add(btn_browse_to, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND);
 }
 
+/* ThingTypeReplacePanel::~ThingTypeReplacePanel
+ * ThingTypeReplacePanel class destructor
+ *******************************************************************/
 ThingTypeReplacePanel::~ThingTypeReplacePanel()
 {
 }
 
+/* ThingTypeReplacePanel::doReplace
+ * Performs replace using settings from the panel controls for
+ * [archive]
+ *******************************************************************/
 void ThingTypeReplacePanel::doReplace(Archive* archive)
 {
 	size_t count = ArchiveOperations::replaceThings(archive, spin_from->GetValue(), spin_to->GetValue());
@@ -44,6 +88,13 @@ void ThingTypeReplacePanel::doReplace(Archive* archive)
 }
 
 
+/*******************************************************************
+ * SPECIALREPLACEPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SpecialReplacePanel::SpecialReplacePanel
+ * SpecialReplacePanel class constructor
+ *******************************************************************/
 SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
@@ -97,10 +148,17 @@ SpecialReplacePanel::SpecialReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	cb_line_specials->SetValue(true);
 }
 
+/* SpecialReplacePanel::~SpecialReplacePanel
+ * SpecialReplacePanel class destructor
+ *******************************************************************/
 SpecialReplacePanel::~SpecialReplacePanel()
 {
 }
 
+/* SpecialReplacePanel::doReplace
+ * Performs replace using settings from the panel controls for
+ * [archive]
+ *******************************************************************/
 void SpecialReplacePanel::doReplace(Archive* archive)
 {
 	size_t count = ArchiveOperations::replaceSpecials(archive, spin_from->GetValue(), spin_to->GetValue(),
@@ -115,6 +173,13 @@ void SpecialReplacePanel::doReplace(Archive* archive)
 }
 
 
+/*******************************************************************
+ * TEXTUREREPLACEPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* TextureReplacePanel::TextureReplacePanel
+ * TextureReplacePanel class constructor
+ *******************************************************************/
 TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
@@ -163,10 +228,17 @@ TextureReplacePanel::TextureReplacePanel(wxWindow* parent) : wxPanel(parent, -1)
 	sizer->AddStretchSpacer();
 }
 
+/* TextureReplacePanel::~TextureReplacePanel
+ * TextureReplacePanel class destructor
+ *******************************************************************/
 TextureReplacePanel::~TextureReplacePanel()
 {
 }
 
+/* TextureReplacePanel::doReplace
+ * Performs replace using settings from the panel controls for
+ * [archive]
+ *******************************************************************/
 void TextureReplacePanel::doReplace(Archive* archive)
 {
 	size_t count = ArchiveOperations::replaceTextures(archive, text_from->GetValue(), text_to->GetValue(),
@@ -177,6 +249,13 @@ void TextureReplacePanel::doReplace(Archive* archive)
 }
 
 
+/*******************************************************************
+ * MAPREPLACEDIALOG CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapReplaceDialog::MapReplaceDialog
+ * MapReplaceDialog class constructor
+ *******************************************************************/
 MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
 	: wxDialog(parent, -1, "Replace In Maps", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
@@ -225,15 +304,29 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
 	btn_replace->Bind(wxEVT_BUTTON, &MapReplaceDialog::onBtnReplace, this);
 }
 
+/* MapReplaceDialog::~MapReplaceDialog
+ * MapReplaceDialog class destructor
+ *******************************************************************/
 MapReplaceDialog::~MapReplaceDialog()
 {
 }
 
+
+/*******************************************************************
+ * MAPREPLACEDIALOG CLASS EVENTS
+ *******************************************************************/
+
+/* MapReplaceDialog::onBtnDone
+ * Called when the 'Done' button is clicked
+ *******************************************************************/
 void MapReplaceDialog::onBtnDone(wxCommandEvent& e)
 {
 	this->EndModal(wxID_OK);
 }
 
+/* MapReplaceDialog::onBtnReplace
+ * Called when the 'Replace' button is clicked
+ *******************************************************************/
 void MapReplaceDialog::onBtnReplace(wxCommandEvent& e)
 {
 	// Get current tab

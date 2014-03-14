@@ -1,13 +1,60 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapPreviewCanvas.cpp
+ * Description: OpenGL Canvas that shows a basic map preview, can
+ *              also save the preview to an image
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #undef BOOL
 #include <FreeImage.h>
 #include "Misc.h"
 #include "EntryType.h"
+#include "SIFormat.h"
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+vector<SIFormat*>	simage_formats;
+SIFormat*			sif_raw = NULL;
+SIFormat*			sif_flat = NULL;
+SIFormat*			sif_general = NULL;
+SIFormat*			sif_unknown = NULL;
+
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Bool, gfx_extraconv)
 
-#include "SIFormat.h"
+
+/*******************************************************************
+ * SIF* CLASSES
+ *******************************************************************/
 #include "SIFImages.h"
 #include "SIFDoom.h"
 #include "SIFHexen.h"
@@ -17,14 +64,12 @@ EXTERN_CVAR(Bool, gfx_extraconv)
 #include "SIFRott.h"
 #include "SIFJedi.h"
 
-vector<SIFormat*>	simage_formats;
-SIFormat*			sif_raw = NULL;
-SIFormat*			sif_flat = NULL;
-SIFormat*			sif_general = NULL;
-SIFormat*			sif_unknown = NULL;
 
-
-// 'Unknown' format
+/*******************************************************************
+ * SIFUNKNOWN CLASS
+ *******************************************************************
+ * 'Unknown' format
+ */
 class SIFUnknown : public SIFormat
 {
 protected:
@@ -38,7 +83,13 @@ public:
 	SImage::info_t	getInfo(MemChunk& mc, int index) { return SImage::info_t(); }
 };
 
-// General image format is a special case, only try if no other formats detected
+
+/*******************************************************************
+ * SIFGENERALIMAGE CLASS
+ *******************************************************************
+ * General image format is a special case, only try if no other
+ * formats are detected
+ */
 class SIFGeneralImage : public SIFormat
 {
 private:
@@ -180,7 +231,12 @@ uint32_t valid_flat_size[][3] =
 };
 uint32_t	n_valid_flat_sizes = 17;
 
-// Raw format is a special case - not detectable
+
+/*******************************************************************
+ * SIFRAW CLASS
+ *******************************************************************
+ * Raw format is a special case - not detectable
+ */
 class SIFRaw : public SIFormat
 {
 protected:
@@ -306,6 +362,10 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * SIFRAWFLAT CLASS
+ *******************************************************************/
 class SIFRawFlat : public SIFRaw
 {
 protected:
@@ -396,6 +456,14 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * SIFORMAT CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SIFormat::SIFormat
+ * SIFormat class constructor
+ *******************************************************************/
 SIFormat::SIFormat(string id)
 {
 	// Init variables
@@ -408,12 +476,21 @@ SIFormat::SIFormat(string id)
 	simage_formats.push_back(this);
 }
 
+/* SIFormat::~SIFormat
+ * SIFormat class destructor
+ *******************************************************************/
 SIFormat::~SIFormat()
 {
 }
 
 
+/*******************************************************************
+ * SIFORMAT CLASS STATIC FUNCTIONS
+ *******************************************************************/
 
+/* SIFormat::initFormats
+ * Initialises all SIFormats
+ *******************************************************************/
 void SIFormat::initFormats()
 {
 	// Non-detectable formats
@@ -476,6 +553,9 @@ void SIFormat::initFormats()
 	new SIFWolfSprite();
 }
 
+/* SIFormat::getFormat
+ * Returns the format [id]
+ *******************************************************************/
 SIFormat* SIFormat::getFormat(string id)
 {
 	// Check for special types
@@ -497,6 +577,9 @@ SIFormat* SIFormat::getFormat(string id)
 	return sif_unknown;
 }
 
+/* SIFormat::determineFormat
+ * Determines the format of the image data in [mc]
+ *******************************************************************/
 SIFormat* SIFormat::determineFormat(MemChunk& mc)
 {
 	// Go through all registered formats
@@ -520,26 +603,42 @@ SIFormat* SIFormat::determineFormat(MemChunk& mc)
 	return format;
 }
 
+/* SIFormat::unknownFormat
+ * Returns the 'unknown' image format
+ *******************************************************************/
 SIFormat* SIFormat::unknownFormat()
 {
 	return sif_unknown;
 }
 
+
+/* SIFormat::rawFormat
+ * Returns the raw image format
+ *******************************************************************/
 SIFormat* SIFormat::rawFormat()
 {
 	return sif_raw;
 }
 
+/* SIFormat::flatFormat
+ * Returns the raw/flat image format
+ *******************************************************************/
 SIFormat* SIFormat::flatFormat()
 {
 	return sif_flat;
 }
 
+/* SIFormat::generalFormat
+ * Returns the 'general' image format
+ *******************************************************************/
 SIFormat* SIFormat::generalFormat()
 {
 	return sif_general;
 }
 
+/* SIFormat::getAllFormats
+ * Adds all image formats to [list]
+ *******************************************************************/
 void SIFormat::getAllFormats(vector<SIFormat*>& list)
 {
 	// Clear list

@@ -1,4 +1,32 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ColourConfiguration.cpp
+ * Description: Functions for handling colour configurations
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "ColourConfiguration.h"
 #include "Parser.h"
@@ -6,9 +34,21 @@
 #include "Console.h"
 #include <map>
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 typedef std::map<string, cc_col_t> ColourHashMap;
 ColourHashMap	cc_colours;
 
+
+/*******************************************************************
+ * COLOURCONFIGURATION NAMESPACE FUNCTIONS
+ *******************************************************************/
+
+/* ColourConfiguration::getColour
+ * Returns the colour [name]
+ *******************************************************************/
 rgba_t ColourConfiguration::getColour(string name)
 {
 	cc_col_t& col = cc_colours[name];
@@ -18,11 +58,17 @@ rgba_t ColourConfiguration::getColour(string name)
 		return COL_WHITE;
 }
 
+/* ColourConfiguration::getColDef
+ * Returns the colour definition [name]
+ *******************************************************************/
 cc_col_t ColourConfiguration::getColDef(string name)
 {
 	return cc_colours[name];
 }
 
+/* ColourConfiguration::setColour
+ * Sets the colour definition [name]
+ *******************************************************************/
 void ColourConfiguration::setColour(string name, int red, int green, int blue, int alpha, int blend)
 {
 	cc_col_t& col = cc_colours[name];
@@ -39,6 +85,9 @@ void ColourConfiguration::setColour(string name, int red, int green, int blue, i
 	col.exists = true;
 }
 
+/* ColourConfiguration::readConfiguration
+ * Reads a colour configuration from text data [mc]
+ *******************************************************************/
 bool ColourConfiguration::readConfiguration(MemChunk& mc)
 {
 	// Parse text
@@ -95,6 +144,9 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 	return true;
 }
 
+/* ColourConfiguration::writeConfiguration
+ * Writes the current colour configuration to text data [mc]
+ *******************************************************************/
 bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 {
 	string cfgstring = "colours\n{\n";
@@ -145,6 +197,9 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 	return true;
 }
 
+/* ColourConfiguration::init
+ * Initialises the colour configuration
+ *******************************************************************/
 bool ColourConfiguration::init()
 {
 	// Load default configuration
@@ -161,6 +216,9 @@ bool ColourConfiguration::init()
 	return true;
 }
 
+/* ColourConfiguration::loadDefaults
+ * Sets all colours in the current configuration to default
+ *******************************************************************/
 void ColourConfiguration::loadDefaults()
 {
 	// Read default colours
@@ -170,6 +228,9 @@ void ColourConfiguration::loadDefaults()
 		readConfiguration(entry_default_cc->getMCData());
 }
 
+/* ColourConfiguration::readConfiguration
+ * Reads saved colour configuration [name]
+ *******************************************************************/
 bool ColourConfiguration::readConfiguration(string name)
 {
 	// TODO: search custom folder
@@ -186,6 +247,9 @@ bool ColourConfiguration::readConfiguration(string name)
 	return false;
 }
 
+/* ColourConfiguration::getConfigurationNames
+ * Adds all available colour configuration names to [names]
+ *******************************************************************/
 void ColourConfiguration::getConfigurationNames(vector<string>& names)
 {
 	// TODO: search custom folder
@@ -197,6 +261,9 @@ void ColourConfiguration::getConfigurationNames(vector<string>& names)
 		names.push_back(dir->getEntry(a)->getName(true));
 }
 
+/* ColourConfiguration::getColourNames
+ * Adds all colour names to [list]
+ *******************************************************************/
 void ColourConfiguration::getColourNames(vector<string>& list)
 {
 	ColourHashMap::iterator i = cc_colours.begin();
@@ -208,8 +275,9 @@ void ColourConfiguration::getColourNames(vector<string>& list)
 }
 
 
-
-
+/*******************************************************************
+ * CONSOLE COMMANDS
+ *******************************************************************/
 CONSOLE_COMMAND(ccfg, 1, false)
 {
 	// Check for 'list'

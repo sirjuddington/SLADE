@@ -1,4 +1,34 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapEditorConfigDialog.cpp
+ * Description: Dialog that shows options for launching the map
+ *              editor - game, port, and resource archives. Also
+ *              can show a map list and preview
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapEditorConfigDialog.h"
@@ -15,6 +45,11 @@
 #include <wx/gbsizer.h>
 
 
+/*******************************************************************
+ * NEWMAPDIALOG CLASS
+ *******************************************************************
+ * Dialog for creating a new map - select map format and name
+ */
 class NewMapDialog : public wxDialog
 {
 private:
@@ -108,6 +143,14 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * MAPEDITORCONFIGDIALOG CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapEditorConfigDialog::MapEditorConfigDialog
+ * MapEditorConfigDialog class constructor
+ *******************************************************************/
 MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating) : wxDialog(parent, -1, "Launch Map Editor")
 {
 	// Init variables
@@ -235,11 +278,17 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 		list_maps->selectItem(0);
 }
 
+/* MapEditorConfigDialog::~MapEditorConfigDialog
+ * MapEditorConfigDialog class destructor
+ *******************************************************************/
 MapEditorConfigDialog::~MapEditorConfigDialog()
 {
 	delete img_list;
 }
 
+/* MapEditorConfigDialog::populateGameList
+ * Adds all configured games to the game dropdown
+ *******************************************************************/
 void MapEditorConfigDialog::populateGameList()
 {
 	// Clear current list
@@ -258,6 +307,10 @@ void MapEditorConfigDialog::populateGameList()
 	choice_game_config->SetSelection(selection);
 }
 
+/* MapEditorConfigDialog::populatePortList
+ * Adds all configured ports to the port dropdown (that support the
+ * currently selected game)
+ *******************************************************************/
 void MapEditorConfigDialog::populatePortList()
 {
 	// Clear current list
@@ -287,6 +340,9 @@ void MapEditorConfigDialog::populatePortList()
 	choice_port_config->SetSelection(selection);
 }
 
+/* MapEditorConfigDialog::populateMapList
+ * Adds all maps in the current archive to the map list
+ *******************************************************************/
 void MapEditorConfigDialog::populateMapList()
 {
 	// Do nothing if map list isn't active
@@ -345,6 +401,9 @@ void MapEditorConfigDialog::populateMapList()
 		list_maps->selectItem(selection);
 }
 
+/* MapEditorConfigDialog::selectedMap
+ * Returns info on the currently selected map
+ *******************************************************************/
 Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 {
 	if (creating)
@@ -394,6 +453,10 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 		return maps[selection];
 }
 
+/* MapEditorConfigDialog::configMatchesMap
+ * Returns true if the currently selected game/port supports the
+ * format of [map]
+ *******************************************************************/
 bool MapEditorConfigDialog::configMatchesMap(Archive::mapdesc_t map)
 {
 	// Get currently selected game/port
@@ -405,6 +468,9 @@ bool MapEditorConfigDialog::configMatchesMap(Archive::mapdesc_t map)
 	return theGameConfiguration->mapFormatSupported(map.format, game, port);
 }
 
+/* MapEditorConfigDialog::selectedGame
+ * Returns the id of the currently selected game configuration
+ *******************************************************************/
 string MapEditorConfigDialog::selectedGame()
 {
 	if (choice_game_config->GetCount() == 0)
@@ -413,6 +479,9 @@ string MapEditorConfigDialog::selectedGame()
 	return theGameConfiguration->gameConfig(choice_game_config->GetSelection()).name;
 }
 
+/* MapEditorConfigDialog::selectedPort
+ * Returns the id of the currently selected port configuration
+ *******************************************************************/
 string MapEditorConfigDialog::selectedPort()
 {
 	if (choice_port_config->GetSelection() == 0 || choice_port_config->GetCount() == 0)
@@ -422,7 +491,13 @@ string MapEditorConfigDialog::selectedPort()
 }
 
 
+/*******************************************************************
+ * MAPEDITORCONFIGDIALOG CLASS EVENTS
+ *******************************************************************/
 
+/* MapEditorConfigDialog::onChoiceGameConfigChanged
+ * Called when the game dropdown selection is changed
+ *******************************************************************/
 void MapEditorConfigDialog::onChoiceGameConfigChanged(wxCommandEvent& e)
 {
 	// Refresh ports combo box
@@ -435,6 +510,9 @@ void MapEditorConfigDialog::onChoiceGameConfigChanged(wxCommandEvent& e)
 	port_current = selectedPort();
 }
 
+/* MapEditorConfigDialog::onChoicePortConfigChanged
+ * Called when the port dropdown selection is changed
+ *******************************************************************/
 void MapEditorConfigDialog::onChoicePortConfigChanged(wxCommandEvent& e)
 {
 	// Refresh map list
@@ -444,12 +522,18 @@ void MapEditorConfigDialog::onChoicePortConfigChanged(wxCommandEvent& e)
 	port_current = selectedPort();
 }
 
+/* MapEditorConfigDialog::onMapActivated
+ * Called when a map in the maps list is activated
+ *******************************************************************/
 void MapEditorConfigDialog::onMapActivated(wxListEvent& e)
 {
 	if (configMatchesMap(selectedMap()))
 		EndModal(wxID_OK);
 }
 
+/* MapEditorConfigDialog::onBtnNewMap
+ * Called when the 'New Map' button is clicked
+ *******************************************************************/
 void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 {
 	// Get selected game/port index
@@ -573,6 +657,9 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 	}
 }
 
+/* MapEditorConfigDialog::onMapSelected
+ * Called when the selection on the map list is changed
+ *******************************************************************/
 void MapEditorConfigDialog::onMapSelected(wxListEvent& e)
 {
 	if (!canvas_preview)
@@ -584,11 +671,17 @@ void MapEditorConfigDialog::onMapSelected(wxListEvent& e)
 	btn_ok->Enable(configMatchesMap(map));
 }
 
+/* MapEditorConfigDialog::onBtnOK
+ * Called when the 'OK' button is clicked
+ *******************************************************************/
 void MapEditorConfigDialog::onBtnOK(wxCommandEvent& e)
 {
 	EndModal(wxID_OK);
 }
 
+/* MapEditorConfigDialog::onBtnCancel
+ * Called when the 'Cancel' button is clicked
+ *******************************************************************/
 void MapEditorConfigDialog::onBtnCancel(wxCommandEvent& e)
 {
 	EndModal(wxID_CANCEL);

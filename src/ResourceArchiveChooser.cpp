@@ -1,4 +1,33 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ResourceArchiveChooser.cpp
+ * Description: A custom control that allows to open/select resource
+ *              archives and change the base resource
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "ResourceArchiveChooser.h"
@@ -6,6 +35,14 @@
 #include "SFileDialog.h"
 #include "SplashWindow.h"
 
+
+/*******************************************************************
+ * RESOURCEARCHIVECHOOSER CLASS FUNCTIONS
+ *******************************************************************/
+
+/* ResourceArchiveChooser::ResourceArchiveChooser
+ * ResourceArchiveChooser class constructor
+ *******************************************************************/
 ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archive) : wxPanel(parent, -1)
 {
 	// Setup sizer
@@ -49,10 +86,16 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 	Layout();
 }
 
+/* ResourceArchiveChooser::~ResourceArchiveChooser
+ * ResourceArchiveChooser class destructor
+ *******************************************************************/
 ResourceArchiveChooser::~ResourceArchiveChooser()
 {
 }
 
+/* ResourceArchiveChooser::getSelectedResourceArchives
+ * Returns a list of archives that have been selected as resources
+ *******************************************************************/
 vector<Archive*> ResourceArchiveChooser::getSelectedResourceArchives()
 {
 	wxArrayInt checked;
@@ -63,6 +106,9 @@ vector<Archive*> ResourceArchiveChooser::getSelectedResourceArchives()
 	return list;
 }
 
+/* ResourceArchiveChooser::getSelectedResourceList
+ * Returns a string of all selected resource archive filenames
+ *******************************************************************/
 string ResourceArchiveChooser::getSelectedResourceList()
 {
 	vector<Archive*> selected = getSelectedResourceArchives();
@@ -72,6 +118,14 @@ string ResourceArchiveChooser::getSelectedResourceList()
 	return ret;
 }
 
+
+/*******************************************************************
+ * RESOURCEARCHIVECHOOSER CLASS EVENTS
+ *******************************************************************/
+
+/* ResourceArchiveChooser::onBtnOpenResource
+ * Called when the 'Open Archive' button is clicked
+ *******************************************************************/
 void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 {
 	SFileDialog::fd_info_t info;
@@ -89,6 +143,9 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 	}
 }
 
+/* ResourceArchiveChooser::onBtnRecent
+ * Called when the 'Open Recent' button is clicked
+ *******************************************************************/
 void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 {
 	// Build list of recent wad filename strings
