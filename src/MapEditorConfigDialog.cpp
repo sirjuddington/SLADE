@@ -153,7 +153,7 @@ public:
 /* MapEditorConfigDialog::MapEditorConfigDialog
  * MapEditorConfigDialog class constructor
  *******************************************************************/
-MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating) : SDialog(parent, "Launch Map Editor", "mapcfg")
+MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating) : SDialog(parent, "Launch Map Editor", "")
 {
 	// Init variables
 	this->archive = archive;

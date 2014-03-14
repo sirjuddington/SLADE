@@ -56,8 +56,11 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
 		Misc::setWindowInfo(id, width, height, x, y);
 
 	// Bind events
-	Bind(wxEVT_SIZE, &SDialog::onSize, this);
-	Bind(wxEVT_MOVE, &SDialog::onMove, this);
+	if (id != "")
+	{
+		Bind(wxEVT_SIZE, &SDialog::onSize, this);
+		Bind(wxEVT_MOVE, &SDialog::onMove, this);
+	}
 }
 
 /* SDialog::SDialog

@@ -711,6 +711,9 @@ Misc::winf_t Misc::getWindowInfo(string id)
 
 void Misc::setWindowInfo(string id, int width, int height, int left, int top)
 {
+	if (id.IsEmpty())
+		return;
+
 	for (unsigned a = 0; a < window_info.size(); a++)
 	{
 		if (window_info[a].id == id)
