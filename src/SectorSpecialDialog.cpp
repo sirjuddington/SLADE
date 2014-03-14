@@ -42,7 +42,7 @@
  * SectorSpecialDialog class constructor
  *******************************************************************/
 SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
-	: wxDialog(parent, -1, "Select Sector Special", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+: SDialog(parent, "Select Sector Special", "sectorspecial")
 {
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -106,7 +106,7 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 	// Bind Events
 	lv_specials->Bind(wxEVT_LIST_ITEM_ACTIVATED, &SectorSpecialDialog::onSpecialsListViewItemActivated, this);
 
-	SetInitialSize(wxSize(width, 400));
+	SetMinSize(wxSize(width, 400));
 	CenterOnParent();
 }
 

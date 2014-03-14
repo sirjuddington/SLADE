@@ -2,9 +2,10 @@
 #ifndef __SECTOR_SPECIAL_DIALOG_H__
 #define __SECTOR_SPECIAL_DIALOG_H__
 
+#include "SDialog.h"
 #include "ListView.h"
 
-class SectorSpecialDialog : public wxDialog
+class SectorSpecialDialog : public SDialog
 {
 private:
 	ListView*	lv_specials;

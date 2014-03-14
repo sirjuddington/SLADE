@@ -55,6 +55,7 @@
 #include "QuickTextureOverlay3d.h"
 #include "ObjectEditPanel.h"
 #include "ShowItemDialog.h"
+#include "SDialog.h"
 
 
 /*******************************************************************
@@ -2559,8 +2560,8 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 		selsize = S_FMT("(%d selected)", list.size());
 
 	// Create dialog for properties panel
-	wxDialog dlg(theMapEditor, -1, S_FMT("%s Properties %s", type, selsize), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
-	dlg.SetInitialSize(wxSize(500, 500));
+	SDialog dlg(theMapEditor, S_FMT("%s Properties %s", type, selsize), "mobjprops", 500, 500);
+	dlg.SetMinSize(wxSize(500, 500));
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 

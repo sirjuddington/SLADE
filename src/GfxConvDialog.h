@@ -8,6 +8,7 @@
 #include "ColourBox.h"
 #include "SIFormat.h"
 #include "CTexture.h"
+#include "SDialog.h"
 
 /* Convert from anything to:
  * Doom Gfx
@@ -65,7 +66,7 @@ struct gcd_item_t
 	}
 };
 
-class GfxConvDialog : public wxDialog
+class GfxConvDialog : public SDialog
 {
 private:
 	struct conv_format_t
@@ -113,7 +114,7 @@ private:
 	bool		nextItem();
 
 public:
-	GfxConvDialog();
+	GfxConvDialog(wxWindow* parent);
 	~GfxConvDialog();
 
 	void	setupLayout();

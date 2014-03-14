@@ -117,7 +117,7 @@ public:
  * RunDialog class constructor
  *******************************************************************/
 RunDialog::RunDialog(wxWindow* parent, Archive* archive)
-: wxDialog(parent, -1, "Run", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+: SDialog(parent, "Run", "run", 500, 400)
 {
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -212,7 +212,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	choice_config->Bind(wxEVT_CHOICE, &RunDialog::onChoiceConfig, this);
 
 	gb_sizer->AddGrowableCol(1, 1);
-	SetInitialSize(wxSize(500, 400));
+	SetMinSize(wxSize(500, 400));
 	Layout();
 	CenterOnParent();
 }

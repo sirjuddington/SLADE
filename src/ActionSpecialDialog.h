@@ -2,6 +2,7 @@
 #ifndef __ACTION_SPECIAL_DIALOG_H__
 #define __ACTION_SPECIAL_DIALOG_H__
 
+#include "SDialog.h"
 #include <wx/dataview.h>
 #include <wx/notebook.h>
 
@@ -39,7 +40,7 @@ public:
 };
 
 class GenLineSpecialPanel;
-class ActionSpecialDialog : public wxDialog
+class ActionSpecialDialog : public SDialog
 {
 private:
 	wxNotebook*				nb_tabs;

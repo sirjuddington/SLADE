@@ -1586,7 +1586,7 @@ bool ArchivePanel::pasteEntry()
 bool ArchivePanel::gfxConvert()
 {
 	// Create gfx conversion dialog
-	GfxConvDialog gcd;
+	GfxConvDialog gcd(theMainWindow);
 
 	// Send selection to the gcd
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();

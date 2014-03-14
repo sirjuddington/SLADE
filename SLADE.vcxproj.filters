@@ -717,9 +717,6 @@
     <ClCompile Include="src\Polygon2D.cpp">
       <Filter>General\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="src\ColourPrefsPanel.cpp">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClCompile>
     <ClCompile Include="src\UDMFProperty.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClCompile>
@@ -1157,6 +1154,9 @@
     </ClCompile>
     <ClCompile Include="src\Dialogs\Preferences\TextStylePrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SDialog.cpp">
+      <Filter>UI Elements</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1752,9 +1752,6 @@
     <ClInclude Include="src\Polygon2D.h">
       <Filter>General\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\ColourPrefsPanel.h">
-      <Filter>Dialogs\Preferences</Filter>
-    </ClInclude>
     <ClInclude Include="src\UDMFProperty.h">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClInclude>
@@ -2078,6 +2075,9 @@
     </ClInclude>
     <ClInclude Include="src\Dialogs\Preferences\TextStylePrefsPanel.h">
       <Filter>Dialogs\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SDialog.h">
+      <Filter>UI Elements</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -200,7 +200,7 @@ void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
  * ActionSpecialDialog class constructor
  *******************************************************************/
 ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent)
-	: wxDialog(parent, -1, "Select Action Special", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+	: SDialog(parent, "Select Action Special", "actionspecial", 400, 500)
 {
 	// Setup layout
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -233,7 +233,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent)
 	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Init
-	SetInitialSize(wxSize(400, 500));
+	SetMinClientSize(sizer->GetMinSize());
 	CenterOnParent();
 }
 

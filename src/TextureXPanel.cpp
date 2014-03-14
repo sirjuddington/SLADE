@@ -914,7 +914,7 @@ void TextureXPanel::exportTexture()
 	}
 
 	// Create gfx conversion dialog
-	GfxConvDialog gcd;
+	GfxConvDialog gcd(this);
 
 	// Send selection to the gcd
 	gcd.openTextures(selection, texture_editor->getPalette(), archive, force_rgba);

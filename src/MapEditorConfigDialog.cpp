@@ -41,8 +41,10 @@
 #include "ColourConfiguration.h"
 #include "Icons.h"
 #include "ResourceArchiveChooser.h"
+#include "MapPreviewCanvas.h"
 #include <wx/statline.h>
 #include <wx/gbsizer.h>
+#include <wx/imaglist.h>
 
 
 /*******************************************************************
@@ -151,7 +153,7 @@ public:
 /* MapEditorConfigDialog::MapEditorConfigDialog
  * MapEditorConfigDialog class constructor
  *******************************************************************/
-MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating) : wxDialog(parent, -1, "Launch Map Editor")
+MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating) : SDialog(parent, "Launch Map Editor", "mapcfg")
 {
 	// Init variables
 	this->archive = archive;
@@ -235,7 +237,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	{
 		frame = new wxStaticBox(this, -1, "Preview");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		mainsizer->Add(framesizer, 0, wxEXPAND|wxALL, 10);
+		mainsizer->Add(framesizer, 1, wxEXPAND|wxALL, 10);
 
 		// Add map preview
 		canvas_preview = new MapPreviewCanvas(this);
@@ -270,7 +272,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	btn_cancel->Bind(wxEVT_BUTTON, &MapEditorConfigDialog::onBtnCancel, this);
 
 	Layout();
-	mainsizer->Fit(this);
+	SetMinClientSize(mainsizer->GetMinSize());
+	//mainsizer->Fit(this);
 	CenterOnParent();
 
 	// Select first map

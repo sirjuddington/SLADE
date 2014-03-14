@@ -73,7 +73,7 @@ int PreferencesDialog::height = 0;
 /* PreferencesDialog::PreferencesDialog
  * PreferencesDialog class constructor
  *******************************************************************/
-PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "SLADE Preferences", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE Preferences", "prefs")
 {
 	// Setup main sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -126,10 +126,10 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : wxDialog(parent, -1, "S
 	Bind(wxEVT_BUTTON, &PreferencesDialog::onButtonClicked, this);
 
 	// Setup layout
-	SetInitialSize(wxSize(800, 600));
+	SetInitialSize(GetSize());
 	Layout();
 	Fit();
-	SetMinSize(GetBestSize());
+	SetMinSize(wxSize(800, 600));
 	CenterOnParent();
 
 	// Collapse all tree nodes

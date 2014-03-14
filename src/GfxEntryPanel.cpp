@@ -819,8 +819,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Convert
 	else if (id == "pgfx_convert")
 	{
-		GfxConvDialog gcd;
-		gcd.SetParent(theMainWindow);
+		GfxConvDialog gcd(theMainWindow);
 		gcd.CenterOnParent();
 		gcd.openEntry(entry);
 

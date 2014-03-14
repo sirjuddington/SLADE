@@ -53,8 +53,8 @@ CVAR(Bool, gfx_extraconv, false, CVAR_SAVE)
 /* GfxConvDialog::GfxConvDialog
  * GfxConvDialog class constructor
  *******************************************************************/
-GfxConvDialog::GfxConvDialog()
-	: wxDialog(NULL, -1, "Graphic Format Conversion", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+GfxConvDialog::GfxConvDialog(wxWindow* parent)
+: SDialog(parent, "Graphic Format Conversion", "gfxconv")
 {
 	current_item = 0;
 
@@ -341,8 +341,8 @@ void GfxConvDialog::setupLayout()
 
 
 	// Autosize to fit contents (and set this as the minimum size)
-	SetInitialSize(wxSize(-1, -1));
-	SetMinSize(GetSize());
+	//SetInitialSize(wxSize(-1, -1));
+	SetMinClientSize(msizer->GetMinSize());
 }
 
 /* GfxConvDialog::openEntry

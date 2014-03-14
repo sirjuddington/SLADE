@@ -2,9 +2,11 @@
 #ifndef __RUN_DIALOG_H__
 #define __RUN_DIALOG_H__
 
+#include "SDialog.h"
+
 class ResourceArchiveChooser;
 class Archive;
-class RunDialog : public wxDialog
+class RunDialog : public SDialog
 {
 private:
 	wxChoice*				choice_game_exes;

@@ -2,14 +2,15 @@
 #ifndef __MAP_EDITOR_CONFIG_DIALOG_H__
 #define __MAP_EDITOR_CONFIG_DIALOG_H__
 
-#include "ListView.h"
+#include "SDialog.h"
 #include "Archive.h"
-#include "MapPreviewCanvas.h"
-#include <wx/imaglist.h>
+#include "ListView.h"
 
+class MapPreviewCanvas;
 class BaseResourceChooser;
 class ResourceArchiveChooser;
-class MapEditorConfigDialog : public wxDialog
+class wxImageList;
+class MapEditorConfigDialog : public SDialog
 {
 private:
 	wxChoice*					choice_game_config;
