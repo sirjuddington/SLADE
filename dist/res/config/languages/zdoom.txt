@@ -186,7 +186,7 @@ z_mapinfo {
 		FadeTable, FallingDamage, FilterStarts, ForceNoSkyStretch, ForgetState,
 		Gravity, Grinding_Polyobj, HorizWallShade, InfiniteFlightPowerup,
 		InterMusic, IronlichSpecial, KeepFullInventory, LaxMonsterActivation,
-		LevelNum, Lightning, Map07Special, MinotaurSpecial, 
+		LevelNum, Lightning, Map07Special, MapBackground, MinotaurSpecial, 
 		MissilesActivateImpactLines, MissileShootersActivateImpactLines,
 		MonsterFallingDamage, Music, Next, No_Grinding_Polyobj, NoAllies, 
 		NoAutosaveHint, NoAutoSequences, NoCheckSwitchRange, NoCrouch, 
