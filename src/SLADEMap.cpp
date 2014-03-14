@@ -2657,7 +2657,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";", sectors[a]->f_tex, sectors[a]->c_tex);
 		if (sectors[a]->f_height != 0) object_def += S_FMT("heightfloor=%d;\n", sectors[a]->f_height);
 		if (sectors[a]->c_height != 0) object_def += S_FMT("heightceiling=%d;\n", sectors[a]->c_height);
-		if (sectors[a]->light != 0) object_def += S_FMT("lightlevel=%d;\n", sectors[a]->light);
+		if (sectors[a]->light != 160) object_def += S_FMT("lightlevel=%d;\n", sectors[a]->light);
 		if (sectors[a]->special != 0) object_def += S_FMT("special=%d;\n", sectors[a]->special);
 		if (sectors[a]->tag != 0) object_def += S_FMT("id=%d;\n", sectors[a]->tag);
 
