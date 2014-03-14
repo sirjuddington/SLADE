@@ -36,6 +36,8 @@
 #include "ArchiveManager.h"
 #include "MapEditorWindow.h"
 #include "OpenGL.h"
+#include "SImage.h"
+#include "Misc.h"
 
 
 /*******************************************************************

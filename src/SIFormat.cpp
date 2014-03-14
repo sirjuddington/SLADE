@@ -34,6 +34,7 @@
 #include "Misc.h"
 #include "EntryType.h"
 #include "SIFormat.h"
+#include "Archive.h"
 
 
 /*******************************************************************

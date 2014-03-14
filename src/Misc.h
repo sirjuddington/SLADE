@@ -2,10 +2,6 @@
 #ifndef __MISC_H__
 #define	__MISC_H__
 
-#include "SImage.h"
-#include "Archive.h"
-#include "ArchiveEntry.h"
-
 enum
 {
 	PAL_NOHACK = 0,
@@ -21,6 +17,11 @@ enum
 	PAL_SODENDHACK,
 };
 
+class SImage;
+class Archive;
+class ArchiveEntry;
+class Palette8bit;
+class Tokenizer;
 namespace Misc
 {
 	bool		loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index = 0);
@@ -41,6 +42,25 @@ namespace Misc
 	// Mass Rename
 	string	massRenameFilter(wxArrayString& names);
 	void	doMassRename(wxArrayString& names, string name_filter);
+
+	// Dialog/Window sizes
+	struct winf_t
+	{
+		string id;
+		int width, height, left, top;
+		winf_t(string id, int w, int h, int l, int t)
+		{
+			this->id = id;
+			width = w;
+			height = h;
+			left = l;
+			top = t;
+		}
+	};
+	winf_t	getWindowInfo(string id);
+	void	setWindowInfo(string id, int width, int height, int left, int top);
+	void	readWindowInfo(Tokenizer* tz);
+	void	writeWindowInfo(wxFile& file);
 }
 
 #endif //__MISC_H__

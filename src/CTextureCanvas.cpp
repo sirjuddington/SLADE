@@ -31,6 +31,7 @@
 #include "Main.h"
 #include "CTextureCanvas.h"
 #include "Misc.h"
+#include "SImage.h"
 #include "Drawing.h"
 
 

@@ -59,10 +59,6 @@ string main_window_layout = "";
 MainWindow* MainWindow::instance = NULL;
 CVAR(Bool, show_start_page, true, CVAR_SAVE);
 CVAR(String, global_palette, "", CVAR_SAVE);
-CVAR(Int, mw_width, 1024, CVAR_SAVE);
-CVAR(Int, mw_height, 768, CVAR_SAVE);
-CVAR(Int, mw_left, -1, CVAR_SAVE);
-CVAR(Int, mw_top, -1, CVAR_SAVE);
 CVAR(Bool, mw_maximized, true, CVAR_SAVE);
 CVAR(Int, tab_style, 1, CVAR_SAVE);
 
@@ -96,7 +92,7 @@ public:
  * MainWindow class constructor
  *******************************************************************/
 MainWindow::MainWindow()
-	: STopWindow("SLADE", mw_left, mw_top, mw_width, mw_height)
+	: STopWindow("SLADE", "main")
 {
 	lasttipindex = 0;
 	custom_menus_begin = 2;
@@ -382,7 +378,6 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_SIZE, &MainWindow::onSize, this);
 	Bind(wxEVT_CLOSE_WINDOW, &MainWindow::onClose, this);
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
-	Bind(wxEVT_MOVE, &MainWindow::onMove, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar->GetId());
 }
 
@@ -828,13 +823,6 @@ void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
  *******************************************************************/
 void MainWindow::onSize(wxSizeEvent& e)
 {
-	// Update window size settings, but only if not maximized
-	if (!IsMaximized())
-	{
-		mw_width = GetSize().x;
-		mw_height = GetSize().y;
-	}
-
 	// Update toolbar layout (if needed)
 	toolbar->updateLayout();
 #ifndef __WXMSW__
@@ -844,21 +832,6 @@ void MainWindow::onSize(wxSizeEvent& e)
 
 	// Update maximized cvar
 	mw_maximized = IsMaximized();
-
-	e.Skip();
-}
-
-/* MainWindow::onMove
- * Called when the window moves
- *******************************************************************/
-void MainWindow::onMove(wxMoveEvent& e)
-{
-	// Update window position settings, but only if not maximized
-	if (!IsMaximized())
-	{
-		mw_left = GetPosition().x;
-		mw_top = GetPosition().y;
-	}
 
 	e.Skip();
 }

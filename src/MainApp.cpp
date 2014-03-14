@@ -49,6 +49,7 @@
 #include "Lua.h"
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "Executables.h"
+#include "Misc.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>
@@ -957,6 +958,13 @@ void MainApp::readConfigFile()
 			}
 		}
 
+		// Read window size/position info
+		if (token == "window_info")
+		{
+			token = tz.getToken();	// Skip {
+			Misc::readWindowInfo(&tz);
+		}
+
 		// Get next token
 		token = tz.getToken();
 	}
@@ -1007,6 +1015,11 @@ void MainApp::saveConfigFile()
 	// Write game exe paths
 	file.Write("\nexecutable_paths\n{\n");
 	file.Write(Executables::writePaths());
+	file.Write("}\n");
+
+	// Write window info
+	file.Write("\nwindow_info\n{\n");
+	Misc::writeWindowInfo(file);
 	file.Write("}\n");
 
 	// Close configuration file

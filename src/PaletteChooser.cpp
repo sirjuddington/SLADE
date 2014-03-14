@@ -33,6 +33,7 @@
 #include "PaletteChooser.h"
 #include "PaletteManager.h"
 #include "Misc.h"
+#include "Archive.h"
 
 
 /*******************************************************************
@@ -46,7 +47,8 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id)
 	: wxChoice(parent, id)   //, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY|wxCB_DROPDOWN) {
 {
 	// Init variables
-	pal_global.copyPalette(thePaletteManager->globalPalette());
+	pal_global = new Palette8bit();
+	pal_global->copyPalette(thePaletteManager->globalPalette());
 
 	// Add first 'existing' item
 	Append("Existing/Global");
@@ -70,6 +72,7 @@ PaletteChooser::PaletteChooser(wxWindow* parent, int id)
  *******************************************************************/
 PaletteChooser::~PaletteChooser()
 {
+	delete pal_global;
 }
 
 /* PaletteChooser::onPaletteChanged
@@ -88,9 +91,9 @@ void PaletteChooser::onPaletteChanged(wxCommandEvent& e)
 void PaletteChooser::setGlobalFromArchive(Archive* archive, int lump)
 {
 	if (!archive)
-		pal_global.copyPalette(thePaletteManager->globalPalette());
+		pal_global->copyPalette(thePaletteManager->globalPalette());
 
-	else if (!Misc::loadPaletteFromArchive(&pal_global, archive, lump))
+	else if (!Misc::loadPaletteFromArchive(pal_global, archive, lump))
 		setGlobalFromArchive(archive->getParentArchive(), lump);
 }
 
@@ -102,8 +105,8 @@ Palette8bit* PaletteChooser::getSelectedPalette(ArchiveEntry* entry)
 	if (GetSelection() > 0)
 		return thePaletteManager->getPalette(GetSelection() - 1);
 	else if (entry)
-		Misc::loadPaletteFromArchive(&pal_global, entry->getParent(), Misc::detectPaletteHack(entry));
-	return &pal_global;
+		Misc::loadPaletteFromArchive(pal_global, entry->getParent(), Misc::detectPaletteHack(entry));
+	return pal_global;
 }
 
 /* PaletteChooser::globalSelected

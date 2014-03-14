@@ -57,10 +57,6 @@
  * VARIABLES
  *******************************************************************/
 MapEditorWindow* MapEditorWindow::instance = NULL;
-CVAR(Int, mew_width, 1024, CVAR_SAVE);
-CVAR(Int, mew_height, 768, CVAR_SAVE);
-CVAR(Int, mew_left, -1, CVAR_SAVE);
-CVAR(Int, mew_top, -1, CVAR_SAVE);
 CVAR(Bool, mew_maximized, true, CVAR_SAVE);
 CVAR(String, nodebuilder_id, "zdbsp", CVAR_SAVE);
 CVAR(String, nodebuilder_options, "", CVAR_SAVE);
@@ -81,7 +77,7 @@ EXTERN_CVAR(Int, flat_drawtype);
  * MapEditorWindow class constructor
  *******************************************************************/
 MapEditorWindow::MapEditorWindow()
-	: STopWindow("SLADE", mew_left, mew_top, mew_width, mew_height)
+	: STopWindow("SLADE", "map")
 {
 	if (mew_maximized) Maximize();
 	setupLayout();
@@ -96,7 +92,6 @@ MapEditorWindow::MapEditorWindow()
 
 	// Bind events
 	Bind(wxEVT_CLOSE_WINDOW, &MapEditorWindow::onClose, this);
-	Bind(wxEVT_MOVE, &MapEditorWindow::onMove, this);
 	Bind(wxEVT_SIZE, &MapEditorWindow::onSize, this);
 }
 
@@ -1193,30 +1188,8 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
  *******************************************************************/
 void MapEditorWindow::onSize(wxSizeEvent& e)
 {
-	// Update window size settings, but only if not maximized
-	if (!IsMaximized())
-	{
-		mew_width = GetSize().x;
-		mew_height = GetSize().y;
-	}
-
 	// Update maximized cvar
 	mew_maximized = IsMaximized();
-
-	e.Skip();
-}
-
-/* MapEditorWindow::onMove
- * Called when the window moves
- *******************************************************************/
-void MapEditorWindow::onMove(wxMoveEvent& e)
-{
-	// Update window position settings, but only if not maximized
-	if (!IsMaximized())
-	{
-		mew_left = GetPosition().x;
-		mew_top = GetPosition().y;
-	}
 
 	e.Skip();
 }

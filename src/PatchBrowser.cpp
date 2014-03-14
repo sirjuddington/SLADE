@@ -40,6 +40,7 @@
 #include "Misc.h"
 #include "CTexture.h"
 #include "TextureXList.h"
+#include "SImage.h"
 
 
 /*******************************************************************

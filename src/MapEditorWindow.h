@@ -93,7 +93,6 @@ public:
 	// Events
 	void	onClose(wxCloseEvent& e);
 	void	onSize(wxSizeEvent& e);
-	void	onMove(wxMoveEvent& e);
 };
 
 // Define for less cumbersome MapEditorWindow::getInstance()

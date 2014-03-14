@@ -31,11 +31,15 @@
  *******************************************************************/
 #include "Main.h"
 #include "Misc.h"
+#include "SImage.h"
+#include "Archive.h"
+#include "ArchiveEntry.h"
 #include "EntryDataFormat.h"
 #include "WadArchive.h"
 #include "ZipArchive.h"
 #include "Console.h"
 #include "SIFormat.h"
+#include "Tokenizer.h"
 #include <wx/filename.h>
 #include "zlib/zlib.h"
 
@@ -47,6 +51,10 @@ CVAR(Bool, size_as_string, true, CVAR_SAVE)
 CVAR(Bool, percent_encoding, false, CVAR_SAVE)
 EXTERN_CVAR(Float, col_cie_tristim_x)
 EXTERN_CVAR(Float, col_cie_tristim_z)
+namespace Misc
+{
+	vector<winf_t>	window_info;
+}
 
 
 /*******************************************************************
@@ -688,4 +696,54 @@ point2_t Misc::findJaguarTextureDimensions(ArchiveEntry* entry, string name)
 	}
 	// We didn't find the texture
 	return dimensions;
+}
+
+Misc::winf_t Misc::getWindowInfo(string id)
+{
+	for (unsigned a = 0; a < window_info.size(); a++)
+	{
+		if (window_info[a].id == id)
+			return window_info[a];
+	}
+
+	return winf_t("", -1, -1, -1, -1);
+}
+
+void Misc::setWindowInfo(string id, int width, int height, int left, int top)
+{
+	for (unsigned a = 0; a < window_info.size(); a++)
+	{
+		if (window_info[a].id == id)
+		{
+			if (width >= -1)	window_info[a].width = width;
+			if (height >= -1)	window_info[a].height = height;
+			if (left >= -1)		window_info[a].left = left;
+			if (top >= -1)		window_info[a].top = top;
+			return;
+		}
+	}
+
+	window_info.push_back(winf_t(id, width, height, left, top));
+}
+
+void Misc::readWindowInfo(Tokenizer* tz)
+{
+	// Read definitions
+	string token = tz->getToken();
+	while (token != "}")
+	{
+		string id = token;
+		int width = tz->getInteger();
+		int height = tz->getInteger();
+		int left = tz->getInteger();
+		int top = tz->getInteger();
+		setWindowInfo(id, width, height, left, top);
+		token = tz->getToken();
+	}
+}
+
+void Misc::writeWindowInfo(wxFile& file)
+{
+	for (unsigned a = 0; a < window_info.size(); a++)
+		file.Write(S_FMT("\t%s %d %d %d %d\n", window_info[a].id, window_info[a].width, window_info[a].height, window_info[a].left, window_info[a].top));
 }

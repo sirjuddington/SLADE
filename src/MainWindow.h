@@ -67,7 +67,6 @@ public:
 	void	onClose(wxCloseEvent& e);
 	void	onTabChanged(wxAuiNotebookEvent& e);
 	void	onSize(wxSizeEvent& e);
-	void	onMove(wxMoveEvent& e);
 	void	onToolBarLayoutChanged(wxEvent& e);
 };
 

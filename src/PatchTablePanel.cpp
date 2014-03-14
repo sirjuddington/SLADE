@@ -35,6 +35,7 @@
 #include "TextureXEditor.h"
 #include "ArchiveEntry.h"
 #include "ArchiveManager.h"
+#include "Misc.h"
 #include <wx/filename.h>
 
 

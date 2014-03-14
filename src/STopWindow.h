@@ -9,9 +9,10 @@ protected:
 	vector<wxMenu*>	custom_menus;
 	int				custom_menus_begin;
 	SToolBar*		toolbar;
+	string			id;
 
 public:
-	STopWindow(string title, int xpos = 0, int ypos = 0, int width = 1024, int height = 768);
+	STopWindow(string title, string id, int xpos = 0, int ypos = 0, int width = 1024, int height = 768);
 	~STopWindow();
 
 	// Custom menu
@@ -24,6 +25,10 @@ public:
 	void	addCustomToolBar(string name, wxArrayString actions);
 	void	removeCustomToolBar(string name);
 	void	removeAllCustomToolBars();
+
+	// Events
+	void	onSize(wxSizeEvent& e);
+	void	onMove(wxMoveEvent& e);
 };
 
 #endif//__S_TOP_WINDOW_H__
