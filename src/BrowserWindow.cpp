@@ -435,7 +435,7 @@ void BrowserWindow::populateItemTree()
 {
 	// Clear current tree
 	tree_items->DeleteAllItems();
-	tree_items->DeleteColumn(0);
+	tree_items->ClearColumns();
 
 	// Add root item
 	tree_items->AppendColumn("Categories", wxCOL_WIDTH_AUTOSIZE);
