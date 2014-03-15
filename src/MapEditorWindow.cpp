@@ -542,7 +542,14 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 {
 	// Don't bother if no scripting language specified
 	if (theGameConfiguration->scriptLanguage().IsEmpty())
+	{
+		// Hide script editor
+		wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
+		wxAuiPaneInfo& p_inf = m_mgr->GetPane("script_editor");
+		p_inf.Show(false);
+		m_mgr->Update();
 		return;
+	}
 
 	// Don't bother if new map
 	if (!map.head)
@@ -1046,20 +1053,6 @@ bool MapEditorWindow::handleAction(string id)
 		return true;
 	}
 
-	//// View->Shape Draw Options
-	//else if (id == "mapw_showdrawoptions")
-	//{
-	//	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
-	//	wxAuiPaneInfo& p_inf = m_mgr->GetPane("shape_draw");
-
-	//	// Toggle window and focus
-	//	p_inf.Show(!p_inf.IsShown());
-	//	map_canvas->SetFocus();
-
-	//	m_mgr->Update();
-	//	return true;
-	//}
-
 	// View->Script Editor
 	else if (id == "mapw_showscripteditor")
 	{
@@ -1072,7 +1065,7 @@ bool MapEditorWindow::handleAction(string id)
 			p_inf.Show(false);
 			map_canvas->SetFocus();
 		}
-		else
+		else if (!theGameConfiguration->scriptLanguage().IsEmpty())
 		{
 			p_inf.Show(true);
 			p_inf.window->SetFocus();
