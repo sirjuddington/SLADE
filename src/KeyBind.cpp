@@ -1,5 +1,30 @@
 
 /*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    KeyBind.cpp
+ * Description: Input key binding system
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
@@ -36,6 +61,9 @@ KeyBind::~KeyBind()
 {
 }
 
+/* KeyBind::addKey
+ * Adds a key combination to the keybind
+ *******************************************************************/
 void KeyBind::addKey(string key, bool alt, bool ctrl, bool shift)
 {
 	keys.push_back(keypress_t());
@@ -45,6 +73,10 @@ void KeyBind::addKey(string key, bool alt, bool ctrl, bool shift)
 	keys.back().key = key;
 }
 
+/* KeyBind::keysAsString
+ * Returns a string representation of all the keys bound to this
+ * keybind
+ *******************************************************************/
 string KeyBind::keysAsString()
 {
 	string ret = "";
@@ -72,9 +104,12 @@ string KeyBind::keysAsString()
 
 
 /*******************************************************************
- * KEYBIND STATIC FUNCTIONS
+ * KEYBIND CLASS STATIC FUNCTIONS
  *******************************************************************/
 
+/* KeyBind::getBind
+ * Returns the keybind [name]
+ *******************************************************************/
 KeyBind& KeyBind::getBind(string name)
 {
 	for (unsigned a = 0; a < keybinds.size(); a++)
@@ -86,6 +121,9 @@ KeyBind& KeyBind::getBind(string name)
 	return kb_none;
 }
 
+/* KeyBind::getBinds
+ * Returns a list of all keybind names bound to [key]
+ *******************************************************************/
 wxArrayString KeyBind::getBinds(keypress_t key)
 {
 	wxArrayString matches;
@@ -113,11 +151,17 @@ wxArrayString KeyBind::getBinds(keypress_t key)
 	return matches;
 }
 
+/* KeyBind::isPressed
+ * Returns true if keybind [name] is currently pressed
+ *******************************************************************/
 bool KeyBind::isPressed(string name)
 {
 	return getBind(name).pressed;
 }
 
+/* KeyBind::addBind
+ * Adds a new keybind
+ *******************************************************************/
 bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bool ignore_shift)
 {
 	// Find keybind
@@ -166,6 +210,9 @@ bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bo
 	return true;
 }
 
+/* KeyBind::keyName
+ * Returns a string representation of [key]
+ *******************************************************************/
 string KeyBind::keyName(int key)
 {
 	// Return string representation of key id
@@ -272,6 +319,9 @@ string KeyBind::keyName(int key)
 	return S_FMT("key%d", key);
 }
 
+/* KeyBind::mbName
+ * Returns a string representation of mouse [button]
+ *******************************************************************/
 string KeyBind::mbName(int button)
 {
 	switch (button)
@@ -284,6 +334,9 @@ string KeyBind::mbName(int button)
 	};
 }
 
+/* KeyBind::keyPressed
+ * 'Presses' all keybinds bound to [key]
+ *******************************************************************/
 bool KeyBind::keyPressed(keypress_t key)
 {
 	// Go through all keybinds
@@ -319,6 +372,9 @@ bool KeyBind::keyPressed(keypress_t key)
 	return pressed;
 }
 
+/* KeyBind::keyRelease
+ * 'Releases' all keybinds bound to [key]
+ *******************************************************************/
 bool KeyBind::keyReleased(string key)
 {
 	// Go through all keybinds
@@ -349,6 +405,9 @@ bool KeyBind::keyReleased(string key)
 	return released;
 }
 
+/* KeyBind::pressBind
+ * 'Presses' the keybind [name]
+ *******************************************************************/
 void KeyBind::pressBind(string name)
 {
 	for (unsigned a = 0; a < keybinds.size(); a++)
@@ -364,6 +423,9 @@ void KeyBind::pressBind(string name)
 	}
 }
 
+/* KeyBind::asKeyPress
+ * Returns [keycode] and [modifiers] as a keypress_t struct
+ *******************************************************************/
 keypress_t KeyBind::asKeyPress(int keycode, int modifiers)
 {
 	return keypress_t(keyName(keycode),
@@ -372,26 +434,27 @@ keypress_t KeyBind::asKeyPress(int keycode, int modifiers)
 	                  ((modifiers & wxMOD_SHIFT) != 0));
 }
 
+/* KeyBind::allKeyBinds
+ * Adds all keybinds to [list]
+ *******************************************************************/
 void KeyBind::allKeyBinds(vector<KeyBind*>& list)
 {
 	for (unsigned a = 0; a < keybinds.size(); a++)
 		list.push_back(&keybinds[a]);
 }
 
+/* KeyBind::releaseAll
+ * 'Releases' all keybinds
+ *******************************************************************/
 void KeyBind::releaseAll()
 {
 	for (unsigned a = 0; a < keybinds.size(); a++)
 		keybinds[a].pressed = false;
 }
 
-// The + key char is different between windows and unix/mac
-#ifdef __WXMSW__
-#define PLUSKEY "+"
-#else
-#define PLUSKEY "="
-#endif
-
-
+/* KeyBind::initBinds
+ * Initialises all default keybinds
+ *******************************************************************/
 void KeyBind::initBinds()
 {
 	// General
@@ -464,9 +527,9 @@ void KeyBind::initBinds()
 	addBind("me2d_move", keypress_t("Z"), "Toggle item move mode", group);
 	addBind("me2d_zoom_in_m", keypress_t("mwheelup"), "Zoom in (towards mouse)", group);
 	addBind("me2d_zoom_out_m", keypress_t("mwheeldown"), "Zoom out (towards mouse)", group);
-	addBind("me2d_zoom_in", keypress_t(PLUSKEY), "Zoom in (towards screen center)", group);
+	addBind("me2d_zoom_in", keypress_t("="), "Zoom in (towards screen center)", group);
 	addBind("me2d_zoom_out", keypress_t("-"), "Zoom out (towards screen center)", group);
-	addBind("me2d_show_object", keypress_t(PLUSKEY, KPM_SHIFT), "Zoom in, show current object", group);
+	addBind("me2d_show_object", keypress_t("=", KPM_SHIFT), "Zoom in, show current object", group);
 	addBind("me2d_show_object", keypress_t("mwheelup", KPM_SHIFT));
 	addBind("me2d_show_all", keypress_t("-", KPM_SHIFT), "Zoom out, show full map", group);
 	addBind("me2d_show_all", keypress_t("mwheeldown", KPM_SHIFT));
@@ -621,6 +684,9 @@ void KeyBind::initBinds()
 	}
 }
 
+/* KeyBind::writeBinds
+ * Writes all keybind definitions as a string
+ *******************************************************************/
 string KeyBind::writeBinds()
 {
 	// Init string
@@ -670,6 +736,9 @@ string KeyBind::writeBinds()
 	return ret;
 }
 
+/* KeyBind::readBinds
+ * Reads keybind defeinitions from tokenizer [tz]
+ *******************************************************************/
 bool KeyBind::readBinds(Tokenizer& tz)
 {
 	// Parse until ending }
@@ -716,12 +785,21 @@ bool KeyBind::readBinds(Tokenizer& tz)
 }
 
 
+/*******************************************************************
+ * KEYBINDHANDLER CLASS FUNCTIONS
+ *******************************************************************/
 
+/* KeyBindHandler::KeyBindHandler
+ * KeyBindHandler class constructor
+ *******************************************************************/
 KeyBindHandler::KeyBindHandler()
 {
 	kb_handlers.push_back(this);
 }
 
+/* KeyBindHandler::~KeyBindHandler
+ * KeyBindHandler class destructor
+ *******************************************************************/
 KeyBindHandler::~KeyBindHandler()
 {
 	for (unsigned a = 0; a < kb_handlers.size(); a++)
