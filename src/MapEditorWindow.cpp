@@ -332,6 +332,21 @@ void MapEditorWindow::setupLayout()
 	m_mgr->AddPane(panel_obj_props, p_inf);
 
 
+	// --- Script Editor Panel ---
+	panel_script_editor = new ScriptEditorPanel(this);
+
+	// Setup panel info & add panel
+	p_inf.Float();
+	p_inf.BestSize(300, 300);
+	p_inf.FloatingSize(500, 400);
+	p_inf.FloatingPosition(150, 150);
+	p_inf.MinSize(300, 300);
+	p_inf.Show(false);
+	p_inf.Caption("Script Editor");
+	p_inf.Name("script_editor");
+	m_mgr->AddPane(panel_script_editor, p_inf);
+
+
 	// --- Shape Draw Options Panel ---
 	ShapeDrawPanel* panel_shapedraw = new ShapeDrawPanel(this);
 
@@ -352,21 +367,6 @@ void MapEditorWindow::setupLayout()
 	p_inf.Caption("Shape Drawing");
 	p_inf.Name("shape_draw");
 	m_mgr->AddPane(panel_shapedraw, p_inf);
-
-
-	// --- Script Editor Panel ---
-	panel_script_editor = new ScriptEditorPanel(this);
-
-	// Setup panel info & add panel
-	p_inf.Float();
-	p_inf.BestSize(300, 300);
-	p_inf.FloatingSize(500, 400);
-	p_inf.FloatingPosition(150, 150);
-	p_inf.MinSize(300, 300);
-	p_inf.Show(false);
-	p_inf.Caption("Script Editor");
-	p_inf.Name("script_editor");
-	m_mgr->AddPane(panel_script_editor, p_inf);
 
 
 	// --- Object Edit Panel ---
