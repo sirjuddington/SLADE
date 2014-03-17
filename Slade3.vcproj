@@ -2232,6 +2232,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\SDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\SDialog.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\SplashWindow.cpp"
 				>
 			</File>
