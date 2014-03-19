@@ -2226,6 +2226,100 @@ void MapEditor::thingQuickAngle(fpoint2_t mouse_pos)
 	}
 }
 
+/* MapEditor::mirror
+ * Mirror selected objects horizontally or vertically depending on
+ * [x_axis]
+ *******************************************************************/
+void MapEditor::mirror(bool x_axis)
+{
+	// Mirror things
+	if (edit_mode == MODE_THINGS)
+	{
+		// Get things to mirror
+		vector<MapThing*> things;
+		getSelectedThings(things);
+
+		// Get midpoint
+		bbox_t bbox;
+		for (unsigned a = 0; a < things.size(); a++)
+			bbox.extend(things[a]->xPos(), things[a]->yPos());
+
+		// Mirror
+		for (unsigned a = 0; a < things.size(); a++)
+		{
+			// Position
+			if (x_axis)
+				map.moveThing(things[a]->getIndex(), bbox.mid_x() - (things[a]->xPos() - bbox.mid_x()), things[a]->yPos());
+			else
+				map.moveThing(things[a]->getIndex(), things[a]->xPos(), bbox.mid_y() - (things[a]->yPos() - bbox.mid_y()));
+
+			// Direction
+			int angle = things[a]->getAngle();
+			if (x_axis)
+			{
+				angle += 90;
+				angle = 360 - angle;
+				angle -= 90;
+			}
+			else
+				angle = 360 - angle;
+			while (angle < 0)
+				angle += 360;
+			things[a]->setIntProperty("angle", angle);
+		}
+	}
+
+	// Mirror map architecture
+	else if (edit_mode != MODE_3D)
+	{
+		// Get vertices to mirror
+		vector<MapVertex*> vertices;
+		vector<MapLine*> lines;
+		if (edit_mode == MODE_VERTICES)
+			getSelectedVertices(vertices);
+		else if (edit_mode == MODE_LINES)
+		{
+			vector<MapLine*> sel;
+			getSelectedLines(sel);
+			for (unsigned a = 0; a < sel.size(); a++)
+			{
+				VECTOR_ADD_UNIQUE(vertices, sel[a]->v1());
+				VECTOR_ADD_UNIQUE(vertices, sel[a]->v2());
+				lines.push_back(sel[a]);
+			}
+		}
+		else if (edit_mode == MODE_SECTORS)
+		{
+			vector<MapSector*> sectors;
+			getSelectedSectors(sectors);
+			for (unsigned a = 0; a < sectors.size(); a++)
+			{
+				sectors[a]->getVertices(vertices);
+				sectors[a]->getLines(lines);
+			}
+		}
+
+		// Get midpoint
+		bbox_t bbox;
+		for (unsigned a = 0; a < vertices.size(); a++)
+			bbox.extend(vertices[a]->xPos(), vertices[a]->yPos());
+
+		// Mirror vertices
+		for (unsigned a = 0; a < vertices.size(); a++)
+		{
+			// Position
+			if (x_axis)
+				map.moveVertex(vertices[a]->getIndex(), bbox.mid_x() - (vertices[a]->xPos() - bbox.mid_x()), vertices[a]->yPos());
+			else
+				map.moveVertex(vertices[a]->getIndex(), vertices[a]->xPos(), bbox.mid_y() - (vertices[a]->yPos() - bbox.mid_y()));
+		}
+
+		// Flip lines (just swap vertices)
+		for (unsigned a = 0; a < lines.size(); a++)
+			lines[a]->flip(false);
+	}
+}
+
 #pragma endregion
 
 #pragma region TAG EDIT

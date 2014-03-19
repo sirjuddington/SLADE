@@ -208,6 +208,8 @@ void MapEditorWindow::setupMenu()
 	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor, true);
 	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor, true);
 	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor, true);
+	theApp->getAction("mapw_mirror_x")->addToMenu(menu_editor, true);
+	theApp->getAction("mapw_mirror_y")->addToMenu(menu_editor, true);
 	menu_editor->AppendSeparator();
 	theApp->getAction("mapw_preferences")->addToMenu(menu_editor, true);
 	theApp->getAction("mapw_setbra")->addToMenu(menu_editor, true);
@@ -284,6 +286,8 @@ void MapEditorWindow::setupLayout()
 	tbg_edit->addActionButton("mapw_draw_lines");
 	tbg_edit->addActionButton("mapw_draw_shape");
 	tbg_edit->addActionButton("mapw_edit_objects");
+	tbg_edit->addActionButton("mapw_mirror_x");
+	tbg_edit->addActionButton("mapw_mirror_y");
 	toolbar->addGroup(tbg_edit);
 
 	// Extra toolbar

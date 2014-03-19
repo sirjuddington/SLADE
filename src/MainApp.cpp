@@ -631,6 +631,8 @@ void MainApp::initActions()
 	new SAction("mapw_show_fullmap", "Show Full Map", "", "Zooms out so that the full map is visible", "kb:me2d_show_all");
 	new SAction("mapw_show_item", "Show Item...", "", "Zoom and scroll to show a map item");
 	new SAction("mapw_toggle_selection_numbers", "Show Selection Numbers", "", "Show/hide selection numbers", "kb:me2d_toggle_selection_numbers", SAction::CHECK);
+	new SAction("mapw_mirror_y", "Mirror Vertically", "t_flip", "Mirror the selected objects vertically", "kb:me2d_mirror_y");
+	new SAction("mapw_mirror_x", "Mirror Horizontally", "t_mirror", "Mirror the selected objects horizontally", "kb:me2d_mirror_x");
 
 	// Script editor
 	new SAction("mapw_script_save", "Save", "t_save", "Save changes to scripts");

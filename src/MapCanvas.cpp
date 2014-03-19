@@ -3065,6 +3065,12 @@ void MapCanvas::keyBinds2d(string name)
 				editor->addEditorMessage("Selection numbers disabled");
 		}
 
+		// Mirror
+		else if (name == "me2d_mirror_x")
+			editor->mirror(true);
+		else if (name == "me2d_mirror_y")
+			editor->mirror(false);
+
 
 		// --- Lines edit mode ---
 		if (editor->editMode() == MapEditor::MODE_LINES)
@@ -3479,6 +3485,21 @@ bool MapCanvas::handleAction(string id)
 
 		return true;
 	}
+
+	// Mirror Y
+	else if (id == "mapw_mirror_y")
+	{
+		editor->mirror(false);
+		return true;
+	}
+
+	// Mirror X
+	else if (id == "mapw_mirror_x")
+	{
+		editor->mirror(true);
+		return true;
+	}
+
 
 	// --- Context menu ---
 
@@ -4068,9 +4089,18 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 				theApp->getAction("mapw_sector_create")->addToMenu(&menu_context);
 			}
 
-			// Properties
 			if (object_selected)
+			{
+				// General edit
+				menu_context.AppendSeparator();
+				theApp->getAction("mapw_edit_objects")->addToMenu(&menu_context);
+				theApp->getAction("mapw_mirror_x")->addToMenu(&menu_context);
+				theApp->getAction("mapw_mirror_y")->addToMenu(&menu_context);
+
+				// Properties
+				menu_context.AppendSeparator();
 				theApp->getAction("mapw_item_properties")->addToMenu(&menu_context);
+			}
 
 			PopupMenu(&menu_context);
 		}

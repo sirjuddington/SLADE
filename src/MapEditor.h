@@ -221,6 +221,7 @@ public:
 	void	joinSectors(bool remove_lines);
 	void	changeThingType(int newtype);
 	void	thingQuickAngle(fpoint2_t mouse_pos);
+	void	mirror(bool x_axis);
 
 	// Tag edit
 	int		beginTagEdit();

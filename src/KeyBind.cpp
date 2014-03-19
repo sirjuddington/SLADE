@@ -555,6 +555,8 @@ void KeyBind::initBinds()
 	addBind("me2d_paste_properties", keypress_t("V", KPM_CTRL|KPM_SHIFT), "Paste object properties", group);
 	addBind("me2d_begin_object_edit", keypress_t("E"), "Begin object edit", group);
 	addBind("me2d_toggle_selection_numbers", keypress_t("N"), "Toggle selection numbers", group);
+	addBind("me2d_mirror_x", keypress_t("M", KPM_CTRL), "Mirror selection horizontally", group);
+	addBind("me2d_mirror_y", keypress_t("M", KPM_CTRL|KPM_SHIFT), "Mirror selection vertically", group);
 
 	// Map Editor 2D Lines mode (me2d_line*)
 	group = "Map Editor 2D Lines Mode";
