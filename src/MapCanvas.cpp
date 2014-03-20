@@ -988,13 +988,13 @@ void MapCanvas::drawObjectEdit()
 	// Map objects
 	renderer_2d->renderObjectEditGroup(group);
 
-	// Line lengths
-	vector<ObjectEditGroup::line_t> lines;
-	group->getLinesToDraw(lines);
-	setOverlayCoords(true);
-	for (unsigned a = 0; a < lines.size(); a++)
-		drawLineLength(lines[a].v1->position, lines[a].v2->position, col);
-	setOverlayCoords(false);
+	//// Line lengths
+	//vector<ObjectEditGroup::line_t> lines;
+	//group->getLinesToDraw(lines);
+	//setOverlayCoords(true);
+	//for (unsigned a = 0; a < lines.size(); a++)
+	//	drawLineLength(lines[a].v1->position, lines[a].v2->position, col);
+	//setOverlayCoords(false);
 
 	// Bounding box
 	OpenGL::setColour(COL_WHITE);
