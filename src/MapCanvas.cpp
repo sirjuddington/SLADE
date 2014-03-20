@@ -3908,7 +3908,8 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		{
 			fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
 			editor->paste(pos);
-			mouse_state = MSTATE_NORMAL;
+			if (!e.ShiftDown())
+				mouse_state = MSTATE_NORMAL;
 		}
 
 		// Sector tagging state
