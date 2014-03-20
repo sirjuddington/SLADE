@@ -3823,7 +3823,9 @@ void MapCanvas::onKeyUp(wxKeyEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
-	editor->updateHilight(mouse_pos_m);
+	// Update hilight
+	if (mouse_state == MSTATE_NORMAL)
+		editor->updateHilight(mouse_pos_m);
 
 	// Update mouse variables
 	mouse_downpos.set(e.GetX(), e.GetY());

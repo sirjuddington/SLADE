@@ -709,7 +709,10 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 
 	// Update tagged lists if the hilight changed
 	if (current != hilight_item)
+	{
+		LOG_MESSAGE(3, "updateHilight");
 		updateTagged();
+	}
 
 	// Update map object properties panel if the hilight changed
 	if (current != hilight_item && selection.empty())
@@ -829,6 +832,8 @@ void MapEditor::updateThingLists()
  *******************************************************************/
 void MapEditor::updateTagged()
 {
+	LOG_MESSAGE(3, "updateTagged");
+
 	// Clear tagged lists
 	tagged_sectors.clear();
 	tagged_lines.clear();
@@ -2434,6 +2439,8 @@ void MapEditor::endTagEdit(bool accept)
 	}
 	else
 		addEditorMessage("Tag edit cancelled");
+
+	updateTagged();
 }
 
 #pragma endregion
