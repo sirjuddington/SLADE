@@ -89,6 +89,14 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	sizer->Add(new wxStaticText(this, -1, "Rotation:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	sizer->Add(combo_rotation, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
 
+	// Mirror X
+	cb_mirror_x = new wxCheckBox(this, -1, "Mirror X");
+	sizer->Add(cb_mirror_x, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
+
+	// Mirror Y
+	cb_mirror_y = new wxCheckBox(this, -1, "Mirror Y");
+	sizer->Add(cb_mirror_y, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
+
 	// Preview button
 	btn_preview = new wxBitmapButton(this, -1, getIcon("i_eye"));
 	btn_preview->SetToolTip("Preview");
@@ -109,6 +117,8 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	btn_preview->Bind(wxEVT_BUTTON, &ObjectEditPanel::onBtnPreviewClicked, this);
 	btn_cancel->Bind(wxEVT_BUTTON, &ObjectEditPanel::onBtnCancelClicked, this);
 	btn_apply->Bind(wxEVT_BUTTON, &ObjectEditPanel::onBtnApplyClicked, this);
+	cb_mirror_x->Bind(wxEVT_CHECKBOX, &ObjectEditPanel::onBtnPreviewClicked, this);
+	cb_mirror_y->Bind(wxEVT_CHECKBOX, &ObjectEditPanel::onBtnPreviewClicked, this);
 
 	// Init layout
 	Layout();
@@ -187,8 +197,10 @@ void ObjectEditPanel::onBtnPreviewClicked(wxCommandEvent& e)
 	text_scalex->GetValue().ToDouble(&xscale);
 	text_scaley->GetValue().ToDouble(&yscale);
 	combo_rotation->GetValue().ToDouble(&rotation);
+	bool mirror_x = cb_mirror_x->GetValue();
+	bool mirror_y = cb_mirror_y->GetValue();
 
-	theMapEditor->mapEditor().getObjectEditGroup()->doAll(xoff, yoff, xscale / 100.0, yscale / 100.0, rotation);
+	theMapEditor->mapEditor().getObjectEditGroup()->doAll(xoff, yoff, xscale / 100.0, yscale / 100.0, rotation, mirror_x, mirror_y);
 }
 
 /* ObjectEditPanel::onBtnCancelClicked

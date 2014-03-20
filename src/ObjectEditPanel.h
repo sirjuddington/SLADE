@@ -14,6 +14,8 @@ private:
 	wxButton*	btn_preview;
 	wxButton*	btn_apply;
 	wxButton*	btn_cancel;
+	wxCheckBox*	cb_mirror_x;
+	wxCheckBox*	cb_mirror_y;
 
 	double	old_x;
 	double	old_y;

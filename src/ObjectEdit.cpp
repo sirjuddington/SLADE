@@ -48,6 +48,7 @@ ObjectEditGroup::ObjectEditGroup()
 {
 	xoff_prev = 0;
 	yoff_prev = 0;
+	mirrored = false;
 }
 
 /* ObjectEditGroup::~ObjectEditGroup
@@ -129,6 +130,7 @@ void ObjectEditGroup::addThing(MapThing* thing)
 	t.position.x = thing->xPos();
 	t.position.y = thing->yPos();
 	t.old_position = t.position;
+	t.angle = thing->getAngle();
 	things.push_back(t);
 
 	// Update bbox
@@ -419,7 +421,7 @@ void ObjectEditGroup::doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45)
  * Moves all group objects by [xoff,yoff], scales all group objects
  * by [xscale,yscale] and rotates all group objects by [rotation]
  *******************************************************************/
-void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double yscale, double rotation)
+void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double yscale, double rotation, bool mirror_x, bool mirror_y)
 {
 	// Update bbox
 	bbox = original_bbox;
@@ -447,9 +449,19 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 		if (vertices[a].ignored)
 			continue;
 
+		// Reset first
+		vertices[a].position.x = vertices[a].map_vertex->xPos();
+		vertices[a].position.y = vertices[a].map_vertex->yPos();
+
+		// Mirror
+		if (mirror_x)
+			vertices[a].position.x = original_bbox.mid_x() - (vertices[a].position.x - original_bbox.mid_x());
+		if (mirror_y)
+			vertices[a].position.y = original_bbox.mid_y() - (vertices[a].position.y - original_bbox.mid_y());
+
 		// Scale
-		vertices[a].position.x = original_bbox.mid_x() + ((vertices[a].map_vertex->xPos() - original_bbox.mid_x()) * xscale);
-		vertices[a].position.y = original_bbox.mid_y() + ((vertices[a].map_vertex->yPos() - original_bbox.mid_y()) * yscale);
+		vertices[a].position.x = original_bbox.mid_x() + ((vertices[a].position.x - original_bbox.mid_x()) * xscale);
+		vertices[a].position.y = original_bbox.mid_y() + ((vertices[a].position.y - original_bbox.mid_y()) * yscale);
 
 		// Move
 		vertices[a].position.x += xoff;
@@ -466,9 +478,30 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 	// Update things
 	for (unsigned a = 0; a < things.size(); a++)
 	{
+		// Reset first
+		things[a].position.x = things[a].map_thing->xPos();
+		things[a].position.y = things[a].map_thing->yPos();
+		things[a].angle = things[a].map_thing->getAngle();
+
+		// Mirror
+		if (mirror_x)
+		{
+			things[a].position.x = original_bbox.mid_x() - (things[a].position.x - original_bbox.mid_x());
+			things[a].angle += 90;
+			things[a].angle = 360 - things[a].angle;
+			things[a].angle -= 90;
+			while (things[a].angle < 0) things[a].angle += 360;
+		}
+		if (mirror_y)
+		{
+			things[a].position.y = original_bbox.mid_y() - (things[a].position.y - original_bbox.mid_y());
+			things[a].angle = 360 - things[a].angle;
+			while (things[a].angle < 0) things[a].angle += 360;
+		}
+
 		// Scale
-		things[a].position.x = original_bbox.min.x + ((things[a].map_thing->xPos() - original_bbox.min.x) * xscale);
-		things[a].position.y = original_bbox.min.y + ((things[a].map_thing->yPos() - original_bbox.min.y) * yscale);
+		things[a].position.x = original_bbox.min.x + ((things[a].position.x - original_bbox.min.x) * xscale);
+		things[a].position.y = original_bbox.min.y + ((things[a].position.y - original_bbox.min.y) * yscale);
 
 		// Move
 		things[a].position.x += xoff;
@@ -494,6 +527,12 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 			bbox.extend(things[a].position.x, things[a].position.y);
 		old_bbox = bbox;
 	}
+
+	// Check if mirrored once (ie. lines need flipping)
+	if ((mirror_x || mirror_y) && !(mirror_x && mirror_y))
+		mirrored = true;
+	else
+		mirrored = false;
 }
 
 /* ObjectEditGroup::applyEdit
@@ -517,7 +556,20 @@ void ObjectEditGroup::applyEdit()
 
 	// Move things
 	for (unsigned a = 0; a < things.size(); a++)
+	{
 		map->moveThing(things[a].map_thing->getIndex(), things[a].position.x, things[a].position.y);
+		things[a].map_thing->setIntProperty("angle", things[a].angle);
+	}
+
+	// Flip lines if needed
+	if (mirrored)
+	{
+		for (unsigned a = 0; a < lines.size(); a++)
+		{
+			if (!lines[a].isExtra())
+				lines[a].map_line->flip(false);
+		}
+	}
 }
 
 /* ObjectEditGroup::getVertices
