@@ -4066,6 +4066,69 @@ void SLADEMap::setOpenedTime()
 	opened_time = theApp->runTimer();
 }
 
+/* SLADEMap::modifiedSince
+ * Returns true if any objects of [type] have a modified time newer
+ * than [since]
+ *******************************************************************/
+bool SLADEMap::modifiedSince(long since, int type)
+{
+	// Any type
+	if (type < 0)
+		return getLastModifiedTime() > since;
+
+	// Vertices
+	else if (type == MOBJ_VERTEX)
+	{
+		for (unsigned a = 0; a < vertices.size(); a++)
+		{
+			if (vertices[a]->modified_time > since)
+				return true;
+		}
+	}
+
+	// Lines
+	else if (type == MOBJ_LINE)
+	{
+		for (unsigned a = 0; a < lines.size(); a++)
+		{
+			if (lines[a]->modified_time > since)
+				return true;
+		}
+	}
+
+	// Sides
+	else if (type == MOBJ_SIDE)
+	{
+		for (unsigned a = 0; a < sides.size(); a++)
+		{
+			if (sides[a]->modified_time > since)
+				return true;
+		}
+	}
+
+	// Sectors
+	else if (type == MOBJ_SECTOR)
+	{
+		for (unsigned a = 0; a < sectors.size(); a++)
+		{
+			if (sectors[a]->modified_time > since)
+				return true;
+		}
+	}
+
+	// Things
+	else if (type == MOBJ_THING)
+	{
+		for (unsigned a = 0; a < things.size(); a++)
+		{
+			if (things[a]->modified_time > since)
+				return true;
+		}
+	}
+
+	return false;
+}
+
 /* SLADEMap::createVertex
  * Creates a new vertex at [x,y] and returns it. Splits any lines
  * within [split_dist] from the position

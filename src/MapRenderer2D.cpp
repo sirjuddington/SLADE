@@ -390,7 +390,11 @@ void MapRenderer2D::renderLines(bool show_direction, float alpha)
 void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 {
 	// Use display list if it's built
-	if (list_lines > 0 && show_direction == lines_dirs && map->nLines() == n_lines && map->geometryUpdated() <= lines_updated)
+	if (list_lines > 0 &&
+		show_direction == lines_dirs &&
+		map->nLines() == n_lines &&
+		map->geometryUpdated() <= lines_updated &&
+		!map->modifiedSince(lines_updated, MOBJ_LINE))
 	{
 		glCallList(list_lines);
 		return;
@@ -454,7 +458,11 @@ void MapRenderer2D::renderLinesVBO(bool show_direction, float alpha)
 		return;
 
 	// Update lines VBO if required
-	if (vbo_lines == 0 || show_direction != lines_dirs || map->nLines() != n_lines || map->geometryUpdated() > lines_updated)
+	if (vbo_lines == 0 ||
+		show_direction != lines_dirs ||
+		map->nLines() != n_lines ||
+		map->geometryUpdated() > lines_updated ||
+		map->modifiedSince(lines_updated, MOBJ_LINE))
 		updateLinesVBO(show_direction, alpha);
 
 	// Disable any blending
@@ -2741,6 +2749,8 @@ void MapRenderer2D::updateVerticesVBO()
  *******************************************************************/
 void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 {
+	LOG_MESSAGE(3, "Updating lines VBO");
+
 	// Create VBO if needed
 	if (vbo_lines == 0)
 		glGenBuffers(1, &vbo_lines);
