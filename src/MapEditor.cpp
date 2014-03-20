@@ -49,7 +49,8 @@
  * VARIABLES
  *******************************************************************/
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536 };
-CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE);
+CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
+CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -2702,10 +2703,6 @@ void MapEditor::deleteObject()
 			map.removeSector(sectors[a]);
 		}
 
-		// Backup connected line properties
-		//for (unsigned a = 0; a < connected_lines.size(); a++)
-		//	undo_manager->recordUndoStep(new PropertyChangeUS(connected_lines[a]));
-
 		// Remove all connected sides
 		for (unsigned a = 0; a < connected_sides.size(); a++)
 		{
@@ -2715,6 +2712,16 @@ void MapEditor::deleteObject()
 				line->flip();
 
 			map.removeSide(connected_sides[a]);
+		}
+
+		// Remove resulting invalid lines
+		if (map_remove_invalid_lines)
+		{
+			for (unsigned a = 0; a < connected_lines.size(); a++)
+			{
+				if (!connected_lines[a]->s1() && !connected_lines[a]->s2())
+					map.removeLine(connected_lines[a]);
+			}
 		}
 
 		// Editor message
