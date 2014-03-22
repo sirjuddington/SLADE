@@ -6,7 +6,7 @@ entry_types
 	demo
 	{
 		name = "Demo";
-		match_name = "demo?", "demo?lmp";
+		match_name = "demo?", "demo?lmp", "demo_???";
 		reliability = 60;
 		export_ext = "lmp";
 		colour = 255, 180, 0;
@@ -100,7 +100,7 @@ entry_types
 	transtable : colormap
 	{
 		name = "Translation Table";
-		match_name = "trantbl*", "tranmap", "cr???*", "*mask", "colort??", "tr_*";
+		match_name = "trantbl*", "tranmap", "cr???*", "*mask", "colort??", "tr_*", "TRANS?0";
 		match_extorname = 1;
 		extra = image;
 		export_ext = "lmp";
@@ -192,5 +192,19 @@ entry_types
 		match_name = "tables";
 		match_size = 8448;
 		icon = "e_data";
+	}
+
+	// misc SRB2
+	sonic_fade
+	{
+		name = "Fading Mask";
+		icon = "e_fademask";
+		section = "fa";
+		format = img_raw;
+		image_format = "raw_flat";
+		export_ext = "raw";
+		editor = gfx;
+		size = 4000, 16000, 64000, 256000;
+		extra = image;
 	}
 }
