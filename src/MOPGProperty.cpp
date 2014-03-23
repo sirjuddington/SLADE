@@ -594,7 +594,7 @@ bool MOPGActionSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		int special = -1;
-		ActionSpecialDialog dlg(window);
+		ActionSpecialDialog dlg(theMapEditor);
 		dlg.setSpecial(GetValue().GetInteger());
 		if (dlg.ShowModal() == wxID_OK)
 			special = dlg.selectedSpecial();
