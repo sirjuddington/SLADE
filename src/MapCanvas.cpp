@@ -988,14 +988,6 @@ void MapCanvas::drawObjectEdit()
 	// Map objects
 	renderer_2d->renderObjectEditGroup(group);
 
-	//// Line lengths
-	//vector<ObjectEditGroup::line_t> lines;
-	//group->getLinesToDraw(lines);
-	//setOverlayCoords(true);
-	//for (unsigned a = 0; a < lines.size(); a++)
-	//	drawLineLength(lines[a].v1->position, lines[a].v2->position, col);
-	//setOverlayCoords(false);
-
 	// Bounding box
 	OpenGL::setColour(COL_WHITE);
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
@@ -1078,6 +1070,24 @@ void MapCanvas::drawObjectEdit()
 		else
 			glLineWidth(2.0f);
 		Drawing::drawLine(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y);
+	}
+
+	// Line length
+	fpoint2_t nl_v1, nl_v2;
+	if (group->getNearestLine(mouse_pos_m, 128 / view_scale, nl_v1, nl_v2))
+	{
+		fpoint2_t mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
+		int length = MathStuff::distance(nl_v1.x, nl_v1.y, nl_v2.x, nl_v2.y);
+		int x = screenX(mid.x);
+		int y = screenY(mid.y) - 8;
+		setOverlayCoords(true);
+		Drawing::drawText(S_FMT("%d", length), x+2, y+1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x-2, y+1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x-2, y-1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x+2, y-1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		setOverlayCoords(false);
+		glDisable(GL_TEXTURE_2D);
 	}
 }
 

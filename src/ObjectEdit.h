@@ -49,6 +49,7 @@ public:
 	void		filterObjects(bool filter);
 	void		resetPositions();
 	bool		empty() { return vertices.empty() && things.empty(); }
+	bool		getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2);
 
 	// Drawing
 	void	getVerticesToDraw(vector<fpoint2_t>& list);

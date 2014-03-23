@@ -231,6 +231,31 @@ void ObjectEditGroup::resetPositions()
 	rotation = 0;
 }
 
+/* ObjectEditGroup::getNearestLine
+ * Finds the nearest line to [pos] (that is closer than [min] in
+ * distance), and sets [v1]/[v2] to the line vertices. Returns true
+ * if a line was found within the distance specified
+ *******************************************************************/
+bool ObjectEditGroup::getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2)
+{
+	double min_dist = min;
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		double d = MathStuff::distanceToLineFast(pos.x, pos.y,
+			lines[a].v1->position.x, lines[a].v1->position.y,
+			lines[a].v2->position.x, lines[a].v2->position.y);
+
+		if (d < min_dist)
+		{
+			min_dist = d;
+			v1.set(lines[a].v1->position);
+			v2.set(lines[a].v2->position);
+		}
+	}
+
+	return (min_dist < min);
+}
+
 /* ObjectEditGroup::getVerticesToDraw
  * Fills [list] with the positions of all group vertices
  *******************************************************************/
