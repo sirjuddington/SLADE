@@ -1,0 +1,296 @@
+
+srb2lua {
+	name = "SRB2 Lua Script";
+	comment_begin = "/*", "--[[";
+	comment_end = "*/", "]]";
+	comment_line = "//", "--";
+	case_sensitive = true;
+
+	keywords = {
+		and, break, continue, do, else, elseif, end, false, for, function,
+		if, in, local, nil, not, or, repeat, return, then, true, until, while,
+		$1, $2, $3, $4, $5, $6, $7, $8, $9
+	}
+
+	constants = {
+		valid,
+
+		sprnames,
+		states,
+		mobjinfo,
+		S_Sfx, sfxinfo,
+		players,
+		powers,
+		skins,
+		mapthings,
+		vertexes,
+		lines,
+		sides,
+		subsectors,
+		sectors,
+		sidenum,
+		hudinfo,
+
+		CV_OnOff,
+		CV_YesNo,
+		CV_Unsigned,
+		CV_Natural
+	}
+
+	functions {
+		print = "string output, [string output2, [...]]";
+		freeslot = "string resource, [string resource2, [...]]";
+		super = "mobj_t actor, int var1, int var2";
+		addHook = "string hook, function(?) fn, [int extra]";
+
+		// math
+		abs = "int a";
+		min = "int a, int b";
+		max = "int a, int b";
+		sin = "angle angle";
+		cos = "angle angle";
+		tan = "angle angle";
+		FixedAngle = "fixed angle";
+		AngleFixed = "angle angle";
+		InvAngle = "angle angle";
+		FixedMul = "fixed a, fixed b";
+		FixedInt = "fixed a";
+		FixedDiv = "fixed a, fixed b";
+		FixedRem = "fixed a, fixed b";
+		FixedSqrt = "fixed a";
+		FixedHypot = "fixed a, fixed b";
+		FixedFloor = "fixed a";
+		FixedTrunc = "fixed a";
+		FixedCeil = "fixed a";
+		FixedRound = "fixed a";
+		
+		// misc
+		GetSecSpecial = "int special, int section";
+		All7Emeralds = "int flags";
+		ColorOpposite = "int color";
+
+		// p_random
+		P_Random;
+		P_SignedRandom;
+		P_RandomKey = "int a";
+		P_RandomRange = "int a, int b";
+
+		// p_maputil
+		P_AproxDistance = "fixed dx, fixed dy";
+		P_ClosestPointOnLine = "fixed x, fixed y, line_t line";
+
+		// p_enemy
+		P_CheckMeleeRange = "mobj_t actor";
+		P_JetbCheckMeleeRange = "mobj_t actor";
+		P_FaceStabCheckMeleeRange = "mobj_t actor";
+		P_SkimCheckMeleeRange = "mobj_t actor";
+		P_CheckMissileRange = "mobj_t actor";
+		P_NewChaseDir = "mobj_t actor";
+		P_LookForPlayers = "mobj_t actor, [fixed dist, [boolean allaround?, [boolean tracer?]]]";
+
+		// p_mobj
+		P_SpawnMobj = "fixed x, fixed y, fixed z, int type";
+		P_RemoveMobj = "mobj_t mobj";
+		P_SpawnMissile = "mobj_t source, mobj_t dest, int type";
+		P_SpawnXYZMissile = "mobj_t source, mobj_t dest, int type, fixed x, fixed y, fixed z";
+		P_SpawnPointMissile = "mobj_t source, fixed dest_x, fixed dest_y, fixed dest_z, int type, fixed x, fixed y, fixed z";
+		P_SpawnAlteredDirectionMissile = "mobj_t source, int type, fixed x, fixed y, fixed z, int angle_shift";
+		P_ColorTeamMissile = "mobj_t missile, player_t player";
+		P_SPMAngle = "mobj_t source, int type, angle angle, [boolean allowaim?, [int flags2]]";
+		P_SpawnPlayerMissile = "mobj_t source, int type, [int flags2]";
+		P_MobjFlip = "mobj_t mobj";
+		P_WeaponOrPanel = "int type";
+		P_FlashPal = "player_t player, int type, int duration";
+		P_GetClosestAxis = "mobj_t mobj";
+		P_SpawnParaloop = "fixed x, fixed y, fixed z, fixed radius, int number, int type, int rotate, [int state, [boolean spawncenter?]]";
+		P_BossTargetPlayer = "mobj_t actor, [boolean closest?]";
+		P_SupermanLook4Players = "mobj_t actor";
+		P_SetScale = "mobj_t mobj, fixed scale";
+		P_CheckDeathPitCollide = "mobj_t mobj";
+
+		// p_user
+		P_GetPlayerHeight = "player_t player";
+		P_GetPlayerSpinHeight = "player_t player";
+		P_GetPlayerControlDirection = "player_t player";
+		P_AddPlayerScore = "player_t player, int amount";
+		P_PlayerInPain = "player_t player";
+		P_DoPlayerPain = "player_t player, [mobj_t source, [mobj_t inflictor]]";
+		P_ResetPlayer = "player_t player";
+		P_IsObjectOnGround = "mobj_t mobj";
+		P_SetObjectMomZ = "mobj_t mobj, fixed momz, [boolean relative?]";
+		P_RestoreMusic = "player_t player";
+		P_SpawnGhostMobj = "mobj_t mobj";
+		P_GivePlayerRings = "player_t player, int amount";
+		P_GivePlayerLives = "player_t player, int amount";
+		P_ResetScore = "player_t player";
+		P_BlackOw = "player_t player";
+		P_ElementalFireTrail = "player_t player";
+		P_DoPlayerExit = "player_t player";
+		P_InstaThrust = "mobj_t mobj, angle angle, fixed move";
+		P_ReturnThrustX = "mobj_t mobj, angle angle, fixed move";
+		P_ReturnThrustY = "mobj_t mobj, angle angle, fixed move";
+		P_LookForEnemies = "player_t player";
+		P_NukeEnemies = "mobj_t inflictor, mobj_t source, fixed radius";
+		P_HomingAttack = "mobj_t source, mobj_t target";
+
+		// p_map
+		P_CheckPosition = "mobj_t mobj, fixed x, fixed y, fixed z";
+		P_TryMove = "mobj_t mobj, fixed x, fixed y, [boolean allowdrowoff?]";
+		P_Move = "mobj_t actor, int speed";
+		P_TeleportMove = "mobj_t mobj, fixed x, fixed y, fixed z";
+		P_SlideMove = "mobj_t mo";
+		P_BounceMove = "mobj_t mo";
+		P_CheckSight = "mobj_t source, mobj_t target";
+		P_CheckHoopPosition = "mobj_t hoop, fixed x, fixed y, fixed z, fixed radius";
+		P_RadiusAttack = "mobj_t inflictor, mobj_t source, fixed radius";
+		P_FloorzAtPos = "fixed x, fixed y, fixed z, fixed height";
+
+		// p_inter
+		P_RemoveShield = "player_t player";
+		P_DamageMobj = "mobj_t target, [mobj_t inflictor, [mobj_t source, [int damage]]]";
+		P_KillMobj = "mobj_t target, [mobj_t inflictor, [mobj_t source]]";
+		P_PlayerRingBurst = "player_t player, [int numrings]";
+		P_PlayerWeaponPanelBurst = "player_t player";
+		P_PlayerWeaponAmmoBurst = "player_t player";
+		P_PlayerEmeraldBurst = "player_t player, [boolean toss?]";
+		P_PlayerFlagBurst = "player_t player, [boolean toss?]";
+		P_PlayRinglossSound = "player_t player";
+		P_PlayDeathSound = "player_t player";
+		P_PlayVictorySound = "player_t player";
+		P_PlayLivesJingle = "player_t player";
+		P_CanPickupItem = "player_t player, [boolean weapon?]";
+		P_DoNightsScore = "player_t player";
+
+		// p_spec
+		P_Thrust = "mobj_t mobj, angle angle, fixed move";
+		P_SetMobjStateNF = "mobj_t mobj, int statenum";
+		P_DoSuperTransformation = "player_t player, [boolean giverings?]";
+		P_ExplodeMissile = "mobj_t missile";
+		P_PlayerTouchingSectorSpecial = "player_t player, int section, int specialnum";
+		P_FindSpecialLineFromTag = "int special, int tag, [int start]";
+		P_SwitchWeather = "int weather";
+		P_LinedefExecute = "int tag, [mobj_t actor, [sector_t caller]]";
+		P_SpawnLightningFlash = "sector_t sector";
+		P_FadeLight = "int tag, int destvalue, int speed";
+		P_ThingOnSpecial3DFloor = "mobj_t mobj";
+		P_SetupLevelSky = "int skynum, [boolean global?]";
+		P_SetSkyboxMobj = "mobj_t mobj, [boolean centerpoint?, [player_t user]]";
+		P_StartQuake = "fixed intensity, int time, [table{x/y/z} epicenter, [fixed radius]]";
+
+		// r_defs
+		R_PointToAngle = "fixed x, fixed y";
+		R_PointToAngle2 = "fixed x, fixed y, fixed dest_x, fixed dest_y";
+		R_PointToDist = "fixed x, fixed y";
+		R_PointToDist2 = "fixed x, fixed y, fixed dest_x, fixed dest_y";
+		R_PointInSubsector = "fixed x, fixed y";
+
+		// s_sound
+		S_StartSound = "mobj_t origin, int soundnum";
+		S_StartSoundAtVolume = "mobj_t origin, int soundnum, int volume";
+		S_StopSound = "mobj_t origin";
+		S_ChangeMusic = "int musicnum, [boolean looping?]";
+		S_SpeedMusic = "fixed musicspeed";
+		S_StopMusic;
+		S_OriginPlaying = "mobj_t origin";
+		S_IdPlaying = "int soundnum";
+		S_SoundPlaying = "mobj_t origin, int soundnum";
+
+		// g_game
+		G_BuildMapName = "int map";
+		G_DoReborn = "int playernum";
+		G_ExitLevel;
+		G_IsSpecialStage = "int map";
+		G_GametypeUsesLives;
+		G_GametypeHasTeams;
+		G_GametypeHasSpectators;
+		G_RingSlingerGametype;
+		G_PlatformGametype;
+		G_TagGametype;
+		G_TicsToHours = "int tics";
+		G_TicsToMinutes = "int tics, [boolean full?]";
+		G_TicsToSeconds = "int tics";
+		G_TicsToCentiseconds = "int tics";
+		G_TicsToMilliseconds = "int tics";
+
+		// console
+		COM_AddCommand = "string name, function(player_t player/[string arg/[...]]) fn, int flags";
+		COM_BufAddText = "player_t player, string text";
+		COM_BufInsertText = "player_t player, string text";
+		CV_RegisterVar = "table{string name/string defaultvalue/int flags/PossibleValue pv/function() fn}, [...]";
+		CONS_Printf = "player_t player, string text";
+
+		// iterators
+		players.iterate;
+		thinkers.iterate = "string type";
+		skins.iterate;
+		sectors.iterate;
+		subsectors.iterate;
+		lines.iterate;
+		sides.iterate;
+		vertexes.iterate;
+
+		hud.enable = "string huditem";
+		hud.disable = "string huditem";
+		hud.add = "function(drawer v/[player_t stplyr]), string type)";
+
+		// technically these are a part of the video code but you can rename that whatever you want...
+		draw = "int x, int y, patch patch, [int flags, [(unimplemented) colormap]]";
+		drawScaled = "fixed x, fixed y, fixed scale, patch patch, [int flags, [(unimplemented) colormap]]";
+		drawNum = "int x, int y, int num, [int flags]"
+		drawPaddedNum = "int x, int y, int num, [int digits, [int flags]]"
+		drawFill = "[int x, [int y, [int w, [int h, [int color]]]]]"
+		drawString = "fixed x, fixed y, string str, [int flags, [string alignment]]"
+
+		// basic Lua
+		assert = "boolean assert, [string errormsg]";
+		collectgarbage = "[string opt, [string arg]]";
+		error = "string message, [int level]";
+		gcinfo = "(unknown)";
+		getfenv = "function(*) fn";
+		getmetatable = "object obj";
+		ipairs = "table{} t";
+		next = "table{} t, [int index]";
+		pairs = "table{} t";
+		pcall = "function(*) fn, [* arg, [...]]";
+		rawequal = "* v1, * v2";
+		rawget = "table{} t, * index";
+		rawset = "table{} t, * index, * value";
+		select = "* index";
+		setfenv = "function(*) fn, table{} table";
+		setmetatable = "table{} t, table{} metatable";
+		tonumber = "* e, [int base]";
+		tostring = "* e";
+		type = "* v";
+		unpack = "table{} list, [int start, [int end]]";
+		xpcall = "function(?) call, function(boolean status) errortrap";
+
+		coroutine.create = "function(?) fn";
+		coroutine.resume = "coroutine co, [* val, [...]]";
+		coroutine.running;
+		coroutine.status = "coroutine co";
+		coroutine.wrap = "function(?) fn";
+		coroutine.yield = "[...]";
+
+		string.byte = "string s, [int start, [int end]]";
+		string.char = "[int charid, [...]]";
+		string.dump = "function(?) fn";
+		string.find = "string s, string pattern, [int start, [boolean plain?]]";
+		string.format = "string formatstr, [...]";
+		string.gfind = "string s, string pattern";
+		string.gmatch = "string s, string pattern";
+		string.gsub = "string s, string pattern, string replace, [int n]";
+		string.len = "string s";
+		string.lower = "string s";
+		string.match = "string s, string pattern, [int n]";
+		string.rep = "string s, int n";
+		string.reverse = "string s, int start, [int end]";
+		string.sub = "string s";
+		string.upper = "string s";
+
+		table.concat = "table{}, [string sep, [int start, [int end]]]";
+		table.maxn = "table{}";
+		table.insert = "table{}, * element";
+		table.remove = "table{}, * key";
+		table.sort = "table{}, [function(* element_a/* element_b) comp]";
+	}
+}
