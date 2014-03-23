@@ -360,7 +360,20 @@ entry_types
 		name = "Main Configuration";
 		match_name = "maincfg";
 	}
-	
+
+	objctcfg : text
+	{
+		name = "Object Configuration";
+		match_name = "objctcfg";
+	}
+
+	srb2lua : text
+	{
+		name = "Lua Script";
+		match_name = "lua_*";
+		text_language = "srb2lua";
+	}
+
 	// ZDaemon text lumps
 	patchinf : text
 	{
