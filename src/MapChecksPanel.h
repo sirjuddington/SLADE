@@ -20,6 +20,7 @@ private:
 	wxCheckBox*		cb_overlapping_things;
 	wxCheckBox*		cb_stuck_things;
 	wxCheckBox*		cb_sector_refs;
+	wxCheckBox*		cb_invalid_lines;
 	wxListBox*		lb_errors;
 	wxButton*		btn_check;
 	wxStaticText*	label_status;

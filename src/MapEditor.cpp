@@ -4888,10 +4888,12 @@ void MapEditor::updateStatusText()
 void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 {
 	// Setup
+	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
+	if (manager->currentlyRecording())
+		return;
 	undo_modified = mod;
 	undo_deleted = del;
 	undo_created = create;
-	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
 
 	// Begin recording
 	manager->beginRecord(name);

@@ -34,6 +34,7 @@ public:
 	static MapCheck*	unknownThingTypeCheck(SLADEMap* map);
 	static MapCheck*	stuckThingsCheck(SLADEMap* map);
 	static MapCheck*	sectorReferenceCheck(SLADEMap* map);
+	static MapCheck*	invalidLineCheck(SLADEMap* map);
 };
 
 #endif//__MAP_CHECKS_H__

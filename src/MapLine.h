@@ -112,7 +112,7 @@ public:
 	double		getLength();
 	bool		doubleSector();
 	fpoint2_t	frontVector();
-	fpoint2_t	dirTabPoint();
+	fpoint2_t	dirTabPoint(double length = 0);
 	double		distanceTo(double x, double y);
 	int			needsTexture();
 	void		clearUnneededTextures();
