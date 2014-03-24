@@ -268,23 +268,26 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 		}
 	}
 
-	// Draw disabled icon if disabled
-	if (!IsEnabled())
+	if (icon.IsOk())
 	{
-		// Determine toolbar background brightness
-		uint8_t r,g,b;
-		r = col_background.Red();
-		g = col_background.Green();
-		b = col_background.Blue();
-		wxColor::MakeGrey(&r, &g, &b);
+		// Draw disabled icon if disabled
+		if (!IsEnabled())
+		{
+			// Determine toolbar background brightness
+			uint8_t r, g, b;
+			r = col_background.Red();
+			g = col_background.Green();
+			b = col_background.Blue();
+			wxColor::MakeGrey(&r, &g, &b);
 
-		// Draw disabled icon
-		gc->DrawBitmap(icon.ConvertToDisabled(r), 3, 3, toolbar_size, toolbar_size);
+			// Draw disabled icon
+			gc->DrawBitmap(icon.ConvertToDisabled(r), 3, 3, toolbar_size, toolbar_size);
+		}
+
+		// Otherwise draw normal icon
+		else
+			gc->DrawBitmap(icon, 3, 3, toolbar_size, toolbar_size);
 	}
-
-	// Otherwise draw normal icon
-	else
-		gc->DrawBitmap(icon, 3, 3, toolbar_size, toolbar_size);
 
 	if (show_name)
 	{
