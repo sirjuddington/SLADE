@@ -81,6 +81,7 @@ CVAR(Bool, map_show_help, true, CVAR_SAVE)
 CVAR(Int, map_crosshair, 0, CVAR_SAVE)
 CVAR(Bool, map_show_selection_numbers, true, CVAR_SAVE)
 CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
+CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -4149,7 +4150,10 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 			double yrel = e.GetY() - int(GetSize().y * 0.5);
 
 			renderer_3d->cameraTurn(-xrel*0.1);
-			renderer_3d->cameraPitch(-yrel*0.003);
+			if (mlook_invert_y)
+				renderer_3d->cameraPitch(yrel*0.003);
+			else
+				renderer_3d->cameraPitch(-yrel*0.003);
 
 			mouseToCenter();
 			fr_idle = 0;
