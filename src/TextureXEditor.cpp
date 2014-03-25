@@ -683,7 +683,10 @@ void TextureXEditor::onAnnouncement(Announcer* announcer, string event_name, Mem
 	}
 
 	if (announcer == theResourceManager && event_name == "resources_updated")
+	{
 		pb_update = true;
+		updateTexturePalette();
+	}
 }
 
 
