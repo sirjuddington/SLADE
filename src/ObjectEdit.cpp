@@ -48,6 +48,7 @@ ObjectEditGroup::ObjectEditGroup()
 {
 	xoff_prev = 0;
 	yoff_prev = 0;
+	rotation = 0;
 	mirrored = false;
 }
 
@@ -65,18 +66,18 @@ ObjectEditGroup::~ObjectEditGroup()
 void ObjectEditGroup::addVertex(MapVertex* vertex, bool ignored)
 {
 	// Add vertex
-	vertex_t v;
-	v.ignored = ignored;
-	v.map_vertex = vertex;
-	v.position.set(vertex->xPos(), vertex->yPos());
-	v.old_position = v.position;
+	vertex_t* v = new vertex_t();
+	v->ignored = ignored;
+	v->map_vertex = vertex;
+	v->position.set(vertex->xPos(), vertex->yPos());
+	v->old_position = v->position;
 	vertices.push_back(v);
 
 	if (!ignored)
 	{
-		bbox.extend(v.position.x, v.position.y);
-		old_bbox.extend(v.position.x, v.position.y);
-		original_bbox.extend(v.position.x, v.position.y);
+		bbox.extend(v->position.x, v->position.y);
+		old_bbox.extend(v->position.x, v->position.y);
+		original_bbox.extend(v->position.x, v->position.y);
 	}
 }
 
@@ -88,7 +89,7 @@ void ObjectEditGroup::addConnectedLines()
 	unsigned n_vertices = vertices.size();
 	for (unsigned a = 0; a < n_vertices; a++)
 	{
-		MapVertex* map_vertex = vertices[a].map_vertex;
+		MapVertex* map_vertex = vertices[a]->map_vertex;
 		for (unsigned l = 0; l < map_vertex->nConnectedLines(); l++)
 		{
 			MapLine* map_line = map_vertex->connectedLine(l);
@@ -104,12 +105,12 @@ void ObjectEditGroup::addConnectedLines()
 				if (!line.v1)
 				{
 					addVertex(map_line->v1(), true);
-					line.v1 = &(vertices.back());
+					line.v1 = vertices.back();
 				}
 				if (!line.v2)
 				{
 					addVertex(map_line->v2(), true);
-					line.v2 = &(vertices.back());
+					line.v2 = vertices.back();
 				}
 
 				// Add line
@@ -160,8 +161,8 @@ ObjectEditGroup::vertex_t* ObjectEditGroup::findVertex(MapVertex* vertex)
 {
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		if (vertices[a].map_vertex == vertex)
-			return &(vertices[a]);
+		if (vertices[a]->map_vertex == vertex)
+			return vertices[a];
 	}
 
 	return NULL;
@@ -190,8 +191,8 @@ void ObjectEditGroup::filterObjects(bool filter)
 	// Vertices
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		if (!vertices[a].ignored)
-			vertices[a].map_vertex->filter(filter);
+		if (!vertices[a]->ignored)
+			vertices[a]->map_vertex->filter(filter);
 	}
 
 	// Lines
@@ -214,10 +215,10 @@ void ObjectEditGroup::resetPositions()
 	// Vertices
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		vertices[a].old_position = vertices[a].position;
+		vertices[a]->old_position = vertices[a]->position;
 
-		if (!vertices[a].ignored)
-			bbox.extend(vertices[a].position.x, vertices[a].position.y);
+		if (!vertices[a]->ignored)
+			bbox.extend(vertices[a]->position.x, vertices[a]->position.y);
 	}
 
 	// Things
@@ -263,8 +264,8 @@ void ObjectEditGroup::getVerticesToDraw(vector<fpoint2_t>& list)
 {
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		if (!vertices[a].ignored)
-			list.push_back(vertices[a].position);
+		if (!vertices[a]->ignored)
+			list.push_back(vertices[a]->position);
 	}
 }
 
@@ -298,11 +299,11 @@ void ObjectEditGroup::doMove(double xoff, double yoff)
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		// Skip ignored
-		if (vertices[a].ignored)
+		if (vertices[a]->ignored)
 			continue;
 
-		vertices[a].position.x = vertices[a].old_position.x + xoff;
-		vertices[a].position.y = vertices[a].old_position.y + yoff;
+		vertices[a]->position.x = vertices[a]->old_position.x + xoff;
+		vertices[a]->position.y = vertices[a]->old_position.y + yoff;
 	}
 
 	// Update things
@@ -380,16 +381,16 @@ void ObjectEditGroup::doScale(double xoff, double yoff, bool left, bool top, boo
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		// Skip ignored
-		if (vertices[a].ignored)
+		if (vertices[a]->ignored)
 			continue;
 
 		// Scale
-		vertices[a].position.x = old_bbox.min.x + ((vertices[a].old_position.x - old_bbox.min.x) * xscale);
-		vertices[a].position.y = old_bbox.min.y + ((vertices[a].old_position.y - old_bbox.min.y) * yscale);
+		vertices[a]->position.x = old_bbox.min.x + ((vertices[a]->old_position.x - old_bbox.min.x) * xscale);
+		vertices[a]->position.y = old_bbox.min.y + ((vertices[a]->old_position.y - old_bbox.min.y) * yscale);
 
 		// Move
-		vertices[a].position.x += xofs;
-		vertices[a].position.y += yofs;
+		vertices[a]->position.x += xofs;
+		vertices[a]->position.y += yofs;
 	}
 
 	// Update things
@@ -433,8 +434,8 @@ void ObjectEditGroup::doRotate(fpoint2_t p1, fpoint2_t p2, bool lock45)
 	// Rotate vertices
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		if (!vertices[a].ignored)
-			vertices[a].position = MathStuff::rotatePoint(mid, vertices[a].old_position, rotation);
+		if (!vertices[a]->ignored)
+			vertices[a]->position = MathStuff::rotatePoint(mid, vertices[a]->old_position, rotation);
 	}
 
 	// Rotate things
@@ -471,32 +472,32 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		// Skip ignored
-		if (vertices[a].ignored)
+		if (vertices[a]->ignored)
 			continue;
 
 		// Reset first
-		vertices[a].position.x = vertices[a].map_vertex->xPos();
-		vertices[a].position.y = vertices[a].map_vertex->yPos();
+		vertices[a]->position.x = vertices[a]->map_vertex->xPos();
+		vertices[a]->position.y = vertices[a]->map_vertex->yPos();
 
 		// Mirror
 		if (mirror_x)
-			vertices[a].position.x = original_bbox.mid_x() - (vertices[a].position.x - original_bbox.mid_x());
+			vertices[a]->position.x = original_bbox.mid_x() - (vertices[a]->position.x - original_bbox.mid_x());
 		if (mirror_y)
-			vertices[a].position.y = original_bbox.mid_y() - (vertices[a].position.y - original_bbox.mid_y());
+			vertices[a]->position.y = original_bbox.mid_y() - (vertices[a]->position.y - original_bbox.mid_y());
 
 		// Scale
-		vertices[a].position.x = original_bbox.mid_x() + ((vertices[a].position.x - original_bbox.mid_x()) * xscale);
-		vertices[a].position.y = original_bbox.mid_y() + ((vertices[a].position.y - original_bbox.mid_y()) * yscale);
+		vertices[a]->position.x = original_bbox.mid_x() + ((vertices[a]->position.x - original_bbox.mid_x()) * xscale);
+		vertices[a]->position.y = original_bbox.mid_y() + ((vertices[a]->position.y - original_bbox.mid_y()) * yscale);
 
 		// Move
-		vertices[a].position.x += xoff;
-		vertices[a].position.y += yoff;
+		vertices[a]->position.x += xoff;
+		vertices[a]->position.y += yoff;
 
 		// Rotate
 		if (rotation != 0)
-			vertices[a].position = MathStuff::rotatePoint(bbox.mid(), vertices[a].position, rotation);
+			vertices[a]->position = MathStuff::rotatePoint(bbox.mid(), vertices[a]->position, rotation);
 
-		vertices[a].old_position = vertices[a].position;
+		vertices[a]->old_position = vertices[a]->position;
 	}
 
 
@@ -545,8 +546,8 @@ void ObjectEditGroup::doAll(double xoff, double yoff, double xscale, double ysca
 		bbox.reset();
 		for (unsigned a = 0; a < vertices.size(); a++)
 		{
-			if (!vertices[a].ignored)
-				bbox.extend(vertices[a].position.x, vertices[a].position.y);
+			if (!vertices[a]->ignored)
+				bbox.extend(vertices[a]->position.x, vertices[a]->position.y);
 		}
 		for (unsigned a = 0; a < things.size(); a++)
 			bbox.extend(things[a].position.x, things[a].position.y);
@@ -569,7 +570,7 @@ void ObjectEditGroup::applyEdit()
 	// Get map
 	SLADEMap* map = NULL;
 	if (!vertices.empty())
-		map = vertices[0].map_vertex->getParentMap();
+		map = vertices[0]->map_vertex->getParentMap();
 	else if (!things.empty())
 		map = things[0].map_thing->getParentMap();
 	else
@@ -577,7 +578,7 @@ void ObjectEditGroup::applyEdit()
 
 	// Move vertices
 	for (unsigned a = 0; a < vertices.size(); a++)
-		map->moveVertex(vertices[a].map_vertex->getIndex(), vertices[a].position.x, vertices[a].position.y);
+		map->moveVertex(vertices[a]->map_vertex->getIndex(), vertices[a]->position.x, vertices[a]->position.y);
 
 	// Move things
 	for (unsigned a = 0; a < things.size(); a++)
@@ -604,7 +605,7 @@ void ObjectEditGroup::getVertices(vector<MapVertex*>& list)
 {
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		if (!vertices[a].ignored)
-			list.push_back(vertices[a].map_vertex);
+		if (!vertices[a]->ignored)
+			list.push_back(vertices[a]->map_vertex);
 	}
 }

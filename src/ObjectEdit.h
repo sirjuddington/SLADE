@@ -14,6 +14,8 @@ public:
 		fpoint2_t	old_position;
 		MapVertex*	map_vertex;
 		bool		ignored;
+
+		vertex_t() { map_vertex = NULL; ignored = false; }
 	};
 
 	struct line_t
@@ -64,7 +66,7 @@ public:
 	void	applyEdit();
 
 private:
-	vector<vertex_t>	vertices;
+	vector<vertex_t*>	vertices;
 	vector<line_t>		lines;
 	vector<thing_t>		things;
 	bbox_t				bbox;			// Current
