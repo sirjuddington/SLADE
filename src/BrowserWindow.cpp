@@ -228,8 +228,22 @@ BrowserWindow::~BrowserWindow()
 bool BrowserWindow::addItem(BrowserItem* item, string where)
 {
 	BrowserTreeNode* target = (BrowserTreeNode*)items_root->addChild(where);
-	target->addItem(item);
-	return true;
+	if (target)
+	{
+		target->addItem(item);
+		return true;
+	}
+	else
+		return false;
+}
+
+/* BrowserWindow::addGlobalItem
+ * Adds [item] to the global items list. Global items will show up
+ * no matter what category is currently selected
+ *******************************************************************/
+void BrowserWindow::addGlobalItem(BrowserItem* item)
+{
+	items_global.push_back(item);
 }
 
 /* BrowserWindow::clearItems
@@ -381,7 +395,13 @@ void BrowserWindow::openTree(BrowserTreeNode* node, bool clear)
 {
 	// Clear if needed
 	if (clear)
+	{
 		canvas->clearItems();
+
+		// Also add global items
+		for (unsigned a = 0; a < items_global.size(); a++)
+			canvas->addItem(items_global[a]);
+	}
 
 	// Add all items in the node
 	for (unsigned a = 0; a < node->nItems(); a++)

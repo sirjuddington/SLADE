@@ -41,7 +41,6 @@ public:
 class BrowserWindow : public wxDialog
 {
 private:
-	//wxTreeCtrl*			tree_items;
 	wxTreeListCtrl*		tree_items;
 	wxChoice*			choice_sort;
 	wxTextCtrl*			text_filter;
@@ -49,10 +48,11 @@ private:
 	wxStaticText*		label_info;
 
 protected:
-	BrowserTreeNode*	items_root;
-	wxBoxSizer*			sizer_bottom;
-	Palette8bit			palette;
-	BrowserCanvas*		canvas;
+	BrowserTreeNode*		items_root;
+	wxBoxSizer*				sizer_bottom;
+	Palette8bit				palette;
+	BrowserCanvas*			canvas;
+	vector<BrowserItem*>	items_global;
 
 public:
 	BrowserWindow(wxWindow* parent);
@@ -62,6 +62,7 @@ public:
 	void			setPalette(Palette8bit* pal) { palette.copyPalette(pal); }
 
 	bool			addItem(BrowserItem* item, string where = "");
+	void			addGlobalItem(BrowserItem* item);
 	void			clearItems(BrowserTreeNode* node = NULL);
 	void			reloadItems(BrowserTreeNode* node = NULL);
 	BrowserItem*	getSelectedItem() { return canvas->getSelectedItem(); }
