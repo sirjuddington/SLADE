@@ -103,7 +103,7 @@ private:
 	void getAdjacentWalls3d(selection_3d_t item, vector<selection_3d_t>& list);
 
 	// Helper for autoAlignX3d
-	void doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done);
+	void doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done, int tex_width);
 
 	void mergeLines(long, vector<fpoint2_t>&);
 
