@@ -74,7 +74,7 @@ public:
 
 	void	openTree(BrowserTreeNode* node, bool clear = true);
 
-	void	populateItemTree();
+	void	populateItemTree(bool collapse_all = true);
 	void	addItemTree(BrowserTreeNode* node, wxTreeListItem& item);
 
 	// Canvas display options
