@@ -298,6 +298,18 @@ bool BrowserWindow::selectItem(string name, BrowserTreeNode* node)
 	if (!node)
 		node = items_root;
 
+	// Check global items
+	for (unsigned a = 0; a < items_global.size(); a++)
+	{
+		if (S_CMPNOCASE(name, items_global[a]->getName()))
+		{
+			openTree(node);
+			canvas->selectItem(items_global[a]);
+			canvas->showSelectedItem();
+			return true;
+		}
+	}
+
 	// Go through all items in this node
 	for (unsigned a = 0;  a < node->nItems(); a++)
 	{

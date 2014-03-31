@@ -183,8 +183,13 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	populateItemTree();
 
 	// Select initial texture (if any)
-	if (!texture.IsEmpty())
-		selectItem(texture);
+	bool sel = selectItem(texture);
+	//if (!sel)
+	//{
+	//	openTree(items_root);
+	//	if (canvas->itemAt(0))
+	//		selectItem(canvas->itemAt(0)->getName());
+	//}
 }
 
 /* MapTextureBrowser::~MapTextureBrowser

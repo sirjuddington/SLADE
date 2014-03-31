@@ -331,8 +331,6 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 			                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
 		}
 	}
-	else
-		return;
 
 	glDisable(GL_TEXTURE_2D);
 
