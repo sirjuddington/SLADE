@@ -356,8 +356,8 @@ void MOPGStringProperty::setUDMFProp(UDMFProperty* prop)
 		SetChoices(choices);
 		SetEditor(wxPGEditor_ComboBox);
 	}
-	else
-		SetEditor(wxPGEditor_TextCtrl);
+	//else
+	//	SetEditor(wxPGEditor_TextCtrl);
 }
 
 /* MOPGStringProperty::openObjects
@@ -1092,7 +1092,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 		// Refresh text
 		RefreshEditor();
 	}
-
+	
 	return wxStringProperty::OnEvent(propgrid, window, e);
 }
 
