@@ -810,7 +810,16 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 {
 	int index = archiveIndex(archive);
 	if (index >= 0)
+	{
+		bool was_resource = open_archives[index].resource;
 		open_archives[index].resource = resource;
+
+		// Update resource manager
+		if (resource && !was_resource)
+			theResourceManager->addArchive(archive);
+		else if (!resource && was_resource)
+			theResourceManager->removeArchive(archive);
+	}
 }
 
 /* ArchiveManager::addBaseResourcePath
