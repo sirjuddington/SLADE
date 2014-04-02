@@ -2601,6 +2601,9 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 
 	// End undo level
 	editor->undoManager()->endRecord(true);
+
+	// Clear property grid to avoid crash (wxPropertyGrid is at fault there)
+	panel_props->clearGrid();
 }
 
 /* MapCanvas::beginLineDraw

@@ -968,6 +968,28 @@ void MapObjectPropsPanel::applyChanges()
 		properties[a]->applyValue();
 }
 
+/* MapObjectPropsPanel::clearGrid
+ * Clears all property grid rows and tabs
+ *******************************************************************/
+void MapObjectPropsPanel::clearGrid()
+{
+	// Clear property grids
+	for (unsigned a = 0; a < 5; a++)
+		args[a] = NULL;
+	pg_properties->Clear();
+	pg_props_side1->Clear();
+	pg_props_side2->Clear();
+	group_custom = NULL;
+	properties.clear();
+	btn_add->Show();
+
+	// Remove side1/2 tabs if they exist
+	while (tabs_sections->GetPageCount() > 1)
+		tabs_sections->RemovePage(1);
+	pg_props_side1->Show(false);
+	pg_props_side2->Show(false);
+}
+
 
 /*******************************************************************
  * MAPOBJECTPROPSPANEL CLASS EVENTS

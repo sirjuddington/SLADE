@@ -55,6 +55,7 @@ public:
 	void	openObjects(vector<MapObject*>& objects);
 	void	updateArgs(MOPGIntWithArgsProperty* source);
 	void	applyChanges();
+	void	clearGrid();
 
 	// Events
 	void	onBtnApply(wxCommandEvent& e);
