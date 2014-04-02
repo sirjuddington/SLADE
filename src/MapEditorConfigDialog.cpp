@@ -82,7 +82,7 @@ public:
 
 		// Create map name combo box
 		cbo_mapname = new wxComboBox(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, flags);
-		cbo_mapname->SetMaxLength(8);
+		if (theGameConfiguration->anyMapName()) cbo_mapname->SetMaxLength(8);
 		sizer->Add(new wxStaticText(this, -1, "Map Name:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		sizer->Add(cbo_mapname, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
 
