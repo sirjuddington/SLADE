@@ -642,6 +642,7 @@ acs_z : acs {
 		GetActorFloorZ = "int tid";
 		GetActorLightLevel = "int tid";
 		GetActorPitch = "int tid";
+		GetActorPowerupTics = "int tid, str powerup";
 		GetActorProperty = "int tid, int property";
 		GetActorVelX = "int tid";
 		GetActorVelY = "int tid";
