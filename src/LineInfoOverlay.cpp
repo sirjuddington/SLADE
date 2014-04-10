@@ -108,9 +108,9 @@ void LineInfoOverlay::update(MapLine* line)
 		args[4] = line->intProperty("arg4");
 		string argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args);
 		if (!argstr.IsEmpty())
-			info_text += (S_FMT("%s\n", argstr));
+			info_text += (S_FMT("%s", argstr));
 		else
-			info_text += ("No Args\n");
+			info_text += ("No Args");
 	}
 	else
 		info_text += (S_FMT("Sector Tag: %d", line->intProperty("arg0")));
