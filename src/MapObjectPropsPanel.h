@@ -30,6 +30,11 @@ private:
 	wxPGProperty*			group_custom;
 	bool					no_apply;
 
+	// Hide properties
+	bool			hide_flags;
+	bool			hide_triggers;
+	vector<string>	hide_props;
+
 	MOPGProperty*	addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
 	MOPGProperty*	addIntProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
 	MOPGProperty*	addFloatProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
@@ -56,6 +61,10 @@ public:
 	void	updateArgs(MOPGIntWithArgsProperty* source);
 	void	applyChanges();
 	void	clearGrid();
+	void	hideFlags(bool hide) { hide_flags = hide; }
+	void	hideTriggers(bool hide) { hide_triggers = hide; }
+	void	hideProperty(string property) { hide_props.push_back(property); }
+	void	clearHiddenProperties() { hide_props.clear(); }
 
 	// Events
 	void	onBtnApply(wxCommandEvent& e);

@@ -64,6 +64,8 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : wxPa
 	for (unsigned a = 0; a < 5; a++)
 		args[a] = NULL;
 	this->no_apply = no_apply;
+	hide_flags = false;
+	hide_triggers = false;
 
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -505,50 +507,56 @@ void MapObjectPropsPanel::setupType(int objtype)
 		addIntProperty(g_basic, "Back Side", "sideback");
 
 		// Add 'Special' group
-		wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Special"));
-
-		// Add special
-		MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty("Special", "special");
-		prop_as->setParent(this);
-		properties.push_back(prop_as);
-		pg_properties->AppendIn(g_special, prop_as);
-
-		// Add args (hexen)
-		if (map_format == MAP_HEXEN)
+		if (!(VECTOR_EXISTS(hide_props, "special")))
 		{
-			for (unsigned a = 0; a < 5; a++)
-			{
-				// Add arg property
-				MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_special, S_FMT("Arg%u", a+1), S_FMT("arg%u", a));
+			wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Special"));
 
-				// Link to action special
-				args[a] = prop;
+			// Add special
+			MOPGActionSpecialProperty* prop_as = new MOPGActionSpecialProperty("Special", "special");
+			prop_as->setParent(this);
+			properties.push_back(prop_as);
+			pg_properties->AppendIn(g_special, prop_as);
+
+			// Add args (hexen)
+			if (map_format == MAP_HEXEN)
+			{
+				for (unsigned a = 0; a < 5; a++)
+				{
+					// Add arg property
+					MOPGIntProperty* prop = (MOPGIntProperty*)addIntProperty(g_special, S_FMT("Arg%u", a+1), S_FMT("arg%u", a));
+
+					// Link to action special
+					args[a] = prop;
+				}
+			}
+			else   // Sector tag otherwise
+			{
+				//addIntProperty(g_special, "Sector Tag", "arg0");
+				MOPGTagProperty* prop_tag = new MOPGTagProperty("Sector Tag", "arg0");
+				prop_tag->setParent(this);
+				properties.push_back(prop_tag);
+				pg_properties->AppendIn(g_special, prop_tag);
+			}
+
+			// Add SPAC
+			if (map_format == MAP_HEXEN)
+			{
+				MOPGSPACTriggerProperty* prop_spac = new MOPGSPACTriggerProperty("Trigger", "spac");
+				prop_spac->setParent(this);
+				properties.push_back(prop_spac);
+				pg_properties->AppendIn(g_special, prop_spac);
 			}
 		}
-		else   // Sector tag otherwise
+
+		if (!hide_flags)
 		{
-			//addIntProperty(g_special, "Sector Tag", "arg0");
-			MOPGTagProperty* prop_tag = new MOPGTagProperty("Sector Tag", "arg0");
-			prop_tag->setParent(this);
-			properties.push_back(prop_tag);
-			pg_properties->AppendIn(g_special, prop_tag);
+			// Add 'Flags' group
+			wxPGProperty* g_flags = pg_properties->Append(new wxPropertyCategory("Flags"));
+
+			// Add flags
+			for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
+				addLineFlagProperty(g_flags, theGameConfiguration->lineFlag(a), S_FMT("flag%u", a), a);
 		}
-
-		// Add SPAC
-		if (map_format == MAP_HEXEN)
-		{
-			MOPGSPACTriggerProperty* prop_spac = new MOPGSPACTriggerProperty("Trigger", "spac");
-			prop_spac->setParent(this);
-			properties.push_back(prop_spac);
-			pg_properties->AppendIn(g_special, prop_spac);
-		}
-
-		// Add 'Flags' group
-		wxPGProperty* g_flags = pg_properties->Append(new wxPropertyCategory("Flags"));
-
-		// Add flags
-		for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
-			addLineFlagProperty(g_flags, theGameConfiguration->lineFlag(a), S_FMT("flag%u", a), a);
 
 		// --- Sides ---
 		pg_props_side1->Show(true);
@@ -689,12 +697,15 @@ void MapObjectPropsPanel::setupType(int objtype)
 			}
 		}
 
-		// Add 'Flags' group
-		wxPGProperty* g_flags = pg_properties->Append(new wxPropertyCategory("Flags"));
+		if (!hide_flags)
+		{
+			// Add 'Flags' group
+			wxPGProperty* g_flags = pg_properties->Append(new wxPropertyCategory("Flags"));
 
-		// Add flags
-		for (int a = 0; a < theGameConfiguration->nThingFlags(); a++)
-			addThingFlagProperty(g_flags, theGameConfiguration->thingFlag(a), S_FMT("flag%u", a), a);
+			// Add flags
+			for (int a = 0; a < theGameConfiguration->nThingFlags(); a++)
+				addThingFlagProperty(g_flags, theGameConfiguration->thingFlag(a), S_FMT("flag%u", a), a);
+		}
 	}
 
 	// Set all bool properties to use checkboxes
@@ -756,7 +767,19 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 	vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(objtype);
 	sort(props.begin(), props.end());
 	for (unsigned a = 0; a < props.size(); a++)
+	{
+		// Skip if hidden
+		if ((hide_flags && props[a].property->isFlag()) ||
+			(hide_triggers && props[a].property->isTrigger()))
+		{
+			hide_props.push_back(props[a].property->getProperty());
+			continue;
+		}
+		if (VECTOR_EXISTS(hide_props, props[a].property->getProperty()))
+			continue;
+
 		addUDMFProperty(props[a].property, objtype);
+	}
 
 	// Add side properties if line type
 	if (objtype == MOBJ_LINE)
@@ -843,6 +866,10 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 			vector<MobjPropertyList::prop_t> objprops = objects[a]->props().allProperties();
 			for (unsigned b = 0; b < objprops.size(); b++)
 			{
+				// Check if hidden
+				if (VECTOR_EXISTS(hide_props, objprops[a].name))
+					continue;
+
 				// Check if property is already on the list
 				bool exists = false;
 				for (unsigned c = 0; c < properties.size(); c++)
