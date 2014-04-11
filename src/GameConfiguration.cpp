@@ -2790,6 +2790,27 @@ string GameConfiguration::spacTriggerString(MapLine* line, int map_format)
 	return "Unknown";
 }
 
+/* GameConfiguration::spacTriggerIndexHexen
+ * Returns the hexen SPAC trigger index for [line]
+ *******************************************************************/
+int GameConfiguration::spacTriggerIndexHexen(MapLine* line)
+{
+	// Get raw flags
+	int flags = line->intProperty("flags");
+
+	// Get SPAC trigger value from flags
+	int trigger = ((flags & 0x1c00) >> 10);
+
+	// Find matching trigger name
+	for (unsigned a = 0; a < triggers_line.size(); a++)
+	{
+		if (triggers_line[a].flag == trigger)
+			return a;
+	}
+
+	return 0;
+}
+
 /* GameConfiguration::allSpacTriggers
  * Returns a list of all defined SPAC triggers
  *******************************************************************/

@@ -285,6 +285,7 @@ public:
 
 	// Line action (SPAC) triggers
 	string			spacTriggerString(MapLine* line, int map_format);
+	int				spacTriggerIndexHexen(MapLine* line);
 	wxArrayString	allSpacTriggers();
 	void			setLineSpacTrigger(unsigned trigger_index, MapLine* line);
 	static int		parseTagged(ParseTreeNode* tagged);

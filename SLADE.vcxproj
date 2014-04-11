@@ -273,6 +273,7 @@
     <ClCompile Include="src\LfdArchive.cpp" />
     <ClCompile Include="src\LibArchive.cpp" />
     <ClCompile Include="src\LineInfoOverlay.cpp" />
+    <ClCompile Include="src\LinePropsPanel.cpp" />
     <ClCompile Include="src\LineTextureOverlay.cpp" />
     <ClCompile Include="src\Lua.cpp" />
     <ClCompile Include="src\lua\lapi.c" />
@@ -396,6 +397,7 @@
     <ClCompile Include="src\SFont.cpp" />
     <ClCompile Include="src\ShapeDrawPanel.cpp" />
     <ClCompile Include="src\ShowItemDialog.cpp" />
+    <ClCompile Include="src\SidePropsPanel.cpp" />
     <ClCompile Include="src\SIFormat.cpp" />
     <ClCompile Include="src\SImageFormats.cpp" />
     <ClCompile Include="src\SToolBar.cpp" />
@@ -580,6 +582,7 @@
     <ClInclude Include="src\LfdArchive.h" />
     <ClInclude Include="src\LibArchive.h" />
     <ClInclude Include="src\LineInfoOverlay.h" />
+    <ClInclude Include="src\LinePropsPanel.h" />
     <ClInclude Include="src\LineTextureOverlay.h" />
     <ClInclude Include="src\Lua.h" />
     <ClInclude Include="src\lua\lapi.h" />
@@ -695,6 +698,7 @@
     <ClInclude Include="src\sfMod\sfMod.h" />
     <ClInclude Include="src\ShapeDrawPanel.h" />
     <ClInclude Include="src\ShowItemDialog.h" />
+    <ClInclude Include="src\SidePropsPanel.h" />
     <ClInclude Include="src\SIFDoom.h" />
     <ClInclude Include="src\SIFHexen.h" />
     <ClInclude Include="src\SIFImages.h" />

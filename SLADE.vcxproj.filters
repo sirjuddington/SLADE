@@ -1158,6 +1158,12 @@
     <ClCompile Include="src\SDialog.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\LinePropsPanel.cpp">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SidePropsPanel.cpp">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2078,6 +2084,12 @@
     </ClInclude>
     <ClInclude Include="src\SDialog.h">
       <Filter>UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LinePropsPanel.h">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SidePropsPanel.h">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

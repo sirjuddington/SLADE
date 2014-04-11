@@ -56,6 +56,7 @@
 #include "ObjectEditPanel.h"
 #include "ShowItemDialog.h"
 #include "SDialog.h"
+#include "LinePropsPanel.h"
 
 
 /*******************************************************************
@@ -2576,22 +2577,44 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 
-	// Create properties panel
-	MapObjectPropsPanel* panel_props = new MapObjectPropsPanel(&dlg, true);
-	sizer->Add(panel_props, 1, wxEXPAND|wxALL, 4);
+	MapObjectPropsPanel* panel_props = NULL;
+	LinePropsPanel* panel_line_props = NULL;
+	if (editor->editMode() == MapEditor::MODE_LINES)
+	{
+		panel_line_props = new LinePropsPanel(&dlg);
+		sizer->Add(panel_line_props, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
-	// Add dialog buttons
-	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		// Add dialog buttons
+		sizer->AddSpacer(4);
+		sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
-	// Open current selection
-	panel_props->openObjects(list);
+		// Open current selection
+		panel_line_props->openLines(list);
+		panel_line_props->SetFocus();
+	}
+	else
+	{
+		// Create properties panel
+		panel_props = new MapObjectPropsPanel(&dlg, true);
+		sizer->Add(panel_props, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+
+		// Add dialog buttons
+		sizer->AddSpacer(4);
+		sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+
+		// Open current selection
+		panel_props->openObjects(list);
+		panel_props->SetFocus();
+	}
 
 	// Open the dialog and apply changes if OK was clicked
-	panel_props->SetFocus();
 	dlg.CenterOnParent();
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		panel_props->applyChanges();
+		if (panel_props)
+			panel_props->applyChanges();
+		if (panel_line_props)
+			panel_line_props->applyChanges(list);
 		renderer_2d->forceUpdate(fade_lines);
 		editor->updateDisplay();
 
@@ -2603,7 +2626,8 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	editor->undoManager()->endRecord(true);
 
 	// Clear property grid to avoid crash (wxPropertyGrid is at fault there)
-	panel_props->clearGrid();
+	if (panel_props)
+		panel_props->clearGrid();
 }
 
 /* MapCanvas::beginLineDraw
@@ -3576,26 +3600,21 @@ bool MapCanvas::handleAction(string id)
 	else if (id == "mapw_line_changespecial")
 	{
 		// Get selection
-		vector<MapLine*> selection;
-		editor->getSelectedLines(selection);
+		//vector<MapLine*> selection;
+		//editor->getSelectedLines(selection);
+		vector<MapObject*> selection;
+		editor->getSelectedObjects(selection);
 
 		// Open action special selection dialog
 		if (selection.size() > 0)
 		{
 			int as = -1;
-			ActionSpecialDialog dlg(this);
-			dlg.setSpecial(selection[0]->getSpecial());
+			ActionSpecialDialog dlg(this, true);
+			dlg.openLines(selection);
 			if (dlg.ShowModal() == wxID_OK)
-				as = dlg.selectedSpecial();
-
-			if (as >= 0)
 			{
-				// Set specials
 				editor->beginUndoRecord("Change Line Special", true, false, false);
-				for (unsigned a = 0; a < selection.size(); a++)
-				{
-					selection[a]->setIntProperty("special", as);
-				}
+				dlg.applyTo(selection, true);
 				editor->endUndoRecord();
 				renderer_2d->forceUpdate();
 			}

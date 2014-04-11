@@ -569,30 +569,42 @@ void MapObjectPropsPanel::setupType(int objtype)
 		addIntProperty(subgroup, "Sector", "side1.sector");
 
 		// 'Textures' group 1
-		subgroup = pg_props_side1->Append(new wxPropertyCategory("Textures", "side1.textures"));
-		addTextureProperty(subgroup, "Upper Texture", "side1.texturetop", 0);
-		addTextureProperty(subgroup, "Middle Texture", "side1.texturemiddle", 0);
-		addTextureProperty(subgroup, "Lower Texture", "side1.texturebottom", 0);
+		if (!(VECTOR_EXISTS(hide_props, "texturetop")))
+		{
+			subgroup = pg_props_side1->Append(new wxPropertyCategory("Textures", "side1.textures"));
+			addTextureProperty(subgroup, "Upper Texture", "side1.texturetop", 0);
+			addTextureProperty(subgroup, "Middle Texture", "side1.texturemiddle", 0);
+			addTextureProperty(subgroup, "Lower Texture", "side1.texturebottom", 0);
+		}
 
 		// 'Offsets' group 1
-		subgroup = pg_props_side1->Append(new wxPropertyCategory("Offsets", "side1.offsets"));
-		addIntProperty(subgroup, "X Offset", "side1.offsetx");
-		addIntProperty(subgroup, "Y Offset", "side1.offsety");
+		if (!(VECTOR_EXISTS(hide_props, "offsetx")))
+		{
+			subgroup = pg_props_side1->Append(new wxPropertyCategory("Offsets", "side1.offsets"));
+			addIntProperty(subgroup, "X Offset", "side1.offsetx");
+			addIntProperty(subgroup, "Y Offset", "side1.offsety");
+		}
 
 		// 'General' group 2
 		subgroup = pg_props_side2->Append(new wxPropertyCategory("General", "side2.general"));
 		addIntProperty(subgroup, "Sector", "side2.sector");
 
 		// 'Textures' group 2
-		subgroup = pg_props_side2->Append(new wxPropertyCategory("Textures", "side2.textures"));
-		addTextureProperty(subgroup, "Upper Texture", "side2.texturetop", 0);
-		addTextureProperty(subgroup, "Middle Texture", "side2.texturemiddle", 0);
-		addTextureProperty(subgroup, "Lower Texture", "side2.texturebottom", 0);
+		if (!(VECTOR_EXISTS(hide_props, "texturetop")))
+		{
+			subgroup = pg_props_side2->Append(new wxPropertyCategory("Textures", "side2.textures"));
+			addTextureProperty(subgroup, "Upper Texture", "side2.texturetop", 0);
+			addTextureProperty(subgroup, "Middle Texture", "side2.texturemiddle", 0);
+			addTextureProperty(subgroup, "Lower Texture", "side2.texturebottom", 0);
+		}
 
 		// 'Offsets' group 2
-		subgroup = pg_props_side2->Append(new wxPropertyCategory("Offsets", "side2.offsets"));
-		addIntProperty(subgroup, "X Offset", "side2.offsetx");
-		addIntProperty(subgroup, "Y Offset", "side2.offsety");
+		if (!(VECTOR_EXISTS(hide_props, "offsetx")))
+		{
+			subgroup = pg_props_side2->Append(new wxPropertyCategory("Offsets", "side2.offsets"));
+			addIntProperty(subgroup, "X Offset", "side2.offsetx");
+			addIntProperty(subgroup, "Y Offset", "side2.offsety");
+		}
 	}
 
 	// Sector properties
@@ -796,11 +808,35 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 
 		// Front side
 		for (unsigned a = 0; a < sprops.size(); a++)
+		{
+			// Skip if hidden
+			if ((hide_flags && sprops[a].property->isFlag()) ||
+				(hide_triggers && sprops[a].property->isTrigger()))
+			{
+				hide_props.push_back(sprops[a].property->getProperty());
+				continue;
+			}
+			if (VECTOR_EXISTS(hide_props, sprops[a].property->getProperty()))
+				continue;
+
 			addUDMFProperty(sprops[a].property, objtype, "side1", pg_props_side1);
+		}
 
 		// Back side
 		for (unsigned a = 0; a < sprops.size(); a++)
+		{
+			// Skip if hidden
+			if ((hide_flags && sprops[a].property->isFlag()) ||
+				(hide_triggers && sprops[a].property->isTrigger()))
+			{
+				hide_props.push_back(sprops[a].property->getProperty());
+				continue;
+			}
+			if (VECTOR_EXISTS(hide_props, sprops[a].property->getProperty()))
+				continue;
+
 			addUDMFProperty(sprops[a].property, objtype, "side2", pg_props_side2);
+		}
 	}
 
 	// Set all bool properties to use checkboxes
@@ -866,8 +902,12 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 			vector<MobjPropertyList::prop_t> objprops = objects[a]->props().allProperties();
 			for (unsigned b = 0; b < objprops.size(); b++)
 			{
+				// Ignore side property
+				if (objprops[b].name.StartsWith("side1.") || objprops[b].name.StartsWith("side2."))
+					continue;
+
 				// Check if hidden
-				if (VECTOR_EXISTS(hide_props, objprops[a].name))
+				if (VECTOR_EXISTS(hide_props, objprops[b].name))
 					continue;
 
 				// Check if property is already on the list
