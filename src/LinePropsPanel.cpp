@@ -201,6 +201,9 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		hbox->Add(text_tag, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 		btn_new_tag = new wxButton(panel_flags, -1, "New Tag");
 		hbox->Add(btn_new_tag, 0, wxEXPAND);
+
+		// Bind event
+		btn_new_tag->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &LinePropsPanel::onBtnNewTag, this);
 	}
 
 	return panel_flags;
@@ -411,4 +414,13 @@ void LinePropsPanel::onOverrideSpecialChecked(wxCommandEvent& e)
 		panel_special->Enable(true);
 	else
 		panel_special->Enable(false);
+}
+
+/* LinePropsPanel::onBtnNewTag
+ * Called when the 'New Tag' button is clicked
+ *******************************************************************/
+void LinePropsPanel::onBtnNewTag(wxCommandEvent& e)
+{
+	int tag = theMapEditor->mapEditor().getMap().findUnusedSectorTag();
+	text_tag->SetValue(S_FMT("%d", tag));
 }

@@ -35,6 +35,7 @@ public:
 	void		applyChanges(vector<MapObject*>& lines);
 
 	void	onOverrideSpecialChecked(wxCommandEvent& e);
+	void	onBtnNewTag(wxCommandEvent& e);
 };
 
 #endif//__LINE_PROPS_PANEL_H__
