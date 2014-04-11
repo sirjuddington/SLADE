@@ -457,10 +457,11 @@ void ActionSpecialPanel::setSpecial(int special)
 			panel_gen_specials->SetFocus();
 			return;
 		}
+		else
+			rb_special->SetValue(true);
 	}
 
 	// Regular action special
-	rb_special->SetValue(true);
 	showGeneralised(false);
 	tree_specials->showSpecial(special);
 	tree_specials->SetFocus();
@@ -513,6 +514,9 @@ int ActionSpecialPanel::selectedSpecial()
  *******************************************************************/
 void ActionSpecialPanel::showGeneralised(bool show)
 {
+	if (!theGameConfiguration->isBoom())
+		return;
+
 	if (show)
 	{
 		wxSizer* sizer = GetSizer();
@@ -662,7 +666,7 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
  *******************************************************************/
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 {
-	if (rb_generalised->GetValue() || !panel_args)
+	if ((theGameConfiguration->isBoom() && rb_generalised->GetValue()) || !panel_args)
 	{
 		e.Skip();
 		return;

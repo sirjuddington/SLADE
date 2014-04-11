@@ -37,6 +37,9 @@
 #include "ActionSpecialDialog.h"
 #include "SidePropsPanel.h"
 #include <wx/gbsizer.h>
+#undef min
+#undef max
+#include <wx/valnum.h>
 
 
 /*******************************************************************
@@ -194,7 +197,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 
 		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
 		text_tag = new wxTextCtrl(panel_flags, -1, "");
-		text_tag->SetValidator(wxNumericPropertyValidator(wxNumericPropertyValidator::NumericType::Unsigned));
+		text_tag->SetValidator(wxIntegerValidator<short>());
 		hbox->Add(text_tag, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 		btn_new_tag = new wxButton(panel_flags, -1, "New Tag");
 		hbox->Add(btn_new_tag, 0, wxEXPAND);

@@ -85,6 +85,8 @@ void SideTexCanvas::setTexture(string tex)
 		texture = NULL;
 	else
 		texture = theMapEditor->textureManager().getTexture(tex, theGameConfiguration->mixTexFlats());
+
+	Refresh();
 }
 
 /* SideTexCanvas::draw
@@ -143,20 +145,22 @@ TextureComboBox::TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 	// Init
 	list_down = false;
 	SetInitialSize(wxSize(136, -1));
+	wxArrayString list;
+	list.Add("-");
 
 	// Add all textures to dropdown on OSX, since the wxEVT_COMBOBOX_DROPDOWN event isn't supported there
 #ifdef __WXOSX__
 	vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
-	wxArrayString list;
 	for (unsigned a = 0; a < textures.size(); a++)
 		list.Add(textures[a].name);
-	Set(list);
 #else
 	// Bind events
 	Bind(wxEVT_COMBOBOX_DROPDOWN, &TextureComboBox::onDropDown, this);
 	Bind(wxEVT_COMBOBOX_CLOSEUP, &TextureComboBox::onCloseUp, this);
 #endif
 	Bind(wxEVT_KEY_DOWN, &TextureComboBox::onKeyDown, this);
+
+	Set(list);
 }
 
 
