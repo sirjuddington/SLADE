@@ -19,6 +19,9 @@ private:
 		string	tex_upper;
 		string	tex_middle;
 		string	tex_lower;
+		bool	needs_upper;
+		bool	needs_middle;
+		bool	needs_lower;
 	};
 	side_t	side_front;
 	side_t	side_back;
@@ -30,7 +33,7 @@ public:
 	void	update(MapLine* line);
 	void	draw(int bottom, int right, float alpha = 1.0f);
 	void	drawSide(int bottom, int right, float alpha, side_t& side, int xstart = 0);
-	void	drawTexture(float alpha, int x, int y, string texture, string pos = "U");
+	void	drawTexture(float alpha, int x, int y, string texture, bool needed, string pos = "U");
 };
 
 #endif//__LINE_INFO_OVERLAY_H__

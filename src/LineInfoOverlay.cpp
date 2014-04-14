@@ -122,6 +122,9 @@ void LineInfoOverlay::update(MapLine* line)
 	// Setup text box
 	text_box->setText(info_text);
 
+	// Check needed textures
+	int needed_tex = line->needsTexture();
+
 	// Front side
 	MapSide* s = line->s1();
 	if (s)
@@ -137,6 +140,9 @@ void LineInfoOverlay::update(MapLine* line)
 		side_front.tex_upper = s->getTexUpper();
 		side_front.tex_middle = s->getTexMiddle();
 		side_front.tex_lower = s->getTexLower();
+		side_front.needs_lower = ((needed_tex & TEX_FRONT_LOWER) > 0);
+		side_front.needs_middle = ((needed_tex & TEX_FRONT_MIDDLE) > 0);
+		side_front.needs_upper = ((needed_tex & TEX_FRONT_UPPER) > 0);
 	}
 	else side_front.exists = false;
 
@@ -155,6 +161,9 @@ void LineInfoOverlay::update(MapLine* line)
 		side_back.tex_upper = s->getTexUpper();
 		side_back.tex_middle = s->getTexMiddle();
 		side_back.tex_lower = s->getTexLower();
+		side_back.needs_lower = ((needed_tex & TEX_BACK_LOWER) > 0);
+		side_back.needs_middle = ((needed_tex & TEX_BACK_MIDDLE) > 0);
+		side_back.needs_upper = ((needed_tex & TEX_BACK_UPPER) > 0);
 	}
 	else side_back.exists = false;
 }
@@ -253,15 +262,15 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side,
 	Drawing::drawText(side.offsets, xstart + 4, bottom - 16, col_fg, Drawing::FONT_CONDENSED);
 
 	// Textures
-	drawTexture(alpha, xstart + 4, bottom - 32, side.tex_upper);
-	drawTexture(alpha, xstart + 88, bottom - 32, side.tex_middle, "M");
-	drawTexture(alpha, xstart + 92 + 80, bottom - 32, side.tex_lower, "L");
+	drawTexture(alpha, xstart + 4, bottom - 32, side.tex_upper, side.needs_upper);
+	drawTexture(alpha, xstart + 88, bottom - 32, side.tex_middle, side.needs_middle, "M");
+	drawTexture(alpha, xstart + 92 + 80, bottom - 32, side.tex_lower, side.needs_lower, "L");
 }
 
 /* LineInfoOverlay::drawTexture
  * Draws a texture box with name underneath for [texture]
  *******************************************************************/
-void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
+void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, bool needed, string pos)
 {
 	// Get colours
 	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
@@ -283,10 +292,18 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, str
 		GLTexture* tex = theMapEditor->textureManager().getTexture(texture, theGameConfiguration->mixTexFlats());
 
 		// Draw texture
-		if (tex)
+		if (tex && tex != &(GLTexture::missingTex()))
 		{
 			OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 			Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0);
+		}
+		else if (tex == &(GLTexture::missingTex()))
+		{
+			// Draw unknown icon
+			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
+			glEnable(GL_TEXTURE_2D);
+			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
+			Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.2);
 		}
 
 		glDisable(GL_TEXTURE_2D);
@@ -298,7 +315,11 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, str
 	}
 
 	// Draw texture name (even if texture is blank)
+	bool required = (needed && texture == "-");
 	texture.Prepend(":");
 	texture.Prepend(pos);
-	Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
+	if (required)
+		Drawing::drawText(texture, x + 40, y - 16, col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f), Drawing::FONT_BOLDCONDENSED, Drawing::ALIGN_CENTER);
+	else
+		Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
 }
