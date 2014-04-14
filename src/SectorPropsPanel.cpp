@@ -117,10 +117,18 @@ void FlatTexCanvas::draw()
 	drawCheckeredBackground();
 
 	// Draw texture
-	if (texture)
+	if (texture && texture != &(GLTexture::missingTex()))
 	{
 		glEnable(GL_TEXTURE_2D);
 		Drawing::drawTextureWithin(texture, 0, 0, GetSize().x, GetSize().y, 0, 100.0);
+	}
+	else if (texture == &(GLTexture::missingTex()))
+	{
+		// Draw unknown icon
+		GLTexture* tex = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		glEnable(GL_TEXTURE_2D);
+		OpenGL::setColour(180, 0, 0);
+		Drawing::drawTextureWithin(tex, 0, 0, GetSize().x, GetSize().y, 0, 0.25);
 	}
 
 	// Swap buffers (ie show what was drawn)
