@@ -35,6 +35,7 @@
 #include "Drawing.h"
 #include "MapTextureBrowser.h"
 #include "GameConfiguration.h"
+#include "NumberTextCtrl.h"
 #include <wx/gbsizer.h>
 #undef min
 #undef max
@@ -267,14 +268,12 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	// X
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 	hbox->Add(new wxStaticText(this, -1, "X Offset:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(text_offsetx = new wxTextCtrl(this, -1), 1, wxEXPAND|wxRIGHT, 4);
-	text_offsetx->SetValidator(wxIntegerValidator<short>());
+	hbox->Add(text_offsetx = new NumberTextCtrl(this), 1, wxEXPAND|wxRIGHT, 4);
 
 	// Y
 	sizer->Add(hbox = new wxBoxSizer(wxHORIZONTAL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 	hbox->Add(new wxStaticText(this, -1, "Y Offset:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(text_offsety = new wxTextCtrl(this, -1), 1, wxEXPAND|wxRIGHT, 4);
-	text_offsety->SetValidator(wxIntegerValidator<short>());
+	hbox->Add(text_offsety = new NumberTextCtrl(this), 1, wxEXPAND|wxRIGHT, 4);
 
 
 	// Bind events
@@ -380,9 +379,6 @@ void SidePropsPanel::applyTo(vector<MapSide*>& sides)
 	string tex_upper = tcb_upper->GetValue();
 	string tex_middle = tcb_middle->GetValue();
 	string tex_lower = tcb_lower->GetValue();
-	long offsetx, offsety;
-	text_offsetx->GetValue().ToLong(&offsetx);
-	text_offsety->GetValue().ToLong(&offsety);
 
 	for (unsigned a = 0; a < sides.size(); a++)
 	{
@@ -400,11 +396,11 @@ void SidePropsPanel::applyTo(vector<MapSide*>& sides)
 
 		// X Offset
 		if (!text_offsetx->GetValue().IsEmpty())
-			sides[a]->setIntProperty("offsetx", offsetx);
+			sides[a]->setIntProperty("offsetx", text_offsetx->getNumber(sides[a]->getOffsetX()));
 
 		// Y Offset
 		if (!text_offsety->GetValue().IsEmpty())
-			sides[a]->setIntProperty("offsety", offsety);
+			sides[a]->setIntProperty("offsety", text_offsety->getNumber(sides[a]->getOffsetY()));
 	}
 }
 

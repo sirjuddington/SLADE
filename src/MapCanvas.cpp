@@ -57,6 +57,7 @@
 #include "ShowItemDialog.h"
 #include "SDialog.h"
 #include "LinePropsPanel.h"
+#include "SectorPropsPanel.h"
 
 
 /*******************************************************************
@@ -2577,44 +2578,58 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 
-	MapObjectPropsPanel* panel_props = NULL;
-	LinePropsPanel* panel_line_props = NULL;
+	//MapObjectPropsPanel* panel_props = NULL;
+	//LinePropsPanel* panel_line_props = NULL;
+	//if (editor->editMode() == MapEditor::MODE_LINES)
+	//{
+	//	panel_line_props = new LinePropsPanel(&dlg);
+	//	sizer->Add(panel_line_props, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+
+	//	// Add dialog buttons
+	//	sizer->AddSpacer(4);
+	//	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+
+	//	// Open current selection
+	//	panel_line_props->openLines(list);
+	//	panel_line_props->SetFocus();
+	//}
+	//else
+	//{
+	//	// Create properties panel
+	//	panel_props = new MapObjectPropsPanel(&dlg, true);
+	//	sizer->Add(panel_props, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+
+	//	// Add dialog buttons
+	//	sizer->AddSpacer(4);
+	//	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+
+	//	// Open current selection
+	//	panel_props->openObjects(list);
+	//	panel_props->SetFocus();
+	//}
+
+	// Create properties panel
+	PropsPanelBase* panel_props = NULL;
 	if (editor->editMode() == MapEditor::MODE_LINES)
-	{
-		panel_line_props = new LinePropsPanel(&dlg);
-		sizer->Add(panel_line_props, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
-
-		// Add dialog buttons
-		sizer->AddSpacer(4);
-		sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
-
-		// Open current selection
-		panel_line_props->openLines(list);
-		panel_line_props->SetFocus();
-	}
+		sizer->Add(panel_props = new LinePropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+	else if (editor->editMode() == MapEditor::MODE_SECTORS)
+		sizer->Add(panel_props = new SectorPropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 	else
-	{
-		// Create properties panel
-		panel_props = new MapObjectPropsPanel(&dlg, true);
-		sizer->Add(panel_props, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+		sizer->Add(panel_props = new MapObjectPropsPanel(&dlg, true), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
-		// Add dialog buttons
-		sizer->AddSpacer(4);
-		sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+	// Add dialog buttons
+	sizer->AddSpacer(4);
+	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
-		// Open current selection
-		panel_props->openObjects(list);
-		panel_props->SetFocus();
-	}
+	// Open current selection
+	panel_props->openObjects(list);
+	//panel_props->SetFocus();
 
 	// Open the dialog and apply changes if OK was clicked
 	dlg.CenterOnParent();
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		if (panel_props)
-			panel_props->applyChanges();
-		if (panel_line_props)
-			panel_line_props->applyChanges(list);
+		panel_props->applyChanges();
 		renderer_2d->forceUpdate(fade_lines);
 		editor->updateDisplay();
 
@@ -2626,8 +2641,8 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	editor->undoManager()->endRecord(true);
 
 	// Clear property grid to avoid crash (wxPropertyGrid is at fault there)
-	if (panel_props)
-		panel_props->clearGrid();
+	//if (panel_props)
+	//	panel_props->clearGrid();
 }
 
 /* MapCanvas::beginLineDraw

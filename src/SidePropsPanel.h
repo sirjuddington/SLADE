@@ -35,6 +35,7 @@ public:
 };
 
 class MapSide;
+class NumberTextCtrl;
 class SidePropsPanel : public wxPanel
 {
 private:
@@ -44,8 +45,8 @@ private:
 	TextureComboBox*	tcb_lower;
 	TextureComboBox*	tcb_middle;
 	TextureComboBox*	tcb_upper;
-	wxTextCtrl*			text_offsetx;
-	wxTextCtrl*			text_offsety;
+	NumberTextCtrl*		text_offsetx;
+	NumberTextCtrl*		text_offsety;
 
 public:
 	SidePropsPanel(wxWindow* parent);

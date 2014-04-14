@@ -2,6 +2,7 @@
 #ifndef __MAP_OBJECT_PROPS_PANEL_H__
 #define __MAP_OBJECT_PROPS_PANEL_H__
 
+#include "PropsPanelBase.h"
 #include "MOPGProperty.h"
 #include <wx/notebook.h>
 
@@ -10,7 +11,7 @@ class wxPGProperty;
 class MapObject;
 class UDMFProperty;
 class MOPGProperty;
-class MapObjectPropsPanel : public wxPanel
+class MapObjectPropsPanel : public PropsPanelBase
 {
 private:
 	wxNotebook*				tabs_sections;
@@ -20,7 +21,6 @@ private:
 	int						last_type;
 	string					last_config;
 	wxStaticText*			label_item;
-	vector<MapObject*>		objects;
 	vector<MOPGProperty*>	properties;
 	wxPGProperty*			args[5];
 	wxButton*				btn_reset;

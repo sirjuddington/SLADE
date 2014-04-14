@@ -37,6 +37,7 @@
 #include "ActionSpecialDialog.h"
 #include "SidePropsPanel.h"
 #include <wx/gbsizer.h>
+#include <wx/notebook.h>
 #undef min
 #undef max
 #include <wx/valnum.h>
@@ -49,7 +50,7 @@
 /* LinePropsPanel::LinePropsPanel
  * LinePropsPanel class constructor
  *******************************************************************/
-LinePropsPanel::LinePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
+LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -235,7 +236,7 @@ wxPanel* LinePropsPanel::setupSpecialTab()
 /* LinePropsPanel::openLines
  * Loads values from all lines/sides in [lines]
  *******************************************************************/
-void LinePropsPanel::openLines(vector<MapObject*>& lines)
+void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 {
 	int map_format = theMapEditor->currentMapDesc().format;
 
@@ -337,6 +338,11 @@ void LinePropsPanel::openLines(vector<MapObject*>& lines)
 	// Load all properties
 	mopp_all_props->openObjects(lines);
 
+	// Update internal objects list
+	this->objects.clear();
+	for (unsigned a = 0; a < lines.size(); a++)
+		this->objects.push_back(lines[a]);
+
 	// Update layout
 	Layout();
 	Refresh();
@@ -345,7 +351,7 @@ void LinePropsPanel::openLines(vector<MapObject*>& lines)
 /* LinePropsPanel::applyChanges
  * Applies values to [lines]
  *******************************************************************/
-void LinePropsPanel::applyChanges(vector<MapObject*>& lines)
+void LinePropsPanel::applyChanges()
 {
 	// Apply flags
 	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
@@ -356,8 +362,8 @@ void LinePropsPanel::applyChanges(vector<MapObject*>& lines)
 			if (cb_flags[a]->Get3StateValue() == wxCHK_UNDETERMINED)
 				continue;
 
-			for (unsigned l = 0; l < lines.size(); l++)
-				lines[l]->setBoolProperty(udmf_flags[a], cb_flags[a]->GetValue());
+			for (unsigned l = 0; l < objects.size(); l++)
+				objects[l]->setBoolProperty(udmf_flags[a], cb_flags[a]->GetValue());
 		}
 	}
 	else
@@ -368,19 +374,19 @@ void LinePropsPanel::applyChanges(vector<MapObject*>& lines)
 			if (cb_flags[a]->Get3StateValue() == wxCHK_UNDETERMINED)
 				continue;
 
-			for (unsigned l = 0; l < lines.size(); l++)
-				theGameConfiguration->setLineFlag(a, (MapLine*)lines[l], cb_flags[a]->GetValue());
+			for (unsigned l = 0; l < objects.size(); l++)
+				theGameConfiguration->setLineFlag(a, (MapLine*)objects[l], cb_flags[a]->GetValue());
 		}
 	}
 
 	// Apply special
-	panel_special->applyTo(lines, true);
+	panel_special->applyTo(objects, true);
 
 	// Apply first side
 	vector<MapSide*> sides;
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (unsigned a = 0; a < objects.size(); a++)
 	{
-		if (MapSide* s = ((MapLine*)lines[a])->s1())
+		if (MapSide* s = ((MapLine*)objects[a])->s1())
 			sides.push_back(s);
 	}
 	if (!sides.empty())
@@ -388,9 +394,9 @@ void LinePropsPanel::applyChanges(vector<MapObject*>& lines)
 
 	// Apply second side
 	sides.clear();
-	for (unsigned a = 0; a < lines.size(); a++)
+	for (unsigned a = 0; a < objects.size(); a++)
 	{
-		if (MapSide* s = ((MapLine*)lines[a])->s2())
+		if (MapSide* s = ((MapLine*)objects[a])->s2())
 			sides.push_back(s);
 	}
 	if (!sides.empty())

@@ -365,6 +365,7 @@
     <ClCompile Include="src\MOPGProperty.cpp" />
     <ClCompile Include="src\mus2mid\mus2mid.cpp" />
     <ClCompile Include="src\NodeBuilders.cpp" />
+    <ClCompile Include="src\NumberTextCtrl.cpp" />
     <ClCompile Include="src\ObjectEdit.cpp" />
     <ClCompile Include="src\ObjectEditPanel.cpp" />
     <ClCompile Include="src\PakArchive.cpp" />
@@ -390,6 +391,7 @@
     <ClCompile Include="src\SDialog.cpp" />
     <ClCompile Include="src\SectorBuilder.cpp" />
     <ClCompile Include="src\SectorInfoOverlay.cpp" />
+    <ClCompile Include="src\SectorPropsPanel.cpp" />
     <ClCompile Include="src\SectorSpecialDialog.cpp" />
     <ClCompile Include="src\SectorTextureOverlay.cpp" />
     <ClCompile Include="src\SFileDialog.cpp" />
@@ -665,6 +667,7 @@
     <ClInclude Include="src\MOPGProperty.h" />
     <ClInclude Include="src\mus2mid\mus2mid.h" />
     <ClInclude Include="src\NodeBuilders.h" />
+    <ClInclude Include="src\NumberTextCtrl.h" />
     <ClInclude Include="src\ObjectEdit.h" />
     <ClInclude Include="src\ObjectEditPanel.h" />
     <ClInclude Include="src\PakArchive.h" />
@@ -681,6 +684,7 @@
     <ClInclude Include="src\Parser.h" />
     <ClInclude Include="src\PatchBrowser.h" />
     <ClInclude Include="src\Polygon2D.h" />
+    <ClInclude Include="src\PropsPanelBase.h" />
     <ClInclude Include="src\QuickTextureOverlay3d.h" />
     <ClInclude Include="src\ResArchive.h" />
     <ClInclude Include="src\ResourceArchiveChooser.h" />
@@ -691,6 +695,7 @@
     <ClInclude Include="src\SDialog.h" />
     <ClInclude Include="src\SectorBuilder.h" />
     <ClInclude Include="src\SectorInfoOverlay.h" />
+    <ClInclude Include="src\SectorPropsPanel.h" />
     <ClInclude Include="src\SectorSpecialDialog.h" />
     <ClInclude Include="src\SectorTextureOverlay.h" />
     <ClInclude Include="src\SFileDialog.h" />

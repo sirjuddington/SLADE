@@ -56,7 +56,7 @@ CVAR(Bool, mobj_props_auto_apply, false, CVAR_SAVE)
 /* MapObjectPropsPanel::MapObjectPropsPanel
  * MapObjectPropsPanel class constructor
  *******************************************************************/
-MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : wxPanel(parent, -1)
+MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : PropsPanelBase(parent)
 {
 	// Init variables
 	last_type = -1;
