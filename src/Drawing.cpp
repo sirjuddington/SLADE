@@ -581,7 +581,7 @@ void Drawing::drawTextureWithin(GLTexture* tex, double x1, double y1, double x2,
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - padding) / x_dim;
-	double y_scale = ((double)width - padding) / y_dim;
+	double y_scale = ((double)height - padding) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
 	double scale = MIN(x_scale, y_scale);
