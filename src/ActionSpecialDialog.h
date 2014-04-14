@@ -47,7 +47,7 @@ private:
 	wxGridBagSizer*	gb_sizer;
 	wxTextCtrl*		text_args[5];
 	wxStaticText*	label_args[5];
-	wxTextCtrl*		label_args_desc[5];
+	wxStaticText*	label_args_desc[5];
 
 public:
 	ArgsPanel(wxWindow* parent);

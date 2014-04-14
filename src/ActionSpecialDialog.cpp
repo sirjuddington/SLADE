@@ -217,9 +217,9 @@ ArgsPanel::ArgsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	for (unsigned a = 0; a < 5; a++)
 	{
 		label_args[a] = new wxStaticText(this, -1, "");
-		text_args[a] = new wxTextCtrl(this, -1);
+		text_args[a] = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(300, -1));
 		text_args[a]->SetValidator(wxIntegerValidator<unsigned char>());
-		label_args_desc[a] = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_BESTWRAP|wxTE_READONLY|wxTE_MULTILINE|wxTE_NO_VSCROLL|wxBORDER_NONE);
+		label_args_desc[a] = new wxStaticText(this, -1, "", wxDefaultPosition, wxSize(300, -1));
 	}
 }
 
@@ -268,11 +268,20 @@ void ArgsPanel::setup(argspec_t* args)
 		if (!arg.desc.IsEmpty())
 		{
 			label_args_desc[a]->Show(true);
-			label_args_desc[a]->SetValue(arg.desc);
+			label_args_desc[a]->SetLabel(arg.desc);
 		}
 	}
 
 	gb_sizer->AddGrowableCol(1, 1);
+
+	Layout();
+
+	for (unsigned a = 0; a < 5; a++)
+	{
+		label_args_desc[a]->SetSize(text_args[a]->GetSize().GetWidth(), -1);
+		label_args_desc[a]->Wrap(text_args[a]->GetSize().GetWidth());
+	}
+
 	Layout();
 }
 
