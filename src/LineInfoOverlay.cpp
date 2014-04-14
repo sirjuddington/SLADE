@@ -272,13 +272,19 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side,
  *******************************************************************/
 void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, bool needed, string pos)
 {
+	bool required = (needed && texture == "-");
+	bool unknown = false;
+
 	// Get colours
 	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
 	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 
-	// Check texture isn't blank
-	if (texture != "-" && !texture.IsEmpty())
+	// Get texture
+	GLTexture* tex = theMapEditor->textureManager().getTexture(texture, theGameConfiguration->mixTexFlats());
+
+	// Valid texture
+	if (texture != "-" && tex != &(GLTexture::missingTex()))
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
@@ -288,23 +294,9 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 		GLTexture::bgTex().draw2dTiled(80, 80);
 		glPopMatrix();
 
-		// Get texture
-		GLTexture* tex = theMapEditor->textureManager().getTexture(texture, theGameConfiguration->mixTexFlats());
-
 		// Draw texture
-		if (tex && tex != &(GLTexture::missingTex()))
-		{
-			OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-			Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0);
-		}
-		else if (tex == &(GLTexture::missingTex()))
-		{
-			// Draw unknown icon
-			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
-			glEnable(GL_TEXTURE_2D);
-			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
-			Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.2);
-		}
+		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
+		Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0);
 
 		glDisable(GL_TEXTURE_2D);
 
@@ -314,12 +306,35 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 		Drawing::drawRect(x, y-96, x+80, y-16);
 	}
 
+	// Unknown texture
+	else if (tex == &(GLTexture::missingTex()) && texture != "-")
+	{
+		// Draw unknown icon
+		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		glEnable(GL_TEXTURE_2D);
+		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
+		Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.15);
+
+		// Set colour to red (for text)
+		col_fg = col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	// Missing texture
+	else if (required)
+	{
+		// Draw missing icon
+		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/minus");
+		glEnable(GL_TEXTURE_2D);
+		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
+		Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.15);
+
+		// Set colour to red (for text)
+		col_fg = col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f);
+	}
+
 	// Draw texture name (even if texture is blank)
-	bool required = (needed && texture == "-");
+	if (required) texture = "MISSING";
 	texture.Prepend(":");
 	texture.Prepend(pos);
-	if (required)
-		Drawing::drawText(texture, x + 40, y - 16, col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f), Drawing::FONT_BOLDCONDENSED, Drawing::ALIGN_CENTER);
-	else
-		Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
+	Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
 }

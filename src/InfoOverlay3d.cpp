@@ -483,6 +483,14 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 			OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 			Drawing::drawTextureWithin(texture, x, y - 96, x + 80, y - 16, 0);
 		}
+		else if (texname == "-")
+		{
+			// Draw missing icon
+			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/minus");
+			glEnable(GL_TEXTURE_2D);
+			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
+			Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.2);
+		}
 		else if (texname != "-" && texture == &(GLTexture::missingTex()))
 		{
 			// Draw unknown icon
