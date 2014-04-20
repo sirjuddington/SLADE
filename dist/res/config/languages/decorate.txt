@@ -14,9 +14,9 @@ decorate : cstyle {
 		Actor, States, Spawn, See, Melee, Missile, Pain, Death, XDeath, Burn, Ice, Disintegrate,
 		Raise, Heal, Crash, Crush, Wound, Greetings, Yes, No, Extreme, Bounce, Floor, Ceiling,
 		Wall, Creature, Loop, Stop, Wait, Fail, Goto, Ready, Deselect, Select, Fire, AltFire,
-		Hold, AltHold, Flash, AltFlash, Reload, Zoom, Pickup, Use, Drop, Bright, Fast, NoDelay,
-		Idle, Active, Inactive, Light, Offset, Action, Native, Const, Enum, Replaces, LightDone,
-		Super, Spray, GenericFreezeDeath, GenericCrush,
+		Hold, AltHold, Flash, AltFlash, Reload, Zoom, Pickup, Use, Drop, Bright, Fast, Slow, NoDelay,
+		CanRaise, Idle, Active, Inactive, Light, Offset, Action, Native, Const, Enum, Replaces,
+		LightDone, Super, Spray, GenericFreezeDeath, GenericCrush,
 
 		// Actor properties
 		
