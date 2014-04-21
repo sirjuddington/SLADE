@@ -71,6 +71,7 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ActionSpecialTreeView::onItemActivated, this);
 
 	Expand(root);
+	SetMinSize(wxSize(-1, 200));
 }
 
 /* ActionSpecialTreeView::~ActionSpecialTreeView
@@ -327,10 +328,11 @@ int ArgsPanel::getArgValue(int index)
 /* ActionSpecialPanel::ActionSpecialPanel
  * ActionSpecialPanel class constructor
  *******************************************************************/
-ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
+ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel(parent, -1)
 {
 	panel_args = NULL;
 	choice_trigger = NULL;
+	show_trigger = trigger;
 
 	// Setup layout
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -384,70 +386,73 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 	// Action specials tree
 	tree_specials = new ActionSpecialTreeView(panel_action_special);
-	sizer->Add(tree_specials, 1, wxEXPAND|wxBOTTOM, 4);
+	sizer->Add(tree_specials, 1, wxEXPAND);
 
-	// UDMF Triggers
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
+	if (show_trigger)
 	{
-		// Get all UDMF properties
-		vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(MOBJ_LINE);
-		sort(props.begin(), props.end());
-
-		// Get all UDMF trigger properties
-		vector<string> triggers;
-		for (unsigned a = 0; a < props.size(); a++)
+		// UDMF Triggers
+		if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 		{
-			if (props[a].property->isTrigger())
+			// Get all UDMF properties
+			vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(MOBJ_LINE);
+			sort(props.begin(), props.end());
+
+			// Get all UDMF trigger properties
+			vector<string> triggers;
+			for (unsigned a = 0; a < props.size(); a++)
 			{
-				triggers.push_back(props[a].property->getName());
-				triggers_udmf.push_back(props[a].property->getProperty());
-			}
-		}
-
-		// Check if there are any triggers defined
-		if (triggers.size() > 0)
-		{
-			// Add frame
-			wxStaticBox* frame_triggers = new wxStaticBox(panel_action_special, -1, "Special Triggers");
-			wxStaticBoxSizer* sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
-			sizer->Add(sizer_triggers, 0, wxEXPAND);
-
-			// Add trigger checkboxes
-			wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
-			sizer_triggers->Add(gb_sizer, 1, wxEXPAND|wxALL, 4);
-			int row = 0;
-			int col = 0;
-			int trigger_mid = triggers.size() / 3;
-			for (unsigned a = 0; a < triggers.size(); a++)
-			{
-				wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special, -1, triggers[a], wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
-				gb_sizer->Add(cb_trigger, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
-				cb_triggers.push_back(cb_trigger);
-
-				if (row >= trigger_mid && col <= 1)
+				if (props[a].property->isTrigger())
 				{
-					trigger_mid;
-					row = 0;
-					col++;
+					triggers.push_back(props[a].property->getName());
+					triggers_udmf.push_back(props[a].property->getProperty());
 				}
 			}
 
-			gb_sizer->AddGrowableCol(0, 1);
-			gb_sizer->AddGrowableCol(1, 1);
-			gb_sizer->AddGrowableCol(2, 1);
+			// Check if there are any triggers defined
+			if (triggers.size() > 0)
+			{
+				// Add frame
+				wxStaticBox* frame_triggers = new wxStaticBox(panel_action_special, -1, "Special Triggers");
+				wxStaticBoxSizer* sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
+				sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, 4);
+
+				// Add trigger checkboxes
+				wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
+				sizer_triggers->Add(gb_sizer, 1, wxEXPAND|wxALL, 4);
+				int row = 0;
+				int col = 0;
+				int trigger_mid = triggers.size() / 3;
+				for (unsigned a = 0; a < triggers.size(); a++)
+				{
+					wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special, -1, triggers[a], wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+					gb_sizer->Add(cb_trigger, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
+					cb_triggers.push_back(cb_trigger);
+
+					if (row >= trigger_mid && col <= 1)
+					{
+						trigger_mid;
+						row = 0;
+						col++;
+					}
+				}
+
+				gb_sizer->AddGrowableCol(0, 1);
+				gb_sizer->AddGrowableCol(1, 1);
+				gb_sizer->AddGrowableCol(2, 1);
+			}
 		}
-	}
 
-	// Hexen trigger
-	else if (theMapEditor->currentMapDesc().format == MAP_HEXEN)
-	{
-		// Add triggers dropdown
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND);
+		// Hexen trigger
+		else if (theMapEditor->currentMapDesc().format == MAP_HEXEN)
+		{
+			// Add triggers dropdown
+			wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+			sizer->Add(hbox, 0, wxEXPAND|wxTOP, 4);
 
-		hbox->Add(new wxStaticText(panel_action_special, -1, "Special Trigger:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-		choice_trigger = new wxChoice(panel_action_special, -1, wxDefaultPosition, wxDefaultSize, theGameConfiguration->allSpacTriggers());
-		hbox->Add(choice_trigger, 1, wxEXPAND);
+			hbox->Add(new wxStaticText(panel_action_special, -1, "Special Trigger:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+			choice_trigger = new wxChoice(panel_action_special, -1, wxDefaultPosition, wxDefaultSize, theGameConfiguration->allSpacTriggers());
+			hbox->Add(choice_trigger, 1, wxEXPAND);
+		}
 	}
 }
 
@@ -489,6 +494,9 @@ void ActionSpecialPanel::setSpecial(int special)
  *******************************************************************/
 void ActionSpecialPanel::setTrigger(int index)
 {
+	if (!show_trigger)
+		return;
+
 	// UDMF Trigger
 	if (cb_triggers.size() > 0)
 	{
@@ -580,23 +588,26 @@ void ActionSpecialPanel::applyTo(vector<MapObject*>& lines, bool apply_special)
 	}
 
 	// Trigger(s)
-	for (unsigned a = 0; a < lines.size(); a++)
+	if (show_trigger)
 	{
-		// UDMF
-		if (!cb_triggers.empty())
+		for (unsigned a = 0; a < lines.size(); a++)
 		{
-			for (unsigned b = 0; b < cb_triggers.size(); b++)
+			// UDMF
+			if (!cb_triggers.empty())
 			{
-				if (cb_triggers[b]->Get3StateValue() == wxCHK_UNDETERMINED)
-					continue;
+				for (unsigned b = 0; b < cb_triggers.size(); b++)
+				{
+					if (cb_triggers[b]->Get3StateValue() == wxCHK_UNDETERMINED)
+						continue;
 
-				lines[a]->setBoolProperty(triggers_udmf[b], cb_triggers[b]->GetValue());
+					lines[a]->setBoolProperty(triggers_udmf[b], cb_triggers[b]->GetValue());
+				}
 			}
-		}
 
-		// Hexen
-		else if (choice_trigger && choice_trigger->GetSelection() >= 0)
-			theGameConfiguration->setLineSpacTrigger(choice_trigger->GetSelection(), (MapLine*)lines[a]);
+			// Hexen
+			else if (choice_trigger && choice_trigger->GetSelection() >= 0)
+				theGameConfiguration->setLineSpacTrigger(choice_trigger->GetSelection(), (MapLine*)lines[a]);
+		}
 	}
 }
 
@@ -626,33 +637,36 @@ void ActionSpecialPanel::openLines(vector<MapObject*>& lines)
 	}
 
 	// Trigger (UDMF)
-	if (!cb_triggers.empty())
+	if (show_trigger)
 	{
-		for (unsigned a = 0; a < triggers_udmf.size(); a++)
+		if (!cb_triggers.empty())
 		{
-			bool set;
-			if (MapObject::multiBoolProperty(lines, triggers_udmf[a], set))
-				cb_triggers[a]->SetValue(set);
-			else
-				cb_triggers[a]->Set3StateValue(wxCHK_UNDETERMINED);
-		}
-	}
-
-	// Trigger (Hexen)
-	else if (choice_trigger)
-	{
-		int trigger = theGameConfiguration->spacTriggerIndexHexen((MapLine*)lines[0]);
-		for (unsigned a = 1; a < lines.size(); a++)
-		{
-			if (trigger != theGameConfiguration->spacTriggerIndexHexen((MapLine*)lines[a]))
+			for (unsigned a = 0; a < triggers_udmf.size(); a++)
 			{
-				trigger = -1;
-				break;
+				bool set;
+				if (MapObject::multiBoolProperty(lines, triggers_udmf[a], set))
+					cb_triggers[a]->SetValue(set);
+				else
+					cb_triggers[a]->Set3StateValue(wxCHK_UNDETERMINED);
 			}
 		}
 
-		if (trigger >= 0)
-			choice_trigger->SetSelection(trigger);
+		// Trigger (Hexen)
+		else if (choice_trigger)
+		{
+			int trigger = theGameConfiguration->spacTriggerIndexHexen((MapLine*)lines[0]);
+			for (unsigned a = 1; a < lines.size(); a++)
+			{
+				if (trigger != theGameConfiguration->spacTriggerIndexHexen((MapLine*)lines[a]))
+				{
+					trigger = -1;
+					break;
+				}
+			}
+
+			if (trigger >= 0)
+				choice_trigger->SetSelection(trigger);
+		}
 	}
 }
 

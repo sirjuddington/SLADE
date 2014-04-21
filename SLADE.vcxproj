@@ -410,6 +410,7 @@
     <ClCompile Include="src\TextStyle.cpp" />
     <ClCompile Include="src\TextureXPanel.cpp" />
     <ClCompile Include="src\ThingInfoOverlay.cpp" />
+    <ClCompile Include="src\ThingPropsPanel.cpp" />
     <ClCompile Include="src\ThingType.cpp" />
     <ClCompile Include="src\ThingTypeBrowser.cpp" />
     <ClCompile Include="src\ThingTypeTreeView.cpp" />
@@ -722,6 +723,7 @@
     <ClInclude Include="src\TextStyle.h" />
     <ClInclude Include="src\TextureXPanel.h" />
     <ClInclude Include="src\ThingInfoOverlay.h" />
+    <ClInclude Include="src\ThingPropsPanel.h" />
     <ClInclude Include="src\ThingType.h" />
     <ClInclude Include="src\ThingTypeBrowser.h" />
     <ClInclude Include="src\ThingTypeTreeView.h" />

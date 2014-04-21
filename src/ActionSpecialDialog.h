@@ -72,9 +72,10 @@ private:
 	vector<wxCheckBox*>		cb_triggers;
 	vector<string>			triggers_udmf;
 	wxChoice*				choice_trigger;
+	bool					show_trigger;
 
 public:
-	ActionSpecialPanel(wxWindow* parent);
+	ActionSpecialPanel(wxWindow* parent, bool trigger = true);
 	~ActionSpecialPanel();
 
 	void	setupSpecialPanel();

@@ -65,6 +65,7 @@ public:
 	void	hideTriggers(bool hide) { hide_triggers = hide; }
 	void	hideProperty(string property) { hide_props.push_back(property); }
 	void	clearHiddenProperties() { hide_props.clear(); }
+	bool	propHidden(string property) { return VECTOR_EXISTS(hide_props, property); }
 
 	// Events
 	void	onBtnApply(wxCommandEvent& e);

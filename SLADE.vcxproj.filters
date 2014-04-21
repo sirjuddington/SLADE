@@ -1170,6 +1170,9 @@
     <ClCompile Include="src\NumberTextCtrl.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\ThingPropsPanel.cpp">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2105,6 +2108,9 @@
     </ClInclude>
     <ClInclude Include="src\NumberTextCtrl.h">
       <Filter>UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThingPropsPanel.h">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -102,7 +102,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 		width = -1;
 	}
 
-	SetMinSize(wxSize(width, 400));
+	SetMinSize(wxSize(width, 200));
 }
 
 /* SectorSpecialPanel::~SectorSpecialPanel

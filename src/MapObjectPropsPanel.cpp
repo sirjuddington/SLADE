@@ -507,7 +507,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		addIntProperty(g_basic, "Back Side", "sideback");
 
 		// Add 'Special' group
-		if (!(VECTOR_EXISTS(hide_props, "special")))
+		if (!propHidden("special"))
 		{
 			wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Special"));
 
@@ -569,7 +569,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		addIntProperty(subgroup, "Sector", "side1.sector");
 
 		// 'Textures' group 1
-		if (!(VECTOR_EXISTS(hide_props, "texturetop")))
+		if (!propHidden("texturetop"))
 		{
 			subgroup = pg_props_side1->Append(new wxPropertyCategory("Textures", "side1.textures"));
 			addTextureProperty(subgroup, "Upper Texture", "side1.texturetop", 0);
@@ -578,7 +578,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		}
 
 		// 'Offsets' group 1
-		if (!(VECTOR_EXISTS(hide_props, "offsetx")))
+		if (!propHidden("offsetx"))
 		{
 			subgroup = pg_props_side1->Append(new wxPropertyCategory("Offsets", "side1.offsets"));
 			addIntProperty(subgroup, "X Offset", "side1.offsetx");
@@ -590,7 +590,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		addIntProperty(subgroup, "Sector", "side2.sector");
 
 		// 'Textures' group 2
-		if (!(VECTOR_EXISTS(hide_props, "texturetop")))
+		if (!propHidden("texturetop"))
 		{
 			subgroup = pg_props_side2->Append(new wxPropertyCategory("Textures", "side2.textures"));
 			addTextureProperty(subgroup, "Upper Texture", "side2.texturetop", 0);
@@ -599,7 +599,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		}
 
 		// 'Offsets' group 2
-		if (!(VECTOR_EXISTS(hide_props, "offsetx")))
+		if (!propHidden("offsetx"))
 		{
 			subgroup = pg_props_side2->Append(new wxPropertyCategory("Offsets", "side2.offsets"));
 			addIntProperty(subgroup, "X Offset", "side2.offsetx");
@@ -617,37 +617,48 @@ void MapObjectPropsPanel::setupType(int objtype)
 		wxPGProperty* g_basic = pg_properties->Append(new wxPropertyCategory("General"));
 
 		// Add heights
-		addIntProperty(g_basic, "Floor Height", "heightfloor");
-		addIntProperty(g_basic, "Ceiling Height", "heightceiling");
+		if (!propHidden("heightfloor")) addIntProperty(g_basic, "Floor Height", "heightfloor");
+		if (!propHidden("heightceiling")) addIntProperty(g_basic, "Ceiling Height", "heightceiling");
 
 		// Add tag
-		//addIntProperty(g_basic, "Tag/ID", "id");
-		MOPGTagProperty* prop_tag = new MOPGTagProperty("Tag/ID", "id");
-		prop_tag->setParent(this);
-		properties.push_back(prop_tag);
-		pg_properties->AppendIn(g_basic, prop_tag);
+		if (!propHidden("id"))
+		{
+			MOPGTagProperty* prop_tag = new MOPGTagProperty("Tag/ID", "id");
+			prop_tag->setParent(this);
+			properties.push_back(prop_tag);
+			pg_properties->AppendIn(g_basic, prop_tag);
+		}
 
 		// Add 'Lighting' group
-		wxPGProperty* g_light = pg_properties->Append(new wxPropertyCategory("Lighting"));
+		if (!propHidden("lightlevel"))
+		{
+			wxPGProperty* g_light = pg_properties->Append(new wxPropertyCategory("Lighting"));
 
-		// Add light level
-		addIntProperty(g_light, "Light Level", "lightlevel");
+			// Add light level
+			addIntProperty(g_light, "Light Level", "lightlevel");
+		}
 
 		// Add 'Textures' group
-		wxPGProperty* g_textures = pg_properties->Append(new wxPropertyCategory("Textures"));
+		if (!propHidden("texturefloor"))
+		{
+			wxPGProperty* g_textures = pg_properties->Append(new wxPropertyCategory("Textures"));
 
-		// Add textures
-		addTextureProperty(g_textures, "Floor Texture", "texturefloor", 1);
-		addTextureProperty(g_textures, "Ceiling Texture", "textureceiling", 1);
+			// Add textures
+			addTextureProperty(g_textures, "Floor Texture", "texturefloor", 1);
+			addTextureProperty(g_textures, "Ceiling Texture", "textureceiling", 1);
+		}
 
 		// Add 'Special' group
-		wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Special"));
+		if (!propHidden("special"))
+		{
+			wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Special"));
 
-		// Add special
-		MOPGSectorSpecialProperty* prop_special = new MOPGSectorSpecialProperty("Special", "special");
-		prop_special->setParent(this);
-		properties.push_back(prop_special);
-		pg_properties->AppendIn(g_special, prop_special);
+			// Add special
+			MOPGSectorSpecialProperty* prop_special = new MOPGSectorSpecialProperty("Special", "special");
+			prop_special->setParent(this);
+			properties.push_back(prop_special);
+			pg_properties->AppendIn(g_special, prop_special);
+		}
 	}
 
 	// Thing properties
@@ -664,24 +675,29 @@ void MapObjectPropsPanel::setupType(int objtype)
 		addIntProperty(g_basic, "Y Position", "y");
 
 		// Add z height
-		if (map_format != MAP_DOOM)
+		if (map_format != MAP_DOOM && !propHidden("height"))
 			addIntProperty(g_basic, "Z Height", "height");
 
 		// Add angle
-		//addIntProperty(g_basic, "Angle", "angle");
-		MOPGAngleProperty* prop_angle = new MOPGAngleProperty("Angle", "angle");
-		prop_angle->setParent(this);
-		properties.push_back(prop_angle);
-		pg_properties->AppendIn(g_basic, prop_angle);
+		if (!propHidden("angle"))
+		{
+			MOPGAngleProperty* prop_angle = new MOPGAngleProperty("Angle", "angle");
+			prop_angle->setParent(this);
+			properties.push_back(prop_angle);
+			pg_properties->AppendIn(g_basic, prop_angle);
+		}
 
 		// Add type
-		MOPGThingTypeProperty* prop_tt = new MOPGThingTypeProperty("Type", "type");
-		prop_tt->setParent(this);
-		properties.push_back(prop_tt);
-		pg_properties->AppendIn(g_basic, prop_tt);
+		if (!propHidden("type"))
+		{
+			MOPGThingTypeProperty* prop_tt = new MOPGThingTypeProperty("Type", "type");
+			prop_tt->setParent(this);
+			properties.push_back(prop_tt);
+			pg_properties->AppendIn(g_basic, prop_tt);
+		}
 
 		// Add id
-		if (map_format != MAP_DOOM)
+		if (map_format != MAP_DOOM && !propHidden("id"))
 		{
 			MOPGTagProperty* prop_id = new MOPGTagProperty("ID", "id");
 			prop_id->setParent(this);
@@ -689,7 +705,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 			pg_properties->AppendIn(g_basic, prop_id);
 		}
 
-		if (map_format == MAP_HEXEN)
+		if (map_format == MAP_HEXEN && !propHidden("special"))
 		{
 			// Add 'Scripting Special' group
 			wxPGProperty* g_special = pg_properties->Append(new wxPropertyCategory("Scripting Special"));
