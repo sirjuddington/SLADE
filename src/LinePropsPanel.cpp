@@ -36,6 +36,7 @@
 #include "MapEditorWindow.h"
 #include "ActionSpecialDialog.h"
 #include "SidePropsPanel.h"
+#include "NumberTextCtrl.h"
 #include <wx/gbsizer.h>
 #include <wx/notebook.h>
 #undef min
@@ -96,6 +97,7 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	mopp_all_props->hideProperty("texturebottom");
 	mopp_all_props->hideProperty("offsetx");
 	mopp_all_props->hideProperty("offsety");
+	mopp_all_props->hideProperty("id");
 	nb_tabs->AddPage(mopp_all_props, "Other Properties");
 
 	// Bind events
@@ -153,6 +155,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 
 		// Add flag checkboxes
 		int flag_mid = flags.size() / 3;
+		if (flags.size() % 3 == 0) flag_mid--;
 		for (unsigned a = 0; a < flags.size(); a++)
 		{
 			wxCheckBox* cb_flag = new wxCheckBox(panel_flags, -1, flags[a], wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
@@ -172,6 +175,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 	{
 		// Add flag checkboxes
 		int flag_mid = theGameConfiguration->nLineFlags() / 3;
+		if (theGameConfiguration->nLineFlags() % 3 == 0) flag_mid--;
 		for (int a = 0; a < theGameConfiguration->nLineFlags(); a++)
 		{
 			wxCheckBox* cb_flag = new wxCheckBox(panel_flags, -1, theGameConfiguration->lineFlag(a), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
@@ -197,14 +201,26 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 
 		hbox->Add(new wxStaticText(panel_flags, -1, "Sector Tag:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
-		text_tag = new wxTextCtrl(panel_flags, -1, "");
-		text_tag->SetValidator(wxIntegerValidator<short>());
-		hbox->Add(text_tag, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+		hbox->Add(text_tag = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 		btn_new_tag = new wxButton(panel_flags, -1, "New Tag");
 		hbox->Add(btn_new_tag, 0, wxEXPAND);
 
 		// Bind event
 		btn_new_tag->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &LinePropsPanel::onBtnNewTag, this);
+	}
+
+	// Id
+	if (map_format == MAP_UDMF)
+	{
+		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
+
+		hbox->Add(new wxStaticText(panel_flags, -1, "Line ID:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
+		hbox->Add(text_id = new NumberTextCtrl(panel_flags), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+		hbox->Add(btn_new_id = new wxButton(panel_flags, -1, "New ID"), 0, wxEXPAND);
+
+		// Bind event
+		btn_new_id->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &LinePropsPanel::onBtnNewId, this);
 	}
 
 	return panel_flags;
@@ -306,9 +322,15 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	{
 		int tag = -1;
 		if (MapObject::multiIntProperty(lines, "arg0", tag))
-			text_tag->SetValue(S_FMT("%d", tag));
-		else
-			text_tag->SetValue("");
+			text_tag->setNumber(tag);
+	}
+
+	// Line ID
+	if (map_format == MAP_UDMF)
+	{
+		int id = -1;
+		if (MapObject::multiIntProperty(lines, "id", id))
+			text_id->setNumber(id);
 	}
 
 	// First side
@@ -353,34 +375,48 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
  *******************************************************************/
 void LinePropsPanel::applyChanges()
 {
-	// Apply flags
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
-	{
-		// UDMF
-		for (unsigned a = 0; a < udmf_flags.size(); a++)
-		{
-			if (cb_flags[a]->Get3StateValue() == wxCHK_UNDETERMINED)
-				continue;
+	int map_format = theMapEditor->currentMapDesc().format;
 
-			for (unsigned l = 0; l < objects.size(); l++)
-				objects[l]->setBoolProperty(udmf_flags[a], cb_flags[a]->GetValue());
-		}
-	}
-	else
+	// Apply general properties
+	for (unsigned l = 0; l < objects.size(); l++)
 	{
-		// Other
-		for (unsigned a = 0; a < cb_flags.size(); a++)
+		// Flags
+		if (map_format == MAP_UDMF)
 		{
-			if (cb_flags[a]->Get3StateValue() == wxCHK_UNDETERMINED)
-				continue;
+			// UDMF
+			for (unsigned a = 0; a < udmf_flags.size(); a++)
+			{
+				if (cb_flags[a]->Get3StateValue() == wxCHK_UNDETERMINED)
+					continue;
 
-			for (unsigned l = 0; l < objects.size(); l++)
-				theGameConfiguration->setLineFlag(a, (MapLine*)objects[l], cb_flags[a]->GetValue());
+				//for (unsigned l = 0; l < objects.size(); l++)
+					objects[l]->setBoolProperty(udmf_flags[a], cb_flags[a]->GetValue());
+			}
 		}
+		else
+		{
+			// Other
+			for (unsigned a = 0; a < cb_flags.size(); a++)
+			{
+				if (cb_flags[a]->Get3StateValue() == wxCHK_UNDETERMINED)
+					continue;
+
+				//for (unsigned l = 0; l < objects.size(); l++)
+					theGameConfiguration->setLineFlag(a, (MapLine*)objects[l], cb_flags[a]->GetValue());
+			}
+		}
+
+		// Sector tag
+		if (map_format == MAP_DOOM && !text_tag->IsEmpty())
+			objects[l]->setIntProperty("arg0", text_tag->getNumber(objects[l]->intProperty("arg0")));
+
+		// Line ID
+		if (map_format == MAP_UDMF && !text_id->IsEmpty())
+			objects[l]->setIntProperty("id", text_id->getNumber(objects[l]->intProperty("id")));
 	}
 
 	// Apply special
-	panel_special->applyTo(objects, true);
+	panel_special->applyTo(objects, !cb_override_special->IsShown() || cb_override_special->GetValue());
 
 	// Apply first side
 	vector<MapSide*> sides;
@@ -427,6 +463,13 @@ void LinePropsPanel::onOverrideSpecialChecked(wxCommandEvent& e)
  *******************************************************************/
 void LinePropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	int tag = theMapEditor->mapEditor().getMap().findUnusedSectorTag();
-	text_tag->SetValue(S_FMT("%d", tag));
+	text_tag->setNumber(theMapEditor->mapEditor().getMap().findUnusedSectorTag());
+}
+
+/* LinePropsPanel::onBtnNewId
+ * Called when the 'New ID' button is clicked
+ *******************************************************************/
+void LinePropsPanel::onBtnNewId(wxCommandEvent& e)
+{
+	text_id->setNumber(theMapEditor->mapEditor().getMap().findUnusedLineId());
 }

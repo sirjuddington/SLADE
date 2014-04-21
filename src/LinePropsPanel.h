@@ -10,6 +10,7 @@ class MapObjectPropsPanel;
 class ActionSpecialPanel;
 class ArgsPanel;
 class SidePropsPanel;
+class NumberTextCtrl;
 class LinePropsPanel : public PropsPanelBase
 {
 private:
@@ -21,8 +22,10 @@ private:
 	ArgsPanel*				panel_args;
 	SidePropsPanel*			panel_side1;
 	SidePropsPanel*			panel_side2;
-	wxTextCtrl*				text_tag;
+	NumberTextCtrl*			text_tag;
 	wxButton*				btn_new_tag;
+	NumberTextCtrl*			text_id;
+	wxButton*				btn_new_id;
 
 	vector<string>	udmf_flags;
 
@@ -37,6 +40,7 @@ public:
 
 	void	onOverrideSpecialChecked(wxCommandEvent& e);
 	void	onBtnNewTag(wxCommandEvent& e);
+	void	onBtnNewId(wxCommandEvent& e);
 };
 
 #endif//__LINE_PROPS_PANEL_H__
