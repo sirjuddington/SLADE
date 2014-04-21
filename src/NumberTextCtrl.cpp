@@ -41,9 +41,10 @@
 /* NumberTextCtrl::NumberTextCtrl
  * NumberTextCtrl class constructor
  *******************************************************************/
-NumberTextCtrl::NumberTextCtrl(wxWindow* parent) : wxTextCtrl(parent, -1)
+NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) : wxTextCtrl(parent, -1)
 {
 	last_point = 0;
+	this->allow_decimal = allow_decimal;
 
 	// Bind events
 	Bind(wxEVT_CHAR, &NumberTextCtrl::onChar, this);
@@ -75,6 +76,35 @@ int NumberTextCtrl::getNumber(int base)
 		return lval;
 }
 
+/* NumberTextCtrl::getDecNumber
+ * Returns the number currently entered. If it's an incrememt or
+ * decrement, returns [base] incremented/decremented by the number
+ *******************************************************************/
+double NumberTextCtrl::getDecNumber(double base)
+{
+	// If decimals aren't allowed just return truncated integral value
+	if (!allow_decimal)
+		return getNumber(base);
+
+	string val = GetValue();
+
+	// Get double value
+	double dval;
+	if (val.StartsWith("--") || val.StartsWith("++"))
+		val = val.Mid(2);
+	else if (val.StartsWith("+"))
+		val = val.Mid(1);
+	val.ToDouble(&dval);
+
+	// Return it (incremented/decremented based on [base])
+	if (isIncrement())
+		return base + dval;
+	else if (isDecrement())
+		return base - dval;
+	else
+		return dval;
+}
+
 /* NumberTextCtrl::isIncrement
  * Returns true if the entered value is an increment
  *******************************************************************/
@@ -89,6 +119,22 @@ bool NumberTextCtrl::isIncrement()
 bool NumberTextCtrl::isDecrement()
 {
 	return GetValue().StartsWith("--");
+}
+
+/* NumberTextCtrl::setNumber
+ * Sets the text control value to [num]
+ *******************************************************************/
+void NumberTextCtrl::setNumber(int num)
+{
+	ChangeValue(S_FMT("%d", num));
+}
+
+/* NumberTextCtrl::setDecNumber
+ * Sets the text control (decimal) value to [num]
+ *******************************************************************/
+void NumberTextCtrl::setDecNumber(double num)
+{
+	ChangeValue(S_FMT("%1.3f", num));
 }
 
 
@@ -114,6 +160,8 @@ void NumberTextCtrl::onChar(wxKeyEvent& e)
 		valid = true;
 	if (e.GetKeyCode() == '-' || e.GetKeyCode() == '+')
 		valid = true;
+	if (allow_decimal && e.GetKeyCode() == '.')
+		valid = true;
 
 	if (valid)
 		wxTextCtrl::OnChar(e);
@@ -132,6 +180,7 @@ void NumberTextCtrl::onChanged(wxCommandEvent& e)
 	bool valid = true;
 	int plus = 0;
 	int minus = 0;
+	int decimal = 0;
 	for (unsigned a = 0; a < new_value.size(); a++)
 	{
 		// Check for number
@@ -165,6 +214,19 @@ void NumberTextCtrl::onChanged(wxCommandEvent& e)
 			}
 			else
 				minus++;
+		}
+
+		// Check for .
+		else if (new_value.at(a) == '.')
+		{
+			if (!num || decimal > 0)
+			{
+				// We've already had a decimal, or no numbers yet, invalid
+				valid = false;
+				break;
+			}
+			else
+				decimal++;
 		}
 	}
 
