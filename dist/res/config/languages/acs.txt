@@ -238,7 +238,7 @@ acs_z : acs {
 
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_Stencil, 
 		STYLE_OptFuzzy, STYLE_Translucent, STYLE_Add, STYLE_Shaded, 
-		STYLE_TranslucentStencil,
+		STYLE_TranslucentStencil, STYLE_Shadow, STYLE_Subtract,
 
 		LEVELINFO_PAR_TIME, LEVELINFO_CLUSTERNUM, LEVELINFO_LEVELNUM, 
 		LEVELINFO_TOTAL_SECRETS, LEVELINFO_FOUND_SECRETS, LEVELINFO_TOTAL_ITEMS, 
