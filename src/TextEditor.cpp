@@ -561,7 +561,7 @@ bool TextEditor::openCalltip(int pos, int arg)
 	// Show calltip if it's a function
 	if (func && func->nArgSets() > 0)
 	{
-		CallTipShow(pos, func->generateCallTipString());
+		CallTipShow(start, func->generateCallTipString());
 		ct_function = func;
 		ct_argset = 0;
 		ct_start = pos;
@@ -977,7 +977,7 @@ void TextEditor::onCalltipClicked(wxStyledTextEvent& e)
  *******************************************************************/
 void TextEditor::onMouseDwellStart(wxStyledTextEvent& e)
 {
-	if (!CallTipActive() && txed_calltips_mouse)
+	if (!CallTipActive() && txed_calltips_mouse && e.GetPosition() >= 0)
 		openCalltip(e.GetPosition(), -1);
 }
 
