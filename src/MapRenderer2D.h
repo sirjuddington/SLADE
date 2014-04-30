@@ -113,7 +113,7 @@ public:
 	// Things
 	bool	setupThingOverlay();
 	void	renderThingOverlay(double x, double y, double radius, bool point);
-	void	renderRoundThing(double x, double y, double angle, ThingType* type, float alpha = 1.0f);
+	void	renderRoundThing(double x, double y, double angle, ThingType* type, float alpha = 1.0f, double radius_mult = 1.0);
 	bool	renderSpriteThing(double x, double y, double angle, ThingType* type, unsigned index, float alpha = 1.0f, bool fitradius = false);
 	void	renderSimpleSquareThing(double x, double y, double angle, ThingType* type, float alpha = 1.0f);
 	bool	renderSquareThing(double x, double y, double angle, ThingType* type, float alpha = 1.0f, bool showicon = true, bool framed = false);

@@ -765,7 +765,7 @@ void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool p
 /* MapRenderer2D::renderRoundThing
  * Renders a round thing icon at [x,y]
  *******************************************************************/
-void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType* tt, float alpha)
+void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType* tt, float alpha, double radius_mult)
 {
 	// Ignore if no type given (shouldn't happen)
 	if (!tt)
@@ -825,7 +825,7 @@ void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType
 	}
 
 	// Draw thing
-	double radius = tt->getRadius();
+	double radius = tt->getRadius() * radius_mult;
 	if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 1.0f);	glVertex2d(x-radius, y-radius);
@@ -876,7 +876,10 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 	// If sprite not found, just draw as a normal, round thing
 	if (!tex)
 	{
-		renderRoundThing(x, y, angle, tt, alpha);
+		if (thing_drawtype == TDT_FRAMEDSPRITE)
+			renderRoundThing(x, y, angle, tt, alpha, 0.7);
+		else
+			renderRoundThing(x, y, angle, tt, alpha);
 		return false;
 	}
 
@@ -905,7 +908,7 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 	// Fit to radius if needed
 	if (fitradius)
 	{
-		double scale = ((double)tt->getRadius()*0.85) / max(hw, hh);
+		double scale = ((double)tt->getRadius()*0.8) / max(hw, hh);
 		hw *= scale;
 		hh *= scale;
 	}
@@ -957,8 +960,12 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 	// Set colour
 	glColor4f(tt->getColour().fr(), tt->getColour().fg(), tt->getColour().fb(), alpha);
 
+	// Show icon anyway if no sprite set
+	if (tt->getSprite().IsEmpty())
+		showicon = true;
+
 	// Check for custom thing icon
-	if (!tt->getIcon().IsEmpty() && showicon && !thing_force_dir && !things_angles)
+	if (!tt->getIcon().IsEmpty() && showicon && !thing_force_dir && !things_angles && !framed)
 		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/square/%s", tt->getIcon()));
 
 	// Otherwise, no icon
@@ -1049,7 +1056,7 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 	glVertex2d(x+radius, y-radius);
 	glEnd();
 
-	return false;
+	return (tt->isAngled() || thing_force_dir || things_angles);
 }
 
 /* MapRenderer2D::renderSimpleSquareThing
@@ -1241,7 +1248,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			renderRoundThing(x, y, angle, tt, talpha);
 		else  							// Drawtype 0 (or other): Square
 		{
-			if (renderSquareThing(x, y, angle, tt, talpha, thing_drawtype < TDT_SQUARESPRITE, thing_drawtype == TDT_FRAMEDSPRITE))
+			if (renderSquareThing(x, y, angle, tt, talpha, (thing_drawtype < TDT_SQUARESPRITE), (thing_drawtype == TDT_FRAMEDSPRITE)))
 				things_arrows.push_back(a);
 		}
 	}
@@ -1262,14 +1269,16 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			x = thing->xPos();
 			y = thing->yPos();
 
+			if (thing_drawtype == TDT_SQUARESPRITE && tt->getSprite().IsEmpty())
+				continue;
+
 			// Set alpha
 			if (thing->isFiltered())
 				talpha = alpha*0.25;
 			else
 				talpha = alpha;
 
-			if (renderSpriteThing(x, y, thing->getAngle(), tt, a, talpha, true))
-				things_arrows.push_back(a);
+			renderSpriteThing(x, y, thing->getAngle(), tt, a, talpha, true);
 		}
 	}
 
