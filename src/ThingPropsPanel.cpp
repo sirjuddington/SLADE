@@ -372,6 +372,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
 	panel_special = NULL;
+	panel_args = NULL;
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -646,7 +647,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Type
-	type_current = -1;
+	type_current = 0;
 	if (MapObject::multiIntProperty(objects, "type", type_current))
 	{
 		ThingType* tt = theGameConfiguration->thingType(type_current);
@@ -739,7 +740,7 @@ void ThingPropsPanel::applyChanges()
 			for (unsigned f = 0; f < udmf_flags.size(); f++)
 			{
 				if (cb_flags[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					objects[f]->setBoolProperty(udmf_flags[f], cb_flags[f]->GetValue());
+					objects[a]->setBoolProperty(udmf_flags[f], cb_flags[f]->GetValue());
 			}
 		}
 
@@ -749,7 +750,7 @@ void ThingPropsPanel::applyChanges()
 			for (unsigned f = 0; f < udmf_flags_extra.size(); f++)
 			{
 				if (cb_flags_extra[f]->Get3StateValue() != wxCHK_UNDETERMINED)
-					objects[f]->setBoolProperty(udmf_flags_extra[f], cb_flags_extra[f]->GetValue());
+					objects[a]->setBoolProperty(udmf_flags_extra[f], cb_flags_extra[f]->GetValue());
 			}
 		}
 
@@ -761,6 +762,10 @@ void ThingPropsPanel::applyChanges()
 		if (!text_direction->IsEmpty())
 			objects[a]->setIntProperty("angle", text_direction->getNumber(objects[a]->intProperty("angle")));
 	}
+
+	// Special
+	if (panel_special)
+		panel_special->applyTo(objects, true);
 
 	mopp_other_props->applyChanges();
 }
