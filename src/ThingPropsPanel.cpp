@@ -934,8 +934,11 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 		label_type->SetLabel(tt->getName());
 
 		// Update args
-		argspec_t as = tt->getArgspec();
-		panel_args->setup(&as);
+		if (panel_args)
+		{
+			argspec_t as = tt->getArgspec();
+			panel_args->setup(&as);
+		}
 
 		// Update layout
 		Layout();
