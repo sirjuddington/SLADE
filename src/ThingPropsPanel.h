@@ -46,11 +46,31 @@ public:
 	void	onMouseEvent(wxMouseEvent& e);
 };
 
+class NumberTextCtrl;
+class AngleControl : public wxControl
+{
+private:
+	int				angle;
+	wxRadioButton*	rb_angles[8];
+	NumberTextCtrl*	text_angle;
+
+public:
+	AngleControl(wxWindow* parent);
+	~AngleControl();
+
+	int		getAngle(int base = 0);
+	void	setAngle(int angle);
+	void	updateAngle();
+	bool	angleSet();
+
+	void	onAngleButtonClicked(wxCommandEvent& e);
+	void	onAngleTextChanged(wxCommandEvent& e);
+};
+
 class wxNotebook;
 class MapObjectPropsPanel;
 class ArgsPanel;
 class ActionSpecialPanel;
-class NumberTextCtrl;
 class ThingPropsPanel : public PropsPanelBase
 {
 private:
@@ -62,8 +82,7 @@ private:
 	SpriteTexCanvas*		gfx_sprite;
 	wxStaticText*			label_type;
 	ActionSpecialPanel*		panel_special;
-	ThingDirCanvas*			gfx_direction;
-	NumberTextCtrl*			text_direction;
+	AngleControl*			ac_direction;
 	NumberTextCtrl*			text_id;
 	NumberTextCtrl*			text_height;
 
@@ -82,8 +101,6 @@ public:
 	void	applyChanges();
 
 	void	onSpriteClicked(wxMouseEvent& e);
-	void	onDirectionClicked(wxMouseEvent& e);
-	void	onDirectionTextChanged(wxCommandEvent& e);
 };
 
 #endif//__THING_PROPS_PANEL_H__

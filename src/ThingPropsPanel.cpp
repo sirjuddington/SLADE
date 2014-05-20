@@ -250,7 +250,7 @@ void ThingDirCanvas::draw()
 	glLoadIdentity();
 
 	// Clear
-	glClearColor(col_bg.r, col_bg.g, col_bg.b, 1.0f);
+	glClearColor(col_bg.fr(), col_bg.fg(), col_bg.fb(), 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 	// Draw angle ring
@@ -363,6 +363,150 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 
 
 /*******************************************************************
+ * ANGLECONTROL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* AngleControl::AngleControl
+ * AngleControl class constructor
+ *******************************************************************/
+AngleControl::AngleControl(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
+{
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
+
+	// Setup visual angle panel
+	wxPanel* panel = new wxPanel(this, -1);
+	sizer->Add(panel, 1, wxEXPAND|wxALL, 4);
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
+	panel->SetSizer(gb_sizer);
+
+	// Fixed size
+	panel->SetInitialSize(wxSize(140, 140));
+	panel->SetMaxSize(wxSize(140, 140));
+
+	// Angle buttons
+	gb_sizer->Add(rb_angles[0] = new wxRadioButton(panel, -1, ""), wxGBPosition(2, 4), wxDefaultSpan, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT);		// East
+	gb_sizer->Add(rb_angles[1] = new wxRadioButton(panel, -1, ""), wxGBPosition(1, 3), wxDefaultSpan, wxALIGN_TOP|wxALIGN_RIGHT);					// NorthEast
+	gb_sizer->Add(rb_angles[2] = new wxRadioButton(panel, -1, ""), wxGBPosition(0, 2), wxDefaultSpan, wxALIGN_CENTER_HORIZONTAL|wxALIGN_BOTTOM);	// North
+	gb_sizer->Add(rb_angles[3] = new wxRadioButton(panel, -1, ""), wxGBPosition(1, 1), wxDefaultSpan, wxALIGN_TOP|wxALIGN_LEFT);					// NorthWest
+	gb_sizer->Add(rb_angles[4] = new wxRadioButton(panel, -1, ""), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT);		// West
+	gb_sizer->Add(rb_angles[5] = new wxRadioButton(panel, -1, ""), wxGBPosition(3, 1), wxDefaultSpan, wxALIGN_BOTTOM|wxALIGN_LEFT);					// SouthWest
+	gb_sizer->Add(rb_angles[6] = new wxRadioButton(panel, -1, ""), wxGBPosition(4, 2), wxDefaultSpan, wxALIGN_CENTER_HORIZONTAL|wxALIGN_TOP);		// South
+	gb_sizer->Add(rb_angles[7] = new wxRadioButton(panel, -1, ""), wxGBPosition(3, 3), wxDefaultSpan, wxALIGN_BOTTOM|wxALIGN_RIGHT);				// SouthEast
+	for (unsigned a = 0; a < 5; a++)
+	{
+		gb_sizer->AddGrowableCol(a, 1);
+		gb_sizer->AddGrowableRow(a, 1);
+	}
+
+	// Angle text box
+	text_angle = new NumberTextCtrl(this);
+	sizer->Add(text_angle, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Bind events
+	for (unsigned a = 0; a < 8; a++)
+		rb_angles[a]->Bind(wxEVT_RADIOBUTTON, &AngleControl::onAngleButtonClicked, this);
+}
+
+/* AngleControl::~AngleControl
+ * AngleControl class destructor
+ *******************************************************************/
+AngleControl::~AngleControl()
+{
+}
+
+/* AngleControl::getAngle
+ * Returns the current angle
+ *******************************************************************/
+int AngleControl::getAngle(int base)
+{
+	return text_angle->getNumber(base);
+}
+
+/* AngleControl::setAngle
+ * Sets the angle to display
+ *******************************************************************/
+void AngleControl::setAngle(int angle)
+{
+	this->angle = angle;
+	text_angle->setNumber(angle);
+	updateAngle();
+}
+
+/* AngleControl::updateAngle
+ * Updates the visual angle buttons
+ *******************************************************************/
+void AngleControl::updateAngle()
+{
+	// Set angle button
+	for (unsigned a = 0; a < 8; a++)
+		rb_angles[a]->SetValue(false);
+
+	if (angleSet())
+	{
+		switch (angle)
+		{
+		case 0:		rb_angles[0]->SetValue(true); break;
+		case 45:	rb_angles[1]->SetValue(true); break;
+		case 90:	rb_angles[2]->SetValue(true); break;
+		case 135:	rb_angles[3]->SetValue(true); break;
+		case 180:	rb_angles[4]->SetValue(true); break;
+		case 225:	rb_angles[5]->SetValue(true); break;
+		case 270:	rb_angles[6]->SetValue(true); break;
+		case 315:	rb_angles[7]->SetValue(true); break;
+		default:	break;
+		}
+	}
+}
+
+/* AngleControl::angleSet
+ * Returns true if an angle is specified
+ *******************************************************************/
+bool AngleControl::angleSet()
+{
+	return !(text_angle->GetValue().IsEmpty());
+}
+
+
+/*******************************************************************
+ * ANGLECONTROL CLASS EVENTS
+ *******************************************************************/
+
+/* AngleControl::onAngleButtonClicked
+ * Called when an angle radio button is clicked
+ *******************************************************************/
+void AngleControl::onAngleButtonClicked(wxCommandEvent& e)
+{
+	// Set angle text
+	if (e.GetEventObject() == rb_angles[0])
+		text_angle->setNumber(0);
+	else if (e.GetEventObject() == rb_angles[1])
+		text_angle->setNumber(45);
+	else if (e.GetEventObject() == rb_angles[2])
+		text_angle->setNumber(90);
+	else if (e.GetEventObject() == rb_angles[3])
+		text_angle->setNumber(135);
+	else if (e.GetEventObject() == rb_angles[4])
+		text_angle->setNumber(180);
+	else if (e.GetEventObject() == rb_angles[5])
+		text_angle->setNumber(225);
+	else if (e.GetEventObject() == rb_angles[6])
+		text_angle->setNumber(270);
+	else if (e.GetEventObject() == rb_angles[7])
+		text_angle->setNumber(315);
+}
+
+/* AngleControl::onAngleTextChanged
+ * Called when the angle text box is changed
+ *******************************************************************/
+void AngleControl::onAngleTextChanged(wxCommandEvent& e)
+{
+	this->angle = text_angle->getNumber();
+	updateAngle();
+}
+
+
+/*******************************************************************
  * THINGPROPSPANEL CLASS FUNCTIONS
  *******************************************************************/
 
@@ -417,8 +561,6 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 
 	// Bind events
 	gfx_sprite->Bind(wxEVT_LEFT_DOWN, &ThingPropsPanel::onSpriteClicked, this);
-	gfx_direction->Bind(wxEVT_LEFT_DOWN, &ThingPropsPanel::onDirectionClicked, this);
-	text_direction->Bind(wxEVT_TEXT, &ThingPropsPanel::onDirectionTextChanged, this);
 
 	Layout();
 }
@@ -532,8 +674,11 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	frame = new wxStaticBox(panel, -1, "Direction");
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	hbox->Add(framesizer, 0, wxEXPAND|wxRIGHT, 4);
-	framesizer->Add(gfx_direction = new ThingDirCanvas(panel), 1, wxEXPAND|wxALL, 4);
-	framesizer->Add(text_direction = new NumberTextCtrl(panel), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	framesizer->Add(ac_direction = new AngleControl(panel), 1, wxEXPAND);
+	
+#ifdef __WXMSW__
+	ac_direction->SetBackgroundColour(nb_tabs->GetThemeBackgroundColour());
+#endif
 
 	if (map_format != MAP_DOOM)
 	{
@@ -688,10 +833,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 
 	// Direction
 	if (MapObject::multiIntProperty(objects, "angle", ival))
-	{
-		gfx_direction->setAngle(ival);
-		text_direction->setNumber(ival);
-	}
+		ac_direction->setAngle(ival);
 
 	// Id
 	if (map_format != MAP_DOOM && MapObject::multiIntProperty(objects, "id", ival))
@@ -759,8 +901,8 @@ void ThingPropsPanel::applyChanges()
 			objects[a]->setIntProperty("type", type_current);
 
 		// Direction
-		if (!text_direction->IsEmpty())
-			objects[a]->setIntProperty("angle", text_direction->getNumber(objects[a]->intProperty("angle")));
+		if (ac_direction->angleSet())
+			objects[a]->setIntProperty("angle", ac_direction->getAngle(objects[a]->intProperty("angle")));
 	}
 
 	// Special
@@ -799,22 +941,4 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 		Layout();
 		Refresh();
 	}
-}
-
-/* ThingPropsPanel::onDirectionClicked
- * Called when the direction canvas is clicked
- *******************************************************************/
-void ThingPropsPanel::onDirectionClicked(wxMouseEvent& e)
-{
-	gfx_direction->onMouseEvent(e);
-	text_direction->ChangeValue(S_FMT("%d", gfx_direction->getAngle()));
-}
-
-/* ThingPropsPanel::onDirectionTextChanged
- * Called when the direction text box is changed
- *******************************************************************/
-void ThingPropsPanel::onDirectionTextChanged(wxCommandEvent& e)
-{
-	text_direction->onChanged(e);
-	gfx_direction->setAngle(text_direction->getNumber());
 }
