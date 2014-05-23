@@ -43,8 +43,8 @@ decorate : cstyle {
 		Speed, VSpeed, FastSpeed, FloatSpeed,
 		
 		// Rendering
-		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, StencilColor, Shaded, 
-		Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
+		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
+		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
 		BloodColor, BloodType, Decal, FloatBobPhase,
 		
 		// Sounds
@@ -199,7 +199,7 @@ decorate : cstyle {
 		BLOCKF_CREATURES, BLOCKF_EVERYTHING, BLOCKF_FLOATERS, BLOCKF_MONSTERS, BLOCKF_PLAYERS,
 		BLOCKF_PROJECTILES, BLOCKF_RAILING, BLOCKF_USE,
 		CBAF_AIMFACING, CBAF_EXPLICITANGLE, CBAF_NOPITCH, CBAF_NORANDOM, CBAF_NORANDOMPUFFZ,
-		CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL,
+		CHAN_5, CHAN_6, CHAN_7, CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL,
 		CHAN_NOPAUSE, CHAN_UI, CHAN_VOICE, CHAN_WEAPON,
 		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT, CMF_ABSOLUTEANGLE,
 		CLOFF_NOAIM_VERT, CLOFF_NOAIM_HORZ, CLOFF_AIM_VERT_NOOFFSET, CLOFF_FROMBASE, CLOFF_MUL_HEIGHT,
@@ -232,7 +232,7 @@ decorate : cstyle {
 		RTF_AFFECTSOURCE, RTF_NOIMPACTDAMAGE, RTF_NOTMISSILE,
 		SF_NORANDOM, SF_NOUSEAMMO, SF_NOUSEAMMOMISS, SF_RANDOMLIGHTBOTH, SF_RANDOMLIGHTHIT, SF_RANDOMLIGHTMISS,
 		SMF_CURSPEED, SMF_LOOK, SMF_PRECISE,
-		SPF_FORCECLAMP,
+		SPF_FORCECLAMP, SPF_INTERPOLATE,
 		SXF_ABSOLUTEANGLE, SXF_ABSOLUTEMOMENTUM, SXF_ABSOLUTEPOSITION, SXF_ABSOLUTEVELOCITY, SXF_CLIENTSIDE,
 		SXF_NOCHECKPOSITION, SXF_SETMASTER, SXF_TELEFRAG, SXF_TRANSFERAMBUSHFLAG, SXF_TRANSFERPITCH,
 		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION, SXF_USEBLOODCOLOR, SXF_CLEARCALLERTID, SXF_MULTIPLYSPEED, 
@@ -429,7 +429,7 @@ decorate : cstyle {
 		A_QueueCorpse;
 		A_DeQueueCorpse;
 		A_Respawn = "[int flags]";
-		A_SetAngle = "[float angle]";
+		A_SetAngle = "[float angle], [int flags]";
 		A_SetArg = "int position, int value";
 		A_SetDamageType = "string damagetype";
 		A_SetPitch = "float pitch, [int flags]";
