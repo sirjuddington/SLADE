@@ -839,7 +839,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	if (map_format != MAP_DOOM && MapObject::multiIntProperty(objects, "id", ival))
 		text_id->setNumber(ival);
 
-	// Z Height (TODO: float for UDMF)
+	// Z Height
 	if (map_format == MAP_HEXEN && MapObject::multiIntProperty(objects, "height", ival))
 		text_height->setNumber(ival);
 	else if (map_format == MAP_UDMF && MapObject::multiFloatProperty(objects, "height", fval))
@@ -863,6 +863,8 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
  *******************************************************************/
 void ThingPropsPanel::applyChanges()
 {
+	int map_format = theMapEditor->currentMapDesc().format;
+
 	// Apply general properties
 	for (unsigned a = 0; a < objects.size(); a++)
 	{
@@ -897,12 +899,28 @@ void ThingPropsPanel::applyChanges()
 		}
 
 		// Type
-		if (type_current >= 0)
+		if (type_current > 0)
 			objects[a]->setIntProperty("type", type_current);
 
 		// Direction
 		if (ac_direction->angleSet())
 			objects[a]->setIntProperty("angle", ac_direction->getAngle(objects[a]->intProperty("angle")));
+
+		if (map_format != MAP_DOOM)
+		{
+			// ID
+			if (!text_id->GetValue().IsEmpty())
+				objects[a]->setIntProperty("id", text_id->getNumber(objects[a]->intProperty("id")));
+
+			// Z Height
+			if (!text_height->GetValue().IsEmpty())
+			{
+				if (map_format == MAP_UDMF)
+					objects[a]->setFloatProperty("height", text_height->getDecNumber(objects[a]->floatProperty("height")));
+				else
+					objects[a]->setIntProperty("height", text_height->getNumber(objects[a]->intProperty("height")));
+			}
+		}
 	}
 
 	// Special
