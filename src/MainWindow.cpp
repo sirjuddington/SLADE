@@ -438,13 +438,13 @@ void MainWindow::createStartPage()
 
 	// Generate recent files string
 	string recent;
-	for (unsigned a = 0; a < 10; a++)
+	recent += "<table border=\"0\" class=\"box\" cellspacing=\"0\">";
+	for (unsigned a = 0; a < 12; a++)
 	{
 		if (a >= theArchiveManager->numRecentFiles())
 			break;	// No more recent files
 
-		// Add line break if needed
-		if (a > 0) recent += "<br/>\n";
+		recent += "<tr><td valign=\"middle\" class=\"box\">";
 
 		// Determine icon
 		string fn = theArchiveManager->recentFile(a);
@@ -457,8 +457,10 @@ void MainWindow::createStartPage()
 			icon = "e_folder";
 
 		// Add recent file link
-		recent += S_FMT("<a href=\"recent://%d\"><img src=\"%s.png\"> %s</a>", a, icon, fn);
+		recent += S_FMT("<img src=\"%s.png\"></td><td valign=\"top\" class=\"box\">", icon);
+		recent += S_FMT("<a href=\"recent://%d\">%s</a></td></tr>", a, fn);
 	}
+	recent += "</table>";
 
 	// Insert tip and recent files into html
 	html.Replace("#recent#", recent);
