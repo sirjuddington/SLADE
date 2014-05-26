@@ -61,6 +61,7 @@ ThingType::ThingType(string name)
 	this->nextargs = 0;
 	this->flags = 0;
 	this->tagged = 0;
+	this->arg_count = 0;
 
 	// Init args
 	args[0].name = "Arg1";
@@ -101,6 +102,7 @@ void ThingType::copy(ThingType* copy)
 	this->nextargs = copy->nextargs;
 	this->flags = copy->flags;
 	this->tagged = copy->tagged;
+	this->arg_count = copy->arg_count;
 
 	// Copy args
 	for (unsigned a = 0; a < 5; a++)

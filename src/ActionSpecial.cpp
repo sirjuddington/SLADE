@@ -68,6 +68,7 @@ void ActionSpecial::copy(ActionSpecial* copy)
 	this->name = copy->name;
 	this->group = copy->group;
 	this->tagged = copy->tagged;
+	this->arg_count = copy->arg_count;
 
 	// Copy args
 	for (unsigned a = 0; a < 5; a++)
