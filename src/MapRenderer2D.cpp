@@ -1057,7 +1057,7 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 	glVertex2d(x+radius, y-radius);
 	glEnd();
 
-	return (tt->isAngled() || thing_force_dir || things_angles);
+	return ((tt->isAngled() || thing_force_dir || things_angles) && !showicon);
 }
 
 /* MapRenderer2D::renderSimpleSquareThing
