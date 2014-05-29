@@ -42,6 +42,7 @@ private:
 	wxCheckBox*	cb_flat_ignore_light;
 	wxCheckBox*	cb_sector_hilight_fill;
 	wxCheckBox*	cb_flat_fade;
+	wxCheckBox*	cb_sector_selected_fill;
 
 public:
 	MapDisplayPrefsPanel(wxWindow* parent);

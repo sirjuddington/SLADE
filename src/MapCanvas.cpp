@@ -667,6 +667,10 @@ void MapCanvas::drawEditorMessages()
 	if (map_showfps) yoff = 16;
 	Drawing::setTextState(true);
 	Drawing::enableTextStateReset(false);
+
+	rgba_t col_fg = ColourConfiguration::getColour("map_editor_message");
+	rgba_t col_bg = ColourConfiguration::getColour("map_editor_message_outline");
+
 	for (unsigned a = 0; a < editor->numEditorMessages(); a++)
 	{
 		// Check message time
@@ -675,7 +679,7 @@ void MapCanvas::drawEditorMessages()
 			continue;
 
 		// Setup message colour
-		rgba_t col = ColourConfiguration::getColour("map_editor_message");
+		rgba_t col = col_fg;
 		if (time < 200)
 		{
 			float flash = 1.0f - (time / 200.0f);
@@ -689,10 +693,10 @@ void MapCanvas::drawEditorMessages()
 			col.a = 255 - (double((time - 1500) / 500.0) * 255);
 
 		// Draw message outline
-		Drawing::drawText(editor->getEditorMessage(a), 2, yoff+1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), 2, yoff-1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), -2, yoff-1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), -2, yoff+1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), 2, yoff+1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), 2, yoff-1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), -2, yoff-1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), -2, yoff+1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
 
 		// Draw message
 		Drawing::drawText(editor->getEditorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
@@ -714,11 +718,13 @@ void MapCanvas::drawFeatureHelpText()
 	// Draw title
 	frect_t bounds;
 	rgba_t col = ColourConfiguration::getColour("map_editor_message");
+	rgba_t col_bg = ColourConfiguration::getColour("map_editor_message_outline");
 	col.a = col.a * anim_help_fade;
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 3, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x, 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x, 3, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	col_bg.a = col_bg.a * anim_help_fade;
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 3, 3, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 3, 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 1, 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 1, 3, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
 	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 2, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT, &bounds);
 
 	// Draw underline
@@ -740,10 +746,10 @@ void MapCanvas::drawFeatureHelpText()
 	for (unsigned a = 1; a < feature_help_lines.size(); a++)
 	{
 		// Draw outline
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff + 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff - 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff - 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff + 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff + 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff - 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff - 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff + 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
 
 		// Draw text
 		Drawing::drawText(feature_help_lines[a], GetSize().x - 2, yoff, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);

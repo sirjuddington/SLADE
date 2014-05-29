@@ -92,7 +92,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 	panel = new GeneralPrefsPanel(tree_prefs);		tree_prefs->AddPage(panel, "General", true); prefs_pages.push_back(panel);
 	panel = new OpenGLPrefsPanel(tree_prefs);		tree_prefs->AddSubPage(panel, "OpenGL"); prefs_pages.push_back(panel);
 	panel = new InterfacePrefsPanel(tree_prefs);	tree_prefs->AddPage(panel, "Interface"); prefs_pages.push_back(panel);
-	panel = new ColourPrefsPanel(tree_prefs);		tree_prefs->AddSubPage(panel, "Colours"); prefs_pages.push_back(panel);
+	panel = new ColourPrefsPanel(tree_prefs);		tree_prefs->AddSubPage(panel, "Colours & Theme"); prefs_pages.push_back(panel);
 	panel = new InputPrefsPanel(tree_prefs);		tree_prefs->AddPage(panel, "Input"); prefs_pages.push_back(panel);
 	panel = new EditingPrefsPanel(tree_prefs);		tree_prefs->AddPage(panel, "Editing"); prefs_pages.push_back(panel);
 	tree_prefs->AddSubPage(setupBaseResourceArchivesPanel(), "Base Resource Archive");

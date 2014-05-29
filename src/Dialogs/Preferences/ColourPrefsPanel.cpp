@@ -33,6 +33,7 @@
 #include "ColourConfiguration.h"
 #include "MainWindow.h"
 #include "MapEditorWindow.h"
+#include "PreferencesDialog.h"
 #include <wx/propgrid/advprops.h>
 
 
@@ -131,6 +132,12 @@ void ColourPrefsPanel::refreshPropGrid()
 		opacity->SetAttribute("Min", 0);
 	}
 
+	// Add theme options to property grid
+	wxPGProperty* g_theme = pg_colours->Append(new wxPropertyCategory("Map Editor Theme"));
+	pg_colours->AppendIn(g_theme, new wxFloatProperty("Line Hilight Width Multiplier", "line_hilight_width", ColourConfiguration::getLineHilightWidth()));
+	pg_colours->AppendIn(g_theme, new wxFloatProperty("Line Selection Width Multiplier", "line_selection_width", ColourConfiguration::getLineSelectionWidth()));
+	pg_colours->AppendIn(g_theme, new wxFloatProperty("Flat Fade", "flat_alpha", ColourConfiguration::getFlatAlpha()));
+
 	// Set all bool properties to use checkboxes
 	pg_colours->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 }
@@ -183,6 +190,13 @@ void ColourPrefsPanel::applyPreferences()
 			p_add->SetModifiedStatus(false);
 		}
 	}
+
+	ColourConfiguration::setLineHilightWidth((double)pg_colours->GetProperty("line_hilight_width")->GetValue());
+	pg_colours->GetProperty("line_hilight_width")->SetModifiedStatus(false);
+	ColourConfiguration::setLineSelectionWidth((double)pg_colours->GetProperty("line_selection_width")->GetValue());
+	pg_colours->GetProperty("line_selection_width")->SetModifiedStatus(false);
+	ColourConfiguration::setFlatAlpha((double)pg_colours->GetProperty("flat_alpha")->GetValue());
+	pg_colours->GetProperty("flat_alpha")->SetModifiedStatus(false);
 
 	pg_colours->Refresh();
 	pg_colours->RefreshEditor();

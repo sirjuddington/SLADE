@@ -142,6 +142,12 @@ colours {
 		group = "Map Editor";
 		rgb = 255, 200, 100;
 	}
+
+	map_editor_message_outline {
+		name = "Editor Message Outline";
+		group = "Map Editor";
+		rgb = 0, 0, 0;
+	}
 	
 	map_linedraw {
 		name = "Line Drawing";
@@ -178,4 +184,11 @@ colours {
 		alpha = 170;
 		additive = true;
 	}
+}
+
+theme
+{
+	line_hilight_width		= 3.0;
+	line_selection_width	= 4.0;
+	flat_alpha				= 1.0;
 }

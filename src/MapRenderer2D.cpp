@@ -56,6 +56,7 @@ CVAR(Float, flat_brightness, 0.8f, CVAR_SAVE)
 CVAR(Bool, flat_ignore_light, false, CVAR_SAVE)
 CVAR(Float, thing_shadow, 0.5f, CVAR_SAVE)
 CVAR(Bool, sector_hilight_fill, true, CVAR_SAVE)
+CVAR(Bool, sector_selected_fill, true, CVAR_SAVE)
 CVAR(Bool, map_animate_hilight, true, CVAR_SAVE)
 CVAR(Bool, map_animate_selection, false, CVAR_SAVE)
 CVAR(Bool, map_animate_tagged, true, CVAR_SAVE)
@@ -512,7 +513,7 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
-	glLineWidth(line_width*3);
+	glLineWidth(line_width*ColourConfiguration::getLineHilightWidth());
 
 	// Render line
 	MapLine* line = map->getLine(index);
@@ -553,7 +554,7 @@ void MapRenderer2D::renderLineSelection(vector<int>& selection, float fade)
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
-	glLineWidth(line_width*4);
+	glLineWidth(line_width*ColourConfiguration::getLineSelectionWidth());
 
 	// Render selected lines
 	MapLine* line;
@@ -596,7 +597,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
-	glLineWidth(line_width*3);
+	glLineWidth(line_width*ColourConfiguration::getLineHilightWidth());
 
 	// Go through tagged lines
 	double x1, y1, x2, y2;
@@ -647,7 +648,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
-	glLineWidth(line_width*5);
+	glLineWidth(line_width*ColourConfiguration::getLineHilightWidth());
 
 	// Go through tagging lines
 	double x1, y1, x2, y2;
@@ -1777,7 +1778,12 @@ bool sortPolyByTex(Polygon2D* left, Polygon2D* right)
 void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 {
 	if (texture)
+	{
 		glEnable(GL_TEXTURE_2D);
+
+		// Apply flat alpha from theme
+		alpha *= ColourConfiguration::getFlatAlpha();
+	}
 
 	if (flat_ignore_light)
 		glColor4f(flat_brightness, flat_brightness, flat_brightness, alpha);
@@ -1896,6 +1902,10 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 
 	if (!glGenBuffers)
 		return;
+
+	// Apply flat alpha from theme
+	if (texture)
+		alpha *= ColourConfiguration::getFlatAlpha();
 
 	// Re-init flats texture list if invalid
 	if (texture && tex_flats.size() < map->nSectors() || last_flat_type != type)
@@ -2065,10 +2075,10 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 	{
 		glColor4f(col.fr(), col.fg(), col.fb(), col.fa()*0.5f);
 		map->getSector(index)->getPolygon()->render();
-		glLineWidth(line_width * 2.0f);
+		glLineWidth(line_width * ColourConfiguration::getLineHilightWidth());
 	}
 	else
-		glLineWidth(line_width * 3.0f);
+		glLineWidth(line_width * ColourConfiguration::getLineHilightWidth());
 
 	// Get all lines belonging to the hilighted sector
 	vector<MapLine*> lines;
@@ -2137,7 +2147,9 @@ void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
 
 		if (poly->hasPolygon())
 		{
-			map->getSector(selection[a])->getPolygon()->render();
+			if (sector_selected_fill)
+				map->getSector(selection[a])->getPolygon()->render();
+
 			for (unsigned s = 0; s < sides.size(); s++)
 				sides_selected.push_back(sides[s]);
 		}
