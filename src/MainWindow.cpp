@@ -438,7 +438,7 @@ void MainWindow::createStartPage()
 
 	// Generate recent files string
 	string recent;
-	recent += "<table border=\"0\" class=\"box\" cellspacing=\"0\">";
+	recent += "<table class=\"box\">";
 	for (unsigned a = 0; a < 12; a++)
 	{
 		if (a >= theArchiveManager->numRecentFiles())
