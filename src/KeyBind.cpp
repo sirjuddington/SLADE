@@ -365,7 +365,7 @@ bool KeyBind::keyPressed(keypress_t key)
 			        kp.key == key.key)
 			{
 				// Set bind state
-				kb.pressed = true;
+				getBind(kb.name).pressed = true;
 
 				// Send key pressed event to keybind handlers
 				for (unsigned b = 0; b < kb_handlers.size(); b++)
