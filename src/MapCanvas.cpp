@@ -3317,7 +3317,7 @@ void MapCanvas::onKeyBindRelease(string name)
 	if (name == "me2d_pan_view" && panning)
 	{
 		panning = false;
-		editor->updateHilight(mouse_pos_m);
+		editor->updateHilight(mouse_pos_m, view_scale);
 		SetCursor(wxNullCursor);
 	}
 
@@ -3325,7 +3325,7 @@ void MapCanvas::onKeyBindRelease(string name)
 	{
 		mouse_state = MSTATE_NORMAL;
 		editor->endUndoRecord(true);
-		editor->updateHilight(mouse_pos_m);
+		editor->updateHilight(mouse_pos_m, view_scale);
 	}
 }
 
@@ -3859,7 +3859,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
 	// Update hilight
 	if (mouse_state == MSTATE_NORMAL)
-		editor->updateHilight(mouse_pos_m);
+		editor->updateHilight(mouse_pos_m, view_scale);
 
 	// Update mouse variables
 	mouse_downpos.set(e.GetX(), e.GetY());

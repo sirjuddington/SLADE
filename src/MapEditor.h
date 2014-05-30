@@ -177,7 +177,7 @@ public:
 
 	// Selection/hilight
 	void		clearHilight() { if (!hilight_locked) hilight_item = -1; }
-	bool		updateHilight(fpoint2_t mouse_pos, double dist_scale = 1.0);
+	bool		updateHilight(fpoint2_t mouse_pos, double dist_scale);
 	void		updateTagged();
 	void		selectionUpdated();
 	void		clearSelection(bool animate = true);
