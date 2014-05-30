@@ -2094,6 +2094,7 @@ bool ArchivePanel::wavDSndConvert()
 	undo_manager->beginRecord("Convert Wav -> Doom Sound");
 
 	// Go through selection
+	bool errors = false;
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Convert WAV -> Doom Sound if the entry is WAV format
@@ -2104,6 +2105,7 @@ bool ArchivePanel::wavDSndConvert()
 			if (!Conversions::wavToDoomSnd(selection[a]->getMCData(), dsnd))
 			{
 				wxLogMessage("Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
+				errors = true;
 				continue;
 			}
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));	// Create undo step
@@ -2115,6 +2117,10 @@ bool ArchivePanel::wavDSndConvert()
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
+
+	// Show message if errors occurred
+	if (errors)
+		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
 
 	return true;
 }
@@ -2131,6 +2137,7 @@ bool ArchivePanel::dSndWavConvert()
 	undo_manager->beginRecord("Convert Doom Sound -> Wav");
 
 	// Go through selection
+	bool errors = false;
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		bool worked = false;
@@ -2165,12 +2172,17 @@ bool ArchivePanel::dSndWavConvert()
 		else
 		{
 			wxLogMessage("Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
+			errors = true;
 			continue;
 		}
 	}
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
+
+	// Show message if errors occurred
+	if (errors)
+		wxMessageBox("Some entries could not be converted, see console log for details", "SLADE", wxICON_INFORMATION);
 
 	return true;
 }
