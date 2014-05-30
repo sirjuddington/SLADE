@@ -467,8 +467,8 @@ bool MapEditorWindow::createMap()
 	MapEditorConfigDialog dialog(theMainWindow, NULL, false, true);
 	if (dialog.ShowModal() == wxID_OK)
 	{
-		theGameConfiguration->openConfig(dialog.selectedGame(), dialog.selectedPort());
 		Archive::mapdesc_t map = dialog.selectedMap();
+		theGameConfiguration->openConfig(dialog.selectedGame(), dialog.selectedPort(), map.format);
 
 		if (map.name.IsEmpty())
 			return false;
