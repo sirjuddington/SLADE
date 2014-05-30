@@ -36,6 +36,7 @@
  * VARIABLES
  *******************************************************************/
 vector<KeyBind>			keybinds;
+vector<KeyBind>			keybinds_sorted;
 KeyBind					kb_none("-none-");
 vector<KeyBindHandler*> kb_handlers;
 
@@ -52,6 +53,7 @@ KeyBind::KeyBind(string name)
 	// Init variables
 	this->name = name;
 	this->pressed = false;
+	this->priority = 0;
 }
 
 /* KeyBind::~KeyBind
@@ -162,7 +164,7 @@ bool KeyBind::isPressed(string name)
 /* KeyBind::addBind
  * Adds a new keybind
  *******************************************************************/
-bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bool ignore_shift)
+bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bool ignore_shift, int priority)
 {
 	// Find keybind
 	KeyBind* bind = NULL;
@@ -203,6 +205,10 @@ bool KeyBind::addBind(string name, keypress_t key, string desc, string group, bo
 			return false;
 		}
 	}
+
+	// Set priority
+	if (priority >= 0)
+		bind->priority = priority;
 
 	// Add the keybind
 	bind->addKey(key.key, key.alt, key.ctrl, key.shift);
@@ -343,9 +349,9 @@ bool KeyBind::keyPressed(keypress_t key)
 {
 	// Go through all keybinds
 	bool pressed = false;
-	for (unsigned k = 0; k < keybinds.size(); k++)
+	for (unsigned k = 0; k < keybinds_sorted.size(); k++)
 	{
-		KeyBind& kb = keybinds[k];
+		KeyBind& kb = keybinds_sorted[k];
 
 		// Go through all keys bound to this keybind
 		for (unsigned a = 0; a < kb.keys.size(); a++)
@@ -559,7 +565,7 @@ void KeyBind::initBinds()
 	addBind("me2d_toggle_selection_numbers", keypress_t("N"), "Toggle selection numbers", group);
 	addBind("me2d_mirror_x", keypress_t("M", KPM_CTRL), "Mirror selection horizontally", group);
 	addBind("me2d_mirror_y", keypress_t("M", KPM_CTRL|KPM_SHIFT), "Mirror selection vertically", group);
-	addBind("me2d_object_properties", keypress_t("return"), "Object Properties", group);
+	addBind("me2d_object_properties", keypress_t("return"), "Object Properties", group, false, 100);
 
 	// Map Editor 2D Lines mode (me2d_line*)
 	group = "Map Editor 2D Lines Mode";
@@ -687,6 +693,10 @@ void KeyBind::initBinds()
 		for (unsigned k = 0; k < keybinds[a].keys.size(); k++)
 			keybinds[a].defaults.push_back(keybinds[a].keys[k]);
 	}
+
+	// Create sorted list
+	keybinds_sorted = keybinds;
+	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
 }
 
 /* KeyBind::writeBinds

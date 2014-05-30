@@ -64,10 +64,27 @@ private:
 	string				description;
 	string				group;
 	bool				ignore_shift;
+	int					priority;
 
 public:
 	KeyBind(string name);
 	~KeyBind();
+
+	// Operators
+	friend bool operator> (KeyBind& l, KeyBind& r)
+	{
+		if (l.priority == r.priority)
+			return l.name < r.name;
+		else
+			return l.priority < r.priority;
+	}
+	friend bool operator< (KeyBind& l, KeyBind& r)
+	{
+		if (l.priority == r.priority)
+			return l.name > r.name;
+		else
+			return l.priority > r.priority;
+	}
 
 	void	clear() { keys.clear(); }
 	void	addKey(string key, bool alt = false, bool ctrl = false, bool shift = false);
@@ -85,7 +102,7 @@ public:
 	static KeyBind&			getBind(string name);
 	static wxArrayString	getBinds(keypress_t key);
 	static bool				isPressed(string name);
-	static bool				addBind(string name, keypress_t key, string desc = "", string group = "", bool ignore_shift = false);
+	static bool				addBind(string name, keypress_t key, string desc = "", string group = "", bool ignore_shift = false, int priority = -1);
 	static string			keyName(int key);
 	static string			mbName(int button);
 	static bool				keyPressed(keypress_t key);
