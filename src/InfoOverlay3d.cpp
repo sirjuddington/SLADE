@@ -418,8 +418,8 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	int height = nlines * 16 + 4;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::getColour("map_3d_overlay_background");
+	rgba_t col_fg = ColourConfiguration::getColour("map_3d_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 	col_bg.a = col_bg.a*alpha;
 	rgba_t col_border(0, 0, 0, 140);
@@ -462,8 +462,8 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 {
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::getColour("map_3d_overlay_background");
+	rgba_t col_fg = ColourConfiguration::getColour("map_3d_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 
 	// Check texture exists

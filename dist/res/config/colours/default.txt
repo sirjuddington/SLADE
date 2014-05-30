@@ -132,6 +132,21 @@ colours {
 		rgb = 255, 255, 255;
 	}
 
+	map_3d_overlay_background
+	{
+		name = "3D Info Overlay Background";
+		group = "Map Editor";
+		rgb = 0, 0, 0;
+		alpha = 180;
+	}
+
+	map_3d_overlay_foreground
+	{
+		name = "3D Info Overlay Foreground";
+		group = "Map Editor";
+		rgb = 255, 255, 255;
+	}
+
 	map_grid
 	{
 		name = "Grid";
