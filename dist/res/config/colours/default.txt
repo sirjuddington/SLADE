@@ -72,6 +72,43 @@ colours {
 		rgb = 200, 200, 200;
 	}
 
+	// Map image export colours
+	map_image_background
+	{
+		name = "Background";
+		group = "Map Image Export";
+		rgb = 255, 255, 255;
+		alpha = 0;
+	}
+
+	map_image_line_1s
+	{
+		name = "Line (1-Sided)";
+		group = "Map Image Export";
+		rgb = 0, 0, 0;
+	}
+
+	map_image_line_2s
+	{
+		name = "Line (2-Sided)";
+		group = "Map Image Export";
+		rgb = 144, 144, 144;
+	}
+
+	map_image_line_special
+	{
+		name = "Line (Special)";
+		group = "Map Image Export";
+		rgb = 220, 130, 50;
+	}
+
+	map_image_line_macro
+	{
+		name = "Line (Macro)";
+		group = "Map Image Export";
+		rgb = 50, 130, 220;
+	}
+
 	// Map editor colours
 	map_background
 	{

@@ -47,12 +47,6 @@
  * VARIABLES
  *******************************************************************/
 CVAR(Float, map_image_thickness, 1.5, CVAR_SAVE)
-CVAR(String, map_image_col_background, "rgb(255, 255, 255)", CVAR_SAVE)
-CVAR(Int, map_image_alpha_background, 0, CVAR_SAVE)
-CVAR(String, map_image_col_line_1s, "rgb(0, 0, 0)", CVAR_SAVE)
-CVAR(String, map_image_col_line_2s, "rgb(144, 144, 144)", CVAR_SAVE)
-CVAR(String, map_image_col_line_special, "rgb(220, 130, 50)", CVAR_SAVE)
-CVAR(String, map_image_col_line_macro, "rgb(50, 130, 220)", CVAR_SAVE)
 
 
 /*******************************************************************
@@ -100,6 +94,9 @@ void MapPreviewCanvas::addLine(unsigned v1, unsigned v2, bool twosided, bool spe
 	lines.push_back(line);
 }
 
+/* MapPreviewCanvas::addThing
+ * Adds a thing to the map data
+ *******************************************************************/
 void MapPreviewCanvas::addThing(double x, double y)
 {
 	mep_thing_t thing;
@@ -334,6 +331,9 @@ bool MapPreviewCanvas::openMap(Archive::mapdesc_t map)
 	return true;
 }
 
+/* MapPreviewCanvas::readVertices
+ * Reads non-UDMF vertex data
+ *******************************************************************/
 bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find VERTEXES entry
@@ -392,6 +392,9 @@ bool MapPreviewCanvas::readVertices(ArchiveEntry* map_head, ArchiveEntry* map_en
 	return true;
 }
 
+/* MapPreviewCanvas::readLines
+ * Reads non-UDMF line data
+ *******************************************************************/
 bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find LINEDEFS entry
@@ -491,6 +494,9 @@ bool MapPreviewCanvas::readLines(ArchiveEntry* map_head, ArchiveEntry* map_end, 
 	return true;
 }
 
+/* MapPreviewCanvas::readThings
+ * Reads non-UDMF thing data
+ *******************************************************************/
 bool MapPreviewCanvas::readThings(ArchiveEntry* map_head, ArchiveEntry* map_end, int map_format)
 {
 	// Find THINGS entry
@@ -755,13 +761,11 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 		height = mapheight / abs(height);
 
 	// Setup colours
-	wxColour wxc;
-	wxc.Set(map_image_col_background);	rgba_t col_save_background(wxc.Red(), wxc.Green(), wxc.Blue(), 255);
-	wxc.Set(map_image_col_line_1s);		rgba_t col_save_line_1s(wxc.Red(), wxc.Green(), wxc.Blue(), 255);
-	wxc.Set(map_image_col_line_2s);		rgba_t col_save_line_2s(wxc.Red(), wxc.Green(), wxc.Blue(), 255);
-	wxc.Set(map_image_col_line_special); rgba_t col_save_line_special(wxc.Red(), wxc.Green(), wxc.Blue(), 255);
-	wxc.Set(map_image_col_line_macro);	rgba_t col_save_line_macro(wxc.Red(), wxc.Green(), wxc.Blue(), 255);
-	col_save_background.a = map_image_alpha_background;
+	rgba_t col_save_background = ColourConfiguration::getColour("map_image_background");
+	rgba_t col_save_line_1s = ColourConfiguration::getColour("map_image_line_1s");
+	rgba_t col_save_line_2s = ColourConfiguration::getColour("map_image_line_2s");
+	rgba_t col_save_line_special = ColourConfiguration::getColour("map_image_line_special");
+	rgba_t col_save_line_macro = ColourConfiguration::getColour("map_image_line_macro");
 
 	// Setup OpenGL rigmarole
 	GLuint texID, fboID;
