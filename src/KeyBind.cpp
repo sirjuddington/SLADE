@@ -329,6 +329,8 @@ string KeyBind::mbName(int button)
 	case wxMOUSE_BTN_LEFT:		return "mouse1";
 	case wxMOUSE_BTN_RIGHT:		return "mouse2";
 	case wxMOUSE_BTN_MIDDLE:	return "mouse3";
+	case wxMOUSE_BTN_AUX1:		return "mouse4";
+	case wxMOUSE_BTN_AUX2:		return "mouse5";
 	default:
 		return S_FMT("mouse%d", button);
 	};
