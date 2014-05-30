@@ -135,7 +135,6 @@ bool MapEntryPanel::saveEntry()
 
 /* MapEntryPanel::createImage
  * Creates a PNG file of the map preview
- * TODO: Preference panel for background and line colors,
  * as well as for image size
  *******************************************************************/
 bool MapEntryPanel::createImage()
@@ -166,6 +165,9 @@ bool MapEntryPanel::createImage()
 
 		// Save 'dir_last'
 		dir_last = dialog_save.GetDirectory();
+
+		// Open the saved image
+		wxLaunchDefaultApplication(dialog_save.GetPath());
 
 		return ret;
 	}
