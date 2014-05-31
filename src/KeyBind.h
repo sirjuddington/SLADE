@@ -71,19 +71,19 @@ public:
 	~KeyBind();
 
 	// Operators
-	friend bool operator> (KeyBind& l, KeyBind& r)
+	inline bool operator> (const KeyBind r) const
 	{
-		if (l.priority == r.priority)
-			return l.name < r.name;
+		if (priority == r.priority)
+			return name < r.name;
 		else
-			return l.priority < r.priority;
+			return priority < r.priority;
 	}
-	friend bool operator< (KeyBind& l, KeyBind& r)
+	inline bool operator< (const KeyBind r) const
 	{
-		if (l.priority == r.priority)
-			return l.name > r.name;
+		if (priority == r.priority)
+			return name > r.name;
 		else
-			return l.priority > r.priority;
+			return priority > r.priority;
 	}
 
 	void	clear() { keys.clear(); }
