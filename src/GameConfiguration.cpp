@@ -1758,6 +1758,8 @@ string GameConfiguration::thingFlagsString(int flags)
 	// Remove ending ', ' if needed
 	if (ret.Length() > 0)
 		ret.RemoveLast(2);
+	else
+		return "None";
 
 	return ret;
 }
@@ -2600,7 +2602,7 @@ bool GameConfiguration::lineBasicFlagSet(string flag, MapLine* line, int map_for
 string GameConfiguration::lineFlagsString(MapLine* line)
 {
 	if (!line)
-		return "";
+		return "None";
 
 	// Get raw flags
 	unsigned long flags = line->intProperty("flags");
@@ -2621,6 +2623,8 @@ string GameConfiguration::lineFlagsString(MapLine* line)
 	// Remove ending ', ' if needed
 	if (ret.Length() > 0)
 		ret.RemoveLast(2);
+	else
+		ret = "None";
 
 	return ret;
 }
@@ -2738,7 +2742,7 @@ void GameConfiguration::setLineBasicFlag(string flag, MapLine* line, int map_for
 string GameConfiguration::spacTriggerString(MapLine* line, int map_format)
 {
 	if (!line)
-		return "";
+		return "None";
 
 	// Hexen format
 	if (map_format == MAP_HEXEN)
