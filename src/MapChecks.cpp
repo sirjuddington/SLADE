@@ -69,21 +69,21 @@ public:
 			if (side1)
 			{
 				// Upper
-				if (needs == TEX_FRONT_UPPER && side1->stringProperty("texturetop") == "-")
+				if ((needs & TEX_FRONT_UPPER) > 0 && side1->stringProperty("texturetop") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_FRONT_UPPER);
 				}
 
 				// Middle
-				if (needs == TEX_FRONT_MIDDLE && side1->stringProperty("texturemiddle") == "-")
+				if ((needs & TEX_FRONT_MIDDLE) > 0 && side1->stringProperty("texturemiddle") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_FRONT_MIDDLE);
 				}
 
 				// Lower
-				if (needs == TEX_FRONT_LOWER && side1->stringProperty("texturebottom") == "-")
+				if ((needs & TEX_FRONT_LOWER) > 0 && side1->stringProperty("texturebottom") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_FRONT_LOWER);
@@ -94,27 +94,29 @@ public:
 			if (side2)
 			{
 				// Upper
-				if (needs == TEX_BACK_UPPER && side2->stringProperty("texturetop") == "-")
+				if ((needs & TEX_BACK_UPPER) > 0 && side2->stringProperty("texturetop") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_BACK_UPPER);
 				}
 
 				// Middle
-				if (needs == TEX_BACK_MIDDLE && side2->stringProperty("texturemiddle") == "-")
+				if ((needs & TEX_BACK_MIDDLE) > 0 && side2->stringProperty("texturemiddle") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_BACK_MIDDLE);
 				}
 
 				// Lower
-				if (needs == TEX_BACK_LOWER && side2->stringProperty("texturebottom") == "-")
+				if ((needs & TEX_BACK_LOWER) > 0 && side2->stringProperty("texturebottom") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_BACK_LOWER);
 				}
 			}
 		}
+
+		LOG_MESSAGE(3, "Missing Texture Check: %d missing textures", parts.size());
 	}
 
 	unsigned nProblems()
