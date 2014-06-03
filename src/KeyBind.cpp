@@ -347,6 +347,10 @@ string KeyBind::mbName(int button)
  *******************************************************************/
 bool KeyBind::keyPressed(keypress_t key)
 {
+	// Ignore raw modifier keys
+	if (key.key == "control" || key.key == "shift" || key.key == "alt" || key.key == "command")
+		return false;
+
 	// Go through all keybinds
 	bool pressed = false;
 	for (unsigned k = 0; k < keybinds_sorted.size(); k++)
@@ -385,6 +389,10 @@ bool KeyBind::keyPressed(keypress_t key)
  *******************************************************************/
 bool KeyBind::keyReleased(string key)
 {
+	// Ignore raw modifier keys
+	if (key == "control" || key == "shift" || key == "alt" || key == "command")
+		return false;
+
 	// Go through all keybinds
 	bool released = false;
 	for (unsigned k = 0; k < keybinds.size(); k++)
@@ -795,6 +803,10 @@ bool KeyBind::readBinds(Tokenizer& tz)
 		// Next keybind
 		name = tz.getToken();
 	}
+
+	// Create sorted list
+	keybinds_sorted = keybinds;
+	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
 
 	return true;
 }
