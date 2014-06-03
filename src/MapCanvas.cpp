@@ -3772,58 +3772,60 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	KeyBind::keyPressed(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Testing
-	if (e.GetKeyCode() == WXK_F6)
+	if (Global::debug)
 	{
-		Polygon2D poly;
-		sf::Clock clock;
-		wxLogMessage("Generating polygons...");
-		for (unsigned a = 0; a < editor->getMap().nSectors(); a++)
+		if (e.GetKeyCode() == WXK_F6)
 		{
-			if (!poly.openSector(editor->getMap().getSector(a)))
-				wxLogMessage("Splitting failed for sector %d", a);
+			Polygon2D poly;
+			sf::Clock clock;
+			wxLogMessage("Generating polygons...");
+			for (unsigned a = 0; a < editor->getMap().nSectors(); a++)
+			{
+				if (!poly.openSector(editor->getMap().getSector(a)))
+					wxLogMessage("Splitting failed for sector %d", a);
+			}
+			//int ms = clock.GetElapsedTime() * 1000;
+			//wxLogMessage("Polygon generation took %dms", ms);
 		}
-		//int ms = clock.GetElapsedTime() * 1000;
-		//wxLogMessage("Polygon generation took %dms", ms);
-	}
-	if (e.GetKeyCode() == WXK_F7)
-	{
-		// Get nearest line
-		int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
-		MapLine* line = editor->getMap().getLine(nearest);
-		if (line)
+		if (e.GetKeyCode() == WXK_F7)
 		{
-			// Determine line side
-			double side = MathStuff::lineSide(mouse_pos_m.x, mouse_pos_m.y, line->x1(), line->y1(), line->x2(), line->y2());
-			if (side >= 0)
-				sbuilder.traceSector(&(editor->getMap()), line, true);
-			else
-				sbuilder.traceSector(&(editor->getMap()), line, false);
+			// Get nearest line
+			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			MapLine* line = editor->getMap().getLine(nearest);
+			if (line)
+			{
+				// Determine line side
+				double side = MathStuff::lineSide(mouse_pos_m.x, mouse_pos_m.y, line->x1(), line->y1(), line->x2(), line->y2());
+				if (side >= 0)
+					sbuilder.traceSector(&(editor->getMap()), line, true);
+				else
+					sbuilder.traceSector(&(editor->getMap()), line, false);
+			}
 		}
-	}
-	if (e.GetKeyCode() == WXK_F5)
-	{
-		// Get nearest line
-		int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
-		MapLine* line = editor->getMap().getLine(nearest);
+		if (e.GetKeyCode() == WXK_F5)
+		{
+			// Get nearest line
+			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			MapLine* line = editor->getMap().getLine(nearest);
 
-		// Get sectors
-		MapSector* sec1 = editor->getMap().getLineSideSector(line, true);
-		MapSector* sec2 = editor->getMap().getLineSideSector(line, false);
-		int i1 = -1;
-		int i2 = -1;
-		if (sec1) i1 = sec1->getIndex();
-		if (sec2) i2 = sec2->getIndex();
+			// Get sectors
+			MapSector* sec1 = editor->getMap().getLineSideSector(line, true);
+			MapSector* sec2 = editor->getMap().getLineSideSector(line, false);
+			int i1 = -1;
+			int i2 = -1;
+			if (sec1) i1 = sec1->getIndex();
+			if (sec2) i2 = sec2->getIndex();
 
-		editor->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
-	}
-
-	if (e.GetKeyCode() == WXK_F5 && editor->editMode() == MapEditor::MODE_SECTORS)
-	{
-		splitter.setVerbose(true);
-		splitter.clear();
-		splitter.openSector(editor->getHilightedSector());
-		Polygon2D temp;
-		splitter.doSplitting(&temp);
+			editor->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
+		}
+		if (e.GetKeyCode() == WXK_F5 && editor->editMode() == MapEditor::MODE_SECTORS)
+		{
+			splitter.setVerbose(true);
+			splitter.clear();
+			splitter.openSector(editor->getHilightedSector());
+			Polygon2D temp;
+			splitter.doSplitting(&temp);
+		}
 	}
 
 	// Update cursor in object edit mode
@@ -4295,7 +4297,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
 	if (e.GetWheelRotation() > 0)
 	{
-		KeyBind::keyPressed(keypress_t("mwheelup", e.AltDown(), e.CmdDown(), e.ShiftDown()));
+		KeyBind::keyPressed(keypress_t("mwheelup", e.AltDown(), e.ControlDown(), e.ShiftDown()));
 
 		// Send to overlay if active
 		if (overlayActive())
@@ -4305,7 +4307,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 	}
 	else if (e.GetWheelRotation() < 0)
 	{
-		KeyBind::keyPressed(keypress_t("mwheeldown", e.AltDown(), e.CmdDown(), e.ShiftDown()));
+		KeyBind::keyPressed(keypress_t("mwheeldown", e.AltDown(), e.ControlDown(), e.ShiftDown()));
 
 		// Send to overlay if active
 		if (overlayActive())
