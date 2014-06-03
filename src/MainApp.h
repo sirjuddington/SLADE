@@ -54,6 +54,7 @@ public:
 	void	saveConfigFile();
 	bool	isInitialised() { return init_ok; }
 	long	runTimer() { return timer.Time(); }
+	void	checkForUpdates(bool message_box);
 
 	int			newMenuId() { return cur_id++; }
 	SAction*	getAction(string id);
@@ -61,6 +62,7 @@ public:
 	void		toggleAction(string id);
 
 	void	onMenu(wxCommandEvent& e);
+	void	onVersionCheckCompleted(wxThreadEvent& e);
 };
 
 #define theApp ((MainApp*)wxTheApp)
