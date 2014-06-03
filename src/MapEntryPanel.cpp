@@ -51,6 +51,7 @@ CVAR(Int, map_image_height, -5, CVAR_SAVE)
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(String, dir_last)
+EXTERN_CVAR(Bool, map_view_things)
 
 
 /*******************************************************************
@@ -74,6 +75,14 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 
 	// Remove save/revert buttons
 	toolbar->deleteGroup("Entry");
+
+	// Setup bottom panel
+	sizer_bottom->AddStretchSpacer();
+	sizer_bottom->Add(cb_show_things = new wxCheckBox(this, -1, "Show Things"));
+	cb_show_things->SetValue(map_view_things);
+
+	// Bind events
+	cb_show_things->Bind(wxEVT_CHECKBOX, &MapEntryPanel::onCBShowThings, this);
 
 	// Layout
 	Layout();
@@ -184,4 +193,18 @@ void MapEntryPanel::toolbarButtonClick(string action_id)
 	{
 		createImage();
 	}
+}
+
+
+/*******************************************************************
+ * MAPENTRYPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* MapEntryPanel::onCBShowThings
+ * Called when the 'Show Things' checkbox is changed
+ *******************************************************************/
+void MapEntryPanel::onCBShowThings(wxCommandEvent& e)
+{
+	map_view_things = cb_show_things->GetValue();
+	map_canvas->Refresh();
 }

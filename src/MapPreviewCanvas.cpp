@@ -47,6 +47,7 @@
  * VARIABLES
  *******************************************************************/
 CVAR(Float, map_image_thickness, 1.5, CVAR_SAVE)
+CVAR(Bool, map_view_things, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -691,33 +692,36 @@ void MapPreviewCanvas::draw()
 	}
 
 	// Draw things
-	OpenGL::setColour(col_view_thing);
-	if (tex_thing)
+	if (map_view_things)
 	{
-		double radius = 20;
-		glEnable(GL_TEXTURE_2D);
-		tex_thing->bind();
-		for (unsigned a = 0; a < things.size(); a++)
+		OpenGL::setColour(col_view_thing);
+		if (tex_thing)
 		{
-			glPushMatrix();
-			glTranslated(things[a].x, things[a].y, 0);
-			glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f);	glVertex2d(-radius, -radius);
-			glTexCoord2f(0.0f, 1.0f);	glVertex2d(-radius, radius);
-			glTexCoord2f(1.0f, 1.0f);	glVertex2d(radius, radius);
-			glTexCoord2f(1.0f, 0.0f);	glVertex2d(radius, -radius);
-			glEnd();
-			glPopMatrix();
+			double radius = 20;
+			glEnable(GL_TEXTURE_2D);
+			tex_thing->bind();
+			for (unsigned a = 0; a < things.size(); a++)
+			{
+				glPushMatrix();
+				glTranslated(things[a].x, things[a].y, 0);
+				glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 0.0f);	glVertex2d(-radius, -radius);
+				glTexCoord2f(0.0f, 1.0f);	glVertex2d(-radius, radius);
+				glTexCoord2f(1.0f, 1.0f);	glVertex2d(radius, radius);
+				glTexCoord2f(1.0f, 0.0f);	glVertex2d(radius, -radius);
+				glEnd();
+				glPopMatrix();
+			}
 		}
-	}
-	else
-	{
-		glEnable(GL_POINT_SMOOTH);
-		glPointSize(8.0f);
-		glBegin(GL_POINTS);
-		for (unsigned a = 0; a < things.size(); a++)
-			glVertex2d(things[a].x, things[a].y);
-		glEnd();
+		else
+		{
+			glEnable(GL_POINT_SMOOTH);
+			glPointSize(8.0f);
+			glBegin(GL_POINTS);
+			for (unsigned a = 0; a < things.size(); a++)
+				glVertex2d(things[a].x, things[a].y);
+			glEnd();
+		}
 	}
 
 	glLineWidth(1.0f);
