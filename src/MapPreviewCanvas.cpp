@@ -980,3 +980,41 @@ unsigned MapPreviewCanvas::nThings()
 {
 	return things.size();
 }
+
+/* MapPreviewCanvas::getWidth
+ * Returns the width (in map units) of the map
+ *******************************************************************/
+unsigned MapPreviewCanvas::getWidth()
+{
+	int min_x = wxINT32_MAX;
+	int max_x = wxINT32_MIN;
+
+	for (unsigned a = 0; a < verts.size(); a++)
+	{
+		if (verts[a].x < min_x)
+			min_x = verts[a].x;
+		if (verts[a].x > max_x)
+			max_x = verts[a].x;
+	}
+
+	return max_x - min_x;
+}
+
+/* MapPreviewCanvas::getHeight
+ * Returns the height (in map units) of the map
+ *******************************************************************/
+unsigned MapPreviewCanvas::getHeight()
+{
+	int min_y = wxINT32_MAX;
+	int max_y = wxINT32_MIN;
+
+	for (unsigned a = 0; a < verts.size(); a++)
+	{
+		if (verts[a].y < min_y)
+			min_y = verts[a].y;
+		if (verts[a].y > max_y)
+			max_y = verts[a].y;
+	}
+
+	return max_y - min_y;
+}

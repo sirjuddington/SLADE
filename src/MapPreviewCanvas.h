@@ -67,6 +67,8 @@ public:
 	unsigned	nLines();
 	unsigned	nSectors();
 	unsigned	nThings();
+	unsigned	getWidth();
+	unsigned	getHeight();
 };
 
 #endif//__MAP_PREVIEW_CANVAS_H__
