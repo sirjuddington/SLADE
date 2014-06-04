@@ -77,6 +77,7 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 	toolbar->deleteGroup("Entry");
 
 	// Setup bottom panel
+	sizer_bottom->Add(label_stats = new wxStaticText(this, -1, ""));
 	sizer_bottom->AddStretchSpacer();
 	sizer_bottom->Add(cb_show_things = new wxCheckBox(this, -1, "Show Things"));
 	cb_show_things->SetValue(map_view_things);
@@ -131,7 +132,16 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	}
 
 	// Load map into preview canvas
-	return map_canvas->openMap(thismap);
+	if (map_canvas->openMap(thismap))
+	{
+		label_stats->SetLabel(S_FMT("%d Vertices, %d Sides, %d Lines, %d Sectors, %d Things", map_canvas->nVertices(), map_canvas->nSides(), map_canvas->nLines(), map_canvas->nSectors(), map_canvas->nThings()));
+		return true;
+	}
+	else
+	{
+		label_stats->SetLabel("");
+		return false;
+	}
 }
 
 /* MapEntryPanel::saveEntry
