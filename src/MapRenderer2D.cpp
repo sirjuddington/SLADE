@@ -1908,7 +1908,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		alpha *= ColourConfiguration::getFlatAlpha();
 
 	// Re-init flats texture list if invalid
-	if (texture && tex_flats.size() < map->nSectors() || last_flat_type != type)
+	if (texture && tex_flats.size() != map->nSectors() || last_flat_type != type)
 	{
 		tex_flats.clear();
 		for (unsigned a = 0; a < map->nSectors(); a++)
