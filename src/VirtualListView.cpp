@@ -37,6 +37,9 @@
 #include "VirtualListView.h"
 #include "ListView.h"
 #include "Console.h"
+#ifdef __WXMSW__
+#include <CommCtrl.h>
+#endif
 
 
 /*******************************************************************
@@ -45,6 +48,14 @@
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
 VirtualListView* VirtualListView::lv_current = NULL;
+int vlv_chars[] =
+{
+	'.', ',', '_', '-', '+', '=', '`', '~',
+	'!', '@', '#', '$', '(', ')', '[', ']',
+	'{', '}', ':', ';', '/', '\\', '<', '>',
+	'?', '^', '&', '\'', '\"',
+};
+int n_vlv_chars = 30;
 
 
 /*******************************************************************
@@ -326,8 +337,85 @@ void VirtualListView::sortItems()
 	std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
 }
 
+/* VirtualListView::setColumnHeaderArrow
+ * Sets the sorting arrow indicator on [column], [arrow] can be 0
+ * (none), 1 (up) or 2 (down)
+ *******************************************************************/
+void VirtualListView::setColumnHeaderArrow(long column, int arrow)
+{
+	// Win32 implementation
+#ifdef __WXMSW__
+	HWND hwnd = ListView_GetHeader((HWND)GetHandle());
+	HDITEM header ={ 0 };
+	if (hwnd)
+	{
+		header.mask = HDI_FORMAT;
+
+		if (Header_GetItem(hwnd, column, &header))
+		{
+			if (arrow == 2)
+				header.fmt = (header.fmt & ~HDF_SORTUP)|HDF_SORTDOWN;
+			else if (arrow == 1)
+				header.fmt = (header.fmt & ~HDF_SORTDOWN)|HDF_SORTUP;
+			else
+				header.fmt = header.fmt & ~(HDF_SORTDOWN|HDF_SORTUP);
+
+			Header_SetItem(hwnd, column, &header);
+		}
+	}
+#endif
+}
+
+/* VirtualListView::focusOnIndex
+ * Selects an entry by its given index and makes sure it is visible
+ *******************************************************************/
+void VirtualListView::focusOnIndex(long index)
+{
+	if (index < GetItemCount())
+	{
+		clearSelection();
+		selectItem(index);
+		focusItem(index);
+		EnsureVisible(index);
+		sendSelectionChangedEvent();
+	}
+}
+
+/* VirtualListView::lookForSearchEntryFrom
+ * Used by VirtualListView::onKeyChar, returns true if an entry
+ * matching search is found, false otherwise
+ *******************************************************************/
+bool VirtualListView::lookForSearchEntryFrom(long focus)
+{
+	long index = focus;
+	bool looped = false;
+	bool gotmatch = false;
+	while ((!looped && index < GetItemCount()) || (looped && index < focus))
+	{
+		string name = getItemText(index, col_search, items[index]);
+		if (name.Upper().StartsWith(search))
+		{
+			// Matches, update selection+focus
+			focusOnIndex(index);
+			return true;
+		}
+
+		// No match, next item; look in the above entries
+		// if no matches were found below.
+		if (++index == GetItemCount() && !looped)
+		{
+			looped = true;
+			index = 0;
+		}
+	}
+	// Didn't get any match
+	return false;
+}
 
 
+/*******************************************************************
+ * VIRTUALLISTVIEW CLASS EVENTS
+ *******************************************************************/
 
 /* VirtualListView::onColumnResize
  * Called when a column is resized
@@ -464,62 +552,6 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 		e.Skip();
 }
 
-int vlv_chars[] =
-{
-	'.', ',', '_', '-', '+', '=', '`', '~',
-	'!', '@', '#', '$', '(', ')', '[', ']',
-	'{', '}', ':', ';', '/', '\\', '<', '>',
-	'?', '^', '&', '\'', '\"',
-};
-int n_vlv_chars = 30;
-
-
-/* VirtualListView::focusOnIndex
- * Selects an entry by its given index and makes sure it is visible
- *******************************************************************/
-void VirtualListView::focusOnIndex(long index)
-{
-	if (index < GetItemCount())
-	{
-		clearSelection();
-		selectItem(index);
-		focusItem(index);
-		EnsureVisible(index);
-		sendSelectionChangedEvent();
-	}
-}
-
-/* VirtualListView::lookForSearchEntryFrom
- * Used by VirtualListView::onKeyChar, returns true if an entry
- * matching search is found, false otherwise
- *******************************************************************/
-bool VirtualListView::lookForSearchEntryFrom(long focus)
-{
-	long index = focus;
-	bool looped = false;
-	bool gotmatch = false;
-	while ((!looped && index < GetItemCount()) || (looped && index < focus))
-	{
-		string name = getItemText(index, col_search, items[index]);
-		if (name.Upper().StartsWith(search))
-		{
-			// Matches, update selection+focus
-			focusOnIndex(index);
-			return true;
-		}
-
-		// No match, next item; look in the above entries
-		// if no matches were found below.
-		if (++index == GetItemCount() && !looped)
-		{
-			looped = true;
-			index = 0;
-		}
-	}
-	// Didn't get any match
-	return false;
-}
-
 /* VirtualListView::onKeyChar
  * Called when a 'character' key is pressed within the list
  *******************************************************************/
@@ -601,8 +633,14 @@ void VirtualListView::onLabelEditEnd(wxListEvent& e)
 		labelEdited(e.GetColumn(), e.GetIndex(), e.GetLabel());
 }
 
+/* VirtualListView::onColumnLeftClick
+ * Called when a column header is clicked
+ *******************************************************************/
 void VirtualListView::onColumnLeftClick(wxListEvent& e)
 {
+	// Clear current sorting arrow
+	setColumnHeaderArrow(sort_column, 0);
+
 	// Current sorting column clicked
 	if (sort_column == e.GetColumn())
 	{
@@ -621,6 +659,10 @@ void VirtualListView::onColumnLeftClick(wxListEvent& e)
 		sort_column = e.GetColumn();
 		sort_descend = false;
 	}
+
+	// Set new sorting arrow
+	if (sort_column >= 0)
+		setColumnHeaderArrow(sort_column, sort_descend ? 2 : 1);
 
 	if (sort_column >= 0)
 	{

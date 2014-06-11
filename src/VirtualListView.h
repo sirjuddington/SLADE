@@ -80,6 +80,7 @@ public:
 	static bool		defaultSort(long left, long right);
 	static bool		indexSort(long left, long right) { return lv_current->sort_descend ? right < left : left < right; }
 	virtual void	sortItems();
+	void			setColumnHeaderArrow(long column, int arrow);
 
 	// Events
 	void	onColumnResize(wxListEvent& e);
