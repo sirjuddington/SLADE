@@ -4918,8 +4918,9 @@ void SLADEMap::mapOpenChecks()
 	int rverts = removeDetachedVertices();
 	int rsides = removeDetachedSides();
 	int rsec = removeDetachedSectors();
+	int risides = removeInvalidSides();
 
-	wxLogMessage("Removed %d detached vertices, %d detached sides and %d detached sectors", rverts, rsides, rsec);
+	wxLogMessage("Removed %d detached vertices, %d detached sides, %d invalid sides and %d detached sectors", rverts, rsides, risides, rsec);
 }
 
 /* SLADEMap::removeDetachedVertices
@@ -4997,6 +4998,25 @@ int SLADEMap::removeZeroLengthLines()
 		if (lines[a]->vertex1 == lines[a]->vertex2)
 		{
 			removeLine(a);
+			a--;
+			count++;
+		}
+	}
+
+	return count;
+}
+
+/* SLADEMap::removeInvalidSides
+ * Removes any sides that reference non-existant sectors
+ *******************************************************************/
+int SLADEMap::removeInvalidSides()
+{
+	int count = 0;
+	for (unsigned a = 0; a < sides.size(); a++)
+	{
+		if (!sides[a]->getSector())
+		{
+			removeSide(a);
 			a--;
 			count++;
 		}

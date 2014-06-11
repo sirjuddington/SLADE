@@ -10,6 +10,7 @@ class MapEntryPanel : public EntryPanel
 private:
 	MapPreviewCanvas*	map_canvas;
 	wxCheckBox*			cb_show_things;
+	wxStaticText*		label_stats;
 
 public:
 	MapEntryPanel(wxWindow* parent);

@@ -297,6 +297,7 @@ void MainWindow::setupLayout()
 	wxMenu* helpMenu = new wxMenu("");
 	theApp->getAction("main_onlinedocs")->addToMenu(helpMenu, true);
 	theApp->getAction("main_about")->addToMenu(helpMenu, true);
+	theApp->getAction("main_updatecheck")->addToMenu(helpMenu, true);
 	menu->Append(helpMenu, "&Help");
 
 	// Set the menu
@@ -710,6 +711,13 @@ bool MainWindow::handleAction(string id)
 	if (id == "main_onlinedocs")
 	{
 		wxLaunchDefaultBrowser("http://slade.mancubus.net/wiki");
+		return true;
+	}
+
+	// Help->Check For Updates
+	if (id == "main_updatecheck")
+	{
+		theApp->checkForUpdates(true);
 		return true;
 	}
 

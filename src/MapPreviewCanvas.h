@@ -37,6 +37,8 @@ private:
 	vector<mep_vertex_t>	verts;
 	vector<mep_line_t>		lines;
 	vector<mep_thing_t>		things;
+	unsigned				n_sides;
+	unsigned				n_sectors;
 	double					zoom;
 	double					offset_x;
 	double					offset_y;
@@ -59,6 +61,14 @@ public:
 	void showMap();
 	void draw();
 	void createImage(ArchiveEntry& ae, int width, int height);
+
+	unsigned	nVertices();
+	unsigned	nSides();
+	unsigned	nLines();
+	unsigned	nSectors();
+	unsigned	nThings();
+	unsigned	getWidth();
+	unsigned	getHeight();
 };
 
 #endif//__MAP_PREVIEW_CANVAS_H__

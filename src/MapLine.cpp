@@ -536,11 +536,11 @@ double MapLine::distanceTo(double x, double y)
 int MapLine::needsTexture()
 {
 	// Check line is valid
-	if (!side1)
+	if (!frontSector())
 		return 0;
 
 	// If line is 1-sided, it only needs front middle
-	if (!side2)
+	if (!backSector())
 		return TEX_FRONT_MIDDLE;
 
 	// ZDoom's Plane_Align ensures a slope will hide the lower or upper texture
