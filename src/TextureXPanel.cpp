@@ -86,18 +86,18 @@ TextureXListView::~TextureXListView()
 /* TextureXListView::getItemText
  * Returns the string for [item] at [column]
  *******************************************************************/
-string TextureXListView::getItemText(long item, long column) const
+string TextureXListView::getItemText(long item, long column, long index) const
 {
 	// Check texture list exists
 	if (!texturex)
 		return "INVALID INDEX";
 
 	// Check index is ok
-	if (item < 0 || (unsigned)item > texturex->nTextures())
+	if (index < 0 || (unsigned)index > texturex->nTextures())
 		return "INVALID INDEX";
 
 	// Get associated texture
-	CTexture* tex = texturex->getTexture(item);
+	CTexture* tex = texturex->getTexture(index);
 
 	if (column == 0)						// Name column
 		return tex->getName();
@@ -113,18 +113,18 @@ string TextureXListView::getItemText(long item, long column) const
  * Called when widget requests the attributes (text colour /
  * background colour / font) for [item]
  *******************************************************************/
-void TextureXListView::updateItemAttr(long item) const
+void TextureXListView::updateItemAttr(long item, long column, long index) const
 {
 	// Check texture list exists
 	if (!texturex)
 		return;
 
 	// Check index is ok
-	if (item < 0 || (unsigned)item > texturex->nTextures())
+	if (index < 0 || (unsigned)index > texturex->nTextures())
 		return;
 
 	// Get associated texture
-	CTexture* tex = texturex->getTexture(item);
+	CTexture* tex = texturex->getTexture(index);
 
 	// Init attributes
 	item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("error")));
@@ -157,11 +157,18 @@ void TextureXListView::updateList(bool clear)
 		ClearAll();
 
 	// Set list size
+	items.clear();
 	if (texturex)
-		SetItemCount(texturex->nTextures());
+	{
+		unsigned count = texturex->nTextures();
+		SetItemCount(count);
+		for (unsigned a = 0; a < count; a++)
+			items.push_back(a);
+	}
 	else
 		SetItemCount(0);
 
+	sortItems();
 	updateWidth();
 	Refresh();
 }

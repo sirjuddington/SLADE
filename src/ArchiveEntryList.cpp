@@ -35,6 +35,7 @@
 #include "ColourConfiguration.h"
 #include "UndoRedo.h"
 #include <wx/imaglist.h>
+#include <functional>
 
 
 /*******************************************************************
@@ -70,12 +71,10 @@ EXTERN_CVAR(Bool, list_font_monospace)
 /* ArchiveEntryList::ArchiveEntryList
  * ArchiveEntryList class constructor
  *******************************************************************/
-ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
+ ArchiveEntryList::ArchiveEntryList(wxWindow* parent) : VirtualListView(parent)
 {
 	// Init variables
 	archive = NULL;
-	filter_active = false;
-	filter_name = "";
 	filter_category = "";
 	current_dir = NULL;
 	show_dir_back = false;
@@ -123,10 +122,10 @@ ArchiveEntryList::~ArchiveEntryList()
 /* ArchiveEntryList::getItemText
  * Called when the widget requests the text for [item] at [column]
  *******************************************************************/
-string ArchiveEntryList::getItemText(long item, long column) const
+string ArchiveEntryList::getItemText(long item, long column, long index) const
 {
 	// Get entry
-	ArchiveEntry* entry = getEntry(item);
+	ArchiveEntry* entry = getEntry(index, false);
 
 	// Check entry
 	if (!entry)
@@ -178,7 +177,7 @@ string ArchiveEntryList::getItemText(long item, long column) const
 /* ArchiveEntryList::getItemIcon
  * Called when the widget requests the icon for [item]
  *******************************************************************/
-int ArchiveEntryList::getItemIcon(long item, long column) const
+int ArchiveEntryList::getItemIcon(long item, long column, long index) const
 {
 	if (column > 0)
 		return -1;
@@ -197,7 +196,7 @@ int ArchiveEntryList::getItemIcon(long item, long column) const
  * Called when widget requests the attributes (text colour /
  * background colour / font) for [item]
  *******************************************************************/
-void ArchiveEntryList::updateItemAttr(long item, long column) const
+void ArchiveEntryList::updateItemAttr(long item, long column, long index) const
 {
 	// Get associated entry
 	ArchiveEntry* entry = getEntry(item);
@@ -277,6 +276,7 @@ void ArchiveEntryList::setArchive(Archive* archive)
 
 		// Open root directory
 		current_dir = archive->getRoot();
+		applyFilter();
 		updateList();
 	}
 }
@@ -328,6 +328,10 @@ void ArchiveEntryList::setupColumns()
 
 	// Set editable
 	setColumnEditable(col_name);	// Name column
+
+	// Reset sorting
+	sort_column = -1;
+	sort_descend = false;
 }
 
 /* ArchiveEntryList::columnType
@@ -350,7 +354,7 @@ int ArchiveEntryList::columnType(int column) const
 /* ArchiveEntryList::updateList
  * Updates + refreshes the list
  *******************************************************************/
-void ArchiveEntryList::updateList()
+void ArchiveEntryList::updateList(bool clear)
 {
 	// If no current directory, set size to 0
 	if (!current_dir)
@@ -361,10 +365,8 @@ void ArchiveEntryList::updateList()
 	}
 
 	// Update list
-	if (filter_active)
-		SetItemCount(filter.size());
-	else
-		SetItemCount(current_dir->numEntries() + current_dir->nChildren());
+	SetItemCount(items.size());
+	sortItems();
 
 	Refresh();
 }
@@ -376,7 +378,7 @@ void ArchiveEntryList::updateList()
 void ArchiveEntryList::filterList(string filter, string category)
 {
 	// Update variables
-	filter_name = filter;
+	filter_text = filter;
 	filter_category = category;
 
 	// Save current selection
@@ -391,7 +393,7 @@ void ArchiveEntryList::filterList(string filter, string category)
 	ArchiveEntry* entry = NULL;
 	for (int a = 0; a < GetItemCount(); a++)
 	{
-		entry = getEntry(a);
+		entry = getEntry(a, false);
 		for (unsigned b = 0; b < selection.size(); b++)
 		{
 			if (entry == selection[b])
@@ -414,43 +416,43 @@ void ArchiveEntryList::filterList(string filter, string category)
  *******************************************************************/
 void ArchiveEntryList::applyFilter()
 {
-	// Disable filter initially
-	filter_active = false;
+	// Clear current filter list
+	items.clear();
 
 	// Check if any filters were given
-	if (filter_name.IsEmpty() && filter_category.IsEmpty())
+	if (filter_text.IsEmpty() && filter_category.IsEmpty())
 	{
 		// No filter, just refresh the list
+		unsigned count = current_dir->numEntries() + current_dir->nChildren();
+		for (unsigned a = 0; a < count; a++)
+			items.push_back(a);
 		updateList();
 
 		return;
 	}
 
-	// Clear current filter list
-	filter.clear();
-
 	// Filter by category
 	unsigned index = 0;
-	ArchiveEntry* entry = getEntry(index);
+	ArchiveEntry* entry = getEntry(index, false);
 	while (entry)
 	{
 		if (filter_category.IsEmpty() || entry->getType() == EntryType::folderType())
-			filter.push_back(index);	// If no category specified, just add all entries to the filter
+			items.push_back(index);	// If no category specified, just add all entries to the filter
 		else
 		{
 			// Check for category match
 			if (S_CMPNOCASE(entry->getType()->getCategory(), filter_category))
-				filter.push_back(index);
+				items.push_back(index);
 		}
 
-		entry = getEntry(++index);
+		entry = getEntry(++index, false);
 	}
 
 	// Now filter by name if needed
-	if (!filter_name.IsEmpty())
+	if (!filter_text.IsEmpty())
 	{
 		// Split filter by ,
-		wxArrayString terms = wxSplit(filter_name, ',');
+		wxArrayString terms = wxSplit(filter_text, ',');
 
 		// Process filter strings
 		for (unsigned a = 0; a < terms.size(); a++)
@@ -463,9 +465,9 @@ void ArchiveEntryList::applyFilter()
 		}
 
 		// Go through filtered list
-		for (unsigned a = 0; a < filter.size(); a++)
+		for (unsigned a = 0; a < items.size(); a++)
 		{
-			entry = getEntry(filter[a]);
+			entry = getEntry(items[a], false);
 
 			// Don't filter folders if !elist_filter_dirs
 			if (!elist_filter_dirs && entry->getType() == EntryType::folderType())
@@ -485,13 +487,10 @@ void ArchiveEntryList::applyFilter()
 				continue;
 
 			// No match, remove from filtered list
-			filter.erase(filter.begin() + a);
+			items.erase(items.begin() + a);
 			a--;
 		}
 	}
-
-	// Enable the filter
-	filter_active = true;
 
 	// Update the list
 	updateList();
@@ -534,6 +533,32 @@ bool ArchiveEntryList::goUpDir()
 	return (setDir((ArchiveTreeNode*)current_dir->getParent()));
 }
 
+/* ArchiveEntryList::sortSize
+ * For column sorting, returns true if entry [left] is smaller than
+ * entry [right]
+ *******************************************************************/
+bool ArchiveEntryList::sortSize(long left, long right)
+{
+	int result = getEntry(left, false)->getSize() - getEntry(right, false)->getSize();
+	if (result == 0)
+		return sort_descend ? right < left : left < right;
+	else
+		return sort_descend ? result > 0 : result < 0;
+}
+
+/* ArchiveEntryList::sortItems
+ * Sorts the list items depending on the current sorting column
+ *******************************************************************/
+void ArchiveEntryList::sortItems()
+{
+	if (sort_column == col_size)
+		std::sort(items.begin(), items.end(), std::bind(&ArchiveEntryList::sortSize, this, std::placeholders::_1, std::placeholders::_2));
+	else if (sort_column == col_index)
+		std::sort(items.begin(), items.end(), std::bind(&VirtualListView::indexSort, this, std::placeholders::_1, std::placeholders::_2));
+	else
+		std::sort(items.begin(), items.end(), std::bind(&VirtualListView::defaultSort, this, std::placeholders::_1, std::placeholders::_2));
+}
+
 /* ArchiveEntryList::entriesBegin
  * Returns the index of the first list item that is an entry (rather
  * than a directory), or -1 if no directory/archive is open)
@@ -557,20 +582,19 @@ int ArchiveEntryList::entriesBegin()
  * Returns the ArchiveEntry associated with the list item at [index].
  * Returns NULL if the index is out of bounds or no archive is open
  *******************************************************************/
-ArchiveEntry* ArchiveEntryList::getEntry(int index) const
+ArchiveEntry* ArchiveEntryList::getEntry(int index, bool filtered) const
 {
 	// Check index & archive
 	if (index < 0 || !archive)
 		return NULL;
 
-	// Check if filtering is active
-	if (filter_active)
+	// Modify index for filtered list
+	if (filtered)
 	{
-		// If it is, modify index for filtered list
-		if (index < 0 || (unsigned) index >= filter.size())
+		if ((unsigned)index >= items.size())
 			return NULL;
-
-		index = filter[index];
+		else
+			index = items[index];
 	}
 
 	// Index modifier if 'up folder' entry exists
@@ -600,20 +624,19 @@ ArchiveEntry* ArchiveEntryList::getEntry(int index) const
  * [index]. Returns -1 if the index is out of bounds or no archive
  * is open
  *******************************************************************/
-int ArchiveEntryList::getEntryIndex(int index)
+int ArchiveEntryList::getEntryIndex(int index, bool filtered)
 {
 	// Check index & archive
 	if (index < 0 || !archive)
 		return -1;
 
-	// Check if filtering is active
-	if (filter_active)
+	// Modify index for filtered list
+	if (filtered)
 	{
-		// If it is, modify index for filtered list
-		if (index < 0 || (unsigned) index >= filter.size())
-			return -1;
-
-		index = filter[index];
+		if ((unsigned)index >= items.size())
+			return NULL;
+		else
+			index = items[index];
 	}
 
 	// Index modifier if 'up folder' entry exists
@@ -779,6 +802,7 @@ bool ArchiveEntryList::handleAction(string id)
 		elist_colsize_show = !elist_colsize_show;
 		setupColumns();
 		updateWidth();
+		updateList();
 		if (GetParent())
 			GetParent()->Layout();
 	}
@@ -787,6 +811,7 @@ bool ArchiveEntryList::handleAction(string id)
 		elist_coltype_show = !elist_coltype_show;
 		setupColumns();
 		updateWidth();
+		updateList();
 		if (GetParent())
 			GetParent()->Layout();
 	}
@@ -795,6 +820,7 @@ bool ArchiveEntryList::handleAction(string id)
 		elist_colindex_show = !elist_colindex_show;
 		setupColumns();
 		updateWidth();
+		updateList();
 		if (GetParent())
 			GetParent()->Layout();
 	}

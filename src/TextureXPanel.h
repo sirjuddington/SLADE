@@ -15,8 +15,8 @@ private:
 	TextureXList*	texturex;
 
 protected:
-	string	getItemText(long item, long column) const;
-	void	updateItemAttr(long item) const;
+	string	getItemText(long item, long column, long index) const;
+	void	updateItemAttr(long item, long column, long index) const;
 
 public:
 	TextureXListView(wxWindow* parent, TextureXList* texturex);

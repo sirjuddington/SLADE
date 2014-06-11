@@ -1,4 +1,4 @@
-
+﻿
 /*******************************************************************
  * SLADE - It's a Doom Editor
  * Copyright (C) 2008-2014 Simon Judd
@@ -37,6 +37,7 @@
 #include "VirtualListView.h"
 #include "ListView.h"
 #include "Console.h"
+#include <functional>
 
 
 /*******************************************************************
@@ -64,6 +65,10 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	item_attr = new wxListItemAttr();
 	last_focus = 0;
 	col_search = 0;
+	filter_text = "";
+	sort_column = -1;
+	filter_column = -1;
+	sort_descend = false;
 	memset(cols_editable, 0, 100);
 
 	// Set monospace font if configured
@@ -81,6 +86,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_CHAR, &VirtualListView::onKeyChar, this);
 	Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &VirtualListView::onLabelEditBegin, this);
 	Bind(wxEVT_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
+	Bind(wxEVT_LIST_COL_CLICK, &VirtualListView::onColumnLeftClick, this);
 }
 
 /* VirtualListView::~VirtualListView
@@ -267,6 +273,59 @@ long VirtualListView::getFocus()
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 }
 
+/* VirtualListView::defaultSort
+ * Default sorting calculation, sorts by index if there is no sorted
+ * column, otherwise sorts by the column item text > index
+ *******************************************************************/
+bool VirtualListView::defaultSort(long left, long right)
+{
+	// No sort column, just sort by index
+	if (sort_column < 0)
+		return sort_descend ? right < left : left < right;
+
+	// Sort by column text > index
+	else
+	{
+		int result = getItemText(left, sort_column, left).Lower().compare(getItemText(right, sort_column, right).Lower());
+		if (result == 0)
+			return sort_descend ? right < left : left < right;
+		else
+			return sort_descend ? result > 0 : result < 0;
+	}
+}
+
+/* VirtualListView::getItemIndex
+ * Returns the filtered index of the list item at [item]
+ *******************************************************************/
+long VirtualListView::getItemIndex(long item) const
+{
+	if (item < 0 || item >= (long)items.size())
+		return item;
+	else
+		return items[item];
+}
+
+/* VirtualListView::updateList
+ * Updates the list item count and refreshes it
+ *******************************************************************/
+void VirtualListView::updateList(bool clear)
+{
+	// Update list
+	if (!items.empty())
+		SetItemCount(items.size());
+
+	Refresh();
+}
+
+/* VirtualListView::sortItems
+ * Sorts the list items depending on the current sorting column
+ *******************************************************************/
+void VirtualListView::sortItems()
+{
+	std::sort(items.begin(), items.end(), std::bind(&VirtualListView::defaultSort, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+
 
 
 /* VirtualListView::onColumnResize
@@ -440,7 +499,7 @@ bool VirtualListView::lookForSearchEntryFrom(long focus)
 	bool gotmatch = false;
 	while ((!looped && index < GetItemCount()) || (looped && index < focus))
 	{
-		string name = getItemText(index, col_search);
+		string name = getItemText(index, col_search, items[index]);
 		if (name.Upper().StartsWith(search))
 		{
 			// Matches, update selection+focus
@@ -539,4 +598,37 @@ void VirtualListView::onLabelEditEnd(wxListEvent& e)
 {
 	if (!e.IsEditCancelled())
 		labelEdited(e.GetColumn(), e.GetIndex(), e.GetLabel());
+}
+
+void VirtualListView::onColumnLeftClick(wxListEvent& e)
+{
+	// Current sorting column clicked
+	if (sort_column == e.GetColumn())
+	{
+		if (sort_descend)
+		{
+			sort_column = -1;
+			sort_descend = false;
+		}
+		else
+			sort_descend = true;
+	}
+
+	// Different sorting column clicked
+	else
+	{
+		sort_column = e.GetColumn();
+		sort_descend = false;
+	}
+
+	if (sort_column >= 0)
+	{
+		LOG_MESSAGE(2, "Sort column %d (%s)", sort_column, sort_descend ? "descending" : "ascending");
+	}
+	else
+	{
+		LOG_MESSAGE(2, "No sorting");
+	}
+
+	updateList();
 }

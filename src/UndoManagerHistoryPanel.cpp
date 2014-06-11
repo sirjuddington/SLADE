@@ -64,7 +64,7 @@ UndoListView::~UndoListView()
 /* UndoListView::getItemText
  * Returns the list text for [item] at [column]
  *******************************************************************/
-string UndoListView::getItemText(long item, long column) const
+string UndoListView::getItemText(long item, long column, long index) const
 {
 	if (!manager)
 		return "";
@@ -72,16 +72,14 @@ string UndoListView::getItemText(long item, long column) const
 	int max = manager->nUndoLevels();
 	if (item < max)
 	{
-		//int index = max - item - 1;
-		int index = item;
 		if (column == 0)
 		{
-			string name = manager->undoLevel(index)->getName();
-			return S_FMT("%d. %s", index + 1, name);
+			string name = manager->undoLevel(item)->getName();
+			return S_FMT("%d. %s", item + 1, name);
 		}
 		else
 		{
-			return manager->undoLevel(index)->getTimeStamp(false, true);
+			return manager->undoLevel(item)->getTimeStamp(false, true);
 		}
 	}
 	else
@@ -91,7 +89,7 @@ string UndoListView::getItemText(long item, long column) const
 /* UndoListView::getItemIcon
  * Returns the icon index for [item]
  *******************************************************************/
-int UndoListView::getItemIcon(long item) const
+int UndoListView::getItemIcon(long item, long column, long index) const
 {
 	return -1;
 }
@@ -99,18 +97,16 @@ int UndoListView::getItemIcon(long item) const
 /* UndoListView::updateItemAttr
  * Updates display attributes for [item]
  *******************************************************************/
-void UndoListView::updateItemAttr(long item) const
+void UndoListView::updateItemAttr(long item, long column, long index) const
 {
 	if (!manager)
 		return;
 
 	item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 
-	//int index = manager->nUndoLevels() - item - 1;
-	int index = item;
-	if (index == manager->getCurrentIndex())
+	if (item == manager->getCurrentIndex())
 		item_attr->SetTextColour(WXCOL(rgba_t(0, 170, 0)));
-	else if (index > manager->getCurrentIndex())
+	else if (item > manager->getCurrentIndex())
 		item_attr->SetTextColour(WXCOL(rgba_t(150, 150, 150)));
 }
 
