@@ -55,8 +55,8 @@ public:
 	bool	setDir(ArchiveTreeNode* dir);
 
 	// Sorting
-	bool	sortSize(long left, long right);
-	void	sortItems();
+	static bool	sortSize(long left, long right);
+	void		sortItems();
 
 	ArchiveEntry*				getEntry(int index, bool filtered = true) const;
 	int							getEntryIndex(int index, bool filtered = true);

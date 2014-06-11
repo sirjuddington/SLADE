@@ -29,6 +29,8 @@ protected:
 	int				filter_column;
 	string			filter_text;
 
+	static VirtualListView* lv_current;
+
 	virtual string	getItemText(long item, long column, long index) const { return "UNDEFINED"; }
 	virtual int		getItemIcon(long item, long column, long index) const { return -1; }
 	virtual void	updateItemAttr(long item, long column, long index) const {}
@@ -74,8 +76,9 @@ public:
 	virtual void	applyFilter() {}
 
 	// Sorting
-	bool			defaultSort(long left, long right);
-	bool			indexSort(long left, long right) { return sort_descend ? right < left : left < right; }
+	bool			sortDescend() { return sort_descend; }
+	static bool		defaultSort(long left, long right);
+	static bool		indexSort(long left, long right) { return lv_current->sort_descend ? right < left : left < right; }
 	virtual void	sortItems();
 
 	// Events

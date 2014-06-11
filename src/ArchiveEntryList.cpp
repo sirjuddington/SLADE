@@ -35,7 +35,6 @@
 #include "ColourConfiguration.h"
 #include "UndoRedo.h"
 #include <wx/imaglist.h>
-#include <functional>
 
 
 /*******************************************************************
@@ -539,11 +538,11 @@ bool ArchiveEntryList::goUpDir()
  *******************************************************************/
 bool ArchiveEntryList::sortSize(long left, long right)
 {
-	int result = getEntry(left, false)->getSize() - getEntry(right, false)->getSize();
+	int result = ((ArchiveEntryList*)lv_current)->getEntry(left, false)->getSize() - ((ArchiveEntryList*)lv_current)->getEntry(right, false)->getSize();
 	if (result == 0)
-		return sort_descend ? right < left : left < right;
+		return lv_current->sortDescend() ? right < left : left < right;
 	else
-		return sort_descend ? result > 0 : result < 0;
+		return lv_current->sortDescend() ? result > 0 : result < 0;
 }
 
 /* ArchiveEntryList::sortItems
@@ -551,12 +550,13 @@ bool ArchiveEntryList::sortSize(long left, long right)
  *******************************************************************/
 void ArchiveEntryList::sortItems()
 {
+	lv_current = this;
 	if (sort_column == col_size)
-		std::sort(items.begin(), items.end(), std::bind(&ArchiveEntryList::sortSize, this, std::placeholders::_1, std::placeholders::_2));
+		std::sort(items.begin(), items.end(), &ArchiveEntryList::sortSize);
 	else if (sort_column == col_index)
-		std::sort(items.begin(), items.end(), std::bind(&VirtualListView::indexSort, this, std::placeholders::_1, std::placeholders::_2));
+		std::sort(items.begin(), items.end(), &VirtualListView::indexSort);
 	else
-		std::sort(items.begin(), items.end(), std::bind(&VirtualListView::defaultSort, this, std::placeholders::_1, std::placeholders::_2));
+		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
 }
 
 /* ArchiveEntryList::entriesBegin

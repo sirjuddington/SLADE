@@ -37,7 +37,6 @@
 #include "VirtualListView.h"
 #include "ListView.h"
 #include "Console.h"
-#include <functional>
 
 
 /*******************************************************************
@@ -45,6 +44,7 @@
  *******************************************************************/
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
+VirtualListView* VirtualListView::lv_current = NULL;
 
 
 /*******************************************************************
@@ -280,17 +280,17 @@ long VirtualListView::getFocus()
 bool VirtualListView::defaultSort(long left, long right)
 {
 	// No sort column, just sort by index
-	if (sort_column < 0)
-		return sort_descend ? right < left : left < right;
+	if (lv_current->sort_column < 0)
+		return lv_current->sort_descend ? right < left : left < right;
 
 	// Sort by column text > index
 	else
 	{
-		int result = getItemText(left, sort_column, left).Lower().compare(getItemText(right, sort_column, right).Lower());
+		int result = lv_current->getItemText(left, lv_current->sort_column, left).Lower().compare(lv_current->getItemText(right, lv_current->sort_column, right).Lower());
 		if (result == 0)
-			return sort_descend ? right < left : left < right;
+			return lv_current->sort_descend ? right < left : left < right;
 		else
-			return sort_descend ? result > 0 : result < 0;
+			return lv_current->sort_descend ? result > 0 : result < 0;
 	}
 }
 
@@ -322,7 +322,8 @@ void VirtualListView::updateList(bool clear)
  *******************************************************************/
 void VirtualListView::sortItems()
 {
-	std::sort(items.begin(), items.end(), std::bind(&VirtualListView::defaultSort, this, std::placeholders::_1, std::placeholders::_2));
+	lv_current = this;
+	std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
 }
 
 
