@@ -21,8 +21,12 @@ public:
 	PatchTableListView(wxWindow* parent, PatchTable* patch_table);
 	~PatchTableListView();
 
-	void	updateList(bool clear = false);
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	PatchTable*	patchTable() { return patch_table; }
+
+	void		updateList(bool clear = false);
+	void		onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
+	static bool usageSort(long left, long right);
+	void		sortItems();
 };
 
 class PatchTablePanel : public wxPanel, public Listener

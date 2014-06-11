@@ -540,7 +540,7 @@ bool ArchiveEntryList::sortSize(long left, long right)
 {
 	int result = ((ArchiveEntryList*)lv_current)->getEntry(left, false)->getSize() - ((ArchiveEntryList*)lv_current)->getEntry(right, false)->getSize();
 	if (result == 0)
-		return lv_current->sortDescend() ? right < left : left < right;
+		return left < right;
 	else
 		return lv_current->sortDescend() ? result > 0 : result < 0;
 }

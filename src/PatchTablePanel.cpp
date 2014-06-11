@@ -163,6 +163,32 @@ void PatchTableListView::onAnnouncement(Announcer* announcer, string event_name,
 		updateList();
 }
 
+/* PatchTableListView::usageSort
+ * Returns true if patch at index [left] is used less than [right]
+ *******************************************************************/
+bool PatchTableListView::usageSort(long left, long right)
+{
+	patch_t& p1 = ((PatchTableListView*)lv_current)->patchTable()->patch(left);
+	patch_t& p2 = ((PatchTableListView*)lv_current)->patchTable()->patch(right);
+
+	if (p1.used_in.size() == p2.used_in.size())
+		return left < right;
+	else
+		return lv_current->sortDescend() ? p2.used_in.size() < p1.used_in.size() : p1.used_in.size() < p2.used_in.size();
+}
+
+/* TextureXListView::sortItems
+ * Sorts the list items depending on the current sorting column
+ *******************************************************************/
+void PatchTableListView::sortItems()
+{
+	lv_current = this;
+	if (sort_column == 2)
+		std::sort(items.begin(), items.end(), &PatchTableListView::usageSort);
+	else
+		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+}
+
 
 /*******************************************************************
  * PATCHTABLEPANEL CLASS FUNCTIONS

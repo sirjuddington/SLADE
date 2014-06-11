@@ -173,6 +173,34 @@ void TextureXListView::updateList(bool clear)
 	Refresh();
 }
 
+/* TextureXListView::sizeSort
+ * Returns true if texture at index [left] is smaller than [right]
+ *******************************************************************/
+bool TextureXListView::sizeSort(long left, long right)
+{
+	CTexture* tl = ((TextureXListView*)lv_current)->txList()->getTexture(left);
+	CTexture* tr = ((TextureXListView*)lv_current)->txList()->getTexture(right);
+	int s1 = tl->getWidth() * tl->getHeight();
+	int s2 = tr->getWidth() * tr->getHeight();
+
+	if (s1 == s2)
+		return left < right;
+	else
+		return lv_current->sortDescend() ? s1 > s2 : s2 > s1;
+}
+
+/* TextureXListView::sortItems
+ * Sorts the list items depending on the current sorting column
+ *******************************************************************/
+void TextureXListView::sortItems()
+{
+	lv_current = this;
+	if (sort_column == 1)
+		std::sort(items.begin(), items.end(), &TextureXListView::sizeSort);
+	else
+		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+}
+
 
 /*******************************************************************
  * TEXTUREXPANEL CLASS FUNCTIONS

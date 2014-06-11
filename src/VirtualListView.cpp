@@ -299,7 +299,7 @@ bool VirtualListView::defaultSort(long left, long right)
 	{
 		int result = lv_current->getItemText(left, lv_current->sort_column, left).Lower().compare(lv_current->getItemText(right, lv_current->sort_column, right).Lower());
 		if (result == 0)
-			return lv_current->sort_descend ? right < left : left < right;
+			return left < right;
 		else
 			return lv_current->sort_descend ? result > 0 : result < 0;
 	}

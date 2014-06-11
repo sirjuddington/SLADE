@@ -22,7 +22,11 @@ public:
 	TextureXListView(wxWindow* parent, TextureXList* texturex);
 	~TextureXListView();
 
-	void	updateList(bool clear = false);
+	TextureXList*	txList() { return texturex; }
+
+	void		updateList(bool clear = false);
+	static bool	sizeSort(long left, long right);
+	void		sortItems();
 };
 
 class TextureXPanel : public wxPanel, SActionHandler
