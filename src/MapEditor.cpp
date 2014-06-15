@@ -4991,6 +4991,7 @@ void MapEditor::doUndo()
 
 		// Refresh stuff
 		//updateTagged();
+		clearSelection();
 		map.rebuildConnectedLines();
 		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();
@@ -5017,6 +5018,7 @@ void MapEditor::doRedo()
 
 		// Refresh stuff
 		//updateTagged();
+		clearSelection();
 		map.rebuildConnectedLines();
 		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();
