@@ -50,6 +50,7 @@
 #include "MapChecksPanel.h"
 #include "SplashWindow.h"
 #include "UndoManagerHistoryPanel.h"
+#include "MapBackupManager.h"
 #include <wx/aui/aui.h>
 
 
@@ -83,6 +84,7 @@ MapEditorWindow::MapEditorWindow()
 	setupLayout();
 	Show(false);
 	custom_menus_begin = 2;
+	backup_manager = new MapBackupManager();
 
 	// Set icon
 	string icon_filename = appPath("slade.ico", DIR_TEMP);
@@ -101,6 +103,7 @@ MapEditorWindow::MapEditorWindow()
 MapEditorWindow::~MapEditorWindow()
 {
 	wxAuiManager::GetManager(this)->UnInit();
+	delete backup_manager;
 }
 
 /* MapEditorWindow::loadLayout
@@ -196,6 +199,7 @@ void MapEditorWindow::setupMenu()
 	theApp->getAction("mapw_save")->addToMenu(menu_map, true);
 	theApp->getAction("mapw_saveas")->addToMenu(menu_map, true);
 	theApp->getAction("mapw_rename")->addToMenu(menu_map, true);
+	theApp->getAction("mapw_backup")->addToMenu(menu_map, true);
 	menu_map->AppendSeparator();
 	theApp->getAction("mapw_run_map")->addToMenu(menu_map, true);
 	menu->Append(menu_map, "&Map");
@@ -491,10 +495,38 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	Update();
 	Refresh();
 
+	// Clear current map data
+	for (unsigned a = 0; a < map_data.size(); a++)
+		delete map_data[a];
+	map_data.clear();
+
 	// Get map parent archive
 	Archive* archive = NULL;
 	if (map.head)
+	{
 		archive = map.head->getParent();
+
+		// Load map data
+		if (map.archive)
+		{
+			WadArchive temp;
+			temp.open(map.head->getMCData());
+			for (unsigned a = 0; a < temp.numEntries(); a++)
+				map_data.push_back(new ArchiveEntry(*(temp.getEntry(a))));
+		}
+		else
+		{
+			ArchiveEntry* entry = map.head;
+			while (entry)
+			{
+				bool end = (entry == map.end);
+				map_data.push_back(new ArchiveEntry(*entry));
+				entry = entry->nextEntry();
+				if (end)
+					break;
+			}
+		}
+	}
 
 	// Set texture manager archive
 	tex_man.setArchive(archive);
@@ -534,6 +566,10 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 			SetTitle(S_FMT("SLADE - %s of %s", map.name, archive->getFilename(false)));
 		else
 			SetTitle(S_FMT("SLADE - %s (UNSAVED)", map.name));
+
+		// Create backup
+		if (map.head && !backup_manager->writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
+			LOG_MESSAGE(1, "Warning: Failed to backup map data");
 	}
 
 	return ok;
@@ -669,19 +705,19 @@ void MapEditorWindow::buildNodes(Archive* wad)
 /* MapEditorWindow::writeMap
  * Writes the current map as [name] to a wad archive and returns it
  *******************************************************************/
-WadArchive* MapEditorWindow::writeMap(string name)
+WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 {
 	// Get map data entries
-	vector<ArchiveEntry*> map_data;
+	vector<ArchiveEntry*> new_map_data;
 	if (mdesc_current.format == MAP_DOOM)
-		editor.getMap().writeDoomMap(map_data);
+		editor.getMap().writeDoomMap(new_map_data);
 	else if (mdesc_current.format == MAP_HEXEN)
-		editor.getMap().writeHexenMap(map_data);
+		editor.getMap().writeHexenMap(new_map_data);
 	else if (mdesc_current.format == MAP_UDMF)
 	{
 		ArchiveEntry* udmf = new ArchiveEntry("TEXTMAP");
 		editor.getMap().writeUDMFMap(udmf);
-		map_data.push_back(udmf);
+		new_map_data.push_back(udmf);
 	}
 	else // TODO: doom64
 		return NULL;
@@ -707,8 +743,8 @@ WadArchive* MapEditorWindow::writeMap(string name)
 	{
 		wad->getEntry(name)->importMemChunk(mdesc_current.head->getMCData());
 	}
-	for (unsigned a = 0; a < map_data.size(); a++)
-		wad->addEntry(map_data[a]);
+	for (unsigned a = 0; a < new_map_data.size(); a++)
+		wad->addEntry(new_map_data[a]);
 	if (acs) // BEHAVIOR
 		wad->addEntry(panel_script_editor->compiledEntry(), "", true);
 	if (acs && panel_script_editor->scriptEntry()->getSize() > 0) // SCRIPTS (if any)
@@ -717,7 +753,17 @@ WadArchive* MapEditorWindow::writeMap(string name)
 		wad->addNewEntry("ENDMAP");
 
 	// Build nodes
-	buildNodes(wad);
+	if (nodes)
+		buildNodes(wad);
+
+	// Clear current map data
+	for (unsigned a = 0; a < map_data.size(); a++)
+		delete map_data[a];
+	map_data.clear();
+
+	// Update map data
+	for (unsigned a = 0; a < wad->numEntries(); a++)
+		map_data.push_back(new ArchiveEntry(*(wad->getEntry(a))));
 
 	return wad;
 }
@@ -773,6 +819,10 @@ bool MapEditorWindow::saveMap()
 		archive->removeEntry(entry);
 		entry = prev;
 	}
+
+	// Create backup
+	if (!backup_manager->writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
+		LOG_MESSAGE(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
 	for (unsigned a = 1; a < wad->numEntries(); a++)
@@ -837,9 +887,13 @@ bool MapEditorWindow::saveMapAs()
 	Archive* archive = theArchiveManager->openArchive(info.filenames[0], true, true);
 
 	// Update current map description
-	mdesc_current.head = archive->getEntry(head->getName());
-	mdesc_current.archive = false;
-	mdesc_current.end = archive->getEntry(end->getName());
+	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	if (!maps.empty())
+	{
+		mdesc_current.head = maps[0].head;
+		mdesc_current.archive = false;
+		mdesc_current.end = maps[0].end;
+	}
 
 	// Set window title
 	SetTitle(S_FMT("SLADE - %s of %s", mdesc_current.name, wad.getFilename(false)));
@@ -974,6 +1028,27 @@ bool MapEditorWindow::handleAction(string id)
 	if (id == "mapw_saveas")
 	{
 		saveMapAs();
+		return true;
+	}
+
+	// Map->Restore Backup
+	if (id == "mapw_backup")
+	{
+		if (mdesc_current.head)
+		{
+			Archive* data = backup_manager->openBackup(mdesc_current.head->getTopParent()->getFilename(false), mdesc_current.name);
+			if (data)
+			{
+				vector<Archive::mapdesc_t> maps = data->detectMaps();
+				if (!maps.empty())
+				{
+					editor.getMap().clearMap();
+					editor.openMap(maps[0]);
+					loadMapScripts(maps[0]);
+				}
+			}
+		}
+
 		return true;
 	}
 

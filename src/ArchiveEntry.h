@@ -53,6 +53,7 @@ public:
 	const uint8_t*		getData(bool allow_load = true);
 	ArchiveTreeNode*	getParentDir()		{ return parent; }
 	Archive*			getParent();
+	Archive*			getTopParent();
 	string				getPath(bool name = false);
 	EntryType*			getType()			{ return type; }
 	PropertyList&		exProps()			{ return ex_props; }

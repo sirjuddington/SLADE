@@ -87,6 +87,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;sndfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -114,6 +115,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;FreeImage.lib;wxbase30u.lib;wxbase30u_net.lib;wxmsw30u_core.lib;wxmsw30u_aui.lib;wxmsw30u_gl.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;wxscintilla.lib;sfml-graphics-s.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;sndfile.lib;openal32.lib;winmm.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -146,6 +148,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;ftgl_static.lib;freetype2411.lib;FreeImage.lib;wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_aui.lib;wxmsw30u_gl.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;wxscintilla.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;sfml-main.lib;openal32.lib;sndfile.lib;winmm.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -344,6 +347,8 @@
     <ClCompile Include="src\lzma\C\XzDec.c" />
     <ClCompile Include="src\lzma\C\XzEnc.c" />
     <ClCompile Include="src\lzma\C\XzIn.c" />
+    <ClCompile Include="src\MapBackupManager.cpp" />
+    <ClCompile Include="src\MapBackupPanel.cpp" />
     <ClCompile Include="src\MapChecks.cpp" />
     <ClCompile Include="src\MapChecksPanel.cpp" />
     <ClCompile Include="src\MapEditor.cpp" />
@@ -645,6 +650,8 @@
     <ClInclude Include="src\lzma\C\Xz.h" />
     <ClInclude Include="src\lzma\C\XzCrc64.h" />
     <ClInclude Include="src\lzma\C\XzEnc.h" />
+    <ClInclude Include="src\MapBackupManager.h" />
+    <ClInclude Include="src\MapBackupPanel.h" />
     <ClInclude Include="src\MapChecks.h" />
     <ClInclude Include="src\MapChecksPanel.h" />
     <ClInclude Include="src\MapEditor.h" />

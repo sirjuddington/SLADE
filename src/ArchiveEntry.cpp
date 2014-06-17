@@ -132,6 +132,22 @@ Archive* ArchiveEntry::getParent()
 		return NULL;
 }
 
+/* ArchiveEntry::getParent
+ * Returns the entry's top-level parent archive
+ *******************************************************************/
+Archive* ArchiveEntry::getTopParent()
+{
+	if (parent)
+	{
+		if (!parent->getArchive()->getParent())
+			return parent->getArchive();
+		else
+			return parent->getArchive()->getParent()->getTopParent();
+	}
+	else
+		return NULL;
+}
+
 /* ArchiveEntry::getPath
  * Returns the entry path in its parent archive
  *******************************************************************/

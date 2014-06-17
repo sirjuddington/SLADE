@@ -31,6 +31,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapEditorPrefsPanel.h"
+#include "NumberTextCtrl.h"
 
 
 /*******************************************************************
@@ -41,6 +42,7 @@ EXTERN_CVAR(Bool, selection_clear_click)
 EXTERN_CVAR(Bool, map_merge_undo_step)
 EXTERN_CVAR(Bool, mobj_props_auto_apply)
 EXTERN_CVAR(Bool, map_remove_invalid_lines)
+EXTERN_CVAR(Int, max_map_backups)
 
 
 /*******************************************************************
@@ -81,6 +83,13 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	cb_remove_invalid_lines = new wxCheckBox(this, -1, "Remove any resulting invalid lines on sector delete");
 	sizer->Add(cb_remove_invalid_lines, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
+	// Maximum backups
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	hbox->Add(new wxStaticText(this, -1, "Max backups to keep:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	text_max_backups = new NumberTextCtrl(this);
+	hbox->Add(text_max_backups, 0, wxEXPAND);
+
 	Layout();
 }
 
@@ -101,6 +110,7 @@ void MapEditorPrefsPanel::init()
 	cb_merge_undo_step->SetValue(map_merge_undo_step);
 	cb_props_auto_apply->SetValue(mobj_props_auto_apply);
 	cb_remove_invalid_lines->SetValue(map_remove_invalid_lines);
+	text_max_backups->setNumber(max_map_backups);
 }
 
 /* MapEditorPrefsPanel::applyPreferences
@@ -113,4 +123,5 @@ void MapEditorPrefsPanel::applyPreferences()
 	map_merge_undo_step = cb_merge_undo_step->GetValue();
 	mobj_props_auto_apply = cb_props_auto_apply->GetValue();
 	map_remove_invalid_lines = cb_remove_invalid_lines->GetValue();
+	max_map_backups = text_max_backups->getNumber();
 }
