@@ -1,4 +1,32 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapBackupPanel.cpp
+ * Description: User interface for selecting a map backup to restore
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapBackupPanel.h"
@@ -6,6 +34,14 @@
 #include "ZipArchive.h"
 #include "WadArchive.h"
 
+
+/*******************************************************************
+ * MAPBACKUPPANEL CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapBackupPanel::MapBackupPanel
+ * MapBackupPanel class constructor
+ *******************************************************************/
 MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Init variables
@@ -29,11 +65,18 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel(parent, -1)
 	Layout();
 }
 
+/* MapBackupPanel::~MapBackupPanel
+ * MapBackupPanel class destructor
+ *******************************************************************/
 MapBackupPanel::~MapBackupPanel()
 {
 	delete archive_backups;
 }
 
+/* MapBackupPanel::loadBackups
+ * Opens the map backup file for [map_name] in [archive_name] and
+ * populates the list
+ *******************************************************************/
 bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 {
 	// Open backup file
@@ -75,6 +118,9 @@ bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 	return true;
 }
 
+/* MapBackupPanel::updateMapPreview
+ * Updates the map preview with the currently selected backup
+ *******************************************************************/
 void MapBackupPanel::updateMapPreview()
 {
 	// Clear current preview
@@ -99,6 +145,14 @@ void MapBackupPanel::updateMapPreview()
 		canvas_map->openMap(maps[0]);
 }
 
+
+/*******************************************************************
+ * MAPBACKUPPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* MapBackupPanel::onBackupListChanged
+ * Called when the selection changes on the backup list
+ *******************************************************************/
 void MapBackupPanel::onBackupListChanged(wxListEvent& e)
 {
 	updateMapPreview();

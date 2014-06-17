@@ -1,4 +1,32 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapBackupManager.cpp
+ * Description: MapBackupManager class - creates/manages map backups
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapBackupManager.h"
@@ -9,6 +37,10 @@
 #include "Misc.h"
 #include <wx/datetime.h>
 
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
 CVAR(Int, max_map_backups, 25, CVAR_SAVE)
 
 // List of entry names to be ignored for backups
@@ -26,14 +58,29 @@ string mb_ignore_entries[] =
 	"GL_NODES"
 };
 
+
+/*******************************************************************
+ * MAPBACKUPMANAGER CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapBackupManager::MapBackupManager
+ * MapBackupManager class constructor
+ *******************************************************************/
 MapBackupManager::MapBackupManager()
 {
 }
 
+/* MapBackupManager::~MapBackupManager
+ * MapBackupManager class destructor
+ *******************************************************************/
 MapBackupManager::~MapBackupManager()
 {
 }
 
+/* MapBackupManager::writeBackup
+ * Writes a backup for [map_name] in [archive_name], with the map
+ * data entries in [map_data]
+ *******************************************************************/
 bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archive_name, string map_name)
 {
 	// Create backup directory if needed
@@ -123,6 +170,10 @@ bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archi
 	return ok;
 }
 
+/* MapBackupManager::openBackp
+ * Shows the map backups for [map_name] in [archive_name], returns
+ * the selected map backup data in a WadArchive
+ *******************************************************************/
 Archive* MapBackupManager::openBackup(string archive_name, string map_name)
 {
 	SDialog* dlg = new SDialog(theMapEditor, S_FMT("Restore %s backup", CHR(map_name)), "map_backup", 500, 400);

@@ -887,9 +887,13 @@ bool MapEditorWindow::saveMapAs()
 	Archive* archive = theArchiveManager->openArchive(info.filenames[0], true, true);
 
 	// Update current map description
-	mdesc_current.head = archive->getEntry(head->getName());
-	mdesc_current.archive = false;
-	mdesc_current.end = archive->getEntry(end->getName());
+	vector<Archive::mapdesc_t> maps = archive->detectMaps();
+	if (!maps.empty())
+	{
+		mdesc_current.head = maps[0].head;
+		mdesc_current.archive = false;
+		mdesc_current.end = maps[0].end;
+	}
 
 	// Set window title
 	SetTitle(S_FMT("SLADE - %s of %s", mdesc_current.name, wad.getFilename(false)));
