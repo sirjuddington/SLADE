@@ -1140,6 +1140,8 @@ void MapRenderer3D::updateLine(unsigned index)
 	double xoff, yoff, sx, sy;
 	bool mixed = theGameConfiguration->mixTexFlats();
 	lines[index].line = line;
+	if (udmf_zdoom)
+		lines[index].alpha = line->floatProperty("alpha");
 
 	// Get first side info
 	int floor1 = line->frontSector()->getFloorHeight();
@@ -1537,12 +1539,23 @@ void MapRenderer3D::renderWalls()
 
 	// Render all visible quads, ordered by texture
 	unsigned a = 0;
+	bool alpha = false;
 	while (n_quads > 0)
 	{
 		tex_last = NULL;
 		a = 0;
+		alpha = true;
 		while (a < n_quads)
 		{
+			// Check alpha
+			if (quads[a]->alpha < 1.0f)
+			{
+				a++;
+				continue;
+			}
+			else
+				alpha = false;
+
 			// Check texture
 			if (!tex_last && quads[a]->texture)
 			{
@@ -1559,6 +1572,33 @@ void MapRenderer3D::renderWalls()
 			renderQuad(quads[a], quads[a]->alpha);
 			quads[a] = quads[n_quads-1];
 			n_quads--;
+		}
+
+		// Only transparent quads left to draw
+		if (alpha)
+		{
+			glDisable(GL_ALPHA_TEST);
+			glDepthMask(GL_FALSE);
+
+			tex_last = NULL;
+			a = 0;
+			for (unsigned a = 0; a < n_quads; a++)
+			{
+				// Check texture
+				if (quads[a]->texture != tex_last)
+				{
+					tex_last = quads[a]->texture;
+					quads[a]->texture->bind();
+				}
+
+				// Render quad
+				renderQuad(quads[a], quads[a]->alpha);
+			}
+
+			glEnable(GL_ALPHA_TEST);
+			glDepthMask(GL_TRUE);
+
+			break;
 		}
 	}
 
@@ -2268,6 +2308,8 @@ void MapRenderer3D::checkVisibleQuads()
 
 			quads[n_quads] = quad;
 			quad->alpha = distfade;
+			if (quad->flags & MIDTEX)
+				quad->alpha *= lines[a].alpha;
 			n_quads++;
 		}
 	}

@@ -60,8 +60,9 @@ public:
 		long				updated_time;
 		bool				visible;
 		MapLine*			line;
+		float				alpha;
 
-		line_3d_t() { updated_time = 0; visible = true; }
+		line_3d_t() { updated_time = 0; visible = true; alpha = 1.0f; }
 	};
 	struct thing_3d_t
 	{
