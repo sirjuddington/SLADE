@@ -70,6 +70,8 @@ public:
 	void	getDouble(double* d);
 	void	getBool(bool* b);
 
+	void	getTokensUntil(vector<string>& tokens, string end);
+
 	bool		quotedString() { return qstring; }
 	uint32_t	lineNo() { return line; }
 	uint32_t	tokenStart() { return t_start; }

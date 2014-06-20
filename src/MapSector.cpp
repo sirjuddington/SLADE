@@ -513,14 +513,14 @@ void MapSector::changeLight(int amount, int where)
 	}
 }
 
-/* MapSector::getLight
+/* MapSector::getColour
  * Returns the colour of the sector at [where] - 1 = floor,
  * 2 = ceiling. If [fullbright] is true, light level is ignored
  *******************************************************************/
 rgba_t MapSector::getColour(int where, bool fullbright)
 {
 	// Check for UDMF+ZDoom namespace
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if ((parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom")) || hasProp("lightcolor"))
 	{
 		// Get sector light colour
 		int intcol = MapObject::intProperty("lightcolor");

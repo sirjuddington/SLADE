@@ -60,9 +60,8 @@ public:
 		long				updated_time;
 		bool				visible;
 		MapLine*			line;
-		float				alpha;
 
-		line_3d_t() { updated_time = 0; visible = true; alpha = 1.0f; }
+		line_3d_t() { updated_time = 0; visible = true; }
 	};
 	struct thing_3d_t
 	{
@@ -159,6 +158,7 @@ public:
 	void	updateLine(unsigned index);
 	void	renderQuad(quad_3d_t* quad, float alpha = 1.0f);
 	void	renderWalls();
+	void	renderTransparentWalls();
 	void	renderWallSelection(vector<selection_3d_t>& selection, float alpha = 1.0f);
 
 	// Things
@@ -212,6 +212,7 @@ private:
 	// Map Structures
 	vector<line_3d_t>	lines;
 	quad_3d_t**			quads;
+	vector<quad_3d_t*>	quads_transparent;
 	vector<thing_3d_t>	things;
 	vector<flat_3d_t>	floors;
 	vector<flat_3d_t>	ceilings;

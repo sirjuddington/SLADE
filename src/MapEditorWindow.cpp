@@ -51,6 +51,7 @@
 #include "SplashWindow.h"
 #include "UndoManagerHistoryPanel.h"
 #include "MapBackupManager.h"
+#include "MapSpecials.h"
 #include <wx/aui/aui.h>
 
 
@@ -632,6 +633,13 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 
 	// Open scripts/compiled if found
 	panel_script_editor->openScripts(scripts, compiled);
+
+	// Parse scripts
+	if (scripts)
+	{
+		MapSpecials::processACSScripts(scripts);
+		MapSpecials::applySectorColours(&editor.getMap());
+	}
 }
 
 /* MapEditorWindow::buildNodes

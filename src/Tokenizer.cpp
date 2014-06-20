@@ -621,6 +621,28 @@ void Tokenizer::getBool(bool* b)
 		*b = !!atoi(CHR(token_current));
 }
 
+/* Tokenizer::getTokensUntil
+ * Reads tokens into [tokens] until either [end] token is found, or
+ * the end of the data is reached
+ *******************************************************************/
+void Tokenizer::getTokensUntil(vector<string>& tokens, string end)
+{
+	string token;
+	while (1)
+	{
+		getToken(&token);
+		if (token.IsEmpty() && !quotedString())
+			break;
+		if (S_CMPNOCASE(token, end))
+			break;
+		tokens.push_back(token);
+	}
+}
+
+/* Tokenizer::skipSection
+ * Skips a 'section' of tokens delimited by [open] and [close]. Also
+ * handles nested sections
+ *******************************************************************/
 void Tokenizer::skipSection(string open, string close)
 {
 	int level = 0;

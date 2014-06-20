@@ -53,6 +53,8 @@ private:
 	bool				poly_needsupdate;
 	long				geometry_updated;
 	fpoint2_t			text_point;
+	plane_t				plane_floor;
+	plane_t				plane_ceiling;
 
 public:
 	MapSector(SLADEMap* parent = NULL);
