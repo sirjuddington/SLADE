@@ -3,6 +3,7 @@
 
 #define MyAppName "SLADE"
 #define MyAppVersion "3.1.0"
+#define VersionNum "310"
 #define MyAppURL "http://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
 
@@ -24,7 +25,7 @@ DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 InfoBeforeFile=..\dist\slade3.txt
-OutputBaseFilename=Setup_{#MyAppName}_{#MyAppVersion}
+OutputBaseFilename=Setup_{#MyAppName}_{#VersionNum}
 SetupIconFile=..\slade.ico
 Compression=lzma
 SolidCompression=yes
@@ -45,6 +46,7 @@ Source: "..\dist\libsndfile-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\openal32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\slade.pk3"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\slade3.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\SLADE.pdb"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -63,7 +65,7 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 #include "scripts\products\fileversion.iss"
 #include "scripts\products\dotnetfxversion.iss"
 
-#include "scripts\products\vcredist2012.iss"
+#include "scripts\products\vcredist2013.iss"
 
 [Code]
 function InitializeSetup(): boolean;
@@ -72,7 +74,7 @@ begin
 	initwinversion();
 
   // Check for VS2012 runtimes installed
-  vcredist2012();
+  vcredist2013();
 
   Result := true;
 end;
