@@ -212,6 +212,7 @@ decorate : cstyle {
 		CPF_DAGGER, CPF_PULLIN, CPF_USEAMMO, CPF_NORANDOMPUFFZ,
 		CVF_RELATIVE, CVF_REPLACE,
 		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO, FBF_NORANDOMPUFFZ,
+		FPF_AIMATANGLE, FPF_TRANSFERTRANSLATION,
 		GFF_NOEXTCHANGE,
 		JLOSF_ALLYNOJUMP, JLOSF_CHECKMASTER, JLOSF_CLOSENOFOV, JLOSF_CLOSENOJUMP, JLOSF_CLOSENOSIGHT, 
 		JLOSF_COMBATANTONLY, JLOSF_DEADNOJUMP, JLOSF_FLIPFOV, JLOSF_NOSIGHT, JLOSF_PROJECTILE, JLOSF_TARGETLOS,
@@ -485,7 +486,7 @@ decorate : cstyle {
 		A_Saw = "[string fullsound], [string hitsound], [int damage], [string pufftype], [int flags], [float range], [float spread_xy], [float spread_z], [float lifesteal]";
 		A_CustomPunch = "int damage, [bool norandom], [int flags], [string pufftype], [float range], [float lifesteal]";
 		A_FireBullets = "angle spread_horz, angle spread_vert, int numbullets, int damage, [string pufftype], [int flags], [float range]";
-		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [int spawnofs_horz], [float spawnheight], [int aim], [angle pitch]";
+		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [int spawnofs_horz], [float spawnheight], [int flags], [angle pitch]";
 		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn], [float spawnofs_z]";
 		A_FireAssaultGun;
 		A_FireBFG;
