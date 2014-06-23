@@ -4504,6 +4504,10 @@ bool SLADEMap::correctLineSectors(MapLine* line)
  *******************************************************************/
 bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 {
+	// Check any map architecture exists
+	if (nVertices() == 0 || nLines() == 0)
+		return false;
+
 	unsigned n_vertices = nVertices();
 	unsigned n_lines = lines.size();
 	MapVertex* last_vertex = this->vertices.back();
