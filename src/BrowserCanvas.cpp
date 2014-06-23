@@ -69,7 +69,7 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 	Bind(wxEVT_MOUSEWHEEL, &BrowserCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEFT_DOWN, &BrowserCanvas::onMouseEvent, this);
 	Bind(wxEVT_KEY_DOWN, &BrowserCanvas::onKeyDown, this);
-	Bind(wxEVT_CHAR, &BrowserCanvas::onKeyChar, this);
+	//Bind(wxEVT_CHAR, &BrowserCanvas::onKeyChar, this);
 }
 
 /* BrowserCanvas::~BrowserCanvas
