@@ -593,7 +593,10 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 
 	// Don't bother if new map
 	if (!map.head)
+	{
+		panel_script_editor->openScripts(NULL, NULL);
 		return;
+	}
 
 	// Check for pk3 map
 	if (map.archive)
