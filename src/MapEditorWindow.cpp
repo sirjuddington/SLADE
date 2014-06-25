@@ -691,8 +691,9 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	{
 		wxArrayString out;
 		wxLogMessage("execute \"%s %s\"", builder.path, command);
+		theApp->SetTopWindow(this);
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
-		Raise();
+		theApp->SetTopWindow(theMainWindow);
 		wxLogMessage("Nodebuilder output:");
 		for (unsigned a = 0; a < out.size(); a++)
 			wxLogMessage(out[a]);
@@ -888,6 +889,7 @@ bool MapEditorWindow::saveMapAs()
 	// Write wad to file
 	wad.save(info.filenames[0]);
 	Archive* archive = theArchiveManager->openArchive(info.filenames[0], true, true);
+	theArchiveManager->addRecentFile(info.filenames[0]);
 
 	// Update current map description
 	vector<Archive::mapdesc_t> maps = archive->detectMaps();
