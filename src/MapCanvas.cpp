@@ -2275,6 +2275,14 @@ void MapCanvas::updateInfoOverlay()
  *******************************************************************/
 void MapCanvas::forceRefreshRenderer()
 {
+	// Update 3d mode info overlay if needed
+	if (editor->editMode() == MapEditor::MODE_3D)
+	{
+		selection_3d_t hl;
+		hl = renderer_3d->determineHilight();
+		info_3d.update(hl.index, hl.type, &(editor->getMap()));
+	}
+
 	renderer_2d->forceUpdate();
 	renderer_3d->clearData();
 }
