@@ -90,6 +90,7 @@ public:
 	void	onTextFilterChanged(wxCommandEvent& e);
 	void	onZoomChanged(wxCommandEvent& e);
 	void	onCanvasSelectionChanged(wxEvent& e);
+	void	onCanvasKeyChar(wxKeyEvent& e);
 };
 
 #endif//__BROWSER_WINDOW_H__

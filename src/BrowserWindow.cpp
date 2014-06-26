@@ -204,6 +204,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent) : wxDialog(parent, -1, "Browser",
 	text_filter->Bind(wxEVT_TEXT, &BrowserWindow::onTextFilterChanged, this);
 	slider_zoom->Bind(wxEVT_SLIDER, &BrowserWindow::onZoomChanged, this);
 	Bind(wxEVT_BROWSERCANVAS_SELECTION_CHANGED, &BrowserWindow::onCanvasSelectionChanged, this, canvas->GetId());
+	canvas->Bind(wxEVT_CHAR, &BrowserWindow::onCanvasKeyChar, this);
 
 	Layout();
 	SetInitialSize(wxSize(768, 600));
@@ -615,6 +616,9 @@ void BrowserWindow::onZoomChanged(wxCommandEvent& e)
 	canvas->Refresh();
 }
 
+/* BrowserWindow::onCanvasSelectionChanged
+ * Called when the selection changes on the browser canvas
+ *******************************************************************/
 void BrowserWindow::onCanvasSelectionChanged(wxEvent& e)
 {
 	// Get selected item
@@ -640,4 +644,56 @@ void BrowserWindow::onCanvasSelectionChanged(wxEvent& e)
 	label_info->SetLabel(info);
 	Refresh();
 	return;
+}
+
+/* BrowserWindow::onCanvasKeyChar
+ * Called when a key is pressed in the browser canvas
+ *******************************************************************/
+int bw_chars[] =
+{
+	'.', ',', '_', '-', '+', '=', '`', '~',
+	'!', '@', '#', '$', '(', ')', '[', ']',
+	'{', '}', ':', ';', '/', '\\', '<', '>',
+	'?', '^', '&', '\'', '\"',
+};
+int n_bw_chars = 30;
+void BrowserWindow::onCanvasKeyChar(wxKeyEvent& e)
+{
+	// Backspace
+	if (e.GetKeyCode() == WXK_BACK && text_filter->GetValue().size() > 0)
+	{
+		string filter = text_filter->GetValue();
+		filter.RemoveLast(1);
+		text_filter->SetValue(filter);
+		e.Skip();
+		return;
+	}
+
+	// Check the key pressed is actually a character (a-z, 0-9 etc)
+	bool isRealChar = false;
+	if (e.GetKeyCode() >= 'a' && e.GetKeyCode() <= 'z')			// Lowercase
+		isRealChar = true;
+	else if (e.GetKeyCode() >= 'A' && e.GetKeyCode() <= 'Z')	// Uppercase
+		isRealChar = true;
+	else if (e.GetKeyCode() >= '0' && e.GetKeyCode() <= '9')	// Number
+		isRealChar = true;
+	else
+	{
+		for (int a = 0; a < n_bw_chars; a++)
+		{
+			if (e.GetKeyCode() == bw_chars[a])
+			{
+				isRealChar = true;
+				break;
+			}
+		}
+	}
+
+	if (isRealChar)
+	{
+		string filter = text_filter->GetValue();
+		filter += e.GetKeyCode();
+		filter.MakeUpper();
+		text_filter->SetValue(filter);
+	}
 }

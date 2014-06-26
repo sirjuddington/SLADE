@@ -86,15 +86,15 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 	init_done = false;
 	last_time = theApp->runTimer();
 
-	if (handle_timer)
-		timer.Start(timer_interval);
+	//if (handle_timer)
+	//	timer.Start(timer_interval);
 
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
 	//Bind(wxEVT_IDLE, &OGLCanvas::onIdle, this);
-	if (handle_timer)
-		Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
+	//if (handle_timer)
+	//	Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
 
 	GLTexture::resetBgTex();
 }

@@ -47,7 +47,7 @@ public:
 	void	saveLayout();
 
 	void	setupLayout();
-	void	createStartPage();
+	void	createStartPage(bool newtip = true);
 	bool	exitProgram();
 
 	ArchiveManagerPanel*	getArchiveManagerPanel() { return panel_archivemanager; }
@@ -68,6 +68,7 @@ public:
 	void	onTabChanged(wxAuiNotebookEvent& e);
 	void	onSize(wxSizeEvent& e);
 	void	onToolBarLayoutChanged(wxEvent& e);
+	void	onActivate(wxActivateEvent& e);
 };
 
 // Define for less cumbersome MainWindow::getInstance()

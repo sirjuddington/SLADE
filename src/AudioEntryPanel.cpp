@@ -37,6 +37,9 @@
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
 #include <wx/statline.h>
+#ifdef __WXMSW__
+#include <wx/msw/registry.h>
+#endif
 
 
 /*******************************************************************
@@ -60,14 +63,30 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	sound_buffer = NULL;
 	audio_type = AUTYPE_INVALID;
 
+#ifdef __WXMSW__
+	wxRegKey key(wxRegKey::HKLM, "Software\\Microsoft\\Active Setup\\Installed Components\\{6BF52A52-394A-11d3-B153-00C04F79FAA6}");
+	long value = 0;
+	key.QueryValue("IsInstalled", &value);
+	if (value == 0)
+	{
+		LOG_MESSAGE(1, "Windows Media Player not installed, mp3 playback disabled.");
+		media_ctrl = NULL;
+	}
+	else
+	{
+		LOG_MESSAGE(3, "Windows Media Player installed, using wxMediaCtrl");
+		media_ctrl = new wxMediaCtrl(this, -1);
+	}
+#else
 	// Create wxMediaCtrl
 	media_ctrl = new wxMediaCtrl(this, -1);
+#endif
 
 	// Setup sizer
 	wxGridBagSizer* sizer_gb = new wxGridBagSizer(4, 4);
 	sizer_main->AddStretchSpacer();
 #ifndef __WXOSX__
-	sizer_main->Add(media_ctrl, 0);
+	if (media_ctrl) sizer_main->Add(media_ctrl, 0);
 #endif
 	sizer_main->Add(sizer_gb, 0, wxALIGN_CENTER);
 	sizer_main->AddStretchSpacer();
@@ -97,13 +116,13 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	sound.setVolume(snd_volume);
 	music.setVolume(snd_volume);
 	theMIDIPlayer->setVolume(snd_volume);
-	media_ctrl->SetVolume(snd_volume*0.01);
+	if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01);
 #ifndef NOLIBMODPLUG
 	mod.setVolume(snd_volume);
 #endif
 
 	// Disable general entrypanel buttons
-	media_ctrl->Show(false);
+	if (media_ctrl) media_ctrl->Show(false);
 	toolbar->Show(false);
 
 	// Bind events
@@ -415,7 +434,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 bool AudioEntryPanel::openMedia(string filename)
 {
 	// Attempt to open with wxMediaCtrl
-	if (media_ctrl->Load(filename))
+	if (media_ctrl && media_ctrl->Load(filename))
 	{
 		// Loaded successfully
 		audio_type = AUTYPE_MEDIA;
@@ -453,7 +472,7 @@ void AudioEntryPanel::startStream()
 	case AUTYPE_MIDI:
 		theMIDIPlayer->play(); break;
 	case AUTYPE_MEDIA:
-		media_ctrl->Play(); break;
+		if (media_ctrl) media_ctrl->Play(); break;
 	}
 }
 
@@ -475,7 +494,7 @@ void AudioEntryPanel::stopStream()
 	case AUTYPE_MIDI:
 		theMIDIPlayer->pause(); break;
 	case AUTYPE_MEDIA:
-		media_ctrl->Pause(); break;
+		if (media_ctrl) media_ctrl->Pause(); break;
 	}
 }
 
@@ -498,7 +517,7 @@ void AudioEntryPanel::resetStream()
 	case AUTYPE_MIDI:
 		theMIDIPlayer->stop(); break;
 	case AUTYPE_MEDIA:
-		media_ctrl->Stop(); break;
+		if (media_ctrl) media_ctrl->Stop(); break;
 	}
 }
 
@@ -561,7 +580,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	case AUTYPE_MIDI:
 		pos = theMIDIPlayer->getPosition(); break;
 	case AUTYPE_MEDIA:
-		pos = media_ctrl->Tell(); break;
+		if (media_ctrl) pos = media_ctrl->Tell(); break;
 	}
 
 	// Set slider
@@ -574,7 +593,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 #ifndef NOLIBMODPLUG
 	        (audio_type == AUTYPE_MOD && mod.getStatus() == sf::Sound::Stopped) ||
 #endif
-	        (audio_type == AUTYPE_MEDIA && media_ctrl->GetState() == wxMEDIASTATE_STOPPED))
+			(audio_type == AUTYPE_MEDIA && media_ctrl && media_ctrl->GetState() == wxMEDIASTATE_STOPPED))
 		timer_seek->Stop();
 }
 
@@ -596,7 +615,7 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 	case AUTYPE_MIDI:
 		theMIDIPlayer->setPosition(slider_seek->GetValue()); break;
 	case AUTYPE_MEDIA:
-		media_ctrl->Seek(slider_seek->GetValue()); break;
+		if (media_ctrl) media_ctrl->Seek(slider_seek->GetValue()); break;
 	}
 }
 
@@ -616,7 +635,7 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 	case AUTYPE_MIDI:
 		theMIDIPlayer->setVolume(snd_volume); break;
 	case AUTYPE_MEDIA:
-		media_ctrl->SetVolume(snd_volume*0.01); break;
+		if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01); break;
 #ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.setVolume(snd_volume); break;

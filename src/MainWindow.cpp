@@ -380,13 +380,14 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_CLOSE_WINDOW, &MainWindow::onClose, this);
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar->GetId());
+	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
 }
 
 /* MainWindow::createStartPage
  * Builds the HTML start page and loads it into the html viewer
  * (start page tab)
  *******************************************************************/
-void MainWindow::createStartPage()
+void MainWindow::createStartPage(bool newtip)
 {
 	// Get relevant resource entries
 	Archive* res_archive = theArchiveManager->programResourceArchive();
@@ -428,9 +429,14 @@ void MainWindow::createStartPage()
 		else
 		{
 			int tipindex = 0;
-			// Don't show same tip twice in a row
-			do { tipindex = 1 + (rand() % numtips); }
-			while (tipindex == lasttipindex);
+			if (newtip || lasttipindex == 0)
+			{
+				// Don't show same tip twice in a row
+				do { tipindex = 1 + (rand() % numtips); } while (tipindex == lasttipindex);
+			}
+			else
+				tipindex = lasttipindex;
+			
 			lasttipindex = tipindex;
 			for (int a = 0; a < tipindex; a++)
 				tip = tz.getToken();
@@ -859,4 +865,29 @@ void MainWindow::onToolBarLayoutChanged(wxEvent& e)
 	// Update toolbar size
 	m_mgr->GetPane(toolbar).MinSize(-1, toolbar->minHeight());
 	m_mgr->Update();
+}
+
+/* MainWindow::onActivate
+ * Called when the window is activated
+ *******************************************************************/
+void MainWindow::onActivate(wxActivateEvent& e)
+{
+	if (!e.GetActive())
+	{
+		e.Skip();
+		return;
+	}
+
+	// Get current tab
+	wxWindow* page = notebook_tabs->GetPage(notebook_tabs->GetSelection());
+
+	// If start page is selected, refresh it
+	if (page->GetName() == "startpage")
+	{
+		createStartPage(false);
+		SetStatusText("", 1);
+		SetStatusText("", 2);
+	}
+
+	e.Skip();
 }

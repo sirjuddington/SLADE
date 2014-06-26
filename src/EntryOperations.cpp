@@ -1201,7 +1201,9 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	// Execute acc
 	string command = path_acc + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
+	theApp->SetTopWindow(parent);
 	wxExecute(command, output, wxEXEC_SYNC);
+	theApp->SetTopWindow(theMainWindow);
 
 	// Log output
 	theConsole->logMessage("ACC.exe Output:");
@@ -1211,10 +1213,6 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		theConsole->logMessage(output[a]);
 		output_log += output[a];
 	}
-
-	// Deal with focus-stealing apps
-	if (parent)
-		parent->Raise();
 
 	// Delete source file
 	wxRemoveFile(srcfile);
