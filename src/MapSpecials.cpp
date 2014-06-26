@@ -60,64 +60,109 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 		processZDoomMapSpecials(map);
 }
 
-/* MapSpecials::applySectorColours
- * Apply sector colours as parsed from scripts
- *******************************************************************/
-void MapSpecials::applySectorColours(SLADEMap* map)
+/* MapSpecials::processLineSpecial
+* Process a line's special, depending on the current game/port
+*******************************************************************/
+void MapSpecials::processLineSpecial(MapLine* line)
+{
+	if (theGameConfiguration->currentPort() == "zdoom")
+		processZDoomLineSpecial(line);
+}
+
+/* MapSpecials::getTagColour
+* Sets [colour] to the parsed colour for [tag]. Returns true if the
+* tag has a colour, false otherwise
+*******************************************************************/
+bool MapSpecials::getTagColour(int tag, rgba_t* colour)
+{
+	for (unsigned a = 0; a < sector_colours.size(); a++)
+	{
+		if (sector_colours[a].tag == tag)
+		{
+			colour->r = sector_colours[a].colour.r;
+			colour->g = sector_colours[a].colour.g;
+			colour->b = sector_colours[a].colour.b;
+			colour->a = 255;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/* MapSpecials::tagColoursSet
+* Returns true if any sector tags should be coloured
+*******************************************************************/
+bool MapSpecials::tagColoursSet()
+{
+	return !(sector_colours.empty());
+}
+
+/* MapSpecials::updateTaggedSecors
+* Updates any sectors with tags that are affected by any processed
+* specials/scripts
+*******************************************************************/
+void MapSpecials::updateTaggedSectors(SLADEMap* map)
 {
 	for (unsigned a = 0; a < sector_colours.size(); a++)
 	{
 		vector<MapSector*> tagged;
 		map->getSectorsByTag(sector_colours[a].tag, tagged);
-		wxColour wxcol(sector_colours[a].colour.r, sector_colours[a].colour.g, sector_colours[a].colour.b, 255);
-		uint32_t col_int = wxcol.GetRGBA();
-
 		for (unsigned s = 0; s < tagged.size(); s++)
-			tagged[s]->setIntProperty("lightcolor", col_int);
+			tagged[s]->setModified();
 	}
 }
 
 /* MapSpecials::processZDoomMapSpecials
- * Process ZDoom map specials, mostly to convert hexen specials to
- * UDMF counterparts
- *******************************************************************/
+* Process ZDoom map specials, mostly to convert hexen specials to
+* UDMF counterparts
+*******************************************************************/
 void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 {
 	// Line specials
 	for (unsigned a = 0; a < map->nLines(); a++)
+		processZDoomLineSpecial(map->getLine(a));
+}
+
+/* MapSpecials::processZDoomLineSpecial
+* Process ZDoom line special
+*******************************************************************/
+void MapSpecials::processZDoomLineSpecial(MapLine* line)
+{
+	// Get special
+	int special = line->getSpecial();
+	if (special == 0)
+		return;
+
+	// Get parent map
+	SLADEMap* map = line->getParentMap();
+
+	// Get args
+	int args[5];
+	for (unsigned arg = 0; arg < 5; arg++)
+		args[arg] = line->intProperty(S_FMT("arg%d", arg));
+
+	// --- TranslucentLine ---
+	if (special == 208)
 	{
-		// Get special
-		int special = map->getLine(a)->getSpecial();
-		if (special == 0)
-			continue;
+		// Get tagged lines
+		vector<MapLine*> tagged;
+		if (args[0] > 0)
+			map->getLinesById(args[0], tagged);
+		else
+			tagged.push_back(line);
 
 		// Get args
-		int args[5];
-		for (unsigned arg = 0; arg < 5; arg++)
-			args[arg] = map->getLine(a)->intProperty(S_FMT("arg%d", arg));
+		double alpha = (double)args[1] / 255.0;
+		string type = (args[2] == 0) ? "translucent" : "add";
 
-		// --- TranslucentLine ---
-		if (special == 208)
+		// Set transparency
+		for (unsigned l = 0; l < tagged.size(); l++)
 		{
-			// Get tagged lines
-			vector<MapLine*> tagged;
-			if (args[0] > 0)
-				map->getLinesById(args[0], tagged);
-			else
-				tagged.push_back(map->getLine(a));
+			tagged[l]->setFloatProperty("alpha", alpha);
+			tagged[l]->setStringProperty("renderstyle", type);
 
-			// Get args
-			double alpha = (double)args[1] / 255.0;
-			string type = (args[2] == 0) ? "translucent" : "add";
-
-			// Set transparency
-			for (unsigned l = 0; l < tagged.size(); l++)
-			{
-				tagged[l]->setFloatProperty("alpha", alpha);
-				tagged[l]->setStringProperty("renderstyle", type);
-
-				LOG_MESSAGE(3, S_FMT("Line %d translucent: (%d) %1.2f, %s", tagged[l]->getIndex(), args[1], alpha, CHR(type)));
-			}
+			LOG_MESSAGE(3, S_FMT("Line %d translucent: (%d) %1.2f, %s", tagged[l]->getIndex(), args[1], alpha, CHR(type)));
 		}
 	}
 }

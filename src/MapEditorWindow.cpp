@@ -636,13 +636,6 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 
 	// Open scripts/compiled if found
 	panel_script_editor->openScripts(scripts, compiled);
-
-	// Parse scripts
-	if (scripts)
-	{
-		MapSpecials::processACSScripts(scripts);
-		MapSpecials::applySectorColours(&editor.getMap());
-	}
 }
 
 /* MapEditorWindow::buildNodes
