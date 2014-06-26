@@ -34,6 +34,7 @@
 #include "MapSpecials.h"
 #include "GameConfiguration.h"
 #include "Tokenizer.h"
+#include "MathStuff.h"
 #include <wx/colour.h>
 
 
@@ -165,6 +166,91 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 			LOG_MESSAGE(3, S_FMT("Line %d translucent: (%d) %1.2f, %s", tagged[l]->getIndex(), args[1], alpha, CHR(type)));
 		}
 	}
+
+	// --- Plane_Align ---
+	if (special == 181)
+	{
+		// Get tagged lines
+		vector<MapLine*> tagged;
+		if (args[2] > 0)
+			map->getLinesById(args[2], tagged);
+		else
+			tagged.push_back(line);
+
+		// Setup slopes
+		for (unsigned a = 0; a < tagged.size(); a++)
+		{
+			// Floor
+			if (args[0] == 1 || args[0] == 2)
+				setupPlaneAlignSlope(tagged[a], true, (args[0] == 1));
+
+			// Ceiling
+			if (args[1] == 1 || args[1] == 2)
+				setupPlaneAlignSlope(tagged[a], false, (args[1] == 1));
+		}
+	}
+}
+
+void MapSpecials::setupPlaneAlignSlope(MapLine* line, bool floor, bool front)
+{
+	LOG_MESSAGE(3, "Line %d %s slope, %s side", line->getIndex(), floor ? "floor" : "ceiling", front ? "front" : "back");
+
+	// Get sectors
+	MapSector* s1 = line->frontSector();
+	MapSector* s2 = line->backSector();
+	if (!s1 || !s2)
+	{
+		LOG_MESSAGE(1, "Line %d is not two-sided, Plane_Align not processed", line->getIndex());
+		return;
+	}
+
+	// Get origin point
+	fpoint3_t origin(line->getPoint(MOBJ_POINT_MID).x, line->getPoint(MOBJ_POINT_MID).y, 0);
+	if (floor)
+		origin.z = front ? s2->getFloorHeight() : s1->getFloorHeight();
+	else
+		origin.z = front ? s2->getCeilingHeight() : s1->getCeilingHeight();
+
+	// Get intersection line and (2d) point
+	fpoint2_t dir_2d = line->frontVector();
+	if (front)
+	{
+		dir_2d.x = -dir_2d.x;
+		dir_2d.y = -dir_2d.y;
+	}
+	double ix, iy;
+	MapLine* intersect = line->getParentMap()->lineVectorIntersect(line, front, ix, iy);
+	if (!intersect)
+	{
+		LOG_MESSAGE(1, "Error processing Plane_Align for line %d - no opposite end found", line->getIndex());
+		return;
+	}
+
+	// Determine end point
+	fpoint3_t end(ix, iy, 0);
+	if (floor)
+		end.z = front ? s1->getFloorHeight() : s2->getFloorHeight();
+	else
+		end.z = front ? s1->getCeilingHeight() : s2->getCeilingHeight();
+
+	// Calculate slope plane
+	plane_t plane;
+	if (front)
+	{
+		plane = MathStuff::planeFromTriangle(end, fpoint3_t(line->x1(), line->y1(), origin.z), fpoint3_t(line->x2(), line->y2(), origin.z));
+		if (floor)
+			s1->setFloorPlane(plane);
+		else
+			s1->setCeilingPlane(plane);
+	}
+	else
+	{
+		plane = MathStuff::planeFromTriangle(end, fpoint3_t(line->x1(), line->y1(), origin.z), fpoint3_t(line->x2(), line->y2(), origin.z));
+		if (floor)
+			s2->setFloorPlane(plane);
+		else
+			s2->setCeilingPlane(plane);
+	}
 }
 
 /* MapSpecials::processACSScripts
@@ -180,7 +266,7 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 	tz.openMem(entry->getData(), entry->getSize(), "ACS Scripts");
 
 	string token = tz.getToken();
-	while (!(token.IsEmpty() && !tz.quotedString()))
+	while (!tz.isAtEnd())
 	{
 		if (S_CMPNOCASE(token, "script"))
 		{

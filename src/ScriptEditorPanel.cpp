@@ -165,6 +165,9 @@ void ScriptEditorPanel::populateWordList()
 	}
 }
 
+/* ScriptEditorPanel::saveScripts
+ * Saves the current content of the text editor to the scripts entry
+ *******************************************************************/
 void ScriptEditorPanel::saveScripts()
 {
 	// Write text to entry

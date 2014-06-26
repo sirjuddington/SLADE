@@ -23,6 +23,7 @@ namespace MapSpecials
 	// ZDoom
 	void	processZDoomMapSpecials(SLADEMap* map);
 	void	processZDoomLineSpecial(MapLine* line);
+	void	setupPlaneAlignSlope(MapLine* line, bool floor, bool front);
 	void	processACSScripts(ArchiveEntry* entry);
 }
 

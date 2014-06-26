@@ -627,15 +627,14 @@ void Tokenizer::getBool(bool* b)
  *******************************************************************/
 void Tokenizer::getTokensUntil(vector<string>& tokens, string end)
 {
-	string token;
 	while (1)
 	{
-		getToken(&token);
-		if (token.IsEmpty() && !quotedString())
+		readToken();
+		if (token_current.IsEmpty() && !qstring)
 			break;
-		if (S_CMPNOCASE(token, end))
+		if (S_CMPNOCASE(token_current, end))
 			break;
-		tokens.push_back(token);
+		tokens.push_back(token_current);
 	}
 }
 

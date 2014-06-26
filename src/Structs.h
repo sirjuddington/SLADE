@@ -626,7 +626,15 @@ struct frect_t
 // plane_t: A 3d plane
 struct plane_t
 {
-	float a, b, c, d;
+	double a, b, c, d;
+
+	void set(double a, double b, double c, double d)
+	{
+		this->a = a;
+		this->b = b;
+		this->c = c;
+		this->d = d;
+	}
 
 	fpoint3_t normal()
 	{
@@ -637,14 +645,14 @@ struct plane_t
 	void normalize()
 	{
 		fpoint3_t vec(a, b, c);
-		float mag = vec.magnitude();
+		double mag = vec.magnitude();
 		a = a / mag;
 		b = b / mag;
 		c = c / mag;
 		d = d / mag;
 	}
 
-	float height_at(float x, float y)
+	double height_at(double x, double y)
 	{
 		return ((-a * x) + (-b * y) + d) / c;
 	}

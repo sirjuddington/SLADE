@@ -3189,6 +3189,51 @@ void SLADEMap::initSectorPolygons()
 	theSplashWindow->setProgress(1.0f);
 }
 
+MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y)
+{
+	// Get sector
+	MapSector* sector = front ? line->frontSector() : line->backSector();
+	if (!sector)
+		return NULL;
+
+	// Get lines to test
+	vector<MapLine*> lines;
+	sector->getLines(lines);
+
+	// Get nearest line intersecting with line vector
+	MapLine* nearest = NULL;
+	fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+	fpoint2_t vec = line->frontVector();
+	if (front)
+	{
+		vec.x = -vec.x;
+		vec.y = -vec.y;
+	}
+	double min_dist = 99999999999;
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		if (lines[a] == line)
+			continue;
+
+		double dist = MathStuff::distanceRayLine(mid, mid + vec, lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2());
+
+		if (dist < min_dist && dist > 0)
+		{
+			min_dist = dist;
+			nearest = lines[a];
+		}
+	}
+
+	// Set intersection point
+	if (nearest)
+	{
+		hit_x = mid.x + (vec.x * min_dist);
+		hit_y = mid.y + (vec.y * min_dist);
+	}
+
+	return nearest;
+}
+
 /* SLADEMap::getSectorsByTag
  * Adds all sectors with tag [tag] to [list]
  *******************************************************************/

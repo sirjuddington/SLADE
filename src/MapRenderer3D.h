@@ -154,6 +154,7 @@ public:
 
 	// Walls
 	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom);
+	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, plane_t top, plane_t bottom);
 	void	setupQuadTexCoords(quad_3d_t* quad, int length, double left, double top, bool pegbottom = false, double sx = 1, double sy = 1);
 	void	updateLine(unsigned index);
 	void	renderQuad(quad_3d_t* quad, float alpha = 1.0f);

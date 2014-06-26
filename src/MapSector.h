@@ -70,12 +70,18 @@ public:
 	short		getLightLevel() { return light; }
 	short		getSpecial() { return special; }
 	short		getTag() { return tag; }
+	plane_t		getFloorPlane() { return plane_floor; }
+	plane_t		getCeilingPlane() { return plane_ceiling; }
+	double		floorHeightAt(double x, double y);
+	double		ceilingHeightAt(double x, double y);
 
 	string	stringProperty(string key);
 	int		intProperty(string key);
 	void	setStringProperty(string key, string value);
 	void	setFloatProperty(string key, double value);
 	void	setIntProperty(string key, int value);
+	void	setFloorPlane(plane_t p) { plane_floor = p; }
+	void	setCeilingPlane(plane_t p) { plane_ceiling = p; }
 
 	fpoint2_t			getPoint(uint8_t point);
 	void				resetBBox() { bbox.reset(); }

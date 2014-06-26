@@ -51,6 +51,7 @@ public:
 	bool	openMem(MemChunk* mc, string source);
 	bool	isWhitespace(char p);
 	bool	isSpecialCharacter(char p);
+	bool	isAtEnd() { return (token_current.IsEmpty() && !qstring); }
 	bool	incrementCurrent();
 	void	skipLineComment();
 	void	skipMultilineComment();

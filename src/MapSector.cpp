@@ -51,6 +51,8 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 	// Init variables
 	this->special = 0;
 	this->tag = 0;
+	plane_floor.set(0, 0, 1, 0);
+	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
 	geometry_updated = theApp->runTimer();
 }
@@ -65,6 +67,8 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	this->c_tex = c_tex;
 	this->special = 0;
 	this->tag = 0;
+	plane_floor.set(0, 0, 1, 0);
+	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
 	geometry_updated = theApp->runTimer();
 }
@@ -111,6 +115,22 @@ void MapSector::copy(MapObject* s)
 
 	// Other properties
 	MapObject::copy(s);
+}
+
+double MapSector::floorHeightAt(double x, double y)
+{
+	if (plane_floor.c == 1)
+		return f_height;
+	else
+		return plane_floor.height_at(x, y);
+}
+
+double MapSector::ceilingHeightAt(double x, double y)
+{
+	if (plane_ceiling.c == 1)
+		return c_height;
+	else
+		return plane_ceiling.height_at(x, y);
 }
 
 /* MapSector::stringProperty
