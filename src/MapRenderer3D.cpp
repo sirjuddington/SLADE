@@ -1104,38 +1104,38 @@ void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double 
 /* MapRenderer3D::setupQuadTexCoords
  * Calculates texture coordinates for a quad
  *******************************************************************/
-void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int length, double left, double top, bool pegbottom, double sx, double sy)
+void MapRenderer3D::setupQuadTexCoords(MapRenderer3D::quad_3d_t* quad, int length, double o_left, double o_top, double h_top, double h_bottom, bool pegbottom, double sx, double sy)
 {
 	// Check texture
 	if (!quad->texture)
 		return;
 
 	// Determine integral height
-	int height = MathStuff::round(quad->points[0].z - quad->points[1].z);
+	int height = MathStuff::round(h_top - h_bottom);
 
 	// Initial offsets
-	double x1 = left;
-	double x2 = left + length;
-	double y1 = top;
-	double y2 = top + height;
+	double y1 = o_top;
+	double y2 = o_top + height;
 	if (pegbottom)
 	{
-		y2 = top + quad->texture->getHeight();
+		y2 = o_top + quad->texture->getHeight();
 		y1 = y2 - height;
 	}
 
 	sx *= quad->texture->getScaleX();
 	sy *= quad->texture->getScaleY();
+	double x_mult = 1.0 / (quad->texture->getWidth() * sx);
+	double y_mult = 1.0 / (quad->texture->getHeight() * sy);
 
 	// Set texture coordinates
-	quad->points[0].tx = x1 / (quad->texture->getWidth() * sx);
-	quad->points[0].ty = y1 / (quad->texture->getHeight() * sy);
-	quad->points[1].tx = x1 / (quad->texture->getWidth() * sx);
-	quad->points[1].ty = y2 / (quad->texture->getHeight() * sy);
-	quad->points[2].tx = x2 / (quad->texture->getWidth() * sx);
-	quad->points[2].ty = y2 / (quad->texture->getHeight() * sy);
-	quad->points[3].tx = x2 / (quad->texture->getWidth() * sx);
-	quad->points[3].ty = y1 / (quad->texture->getHeight() * sy);
+	quad->points[0].tx = o_left * x_mult;
+	quad->points[0].ty = (y1 * y_mult) + ((h_top - quad->points[0].z) * y_mult);
+	quad->points[1].tx = o_left * x_mult;
+	quad->points[1].ty = (y2 * y_mult) + ((h_bottom - quad->points[1].z) * y_mult);
+	quad->points[2].tx = (o_left + length) * x_mult;
+	quad->points[2].ty = (y2 * y_mult) + ((h_bottom - quad->points[2].z) * y_mult);
+	quad->points[3].tx = (o_left + length) * x_mult;
+	quad->points[3].ty = (y1 * y_mult) + ((h_top - quad->points[3].z) * y_mult);
 }
 
 /* MapRenderer3D::updateLine
@@ -1213,7 +1213,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
-		setupQuadTexCoords(&quad, length, xoff, yoff, lpeg, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, floor1, lpeg, sx, sy);
 
 		// Add middle quad and finish
 		lines[index].quads.push_back(quad);
@@ -1274,7 +1274,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexLower(), mixed);
-		setupQuadTexCoords(&quad, length, xoff, yoff, false, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, yoff, floor2, floor1, false, sx, sy);
 		// No, the sky hack is only for ceilings!
 		// if (line->backSector()->getFloorTex() == sky_flat) quad.flags |= SKY;
 		quad.flags |= LOWER;
@@ -1335,7 +1335,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), top, bottom);
 		quad.colour = colour1.ampf(1.0f, 1.0f, 1.0f, alpha);
 		quad.light = light1;
-		setupQuadTexCoords(&quad, length, xoff, yoff, false, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, yoff, top, bottom, false, sx, sy);
 		quad.flags |= MIDTEX;
 
 		// Add quad
@@ -1374,7 +1374,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexUpper(), mixed);
-		setupQuadTexCoords(&quad, length, xoff, yoff, !upeg, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, ceiling2, !upeg, sx, sy);
 		// Sky hack only applies if both sectors have a sky ceiling
 		if (line->frontSector()->getCeilingTex() == sky_flat && line->backSector()->getCeilingTex() == sky_flat) quad.flags |= SKY;
 		quad.flags |= UPPER;
@@ -1417,7 +1417,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour2;
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexLower(), mixed);
-		setupQuadTexCoords(&quad, length, xoff, yoff, false, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, yoff, floor1, floor2, false, sx, sy);
 		if (line->frontSector()->getFloorTex() == sky_flat) quad.flags |= SKY;
 		quad.flags |= BACK;
 		quad.flags |= LOWER;
@@ -1476,7 +1476,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), top, bottom);
 		quad.colour = colour2.ampf(1.0f, 1.0f, 1.0f, alpha);
 		quad.light = light2;
-		setupQuadTexCoords(&quad, length, xoff, yoff, false, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, yoff, top, bottom, false, sx, sy);
 		quad.flags |= BACK;
 		quad.flags |= MIDTEX;
 
@@ -1516,7 +1516,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour = colour2;
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexUpper(), mixed);
-		setupQuadTexCoords(&quad, length, xoff, yoff, !upeg, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling2, ceiling1, !upeg, sx, sy);
 		if (line->frontSector()->getCeilingTex() == sky_flat) quad.flags |= SKY;
 		quad.flags |= BACK;
 		quad.flags |= UPPER;
