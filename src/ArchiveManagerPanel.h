@@ -46,6 +46,7 @@ private:
 	wxMenu*				menu_recent;
 	Archive*			current_maps;
 	Archive*			pending_closed_archive;
+	bool				asked_save_unchanged;
 
 public:
 	ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_archives);
@@ -73,6 +74,7 @@ public:
 	Archive*		currentArchive();
 	wxWindow*		currentPanel();
 	EntryPanel*		currentArea();
+	bool			askedSaveUnchanged() { return asked_save_unchanged; }
 
 	ArchiveEntry*			currentEntry();
 	vector<ArchiveEntry*>	currentEntrySelection();

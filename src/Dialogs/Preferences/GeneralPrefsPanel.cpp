@@ -40,6 +40,7 @@ EXTERN_CVAR(Bool, archive_load_data)
 EXTERN_CVAR(Bool, auto_open_wads_root)
 EXTERN_CVAR(Bool, update_check)
 EXTERN_CVAR(Bool, update_check_beta)
+EXTERN_CVAR(Bool, confirm_exit)
 
 
 /*******************************************************************
@@ -80,6 +81,10 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	// Check for beta updates
 	cb_update_check_beta = new wxCheckBox(this, -1, "Include beta versions when checking for updates");
 	sizer->Add(cb_update_check_beta, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Confirm exit
+	cb_confirm_exit = new wxCheckBox(this, -1, "Show confirmation dialog on exit");
+	sizer->Add(cb_confirm_exit, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 }
 
 /* GeneralPrefsPanel::~GeneralPrefsPanel
@@ -99,6 +104,7 @@ void GeneralPrefsPanel::init()
 	cb_wads_root->SetValue(auto_open_wads_root);
 	cb_update_check->SetValue(update_check);
 	cb_update_check_beta->SetValue(update_check_beta);
+	cb_confirm_exit->SetValue(confirm_exit);
 }
 
 /* GeneralPrefsPanel::applyPreferences
@@ -111,4 +117,5 @@ void GeneralPrefsPanel::applyPreferences()
 	auto_open_wads_root = cb_wads_root->GetValue();
 	update_check = cb_update_check->GetValue();
 	update_check_beta = cb_update_check_beta->GetValue();
+	confirm_exit = cb_confirm_exit->GetValue();
 }
