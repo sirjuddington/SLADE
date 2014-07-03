@@ -880,7 +880,7 @@ void MainWindow::onToolBarLayoutChanged(wxEvent& e)
  *******************************************************************/
 void MainWindow::onActivate(wxActivateEvent& e)
 {
-	if (!e.GetActive())
+	if (!e.GetActive() || this->IsBeingDeleted())
 	{
 		e.Skip();
 		return;
