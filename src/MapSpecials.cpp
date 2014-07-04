@@ -62,8 +62,8 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 }
 
 /* MapSpecials::processLineSpecial
-* Process a line's special, depending on the current game/port
-*******************************************************************/
+ * Process a line's special, depending on the current game/port
+ *******************************************************************/
 void MapSpecials::processLineSpecial(MapLine* line)
 {
 	if (theGameConfiguration->currentPort() == "zdoom")
@@ -71,9 +71,9 @@ void MapSpecials::processLineSpecial(MapLine* line)
 }
 
 /* MapSpecials::getTagColour
-* Sets [colour] to the parsed colour for [tag]. Returns true if the
-* tag has a colour, false otherwise
-*******************************************************************/
+ * Sets [colour] to the parsed colour for [tag]. Returns true if the
+ * tag has a colour, false otherwise
+ *******************************************************************/
 bool MapSpecials::getTagColour(int tag, rgba_t* colour)
 {
 	for (unsigned a = 0; a < sector_colours.size(); a++)
@@ -92,17 +92,17 @@ bool MapSpecials::getTagColour(int tag, rgba_t* colour)
 }
 
 /* MapSpecials::tagColoursSet
-* Returns true if any sector tags should be coloured
-*******************************************************************/
+ * Returns true if any sector tags should be coloured
+ *******************************************************************/
 bool MapSpecials::tagColoursSet()
 {
 	return !(sector_colours.empty());
 }
 
 /* MapSpecials::updateTaggedSecors
-* Updates any sectors with tags that are affected by any processed
-* specials/scripts
-*******************************************************************/
+ * Updates any sectors with tags that are affected by any processed
+ * specials/scripts
+ *******************************************************************/
 void MapSpecials::updateTaggedSectors(SLADEMap* map)
 {
 	for (unsigned a = 0; a < sector_colours.size(); a++)
@@ -115,9 +115,9 @@ void MapSpecials::updateTaggedSectors(SLADEMap* map)
 }
 
 /* MapSpecials::processZDoomMapSpecials
-* Process ZDoom map specials, mostly to convert hexen specials to
-* UDMF counterparts
-*******************************************************************/
+ * Process ZDoom map specials, mostly to convert hexen specials to
+ * UDMF counterparts
+ *******************************************************************/
 void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 {
 	// Line specials
@@ -126,8 +126,8 @@ void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 }
 
 /* MapSpecials::processZDoomLineSpecial
-* Process ZDoom line special
-*******************************************************************/
+ * Process ZDoom line special
+ *******************************************************************/
 void MapSpecials::processZDoomLineSpecial(MapLine* line)
 {
 	// Get special
@@ -191,6 +191,10 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 	}
 }
 
+/* MapSpecials::setupPlaneAlignSlope
+ * Calculates the floor/ceiling plane for the sector affected by
+ * [line]'s Plane_Align special
+ *******************************************************************/
 void MapSpecials::setupPlaneAlignSlope(MapLine* line, bool floor, bool front)
 {
 	LOG_MESSAGE(3, "Line %d %s slope, %s side", line->getIndex(), floor ? "floor" : "ceiling", front ? "front" : "back");
@@ -260,6 +264,9 @@ void MapSpecials::setupPlaneAlignSlope(MapLine* line, bool floor, bool front)
 void MapSpecials::processACSScripts(ArchiveEntry* entry)
 {
 	sector_colours.clear();
+
+	if (!entry || entry->getSize() == 0)
+		return;
 
 	Tokenizer tz;
 	tz.setSpecialCharacters(";,:|={}/()");
