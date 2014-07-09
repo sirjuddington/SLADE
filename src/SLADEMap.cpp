@@ -4375,6 +4375,10 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 		else
 			lines[line]->side2 = side;
 
+		// Flip if no first side
+		if (lines[line]->side2 && !lines[line]->side1)
+			lines[line]->flip();
+
 		// Set appropriate line flags
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
 		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
