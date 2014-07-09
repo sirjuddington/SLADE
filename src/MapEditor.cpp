@@ -3036,6 +3036,18 @@ void MapEditor::endLineDraw(bool apply)
 			new_lines.push_back(map.getLine(a));
 		map.correctSectors(new_lines);
 
+		// Check for and attempt to correct invalid lines
+		vector<MapLine*> invalid_lines;
+		for (unsigned a = 0; a < new_lines.size(); a++)
+		{
+			if (new_lines[a]->s1())
+				continue;
+
+			new_lines[a]->flip();
+			invalid_lines.push_back(new_lines[a]);
+		}
+		map.correctSectors(invalid_lines);
+
 		// End recording undo level
 		endUndoRecord(true);
 	}
