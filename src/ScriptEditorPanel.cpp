@@ -40,6 +40,12 @@
 
 
 /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, script_show_language_list, true, CVAR_SAVE)
+
+
+/*******************************************************************
  * SCRIPTEDTIORPANEL CLASS FUNCTIONS
  *******************************************************************/
 
@@ -65,6 +71,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	actions.Add("mapw_script_save");
 	actions.Add("mapw_script_compile");
 	actions.Add("mapw_script_jumpto");
+	actions.Add("mapw_script_togglelanguage");
 	toolbar->addActionGroup("Scripts", actions);
 
 	// Add text editor
@@ -94,6 +101,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	list_words->SetInitialSize(wxSize(200, -10));
 	hbox->Add(list_words, 0, wxEXPAND|wxALL, 4);
 	populateWordList();
+	list_words->Show(script_show_language_list);
 
 	// Bind events
 	list_words->Bind(wxEVT_TREELIST_ITEM_ACTIVATED, &ScriptEditorPanel::onWordListActivate, this);
@@ -210,6 +218,15 @@ bool ScriptEditorPanel::handleAction(string name)
 	// Jump To
 	else if (name == "mapw_script_jumpto")
 		text_editor->openJumpToDialog();
+
+	// Toggle language list
+	else if (name == "mapw_script_togglelanguage")
+	{
+		script_show_language_list = !script_show_language_list;
+		list_words->Show(script_show_language_list);
+		Layout();
+		Refresh();
+	}
 
 	// Not handled
 	else

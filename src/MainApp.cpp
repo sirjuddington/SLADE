@@ -113,6 +113,7 @@ CVAR(Bool, update_check_beta, false, CVAR_SAVE)
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, map_show_selection_numbers)
+EXTERN_CVAR(Bool, script_show_language_list)
 
 
 /*******************************************************************
@@ -647,10 +648,12 @@ void MainApp::initActions()
 	new SAction("mapw_script_save", "Save", "t_save", "Save changes to scripts");
 	new SAction("mapw_script_compile", "Compile", "t_compile", "Compile scripts");
 	new SAction("mapw_script_jumpto", "Jump To...", "t_up", "Jump to a specific script/function");
+	new SAction("mapw_script_togglelanguage", "Show Language List", "t_properties", "Show/Hide the language list", "", SAction::CHECK);
 
 
 	// Init checked actions
 	getAction("mapw_toggle_selection_numbers")->toggled = map_show_selection_numbers;
+	getAction("mapw_script_togglelanguage")->toggled = script_show_language_list;
 }
 
 /* MainApp::OnInit
