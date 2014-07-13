@@ -193,7 +193,8 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	menu_texture->AppendSubMenu(menu_patch, "&Patch");
 
 	// Create patch browser
-	patch_browser = new PatchBrowser(this);
+	patch_browser = new PatchBrowser(theMainWindow);
+	patch_browser->CenterOnParent();
 	patch_browser->Show(false);
 
 	// Setup sizer

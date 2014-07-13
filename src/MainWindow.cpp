@@ -61,6 +61,7 @@ CVAR(Bool, show_start_page, true, CVAR_SAVE);
 CVAR(String, global_palette, "", CVAR_SAVE);
 CVAR(Bool, mw_maximized, true, CVAR_SAVE);
 CVAR(Int, tab_style, 1, CVAR_SAVE);
+CVAR(Bool, confirm_exit, true, CVAR_SAVE);
 
 
 /*******************************************************************
@@ -513,6 +514,13 @@ bool MainWindow::exitProgram()
 	if (!panel_archivemanager->closeAll())
 		return false;
 
+	// Confirm exit
+	if (confirm_exit && !panel_archivemanager->askedSaveUnchanged())
+	{
+		if (wxMessageBox("Are you sure you want to exit SLADE?", "SLADE", wxICON_QUESTION|wxYES_NO, this) != wxYES)
+			return false;
+	}
+
 	// Save current layout
 	//main_window_layout = m_mgr->SavePerspective();
 	saveLayout();
@@ -872,7 +880,7 @@ void MainWindow::onToolBarLayoutChanged(wxEvent& e)
  *******************************************************************/
 void MainWindow::onActivate(wxActivateEvent& e)
 {
-	if (!e.GetActive())
+	if (!e.GetActive() || this->IsBeingDeleted())
 	{
 		e.Skip();
 		return;
@@ -882,7 +890,7 @@ void MainWindow::onActivate(wxActivateEvent& e)
 	wxWindow* page = notebook_tabs->GetPage(notebook_tabs->GetSelection());
 
 	// If start page is selected, refresh it
-	if (page->GetName() == "startpage")
+	if (page && page->GetName() == "startpage")
 	{
 		createStartPage(false);
 		SetStatusText("", 1);

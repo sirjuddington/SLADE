@@ -782,16 +782,16 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 		{
 			ox = sector->floatProperty("xpanningfloor");
 			oy = sector->floatProperty("ypanningfloor");
-			sx *= sector->floatProperty("xscalefloor");
-			sy *= sector->floatProperty("yscalefloor");
+			sx *= (1.0 / sector->floatProperty("xscalefloor"));
+			sy *= (1.0 / sector->floatProperty("yscalefloor"));
 			rot = sector->floatProperty("rotationfloor");
 		}
 		else
 		{
 			ox = sector->floatProperty("xpanningceiling");
 			oy = sector->floatProperty("ypanningceiling");
-			sx *= sector->floatProperty("xscaleceiling");
-			sy *= sector->floatProperty("yscaleceiling");
+			sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+			sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 			rot = sector->floatProperty("rotationceiling");
 		}
 	}
@@ -1203,9 +1203,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (udmf_zdoom)
 		{
 			if (line->s1()->hasProp("scalex_mid"))
-				sx = line->s1()->floatProperty("scalex_mid");
+				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
 			if (line->s1()->hasProp("scaley_mid"))
-				sy = line->s1()->floatProperty("scaley_mid");
+				sy = 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
 
 		// Create quad
@@ -1264,9 +1264,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (udmf_zdoom)
 		{
 			if (line->s1()->hasProp("scalex_bottom"))
-				sx = line->s1()->floatProperty("scalex_bottom");
+				sx = 1.0 / line->s1()->floatProperty("scalex_bottom");
 			if (line->s1()->hasProp("scaley_bottom"))
-				sy = line->s1()->floatProperty("scaley_bottom");
+				sy = 1.0 / line->s1()->floatProperty("scaley_bottom");
 		}
 
 		// Create quad
@@ -1308,9 +1308,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (udmf_zdoom)
 		{
 			if (line->s1()->hasProp("scalex_mid"))
-				sx = line->s1()->floatProperty("scalex_mid");
+				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
 			if (line->s1()->hasProp("scaley_mid"))
-				sy = line->s1()->floatProperty("scaley_mid");
+				sy = 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
 
 		// Setup quad coordinates
@@ -1364,9 +1364,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (udmf_zdoom)
 		{
 			if (line->s1()->hasProp("scalex_top"))
-				sx = line->s1()->floatProperty("scalex_top");
+				sx = 1.0 / line->s1()->floatProperty("scalex_top");
 			if (line->s1()->hasProp("scaley_top"))
-				sy = line->s1()->floatProperty("scaley_top");
+				sy = 1.0 / line->s1()->floatProperty("scaley_top");
 		}
 
 		// Create quad
@@ -1407,9 +1407,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (udmf_zdoom)
 		{
 			if (line->s2()->hasProp("scalex_bottom"))
-				sx = line->s2()->floatProperty("scalex_bottom");
+				sx = 1.0 / line->s2()->floatProperty("scalex_bottom");
 			if (line->s2()->hasProp("scaley_bottom"))
-				sy = line->s2()->floatProperty("scaley_bottom");
+				sy = 1.0 / line->s2()->floatProperty("scaley_bottom");
 		}
 
 		// Create quad
@@ -1451,9 +1451,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (udmf_zdoom)
 		{
 			if (line->s2()->hasProp("scalex_mid"))
-				sx = line->s2()->floatProperty("scalex_mid");
+				sx = 1.0 / line->s2()->floatProperty("scalex_mid");
 			if (line->s2()->hasProp("scaley_mid"))
-				sy = line->s2()->floatProperty("scaley_mid");
+				sy = 1.0 / line->s2()->floatProperty("scaley_mid");
 		}
 
 		// Setup quad coordinates
@@ -1506,9 +1506,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		if (udmf_zdoom)
 		{
 			if (line->s2()->hasProp("scalex_top"))
-				sx = line->s2()->floatProperty("scalex_top");
+				sx = 1.0 / line->s2()->floatProperty("scalex_top");
 			if (line->s2()->hasProp("scaley_top"))
-				sy = line->s2()->floatProperty("scaley_top");
+				sy = 1.0 / line->s2()->floatProperty("scaley_top");
 		}
 
 		// Create quad
