@@ -135,7 +135,7 @@ entry_types
 		name = "Boom Switches";
 		format = switches;
 		match_name = "switches";
-		editor = switches;
+		editor = data;
 		export_ext = "lmp";
 		icon = "e_switches";
 	}

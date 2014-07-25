@@ -63,6 +63,7 @@
 #include "PaletteManager.h"
 #include "MapReplaceDialog.h"
 #include "Dialogs/RunDialog.h"
+#include "DataEntryPanel.h"
 #include <wx/aui/auibook.h>
 #include <wx/aui/auibar.h>
 #include <wx/filename.h>
@@ -319,6 +320,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	ansi_area = new ANSIEntryPanel(this);
 	map_area = new MapEntryPanel(this);
 	audio_area = new AudioEntryPanel(this);
+	data_area = new DataEntryPanel(this);
 
 
 	// --- Setup Layout ---
@@ -2412,6 +2414,8 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 			new_area = switches_area;
 		else if (!entry->getType()->getEditor().Cmp("audio"))
 			new_area = audio_area;
+		else if (!entry->getType()->getEditor().Cmp("data"))
+			new_area = data_area;
 		else if (!entry->getType()->getEditor().Cmp("default"))
 			new_area = default_area;
 		else

@@ -225,6 +225,7 @@
     <ClCompile Include="src\ColourConfiguration.cpp" />
     <ClCompile Include="src\Compression.cpp" />
     <ClCompile Include="src\Conversions.cpp" />
+    <ClCompile Include="src\DataEntryPanel.cpp" />
     <ClCompile Include="src\DatArchive.cpp" />
     <ClCompile Include="src\Dialogs\Preferences\ACSPrefsPanel.cpp" />
     <ClCompile Include="src\Dialogs\Preferences\AdvancedPrefsPanel.cpp" />
@@ -536,6 +537,7 @@
     <ClInclude Include="src\Compression.h" />
     <ClInclude Include="src\ConsoleHelpers.h" />
     <ClInclude Include="src\Conversions.h" />
+    <ClInclude Include="src\DataEntryPanel.h" />
     <ClInclude Include="src\DatArchive.h" />
     <ClInclude Include="src\Dialogs\Preferences\ACSPrefsPanel.h" />
     <ClInclude Include="src\Dialogs\Preferences\AdvancedPrefsPanel.h" />

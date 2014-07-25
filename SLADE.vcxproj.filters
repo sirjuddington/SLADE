@@ -1185,6 +1185,9 @@
     <ClCompile Include="src\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\DataEntryPanel.cpp">
+      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2135,6 +2138,9 @@
     </ClInclude>
     <ClInclude Include="src\MapSpecials.h">
       <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DataEntryPanel.h">
+      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
