@@ -1273,7 +1273,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			wxFile file(appPath("acs.err", DIR_TEMP));
 			char* buf = new char[file.Length()];
 			file.Read(buf, file.Length());
-			string errors = wxString::From8BitData(buf, file.Length());
+			errors = wxString::From8BitData(buf, file.Length());
 			delete[] buf;
 		}
 		else
