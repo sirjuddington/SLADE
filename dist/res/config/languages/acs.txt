@@ -386,7 +386,11 @@ acs_z : acs {
 
 		// Line activation flags
 		SPAC_AnyCross, SPAC_Cross, SPAC_Impact, SPAC_MCross, SPAC_MPush, SPAC_MUse,
-		SPAC_None, SPAC_PCross, SPAC_Push, SPAC_Use, SPAC_UseBack, SPAC_UseThrough
+		SPAC_None, SPAC_PCross, SPAC_Push, SPAC_Use, SPAC_UseBack, SPAC_UseThrough,
+
+		// GetArmorInfo info types
+		ARMORINFO_ACTUALSAVEAMOUNT, ARMORINFO_CLASSNAME, ARMORINFO_MAXABSORB,
+		ARMORINFO_MAXFULLABSORB, ARMORINFO_SAVEAMOUNT, ARMORINFO_SAVEPERCENT
 	}
 
 	functions
@@ -656,6 +660,7 @@ acs_z : acs {
 		GetActorZ = "int tid";
 		GetAirSupply = "int playernum";
 		GetAmmoCapacity = "str classname";
+		GetArmorInfo = "int infotype";
 		GetArmorType = "string armortype, int playernum";
 		GetChar = "str string, int index";
 		GetCVar = "str cvar";
