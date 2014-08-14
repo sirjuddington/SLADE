@@ -33,6 +33,7 @@ entry_types
 		min_size = 4;
 		icon = "e_pnames";
 		colour = 255, 180, 0;
+		editor = data;
 	}
 
 	// Use the same format as PNames, but can't use the texture editor
@@ -125,7 +126,7 @@ entry_types
 		name = "Boom Animated";
 		format = animated;
 		match_name = "animated";
-		editor = animated;
+		editor = data;
 		export_ext = "lmp";
 		icon = "e_animated";
 	}

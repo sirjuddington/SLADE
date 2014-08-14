@@ -344,8 +344,8 @@ void EntryPanel::onBtnEditExt(wxCommandEvent& e)
 }
 
 /* EntryPanel::onToolbarButton
-* Called when a button on the toolbar is clicked
-*******************************************************************/
+ * Called when a button on the toolbar is clicked
+ *******************************************************************/
 void EntryPanel::onToolbarButton(wxCommandEvent& e)
 {
 	string button = e.GetString();

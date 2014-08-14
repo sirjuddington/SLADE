@@ -592,7 +592,9 @@ void MainApp::initActions()
 	// DataEntryPanel
 	new SAction("data_add_row", "Add Row", "t_plus", "Add a new row (after the currently selected row");
 	new SAction("data_delete_row", "Delete Row(s)", "t_close", "Delete the currently selected row(s)");
-	new SAction("data_duplicate", "Duplicate Row(s)", "t_patch_duplicate", "Duplicate the currently selected row(s)");
+	new SAction("data_cut_row", "Cut Row(s)", "t_cut", "Cut the currently selected row(s)", "Ctrl+X");
+	new SAction("data_copy_row", "Copy Row(s)", "t_copy", "Copy the currently selected row(s)", "Ctrl+C");
+	new SAction("data_paste_row", "Paste Row(s)", "t_paste", "Paste at the currently selected row", "Ctrl+V");
 
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "t_save", "Save any changes to the current map", "Ctrl+S");

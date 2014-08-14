@@ -146,6 +146,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = data;
 	}
 
 	map_ssectors : map_base
@@ -155,6 +156,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = data;
 	}
 
 	map_segs : map_base
@@ -164,6 +166,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = data;
 	}
 
 	map_reject : map_base

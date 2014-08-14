@@ -3,6 +3,7 @@
 #define __DATA_ENTRY_PANEL_H__
 
 #include "EntryPanel.h"
+#include "MainApp.h"
 #include <wx/grid.h>
 
 struct int_string_t
@@ -43,7 +44,7 @@ struct dep_column_t
 			if (key == custom_values[a].key)
 				return custom_values[a].value;
 		}
-		return S_FMT("Unknown: %d", key);
+		return "Unknown";
 	}
 };
 
@@ -55,7 +56,10 @@ private:
 	vector<dep_column_t>	columns;
 	unsigned				row_stride;
 	unsigned				data_start;
+	int						row_first;
+	string					row_prefix;
 	DataEntryPanel*			parent;
+	MemChunk				data_clipboard;
 
 public:
 	DataEntryTable(DataEntryPanel* parent);
@@ -79,12 +83,17 @@ public:
 	string	GetValue(int row, int col);
 	void	SetValue(int row, int col, const string& value);
 	string	GetColLabelValue(int col);
+	string	GetRowLabelValue(int row);
+	bool	DeleteRows(size_t pos, size_t num);
+	bool	InsertRows(size_t pos, size_t num);
 
 	MemChunk&	getData() { return data; }
 	bool		setupDataStructure(ArchiveEntry* entry);
+	void		copyRows(int row, int num, bool add = false);
+	void		pasteRows(int row);
 };
 
-class DataEntryPanel : public EntryPanel
+class DataEntryPanel : public EntryPanel, SActionHandler
 {
 private:
 	wxGrid*			grid_data;
@@ -97,6 +106,14 @@ public:
 	bool	loadEntry(ArchiveEntry* entry);
 	bool	saveEntry();
 	void	setModified(bool modified) { EntryPanel::setModified(modified); }
+
+	void	deleteRow();
+	void	addRow();
+	void	copyRow(bool cut);
+	void	pasteRow();
+	bool	handleAction(string id);
+
+	void	onKeyDown(wxKeyEvent& e);
 };
 
 #endif//__DATA_ENTRY_PANEL_H__
