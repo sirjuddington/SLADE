@@ -398,7 +398,8 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 		return;
 
 	// Get target height
-	int fheight = map->getSector(sector)->floorHeightAt(cam_position.x, cam_position.y) + 40;
+	int view_height = (map->currentFormat() == MAP_DOOM64) ? 56 : 41;
+	int fheight = map->getSector(sector)->floorHeightAt(cam_position.x, cam_position.y) + view_height;
 	int cheight = map->getSector(sector)->ceilingHeightAt(cam_position.x, cam_position.y);
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
