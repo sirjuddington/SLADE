@@ -60,6 +60,8 @@ private:
 	string					row_prefix;
 	DataEntryPanel*			parent;
 	MemChunk				data_clipboard;
+	vector<point2_t>		cells_modified;
+	vector<int>				rows_new;
 
 public:
 	DataEntryTable(DataEntryPanel* parent);
@@ -78,19 +80,21 @@ public:
 	};
 
 	// wxGridTableBase overrides
-	int		GetNumberRows();
-	int		GetNumberCols();
-	string	GetValue(int row, int col);
-	void	SetValue(int row, int col, const string& value);
-	string	GetColLabelValue(int col);
-	string	GetRowLabelValue(int row);
-	bool	DeleteRows(size_t pos, size_t num);
-	bool	InsertRows(size_t pos, size_t num);
+	int				GetNumberRows();
+	int				GetNumberCols();
+	string			GetValue(int row, int col);
+	void			SetValue(int row, int col, const string& value);
+	string			GetColLabelValue(int col);
+	string			GetRowLabelValue(int row);
+	bool			DeleteRows(size_t pos, size_t num);
+	bool			InsertRows(size_t pos, size_t num);
+	wxGridCellAttr*	GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind);
 
-	MemChunk&	getData() { return data; }
-	bool		setupDataStructure(ArchiveEntry* entry);
-	void		copyRows(int row, int num, bool add = false);
-	void		pasteRows(int row);
+	MemChunk&		getData() { return data; }
+	dep_column_t	getColumnInfo(int col) { return columns[col]; }
+	bool			setupDataStructure(ArchiveEntry* entry);
+	void			copyRows(int row, int num, bool add = false);
+	void			pasteRows(int row);
 };
 
 class DataEntryPanel : public EntryPanel, SActionHandler
@@ -98,6 +102,7 @@ class DataEntryPanel : public EntryPanel, SActionHandler
 private:
 	wxGrid*			grid_data;
 	DataEntryTable*	table_data;
+	wxComboBox*		combo_cell_value;
 
 public:
 	DataEntryPanel(wxWindow* parent);
@@ -111,9 +116,16 @@ public:
 	void	addRow();
 	void	copyRow(bool cut);
 	void	pasteRow();
+	void	changeValue();
 	bool	handleAction(string id);
+	int		getColWithSelection();
+
+	vector<point2_t>	getSelection();
 
 	void	onKeyDown(wxKeyEvent& e);
+	void	onGridRightClick(wxGridEvent& e);
+	void	onGridCursorChanged(wxGridEvent& e);
+	void	onComboCellValueSet(wxCommandEvent& e);
 };
 
 #endif//__DATA_ENTRY_PANEL_H__

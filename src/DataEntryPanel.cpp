@@ -33,6 +33,7 @@
 #include "DataEntryPanel.h"
 #include "ColourConfiguration.h"
 #include "BinaryControlLump.h"
+#include "MainWindow.h"
 
 
 /*******************************************************************
@@ -65,10 +66,7 @@ int DataEntryTable::GetNumberRows()
 	if (row_stride == 0)
 		return 0;
 	else
-	{
-		//LOG_MESSAGE(2, "size %d, %d rows", data.getSize(), data.getSize() / row_stride);
 		return (data.getSize() - data_start) / row_stride;
-	}
 }
 
 /* DataEntryTable::GetNumberCols
@@ -278,7 +276,17 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 	}
 
 	// Set cell to modified colour
-	GetView()->SetCellTextColour(WXCOL(ColourConfiguration::getColour("modified")), row, col);
+	bool set = true;
+	for (unsigned a = 0; a < cells_modified.size(); a++)
+	{
+		if (cells_modified[a].x == row && cells_modified[a].y == col)
+		{
+			set = false;
+			break;
+		}
+	}
+	if (set)
+		cells_modified.push_back(point2_t(row, col));
 
 	// Set entry modified
 	parent->setModified(true);
@@ -319,6 +327,17 @@ bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 	data.write(copy.getData(), start);
 	data.write(copy.getData() + end, copy.getSize() - end);
 
+	// Update new rows
+	vector<int> new_rows_new;
+	for (unsigned a = 0; a < rows_new.size(); a++)
+	{
+		if ((unsigned)rows_new[a] >= pos + num)
+			new_rows_new.push_back(rows_new[a] - num);
+		else if ((unsigned)rows_new[a] < pos)
+			new_rows_new.push_back(rows_new[a]);
+	}
+	rows_new = new_rows_new;
+
 	// Send message to grid
 	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_DELETED, pos, num);
 	GetView()->ProcessTableMessage(msg);
@@ -349,11 +368,55 @@ bool DataEntryTable::InsertRows(size_t pos, size_t num)
 	// Write ending rows
 	data.write(copy.getData() + start, copy.getSize() - start);
 
+	// Update new rows
+	for (unsigned a = 0; a < rows_new.size(); a++)
+	{
+		if ((unsigned)rows_new[a] >= pos)
+			rows_new[a] += num;
+	}
+	for (unsigned a = 0; a < num; a++)
+		rows_new.push_back(pos + a);
+
 	// Send message to grid
 	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_INSERTED, pos, num);
 	GetView()->ProcessTableMessage(msg);
 
 	return true;
+}
+
+/* DataEntryTable::GetAttr
+ * Returns the (display) attributes for the cell at [row,col]
+ *******************************************************************/
+wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind)
+{
+	wxGridCellAttr* attr = new wxGridCellAttr();
+
+	// Check if cell is part of a new row
+	bool new_row = false;
+	for (unsigned a = 0; a < rows_new.size(); a++)
+	{
+		if (rows_new[a] == row)
+		{
+			attr->SetTextColour(WXCOL(ColourConfiguration::getColour("new")));
+			new_row = true;
+			break;
+		}
+	}
+
+	// Check if cell is modified
+	if (!new_row)
+	{
+		for (unsigned a = 0; a < cells_modified.size(); a++)
+		{
+			if (cells_modified[a].x == row && cells_modified[a].y == col)
+			{
+				attr->SetTextColour(WXCOL(ColourConfiguration::getColour("modified")));
+				break;
+			}
+		}
+	}
+
+	return attr;
 }
 
 /* DataEntryTable::setupDataStructure
@@ -364,6 +427,8 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// Clear existing
 	data.clear();
 	data_clipboard.clear();
+	cells_modified.clear();
+	rows_new.clear();
 	columns.clear();
 	row_stride = 0;
 	data_start = 0;
@@ -488,11 +553,11 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Ceiling Height", COL_INT_SIGNED, 2, 2));
 			columns.push_back(dep_column_t("Floor Texture", COL_INT_UNSIGNED, 2, 4));
 			columns.push_back(dep_column_t("Ceiling Texture", COL_INT_UNSIGNED, 2, 6));
-			columns.push_back(dep_column_t("Colour1", COL_INT_UNSIGNED, 2, 8));
-			columns.push_back(dep_column_t("Colour2", COL_INT_UNSIGNED, 2, 10));
-			columns.push_back(dep_column_t("Colour3", COL_INT_UNSIGNED, 2, 12));
-			columns.push_back(dep_column_t("Colour4", COL_INT_UNSIGNED, 2, 14));
-			columns.push_back(dep_column_t("Colour5", COL_INT_UNSIGNED, 2, 16));
+			columns.push_back(dep_column_t("Floor Colour", COL_INT_UNSIGNED, 2, 8));
+			columns.push_back(dep_column_t("Ceiling Colour", COL_INT_UNSIGNED, 2, 10));
+			columns.push_back(dep_column_t("Thing Colour", COL_INT_UNSIGNED, 2, 12));
+			columns.push_back(dep_column_t("Wall Top Colour", COL_INT_UNSIGNED, 2, 14));
+			columns.push_back(dep_column_t("Wall Bottom Colour", COL_INT_UNSIGNED, 2, 16));
 			columns.push_back(dep_column_t("Special", COL_INT_UNSIGNED, 2, 18));
 			columns.push_back(dep_column_t("Tag", COL_INT_UNSIGNED, 2, 20));
 			columns.push_back(dep_column_t("Flags", COL_INT_UNSIGNED, 2, 22));
@@ -610,6 +675,18 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		data_start = 0;
 	}
 
+	// LIGHTS
+	else if (type == "map_lights")
+	{
+		columns.push_back(dep_column_t("Red", COL_INT_UNSIGNED, 1, 0));
+		columns.push_back(dep_column_t("Green", COL_INT_UNSIGNED, 1, 1));
+		columns.push_back(dep_column_t("Blue", COL_INT_UNSIGNED, 1, 2));
+		columns.push_back(dep_column_t("Pad (Unused)", COL_INT_UNSIGNED, 1, 3));
+		columns.push_back(dep_column_t("Tag", COL_INT_UNSIGNED, 2, 4));
+		row_stride = 6;
+		data_start = 0;
+	}
+
 	// SWITCHES
 	else if (type == "switches")
 	{
@@ -617,9 +694,9 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(dep_column_t("Off Texture", COL_STRING, 8, 9));
 
 		dep_column_t col_type("Type", COL_CUSTOM_VALUE, 2, 18);
-		col_type.addCustomValue(SWCH_COMM, "Commercial");
-		col_type.addCustomValue(SWCH_FULL, "Registered");
 		col_type.addCustomValue(SWCH_DEMO, "Shareware");
+		col_type.addCustomValue(SWCH_FULL, "Registered");
+		col_type.addCustomValue(SWCH_COMM, "Commercial");
 		columns.push_back(col_type);
 
 		row_stride = 20;
@@ -649,6 +726,43 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(dep_column_t("Patch Name", COL_STRING, 8, 0));
 		row_stride = 8;
 		data_start = 4;
+	}
+
+	// DIALOGUE
+	else if (type == "map_dialog")
+	{
+		columns.push_back(dep_column_t("Speaker ID", COL_INT_UNSIGNED, 4, 0));
+		columns.push_back(dep_column_t("Drop Type", COL_INT_SIGNED, 4, 4));
+		columns.push_back(dep_column_t("Item Check 1", COL_INT_SIGNED, 4, 8));
+		columns.push_back(dep_column_t("Item Check 2", COL_INT_SIGNED, 4, 12));
+		columns.push_back(dep_column_t("Item Check 3", COL_INT_SIGNED, 4, 16));
+		columns.push_back(dep_column_t("Link", COL_INT_SIGNED, 4, 20));
+		columns.push_back(dep_column_t("Speaker Name", COL_STRING, 16, 24));
+		columns.push_back(dep_column_t("Sound", COL_STRING, 8, 40));
+		columns.push_back(dep_column_t("Backdrop", COL_STRING, 8, 48));
+		columns.push_back(dep_column_t("Dialogue Text", COL_STRING, 320, 56));
+
+		// Responses
+		unsigned offset = 320 + 56;
+		for (unsigned a = 1; a <= 5; a++)
+		{
+			columns.push_back(dep_column_t(S_FMT("Response %d: Give Type", a), COL_INT_SIGNED, 4, offset));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Item 1", a), COL_INT_SIGNED, 4, offset + 4));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Item 2", a), COL_INT_SIGNED, 4, offset + 8));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Item 3", a), COL_INT_SIGNED, 4, offset + 12));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Count 1", a), COL_INT_SIGNED, 4, offset + 16));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Count 2", a), COL_INT_SIGNED, 4, offset + 20));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Count 3", a), COL_INT_SIGNED, 4, offset + 24));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Choice Text", a), COL_STRING, 32, offset + 28));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Success Text", a), COL_STRING, 80, offset + 60));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Link", a), COL_INT_SIGNED, 4, offset + 140));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Log", a), COL_INT_UNSIGNED, 4, offset + 144));
+			columns.push_back(dep_column_t(S_FMT("Response %d: Fail Text", a), COL_STRING, 80, offset + 148));
+			offset += 228;
+		}
+
+		row_stride = 1516;
+		data_start = 0;
 	}
 
 	if (columns.empty())
@@ -692,8 +806,17 @@ void DataEntryTable::pasteRows(int row)
 	// Write ending rows
 	data.write(copy.getData() + start, copy.getSize() - start);
 
-	// Send message to grid
+	// Update new rows
 	int num = data_clipboard.getSize() / row_stride;
+	for (unsigned a = 0; a < rows_new.size(); a++)
+	{
+		if (rows_new[a] >= row)
+			rows_new[a] += num;
+	}
+	for (int a = 0; a < num; a++)
+		rows_new.push_back(row + a);
+
+	// Send message to grid
 	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_INSERTED, row, num);
 	GetView()->ProcessTableMessage(msg);
 }
@@ -711,11 +834,15 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data")
 	// Init variables
 	table_data = NULL;
 
+	// Cell value combo box
+	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	sizer_main->Add(vbox, 1, wxEXPAND);
+	combo_cell_value = new wxComboBox(this, -1, "", wxDefaultPosition, wxDefaultSize, 0, NULL, wxTE_PROCESS_ENTER);
+	vbox->Add(combo_cell_value, 0, wxEXPAND|wxBOTTOM, 4);
+
 	// Create grid
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer_main->Add(hbox, 1, wxEXPAND);
 	grid_data = new wxGrid(this, -1);
-	hbox->Add(grid_data, 1, wxEXPAND);
+	vbox->Add(grid_data, 1, wxEXPAND);
 
 	// Add actions to toolbar
 	wxArrayString actions;
@@ -725,6 +852,13 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data")
 	actions.Add("data_copy_row");
 	actions.Add("data_paste_row");
 	toolbar->addActionGroup("Data", actions);
+
+	// Bind events
+	Bind(wxEVT_KEY_DOWN, &DataEntryPanel::onKeyDown, this);
+	grid_data->Bind(wxEVT_GRID_CELL_RIGHT_CLICK, &DataEntryPanel::onGridRightClick, this);
+	grid_data->Bind(wxEVT_GRID_SELECT_CELL, &DataEntryPanel::onGridCursorChanged, this);
+	combo_cell_value->Bind(wxEVT_COMBOBOX, &DataEntryPanel::onComboCellValueSet, this);
+	combo_cell_value->Bind(wxEVT_TEXT_ENTER, &DataEntryPanel::onComboCellValueSet, this);
 }
 
 /* DataEntryPanel::~DataEntryPanel
@@ -743,16 +877,17 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 	if (!table_data)
 		table_data = new DataEntryTable(this);
 	table_data->setupDataStructure(entry);
+	grid_data->ClearGrid();
 	grid_data->SetTable(table_data);
+	combo_cell_value->Clear();
+
+	// Set column widths
 	grid_data->SetColMinimalAcceptableWidth(64);
 	for (int a = 0; a < table_data->GetNumberCols(); a++)
 		grid_data->AutoSizeColLabelSize(a);
 	grid_data->ForceRefresh();
 
 	Layout();
-
-	// Bind events
-	Bind(wxEVT_KEY_DOWN, &DataEntryPanel::onKeyDown, this);
 
 	return true;
 }
@@ -835,7 +970,8 @@ void DataEntryPanel::copyRow(bool cut)
 	else
 	{
 		// Copy
-		for (unsigned a = 0; a < selected_rows.size(); a++)
+		table_data->copyRows(selected_rows[0], 1);
+		for (unsigned a = 1; a < selected_rows.size(); a++)
 			table_data->copyRows(selected_rows[a], 1, true);
 
 		// Delete if cutting
@@ -876,6 +1012,66 @@ void DataEntryPanel::pasteRow()
 	setModified(true);
 }
 
+/* DataEntryPanel::changeValue
+ * Shows a dialog to change the value of currently selected cells
+ * (single-column selection only)
+ *******************************************************************/
+void DataEntryPanel::changeValue()
+{
+	// Get selection
+	vector<point2_t> selection = getSelection();
+
+	// Determine common value (if any)
+	string initial_val;
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
+		string cell_value = grid_data->GetCellValue(selection[a].x, selection[a].y);
+		if (initial_val.empty())
+			initial_val = cell_value;
+		else if (initial_val != cell_value)
+		{
+			initial_val = "";
+			break;
+		}
+	}
+
+	// Create dialog
+	wxDialog dlg(theMainWindow, -1, "Change Value");
+
+	dep_column_t ci = table_data->getColumnInfo(selection[0].y);
+	wxArrayString choices;
+	for (unsigned a = 0; a < ci.custom_values.size(); a++)
+		choices.Add(S_FMT("%d: %s", ci.custom_values[a].key, ci.custom_values[a].value));
+	wxComboBox* combo = new wxComboBox(&dlg, -1, initial_val, wxDefaultPosition, wxDefaultSize, choices);
+
+	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	dlg.SetSizer(vbox);
+	vbox->Add(combo, 0, wxEXPAND|wxALL, 10);
+	vbox->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 10);
+
+	// Show dialog
+	dlg.Fit();
+	dlg.CenterOnParent();
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		// Get entered value
+		string val = combo->GetValue();
+		long lval;
+		if (!val.ToLong(&lval))
+		{
+			// Invalid number, check for option value
+			string numpart = val.BeforeFirst(':');
+			if (!numpart.ToLong(&lval))
+				return;
+		}
+
+		// Apply value to selected cells
+		for (unsigned a = 0; a < selection.size(); a++)
+			grid_data->SetCellValue(selection[a].x, selection[a].y, S_FMT("%d", lval));
+		grid_data->ForceRefresh();
+	}
+}
+
 /* DataEntryPanel::handleAction
  * Handles any SAction messages (from the panel toolbar)
  *******************************************************************/
@@ -891,10 +1087,61 @@ bool DataEntryPanel::handleAction(string action_id)
 		copyRow(true);
 	else if (action_id == "data_paste_row")
 		pasteRow();
+	else if (action_id == "data_change_value")
+		changeValue();
 	else
 		return false;
 
 	return true;
+}
+
+/* DataEntryPanel::getColWithSelection
+ * Returns the column of the current selection (-1 if selection
+ * spans multiple columns)
+ *******************************************************************/
+int DataEntryPanel::getColWithSelection()
+{
+	vector<point2_t> selection = getSelection();
+
+	if (selection.empty())
+		return -1;
+
+	int col = -1;
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
+		if (col < 0)
+			col = selection[a].y;
+		else if (col != selection[a].y)
+			return -1;
+	}
+
+	return col;
+}
+
+/* DataEntryPanel::getSelection
+ * Gets the positions of the currently selected cells
+ *******************************************************************/
+vector<point2_t> DataEntryPanel::getSelection()
+{
+	vector<point2_t> selection;
+
+	// Just go through entire grid
+	int rows = table_data->GetNumberRows();
+	int cols = table_data->GetNumberCols();
+	for (int r = 0; r < rows; r++)
+	{
+		for (int c = 0; c < cols; c++)
+		{
+			if (grid_data->IsInSelection(r, c))
+				selection.push_back(point2_t(r, c));
+		}
+	}
+
+	// If no selection, add current cursor cell
+	if (selection.empty())
+		selection.push_back(point2_t(grid_data->GetGridCursorRow(), grid_data->GetGridCursorCol()));
+
+	return selection;
 }
 
 
@@ -921,4 +1168,53 @@ void DataEntryPanel::onKeyDown(wxKeyEvent& e)
 
 	else
 		e.Skip();
+}
+
+/* DataEntryPanel::onGridRightClick
+ * Called when the right mouse button is clicked on the grid
+ *******************************************************************/
+void DataEntryPanel::onGridRightClick(wxGridEvent& e)
+{
+	// Check if only one column is selected
+	int col = getColWithSelection();
+	LOG_MESSAGE(2, "Column %d", col);
+
+	wxMenu menu;
+	theApp->getAction("data_add_row")->addToMenu(&menu);
+	theApp->getAction("data_delete_row")->addToMenu(&menu);
+	menu.AppendSeparator();
+	theApp->getAction("data_cut_row")->addToMenu(&menu);
+	theApp->getAction("data_copy_row")->addToMenu(&menu);
+	theApp->getAction("data_paste_row")->addToMenu(&menu);
+	if (col >= 0)
+	{
+		menu.AppendSeparator();
+		theApp->getAction("data_change_value")->addToMenu(&menu);
+	}
+	PopupMenu(&menu);
+}
+
+/* DataEntryPanel::onGridCursorChanged
+ * Called when the grid cursor changes cell
+ *******************************************************************/
+void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
+{
+	combo_cell_value->Clear();
+	dep_column_t col = table_data->getColumnInfo(e.GetCol());
+	for (unsigned a = 0; a < col.custom_values.size(); a++)
+		combo_cell_value->AppendString(S_FMT("%d: %s", col.custom_values[a].key, col.custom_values[a].value));
+
+	combo_cell_value->SetValue(grid_data->GetCellValue(e.GetRow(), e.GetCol()));
+}
+
+/* DataEntryPanel::onComboCellValueSet
+ * Called when the cell value combo is changed (enter pressed or an
+ * option selected from the dropdown)
+ *******************************************************************/
+void DataEntryPanel::onComboCellValueSet(wxCommandEvent& e)
+{
+	int row = grid_data->GetGridCursorRow();
+	int col = grid_data->GetGridCursorCol();
+	grid_data->SetCellValue(row, col, combo_cell_value->GetValue());
+	combo_cell_value->SetValue(grid_data->GetCellValue(row, col));
 }

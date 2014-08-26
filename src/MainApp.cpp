@@ -595,6 +595,7 @@ void MainApp::initActions()
 	new SAction("data_cut_row", "Cut Row(s)", "t_cut", "Cut the currently selected row(s)", "Ctrl+X");
 	new SAction("data_copy_row", "Copy Row(s)", "t_copy", "Copy the currently selected row(s)", "Ctrl+C");
 	new SAction("data_paste_row", "Paste Row(s)", "t_paste", "Paste at the currently selected row", "Ctrl+V");
+	new SAction("data_change_value", "Change Value...", "t_rename", "Change the value of the selected cell(s)");
 
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "t_save", "Save any changes to the current map", "Ctrl+S");

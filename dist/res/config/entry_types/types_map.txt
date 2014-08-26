@@ -224,6 +224,7 @@ entry_types
 		size_multiple = 1488, 1516;
 		icon = "e_map_data";
 		export_ext = "lmp";
+		editor = data;
 	}
 
 	// The following four lumps are used by OpenGL ports (including EDGE, GZDoom, and others)
@@ -281,6 +282,7 @@ entry_types
 		size_multiple = 6;
 		export_ext = "lmp";
 		category = "Maps";
+		editor = data;
 	}
 
 	map_macros : map_base
