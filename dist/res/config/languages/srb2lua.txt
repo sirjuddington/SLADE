@@ -42,6 +42,7 @@ srb2lua {
 		freeslot = "string resource, [string resource2, [...]]";
 		super = "mobj_t actor, int var1, int var2";
 		addHook = "string hook, function(?) fn, [int extra]";
+		EvalMath = "string word";
 
 		// math
 		abs = "int a";
@@ -63,7 +64,7 @@ srb2lua {
 		FixedTrunc = "fixed a";
 		FixedCeil = "fixed a";
 		FixedRound = "fixed a";
-		
+
 		// misc
 		GetSecSpecial = "int special, int section";
 		All7Emeralds = "int flags";
@@ -107,6 +108,9 @@ srb2lua {
 		P_SupermanLook4Players = "mobj_t actor";
 		P_SetScale = "mobj_t mobj, fixed scale";
 		P_CheckDeathPitCollide = "mobj_t mobj";
+		P_InsideANonSolidFFloor = "mobj_t mobj, ffloor_t rover";
+		P_CheckSolidLava = "mobj_t mobj, ffloor_t rover";
+		P_CanRunOnWater = "player_t player, ffloor_t rover";
 
 		// p_user
 		P_GetPlayerHeight = "player_t player";
@@ -132,6 +136,13 @@ srb2lua {
 		P_LookForEnemies = "player_t player";
 		P_NukeEnemies = "mobj_t inflictor, mobj_t source, fixed radius";
 		P_HomingAttack = "mobj_t source, mobj_t target";
+		P_SpawnThokMobj = "player_t player";
+		P_SpawnSpinMobj = "player_t player, int type";
+		P_Telekinesis = "player_t player, fixed_t thrust, fixed_t range";
+		P_InQuicksand = "mobj_t mobj";
+		P_InSpaceSector = "mobj_t mobj";
+		P_DoJumpShield = "player_t player";
+		P_IsObjectInGoop = "mobj_t mobj";
 
 		// p_map
 		P_CheckPosition = "mobj_t mobj, fixed x, fixed y, fixed z";
@@ -144,9 +155,11 @@ srb2lua {
 		P_CheckHoopPosition = "mobj_t hoop, fixed x, fixed y, fixed z, fixed radius";
 		P_RadiusAttack = "mobj_t inflictor, mobj_t source, fixed radius";
 		P_FloorzAtPos = "fixed x, fixed y, fixed z, fixed height";
+		P_DoSpring = "mobj_t spring, mobj_t object";
 
 		// p_inter
 		P_RemoveShield = "player_t player";
+		P_SpawnShieldOrb = "player_t player";
 		P_DamageMobj = "mobj_t target, [mobj_t inflictor, [mobj_t source, [int damage]]]";
 		P_KillMobj = "mobj_t target, [mobj_t inflictor, [mobj_t source]]";
 		P_PlayerRingBurst = "player_t player, [int numrings]";
@@ -154,9 +167,9 @@ srb2lua {
 		P_PlayerWeaponAmmoBurst = "player_t player";
 		P_PlayerEmeraldBurst = "player_t player, [boolean toss?]";
 		P_PlayerFlagBurst = "player_t player, [boolean toss?]";
-		P_PlayRinglossSound = "player_t player";
-		P_PlayDeathSound = "player_t player";
-		P_PlayVictorySound = "player_t player";
+		P_PlayRinglossSound = "mobj_t source, [player_t player]";
+		P_PlayDeathSound = "mobj_t source, [player_t player]";
+		P_PlayVictorySound = "mobj_t source, [player_t player]";
 		P_PlayLivesJingle = "player_t player";
 		P_CanPickupItem = "player_t player, [boolean weapon?]";
 		P_DoNightsScore = "player_t player";
@@ -168,14 +181,16 @@ srb2lua {
 		P_ExplodeMissile = "mobj_t missile";
 		P_PlayerTouchingSectorSpecial = "player_t player, int section, int specialnum";
 		P_FindSpecialLineFromTag = "int special, int tag, [int start]";
-		P_SwitchWeather = "int weather";
+		P_SwitchWeather = "int weather, [player_t player]";
 		P_LinedefExecute = "int tag, [mobj_t actor, [sector_t caller]]";
 		P_SpawnLightningFlash = "sector_t sector";
 		P_FadeLight = "int tag, int destvalue, int speed";
 		P_ThingOnSpecial3DFloor = "mobj_t mobj";
-		P_SetupLevelSky = "int skynum, [boolean global?]";
+		P_SetupLevelSky = "int skynum, [player player]";
 		P_SetSkyboxMobj = "mobj_t mobj, [boolean centerpoint?, [player_t user]]";
 		P_StartQuake = "fixed intensity, int time, [table{x/y/z} epicenter, [fixed radius]]";
+		P_IsFlagAtBase = "int type";
+		EV_CrumbleChain = "sector_t sector, ffloor_t rover";
 
 		// r_defs
 		R_PointToAngle = "fixed x, fixed y";
@@ -184,13 +199,18 @@ srb2lua {
 		R_PointToDist2 = "fixed x, fixed y, fixed dest_x, fixed dest_y";
 		R_PointInSubsector = "fixed x, fixed y";
 
+		// r_things
+		R_Char2Frame = "string char";
+		R_Frame2Char = "int frame";
+		R_SetPlayerSkin = "player_t player, int/string skin";
+
 		// s_sound
-		S_StartSound = "mobj_t origin, int soundnum";
-		S_StartSoundAtVolume = "mobj_t origin, int soundnum, int volume";
+		S_StartSound = "mobj_t origin, int soundnum, [player_t player]";
+		S_StartSoundAtVolume = "mobj_t origin, int soundnum, int volume, [player_t player]";
 		S_StopSound = "mobj_t origin";
-		S_ChangeMusic = "int musicnum, [boolean looping?]";
-		S_SpeedMusic = "fixed musicspeed";
-		S_StopMusic;
+		S_ChangeMusic = "int musicnum, [boolean looping?], [player_t player]";
+		S_SpeedMusic = "fixed musicspeed, [player_t player]";
+		S_StopMusic = "[player_t player]";
 		S_OriginPlaying = "mobj_t origin";
 		S_IdPlaying = "int soundnum";
 		S_SoundPlaying = "mobj_t origin, int soundnum";
@@ -240,6 +260,9 @@ srb2lua {
 		drawPaddedNum = "int x, int y, int num, [int digits, [int flags]]";
 		drawFill = "[int x, [int y, [int w, [int h, [int color]]]]]";
 		drawString = "fixed x, fixed y, string str, [int flags, [string alignment]]";
+		patchExists = "string name";
+		cachePatch = "string name";
+		stringWidth = "string string, [int flags, [string widthtype]]";
 
 		// basic Lua
 		assert = "boolean assert, [string errormsg]";
