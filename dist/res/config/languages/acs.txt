@@ -216,9 +216,8 @@ acs_z : acs {
 
 		HUDMSG_PLAIN, HUDMSG_FADEOUT, HUDMSG_TYPEON, HUDMSG_FADEINOUT, HUDMSG_LOG, 
 		HUDMSG_COLORSTRING, HUDMSG_ADDBLEND, HUDMSG_LAYER_OVERHUD, HUDMSG_ALPHA,
-		HUDMSG_LAYER_OVERMAP, HUDMSG_LAYER_UNDERHUD, HUDMSG_LOG, HUDMSG_LOG,
-		HUDMSG_NOTWITH3DVIEW, HUDMSG_NOTWITHFULLMAP, HUDMSG_NOTWITHOVERLAYMAP,
-		HUDMSG_NOWRAP,
+		HUDMSG_LAYER_OVERMAP, HUDMSG_LAYER_UNDERHUD, HUDMSG_NOTWITH3DVIEW,
+		HUDMSG_NOTWITHFULLMAP, HUDMSG_NOTWITHOVERLAYMAP, HUDMSG_NOWRAP,
 
 		MARINEWEAPON_Dummy, MARINEWEAPON_Fist, MARINEWEAPON_BerserkFist, 
 		MARINEWEAPON_Chainsaw, MARINEWEAPON_Pistol, MARINEWEAPON_Shotgun, 
@@ -326,7 +325,7 @@ acs_z : acs {
 		AAPTR_DEFAULT, AAPTR_NULL, AAPTR_TARGET, AAPTR_MASTER, AAPTR_TRACER, 
 		AAPTR_PLAYER_GETTARGET, AAPTR_PLAYER_GETCONVERSATION, AAPTR_PLAYER1, 
 		AAPTR_PLAYER2, AAPTR_PLAYER3, AAPTR_PLAYER4, AAPTR_PLAYER5, AAPTR_PLAYER6, 
-		AAPTR_PLAYER7, AAPTR_PLAYER8, AAPTR_FRIENDPLAYER, 
+		AAPTR_PLAYER7, AAPTR_PLAYER8, AAPTR_FRIENDPLAYER, AAPTR_GET_LINETARGET,
 
 		PTROP_UNSAFETARGET, PTROP_UNSAFEMASTER, PTROP_NOSAFEGUARDS, 
 
@@ -390,7 +389,21 @@ acs_z : acs {
 
 		// GetArmorInfo info types
 		ARMORINFO_ACTUALSAVEAMOUNT, ARMORINFO_CLASSNAME, ARMORINFO_MAXABSORB,
-		ARMORINFO_MAXFULLABSORB, ARMORINFO_SAVEAMOUNT, ARMORINFO_SAVEPERCENT
+		ARMORINFO_MAXFULLABSORB, ARMORINFO_SAVEAMOUNT, ARMORINFO_SAVEPERCENT,
+
+		// PickActor actor and wall mask flags
+		MF_AMBUSH, MF_CORPSE, MF_COUNTITEM, MF_COUNTKILL, MF_DROPOFF, MF_DROPPED,
+		MF_FLOAT, MF_FRIENDLY, MF_ICECORPSE, MF_INBOUNCE, MF_INCHASE, MF_INFLOAT,
+		MF_JUSTATTACKED, MF_JUSTHIT, MF_MISSILE, MF_NOBLOCKMAP, MF_NOBLOOD, MF_NOCLIP,
+		MF_NOGRAVITY, MF_NOLIFTDROP, MF_NOSECTOR, MF_NOTDMATCH, MF_PICKUP, MF_SHADOW,
+		MF_SHOOTABLE, MF_SKULLFLY, MF_SOLID, MF_SPAWNCEILING, MF_SPAWNSOUNDSOURCE,
+		MF_SPECIAL, MF_STEALTH, MF_TELEPORT, MF_UNMORPHED,
+		ML_3DMIDTEX, ML_ADDTRANS, ML_BLOCK_FLOATERS, ML_BLOCK_PLAYERS, ML_BLOCKEVERYTHING,
+		ML_BLOCKHITSCAN, ML_BLOCKING, ML_BLOCKMONSTERS, ML_BLOCKPROJECTILE, ML_BLOCKSIGHT,
+		ML_BLOCKUSE, ML_CHECKSWITCHRANGE, ML_CLIP_MIDTEX, ML_DONTDRAW, ML_DONTPEGBOTTOM,
+		ML_DONTPEGTOP, ML_FIRSTSIDEONLY, ML_MAPPED, ML_MONSTERSCANACTIVATE, ML_RAILING,
+		ML_REPEAT_SPECIAL, ML_SECRET, ML_SOUNDBLOCK, ML_TWOSIDED, ML_WRAP_MIDTEX,
+		ML_ZONEBOUNDARY
 	}
 
 	functions
@@ -612,6 +625,7 @@ acs_z : acs {
 		ActivatorTID;
 		AmbientSound = "str sound, int volume";
 		CancelFade;
+		CanRaiseActor = "int tid";
 		ChangeActorAngle = "int tid, int angle, [bool interpolate]";
 		ChangeActorPitch = "int tid, int pitch, [bool interpolate]";
 		ChangeCeiling = "int tag, str flatname";
@@ -636,6 +650,7 @@ acs_z : acs {
 		Cos = "int angle";
 		CreateTranslation = "int transnumber, a:b=c:d, ...", "int transnumber, a:b=[red1,green1,blue1]:[red2,green2,blue2], ...";
 		Delay = "int tics";
+		DropInventory = "int tid, str item";
 		DropItem = "int tid, str item, [int dropamount], [int chance]";
 		FadeRange = "int red1, int green1, int blue1, fixed amount1, int red2, int green2, int blue2, fixed amount2, fixed seconds";
 		FadeTo = "int red, int green, int blue, fixed amount, fixed seconds";
@@ -696,6 +711,7 @@ acs_z : acs {
 		GiveInventory = "str inventory_item, int amount";
 		HudMessage = "text; int type, int id, int color, fixed x, fixed y, fixed holdTime, alpha", "text; HUDMSG_FADEOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed fadetime, alpha", "text; HUDMSG_TYPEON, int id, int color, fixed x, fixed y, fixed holdTime, fixed typetime, fixed fadetime, alpha", "text; HUDMSG_FADEINOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed inTime, fixed outTime, alpha";
 		HudMessageBold = "text; int type, int id, int color, fixed x, fixed y, fixed holdTime, alpha", "text; HUDMSG_FADEOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed fadetime, alpha", "text; HUDMSG_TYPEON, int id, int color, fixed x, fixed y, fixed holdTime, fixed typetime, fixed fadetime, alpha", "text; HUDMSG_FADEINOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed inTime, fixed outTime, alpha";
+		IsPointerEqual = "int ptr_select1, int ptr_select2, [int tid1], [int tid2]";
 		IsTIDUsed = "int tid";
 		LineSide;
 		LineAttack = "int tid, fixed angle, fixed pitch, int damage, [str pufftype], [str damagetype], [fixed range], [int flags]";
@@ -704,6 +720,7 @@ acs_z : acs {
 		Log = "type:expression";
 		MorphActor = "int tid, [str playerclass, [str monsterclass, [int duration, [int style, [str morphflash, [str unmorphflash]]]]]]";
 		NamedScriptWait = "str script";
+		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask]";
 		PlayActorSound = "int tid, int sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
 		PlayerClass = "int playernumber";
 		PlayerCount;
