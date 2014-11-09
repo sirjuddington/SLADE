@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SLADE"
-#define MyAppVersion "3.1.0"
-#define VersionNum "310"
+#define MyAppVersion "3.1.0.1"
+#define VersionNum "3101"
 #define MyAppURL "http://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
 

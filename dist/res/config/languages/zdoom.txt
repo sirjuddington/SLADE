@@ -337,7 +337,7 @@ z_sbarinfo {
 		Base, completeborder, CreatePopup, Height, InterpolateHealth, InterpolateArmor, LowerHealthCap, MonospaceFonts,
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
-		InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
+		IfHealth, InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
 		WeaponAmmo, mugshot
 	}
 
@@ -526,6 +526,7 @@ z_xlat {
 		Ceiling_CrushAndRaiseA = "int tag, int downspeed, int upspeed, int damage, [cint rushmode]";
 		Ceiling_CrushAndRaiseDist = "int tag, int dist, int speed, int damage, [int crushmode]";
 		Ceiling_CrushAndRaiseSilentA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushAndRaiseSilentDist = "int tag, int dist, int speed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStay = "int tag, int speed, int crush, [int crushmode]";
 		Ceiling_CrushRaiseAndStayA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStaySilA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
