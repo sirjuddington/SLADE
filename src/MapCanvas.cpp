@@ -1966,6 +1966,7 @@ void MapCanvas::update(long frametime)
 void MapCanvas::mouseToCenter()
 {
 	wxRect rect = GetScreenRect();
+	mouse_warp = true;
 	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width*0.5), rect.y + int(rect.height*0.5)));
 }
 
@@ -3703,12 +3704,11 @@ bool MapCanvas::handleAction(string id)
 		if (selection.size() > 0)
 		{
 			SectorSpecialDialog dlg(this);
-			int map_format = editor->getMap().currentFormat();
-			dlg.setup(selection[0]->intProperty("special"), map_format);
+			dlg.setup(selection[0]->intProperty("special"));
 			if (dlg.ShowModal() == wxID_OK)
 			{
 				// Set specials of selected sectors
-				int special = dlg.getSelectedSpecial(map_format);
+				int special = dlg.getSelectedSpecial();
 				editor->beginUndoRecord("Change Sector Special", true, false, false);
 				for (unsigned a = 0; a < selection.size(); a++)
 					selection[a]->setIntProperty("special", special);

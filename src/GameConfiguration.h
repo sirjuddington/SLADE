@@ -106,6 +106,7 @@ private:
 	bool				map_formats[4];		// Supported map formats
 	string				udmf_namespace;		// Namespace to use for UDMF
 	bool				boom;				// Boom extensions enabled
+	int 				boom_sector_flag_start;  // Beginning of Boom sector flags
 	ASpecialMap			action_specials;	// Action specials
 	ActionSpecial		as_unknown;			// Default action special
 	ActionSpecial		as_generalized_s;	// Dummy for Boom generalized switched specials
@@ -210,6 +211,7 @@ public:
 	string	currentGame() { return current_game; }
 	string	currentPort() { return current_port; }
 	bool	isBoom() { return boom; }
+	bool	supportsSectorFlags() { return boom_sector_flag_start > 0; }
 	bool	anyMapName() { return any_map_name; }
 	bool	mixTexFlats() { return mix_tex_flats; }
 	bool	txTextures() { return tx_textures; }
@@ -296,15 +298,15 @@ public:
 	void			cleanObjectUDMFProps(MapObject* object);
 
 	// Sector types
-	string				sectorTypeName(int type, int map_format);
+	string				sectorTypeName(int type);
 	vector<sectype_t>	allSectorTypes() { return sector_types; }
 	int					sectorTypeByName(string name);
-	int					baseSectorType(int type, int map_format);
-	int					sectorBoomDamage(int type, int map_format);
-	bool				sectorBoomSecret(int type, int map_format);
-	bool				sectorBoomFriction(int type, int map_format);
-	bool				sectorBoomPushPull(int type, int map_format);
-	int					boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull, int map_format);
+	int					baseSectorType(int type);
+	int					sectorBoomDamage(int type);
+	bool				sectorBoomSecret(int type);
+	bool				sectorBoomFriction(int type);
+	bool				sectorBoomPushPull(int type);
+	int					boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull);
 
 	// Defaults
 	string	getDefaultString(int type, string property);

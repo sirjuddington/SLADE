@@ -73,7 +73,7 @@ void SectorInfoOverlay::update(MapSector* sector)
 
 	// Info (index + type)
 	int t = sector->intProperty("special");
-	string type = S_FMT("%s (Type %d)", theGameConfiguration->sectorTypeName(t, theMapEditor->currentMapDesc().format), t);
+	string type = S_FMT("%s (Type %d)", theGameConfiguration->sectorTypeName(t), t);
 	if (Global::debug)
 		info_text += S_FMT("Sector #%d (%d): %s\n", sector->getIndex(), sector->getId(), type);
 	else

@@ -637,7 +637,7 @@ acs_z : acs {
 		CheckActorFloorTexture = "int tid, str texture";
 		CheckActorInventory = "int tid, str inventory_item";
 		CheckActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
-		CheckFlag = "int tid, int flag";
+		CheckFlag = "int tid, str flag";
 		CheckFont = "str fontname";
 		CheckInventory = "str inventory_item";
 		CheckPlayerCamera = "int player";
@@ -720,7 +720,7 @@ acs_z : acs {
 		Log = "type:expression";
 		MorphActor = "int tid, [str playerclass, [str monsterclass, [int duration, [int style, [str morphflash, [str unmorphflash]]]]]]";
 		NamedScriptWait = "str script";
-		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask]";
+		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask], [bool force_tid]";
 		PlayActorSound = "int tid, int sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
 		PlayerClass = "int playernumber";
 		PlayerCount;

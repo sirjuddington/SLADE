@@ -220,7 +220,7 @@ z_mapinfo {
 		MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight, MenuFontColor_Selection, MenuBackButton,
 		PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX, TextScreenY, DefaultEndSequence, MapArrow,
 		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
-		DontCrunchCorpses,
+		DontCrunchCorpses, CheatKey,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,

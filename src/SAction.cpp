@@ -128,7 +128,7 @@ bool SAction::addToMenu(wxMenu* menu, bool menubar, string text_override)
 	string item_text = text;
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
-	if (!sc.IsEmpty() && (!is_bind || !menubar))
+	if (!sc.IsEmpty())
 		item_text = S_FMT("%s\t%s", item_text, sc);
 
 	// Append this action to the menu
