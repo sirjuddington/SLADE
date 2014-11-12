@@ -944,6 +944,10 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 		else if (S_CMPNOCASE(node->getName(), "light_level_interval"))
 			setLightLevelInterval(node->getIntValue());
 
+		// Long names
+		else if (S_CMPNOCASE(node->getName(), "long_names"))
+			allow_long_names = node->getBoolValue();
+
 		// Defaults section
 		else if (S_CMPNOCASE(node->getName(), "defaults"))
 		{
