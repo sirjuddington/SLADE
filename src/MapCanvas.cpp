@@ -1966,6 +1966,7 @@ void MapCanvas::update(long frametime)
 void MapCanvas::mouseToCenter()
 {
 	wxRect rect = GetScreenRect();
+	mouse_warp = true;
 	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width*0.5), rect.y + int(rect.height*0.5)));
 }
 
