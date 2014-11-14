@@ -623,10 +623,21 @@ struct frect_t
 };
 
 
-// plane_t: A 3d plane
+// plane_t: A 3d plane described by ax + by + cz = d
 struct plane_t
 {
 	float a, b, c, d;
+
+	plane_t() : a(0.0), b(0.0), c(0.0), d(0.0) {}
+	plane_t(float a, float b, float c, float d) : a(a), b(b), c(c), d(d) {}
+
+	/** Construct a flat plane (perpendicular to the z axis) at the given height.
+	 */
+	static plane_t flat(float height)
+	{
+		// The equation is just z = height
+		return plane_t(0.0, 0.0, 1.0, height);
+	}
 
 	fpoint3_t normal()
 	{

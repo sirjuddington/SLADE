@@ -397,8 +397,8 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 		return;
 
 	// Get target height
-	int fheight = map->getSector(sector)->getFloorHeight() + 40;
-	int cheight = map->getSector(sector)->getCeilingHeight();
+	int fheight = map->getSector(sector)->getFloorPlane().height_at(cam_position.x, cam_position.y) + 40;
+	int cheight = map->getSector(sector)->getCeilingPlane().height_at(cam_position.x, cam_position.y);
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -829,7 +829,7 @@ void MapRenderer3D::updateSector(unsigned index)
 		updateFlatTexCoords(index, true);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_floors);
 		Polygon2D::setupVBOPointers();
-		sector->getPolygon()->setZ(sector->getFloorHeight());
+		sector->getPolygon()->setZ(sector->getFloorPlane());
 		sector->getPolygon()->updateVBOData();
 	}
 
@@ -852,7 +852,7 @@ void MapRenderer3D::updateSector(unsigned index)
 		updateFlatTexCoords(index, false);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings);
 		Polygon2D::setupVBOPointers();
-		sector->getPolygon()->setZ(sector->getCeilingHeight());
+		sector->getPolygon()->setZ(sector->getCeilingPlane());
 		sector->getPolygon()->updateVBOData();
 	}
 
@@ -1064,19 +1064,19 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 /* MapRenderer3D::setupQuad
  * Sets up coordinates for a quad
  *******************************************************************/
-void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom)
+void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double y1, double x2, double y2, plane_t top, plane_t bottom)
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = x1;
 	quad->points[0].y = quad->points[1].y = y1;
+	quad->points[0].z = top.height_at(x1, y1);
+	quad->points[1].z = bottom.height_at(x1, y1);
 
 	// Right
 	quad->points[2].x = quad->points[3].x = x2;
 	quad->points[2].y = quad->points[3].y = y2;
-
-	// Top/bottom
-	quad->points[0].z = quad->points[3].z = top;
-	quad->points[1].z = quad->points[2].z = bottom;
+	quad->points[2].z = bottom.height_at(x2, y2);
+	quad->points[3].z = top.height_at(x2, y2);
 }
 
 /* MapRenderer3D::setupQuadTexCoords
@@ -1234,7 +1234,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), floor2, floor1);
+		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), line->backSector()->getFloorPlane(), line->frontSector()->getFloorPlane());
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexLower(), mixed);
@@ -1377,7 +1377,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), floor1, floor2);
+		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), line->frontSector()->getFloorPlane(), line->backSector()->getFloorPlane());
 		quad.colour = colour2;
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexLower(), mixed);

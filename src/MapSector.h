@@ -4,6 +4,7 @@
 
 #include "MapObject.h"
 #include "Polygon2D.h"
+#include "Structs.h"
 
 class MapSide;
 class MapLine;
@@ -86,6 +87,8 @@ public:
 	bool				getLines(vector<MapLine*>& list);
 	bool				getVertices(vector<MapVertex*>& list);
 	bool				getVertices(vector<MapObject*>& list);
+	plane_t				getFloorPlane();
+	plane_t				getCeilingPlane();
 	uint8_t				getLight(int where = 0);
 	void				changeLight(int amount, int where = 0);
 	rgba_t				getColour(int where = 0, bool fullbright = false);

@@ -35,6 +35,7 @@
 #include "MainApp.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
+#include "GameConfiguration.h"
 #include <wx/colour.h>
 
 
@@ -269,8 +270,8 @@ Polygon2D* MapSector::getPolygon()
 {
 	if (poly_needsupdate)
 	{
-		polygon.openSector(this);
 		poly_needsupdate = false;
+		polygon.openSector(this);
 	}
 
 	return &polygon;
@@ -421,6 +422,112 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 	}
 
 	return true;
+}
+
+/* MapSector::getFloorPlane
+ * Returns the slope of the floor
+ *******************************************************************/
+plane_t MapSector::getFloorPlane()
+{
+	// Deal with slopes, in the same order as ZDoom.
+	// Plane_Align
+	MapSide* side;
+	MapLine* line;
+	// Go through connected sides
+	// TODO does this need to go through lines in id order?
+	for (unsigned a = 0; a < connected_sides.size(); a++)
+	{
+		side = connected_sides[a];
+		line = side->getParentLine();
+		// TODO faster to find Plane_Align's number first
+		if (line->getSpecial())
+		{
+			ActionSpecial* as = theGameConfiguration->actionSpecial(line->getSpecial());
+			if (as->getName() == "Plane_Align")
+			{
+				// TODO honestly this is all terrible.  just terrible.
+
+				int prop;
+				MapSector* adjacent_sector;
+				// Floor
+				prop = line->intProperty("arg0");
+				short adjacent_floor;
+				if (prop == 1 && side == line->s1())
+				{
+					adjacent_sector = line->backSector();
+					if (! adjacent_sector)
+						continue;
+					adjacent_floor = adjacent_sector->getFloorHeight();
+				}
+				else if (prop == 2 && side == line->s2())
+				{
+					adjacent_sector = line->frontSector();
+					if (! adjacent_sector)
+						continue;
+					adjacent_floor = adjacent_sector->getFloorHeight();
+				}
+				else
+				{
+					continue;
+				}
+
+				MapSide* sideb;
+				MapVertex* vtmp;
+				double furthest = 0.0;
+				double dist;
+				MapVertex* v = NULL;
+				for (unsigned b = 0; b < connected_sides.size(); b++)
+				{
+					vtmp = connected_sides[b]->getParentLine()->v1();
+					dist = line->distanceTo(vtmp->xPos(), vtmp->yPos());
+					if (dist > furthest) {
+						furthest = dist;
+						v = vtmp;
+					}
+					vtmp = connected_sides[b]->getParentLine()->v2();
+					dist = line->distanceTo(vtmp->xPos(), vtmp->yPos());
+					if (dist > furthest) {
+						furthest = dist;
+						v = vtmp;
+					}
+				}
+
+				// TODO found point must not be on this same line!
+				// TODO does zdoom look for furthest point, or furthest /perpendicular/ point?  which does distanceTo do?
+				// TODO this line must not have length zero!
+				// TODO all this code is bad
+				if (furthest > 0.01) {
+					// Slope the floor such that point v remains at the
+					// actual floor height, but this line is at the floor
+					// height of the adjacent sector.
+					// Make two vectors, then make a plane from them:
+					fpoint3_t p = line->v1()->getPoint(0);
+					p.z = adjacent_floor;
+					fpoint3_t q = line->v2()->getPoint(0);
+					q.z = adjacent_floor;
+					fpoint3_t r = v->getPoint(0);
+					r.z = f_height;
+
+					fpoint3_t pq = p - q;
+					fpoint3_t pr = p - r;
+					// Procedure to get a plane from two vectors
+					fpoint3_t norm = pq.cross(pr);
+					double dot = norm.dot(p);
+					return plane_t(norm.x, norm.y, norm.z, dot);
+				}
+			}
+		}
+	}
+
+	return plane_t::flat(f_height);
+}
+
+/* MapSector::getCeilingPlane
+ * Returns the slope of the ceiling
+ *******************************************************************/
+plane_t MapSector::getCeilingPlane()
+{
+	return plane_t::flat(c_height);
 }
 
 /* MapSector::getLight
