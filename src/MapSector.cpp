@@ -493,7 +493,7 @@ plane_t MapSector::getPlane()
 			// Cross product gives a normal vector, and dot product with our
 			// point finishes it up.
 			fpoint3_t norm = vec1.cross(vec2);
-			double dot = norm.dot(thing->getPoint(0));
+			double dot = norm.dot(point);
 			ret = plane_t(norm.x, norm.y, norm.z, dot);
 			ret.normalize();
 			return ret;
