@@ -447,6 +447,7 @@ plane_t MapSector::getPlane()
 	// Deal with slopes, in REVERSE order from ZDoom -- it applies slopes to
 	// sectors at startup, so later slopes override older ones, whereas we just
 	// want to use the first we find.
+	plane_t ret;
 
 	// Check for slope alignment things.
 	// TODO there doesn't seem to be a helper anywhere for getting all the
@@ -493,7 +494,9 @@ plane_t MapSector::getPlane()
 			// point finishes it up.
 			fpoint3_t norm = vec1.cross(vec2);
 			double dot = norm.dot(thing->getPoint(0));
-			return plane_t(norm.x, norm.y, norm.z, dot);
+			ret = plane_t(norm.x, norm.y, norm.z, dot);
+			ret.normalize();
+			return ret;
 		}
 	}
 
@@ -580,14 +583,18 @@ plane_t MapSector::getPlane()
 					// Procedure to get a plane from two vectors
 					fpoint3_t norm = vec1.cross(vec2);
 					double dot = norm.dot(pt1);
-					return plane_t(norm.x, norm.y, norm.z, dot);
+					ret = plane_t(norm.x, norm.y, norm.z, dot);
+					ret.normalize();
+					return ret;
 				}
 			}
 		}
 	}
 
 	// Default to a flat plane
-	return plane_t::flat(getPlaneHeight<p>());
+	ret = plane_t::flat(getPlaneHeight<p>());
+	ret.normalize();
+	return ret;
 }
 
 /* MapSector::getLight

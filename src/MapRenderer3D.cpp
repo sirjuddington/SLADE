@@ -1020,16 +1020,15 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		if (!sector)
 			return;
 
-		// Translate to floor/ceiling height
-		glPushMatrix();
+		plane_t plane;
 		if (selection[a].type == MapEditor::SEL_FLOOR)
 		{
-			glTranslated(0, 0, sector->intProperty("heightfloor"));
+			plane = sector->getFloorPlane();
 			glCullFace(GL_FRONT);
 		}
 		else
 		{
-			glTranslated(0, 0, sector->intProperty("heightceiling"));
+			plane = sector->getCeilingPlane();
 			glCullFace(GL_BACK);
 		}
 
@@ -1040,16 +1039,14 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		glBegin(GL_LINES);
 		for (unsigned l = 0; l < lines.size(); l++)
 		{
-			glVertex3d(lines[l]->x1(), lines[l]->y1(), 0);
-			glVertex3d(lines[l]->x2(), lines[l]->y2(), 0);
+			glVertex3d(lines[l]->x1(), lines[l]->y1(), plane.height_at(lines[l]->x1(), lines[l]->y1()));
+			glVertex3d(lines[l]->x2(), lines[l]->y2(), plane.height_at(lines[l]->x2(), lines[l]->y2()));
 		}
 		glEnd();
 
 		// Render fill
 		OpenGL::setColour(col2, false);
 		sector->getPolygon()->render();
-
-		glPopMatrix();
 	}
 
 	glCullFace(GL_BACK);
@@ -2346,7 +2343,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 		return current;
 
 	// Check lines
-	double height, dist;
+	double height, dist, targetx, targety;
 	quad_3d_t* quad;
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
@@ -2410,11 +2407,14 @@ selection_3d_t MapRenderer3D::determineHilight()
 		dist = MathStuff::distanceRayPlane(cam_position, cam_dir3d, floors[a].plane);
 		if (dist >= 0 && dist < min_dist)
 		{
+			targetx = cam_position.x + cam_dir3d.x * dist;
+			targety = cam_position.y + cam_dir3d.y * dist;
+
 			// Check if on the correct side of the plane
-			if (cam_position.z > floors[a].plane.height_at(cam_position.x, cam_position.y))
+			if (cam_position.z > floors[a].plane.height_at(targetx, targety))
 			{
 				// Check if intersection is within sector
-				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				if (map->getSector(a)->isWithin(targetx, targety))
 				{
 					current.index = a;
 					current.type = MapEditor::SEL_FLOOR;
@@ -2427,11 +2427,14 @@ selection_3d_t MapRenderer3D::determineHilight()
 		dist = MathStuff::distanceRayPlane(cam_position, cam_dir3d, ceilings[a].plane);
 		if (dist >= 0 && dist < min_dist)
 		{
+			targetx = cam_position.x + cam_dir3d.x * dist;
+			targety = cam_position.y + cam_dir3d.y * dist;
+
 			// Check if on the correct side of the plane
-			if (cam_position.z < ceilings[a].plane.height_at(cam_position.x, cam_position.y))
+			if (cam_position.z < ceilings[a].plane.height_at(targetx, targety))
 			{
 				// Check if intersection is within sector
-				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				if (map->getSector(a)->isWithin(targetx, targety))
 				{
 					current.index = a;
 					current.type = MapEditor::SEL_CEILING;
@@ -2593,16 +2596,15 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		if (!sector)
 			return;
 
-		// Translate to floor/ceiling height
-		glPushMatrix();
+		plane_t plane;
 		if (hilight.type == MapEditor::SEL_FLOOR)
 		{
-			glTranslated(0, 0, sector->getFloorHeight());
+			plane = sector->getFloorPlane();
 			glCullFace(GL_FRONT);
 		}
 		else
 		{
-			glTranslated(0, 0, sector->getCeilingHeight());
+			plane = sector->getCeilingPlane();
 			glCullFace(GL_BACK);
 		}
 
@@ -2612,8 +2614,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		glBegin(GL_LINES);
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
-			glVertex3d(lines[a]->x1(), lines[a]->y1(), 0);
-			glVertex3d(lines[a]->x2(), lines[a]->y2(), 0);
+			glVertex3d(lines[a]->x1(), lines[a]->y1(), plane.height_at(lines[a]->x1(), lines[a]->y1()));
+			glVertex3d(lines[a]->x2(), lines[a]->y2(), plane.height_at(lines[a]->x2(), lines[a]->y2()));
 		}
 		glEnd();
 
@@ -2622,10 +2624,10 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		{
 			col_hilight.a *= 0.3;
 			OpenGL::setColour(col_hilight, false);
+			// TODO this isn't right; doesn't know its own z heights.  also,
+			// undupe this with the selection code.
 			sector->getPolygon()->render();
 		}
-
-		glPopMatrix();
 	}
 
 	// Thing hilight
