@@ -37,7 +37,11 @@
 #include "MathStuff.h"
 #include "GameConfiguration.h"
 #include <wx/colour.h>
+#include <cmath>
 
+
+// Number of radians in the unit circle
+const double TAU = M_PI * 2;
 
 /*******************************************************************
  * MAPSECTOR CLASS FUNCTIONS
@@ -440,7 +444,59 @@ template plane_t MapSector::getPlane<CEILING_PLANE>();
 template<PlaneType p>
 plane_t MapSector::getPlane()
 {
-	// Deal with slopes, in the same order as ZDoom.
+	// Deal with slopes, in REVERSE order from ZDoom -- it applies slopes to
+	// sectors at startup, so later slopes override older ones, whereas we just
+	// want to use the first we find.
+
+	// Check for slope alignment things.
+	// TODO there doesn't seem to be a helper anywhere for getting all the
+	// things within a given sector!  might be nice to have one; would also
+	// help when moving sectors around.
+	for (unsigned a = 0; a < parent_map->nThings(); a++)
+	{
+		MapThing* thing = parent_map->getThing(a);
+		// TODO don't hardcode this number...  maybe?
+		if (thing->getType() == (p == FLOOR_PLANE ? 9502 : 9503)
+			&& bbox.point_within(thing->xPos(), thing->yPos())
+			&& isWithin(thing->xPos(), thing->yPos())
+		)
+		{
+			// Sector tilt things.  First argument is the tilt angle, but
+			// starting with 0 as straight down; subtracting 90 fixes that.
+			// TODO skip if the tilt is vertical!
+			double angle = thing->getAngle() / 360.0 * TAU;
+			double tilt = (thing->intProperty("arg0") - 90) / 360.0 * TAU;
+			// Resulting plane goes through the position of the thing
+			double z = getPlaneHeight<p>() + thing->floatProperty("height");
+			fpoint3_t point(thing->xPos(), thing->yPos(), z);
+
+			double cos_angle = cos(angle);
+			double sin_angle = sin(angle);
+			double cos_tilt = cos(tilt);
+			double sin_tilt = sin(tilt);
+			// Need to convert these angles into vectors on the plane, so we
+			// can take a normal.
+			// For the first: we know that the line perpendicular to the
+			// direction the thing faces lies "flat", because this is the axis
+			// the tilt thing rotates around.  "Rotate" the angle a quarter
+			// turn to get this vector -- switch x and y, and negate one.
+			fpoint3_t vec1(-sin_angle, cos_angle, 0.0);
+
+			// For the second: the tilt angle makes a triangle between the
+			// floor plane and the z axis.  sin gives us the distance along the
+			// z-axis, but cos only gives us the distance away /from/ the
+			// z-axis.  Break that into x and y by multiplying by cos and sin
+			// of the thing's facing angle.
+			fpoint3_t vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
+
+			// Cross product gives a normal vector, and dot product with our
+			// point finishes it up.
+			fpoint3_t norm = vec1.cross(vec2);
+			double dot = norm.dot(thing->getPoint(0));
+			return plane_t(norm.x, norm.y, norm.z, dot);
+		}
+	}
+
 	// Plane_Align
 	MapSide* side;
 	MapLine* line;
