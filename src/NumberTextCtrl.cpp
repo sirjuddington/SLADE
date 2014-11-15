@@ -38,6 +38,9 @@
  * NUMBERTEXTCTRL CLASS FUNCTIONS
  *******************************************************************/
 
+// TODO this class could possibly be replaced by a validator on a regular
+// wxTextCtrl
+
 /* NumberTextCtrl::NumberTextCtrl
  * NumberTextCtrl class constructor
  *******************************************************************/
@@ -45,6 +48,8 @@ NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) : wxTextCtr
 {
 	last_point = 0;
 	this->allow_decimal = allow_decimal;
+
+	SetToolTip("Use ++ or -- to make relative changes, e.g., ++16 to increase by 16");
 
 	// Bind events
 	Bind(wxEVT_CHAR, &NumberTextCtrl::onChar, this);
@@ -147,8 +152,9 @@ void NumberTextCtrl::setDecNumber(double num)
  *******************************************************************/
 void NumberTextCtrl::onChar(wxKeyEvent& e)
 {
-	// Check if navigation key
-	if (e.IsKeyInCategory(WXK_CATEGORY_NAVIGATION|WXK_CATEGORY_CUT))
+	// Don't try to validate non-printable characters
+	wxChar key = e.GetUnicodeKey();
+	if (key == WXK_NONE || key < 32)
 	{
 		e.Skip();
 		return;
@@ -156,11 +162,11 @@ void NumberTextCtrl::onChar(wxKeyEvent& e)
 
 	// Check if valid numeric character
 	bool valid = false;
-	if (e.GetKeyCode() >= '0' && e.GetKeyCode() <= '9')
+	if (key >= '0' && key <= '9')
 		valid = true;
-	if (e.GetKeyCode() == '-' || e.GetKeyCode() == '+')
+	if (key == '-' || key == '+')
 		valid = true;
-	if (allow_decimal && e.GetKeyCode() == '.')
+	if (allow_decimal && key == '.')
 		valid = true;
 
 	if (valid)
