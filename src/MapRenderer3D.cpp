@@ -816,10 +816,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	floors[index].colour = sector->getColour(1, true);
 	floors[index].light = sector->getLight(1);
 	floors[index].flags = 0;
-	floors[index].plane.a = 0;
-	floors[index].plane.b = 0;
-	floors[index].plane.c = 1;
-	floors[index].plane.d = sector->getFloorHeight();
+	floors[index].plane = sector->getFloorPlane();
 	if (sector->getFloorTex() == theGameConfiguration->skyFlat())
 		floors[index].flags |= SKY;
 
@@ -829,7 +826,7 @@ void MapRenderer3D::updateSector(unsigned index)
 		updateFlatTexCoords(index, true);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_floors);
 		Polygon2D::setupVBOPointers();
-		sector->getPolygon()->setZ(sector->getFloorPlane());
+		sector->getPolygon()->setZ(floors[index].plane);
 		sector->getPolygon()->updateVBOData();
 	}
 
@@ -839,10 +836,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	ceilings[index].colour = sector->getColour(2, true);
 	ceilings[index].light = sector->getLight(2);
 	ceilings[index].flags = CEIL;
-	ceilings[index].plane.a = 0;
-	ceilings[index].plane.b = 0;
-	ceilings[index].plane.c = 1;
-	ceilings[index].plane.d = sector->getCeilingHeight();
+	ceilings[index].plane = sector->getCeilingPlane();
 	if (sector->getCeilingTex() == theGameConfiguration->skyFlat())
 		ceilings[index].flags |= SKY;
 
@@ -852,7 +846,7 @@ void MapRenderer3D::updateSector(unsigned index)
 		updateFlatTexCoords(index, false);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings);
 		Polygon2D::setupVBOPointers();
-		sector->getPolygon()->setZ(sector->getCeilingPlane());
+		sector->getPolygon()->setZ(ceilings[index].plane);
 		sector->getPolygon()->updateVBOData();
 	}
 

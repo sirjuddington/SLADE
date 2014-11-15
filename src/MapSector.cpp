@@ -424,10 +424,21 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 	return true;
 }
 
-/* MapSector::getFloorPlane
- * Returns the slope of the floor
+template<> short MapSector::getPlaneHeight<FLOOR_PLANE>() { return getFloorHeight(); }
+template<> short MapSector::getPlaneHeight<CEILING_PLANE>() { return getCeilingHeight(); }
+
+/* MapSector::getPlane
+ * Returns the slope of the floor or ceiling
  *******************************************************************/
-plane_t MapSector::getFloorPlane()
+template<PlaneType p> static const char* _plane_align_arg();
+template<> const char* _plane_align_arg<FLOOR_PLANE>() { return "arg0"; }
+template<> const char* _plane_align_arg<CEILING_PLANE>() { return "arg1"; }
+
+template plane_t MapSector::getPlane<FLOOR_PLANE>();
+template plane_t MapSector::getPlane<CEILING_PLANE>();
+
+template<PlaneType p>
+plane_t MapSector::getPlane()
 {
 	// Deal with slopes, in the same order as ZDoom.
 	// Plane_Align
@@ -450,21 +461,21 @@ plane_t MapSector::getFloorPlane()
 				int prop;
 				MapSector* adjacent_sector;
 				// Floor
-				prop = line->intProperty("arg0");
-				short adjacent_floor;
+				prop = line->intProperty(_plane_align_arg<p>());
+				short adjacent_height;
 				if (prop == 1 && side == line->s1())
 				{
 					adjacent_sector = line->backSector();
 					if (! adjacent_sector)
 						continue;
-					adjacent_floor = adjacent_sector->getFloorHeight();
+					adjacent_height = adjacent_sector->getPlaneHeight<p>();
 				}
 				else if (prop == 2 && side == line->s2())
 				{
 					adjacent_sector = line->frontSector();
 					if (! adjacent_sector)
 						continue;
-					adjacent_floor = adjacent_sector->getFloorHeight();
+					adjacent_height = adjacent_sector->getPlaneHeight<p>();
 				}
 				else
 				{
@@ -501,33 +512,26 @@ plane_t MapSector::getFloorPlane()
 					// actual floor height, but this line is at the floor
 					// height of the adjacent sector.
 					// Make two vectors, then make a plane from them:
-					fpoint3_t p = line->v1()->getPoint(0);
-					p.z = adjacent_floor;
-					fpoint3_t q = line->v2()->getPoint(0);
-					q.z = adjacent_floor;
-					fpoint3_t r = v->getPoint(0);
-					r.z = f_height;
+					fpoint3_t pt1 = line->v1()->getPoint(0);
+					pt1.z = adjacent_height;
+					fpoint3_t pt2 = line->v2()->getPoint(0);
+					pt2.z = adjacent_height;
+					fpoint3_t pt3 = v->getPoint(0);
+					pt3.z = getPlaneHeight<p>();
 
-					fpoint3_t pq = p - q;
-					fpoint3_t pr = p - r;
+					fpoint3_t vec1 = pt1 - pt2;
+					fpoint3_t vec2 = pt1 - pt3;
 					// Procedure to get a plane from two vectors
-					fpoint3_t norm = pq.cross(pr);
-					double dot = norm.dot(p);
+					fpoint3_t norm = vec1.cross(vec2);
+					double dot = norm.dot(pt1);
 					return plane_t(norm.x, norm.y, norm.z, dot);
 				}
 			}
 		}
 	}
 
-	return plane_t::flat(f_height);
-}
-
-/* MapSector::getCeilingPlane
- * Returns the slope of the ceiling
- *******************************************************************/
-plane_t MapSector::getCeilingPlane()
-{
-	return plane_t::flat(c_height);
+	// Default to a flat plane
+	return plane_t::flat(getPlaneHeight<p>());
 }
 
 /* MapSector::getLight
