@@ -70,7 +70,7 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	sizer->Add(cb_archive_close_tab, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Auto open wads in root
-	cb_wads_root = new wxCheckBox(this, -1, "Auto open wad archives in root directory");
+	cb_wads_root = new wxCheckBox(this, -1, "Auto open nested wad archives");
 	cb_wads_root->SetToolTip("When opening a zip or folder archive, automatically open all wad entries in the root directory");
 	sizer->Add(cb_wads_root, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
