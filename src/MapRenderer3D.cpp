@@ -1171,7 +1171,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), ceiling1, floor1);
+		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), line->frontSector()->getCeilingPlane(), line->frontSector()->getFloorPlane());
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
@@ -1328,7 +1328,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), ceiling1, ceiling2);
+		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), line->backSector()->getCeilingPlane(), line->frontSector()->getCeilingPlane());
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexUpper(), mixed);
@@ -1470,7 +1470,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), ceiling2, ceiling1);
+		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), line->frontSector()->getCeilingPlane(), line->backSector()->getCeilingPlane());
 		quad.colour = colour2;
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexUpper(), mixed);
