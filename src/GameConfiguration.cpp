@@ -1058,6 +1058,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t fo
 		thing_types.clear();
 		flags_thing.clear();
 		flags_line.clear();
+		sector_types.clear();
 		udmf_vertex_props.clear();
 		udmf_linedef_props.clear();
 		udmf_sidedef_props.clear();
