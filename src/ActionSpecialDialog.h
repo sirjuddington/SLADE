@@ -41,11 +41,12 @@ public:
 
 struct argspec_t;
 class wxGridBagSizer;
+class ArgsControl;
 class ArgsPanel : public wxPanel
 {
 private:
-	wxGridBagSizer*	gb_sizer;
-	wxTextCtrl*		text_args[5];
+	wxFlexGridSizer*	fg_sizer;
+	ArgsControl*	text_args[5];
 	wxStaticText*	label_args[5];
 	wxStaticText*	label_args_desc[5];
 
