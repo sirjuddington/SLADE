@@ -20,8 +20,8 @@ public:
 
 	ListView*	getSpecialsList() { return lv_specials; }
 
-	void	setup(int special, int map_format);
-	int		getSelectedSpecial(int map_format);
+	void	setup(int special);
+	int		getSelectedSpecial();
 };
 
 class SectorSpecialDialog : public SDialog
@@ -33,8 +33,8 @@ public:
 	SectorSpecialDialog(wxWindow* parent);
 	~SectorSpecialDialog();
 
-	void	setup(int special, int map_format);
-	int		getSelectedSpecial(int map_format);
+	void	setup(int special);
+	int		getSelectedSpecial();
 
 	// Events
 	void	onSpecialsListViewItemActivated(wxListEvent& e);

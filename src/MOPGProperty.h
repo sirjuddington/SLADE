@@ -244,7 +244,8 @@ public:
 	void	openObjects(vector<MapObject*>& objects);
 
 	// wxPGProperty overrides
-	bool 	OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
+	wxString	ValueToString(wxVariant& value, int argFlags = 0) const;
+	bool		OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e);
 };
 
 #endif//__MOPG_PROPERTY_H__

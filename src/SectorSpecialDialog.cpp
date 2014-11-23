@@ -70,7 +70,7 @@ SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Boom Flags
 	int width = 300;
-	if (theGameConfiguration->isBoom())
+	if (theGameConfiguration->supportsSectorFlags())
 	{
 		frame = new wxStaticBox(this, -1, "Flags");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
@@ -115,9 +115,9 @@ SectorSpecialPanel::~SectorSpecialPanel()
 /* SectorSpecialPanel::setup
  * Sets up controls on the dialog to show [special]
  *******************************************************************/
-void SectorSpecialPanel::setup(int special, int map_format)
+void SectorSpecialPanel::setup(int special)
 {
-	int base_type = theGameConfiguration->baseSectorType(special, map_format);
+	int base_type = theGameConfiguration->baseSectorType(special);
 
 	// Select base type
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
@@ -132,37 +132,40 @@ void SectorSpecialPanel::setup(int special, int map_format)
 	}
 
 	// Flags
-	if (theGameConfiguration->isBoom())
+	if (theGameConfiguration->supportsSectorFlags())
 	{
 		// Damage
-		choice_damage->Select(theGameConfiguration->sectorBoomDamage(special, map_format));
+		choice_damage->Select(theGameConfiguration->sectorBoomDamage(special));
 
 		// Secret
-		cb_secret->SetValue(theGameConfiguration->sectorBoomSecret(special, map_format));
+		cb_secret->SetValue(theGameConfiguration->sectorBoomSecret(special));
 
 		// Friction
-		cb_friction->SetValue(theGameConfiguration->sectorBoomFriction(special, map_format));
+		cb_friction->SetValue(theGameConfiguration->sectorBoomFriction(special));
 
 		// Pusher/Puller
-		cb_pushpull->SetValue(theGameConfiguration->sectorBoomPushPull(special, map_format));
+		cb_pushpull->SetValue(theGameConfiguration->sectorBoomPushPull(special));
 	}
 }
 
 /* SectorSpecialPanel::getSelectedSpecial
  * Returns the currently selected sector special
  *******************************************************************/
-int SectorSpecialPanel::getSelectedSpecial(int map_format)
+int SectorSpecialPanel::getSelectedSpecial()
 {
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
-	int selection = lv_specials->selectedItems()[0];
+	int selection = 0;
+	wxArrayInt items = lv_specials->selectedItems();
+	if (items.GetCount())
+		selection = items[0];
 
 	// Get selected base type
 	int base = 0;
 	if (selection < (int)types.size())
 		base = types[selection].type;
 
-	if (theGameConfiguration->isBoom())
-		return theGameConfiguration->boomSectorType(base, choice_damage->GetSelection(), cb_secret->GetValue(), cb_friction->GetValue(), cb_pushpull->GetValue(), map_format);
+	if (theGameConfiguration->supportsSectorFlags())
+		return theGameConfiguration->boomSectorType(base, choice_damage->GetSelection(), cb_secret->GetValue(), cb_friction->GetValue(), cb_pushpull->GetValue());
 	else
 		return base;
 }
@@ -207,17 +210,17 @@ SectorSpecialDialog::~SectorSpecialDialog()
 /* SectorSpecialDialog::setup
  * Sets up controls on the dialog to show [special]
  *******************************************************************/
-void SectorSpecialDialog::setup(int special, int map_format)
+void SectorSpecialDialog::setup(int special)
 {
-	panel_special->setup(special, map_format);
+	panel_special->setup(special);
 }
 
 /* SectorSpecialDialog::getSelectedSpecial
  * Returns the currently selected sector special
  *******************************************************************/
-int SectorSpecialDialog::getSelectedSpecial(int map_format)
+int SectorSpecialDialog::getSelectedSpecial()
 {
-	return panel_special->getSelectedSpecial(map_format);
+	return panel_special->getSelectedSpecial();
 }
 
 
