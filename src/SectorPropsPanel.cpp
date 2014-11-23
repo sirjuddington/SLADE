@@ -377,14 +377,13 @@ wxPanel* SectorPropsPanel::setupSpecialPanel()
  *******************************************************************/
 void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 {
-	int map_format = theMapEditor->currentMapDesc().format;
 	int ival;
 	string sval;
 
 	// Special
 	if (MapObject::multiIntProperty(objects, "special", ival))
 	{
-		panel_special->setup(ival, map_format);
+		panel_special->setup(ival);
 		cb_override_special->Show(false);
 		cb_override_special->SetValue(true);
 	}
@@ -446,7 +445,7 @@ void SectorPropsPanel::applyChanges()
 
 		// Special
 		if (cb_override_special->GetValue())
-			sector->setIntProperty("special", panel_special->getSelectedSpecial(theMapEditor->currentMapDesc().format));
+			sector->setIntProperty("special", panel_special->getSelectedSpecial());
 
 		// Floor texture
 		if (!fcb_floor->GetValue().IsEmpty())

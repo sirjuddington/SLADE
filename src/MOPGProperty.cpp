@@ -1321,6 +1321,16 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 	noupdate = false;
 }
 
+/* MOPGSectorSpecialProperty::ValueToString
+ * Returns the sector special value as a string
+ *******************************************************************/
+wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
+{
+	int type = value.GetInteger();
+
+	return S_FMT("%d: %s", type, theGameConfiguration->sectorTypeName(type));
+}
+
 /* MOPGSectorSpecialProperty::OnEvent
  * Called when an event is raised for the control
  *******************************************************************/
@@ -1330,10 +1340,9 @@ bool MOPGSectorSpecialProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* wind
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		SectorSpecialDialog dlg(theMapEditor);
-		int map_format = theMapEditor->currentMapDesc().format;
-		dlg.setup(m_value.GetInteger(), map_format);
+		dlg.setup(m_value.GetInteger());
 		if (dlg.ShowModal() == wxID_OK)
-			GetGrid()->ChangePropertyValue(this, dlg.getSelectedSpecial(map_format));
+			GetGrid()->ChangePropertyValue(this, dlg.getSelectedSpecial());
 
 		return true;
 	}
