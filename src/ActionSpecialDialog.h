@@ -46,7 +46,7 @@ class ArgsPanel : public wxPanel
 {
 private:
 	wxFlexGridSizer*	fg_sizer;
-	ArgsControl*	text_args[5];
+	ArgsControl*	control_args[5];
 	wxStaticText*	label_args[5];
 	wxStaticText*	label_args_desc[5];
 

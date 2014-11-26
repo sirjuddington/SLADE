@@ -211,7 +211,10 @@ void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
 class ArgsControl : public wxPanel
 {
 public:
-	ArgsControl(wxWindow* parent) : wxPanel(parent, -1) {}
+	ArgsControl(wxWindow* parent) : wxPanel(parent, -1)
+	{
+		SetSizer(new wxBoxSizer(wxVERTICAL));
+	}
 	~ArgsControl() {}
 
 	virtual long getArgValue() = 0;
@@ -231,12 +234,9 @@ protected:
 public:
 	ArgsTextControl(wxWindow* parent) : ArgsControl(parent)
 	{
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
-
 		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(300, -1));
 		text_control->SetValidator(wxIntegerValidator<unsigned char>());
-		sizer->Add(text_control, wxSizerFlags().Expand());
+		GetSizer()->Add(text_control, wxSizerFlags().Expand());
 	}
 
 	// Get the value of the argument from the textbox
@@ -267,6 +267,32 @@ public:
  * Combo box for an argument that takes one of a set of predefined
  * values.
  *******************************************************************/
+// Helper for the combo box.  wxIntegerValidator, by default, will erase the
+// entire combo box if one of the labeled numbers is selected, because the
+// label isn't a valid number.
+template<typename T>
+class ComboBoxAwareIntegerValidator : public wxIntegerValidator<T>
+{
+public:
+	ComboBoxAwareIntegerValidator() : wxIntegerValidator<T>() {}
+	ComboBoxAwareIntegerValidator(const ComboBoxAwareIntegerValidator& validator)
+		: wxIntegerValidator<T>(validator) {}
+
+	virtual wxObject* Clone() const { return new ComboBoxAwareIntegerValidator(*this); }
+
+	virtual wxString NormalizeString(const wxString& s) const
+	{
+		// If there's a valid selection in the combobox, don't "normalize".
+		// This is a highly inappropriate place for this check, but everything
+		// else is private and non-virtual.
+		wxComboBox* control = static_cast<wxComboBox*>(wxNumValidatorBase::GetTextEntry());
+		if (control->GetSelection() != wxNOT_FOUND)
+			return s;
+
+		return wxIntegerValidator<T>::NormalizeString(s);
+	}
+};
+
 class ArgsChoiceControl : public ArgsControl
 {
 private:
@@ -278,12 +304,15 @@ public:
 		: ArgsControl(parent), choices(choices)
 	{
 		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, wxSize(300, -1));
-		choice_control->SetValidator(wxIntegerValidator<unsigned char>());
+		choice_control->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
+
 		for (unsigned i = 0; i < choices.size(); i++)
 		{
 			choice_control->Append(
 				S_FMT("%d: %s", choices[i].value, choices[i].name));
 		}
+
+		GetSizer()->Add(choice_control, wxSizerFlags().Expand());
 	}
 
 	long getArgValue()
@@ -404,7 +433,6 @@ private:
 	void onKeypress(wxKeyEvent& event)
 	{
 		event.Skip();
-		wxLogMessage("seem to have gotten %s / %d", text_control->GetValue(), getArgValue());
 		updateCheckState(getArgValue());
 	}
 
@@ -567,38 +595,29 @@ void ArgsPanel::setup(argspec_t* args)
 		if ((int)a < args->count) {
 			has_desc = !arg.desc.IsEmpty();
 
-			if (arg.type == ARGT_CHOICE) {
+			if (arg.type == ARGT_CHOICE)
 				control_args[a] = new ArgsChoiceControl(this, arg.custom_values);
-			}
-			else if (arg.type == ARGT_FLAGS) {
+			else if (arg.type == ARGT_FLAGS)
 				control_args[a] = new ArgsFlagsControl(this, arg.custom_flags);
-			}
-			else {
+			else
 				control_args[a] = new ArgsTextControl(this);
-			}
 		}
 		else {
 			control_args[a] = new ArgsTextControl(this);
 		}
 
 		// Arg name
-		if (has_desc)
-			fg_sizer->Add(label_args[a], wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-		else
-			fg_sizer->Add(label_args[a], wxALIGN_CENTER_VERTICAL|wxRIGHT|wxBOTTOM, 4);
+		fg_sizer->Add(label_args[a], wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT).Border(wxALL, 4));
 
 		// Arg value
-		if (has_desc)
-			fg_sizer->Add(control_args[a], wxEXPAND);
-		else
-			fg_sizer->Add(control_args[a], wxEXPAND|wxBOTTOM, 4);
+		fg_sizer->Add(control_args[a], wxSizerFlags().Expand());
 		
 		// Arg description
 		if (has_desc)
 		{
 			// Add an empty spacer to the first column
 			fg_sizer->Add(0, 0);
-			fg_sizer->Add(label_args_desc[a], wxEXPAND|wxBOTTOM, 4);
+			fg_sizer->Add(label_args_desc[a], wxSizerFlags().Expand());
 		}
 	}
 
@@ -617,10 +636,11 @@ void ArgsPanel::setup(argspec_t* args)
 
 	Layout();
 
+	int available_width = fg_sizer->GetColWidths()[1];
 	for (unsigned a = 0; a < 5; a++)
 	{
-		label_args_desc[a]->SetSize(control_args[a]->GetSize().GetWidth(), -1);
-		label_args_desc[a]->Wrap(control_args[a]->GetSize().GetWidth());
+		label_args_desc[a]->SetSize(available_width, -1);
+		label_args_desc[a]->Wrap(available_width);
 	}
 
 	Layout();
