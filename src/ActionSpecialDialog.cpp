@@ -234,7 +234,7 @@ protected:
 public:
 	ArgsTextControl(wxWindow* parent) : ArgsControl(parent)
 	{
-		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(300, -1));
+		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(100, -1));
 		text_control->SetValidator(wxIntegerValidator<unsigned char>());
 		GetSizer()->Add(text_control, wxSizerFlags().Expand());
 	}
@@ -303,7 +303,7 @@ public:
 	ArgsChoiceControl(wxWindow* parent, vector<arg_val_t>& choices)
 		: ArgsControl(parent), choices(choices)
 	{
-		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, wxSize(300, -1));
+		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, wxSize(100, -1));
 		choice_control->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
 
 		for (unsigned i = 0; i < choices.size(); i++)
@@ -549,7 +549,8 @@ public:
 /* ArgsPanel::ArgsPanel
  * ArgsPanel class constructor
  *******************************************************************/
-ArgsPanel::ArgsPanel(wxWindow* parent) : wxPanel(parent, -1)
+ArgsPanel::ArgsPanel(wxWindow* parent)
+: wxScrolled<wxPanel>(parent, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL)
 {
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -564,8 +565,13 @@ ArgsPanel::ArgsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	{
 		label_args[a] = new wxStaticText(this, -1, "");
 		control_args[a] = NULL;
-		label_args_desc[a] = new wxStaticText(this, -1, "", wxDefaultPosition, wxSize(300, -1));
+		label_args_desc[a] = new wxStaticText(this, -1, "", wxDefaultPosition, wxSize(100, -1));
 	}
+
+	// Set up vertical scrollbar
+	SetScrollRate(0, 10);
+
+	Bind(wxEVT_SIZE, &ArgsPanel::onSize, this);
 }
 
 /* ArgsPanel::setup
@@ -577,8 +583,10 @@ void ArgsPanel::setup(argspec_t* args)
 	fg_sizer->Clear();
 	for (unsigned a = 0; a < 5; a++)
 	{
+		if (control_args[a])
+			control_args[a]->Destroy();
 		control_args[a] = NULL;
-		label_args[a]->SetLabel(S_FMT("Arg %d:", a + 1));
+		label_args[a]->SetLabelText(S_FMT("Arg %d:", a + 1));
 		label_args_desc[a]->Show(false);
 	}
 
@@ -590,8 +598,6 @@ void ArgsPanel::setup(argspec_t* args)
 		bool has_desc = false;
 		wxWindow* control;
 		
-		if (control_args[a])
-			control_args[a]->Destroy();
 		if ((int)a < args->count) {
 			has_desc = !arg.desc.IsEmpty();
 
@@ -607,7 +613,8 @@ void ArgsPanel::setup(argspec_t* args)
 		}
 
 		// Arg name
-		fg_sizer->Add(label_args[a], wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT).Border(wxALL, 4));
+		label_args[a]->SetLabelText(S_FMT("%s:", arg.name));
+		fg_sizer->Add(label_args[a], wxSizerFlags().Align(wxALIGN_TOP|wxALIGN_RIGHT).Border(wxALL, 4));
 
 		// Arg value
 		fg_sizer->Add(control_args[a], wxSizerFlags().Expand());
@@ -621,29 +628,23 @@ void ArgsPanel::setup(argspec_t* args)
 		}
 	}
 
+	Layout();
+
 	// Setup controls
+	int available_width = fg_sizer->GetColWidths()[1];
 	for (int a = 0; a < args->count; a++)
 	{
 		arg_t& arg = args->getArg(a);
 
-		label_args[a]->SetLabel(S_FMT("%s:", arg.name));
 		if (!arg.desc.IsEmpty())
 		{
 			label_args_desc[a]->Show(true);
-			label_args_desc[a]->SetLabel(arg.desc);
+			label_args_desc[a]->SetLabelText(arg.desc);
+			label_args_desc[a]->Wrap(available_width);
 		}
 	}
 
-	Layout();
-
-	int available_width = fg_sizer->GetColWidths()[1];
-	for (unsigned a = 0; a < 5; a++)
-	{
-		label_args_desc[a]->SetSize(available_width, -1);
-		label_args_desc[a]->Wrap(available_width);
-	}
-
-	Layout();
+	FitInside();  // for wxScrolled's benefit
 }
 
 /* ArgsPanel::setValues
@@ -668,6 +669,26 @@ int ArgsPanel::getArgValue(int index)
 
 	return control_args[index]->getArgValue();
 }
+
+/* ArgsPanel::onSize
+ * Rewrap the descriptions when the panel is resized
+ *******************************************************************/
+void ArgsPanel::onSize(wxSizeEvent& event)
+{
+	event.Skip();
+
+	fg_sizer->Layout();
+	int available_width = fg_sizer->GetColWidths()[1];
+	for (int a = 0; a < 5; a++)
+	{
+		// Wrap() puts hard newlines in the label, so we need to remove them
+		wxString label = label_args_desc[a]->GetLabelText();
+		label.Replace("\n", " ");
+		label_args_desc[a]->SetLabelText(label);
+		label_args_desc[a]->Wrap(available_width);
+	}
+}
+
 
 
 /*******************************************************************
@@ -1045,7 +1066,13 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 	}
 
 	argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+	// Save and restore the current arg values, since setup() deletes and
+	// recreates the controls
+	int arg_values[5];
+	for (unsigned a = 0; a < 5; a++)
+		arg_values[a] = panel_args->getArgValue(a);
 	panel_args->setup(&args);
+	panel_args->setValues(arg_values);
 }
 
 
@@ -1091,7 +1118,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args)
 	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 	// Init
-	SetMinClientSize(sizer->GetMinSize());
+	SetSizerAndFit(sizer);
 	CenterOnParent();
 }
 
