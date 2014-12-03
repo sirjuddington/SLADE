@@ -580,7 +580,7 @@ void GameConfiguration::buildConfig(string filename, string& out)
 	while (!file.Eof())
 	{
 		// Check for #include
-		if (line.Trim().StartsWith("#include"))
+		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get filename to include
 			Tokenizer tz;
@@ -624,7 +624,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 	while (!file.Eof())
 	{
 		// Check for #include
-		if (line.Trim().StartsWith("#include"))
+		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get name of entry to include
 			Tokenizer tz;
