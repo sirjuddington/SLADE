@@ -1699,10 +1699,12 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	{
 		// Get sector floor (or ceiling) height
 		int sheight = things[index].sector->getFloorHeight();
+		float zheight = thing->floatProperty("height");
 		if (things[index].type->isHanging())
 		{
 			sheight = things[index].sector->getCeilingHeight();
 			sheight -= theight;
+			zheight = -zheight;
 		}
 
 		// Set height
@@ -1711,7 +1713,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 			things[index].z -= render_thing_icon_size*0.5;
 		if (things[index].z < sheight)
 			things[index].z = sheight;
-		things[index].z += thing->floatProperty("height");
+		things[index].z += zheight;
 	}
 
 	// Adjust height by sprite Y offset if needed
