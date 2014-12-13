@@ -224,6 +224,7 @@ acs_z : acs {
 		MARINEWEAPON_SuperShotgun, MARINEWEAPON_Chaingun, MARINEWEAPON_RocketLauncher, 
 		MARINEWEAPON_PlasmaRifle, MARINEWEAPON_Railgun, MARINEWEAPON_BFG, 
 
+		// ACS actor properties for Get/Check/SetActorProperty functions
 		APROP_Health, APROP_Speed, APROP_Damage, APROP_Alpha, APROP_RenderStyle, 
 		APROP_SeeSound, APROP_AttackSound, APROP_PainSound, APROP_DeathSound, 
 		APROP_ActiveSound, APROP_Ambush, APROP_Invulnerable, APROP_JumpZ, 
@@ -233,7 +234,7 @@ acs_z : acs {
 		APROP_TargetTID, APROP_TracerTID, APROP_Waterlevel, APROP_ScaleX, APROP_ScaleY, 
 		APROP_Dormant, APROP_Mass, APROP_Accuracy, APROP_Stamina, APROP_Height,
 		APROP_Radius, APROP_ReactionTime, APROP_AttackZOffset, APROP_MeleeRange,
-		APROP_ViewHeight, APROP_StencilColor,
+		APROP_ViewHeight, APROP_StencilColor, APROP_DamageMultiplier, APROP_Friction,
 
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_Stencil, 
 		STYLE_OptFuzzy, STYLE_Translucent, STYLE_Add, STYLE_Shaded, 
