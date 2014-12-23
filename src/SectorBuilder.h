@@ -2,12 +2,16 @@
 #ifndef __SECTOR_BUILDER_H__
 #define __SECTOR_BUILDER_H__
 
+#include <wx/hashmap.h>
+
 // Forward declarations
 class MapLine;
 class MapVertex;
 class MapSector;
 class MapSide;
 class SLADEMap;
+
+WX_DECLARE_HASH_MAP(MapLine*, bool, wxPointerHash, wxPointerEqual, MapLineSet);
 
 class SectorBuilder
 {
@@ -47,7 +51,7 @@ public:
 	bool		edgeIsFront(unsigned index);
 	bool		edgeSideCreated(unsigned index);
 
-	edge_t		nextEdge(edge_t edge);
+	edge_t		nextEdge(edge_t edge, MapLineSet& visited_lines);
 	bool		traceOutline(MapLine* line, bool front = true);
 	int			nearestEdge(double x, double y);
 	bool		pointWithinOutline(double x, double y);
