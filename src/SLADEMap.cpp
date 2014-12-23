@@ -4614,17 +4614,12 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			if ((line1->vertex1 == line2->vertex1 && line1->vertex2 == line2->vertex2) ||
 				(line1->vertex1 == line2->vertex2 && line1->vertex2 == line2->vertex1))
 			{
-				VECTOR_ADD_UNIQUE(remove_lines, mergeOverlappingLines(line2, line1));
-				//// Prioritise removing 2-sided lines
-				//if (line1->side2 && !line2->side2)
-				//{
-				//	VECTOR_ADD_UNIQUE(remove_lines, line1);
-				//	break;
-				//}
-				//else
-				//{
-				//	VECTOR_ADD_UNIQUE(remove_lines, line2);
-				//}
+				MapLine* remove_line = mergeOverlappingLines(line2, line1);
+				VECTOR_ADD_UNIQUE(remove_lines, remove_line);
+
+				// Don't check against any more lines if we just decided to remove this one
+				if (remove_line == line1)
+					break;
 			}
 		}
 	}
