@@ -200,6 +200,7 @@ z_mapinfo {
 		SpiderMastermindSpecial, StrictMonsterActivation, StrifeFallingDamage,
 		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
 		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
+		ForceFakeContrast,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate,
