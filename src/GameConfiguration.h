@@ -120,6 +120,7 @@ private:
 	string				sky_flat;			// Sky flat for 3d mode
 	string				script_language;	// Scripting language (should be extended to allow multiple)
 	vector<int>			light_levels;		// Light levels for up/down light in editor
+	bool				allow_long_names;	// Allow long names for maps/textures
 
 	// Basic game configuration info
 	struct gconf_t
@@ -219,6 +220,7 @@ public:
 	string	skyFlat() { return sky_flat; }
 	string	scriptLanguage() { return script_language; }
 	int		lightLevelInterval();
+	bool	allowLongNames() { return allow_long_names; }
 
 	string			readConfigName(MemChunk& mc);
 	gconf_t			readBasicGameConfig(MemChunk& mc);
