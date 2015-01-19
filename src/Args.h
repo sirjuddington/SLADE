@@ -14,8 +14,8 @@ enum
 
 struct arg_val_t
 {
-	int			value;
 	wxString	name;
+	int			value;
 
 	arg_val_t(wxString name, int value) : name(name), value(value) {}
 };

@@ -113,7 +113,7 @@ string TextureXListView::getItemText(long item, long column) const
  * Called when widget requests the attributes (text colour /
  * background colour / font) for [item]
  *******************************************************************/
-void TextureXListView::updateItemAttr(long item) const
+void TextureXListView::updateItemAttr(long item, long column) const
 {
 	// Check texture list exists
 	if (!texturex)

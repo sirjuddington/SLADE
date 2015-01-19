@@ -87,8 +87,8 @@ public:
 
 		// Limit map name length if necessary
 		if (theGameConfiguration->anyMapName() &&
-			!theGameConfiguration->allowLongNames() ||
-			(archive->getType() != ARCHIVE_ZIP && archive->getType() != ARCHIVE_7Z && archive->getType() != ARCHIVE_FOLDER))
+			(!theGameConfiguration->allowLongNames() ||
+			(archive->getType() != ARCHIVE_ZIP && archive->getType() != ARCHIVE_7Z && archive->getType() != ARCHIVE_FOLDER)))
 			cbo_mapname->SetMaxLength(8);
 
 		// Add possible map names to the combo box

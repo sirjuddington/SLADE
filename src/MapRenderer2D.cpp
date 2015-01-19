@@ -981,7 +981,7 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 		{
 			tex = theMapEditor->textureManager().getEditorImage("thing/square/normal_n");
 
-			if (tt->isAngled() && showicon || thing_force_dir || things_angles)
+			if ((tt->isAngled() && showicon) || thing_force_dir || things_angles)
 			{
 				tex = theMapEditor->textureManager().getEditorImage("thing/square/normal_d1");
 
@@ -1789,7 +1789,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 		glColor4f(flat_brightness, flat_brightness, flat_brightness, alpha);
 
 	// Re-init flats texture list if invalid
-	if (texture && tex_flats.size() < map->nSectors() || last_flat_type != type)
+	if ((texture && tex_flats.size() < map->nSectors()) || last_flat_type != type)
 	{
 		tex_flats.clear();
 		for (unsigned a = 0; a < map->nSectors(); a++)
@@ -1908,7 +1908,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		alpha *= ColourConfiguration::getFlatAlpha();
 
 	// Re-init flats texture list if invalid
-	if (texture && tex_flats.size() != map->nSectors() || last_flat_type != type)
+	if ((texture && tex_flats.size() != map->nSectors()) || last_flat_type != type)
 	{
 		tex_flats.clear();
 		for (unsigned a = 0; a < map->nSectors(); a++)

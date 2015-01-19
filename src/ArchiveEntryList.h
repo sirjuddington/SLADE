@@ -49,7 +49,7 @@ public:
 
 	void	setupColumns();
 	int		columnType(int column) const;
-	void	updateList();
+	void	updateList(bool clear = false);
 	int		entriesBegin();
 
 	void	filterList(string filter = "", string category = "");

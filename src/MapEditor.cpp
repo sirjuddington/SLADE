@@ -907,7 +907,7 @@ void MapEditor::updateTagged()
 
 			// Sector tag
 			if (needs_tag == AS_TT_SECTOR ||
-					needs_tag == AS_TT_SECTOR_AND_BACK && tag > 0)
+					(needs_tag == AS_TT_SECTOR_AND_BACK && tag > 0))
 				map.getSectorsByTag(tag, tagged_sectors);
 
 			// Backside sector (for local doors)
@@ -2893,8 +2893,8 @@ void MapEditor::updateShapeDraw(fpoint2_t point)
 
 	// Lock width:height at 1:1 if needed
 	fpoint2_t origin = draw_origin;
-	double width = abs(point.x - origin.x);
-	double height = abs(point.y - origin.y);
+	double width = fabs(point.x - origin.x);
+	double height = fabs(point.y - origin.y);
 	if (shapedraw_lockratio)
 	{
 		if (width < height)

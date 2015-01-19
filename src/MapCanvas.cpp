@@ -1239,7 +1239,7 @@ void MapCanvas::drawMap2d()
 
 
 	// Draw tagged sectors/lines/things if needed
-	if (!overlayActive() && mouse_state == MSTATE_NORMAL || mouse_state == MSTATE_TAG_SECTORS || mouse_state == MSTATE_TAG_THINGS)
+	if (!overlayActive() && (mouse_state == MSTATE_NORMAL || mouse_state == MSTATE_TAG_SECTORS || mouse_state == MSTATE_TAG_THINGS))
 	{
 		if (editor->taggedSectors().size() > 0)
 			renderer_2d->renderTaggedFlats(editor->taggedSectors(), anim_flash_level);
@@ -1659,8 +1659,8 @@ bool MapCanvas::update2d(double mult)
 			view_scale_inter += diff_scale*anim_view_speed*mult;
 
 			// Check for zoom finish
-			if (diff_scale < 0 && view_scale_inter < view_scale ||
-			        diff_scale > 0 && view_scale_inter > view_scale)
+			if ((diff_scale < 0 && view_scale_inter < view_scale) ||
+			        (diff_scale > 0 && view_scale_inter > view_scale))
 				view_scale_inter = view_scale;
 			else
 				view_anim = true;
@@ -1685,8 +1685,8 @@ bool MapCanvas::update2d(double mult)
 				view_xoff_inter += diff_xoff*anim_view_speed*mult;
 
 				// Check stuff
-				if (diff_xoff < 0 && view_xoff_inter < view_xoff ||
-				        diff_xoff > 0 && view_xoff_inter > view_xoff)
+				if ((diff_xoff < 0 && view_xoff_inter < view_xoff) ||
+				        (diff_xoff > 0 && view_xoff_inter > view_xoff))
 					view_xoff_inter = view_xoff;
 				else
 					view_anim = true;
@@ -1701,8 +1701,8 @@ bool MapCanvas::update2d(double mult)
 				// Interpolate offset
 				view_yoff_inter += diff_yoff*anim_view_speed*mult;
 
-				if (diff_yoff < 0 && view_yoff_inter < view_yoff ||
-				        diff_yoff > 0 && view_yoff_inter > view_yoff)
+				if ((diff_yoff < 0 && view_yoff_inter < view_yoff) ||
+				        (diff_yoff > 0 && view_yoff_inter > view_yoff))
 					view_yoff_inter = view_yoff;
 				else
 					view_anim = true;

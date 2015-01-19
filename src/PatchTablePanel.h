@@ -15,7 +15,7 @@ private:
 
 protected:
 	string	getItemText(long item, long column) const;
-	void	updateItemAttr(long item) const;
+	void	updateItemAttr(long item, long column) const;
 
 public:
 	PatchTableListView(wxWindow* parent, PatchTable* patch_table);

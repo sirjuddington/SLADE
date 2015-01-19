@@ -596,7 +596,6 @@ void ArgsPanel::setup(argspec_t* args)
 	{
 		arg_t& arg = args->getArg(a);
 		bool has_desc = false;
-		wxWindow* control;
 		
 		if ((int)a < args->count) {
 			has_desc = !arg.desc.IsEmpty();
@@ -800,7 +799,6 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 					if (row >= trigger_mid && col <= 1)
 					{
-						trigger_mid;
 						row = 0;
 						col++;
 					}
