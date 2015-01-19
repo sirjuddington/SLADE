@@ -2565,6 +2565,8 @@ void MapEditor::createSector(double x, double y)
 	// Find nearest line
 	int nearest = map.nearestLine(x, y, 99999999);
 	MapLine* line = map.getLine(nearest);
+	if (!line)
+		return;
 
 	// Determine side
 	double side = MathStuff::lineSide(x, y, line->x1(), line->y1(), line->x2(), line->y2());
