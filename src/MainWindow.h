@@ -9,19 +9,31 @@
 #include "MainApp.h"
 #include "STopWindow.h"
 
+#ifndef USE_WEBVIEW_STARTPAGE
+#include <wx/html/htmlwin.h>
+#endif
+
 class SToolBar;
 class UndoManagerHistoryPanel;
+#ifdef USE_WEBVIEW_STARTPAGE
 class wxWebView;
+#endif
 class MainWindow : public STopWindow, SActionHandler
 {
 private:
 	ArchiveManagerPanel*		panel_archivemanager;
 	UndoManagerHistoryPanel*	panel_undo_history;
 	wxAuiNotebook*				notebook_tabs;
-	wxWebView*					html_startpage;
 	wxAuiManager*				m_mgr;
 	int							lasttipindex;
 	PaletteChooser*				palette_chooser;
+
+	// Start page
+#ifdef USE_WEBVIEW_STARTPAGE
+	wxWebView*					html_startpage;
+#else
+	wxHtmlWindow*				html_startpage;
+#endif
 
 	// Singleton instance
 	static MainWindow*		instance;
