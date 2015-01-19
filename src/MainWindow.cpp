@@ -298,7 +298,9 @@ void MainWindow::setupLayout()
 	wxMenu* helpMenu = new wxMenu("");
 	theApp->getAction("main_onlinedocs")->addToMenu(helpMenu, true);
 	theApp->getAction("main_about")->addToMenu(helpMenu, true);
+#ifdef __WXMSW__
 	theApp->getAction("main_updatecheck")->addToMenu(helpMenu, true);
+#endif
 	menu->Append(helpMenu, "&Help");
 
 	// Set the menu

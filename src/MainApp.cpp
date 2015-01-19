@@ -799,9 +799,11 @@ bool MainApp::OnInit()
 	}
 
 	// Check for updates
+#ifdef __WXMSW__
 	wxHTTP::Initialize();
 	if (update_check)
 		checkForUpdates(false);
+#endif
 
 	// Bind events
 	Bind(wxEVT_MENU, &MainApp::onMenu, this);
@@ -1049,11 +1051,13 @@ void MainApp::saveConfigFile()
  *******************************************************************/
 void MainApp::checkForUpdates(bool message_box)
 {
+#ifdef __WXMSW__
 	update_check_message_box = message_box;
 	LOG_MESSAGE(1, "Checking for updates...");
 	VersionCheck* checker = new VersionCheck(this);
 	checker->Create();
 	checker->Run();
+#endif
 }
 
 /* MainApp::getAction
