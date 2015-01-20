@@ -42,14 +42,16 @@ CVAR(Int, gl_depth_buffer_size, 16, CVAR_SAVE)
 
 namespace OpenGL
 {
+#ifndef USE_SFML_RENDERWINDOW
 	wxGLContext*	context = NULL;
+	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0 };
+#endif
 	bool			initialised = false;
 	double			version = 0;
 	unsigned		max_tex_size = 128;
 	unsigned		pow_two[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
 	uint8_t			n_pow_two = 16;
-	float			max_point_size = -1.0f;
-	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0 };
+	float			max_point_size = -1.0f;	
 	int8_t			last_blend = BLEND_NORMAL;
 }
 
@@ -58,6 +60,7 @@ namespace OpenGL
  * OPENGL NAMESPACE FUNCTIONS
  *******************************************************************/
 
+#ifndef USE_SFML_RENDERWINDOW
 /* OpenGL::getContext
  * Returns the global OpenGL context, and creates it if needed
  *******************************************************************/
@@ -77,6 +80,7 @@ wxGLContext* OpenGL::getContext(wxGLCanvas* canvas)
 
 	return context;
 }
+#endif
 
 /* OpenGL::init
  * Initialises general OpenGL variables and settings
@@ -213,6 +217,7 @@ bool OpenGL::accuracyTweak()
 	return gl_tweak_accuracy;
 }
 
+#ifndef USE_SFML_RENDERWINDOW
 /* OpenGL::getWxGLAttribs
  * Returns the GL attributes array for use with wxGLCanvas
  *******************************************************************/
@@ -223,6 +228,7 @@ int* OpenGL::getWxGLAttribs()
 
 	return wx_gl_attrib;
 }
+#endif
 
 #ifdef _MSC_VER
 

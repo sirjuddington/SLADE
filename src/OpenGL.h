@@ -20,7 +20,9 @@
 #include <GL/glu.h>
 #endif
 
+#ifndef USE_SFML_RENDERWINDOW
 #include <wx/glcanvas.h>
+#endif
 
 #define BLEND_NORMAL	0
 #define BLEND_ADDITIVE	1
@@ -28,7 +30,9 @@
 
 namespace OpenGL
 {
+#ifndef USE_SFML_RENDERWINDOW
 	wxGLContext*	getContext(wxGLCanvas* canvas);
+#endif
 	bool			init();
 	bool			np2TexSupport();
 	bool			pointSpriteSupport();
@@ -38,7 +42,9 @@ namespace OpenGL
 	unsigned		maxTextureSize();
 	bool			isInitialised();
 	bool			accuracyTweak();
+#ifndef USE_SFML_RENDERWINDOW
 	int*			getWxGLAttribs();
+#endif
 #ifdef _MSC_VER
 	void			setColour(rgba_t& col, bool set_blend = true);
 #else
