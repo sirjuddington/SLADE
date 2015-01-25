@@ -31,4 +31,7 @@ if(NOT BZIP2_FOUND)
 	set(BZIP2_LIBRARIES bz2)
 endif(NOT BZIP2_FOUND)
 
+OPTION(USE_WEBVIEW_STARTPAGE "Use wxWebView to display the start page" OFF)
+OPTION(USE_SFML_RENDERWINDOW "Use SFML RenderWindow for OpenGL displays" OFF)
+
 add_subdirectory(src)

@@ -2455,7 +2455,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def = S_FMT("sector//#%u\n{\n", a);
 
 		// Basic properties
-		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";", sectors[a]->f_tex, sectors[a]->c_tex);
+		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", sectors[a]->f_tex, sectors[a]->c_tex);
 		if (sectors[a]->f_height != 0) object_def += S_FMT("heightfloor=%d;\n", sectors[a]->f_height);
 		if (sectors[a]->c_height != 0) object_def += S_FMT("heightceiling=%d;\n", sectors[a]->c_height);
 		if (sectors[a]->light != 160) object_def += S_FMT("lightlevel=%d;\n", sectors[a]->light);
@@ -4708,8 +4708,16 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		{
 			MapSector* s1 = getLineSideSector(connected_lines[a], true);
 			MapSector* s2 = getLineSideSector(connected_lines[a], false);
-			if (s1) setLineSector(connected_lines[a]->index, s1->index, true);
-			if (s2) setLineSector(connected_lines[a]->index, s2->index, false);
+			
+			if (s1)
+				setLineSector(connected_lines[a]->index, s1->index, true);
+			else
+				removeSide(connected_lines[a]->side1);
+
+			if (s2)
+				setLineSector(connected_lines[a]->index, s2->index, false);
+			else
+				removeSide(connected_lines[a]->side2);
 		}
 	}
 

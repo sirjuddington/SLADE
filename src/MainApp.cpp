@@ -810,9 +810,11 @@ bool MainApp::OnInit()
 	}
 
 	// Check for updates
+#ifdef __WXMSW__
 	wxHTTP::Initialize();
 	if (update_check)
 		checkForUpdates(false);
+#endif
 
 	// Bind events
 	Bind(wxEVT_MENU, &MainApp::onMenu, this);
@@ -1060,11 +1062,13 @@ void MainApp::saveConfigFile()
  *******************************************************************/
 void MainApp::checkForUpdates(bool message_box)
 {
+#ifdef __WXMSW__
 	update_check_message_box = message_box;
 	LOG_MESSAGE(1, "Checking for updates...");
 	VersionCheck* checker = new VersionCheck(this);
 	checker->Create();
 	checker->Run();
+#endif
 }
 
 /* MainApp::getAction
@@ -1215,8 +1219,8 @@ void MainApp::onVersionCheckCompleted(wxThreadEvent& e)
 	info[2].ToLong(&version_beta);
 	info[3].ToLong(&beta_num);
 
-	LOG_MESSAGE(1, "Latest stable release: v%d \"%s\"", version_stable, info[1].Trim());
-	LOG_MESSAGE(1, "Latest beta release: v%d_b%d \"%s\"", version_beta, beta_num, info[4].Trim());
+	LOG_MESSAGE(1, "Latest stable release: v%ld \"%s\"", version_stable, info[1].Trim());
+	LOG_MESSAGE(1, "Latest beta release: v%ld_b%ld \"%s\"", version_beta, beta_num, info[4].Trim());
 
 	// Check if new stable version
 	bool new_stable = false;

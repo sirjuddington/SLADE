@@ -304,7 +304,7 @@ void MapLine::setIntProperty(string key, int value)
 	// Vertices
 	else if (key == "v1")
 	{
-		if (vertex = parent_map->getVertex(value))
+		if ((vertex = parent_map->getVertex(value)))
 		{
 			vertex1->disconnectLine(this);
 			vertex1 = vertex;
@@ -314,7 +314,7 @@ void MapLine::setIntProperty(string key, int value)
 	}
 	else if (key == "v2")
 	{
-		if (vertex = parent_map->getVertex(value))
+		if ((vertex = parent_map->getVertex(value)))
 		{
 			vertex2->disconnectLine(this);
 			vertex2 = vertex;
@@ -326,12 +326,12 @@ void MapLine::setIntProperty(string key, int value)
 	// Sides
 	else if (key == "sidefront")
 	{
-		if (side1 = parent_map->getSide(value))
+		if ((side1 = parent_map->getSide(value)))
 			side1->parent = this;
 	}
 	else if (key == "sideback")
 	{
-		if (side2 = parent_map->getSide(value))
+		if ((side2 = parent_map->getSide(value)))
 			side2->parent = this;
 	}
 

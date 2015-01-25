@@ -78,7 +78,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;SFML_STATIC;NOLIBMODPLUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;NOLIBMODPLUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -90,7 +90,7 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;wsock32.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;sndfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;sndfile.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -102,7 +102,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>WIN32;SFML_STATIC;USE_SFML_RENDERWINDOW;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SFML_STATIC;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
       <StringPooling>true</StringPooling>

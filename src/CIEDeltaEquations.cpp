@@ -153,7 +153,7 @@ double CIE::CIEDE2000(lab_t& col1, lab_t& col2)
 	double hpavg = hp1 + hp2;
 	if (cp1 * cp2 != 0)
 	{
-		if (abs(hp1 - hp2) > PI)
+		if (fabs(hp1 - hp2) > PI)
 		{
 			if (hp1 + hp2 < 2.0 * PI)	hpavg += 2.0 * PI;
 			else						hpavg -= 2.0 * PI;

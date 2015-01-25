@@ -177,6 +177,10 @@ public:
 		if (mc[1] != 0 && mc[1] != 1)
 			return EDF_FALSE;
 
+		// If there is no colormap, then colormap info must be null
+		if (mc[1] == 0 && (READ_L32(mc, 3) != 0 || mc[7] != 0))
+			return EDF_FALSE;
+
 		// Bits per pixel can be 8, 15, 16, 24 or 32
 		if (mc[16] != 8 && mc[16] != 15 && mc[16] != 16 && mc[16] !=24 && mc[16] !=32)
 			return EDF_FALSE;
@@ -401,10 +405,10 @@ public:
 		const patch_header_t* header = (const patch_header_t*)data;
 
 		// Check header values are 'sane'
-		if (header->height > 0 && header->height < 4096 &&
-		        header->width > 0 && header->width < 4096 &&
-		        header->top > -2000 && header->top < 2000 &&
-		        header->left > -2000 && header->left < 2000)
+		if (header->height > 0 && header->height < 256 &&
+		        header->width > 0 && header->width < 384 &&
+		        header->top > -200 && header->top < 200 &&
+		        header->left > -200 && header->left < 200)
 		{
 			uint16_t* col_offsets = (uint16_t*)((const uint8_t*)data + sizeof(patch_header_t));
 

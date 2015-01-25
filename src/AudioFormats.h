@@ -377,9 +377,9 @@ public:
 
 			if ((samples == (mc.getSize() - 28) && samples > 4) &&
 			        // Normal sounds typically have loopstart = 0, loopend = samples
-			        (loopstr < samples && loopend <= samples && loopstr <= loopend)
+			        ((loopstr < samples && loopend <= samples && loopstr <= loopend)
 			        // Percussion instruments have deliberately invalid loop start/loop end values
-			        || (loopstr == 0xFFFFFFFF && (loopend == samples + 1 || loopend == 0)))
+			        || (loopstr == 0xFFFFFFFF && (loopend == samples + 1 || loopend == 0))))
 
 
 				return EDF_TRUE;
@@ -427,8 +427,8 @@ int RiffWavFormat(MemChunk& mc)
 	if (mc.getSize() > 44)
 	{
 		// Check for wav header
-		if (mc[0] != 'R' || mc[1] != 'I' || mc[2] != 'F' || mc[3] != 'F' &&
-		        mc[8] != 'W' || mc[9] != 'A' || mc[10] != 'V' || mc[11] != 'E' &&
+		if (mc[0] != 'R' || mc[1] != 'I' || mc[2] != 'F' || mc[3] != 'F' ||
+		        mc[8] != 'W' || mc[9] != 'A' || mc[10] != 'V' || mc[11] != 'E' ||
 		        mc[12] != 'f' || mc[13] != 'm' || mc[14] != 't' || mc[15] != ' ')
 			// Not a RIFF-WAV file
 			return -1;

@@ -437,7 +437,7 @@ bool MathStuff::boxLineIntersect(double box_x1, double box_y1, double box_x2, do
 	double maxY = line_y2;
 	double dx = line_x2 - line_x1;
 
-	if (abs(dx) > 0.0000001)
+	if (fabs(dx) > 0.0000001)
 	{
 		double a = (line_y2 - line_y1) / dx;
 		double b = line_y1 - a * line_x1;

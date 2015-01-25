@@ -197,7 +197,8 @@ void MainWindow::setupLayout()
 	p_inf.PaneBorder(false);
 	m_mgr->AddPane(notebook_tabs, p_inf);
 
-	// Create Start Page (temporary)
+	// Create Start Page
+#ifdef USE_WEBVIEW_STARTPAGE
 	html_startpage = wxWebView::New(notebook_tabs, -1, wxEmptyString);
 	html_startpage->SetName("startpage");
 	html_startpage->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
@@ -209,6 +210,18 @@ void MainWindow::setupLayout()
 	}
 	else
 		html_startpage->Show(false);
+#else
+	html_startpage = new wxHtmlWindow(notebook_tabs, -1, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_NEVER, "startpage");
+	html_startpage->SetName("startpage");
+	if (show_start_page)
+	{
+		notebook_tabs->AddPage(html_startpage, "Start Page");
+		notebook_tabs->SetPageBitmap(0, getIcon("i_logo"));
+		createStartPage();
+	}
+	else
+		html_startpage->Show(false);
+#endif
 
 
 	// -- Console Panel --
@@ -298,7 +311,9 @@ void MainWindow::setupLayout()
 	wxMenu* helpMenu = new wxMenu("");
 	theApp->getAction("main_onlinedocs")->addToMenu(helpMenu, true);
 	theApp->getAction("main_about")->addToMenu(helpMenu, true);
+#ifdef __WXMSW__
 	theApp->getAction("main_updatecheck")->addToMenu(helpMenu, true);
+#endif
 	menu->Append(helpMenu, "&Help");
 
 	// Set the menu
@@ -376,7 +391,11 @@ void MainWindow::setupLayout()
 	Layout();
 
 	// Bind events
+#ifdef USE_WEBVIEW_STARTPAGE
 	html_startpage->Bind(wxEVT_WEBVIEW_NAVIGATING, &MainWindow::onHTMLLinkClicked, this);
+#else
+	html_startpage->Bind(wxEVT_COMMAND_HTML_LINK_CLICKED, &MainWindow::onHTMLLinkClicked, this);
+#endif
 	Bind(wxEVT_SIZE, &MainWindow::onSize, this);
 	Bind(wxEVT_CLOSE_WINDOW, &MainWindow::onClose, this);
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
@@ -384,6 +403,7 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
 }
 
+#ifdef USE_WEBVIEW_STARTPAGE
 /* MainWindow::createStartPage
  * Builds the HTML start page and loads it into the html viewer
  * (start page tab)
@@ -503,6 +523,87 @@ void MainWindow::createStartPage(bool newtip)
 	//wxRemoveFile(html_file);
 	//wxRemoveFile(appPath("logo.png", DIR_TEMP));
 }
+
+#else
+
+/* MainWindow::createStartPage
+ * Builds the HTML start page and loads it into the html viewer
+ * (start page tab)
+ *******************************************************************/
+void MainWindow::createStartPage(bool newtip)
+{
+	// Get relevant resource entries
+	Archive* res_archive = theArchiveManager->programResourceArchive();
+	if (!res_archive)
+		return;
+	ArchiveEntry* entry_html = res_archive->entryAtPath("html/startpage_basic.htm");
+	ArchiveEntry* entry_logo = res_archive->entryAtPath("logo.png");
+	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
+
+	// Can't do anything without html entry
+	if (!entry_html)
+	{
+		html_startpage->SetPage("<html><head><title>SLADE</title></head><body><center><h1>Something is wrong with slade.pk3 :(</h1><center></body></html>");
+		return;
+	}
+
+	// Get html as string
+	string html = wxString::FromAscii((const char*)(entry_html->getData()), entry_html->getSize());
+
+	// Generate tip of the day string
+	string tip = "It seems tips.txt is missing from your slade.pk3";
+	if (entry_tips)
+	{
+		Tokenizer tz;
+		tz.openMem((const char*)entry_tips->getData(), entry_tips->getSize(), entry_tips->getName());
+		srand(wxGetLocalTime());
+		int numtips = tz.getInteger();
+		if (numtips < 2) // Needs at least two choices or it's kinda pointless.
+			tip = "Did you know? Something is wrong with the tips.txt file in your slade.pk3.";
+		else
+		{
+			int tipindex = 0;
+			// Don't show same tip twice in a row
+			do { tipindex = 1 + (rand() % numtips); } while (tipindex == lasttipindex);
+			lasttipindex = tipindex;
+			for (int a = 0; a < tipindex; a++)
+				tip = tz.getToken();
+		}
+	}
+
+	// Generate recent files string
+	string recent;
+	for (unsigned a = 0; a < 12; a++)
+	{
+		if (a >= theArchiveManager->numRecentFiles())
+			break;	// No more recent files
+
+		// Add line break if needed
+		if (a > 0) recent += "<br/>\n";
+
+		// Add recent file link
+		recent += S_FMT("<a href=\"recent://%d\">%s</a>", a, theArchiveManager->recentFile(a));
+	}
+
+	// Insert tip and recent files into html
+	html.Replace("#recent#", recent);
+	html.Replace("#totd#", tip);
+
+	// Write html and images to temp folder
+	if (entry_logo) entry_logo->exportFile(appPath("logo.png", DIR_TEMP));
+	string html_file = appPath("startpage_basic.htm", DIR_TEMP);
+	wxFile outfile(html_file, wxFile::write);
+	outfile.Write(html);
+	outfile.Close();
+
+	// Load page
+	html_startpage->LoadPage(html_file);
+
+	// Clean up
+	wxRemoveFile(html_file);
+	wxRemoveFile(appPath("logo.png", DIR_TEMP));
+}
+#endif
 
 /* MainWindow::exitProgram
  * Attempts to exit the program. Only fails if an unsaved archive is
@@ -744,6 +845,8 @@ bool MainWindow::handleAction(string id)
  * MAINWINDOW EVENTS
  *******************************************************************/
 
+#ifdef USE_WEBVIEW_STARTPAGE
+
 /* MainWindow::onHTMLLinkClicked
  * Called when a link is clicked on the HTML Window, so that
  * external (http) links are opened in the default browser
@@ -813,6 +916,49 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		ev.Veto();
 	}
 }
+
+#else
+
+/* MainWindow::onHTMLLinkClicked
+ * Called when a link is clicked on the HTML Window, so that
+ * external (http) links are opened in the default browser
+ *******************************************************************/
+void MainWindow::onHTMLLinkClicked(wxEvent& e)
+{
+	wxHtmlLinkEvent& ev = (wxHtmlLinkEvent&)e;
+	string href = ev.GetLinkInfo().GetHref();
+
+	if (href.StartsWith("http://"))
+		wxLaunchDefaultBrowser(ev.GetLinkInfo().GetHref());
+	else if (href.StartsWith("recent://"))
+	{
+		// Recent file
+		string rs = href.Right(1);
+		unsigned long index = 0;
+		rs.ToULong(&index);
+		index++;
+
+		panel_archivemanager->handleAction(S_FMT("aman_recent%d", index));
+	}
+	else if (href.StartsWith("action://"))
+	{
+		// Action
+		if (href.EndsWith("open"))
+			theApp->doAction("aman_open");
+		else if (href.EndsWith("newwad"))
+			theApp->doAction("aman_newwad");
+		else if (href.EndsWith("newzip"))
+			theApp->doAction("aman_newzip");
+		else if (href.EndsWith("newmap"))
+			theApp->doAction("aman_newmap");
+		else if (href.EndsWith("reloadstartpage"))
+			createStartPage();
+	}
+	else
+		html_startpage->OnLinkClicked(ev.GetLinkInfo());
+}
+
+#endif
 
 /* MainWindow::onClose
  * Called when the window is closed

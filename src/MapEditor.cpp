@@ -911,7 +911,7 @@ void MapEditor::updateTagged()
 
 			// Sector tag
 			if (needs_tag == AS_TT_SECTOR ||
-					needs_tag == AS_TT_SECTOR_AND_BACK && tag > 0)
+					(needs_tag == AS_TT_SECTOR_AND_BACK && tag > 0))
 				map.getSectorsByTag(tag, tagged_sectors);
 
 			// Backside sector (for local doors)
@@ -2569,6 +2569,8 @@ void MapEditor::createSector(double x, double y)
 	// Find nearest line
 	int nearest = map.nearestLine(x, y, 99999999);
 	MapLine* line = map.getLine(nearest);
+	if (!line)
+		return;
 
 	// Determine side
 	double side = MathStuff::lineSide(x, y, line->x1(), line->y1(), line->x2(), line->y2());
@@ -2897,8 +2899,8 @@ void MapEditor::updateShapeDraw(fpoint2_t point)
 
 	// Lock width:height at 1:1 if needed
 	fpoint2_t origin = draw_origin;
-	double width = abs(point.x - origin.x);
-	double height = abs(point.y - origin.y);
+	double width = fabs(point.x - origin.x);
+	double height = fabs(point.y - origin.y);
 	if (shapedraw_lockratio)
 	{
 		if (width < height)

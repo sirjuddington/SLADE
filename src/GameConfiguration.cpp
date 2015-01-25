@@ -580,7 +580,7 @@ void GameConfiguration::buildConfig(string filename, string& out)
 	while (!file.Eof())
 	{
 		// Check for #include
-		if (line.Trim().StartsWith("#include"))
+		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get filename to include
 			Tokenizer tz;
@@ -624,7 +624,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 	while (!file.Eof())
 	{
 		// Check for #include
-		if (line.Trim().StartsWith("#include"))
+		if (line.Lower().Trim().StartsWith("#include"))
 		{
 			// Get name of entry to include
 			Tokenizer tz;
@@ -917,6 +917,8 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 		// Boom extensions
 		else if (S_CMPNOCASE(node->getName(), "boom"))
 			boom = node->getBoolValue();
+		else if (S_CMPNOCASE(node->getName(), "boom_sector_flag_start"))
+			boom_sector_flag_start = node->getIntValue();
 
 		// UDMF namespace
 		else if (S_CMPNOCASE(node->getName(), "udmf_namespace"))
@@ -941,6 +943,10 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 		// Light levels interval
 		else if (S_CMPNOCASE(node->getName(), "light_level_interval"))
 			setLightLevelInterval(node->getIntValue());
+
+		// Long names
+		else if (S_CMPNOCASE(node->getName(), "long_names"))
+			allow_long_names = node->getBoolValue();
 
 		// Defaults section
 		else if (S_CMPNOCASE(node->getName(), "defaults"))
@@ -1058,6 +1064,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t fo
 		thing_types.clear();
 		flags_thing.clear();
 		flags_line.clear();
+		sector_types.clear();
 		udmf_vertex_props.clear();
 		udmf_linedef_props.clear();
 		udmf_sidedef_props.clear();
@@ -2980,7 +2987,7 @@ void GameConfiguration::cleanObjectUDMFProps(MapObject* object)
  * Returns the name for sector type value [type], taking generalised
  * types into account
  *******************************************************************/
-string GameConfiguration::sectorTypeName(int type, int map_format)
+string GameConfiguration::sectorTypeName(int type)
 {
 	// Check for zero type
 	if (type == 0)
@@ -2988,59 +2995,31 @@ string GameConfiguration::sectorTypeName(int type, int map_format)
 
 	// Deal with generalised flags
 	vector<string> gen_flags;
-	if (boom)
+	if (supportsSectorFlags() && type >= boom_sector_flag_start)
 	{
-		// Check what the map format is (the flag bits differ between doom/hexen format)
-		if (map_format == MAP_DOOM && type >= 32)
-		{
-			// Damage flags
-			if ((type & 96) == 96)
-				gen_flags.push_back("20% Damage");
-			else if (type & 32)
-				gen_flags.push_back("5% Damage");
-			else if (type & 64)
-				gen_flags.push_back("10% Damage");
+		// Damage flags
+		int damage = sectorBoomDamage(type);
+		if (damage == 1)
+			gen_flags.push_back("5% Damage");
+		else if (damage == 2)
+			gen_flags.push_back("10% Damage");
+		else if (damage == 3)
+			gen_flags.push_back("20% Damage");
 
-			// Secret
-			if (type & 128)
-				gen_flags.push_back("Secret");
+		// Secret
+		if (sectorBoomSecret(type))
+			gen_flags.push_back("Secret");
 
-			// Friction
-			if (type & 256)
-				gen_flags.push_back("Friction Enabled");
+		// Friction
+		if (sectorBoomFriction(type))
+			gen_flags.push_back("Friction Enabled");
 
-			// Pushers/Pullers
-			if (type & 512)
-				gen_flags.push_back("Pushers/Pullers Enabled");
+		// Pushers/Pullers
+		if (sectorBoomPushPull(type))
+			gen_flags.push_back("Pushers/Pullers Enabled");
 
-			// Remove flag bits from type value
-			type = type & 31;
-		}
-		else if (type >= 256)
-		{
-			// Damage flags
-			if ((type & 768) == 768)
-				gen_flags.push_back("20% Damage");
-			else if (type & 256)
-				gen_flags.push_back("5% Damage");
-			else if (type & 512)
-				gen_flags.push_back("10% Damage");
-
-			// Secret
-			if (type & 1024)
-				gen_flags.push_back("Secret");
-
-			// Friction
-			if (type & 2048)
-				gen_flags.push_back("Friction Enabled");
-
-			// Pushers/Pullers
-			if (type & 4096)
-				gen_flags.push_back("Pushers/Pullers Enabled");
-
-			// Remove flag bits from type value
-			type = type & 255;
-		}
+		// Remove flag bits from type value
+		type = type & (boom_sector_flag_start - 1);
 	}
 
 	// Check if the type only has generalised flags
@@ -3090,17 +3069,15 @@ int GameConfiguration::sectorTypeByName(string name)
  * Returns the 'base' sector type for value [type] (strips generalised
  * flags/type)
  *******************************************************************/
-int GameConfiguration::baseSectorType(int type, int map_format)
+int GameConfiguration::baseSectorType(int type)
 {
 	// No type
 	if (type == 0)
 		return 0;
 
 	// Strip boom flags depending on map format
-	if (map_format == MAP_DOOM && type >= 32)
-		return type & 31;
-	else if (type >= 256)
-		return type & 255;
+	if (supportsSectorFlags())
+		return type & (boom_sector_flag_start - 1);
 
 	// No flags
 	return type;
@@ -3110,33 +3087,24 @@ int GameConfiguration::baseSectorType(int type, int map_format)
  * Returns the generalised 'damage' flag for [type]: 0=none, 1=5%,
  * 2=10% 3=20%
  *******************************************************************/
-int GameConfiguration::sectorBoomDamage(int type, int map_format)
+int GameConfiguration::sectorBoomDamage(int type)
 {
+	if (!supportsSectorFlags())
+		return 0;
+
 	// No type
 	if (type == 0)
 		return 0;
 
-	// Doom format
-	if (map_format == MAP_DOOM && type >= 32)
-	{
-		if ((type & 96) == 96)
-			return 3;
-		else if (type & 32)
-			return 1;
-		else if (type & 64)
-			return 2;
-	}
+	int low_bit = boom_sector_flag_start << 0;
+	int high_bit = boom_sector_flag_start << 1;
 
-	// Hexen format
-	else if (type >= 256)
-	{
-		if ((type & 768) == 768)
-			return 3;
-		else if (type & 256)
-			return 1;
-		else if (type & 512)
-			return 2;
-	}
+	if ((type & (low_bit | high_bit)) == (low_bit | high_bit))
+		return 3;
+	else if (type & low_bit)
+		return 1;
+	else if (type & high_bit)
+		return 2;
 
 	// No damage
 	return 0;
@@ -3145,18 +3113,16 @@ int GameConfiguration::sectorBoomDamage(int type, int map_format)
 /* GameConfiguration::sectorBoomSecret
  * Returns true if the generalised 'secret' flag is set for [type]
  *******************************************************************/
-bool GameConfiguration::sectorBoomSecret(int type, int map_format)
+bool GameConfiguration::sectorBoomSecret(int type)
 {
+	if (!supportsSectorFlags())
+		return false;
+
 	// No type
 	if (type == 0)
 		return false;
 
-	// Doom format
-	if (map_format == MAP_DOOM && type >= 32 && type & 128)
-		return true;
-
-	// Hexen format
-	else if (type >= 256 && type & 1024)
+	if (type & (boom_sector_flag_start << 2))
 		return true;
 
 	// Not secret
@@ -3166,18 +3132,16 @@ bool GameConfiguration::sectorBoomSecret(int type, int map_format)
 /* GameConfiguration::sectorBoomFriction
 * Returns true if the generalised 'friction' flag is set for [type]
 *******************************************************************/
-bool GameConfiguration::sectorBoomFriction(int type, int map_format)
+bool GameConfiguration::sectorBoomFriction(int type)
 {
+	if (!supportsSectorFlags())
+		return false;
+
 	// No type
 	if (type == 0)
 		return false;
 
-	// Doom format
-	if (map_format == MAP_DOOM && type >= 32 && type & 256)
-		return true;
-
-	// Hexen format
-	else if (type >= 256 && type & 2048)
+	if (type & (boom_sector_flag_start << 3))
 		return true;
 
 	// Friction disabled
@@ -3188,18 +3152,16 @@ bool GameConfiguration::sectorBoomFriction(int type, int map_format)
  * Returns true if the generalised 'pusher/puller' flag is set for
  * [type]
  *******************************************************************/
-bool GameConfiguration::sectorBoomPushPull(int type, int map_format)
+bool GameConfiguration::sectorBoomPushPull(int type)
 {
+	if (!supportsSectorFlags())
+		return false;
+
 	// No type
 	if (type == 0)
 		return false;
 
-	// Doom format
-	if (map_format == MAP_DOOM && type >= 32 && type & 512)
-		return true;
-
-	// Hexen format
-	else if (type >= 256 && type & 4096)
+	if (type & (boom_sector_flag_start << 4))
 		return true;
 
 	// Pusher/Puller disabled
@@ -3209,57 +3171,24 @@ bool GameConfiguration::sectorBoomPushPull(int type, int map_format)
 /* GameConfiguration::boomSectorType
  * Returns the generalised boom sector type built from parameters
  *******************************************************************/
-int GameConfiguration::boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull, int map_format)
+int GameConfiguration::boomSectorType(int base, int damage, bool secret, bool friction, bool pushpull)
 {
 	int fulltype = base;
 
-	// Doom format
-	if (map_format == MAP_DOOM)
-	{
-		// Damage
-		if (damage == 1)
-			fulltype += 32;
-		else if (damage == 2)
-			fulltype += 64;
-		else if (damage == 3)
-			fulltype += 96;
+	// Damage
+	fulltype += damage * boom_sector_flag_start;
 
-		// Secret
-		if (secret)
-			fulltype += 128;
+	// Secret
+	if (secret)
+		fulltype += boom_sector_flag_start << 2;
 
-		// Friction
-		if (friction)
-			fulltype += 256;
+	// Friction
+	if (friction)
+		fulltype += boom_sector_flag_start << 3;
 
-		// Pusher/Puller
-		if (pushpull)
-			fulltype += 512;
-	}
-
-	// Hexen format
-	else
-	{
-		// Damage
-		if (damage == 1)
-			fulltype += 256;
-		else if (damage == 2)
-			fulltype += 512;
-		else if (damage == 3)
-			fulltype += 768;
-
-		// Secret
-		if (secret)
-			fulltype += 1024;
-
-		// Friction
-		if (friction)
-			fulltype += 2048;
-
-		// Pusher/Puller
-		if (pushpull)
-			fulltype += 4096;
-	}
+	// Pusher/Puller
+	if (pushpull)
+		fulltype += boom_sector_flag_start << 4;
 
 	return fulltype;
 }

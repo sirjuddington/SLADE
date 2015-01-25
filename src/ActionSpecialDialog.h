@@ -41,11 +41,12 @@ public:
 
 struct argspec_t;
 class wxGridBagSizer;
-class ArgsPanel : public wxPanel
+class ArgsControl;
+class ArgsPanel : public wxScrolled<wxPanel>
 {
 private:
-	wxGridBagSizer*	gb_sizer;
-	wxTextCtrl*		text_args[5];
+	wxFlexGridSizer*	fg_sizer;
+	ArgsControl*	control_args[5];
 	wxStaticText*	label_args[5];
 	wxStaticText*	label_args_desc[5];
 
@@ -56,6 +57,7 @@ public:
 	void	setup(argspec_t* args);
 	void	setValues(int args[5]);
 	int		getArgValue(int index);
+	void	onSize(wxSizeEvent& event);
 };
 
 class GenLineSpecialPanel;

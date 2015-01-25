@@ -35,6 +35,7 @@
 #include "GenLineSpecialPanel.h"
 #include "MapEditorWindow.h"
 #include <wx/gbsizer.h>
+#include <wx/window.h>
 #undef min
 #undef max
 #include <wx/valnum.h>
@@ -202,26 +203,375 @@ void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
  * ARGSPANEL CLASS FUNCTIONS
  *******************************************************************/
 
+/* ArgsControl
+ * Helper class that contains controls specific to a particular
+ * argument.  Usually this is a text box, but some args take one of
+ * a list of choices, flags, etc.
+ *******************************************************************/
+class ArgsControl : public wxPanel
+{
+public:
+	ArgsControl(wxWindow* parent) : wxPanel(parent, -1)
+	{
+		SetSizer(new wxBoxSizer(wxVERTICAL));
+	}
+	~ArgsControl() {}
+
+	virtual long getArgValue() = 0;
+	virtual void setArgValue(long val) = 0;
+};
+
+/* ArgsTextControl
+ * Trivial case of an arg control: a text box that can hold a number
+ * from 0 to 255.
+ *******************************************************************/
+class ArgsTextControl : public ArgsControl
+{
+protected:
+	// This is the control holding the "real" value
+	wxTextCtrl* text_control;
+
+public:
+	ArgsTextControl(wxWindow* parent) : ArgsControl(parent)
+	{
+		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(100, -1));
+		text_control->SetValidator(wxIntegerValidator<unsigned char>());
+		GetSizer()->Add(text_control, wxSizerFlags().Expand());
+	}
+
+	// Get the value of the argument from the textbox
+	long getArgValue()
+	{
+		wxString val = text_control->GetValue();
+
+		// Empty string means ignore it
+		if (val == "")
+			return -1;
+
+		long ret;
+		val.ToLong(&ret);
+		return ret;
+	}
+
+	// Set the value in the textbox
+	void setArgValue(long val)
+	{
+		if (val < 0)
+			text_control->ChangeValue("");
+		else
+			text_control->ChangeValue(S_FMT("%ld", val));
+	}
+};
+
+/* ArgsChoiceControl
+ * Combo box for an argument that takes one of a set of predefined
+ * values.
+ *******************************************************************/
+// Helper for the combo box.  wxIntegerValidator, by default, will erase the
+// entire combo box if one of the labeled numbers is selected, because the
+// label isn't a valid number.
+template<typename T>
+class ComboBoxAwareIntegerValidator : public wxIntegerValidator<T>
+{
+public:
+	ComboBoxAwareIntegerValidator() : wxIntegerValidator<T>() {}
+	ComboBoxAwareIntegerValidator(const ComboBoxAwareIntegerValidator& validator)
+		: wxIntegerValidator<T>(validator) {}
+
+	virtual wxObject* Clone() const { return new ComboBoxAwareIntegerValidator(*this); }
+
+	virtual wxString NormalizeString(const wxString& s) const
+	{
+		// If there's a valid selection in the combobox, don't "normalize".
+		// This is a highly inappropriate place for this check, but everything
+		// else is private and non-virtual.
+		wxComboBox* control = static_cast<wxComboBox*>(wxNumValidatorBase::GetTextEntry());
+		if (control->GetSelection() != wxNOT_FOUND)
+			return s;
+
+		return wxIntegerValidator<T>::NormalizeString(s);
+	}
+};
+
+class ArgsChoiceControl : public ArgsControl
+{
+private:
+	wxComboBox*			choice_control;
+	vector<arg_val_t>&	choices;
+
+public:
+	ArgsChoiceControl(wxWindow* parent, vector<arg_val_t>& choices)
+		: ArgsControl(parent), choices(choices)
+	{
+		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, wxSize(100, -1));
+		choice_control->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
+
+		for (unsigned i = 0; i < choices.size(); i++)
+		{
+			choice_control->Append(
+				S_FMT("%d: %s", choices[i].value, choices[i].name));
+		}
+
+		GetSizer()->Add(choice_control, wxSizerFlags().Expand());
+	}
+
+	long getArgValue()
+	{
+		int selected = choice_control->GetSelection();
+		if (selected == wxNOT_FOUND)
+		{
+			// No match.  User must have entered a value themselves
+			string val = choice_control->GetValue();
+
+			// Empty string means ignore it
+			if (val == "")
+				return -1;
+
+			long ret;
+			val.ToLong(&ret);
+			return ret;
+
+		}
+		else
+		{
+			return choices[selected].value;
+		}
+	}
+
+	void setArgValue(long val)
+	{
+		if (val < 0)
+		{
+			choice_control->ChangeValue("");
+			return;
+		}
+
+		// Look for a name for this value
+		for (unsigned i = 0; i < choices.size(); i++)
+		{
+			if (val == choices[i].value)
+			{
+				choice_control->SetSelection(i);
+				return;
+			}
+		}
+		choice_control->ChangeValue(S_FMT("%ld", val));
+	}
+};
+
+/* ArgsFlagsControl
+ * Set of checkboxes, for an argument that contains flags.
+ *******************************************************************/
+class ArgsFlagsControl : public ArgsTextControl
+{
+private:
+	// Reference to the arg's custom_flags
+	vector<arg_val_t>&	flags;
+	// Parallel vector of bitmasks for the groups each flag belongs to, or 0
+	// for an independent flag
+	vector<int>			flag_to_bit_group;
+	// Parallel vector of the checkboxes and radio buttons we create
+	vector<wxControl*>	controls;
+
+	bool isPowerOfTwo(long n) { return (n & (n - 1)) == 0; }
+
+	/* ArgsFlagsControl::addControl
+	 * Add a checkbox or radio button to the sizer, and perform some
+	 * bookkeeping.
+	*******************************************************************/
+	void addControl(wxControl* control, int index, int group)
+	{
+		GetSizer()->Add(control);
+		controls[index] = control;
+		flag_to_bit_group[index] = group;
+		control->Bind(wxEVT_CHECKBOX, &ArgsFlagsControl::onCheck, this);
+		control->Bind(wxEVT_RADIOBUTTON, &ArgsFlagsControl::onCheck, this);
+	}
+
+	/* ArgsFlagsControl::onCheck
+	 * Event handler called when a checkbox or radio button is toggled.
+	 * Update the value in the textbox.
+	*******************************************************************/
+	void onCheck(wxCommandEvent& event)
+	{
+		// Note that this function does NOT recompute the arg value from
+		// scratch!  There might be newer flags we don't know about, and
+		// blindly erasing them would be rude.  Instead, only twiddle the
+		// single flag corresponding to this checkbox.
+		event.Skip();
+
+		int val = getArgValue();
+		if (val < 0)
+			return;
+
+		// Doesn't matter what type of pointer this is; only need it to find
+		// the flag index
+		wxObject* control = event.GetEventObject();
+		for (unsigned i = 0; i < flags.size(); i++)
+		{
+			if (controls[i] == control)
+			{
+				// Remove the entire group
+				if (flag_to_bit_group[i])
+					val &= ~flag_to_bit_group[i];
+				else
+					val &= ~flags[i].value;
+
+				// Then re-add if appropriate
+				if (event.IsChecked())
+					val |= flags[i].value;
+				ArgsTextControl::setArgValue(val);
+				return;
+			}
+		}
+	}
+
+	/* ArgsFlagsControl::onKeypress
+	 * Event handler called when a key is pressed in the textbox.  Refresh
+	 * all the flag states.
+	*******************************************************************/
+	void onKeypress(wxKeyEvent& event)
+	{
+		event.Skip();
+		updateCheckState(getArgValue());
+	}
+
+	/* ArgsFlagsControl::updateCheckState
+	 * Do the actual work of updating the checkbox states.
+	*******************************************************************/
+	void updateCheckState(long val)
+	{
+		for (unsigned i = 0; i < flags.size(); i++)
+		{
+			if (flag_to_bit_group[i])
+			{
+				bool checked = (val >= 0 && (val & flag_to_bit_group[i]) == flags[i].value);
+				static_cast<wxRadioButton*>(controls[i])->SetValue(checked);
+			}
+			else
+			{
+				bool checked = (val >= 0 && (val & flags[i].value) == flags[i].value);
+				static_cast<wxCheckBox*>(controls[i])->SetValue(checked);
+			}
+		}
+	}
+
+public:
+	ArgsFlagsControl(wxWindow* parent, vector<arg_val_t>& flags)
+		: ArgsTextControl(parent), flags(flags), flag_to_bit_group(flags.size(), 0), controls(flags.size(), NULL)
+	{
+		text_control->Bind(wxEVT_KEY_UP, &ArgsFlagsControl::onKeypress, this);
+
+		wxControl* control;
+		wxSizer* sizer = GetSizer();
+
+		// Sometimes multiple bits are used for a set of more than two flags.
+		// For example, if 3 is a flag, then it must be one of /four/ flags
+		// along with values 0, 1, and 2.  In such cases, we need radio buttons
+		// instead of a checkbox.
+		// This is not as robust as it could be, but to my knowledge, the only
+		// place this gets used is the "type" argument to ZDoom's
+		// Sector_Set3DFloor, where the first two bits are an enum.
+		vector<int> bit_groups;
+		for (unsigned i = 0; i < flags.size(); i++)
+		{
+			int value = flags[i].value;
+			if (isPowerOfTwo(value))
+				continue;
+
+			bool found_match = false;
+			for (unsigned j = 0; j < bit_groups.size(); j++)
+			{
+				if (bit_groups[j] & value) {
+					bit_groups[j] |= value;
+					found_match = true;
+					break;
+				}
+			}
+			if (!found_match)
+				bit_groups.push_back(value);
+		}
+
+		vector<bool> flag_done(flags.size(), false);
+		for (unsigned i = 0; i < flags.size(); i++)
+		{
+			if (flag_done[i])
+				continue;
+
+			// Check if this flag is part of a group
+			int group = 0;
+			int check_against = flags[i].value;
+			// Special case: if the value is 0, it has no bits, so assume it's
+			// part of the next flag's group
+			if (flags[i].value == 0 && i < flags.size() - 1)
+				check_against = flags[i + 1].value;
+			for (unsigned j = 0; j < bit_groups.size(); j++)
+				if (bit_groups[j] & check_against) {
+					group = bit_groups[j];
+					break;
+				}
+
+			if (group)
+			{
+				addControl(
+					new wxRadioButton(this, -1, S_FMT("%d: %s", flags[i].value, flags[i].name),
+						wxDefaultPosition, wxDefaultSize, wxRB_GROUP),
+					i, group);
+				// Find all the other (later) flags that are part of this same bit group
+				for (unsigned ii = i + 1; ii < flags.size(); ii++)
+				{
+					if (flag_done[ii])
+						continue;
+					if (flags[ii].value & group)
+					{
+						addControl(
+							new wxRadioButton(this, -1, S_FMT("%d: %s", flags[ii].value, flags[ii].name)),
+							ii, group);
+						flag_done[ii] = true;
+					}
+				}
+			}
+			else  // not in a group
+			{
+				control = new wxCheckBox(this, -1, S_FMT("%d: %s", flags[i].value, flags[i].name));
+				addControl(control, i, 0);
+			}
+		}
+	}
+
+	void setArgValue(long val)
+	{
+		ArgsTextControl::setArgValue(val);
+		updateCheckState(val);
+	}
+};
+
 /* ArgsPanel::ArgsPanel
  * ArgsPanel class constructor
  *******************************************************************/
-ArgsPanel::ArgsPanel(wxWindow* parent) : wxPanel(parent, -1)
+ArgsPanel::ArgsPanel(wxWindow* parent)
+: wxScrolled<wxPanel>(parent, -1, wxDefaultPosition, wxDefaultSize, wxVSCROLL)
 {
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add arg controls
-	gb_sizer = new wxGridBagSizer(4, 4);
-	sizer->Add(gb_sizer, 1, wxEXPAND|wxALL, 4);
+	fg_sizer = new wxFlexGridSizer(2, 4, 4);
+	fg_sizer->AddGrowableCol(1);
+	sizer->Add(fg_sizer, 1, wxEXPAND|wxALL, 4);
 
 	for (unsigned a = 0; a < 5; a++)
 	{
 		label_args[a] = new wxStaticText(this, -1, "");
-		text_args[a] = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(300, -1));
-		text_args[a]->SetValidator(wxIntegerValidator<unsigned char>());
-		label_args_desc[a] = new wxStaticText(this, -1, "", wxDefaultPosition, wxSize(300, -1));
+		control_args[a] = NULL;
+		label_args_desc[a] = new wxStaticText(this, -1, "", wxDefaultPosition, wxSize(100, -1));
 	}
+
+	// Set up vertical scrollbar
+	SetScrollRate(0, 10);
+
+	Bind(wxEVT_SIZE, &ArgsPanel::onSize, this);
 }
 
 /* ArgsPanel::setup
@@ -230,10 +580,13 @@ ArgsPanel::ArgsPanel(wxWindow* parent) : wxPanel(parent, -1)
 void ArgsPanel::setup(argspec_t* args)
 {
 	// Reset stuff
-	gb_sizer->Clear();
+	fg_sizer->Clear();
 	for (unsigned a = 0; a < 5; a++)
 	{
-		label_args[a]->SetLabel(S_FMT("Arg %d:", a + 1));
+		if (control_args[a])
+			control_args[a]->Destroy();
+		control_args[a] = NULL;
+		label_args[a]->SetLabelText(S_FMT("Arg %d:", a + 1));
 		label_args_desc[a]->Show(false);
 	}
 
@@ -241,49 +594,56 @@ void ArgsPanel::setup(argspec_t* args)
 	int row = 0;
 	for (unsigned a = 0; a < 5; a++)
 	{
-		bool has_desc = ((int)a < args->count && !args->getArg(a).desc.IsEmpty());
+		arg_t& arg = args->getArg(a);
+		bool has_desc = false;
+		
+		if ((int)a < args->count) {
+			has_desc = !arg.desc.IsEmpty();
+
+			if (arg.type == ARGT_CHOICE)
+				control_args[a] = new ArgsChoiceControl(this, arg.custom_values);
+			else if (arg.type == ARGT_FLAGS)
+				control_args[a] = new ArgsFlagsControl(this, arg.custom_flags);
+			else
+				control_args[a] = new ArgsTextControl(this);
+		}
+		else {
+			control_args[a] = new ArgsTextControl(this);
+		}
 
 		// Arg name
-		if (has_desc)
-			gb_sizer->Add(label_args[a], wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-		else
-			gb_sizer->Add(label_args[a], wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL|wxRIGHT|wxBOTTOM, 4);
+		label_args[a]->SetLabelText(S_FMT("%s:", arg.name));
+		fg_sizer->Add(label_args[a], wxSizerFlags().Align(wxALIGN_TOP|wxALIGN_RIGHT).Border(wxALL, 4));
 
 		// Arg value
-		if (has_desc)
-			gb_sizer->Add(text_args[a], wxGBPosition(row++, 1), wxDefaultSpan, wxEXPAND);
-		else
-			gb_sizer->Add(text_args[a], wxGBPosition(row++, 1), wxDefaultSpan, wxEXPAND|wxBOTTOM, 4);
+		fg_sizer->Add(control_args[a], wxSizerFlags().Expand());
 		
 		// Arg description
 		if (has_desc)
-			gb_sizer->Add(label_args_desc[a], wxGBPosition(row++, 1), wxDefaultSpan, wxEXPAND|wxBOTTOM, 4);
+		{
+			// Add an empty spacer to the first column
+			fg_sizer->Add(0, 0);
+			fg_sizer->Add(label_args_desc[a], wxSizerFlags().Expand());
+		}
 	}
 
+	Layout();
+
 	// Setup controls
+	int available_width = fg_sizer->GetColWidths()[1];
 	for (int a = 0; a < args->count; a++)
 	{
 		arg_t& arg = args->getArg(a);
 
-		label_args[a]->SetLabel(S_FMT("%s:", arg.name));
 		if (!arg.desc.IsEmpty())
 		{
 			label_args_desc[a]->Show(true);
-			label_args_desc[a]->SetLabel(arg.desc);
+			label_args_desc[a]->SetLabelText(arg.desc);
+			label_args_desc[a]->Wrap(available_width);
 		}
 	}
 
-	gb_sizer->AddGrowableCol(1, 1);
-
-	Layout();
-
-	for (unsigned a = 0; a < 5; a++)
-	{
-		label_args_desc[a]->SetSize(text_args[a]->GetSize().GetWidth(), -1);
-		label_args_desc[a]->Wrap(text_args[a]->GetSize().GetWidth());
-	}
-
-	Layout();
+	FitInside();  // for wxScrolled's benefit
 }
 
 /* ArgsPanel::setValues
@@ -293,10 +653,7 @@ void ArgsPanel::setValues(int args[5])
 {
 	for (unsigned a = 0; a < 5; a++)
 	{
-		if (args[a] >= 0)
-			text_args[a]->SetValue(S_FMT("%d", args[a]));
-		else
-			text_args[a]->SetValue("");
+		control_args[a]->setArgValue(args[a]);
 	}
 }
 
@@ -309,16 +666,28 @@ int ArgsPanel::getArgValue(int index)
 	if (index < 0 || index > 4)
 		return -1;
 
-	// Check ignored
-	if (text_args[index]->GetValue() == "")
-		return -1;
-
-	// Get value
-	long val;
-	text_args[index]->GetValue().ToLong(&val);
-
-	return val;
+	return control_args[index]->getArgValue();
 }
+
+/* ArgsPanel::onSize
+ * Rewrap the descriptions when the panel is resized
+ *******************************************************************/
+void ArgsPanel::onSize(wxSizeEvent& event)
+{
+	event.Skip();
+
+	fg_sizer->Layout();
+	int available_width = fg_sizer->GetColWidths()[1];
+	for (int a = 0; a < 5; a++)
+	{
+		// Wrap() puts hard newlines in the label, so we need to remove them
+		wxString label = label_args_desc[a]->GetLabelText();
+		label.Replace("\n", " ");
+		label_args_desc[a]->SetLabelText(label);
+		label_args_desc[a]->Wrap(available_width);
+	}
+}
+
 
 
 /*******************************************************************
@@ -430,7 +799,6 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 					if (row >= trigger_mid && col <= 1)
 					{
-						trigger_mid;
 						row = 0;
 						col++;
 					}
@@ -696,7 +1064,13 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 	}
 
 	argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+	// Save and restore the current arg values, since setup() deletes and
+	// recreates the controls
+	int arg_values[5];
+	for (unsigned a = 0; a < 5; a++)
+		arg_values[a] = panel_args->getArgValue(a);
 	panel_args->setup(&args);
+	panel_args->setValues(arg_values);
 }
 
 
@@ -742,7 +1116,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args)
 	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 	// Init
-	SetMinClientSize(sizer->GetMinSize());
+	SetSizerAndFit(sizer);
 	CenterOnParent();
 }
 

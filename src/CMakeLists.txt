@@ -1,7 +1,17 @@
+if (USE_WEBVIEW_STARTPAGE)
 find_package(wxWidgets 3.0 COMPONENTS std aui gl stc richtext propgrid media webview REQUIRED)
+ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
+else (USE_WEBVIEW_STARTPAGE)
+find_package(wxWidgets 3.0 COMPONENTS std aui gl stc richtext propgrid media html REQUIRED)
+endif (USE_WEBVIEW_STARTPAGE)
 include(${wxWidgets_USE_FILE})
 
+if (USE_SFML_RENDERWINDOW)
+set(SFML_FIND_COMPONENTS system audio window graphics)
+ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
+else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window)
+endif(USE_SFML_RENDERWINDOW)
 
 find_package (PkgConfig REQUIRED)
 pkg_check_modules (GTK2 REQUIRED gtk+-2.0)

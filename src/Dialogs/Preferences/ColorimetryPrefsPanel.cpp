@@ -148,15 +148,15 @@ ColorimetryPrefsPanel::ColorimetryPrefsPanel(wxWindow* parent) : PrefsPanelBase(
 	hbox->Add(spin_tristim_z, 0, wxEXPAND|wxBOTTOM, 4);
 	string tristimuli[] =
 	{
-		"Illuminant A, 2° Observer", "Illuminant A, 10° Observer",
-		"Illuminant C, 2° Observer", "Illuminant C, 10° Observer",
-		"Illuminant D50, 2° Observer", "Illuminant D50, 10° Observer",
-		"Illuminant D60, 2° Observer", "Illuminant D60, 10° Observer",
-		"Illuminant D65, 2° Observer", "Illuminant D65, 10° Observer",
-		"Illuminant D75, 2° Observer", "Illuminant D75, 10° Observer",
-		"Illuminant F2, 2° Observer", "Illuminant F2, 10° Observer",
-		"Illuminant TL4, 2° Observer", "Illuminant TL4, 10° Observer",
-		"Illuminant UL3000, 2° Observer", "Illuminant UL3000, 10° Observer",
+		wxString::FromUTF8("Illuminant A, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant A, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant C, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant C, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D50, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant D50, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D60, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant D60, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D65, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant D65, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant D75, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant D75, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant F2, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant F2, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant TL4, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant TL4, 10\xc2\xb0 Observer"),
+		wxString::FromUTF8("Illuminant UL3000, 2\xc2\xb0 Observer"), wxString::FromUTF8("Illuminant UL3000, 10\xc2\xb0 Observer"),
 	};
 	choice_presets_tristim = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 18, tristimuli);
 	hbox->Add(choice_presets_tristim, 1, wxEXPAND);

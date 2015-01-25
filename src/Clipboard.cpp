@@ -33,6 +33,7 @@
 #include "SLADEMap.h"
 #include "SectorBuilder.h"
 #include <map>
+#include <wx/clipbrd.h>
 
 
 /*******************************************************************
@@ -74,9 +75,31 @@ EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, v
 	// Create tree
 	tree = new ArchiveTreeNode();
 
+	// Copy entries
 	for (unsigned a = 0; a < entries.size(); a++)
 		tree->addEntry(new ArchiveEntry(*(entries[a])));
 
+	// Copy entries to system clipboard
+	// (exports them as temp files and adds the paths to the clipboard)
+	if (wxTheClipboard->Open())
+	{
+		wxTheClipboard->Clear();
+		wxFileDataObject* file = new wxFileDataObject();
+		for (unsigned a = 0; a < entries.size(); a++)
+		{
+			// Export to file
+			string filename = entries[a]->getName(true) + "." + entries[a]->getType()->getExtension();
+			filename = appPath(filename, DIR_TEMP);
+			entries[a]->exportFile(filename);
+
+			// Add to clipboard
+			file->AddFile(filename);
+		}
+		wxTheClipboard->AddData(file);
+		wxTheClipboard->Close();
+	}
+
+	// Copy dirs
 	for (unsigned a = 0; a < dirs.size(); a++)
 		tree->addChild(dirs[a]->clone());
 }
@@ -416,20 +439,20 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 	// - Split lines
 	// - Merge lines
 
-	// Fix sector references
-	// TODO: figure out what lines are 'outside' on copy, only fix said lines
-	for (unsigned a = first_new_line; a < map->nLines(); a++)
-	{
-		MapLine* line = map->getLine(a);
-		MapSector* sec1 = map->getLineSideSector(line, true);
-		MapSector* sec2 = map->getLineSideSector(line, false);
-		int i1 = -1;
-		int i2 = -2;
-		if (sec1) i1 = sec1->getIndex();
-		if (sec2) i2 = sec2->getIndex();
-		map->setLineSector(a, i1, true);
-		map->setLineSector(a, i2, false);
-	}
+	//// Fix sector references
+	//// TODO: figure out what lines are 'outside' on copy, only fix said lines
+	//for (unsigned a = first_new_line; a < map->nLines(); a++)
+	//{
+	//	MapLine* line = map->getLine(a);
+	//	MapSector* sec1 = map->getLineSideSector(line, true);
+	//	MapSector* sec2 = map->getLineSideSector(line, false);
+	//	int i1 = -1;
+	//	int i2 = -2;
+	//	if (sec1) i1 = sec1->getIndex();
+	//	if (sec2) i2 = sec2->getIndex();
+	//	map->setLineSector(a, i1, true);
+	//	map->setLineSector(a, i2, false);
+	//}
 
 	return new_verts;
 }
