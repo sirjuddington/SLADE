@@ -268,7 +268,7 @@ void DataEntryTable::SetValue(int row, int col, const string& value)
 	else if (columns[col].type == COL_STRING)
 	{
 		char* str = new char[columns[col].size];
-		unsigned minsize = min(columns[col].size, value.size());
+		unsigned minsize = MIN(columns[col].size, value.size());
 		for (unsigned a = 0; a < minsize; a++)
 			str[a] = value[a];
 		data.write(str, columns[col].size);
