@@ -14,7 +14,7 @@ public:
 	enum
 	{
 	    // Common flags
-	    TRANS	= 2,
+	    TRANSADD	= 2,
 
 	    // Quad/flat flags
 	    SKY		= 4,

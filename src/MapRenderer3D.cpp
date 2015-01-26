@@ -1338,6 +1338,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light = light1;
 		setupQuadTexCoords(&quad, length, xoff, yoff, top, bottom, false, sx, sy);
 		quad.flags |= MIDTEX;
+		if (line->hasProp("renderstyle") && !wxStrcmp(line->stringProperty("renderstyle"), "add"))
+			quad.flags |= TRANSADD;
 
 		// Add quad
 		lines[index].quads.push_back(quad);
@@ -1480,6 +1482,8 @@ void MapRenderer3D::updateLine(unsigned index)
 		setupQuadTexCoords(&quad, length, xoff, yoff, top, bottom, false, sx, sy);
 		quad.flags |= BACK;
 		quad.flags |= MIDTEX;
+		if (line->hasProp("renderstyle") && !wxStrcmp(line->stringProperty("renderstyle"), "add"))
+			quad.flags |= TRANSADD;
 
 		// Add quad
 		lines[index].quads.push_back(quad);
@@ -1547,6 +1551,12 @@ void MapRenderer3D::renderQuad(MapRenderer3D::quad_3d_t* quad, float alpha)
 		else if (quad->flags & MIDTEX)
 			glAlphaFunc(GL_GREATER, 0.9f*alpha);
 	}
+
+	// Checking for additive renderstyle
+	if (quad->flags & TRANSADD)
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	else
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Setup colour/light
 	setLight(quad->colour, quad->light, alpha);
