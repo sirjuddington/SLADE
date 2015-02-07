@@ -119,7 +119,7 @@ string PatchTableListView::getItemText(long item, long column) const
  * Updates the item attributes for [item] (red text if patch entry
  * not found, default otherwise)
  *******************************************************************/
-void PatchTableListView::updateItemAttr(long item) const
+void PatchTableListView::updateItemAttr(long item, long column) const
 {
 	// Just set normal text colour
 	item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));

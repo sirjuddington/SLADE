@@ -267,6 +267,7 @@ public:
 	int		removeDetachedSides();
 	int		removeDetachedSectors();
 	int		removeZeroLengthLines();
+	int		removeInvalidSides();
 
 	// Convert
 	bool	convertToHexen();

@@ -53,7 +53,7 @@
 /* OGLCanvas::OGLCanvas
  * OGLCanvas class constructor, SFML implementation
  *******************************************************************/
-OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
+OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval)
 	: wxControl(parent, id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this)
 {
 	init_done = false;
@@ -61,7 +61,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
 	last_time = theApp->runTimer();
 
 	if (handle_timer)
-		timer.Start(100);
+		timer.Start(timer_interval);
 
 	// Create SFML RenderWindow
 	createSFML();
@@ -80,17 +80,21 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
 /* OGLCanvas::OGLCanvas
  * OGLCanvas class constructor, wxGLCanvas implementation
  *******************************************************************/
-OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer)
+OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_interval)
 	: wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this)
 {
 	init_done = false;
 	last_time = theApp->runTimer();
 
+	//if (handle_timer)
+	//	timer.Start(timer_interval);
+
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::onPaint, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::onEraseBackground, this);
 	//Bind(wxEVT_IDLE, &OGLCanvas::onIdle, this);
-	//Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
+	//if (handle_timer)
+	//	Bind(wxEVT_TIMER, &OGLCanvas::onTimer, this);
 
 	GLTexture::resetBgTex();
 }

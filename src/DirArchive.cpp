@@ -310,7 +310,9 @@ bool DirArchive::save(string filename)
 
 		// Write entry to file
 		if (!entries[a]->exportFile(path))
+		{
 			LOG_MESSAGE(1, "Unable to save entry %s: %s", entries[a]->getName(), Global::error);
+		}
 		else
 			files_written.push_back(path);
 

@@ -1,8 +1,44 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    MapThing.cpp
+ * Description: MapThing class, represents a thing object in a map
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "MapThing.h"
 #include "MainApp.h"
 
+
+/*******************************************************************
+ * MAPTHING CLASS FUNCTIONS
+ *******************************************************************/
+
+/* MapThing::MapThing
+ * MapThing class constructor
+ *******************************************************************/
 MapThing::MapThing(SLADEMap* parent) : MapObject(MOBJ_THING, parent)
 {
 	// Init variables
@@ -12,6 +48,9 @@ MapThing::MapThing(SLADEMap* parent) : MapObject(MOBJ_THING, parent)
 	this->angle = 0;
 }
 
+/* MapThing::MapThing
+ * MapThing class constructor
+ *******************************************************************/
 MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject(MOBJ_THING, parent)
 {
 	// Init variables
@@ -21,15 +60,25 @@ MapThing::MapThing(double x, double y, short type, SLADEMap* parent) : MapObject
 	this->angle = 0;
 }
 
+/* MapThing::~MapThing
+ * MapThing class destructor
+ *******************************************************************/
 MapThing::~MapThing()
 {
 }
 
+/* MapThing::getPoint
+ * Returns the object point [point]. Currently for things this is
+ * always the thing position
+ *******************************************************************/
 fpoint2_t MapThing::getPoint(uint8_t point)
 {
 	return fpoint2_t(x, y);
 }
 
+/* MapThing::intProperty
+ * Returns the value of the integer property matching [key]
+ *******************************************************************/
 int MapThing::intProperty(string key)
 {
 	if (key == "type")
@@ -44,6 +93,9 @@ int MapThing::intProperty(string key)
 		return MapObject::intProperty(key);
 }
 
+/* MapThing::floatProperty
+ * Returns the value of the float property matching [key]
+ *******************************************************************/
 double MapThing::floatProperty(string key)
 {
 	if (key == "x")
@@ -54,6 +106,9 @@ double MapThing::floatProperty(string key)
 		return MapObject::floatProperty(key);
 }
 
+/* MapThing::setIntProperty
+ * Sets the integer value of the property [key] to [value]
+ *******************************************************************/
 void MapThing::setIntProperty(string key, int value)
 {
 	// Update modified time
@@ -71,6 +126,9 @@ void MapThing::setIntProperty(string key, int value)
 		return MapObject::setIntProperty(key, value);
 }
 
+/* MapThing::setFloatProperty
+ * Sets the float value of the property [key] to [value]
+ *******************************************************************/
 void MapThing::setFloatProperty(string key, double value)
 {
 	// Update modified time
@@ -84,6 +142,9 @@ void MapThing::setFloatProperty(string key, double value)
 		return MapObject::setFloatProperty(key, value);
 }
 
+/* MapThing::copy
+ * Copies another map object [c]
+ *******************************************************************/
 void MapThing::copy(MapObject* c)
 {
 	// Don't copy a non-thing
@@ -101,6 +162,9 @@ void MapThing::copy(MapObject* c)
 	MapObject::copy(c);
 }
 
+/* MapThing::setAnglePoint
+ * Sets the angle of the thing to be facing towards [point]
+ *******************************************************************/
 void MapThing::setAnglePoint(fpoint2_t point)
 {
 	// Calculate direction vector
@@ -132,6 +196,9 @@ void MapThing::setAnglePoint(fpoint2_t point)
 	setIntProperty("angle", angle);
 }
 
+/* MapThing::writeBackup
+ * Write all thing info to a mobj_backup_t struct
+ *******************************************************************/
 void MapThing::writeBackup(mobj_backup_t* backup)
 {
 	// Type
@@ -145,6 +212,9 @@ void MapThing::writeBackup(mobj_backup_t* backup)
 	backup->props_internal["angle"] = angle;
 }
 
+/* MapThing::readBackup
+ * Reads all thing info from a mobj_backup_t struct
+ *******************************************************************/
 void MapThing::readBackup(mobj_backup_t* backup)
 {
 	// Type

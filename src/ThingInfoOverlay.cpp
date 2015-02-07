@@ -138,13 +138,14 @@ void ThingInfoOverlay::update(MapThing* thing)
 
 	// Flags
 	if (map_format != MAP_UDMF)
-		info_text += S_FMT("Flags: %s", theGameConfiguration->thingFlagsString(thing->intProperty("flags")));
+		info_text += S_FMT("Flags: %s\n", theGameConfiguration->thingFlagsString(thing->intProperty("flags")));
 
 	// TID (if in doom64/hexen/udmf format)
 	if (map_format != MAP_DOOM)
-	{
-		info_text += S_FMT("\nTID: %i", thing->intProperty("id"));
-	}
+		info_text += S_FMT("TID: %i", thing->intProperty("id"));
+
+	if (info_text.EndsWith("\n"))
+		info_text.RemoveLast(1);
 
 	// Set sprite and translation
 	sprite = tt->getSprite();

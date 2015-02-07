@@ -56,6 +56,7 @@ CVAR(Float, flat_brightness, 0.8f, CVAR_SAVE)
 CVAR(Bool, flat_ignore_light, false, CVAR_SAVE)
 CVAR(Float, thing_shadow, 0.5f, CVAR_SAVE)
 CVAR(Bool, sector_hilight_fill, true, CVAR_SAVE)
+CVAR(Bool, sector_selected_fill, true, CVAR_SAVE)
 CVAR(Bool, map_animate_hilight, true, CVAR_SAVE)
 CVAR(Bool, map_animate_selection, false, CVAR_SAVE)
 CVAR(Bool, map_animate_tagged, true, CVAR_SAVE)
@@ -512,7 +513,7 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
-	glLineWidth(line_width*3);
+	glLineWidth(line_width*ColourConfiguration::getLineHilightWidth());
 
 	// Render line
 	MapLine* line = map->getLine(index);
@@ -553,7 +554,7 @@ void MapRenderer2D::renderLineSelection(vector<int>& selection, float fade)
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
-	glLineWidth(line_width*4);
+	glLineWidth(line_width*ColourConfiguration::getLineSelectionWidth());
 
 	// Render selected lines
 	MapLine* line;
@@ -596,7 +597,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
-	glLineWidth(line_width*3);
+	glLineWidth(line_width*ColourConfiguration::getLineHilightWidth());
 
 	// Go through tagged lines
 	double x1, y1, x2, y2;
@@ -647,7 +648,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 	OpenGL::setColour(col);
 
 	// Setup rendering properties
-	glLineWidth(line_width*5);
+	glLineWidth(line_width*ColourConfiguration::getLineHilightWidth());
 
 	// Go through tagging lines
 	double x1, y1, x2, y2;
@@ -765,7 +766,7 @@ void MapRenderer2D::renderThingOverlay(double x, double y, double radius, bool p
 /* MapRenderer2D::renderRoundThing
  * Renders a round thing icon at [x,y]
  *******************************************************************/
-void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType* tt, float alpha)
+void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType* tt, float alpha, double radius_mult)
 {
 	// Ignore if no type given (shouldn't happen)
 	if (!tt)
@@ -825,7 +826,7 @@ void MapRenderer2D::renderRoundThing(double x, double y, double angle, ThingType
 	}
 
 	// Draw thing
-	double radius = tt->getRadius();
+	double radius = tt->getRadius() * radius_mult;
 	if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 1.0f);	glVertex2d(x-radius, y-radius);
@@ -876,7 +877,10 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 	// If sprite not found, just draw as a normal, round thing
 	if (!tex)
 	{
-		renderRoundThing(x, y, angle, tt, alpha);
+		if (thing_drawtype == TDT_FRAMEDSPRITE)
+			renderRoundThing(x, y, angle, tt, alpha, 0.7);
+		else
+			renderRoundThing(x, y, angle, tt, alpha);
 		return false;
 	}
 
@@ -905,7 +909,7 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 	// Fit to radius if needed
 	if (fitradius)
 	{
-		double scale = ((double)tt->getRadius()*0.85) / max(hw, hh);
+		double scale = ((double)tt->getRadius()*0.8) / max(hw, hh);
 		hw *= scale;
 		hh *= scale;
 	}
@@ -957,8 +961,12 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 	// Set colour
 	glColor4f(tt->getColour().fr(), tt->getColour().fg(), tt->getColour().fb(), alpha);
 
+	// Show icon anyway if no sprite set
+	if (tt->getSprite().IsEmpty())
+		showicon = true;
+
 	// Check for custom thing icon
-	if (!tt->getIcon().IsEmpty() && showicon && !thing_force_dir && !things_angles)
+	if (!tt->getIcon().IsEmpty() && showicon && !thing_force_dir && !things_angles && !framed)
 		tex = theMapEditor->textureManager().getEditorImage(S_FMT("thing/square/%s", tt->getIcon()));
 
 	// Otherwise, no icon
@@ -973,7 +981,7 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 		{
 			tex = theMapEditor->textureManager().getEditorImage("thing/square/normal_n");
 
-			if (tt->isAngled() && showicon || thing_force_dir || things_angles)
+			if ((tt->isAngled() && showicon) || thing_force_dir || things_angles)
 			{
 				tex = theMapEditor->textureManager().getEditorImage("thing/square/normal_d1");
 
@@ -1049,7 +1057,7 @@ bool MapRenderer2D::renderSquareThing(double x, double y, double angle, ThingTyp
 	glVertex2d(x+radius, y-radius);
 	glEnd();
 
-	return false;
+	return ((tt->isAngled() || thing_force_dir || things_angles) && !showicon);
 }
 
 /* MapRenderer2D::renderSimpleSquareThing
@@ -1241,7 +1249,7 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			renderRoundThing(x, y, angle, tt, talpha);
 		else  							// Drawtype 0 (or other): Square
 		{
-			if (renderSquareThing(x, y, angle, tt, talpha, thing_drawtype < TDT_SQUARESPRITE, thing_drawtype == TDT_FRAMEDSPRITE))
+			if (renderSquareThing(x, y, angle, tt, talpha, (thing_drawtype < TDT_SQUARESPRITE), (thing_drawtype == TDT_FRAMEDSPRITE)))
 				things_arrows.push_back(a);
 		}
 	}
@@ -1262,14 +1270,16 @@ void MapRenderer2D::renderThingsImmediate(float alpha)
 			x = thing->xPos();
 			y = thing->yPos();
 
+			if (thing_drawtype == TDT_SQUARESPRITE && tt->getSprite().IsEmpty())
+				continue;
+
 			// Set alpha
 			if (thing->isFiltered())
 				talpha = alpha*0.25;
 			else
 				talpha = alpha;
 
-			if (renderSpriteThing(x, y, thing->getAngle(), tt, a, talpha, true))
-				things_arrows.push_back(a);
+			renderSpriteThing(x, y, thing->getAngle(), tt, a, talpha, true);
 		}
 	}
 
@@ -1768,13 +1778,18 @@ bool sortPolyByTex(Polygon2D* left, Polygon2D* right)
 void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 {
 	if (texture)
+	{
 		glEnable(GL_TEXTURE_2D);
+
+		// Apply flat alpha from theme
+		alpha *= ColourConfiguration::getFlatAlpha();
+	}
 
 	if (flat_ignore_light)
 		glColor4f(flat_brightness, flat_brightness, flat_brightness, alpha);
 
 	// Re-init flats texture list if invalid
-	if (texture && tex_flats.size() < map->nSectors() || last_flat_type != type)
+	if ((texture && tex_flats.size() < map->nSectors()) || last_flat_type != type)
 	{
 		tex_flats.clear();
 		for (unsigned a = 0; a < map->nSectors(); a++)
@@ -1843,8 +1858,8 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				{
 					ox = sector->floatProperty("xpanningfloor");
 					oy = sector->floatProperty("ypanningfloor");
-					sx *= sector->floatProperty("xscalefloor");
-					sy *= sector->floatProperty("yscalefloor");
+					sx *= (1.0 / sector->floatProperty("xscalefloor"));
+					sy *= (1.0 / sector->floatProperty("yscalefloor"));
 					rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
@@ -1852,8 +1867,8 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 				{
 					ox = sector->floatProperty("xpanningceiling");
 					oy = sector->floatProperty("ypanningceiling");
-					sx *= sector->floatProperty("xscaleceiling");
-					sy *= sector->floatProperty("yscaleceiling");
+					sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+					sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 					rot = sector->floatProperty("rotationceiling");
 				}
 			}
@@ -1888,8 +1903,12 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 	if (!glGenBuffers)
 		return;
 
+	// Apply flat alpha from theme
+	if (texture)
+		alpha *= ColourConfiguration::getFlatAlpha();
+
 	// Re-init flats texture list if invalid
-	if (texture && tex_flats.size() < map->nSectors() || last_flat_type != type)
+	if ((texture && tex_flats.size() != map->nSectors()) || last_flat_type != type)
 	{
 		tex_flats.clear();
 		for (unsigned a = 0; a < map->nSectors(); a++)
@@ -1977,8 +1996,8 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 				{
 					ox = sector->floatProperty("xpanningfloor");
 					oy = sector->floatProperty("ypanningfloor");
-					sx *= sector->floatProperty("xscalefloor");
-					sy *= sector->floatProperty("yscalefloor");
+					sx *= (1.0 / sector->floatProperty("xscalefloor"));
+					sy *= (1.0 / sector->floatProperty("yscalefloor"));
 					rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
@@ -1986,8 +2005,8 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 				{
 					ox = sector->floatProperty("xpanningceiling");
 					oy = sector->floatProperty("ypanningceiling");
-					sx *= sector->floatProperty("xscaleceiling");
-					sy *= sector->floatProperty("yscaleceiling");
+					sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+					sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 					rot = sector->floatProperty("rotationceiling");
 				}
 			}
@@ -2056,10 +2075,10 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
 	{
 		glColor4f(col.fr(), col.fg(), col.fb(), col.fa()*0.5f);
 		map->getSector(index)->getPolygon()->render();
-		glLineWidth(line_width * 2.0f);
+		glLineWidth(line_width * ColourConfiguration::getLineHilightWidth());
 	}
 	else
-		glLineWidth(line_width * 3.0f);
+		glLineWidth(line_width * ColourConfiguration::getLineHilightWidth());
 
 	// Get all lines belonging to the hilighted sector
 	vector<MapLine*> lines;
@@ -2128,7 +2147,9 @@ void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
 
 		if (poly->hasPolygon())
 		{
-			map->getSector(selection[a])->getPolygon()->render();
+			if (sector_selected_fill)
+				map->getSector(selection[a])->getPolygon()->render();
+
 			for (unsigned s = 0; s < sides.size(); s++)
 				sides_selected.push_back(sides[s]);
 		}

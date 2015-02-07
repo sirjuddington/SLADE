@@ -91,7 +91,7 @@ string UndoListView::getItemText(long item, long column) const
 /* UndoListView::getItemIcon
  * Returns the icon index for [item]
  *******************************************************************/
-int UndoListView::getItemIcon(long item) const
+int UndoListView::getItemIcon(long item, long column) const
 {
 	return -1;
 }
@@ -99,7 +99,7 @@ int UndoListView::getItemIcon(long item) const
 /* UndoListView::updateItemAttr
  * Updates display attributes for [item]
  *******************************************************************/
-void UndoListView::updateItemAttr(long item) const
+void UndoListView::updateItemAttr(long item, long column) const
 {
 	if (!manager)
 		return;

@@ -88,6 +88,11 @@ public:
 	static long propBackupTime();
 	static void beginPropBackup(long current_time);
 	static void endPropBackup();
+	
+	static bool	multiBoolProperty(vector<MapObject*>& objects, string prop, bool& value);
+	static bool multiIntProperty(vector<MapObject*>& objects, string prop, int& value);
+	static bool multiFloatProperty(vector<MapObject*>& objects, string prop, double& value);
+	static bool multiStringProperty(vector<MapObject*>& objects, string prop, string& value);
 };
 
 #endif//__MAP_OBJECT_H__

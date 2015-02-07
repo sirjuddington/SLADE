@@ -201,7 +201,7 @@ void SFont::drawCharacter(char c, rgba_t colour)
 	OpenGL::setColour(colour);
 
 	// Get character to draw
-	SFontChar* ch = characters[c];
+	SFontChar* ch = characters[(uint8_t)c];
 	if (!ch)
 		return;
 
@@ -235,7 +235,7 @@ void SFont::drawString(string str, rgba_t colour, uint8_t align)
 	for (unsigned a = 0; a < str.size(); a++)
 	{
 		// Get character
-		SFontChar* ch = characters[CHR(str)[a]];
+		SFontChar* ch = characters[(uint8_t)CHR(str)[a]];
 
 		// Increment total width
 		if (ch)
@@ -256,7 +256,7 @@ void SFont::drawString(string str, rgba_t colour, uint8_t align)
 	for (unsigned a = 0; a < str.size(); a++)
 	{
 		// Get character
-		SFontChar* ch = characters[CHR(str)[a]];
+		SFontChar* ch = characters[(uint8_t)CHR(str)[a]];
 		if (!ch)
 		{
 			xoff += spacing;

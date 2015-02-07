@@ -51,6 +51,7 @@ CVAR(Int, map_image_height, -5, CVAR_SAVE)
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(String, dir_last)
+EXTERN_CVAR(Bool, map_view_things)
 
 
 /*******************************************************************
@@ -74,6 +75,15 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 
 	// Remove save/revert buttons
 	toolbar->deleteGroup("Entry");
+
+	// Setup bottom panel
+	sizer_bottom->Add(label_stats = new wxStaticText(this, -1, ""), 0, wxALIGN_CENTER_VERTICAL);
+	sizer_bottom->AddStretchSpacer();
+	sizer_bottom->Add(cb_show_things = new wxCheckBox(this, -1, "Show Things"), 0, wxALIGN_CENTER_VERTICAL);
+	cb_show_things->SetValue(map_view_things);
+
+	// Bind events
+	cb_show_things->Bind(wxEVT_CHECKBOX, &MapEntryPanel::onCBShowThings, this);
 
 	// Layout
 	Layout();
@@ -122,7 +132,16 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	}
 
 	// Load map into preview canvas
-	return map_canvas->openMap(thismap);
+	if (map_canvas->openMap(thismap))
+	{
+		label_stats->SetLabel(S_FMT("Vertices: %d, Sides: %d, Lines: %d, Sectors: %d, Things: %d, Total Size: %dx%d", map_canvas->nVertices(), map_canvas->nSides(), map_canvas->nLines(), map_canvas->nSectors(), map_canvas->nThings(), map_canvas->getWidth(), map_canvas->getHeight()));
+		return true;
+	}
+	else
+	{
+		label_stats->SetLabel("");
+		return false;
+	}
 }
 
 /* MapEntryPanel::saveEntry
@@ -135,7 +154,6 @@ bool MapEntryPanel::saveEntry()
 
 /* MapEntryPanel::createImage
  * Creates a PNG file of the map preview
- * TODO: Preference panel for background and line colors,
  * as well as for image size
  *******************************************************************/
 bool MapEntryPanel::createImage()
@@ -167,6 +185,9 @@ bool MapEntryPanel::createImage()
 		// Save 'dir_last'
 		dir_last = dialog_save.GetDirectory();
 
+		// Open the saved image
+		wxLaunchDefaultApplication(dialog_save.GetPath());
+
 		return ret;
 	}
 	return true;
@@ -182,4 +203,18 @@ void MapEntryPanel::toolbarButtonClick(string action_id)
 	{
 		createImage();
 	}
+}
+
+
+/*******************************************************************
+ * MAPENTRYPANEL CLASS EVENTS
+ *******************************************************************/
+
+/* MapEntryPanel::onCBShowThings
+ * Called when the 'Show Things' checkbox is changed
+ *******************************************************************/
+void MapEntryPanel::onCBShowThings(wxCommandEvent& e)
+{
+	map_view_things = cb_show_things->GetValue();
+	map_canvas->Refresh();
 }

@@ -216,15 +216,15 @@ acs_z : acs {
 
 		HUDMSG_PLAIN, HUDMSG_FADEOUT, HUDMSG_TYPEON, HUDMSG_FADEINOUT, HUDMSG_LOG, 
 		HUDMSG_COLORSTRING, HUDMSG_ADDBLEND, HUDMSG_LAYER_OVERHUD, HUDMSG_ALPHA,
-		HUDMSG_LAYER_OVERMAP, HUDMSG_LAYER_UNDERHUD, HUDMSG_LOG, HUDMSG_LOG,
-		HUDMSG_NOTWITH3DVIEW, HUDMSG_NOTWITHFULLMAP, HUDMSG_NOTWITHOVERLAYMAP,
-		HUDMSG_NOWRAP,
+		HUDMSG_LAYER_OVERMAP, HUDMSG_LAYER_UNDERHUD, HUDMSG_NOTWITH3DVIEW,
+		HUDMSG_NOTWITHFULLMAP, HUDMSG_NOTWITHOVERLAYMAP, HUDMSG_NOWRAP,
 
 		MARINEWEAPON_Dummy, MARINEWEAPON_Fist, MARINEWEAPON_BerserkFist, 
 		MARINEWEAPON_Chainsaw, MARINEWEAPON_Pistol, MARINEWEAPON_Shotgun, 
 		MARINEWEAPON_SuperShotgun, MARINEWEAPON_Chaingun, MARINEWEAPON_RocketLauncher, 
 		MARINEWEAPON_PlasmaRifle, MARINEWEAPON_Railgun, MARINEWEAPON_BFG, 
 
+		// ACS actor properties for Get/Check/SetActorProperty functions
 		APROP_Health, APROP_Speed, APROP_Damage, APROP_Alpha, APROP_RenderStyle, 
 		APROP_SeeSound, APROP_AttackSound, APROP_PainSound, APROP_DeathSound, 
 		APROP_ActiveSound, APROP_Ambush, APROP_Invulnerable, APROP_JumpZ, 
@@ -234,11 +234,12 @@ acs_z : acs {
 		APROP_TargetTID, APROP_TracerTID, APROP_Waterlevel, APROP_ScaleX, APROP_ScaleY, 
 		APROP_Dormant, APROP_Mass, APROP_Accuracy, APROP_Stamina, APROP_Height,
 		APROP_Radius, APROP_ReactionTime, APROP_AttackZOffset, APROP_MeleeRange,
-		APROP_ViewHeight,
+		APROP_ViewHeight, APROP_StencilColor, APROP_DamageMultiplier, APROP_Friction,
 
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_Stencil, 
 		STYLE_OptFuzzy, STYLE_Translucent, STYLE_Add, STYLE_Shaded, 
-		STYLE_TranslucentStencil,
+		STYLE_TranslucentStencil, STYLE_Shadow, STYLE_Subtract, STYLE_AddStencil,
+		STYLE_AddShaded,
 
 		LEVELINFO_PAR_TIME, LEVELINFO_CLUSTERNUM, LEVELINFO_LEVELNUM, 
 		LEVELINFO_TOTAL_SECRETS, LEVELINFO_FOUND_SECRETS, LEVELINFO_TOTAL_ITEMS, 
@@ -325,7 +326,7 @@ acs_z : acs {
 		AAPTR_DEFAULT, AAPTR_NULL, AAPTR_TARGET, AAPTR_MASTER, AAPTR_TRACER, 
 		AAPTR_PLAYER_GETTARGET, AAPTR_PLAYER_GETCONVERSATION, AAPTR_PLAYER1, 
 		AAPTR_PLAYER2, AAPTR_PLAYER3, AAPTR_PLAYER4, AAPTR_PLAYER5, AAPTR_PLAYER6, 
-		AAPTR_PLAYER7, AAPTR_PLAYER8, AAPTR_FRIENDPLAYER, 
+		AAPTR_PLAYER7, AAPTR_PLAYER8, AAPTR_FRIENDPLAYER, AAPTR_GET_LINETARGET,
 
 		PTROP_UNSAFETARGET, PTROP_UNSAFEMASTER, PTROP_NOSAFEGUARDS, 
 
@@ -385,7 +386,25 @@ acs_z : acs {
 
 		// Line activation flags
 		SPAC_AnyCross, SPAC_Cross, SPAC_Impact, SPAC_MCross, SPAC_MPush, SPAC_MUse,
-		SPAC_None, SPAC_PCross, SPAC_Push, SPAC_Use, SPAC_UseBack, SPAC_UseThrough
+		SPAC_None, SPAC_PCross, SPAC_Push, SPAC_Use, SPAC_UseBack, SPAC_UseThrough,
+
+		// GetArmorInfo info types
+		ARMORINFO_ACTUALSAVEAMOUNT, ARMORINFO_CLASSNAME, ARMORINFO_MAXABSORB,
+		ARMORINFO_MAXFULLABSORB, ARMORINFO_SAVEAMOUNT, ARMORINFO_SAVEPERCENT,
+
+		// PickActor actor and wall mask flags
+		MF_AMBUSH, MF_CORPSE, MF_COUNTITEM, MF_COUNTKILL, MF_DROPOFF, MF_DROPPED,
+		MF_FLOAT, MF_FRIENDLY, MF_ICECORPSE, MF_INBOUNCE, MF_INCHASE, MF_INFLOAT,
+		MF_JUSTATTACKED, MF_JUSTHIT, MF_MISSILE, MF_NOBLOCKMAP, MF_NOBLOOD, MF_NOCLIP,
+		MF_NOGRAVITY, MF_NOLIFTDROP, MF_NOSECTOR, MF_NOTDMATCH, MF_PICKUP, MF_SHADOW,
+		MF_SHOOTABLE, MF_SKULLFLY, MF_SOLID, MF_SPAWNCEILING, MF_SPAWNSOUNDSOURCE,
+		MF_SPECIAL, MF_STEALTH, MF_TELEPORT, MF_UNMORPHED,
+		ML_3DMIDTEX, ML_ADDTRANS, ML_BLOCK_FLOATERS, ML_BLOCK_PLAYERS, ML_BLOCKEVERYTHING,
+		ML_BLOCKHITSCAN, ML_BLOCKING, ML_BLOCKMONSTERS, ML_BLOCKPROJECTILE, ML_BLOCKSIGHT,
+		ML_BLOCKUSE, ML_CHECKSWITCHRANGE, ML_CLIP_MIDTEX, ML_DONTDRAW, ML_DONTPEGBOTTOM,
+		ML_DONTPEGTOP, ML_FIRSTSIDEONLY, ML_MAPPED, ML_MONSTERSCANACTIVATE, ML_RAILING,
+		ML_REPEAT_SPECIAL, ML_SECRET, ML_SOUNDBLOCK, ML_TWOSIDED, ML_WRAP_MIDTEX,
+		ML_ZONEBOUNDARY
 	}
 
 	functions
@@ -403,6 +422,7 @@ acs_z : acs {
 		Ceiling_CrushAndRaiseA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
 		Ceiling_CrushAndRaiseDist = "int tag, int dist, int speed, int damage, [int crushmode]";
 		Ceiling_CrushAndRaiseSilentA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushAndRaiseSilentDist = "int tag, int dist, int speed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStay = "int tag, int speed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStayA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStaySilA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
@@ -606,6 +626,10 @@ acs_z : acs {
 		ActivatorTID;
 		AmbientSound = "str sound, int volume";
 		CancelFade;
+		CanRaiseActor = "int tid";
+		ChangeActorAngle = "int tid, fixed angle, [bool interpolate]";
+		ChangeActorPitch = "int tid, fixed pitch, [bool interpolate]";
+		ChangeActorRoll = "int tid, fixed angle, [bool interpolate]";
 		ChangeCeiling = "int tag, str flatname";
 		ChangeFloor = "int tag, str flatname";
 		ChangeLevel = "str mapname, int position, int flags,[ int skill]";
@@ -615,7 +639,7 @@ acs_z : acs {
 		CheckActorFloorTexture = "int tid, str texture";
 		CheckActorInventory = "int tid, str inventory_item";
 		CheckActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
-		CheckFlag = "int tid, int flag";
+		CheckFlag = "int tid, str flag";
 		CheckFont = "str fontname";
 		CheckInventory = "str inventory_item";
 		CheckPlayerCamera = "int player";
@@ -628,6 +652,7 @@ acs_z : acs {
 		Cos = "int angle";
 		CreateTranslation = "int transnumber, a:b=c:d, ...", "int transnumber, a:b=[red1,green1,blue1]:[red2,green2,blue2], ...";
 		Delay = "int tics";
+		DropInventory = "int tid, str item";
 		DropItem = "int tid, str item, [int dropamount], [int chance]";
 		FadeRange = "int red1, int green1, int blue1, fixed amount1, int red2, int green2, int blue2, fixed amount2, fixed seconds";
 		FadeTo = "int red, int green, int blue, fixed amount, fixed seconds";
@@ -642,7 +667,9 @@ acs_z : acs {
 		GetActorFloorZ = "int tid";
 		GetActorLightLevel = "int tid";
 		GetActorPitch = "int tid";
+		GetActorPowerupTics = "int tid, str powerup";
 		GetActorProperty = "int tid, int property";
+		GetActorRoll = "int tid";
 		GetActorVelX = "int tid";
 		GetActorVelY = "int tid";
 		GetActorVelZ = "int tid";
@@ -652,6 +679,7 @@ acs_z : acs {
 		GetActorZ = "int tid";
 		GetAirSupply = "int playernum";
 		GetAmmoCapacity = "str classname";
+		GetArmorInfo = "int infotype";
 		GetArmorType = "string armortype, int playernum";
 		GetChar = "str string, int index";
 		GetCVar = "str cvar";
@@ -686,6 +714,7 @@ acs_z : acs {
 		GiveInventory = "str inventory_item, int amount";
 		HudMessage = "text; int type, int id, int color, fixed x, fixed y, fixed holdTime, alpha", "text; HUDMSG_FADEOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed fadetime, alpha", "text; HUDMSG_TYPEON, int id, int color, fixed x, fixed y, fixed holdTime, fixed typetime, fixed fadetime, alpha", "text; HUDMSG_FADEINOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed inTime, fixed outTime, alpha";
 		HudMessageBold = "text; int type, int id, int color, fixed x, fixed y, fixed holdTime, alpha", "text; HUDMSG_FADEOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed fadetime, alpha", "text; HUDMSG_TYPEON, int id, int color, fixed x, fixed y, fixed holdTime, fixed typetime, fixed fadetime, alpha", "text; HUDMSG_FADEINOUT, int id, int color, fixed x, fixed y, fixed holdTime, fixed inTime, fixed outTime, alpha";
+		IsPointerEqual = "int ptr_select1, int ptr_select2, [int tid1], [int tid2]";
 		IsTIDUsed = "int tid";
 		LineSide;
 		LineAttack = "int tid, fixed angle, fixed pitch, int damage, [str pufftype], [str damagetype], [fixed range], [int flags]";
@@ -694,6 +723,7 @@ acs_z : acs {
 		Log = "type:expression";
 		MorphActor = "int tid, [str playerclass, [str monsterclass, [int duration, [int style, [str morphflash, [str unmorphflash]]]]]]";
 		NamedScriptWait = "str script";
+		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask], [bool force_tid]";
 		PlayActorSound = "int tid, int sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
 		PlayerClass = "int playernumber";
 		PlayerCount;
@@ -712,13 +742,15 @@ acs_z : acs {
 		ScriptWait = "int script";
 		SectorDamage = "int tag, int amount, str type, str protection_item, int flags";
 		SectorSound = "str sound, int volume";
-		SetActivator = "int tid[, pointer_selector]";
+		SetActivator = "int tid[, int pointer_selector]";
 		SetActivatorToTarget = "int tid";
-		SetActorAngle = "int tid, int angle";
-		SetActorPitch = "int tid, int pitch";
+		SetActorAngle = "int tid, fixed angle";
+		SetActorPitch = "int tid, fixed pitch";
 		SetActorPosition = "int tid, fixed x, fixed y, fixed z, bool fog";
 		SetActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
+		SetActorRoll = "int tid, fixed angle";
 		SetActorState = "int tid, str statename[, bool exact]";
+		SetActorTeleFog = "int tid, str sourcefog, str destfog";
 		SetActorVelocity = "int tid, fixed velx, fixed vely, fixed velz, bool add, bool setbob";
 		SetAirControl = "int amount";
 		SetAirSupply = "int playernum, int tics";
@@ -775,6 +807,7 @@ acs_z : acs {
 		StrMid = "str string, int start, int length";
 		StrParam = "type:expression";
 		StrRight =  "str string, int length";
+		SwapActorTeleFog = "int tid";
 		TagWait = "int tag";
 		TakeActorInventory = "int tid, str inventory_item, int amount";
 		TakeInventory = "str inventory_item, int amount";

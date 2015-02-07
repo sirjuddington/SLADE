@@ -18,6 +18,13 @@ namespace ColourConfiguration
 	cc_col_t	getColDef(string name);
 	void		setColour(string name, int red = -1, int green = -1, int blue = -1, int alpha = -1, int blend = -1);
 
+	double		getLineHilightWidth();
+	double		getLineSelectionWidth();
+	double		getFlatAlpha();
+	void		setLineHilightWidth(double mult);
+	void		setLineSelectionWidth(double mult);
+	void		setFlatAlpha(double alpha);
+
 
 	bool	readConfiguration(MemChunk& mc);
 	bool	writeConfiguration(MemChunk& mc);

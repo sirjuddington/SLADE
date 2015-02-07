@@ -49,6 +49,7 @@ EXTERN_CVAR(Int, thing_drawtype)
 EXTERN_CVAR(Bool, vertex_round)
 EXTERN_CVAR(Float, line_width)
 EXTERN_CVAR(Int, halo_width)
+EXTERN_CVAR(Bool, sector_selected_fill)
 
 
 /*******************************************************************
@@ -288,7 +289,7 @@ void MCALineSelection::draw()
 	OpenGL::setColour(col);
 
 	// Draw lines
-	glLineWidth(line_width*5);
+	glLineWidth(line_width*ColourConfiguration::getLineSelectionWidth());
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
@@ -469,6 +470,10 @@ bool MCASectorSelection::update(long time)
  *******************************************************************/
 void MCASectorSelection::draw()
 {
+	// Don't draw if no fill
+	if (!sector_selected_fill)
+		return;
+
 	// Setup colour
 	rgba_t col;
 	if (select)

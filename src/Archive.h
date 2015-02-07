@@ -110,6 +110,7 @@ public:
 			format = MAP_UNKNOWN;
 		}
 	};
+	static bool	save_backup;
 
 	Archive(uint8_t type = ARCHIVE_INVALID);
 	virtual ~Archive();

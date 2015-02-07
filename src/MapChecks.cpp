@@ -37,6 +37,7 @@
 #include "MapEditorWindow.h"
 #include "ThingTypeBrowser.h"
 #include "MathStuff.h"
+#include "SectorBuilder.h"
 #include <SFML/System.hpp>
 
 
@@ -68,21 +69,21 @@ public:
 			if (side1)
 			{
 				// Upper
-				if (needs == TEX_FRONT_UPPER && side1->stringProperty("texturetop") == "-")
+				if ((needs & TEX_FRONT_UPPER) > 0 && side1->stringProperty("texturetop") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_FRONT_UPPER);
 				}
 
 				// Middle
-				if (needs == TEX_FRONT_MIDDLE && side1->stringProperty("texturemiddle") == "-")
+				if ((needs & TEX_FRONT_MIDDLE) > 0 && side1->stringProperty("texturemiddle") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_FRONT_MIDDLE);
 				}
 
 				// Lower
-				if (needs == TEX_FRONT_LOWER && side1->stringProperty("texturebottom") == "-")
+				if ((needs & TEX_FRONT_LOWER) > 0 && side1->stringProperty("texturebottom") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_FRONT_LOWER);
@@ -93,27 +94,29 @@ public:
 			if (side2)
 			{
 				// Upper
-				if (needs == TEX_BACK_UPPER && side2->stringProperty("texturetop") == "-")
+				if ((needs & TEX_BACK_UPPER) > 0 && side2->stringProperty("texturetop") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_BACK_UPPER);
 				}
 
 				// Middle
-				if (needs == TEX_BACK_MIDDLE && side2->stringProperty("texturemiddle") == "-")
+				if ((needs & TEX_BACK_MIDDLE) > 0 && side2->stringProperty("texturemiddle") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_BACK_MIDDLE);
 				}
 
 				// Lower
-				if (needs == TEX_BACK_LOWER && side2->stringProperty("texturebottom") == "-")
+				if ((needs & TEX_BACK_LOWER) > 0 && side2->stringProperty("texturebottom") == "-")
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_BACK_LOWER);
 				}
 			}
 		}
+
+		LOG_MESSAGE(3, "Missing Texture Check: %d missing textures", parts.size());
 	}
 
 	unsigned nProblems()
@@ -1438,6 +1441,128 @@ public:
 
 
 /*******************************************************************
+* INVALIDLINECHECK CLASS
+*******************************************************************
+* Checks for any invalid lines (that have no first side)
+*/
+class InvalidLineCheck : public MapCheck
+{
+private:
+	vector<int>	lines;
+
+public:
+	InvalidLineCheck(SLADEMap* map) : MapCheck(map) {}
+
+	void doCheck()
+	{
+		// Go through map lines
+		lines.clear();
+		for (unsigned a = 0; a < map->nLines(); a++)
+		{
+			if (!map->getLine(a)->s1())
+				lines.push_back(a);
+		}
+	}
+
+	unsigned nProblems()
+	{
+		return lines.size();
+	}
+
+	string problemDesc(unsigned index)
+	{
+		if (index >= lines.size())
+			return "No invalid lines found";
+
+		if (map->getLine(lines[index])->s2())
+			return S_FMT("Line %d has no front side", lines[index]);
+		else
+			return S_FMT("Line %d has no sides", lines[index]);
+	}
+
+	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
+	{
+		if (index >= lines.size())
+			return false;
+
+		MapLine* line = map->getLine(lines[index]);
+		if (line->s2())
+		{
+			// Flip
+			if (fix_type == 0)
+			{
+				line->flip();
+				return true;
+			}
+
+			// Create sector
+			else if (fix_type == 1)
+			{
+				fpoint2_t pos = line->dirTabPoint(0.1);
+				editor->createSector(pos.x, pos.y);
+				doCheck();
+				return true;
+			}
+		}
+		else
+		{
+			// Delete
+			if (fix_type == 0)
+			{
+				map->removeLine(line);
+				doCheck();
+				return true;
+			}
+
+			// Create sector
+			else if (fix_type == 1)
+			{
+				fpoint2_t pos = line->dirTabPoint(0.1);
+				editor->createSector(pos.x, pos.y);
+				doCheck();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	MapObject* getObject(unsigned index)
+	{
+		if (index < lines.size())
+			return map->getLine(lines[index]);
+
+		return NULL;
+	}
+
+	string progressText()
+	{
+		return "Checking for invalid lines...";
+	}
+
+	string fixText(unsigned fix_type, unsigned index)
+	{
+		if (map->getLine(lines[index])->s2())
+		{
+			if (fix_type == 0)
+				return "Flip line";
+			else if (fix_type == 1)
+				return "Create sector";
+		}
+		else
+		{
+			if (fix_type == 0)
+				return "Delete line";
+			else if (fix_type == 1)
+				return "Create sector";
+		}
+
+		return "";
+	}
+};
+
+
+/*******************************************************************
  * MAPCHECK STATIC FUNCTIONS
  *******************************************************************/
 
@@ -1519,4 +1644,12 @@ MapCheck* MapCheck::stuckThingsCheck(SLADEMap* map)
 MapCheck* MapCheck::sectorReferenceCheck(SLADEMap* map)
 {
 	return new SectorReferenceCheck(map);
+}
+
+/* MapCheck::invalidLineCheck
+ * Returns a new InvalidLineCheck object for [map]
+ *******************************************************************/
+MapCheck* MapCheck::invalidLineCheck(SLADEMap* map)
+{
+	return new InvalidLineCheck(map);
 }

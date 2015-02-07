@@ -30,7 +30,7 @@ protected:
 	bool		recreate;
 
 public:
-	OGLCanvas(wxWindow* parent, int id, bool handle_timer = true);
+	OGLCanvas(wxWindow* parent, int id, bool handle_timer = true, int timer_interval = 100);
 	~OGLCanvas();
 
 	Palette8bit*	getPalette() { return &palette; }

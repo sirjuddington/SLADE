@@ -164,6 +164,8 @@ void Executables::init()
 void Executables::parse(Parser* p, bool custom)
 {
 	ParseTreeNode* n = (ParseTreeNode*)p->parseTreeRoot()->getChild("executables");
+	if (!n) return;
+
 	for (unsigned a = 0; a < n->nChildren(); a++)
 	{
 		// Get game_exe_t being parsed

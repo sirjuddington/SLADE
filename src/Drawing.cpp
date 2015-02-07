@@ -498,11 +498,17 @@ void Drawing::drawFilledRect(double x1, double y1, double x2, double y2)
 	glEnd();
 }
 
+/* Drawing::drawBorderedRect
+ * Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
+ *******************************************************************/
 void Drawing::drawBorderedRect(fpoint2_t tl, fpoint2_t br, rgba_t colour, rgba_t border_colour)
 {
 	drawBorderedRect(tl.x, tl.y, br.x, br.y, colour, border_colour);
 }
 
+/* Drawing::drawBorderedRect
+ * Draws a filled rectangle with a border from [x1,y1] to [x2,y2]
+ *******************************************************************/
 void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_t colour, rgba_t border_colour)
 {
 	// Rect
@@ -521,6 +527,45 @@ void Drawing::drawBorderedRect(double x1, double y1, double x2, double y2, rgba_
 	glVertex2d(x1, y2-1);
 	glVertex2d(x2-1, y2-1);
 	glVertex2d(x2-1, y1);
+	glEnd();
+}
+
+/* Drawing::drawEllipse
+ * Draws an ellipse at [mid]
+ *******************************************************************/
+void Drawing::drawEllipse(fpoint2_t mid, double radius_x, double radius_y, int sides, rgba_t colour)
+{
+	// Set colour
+	OpenGL::setColour(colour, false);
+
+	// Draw circle as line loop
+	glBegin(GL_LINE_LOOP);
+	double rot = 0;
+	for (int a = 0; a < sides; a++)
+	{
+		glVertex2d(mid.x + sin(rot) * radius_x, mid.y - cos(rot) * radius_y);
+		rot -= (3.1415926535897932384626433832795 * 2) / (double)sides;
+	}
+	glEnd();
+}
+
+/* Drawing::drawFilledEllipse
+ * Draws a filled ellipse at [mid]
+ *******************************************************************/
+void Drawing::drawFilledEllipse(fpoint2_t mid, double radius_x, double radius_y, int sides, rgba_t colour)
+{
+	// Set colour
+	OpenGL::setColour(colour, false);
+
+	// Draw circle as line loop
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2d(mid.x, mid.y);
+	double rot = 0;
+	for (int a = 0; a < sides + 1; a++)
+	{
+		glVertex2d(mid.x + sin(rot) * radius_x, mid.y - cos(rot) * radius_y);
+		rot -= (3.1415926535897932384626433832795 * 2) / (double)sides;
+	}
 	glEnd();
 }
 
@@ -581,7 +626,7 @@ void Drawing::drawTextureWithin(GLTexture* tex, double x1, double y1, double x2,
 
 	// Get max scale for x and y (including padding)
 	double x_scale = ((double)width - padding) / x_dim;
-	double y_scale = ((double)width - padding) / y_dim;
+	double y_scale = ((double)height - padding) / y_dim;
 
 	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
 	double scale = MIN(x_scale, y_scale);

@@ -68,6 +68,7 @@ void ActionSpecial::copy(ActionSpecial* copy)
 	this->name = copy->name;
 	this->group = copy->group;
 	this->tagged = copy->tagged;
+	this->arg_count = copy->arg_count;
 
 	// Copy args
 	for (unsigned a = 0; a < 5; a++)
@@ -101,6 +102,7 @@ void ActionSpecial::parse(ParseTreeNode* node)
 {
 	// Go through all child nodes/values
 	ParseTreeNode* child = NULL;
+	ParseTreeNode* custom = NULL;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		child = (ParseTreeNode*)node->getChild(a);
@@ -165,8 +167,33 @@ void ActionSpecial::parse(ParseTreeNode* node)
 					args[arg].type = ARGT_NOYES;
 				else if (S_CMPNOCASE(atype, "angle"))
 					args[arg].type = ARGT_ANGLE;
+				else if (S_CMPNOCASE(atype, "choice"))
+					args[arg].type = ARGT_CHOICE;
+				else if (S_CMPNOCASE(atype, "flags"))
+					args[arg].type = ARGT_FLAGS;
 				else
 					args[arg].type = ARGT_NUMBER;
+
+				// Customs
+				val = (ParseTreeNode*)child->getChild("custom_values");
+				if (val) {
+					for (unsigned b = 0; b < val->nChildren(); b++)
+					{
+						custom = (ParseTreeNode*)val->getChild(b);
+						args[arg].custom_values.push_back(
+							arg_val_t(custom->getStringValue(), wxAtoi(custom->getName())));
+					}
+				}
+
+				val = (ParseTreeNode*)child->getChild("custom_flags");
+				if (val) {
+					for (unsigned b = 0; b < val->nChildren(); b++)
+					{
+						custom = (ParseTreeNode*)val->getChild(b);
+						args[arg].custom_flags.push_back(
+							arg_val_t(custom->getStringValue(), wxAtoi(custom->getName())));
+					}
+				}
 			}
 		}
 	}
@@ -228,6 +255,8 @@ string ActionSpecial::stringDesc()
 			ret += "No/Yes";
 		else if (args[a].type == ARGT_ANGLE)
 			ret += "Angle";
+		else if (args[a].type == ARGT_CHOICE)
+			ret += "Choice";
 		else
 			ret += "Unknown Type";
 

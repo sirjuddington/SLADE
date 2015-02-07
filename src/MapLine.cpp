@@ -304,7 +304,7 @@ void MapLine::setIntProperty(string key, int value)
 	// Vertices
 	else if (key == "v1")
 	{
-		if (vertex = parent_map->getVertex(value))
+		if ((vertex = parent_map->getVertex(value)))
 		{
 			vertex1->disconnectLine(this);
 			vertex1 = vertex;
@@ -314,7 +314,7 @@ void MapLine::setIntProperty(string key, int value)
 	}
 	else if (key == "v2")
 	{
-		if (vertex = parent_map->getVertex(value))
+		if ((vertex = parent_map->getVertex(value)))
 		{
 			vertex2->disconnectLine(this);
 			vertex2 = vertex;
@@ -326,12 +326,12 @@ void MapLine::setIntProperty(string key, int value)
 	// Sides
 	else if (key == "sidefront")
 	{
-		if (side1 = parent_map->getSide(value))
+		if ((side1 = parent_map->getSide(value)))
 			side1->parent = this;
 	}
 	else if (key == "sideback")
 	{
-		if (side2 = parent_map->getSide(value))
+		if ((side2 = parent_map->getSide(value)))
 			side2->parent = this;
 	}
 
@@ -484,15 +484,18 @@ fpoint2_t MapLine::frontVector()
  * Calculates and returns the end point of the 'direction tab' for
  * the line (used as a front side indicator for 2d map display)
  *******************************************************************/
-fpoint2_t MapLine::dirTabPoint()
+fpoint2_t MapLine::dirTabPoint(double tablen)
 {
 	// Calculate midpoint
 	fpoint2_t mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
 
 	// Calculate tab length
-	double tablen = getLength() * 0.1;
-	if (tablen > 16) tablen = 16;
-	if (tablen < 2) tablen = 2;
+	if (tablen == 0)
+	{
+		tablen = getLength() * 0.1;
+		if (tablen > 16) tablen = 16;
+		if (tablen < 2) tablen = 2;
+	}
 
 	// Calculate tab endpoint
 	if (front_vec.x == 0 && front_vec.y == 0) frontVector();
@@ -533,11 +536,11 @@ double MapLine::distanceTo(double x, double y)
 int MapLine::needsTexture()
 {
 	// Check line is valid
-	if (!side1)
+	if (!frontSector())
 		return 0;
 
 	// If line is 1-sided, it only needs front middle
-	if (!side2)
+	if (!backSector())
 		return TEX_FRONT_MIDDLE;
 
 	// ZDoom's Plane_Align ensures a slope will hide the lower or upper texture

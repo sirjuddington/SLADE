@@ -14,6 +14,8 @@ public:
 		fpoint2_t	old_position;
 		MapVertex*	map_vertex;
 		bool		ignored;
+
+		vertex_t() { map_vertex = NULL; ignored = false; }
 	};
 
 	struct line_t
@@ -49,6 +51,7 @@ public:
 	void		filterObjects(bool filter);
 	void		resetPositions();
 	bool		empty() { return vertices.empty() && things.empty(); }
+	bool		getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, fpoint2_t& v2);
 
 	// Drawing
 	void	getVerticesToDraw(vector<fpoint2_t>& list);
@@ -63,7 +66,7 @@ public:
 	void	applyEdit();
 
 private:
-	vector<vertex_t>	vertices;
+	vector<vertex_t*>	vertices;
 	vector<line_t>		lines;
 	vector<thing_t>		things;
 	bbox_t				bbox;			// Current

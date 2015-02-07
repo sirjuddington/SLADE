@@ -254,25 +254,33 @@
         <File Name="src/MapObjectPropsPanel.h"/>
         <File Name="src/MOPGProperty.h"/>
         <File Name="src/MOPGProperty.cpp"/>
+        <File Name="src/LinePropsPanel.cpp"/>
+        <File Name="src/LinePropsPanel.h"/>
+        <File Name="src/SidePropsPanel.cpp"/>
+        <File Name="src/SidePropsPanel.h"/>
       </VirtualDirectory>
-      <File Name="src/MapTextureBrowser.cpp"/>
-      <File Name="src/MapTextureBrowser.h"/>
-      <File Name="src/ThingTypeBrowser.cpp"/>
-      <File Name="src/ThingTypeBrowser.h"/>
       <File Name="src/ShapeDrawPanel.cpp"/>
       <File Name="src/ShapeDrawPanel.h"/>
       <File Name="src/ScriptEditorPanel.cpp"/>
       <File Name="src/ScriptEditorPanel.h"/>
-      <File Name="src/SectorSpecialDialog.cpp"/>
-      <File Name="src/SectorSpecialDialog.h"/>
-      <File Name="src/ActionSpecialDialog.cpp"/>
-      <File Name="src/ActionSpecialDialog.h"/>
       <File Name="src/GenLineSpecialPanel.cpp"/>
       <File Name="src/GenLineSpecialPanel.h"/>
       <File Name="src/ObjectEditPanel.cpp"/>
       <File Name="src/ObjectEditPanel.h"/>
       <File Name="src/MapChecksPanel.cpp"/>
       <File Name="src/MapChecksPanel.h"/>
+      <VirtualDirectory Name="Dialogs">
+        <File Name="src/ActionSpecialDialog.cpp"/>
+        <File Name="src/ActionSpecialDialog.h"/>
+        <File Name="src/MapTextureBrowser.cpp"/>
+        <File Name="src/MapTextureBrowser.h"/>
+        <File Name="src/SectorSpecialDialog.cpp"/>
+        <File Name="src/SectorSpecialDialog.h"/>
+        <File Name="src/ThingTypeBrowser.cpp"/>
+        <File Name="src/ThingTypeBrowser.h"/>
+        <File Name="src/ShowItemDialog.h"/>
+        <File Name="src/ShowItemDialog.cpp"/>
+      </VirtualDirectory>
     </VirtualDirectory>
     <File Name="src/MapEditorWindow.h"/>
     <File Name="src/MapEditorWindow.cpp"/>
@@ -371,6 +379,8 @@
         <File Name="src/ZipArchive.h"/>
         <File Name="src/DiskArchive.cpp"/>
         <File Name="src/DiskArchive.h"/>
+        <File Name="src/DirArchive.h"/>
+        <File Name="src/DirArchive.cpp"/>
       </VirtualDirectory>
     </VirtualDirectory>
     <VirtualDirectory Name="Binary Control Lumps">
@@ -485,6 +495,8 @@
     <File Name="src/UndoManagerHistoryPanel.h"/>
     <File Name="src/ResourceArchiveChooser.cpp"/>
     <File Name="src/ResourceArchiveChooser.h"/>
+    <File Name="src/SDialog.h"/>
+    <File Name="src/SDialog.cpp"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
@@ -512,6 +524,15 @@
       <File Name="src/zreaders/m_alloc.h"/>
       <File Name="src/zreaders/tarray.h"/>
       <File Name="src/zreaders/templates.h"/>
+      <File Name="src/zreaders/mus2midi.h"/>
+      <File Name="src/zreaders/i_musicinterns.h"/>
+      <File Name="src/zreaders/i_music.h"/>
+      <File Name="src/zreaders/i_music.cpp"/>
+      <File Name="src/zreaders/music_xmi_midiout.cpp"/>
+      <File Name="src/zreaders/music_smf_midiout.cpp"/>
+      <File Name="src/zreaders/music_mus_midiout.cpp"/>
+      <File Name="src/zreaders/music_midistream.cpp"/>
+      <File Name="src/zreaders/music_hmi_midiout.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="Lzma">
       <File Name="src/lzma/C/7z.h"/>
@@ -654,6 +675,7 @@
       <File Name="src/lua/lzio.c"/>
       <File Name="src/lua/lzio.h"/>
     </VirtualDirectory>
+    <VirtualDirectory Name="zmus2mid"/>
   </VirtualDirectory>
   <VirtualDirectory Name="osx">
     <File Name="Info.plist"/>

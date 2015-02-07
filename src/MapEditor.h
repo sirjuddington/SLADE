@@ -103,7 +103,7 @@ private:
 	void getAdjacentWalls3d(selection_3d_t item, vector<selection_3d_t>& list);
 
 	// Helper for autoAlignX3d
-	void doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done);
+	void doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done, int tex_width);
 
 	void mergeLines(long, vector<fpoint2_t>&);
 
@@ -177,7 +177,7 @@ public:
 
 	// Selection/hilight
 	void		clearHilight() { if (!hilight_locked) hilight_item = -1; }
-	bool		updateHilight(fpoint2_t mouse_pos, double dist_scale = 1.0);
+	bool		updateHilight(fpoint2_t mouse_pos, double dist_scale);
 	void		updateTagged();
 	void		selectionUpdated();
 	void		clearSelection(bool animate = true);

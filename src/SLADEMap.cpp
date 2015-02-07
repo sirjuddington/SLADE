@@ -214,205 +214,6 @@ void SLADEMap::removeMapObject(MapObject* object)
 	created_deleted_objects.push_back(mobj_cd_t(object->id, false));
 }
 
-///* SLADEMap::restoreObjectById
-// * Restores the map object with [id] at its last index in the map
-// *******************************************************************/
-//void SLADEMap::restoreObjectById(unsigned id)
-//{
-//	// Get map object to restore
-//	MapObject* object = all_objects[id].mobj;
-//	if (!object)
-//	{
-//		LOG_MESSAGE(2, "restoreObjectById: Invalid object id %u", id);
-//		return;
-//	}
-//
-//	// Vertex
-//	if (object->getObjType() == MOBJ_VERTEX)
-//	{
-//		// Add to map
-//		if (object->index < vertices.size())
-//		{
-//			MapVertex* current = vertices[object->index];
-//			vertices[object->index] = (MapVertex*)object;
-//			current->index = vertices.size();
-//			vertices.push_back(current);
-//		}
-//		else
-//			vertices.push_back((MapVertex*)object);
-//
-//		geometry_updated = theApp->runTimer();
-//	}
-//
-//	// Side
-//	else if (object->getObjType() == MOBJ_SIDE)
-//	{
-//		MapSide* side = (MapSide*)object;
-//
-//		// Connect to sector
-//		if (side->sector)
-//		{
-//			side->sector->connected_sides.push_back(side);
-//			side->sector->poly_needsupdate = true;
-//		}
-//
-//		// Add to map
-//		if (object->index < vertices.size())
-//		{
-//			MapSide* current = sides[side->index];
-//			sides[object->index] = side;
-//			current->index = sides.size();
-//			sides.push_back(current);
-//		}
-//		else
-//			sides.push_back(side);
-//
-//		geometry_updated = theApp->runTimer();
-//	}
-//
-//	// Line
-//	else if (object->getObjType() == MOBJ_LINE)
-//	{
-//		MapLine* line = (MapLine*)object;
-//
-//		// Connect to vertices
-//		if (line->vertex1)
-//			line->vertex1->connected_lines.push_back(line);
-//		if (line->vertex2)
-//			line->vertex2->connected_lines.push_back(line);
-//
-//		// Add to map
-//		if (object->index < vertices.size())
-//		{
-//			MapLine* current = lines[line->index];
-//			lines[line->index] = line;
-//			current->index = lines.size();
-//			lines.push_back(current);
-//		}
-//		else
-//			lines.push_back(line);
-//
-//		geometry_updated = theApp->runTimer();
-//	}
-//
-//	// Sector
-//	else if (object->getObjType() == MOBJ_SECTOR)
-//	{
-//		// Add to map
-//		if (object->index < vertices.size())
-//		{
-//			MapSector* current = sectors[object->index];
-//			sectors[object->index] = (MapSector*)object;
-//			current->index = sectors.size();
-//			sectors.push_back(current);
-//		}
-//		else
-//			sectors.push_back((MapSector*)object);
-//	}
-//
-//	// Thing
-//	else if (object->getObjType() == MOBJ_THING)
-//	{
-//		// Add to map
-//		if (object->index < vertices.size())
-//		{
-//			MapThing* current = things[object->index];
-//			things[object->index] = (MapThing*)object;
-//			current->index = things.size();
-//			things.push_back(current);
-//		}
-//		else
-//			things.push_back((MapThing*)object);
-//	}
-//
-//	all_objects[id].in_map = true;
-//	LOG_MESSAGE(4, "restore id %u index %u", object->id, object->index);
-//}
-//
-///* SLADEMap::removeObjectById
-// * Removes the map object with [id] from the map
-// *******************************************************************/
-//void SLADEMap::removeObjectById(unsigned id)
-//{
-//	// Get map object to remove
-//	MapObject* object = all_objects[id].mobj;
-//	if (!object)
-//	{
-//		LOG_MESSAGE(2, "removeObjectById: Invalid object id %u", id);
-//		return;
-//	}
-//	unsigned oindex = object->getIndex();
-//
-//	// Vertex
-//	if (object->getObjType() == MOBJ_VERTEX)
-//	{
-//		// Remove
-//		vertices[oindex] = vertices.back();
-//		vertices[oindex]->index = oindex;
-//		vertices.pop_back();
-//
-//		geometry_updated = theApp->runTimer();
-//	}
-//
-//	// Side
-//	else if (object->getObjType() == MOBJ_SIDE)
-//	{
-//		MapSide* side = (MapSide*)object;
-//
-//		// Disconnect from sector
-//		if (side->sector)
-//		{
-//			side->sector->disconnectSide(side);
-//			side->sector->poly_needsupdate = true;
-//		}
-//
-//		// Remove
-//		sides[object->getIndex()] = sides.back();
-//		sides[oindex]->index = oindex;
-//		sides.pop_back();
-//	}
-//
-//	// Line
-//	else if (object->getObjType() == MOBJ_LINE)
-//	{
-//		MapLine* line = (MapLine*)object;
-//
-//		// Disconnect from vertices
-//		if (line->vertex1)
-//			line->vertex1->disconnectLine(line);
-//		if (line->vertex2)
-//			line->vertex2->disconnectLine(line);
-//
-//		// Remove
-//		lines[object->getIndex()] = lines.back();
-//		lines[oindex]->index = oindex;
-//		lines.pop_back();
-//
-//		geometry_updated = theApp->runTimer();
-//	}
-//
-//	// Sector
-//	else if (object->getObjType() == MOBJ_SECTOR)
-//	{
-//		// Remove
-//		sectors[object->getIndex()] = sectors.back();
-//		sectors[oindex]->index = oindex;
-//		sectors.pop_back();
-//	}
-//
-//	// Thing
-//	else if (object->getObjType() == MOBJ_THING)
-//	{
-//		// Remove
-//		things[object->getIndex()] = things.back();
-//		things[oindex]->index = oindex;
-//		things.pop_back();
-//	}
-//
-//	LOG_MESSAGE(4, "remove id %u index %u", object->id, object->index);
-//	removeMapObject(object);
-//}
-
 /* SLADEMap::getObjectIdList
  * Adds all object ids of [type] currently in the map to [list]
  *******************************************************************/
@@ -2654,7 +2455,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def = S_FMT("sector//#%u\n{\n", a);
 
 		// Basic properties
-		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";", sectors[a]->f_tex, sectors[a]->c_tex);
+		object_def += S_FMT("texturefloor=\"%s\";\ntextureceiling=\"%s\";\n", sectors[a]->f_tex, sectors[a]->c_tex);
 		if (sectors[a]->f_height != 0) object_def += S_FMT("heightfloor=%d;\n", sectors[a]->f_height);
 		if (sectors[a]->c_height != 0) object_def += S_FMT("heightceiling=%d;\n", sectors[a]->c_height);
 		if (sectors[a]->light != 160) object_def += S_FMT("lightlevel=%d;\n", sectors[a]->light);
@@ -4574,6 +4375,10 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 		else
 			lines[line]->side2 = side;
 
+		// Flip if no first side
+		if (lines[line]->side2 && !lines[line]->side1)
+			lines[line]->flip();
+
 		// Set appropriate line flags
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
 		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
@@ -4703,6 +4508,10 @@ bool SLADEMap::correctLineSectors(MapLine* line)
  *******************************************************************/
 bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 {
+	// Check any map architecture exists
+	if (nVertices() == 0 || nLines() == 0)
+		return false;
+
 	unsigned n_vertices = nVertices();
 	unsigned n_lines = lines.size();
 	MapVertex* last_vertex = this->vertices.back();
@@ -4854,8 +4663,16 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		{
 			MapSector* s1 = getLineSideSector(connected_lines[a], true);
 			MapSector* s2 = getLineSideSector(connected_lines[a], false);
-			if (s1) setLineSector(connected_lines[a]->index, s1->index, true);
-			if (s2) setLineSector(connected_lines[a]->index, s2->index, false);
+			
+			if (s1)
+				setLineSector(connected_lines[a]->index, s1->index, true);
+			else
+				removeSide(connected_lines[a]->side1);
+
+			if (s2)
+				setLineSector(connected_lines[a]->index, s2->index, false);
+			else
+				removeSide(connected_lines[a]->side2);
 		}
 	}
 
@@ -5117,8 +4934,9 @@ void SLADEMap::mapOpenChecks()
 	int rverts = removeDetachedVertices();
 	int rsides = removeDetachedSides();
 	int rsec = removeDetachedSectors();
+	int risides = removeInvalidSides();
 
-	wxLogMessage("Removed %d detached vertices, %d detached sides and %d detached sectors", rverts, rsides, rsec);
+	wxLogMessage("Removed %d detached vertices, %d detached sides, %d invalid sides and %d detached sectors", rverts, rsides, risides, rsec);
 }
 
 /* SLADEMap::removeDetachedVertices
@@ -5196,6 +5014,25 @@ int SLADEMap::removeZeroLengthLines()
 		if (lines[a]->vertex1 == lines[a]->vertex2)
 		{
 			removeLine(a);
+			a--;
+			count++;
+		}
+	}
+
+	return count;
+}
+
+/* SLADEMap::removeInvalidSides
+ * Removes any sides that reference non-existant sectors
+ *******************************************************************/
+int SLADEMap::removeInvalidSides()
+{
+	int count = 0;
+	for (unsigned a = 0; a < sides.size(); a++)
+	{
+		if (!sides[a]->getSector())
+		{
+			removeSide(a);
 			a--;
 			count++;
 		}

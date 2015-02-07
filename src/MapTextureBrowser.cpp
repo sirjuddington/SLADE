@@ -152,6 +152,8 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Textures
 	if (type == 0 || theGameConfiguration->mixTexFlats())
 	{
+		addGlobalItem(new MapTexBrowserItem("-", 0, 0));
+
 		vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
@@ -178,11 +180,10 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 		}
 	}
 
-	populateItemTree();
+	populateItemTree(false);
 
 	// Select initial texture (if any)
-	if (!texture.IsEmpty())
-		selectItem(texture);
+	selectItem(texture);
 }
 
 /* MapTextureBrowser::~MapTextureBrowser

@@ -21,6 +21,7 @@ public:
 	// Events
 	void	onBtnOpenResource(wxCommandEvent& e);
 	void	onBtnRecent(wxCommandEvent& e);
+	void	onResourceChecked(wxCommandEvent& e);
 };
 
 #endif//__RESOURCE_ARCHIVE_CHOOSER_H__

@@ -61,6 +61,7 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
 		Bind(wxEVT_SIZE, &SDialog::onSize, this);
 		Bind(wxEVT_MOVE, &SDialog::onMove, this);
 	}
+	Bind(wxEVT_SHOW, &SDialog::onShow, this);
 }
 
 /* SDialog::SDialog
@@ -68,6 +69,24 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
  *******************************************************************/
 SDialog::~SDialog()
 {
+}
+
+/* SDialog::setSavedSize
+ * Resizes the dialog to its saved size
+ *******************************************************************/
+void SDialog::setSavedSize(int def_width, int def_height)
+{
+	Misc::winf_t info = Misc::getWindowInfo(id);
+	if (!info.id.IsEmpty())
+	{
+		SetInitialSize(wxSize(info.width, info.height));
+		SetSize(info.width, info.height);
+	}
+	else
+	{
+		SetInitialSize(wxSize(def_width, def_height));
+		SetSize(def_width, def_height);
+	}
 }
 
 
@@ -92,5 +111,15 @@ void SDialog::onMove(wxMoveEvent& e)
 {
 	// Update window position settings
 	Misc::setWindowInfo(id, -2, -2, GetPosition().x, GetPosition().y);
+	e.Skip();
+}
+
+/* SDialog::onShow
+ * Called when the dialog is shown
+ *******************************************************************/
+void SDialog::onShow(wxShowEvent& e)
+{
+	if (e.IsShown())
+		CenterOnParent();
 	e.Skip();
 }

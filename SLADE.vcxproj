@@ -33,7 +33,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110_xp</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -78,7 +78,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;SFML_STATIC;NOLIBMODPLUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;NOLIBMODPLUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -87,9 +87,10 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;sndfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;sndfile.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -101,7 +102,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>WIN32;SFML_STATIC;USE_SFML_RENDERWINDOW;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SFML_STATIC;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
       <StringPooling>true</StringPooling>
@@ -114,9 +115,10 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;FreeImage.lib;wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_aui.lib;wxmsw30u_gl.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;wxscintilla.lib;sfml-graphics-s.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;sndfile.lib;openal32.lib;winmm.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;FreeImage.lib;wxbase30u.lib;wxbase30u_net.lib;wxmsw30u_core.lib;wxmsw30u_aui.lib;wxmsw30u_gl.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;wxscintilla.lib;sfml-graphics-s.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;sndfile.lib;openal32.lib;winmm.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -146,6 +148,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;ftgl_static.lib;freetype2411.lib;FreeImage.lib;wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_aui.lib;wxmsw30u_gl.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;wxscintilla.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;sfml-main.lib;openal32.lib;sndfile.lib;winmm.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -273,6 +276,7 @@
     <ClCompile Include="src\LfdArchive.cpp" />
     <ClCompile Include="src\LibArchive.cpp" />
     <ClCompile Include="src\LineInfoOverlay.cpp" />
+    <ClCompile Include="src\LinePropsPanel.cpp" />
     <ClCompile Include="src\LineTextureOverlay.cpp" />
     <ClCompile Include="src\Lua.cpp" />
     <ClCompile Include="src\lua\lapi.c" />
@@ -343,6 +347,8 @@
     <ClCompile Include="src\lzma\C\XzDec.c" />
     <ClCompile Include="src\lzma\C\XzEnc.c" />
     <ClCompile Include="src\lzma\C\XzIn.c" />
+    <ClCompile Include="src\MapBackupManager.cpp" />
+    <ClCompile Include="src\MapBackupPanel.cpp" />
     <ClCompile Include="src\MapChecks.cpp" />
     <ClCompile Include="src\MapChecksPanel.cpp" />
     <ClCompile Include="src\MapEditor.cpp" />
@@ -364,6 +370,7 @@
     <ClCompile Include="src\MOPGProperty.cpp" />
     <ClCompile Include="src\mus2mid\mus2mid.cpp" />
     <ClCompile Include="src\NodeBuilders.cpp" />
+    <ClCompile Include="src\NumberTextCtrl.cpp" />
     <ClCompile Include="src\ObjectEdit.cpp" />
     <ClCompile Include="src\ObjectEditPanel.cpp" />
     <ClCompile Include="src\PakArchive.cpp" />
@@ -389,6 +396,7 @@
     <ClCompile Include="src\SDialog.cpp" />
     <ClCompile Include="src\SectorBuilder.cpp" />
     <ClCompile Include="src\SectorInfoOverlay.cpp" />
+    <ClCompile Include="src\SectorPropsPanel.cpp" />
     <ClCompile Include="src\SectorSpecialDialog.cpp" />
     <ClCompile Include="src\SectorTextureOverlay.cpp" />
     <ClCompile Include="src\SFileDialog.cpp" />
@@ -396,6 +404,7 @@
     <ClCompile Include="src\SFont.cpp" />
     <ClCompile Include="src\ShapeDrawPanel.cpp" />
     <ClCompile Include="src\ShowItemDialog.cpp" />
+    <ClCompile Include="src\SidePropsPanel.cpp" />
     <ClCompile Include="src\SIFormat.cpp" />
     <ClCompile Include="src\SImageFormats.cpp" />
     <ClCompile Include="src\SToolBar.cpp" />
@@ -406,6 +415,7 @@
     <ClCompile Include="src\TextStyle.cpp" />
     <ClCompile Include="src\TextureXPanel.cpp" />
     <ClCompile Include="src\ThingInfoOverlay.cpp" />
+    <ClCompile Include="src\ThingPropsPanel.cpp" />
     <ClCompile Include="src\ThingType.cpp" />
     <ClCompile Include="src\ThingTypeBrowser.cpp" />
     <ClCompile Include="src\ThingTypeTreeView.cpp" />
@@ -416,6 +426,7 @@
     <ClCompile Include="src\UDMFProperty.cpp" />
     <ClCompile Include="src\UndoManagerHistoryPanel.cpp" />
     <ClCompile Include="src\UndoRedo.cpp" />
+    <ClCompile Include="src\VersionCheck.cpp" />
     <ClCompile Include="src\VertexInfoOverlay.cpp" />
     <ClCompile Include="src\VirtualListView.cpp" />
     <ClCompile Include="src\Wad2Archive.cpp" />
@@ -580,6 +591,7 @@
     <ClInclude Include="src\LfdArchive.h" />
     <ClInclude Include="src\LibArchive.h" />
     <ClInclude Include="src\LineInfoOverlay.h" />
+    <ClInclude Include="src\LinePropsPanel.h" />
     <ClInclude Include="src\LineTextureOverlay.h" />
     <ClInclude Include="src\Lua.h" />
     <ClInclude Include="src\lua\lapi.h" />
@@ -638,6 +650,8 @@
     <ClInclude Include="src\lzma\C\Xz.h" />
     <ClInclude Include="src\lzma\C\XzCrc64.h" />
     <ClInclude Include="src\lzma\C\XzEnc.h" />
+    <ClInclude Include="src\MapBackupManager.h" />
+    <ClInclude Include="src\MapBackupPanel.h" />
     <ClInclude Include="src\MapChecks.h" />
     <ClInclude Include="src\MapChecksPanel.h" />
     <ClInclude Include="src\MapEditor.h" />
@@ -662,6 +676,7 @@
     <ClInclude Include="src\MOPGProperty.h" />
     <ClInclude Include="src\mus2mid\mus2mid.h" />
     <ClInclude Include="src\NodeBuilders.h" />
+    <ClInclude Include="src\NumberTextCtrl.h" />
     <ClInclude Include="src\ObjectEdit.h" />
     <ClInclude Include="src\ObjectEditPanel.h" />
     <ClInclude Include="src\PakArchive.h" />
@@ -678,6 +693,7 @@
     <ClInclude Include="src\Parser.h" />
     <ClInclude Include="src\PatchBrowser.h" />
     <ClInclude Include="src\Polygon2D.h" />
+    <ClInclude Include="src\PropsPanelBase.h" />
     <ClInclude Include="src\QuickTextureOverlay3d.h" />
     <ClInclude Include="src\ResArchive.h" />
     <ClInclude Include="src\ResourceArchiveChooser.h" />
@@ -688,6 +704,7 @@
     <ClInclude Include="src\SDialog.h" />
     <ClInclude Include="src\SectorBuilder.h" />
     <ClInclude Include="src\SectorInfoOverlay.h" />
+    <ClInclude Include="src\SectorPropsPanel.h" />
     <ClInclude Include="src\SectorSpecialDialog.h" />
     <ClInclude Include="src\SectorTextureOverlay.h" />
     <ClInclude Include="src\SFileDialog.h" />
@@ -695,6 +712,7 @@
     <ClInclude Include="src\sfMod\sfMod.h" />
     <ClInclude Include="src\ShapeDrawPanel.h" />
     <ClInclude Include="src\ShowItemDialog.h" />
+    <ClInclude Include="src\SidePropsPanel.h" />
     <ClInclude Include="src\SIFDoom.h" />
     <ClInclude Include="src\SIFHexen.h" />
     <ClInclude Include="src\SIFImages.h" />
@@ -713,6 +731,7 @@
     <ClInclude Include="src\TextStyle.h" />
     <ClInclude Include="src\TextureXPanel.h" />
     <ClInclude Include="src\ThingInfoOverlay.h" />
+    <ClInclude Include="src\ThingPropsPanel.h" />
     <ClInclude Include="src\ThingType.h" />
     <ClInclude Include="src\ThingTypeBrowser.h" />
     <ClInclude Include="src\ThingTypeTreeView.h" />
@@ -723,6 +742,7 @@
     <ClInclude Include="src\UDMFProperty.h" />
     <ClInclude Include="src\UndoManagerHistoryPanel.h" />
     <ClInclude Include="src\UndoRedo.h" />
+    <ClInclude Include="src\VersionCheck.h" />
     <ClInclude Include="src\VertexInfoOverlay.h" />
     <ClInclude Include="src\VirtualListView.h" />
     <ClInclude Include="src\Wad2Archive.h" />

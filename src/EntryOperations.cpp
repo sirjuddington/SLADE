@@ -1201,16 +1201,18 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	// Execute acc
 	string command = path_acc + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
+	theApp->SetTopWindow(parent);
 	wxExecute(command, output, wxEXEC_SYNC);
+	theApp->SetTopWindow(theMainWindow);
 
 	// Log output
 	theConsole->logMessage("ACC.exe Output:");
+	string output_log;
 	for (unsigned a = 0; a < output.size(); a++)
+	{
 		theConsole->logMessage(output[a]);
-
-	// Deal with focus-stealing apps
-	if (parent)
-		parent->Raise();
+		output_log += output[a];
+	}
 
 	// Delete source file
 	wxRemoveFile(srcfile);
@@ -1264,12 +1266,18 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 	else
 	{
-		// Read acs.err to string
-		wxFile file(appPath("acs.err", DIR_TEMP));
-		char* buf = new char[file.Length()];
-		file.Read(buf, file.Length());
-		string errors = wxString::From8BitData(buf, file.Length());
-		delete[] buf;
+		string errors;
+		if (wxFileExists(appPath("acs.err", DIR_TEMP)))
+		{
+			// Read acs.err to string
+			wxFile file(appPath("acs.err", DIR_TEMP));
+			char* buf = new char[file.Length()];
+			file.Read(buf, file.Length());
+			errors = wxString::From8BitData(buf, file.Length());
+			delete[] buf;
+		}
+		else
+			errors = output_log;
 
 		ExtMessageDialog dlg(NULL, "Error Compiling");
 		dlg.setMessage("The following errors were encountered while compiling, please fix them and recompile:");

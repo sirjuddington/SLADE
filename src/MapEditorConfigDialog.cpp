@@ -59,7 +59,7 @@ private:
 	wxChoice*	choice_mapformat;
 
 public:
-	NewMapDialog(wxWindow* parent, int game, int port, vector<Archive::mapdesc_t>& maps) : wxDialog(parent, -1, "New Map")
+	NewMapDialog(wxWindow* parent, int game, int port, vector<Archive::mapdesc_t>& maps, Archive* archive) : wxDialog(parent, -1, "New Map")
 	{
 		// Setup dialog
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
@@ -82,9 +82,14 @@ public:
 
 		// Create map name combo box
 		cbo_mapname = new wxComboBox(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, flags);
-		cbo_mapname->SetMaxLength(8);
 		sizer->Add(new wxStaticText(this, -1, "Map Name:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 		sizer->Add(cbo_mapname, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
+
+		// Limit map name length if necessary
+		if (theGameConfiguration->anyMapName() &&
+			(!theGameConfiguration->allowLongNames() ||
+			(archive->getType() != ARCHIVE_ZIP && archive->getType() != ARCHIVE_7Z && archive->getType() != ARCHIVE_FOLDER)))
+			cbo_mapname->SetMaxLength(8);
 
 		// Add possible map names to the combo box
 		for (unsigned a = 0; a < theGameConfiguration->nMapNames(); a++)
@@ -419,7 +424,7 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 
 		// Show new map dialog
 		vector<Archive::mapdesc_t> temp;
-		NewMapDialog dlg(this, sel_game, sel_port, temp);
+		NewMapDialog dlg(this, sel_game, sel_port, temp, archive);
 		dlg.SetInitialSize(wxSize(250, -1));
 		if (dlg.ShowModal() == wxID_OK)
 		{
@@ -546,7 +551,7 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 	int sel_game = choice_game_config->GetSelection();
 
 	// Create new map dialog
-	NewMapDialog dlg(this, sel_game, sel_port, maps);
+	NewMapDialog dlg(this, sel_game, sel_port, maps, archive);
 
 	// Show it
 	dlg.SetInitialSize(wxSize(250, -1));

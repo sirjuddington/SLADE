@@ -56,6 +56,9 @@
 #include "ObjectEditPanel.h"
 #include "ShowItemDialog.h"
 #include "SDialog.h"
+#include "LinePropsPanel.h"
+#include "SectorPropsPanel.h"
+#include "ThingPropsPanel.h"
 
 
 /*******************************************************************
@@ -81,6 +84,7 @@ CVAR(Bool, map_show_help, true, CVAR_SAVE)
 CVAR(Int, map_crosshair, 0, CVAR_SAVE)
 CVAR(Bool, map_show_selection_numbers, true, CVAR_SAVE)
 CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
+CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -663,6 +667,10 @@ void MapCanvas::drawEditorMessages()
 	if (map_showfps) yoff = 16;
 	Drawing::setTextState(true);
 	Drawing::enableTextStateReset(false);
+
+	rgba_t col_fg = ColourConfiguration::getColour("map_editor_message");
+	rgba_t col_bg = ColourConfiguration::getColour("map_editor_message_outline");
+
 	for (unsigned a = 0; a < editor->numEditorMessages(); a++)
 	{
 		// Check message time
@@ -671,7 +679,7 @@ void MapCanvas::drawEditorMessages()
 			continue;
 
 		// Setup message colour
-		rgba_t col = ColourConfiguration::getColour("map_editor_message");
+		rgba_t col = col_fg;
 		if (time < 200)
 		{
 			float flash = 1.0f - (time / 200.0f);
@@ -685,10 +693,10 @@ void MapCanvas::drawEditorMessages()
 			col.a = 255 - (double((time - 1500) / 500.0) * 255);
 
 		// Draw message outline
-		Drawing::drawText(editor->getEditorMessage(a), 2, yoff+1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), 2, yoff-1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), -2, yoff-1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), -2, yoff+1, rgba_t(0, 0, 0, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), 2, yoff+1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), 2, yoff-1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), -2, yoff-1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
+		Drawing::drawText(editor->getEditorMessage(a), -2, yoff+1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
 
 		// Draw message
 		Drawing::drawText(editor->getEditorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
@@ -710,11 +718,13 @@ void MapCanvas::drawFeatureHelpText()
 	// Draw title
 	frect_t bounds;
 	rgba_t col = ColourConfiguration::getColour("map_editor_message");
+	rgba_t col_bg = ColourConfiguration::getColour("map_editor_message_outline");
 	col.a = col.a * anim_help_fade;
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 3, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x, 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x, 3, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	col_bg.a = col_bg.a * anim_help_fade;
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 3, 3, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 3, 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 1, 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 1, 3, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
 	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 2, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT, &bounds);
 
 	// Draw underline
@@ -736,10 +746,10 @@ void MapCanvas::drawFeatureHelpText()
 	for (unsigned a = 1; a < feature_help_lines.size(); a++)
 	{
 		// Draw outline
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff + 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff - 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff - 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff + 1, rgba_t(0, 0, 0, 255 * anim_help_fade), Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff + 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff - 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff - 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff + 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
 
 		// Draw text
 		Drawing::drawText(feature_help_lines[a], GetSize().x - 2, yoff, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
@@ -988,14 +998,6 @@ void MapCanvas::drawObjectEdit()
 	// Map objects
 	renderer_2d->renderObjectEditGroup(group);
 
-	//// Line lengths
-	//vector<ObjectEditGroup::line_t> lines;
-	//group->getLinesToDraw(lines);
-	//setOverlayCoords(true);
-	//for (unsigned a = 0; a < lines.size(); a++)
-	//	drawLineLength(lines[a].v1->position, lines[a].v2->position, col);
-	//setOverlayCoords(false);
-
 	// Bounding box
 	OpenGL::setColour(COL_WHITE);
 	glColor4f(col.fr(), col.fg(), col.fb(), 1.0f);
@@ -1078,6 +1080,24 @@ void MapCanvas::drawObjectEdit()
 		else
 			glLineWidth(2.0f);
 		Drawing::drawLine(bbox.max.x, bbox.max.y, bbox.min.x, bbox.max.y);
+	}
+
+	// Line length
+	fpoint2_t nl_v1, nl_v2;
+	if (group->getNearestLine(mouse_pos_m, 128 / view_scale, nl_v1, nl_v2))
+	{
+		fpoint2_t mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
+		int length = MathStuff::distance(nl_v1.x, nl_v1.y, nl_v2.x, nl_v2.y);
+		int x = screenX(mid.x);
+		int y = screenY(mid.y) - 8;
+		setOverlayCoords(true);
+		Drawing::drawText(S_FMT("%d", length), x+2, y+1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x-2, y+1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x-2, y-1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x+2, y-1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		setOverlayCoords(false);
+		glDisable(GL_TEXTURE_2D);
 	}
 }
 
@@ -1219,7 +1239,7 @@ void MapCanvas::drawMap2d()
 
 
 	// Draw tagged sectors/lines/things if needed
-	if (!overlayActive() && mouse_state == MSTATE_NORMAL || mouse_state == MSTATE_TAG_SECTORS || mouse_state == MSTATE_TAG_THINGS)
+	if (!overlayActive() && (mouse_state == MSTATE_NORMAL || mouse_state == MSTATE_TAG_SECTORS || mouse_state == MSTATE_TAG_THINGS))
 	{
 		if (editor->taggedSectors().size() > 0)
 			renderer_2d->renderTaggedFlats(editor->taggedSectors(), anim_flash_level);
@@ -1639,8 +1659,8 @@ bool MapCanvas::update2d(double mult)
 			view_scale_inter += diff_scale*anim_view_speed*mult;
 
 			// Check for zoom finish
-			if (diff_scale < 0 && view_scale_inter < view_scale ||
-			        diff_scale > 0 && view_scale_inter > view_scale)
+			if ((diff_scale < 0 && view_scale_inter < view_scale) ||
+			        (diff_scale > 0 && view_scale_inter > view_scale))
 				view_scale_inter = view_scale;
 			else
 				view_anim = true;
@@ -1665,8 +1685,8 @@ bool MapCanvas::update2d(double mult)
 				view_xoff_inter += diff_xoff*anim_view_speed*mult;
 
 				// Check stuff
-				if (diff_xoff < 0 && view_xoff_inter < view_xoff ||
-				        diff_xoff > 0 && view_xoff_inter > view_xoff)
+				if ((diff_xoff < 0 && view_xoff_inter < view_xoff) ||
+				        (diff_xoff > 0 && view_xoff_inter > view_xoff))
 					view_xoff_inter = view_xoff;
 				else
 					view_anim = true;
@@ -1681,8 +1701,8 @@ bool MapCanvas::update2d(double mult)
 				// Interpolate offset
 				view_yoff_inter += diff_yoff*anim_view_speed*mult;
 
-				if (diff_yoff < 0 && view_yoff_inter < view_yoff ||
-				        diff_yoff > 0 && view_yoff_inter > view_yoff)
+				if ((diff_yoff < 0 && view_yoff_inter < view_yoff) ||
+				        (diff_yoff > 0 && view_yoff_inter > view_yoff))
 					view_yoff_inter = view_yoff;
 				else
 					view_anim = true;
@@ -1946,6 +1966,7 @@ void MapCanvas::update(long frametime)
 void MapCanvas::mouseToCenter()
 {
 	wxRect rect = GetScreenRect();
+	mouse_warp = true;
 	sf::Mouse::setPosition(sf::Vector2i(rect.x + int(rect.width*0.5), rect.y + int(rect.height*0.5)));
 }
 
@@ -2255,6 +2276,14 @@ void MapCanvas::updateInfoOverlay()
  *******************************************************************/
 void MapCanvas::forceRefreshRenderer()
 {
+	// Update 3d mode info overlay if needed
+	if (editor->editMode() == MapEditor::MODE_3D)
+	{
+		selection_3d_t hl;
+		hl = renderer_3d->determineHilight();
+		info_3d.update(hl.index, hl.type, &(editor->getMap()));
+	}
+
 	renderer_2d->forceUpdate();
 	renderer_3d->clearData();
 }
@@ -2560,23 +2589,30 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 		selsize = S_FMT("(%d selected)", list.size());
 
 	// Create dialog for properties panel
-	SDialog dlg(theMapEditor, S_FMT("%s Properties %s", type, selsize), "mobjprops", 500, 500);
-	dlg.SetMinSize(wxSize(500, 500));
+	SDialog dlg(theMapEditor, S_FMT("%s Properties %s", type, selsize), S_FMT("mobjprops_%d", editor->editMode()), -1, -1);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 
 	// Create properties panel
-	MapObjectPropsPanel* panel_props = new MapObjectPropsPanel(&dlg, true);
-	sizer->Add(panel_props, 1, wxEXPAND|wxALL, 4);
+	PropsPanelBase* panel_props = NULL;
+	if (editor->editMode() == MapEditor::MODE_LINES)
+		sizer->Add(panel_props = new LinePropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+	else if (editor->editMode() == MapEditor::MODE_SECTORS)
+		sizer->Add(panel_props = new SectorPropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+	else if (editor->editMode() == MapEditor::MODE_THINGS)
+		sizer->Add(panel_props = new ThingPropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+	else
+		sizer->Add(panel_props = new MapObjectPropsPanel(&dlg, true), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
 	// Add dialog buttons
-	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->AddSpacer(4);
+	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 	// Open current selection
 	panel_props->openObjects(list);
 
 	// Open the dialog and apply changes if OK was clicked
-	panel_props->SetFocus();
+	dlg.SetMinClientSize(sizer->GetMinSize());
 	dlg.CenterOnParent();
 	if (dlg.ShowModal() == wxID_OK)
 	{
@@ -2590,6 +2626,10 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 
 	// End undo level
 	editor->undoManager()->endRecord(true);
+
+	// Clear property grid to avoid crash (wxPropertyGrid is at fault there)
+	//if (panel_props)
+	//	panel_props->clearGrid();
 }
 
 /* MapCanvas::beginLineDraw
@@ -3071,6 +3111,14 @@ void MapCanvas::keyBinds2d(string name)
 		else if (name == "me2d_mirror_y")
 			editor->mirror(false);
 
+		// Object Properties
+		else if (name == "me2d_object_properties")
+		{
+			vector<MapObject*> objects;
+			editor->getSelectedObjects(objects);
+			editObjectProperties(objects);
+		}
+
 
 		// --- Lines edit mode ---
 		if (editor->editMode() == MapEditor::MODE_LINES)
@@ -3278,7 +3326,7 @@ void MapCanvas::onKeyBindRelease(string name)
 	if (name == "me2d_pan_view" && panning)
 	{
 		panning = false;
-		editor->updateHilight(mouse_pos_m);
+		editor->updateHilight(mouse_pos_m, view_scale);
 		SetCursor(wxNullCursor);
 	}
 
@@ -3286,7 +3334,7 @@ void MapCanvas::onKeyBindRelease(string name)
 	{
 		mouse_state = MSTATE_NORMAL;
 		editor->endUndoRecord(true);
-		editor->updateHilight(mouse_pos_m);
+		editor->updateHilight(mouse_pos_m, view_scale);
 	}
 }
 
@@ -3562,26 +3610,21 @@ bool MapCanvas::handleAction(string id)
 	else if (id == "mapw_line_changespecial")
 	{
 		// Get selection
-		vector<MapLine*> selection;
-		editor->getSelectedLines(selection);
+		//vector<MapLine*> selection;
+		//editor->getSelectedLines(selection);
+		vector<MapObject*> selection;
+		editor->getSelectedObjects(selection);
 
 		// Open action special selection dialog
 		if (selection.size() > 0)
 		{
 			int as = -1;
-			ActionSpecialDialog dlg(this);
-			dlg.setSpecial(selection[0]->getSpecial());
+			ActionSpecialDialog dlg(this, true);
+			dlg.openLines(selection);
 			if (dlg.ShowModal() == wxID_OK)
-				as = dlg.selectedSpecial();
-
-			if (as >= 0)
 			{
-				// Set specials
 				editor->beginUndoRecord("Change Line Special", true, false, false);
-				for (unsigned a = 0; a < selection.size(); a++)
-				{
-					selection[a]->setIntProperty("special", as);
-				}
+				dlg.applyTo(selection, true);
 				editor->endUndoRecord();
 				renderer_2d->forceUpdate();
 			}
@@ -3661,12 +3704,11 @@ bool MapCanvas::handleAction(string id)
 		if (selection.size() > 0)
 		{
 			SectorSpecialDialog dlg(this);
-			int map_format = editor->getMap().currentFormat();
-			dlg.setup(selection[0]->intProperty("special"), map_format);
+			dlg.setup(selection[0]->intProperty("special"));
 			if (dlg.ShowModal() == wxID_OK)
 			{
 				// Set specials of selected sectors
-				int special = dlg.getSelectedSpecial(map_format);
+				int special = dlg.getSelectedSpecial();
 				editor->beginUndoRecord("Change Sector Special", true, false, false);
 				for (unsigned a = 0; a < selection.size(); a++)
 					selection[a]->setIntProperty("special", special);
@@ -3738,58 +3780,60 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	KeyBind::keyPressed(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
 	// Testing
-	if (e.GetKeyCode() == WXK_F6)
+	if (Global::debug)
 	{
-		Polygon2D poly;
-		sf::Clock clock;
-		wxLogMessage("Generating polygons...");
-		for (unsigned a = 0; a < editor->getMap().nSectors(); a++)
+		if (e.GetKeyCode() == WXK_F6)
 		{
-			if (!poly.openSector(editor->getMap().getSector(a)))
-				wxLogMessage("Splitting failed for sector %d", a);
+			Polygon2D poly;
+			sf::Clock clock;
+			wxLogMessage("Generating polygons...");
+			for (unsigned a = 0; a < editor->getMap().nSectors(); a++)
+			{
+				if (!poly.openSector(editor->getMap().getSector(a)))
+					wxLogMessage("Splitting failed for sector %d", a);
+			}
+			//int ms = clock.GetElapsedTime() * 1000;
+			//wxLogMessage("Polygon generation took %dms", ms);
 		}
-		//int ms = clock.GetElapsedTime() * 1000;
-		//wxLogMessage("Polygon generation took %dms", ms);
-	}
-	if (e.GetKeyCode() == WXK_F7)
-	{
-		// Get nearest line
-		int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
-		MapLine* line = editor->getMap().getLine(nearest);
-		if (line)
+		if (e.GetKeyCode() == WXK_F7)
 		{
-			// Determine line side
-			double side = MathStuff::lineSide(mouse_pos_m.x, mouse_pos_m.y, line->x1(), line->y1(), line->x2(), line->y2());
-			if (side >= 0)
-				sbuilder.traceSector(&(editor->getMap()), line, true);
-			else
-				sbuilder.traceSector(&(editor->getMap()), line, false);
+			// Get nearest line
+			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			MapLine* line = editor->getMap().getLine(nearest);
+			if (line)
+			{
+				// Determine line side
+				double side = MathStuff::lineSide(mouse_pos_m.x, mouse_pos_m.y, line->x1(), line->y1(), line->x2(), line->y2());
+				if (side >= 0)
+					sbuilder.traceSector(&(editor->getMap()), line, true);
+				else
+					sbuilder.traceSector(&(editor->getMap()), line, false);
+			}
 		}
-	}
-	if (e.GetKeyCode() == WXK_F5)
-	{
-		// Get nearest line
-		int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
-		MapLine* line = editor->getMap().getLine(nearest);
+		if (e.GetKeyCode() == WXK_F5)
+		{
+			// Get nearest line
+			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			MapLine* line = editor->getMap().getLine(nearest);
 
-		// Get sectors
-		MapSector* sec1 = editor->getMap().getLineSideSector(line, true);
-		MapSector* sec2 = editor->getMap().getLineSideSector(line, false);
-		int i1 = -1;
-		int i2 = -1;
-		if (sec1) i1 = sec1->getIndex();
-		if (sec2) i2 = sec2->getIndex();
+			// Get sectors
+			MapSector* sec1 = editor->getMap().getLineSideSector(line, true);
+			MapSector* sec2 = editor->getMap().getLineSideSector(line, false);
+			int i1 = -1;
+			int i2 = -1;
+			if (sec1) i1 = sec1->getIndex();
+			if (sec2) i2 = sec2->getIndex();
 
-		editor->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
-	}
-
-	if (e.GetKeyCode() == WXK_F5 && editor->editMode() == MapEditor::MODE_SECTORS)
-	{
-		splitter.setVerbose(true);
-		splitter.clear();
-		splitter.openSector(editor->getHilightedSector());
-		Polygon2D temp;
-		splitter.doSplitting(&temp);
+			editor->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
+		}
+		if (e.GetKeyCode() == WXK_F5 && editor->editMode() == MapEditor::MODE_SECTORS)
+		{
+			splitter.setVerbose(true);
+			splitter.clear();
+			splitter.openSector(editor->getHilightedSector());
+			Polygon2D temp;
+			splitter.doSplitting(&temp);
+		}
 	}
 
 	// Update cursor in object edit mode
@@ -3825,7 +3869,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
 	// Update hilight
 	if (mouse_state == MSTATE_NORMAL)
-		editor->updateHilight(mouse_pos_m);
+		editor->updateHilight(mouse_pos_m, view_scale);
 
 	// Update mouse variables
 	mouse_downpos.set(e.GetX(), e.GetY());
@@ -4139,7 +4183,10 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 			double yrel = e.GetY() - int(GetSize().y * 0.5);
 
 			renderer_3d->cameraTurn(-xrel*0.1);
-			renderer_3d->cameraPitch(-yrel*0.003);
+			if (mlook_invert_y)
+				renderer_3d->cameraPitch(yrel*0.003);
+			else
+				renderer_3d->cameraPitch(-yrel*0.003);
 
 			mouseToCenter();
 			fr_idle = 0;
@@ -4258,7 +4305,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
 	if (e.GetWheelRotation() > 0)
 	{
-		KeyBind::keyPressed(keypress_t("mwheelup", e.AltDown(), e.CmdDown(), e.ShiftDown()));
+		KeyBind::keyPressed(keypress_t("mwheelup", e.AltDown(), e.ControlDown(), e.ShiftDown()));
 
 		// Send to overlay if active
 		if (overlayActive())
@@ -4268,7 +4315,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 	}
 	else if (e.GetWheelRotation() < 0)
 	{
-		KeyBind::keyPressed(keypress_t("mwheeldown", e.AltDown(), e.CmdDown(), e.ShiftDown()));
+		KeyBind::keyPressed(keypress_t("mwheeldown", e.AltDown(), e.ControlDown(), e.ShiftDown()));
 
 		// Send to overlay if active
 		if (overlayActive())

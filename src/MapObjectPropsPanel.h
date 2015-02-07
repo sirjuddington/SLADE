@@ -2,6 +2,7 @@
 #ifndef __MAP_OBJECT_PROPS_PANEL_H__
 #define __MAP_OBJECT_PROPS_PANEL_H__
 
+#include "PropsPanelBase.h"
 #include "MOPGProperty.h"
 #include <wx/notebook.h>
 
@@ -10,7 +11,7 @@ class wxPGProperty;
 class MapObject;
 class UDMFProperty;
 class MOPGProperty;
-class MapObjectPropsPanel : public wxPanel
+class MapObjectPropsPanel : public PropsPanelBase
 {
 private:
 	wxNotebook*				tabs_sections;
@@ -20,7 +21,6 @@ private:
 	int						last_type;
 	string					last_config;
 	wxStaticText*			label_item;
-	vector<MapObject*>		objects;
 	vector<MOPGProperty*>	properties;
 	wxPGProperty*			args[5];
 	wxButton*				btn_reset;
@@ -29,6 +29,11 @@ private:
 	wxButton*				btn_add;
 	wxPGProperty*			group_custom;
 	bool					no_apply;
+
+	// Hide properties
+	bool			hide_flags;
+	bool			hide_triggers;
+	vector<string>	hide_props;
 
 	MOPGProperty*	addBoolProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
 	MOPGProperty*	addIntProperty(wxPGProperty* group, string label, string propname, bool readonly = false, wxPropertyGrid* grid = NULL, UDMFProperty* udmf_prop = NULL);
@@ -55,6 +60,12 @@ public:
 	void	openObjects(vector<MapObject*>& objects);
 	void	updateArgs(MOPGIntWithArgsProperty* source);
 	void	applyChanges();
+	void	clearGrid();
+	void	hideFlags(bool hide) { hide_flags = hide; }
+	void	hideTriggers(bool hide) { hide_triggers = hide; }
+	void	hideProperty(string property) { hide_props.push_back(property); }
+	void	clearHiddenProperties() { hide_props.clear(); }
+	bool	propHidden(string property) { return VECTOR_EXISTS(hide_props, property); }
 
 	// Events
 	void	onBtnApply(wxCommandEvent& e);

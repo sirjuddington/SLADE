@@ -137,6 +137,7 @@ void CTextureCanvas::clearTexture()
 
 	// Clear patch selection
 	selected_patches.clear();
+	hilight_patch = -1;
 
 	// Clear full preview
 	tex_preview.clear();
@@ -381,7 +382,7 @@ void CTextureCanvas::drawTexture()
 	}
 
 	// Finally, draw a hilight outline if anything is hilighted
-	if (hilight_patch >= 0)
+	if (hilight_patch >= 0 && hilight_patch < (int)texture->nPatches())
 	{
 		// Set colour
 		OpenGL::setColour(255, 255, 255, 150, BLEND_ADDITIVE);

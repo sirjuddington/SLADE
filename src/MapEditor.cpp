@@ -709,10 +709,7 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 
 	// Update tagged lists if the hilight changed
 	if (current != hilight_item)
-	{
-		LOG_MESSAGE(3, "updateHilight");
 		updateTagged();
-	}
 
 	// Update map object properties panel if the hilight changed
 	if (current != hilight_item && selection.empty())
@@ -832,8 +829,6 @@ void MapEditor::updateThingLists()
  *******************************************************************/
 void MapEditor::updateTagged()
 {
-	LOG_MESSAGE(3, "updateTagged");
-
 	// Clear tagged lists
 	tagged_sectors.clear();
 	tagged_lines.clear();
@@ -912,7 +907,7 @@ void MapEditor::updateTagged()
 
 			// Sector tag
 			if (needs_tag == AS_TT_SECTOR ||
-					needs_tag == AS_TT_SECTOR_AND_BACK && tag > 0)
+					(needs_tag == AS_TT_SECTOR_AND_BACK && tag > 0))
 				map.getSectorsByTag(tag, tagged_sectors);
 
 			// Backside sector (for local doors)
@@ -2570,6 +2565,8 @@ void MapEditor::createSector(double x, double y)
 	// Find nearest line
 	int nearest = map.nearestLine(x, y, 99999999);
 	MapLine* line = map.getLine(nearest);
+	if (!line)
+		return;
 
 	// Determine side
 	double side = MathStuff::lineSide(x, y, line->x1(), line->y1(), line->x2(), line->y2());
@@ -2898,8 +2895,8 @@ void MapEditor::updateShapeDraw(fpoint2_t point)
 
 	// Lock width:height at 1:1 if needed
 	fpoint2_t origin = draw_origin;
-	double width = abs(point.x - origin.x);
-	double height = abs(point.y - origin.y);
+	double width = fabs(point.x - origin.x);
+	double height = fabs(point.y - origin.y);
 	if (shapedraw_lockratio)
 	{
 		if (width < height)
@@ -3040,6 +3037,18 @@ void MapEditor::endLineDraw(bool apply)
 		for (unsigned a = nl_start; a < map.nLines(); a++)
 			new_lines.push_back(map.getLine(a));
 		map.correctSectors(new_lines);
+
+		// Check for and attempt to correct invalid lines
+		vector<MapLine*> invalid_lines;
+		for (unsigned a = 0; a < new_lines.size(); a++)
+		{
+			if (new_lines[a]->s1())
+				continue;
+
+			new_lines[a]->flip();
+			invalid_lines.push_back(new_lines[a]);
+		}
+		map.correctSectors(invalid_lines);
 
 		// End recording undo level
 		endUndoRecord(true);
@@ -4015,7 +4024,7 @@ void MapEditor::changeSectorHeight3d(int amount)
 /* MapEditor::doAlignX3d
  * Recursive function to align textures on the x axis
  *******************************************************************/
-void MapEditor::doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done)
+void MapEditor::doAlignX3d(MapSide* side, int offset, string tex, vector<selection_3d_t>& walls_done, int tex_width)
 {
 	// Check if this wall has already been processed
 	for (unsigned a = 0; a < walls_done.size(); a++)
@@ -4026,6 +4035,13 @@ void MapEditor::doAlignX3d(MapSide* side, int offset, string tex, vector<selecti
 
 	// Add to 'done' list
 	walls_done.push_back(selection_3d_t(side->getIndex(), SEL_SIDE_MIDDLE));
+
+	// Wrap offset
+	if (tex_width > 0)
+	{
+		while (offset >= tex_width)
+			offset -= tex_width;
+	}
 
 	// Set offset
 	side->setIntProperty("offsetx", offset);
@@ -4050,7 +4066,7 @@ void MapEditor::doAlignX3d(MapSide* side, int offset, string tex, vector<selecti
 		{
 			// Check for matching texture
 			if (s->stringProperty("texturetop") == tex || s->stringProperty("texturemiddle") == tex || s->stringProperty("texturebottom") == tex)
-				doAlignX3d(s, offset + intlen, tex, walls_done);
+				doAlignX3d(s, offset + intlen, tex, walls_done, tex_width);
 		}
 
 		// Second side
@@ -4059,7 +4075,7 @@ void MapEditor::doAlignX3d(MapSide* side, int offset, string tex, vector<selecti
 		{
 			// Check for matching texture
 			if (s->stringProperty("texturetop") == tex || s->stringProperty("texturemiddle") == tex || s->stringProperty("texturebottom") == tex)
-				doAlignX3d(s, offset + intlen, tex, walls_done);
+				doAlignX3d(s, offset + intlen, tex, walls_done, tex_width);
 		}
 	}
 }
@@ -4086,6 +4102,12 @@ void MapEditor::autoAlignX3d(selection_3d_t start)
 	else if (start.type == SEL_SIDE_TOP)
 		tex = side->stringProperty("texturetop");
 
+	// Get texture width
+	GLTexture* gl_tex = theMapEditor->textureManager().getTexture(tex, theGameConfiguration->mixTexFlats());
+	int tex_width = -1;
+	if (gl_tex)
+		tex_width = gl_tex->getWidth();
+
 	// Init aligned wall list
 	vector<selection_3d_t> walls_done;
 
@@ -4093,7 +4115,7 @@ void MapEditor::autoAlignX3d(selection_3d_t start)
 	beginUndoRecord("Auto Align X", true, false, false);
 
 	// Do alignment
-	doAlignX3d(side, side->intProperty("offsetx"), tex, walls_done);
+	doAlignX3d(side, side->intProperty("offsetx"), tex, walls_done, tex_width);
 
 	// End undo level
 	endUndoRecord();
@@ -4888,10 +4910,12 @@ void MapEditor::updateStatusText()
 void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 {
 	// Setup
+	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
+	if (manager->currentlyRecording())
+		return;
 	undo_modified = mod;
 	undo_deleted = del;
 	undo_created = create;
-	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
 
 	// Begin recording
 	manager->beginRecord(name);
@@ -4981,6 +5005,7 @@ void MapEditor::doUndo()
 
 		// Refresh stuff
 		//updateTagged();
+		clearSelection();
 		map.rebuildConnectedLines();
 		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();
@@ -5007,6 +5032,7 @@ void MapEditor::doRedo()
 
 		// Refresh stuff
 		//updateTagged();
+		clearSelection();
 		map.rebuildConnectedLines();
 		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();

@@ -331,8 +331,6 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 			                           tex.position.x + halfsize, tex.position.y + halfsize, 0, 2);
 		}
 	}
-	else
-		return;
 
 	glDisable(GL_TEXTURE_2D);
 
@@ -413,11 +411,11 @@ void LineTextureOverlay::mouseRightClick()
 void LineTextureOverlay::keyDown(string key)
 {
 	// 'Select' front side
-	if (key == "F" || key == "f" && side1)
+	if ((key == "F" || key == "f") && side1)
 		selected_side = 0;
 
 	// 'Select' back side
-	if (key == "B" || key == "b" && side2)
+	if ((key == "B" || key == "b") && side2)
 		selected_side = 1;
 
 	// Browse upper texture

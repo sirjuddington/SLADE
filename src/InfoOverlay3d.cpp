@@ -403,10 +403,9 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 		return;
 
 	// Update if needed
-	if (object->modifiedTime() > last_update)
-		update(object->getIndex(), current_type, object->getParentMap());	// object updated
-	else if (object->getObjType() == MOBJ_SIDE && ((MapSide*)object)->getParentLine()->modifiedTime() > last_update)
-		update(object->getIndex(), current_type, object->getParentMap());	// parent line updated
+	if ((object->modifiedTime() > last_update) ||																		// object updated
+		(object->getObjType() == MOBJ_SIDE && ((MapSide*)object)->getParentLine()->modifiedTime() > last_update))		// parent line updated
+		update(object->getIndex(), current_type, object->getParentMap());
 
 	// Init GL stuff
 	glLineWidth(1.0f);
@@ -418,8 +417,8 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	int height = nlines * 16 + 4;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::getColour("map_3d_overlay_background");
+	rgba_t col_fg = ColourConfiguration::getColour("map_3d_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 	col_bg.a = col_bg.a*alpha;
 	rgba_t col_border(0, 0, 0, 140);
@@ -462,8 +461,8 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 {
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
+	rgba_t col_bg = ColourConfiguration::getColour("map_3d_overlay_background");
+	rgba_t col_fg = ColourConfiguration::getColour("map_3d_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 
 	// Check texture exists
@@ -478,10 +477,26 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		glPopMatrix();
 
 		// Draw texture
-		if (texture)
+		if (texture && texture != &(GLTexture::missingTex()))
 		{
 			OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 			Drawing::drawTextureWithin(texture, x, y - 96, x + 80, y - 16, 0);
+		}
+		else if (texname == "-")
+		{
+			// Draw missing icon
+			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/minus");
+			glEnable(GL_TEXTURE_2D);
+			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
+			Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.2);
+		}
+		else if (texname != "-" && texture == &(GLTexture::missingTex()))
+		{
+			// Draw unknown icon
+			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
+			glEnable(GL_TEXTURE_2D);
+			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
+			Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.2);
 		}
 
 		glDisable(GL_TEXTURE_2D);

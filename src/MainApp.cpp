@@ -50,6 +50,7 @@
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "Executables.h"
 #include "Misc.h"
+#include "VersionCheck.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>
@@ -57,6 +58,7 @@
 #include <wx/dir.h>
 #include <wx/sysopt.h>
 #include <wx/filename.h>
+#include <wx/protocol/http.h>
 
 #undef BOOL
 #include <FreeImage.h>
@@ -73,13 +75,15 @@ namespace Global
 {
 	string error = "";
 
-	string version = "3.1.0 beta 4"
+	string version = "3.1.0.1"
 #ifdef GIT_DESCRIPTION
 	                 " (" GIT_DESCRIPTION ")"
 #endif
 	                 "";
 
 	int log_verbosity = 1;
+	int version_num = 3101;
+	int beta_num = 0;
 
 #ifdef DEBUG
 	bool debug = true;
@@ -95,11 +99,14 @@ string	dir_user = "";
 string	dir_app = "";
 bool	exiting = false;
 string	current_action = "";
+bool	update_check_message_box = false;
 CVAR(String, dir_last, "", CVAR_SAVE)
 CVAR(Int, log_verbosity, 1, CVAR_SAVE)
 CVAR(Int, temp_location, 0, CVAR_SAVE)
 CVAR(String, temp_location_custom, "", CVAR_SAVE)
 CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
+CVAR(Bool, update_check, true, CVAR_SAVE)
+CVAR(Bool, update_check_beta, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -405,6 +412,7 @@ void MainApp::initActions()
 	new SAction("main_showundohistory", "&Undo History", "t_undo", "Toggle the Undo History window", "Ctrl+3");
 	new SAction("main_onlinedocs", "Online &Documentation", "t_wiki", "View SLADE documentation online");
 	new SAction("main_about", "&About", "i_logo", "Informaton about SLADE", "", 0, wxID_ABOUT);
+	new SAction("main_updatecheck", "Check for Updates...", "", "Check online for updates");
 
 	// ArchiveManagerPanel
 	new SAction("aman_newwad", "New Wad Archive", "t_newarchive", "Create a new Doom Wad Archive", "Ctrl+Shift+W");
@@ -585,6 +593,7 @@ void MainApp::initActions()
 	new SAction("mapw_saveas", "Save Map &As...", "t_saveas", "Save the map to a new wad archive", "Ctrl+Shift+S");
 	new SAction("mapw_rename", "&Rename Map", "t_rename", "Rename the current map");
 	new SAction("mapw_convert", "Con&vert Map...", "t_convert", "Convert the current map to a different format");
+	new SAction("mapw_backup", "Restore Backup...", "t_undo", "Restore a previous backup of the current map");
 	new SAction("mapw_undo", "Undo", "t_undo", "Undo", "Ctrl+Z");
 	new SAction("mapw_redo", "Redo", "t_redo", "Redo", "Ctrl+Y");
 	new SAction("mapw_setbra", "Set &Base Resource Archive", "e_archive", "Set the Base Resource Archive, to act as the program 'IWAD'");
@@ -651,7 +660,7 @@ bool MainApp::OnInit()
 {
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
-	setlocale (LC_ALL, "C");
+	setlocale(LC_ALL, "C");
 
 	// Init global variables
 	Global::error = "";
@@ -789,8 +798,16 @@ bool MainApp::OnInit()
 		setup_wizard_run = true;
 	}
 
+	// Check for updates
+#ifdef __WXMSW__
+	wxHTTP::Initialize();
+	if (update_check)
+		checkForUpdates(false);
+#endif
+
 	// Bind events
 	Bind(wxEVT_MENU, &MainApp::onMenu, this);
+	Bind(wxEVT_COMMAND_VERSIONCHECK_COMPLETED, &MainApp::onVersionCheckCompleted, this);
 
 	return true;
 }
@@ -1028,6 +1045,24 @@ void MainApp::saveConfigFile()
 	file.Write("\n// End Configuration File\n\n");
 }
 
+/* MainApp::checkForUpdates
+ * Runs the version checker, if [message_box] is true, a message box
+ * will be shown if already up-to-date
+ *******************************************************************/
+void MainApp::checkForUpdates(bool message_box)
+{
+#ifdef __WXMSW__
+	update_check_message_box = message_box;
+	LOG_MESSAGE(1, "Checking for updates...");
+	VersionCheck* checker = new VersionCheck(this);
+	checker->Create();
+	checker->Run();
+#endif
+}
+
+/* MainApp::getAction
+ * Returns the SAction matching [id]
+ *******************************************************************/
 SAction* MainApp::getAction(string id)
 {
 	// Find matching action
@@ -1041,6 +1076,9 @@ SAction* MainApp::getAction(string id)
 	return action_invalid;
 }
 
+/* MainApp::doAction
+ * Performs the SAction matching [id]
+ *******************************************************************/
 bool MainApp::doAction(string id)
 {
 	// Toggle action if necessary
@@ -1065,6 +1103,9 @@ bool MainApp::doAction(string id)
 	return handled;
 }
 
+/* MainApp::toggleAction
+ * Toggles the SAction matching [id]
+ *******************************************************************/
 void MainApp::toggleAction(string id)
 {
 	// Check action type for check/radio toggle
@@ -1088,6 +1129,14 @@ void MainApp::toggleAction(string id)
 	}
 }
 
+
+/*******************************************************************
+ * MAINAPP CLASS EVENTS
+ *******************************************************************/
+
+/* MainApp::onMenu
+ * Called when a menu item is selected in the application
+ *******************************************************************/
 void MainApp::onMenu(wxCommandEvent& e)
 {
 	// Find applicable action
@@ -1109,15 +1158,18 @@ void MainApp::onMenu(wxCommandEvent& e)
 	{
 		current_action = action;
 		handled = doAction(action);
-		current_action = "";
 
 		// Check if triggering object is a menu item
-		if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
+		if (s_action && s_action->type == SAction::CHECK)
 		{
-			wxMenuItem* item = (wxMenuItem*)e.GetEventObject();
-			if (s_action->type == SAction::CHECK)
+			if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
+			{
+				wxMenuItem* item = (wxMenuItem*)e.GetEventObject();
 				item->Check(s_action->toggled);
+			}
 		}
+
+		current_action = "";
 	}
 
 	// If not handled, let something else handle it
@@ -1125,6 +1177,87 @@ void MainApp::onMenu(wxCommandEvent& e)
 		e.Skip();
 }
 
+/* MainApp::onVersionCheckCompleted
+ * Called when the VersionCheck thread completes
+ *******************************************************************/
+void MainApp::onVersionCheckCompleted(wxThreadEvent& e)
+{
+	// Check failed
+	if (e.GetString() == "connect_failed")
+	{
+		LOG_MESSAGE(1, "Version check failed, unable to connect");
+		if (update_check_message_box)
+			wxMessageBox("Update check failed: unable to connect to internet. Check your connection and try again.", "Check for Updates");
+		return;
+	}
+
+	wxArrayString info = wxSplit(e.GetString(), '\n');
+	
+	// Check for correct info
+	if (info.size() != 5)
+	{
+		LOG_MESSAGE(1, "Version check failed, received invalid version info");
+		if (update_check_message_box)
+			wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
+		return;
+	}
+
+	// Get version numbers
+	long version_stable, version_beta, beta_num;
+	info[0].ToLong(&version_stable);
+	info[2].ToLong(&version_beta);
+	info[3].ToLong(&beta_num);
+
+	LOG_MESSAGE(1, "Latest stable release: v%ld \"%s\"", version_stable, info[1].Trim());
+	LOG_MESSAGE(1, "Latest beta release: v%ld_b%ld \"%s\"", version_beta, beta_num, info[4].Trim());
+
+	// Check if new stable version
+	bool new_stable = false;
+	if (Global::version_num < version_stable ||								// New stable version
+		(Global::version_num == version_stable && Global::beta_num > 0))	// Stable version of current beta
+		new_stable = true;
+
+	// Check if new beta version
+	bool new_beta = false;
+	if (version_stable < version_beta)
+	{
+		// Stable -> Beta
+		if (Global::version_num < version_beta && Global::beta_num == 0)
+			new_beta = true;
+
+		// Beta -> Beta
+		else if (Global::version_num < version_beta ||															// New version beta
+				(Global::beta_num < beta_num && Global::version_num == version_beta && Global::beta_num > 0))	// Same version, newer beta
+			new_beta = true;
+	}
+
+	// Ask for new beta
+	if (update_check_beta && new_beta)
+	{
+		if (wxMessageBox(S_FMT("A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage and download the update.", info[4].Trim()), "New Beta Version Available", wxOK|wxCANCEL) == wxOK)
+			wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads");
+
+		return;
+	}
+
+	// Ask for new stable
+	if (new_stable)
+	{
+		if (wxMessageBox(S_FMT("A new version of SLADE is available (%s), click OK to visit the SLADE homepage and download the update.", info[1].Trim()), "New Version Available", wxOK|wxCANCEL) == wxOK)
+			wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads");
+
+		return;
+	}
+
+	LOG_MESSAGE(1, "Already up-to-date");
+	if (update_check_message_box)
+		wxMessageBox("SLADE is already up to date", "Check for Updates");
+}
+
+
+/*******************************************************************
+ * CONSOLE COMMANDS
+ *******************************************************************/
 
 CONSOLE_COMMAND (crash, 0, false)
 {

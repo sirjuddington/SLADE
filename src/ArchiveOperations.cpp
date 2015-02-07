@@ -563,6 +563,17 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 	// Pop up a dialog with a checkbox list of unused textures
 	wxMultiChoiceDialog dialog(theMainWindow, "The following textures are not used in any map,\nselect which textures to delete", "Delete Unused Textures", unused_tex);
 
+	// Get base resource textures (if any)
+	Archive* base_resource = theArchiveManager->baseResourceArchive();
+	vector<ArchiveEntry*> base_tx_entries = base_resource->findAll(opt);
+	PatchTable pt_temp;
+	TextureXList tx;
+	for (unsigned a = 0; a < base_tx_entries.size(); a++)
+		tx.readTEXTUREXData(base_tx_entries[a], pt_temp, true);
+	vector<string> base_resource_textures;
+	for (unsigned a = 0; a < tx.nTextures(); a++)
+		base_resource_textures.push_back(tx.getTexture(a)->getName());
+
 	// Determine which textures to check initially
 	wxArrayInt selection;
 	for (unsigned a = 0; a < unused_tex.size(); a++)
@@ -591,7 +602,19 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 				swtex = true;
 		}
 
-		if (!swtex)
+		// Check for base resource texture
+		bool br_tex = false;
+		for (unsigned b = 0; b < base_resource_textures.size(); b++)
+		{
+			if (base_resource_textures[b].CmpNoCase(unused_tex[a]) == 0)
+			{
+				LOG_MESSAGE(3, "Texture " + base_resource_textures[b] + " is in base resource");
+				br_tex = true;
+				break;
+			}
+		}
+
+		if (!swtex && !br_tex)
 			selection.Add(a);
 	}
 	dialog.SetSelections(selection);

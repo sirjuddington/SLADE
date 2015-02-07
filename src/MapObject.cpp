@@ -357,3 +357,104 @@ void MapObject::endPropBackup()
 {
 	prop_backup_time = -1;
 }
+
+
+/* MapObject::multiBoolProperty
+ * Checks the boolean property [prop] on all objects in [objects].
+ * If all values are the same, [value] is set and returns true,
+ * otherwise returns false
+ *******************************************************************/
+bool MapObject::multiBoolProperty(vector<MapObject*>& objects, string prop, bool& value)
+{
+	// Check objects given
+	if (objects.empty())
+		return false;
+
+	// Check values
+	bool first = objects[0]->boolProperty(prop);
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		// Differing values
+		if (objects[a]->boolProperty(prop) != first)
+			return false;
+	}
+
+	// All had same value
+	value = first;
+	return true;
+}
+
+/* MapObject::multiIntProperty
+ * Checks the integer property [prop] on all objects in [objects].
+ * If all values are the same, [value] is set and returns true,
+ * otherwise returns false
+ *******************************************************************/
+bool MapObject::multiIntProperty(vector<MapObject*>& objects, string prop, int& value)
+{
+	// Check objects given
+	if (objects.empty())
+		return false;
+
+	// Check values
+	int first = objects[0]->intProperty(prop);
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		// Differing values
+		if (objects[a]->intProperty(prop) != first)
+			return false;
+	}
+
+	// All had same value
+	value = first;
+	return true;
+}
+
+/* MapObject::multiFloatProperty
+ * Checks the float property [prop] on all objects in [objects].
+ * If all values are the same, [value] is set and returns true,
+ * otherwise returns false
+ *******************************************************************/
+bool MapObject::multiFloatProperty(vector<MapObject*>& objects, string prop, double& value)
+{
+	// Check objects given
+	if (objects.empty())
+		return false;
+
+	// Check values
+	double first = objects[0]->floatProperty(prop);
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		// Differing values
+		if (objects[a]->floatProperty(prop) != first)
+			return false;
+	}
+
+	// All had same value
+	value = first;
+	return true;
+}
+
+/* MapObject::multiStringProperty
+ * Checks the string property [prop] on all objects in [objects].
+ * If all values are the same, [value] is set and returns true,
+ * otherwise returns false
+ *******************************************************************/
+bool MapObject::multiStringProperty(vector<MapObject*>& objects, string prop, string& value)
+{
+	// Check objects given
+	if (objects.empty())
+		return false;
+
+	// Check values
+	string first = objects[0]->stringProperty(prop);
+	for (unsigned a = 1; a < objects.size(); a++)
+	{
+		// Differing values
+		if (objects[a]->stringProperty(prop) != first)
+			return false;
+	}
+
+	// All had same value
+	value = first;
+	return true;
+}

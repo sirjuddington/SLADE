@@ -350,7 +350,7 @@ int ArchiveEntryList::columnType(int column) const
 /* ArchiveEntryList::updateList
  * Updates + refreshes the list
  *******************************************************************/
-void ArchiveEntryList::updateList()
+void ArchiveEntryList::updateList(bool clear)
 {
 	// If no current directory, set size to 0
 	if (!current_dir)

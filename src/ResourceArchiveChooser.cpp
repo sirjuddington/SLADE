@@ -82,6 +82,7 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 	// Bind events
 	btn_open_resource->Bind(wxEVT_BUTTON, &ResourceArchiveChooser::onBtnOpenResource, this);
 	btn_recent->Bind(wxEVT_BUTTON, &ResourceArchiveChooser::onBtnRecent, this);
+	list_resources->Bind(wxEVT_CHECKLISTBOX, &ResourceArchiveChooser::onResourceChecked, this);
 
 	Layout();
 }
@@ -165,4 +166,9 @@ void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 			archives.push_back(na);
 		}
 	}
+}
+
+void ResourceArchiveChooser::onResourceChecked(wxCommandEvent& e)
+{
+	theArchiveManager->setArchiveResource(archives[e.GetInt()], list_resources->IsChecked(e.GetInt()));
 }

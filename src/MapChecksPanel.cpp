@@ -99,6 +99,10 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_sector_refs = new wxCheckBox(this, -1, "Check sector references");
 	gb_sizer->Add(cb_sector_refs, wxGBPosition(4, 1), wxDefaultSpan, wxEXPAND);
 
+	// Check for invalid lines
+	cb_invalid_lines = new wxCheckBox(this, -1, "Check for invalid lines");
+	gb_sizer->Add(cb_invalid_lines, wxGBPosition(5, 0), wxDefaultSpan, wxEXPAND);
+
 	// Error list
 	lb_errors = new wxListBox(this, -1);
 	sizer->Add(lb_errors, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -139,6 +143,7 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_unknown_tex->SetValue(true);
 	cb_unknown_things->SetValue(true);
 	cb_stuck_things->SetValue(true);
+	cb_invalid_lines->SetValue(true);
 	//cb_sector_refs->SetValue(true);
 
 	btn_fix1->Show(false);
@@ -329,6 +334,8 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 		active_checks.push_back(MapCheck::stuckThingsCheck(map));
 	if (cb_sector_refs->GetValue())
 		active_checks.push_back(MapCheck::sectorReferenceCheck(map));
+	if (cb_invalid_lines->GetValue())
+		active_checks.push_back(MapCheck::invalidLineCheck(map));
 
 	// Run checks
 	for (unsigned a = 0; a < active_checks.size(); a++)
@@ -373,7 +380,10 @@ void MapChecksPanel::onBtnFix1(wxCommandEvent& e)
 	int selected = lb_errors->GetSelection();
 	if (selected >= 0 && selected < (int)check_items.size())
 	{
+		theMapEditor->mapEditor().beginUndoRecord(btn_fix1->GetLabel());
+		theMapEditor->mapEditor().clearSelection();
 		bool fixed = check_items[selected].check->fixProblem(check_items[selected].index, 0, &(theMapEditor->mapEditor()));
+		theMapEditor->mapEditor().endUndoRecord(fixed);
 		if (fixed)
 		{
 			refreshList();
@@ -390,7 +400,10 @@ void MapChecksPanel::onBtnFix2(wxCommandEvent& e)
 	int selected = lb_errors->GetSelection();
 	if (selected >= 0 && selected < (int)check_items.size())
 	{
+		theMapEditor->mapEditor().beginUndoRecord(btn_fix2->GetLabel());
+		theMapEditor->mapEditor().clearSelection();
 		bool fixed = check_items[selected].check->fixProblem(check_items[selected].index, 1, &(theMapEditor->mapEditor()));
+		theMapEditor->mapEditor().endUndoRecord(fixed);
 		if (fixed)
 		{
 			refreshList();

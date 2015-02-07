@@ -11,6 +11,9 @@ private:
 	wxCheckBox*	cb_archive_load;
 	wxCheckBox*	cb_archive_close_tab;
 	wxCheckBox*	cb_wads_root;
+	wxCheckBox*	cb_update_check;
+	wxCheckBox* cb_update_check_beta;
+	wxCheckBox*	cb_confirm_exit;
 
 public:
 	GeneralPrefsPanel(wxWindow* parent);

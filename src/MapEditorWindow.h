@@ -18,6 +18,7 @@ class MapCanvas;
 class MapChecksPanel;
 class UndoManagerHistoryPanel;
 class UndoManager;
+class MapBackupManager;
 class MapEditorWindow : public STopWindow, public SActionHandler
 {
 private:
@@ -27,9 +28,11 @@ private:
 	MapObjectPropsPanel*		panel_obj_props;
 	ScriptEditorPanel*			panel_script_editor;
 	Archive::mapdesc_t			mdesc_current;
+	vector<ArchiveEntry*>		map_data;
 	ObjectEditPanel*			panel_obj_edit;
 	MapChecksPanel*				panel_checks;
 	UndoManagerHistoryPanel*	panel_undo_history;
+	MapBackupManager*			backup_manager;
 
 	// Singleton instance
 	static MapEditorWindow*		instance;
@@ -72,7 +75,7 @@ public:
 	bool		createMap();
 	bool		openMap(Archive::mapdesc_t map);
 	void		loadMapScripts(Archive::mapdesc_t map);
-	WadArchive*	writeMap(string name="MAP01");
+	WadArchive*	writeMap(string name="MAP01", bool nodes = true);
 	bool		saveMap();
 	bool		saveMapAs();
 	void		closeMap();

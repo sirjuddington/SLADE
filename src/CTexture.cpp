@@ -846,9 +846,9 @@ string CTexture::asText()
 
 	// Write texture properties
 	if (scale_x != 1.0)
-		text += S_FMT("\tXScale %1.1f\n", scale_x);
+		text += S_FMT("\tXScale %1.3f\n", scale_x);
 	if (scale_y != 1.0)
-		text += S_FMT("\tYScale %1.1f\n", scale_y);
+		text += S_FMT("\tYScale %1.3f\n", scale_y);
 	if (offset_x != 0 || offset_y != 0)
 		text += S_FMT("\tOffset %d, %d\n", offset_x, offset_y);
 	if (world_panning)

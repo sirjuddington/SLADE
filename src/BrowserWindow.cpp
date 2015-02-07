@@ -204,6 +204,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent) : wxDialog(parent, -1, "Browser",
 	text_filter->Bind(wxEVT_TEXT, &BrowserWindow::onTextFilterChanged, this);
 	slider_zoom->Bind(wxEVT_SLIDER, &BrowserWindow::onZoomChanged, this);
 	Bind(wxEVT_BROWSERCANVAS_SELECTION_CHANGED, &BrowserWindow::onCanvasSelectionChanged, this, canvas->GetId());
+	canvas->Bind(wxEVT_CHAR, &BrowserWindow::onCanvasKeyChar, this);
 
 	Layout();
 	SetInitialSize(wxSize(768, 600));
@@ -228,8 +229,22 @@ BrowserWindow::~BrowserWindow()
 bool BrowserWindow::addItem(BrowserItem* item, string where)
 {
 	BrowserTreeNode* target = (BrowserTreeNode*)items_root->addChild(where);
-	target->addItem(item);
-	return true;
+	if (target)
+	{
+		target->addItem(item);
+		return true;
+	}
+	else
+		return false;
+}
+
+/* BrowserWindow::addGlobalItem
+ * Adds [item] to the global items list. Global items will show up
+ * no matter what category is currently selected
+ *******************************************************************/
+void BrowserWindow::addGlobalItem(BrowserItem* item)
+{
+	items_global.push_back(item);
 }
 
 /* BrowserWindow::clearItems
@@ -283,6 +298,18 @@ bool BrowserWindow::selectItem(string name, BrowserTreeNode* node)
 	// Check node was given, if not start from root
 	if (!node)
 		node = items_root;
+
+	// Check global items
+	for (unsigned a = 0; a < items_global.size(); a++)
+	{
+		if (S_CMPNOCASE(name, items_global[a]->getName()))
+		{
+			openTree(node);
+			canvas->selectItem(items_global[a]);
+			canvas->showSelectedItem();
+			return true;
+		}
+	}
 
 	// Go through all items in this node
 	for (unsigned a = 0;  a < node->nItems(); a++)
@@ -381,7 +408,13 @@ void BrowserWindow::openTree(BrowserTreeNode* node, bool clear)
 {
 	// Clear if needed
 	if (clear)
+	{
 		canvas->clearItems();
+
+		// Also add global items
+		for (unsigned a = 0; a < items_global.size(); a++)
+			canvas->addItem(items_global[a]);
+	}
 
 	// Add all items in the node
 	for (unsigned a = 0; a < node->nItems(); a++)
@@ -431,7 +464,7 @@ int expandtree(wxTreeListCtrl* tree, wxTreeListItem& item, bool expand, int dept
  * Populates the wxTreeCtrl with the contents of the browser item
  * category tree
  *******************************************************************/
-void BrowserWindow::populateItemTree()
+void BrowserWindow::populateItemTree(bool collapse_all)
 {
 	// Clear current tree
 	tree_items->DeleteAllItems();
@@ -453,7 +486,8 @@ void BrowserWindow::populateItemTree()
 #endif
 	tree_items->SetMinSize(wxSize(colwidth + 16, -1));
 	Layout();
-	expandtree(tree_items, item, false, 0);
+	if (collapse_all)
+		expandtree(tree_items, item, false, 0);
 }
 
 /* BrowserWindow::addItemTree
@@ -582,6 +616,9 @@ void BrowserWindow::onZoomChanged(wxCommandEvent& e)
 	canvas->Refresh();
 }
 
+/* BrowserWindow::onCanvasSelectionChanged
+ * Called when the selection changes on the browser canvas
+ *******************************************************************/
 void BrowserWindow::onCanvasSelectionChanged(wxEvent& e)
 {
 	// Get selected item
@@ -607,4 +644,56 @@ void BrowserWindow::onCanvasSelectionChanged(wxEvent& e)
 	label_info->SetLabel(info);
 	Refresh();
 	return;
+}
+
+/* BrowserWindow::onCanvasKeyChar
+ * Called when a key is pressed in the browser canvas
+ *******************************************************************/
+int bw_chars[] =
+{
+	'.', ',', '_', '-', '+', '=', '`', '~',
+	'!', '@', '#', '$', '(', ')', '[', ']',
+	'{', '}', ':', ';', '/', '\\', '<', '>',
+	'?', '^', '&', '\'', '\"',
+};
+int n_bw_chars = 30;
+void BrowserWindow::onCanvasKeyChar(wxKeyEvent& e)
+{
+	// Backspace
+	if (e.GetKeyCode() == WXK_BACK && text_filter->GetValue().size() > 0)
+	{
+		string filter = text_filter->GetValue();
+		filter.RemoveLast(1);
+		text_filter->SetValue(filter);
+		e.Skip();
+		return;
+	}
+
+	// Check the key pressed is actually a character (a-z, 0-9 etc)
+	bool isRealChar = false;
+	if (e.GetKeyCode() >= 'a' && e.GetKeyCode() <= 'z')			// Lowercase
+		isRealChar = true;
+	else if (e.GetKeyCode() >= 'A' && e.GetKeyCode() <= 'Z')	// Uppercase
+		isRealChar = true;
+	else if (e.GetKeyCode() >= '0' && e.GetKeyCode() <= '9')	// Number
+		isRealChar = true;
+	else
+	{
+		for (int a = 0; a < n_bw_chars; a++)
+		{
+			if (e.GetKeyCode() == bw_chars[a])
+			{
+				isRealChar = true;
+				break;
+			}
+		}
+	}
+
+	if (isRealChar)
+	{
+		string filter = text_filter->GetValue();
+		filter += e.GetKeyCode();
+		filter.MakeUpper();
+		text_filter->SetValue(filter);
+	}
 }

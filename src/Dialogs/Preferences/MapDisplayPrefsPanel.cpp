@@ -51,6 +51,7 @@ EXTERN_CVAR(Bool, thing_overlay_square)
 EXTERN_CVAR(Float, thing_shadow)
 EXTERN_CVAR(Float, flat_brightness)
 EXTERN_CVAR(Bool, sector_hilight_fill)
+EXTERN_CVAR(Bool, sector_selected_fill)
 EXTERN_CVAR(Bool, flat_ignore_light)
 EXTERN_CVAR(Bool, line_tabs_always)
 EXTERN_CVAR(Bool, map_animate_hilight)
@@ -315,6 +316,10 @@ void MapDisplayPrefsPanel::setupFlatsTab()
 	cb_sector_hilight_fill = new wxCheckBox(panel, -1, "Filled sector hilight");
 	sizer->Add(cb_sector_hilight_fill, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
+	// Fill sector selection
+	cb_sector_selected_fill = new wxCheckBox(panel, -1, "Filled sector selection");
+	sizer->Add(cb_sector_selected_fill, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
 	// Fade when not in sectors mode
 	cb_flat_fade = new wxCheckBox(panel, -1, "Fade flats when not in sectors mode");
 	sizer->Add(cb_flat_fade, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -334,6 +339,7 @@ void MapDisplayPrefsPanel::init()
 	cb_thing_arrow_colour->SetValue(arrow_colour);
 	cb_flat_ignore_light->SetValue(flat_ignore_light);
 	cb_sector_hilight_fill->SetValue(sector_hilight_fill);
+	cb_sector_selected_fill->SetValue(sector_selected_fill);
 	cb_animate_hilight->SetValue(map_animate_hilight);
 	cb_animate_selection->SetValue(map_animate_selection);
 	cb_animate_tagged->SetValue(map_animate_tagged);
@@ -375,6 +381,7 @@ void MapDisplayPrefsPanel::applyPreferences()
 	flat_brightness = (float)slider_flat_brightness->GetValue() * 0.1f;
 	flat_ignore_light = cb_flat_ignore_light->GetValue();
 	sector_hilight_fill = cb_sector_hilight_fill->GetValue();
+	sector_selected_fill = cb_sector_selected_fill->GetValue();
 	map_animate_hilight = cb_animate_hilight->GetValue();
 	map_animate_selection = cb_animate_selection->GetValue();
 	map_animate_tagged = cb_animate_tagged->GetValue();

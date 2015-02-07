@@ -70,6 +70,8 @@ InputKeyCtrl::InputKeyCtrl(wxWindow* parent, keypress_t init)
 	Bind(wxEVT_KEY_DOWN, &InputKeyCtrl::onKeyDown, this);
 	Bind(wxEVT_CHAR, &InputKeyCtrl::onKeyDown, this);
 	Bind(wxEVT_MIDDLE_DOWN, &InputKeyCtrl::onMouseDown, this);
+	Bind(wxEVT_AUX1_DOWN, &InputKeyCtrl::onMouseDown, this);
+	Bind(wxEVT_AUX2_DOWN, &InputKeyCtrl::onMouseDown, this);
 	Bind(wxEVT_MOUSEWHEEL, &InputKeyCtrl::onMouseDown, this);
 	Bind(wxEVT_TEXT_ENTER, &InputKeyCtrl::onEnter, this);
 }
@@ -98,6 +100,14 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent& e)
 	// Middle button
 	if (e.GetEventType() == wxEVT_MIDDLE_DOWN)
 		key.key = "mouse3";
+
+	// Button 4
+	else if (e.GetEventType() == wxEVT_AUX1_DOWN)
+		key.key = "mouse4";
+
+	// Button 5
+	else if (e.GetEventType() == wxEVT_AUX2_DOWN)
+		key.key = "mouse5";
 
 	// Mouse wheel
 	else if (e.GetEventType() == wxEVT_MOUSEWHEEL)

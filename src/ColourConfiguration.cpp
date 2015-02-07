@@ -40,6 +40,12 @@
  *******************************************************************/
 typedef std::map<string, cc_col_t> ColourHashMap;
 ColourHashMap	cc_colours;
+namespace ColourConfiguration
+{
+	double	line_hilight_width;
+	double	line_selection_width;
+	double	flat_alpha;
+}
 
 
 /*******************************************************************
@@ -85,6 +91,54 @@ void ColourConfiguration::setColour(string name, int red, int green, int blue, i
 	col.exists = true;
 }
 
+/* ColourConfiguration::getLineHilightWidth
+ * Returns the line hilight width multiplier
+ *******************************************************************/
+double ColourConfiguration::getLineHilightWidth()
+{
+	return line_hilight_width;
+}
+
+/* ColourConfiguration::getLineSelectionWidth
+ * Returns the line selection width multiplier
+ *******************************************************************/
+double ColourConfiguration::getLineSelectionWidth()
+{
+	return line_selection_width;
+}
+
+/* ColourConfiguration::getFlatAlpha
+ * Returns the flat alpha multiplier
+ *******************************************************************/
+double ColourConfiguration::getFlatAlpha()
+{
+	return flat_alpha;
+}
+
+/* ColourConfiguration::setLineHilightWidth
+ * Sets the line hilight width multiplier
+ *******************************************************************/
+void ColourConfiguration::setLineHilightWidth(double mult)
+{
+	line_hilight_width = mult;
+}
+
+/* ColourConfiguration::setLineSelectionWidth
+ * Sets the line selection width multiplier
+ *******************************************************************/
+void ColourConfiguration::setLineSelectionWidth(double mult)
+{
+	line_selection_width = mult;
+}
+
+/* ColourConfiguration::setFlatAlpha
+ * Sets the flat alpha multiplier
+ *******************************************************************/
+void ColourConfiguration::setFlatAlpha(double alpha)
+{
+	flat_alpha = alpha;
+}
+
 /* ColourConfiguration::readConfiguration
  * Reads a colour configuration from text data [mc]
  *******************************************************************/
@@ -96,48 +150,71 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 
 	// Get 'colours' block
 	ParseTreeNode* colours = (ParseTreeNode*)parser.parseTreeRoot()->getChild("colours");
-	if (!colours)
-		return false;
-
-	// Read all colour definitions
-	for (unsigned a = 0; a < colours->nChildren(); a++)
+	if (colours)
 	{
-		ParseTreeNode* def = (ParseTreeNode*)colours->getChild(a);
-
-		// Read properties
-		for (unsigned b = 0; b < def->nChildren(); b++)
+		// Read all colour definitions
+		for (unsigned a = 0; a < colours->nChildren(); a++)
 		{
-			ParseTreeNode* prop = (ParseTreeNode*)def->getChild(b);
-			cc_col_t& col = cc_colours[def->getName()];
-			col.exists = true;
+			ParseTreeNode* def = (ParseTreeNode*)colours->getChild(a);
 
-			// Colour name
-			if (prop->getName() == "name")
-				col.name = prop->getStringValue();
-
-			// Colour group (for config ui)
-			else if (prop->getName() == "group")
-				col.group = prop->getStringValue();
-
-			// Colour
-			else if (prop->getName() == "rgb")
-				col.colour.set(prop->getIntValue(0), prop->getIntValue(1), prop->getIntValue(2));
-
-			// Alpha
-			else if (prop->getName() == "alpha")
-				col.colour.a = prop->getIntValue();
-
-			// Additive
-			else if (prop->getName() == "additive")
+			// Read properties
+			for (unsigned b = 0; b < def->nChildren(); b++)
 			{
-				if (prop->getBoolValue())
-					col.colour.blend = 1;
+				ParseTreeNode* prop = (ParseTreeNode*)def->getChild(b);
+				cc_col_t& col = cc_colours[def->getName()];
+				col.exists = true;
+
+				// Colour name
+				if (prop->getName() == "name")
+					col.name = prop->getStringValue();
+
+				// Colour group (for config ui)
+				else if (prop->getName() == "group")
+					col.group = prop->getStringValue();
+
+				// Colour
+				else if (prop->getName() == "rgb")
+					col.colour.set(prop->getIntValue(0), prop->getIntValue(1), prop->getIntValue(2));
+
+				// Alpha
+				else if (prop->getName() == "alpha")
+					col.colour.a = prop->getIntValue();
+
+				// Additive
+				else if (prop->getName() == "additive")
+				{
+					if (prop->getBoolValue())
+						col.colour.blend = 1;
+					else
+						col.colour.blend = 0;
+				}
+
 				else
-					col.colour.blend = 0;
+					wxLogMessage("Warning: unknown colour definition property \"%s\"", prop->getName());
 			}
+		}
+	}
+
+	// Get 'theme' block
+	ParseTreeNode* theme = (ParseTreeNode*)parser.parseTreeRoot()->getChild("theme");
+	if (theme)
+	{
+		// Read all theme definitions
+		for (unsigned a = 0; a < theme->nChildren(); a++)
+		{
+			ParseTreeNode* prop = (ParseTreeNode*)theme->getChild(a);
+
+			if (prop->getName() == "line_hilight_width")
+				line_hilight_width = prop->getFloatValue();
+
+			else if (prop->getName() == "line_selection_width")
+				line_selection_width = prop->getFloatValue();
+
+			else if (prop->getName() == "flat_alpha")
+				flat_alpha = prop->getFloatValue();
 
 			else
-				wxLogMessage("Warning: unknown colour definition property \"%s\"", prop->getName());
+				LOG_MESSAGE(1, "Warning: unknown theme property \"%s\"", prop->getName());
 		}
 	}
 
@@ -190,6 +267,11 @@ bool ColourConfiguration::writeConfiguration(MemChunk& mc)
 		i++;
 	}
 
+	cfgstring += "}\n\ntheme\n{\n";
+
+	cfgstring += S_FMT("\tline_hilight_width = %1.3f;\n", line_hilight_width);
+	cfgstring += S_FMT("\tline_selection_width = %1.3f;\n", line_selection_width);
+	cfgstring += S_FMT("\tflat_alpha = %1.3f;\n", flat_alpha);
 	cfgstring += "}\n";
 
 	mc.write(cfgstring.ToAscii(), cfgstring.size());

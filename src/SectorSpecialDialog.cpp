@@ -35,14 +35,13 @@
 
 
 /*******************************************************************
- * SECTORSPECIALDIALOG CLASS FUNCTIONS
+ * SECTORSPECIALPANEL CLASS FUNCTIONS
  *******************************************************************/
 
-/* SectorSpecialDialog::SectorSpecialDialog
- * SectorSpecialDialog class constructor
+/* SectorSpecialPanel::SectorSpecialPanel
+ * SectorSpecialPanel class constructor
  *******************************************************************/
-SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
-: SDialog(parent, "Select Sector Special", "sectorspecial")
+SectorSpecialPanel::SectorSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -53,8 +52,9 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 	wxStaticBoxSizer* framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	lv_specials = new ListView(this, -1);
 	framesizer->Add(lv_specials, 1, wxEXPAND|wxALL, 4);
-	sizer->Add(framesizer, 1, wxEXPAND|wxALL, 8);
+	sizer->Add(framesizer, 1, wxEXPAND);
 
+	lv_specials->enableSizeUpdate(false);
 	lv_specials->AppendColumn("#");
 	lv_specials->AppendColumn("Name");
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
@@ -65,19 +65,21 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 		item.Add(types[a].name);
 		lv_specials->addItem(999999, item);
 	}
+	lv_specials->enableSizeUpdate(true);
+	lv_specials->updateSize();
 
 	// Boom Flags
 	int width = 300;
-	if (theGameConfiguration->isBoom())
+	if (theGameConfiguration->supportsSectorFlags())
 	{
 		frame = new wxStaticBox(this, -1, "Flags");
 		framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-		sizer->Add(framesizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 8);
+		sizer->Add(framesizer, 0, wxEXPAND|wxTOP, 4);
 
 		// Damage
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 		framesizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
-		string damage_types[] = { "None", "5%", "10%", "20%" };
+		string damage_types[] ={ "None", "5%", "10%", "20%" };
 		choice_damage = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 4, damage_types);
 		choice_damage->Select(0);
 		hbox->Add(new wxStaticText(this, -1, "Damage:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
@@ -100,29 +102,22 @@ SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
 		width = -1;
 	}
 
-	// Dialog buttons
-	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Bind Events
-	lv_specials->Bind(wxEVT_LIST_ITEM_ACTIVATED, &SectorSpecialDialog::onSpecialsListViewItemActivated, this);
-
-	SetMinSize(wxSize(width, 400));
-	CenterOnParent();
+	SetMinSize(wxSize(width, 200));
 }
 
-/* SectorSpecialDialog::~SectorSpecialDialog
- * SectorSpecialDialog class destructor
+/* SectorSpecialPanel::~SectorSpecialPanel
+ * SectorSpecialPanel class destructor
  *******************************************************************/
-SectorSpecialDialog::~SectorSpecialDialog()
+SectorSpecialPanel::~SectorSpecialPanel()
 {
 }
 
-/* SectorSpecialDialog::setup
+/* SectorSpecialPanel::setup
  * Sets up controls on the dialog to show [special]
  *******************************************************************/
-void SectorSpecialDialog::setup(int special, int map_format)
+void SectorSpecialPanel::setup(int special)
 {
-	int base_type = theGameConfiguration->baseSectorType(special, map_format);
+	int base_type = theGameConfiguration->baseSectorType(special);
 
 	// Select base type
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
@@ -137,39 +132,95 @@ void SectorSpecialDialog::setup(int special, int map_format)
 	}
 
 	// Flags
-	if (theGameConfiguration->isBoom())
+	if (theGameConfiguration->supportsSectorFlags())
 	{
 		// Damage
-		choice_damage->Select(theGameConfiguration->sectorBoomDamage(special, map_format));
+		choice_damage->Select(theGameConfiguration->sectorBoomDamage(special));
 
 		// Secret
-		cb_secret->SetValue(theGameConfiguration->sectorBoomSecret(special, map_format));
+		cb_secret->SetValue(theGameConfiguration->sectorBoomSecret(special));
 
 		// Friction
-		cb_friction->SetValue(theGameConfiguration->sectorBoomFriction(special, map_format));
+		cb_friction->SetValue(theGameConfiguration->sectorBoomFriction(special));
 
 		// Pusher/Puller
-		cb_pushpull->SetValue(theGameConfiguration->sectorBoomPushPull(special, map_format));
+		cb_pushpull->SetValue(theGameConfiguration->sectorBoomPushPull(special));
 	}
 }
 
-/* SectorSpecialDialog::getSelectedSpecial
+/* SectorSpecialPanel::getSelectedSpecial
  * Returns the currently selected sector special
  *******************************************************************/
-int SectorSpecialDialog::getSelectedSpecial(int map_format)
+int SectorSpecialPanel::getSelectedSpecial()
 {
 	vector<sectype_t> types = theGameConfiguration->allSectorTypes();
-	int selection = lv_specials->selectedItems()[0];
+	int selection = 0;
+	wxArrayInt items = lv_specials->selectedItems();
+	if (items.GetCount())
+		selection = items[0];
 
 	// Get selected base type
 	int base = 0;
 	if (selection < (int)types.size())
 		base = types[selection].type;
 
-	if (theGameConfiguration->isBoom())
-		return theGameConfiguration->boomSectorType(base, choice_damage->GetSelection(), cb_secret->GetValue(), cb_friction->GetValue(), cb_pushpull->GetValue(), map_format);
+	if (theGameConfiguration->supportsSectorFlags())
+		return theGameConfiguration->boomSectorType(base, choice_damage->GetSelection(), cb_secret->GetValue(), cb_friction->GetValue(), cb_pushpull->GetValue());
 	else
 		return base;
+}
+
+
+/*******************************************************************
+ * SECTORSPECIALDIALOG CLASS FUNCTIONS
+ *******************************************************************/
+
+/* SectorSpecialDialog::SectorSpecialDialog
+ * SectorSpecialDialog class constructor
+ *******************************************************************/
+SectorSpecialDialog::SectorSpecialDialog(wxWindow* parent)
+: SDialog(parent, "Select Sector Special", "sectorspecial")
+{
+	// Setup sizer
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
+
+	// Special panel
+	panel_special = new SectorSpecialPanel(this);
+	sizer->Add(panel_special, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+
+	// Dialog buttons
+	sizer->AddSpacer(4);
+	sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+
+	// Bind Events
+	panel_special->getSpecialsList()->Bind(wxEVT_LIST_ITEM_ACTIVATED, &SectorSpecialDialog::onSpecialsListViewItemActivated, this);
+
+	SetMinClientSize(sizer->GetMinSize());
+	CenterOnParent();
+}
+
+/* SectorSpecialDialog::~SectorSpecialDialog
+ * SectorSpecialDialog class destructor
+ *******************************************************************/
+SectorSpecialDialog::~SectorSpecialDialog()
+{
+}
+
+/* SectorSpecialDialog::setup
+ * Sets up controls on the dialog to show [special]
+ *******************************************************************/
+void SectorSpecialDialog::setup(int special)
+{
+	panel_special->setup(special);
+}
+
+/* SectorSpecialDialog::getSelectedSpecial
+ * Returns the currently selected sector special
+ *******************************************************************/
+int SectorSpecialDialog::getSelectedSpecial()
+{
+	return panel_special->getSelectedSpecial();
 }
 
 

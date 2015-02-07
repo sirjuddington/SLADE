@@ -1158,6 +1158,30 @@
     <ClCompile Include="src\SDialog.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\LinePropsPanel.cpp">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SidePropsPanel.cpp">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SectorPropsPanel.cpp">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NumberTextCtrl.cpp">
+      <Filter>UI Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThingPropsPanel.cpp">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VersionCheck.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MapBackupManager.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MapBackupPanel.cpp">
+      <Filter>Map Editor\UI Elements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2078,6 +2102,33 @@
     </ClInclude>
     <ClInclude Include="src\SDialog.h">
       <Filter>UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LinePropsPanel.h">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SidePropsPanel.h">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SectorPropsPanel.h">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PropsPanelBase.h">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NumberTextCtrl.h">
+      <Filter>UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThingPropsPanel.h">
+      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VersionCheck.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MapBackupManager.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MapBackupPanel.h">
+      <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

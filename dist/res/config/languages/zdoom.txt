@@ -200,6 +200,7 @@ z_mapinfo {
 		SpiderMastermindSpecial, StrictMonsterActivation, StrifeFallingDamage,
 		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
 		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
+		ForceFakeContrast,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate,
@@ -207,8 +208,8 @@ z_mapinfo {
 		// Skill definitions
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
-		FastMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain, DefaultSkill,
-		ArmorFactor, EasyKey,
+		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
+		DefaultSkill, ArmorFactor, EasyKey,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
@@ -219,7 +220,8 @@ z_mapinfo {
 		Player5Start, PickupColor, QuitMessages, MenuFontColor_Title, MenuFontColor_Label, MenuFontColor_Value,
 		MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight, MenuFontColor_Selection, MenuBackButton,
 		PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX, TextScreenY, DefaultEndSequence, MapArrow,
-		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont,
+		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
+		DontCrunchCorpses, CheatKey,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -336,7 +338,7 @@ z_sbarinfo {
 		Base, completeborder, CreatePopup, Height, InterpolateHealth, InterpolateArmor, LowerHealthCap, MonospaceFonts,
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
-		InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
+		IfHealth, InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
 		WeaponAmmo, mugshot
 	}
 
@@ -525,6 +527,7 @@ z_xlat {
 		Ceiling_CrushAndRaiseA = "int tag, int downspeed, int upspeed, int damage, [cint rushmode]";
 		Ceiling_CrushAndRaiseDist = "int tag, int dist, int speed, int damage, [int crushmode]";
 		Ceiling_CrushAndRaiseSilentA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
+		Ceiling_CrushAndRaiseSilentDist = "int tag, int dist, int speed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStay = "int tag, int speed, int crush, [int crushmode]";
 		Ceiling_CrushRaiseAndStayA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
 		Ceiling_CrushRaiseAndStaySilA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";

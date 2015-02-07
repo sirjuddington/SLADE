@@ -484,7 +484,7 @@ bool SImage::loadBMF(const uint8_t* gfx_data, int size)
 	// Let's create each character's data and compute the total size
 	mf.chars = new BMFChar[mf.num_chars];
 	int miny = ofs[4], maxy = ofs[2];
-	width = ofs[5] + abs(ofs[3]);
+	width = ofs[5] + ofs[3];
 	for (size_t i = 0; i < mf.num_chars; ++i)
 	{
 		mf.chars[i].which = ofs[0];

@@ -73,7 +73,7 @@ void SectorInfoOverlay::update(MapSector* sector)
 
 	// Info (index + type)
 	int t = sector->intProperty("special");
-	string type = S_FMT("%s (Type %d)", theGameConfiguration->sectorTypeName(t, theMapEditor->currentMapDesc().format), t);
+	string type = S_FMT("%s (Type %d)", theGameConfiguration->sectorTypeName(t), t);
 	if (Global::debug)
 		info_text += S_FMT("Sector #%d (%d): %s\n", sector->getIndex(), sector->getId(), type);
 	else
@@ -158,8 +158,11 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 
-	// Check texture isn't blank
-	if (!(S_CMPNOCASE(texture, "-")))
+	// Get texture
+	GLTexture* tex = theMapEditor->textureManager().getFlat(texture, theGameConfiguration->mixTexFlats());
+
+	// Valid texture
+	if (texture != "-" && tex != &(GLTexture::missingTex()))
 	{
 		// Draw background
 		glEnable(GL_TEXTURE_2D);
@@ -169,26 +172,32 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 		GLTexture::bgTex().draw2dTiled(80, 80);
 		glPopMatrix();
 
-		// Get texture
-		GLTexture* tex = theMapEditor->textureManager().getFlat(texture, theGameConfiguration->mixTexFlats());
-
 		// Draw texture
-		if (tex)
-		{
-			OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-			Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0, 100);
-		}
+		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
+		Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0);
 
 		glDisable(GL_TEXTURE_2D);
 
 		// Draw outline
 		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0);
-		glLineWidth(1.0f);
 		glDisable(GL_LINE_SMOOTH);
 		Drawing::drawRect(x, y-96, x+80, y-16);
 	}
 
-	// Draw texture name (even if texture is blank)
+	// Unknown texture
+	else if (tex == &(GLTexture::missingTex()))
+	{
+		// Draw unknown icon
+		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		glEnable(GL_TEXTURE_2D);
+		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
+		Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.15);
+
+		// Set colour to red (for text)
+		col_fg = col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	// Draw texture name
 	texture.Prepend(":");
 	texture.Prepend(pos);
 	Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
