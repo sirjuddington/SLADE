@@ -230,7 +230,7 @@ decorate : cstyle {
 		DMSS_EXSPECIES, DMSS_EITHER,
 
 		// Flags for A_Face* functions
-		FAF_BOTTOM, FAF_MIDDLE, FAF_TOP, FAF_NODISTFACTO,
+		FAF_BOTTOM, FAF_MIDDLE, FAF_TOP, FAF_NODISTFACTOR,
 
 		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO, FBF_NORANDOMPUFFZ,
 		FPF_AIMATANGLE, FPF_TRANSFERTRANSLATION,
@@ -257,6 +257,10 @@ decorate : cstyle {
 		PROP_ALLMAP, PROP_BUDDHA, PROP_FLIGHT, PROP_FLY, PROP_FROZEN, PROP_INFRARED, PROP_INSTANTWEAPONSWITCH,
 		PROP_INVISIBILITY, PROP_INVULNERABILITY , PROP_NOTARGET, PROP_RADIATIONSUIT, PROP_SPEED, PROP_STRENGTH,
 		PROP_TOTALLYFROZEN, PROP_WEAPONLEVEL2, PTROP_NOSAFEGUARDS, PTROP_UNSAFEMASTER, PTROP_UNSAFETARGET,
+
+		// A_QuakeEx flags
+		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE,
+
 		RGF_CENTERZ, RGF_CORPSES, RGF_CUBE, RGF_EXPLICITANGLE, RGF_FULLBRIGHT, RGF_GIVESELF, RGF_MISSILES, RGF_MONSTERS, 
 		RGF_NOMASTER, RGF_NOPIERCING, RGF_NOSIGHT, RGF_NOTARGET, RGF_NOTRACER, RGF_OBJECTS, RGF_PLAYERS, RGF_SILENT,
 		RGF_VOODOO,
@@ -283,6 +287,7 @@ decorate : cstyle {
 		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION, SXF_USEBLOODCOLOR, SXF_CLEARCALLERTID, SXF_MULTIPLYSPEED, 
 		SXF_TRANSFERSCALE, SXF_TRANSFERSPECIAL, SXF_CLEARCALLERSPECIAL, SXF_TRANSFERSTENCILCOL, SXF_TRANSFERALPHA,
 		SXF_TRANSFERRENDERSTYLE, SXF_SETTARGET, SXF_SETTRACER, SXF_NOPOINTERS, SXF_ORIGINATOR, SXF_TRANSFERSPRITEFRAME,
+		SXF_TRANSFERROLL,
 
 		// A_Teleport flags
 		TF_FORCED, TF_RANDOMDECIDE, TF_TELEFRAG, TF_KEEPVELOCITY, TF_KEEPANGLE, TF_USESPOTZ, TF_NOSRCFOG,
@@ -386,6 +391,7 @@ decorate : cstyle {
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
 		A_Quake = "int intensity, int duration, int damrad, int tremrad, [sound sfx]";
+		A_QuakeEx = "int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ]";
 		A_SetTics = "int tics";
 
 		A_FreezeDeath;
@@ -753,6 +759,7 @@ decorate : cstyle {
 		random2 = "int mask";
 		frandom = "float min, float max";
 		randompick = "int value1, int value2, int value3, ...";
+		frandompick = "float value1, float value2, float value3, ...";
 		ACS_NamedExecute = "string script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
 		ACS_NamedExecuteAlways = "string script, [int mapnum], [int arg1], [int arg2], [int arg3]";
 		ACS_NamedExecuteWithResult = "string script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
