@@ -14,7 +14,7 @@ z_animdefs {
 	}
 
 	constants = {
-		allowdecals, doom, heretic, hexen, strife, optional
+		allowdecals, doom, heretic, hexen, strife, optional, random, oscillate
 	}
 }
 
@@ -164,7 +164,8 @@ z_mapinfo {
 	keyword_link = "http://zdoom.org/wiki/MAPINFO";
 	constant_link = "http://zdoom.org/wiki/MAPINFO";
 	function_link = "http://zdoom.org/wiki/MAPINFO";
-	blocks = "gameinfo", "skill", "map", "episode", "cluster", "automap", "automap_overlay";
+	blocks = "gameinfo", "skill", "map", "episode", "cluster", "automap", "automap_overlay",
+	         "doomednums", "spawnnums", "conversationids";
 
 	keywords = {
 		// Generic
@@ -200,10 +201,10 @@ z_mapinfo {
 		SpiderMastermindSpecial, StrictMonsterActivation, StrifeFallingDamage,
 		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
 		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
-		ForceFakeContrast,
+		ForceFakeContrast, PrecacheTextures,
 
 		// GZDoom
-		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate,
+		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
 
 		// Skill definitions
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
@@ -232,7 +233,16 @@ z_mapinfo {
 		Automap, Automap_Overlay, AlmostBackgroundColor, Base, CeilingDiffWallColor, ExtraFloorWallColor, FloorDiffWallColor,
 		GridColor, InterTeleportColor, IntraTeleportColor, LockedColor, NotSeenColor, SecretSectorColor, SecretWallColor,
 		ShowLocks, SpecialWallColor, ThingColor, ThingColor_CountItem, ThingColor_Friend, ThingColor_Item, ThingColor_Monster,
-		ThingColor_NocountMonster, TwoSidedWallColor, WallColor, XHairColor, YourColor
+		ThingColor_NocountMonster, TwoSidedWallColor, WallColor, XHairColor, YourColor,
+
+		// Thing editor numbers
+		DoomEdNums,
+
+		// Spawn numbers (SpawnIDs)
+		SpawnNums,
+
+		// Conversation IDs
+		ConversationIDs
 	}
 
 	constants = {

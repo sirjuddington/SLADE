@@ -40,7 +40,7 @@ decorate : cstyle {
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
 		DeathHeight, BurnHeight, ProjectilePassHeight, CameraHeight, MaxStepHeight, MaxDropOffHeight, 
-		Speed, VSpeed, FastSpeed, FloatSpeed,
+		Speed, VSpeed, FastSpeed, FloatSpeed, Friction,
 		
 		// Rendering
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
@@ -697,6 +697,7 @@ decorate : cstyle {
 		A_DragonInitFlight; A_DragonFlap; A_DragonFlight; A_DragonPain; A_DragonAttack; A_DragonCheckCrash;
 		A_DragonFX2;
 		A_FAxeCheckUp; A_FAxeCheckReady; A_FAxeCheckAtk; A_FAxeAttack; A_FAxeCheckUpG; A_FAxeCheckReadyG;
+		A_FlyBuzz; A_FlySearch;
 		A_FPunchAttack; A_FHammerAttack; A_FHammerThrow;
 		A_FSwordAttack; A_FSwordFlames;
 		A_FiredRocks; A_FiredChase; A_FiredAttack; A_FiredSplotch; A_SmBounce;
