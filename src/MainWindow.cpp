@@ -611,16 +611,16 @@ void MainWindow::createStartPage(bool newtip)
  *******************************************************************/
 bool MainWindow::exitProgram()
 {
-	// Close all archives
-	if (!panel_archivemanager->closeAll())
-		return false;
-
 	// Confirm exit
 	if (confirm_exit && !panel_archivemanager->askedSaveUnchanged())
 	{
 		if (wxMessageBox("Are you sure you want to exit SLADE?", "SLADE", wxICON_QUESTION|wxYES_NO, this) != wxYES)
 			return false;
 	}
+
+	// Close all archives
+	if (!panel_archivemanager->closeAll())
+		return false;
 
 	// Save current layout
 	//main_window_layout = m_mgr->SavePerspective();
