@@ -865,12 +865,12 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 	{
 		// Create context menu
 		wxMenu popup;
-		theApp->getAction("txed_patch_add")->addToMenu(&popup);
-		theApp->getAction("txed_patch_remove")->addToMenu(&popup);
-		theApp->getAction("txed_patch_replace")->addToMenu(&popup);
-		theApp->getAction("txed_patch_back")->addToMenu(&popup);
-		theApp->getAction("txed_patch_forward")->addToMenu(&popup);
-		theApp->getAction("txed_patch_duplicate")->addToMenu(&popup);
+		theApp->getAction("txed_patch_add")->addToMenu(&popup, true);
+		theApp->getAction("txed_patch_remove")->addToMenu(&popup, true);
+		theApp->getAction("txed_patch_replace")->addToMenu(&popup, true);
+		theApp->getAction("txed_patch_back")->addToMenu(&popup, true);
+		theApp->getAction("txed_patch_forward")->addToMenu(&popup, true);
+		theApp->getAction("txed_patch_duplicate")->addToMenu(&popup, true);
 
 		hack_nodrag = true;
 		PopupMenu(&popup);

@@ -840,13 +840,13 @@ void ArchiveEntryList::onColumnHeaderRightClick(wxListEvent& e)
 {
 	// Create simple popup menu with options to toggle columns
 	wxMenu popup;
-	theApp->getAction("aelt_indexcol")->addToMenu(&popup);
-	theApp->getAction("aelt_sizecol")->addToMenu(&popup);
-	theApp->getAction("aelt_typecol")->addToMenu(&popup);
-	theApp->getAction("aelt_hrules")->addToMenu(&popup);
-	theApp->getAction("aelt_vrules")->addToMenu(&popup);
-	theApp->getAction("aelt_bgcolour")->addToMenu(&popup);
-	theApp->getAction("aelt_bgalt")->addToMenu(&popup);
+	theApp->getAction("aelt_indexcol")->addToMenu(&popup, true);
+	theApp->getAction("aelt_sizecol")->addToMenu(&popup, true);
+	theApp->getAction("aelt_typecol")->addToMenu(&popup, true);
+	theApp->getAction("aelt_hrules")->addToMenu(&popup, true);
+	theApp->getAction("aelt_vrules")->addToMenu(&popup, true);
+	theApp->getAction("aelt_bgcolour")->addToMenu(&popup, true);
+	theApp->getAction("aelt_bgalt")->addToMenu(&popup, true);
 	popup.Check(theApp->getAction("aelt_indexcol")->getWxId(), elist_colindex_show);
 	popup.Check(theApp->getAction("aelt_sizecol")->getWxId(), elist_colsize_show);
 	popup.Check(theApp->getAction("aelt_typecol")->getWxId(), elist_coltype_show);

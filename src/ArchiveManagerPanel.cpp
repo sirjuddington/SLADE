@@ -1724,9 +1724,9 @@ void ArchiveManagerPanel::onListArchivesRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_save_a")->addToMenu(&context);
-	theApp->getAction("aman_saveas_a")->addToMenu(&context);
-	theApp->getAction("aman_close_a")->addToMenu(&context);
+	theApp->getAction("aman_save_a")->addToMenu(&context, true);
+	theApp->getAction("aman_saveas_a")->addToMenu(&context, true);
+	theApp->getAction("aman_close_a")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -1752,8 +1752,8 @@ void ArchiveManagerPanel::onListRecentRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_recent_open")->addToMenu(&context);
-	theApp->getAction("aman_recent_remove")->addToMenu(&context);
+	theApp->getAction("aman_recent_open")->addToMenu(&context, true);
+	theApp->getAction("aman_recent_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -1778,8 +1778,8 @@ void ArchiveManagerPanel::onListBookmarksRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_bookmark_go")->addToMenu(&context);
-	theApp->getAction("aman_bookmark_remove")->addToMenu(&context);
+	theApp->getAction("aman_bookmark_go")->addToMenu(&context, true);
+	theApp->getAction("aman_bookmark_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

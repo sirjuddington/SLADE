@@ -4090,25 +4090,25 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 			wxMenu menu_context;
 
 			// Set 3d camera
-			theApp->getAction("mapw_camera_set")->addToMenu(&menu_context);
+			theApp->getAction("mapw_camera_set")->addToMenu(&menu_context, true);
 
 			// Mode-specific
 			bool object_selected = (editor->selectionSize() > 0 || editor->hilightItem() >= 0);
 			if (editor->editMode() == MapEditor::MODE_VERTICES)
 			{
 				menu_context.AppendSeparator();
-				theApp->getAction("mapw_vertex_create")->addToMenu(&menu_context);
+				theApp->getAction("mapw_vertex_create")->addToMenu(&menu_context, true);
 			}
 			else if (editor->editMode() == MapEditor::MODE_LINES)
 			{
 				if (object_selected)
 				{
 					menu_context.AppendSeparator();
-					theApp->getAction("mapw_line_changetexture")->addToMenu(&menu_context);
-					theApp->getAction("mapw_line_changespecial")->addToMenu(&menu_context);
-					theApp->getAction("mapw_line_tagedit")->addToMenu(&menu_context);
-					theApp->getAction("mapw_line_flip")->addToMenu(&menu_context);
-					theApp->getAction("mapw_line_correctsectors")->addToMenu(&menu_context);
+					theApp->getAction("mapw_line_changetexture")->addToMenu(&menu_context, true);
+					theApp->getAction("mapw_line_changespecial")->addToMenu(&menu_context, true);
+					theApp->getAction("mapw_line_tagedit")->addToMenu(&menu_context, true);
+					theApp->getAction("mapw_line_flip")->addToMenu(&menu_context, true);
+					theApp->getAction("mapw_line_correctsectors")->addToMenu(&menu_context, true);
 				}
 			}
 			else if (editor->editMode() == MapEditor::MODE_THINGS)
@@ -4116,37 +4116,37 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 				menu_context.AppendSeparator();
 
 				if (object_selected)
-					theApp->getAction("mapw_thing_changetype")->addToMenu(&menu_context);
+					theApp->getAction("mapw_thing_changetype")->addToMenu(&menu_context, true);
 
-				theApp->getAction("mapw_thing_create")->addToMenu(&menu_context);
+				theApp->getAction("mapw_thing_create")->addToMenu(&menu_context, true);
 			}
 			else if (editor->editMode() == MapEditor::MODE_SECTORS)
 			{
 				if (object_selected)
 				{
-					theApp->getAction("mapw_sector_changetexture")->addToMenu(&menu_context);
-					theApp->getAction("mapw_sector_changespecial")->addToMenu(&menu_context);
+					theApp->getAction("mapw_sector_changetexture")->addToMenu(&menu_context, true);
+					theApp->getAction("mapw_sector_changespecial")->addToMenu(&menu_context, true);
 					if (editor->getSelection().size() > 1)
 					{
-						theApp->getAction("mapw_sector_join")->addToMenu(&menu_context);
-						theApp->getAction("mapw_sector_join_keep")->addToMenu(&menu_context);
+						theApp->getAction("mapw_sector_join")->addToMenu(&menu_context, true);
+						theApp->getAction("mapw_sector_join_keep")->addToMenu(&menu_context, true);
 					}
 				}
 
-				theApp->getAction("mapw_sector_create")->addToMenu(&menu_context);
+				theApp->getAction("mapw_sector_create")->addToMenu(&menu_context, true);
 			}
 
 			if (object_selected)
 			{
 				// General edit
 				menu_context.AppendSeparator();
-				theApp->getAction("mapw_edit_objects")->addToMenu(&menu_context);
-				theApp->getAction("mapw_mirror_x")->addToMenu(&menu_context);
-				theApp->getAction("mapw_mirror_y")->addToMenu(&menu_context);
+				theApp->getAction("mapw_edit_objects")->addToMenu(&menu_context, true);
+				theApp->getAction("mapw_mirror_x")->addToMenu(&menu_context, true);
+				theApp->getAction("mapw_mirror_y")->addToMenu(&menu_context, true);
 
 				// Properties
 				menu_context.AppendSeparator();
-				theApp->getAction("mapw_item_properties")->addToMenu(&menu_context);
+				theApp->getAction("mapw_item_properties")->addToMenu(&menu_context, true);
 			}
 
 			PopupMenu(&menu_context);
