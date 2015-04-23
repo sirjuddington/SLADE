@@ -34,6 +34,7 @@
 #include "GameConfiguration.h"
 #include "GenLineSpecialPanel.h"
 #include "MapEditorWindow.h"
+#include "NumberTextCtrl.h"
 #include <wx/gbsizer.h>
 #include <wx/window.h>
 #undef min
@@ -56,7 +57,7 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	root = wxDataViewItem(0);
 
 	// Add 'None'
-	AppendItem(root, "0: None");
+	item_none = AppendItem(root, "0: None");
 
 	// Populate tree
 	vector<as_t> specials = theGameConfiguration->allActionSpecials();
@@ -89,7 +90,8 @@ int ActionSpecialTreeView::specialNumber(wxDataViewItem item)
 {
 	string num = GetItemText(item).BeforeFirst(':');
 	long s;
-	num.ToLong(&s);
+	if (!num.ToLong(&s))
+		s = -1;
 
 	return s;
 }
@@ -97,8 +99,17 @@ int ActionSpecialTreeView::specialNumber(wxDataViewItem item)
 /* ActionSpecialTreeView::showSpecial
  * Finds the item for [special], selects it and ensures it is shown
  *******************************************************************/
-void ActionSpecialTreeView::showSpecial(int special)
+void ActionSpecialTreeView::showSpecial(int special, bool focus)
 {
+	if (special == 0)
+	{
+		EnsureVisible(item_none);
+		Select(item_none);
+		if (focus)
+			SetFocus();
+		return;
+	}
+
 	// Go through item groups
 	for (unsigned a = 0; a < groups.size(); a++)
 	{
@@ -112,7 +123,8 @@ void ActionSpecialTreeView::showSpecial(int special)
 			{
 				EnsureVisible(item);
 				Select(item);
-				SetFocus();
+				if (focus)
+					SetFocus();
 				return;
 			}
 		}
@@ -677,14 +689,17 @@ void ArgsPanel::onSize(wxSizeEvent& event)
 	event.Skip();
 
 	fg_sizer->Layout();
-	int available_width = fg_sizer->GetColWidths()[1];
-	for (int a = 0; a < 5; a++)
+	if (fg_sizer->GetColWidths().size() > 1)
 	{
-		// Wrap() puts hard newlines in the label, so we need to remove them
-		wxString label = label_args_desc[a]->GetLabelText();
-		label.Replace("\n", " ");
-		label_args_desc[a]->SetLabelText(label);
-		label_args_desc[a]->Wrap(available_width);
+		int available_width = fg_sizer->GetColWidths()[1];
+		for (int a = 0; a < 5; a++)
+		{
+			// Wrap() puts hard newlines in the label, so we need to remove them
+			wxString label = label_args_desc[a]->GetLabelText();
+			label.Replace("\n", " ");
+			label_args_desc[a]->SetLabelText(label);
+			label_args_desc[a]->Wrap(available_width);
+		}
 	}
 }
 
@@ -753,9 +768,14 @@ void ActionSpecialPanel::setupSpecialPanel()
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	panel_action_special->SetSizer(sizer);
 
+	// Special box
+	text_special = new NumberTextCtrl(panel_action_special);
+	sizer->Add(text_special, 0, wxEXPAND|wxALL, 4);
+	text_special->Bind(wxEVT_TEXT, &ActionSpecialPanel::onSpecialTextChanged, this);
+
 	// Action specials tree
 	tree_specials = new ActionSpecialTreeView(panel_action_special);
-	sizer->Add(tree_specials, 1, wxEXPAND);
+	sizer->Add(tree_specials, 1, wxEXPAND|wxALL, 4);
 
 	if (show_trigger)
 	{
@@ -848,6 +868,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	tree_specials->showSpecial(special);
 	tree_specials->SetFocus();
 	tree_specials->SetFocusFromKbd();
+	text_special->SetValue(S_FMT("%d", special));
 
 	// Setup args if any
 	if (panel_args)
@@ -1057,20 +1078,34 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
  *******************************************************************/
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 {
-	if ((theGameConfiguration->isBoom() && rb_generalised->GetValue()) || !panel_args)
+	if ((theGameConfiguration->isBoom() && rb_generalised->GetValue()))
 	{
 		e.Skip();
 		return;
 	}
 
-	argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-	// Save and restore the current arg values, since setup() deletes and
-	// recreates the controls
-	int arg_values[5];
-	for (unsigned a = 0; a < 5; a++)
-		arg_values[a] = panel_args->getArgValue(a);
-	panel_args->setup(&args);
-	panel_args->setValues(arg_values);
+	// Set special # text box
+	text_special->SetValue(S_FMT("%d", selectedSpecial()));
+
+	if (panel_args)
+	{
+		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		// Save and restore the current arg values, since setup() deletes and
+		// recreates the controls
+		int arg_values[5];
+		for (unsigned a = 0; a < 5; a++)
+			arg_values[a] = panel_args->getArgValue(a);
+		panel_args->setup(&args);
+		panel_args->setValues(arg_values);
+	}
+}
+
+/* ActionSpecialPanel::onSpecialTextChanged
+ * Called when the action special number box is changed
+ *******************************************************************/
+void ActionSpecialPanel::onSpecialTextChanged(wxCommandEvent& e)
+{
+	tree_specials->showSpecial(text_special->getNumber(), false);
 }
 
 

@@ -12,6 +12,7 @@ class ActionSpecialTreeView : public wxDataViewTreeCtrl
 {
 private:
 	wxDataViewItem	root;
+	wxDataViewItem	item_none;
 	wxDialog*		parent_dialog;
 
 	// It's incredibly retarded that I actually have to do this
@@ -32,7 +33,7 @@ public:
 	void	setParentDialog(wxDialog* dlg) { parent_dialog = dlg; }
 
 	int		specialNumber(wxDataViewItem item);
-	void	showSpecial(int special);
+	void	showSpecial(int special, bool focus = true);
 	int		selectedSpecial();
 
 	void	onItemEdit(wxDataViewEvent& e);
@@ -62,6 +63,7 @@ public:
 
 class GenLineSpecialPanel;
 class MapObject;
+class NumberTextCtrl;
 class ActionSpecialPanel : public wxPanel
 {
 private:
@@ -75,6 +77,7 @@ private:
 	vector<string>			triggers_udmf;
 	wxChoice*				choice_trigger;
 	bool					show_trigger;
+	NumberTextCtrl*			text_special;
 
 public:
 	ActionSpecialPanel(wxWindow* parent, bool trigger = true);
@@ -91,6 +94,7 @@ public:
 
 	void	onRadioButtonChanged(wxCommandEvent& e);
 	void	onSpecialSelectionChanged(wxDataViewEvent& e);
+	void	onSpecialTextChanged(wxCommandEvent& e);
 };
 
 class ActionSpecialDialog : public SDialog
