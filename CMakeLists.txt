@@ -35,3 +35,4 @@ OPTION(USE_WEBVIEW_STARTPAGE "Use wxWebView to display the start page" OFF)
 OPTION(USE_SFML_RENDERWINDOW "Use SFML RenderWindow for OpenGL displays" OFF)
 
 add_subdirectory(src)
+add_subdirectory(dist)

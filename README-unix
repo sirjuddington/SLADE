@@ -34,6 +34,19 @@ b) CMake Compilation
 -cd to the 'dist' directory
 -Enter the following commands: 'cmake ..' then 'make'
 
+4) Build slade.pk3
+
+If you build SLADE3 with cmake, the essential slade.pk3 will also be
+built for you. The only requirement is that you have either 7z or zip
+programs in your path. This will also work on MS Windows.
+
+7z is preferred as it's faster at checking if any modifications
+need to be done to existing archive.
+
+If you have neither program, or choose not to use cmake, you can build
+slade.pk3 manually by zipping up contents of dist/res directory.
+
+
 And that should be it. There are some more detailed instructions on the SLADE wiki here: http://slade-editor.wikia.com/wiki/Compilation
 
 If you are having problems I can be contacted via email:
