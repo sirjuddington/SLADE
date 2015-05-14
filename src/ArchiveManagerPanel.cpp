@@ -42,6 +42,8 @@
 #include "Icons.h"
 #include "cl_notebook_art/cl_aui_notebook_art.h"
 #include "MapEditorWindow.h"
+#include "DirArchive.h"
+#include "Dialogs/DirArchiveUpdateDialog.h"
 #include <wx/filename.h>
 
 
@@ -117,6 +119,8 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 {
 	notebook_archives = nb_archives;
 	pending_closed_archive = NULL;
+	checked_dir_archive_changes = false;
+	asked_save_unchanged = false;
 
 	// Create main sizer
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
@@ -1006,6 +1010,35 @@ void ArchiveManagerPanel::saveAll()
 			}
 		}
 	}
+}
+
+/* ArchiveManagerPanel::checkDirArchives
+ * Checks all open directory archives for changes on the file system,
+ * and brings up a dialog to apply any changes
+ *******************************************************************/
+void ArchiveManagerPanel::checkDirArchives()
+{
+	if (checked_dir_archive_changes)
+		return;
+
+	checked_dir_archive_changes = true;
+
+	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	{
+		Archive* archive = theArchiveManager->getArchive(a);
+		if (archive->getType() != ARCHIVE_FOLDER)
+			continue;
+
+		vector<dir_entry_change_t> changes;
+		((DirArchive*)archive)->checkUpdatedFiles(changes);
+		if (!changes.empty())
+		{
+			DirArchiveUpdateDialog dlg((wxWindow*)theMainWindow, (DirArchive*)archive, changes);
+			dlg.ShowModal();
+		}
+	}
+
+	checked_dir_archive_changes = false;
 }
 
 /* ArchiveManagerPanel::createNewArchive

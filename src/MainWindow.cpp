@@ -1092,5 +1092,8 @@ void MainWindow::onActivate(wxActivateEvent& e)
 		SetStatusText("", 2);
 	}
 
+	// Check open directory archives for changes on the file system
+	panel_archivemanager->checkDirArchives();
+
 	e.Skip();
 }

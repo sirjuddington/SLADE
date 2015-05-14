@@ -1,30 +1,30 @@
 
 /*******************************************************************
-* SLADE - It's a Doom Editor
-* Copyright (C) 2008-2014 Simon Judd
-*
-* Email:       sirjuddington@gmail.com
-* Web:         http://slade.mancubus.net
-* Filename:    DirArchive.cpp
-* Description: DirArchive, archive class that opens a directory
-*              and treats it as an archive. All entry data is still
-*              stored in memory and only written to the file system
-*              when saving the 'archive'
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*******************************************************************/
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    DirArchive.cpp
+ * Description: DirArchive, archive class that opens a directory
+ *              and treats it as an archive. All entry data is still
+ *              stored in memory and only written to the file system
+ *              when saving the 'archive'
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
 
 
 /*******************************************************************
@@ -117,8 +117,12 @@ bool DirArchive::open(string filename)
 {
 	theSplashWindow->setProgressMessage("Reading directory structure");
 	theSplashWindow->setProgress(0);
-	wxArrayString files;
-	wxDir::GetAllFiles(filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
+	//wxArrayString files;
+	//wxDir::GetAllFiles(filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
+	vector<string> files, dirs;
+	DirArchiveTraverser traverser(files, dirs);
+	wxDir dir(filename);
+	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
 	theSplashWindow->setProgressMessage("Reading files");
 	for (unsigned a = 0; a < files.size(); a++)
@@ -150,6 +154,7 @@ bool DirArchive::open(string filename)
 		new_entry->setLoaded(true);
 
 		time_t modtime = wxFileModificationTime(files[a]);
+		file_modification_times[new_entry] = modtime;
 
 		// Detect entry type
 		EntryType::detectEntryType(new_entry);
@@ -157,6 +162,17 @@ bool DirArchive::open(string filename)
 		// Unload data if needed
 		if (!archive_load_data)
 			new_entry->unloadData();
+	}
+
+	// Add empty directories
+	for (unsigned a = 0; a < dirs.size(); a++)
+	{
+		string name = dirs[a];
+		name.Remove(0, filename.Length());
+		if (name.StartsWith(separator))
+			name.Remove(0, 1);
+		name.Replace("\\", "/");
+		createDir(name);
 	}
 
 	// Set all entries/directories to unmodified
@@ -331,7 +347,13 @@ bool DirArchive::save(string filename)
  *******************************************************************/
 bool DirArchive::loadEntryData(ArchiveEntry* entry)
 {
-	return entry->importFile(entry->exProp("filePath").getStringValue());
+	if (entry->importFile(entry->exProp("filePath").getStringValue()))
+	{
+		file_modification_times[entry] = wxFileModificationTime(entry->exProp("filePath").getStringValue());
+		return true;
+	}
+
+	return false;
 }
 
 /* DirArchive::renameDir
@@ -543,4 +565,179 @@ vector<ArchiveEntry*> DirArchive::findAll(search_options_t& options)
 	opt.dir = dir;
 	opt.match_namespace = "";
 	return Archive::findAll(opt);
+}
+
+/* DirArchive::checkUpdatedFiles
+ * Checks if any entries/folders have been changed on disk, adds any
+ * detected changes to [changes]
+ *******************************************************************/
+void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
+{
+	// Get flat entry list
+	vector<ArchiveEntry*> entries;
+	getEntryTreeAsList(entries);
+
+	// Get entry path list
+	vector<string> entry_paths;
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
+		entry_paths.push_back(this->filename + entries[a]->getPath(true));
+		if (separator != "/") entry_paths.back().Replace("/", separator);
+	}
+
+	// Get current directory structure
+	vector<string> files, dirs;
+	DirArchiveTraverser traverser(files, dirs);
+	wxDir dir(this->filename);
+	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+
+	// Check for deleted files
+	for (unsigned a = 0; a < entry_paths.size(); a++)
+	{
+		if (entries[a]->getType() == EntryType::folderType())
+		{
+			if (!wxDirExists(entry_paths[a]))
+				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, entry_paths[a], entries[a]->getPath(true)));
+		}
+		else
+		{
+			if (!wxFileExists(entry_paths[a]))
+				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, entry_paths[a], entries[a]->getPath(true)));
+		}
+	}
+
+	// Check for new/updated files
+	for (unsigned a = 0; a < files.size(); a++)
+	{
+		// Find file in archive
+		ArchiveEntry * entry = NULL;
+		for (unsigned b = 0; b < entry_paths.size(); b++)
+		{
+			if (entry_paths[b] == files[a])
+			{
+				entry = entries[b];
+				break;
+			}
+		}
+
+		// No match, added to archive
+		if (!entry)
+			changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a]));
+		else
+		{
+			// Matched, check modification time
+			time_t mod = wxFileModificationTime(files[a]);
+			if (mod > file_modification_times[entry])
+				changes.push_back(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], entry->getPath(true)));
+		}
+	}
+
+	// Check for new dirs
+	for (unsigned a = 0; a < dirs.size(); a++)
+	{
+		//LOG_MESSAGE(3, dirs[a]);
+
+		// Find dir in archive
+		ArchiveEntry * entry = NULL;
+		for (unsigned b = 0; b < entry_paths.size(); b++)
+		{
+			if (entry_paths[b] == dirs[a])
+			{
+				entry = entries[b];
+				break;
+			}
+		}
+
+		// No match, added to archive
+		if (!entry)
+			changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a]));
+	}
+}
+
+/* DirArchive::updateChangedEntries
+ * Updates entries/directories based on [changes] list
+ *******************************************************************/
+void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
+{
+	// Modified Entries
+	for (unsigned a = 0; a < changes.size(); a++)
+	{
+		if (changes[a].action == dir_entry_change_t::UPDATED)
+		{
+			ArchiveEntry* entry = entryAtPath(changes[a].entry_path);
+			entry->importFile(changes[a].file_path);
+			EntryType::detectEntryType(entry);
+			file_modification_times[entry] = wxFileModificationTime(changes[a].file_path);
+		}
+	}
+
+	// Deleted Entries
+	for (unsigned a = 0; a < changes.size(); a++)
+	{
+		if (changes[a].action == dir_entry_change_t::DELETED_FILE)
+			removeEntry(entryAtPath(changes[a].entry_path));
+	}
+
+	// Deleted Directories
+	for (unsigned a = 0; a < changes.size(); a++)
+	{
+		if (changes[a].action == dir_entry_change_t::DELETED_DIR)
+			removeDir(changes[a].entry_path);
+	}
+
+	// Added Entries/Directories
+	for (unsigned a = 0; a < changes.size(); a++)
+	{
+		// New Directory
+		if (changes[a].action == dir_entry_change_t::ADDED_DIR)
+		{
+			string name = changes[a].file_path;
+			name.Remove(0, filename.Length());
+			if (name.StartsWith(separator))
+				name.Remove(0, 1);
+			name.Replace("\\", "/");
+
+			ArchiveTreeNode* ndir = createDir(name);
+			ndir->getDirEntry()->setState(0);
+		}
+
+		// New Entry
+		else if (changes[a].action == dir_entry_change_t::ADDED_FILE)
+		{
+			string name = changes[a].file_path;
+			name.Remove(0, filename.Length());
+			if (name.StartsWith(separator))
+				name.Remove(0, 1);
+			name.Replace("\\", "/");
+
+			// Create entry
+			wxFileName fn(name);
+			ArchiveEntry* new_entry = new ArchiveEntry(fn.GetFullName());
+
+			// Setup entry info
+			new_entry->setLoaded(false);
+			new_entry->exProp("filePath") = changes[a].file_path;
+
+			// Add entry and directory to directory tree
+			ArchiveTreeNode* ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
+			ndir->addEntry(new_entry);
+
+			// Read entry data
+			new_entry->importFile(changes[a].file_path);
+			new_entry->setLoaded(true);
+
+			time_t modtime = wxFileModificationTime(changes[a].file_path);
+			file_modification_times[new_entry] = modtime;
+
+			// Detect entry type
+			EntryType::detectEntryType(new_entry);
+
+			// Unload data if needed
+			if (!archive_load_data)
+				new_entry->unloadData();
+
+			// Set entry not modified
+			new_entry->setState(0);
+		}
+	}
 }
