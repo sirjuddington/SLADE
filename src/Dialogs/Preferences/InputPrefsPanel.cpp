@@ -452,9 +452,8 @@ void InputPrefsPanel::applyPreferences()
 void InputPrefsPanel::onSize(wxSizeEvent& e)
 {
 	// Update list column sizes
-	//int width = list_binds->GetSize().x / 3;
-	//LOG_MESSAGE(2, "Width %d", width);
-	//list_binds->SetColumnWidth(0, width);
+	int width = list_binds->GetSize().x / 3;
+	list_binds->SetColumnWidth(1, width);
 
 	e.Skip();
 }
