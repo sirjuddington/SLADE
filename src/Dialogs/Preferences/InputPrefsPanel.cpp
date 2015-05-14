@@ -237,7 +237,11 @@ void InputPrefsPanel::initBindsList()
 	KeyBind::allKeyBinds(binds);
 
 	// Create columns
-	list_binds->AppendColumn("Control");
+#ifdef __WXGTK__
+	list_binds->AppendColumn("Control", 200);
+#else
+	list_binds->AppendColumn("Control", 100);
+#endif
 	list_binds->AppendColumn("Bound Keys");
 
 	// Add binds to list
@@ -448,7 +452,9 @@ void InputPrefsPanel::applyPreferences()
 void InputPrefsPanel::onSize(wxSizeEvent& e)
 {
 	// Update list column sizes
-	list_binds->SetColumnWidth(1, e.GetSize().x * 0.3);
+	//int width = list_binds->GetSize().x / 3;
+	//LOG_MESSAGE(2, "Width %d", width);
+	//list_binds->SetColumnWidth(0, width);
 
 	e.Skip();
 }

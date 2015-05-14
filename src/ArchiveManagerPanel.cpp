@@ -957,9 +957,9 @@ bool ArchiveManagerPanel::closeAll()
 {
 	asked_save_unchanged = false;
 
-	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	while (theArchiveManager->numArchives() > 0)
 	{
-		if (!closeArchive(theArchiveManager->getArchive(a)))
+		if (!closeArchive(theArchiveManager->getArchive(0)))
 			return false;
 	}
 
