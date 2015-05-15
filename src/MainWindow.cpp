@@ -104,7 +104,9 @@ MainWindow::MainWindow()
 	if (mw_maximized) Maximize();
 	setupLayout();
 	SetDropTarget(new MainWindowDropTarget());
+#ifdef USE_WEBVIEW_STARTPAGE
 	docs_page = NULL;
+#endif
 }
 
 /* MainWindow::~MainWindow
@@ -716,6 +718,7 @@ void MainWindow::openEntry(ArchiveEntry* entry)
 /* MainWindow::openDocs
  * Opens [entry] in its own tab
  *******************************************************************/
+#ifdef USE_WEBVIEW_STARTPAGE
 void MainWindow::openDocs(string page_name)
 {
 	// Create docs page control if needed
@@ -752,6 +755,7 @@ void MainWindow::openDocs(string page_name)
 	docs_page->Layout();
 	docs_page->Update();
 }
+#endif
 
 /* MainWindow::handleAction
  * Handles the action [id]. Returns true if the action was handled,
