@@ -75,14 +75,14 @@ namespace Global
 {
 	string error = "";
 
-	string version = "3.1.0.1"
+	string version = "3.1.0.2"
 #ifdef GIT_DESCRIPTION
 	                 " (" GIT_DESCRIPTION ")"
 #endif
 	                 "";
 
 	int log_verbosity = 1;
-	int version_num = 3101;
+	int version_num = 3102;
 	int beta_num = 0;
 
 #ifdef DEBUG
