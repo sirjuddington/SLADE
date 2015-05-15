@@ -166,11 +166,13 @@ public:
 		{
 			map->restoreObjectIdList(MOBJ_VERTEX, this->vertices);
 			this->vertices = vertices;
+			map->updateGeometryInfo(0);
 		}
 		if (isValid(this->lines))
 		{
 			map->restoreObjectIdList(MOBJ_LINE, this->lines);
 			this->lines = lines;
+			map->updateGeometryInfo(0);
 		}
 		if (isValid(this->sides))
 		{
