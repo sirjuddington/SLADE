@@ -51,6 +51,7 @@
 #include "SplashWindow.h"
 #include "UndoManagerHistoryPanel.h"
 #include "MapBackupManager.h"
+#include "Misc.h"
 #include <wx/aui/aui.h>
 
 
@@ -1255,6 +1256,8 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 
 	// Save current layout
 	saveLayout();
+	if (!IsMaximized())
+		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	this->Show(false);
 	closeMap();

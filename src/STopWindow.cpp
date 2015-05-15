@@ -62,8 +62,8 @@ STopWindow::STopWindow(string title, string id, int x, int y, int width, int hei
 	this->id = id;
 
 	// Bind events
-	Bind(wxEVT_SIZE, &STopWindow::onSize, this);
-	Bind(wxEVT_MOVE, &STopWindow::onMove, this);
+	//Bind(wxEVT_SIZE, &STopWindow::onSize, this);
+	//Bind(wxEVT_MOVE, &STopWindow::onMove, this);
 }
 
 /* STopWindow::~STopWindow
@@ -71,6 +71,8 @@ STopWindow::STopWindow(string title, string id, int x, int y, int width, int hei
  *******************************************************************/
 STopWindow::~STopWindow()
 {
+	if (!IsMaximized())
+		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 }
 
 /* STopWindow::addCustomMenu

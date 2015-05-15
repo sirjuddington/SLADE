@@ -45,6 +45,7 @@
 #include "UndoManagerHistoryPanel.h"
 #include "ArchivePanel.h"
 #include "cl_notebook_art/cl_aui_notebook_art.h"
+#include "Misc.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
@@ -633,6 +634,8 @@ bool MainWindow::exitProgram()
 	//main_window_layout = m_mgr->SavePerspective();
 	saveLayout();
 	mw_maximized = IsMaximized();
+	if (!IsMaximized())
+		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	// Save selected palette
 	global_palette = palette_chooser->GetStringSelection();
