@@ -690,12 +690,12 @@ void TextEditor::openJumpToDialog()
 	tz.openString(GetText());
 
 	string token = tz.getToken();
-	while (!token.IsEmpty())
+	while (!tz.atEnd())
 	{
 		if (token == "{")
 		{
 			// Skip block
-			while (!token.IsEmpty() && token != "}")
+			while (!tz.atEnd() && token != "}")
 				token = tz.getToken();
 		}
 

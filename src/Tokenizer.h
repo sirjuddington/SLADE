@@ -74,6 +74,7 @@ public:
 	uint32_t	lineNo() { return line; }
 	uint32_t	tokenStart() { return t_start; }
 	uint32_t	tokenEnd() { return t_end; }
+	bool		atEnd() { return position == size; }
 
 	void	skipSection(string open, string close);
 };
