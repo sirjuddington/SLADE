@@ -335,6 +335,7 @@ bool DirArchive::save(string filename)
 		// Set unmodified
 		entries[a]->setState(0);
 		entries[a]->exProp("filePath") = path;
+		file_modification_times[entries[a]] = wxFileModificationTime(path);
 	}
 
 	setModified(false);
