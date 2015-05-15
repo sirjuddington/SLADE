@@ -40,7 +40,7 @@ endif()
 if(NOT ${GLEW_FOUND})
 	message(SEND_ERROR "GLEW required.")
 endif()
-include_directories(${FLUIDSYNTH_INCLUDE_DIR} ${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} .)
+include_directories(${FLUIDSYNTH_INCLUDE_DIR} ${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./dumb)
 
 set(SLADE_SOURCES
 )
@@ -48,6 +48,9 @@ file(GLOB_RECURSE SLADE_SOURCES *.cpp)
 set(LUA_SOURCES
 )
 file(GLOB LUA_SOURCES lua/*.c)
+set(DUMB_SOURCES
+)
+file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)
 
 add_executable(slade WIN32
 	lzma/C/LzmaDec.c
@@ -62,12 +65,12 @@ add_executable(slade WIN32
 	zreaders/music_smf_midiout.cpp
 	zreaders/music_xmi_midiout.cpp
 	cl_notebook_art/cl_aui_notebook_art.cpp
-	sfMod/sfMod.cpp
 	${LUA_SOURCES}
+	${DUMB_SOURCES}
 	${SLADE_SOURCES}
 )
 
-target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRARIES} ${FLUIDSYNTH_LIBRARIES} ${FREEIMAGE_LIBRARIES} ${SFML_LIBRARY} ${FTGL_LIBRARY} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${GLEW_LIBRARY} ${GTK2_LIBRARIES} modplug)
+target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRARIES} ${FLUIDSYNTH_LIBRARIES} ${FREEIMAGE_LIBRARIES} ${SFML_LIBRARY} ${FTGL_LIBRARY} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${GLEW_LIBRARY} ${GTK2_LIBRARIES})
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
 if(APPLE)
