@@ -333,7 +333,10 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	}
 
 	// Draw texture name (even if texture is blank)
-	if (required) texture = "MISSING";
+	if (required)
+		texture = "MISSING";
+	else if (texture.Length() > 8)
+		texture = texture.Truncate(8) + "...";
 	texture.Prepend(":");
 	texture.Prepend(pos);
 	Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);

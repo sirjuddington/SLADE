@@ -198,6 +198,8 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	}
 
 	// Draw texture name
+	if (texture.Length() > 8)
+		texture = texture.Truncate(8) + "...";
 	texture.Prepend(":");
 	texture.Prepend(pos);
 	Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);

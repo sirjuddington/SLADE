@@ -141,6 +141,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Init variables
 	this->type = type;
 	this->map = map;
+	this->truncate_names = true;
 
 	// Init sorting
 	addSortType("Usage Count");

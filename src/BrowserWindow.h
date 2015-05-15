@@ -53,10 +53,13 @@ protected:
 	Palette8bit				palette;
 	BrowserCanvas*			canvas;
 	vector<BrowserItem*>	items_global;
+	bool					truncate_names;
 
 public:
 	BrowserWindow(wxWindow* parent);
 	~BrowserWindow();
+
+	bool	truncateNames() { return truncate_names; }
 
 	Palette8bit*	getPalette() { return &palette; }
 	void			setPalette(Palette8bit* pal) { palette.copyPalette(pal); }
