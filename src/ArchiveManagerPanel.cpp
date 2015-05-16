@@ -1200,8 +1200,11 @@ bool ArchiveManagerPanel::closeArchive(Archive* archive)
 	if (!archive)
 		return false;
 
-	return beforeCloseArchive(archive)
-		&& theArchiveManager->closeArchive(archive);
+	checked_dir_archive_changes = true;
+	bool ok = beforeCloseArchive(archive) && theArchiveManager->closeArchive(archive);
+	checked_dir_archive_changes = false;
+
+	return ok;
 }
 
 /* ArchiveManagerPanel::getSelectedArchives
