@@ -1012,10 +1012,11 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 	}
 
 	// Find patch table in parent archive
-	ArchiveEntry* pnames = parent->findLast(opt);
+	ArchiveEntry* pnames = NULL;
 	if (!zdtextures)
 	{
 		opt.match_type = EntryType::getType("pnames");
+		pnames = parent->findLast(opt);
 
 		// Check it exists
 		if (!pnames)
