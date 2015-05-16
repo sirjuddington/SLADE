@@ -377,7 +377,7 @@ void MainApp::initLogFile()
 {
 	// Set wxLog target(s)
 	wxLog::SetActiveTarget(new SLADELog());
-	FILE* log_file = fopen(CHR(appPath("slade3.log", DIR_DATA)), "wt");
+	FILE* log_file = fopen(CHR(appPath("slade3.log", DIR_USER)), "wt");
 	new wxLogChain(new wxLogStderr(log_file));
 
 	// Write logfile header

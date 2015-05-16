@@ -2759,7 +2759,7 @@ void MapCanvas::onKeyBindPress(string name)
 		string timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
 		string filename = S_FMT("sladeshot-%s.png", timestamp);
-		shot.saveToFile(CHR(appPath(filename, DIR_APP)));
+		shot.saveToFile(CHR(appPath(filename, DIR_USER)));
 
 		// Editor message
 		editor->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
