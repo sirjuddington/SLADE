@@ -54,18 +54,19 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 	SetSizer(sizer);
 
 	// Message
-	string message = S_FMT("Contents of the currently open directory \"%s\" have been modified outside of SLADE. \
-		Please tick the changes below that you wish to apply.\n \
-		\nNote that any unticked changes will be overwritten on disk when the directory is saved.",
+	string message = S_FMT("Contents of the directory \"%s\" have been modified outside of SLADE,\n",
 		archive->getFilename());
-	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+	message += "please tick the changes below that you wish to apply.";
+	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, 10);
+	message = "Note that any unticked changes will be overwritten on disk when the directory is saved.";
+	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, 10);
 
 	// Changes list
 	list_changes = new wxDataViewListCtrl(this, -1);
 	list_changes->AppendToggleColumn("", wxDATAVIEW_CELL_ACTIVATABLE, wxDVC_DEFAULT_MINWIDTH, wxALIGN_CENTER);
 	list_changes->AppendTextColumn("Change");
 	list_changes->AppendTextColumn("Filename", wxDATAVIEW_CELL_INERT, -2);
-	sizer->AddSpacer(4);
+	list_changes->SetMinSize(wxSize(0, 200));
 	sizer->Add(list_changes, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
 
 	// OK button
@@ -75,6 +76,10 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 	btn_ok->Bind(wxEVT_BUTTON, &DirArchiveUpdateDialog::onBtnOKClicked, this);
 
 	populateChangeList();
+
+	Layout();
+	Fit();
+	SetInitialSize(GetSize());
 }
 
 /* DirArchiveUpdateDialog::~DirArchiveUpdateDialog
