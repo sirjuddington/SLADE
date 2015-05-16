@@ -30,10 +30,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "WxStuff.h"
 #include "BrowserItem.h"
 #include "Drawing.h"
 #include "SFont.h"
 #include "OpenGL.h"
+#include "BrowserWindow.h"
 
 
 /*******************************************************************
@@ -83,6 +85,13 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 		draw_name = name;
 	else if (nametype == 1)
 		draw_name = S_FMT("%d", index);
+
+	// Truncate name if needed
+	if (parent->truncateNames() && draw_name.Length() > 8)
+	{
+		draw_name.Truncate(8);
+		draw_name += "...";
+	}
 
 	// Item name
 	if (viewtype == 0)

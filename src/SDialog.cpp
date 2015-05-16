@@ -58,8 +58,8 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
 	// Bind events
 	if (id != "")
 	{
-		Bind(wxEVT_SIZE, &SDialog::onSize, this);
-		Bind(wxEVT_MOVE, &SDialog::onMove, this);
+		//Bind(wxEVT_SIZE, &SDialog::onSize, this);
+		//Bind(wxEVT_MOVE, &SDialog::onMove, this);
 	}
 	Bind(wxEVT_SHOW, &SDialog::onShow, this);
 }
@@ -69,6 +69,8 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
  *******************************************************************/
 SDialog::~SDialog()
 {
+	if (id != "")
+		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 }
 
 /* SDialog::setSavedSize

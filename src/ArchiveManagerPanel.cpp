@@ -34,14 +34,14 @@
 #include "ArchiveManagerPanel.h"
 #include "ArchiveManager.h"
 #include "ArchivePanel.h"
-#include "ZipArchive.h"
-#include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "TextureXEditor.h"
 #include "SplashWindow.h"
 #include "MainWindow.h"
 #include "Icons.h"
 #include "cl_notebook_art/cl_aui_notebook_art.h"
 #include "MapEditorWindow.h"
+#include "DirArchive.h"
+#include "Dialogs/DirArchiveUpdateDialog.h"
 #include <wx/filename.h>
 
 
@@ -117,6 +117,8 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 {
 	notebook_archives = nb_archives;
 	pending_closed_archive = NULL;
+	checked_dir_archive_changes = false;
+	asked_save_unchanged = false;
 
 	// Create main sizer
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
@@ -953,9 +955,9 @@ bool ArchiveManagerPanel::closeAll()
 {
 	asked_save_unchanged = false;
 
-	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	while (theArchiveManager->numArchives() > 0)
 	{
-		if (!closeArchive(theArchiveManager->getArchive(a)))
+		if (!closeArchive(theArchiveManager->getArchive(0)))
 			return false;
 	}
 
@@ -1006,6 +1008,35 @@ void ArchiveManagerPanel::saveAll()
 			}
 		}
 	}
+}
+
+/* ArchiveManagerPanel::checkDirArchives
+ * Checks all open directory archives for changes on the file system,
+ * and brings up a dialog to apply any changes
+ *******************************************************************/
+void ArchiveManagerPanel::checkDirArchives()
+{
+	if (checked_dir_archive_changes)
+		return;
+
+	checked_dir_archive_changes = true;
+
+	for (int a = 0; a < theArchiveManager->numArchives(); a++)
+	{
+		Archive* archive = theArchiveManager->getArchive(a);
+		if (archive->getType() != ARCHIVE_FOLDER)
+			continue;
+
+		vector<dir_entry_change_t> changes;
+		((DirArchive*)archive)->checkUpdatedFiles(changes);
+		if (!changes.empty())
+		{
+			DirArchiveUpdateDialog dlg((wxWindow*)theMainWindow, (DirArchive*)archive, changes);
+			dlg.ShowModal();
+		}
+	}
+
+	checked_dir_archive_changes = false;
 }
 
 /* ArchiveManagerPanel::createNewArchive
@@ -1169,8 +1200,11 @@ bool ArchiveManagerPanel::closeArchive(Archive* archive)
 	if (!archive)
 		return false;
 
-	return beforeCloseArchive(archive)
-		&& theArchiveManager->closeArchive(archive);
+	checked_dir_archive_changes = true;
+	bool ok = beforeCloseArchive(archive) && theArchiveManager->closeArchive(archive);
+	checked_dir_archive_changes = false;
+
+	return ok;
 }
 
 /* ArchiveManagerPanel::getSelectedArchives
@@ -1724,9 +1758,9 @@ void ArchiveManagerPanel::onListArchivesRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_save_a")->addToMenu(&context);
-	theApp->getAction("aman_saveas_a")->addToMenu(&context);
-	theApp->getAction("aman_close_a")->addToMenu(&context);
+	theApp->getAction("aman_save_a")->addToMenu(&context, true);
+	theApp->getAction("aman_saveas_a")->addToMenu(&context, true);
+	theApp->getAction("aman_close_a")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -1752,8 +1786,8 @@ void ArchiveManagerPanel::onListRecentRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_recent_open")->addToMenu(&context);
-	theApp->getAction("aman_recent_remove")->addToMenu(&context);
+	theApp->getAction("aman_recent_open")->addToMenu(&context, true);
+	theApp->getAction("aman_recent_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -1778,8 +1812,8 @@ void ArchiveManagerPanel::onListBookmarksRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_bookmark_go")->addToMenu(&context);
-	theApp->getAction("aman_bookmark_remove")->addToMenu(&context);
+	theApp->getAction("aman_bookmark_go")->addToMenu(&context, true);
+	theApp->getAction("aman_bookmark_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

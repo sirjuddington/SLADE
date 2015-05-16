@@ -1405,7 +1405,7 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 bool replaceTextureString(char* str, string oldtex, string newtex)
 {
 	bool go = true;
-	for (unsigned c = 0; c < 8; ++c)
+	for (unsigned c = 0; c < oldtex.Length(); ++c)
 	{
 		if (str[c] != oldtex[c] && oldtex[c] != '?' && oldtex[c] != '*')
 			go = false;

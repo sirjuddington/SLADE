@@ -47,6 +47,7 @@ private:
 	Archive*			current_maps;
 	Archive*			pending_closed_archive;
 	bool				asked_save_unchanged;
+	bool				checked_dir_archive_changes;
 
 public:
 	ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_archives);
@@ -106,6 +107,7 @@ public:
 	void	createNewArchive(uint8_t type);
 	bool	closeAll();
 	void	saveAll();
+	void	checkDirArchives();
 
 	// Selected archives in the lists
 	void	saveSelection();

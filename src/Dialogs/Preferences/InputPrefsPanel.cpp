@@ -179,7 +179,7 @@ InputPrefsPanel::InputPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	btn_defaults->Enable(false);
 
 	// Bind events
-	Bind(wxEVT_SIZE, &InputPrefsPanel::onSize, this);
+	//Bind(wxEVT_SIZE, &InputPrefsPanel::onSize, this);
 	list_binds->Bind(wxEVT_TREELIST_SELECTION_CHANGED, &InputPrefsPanel::onListSelectionChanged, this);
 	list_binds->Bind(wxEVT_TREELIST_ITEM_ACTIVATED, &InputPrefsPanel::onListItemActivated, this);
 	//list_binds->Bind(wxEVT_KEY_DOWN, &InputPrefsPanel::onListKeyDown, this);
@@ -206,6 +206,11 @@ InputPrefsPanel::~InputPrefsPanel()
 void InputPrefsPanel::init()
 {
 	updateBindsList();
+
+	// Update list column sizes
+	int width = list_binds->GetSize().x / 3;
+	list_binds->SetColumnWidth(1, width);
+	list_binds->SetColumnWidth(0, width * 1.8);
 }
 
 /* InputPrefsPanel::getListGroupItem
@@ -237,8 +242,9 @@ void InputPrefsPanel::initBindsList()
 	KeyBind::allKeyBinds(binds);
 
 	// Create columns
-	list_binds->AppendColumn("Control");
-	list_binds->AppendColumn("Bound Keys");
+	int width = list_binds->GetSize().x / 3;
+	list_binds->AppendColumn("Control", width * 1.8);
+	list_binds->AppendColumn("Bound Keys", width);
 
 	// Add binds to list
 	for (unsigned a = 0; a < binds.size(); a++)
@@ -255,6 +261,10 @@ void InputPrefsPanel::initBindsList()
 		for (int b = 1; b < binds[a]->nKeys(); b++)
 			list_binds->AppendItem(item, "", -1, -1, new BindListItemData(binds[a]->getKey(b)));
 	}
+
+	// Update list column sizes
+	list_binds->SetColumnWidth(1, width);
+	list_binds->SetColumnWidth(0, width * 1.8);
 }
 
 /* InputPrefsPanel::updateBindsList
@@ -448,7 +458,8 @@ void InputPrefsPanel::applyPreferences()
 void InputPrefsPanel::onSize(wxSizeEvent& e)
 {
 	// Update list column sizes
-	list_binds->SetColumnWidth(1, e.GetSize().x * 0.3);
+	int width = list_binds->GetSize().x / 3;
+	list_binds->SetColumnWidth(1, width);
 
 	e.Skip();
 }

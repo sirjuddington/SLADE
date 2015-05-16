@@ -509,5 +509,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 	}
 
 	// Draw texture name (even if texture is blank)
+	if (texname.Length() > 8)
+		texname = texname.Truncate(8) + "...";
 	Drawing::drawText(texname, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
 }

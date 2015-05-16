@@ -131,6 +131,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent) : wxDialog(parent, -1, "Browser",
 	// Init variables
 	items_root = new BrowserTreeNode();
 	items_root->setName("All");
+	truncate_names = false;
 
 	// Setup layout
 	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
@@ -145,10 +146,8 @@ BrowserWindow::BrowserWindow(wxWindow* parent) : wxDialog(parent, -1, "Browser",
 	m_hbox->Add(tree_items, 0, wxEXPAND|wxALL, 4);
 
 	// Browser area
-	//wxPanel* panel_browser_area = new wxPanel(this, -1);
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	m_hbox->Add(vbox, 1, wxEXPAND|wxALL, 4);
-	//panel_browser_area->SetSizer(vbox);
 
 	// Zoom
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -228,6 +227,7 @@ BrowserWindow::~BrowserWindow()
  *******************************************************************/
 bool BrowserWindow::addItem(BrowserItem* item, string where)
 {
+	item->parent = this;
 	BrowserTreeNode* target = (BrowserTreeNode*)items_root->addChild(where);
 	if (target)
 	{
@@ -244,6 +244,7 @@ bool BrowserWindow::addItem(BrowserItem* item, string where)
  *******************************************************************/
 void BrowserWindow::addGlobalItem(BrowserItem* item)
 {
+	item->parent = this;
 	items_global.push_back(item);
 }
 

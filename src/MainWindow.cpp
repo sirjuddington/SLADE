@@ -45,11 +45,16 @@
 #include "UndoManagerHistoryPanel.h"
 #include "ArchivePanel.h"
 #include "cl_notebook_art/cl_aui_notebook_art.h"
+#include "Misc.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
-#include <wx/webview.h>
 #include <wx/filename.h>
+
+#ifdef USE_WEBVIEW_STARTPAGE
+#include <wx/webview.h>
+#include "DocsPage.h"
+#endif
 
 
 /*******************************************************************
@@ -100,6 +105,9 @@ MainWindow::MainWindow()
 	if (mw_maximized) Maximize();
 	setupLayout();
 	SetDropTarget(new MainWindowDropTarget());
+#ifdef USE_WEBVIEW_STARTPAGE
+	docs_page = NULL;
+#endif
 }
 
 /* MainWindow::~MainWindow
@@ -611,10 +619,6 @@ void MainWindow::createStartPage(bool newtip)
  *******************************************************************/
 bool MainWindow::exitProgram()
 {
-	// Close all archives
-	if (!panel_archivemanager->closeAll())
-		return false;
-
 	// Confirm exit
 	if (confirm_exit && !panel_archivemanager->askedSaveUnchanged())
 	{
@@ -622,10 +626,16 @@ bool MainWindow::exitProgram()
 			return false;
 	}
 
+	// Close all archives
+	if (!panel_archivemanager->closeAll())
+		return false;
+
 	// Save current layout
 	//main_window_layout = m_mgr->SavePerspective();
 	saveLayout();
 	mw_maximized = IsMaximized();
+	if (!IsMaximized())
+		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	// Save selected palette
 	global_palette = palette_chooser->GetStringSelection();
@@ -707,6 +717,48 @@ void MainWindow::openEntry(ArchiveEntry* entry)
 {
 	panel_archivemanager->openEntryTab(entry);
 }
+
+/* MainWindow::openDocs
+ * Opens [entry] in its own tab
+ *******************************************************************/
+#ifdef USE_WEBVIEW_STARTPAGE
+void MainWindow::openDocs(string page_name)
+{
+	// Create docs page control if needed
+	if (!docs_page)
+	{
+		docs_page = new DocsPage(this);
+		docs_page->SetName("docs");
+	}
+
+	// Check if docs tab is already open
+	bool found = false;
+	for (unsigned a = 0; a < notebook_tabs->GetPageCount(); a++)
+	{
+		if (notebook_tabs->GetPage(a)->GetName() == "docs")
+		{
+			notebook_tabs->SetSelection(a);
+			found = true;
+			break;
+		}
+	}
+
+	// Open new docs tab if not already open
+	if (!found)
+	{
+		notebook_tabs->AddPage(docs_page, "Documentation", true, -1);
+		notebook_tabs->SetPageBitmap(notebook_tabs->GetPageCount() - 1, getIcon("t_wiki"));
+	}
+
+	// Load specified page, if any
+	if (page_name != "")
+		docs_page->openPage(page_name);
+
+	// Refresh page
+	docs_page->Layout();
+	docs_page->Update();
+}
+#endif
 
 /* MainWindow::handleAction
  * Handles the action [id]. Returns true if the action was handled,
@@ -825,7 +877,11 @@ bool MainWindow::handleAction(string id)
 	// Help->Online Documentation
 	if (id == "main_onlinedocs")
 	{
+#ifdef USE_WEBVIEW_STARTPAGE
+		openDocs();
+#else
 		wxLaunchDefaultBrowser("http://slade.mancubus.net/wiki");
+#endif
 		return true;
 	}
 
@@ -1042,6 +1098,9 @@ void MainWindow::onActivate(wxActivateEvent& e)
 		SetStatusText("", 1);
 		SetStatusText("", 2);
 	}
+
+	// Check open directory archives for changes on the file system
+	panel_archivemanager->checkDirArchives();
 
 	e.Skip();
 }

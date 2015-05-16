@@ -75,14 +75,14 @@ namespace Global
 {
 	string error = "";
 
-	string version = "3.1.0.1"
+	string version = "3.1.0.2"
 #ifdef GIT_DESCRIPTION
 	                 " (" GIT_DESCRIPTION ")"
 #endif
 	                 "";
 
 	int log_verbosity = 1;
-	int version_num = 3101;
+	int version_num = 3102;
 	int beta_num = 0;
 
 #ifdef DEBUG
@@ -378,7 +378,7 @@ void MainApp::initLogFile()
 {
 	// Set wxLog target(s)
 	wxLog::SetActiveTarget(new SLADELog());
-	FILE* log_file = fopen(CHR(appPath("slade3.log", DIR_DATA)), "wt");
+	FILE* log_file = fopen(CHR(appPath("slade3.log", DIR_USER)), "wt");
 	new wxLogChain(new wxLogStderr(log_file));
 
 	// Write logfile header

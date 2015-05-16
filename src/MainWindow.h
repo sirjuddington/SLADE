@@ -17,6 +17,7 @@ class SToolBar;
 class UndoManagerHistoryPanel;
 #ifdef USE_WEBVIEW_STARTPAGE
 class wxWebView;
+class DocsPage;
 #endif
 class MainWindow : public STopWindow, SActionHandler
 {
@@ -31,6 +32,7 @@ private:
 	// Start page
 #ifdef USE_WEBVIEW_STARTPAGE
 	wxWebView*					html_startpage;
+	DocsPage*					docs_page;
 #else
 	wxHtmlWindow*				html_startpage;
 #endif
@@ -72,6 +74,9 @@ public:
 	void	openTextureEditor(Archive* archive, ArchiveEntry* entry = NULL);
 	void	openMapEditor(Archive* archive);
 	void	openEntry(ArchiveEntry* entry);
+#ifdef USE_WEBVIEW_STARTPAGE
+	void	openDocs(string page_name = "");
+#endif
 
 	// Events
 	void	onMenuItemClicked(wxCommandEvent& e);

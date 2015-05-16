@@ -40,7 +40,7 @@ decorate : cstyle {
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
 		DeathHeight, BurnHeight, ProjectilePassHeight, CameraHeight, MaxStepHeight, MaxDropOffHeight, 
-		Speed, VSpeed, FastSpeed, FloatSpeed,
+		Speed, VSpeed, FastSpeed, FloatSpeed, Friction,
 		
 		// Rendering
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
@@ -163,7 +163,7 @@ decorate : cstyle {
 		QUIET, AUTOACTIVATE, UNDROPPABLE, INVBAR, HUBPOWER, PERSISTENTPOWER, INTERHUBSTRIP,
 		PICKUPFLASH, ALWAYSPICKUP, FANCYPICKUPSOUND, BIGPOWERUP, KEEPDEPLETED, IGNORESKILL, 
 		ADDITIVETIME, UNTOSSABLE, RESTRICTABSOLUTELY, NEVERRESPAWN, NOSCREENFLASH,
-		NOATTENPICKUPSOUND, TOSSED,
+		NOATTENPICKUPSOUND, TOSSED, TRANSFER,
 		
 		// PLAYERPAWN.
 		PLAYERPAWN, 
@@ -229,6 +229,9 @@ decorate : cstyle {
 		DMSS_AFFECTARMOR, DMSS_FOILBUDDHA, DMSS_FOILINVUL, DMSS_KILL, DMSS_NOFACTOR, DMSS_NOPROTECT, DMSS_EXFILTER,
 		DMSS_EXSPECIES, DMSS_EITHER,
 
+		// Flags for A_Face* functions
+		FAF_BOTTOM, FAF_MIDDLE, FAF_TOP, FAF_NODISTFACTOR,
+
 		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO, FBF_NORANDOMPUFFZ,
 		FPF_AIMATANGLE, FPF_TRANSFERTRANSLATION,
 
@@ -254,6 +257,10 @@ decorate : cstyle {
 		PROP_ALLMAP, PROP_BUDDHA, PROP_FLIGHT, PROP_FLY, PROP_FROZEN, PROP_INFRARED, PROP_INSTANTWEAPONSWITCH,
 		PROP_INVISIBILITY, PROP_INVULNERABILITY , PROP_NOTARGET, PROP_RADIATIONSUIT, PROP_SPEED, PROP_STRENGTH,
 		PROP_TOTALLYFROZEN, PROP_WEAPONLEVEL2, PTROP_NOSAFEGUARDS, PTROP_UNSAFEMASTER, PTROP_UNSAFETARGET,
+
+		// A_QuakeEx flags
+		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE,
+
 		RGF_CENTERZ, RGF_CORPSES, RGF_CUBE, RGF_EXPLICITANGLE, RGF_FULLBRIGHT, RGF_GIVESELF, RGF_MISSILES, RGF_MONSTERS, 
 		RGF_NOMASTER, RGF_NOPIERCING, RGF_NOSIGHT, RGF_NOTARGET, RGF_NOTRACER, RGF_OBJECTS, RGF_PLAYERS, RGF_SILENT,
 		RGF_VOODOO,
@@ -279,7 +286,8 @@ decorate : cstyle {
 		SXF_NOCHECKPOSITION, SXF_SETMASTER, SXF_TELEFRAG, SXF_TRANSFERAMBUSHFLAG, SXF_TRANSFERPITCH,
 		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION, SXF_USEBLOODCOLOR, SXF_CLEARCALLERTID, SXF_MULTIPLYSPEED, 
 		SXF_TRANSFERSCALE, SXF_TRANSFERSPECIAL, SXF_CLEARCALLERSPECIAL, SXF_TRANSFERSTENCILCOL, SXF_TRANSFERALPHA,
-		SXF_TRANSFERRENDERSTYLE, SXF_SETTARGET, SXF_SETTRACER, SXF_NOPOINTERS, SXF_ORIGINATOR,
+		SXF_TRANSFERRENDERSTYLE, SXF_SETTARGET, SXF_SETTRACER, SXF_NOPOINTERS, SXF_ORIGINATOR, SXF_TRANSFERSPRITEFRAME,
+		SXF_TRANSFERROLL,
 
 		// A_Teleport flags
 		TF_FORCED, TF_RANDOMDECIDE, TF_TELEFRAG, TF_KEEPVELOCITY, TF_KEEPANGLE, TF_USESPOTZ, TF_NOSRCFOG,
@@ -332,9 +340,9 @@ decorate : cstyle {
 		A_DamageTracer = "int amount, [string type], [int flags], [string filter_class], [string spceies]";
 		A_Die = "[string DamageType]";
 		A_ExtChase = "bool domelee, bool domissile, [bool playactive], [bool nightmarefast]";
-		A_FaceTarget = "[float max_turn_allowed], [float max_pitch_allowed]";
-		A_FaceTracer = "[float max_turn_allowed], [float max_pitch_allowed]";
-		A_FaceMaster = "[float max_turn_allowed], [float max_pitch_allowed]";
+		A_FaceTarget = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags]";
+		A_FaceTracer = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags]";
+		A_FaceMaster = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags]";
 		A_FaceConsolePlayer = "[float maxturnangle]"; // Zandronum-only
 		A_FastChase;
 		A_KillChildren = "[string damagetype], [int flags], [string filter_class], [string spceies]";
@@ -383,6 +391,7 @@ decorate : cstyle {
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
 		A_Quake = "int intensity, int duration, int damrad, int tremrad, [sound sfx]";
+		A_QuakeEx = "int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ]";
 		A_SetTics = "int tics";
 
 		A_FreezeDeath;
@@ -492,22 +501,24 @@ decorate : cstyle {
 		A_QueueCorpse;
 		A_DeQueueCorpse;
 		A_Respawn = "[int flags]";
-		A_SetAngle = "[float angle], [int flags]";
+		A_SetAngle = "[float angle], [int flags], [int pointer]";
 		A_SetArg = "int position, int value";
 		A_SetDamageType = "string damagetype";
-		A_SetPitch = "float pitch, [int flags]";
+		A_SetPitch = "float pitch, [int flags], [int pointer]";
 		A_SetSpecial = "int special, [int arg0], [int arg1], [int arg2], [int arg3], [int arg4]";
-		A_SetSpeed = "float speed";
-		A_SetScale = "float scalex, [float scaley]";
+		A_SetSpeed = "float speed, [int pointer]";
+		A_SetScale = "float scalex, [float scaley], [int pointer]";
 		A_SetMass = "int mass";
 		A_SetTeleFog = "string oldpos, string newpos";
-		A_SetRoll = "float roll, [int flags]";
+		A_SetRoll = "float roll, [int flags], [int pointer]";
 		A_SetFloatBobPhase = "int bob";
 		A_SwapTeleFog;
 		A_SetUserArray = "string name, int pos, int value";
 		A_SetUserVar = "string name, int value";
-		A_ScaleVelocity = "float scale";
-		A_ChangeVelocity = "[float x], [float y], [float z], [int flags]";
+		A_ScaleVelocity = "float scale, [int pointer]";
+		A_ChangeVelocity = "[float x], [float y], [float z], [int flags], [int pointer]";
+		A_SetHealth = "int health, [int pointer]";
+		A_ResetHealth = "[int pointer]";
 
 		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
 		A_Tracer;
@@ -686,6 +697,7 @@ decorate : cstyle {
 		A_DragonInitFlight; A_DragonFlap; A_DragonFlight; A_DragonPain; A_DragonAttack; A_DragonCheckCrash;
 		A_DragonFX2;
 		A_FAxeCheckUp; A_FAxeCheckReady; A_FAxeCheckAtk; A_FAxeAttack; A_FAxeCheckUpG; A_FAxeCheckReadyG;
+		A_FlyBuzz; A_FlySearch;
 		A_FPunchAttack; A_FHammerAttack; A_FHammerThrow;
 		A_FSwordAttack; A_FSwordFlames;
 		A_FiredRocks; A_FiredChase; A_FiredAttack; A_FiredSplotch; A_SmBounce;
@@ -748,6 +760,7 @@ decorate : cstyle {
 		random2 = "int mask";
 		frandom = "float min, float max";
 		randompick = "int value1, int value2, int value3, ...";
+		frandompick = "float value1, float value2, float value3, ...";
 		ACS_NamedExecute = "string script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
 		ACS_NamedExecuteAlways = "string script, [int mapnum], [int arg1], [int arg2], [int arg3]";
 		ACS_NamedExecuteWithResult = "string script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";

@@ -51,6 +51,7 @@
 #include "SplashWindow.h"
 #include "UndoManagerHistoryPanel.h"
 #include "MapBackupManager.h"
+#include "Misc.h"
 #include "MapSpecials.h"
 #include <wx/aui/aui.h>
 
@@ -210,14 +211,14 @@ void MapEditorWindow::setupMenu()
 	theApp->getAction("mapw_undo")->addToMenu(menu_editor, true);
 	theApp->getAction("mapw_redo")->addToMenu(menu_editor, true);
 	menu_editor->AppendSeparator();
-	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor, true);
-	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor, true);
-	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor, true);
-	theApp->getAction("mapw_mirror_x")->addToMenu(menu_editor, true);
-	theApp->getAction("mapw_mirror_y")->addToMenu(menu_editor, true);
+	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor);
+	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor);
+	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor);
+	theApp->getAction("mapw_mirror_x")->addToMenu(menu_editor);
+	theApp->getAction("mapw_mirror_y")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
-	theApp->getAction("mapw_preferences")->addToMenu(menu_editor, true);
-	theApp->getAction("mapw_setbra")->addToMenu(menu_editor, true);
+	theApp->getAction("mapw_preferences")->addToMenu(menu_editor);
+	theApp->getAction("mapw_setbra")->addToMenu(menu_editor);
 	menu->Append(menu_editor, "&Edit");
 
 	// View menu
@@ -1256,6 +1257,8 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 
 	// Save current layout
 	saveLayout();
+	if (!IsMaximized())
+		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 
 	this->Show(false);
 	closeMap();

@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SLADE"
-#define MyAppVersion "3.1.0.1"
-#define VersionNum "3101"
+#define MyAppVersion "3.1.0.2"
+#define VersionNum "3102"
 #define MyAppURL "http://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
 
@@ -42,7 +42,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: "..\dist\SLADE.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\libfluidsynth.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\dist\libsndfile-1.dll"; DestDir: "{app}"; Flags: ignoreversion
+; Source: "..\dist\libsndfile-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\openal32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\slade.pk3"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\slade3.txt"; DestDir: "{app}"; Flags: ignoreversion

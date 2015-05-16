@@ -353,9 +353,9 @@ bool KeyBind::keyPressed(keypress_t key)
 
 	// Go through all keybinds
 	bool pressed = false;
-	for (unsigned k = 0; k < keybinds_sorted.size(); k++)
+	for (unsigned k = 0; k < keybinds.size(); k++)
 	{
-		KeyBind& kb = keybinds_sorted[k];
+		KeyBind& kb = keybinds[k];
 
 		// Go through all keys bound to this keybind
 		for (unsigned a = 0; a < kb.keys.size(); a++)

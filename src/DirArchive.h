@@ -3,12 +3,39 @@
 #define __DIR_ARCHIVE_H__
 
 #include "Archive.h"
+#include <map>
+
+typedef std::map<ArchiveEntry*, time_t> mod_times_t;
+
+struct dir_entry_change_t
+{
+	enum
+	{
+		UPDATED = 0,
+		DELETED_FILE = 1,
+		DELETED_DIR = 2,
+		ADDED_FILE = 3,
+		ADDED_DIR = 4
+	};
+
+	string	entry_path;
+	string	file_path;
+	int		action;
+
+	dir_entry_change_t(int action, string file = "", string entry = "")
+	{
+		this->action = action;
+		this->entry_path = entry;
+		this->file_path = file;
+	}
+};
 
 class DirArchive : public Archive
 {
 private:
 	string				separator;
 	vector<key_value_t>	renamed_dirs;
+	mod_times_t			file_modification_times;
 
 public:
 	DirArchive();
@@ -46,6 +73,10 @@ public:
 	ArchiveEntry*			findFirst(search_options_t& options);
 	ArchiveEntry*			findLast(search_options_t& options);
 	vector<ArchiveEntry*>	findAll(search_options_t& options);
+
+	// DirArchive-specific
+	void	checkUpdatedFiles(vector<dir_entry_change_t>& changes);
+	void	updateChangedEntries(vector<dir_entry_change_t>& changes);
 };
 
 #endif//__DIR_ARCHIVE_H__

@@ -993,25 +993,38 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 	if (!TextureXEditor::setupTextureEntries(parent))
 		return false;
 
-	// Find patch table in parent archive
-	Archive::search_options_t opt;
-	opt.match_type = EntryType::getType("pnames");
-	ArchiveEntry* pnames = parent->findLast(opt);
-
-	// Check it exists
-	if (!pnames)
-		return false;
-
 	// Find texturex entry to add to
+	Archive::search_options_t opt;
 	opt.match_type = EntryType::getType("texturex");
 	ArchiveEntry* texturex = parent->findFirst(opt);
 
 	// Check it exists
+	bool zdtextures = false;
 	if (!texturex)
-		return false;
+	{
+		opt.match_type = EntryType::getType("zdtextures");
+		texturex = parent->findFirst(opt);
+
+		if (!texturex)
+			return false;
+		else
+			zdtextures = true;
+	}
+
+	// Find patch table in parent archive
+	ArchiveEntry* pnames = NULL;
+	if (!zdtextures)
+	{
+		opt.match_type = EntryType::getType("pnames");
+		pnames = parent->findLast(opt);
+
+		// Check it exists
+		if (!pnames)
+			return false;
+	}
 
 	// Check entries aren't locked (texture editor open or iwad)
-	if (pnames->isLocked() || texturex->isLocked())
+	if ((pnames && pnames->isLocked()) || texturex->isLocked())
 	{
 		if (parent->isReadOnly())
 			wxMessageBox("Cannot perform this action on an IWAD", "Error", wxICON_ERROR);
@@ -1021,13 +1034,21 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		return false;
 	}
 
-	// Load patch table
-	PatchTable ptable;
-	ptable.loadPNAMES(pnames);
-
-	// Load texture list
 	TextureXList tx;
-	tx.readTEXTUREXData(texturex, ptable);
+	PatchTable ptable;
+	if (zdtextures)
+	{
+		// Load TEXTURES
+		tx.readTEXTURESData(texturex);
+	}
+	else
+	{
+		// Load patch table
+		ptable.loadPNAMES(pnames);
+
+		// Load TEXTUREx
+		tx.readTEXTUREXData(texturex, ptable);
+	}
 
 	// Create textures from entries
 	SImage image;
@@ -1049,13 +1070,14 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		}
 
 		// Add to patch table
-		ptable.addPatch(name);
+		if (!zdtextures)
+			ptable.addPatch(name);
 
 		// Load patch to temp image
 		Misc::loadImageFromEntry(&image, entries[a]);
 
 		// Create texture
-		CTexture* ntex = new CTexture();
+		CTexture* ntex = new CTexture(zdtextures);
 		ntex->setName(name);
 		ntex->addPatch(name, 0, 0);
 		ntex->setWidth(image.getWidth());
@@ -1071,11 +1093,19 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		tx.addTexture(ntex);
 	}
 
-	// Write patch table data back to pnames entry
-	ptable.writePNAMES(pnames);
+	if (zdtextures)
+	{
+		// Write texture data back to textures entry
+		tx.writeTEXTURESData(texturex);
+	}
+	else
+	{
+		// Write patch table data back to pnames entry
+		ptable.writePNAMES(pnames);
 
-	// Write texture data back to texturex entry
-	tx.writeTEXTUREXData(texturex, ptable);
+		// Write texture data back to texturex entry
+		tx.writeTEXTUREXData(texturex, ptable);
+	}
 
 	return true;
 }

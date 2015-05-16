@@ -3074,25 +3074,25 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("arch_entry_rename")->addToMenu(&context);
-	if (selection.size() > 1) theApp->getAction("arch_entry_rename_each")->addToMenu(&context);
-	theApp->getAction("arch_entry_delete")->addToMenu(&context);
-	if (modified_selected) theApp->getAction("arch_entry_revert")->addToMenu(&context);
+	theApp->getAction("arch_entry_rename")->addToMenu(&context, true);
+	if (selection.size() > 1) theApp->getAction("arch_entry_rename_each")->addToMenu(&context, true);
+	theApp->getAction("arch_entry_delete")->addToMenu(&context, true);
+	if (modified_selected) theApp->getAction("arch_entry_revert")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_cut")->addToMenu(&context);
-	theApp->getAction("arch_entry_copy")->addToMenu(&context);
-	theApp->getAction("arch_entry_paste")->addToMenu(&context);
+	theApp->getAction("arch_entry_cut")->addToMenu(&context, true);
+	theApp->getAction("arch_entry_copy")->addToMenu(&context, true);
+	theApp->getAction("arch_entry_paste")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_import")->addToMenu(&context);
-	theApp->getAction("arch_entry_export")->addToMenu(&context);
+	theApp->getAction("arch_entry_import")->addToMenu(&context, true);
+	theApp->getAction("arch_entry_export")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_moveup")->addToMenu(&context);
-	theApp->getAction("arch_entry_movedown")->addToMenu(&context);
-	theApp->getAction("arch_entry_sort")->addToMenu(&context);
+	theApp->getAction("arch_entry_moveup")->addToMenu(&context, true);
+	theApp->getAction("arch_entry_movedown")->addToMenu(&context, true);
+	theApp->getAction("arch_entry_sort")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_bookmark")->addToMenu(&context);
-	theApp->getAction("arch_entry_opentab")->addToMenu(&context);
-	theApp->getAction("arch_entry_crc32")->addToMenu(&context);
+	theApp->getAction("arch_entry_bookmark")->addToMenu(&context, true);
+	theApp->getAction("arch_entry_opentab")->addToMenu(&context, true);
+	theApp->getAction("arch_entry_crc32")->addToMenu(&context, true);
 
 	// Add custom menu items
 	wxMenu* custom;
@@ -3111,17 +3111,17 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	// Add Boom Animations/Switches related menu items if they are selected
 	if (bas_selected)
 	{
-		theApp->getAction("arch_bas_convertb")->addToMenu(&context);
-		theApp->getAction("arch_bas_convertz")->addToMenu(&context);
+		theApp->getAction("arch_bas_convertb")->addToMenu(&context, true);
+		theApp->getAction("arch_bas_convertz")->addToMenu(&context, true);
 	}
 	if (swan_selected)
 	{
-		theApp->getAction("arch_swan_convert")->addToMenu(&context);
+		theApp->getAction("arch_swan_convert")->addToMenu(&context, true);
 	}
 
 	// Add texturex related menu items if needed
 	if (texturex_selected)
-		theApp->getAction("arch_texturex_convertzd")->addToMenu(&context);
+		theApp->getAction("arch_texturex_convertzd")->addToMenu(&context, true);
 
 	// 'View As' menu
 	if (context_submenus)
@@ -3134,8 +3134,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	else
 	{
 		context.AppendSeparator();
-		theApp->getAction("arch_view_text")->addToMenu(&context);
-		theApp->getAction("arch_view_hex")->addToMenu(&context);
+		theApp->getAction("arch_view_text")->addToMenu(&context, true);
+		theApp->getAction("arch_view_hex")->addToMenu(&context, true);
 	}
 
 	// Add gfx-related menu items if gfx are selected (multi-select only)
@@ -3152,16 +3152,16 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			context.AppendSeparator();
 			gfx = &context;
 		}
-		theApp->getAction("arch_gfx_convert")->addToMenu(gfx);
-		theApp->getAction("arch_gfx_translate")->addToMenu(gfx);
-		theApp->getAction("arch_gfx_colourise")->addToMenu(gfx);
-		theApp->getAction("arch_gfx_tint")->addToMenu(gfx);
-		theApp->getAction("arch_gfx_offsets")->addToMenu(gfx);
-		theApp->getAction("arch_gfx_addptable")->addToMenu(gfx);
-		theApp->getAction("arch_gfx_addtexturex")->addToMenu(gfx);
-		theApp->getAction("arch_gfx_exportpng")->addToMenu(gfx);
+		theApp->getAction("arch_gfx_convert")->addToMenu(gfx, true);
+		theApp->getAction("arch_gfx_translate")->addToMenu(gfx, true);
+		theApp->getAction("arch_gfx_colourise")->addToMenu(gfx, true);
+		theApp->getAction("arch_gfx_tint")->addToMenu(gfx, true);
+		theApp->getAction("arch_gfx_offsets")->addToMenu(gfx, true);
+		theApp->getAction("arch_gfx_addptable")->addToMenu(gfx, true);
+		theApp->getAction("arch_gfx_addtexturex")->addToMenu(gfx, true);
+		theApp->getAction("arch_gfx_exportpng")->addToMenu(gfx, true);
 		if (png_selected)
-			theApp->getAction("arch_gfx_pngopt")->addToMenu(gfx);
+			theApp->getAction("arch_gfx_pngopt")->addToMenu(gfx, true);
 	}
 
 	// Add Audio related menu items if needed
@@ -3179,11 +3179,11 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			audio = &context;
 		}
 		if (wav_selected)
-			theApp->getAction("arch_audio_convertwd")->addToMenu(audio);
+			theApp->getAction("arch_audio_convertwd")->addToMenu(audio, true);
 		if (dsnd_selected)
-			theApp->getAction("arch_audio_convertdw")->addToMenu(audio);
+			theApp->getAction("arch_audio_convertdw")->addToMenu(audio, true);
 		if (mus_selected)
-			theApp->getAction("arch_audio_convertmus")->addToMenu(audio);
+			theApp->getAction("arch_audio_convertmus")->addToMenu(audio, true);
 	}
 
 	// Add script related menu items if needed
@@ -3200,8 +3200,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			context.AppendSeparator();
 			scripts = &context;
 		}
-		theApp->getAction("arch_scripts_compileacs")->addToMenu(scripts);
-		theApp->getAction("arch_scripts_compilehacs")->addToMenu(scripts);
+		theApp->getAction("arch_scripts_compileacs")->addToMenu(scripts, true);
+		theApp->getAction("arch_scripts_compilehacs")->addToMenu(scripts, true);
 	}
 
 	// Add map related menu items if needed
@@ -3209,7 +3209,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	{
 		// 'Open in Doom Builder 2' (windows-only)
 #ifdef __WXMSW__
-		theApp->getAction("arch_map_opendb2")->addToMenu(&context);
+		theApp->getAction("arch_map_opendb2")->addToMenu(&context, true);
 #endif
 	}
 

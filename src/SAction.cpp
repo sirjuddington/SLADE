@@ -107,7 +107,7 @@ bool SAction::addToMenu(wxMenu* menu, string text_override)
 {
 	return addToMenu(menu, false, text_override);
 }
-bool SAction::addToMenu(wxMenu* menu, bool menubar, string text_override)
+bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override)
 {
 	// Can't add to nonexistant menu
 	if (!menu)
@@ -128,7 +128,7 @@ bool SAction::addToMenu(wxMenu* menu, bool menubar, string text_override)
 	string item_text = text;
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
-	if (!sc.IsEmpty())
+	if (!sc.IsEmpty() && show_shortcut)
 		item_text = S_FMT("%s\t%s", item_text, sc);
 
 	// Append this action to the menu
