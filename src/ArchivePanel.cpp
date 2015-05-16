@@ -845,6 +845,9 @@ bool ArchivePanel::renameEntry(bool each)
 	// Begin recording undo level
 	undo_manager->beginRecord("Rename Entry");
 
+	/* Define alphabet */
+	const wxString alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 	// Check any are selected
 	if (each || selection.size() == 1)
 	{
@@ -853,7 +856,7 @@ bool ArchivePanel::renameEntry(bool each)
 		{
 
 			// Prompt for a new name
-			string new_name = wxGetTextFromUser("Enter new entry name: (* = unchanged)", "Rename", selection[a]->getName());
+			string new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->getName());
 
 			// Rename entry (if needed)
 			if (!new_name.IsEmpty() && selection[a]->getName() != new_name)
@@ -871,7 +874,7 @@ bool ArchivePanel::renameEntry(bool each)
 		string filter = Misc::massRenameFilter(names);
 
 		// Prompt for a new name
-		string new_name = wxGetTextFromUser("Enter new entry name: (* = unchanged)", "Rename", filter);
+		string new_name = wxGetTextFromUser("Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = alphabet repeat number, & = entry number, %% or && = n-1)", "Rename", filter);
 
 		// Apply mass rename to list of names
 		if (!new_name.IsEmpty())
@@ -893,7 +896,17 @@ bool ArchivePanel::renameEntry(bool each)
 				// Rename the entry (if needed)
 				if (fn.GetName() != names[a])
 				{
-					fn.SetName(names[a]);							// Change name
+					wxString filename = names[a];
+					/* file renaming syntax */
+					int num = a / alphabet.size();
+					int cn = a-(num*alphabet.size());
+					filename.Replace("^^", alphabet.Lower()[cn]);
+					filename.Replace("^", alphabet[cn]);
+					filename.Replace("%%", wxString::FromDouble(num, 0));
+					filename.Replace("%", wxString::FromDouble(num+1, 0));
+					filename.Replace("&&", wxString::FromDouble(a, 0));
+					filename.Replace("&", wxString::FromDouble(a+1, 0));
+					fn.SetName(filename);							// Change name
 					archive->renameEntry(entry, fn.GetFullName());	// Rename in archive
 				}
 			}
