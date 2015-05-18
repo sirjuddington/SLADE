@@ -338,6 +338,7 @@ bool DirArchive::save(string filename)
 		file_modification_times[entries[a]] = wxFileModificationTime(path);
 	}
 
+	removed_files.clear();
 	setModified(false);
 
 	return true;
@@ -390,6 +391,12 @@ ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 
 	// Add the entry to the dir
 	return Archive::addEntry(entry, 0xFFFFFFFF, dir, copy);
+}
+
+bool DirArchive::removeEntry(ArchiveEntry* entry, bool delete_entry)
+{
+	removed_files.push_back(entry->exProp("filePath").getStringValue());
+	return Archive::removeEntry(entry, delete_entry);
 }
 
 /* DirArchive::getMapInfo
@@ -595,6 +602,10 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 	// Check for deleted files
 	for (unsigned a = 0; a < entry_paths.size(); a++)
 	{
+		// Ignore if new
+		if (entries[a]->getState() == 2)
+			continue;
+
 		if (entries[a]->getType() == EntryType::folderType())
 		{
 			if (!wxDirExists(entry_paths[a]))
@@ -610,6 +621,9 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 	// Check for new/updated files
 	for (unsigned a = 0; a < files.size(); a++)
 	{
+		if (VECTOR_EXISTS(removed_files, files[a]))
+			continue;
+
 		// Find file in archive
 		ArchiveEntry * entry = NULL;
 		for (unsigned b = 0; b < entry_paths.size(); b++)
