@@ -61,12 +61,12 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">true</GenerateManifest>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)src;$(FLUIDSYNTH)\include;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)src;$(FLUIDSYNTH)\include;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)src\dumb;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)src;$(FLUIDSYNTH)\include;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist;$(SFML)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(FLUIDSYNTH)\lib;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(FLUIDSYNTH)\lib;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist;$(SFML)\lib;$(FTGL)\msvc\build;$(FREETYPE)\objs\win32;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist;$(SFML)\include;$(FLUIDSYNTH)\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist;$(SFML)\lib;$(FLUIDSYNTH)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(FLUIDSYNTH)\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(FLUIDSYNTH)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -78,7 +78,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;NOLIBMODPLUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -90,7 +90,7 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;sndfile.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -102,7 +102,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>WIN32;SFML_STATIC;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SFML_STATIC;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;NOLIBMODPLUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
       <StringPooling>true</StringPooling>
@@ -164,40 +164,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="libmodplug\fastmix.cpp" />
-    <ClCompile Include="libmodplug\load_669.cpp" />
-    <ClCompile Include="libmodplug\load_abc.cpp" />
-    <ClCompile Include="libmodplug\load_amf.cpp" />
-    <ClCompile Include="libmodplug\load_ams.cpp" />
-    <ClCompile Include="libmodplug\load_dbm.cpp" />
-    <ClCompile Include="libmodplug\load_dmf.cpp" />
-    <ClCompile Include="libmodplug\load_dsm.cpp" />
-    <ClCompile Include="libmodplug\load_far.cpp" />
-    <ClCompile Include="libmodplug\load_it.cpp" />
-    <ClCompile Include="libmodplug\load_j2b.cpp" />
-    <ClCompile Include="libmodplug\load_mdl.cpp" />
-    <ClCompile Include="libmodplug\load_med.cpp" />
-    <ClCompile Include="libmodplug\load_mid.cpp" />
-    <ClCompile Include="libmodplug\load_mod.cpp" />
-    <ClCompile Include="libmodplug\load_mt2.cpp" />
-    <ClCompile Include="libmodplug\load_mtm.cpp" />
-    <ClCompile Include="libmodplug\load_okt.cpp" />
-    <ClCompile Include="libmodplug\load_pat.cpp" />
-    <ClCompile Include="libmodplug\load_psm.cpp" />
-    <ClCompile Include="libmodplug\load_ptm.cpp" />
-    <ClCompile Include="libmodplug\load_s3m.cpp" />
-    <ClCompile Include="libmodplug\load_stm.cpp" />
-    <ClCompile Include="libmodplug\load_ult.cpp" />
-    <ClCompile Include="libmodplug\load_umx.cpp" />
-    <ClCompile Include="libmodplug\load_wav.cpp" />
-    <ClCompile Include="libmodplug\load_xm.cpp" />
-    <ClCompile Include="libmodplug\mmcmp.cpp" />
-    <ClCompile Include="libmodplug\modplug.cpp" />
-    <ClCompile Include="libmodplug\sndfile.cpp" />
-    <ClCompile Include="libmodplug\sndmix.cpp" />
-    <ClCompile Include="libmodplug\snd_dsp.cpp" />
-    <ClCompile Include="libmodplug\snd_flt.cpp" />
-    <ClCompile Include="libmodplug\snd_fx.cpp" />
     <ClCompile Include="src\ActionSpecial.cpp" />
     <ClCompile Include="src\ActionSpecialDialog.cpp" />
     <ClCompile Include="src\ADatArchive.cpp" />
@@ -258,6 +224,92 @@
     <ClCompile Include="src\DockPanel.cpp" />
     <ClCompile Include="src\DocsPage.cpp" />
     <ClCompile Include="src\Drawing.cpp" />
+    <ClCompile Include="src\dumb\core\atexit.c" />
+    <ClCompile Include="src\dumb\core\duhlen.c" />
+    <ClCompile Include="src\dumb\core\duhtag.c" />
+    <ClCompile Include="src\dumb\core\dumbfile.c" />
+    <ClCompile Include="src\dumb\core\loadduh.c" />
+    <ClCompile Include="src\dumb\core\makeduh.c" />
+    <ClCompile Include="src\dumb\core\rawsig.c" />
+    <ClCompile Include="src\dumb\core\readduh.c" />
+    <ClCompile Include="src\dumb\core\register.c" />
+    <ClCompile Include="src\dumb\core\rendduh.c" />
+    <ClCompile Include="src\dumb\core\rendsig.c" />
+    <ClCompile Include="src\dumb\core\unload.c" />
+    <ClCompile Include="src\dumb\helpers\barray.c" />
+    <ClCompile Include="src\dumb\helpers\clickrem.c" />
+    <ClCompile Include="src\dumb\helpers\fir_resampler.c" />
+    <ClCompile Include="src\dumb\helpers\lpc.c" />
+    <ClCompile Include="src\dumb\helpers\memfile.c" />
+    <ClCompile Include="src\dumb\helpers\resample.c" />
+    <ClCompile Include="src\dumb\helpers\resampler.c" />
+    <ClCompile Include="src\dumb\helpers\riff.c" />
+    <ClCompile Include="src\dumb\helpers\sampbuf.c" />
+    <ClCompile Include="src\dumb\helpers\silence.c" />
+    <ClCompile Include="src\dumb\helpers\stdfile.c" />
+    <ClCompile Include="src\dumb\helpers\tarray.c" />
+    <ClCompile Include="src\dumb\it\itload.c" />
+    <ClCompile Include="src\dumb\it\itload2.c" />
+    <ClCompile Include="src\dumb\it\itmisc.c" />
+    <ClCompile Include="src\dumb\it\itorder.c" />
+    <ClCompile Include="src\dumb\it\itread.c" />
+    <ClCompile Include="src\dumb\it\itread2.c" />
+    <ClCompile Include="src\dumb\it\itrender.c" />
+    <ClCompile Include="src\dumb\it\itunload.c" />
+    <ClCompile Include="src\dumb\it\load669.c" />
+    <ClCompile Include="src\dumb\it\load6692.c" />
+    <ClCompile Include="src\dumb\it\loadamf.c" />
+    <ClCompile Include="src\dumb\it\loadamf2.c" />
+    <ClCompile Include="src\dumb\it\loadany.c" />
+    <ClCompile Include="src\dumb\it\loadany2.c" />
+    <ClCompile Include="src\dumb\it\loadasy.c" />
+    <ClCompile Include="src\dumb\it\loadasy2.c" />
+    <ClCompile Include="src\dumb\it\loadmod.c" />
+    <ClCompile Include="src\dumb\it\loadmod2.c" />
+    <ClCompile Include="src\dumb\it\loadmtm.c" />
+    <ClCompile Include="src\dumb\it\loadmtm2.c" />
+    <ClCompile Include="src\dumb\it\loadokt.c" />
+    <ClCompile Include="src\dumb\it\loadokt2.c" />
+    <ClCompile Include="src\dumb\it\loadoldpsm.c" />
+    <ClCompile Include="src\dumb\it\loadoldpsm2.c" />
+    <ClCompile Include="src\dumb\it\loadpsm.c" />
+    <ClCompile Include="src\dumb\it\loadpsm2.c" />
+    <ClCompile Include="src\dumb\it\loadptm.c" />
+    <ClCompile Include="src\dumb\it\loadptm2.c" />
+    <ClCompile Include="src\dumb\it\loadriff.c" />
+    <ClCompile Include="src\dumb\it\loadriff2.c" />
+    <ClCompile Include="src\dumb\it\loads3m.c" />
+    <ClCompile Include="src\dumb\it\loads3m2.c" />
+    <ClCompile Include="src\dumb\it\loadstm.c" />
+    <ClCompile Include="src\dumb\it\loadstm2.c" />
+    <ClCompile Include="src\dumb\it\loadxm.c" />
+    <ClCompile Include="src\dumb\it\loadxm2.c" />
+    <ClCompile Include="src\dumb\it\ptmeffect.c" />
+    <ClCompile Include="src\dumb\it\read669.c" />
+    <ClCompile Include="src\dumb\it\read6692.c" />
+    <ClCompile Include="src\dumb\it\readam.c" />
+    <ClCompile Include="src\dumb\it\readamf.c" />
+    <ClCompile Include="src\dumb\it\readamf2.c" />
+    <ClCompile Include="src\dumb\it\readany.c" />
+    <ClCompile Include="src\dumb\it\readany2.c" />
+    <ClCompile Include="src\dumb\it\readasy.c" />
+    <ClCompile Include="src\dumb\it\readdsmf.c" />
+    <ClCompile Include="src\dumb\it\readmod.c" />
+    <ClCompile Include="src\dumb\it\readmod2.c" />
+    <ClCompile Include="src\dumb\it\readmtm.c" />
+    <ClCompile Include="src\dumb\it\readokt.c" />
+    <ClCompile Include="src\dumb\it\readokt2.c" />
+    <ClCompile Include="src\dumb\it\readoldpsm.c" />
+    <ClCompile Include="src\dumb\it\readpsm.c" />
+    <ClCompile Include="src\dumb\it\readptm.c" />
+    <ClCompile Include="src\dumb\it\readriff.c" />
+    <ClCompile Include="src\dumb\it\reads3m.c" />
+    <ClCompile Include="src\dumb\it\reads3m2.c" />
+    <ClCompile Include="src\dumb\it\readstm.c" />
+    <ClCompile Include="src\dumb\it\readstm2.c" />
+    <ClCompile Include="src\dumb\it\readxm.c" />
+    <ClCompile Include="src\dumb\it\readxm2.c" />
+    <ClCompile Include="src\dumb\it\xmeffect.c" />
     <ClCompile Include="src\EntryDataFormat.cpp" />
     <ClCompile Include="src\Executables.cpp" />
     <ClCompile Include="src\ExtMessageDialog.cpp" />
@@ -369,6 +421,7 @@
     <ClCompile Include="src\MIDIPlayer.cpp" />
     <ClCompile Include="src\MobjPropertyList.cpp" />
     <ClCompile Include="src\ModifyOffsetsDialog.cpp" />
+    <ClCompile Include="src\ModMusic.cpp" />
     <ClCompile Include="src\MOPGProperty.cpp" />
     <ClCompile Include="src\mus2mid\mus2mid.cpp" />
     <ClCompile Include="src\NodeBuilders.cpp" />
@@ -402,7 +455,6 @@
     <ClCompile Include="src\SectorSpecialDialog.cpp" />
     <ClCompile Include="src\SectorTextureOverlay.cpp" />
     <ClCompile Include="src\SFileDialog.cpp" />
-    <ClCompile Include="src\sfMod\sfMod.cpp" />
     <ClCompile Include="src\SFont.cpp" />
     <ClCompile Include="src\ShapeDrawPanel.cpp" />
     <ClCompile Include="src\ShowItemDialog.cpp" />
@@ -508,9 +560,6 @@
     <ClCompile Include="src\ZTextureEditorPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="libmodplug\load_pat.h" />
-    <ClInclude Include="libmodplug\modplug.h" />
-    <ClInclude Include="libmodplug\tables.h" />
     <ClInclude Include="src\ActionSpecial.h" />
     <ClInclude Include="src\ActionSpecialDialog.h" />
     <ClInclude Include="src\ADatArchive.h" />
@@ -572,6 +621,18 @@
     <ClInclude Include="src\DockPanel.h" />
     <ClInclude Include="src\DocsPage.h" />
     <ClInclude Include="src\Drawing.h" />
+    <ClInclude Include="src\dumb\dumb.h" />
+    <ClInclude Include="src\dumb\internal\aldumb.h" />
+    <ClInclude Include="src\dumb\internal\barray.h" />
+    <ClInclude Include="src\dumb\internal\dumb.h" />
+    <ClInclude Include="src\dumb\internal\dumbfile.h" />
+    <ClInclude Include="src\dumb\internal\fir_resampler.h" />
+    <ClInclude Include="src\dumb\internal\it.h" />
+    <ClInclude Include="src\dumb\internal\lpc.h" />
+    <ClInclude Include="src\dumb\internal\resampler.h" />
+    <ClInclude Include="src\dumb\internal\riff.h" />
+    <ClInclude Include="src\dumb\internal\stack_alloc.h" />
+    <ClInclude Include="src\dumb\internal\tarray.h" />
     <ClInclude Include="src\EntryDataFormat.h" />
     <ClInclude Include="src\Executables.h" />
     <ClInclude Include="src\ExtMessageDialog.h" />
@@ -677,6 +738,7 @@
     <ClInclude Include="src\MobjPropertyList.h" />
     <ClInclude Include="src\ModelFormats.h" />
     <ClInclude Include="src\ModifyOffsetsDialog.h" />
+    <ClInclude Include="src\ModMusic.h" />
     <ClInclude Include="src\MOPGProperty.h" />
     <ClInclude Include="src\mus2mid\mus2mid.h" />
     <ClInclude Include="src\NodeBuilders.h" />
@@ -712,8 +774,6 @@
     <ClInclude Include="src\SectorSpecialDialog.h" />
     <ClInclude Include="src\SectorTextureOverlay.h" />
     <ClInclude Include="src\SFileDialog.h" />
-    <ClInclude Include="src\sfMod\modplug.h" />
-    <ClInclude Include="src\sfMod\sfMod.h" />
     <ClInclude Include="src\ShapeDrawPanel.h" />
     <ClInclude Include="src\ShowItemDialog.h" />
     <ClInclude Include="src\SidePropsPanel.h" />
@@ -883,6 +943,9 @@
     <None Include="dist\res\config\ports\include\things_zdoom.cfg" />
     <None Include="dist\res\config\ports\zdoom.cfg" />
     <None Include="slade.ico" />
+    <None Include="src\dumb\helpers\resamp2.inc" />
+    <None Include="src\dumb\helpers\resamp3.inc" />
+    <None Include="src\dumb\helpers\resample.inc" />
     <None Include="stuff.txt" />
   </ItemGroup>
   <ItemGroup>

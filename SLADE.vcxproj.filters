@@ -124,9 +124,6 @@
     <Filter Include="External\CodeLite Notebook Art">
       <UniqueIdentifier>{a0b955c7-f8c3-4ccf-94dd-2137c2dd6b5d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External\sfMod">
-      <UniqueIdentifier>{5ecd0756-5410-456d-b7d8-69e3ab5098bf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Map Editor\UI Elements\Overlays">
       <UniqueIdentifier>{373e0e80-3aef-4e5a-b892-d9bf8b525878}</UniqueIdentifier>
     </Filter>
@@ -148,9 +145,6 @@
     <Filter Include="Map Editor\GameConfiguration\Configurations\Ports\Include">
       <UniqueIdentifier>{99eceb21-bb23-4972-bb7e-23a2cbe6de2b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External\libmodplug">
-      <UniqueIdentifier>{d4a54f03-4a85-41e3-8cc0-f8268538d3bd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Dialogs\SetupWizard">
       <UniqueIdentifier>{90dc0f0c-92e7-414e-a30b-76c8c288e615}</UniqueIdentifier>
     </Filter>
@@ -159,6 +153,21 @@
     </Filter>
     <Filter Include="Map Editor\UI Elements\Dialogs">
       <UniqueIdentifier>{76701b85-f3f6-418f-b84e-cddfc761072f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\DUMB">
+      <UniqueIdentifier>{ffdebfe3-3d6d-42d9-854b-4086903af5c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\DUMB\core">
+      <UniqueIdentifier>{560e9a8a-a30c-4d08-b95f-8ef671d0c653}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\DUMB\helpers">
+      <UniqueIdentifier>{0d266184-6ec2-4d17-af30-5802fc880f4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\DUMB\internal">
+      <UniqueIdentifier>{3756388c-7b51-41c5-9b95-9d0f2b2b8744}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\DUMB\it">
+      <UniqueIdentifier>{210b2c2d-6db2-46a5-87e6-a09c7ac669fa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -747,9 +756,6 @@
     <ClCompile Include="src\cl_notebook_art\cl_aui_notebook_art.cpp">
       <Filter>External\CodeLite Notebook Art</Filter>
     </ClCompile>
-    <ClCompile Include="src\sfMod\sfMod.cpp">
-      <Filter>External\sfMod</Filter>
-    </ClCompile>
     <ClCompile Include="src\SectorTextureOverlay.cpp">
       <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClCompile>
@@ -890,108 +896,6 @@
     </ClCompile>
     <ClCompile Include="src\DiskArchive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\fastmix.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_669.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_abc.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_amf.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_ams.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_dbm.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_dmf.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_dsm.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_far.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_it.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_j2b.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_mdl.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_med.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_mid.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_mod.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_mt2.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_mtm.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_okt.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_pat.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_psm.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_ptm.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_s3m.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_stm.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_ult.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_umx.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_wav.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\load_xm.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\mmcmp.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\modplug.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\snd_dsp.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\snd_flt.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\snd_fx.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\sndfile.cpp">
-      <Filter>External\libmodplug</Filter>
-    </ClCompile>
-    <ClCompile Include="libmodplug\sndmix.cpp">
-      <Filter>External\libmodplug</Filter>
     </ClCompile>
     <ClCompile Include="src\GenLineSpecial.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
@@ -1187,6 +1091,267 @@
     </ClCompile>
     <ClCompile Include="src\Dialogs\DirArchiveUpdateDialog.cpp">
       <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\atexit.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\duhlen.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\duhtag.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\dumbfile.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\loadduh.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\makeduh.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\rawsig.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\readduh.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\register.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\rendduh.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\rendsig.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\core\unload.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\barray.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\clickrem.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\fir_resampler.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\lpc.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\memfile.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\resample.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\resampler.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\riff.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\sampbuf.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\silence.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\stdfile.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\helpers\tarray.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\itload.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\itload2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\itmisc.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\itorder.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\itread.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\itread2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\itrender.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\itunload.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\load669.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\load6692.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadamf.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadamf2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadany.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadany2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadasy.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadasy2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadmod.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadmod2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadmtm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadmtm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadokt.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadokt2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadoldpsm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadoldpsm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadpsm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadpsm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadptm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadptm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadriff.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadriff2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loads3m.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loads3m2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadstm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadstm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadxm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\loadxm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\ptmeffect.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\read669.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\read6692.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readam.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readamf.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readamf2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readany.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readany2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readasy.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readdsmf.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readmod.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readmod2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readmtm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readokt.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readokt2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readoldpsm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readpsm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readptm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readriff.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\reads3m.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\reads3m2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readstm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readstm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readxm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\readxm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dumb\it\xmeffect.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModMusic.cpp">
+      <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1812,12 +1977,6 @@
     <ClInclude Include="src\cl_notebook_art\cl_aui_notebook_art.h">
       <Filter>External\CodeLite Notebook Art</Filter>
     </ClInclude>
-    <ClInclude Include="src\sfMod\sfMod.h">
-      <Filter>External\sfMod</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sfMod\modplug.h">
-      <Filter>External\sfMod</Filter>
-    </ClInclude>
     <ClInclude Include="src\MCOverlay.h">
       <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClInclude>
@@ -1934,15 +2093,6 @@
     </ClInclude>
     <ClInclude Include="src\DiskArchive.h">
       <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="libmodplug\load_pat.h">
-      <Filter>External\libmodplug</Filter>
-    </ClInclude>
-    <ClInclude Include="libmodplug\modplug.h">
-      <Filter>External\libmodplug</Filter>
-    </ClInclude>
-    <ClInclude Include="libmodplug\tables.h">
-      <Filter>External\libmodplug</Filter>
     </ClInclude>
     <ClInclude Include="src\GenLineSpecial.h">
       <Filter>Map Editor\GameConfiguration</Filter>
@@ -2142,6 +2292,45 @@
     <ClInclude Include="src\Dialogs\DirArchiveUpdateDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="src\dumb\dumb.h">
+      <Filter>External\DUMB</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\aldumb.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\barray.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\dumb.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\dumbfile.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\fir_resampler.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\it.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\lpc.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\resampler.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\riff.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\stack_alloc.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dumb\internal\tarray.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ModMusic.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
@@ -2305,6 +2494,15 @@
     </None>
     <None Include="dist\res\config\games\include\things_chex3.cfg">
       <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
+    </None>
+    <None Include="src\dumb\helpers\resamp2.inc">
+      <Filter>External\DUMB\helpers</Filter>
+    </None>
+    <None Include="src\dumb\helpers\resamp3.inc">
+      <Filter>External\DUMB\helpers</Filter>
+    </None>
+    <None Include="src\dumb\helpers\resample.inc">
+      <Filter>External\DUMB\helpers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
