@@ -48,6 +48,8 @@ bool ModMusic::init_done = false;
  *******************************************************************/
 ModMusic::ModMusic()
 {
+	dumb_module = NULL;
+	dumb_player = NULL;
 }
 
 /* ModMusic::~ModMusic
