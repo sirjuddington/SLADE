@@ -4576,9 +4576,28 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	}
 
 	// Split lines (by vertices)
-	int nl_start = lines.size();
+	const double split_dist = 0.1;
+	// Split existing lines that vertices moved onto
 	for (unsigned a = 0; a < merged_vertices.size(); a++)
-		splitLinesAt(merged_vertices[a], 0.1);
+		splitLinesAt(merged_vertices[a], split_dist);
+
+	// Split lines that moved onto existing vertices
+	unsigned nlines = connected_lines.size();
+	for (unsigned a = 0; a < nlines; a++)
+	{
+		unsigned nvertices = this->vertices.size();
+		for (unsigned b = 0; b < nvertices; b++)
+		{
+			MapVertex* vertex = this->vertices[b];
+
+			// Skip line if it shares the vertex
+			if (connected_lines[a]->v1() == vertex || connected_lines[a]->v2() == vertex)
+				continue;
+
+			if (connected_lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
+				splitLine(connected_lines[a], vertex);
+		}
+	}
 
 	// Refresh connected lines
 	connected_lines.clear();
