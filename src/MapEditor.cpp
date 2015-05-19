@@ -1837,7 +1837,7 @@ void MapEditor::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
 			MapVertex* split = map.lineCrossVertex(line->x1(), line->y1(), line->x2(), line->y2());
 			if (split)
 			{
-				map.splitLine(a, split->getIndex());
+				map.splitLine(line, split);
 				a = 0;
 			}
 		}
@@ -1888,7 +1888,7 @@ void MapEditor::splitLine(double x, double y, double min_dist)
 	MapVertex* vertex = map.createVertex(closest.x, closest.y);
 
 	// Do line split
-	map.splitLine(lindex, vertex->getIndex());
+	map.splitLine(line, vertex);
 
 	// Finish recording undo level
 	endUndoRecord();

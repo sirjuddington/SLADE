@@ -395,11 +395,11 @@ public:
 			MapVertex* nv = map->createVertex(intersections[index].intersect_point.x, intersections[index].intersect_point.y, -1);
 
 			// Split first line
-			map->splitLine(line1->getIndex(), nv->getIndex());
+			map->splitLine(line1, nv);
 			MapLine* nl1 = map->getLine(map->nLines() - 1);
 
 			// Split second line
-			map->splitLine(line2->getIndex(), nv->getIndex());
+			map->splitLine(line2, nv);
 			MapLine* nl2 = map->getLine(map->nLines() - 1);
 
 			// Remove intersection

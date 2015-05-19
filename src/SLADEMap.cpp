@@ -3968,7 +3968,7 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 			if (lines[a]->distanceTo(x, y) < split_dist)
 			{
 				//wxLogMessage("Vertex at (%1.2f,%1.2f) splits line %d", x, y, a);
-				splitLine(a, nv->index);
+				splitLine(lines[a], nv);
 			}
 		}
 	}
@@ -4224,15 +4224,10 @@ MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 /* SLADEMap::splitLine
  * Splits [line] at [vertex]
  *******************************************************************/
-void SLADEMap::splitLine(unsigned line, unsigned vertex)
+void SLADEMap::splitLine(MapLine* l, MapVertex* v)
 {
-	// Check indices
-	if (line >= lines.size() || vertex >= vertices.size())
+	if (!l || !v)
 		return;
-
-	// Get objects
-	MapLine* l = lines[line];
-	MapVertex* v = vertices[vertex];
 
 	// Shorten line
 	MapVertex* v2 = l->vertex2;
@@ -4336,7 +4331,7 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 		if (lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
 		{
 			LOG_MESSAGE(2, "Vertex at (%1.2f,%1.2f) splits line %u", vertex->x, vertex->y, a);
-			splitLine(a, vertex->index);
+			splitLine(lines[a], vertex);
 		}
 	}
 }
@@ -4418,7 +4413,7 @@ void SLADEMap::splitLinesByLine(MapLine* split_line)
 		if (MathStuff::linesIntersect(x1, y1, x2, y2, lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2(), ix, iy))
 		{
 			MapVertex* v = createVertex(ix, iy, 0.9);
-			//splitLine(a, v->getIndex());
+			//splitLine(lines[a], v);
 		}
 	}
 }
@@ -4567,9 +4562,9 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				merged_vertices.push_back(nv);
 
 				// Split lines
-				splitLine(line1->getIndex(), nv->getIndex());
+				splitLine(line1, nv);
 				connected_lines.push_back(lines.back());
-				splitLine(line2->getIndex(), nv->getIndex());
+				splitLine(line2, nv);
 				connected_lines.push_back(lines.back());
 
 				LOG_MESSAGE(4, "Lines %u and %u intersect", line1->getIndex(), line2->getIndex());
