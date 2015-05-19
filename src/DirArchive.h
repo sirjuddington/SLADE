@@ -60,6 +60,7 @@ public:
 	bool	loadEntryData(ArchiveEntry* entry);
 
 	// Dir stuff
+	bool	removeDir(string path, ArchiveTreeNode* base = NULL);
 	bool	renameDir(ArchiveTreeNode* dir, string new_name);
 
 	// Entry addition/removal
