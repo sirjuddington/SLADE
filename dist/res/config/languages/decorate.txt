@@ -139,13 +139,13 @@ decorate : cstyle {
 		DONTHARMSPECIES, DONTHURTSPECIES, DONTMORPH, DONTOVERLAP, DONTREFLECT, DONTRIP, DONTSEEKINVISIBLE,
 		DONTSPLASH, DONTSQUASH, DONTTHRUST, DONTTRANSLATE, DOOMBOUNCE, DORMANT, DROPOFF, DROPPED, EXPLOCOUNT,
 		EXPLODEONWATER, EXTREMEDEATH, FASTER, FASTMELEE, FIREDAMAGE, FIRERESIST, FIXMAPTHINGPOS, FLOAT,
-		FLOATBOB, FLOORCLIP, FLOORHUGGER, FOILBUDDHA, FOILINVUL, FORCEPAIN, FORCERADIUSDMG, FORCEXYBILLBOARD, 
+		FLOATBOB, FLOORCLIP, FLOORHUGGER, FOILBUDDHA, FOILINVUL, FORCEDECAL, FORCEPAIN, FORCERADIUSDMG, FORCEXYBILLBOARD, 
 		FORCEYBILLBOARD, FRIENDLY, FRIGHTENED, FULLVOLACTIVE, FULLVOLDEATH, GHOST, GRENADETRAIL, HARMFRIENDS,
 		HERETICBOUNCE, HEXENBOUNCE, HITMASTER, HITTARGET, HITTRACER, ICECORPSE, ICEDAMAGE, INCOMBAT, INVISIBLE,
 		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY, 
 		MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST, 
 		NEVERRESPAWN, NEVERTARGET, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS, NOBOSSRIP, NOBOUNCESOUND, 
-		NOCLIP, NODAMAGE, NODAMAGETHRUST, NODROPOFF, NOEXPLODEFLOOR, NOEXTREMEDEATH, NOFEAR, NOFORWARDFALL, 
+		NOCLIP, NODAMAGE, NODAMAGETHRUST, NODECAL, NODROPOFF, NOEXPLODEFLOOR, NOEXTREMEDEATH, NOFEAR, NOFORWARDFALL, 
 		NOGRAVITY, NOICEDEATH, NOINFIGHTING, NOINTERACTION, NOLIFTDROP, NOMENU, NONSHOOTABLE, NOPAIN, 
 		NORADIUSDMG, NOSECTOR, NOSKIN, NOSPLASHALERT, NOTARGET, NOTARGETSWITCH, NOTAUTOAIMED, NOTDMATCH, 
 		NOTELEFRAG, NOTELEOTHER, NOTELEPORT, NOTELESTOMP, NOTIMEFREEZE, NOTONAUTOMAP, NOTRIGGER,
@@ -251,7 +251,7 @@ decorate : cstyle {
 		LOF_DONTCHASEGOAL, LOF_FULLVOLSEESOUND, LOF_NOJUMP, LOF_NOSEESOUND, LOF_NOSIGHTCHECK, LOF_NOSOUNDCHECK,
 		MRF_ADDSTAMINA, MRF_FAILNOLAUGH, MRF_FAILNOTELEFRAG, MRF_FULLHEALTH, MRF_LOSEACTUALWEAPON, 
 		MRF_NEWTIDBEHAVIOUR, MRF_UNDOBYCHAOSDEVICE, MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES,
-		MRF_UNDOBYTOMEOFPOWER, MRF_WHENINVULNERABLE,
+		MRF_UNDOBYTOMEOFPOWER, MRF_WHENINVULNERABLE, MRF_UNDOALWAYS,
 		MSF_Classic, MSF_DontHurt, MSF_Standard,
 		PAF_AIMFACING, PAF_NOSKULLATTACK, PAF_NOTARGET,
 		PROP_ALLMAP, PROP_BUDDHA, PROP_FLIGHT, PROP_FLY, PROP_FROZEN, PROP_INFRARED, PROP_INSTANTWEAPONSWITCH,
@@ -291,7 +291,7 @@ decorate : cstyle {
 
 		// A_Teleport flags
 		TF_FORCED, TF_RANDOMDECIDE, TF_TELEFRAG, TF_KEEPVELOCITY, TF_KEEPANGLE, TF_USESPOTZ, TF_NOSRCFOG,
-		TF_NODESTFOG, TF_USEACTORFOG, TF_NOJUMP, TF_KEEPORIENTATION, TF_NOFOG, 
+		TF_NODESTFOG, TF_USEACTORFOG, TF_NOJUMP, TF_KEEPORIENTATION, TF_NOFOG, TF_OVERRIDE,
 
 		THINGSPEC_ClearSpecial, THINGSPEC_Default, THINGSPEC_MissileTrigger, THINGSPEC_MonsterTrigger,
 		THINGSPEC_NoDeathSpecial, THINGSPEC_ThingActs, THINGSPEC_ThingTargets, THINGSPEC_TriggerActs,
@@ -363,7 +363,7 @@ decorate : cstyle {
 		A_RemoveTarget = "[int flags], [string filter_class], [string spceies]";
 		A_RemoveTracer = "[int flags], [string filter_class], [string spceies]";
 		A_SentinelBob;
-		A_Teleport = "[string teleportstate], [string targettype], [string fogtype], [int flags], [float mindist], [float maxdist]";
+		A_Teleport = "[string teleportstate], [string targettype], [string fogtype], [int flags], [float mindist], [float maxdist], [pointer ptr]";
 		A_TurretLook;
 		A_VileChase;
 		A_Wander;
@@ -374,7 +374,7 @@ decorate : cstyle {
 
 		A_CustomMissile = "string missiletype, [float spawnheight], [int spawnofs_horiz], [angle angle], [int aimflags], [angle pitch], [int pointer]";
 		A_CustomBulletAttack = "float horz_spread, float vert_spread, int numbullets, int dmgperbullet, [string pufftype], [float range], [int flags], [int pointer]";
-		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [bool aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [string spawnclass], [float spawnofs_z]";
+		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [bool aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [string spawnclass], [float spawnofs_z], [int spiraloffset]";
 		A_CustomMeleeAttack = "[int damage], [string meleesound], [string misssound], [string damagetype], [bool bleed]";
 		A_CustomComboAttack = "string missiletype, float spawnheight, int damage, [string meleesound], [string damagetype], [bool bleed]";
 		A_MeleeAttack;
@@ -464,6 +464,7 @@ decorate : cstyle {
 		A_JumpIfTracerCloser = "float distance, string state", "float distance, int offset";
 		A_JumpIfTargetInsideMeleeRange = "string state", "int offset";
 		A_JumpIfTargetOutsideMeleeRange = "string state", "int offset";
+		A_JumpIfHigherOrLower = "string high, string low, [float offsethigh], [float offsetlow], [bool includeheight], [pointer ptr]";
 
 		A_ClassBossHealth;
 		A_ChangeFlag = "string flagname, bool value";
@@ -569,7 +570,7 @@ decorate : cstyle {
 		A_CustomPunch = "int damage, [bool norandom], [int flags], [string pufftype], [float range], [float lifesteal], [int lifestealmax], [string armorbonustype]";
 		A_FireBullets = "angle spread_horz, angle spread_vert, int numbullets, int damage, [string pufftype], [int flags], [float range]";
 		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [int spawnofs_horz], [float spawnheight], [int flags], [angle pitch]";
-		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn], [float spawnofs_z]";
+		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn], [float spawnofs_z], [int spiraloffset]";
 		A_FireAssaultGun;
 		A_FireBFG;
 		A_FireOldBFG;
