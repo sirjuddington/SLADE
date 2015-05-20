@@ -64,7 +64,6 @@ add_executable(slade WIN32
 	zreaders/music_mus_midiout.cpp
 	zreaders/music_smf_midiout.cpp
 	zreaders/music_xmi_midiout.cpp
-	cl_notebook_art/cl_aui_notebook_art.cpp
 	${LUA_SOURCES}
 	${DUMB_SOURCES}
 	${SLADE_SOURCES}

@@ -44,7 +44,6 @@
 #include "SToolBar.h"
 #include "UndoManagerHistoryPanel.h"
 #include "ArchivePanel.h"
-#include "cl_notebook_art/cl_aui_notebook_art.h"
 #include "Misc.h"
 #include "SAuiTabArt.h"
 #include <wx/aboutdlg.h>
