@@ -114,3 +114,11 @@ enum MapTypes
 	MAP_UDMF,
 	MAP_UNKNOWN,	// Needed for maps in zip archives
 };
+
+const string MAP_TYPE_NAMES[] = {
+	"Doom",
+	"Hexen",
+	"Doom64",
+	"UDMF",
+	"Unknown",
+};

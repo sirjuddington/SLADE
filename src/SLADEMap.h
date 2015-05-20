@@ -248,7 +248,7 @@ public:
 	void		moveVertex(unsigned vertex, double nx, double ny);
 	void		mergeVertices(unsigned vertex1, unsigned vertex2);
 	MapVertex*	mergeVerticesPoint(double x, double y);
-	void		splitLine(unsigned line, unsigned vertex);
+	void		splitLine(MapLine* line, MapVertex* vertex);
 	void		moveThing(unsigned thing, double nx, double ny);
 	void		splitLinesAt(MapVertex* vertex, double split_dist = 0);
 	bool		setLineSector(unsigned line, unsigned sector, bool front = true);

@@ -120,15 +120,21 @@ public:
 		sizer->Add(choice_mapformat, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
 
 		// Add possible map formats to the combo box
-		if (theGameConfiguration->mapFormatSupported(MAP_DOOM, game, port))
-			choice_mapformat->Append("Doom");
-		if (theGameConfiguration->mapFormatSupported(MAP_HEXEN, game, port))
-			choice_mapformat->Append("Hexen");
-		if (theGameConfiguration->mapFormatSupported(MAP_UDMF, game, port))
-			choice_mapformat->Append("UDMF");
-		if (theGameConfiguration->mapFormatSupported(MAP_DOOM64, game, port))
-			choice_mapformat->Append("Doom64");
-		choice_mapformat->SetSelection(0);
+		uint8_t default_format = MAP_UNKNOWN;
+		if (! maps.empty())
+			default_format = maps[0].format;
+		for (uint8_t map_type = 0; map_type < MAP_UNKNOWN; map_type++)
+		{
+			if (theGameConfiguration->mapFormatSupported(map_type, game, port))
+			{
+				choice_mapformat->Append(MAP_TYPE_NAMES[map_type]);
+				if (map_type == default_format)
+					choice_mapformat->SetSelection(choice_mapformat->GetCount() - 1);
+			}
+		}
+		// Default to the "best" supported format, the last one in the list
+		if (choice_mapformat->GetSelection() == wxNOT_FOUND)
+			choice_mapformat->SetSelection(choice_mapformat->GetCount() - 1);
 
 		// Add dialog buttons
 		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND);
@@ -434,12 +440,12 @@ Archive::mapdesc_t MapEditorConfigDialog::selectedMap()
 
 			// Get selected map format
 			int map_format = MAP_DOOM;
-			if (dlg.getMapFormat() == "Hexen")
-				map_format = MAP_HEXEN;
-			else if (dlg.getMapFormat() == "UDMF")
-				map_format = MAP_UDMF;
-			else if (dlg.getMapFormat() == "Doom64")
-				map_format = MAP_DOOM64;
+			for (uint8_t map_type = 0; map_type < MAP_UNKNOWN; map_type++)
+				if (dlg.getMapFormat() == MAP_TYPE_NAMES[map_type])
+				{
+					map_format = map_type;
+					break;
+				}
 			mdesc.format = map_format;
 
 			return mdesc;
@@ -574,12 +580,12 @@ void MapEditorConfigDialog::onBtnNewMap(wxCommandEvent& e)
 
 		// Get selected map format
 		int map_format = MAP_DOOM;
-		if (dlg.getMapFormat() == "Hexen")
-			map_format = MAP_HEXEN;
-		else if (dlg.getMapFormat() == "UDMF")
-			map_format = MAP_UDMF;
-		else if (dlg.getMapFormat() == "Doom64")
-			map_format = MAP_DOOM64;
+		for (uint8_t map_type = 0; map_type < MAP_UNKNOWN; map_type++)
+			if (dlg.getMapFormat() == MAP_TYPE_NAMES[map_type])
+			{
+				map_format = map_type;
+				break;
+			}
 
 		// Check archive type
 		if (archive->getType() == ARCHIVE_WAD)

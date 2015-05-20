@@ -100,7 +100,7 @@ bool SectorBuilder::edgeSideCreated(unsigned index)
  * Finds the next adjacent edge to [edge], ie the adjacent edge that
  * creates the smallest angle
  *******************************************************************/
-SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge)
+SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge, MapLineSet& visited_lines)
 {
 	// Get relevant vertices
 	MapVertex* vertex = edge.line->v2();		// Vertex to be tested
@@ -120,6 +120,10 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge)
 
 		// Ignore original line
 		if (line == edge.line)
+			continue;
+
+		// Ignore already-traversed lines
+		if (visited_lines.count(line))
 			continue;
 
 		// Ignore if zero-length
@@ -152,6 +156,7 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge)
 	}
 
 	// Return the next edge found
+	visited_lines[next.line] = true;
 	return next;
 }
 
@@ -171,6 +176,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 	edge_t edge(line, front);
 	o_edges.push_back(edge);
 	double edge_sum = 0;
+	MapLineSet visited_lines;
 
 	// Begin tracing
 	vertex_right = edge.line->v1();
@@ -189,7 +195,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 			vertex_right = edge.line->v2();
 
 		// Get next edge
-		edge_t edge_next = nextEdge(edge);
+		edge_t edge_next = nextEdge(edge, visited_lines);
 		LOG_MESSAGE(4, "Got next edge line %d", edge_next.line ? edge_next.line->getIndex() : -1);
 
 		// Check if no valid next edge was found

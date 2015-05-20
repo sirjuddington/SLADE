@@ -206,15 +206,19 @@ public:
 	void checkChanges()
 	{
 		SLADEMap* map = UndoRedo::currentMap();
-		MapVertex* lv = map->getVertex(map->nVertices() - 1);
-		MapLine* ll = map->getLine(map->nLines() - 1);
-		MapSide* lsd = map->getSide(map->nSides() - 1);
-		MapSector* ls = map->getSector(map->nSectors() - 1);
-		MapThing* lt = map->getThing(map->nThings() - 1);
 
 		// Check vertices changed
-		if (map->nVertices() == vertices.size() &&
-			(!lv || lv->getId() == vertices.back()))
+		bool vertices_changed = false;
+		if (map->nVertices() != vertices.size())
+			vertices_changed = true;
+		else
+			for (unsigned a = 0; a < map->nVertices(); a++)
+				if (map->getSector(a)->getId() != vertices[a])
+				{
+					vertices_changed = true;
+					break;
+				}
+		if (!vertices_changed)
 		{
 			// No change, clear
 			vertices.clear();
@@ -223,8 +227,17 @@ public:
 		}
 
 		// Check lines changed
-		if (map->nLines() == lines.size() &&
-			(!ll || ll->getId() == lines.back()))
+		bool lines_changed = false;
+		if (map->nLines() != lines.size())
+			lines_changed = true;
+		else
+			for (unsigned a = 0; a < map->nLines(); a++)
+				if (map->getLine(a)->getId() != lines[a])
+				{
+					lines_changed = true;
+					break;
+				}
+		if (!lines_changed)
 		{
 			// No change, clear
 			lines.clear();
@@ -233,8 +246,17 @@ public:
 		}
 
 		// Check sides changed
-		if (map->nSides() == sides.size() &&
-			(!lsd || lsd->getId() == sides.back()))
+		bool sides_changed = false;
+		if (map->nSides() != sides.size())
+			sides_changed = true;
+		else
+			for (unsigned a = 0; a < map->nSides(); a++)
+				if (map->getSide(a)->getId() != sides[a])
+				{
+					sides_changed = true;
+					break;
+				}
+		if (!sides_changed)
 		{
 			// No change, clear
 			sides.clear();
@@ -243,8 +265,17 @@ public:
 		}
 
 		// Check sectors changed
-		if (map->nSectors() == sectors.size() &&
-			(!ls || ls->getId() == sectors.back()))
+		bool sectors_changed = false;
+		if (map->nSectors() != sectors.size())
+			sectors_changed = true;
+		else
+			for (unsigned a = 0; a < map->nSectors(); a++)
+				if (map->getSector(a)->getId() != sectors[a])
+				{
+					sectors_changed = true;
+					break;
+				}
+		if (!sectors_changed)
 		{
 			// No change, clear
 			sectors.clear();
@@ -253,8 +284,17 @@ public:
 		}
 
 		// Check things changed
-		if (map->nThings() == things.size() &&
-			(!lt || lt->getId() == things.back()))
+		bool things_changed = false;
+		if (map->nThings() != things.size())
+			things_changed = true;
+		else
+			for (unsigned a = 0; a < map->nThings(); a++)
+				if (map->getThing(a)->getId() != things[a])
+				{
+					things_changed = true;
+					break;
+				}
+		if (!things_changed)
 		{
 			// No change, clear
 			things.clear();
@@ -1837,7 +1877,7 @@ void MapEditor::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
 			MapVertex* split = map.lineCrossVertex(line->x1(), line->y1(), line->x2(), line->y2());
 			if (split)
 			{
-				map.splitLine(a, split->getIndex());
+				map.splitLine(line, split);
 				a = 0;
 			}
 		}
@@ -1888,7 +1928,7 @@ void MapEditor::splitLine(double x, double y, double min_dist)
 	MapVertex* vertex = map.createVertex(closest.x, closest.y);
 
 	// Do line split
-	map.splitLine(lindex, vertex->getIndex());
+	map.splitLine(line, vertex);
 
 	// Finish recording undo level
 	endUndoRecord();
