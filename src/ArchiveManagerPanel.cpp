@@ -38,7 +38,6 @@
 #include "SplashWindow.h"
 #include "MainWindow.h"
 #include "Icons.h"
-#include "cl_notebook_art/cl_aui_notebook_art.h"
 #include "MapEditorWindow.h"
 #include "DirArchive.h"
 #include "Dialogs/DirArchiveUpdateDialog.h"
@@ -126,7 +125,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 
 	// Create/setup tabs
 	notebook_tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxAUI_NB_WINDOWLIST_BUTTON);
-	notebook_tabs->SetArtProvider(new clAuiTabArt());
+	notebook_tabs->SetArtProvider(getTabArt());
 	vbox->Add(notebook_tabs, 1, wxEXPAND | wxALL, 4);
 
 	// Open archives tab

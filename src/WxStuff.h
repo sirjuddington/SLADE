@@ -24,4 +24,8 @@
 wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help = wxEmptyString, string icon = wxEmptyString);
 wxFont		getMonospaceFont(wxFont base);
 
+// Tab art provider
+class wxAuiTabArt;
+wxAuiTabArt*	getTabArt(bool close_buttons = false);
+
 #endif //__WXSTUFF_H__

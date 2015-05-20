@@ -186,7 +186,6 @@
     <ClCompile Include="src\bzip2\huffman.c" />
     <ClCompile Include="src\bzip2\randtable.c" />
     <ClCompile Include="src\CIEDeltaEquations.cpp" />
-    <ClCompile Include="src\cl_notebook_art\cl_aui_notebook_art.cpp" />
     <ClCompile Include="src\CodePages.cpp" />
     <ClCompile Include="src\ColourConfiguration.cpp" />
     <ClCompile Include="src\Compression.cpp" />
@@ -447,6 +446,7 @@
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\RffArchive.cpp" />
     <ClCompile Include="src\SAction.cpp" />
+    <ClCompile Include="src\SAuiTabArt.cpp" />
     <ClCompile Include="src\ScriptEditorPanel.cpp" />
     <ClCompile Include="src\SDialog.cpp" />
     <ClCompile Include="src\SectorBuilder.cpp" />
@@ -580,7 +580,6 @@
     <ClInclude Include="src\BZip2Archive.h" />
     <ClInclude Include="src\bzip2\bzlib.h" />
     <ClInclude Include="src\bzip2\bzlib_private.h" />
-    <ClInclude Include="src\cl_notebook_art\cl_aui_notebook_art.h" />
     <ClInclude Include="src\CodePages.h" />
     <ClInclude Include="src\ColourConfiguration.h" />
     <ClInclude Include="src\Compression.h" />
@@ -766,6 +765,7 @@
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\RffArchive.h" />
     <ClInclude Include="src\SAction.h" />
+    <ClInclude Include="src\SAuiTabArt.h" />
     <ClInclude Include="src\ScriptEditorPanel.h" />
     <ClInclude Include="src\SDialog.h" />
     <ClInclude Include="src\SectorBuilder.h" />
