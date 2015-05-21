@@ -87,3 +87,8 @@ wxAuiTabArt* getTabArt(bool close_buttons)
 	else
 		return new wxAuiDefaultTabArt();
 }
+
+wxAuiDockArt* getDockArt()
+{
+	return new SAuiDockArt();
+}

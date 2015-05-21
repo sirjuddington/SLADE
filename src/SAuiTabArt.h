@@ -3,6 +3,7 @@
 #define __S_AUI_TAB_ART_H__
 
 #include <wx/aui/auibook.h>
+#include <wx/aui/dockart.h>
 
 class wxAuiCommandCapture : public wxEvtHandler
 {
@@ -31,7 +32,7 @@ private:
 	int m_last_id;
 };
 
-class SAuiTabArt : public wxAuiTabArt
+class SAuiTabArt : public wxAuiGenericTabArt
 {
 public:
 	SAuiTabArt(bool close_buttons = false);
@@ -40,15 +41,7 @@ public:
 	wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour& color);
 
 	wxAuiTabArt* Clone();
-	void SetFlags(unsigned int flags);
-	void SetSizingInfo(const wxSize& tabCtrlSize,
-		size_t tabCount);
-
-	void SetNormalFont(const wxFont& font);
 	void SetSelectedFont(const wxFont& font);
-	void SetMeasuringFont(const wxFont& font);
-	void SetColour(const wxColour& colour);
-	void SetActiveColour(const wxColour& colour);
 
 	void DrawBorder(
 		wxDC& dc,
@@ -69,23 +62,6 @@ public:
 		wxRect* outButtonRect,
 		int* xExtent);
 
-	void DrawButton(
-		wxDC& dc,
-		wxWindow* wnd,
-		const wxRect& inRect,
-		int bitmapId,
-		int buttonState,
-		int orientation,
-		wxRect* outRect);
-
-	int GetIndentSize();
-
-	int GetBorderWidth(
-		wxWindow* wnd);
-
-	int GetAdditionalBorderSpace(
-		wxWindow* wnd);
-
 	wxSize GetTabSize(
 		wxDC& dc,
 		wxWindow* wnd,
@@ -95,37 +71,33 @@ public:
 		int closeButtonState,
 		int* xExtent);
 
-	int ShowDropDown(
-		wxWindow* wnd,
-		const wxAuiNotebookPageArray& items,
-		int activeIdx);
-
-	int GetBestTabCtrlSize(wxWindow* wnd,
-		const wxAuiNotebookPageArray& pages,
-		const wxSize& requiredBmpSize);
-
 protected:
-	wxFont m_normalFont;
-	wxFont m_selectedFont;
-	wxFont m_measuringFont;
-	wxColour m_baseColour;
-	wxPen m_baseColourPen;
-	wxPen m_borderPen;
-	wxBrush m_baseColourBrush;
-	wxColour m_activeColour;
-	wxBitmap m_activeCloseBmp;
-	wxBitmap m_disabledCloseBmp;
-	wxBitmap m_activeLeftBmp;
-	wxBitmap m_disabledLeftBmp;
-	wxBitmap m_activeRightBmp;
-	wxBitmap m_disabledRightBmp;
-	wxBitmap m_activeWindowListBmp;
-	wxBitmap m_disabledWindowListBmp;
-
-	int m_fixedTabWidth;
-	int m_tabCtrlHeight;
-	unsigned int m_flags;
 	bool m_closeButtons;
+	wxColour m_inactiveTabColour;
+};
+
+class SAuiDockArt : public wxAuiDefaultDockArt
+{
+private:
+	wxColour captionBackColour;
+	wxColour captionAccentColour;
+
+public:
+	SAuiDockArt();
+	virtual ~SAuiDockArt();
+
+	void DrawCaption(wxDC& dc,
+		wxWindow *window,
+		const wxString& text,
+		const wxRect& rect,
+		wxAuiPaneInfo& pane);
+
+	void DrawPaneButton(wxDC& dc,
+		wxWindow *window,
+		int button,
+		int buttonState,
+		const wxRect& rect,
+		wxAuiPaneInfo& pane);
 };
 
 #endif//__S_AUI_TAB_ART_H__
