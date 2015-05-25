@@ -36,7 +36,7 @@
 #include <wx/filename.h>
 #include <wx/dir.h>
 
-#include <SFML\System.hpp>
+#include <SFML/System.hpp>
 
 /* Archive Directory Layout:
  * ---------------------
