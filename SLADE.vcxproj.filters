@@ -1350,6 +1350,9 @@
     <ClCompile Include="src\SAuiTabArt.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\STabCtrl.cpp">
+      <Filter>UI Elements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2326,6 +2329,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="src\SAuiTabArt.h">
+      <Filter>UI Elements</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STabCtrl.h">
       <Filter>UI Elements</Filter>
     </ClInclude>
   </ItemGroup>

@@ -67,14 +67,14 @@ public:
 	void	onAngleTextChanged(wxCommandEvent& e);
 };
 
-class wxNotebook;
+class STabCtrl;
 class MapObjectPropsPanel;
 class ArgsPanel;
 class ActionSpecialPanel;
 class ThingPropsPanel : public PropsPanelBase
 {
 private:
-	wxNotebook*				nb_tabs;
+	STabCtrl*				stc_tabs;
 	MapObjectPropsPanel*	mopp_other_props;
 	vector<wxCheckBox*>		cb_flags;
 	vector<wxCheckBox*>		cb_flags_extra;

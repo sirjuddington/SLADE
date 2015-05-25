@@ -38,7 +38,7 @@
 #include "ThingTypeBrowser.h"
 #include "MathStuff.h"
 #include "NumberTextCtrl.h"
-#include <wx/notebook.h>
+#include "STabCtrl.h"
 #include <wx/gbsizer.h>
 
 
@@ -523,30 +523,30 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	SetSizer(sizer);
 
 	// Tabs
-	nb_tabs = new wxNotebook(this, -1);
-	sizer->Add(nb_tabs, 1, wxEXPAND|wxALL, 4);
+	stc_tabs = new STabCtrl(this, false);
+	sizer->Add(stc_tabs, 1, wxEXPAND|wxALL, 4);
 
 	// General tab
-	nb_tabs->AddPage(setupGeneralTab(), "General");
+	stc_tabs->AddPage(setupGeneralTab(), "General");
 
 	// Extra Flags tab
 	if (!udmf_flags_extra.empty())
-		nb_tabs->AddPage(setupExtraFlagsTab(), "Extra Flags");
+		stc_tabs->AddPage(setupExtraFlagsTab(), "Extra Flags");
 
 	// Special tab
 	if (theMapEditor->currentMapDesc().format != MAP_DOOM)
-		nb_tabs->AddPage(panel_special = new ActionSpecialPanel(nb_tabs, false), "Special");
+		stc_tabs->AddPage(panel_special = new ActionSpecialPanel(stc_tabs, false), "Special");
 
 	// Args tab
 	if (theMapEditor->currentMapDesc().format != MAP_DOOM)
 	{
-		nb_tabs->AddPage(panel_args = new ArgsPanel(nb_tabs), "Args");
+		stc_tabs->AddPage(panel_args = new ArgsPanel(stc_tabs), "Args");
 		if (panel_special)
 			panel_special->setArgsPanel(panel_args);
 	}
 
 	// Other Properties tab
-	nb_tabs->AddPage(mopp_other_props = new MapObjectPropsPanel(nb_tabs, true), "Other Properties");
+	stc_tabs->AddPage(mopp_other_props = new MapObjectPropsPanel(stc_tabs, true), "Other Properties");
 	mopp_other_props->hideFlags(true);
 	mopp_other_props->hideProperty("height");
 	mopp_other_props->hideProperty("angle");
@@ -580,7 +580,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	int map_format = theMapEditor->currentMapDesc().format;
 
 	// Create panel
-	wxPanel* panel = new wxPanel(nb_tabs, -1);
+	wxPanel* panel = new wxPanel(stc_tabs, -1);
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -677,7 +677,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 	framesizer->Add(ac_direction = new AngleControl(panel), 1, wxEXPAND);
 	
 #ifdef __WXMSW__
-	ac_direction->SetBackgroundColour(nb_tabs->GetThemeBackgroundColour());
+	//ac_direction->SetBackgroundColour(stc_tabs->GetThemeBackgroundColour());
 #endif
 
 	if (map_format != MAP_DOOM)
@@ -706,7 +706,7 @@ wxPanel* ThingPropsPanel::setupGeneralTab()
 wxPanel* ThingPropsPanel::setupExtraFlagsTab()
 {
 	// Create panel
-	wxPanel* panel = new wxPanel(nb_tabs, -1);
+	wxPanel* panel = new wxPanel(stc_tabs, -1);
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

@@ -41,6 +41,7 @@
 #include "MapEditorWindow.h"
 #include "DirArchive.h"
 #include "Dialogs/DirArchiveUpdateDialog.h"
+#include "STabCtrl.h"
 #include <wx/filename.h>
 
 
@@ -49,6 +50,7 @@
  *******************************************************************/
 CVAR(Bool, close_archive_with_tab, true, CVAR_SAVE)
 CVAR(Int, am_current_tab, 0, CVAR_SAVE)
+CVAR(Bool, am_file_browser_tab, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -67,9 +69,9 @@ EXTERN_CVAR(String, dir_last)
  * Note: wxWidgets 2.9.4 deprecated the wxDIRCTRL_SHOW_FILTERS flag;
  * instead, the filters are always shown if any are defined.
  *******************************************************************/
-			WMFileBrowser::WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id)
-			: wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr, wxDefaultPosition, wxDefaultSize, 0,
-			"Any Supported Archive File (*.wad; *.zip; *.pk3; *.pke; *.lib; *.dat)|*.wad;*.zip;*.pk3;*.pke;*.lib;*.dat|Doom Wad files (*.wad)|*.wad|Zip files (*.zip)|*.zip|Pk3 (zip) files (*.pk3)|*.pk3|All Files (*.*)|*.*")
+WMFileBrowser::WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id)
+	: wxGenericDirCtrl(parent, id, wxDirDialogDefaultFolderStr, wxDefaultPosition, wxDefaultSize, 0,
+	"Any Supported Archive File (*.wad; *.zip; *.pk3; *.pke; *.lib; *.dat)|*.wad;*.zip;*.pk3;*.pke;*.lib;*.dat|Doom Wad files (*.wad)|*.wad|Zip files (*.zip)|*.zip|Pk3 (zip) files (*.pk3)|*.pk3|All Files (*.*)|*.*")
 {
 	// Set the parent
 	this->parent = wm;
@@ -111,10 +113,10 @@ void WMFileBrowser::onItemActivated(wxTreeEvent& e)
 /* ArchiveManagerPanel::ArchiveManagerPanel
  * ArchiveManagerPanel class constructor
  *******************************************************************/
-ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_archives)
+ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives)
 	: DockPanel(parent)
 {
-	notebook_archives = nb_archives;
+	stc_archives = nb_archives;
 	pending_closed_archive = NULL;
 	checked_dir_archive_changes = false;
 	asked_save_unchanged = false;
@@ -124,13 +126,12 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 	SetSizer(vbox);
 
 	// Create/setup tabs
-	notebook_tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxAUI_NB_WINDOWLIST_BUTTON);
-	notebook_tabs->SetArtProvider(getTabArt());
-	vbox->Add(notebook_tabs, 1, wxEXPAND | wxALL, 4);
+	stc_tabs = new STabCtrl(this, false);
+	vbox->Add(stc_tabs, 1, wxEXPAND | wxALL, 4);
 
 	// Open archives tab
-	panel_am = new wxPanel(notebook_tabs);
-	notebook_tabs->AddPage(panel_am, "Archives", true);
+	panel_am = new wxPanel(stc_tabs);
+	stc_tabs->AddPage(panel_am, "Archives", true);
 
 	// Create/setup archive list
 	createArchivesPanel();
@@ -141,27 +142,27 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 	createRecentPanel();
 	refreshRecentFileList();
 
-	// Create/setup file browser tab
-	// I'm commenting this out for the moment because it suddenly started making
-	// SLADE freeze for me before initialization could complete. It might explain
-	// some of the weird bug reports I've seen, with the application starting then
-	// seemingly disappearing silently (though still running if you look at the
-	// task manager). Since it calls wx components, it'll be hard to investigate.
-	//file_browser = new WMFileBrowser(notebook_tabs, this, -1);
-	//notebook_tabs->AddPage(file_browser, _("File Browser"));
-
 	// Create/setup bookmarks tab
-	wxPanel* panel_bm = new wxPanel(notebook_tabs);
+	wxPanel* panel_bm = new wxPanel(stc_tabs);
 	wxBoxSizer* box_bm = new wxBoxSizer(wxVERTICAL);
 	panel_bm->SetSizer(box_bm);
 	box_bm->Add(new wxStaticText(panel_bm, -1, "Bookmarks:"), 0, wxEXPAND | wxALL, 4);
 	list_bookmarks = new ListView(panel_bm, -1);
 	box_bm->Add(list_bookmarks, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
 	refreshBookmarkList();
-	notebook_tabs->AddPage(panel_bm, "Bookmarks", true);
+	stc_tabs->AddPage(panel_bm, "Bookmarks", true);
+
+	// Create/setup file browser tab
+	// Used to cause problems, however seems to work much better now than what I can remember,
+	// adding a cvar to disable in case it still has issues
+	if (am_file_browser_tab)
+	{
+		file_browser = new WMFileBrowser(stc_tabs, this, -1);
+		stc_tabs->AddPage(file_browser, "File Browser");
+	}
 
 	// Set current tab
-	notebook_tabs->SetSelection(am_current_tab);
+	stc_tabs->SetSelection(am_current_tab);
 
 	// Bind events
 	list_archives->Bind(wxEVT_LIST_ITEM_SELECTED, &ArchiveManagerPanel::onListArchivesChanged, this);
@@ -171,17 +172,18 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_arc
 	list_recent->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListRecentRightClick, this);
 	list_bookmarks->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ArchiveManagerPanel::onListBookmarksActivated, this);
 	list_bookmarks->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &ArchiveManagerPanel::onListBookmarksRightClick, this);
-	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGING, &ArchiveManagerPanel::onArchiveTabChanging, this);
-	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onArchiveTabChanged, this);
-	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &ArchiveManagerPanel::onArchiveTabClose, this);
-	notebook_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSED, &ArchiveManagerPanel::onArchiveTabClosed, this);
-	notebook_tabs->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onAMTabChanged, this);
+	stc_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGING, &ArchiveManagerPanel::onArchiveTabChanging, this);
+	stc_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onArchiveTabChanged, this);
+	stc_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &ArchiveManagerPanel::onArchiveTabClose, this);
+	stc_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSED, &ArchiveManagerPanel::onArchiveTabClosed, this);
+	stc_tabs->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onAMTabChanged, this);
 
 	// Listen to the ArchiveManager
 	listenTo(theArchiveManager);
 
 	// Init layout
 	Layout();
+	SetInitialSize(wxSize(192, -1));
 }
 
 /* ArchiveManagerPanel::~ArchiveManagerPanel
@@ -333,9 +335,9 @@ void ArchiveManagerPanel::refreshArchiveList()
 void ArchiveManagerPanel::refreshAllTabs()
 {
 	// Go through tabs
-	for (unsigned a = 0; a < notebook_archives->GetPageCount(); a++)
+	for (unsigned a = 0; a < stc_archives->GetPageCount(); a++)
 	{
-		wxWindow* tab = notebook_archives->GetPage(a);
+		wxWindow* tab = stc_archives->GetPage(a);
 
 		// Refresh if it's an archive panel
 		if (isArchivePanel(a))
@@ -407,14 +409,14 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index)
 		return;
 
 	// Go through all tabs
-	for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
+	for (size_t a = 0; a < stc_archives->GetPageCount(); a++)
 	{
 		// Check page type is "archive"
-		if (notebook_archives->GetPage(a)->GetName().CmpNoCase("archive"))
+		if (stc_archives->GetPage(a)->GetName().CmpNoCase("archive"))
 			continue;
 
 		// Check for archive match
-		ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(a);
+		ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(a);
 		if (ap->getArchive() == archive)
 		{
 			string title;
@@ -422,7 +424,7 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index)
 				title = S_FMT("%s *", archive->getFilename(false));
 			else
 				title = archive->getFilename(false);
-			notebook_archives->SetPageText(a, title);
+			stc_archives->SetPageText(a, title);
 			return;
 		}
 	}
@@ -435,11 +437,11 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index)
 bool ArchiveManagerPanel::isArchivePanel(int tab_index)
 {
 	// Check that tab index is in range
-	if ((unsigned)tab_index >= notebook_archives->GetPageCount())
+	if ((unsigned)tab_index >= stc_archives->GetPageCount())
 		return false;
 
 	// Check the page's name
-	if (!notebook_archives->GetPage(tab_index)->GetName().CmpNoCase("archive"))
+	if (!stc_archives->GetPage(tab_index)->GetName().CmpNoCase("archive"))
 		return true;
 	else
 		return false;
@@ -452,7 +454,7 @@ bool ArchiveManagerPanel::isArchivePanel(int tab_index)
 Archive* ArchiveManagerPanel::getArchive(int tab_index)
 {
 	// Check the index is valid
-	if (tab_index < 0 || (unsigned)tab_index >= notebook_archives->GetPageCount())
+	if (tab_index < 0 || (unsigned)tab_index >= stc_archives->GetPageCount())
 		return NULL;
 
 	// Check the specified tab is actually an archive tab
@@ -460,7 +462,7 @@ Archive* ArchiveManagerPanel::getArchive(int tab_index)
 		return NULL;
 
 	// Get the archive associated with the tab
-	ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(tab_index);
+	ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(tab_index);
 	return ap->getArchive();
 }
 
@@ -469,7 +471,7 @@ Archive* ArchiveManagerPanel::getArchive(int tab_index)
  *******************************************************************/
 int ArchiveManagerPanel::currentTabIndex()
 {
-	return notebook_archives->GetSelection();
+	return stc_archives->GetSelection();
 }
 
 /* ArchiveManagerPanel::currentArchive
@@ -480,7 +482,7 @@ int ArchiveManagerPanel::currentTabIndex()
 Archive* ArchiveManagerPanel::currentArchive()
 {
 	// Get current tab
-	wxWindow* page = notebook_archives->GetPage(notebook_archives->GetSelection());
+	wxWindow* page = stc_archives->GetPage(stc_archives->GetSelection());
 
 	// Return if no tabs exist
 	if (!page)
@@ -517,7 +519,7 @@ Archive* ArchiveManagerPanel::currentArchive()
  *******************************************************************/
 wxWindow* ArchiveManagerPanel::currentPanel()
 {
-	return notebook_archives->GetPage(notebook_archives->GetSelection());
+	return stc_archives->GetPage(stc_archives->GetSelection());
 }
 
 /* ArchiveManagerPanel::currentArea
@@ -526,13 +528,13 @@ wxWindow* ArchiveManagerPanel::currentPanel()
 EntryPanel* ArchiveManagerPanel::currentArea()
 {
 	// Get current tab index
-	int selected = notebook_archives->GetSelection();
+	int selected = stc_archives->GetSelection();
 
 	// Check it's an archive tab
 	if (!isArchivePanel(selected))
 		return NULL;
 
-	ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(selected);
+	ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(selected);
 	return ap->currentArea();
 }
 
@@ -543,14 +545,14 @@ EntryPanel* ArchiveManagerPanel::currentArea()
 ArchiveEntry* ArchiveManagerPanel::currentEntry()
 {
 	// Get current tab index
-	int selected = notebook_archives->GetSelection();
+	int selected = stc_archives->GetSelection();
 
 	// Check it's an archive tab
 	if (!isArchivePanel(selected))
 		return NULL;
 
 	// Get the archive panel
-	ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(selected);
+	ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(selected);
 	return ap->currentEntry();
 }
 
@@ -561,14 +563,14 @@ ArchiveEntry* ArchiveManagerPanel::currentEntry()
 vector<ArchiveEntry*> ArchiveManagerPanel::currentEntrySelection()
 {
 	// Get current tab index
-	int selected = notebook_archives->GetSelection();
+	int selected = stc_archives->GetSelection();
 
 	// Check it's an archive tab
 	if (!isArchivePanel(selected))
 		return vector<ArchiveEntry*>();
 
 	// Get the archive panel
-	ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(selected);
+	ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(selected);
 	return ap->currentEntries();
 }
 
@@ -595,14 +597,14 @@ ArchivePanel* ArchiveManagerPanel::getArchiveTab(Archive* archive)
 		return NULL;
 
 	// Go through all tabs
-	for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
+	for (size_t a = 0; a < stc_archives->GetPageCount(); a++)
 	{
 		// Check page type is "archive"
-		if (notebook_archives->GetPage(a)->GetName().CmpNoCase("archive"))
+		if (stc_archives->GetPage(a)->GetName().CmpNoCase("archive"))
 			continue;
 
 		// Check for archive match
-		ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(a);
+		ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(a);
 		if (ap->getArchive() == archive)
 			return ap;
 	}
@@ -623,14 +625,14 @@ void ArchiveManagerPanel::openTab(Archive* archive)
 		if (wp)
 		{
 			// Switch to tab
-			notebook_archives->SetSelection(notebook_archives->GetPageIndex(wp));
+			stc_archives->SetSelection(stc_archives->GetPageIndex(wp));
 			wp->focusEntryList();
 
 			return;
 		}
 
 		// If tab isn't already open, open a new one
-		wp = new ArchivePanel(notebook_archives, archive);
+		wp = new ArchivePanel(stc_archives, archive);
 
 		// Determine icon
 		string icon = "e_archive";
@@ -642,9 +644,9 @@ void ArchiveManagerPanel::openTab(Archive* archive)
 			icon = "e_folder";
 
 		wp->SetName("archive");
-		notebook_archives->AddPage(wp, archive->getFilename(false), false);
-		notebook_archives->SetSelection(notebook_archives->GetPageCount() - 1);
-		notebook_archives->SetPageBitmap(notebook_archives->GetPageCount() - 1, getIcon(icon));
+		stc_archives->AddPage(wp, archive->getFilename(false), false);
+		stc_archives->SetSelection(stc_archives->GetPageCount() - 1);
+		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon(icon));
 		wp->addMenus();
 		wp->Show(true);
 		wp->SetFocus();
@@ -662,7 +664,7 @@ void ArchiveManagerPanel::closeTab(int archive_index)
 	ArchivePanel* ap = getArchiveTab(archive);
 
 	if (ap)
-		notebook_archives->DeletePage(notebook_archives->GetPageIndex(ap));
+		stc_archives->DeletePage(stc_archives->GetPageIndex(ap));
 }
 
 /* ArchiveManagerPanel::openTextureTab
@@ -676,25 +678,25 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 	if (archive)
 	{
 		// Go through all tabs
-		for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
+		for (size_t a = 0; a < stc_archives->GetPageCount(); a++)
 		{
 			// Check page type is "texture"
-			if (notebook_archives->GetPage(a)->GetName().CmpNoCase("texture"))
+			if (stc_archives->GetPage(a)->GetName().CmpNoCase("texture"))
 				continue;
 
 			// Check for archive match
-			TextureXEditor* txed = (TextureXEditor*)notebook_archives->GetPage(a);
+			TextureXEditor* txed = (TextureXEditor*)stc_archives->GetPage(a);
 			if (txed->getArchive() == archive)
 			{
 				// Selected archive already has its texture editor open, so show that tab
-				notebook_archives->SetSelection(a);
+				stc_archives->SetSelection(a);
 				txed->setSelection(entry);
 				return;
 			}
 		}
 
 		// If tab isn't already open, open a new one
-		TextureXEditor* txed = new TextureXEditor(notebook_archives);
+		TextureXEditor* txed = new TextureXEditor(stc_archives);
 		txed->Show(false);
 		if (!txed->openArchive(archive))
 		{
@@ -702,17 +704,17 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 			return;
 		}
 
-		notebook_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->getFilename(false)), true);
-		notebook_archives->SetPageBitmap(notebook_archives->GetPageCount() - 1, getIcon("e_texturex"));
+		stc_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->getFilename(false)), true);
+		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon("e_texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);
 		txed->Show(true);
 		// Select the new tab
-		for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
+		for (size_t a = 0; a < stc_archives->GetPageCount(); a++)
 		{
-			if (notebook_archives->GetPage(a) == txed)
+			if (stc_archives->GetPage(a) == txed)
 			{
-				notebook_archives->SetSelection(a);
+				stc_archives->SetSelection(a);
 				return;
 			}
 		}
@@ -730,14 +732,14 @@ TextureXEditor* ArchiveManagerPanel::getTextureTab(int archive_index)
 	if (archive)
 	{
 		// Go through all tabs
-		for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
+		for (size_t a = 0; a < stc_archives->GetPageCount(); a++)
 		{
 			// Check page type is "texture"
-			if (notebook_archives->GetPage(a)->GetName().CmpNoCase("texture"))
+			if (stc_archives->GetPage(a)->GetName().CmpNoCase("texture"))
 				continue;
 
 			// Check for archive match
-			TextureXEditor* txed = (TextureXEditor*)notebook_archives->GetPage(a);
+			TextureXEditor* txed = (TextureXEditor*)stc_archives->GetPage(a);
 			if (txed->getArchive() == archive)
 				return txed;
 		}
@@ -754,7 +756,7 @@ TextureXEditor* ArchiveManagerPanel::getTextureTab(int archive_index)
 void ArchiveManagerPanel::closeTextureTab(int archive_index)
 {
 	TextureXEditor* txed = getTextureTab(archive_index);
-	if (txed) notebook_archives->DeletePage(notebook_archives->GetPageIndex(txed));
+	if (txed) stc_archives->DeletePage(stc_archives->GetPageIndex(txed));
 }
 
 /* ArchiveManagerPanel::openEntryTab
@@ -763,24 +765,24 @@ void ArchiveManagerPanel::closeTextureTab(int archive_index)
 void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
 {
 	// First check if the entry is already open in a tab
-	for (unsigned a = 0; a < notebook_archives->GetPageCount(); a++)
+	for (unsigned a = 0; a < stc_archives->GetPageCount(); a++)
 	{
 		// Check page type is "entry"
-		if (notebook_archives->GetPage(a)->GetName() != "entry")
+		if (stc_archives->GetPage(a)->GetName() != "entry")
 			continue;
 
 		// Check for entry match
-		EntryPanel* ep = (EntryPanel*)notebook_archives->GetPage(a);
+		EntryPanel* ep = (EntryPanel*)stc_archives->GetPage(a);
 		if (ep->getEntry() == entry)
 		{
 			// Already open, switch to tab
-			notebook_archives->SetSelection(a);
+			stc_archives->SetSelection(a);
 			return;
 		}
 	}
 
 	// Create an EntryPanel for the entry
-	EntryPanel* ep = ArchivePanel::createPanelForEntry(entry, notebook_archives);
+	EntryPanel* ep = ArchivePanel::createPanelForEntry(entry, stc_archives);
 	ep->openEntry(entry);
 
 	// Don't bother with the default entry panel
@@ -792,19 +794,19 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
 	}
 
 	// Create new tab for the EntryPanel
-	notebook_archives->AddPage(ep, S_FMT("%s/%s", entry->getParent()->getFilename(false), entry->getName()), true);
-	notebook_archives->SetPageBitmap(notebook_archives->GetPageCount() - 1, getIcon(entry->getType()->getIcon()));
+	stc_archives->AddPage(ep, S_FMT("%s/%s", entry->getParent()->getFilename(false), entry->getName()), true);
+	stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon(entry->getType()->getIcon()));
 	ep->SetName("entry");
 	ep->Show(true);
 	ep->addCustomMenu();
 	ep->updateToolbar();
 
 	// Select the new tab
-	for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
+	for (size_t a = 0; a < stc_archives->GetPageCount(); a++)
 	{
-		if (notebook_archives->GetPage(a) == ep)
+		if (stc_archives->GetPage(a) == ep)
 		{
-			notebook_archives->SetSelection(a);
+			stc_archives->SetSelection(a);
 			return;
 		}
 	}
@@ -820,19 +822,19 @@ void ArchiveManagerPanel::closeEntryTabs(Archive* parent)
 		return;
 
 	// Go through tabs
-	for (unsigned a = 0; a < notebook_archives->GetPageCount(); a++)
+	for (unsigned a = 0; a < stc_archives->GetPageCount(); a++)
 	{
 		// Check page type is "entry"
-		if (notebook_archives->GetPage(a)->GetName() != "entry")
+		if (stc_archives->GetPage(a)->GetName() != "entry")
 			continue;
 
 		// Check for entry parent archive match
-		EntryPanel* ep = (EntryPanel*)notebook_archives->GetPage(a);
+		EntryPanel* ep = (EntryPanel*)stc_archives->GetPage(a);
 		if (ep->getEntry()->getParent() == parent)
 		{
 			// Close tab
 			ep->removeCustomMenu();
-			notebook_archives->DeletePage(a);
+			stc_archives->DeletePage(a);
 			a--;
 		}
 	}
@@ -1058,14 +1060,14 @@ void ArchiveManagerPanel::createNewArchive(uint8_t type)
 bool ArchiveManagerPanel::saveEntryChanges(Archive* archive)
 {
 	// Go through tabs
-	for (size_t a = 0; a < notebook_archives->GetPageCount(); a++)
+	for (size_t a = 0; a < stc_archives->GetPageCount(); a++)
 	{
 		// Check page type is "archive"
-		if (notebook_archives->GetPage(a)->GetName().CmpNoCase("archive"))
+		if (stc_archives->GetPage(a)->GetName().CmpNoCase("archive"))
 			continue;
 
 		// Check for archive match
-		ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(a);
+		ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(a);
 		if (ap->getArchive() == archive)
 		{
 			// Save entry changes
@@ -1705,7 +1707,7 @@ void ArchiveManagerPanel::goToBookmark(long index)
 	openTab(bookmark->getParent());
 
 	// Get the opened tab (should be an ArchivePanel unless something went wrong)
-	wxWindow* tab = notebook_archives->GetPage(notebook_archives->GetSelection());
+	wxWindow* tab = stc_archives->GetPage(stc_archives->GetSelection());
 
 	// Check it's an archive panel
 	if (!(S_CMP(tab->GetName(), "archive")))
@@ -1832,7 +1834,7 @@ void ArchiveManagerPanel::onArchiveTabChanging(wxAuiNotebookEvent& e)
 void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 {
 	// Page has changed, update custom menus and toolbars
-	int selection = notebook_archives->GetSelection();
+	int selection = stc_archives->GetSelection();
 
 	// Remove any current custom menus/toolbars
 	theMainWindow->removeAllCustomMenus();
@@ -1843,15 +1845,15 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	// ArchivePanel
 	if (isArchivePanel(selection))
 	{
-		ArchivePanel* ap = (ArchivePanel*)notebook_archives->GetPage(selection);
+		ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(selection);
 		ap->currentArea()->updateStatus();
 		ap->addMenus();
 	}
 
 	// EntryPanel
-	if (notebook_archives->GetPage(selection)->GetName() == "entry")
+	if (stc_archives->GetPage(selection)->GetName() == "entry")
 	{
-		EntryPanel* ep = (EntryPanel*)notebook_archives->GetPage(selection);
+		EntryPanel* ep = (EntryPanel*)stc_archives->GetPage(selection);
 		ep->addCustomMenu();
 		ep->addCustomToolBar();
 	}
@@ -1866,7 +1868,7 @@ void ArchiveManagerPanel::onArchiveTabClose(wxAuiNotebookEvent& e)
 {
 	// Get tab that is closing
 	int tabindex = e.GetSelection();
-	wxWindow* page = notebook_archives->GetPage(tabindex);
+	wxWindow* page = stc_archives->GetPage(tabindex);
 
 	if (tabindex < 0)
 		return;
@@ -1926,5 +1928,5 @@ void ArchiveManagerPanel::onArchiveTabClosed(wxAuiNotebookEvent& e)
  *******************************************************************/
 void ArchiveManagerPanel::onAMTabChanged(wxAuiNotebookEvent& e)
 {
-	am_current_tab = notebook_tabs->GetSelection();
+	am_current_tab = stc_tabs->GetSelection();
 }

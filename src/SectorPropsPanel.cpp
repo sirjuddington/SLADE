@@ -37,7 +37,7 @@
 #include "Drawing.h"
 #include "NumberTextCtrl.h"
 #include "MapTextureBrowser.h"
-#include <wx/notebook.h>
+#include "STabCtrl.h"
 #include <wx/gbsizer.h>
 
 
@@ -236,20 +236,20 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	SetSizer(sizer);
 
 	// Tabs
-	nb_tabs = new wxNotebook(this, -1);
-	sizer->Add(nb_tabs, 1, wxEXPAND);
+	stc_tabs = new STabCtrl(this, false);
+	sizer->Add(stc_tabs, 1, wxEXPAND);
 
 	// General tab
-	nb_tabs->AddPage(setupGeneralPanel(), "General");
+	stc_tabs->AddPage(setupGeneralPanel(), "General");
 
 	// Special tab
-	nb_tabs->AddPage(setupSpecialPanel(), "Special");
+	stc_tabs->AddPage(setupSpecialPanel(), "Special");
 
 	// Other Properties tab
 	
 	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 	{
-		mopp_all_props = new MapObjectPropsPanel(nb_tabs, true);
+		mopp_all_props = new MapObjectPropsPanel(stc_tabs, true);
 		mopp_all_props->hideProperty("texturefloor");
 		mopp_all_props->hideProperty("textureceiling");
 		mopp_all_props->hideProperty("heightfloor");
@@ -257,7 +257,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 		mopp_all_props->hideProperty("lightlevel");
 		mopp_all_props->hideProperty("id");
 		mopp_all_props->hideProperty("special");
-		nb_tabs->AddPage(mopp_all_props, "Other Properties");
+		stc_tabs->AddPage(mopp_all_props, "Other Properties");
 	}
 	else
 		mopp_all_props = NULL;
@@ -283,7 +283,7 @@ SectorPropsPanel::~SectorPropsPanel()
 wxPanel* SectorPropsPanel::setupGeneralPanel()
 {
 	// Create panel
-	wxPanel* panel = new wxPanel(nb_tabs);
+	wxPanel* panel = new wxPanel(stc_tabs);
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -356,7 +356,7 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 wxPanel* SectorPropsPanel::setupSpecialPanel()
 {
 	// Create panel
-	wxPanel* panel = new wxPanel(nb_tabs);
+	wxPanel* panel = new wxPanel(stc_tabs);
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

@@ -33,6 +33,7 @@
 #include "WxStuff.h"
 #include "MapReplaceDialog.h"
 #include "ArchiveOperations.h"
+#include "STabCtrl.h"
 #include <wx/gbsizer.h>
 #include <wx/statline.h>
 
@@ -267,20 +268,20 @@ MapReplaceDialog::MapReplaceDialog(wxWindow* parent, Archive* archive)
 	SetSizer(sizer);
 
 	// Add tabs
-	nb_tabs = new wxNotebook(this, -1);
-	sizer->Add(nb_tabs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+	stc_tabs = new STabCtrl(this, false);
+	sizer->Add(stc_tabs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
 	// Thing type tab
-	panel_thing = new ThingTypeReplacePanel(nb_tabs);
-	nb_tabs->AddPage(panel_thing, "Thing Types");
+	panel_thing = new ThingTypeReplacePanel(stc_tabs);
+	stc_tabs->AddPage(panel_thing, "Thing Types");
 
 	// Specials tab
-	panel_special = new SpecialReplacePanel(nb_tabs);
-	nb_tabs->AddPage(panel_special, "Specials");
+	panel_special = new SpecialReplacePanel(stc_tabs);
+	stc_tabs->AddPage(panel_special, "Specials");
 
 	// Textures tab
-	panel_texture = new TextureReplacePanel(nb_tabs);
-	nb_tabs->AddPage(panel_texture, "Textures");
+	panel_texture = new TextureReplacePanel(stc_tabs);
+	stc_tabs->AddPage(panel_texture, "Textures");
 
 	// Dialog buttons
 	btn_replace = new wxButton(this, -1, "Replace");
@@ -330,7 +331,7 @@ void MapReplaceDialog::onBtnDone(wxCommandEvent& e)
 void MapReplaceDialog::onBtnReplace(wxCommandEvent& e)
 {
 	// Get current tab
-	int current = nb_tabs->GetSelection();
+	int current = stc_tabs->GetSelection();
 
 	// Thing types
 	if (current == 0)

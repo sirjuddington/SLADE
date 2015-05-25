@@ -36,6 +36,8 @@
 #include <wx/filename.h>
 #include <wx/dir.h>
 
+#include <SFML\System.hpp>
+
 /* Archive Directory Layout:
  * ---------------------
  * [root entries]
@@ -706,8 +708,10 @@ bool Archive::open(string filename)
 	this->filename = filename;
 
 	// Load from MemChunk
+	sf::Clock timer;
 	if (open(mc))
 	{
+		LOG_MESSAGE(2, "Archive::open took %dms", timer.getElapsedTime().asMilliseconds());
 		this->on_disk = true;
 		return true;
 	}

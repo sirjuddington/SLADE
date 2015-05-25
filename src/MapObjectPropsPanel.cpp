@@ -37,6 +37,7 @@
 #include "MOPGProperty.h"
 #include "MapEditorWindow.h"
 #include "Icons.h"
+#include "STabCtrl.h"
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
 #include <wx/gbsizer.h>
@@ -80,16 +81,16 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	sizer->AddSpacer(4);
 
 	// Add tabs
-	tabs_sections = new wxNotebook(this, -1);
-	sizer->Add(tabs_sections, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	stc_sections = new STabCtrl(this, false);
+	sizer->Add(stc_sections, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Add main property grid
-	pg_properties = new wxPropertyGrid(tabs_sections, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER);
-	tabs_sections->AddPage(pg_properties, "Properties");
+	pg_properties = new wxPropertyGrid(stc_sections, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER);
+	stc_sections->AddPage(pg_properties, "Properties");
 
 	// Create side property grids
-	pg_props_side1 = new wxPropertyGrid(tabs_sections, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER);
-	pg_props_side2 = new wxPropertyGrid(tabs_sections, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER);
+	pg_props_side1 = new wxPropertyGrid(stc_sections, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER);
+	pg_props_side2 = new wxPropertyGrid(stc_sections, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS|wxPG_SPLITTER_AUTO_CENTER);
 
 	// Add buttons
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -472,8 +473,8 @@ void MapObjectPropsPanel::setupType(int objtype)
 	}
 
 	// Remove side1/2 tabs if they exist
-	while (tabs_sections->GetPageCount() > 1)
-		tabs_sections->RemovePage(1);
+	while (stc_sections->GetPageCount() > 1)
+		stc_sections->RemovePage(1);
 	pg_props_side1->Show(false);
 	pg_props_side2->Show(false);
 
@@ -481,7 +482,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	if (objtype == MOBJ_VERTEX)
 	{
 		// Set main tab name
-		tabs_sections->SetPageText(0, "Vertex");
+		stc_sections->SetPageText(0, "Vertex");
 
 		// Add 'basic' group
 		wxPGProperty* g_basic = pg_properties->Append(new wxPropertyCategory("General"));
@@ -497,7 +498,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	else if (objtype == MOBJ_LINE)
 	{
 		// Set main tab name
-		tabs_sections->SetPageText(0, "Line");
+		stc_sections->SetPageText(0, "Line");
 
 		// Add 'General' group
 		wxPGProperty* g_basic = pg_properties->Append(new wxPropertyCategory("General"));
@@ -561,8 +562,8 @@ void MapObjectPropsPanel::setupType(int objtype)
 		// --- Sides ---
 		pg_props_side1->Show(true);
 		pg_props_side2->Show(true);
-		tabs_sections->AddPage(pg_props_side1, "Front Side");
-		tabs_sections->AddPage(pg_props_side2, "Back Side");
+		stc_sections->AddPage(pg_props_side1, "Front Side");
+		stc_sections->AddPage(pg_props_side2, "Back Side");
 
 		// 'General' group 1
 		wxPGProperty* subgroup = pg_props_side1->Append(new wxPropertyCategory("General", "side1.general"));
@@ -611,7 +612,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	else if (objtype == MOBJ_SECTOR)
 	{
 		// Set main tab name
-		tabs_sections->SetPageText(0, "Sector");
+		stc_sections->SetPageText(0, "Sector");
 
 		// Add 'General' group
 		wxPGProperty* g_basic = pg_properties->Append(new wxPropertyCategory("General"));
@@ -665,7 +666,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	else if (objtype == MOBJ_THING)
 	{
 		// Set main tab name
-		tabs_sections->SetPageText(0, "Thing");
+		stc_sections->SetPageText(0, "Thing");
 
 		// Add 'General' group
 		wxPGProperty* g_basic = pg_properties->Append(new wxPropertyCategory("General"));
@@ -776,20 +777,20 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 	}
 
 	// Remove side1/2 tabs if they exist
-	while (tabs_sections->GetPageCount() > 1)
-		tabs_sections->RemovePage(1);
+	while (stc_sections->GetPageCount() > 1)
+		stc_sections->RemovePage(1);
 	pg_props_side1->Show(false);
 	pg_props_side2->Show(false);
 
 	// Set main tab title
 	if (objtype == MOBJ_VERTEX)
-		tabs_sections->SetPageText(0, "Vertex");
+		stc_sections->SetPageText(0, "Vertex");
 	else if (objtype == MOBJ_LINE)
-		tabs_sections->SetPageText(0, "Line");
+		stc_sections->SetPageText(0, "Line");
 	else if (objtype == MOBJ_SECTOR)
-		tabs_sections->SetPageText(0, "Sector");
+		stc_sections->SetPageText(0, "Sector");
 	else if (objtype == MOBJ_THING)
-		tabs_sections->SetPageText(0, "Thing");
+		stc_sections->SetPageText(0, "Thing");
 
 	// Go through all possible properties for this type
 	vector<udmfp_t> props = theGameConfiguration->allUDMFProperties(objtype);
@@ -815,8 +816,8 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		// Add side tabs
 		pg_props_side1->Show(true);
 		pg_props_side2->Show(true);
-		tabs_sections->AddPage(pg_props_side1, "Front Side");
-		tabs_sections->AddPage(pg_props_side2, "Back Side");
+		stc_sections->AddPage(pg_props_side1, "Front Side");
+		stc_sections->AddPage(pg_props_side2, "Back Side");
 
 		// Get side properties
 		vector<udmfp_t> sprops = theGameConfiguration->allUDMFProperties(MOBJ_SIDE);
@@ -1067,8 +1068,8 @@ void MapObjectPropsPanel::clearGrid()
 	btn_add->Show();
 
 	// Remove side1/2 tabs if they exist
-	while (tabs_sections->GetPageCount() > 1)
-		tabs_sections->RemovePage(1);
+	while (stc_sections->GetPageCount() > 1)
+		stc_sections->RemovePage(1);
 	pg_props_side1->Show(false);
 	pg_props_side2->Show(false);
 }

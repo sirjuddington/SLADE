@@ -45,7 +45,7 @@
 #include "UndoManagerHistoryPanel.h"
 #include "ArchivePanel.h"
 #include "Misc.h"
-#include "SAuiTabArt.h"
+#include "STabCtrl.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
@@ -193,24 +193,23 @@ void MainWindow::setupLayout()
 
 
 	// -- Editor Area --
-	notebook_tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE|wxBORDER_NONE|wxAUI_NB_WINDOWLIST_BUTTON|wxNB_FLAT);
-	notebook_tabs->SetArtProvider(getTabArt(true));
+	stc_tabs = new STabCtrl(this, true, true);
 
 	// Setup panel info & add panel
 	p_inf.CenterPane();
 	p_inf.Name("editor_area");
 	p_inf.PaneBorder(false);
-	m_mgr->AddPane(notebook_tabs, p_inf);
+	m_mgr->AddPane(stc_tabs, p_inf);
 
 	// Create Start Page
 #ifdef USE_WEBVIEW_STARTPAGE
-	html_startpage = wxWebView::New(notebook_tabs, -1, wxEmptyString);
+	html_startpage = wxWebView::New(stc_tabs, -1, wxEmptyString);
 	html_startpage->SetName("startpage");
 	html_startpage->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
 	if (show_start_page)
 	{
-		notebook_tabs->AddPage(html_startpage,"Start Page");
-		notebook_tabs->SetPageBitmap(0, getIcon("i_logo"));
+		stc_tabs->AddPage(html_startpage,"Start Page");
+		stc_tabs->SetPageBitmap(0, getIcon("i_logo"));
 		createStartPage();
 	}
 	else
@@ -245,7 +244,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Archive Manager Panel --
-	panel_archivemanager = new ArchiveManagerPanel(this, notebook_tabs);
+	panel_archivemanager = new ArchiveManagerPanel(this, stc_tabs);
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -730,11 +729,11 @@ void MainWindow::openDocs(string page_name)
 
 	// Check if docs tab is already open
 	bool found = false;
-	for (unsigned a = 0; a < notebook_tabs->GetPageCount(); a++)
+	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
 	{
-		if (notebook_tabs->GetPage(a)->GetName() == "docs")
+		if (stc_tabs->GetPage(a)->GetName() == "docs")
 		{
-			notebook_tabs->SetSelection(a);
+			stc_tabs->SetSelection(a);
 			found = true;
 			break;
 		}
@@ -743,8 +742,8 @@ void MainWindow::openDocs(string page_name)
 	// Open new docs tab if not already open
 	if (!found)
 	{
-		notebook_tabs->AddPage(docs_page, "Documentation", true, -1);
-		notebook_tabs->SetPageBitmap(notebook_tabs->GetPageCount() - 1, getIcon("t_wiki"));
+		stc_tabs->AddPage(docs_page, "Documentation", true, -1);
+		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, getIcon("t_wiki"));
 	}
 
 	// Load specified page, if any
@@ -1028,7 +1027,7 @@ void MainWindow::onClose(wxCloseEvent& e)
 void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 {
 	// Get current page
-	wxWindow* page = notebook_tabs->GetPage(notebook_tabs->GetSelection());
+	wxWindow* page = stc_tabs->GetPage(stc_tabs->GetSelection());
 
 	// If start page is selected, refresh it
 	if (page->GetName() == "startpage")
@@ -1086,7 +1085,7 @@ void MainWindow::onActivate(wxActivateEvent& e)
 	}
 
 	// Get current tab
-	wxWindow* page = notebook_tabs->GetPage(notebook_tabs->GetSelection());
+	wxWindow* page = stc_tabs->GetPage(stc_tabs->GetSelection());
 
 	// If start page is selected, refresh it
 	if (page && page->GetName() == "startpage")

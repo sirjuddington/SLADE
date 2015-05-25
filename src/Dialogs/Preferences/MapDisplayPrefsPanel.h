@@ -3,12 +3,12 @@
 #define __MAP_DISPLAY_PREFS_PANEL_H__
 
 #include "PrefsPanelBase.h"
-#include <wx/notebook.h>
 
+class STabCtrl;
 class MapDisplayPrefsPanel : public PrefsPanelBase
 {
 private:
-	wxNotebook*	nb_pages;
+	STabCtrl*	stc_pages;
 
 	wxCheckBox*	cb_grid_dashed;
 	wxCheckBox*	cb_animate_hilight;

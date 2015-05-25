@@ -147,7 +147,7 @@ SAuiTabArt::SAuiTabArt(bool close_buttons)
 	m_baseColourPen = wxPen(m_baseColour);
 	m_baseColourBrush = wxBrush(m_baseColour);
 
-	m_activeCloseBmp = bitmapFromBits(close_bits, 16, 16, *wxBLACK);
+	m_activeCloseBmp = bitmapFromBits(close_bits, 16, 16, wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT));
 	m_disabledCloseBmp = bitmapFromBits(close_bits, 16, 16, wxColour(128, 128, 128));
 
 	m_activeLeftBmp = bitmapFromBits(left_bits, 16, 16, *wxBLACK);
@@ -182,24 +182,27 @@ wxAuiTabArt* SAuiTabArt::Clone()
 
 void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
-	int i, border_width = GetBorderWidth(wnd);
+	//wxAuiGenericTabArt::DrawBorder(dc, wnd, rect);
+	//int i, border_width = GetBorderWidth(wnd);
+
+	int height = ((wxAuiNotebook*)wnd)->GetTabCtrlHeight() - 3;
 
 	wxRect theRect(rect);
 	//for (i = 0; i < border_width; ++i)
 	//{
 	//dc.SetPen(wxPen(m_baseColour));
-		dc.DrawRectangle(theRect.x, theRect.y, theRect.width, theRect.height);
+		//dc.DrawRectangle(theRect.x, theRect.y, theRect.width, theRect.height);
 		
 
 		//dc.SetPen(wxPen(m_baseColour));
-		/*dc.DrawLine(theRect.x, theRect.y + m_tabCtrlHeight + 24, theRect.x, theRect.y + theRect.height);
-		dc.DrawLine(theRect.x + theRect.width - 1, theRect.y + m_tabCtrlHeight + 24, theRect.x + theRect.width - 1, theRect.y + theRect.height);
+		dc.DrawLine(theRect.x, theRect.y + height, theRect.x, theRect.y + theRect.height);
+		dc.DrawLine(theRect.x + theRect.width - 1, theRect.y + height, theRect.x + theRect.width - 1, theRect.y + theRect.height);
 		dc.DrawLine(theRect.x, theRect.y + theRect.height - 1, theRect.x + theRect.width, theRect.y + theRect.height - 1);
 
 		dc.SetPen(wxPen(m_baseColour));
-		dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + 24);
-		dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + 24);
-		dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);*/
+		dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + height);
+		dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + height);
+		dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
 
 //theRect.Deflate(1);
 	//}
@@ -239,7 +242,7 @@ void SAuiTabArt::DrawBackground(wxDC& dc,
 		dc.DrawRectangle(-1, y - 4, w + 2, 4);
 
 		dc.SetPen(m_borderPen);
-		dc.DrawLine(-1, y - 4, w + 1, y - 4);
+		dc.DrawLine(-2, y - 4, w + 2, y - 4);
 	}
 }
 
@@ -363,8 +366,17 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 	else
 	{
 		wxRect r(tab_x, tab_y, tab_width, tab_height);
-		dc.SetPen(wxPen(m_inactiveTabColour));
-		dc.SetBrush(wxBrush(m_inactiveTabColour));
+		wxPoint mouse = wnd->ScreenToClient(wxGetMousePosition());
+		/*if (r.Contains(mouse))
+		{
+			dc.SetPen(wxPen(m_activeColour));
+			dc.SetBrush(wxBrush(m_activeColour));
+		}
+		else
+		{*/
+			dc.SetPen(wxPen(m_inactiveTabColour));
+			dc.SetBrush(wxBrush(m_inactiveTabColour));
+		//}
 		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, r.height - 4);
 	}
 
@@ -455,13 +467,7 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 	{
 		wxBitmap bmp = m_disabledCloseBmp;
 
-		if (close_button_state == wxAUI_BUTTON_STATE_HOVER ||
-			close_button_state == wxAUI_BUTTON_STATE_PRESSED)
-		{
-			bmp = m_activeCloseBmp;
-		}
-
-		int offsetY = tab_y - 1;
+		int offsetY = tab_y;
 		if (m_flags & wxAUI_NB_BOTTOM)
 			offsetY = 1;
 
@@ -471,8 +477,21 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 			tab_height);
 
 		IndentPressedBitmap(&rect, close_button_state);
-		dc.DrawBitmap(bmp, rect.x, rect.y, true);
 
+		if (close_button_state == wxAUI_BUTTON_STATE_HOVER ||
+			close_button_state == wxAUI_BUTTON_STATE_PRESSED)
+		{
+			bmp = m_activeCloseBmp;
+			dc.DrawBitmap(bmp, rect.x + 1, rect.y, true);
+			dc.DrawBitmap(bmp, rect.x - 1, rect.y, true);
+			dc.DrawBitmap(bmp, rect.x, rect.y, true);
+		}
+		else
+		{
+			bmp = m_disabledCloseBmp;
+			dc.DrawBitmap(bmp, rect.x, rect.y, true);
+		}
+		
 		*out_button_rect = rect;
 	}
 

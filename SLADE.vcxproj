@@ -461,6 +461,7 @@
     <ClCompile Include="src\SidePropsPanel.cpp" />
     <ClCompile Include="src\SIFormat.cpp" />
     <ClCompile Include="src\SImageFormats.cpp" />
+    <ClCompile Include="src\STabCtrl.cpp" />
     <ClCompile Include="src\SToolBar.cpp" />
     <ClCompile Include="src\SToolBarButton.cpp" />
     <ClCompile Include="src\STopWindow.cpp" />
@@ -786,6 +787,7 @@
     <ClInclude Include="src\SIFQuake.h" />
     <ClInclude Include="src\SIFRott.h" />
     <ClInclude Include="src\SIFZDoom.h" />
+    <ClInclude Include="src\STabCtrl.h" />
     <ClInclude Include="src\STopWindow.h" />
     <ClInclude Include="src\SToolBar.h" />
     <ClInclude Include="src\SToolBarButton.h" />
