@@ -13,6 +13,7 @@ private:
 	wxCheckBox*	cb_start_page;
 	wxCheckBox*	cb_context_submenus;
 	wxCheckBox*	cb_elist_bgcol;
+	wxCheckBox* cb_file_browser;
 	wxChoice*	choice_toolbar_size;
 	wxChoice*	choice_tab_style;
 
