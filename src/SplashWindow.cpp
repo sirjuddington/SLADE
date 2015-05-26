@@ -170,6 +170,10 @@ void SplashWindow::show(string message, bool progress, wxWindow* parent)
  *******************************************************************/
 void SplashWindow::hide()
 {
+	// Close
+	Show(false);
+	Close(true);
+
 	// Destroy instance
 	deleteInstance();
 }
