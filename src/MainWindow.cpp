@@ -215,12 +215,12 @@ void MainWindow::setupLayout()
 	else
 		html_startpage->Show(false);
 #else
-	html_startpage = new wxHtmlWindow(notebook_tabs, -1, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_NEVER, "startpage");
+	html_startpage = new wxHtmlWindow(stc_tabs, -1, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_NEVER, "startpage");
 	html_startpage->SetName("startpage");
 	if (show_start_page)
 	{
-		notebook_tabs->AddPage(html_startpage, "Start Page");
-		notebook_tabs->SetPageBitmap(0, getIcon("i_logo"));
+		stc_tabs->AddPage(html_startpage, "Start Page");
+		stc_tabs->SetPageBitmap(0, getIcon("i_logo"));
 		createStartPage();
 	}
 	else
