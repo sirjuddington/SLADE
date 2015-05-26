@@ -51,6 +51,7 @@
 #include "Executables.h"
 #include "Misc.h"
 #include "VersionCheck.h"
+#include "dumb/dumb.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>
@@ -873,6 +874,9 @@ int MainApp::OnExit()
 
 	// Close lua
 	Lua::close();
+
+	// Close DUMB
+	dumb_exit();
 
 	return 0;
 }

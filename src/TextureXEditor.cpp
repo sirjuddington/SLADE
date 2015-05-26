@@ -37,7 +37,6 @@
 #include "SplashWindow.h"
 #include "ExtMessageDialog.h"
 #include "ResourceManager.h"
-#include "cl_notebook_art/cl_aui_notebook_art.h"
 #include <wx/dialog.h>
 #include <wx/radiobut.h>
 
@@ -203,7 +202,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Add tabs
 	tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxAUI_NB_WINDOWLIST_BUTTON|wxBORDER_NONE);
-	tabs->SetArtProvider(new clAuiTabArt());
+	tabs->SetArtProvider(getTabArt());
 	sizer->Add(tabs, 1, wxEXPAND|wxALL, 4);
 
 	// Bind events

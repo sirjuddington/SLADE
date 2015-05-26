@@ -4,7 +4,7 @@
 
 #include "PropsPanelBase.h"
 
-class wxNotebook;
+class STabCtrl;
 class MapObject;
 class MapObjectPropsPanel;
 class ActionSpecialPanel;
@@ -14,7 +14,7 @@ class NumberTextCtrl;
 class LinePropsPanel : public PropsPanelBase
 {
 private:
-	wxNotebook*				nb_tabs;
+	STabCtrl*				stc_tabs;
 	vector<wxCheckBox*>		cb_flags;
 	MapObjectPropsPanel*	mopp_all_props;
 	wxCheckBox*				cb_override_special;

@@ -37,8 +37,8 @@
 #include "ActionSpecialDialog.h"
 #include "SidePropsPanel.h"
 #include "NumberTextCtrl.h"
+#include "STabCtrl.h"
 #include <wx/gbsizer.h>
-#include <wx/notebook.h>
 #undef min
 #undef max
 #include <wx/valnum.h>
@@ -57,33 +57,33 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	SetSizer(sizer);
 
 	// Tabs
-	nb_tabs = new wxNotebook(this, -1);
-	sizer->Add(nb_tabs, 1, wxEXPAND);
+	stc_tabs = new STabCtrl(this, false);
+	sizer->Add(stc_tabs, 1, wxEXPAND);
 
 	// General tab
-	nb_tabs->AddPage(setupGeneralTab(), "General");
+	stc_tabs->AddPage(setupGeneralTab(), "General");
 
 	// Special tab
-	nb_tabs->AddPage(setupSpecialTab(), "Special");
+	stc_tabs->AddPage(setupSpecialTab(), "Special");
 
 	// Args tab
 	if (theMapEditor->currentMapDesc().format != MAP_DOOM)
 	{
-		panel_args = new ArgsPanel(nb_tabs);
-		nb_tabs->AddPage(panel_args, "Args");
+		panel_args = new ArgsPanel(stc_tabs);
+		stc_tabs->AddPage(panel_args, "Args");
 		panel_special->setArgsPanel(panel_args);
 	}
 
 	// Front side tab
-	panel_side1 = new SidePropsPanel(nb_tabs);
-	nb_tabs->AddPage(panel_side1, "Front Side");
+	panel_side1 = new SidePropsPanel(stc_tabs);
+	stc_tabs->AddPage(panel_side1, "Front Side");
 
 	// Back side tab
-	panel_side2 = new SidePropsPanel(nb_tabs);
-	nb_tabs->AddPage(panel_side2, "Back Side");
+	panel_side2 = new SidePropsPanel(stc_tabs);
+	stc_tabs->AddPage(panel_side2, "Back Side");
 
 	// All properties tab
-	mopp_all_props = new MapObjectPropsPanel(nb_tabs, true);
+	mopp_all_props = new MapObjectPropsPanel(stc_tabs, true);
 	mopp_all_props->hideFlags(true);
 	mopp_all_props->hideTriggers(true);
 	mopp_all_props->hideProperty("special");
@@ -98,7 +98,7 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	mopp_all_props->hideProperty("offsetx");
 	mopp_all_props->hideProperty("offsety");
 	mopp_all_props->hideProperty("id");
-	nb_tabs->AddPage(mopp_all_props, "Other Properties");
+	stc_tabs->AddPage(mopp_all_props, "Other Properties");
 
 	// Bind events
 	cb_override_special->Bind(wxEVT_CHECKBOX, &LinePropsPanel::onOverrideSpecialChecked, this);
@@ -117,7 +117,7 @@ LinePropsPanel::~LinePropsPanel()
  *******************************************************************/
 wxPanel* LinePropsPanel::setupGeneralTab()
 {
-	wxPanel* panel_flags = new wxPanel(nb_tabs, -1);
+	wxPanel* panel_flags = new wxPanel(stc_tabs, -1);
 	int map_format = theMapEditor->currentMapDesc().format;
 
 	// Setup sizer
@@ -231,7 +231,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
  *******************************************************************/
 wxPanel* LinePropsPanel::setupSpecialTab()
 {
-	wxPanel* panel = new wxPanel(nb_tabs, -1);
+	wxPanel* panel = new wxPanel(stc_tabs, -1);
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

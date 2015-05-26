@@ -35,6 +35,7 @@
 #include "GenLineSpecialPanel.h"
 #include "MapEditorWindow.h"
 #include "NumberTextCtrl.h"
+#include "STabCtrl.h"
 #include <wx/gbsizer.h>
 #include <wx/window.h>
 #undef min
@@ -1133,16 +1134,16 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args)
 	// Args (use tabs)
 	else
 	{
-		nb_tabs = new wxNotebook(this, -1);
-		sizer->Add(nb_tabs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
+		stc_tabs = new STabCtrl(this, false);
+		sizer->Add(stc_tabs, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 
 		// Special panel
-		panel_special = new ActionSpecialPanel(nb_tabs);
-		nb_tabs->AddPage(panel_special, "Special");
+		panel_special = new ActionSpecialPanel(stc_tabs);
+		stc_tabs->AddPage(panel_special, "Special");
 
 		// Args panel
-		panel_args = new ArgsPanel(nb_tabs);
-		nb_tabs->AddPage(panel_args, "Args");
+		panel_args = new ArgsPanel(stc_tabs);
+		stc_tabs->AddPage(panel_args, "Args");
 		panel_special->setArgsPanel(panel_args);
 	}
 

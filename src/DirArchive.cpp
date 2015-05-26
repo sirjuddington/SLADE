@@ -148,6 +148,7 @@ bool DirArchive::open(string filename)
 		// Add entry and directory to directory tree
 		ArchiveTreeNode* ndir = createDir(fn.GetPath(true, wxPATH_UNIX));
 		ndir->addEntry(new_entry);
+		ndir->getDirEntry()->exProp("filePath") = filename + fn.GetPath(true, wxPATH_UNIX);
 
 		// Read entry data
 		new_entry->importFile(files[a]);
@@ -172,7 +173,8 @@ bool DirArchive::open(string filename)
 		if (name.StartsWith(separator))
 			name.Remove(0, 1);
 		name.Replace("\\", "/");
-		createDir(name);
+		ArchiveTreeNode* ndir = createDir(name);
+		ndir->getDirEntry()->exProp("filePath") = dirs[a];
 	}
 
 	// Set all entries/directories to unmodified
@@ -315,6 +317,7 @@ bool DirArchive::save(string filename)
 				wxMkdir(path);
 
 			// Set unmodified
+			entries[a]->exProp("filePath") = path;
 			entries[a]->setState(0);
 
 			continue;
@@ -338,6 +341,7 @@ bool DirArchive::save(string filename)
 		file_modification_times[entries[a]] = wxFileModificationTime(path);
 	}
 
+	removed_files.clear();
 	setModified(false);
 
 	return true;
@@ -355,6 +359,42 @@ bool DirArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	return false;
+}
+
+/* DirArchive::removeDir
+ * Deletes the directory matching [path], starting from [base]. If
+ * [base] is NULL, the root directory is used. Returns false if
+ * the directory does not exist, true otherwise
+ *
+ * For DirArchive also adds all subdirs and entries to the removed
+ * files list, so they are ignored when checking for changes on disk
+ *******************************************************************/
+bool DirArchive::removeDir(string path, ArchiveTreeNode* base)
+{
+	// Abort if read only
+	if (read_only)
+		return false;
+
+	// Get the dir to remove
+	ArchiveTreeNode* dir = getDir(path, base);
+
+	// Check it exists (and that it isn't the root dir)
+	if (!dir || dir == getRoot())
+		return false;
+
+	// Get all entries in the directory (and subdirectories)
+	vector<ArchiveEntry*> entries;
+	getEntryTreeAsList(entries, dir);
+
+	// Add to removed files list
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
+		LOG_MESSAGE(2, entries[a]->exProp("filePath").getStringValue());
+		removed_files.push_back(entries[a]->exProp("filePath").getStringValue());
+	}
+
+	// Do normal dir remove
+	return Archive::removeDir(path, base);
 }
 
 /* DirArchive::renameDir
@@ -390,6 +430,16 @@ ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 
 	// Add the entry to the dir
 	return Archive::addEntry(entry, 0xFFFFFFFF, dir, copy);
+}
+
+/* DirArchive::removeEntry
+ * Removes [entry] from the archive. If [delete_entry] is true, the
+ * entry will also be deleted. Returns true if the removal succeeded
+ *******************************************************************/
+bool DirArchive::removeEntry(ArchiveEntry* entry, bool delete_entry)
+{
+	removed_files.push_back(entry->exProp("filePath").getStringValue());
+	return Archive::removeEntry(entry, delete_entry);
 }
 
 /* DirArchive::getMapInfo
@@ -578,14 +628,6 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 	vector<ArchiveEntry*> entries;
 	getEntryTreeAsList(entries);
 
-	// Get entry path list
-	vector<string> entry_paths;
-	for (unsigned a = 0; a < entries.size(); a++)
-	{
-		entry_paths.push_back(this->filename + entries[a]->getPath(true));
-		if (separator != "/") entry_paths.back().Replace("/", separator);
-	}
-
 	// Get current directory structure
 	vector<string> files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
@@ -593,28 +635,38 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
 	// Check for deleted files
-	for (unsigned a = 0; a < entry_paths.size(); a++)
+	for (unsigned a = 0; a < entries.size(); a++)
 	{
+		string path = entries[a]->exProp("filePath").getStringValue();
+
+		// Ignore if not on disk
+		if (path.IsEmpty())
+			continue;
+
 		if (entries[a]->getType() == EntryType::folderType())
 		{
-			if (!wxDirExists(entry_paths[a]))
-				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, entry_paths[a], entries[a]->getPath(true)));
+			if (!wxDirExists(path))
+				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entries[a]->getPath(true)));
 		}
 		else
 		{
-			if (!wxFileExists(entry_paths[a]))
-				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, entry_paths[a], entries[a]->getPath(true)));
+			if (!wxFileExists(path))
+				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entries[a]->getPath(true)));
 		}
 	}
 
 	// Check for new/updated files
 	for (unsigned a = 0; a < files.size(); a++)
 	{
+		// Ignore files removed from archive since last save
+		if (VECTOR_EXISTS(removed_files, files[a]))
+			continue;
+
 		// Find file in archive
 		ArchiveEntry * entry = NULL;
-		for (unsigned b = 0; b < entry_paths.size(); b++)
+		for (unsigned b = 0; b < entries.size(); b++)
 		{
-			if (entry_paths[b] == files[a])
+			if (entries[b]->exProp("filePath").getStringValue() == files[a])
 			{
 				entry = entries[b];
 				break;
@@ -638,11 +690,15 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 	{
 		//LOG_MESSAGE(3, dirs[a]);
 
+		// Ignore dirs removed from archive since last save
+		if (VECTOR_EXISTS(removed_files, dirs[a]))
+			continue;
+
 		// Find dir in archive
 		ArchiveEntry * entry = NULL;
-		for (unsigned b = 0; b < entry_paths.size(); b++)
+		for (unsigned b = 0; b < entries.size(); b++)
 		{
-			if (entry_paths[b] == dirs[a])
+			if (entries[b]->exProp("filePath").getStringValue() == dirs[a])
 			{
 				entry = entries[b];
 				break;
@@ -700,6 +756,7 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 
 			ArchiveTreeNode* ndir = createDir(name);
 			ndir->getDirEntry()->setState(0);
+			ndir->getDirEntry()->exProp("filePath") = changes[a].file_path;
 		}
 
 		// New Entry

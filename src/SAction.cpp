@@ -116,19 +116,21 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override)
 	// Determine shortcut key
 	string sc = shortcut;
 	bool is_bind = false;
+	bool sc_control = shortcut.Contains("Ctrl") || shortcut.Contains("Alt");
 	if (shortcut.StartsWith("kb:"))
 	{
 		is_bind = true;
 		keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
 		if (kp.key != "")
 			sc = kp.as_string();
+		sc_control = (kp.ctrl || kp.alt);
 	}
 
 	// Setup menu item string
 	string item_text = text;
 	if (!(S_CMP(text_override, "NO")))
 		item_text = text_override;
-	if (!sc.IsEmpty() && show_shortcut)
+	if (!sc.IsEmpty() && sc_control)
 		item_text = S_FMT("%s\t%s", item_text, sc);
 
 	// Append this action to the menu

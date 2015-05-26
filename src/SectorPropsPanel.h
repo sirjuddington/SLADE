@@ -35,7 +35,7 @@ public:
 	void onKeyDown(wxKeyEvent& e);
 };
 
-class wxNotebook;
+class STabCtrl;
 class SectorSpecialPanel;
 class MapObject;
 class MapObjectPropsPanel;
@@ -43,7 +43,7 @@ class NumberTextCtrl;
 class SectorPropsPanel : public PropsPanelBase
 {
 private:
-	wxNotebook*				nb_tabs;
+	STabCtrl*				stc_tabs;
 	SectorSpecialPanel*		panel_special;
 	wxCheckBox*				cb_override_special;
 	MapObjectPropsPanel*	mopp_all_props;

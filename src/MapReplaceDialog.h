@@ -2,7 +2,6 @@
 #ifndef __MAP_REPLACE_DIALOG_H__
 #define __MAP_REPLACE_DIALOG_H__
 
-#include <wx/notebook.h>
 #include <wx/spinctrl.h>
 
 class Archive;
@@ -57,12 +56,13 @@ public:
 	void doReplace(Archive* archive);
 };
 
+class STabCtrl;
 class MapReplaceDialog : public wxDialog
 {
 private:
 	Archive*	archive;
 
-	wxNotebook*				nb_tabs;
+	STabCtrl*				stc_tabs;
 	ThingTypeReplacePanel*	panel_thing;
 	SpecialReplacePanel*	panel_special;
 	TextureReplacePanel*	panel_texture;

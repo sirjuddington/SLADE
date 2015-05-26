@@ -123,10 +123,10 @@ public:
 		wxColour col_dark = Drawing::darkColour(col_background, 1.5f);
 
 		// Draw lines
-		dc.SetPen(wxPen(col_dark));
-		dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
-		dc.SetPen(wxPen(col_light));
-		dc.DrawLine(wxPoint(0, 1), wxPoint(GetSize().x+1, 1));
+		//dc.SetPen(wxPen(col_dark));
+		//dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
+		//dc.SetPen(wxPen(col_light));
+		//dc.DrawLine(wxPoint(0, 1), wxPoint(GetSize().x+1, 1));
 	}
 };
 
@@ -627,8 +627,8 @@ void SToolBar::onPaint(wxPaintEvent& e)
 	if (draw_border)
 	{
 		// Draw top
-		dc.SetPen(wxPen(col_light));
-		dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
+		//dc.SetPen(wxPen(col_dark));// col_light));
+		//dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
 
 		// Draw bottom
 		dc.SetPen(wxPen(col_dark));

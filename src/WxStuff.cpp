@@ -31,12 +31,14 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "Icons.h"
+#include "SAuiTabArt.h"
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
 CVAR(String, font_monospace, "Consolas,Lucida Console", CVAR_SAVE)
+CVAR(Int, tab_style, 1, CVAR_SAVE)
 
 
 /* createMenuItem
@@ -71,4 +73,22 @@ wxFont getMonospaceFont(wxFont base)
 	}
 
 	return font;
+}
+
+/* getTabArt
+ * Returns the currently set AUI tab art provider
+ *******************************************************************/
+wxAuiTabArt* getTabArt(bool close_buttons)
+{
+	//if (tab_style == 1)
+		return new SAuiTabArt(close_buttons);
+	//else if (tab_style == 2)
+	//	return new wxAuiSimpleTabArt();
+	//else
+	//	return new wxAuiDefaultTabArt();
+}
+
+wxAuiDockArt* getDockArt()
+{
+	return new SAuiDockArt();
 }

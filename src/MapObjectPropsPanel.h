@@ -4,17 +4,17 @@
 
 #include "PropsPanelBase.h"
 #include "MOPGProperty.h"
-#include <wx/notebook.h>
 
 class wxPropertyGrid;
 class wxPGProperty;
 class MapObject;
 class UDMFProperty;
 class MOPGProperty;
+class STabCtrl;
 class MapObjectPropsPanel : public PropsPanelBase
 {
 private:
-	wxNotebook*				tabs_sections;
+	STabCtrl*				stc_sections;
 	wxPropertyGrid*			pg_properties;
 	wxPropertyGrid*			pg_props_side1;
 	wxPropertyGrid*			pg_props_side2;

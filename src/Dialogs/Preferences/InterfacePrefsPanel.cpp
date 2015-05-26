@@ -30,6 +30,8 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "InterfacePrefsPanel.h"
+#include "STabCtrl.h"
+#include <wx/statline.h>
 
 
 /*******************************************************************
@@ -44,6 +46,8 @@ EXTERN_CVAR(Bool, list_font_monospace)
 EXTERN_CVAR(Bool, elist_type_bgcol)
 EXTERN_CVAR(Int, toolbar_size)
 EXTERN_CVAR(Int, tab_style)
+EXTERN_CVAR(Bool, am_file_browser_tab)
+
 
 /*******************************************************************
  * INTERFACEPREFSPANEL CLASS FUNCTIONS
@@ -60,49 +64,77 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 
 	// Create frame+sizer
 	wxStaticBox* frame = new wxStaticBox(this, -1, "Interface Preferences");
-	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
+	wxStaticBoxSizer* fsizer = new wxStaticBoxSizer(frame, wxVERTICAL);
+	psizer->Add(fsizer, 1, wxEXPAND|wxALL, 4);
 
-	// Show entry size as string instead of a number
-	cb_size_as_string = new wxCheckBox(this, -1, "Show entry size as a string with units");
-	sizer->Add(cb_size_as_string, 0, wxEXPAND|wxALL, 4);
+	STabCtrl* stc_tabs = new STabCtrl(this);
+	fsizer->Add(stc_tabs, 1, wxEXPAND | wxALL, 4);
 
-	// Filter directories
-	cb_filter_dirs = new wxCheckBox(this, -1, "Ignore directories when filtering by name");
-	sizer->Add(cb_filter_dirs, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	// --- General ---
+	wxPanel* panel = new wxPanel(stc_tabs, -1);
+	wxBoxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(vsizer);
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	vsizer->Add(sizer, 1, wxEXPAND | wxALL, 4);
+	stc_tabs->AddPage(panel, "General");
+
+	// Show startpage
+	cb_start_page = new wxCheckBox(panel, -1, "Show Start Page on Startup");
+	sizer->Add(cb_start_page, 0, wxEXPAND | wxALL, 4);
+
+	// Show file browser
+	cb_file_browser = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel");
+	sizer->Add(cb_file_browser, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
 
 	// Monospace list font
-	cb_list_monospace = new wxCheckBox(this, -1, "Use monospaced font for lists");
-	sizer->Add(cb_list_monospace, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	cb_list_monospace = new wxCheckBox(panel, -1, "Use monospaced font for lists");
+	sizer->Add(cb_list_monospace, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+
+	// Toolbar size
+	string sizes[] = { "Small (16)", "Medium (24)", "Large (32)" };
+	choice_toolbar_size = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+	hbox->Add(new wxStaticText(panel, -1, "Toolbar icon size:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+	hbox->Add(choice_toolbar_size, 0, wxEXPAND | wxRIGHT, 4);
+
+
+	// --- Entry List ---
+	panel = new wxPanel(stc_tabs, -1);
+	vsizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(vsizer);
+	sizer = new wxBoxSizer(wxVERTICAL);
+	vsizer->Add(sizer, 1, wxEXPAND | wxALL, 4);
+	stc_tabs->AddPage(panel, "Entry List");
+
+	// Show entry size as string instead of a number
+	cb_size_as_string = new wxCheckBox(panel, -1, "Show entry size as a string with units");
+	sizer->Add(cb_size_as_string, 0, wxEXPAND| wxALL, 4);
+
+	// Filter directories
+	cb_filter_dirs = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
+	sizer->Add(cb_filter_dirs, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Entry list background colour by type
-	cb_elist_bgcol = new wxCheckBox(this, -1, "Colour entry list item background by entry type");
+	cb_elist_bgcol = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
 	sizer->Add(cb_elist_bgcol, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Context menu submenus
-	cb_context_submenus = new wxCheckBox(this, -1, "Group related entry context menu items into submenus");
+	cb_context_submenus = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
 	sizer->Add(cb_context_submenus, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
-	// Show startpage
-	cb_start_page = new wxCheckBox(this, -1, "Show Start Page on Startup");
-	sizer->Add(cb_start_page, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	
 
-	// Toolbar size
-	string sizes[] ={ "Small (16)", "Medium (24)", "Large (32)" };
-	choice_toolbar_size = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	hbox->Add(new wxStaticText(this, -1, "Toolbar icon size:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(choice_toolbar_size, 0, wxEXPAND|wxRIGHT, 4);
+	
 
-	// Tab style
-	string styles[] ={ "Glossy", "Flat", "Rounded" };
-	choice_tab_style = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, styles);
-	hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	hbox->Add(new wxStaticText(this, -1, "Tab style:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(choice_tab_style, 0, wxEXPAND|wxRIGHT, 4);
-	sizer->Add(new wxStaticText(this, -1, "You need to quit and restart SLADE 3 for tab style changes to take effect."), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	//// Tab style
+	//string styles[] ={ "Flat (Default)", "Glossy", "Rounded" };
+	//choice_tab_style = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, styles);
+	//hbox = new wxBoxSizer(wxHORIZONTAL);
+	//sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	//hbox->Add(new wxStaticText(this, -1, "Tab style:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	//hbox->Add(choice_tab_style, 0, wxEXPAND|wxRIGHT, 4);
+	//sizer->Add(new wxStaticText(this, -1, "You need to quit and restart SLADE 3 for tab style changes to take effect."), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 }
 
 /* InterfacePrefsPanel::~InterfacePrefsPanel
@@ -123,6 +155,7 @@ void InterfacePrefsPanel::init()
 	cb_start_page->SetValue(show_start_page);
 	cb_context_submenus->SetValue(context_submenus);
 	cb_elist_bgcol->SetValue(elist_type_bgcol);
+	cb_file_browser->SetValue(am_file_browser_tab);
 
 	if (toolbar_size <= 16)
 		choice_toolbar_size->Select(0);
@@ -131,11 +164,10 @@ void InterfacePrefsPanel::init()
 	else
 		choice_toolbar_size->Select(2);
 
-	if (tab_style < 0)
-		tab_style = 0;
-	else if (tab_style > 2)
-		tab_style = 2;
-	choice_tab_style->Select(tab_style);
+	//if (tab_style < 0)
+	//	tab_style = 0;
+	//else if (tab_style > 2)
+	//	tab_style = 2;
 }
 
 /* InterfacePrefsPanel::applyPreferences
@@ -149,6 +181,7 @@ void InterfacePrefsPanel::applyPreferences()
 	show_start_page = cb_start_page->GetValue();
 	context_submenus = cb_context_submenus->GetValue();
 	elist_type_bgcol = cb_elist_bgcol->GetValue();
+	am_file_browser_tab = cb_file_browser->GetValue();
 
 	if (choice_toolbar_size->GetSelection() == 0)
 		toolbar_size = 16;
@@ -157,5 +190,5 @@ void InterfacePrefsPanel::applyPreferences()
 	else
 		toolbar_size = 32;
 
-	tab_style = choice_tab_style->GetSelection();
+	//tab_style = choice_tab_style->GetSelection();
 }

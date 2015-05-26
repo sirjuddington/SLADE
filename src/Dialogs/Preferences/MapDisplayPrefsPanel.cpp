@@ -31,6 +31,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "MapDisplayPrefsPanel.h"
+#include "STabCtrl.h"
 #include <wx/statline.h>
 #include <wx/gbsizer.h>
 
@@ -88,8 +89,8 @@ MapDisplayPrefsPanel::MapDisplayPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	psizer->Add(fsizer, 1, wxEXPAND|wxALL, 4);
 
 	// Create notebook
-	nb_pages = new wxNotebook(this, -1);
-	fsizer->Add(nb_pages, 1, wxEXPAND|wxALL, 4);
+	stc_pages = new STabCtrl(this, false);
+	fsizer->Add(stc_pages, 1, wxEXPAND|wxALL, 4);
 
 	// Setup tabs
 	setupGeneralTab();
@@ -114,8 +115,8 @@ MapDisplayPrefsPanel::~MapDisplayPrefsPanel()
 void MapDisplayPrefsPanel::setupGeneralTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(nb_pages, -1);
-	nb_pages->AddPage(panel, "General", true);
+	wxPanel* panel = new wxPanel(stc_pages, -1);
+	stc_pages->AddPage(panel, "General", true);
 	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
@@ -172,8 +173,8 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 void MapDisplayPrefsPanel::setupVerticesTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(nb_pages, -1);
-	nb_pages->AddPage(panel, "Vertices");
+	wxPanel* panel = new wxPanel(stc_pages, -1);
+	stc_pages->AddPage(panel, "Vertices");
 	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -205,8 +206,8 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 void MapDisplayPrefsPanel::setupLinesTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(nb_pages, -1);
-	nb_pages->AddPage(panel, "Lines");
+	wxPanel* panel = new wxPanel(stc_pages, -1);
+	stc_pages->AddPage(panel, "Lines");
 	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -234,8 +235,8 @@ void MapDisplayPrefsPanel::setupLinesTab()
 void MapDisplayPrefsPanel::setupThingsTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(nb_pages, -1);
-	nb_pages->AddPage(panel, "Things");
+	wxPanel* panel = new wxPanel(stc_pages, -1);
+	stc_pages->AddPage(panel, "Things");
 	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
@@ -294,8 +295,8 @@ void MapDisplayPrefsPanel::setupThingsTab()
 void MapDisplayPrefsPanel::setupFlatsTab()
 {
 	// Add tab
-	wxPanel* panel = new wxPanel(nb_pages, -1);
-	nb_pages->AddPage(panel, "Sectors");
+	wxPanel* panel = new wxPanel(stc_pages, -1);
+	stc_pages->AddPage(panel, "Sectors");
 	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

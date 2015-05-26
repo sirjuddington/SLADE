@@ -4,7 +4,6 @@
 
 #include "SDialog.h"
 #include <wx/dataview.h>
-#include <wx/notebook.h>
 
 // A wxDataViewTreeCtrl specialisation showing the
 // action specials and groups in a tree structure
@@ -97,12 +96,13 @@ public:
 	void	onSpecialTextChanged(wxCommandEvent& e);
 };
 
+class STabCtrl;
 class ActionSpecialDialog : public SDialog
 {
 private:
 	ActionSpecialPanel* panel_special;
 	ArgsPanel*			panel_args;
-	wxNotebook*			nb_tabs;
+	STabCtrl*			stc_tabs;
 
 public:
 	ActionSpecialDialog(wxWindow* parent, bool show_args = false);

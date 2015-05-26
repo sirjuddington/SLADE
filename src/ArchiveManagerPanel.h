@@ -15,6 +15,7 @@
 
 class ArchiveManagerPanel;
 class ArchivePanel;
+class STabCtrl;
 
 class WMFileBrowser : public wxGenericDirCtrl
 {
@@ -33,8 +34,8 @@ class TextureXEditor;
 class ArchiveManagerPanel : public DockPanel, Listener, SActionHandler
 {
 private:
-	wxAuiNotebook*		notebook_tabs;
-	wxAuiNotebook*		notebook_archives;
+	STabCtrl*			stc_tabs;
+	STabCtrl*			stc_archives;
 	wxPanel*			panel_am;
 	wxPanel*			panel_archives;
 	wxPanel*			panel_rf;
@@ -50,7 +51,7 @@ private:
 	bool				checked_dir_archive_changes;
 
 public:
-	ArchiveManagerPanel(wxWindow* parent, wxAuiNotebook* nb_archives);
+	ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives);
 	~ArchiveManagerPanel();
 
 	wxMenu*			getRecentMenu() { return menu_recent; }

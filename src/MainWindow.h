@@ -14,6 +14,7 @@
 #endif
 
 class SToolBar;
+class STabCtrl;
 class UndoManagerHistoryPanel;
 #ifdef USE_WEBVIEW_STARTPAGE
 class wxWebView;
@@ -24,7 +25,7 @@ class MainWindow : public STopWindow, SActionHandler
 private:
 	ArchiveManagerPanel*		panel_archivemanager;
 	UndoManagerHistoryPanel*	panel_undo_history;
-	wxAuiNotebook*				notebook_tabs;
+	STabCtrl*					stc_tabs;
 	wxAuiManager*				m_mgr;
 	int							lasttipindex;
 	PaletteChooser*				palette_chooser;

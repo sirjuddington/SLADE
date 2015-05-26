@@ -117,9 +117,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	music.setVolume(snd_volume);
 	theMIDIPlayer->setVolume(snd_volume);
 	if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01);
-#ifndef NOLIBMODPLUG
 	mod.setVolume(snd_volume);
-#endif
 
 	// Disable general entrypanel buttons
 	if (media_ctrl) media_ctrl->Show(false);
@@ -292,9 +290,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 	// Stop if sound currently playing
 	sound.stop();
 	music.stop();
-#ifndef NOLIBMODPLUG
 	mod.stop();
-#endif
 
 	// (Re)create sound buffer
 	if (sound_buffer)
@@ -398,9 +394,9 @@ bool AudioEntryPanel::openMidi(string filename)
 *******************************************************************/
 bool AudioEntryPanel::openMod(MemChunk& data)
 {
-#ifndef NOLIBMODPLUG
-	// Attempt to load the mod
-	if (mod.loadFromMemory(data.getData(), data.getSize()))
+	string filename = appPath("sladetemp_mod", DIR_TEMP);
+	data.exportFile(filename);
+	if (mod.openFromFile(CHR(filename)))
 	{
 		audio_type = AUTYPE_MOD;
 
@@ -409,7 +405,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 		btn_play->Enable();
 		btn_pause->Enable();
 		btn_stop->Enable();
-		setAudioDuration(mod.getLength());
+		setAudioDuration(mod.getDuration().asMilliseconds());
 
 		return true;
 	}
@@ -424,8 +420,6 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 
 		return false;
 	}
-#endif
-	return false;
 }
 
 /* AudioEntryPanel::openMedia
@@ -465,10 +459,8 @@ void AudioEntryPanel::startStream()
 		sound.play(); break;
 	case AUTYPE_MUSIC:
 		music.play(); break;
-#ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.play(); break;
-#endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->play(); break;
 	case AUTYPE_MEDIA:
@@ -487,10 +479,8 @@ void AudioEntryPanel::stopStream()
 		sound.pause(); break;
 	case AUTYPE_MUSIC:
 		music.pause(); break;
-#ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.pause(); break;
-#endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->pause(); break;
 	case AUTYPE_MEDIA:
@@ -510,10 +500,8 @@ void AudioEntryPanel::resetStream()
 		sound.stop(); break;
 	case AUTYPE_MUSIC:
 		music.stop(); break;
-#ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.stop(); break;
-#endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->stop(); break;
 	case AUTYPE_MEDIA:
@@ -573,10 +561,8 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 		pos = sound.getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MUSIC:
 		pos = music.getPlayingOffset().asMilliseconds(); break;
-#ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		pos = mod.getPlayingOffset().asMilliseconds(); break;
-#endif
 	case AUTYPE_MIDI:
 		pos = theMIDIPlayer->getPosition(); break;
 	case AUTYPE_MEDIA:
@@ -590,9 +576,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	if (pos >= slider_seek->GetMax() ||
 	        (audio_type == AUTYPE_SOUND && sound.getStatus() == sf::Sound::Stopped) ||
 	        (audio_type == AUTYPE_MUSIC && music.getStatus() == sf::Sound::Stopped) ||
-#ifndef NOLIBMODPLUG
-	        (audio_type == AUTYPE_MOD && mod.getStatus() == sf::Sound::Stopped) ||
-#endif
+			(audio_type == AUTYPE_MOD && mod.getStatus() == sf::Sound::Stopped) ||
 			(audio_type == AUTYPE_MEDIA && media_ctrl && media_ctrl->GetState() == wxMEDIASTATE_STOPPED))
 		timer_seek->Stop();
 }
@@ -608,10 +592,8 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 		sound.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
 	case AUTYPE_MUSIC:
 		music.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
-#ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
-#endif
 	case AUTYPE_MIDI:
 		theMIDIPlayer->setPosition(slider_seek->GetValue()); break;
 	case AUTYPE_MEDIA:
@@ -636,9 +618,7 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 		theMIDIPlayer->setVolume(snd_volume); break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01); break;
-#ifndef NOLIBMODPLUG
 	case AUTYPE_MOD:
 		mod.setVolume(snd_volume); break;
-#endif
 	}
 }

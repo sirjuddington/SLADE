@@ -36,6 +36,7 @@ private:
 	string				separator;
 	vector<key_value_t>	renamed_dirs;
 	mod_times_t			file_modification_times;
+	vector<string>		removed_files;
 
 public:
 	DirArchive();
@@ -59,11 +60,12 @@ public:
 	bool	loadEntryData(ArchiveEntry* entry);
 
 	// Dir stuff
+	bool	removeDir(string path, ArchiveTreeNode* base = NULL);
 	bool	renameDir(ArchiveTreeNode* dir, string new_name);
 
 	// Entry addition/removal
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
-	//bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true);
+	bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true);
 
 	// Detection
 	mapdesc_t			getMapInfo(ArchiveEntry* maphead);

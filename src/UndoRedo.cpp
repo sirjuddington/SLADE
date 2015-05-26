@@ -79,7 +79,7 @@ string UndoLevel::getTimeStamp(bool date, bool time)
  *******************************************************************/
 bool UndoLevel::doUndo()
 {
-	LOG_MESSAGE(3, "Performing undo \"%s\" (%d steps)", name, undo_steps.size());
+	LOG_MESSAGE(3, "Performing undo \"%s\" (%lu steps)", name, undo_steps.size());
 	bool ok = true;
 	for (int a = (int)undo_steps.size() - 1; a >= 0; a--)
 	{
@@ -95,7 +95,7 @@ bool UndoLevel::doUndo()
  *******************************************************************/
 bool UndoLevel::doRedo()
 {
-	LOG_MESSAGE(3, "Performing redo \"%s\" (%d steps)", name, undo_steps.size());
+	LOG_MESSAGE(3, "Performing redo \"%s\" (%lu steps)", name, undo_steps.size());
 	bool ok = true;
 	for (unsigned a = 0; a < undo_steps.size(); a++)
 	{
