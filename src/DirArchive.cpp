@@ -628,15 +628,6 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 	vector<ArchiveEntry*> entries;
 	getEntryTreeAsList(entries);
 
-	// Get entry path list
-	vector<string> entry_paths;
-	for (unsigned a = 0; a < entries.size(); a++)
-	{
-		//entry_paths.push_back(this->filename + entries[a]->getPath(true));
-		//if (separator != "/") entry_paths.back().Replace("/", separator);
-		entry_paths.push_back(entries[a]->exProp("filePath").getStringValue());
-	}
-
 	// Get current directory structure
 	vector<string> files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
@@ -644,23 +635,23 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
 	// Check for deleted files
-	for (unsigned a = 0; a < entry_paths.size(); a++)
+	for (unsigned a = 0; a < entries.size(); a++)
 	{
+		string path = entries[a]->exProp("filePath").getStringValue();
+
 		// Ignore if not on disk
-		if (entry_paths[a].IsEmpty())
+		if (path.IsEmpty())
 			continue;
-		//if (entries[a]->getState() == 2)
-		//	continue;
 
 		if (entries[a]->getType() == EntryType::folderType())
 		{
-			if (!wxDirExists(entry_paths[a]))
-				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, entry_paths[a], entries[a]->getPath(true)));
+			if (!wxDirExists(path))
+				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entries[a]->getPath(true)));
 		}
 		else
 		{
-			if (!wxFileExists(entry_paths[a]))
-				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, entry_paths[a], entries[a]->getPath(true)));
+			if (!wxFileExists(path))
+				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entries[a]->getPath(true)));
 		}
 	}
 
@@ -673,9 +664,9 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 
 		// Find file in archive
 		ArchiveEntry * entry = NULL;
-		for (unsigned b = 0; b < entry_paths.size(); b++)
+		for (unsigned b = 0; b < entries.size(); b++)
 		{
-			if (entry_paths[b] == files[a])
+			if (entries[b]->exProp("filePath").getStringValue() == files[a])
 			{
 				entry = entries[b];
 				break;
@@ -705,9 +696,9 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
 
 		// Find dir in archive
 		ArchiveEntry * entry = NULL;
-		for (unsigned b = 0; b < entry_paths.size(); b++)
+		for (unsigned b = 0; b < entries.size(); b++)
 		{
-			if (entry_paths[b] == dirs[a])
+			if (entries[b]->exProp("filePath").getStringValue() == dirs[a])
 			{
 				entry = entries[b];
 				break;
