@@ -497,6 +497,10 @@
     <File Name="src/ResourceArchiveChooser.h"/>
     <File Name="src/SDialog.h"/>
     <File Name="src/SDialog.cpp"/>
+    <File Name="src/SAuiTabArt.cpp"/>
+    <File Name="src/SAuiTabArt.h"/>
+    <File Name="src/STabCtrl.cpp"/>
+    <File Name="src/STabCtrl.h"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
