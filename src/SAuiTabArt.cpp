@@ -644,7 +644,11 @@ void SAuiDockArt::DrawCaption(wxDC& dc,
 	dc.GetTextExtent(draw_text, &w, &h);
 
 	dc.SetClippingRegion(clip_rect);
+#ifdef __WXMSW__
+	dc.DrawText(draw_text, rect.x + 5 + caption_offset, rect.y + (rect.height / 2) - (h / 2));
+#else
 	dc.DrawText(draw_text, rect.x + 5 + caption_offset, rect.y + (rect.height / 2) - (h / 2) + 1);
+#endif
 
 	//dc.SetPen(wxPen(captionAccentColour));
 	//dc.DrawLine(rect.x + w + 8, rect.y + (rect.height / 2) - 1, rect.x + rect.width - 16, rect.y + (rect.height / 2) - 1);

@@ -135,7 +135,11 @@ void save_cvars(wxFile& file)
 				file.Write(S_FMT("%1.5f\n", cvars[c]->GetValue().Float));
 
 			if (cvars[c]->type == CVAR_STRING)
-				file.Write(S_FMT("\"%s\"\n", ((CStringCVar*)cvars[c])->value), wxConvUTF8);
+			{
+				string value = ((CStringCVar*)cvars[c])->value;
+				value.Replace("\"", "\\\"");
+				file.Write(S_FMT("\"%s\"\n", value), wxConvUTF8);
+			}
 		}
 	}
 
