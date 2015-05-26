@@ -289,7 +289,7 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 		close_button_state,
 		x_extent);
 
-	wxCoord tab_height = m_tabCtrlHeight - 3;
+	wxCoord tab_height = m_tabCtrlHeight - 1;// -3;
 	wxCoord tab_width = tab_size.x;
 	wxCoord tab_x = in_rect.x;
 	wxCoord tab_y = in_rect.y + in_rect.height - tab_height;

@@ -193,7 +193,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Editor Area --
-	stc_tabs = new STabCtrl(this, true, true);
+	stc_tabs = new STabCtrl(this, true, true, 30);
 
 	// Setup panel info & add panel
 	p_inf.CenterPane();

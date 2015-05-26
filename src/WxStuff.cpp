@@ -80,12 +80,12 @@ wxFont getMonospaceFont(wxFont base)
  *******************************************************************/
 wxAuiTabArt* getTabArt(bool close_buttons)
 {
-	if (tab_style == 1)
+	//if (tab_style == 1)
 		return new SAuiTabArt(close_buttons);
-	else if (tab_style == 2)
-		return new wxAuiSimpleTabArt();
-	else
-		return new wxAuiDefaultTabArt();
+	//else if (tab_style == 2)
+	//	return new wxAuiSimpleTabArt();
+	//else
+	//	return new wxAuiDefaultTabArt();
 }
 
 wxAuiDockArt* getDockArt()

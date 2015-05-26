@@ -9,7 +9,7 @@ class STabCtrl : public wxAuiNotebook
 private:
 
 public:
-	STabCtrl(wxWindow* parent, bool close_buttons = false, bool window_list = false, int height = 32);
+	STabCtrl(wxWindow* parent, bool close_buttons = false, bool window_list = false, int height = 26);
 	~STabCtrl();
 };
 
