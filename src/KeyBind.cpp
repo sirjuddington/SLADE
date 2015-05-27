@@ -656,6 +656,12 @@ void KeyBind::initBinds()
 	addBind("me3d_yoff_up", keypress_t("num_up"), "Y offset up 1", group);
 	addBind("me3d_yoff_down8", keypress_t("num_2"), "Y offset down 8", group);
 	addBind("me3d_yoff_down", keypress_t("num_down"), "Y offset down 1", group);
+#ifdef __WXGTK__
+	addBind("me3d_xoff_up", keypress_t("num_left", KPM_SHIFT));
+	addBind("me3d_xoff_down", keypress_t("num_right", KPM_SHIFT));
+	addBind("me3d_yoff_up", keypress_t("num_up", KPM_SHIFT));
+	addBind("me3d_yoff_down", keypress_t("num_down", KPM_SHIFT));
+#endif
 
 	// Map Editor 3D Scaling (me3d_scale*)
 	group = "Map Editor 3D Mode Scaling";
