@@ -3840,7 +3840,14 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	//if (mouse_state == MSTATE_EDIT)
 	//	determineObjectEditState();
 
-	if (e.GetKeyCode() != WXK_UP && e.GetKeyCode() != WXK_DOWN && e.GetKeyCode() != WXK_LEFT && e.GetKeyCode() != WXK_RIGHT)
+	if (e.GetKeyCode() != WXK_UP &&
+		e.GetKeyCode() != WXK_DOWN &&
+		e.GetKeyCode() != WXK_LEFT &&
+		e.GetKeyCode() != WXK_RIGHT &&
+		e.GetKeyCode() != WXK_NUMPAD_UP &&
+		e.GetKeyCode() != WXK_NUMPAD_DOWN &&
+		e.GetKeyCode() != WXK_NUMPAD_LEFT &&
+		e.GetKeyCode() != WXK_NUMPAD_RIGHT)
 		e.Skip();
 }
 
