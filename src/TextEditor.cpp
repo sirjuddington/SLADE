@@ -848,6 +848,78 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 #ifdef __WXMSW__
 	Colourise(GetCurrentPos(), GetLineEndPosition(GetCurrentLine()));
 #endif
+	
+#ifdef __APPLE__
+	if (!handled) {
+		const int  keyCode =   e.GetKeyCode();
+		const bool shiftDown = e.ShiftDown();
+
+		if (e.ControlDown()) {
+			if (WXK_LEFT == keyCode) {
+				if (shiftDown) {
+					HomeExtend();
+				}
+				else {
+					Home();
+				}
+
+				handled = true;
+			}
+			else if (WXK_RIGHT == keyCode) {
+				if (shiftDown) {
+					LineEndExtend();
+				}
+				else {
+					LineEnd();
+				}
+
+				handled = true;
+			}
+			else if (WXK_UP == keyCode) {
+				if (shiftDown) {
+					DocumentStartExtend();
+				}
+				else {
+					DocumentStart();
+				}
+
+				handled = true;
+			}
+			else if (WXK_DOWN == keyCode) {
+				if (shiftDown) {
+					DocumentEndExtend();
+				}
+				else {
+					DocumentEnd();
+				}
+
+				handled = true;
+			}
+		}
+		else if (e.RawControlDown()) {
+			if (WXK_LEFT == keyCode) {
+				if (shiftDown) {
+					WordLeftExtend();
+				}
+				else {
+					WordLeft();
+				}
+
+				handled = true;
+			}
+			else if (WXK_RIGHT == keyCode) {
+				if (shiftDown) {
+					WordRightExtend();
+				}
+				else {
+					WordRight();
+				}
+
+				handled = true;
+			}
+		}
+	}
+#endif // __APPLE__
 
 	if (!handled)
 		e.Skip();
