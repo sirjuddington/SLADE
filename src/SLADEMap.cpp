@@ -3136,7 +3136,7 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 		return;
 
 	// Find nearest line to sector midpoint (that is also part of the sector)
-	double min_dist = 9999999999;
+	double min_dist = 9999999999.0;
 	MapSide* mid_side = sector->connected_sides[0];
 	for (unsigned a = 0; a < sector->connected_sides.size(); a++)
 	{
@@ -3157,7 +3157,7 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 		r_d.set(-r_d.x, -r_d.y);
 
 	// Find nearest intersecting line
-	min_dist = 9999999999;
+	min_dist = 9999999999.0;
 	for (unsigned a = 0; a < sector->connected_sides.size(); a++)
 	{
 		if (sector->connected_sides[a] == mid_side)

@@ -141,11 +141,7 @@ SAuiTabArt::SAuiTabArt(bool close_buttons)
 	m_fixedTabWidth = 100;
 	m_tabCtrlHeight = 0;
 
-#if defined( __WXMAC__ ) && wxOSX_USE_COCOA_OR_CARBON
-	wxColor baseColour = wxColour(wxMacCreateCGColorFromHITheme(kThemeBrushToolbarBackground));
-#else
 	wxColor baseColour = Drawing::getPanelBGColour();
-#endif
 
 	m_activeColour = baseColour;
 	m_baseColour = baseColour;

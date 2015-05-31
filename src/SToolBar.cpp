@@ -317,7 +317,7 @@ SToolBar::SToolBar(wxWindow* parent) : wxPanel(parent, -1)
 	wxGetOsVersion(&win_vers);
 	if (win_vers >= 6)
 		SetDoubleBuffered(true);
-#else
+#elif !defined __WXMAC__
 	SetDoubleBuffered(true);
 #endif
 

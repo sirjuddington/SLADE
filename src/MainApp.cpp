@@ -882,6 +882,13 @@ void MainApp::OnFatalException()
 #endif
 }
 
+#ifdef __APPLE__
+void MainApp::MacOpenFile(const wxString &fileName)
+{
+	theMainWindow->getArchiveManagerPanel()->openFile(fileName);
+}
+#endif // __APPLE__
+
 /* MainApp::readConfigFile
  * Reads and parses the SLADE configuration file
  *******************************************************************/
