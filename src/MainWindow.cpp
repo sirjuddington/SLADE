@@ -205,7 +205,11 @@ void MainWindow::setupLayout()
 #ifdef USE_WEBVIEW_STARTPAGE
 	html_startpage = wxWebView::New(stc_tabs, -1, wxEmptyString);
 	html_startpage->SetName("startpage");
+#ifdef __WXMAC__
+	html_startpage->SetZoomType(wxWEBVIEW_ZOOM_TYPE_TEXT);
+#else // !__WXMAC__
 	html_startpage->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
+#endif // __WXMAC__
 	if (show_start_page)
 	{
 		stc_tabs->AddPage(html_startpage,"Start Page");
