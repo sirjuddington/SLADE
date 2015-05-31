@@ -1,5 +1,12 @@
 
+#ifdef _MSC_VER
+// Avoid many '#pragma once in main file' warnings from GCC or Clang
+// when this file is used as the prefix header
 #pragma once
+#endif // _MSC_VER
+
+#ifndef __MAIN_H__
+#define __MAIN_H__
 
 #ifdef _WINDOWS
 #include <windows.h>
@@ -122,3 +129,5 @@ const string MAP_TYPE_NAMES[] = {
 	"UDMF",
 	"Unknown",
 };
+
+#endif // __MAIN_H__
