@@ -16,3 +16,11 @@ if(ZIP_COMMAND)
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/res
 		VERBATIM)
 endif()
+
+if(APPLE)
+	# Put .pk3 in application bundle
+	add_custom_command(TARGET pk3
+		POST_BUILD
+		COMMAND mv "${SLADE_OUTPUT_DIR}/slade.pk3" "${SLADE_OUTPUT_DIR}/SLADE.app/Contents/MacOS"
+	)
+endif(APPLE)
