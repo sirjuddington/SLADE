@@ -87,6 +87,5 @@ add_custom_command(TARGET slade
 	COMMAND cp ${SLADE_OUTPUT_DIR}/../Info.plist ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/
 	COMMAND cp ${SLADE_OUTPUT_DIR}/../SLADE-osx.icns ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/Resources/
 	COMMAND mv ${SLADE_OUTPUT_DIR}/slade ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/MacOS/
-	COMMAND rsync -aC ${SLADE_OUTPUT_DIR}/res/ ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/Resources
 )
 endif()
