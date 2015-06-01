@@ -39,6 +39,7 @@
 #include "UndoRedo.h"
 #include "SectorBuilder.h"
 #include "SplashWindow.h"
+#include <locale.h>
 #include <wx/colour.h>
 
 #define IDEQ(x) (((x) != 0) && ((x) == id))
