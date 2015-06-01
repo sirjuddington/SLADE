@@ -14,7 +14,13 @@ set(SFML_FIND_COMPONENTS system audio window)
 endif(USE_SFML_RENDERWINDOW)
 
 find_package (PkgConfig REQUIRED)
-pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
+if (APPLE)
+	# There is no need to have GTK2 installed on OS X
+	# Although, GLib is required by FluidSynth
+	pkg_check_modules (GLib REQUIRED glib-2.0)
+else (APPLE)
+	pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
+endif (APPLE)
 
 include(../FindFluidSynth.cmake)
 include(../FindFreeImage.cmake)
