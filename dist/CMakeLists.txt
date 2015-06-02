@@ -19,8 +19,11 @@ endif()
 
 if(APPLE)
 	# Put .pk3 in application bundle
+	set(OSX_EXE_DIR ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/MacOS/)
+
 	add_custom_command(TARGET pk3
 		POST_BUILD
-		COMMAND mv "${SLADE_OUTPUT_DIR}/slade.pk3" "${SLADE_OUTPUT_DIR}/SLADE.app/Contents/MacOS"
+		COMMAND mkdir -p "${OSX_EXE_DIR}"
+		COMMAND mv "${SLADE_OUTPUT_DIR}/slade.pk3" "${OSX_EXE_DIR}"
 	)
 endif(APPLE)
