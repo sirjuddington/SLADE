@@ -565,7 +565,9 @@ void ArchiveOperations::removeUnusedTextures(Archive* archive)
 
 	// Get base resource textures (if any)
 	Archive* base_resource = theArchiveManager->baseResourceArchive();
-	vector<ArchiveEntry*> base_tx_entries = base_resource->findAll(opt);
+	vector<ArchiveEntry*> base_tx_entries;
+	if (base_resource)
+		base_tx_entries = base_resource->findAll(opt);
 	PatchTable pt_temp;
 	TextureXList tx;
 	for (unsigned a = 0; a < base_tx_entries.size(); a++)

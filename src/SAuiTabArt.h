@@ -38,7 +38,7 @@ public:
 	SAuiTabArt(bool close_buttons = false);
 	virtual ~SAuiTabArt();
 
-	wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour& color);
+	//wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour& color);
 
 	wxAuiTabArt* Clone();
 	void SetSelectedFont(const wxFont& font);
@@ -79,8 +79,8 @@ protected:
 class SAuiDockArt : public wxAuiDefaultDockArt
 {
 private:
-	wxColour captionBackColour;
-	wxColour captionAccentColour;
+	wxColour	captionBackColour;
+	wxColour	captionAccentColour;
 
 public:
 	SAuiDockArt();

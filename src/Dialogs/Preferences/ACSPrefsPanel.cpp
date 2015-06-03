@@ -141,6 +141,8 @@ void ACSPrefsPanel::onBtnBrowseACCPath(wxCommandEvent& e)
 	string acc_exe = "acc";
 #ifdef WIN32
 	acc_exe += ".exe";	// exe extension in windows
+#elif __WXOSX__
+	acc_exe = "";
 #endif
 
 	// Open file dialog

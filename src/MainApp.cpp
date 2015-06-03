@@ -76,14 +76,14 @@ namespace Global
 {
 	string error = "";
 
-	string version = "3.1.0.2"
+	string version = "3.1.0.3"
 #ifdef GIT_DESCRIPTION
 	                 " (" GIT_DESCRIPTION ")"
 #endif
 	                 "";
 
 	int log_verbosity = 1;
-	int version_num = 3102;
+	int version_num = 3103;
 	int beta_num = 0;
 
 #ifdef DEBUG
@@ -892,6 +892,13 @@ void MainApp::OnFatalException()
 #endif
 #endif
 }
+
+#ifdef __APPLE__
+void MainApp::MacOpenFile(const wxString &fileName)
+{
+	theMainWindow->getArchiveManagerPanel()->openFile(fileName);
+}
+#endif // __APPLE__
 
 /* MainApp::readConfigFile
  * Reads and parses the SLADE configuration file

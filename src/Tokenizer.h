@@ -23,7 +23,8 @@ private:
 	uint32_t	position;		// Current position
 	uint8_t		comments;		// See CommentTypes enum
 	bool		debug;			// If true every getToken() is printed to the console
-	string		special;		// A string defining the 'special characters'. These will always be parsed as separate tokens
+	string		special;		// A string defining the 'special characters',
+								// these will always be parsed as separate tokens
 	string		name;			// What file/entry/chunk is being tokenized
 	bool		qstring;		// True if the last read token was a quoted string
 	uint32_t	line;			// The current line number

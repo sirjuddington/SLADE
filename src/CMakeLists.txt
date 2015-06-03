@@ -14,7 +14,13 @@ set(SFML_FIND_COMPONENTS system audio window)
 endif(USE_SFML_RENDERWINDOW)
 
 find_package (PkgConfig REQUIRED)
-pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
+if (APPLE)
+	# There is no need to have GTK2 installed on OS X
+	# Although, GLib is required by FluidSynth
+	pkg_check_modules (GLib REQUIRED glib-2.0)
+else (APPLE)
+	pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
+endif (APPLE)
 
 include(../FindFluidSynth.cmake)
 include(../FindFreeImage.cmake)
@@ -73,14 +79,15 @@ target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRA
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
 if(APPLE)
-add_custom_command(TARGET slade
-	POST_BUILD
-	COMMAND mkdir -p ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/
-	COMMAND mkdir -p ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/MacOS/
-	COMMAND mkdir -p ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/Resources/
-	COMMAND cp ${SLADE_OUTPUT_DIR}/../Info.plist ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/
-	COMMAND cp ${SLADE_OUTPUT_DIR}/../SLADE-osx.icns ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/Resources/
-	COMMAND mv ${SLADE_OUTPUT_DIR}/slade ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/MacOS/
-	COMMAND rsync -aC ${SLADE_OUTPUT_DIR}/res/ ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/Resources
-)
+	set(OSX_CONTENT_DIR ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/)
+	set(OSX_EXE_DIR ${OSX_CONTENT_DIR}MacOS/)
+	set(OSX_RES_DIR ${OSX_CONTENT_DIR}Resources/)
+
+	add_custom_command(TARGET slade
+		POST_BUILD
+		COMMAND mkdir -p "${OSX_EXE_DIR}" "${OSX_RES_DIR}"
+		COMMAND cp "${CMAKE_SOURCE_DIR}/Info.plist" "${OSX_CONTENT_DIR}"
+		COMMAND cp "${CMAKE_SOURCE_DIR}/SLADE-osx.icns" "${OSX_RES_DIR}"
+		COMMAND mv "${SLADE_OUTPUT_DIR}/slade" "${OSX_EXE_DIR}"
+	)
 endif()

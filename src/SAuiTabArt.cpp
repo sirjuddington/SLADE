@@ -117,6 +117,15 @@ static void IndentPressedBitmap(wxRect* rect, int button_state)
 	}
 }
 
+wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour& color)
+{
+	wxImage img = wxBitmap((const char*)bits, w, h).ConvertToImage();
+	img.Replace(0, 0, 0, 123, 123, 123);
+	img.Replace(255, 255, 255, color.Red(), color.Green(), color.Blue());
+	img.SetMaskColour(123, 123, 123);
+	return wxBitmap(img);
+}
+
 
 /*******************************************************************
  * SAUITABART CLASS FUNCTIONS
@@ -132,11 +141,7 @@ SAuiTabArt::SAuiTabArt(bool close_buttons)
 	m_fixedTabWidth = 100;
 	m_tabCtrlHeight = 0;
 
-#if defined( __WXMAC__ ) && wxOSX_USE_COCOA_OR_CARBON
-	wxColor baseColour = wxColour(wxMacCreateCGColorFromHITheme(kThemeBrushToolbarBackground));
-#else
 	wxColor baseColour = Drawing::getPanelBGColour();
-#endif
 
 	m_activeColour = baseColour;
 	m_baseColour = baseColour;
@@ -166,15 +171,6 @@ SAuiTabArt::~SAuiTabArt()
 {
 }
 
-wxBitmap SAuiTabArt::bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour& color)
-{
-	wxImage img = wxBitmap((const char*)bits, w, h).ConvertToImage();
-	img.Replace(0, 0, 0, 123, 123, 123);
-	img.Replace(255, 255, 255, color.Red(), color.Green(), color.Blue());
-	img.SetMaskColour(123, 123, 123);
-	return wxBitmap(img);
-}
-
 wxAuiTabArt* SAuiTabArt::Clone()
 {
 	return new SAuiTabArt(*this);
@@ -192,7 +188,7 @@ void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 	//{
 	//dc.SetPen(wxPen(m_baseColour));
 		//dc.DrawRectangle(theRect.x, theRect.y, theRect.width, theRect.height);
-		
+
 
 		//dc.SetPen(wxPen(m_baseColour));
 		dc.DrawLine(theRect.x, theRect.y + height, theRect.x, theRect.y + theRect.height);
@@ -347,9 +343,11 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 	int drawn_tab_height = border_points[0].y - border_points[1].y;
 
 
+	wxColour bgcol;
 	if (page.active)
 	{
 		// draw active tab
+		bgcol = m_activeColour;
 
 		// draw base background color
 		wxRect r(tab_x, tab_y, tab_width, tab_height);
@@ -365,6 +363,8 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 	}
 	else
 	{
+		bgcol = m_inactiveTabColour;
+
 		wxRect r(tab_x, tab_y, tab_width, tab_height);
 		wxPoint mouse = wnd->ScreenToClient(wxGetMousePosition());
 		/*if (r.Contains(mouse))
@@ -481,9 +481,20 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 		if (close_button_state == wxAUI_BUTTON_STATE_HOVER ||
 			close_button_state == wxAUI_BUTTON_STATE_PRESSED)
 		{
+			/*wxColour bcol = m_borderPen.GetColour();
+			float r = ((float)bcol.Red() * 0.2f) + ((float)m_activeColour.Red() * 0.8f);
+			float g = ((float)bcol.Green() * 0.2f) + ((float)m_activeColour.Green() * 0.8f);
+			float b = ((float)bcol.Blue() * 0.2f) + ((float)m_activeColour.Blue() * 0.8f);*/
+			//captionAccentColour = wxColor(r, g, b);
+
+			//dc.SetPen(*wxTRANSPARENT_PEN);
+			dc.SetPen(wxPen(Drawing::darkColour(bgcol, 2.0f)));
+			dc.SetBrush(wxBrush(Drawing::lightColour(bgcol, 1.0f)));
+			dc.DrawRectangle(rect.x, rect.y + 1, rect.width - 1, rect.width - 2);
+
 			bmp = m_activeCloseBmp;
-			dc.DrawBitmap(bmp, rect.x + 1, rect.y, true);
-			dc.DrawBitmap(bmp, rect.x - 1, rect.y, true);
+			//dc.DrawBitmap(bmp, rect.x + 1, rect.y, true);
+			//dc.DrawBitmap(bmp, rect.x - 1, rect.y, true);
 			dc.DrawBitmap(bmp, rect.x, rect.y, true);
 		}
 		else
@@ -491,7 +502,7 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 			bmp = m_disabledCloseBmp;
 			dc.DrawBitmap(bmp, rect.x, rect.y, true);
 		}
-		
+
 		*out_button_rect = rect;
 	}
 
@@ -558,14 +569,18 @@ void SAuiTabArt::SetSelectedFont(const wxFont& font)
 SAuiDockArt::SAuiDockArt()
 {
 	captionBackColour = Drawing::darkColour(Drawing::getPanelBGColour(), 0.0f);
-	
+
 	wxColour textColour = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	float r = ((float)textColour.Red() * 0.2f) + ((float)captionBackColour.Red() * 0.8f);
 	float g = ((float)textColour.Green() * 0.2f) + ((float)captionBackColour.Green() * 0.8f);
 	float b = ((float)textColour.Blue() * 0.2f) + ((float)captionBackColour.Blue() * 0.8f);
 	captionAccentColour = wxColor(r, g, b);
 
-	//m_captionSize = 19;
+	m_activeCloseBitmap = bitmapFromBits(close_bits, 16, 16, wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT));
+	m_inactiveCloseBitmap = bitmapFromBits(close_bits, 16, 16, wxColour(128, 128, 128));
+
+	m_captionSize = 19;
+	m_sashSize = 4;
 }
 
 SAuiDockArt::~SAuiDockArt()
@@ -585,7 +600,21 @@ void SAuiDockArt::DrawCaption(wxDC& dc,
 	dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
 
 	//dc.SetPen(m_borderPen);
+	//dc.SetBrush(wxBrush(Drawing::darkColour(captionBackColour, 2.0f)));
+	//dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
+
+	wxColor sepCol;
+	int l = rgba_t(captionBackColour.Red(), captionBackColour.Green(), captionBackColour.Blue()).greyscale().r;
+	if (l < 100)
+		sepCol = Drawing::lightColour(captionBackColour, 2.0f);
+	else
+		sepCol = Drawing::darkColour(captionBackColour, 2.0f);
+
+	//dc.SetPen(wxPen(sepCol));
 	//dc.DrawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width, rect.y + rect.height - 1);
+
+	dc.SetBrush(wxBrush(sepCol));
+	dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height + 1);
 
 	int caption_offset = 0;
 	if (pane.icon.IsOk())
@@ -607,15 +636,19 @@ void SAuiDockArt::DrawCaption(wxDC& dc,
 		clip_rect.width -= m_buttonSize;
 
 	wxString draw_text = wxAuiChopText(dc, text, clip_rect.width);
-	dc.SetClippingRegion(clip_rect);
-	dc.DrawText(draw_text, rect.x + 3 + caption_offset, rect.y + 1/* + (rect.height / 2) - (h / 2) - 1*/);
-
 	wxCoord w, h;
 	dc.GetTextExtent(draw_text, &w, &h);
 
-	dc.SetPen(wxPen(captionAccentColour));
-	dc.DrawLine(rect.x + w + 8, rect.y + (rect.height / 2) - 1, rect.x + rect.width - 16, rect.y + (rect.height / 2) - 1);
-	dc.DrawLine(rect.x + w + 8, rect.y + (rect.height / 2) + 1, rect.x + rect.width - 16, rect.y + (rect.height / 2) + 1);
+	dc.SetClippingRegion(clip_rect);
+#ifdef __WXMSW__
+	dc.DrawText(draw_text, rect.x + 5 + caption_offset, rect.y + (rect.height / 2) - (h / 2));
+#else
+	dc.DrawText(draw_text, rect.x + 5 + caption_offset, rect.y + (rect.height / 2) - (h / 2) + 1);
+#endif
+
+	//dc.SetPen(wxPen(captionAccentColour));
+	//dc.DrawLine(rect.x + w + 8, rect.y + (rect.height / 2) - 1, rect.x + rect.width - 16, rect.y + (rect.height / 2) - 1);
+	//dc.DrawLine(rect.x + w + 8, rect.y + (rect.height / 2) + 1, rect.x + rect.width - 16, rect.y + (rect.height / 2) + 1);
 
 	dc.DestroyClippingRegion();
 }
@@ -668,6 +701,7 @@ void SAuiDockArt::DrawPaneButton(wxDC& dc, wxWindow *WXUNUSED(window),
 	int old_y = rect.y;
 	rect.y = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2) + 1;
 	rect.height = old_y + rect.height - rect.y - 1;
+	//rect.y--;
 
 
 	if (button_state == wxAUI_BUTTON_STATE_PRESSED)
@@ -690,11 +724,20 @@ void SAuiDockArt::DrawPaneButton(wxDC& dc, wxWindow *WXUNUSED(window),
 			dc.SetPen(wxPen(m_inactiveCaptionColour.ChangeLightness(70)));
 		}*/
 
-		dc.SetBrush(wxBrush(captionAccentColour));
-		dc.SetPen(wxPen(m_inactiveCaptionColour.ChangeLightness(70)));
+		//dc.SetBrush(wxBrush(captionAccentColour));
+		//dc.SetPen(wxPen(m_inactiveCaptionColour.ChangeLightness(70)));
 
 		// draw the background behind the button
-		dc.DrawRectangle(rect.x, rect.y, 15, 15);
+		//dc.DrawRectangle(rect.x, rect.y, 15, 15);
+
+		dc.SetPen(wxPen(Drawing::darkColour(Drawing::getPanelBGColour(), 2.0f)));
+		dc.SetBrush(wxBrush(Drawing::lightColour(Drawing::getPanelBGColour(), 1.0f)));
+		dc.DrawRectangle(rect.x, rect.y, rect.width + 1, rect.width + 1);
+
+		bmp = m_activeCloseBitmap;
+		//dc.DrawBitmap(bmp, rect.x + 1, rect.y, true);
+		//dc.DrawBitmap(bmp, rect.x - 1, rect.y, true);
+		//dc.DrawBitmap(bmp, rect.x, rect.y, true);
 	}
 
 

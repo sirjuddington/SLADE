@@ -45,6 +45,10 @@ public:
 	virtual int OnExit();
 	virtual void OnFatalException();
 
+#ifdef __APPLE__
+	virtual void MacOpenFile(const wxString &fileName);
+#endif // __APPLE__
+
 	MainWindow*	getMainWindow() { return main_window; }
 
 	bool	initDirectories();
