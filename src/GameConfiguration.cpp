@@ -725,6 +725,7 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 			if (!action_specials[special].special)
 			{
 				action_specials[special].special = new ActionSpecial();
+				action_specials[special].number = special;
 				action_specials[special].index = action_specials.size();
 			}
 
@@ -1570,7 +1571,7 @@ vector<as_t> GameConfiguration::allActionSpecials()
 	{
 		if (i->second.special)
 		{
-			as_t as(i->second.special);
+			as_t as(i->second);
 			as.number = i->first;
 			ret.push_back(as);
 		}
