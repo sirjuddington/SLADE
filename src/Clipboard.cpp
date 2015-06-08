@@ -358,7 +358,7 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
  *******************************************************************/
 string MapArchClipboardItem::getInfo()
 {
-	return S_FMT("%d Vertices, %d Lines, %d Sides and %d Sectors",
+	return S_FMT("%lu Vertices, %lu Lines, %lu Sides and %lu Sectors",
 	             vertices.size(), lines.size(), sides.size(), sectors.size());
 }
 
