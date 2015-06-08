@@ -98,8 +98,15 @@ void ActionSpecial::reset()
 /* ActionSpecial::parse
  * Reads an action special definition from a parsed tree [node]
  *******************************************************************/
-void ActionSpecial::parse(ParseTreeNode* node)
+void ActionSpecial::parse(ParseTreeNode* node, SpecialArgMap* shared_args)
 {
+	// Check for simple definition
+	if (node->isLeaf())
+	{
+		name = node->getStringValue();
+		return;
+	}
+
 	// Go through all child nodes/values
 	ParseTreeNode* child = NULL;
 	for (unsigned a = 0; a < node->nChildren(); a++)
@@ -135,7 +142,7 @@ void ActionSpecial::parse(ParseTreeNode* node)
 			if (argn + 1 > arg_count)
 				arg_count = argn + 1;
 
-			parseArg(child, args[argn]);
+			parseArg(child, shared_args, args[argn]);
 		}
 	}
 }
@@ -143,18 +150,34 @@ void ActionSpecial::parse(ParseTreeNode* node)
 /* ActionSpecial::parseArg
  * Reads an action special argument definition from a parsed tree [node]
  *******************************************************************/
-void ActionSpecial::parseArg(ParseTreeNode* node, arg_t& arg)
+void ActionSpecial::parseArg(ParseTreeNode* node, SpecialArgMap* shared_args, arg_t& arg)
 {
 	ParseTreeNode* custom = NULL;
 
 	// Check for simple definition
 	if (node->isLeaf())
 	{
-		// Set name
-		arg.name = node->getStringValue();
+		string name = node->getStringValue();
+		string shared_arg_name;
 
-		// Set description (if specified)
-		if (node->nValues() > 1) arg.desc = node->getStringValue(1);
+		// Names beginning with a dollar sign are references to predeclared args
+		if (shared_args && name.StartsWith("$", &shared_arg_name))
+		{
+			SpecialArgMap::iterator it = shared_args->find(shared_arg_name);
+			if (it == shared_args->end())
+				// Totally bogus reference; silently ignore this arg
+				return;
+
+			arg = it->second;
+		}
+		else
+		{
+			// Set name
+			arg.name = node->getStringValue();
+
+			// Set description (if specified)
+			if (node->nValues() > 1) arg.desc = node->getStringValue(1);
+		}
 	}
 	else
 	{

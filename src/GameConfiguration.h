@@ -244,7 +244,7 @@ public:
 	void	buildConfig(ArchiveEntry* entry, string& out, bool use_res = true);
 
 	// Configuration reading
-	void	readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults = NULL);
+	void	readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults = NULL, SpecialArgMap* shared_args = NULL);
 	void	readThingTypes(ParseTreeNode* node, ThingType* group_defaults = NULL);
 	void	readUDMFProperties(ParseTreeNode* node, UDMFPropMap& plist);
 	void	readGameSection(ParseTreeNode* node_game, bool port_section = false);
