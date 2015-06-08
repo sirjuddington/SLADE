@@ -102,12 +102,11 @@ void ActionSpecial::parse(ParseTreeNode* node)
 {
 	// Go through all child nodes/values
 	ParseTreeNode* child = NULL;
-	ParseTreeNode* custom = NULL;
 	for (unsigned a = 0; a < node->nChildren(); a++)
 	{
 		child = (ParseTreeNode*)node->getChild(a);
 		string name = child->getName();
-		int arg = -1;
+		int argn = -1;
 
 		// Name
 		if (S_CMPNOCASE(name, "name"))
@@ -115,85 +114,95 @@ void ActionSpecial::parse(ParseTreeNode* node)
 
 		// Args
 		else if (S_CMPNOCASE(name, "arg1"))
-			arg = 0;
+			argn = 0;
 		else if (S_CMPNOCASE(name, "arg2"))
-			arg = 1;
+			argn = 1;
 		else if (S_CMPNOCASE(name, "arg3"))
-			arg = 2;
+			argn = 2;
 		else if (S_CMPNOCASE(name, "arg4"))
-			arg = 3;
+			argn = 3;
 		else if (S_CMPNOCASE(name, "arg5"))
-			arg = 4;
+			argn = 4;
 
 		// Tagged
 		else if (S_CMPNOCASE(name, "tagged"))
 			this->tagged = GameConfiguration::parseTagged(child);
 
 		// Parse arg definition if it was one
-		if (arg >= 0)
+		if (argn >= 0)
 		{
 			// Update arg count
-			if (arg + 1 > arg_count)
-				arg_count = arg + 1;
+			if (argn + 1 > arg_count)
+				arg_count = argn + 1;
 
-			// Check for simple definition
-			if (child->isLeaf())
+			parseArg(child, args[argn]);
+		}
+	}
+}
+
+/* ActionSpecial::parseArg
+ * Reads an action special argument definition from a parsed tree [node]
+ *******************************************************************/
+void ActionSpecial::parseArg(ParseTreeNode* node, arg_t& arg)
+{
+	ParseTreeNode* custom = NULL;
+
+	// Check for simple definition
+	if (node->isLeaf())
+	{
+		// Set name
+		arg.name = node->getStringValue();
+
+		// Set description (if specified)
+		if (node->nValues() > 1) arg.desc = node->getStringValue(1);
+	}
+	else
+	{
+		// Extended arg definition
+
+		// Name
+		ParseTreeNode* val = (ParseTreeNode*)node->getChild("name");
+		if (val) arg.name = val->getStringValue();
+
+		// Description
+		val = (ParseTreeNode*)node->getChild("desc");
+		if (val) arg.desc = val->getStringValue();
+
+		// Type
+		val = (ParseTreeNode*)node->getChild("type");
+		string atype;
+		if (val) atype = val->getStringValue();
+		if (S_CMPNOCASE(atype, "yesno"))
+			arg.type = ARGT_YESNO;
+		else if (S_CMPNOCASE(atype, "noyes"))
+			arg.type = ARGT_NOYES;
+		else if (S_CMPNOCASE(atype, "angle"))
+			arg.type = ARGT_ANGLE;
+		else if (S_CMPNOCASE(atype, "choice"))
+			arg.type = ARGT_CHOICE;
+		else if (S_CMPNOCASE(atype, "flags"))
+			arg.type = ARGT_FLAGS;
+		else
+			arg.type = ARGT_NUMBER;
+
+		// Customs
+		val = (ParseTreeNode*)node->getChild("custom_values");
+		if (val) {
+			for (unsigned b = 0; b < val->nChildren(); b++)
 			{
-				// Set name
-				args[arg].name = child->getStringValue();
-
-				// Set description (if specified)
-				if (child->nValues() > 1) args[arg].desc = child->getStringValue(1);
+				custom = (ParseTreeNode*)val->getChild(b);
+				arg.custom_values.push_back(
+					arg_val_t(custom->getStringValue(), wxAtoi(custom->getName())));
 			}
-			else
+		}
+
+		val = (ParseTreeNode*)node->getChild("custom_flags");
+		if (val) {
+			for (unsigned b = 0; b < val->nChildren(); b++)
 			{
-				// Extended arg definition
-
-				// Name
-				ParseTreeNode* val = (ParseTreeNode*)child->getChild("name");
-				if (val) args[arg].name = val->getStringValue();
-
-				// Description
-				val = (ParseTreeNode*)child->getChild("desc");
-				if (val) args[arg].desc = val->getStringValue();
-
-				// Type
-				val = (ParseTreeNode*)child->getChild("type");
-				string atype;
-				if (val) atype = val->getStringValue();
-				if (S_CMPNOCASE(atype, "yesno"))
-					args[arg].type = ARGT_YESNO;
-				else if (S_CMPNOCASE(atype, "noyes"))
-					args[arg].type = ARGT_NOYES;
-				else if (S_CMPNOCASE(atype, "angle"))
-					args[arg].type = ARGT_ANGLE;
-				else if (S_CMPNOCASE(atype, "choice"))
-					args[arg].type = ARGT_CHOICE;
-				else if (S_CMPNOCASE(atype, "flags"))
-					args[arg].type = ARGT_FLAGS;
-				else
-					args[arg].type = ARGT_NUMBER;
-
-				// Customs
-				val = (ParseTreeNode*)child->getChild("custom_values");
-				if (val) {
-					for (unsigned b = 0; b < val->nChildren(); b++)
-					{
-						custom = (ParseTreeNode*)val->getChild(b);
-						args[arg].custom_values.push_back(
-							arg_val_t(custom->getStringValue(), wxAtoi(custom->getName())));
-					}
-				}
-
-				val = (ParseTreeNode*)child->getChild("custom_flags");
-				if (val) {
-					for (unsigned b = 0; b < val->nChildren(); b++)
-					{
-						custom = (ParseTreeNode*)val->getChild(b);
-						args[arg].custom_flags.push_back(
-							arg_val_t(custom->getStringValue(), wxAtoi(custom->getName())));
-					}
-				}
+				custom = (ParseTreeNode*)val->getChild(b);
+				arg.custom_flags.push_back(
+					arg_val_t(custom->getStringValue(), wxAtoi(custom->getName())));
 			}
 		}
 	}

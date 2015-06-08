@@ -34,6 +34,7 @@ public:
 
 	void	reset();
 	void	parse(ParseTreeNode* node);
+	static void	parseArg(ParseTreeNode* node, arg_t& arg);
 	string	stringDesc();
 };
 
