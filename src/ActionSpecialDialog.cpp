@@ -587,7 +587,9 @@ protected:
 			slider_control->SetValue(value);
 			speed_label->SetLabel(S_FMT(
 				"%s (%.1f units per tic, %.1f units per sec)",
-				arg_t::speedLabel(value), value / 8.0, value / 8.0 * 35
+				arg_t::speedLabel(value), value / 8.0,
+				// A tic is 28ms, slightly less than 1/35 of a second
+				value / 8.0 * 1000.0 / 28.0
 			));
 		}
 	}
