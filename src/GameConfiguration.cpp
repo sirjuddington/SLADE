@@ -2785,6 +2785,7 @@ string GameConfiguration::spacTriggerString(MapLine* line, int map_format)
 		// Go through all line UDMF properties
 		string trigger = "";
 		vector<udmfp_t> props = allUDMFProperties(MOBJ_LINE);
+		sort(props.begin(), props.end());
 		for (unsigned a = 0; a < props.size(); a++)
 		{
 			// Check for trigger property

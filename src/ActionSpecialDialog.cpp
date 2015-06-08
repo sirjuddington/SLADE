@@ -827,6 +827,8 @@ ActionSpecialPanel::~ActionSpecialPanel()
 {
 }
 
+WX_DECLARE_STRING_HASH_MAP(wxFlexGridSizer*, NamedFlexGridMap);
+
 /* ActionSpecialPanel::setupSpecialPanel
  * Creates and sets up the action special panel
  *******************************************************************/
@@ -857,45 +859,36 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 			// Get all UDMF trigger properties
 			vector<string> triggers;
+			NamedFlexGridMap named_flexgrids;
 			for (unsigned a = 0; a < props.size(); a++)
 			{
-				if (props[a].property->isTrigger())
+				UDMFProperty* property = props[a].property;
+				if (!property->isTrigger())
+					continue;
+
+				string group = property->getGroup();
+				wxFlexGridSizer* frame_sizer = named_flexgrids[group];
+				if (!frame_sizer)
 				{
-					triggers.push_back(props[a].property->getName());
-					triggers_udmf.push_back(props[a].property->getProperty());
-				}
-			}
+					wxStaticBox* frame_triggers = new wxStaticBox(panel_action_special, -1, group);
+					wxStaticBoxSizer* sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
+					sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, 4);
 
-			// Check if there are any triggers defined
-			if (triggers.size() > 0)
-			{
-				// Add frame
-				wxStaticBox* frame_triggers = new wxStaticBox(panel_action_special, -1, "Special Triggers");
-				wxStaticBoxSizer* sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
-				sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, 4);
+					frame_sizer = new wxFlexGridSizer(3);
+					frame_sizer->AddGrowableCol(0, 1);
+					frame_sizer->AddGrowableCol(1, 1);
+					frame_sizer->AddGrowableCol(2, 1);
+					sizer_triggers->Add(frame_sizer, 1, wxEXPAND|wxALL, 4);
 
-				// Add trigger checkboxes
-				wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
-				sizer_triggers->Add(gb_sizer, 1, wxEXPAND|wxALL, 4);
-				int row = 0;
-				int col = 0;
-				int trigger_mid = triggers.size() / 3;
-				for (unsigned a = 0; a < triggers.size(); a++)
-				{
-					wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special, -1, triggers[a], wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
-					gb_sizer->Add(cb_trigger, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
-					cb_triggers.push_back(cb_trigger);
-
-					if (row >= trigger_mid && col <= 1)
-					{
-						row = 0;
-						col++;
-					}
+					named_flexgrids.find(group)->second = frame_sizer;
 				}
 
-				gb_sizer->AddGrowableCol(0, 1);
-				gb_sizer->AddGrowableCol(1, 1);
-				gb_sizer->AddGrowableCol(2, 1);
+				wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special, -1, property->getName(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+				frame_sizer->Add(cb_trigger, 0, wxEXPAND);
+
+				triggers.push_back(property->getName());
+				triggers_udmf.push_back(property->getProperty());
+				cb_triggers.push_back(cb_trigger);
 			}
 		}
 
