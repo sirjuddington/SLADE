@@ -10,6 +10,7 @@ enum
 	ARGT_ANGLE,
 	ARGT_CHOICE,
 	ARGT_FLAGS,
+	ARGT_SPEED,
 };
 
 struct arg_val_t
@@ -115,8 +116,61 @@ struct arg_t
 		else if (type == ARGT_ANGLE)
 			return S_FMT("%d Degrees", value);	// TODO: E/S/W/N/etc
 
+		// Speed
+		else if (type == ARGT_SPEED)
+		{
+			// Label with the Boom generalized speed names
+			string speed_label;
+			if (value == 0)
+				speed_label = "broken (don't use!)";
+			else if (value < 8)
+				speed_label = "< slow";
+			else if (value == 8)
+				speed_label = "slow";
+			else if (value < 16)
+				speed_label = "slow ~ normal";
+			else if (value == 16)
+				speed_label = "normal";
+			else if (value < 32)
+				speed_label = "normal ~ fast";
+			else if (value == 32)
+				speed_label = "fast";
+			else if (value < 64)
+				speed_label = "fast ~ turbo";
+			else if (value == 64)
+				speed_label = "turbo";
+			else
+				speed_label = "> turbo";
+			return S_FMT("%d (%s)", value, speed_label);
+		}
+
 		// Any other type
 		return S_FMT("%d", value);
+	}
+
+	static const string speedLabel(int value)
+	{
+		// Use the generalized Boom speeds as landmarks
+		if (value == 0)
+			return "none, probably bogus";
+		else if (value < 8)
+			return "< slow";
+		else if (value == 8)
+			return "slow";
+		else if (value < 16)
+			return "slow ~ normal";
+		else if (value == 16)
+			return "normal";
+		else if (value < 32)
+			return "normal ~ fast";
+		else if (value == 32)
+			return "fast";
+		else if (value < 64)
+			return "fast ~ turbo";
+		else if (value == 64)
+			return "turbo";
+		else
+			return "> turbo";
 	}
 };
 

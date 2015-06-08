@@ -247,7 +247,7 @@ protected:
 public:
 	ArgsTextControl(wxWindow* parent) : ArgsControl(parent)
 	{
-		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(100, -1));
+		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
 		text_control->SetValidator(wxIntegerValidator<unsigned char>());
 		GetSizer()->Add(text_control, wxSizerFlags().Expand());
 	}
@@ -559,6 +559,70 @@ public:
 	}
 };
 
+/* ArgsSpeedControl
+ * Arg control that shows a slider for selecting a flat movement speed.
+ *******************************************************************/
+class ArgsSpeedControl : public ArgsTextControl
+{
+protected:
+	wxSlider* slider_control;
+	wxStaticText* speed_label;
+
+	void onSlide(wxCommandEvent& event)
+	{
+		syncControls(slider_control->GetValue());
+	}
+
+	void syncControls(int value)
+	{
+		ArgsTextControl::setArgValue(value);
+
+		if (value < 0)
+		{
+			slider_control->SetValue(0);
+			speed_label->SetLabel("");
+		}
+		else
+		{
+			slider_control->SetValue(value);
+			speed_label->SetLabel(S_FMT(
+				"%s (%.1f units per tic, %.1f units per sec)",
+				arg_t::speedLabel(value), value / 8.0, value / 8.0 * 35
+			));
+		}
+	}
+
+public:
+	ArgsSpeedControl(wxWindow* parent) : ArgsTextControl(parent)
+	{
+		wxBoxSizer* row = new wxBoxSizer(wxHORIZONTAL);
+
+		GetSizer()->Detach(text_control);
+		row->Add(text_control, wxSizerFlags(1).Expand());
+		speed_label = new wxStaticText(this, -1, "");
+		row->AddSpacer(4);
+		row->Add(speed_label, wxSizerFlags(4).Align(wxALIGN_CENTER_VERTICAL));
+		GetSizer()->Add(row, wxSizerFlags(1).Expand());
+
+		slider_control = new wxSlider(this, -1, 0, 0, 255);
+		slider_control->SetLineSize(2);
+		slider_control->SetPageSize(8);
+		// These are the generalized Boom speeds
+		slider_control->SetTick(8);
+		slider_control->SetTick(16);
+		slider_control->SetTick(32);
+		slider_control->SetTick(64);
+		slider_control->Bind(wxEVT_SLIDER, &ArgsSpeedControl::onSlide, this);
+		GetSizer()->Add(slider_control, wxSizerFlags(1).Expand());
+	}
+
+	// Set the value in the textbox
+	void setArgValue(long val)
+	{
+		syncControls(val);
+	}
+};
+
 /* ArgsPanel::ArgsPanel
  * ArgsPanel class constructor
  *******************************************************************/
@@ -617,6 +681,8 @@ void ArgsPanel::setup(argspec_t* args)
 				control_args[a] = new ArgsChoiceControl(this, arg.custom_values);
 			else if (arg.type == ARGT_FLAGS)
 				control_args[a] = new ArgsFlagsControl(this, arg.custom_flags);
+			else if (arg.type == ARGT_SPEED)
+				control_args[a] = new ArgsSpeedControl(this);
 			else
 				control_args[a] = new ArgsTextControl(this);
 		}

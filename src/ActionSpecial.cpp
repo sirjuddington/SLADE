@@ -205,6 +205,8 @@ void ActionSpecial::parseArg(ParseTreeNode* node, SpecialArgMap* shared_args, ar
 			arg.type = ARGT_CHOICE;
 		else if (S_CMPNOCASE(atype, "flags"))
 			arg.type = ARGT_FLAGS;
+		else if (S_CMPNOCASE(atype, "speed"))
+			arg.type = ARGT_SPEED;
 		else
 			arg.type = ARGT_NUMBER;
 
