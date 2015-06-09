@@ -530,6 +530,9 @@ double MapLine::distanceTo(double x, double y)
 	return sqrt((ix-x)*(ix-x) + (iy-y)*(iy-y));
 }
 
+// Minimum gap between planes for a texture to be considered missing
+static const float EPSILON = 0.001;
+
 /* MapLine::needsTexture
  * Returns a flag set of any parts of the line that require a texture
  *******************************************************************/
@@ -549,7 +552,7 @@ int MapLine::needsTexture()
 	plane_t floor_back = backSector()->getFloorPlane();
 	plane_t ceiling_back = backSector()->getCeilingPlane();
 
-	float front_height, back_height;
+	double front_height, back_height;
 
 	int tex = 0;
 
@@ -557,34 +560,34 @@ int MapLine::needsTexture()
 	front_height = floor_front.height_at(x1(), y1());
 	back_height = floor_back.height_at(x1(), y1());
 
-	if (front_height - back_height > 0.001)
+	if (front_height - back_height > EPSILON)
 		tex |= TEX_BACK_LOWER;
-	if (back_height - front_height > 0.001)
+	if (back_height - front_height > EPSILON)
 		tex |= TEX_FRONT_LOWER;
 
 	front_height = floor_front.height_at(x2(), y2());
 	back_height = floor_back.height_at(x2(), y2());
 
-	if (front_height - back_height > 0.001)
+	if (front_height - back_height > EPSILON)
 		tex |= TEX_BACK_LOWER;
-	if (back_height - front_height > 0.001)
+	if (back_height - front_height > EPSILON)
 		tex |= TEX_FRONT_LOWER;
 
 	// Check the ceiling
 	front_height = ceiling_front.height_at(x1(), y1());
 	back_height = ceiling_back.height_at(x1(), y1());
 
-	if (back_height - front_height > 0.001)
+	if (back_height - front_height > EPSILON)
 		tex |= TEX_BACK_UPPER;
-	if (front_height - back_height > 0.001)
+	if (front_height - back_height > EPSILON)
 		tex |= TEX_FRONT_UPPER;
 
 	front_height = ceiling_front.height_at(x2(), y2());
 	back_height = ceiling_back.height_at(x2(), y2());
 
-	if (back_height - front_height > 0.001)
+	if (back_height - front_height > EPSILON)
 		tex |= TEX_BACK_UPPER;
-	if (front_height - back_height > 0.001)
+	if (front_height - back_height > EPSILON)
 		tex |= TEX_FRONT_UPPER;
 
 	return tex;
