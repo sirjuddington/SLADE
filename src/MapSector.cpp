@@ -105,6 +105,8 @@ void MapSector::copy(MapObject* s)
 	this->light = sector->light;
 	this->special = sector->special;
 	this->tag = sector->tag;
+	plane_floor.set(0, 0, 1, sector->f_height);
+	plane_ceiling.set(0, 0, 1, sector->c_height);
 
 	// Update texture counts (increment new)
 	if (parent_map)
@@ -119,18 +121,12 @@ void MapSector::copy(MapObject* s)
 
 double MapSector::floorHeightAt(double x, double y)
 {
-	if (plane_floor.c == 1)
-		return f_height;
-	else
-		return plane_floor.height_at(x, y);
+	return plane_floor.height_at(x, y);
 }
 
 double MapSector::ceilingHeightAt(double x, double y)
 {
-	if (plane_ceiling.c == 1)
-		return c_height;
-	else
-		return plane_ceiling.height_at(x, y);
+	return plane_ceiling.height_at(x, y);
 }
 
 /* MapSector::stringProperty
@@ -217,9 +213,15 @@ void MapSector::setIntProperty(string key, int value)
 	setModified();
 
 	if (key == "heightfloor")
+	{
 		f_height = value;
+		plane_floor.set(0, 0, 1, value);
+	}
 	else if (key == "heightceiling")
+	{
 		c_height = value;
+		plane_ceiling.set(0, 0, 1, value);
+	}
 	else if (key == "lightlevel")
 		light = value;
 	else if (key == "special")

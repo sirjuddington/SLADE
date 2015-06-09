@@ -822,7 +822,6 @@ void MapRenderer3D::updateSector(unsigned index)
 	floors[index].light = sector->getLight(1);
 	floors[index].flags = 0;
 	floors[index].plane = sector->getFloorPlane();
-	if (floors[index].plane.c == 1) floors[index].plane.d = sector->getFloorHeight();
 	if (sector->getFloorTex() == theGameConfiguration->skyFlat())
 		floors[index].flags |= SKY;
 
@@ -843,7 +842,6 @@ void MapRenderer3D::updateSector(unsigned index)
 	ceilings[index].light = sector->getLight(2);
 	ceilings[index].flags = CEIL;
 	ceilings[index].plane = sector->getCeilingPlane();
-	if (ceilings[index].plane.c == 1) ceilings[index].plane.d = sector->getCeilingHeight();
 	if (sector->getCeilingTex() == theGameConfiguration->skyFlat())
 		ceilings[index].flags |= SKY;
 
@@ -1030,15 +1028,9 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		// Get plane
 		plane_t plane;
 		if (selection[a].type == MapEditor::SEL_FLOOR)
-		{
 			plane = sector->getFloorPlane();
-			if (plane.c == 1) plane.d = sector->getFloorHeight();
-		}
 		else
-		{
 			plane = sector->getCeilingPlane();
-			if (plane.c == 1) plane.d = sector->getCeilingHeight();
-		}
 
 		// Draw sector outline
 		vector<MapLine*> lines;
@@ -1174,9 +1166,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	int floor1 = line->frontSector()->getFloorHeight();
 	int ceiling1 = line->frontSector()->getCeilingHeight();
 	plane_t fp1 = line->frontSector()->getFloorPlane();
-	if (fp1.c == 1) fp1.d = floor1;
 	plane_t cp1 = line->frontSector()->getCeilingPlane();
-	if (cp1.c == 1) cp1.d = ceiling1;
 	rgba_t colour1 = line->frontSector()->getColour(0, true);
 	int light1 = line->frontSector()->getLight();
 	int xoff1 = line->s1()->getOffsetX();
@@ -1228,9 +1218,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	int floor2 = line->backSector()->getFloorHeight();
 	int ceiling2 = line->backSector()->getCeilingHeight();
 	plane_t fp2 = line->backSector()->getFloorPlane();
-	if (fp2.c == 1) fp2.d = floor2;
 	plane_t cp2 = line->backSector()->getCeilingPlane();
-	if (cp2.c == 1) cp2.d = ceiling2;
 	rgba_t colour2 = line->backSector()->getColour(0, true);
 	int light2 = line->backSector()->getLight();
 	int xoff2 = line->s2()->getOffsetX();
@@ -2698,15 +2686,9 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		// Get plane
 		plane_t plane;
 		if (hilight.type == MapEditor::SEL_FLOOR)
-		{
 			plane = sector->getFloorPlane();
-			if (plane.c == 1) plane.d = sector->getFloorHeight();
-		}
 		else
-		{
 			plane = sector->getCeilingPlane();
-			if (plane.c == 1) plane.d = sector->getCeilingHeight();
-		}
 
 		// Render sector outline
 		vector<MapLine*> lines;
