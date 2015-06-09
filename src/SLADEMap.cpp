@@ -588,8 +588,8 @@ bool SLADEMap::addSector(doomsector_t& s)
 	MapSector* ns = new MapSector(wxString::FromAscii(s.f_tex, 8), wxString::FromAscii(s.c_tex, 8), this);
 
 	// Setup sector properties
-	ns->f_height = s.f_height;
-	ns->c_height = s.c_height;
+	ns->setFloorHeight(s.f_height);
+	ns->setCeilingHeight(s.c_height);
 	ns->light = s.light;
 	ns->special = s.special;
 	ns->tag = s.tag;
@@ -614,8 +614,8 @@ bool SLADEMap::addSector(doom64sector_t& s)
 								  theResourceManager->getTextureName(s.c_tex), this);
 
 	// Setup sector properties
-	ns->f_height = s.f_height;
-	ns->c_height = s.c_height;
+	ns->setFloorHeight(s.f_height);
+	ns->setCeilingHeight(s.c_height);
 	ns->light = 255;
 	ns->special = s.special;
 	ns->tag = s.tag;
@@ -1566,8 +1566,8 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 	usage_flat[ns->c_tex.Upper()] += 1;
 
 	// Set defaults
-	ns->f_height = 0;
-	ns->c_height = 0;
+	ns->setFloorHeight(0);
+	ns->setCeilingHeight(0);
 	ns->light = 160;
 	ns->special = 0;
 	ns->tag = 0;
@@ -1583,9 +1583,9 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 			continue;
 
 		if (S_CMPNOCASE(prop->getName(), "heightfloor"))
-			ns->f_height = prop->getIntValue();
+			ns->setFloorHeight(prop->getIntValue());
 		else if (S_CMPNOCASE(prop->getName(), "heightceiling"))
-			ns->c_height = prop->getIntValue();
+			ns->setCeilingHeight(prop->getIntValue());
 		else if (S_CMPNOCASE(prop->getName(), "lightlevel"))
 			ns->light = prop->getIntValue();
 		else if (S_CMPNOCASE(prop->getName(), "special"))
