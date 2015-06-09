@@ -2475,7 +2475,8 @@ selection_3d_t MapRenderer3D::determineHilight()
 				continue;
 
 			// Check intersection height
-			if (height >= quad->points[1].z && height <= quad->points[0].z)
+			if ((height >= quad->points[1].z || height >= quad->points[2].z) &&
+				(height <= quad->points[0].z || height <= quad->points[3].z))
 			{
 				// Determine selected item from quad flags
 
