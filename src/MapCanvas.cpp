@@ -3974,8 +3974,15 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 
 		else if (mouse_state == MSTATE_NORMAL)
 		{
+			// Double click to edit the current selection
+			if (e.LeftDClick())
+			{
+				vector<MapObject*> objects;
+				editor->getSelectedObjects(objects);
+				editObjectProperties(objects);
+			}
 			// Begin box selection if shift is held down, otherwise toggle selection on hilighted object
-			if (e.ShiftDown())
+			else if (e.ShiftDown())
 				mouse_state = MSTATE_SELECTION;
 			else
 				mouse_selbegin = !editor->selectCurrent(selection_clear_click);
