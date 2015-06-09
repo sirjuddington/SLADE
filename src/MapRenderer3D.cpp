@@ -1228,9 +1228,18 @@ void MapRenderer3D::updateLine(unsigned index)
 	string sky_flat = theGameConfiguration->skyFlat();
 	string hidden_tex = map->currentFormat() == MAP_DOOM64 ? "?" : "-";
 	bool show_midtex = (map->currentFormat() != MAP_DOOM64) || (line->intProperty("flags") & 512);
+	// Heights at both endpoints, for both planes, on both sides
+	double f1h1 = fp1.height_at(line->x1(), line->y1());
+	double f1h2 = fp1.height_at(line->x2(), line->y2());
+	double f2h1 = fp2.height_at(line->x1(), line->y1());
+	double f2h2 = fp2.height_at(line->x2(), line->y2());
+	double c1h1 = cp1.height_at(line->x1(), line->y1());
+	double c1h2 = cp1.height_at(line->x2(), line->y2());
+	double c2h1 = cp2.height_at(line->x1(), line->y1());
+	double c2h2 = cp2.height_at(line->x2(), line->y2());
 
 	// Front lower
-	if (floor2 > floor1)
+	if (f2h1 > f1h1 || f2h2 > f1h2)
 	{
 		quad_3d_t quad;
 
@@ -1334,7 +1343,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Front upper
-	if (ceiling1 > ceiling2)
+	if (c1h1 > c2h1 || c1h2 > c2h2)
 	{
 		quad_3d_t quad;
 
@@ -1375,7 +1384,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Back lower
-	if (floor1 > floor2)
+	if (f1h1 > f2h1 || f1h2 > f2h2)
 	{
 		quad_3d_t quad;
 
@@ -1478,7 +1487,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	}
 
 	// Back upper
-	if (ceiling2 > ceiling1)
+	if (c2h1 > c1h1 || c2h2 > c1h2)
 	{
 		quad_3d_t quad;
 
