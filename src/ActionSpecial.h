@@ -4,6 +4,8 @@
 
 #include "Args.h"
 
+WX_DECLARE_STRING_HASH_MAP(arg_t, SpecialArgMap);
+
 class ParseTreeNode;
 class ActionSpecial
 {
@@ -33,7 +35,8 @@ public:
 	string	getArgsString(int args[5]);
 
 	void	reset();
-	void	parse(ParseTreeNode* node);
+	void	parse(ParseTreeNode* node, SpecialArgMap* shared_args);
+	static void	parseArg(ParseTreeNode* node, SpecialArgMap* shared_args, arg_t& arg);
 	string	stringDesc();
 };
 
