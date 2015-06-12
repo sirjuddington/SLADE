@@ -39,17 +39,16 @@
 
 
 /*******************************************************************
- * VARIABLES
- *******************************************************************/
-namespace MapSpecials
-{
-	vector<sector_colour_t> sector_colours;
-}
-
-
-/*******************************************************************
  * MAPSPECIALS NAMESPACE FUNCTIONS
  *******************************************************************/
+
+/* MapSpecials::reset
+ * Clear out all internal state
+ *******************************************************************/
+void MapSpecials::reset()
+{
+	sector_colours.clear();
+}
 
 /* MapSpecials::processMapSpecials
  * Process map specials, depending on the current game/port

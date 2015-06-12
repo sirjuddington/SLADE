@@ -38,7 +38,6 @@
 #include "ResourceManager.h"
 #include "MainWindow.h"
 #include "OpenGL.h"
-#include "MapSpecials.h"
 #include <SFML/System.hpp>
 
 
@@ -1149,7 +1148,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		return;
 
 	// Process line special
-	MapSpecials::processLineSpecial(line);
+	map->mapSpecials()->processLineSpecial(line);
 
 	// Get relevant line info
 	int map_format = theMapEditor->currentMapDesc().format;

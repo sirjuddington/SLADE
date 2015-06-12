@@ -35,7 +35,6 @@
 #include "MainApp.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
-#include "MapSpecials.h"
 #include <wx/colour.h>
 
 
@@ -544,10 +543,10 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 {
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
-	if (MapSpecials::tagColoursSet())
+	if (parent_map->mapSpecials()->tagColoursSet())
 	{
 		rgba_t col;
-		if (MapSpecials::getTagColour(tag, &col))
+		if (parent_map->mapSpecials()->getTagColour(tag, &col))
 		{
 			if (fullbright)
 				return col;

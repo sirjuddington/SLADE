@@ -2489,6 +2489,8 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
  *******************************************************************/
 void SLADEMap::clearMap()
 {
+	map_specials.reset();
+
 	// Clear vectors
 	sides.clear();
 	lines.clear();

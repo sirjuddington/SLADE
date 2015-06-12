@@ -5,13 +5,18 @@
 class SLADEMap;
 class ArchiveEntry;
 
-namespace MapSpecials
+class MapSpecials
 {
 	struct sector_colour_t
 	{
 		int		tag;
 		rgba_t	colour;
 	};
+
+	vector<sector_colour_t> sector_colours;
+
+public:
+	void	reset();
 
 	void	processMapSpecials(SLADEMap* map);
 	void	processLineSpecial(MapLine* line);
@@ -23,8 +28,9 @@ namespace MapSpecials
 	// ZDoom
 	void	processZDoomMapSpecials(SLADEMap* map);
 	void	processZDoomLineSpecial(MapLine* line);
+	void	updateZDoomSector(MapSector* line);
 	void	setupPlaneAlignSlope(MapLine* line, bool floor, bool front);
 	void	processACSScripts(ArchiveEntry* entry);
-}
+};
 
 #endif//__MAP_SPECIALS_H__
