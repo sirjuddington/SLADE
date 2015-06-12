@@ -52,9 +52,13 @@ private:
 	Polygon2D			polygon;
 	bool				poly_needsupdate;
 	long				geometry_updated;
+	long				planes_updated;
 	fpoint2_t			text_point;
 	plane_t				plane_floor;
 	plane_t				plane_ceiling;
+
+	void		updatePlanes();
+	bool		applyPlaneAlign(MapLine* line, bool floor);
 
 public:
 	MapSector(SLADEMap* parent = NULL);
@@ -70,8 +74,8 @@ public:
 	short		getLightLevel() { return light; }
 	short		getSpecial() { return special; }
 	short		getTag() { return tag; }
-	plane_t		getFloorPlane() { return plane_floor; }
-	plane_t		getCeilingPlane() { return plane_ceiling; }
+	plane_t		getFloorPlane() { updatePlanes(); return plane_floor; }
+	plane_t		getCeilingPlane() { updatePlanes(); return plane_ceiling; }
 	double		floorHeightAt(double x, double y);
 	double		ceilingHeightAt(double x, double y);
 
@@ -83,12 +87,12 @@ public:
 	void	setFloorHeight(short height)
 	{
 		f_height = height;
-		plane_floor.set(0, 0, 1, height);
+		planes_updated = 0;
 	}
 	void	setCeilingHeight(short height)
 	{
 		c_height = height;
-		plane_ceiling.set(0, 0, 1, height);
+		planes_updated = 0;
 	}
 	void	setFloorPlane(plane_t p) { plane_floor = p; }
 	void	setCeilingPlane(plane_t p) { plane_ceiling = p; }

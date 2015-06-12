@@ -4020,8 +4020,7 @@ void MapEditor::changeSectorHeight3d(int amount)
 			MapSector* sector = map.getSector(items[a].index);
 
 			// Change height
-			int height = sector->intProperty("heightfloor");
-			sector->setIntProperty("heightfloor", height + amount);
+			sector->setFloorHeight(sector->getFloorHeight() + amount);
 		}
 
 		// Ceiling
@@ -4045,8 +4044,7 @@ void MapEditor::changeSectorHeight3d(int amount)
 				continue;
 
 			// Change height
-			int height = sector->intProperty("heightceiling");
-			sector->setIntProperty("heightceiling", height + amount);
+			sector->setCeilingHeight(sector->getCeilingHeight() + amount);
 
 			// Set to changed
 			ceilings.push_back(sector->getIndex());

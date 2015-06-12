@@ -35,6 +35,7 @@
 #include "MainApp.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
+#include "GameConfiguration.h"
 #include <wx/colour.h>
 
 
@@ -54,6 +55,7 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
 	geometry_updated = theApp->runTimer();
+	planes_updated = theApp->runTimer();
 }
 
 /* MapSector::MapSector
@@ -70,6 +72,7 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
 	geometry_updated = theApp->runTimer();
+	planes_updated = theApp->runTimer();
 }
 
 /* MapSector::~MapSector
@@ -214,12 +217,12 @@ void MapSector::setIntProperty(string key, int value)
 	if (key == "heightfloor")
 	{
 		f_height = value;
-		plane_floor.set(0, 0, 1, value);
+		planes_updated = 0;
 	}
 	else if (key == "heightceiling")
 	{
 		c_height = value;
-		plane_ceiling.set(0, 0, 1, value);
+		planes_updated = 0;
 	}
 	else if (key == "lightlevel")
 		light = value;
@@ -626,6 +629,155 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 
 		return rgba_t(l, l, l, 255);
 	}
+}
+
+/* MapSector::updatePlanes
+ * Recompute the floor and ceiling planes, if any part of this sector has
+ * changed
+ *******************************************************************/
+void MapSector::updatePlanes()
+{
+	// Only ZDoom sloped sectors are currently supported
+	// TODO this is kinda fugly, maybe split this function up
+	if (theGameConfiguration->currentPort() != "zdoom")
+	{
+		plane_floor.set(0, 0, 1, f_height);
+		plane_ceiling.set(0, 0, 1, c_height);
+		return;
+	}
+
+	// TODO it would be faster if changing a line special, moving or changing a
+	// thing, modifying a vertex, etc. also invalidated the sector.  i thought
+	// that would be really invasive but it occurs to me that all kinds of
+	// changes might impact a sector (e.g. color setting things) so it would be
+	// nice to just bump all those caches at once.  would be way easier to do
+	// it for lines that affect tagged sectors, too
+	bool needs_update = false;
+	for (unsigned a = 0; a < connected_sides.size(); a++)
+	{
+		if (connected_sides[a]->modifiedTime() > planes_updated ||
+			connected_sides[a]->getParentLine()->modifiedTime() > planes_updated)
+		{
+			needs_update = true;
+			break;
+		}
+	}
+
+	if (!needs_update)
+		return;
+
+	planes_updated = modified_time = theApp->runTimer();
+
+	// ZDoom applies specials in id order, so presumably if there are two
+	// Plane_Aligns affecting the same sector, the one with the highest id
+	// wins.  Thus we go through them in reverse order, and stop after the
+	// first
+	vector<MapLine*> lines;
+	getLines(lines);
+	sort(lines.begin(), lines.end());
+	reverse(lines.begin(), lines.end());
+
+	// TODO hacky ugh
+	bool floor_done = false;
+	bool ceiling_done = false;
+
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		MapLine* line = lines[a];
+		// 181: Plane_Align
+		if (line->getSpecial() == 181)
+		{
+			int side = (this == line->frontSector()) ? 1 : 2;
+			if (!floor_done && line->intProperty("arg0") == side)
+				floor_done = applyPlaneAlign(line, true);
+
+			if (!ceiling_done && line->intProperty("arg1") == side)
+				ceiling_done = applyPlaneAlign(line, false);
+
+			if (floor_done && ceiling_done)
+				return;
+		}
+	}
+
+	if (!floor_done)
+		plane_floor.set(0, 0, 1, f_height);
+	if (!ceiling_done)
+		plane_ceiling.set(0, 0, 1, c_height);
+}
+
+/* MapSector::applyPlaneAlign
+ * Calculates the floor/ceiling plane for the sector affected by
+ * [line]'s Plane_Align special
+ *******************************************************************/
+bool MapSector::applyPlaneAlign(MapLine* line, bool floor)
+{
+	LOG_MESSAGE(3, "Line %d %s slope", line->getIndex(), floor ? "floor" : "ceiling");
+
+	// Get sectors
+	MapSector* sloping_sector;
+	MapSector* control_sector;
+	if (this == line->frontSector())
+	{
+		sloping_sector = line->frontSector();
+		control_sector = line->backSector();
+	}
+	else
+	{
+		sloping_sector = line->backSector();
+		control_sector = line->frontSector();
+	}
+	if (!sloping_sector || !control_sector)
+	{
+		LOG_MESSAGE(1, "Line %d is not two-sided; Plane_Align ignored", line->getIndex());
+		return false;
+	}
+	if (sloping_sector == control_sector)
+	{
+		LOG_MESSAGE(1, "Line %d has both sides in the same sector; Plane_Align ignored", line->getIndex());
+		return false;
+	}
+
+	// The slope is between the line with Plane_Align, and the point in the
+	// sector furthest away from it, which must be at a vertex
+	vector<MapVertex*> vertices;
+	sloping_sector->getVertices(vertices);
+
+	double this_dist;
+	MapVertex* this_vertex;
+	double furthest_dist = 0.0;
+	MapVertex* furthest_vertex = NULL;
+	for (unsigned a = 0; a < vertices.size(); a++)
+	{
+		this_vertex = vertices[a];
+		this_dist = line->distanceTo(this_vertex->xPos(), this_vertex->yPos());
+		if (this_dist > furthest_dist)
+		{
+			furthest_dist = this_dist;
+			furthest_vertex = this_vertex;
+		}
+	}
+
+	if (!furthest_vertex || furthest_dist < 0.01)
+	{
+		LOG_MESSAGE(1, "Can't find a reference point not on line %d; Plane_Align ignored", line->getIndex());
+		return false;
+	}
+
+	// Calculate slope plane
+	// We now have three points: this line's endpoints (at the control sector's
+	// height) and the found vertex (at the sloped sector's height).
+	double controlz = floor ? control_sector->getFloorHeight() : control_sector->getCeilingHeight();
+	double slopingz = floor ? sloping_sector->getFloorHeight() : sloping_sector->getCeilingHeight();
+	fpoint3_t p1(line->x1(), line->y1(), controlz);
+	fpoint3_t p2(line->x2(), line->y2(), controlz);
+	fpoint3_t p3(furthest_vertex->xPos(), furthest_vertex->yPos(), slopingz);
+	plane_t plane = MathStuff::planeFromTriangle(p1, p2, p3);
+	if (floor)
+		sloping_sector->setFloorPlane(plane);
+	else
+		sloping_sector->setCeilingPlane(plane);
+
+	return true;
 }
 
 /* MapSector::connectSide

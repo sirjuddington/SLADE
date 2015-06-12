@@ -29,7 +29,6 @@ public:
 	void	processZDoomMapSpecials(SLADEMap* map);
 	void	processZDoomLineSpecial(MapLine* line);
 	void	updateZDoomSector(MapSector* line);
-	void	setupPlaneAlignSlope(MapLine* line, bool floor, bool front);
 	void	processACSScripts(ArchiveEntry* entry);
 };
 
