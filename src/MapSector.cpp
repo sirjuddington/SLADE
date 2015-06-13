@@ -54,8 +54,8 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 	plane_floor.set(0, 0, 1, 0);
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
+	specials_needupdate = true;
 	geometry_updated = theApp->runTimer();
-	planes_updated = theApp->runTimer();
 }
 
 /* MapSector::MapSector
@@ -71,8 +71,8 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	plane_floor.set(0, 0, 1, 0);
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
+	specials_needupdate = true;
 	geometry_updated = theApp->runTimer();
-	planes_updated = theApp->runTimer();
 }
 
 /* MapSector::~MapSector
@@ -217,12 +217,12 @@ void MapSector::setIntProperty(string key, int value)
 	if (key == "heightfloor")
 	{
 		f_height = value;
-		planes_updated = 0;
+		expireNeighborSpecials();
 	}
 	else if (key == "heightceiling")
 	{
 		c_height = value;
-		planes_updated = 0;
+		expireNeighborSpecials();
 	}
 	else if (key == "lightlevel")
 		light = value;
@@ -631,12 +631,27 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	}
 }
 
+/* MapSector::expireNeighborSpecials
+ * Expire special sector properties on this sector and all its neighbors -- the
+ * height of this sector can change the slope of neighbors due to Plane_Align.
+ *******************************************************************/
+void MapSector::expireNeighborSpecials()
+{
+	for (unsigned a = 0; a < connected_sides.size(); a++)
+		connected_sides[a]->getParentLine()->expireSectorSpecials();
+}
+
 /* MapSector::updatePlanes
  * Recompute the floor and ceiling planes, if any part of this sector has
  * changed
  *******************************************************************/
 void MapSector::updatePlanes()
 {
+	if (!specials_needupdate)
+		return;
+	specials_needupdate = false;
+	setModified();
+
 	// Only ZDoom sloped sectors are currently supported
 	// TODO this is kinda fugly, maybe split this function up
 	if (theGameConfiguration->currentPort() != "zdoom")
@@ -645,28 +660,6 @@ void MapSector::updatePlanes()
 		plane_ceiling.set(0, 0, 1, c_height);
 		return;
 	}
-
-	// TODO it would be faster if changing a line special, moving or changing a
-	// thing, modifying a vertex, etc. also invalidated the sector.  i thought
-	// that would be really invasive but it occurs to me that all kinds of
-	// changes might impact a sector (e.g. color setting things) so it would be
-	// nice to just bump all those caches at once.  would be way easier to do
-	// it for lines that affect tagged sectors, too
-	bool needs_update = false;
-	for (unsigned a = 0; a < connected_sides.size(); a++)
-	{
-		if (connected_sides[a]->modifiedTime() > planes_updated ||
-			connected_sides[a]->getParentLine()->modifiedTime() > planes_updated)
-		{
-			needs_update = true;
-			break;
-		}
-	}
-
-	if (!needs_update)
-		return;
-
-	planes_updated = modified_time = theApp->runTimer();
 
 	// ZDoom applies specials in id order, so presumably if there are two
 	// Plane_Aligns affecting the same sector, the one with the highest id

@@ -339,6 +339,7 @@ void MapLine::setIntProperty(string key, int value)
 	else if (key == "special")
 	{
 		setModified();
+		expireSectorSpecials();
 		special = value;
 	}
 
@@ -621,6 +622,17 @@ void MapLine::clearUnneededTextures()
 		if ((tex & TEX_BACK_LOWER) == 0)
 			setStringProperty("side2.texturebottom", "-");
 	}
+}
+
+/* MapLine::expireSectorSpecials
+ * Expire special sector properties on the neighboring sectors.
+ *******************************************************************/
+void MapLine::expireSectorSpecials()
+{
+	if (frontSector())
+		frontSector()->expireSpecials();
+	if (backSector())
+		backSector()->expireSpecials();
 }
 
 /* MapLine::resetInternals

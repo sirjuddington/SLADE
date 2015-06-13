@@ -51,12 +51,13 @@ private:
 	bbox_t				bbox;
 	Polygon2D			polygon;
 	bool				poly_needsupdate;
+	bool				specials_needupdate;
 	long				geometry_updated;
-	long				planes_updated;
 	fpoint2_t			text_point;
 	plane_t				plane_floor;
 	plane_t				plane_ceiling;
 
+	void		expireNeighborSpecials();
 	void		updatePlanes();
 	bool		applyPlaneAlign(MapLine* line, bool floor);
 
@@ -87,13 +88,14 @@ public:
 	void	setFloorHeight(short height)
 	{
 		f_height = height;
-		planes_updated = 0;
+		expireNeighborSpecials();
 	}
 	void	setCeilingHeight(short height)
 	{
 		c_height = height;
-		planes_updated = 0;
+		expireNeighborSpecials();
 	}
+	void	expireSpecials() { specials_needupdate = true; }
 	void	setFloorPlane(plane_t p) { plane_floor = p; }
 	void	setCeilingPlane(plane_t p) { plane_ceiling = p; }
 
