@@ -43,6 +43,7 @@
 #include "Clipboard.h"
 #include "UndoRedo.h"
 #include "MapChecks.h"
+#include "MapSpecials.h"
 
 
 /*******************************************************************
@@ -634,6 +635,9 @@ bool MapEditor::openMap(Archive::mapdesc_t map)
 
 	updateStatusText();
 	updateThingLists();
+
+	// Process specials
+	MapSpecials::processMapSpecials(&(this->map));
 
 	return true;
 }

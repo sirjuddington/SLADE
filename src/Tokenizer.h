@@ -52,6 +52,7 @@ public:
 	bool	openMem(MemChunk* mc, string source);
 	bool	isWhitespace(char p);
 	bool	isSpecialCharacter(char p);
+	bool	isAtEnd() { return (token_current.IsEmpty() && !qstring); }
 	bool	incrementCurrent();
 	void	skipLineComment();
 	void	skipMultilineComment();
@@ -70,6 +71,8 @@ public:
 	void	getFloat(float* f);
 	void	getDouble(double* d);
 	void	getBool(bool* b);
+
+	void	getTokensUntil(vector<string>& tokens, string end);
 
 	bool		quotedString() { return qstring; }
 	uint32_t	lineNo() { return line; }

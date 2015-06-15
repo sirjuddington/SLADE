@@ -588,8 +588,8 @@ bool SLADEMap::addSector(doomsector_t& s)
 	MapSector* ns = new MapSector(wxString::FromAscii(s.f_tex, 8), wxString::FromAscii(s.c_tex, 8), this);
 
 	// Setup sector properties
-	ns->f_height = s.f_height;
-	ns->c_height = s.c_height;
+	ns->setFloorHeight(s.f_height);
+	ns->setCeilingHeight(s.c_height);
 	ns->light = s.light;
 	ns->special = s.special;
 	ns->tag = s.tag;
@@ -614,8 +614,8 @@ bool SLADEMap::addSector(doom64sector_t& s)
 								  theResourceManager->getTextureName(s.c_tex), this);
 
 	// Setup sector properties
-	ns->f_height = s.f_height;
-	ns->c_height = s.c_height;
+	ns->setFloorHeight(s.f_height);
+	ns->setCeilingHeight(s.c_height);
 	ns->light = 255;
 	ns->special = s.special;
 	ns->tag = s.tag;
@@ -1566,8 +1566,8 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 	usage_flat[ns->c_tex.Upper()] += 1;
 
 	// Set defaults
-	ns->f_height = 0;
-	ns->c_height = 0;
+	ns->setFloorHeight(0);
+	ns->setCeilingHeight(0);
 	ns->light = 160;
 	ns->special = 0;
 	ns->tag = 0;
@@ -1583,9 +1583,9 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 			continue;
 
 		if (S_CMPNOCASE(prop->getName(), "heightfloor"))
-			ns->f_height = prop->getIntValue();
+			ns->setFloorHeight(prop->getIntValue());
 		else if (S_CMPNOCASE(prop->getName(), "heightceiling"))
-			ns->c_height = prop->getIntValue();
+			ns->setCeilingHeight(prop->getIntValue());
 		else if (S_CMPNOCASE(prop->getName(), "lightlevel"))
 			ns->light = prop->getIntValue();
 		else if (S_CMPNOCASE(prop->getName(), "special"))
@@ -3188,6 +3188,51 @@ void SLADEMap::initSectorPolygons()
 		sectors[a]->getPolygon();
 	}
 	theSplashWindow->setProgress(1.0f);
+}
+
+MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y)
+{
+	// Get sector
+	MapSector* sector = front ? line->frontSector() : line->backSector();
+	if (!sector)
+		return NULL;
+
+	// Get lines to test
+	vector<MapLine*> lines;
+	sector->getLines(lines);
+
+	// Get nearest line intersecting with line vector
+	MapLine* nearest = NULL;
+	fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+	fpoint2_t vec = line->frontVector();
+	if (front)
+	{
+		vec.x = -vec.x;
+		vec.y = -vec.y;
+	}
+	double min_dist = 99999999999;
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		if (lines[a] == line)
+			continue;
+
+		double dist = MathStuff::distanceRayLine(mid, mid + vec, lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2());
+
+		if (dist < min_dist && dist > 0)
+		{
+			min_dist = dist;
+			nearest = lines[a];
+		}
+	}
+
+	// Set intersection point
+	if (nearest)
+	{
+		hit_x = mid.x + (vec.x * min_dist);
+		hit_y = mid.y + (vec.y * min_dist);
+	}
+
+	return nearest;
 }
 
 /* SLADEMap::getSectorsByTag

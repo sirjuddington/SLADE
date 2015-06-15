@@ -114,6 +114,7 @@ CVAR(Bool, update_check_beta, false, CVAR_SAVE)
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, map_show_selection_numbers)
+EXTERN_CVAR(Bool, script_show_language_list)
 
 
 /*******************************************************************
@@ -589,6 +590,14 @@ void MainApp::initActions()
 	// MapEntryPanel
 	new SAction("pmap_open_text", "Edit Level Script", "e_text", "Open the map header as text (to edit fragglescript, etc.)");
 
+	// DataEntryPanel
+	new SAction("data_add_row", "Add Row", "t_plus", "Add a new row (after the currently selected row");
+	new SAction("data_delete_row", "Delete Row(s)", "t_close", "Delete the currently selected row(s)");
+	new SAction("data_cut_row", "Cut Row(s)", "t_cut", "Cut the currently selected row(s)", "Ctrl+X");
+	new SAction("data_copy_row", "Copy Row(s)", "t_copy", "Copy the currently selected row(s)", "Ctrl+C");
+	new SAction("data_paste_row", "Paste Row(s)", "t_paste", "Paste at the currently selected row", "Ctrl+V");
+	new SAction("data_change_value", "Change Value...", "t_rename", "Change the value of the selected cell(s)");
+
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "t_save", "Save any changes to the current map", "Ctrl+S");
 	new SAction("mapw_saveas", "Save Map &As...", "t_saveas", "Save the map to a new wad archive", "Ctrl+Shift+S");
@@ -648,10 +657,12 @@ void MainApp::initActions()
 	new SAction("mapw_script_save", "Save", "t_save", "Save changes to scripts");
 	new SAction("mapw_script_compile", "Compile", "t_compile", "Compile scripts");
 	new SAction("mapw_script_jumpto", "Jump To...", "t_up", "Jump to a specific script/function");
+	new SAction("mapw_script_togglelanguage", "Show Language List", "t_properties", "Show/Hide the language list", "", SAction::CHECK);
 
 
 	// Init checked actions
 	getAction("mapw_toggle_selection_numbers")->toggled = map_show_selection_numbers;
+	getAction("mapw_script_togglelanguage")->toggled = script_show_language_list;
 }
 
 /* MainApp::OnInit

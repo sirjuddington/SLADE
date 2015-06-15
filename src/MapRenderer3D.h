@@ -14,7 +14,7 @@ public:
 	enum
 	{
 	    // Common flags
-	    TRANS	= 2,
+	    TRANSADD	= 2,
 
 	    // Quad/flat flags
 	    SKY		= 4,
@@ -154,10 +154,12 @@ public:
 
 	// Walls
 	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom);
-	void	setupQuadTexCoords(quad_3d_t* quad, int length, double left, double top, bool pegbottom = false, double sx = 1, double sy = 1);
+	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, plane_t top, plane_t bottom);
+	void	setupQuadTexCoords(quad_3d_t* quad, int length, double o_left, double o_top, double h_top, double h_bottom, bool pegbottom = false, double sx = 1, double sy = 1);
 	void	updateLine(unsigned index);
 	void	renderQuad(quad_3d_t* quad, float alpha = 1.0f);
 	void	renderWalls();
+	void	renderTransparentWalls();
 	void	renderWallSelection(vector<selection_3d_t>& selection, float alpha = 1.0f);
 
 	// Things
@@ -211,6 +213,7 @@ private:
 	// Map Structures
 	vector<line_3d_t>	lines;
 	quad_3d_t**			quads;
+	vector<quad_3d_t*>	quads_transparent;
 	vector<thing_3d_t>	things;
 	vector<flat_3d_t>	floors;
 	vector<flat_3d_t>	ceilings;

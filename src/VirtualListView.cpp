@@ -1,4 +1,4 @@
-
+﻿
 /*******************************************************************
  * SLADE - It's a Doom Editor
  * Copyright (C) 2008-2014 Simon Judd
@@ -37,6 +37,9 @@
 #include "VirtualListView.h"
 #include "ListView.h"
 #include "Console.h"
+#ifdef __WXMSW__
+#include <CommCtrl.h>
+#endif
 
 
 /*******************************************************************
@@ -44,6 +47,15 @@
  *******************************************************************/
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
 CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
+VirtualListView* VirtualListView::lv_current = NULL;
+int vlv_chars[] =
+{
+	'.', ',', '_', '-', '+', '=', '`', '~',
+	'!', '@', '#', '$', '(', ')', '[', ']',
+	'{', '}', ':', ';', '/', '\\', '<', '>',
+	'?', '^', '&', '\'', '\"',
+};
+int n_vlv_chars = 30;
 
 
 /*******************************************************************
@@ -64,6 +76,10 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	item_attr = new wxListItemAttr();
 	last_focus = 0;
 	col_search = 0;
+	filter_text = "";
+	sort_column = -1;
+	filter_column = -1;
+	sort_descend = false;
 	memset(cols_editable, 0, 100);
 
 	// Set monospace font if configured
@@ -81,6 +97,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_CHAR, &VirtualListView::onKeyChar, this);
 	Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &VirtualListView::onLabelEditBegin, this);
 	Bind(wxEVT_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
+	Bind(wxEVT_LIST_COL_CLICK, &VirtualListView::onColumnLeftClick, this);
 }
 
 /* VirtualListView::~VirtualListView
@@ -267,7 +284,138 @@ long VirtualListView::getFocus()
 	return GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 }
 
+/* VirtualListView::defaultSort
+ * Default sorting calculation, sorts by index if there is no sorted
+ * column, otherwise sorts by the column item text > index
+ *******************************************************************/
+bool VirtualListView::defaultSort(long left, long right)
+{
+	// No sort column, just sort by index
+	if (lv_current->sort_column < 0)
+		return lv_current->sort_descend ? right < left : left < right;
 
+	// Sort by column text > index
+	else
+	{
+		int result = lv_current->getItemText(left, lv_current->sort_column, left).Lower().compare(lv_current->getItemText(right, lv_current->sort_column, right).Lower());
+		if (result == 0)
+			return left < right;
+		else
+			return lv_current->sort_descend ? result > 0 : result < 0;
+	}
+}
+
+/* VirtualListView::getItemIndex
+ * Returns the filtered index of the list item at [item]
+ *******************************************************************/
+long VirtualListView::getItemIndex(long item) const
+{
+	if (item < 0 || item >= (long)items.size())
+		return item;
+	else
+		return items[item];
+}
+
+/* VirtualListView::updateList
+ * Updates the list item count and refreshes it
+ *******************************************************************/
+void VirtualListView::updateList(bool clear)
+{
+	// Update list
+	if (!items.empty())
+		SetItemCount(items.size());
+
+	Refresh();
+}
+
+/* VirtualListView::sortItems
+ * Sorts the list items depending on the current sorting column
+ *******************************************************************/
+void VirtualListView::sortItems()
+{
+	lv_current = this;
+	std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+}
+
+/* VirtualListView::setColumnHeaderArrow
+ * Sets the sorting arrow indicator on [column], [arrow] can be 0
+ * (none), 1 (up) or 2 (down)
+ *******************************************************************/
+void VirtualListView::setColumnHeaderArrow(long column, int arrow)
+{
+	// Win32 implementation
+#ifdef __WXMSW__
+	HWND hwnd = ListView_GetHeader((HWND)GetHandle());
+	HDITEM header ={ 0 };
+	if (hwnd)
+	{
+		header.mask = HDI_FORMAT;
+
+		if (Header_GetItem(hwnd, column, &header))
+		{
+			if (arrow == 2)
+				header.fmt = (header.fmt & ~HDF_SORTUP)|HDF_SORTDOWN;
+			else if (arrow == 1)
+				header.fmt = (header.fmt & ~HDF_SORTDOWN)|HDF_SORTUP;
+			else
+				header.fmt = header.fmt & ~(HDF_SORTDOWN|HDF_SORTUP);
+
+			Header_SetItem(hwnd, column, &header);
+		}
+	}
+#endif
+}
+
+/* VirtualListView::focusOnIndex
+ * Selects an entry by its given index and makes sure it is visible
+ *******************************************************************/
+void VirtualListView::focusOnIndex(long index)
+{
+	if (index < GetItemCount())
+	{
+		clearSelection();
+		selectItem(index);
+		focusItem(index);
+		EnsureVisible(index);
+		sendSelectionChangedEvent();
+	}
+}
+
+/* VirtualListView::lookForSearchEntryFrom
+ * Used by VirtualListView::onKeyChar, returns true if an entry
+ * matching search is found, false otherwise
+ *******************************************************************/
+bool VirtualListView::lookForSearchEntryFrom(long focus)
+{
+	long index = focus;
+	bool looped = false;
+	bool gotmatch = false;
+	while ((!looped && index < GetItemCount()) || (looped && index < focus))
+	{
+		string name = getItemText(index, col_search, items[index]);
+		if (name.Upper().StartsWith(search))
+		{
+			// Matches, update selection+focus
+			focusOnIndex(index);
+			return true;
+		}
+
+		// No match, next item; look in the above entries
+		// if no matches were found below.
+		if (++index == GetItemCount() && !looped)
+		{
+			looped = true;
+			index = 0;
+		}
+	}
+	// Didn't get any match
+	return false;
+}
+
+
+/*******************************************************************
+ * VIRTUALLISTVIEW CLASS EVENTS
+ *******************************************************************/
 
 /* VirtualListView::onColumnResize
  * Called when a column is resized
@@ -404,62 +552,6 @@ void VirtualListView::onKeyDown(wxKeyEvent& e)
 		e.Skip();
 }
 
-int vlv_chars[] =
-{
-	'.', ',', '_', '-', '+', '=', '`', '~',
-	'!', '@', '#', '$', '(', ')', '[', ']',
-	'{', '}', ':', ';', '/', '\\', '<', '>',
-	'?', '^', '&', '\'', '\"',
-};
-int n_vlv_chars = 30;
-
-
-/* VirtualListView::focusOnIndex
- * Selects an entry by its given index and makes sure it is visible
- *******************************************************************/
-void VirtualListView::focusOnIndex(long index)
-{
-	if (index < GetItemCount())
-	{
-		clearSelection();
-		selectItem(index);
-		focusItem(index);
-		EnsureVisible(index);
-		sendSelectionChangedEvent();
-	}
-}
-
-/* VirtualListView::lookForSearchEntryFrom
- * Used by VirtualListView::onKeyChar, returns true if an entry
- * matching search is found, false otherwise
- *******************************************************************/
-bool VirtualListView::lookForSearchEntryFrom(long focus)
-{
-	long index = focus;
-	bool looped = false;
-	bool gotmatch = false;
-	while ((!looped && index < GetItemCount()) || (looped && index < focus))
-	{
-		string name = getItemText(index, col_search);
-		if (name.Upper().StartsWith(search))
-		{
-			// Matches, update selection+focus
-			focusOnIndex(index);
-			return true;
-		}
-
-		// No match, next item; look in the above entries
-		// if no matches were found below.
-		if (++index == GetItemCount() && !looped)
-		{
-			looped = true;
-			index = 0;
-		}
-	}
-	// Didn't get any match
-	return false;
-}
-
 /* VirtualListView::onKeyChar
  * Called when a 'character' key is pressed within the list
  *******************************************************************/
@@ -539,4 +631,47 @@ void VirtualListView::onLabelEditEnd(wxListEvent& e)
 {
 	if (!e.IsEditCancelled())
 		labelEdited(e.GetColumn(), e.GetIndex(), e.GetLabel());
+}
+
+/* VirtualListView::onColumnLeftClick
+ * Called when a column header is clicked
+ *******************************************************************/
+void VirtualListView::onColumnLeftClick(wxListEvent& e)
+{
+	// Clear current sorting arrow
+	setColumnHeaderArrow(sort_column, 0);
+
+	// Current sorting column clicked
+	if (sort_column == e.GetColumn())
+	{
+		if (sort_descend)
+		{
+			sort_column = -1;
+			sort_descend = false;
+		}
+		else
+			sort_descend = true;
+	}
+
+	// Different sorting column clicked
+	else
+	{
+		sort_column = e.GetColumn();
+		sort_descend = false;
+	}
+
+	// Set new sorting arrow
+	if (sort_column >= 0)
+		setColumnHeaderArrow(sort_column, sort_descend ? 2 : 1);
+
+	if (sort_column >= 0)
+	{
+		LOG_MESSAGE(2, "Sort column %d (%s)", sort_column, sort_descend ? "descending" : "ascending");
+	}
+	else
+	{
+		LOG_MESSAGE(2, "No sorting");
+	}
+
+	updateList();
 }

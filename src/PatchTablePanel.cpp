@@ -81,21 +81,21 @@ PatchTableListView::~PatchTableListView()
 /* PatchTableListView::getItemText
  * Returns the string for [item] at [column]
  *******************************************************************/
-string PatchTableListView::getItemText(long item, long column) const
+string PatchTableListView::getItemText(long item, long column, long index) const
 {
 	// Check patch table exists
 	if (!patch_table)
 		return "INVALID INDEX";
 
 	// Check index is ok
-	if (item < 0 || (unsigned)item > patch_table->nPatches())
+	if (index < 0 || (unsigned)index > patch_table->nPatches())
 		return "INVALID INDEX";
 
 	// Get associated patch
-	patch_t& patch = patch_table->patch(item);
+	patch_t& patch = patch_table->patch(index);
 
 	if (column == 0)						// Index column
-		return S_FMT("%04d", item);
+		return S_FMT("%04d", index);
 	else if (column == 1)					// Name column
 		return patch.name;
 	else if (column == 2)					// Usage count column
@@ -103,7 +103,7 @@ string PatchTableListView::getItemText(long item, long column) const
 	else if (column == 3)  					// Archive column
 	{
 		// Get patch entry
-		ArchiveEntry* entry = patch_table->patchEntry(item);
+		ArchiveEntry* entry = patch_table->patchEntry(index);
 
 		// If patch entry can't be found return invalid
 		if (entry)
@@ -119,7 +119,7 @@ string PatchTableListView::getItemText(long item, long column) const
  * Updates the item attributes for [item] (red text if patch entry
  * not found, default otherwise)
  *******************************************************************/
-void PatchTableListView::updateItemAttr(long item, long column) const
+void PatchTableListView::updateItemAttr(long item, long column, long index) const
 {
 	// Just set normal text colour
 	item_attr->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
@@ -134,11 +134,18 @@ void PatchTableListView::updateList(bool clear)
 		ClearAll();
 
 	// Set list size
+	items.clear();
 	if (patch_table)
-		SetItemCount(patch_table->nPatches());
+	{
+		size_t count = patch_table->nPatches();
+		SetItemCount(count);
+		for (unsigned a = 0; a < count; a++)
+			items.push_back(a);
+	}
 	else
 		SetItemCount(0);
 
+	sortItems();
 	updateWidth();
 	Refresh();
 }
@@ -154,6 +161,32 @@ void PatchTableListView::onAnnouncement(Announcer* announcer, string event_name,
 
 	if (announcer == theArchiveManager)
 		updateList();
+}
+
+/* PatchTableListView::usageSort
+ * Returns true if patch at index [left] is used less than [right]
+ *******************************************************************/
+bool PatchTableListView::usageSort(long left, long right)
+{
+	patch_t& p1 = ((PatchTableListView*)lv_current)->patchTable()->patch(left);
+	patch_t& p2 = ((PatchTableListView*)lv_current)->patchTable()->patch(right);
+
+	if (p1.used_in.size() == p2.used_in.size())
+		return left < right;
+	else
+		return lv_current->sortDescend() ? p2.used_in.size() < p1.used_in.size() : p1.used_in.size() < p2.used_in.size();
+}
+
+/* TextureXListView::sortItems
+ * Sorts the list items depending on the current sorting column
+ *******************************************************************/
+void PatchTableListView::sortItems()
+{
+	lv_current = this;
+	if (sort_column == 2)
+		std::sort(items.begin(), items.end(), &PatchTableListView::usageSort);
+	else
+		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
 }
 
 

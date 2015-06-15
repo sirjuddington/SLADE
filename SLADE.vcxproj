@@ -190,6 +190,7 @@
     <ClCompile Include="src\ColourConfiguration.cpp" />
     <ClCompile Include="src\Compression.cpp" />
     <ClCompile Include="src\Conversions.cpp" />
+    <ClCompile Include="src\DataEntryPanel.cpp" />
     <ClCompile Include="src\DatArchive.cpp" />
     <ClCompile Include="src\Dialogs\DirArchiveUpdateDialog.cpp" />
     <ClCompile Include="src\Dialogs\Preferences\ACSPrefsPanel.cpp" />
@@ -413,6 +414,7 @@
     <ClCompile Include="src\MapRenderer2D.cpp" />
     <ClCompile Include="src\MapRenderer3D.cpp" />
     <ClCompile Include="src\MapReplaceDialog.cpp" />
+    <ClCompile Include="src\MapSpecials.cpp" />
     <ClCompile Include="src\MapTextureBrowser.cpp" />
     <ClCompile Include="src\MapTextureManager.cpp" />
     <ClCompile Include="src\MathStuff.cpp" />
@@ -586,6 +588,7 @@
     <ClInclude Include="src\Compression.h" />
     <ClInclude Include="src\ConsoleHelpers.h" />
     <ClInclude Include="src\Conversions.h" />
+    <ClInclude Include="src\DataEntryPanel.h" />
     <ClInclude Include="src\DatArchive.h" />
     <ClInclude Include="src\Dialogs\DirArchiveUpdateDialog.h" />
     <ClInclude Include="src\Dialogs\Preferences\ACSPrefsPanel.h" />
@@ -728,6 +731,7 @@
     <ClInclude Include="src\MapRenderer2D.h" />
     <ClInclude Include="src\MapRenderer3D.h" />
     <ClInclude Include="src\MapReplaceDialog.h" />
+    <ClInclude Include="src\MapSpecials.h" />
     <ClInclude Include="src\MapTextureBrowser.h" />
     <ClInclude Include="src\MapTextureManager.h" />
     <ClInclude Include="src\MathStuff.h" />

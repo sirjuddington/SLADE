@@ -35,7 +35,14 @@
 #include "EntryOperations.h"
 #include "GameConfiguration.h"
 #include "MapEditorWindow.h"
+#include "MapSpecials.h"
 #include <wx/dataview.h>
+
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, script_show_language_list, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -64,6 +71,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	actions.Add("mapw_script_save");
 	actions.Add("mapw_script_compile");
 	actions.Add("mapw_script_jumpto");
+	actions.Add("mapw_script_togglelanguage");
 	toolbar->addActionGroup("Scripts", actions);
 
 	// Add text editor
@@ -93,6 +101,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	list_words->SetInitialSize(wxSize(200, -10));
 	hbox->Add(list_words, 0, wxEXPAND|wxALL, 4);
 	populateWordList();
+	list_words->Show(script_show_language_list);
 
 	// Bind events
 	list_words->Bind(wxEVT_TREELIST_ITEM_ACTIVATED, &ScriptEditorPanel::onWordListActivate, this);
@@ -120,6 +129,14 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	// Import script data
 	if (script) entry_script->importEntry(script);
 	if (compiled) entry_compiled->importEntry(compiled);
+
+	// Process ACS open scripts
+	string lang = theGameConfiguration->scriptLanguage();
+	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
+	{
+		MapSpecials::processACSScripts(entry_script);
+		MapSpecials::updateTaggedSectors(&(theMapEditor->mapEditor().getMap()));
+	}
 
 	// Load script text
 	return text_editor->loadEntry(entry_script);
@@ -156,6 +173,24 @@ void ScriptEditorPanel::populateWordList()
 	}
 }
 
+/* ScriptEditorPanel::saveScripts
+ * Saves the current content of the text editor to the scripts entry
+ *******************************************************************/
+void ScriptEditorPanel::saveScripts()
+{
+	// Write text to entry
+	wxCharBuffer buf = text_editor->GetText().mb_str();
+	entry_script->importMem(buf, buf.length());
+
+	// Process ACS open scripts
+	string lang = theGameConfiguration->scriptLanguage();
+	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
+	{
+		MapSpecials::processACSScripts(entry_script);
+		MapSpecials::updateTaggedSectors(&(theMapEditor->mapEditor().getMap()));
+	}
+}
+
 /* ScriptEditorPanel::handleAction
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
@@ -165,9 +200,8 @@ bool ScriptEditorPanel::handleAction(string name)
 	// Compile Script
 	if (name == "mapw_script_compile")
 	{
-		// Write text to entry
-		wxCharBuffer buf = text_editor->GetText().mb_str();
-		entry_script->importMem(buf, buf.length());
+		// Save script
+		saveScripts();
 
 		// Compile depending on language
 		string lang = theGameConfiguration->scriptLanguage();
@@ -179,15 +213,20 @@ bool ScriptEditorPanel::handleAction(string name)
 
 	// Save Script
 	else if (name == "mapw_script_save")
-	{
-		// Write text to entry
-		wxCharBuffer buf = text_editor->GetText().mb_str();
-		entry_script->importMem(buf, buf.length());
-	}
+		saveScripts();
 
 	// Jump To
 	else if (name == "mapw_script_jumpto")
 		text_editor->openJumpToDialog();
+
+	// Toggle language list
+	else if (name == "mapw_script_togglelanguage")
+	{
+		script_show_language_list = !script_show_language_list;
+		list_words->Show(script_show_language_list);
+		Layout();
+		Refresh();
+	}
 
 	// Not handled
 	else

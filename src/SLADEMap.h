@@ -211,6 +211,7 @@ public:
 	bool				linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
 	void				findSectorTextPoint(MapSector* sector);
 	void				initSectorPolygons();
+	MapLine*			lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y);
 
 	// Tags/Ids
 	MapThing* getFirstThingWithId(int id);

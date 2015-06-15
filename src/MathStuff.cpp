@@ -464,6 +464,27 @@ bool MathStuff::boxLineIntersect(double box_x1, double box_y1, double box_x2, do
 	return true;
 }
 
+/* MathStuff::planeFromTriangle
+ * Calculates a plane from the given points [p1,p2,p3]
+ *******************************************************************/
+plane_t MathStuff::planeFromTriangle(fpoint3_t p1, fpoint3_t p2, fpoint3_t p3)
+{
+	fpoint3_t v1 = p3 - p1;
+	fpoint3_t v2 = p2 - p1;
+	v1 = v1.normalize();
+	v2 = v2.normalize();
+	fpoint3_t normal = v1.cross(v2);
+	normal.set(normal.normalize());
+
+	plane_t plane;
+	plane.a = normal.x;
+	plane.b = normal.y;
+	plane.c = normal.z;
+	plane.d = (normal.x * p1.x) + (normal.y * p1.y) + (normal.z * p1.z);
+
+	return plane;
+}
+
 
 
 CONSOLE_COMMAND(angle2d, 6, false)

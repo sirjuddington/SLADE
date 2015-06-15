@@ -22,16 +22,25 @@ protected:
 	wxFont*			font_normal;
 	wxFont*			font_monospace;
 
-	virtual string	getItemText(long item, long column) const { return "UNDEFINED"; }
-	virtual int		getItemIcon(long item, long column) const { return -1; }
-	virtual void	updateItemAttr(long item, long column) const {}
+	// Item sorting/filtering
+	vector<long>	items;
+	int				sort_column;
+	bool			sort_descend;
+	int				filter_column;
+	string			filter_text;
+
+	static VirtualListView* lv_current;
+
+	virtual string	getItemText(long item, long column, long index) const { return "UNDEFINED"; }
+	virtual int		getItemIcon(long item, long column, long index) const { return -1; }
+	virtual void	updateItemAttr(long item, long column, long index) const {}
 
 	// Virtual wxListCtrl overrides
-	string			OnGetItemText(long item, long column) const { return getItemText(item, column); }
-	int				OnGetItemImage(long item) const { return getItemIcon(item, 0); }
-	int				OnGetItemColumnImage(long item, long column) const { return getItemIcon(item, column); }
-	wxListItemAttr*	OnGetItemAttr(long item) const { updateItemAttr(item, 0); return item_attr; }
-	wxListItemAttr*	OnGetItemColumnAttr(long item, long column) const { updateItemAttr(item, column); return item_attr; }
+	virtual string			OnGetItemText(long item, long column) const { return getItemText(item, column, getItemIndex(item)); }
+	virtual int				OnGetItemImage(long item) const { return getItemIcon(item, 0, getItemIndex(item)); }
+	virtual int				OnGetItemColumnImage(long item, long column) const { return getItemIcon(item, column, getItemIndex(item)); }
+	virtual wxListItemAttr*	OnGetItemAttr(long item) const { updateItemAttr(item, 0, getItemIndex(item)); return item_attr; }
+	virtual wxListItemAttr*	OnGetItemColumnAttr(long item, long column) const { updateItemAttr(item, column, getItemIndex(item)); return item_attr; }
 
 public:
 	VirtualListView(wxWindow* parent);
@@ -57,10 +66,21 @@ public:
 
 	// Layout
 	void			updateWidth();
-	virtual void	updateList(bool clear = false) { SetItemCount(0); }
+	virtual void	updateList(bool clear = false);
 
 	// Label editing
 	virtual void	labelEdited(int col, int index, string new_label) {}
+
+	// Filtering
+	long			getItemIndex(long item) const;
+	virtual void	applyFilter() {}
+
+	// Sorting
+	bool			sortDescend() { return sort_descend; }
+	static bool		defaultSort(long left, long right);
+	static bool		indexSort(long left, long right) { return lv_current->sort_descend ? right < left : left < right; }
+	virtual void	sortItems();
+	void			setColumnHeaderArrow(long column, int arrow);
 
 	// Events
 	void	onColumnResize(wxListEvent& e);
@@ -69,6 +89,7 @@ public:
 	void	onKeyChar(wxKeyEvent& e);
 	void	onLabelEditBegin(wxListEvent& e);
 	void	onLabelEditEnd(wxListEvent& e);
+	void	onColumnLeftClick(wxListEvent& e);
 };
 
 #endif//__VIRTUAL_LIST_VIEW_H__

@@ -2334,6 +2334,12 @@
     <ClInclude Include="src\STabCtrl.h">
       <Filter>UI Elements</Filter>
     </ClInclude>
+	<ClInclude Include="src\MapSpecials.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DataEntryPanel.h">
+      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />

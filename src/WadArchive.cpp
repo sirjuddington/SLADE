@@ -1094,6 +1094,27 @@ vector<Archive::mapdesc_t> WadArchive::detectMaps()
 		if (!maps[a].archive)
 			maps[a].head->setType(EntryType::mapMarkerType());
 
+	// Update entry map format hints
+	for (unsigned a = 0; a < maps.size(); a++)
+	{
+		string format;
+		if (maps[a].format == MAP_DOOM)
+			format = "doom";
+		else if (maps[a].format == MAP_DOOM64)
+			format = "doom64";
+		else if (maps[a].format == MAP_HEXEN)
+			format = "hexen";
+		else
+			format = "udmf";
+
+		ArchiveEntry* entry = maps[a].head;
+		while (entry && entry != maps[a].end->nextEntry())
+		{
+			entry->exProp("MapFormat") = format;
+			entry = entry->nextEntry();
+		}
+	}
+
 	return maps;
 }
 

@@ -42,6 +42,7 @@ public:
 	bool			isModified() { return modified; }
 	bool			isActivePanel();
 	void			setUndoManager(UndoManager* manager) { undo_manager = manager; }
+	MemChunk*		getEntryData() { return &entry_data; }
 
 	bool			openEntry(ArchiveEntry* entry);
 	virtual bool	loadEntry(ArchiveEntry* entry);
