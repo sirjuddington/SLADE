@@ -96,7 +96,11 @@ string Executables::writePaths()
 {
 	string ret;
 	for (unsigned a = 0; a < game_exes.size(); a++)
-		ret += S_FMT("\t%s \"%s\"\n", game_exes[a].id, game_exes[a].path);
+	{
+		string path = game_exes[a].path;
+		path.Replace("\\", "/");
+		ret += S_FMT("\t%s \"%s\"\n", game_exes[a].id, path);
+	}
 	return ret;
 }
 

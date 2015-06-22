@@ -1024,13 +1024,21 @@ void MainApp::saveConfigFile()
 	// Write base resource archive paths
 	file.Write("\nbase_resource_paths\n{\n");
 	for (size_t a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
-		file.Write(S_FMT("\t\"%s\"\n", theArchiveManager->getBaseResourcePath(a)), wxConvUTF8);
+	{
+		string path = theArchiveManager->getBaseResourcePath(a);
+		path.Replace("\\", "/");
+		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
+	}
 	file.Write("}\n");
 
 	// Write recent files list (in reverse to keep proper order when reading back)
 	file.Write("\nrecent_files\n{\n");
-	for (int a = theArchiveManager->numRecentFiles()-1; a >= 0; a--)
-		file.Write(S_FMT("\t\"%s\"\n", theArchiveManager->recentFile(a)), wxConvUTF8);
+	for (int a = theArchiveManager->numRecentFiles() - 1; a >= 0; a--)
+	{
+		string path = theArchiveManager->recentFile(a);
+		path.Replace("\\", "/");
+		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
+	}
 	file.Write("}\n");
 
 	// Write keybinds

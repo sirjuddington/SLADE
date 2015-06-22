@@ -407,7 +407,8 @@ void Tokenizer::readToken(bool toeol)
 		// Read literal string (include whitespace)
 		while (current[0] != '\"')
 		{
-			if (position < size - 1 && current[0] == '\\' && current[1] == '\"')
+			//if (position < size - 1 && current[0] == '\\' && current[1] == '\"')
+			if (current[0] == '\\')
 				incrementCurrent();
 
 			token_current += current[0];
