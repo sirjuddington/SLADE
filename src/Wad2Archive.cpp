@@ -371,8 +371,8 @@ bool Wad2Archive::isWad2Archive(MemChunk& mc)
 		return false;
 
 	// Get number of lumps and directory offset
-	long num_lumps = 0;
-	long dir_offset = 0;
+	int32_t num_lumps = 0;
+	int32_t dir_offset = 0;
 	mc.seek(4, SEEK_SET);
 	mc.read(&num_lumps, 4);
 	mc.read(&dir_offset, 4);
@@ -414,8 +414,8 @@ bool Wad2Archive::isWad2Archive(string filename)
 		return false;
 
 	// Get number of lumps and directory offset
-	long num_lumps = 0;
-	long dir_offset = 0;
+	int32_t num_lumps = 0;
+	int32_t dir_offset = 0;
 	file.Read(&num_lumps, 4);
 	file.Read(&dir_offset, 4);
 

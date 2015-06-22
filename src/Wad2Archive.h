@@ -7,12 +7,12 @@
 // From http://www.gamers.org/dEngine/quake/spec/quake-spec31.html#CWADF
 struct wad2entry_t
 {
-	long offset;                 // Position of the entry in WAD
-	long dsize;                  // Size of the entry in WAD file
-	long size;                   // Size of the entry in memory
+	int32_t offset;                 // Position of the entry in WAD
+	int32_t dsize;                  // Size of the entry in WAD file
+	int32_t size;                   // Size of the entry in memory
 	char type;                   // type of entry
 	char cmprs;                  // Compression. 0 if none.
-	short dummy;                 // Not used
+	int16_t dummy;                 // Not used
 	char name[16];               // 1 to 16 characters, '\0'-padded
 };
 

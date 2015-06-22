@@ -994,7 +994,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		rs.ToULong(&index);
 		index++;
 
-		panel_archivemanager->handleAction(S_FMT("aman_recent%d", index));
+		panel_archivemanager->handleAction(S_FMT("aman_recent%lu", index));
 	}
 	else if (href.StartsWith("action://"))
 	{

@@ -247,7 +247,7 @@ protected:
 public:
 	ArgsTextControl(wxWindow* parent) : ArgsControl(parent)
 	{
-		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(100, -1));
+		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
 		text_control->SetValidator(wxIntegerValidator<unsigned char>());
 		GetSizer()->Add(text_control, wxSizerFlags().Expand());
 	}
@@ -559,6 +559,72 @@ public:
 	}
 };
 
+/* ArgsSpeedControl
+ * Arg control that shows a slider for selecting a flat movement speed.
+ *******************************************************************/
+class ArgsSpeedControl : public ArgsTextControl
+{
+protected:
+	wxSlider* slider_control;
+	wxStaticText* speed_label;
+
+	void onSlide(wxCommandEvent& event)
+	{
+		syncControls(slider_control->GetValue());
+	}
+
+	void syncControls(int value)
+	{
+		ArgsTextControl::setArgValue(value);
+
+		if (value < 0)
+		{
+			slider_control->SetValue(0);
+			speed_label->SetLabel("");
+		}
+		else
+		{
+			slider_control->SetValue(value);
+			speed_label->SetLabel(S_FMT(
+				"%s (%.1f units per tic, %.1f units per sec)",
+				arg_t::speedLabel(value), value / 8.0,
+				// A tic is 28ms, slightly less than 1/35 of a second
+				value / 8.0 * 1000.0 / 28.0
+			));
+		}
+	}
+
+public:
+	ArgsSpeedControl(wxWindow* parent) : ArgsTextControl(parent)
+	{
+		wxBoxSizer* row = new wxBoxSizer(wxHORIZONTAL);
+
+		GetSizer()->Detach(text_control);
+		row->Add(text_control, wxSizerFlags(1).Expand());
+		speed_label = new wxStaticText(this, -1, "");
+		row->AddSpacer(4);
+		row->Add(speed_label, wxSizerFlags(4).Align(wxALIGN_CENTER_VERTICAL));
+		GetSizer()->Add(row, wxSizerFlags(1).Expand());
+
+		slider_control = new wxSlider(this, -1, 0, 0, 255);
+		slider_control->SetLineSize(2);
+		slider_control->SetPageSize(8);
+		// These are the generalized Boom speeds
+		slider_control->SetTick(8);
+		slider_control->SetTick(16);
+		slider_control->SetTick(32);
+		slider_control->SetTick(64);
+		slider_control->Bind(wxEVT_SLIDER, &ArgsSpeedControl::onSlide, this);
+		GetSizer()->Add(slider_control, wxSizerFlags(1).Expand());
+	}
+
+	// Set the value in the textbox
+	void setArgValue(long val)
+	{
+		syncControls(val);
+	}
+};
+
 /* ArgsPanel::ArgsPanel
  * ArgsPanel class constructor
  *******************************************************************/
@@ -617,6 +683,8 @@ void ArgsPanel::setup(argspec_t* args)
 				control_args[a] = new ArgsChoiceControl(this, arg.custom_values);
 			else if (arg.type == ARGT_FLAGS)
 				control_args[a] = new ArgsFlagsControl(this, arg.custom_flags);
+			else if (arg.type == ARGT_SPEED)
+				control_args[a] = new ArgsSpeedControl(this);
 			else
 				control_args[a] = new ArgsTextControl(this);
 		}
@@ -759,6 +827,8 @@ ActionSpecialPanel::~ActionSpecialPanel()
 {
 }
 
+WX_DECLARE_STRING_HASH_MAP(wxFlexGridSizer*, NamedFlexGridMap);
+
 /* ActionSpecialPanel::setupSpecialPanel
  * Creates and sets up the action special panel
  *******************************************************************/
@@ -789,45 +859,36 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 			// Get all UDMF trigger properties
 			vector<string> triggers;
+			NamedFlexGridMap named_flexgrids;
 			for (unsigned a = 0; a < props.size(); a++)
 			{
-				if (props[a].property->isTrigger())
+				UDMFProperty* property = props[a].property;
+				if (!property->isTrigger())
+					continue;
+
+				string group = property->getGroup();
+				wxFlexGridSizer* frame_sizer = named_flexgrids[group];
+				if (!frame_sizer)
 				{
-					triggers.push_back(props[a].property->getName());
-					triggers_udmf.push_back(props[a].property->getProperty());
-				}
-			}
+					wxStaticBox* frame_triggers = new wxStaticBox(panel_action_special, -1, group);
+					wxStaticBoxSizer* sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
+					sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, 4);
 
-			// Check if there are any triggers defined
-			if (triggers.size() > 0)
-			{
-				// Add frame
-				wxStaticBox* frame_triggers = new wxStaticBox(panel_action_special, -1, "Special Triggers");
-				wxStaticBoxSizer* sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
-				sizer->Add(sizer_triggers, 0, wxEXPAND|wxTOP, 4);
+					frame_sizer = new wxFlexGridSizer(3);
+					frame_sizer->AddGrowableCol(0, 1);
+					frame_sizer->AddGrowableCol(1, 1);
+					frame_sizer->AddGrowableCol(2, 1);
+					sizer_triggers->Add(frame_sizer, 1, wxEXPAND|wxALL, 4);
 
-				// Add trigger checkboxes
-				wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
-				sizer_triggers->Add(gb_sizer, 1, wxEXPAND|wxALL, 4);
-				int row = 0;
-				int col = 0;
-				int trigger_mid = triggers.size() / 3;
-				for (unsigned a = 0; a < triggers.size(); a++)
-				{
-					wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special, -1, triggers[a], wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
-					gb_sizer->Add(cb_trigger, wxGBPosition(row++, col), wxDefaultSpan, wxEXPAND);
-					cb_triggers.push_back(cb_trigger);
-
-					if (row >= trigger_mid && col <= 1)
-					{
-						row = 0;
-						col++;
-					}
+					named_flexgrids.find(group)->second = frame_sizer;
 				}
 
-				gb_sizer->AddGrowableCol(0, 1);
-				gb_sizer->AddGrowableCol(1, 1);
-				gb_sizer->AddGrowableCol(2, 1);
+				wxCheckBox* cb_trigger = new wxCheckBox(panel_action_special, -1, property->getName(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+				frame_sizer->Add(cb_trigger, 0, wxEXPAND);
+
+				triggers.push_back(property->getName());
+				triggers_udmf.push_back(property->getProperty());
+				cb_triggers.push_back(cb_trigger);
 			}
 		}
 
