@@ -43,6 +43,8 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
+string GfxConvDialog::current_palette_name = "";
+string GfxConvDialog::target_palette_name = "";
 CVAR(Bool, gfx_extraconv, false, CVAR_SAVE)
 
 
@@ -72,6 +74,8 @@ GfxConvDialog::GfxConvDialog(wxWindow* parent)
  *******************************************************************/
 GfxConvDialog::~GfxConvDialog()
 {
+	current_palette_name = pal_chooser_current->GetStringSelection();
+	target_palette_name = pal_chooser_target->GetStringSelection();
 }
 
 /* GfxConvDialog::nextItem
@@ -243,6 +247,7 @@ void GfxConvDialog::setupLayout()
 	vbox->Add(gfx_current->toPanel(this), 1, wxEXPAND|wxTOP|wxLEFT|wxRIGHT, 4);
 
 	pal_chooser_current = new PaletteChooser(this, -1);
+	pal_chooser_current->selectPalette(current_palette_name);
 	vbox->Add(pal_chooser_current, 0, wxEXPAND|wxALL, 4);
 
 
@@ -257,6 +262,7 @@ void GfxConvDialog::setupLayout()
 	vbox->Add(gfx_target->toPanel(this), 1, wxEXPAND|wxTOP|wxLEFT|wxRIGHT, 4);
 
 	pal_chooser_target = new PaletteChooser(this, -1);
+	pal_chooser_target->selectPalette(target_palette_name);
 	vbox->Add(pal_chooser_target, 0, wxEXPAND|wxALL, 4);
 
 
