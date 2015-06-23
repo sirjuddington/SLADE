@@ -48,6 +48,10 @@
 CVAR(Int, snd_volume, 100, CVAR_SAVE)
 CVAR(Bool, snd_autoplay, false, CVAR_SAVE)
 
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Bool, snd_midi_usetimidity)
 
 /*******************************************************************
  * AUDIOENTRYPANEL CLASS FUNCTIONS
@@ -115,7 +119,8 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	// Set volume
 	sound.setVolume(snd_volume);
 	music.setVolume(snd_volume);
-	theMIDIPlayer->setVolume(snd_volume);
+	if (!snd_midi_usetimidity)
+		theMIDIPlayer->setVolume(snd_volume);
 	if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01);
 	mod.setVolume(snd_volume);
 
@@ -141,7 +146,9 @@ AudioEntryPanel::~AudioEntryPanel()
 {
 	// Stop the timer to avoid crashes
 	timer_seek->Stop();
+
 	theMIDIPlayer->stop();
+	theMIDIPlayerApp->stop();
 }
 
 /* AudioEntryPanel::loadEntry
@@ -159,6 +166,14 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	btn_play->Enable();
 	btn_pause->Enable();
 	btn_stop->Enable();
+
+	// Disable some GUI elements due timidity liminations
+	if (snd_midi_usetimidity)
+	{
+		slider_seek->Disable();
+		btn_pause->Disable();
+		slider_volume->Disable();
+	}
 
 	// Reset seek slider
 	slider_seek->SetValue(0);
@@ -354,30 +369,37 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 bool nosf_warned = false;	// One-time 'no soundfont loaded' warning
 bool AudioEntryPanel::openMidi(string filename)
 {
-	// Enable volume control
-	slider_volume->Enable(true);
-
 	// Attempt to open midi
-	if (theMIDIPlayer->isInitialised() && theMIDIPlayer->isSoundfontLoaded())
+	if (!snd_midi_usetimidity)
 	{
-		if (theMIDIPlayer->openFile(filename))
+		// Enable volume control
+		slider_volume->Enable(true);
+		if (theMIDIPlayer->isInitialised() && theMIDIPlayer->isSoundfontLoaded())
 		{
-			// Enable play controls
-			btn_play->Enable();
-			btn_pause->Enable();
-			btn_stop->Enable();
+			if (theMIDIPlayer->openFile(filename))
+			{
+				// Enable play controls
+				btn_play->Enable();
+				btn_pause->Enable();
+				btn_stop->Enable();
 
-			// Setup seekbar
-			setAudioDuration(theMIDIPlayer->getLength());
+				// Setup seekbar
+				setAudioDuration(theMIDIPlayer->getLength());
 
-			return true;
+				return true;
+			}
+		}
+		else
+		{
+			// MIDI Player not initialised (no soundfont set), attempt to open with wxMediaCtrl
+			if (openMedia(filename))
+				return true;
 		}
 	}
 	else
 	{
-		// MIDI Player not initialised (no soundfont set), attempt to open with wxMediaCtrl
-		if (openMedia(filename))
-			return true;
+		theMIDIPlayerApp->openFile(filename);
+		return true;
 	}
 
 	// Disable play controls
@@ -462,7 +484,12 @@ void AudioEntryPanel::startStream()
 	case AUTYPE_MOD:
 		mod.play(); break;
 	case AUTYPE_MIDI:
-		theMIDIPlayer->play(); break;
+		if (!snd_midi_usetimidity)
+			theMIDIPlayer->play();
+		else
+			theMIDIPlayerApp->play();
+
+		break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->Play(); break;
 	}
@@ -482,7 +509,9 @@ void AudioEntryPanel::stopStream()
 	case AUTYPE_MOD:
 		mod.pause(); break;
 	case AUTYPE_MIDI:
-		theMIDIPlayer->pause(); break;
+			theMIDIPlayer->pause();
+			theMIDIPlayerApp->stop();
+			break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->Pause(); break;
 	}
@@ -503,7 +532,9 @@ void AudioEntryPanel::resetStream()
 	case AUTYPE_MOD:
 		mod.stop(); break;
 	case AUTYPE_MIDI:
-		theMIDIPlayer->stop(); break;
+			theMIDIPlayer->stop();
+			theMIDIPlayerApp->stop();
+			break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->Stop(); break;
 	}
@@ -564,7 +595,10 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	case AUTYPE_MOD:
 		pos = mod.getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MIDI:
-		pos = theMIDIPlayer->getPosition(); break;
+		if (!snd_midi_usetimidity)
+			pos = theMIDIPlayer->getPosition();
+
+		break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) pos = media_ctrl->Tell(); break;
 	}
@@ -595,7 +629,10 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 	case AUTYPE_MOD:
 		mod.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
 	case AUTYPE_MIDI:
-		theMIDIPlayer->setPosition(slider_seek->GetValue()); break;
+		if (!snd_midi_usetimidity)
+			theMIDIPlayer->setPosition(slider_seek->GetValue());
+
+		break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->Seek(slider_seek->GetValue()); break;
 	}
@@ -615,7 +652,10 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 	case AUTYPE_MUSIC:
 		music.setVolume(snd_volume); break;
 	case AUTYPE_MIDI:
-		theMIDIPlayer->setVolume(snd_volume); break;
+		if (!snd_midi_usetimidity)
+			theMIDIPlayer->setVolume(snd_volume);
+
+		break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01); break;
 	case AUTYPE_MOD:
