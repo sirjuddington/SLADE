@@ -67,6 +67,9 @@ if(APPLE)
 	set_source_files_properties(${OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif(APPLE)
 
+# enable SSE instructions for dumb library
+set(CMAKE_C_FLAGS "-D_USE_SSE -msse")
+
 add_executable(slade WIN32 MACOSX_BUNDLE
 	lzma/C/LzmaDec.c
 	mus2mid/mus2mid.cpp
