@@ -51,12 +51,149 @@
 CVAR(Bool, close_archive_with_tab, true, CVAR_SAVE)
 CVAR(Int, am_current_tab, 0, CVAR_SAVE)
 CVAR(Bool, am_file_browser_tab, true, CVAR_SAVE)
+CVAR(Bool, check_dir_archives, true, CVAR_SAVE)
 
 
 /*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
-EXTERN_CVAR(String, dir_last)
+EXTERN_CVAR(String, dir_last);
+
+
+/*******************************************************************
+ * DIRARCHIVECHECK CLASS FUNCTIONS
+ *******************************************************************/
+wxDEFINE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
+
+/* DirArchiveCheck::DirArchiveCheck
+ * DirArchiveCheck class constructor
+ *******************************************************************/
+DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive)
+{
+	this->handler = handler;
+	dir_path = archive->getFilename();
+	removed_files = archive->getRemovedFiles();
+	change_list.archive = archive;
+
+	// Get flat entry list
+	vector<ArchiveEntry*> entries;
+	archive->getEntryTreeAsList(entries);
+
+	// Build entry info list
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
+		entry_info_t inf;
+		inf.file_path = entries[a]->exProp("filePath").getStringValue();
+		inf.entry_path = entries[a]->getPath(true);
+		inf.is_dir = (entries[a]->getType() == EntryType::folderType());
+		inf.file_modified = archive->fileModificationTime(entries[a]);
+		entry_info.push_back(inf);
+	}
+}
+
+/* DirArchiveCheck::~DirArchiveCheck
+ * DirArchiveCheck class destructor
+ *******************************************************************/
+DirArchiveCheck::~DirArchiveCheck()
+{
+}
+
+/* DirArchiveCheck::Entry
+ * DirArchiveCheck thread entry function
+ *******************************************************************/
+wxThread::ExitCode DirArchiveCheck::Entry()
+{
+	// Get current directory structure
+	vector<string> files, dirs;
+	DirArchiveTraverser traverser(files, dirs);
+	wxDir dir(dir_path);
+	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+
+	// Check for deleted files
+	for (unsigned a = 0; a < entry_info.size(); a++)
+	{
+		string path = entry_info[a].file_path;
+
+		// Ignore if not on disk
+		if (path.IsEmpty())
+			continue;
+
+		if (entry_info[a].is_dir)
+		{
+			if (!wxDirExists(path))
+				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entry_info[a].entry_path));
+		}
+		else
+		{
+			if (!wxFileExists(path))
+				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entry_info[a].entry_path));
+		}
+	}
+
+	// Check for new/updated files
+	for (unsigned a = 0; a < files.size(); a++)
+	{
+		// Ignore files removed from archive since last save
+		if (VECTOR_EXISTS(removed_files, files[a]))
+			continue;
+
+		// Find file in archive
+		entry_info_t inf;
+		bool found = false;
+		for (unsigned b = 0; b < entry_info.size(); b++)
+		{
+			if (entry_info[b].file_path == files[a])
+			{
+				inf = entry_info[b];
+				found = true;
+				break;
+			}
+		}
+
+		// No match, added to archive
+		if (!found)
+			change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a]));
+		else
+		{
+			// Matched, check modification time
+			time_t mod = wxFileModificationTime(files[a]);
+			if (mod > inf.file_modified)
+				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], inf.entry_path));
+		}
+	}
+
+	// Check for new dirs
+	for (unsigned a = 0; a < dirs.size(); a++)
+	{
+		// Ignore dirs removed from archive since last save
+		if (VECTOR_EXISTS(removed_files, dirs[a]))
+			continue;
+
+		// Find dir in archive
+		entry_info_t inf;
+		bool found = false;
+		for (unsigned b = 0; b < entry_info.size(); b++)
+		{
+			if (entry_info[b].file_path == dirs[a])
+			{
+				inf = entry_info[b];
+				found = true;
+				break;
+			}
+		}
+
+		// No match, added to archive
+		if (!found)
+			change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a]));
+	}
+
+	// Send changes via event
+	wxThreadEvent* event = new wxThreadEvent(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED);
+	event->SetPayload<dir_archive_changelist_t>(change_list);
+	wxQueueEvent(handler, event);
+
+	return NULL;
+}
 
 
 /*******************************************************************
@@ -177,6 +314,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	stc_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &ArchiveManagerPanel::onArchiveTabClose, this);
 	stc_archives->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSED, &ArchiveManagerPanel::onArchiveTabClosed, this);
 	stc_tabs->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &ArchiveManagerPanel::onAMTabChanged, this);
+	Bind(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, &ArchiveManagerPanel::onDirArchiveCheckCompleted, this);
 
 	// Listen to the ArchiveManager
 	listenTo(theArchiveManager);
@@ -1012,15 +1150,13 @@ void ArchiveManagerPanel::saveAll()
 }
 
 /* ArchiveManagerPanel::checkDirArchives
- * Checks all open directory archives for changes on the file system,
- * and brings up a dialog to apply any changes
+ * Checks all open directory archives for changes on the file system
+ * in background threads
  *******************************************************************/
 void ArchiveManagerPanel::checkDirArchives()
 {
-	if (checked_dir_archive_changes)
+	if (checked_dir_archive_changes || !check_dir_archives)
 		return;
-
-	checked_dir_archive_changes = true;
 
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
@@ -1028,16 +1164,15 @@ void ArchiveManagerPanel::checkDirArchives()
 		if (archive->getType() != ARCHIVE_FOLDER)
 			continue;
 
-		vector<dir_entry_change_t> changes;
-		((DirArchive*)archive)->checkUpdatedFiles(changes);
-		if (!changes.empty())
-		{
-			DirArchiveUpdateDialog dlg((wxWindow*)theMainWindow, (DirArchive*)archive, changes);
-			dlg.ShowModal();
-		}
-	}
+		if (VECTOR_EXISTS(checking_archives, archive))
+			continue;
 
-	checked_dir_archive_changes = false;
+		LOG_MESSAGE(2, "Checking %s for external changes...", CHR(archive->getFilename()));
+		checking_archives.push_back(archive);
+		DirArchiveCheck* check = new DirArchiveCheck(this, (DirArchive*)archive);
+		check->Create();
+		check->Run();
+	}
 }
 
 /* ArchiveManagerPanel::createNewArchive
@@ -1929,4 +2064,36 @@ void ArchiveManagerPanel::onArchiveTabClosed(wxAuiNotebookEvent& e)
 void ArchiveManagerPanel::onAMTabChanged(wxAuiNotebookEvent& e)
 {
 	am_current_tab = stc_tabs->GetSelection();
+}
+
+/* ArchiveManagerPanel::onDirArchiveCheckCompleted
+ * Called when a directory archive check thread finishes work. Pops
+ * up a dialog to apply any changes found (if any)
+ *******************************************************************/
+void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
+{
+	dir_archive_changelist_t change_list = e.GetPayload<dir_archive_changelist_t>();
+
+	// Check the archive is still open
+	if (theArchiveManager->archiveIndex(change_list.archive) >= 0)
+	{
+		LOG_MESSAGE(2, "Finished checking %s for external changes", CHR(change_list.archive->getFilename()));
+
+		if (!change_list.changes.empty())
+		{
+			checked_dir_archive_changes = true;
+
+			// Show change/update dialog
+			DirArchiveUpdateDialog dlg((wxWindow*)theMainWindow, (DirArchive*)change_list.archive, change_list.changes);
+			dlg.ShowModal();
+			
+			checked_dir_archive_changes = false;
+		}
+		else
+		{
+			LOG_MESSAGE(2, "No changes");
+		}
+	}
+
+	VECTOR_REMOVE(checking_archives, change_list.archive);
 }
