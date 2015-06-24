@@ -37,10 +37,13 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
+#ifndef NO_FLUIDSYNTH
 MIDIPlayer*	MIDIPlayer::instance = NULL;
-MIDIPlayerApp* MIDIPlayerApp::instance = NULL;
 CVAR(String, fs_soundfont_path, "", CVAR_SAVE);
 CVAR(String, fs_driver, "", CVAR_SAVE);
+#endif
+
+MIDIPlayerApp* MIDIPlayerApp::instance = NULL;
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -49,6 +52,7 @@ EXTERN_CVAR(Int, snd_volume)
 EXTERN_CVAR(String, snd_timidity_path)
 EXTERN_CVAR(String, snd_timidity_options)
 
+#ifndef NO_FLUIDSYNTH
 
 /*******************************************************************
  * MIDIPLAYER FLUIDSYNTH IMPLEMENTATION
@@ -292,6 +296,8 @@ bool MIDIPlayer::setVolume(int volume)
 
 	return true;
 }
+
+#endif
 
 /*******************************************************************
  * MIDIPLAYER TIMIDITY IMPLEMENTATION
