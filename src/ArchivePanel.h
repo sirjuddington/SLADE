@@ -72,6 +72,7 @@ public:
 	bool	importFiles();
 	bool	convertArchiveTo();
 	bool	cleanupArchive();
+	bool	buildArchive();
 
 	// Entry manipulation actions
 	bool	renameEntry(bool each = false);
