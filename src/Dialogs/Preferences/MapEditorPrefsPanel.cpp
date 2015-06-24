@@ -39,6 +39,7 @@
  *******************************************************************/
 EXTERN_CVAR(Bool, scroll_smooth)
 EXTERN_CVAR(Bool, selection_clear_click)
+EXTERN_CVAR(Bool, property_edit_dclick)
 EXTERN_CVAR(Bool, map_merge_undo_step)
 EXTERN_CVAR(Bool, mobj_props_auto_apply)
 EXTERN_CVAR(Bool, map_remove_invalid_lines)
@@ -70,6 +71,10 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	// Clear selection on click
 	cb_selection_clear_click = new wxCheckBox(this, -1, "Clear selection when nothing is clicked");
 	sizer->Add(cb_selection_clear_click, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	// Double-click to edit selection properties
+	cb_property_edit_dclick = new wxCheckBox(this, -1, "Double-click to edit properties");
+	sizer->Add(cb_property_edit_dclick, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Merge undo step
 	cb_merge_undo_step = new wxCheckBox(this, -1, "Create a 'Merge' undo level on move/edit map architecture");
@@ -107,6 +112,7 @@ void MapEditorPrefsPanel::init()
 {
 	cb_scroll_smooth->SetValue(scroll_smooth);
 	cb_selection_clear_click->SetValue(selection_clear_click);
+	cb_property_edit_dclick->SetValue(property_edit_dclick);
 	cb_merge_undo_step->SetValue(map_merge_undo_step);
 	cb_props_auto_apply->SetValue(mobj_props_auto_apply);
 	cb_remove_invalid_lines->SetValue(map_remove_invalid_lines);
@@ -120,6 +126,7 @@ void MapEditorPrefsPanel::applyPreferences()
 {
 	scroll_smooth = cb_scroll_smooth->GetValue();
 	selection_clear_click = cb_selection_clear_click->GetValue();
+	property_edit_dclick = cb_property_edit_dclick->GetValue();
 	map_merge_undo_step = cb_merge_undo_step->GetValue();
 	mobj_props_auto_apply = cb_props_auto_apply->GetValue();
 	map_remove_invalid_lines = cb_remove_invalid_lines->GetValue();

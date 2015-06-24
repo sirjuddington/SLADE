@@ -73,6 +73,7 @@ CVAR(Bool, grid_dashed, false, CVAR_SAVE)
 CVAR(Bool, scroll_smooth, true, CVAR_SAVE)
 CVAR(Int, flat_drawtype, 2, CVAR_SAVE)
 CVAR(Bool, selection_clear_click, false, CVAR_SAVE)
+CVAR(Bool, property_edit_dclick, true, CVAR_SAVE)
 CVAR(Bool, map_showfps, false, CVAR_SAVE)
 CVAR(Bool, camera_3d_gravity, true, CVAR_SAVE)
 CVAR(Int, camera_3d_crosshair_size, 6, CVAR_SAVE)
@@ -3975,7 +3976,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		else if (mouse_state == MSTATE_NORMAL)
 		{
 			// Double click to edit the current selection
-			if (e.LeftDClick())
+			if (e.LeftDClick() && property_edit_dclick)
 			{
 				vector<MapObject*> objects;
 				editor->getSelectedObjects(objects);
