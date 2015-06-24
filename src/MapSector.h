@@ -80,6 +80,16 @@ public:
 	void	setStringProperty(string key, string value);
 	void	setFloatProperty(string key, double value);
 	void	setIntProperty(string key, int value);
+	void	setFloorHeight(short height)
+	{
+		f_height = height;
+		plane_floor.set(0, 0, 1, height);
+	}
+	void	setCeilingHeight(short height)
+	{
+		c_height = height;
+		plane_ceiling.set(0, 0, 1, height);
+	}
 	void	setFloorPlane(plane_t p) { plane_floor = p; }
 	void	setCeilingPlane(plane_t p) { plane_ceiling = p; }
 

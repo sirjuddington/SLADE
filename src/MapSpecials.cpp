@@ -200,61 +200,63 @@ void MapSpecials::setupPlaneAlignSlope(MapLine* line, bool floor, bool front)
 	LOG_MESSAGE(3, "Line %d %s slope, %s side", line->getIndex(), floor ? "floor" : "ceiling", front ? "front" : "back");
 
 	// Get sectors
-	MapSector* s1 = line->frontSector();
-	MapSector* s2 = line->backSector();
-	if (!s1 || !s2)
+	MapSector* sloping_sector;
+	MapSector* control_sector;
+	if (front)
+	{
+		sloping_sector = line->frontSector();
+		control_sector = line->backSector();
+	}
+	else
+	{
+		sloping_sector = line->backSector();
+		control_sector = line->frontSector();
+	}
+	if (!sloping_sector || !control_sector)
 	{
 		LOG_MESSAGE(1, "Line %d is not two-sided, Plane_Align not processed", line->getIndex());
 		return;
 	}
 
-	// Get origin point
-	fpoint3_t origin(line->getPoint(MOBJ_POINT_MID).x, line->getPoint(MOBJ_POINT_MID).y, 0);
-	if (floor)
-		origin.z = front ? s2->getFloorHeight() : s1->getFloorHeight();
-	else
-		origin.z = front ? s2->getCeilingHeight() : s1->getCeilingHeight();
+	// The slope is between the line with Plane_Align, and the point in the
+	// sector furthest away from it, which must be at a vertex
+	vector<MapVertex*> vertices;
+	sloping_sector->getVertices(vertices);
 
-	// Get intersection line and (2d) point
-	fpoint2_t dir_2d = line->frontVector();
-	if (front)
+	double this_dist;
+	MapVertex* this_vertex;
+	double furthest_dist = 0.0;
+	MapVertex* furthest_vertex = NULL;
+	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		dir_2d.x = -dir_2d.x;
-		dir_2d.y = -dir_2d.y;
+		this_vertex = vertices[a];
+		this_dist = line->distanceTo(this_vertex->xPos(), this_vertex->yPos());
+		if (this_dist > furthest_dist)
+		{
+			furthest_dist = this_dist;
+			furthest_vertex = this_vertex;
+		}
 	}
-	double ix, iy;
-	MapLine* intersect = line->getParentMap()->lineVectorIntersect(line, front, ix, iy);
-	if (!intersect)
+
+	if (!furthest_vertex || furthest_dist < 0.01)
 	{
-		LOG_MESSAGE(1, "Error processing Plane_Align for line %d - no opposite end found", line->getIndex());
+		LOG_MESSAGE(1, "Can't find a reference point not on line %d; Plane_Align not processed", line->getIndex());
 		return;
 	}
 
-	// Determine end point
-	fpoint3_t end(ix, iy, 0);
-	if (floor)
-		end.z = front ? s1->getFloorHeight() : s2->getFloorHeight();
-	else
-		end.z = front ? s1->getCeilingHeight() : s2->getCeilingHeight();
-
 	// Calculate slope plane
-	plane_t plane;
-	if (front)
-	{
-		plane = MathStuff::planeFromTriangle(end, fpoint3_t(line->x1(), line->y1(), origin.z), fpoint3_t(line->x2(), line->y2(), origin.z));
-		if (floor)
-			s1->setFloorPlane(plane);
-		else
-			s1->setCeilingPlane(plane);
-	}
+	// We now have three points: this line's endpoints (at the control sector's
+	// height) and the found vertex (at the sloped sector's height).
+	double controlz = floor ? control_sector->getFloorHeight() : control_sector->getCeilingHeight();
+	double slopingz = floor ? sloping_sector->getFloorHeight() : sloping_sector->getCeilingHeight();
+	fpoint3_t p1(line->x1(), line->y1(), controlz);
+	fpoint3_t p2(line->x2(), line->y2(), controlz);
+	fpoint3_t p3(furthest_vertex->xPos(), furthest_vertex->yPos(), slopingz);
+	plane_t plane = MathStuff::planeFromTriangle(p1, p2, p3);
+	if (floor)
+		sloping_sector->setFloorPlane(plane);
 	else
-	{
-		plane = MathStuff::planeFromTriangle(end, fpoint3_t(line->x1(), line->y1(), origin.z), fpoint3_t(line->x2(), line->y2(), origin.z));
-		if (floor)
-			s2->setFloorPlane(plane);
-		else
-			s2->setCeilingPlane(plane);
-	}
+		sloping_sector->setCeilingPlane(plane);
 }
 
 /* MapSpecials::processACSScripts
