@@ -128,7 +128,11 @@ void NodeBuilders::saveBuilderPaths(wxFile& file)
 {
 	file.Write("nodebuilder_paths\n{\n");
 	for (unsigned a = 0; a < builders.size(); a++)
-		file.Write(S_FMT("\t%s \"%s\"\n", builders[a].id, builders[a].path));
+	{
+		string path = builders[a].path;
+		path.Replace("\\", "/");
+		file.Write(S_FMT("\t%s \"%s\"\n", builders[a].id, path));
+	}
 	file.Write("}\n");
 }
 

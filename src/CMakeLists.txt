@@ -58,7 +58,19 @@ set(DUMB_SOURCES
 )
 file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)
 
-add_executable(slade WIN32
+if(APPLE)
+	set(OSX_ICON "${CMAKE_SOURCE_DIR}/SLADE-osx.icns")
+	set(OSX_PLIST "${CMAKE_SOURCE_DIR}/Info.plist")
+
+	set(SLADE_SOURCES ${SLADE_SOURCES} ${OSX_ICON} ${OSX_PLIST})
+
+	set_source_files_properties(${OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+endif(APPLE)
+
+# enable SSE instructions for dumb library
+set(CMAKE_C_FLAGS "-D_USE_SSE -msse")
+
+add_executable(slade WIN32 MACOSX_BUNDLE
 	lzma/C/LzmaDec.c
 	mus2mid/mus2mid.cpp
 	zreaders/ancientzip.cpp
@@ -79,15 +91,9 @@ target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRA
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
 if(APPLE)
-	set(OSX_CONTENT_DIR ${SLADE_OUTPUT_DIR}/SLADE.app/Contents/)
-	set(OSX_EXE_DIR ${OSX_CONTENT_DIR}MacOS/)
-	set(OSX_RES_DIR ${OSX_CONTENT_DIR}Resources/)
+	set_target_properties(slade PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${OSX_PLIST})
 
-	add_custom_command(TARGET slade
-		POST_BUILD
-		COMMAND mkdir -p "${OSX_EXE_DIR}" "${OSX_RES_DIR}"
-		COMMAND cp "${CMAKE_SOURCE_DIR}/Info.plist" "${OSX_CONTENT_DIR}"
-		COMMAND cp "${CMAKE_SOURCE_DIR}/SLADE-osx.icns" "${OSX_RES_DIR}"
-		COMMAND mv "${SLADE_OUTPUT_DIR}/slade" "${OSX_EXE_DIR}"
+	add_custom_command(TARGET slade POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SLADE_OUTPUT_DIR}/slade.pk3" "$<TARGET_FILE_DIR:slade>/slade.pk3"
 	)
-endif()
+endif(APPLE)

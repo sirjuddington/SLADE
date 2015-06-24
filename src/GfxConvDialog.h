@@ -113,6 +113,10 @@ private:
 
 	bool		nextItem();
 
+	// Static
+	static string	current_palette_name;
+	static string	target_palette_name;
+
 public:
 	GfxConvDialog(wxWindow* parent);
 	~GfxConvDialog();

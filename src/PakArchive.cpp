@@ -85,8 +85,8 @@ bool PakArchive::open(MemChunk& mc)
 
 	// Read pak header
 	char pack[4];
-	long dir_offset;
-	long dir_size;
+	int32_t dir_offset;
+	int32_t dir_size;
 	mc.seek(0, SEEK_SET);
 	mc.read(pack, 4);
 	mc.read(&dir_offset, 4);
@@ -114,8 +114,8 @@ bool PakArchive::open(MemChunk& mc)
 
 		// Read entry info
 		char name[56];
-		long offset;
-		long size;
+		int32_t offset;
+		int32_t size;
 		mc.read(name, 56);
 		mc.read(&offset, 4);
 		mc.read(&size, 4);
@@ -205,8 +205,8 @@ bool PakArchive::write(MemChunk& mc, bool update)
 	getEntryTreeAsList(entries);
 
 	// Process entry list
-	long dir_offset = 12;
-	long dir_size = 0;
+	int32_t dir_offset = 12;
+	int32_t dir_size = 0;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Ignore folder entries
@@ -230,7 +230,7 @@ bool PakArchive::write(MemChunk& mc, bool update)
 
 	// Write directory
 	mc.seek(dir_offset, SEEK_SET);
-	long offset = 12;
+	int32_t offset = 12;
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
 		// Skip folders
@@ -266,7 +266,7 @@ bool PakArchive::write(MemChunk& mc, bool update)
 		mc.write(&offset, 4);
 
 		// Write entry size
-		long size = entries[a]->getSize();
+		int32_t size = entries[a]->getSize();
 		mc.write(&size, 4);
 
 		// Increment/update offset
@@ -341,8 +341,8 @@ bool PakArchive::isPakArchive(MemChunk& mc)
 
 	// Read pak header
 	char pack[4];
-	long dir_offset;
-	long dir_size;
+	int32_t dir_offset;
+	int32_t dir_size;
 	mc.seek(0, SEEK_SET);
 	mc.read(pack, 4);
 	mc.read(&dir_offset, 4);
@@ -378,8 +378,8 @@ bool PakArchive::isPakArchive(string filename)
 
 	// Read pak header
 	char pack[4];
-	long dir_offset;
-	long dir_size;
+	int32_t dir_offset;
+	int32_t dir_size;
 	file.Seek(0, wxFromStart);
 	file.Read(pack, 4);
 	file.Read(&dir_offset, 4);

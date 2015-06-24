@@ -35,7 +35,6 @@
 #include "SplashWindow.h"
 #include "WadArchive.h"
 #include "MainApp.h"
-#include <wx/dir.h>
 #include <wx/filename.h>
 
 
@@ -43,30 +42,6 @@
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, archive_load_data)
-
-
-class DirArchiveTraverser : public wxDirTraverser
-{
-private:
-	vector<string>&	paths;
-	vector<string>&	dirs;
-
-public:
-	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist) : paths(pathlist), dirs(dirlist) {}
-	~DirArchiveTraverser() {}
-
-	virtual wxDirTraverseResult OnFile(const wxString& filename)
-	{
-		paths.push_back(filename);
-		return wxDIR_CONTINUE;
-	}
-
-	virtual wxDirTraverseResult OnDir(const wxString& dirname)
-	{
-		dirs.push_back(dirname);
-		return wxDIR_CONTINUE;
-	}
-};
 
 
 /*******************************************************************

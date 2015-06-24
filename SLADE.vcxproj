@@ -953,6 +953,7 @@
     <None Include="src\dumb\helpers\resamp3.inc" />
     <None Include="src\dumb\helpers\resample.inc" />
     <None Include="stuff.txt" />
+    <None Include="win_installer\SLADE.iss" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />

@@ -55,7 +55,37 @@ public:
 	bool	setVolume(int volume);
 };
 
+#include <wx/process.h>
+
+class MIDIPlayerApp
+{
+private:
+	static MIDIPlayerApp*	instance;
+
+	wxProcess	 *program;
+	string	 file;
+
+public:
+	MIDIPlayerApp();
+	~MIDIPlayerApp();
+
+	static MIDIPlayerApp*	getInstance()
+	{
+		if (!instance)
+			instance = new MIDIPlayerApp();
+
+		return instance;
+	}
+
+	void	openFile(string filename);
+	void	reset();
+	bool	play();
+	bool	stop();
+	bool	isPlaying();
+};
+
 // Define for less cumbersome MIDIPlayer::getInstance()
 #define theMIDIPlayer MIDIPlayer::getInstance()
+#define theMIDIPlayerApp MIDIPlayerApp::getInstance()
 
 #endif//__MIDIPLAYER_H__

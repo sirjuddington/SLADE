@@ -76,15 +76,15 @@ namespace Global
 {
 	string error = "";
 
-	string version = "3.1.0.3"
+	int beta_num = 0;
+	int version_num = 3104;
+	string version = "3.1.0.4"
 #ifdef GIT_DESCRIPTION
 	                 " (" GIT_DESCRIPTION ")"
 #endif
 	                 "";
 
 	int log_verbosity = 1;
-	int version_num = 3103;
-	int beta_num = 0;
 
 #ifdef DEBUG
 	bool debug = true;
@@ -1035,13 +1035,21 @@ void MainApp::saveConfigFile()
 	// Write base resource archive paths
 	file.Write("\nbase_resource_paths\n{\n");
 	for (size_t a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
-		file.Write(S_FMT("\t\"%s\"\n", theArchiveManager->getBaseResourcePath(a)), wxConvUTF8);
+	{
+		string path = theArchiveManager->getBaseResourcePath(a);
+		path.Replace("\\", "/");
+		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
+	}
 	file.Write("}\n");
 
 	// Write recent files list (in reverse to keep proper order when reading back)
 	file.Write("\nrecent_files\n{\n");
-	for (int a = theArchiveManager->numRecentFiles()-1; a >= 0; a--)
-		file.Write(S_FMT("\t\"%s\"\n", theArchiveManager->recentFile(a)), wxConvUTF8);
+	for (int a = theArchiveManager->numRecentFiles() - 1; a >= 0; a--)
+	{
+		string path = theArchiveManager->recentFile(a);
+		path.Replace("\\", "/");
+		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
+	}
 	file.Write("}\n");
 
 	// Write keybinds

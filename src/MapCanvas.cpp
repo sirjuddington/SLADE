@@ -3116,7 +3116,8 @@ void MapCanvas::keyBinds2d(string name)
 		{
 			vector<MapObject*> objects;
 			editor->getSelectedObjects(objects);
-			editObjectProperties(objects);
+			if (!objects.empty())
+				editObjectProperties(objects);
 		}
 
 

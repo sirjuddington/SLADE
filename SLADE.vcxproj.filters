@@ -166,6 +166,9 @@
     <Filter Include="External\DUMB\it">
       <UniqueIdentifier>{210b2c2d-6db2-46a5-87e6-a09c7ac669fa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Installer">
+      <UniqueIdentifier>{fa5a343f-ee94-41ea-a75f-1d0292b58329}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GfxConvDialog.cpp">
@@ -2512,6 +2515,9 @@
     </None>
     <None Include="src\dumb\helpers\resample.inc">
       <Filter>External\DUMB\helpers</Filter>
+    </None>
+    <None Include="win_installer\SLADE.iss">
+      <Filter>Installer</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

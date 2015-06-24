@@ -4,6 +4,7 @@
 
 #include "Archive.h"
 #include <map>
+#include <wx/dir.h>
 
 typedef std::map<ArchiveEntry*, time_t> mod_times_t;
 
@@ -42,6 +43,10 @@ public:
 	DirArchive();
 	~DirArchive();
 
+	// Accessors
+	vector<string>	getRemovedFiles() { return removed_files; }
+	time_t			fileModificationTime(ArchiveEntry* entry) { return file_modification_times[entry]; }
+
 	// Archive type info
 	string	getFileExtensionString();
 	string	getFormat();
@@ -79,6 +84,29 @@ public:
 	// DirArchive-specific
 	void	checkUpdatedFiles(vector<dir_entry_change_t>& changes);
 	void	updateChangedEntries(vector<dir_entry_change_t>& changes);
+};
+
+class DirArchiveTraverser : public wxDirTraverser
+{
+private:
+	vector<string>&	paths;
+	vector<string>&	dirs;
+
+public:
+	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist) : paths(pathlist), dirs(dirlist) {}
+	~DirArchiveTraverser() {}
+
+	virtual wxDirTraverseResult OnFile(const wxString& filename)
+	{
+		paths.push_back(filename);
+		return wxDIR_CONTINUE;
+	}
+
+	virtual wxDirTraverseResult OnDir(const wxString& dirname)
+	{
+		dirs.push_back(dirname);
+		return wxDIR_CONTINUE;
+	}
 };
 
 #endif//__DIR_ARCHIVE_H__

@@ -677,7 +677,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
  * Reads action special definitions from a parsed tree [node], using
  * [group_defaults] for default values
  *******************************************************************/
-void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults)
+void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* group_defaults, SpecialArgMap* shared_args)
 {
 	// Check if we're clearing all existing specials
 	if (node->getChild("clearexisting"))
@@ -701,9 +701,16 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 		groupname.RemoveLast();	// Remove last '/'
 
 	// --- Set up group default properties ---
+	bool own_shared_args = false;
+	if (!shared_args)
+	{
+		shared_args = new SpecialArgMap();
+		own_shared_args = true;
+	}
+
 	ActionSpecial* as_defaults = new ActionSpecial();
 	if (group_defaults) as_defaults->copy(group_defaults);
-	as_defaults->parse(node);
+	as_defaults->parse(node, shared_args);
 
 	// --- Go through all child nodes ---
 	for (unsigned a = 0; a < node->nChildren(); a++)
@@ -712,7 +719,12 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 
 		// Check for 'group'
 		if (S_CMPNOCASE(child->getType(), "group"))
-			readActionSpecials(child, as_defaults);
+			readActionSpecials(child, as_defaults, shared_args);
+
+		// Predeclared argument, for action specials that share the same
+		// complex argument
+		else if (S_CMPNOCASE(child->getType(), "arg"))
+			ActionSpecial::parseArg(child, shared_args, (*shared_args)[child->getName()]);
 
 		// Action special
 		else if (S_CMPNOCASE(child->getType(), "special"))
@@ -725,6 +737,7 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 			if (!action_specials[special].special)
 			{
 				action_specials[special].special = new ActionSpecial();
+				action_specials[special].number = special;
 				action_specials[special].index = action_specials.size();
 			}
 
@@ -735,15 +748,13 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 			action_specials[special].special->copy(as_defaults);
 			action_specials[special].special->group = groupname;
 
-			// Check for simple definition
-			if (child->isLeaf())
-				action_specials[special].special->name = child->getStringValue();
-			else
-				action_specials[special].special->parse(child);	// Extended definition
+			action_specials[special].special->parse(child, shared_args);
 		}
 	}
 
 	delete as_defaults;
+	if (own_shared_args)
+		delete shared_args;
 }
 
 /* GameConfiguration::readThingTypes
@@ -1570,7 +1581,7 @@ vector<as_t> GameConfiguration::allActionSpecials()
 	{
 		if (i->second.special)
 		{
-			as_t as(i->second.special);
+			as_t as(i->second);
 			as.number = i->first;
 			ret.push_back(as);
 		}
@@ -2774,6 +2785,7 @@ string GameConfiguration::spacTriggerString(MapLine* line, int map_format)
 		// Go through all line UDMF properties
 		string trigger = "";
 		vector<udmfp_t> props = allUDMFProperties(MOBJ_LINE);
+		sort(props.begin(), props.end());
 		for (unsigned a = 0; a < props.size(); a++)
 		{
 			// Check for trigger property
