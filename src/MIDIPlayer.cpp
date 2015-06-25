@@ -378,14 +378,3 @@ bool MIDIPlayerApp::isPlaying()
 
 	return true;
 }
-
-/* MIDIPlayerApp::Reset
- * Reset everything
- *******************************************************************/
-void MIDIPlayerApp::reset()
-{
-	stop();
-
-	file = "";
-	program = NULL;
-}

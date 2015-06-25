@@ -241,5 +241,5 @@ void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e)
 #ifndef NO_FLUIDSYNTH
 	theMIDIPlayer->resetPlayer();
 #endif
-	theMIDIPlayerApp->reset();
+	theMIDIPlayerApp->stop();
 }

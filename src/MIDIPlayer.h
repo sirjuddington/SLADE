@@ -85,7 +85,6 @@ public:
 	}
 
 	void	openFile(string filename);
-	void	reset();
 	bool	play();
 	bool	stop();
 	bool	isPlaying();
