@@ -265,7 +265,7 @@ z_menudef {
 		StaticTextSwitchable, ScrollTop, SafeCommand, ColorPicker, Class, ScreenResolution, 
 		StaticPatch, Control, Option, Slider, PatchItem, TextItem, Submenu, Command,
 		NetgameMessage, StaticPatchCentered, StaticTextCentered, MouseWindow, CenterMenu,
-		Title, PlayerNameBox, ValueText, MapControl, Else
+		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField
 	}
 	
 	functions { ifgame = "games ..."; ifoption = "options ..."; }
