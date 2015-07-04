@@ -692,6 +692,47 @@ void MapSector::updatePlanes()
 		}
 	}
 
+	vector<MapVertex*> vertices;
+	getVertices(vertices);
+
+	// UDMF vertex heights
+	if (vertices.size() == 3)
+	{
+		if (!floor_done && theGameConfiguration->getUDMFProperty("zfloor", MOBJ_VERTEX))
+		{
+			double z1 = vertices[0]->floatProperty("zfloor");
+			double z2 = vertices[1]->floatProperty("zfloor");
+			double z3 = vertices[2]->floatProperty("zfloor");
+			// NOTE: there's currently no way to distinguish a height of 0 from
+			// an unset height, so assume the author intended to have a slope
+			// if at least one vertex has a height
+			if (z1 || z2 || z3)
+			{
+				fpoint3_t p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
+				fpoint3_t p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
+				fpoint3_t p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
+				plane_t plane = MathStuff::planeFromTriangle(p1, p2, p3);
+				setFloorPlane(plane);
+				floor_done = true;
+			}
+		}
+		if (!ceiling_done && theGameConfiguration->getUDMFProperty("zceiling", MOBJ_VERTEX))
+		{
+			double z1 = vertices[0]->floatProperty("zceiling");
+			double z2 = vertices[1]->floatProperty("zceiling");
+			double z3 = vertices[2]->floatProperty("zceiling");
+			if (z1 || z2 || z3)
+			{
+				fpoint3_t p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
+				fpoint3_t p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
+				fpoint3_t p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
+				plane_t plane = MathStuff::planeFromTriangle(p1, p2, p3);
+				setCeilingPlane(plane);
+				ceiling_done = true;
+			}
+		}
+	}
+
 	if (!floor_done)
 		plane_floor.set(0, 0, 1, f_height);
 	if (!ceiling_done)
