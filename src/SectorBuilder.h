@@ -11,7 +11,7 @@ class MapSector;
 class MapSide;
 class SLADEMap;
 
-WX_DECLARE_HASH_MAP(MapLine*, bool, wxPointerHash, wxPointerEqual, MapLineSet);
+WX_DECLARE_HASH_MAP(MapLine*, int, wxPointerHash, wxPointerEqual, MapLineSet);
 
 class SectorBuilder
 {
