@@ -4371,10 +4371,6 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 		else
 			lines[line]->side2 = side;
 
-		// Flip if no first side
-		if (lines[line]->side2 && !lines[line]->side1)
-			lines[line]->flip();
-
 		// Set appropriate line flags
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
 		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
@@ -4686,6 +4682,13 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		}
 	}
 
+	// Flip any one-sided lines that only have a side 2
+	for (unsigned a = 0; a < connected_lines.size(); a++)
+	{
+		if (connected_lines[a]->side2 && !connected_lines[a]->side1)
+			connected_lines[a]->flip();
+	}
+
 	if (merged)
 	{
 		LOG_MESSAGE(4, "Architecture merged");
@@ -4811,7 +4814,10 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 			{
 				if (edges[e].line == builder.getEdgeLine(b) &&
 					edges[e].front == builder.edgeIsFront(b))
+				{
 					edges[e].ignore = true;
+					break;
+				}
 			}
 		}
 
