@@ -843,6 +843,8 @@ bool ArchivePanel::buildArchive()
 		return false;
 	}
 
+	Archive *new_archive;
+
 	// Create dialog
 	SFileDialog::fd_info_t info;
 	if (SFileDialog::saveFile(info, "Build archive", "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)", this))
@@ -851,18 +853,23 @@ bool ArchivePanel::buildArchive()
 		theSplashWindow->setProgress(-1.0f);
 
 		// Create temporary archive
-		Archive *new_archive = theArchiveManager->newArchive(ARCHIVE_ZIP);
+		new_archive = theArchiveManager->newArchive(ARCHIVE_ZIP);
 		new_archive->importDir(archive->getFilename());
 
 		// Save the archive
 		if (!new_archive->save(info.filenames[0]))
 		{
-			// If there was an error pop up a message box
+			theArchiveManager->closeArchive(new_archive);
 			theSplashWindow->hide();
+
+			// If there was an error pop up a message box
 			wxMessageBox(S_FMT("Error:\n%s", Global::error), "Error", wxICON_ERROR);
 			return false;
 		}
 	}
+
+	if (new_archive)
+		theArchiveManager->closeArchive(new_archive);
 
 	theSplashWindow->hide();
 
