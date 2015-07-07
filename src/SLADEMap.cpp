@@ -4371,10 +4371,6 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 		else
 			lines[line]->side2 = side;
 
-		// Flip if no first side
-		if (lines[line]->side2 && !lines[line]->side1)
-			lines[line]->flip();
-
 		// Set appropriate line flags
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
 		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
@@ -4526,6 +4522,30 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			VECTOR_ADD_UNIQUE(connected_lines, merged_vertices[a]->connected_lines[l]);
 	}
 
+	// Split lines (by vertices)
+	const double split_dist = 0.1;
+	// Split existing lines that vertices moved onto
+	for (unsigned a = 0; a < merged_vertices.size(); a++)
+		splitLinesAt(merged_vertices[a], split_dist);
+
+	// Split lines that moved onto existing vertices
+	unsigned nlines = connected_lines.size();
+	for (unsigned a = 0; a < nlines; a++)
+	{
+		unsigned nvertices = this->vertices.size();
+		for (unsigned b = 0; b < nvertices; b++)
+		{
+			MapVertex* vertex = this->vertices[b];
+
+			// Skip line if it shares the vertex
+			if (connected_lines[a]->v1() == vertex || connected_lines[a]->v2() == vertex)
+				continue;
+
+			if (connected_lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
+				splitLine(connected_lines[a], vertex);
+		}
+	}
+
 	// Split lines (by lines)
 	double l1x1, l1y1, l1x2, l1y2;
 	double l2x1, l2y1, l2x2, l2y2;
@@ -4573,30 +4593,6 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				a--;
 				break;
 			}
-		}
-	}
-
-	// Split lines (by vertices)
-	const double split_dist = 0.1;
-	// Split existing lines that vertices moved onto
-	for (unsigned a = 0; a < merged_vertices.size(); a++)
-		splitLinesAt(merged_vertices[a], split_dist);
-
-	// Split lines that moved onto existing vertices
-	unsigned nlines = connected_lines.size();
-	for (unsigned a = 0; a < nlines; a++)
-	{
-		unsigned nvertices = this->vertices.size();
-		for (unsigned b = 0; b < nvertices; b++)
-		{
-			MapVertex* vertex = this->vertices[b];
-
-			// Skip line if it shares the vertex
-			if (connected_lines[a]->v1() == vertex || connected_lines[a]->v2() == vertex)
-				continue;
-
-			if (connected_lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
-				splitLine(connected_lines[a], vertex);
 		}
 	}
 
@@ -4684,6 +4680,13 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			else
 				removeSide(connected_lines[a]->side2);
 		}
+	}
+
+	// Flip any one-sided lines that only have a side 2
+	for (unsigned a = 0; a < connected_lines.size(); a++)
+	{
+		if (connected_lines[a]->side2 && !connected_lines[a]->side1)
+			connected_lines[a]->flip();
 	}
 
 	if (merged)
@@ -4811,7 +4814,10 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 			{
 				if (edges[e].line == builder.getEdgeLine(b) &&
 					edges[e].front == builder.edgeIsFront(b))
+				{
 					edges[e].ignore = true;
+					break;
+				}
 			}
 		}
 

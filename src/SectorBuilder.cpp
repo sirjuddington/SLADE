@@ -122,10 +122,6 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge, MapLin
 		if (line == edge.line)
 			continue;
 
-		// Ignore already-traversed lines
-		if (visited_lines.count(line))
-			continue;
-
 		// Ignore if zero-length
 		if (line->v1() == line->v2())
 			continue;
@@ -140,6 +136,10 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge, MapLin
 			vertex_next = line->v1();
 			front = false;
 		}
+
+		// Ignore already-traversed lines
+		if (visited_lines[line] & (front ? 1 : 2))
+			continue;
 
 		// Determine angle between lines
 		double angle = MathStuff::angle2DRad(fpoint2_t(vertex_prev->xPos(), vertex_prev->yPos()),
@@ -156,7 +156,7 @@ SectorBuilder::edge_t SectorBuilder::nextEdge(SectorBuilder::edge_t edge, MapLin
 	}
 
 	// Return the next edge found
-	visited_lines[next.line] = true;
+	visited_lines[next.line] |= (next.front ? 1 : 2);
 	return next;
 }
 
