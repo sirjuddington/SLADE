@@ -854,6 +854,12 @@ bool ArchivePanel::buildArchive()
 
 		// Create temporary archive
 		new_archive = theArchiveManager->newArchive(ARCHIVE_ZIP);
+
+		// prevent for "archive in archive" when saving in the current directory
+		if(wxFileExists(info.filenames[0]))
+			wxRemoveFile(info.filenames[0]);
+
+		// import all files into new archive
 		new_archive->importDir(archive->getFilename());
 
 		// Save the archive
