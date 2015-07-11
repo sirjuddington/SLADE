@@ -37,6 +37,11 @@
 #include "MathStuff.h"
 #include "GameConfiguration.h"
 #include <wx/colour.h>
+#include <cmath>
+
+
+// Number of radians in the unit circle
+const double TAU = M_PI * 2;
 
 
 /*******************************************************************
@@ -661,6 +666,90 @@ void MapSector::updatePlanes()
 		return;
 	}
 
+	// TODO hacky ugh
+	bool floor_done = false;
+	bool ceiling_done = false;
+
+	for (unsigned a = 0; a < parent_map->nThings(); a++)
+	{
+		MapThing* thing = parent_map->getThing(a);
+		// TODO don't hardcode this number...  maybe?
+		if (!floor_done
+			&& thing->getType() == 9502
+			&& bbox.point_within(thing->xPos(), thing->yPos())
+			&& isWithin(thing->xPos(), thing->yPos())
+		)
+		{
+			// Sector tilt things.  First argument is the tilt angle, but
+			// starting with 0 as straight down; subtracting 90 fixes that.
+			// TODO skip if the tilt is vertical!
+			double angle = thing->getAngle() / 360.0 * TAU;
+			double tilt = (thing->intProperty("arg0") - 90) / 360.0 * TAU;
+			// Resulting plane goes through the position of the thing
+			double z = getFloorHeight() + thing->floatProperty("height");
+			fpoint3_t point(thing->xPos(), thing->yPos(), z);
+
+			double cos_angle = cos(angle);
+			double sin_angle = sin(angle);
+			double cos_tilt = cos(tilt);
+			double sin_tilt = sin(tilt);
+			// Need to convert these angles into vectors on the plane, so we
+			// can take a normal.
+			// For the first: we know that the line perpendicular to the
+			// direction the thing faces lies "flat", because this is the axis
+			// the tilt thing rotates around.  "Rotate" the angle a quarter
+			// turn to get this vector -- switch x and y, and negate one.
+			fpoint3_t vec1(-sin_angle, cos_angle, 0.0);
+
+			// For the second: the tilt angle makes a triangle between the
+			// floor plane and the z axis.  sin gives us the distance along the
+			// z-axis, but cos only gives us the distance away /from/ the
+			// z-axis.  Break that into x and y by multiplying by cos and sin
+			// of the thing's facing angle.
+			fpoint3_t vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
+
+			setFloorPlane(MathStuff::planeFromTriangle(point, point + vec1, point + vec2));
+			floor_done = true;
+		}
+		if (!ceiling_done
+			&& thing->getType() == 9503
+			&& bbox.point_within(thing->xPos(), thing->yPos())
+			&& isWithin(thing->xPos(), thing->yPos())
+		)
+		{
+			// Sector tilt things.  First argument is the tilt angle, but
+			// starting with 0 as straight down; subtracting 90 fixes that.
+			// TODO skip if the tilt is vertical!
+			double angle = thing->getAngle() / 360.0 * TAU;
+			double tilt = (thing->intProperty("arg0") - 90) / 360.0 * TAU;
+			// Resulting plane goes through the position of the thing
+			double z = getCeilingHeight() + thing->floatProperty("height");
+			fpoint3_t point(thing->xPos(), thing->yPos(), z);
+
+			double cos_angle = cos(angle);
+			double sin_angle = sin(angle);
+			double cos_tilt = cos(tilt);
+			double sin_tilt = sin(tilt);
+			// Need to convert these angles into vectors on the plane, so we
+			// can take a normal.
+			// For the first: we know that the line perpendicular to the
+			// direction the thing faces lies "flat", because this is the axis
+			// the tilt thing rotates around.  "Rotate" the angle a quarter
+			// turn to get this vector -- switch x and y, and negate one.
+			fpoint3_t vec1(-sin_angle, cos_angle, 0.0);
+
+			// For the second: the tilt angle makes a triangle between the
+			// floor plane and the z axis.  sin gives us the distance along the
+			// z-axis, but cos only gives us the distance away /from/ the
+			// z-axis.  Break that into x and y by multiplying by cos and sin
+			// of the thing's facing angle.
+			fpoint3_t vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
+
+			setCeilingPlane(MathStuff::planeFromTriangle(point, point + vec1, point + vec2));
+			ceiling_done = true;
+		}
+	}
+
 	// ZDoom applies specials in id order, so presumably if there are two
 	// Plane_Aligns affecting the same sector, the one with the highest id
 	// wins.  Thus we go through them in reverse order, and stop after the
@@ -669,10 +758,6 @@ void MapSector::updatePlanes()
 	getLines(lines);
 	sort(lines.begin(), lines.end());
 	reverse(lines.begin(), lines.end());
-
-	// TODO hacky ugh
-	bool floor_done = false;
-	bool ceiling_done = false;
 
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
