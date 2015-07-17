@@ -397,8 +397,8 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 		return;
 
 	// Get target height
-	int fheight = map->getSector(sector)->getFloorHeight() + 40;
-	int cheight = map->getSector(sector)->getCeilingHeight();
+	int fheight = map->getSector(sector)->getFloorPlane().height_at(cam_position.x, cam_position.y) + 40;
+	int cheight = map->getSector(sector)->getCeilingPlane().height_at(cam_position.x, cam_position.y);
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -816,10 +816,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	floors[index].colour = sector->getColour(1, true);
 	floors[index].light = sector->getLight(1);
 	floors[index].flags = 0;
-	floors[index].plane.a = 0;
-	floors[index].plane.b = 0;
-	floors[index].plane.c = 1;
-	floors[index].plane.d = sector->getFloorHeight();
+	floors[index].plane = sector->getFloorPlane();
 	if (sector->getFloorTex() == theGameConfiguration->skyFlat())
 		floors[index].flags |= SKY;
 
@@ -829,7 +826,7 @@ void MapRenderer3D::updateSector(unsigned index)
 		updateFlatTexCoords(index, true);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_floors);
 		Polygon2D::setupVBOPointers();
-		sector->getPolygon()->setZ(sector->getFloorHeight());
+		sector->getPolygon()->setZ(floors[index].plane);
 		sector->getPolygon()->updateVBOData();
 	}
 
@@ -839,10 +836,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	ceilings[index].colour = sector->getColour(2, true);
 	ceilings[index].light = sector->getLight(2);
 	ceilings[index].flags = CEIL;
-	ceilings[index].plane.a = 0;
-	ceilings[index].plane.b = 0;
-	ceilings[index].plane.c = 1;
-	ceilings[index].plane.d = sector->getCeilingHeight();
+	ceilings[index].plane = sector->getCeilingPlane();
 	if (sector->getCeilingTex() == theGameConfiguration->skyFlat())
 		ceilings[index].flags |= SKY;
 
@@ -852,7 +846,7 @@ void MapRenderer3D::updateSector(unsigned index)
 		updateFlatTexCoords(index, false);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_ceilings);
 		Polygon2D::setupVBOPointers();
-		sector->getPolygon()->setZ(sector->getCeilingHeight());
+		sector->getPolygon()->setZ(ceilings[index].plane);
 		sector->getPolygon()->updateVBOData();
 	}
 
@@ -1026,16 +1020,15 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		if (!sector)
 			return;
 
-		// Translate to floor/ceiling height
-		glPushMatrix();
+		plane_t plane;
 		if (selection[a].type == MapEditor::SEL_FLOOR)
 		{
-			glTranslated(0, 0, sector->intProperty("heightfloor"));
+			plane = sector->getFloorPlane();
 			glCullFace(GL_FRONT);
 		}
 		else
 		{
-			glTranslated(0, 0, sector->intProperty("heightceiling"));
+			plane = sector->getCeilingPlane();
 			glCullFace(GL_BACK);
 		}
 
@@ -1046,16 +1039,14 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 		glBegin(GL_LINES);
 		for (unsigned l = 0; l < lines.size(); l++)
 		{
-			glVertex3d(lines[l]->x1(), lines[l]->y1(), 0);
-			glVertex3d(lines[l]->x2(), lines[l]->y2(), 0);
+			glVertex3d(lines[l]->x1(), lines[l]->y1(), plane.height_at(lines[l]->x1(), lines[l]->y1()));
+			glVertex3d(lines[l]->x2(), lines[l]->y2(), plane.height_at(lines[l]->x2(), lines[l]->y2()));
 		}
 		glEnd();
 
 		// Render fill
 		OpenGL::setColour(col2, false);
 		sector->getPolygon()->render();
-
-		glPopMatrix();
 	}
 
 	glCullFace(GL_BACK);
@@ -1064,19 +1055,19 @@ void MapRenderer3D::renderFlatSelection(vector<selection_3d_t>& selection, float
 /* MapRenderer3D::setupQuad
  * Sets up coordinates for a quad
  *******************************************************************/
-void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom)
+void MapRenderer3D::setupQuad(MapRenderer3D::quad_3d_t* quad, double x1, double y1, double x2, double y2, plane_t top, plane_t bottom)
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = x1;
 	quad->points[0].y = quad->points[1].y = y1;
+	quad->points[0].z = top.height_at(x1, y1);
+	quad->points[1].z = bottom.height_at(x1, y1);
 
 	// Right
 	quad->points[2].x = quad->points[3].x = x2;
 	quad->points[2].y = quad->points[3].y = y2;
-
-	// Top/bottom
-	quad->points[0].z = quad->points[3].z = top;
-	quad->points[1].z = quad->points[2].z = bottom;
+	quad->points[2].z = bottom.height_at(x2, y2);
+	quad->points[3].z = top.height_at(x2, y2);
 }
 
 /* MapRenderer3D::setupQuadTexCoords
@@ -1177,7 +1168,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), ceiling1, floor1);
+		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), line->frontSector()->getCeilingPlane(), line->frontSector()->getFloorPlane());
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
@@ -1234,7 +1225,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), floor2, floor1);
+		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), line->backSector()->getFloorPlane(), line->frontSector()->getFloorPlane());
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexLower(), mixed);
@@ -1334,7 +1325,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), ceiling1, ceiling2);
+		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), line->frontSector()->getCeilingPlane(), line->backSector()->getCeilingPlane());
 		quad.colour = colour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexUpper(), mixed);
@@ -1377,7 +1368,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), floor1, floor2);
+		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), line->frontSector()->getFloorPlane(), line->backSector()->getFloorPlane());
 		quad.colour = colour2;
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexLower(), mixed);
@@ -1476,7 +1467,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), ceiling2, ceiling1);
+		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), line->backSector()->getCeilingPlane(), line->frontSector()->getCeilingPlane());
 		quad.colour = colour2;
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexUpper(), mixed);
@@ -2354,7 +2345,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 		return current;
 
 	// Check lines
-	double height, dist;
+	double height, dist, targetx, targety;
 	quad_3d_t* quad;
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
@@ -2418,11 +2409,14 @@ selection_3d_t MapRenderer3D::determineHilight()
 		dist = MathStuff::distanceRayPlane(cam_position, cam_dir3d, floors[a].plane);
 		if (dist >= 0 && dist < min_dist)
 		{
+			targetx = cam_position.x + cam_dir3d.x * dist;
+			targety = cam_position.y + cam_dir3d.y * dist;
+
 			// Check if on the correct side of the plane
-			if (cam_position.z > floors[a].plane.height_at(cam_position.x, cam_position.y))
+			if (cam_position.z > floors[a].plane.height_at(targetx, targety))
 			{
 				// Check if intersection is within sector
-				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				if (map->getSector(a)->isWithin(targetx, targety))
 				{
 					current.index = a;
 					current.type = MapEditor::SEL_FLOOR;
@@ -2435,11 +2429,14 @@ selection_3d_t MapRenderer3D::determineHilight()
 		dist = MathStuff::distanceRayPlane(cam_position, cam_dir3d, ceilings[a].plane);
 		if (dist >= 0 && dist < min_dist)
 		{
+			targetx = cam_position.x + cam_dir3d.x * dist;
+			targety = cam_position.y + cam_dir3d.y * dist;
+
 			// Check if on the correct side of the plane
-			if (cam_position.z < ceilings[a].plane.height_at(cam_position.x, cam_position.y))
+			if (cam_position.z < ceilings[a].plane.height_at(targetx, targety))
 			{
 				// Check if intersection is within sector
-				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				if (map->getSector(a)->isWithin(targetx, targety))
 				{
 					current.index = a;
 					current.type = MapEditor::SEL_CEILING;
@@ -2601,16 +2598,15 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		if (!sector)
 			return;
 
-		// Translate to floor/ceiling height
-		glPushMatrix();
+		plane_t plane;
 		if (hilight.type == MapEditor::SEL_FLOOR)
 		{
-			glTranslated(0, 0, sector->getFloorHeight());
+			plane = sector->getFloorPlane();
 			glCullFace(GL_FRONT);
 		}
 		else
 		{
-			glTranslated(0, 0, sector->getCeilingHeight());
+			plane = sector->getCeilingPlane();
 			glCullFace(GL_BACK);
 		}
 
@@ -2620,8 +2616,8 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		glBegin(GL_LINES);
 		for (unsigned a = 0; a < lines.size(); a++)
 		{
-			glVertex3d(lines[a]->x1(), lines[a]->y1(), 0);
-			glVertex3d(lines[a]->x2(), lines[a]->y2(), 0);
+			glVertex3d(lines[a]->x1(), lines[a]->y1(), plane.height_at(lines[a]->x1(), lines[a]->y1()));
+			glVertex3d(lines[a]->x2(), lines[a]->y2(), plane.height_at(lines[a]->x2(), lines[a]->y2()));
 		}
 		glEnd();
 
@@ -2630,10 +2626,10 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
 		{
 			col_hilight.a *= 0.3;
 			OpenGL::setColour(col_hilight, false);
+			// TODO this isn't right; doesn't know its own z heights.  also,
+			// undupe this with the selection code.
 			sector->getPolygon()->render();
 		}
-
-		glPopMatrix();
 	}
 
 	// Thing hilight

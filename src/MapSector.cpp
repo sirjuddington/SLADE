@@ -35,8 +35,13 @@
 #include "MainApp.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
+#include "GameConfiguration.h"
 #include <wx/colour.h>
+#include <cmath>
 
+
+// Number of radians in the unit circle
+const double TAU = M_PI * 2;
 
 /*******************************************************************
  * MAPSECTOR CLASS FUNCTIONS
@@ -269,8 +274,8 @@ Polygon2D* MapSector::getPolygon()
 {
 	if (poly_needsupdate)
 	{
-		polygon.openSector(this);
 		poly_needsupdate = false;
+		polygon.openSector(this);
 	}
 
 	return &polygon;
@@ -421,6 +426,175 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 	}
 
 	return true;
+}
+
+template<> short MapSector::getPlaneHeight<FLOOR_PLANE>() { return getFloorHeight(); }
+template<> short MapSector::getPlaneHeight<CEILING_PLANE>() { return getCeilingHeight(); }
+
+/* MapSector::getPlane
+ * Returns the slope of the floor or ceiling
+ *******************************************************************/
+template<PlaneType p> static const char* _plane_align_arg();
+template<> const char* _plane_align_arg<FLOOR_PLANE>() { return "arg0"; }
+template<> const char* _plane_align_arg<CEILING_PLANE>() { return "arg1"; }
+
+template plane_t MapSector::getPlane<FLOOR_PLANE>();
+template plane_t MapSector::getPlane<CEILING_PLANE>();
+
+template<PlaneType p>
+plane_t MapSector::getPlane()
+{
+	// Deal with slopes, in REVERSE order from ZDoom -- it applies slopes to
+	// sectors at startup, so later slopes override older ones, whereas we just
+	// want to use the first we find.
+	plane_t ret;
+
+	// Check for slope alignment things.
+	// TODO there doesn't seem to be a helper anywhere for getting all the
+	// things within a given sector!  might be nice to have one; would also
+	// help when moving sectors around.
+	for (unsigned a = 0; a < parent_map->nThings(); a++)
+	{
+		MapThing* thing = parent_map->getThing(a);
+		// TODO don't hardcode this number...  maybe?
+		if (thing->getType() == (p == FLOOR_PLANE ? 9502 : 9503)
+			&& bbox.point_within(thing->xPos(), thing->yPos())
+			&& isWithin(thing->xPos(), thing->yPos())
+		)
+		{
+			// Sector tilt things.  First argument is the tilt angle, but
+			// starting with 0 as straight down; subtracting 90 fixes that.
+			// TODO skip if the tilt is vertical!
+			double angle = thing->getAngle() / 360.0 * TAU;
+			double tilt = (thing->intProperty("arg0") - 90) / 360.0 * TAU;
+			// Resulting plane goes through the position of the thing
+			double z = getPlaneHeight<p>() + thing->floatProperty("height");
+			fpoint3_t point(thing->xPos(), thing->yPos(), z);
+
+			double cos_angle = cos(angle);
+			double sin_angle = sin(angle);
+			double cos_tilt = cos(tilt);
+			double sin_tilt = sin(tilt);
+			// Need to convert these angles into vectors on the plane, so we
+			// can take a normal.
+			// For the first: we know that the line perpendicular to the
+			// direction the thing faces lies "flat", because this is the axis
+			// the tilt thing rotates around.  "Rotate" the angle a quarter
+			// turn to get this vector -- switch x and y, and negate one.
+			fpoint3_t vec1(-sin_angle, cos_angle, 0.0);
+
+			// For the second: the tilt angle makes a triangle between the
+			// floor plane and the z axis.  sin gives us the distance along the
+			// z-axis, but cos only gives us the distance away /from/ the
+			// z-axis.  Break that into x and y by multiplying by cos and sin
+			// of the thing's facing angle.
+			fpoint3_t vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
+
+			// Cross product gives a normal vector, and dot product with our
+			// point finishes it up.
+			fpoint3_t norm = vec1.cross(vec2);
+			double dot = norm.dot(point);
+			ret = plane_t(norm.x, norm.y, norm.z, dot);
+			ret.normalize();
+			return ret;
+		}
+	}
+
+	// Plane_Align
+	MapSide* side;
+	MapLine* line;
+	// Go through connected sides
+	// TODO does this need to go through lines in id order?
+	for (unsigned a = 0; a < connected_sides.size(); a++)
+	{
+		side = connected_sides[a];
+		line = side->getParentLine();
+		// TODO faster to find Plane_Align's number first
+		if (line->getSpecial())
+		{
+			ActionSpecial* as = theGameConfiguration->actionSpecial(line->getSpecial());
+			if (as->getName() == "Plane_Align")
+			{
+				// TODO honestly this is all terrible.  just terrible.
+
+				int prop;
+				MapSector* adjacent_sector;
+				// Floor
+				prop = line->intProperty(_plane_align_arg<p>());
+				short adjacent_height;
+				if (prop == 1 && side == line->s1())
+				{
+					adjacent_sector = line->backSector();
+					if (! adjacent_sector)
+						continue;
+					adjacent_height = adjacent_sector->getPlaneHeight<p>();
+				}
+				else if (prop == 2 && side == line->s2())
+				{
+					adjacent_sector = line->frontSector();
+					if (! adjacent_sector)
+						continue;
+					adjacent_height = adjacent_sector->getPlaneHeight<p>();
+				}
+				else
+				{
+					continue;
+				}
+
+				MapSide* sideb;
+				MapVertex* vtmp;
+				double furthest = 0.0;
+				double dist;
+				MapVertex* v = NULL;
+				for (unsigned b = 0; b < connected_sides.size(); b++)
+				{
+					vtmp = connected_sides[b]->getParentLine()->v1();
+					dist = line->distanceTo(vtmp->xPos(), vtmp->yPos());
+					if (dist > furthest) {
+						furthest = dist;
+						v = vtmp;
+					}
+					vtmp = connected_sides[b]->getParentLine()->v2();
+					dist = line->distanceTo(vtmp->xPos(), vtmp->yPos());
+					if (dist > furthest) {
+						furthest = dist;
+						v = vtmp;
+					}
+				}
+
+				// TODO found point must not be on this same line!
+				// TODO does zdoom look for furthest point, or furthest /perpendicular/ point?  which does distanceTo do?
+				// TODO this line must not have length zero!
+				// TODO all this code is bad
+				if (furthest > 0.01) {
+					// Slope the floor such that point v remains at the
+					// actual floor height, but this line is at the floor
+					// height of the adjacent sector.
+					// Make two vectors, then make a plane from them:
+					fpoint3_t pt1 = line->v1()->getPoint(0);
+					pt1.z = adjacent_height;
+					fpoint3_t pt2 = line->v2()->getPoint(0);
+					pt2.z = adjacent_height;
+					fpoint3_t pt3 = v->getPoint(0);
+					pt3.z = getPlaneHeight<p>();
+
+					fpoint3_t vec1 = pt1 - pt2;
+					fpoint3_t vec2 = pt1 - pt3;
+					// Procedure to get a plane from two vectors
+					fpoint3_t norm = vec1.cross(vec2);
+					double dot = norm.dot(pt1);
+					ret = plane_t(norm.x, norm.y, norm.z, dot);
+					ret.normalize();
+					return ret;
+				}
+			}
+		}
+	}
+
+	// Default to a flat plane
+	ret = plane_t::flat(getPlaneHeight<p>());
+	ret.normalize();
+	return ret;
 }
 
 /* MapSector::getLight

@@ -391,6 +391,7 @@ fpoint2_t MathStuff::vectorAngle(double angle_rad)
 
 /* MathStuff::distanceRayPlane
  * Returns the distance along the ray [r_o -> r_v] to [plane]
+ * [plane] MUST be normalized!
  *******************************************************************/
 double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane)
 {

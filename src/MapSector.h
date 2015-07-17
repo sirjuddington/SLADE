@@ -4,6 +4,7 @@
 
 #include "MapObject.h"
 #include "Polygon2D.h"
+#include "Structs.h"
 
 class MapSide;
 class MapLine;
@@ -30,6 +31,12 @@ struct doom64sector_t
 	short		special;
 	short		tag;
 	uint16_t	flags;
+};
+
+enum PlaneType
+{
+	FLOOR_PLANE,
+	CEILING_PLANE,
 };
 
 class MapSector : public MapObject
@@ -86,10 +93,18 @@ public:
 	bool				getLines(vector<MapLine*>& list);
 	bool				getVertices(vector<MapVertex*>& list);
 	bool				getVertices(vector<MapObject*>& list);
+	plane_t				getFloorPlane() { return getPlane<FLOOR_PLANE>(); }
+	plane_t				getCeilingPlane() { return getPlane<CEILING_PLANE>(); }
 	uint8_t				getLight(int where = 0);
 	void				changeLight(int amount, int where = 0);
 	rgba_t				getColour(int where = 0, bool fullbright = false);
 	long				geometryUpdatedTime() { return geometry_updated; }
+
+	template<PlaneType p>
+	short getPlaneHeight();
+
+	template<PlaneType p>
+	plane_t getPlane();
 
 	void	connectSide(MapSide* side);
 	void	disconnectSide(MapSide* side);
