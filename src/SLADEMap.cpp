@@ -3288,7 +3288,7 @@ MapThing* SLADEMap::getFirstThingWithId(int id)
 	return NULL;
 }
 
-/* SLADEMap::getSectorsByTag
+/* SLADEMap::getThingsByIdInSectorTag
  * Adds all things with TID [id] that are also within a sector with
  * tag [tag] to [list]
  *******************************************************************/

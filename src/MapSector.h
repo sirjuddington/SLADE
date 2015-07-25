@@ -32,6 +32,12 @@ struct doom64sector_t
 	uint16_t	flags;
 };
 
+enum PlaneType
+{
+	FLOOR_PLANE,
+	CEILING_PLANE,
+};
+
 class MapSector : public MapObject
 {
 	friend class SLADEMap;
@@ -59,7 +65,8 @@ private:
 
 	void		expireNeighborSpecials();
 	void		updatePlanes();
-	bool		applyPlaneAlign(MapLine* line, bool floor);
+	template<PlaneType p>
+	plane_t		computeZDoomPlane();
 
 public:
 	MapSector(SLADEMap* parent = NULL);
@@ -99,6 +106,11 @@ public:
 	void	setFloorPlane(plane_t p) { plane_floor = p; }
 	void	setCeilingPlane(plane_t p) { plane_ceiling = p; }
 
+	template<PlaneType p> short getPlaneHeight();
+
+	template<PlaneType p>
+	plane_t getPlane();
+
 	fpoint2_t			getPoint(uint8_t point);
 	void				resetBBox() { bbox.reset(); }
 	bbox_t				boundingBox();
@@ -123,5 +135,13 @@ public:
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
 };
+
+// Note: these MUST be inline, or the linker will complain
+template<> inline short MapSector::getPlaneHeight<FLOOR_PLANE>() { return getFloorHeight(); }
+template<> inline short MapSector::getPlaneHeight<CEILING_PLANE>() { return getCeilingHeight(); }
+template<> inline plane_t MapSector::getPlane<FLOOR_PLANE>() { return getFloorPlane(); }
+template<> inline plane_t MapSector::getPlane<CEILING_PLANE>() { return getCeilingPlane(); }
+
+
 
 #endif //__MAPSECTOR_H__
