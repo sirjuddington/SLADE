@@ -44,7 +44,7 @@ namespace OpenGL
 {
 #ifndef USE_SFML_RENDERWINDOW
 	wxGLContext*	context = NULL;
-	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0 };
+	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 #endif
 	bool			initialised = false;
 	double			version = 0;
