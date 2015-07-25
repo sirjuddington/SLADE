@@ -1788,13 +1788,17 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	if (things[index].sector)
 	{
 		// Get sector floor (or ceiling) height
-		int sheight = things[index].sector->getFloorHeight();
+		int sheight;
 		float zheight = thing->floatProperty("height");
 		if (things[index].type->isHanging())
 		{
-			sheight = things[index].sector->getCeilingHeight();
+			sheight = things[index].sector->getCeilingPlane().height_at(thing->xPos(), thing->yPos());
 			sheight -= theight;
 			zheight = -zheight;
+		}
+		else
+		{
+			sheight = things[index].sector->getFloorPlane().height_at(thing->xPos(), thing->yPos());
 		}
 
 		// Set height
