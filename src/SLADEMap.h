@@ -239,6 +239,7 @@ public:
 	bool				isModified();
 	void				setOpenedTime();
 	bool				modifiedSince(long since, int type = -1);
+	void				expireSpecials();
 
 	// Creation
 	MapVertex*	createVertex(double x, double y, double split_dist = -1);

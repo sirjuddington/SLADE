@@ -3978,6 +3978,14 @@ bool SLADEMap::modifiedSince(long since, int type)
 	return false;
 }
 
+void SLADEMap::expireSpecials()
+{
+	// TODO need to hold off on this during bulk operations, like undo;
+	// otherwise doing a LOT of churn for no reason
+	map_specials.reset();
+	map_specials.processMapSpecials(this);
+}
+
 /* SLADEMap::createVertex
  * Creates a new vertex at [x,y] and returns it. Splits any lines
  * within [split_dist] from the position

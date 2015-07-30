@@ -92,24 +92,26 @@ public:
 	void	setStringProperty(string key, string value);
 	void	setFloatProperty(string key, double value);
 	void	setIntProperty(string key, int value);
-	void	setFloorHeight(short height)
-	{
-		f_height = height;
-		expireNeighborSpecials();
-	}
-	void	setCeilingHeight(short height)
-	{
-		c_height = height;
-		expireNeighborSpecials();
-	}
+	void	setFloorHeight(short height);
+	void	setCeilingHeight(short height);
 	void	expireSpecials() { specials_needupdate = true; }
-	void	setFloorPlane(plane_t p) { plane_floor = p; }
-	void	setCeilingPlane(plane_t p) { plane_ceiling = p; }
+	void	setFloorPlane(plane_t p) {
+		if (p != plane_floor)
+			setModified();
+		plane_floor = p;
+	}
+	void	setCeilingPlane(plane_t p) {
+		if (p != plane_ceiling)
+			setModified();
+		plane_ceiling = p;
+	}
 
 	template<PlaneType p> short getPlaneHeight();
 
 	template<PlaneType p>
-	plane_t getPlane();
+	plane_t	getPlane();
+	template<PlaneType p>
+	void	setPlane(plane_t plane);
 
 	fpoint2_t			getPoint(uint8_t point);
 	void				resetBBox() { bbox.reset(); }
@@ -141,6 +143,8 @@ template<> inline short MapSector::getPlaneHeight<FLOOR_PLANE>() { return getFlo
 template<> inline short MapSector::getPlaneHeight<CEILING_PLANE>() { return getCeilingHeight(); }
 template<> inline plane_t MapSector::getPlane<FLOOR_PLANE>() { return getFloorPlane(); }
 template<> inline plane_t MapSector::getPlane<CEILING_PLANE>() { return getCeilingPlane(); }
+template<> inline void MapSector::setPlane<FLOOR_PLANE>(plane_t plane) { setFloorPlane(plane); }
+template<> inline void MapSector::setPlane<CEILING_PLANE>(plane_t plane) { setCeilingPlane(plane); }
 
 
 

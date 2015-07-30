@@ -638,6 +638,15 @@ struct plane_t
 		return plane_t(0.0, 0.0, 1.0, height);
 	}
 
+	bool operator==(const plane_t& rhs) const
+	{
+		return a == rhs.a && b == rhs.b && c == rhs.c && d == rhs.d;
+	}
+	bool operator!=(const plane_t& rhs) const
+	{
+		return !(*this == rhs);
+	}
+
 	void set(double a, double b, double c, double d)
 	{
 		this->a = a;

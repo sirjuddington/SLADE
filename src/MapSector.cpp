@@ -239,6 +239,24 @@ void MapSector::setIntProperty(string key, int value)
 		MapObject::setIntProperty(key, value);
 }
 
+void MapSector::setFloorHeight(short height)
+{
+	f_height = height;
+	setFloorPlane(plane_t::flat(height));
+	setModified();
+	parent_map->expireSpecials();
+	expireNeighborSpecials();
+}
+
+void MapSector::setCeilingHeight(short height)
+{
+	c_height = height;
+	setCeilingPlane(plane_t::flat(height));
+	setModified();
+	parent_map->expireSpecials();
+	expireNeighborSpecials();
+}
+
 /* MapLine::getPoint
  * Returns the object point [point]: MOBJ_POINT_MID = the absolute
  * mid point of the sector, MOBJ_POINT_WITHIN/MOBJ_POINT_TEXT =
@@ -652,6 +670,7 @@ void MapSector::expireNeighborSpecials()
  *******************************************************************/
 void MapSector::updatePlanes()
 {
+	return;  // TODO
 	if (!specials_needupdate)
 		return;
 	specials_needupdate = false;

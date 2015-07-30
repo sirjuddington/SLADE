@@ -15,6 +15,16 @@ class MapSpecials
 
 	vector<sector_colour_t> sector_colours;
 
+	void	processZDoomSlopes(SLADEMap* map);
+	template<PlaneType>
+	void	applyPlaneAlign(MapLine* line, MapSector* sector, MapSector* model_sector);
+	template<PlaneType>
+	void	applyLineSlopeThing(SLADEMap* map, MapThing* thing);
+	template<PlaneType>
+	void	applySectorTiltThing(SLADEMap* map, MapThing* thing);
+	template<PlaneType>
+	void	applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices);
+
 public:
 	void	reset();
 
