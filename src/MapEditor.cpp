@@ -5056,6 +5056,7 @@ void MapEditor::doUndo()
 		last_undo_level = "";
 	}
 	updateThingLists();
+	map.expireSpecials();
 }
 
 /* MapEditor::doRedo
@@ -5083,6 +5084,7 @@ void MapEditor::doRedo()
 		last_undo_level = "";
 	}
 	updateThingLists();
+	map.expireSpecials();
 }
 
 #pragma endregion

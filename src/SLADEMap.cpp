@@ -3978,10 +3978,15 @@ bool SLADEMap::modifiedSince(long since, int type)
 	return false;
 }
 
+/* SLADEMap::expireSpecials
+ * Expires all the currently calculated special map properties (currently this
+ * just means ZDoom slopes).  They're guaranteed to be recomputed by the next
+ * time the user can see or edit the map.
+ *******************************************************************/
 void SLADEMap::expireSpecials()
 {
-	// TODO need to hold off on this during bulk operations, like undo;
-	// otherwise doing a LOT of churn for no reason
+	// TODO should support holding off on this during bulk operations (like
+	// mass property edit) so we don't waste effort recomputing multiple times
 	map_specials.reset();
 	map_specials.processMapSpecials(this);
 }
