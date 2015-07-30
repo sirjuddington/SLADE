@@ -59,7 +59,6 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 	plane_floor.set(0, 0, 1, 0);
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
-	specials_needupdate = true;
 	geometry_updated = theApp->runTimer();
 }
 
@@ -76,7 +75,6 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	plane_floor.set(0, 0, 1, 0);
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
-	specials_needupdate = true;
 	geometry_updated = theApp->runTimer();
 }
 
@@ -220,15 +218,9 @@ void MapSector::setIntProperty(string key, int value)
 	setModified();
 
 	if (key == "heightfloor")
-	{
-		f_height = value;
-		expireNeighborSpecials();
-	}
+		setFloorHeight(value);
 	else if (key == "heightceiling")
-	{
-		c_height = value;
-		expireNeighborSpecials();
-	}
+		setCeilingHeight(value);
 	else if (key == "lightlevel")
 		light = value;
 	else if (key == "special")
@@ -245,7 +237,6 @@ void MapSector::setFloorHeight(short height)
 	setFloorPlane(plane_t::flat(height));
 	setModified();
 	parent_map->expireSpecials();
-	expireNeighborSpecials();
 }
 
 void MapSector::setCeilingHeight(short height)
@@ -254,7 +245,6 @@ void MapSector::setCeilingHeight(short height)
 	setCeilingPlane(plane_t::flat(height));
 	setModified();
 	parent_map->expireSpecials();
-	expireNeighborSpecials();
 }
 
 /* MapLine::getPoint
@@ -652,343 +642,6 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 
 		return rgba_t(l, l, l, 255);
 	}
-}
-
-/* MapSector::expireNeighborSpecials
- * Expire special sector properties on this sector and all its neighbors -- the
- * height of this sector can change the slope of neighbors due to Plane_Align.
- *******************************************************************/
-void MapSector::expireNeighborSpecials()
-{
-	for (unsigned a = 0; a < connected_sides.size(); a++)
-		connected_sides[a]->getParentLine()->expireSectorSpecials();
-}
-
-/* MapSector::updatePlanes
- * Recompute the floor and ceiling planes, if any part of this sector has
- * changed
- *******************************************************************/
-void MapSector::updatePlanes()
-{
-	return;  // TODO
-	if (!specials_needupdate)
-		return;
-	specials_needupdate = false;
-	setModified();
-
-	// Only ZDoom sloped sectors are currently supported
-	// TODO this is kinda fugly, maybe split this function up
-	if (theGameConfiguration->currentPort() == "zdoom")
-	{
-		plane_floor = computeZDoomPlane<FLOOR_PLANE>();
-		plane_ceiling = computeZDoomPlane<CEILING_PLANE>();
-	}
-	else
-	{
-		plane_floor.set(0, 0, 1, f_height);
-		plane_ceiling.set(0, 0, 1, c_height);
-	}
-
-}
-
-/* MapSector::computeZDoomPlane
- * Computes the plane for this sector, based on ZDoom rules
- *******************************************************************/
-template<PlaneType p>
-plane_t MapSector::computeZDoomPlane()
-{
-	// ZDoom has a variety of slope mechanisms.  Replicating its behavior is
-	// slightly complicated, because it applies several map-wide passes when
-	// the map loads, but we want to support live adjustments.
-	// Here is what ZDoom does, in order:
-	//  - applies Plane_Align in line order
-	//  - applies line slope + sector tilt + vavoom in thing order
-	//  - applies slope copy things in thing order
-	//  - overwrites vertex heights with vertex height things
-	//  - applies vertex triangle slopes in sector order
-	//  - applies Plane_Copy in line order
-	// If the same sector is given a slope in several different ways, the last
-	// one clobbers all the others.  So to replicate ZDoom's behavior, we apply
-	// all these operations in /reverse/, including iterating over map objects
-	// in reverse order.  Also, copies are only applied if the model sector's
-	// id is less than this sector's id, which also avoids any possible
-	// infinite loops of copying.
-	// TODO line slope things have the same problem here
-	// NOTE: One edge case isn't handled correctly.  Consider a sector X whose
-	// slope is determined by vertex heights.  If this sector contains a slope
-	// copy thing that points to sector X, we should NOT copy the vertex slope
-	// -- ZDoom applies slope copy things before vertex heights, so the vertex
-	// slope wouldn't exist yet.  But we're not this clever, alas.
-	// TODO how on earth do you expire slopes when a slope thing moves, or a
-	// line id changes, or the height of a sector that a line slope thing is in
-	// changes...
-
-	vector<MapLine*> lines;
-	getLines(lines);
-	sort(lines.begin(), lines.end());
-	reverse(lines.begin(), lines.end());
-	// TODO add some logging here?  is there any point?  maybe in case of errors?
-
-	// Plane_Copy
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		MapLine* line = lines[a];
-		if (line->getSpecial() != 118)
-			continue;
-
-		// The fifth "share" argument copies from one side of the line to the
-		// other, and takes priority
-		if (line->s1() && line->s2())
-		{
-			int share = line->intProperty("arg4");
-			MapSector* model;
-			int floor_copy_flag, ceiling_copy_flag;
-			if (this == line->frontSector())
-			{
-				model = line->backSector();
-				floor_copy_flag = 2;
-				ceiling_copy_flag = 8;
-			}
-			else
-			{
-				model = line->frontSector();
-				floor_copy_flag = 1;
-				ceiling_copy_flag = 4;
-			}
-
-			// TODO fix for ceiling as well
-			if (model->id < this->id && (share & 3) == floor_copy_flag)
-			{
-				return model->getPlane<p>();
-			}
-		}
-
-		// TODO other args...
-	}
-
-	vector<MapVertex*> vertices;
-	getVertices(vertices);
-
-	// Vertex heights -- only applies if the sector has exactly three vertices.
-	// Heights may be set by UDMF properties, or by a vertex height thing
-	// placed exactly on the vertex (which takes priority over the prop).
-	// TODO changing vertex height doesn't expire the slope, oops
-	if (vertices.size() == 3)
-	{
-		string prop = (p == FLOOR_PLANE ? "zfloor" : "zceiling");
-		if (theGameConfiguration->getUDMFProperty(prop, MOBJ_VERTEX))
-		{
-			double z1 = vertices[0]->floatProperty(prop);
-			double z2 = vertices[1]->floatProperty(prop);
-			double z3 = vertices[2]->floatProperty(prop);
-			// NOTE: there's currently no way to distinguish a height of 0 from
-			// an unset height, so assume the author intended to have a slope
-			// if at least one vertex has a height
-			if (z1 || z2 || z3)
-			{
-				fpoint3_t p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
-				fpoint3_t p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
-				fpoint3_t p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
-				return MathStuff::planeFromTriangle(p1, p2, p3);
-			}
-		}
-	}
-
-	// Slope copy things (9510/9511)
-	// TODO needs to go in reverse order
-	for (unsigned a = 0; a < parent_map->nThings(); a++)
-	{
-		MapThing* thing = parent_map->getThing(a);
-
-		if (thing->getType() == (p == FLOOR_PLANE ? 9510 : 9511)
-			&& bbox.point_within(thing->xPos(), thing->yPos())
-			&& isWithin(thing->xPos(), thing->yPos())
-		)
-		{
-			// First argument is the tag of a sector whose slope should be copied
-			int tag = thing->intProperty("arg0");
-			if (!tag)
-			{
-				LOG_MESSAGE(1, "Ignoring slope copy thing in sector %d with no argument", index);
-				continue;
-			}
-
-			vector<MapSector*> tagged_sectors;
-			parent_map->getSectorsByTag(tag, tagged_sectors);
-			if (tagged_sectors.empty())
-			{
-				LOG_MESSAGE(1, "Ignoring slope copy thing in sector %d; no sectors have target tag %d", index, tag);
-				continue;
-			}
-
-			if (tagged_sectors[0]->getId() < this->id)
-			{
-				return tagged_sectors[0]->getPlane<p>();
-			}
-		}
-	}
-
-	// Line slope things (9500/9501), sector tilt things (9502/9503), and
-	// vavoom things (1500/1501), all in the same pass
-	// TODO needs to go in reverse order
-	for (unsigned a = 0; a < parent_map->nThings(); a++)
-	{
-		MapThing* thing = parent_map->getThing(a);
-
-		// Line slope things, which do NOT have to be within the sector
-		if (thing->getType() == (p == FLOOR_PLANE ? 9500 : 9501))
-		{
-			int lineid = thing->intProperty("arg0");
-			if (lineid)
-			{
-				// TODO oops actually i think this should go in /forward/ order by lines.  confirm that though
-				for (unsigned b = 0; b < lines.size(); b++)
-				{
-					MapLine* line = lines[b];
-					if (line->intProperty("id") != lineid)
-						continue;
-
-					// The thing only affects the sector on the side of the
-					// line that faces the thing
-					double side = MathStuff::lineSide(
-						thing->xPos(), thing->yPos(),
-						line->x1(), line->y1(), line->x2(), line->y2());
-					if ((side > 0 && this == line->frontSector()) ||
-						(side < 0 && this == line->backSector()))
-					{
-						int containing_sector_idx = parent_map->sectorAt(
-							thing->xPos(), thing->yPos());
-						if (containing_sector_idx < 0)
-							break;
-
-						// The height of the thing is based on the SLOPED
-						// height of the sector it's in, which makes 
-						// little hokey
-						// TODO whoopsadaisy, this can rely on
-						// previously-defined slopes for the same sector
-						MapSector* containing_sector = parent_map->getSector(
-							containing_sector_idx);
-						double thingz = thing->floatProperty("height");
-						if (containing_sector_idx < index)
-							thingz += containing_sector->getPlane<p>().height_at(thing->xPos(), thing->yPos());
-						else
-							thingz += containing_sector->getPlaneHeight<p>();
-
-						// Three points: endpoints of the line, and the thing itself
-						double thisz = getPlaneHeight<p>();
-						fpoint3_t p1(lines[b]->x1(), lines[b]->y1(), thisz);
-						fpoint3_t p2(lines[b]->x2(), lines[b]->y2(), thisz);
-						fpoint3_t p3(thing->xPos(), thing->yPos(), thingz);
-						return MathStuff::planeFromTriangle(p1, p2, p3);
-					}
-				}
-			}
-		}
-
-		// Sector tilt things
-		if (thing->getType() == (p == FLOOR_PLANE ? 9502 : 9503)
-			&& bbox.point_within(thing->xPos(), thing->yPos())
-			&& isWithin(thing->xPos(), thing->yPos())
-		)
-		{
-			// Sector tilt things.  First argument is the tilt angle, but
-			// starting with 0 as straight down; subtracting 90 fixes that.
-			// TODO skip if the tilt is vertical!
-			double angle = thing->getAngle() / 360.0 * TAU;
-			double tilt = (thing->intProperty("arg0") - 90) / 360.0 * TAU;
-			// Resulting plane goes through the position of the thing
-			double z = getPlaneHeight<p>() + thing->floatProperty("height");
-			fpoint3_t point(thing->xPos(), thing->yPos(), z);
-
-			double cos_angle = cos(angle);
-			double sin_angle = sin(angle);
-			double cos_tilt = cos(tilt);
-			double sin_tilt = sin(tilt);
-			// Need to convert these angles into vectors on the plane, so we
-			// can take a normal.
-			// For the first: we know that the line perpendicular to the
-			// direction the thing faces lies "flat", because this is the axis
-			// the tilt thing rotates around.  "Rotate" the angle a quarter
-			// turn to get this vector -- switch x and y, and negate one.
-			fpoint3_t vec1(-sin_angle, cos_angle, 0.0);
-
-			// For the second: the tilt angle makes a triangle between the
-			// floor plane and the z axis.  sin gives us the distance along the
-			// z-axis, but cos only gives us the distance away /from/ the
-			// z-axis.  Break that into x and y by multiplying by cos and sin
-			// of the thing's facing angle.
-			fpoint3_t vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
-
-			return MathStuff::planeFromTriangle(point, point + vec1, point + vec2);
-		}
-
-		// Vavoom things
-		// TODO
-	}
-
-	// Plane_Align (181)
-	for (unsigned a = 0; a < lines.size(); a++)
-	{
-		MapLine* line = lines[a];
-		if (line->getSpecial() != 181)
-			continue;
-
-		int side = (this == line->frontSector()) ? 1 : 2;
-		if (side != line->intProperty(p == FLOOR_PLANE ? "arg0" : "arg1"))
-			continue;
-
-		// Get sectors
-		MapSector* model_sector;
-		if (this == line->frontSector())
-			model_sector = line->backSector();
-		else
-			model_sector = line->frontSector();
-		if (!model_sector)
-		{
-			LOG_MESSAGE(1, "Ignoring Plane_Align on one-sided line %d", line->getIndex());
-			continue;
-		}
-		if (this == model_sector)
-		{
-			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->getIndex());
-			continue;
-		}
-
-		// The slope is between the line with Plane_Align, and the point in the
-		// sector furthest away from it, which can only be at a vertex
-		double this_dist;
-		MapVertex* this_vertex;
-		double furthest_dist = 0.0;
-		MapVertex* furthest_vertex = NULL;
-		for (unsigned a = 0; a < vertices.size(); a++)
-		{
-			this_vertex = vertices[a];
-			this_dist = line->distanceTo(this_vertex->xPos(), this_vertex->yPos());
-			if (this_dist > furthest_dist)
-			{
-				furthest_dist = this_dist;
-				furthest_vertex = this_vertex;
-			}
-		}
-
-		if (!furthest_vertex || furthest_dist < 0.01)
-		{
-			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d; sector %d has no appropriate reference vertex", line->getIndex(), this->getIndex());
-			continue;
-		}
-
-		// Calculate slope plane from our three points: this line's endpoints
-		// (at the model sector's height) and the found vertex (at this
-		// sector's height).
-		double modelz = model_sector->getPlaneHeight<p>();
-		double thisz = this->getPlaneHeight<p>();
-		fpoint3_t p1(line->x1(), line->y1(), modelz);
-		fpoint3_t p2(line->x2(), line->y2(), modelz);
-		fpoint3_t p3(furthest_vertex->xPos(), furthest_vertex->yPos(), thisz);
-		return MathStuff::planeFromTriangle(p1, p2, p3);
-	}
-
-	return plane_t(0, 0, 1, getPlaneHeight<p>());
 }
 
 /* MapSector::connectSide

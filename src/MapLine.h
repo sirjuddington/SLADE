@@ -117,7 +117,6 @@ public:
 	int			needsTexture();
 	void		clearUnneededTextures();
 
-	void	expireSectorSpecials();
 	void	resetInternals();
 	void	flip(bool sides = true);
 

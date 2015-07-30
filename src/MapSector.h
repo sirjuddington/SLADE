@@ -57,14 +57,11 @@ private:
 	bbox_t				bbox;
 	Polygon2D			polygon;
 	bool				poly_needsupdate;
-	bool				specials_needupdate;
 	long				geometry_updated;
 	fpoint2_t			text_point;
 	plane_t				plane_floor;
 	plane_t				plane_ceiling;
 
-	void		expireNeighborSpecials();
-	void		updatePlanes();
 	template<PlaneType p>
 	plane_t		computeZDoomPlane();
 
@@ -82,8 +79,8 @@ public:
 	short		getLightLevel() { return light; }
 	short		getSpecial() { return special; }
 	short		getTag() { return tag; }
-	plane_t		getFloorPlane() { updatePlanes(); return plane_floor; }
-	plane_t		getCeilingPlane() { updatePlanes(); return plane_ceiling; }
+	plane_t		getFloorPlane() { return plane_floor; }
+	plane_t		getCeilingPlane() { return plane_ceiling; }
 	double		floorHeightAt(double x, double y);
 	double		ceilingHeightAt(double x, double y);
 
@@ -94,7 +91,6 @@ public:
 	void	setIntProperty(string key, int value);
 	void	setFloorHeight(short height);
 	void	setCeilingHeight(short height);
-	void	expireSpecials() { specials_needupdate = true; }
 	void	setFloorPlane(plane_t p) {
 		if (p != plane_floor)
 			setModified();
