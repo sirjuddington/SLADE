@@ -2,6 +2,8 @@
 #ifndef __MIDIPLAYER_H__
 #define __MIDIPLAYER_H__
 
+#ifndef NO_FLUIDSYNTH
+
 #include <fluidsynth.h>
 
 class MIDIPlayer
@@ -55,6 +57,11 @@ public:
 	bool	setVolume(int volume);
 };
 
+// Define for less cumbersome MIDIPlayer::getInstance()
+#define theMIDIPlayer MIDIPlayer::getInstance()
+
+#endif
+
 #include <wx/process.h>
 
 class MIDIPlayerApp
@@ -78,14 +85,11 @@ public:
 	}
 
 	void	openFile(string filename);
-	void	reset();
 	bool	play();
 	bool	stop();
 	bool	isPlaying();
 };
 
-// Define for less cumbersome MIDIPlayer::getInstance()
-#define theMIDIPlayer MIDIPlayer::getInstance()
 #define theMIDIPlayerApp MIDIPlayerApp::getInstance()
 
 #endif//__MIDIPLAYER_H__

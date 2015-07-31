@@ -83,6 +83,7 @@ private:
 	Archive*			pending_closed_archive;
 	bool				asked_save_unchanged;
 	bool				checked_dir_archive_changes;
+	bool				ignore_dir_archive_changes;
 	vector<Archive*>	checking_archives;
 
 public:

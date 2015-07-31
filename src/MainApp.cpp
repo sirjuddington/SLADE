@@ -466,6 +466,7 @@ void MainApp::initActions()
 	new SAction("arch_newswitches", "New SWITCHES", "t_switch", "Create a new Boom SWITCHES entry");
 	new SAction("arch_newdir", "New Directory", "t_newfolder", "Create a new empty directory");
 	new SAction("arch_importfiles", "&Import Files", "t_importfiles", "Import multiple files into the archive", "kb:el_import_files");
+	new SAction("arch_buildarchive", "&Build Archive", "t_buildarchive", "Build archive from the current directory", "kb:el_build_archive");
 	new SAction("arch_texeditor", "&Texture Editor", "t_texeditor", "Open the texture editor for the current archive");
 	new SAction("arch_mapeditor", "&Map Editor", "t_mapeditor", "Open the map editor");
 	new SAction("arch_clean_patches", "Remove Unused &Patches", "", "Remove any unused patches, and their associated entries");

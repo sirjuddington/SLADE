@@ -36,6 +36,7 @@ decorate : cstyle {
 		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, 
 		MissileType, MissileHeight, MinMissileChance, 
 		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack, 
+		RipperLevel, RipLevelMin, RipLevelMax,
 		
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
@@ -142,7 +143,7 @@ decorate : cstyle {
 		FLOATBOB, FLOORCLIP, FLOORHUGGER, FOILBUDDHA, FOILINVUL, FORCEDECAL, FORCEPAIN, FORCERADIUSDMG, FORCEXYBILLBOARD, 
 		FORCEYBILLBOARD, FRIENDLY, FRIGHTENED, FULLVOLACTIVE, FULLVOLDEATH, GHOST, GRENADETRAIL, HARMFRIENDS,
 		HERETICBOUNCE, HEXENBOUNCE, HITMASTER, HITTARGET, HITTRACER, ICECORPSE, ICEDAMAGE, INCOMBAT, INVISIBLE,
-		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY, 
+		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LAXTELEFRAGDMG, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY, 
 		MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST, 
 		NEVERRESPAWN, NEVERTARGET, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS, NOBOSSRIP, NOBOUNCESOUND, 
 		NOCLIP, NODAMAGE, NODAMAGETHRUST, NODECAL, NODROPOFF, NOEXPLODEFLOOR, NOEXTREMEDEATH, NOFEAR, NOFORWARDFALL, 
@@ -520,6 +521,9 @@ decorate : cstyle {
 		A_ChangeVelocity = "[float x], [float y], [float z], [int flags], [int pointer]";
 		A_SetHealth = "int health, [int pointer]";
 		A_ResetHealth = "[int pointer]";
+		A_SetRipperLevel = "int level";
+		A_SetRipMin = "int min";
+		A_SetRipMax = "int max";
 
 		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
 		A_Tracer;

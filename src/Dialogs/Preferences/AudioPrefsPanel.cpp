@@ -38,12 +38,14 @@
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, snd_autoplay)
+#ifndef NO_FLUIDSYNTH
 EXTERN_CVAR(String, fs_soundfont_path)
 EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Bool, dmx_padding)
 CVAR(String, dir_last_soundfont, "", CVAR_SAVE)
-CVAR(String, snd_timidity_path, "", CVAR_SAVE)
 CVAR(Bool, snd_midi_usetimidity, false, CVAR_SAVE)
+#endif
+CVAR(String, snd_timidity_path, "", CVAR_SAVE)
 CVAR(String, snd_timidity_options, "", CVAR_SAVE)
 
 /*******************************************************************
@@ -68,6 +70,7 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_snd_autoplay = new wxCheckBox(this, -1, "Automatically play audio entries when opened");
 	sizer->Add(cb_snd_autoplay, 0, wxEXPAND|wxALL, 4);
 
+#ifndef NO_FLUIDSYNTH
 	// DMX Padding
 	cb_dmx_padding = new wxCheckBox(this, -1, "Use DMX padding when appropriate");
 	sizer->Add(cb_dmx_padding, 0, wxEXPAND|wxALL, 4);
@@ -80,15 +83,18 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	btn_browse_soundfont = new wxButton(this, -1, "Browse");
 	hbox->Add(btn_browse_soundfont, 0, wxEXPAND);
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+#endif
 
 	// Reset
 	sizer->Add(new wxStaticText(this, -1, "Reset MIDI Player"), 0, wxALL, 4);
 	btn_reset_player = new wxButton(this, -1, "Reset");
 	sizer->Add(btn_reset_player, 0, wxEXPAND, 4);
 
+#ifndef NO_FLUIDSYNTH
 	// Timidity checkbox
 	cb_snd_timidity = new wxCheckBox(this, -1, "Use timidity instead of fluidsynth:");
 	sizer->Add(cb_snd_timidity, 0, wxEXPAND|wxALL, 4);
+#endif
 
 	// Timidity exe path
 	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
@@ -107,7 +113,9 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	sizer->Add(hbox3, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Bind events
+#ifndef NO_FLUIDSYNTH
 	btn_browse_soundfont->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnBrowseSoundfont, this);
+#endif
 	btn_reset_player->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnResetPlayer, this);
 	btn_browse_timidityexe->Bind(wxEVT_BUTTON, &AudioPrefsPanel::onBtnBrowseTimidityExe, this);
 
@@ -127,8 +135,10 @@ AudioPrefsPanel::~AudioPrefsPanel()
 void AudioPrefsPanel::init()
 {
 	cb_snd_autoplay->SetValue(snd_autoplay);
+#ifndef NO_FLUIDSYNTH
 	cb_snd_timidity->SetValue(snd_midi_usetimidity);
 	text_soundfont_path->SetValue(wxString(fs_soundfont_path));
+#endif
 	text_timidity_path->SetValue(wxString(snd_timidity_path));
 	text_timidity_options->SetValue(wxString(snd_timidity_options));
 }
@@ -139,11 +149,13 @@ void AudioPrefsPanel::init()
 void AudioPrefsPanel::applyPreferences()
 {
 	snd_autoplay = cb_snd_autoplay->GetValue();
+#ifndef NO_FLUIDSYNTH
 	snd_midi_usetimidity = cb_snd_timidity->GetValue();
 	dmx_padding = cb_dmx_padding->GetValue();
 	fs_soundfont_path = text_soundfont_path->GetValue();
 	if (!theMIDIPlayer->isSoundfontLoaded())
 		theMIDIPlayer->reloadSoundfont();
+#endif
 	snd_timidity_path = text_timidity_path->GetValue();
 	snd_timidity_options = text_timidity_options->GetValue();
 }
@@ -153,6 +165,7 @@ void AudioPrefsPanel::applyPreferences()
  * AUDIOPREFSPANEL CLASS EVENTS
  *******************************************************************/
 
+#ifndef NO_FLUIDSYNTH
 /* AudioPrefsPanel::onBtnBrowseSoundfont
  * Called when the browse for soundfont button is clicked
  *******************************************************************/
@@ -186,6 +199,7 @@ void AudioPrefsPanel::onBtnBrowseSoundfont(wxCommandEvent& e)
 		dir_last_soundfont = fd.GetDirectory();
 	}
 }
+#endif
 
 /* AudioPrefsPanel::onBtnBrowseTimidityExe
  * Called when the browse for timidity exe is clicked
@@ -224,6 +238,8 @@ void AudioPrefsPanel::onBtnBrowseTimidityExe(wxCommandEvent &e)
  *******************************************************************/
 void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e)
 {
+#ifndef NO_FLUIDSYNTH
 	theMIDIPlayer->resetPlayer();
-	theMIDIPlayerApp->reset();
+#endif
+	theMIDIPlayerApp->stop();
 }

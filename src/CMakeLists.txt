@@ -13,6 +13,10 @@ else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window)
 endif(USE_SFML_RENDERWINDOW)
 
+if (NO_FLUIDSYNTH)
+ADD_DEFINITIONS(-DNO_FLUIDSYNTH)
+endif(NO_FLUIDSYNTH)
+
 find_package (PkgConfig REQUIRED)
 if (APPLE)
 	# There is no need to have GTK2 installed on OS X
@@ -22,14 +26,21 @@ else (APPLE)
 	pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
 endif (APPLE)
 
-include(../FindFluidSynth.cmake)
+if(NOT NO_FLUIDSYNTH)
+	include(../FindFluidSynth.cmake)
+else(NO_FLUIDSYNTH)
+	message(STATUS "Fluidsynth support is disabled.")
+endif()
+
 include(../FindFreeImage.cmake)
 include(../FindSFML.cmake)
 include(../FindFTGL.cmake)
 include(../FindGLEW.cmake)
 include(FindFreetype)
-if(NOT ${FLUIDSYNTH_FOUND})
-	message(SEND_ERROR "Fluidsynth required.")
+if(NOT NO_FLUIDSYNTH)
+	if(NOT ${FLUIDSYNTH_FOUND})
+		message(SEND_ERROR "Fluidsynth required.")
+	endif()
 endif()
 if(NOT ${FREEIMAGE_FOUND})
 	message(SEND_ERROR "FreeImage required.")
@@ -46,7 +57,11 @@ endif()
 if(NOT ${GLEW_FOUND})
 	message(SEND_ERROR "GLEW required.")
 endif()
-include_directories(${FLUIDSYNTH_INCLUDE_DIR} ${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./dumb)
+include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./dumb)
+
+if (NOT NO_FLUIDSYNTH)
+	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
+endif()
 
 set(SLADE_SOURCES
 )
@@ -87,7 +102,12 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_SOURCES}
 )
 
-target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRARIES} ${FLUIDSYNTH_LIBRARIES} ${FREEIMAGE_LIBRARIES} ${SFML_LIBRARY} ${FTGL_LIBRARY} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${GLEW_LIBRARY} ${GTK2_LIBRARIES})
+target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRARIES} ${FREEIMAGE_LIBRARIES} ${SFML_LIBRARY} ${FTGL_LIBRARY} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${GLEW_LIBRARY} ${GTK2_LIBRARIES})
+
+if (NOT NO_FLUIDSYNTH)
+	target_link_libraries(slade ${FLUIDSYNTH_LIBRARIES})
+endif()
+
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
 if(APPLE)
