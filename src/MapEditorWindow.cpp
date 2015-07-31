@@ -256,7 +256,7 @@ void MapEditorWindow::setupLayout()
 
 
 	// --- Toolbars ---
-	toolbar = new SToolBar(this);
+	toolbar = new SToolBar(this, true);
 
 	// Map toolbar
 	SToolBarGroup* tbg_map = new SToolBarGroup(toolbar, "_Map");

@@ -1356,6 +1356,10 @@
     <ClCompile Include="src\STabCtrl.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\DataEntryPanel.cpp" />
+    <ClCompile Include="src\MapSpecials.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2337,7 +2341,7 @@
     <ClInclude Include="src\STabCtrl.h">
       <Filter>UI Elements</Filter>
     </ClInclude>
-	<ClInclude Include="src\MapSpecials.h">
+    <ClInclude Include="src\MapSpecials.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\DataEntryPanel.h">
@@ -2522,5 +2526,8 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="SLADE.manifest" />
   </ItemGroup>
 </Project>

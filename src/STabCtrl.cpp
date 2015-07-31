@@ -3,7 +3,7 @@
 #include "WxStuff.h"
 #include "STabCtrl.h"
 
-STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int height) : wxAuiNotebook()
+STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int height, bool main_tabs) : wxAuiNotebook()
 {
 	// Determine style
 	long style = wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS;
@@ -16,7 +16,7 @@ STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int h
 	wxAuiNotebook::Create(parent, -1, wxDefaultPosition, wxDefaultSize, style);
 
 	// Setup tabs
-	SetArtProvider(getTabArt(close_buttons));
+	SetArtProvider(getTabArt(close_buttons, main_tabs));
 	SetTabCtrlHeight(height);
 }
 

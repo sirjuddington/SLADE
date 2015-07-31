@@ -96,6 +96,9 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SLADE.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -129,6 +132,9 @@
       <AllowIsolation>true</AllowIsolation>
       <Profile>true</Profile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SLADE.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">
     <ClCompile>
@@ -162,6 +168,9 @@
       <AllowIsolation>true</AllowIsolation>
       <Profile>true</Profile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SLADE.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\ActionSpecial.cpp" />
@@ -957,6 +966,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="SLADE.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

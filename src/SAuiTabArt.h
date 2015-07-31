@@ -35,7 +35,7 @@ private:
 class SAuiTabArt : public wxAuiGenericTabArt
 {
 public:
-	SAuiTabArt(bool close_buttons = false);
+	SAuiTabArt(bool close_buttons = false, bool main_tabs = false);
 	virtual ~SAuiTabArt();
 
 	//wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour& color);
@@ -74,6 +74,7 @@ public:
 protected:
 	bool m_closeButtons;
 	wxColour m_inactiveTabColour;
+	bool m_mainTabs;
 };
 
 class SAuiDockArt : public wxAuiDefaultDockArt

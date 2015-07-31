@@ -77,6 +77,8 @@ static const unsigned char list_bits[] = {
 	0x0f, 0xf8, 0xff, 0xff, 0x0f, 0xf8, 0x1f, 0xfc, 0x3f, 0xfe, 0x7f, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
+static const wxColor col_w10_bg(250, 250, 250);
+
 
 /*******************************************************************
  * FUNCTIONS
@@ -131,12 +133,13 @@ wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour
  * SAUITABART CLASS FUNCTIONS
  *******************************************************************/
 
-SAuiTabArt::SAuiTabArt(bool close_buttons)
+SAuiTabArt::SAuiTabArt(bool close_buttons, bool main_tabs)
 {
 	m_normalFont = *wxNORMAL_FONT;
 	m_selectedFont = *wxNORMAL_FONT;
 	m_measuringFont = m_selectedFont;
 	m_closeButtons = close_buttons;
+	m_mainTabs = main_tabs;
 
 	m_fixedTabWidth = 100;
 	m_tabCtrlHeight = 0;
@@ -195,7 +198,7 @@ void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 		dc.DrawLine(theRect.x + theRect.width - 1, theRect.y + height, theRect.x + theRect.width - 1, theRect.y + theRect.height);
 		dc.DrawLine(theRect.x, theRect.y + theRect.height - 1, theRect.x + theRect.width, theRect.y + theRect.height - 1);
 
-		dc.SetPen(wxPen(m_baseColour));
+		dc.SetPen(wxPen((m_mainTabs && Global::win_version_major >= 10) ? col_w10_bg : m_baseColour));
 		dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + height);
 		dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + height);
 		dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
@@ -209,8 +212,8 @@ void SAuiTabArt::DrawBackground(wxDC& dc,
 	const wxRect& rect)
 {
 	// draw background
-	wxColor top_color = m_baseColour;
-	wxColor bottom_color = m_baseColour;
+	wxColor top_color = (m_mainTabs && Global::win_version_major >= 10) ? col_w10_bg : m_baseColour;
+	wxColor bottom_color = (m_mainTabs && Global::win_version_major >= 10) ? col_w10_bg : m_baseColour;
 	wxRect r;
 
 	if (m_flags &wxAUI_NB_BOTTOM)
@@ -578,6 +581,9 @@ SAuiDockArt::SAuiDockArt()
 
 	m_activeCloseBitmap = bitmapFromBits(close_bits, 16, 16, wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT));
 	m_inactiveCloseBitmap = bitmapFromBits(close_bits, 16, 16, wxColour(128, 128, 128));
+	
+	if (Global::win_version_major >= 10)
+		m_sashBrush = wxBrush(col_w10_bg);
 
 	m_captionSize = 19;
 	m_sashSize = 4;

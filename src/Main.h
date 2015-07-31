@@ -99,6 +99,8 @@ namespace Global
 	extern int log_verbosity;
 	extern bool debug;
 	extern double ppi_scale;
+	extern int win_version_major;
+	extern int win_version_minor;
 };
 
 

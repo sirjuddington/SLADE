@@ -186,7 +186,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	wxPaintDC dc(this);
 
 	// Get system colours needed
-	wxColour col_background = Drawing::getPanelBGColour();//Drawing::getMenuBarBGColour();
+	wxColour col_background = GetBackgroundColour();//toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
 	wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 
 	// Draw background

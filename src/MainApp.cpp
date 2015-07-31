@@ -93,6 +93,8 @@ namespace Global
 #endif
 
 	double ppi_scale = 1.0;
+	int win_version_major = 0;
+	int win_version_minor = 0;
 }
 
 string	dir_data = "";
@@ -706,6 +708,12 @@ bool MainApp::OnInit()
 
 	// Init logfile
 	initLogFile();
+
+	// Get Windows version
+#ifdef __WXMSW__
+	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
+	LOG_MESSAGE(0, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
+#endif
 
 	// Init keybinds
 	KeyBind::initBinds();

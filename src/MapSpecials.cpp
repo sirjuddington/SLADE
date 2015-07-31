@@ -40,7 +40,7 @@
 
 
 // Number of radians in the unit circle
-const double TAU = M_PI * 2;
+const double TAU = PI * 2;
 
 
 /*******************************************************************
