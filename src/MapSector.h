@@ -32,6 +32,12 @@ struct doom64sector_t
 	uint16_t	flags;
 };
 
+enum PlaneType
+{
+	FLOOR_PLANE,
+	CEILING_PLANE,
+};
+
 class MapSector : public MapObject
 {
 	friend class SLADEMap;
@@ -55,6 +61,9 @@ private:
 	fpoint2_t			text_point;
 	plane_t				plane_floor;
 	plane_t				plane_ceiling;
+
+	template<PlaneType p>
+	plane_t		computeZDoomPlane();
 
 public:
 	MapSector(SLADEMap* parent = NULL);
@@ -80,18 +89,25 @@ public:
 	void	setStringProperty(string key, string value);
 	void	setFloatProperty(string key, double value);
 	void	setIntProperty(string key, int value);
-	void	setFloorHeight(short height)
-	{
-		f_height = height;
-		plane_floor.set(0, 0, 1, height);
+	void	setFloorHeight(short height);
+	void	setCeilingHeight(short height);
+	void	setFloorPlane(plane_t p) {
+		if (p != plane_floor)
+			setModified();
+		plane_floor = p;
 	}
-	void	setCeilingHeight(short height)
-	{
-		c_height = height;
-		plane_ceiling.set(0, 0, 1, height);
+	void	setCeilingPlane(plane_t p) {
+		if (p != plane_ceiling)
+			setModified();
+		plane_ceiling = p;
 	}
-	void	setFloorPlane(plane_t p) { plane_floor = p; }
-	void	setCeilingPlane(plane_t p) { plane_ceiling = p; }
+
+	template<PlaneType p> short getPlaneHeight();
+
+	template<PlaneType p>
+	plane_t	getPlane();
+	template<PlaneType p>
+	void	setPlane(plane_t plane);
 
 	fpoint2_t			getPoint(uint8_t point);
 	void				resetBBox() { bbox.reset(); }
@@ -117,5 +133,15 @@ public:
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
 };
+
+// Note: these MUST be inline, or the linker will complain
+template<> inline short MapSector::getPlaneHeight<FLOOR_PLANE>() { return getFloorHeight(); }
+template<> inline short MapSector::getPlaneHeight<CEILING_PLANE>() { return getCeilingHeight(); }
+template<> inline plane_t MapSector::getPlane<FLOOR_PLANE>() { return getFloorPlane(); }
+template<> inline plane_t MapSector::getPlane<CEILING_PLANE>() { return getCeilingPlane(); }
+template<> inline void MapSector::setPlane<FLOOR_PLANE>(plane_t plane) { setFloorPlane(plane); }
+template<> inline void MapSector::setPlane<CEILING_PLANE>(plane_t plane) { setCeilingPlane(plane); }
+
+
 
 #endif //__MAPSECTOR_H__

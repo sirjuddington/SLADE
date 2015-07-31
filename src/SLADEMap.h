@@ -9,6 +9,7 @@
 #include "MapThing.h"
 #include "Archive.h"
 #include "PropertyList.h"
+#include "MapSpecials.h"
 
 struct mobj_holder_t
 {
@@ -53,6 +54,7 @@ private:
 	string				name;
 	int					current_format;
 	long				opened_time;
+	MapSpecials			map_specials;
 
 	vector<mobj_holder_t>	all_objects;
 	vector<unsigned>		deleted_objects;
@@ -172,6 +174,7 @@ public:
 	void	refreshIndices();
 	bool	readMap(Archive::mapdesc_t map);
 	void	clearMap();
+	MapSpecials*	mapSpecials() { return &map_specials; }
 
 	// Map loading
 	bool	readDoomMap(Archive::mapdesc_t map);
@@ -236,6 +239,7 @@ public:
 	bool				isModified();
 	void				setOpenedTime();
 	bool				modifiedSince(long since, int type = -1);
+	void				expireSpecials();
 
 	// Creation
 	MapVertex*	createVertex(double x, double y, double split_dist = -1);

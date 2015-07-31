@@ -35,8 +35,13 @@
 #include "MainApp.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
-#include "MapSpecials.h"
+#include "GameConfiguration.h"
 #include <wx/colour.h>
+#include <cmath>
+
+
+// Number of radians in the unit circle
+const double TAU = M_PI * 2;
 
 
 /*******************************************************************
@@ -213,15 +218,9 @@ void MapSector::setIntProperty(string key, int value)
 	setModified();
 
 	if (key == "heightfloor")
-	{
-		f_height = value;
-		plane_floor.set(0, 0, 1, value);
-	}
+		setFloorHeight(value);
 	else if (key == "heightceiling")
-	{
-		c_height = value;
-		plane_ceiling.set(0, 0, 1, value);
-	}
+		setCeilingHeight(value);
 	else if (key == "lightlevel")
 		light = value;
 	else if (key == "special")
@@ -230,6 +229,22 @@ void MapSector::setIntProperty(string key, int value)
 		tag = value;
 	else
 		MapObject::setIntProperty(key, value);
+}
+
+void MapSector::setFloorHeight(short height)
+{
+	f_height = height;
+	setFloorPlane(plane_t::flat(height));
+	setModified();
+	parent_map->expireSpecials();
+}
+
+void MapSector::setCeilingHeight(short height)
+{
+	c_height = height;
+	setCeilingPlane(plane_t::flat(height));
+	setModified();
+	parent_map->expireSpecials();
 }
 
 /* MapLine::getPoint
@@ -544,10 +559,10 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 {
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
-	if (MapSpecials::tagColoursSet())
+	if (parent_map->mapSpecials()->tagColoursSet())
 	{
 		rgba_t col;
-		if (MapSpecials::getTagColour(tag, &col))
+		if (parent_map->mapSpecials()->getTagColour(tag, &col))
 		{
 			if (fullbright)
 				return col;

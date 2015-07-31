@@ -43,7 +43,6 @@
 #include "Clipboard.h"
 #include "UndoRedo.h"
 #include "MapChecks.h"
-#include "MapSpecials.h"
 
 
 /*******************************************************************
@@ -637,7 +636,7 @@ bool MapEditor::openMap(Archive::mapdesc_t map)
 	updateThingLists();
 
 	// Process specials
-	MapSpecials::processMapSpecials(&(this->map));
+	this->map.mapSpecials()->processMapSpecials(&(this->map));
 
 	return true;
 }
@@ -4021,8 +4020,7 @@ void MapEditor::changeSectorHeight3d(int amount)
 			MapSector* sector = map.getSector(items[a].index);
 
 			// Change height
-			int height = sector->intProperty("heightfloor");
-			sector->setIntProperty("heightfloor", height + amount);
+			sector->setFloorHeight(sector->getFloorHeight() + amount);
 		}
 
 		// Ceiling
@@ -4046,8 +4044,7 @@ void MapEditor::changeSectorHeight3d(int amount)
 				continue;
 
 			// Change height
-			int height = sector->intProperty("heightceiling");
-			sector->setIntProperty("heightceiling", height + amount);
+			sector->setCeilingHeight(sector->getCeilingHeight() + amount);
 
 			// Set to changed
 			ceilings.push_back(sector->getIndex());
@@ -5059,6 +5056,7 @@ void MapEditor::doUndo()
 		last_undo_level = "";
 	}
 	updateThingLists();
+	map.expireSpecials();
 }
 
 /* MapEditor::doRedo
@@ -5086,6 +5084,7 @@ void MapEditor::doRedo()
 		last_undo_level = "";
 	}
 	updateThingLists();
+	map.expireSpecials();
 }
 
 #pragma endregion

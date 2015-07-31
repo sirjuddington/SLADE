@@ -2489,6 +2489,8 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
  *******************************************************************/
 void SLADEMap::clearMap()
 {
+	map_specials.reset();
+
 	// Clear vectors
 	sides.clear();
 	lines.clear();
@@ -3286,7 +3288,7 @@ MapThing* SLADEMap::getFirstThingWithId(int id)
 	return NULL;
 }
 
-/* SLADEMap::getSectorsByTag
+/* SLADEMap::getThingsByIdInSectorTag
  * Adds all things with TID [id] that are also within a sector with
  * tag [tag] to [list]
  *******************************************************************/
@@ -3974,6 +3976,19 @@ bool SLADEMap::modifiedSince(long since, int type)
 	}
 
 	return false;
+}
+
+/* SLADEMap::expireSpecials
+ * Expires all the currently calculated special map properties (currently this
+ * just means ZDoom slopes).  They're guaranteed to be recomputed by the next
+ * time the user can see or edit the map.
+ *******************************************************************/
+void SLADEMap::expireSpecials()
+{
+	// TODO should support holding off on this during bulk operations (like
+	// mass property edit) so we don't waste effort recomputing multiple times
+	map_specials.reset();
+	map_specials.processMapSpecials(this);
 }
 
 /* SLADEMap::createVertex
