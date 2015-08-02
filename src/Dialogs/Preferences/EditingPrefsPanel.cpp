@@ -63,27 +63,27 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Force uppercase
 	cb_wad_force_uppercase = new wxCheckBox(this, -1, "Force uppercase entry names in Wad Archives");
-	sizer->Add(cb_wad_force_uppercase, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_wad_force_uppercase, 0, wxEXPAND|wxALL, 4);
 
 	// Percent encoding
 	cb_zip_percent_encoding = new wxCheckBox(this, -1, "Use percent encoding if needed outside of Wad Archives");
-	sizer->Add(cb_zip_percent_encoding, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_zip_percent_encoding, 0, wxEXPAND|wxALL, 4);
 
 	// Automatically replace entries
 	cb_auto_entry_replace = new wxCheckBox(this, -1, "Automatically replace entries with same name as drag-and-dropped files");
-	sizer->Add(cb_auto_entry_replace, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_auto_entry_replace, 0, wxEXPAND|wxALL, 4);
 
 	// Save archive when saving map
 	cb_save_archive_with_map = new wxCheckBox(this, -1, "Save the map's parent archive when saving a map");
-	sizer->Add(cb_save_archive_with_map, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_save_archive_with_map, 0, wxEXPAND|wxALL, 4);
 
 	// Confirm entry delete
 	cb_confirm_entry_delete = new wxCheckBox(this, -1, "Show confirmation dialog on deleting an entry");
-	sizer->Add(cb_confirm_entry_delete, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_confirm_entry_delete, 0, wxEXPAND|wxALL, 4);
 
 	// Unsaved entry changes
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 	string choices[] = { "Don't Save", "Save", "Ask" };
 	choice_entry_mod = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, choices);
 	hbox->Add(new wxStaticText(this, -1, "Action on unsaved entry changes:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);

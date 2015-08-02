@@ -70,27 +70,27 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 
 	// Clear selection on click
 	cb_selection_clear_click = new wxCheckBox(this, -1, "Clear selection when nothing is clicked");
-	sizer->Add(cb_selection_clear_click, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_selection_clear_click, 0, wxEXPAND|wxALL, 4);
 
 	// Double-click to edit selection properties
 	cb_property_edit_dclick = new wxCheckBox(this, -1, "Double-click to edit properties");
-	sizer->Add(cb_property_edit_dclick, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_property_edit_dclick, 0, wxEXPAND|wxALL, 4);
 
 	// Merge undo step
 	cb_merge_undo_step = new wxCheckBox(this, -1, "Create a 'Merge' undo level on move/edit map architecture");
-	sizer->Add(cb_merge_undo_step, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_merge_undo_step, 0, wxEXPAND|wxALL, 4);
 
 	// Auto apply property changes
 	cb_props_auto_apply = new wxCheckBox(this, -1, "Automatically apply property panel changes");
-	sizer->Add(cb_props_auto_apply, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_props_auto_apply, 0, wxEXPAND|wxALL, 4);
 
 	// Auto remove invalid lines
 	cb_remove_invalid_lines = new wxCheckBox(this, -1, "Remove any resulting invalid lines on sector delete");
-	sizer->Add(cb_remove_invalid_lines, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_remove_invalid_lines, 0, wxEXPAND|wxALL, 4);
 
 	// Maximum backups
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 	hbox->Add(new wxStaticText(this, -1, "Max backups to keep:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 	text_max_backups = new NumberTextCtrl(this);
 	hbox->Add(text_max_backups, 0, wxEXPAND);

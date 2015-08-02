@@ -11,6 +11,7 @@ private:
 	STabCtrl*	stc_pages;
 
 	wxCheckBox*	cb_grid_dashed;
+	wxChoice*	choice_grid_64;
 	wxCheckBox*	cb_animate_hilight;
 	wxCheckBox*	cb_animate_selection;
 	wxCheckBox*	cb_animate_tagged;

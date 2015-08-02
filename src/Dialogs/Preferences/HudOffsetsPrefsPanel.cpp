@@ -66,15 +66,15 @@ EXTERN_CVAR(Bool, hud_wide)
 
 	// Show center line
 	cb_hud_center = new wxCheckBox(this, -1, "Show center line");
-	sizer->Add(cb_hud_center, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_hud_center, 0, wxEXPAND|wxALL, 4);
 
 	// Show status bar line
 	cb_hud_statusbar = new wxCheckBox(this, -1, "Show status bar lines");
-	sizer->Add(cb_hud_statusbar, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_hud_statusbar, 0, wxEXPAND|wxALL, 4);
 
 	// Show widescreen borders
 	cb_hud_wide = new wxCheckBox(this, -1, "Show widescreen borders");
-	sizer->Add(cb_hud_wide, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_hud_wide, 0, wxEXPAND|wxALL, 4);
 }
 
 /* HudOffsetsPrefsPanel::~HudOffsetsPrefsPanel

@@ -65,7 +65,7 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	wxStaticBoxSizer* fsizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(fsizer, 1, wxEXPAND|wxALL, 4);
 
-	wxGridBagSizer* gbsizer = new wxGridBagSizer(4, 4);
+	wxGridBagSizer* gbsizer = new wxGridBagSizer(8, 8);
 	fsizer->Add(gbsizer, 0, wxEXPAND|wxALL, 4);
 
 	// Render distance
@@ -107,11 +107,11 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Show distance
 	cb_show_distance = new wxCheckBox(this, -1, "Show distance under crosshair");
-	fsizer->Add(cb_show_distance, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	fsizer->Add(cb_show_distance, 0, wxEXPAND|wxALL, 4);
 
 	// Invert mouse y
 	cb_invert_y = new wxCheckBox(this, -1, "Invert mouse Y axis");
-	fsizer->Add(cb_invert_y, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	fsizer->Add(cb_invert_y, 0, wxEXPAND|wxALL, 4);
 
 
 	// Bind events
