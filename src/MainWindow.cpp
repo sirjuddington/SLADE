@@ -724,13 +724,6 @@ void MainWindow::openEntry(ArchiveEntry* entry)
 #ifdef USE_WEBVIEW_STARTPAGE
 void MainWindow::openDocs(string page_name)
 {
-	// Create docs page control if needed
-	if (!docs_page)
-	{
-		docs_page = new DocsPage(this);
-		docs_page->SetName("docs");
-	}
-
 	// Check if docs tab is already open
 	bool found = false;
 	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
@@ -746,6 +739,11 @@ void MainWindow::openDocs(string page_name)
 	// Open new docs tab if not already open
 	if (!found)
 	{
+		// Create docs page
+		docs_page = new DocsPage(this);
+		docs_page->SetName("docs");
+
+		// Add tab
 		stc_tabs->AddPage(docs_page, "Documentation", true, -1);
 		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, getIcon("t_wiki"));
 	}
