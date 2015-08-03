@@ -55,6 +55,8 @@ private:
 	int					current_format;
 	long				opened_time;
 	MapSpecials			map_specials;
+	bool				bulk_op_in_progress;
+	bool				specials_expired;
 
 	vector<mobj_holder_t>	all_objects;
 	vector<unsigned>		deleted_objects;
@@ -174,7 +176,11 @@ public:
 	void	refreshIndices();
 	bool	readMap(Archive::mapdesc_t map);
 	void	clearMap();
+
 	MapSpecials*	mapSpecials() { return &map_specials; }
+	void			expireSpecials();
+	void			beginBulkOperation();
+	void			endBulkOperation();
 
 	// Map loading
 	bool	readDoomMap(Archive::mapdesc_t map);
@@ -239,7 +245,6 @@ public:
 	bool				isModified();
 	void				setOpenedTime();
 	bool				modifiedSince(long since, int type = -1);
-	void				expireSpecials();
 
 	// Creation
 	MapVertex*	createVertex(double x, double y, double split_dist = -1);

@@ -3978,6 +3978,31 @@ bool SLADEMap::modifiedSince(long since, int type)
 	return false;
 }
 
+/* SLADEMap::beginBulkOperation
+ * Indicate that a lot of changes to the map are about to be performed all at
+ * once (i.e., without redrawing the UI or returning control to the user).
+ * This suspends some operations, such as re-evaluating map specials, until
+ * endBulkOperation is called.
+ *******************************************************************/
+void SLADEMap::beginBulkOperation()
+{
+	bulk_op_in_progress = true;
+}
+
+/* SLADEMap::endBulkOperation
+ * Counterpart to beginBulkOperation.
+ *******************************************************************/
+void SLADEMap::endBulkOperation()
+{
+	bulk_op_in_progress = false;
+
+	if (specials_expired)
+	{
+		map_specials.processMapSpecials(this);
+		specials_expired = false;
+	}
+}
+
 /* SLADEMap::expireSpecials
  * Expires all the currently calculated special map properties (currently this
  * just means ZDoom slopes).  They're guaranteed to be recomputed by the next
@@ -3985,10 +4010,16 @@ bool SLADEMap::modifiedSince(long since, int type)
  *******************************************************************/
 void SLADEMap::expireSpecials()
 {
-	// TODO should support holding off on this during bulk operations (like
-	// mass property edit) so we don't waste effort recomputing multiple times
 	map_specials.reset();
+
+	if (bulk_op_in_progress)
+	{
+		specials_expired = true;
+		return;
+	}
+
 	map_specials.processMapSpecials(this);
+	specials_expired = false;
 }
 
 /* SLADEMap::createVertex
