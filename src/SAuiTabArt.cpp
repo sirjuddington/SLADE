@@ -181,30 +181,17 @@ wxAuiTabArt* SAuiTabArt::Clone()
 
 void SAuiTabArt::DrawBorder(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
-	//wxAuiGenericTabArt::DrawBorder(dc, wnd, rect);
-	//int i, border_width = GetBorderWidth(wnd);
-
-	int height = ((wxAuiNotebook*)wnd)->GetTabCtrlHeight() - 3;
-
+	int height = ((wxAuiNotebook*)wnd)->GetTabCtrlHeight();// -3;
 	wxRect theRect(rect);
-	//for (i = 0; i < border_width; ++i)
-	//{
-	//dc.SetPen(wxPen(m_baseColour));
-		//dc.DrawRectangle(theRect.x, theRect.y, theRect.width, theRect.height);
 
+	dc.DrawLine(theRect.x, theRect.y + height, theRect.x, theRect.y + theRect.height);
+	dc.DrawLine(theRect.x + theRect.width - 1, theRect.y + height, theRect.x + theRect.width - 1, theRect.y + theRect.height);
+	dc.DrawLine(theRect.x, theRect.y + theRect.height - 1, theRect.x + theRect.width, theRect.y + theRect.height - 1);
 
-		//dc.SetPen(wxPen(m_baseColour));
-		dc.DrawLine(theRect.x, theRect.y + height, theRect.x, theRect.y + theRect.height);
-		dc.DrawLine(theRect.x + theRect.width - 1, theRect.y + height, theRect.x + theRect.width - 1, theRect.y + theRect.height);
-		dc.DrawLine(theRect.x, theRect.y + theRect.height - 1, theRect.x + theRect.width, theRect.y + theRect.height - 1);
-
-		dc.SetPen(wxPen((m_mainTabs && Global::win_version_major >= 10) ? col_w10_bg : m_baseColour));
-		dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + height);
-		dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + height);
-		dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
-
-//theRect.Deflate(1);
-	//}
+	dc.SetPen(wxPen((m_mainTabs && Global::win_version_major >= 10) ? col_w10_bg : m_baseColour));
+	dc.DrawLine(theRect.x, theRect.y, theRect.x, theRect.y + height);
+	dc.DrawLine(theRect.x + theRect.width - 1, theRect.y, theRect.x + theRect.width - 1, theRect.y + height);
+	dc.DrawLine(theRect.x, theRect.y, theRect.x + theRect.width, theRect.y);
 }
 
 void SAuiTabArt::DrawBackground(wxDC& dc,
@@ -219,10 +206,9 @@ void SAuiTabArt::DrawBackground(wxDC& dc,
 	if (m_flags &wxAUI_NB_BOTTOM)
 		r = wxRect(rect.x, rect.y, rect.width + 2, rect.height);
 	else
-		r = wxRect(rect.x, rect.y, rect.width + 2, rect.height - 3);
+		r = wxRect(rect.x, rect.y, rect.width + 2, rect.height);
 
 	dc.GradientFillLinear(r, top_color, bottom_color, wxSOUTH);
-
 
 	// draw base lines
 	dc.SetPen(wxPen(m_baseColour));
@@ -236,12 +222,13 @@ void SAuiTabArt::DrawBackground(wxDC& dc,
 	}
 	else
 	{
-		dc.SetPen(*wxTRANSPARENT_PEN);
-		dc.SetBrush(wxBrush(m_activeColour));// m_baseColourBrush);
-		dc.DrawRectangle(-1, y - 4, w + 2, 4);
+		//dc.SetPen(*wxTRANSPARENT_PEN);
+		//dc.SetBrush(wxBrush(m_activeColour));
+		//dc.SetBrush(wxBrush(wxColor(224, 238, 255)));
+		//dc.DrawRectangle(-1, y - 4, w + 2, 4);
 
 		dc.SetPen(m_borderPen);
-		dc.DrawLine(-2, y - 4, w + 2, y - 4);
+		dc.DrawLine(-2, y - 1, w + 2, y - 1);
 	}
 }
 
@@ -279,6 +266,10 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 	dc.SetFont(m_normalFont);
 	dc.GetTextExtent(caption, &normal_textx, &normal_texty);
 
+	bool bluetab = false;
+	if (page.window->GetName() == "startpage")
+		bluetab = true;
+
 	// figure out the size of the tab
 	wxSize tab_size = GetTabSize(dc,
 		wnd,
@@ -288,10 +279,10 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 		close_button_state,
 		x_extent);
 
-	wxCoord tab_height = m_tabCtrlHeight - 1;// -3;
+	wxCoord tab_height = m_tabCtrlHeight + 2;// -1;// -3;
 	wxCoord tab_width = tab_size.x;
 	wxCoord tab_x = in_rect.x;
-	wxCoord tab_y = in_rect.y + in_rect.height - tab_height;
+	wxCoord tab_y = in_rect.y + in_rect.height - tab_height + 3;
 
 
 	if (!page.active)
@@ -354,8 +345,8 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 
 		// draw base background color
 		wxRect r(tab_x, tab_y, tab_width, tab_height);
-		dc.SetPen(wxPen(m_activeColour));
-		dc.SetBrush(wxBrush(m_activeColour));
+		dc.SetPen(wxPen(bluetab ? wxColor(224, 238, 255) : m_activeColour));
+		dc.SetBrush(wxBrush(bluetab ? wxColor(224, 238, 255) : m_activeColour));
 		dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, r.height - 5);
 
 		// highlight top of tab
@@ -395,7 +386,7 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 		if (m_flags &wxAUI_NB_BOTTOM)
 			dc.SetPen(wxPen(m_baseColour.ChangeLightness(170)));
 		else
-			dc.SetPen(wxPen(m_activeColour));
+			dc.SetPen(wxPen(bluetab ? wxColor(224, 238, 255) : m_activeColour));
 		dc.DrawLine(border_points[0].x + 1,
 			border_points[0].y,
 			border_points[5].x,

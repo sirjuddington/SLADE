@@ -71,6 +71,8 @@ public:
 		int closeButtonState,
 		int* xExtent);
 
+	int GetIndentSize() { return 2; }
+
 protected:
 	bool m_closeButtons;
 	wxColour m_inactiveTabColour;
