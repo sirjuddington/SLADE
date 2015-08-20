@@ -931,7 +931,7 @@ void DataEntryPanel::deleteRow()
 	}
 
 	// Update grid
-	grid_data->UpdateDimensions();
+	//grid_data->UpdateDimensions();
 	grid_data->ClearSelection();
 	grid_data->ForceRefresh();
 	setModified(true);
@@ -943,7 +943,7 @@ void DataEntryPanel::deleteRow()
 void DataEntryPanel::addRow()
 {
 	grid_data->InsertRows(grid_data->GetGridCursorRow(), 1);
-	grid_data->UpdateDimensions();
+	//grid_data->UpdateDimensions();
 	grid_data->ClearSelection();
 	grid_data->ForceRefresh();
 	setModified(true);
@@ -994,7 +994,7 @@ void DataEntryPanel::copyRow(bool cut)
 	}
 
 	// Update grid
-	grid_data->UpdateDimensions();
+	//grid_data->UpdateDimensions();
 	grid_data->ClearSelection();
 	grid_data->ForceRefresh();
 	setModified(true);
@@ -1006,7 +1006,7 @@ void DataEntryPanel::copyRow(bool cut)
 void DataEntryPanel::pasteRow()
 {
 	table_data->pasteRows(grid_data->GetGridCursorRow());
-	grid_data->UpdateDimensions();
+	//grid_data->UpdateDimensions();
 	grid_data->ClearSelection();
 	grid_data->ForceRefresh();
 	setModified(true);
