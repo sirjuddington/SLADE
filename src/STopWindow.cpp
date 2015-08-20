@@ -47,6 +47,9 @@
 STopWindow::STopWindow(string title, string id, int x, int y, int width, int height)
 	: wxFrame(NULL, -1, title, wxPoint(x, y), wxSize(width, height))
 {
+	// Enable fullscreen mode on OSX
+	EnableFullScreenView(true);
+
 	// Init size/pos
 	Misc::winf_t info = Misc::getWindowInfo(id);
 	if (!info.id.IsEmpty())
