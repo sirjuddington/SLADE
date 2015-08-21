@@ -1360,6 +1360,9 @@
     <ClCompile Include="src\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\PodArchive.cpp">
+      <Filter>Resources\Archive\Formats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2346,6 +2349,9 @@
     </ClInclude>
     <ClInclude Include="src\DataEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PodArchive.h">
+      <Filter>Resources\Archive\Formats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

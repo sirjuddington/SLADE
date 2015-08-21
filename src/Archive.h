@@ -76,7 +76,8 @@ enum ArchiveTypes
 	ARCHIVE_BZ2,
 	ARCHIVE_7Z,
 	ARCHIVE_DISK,
-	ARCHIVE_FOLDER
+	ARCHIVE_FOLDER,
+	ARCHIVE_POD
 };
 
 class Archive : public Announcer

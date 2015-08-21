@@ -318,6 +318,8 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 		new_archive = new TarArchive();
 	else if (DiskArchive::isDiskArchive(filename))
 		new_archive = new DiskArchive();
+	else if (PodArchive::isPodArchive(filename))
+		new_archive = new PodArchive();
 	else
 	{
 		// Unsupported format
@@ -428,6 +430,8 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 		new_archive = new TarArchive();
 	else if (DiskArchive::isDiskArchive(entry->getMCData()))
 		new_archive = new DiskArchive();
+	else if (entry->getName().Lower().EndsWith(".pod") && PodArchive::isPodArchive(entry->getMCData()))
+		new_archive = new PodArchive();
 	else
 	{
 		// Unsupported format
@@ -759,6 +763,7 @@ string ArchiveManager::getArchiveExtensionsString()
 	string ext_grp = "*.grp;*.GRP;*.Grp;*.prg;*.PRG;*.Prg";		extensions += ext_grp + ";";
 	string ext_rff = "*.rff;*.RFF;*.Rff";						extensions += ext_rff + ";";
 	string ext_disk = "*.disk;*.DISK;*.Disk";					extensions += ext_disk+ ";";
+	string ext_pod = "*.pod;*.POD;*.Pod";						extensions += ext_pod + ";";
 #ifdef __APPLE__
 	// Cocoa supports filters with file extensions only
 	string ext_wolf =	"*.wl1;*.wl3;*.wl6;"
@@ -776,22 +781,23 @@ string ArchiveManager::getArchiveExtensionsString()
 	                    "vgadict.*;VGADICT.*;Vgadict.*";		extensions += ext_wolf +";";
 #endif // __APPLE__
 
-	extensions += S_FMT("|Doom Wad files (*.wad)|%s",			ext_wad);
-	extensions += S_FMT("|Zip files (*.zip)|%s",				ext_zip);
-	extensions += S_FMT("|Pk3 (zip) files (*.pk3)|%s",			ext_pk3);
-	extensions += S_FMT("|JDF (zip) files (*.jdf)|%s",			ext_jdf);
-	extensions += S_FMT("|Data (dat) files (*.dat)|%s",			ext_dat);
-	extensions += S_FMT("|CD/HD (cd/hd) files (*.cd; *.hd)|%s",	ext_chd);
-	extensions += S_FMT("|Library (lib) files (*.lib)|%s",		ext_lib);
-	extensions += S_FMT("|Resource (res) files (*.res)|%s",		ext_res);
-	extensions += S_FMT("|Quake Pak files (*.pak)|%s",			ext_pak);
-	extensions += S_FMT("|Build Grp files (*.grp)|%s",			ext_grp);
-	extensions += S_FMT("|Dark Forces Gob files (*.gob)|%s",	ext_gob);
-	extensions += S_FMT("|Dark Forces Lfd files (*.lfd)|%s",	ext_lfd);
-	extensions += S_FMT("|Descent Hog files (*.hog)|%s",		ext_hog);
-	extensions += S_FMT("|Blood Rff files (*.rff)|%s",			ext_rff);
-	extensions += S_FMT("|Wolfenstein 3D files|%s",				ext_wolf);
-	extensions += S_FMT("|Nerve Software Disk files|%s",		ext_disk);
+	extensions += S_FMT("|Doom Wad files (*.wad)|%s",				ext_wad);
+	extensions += S_FMT("|Zip files (*.zip)|%s",					ext_zip);
+	extensions += S_FMT("|Pk3 (zip) files (*.pk3)|%s",				ext_pk3);
+	extensions += S_FMT("|JDF (zip) files (*.jdf)|%s",				ext_jdf);
+	extensions += S_FMT("|Data (dat) files (*.dat)|%s",				ext_dat);
+	extensions += S_FMT("|CD/HD (cd/hd) files (*.cd; *.hd)|%s",		ext_chd);
+	extensions += S_FMT("|Library (lib) files (*.lib)|%s",			ext_lib);
+	extensions += S_FMT("|Resource (res) files (*.res)|%s",			ext_res);
+	extensions += S_FMT("|Quake Pak files (*.pak)|%s",				ext_pak);
+	extensions += S_FMT("|Build Grp files (*.grp)|%s",				ext_grp);
+	extensions += S_FMT("|Dark Forces Gob files (*.gob)|%s",		ext_gob);
+	extensions += S_FMT("|Dark Forces Lfd files (*.lfd)|%s",		ext_lfd);
+	extensions += S_FMT("|Descent Hog files (*.hog)|%s",			ext_hog);
+	extensions += S_FMT("|Blood Rff files (*.rff)|%s",				ext_rff);
+	extensions += S_FMT("|Wolfenstein 3D files|%s",					ext_wolf);
+	extensions += S_FMT("|Nerve Software Disk files|%s",			ext_disk);
+	extensions += S_FMT("|Terminal Velocity POD files (*.pod)|%s",	ext_pod);
 
 	return extensions;
 }
@@ -1052,6 +1058,9 @@ void ArchiveManager::addRecentFile(string path)
 	// Check the path is valid
 	if (!(wxFileName::FileExists(path) || wxDirExists(path)))
 		return;
+
+	// Replace \ with /
+	path.Replace("\\", "/");
 
 	// Check if the file is already in the list
 	for (unsigned a = 0; a < recent_files.size(); a++)
