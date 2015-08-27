@@ -76,9 +76,9 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 0;
-	int version_num = 3104;
-	string version = "3.1.0.4"
+	int beta_num = 1;
+	int version_num = 3110;
+	string version = "3.1.1"
 #ifdef GIT_DESCRIPTION
 	                 " (" GIT_DESCRIPTION ")"
 #endif
