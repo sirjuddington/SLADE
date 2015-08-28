@@ -204,6 +204,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	Bind(wxEVT_STC_DWELLEND, &TextEditor::onMouseDwellEnd, this);
 	Bind(wxEVT_LEFT_DOWN, &TextEditor::onMouseDown, this);
 	Bind(wxEVT_KILL_FOCUS, &TextEditor::onFocusLoss, this);
+	Bind(wxEVT_ACTIVATE, &TextEditor::onActivate, this);
 	dlg_fr->getBtnFindNext()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
 	dlg_fr->getBtnReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
 	dlg_fr->getBtnReplaceAll()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplaceAll, this);
@@ -217,6 +218,8 @@ TextEditor::TextEditor(wxWindow* parent, int id)
  *******************************************************************/
 TextEditor::~TextEditor()
 {
+	if (dlg_fr)
+		delete dlg_fr;
 }
 
 /* TextEditor::setup
@@ -247,9 +250,7 @@ void TextEditor::setup()
 	StyleSetChangeable(wxSTC_STYLE_CALLTIP, true);
 	wxFont font_ct(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 	StyleSetFont(wxSTC_STYLE_CALLTIP, font_ct);
-	CallTipSetBackground(wxColour(255, 255, 180));
-	CallTipSetForeground(wxColour(0, 0, 0));
-	CallTipSetForegroundHighlight(wxColour(0, 0, 200));
+	CallTipSetForegroundHighlight(WXCOL(StyleSet::currentSet()->getStyle("calltip_hl")->getForeground()));
 
 	// Set lexer
 	if (txed_syntax_hilight)
@@ -1117,6 +1118,9 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 			CallTipCancel();
 		}
 	}
+
+	if (e.RightDown() || e.LeftDown())
+		CallTipCancel();
 }
 
 /* TextEditor::onFocusLoss
@@ -1234,4 +1238,13 @@ void TextEditor::onFRDKeyDown(wxKeyEvent& e)
 	// Other
 	else
 		e.Skip();
+}
+
+/* TextEditor::onActivate
+ * Called when the text editor is activated/deactivated
+ *******************************************************************/
+void TextEditor::onActivate(wxActivateEvent& e)
+{
+	if (!e.GetActive())
+		CallTipCancel();
 }
