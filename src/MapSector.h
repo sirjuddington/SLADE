@@ -91,16 +91,8 @@ public:
 	void	setIntProperty(string key, int value);
 	void	setFloorHeight(short height);
 	void	setCeilingHeight(short height);
-	void	setFloorPlane(plane_t p) {
-		if (p != plane_floor)
-			setModified();
-		plane_floor = p;
-	}
-	void	setCeilingPlane(plane_t p) {
-		if (p != plane_ceiling)
-			setModified();
-		plane_ceiling = p;
-	}
+	void	setFloorPlane(plane_t p) { plane_floor = p; }
+	void	setCeilingPlane(plane_t p) { plane_ceiling = p; }
 
 	template<PlaneType p> short getPlaneHeight();
 
