@@ -23,6 +23,8 @@ class MapSpecials
 	template<PlaneType>
 	void	applySectorTiltThing(SLADEMap* map, MapThing* thing);
 	template<PlaneType>
+	void	applyVavoomSlopeThing(SLADEMap* map, MapThing* thing);
+	template<PlaneType>
 	void	applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices);
 
 public:

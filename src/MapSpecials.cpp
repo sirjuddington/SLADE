@@ -334,7 +334,10 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		else if (thing->getType() == 9503)
 			applySectorTiltThing<CEILING_PLANE>(map, thing);
 		// Vavoom things
-		// TODO
+		else if (thing->getType() == 1500)
+			applyVavoomSlopeThing<FLOOR_PLANE>(map, thing);
+		else if (thing->getType() == 1501)
+			applyVavoomSlopeThing<CEILING_PLANE>(map, thing);
 	}
 
 	// Slope copy things (9510/9511)
@@ -521,7 +524,6 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 	}
 }
 
-
 template<PlaneType p>
 void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 {
@@ -531,7 +533,6 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 	if (target_idx < 0)
 		return;
 	MapSector* target = map->getSector(target_idx);
-
 
 	// First argument is the tilt angle, but starting with 0 as straight down;
 	// subtracting 90 fixes that.
@@ -565,6 +566,46 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 	fpoint3_t vec2(cos_tilt * cos_angle, cos_tilt * sin_angle, sin_tilt);
 
 	target->setPlane<p>(MathStuff::planeFromTriangle(point, point + vec1, point + vec2));
+}
+
+template<PlaneType p>
+void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
+{
+	int target_idx = map->sectorAt(thing->xPos(), thing->yPos());
+	if (target_idx < 0)
+		return;
+	MapSector* target = map->getSector(target_idx);
+
+	int tid = thing->intProperty("id");
+	vector<MapLine*> lines;
+	target->getLines(lines);
+
+	// TODO unclear if this is the same order that ZDoom would go through the
+	// lines, which matters if two lines have the same first arg
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		if (tid != lines[a]->intProperty("arg0"))
+			continue;
+
+		// Vavoom things use the plane defined by the thing and its two
+		// endpoints, based on the sector's original (flat) plane and treating
+		// the thing's height as absolute
+		short height = target->getPlaneHeight<p>();
+		fpoint3_t p1(thing->xPos(), thing->yPos(), thing->floatProperty("height"));
+		fpoint3_t p2(lines[a]->x1(), lines[a]->y1(), height);
+		fpoint3_t p3(lines[a]->x2(), lines[a]->y2(), height);
+
+		if (MathStuff::distanceToLineFast(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y) == 0)
+		{
+			LOG_MESSAGE(1, "Vavoom thing %d lies directly on its target line %d", thing->getIndex(), a);
+			return;
+		}
+
+		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
+		return;
+	}
+
+	LOG_MESSAGE(1, "Vavoom thing %d has no matching line with first arg %d", thing->getIndex(), tid);
 }
 
 template<PlaneType p>
