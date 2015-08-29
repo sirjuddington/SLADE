@@ -2335,14 +2335,16 @@ void MapRenderer3D::checkVisibleQuads()
 		{
 			// Check front side/sector modified
 			if (lines[a].updated_time < line->s1()->modifiedTime() ||
-			        lines[a].updated_time < line->frontSector()->modifiedTime())
+			        lines[a].updated_time < line->frontSector()->modifiedTime() ||
+			        lines[a].updated_time < line->frontSector()->geometryUpdatedTime())
 				update = true;
 		}
 		if (!update && line->s2())
 		{
 			// Check back side/sector modified
 			if (lines[a].updated_time < line->s2()->modifiedTime() ||
-			        lines[a].updated_time < line->backSector()->modifiedTime())
+			        lines[a].updated_time < line->backSector()->modifiedTime() ||
+			        lines[a].updated_time < line->backSector()->geometryUpdatedTime())
 				update = true;
 		}
 		if (update)
@@ -2405,7 +2407,8 @@ void MapRenderer3D::checkVisibleFlats()
 		}
 
 		// Update sector info if needed
-		if (floors[a].updated_time < sector->modifiedTime())
+		if (floors[a].updated_time < sector->modifiedTime() ||
+			floors[a].updated_time < sector->geometryUpdatedTime())
 			updateSector(a);
 
 		// Set distance fade alpha
