@@ -378,6 +378,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	opened_time = theApp->runTimer() + 10;
 
 	initSectorPolygons();
+	recomputeSpecials();
 
 	return ok;
 }
@@ -3978,48 +3979,16 @@ bool SLADEMap::modifiedSince(long since, int type)
 	return false;
 }
 
-/* SLADEMap::beginBulkOperation
- * Indicate that a lot of changes to the map are about to be performed all at
- * once (i.e., without redrawing the UI or returning control to the user).
- * This suspends some operations, such as re-evaluating map specials, until
- * endBulkOperation is called.
+/* SLADEMap::recomputeSpecials
+ * Re-applies all the currently calculated special map properties (currently
+ * this just means ZDoom slopes).
+ * Since this needs to be done anytime the map changes, it's called whenever a
+ * map is read, an undo record ends, or an undo/redo is performed.
  *******************************************************************/
-void SLADEMap::beginBulkOperation()
-{
-	bulk_op_in_progress = true;
-}
-
-/* SLADEMap::endBulkOperation
- * Counterpart to beginBulkOperation.
- *******************************************************************/
-void SLADEMap::endBulkOperation()
-{
-	bulk_op_in_progress = false;
-
-	if (specials_expired)
-	{
-		map_specials.processMapSpecials(this);
-		specials_expired = false;
-	}
-}
-
-/* SLADEMap::expireSpecials
- * Expires all the currently calculated special map properties (currently this
- * just means ZDoom slopes).  They're guaranteed to be recomputed by the next
- * time the user can see or edit the map.
- *******************************************************************/
-void SLADEMap::expireSpecials()
+void SLADEMap::recomputeSpecials()
 {
 	map_specials.reset();
-
-	if (bulk_op_in_progress)
-	{
-		specials_expired = true;
-		return;
-	}
-
 	map_specials.processMapSpecials(this);
-	specials_expired = false;
 }
 
 /* SLADEMap::createVertex

@@ -340,7 +340,6 @@ void MapLine::setIntProperty(string key, int value)
 	{
 		special = value;
 		setModified();
-		parent_map->expireSpecials();
 	}
 
 	// Line property

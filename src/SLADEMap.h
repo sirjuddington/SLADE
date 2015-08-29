@@ -55,7 +55,7 @@ private:
 	int					current_format;
 	long				opened_time;
 	MapSpecials			map_specials;
-	bool				bulk_op_in_progress;
+	int					bulk_op_level;
 	bool				specials_expired;
 
 	vector<mobj_holder_t>	all_objects;
@@ -178,9 +178,7 @@ public:
 	void	clearMap();
 
 	MapSpecials*	mapSpecials() { return &map_specials; }
-	void			expireSpecials();
-	void			beginBulkOperation();
-	void			endBulkOperation();
+	void			recomputeSpecials();
 
 	// Map loading
 	bool	readDoomMap(Archive::mapdesc_t map);

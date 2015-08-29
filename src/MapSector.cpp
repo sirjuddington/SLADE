@@ -236,7 +236,6 @@ void MapSector::setFloorHeight(short height)
 	f_height = height;
 	setFloorPlane(plane_t::flat(height));
 	setModified();
-	parent_map->expireSpecials();
 }
 
 void MapSector::setCeilingHeight(short height)
@@ -244,7 +243,6 @@ void MapSector::setCeilingHeight(short height)
 	c_height = height;
 	setCeilingPlane(plane_t::flat(height));
 	setModified();
-	parent_map->expireSpecials();
 }
 
 /* MapLine::getPoint
