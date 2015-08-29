@@ -2468,7 +2468,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 			continue;
 
 		// Find quad intersect if any
-		height = cam_position.z + cam_dir3d.z*dist;
+		fpoint3_t intersection = cam_position + cam_dir3d * dist;
 		for (unsigned q = 0; q < lines[a].quads.size(); q++)
 		{
 			quad = &lines[a].quads[q];
@@ -2478,8 +2478,16 @@ selection_3d_t MapRenderer3D::determineHilight()
 				continue;
 
 			// Check intersection height
-			if ((height >= quad->points[1].z || height >= quad->points[2].z) &&
-				(height <= quad->points[0].z || height <= quad->points[3].z))
+			// Need to handle slopes by finding the floor and ceiling height of
+			// the quad at the intersection point
+			fpoint2_t seg_left = fpoint2_t(quad->points[1].x, quad->points[1].y);
+			fpoint2_t seg_right = fpoint2_t(quad->points[2].x, quad->points[2].y);
+			double dist_along_segment =
+				(intersection.get2d() - seg_left).magnitude() /
+				(seg_right - seg_left).magnitude();
+			double top = quad->points[0].z + (quad->points[3].z - quad->points[0].z) * dist_along_segment;
+			double bottom = quad->points[1].z + (quad->points[2].z - quad->points[1].z) * dist_along_segment;
+			if (bottom <= intersection.z && intersection.z <= top)
 			{
 				// Determine selected item from quad flags
 
