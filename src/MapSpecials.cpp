@@ -375,7 +375,28 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		}
 	}
 
-	// TODO vertex height things -- possibly belong in a separate pass?
+	// Vertex height things
+	// These only affect the calculation of slopes and shouldn't be stored in
+	// the map data proper, so instead of actually changing vertex properties,
+	// we store them in a hashmap.
+	VertexHeightMap vertex_floor_heights;
+	VertexHeightMap vertex_ceiling_heights;
+	for (unsigned a = 0; a < map->nThings(); a++)
+	{
+		MapThing* thing = map->getThing(a);
+		if (thing->getType() == 1504 || thing->getType() == 1505)
+		{
+			// TODO there could be more than one vertex at this point
+			MapVertex* vertex = map->vertexAt(thing->xPos(), thing->yPos());
+			if (vertex)
+			{
+				if (thing->getType() == 1504)
+					vertex_floor_heights[vertex] = thing->floatProperty("height");
+				else if (thing->getType() == 1505)
+					vertex_ceiling_heights[vertex] = thing->floatProperty("height");
+			}
+		}
+	}
 
 	// Vertex heights -- only applies for sectors with exactly three vertices.
 	// Heights may be set by UDMF properties, or by a vertex height thing
@@ -389,8 +410,8 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		if (vertices.size() != 3)
 			continue;
 
-		applyVertexHeightSlope<FLOOR_PLANE>(target, vertices);
-		applyVertexHeightSlope<CEILING_PLANE>(target, vertices);
+		applyVertexHeightSlope<FLOOR_PLANE>(target, vertices, vertex_floor_heights);
+		applyVertexHeightSlope<CEILING_PLANE>(target, vertices, vertex_ceiling_heights);
 	}
 
 	// Plane_Copy
@@ -609,15 +630,15 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 }
 
 template<PlaneType p>
-void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices)
+void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 {
 	string prop = (p == FLOOR_PLANE ? "zfloor" : "zceiling");
 	if (!theGameConfiguration->getUDMFProperty(prop, MOBJ_VERTEX))
 		return;
 
-	double z1 = vertices[0]->floatProperty(prop);
-	double z2 = vertices[1]->floatProperty(prop);
-	double z3 = vertices[2]->floatProperty(prop);
+	double z1 = heights.count(vertices[0]) ? heights[vertices[0]] : vertices[0]->floatProperty(prop);
+	double z2 = heights.count(vertices[1]) ? heights[vertices[1]] : vertices[1]->floatProperty(prop);
+	double z3 = heights.count(vertices[2]) ? heights[vertices[2]] : vertices[2]->floatProperty(prop);
 	// NOTE: there's currently no way to distinguish a height of 0 from an
 	// unset height, so assume the author intended to have a slope if at least
 	// one vertex has a non-zero height.  All zeroes would not be a very
