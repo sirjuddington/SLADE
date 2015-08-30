@@ -415,16 +415,47 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 	}
 
 	// Plane_Copy
+	vector<MapSector*> sectors;
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
 		if (line->getSpecial() != 118)
 			continue;
 
-		// The fifth "share" argument copies from one side of the line to the
-		// other, and takes priority
+		int tag;
 		MapSector* front = line->frontSector();
 		MapSector* back = line->backSector();
+		if ((tag = line->intProperty("arg0")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if (sectors.size())
+				front->setFloorPlane(sectors[0]->getFloorPlane());
+		}
+		if ((tag = line->intProperty("arg1")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if (sectors.size())
+				front->setCeilingPlane(sectors[0]->getCeilingPlane());
+		}
+		if ((tag = line->intProperty("arg2")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if (sectors.size())
+				back->setFloorPlane(sectors[0]->getFloorPlane());
+		}
+		if ((tag = line->intProperty("arg3")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if (sectors.size())
+				back->setCeilingPlane(sectors[0]->getCeilingPlane());
+		}
+
+		// The fifth "share" argument copies from one side of the line to the
+		// other
 		if (front && back)
 		{
 			int share = line->intProperty("arg4");
@@ -439,8 +470,6 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			else if ((share & 12) == 8)
 				front->setCeilingPlane(back->getCeilingPlane());
 		}
-
-		// TODO other args...
 	}
 }
 
