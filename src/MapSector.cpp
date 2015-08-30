@@ -59,7 +59,7 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 	plane_floor.set(0, 0, 1, 0);
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::MapSector
@@ -75,7 +75,7 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	plane_floor.set(0, 0, 1, 0);
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::~MapSector
@@ -124,11 +124,25 @@ void MapSector::copy(MapObject* s)
 	MapObject::copy(s);
 }
 
+/* MapSector::setGeometryUpdated
+ * Update the last time the sector geometry changed
+ *******************************************************************/
+void MapSector::setGeometryUpdated()
+{
+	geometry_updated = theApp->runTimer();
+}
+
+/* MapSector::floorHeightAt
+ * Returns the height of the floor at the given point
+ *******************************************************************/
 double MapSector::floorHeightAt(double x, double y)
 {
 	return plane_floor.height_at(x, y);
 }
 
+/* MapSector::ceilingHeightAt
+ * Returns the height of the ceiling at the given point
+ *******************************************************************/
 double MapSector::ceilingHeightAt(double x, double y)
 {
 	return plane_ceiling.height_at(x, y);
@@ -236,7 +250,6 @@ void MapSector::setFloorHeight(short height)
 	f_height = height;
 	setFloorPlane(plane_t::flat(height));
 	setModified();
-	parent_map->expireSpecials();
 }
 
 void MapSector::setCeilingHeight(short height)
@@ -244,7 +257,6 @@ void MapSector::setCeilingHeight(short height)
 	c_height = height;
 	setCeilingPlane(plane_t::flat(height));
 	setModified();
-	parent_map->expireSpecials();
 }
 
 /* MapLine::getPoint
@@ -285,7 +297,7 @@ void MapSector::updateBBox()
 	}
 
 	text_point.set(0, 0);
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::boundingBox
@@ -654,7 +666,7 @@ void MapSector::connectSide(MapSide* side)
 	poly_needsupdate = true;
 	bbox.reset();
 	setModified();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::disconnectSide
@@ -674,7 +686,7 @@ void MapSector::disconnectSide(MapSide* side)
 	setModified();
 	poly_needsupdate = true;
 	bbox.reset();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::writeBackup
@@ -715,5 +727,5 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	// Update geometry info
 	poly_needsupdate = true;
 	bbox.reset();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }

@@ -5020,6 +5020,7 @@ void MapEditor::endUndoRecord(bool success)
 	}
 	updateThingLists();
 	us_create_delete = NULL;
+	map.recomputeSpecials();
 }
 
 /* MapEditor::recordPropertyChangeUndoStep
@@ -5056,7 +5057,7 @@ void MapEditor::doUndo()
 		last_undo_level = "";
 	}
 	updateThingLists();
-	map.expireSpecials();
+	map.recomputeSpecials();
 }
 
 /* MapEditor::doRedo
@@ -5084,7 +5085,7 @@ void MapEditor::doRedo()
 		last_undo_level = "";
 	}
 	updateThingLists();
-	map.expireSpecials();
+	map.recomputeSpecials();
 }
 
 #pragma endregion

@@ -2622,7 +2622,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 		type = "Thing";
 
 	// Begin recording undo level
-	editor->undoManager()->beginRecord(S_FMT("Property Edit (%s)", type));
+	editor->beginUndoRecord(S_FMT("Property Edit (%s)", type));
 	for (unsigned a = 0; a < list.size(); a++)
 		editor->recordPropertyChangeUndoStep(list[a]);
 
@@ -2630,7 +2630,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	if (list.size() == 1)
 		type += S_FMT(" #%d", list[0]->getIndex());
 	else if (list.size() > 1)
-		selsize = S_FMT("(%d selected)", list.size());
+		selsize = S_FMT("(%u selected)", list.size());
 
 	// Create dialog for properties panel
 	SDialog dlg(theMapEditor, S_FMT("%s Properties %s", type, selsize), S_FMT("mobjprops_%d", editor->editMode()), -1, -1);
@@ -2669,7 +2669,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	}
 
 	// End undo level
-	editor->undoManager()->endRecord(true);
+	editor->endUndoRecord(true);
 
 	// Clear property grid to avoid crash (wxPropertyGrid is at fault there)
 	//if (panel_props)

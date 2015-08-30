@@ -378,6 +378,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	opened_time = theApp->runTimer() + 10;
 
 	initSectorPolygons();
+	recomputeSpecials();
 
 	return ok;
 }
@@ -3978,15 +3979,14 @@ bool SLADEMap::modifiedSince(long since, int type)
 	return false;
 }
 
-/* SLADEMap::expireSpecials
- * Expires all the currently calculated special map properties (currently this
- * just means ZDoom slopes).  They're guaranteed to be recomputed by the next
- * time the user can see or edit the map.
+/* SLADEMap::recomputeSpecials
+ * Re-applies all the currently calculated special map properties (currently
+ * this just means ZDoom slopes).
+ * Since this needs to be done anytime the map changes, it's called whenever a
+ * map is read, an undo record ends, or an undo/redo is performed.
  *******************************************************************/
-void SLADEMap::expireSpecials()
+void SLADEMap::recomputeSpecials()
 {
-	// TODO should support holding off on this during bulk operations (like
-	// mass property edit) so we don't waste effort recomputing multiple times
 	map_specials.reset();
 	map_specials.processMapSpecials(this);
 }

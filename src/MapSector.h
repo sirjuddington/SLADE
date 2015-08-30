@@ -62,8 +62,7 @@ private:
 	plane_t				plane_floor;
 	plane_t				plane_ceiling;
 
-	template<PlaneType p>
-	plane_t		computeZDoomPlane();
+	void		setGeometryUpdated();
 
 public:
 	MapSector(SLADEMap* parent = NULL);
@@ -92,13 +91,13 @@ public:
 	void	setFloorHeight(short height);
 	void	setCeilingHeight(short height);
 	void	setFloorPlane(plane_t p) {
-		if (p != plane_floor)
-			setModified();
+		if (plane_floor != p)
+			setGeometryUpdated();
 		plane_floor = p;
 	}
 	void	setCeilingPlane(plane_t p) {
-		if (p != plane_ceiling)
-			setModified();
+		if (plane_ceiling != p)
+			setGeometryUpdated();
 		plane_ceiling = p;
 	}
 
