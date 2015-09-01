@@ -1050,7 +1050,7 @@ void TextEditor::onCalltipClicked(wxStyledTextEvent& e)
  *******************************************************************/
 void TextEditor::onMouseDwellStart(wxStyledTextEvent& e)
 {
-	if (!CallTipActive() && txed_calltips_mouse && e.GetPosition() >= 0)
+	if (wxTheApp->IsActive() && HasFocus() && !CallTipActive() && txed_calltips_mouse && e.GetPosition() >= 0)
 		openCalltip(e.GetPosition(), -1);
 }
 
@@ -1059,7 +1059,7 @@ void TextEditor::onMouseDwellStart(wxStyledTextEvent& e)
  *******************************************************************/
 void TextEditor::onMouseDwellEnd(wxStyledTextEvent& e)
 {
-	if (!(ct_function && ct_function->nArgSets() > 1))
+	if (!(ct_function && ct_function->nArgSets() > 1) || !wxTheApp->IsActive() || !HasFocus())
 		CallTipCancel();
 }
 
