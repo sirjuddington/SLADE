@@ -44,6 +44,8 @@
  *******************************************************************/
 BZip2Archive::BZip2Archive() : TreelessArchive(ARCHIVE_BZ2)
 {
+	desc.names_extensions = true;
+	desc.supports_dirs = true;
 }
 
 /* BZip2Archive::~BZip2Archive

@@ -641,7 +641,7 @@ public:
 Archive::Archive(uint8_t type)
 {
 	// Init variables
-	this->type = type;
+	desc.type = type;
 	modified = true;
 	on_disk = false;
 	parent = NULL;

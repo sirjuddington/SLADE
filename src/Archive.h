@@ -79,14 +79,29 @@ enum ArchiveTypes
 	ARCHIVE_FOLDER
 };
 
+struct archive_desc_t
+{
+	uint8_t	type;				// See ArchiveTypes enum
+	bool	supports_dirs;
+	bool	names_extensions;
+	int		max_name_length;
+
+	archive_desc_t()
+	{
+		supports_dirs = false;
+		names_extensions = true;
+		max_name_length = -1;
+	}
+};
+
 class Archive : public Announcer
 {
 private:
 	bool				modified;
-	uint8_t				type;	// See ArchiveTypes enum
 	ArchiveTreeNode*	dir_root;
 
 protected:
+	archive_desc_t		desc;
 	string			filename;
 	ArchiveEntry*	parent;
 	bool			on_disk;	// Specifies whether the archive exists on disk (as opposed to being newly created)
@@ -110,12 +125,14 @@ public:
 			format = MAP_UNKNOWN;
 		}
 	};
+
 	static bool	save_backup;
 
 	Archive(uint8_t type = ARCHIVE_INVALID);
 	virtual ~Archive();
 
-	uint8_t				getType() { return type; }
+	archive_desc_t		getDesc() { return desc; }
+	uint8_t				getType() { return desc.type; }
 	string				getFilename(bool full = true);
 	ArchiveEntry*		getParent() { return parent; }
 	Archive*			getParentArchive() { return (parent ? parent->getParent() : NULL); }
@@ -219,7 +236,7 @@ public:
 class TreelessArchive : public Archive
 {
 public:
-	TreelessArchive(uint8_t type = ARCHIVE_INVALID):Archive(type) {}
+	TreelessArchive(uint8_t type = ARCHIVE_INVALID) :Archive(type) { desc.supports_dirs = false; }
 	virtual ~TreelessArchive() {}
 
 	// Entry retrieval/info

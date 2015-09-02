@@ -66,6 +66,8 @@ DirArchive::DirArchive() : Archive(ARCHIVE_FOLDER)
  *******************************************************************/
 DirArchive::~DirArchive()
 {
+	desc.names_extensions = true;
+	desc.supports_dirs = true;
 }
 
 /* DirArchive::getFileExtensionString

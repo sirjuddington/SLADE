@@ -59,6 +59,9 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 DiskArchive::DiskArchive() : Archive(ARCHIVE_DISK)
 {
+	desc.max_name_length = 64;
+	desc.names_extensions = true;
+	desc.supports_dirs = true;
 }
 
 /* DiskArchive::~DiskArchive
