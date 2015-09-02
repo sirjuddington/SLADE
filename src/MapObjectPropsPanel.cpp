@@ -423,7 +423,15 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 		addTextureProperty(group, prop->getName(), propname, 1, false, grid, prop);
 	else if (prop->getType() == UDMFProperty::TYPE_ID)
 	{
-		MOPGTagProperty* prop_id = new MOPGTagProperty(prop->getName(), propname);
+		int tagtype;
+		if (objtype == MOBJ_LINE)
+			tagtype = MOPGTagProperty::TT_LINEID;
+		else if (objtype == MOBJ_THING)
+			tagtype = MOPGTagProperty::TT_THINGID;
+		else
+			tagtype = MOPGTagProperty::TT_SECTORTAG;
+
+		MOPGTagProperty* prop_id = new MOPGTagProperty(tagtype, prop->getName(), propname);
 		prop_id->setParent(this);
 		prop_id->setUDMFProp(prop);
 		properties.push_back(prop_id);
@@ -533,7 +541,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 			else   // Sector tag otherwise
 			{
 				//addIntProperty(g_special, "Sector Tag", "arg0");
-				MOPGTagProperty* prop_tag = new MOPGTagProperty("Sector Tag", "arg0");
+				MOPGTagProperty* prop_tag = new MOPGTagProperty(MOPGTagProperty::TT_SECTORTAG, "Sector Tag", "arg0");
 				prop_tag->setParent(this);
 				properties.push_back(prop_tag);
 				pg_properties->AppendIn(g_special, prop_tag);
@@ -624,7 +632,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		// Add tag
 		if (!propHidden("id"))
 		{
-			MOPGTagProperty* prop_tag = new MOPGTagProperty("Tag/ID", "id");
+			MOPGTagProperty* prop_tag = new MOPGTagProperty(MOPGTagProperty::TT_SECTORTAG, "Tag/ID", "id");
 			prop_tag->setParent(this);
 			properties.push_back(prop_tag);
 			pg_properties->AppendIn(g_basic, prop_tag);
@@ -700,7 +708,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 		// Add id
 		if (map_format != MAP_DOOM && !propHidden("id"))
 		{
-			MOPGTagProperty* prop_id = new MOPGTagProperty("ID", "id");
+			MOPGTagProperty* prop_id = new MOPGTagProperty(MOPGTagProperty::TT_THINGID, "ID", "id");
 			prop_id->setParent(this);
 			properties.push_back(prop_id);
 			pg_properties->AppendIn(g_basic, prop_id);
