@@ -408,7 +408,13 @@ acs_z : acs {
 		ML_ZONEBOUNDARY,
 
 		// QuakeEx flags
-		QF_FULLINTENSITY, QF_MAX, QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_WAVE
+		QF_FULLINTENSITY, QF_MAX, QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_WAVE,
+
+		// Warp flags
+		WARPF_ABSOLUTEOFFSET, WARPF_ABSOLUTEANGLE, WARPF_USECALLERANGLE, WARPF_NOCHECKPOSITION,
+		WARPF_INTERPOLATE, WARPF_WARPINTERPOLATION, WARPF_COPYINTERPOLATION, WARPF_STOP,
+		WARPF_TOFLOOR, WARPF_TESTONLY, WARPF_ABSOLUTEPOSITION, WARPF_BOB, WARPF_MOVEPTR,
+		WARPF_USEPTR
 	}
 
 	functions
@@ -830,6 +836,7 @@ acs_z : acs {
 		UseInventory = "str classname";
 		VectorAngle = "int x, int y";
 		VectorLength = "int x, int y";
+		Warp = "int tid, fixed xofs, fixed yofs, fixed zofs, fixed angle, int flags, [str success_state], [bool exact], [fixed heightoffset]";
 		
 		// Skulltag functions
 		BlueCount;
