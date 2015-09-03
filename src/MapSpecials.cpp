@@ -334,7 +334,10 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		else if (thing->getType() == 9503)
 			applySectorTiltThing<CEILING_PLANE>(map, thing);
 		// Vavoom things
-		// TODO
+		else if (thing->getType() == 1500)
+			applyVavoomSlopeThing<FLOOR_PLANE>(map, thing);
+		else if (thing->getType() == 1501)
+			applyVavoomSlopeThing<CEILING_PLANE>(map, thing);
 	}
 
 	// Slope copy things (9510/9511)
@@ -372,7 +375,28 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		}
 	}
 
-	// TODO vertex height things -- possibly belong in a separate pass?
+	// Vertex height things
+	// These only affect the calculation of slopes and shouldn't be stored in
+	// the map data proper, so instead of actually changing vertex properties,
+	// we store them in a hashmap.
+	VertexHeightMap vertex_floor_heights;
+	VertexHeightMap vertex_ceiling_heights;
+	for (unsigned a = 0; a < map->nThings(); a++)
+	{
+		MapThing* thing = map->getThing(a);
+		if (thing->getType() == 1504 || thing->getType() == 1505)
+		{
+			// TODO there could be more than one vertex at this point
+			MapVertex* vertex = map->vertexAt(thing->xPos(), thing->yPos());
+			if (vertex)
+			{
+				if (thing->getType() == 1504)
+					vertex_floor_heights[vertex] = thing->floatProperty("height");
+				else if (thing->getType() == 1505)
+					vertex_ceiling_heights[vertex] = thing->floatProperty("height");
+			}
+		}
+	}
 
 	// Vertex heights -- only applies for sectors with exactly three vertices.
 	// Heights may be set by UDMF properties, or by a vertex height thing
@@ -386,21 +410,52 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		if (vertices.size() != 3)
 			continue;
 
-		applyVertexHeightSlope<FLOOR_PLANE>(target, vertices);
-		applyVertexHeightSlope<CEILING_PLANE>(target, vertices);
+		applyVertexHeightSlope<FLOOR_PLANE>(target, vertices, vertex_floor_heights);
+		applyVertexHeightSlope<CEILING_PLANE>(target, vertices, vertex_ceiling_heights);
 	}
 
 	// Plane_Copy
+	vector<MapSector*> sectors;
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		MapLine* line = map->getLine(a);
 		if (line->getSpecial() != 118)
 			continue;
 
-		// The fifth "share" argument copies from one side of the line to the
-		// other, and takes priority
+		int tag;
 		MapSector* front = line->frontSector();
 		MapSector* back = line->backSector();
+		if ((tag = line->intProperty("arg0")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if (sectors.size())
+				front->setFloorPlane(sectors[0]->getFloorPlane());
+		}
+		if ((tag = line->intProperty("arg1")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if (sectors.size())
+				front->setCeilingPlane(sectors[0]->getCeilingPlane());
+		}
+		if ((tag = line->intProperty("arg2")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if (sectors.size())
+				back->setFloorPlane(sectors[0]->getFloorPlane());
+		}
+		if ((tag = line->intProperty("arg3")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if (sectors.size())
+				back->setCeilingPlane(sectors[0]->getCeilingPlane());
+		}
+
+		// The fifth "share" argument copies from one side of the line to the
+		// other
 		if (front && back)
 		{
 			int share = line->intProperty("arg4");
@@ -415,8 +470,6 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 			else if ((share & 12) == 8)
 				front->setCeilingPlane(back->getCeilingPlane());
 		}
-
-		// TODO other args...
 	}
 }
 
@@ -521,7 +574,6 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 	}
 }
 
-
 template<PlaneType p>
 void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 {
@@ -531,7 +583,6 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 	if (target_idx < 0)
 		return;
 	MapSector* target = map->getSector(target_idx);
-
 
 	// First argument is the tilt angle, but starting with 0 as straight down;
 	// subtracting 90 fixes that.
@@ -568,15 +619,55 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 }
 
 template<PlaneType p>
-void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices)
+void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
+{
+	int target_idx = map->sectorAt(thing->xPos(), thing->yPos());
+	if (target_idx < 0)
+		return;
+	MapSector* target = map->getSector(target_idx);
+
+	int tid = thing->intProperty("id");
+	vector<MapLine*> lines;
+	target->getLines(lines);
+
+	// TODO unclear if this is the same order that ZDoom would go through the
+	// lines, which matters if two lines have the same first arg
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		if (tid != lines[a]->intProperty("arg0"))
+			continue;
+
+		// Vavoom things use the plane defined by the thing and its two
+		// endpoints, based on the sector's original (flat) plane and treating
+		// the thing's height as absolute
+		short height = target->getPlaneHeight<p>();
+		fpoint3_t p1(thing->xPos(), thing->yPos(), thing->floatProperty("height"));
+		fpoint3_t p2(lines[a]->x1(), lines[a]->y1(), height);
+		fpoint3_t p3(lines[a]->x2(), lines[a]->y2(), height);
+
+		if (MathStuff::distanceToLineFast(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y) == 0)
+		{
+			LOG_MESSAGE(1, "Vavoom thing %d lies directly on its target line %d", thing->getIndex(), a);
+			return;
+		}
+
+		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
+		return;
+	}
+
+	LOG_MESSAGE(1, "Vavoom thing %d has no matching line with first arg %d", thing->getIndex(), tid);
+}
+
+template<PlaneType p>
+void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 {
 	string prop = (p == FLOOR_PLANE ? "zfloor" : "zceiling");
 	if (!theGameConfiguration->getUDMFProperty(prop, MOBJ_VERTEX))
 		return;
 
-	double z1 = vertices[0]->floatProperty(prop);
-	double z2 = vertices[1]->floatProperty(prop);
-	double z3 = vertices[2]->floatProperty(prop);
+	double z1 = heights.count(vertices[0]) ? heights[vertices[0]] : vertices[0]->floatProperty(prop);
+	double z2 = heights.count(vertices[1]) ? heights[vertices[1]] : vertices[1]->floatProperty(prop);
+	double z3 = heights.count(vertices[2]) ? heights[vertices[2]] : vertices[2]->floatProperty(prop);
 	// NOTE: there's currently no way to distinguish a height of 0 from an
 	// unset height, so assume the author intended to have a slope if at least
 	// one vertex has a non-zero height.  All zeroes would not be a very

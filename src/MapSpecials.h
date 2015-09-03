@@ -1,9 +1,15 @@
+#include <wx/hashmap.h>
+#include "MapLine.h"
+#include "MapSector.h"
+#include "MapThing.h"
 
 #ifndef __MAP_SPECIALS_H__
 #define __MAP_SPECIALS_H__
 
 class SLADEMap;
 class ArchiveEntry;
+
+WX_DECLARE_HASH_MAP(MapVertex*, double, wxPointerHash, wxPointerEqual, VertexHeightMap);
 
 class MapSpecials
 {
@@ -23,7 +29,9 @@ class MapSpecials
 	template<PlaneType>
 	void	applySectorTiltThing(SLADEMap* map, MapThing* thing);
 	template<PlaneType>
-	void	applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices);
+	void	applyVavoomSlopeThing(SLADEMap* map, MapThing* thing);
+	template<PlaneType>
+	void	applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights);
 
 public:
 	void	reset();
