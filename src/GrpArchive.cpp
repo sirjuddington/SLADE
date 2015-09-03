@@ -49,6 +49,9 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 GrpArchive::GrpArchive() : TreelessArchive(ARCHIVE_GRP)
 {
+	desc.max_name_length = 12;
+	desc.names_extensions = false;
+	desc.supports_dirs = false;
 }
 
 /* GrpArchive::~GrpArchive

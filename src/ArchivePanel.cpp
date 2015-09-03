@@ -730,7 +730,7 @@ bool ArchivePanel::newEntry(int type)
 bool ArchivePanel::newDirectory()
 {
 	// Check archive supports directories
-	if (archive->getType() != ARCHIVE_ZIP && archive->getType() != ARCHIVE_FOLDER && archive->getType() != ARCHIVE_POD)
+	if (!archive->getDesc().supports_dirs)
 	{
 		wxMessageBox("This Archive format does not support directories", "Can't create new directory", wxICON_ERROR);
 		return false;

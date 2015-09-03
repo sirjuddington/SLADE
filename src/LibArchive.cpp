@@ -48,6 +48,9 @@
 LibArchive::LibArchive()
 	: TreelessArchive(ARCHIVE_LIB)
 {
+	desc.max_name_length = 12;
+	desc.names_extensions = false;
+	desc.supports_dirs = false;
 }
 
 /* LibArchive::~LibArchive

@@ -48,6 +48,7 @@ EXTERN_CVAR(Bool, archive_load_data)
 ResArchive::ResArchive() : Archive(ARCHIVE_RES)
 {
 	// Init variables
+	desc.supports_dirs = true;
 }
 
 /* ResArchive::~ResArchive

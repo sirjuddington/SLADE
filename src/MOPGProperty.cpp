@@ -1202,9 +1202,11 @@ void MOPGSPACTriggerProperty::applyValue()
 /* MOPGTagProperty::MOPGTagProperty
  * MOPGTagProperty class constructor
  *******************************************************************/
-MOPGTagProperty::MOPGTagProperty(const wxString& label, const wxString& name)
+MOPGTagProperty::MOPGTagProperty(int tagtype, const wxString& label, const wxString& name)
 	: MOPGIntProperty(label, name)
 {
+	this->tagtype = tagtype;
+
 	// Set to text+button editor
 	SetEditor(wxPGEditor_TextCtrlAndButton);
 }
@@ -1258,12 +1260,12 @@ bool MOPGTagProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEven
 
 		// Get unused tag/id depending on object type
 		int tag = GetValue().GetInteger();
-		if (objects[0]->getObjType() == MOBJ_SECTOR)
+		if (tagtype == TT_SECTORTAG)//objects[0]->getObjType() == MOBJ_SECTOR)
 			tag = objects[0]->getParentMap()->findUnusedSectorTag();
-		else if (objects[0]->getObjType() == MOBJ_THING)
-			tag = objects[0]->getParentMap()->findUnusedThingId();
-		else if (objects[0]->getObjType() == MOBJ_LINE)
+		else if (tagtype == TT_LINEID)//objects[0]->getObjType() == MOBJ_LINE)
 			tag = objects[0]->getParentMap()->findUnusedLineId();
+		else if (tagtype == TT_THINGID)//objects[0]->getObjType() == MOBJ_THING)
+			tag = objects[0]->getParentMap()->findUnusedThingId();
 
 		GetGrid()->ChangePropertyValue(this, tag);
 		return true;

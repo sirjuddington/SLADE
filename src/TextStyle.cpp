@@ -306,6 +306,8 @@ StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_D
 	styles.push_back(new TextStyle("bracematch",	"Brace Match",		wxSTC_STYLE_BRACELIGHT));
 	styles.push_back(new TextStyle("bracebad",		"Brace Mismatch",	wxSTC_STYLE_BRACEBAD));
 	styles.push_back(new TextStyle("linenum",		"Line Numbers",		wxSTC_STYLE_LINENUMBER));
+	styles.push_back(new TextStyle("calltip",		"Call Tip",			wxSTC_STYLE_CALLTIP));
+	styles.push_back(new TextStyle("calltip_hl",	"Call Tip Highlight"));
 }
 
 /* StyleSet::~StyleSet

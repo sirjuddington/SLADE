@@ -49,6 +49,9 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 HogArchive::HogArchive() : TreelessArchive(ARCHIVE_HOG)
 {
+	desc.max_name_length = 13;
+	desc.names_extensions = false;
+	desc.supports_dirs = false;
 }
 
 /* HogArchive::~HogArchive

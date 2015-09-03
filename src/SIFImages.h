@@ -380,11 +380,14 @@ protected:
 		data.clear();
 		data.write(png_data, 33);
 
-		// Create grAb chunk with offsets
-		PNGChunk grAb("grAb");
-		grab_chunk_t gc = { wxINT32_SWAP_ON_LE((int32_t)image.offset().x), wxINT32_SWAP_ON_LE((int32_t)image.offset().y) };
-		grAb.setData((const uint8_t*)&gc, 8);
-		grAb.write(data);
+		// Create grAb chunk with offsets (only if offsets exist)
+		if (image.offset().x != 0 || image.offset().y != 0)
+		{
+			PNGChunk grAb("grAb");
+			grab_chunk_t gc = { wxINT32_SWAP_ON_LE((int32_t)image.offset().x), wxINT32_SWAP_ON_LE((int32_t)image.offset().y) };
+			grAb.setData((const uint8_t*)&gc, 8);
+			grAb.write(data);
+		}
 
 		// Create alPh chunk if it's an alpha map
 		if (type == ALPHAMAP)

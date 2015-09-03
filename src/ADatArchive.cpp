@@ -55,6 +55,8 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 ADatArchive::ADatArchive() : Archive(ARCHIVE_ADAT)
 {
+	desc.supports_dirs = true;
+	desc.max_name_length = 128;
 }
 
 /* ADatArchive::~ADatArchive

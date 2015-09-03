@@ -104,6 +104,7 @@ public:
 	void	onFRDBtnReplace(wxCommandEvent& e);
 	void	onFRDBtnReplaceAll(wxCommandEvent& e);
 	void	onFRDKeyDown(wxKeyEvent& e);
+	void	onActivate(wxActivateEvent& e);
 };
 
 #endif //__TEXTEDITOR_H__
