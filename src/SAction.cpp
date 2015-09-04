@@ -123,6 +123,8 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override)
 		keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
 		if (kp.key != "")
 			sc = kp.as_string();
+		else
+			sc = "None";
 		sc_control = (kp.ctrl || kp.alt);
 	}
 
