@@ -264,6 +264,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 
 	// Create/setup tabs
 	stc_tabs = new STabCtrl(this, false);
+	stc_tabs->SetInitialSize(wxSize(224, -1));
 	vbox->Add(stc_tabs, 1, wxEXPAND | wxALL, 4);
 
 	// Open archives tab
@@ -321,7 +322,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 
 	// Init layout
 	Layout();
-	SetInitialSize(wxSize(192, -1));
+	SetInitialSize(wxSize(256, -1));
 }
 
 /* ArchiveManagerPanel::~ArchiveManagerPanel
