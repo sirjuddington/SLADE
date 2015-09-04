@@ -2519,28 +2519,77 @@ void SLADEMap::clearMap()
 /* SLADEMap::removeVertex
  * Removes [vertex] from the map
  *******************************************************************/
-bool SLADEMap::removeVertex(MapVertex* vertex)
+bool SLADEMap::removeVertex(MapVertex* vertex, bool merge_lines)
 {
 	// Check vertex was given
 	if (!vertex)
 		return false;
 
-	return removeVertex(vertex->index);
+	return removeVertex(vertex->index, merge_lines);
 }
 
 /* SLADEMap::removeVertex
  * Removes the vertex at [index] from the map
  *******************************************************************/
-bool SLADEMap::removeVertex(unsigned index)
+bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 {
 	// Check index
 	if (index >= vertices.size())
 		return false;
 
-	// Remove all connected lines
-	vector<MapLine*> clines = vertices[index]->connected_lines;
-	for (unsigned a = 0; a < clines.size(); a++)
-		removeLine(clines[a]);
+	// Check if we should merge connected lines
+	bool merged = false;
+	if (merge_lines && vertices[index]->connected_lines.size() == 2)
+	{
+		// Get other end vertex of second connected line
+		MapLine* l_first = vertices[index]->connected_lines[0];
+		MapLine* l_second = vertices[index]->connected_lines[1];
+		MapVertex* v_end = l_second->vertex2;
+		if (v_end == vertices[index])
+			v_end = l_second->vertex1;
+
+		// Remove second connected line
+		removeLine(l_second);
+
+		// Connect first connected line to other end vertex
+		l_first->setModified();
+		MapVertex* v_start = l_first->vertex1;
+		if (l_first->vertex1 == vertices[index])
+		{
+			l_first->vertex1 = v_end;
+			v_start = l_first->vertex2;
+		}
+		else
+			l_first->vertex2 = v_end;
+		vertices[index]->disconnectLine(l_first);
+		v_end->connectLine(l_first);
+		l_first->resetInternals();
+
+		// Check if we ended up with overlapping lines (ie. there was a triangle)
+		for (unsigned a = 0; a < v_end->nConnectedLines(); a++)
+		{
+			if (v_end->connected_lines[a] == l_first)
+				continue;
+
+			if ((v_end->connected_lines[a]->vertex1 == v_end && v_end->connected_lines[a]->vertex2 == v_start) ||
+				(v_end->connected_lines[a]->vertex2 == v_end && v_end->connected_lines[a]->vertex1 == v_start))
+			{
+				// Overlap found, remove line
+				removeLine(l_first);
+				break;
+			}
+		}
+
+		merged = true;
+	}
+	
+	if (!merged)
+	{
+		// Remove all connected lines
+		vector<MapLine*> clines = vertices[index]->connected_lines;
+		for (unsigned a = 0; a < clines.size(); a++)
+			removeLine(clines[a]);
+	}
 
 	// Remove the vertex
 	removeMapObject(vertices[index]);

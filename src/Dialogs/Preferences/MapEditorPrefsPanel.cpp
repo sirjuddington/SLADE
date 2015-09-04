@@ -44,6 +44,7 @@ EXTERN_CVAR(Bool, map_merge_undo_step)
 EXTERN_CVAR(Bool, mobj_props_auto_apply)
 EXTERN_CVAR(Bool, map_remove_invalid_lines)
 EXTERN_CVAR(Int, max_map_backups)
+EXTERN_CVAR(Bool, map_merge_lines_on_delete_vertex)
 
 
 /*******************************************************************
@@ -88,6 +89,10 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	cb_remove_invalid_lines = new wxCheckBox(this, -1, "Remove any resulting invalid lines on sector delete");
 	sizer->Add(cb_remove_invalid_lines, 0, wxEXPAND|wxALL, 4);
 
+	// Merge lines on vertex delete
+	cb_merge_lines_vertex_delete = new wxCheckBox(this, -1, "Merge connected lines when deleting a vertex");
+	sizer->Add(cb_merge_lines_vertex_delete, 0, wxEXPAND|wxALL, 4);
+
 	// Maximum backups
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
@@ -116,6 +121,7 @@ void MapEditorPrefsPanel::init()
 	cb_merge_undo_step->SetValue(map_merge_undo_step);
 	cb_props_auto_apply->SetValue(mobj_props_auto_apply);
 	cb_remove_invalid_lines->SetValue(map_remove_invalid_lines);
+	cb_merge_lines_vertex_delete->SetValue(map_merge_lines_on_delete_vertex);
 	text_max_backups->setNumber(max_map_backups);
 }
 
@@ -130,5 +136,6 @@ void MapEditorPrefsPanel::applyPreferences()
 	map_merge_undo_step = cb_merge_undo_step->GetValue();
 	mobj_props_auto_apply = cb_props_auto_apply->GetValue();
 	map_remove_invalid_lines = cb_remove_invalid_lines->GetValue();
+	map_merge_lines_on_delete_vertex = cb_merge_lines_vertex_delete->GetValue();
 	max_map_backups = text_max_backups->getNumber();
 }

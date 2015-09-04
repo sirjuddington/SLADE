@@ -193,8 +193,8 @@ public:
 	bool	writeUDMFMap(ArchiveEntry* textmap);
 
 	// Item removal
-	bool	removeVertex(MapVertex* vertex);
-	bool	removeVertex(unsigned index);
+	bool	removeVertex(MapVertex* vertex, bool merge_lines = false);
+	bool	removeVertex(unsigned index, bool merge_lines = false);
 	bool	removeLine(MapLine* line);
 	bool	removeLine(unsigned index);
 	bool	removeSide(MapSide* side, bool remove_from_line = true);

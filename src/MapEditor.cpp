@@ -51,6 +51,7 @@
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
 CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
+CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -213,7 +214,7 @@ public:
 			vertices_changed = true;
 		else
 			for (unsigned a = 0; a < map->nVertices(); a++)
-				if (map->getSector(a)->getId() != vertices[a])
+				if (map->getVertex(a)->getId() != vertices[a])
 				{
 					vertices_changed = true;
 					break;
@@ -2682,13 +2683,11 @@ void MapEditor::deleteObject()
 			index = verts[0]->getIndex();
 
 		// Begin undo step
-		beginUndoRecord("Delete Vertices", false, false, true);
-		//undo_manager->beginRecord("Delete Vertices");
-		//map.clearDeletedObjectIds();
+		beginUndoRecord("Delete Vertices", map_merge_lines_on_delete_vertex, false, true);
 
 		// Delete them (if any)
 		for (unsigned a = 0; a < verts.size(); a++)
-			map.removeVertex(verts[a]);
+			map.removeVertex(verts[a], map_merge_lines_on_delete_vertex);
 
 		// Remove detached vertices
 		map.removeDetachedVertices();
