@@ -841,7 +841,7 @@ bool ArchivePanel::buildArchive()
 {
 	if (archive->getType() != ARCHIVE_FOLDER)
 	{
-		wxMessageBox("This function is not supported with archives", "Can't build archive", wxICON_ERROR);
+		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
 		return false;
 	}
 
@@ -1512,11 +1512,12 @@ bool ArchivePanel::importEntry()
  *******************************************************************/
 bool ArchivePanel::exportEntry()
 {
-	// Get a list of selected entries
+	// Get a list of selected entries & dirs
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+	vector<ArchiveTreeNode*> selected_dirs = entry_list->getSelectedDirectories();
 
 	// If we're just exporting 1 entry
-	if (selection.size() == 1)
+	if (selection.size() == 1 && selected_dirs.size() == 0)
 	{
 		string name = Misc::lumpNameToFileName(selection[0]->getName());
 		wxFileName fn(name);
@@ -1535,7 +1536,7 @@ bool ArchivePanel::exportEntry()
 		SFileDialog::fd_info_t info;
 		if (SFileDialog::saveFiles(info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", this))
 		{
-			// Go through the selection
+			// Go through the selected entries
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Setup entry filename
@@ -1549,6 +1550,10 @@ bool ArchivePanel::exportEntry()
 				// Do export
 				selection[a]->exportFile(fn.GetFullPath());
 			}
+
+			// Go through selected dirs
+			for (unsigned a = 0; a < selected_dirs.size(); a++)
+				selected_dirs[a]->exportTo(info.path + "/" + selected_dirs[a]->getName());
 		}
 	}
 

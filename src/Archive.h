@@ -46,6 +46,8 @@ public:
 
 	ArchiveTreeNode*	clone();
 	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
+
+	bool	exportTo(string path);
 };
 
 // Define archive types
