@@ -373,7 +373,7 @@ bool ArchiveTreeNode::exportTo(string path)
 {
 	// Create directory if needed
 	if (!wxDirExists(path))
-		wxMkDir(path);
+		wxMkDir(path, 0);
 
 	// Export entries as files
 	for (unsigned a = 0; a < entries.size(); a++)

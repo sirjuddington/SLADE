@@ -421,7 +421,7 @@ void SAuiTabArt::DrawTab(wxDC& dc,
 		text_offset = tab_x + 8;
 	}
 
-	dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
+	dc.SetTextForeground((page.active && bluetab) ? wxColor(0,0,0) : wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
 	wxString draw_text = wxAuiChopText(dc,
 		caption,
 		tab_width - (text_offset - tab_x) - close_button_width);
