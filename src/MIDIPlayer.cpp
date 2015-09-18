@@ -357,7 +357,7 @@ bool MIDIPlayerApp::stop()
 	{
 		int pid = program->GetPid();
 
-		wxProcess::Kill(pid);
+		program->Kill(pid);
 		return true;
 	}
 	return false;
@@ -373,7 +373,7 @@ bool MIDIPlayerApp::isPlaying()
 
 	int pid = program->GetPid();
 	// also ignore zero pid
-	if (!pid || !wxProcess::Exists(pid))
+	if (!pid || !program->Exists(pid))
 		return false;
 
 	return true;
