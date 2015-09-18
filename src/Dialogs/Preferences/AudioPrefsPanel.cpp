@@ -33,6 +33,8 @@
 #include "MIDIPlayer.h"
 #include <wx/filedlg.h>
 #include <wx/filename.h>
+#include <wx/statline.h>
+
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -47,6 +49,7 @@ CVAR(Bool, snd_midi_usetimidity, false, CVAR_SAVE)
 #endif
 CVAR(String, snd_timidity_path, "", CVAR_SAVE)
 CVAR(String, snd_timidity_options, "", CVAR_SAVE)
+
 
 /*******************************************************************
  * AUDIOPREFSPANEL CLASS FUNCTIONS
@@ -85,12 +88,9 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 #endif
 
-	// Reset
-	sizer->Add(new wxStaticText(this, -1, "Reset MIDI Player"), 0, wxALL, 4);
-	btn_reset_player = new wxButton(this, -1, "Reset");
-	sizer->Add(btn_reset_player, 0, wxEXPAND, 4);
-
 #ifndef NO_FLUIDSYNTH
+	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND|wxALL, 8);
+
 	// Timidity checkbox
 	cb_snd_timidity = new wxCheckBox(this, -1, "Use timidity instead of fluidsynth:");
 	sizer->Add(cb_snd_timidity, 0, wxEXPAND|wxALL, 4);
@@ -111,6 +111,13 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	text_timidity_options = new wxTextCtrl(this, -1);
 	hbox3->Add(text_timidity_options, 1, wxEXPAND|wxRIGHT, 4);
 	sizer->Add(hbox3, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+
+	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND | wxALL, 8);
+
+	// Reset
+	sizer->Add(new wxStaticText(this, -1, "Reset MIDI Player"), 0, wxALL, 4);
+	btn_reset_player = new wxButton(this, -1, "Reset");
+	sizer->Add(btn_reset_player, 0, wxEXPAND, 4);
 
 	// Bind events
 #ifndef NO_FLUIDSYNTH
