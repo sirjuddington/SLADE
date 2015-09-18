@@ -54,6 +54,9 @@ private:
 	int					current_format;
 	long				opened_time;
 
+	// UDMF Extras
+	vector<ArchiveEntry*>	udmf_extra_entries;
+
 	vector<mobj_holder_t>	all_objects;
 	vector<unsigned>		deleted_objects;
 	vector<unsigned>		created_objects;
@@ -156,6 +159,8 @@ public:
 	long		thingsUpdated() { return things_updated; }
 	void		setGeometryUpdated();
 	void		setThingsUpdated();
+
+	vector<ArchiveEntry*>&	udmfExtraEntries() { return udmf_extra_entries; }
 
 	// MapObject id stuff (used for undo/redo)
 	void				addMapObject(MapObject* object);
