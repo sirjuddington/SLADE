@@ -2494,7 +2494,7 @@ void MapCanvas::changeTexture3d(selection_3d_t first)
 	// Open texture browser
 	MapTextureBrowser browser(theMapEditor, type, tex, &(theMapEditor->mapEditor().getMap()));
 	browser.SetTitle("Browse Texture");
-	if (browser.ShowModal() == wxID_OK)
+	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem() != NULL)
 	{
 		bool mix = theGameConfiguration->mixTexFlats();
 		tex = browser.getSelectedItem()->getName();
