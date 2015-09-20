@@ -525,7 +525,7 @@ void MapEditor::setEditMode(int mode)
 	{
 		// Cycle sector edit mode
 		if (mode == MODE_SECTORS)
-			setSectorEditMode(sector_mode + 1);
+			setSectorEditMode(sector_mode);
 
 		// Do nothing otherwise
 		return;
@@ -546,7 +546,6 @@ void MapEditor::setEditMode(int mode)
 
 	// Set edit mode
 	edit_mode = mode;
-	sector_mode = SECTOR_BOTH;
 
 	// Clear hilight and selection stuff
 	hilight_item = -1;
