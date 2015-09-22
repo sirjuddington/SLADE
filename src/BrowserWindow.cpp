@@ -655,9 +655,9 @@ int bw_chars[] =
 	'.', ',', '_', '-', '+', '=', '`', '~',
 	'!', '@', '#', '$', '(', ')', '[', ']',
 	'{', '}', ':', ';', '/', '\\', '<', '>',
-	'?', '^', '&', '\'', '\"',
+	'?', '^', '&', '*', '\'', '\"',
 };
-int n_bw_chars = 30;
+int n_bw_chars = 31;
 void BrowserWindow::onCanvasKeyChar(wxKeyEvent& e)
 {
 	// Backspace
