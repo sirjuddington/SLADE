@@ -1262,7 +1262,8 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Determine offsets
 		xoff = xoff1;
-		yoff = 0;
+		yoff = yoff1;
+		double ytex = 0;
 		if (udmf_zdoom)
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
@@ -1284,20 +1285,33 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff *= sy;
 
 		// Setup quad coordinates
-		double top = lowceil + yoff1;
-		double bottom = top - (quad.texture->getHeight() * sy);
+		double top, bottom;
 		if ((map->currentFormat() == MAP_DOOM64) || (udmf_zdoom && line->boolProperty("wrapmidtex")))
-			bottom = highfloor;
-		if (lpeg)
 		{
-			bottom = highfloor + yoff1;
+			top = lowceil;
+			bottom = highfloor;
+			ytex = yoff;
+			if (lpeg)
+				ytex -= lowceil - highfloor;
+		}
+		else if (lpeg)
+		{
+			bottom = highfloor + yoff;
 			top = bottom + (quad.texture->getHeight() * sy);
 		}
+		else
+		{
+			top = lowceil + yoff;
+			bottom = top - (quad.texture->getHeight() * sy);
+		}
+		// The "correct" thing here is to allow textures to run into the floor
+		// unless clipmidtex is on, but OpenGL is designed not to allow that to
+		// happen, and GZDoom doesn't support it either.
 		if (bottom < highfloor)
 			bottom = highfloor;
 		if (top > lowceil)
 		{
-			yoff = top - lowceil;
+			ytex = top - lowceil;
 			top = lowceil;
 		}
 
@@ -1305,7 +1319,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), top, bottom);
 		quad.colour = colour1;
 		quad.light = light1;
-		setupQuadTexCoords(&quad, length, xoff, yoff, false, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, ytex, false, sx, sy);
 		quad.flags |= MIDTEX;
 
 		// Add quad
@@ -1411,7 +1425,8 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Determine offsets
 		xoff = xoff2;
-		yoff = 0;
+		yoff = yoff2;
+		double ytex = 0;
 		if (udmf_zdoom)
 		{
 			if (line->s2()->hasProp("offsetx_mid"))
@@ -1433,18 +1448,33 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff *= sy;
 
 		// Setup quad coordinates
-		double top = lowceil + yoff2;
-		double bottom = top - (quad.texture->getHeight() * sy);
-		if (lpeg)
+		double top, bottom;
+		if ((map->currentFormat() == MAP_DOOM64) || (udmf_zdoom && line->boolProperty("wrapmidtex")))
 		{
-			bottom = highfloor + yoff2;
+			top = lowceil;
+			bottom = highfloor;
+			ytex = yoff;
+			if (lpeg)
+				ytex -= lowceil - highfloor;
+		}
+		else if (lpeg)
+		{
+			bottom = highfloor + yoff;
 			top = bottom + (quad.texture->getHeight() * sy);
 		}
+		else
+		{
+			top = lowceil + yoff;
+			bottom = top - (quad.texture->getHeight() * sy);
+		}
+		// The "correct" thing here is to allow textures to run into the floor
+		// unless clipmidtex is on, but OpenGL is designed not to allow that to
+		// happen, and GZDoom doesn't support it either.
 		if (bottom < highfloor)
 			bottom = highfloor;
 		if (top > lowceil)
 		{
-			yoff = top - lowceil;
+			ytex = top - lowceil;
 			top = lowceil;
 		}
 
@@ -1452,7 +1482,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), top, bottom);
 		quad.colour = colour2;
 		quad.light = light2;
-		setupQuadTexCoords(&quad, length, xoff, yoff, false, sx, sy);
+		setupQuadTexCoords(&quad, length, xoff, ytex, false, sx, sy);
 		quad.flags |= BACK;
 		quad.flags |= MIDTEX;
 
