@@ -2770,6 +2770,32 @@ void MapEditor::deleteObject()
 			}
 		}
 
+		// Try to fill in textures on any lines that just became one-sided
+		for (unsigned a = 0; a < connected_lines.size(); a++)
+		{
+			MapLine* line = connected_lines[a];
+			MapSide* side;
+			if (line->s1() && !line->s2())
+				side = line->s1();
+			else if (!line->s1() && line->s2())
+				side = line->s2();
+			else
+				continue;
+
+			if (side->getTexMiddle() != "-")
+				continue;
+
+			// Inherit textures from upper or lower
+			if (side->getTexUpper() != "-")
+				side->setStringProperty("texturemiddle", side->getTexUpper());
+			else if (side->getTexLower() != "-")
+				side->setStringProperty("texturemiddle", side->getTexLower());
+
+			// Clear any existing textures, which are no longer visible
+			side->setStringProperty("texturetop", "-");
+			side->setStringProperty("texturebottom", "-");
+		}
+
 		// Editor message
 		if (sectors.size() == 1)
 			addEditorMessage(S_FMT("Deleted sector #%d", index));
