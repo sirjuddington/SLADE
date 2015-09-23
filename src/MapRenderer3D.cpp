@@ -1175,6 +1175,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s1()->hasProp("scaley_mid"))
 				sy = 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
+		xoff *= sx;
+		yoff *= sy;
 
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), ceiling1, floor1);
@@ -1232,6 +1234,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s1()->hasProp("scaley_bottom"))
 				sy = 1.0 / line->s1()->floatProperty("scaley_bottom");
 		}
+		xoff *= sx;
+		yoff *= sy;
 
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), floor2, floor1);
@@ -1276,6 +1280,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s1()->hasProp("scaley_mid"))
 				sy = 1.0 / line->s1()->floatProperty("scaley_mid");
 		}
+		xoff *= sx;
+		yoff *= sy;
 
 		// Setup quad coordinates
 		double top = lowceil + yoff1;
@@ -1332,6 +1338,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s1()->hasProp("scaley_top"))
 				sy = 1.0 / line->s1()->floatProperty("scaley_top");
 		}
+		xoff *= sx;
+		yoff *= sy;
 
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), ceiling1, ceiling2);
@@ -1375,6 +1383,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s2()->hasProp("scaley_bottom"))
 				sy = 1.0 / line->s2()->floatProperty("scaley_bottom");
 		}
+		xoff *= sx;
+		yoff *= sy;
 
 		// Create quad
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), floor1, floor2);
@@ -1419,6 +1429,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s2()->hasProp("scaley_mid"))
 				sy = 1.0 / line->s2()->floatProperty("scaley_mid");
 		}
+		xoff *= sx;
+		yoff *= sy;
 
 		// Setup quad coordinates
 		double top = lowceil + yoff2;
@@ -1474,6 +1486,8 @@ void MapRenderer3D::updateLine(unsigned index)
 			if (line->s2()->hasProp("scaley_top"))
 				sy = 1.0 / line->s2()->floatProperty("scaley_top");
 		}
+		xoff *= sx;
+		yoff *= sy;
 
 		// Create quad
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), ceiling2, ceiling1);
