@@ -3195,8 +3195,12 @@ void MapCanvas::keyBinds2d(string name)
  *******************************************************************/
 void MapCanvas::keyBinds3d(string name)
 {
+	// Escape from 3D mode
+	if (name == "map_edit_cancel")
+		changeEditMode(mode_last);
+
 	// Toggle fog
-	if (name == "me3d_toggle_fog")
+	else if (name == "me3d_toggle_fog")
 	{
 		bool fog = renderer_3d->fogEnabled();
 		renderer_3d->enableFog(!fog);

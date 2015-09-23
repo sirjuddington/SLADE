@@ -4732,6 +4732,9 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 
 		else
 			handled = false;
+
+		if (handled)
+			return handled;
 	}
 
 	// --- Sector mode keybinds ---
@@ -4876,8 +4879,10 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		else
 			return false;
 	}
+	else
+		return false;
 
-	return handled;
+	return true;
 }
 
 /* MapEditor::updateDisplay
