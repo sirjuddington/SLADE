@@ -161,7 +161,6 @@ void ThingTypeBrowser::setupViewOptions()
 		setItemViewType(BrowserCanvas::ITEMS_NORMAL);
 	}
 
-	canvas->updateScrollBar();
 	canvas->updateLayout();
 	canvas->showSelectedItem();
 }

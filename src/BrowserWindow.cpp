@@ -432,8 +432,6 @@ void BrowserWindow::openTree(BrowserTreeNode* node, bool clear)
 	if (clear)
 	{
 		doSort(choice_sort->GetSelection());
-		canvas->updateScrollBar();
-		canvas->updateLayout();
 		canvas->filterItems(text_filter->GetValue());
 		canvas->showSelectedItem();
 	}
@@ -611,10 +609,12 @@ void BrowserWindow::onZoomChanged(wxCommandEvent& e)
 	//label_current_zoom->SetLabel(S_FMT("%d%%", zoom_percent));
 
 	// Update item size and refresh
-	browser_item_size = item_size;
-	canvas->updateScrollBar();
-	canvas->updateLayout();
-	canvas->Refresh();
+	if (item_size != browser_item_size)
+	{
+		int viewed_index = canvas->getViewedIndex();
+		browser_item_size = item_size;
+		canvas->updateLayout(viewed_index);
+	}
 }
 
 /* BrowserWindow::onCanvasSelectionChanged
