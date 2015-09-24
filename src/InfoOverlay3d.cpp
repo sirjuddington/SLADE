@@ -224,41 +224,47 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		if (other_side)
 			other_sector = other_side->getSector();
 
-		plane_t top_plane, bottom_plane;
-		top_plane.a = 0.0; top_plane.b = 0.0; top_plane.c = 1.0;
-		bottom_plane.a = 0.0; bottom_plane.b = 0.0; bottom_plane.c = 1.0;
-
-		if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+		double left_height, right_height;
+		if (item_type == MapEditor::SEL_SIDE_MIDDLE && other_sector)
 		{
-			if (other_sector)
-			{
-				// A two-sided line's middle area is the smallest distance
-				// between both sides' floors and ceilings
-				// TODO this is more complicated with slopes
-				top_plane.d = min(this_sector->getCeilingHeight(), other_sector->getCeilingHeight());
-				bottom_plane.d = max(this_sector->getFloorHeight(), other_sector->getFloorHeight());
-			}
-			else {
-				top_plane.d = this_sector->getCeilingHeight();
-				bottom_plane.d = this_sector->getFloorHeight();
-			}
+			// A two-sided line's middle area is the smallest distance between
+			// both sides' floors and ceilings, which is more complicated with
+			// slopes.
+			plane_t floor1 = this_sector->getFloorPlane();
+			plane_t floor2 = other_sector->getFloorPlane();
+			plane_t ceiling1 = this_sector->getCeilingPlane();
+			plane_t ceiling2 = other_sector->getCeilingPlane();
+			left_height = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
+			            - max(floor1.height_at(left_point), floor2.height_at(left_point));
+			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
+			             - max(floor1.height_at(right_point), floor2.height_at(right_point));
 		}
 		else
 		{
-			if (!other_sector) return;
-			if (item_type == MapEditor::SEL_SIDE_TOP)
+			plane_t top_plane, bottom_plane;
+			if (item_type == MapEditor::SEL_SIDE_MIDDLE)
 			{
-				top_plane.d = this_sector->getCeilingHeight();
-				bottom_plane.d = other_sector->getCeilingHeight();
+				top_plane = this_sector->getCeilingPlane();
+				bottom_plane = this_sector->getFloorPlane();
 			}
 			else
 			{
-				top_plane.d = other_sector->getFloorHeight();
-				bottom_plane.d = this_sector->getFloorHeight();
+				if (!other_sector) return;
+				if (item_type == MapEditor::SEL_SIDE_TOP)
+				{
+					top_plane = this_sector->getCeilingPlane();
+					bottom_plane = other_sector->getCeilingPlane();
+				}
+				else
+				{
+					top_plane = other_sector->getFloorPlane();
+					bottom_plane = this_sector->getFloorPlane();
+				}
 			}
+
+			left_height = top_plane.height_at(left_point) - bottom_plane.height_at(left_point);
+			right_height = top_plane.height_at(right_point) - bottom_plane.height_at(right_point);
 		}
-		double left_height = top_plane.height_at(left_point) - bottom_plane.height_at(left_point);
-		double right_height = top_plane.height_at(right_point) - bottom_plane.height_at(right_point);
 		if (fabs(left_height - right_height) < 0.001)
 			info2.push_back(S_FMT("Height: %d", (int)left_height));
 		else
