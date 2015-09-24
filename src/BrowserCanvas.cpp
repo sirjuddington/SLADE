@@ -29,6 +29,9 @@
 /*******************************************************************
  * INCLUDES
  *******************************************************************/
+#include <algorithm>
+#include <cmath>
+
 #include "Main.h"
 #include "WxStuff.h"
 #include "BrowserCanvas.h"
@@ -77,6 +80,28 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
  *******************************************************************/
 BrowserCanvas::~BrowserCanvas()
 {
+}
+
+/* BrowserCanvas::getViewedIndex
+ * Return the unfiltered index of the item currently in the middle of the
+ * viewport, or -1 if no items are visible
+ *******************************************************************/
+int BrowserCanvas::getViewedIndex()
+{
+	if (items_filter.empty())
+		return -1;
+
+	int viewport_height = GetSize().y;
+	int row_height = fullItemSizeY();
+	int viewport_mid_y = yoff + viewport_height / 2.0;
+	int viewed_row = viewport_mid_y / row_height;
+	int viewed_item_id = (viewed_row + 0.5) * num_cols;
+	if (viewed_item_id < 0)
+		viewed_item_id = 0;
+	else if (viewed_item_id >= items_filter.size())
+		viewed_item_id = items_filter.size() - 1;
+
+	return items_filter[viewed_item_id];
 }
 
 /* BrowserCanvas::addItem
@@ -298,35 +323,45 @@ void BrowserCanvas::setScrollBar(wxScrollBar* scrollbar)
 	scrollbar->Bind(wxEVT_SCROLL_PAGEDOWN, &BrowserCanvas::onScrollPageDown, this);
 }
 
-/* BrowserCanvas::updateScrollBar
- * Updates the associated scrollbar's properties depending on the
- * number of items, the canvas size, etc.
- *******************************************************************/
-void BrowserCanvas::updateScrollBar()
-{
-	// Do nothing special if no scrollbar present
-	if (!scrollbar)
-		return;
-
-	// Determine total height of all items
-	int rows = (double)items_filter.size() / (double)num_cols + 0.9999;
-	int total_height = rows * fullItemSizeY();
-
-	// Setup scrollbar
-	scrollbar->SetScrollbar(scrollbar->GetThumbPosition(), GetSize().y, total_height, GetSize().y);
-	yoff = scrollbar->GetThumbPosition();
-}
-
 /* BrowserCanvas::updateLayout
- * Updates variables concerning the object layout
+ * Updates variables concerning the object layout, then updates the
+ * associated scrollbar's properties depending on the number of
+ * items, the canvas size, etc.
  *******************************************************************/
-void BrowserCanvas::updateLayout()
+void BrowserCanvas::updateLayout(int viewed_index)
 {
+	if (scrollbar && viewed_index < 0)
+		viewed_index = getViewedIndex();
+
 	// Determine number of columns
 	num_cols = GetSize().x / fullItemSizeX();
 
-	// Update the scrollbar
-	updateScrollBar();
+	// Update the scrollbar, if present
+	if (scrollbar)
+	{
+		// Try to keep the view scrolled to roughly the same area: find the
+		// item currently in the middle, and keep it there
+		// If the given item is no longer visible, find the first filtered item
+		// after it that is
+		int filtered_viewed_index = -1;
+		for (unsigned a = 0; a < items_filter.size(); a++)
+			if (items_filter[a] >= viewed_index)
+			{
+				filtered_viewed_index = a;
+				break;
+			}
+		if (filtered_viewed_index < 0)
+			filtered_viewed_index = items_filter.size() - 1;
+
+		// Determine total height of all items
+		int rows = (double)items_filter.size() / (double)num_cols + 0.9999;
+		int total_height = rows * fullItemSizeY();
+		int viewport_height = GetSize().y;
+
+		// Setup scrollbar
+		scrollbar->SetScrollbar(scrollbar->GetThumbPosition(), viewport_height, total_height, viewport_height);
+		showItem(filtered_viewed_index, 0);
+	}
 
 	Refresh();
 }
@@ -416,6 +451,9 @@ void BrowserCanvas::selectItem(int index)
  *******************************************************************/
 void BrowserCanvas::filterItems(string filter)
 {
+	// Find the currently-viewed item before we change the item list
+	int viewed_index = getViewedIndex();
+
 	// Clear current filter list
 	items_filter.clear();
 
@@ -441,16 +479,16 @@ void BrowserCanvas::filterItems(string filter)
 	}
 
 	// Update scrollbar and refresh
-	updateScrollBar();
-	Refresh();
+	updateLayout(viewed_index);
 }
 
 /* BrowserCanvas::showItem
  * Scrolls the view to show [item] if it is currently off-screen. If
- * [top] is true, the item will be shown on the top row, otherwise,
- * the item will be shown on the bottom row
+ * [where] is positive, the item will be shown on the top row; if
+ * negative, the item will be shown on the bottom row; if zero, the
+ * item will be roughly centered.
  *******************************************************************/
-void BrowserCanvas::showItem(int item, bool top)
+void BrowserCanvas::showItem(int item, int where)
 {
 	// Check item index
 	if (item < 0 || item >= (int)items_filter.size())
@@ -461,21 +499,27 @@ void BrowserCanvas::showItem(int item, bool top)
 	int y_top = (item / num_cols) * fullItemSizeY();
 	int y_bottom = y_top + fullItemSizeY();
 
-	// Check if item is above current view
-	if (y_top < yoff || y_bottom > yoff + GetSize().y)
+	int _yoff = yoff;
+
+	// Check if item is outside current view (but always center an item if
+	// asked)
+	if (y_top < yoff || y_bottom > yoff + GetSize().y || where == 0)
 	{
-		if (top)
-		{
+		if (where > 0)
 			// Scroll view to show the item on the top row
 			yoff = y_top;
-			if (scrollbar) scrollbar->SetThumbPosition(yoff);
-		}
-		else
-		{
+		else if (where < 0)
 			// Scroll view to show the item on the bottom row
 			yoff = y_bottom - GetSize().y;
-			if (scrollbar) scrollbar->SetThumbPosition(yoff);
+		else
+		{
+			// Scroll view to put the item's middle in the middle of the canvas
+			yoff = y_top + (fullItemSizeY() - GetSize().y) / 2;
+			if (yoff < 0)
+				yoff = 0;
 		}
+
+		if (scrollbar) scrollbar->SetThumbPosition(yoff);
 	}
 }
 
@@ -484,7 +528,7 @@ void BrowserCanvas::showItem(int item, bool top)
  *******************************************************************/
 void BrowserCanvas::showSelectedItem()
 {
-	showItem(itemIndex(item_selected));
+	showItem(itemIndex(item_selected), 1);
 }
 
 /* BrowserCanvas::lookForSearchEntryFrom
@@ -549,7 +593,6 @@ int BrowserCanvas::longestItemTextWidth()
  *******************************************************************/
 void BrowserCanvas::onSize(wxSizeEvent& e)
 {
-	updateScrollBar();
 	updateLayout();
 
 	// Do default stuff
@@ -670,55 +713,51 @@ void BrowserCanvas::onMouseEvent(wxMouseEvent& e)
  *******************************************************************/
 void BrowserCanvas::onKeyDown(wxKeyEvent& e)
 {
-	bool handled = true;
 	int num_cols = GetSize().x / fullItemSizeX();
-	int selected = itemIndex(item_selected);
+	int offset;
 
 	// Down arrow
 	if (e.GetKeyCode() == WXK_DOWN)
-	{
-		selected += num_cols;
-		showItem(selected, false);
-	}
+		offset = num_cols;
 
 	// Up arrow
 	else if (e.GetKeyCode() == WXK_UP)
-	{
-		selected -= num_cols;
-		showItem(selected);
-	}
+		offset = -1 * num_cols;
 
 	// Left arrow
 	else if (e.GetKeyCode() == WXK_LEFT)
-	{
-		selected--;
-		showItem(selected);
-	}
+		offset = -1;
 
 	// Right arrow
 	else if (e.GetKeyCode() == WXK_RIGHT)
-	{
-		selected++;
-		showItem(selected, false);
-	}
+		offset = 1;
+
+	// Page up
+	else if (e.GetKeyCode() == WXK_PAGEUP)
+		offset = -1 * num_cols * max(GetSize().y / fullItemSizeY(), 1);
+
+	// Page down
+	else if (e.GetKeyCode() == WXK_PAGEDOWN)
+		offset = num_cols * max(GetSize().y / fullItemSizeY(), 1);
 
 	else
 	{
 		e.Skip();
-		handled = false;
+		return;
 	}
 
-	if (handled)
-	{
-		// Clamp selection
-		if (selected >= (int)items_filter.size())
-			selectItem((int)items_filter.size() - 1);
-		if (selected < 0)
-			selectItem(0);
+	// Clamp selection
+	int selected = itemIndex(item_selected) + offset;
+	if (selected < 0)
+		selected = 0;
+	else if (selected >= (int)items_filter.size())
+		selected = (int)items_filter.size() - 1;
 
-		// Refresh canvas
-		Refresh();
-	}
+	selectItem(selected);
+	showItem(selected, -1 * offset);
+
+	// Refresh canvas
+	Refresh();
 }
 
 /* BrowserCanvas::onKeyChar

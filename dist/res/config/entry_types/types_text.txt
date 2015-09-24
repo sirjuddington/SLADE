@@ -79,6 +79,7 @@ entry_types
 		match_name = "dehacked";
 		match_ext = "deh";
 		match_extorname = 1;
+		text_language = "dehacked";
 	}
 
 	dehsupp : text

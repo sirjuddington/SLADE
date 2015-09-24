@@ -671,6 +671,10 @@ struct plane_t
 		d = d / mag;
 	}
 
+	double height_at(fpoint2_t& point)
+	{
+		return height_at(point.x, point.y);
+	}
 	double height_at(double x, double y)
 	{
 		return ((-a * x) + (-b * y) + d) / c;

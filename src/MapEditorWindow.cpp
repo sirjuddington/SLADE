@@ -715,14 +715,15 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 {
 	// Get map data entries
 	vector<ArchiveEntry*> new_map_data;
+	SLADEMap& map = editor.getMap();
 	if (mdesc_current.format == MAP_DOOM)
-		editor.getMap().writeDoomMap(new_map_data);
+		map.writeDoomMap(new_map_data);
 	else if (mdesc_current.format == MAP_HEXEN)
-		editor.getMap().writeHexenMap(new_map_data);
+		map.writeHexenMap(new_map_data);
 	else if (mdesc_current.format == MAP_UDMF)
 	{
 		ArchiveEntry* udmf = new ArchiveEntry("TEXTMAP");
-		editor.getMap().writeUDMFMap(udmf);
+		map.writeUDMFMap(udmf);
 		new_map_data.push_back(udmf);
 	}
 	else // TODO: doom64
@@ -756,7 +757,13 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 	if (acs && panel_script_editor->scriptEntry()->getSize() > 0) // SCRIPTS (if any)
 		wad->addEntry(panel_script_editor->scriptEntry(), "", true);
 	if (mdesc_current.format == MAP_UDMF)
+	{
+		// Add extra UDMF entries
+		for (unsigned a = 0; a < map.udmfExtraEntries().size(); a++)
+			wad->addEntry(map.udmfExtraEntries()[a], -1, NULL, true);
+
 		wad->addNewEntry("ENDMAP");
+	}
 
 	// Build nodes
 	if (nodes)
@@ -805,16 +812,6 @@ bool MapEditorWindow::saveMap()
 
 	// Unlock current map entries
 	lockMapEntries(false);
-
-	// Put back unknown lumps if UDMF -- this isn't handled by writeMap() or writeUDMFMap(), so do it now.
-	if (map.unk.size())
-	{
-		for (size_t s = 0; s < map.unk.size(); ++s)
-		{
-			ArchiveEntry * clone = wad->addNewEntry(map.unk[s]->getName(), wad->numEntries() - 1);
-			if (clone) clone->importMemChunk(map.unk[s]->getMCData());
-		}
-	}
 
 	// Delete current map entries
 	ArchiveEntry* entry = map.end;

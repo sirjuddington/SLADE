@@ -2537,7 +2537,7 @@ void MapCanvas::changeTexture3d(selection_3d_t first)
 	// Open texture browser
 	MapTextureBrowser browser(theMapEditor, type, tex, &(theMapEditor->mapEditor().getMap()));
 	browser.SetTitle("Browse Texture");
-	if (browser.ShowModal() == wxID_OK)
+	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem() != NULL)
 	{
 		bool mix = theGameConfiguration->mixTexFlats();
 		tex = browser.getSelectedItem()->getName();
@@ -3238,8 +3238,12 @@ void MapCanvas::keyBinds2d(string name)
  *******************************************************************/
 void MapCanvas::keyBinds3d(string name)
 {
+	// Escape from 3D mode
+	if (name == "map_edit_cancel")
+		changeEditMode(mode_last);
+
 	// Toggle fog
-	if (name == "me3d_toggle_fog")
+	else if (name == "me3d_toggle_fog")
 	{
 		bool fog = renderer_3d->fogEnabled();
 		renderer_3d->enableFog(!fog);

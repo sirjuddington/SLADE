@@ -1759,6 +1759,10 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 	for (unsigned a = 0; a < sectors.size(); a++)
 		sectors[a]->updateBBox();
 
+	// Copy extra entries
+	for (unsigned a = 0; a < map.unk.size(); a++)
+		udmf_extra_entries.push_back(new ArchiveEntry(*(map.unk[a])));
+
 	return true;
 }
 
@@ -2514,6 +2518,11 @@ void SLADEMap::clearMap()
 	usage_flat.clear();
 	usage_tex.clear();
 	usage_thing_type.clear();
+
+	// Clear UDMF extra entries
+	for (unsigned a = 0; a < udmf_extra_entries.size(); a++)
+		delete udmf_extra_entries[a];
+	udmf_extra_entries.clear();
 }
 
 /* SLADEMap::removeVertex
