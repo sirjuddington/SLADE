@@ -41,21 +41,21 @@ public:
 	};
 
 	vector<BrowserItem*>&	itemList() { return items; }
+	int						getViewedIndex();
 	void					addItem(BrowserItem* item);
 	void					clearItems();
 	int						fullItemSizeX();
 	int						fullItemSizeY();
 	void					draw();
 	void					setScrollBar(wxScrollBar* scrollbar);
-	void					updateScrollBar();
-	void					updateLayout();
+	void					updateLayout(int viewed_item = -1);
 	BrowserItem*			getSelectedItem();
 	BrowserItem*			itemAt(int index);
 	int						itemIndex(BrowserItem* item);
 	void					selectItem(int index);
 	void					selectItem(BrowserItem* item);
 	void					filterItems(string filter);
-	void					showItem(int item, bool top = true);
+	void					showItem(int item, int where);
 	void					showSelectedItem();
 	bool					searchItemFrom(int from);
 	void					setFont(int font) { this->font = font; }

@@ -175,11 +175,11 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	sizer->AddSpacer(8);
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
-	btn_run = new wxButton(this, -1, "Run");
+	btn_run = new wxButton(this, wxID_OK, "Run");
 	hbox->AddStretchSpacer();
 	hbox->Add(btn_run, 0, wxEXPAND|wxRIGHT, 4);
 
-	btn_cancel = new wxButton(this, -1, "Cancel");
+	btn_cancel = new wxButton(this, wxID_CANCEL, "Cancel");
 	hbox->Add(btn_cancel, 0, wxEXPAND);
 
 	// Populate game executables dropdown

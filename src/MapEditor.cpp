@@ -2770,6 +2770,32 @@ void MapEditor::deleteObject()
 			}
 		}
 
+		// Try to fill in textures on any lines that just became one-sided
+		for (unsigned a = 0; a < connected_lines.size(); a++)
+		{
+			MapLine* line = connected_lines[a];
+			MapSide* side;
+			if (line->s1() && !line->s2())
+				side = line->s1();
+			else if (!line->s1() && line->s2())
+				side = line->s2();
+			else
+				continue;
+
+			if (side->getTexMiddle() != "-")
+				continue;
+
+			// Inherit textures from upper or lower
+			if (side->getTexUpper() != "-")
+				side->setStringProperty("texturemiddle", side->getTexUpper());
+			else if (side->getTexLower() != "-")
+				side->setStringProperty("texturemiddle", side->getTexLower());
+
+			// Clear any existing textures, which are no longer visible
+			side->setStringProperty("texturetop", "-");
+			side->setStringProperty("texturebottom", "-");
+		}
+
 		// Editor message
 		if (sectors.size() == 1)
 			addEditorMessage(S_FMT("Deleted sector #%d", index));
@@ -3779,11 +3805,21 @@ void MapEditor::changeSectorLight3d(int amount)
 				processed_sectors.push_back(sector);
 
 			// Check for decrease when light = 255
-			if (sector->getLight(0) == 255 && amount < -1)
+			int current_light = sector->getLight(0);
+			if (current_light == 255 && amount < -1)
 				amount++;
 
 			// Change sector light level
 			sector->changeLight(amount);
+
+			// If light levels are unlinked, change the floor and ceiling as
+			// well so they stay the same
+			if (!link_3d_light)
+			{
+				int actual_change = sector->getLight(0) - current_light;
+				sector->changeLight(-actual_change, 1);
+				sector->changeLight(-actual_change, 2);
+			}
 		}
 
 		// Flat
@@ -4732,6 +4768,9 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 
 		else
 			handled = false;
+
+		if (handled)
+			return handled;
 	}
 
 	// --- Sector mode keybinds ---
@@ -4876,8 +4915,10 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		else
 			return false;
 	}
+	else
+		return false;
 
-	return handled;
+	return true;
 }
 
 /* MapEditor::updateDisplay
