@@ -3805,11 +3805,21 @@ void MapEditor::changeSectorLight3d(int amount)
 				processed_sectors.push_back(sector);
 
 			// Check for decrease when light = 255
-			if (sector->getLight(0) == 255 && amount < -1)
+			int current_light = sector->getLight(0);
+			if (current_light == 255 && amount < -1)
 				amount++;
 
 			// Change sector light level
 			sector->changeLight(amount);
+
+			// If light levels are unlinked, change the floor and ceiling as
+			// well so they stay the same
+			if (!link_3d_light)
+			{
+				int actual_change = sector->getLight(0) - current_light;
+				sector->changeLight(-actual_change, 1);
+				sector->changeLight(-actual_change, 2);
+			}
 		}
 
 		// Flat
