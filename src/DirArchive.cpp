@@ -233,7 +233,7 @@ bool DirArchive::save(string filename)
 	wxDir dir(this->filename);
 	dir.Traverse(traverser, "", wxDIR_FILES|wxDIR_DIRS);
 	//wxDir::GetAllFiles(this->filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
-	LOG_MESSAGE(2, "GetAllFiles took %dms", theApp->runTimer() - time);
+	LOG_MESSAGE(2, "GetAllFiles took %lums", theApp->runTimer() - time);
 
 	// Check for any files to remove
 	time = theApp->runTimer();

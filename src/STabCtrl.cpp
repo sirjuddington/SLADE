@@ -23,3 +23,20 @@ STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int h
 STabCtrl::~STabCtrl()
 {
 }
+
+// wxAuiNotebook doesn't automatically set its own minimum size to the minimum
+// size of its contents, so we have to do that for it.  See
+// http://trac.wxwidgets.org/ticket/4698
+wxSize STabCtrl::DoGetBestClientSize() const
+{
+	wxSize ret;
+	for (int i = 0; i < GetPageCount(); i++)
+	{
+		wxWindow* page = GetPage(i);
+		ret.IncTo(page->GetBestSize());
+	}
+
+	ret.IncBy(0, GetTabCtrlHeight());
+
+	return ret;
+}
