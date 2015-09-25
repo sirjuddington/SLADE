@@ -60,21 +60,31 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	// Add 'None'
 	item_none = AppendItem(root, "0: None");
 
+	// Computing the minimum width of the tree is slightly complicated, since
+	// wx doesn't expose it to us directly
+	wxClientDC dc(this);
+	dc.SetFont(GetFont());
+	wxSize textsize;
+
 	// Populate tree
 	vector<as_t> specials = theGameConfiguration->allActionSpecials();
 	std::sort(specials.begin(), specials.end());
 	for (unsigned a = 0; a < specials.size(); a++)
 	{
-		AppendItem(getGroup(specials[a].special->getGroup()),
-		           S_FMT("%d: %s", specials[a].number, specials[a].special->getName()), -1);
+		string label = S_FMT("%d: %s", specials[a].number, specials[a].special->getName());
+		AppendItem(getGroup(specials[a].special->getGroup()), label);
+		textsize.IncTo(dc.GetTextExtent(label));
 	}
+	Expand(root);
 
 	// Bind events
 	Bind(wxEVT_DATAVIEW_ITEM_START_EDITING, &ActionSpecialTreeView::onItemEdit, this);
 	Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ActionSpecialTreeView::onItemActivated, this);
 
-	Expand(root);
-	SetMinSize(wxSize(-1, 200));
+	// 64 is an arbitrary fudge factor -- should be at least the width of a
+	// scrollbar plus the expand icons plus any extra padding
+	int min_width = textsize.GetWidth() + GetIndent() + 64;
+	SetMinSize(wxSize(min_width, 200));
 }
 
 /* ActionSpecialTreeView::~ActionSpecialTreeView
@@ -326,6 +336,7 @@ public:
 		}
 
 		GetSizer()->Add(choice_control, wxSizerFlags().Expand());
+		Fit();
 	}
 
 	long getArgValue()
@@ -550,6 +561,8 @@ public:
 				addControl(control, i, 0);
 			}
 		}
+
+		Fit();
 	}
 
 	void setArgValue(long val)
@@ -616,6 +629,12 @@ public:
 		slider_control->SetTick(64);
 		slider_control->Bind(wxEVT_SLIDER, &ArgsSpeedControl::onSlide, this);
 		GetSizer()->Add(slider_control, wxSizerFlags(1).Expand());
+
+		// The label has its longest value at 0, which makes for an appropriate
+		// minimum size
+		syncControls(0);
+
+		Fit();
 	}
 
 	// Set the value in the textbox
@@ -708,9 +727,28 @@ void ArgsPanel::setup(argspec_t* args)
 		}
 	}
 
-	Layout();
+	// We may have changed the minimum size of the window by adding new big
+	// controls, so we need to ask the top-level parent to recompute its
+	// minimum size
+	wxWindow* toplevel = this;
+	while (!toplevel->IsTopLevel() && toplevel->GetParent())
+		toplevel = toplevel->GetParent();
+	wxSizer* toplevel_sizer = toplevel->GetSizer();
+	if (toplevel_sizer)
+	{
+		// This is more or less what SetSizerAndFit does, but without resizing
+		// the window if not necessary
+		toplevel->SetMinClientSize(
+			toplevel_sizer->ComputeFittingClientSize(toplevel));
+		wxSize toplevel_size = toplevel->GetSize();
+		wxSize toplevel_best = toplevel_size;
+		toplevel_best.IncTo(toplevel->GetBestSize());
+		if (toplevel_best != toplevel_size)
+			toplevel->SetSize(toplevel_best);
+	}
 
-	// Setup controls
+	// Set the label text last, so very long labels will wrap naturally and not
+	// force the window to be ridiculously wide
 	int available_width = fg_sizer->GetColWidths()[1];
 	for (int a = 0; a < args->count; a++)
 	{
@@ -757,7 +795,7 @@ void ArgsPanel::onSize(wxSizeEvent& event)
 {
 	event.Skip();
 
-	fg_sizer->Layout();
+	Layout();
 	if (fg_sizer->GetColWidths().size() > 1)
 	{
 		int available_width = fg_sizer->GetColWidths()[1];
@@ -789,7 +827,6 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 
 	// Setup layout
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
 
 	if (theGameConfiguration->isBoom())
 	{
@@ -816,6 +853,8 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	setupSpecialPanel();
 	sizer->Add(panel_action_special, 1, wxEXPAND|wxALL, 4);
 
+	SetSizerAndFit(sizer);
+
 	// Bind events
 	tree_specials->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ActionSpecialPanel::onSpecialSelectionChanged, this);
 }
@@ -837,7 +876,6 @@ void ActionSpecialPanel::setupSpecialPanel()
 	// Create panel
 	panel_action_special = new wxPanel(this, -1);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	panel_action_special->SetSizer(sizer);
 
 	// Special box
 	text_special = new NumberTextCtrl(panel_action_special);
@@ -904,6 +942,8 @@ void ActionSpecialPanel::setupSpecialPanel()
 			hbox->Add(choice_trigger, 1, wxEXPAND);
 		}
 	}
+
+	panel_action_special->SetSizerAndFit(sizer);
 }
 
 /* ActionSpecialPanel::setSpecial
