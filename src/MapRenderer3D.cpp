@@ -55,6 +55,7 @@ CVAR(Int, render_3d_things, 1, CVAR_SAVE)
 CVAR(Int, render_3d_things_style, 1, CVAR_SAVE)
 CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
+CVAR(Float, render_fog_distance, 1000, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -84,7 +85,6 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map)
 	this->skytex1 = "SKY1";
 	this->quads = NULL;
 	this->flats = NULL;
-	this->last_light = 255;
 	this->tex_last = NULL;
 	this->n_quads = 0;
 	this->n_flats = 0;
@@ -450,7 +450,7 @@ void MapRenderer3D::setupView(int width, int height)
 }
 
 /* MapRenderer3D::setLight
- * Sets the OpenGL colour+fog for rendering an object using [colour]
+ * Sets the OpenGL colour for rendering an object using [colour]
  * and [light] level
  *******************************************************************/
 void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
@@ -462,26 +462,35 @@ void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
 	// Apply brightness
 	light = MathStuff::clamp(light * render_3d_brightness, 0, 255);
 
-	// Setup fog
-	if (fog && light != last_light)
-	{
-		if (light >= 240)
-			glDisable(GL_FOG);
-		else
-		{
-			glEnable(GL_FOG);
-			float lm = light/170.0f;
-			glFogf(GL_FOG_END, (lm * lm * 3000.0f));
-		}
-
-		last_light = light;
-	}
-
 	// If we have a non-coloured light, darken it a bit to
 	// closer resemble the software renderer light level
 	float mult = (float)light / 255.0f;
 	mult *= (mult * 1.3f);
 	glColor4f(colour.fr()*mult, colour.fg()*mult, colour.fb()*mult, colour.fa()*alpha);
+}
+
+/* MapRenderer3D::setFog
+ * Sets the OpenGL fog for rendering an object using [fogcol]
+ *******************************************************************/
+void MapRenderer3D::setFog(rgba_t &fogcol)
+{
+	if (!fog)
+		return;
+
+	GLfloat fogColor[3]= {fogcol.fr(), fogcol.fg(), fogcol.fb()};
+
+	glEnable(GL_FOG);
+
+	glFogfv(GL_FOG_COLOR, fogColor);
+	glFogi(GL_FOG_MODE, GL_LINEAR);
+	glFogf(GL_FOG_DENSITY, 1.0f);
+	glFogf(GL_FOG_START, 0.0f);
+
+	glFogf(GL_FOG_END, render_fog_distance);
+	if (render_fog_quality)
+		glHint(GL_FOG_HINT, GL_NICEST);
+	else
+		glHint(GL_FOG_HINT, GL_FASTEST);
 }
 
 /* MapRenderer3D::renderMap
@@ -497,20 +506,7 @@ void MapRenderer3D::renderMap()
 	glDepthMask(GL_TRUE);
 	glAlphaFunc(GL_GREATER, 0.0f);
 
-	// Setup fog
-	GLfloat fogColor[4]= {0.0f, 0.0f, 0.0f, 0.6f};
-	glFogi(GL_FOG_MODE, GL_LINEAR);
-	glFogfv(GL_FOG_COLOR, fogColor);
-	glFogf(GL_FOG_DENSITY, 2.0f);
-	glFogf(GL_FOG_START, 0.0f);
-	glFogf(GL_FOG_END, 3000.0f);
-	if (render_fog_quality)
-		glHint(GL_FOG_HINT, GL_NICEST);
-	else
-		glHint(GL_FOG_HINT, GL_FASTEST);
-
 	// Init
-	last_light = -1;
 	tex_last = NULL;
 
 	// Init VBO stuff
@@ -818,6 +814,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	floors[index].sector = sector;
 	floors[index].texture = theMapEditor->textureManager().getFlat(sector->getFloorTex(), theGameConfiguration->mixTexFlats());
 	floors[index].colour = sector->getColour(1, true);
+	floors[index].fogcolour = sector->getFogColour();
 	floors[index].light = sector->getLight(1);
 	floors[index].flags = 0;
 	floors[index].plane = sector->getFloorPlane();
@@ -838,6 +835,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	ceilings[index].sector = sector;
 	ceilings[index].texture = theMapEditor->textureManager().getFlat(sector->getCeilingTex(), theGameConfiguration->mixTexFlats());
 	ceilings[index].colour = sector->getColour(2, true);
+	ceilings[index].fogcolour = sector->getFogColour();
 	ceilings[index].light = sector->getLight(2);
 	ceilings[index].flags = CEIL;
 	ceilings[index].plane = sector->getCeilingPlane();
@@ -883,6 +881,9 @@ void MapRenderer3D::renderFlat(flat_3d_t* flat)
 
 	// Setup colour/light
 	setLight(flat->colour, flat->light, alpha);
+
+	// Setup fog colour
+	setFog(flat->fogcolour);
 
 	// Render flat
 	if (OpenGL::vboSupport() && flats_use_vbo)
@@ -1167,6 +1168,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	plane_t fp1 = line->frontSector()->getFloorPlane();
 	plane_t cp1 = line->frontSector()->getCeilingPlane();
 	rgba_t colour1 = line->frontSector()->getColour(0, true);
+	rgba_t fogcolour1 = line->frontSector()->getFogColour();
 	int light1 = line->frontSector()->getLight();
 	int xoff1 = line->s1()->getOffsetX();
 	int yoff1 = line->s1()->getOffsetY();
@@ -1203,6 +1205,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), cp1, fp1);
 		quad.colour = colour1;
+		quad.fogcolour = fogcolour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexMiddle(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, floor1, lpeg, sx, sy);
@@ -1221,6 +1224,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	plane_t fp2 = line->backSector()->getFloorPlane();
 	plane_t cp2 = line->backSector()->getCeilingPlane();
 	rgba_t colour2 = line->backSector()->getColour(0, true);
+	rgba_t fogcolour2 = line->backSector()->getFogColour();
 	int light2 = line->backSector()->getLight();
 	int xoff2 = line->s2()->getOffsetX();
 	int yoff2 = line->s2()->getOffsetY();
@@ -1273,6 +1277,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), fp2, fp1);
 		quad.colour = colour1;
+		quad.fogcolour = fogcolour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor2, floor1, false, sx, sy);
@@ -1351,6 +1356,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), top, bottom);
 		quad.colour = colour1.ampf(1.0f, 1.0f, 1.0f, alpha);
+		quad.fogcolour = fogcolour1;
 		quad.light = light1;
 		setupQuadTexCoords(&quad, length, xoff, ytex, top, bottom, false, sx, sy);
 		quad.flags |= MIDTEX;
@@ -1393,6 +1399,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), cp1, cp2);
 		quad.colour = colour1;
+		quad.fogcolour = fogcolour1;
 		quad.light = light1;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, ceiling2, !upeg, sx, sy);
@@ -1438,6 +1445,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Create quad
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), fp1, fp2);
 		quad.colour = colour2;
+		quad.fogcolour = fogcolour2;
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor1, floor2, false, sx, sy);
@@ -1516,6 +1524,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Create quad
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), top, bottom);
 		quad.colour = colour2.ampf(1.0f, 1.0f, 1.0f, alpha);
+		quad.fogcolour = fogcolour2;
 		quad.light = light2;
 		setupQuadTexCoords(&quad, length, xoff, ytex, top, bottom, false, sx, sy);
 		quad.flags |= BACK;
@@ -1559,6 +1568,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Create quad
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), cp2, cp1);
 		quad.colour = colour2;
+		quad.fogcolour = fogcolour2;
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling2, ceiling1, !upeg, sx, sy);
@@ -1600,6 +1610,9 @@ void MapRenderer3D::renderQuad(MapRenderer3D::quad_3d_t* quad, float alpha)
 
 	// Setup colour/light
 	setLight(quad->colour, quad->light, alpha);
+
+	// Setup fog
+	setFog(quad->fogcolour);
 
 	// Draw quad
 	glBegin(GL_QUADS);
@@ -1962,6 +1975,8 @@ void MapRenderer3D::renderThings()
 				col.set(things[a].sector->getColour(0, true));
 		}
 		setLight(col, light, calcDistFade(dist, mdist));
+		rgba_t fogcol = things[a].sector->getFogColour();
+		setFog(fogcol);
 
 		// Draw thing
 		glBegin(GL_QUADS);
@@ -2001,6 +2016,8 @@ void MapRenderer3D::renderThings()
 
 			// Fill
 			glColor4f(col.fr(), col.fg(), col.fb(), 0.21f);
+			rgba_t fogcol2 = things[a].sector->getFogColour();
+			setFog(fogcol2);
 			glBegin(GL_QUADS);
 			// Bottom
 			glVertex3f(thing->xPos() - radius, thing->yPos() - radius, bottom);
@@ -2453,7 +2470,12 @@ void MapRenderer3D::checkVisibleFlats()
 		// Update sector info if needed
 		if (floors[a].updated_time < sector->modifiedTime() ||
 			floors[a].updated_time < sector->geometryUpdatedTime())
+		{
 			updateSector(a);
+
+			// update sector lines
+			sector->setModified();
+		}
 
 		// Set distance fade alpha
 		if (render_max_dist > 0)

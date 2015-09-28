@@ -42,6 +42,7 @@ public:
 	{
 		gl_vertex_t	points[4];
 		rgba_t		colour;
+		rgba_t		fogcolour;
 		uint8_t		light;
 		GLTexture*	texture;
 		uint8_t		flags;
@@ -88,6 +89,7 @@ public:
 		uint8_t		flags;
 		uint8_t		light;
 		rgba_t		colour;
+		rgba_t		fogcolour;
 		GLTexture*	texture;
 		plane_t		plane;
 		float		alpha;
@@ -141,6 +143,7 @@ public:
 	// -- Rendering --
 	void	setupView(int width, int height);
 	void	setLight(rgba_t& colour, uint8_t light, float alpha = 1.0f);
+	void	setFog(rgba_t &fogcol);
 	void	renderMap();
 	void	renderSkySlice(float top, float bottom, float atop, float abottom, float size, float tx = 0.125f, float ty = 2.0f);
 	void	renderSky();
@@ -189,7 +192,6 @@ private:
 	bool		udmf_zdoom;
 	bool		fullbright;
 	bool		fog;
-	int			last_light;
 	GLTexture*	tex_last;
 	unsigned	n_quads;
 	unsigned	n_flats;
