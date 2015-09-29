@@ -55,7 +55,8 @@ CVAR(Int, render_3d_things, 1, CVAR_SAVE)
 CVAR(Int, render_3d_things_style, 1, CVAR_SAVE)
 CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
-CVAR(Float, render_fog_distance, 1000, CVAR_SAVE)
+CVAR(Float, render_fog_distance, 1500, CVAR_SAVE)
+CVAR(Bool, render_fog_new_formula, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -472,7 +473,7 @@ void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
 /* MapRenderer3D::setFog
  * Sets the OpenGL fog for rendering an object using [fogcol]
  *******************************************************************/
-void MapRenderer3D::setFog(rgba_t &fogcol)
+void MapRenderer3D::setFog(rgba_t &fogcol, uint8_t light)
 {
 	if (!fog)
 		return;
@@ -486,7 +487,15 @@ void MapRenderer3D::setFog(rgba_t &fogcol)
 	glFogf(GL_FOG_DENSITY, 1.0f);
 	glFogf(GL_FOG_START, 0.0f);
 
-	glFogf(GL_FOG_END, render_fog_distance);
+	// check if fog color is default
+	if ((fogColor[0] == 0 && fogColor[1] == 0 && fogColor[2] == 0) || !render_fog_new_formula)
+	{
+		float lm = light/170.0f;
+		glFogf(GL_FOG_END, (lm * lm * 3000.0f));
+	}
+	else
+		glFogf(GL_FOG_END, render_fog_distance);
+
 	if (render_fog_quality)
 		glHint(GL_FOG_HINT, GL_NICEST);
 	else
@@ -883,7 +892,7 @@ void MapRenderer3D::renderFlat(flat_3d_t* flat)
 	setLight(flat->colour, flat->light, alpha);
 
 	// Setup fog colour
-	setFog(flat->fogcolour);
+	setFog(flat->fogcolour, flat->light);
 
 	// Render flat
 	if (OpenGL::vboSupport() && flats_use_vbo)
@@ -1612,7 +1621,7 @@ void MapRenderer3D::renderQuad(MapRenderer3D::quad_3d_t* quad, float alpha)
 	setLight(quad->colour, quad->light, alpha);
 
 	// Setup fog
-	setFog(quad->fogcolour);
+	setFog(quad->fogcolour, quad->light);
 
 	// Draw quad
 	glBegin(GL_QUADS);
@@ -1975,8 +1984,11 @@ void MapRenderer3D::renderThings()
 				col.set(things[a].sector->getColour(0, true));
 		}
 		setLight(col, light, calcDistFade(dist, mdist));
-		rgba_t fogcol = things[a].sector->getFogColour();
-		setFog(fogcol);
+		rgba_t fogcol = rgba_t(0, 0, 0, 0);
+		if (things[a].sector)
+			fogcol = things[a].sector->getFogColour();
+
+		setFog(fogcol, light);
 
 		// Draw thing
 		glBegin(GL_QUADS);
@@ -2016,8 +2028,14 @@ void MapRenderer3D::renderThings()
 
 			// Fill
 			glColor4f(col.fr(), col.fg(), col.fb(), 0.21f);
-			rgba_t fogcol2 = things[a].sector->getFogColour();
-			setFog(fogcol2);
+			uint8_t light2 = 255;
+			rgba_t fogcol2 = rgba_t(0, 0, 0, 0);
+			if (things[a].sector)
+			{
+				light2 = things[a].sector->getLight();
+				fogcol2 = things[a].sector->getFogColour();
+			}
+			setFog(fogcol2, light2);
 			glBegin(GL_QUADS);
 			// Bottom
 			glVertex3f(thing->xPos() - radius, thing->yPos() - radius, bottom);

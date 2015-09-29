@@ -143,7 +143,7 @@ public:
 	// -- Rendering --
 	void	setupView(int width, int height);
 	void	setLight(rgba_t& colour, uint8_t light, float alpha = 1.0f);
-	void	setFog(rgba_t &fogcol);
+	void	setFog(rgba_t &fogcol, uint8_t light);
 	void	renderMap();
 	void	renderSkySlice(float top, float bottom, float atop, float abottom, float size, float tx = 0.125f, float ty = 2.0f);
 	void	renderSky();
