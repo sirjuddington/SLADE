@@ -36,8 +36,12 @@ if (Test-Path "$pk3path")
 	Remove-Item "$pk3path"
 }
 
-# Build pk3
+# Clean out Thumbs.db files from res folder
+Write-Host "`nRemoving Thumbs.db files..." -foregroundcolor yellow
 $resdir = (resolve-path ".\res").path
+Get-ChildItem -Path . -Include Thumbs.db -Recurse -Name -Force | Remove-Item -Force
+
+# Build pk3
 Write-Host "`nBuilding slade.pk3..." -foregroundcolor yellow
 & $7zpath a -tzip $pk3path "$resdir\*" | out-null
 Write-Host "Done" -foregroundcolor green
