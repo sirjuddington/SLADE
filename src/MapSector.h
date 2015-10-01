@@ -122,6 +122,7 @@ public:
 	uint8_t				getLight(int where = 0);
 	void				changeLight(int amount, int where = 0);
 	rgba_t				getColour(int where = 0, bool fullbright = false);
+	rgba_t				getFogColour();
 	long				geometryUpdatedTime() { return geometry_updated; }
 
 	void	connectSide(MapSide* side);

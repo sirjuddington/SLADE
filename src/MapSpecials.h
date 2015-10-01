@@ -20,6 +20,7 @@ class MapSpecials
 	};
 
 	vector<sector_colour_t> sector_colours;
+	vector<sector_colour_t> sector_fadecolours;
 
 	void	processZDoomSlopes(SLADEMap* map);
 	template<PlaneType>
@@ -40,7 +41,9 @@ public:
 	void	processLineSpecial(MapLine* line);
 
 	bool	getTagColour(int tag, rgba_t* colour);
+	bool	getTagFadeColour(int tag, rgba_t *colour);
 	bool	tagColoursSet();
+	bool	tagFadeColoursSet();
 	void	updateTaggedSectors(SLADEMap* map);
 
 	// ZDoom
@@ -48,6 +51,7 @@ public:
 	void	processZDoomLineSpecial(MapLine* line);
 	void	updateZDoomSector(MapSector* line);
 	void	processACSScripts(ArchiveEntry* entry);
+	void	setModified(SLADEMap *map, int tag);
 };
 
 #endif//__MAP_SPECIALS_H__

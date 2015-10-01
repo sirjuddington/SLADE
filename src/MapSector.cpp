@@ -656,6 +656,31 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	}
 }
 
+/* MapSector::getColour
+ * Returns the fog colour of the sector
+ *******************************************************************/
+rgba_t MapSector::getFogColour()
+{
+	rgba_t color(0, 0, 0, 0);
+
+	// map specials/scripts
+	if (parent_map->mapSpecials()->tagFadeColoursSet())
+	{
+		if (parent_map->mapSpecials()->getTagFadeColour(tag, &color))
+			return color;
+	}
+
+	// udmf
+	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	{
+		int intcol = MapObject::intProperty("fadecolor");
+
+		wxColour wxcol(intcol);
+		color = rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 0);
+	}
+	return color;
+}
+
 /* MapSector::connectSide
  * Adds [side] to the list of 'connected sides' (sides that are part
  * of this sector)
