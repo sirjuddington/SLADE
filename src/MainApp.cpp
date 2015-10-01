@@ -78,11 +78,13 @@ namespace Global
 
 	int beta_num = 0;
 	int version_num = 3105;
-	string version = "3.1.0.5"
+	string version = "3.1.0.5";
+	
 #ifdef GIT_DESCRIPTION
-	                 " (" GIT_DESCRIPTION ")"
+	string sc_rev = GIT_DESCRIPTION;
+#else
+	string sc_rev = "";
 #endif
-	                 "";
 
 	int log_verbosity = 1;
 
@@ -385,6 +387,7 @@ void MainApp::initLogFile()
 	string year = wxNow().Right(4);
 	wxLogMessage("SLADE - It's a Doom Editor");
 	wxLogMessage("Version %s", Global::version);
+	if (Global::sc_rev != "") wxLogMessage("Git Revision %s", Global::sc_rev);
 	wxLogMessage("Written by Simon Judd, 2008-%s", year);
 #ifdef SFML_VERSION_MAJOR
 	wxLogMessage("Compiled with wxWidgets %i.%i.%i and SFML %i.%i", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER, SFML_VERSION_MAJOR, SFML_VERSION_MINOR);

@@ -854,7 +854,10 @@ bool MainWindow::handleAction(string id)
 	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
-		info.SetVersion("v" + Global::version);
+		string version = "v" + Global::version;
+		if (Global::sc_rev != "")
+			version = version + " (Git Rev " + Global::sc_rev + ")";
+		info.SetVersion(version);
 		info.SetWebSite("http://slade.mancubus.net");
 		info.SetDescription("It's a Doom Editor");
 

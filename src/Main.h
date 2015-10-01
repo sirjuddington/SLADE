@@ -96,6 +96,7 @@ namespace Global
 {
 	extern string error;
 	extern string version;
+	extern string sc_rev;
 	extern int log_verbosity;
 	extern bool debug;
 	extern double ppi_scale;
