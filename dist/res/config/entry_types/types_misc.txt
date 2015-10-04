@@ -73,7 +73,7 @@ entry_types
 	{
 		name = "Palette";
 		match_extorname = 1;
-		match_ext = "pal";
+		match_ext = "pal", "act";
 		size_multiple = 768, 10824;
 		//format = palette;
 		editor = palette;

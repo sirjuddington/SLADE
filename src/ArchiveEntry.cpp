@@ -553,6 +553,10 @@ void ArchiveEntry::stateChanged()
  *******************************************************************/
 void ArchiveEntry::setExtensionByType()
 {
+	// Ignore if the parent archive doesn't support entry name extensions
+	if (getParent() && !getParent()->getDesc().names_extensions)
+		return;
+
 	// Convert name to wxFileName for processing
 	wxFileName fn(name);
 

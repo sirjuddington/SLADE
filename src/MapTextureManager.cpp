@@ -71,7 +71,6 @@ MapTextureManager::MapTextureManager(Archive* archive)
  *******************************************************************/
 MapTextureManager::~MapTextureManager()
 {
-	delete palette;
 }
 
 /* MapTextureManager::getResourcePalette

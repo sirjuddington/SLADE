@@ -55,6 +55,8 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 ZipArchive::ZipArchive() : Archive(ARCHIVE_ZIP)
 {
+	desc.names_extensions = true;
+	desc.supports_dirs = true;
 }
 
 /* ZipArchive::~ZipArchive

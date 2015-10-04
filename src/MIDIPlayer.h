@@ -2,6 +2,8 @@
 #ifndef __MIDIPLAYER_H__
 #define __MIDIPLAYER_H__
 
+#ifndef NO_FLUIDSYNTH
+
 #include <fluidsynth.h>
 
 class MIDIPlayer
@@ -57,5 +59,37 @@ public:
 
 // Define for less cumbersome MIDIPlayer::getInstance()
 #define theMIDIPlayer MIDIPlayer::getInstance()
+
+#endif
+
+#include <wx/process.h>
+
+class MIDIPlayerApp
+{
+private:
+	static MIDIPlayerApp*	instance;
+
+	wxProcess	 *program;
+	string	 file;
+
+public:
+	MIDIPlayerApp();
+	~MIDIPlayerApp();
+
+	static MIDIPlayerApp*	getInstance()
+	{
+		if (!instance)
+			instance = new MIDIPlayerApp();
+
+		return instance;
+	}
+
+	void	openFile(string filename);
+	bool	play();
+	bool	stop();
+	bool	isPlaying();
+};
+
+#define theMIDIPlayerApp MIDIPlayerApp::getInstance()
 
 #endif//__MIDIPLAYER_H__

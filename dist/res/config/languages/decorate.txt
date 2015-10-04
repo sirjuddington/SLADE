@@ -36,6 +36,7 @@ decorate : cstyle {
 		MeleeDamage, MeleeThreshold, MeleeRange, MaxTargetRange, 
 		MissileType, MissileHeight, MinMissileChance, 
 		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack, 
+		RipperLevel, RipLevelMin, RipLevelMax,
 		
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
@@ -142,7 +143,7 @@ decorate : cstyle {
 		FLOATBOB, FLOORCLIP, FLOORHUGGER, FOILBUDDHA, FOILINVUL, FORCEDECAL, FORCEPAIN, FORCERADIUSDMG, FORCEXYBILLBOARD, 
 		FORCEYBILLBOARD, FRIENDLY, FRIGHTENED, FULLVOLACTIVE, FULLVOLDEATH, GHOST, GRENADETRAIL, HARMFRIENDS,
 		HERETICBOUNCE, HEXENBOUNCE, HITMASTER, HITTARGET, HITTRACER, ICECORPSE, ICEDAMAGE, INCOMBAT, INVISIBLE,
-		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY, 
+		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LAXTELEFRAGDMG, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY, 
 		MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST, 
 		NEVERRESPAWN, NEVERTARGET, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS, NOBOSSRIP, NOBOUNCESOUND, 
 		NOCLIP, NODAMAGE, NODAMAGETHRUST, NODECAL, NODROPOFF, NOEXPLODEFLOOR, NOEXTREMEDEATH, NOFEAR, NOFORWARDFALL, 
@@ -163,7 +164,7 @@ decorate : cstyle {
 		QUIET, AUTOACTIVATE, UNDROPPABLE, INVBAR, HUBPOWER, PERSISTENTPOWER, INTERHUBSTRIP,
 		PICKUPFLASH, ALWAYSPICKUP, FANCYPICKUPSOUND, BIGPOWERUP, KEEPDEPLETED, IGNORESKILL, 
 		ADDITIVETIME, UNTOSSABLE, RESTRICTABSOLUTELY, NEVERRESPAWN, NOSCREENFLASH,
-		NOATTENPICKUPSOUND, TOSSED, TRANSFER,
+		NOATTENPICKUPSOUND, TOSSED, TRANSFER, NOTELEPORTFREEZE,
 		
 		// PLAYERPAWN.
 		PLAYERPAWN, 
@@ -261,9 +262,13 @@ decorate : cstyle {
 		// A_QuakeEx flags
 		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE,
 
-		RGF_CENTERZ, RGF_CORPSES, RGF_CUBE, RGF_EXPLICITANGLE, RGF_FULLBRIGHT, RGF_GIVESELF, RGF_MISSILES, RGF_MONSTERS, 
-		RGF_NOMASTER, RGF_NOPIERCING, RGF_NOSIGHT, RGF_NOTARGET, RGF_NOTRACER, RGF_OBJECTS, RGF_PLAYERS, RGF_SILENT,
-		RGF_VOODOO,
+		// A_RailAttack and A_CustomRailgun flags
+		RGF_CENTERZ, RGF_EXPLICITANGLE, RGF_FULLBRIGHT, RGF_NOPIERCING, RGF_SILENT,
+
+		// A_RadiusGive flags
+		RGF_CORPSES, RGF_CUBE, RGF_GIVESELF, RGF_MISSILES, RGF_MONSTERS, RGF_NOMASTER, RGF_NOSIGHT, RGF_NOTARGET,
+		RGF_NOTRACER, RGF_OBJECTS, RGF_PLAYERS, RGF_VOODOO, RGF_INCLUSIVE, RGF_ITEMS, RGF_KILLED, RGF_EXFILTER,
+		RGF_EXSPECIES, RGF_EITHER,
 
 		// Flags for A_Remove* functions
 		RMVF_EVERYTHING, RMVF_MISC, RMVF_MISSILES, RMVF_NOMONSTERS, RMVF_EXFILTER, RMVF_EXSPECIES, RMVF_EITHER,
@@ -287,7 +292,7 @@ decorate : cstyle {
 		SXF_TRANSFERPOINTERS, SXF_TRANSFERTRANSLATION, SXF_USEBLOODCOLOR, SXF_CLEARCALLERTID, SXF_MULTIPLYSPEED, 
 		SXF_TRANSFERSCALE, SXF_TRANSFERSPECIAL, SXF_CLEARCALLERSPECIAL, SXF_TRANSFERSTENCILCOL, SXF_TRANSFERALPHA,
 		SXF_TRANSFERRENDERSTYLE, SXF_SETTARGET, SXF_SETTRACER, SXF_NOPOINTERS, SXF_ORIGINATOR, SXF_TRANSFERSPRITEFRAME,
-		SXF_TRANSFERROLL,
+		SXF_TRANSFERROLL, SXF_ISTARGET, SXF_ISMASTER, SXF_ISTRACER,
 
 		// A_Teleport flags
 		TF_FORCED, TF_RANDOMDECIDE, TF_TELEFRAG, TF_KEEPVELOCITY, TF_KEEPANGLE, TF_USESPOTZ, TF_NOSRCFOG,
@@ -303,7 +308,7 @@ decorate : cstyle {
 		// A_Warp flags
 		WARPF_ABSOLUTEANGLE, WARPF_ABSOLUTEOFFSET, WARPF_COPYINTERPOLATION, WARPF_INTERPOLATE,WARPF_NOCHECKPOSITION, 
 		WARPF_STOP, WARPF_TESTONLY, WARPF_TOFLOOR, WARPF_USECALLERANGLE, WARPF_WARPINTERPOLATION, WARPF_ABSOLUTEPOSITION,
-		WARPF_BOB, WARPF_MOVEPTR,
+		WARPF_BOB, WARPF_MOVEPTR, WARPF_USETID,
 
 		// A_WeaponReady flags
 		WRF_ALLOWRELOAD, WRF_ALLOWZOOM, WRF_NOBOB, WRF_NOFIRE, WRF_NOPRIMARY, WRF_NOSECONDARY, WRF_NOSWITCH, WRF_DISABLESWITCH,
@@ -367,7 +372,7 @@ decorate : cstyle {
 		A_TurretLook;
 		A_VileChase;
 		A_Wander;
-		A_Warp = "pointer destination, [float xofs], [float yofs], [float zofs], [float angle], [int flags], [state success_state]";
+		A_Warp = "pointer destination, [float xofs], [float yofs], [float zofs], [float angle], [int flags], [state success_state], [float heightoffset]";
 
 		A_RearrangePointers = "pointer newtarget, [pointer newmaster], [pointer newtracer], [int flags]";
 		A_TransferPointer = "pointer source, pointer recipient, pointer sourcefield, [pointer recipientfield], [int flags]";
@@ -387,7 +392,7 @@ decorate : cstyle {
 		A_Blast = "[int flags], [int strength], [int radius], [float speed], [class blasteffect], [sound blastsound]";
 		A_Explode = "[int dmg], [int radius], [int flags], [bool alert], [int fulldmgradius], [int nails], [int naildmg], [string pufftype]";
 		A_RadiusThrust = "[int thrust], [int radius], [int flags], [int fullthrustdistance]";
-		A_RadiusGive = "class itemtype, int distance, int flags, [int amount]";
+		A_RadiusGive = "class itemtype, int distance, int flags, [int amount], [class filter], [string species]";
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
 		A_Quake = "int intensity, int duration, int damrad, int tremrad, [sound sfx]";
@@ -520,6 +525,10 @@ decorate : cstyle {
 		A_ChangeVelocity = "[float x], [float y], [float z], [int flags], [int pointer]";
 		A_SetHealth = "int health, [int pointer]";
 		A_ResetHealth = "[int pointer]";
+		A_SetRipperLevel = "int level";
+		A_SetRipMin = "int min";
+		A_SetRipMax = "int max";
+		A_SetSpecies = "string species, [int pointer]";
 
 		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
 		A_Tracer;

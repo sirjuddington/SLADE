@@ -6,12 +6,46 @@
 #include <wx/aui/auibook.h>
 #include <wx/dirctrl.h>
 #include <wx/listbox.h>
+#include <wx/thread.h>
 #include "ListenerAnnouncer.h"
 #include "Archive.h"
 #include "ListView.h"
 #include "EntryPanel.h"
 #include "MainApp.h"
 #include "DockPanel.h"
+#include "DirArchive.h"
+
+wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
+
+struct dir_archive_changelist_t
+{
+	Archive*					archive;
+	vector<dir_entry_change_t>	changes;
+};
+
+class DirArchiveCheck : public wxThread
+{
+private:
+	struct entry_info_t
+	{
+		string	entry_path;
+		string	file_path;
+		bool	is_dir;
+		time_t	file_modified;
+	};
+
+	wxEvtHandler*				handler;
+	string						dir_path;
+	vector<entry_info_t>		entry_info;
+	vector<string>				removed_files;
+	dir_archive_changelist_t	change_list;
+
+public:
+	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
+	virtual ~DirArchiveCheck();
+
+	ExitCode Entry();
+};
 
 class ArchiveManagerPanel;
 class ArchivePanel;
@@ -49,6 +83,8 @@ private:
 	Archive*			pending_closed_archive;
 	bool				asked_save_unchanged;
 	bool				checked_dir_archive_changes;
+	bool				ignore_dir_archive_changes;
+	vector<Archive*>	checking_archives;
 
 public:
 	ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives);
@@ -144,6 +180,7 @@ public:
 	void	onArchiveTabClose(wxAuiNotebookEvent& e);
 	void	onArchiveTabClosed(wxAuiNotebookEvent& e);
 	void	onAMTabChanged(wxAuiNotebookEvent& e);
+	void	onDirArchiveCheckCompleted(wxThreadEvent& e);
 };
 
 #endif //__ARCHIVEMANAGERPANEL_H__

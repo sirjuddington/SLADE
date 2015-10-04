@@ -43,7 +43,6 @@
 #include "Clipboard.h"
 #include "UndoRedo.h"
 #include "MapChecks.h"
-#include "MapSpecials.h"
 
 
 /*******************************************************************
@@ -52,6 +51,7 @@
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
 CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
+CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -214,7 +214,7 @@ public:
 			vertices_changed = true;
 		else
 			for (unsigned a = 0; a < map->nVertices(); a++)
-				if (map->getSector(a)->getId() != vertices[a])
+				if (map->getVertex(a)->getId() != vertices[a])
 				{
 					vertices_changed = true;
 					break;
@@ -637,7 +637,7 @@ bool MapEditor::openMap(Archive::mapdesc_t map)
 	updateThingLists();
 
 	// Process specials
-	MapSpecials::processMapSpecials(&(this->map));
+	this->map.mapSpecials()->processMapSpecials(&(this->map));
 
 	return true;
 }
@@ -2683,13 +2683,11 @@ void MapEditor::deleteObject()
 			index = verts[0]->getIndex();
 
 		// Begin undo step
-		beginUndoRecord("Delete Vertices", false, false, true);
-		//undo_manager->beginRecord("Delete Vertices");
-		//map.clearDeletedObjectIds();
+		beginUndoRecord("Delete Vertices", map_merge_lines_on_delete_vertex, false, true);
 
 		// Delete them (if any)
 		for (unsigned a = 0; a < verts.size(); a++)
-			map.removeVertex(verts[a]);
+			map.removeVertex(verts[a], map_merge_lines_on_delete_vertex);
 
 		// Remove detached vertices
 		map.removeDetachedVertices();
@@ -2772,6 +2770,32 @@ void MapEditor::deleteObject()
 				if (!connected_lines[a]->s1() && !connected_lines[a]->s2())
 					map.removeLine(connected_lines[a]);
 			}
+		}
+
+		// Try to fill in textures on any lines that just became one-sided
+		for (unsigned a = 0; a < connected_lines.size(); a++)
+		{
+			MapLine* line = connected_lines[a];
+			MapSide* side;
+			if (line->s1() && !line->s2())
+				side = line->s1();
+			else if (!line->s1() && line->s2())
+				side = line->s2();
+			else
+				continue;
+
+			if (side->getTexMiddle() != "-")
+				continue;
+
+			// Inherit textures from upper or lower
+			if (side->getTexUpper() != "-")
+				side->setStringProperty("texturemiddle", side->getTexUpper());
+			else if (side->getTexLower() != "-")
+				side->setStringProperty("texturemiddle", side->getTexLower());
+
+			// Clear any existing textures, which are no longer visible
+			side->setStringProperty("texturetop", "-");
+			side->setStringProperty("texturebottom", "-");
 		}
 
 		// Editor message
@@ -3783,11 +3807,21 @@ void MapEditor::changeSectorLight3d(int amount)
 				processed_sectors.push_back(sector);
 
 			// Check for decrease when light = 255
-			if (sector->getLight(0) == 255 && amount < -1)
+			int current_light = sector->getLight(0);
+			if (current_light == 255 && amount < -1)
 				amount++;
 
 			// Change sector light level
 			sector->changeLight(amount);
+
+			// If light levels are unlinked, change the floor and ceiling as
+			// well so they stay the same
+			if (!link_3d_light)
+			{
+				int actual_change = sector->getLight(0) - current_light;
+				sector->changeLight(-actual_change, 1);
+				sector->changeLight(-actual_change, 2);
+			}
 		}
 
 		// Flat
@@ -4021,8 +4055,7 @@ void MapEditor::changeSectorHeight3d(int amount)
 			MapSector* sector = map.getSector(items[a].index);
 
 			// Change height
-			int height = sector->intProperty("heightfloor");
-			sector->setIntProperty("heightfloor", height + amount);
+			sector->setFloorHeight(sector->getFloorHeight() + amount);
 		}
 
 		// Ceiling
@@ -4046,8 +4079,7 @@ void MapEditor::changeSectorHeight3d(int amount)
 				continue;
 
 			// Change height
-			int height = sector->intProperty("heightceiling");
-			sector->setIntProperty("heightceiling", height + amount);
+			sector->setCeilingHeight(sector->getCeilingHeight() + amount);
 
 			// Set to changed
 			ceilings.push_back(sector->getIndex());
@@ -4736,6 +4768,9 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 
 		else
 			handled = false;
+
+		if (handled)
+			return handled;
 	}
 
 	// --- Sector mode keybinds ---
@@ -4880,8 +4915,10 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		else
 			return false;
 	}
+	else
+		return false;
 
-	return handled;
+	return true;
 }
 
 /* MapEditor::updateDisplay
@@ -5023,6 +5060,7 @@ void MapEditor::endUndoRecord(bool success)
 	}
 	updateThingLists();
 	us_create_delete = NULL;
+	map.recomputeSpecials();
 }
 
 /* MapEditor::recordPropertyChangeUndoStep
@@ -5059,6 +5097,7 @@ void MapEditor::doUndo()
 		last_undo_level = "";
 	}
 	updateThingLists();
+	map.recomputeSpecials();
 }
 
 /* MapEditor::doRedo
@@ -5086,6 +5125,7 @@ void MapEditor::doRedo()
 		last_undo_level = "";
 	}
 	updateThingLists();
+	map.recomputeSpecials();
 }
 
 #pragma endregion

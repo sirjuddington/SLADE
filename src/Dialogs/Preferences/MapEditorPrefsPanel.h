@@ -10,9 +10,11 @@ class MapEditorPrefsPanel : public PrefsPanelBase
 private:
 	wxCheckBox*		cb_scroll_smooth;
 	wxCheckBox*		cb_selection_clear_click;
+	wxCheckBox*		cb_property_edit_dclick;
 	wxCheckBox*		cb_merge_undo_step;
 	wxCheckBox*		cb_props_auto_apply;
 	wxCheckBox*		cb_remove_invalid_lines;
+	wxCheckBox*		cb_merge_lines_vertex_delete;
 	NumberTextCtrl*	text_max_backups;
 
 public:

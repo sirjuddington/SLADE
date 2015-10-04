@@ -378,6 +378,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	opened_time = theApp->runTimer() + 10;
 
 	initSectorPolygons();
+	recomputeSpecials();
 
 	return ok;
 }
@@ -1758,6 +1759,10 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 	for (unsigned a = 0; a < sectors.size(); a++)
 		sectors[a]->updateBBox();
 
+	// Copy extra entries
+	for (unsigned a = 0; a < map.unk.size(); a++)
+		udmf_extra_entries.push_back(new ArchiveEntry(*(map.unk[a])));
+
 	return true;
 }
 
@@ -2489,6 +2494,8 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
  *******************************************************************/
 void SLADEMap::clearMap()
 {
+	map_specials.reset();
+
 	// Clear vectors
 	sides.clear();
 	lines.clear();
@@ -2511,33 +2518,87 @@ void SLADEMap::clearMap()
 	usage_flat.clear();
 	usage_tex.clear();
 	usage_thing_type.clear();
+
+	// Clear UDMF extra entries
+	for (unsigned a = 0; a < udmf_extra_entries.size(); a++)
+		delete udmf_extra_entries[a];
+	udmf_extra_entries.clear();
 }
 
 /* SLADEMap::removeVertex
  * Removes [vertex] from the map
  *******************************************************************/
-bool SLADEMap::removeVertex(MapVertex* vertex)
+bool SLADEMap::removeVertex(MapVertex* vertex, bool merge_lines)
 {
 	// Check vertex was given
 	if (!vertex)
 		return false;
 
-	return removeVertex(vertex->index);
+	return removeVertex(vertex->index, merge_lines);
 }
 
 /* SLADEMap::removeVertex
  * Removes the vertex at [index] from the map
  *******************************************************************/
-bool SLADEMap::removeVertex(unsigned index)
+bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 {
 	// Check index
 	if (index >= vertices.size())
 		return false;
 
-	// Remove all connected lines
-	vector<MapLine*> clines = vertices[index]->connected_lines;
-	for (unsigned a = 0; a < clines.size(); a++)
-		removeLine(clines[a]);
+	// Check if we should merge connected lines
+	bool merged = false;
+	if (merge_lines && vertices[index]->connected_lines.size() == 2)
+	{
+		// Get other end vertex of second connected line
+		MapLine* l_first = vertices[index]->connected_lines[0];
+		MapLine* l_second = vertices[index]->connected_lines[1];
+		MapVertex* v_end = l_second->vertex2;
+		if (v_end == vertices[index])
+			v_end = l_second->vertex1;
+
+		// Remove second connected line
+		removeLine(l_second);
+
+		// Connect first connected line to other end vertex
+		l_first->setModified();
+		MapVertex* v_start = l_first->vertex1;
+		if (l_first->vertex1 == vertices[index])
+		{
+			l_first->vertex1 = v_end;
+			v_start = l_first->vertex2;
+		}
+		else
+			l_first->vertex2 = v_end;
+		vertices[index]->disconnectLine(l_first);
+		v_end->connectLine(l_first);
+		l_first->resetInternals();
+
+		// Check if we ended up with overlapping lines (ie. there was a triangle)
+		for (unsigned a = 0; a < v_end->nConnectedLines(); a++)
+		{
+			if (v_end->connected_lines[a] == l_first)
+				continue;
+
+			if ((v_end->connected_lines[a]->vertex1 == v_end && v_end->connected_lines[a]->vertex2 == v_start) ||
+				(v_end->connected_lines[a]->vertex2 == v_end && v_end->connected_lines[a]->vertex1 == v_start))
+			{
+				// Overlap found, remove line
+				removeLine(l_first);
+				break;
+			}
+		}
+
+		merged = true;
+	}
+	
+	if (!merged)
+	{
+		// Remove all connected lines
+		vector<MapLine*> clines = vertices[index]->connected_lines;
+		for (unsigned a = 0; a < clines.size(); a++)
+			removeLine(clines[a]);
+	}
 
 	// Remove the vertex
 	removeMapObject(vertices[index]);
@@ -3286,7 +3347,7 @@ MapThing* SLADEMap::getFirstThingWithId(int id)
 	return NULL;
 }
 
-/* SLADEMap::getSectorsByTag
+/* SLADEMap::getThingsByIdInSectorTag
  * Adds all things with TID [id] that are also within a sector with
  * tag [tag] to [list]
  *******************************************************************/
@@ -3976,6 +4037,17 @@ bool SLADEMap::modifiedSince(long since, int type)
 	return false;
 }
 
+/* SLADEMap::recomputeSpecials
+ * Re-applies all the currently calculated special map properties (currently
+ * this just means ZDoom slopes).
+ * Since this needs to be done anytime the map changes, it's called whenever a
+ * map is read, an undo record ends, or an undo/redo is performed.
+ *******************************************************************/
+void SLADEMap::recomputeSpecials()
+{
+	map_specials.processMapSpecials(this);
+}
+
 /* SLADEMap::createVertex
  * Creates a new vertex at [x,y] and returns it. Splits any lines
  * within [split_dist] from the position
@@ -4416,10 +4488,6 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
 		else
 			lines[line]->side2 = side;
 
-		// Flip if no first side
-		if (lines[line]->side2 && !lines[line]->side1)
-			lines[line]->flip();
-
 		// Set appropriate line flags
 		bool twosided = (lines[line]->side1 && lines[line]->side2);
 		theGameConfiguration->setLineBasicFlag("blocking", lines[line], current_format, !twosided);
@@ -4571,6 +4639,30 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			VECTOR_ADD_UNIQUE(connected_lines, merged_vertices[a]->connected_lines[l]);
 	}
 
+	// Split lines (by vertices)
+	const double split_dist = 0.1;
+	// Split existing lines that vertices moved onto
+	for (unsigned a = 0; a < merged_vertices.size(); a++)
+		splitLinesAt(merged_vertices[a], split_dist);
+
+	// Split lines that moved onto existing vertices
+	unsigned nlines = connected_lines.size();
+	for (unsigned a = 0; a < nlines; a++)
+	{
+		unsigned nvertices = this->vertices.size();
+		for (unsigned b = 0; b < nvertices; b++)
+		{
+			MapVertex* vertex = this->vertices[b];
+
+			// Skip line if it shares the vertex
+			if (connected_lines[a]->v1() == vertex || connected_lines[a]->v2() == vertex)
+				continue;
+
+			if (connected_lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
+				splitLine(connected_lines[a], vertex);
+		}
+	}
+
 	// Split lines (by lines)
 	double l1x1, l1y1, l1x2, l1y2;
 	double l2x1, l2y1, l2x2, l2y2;
@@ -4618,30 +4710,6 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				a--;
 				break;
 			}
-		}
-	}
-
-	// Split lines (by vertices)
-	const double split_dist = 0.1;
-	// Split existing lines that vertices moved onto
-	for (unsigned a = 0; a < merged_vertices.size(); a++)
-		splitLinesAt(merged_vertices[a], split_dist);
-
-	// Split lines that moved onto existing vertices
-	unsigned nlines = connected_lines.size();
-	for (unsigned a = 0; a < nlines; a++)
-	{
-		unsigned nvertices = this->vertices.size();
-		for (unsigned b = 0; b < nvertices; b++)
-		{
-			MapVertex* vertex = this->vertices[b];
-
-			// Skip line if it shares the vertex
-			if (connected_lines[a]->v1() == vertex || connected_lines[a]->v2() == vertex)
-				continue;
-
-			if (connected_lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
-				splitLine(connected_lines[a], vertex);
 		}
 	}
 
@@ -4729,6 +4797,13 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			else
 				removeSide(connected_lines[a]->side2);
 		}
+	}
+
+	// Flip any one-sided lines that only have a side 2
+	for (unsigned a = 0; a < connected_lines.size(); a++)
+	{
+		if (connected_lines[a]->side2 && !connected_lines[a]->side1)
+			connected_lines[a]->flip();
 	}
 
 	if (merged)
@@ -4856,7 +4931,10 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 			{
 				if (edges[e].line == builder.getEdgeLine(b) &&
 					edges[e].front == builder.edgeIsFront(b))
+				{
 					edges[e].ignore = true;
+					break;
+				}
 			}
 		}
 

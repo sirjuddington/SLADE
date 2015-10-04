@@ -35,7 +35,6 @@
 #include "SplashWindow.h"
 #include "WadArchive.h"
 #include "MainApp.h"
-#include <wx/dir.h>
 #include <wx/filename.h>
 
 
@@ -43,30 +42,6 @@
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, archive_load_data)
-
-
-class DirArchiveTraverser : public wxDirTraverser
-{
-private:
-	vector<string>&	paths;
-	vector<string>&	dirs;
-
-public:
-	DirArchiveTraverser(vector<string>& pathlist, vector<string>& dirlist) : paths(pathlist), dirs(dirlist) {}
-	~DirArchiveTraverser() {}
-
-	virtual wxDirTraverseResult OnFile(const wxString& filename)
-	{
-		paths.push_back(filename);
-		return wxDIR_CONTINUE;
-	}
-
-	virtual wxDirTraverseResult OnDir(const wxString& dirname)
-	{
-		dirs.push_back(dirname);
-		return wxDIR_CONTINUE;
-	}
-};
 
 
 /*******************************************************************
@@ -84,6 +59,9 @@ DirArchive::DirArchive() : Archive(ARCHIVE_FOLDER)
 #else
 	separator = "/";
 #endif
+	// Init variables
+	desc.names_extensions = true;
+	desc.supports_dirs = true;
 }
 
 /* DirArchive::~DirArchive
@@ -255,7 +233,7 @@ bool DirArchive::save(string filename)
 	wxDir dir(this->filename);
 	dir.Traverse(traverser, "", wxDIR_FILES|wxDIR_DIRS);
 	//wxDir::GetAllFiles(this->filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
-	LOG_MESSAGE(2, "GetAllFiles took %dms", theApp->runTimer() - time);
+	LOG_MESSAGE(2, "GetAllFiles took %lums", theApp->runTimer() - time);
 
 	// Check for any files to remove
 	time = theApp->runTimer();

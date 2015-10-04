@@ -78,10 +78,10 @@ wxFont getMonospaceFont(wxFont base)
 /* getTabArt
  * Returns the currently set AUI tab art provider
  *******************************************************************/
-wxAuiTabArt* getTabArt(bool close_buttons)
+wxAuiTabArt* getTabArt(bool close_buttons, bool main_tabs)
 {
 	//if (tab_style == 1)
-		return new SAuiTabArt(close_buttons);
+		return new SAuiTabArt(close_buttons, main_tabs);
 	//else if (tab_style == 2)
 	//	return new wxAuiSimpleTabArt();
 	//else

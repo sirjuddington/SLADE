@@ -84,17 +84,17 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 
 	// Show file browser
 	cb_file_browser = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel");
-	sizer->Add(cb_file_browser, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+	sizer->Add(cb_file_browser, 0, wxEXPAND | wxALL, 4);
 
 	// Monospace list font
 	cb_list_monospace = new wxCheckBox(panel, -1, "Use monospaced font for lists");
-	sizer->Add(cb_list_monospace, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+	sizer->Add(cb_list_monospace, 0, wxEXPAND | wxALL, 4);
 
 	// Toolbar size
 	string sizes[] = { "Small (16)", "Medium (24)", "Large (32)" };
 	choice_toolbar_size = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 4);
+	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
 	hbox->Add(new wxStaticText(panel, -1, "Toolbar icon size:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
 	hbox->Add(choice_toolbar_size, 0, wxEXPAND | wxRIGHT, 4);
 
@@ -113,15 +113,15 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 
 	// Filter directories
 	cb_filter_dirs = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
-	sizer->Add(cb_filter_dirs, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_filter_dirs, 0, wxEXPAND|wxALL, 4);
 
 	// Entry list background colour by type
 	cb_elist_bgcol = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
-	sizer->Add(cb_elist_bgcol, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_elist_bgcol, 0, wxEXPAND|wxALL, 4);
 
 	// Context menu submenus
 	cb_context_submenus = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
-	sizer->Add(cb_context_submenus, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_context_submenus, 0, wxEXPAND|wxALL, 4);
 
 	
 

@@ -37,16 +37,22 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
+#ifndef NO_FLUIDSYNTH
 MIDIPlayer*	MIDIPlayer::instance = NULL;
 CVAR(String, fs_soundfont_path, "", CVAR_SAVE);
 CVAR(String, fs_driver, "", CVAR_SAVE);
+#endif
 
+MIDIPlayerApp* MIDIPlayerApp::instance = NULL;
 
 /*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Int, snd_volume)
+EXTERN_CVAR(String, snd_timidity_path)
+EXTERN_CVAR(String, snd_timidity_options)
 
+#ifndef NO_FLUIDSYNTH
 
 /*******************************************************************
  * MIDIPLAYER FLUIDSYNTH IMPLEMENTATION
@@ -287,6 +293,88 @@ bool MIDIPlayer::setVolume(int volume)
 	if (volume < 0) volume = 0;
 
 	fluid_synth_set_gain(fs_synth, volume*0.01f);
+
+	return true;
+}
+
+#endif
+
+/*******************************************************************
+ * MIDIPLAYER TIMIDITY IMPLEMENTATION
+ *******************************************************************/
+
+/* MIDIPlayerApp::MIDIPlayerApp
+ * MIDIPlayerApp class constructor
+ *******************************************************************/
+MIDIPlayerApp::MIDIPlayerApp()
+{
+	program = NULL;
+	file = "";
+}
+
+/* MIDIPlayerApp::openFile
+ * Tell to timidity where is our midi
+ *******************************************************************/
+void MIDIPlayerApp::openFile(string filename)
+{
+	file = filename;
+}
+
+/* MIDIPlayerApp::~MIDIPlayerApp
+ * MIDIPlayerApp class destructor
+ *******************************************************************/
+MIDIPlayerApp::~MIDIPlayerApp()
+{
+	stop();
+
+	if (program)
+		delete program;
+}
+
+/* MIDIPlayerApp::play
+ * Begins playback by starting the new timidity process
+ *******************************************************************/
+bool MIDIPlayerApp::play()
+{
+	// prevent from process copies
+	stop();
+
+	string commandline = snd_timidity_path + " " + file + " " + snd_timidity_options;
+	program = wxProcess::Open(commandline);
+
+	if (isPlaying())
+		return true;
+
+	return false;
+}
+
+/* MIDIPlayerApp::stop
+ * Stops playback by killing current timidity process
+ *******************************************************************/
+bool MIDIPlayerApp::stop()
+{
+	if (isPlaying())
+	{
+		int pid = program->GetPid();
+
+		program->Kill(pid);
+		return true;
+	}
+	return false;
+}
+
+/* MIDIPlayerApp::isPlaying
+ * Returns true if timidity is running, false if not
+ *******************************************************************/
+bool MIDIPlayerApp::isPlaying()
+{
+	if (!program)
+		return false;
+
+	int pid = program->GetPid();
+	// also ignore zero pid
+	if (!pid || !program->Exists(pid))
+		return false;
 
 	return true;
 }

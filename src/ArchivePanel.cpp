@@ -462,6 +462,7 @@ void ArchivePanel::addMenus()
 		menu_archive = new wxMenu();
 		menu_archive->AppendSubMenu(menu_new, "&New");
 		theApp->getAction("arch_importfiles")->addToMenu(menu_archive, true);
+		theApp->getAction("arch_buildarchive")->addToMenu(menu_archive, true);
 		menu_archive->AppendSeparator();
 		theApp->getAction("arch_texeditor")->addToMenu(menu_archive, true);
 		theApp->getAction("arch_mapeditor")->addToMenu(menu_archive, true);
@@ -729,7 +730,7 @@ bool ArchivePanel::newEntry(int type)
 bool ArchivePanel::newDirectory()
 {
 	// Check archive supports directories
-	if (archive->getType() != ARCHIVE_ZIP && archive->getType() != ARCHIVE_FOLDER)
+	if (!archive->getDesc().supports_dirs)
 	{
 		wxMessageBox("This Archive format does not support directories", "Can't create new directory", wxICON_ERROR);
 		return false;
@@ -831,6 +832,58 @@ bool ArchivePanel::cleanupArchive()
 {
 	wxMessageBox("Not Implemented");
 	return false;
+}
+
+/* ArchivePanel::buildArchive
+ * Build pk3/zip archive from the current directory
+ *******************************************************************/
+bool ArchivePanel::buildArchive()
+{
+	if (archive->getType() != ARCHIVE_FOLDER)
+	{
+		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
+		return false;
+	}
+
+	Archive *new_archive;
+
+	// Create dialog
+	SFileDialog::fd_info_t info;
+	if (SFileDialog::saveFile(info, "Build archive", "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)", this))
+	{
+		theSplashWindow->show(string("Building ") + info.filenames[0]);
+		theSplashWindow->setProgress(-1.0f);
+
+		// Create temporary archive
+		new_archive = theArchiveManager->newArchive(ARCHIVE_ZIP);
+
+		// prevent for "archive in archive" when saving in the current directory
+		if(wxFileExists(info.filenames[0]))
+			wxRemoveFile(info.filenames[0]);
+
+		// import all files into new archive
+		new_archive->importDir(archive->getFilename());
+
+		// Save the archive
+		if (!new_archive->save(info.filenames[0]))
+		{
+			theArchiveManager->closeArchive(new_archive);
+			theSplashWindow->hide();
+
+			// If there was an error pop up a message box
+			wxMessageBox(S_FMT("Error:\n%s", Global::error), "Error", wxICON_ERROR);
+			return false;
+		}
+	}
+
+	if (new_archive)
+		theArchiveManager->closeArchive(new_archive);
+
+	theSplashWindow->hide();
+
+	// Refresh entry list
+	entry_list->updateList();
+	return true;
 }
 
 /* ArchivePanel::renameEntry
@@ -1459,11 +1512,12 @@ bool ArchivePanel::importEntry()
  *******************************************************************/
 bool ArchivePanel::exportEntry()
 {
-	// Get a list of selected entries
+	// Get a list of selected entries & dirs
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+	vector<ArchiveTreeNode*> selected_dirs = entry_list->getSelectedDirectories();
 
 	// If we're just exporting 1 entry
-	if (selection.size() == 1)
+	if (selection.size() == 1 && selected_dirs.size() == 0)
 	{
 		string name = Misc::lumpNameToFileName(selection[0]->getName());
 		wxFileName fn(name);
@@ -1482,7 +1536,7 @@ bool ArchivePanel::exportEntry()
 		SFileDialog::fd_info_t info;
 		if (SFileDialog::saveFiles(info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", this))
 		{
-			// Go through the selection
+			// Go through the selected entries
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Setup entry filename
@@ -1496,6 +1550,10 @@ bool ArchivePanel::exportEntry()
 				// Do export
 				selection[a]->exportFile(fn.GetFullPath());
 			}
+
+			// Go through selected dirs
+			for (unsigned a = 0; a < selected_dirs.size(); a++)
+				selected_dirs[a]->exportTo(info.path + "/" + selected_dirs[a]->getName());
 		}
 	}
 
@@ -2623,6 +2681,10 @@ bool ArchivePanel::handleAction(string id)
 	// Archive->Import Files
 	else if (id == "arch_importfiles")
 		importFiles();
+
+	// Archive->Build Archive
+	else if (id == "arch_buildarchive")
+		buildArchive();
 
 	// Archive->Texture Editor
 	else if (id == "arch_texeditor")

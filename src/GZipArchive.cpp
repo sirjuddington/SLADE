@@ -57,6 +57,8 @@
  *******************************************************************/
 GZipArchive::GZipArchive() : TreelessArchive(ARCHIVE_GZIP)
 {
+	desc.names_extensions = true;
+	desc.supports_dirs = true;
 }
 
 /* GZipArchive::~GZipArchive

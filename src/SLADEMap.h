@@ -9,6 +9,7 @@
 #include "MapThing.h"
 #include "Archive.h"
 #include "PropertyList.h"
+#include "MapSpecials.h"
 
 struct mobj_holder_t
 {
@@ -53,6 +54,12 @@ private:
 	string				name;
 	int					current_format;
 	long				opened_time;
+	MapSpecials			map_specials;
+	int					bulk_op_level;
+	bool				specials_expired;
+
+	// UDMF Extras
+	vector<ArchiveEntry*>	udmf_extra_entries;
 
 	vector<mobj_holder_t>	all_objects;
 	vector<unsigned>		deleted_objects;
@@ -157,6 +164,8 @@ public:
 	void		setGeometryUpdated();
 	void		setThingsUpdated();
 
+	vector<ArchiveEntry*>&	udmfExtraEntries() { return udmf_extra_entries; }
+
 	// MapObject id stuff (used for undo/redo)
 	void				addMapObject(MapObject* object);
 	void				removeMapObject(MapObject* object);
@@ -173,6 +182,9 @@ public:
 	bool	readMap(Archive::mapdesc_t map);
 	void	clearMap();
 
+	MapSpecials*	mapSpecials() { return &map_specials; }
+	void			recomputeSpecials();
+
 	// Map loading
 	bool	readDoomMap(Archive::mapdesc_t map);
 	bool	readHexenMap(Archive::mapdesc_t map);
@@ -186,8 +198,8 @@ public:
 	bool	writeUDMFMap(ArchiveEntry* textmap);
 
 	// Item removal
-	bool	removeVertex(MapVertex* vertex);
-	bool	removeVertex(unsigned index);
+	bool	removeVertex(MapVertex* vertex, bool merge_lines = false);
+	bool	removeVertex(unsigned index, bool merge_lines = false);
 	bool	removeLine(MapLine* line);
 	bool	removeLine(unsigned index);
 	bool	removeSide(MapSide* side, bool remove_from_line = true);

@@ -137,6 +137,7 @@ void save_cvars(wxFile& file)
 			if (cvars[c]->type == CVAR_STRING)
 			{
 				string value = ((CStringCVar*)cvars[c])->value;
+				value.Replace("\\", "/");
 				value.Replace("\"", "\\\"");
 				file.Write(S_FMT("\"%s\"\n", value), wxConvUTF8);
 			}

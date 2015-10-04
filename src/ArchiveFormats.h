@@ -242,4 +242,16 @@ public:
 	}
 };
 
+class PodArchiveDataFormat : public EntryDataFormat
+{
+public:
+	PodArchiveDataFormat() : EntryDataFormat("archive_pod") {};
+	~PodArchiveDataFormat() {}
+
+	int isThisFormat(MemChunk& mc)
+	{
+		return PodArchive::isPodArchive(mc) ? EDF_PROBABLY : EDF_FALSE;
+	}
+};
+
 #endif //ARCHIVEFORMATS_H

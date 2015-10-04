@@ -193,7 +193,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Editor Area --
-	stc_tabs = new STabCtrl(this, true, true, 30);
+	stc_tabs = new STabCtrl(this, true, true, 27, true);
 
 	// Setup panel info & add panel
 	p_inf.CenterPane();
@@ -203,7 +203,7 @@ void MainWindow::setupLayout()
 
 	// Create Start Page
 #ifdef USE_WEBVIEW_STARTPAGE
-	html_startpage = wxWebView::New(stc_tabs, -1, wxEmptyString);
+	html_startpage = wxWebView::New(stc_tabs, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxWebViewBackendDefault, wxBORDER_NONE);
 	html_startpage->SetName("startpage");
 #ifdef __WXMAC__
 	html_startpage->SetZoomType(wxWEBVIEW_ZOOM_TYPE_TEXT);
@@ -277,6 +277,7 @@ void MainWindow::setupLayout()
 
 	// -- Menu bar --
 	wxMenuBar* menu = new wxMenuBar();
+	menu->SetThemeEnabled(false);
 
 	// File menu
 	wxMenu* fileNewMenu = new wxMenu("");
@@ -330,7 +331,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Toolbars --
-	toolbar = new SToolBar(this);
+	toolbar = new SToolBar(this, true);
 
 	// Create File toolbar
 	SToolBarGroup* tbg_file = new SToolBarGroup(toolbar, "_File");
@@ -724,13 +725,6 @@ void MainWindow::openEntry(ArchiveEntry* entry)
 #ifdef USE_WEBVIEW_STARTPAGE
 void MainWindow::openDocs(string page_name)
 {
-	// Create docs page control if needed
-	if (!docs_page)
-	{
-		docs_page = new DocsPage(this);
-		docs_page->SetName("docs");
-	}
-
 	// Check if docs tab is already open
 	bool found = false;
 	for (unsigned a = 0; a < stc_tabs->GetPageCount(); a++)
@@ -746,6 +740,11 @@ void MainWindow::openDocs(string page_name)
 	// Open new docs tab if not already open
 	if (!found)
 	{
+		// Create docs page
+		docs_page = new DocsPage(this);
+		docs_page->SetName("docs");
+
+		// Add tab
 		stc_tabs->AddPage(docs_page, "Documentation", true, -1);
 		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, getIcon("t_wiki"));
 	}

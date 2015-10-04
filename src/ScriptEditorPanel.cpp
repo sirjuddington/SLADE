@@ -35,7 +35,6 @@
 #include "EntryOperations.h"
 #include "GameConfiguration.h"
 #include "MapEditorWindow.h"
-#include "MapSpecials.h"
 #include <wx/dataview.h>
 
 
@@ -134,8 +133,9 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	string lang = theGameConfiguration->scriptLanguage();
 	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		MapSpecials::processACSScripts(entry_script);
-		MapSpecials::updateTaggedSectors(&(theMapEditor->mapEditor().getMap()));
+		SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+		map->mapSpecials()->processACSScripts(entry_script);
+		map->mapSpecials()->updateTaggedSectors(map);
 	}
 
 	// Load script text
@@ -186,8 +186,9 @@ void ScriptEditorPanel::saveScripts()
 	string lang = theGameConfiguration->scriptLanguage();
 	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		MapSpecials::processACSScripts(entry_script);
-		MapSpecials::updateTaggedSectors(&(theMapEditor->mapEditor().getMap()));
+		SLADEMap* map = &(theMapEditor->mapEditor().getMap());
+		map->mapSpecials()->processACSScripts(entry_script);
+		map->mapSpecials()->updateTaggedSectors(map);
 	}
 }
 

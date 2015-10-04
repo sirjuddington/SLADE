@@ -338,8 +338,8 @@ void MapLine::setIntProperty(string key, int value)
 	// Special
 	else if (key == "special")
 	{
-		setModified();
 		special = value;
+		setModified();
 	}
 
 	// Line property

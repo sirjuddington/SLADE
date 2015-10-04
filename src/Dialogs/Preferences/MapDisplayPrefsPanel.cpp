@@ -68,6 +68,7 @@ EXTERN_CVAR(Bool, map_show_help)
 EXTERN_CVAR(Int, map_tex_filter)
 EXTERN_CVAR(Bool, use_zeth_icons)
 EXTERN_CVAR(Int, halo_width)
+EXTERN_CVAR(Int, grid_64_style)
 
 
 /*******************************************************************
@@ -119,7 +120,7 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 	stc_pages->AddPage(panel, "General", true);
 	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(8, 8);
 	sz_border->Add(gb_sizer, 1, wxEXPAND|wxALL, 8);
 	int row = 0;
 
@@ -134,6 +135,12 @@ void MapDisplayPrefsPanel::setupGeneralTab()
 	choice_tex_filter = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, filters);
 	gb_sizer->Add(new wxStaticText(panel, -1, "Texture Filtering:"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL|wxRIGHT);
 	gb_sizer->Add(choice_tex_filter, wxGBPosition(row++, 1), wxGBSpan(1, 2), wxEXPAND);
+
+	// 64 grid
+	string grid64[] = { "None", "Full", "Crosses" };
+	choice_grid_64 = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, grid64);
+	gb_sizer->Add(new wxStaticText(panel, -1, "64 Grid:"), wxGBPosition(row, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL | wxRIGHT);
+	gb_sizer->Add(choice_grid_64, wxGBPosition(row++, 1), wxGBSpan(1, 2), wxEXPAND);
 
 	// Dashed grid
 	cb_grid_dashed = new wxCheckBox(panel, -1, "Dashed grid");
@@ -197,7 +204,7 @@ void MapDisplayPrefsPanel::setupVerticesTab()
 
 	// Round vertices
 	cb_vertex_round = new wxCheckBox(panel, -1, "Round vertices");
-	sizer->Add(cb_vertex_round, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_vertex_round, 0, wxEXPAND|wxALL, 4);
 }
 
 /* MapDisplayPrefsPanel::setupLinesTab
@@ -222,11 +229,11 @@ void MapDisplayPrefsPanel::setupLinesTab()
 
 	// Smooth lines
 	cb_line_smooth = new wxCheckBox(panel, -1, "Smooth lines");
-	sizer->Add(cb_line_smooth, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_line_smooth, 0, wxEXPAND|wxALL, 4);
 
 	// Fade when not in lines mode
 	cb_line_fade = new wxCheckBox(panel, -1, "Fade when not in lines mode");
-	sizer->Add(cb_line_fade, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_line_fade, 0, wxEXPAND|wxALL, 4);
 }
 
 /* MapDisplayPrefsPanel::setupThingsTab
@@ -239,7 +246,7 @@ void MapDisplayPrefsPanel::setupThingsTab()
 	stc_pages->AddPage(panel, "Things");
 	wxBoxSizer* sz_border = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sz_border);
-	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
+	wxGridBagSizer* gb_sizer = new wxGridBagSizer(8, 8);
 	sz_border->Add(gb_sizer, 1, wxEXPAND|wxALL, 8);
 	int row = 0;
 
@@ -311,19 +318,19 @@ void MapDisplayPrefsPanel::setupFlatsTab()
 
 	// Ignore sector light
 	cb_flat_ignore_light = new wxCheckBox(panel, -1, "Flats ignore sector brightness");
-	sizer->Add(cb_flat_ignore_light, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_flat_ignore_light, 0, wxEXPAND|wxALL, 4);
 
 	// Fill sector hilight
 	cb_sector_hilight_fill = new wxCheckBox(panel, -1, "Filled sector hilight");
-	sizer->Add(cb_sector_hilight_fill, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_sector_hilight_fill, 0, wxEXPAND|wxALL, 4);
 
 	// Fill sector selection
 	cb_sector_selected_fill = new wxCheckBox(panel, -1, "Filled sector selection");
-	sizer->Add(cb_sector_selected_fill, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_sector_selected_fill, 0, wxEXPAND|wxALL, 4);
 
 	// Fade when not in sectors mode
 	cb_flat_fade = new wxCheckBox(panel, -1, "Fade flats when not in sectors mode");
-	sizer->Add(cb_flat_fade, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_flat_fade, 0, wxEXPAND|wxALL, 4);
 }
 
 /* MapDisplayPrefsPanel::init
@@ -360,6 +367,7 @@ void MapDisplayPrefsPanel::init()
 	choice_tex_filter->Select(map_tex_filter);
 	cb_use_zeth_icons->SetValue(use_zeth_icons);
 	slider_halo_width->SetValue(halo_width);
+	choice_grid_64->SetSelection(grid_64_style);
 }
 
 /* MapDisplayPrefsPanel::applyPreferences
@@ -396,4 +404,5 @@ void MapDisplayPrefsPanel::applyPreferences()
 	map_tex_filter = choice_tex_filter->GetSelection();
 	use_zeth_icons = cb_use_zeth_icons->GetValue();
 	halo_width = slider_halo_width->GetValue();
+	grid_64_style = choice_grid_64->GetSelection();
 }

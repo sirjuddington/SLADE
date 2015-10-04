@@ -65,11 +65,11 @@ EXTERN_CVAR(Bool, gl_vbo)
 	// Enable point sprites
 	cb_gl_point_sprite = new wxCheckBox(this, -1, "Enable point sprites if supported");
 	cb_gl_point_sprite->SetToolTip("Only disable this if you are experiencing graphical glitches like things disappearing");
-	sizer->Add(cb_gl_point_sprite, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_gl_point_sprite, 0, wxEXPAND|wxALL, 4);
 
 	// Enable VBOs
 	cb_gl_use_vbo = new wxCheckBox(this, -1, "Use Vertex Buffer Objects if supported");
-	sizer->Add(cb_gl_use_vbo, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_gl_use_vbo, 0, wxEXPAND|wxALL, 4);
 }
 
 /* OpenGLPrefsPanel::~OpenGLPrefsPanel

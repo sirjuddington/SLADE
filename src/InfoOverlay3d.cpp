@@ -107,12 +107,12 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		if (theGameConfiguration->lineBasicFlagSet("blocking", line, map_format))
 			flags += "Blocking, ";
 		if (!flags.IsEmpty())
-		{
 			flags.RemoveLast(2);
-			info.push_back(flags);
-		}
+		info.push_back(flags);
 
-		// Other potential info: special, sector#, length
+		info.push_back(S_FMT("Length: %d", (int)line->getLength()));
+
+		// Other potential info: special, sector#
 
 
 		// --- Wall part info ---
@@ -139,12 +139,13 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 				xoff_part = side->floatProperty("offsetx_top");
 
 			// Add x offset string
+			string xoff_info;
 			if (xoff_part == 0)
-				info2.push_back(S_FMT("X Offset: %d", xoff));
+				xoff_info = S_FMT("%d", xoff);
 			else if (xoff_part > 0)
-				info2.push_back(S_FMT("X Offset: %1.2f (%d+%1.2f)", (double)xoff+xoff_part, xoff, xoff_part));
+				xoff_info = S_FMT("%1.2f (%d+%1.2f)", (double)xoff+xoff_part, xoff, xoff_part);
 			else
-				info2.push_back(S_FMT("X Offset: %1.2f (%d-%1.2f)", (double)xoff+xoff_part, xoff, -xoff_part));
+				xoff_info = S_FMT("%1.2f (%d-%1.2f)", (double)xoff+xoff_part, xoff, -xoff_part);
 
 			// Get y offset info
 			int yoff = side->intProperty("offsety");
@@ -157,18 +158,20 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 				yoff_part = side->floatProperty("offsety_top");
 
 			// Add y offset string
+			string yoff_info;
 			if (yoff_part == 0)
-				info2.push_back(S_FMT("Y Offset: %d", yoff));
+				yoff_info = S_FMT("%d", yoff);
 			else if (yoff_part > 0)
-				info2.push_back(S_FMT("Y Offset: %1.2f (%d+%1.2f)", (double)yoff+yoff_part, yoff, yoff_part));
+				yoff_info = S_FMT("%1.2f (%d+%1.2f)", (double)yoff+yoff_part, yoff, yoff_part);
 			else
-				info2.push_back(S_FMT("Y Offset: %1.2f (%d-%1.2f)", (double)yoff+yoff_part, yoff, -yoff_part));
+				yoff_info = S_FMT("%1.2f (%d-%1.2f)", (double)yoff+yoff_part, yoff, -yoff_part);
+
+			info2.push_back(S_FMT("Offsets: %s, %s", xoff_info, yoff_info));
 		}
 		else
 		{
 			// Basic offsets
-			info2.push_back(S_FMT("X Offset: %d", side->intProperty("offsetx")));
-			info2.push_back(S_FMT("Y Offset: %d", side->intProperty("offsety")));
+			info2.push_back(S_FMT("Offsets: %d, %d", side->intProperty("offsetx"), side->intProperty("offsety")));
 		}
 
 		// ZDoom UDMF extras
@@ -193,6 +196,79 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			}
 			info2.push_back(S_FMT("Scale: %1.2fx, %1.2fx", xscale, yscale));
 		}
+		else
+		{
+			info2.push_back("");
+		}
+
+		// Height of this section of the wall
+		// TODO this is wrong in the case of slopes, but slope support only
+		// exists in the 3.1.1 branch
+		fpoint2_t left_point, right_point;
+		MapSide* other_side;
+		if (side == line->s1())
+		{
+			left_point = line->v1()->getPoint(0);
+			right_point = line->v2()->getPoint(0);
+			other_side = line->s2();
+		}
+		else
+		{
+			left_point = line->v2()->getPoint(0);
+			right_point = line->v1()->getPoint(0);
+			other_side = line->s1();
+		}
+
+		MapSector* this_sector = side->getSector();
+		MapSector* other_sector = NULL;
+		if (other_side)
+			other_sector = other_side->getSector();
+
+		double left_height, right_height;
+		if (item_type == MapEditor::SEL_SIDE_MIDDLE && other_sector)
+		{
+			// A two-sided line's middle area is the smallest distance between
+			// both sides' floors and ceilings, which is more complicated with
+			// slopes.
+			plane_t floor1 = this_sector->getFloorPlane();
+			plane_t floor2 = other_sector->getFloorPlane();
+			plane_t ceiling1 = this_sector->getCeilingPlane();
+			plane_t ceiling2 = other_sector->getCeilingPlane();
+			left_height = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
+			            - max(floor1.height_at(left_point), floor2.height_at(left_point));
+			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
+			             - max(floor1.height_at(right_point), floor2.height_at(right_point));
+		}
+		else
+		{
+			plane_t top_plane, bottom_plane;
+			if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+			{
+				top_plane = this_sector->getCeilingPlane();
+				bottom_plane = this_sector->getFloorPlane();
+			}
+			else
+			{
+				if (!other_sector) return;
+				if (item_type == MapEditor::SEL_SIDE_TOP)
+				{
+					top_plane = this_sector->getCeilingPlane();
+					bottom_plane = other_sector->getCeilingPlane();
+				}
+				else
+				{
+					top_plane = other_sector->getFloorPlane();
+					bottom_plane = this_sector->getFloorPlane();
+				}
+			}
+
+			left_height = top_plane.height_at(left_point) - bottom_plane.height_at(left_point);
+			right_height = top_plane.height_at(right_point) - bottom_plane.height_at(right_point);
+		}
+		if (fabs(left_height - right_height) < 0.001)
+			info2.push_back(S_FMT("Height: %d", (int)left_height));
+		else
+			info2.push_back(S_FMT("Height: %d ~ %d", (int)left_height, (int)right_height));
 
 		// Texture
 		if (item_type == MapEditor::SEL_SIDE_BOTTOM)

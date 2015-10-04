@@ -96,6 +96,7 @@ private:
 	wxChoice*		combo_target_format;
 	PaletteChooser*	pal_chooser_current;
 	PaletteChooser*	pal_chooser_target;
+	wxButton*		btn_colorimetry_settings;
 
 	wxCheckBox*		cb_enable_transparency;
 	wxRadioButton*	rb_transparency_existing;
@@ -112,6 +113,10 @@ private:
 	rgba_t			colour_trans;
 
 	bool		nextItem();
+
+	// Static
+	static string	current_palette_name;
+	static string	target_palette_name;
 
 public:
 	GfxConvDialog(wxWindow* parent);
@@ -147,6 +152,7 @@ public:
 	void	onTransTypeChanged(wxCommandEvent& e);
 	void	onTransColourChanged(wxEvent& e);
 	void	onPreviewCurrentMouseDown(wxMouseEvent& e);
+	void	onBtnColorimetrySettings(wxCommandEvent& e);
 };
 
 #endif //__GFXCONVDIALOG_H__

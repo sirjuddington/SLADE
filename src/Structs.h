@@ -628,6 +628,25 @@ struct plane_t
 {
 	double a, b, c, d;
 
+	plane_t() : a(0.0), b(0.0), c(0.0), d(0.0) {}
+	plane_t(double a, double b, double c, double d) : a(a), b(b), c(c), d(d) {}
+
+	/** Construct a flat plane (perpendicular to the z axis) at the given height.
+	 */
+	static plane_t flat(float height)
+	{
+		return plane_t(0.0, 0.0, 1.0, height);
+	}
+
+	bool operator==(const plane_t& rhs) const
+	{
+		return a == rhs.a && b == rhs.b && c == rhs.c && d == rhs.d;
+	}
+	bool operator!=(const plane_t& rhs) const
+	{
+		return !(*this == rhs);
+	}
+
 	void set(double a, double b, double c, double d)
 	{
 		this->a = a;
@@ -652,6 +671,10 @@ struct plane_t
 		d = d / mag;
 	}
 
+	double height_at(fpoint2_t& point)
+	{
+		return height_at(point.x, point.y);
+	}
 	double height_at(double x, double y)
 	{
 		return ((-a * x) + (-b * y) + d) / c;

@@ -35,8 +35,13 @@
 #include "MainApp.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
-#include "MapSpecials.h"
+#include "GameConfiguration.h"
 #include <wx/colour.h>
+#include <cmath>
+
+
+// Number of radians in the unit circle
+const double TAU = M_PI * 2;
 
 
 /*******************************************************************
@@ -54,7 +59,7 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 	plane_floor.set(0, 0, 1, 0);
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::MapSector
@@ -70,7 +75,7 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	plane_floor.set(0, 0, 1, 0);
 	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::~MapSector
@@ -119,11 +124,25 @@ void MapSector::copy(MapObject* s)
 	MapObject::copy(s);
 }
 
+/* MapSector::setGeometryUpdated
+ * Update the last time the sector geometry changed
+ *******************************************************************/
+void MapSector::setGeometryUpdated()
+{
+	geometry_updated = theApp->runTimer();
+}
+
+/* MapSector::floorHeightAt
+ * Returns the height of the floor at the given point
+ *******************************************************************/
 double MapSector::floorHeightAt(double x, double y)
 {
 	return plane_floor.height_at(x, y);
 }
 
+/* MapSector::ceilingHeightAt
+ * Returns the height of the ceiling at the given point
+ *******************************************************************/
 double MapSector::ceilingHeightAt(double x, double y)
 {
 	return plane_ceiling.height_at(x, y);
@@ -213,15 +232,9 @@ void MapSector::setIntProperty(string key, int value)
 	setModified();
 
 	if (key == "heightfloor")
-	{
-		f_height = value;
-		plane_floor.set(0, 0, 1, value);
-	}
+		setFloorHeight(value);
 	else if (key == "heightceiling")
-	{
-		c_height = value;
-		plane_ceiling.set(0, 0, 1, value);
-	}
+		setCeilingHeight(value);
 	else if (key == "lightlevel")
 		light = value;
 	else if (key == "special")
@@ -230,6 +243,20 @@ void MapSector::setIntProperty(string key, int value)
 		tag = value;
 	else
 		MapObject::setIntProperty(key, value);
+}
+
+void MapSector::setFloorHeight(short height)
+{
+	f_height = height;
+	setFloorPlane(plane_t::flat(height));
+	setModified();
+}
+
+void MapSector::setCeilingHeight(short height)
+{
+	c_height = height;
+	setCeilingPlane(plane_t::flat(height));
+	setModified();
 }
 
 /* MapLine::getPoint
@@ -270,7 +297,7 @@ void MapSector::updateBBox()
 	}
 
 	text_point.set(0, 0);
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::boundingBox
@@ -544,10 +571,10 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 {
 	// Check for sector colour set in open script
 	// TODO: Test if this is correct behaviour
-	if (MapSpecials::tagColoursSet())
+	if (parent_map->mapSpecials()->tagColoursSet())
 	{
 		rgba_t col;
-		if (MapSpecials::getTagColour(tag, &col))
+		if (parent_map->mapSpecials()->getTagColour(tag, &col))
 		{
 			if (fullbright)
 				return col;
@@ -629,6 +656,31 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 	}
 }
 
+/* MapSector::getColour
+ * Returns the fog colour of the sector
+ *******************************************************************/
+rgba_t MapSector::getFogColour()
+{
+	rgba_t color(0, 0, 0, 0);
+
+	// map specials/scripts
+	if (parent_map->mapSpecials()->tagFadeColoursSet())
+	{
+		if (parent_map->mapSpecials()->getTagFadeColour(tag, &color))
+			return color;
+	}
+
+	// udmf
+	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	{
+		int intcol = MapObject::intProperty("fadecolor");
+
+		wxColour wxcol(intcol);
+		color = rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 0);
+	}
+	return color;
+}
+
 /* MapSector::connectSide
  * Adds [side] to the list of 'connected sides' (sides that are part
  * of this sector)
@@ -639,7 +691,7 @@ void MapSector::connectSide(MapSide* side)
 	poly_needsupdate = true;
 	bbox.reset();
 	setModified();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::disconnectSide
@@ -659,7 +711,7 @@ void MapSector::disconnectSide(MapSide* side)
 	setModified();
 	poly_needsupdate = true;
 	bbox.reset();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::writeBackup
@@ -700,5 +752,5 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	// Update geometry info
 	poly_needsupdate = true;
 	bbox.reset();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }

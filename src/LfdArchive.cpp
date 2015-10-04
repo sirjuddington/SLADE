@@ -49,6 +49,9 @@ EXTERN_CVAR(Bool, archive_load_data)
  *******************************************************************/
 LfdArchive::LfdArchive() : TreelessArchive(ARCHIVE_LFD)
 {
+	desc.max_name_length = 8;
+	desc.names_extensions = false;
+	desc.supports_dirs = false;
 }
 
 /* LfdArchive::~LfdArchive

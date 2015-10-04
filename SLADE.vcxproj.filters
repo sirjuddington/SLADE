@@ -166,6 +166,9 @@
     <Filter Include="External\DUMB\it">
       <UniqueIdentifier>{210b2c2d-6db2-46a5-87e6-a09c7ac669fa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Installer">
+      <UniqueIdentifier>{fa5a343f-ee94-41ea-a75f-1d0292b58329}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GfxConvDialog.cpp">
@@ -1353,6 +1356,15 @@
     <ClCompile Include="src\STabCtrl.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\MapSpecials.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PodArchive.cpp">
+      <Filter>Resources\Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DataEntryPanel.cpp">
+      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2334,11 +2346,14 @@
     <ClInclude Include="src\STabCtrl.h">
       <Filter>UI Elements</Filter>
     </ClInclude>
-	<ClInclude Include="src\MapSpecials.h">
+    <ClInclude Include="src\MapSpecials.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\DataEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PodArchive.h">
+      <Filter>Resources\Archive\Formats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2513,8 +2528,14 @@
     <None Include="src\dumb\helpers\resample.inc">
       <Filter>External\DUMB\helpers</Filter>
     </None>
+    <None Include="win_installer\SLADE.iss">
+      <Filter>Installer</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="SLADE.manifest" />
   </ItemGroup>
 </Project>

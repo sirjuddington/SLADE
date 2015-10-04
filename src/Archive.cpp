@@ -369,6 +369,34 @@ bool ArchiveTreeNode::merge(ArchiveTreeNode* node, unsigned position, int state)
 	return true;
 }
 
+bool ArchiveTreeNode::exportTo(string path)
+{
+	// Create directory if needed
+	if (!wxDirExists(path))
+		wxMkDir(path, 0);
+
+	// Export entries as files
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
+		// Setup entry filename
+		wxFileName fn(entries[a]->getName());
+		fn.SetPath(path);
+
+		// Add file extension if it doesn't exist
+		if (!fn.HasExt())
+			fn.SetExt(entries[a]->getType()->getExtension());
+
+		// Do export
+		entries[a]->exportFile(fn.GetFullPath());
+	}
+
+	// Export subdirectories
+	for (unsigned a = 0; a < children.size(); a++)
+		((ArchiveTreeNode*)children[a])->exportTo(path + "/" + children[a]->getName());
+
+	return true;
+}
+
 
 
 class EntryRenameUS : public UndoStep
@@ -641,7 +669,7 @@ public:
 Archive::Archive(uint8_t type)
 {
 	// Init variables
-	this->type = type;
+	desc.type = type;
 	modified = true;
 	on_disk = false;
 	parent = NULL;

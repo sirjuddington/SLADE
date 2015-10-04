@@ -65,7 +65,7 @@
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)src;$(FLUIDSYNTH)\include;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist;$(SFML)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(FLUIDSYNTH)\lib;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(FLUIDSYNTH)\lib;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist;$(SFML)\lib;$(FTGL)\msvc\build;$(FREETYPE)\objs\win32;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(FLUIDSYNTH)\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(FLUIDSYNTH)\include;$(ProjectDir)src\dumb;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(FLUIDSYNTH)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
   </PropertyGroup>
@@ -96,6 +96,9 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SLADE.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -129,6 +132,9 @@
       <AllowIsolation>true</AllowIsolation>
       <Profile>true</Profile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SLADE.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">
     <ClCompile>
@@ -162,6 +168,9 @@
       <AllowIsolation>true</AllowIsolation>
       <Profile>true</Profile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SLADE.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\ActionSpecial.cpp" />
@@ -441,6 +450,7 @@
     <ClCompile Include="src\OpenGL.cpp" />
     <ClCompile Include="src\Parser.cpp" />
     <ClCompile Include="src\PatchBrowser.cpp" />
+    <ClCompile Include="src\PodArchive.cpp" />
     <ClCompile Include="src\Polygon2D.cpp" />
     <ClCompile Include="src\QuickTextureOverlay3d.cpp" />
     <ClCompile Include="src\ResArchive.cpp" />
@@ -762,6 +772,7 @@
     <ClInclude Include="src\OpenGL.h" />
     <ClInclude Include="src\Parser.h" />
     <ClInclude Include="src\PatchBrowser.h" />
+    <ClInclude Include="src\PodArchive.h" />
     <ClInclude Include="src\Polygon2D.h" />
     <ClInclude Include="src\PropsPanelBase.h" />
     <ClInclude Include="src\QuickTextureOverlay3d.h" />
@@ -953,9 +964,13 @@
     <None Include="src\dumb\helpers\resamp3.inc" />
     <None Include="src\dumb\helpers\resample.inc" />
     <None Include="stuff.txt" />
+    <None Include="win_installer\SLADE.iss" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="SLADE.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

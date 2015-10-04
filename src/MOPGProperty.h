@@ -225,8 +225,18 @@ public:
 
 class MOPGTagProperty : public MOPGIntProperty
 {
+private:
+	int	tagtype;
+
 public:
-	MOPGTagProperty(const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
+	enum
+	{
+		TT_SECTORTAG,
+		TT_LINEID,
+		TT_THINGID
+	};
+
+	MOPGTagProperty(int tagtype, const wxString& label = wxPG_LABEL, const wxString& name = wxPG_LABEL);
 
 	int		getType() { return TYPE_ID; }
 	void	openObjects(vector<MapObject*>& objects);

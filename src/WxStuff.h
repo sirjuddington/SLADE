@@ -27,7 +27,7 @@ wxFont		getMonospaceFont(wxFont base);
 // Tab art provider
 class wxAuiTabArt;
 class wxAuiDockArt;
-wxAuiTabArt*	getTabArt(bool close_buttons = false);
+wxAuiTabArt*	getTabArt(bool close_buttons = false, bool main_tabs = false);
 wxAuiDockArt*	getDockArt();
 
 #endif //__WXSTUFF_H__

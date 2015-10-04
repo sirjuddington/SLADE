@@ -48,6 +48,8 @@ protected:
 public:
 	MapObject(int type = MOBJ_UNKNOWN, SLADEMap* parent = NULL);
 	virtual ~MapObject();
+	bool operator< (const MapObject& right) const { return (index < right.index); }
+	bool operator> (const MapObject& right) const { return (index > right.index); }
 
 	uint8_t		getObjType() { return type; }
 	unsigned	getIndex();
