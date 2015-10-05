@@ -185,7 +185,7 @@ public:
 
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("e_palette"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::ENTRY, "palette"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -276,7 +276,7 @@ size_t getNamespaceNumber(ArchiveEntry * entry, size_t index, vector<string> &ns
 			ens = "graphics";
 		else if (S_CMPNOCASE(entry->getType()->getCategory(), "Audio"))
 		{
-			if (S_CMPNOCASE(entry->getType()->getIcon(), "e_music"))
+			if (S_CMPNOCASE(entry->getType()->getIcon(), "music"))
 				ens = "music";
 			else ens = "sounds";
 		}
@@ -347,7 +347,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	sizer_path_controls->Add(label_path, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
 
 	// 'Up' button
-	btn_updir = new wxBitmapButton(this, -1, getIcon("e_upfolder"));
+	btn_updir = new wxBitmapButton(this, -1, Icons::getIcon(Icons::ENTRY, "upfolder"));
 	btn_updir->Enable(false);
 	sizer_path_controls->Add(btn_updir, 0, wxEXPAND);
 
@@ -1276,7 +1276,7 @@ bool ArchivePanel::sort()
 		string name, ename = entry->getName().Upper();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
-		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->getType()->getIcon(), "e_music"))
+		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->getType()->getIcon(), "music"))
 		{
 			if		(ename == "D_RUNNIN")	ename = "D_MAP01";
 			else if (ename == "D_STALKS")	ename = "D_MAP02";

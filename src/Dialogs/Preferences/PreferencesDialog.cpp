@@ -81,7 +81,7 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Set icon
 	wxIcon icon;
-	icon.CopyFromBitmap(getIcon("t_settings"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "settings"));
 	SetIcon(icon);
 
 	// Create preferences TreeBook

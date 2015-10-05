@@ -202,8 +202,8 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	// Setup image list
 	img_list = new wxImageList(16, 16);
-	img_list->Add(getIcon("i_tick"));
-	img_list->Add(getIcon("t_close"));
+	img_list->Add(Icons::getIcon(Icons::GENERAL, "tick"));
+	img_list->Add(Icons::getIcon(Icons::GENERAL, "close"));
 
 	// Map section
 	if (show_maplist)

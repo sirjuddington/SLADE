@@ -213,7 +213,7 @@ void MainWindow::setupLayout()
 	if (show_start_page)
 	{
 		stc_tabs->AddPage(html_startpage,"Start Page");
-		stc_tabs->SetPageBitmap(0, getIcon("i_logo"));
+		stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "logo"));
 		createStartPage();
 	}
 	else
@@ -370,7 +370,7 @@ void MainWindow::setupLayout()
 	SToolBarGroup* tbg_bra = new SToolBarGroup(toolbar, "_Base Resource", true);
 	BaseResourceChooser* brc = new BaseResourceChooser(tbg_bra);
 	tbg_bra->addCustomControl(brc);
-	tbg_bra->addActionButton("main_setbra", "t_settings");
+	tbg_bra->addActionButton("main_setbra", "settings");
 	toolbar->addGroup(tbg_bra);
 
 	// Create Palette Chooser toolbar
@@ -430,10 +430,10 @@ void MainWindow::createStartPage(bool newtip)
 	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
 	export_entries.push_back(res_archive->entryAtPath("logo.png"));
 	export_entries.push_back(res_archive->entryAtPath("html/box-title-back.png"));
-	export_entries.push_back(res_archive->entryAtPath("icons/e_archive.png"));
-	export_entries.push_back(res_archive->entryAtPath("icons/e_wad.png"));
-	export_entries.push_back(res_archive->entryAtPath("icons/e_zip.png"));
-	export_entries.push_back(res_archive->entryAtPath("icons/e_folder.png"));
+	//export_entries.push_back(res_archive->entryAtPath("icons/e_archive.png"));
+	//export_entries.push_back(res_archive->entryAtPath("icons/e_wad.png"));
+	//export_entries.push_back(res_archive->entryAtPath("icons/e_zip.png"));
+	//export_entries.push_back(res_archive->entryAtPath("icons/e_folder.png"));
 
 	// Can't do anything without html entry
 	if (!entry_html)
@@ -487,13 +487,13 @@ void MainWindow::createStartPage(bool newtip)
 
 			// Determine icon
 			string fn = theArchiveManager->recentFile(a);
-			string icon = "e_archive";
+			string icon = "archive";
 			if (fn.EndsWith(".wad"))
-				icon = "e_wad";
+				icon = "wad";
 			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
-				icon = "e_zip";
+				icon = "zip";
 			else if (wxDirExists(fn))
-				icon = "e_folder";
+				icon = "folder";
 
 			// Add recent file link
 			recent += S_FMT("<img src=\"%s.png\"></td><td valign=\"top\" class=\"box\">", icon);
@@ -511,6 +511,10 @@ void MainWindow::createStartPage(bool newtip)
 	// Write html and images to temp folder
 	for (unsigned a = 0; a < export_entries.size(); a++)
 		export_entries[a]->exportFile(appPath(export_entries[a]->getName(), DIR_TEMP));
+	Icons::exportIconPNG(Icons::ENTRY, "archive", appPath("archive.png", DIR_TEMP));
+	Icons::exportIconPNG(Icons::ENTRY, "wad", appPath("wad.png", DIR_TEMP));
+	Icons::exportIconPNG(Icons::ENTRY, "zip", appPath("zip.png", DIR_TEMP));
+	Icons::exportIconPNG(Icons::ENTRY, "folder", appPath("folder.png", DIR_TEMP));
 	string html_file = appPath("startpage.htm", DIR_TEMP);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
@@ -746,7 +750,7 @@ void MainWindow::openDocs(string page_name)
 
 		// Add tab
 		stc_tabs->AddPage(docs_page, "Documentation", true, -1);
-		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, getIcon("t_wiki"));
+		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, Icons::getIcon(Icons::GENERAL, "wiki"));
 	}
 
 	// Load specified page, if any

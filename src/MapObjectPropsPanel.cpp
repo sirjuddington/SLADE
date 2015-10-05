@@ -97,18 +97,18 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Add button
-	btn_add = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	btn_add->SetToolTip("Add Property");
 	hbox->Add(btn_add, 0, wxEXPAND|wxRIGHT, 4);
 	hbox->AddStretchSpacer(1);
 
 	// Reset button
-	btn_reset = new wxBitmapButton(this, -1, getIcon("t_close"));
+	btn_reset = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "close"));
 	btn_reset->SetToolTip("Discard Changes");
 	hbox->Add(btn_reset, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Apply button
-	btn_apply = new wxBitmapButton(this, -1, getIcon("i_tick"));
+	btn_apply = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tick"));
 	btn_apply->SetToolTip("Apply Changes");
 	hbox->Add(btn_apply, 0, wxEXPAND);
 

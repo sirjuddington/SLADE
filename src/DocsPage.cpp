@@ -63,17 +63,17 @@ DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Toolbar 'Navigation' group
 	SToolBarGroup* g_nav = new SToolBarGroup(toolbar, "Navigation");
-	tb_back = g_nav->addActionButton("back", "Back", "t_left", "Go back");
-	tb_forward = g_nav->addActionButton("forward", "Forward", "t_right", "Go forward");
+	tb_back = g_nav->addActionButton("back", "Back", "left", "Go back");
+	tb_forward = g_nav->addActionButton("forward", "Forward", "right", "Go forward");
 	toolbar->addGroup(g_nav);
 
 	// Toolbar 'Links' group
 	SToolBarGroup* g_links = new SToolBarGroup(toolbar, "Links");
-	tb_home = g_links->addActionButton("home", "Home", "t_wiki", "Return to the SLADE Documentation Wiki main page", true);
-	g_links->addActionButton("tutorials", "Tutorials", "t_wiki", "Go to the tutorials index", true);
-	g_links->addActionButton("index", "Wiki Index", "t_wiki", "Go to the wiki index", true);
+	tb_home = g_links->addActionButton("home", "Home", "wiki", "Return to the SLADE Documentation Wiki main page", true);
+	g_links->addActionButton("tutorials", "Tutorials", "wiki", "Go to the tutorials index", true);
+	g_links->addActionButton("index", "Wiki Index", "wiki", "Go to the wiki index", true);
 	if (Global::debug)
-		g_links->addActionButton("edit", "Edit on GitHub", "t_wiki", "Edit this page on GitHub", true);
+		g_links->addActionButton("edit", "Edit on GitHub", "wiki", "Edit this page on GitHub", true);
 	toolbar->addGroup(g_links);
 
 	// Create browser

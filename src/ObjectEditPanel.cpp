@@ -98,18 +98,18 @@ ObjectEditPanel::ObjectEditPanel(wxWindow* parent) : wxPanel(parent)
 	sizer->Add(cb_mirror_y, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
 
 	// Preview button
-	btn_preview = new wxBitmapButton(this, -1, getIcon("i_eye"));
+	btn_preview = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "eye"));
 	btn_preview->SetToolTip("Preview");
 	btn_preview->SetDefault();
 	sizer->Add(btn_preview, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Cancel button
-	btn_cancel = new wxBitmapButton(this, -1, getIcon("t_close"));
+	btn_cancel = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "close"));
 	btn_cancel->SetToolTip("Cancel");
 	sizer->Add(btn_cancel, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Apply button
-	btn_apply = new wxBitmapButton(this, -1, getIcon("i_tick"));
+	btn_apply = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tick"));
 	sizer->Add(btn_apply, 0, wxEXPAND);
 	btn_apply->SetToolTip("Apply");
 

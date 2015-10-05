@@ -77,7 +77,7 @@ public:
 	{
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("t_settings"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "settings"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -140,7 +140,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	sizer_bottom->Add(choice_offset_type, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 
 	// Auto offset
-	btn_auto_offset = new wxBitmapButton(this, -1, getIcon("t_offset"));
+	btn_auto_offset = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "offset"));
 	btn_auto_offset->SetToolTip("Modify Offsets...");
 	sizer_bottom->Add(btn_auto_offset, 0, wxALIGN_CENTER_VERTICAL);
 
@@ -158,8 +158,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	sizer_bottom->AddSpacer(8);
 
 	// Image selection buttons
-	btn_nextimg = new wxBitmapButton(this, -1, getIcon("t_right"));
-	btn_previmg = new wxBitmapButton(this, -1, getIcon("t_left"));
+	btn_nextimg = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "right"));
+	btn_previmg = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "left"));
 	text_curimg = new wxStaticText(this, -1, "Image XX/XX");
 	btn_nextimg->Show(false);
 	btn_previmg->Show(false);

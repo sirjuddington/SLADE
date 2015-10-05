@@ -130,9 +130,9 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	gb_sizer->Add(new wxStaticText(this, -1, "Game Executable:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_game_exes = new wxChoice(this, -1);
 	gb_sizer->Add(choice_game_exes, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
-	btn_add_game = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add_game = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	gb_sizer->Add(btn_add_game, wxGBPosition(0, 3));
-	btn_remove_game = new wxBitmapButton(this, -1, getIcon("t_minus"));
+	btn_remove_game = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "minus"));
 	gb_sizer->Add(btn_remove_game, wxGBPosition(0, 4));
 
 	// Executable path
@@ -140,7 +140,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	text_exe_path = new wxTextCtrl(this, -1, "");
 	text_exe_path->Enable(false);
 	gb_sizer->Add(text_exe_path, wxGBPosition(1, 1), wxGBSpan(1, 3), wxEXPAND);
-	btn_browse_exe = new wxBitmapButton(this, -1, getIcon("t_open"));
+	btn_browse_exe = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "open"));
 	btn_browse_exe->SetToolTip("Browse...");
 	gb_sizer->Add(btn_browse_exe, wxGBPosition(1, 4));
 
@@ -148,12 +148,12 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	gb_sizer->Add(new wxStaticText(this, -1, "Run Configuration:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_config = new wxChoice(this, -1);
 	gb_sizer->Add(choice_config, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
-	btn_edit_config = new wxBitmapButton(this, -1, getIcon("t_settings"));
+	btn_edit_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "settings"));
 	btn_edit_config->SetToolTip("Edit command line");
 	gb_sizer->Add(btn_edit_config, wxGBPosition(2, 2));
-	btn_add_config = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	gb_sizer->Add(btn_add_config, wxGBPosition(2, 3));
-	btn_remove_config = new wxBitmapButton(this, -1, getIcon("t_minus"));
+	btn_remove_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "minus"));
 	btn_remove_config->Enable(false);
 	gb_sizer->Add(btn_remove_config, wxGBPosition(2, 4));
 

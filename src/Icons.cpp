@@ -37,24 +37,116 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-struct icon_t
+namespace Icons
 {
-	wxImage	image;
-	wxImage image_large;
-	string	name;
-};
-vector<icon_t>	icons;
-wxBitmap icon_empty;
+	struct icon_t
+	{
+		wxImage			image;
+		wxImage			image_large;
+		string			name;
+		ArchiveEntry*	resource_entry;
+	};
+
+	vector<icon_t>	icons_general;
+	vector<icon_t>	icons_text_editor;
+	vector<icon_t>	icons_entry;
+	wxBitmap icon_empty;
+}
 
 
 /*******************************************************************
- * FUNCTIONS
+ * ICONS NAMESPACE FUNCTIONS
  *******************************************************************/
+namespace Icons
+{
+	vector<icon_t>& iconList(int type)
+	{
+		if (type == ENTRY)
+			return icons_entry;
+		else if (type == TEXT_EDITOR)
+			return icons_text_editor;
+		else
+			return icons_general;
+	}
+
+	bool loadIconsDir(int type, ArchiveTreeNode* dir)
+	{
+		if (!dir)
+			return false;
+
+		vector<icon_t>& icons = iconList(type);
+		string tempfile = appPath("sladetemp", DIR_TEMP);
+
+		// Go through each entry in the directory
+		for (size_t a = 0; a < dir->numEntries(false); a++)
+		{
+			ArchiveEntry* entry = dir->getEntry(a);
+
+			// Export entry data to a temporary file
+			entry->exportFile(tempfile);
+
+			// Create / setup icon
+			icon_t n_icon;
+			n_icon.image.LoadFile(tempfile);	// Load image from temp file
+			n_icon.name = entry->getName(true);	// Set icon name
+			n_icon.resource_entry = entry;
+
+			// Add the icon
+			icons.push_back(n_icon);
+			wxLogMessage(n_icon.name);
+
+			// Delete the temporary file
+			wxRemoveFile(tempfile);
+		}
+
+		// Go through large icons
+		ArchiveTreeNode* dir_large = (ArchiveTreeNode*)dir->getChild("large");
+		if (dir_large)
+		{
+			for (size_t a = 0; a < dir_large->numEntries(false); a++)
+			{
+				ArchiveEntry* entry = dir_large->getEntry(a);
+
+				// Export entry data to a temporary file
+				entry->exportFile(tempfile);
+
+				// Create / setup icon
+				bool found = false;
+				string name = entry->getName(true);
+				for (unsigned i = 0; i < icons.size(); i++)
+				{
+					if (icons[i].name == name)
+					{
+						icons[i].image_large.LoadFile(tempfile);
+						found = true;
+						break;
+					}
+				}
+
+				if (!found)
+				{
+					icon_t n_icon;
+					n_icon.image_large.LoadFile(tempfile);	// Load image from temp file
+					n_icon.name = entry->getName(true);		// Set icon name
+					n_icon.resource_entry = entry;
+
+					// Add the icon
+					icons.push_back(n_icon);
+				}
+
+				// Delete the temporary file
+				wxRemoveFile(tempfile);
+			}
+		}
+
+		return true;
+	}
+}
 
 /* loadIcons
  * Loads all icons from slade.pk3 (in the icons/ dir)
  *******************************************************************/
-bool loadIcons()
+bool Icons::loadIcons()
 {
 	string tempfile = appPath("sladetemp", DIR_TEMP);
 
@@ -68,64 +160,18 @@ bool loadIcons()
 	// Get the icons directory of the archive
 	ArchiveTreeNode* dir_icons = res_archive->getDir("icons/");
 
-	// Go through each entry in the directory
-	for (size_t a = 0; a < dir_icons->numEntries(false); a++)
-	{
-		ArchiveEntry* entry = dir_icons->getEntry(a);
+	// Load general icons
+	wxLogMessage("****GENERAL****");
+	if (!loadIconsDir(GENERAL, (ArchiveTreeNode*)dir_icons->getChild("general")))
+		wxLogError("No icons/general dir found");
 
-		// Export entry data to a temporary file
-		entry->exportFile(tempfile);
+	// Load entry list icons
+	wxLogMessage("****ENTRY LIST****");
+	loadIconsDir(ENTRY, (ArchiveTreeNode*)dir_icons->getChild("entry_list"));
 
-		// Create / setup icon
-		icon_t n_icon;
-		n_icon.image.LoadFile(tempfile);	// Load image from temp file
-		n_icon.name = entry->getName(true);	// Set icon name
-
-		// Add the icon
-		icons.push_back(n_icon);
-
-		// Delete the temporary file
-		wxRemoveFile(tempfile);
-	}
-
-	// Go through large icons
-	ArchiveTreeNode* dir_icons_large = res_archive->getDir("icons/large/");
-	if (dir_icons_large)
-	{
-		for (size_t a = 0; a < dir_icons_large->numEntries(false); a++)
-		{
-			ArchiveEntry* entry = dir_icons_large->getEntry(a);
-
-			// Export entry data to a temporary file
-			entry->exportFile(tempfile);
-
-			// Create / setup icon
-			bool found = false;
-			string name = entry->getName(true);
-			for (unsigned i = 0; i < icons.size(); i++)
-			{
-				if (icons[i].name == name)
-				{
-					icons[i].image_large.LoadFile(tempfile);
-					found = true;
-					break;
-				}
-			}
-
-			if (!found)
-			{
-				icon_t n_icon;
-				n_icon.image_large.LoadFile(tempfile);	// Load image from temp file
-				n_icon.name = entry->getName(true);	// Set icon name
-
-				// Add the icon
-				icons.push_back(n_icon);
-			}
-
-			// Delete the temporary file
-			wxRemoveFile(tempfile);
-		}
-	}
+	// Load text editor icons
+	wxLogMessage("****TEXT EDITOR****");
+	loadIconsDir(TEXT_EDITOR, (ArchiveTreeNode*)dir_icons->getChild("text_editor"));
 
 	return true;
 }
@@ -134,8 +180,10 @@ bool loadIcons()
  * Returns the icon matching <name> as a wxBitmap (for toolbars etc),
  * or an empty bitmap if no icon matching <name> was found
  *******************************************************************/
-wxBitmap getIcon(string name, bool large)
+wxBitmap Icons::getIcon(int type, string name, bool large)
 {
+	vector<icon_t>& icons = iconList(type);
+
 	for (size_t a = 0; a < icons.size(); a++)
 	{
 		if (icons[a].name.Cmp(name) == 0)
@@ -154,4 +202,20 @@ wxBitmap getIcon(string name, bool large)
 
 	wxLogMessage("Icon \"%s\" does not exist", name);
 	return wxNullBitmap;
+}
+
+/* exportIconPNG
+ * Exports icon [name] of [type] to a png image file at [path]
+ *******************************************************************/
+bool Icons::exportIconPNG(int type, string name, string path)
+{
+	vector<icon_t>& icons = iconList(type);
+
+	for (size_t a = 0; a < icons.size(); a++)
+	{
+		if (icons[a].name.Cmp(name) == 0)
+			return icons[a].resource_entry->exportFile(path);
+	}
+
+	return false;
 }
