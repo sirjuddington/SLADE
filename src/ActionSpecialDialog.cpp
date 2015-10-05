@@ -856,7 +856,7 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	SetSizerAndFit(sizer);
 
 	// Bind events
-	tree_specials->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ActionSpecialPanel::onSpecialSelectionChanged, this);
+	tree_specials->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ActionSpecialPanel::onSpecialItemActivated, this);
 }
 
 /* ActionSpecialPanel::~ActionSpecialPanel
@@ -1175,10 +1175,10 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
 	showGeneralised(rb_generalised->GetValue());
 }
 
-/* ActionSpecialPanel::onSpecialSelectionChanged
- * Called when the action special selection is changed
+/* ActionSpecialPanel::SpecialItemActivated
+ * Called when the action special item is activated
  *******************************************************************/
-void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
+void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 {
 	if ((theGameConfiguration->isBoom() && rb_generalised->GetValue()))
 	{
@@ -1199,6 +1199,8 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 			arg_values[a] = panel_args->getArgValue(a);
 		panel_args->setup(&args);
 		panel_args->setValues(arg_values);
+		// Go to args tab
+		panel_args->SetFocus();
 	}
 }
 
@@ -1209,7 +1211,6 @@ void ActionSpecialPanel::onSpecialTextChanged(wxCommandEvent& e)
 {
 	tree_specials->showSpecial(text_special->getNumber(), false);
 }
-
 
 /*******************************************************************
  * ACTIONSPECIALDIALOG CLASS FUNCTIONS

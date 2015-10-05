@@ -4045,7 +4045,6 @@ bool SLADEMap::modifiedSince(long since, int type)
  *******************************************************************/
 void SLADEMap::recomputeSpecials()
 {
-	map_specials.reset();
 	map_specials.processMapSpecials(this);
 }
 

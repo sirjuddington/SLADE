@@ -53,6 +53,7 @@ const double TAU = PI * 2;
 void MapSpecials::reset()
 {
 	sector_colours.clear();
+	sector_fadecolours.clear();
 }
 
 /* MapSpecials::processMapSpecials
@@ -80,7 +81,9 @@ void MapSpecials::processLineSpecial(MapLine* line)
  *******************************************************************/
 bool MapSpecials::getTagColour(int tag, rgba_t* colour)
 {
-	for (unsigned a = 0; a < sector_colours.size(); a++)
+	unsigned a;
+	// scripts
+	for (a = 0; a < sector_colours.size(); a++)
 	{
 		if (sector_colours[a].tag == tag)
 		{
@@ -88,6 +91,29 @@ bool MapSpecials::getTagColour(int tag, rgba_t* colour)
 			colour->g = sector_colours[a].colour.g;
 			colour->b = sector_colours[a].colour.b;
 			colour->a = 255;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/* MapSpecials::getTagFadeColour
+ * Sets [colour] to the parsed fade colour for [tag]. Returns true if the
+ * tag has a colour, false otherwise
+ *******************************************************************/
+bool MapSpecials::getTagFadeColour(int tag, rgba_t *colour)
+{
+	unsigned a;
+	// scripts
+	for (a = 0; a < sector_fadecolours.size(); a++)
+	{
+		if (sector_fadecolours[a].tag == tag)
+		{
+			colour->r = sector_fadecolours[a].colour.r;
+			colour->g = sector_fadecolours[a].colour.g;
+			colour->b = sector_fadecolours[a].colour.b;
+			colour->a = 0;
 			return true;
 		}
 	}
@@ -103,19 +129,38 @@ bool MapSpecials::tagColoursSet()
 	return !(sector_colours.empty());
 }
 
+/* MapSpecials::tagFadeColoursSet
+ * Returns true if any sector tags should be coloured by fog
+ *******************************************************************/
+bool MapSpecials::tagFadeColoursSet()
+{
+	return !(sector_fadecolours.empty());
+}
+
+/* MapSpecials::setModified
+ * Modify sector with [tag]
+ *******************************************************************/
+void MapSpecials::setModified(SLADEMap *map, int tag)
+{
+	vector<MapSector*> tagged;
+	map->getSectorsByTag(tag, tagged);
+	for (unsigned s = 0; s < tagged.size(); s++)
+		tagged[s]->setModified();
+}
+
 /* MapSpecials::updateTaggedSecors
  * Updates any sectors with tags that are affected by any processed
  * specials/scripts
  *******************************************************************/
 void MapSpecials::updateTaggedSectors(SLADEMap* map)
 {
-	for (unsigned a = 0; a < sector_colours.size(); a++)
-	{
-		vector<MapSector*> tagged;
-		map->getSectorsByTag(sector_colours[a].tag, tagged);
-		for (unsigned s = 0; s < tagged.size(); s++)
-			tagged[s]->setModified();
-	}
+	// scripts
+	unsigned a;
+	for (a = 0; a < sector_colours.size(); a++)
+		setModified(map, sector_colours[a].tag);
+
+	for (a = 0; a < sector_fadecolours.size(); a++)
+		setModified(map, sector_fadecolours[a].tag);
 }
 
 /* MapSpecials::processZDoomMapSpecials
@@ -182,6 +227,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 void MapSpecials::processACSScripts(ArchiveEntry* entry)
 {
 	sector_colours.clear();
+	sector_fadecolours.clear();
 
 	if (!entry || entry->getSize() == 0)
 		return;
@@ -253,6 +299,48 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 							sc.colour.set(r, g, b, 255);
 							LOG_MESSAGE(3, "Sector tag %d, colour %d,%d,%d", tag, r, g, b);
 							sector_colours.push_back(sc);
+						}
+					}
+					// --- Sector_SetFade ---
+					else if (S_CMPNOCASE(token, "Sector_SetFade"))
+					{
+						// Get parameters
+						vector<string> parameters;
+						tz.getTokensUntil(parameters, ")");
+
+						// Parse parameters
+						long val;
+						int tag = -1;
+						int r = -1;
+						int g = -1;
+						int b = -1;
+						for (unsigned a = 0; a < parameters.size(); a++)
+						{
+							if (parameters[a].ToLong(&val))
+							{
+								if (tag < 0)
+									tag = val;
+								else if (r < 0)
+									r = val;
+								else if (g < 0)
+									g = val;
+								else if (b < 0)
+									b = val;
+							}
+						}
+
+						// Check everything is set
+						if (b < 0)
+						{
+							LOG_MESSAGE(2, "Invalid Sector_SetFade parameters");
+						}
+						else
+						{
+							sector_colour_t sc;
+							sc.tag = tag;
+							sc.colour.set(r, g, b, 0);
+							LOG_MESSAGE(3, "Sector tag %d, fade colour %d,%d,%d", tag, r, g, b);
+							sector_fadecolours.push_back(sc);
 						}
 					}
 
