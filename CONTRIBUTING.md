@@ -6,7 +6,11 @@ When submitting a new issue, remember to select any appropriate labels for it (t
 
 When submitting a bug report, be sure to include the version of SLADE you are using, your OS and any other details that may be helpful.
 
-If it is a crash, be sure to include the stack trace that was output when the program crashed, if it showed up. To get the stack trace, simply copy the text from the 'Stack Trace' text box.
+If it is a crash, be sure to include the stack trace that was output when the program crashed, if it showed up. The crash dialog should look something like this:
+
+<p align="center"><img src="http://i.imgur.com/5YlnS2n.png"/></p>
+
+To get the stack trace, simply copy all the text from the scrollable text box.
 
 #### Feature Requests
 
