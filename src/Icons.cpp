@@ -37,6 +37,9 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
+CVAR(String, iconset_general, "Default", CVAR_SAVE)
+CVAR(String, iconset_entry_list, "Default", CVAR_SAVE)
+
 namespace Icons
 {
 	struct icon_t
@@ -51,6 +54,8 @@ namespace Icons
 	vector<icon_t>	icons_text_editor;
 	vector<icon_t>	icons_entry;
 	wxBitmap icon_empty;
+	vector<string>	iconsets_entry;
+	vector<string>	iconsets_general;
 }
 
 
@@ -73,6 +78,25 @@ namespace Icons
 	{
 		if (!dir)
 			return false;
+
+		// Check for icon set dirs
+		for (unsigned a = 0; a < dir->nChildren(); a++)
+		{
+			if (dir->getChild(a)->getName() != "large")
+			{
+				if (type == GENERAL)
+					iconsets_general.push_back(dir->getChild(a)->getName());
+				else if (type == ENTRY)
+					iconsets_entry.push_back(dir->getChild(a)->getName());
+			}
+		}
+
+		// Get icon set dir
+		string icon_set_dir = "Default";
+		if (type == ENTRY) icon_set_dir = iconset_entry_list;
+		if (type == GENERAL) icon_set_dir = iconset_general;
+		if (icon_set_dir != "Default" && dir->getChild(icon_set_dir))
+			dir = (ArchiveTreeNode*)dir->getChild(icon_set_dir);
 
 		vector<icon_t>& icons = iconList(type);
 		string tempfile = appPath("sladetemp", DIR_TEMP);
@@ -143,7 +167,7 @@ namespace Icons
 	}
 }
 
-/* loadIcons
+/* Icons::loadIcons
  * Loads all icons from slade.pk3 (in the icons/ dir)
  *******************************************************************/
 bool Icons::loadIcons()
@@ -161,22 +185,20 @@ bool Icons::loadIcons()
 	ArchiveTreeNode* dir_icons = res_archive->getDir("icons/");
 
 	// Load general icons
-	wxLogMessage("****GENERAL****");
-	if (!loadIconsDir(GENERAL, (ArchiveTreeNode*)dir_icons->getChild("general")))
-		wxLogError("No icons/general dir found");
+	iconsets_general.push_back("Default");
+	loadIconsDir(GENERAL, (ArchiveTreeNode*)dir_icons->getChild("general"));
 
 	// Load entry list icons
-	wxLogMessage("****ENTRY LIST****");
+	iconsets_entry.push_back("Default");
 	loadIconsDir(ENTRY, (ArchiveTreeNode*)dir_icons->getChild("entry_list"));
 
 	// Load text editor icons
-	wxLogMessage("****TEXT EDITOR****");
 	loadIconsDir(TEXT_EDITOR, (ArchiveTreeNode*)dir_icons->getChild("text_editor"));
 
 	return true;
 }
 
-/* getIcon
+/* Icons::getIcon
  * Returns the icon matching <name> as a wxBitmap (for toolbars etc),
  * or an empty bitmap if no icon matching <name> was found
  *******************************************************************/
@@ -204,7 +226,7 @@ wxBitmap Icons::getIcon(int type, string name, bool large)
 	return wxNullBitmap;
 }
 
-/* exportIconPNG
+/* Icons::exportIconPNG
  * Exports icon [name] of [type] to a png image file at [path]
  *******************************************************************/
 bool Icons::exportIconPNG(int type, string name, string path)
@@ -218,4 +240,17 @@ bool Icons::exportIconPNG(int type, string name, string path)
 	}
 
 	return false;
+}
+
+/* Icons::getIconSets
+ * Returns a list of currently available icon sets for [type]
+ *******************************************************************/
+vector<string> Icons::getIconSets(int type)
+{
+	if (type == GENERAL)
+		return iconsets_general;
+	else if (type == ENTRY)
+		return iconsets_entry;
+
+	return vector<string>();
 }

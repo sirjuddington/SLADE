@@ -15,9 +15,10 @@ namespace Icons
 		TEXT_EDITOR,
 	};
 
-	bool		loadIcons();
-	wxBitmap	getIcon(int type, string name, bool large = false);
-	bool		exportIconPNG(int type, string name, string path);
+	bool			loadIcons();
+	wxBitmap		getIcon(int type, string name, bool large = false);
+	bool			exportIconPNG(int type, string name, string path);
+	vector<string>	getIconSets(int type);
 }
 
 #endif//__ICONS_H__
