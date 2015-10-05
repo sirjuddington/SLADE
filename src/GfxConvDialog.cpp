@@ -63,7 +63,7 @@ GfxConvDialog::GfxConvDialog(wxWindow* parent)
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(getIcon("t_convert"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "convert"));
 	SetIcon(icon);
 
 	setupLayout();
@@ -268,7 +268,7 @@ void GfxConvDialog::setupLayout()
 	pal_chooser_target->selectPalette(target_palette_name);
 	hbox->Add(pal_chooser_target, 1, wxEXPAND|wxRIGHT, 4);
 
-	btn_colorimetry_settings = new wxBitmapButton(this, -1, getIcon("t_settings"), wxDefaultPosition, wxDefaultSize);
+	btn_colorimetry_settings = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "settings"), wxDefaultPosition, wxDefaultSize);
 	btn_colorimetry_settings->SetToolTip("Adjust Colorimetry Settings...");
 	hbox->Add(btn_colorimetry_settings, 0, wxEXPAND, 0);
 

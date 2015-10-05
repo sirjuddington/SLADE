@@ -308,32 +308,32 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	framesizer->Add(vbox, 0, wxEXPAND|wxTOP|wxRIGHT|wxBOTTOM, 4);
 
 	// 'Add' button
-	btn_patch_add = new wxBitmapButton(panel, -1, getIcon("t_patch_add"));
+	btn_patch_add = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_add"));
 	btn_patch_add->SetToolTip("Add new patch to texture");
 	vbox->Add(btn_patch_add, 0, wxBOTTOM, 4);
 
 	// 'Remove' button
-	btn_patch_remove = new wxBitmapButton(panel, -1, getIcon("t_patch_remove"));
+	btn_patch_remove = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_remove"));
 	btn_patch_remove->SetToolTip("Remove selected patch(es) from texture");
 	vbox->Add(btn_patch_remove, 0, wxBOTTOM, 4);
 
 	// 'Back' button
-	btn_patch_back = new wxBitmapButton(panel, -1, getIcon("t_patch_back"));
+	btn_patch_back = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_back"));
 	btn_patch_back->SetToolTip("Send selected patch(es) back");
 	vbox->Add(btn_patch_back, 0, wxBOTTOM, 4);
 
 	// 'Forward' button
-	btn_patch_forward = new wxBitmapButton(panel, -1, getIcon("t_patch_forward"));
+	btn_patch_forward = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_forward"));
 	btn_patch_forward->SetToolTip("Bring selected patch(es) forward");
 	vbox->Add(btn_patch_forward, 0, wxBOTTOM, 4);
 
 	// 'Replace' button
-	btn_patch_replace = new wxBitmapButton(panel, -1, getIcon("t_patch_replace"));
+	btn_patch_replace = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_replace"));
 	btn_patch_replace->SetToolTip("Replace selected patch(es)");
 	vbox->Add(btn_patch_replace, 0, wxBOTTOM, 4);
 
 	// 'Duplicate' button
-	btn_patch_duplicate = new wxBitmapButton(panel, -1, getIcon("t_patch_duplicate"));
+	btn_patch_duplicate = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_duplicate"));
 	btn_patch_duplicate->SetToolTip("Duplicate selected patch(es)");
 	vbox->Add(btn_patch_duplicate, 0, wxBOTTOM, 4);
 

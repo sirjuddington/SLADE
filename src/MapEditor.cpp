@@ -2282,6 +2282,8 @@ void MapEditor::mirror(bool x_axis)
 	// Mirror things
 	if (edit_mode == MODE_THINGS)
 	{
+		// Begin undo level
+		beginUndoRecord("Mirror things", true, false, false);
 		// Get things to mirror
 		vector<MapThing*> things;
 		getSelectedThings(things);
@@ -2314,11 +2316,14 @@ void MapEditor::mirror(bool x_axis)
 				angle += 360;
 			things[a]->setIntProperty("angle", angle);
 		}
+		endUndoRecord(true);
 	}
 
 	// Mirror map architecture
 	else if (edit_mode != MODE_3D)
 	{
+		// Begin undo level
+		beginUndoRecord("Mirror map architecture", true, false, false);
 		// Get vertices to mirror
 		vector<MapVertex*> vertices;
 		vector<MapLine*> lines;
@@ -2364,6 +2369,8 @@ void MapEditor::mirror(bool x_axis)
 		// Flip lines (just swap vertices)
 		for (unsigned a = 0; a < lines.size(); a++)
 			lines[a]->flip(false);
+
+		endUndoRecord(true);
 	}
 }
 

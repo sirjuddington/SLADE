@@ -69,7 +69,7 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 
 	// Setup map toolbar buttons
 	SToolBarGroup* group = new SToolBarGroup(toolbar, "Map");
-	group->addActionButton("save_image", "Save Map Image", "t_export", "Save map overview to an image", true);
+	group->addActionButton("save_image", "Save Map Image", "export", "Save map overview to an image", true);
 	group->addActionButton("pmap_open_text", "", true);
 	toolbar->addGroup(group);
 

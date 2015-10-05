@@ -50,7 +50,7 @@ wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help, stri
 	wxMenuItem* item = new wxMenuItem(menu, id, label, help);
 
 	if (!icon.IsEmpty())
-		item->SetBitmap(getIcon(icon));
+		item->SetBitmap(Icons::getIcon(Icons::GENERAL, icon));
 
 	return item;
 }

@@ -131,7 +131,7 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(getIcon("t_remap"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "remap"));
 	SetIcon(icon);
 
 	// Create sizer
@@ -155,19 +155,19 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	framesizer->Add(vbox, 0, wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT, 4);
 
-	btn_add = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	vbox->Add(btn_add, 0, wxEXPAND|wxBOTTOM, 4);
 
 	// Remove translation button
-	btn_remove = new wxBitmapButton(this, -1, getIcon("t_minus"));
+	btn_remove = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "minus"));
 	vbox->Add(btn_remove, 0, wxEXPAND|wxBOTTOM, 4);
 
 	// Move up button
-	btn_up = new wxBitmapButton(this, -1, getIcon("t_up"));
+	btn_up = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "up"));
 	vbox->Add(btn_up, 0, wxEXPAND|wxBOTTOM, 4);
 
 	// Move down button
-	btn_down = new wxBitmapButton(this, -1, getIcon("t_down"));
+	btn_down = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "down"));
 	vbox->Add(btn_down, 0, wxEXPAND);
 
 
@@ -1092,7 +1092,7 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(getIcon("t_colourise"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "colourise"));
 	SetIcon(icon);
 
 	// Setup main sizer
@@ -1184,7 +1184,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit*
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(getIcon("t_tint"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "tint"));
 	SetIcon(icon);
 
 	// Setup main sizer

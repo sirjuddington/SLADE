@@ -70,8 +70,8 @@ EntryPanel::EntryPanel(wxWindow* parent, string id)
 
 	// Default entry toolbar group
 	SToolBarGroup* tb_group = new SToolBarGroup(toolbar, "Entry");
-	stb_save = tb_group->addActionButton("save", "Save", "t_save", "Save any changes made to the entry", true);
-	stb_revert = tb_group->addActionButton("revert", "Revert", "t_revert", "Revert any changes made to the entry", true);
+	stb_save = tb_group->addActionButton("save", "Save", "save", "Save any changes made to the entry", true);
+	stb_revert = tb_group->addActionButton("revert", "Revert", "revert", "Revert any changes made to the entry", true);
 	toolbar->addGroup(tb_group);
 	toolbar->enableGroup("Entry", false);
 

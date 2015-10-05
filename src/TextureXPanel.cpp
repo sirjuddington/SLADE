@@ -238,17 +238,17 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	// Add texture operations buttons
 	wxGridBagSizer* gbsizer = new wxGridBagSizer(4, 4);
 	framesizer->Add(gbsizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	btn_move_up = new wxBitmapButton(this, -1, getIcon("t_up"));
+	btn_move_up = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "up"));
 	btn_move_up->SetToolTip("Move Up");
-	btn_move_down = new wxBitmapButton(this, -1, getIcon("t_down"));
+	btn_move_down = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "down"));
 	btn_move_down->SetToolTip("Move Down");
-	btn_new_texture = new wxBitmapButton(this, -1, getIcon("t_tex_new"));
+	btn_new_texture = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tex_new"));
 	btn_new_texture->SetToolTip("New");
-	btn_remove_texture = new wxBitmapButton(this, -1, getIcon("t_tex_delete"));
+	btn_remove_texture = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tex_delete"));
 	btn_remove_texture->SetToolTip("Remove");
-	btn_new_from_patch = new wxBitmapButton(this, -1, getIcon("t_tex_newpatch"));
+	btn_new_from_patch = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tex_newpatch"));
 	btn_new_from_patch->SetToolTip("New from Patch");
-	btn_new_from_file = new wxBitmapButton(this, -1, getIcon("t_tex_newfile"));
+	btn_new_from_file = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tex_newfile"));
 	btn_new_from_file->SetToolTip("New from File");
 	gbsizer->Add(btn_new_texture, wxGBPosition(0, 0), wxDefaultSpan);
 	gbsizer->Add(btn_new_from_patch, wxGBPosition(0, 1), wxDefaultSpan);

@@ -52,7 +52,7 @@ AnimatedEntryPanel::AnimatedEntryPanel(wxWindow* parent)
 
 	// Setup toolbar
 	SToolBarGroup* group = new SToolBarGroup(toolbar, "Animated");
-	group->addActionButton("new_anim", "New Animation", "t_animation_new", "Create a new animation definition", true);
+	group->addActionButton("new_anim", "New Animation", "animation_new", "Create a new animation definition", true);
 	toolbar->addGroup(group);
 
 	// Setup panel sizer

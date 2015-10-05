@@ -16,6 +16,8 @@ private:
 	wxCheckBox* cb_file_browser;
 	wxChoice*	choice_toolbar_size;
 	wxChoice*	choice_tab_style;
+	wxChoice*	choice_iconset_general;
+	wxChoice*	choice_iconset_entry;
 
 public:
 	InterfacePrefsPanel(wxWindow* parent);

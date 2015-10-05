@@ -102,11 +102,11 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	sizer_gb->Add(slider_seek, wxGBPosition(0, 0), wxGBSpan(1, 6), wxEXPAND);
 
 	// Add play controls
-	btn_play = new wxBitmapButton(this, -1, getIcon("i_play"));
+	btn_play = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "play"));
 	sizer_gb->Add(btn_play, wxGBPosition(1, 0));
-	btn_pause = new wxBitmapButton(this, -1, getIcon("i_pause"));
+	btn_pause = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "pause"));
 	sizer_gb->Add(btn_pause, wxGBPosition(1, 1));
-	btn_stop = new wxBitmapButton(this, -1, getIcon("i_stop"));
+	btn_stop = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "stop"));
 	sizer_gb->Add(btn_stop, wxGBPosition(1, 2));
 
 	// Separator

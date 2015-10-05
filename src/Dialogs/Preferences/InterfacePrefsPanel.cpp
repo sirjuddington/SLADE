@@ -31,7 +31,8 @@
 #include "WxStuff.h"
 #include "InterfacePrefsPanel.h"
 #include "STabCtrl.h"
-#include <wx/statline.h>
+#include "Icons.h"
+#include <wx/gbsizer.h>
 
 
 /*******************************************************************
@@ -47,6 +48,8 @@ EXTERN_CVAR(Bool, elist_type_bgcol)
 EXTERN_CVAR(Int, toolbar_size)
 EXTERN_CVAR(Int, tab_style)
 EXTERN_CVAR(Bool, am_file_browser_tab)
+EXTERN_CVAR(String, iconset_general)
+EXTERN_CVAR(String, iconset_entry_list)
 
 
 /*******************************************************************
@@ -72,58 +75,77 @@ InterfacePrefsPanel::InterfacePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 
 	// --- General ---
 	wxPanel* panel = new wxPanel(stc_tabs, -1);
-	wxBoxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(vsizer);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	vsizer->Add(sizer, 1, wxEXPAND | wxALL, 4);
+	panel->SetSizer(sizer);
+	wxGridBagSizer*	gb_sizer = new wxGridBagSizer(8, 8);
+	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, 8);
 	stc_tabs->AddPage(panel, "General");
 
 	// Show startpage
+	int row = 0;
 	cb_start_page = new wxCheckBox(panel, -1, "Show Start Page on Startup");
-	sizer->Add(cb_start_page, 0, wxEXPAND | wxALL, 4);
+	gb_sizer->Add(cb_start_page, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Show file browser
-	cb_file_browser = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel");
-	sizer->Add(cb_file_browser, 0, wxEXPAND | wxALL, 4);
+	cb_file_browser = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
+	gb_sizer->Add(cb_file_browser, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Monospace list font
 	cb_list_monospace = new wxCheckBox(panel, -1, "Use monospaced font for lists");
-	sizer->Add(cb_list_monospace, 0, wxEXPAND | wxALL, 4);
+	gb_sizer->Add(cb_list_monospace, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Toolbar size
-	string sizes[] = { "Small (16)", "Medium (24)", "Large (32)" };
+	string sizes[] = { "Small (16px)", "Medium (24px)", "Large (32px)" };
 	choice_toolbar_size = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
-	hbox->Add(new wxStaticText(panel, -1, "Toolbar icon size:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
-	hbox->Add(choice_toolbar_size, 0, wxEXPAND | wxRIGHT, 4);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Toolbar icon size:"), wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(choice_toolbar_size, wxGBPosition(row, 1), wxDefaultSpan, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "*"), wxGBPosition(row++, 2), wxDefaultSpan, wxALIGN_CENTRE_VERTICAL);
+
+	// Icon set
+	vector<string> sets = Icons::getIconSets(Icons::GENERAL);
+	choice_iconset_general = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Icons:"), wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(choice_iconset_general, wxGBPosition(row, 1), wxDefaultSpan, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "*"), wxGBPosition(row++, 2), wxDefaultSpan, wxALIGN_CENTRE_VERTICAL);
+
+	gb_sizer->AddGrowableCol(1, 1);
+	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, 8);
 
 
 	// --- Entry List ---
 	panel = new wxPanel(stc_tabs, -1);
-	vsizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(vsizer);
 	sizer = new wxBoxSizer(wxVERTICAL);
-	vsizer->Add(sizer, 1, wxEXPAND | wxALL, 4);
+	panel->SetSizer(sizer);
+	gb_sizer = new wxGridBagSizer(8, 8);
+	sizer->Add(gb_sizer, 1, wxALL | wxEXPAND, 8);
 	stc_tabs->AddPage(panel, "Entry List");
 
 	// Show entry size as string instead of a number
+	row = 0;
 	cb_size_as_string = new wxCheckBox(panel, -1, "Show entry size as a string with units");
-	sizer->Add(cb_size_as_string, 0, wxEXPAND| wxALL, 4);
+	gb_sizer->Add(cb_size_as_string, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Filter directories
 	cb_filter_dirs = new wxCheckBox(panel, -1, "Ignore directories when filtering by name");
-	sizer->Add(cb_filter_dirs, 0, wxEXPAND|wxALL, 4);
+	gb_sizer->Add(cb_filter_dirs, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Entry list background colour by type
 	cb_elist_bgcol = new wxCheckBox(panel, -1, "Colour entry list item background by entry type");
-	sizer->Add(cb_elist_bgcol, 0, wxEXPAND|wxALL, 4);
+	gb_sizer->Add(cb_elist_bgcol, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
 	// Context menu submenus
 	cb_context_submenus = new wxCheckBox(panel, -1, "Group related entry context menu items into submenus");
-	sizer->Add(cb_context_submenus, 0, wxEXPAND|wxALL, 4);
+	gb_sizer->Add(cb_context_submenus, wxGBPosition(row++, 0), wxGBSpan(1, 2), wxEXPAND);
 
-	
+	// Icon set
+	sets = Icons::getIconSets(Icons::ENTRY);
+	choice_iconset_entry = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);
+	gb_sizer->Add(new wxStaticText(panel, -1, "Icons:"), wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTRE_VERTICAL);
+	gb_sizer->Add(choice_iconset_entry, wxGBPosition(row, 1), wxDefaultSpan, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(panel, -1, "*"), wxGBPosition(row++, 2), wxDefaultSpan, wxALIGN_CENTRE_VERTICAL);
+
+	gb_sizer->AddGrowableCol(1, 1);
+	sizer->Add(new wxStaticText(panel, -1, "* requires restart to take effect"), 0, wxALL | wxALIGN_RIGHT, 8);
 
 	
 
@@ -164,6 +186,22 @@ void InterfacePrefsPanel::init()
 	else
 		choice_toolbar_size->Select(2);
 
+	choice_iconset_general->SetSelection(0);
+	for (unsigned a = 0; a < choice_iconset_general->GetCount(); a++)
+		if (choice_iconset_general->GetString(a) == iconset_general)
+		{
+			choice_iconset_general->SetSelection(a);
+			break;
+		}
+
+	choice_iconset_entry->SetSelection(0);
+	for (unsigned a = 0; a < choice_iconset_entry->GetCount(); a++)
+		if (choice_iconset_entry->GetString(a) == iconset_entry_list)
+		{
+			choice_iconset_entry->SetSelection(a);
+			break;
+		}
+
 	//if (tab_style < 0)
 	//	tab_style = 0;
 	//else if (tab_style > 2)
@@ -189,6 +227,9 @@ void InterfacePrefsPanel::applyPreferences()
 		toolbar_size = 24;
 	else
 		toolbar_size = 32;
+
+	iconset_general = choice_iconset_general->GetString(choice_iconset_general->GetSelection());
+	iconset_entry_list = choice_iconset_entry->GetString(choice_iconset_entry->GetSelection());
 
 	//tab_style = choice_tab_style->GetSelection();
 }

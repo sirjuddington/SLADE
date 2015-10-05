@@ -359,10 +359,10 @@ void ArchiveManagerPanel::createRecentPanel()
 
 	// Setup image list
 	wxImageList* list = new wxImageList(16, 16, false, 0);
-	list->Add(getIcon("e_archive"));
-	list->Add(getIcon("e_wad"));
-	list->Add(getIcon("e_zip"));
-	list->Add(getIcon("e_folder"));
+	list->Add(Icons::getIcon(Icons::ENTRY, "archive"));
+	list->Add(Icons::getIcon(Icons::ENTRY, "wad"));
+	list->Add(Icons::getIcon(Icons::ENTRY, "zip"));
+	list->Add(Icons::getIcon(Icons::ENTRY, "folder"));
 	list_recent->SetImageList(list, wxIMAGE_LIST_SMALL);
 }
 
@@ -423,17 +423,17 @@ void ArchiveManagerPanel::refreshRecentFileList()
 		{
 			// Get path and determine icon
 			string fn = theArchiveManager->recentFile(a);
-			string icon = "e_archive";
+			string icon = "archive";
 			if (fn.EndsWith(".wad"))
-				icon = "e_wad";
+				icon = "wad";
 			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
-				icon = "e_zip";
+				icon = "zip";
 			else if (wxDirExists(fn))
-				icon = "e_folder";
+				icon = "folder";
 
 			// Create and add menu item
 			wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
-			mi->SetBitmap(getIcon(icon));
+			mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
 			menu_recent->Append(mi);
 		}
 	}
@@ -774,18 +774,18 @@ void ArchiveManagerPanel::openTab(Archive* archive)
 		wp = new ArchivePanel(stc_archives, archive);
 
 		// Determine icon
-		string icon = "e_archive";
+		string icon = "archive";
 		if (archive->getType() == ARCHIVE_WAD)
-			icon = "e_wad";
+			icon = "wad";
 		else if (archive->getType() == ARCHIVE_ZIP)
-			icon = "e_zip";
+			icon = "zip";
 		else if (archive->getType() == ARCHIVE_FOLDER)
-			icon = "e_folder";
+			icon = "folder";
 
 		wp->SetName("archive");
 		stc_archives->AddPage(wp, archive->getFilename(false), false);
 		stc_archives->SetSelection(stc_archives->GetPageCount() - 1);
-		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon(icon));
+		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, icon));
 		wp->addMenus();
 		wp->Show(true);
 		wp->SetFocus();
@@ -844,7 +844,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 		}
 
 		stc_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->getFilename(false)), true);
-		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon("e_texturex"));
+		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, "texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);
 		txed->Show(true);
@@ -934,7 +934,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
 
 	// Create new tab for the EntryPanel
 	stc_archives->AddPage(ep, S_FMT("%s/%s", entry->getParent()->getFilename(false), entry->getName()), true);
-	stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon(entry->getType()->getIcon()));
+	stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, entry->getType()->getIcon()));
 	ep->SetName("entry");
 	ep->Show(true);
 	ep->addCustomMenu();
