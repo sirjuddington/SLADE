@@ -106,6 +106,10 @@ namespace Icons
 		{
 			ArchiveEntry* entry = dir->getEntry(a);
 
+			// Ignore anything not png format
+			if (!entry->getName().EndsWith("png"))
+				continue;
+
 			// Export entry data to a temporary file
 			entry->exportFile(tempfile);
 
@@ -117,7 +121,6 @@ namespace Icons
 
 			// Add the icon
 			icons.push_back(n_icon);
-			wxLogMessage(n_icon.name);
 
 			// Delete the temporary file
 			wxRemoveFile(tempfile);
@@ -130,6 +133,10 @@ namespace Icons
 			for (size_t a = 0; a < dir_large->numEntries(false); a++)
 			{
 				ArchiveEntry* entry = dir_large->getEntry(a);
+
+				// Ignore anything not png format
+				if (!entry->getName().EndsWith("png"))
+					continue;
 
 				// Export entry data to a temporary file
 				entry->exportFile(tempfile);

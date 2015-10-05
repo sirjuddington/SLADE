@@ -415,7 +415,7 @@ void MainApp::initActions()
 	new SAction("main_showconsole", "&Console", "console", "Toggle the Console window", "Ctrl+2");
 	new SAction("main_showundohistory", "&Undo History", "undo", "Toggle the Undo History window", "Ctrl+3");
 	new SAction("main_onlinedocs", "Online &Documentation", "wiki", "View SLADE documentation online");
-	new SAction("main_about", "&About", "i_logo", "Informaton about SLADE", "", 0, wxID_ABOUT);
+	new SAction("main_about", "&About", "logo", "Informaton about SLADE", "", 0, wxID_ABOUT);
 	new SAction("main_updatecheck", "Check for Updates...", "", "Check online for updates");
 
 	// ArchiveManagerPanel
