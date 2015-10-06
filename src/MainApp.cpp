@@ -628,7 +628,7 @@ void MainApp::initActions()
 	new SAction("mapw_showproperties", "&Item Properties", "properties", "Toggle the Item Properties window", "Ctrl+1");
 	new SAction("mapw_showconsole", "&Console", "console", "Toggle the Console window", "Ctrl+2");
 	new SAction("mapw_showundohistory", "&Undo History", "undo", "Toggle the Undo History window", "Ctrl+3");
-	new SAction("mapw_showchecks", "Map Checks", "i_tick", "Toggle the Map Checks window", "Ctrl+4");
+	new SAction("mapw_showchecks", "Map Checks", "tick", "Toggle the Map Checks window", "Ctrl+4");
 	new SAction("mapw_showscripteditor", "Script &Editor", "text", "Toggle the Script Editor window", "Ctrl+5");
 	new SAction("mapw_run_map", "Run Map", "run", "Run the current map", "Ctrl+Shift+R");
 	new SAction("mapw_draw_lines", "Draw Lines", "linedraw", "Begin line drawing", "kb:me2d_begin_linedraw");
@@ -638,7 +638,7 @@ void MainApp::initActions()
 	new SAction("mapw_line_changetexture", "Change Texture", "", "Change the currently selected or hilighted line texture(s)", "kb:me2d_line_change_texture");
 	new SAction("mapw_line_changespecial", "Change Special", "", "Change the currently selected or hilighted line special");
 	new SAction("mapw_line_tagedit", "Edit Tagged", "", "Select sectors/things to tag to this line's special", "kb:me2d_line_tag_edit");
-	new SAction("mapw_line_correctsectors", "Correct Sectors", "i_tick", "Correct line sector references");
+	new SAction("mapw_line_correctsectors", "Correct Sectors", "tick", "Correct line sector references");
 	new SAction("mapw_line_flip", "Flip Line", "", "Flip the currently selected of hilighted line(s)", "kb:me2d_line_flip");
 	new SAction("mapw_thing_changetype", "Change Type", "", "Change the currently selected or hilighted thing type(s)", "kb:me2d_thing_change_type");
 	new SAction("mapw_thing_create", "Create Thing Here", "", "Create a new thing at the cursor position");
