@@ -626,6 +626,11 @@ bool MainWindow::exitProgram()
 			return false;
 	}
 
+	// Check if we can close the map editor
+	if (theMapEditor->IsShown())
+		if (!theMapEditor->tryClose())
+			return false;
+
 	// Close all archives
 	if (!panel_archivemanager->closeAll())
 		return false;
