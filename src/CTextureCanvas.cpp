@@ -259,10 +259,6 @@ void CTextureCanvas::drawTexture()
 	// Push matrix
 	glPushMatrix();
 
-	// Calculate top-left position of texture (for glScissor, since it ignores the current translation/scale)
-	double left = offset.x + (GetSize().x * 0.5) - (texture->getWidth() * 0.5 * scale);
-	double top = -offset.y + (GetSize().y * 0.5) - (texture->getHeight() * 0.5 * scale);
-
 	// Translate to middle of the canvas
 	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
 
@@ -285,16 +281,20 @@ void CTextureCanvas::drawTexture()
 		glScaled(1.0 / tscalex, 1.0 / tscaley, 1);
 	}
 
+	// Calculate top-left position of texture (for glScissor, since it ignores the current translation/scale)
+	point2_t screen_tl = texToScreenPosition(0, 0);
+	int left = screen_tl.x;
+	int top = screen_tl.y;
+
 	// Translate by offsets if needed
-	if (view_type == 0)
-		glTranslated(texture->getWidth() * -0.5, texture->getHeight() * -0.5, 0);	// No offsets
-	if (view_type >= 1)
-		glTranslated(-texture->getOffsetX(), -texture->getOffsetY(), 0);			// Sprite offsets
-	if (view_type == 2)
-		glTranslated(-160*tscalex, -100*tscaley, 0);								// HUD offsets
+	if (view_type == 0) // No offsets
+		glTranslated(texture->getWidth() * -0.5, texture->getHeight() * -0.5, 0);
+	if (view_type >= 1) // Sprite offsets
+		glTranslated(-texture->getOffsetX(), -texture->getOffsetY(), 0);
+	if (view_type == 2) // HUD offsets
+		glTranslated(-160 * tscalex, -100 * tscaley, 0);
 
 	// Draw the texture border
-	//if (gfx_show_border)
 	drawTextureBorder();
 
 	// Enable textures
@@ -315,7 +315,7 @@ void CTextureCanvas::drawTexture()
 	if (dragging)
 	{
 		glEnable(GL_SCISSOR_TEST);
-		glScissor(left, top, texture->getWidth() * scale, texture->getHeight() * scale);
+		glScissor(left, top, texture->getWidth() * scale * (1.0 / tscalex), texture->getHeight() * yscale * (1.0 / tscaley));
 		for (uint32_t a = 0; a < texture->nPatches(); a++)
 			drawPatch(a);
 		glDisable(GL_SCISSOR_TEST);
@@ -645,7 +645,7 @@ void CTextureCanvas::redraw(bool update_texture)
 	Refresh();
 }
 
-/* CTextureCanvas::screenToTextPosition
+/* CTextureCanvas::screenToTexPosition
  * Convert from [x,y] from the top left of the canvas to coordinates
  * relative to the top left of the texture
  *******************************************************************/
@@ -671,26 +671,70 @@ point2_t CTextureCanvas::screenToTexPosition(int x, int y)
 	int top = GetSize().y * 0.5 + offset.y;
 
 	// Adjust for view type
+	double yscale = (tx_arc ? scale * 1.2 : scale);
 	if (view_type == 0)
 	{
 		// None (centered)
 		left -= ((double)texture->getWidth() / scalex) * 0.5 * scale;
-		top -= ((double)texture->getHeight() / scaley) * 0.5 * scale;
+		top -= ((double)texture->getHeight() / scaley) * 0.5 * yscale;
 	}
 	if (view_type >= 1)
 	{
 		// Sprite
 		left -= ((double)texture->getOffsetX() / scalex) * scale;
-		top -= ((double)texture->getOffsetY() / scaley) * scale;
+		top -= ((double)texture->getOffsetY() / scaley) * yscale;
 	}
 	if (view_type == 2)
 	{
 		// HUD
 		left -= 160 * scale;
-		top -= 100 * scale;
+		top -= 100 * yscale;
 	}
 
-	return point2_t(double(x - left) / scale * scalex, double(y - top) / scale * scaley);
+	return point2_t(double(x - left) / scale * scalex, double(y - top) / yscale * scaley);
+}
+
+/* CTextureCanvas::screenToTexPosition
+ * Convert from [x,y] from the top left of the texture to
+ * coordinates relative to the top left of the canvas
+ *******************************************************************/
+point2_t CTextureCanvas::texToScreenPosition(int x, int y)
+{
+	// Get texture scale
+	double tscalex = 1;
+	double tscaley = 1;
+	if (tex_scale)
+	{
+		tscalex = texture->getScaleX();
+		if (tscalex == 0) tscalex = 1;
+		tscaley = texture->getScaleY();
+		if (tscaley == 0) tscaley = 1;
+	}
+	tscalex = 1.0 / tscalex;
+	tscaley = 1.0 / tscaley;
+
+	// Get top/left
+	double yscale = (tx_arc ? scale * 1.2 : scale);
+	double halfx = (texture->getWidth() * 0.5 * scale * tscalex);
+	double halfy = (texture->getHeight() * 0.5 * yscale * tscaley);
+	double left = offset.x + (GetSize().x * 0.5) - halfx;
+	double top = -offset.y + (GetSize().y * 0.5) - halfy;
+
+	// Adjust for view types
+	if (view_type >= 1)
+	{
+		// Sprite
+		left -= (texture->getOffsetX() * scale * tscalex) - halfx;
+		top += (texture->getOffsetY() * yscale * tscaley) - halfy;
+	}
+	if (view_type == 2)
+	{
+		// HUD
+		left -= (160 * scale);
+		top += (100 * yscale);
+	}
+
+	return point2_t(left, top);
 }
 
 /* CTextureCanvas::patchAt

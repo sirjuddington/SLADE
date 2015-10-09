@@ -858,6 +858,7 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 
 		// Redraw texture canvas
 		tex_canvas->redraw(false);
+		updateTextureControls();
 	}
 
 	// RIGHT MOUSE UP
@@ -882,29 +883,47 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 		// Drag selected patches if left button is down and any patch is selected
 		if (hack_nodrag)
 			hack_nodrag = false;
-		else if (e.LeftIsDown() && list_patches->GetSelectedItemCount() > 0)
+		else if (e.LeftIsDown())
 		{
-			// Get drag amount according to texture
-			point2_t tex_cur = tex_canvas->screenToTexPosition(e.GetX(), e.GetY());
-			point2_t tex_prev = tex_canvas->screenToTexPosition(tex_canvas->getMousePrevPos().x, tex_canvas->getMousePrevPos().y);
-			point2_t diff = tex_cur - tex_prev;
-
-			// Move any selected patches
-			wxArrayInt selected_patches = list_patches->selectedItems();
-			for (size_t a = 0; a < selected_patches.size(); a++)
+			if (list_patches->GetSelectedItemCount() > 0)
 			{
-				CTPatch* patch = tex_current->getPatch(selected_patches[a]);
-				if (!patch) continue;
-				int16_t cx = patch->xOffset();
-				int16_t cy = patch->yOffset();
-				patch->setOffsetX(cx + diff.x);
-				patch->setOffsetY(cy + diff.y);
-				tex_modified = true;
-			}
+				// Get drag amount according to texture
+				point2_t tex_cur = tex_canvas->screenToTexPosition(e.GetX(), e.GetY());
+				point2_t tex_prev = tex_canvas->screenToTexPosition(tex_canvas->getMousePrevPos().x, tex_canvas->getMousePrevPos().y);
+				point2_t diff = tex_cur - tex_prev;
 
-			// Refresh texture canvas
-			tex_canvas->showGrid(true);
-			tex_canvas->redraw(false);
+				// Move any selected patches
+				wxArrayInt selected_patches = list_patches->selectedItems();
+				for (size_t a = 0; a < selected_patches.size(); a++)
+				{
+					CTPatch* patch = tex_current->getPatch(selected_patches[a]);
+					if (!patch) continue;
+					int16_t cx = patch->xOffset();
+					int16_t cy = patch->yOffset();
+					patch->setOffsetX(cx + diff.x);
+					patch->setOffsetY(cy + diff.y);
+					tex_modified = true;
+				}
+
+				// Refresh texture canvas
+				tex_canvas->showGrid(true);
+				tex_canvas->redraw(false);
+			}
+			else if (tex_current->isExtended() && tex_canvas->getViewType() > 0)
+			{
+				// Get drag amount according to texture
+				point2_t tex_cur = tex_canvas->screenToTexPosition(e.GetX(), e.GetY());
+				point2_t tex_prev = tex_canvas->screenToTexPosition(tex_canvas->getMousePrevPos().x, tex_canvas->getMousePrevPos().y);
+				point2_t diff = tex_cur - tex_prev;
+
+				// Modify offsets
+				tex_current->setOffsetX(tex_current->getOffsetX() - diff.x);
+				tex_current->setOffsetY(tex_current->getOffsetY() - diff.y);
+				tex_modified = true;
+
+				// Refresh texture canvas
+				tex_canvas->redraw(false);
+			}
 		}
 	}
 
