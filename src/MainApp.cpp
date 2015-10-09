@@ -52,6 +52,7 @@
 #include "Misc.h"
 #include "VersionCheck.h"
 #include "dumb/dumb.h"
+#include "OpenGL.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>
@@ -60,6 +61,7 @@
 #include <wx/sysopt.h>
 #include <wx/filename.h>
 #include <wx/protocol/http.h>
+#include <wx/clipbrd.h>
 
 #undef BOOL
 #include <FreeImage.h>
@@ -173,6 +175,9 @@ class SLADECrashDialog : public wxDialog
 {
 private:
 	wxTextCtrl*	text_stack;
+	wxButton*	btn_copy_trace;
+	wxButton*	btn_exit;
+	string		trace;
 
 public:
 	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE3 Application Crash")
@@ -183,37 +188,81 @@ public:
 
 		// Add general crash method
 		string message = "SLADE3 has crashed unexpectedly. To help fix the problem that caused this crash,\nplease copy+paste the information from the window below to a text file, and email\nit to <sirjuddington@gmail.com> along with a description of what you were\ndoing at the time of the crash. Sorry for the inconvenience.";
-		sizer->Add(new wxStaticText(this, -1, message), 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 4);
+		sizer->Add(new wxStaticText(this, -1, message), 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxTOP, 10);
 
-		// Setup stack trace string
-		string trace = S_FMT("Version: %s\n", Global::version);
+		// SLADE info
+		trace = S_FMT("Version: %s\n", Global::version);
 		if (current_action.IsEmpty())
 			trace += "No current action\n";
 		else
 			trace += S_FMT("Current action: %s", current_action);
 		trace += "\n";
+
+		// System info
+		OpenGL::gl_info_t gl_info = OpenGL::getInfo();
+		trace += "Operating System: " + wxGetOsDescription() + "\n";
+		trace += "Graphics Vendor: " + gl_info.vendor + "\n";
+		trace += "Graphics Hardware: " + gl_info.renderer + "\n";
+		trace += "OpenGL Version: " + gl_info.version + "\n";
+
+		// Stack trace
+		trace += "\n";
 		trace += st.getTraceString();
+
+		// Last 5 log lines
+		trace += "\nLast Log Messages:\n";
+		vector<string> lines = theConsole->lastLogLines(10);
+		for (unsigned a = 0; a < lines.size(); a++)
+			trace += lines[a];
 
 		// Add stack trace text area
 		text_stack = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL);
 		text_stack->SetValue(trace);
 		text_stack->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-		sizer->Add(text_stack, 1, wxEXPAND|wxALL, 4);
+		sizer->Add(text_stack, 1, wxEXPAND|wxALL, 10);
 
 		// Dump stack trace to a file (just in case)
 		wxFile file(appPath("slade3_crash.log", DIR_USER), wxFile::write);
 		file.Write(trace);
 		file.Close();
 
-		// Add standard 'OK' button
-		sizer->Add(CreateStdDialogButtonSizer(wxOK), 0, wxEXPAND|wxALL, 4);
+		// Add 'Copy Stack Trace' button
+		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 6);
+		btn_copy_trace = new wxButton(this, -1, "Copy Stack Trace");
+		hbox->AddStretchSpacer();
+		hbox->Add(btn_copy_trace, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		btn_copy_trace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnCopyTrace, this);
+
+		// Add 'Exit SLADE' button
+		btn_exit = new wxButton(this, -1, "Exit SLADE");
+		hbox->Add(btn_exit, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		btn_exit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
 
 		// Setup layout
 		Layout();
 		SetInitialSize(wxSize(500, 500));
+		CenterOnParent();
 	}
 
 	~SLADECrashDialog() {}
+
+	void onBtnCopyTrace(wxCommandEvent& e)
+	{
+		if (wxTheClipboard->Open())
+		{
+			wxTheClipboard->SetData(new wxTextDataObject(trace));
+			wxTheClipboard->Close();
+			wxMessageBox("Stack trace successfully copied to clipboard");
+		}
+		else
+			wxMessageBox("Unable to access the system clipboard, please select+copy the text above manually", wxMessageBoxCaptionStr, wxICON_EXCLAMATION);
+	}
+
+	void onBtnExit(wxCommandEvent& e)
+	{
+		EndModal(wxID_OK);
+	}
 };
 #endif//__APPLE__
 
