@@ -226,6 +226,9 @@ public:
 		file.Write(trace);
 		file.Close();
 
+		// Also dump stack trace to console
+		std::cerr << trace;
+
 		// Add 'Copy Stack Trace' button
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 6);
@@ -252,6 +255,7 @@ public:
 		if (wxTheClipboard->Open())
 		{
 			wxTheClipboard->SetData(new wxTextDataObject(trace));
+			wxTheClipboard->Flush();
 			wxTheClipboard->Close();
 			wxMessageBox("Stack trace successfully copied to clipboard");
 		}
