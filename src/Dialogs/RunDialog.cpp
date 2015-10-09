@@ -426,8 +426,13 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", exe->name), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		Executables::addGameExeConfig(choice_game_exes->GetSelection(), dlg.getName(), dlg.getParams());
-		choice_config->AppendString(dlg.getName());
+		string name = dlg.getName();
+
+		if (name.IsEmpty())
+			name = S_FMT("Config %d", choice_config->GetCount() + 1);
+
+		Executables::addGameExeConfig(choice_game_exes->GetSelection(), name, dlg.getParams());
+		choice_config->AppendString(name);
 		choice_config->Select(choice_config->GetCount() - 1);
 	}
 }
@@ -449,9 +454,10 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		exe->configs[index].key = dlg.getName();
+		string name = dlg.getName().IsEmpty() ? exe->configs[index].key : dlg.getName();
+		exe->configs[index].key = name;
 		exe->configs[index].value = dlg.getParams();
-		choice_config->SetString(index, dlg.getName());
+		choice_config->SetString(index, name);
 	}
 }
 

@@ -83,6 +83,7 @@ public:
 	void		refreshToolBar();
 	void		editObjectProperties(vector<MapObject*>& objects);
 	void		setUndoManager(UndoManager* manager);
+	bool		tryClose();
 
 	MapObjectPropsPanel*	propsPanel() { return panel_obj_props; }
 	ObjectEditPanel*		objectEditPanel() { return panel_obj_edit; }

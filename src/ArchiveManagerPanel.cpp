@@ -1287,6 +1287,8 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 		// Add recent file
 		theArchiveManager->addRecentFile(filename);
 	}
+	else
+		return false;
 
 	return true;
 }

@@ -631,6 +631,11 @@ bool MainWindow::exitProgram()
 			return false;
 	}
 
+	// Check if we can close the map editor
+	if (theMapEditor->IsShown())
+		if (!theMapEditor->tryClose())
+			return false;
+
 	// Close all archives
 	if (!panel_archivemanager->closeAll())
 		return false;
@@ -859,7 +864,10 @@ bool MainWindow::handleAction(string id)
 	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
-		info.SetVersion("v" + Global::version);
+		string version = "v" + Global::version;
+		if (Global::sc_rev != "")
+			version = version + " (Git Rev " + Global::sc_rev + ")";
+		info.SetVersion(version);
 		info.SetWebSite("http://slade.mancubus.net");
 		info.SetDescription("It's a Doom Editor");
 

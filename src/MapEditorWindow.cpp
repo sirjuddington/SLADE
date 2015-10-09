@@ -490,6 +490,17 @@ bool MapEditorWindow::createMap()
  *******************************************************************/
 bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 {
+	// If a map is currently open and modified, prompt to save changes
+	if (editor.getMap().isModified())
+	{
+		wxMessageDialog md(this, S_FMT("Save changes to map %s?", currentMapDesc().name), "Unsaved Changes", wxYES_NO | wxCANCEL);
+		int answer = md.ShowModal();
+		if (answer == wxID_YES)
+			saveMap();
+		else if (answer == wxID_CANCEL)
+			return true;
+	}
+
 	// Show blank map
 	this->Show(true);
 	map_canvas->Refresh();
@@ -938,6 +949,26 @@ void MapEditorWindow::refreshToolBar()
 	toolbar->Refresh();
 }
 
+/* MapEditorWindow::tryClose
+ * Checks if the currently open map is modified and prompts to save.
+ * If 'Cancel' is clicked then this will return false (ie. we don't
+ * want to close the window)
+ *******************************************************************/
+bool MapEditorWindow::tryClose()
+{
+	if (editor.getMap().isModified())
+	{
+		wxMessageDialog md(this, S_FMT("Save changes to map %s?", currentMapDesc().name), "Unsaved Changes", wxYES_NO | wxCANCEL);
+		int answer = md.ShowModal();
+		if (answer == wxID_YES)
+			return saveMap();
+		else if (answer == wxID_CANCEL)
+			return false;
+	}
+
+	return true;
+}
+
 /* MapEditorWindow::editObjectProperties
  * Opens the property editor for [objects]
  *******************************************************************/
@@ -1019,11 +1050,12 @@ bool MapEditorWindow::handleAction(string id)
 	if (id == "mapw_save")
 	{
 		// Save map
-		saveMap();
-
-		// Save archive
-		Archive* a = currentMapDesc().head->getParent();
-		if (a && save_archive_with_map) a->save();
+		if (saveMap())
+		{
+			// Save archive
+			Archive* a = currentMapDesc().head->getParent();
+			if (a && save_archive_with_map) a->save();
+		}
 
 		return true;
 	}
@@ -1239,17 +1271,10 @@ bool MapEditorWindow::handleAction(string id)
  *******************************************************************/
 void MapEditorWindow::onClose(wxCloseEvent& e)
 {
-	if (editor.getMap().isModified())
+	if (!tryClose())
 	{
-		wxMessageDialog md(this, S_FMT("Save changes to map %s?", currentMapDesc().name), "Unsaved Changes", wxYES_NO|wxCANCEL);
-		int answer = md.ShowModal();
-		if (answer == wxID_YES)
-			saveMap();
-		else if (answer == wxID_CANCEL)
-		{
-			e.Veto();
-			return;
-		}
+		e.Veto();
+		return;
 	}
 
 	// Save current layout
