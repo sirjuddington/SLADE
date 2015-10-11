@@ -11,6 +11,7 @@
 #include "PatchBrowser.h"
 #include <wx/aui/auibook.h>
 
+class UndoManager;
 class TextureXEditor : public wxPanel, public Listener
 {
 private:
@@ -19,6 +20,7 @@ private:
 	PatchTable					patch_table;		// The patch table for TEXTURE1/2 (ie PNAMES)
 	vector<TextureXPanel*>		texture_editors;	// One panel per TEXTUREX list (ie TEXTURE1/TEXTURE2)
 	PatchBrowser*				patch_browser;		// The patch browser window
+	UndoManager*				undo_manager;
 
 	// UI Stuff
 	wxAuiNotebook*		tabs;
@@ -32,9 +34,10 @@ public:
 	TextureXEditor(wxWindow* parent);
 	~TextureXEditor();
 
-	Archive*	getArchive() { return archive; }
-	PatchTable&	patchTable() { return patch_table; }
-	void		pnamesModified(bool mod = true) { pnames_modified = mod; }
+	Archive*		getArchive() { return archive; }
+	PatchTable&		patchTable() { return patch_table; }
+	void			pnamesModified(bool mod = true) { pnames_modified = mod; }
+	UndoManager*	getUndoManager() { return undo_manager; }
 
 	bool	openArchive(Archive* archive);
 	void	updateTexturePalette();
@@ -44,6 +47,8 @@ public:
 	void	setSelection(size_t index);
 	void	setSelection(ArchiveEntry* entry);
 	void	updateMenuStatus();
+	void	undo();
+	void	redo();
 
 	// Editing
 	bool	removePatch(unsigned index, bool delete_entry = false);

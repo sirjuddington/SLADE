@@ -29,6 +29,7 @@ public:
 	void		sortItems();
 };
 
+class UndoManager;
 class TextureXPanel : public wxPanel, SActionHandler
 {
 private:
@@ -37,6 +38,7 @@ private:
 	ArchiveEntry*		tx_entry;
 	CTexture*			tex_current;
 	bool				modified;
+	UndoManager*		undo_manager;
 
 	TextureXListView*	list_textures;
 	TextureEditorPanel*	texture_editor;
@@ -53,14 +55,17 @@ public:
 	TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor);
 	~TextureXPanel();
 
-	TextureXList&	txList() { return texturex; }
-	ArchiveEntry*	txEntry() { return tx_entry; }
-	bool			isModified() { return modified; }
+	TextureXList&		txList() { return texturex; }
+	ArchiveEntry*		txEntry() { return tx_entry; }
+	bool				isModified() { return modified; }
+	CTexture*			currentTexture() { return tex_current; }
+	TextureEditorPanel*	textureEditor() { return texture_editor; }
 
 	bool	openTEXTUREX(ArchiveEntry* texturex);
 	bool	saveTEXTUREX();
 	void	setPalette(Palette8bit* pal);
 	void	applyChanges();
+	void	updateTextureList() { list_textures->updateList(); }
 
 	// Texture operations
 	CTexture*	newTextureFromPatch(string name, string patch);
@@ -78,6 +83,10 @@ public:
 	void		sort();
 	void		copy();
 	void		paste();
+
+	// Undo/Redo
+	void	onUndo(string undo_action);
+	void	onRedo(string undo_action);
 
 	// SAction handler
 	bool	handleAction(string id);
