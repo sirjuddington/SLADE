@@ -142,7 +142,7 @@ decorate : cstyle {
 		EXPLODEONWATER, EXTREMEDEATH, FASTER, FASTMELEE, FIREDAMAGE, FIRERESIST, FIXMAPTHINGPOS, FLOAT,
 		FLOATBOB, FLOORCLIP, FLOORHUGGER, FOILBUDDHA, FOILINVUL, FORCEDECAL, FORCEPAIN, FORCERADIUSDMG, FORCEXYBILLBOARD, 
 		FORCEYBILLBOARD, FRIENDLY, FRIGHTENED, FULLVOLACTIVE, FULLVOLDEATH, GHOST, GRENADETRAIL, HARMFRIENDS,
-		HERETICBOUNCE, HEXENBOUNCE, HITMASTER, HITTARGET, HITTRACER, ICECORPSE, ICEDAMAGE, INCOMBAT, INVISIBLE,
+		HERETICBOUNCE, HEXENBOUNCE, HITMASTER, HITTARGET, HITTRACER, ICECORPSE, ICEDAMAGE, ICESHATTER, INCOMBAT, INVISIBLE,
 		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LAXTELEFRAGDMG, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY, 
 		MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST, 
 		NEVERRESPAWN, NEVERTARGET, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS, NOBOSSRIP, NOBOUNCESOUND, 
@@ -204,6 +204,10 @@ decorate : cstyle {
 		BLOCKF_CREATURES, BLOCKF_EVERYTHING, BLOCKF_FLOATERS, BLOCKF_MONSTERS, BLOCKF_PLAYERS,
 		BLOCKF_PROJECTILES, BLOCKF_RAILING, BLOCKF_USE,
 		CBAF_AIMFACING, CBAF_EXPLICITANGLE, CBAF_NOPITCH, CBAF_NORANDOM, CBAF_NORANDOMPUFFZ,
+
+		// A_CheckBlock flags
+		CBF_NOLINES, CBF_SETTARGET, CBF_SETMASTER, CBF_SETTRACER, CBF_SETONPTR,
+
 		CHAN_5, CHAN_6, CHAN_7, CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL,
 		CHAN_NOPAUSE, CHAN_UI, CHAN_VOICE, CHAN_WEAPON,
 		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT,
@@ -234,7 +238,7 @@ decorate : cstyle {
 		FAF_BOTTOM, FAF_MIDDLE, FAF_TOP, FAF_NODISTFACTOR,
 
 		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO, FBF_NORANDOMPUFFZ,
-		FPF_AIMATANGLE, FPF_TRANSFERTRANSLATION,
+		FPF_AIMATANGLE, FPF_TRANSFERTRANSLATION, FPF_NOAUTOAIM,
 
 		// A_Fade* functions flags
 		FTF_REMOVE, FTF_CLAMP,
@@ -452,21 +456,22 @@ decorate : cstyle {
 		A_CheckRange = "float distance, state label, [bool two_dimension]", "float distance, int offset, [bool two_dimension]";
 		A_CheckSight = "string state", "int offset";
 		A_CheckSightOrRange = "float distance, string state, [bool two_dimension]", "float distance, int offset, [bool two_dimension]";
+		A_CheckBlock = "string state, [int flags], [int pointer]";
 
 		A_Jump = "int chance, string state, [...]", "int chance, int offset, [...]";
 		A_JumpIf = "condition, string state", "condition, int offset";
 		A_JumpIfArmorType = "string armortype, string state, [int minimum]", "string armortype, int offset, [int minimum]";
-		A_JumpIfCloser = "float distance, string state", "float distance, int offset";
+		A_JumpIfCloser = "float distance, string state, [bool no_z]", "float distance, int offset, [bool no_z]";
 		A_JumpIfHealthLower = "int health, string state, [int ptr_selector]", "int health, int offset, [int ptr_selector]";
 		A_JumpIfInventory = "string inventorytype, int amount, string state, [pointer owner]", "string inventorytype, int amount, int offset, [pointer owner]";
 		A_JumpIfInTargetInventory = "string item, int count, string state, [pointer forward]", "string item, int count, int offset, [pointer forward]";
-		A_JumpIfMasterCloser = "float distance, string state", "float distance, int offset";
+		A_JumpIfMasterCloser = "float distance, string state, [bool no_z]", "float distance, int offset, [bool no_z]";
 		A_JumpIfNoAmmo = "string state", "int offset";
 		A_JumpIfTargetInsideMeleeRange = "string state", "int offset";
 		A_JumpIfTargetOutsideMeleeRange = "string state", "int offset";
 		A_JumpIfTargetInLOS = "string state, [float fov], [int flags], [float dist_max], [float dist_close]", "int offset, [float fov], [int flags], [float dist_max], [float dist_close]";
 		A_JumpIfInTargetLOS = "string state, [float fov], [int flags], [float dist_max], [float dist_close]", "int offset, [float fov], [int flags], [float dist_max], [float dist_close]";
-		A_JumpIfTracerCloser = "float distance, string state", "float distance, int offset";
+		A_JumpIfTracerCloser = "float distance, string state, [bool no_z]", "float distance, int offset, [bool no_z]";
 		A_JumpIfTargetInsideMeleeRange = "string state", "int offset";
 		A_JumpIfTargetOutsideMeleeRange = "string state", "int offset";
 		A_JumpIfHigherOrLower = "string high, string low, [float offsethigh], [float offsetlow], [bool includeheight], [pointer ptr]";
@@ -513,6 +518,7 @@ decorate : cstyle {
 		A_SetPitch = "float pitch, [int flags], [int pointer]";
 		A_SetSpecial = "int special, [int arg0], [int arg1], [int arg2], [int arg3], [int arg4]";
 		A_SetSpeed = "float speed, [int pointer]";
+		A_SetFloatSpeed = "float speed, [int pointer]";
 		A_SetScale = "float scalex, [float scaley], [int pointer]";
 		A_SetMass = "int mass";
 		A_SetTeleFog = "string oldpos, string newpos";
@@ -529,6 +535,7 @@ decorate : cstyle {
 		A_SetRipMin = "int min";
 		A_SetRipMax = "int max";
 		A_SetSpecies = "string species, [int pointer]";
+		A_SetPainThreshold = "int threshold, [int pointer]";
 
 		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
 		A_Tracer;
