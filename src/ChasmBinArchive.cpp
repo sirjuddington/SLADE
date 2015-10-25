@@ -76,6 +76,24 @@ string ChasmBinArchive::getFormat()
 	return "archive_chasm_bin";
 }
 
+static void FixBrokenWave(ArchiveEntry* const entry)
+{
+	static const uint32_t MIN_WAVE_SIZE = 44;
+
+	if ("snd_wav" != entry->getType()->getFormat()
+		|| entry->getSize() < MIN_WAVE_SIZE)
+	{
+		return;
+	}
+
+	// Some wave files have an incorrect size of the format chunk
+	uint32_t* const format_size = reinterpret_cast<uint32_t*>(&entry->getMCData()[0x10]);
+	if (0x12 == *format_size)
+	{
+		*format_size = 0x10;
+	}
+}
+
 /* ChasmBinArchive::open
  * Reads Chasm bin format data from a MemChunk
  * Returns true if successful, false otherwise
@@ -177,6 +195,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 
 		// Detect entry type
 		EntryType::detectEntryType(entry);
+		FixBrokenWave(entry);
 
 		// Unload entry data if needed
 		if (!archive_load_data)
