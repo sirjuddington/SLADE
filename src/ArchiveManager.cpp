@@ -320,6 +320,8 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 		new_archive = new DiskArchive();
 	else if (PodArchive::isPodArchive(filename))
 		new_archive = new PodArchive();
+	else if (ChasmBinArchive::isChasmBinArchive(filename))
+		new_archive = new ChasmBinArchive();
 	else
 	{
 		// Unsupported format
@@ -432,6 +434,8 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 		new_archive = new DiskArchive();
 	else if (entry->getName().Lower().EndsWith(".pod") && PodArchive::isPodArchive(entry->getMCData()))
 		new_archive = new PodArchive();
+	else if (ChasmBinArchive::isChasmBinArchive(entry->getMCData()))
+		new_archive = new ChasmBinArchive();
 	else
 	{
 		// Unsupported format
@@ -764,6 +768,7 @@ string ArchiveManager::getArchiveExtensionsString()
 	string ext_rff = "*.rff;*.RFF;*.Rff";						extensions += ext_rff + ";";
 	string ext_disk = "*.disk;*.DISK;*.Disk";					extensions += ext_disk+ ";";
 	string ext_pod = "*.pod;*.POD;*.Pod";						extensions += ext_pod + ";";
+	string ext_csm = "*.bin;*.BIN;*.Bin";						extensions += ext_csm + ";";
 #ifdef __APPLE__
 	// Cocoa supports filters with file extensions only
 	string ext_wolf =	"*.wl1;*.wl3;*.wl6;"
@@ -798,6 +803,7 @@ string ArchiveManager::getArchiveExtensionsString()
 	extensions += S_FMT("|Wolfenstein 3D files|%s",					ext_wolf);
 	extensions += S_FMT("|Nerve Software Disk files|%s",			ext_disk);
 	extensions += S_FMT("|Terminal Velocity POD files (*.pod)|%s",	ext_pod);
+	extensions += S_FMT("|Chasm: The Rift BIN files (*.bin)|%s",	ext_csm);
 
 	return extensions;
 }

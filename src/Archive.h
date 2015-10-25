@@ -79,7 +79,8 @@ enum ArchiveTypes
 	ARCHIVE_7Z,
 	ARCHIVE_DISK,
 	ARCHIVE_FOLDER,
-	ARCHIVE_POD
+	ARCHIVE_POD,
+	ARCHIVE_CHASM_BIN,
 };
 
 struct archive_desc_t
