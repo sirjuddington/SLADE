@@ -20,3 +20,4 @@
 #include "TarArchive.h"
 #include "DiskArchive.h"
 #include "PodArchive.h"
+#include "ChasmBinArchive.h"
