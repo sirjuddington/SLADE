@@ -62,6 +62,8 @@
 #include <wx/filename.h>
 #include <wx/protocol/http.h>
 #include <wx/clipbrd.h>
+#include <wx/snglinst.h>
+#include <wx/ipc.h>
 
 #undef BOOL
 #include <FreeImage.h>
@@ -269,6 +271,55 @@ public:
 	}
 };
 #endif//__APPLE__
+
+
+/* MainAppFileListener and related Classes
+ * wxWidgets IPC classes used to send filenames of archives to open
+ * from one SLADE instance to another in the case where a second
+ * instance is opened
+ *******************************************************************/
+class MainAppFLConnection : public wxConnection
+{
+public:
+	MainAppFLConnection() {}
+	~MainAppFLConnection() {}
+
+	bool OnAdvise(const wxString& topic, const wxString& item, char* data, int size, wxIPCFormat format)
+	{
+		return true;
+	}
+
+	virtual bool OnPoke(const wxString& topic, const wxString& item, const void *data, size_t size, wxIPCFormat format)
+	{
+		theArchiveManager->openArchive(item);
+		return true;
+	}
+};
+
+class MainAppFileListener : public wxServer
+{
+public:
+	MainAppFileListener() {}
+	~MainAppFileListener() {}
+
+	wxConnectionBase* OnAcceptConnection(const wxString& topic)
+	{
+		return new MainAppFLConnection();
+	}
+};
+
+class MainAppFLClient : public wxClient
+{
+public:
+	MainAppFLClient() {}
+	~MainAppFLClient() {}
+
+	wxConnectionBase* OnMakeConnection()
+	{
+		return new MainAppFLConnection();
+	}
+};
+
 
 /*******************************************************************
  * FUNCTIONS
@@ -723,11 +774,49 @@ void MainApp::initActions()
 	getAction("mapw_script_togglelanguage")->toggled = script_show_language_list;
 }
 
+/* MainApp::singleInstanceCheck
+ * Checks if another instance of SLADE is already running, and if so,
+ * sends the args to the file listener of the existing SLADE
+ * process. Returns false if another instance was found
+ *******************************************************************/
+bool MainApp::singleInstanceCheck()
+{
+	single_instance_checker = new wxSingleInstanceChecker;
+	if (single_instance_checker->IsAnotherRunning())
+	{
+		delete single_instance_checker;
+
+		// Connect to the file listener of the existing SLADE process
+		MainAppFLClient* client = new MainAppFLClient();
+		MainAppFLConnection* connection = (MainAppFLConnection*)client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files");
+
+		if (connection)
+		{
+			// Send args as archives to open
+			for (int a = 1; a < argc; a++)
+			{
+				string arg = argv[a];
+				connection->Poke(arg, arg);
+			}
+
+			connection->Disconnect();
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
 /* MainApp::OnInit
  * Application initialization, run when program is started
  *******************************************************************/
 bool MainApp::OnInit()
 {
+	// Check if an instance of SLADE is already running
+	if (!singleInstanceCheck())
+		return false;
+
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
 	setlocale(LC_ALL, "C");
@@ -736,6 +825,10 @@ bool MainApp::OnInit()
 	Global::error = "";
 	ArchiveManager::getInstance();
 	init_ok = false;
+
+	// Start up file listener
+	file_listener = new MainAppFileListener();
+	file_listener->Create("SLADE_MAFL");
 
 	// Init variables
 	action_invalid = new SAction("invalid", "Invalid Action", "", "Something's gone wrong here");
@@ -923,6 +1016,8 @@ int MainApp::OnExit()
 	ArchiveManager::deleteInstance();
 	Console::deleteInstance();
 	SplashWindow::deleteInstance();
+	delete single_instance_checker;
+	delete file_listener;
 
 	// Clear temp folder
 	wxDir temp;
