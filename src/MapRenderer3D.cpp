@@ -1260,8 +1260,6 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (lpeg)	// Lower unpegged
-			yoff += (ceiling1 - floor2);
 		if (udmf_zdoom)
 		{
 			// ZDoom UDMF extra offsets
@@ -1282,6 +1280,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		xoff *= sx;
 		yoff *= sy;
+
+		if (lpeg)	// Lower unpegged
+			yoff += (ceiling1 - floor2);
 
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), fp2, fp1);
@@ -1428,8 +1429,6 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (lpeg)	// Lower unpegged
-			yoff += (ceiling2 - floor1);
 		if (udmf_zdoom)
 		{
 			// ZDoom UDMF extra offsets
@@ -1450,6 +1449,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 		xoff *= sx;
 		yoff *= sy;
+
+		if (lpeg)	// Lower unpegged
+			yoff += (ceiling2 - floor1);
 
 		// Create quad
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), fp1, fp2);
