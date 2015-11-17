@@ -110,9 +110,9 @@ double MathStuff::distance3d(fpoint3_t p1, fpoint3_t p2)
  * point at [x,y] lies on. Positive is front, negative is back, zero
  * is on the line
  *******************************************************************/
-double MathStuff::lineSide(double x, double y, double x1, double y1, double x2, double y2)
+double MathStuff::lineSide(fpoint2_t point, fseg2_t line)
 {
-	return -((y-y1)*(x2-x1) - (x-x1)*(y2-y1));
+	return (point.x - line.x1()) * line.height() - (point.y - line.y1()) * line.width();
 }
 
 /* MathStuff::closestPointOnLine

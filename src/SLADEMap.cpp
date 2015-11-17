@@ -3836,7 +3836,7 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 
 		// Check side of line
 		MapSector* sector = NULL;
-		if (MathStuff::lineSide(mid.x, mid.y, l->x1(), l->y1(), l->x2(), l->y2()) >= 0)
+		if (MathStuff::lineSide(mid, l->seg()) >= 0)
 			sector = l->frontSector();
 		else
 			sector = l->backSector();

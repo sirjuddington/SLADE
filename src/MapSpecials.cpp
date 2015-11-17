@@ -624,9 +624,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 
 		// Line slope things only affect the sector on the side of the line
 		// that faces the thing
-		double side = MathStuff::lineSide(
-			thing->xPos(), thing->yPos(),
-			line->x1(), line->y1(), line->x2(), line->y2());
+		double side = MathStuff::lineSide(thing->point(), line->seg());
 		MapSector* target = NULL;
 		if (side < 0)
 			target = line->backSector();

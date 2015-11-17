@@ -696,7 +696,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	int closest = -1;
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		if (MathStuff::lineSide(vertices[a].x, vertices[a].y, vertices[v1].x, vertices[v1].y, vertices[v2].x, vertices[v2].y) > 0 && vertices[a].ok)
+		if (MathStuff::lineSide(vertices[a], fseg2_t(vertices[v1], vertices[v2])) > 0 && vertices[a].ok)
 		{
 			vertices[a].distance = MathStuff::distance(vertices[v2].x, vertices[v2].y, vertices[a].x, vertices[a].y);
 			if (vertices[a].distance < min_dist)

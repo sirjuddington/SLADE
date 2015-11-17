@@ -315,6 +315,8 @@ Polygon2D* MapSector::getPolygon()
  *******************************************************************/
 bool MapSector::isWithin(double x, double y)
 {
+	fpoint2_t point(x, y);
+
 	// Check with bbox first
 	if (!boundingBox().point_within(x, y))
 		return false;
@@ -348,7 +350,7 @@ bool MapSector::isWithin(double x, double y)
 		return false;
 
 	// Check the side of the nearest line
-	double side = MathStuff::lineSide(x, y, nline->x1(), nline->y1(), nline->x2(), nline->y2());
+	double side = MathStuff::lineSide(point, nline->seg());
 	if (side >= 0 && nline->frontSector() == this)
 		return true;
 	else if (side < 0 && nline->backSector() == this)

@@ -1902,7 +1902,7 @@ void MapRenderer3D::renderThings()
 	uint8_t light;
 	float x1, y1, x2, y2;
 	unsigned update = 0;
-	fpoint2_t strafe(cam_position.x + cam_strafe.x, cam_position.y + cam_strafe.y);
+	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 	for (unsigned a = 0; a < map->nThings(); a++)
 	{
 		MapThing* thing = map->getThing(a);
@@ -1911,7 +1911,7 @@ void MapRenderer3D::renderThings()
 		// Check side of camera
 		if (cam_pitch > -0.9 && cam_pitch < 0.9)
 		{
-			if (MathStuff::lineSide(thing->xPos(), thing->yPos(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
+			if (MathStuff::lineSide(thing->point(), strafe) > 0)
 				continue;
 		}
 
@@ -2297,7 +2297,7 @@ void MapRenderer3D::quickVisDiscard()
 	double x = cam_position.x;
 	double y = cam_position.y;
 	double min_dist, dist;
-	fpoint2_t strafe(x + cam_strafe.x, y + cam_strafe.y);
+	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		// Get sector bbox
@@ -2313,10 +2313,10 @@ void MapRenderer3D::quickVisDiscard()
 		// Check side of camera
 		if (cam_pitch > -0.9 && cam_pitch < 0.9)
 		{
-			if (MathStuff::lineSide(bbox.min.x, bbox.min.y, x, y, strafe.x, strafe.y) > 0 &&
-			        MathStuff::lineSide(bbox.max.x, bbox.min.y, x, y, strafe.x, strafe.y) > 0 &&
-			        MathStuff::lineSide(bbox.max.x, bbox.max.y, x, y, strafe.x, strafe.y) > 0 &&
-			        MathStuff::lineSide(bbox.min.x, bbox.max.y, x, y, strafe.x, strafe.y) > 0)
+			if (MathStuff::lineSide(bbox.min, strafe) > 0 &&
+			        MathStuff::lineSide(fpoint2_t(bbox.max.x, bbox.min.y), strafe) > 0 &&
+			        MathStuff::lineSide(bbox.max, strafe) > 0 &&
+			        MathStuff::lineSide(fpoint2_t(bbox.min.x, bbox.max.y), strafe) > 0)
 			{
 				// Behind camera, invisible
 				dist_sectors[a] = -1.0f;
@@ -2383,7 +2383,7 @@ void MapRenderer3D::checkVisibleQuads()
 	n_quads = 0;
 	unsigned updates = 0;
 	bool update = false;
-	fpoint2_t strafe(cam_position.x+cam_strafe.x, cam_position.y+cam_strafe.y);
+	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		line = map->getLine(a);
@@ -2395,8 +2395,8 @@ void MapRenderer3D::checkVisibleQuads()
 		// Check side of camera
 		if (cam_pitch > -0.9 && cam_pitch < 0.9)
 		{
-			if (MathStuff::lineSide(line->x1(), line->y1(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0 &&
-			        MathStuff::lineSide(line->x2(), line->y2(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
+			if (MathStuff::lineSide(line->point1(), strafe) > 0 &&
+			        MathStuff::lineSide(line->point2(), strafe) > 0)
 				continue;
 		}
 
@@ -2442,7 +2442,7 @@ void MapRenderer3D::checkVisibleQuads()
 		{
 			// Check we're on the right side of the quad
 			quad = &(lines[a].quads[q]);
-			if (MathStuff::lineSide(cam_position.x, cam_position.y, quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y) < 0)
+			if (MathStuff::lineSide(cam_position.get2d(), fseg2_t(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y)) < 0)
 				continue;
 
 			quads[n_quads] = quad;
@@ -2528,7 +2528,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 	// Init
 	double min_dist = 9999999;
 	selection_3d_t current;
-	fpoint2_t strafe(cam_position.x+cam_strafe.x, cam_position.y+cam_strafe.y);
+	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 
 	// Check for required map structures
 	if (!map || lines.size() != map->nLines() ||
@@ -2563,7 +2563,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 			quad = &lines[a].quads[q];
 
 			// Check side of camera
-			if (MathStuff::lineSide(cam_position.x, cam_position.y, quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y) < 0)
+			if (MathStuff::lineSide(cam_position.get2d(), fseg2_t(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y)) < 0)
 				continue;
 
 			// Check intersection height
@@ -2659,7 +2659,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 
 		// Ignore if not visible
 		MapThing* thing = map->getThing(a);
-		if (MathStuff::lineSide(thing->xPos(), thing->yPos(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
+		if (MathStuff::lineSide(thing->point(), strafe) > 0)
 			continue;
 
 		// Ignore if not shown

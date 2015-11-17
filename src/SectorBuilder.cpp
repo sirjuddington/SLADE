@@ -272,6 +272,8 @@ int SectorBuilder::nearestEdge(double x, double y)
  *******************************************************************/
 bool SectorBuilder::pointWithinOutline(double x, double y)
 {
+	fpoint2_t point(x, y);
+
 	// Check with bounding box
 	if (!o_bbox.point_within(x, y))
 	{
@@ -291,9 +293,7 @@ bool SectorBuilder::pointWithinOutline(double x, double y)
 	if (nearest >= 0)
 	{
 		// Check what side of the edge the point is on
-		double side = MathStuff::lineSide(x, y,
-		                                  o_edges[nearest].line->x1(), o_edges[nearest].line->y1(),
-		                                  o_edges[nearest].line->x2(), o_edges[nearest].line->y2());
+		double side = MathStuff::lineSide(point, o_edges[nearest].line->seg());
 
 		// Return true if it is on the correct side
 		if (side >= 0 && o_edges[nearest].front)
@@ -380,7 +380,7 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 	//wxLogMessage("Found next outer line %d", nearest->getIndex());
 
 	// Determine the edge side
-	double side = MathStuff::lineSide(vr_x, vr_y, nearest->x1(), nearest->y1(), nearest->x2(), nearest->y2());
+	double side = MathStuff::lineSide(vertex_right->point(), nearest->seg());
 	if (side >= 0)
 		return edge_t(nearest, true);
 	else
