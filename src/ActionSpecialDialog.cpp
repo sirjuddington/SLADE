@@ -1212,7 +1212,17 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 {
 	// Jump to args tab, if there is one
 	if (panel_args)
+	{
+		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		// Save and restore the current arg values, since setup() deletes and
+		// recreates the controls
+		int arg_values[5];
+		for (unsigned a = 0; a < 5; a++)
+			arg_values[a] = panel_args->getArgValue(a);
+		panel_args->setup(&args);
+		panel_args->setValues(arg_values);
 		panel_args->SetFocus();
+	}
 }
 
 /* ActionSpecialPanel::onSpecialTextChanged
