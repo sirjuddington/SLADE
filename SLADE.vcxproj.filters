@@ -1365,6 +1365,9 @@
     <ClCompile Include="src\DataEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
+    <ClCompile Include="src\ChasmBinArchive.cpp">
+      <Filter>Resources\Archive\Formats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GfxConvDialog.h">
@@ -2355,6 +2358,9 @@
     <ClInclude Include="src\PodArchive.h">
       <Filter>Resources\Archive\Formats</Filter>
     </ClInclude>
+    <ClInclude Include="src\ChasmBinArchive.h">
+      <Filter>Resources\Archive\Formats</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
@@ -2531,6 +2537,7 @@
     <None Include="win_installer\SLADE.iss">
       <Filter>Installer</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />
