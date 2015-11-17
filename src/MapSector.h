@@ -80,8 +80,6 @@ public:
 	short		getTag() { return tag; }
 	plane_t		getFloorPlane() { return plane_floor; }
 	plane_t		getCeilingPlane() { return plane_ceiling; }
-	double		floorHeightAt(double x, double y);
-	double		ceilingHeightAt(double x, double y);
 
 	string	stringProperty(string key);
 	int		intProperty(string key);

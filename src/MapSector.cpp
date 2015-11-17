@@ -132,22 +132,6 @@ void MapSector::setGeometryUpdated()
 	geometry_updated = theApp->runTimer();
 }
 
-/* MapSector::floorHeightAt
- * Returns the height of the floor at the given point
- *******************************************************************/
-double MapSector::floorHeightAt(double x, double y)
-{
-	return plane_floor.height_at(x, y);
-}
-
-/* MapSector::ceilingHeightAt
- * Returns the height of the ceiling at the given point
- *******************************************************************/
-double MapSector::ceilingHeightAt(double x, double y)
-{
-	return plane_ceiling.height_at(x, y);
-}
-
 /* MapSector::stringProperty
  * Returns the value of the string property matching [key]
  *******************************************************************/
