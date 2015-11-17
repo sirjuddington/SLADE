@@ -112,8 +112,8 @@ public:
 	vector<MapSide*>&	connectedSides() { return connected_sides; }
 	void				resetPolygon() { poly_needsupdate = true; }
 	Polygon2D*			getPolygon();
-	bool				isWithin(double x, double y);
-	double				distanceTo(double x, double y, double maxdist = -1);
+	bool				isWithin(fpoint2_t point);
+	double				distanceTo(fpoint2_t point, double maxdist = -1);
 	bool				getLines(vector<MapLine*>& list);
 	bool				getVertices(vector<MapVertex*>& list);
 	bool				getVertices(vector<MapObject*>& list);

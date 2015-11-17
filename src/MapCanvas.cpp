@@ -511,8 +511,8 @@ void MapCanvas::viewMatchSpot(double mx, double my, double sx, double sy)
 void MapCanvas::set3dCameraThing(MapThing* thing)
 {
 	// Determine position
-	fpoint3_t pos(thing->xPos(), thing->yPos(), 40);
-	int sector = editor->getMap().sectorAt(pos.x, pos.y);
+	fpoint3_t pos(thing->point(), 40);
+	int sector = editor->getMap().sectorAt(thing->point());
 	if (sector >= 0)
 		pos.z += editor->getMap().getSector(sector)->getFloorHeight();
 
@@ -3603,11 +3603,9 @@ bool MapCanvas::handleAction(string id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		fpoint3_t pos;
-		pos.x = mouse_pos_m.x;
-		pos.y = mouse_pos_m.y;
+		fpoint3_t pos(mouse_pos_m);
 		SLADEMap& map = editor->getMap();
-		MapSector* sector = map.getSector(map.sectorAt(pos.x, pos.y));
+		MapSector* sector = map.getSector(map.sectorAt(mouse_pos_m));
 		if (sector)
 			pos.z = sector->getFloorHeight() + 40;
 		renderer_3d->cameraSetPosition(pos);
@@ -3847,7 +3845,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
-			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			int nearest = editor->getMap().nearestLine(mouse_pos_m, 999999);
 			MapLine* line = editor->getMap().getLine(nearest);
 			if (line)
 			{
@@ -3862,7 +3860,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F5)
 		{
 			// Get nearest line
-			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			int nearest = editor->getMap().nearestLine(mouse_pos_m, 999999);
 			MapLine* line = editor->getMap().getLine(nearest);
 
 			// Get sectors

@@ -723,15 +723,15 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	if (edit_mode == MODE_VERTICES)
 		hilight_item = map.nearestVertex(mouse_pos, 32/dist_scale);
 	else if (edit_mode == MODE_LINES)
-		hilight_item = map.nearestLine(mouse_pos.x, mouse_pos.y, 32/dist_scale);
+		hilight_item = map.nearestLine(mouse_pos, 32/dist_scale);
 	else if (edit_mode == MODE_SECTORS)
-		hilight_item = map.sectorAt(mouse_pos.x, mouse_pos.y);
+		hilight_item = map.sectorAt(mouse_pos);
 	else if (edit_mode == MODE_THINGS)
 	{
 		hilight_item = -1;
 
 		// Get (possibly multiple) nearest-thing(s)
-		vector<int> nearest = map.nearestThingMulti(mouse_pos.x, mouse_pos.y);
+		vector<int> nearest = map.nearestThingMulti(mouse_pos);
 		if (nearest.size() == 1)
 		{
 			MapThing* t = map.getThing(nearest[0]);
@@ -1917,7 +1917,7 @@ void MapEditor::splitLine(double x, double y, double min_dist)
 	fpoint2_t point(x, y);
 
 	// Get the closest line
-	int lindex = map.nearestLine(x, y, min_dist);
+	int lindex = map.nearestLine(point, min_dist);
 	MapLine* line = map.getLine(lindex);
 
 	// Do nothing if no line is close enough
@@ -2422,7 +2422,9 @@ int MapEditor::beginTagEdit()
  *******************************************************************/
 void MapEditor::tagSectorAt(double x, double y)
 {
-	int index = map.sectorAt(x, y);
+	fpoint2_t point(x, y);
+
+	int index = map.sectorAt(point);
 	if (index < 0)
 		return;
 
@@ -2620,7 +2622,7 @@ void MapEditor::createSector(double x, double y)
 	fpoint2_t point(x, y);
 
 	// Find nearest line
-	int nearest = map.nearestLine(x, y, 99999999);
+	int nearest = map.nearestLine(point, 99999999);
 	MapLine* line = map.getLine(nearest);
 	if (!line)
 		return;
@@ -5237,7 +5239,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	sf::Clock clock;
 	SLADEMap& map = theMapEditor->mapEditor().getMap();
 	for (unsigned a = 0; a < map.nThings(); a++)
-		map.sectorAt(map.getThing(a)->xPos(), map.getThing(a)->yPos());
+		map.sectorAt(map.getThing(a)->point());
 	long ms = clock.getElapsedTime().asMilliseconds();
 	wxLogMessage("Took %ldms", ms);
 }

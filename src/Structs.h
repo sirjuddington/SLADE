@@ -98,6 +98,19 @@ struct fpoint2_t
 		return sqrt((dist_x * dist_x) + (dist_y * dist_y));
 	}
 
+	// aka "Manhattan" distance -- just the sum of the vertical and horizontal
+	// distance, and an upper bound on the true distance
+	double taxicab_distance_to(fpoint2_t point)
+	{
+		double dist;
+		if (point.x < x)	dist = x - point.x;
+		else				dist = point.x - x;
+		if (point.y < y)	dist += y - point.y;
+		else				dist += point.y - y;
+
+		return dist;
+	}
+
 	double dot(fpoint2_t vec)
 	{
 		return x*vec.x + y*vec.y;

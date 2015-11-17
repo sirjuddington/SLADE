@@ -311,14 +311,12 @@ Polygon2D* MapSector::getPolygon()
 }
 
 /* MapSector::isWithin
- * Returns true if the point [x, y] is inside the sector
+ * Returns true if the point is inside the sector
  *******************************************************************/
-bool MapSector::isWithin(double x, double y)
+bool MapSector::isWithin(fpoint2_t point)
 {
-	fpoint2_t point(x, y);
-
 	// Check with bbox first
-	if (!boundingBox().point_within(x, y))
+	if (!boundingBox().contains(point))
 		return false;
 
 	// Find nearest line in the sector
@@ -335,7 +333,7 @@ bool MapSector::isWithin(double x, double y)
 		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!", connected_sides[a]->getIndex());
 		//	continue;
 		//}
-		dist = connected_sides[a]->getParentLine()->distanceTo(x, y);
+		dist = connected_sides[a]->getParentLine()->distanceTo(point);
 
 		// Check distance
 		if (dist < min_dist)
@@ -360,13 +358,11 @@ bool MapSector::isWithin(double x, double y)
 }
 
 /* MapSector::distanceTo
- * Returns the minimum distance from [x, y] to the closest line in
+ * Returns the minimum distance from the point to the closest line in
  * the sector
  *******************************************************************/
-double MapSector::distanceTo(double x, double y, double maxdist)
+double MapSector::distanceTo(fpoint2_t point, double maxdist)
 {
-	fpoint2_t point(x, y);
-
 	// Init
 	if (maxdist < 0)
 		maxdist = 9999999;
@@ -384,7 +380,7 @@ double MapSector::distanceTo(double x, double y, double maxdist)
 	dist = MathStuff::distanceToLine(point, bbox.bottom_side());
 	if (dist < min_dist) min_dist = dist;
 
-	if (min_dist > maxdist && !bbox.point_within(x, y))
+	if (min_dist > maxdist && !bbox.contains(point))
 		return -1;
 
 	// Go through connected sides
@@ -395,7 +391,7 @@ double MapSector::distanceTo(double x, double y, double maxdist)
 		if (!line) continue;
 
 		// Check distance
-		dist = line->distanceTo(x, y);
+		dist = line->distanceTo(point);
 		if (dist < min_dist)
 			min_dist = dist;
 	}

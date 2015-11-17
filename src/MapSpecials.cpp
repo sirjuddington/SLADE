@@ -435,7 +435,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 
 		if (thing->getType() == 9510 || thing->getType() == 9511)
 		{
-			int target_idx = map->sectorAt(thing->xPos(), thing->yPos());
+			int target_idx = map->sectorAt(thing->point());
 			if (target_idx < 0)
 				continue;
 			MapSector* target = map->getSector(target_idx);
@@ -577,7 +577,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		this_vertex = vertices[a];
-		this_dist = line->distanceTo(this_vertex->xPos(), this_vertex->yPos());
+		this_dist = line->distanceTo(this_vertex->point());
 		if (this_dist > furthest_dist)
 		{
 			furthest_dist = this_dist;
@@ -636,8 +636,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 		// Need to know the containing sector's height to find the thing's true height
 		if (!containing_sector)
 		{
-			int containing_sector_idx = map->sectorAt(
-				thing->xPos(), thing->yPos());
+			int containing_sector_idx = map->sectorAt(thing->point());
 			if (containing_sector_idx < 0)
 				return;
 			containing_sector = map->getSector(containing_sector_idx);
@@ -661,7 +660,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 {
 	// TODO should this apply to /all/ sectors at this point, in the case of an
 	// intersection?
-	int target_idx = map->sectorAt(thing->xPos(), thing->yPos());
+	int target_idx = map->sectorAt(thing->point());
 	if (target_idx < 0)
 		return;
 	MapSector* target = map->getSector(target_idx);
@@ -703,7 +702,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 template<PlaneType p>
 void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 {
-	int target_idx = map->sectorAt(thing->xPos(), thing->yPos());
+	int target_idx = map->sectorAt(thing->point());
 	if (target_idx < 0)
 		return;
 	MapSector* target = map->getSector(target_idx);

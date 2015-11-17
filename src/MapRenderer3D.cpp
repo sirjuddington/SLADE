@@ -393,7 +393,7 @@ void MapRenderer3D::cameraSetPosition(fpoint3_t position)
 void MapRenderer3D::cameraApplyGravity(double mult)
 {
 	// Get current sector
-	int sector = map->sectorAt(cam_position.x, cam_position.y);
+	int sector = map->sectorAt(cam_position.get2d());
 	if (sector < 0)
 		return;
 
@@ -1828,7 +1828,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 
 	// Setup thing info
 	things[index].type = theGameConfiguration->thingType(thing->getType());
-	things[index].sector = map->getSector(map->sectorAt(thing->xPos(), thing->yPos()));
+	things[index].sector = map->getSector(map->sectorAt(thing->point()));
 
 	// Get sprite texture
 	uint32_t theight = render_thing_icon_size;
@@ -2464,6 +2464,7 @@ void MapRenderer3D::checkVisibleFlats()
 	MapSector* sector;
 	n_flats = 0;
 	float alpha;
+	fpoint2_t cam = cam_position.get2d();
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		sector = map->getSector(a);
@@ -2478,8 +2479,8 @@ void MapRenderer3D::checkVisibleFlats()
 			if (dist_sectors[a] > render_max_dist)
 				continue;
 			// Double-check distance
-			dist_sectors[a] = sector->distanceTo(cam_position.x, cam_position.y, render_max_dist);
-			if (dist_sectors[a] > render_max_dist && !sector->boundingBox().point_within(cam_position.x, cam_position.y))
+			dist_sectors[a] = sector->distanceTo(cam, render_max_dist);
+			if (dist_sectors[a] > render_max_dist && !sector->boundingBox().contains(cam))
 			{
 				dist_sectors[a] = -1;
 				continue;
@@ -2613,7 +2614,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 			if (cam_position.z > floors[a].plane.height_at(cam_position.x, cam_position.y))
 			{
 				// Check if intersection is within sector
-				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				if (map->getSector(a)->isWithin((cam_position + cam_dir3d * dist).get2d()))
 				{
 					current.index = a;
 					current.type = MapEditor::SEL_FLOOR;
@@ -2630,7 +2631,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 			if (cam_position.z < ceilings[a].plane.height_at(cam_position.x, cam_position.y))
 			{
 				// Check if intersection is within sector
-				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				if (map->getSector(a)->isWithin((cam_position + cam_dir3d * dist).get2d()))
 				{
 					current.index = a;
 					current.type = MapEditor::SEL_CEILING;

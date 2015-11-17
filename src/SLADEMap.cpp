@@ -2814,10 +2814,7 @@ int SLADEMap::nearestVertex(fpoint2_t point, double min)
 		v = vertices[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		if (v->x < point.x)	dist = point.x - v->x;
-		else				dist = v->x - point.x;
-		if (v->y < point.y)	dist += point.y - v->y;
-		else				dist += v->y - point.y;
+		dist = point.taxicab_distance_to(v->point());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -2841,10 +2838,10 @@ int SLADEMap::nearestVertex(fpoint2_t point, double min)
 }
 
 /* SLADEMap::nearestLine
- * Returns the index of the line closest to [x,y], or -1 if none is
- * found. Ignores lines further away than [mindist]
+ * Returns the index of the line closest to the point, or -1 if none
+ * is found. Ignores lines further away than [mindist]
  *******************************************************************/
-int SLADEMap::nearestLine(double x, double y, double mindist)
+int SLADEMap::nearestLine(fpoint2_t point, double mindist)
 {
 	// Go through lines
 	double min_dist = mindist;
@@ -2856,12 +2853,13 @@ int SLADEMap::nearestLine(double x, double y, double mindist)
 		l = lines[a];
 
 		// Check with line bounding box first (since we have a minimum distance)
-		if (x < min(l->vertex1->x, l->vertex2->x) - mindist || x > max(l->vertex1->x, l->vertex2->x) + mindist ||
-				y < min(l->vertex1->y, l->vertex2->y) - mindist || y > max(l->vertex1->y, l->vertex2->y) + mindist)
+		fseg2_t bbox = l->seg();
+		bbox.expand(mindist, mindist);
+		if (! bbox.contains(point))
 			continue;
 
 		// Calculate distance to line
-		dist = l->distanceTo(x, y);
+		dist = l->distanceTo(point);
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist && dist < mindist)
@@ -2875,10 +2873,10 @@ int SLADEMap::nearestLine(double x, double y, double mindist)
 }
 
 /* SLADEMap::nearestThing
- * Returns the index of the thing closest to [x,y], or -1 if none
+ * Returns the index of the thing closest to the point, or -1 if none
  * found. Igonres any thing further away than [min]
  *******************************************************************/
-int SLADEMap::nearestThing(double x, double y, double min)
+int SLADEMap::nearestThing(fpoint2_t point, double min)
 {
 	// Go through things
 	double min_dist = 999999999;
@@ -2890,10 +2888,7 @@ int SLADEMap::nearestThing(double x, double y, double min)
 		t = things[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		if (t->x < x)	dist = x - t->x;
-		else			dist = t->x - x;
-		if (t->y < y)	dist += y - t->y;
-		else			dist += t->y - y;
+		dist = point.taxicab_distance_to(t->point());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -2908,7 +2903,6 @@ int SLADEMap::nearestThing(double x, double y, double min)
 	if (index >= 0)
 	{
 		t = things[index];
-		fpoint2_t point(x, y);
 		double rdist = MathStuff::distance(t->point(), point);
 		if (rdist > min)
 			return -1;
@@ -2921,7 +2915,7 @@ int SLADEMap::nearestThing(double x, double y, double min)
  * Same as nearestThing, but returns a list of indices for the case
  * where there are multiple things at the same point
  *******************************************************************/
-vector<int> SLADEMap::nearestThingMulti(double x, double y)
+vector<int> SLADEMap::nearestThingMulti(fpoint2_t point)
 {
 	// Go through things
 	vector<int> ret;
@@ -2933,10 +2927,7 @@ vector<int> SLADEMap::nearestThingMulti(double x, double y)
 		t = things[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		if (t->x < x)	dist = x - t->x;
-		else			dist = t->x - x;
-		if (t->y < y)	dist += y - t->y;
-		else			dist += t->y - y;
+		dist = point.taxicab_distance_to(t->point());
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -2953,16 +2944,16 @@ vector<int> SLADEMap::nearestThingMulti(double x, double y)
 }
 
 /* SLADEMap::sectorAt
- * Returns the index of the sector at [x,y], or -1 if not within a
- * sector
+ * Returns the index of the sector at the given point, or -1 if not
+ * within a sector
  *******************************************************************/
-int SLADEMap::sectorAt(double x, double y)
+int SLADEMap::sectorAt(fpoint2_t point)
 {
 	// Go through sectors
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
 		// Check if point is within sector
-		if (sectors[a]->isWithin(x, y))
+		if (sectors[a]->isWithin(point))
 			return a;
 	}
 
@@ -3191,7 +3182,7 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 
 	// Check if actual sector midpoint can be used
 	sector->text_point = sector->getPoint(MOBJ_POINT_MID);
-	if (sector->isWithin(sector->text_point.x, sector->text_point.y))
+	if (sector->isWithin(sector->text_point))
 		return;
 
 	if (sector->connected_sides.size() == 0)
@@ -3361,7 +3352,7 @@ void SLADEMap::getThingsByIdInSectorTag(int id, int tag, vector<MapThing*>& list
 	{
 		if (things[a]->intProperty("id") == id)
 		{
-			int si = sectorAt(things[a]->xPos(), things[a]->yPos());
+			int si = sectorAt(things[a]->point());
 			if (si > -1 && (unsigned)si < sectors.size() && sectors[si]->intProperty("id") == tag)
 			{
 				list.push_back(things[a]);
@@ -4061,6 +4052,8 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 		y = MathStuff::round(y);
 	}
 
+	fpoint2_t point(x, y);
+
 	// First check that it won't overlap any other vertex
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
@@ -4083,7 +4076,7 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 			if (lines[a]->v1() == nv || lines[a]->v2() == nv)
 				continue;
 
-			if (lines[a]->distanceTo(x, y) < split_dist)
+			if (lines[a]->distanceTo(point) < split_dist)
 			{
 				//wxLogMessage("Vertex at (%1.2f,%1.2f) splits line %d", x, y, a);
 				splitLine(lines[a], nv);
@@ -4448,7 +4441,7 @@ void SLADEMap::splitLinesAt(MapVertex* vertex, double split_dist)
 		if (lines[a]->v1() == vertex || lines[a]->v2() == vertex)
 			continue;
 
-		if (lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
+		if (lines[a]->distanceTo(vertex->point()) < split_dist)
 		{
 			LOG_MESSAGE(2, "Vertex at (%1.2f,%1.2f) splits line %u", vertex->x, vertex->y, a);
 			splitLine(lines[a], vertex);
@@ -4656,7 +4649,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			if (connected_lines[a]->v1() == vertex || connected_lines[a]->v2() == vertex)
 				continue;
 
-			if (connected_lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
+			if (connected_lines[a]->distanceTo(vertex->point()) < split_dist)
 			{
 				connected_lines.push_back(splitLine(connected_lines[a], vertex));
 				VECTOR_ADD_UNIQUE(merged_vertices, vertex);
@@ -4879,7 +4872,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		{
 			edges.push_back(me_ls_t(lines[a], true));
 			fpoint2_t mid = lines[a]->getPoint(MOBJ_POINT_MID);
-			if (sectorAt(mid.x, mid.y) >= 0)
+			if (sectorAt(mid) >= 0)
 				edges.push_back(me_ls_t(lines[a], false));
 		}
 	}

@@ -527,9 +527,9 @@ fpoint2_t MapLine::dirTabPoint(double tablen)
 }
 
 /* MapLine::distanceTo
- * Returns the minimum distance from [x, y] to the line
+ * Returns the minimum distance from the point to the line
  *******************************************************************/
-double MapLine::distanceTo(double x, double y)
+double MapLine::distanceTo(fpoint2_t point)
 {
 	// Update length data if needed
 	if (length < 0)
@@ -544,14 +544,14 @@ double MapLine::distanceTo(double x, double y)
 
 	// Calculate intersection point
 	double mx, ix, iy;
-	mx = (-vertex1->xPos()+x)*ca + (-vertex1->yPos()+y)*sa;
+	mx = (-vertex1->xPos()+point.x)*ca + (-vertex1->yPos()+point.y)*sa;
 	if (mx <= 0)		mx = 0.00001;				// Clip intersection to line (but not exactly on endpoints)
 	else if (mx >= length)	mx = length - 0.00001;	// ^^
 	ix = vertex1->xPos() + mx*ca;
 	iy = vertex1->yPos() + mx*sa;
 
 	// Calculate distance to line
-	return sqrt((ix-x)*(ix-x) + (iy-y)*(iy-y));
+	return sqrt((ix-point.x)*(ix-point.x) + (iy-point.y)*(iy-point.y));
 }
 
 // Minimum gap between planes for a texture to be considered missing
