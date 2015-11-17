@@ -3226,7 +3226,7 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 			continue;
 
 		MapLine* line = sector->connected_sides[a]->parent;
-		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->x1(), line->y1(), line->x2(), line->y2());
+		double dist = MathStuff::distanceRayLine(r_o, r_o + r_d, line->point1(), line->point2());
 
 		if (dist > 0 && dist < min_dist)
 			min_dist = dist;
@@ -3277,7 +3277,7 @@ MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x,
 		if (lines[a] == line)
 			continue;
 
-		double dist = MathStuff::distanceRayLine(mid, mid + vec, lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2());
+		double dist = MathStuff::distanceRayLine(mid, mid + vec, lines[a]->point1(), lines[a]->point2());
 
 		if (dist < min_dist && dist > 0)
 		{
@@ -3816,7 +3816,7 @@ MapSector* SLADEMap::getLineSideSector(MapLine* line, bool front)
 		if (lines[a] == line)
 			continue;
 
-		dist = MathStuff::distanceRayLine(mid, dir, lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2());
+		dist = MathStuff::distanceRayLine(mid, dir, lines[a]->point1(), lines[a]->point2());
 		if (dist < min_dist && dist > 0)
 		{
 			min_dist = dist;

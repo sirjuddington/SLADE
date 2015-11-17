@@ -76,6 +76,15 @@ fpoint2_t MapThing::getPoint(uint8_t point)
 	return fpoint2_t(x, y);
 }
 
+/* MapThing::point
+ * Returns the position of the thing, more explicitly than the
+ * generic method getPoint
+ *******************************************************************/
+fpoint2_t MapThing::point()
+{
+	return fpoint2_t(x, y);
+}
+
 /* MapThing::intProperty
  * Returns the value of the integer property matching [key]
  *******************************************************************/

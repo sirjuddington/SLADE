@@ -435,6 +435,22 @@ fpoint2_t MapLine::getPoint(uint8_t point)
 		return fpoint2_t(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
 }
 
+/* MapLine::point1
+ * Returns the point at the first vertex.
+ *******************************************************************/
+fpoint2_t MapLine::point1()
+{
+	return vertex1->getPoint(0);
+}
+
+/* MapLine::point2
+ * Returns the point at the first vertex.
+ *******************************************************************/
+fpoint2_t MapLine::point2()
+{
+	return vertex2->getPoint(0);
+}
+
 /* MapLine::getLength
  * Returns the length of the line
  *******************************************************************/

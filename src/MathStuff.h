@@ -2,6 +2,8 @@
 #ifndef __MATHSTUFF_H__
 #define __MATHSTUFF_H__
 
+#include "Structs.h"
+
 #define PI	3.1415926535897932384
 
 namespace MathStuff
@@ -19,7 +21,7 @@ namespace MathStuff
 	bool		linesIntersect(double l1x1, double l1y1, double l1x2, double l1y2,
 	                           double l2x1, double l2y1, double l2x2, double l2y2,
 	                           double& x, double& y);
-	double		distanceRayLine(fpoint2_t ray_origin, fpoint2_t ray_dir, double x1, double y1, double x2, double y2);
+	double		distanceRayLine(fpoint2_t ray_origin, fpoint2_t ray_dir, fpoint2_t seg1, fpoint2_t seg2);
 	double		angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3);
 	fpoint2_t	rotatePoint(fpoint2_t origin, fpoint2_t point, double angle);
 	fpoint3_t	rotateVector3D(fpoint3_t vector, fpoint3_t axis, double angle);

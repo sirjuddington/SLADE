@@ -247,17 +247,17 @@ bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y
 
 /* MathStuff::distanceRayLine
  * Returns the distance between the ray [r1 -> r2] and the line
- * segment [x1,y1]-[x2,y2]
+ * segment [seg1 -> seg2]
  *******************************************************************/
-double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, double x1, double y1, double x2, double y2)
+double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, fpoint2_t s1, fpoint2_t s2)
 {
 	// Calculate the intersection distance from the ray
-	double u_ray = ((x2 - x1) * (r1.y - y1) - (y2 - y1) * (r1.x - x1)) /
-				   ((y2 - y1) * (r2.x - r1.x) - (x2 - x1) * (r2.y - r1.y));
+	double u_ray = ((s2.x - s1.x) * (r1.y - s1.y) - (s2.y - s1.y) * (r1.x - s1.x)) /
+				   ((s2.y - s1.y) * (r2.x - r1.x) - (s2.x - s1.x) * (r2.y - r1.y));
 
 	// Calculate the intersection distance from the line
-	double u_line = ((r2.x - r1.x) * (r1.y - y1) - (r2.y - r1.y) * (r1.x - x1)) /
-					((y2 - y1) * (r2.x - r1.x) - (x2 - x1) * (r2.y - r1.y));
+	double u_line = ((r2.x - r1.x) * (r1.y - s1.y) - (r2.y - r1.y) * (r1.x - s1.x)) /
+					((s2.y - s1.y) * (r2.x - r1.x) - (s2.x - s1.x) * (r2.y - r1.y));
 
 	// Return the distance on the ray if intersecting, or return -1
 	if((u_ray >= 0)/* && (u_ray <= 1024) */&& (u_line >= 0) && (u_line <= 1)) return u_ray; else return -1;

@@ -2548,9 +2548,9 @@ selection_3d_t MapRenderer3D::determineHilight()
 		MapLine* line = map->getLine(a);
 
 		// Find (2d) distance to line
-		dist = MathStuff::distanceRayLine(fpoint2_t(cam_position.x, cam_position.y),
-		                                  fpoint2_t(cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y),
-		                                  line->x1(), line->y1(), line->x2(), line->y2());
+		dist = MathStuff::distanceRayLine(
+			cam_position.get2d(), (cam_position + cam_dir3d).get2d(),
+			line->point1(), line->point2());
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
@@ -2670,10 +2670,9 @@ selection_3d_t MapRenderer3D::determineHilight()
 		halfwidth = things[a].sprite->getWidth() * 0.5;
 		if (things[a].flags & ICON)
 			halfwidth = render_thing_icon_size*0.5;
-		dist = MathStuff::distanceRayLine(fpoint2_t(cam_position.x, cam_position.y),
-		                                  fpoint2_t(cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y),
-		                                  thing->xPos() - cam_strafe.x * halfwidth, thing->yPos() - cam_strafe.y * halfwidth,
-		                                  thing->xPos() + cam_strafe.x * halfwidth, thing->yPos() + cam_strafe.y * halfwidth);
+		dist = MathStuff::distanceRayLine(
+			cam_position.get2d(), (cam_position + cam_dir3d).get2d(),
+			thing->point() - cam_strafe.get2d() * halfwidth, thing->point() + cam_strafe.get2d() * halfwidth);
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
