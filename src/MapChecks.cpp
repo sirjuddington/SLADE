@@ -1200,6 +1200,7 @@ public:
 				continue;
 
 			radius = tt->getRadius() - 1;
+			frect_t bbox(thing->xPos(), thing->yPos(), radius * 2, radius * 2, 1);
 
 			// Go through lines
 			for (unsigned b = 0; b < check_lines.size(); b++)
@@ -1207,9 +1208,7 @@ public:
 				line = check_lines[b];
 
 				// Check intersection
-				if (MathStuff::boxLineIntersect(thing->xPos() - radius, thing->yPos() - radius,
-					thing->xPos() + radius, thing->yPos() + radius,
-					line->x1(), line->y1(), line->x2(), line->y2()))
+				if (MathStuff::boxLineIntersect(bbox, line->seg()))
 				{
 					things.push_back(thing);
 					lines.push_back(line);

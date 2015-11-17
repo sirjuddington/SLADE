@@ -407,37 +407,36 @@ double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane)
  * [line_x2,line_y2]. Box values must be from min to max.
  * Taken from http://stackoverflow.com/a/100165
  *******************************************************************/
-bool MathStuff::boxLineIntersect(double box_x1, double box_y1, double box_x2, double box_y2,
-						double line_x1, double line_y1, double line_x2, double line_y2)
+bool MathStuff::boxLineIntersect(frect_t box, fseg2_t line)
 {
 	// Find min and max X for the segment
-	double minX = line_x1;
-	double maxX = line_x2;
-	if (line_x1 > line_x2)
+	double minX = line.x1();
+	double maxX = line.x2();
+	if (line.x1() > line.x2())
 	{
-		minX = line_x2;
-		maxX = line_x1;
+		minX = line.x2();
+		maxX = line.x1();
 	}
 
 	// Find the intersection of the segment's and rectangle's x-projections
-	if (maxX > box_x2)
-		maxX = box_x2;
-	if (minX < box_x1)
-		minX = box_x1;
+	if (maxX > box.x2())
+		maxX = box.x2();
+	if (minX < box.x1())
+		minX = box.x1();
 
 	// If their projections do not intersect return false
 	if (minX > maxX)
 		return false;
 
 	// Find corresponding min and max Y for min and max X we found before
-	double minY = line_y1;
-	double maxY = line_y2;
-	double dx = line_x2 - line_x1;
+	double minY = line.y1();
+	double maxY = line.y2();
+	double dx = line.x2() - line.x1();
 
 	if (fabs(dx) > 0.0000001)
 	{
-		double a = (line_y2 - line_y1) / dx;
-		double b = line_y1 - a * line_x1;
+		double a = (line.y2() - line.y1()) / dx;
+		double b = line.y1() - a * line.x1();
 		minY = a * minX + b;
 		maxY = a * maxX + b;
 	}
@@ -449,10 +448,10 @@ bool MathStuff::boxLineIntersect(double box_x1, double box_y1, double box_x2, do
 	}
 
 	// Find the intersection of the segment's and rectangle's y-projections
-	if (maxY > box_y2)
-		maxY = box_y2;
-	if (minY < box_y1)
-		minY = box_y1;
+	if (maxY > box.y2())
+		maxY = box.y2();
+	if (minY < box.y1())
+		minY = box.y1();
 
 	// If Y-projections do not intersect return false
 	if (minY > maxY)
