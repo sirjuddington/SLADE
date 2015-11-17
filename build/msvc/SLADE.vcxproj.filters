@@ -2364,8 +2364,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
-    <None Include="..\..\stuff.txt" />
-    <None Include="..\..\detect_functions.txt" />
     <None Include="..\..\dist\res\config\games\doom1.cfg">
       <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
     </None>
@@ -2535,12 +2533,17 @@
       <Filter>External\DUMB\helpers</Filter>
     </None>
     <None Include="packages.config" />
-    <None Include="..\..\win_installer\SLADE.iss" />
+    <None Include="..\..\win_installer\SLADE.iss">
+      <Filter>Installer</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="SLADE.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\misc\stuff.txt" />
   </ItemGroup>
 </Project>

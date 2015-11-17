@@ -914,7 +914,6 @@
     <ClInclude Include="..\..\src\ZTextureEditorPanel.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\detect_functions.txt" />
     <None Include="..\..\dist\res\config\games\chex1.cfg" />
     <None Include="..\..\dist\res\config\games\chex3.cfg" />
     <None Include="..\..\dist\res\config\games\doom1.cfg" />
@@ -973,7 +972,6 @@
     <None Include="..\..\src\dumb\helpers\resamp2.inc" />
     <None Include="..\..\src\dumb\helpers\resamp3.inc" />
     <None Include="..\..\src\dumb\helpers\resample.inc" />
-    <None Include="..\..\stuff.txt" />
     <None Include="..\..\win_installer\SLADE.iss" />
   </ItemGroup>
   <ItemGroup>
@@ -981,6 +979,9 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="SLADE.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\misc\stuff.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
