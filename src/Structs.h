@@ -141,7 +141,7 @@ struct fpoint3_t
 
 	fpoint3_t() { x = y = z = 0; }
 	fpoint3_t(double X, double Y, double Z) { x = X; y = Y; z = Z; }
-	fpoint3_t(fpoint2_t p) { x = p.x; y = p.y; z = 0; }
+	fpoint3_t(fpoint2_t p, double Z = 0) { x = p.x; y = p.y; z = Z; }
 
 	void set(double X, double Y, double Z) { x = X; y = Y; z = Z; }
 	void set(fpoint3_t p) { x = p.x; y = p.y; z = p.z; }
