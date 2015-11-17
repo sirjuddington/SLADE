@@ -242,9 +242,8 @@ bool ObjectEditGroup::getNearestLine(fpoint2_t pos, double min, fpoint2_t& v1, f
 	double min_dist = min;
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
-		double d = MathStuff::distanceToLineFast(pos.x, pos.y,
-			lines[a].v1->position.x, lines[a].v1->position.y,
-			lines[a].v2->position.x, lines[a].v2->position.y);
+		double d = MathStuff::distanceToLineFast(
+			pos, fseg2_t(lines[a].v1->position, lines[a].v2->position));
 
 		if (d < min_dist)
 		{

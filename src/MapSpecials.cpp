@@ -722,16 +722,16 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 		// Vavoom things use the plane defined by the thing and its two
 		// endpoints, based on the sector's original (flat) plane and treating
 		// the thing's height as absolute
-		short height = target->getPlaneHeight<p>();
-		fpoint3_t p1(thing->point(), thing->floatProperty("height"));
-		fpoint3_t p2(lines[a]->point1(), height);
-		fpoint3_t p3(lines[a]->point2(), height);
-
-		if (MathStuff::distanceToLineFast(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y) == 0)
+		if (MathStuff::distanceToLineFast(thing->point(), lines[a]->seg()) == 0)
 		{
 			LOG_MESSAGE(1, "Vavoom thing %d lies directly on its target line %d", thing->getIndex(), a);
 			return;
 		}
+
+		short height = target->getPlaneHeight<p>();
+		fpoint3_t p1(thing->point(), thing->floatProperty("height"));
+		fpoint3_t p2(lines[a]->point1(), height);
+		fpoint3_t p3(lines[a]->point2(), height);
 
 		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 		return;

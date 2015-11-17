@@ -242,6 +242,8 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
  *******************************************************************/
 int SectorBuilder::nearestEdge(double x, double y)
 {
+	fpoint2_t point(x, y);
+
 	// Init variables
 	double min_dist = 99999999;
 	int nearest = -1;
@@ -251,9 +253,7 @@ int SectorBuilder::nearestEdge(double x, double y)
 	for (unsigned a = 0; a < o_edges.size(); a++)
 	{
 		// Get distance to edge
-		dist = MathStuff::distanceToLineFast(x, y,
-		                                     o_edges[a].line->x1(), o_edges[a].line->y1(),
-		                                     o_edges[a].line->x2(), o_edges[a].line->y2());
+		dist = MathStuff::distanceToLineFast(point, o_edges[a].line->seg());
 
 		// Check if minimum
 		if (dist < min_dist)

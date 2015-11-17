@@ -1914,6 +1914,8 @@ void MapEditor::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
  *******************************************************************/
 void MapEditor::splitLine(double x, double y, double min_dist)
 {
+	fpoint2_t point(x, y);
+
 	// Get the closest line
 	int lindex = map.nearestLine(x, y, min_dist);
 	MapLine* line = map.getLine(lindex);
@@ -1926,7 +1928,7 @@ void MapEditor::splitLine(double x, double y, double min_dist)
 	beginUndoRecord("Split Line", true, true, false);
 
 	// Get closest point on the line
-	fpoint2_t closest = MathStuff::closestPointOnLine(x, y, line->x1(), line->y1(), line->x2(), line->y2());
+	fpoint2_t closest = MathStuff::closestPointOnLine(point, line->seg());
 
 	// Create vertex there
 	MapVertex* vertex = map.createVertex(closest.x, closest.y);

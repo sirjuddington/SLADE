@@ -2294,10 +2294,9 @@ void MapRenderer3D::quickVisDiscard()
 		dist_sectors.resize(map->nSectors());
 
 	// Go through all sectors
-	double x = cam_position.x;
-	double y = cam_position.y;
+	fpoint2_t cam = cam_position.get2d();
 	double min_dist, dist;
-	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
+	fseg2_t strafe(cam, cam + cam_strafe.get2d());
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		// Get sector bbox
@@ -2307,7 +2306,7 @@ void MapRenderer3D::quickVisDiscard()
 		dist_sectors[a] = 0.0f;
 
 		// Check if within bbox
-		if (bbox.point_within(x, y))
+		if (bbox.contains(cam))
 			continue;
 
 		// Check side of camera
@@ -2328,13 +2327,13 @@ void MapRenderer3D::quickVisDiscard()
 		if (render_max_dist > 0)
 		{
 			min_dist = 9999999;
-			dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
+			dist = MathStuff::distanceToLine(cam, bbox.left_side());
 			if (dist < min_dist) min_dist = dist;
-			dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.max.y, bbox.max.x, bbox.max.y);
+			dist = MathStuff::distanceToLine(cam, bbox.top_side());
 			if (dist < min_dist) min_dist = dist;
-			dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
+			dist = MathStuff::distanceToLine(cam, bbox.right_side());
 			if (dist < min_dist) min_dist = dist;
-			dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.min.y, bbox.min.x, bbox.min.y);
+			dist = MathStuff::distanceToLine(cam, bbox.bottom_side());
 			if (dist < min_dist) min_dist = dist;
 
 			dist_sectors[a] = dist;
@@ -2402,7 +2401,7 @@ void MapRenderer3D::checkVisibleQuads()
 
 		// Check for distance fade
 		if (render_max_dist > 0)
-			distfade = calcDistFade(MathStuff::distanceToLine(cam_position.x, cam_position.y, line->x1(), line->y1(), line->x2(), line->y2()), render_max_dist);
+			distfade = calcDistFade(MathStuff::distanceToLine(cam_position.get2d(), line->seg()), render_max_dist);
 		else
 			distfade = 1.0f;
 

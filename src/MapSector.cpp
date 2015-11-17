@@ -365,6 +365,8 @@ bool MapSector::isWithin(double x, double y)
  *******************************************************************/
 double MapSector::distanceTo(double x, double y, double maxdist)
 {
+	fpoint2_t point(x, y);
+
 	// Init
 	if (maxdist < 0)
 		maxdist = 9999999;
@@ -373,13 +375,13 @@ double MapSector::distanceTo(double x, double y, double maxdist)
 	if (!bbox.is_valid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
+	double dist = MathStuff::distanceToLine(point, bbox.left_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.max.y, bbox.max.x, bbox.max.y);
+	dist = MathStuff::distanceToLine(point, bbox.top_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
+	dist = MathStuff::distanceToLine(point, bbox.right_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.min.y, bbox.min.x, bbox.min.y);
+	dist = MathStuff::distanceToLine(point, bbox.bottom_side());
 	if (dist < min_dist) min_dist = dist;
 
 	if (min_dist > maxdist && !bbox.point_within(x, y))

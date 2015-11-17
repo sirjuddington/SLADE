@@ -1242,7 +1242,7 @@ public:
 			MapLine* line = lines[index];
 
 			// Get nearest line point to thing
-			fpoint2_t np = MathStuff::closestPointOnLine(thing->xPos(), thing->yPos(), line->x1(), line->y1(), line->x2(), line->y2());
+			fpoint2_t np = MathStuff::closestPointOnLine(thing->point(), line->seg());
 
 			// Get distance to move
 			double r = theGameConfiguration->thingType(thing->getType())->getRadius();

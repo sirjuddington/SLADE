@@ -15,9 +15,9 @@ namespace MathStuff
 	double		distance(fpoint2_t p1, fpoint2_t p2);
 	double		distance3d(fpoint3_t p1, fpoint3_t p2);
 	double		lineSide(fpoint2_t point, fseg2_t line);
-	fpoint2_t	closestPointOnLine(double x, double y, double x1, double y1, double x2, double y2);
-	double		distanceToLine(double x, double y, double x1, double y1, double x2, double y2);
-	double		distanceToLineFast(double x, double y, double x1, double y1, double x2, double y2);
+	fpoint2_t	closestPointOnLine(fpoint2_t point, fseg2_t line);
+	double		distanceToLine(fpoint2_t point, fseg2_t line);
+	double		distanceToLineFast(fpoint2_t point, fseg2_t line);
 	bool		linesIntersect(fseg2_t line1, fseg2_t line2, fpoint2_t& out);
 	double		distanceRayLine(fpoint2_t ray_origin, fpoint2_t ray_dir, fpoint2_t seg1, fpoint2_t seg2);
 	double		angle2DRad(fpoint2_t p1, fpoint2_t p2, fpoint2_t p3);

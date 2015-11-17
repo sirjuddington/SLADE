@@ -476,12 +476,10 @@ struct rect_t
 		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool within(int x, int y)
+	bool contains(point2_t point)
 	{
-		if (x >= left() && x <= right() && y >= top() && y <= bottom())
-			return true;
-		else
-			return false;
+		return (point.x >= left() && point.x <= right() &&
+				point.y >= top() && point.y <= bottom());
 	}
 };
 
@@ -619,12 +617,10 @@ struct frect_t
 		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool within(double x, double y)
+	bool contains(fpoint2_t point)
 	{
-		if (x >= left() && x <= right() && y >= top() && y <= bottom())
-			return true;
-		else
-			return false;
+		return (point.x >= left() && point.x <= right() &&
+				point.y >= top() && point.y <= bottom());
 	}
 };
 // Rectangle is not really any different from a 2D segment, but using it to
@@ -730,6 +726,10 @@ struct bbox_t
 	{
 		return (x >= min.x && x <= max.x && y >= min.y && y <= max.y);
 	}
+	bool contains(fpoint2_t point)
+	{
+		return point_within(point.x, point.y);
+	}
 
 	bool is_within(fpoint2_t bmin, fpoint2_t bmax)
 	{
@@ -769,6 +769,26 @@ struct bbox_t
 	double mid_y()
 	{
 		return min.y + ((max.y - min.y) * 0.5);
+	}
+
+	fseg2_t left_side()
+	{
+		return fseg2_t(min.x, min.y, min.x, max.y);
+	}
+
+	fseg2_t right_side()
+	{
+		return fseg2_t(max.x, min.y, max.x, max.y);
+	}
+
+	fseg2_t top_side()
+	{
+		return fseg2_t(min.x, max.y, max.x, max.y);
+	}
+
+	fseg2_t bottom_side()
+	{
+		return fseg2_t(min.x, min.y, max.x, min.y);
 	}
 };
 

@@ -106,9 +106,8 @@ double MathStuff::distance3d(fpoint3_t p1, fpoint3_t p2)
 }
 
 /* MathStuff::lineSide
- * Returns the side of the line from [x1,y1] to [x2,y2] that the
- * point at [x,y] lies on. Positive is front, negative is back, zero
- * is on the line
+ * Returns the side of the line that the point lies on.  Positive is
+ * front, negative is back, zero is on the line
  *******************************************************************/
 double MathStuff::lineSide(fpoint2_t point, fseg2_t line)
 {
@@ -116,19 +115,19 @@ double MathStuff::lineSide(fpoint2_t point, fseg2_t line)
 }
 
 /* MathStuff::closestPointOnLine
- * Returns the closest point to [x,y] along the line from [x1,y1] to
- * [x2,y2]
+ * Returns the point on the given line that's closest to the given
+ * point
  *******************************************************************/
-fpoint2_t MathStuff::closestPointOnLine(double x, double y, double x1, double y1, double x2, double y2)
+fpoint2_t MathStuff::closestPointOnLine(fpoint2_t point, fseg2_t line)
 {
 	// Get line length
-	double len = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+	double len = line.length();
 
 	// Calculate intersection distance
 	double u = 0;
 	if (len > 0)
 	{
-		u = ((x-x1)*(x2-x1) + (y-y1)*(y2-y1)) / (len*len);
+		u = MathStuff::lineSide(point, line) / (len * len);
 
 		// Limit intersection distance to the line
 		double lbound = 1 / len;
@@ -137,37 +136,36 @@ fpoint2_t MathStuff::closestPointOnLine(double x, double y, double x1, double y1
 	}
 
 	// Return intersection point
-	return fpoint2_t(x1 + u*(x2 - x1), y1 + u*(y2 - y1));
+	return fpoint2_t(line.x1() + u*line.width(), line.y1() + u*line.height());
 }
 
 /* MathStuff::distanceToLine
  * Returns the shortest distance between the point at [x,y] and the
  * line from [x1,y1] to [x2,y2]
  *******************************************************************/
-double MathStuff::distanceToLine(double x, double y, double x1, double y1, double x2, double y2)
+double MathStuff::distanceToLine(fpoint2_t point, fseg2_t line)
 {
 	// Calculate intersection point
-	fpoint2_t i = closestPointOnLine(x, y, x1, y1, x2, y2);
+	fpoint2_t i = closestPointOnLine(point, line);
 
 	// Return distance between intersection and point
 	// which is the shortest distance to the line
-	return sqrt((i.x-x)*(i.x-x) + (i.y-y)*(i.y-y));
+	return MathStuff::distance(i, point);
 }
 
 /* MathStuff::distanceToLineFast
- * Returns the shortest 'distance' between the point at [x,y] and the
- * line from [x1,y1] to [x2,y2]. The distance returned isn't the
- * real distance, but can be used to find the 'closest' line to the
- * point
+ * Returns the shortest 'distance' between the given point and line.
+ * The distance returned isn't the real distance, but can be used to
+ * find the 'closest' line to the point
  *******************************************************************/
-double MathStuff::distanceToLineFast(double x, double y, double x1, double y1, double x2, double y2)
+double MathStuff::distanceToLineFast(fpoint2_t point, fseg2_t line)
 {
 	// Calculate intersection point
-	fpoint2_t i = closestPointOnLine(x, y, x1, y1, x2, y2);
+	fpoint2_t i = closestPointOnLine(point, line);
 
 	// Return fast distance between intersection and point
 	// which is the shortest distance to the line
-	return (i.x-x)*(i.x-x) + (i.y-y)*(i.y-y);
+	return (i.x-point.x)*(i.x-point.x) + (i.y-point.y)*(i.y-point.y);
 }
 
 /* MathStuff::linesIntersect

@@ -3096,10 +3096,7 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
  *******************************************************************/
 MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 {
-	// Create bbox for line
-	bbox_t bbox;
-	bbox.extend(x1, y1);
-	bbox.extend(x2, y2);
+	fseg2_t seg(x1, y1, x2, y2);
 
 	// Go through vertices
 	MapVertex* cv = NULL;
@@ -3107,23 +3104,21 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		MapVertex* vertex = vertices[a];
+		fpoint2_t point = vertex->point();
 
 		// Skip if outside line bbox
-		if (!bbox.point_within(vertex->x, vertex->y))
+		if (!seg.contains(point))
 			continue;
 
 		// Skip if it's at an end of the line
-		if (vertex->x == x1 && vertex->y == y1)
-			continue;
-		if (vertex->x == x2 && vertex->y == y2)
+		if (point == seg.p1() || point == seg.p2())
 			continue;
 
 		// Check if on line
-		if (MathStuff::distanceToLineFast(vertex->x, vertex->y, x1, y1, x2, y2) == 0)
+		if (MathStuff::distanceToLineFast(point, seg) == 0)
 		{
 			// Check distance between line start and vertex
-			fpoint2_t point1(x1, y1);
-			double dist = MathStuff::distance(point1, vertex->point());
+			double dist = MathStuff::distance(seg.p1(), point);
 			if (dist < min_dist)
 			{
 				cv = vertex;
@@ -3209,7 +3204,7 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
 	for (unsigned a = 0; a < sector->connected_sides.size(); a++)
 	{
 		MapLine* l = sector->connected_sides[a]->parent;
-		double dist = MathStuff::distanceToLineFast(sector->text_point.x, sector->text_point.y, l->x1(), l->y1(), l->x2(), l->y2());
+		double dist = MathStuff::distanceToLineFast(sector->text_point, l->seg());
 
 		if (dist < min_dist)
 		{
