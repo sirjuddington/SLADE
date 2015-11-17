@@ -116,7 +116,7 @@ public:
 			}
 		}
 
-		LOG_MESSAGE(3, "Missing Texture Check: %d missing textures", parts.size());
+		LOG_MESSAGE(3, "Missing Texture Check: %lu missing textures", parts.size());
 	}
 
 	unsigned nProblems()
