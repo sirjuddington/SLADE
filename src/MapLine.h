@@ -125,6 +125,8 @@ public:
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
 	void	copy(MapObject*);
+
+	operator Debuggable() const { return Debuggable(S_FMT("<line %u>", index)); }
 };
 
 #endif //__MAPLINE_H__

@@ -130,6 +130,8 @@ public:
 
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
+
+	operator Debuggable() const { return Debuggable(S_FMT("<sector %u>", index)); }
 };
 
 // Note: these MUST be inline, or the linker will complain

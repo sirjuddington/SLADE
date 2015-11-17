@@ -133,4 +133,82 @@ const string MAP_TYPE_NAMES[] = {
 	"Unknown",
 };
 
+// Debug helper type
+#ifdef WXDEBUG
+#include <typeinfo>
+class Debuggable
+{
+	string repr;
+
+public:
+	Debuggable(string v) { repr = v; }
+	Debuggable(const char* v) { repr = v; }
+	Debuggable(int v) { repr = S_FMT("%d", v); }
+	Debuggable(unsigned int v) { repr = S_FMT("%u", v); }
+	Debuggable(long v) { repr = S_FMT("%ld", v); }
+	Debuggable(unsigned long v) { repr = S_FMT("%lu", v); }
+
+	Debuggable(fpoint2_t v) { repr = S_FMT("(%0.6f, %0.6f)", v.x, v.y); }
+	Debuggable(fpoint3_t v) { repr = S_FMT("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
+
+	template<typename T>
+	Debuggable(T* v) { repr = Debuggable(*v).repr; }
+
+	template<typename T>
+	Debuggable(vector<T> v) {
+		repr << "{";
+		for (unsigned int a = 0; a < v.size(); a++)
+		{
+			repr << Debuggable(v[a]).get();
+			if (a < v.size() - 1)
+				repr << ", ";
+		}
+		repr << "}";
+	}
+
+	string get() { return this->repr; }
+};
+
+inline void LOG_DEBUG(
+	Debuggable a1 = "",
+	Debuggable a2 = "",
+	Debuggable a3 = "",
+	Debuggable a4 = "",
+	Debuggable a5 = "",
+	Debuggable a6 = "",
+	Debuggable a7 = "",
+	Debuggable a8 = "",
+	Debuggable a9 = "",
+	Debuggable a10 = "",
+	Debuggable a11 = "",
+	Debuggable a12 = ""
+)
+{
+	string message;
+	message << a1.get();
+	message << a2.get();
+	message << a3.get();
+	message << a4.get();
+	message << a5.get();
+	message << a6.get();
+	message << a7.get();
+	message << a8.get();
+	message << a9.get();
+	message << a10.get();
+	message << a11.get();
+	message << a12.get();
+	wxLogMessage("%s", message);
+}
+
+#define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)
+#else  // WXDEBUG
+struct Debuggable {
+	string repr;
+};
+#define LOG_DEBUG(...)
+#define LOG_DEBUG_VAR(name)
+#endif  // WXDEBUG
+
+
+
 #endif // __MAIN_H__
