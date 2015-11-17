@@ -372,40 +372,6 @@ void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double 
 	glEnd();
 }
 
-/* Drawing::drawLineTabbed
- * Draws a line from [x1,y1] to [x2,y2]
- *******************************************************************/
-void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double tab, double tab_max)
-{
-	// Draw line
-	glBegin(GL_LINES);
-	glVertex2d(x1, y1);
-	glVertex2d(x2, y2);
-	glEnd();
-
-	// Calculate midpoint
-	fpoint2_t mid;
-	mid.x = x1 + ((x2 - x1) * 0.5);
-	mid.y = y1 + ((y1 - y1) * 0.5);
-
-	// Calculate tab length
-	fpoint2_t p1(x1, y1);
-	fpoint2_t p2(x2, y2);
-	double tablen = MathStuff::distance(p1, p2) * tab;
-	if (tablen > tab_max) tablen = tab_max;
-	if (tablen < 2) tablen = 2;
-
-	// Calculate tab endpoint
-	fpoint2_t invdir(-(y2 - y1), x2 - x1);
-	invdir.normalize();
-
-	// Draw tab
-	glBegin(GL_LINES);
-	glVertex2d(mid.x, mid.y);
-	glVertex2d(mid.x - invdir.x*tablen, mid.y - invdir.y*tablen);
-	glEnd();
-}
-
 /* Drawing::drawArrow
  * Draws a line from [p1] to [p2] with an arrowhead at the [p1] end.
  * If [twoway] is true, an arrowhead is also drawn at the [p2] end
