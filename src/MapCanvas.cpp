@@ -908,7 +908,7 @@ void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
 	fpoint2_t tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1.x, p1.y, p2.x, p2.y)));
+	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
 	double hh = Drawing::textExtents(length).y * 0.5;
 
 	// Draw text
@@ -1131,7 +1131,7 @@ void MapCanvas::drawObjectEdit()
 	if (group->getNearestLine(mouse_pos_m, 128 / view_scale, nl_v1, nl_v2))
 	{
 		fpoint2_t mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
-		int length = MathStuff::distance(nl_v1.x, nl_v1.y, nl_v2.x, nl_v2.y);
+		int length = MathStuff::distance(nl_v1, nl_v2);
 		int x = screenX(mid.x);
 		int y = screenY(mid.y) - 8;
 		setOverlayCoords(true);

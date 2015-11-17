@@ -469,7 +469,7 @@ double MapLine::getLength()
 
 	if (length < 0)
 	{
-		length = MathStuff::distance(vertex1->xPos(), vertex1->yPos(), vertex2->xPos(), vertex2->yPos());
+		length = this->seg().length();
 		ca = (vertex2->xPos() - vertex1->xPos()) / length;
 		sa = (vertex2->yPos() - vertex1->yPos()) / length;
 	}
@@ -534,7 +534,7 @@ double MapLine::distanceTo(double x, double y)
 	// Update length data if needed
 	if (length < 0)
 	{
-		length = MathStuff::distance(vertex1->xPos(), vertex1->yPos(), vertex2->xPos(), vertex2->yPos());
+		length = this->seg().length();
 		if (length != 0)
 		{
 			ca = (vertex2->xPos() - vertex1->xPos()) / length;

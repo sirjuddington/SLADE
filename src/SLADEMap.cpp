@@ -2832,7 +2832,8 @@ int SLADEMap::nearestVertex(double x, double y, double min)
 	if (index >= 0)
 	{
 		v = vertices[index];
-		double rdist = MathStuff::distance(v->x, v->y, x, y);
+		fpoint2_t point(x, y);
+		double rdist = MathStuff::distance(v->point(), point);
 		if (rdist > min)
 			return -1;
 	}
@@ -2908,7 +2909,8 @@ int SLADEMap::nearestThing(double x, double y, double min)
 	if (index >= 0)
 	{
 		t = things[index];
-		double rdist = MathStuff::distance(t->x, t->y, x, y);
+		fpoint2_t point(x, y);
+		double rdist = MathStuff::distance(t->point(), point);
 		if (rdist > min)
 			return -1;
 	}
@@ -3120,7 +3122,8 @@ MapVertex* SLADEMap::lineCrossVertex(double x1, double y1, double x2, double y2)
 		if (MathStuff::distanceToLineFast(vertex->x, vertex->y, x1, y1, x2, y2) == 0)
 		{
 			// Check distance between line start and vertex
-			double dist = MathStuff::distance(x1, y1, vertex->x, vertex->y);
+			fpoint2_t point1(x1, y1);
+			double dist = MathStuff::distance(point1, vertex->point());
 			if (dist < min_dist)
 			{
 				cv = vertex;

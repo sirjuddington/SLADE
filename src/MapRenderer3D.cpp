@@ -1916,7 +1916,7 @@ void MapRenderer3D::renderThings()
 		}
 
 		// Check thing distance if needed
-		dist = MathStuff::distance(cam_position.x, cam_position.y, thing->xPos(), thing->yPos());
+		dist = MathStuff::distance(cam_position.get2d(), thing->point());
 		if (mdist > 0 && dist > mdist)
 			continue;
 

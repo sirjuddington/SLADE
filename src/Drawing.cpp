@@ -357,7 +357,7 @@ void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double 
 	mid.y = start.y + ((end.y - start.y) * 0.5);
 
 	// Calculate tab length
-	double tablen = MathStuff::distance(start.x, start.y, end.x, end.y) * tab;
+	double tablen = MathStuff::distance(start, end) * tab;
 	if (tablen > tab_max) tablen = tab_max;
 	if (tablen < 2) tablen = 2;
 
@@ -389,7 +389,9 @@ void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double 
 	mid.y = y1 + ((y1 - y1) * 0.5);
 
 	// Calculate tab length
-	double tablen = MathStuff::distance(x1, y1, x2, y2) * tab;
+	fpoint2_t p1(x1, y1);
+	fpoint2_t p2(x2, y2);
+	double tablen = MathStuff::distance(p1, p2) * tab;
 	if (tablen > tab_max) tablen = tab_max;
 	if (tablen < 2) tablen = 2;
 

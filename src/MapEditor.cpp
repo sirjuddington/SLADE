@@ -736,7 +736,7 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 		{
 			MapThing* t = map.getThing(nearest[0]);
 			ThingType* type = theGameConfiguration->thingType(t->getType());
-			double dist = MathStuff::distance(mouse_pos.x, mouse_pos.y, t->xPos(), t->yPos());
+			double dist = MathStuff::distance(mouse_pos, t->point());
 			if (dist <= type->getRadius() + (32/dist_scale))
 				hilight_item = nearest[0];
 		}
@@ -746,7 +746,7 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 			{
 				MapThing* t = map.getThing(nearest[a]);
 				ThingType* type = theGameConfiguration->thingType(t->getType());
-				double dist = MathStuff::distance(mouse_pos.x, mouse_pos.y, t->xPos(), t->yPos());
+				double dist = MathStuff::distance(mouse_pos, t->point());
 				if (dist <= type->getRadius() + (32/dist_scale))
 					hilight_item = nearest[a];
 			}

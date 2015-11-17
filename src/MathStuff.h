@@ -12,7 +12,7 @@ namespace MathStuff
 	int			floor(double val);
 	int			ceil(double val);
 	int			round(double val);
-	double		distance(double x1, double y1, double x2, double y2);
+	double		distance(fpoint2_t p1, fpoint2_t p2);
 	double		distance3d(fpoint3_t p1, fpoint3_t p2);
 	double		lineSide(fpoint2_t point, fseg2_t line);
 	fpoint2_t	closestPointOnLine(double x, double y, double x1, double y1, double x2, double y2);

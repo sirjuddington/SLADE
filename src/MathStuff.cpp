@@ -90,15 +90,15 @@ int MathStuff::round(double val)
 }
 
 /* MathStuff::distance
- * Returns the distance between [x1,y1] and [x2,y2]
+ * Returns the distance between p1 and p2
  *******************************************************************/
-double MathStuff::distance(double x1, double y1, double x2, double y2)
+double MathStuff::distance(fpoint2_t p1, fpoint2_t p2)
 {
-	return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+	return sqrt((p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y));
 }
 
 /* MathStuff::distance3d
- * Returns the distance between [x1,y1,z1] and [x2,y2,z2]
+ * Returns the distance between p1 and p2
  *******************************************************************/
 double MathStuff::distance3d(fpoint3_t p1, fpoint3_t p2)
 {

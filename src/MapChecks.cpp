@@ -1246,7 +1246,7 @@ public:
 
 			// Get distance to move
 			double r = theGameConfiguration->thingType(thing->getType())->getRadius();
-			double dist = MathStuff::distance(0, 0, r, r);
+			double dist = MathStuff::distance(fpoint2_t(), fpoint2_t(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
 
