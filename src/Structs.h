@@ -156,13 +156,26 @@ struct fpoint3_t
 		return x*vec.x + y*vec.y + z*vec.z;
 	}
 
-	fpoint3_t normalize()
+	fpoint3_t normalized()
 	{
 		double mag = magnitude();
 		if (mag == 0)
 			return fpoint3_t(0, 0, 0);
 		else
 			return fpoint3_t(x / mag, y / mag, z / mag);
+	}
+
+	void normalize()
+	{
+		double mag = magnitude();
+		if (mag == 0)
+			set(0, 0, 0);
+		else
+		{
+			x /= mag;
+			y /= mag;
+			z /= mag;
+		}
 	}
 
 	double distance_to(fpoint3_t point)
@@ -663,7 +676,8 @@ struct plane_t
 	fpoint3_t normal()
 	{
 		fpoint3_t norm(a, b, c);
-		return norm.normalize();
+		norm.normalize();
+		return norm;
 	}
 
 	void normalize()

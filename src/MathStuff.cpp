@@ -465,10 +465,10 @@ plane_t MathStuff::planeFromTriangle(fpoint3_t p1, fpoint3_t p2, fpoint3_t p3)
 {
 	fpoint3_t v1 = p3 - p1;
 	fpoint3_t v2 = p2 - p1;
-	v1 = v1.normalize();
-	v2 = v2.normalize();
+	v1.normalize();
+	v2.normalize();
 	fpoint3_t normal = v1.cross(v2);
-	normal.set(normal.normalize());
+	normal.normalize();
 
 	plane_t plane;
 	plane.a = normal.x;

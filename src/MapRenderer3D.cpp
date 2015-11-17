@@ -357,12 +357,12 @@ void MapRenderer3D::cameraUpdateVectors()
 	cam_direction.normalize();
 
 	// Calculate strafe vector
-	cam_strafe = fpoint3_t(cam_direction.x, cam_direction.y, 0).cross(fpoint3_t(0, 0, 1));
-	cam_strafe = cam_strafe.normalize();
+	cam_strafe = fpoint3_t(cam_direction, 0).cross(fpoint3_t(0, 0, 1));
+	cam_strafe.normalize();
 
 	// Calculate 3d direction vector
-	cam_dir3d = MathStuff::rotateVector3D(fpoint3_t(cam_direction.x, cam_direction.y, 0), cam_strafe, cam_pitch);
-	cam_dir3d = cam_dir3d.normalize();
+	cam_dir3d = MathStuff::rotateVector3D(fpoint3_t(cam_direction, 0), cam_strafe, cam_pitch);
+	cam_dir3d.normalize();
 }
 
 /* MapRenderer3D::cameraSet
@@ -442,7 +442,7 @@ void MapRenderer3D::setupView(int width, int height)
 	glLoadIdentity();
 
 	// Calculate up vector
-	fpoint3_t up = cam_strafe.cross(cam_dir3d).normalize();
+	fpoint3_t up = cam_strafe.cross(cam_dir3d).normalized();
 
 	// Setup camera view
 	gluLookAt(cam_position.x, cam_position.y, cam_position.z,
