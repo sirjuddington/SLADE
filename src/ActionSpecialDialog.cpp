@@ -749,6 +749,7 @@ void ArgsPanel::setup(argspec_t* args)
 
 	// Set the label text last, so very long labels will wrap naturally and not
 	// force the window to be ridiculously wide
+	Layout();
 	int available_width = fg_sizer->GetColWidths()[1];
 	for (int a = 0; a < args->count; a++)
 	{
