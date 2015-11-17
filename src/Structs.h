@@ -816,12 +816,12 @@ struct bbox_t
 		return fseg2_t(max.x, min.y, max.x, max.y);
 	}
 
-	fseg2_t top_side()
+	fseg2_t bottom_side()
 	{
 		return fseg2_t(min.x, max.y, max.x, max.y);
 	}
 
-	fseg2_t bottom_side()
+	fseg2_t top_side()
 	{
 		return fseg2_t(min.x, min.y, max.x, min.y);
 	}
