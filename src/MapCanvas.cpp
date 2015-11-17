@@ -930,7 +930,7 @@ void MapCanvas::drawLineDrawLines()
 	if (modifiers_current & wxMOD_SHIFT)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
-		int vertex = editor->getMap().nearestVertex(end.x, end.y);
+		int vertex = editor->getMap().nearestVertex(end);
 		if (vertex >= 0)
 		{
 			end.x = editor->getMap().getVertex(vertex)->xPos();

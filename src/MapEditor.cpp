@@ -721,7 +721,7 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 
 	// Update hilighted object depending on mode
 	if (edit_mode == MODE_VERTICES)
-		hilight_item = map.nearestVertex(mouse_pos.x, mouse_pos.y, 32/dist_scale);
+		hilight_item = map.nearestVertex(mouse_pos, 32/dist_scale);
 	else if (edit_mode == MODE_LINES)
 		hilight_item = map.nearestLine(mouse_pos.x, mouse_pos.y, 32/dist_scale);
 	else if (edit_mode == MODE_SECTORS)
@@ -2876,12 +2876,9 @@ bool MapEditor::addLineDrawPoint(fpoint2_t point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		int vertex = map.nearestVertex(point.x, point.y);
+		int vertex = map.nearestVertex(point);
 		if (vertex >= 0)
-		{
-			point.x = map.getVertex(vertex)->xPos();
-			point.y = map.getVertex(vertex)->yPos();
-		}
+			point = map.getVertex(vertex)->point();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -2940,12 +2937,9 @@ void MapEditor::setShapeDrawOrigin(fpoint2_t point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		int vertex = map.nearestVertex(point.x, point.y);
+		int vertex = map.nearestVertex(point);
 		if (vertex >= 0)
-		{
-			point.x = map.getVertex(vertex)->xPos();
-			point.y = map.getVertex(vertex)->yPos();
-		}
+			point = map.getVertex(vertex)->point();
 	}
 
 	// Otherwise, snap to grid if necessary

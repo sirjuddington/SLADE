@@ -2799,10 +2799,10 @@ bool SLADEMap::removeThing(unsigned index)
 }
 
 /* SLADEMap::nearestVertex
- * Returns the index of the vertex closest to [x,y], or -1 if none
+ * Returns the index of the vertex closest to the point, or -1 if none
  * found. Igonres any vertices further away than [min]
  *******************************************************************/
-int SLADEMap::nearestVertex(double x, double y, double min)
+int SLADEMap::nearestVertex(fpoint2_t point, double min)
 {
 	// Go through vertices
 	double min_dist = 999999999;
@@ -2814,10 +2814,10 @@ int SLADEMap::nearestVertex(double x, double y, double min)
 		v = vertices[a];
 
 		// Get 'quick' distance (no need to get real distance)
-		if (v->x < x)	dist = x - v->x;
-		else			dist = v->x - x;
-		if (v->y < y)	dist += y - v->y;
-		else			dist += v->y - y;
+		if (v->x < point.x)	dist = point.x - v->x;
+		else				dist = v->x - point.x;
+		if (v->y < point.y)	dist += point.y - v->y;
+		else				dist += v->y - point.y;
 
 		// Check if it's nearer than the previous nearest
 		if (dist < min_dist)
@@ -2832,7 +2832,6 @@ int SLADEMap::nearestVertex(double x, double y, double min)
 	if (index >= 0)
 	{
 		v = vertices[index];
-		fpoint2_t point(x, y);
 		double rdist = MathStuff::distance(v->point(), point);
 		if (rdist > min)
 			return -1;

@@ -210,7 +210,7 @@ public:
 	bool	removeThing(unsigned index);
 
 	// Geometry
-	int					nearestVertex(double x, double y, double min = 64);
+	int					nearestVertex(fpoint2_t point, double min = 64);
 	int					nearestLine(double x, double y, double min = 64);
 	int					nearestThing(double x, double y, double min = 64);
 	vector<int>			nearestThingMulti(double x, double y);

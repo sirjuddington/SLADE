@@ -90,6 +90,14 @@ struct fpoint2_t
 		}
 	}
 
+	double distance_to(fpoint2_t point)
+	{
+		double dist_x = point.x - x;
+		double dist_y = point.y - y;
+
+		return sqrt((dist_x * dist_x) + (dist_y * dist_y));
+	}
+
 	double dot(fpoint2_t vec)
 	{
 		return x*vec.x + y*vec.y;
