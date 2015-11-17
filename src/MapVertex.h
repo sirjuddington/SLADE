@@ -39,6 +39,7 @@ public:
 	double		yPos() { return y; }
 
 	fpoint2_t	getPoint(uint8_t point);
+	fpoint2_t	point();
 
 	int		intProperty(string key);
 	double	floatProperty(string key);

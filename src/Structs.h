@@ -127,6 +127,10 @@ struct fpoint2_t
 	{
 		return (x == rhs.x && y == rhs.y);
 	}
+	bool operator!=(fpoint2_t rhs)
+	{
+		return (x != rhs.x || y != rhs.y);
+	}
 };
 
 
@@ -566,6 +570,8 @@ struct frect_t
 	double y1() { return tl.y; }
 	double x2() { return br.x; }
 	double y2() { return br.y; }
+	fpoint2_t p1() { return tl; }
+	fpoint2_t p2() { return br; }
 
 	double left()	{ return min(tl.x, br.x); }
 	double top()	{ return min(tl.y, br.y); }
@@ -621,6 +627,9 @@ struct frect_t
 			return false;
 	}
 };
+// Rectangle is not really any different from a 2D segment, but using it to
+// mean that can be confusing, so here's an alias.
+typedef frect_t fseg2_t;
 
 
 // plane_t: A 3d plane

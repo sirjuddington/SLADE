@@ -171,55 +171,52 @@ double MathStuff::distanceToLineFast(double x, double y, double x1, double y1, d
 }
 
 /* MathStuff::linesIntersect
- * Checks for an intersection between two lines [l1x1,l1y1]-[l1x2,l1y2]
- * and [l2x1,l2y1]-[l2x2,l2y2]. Returns true if they intersect and
- * sets [x,y] to the intersection point
+ * Checks for an intersection between two lines l1 and l2.  Returns
+ * true if they intersect and sets out to the intersection point
  *******************************************************************/
-bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y2,
-							   double l2x1, double l2y1, double l2x2, double l2y2,
-							   double& x, double& y)
+bool MathStuff::linesIntersect(fseg2_t l1, fseg2_t l2, fpoint2_t& out)
 {
 	// First, simple check for two parallel horizontal or vertical lines
-	if ((l1x1 == l1x2 && l2x1 == l2x2) || (l1y1 == l1y2 && l2y1 == l2y2))
+	if ((l1.x1() == l1.x2() && l2.x1() == l2.x2()) || (l1.y1() == l1.y2() && l2.y1() == l2.y2()))
 		return false;
 
 	// Second, check if the lines share any endpoints
-	if ((l1x1 == l2x1 && l1y1 == l2y1) ||
-			(l1x2 == l2x2 && l1y2 == l2y2) ||
-			(l1x1 == l2x2 && l1y1 == l2y2) ||
-			(l1x2 == l2x1 && l1y2 == l2y1))
+	if ((l1.x1() == l2.x1() && l1.y1() == l2.y1()) ||
+			(l1.x2() == l2.x2() && l1.y2() == l2.y2()) ||
+			(l1.x1() == l2.x2() && l1.y1() == l2.y2()) ||
+			(l1.x2() == l2.x1() && l1.y2() == l2.y1()))
 		return false;
 
 	// Third, check bounding boxes
-	if (max(l1x1, l1x2) < min(l2x1, l2x2) ||
-			max(l2x1, l2x2) < min(l1x1, l1x2) ||
-			max(l1y1, l1y2) < min(l2y1, l2y2) ||
-			max(l2y1, l2y2) < min(l1y1, l1y2))
+	if (max(l1.x1(), l1.x2()) < min(l2.x1(), l2.x2()) ||
+			max(l2.x1(), l2.x2()) < min(l1.x1(), l1.x2()) ||
+			max(l1.y1(), l1.y2()) < min(l2.y1(), l2.y2()) ||
+			max(l2.y1(), l2.y2()) < min(l1.y1(), l1.y2()))
 		return false;
 
 	// Fourth, check for two perpendicular horizontal or vertical lines
-	if (l1x1 == l1x2 && l2y1 == l2y2)
+	if (l1.x1() == l1.x2() && l2.y1() == l2.y2())
 	{
-		x = l1x1;
-		y = l2y1;
+		out.x = l1.x1();
+		out.y = l2.y1();
 		return true;
 	}
-	if (l1y1 == l1y2 && l2x1 == l2x2)
+	if (l1.y1() == l1.y2() && l2.x1() == l2.x2())
 	{
-		x = l2x1;
-		y = l1y1;
+		out.x = l2.x1();
+		out.y = l1.y1();
 		return true;
 	}
 
 	// Not a simple case, do full intersection calculation
 
 	// Calculate some values
-	double a1 = l1y2 - l1y1;
-	double a2 = l2y2 - l2y1;
-	double b1 = l1x1 - l1x2;
-	double b2 = l2x1 - l2x2;
-	double c1 = (a1 * l1x1) + (b1 * l1y1);
-	double c2 = (a2 * l2x1) + (b2 * l2y1);
+	double a1 = l1.y2() - l1.y1();
+	double a2 = l2.y2() - l2.y1();
+	double b1 = l1.x1() - l1.x2();
+	double b2 = l2.x1() - l2.x2();
+	double c1 = (a1 * l1.x1()) + (b1 * l1.y1());
+	double c2 = (a2 * l2.x1()) + (b2 * l2.y1());
 	double det = a1*b2 - a2*b1;
 
 	// Check for no intersection
@@ -227,18 +224,18 @@ bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y
 		return false;
 
 	// Calculate intersection point
-	x = (b2*c1 - b1*c2) / det;
-	y = (a1*c2 - a2*c1) / det;
+	out.x = (b2*c1 - b1*c2) / det;
+	out.y = (a1*c2 - a2*c1) / det;
 
 	// Round to nearest 3 decimal places
-	x = std::floor(x * 1000.0 + 0.5) / 1000.0;
-	y = std::floor(y * 1000.0 + 0.5) / 1000.0;
+	out.x = std::floor(out.x * 1000.0 + 0.5) / 1000.0;
+	out.y = std::floor(out.y * 1000.0 + 0.5) / 1000.0;
 
 	// Check that the intersection point is on both lines
-	if (min(l1x1, l1x2) <= x && x <= max(l1x1, l1x2) &&
-			min(l1y1, l1y2) <= y && y <= max(l1y1, l1y2) &&
-			min(l2x1, l2x2) <= x && x <= max(l2x1, l2x2) &&
-			min(l2y1, l2y2) <= y && y <= max(l2y1, l2y2))
+	if (min(l1.x1(), l1.x2()) <= out.x && out.x <= max(l1.x1(), l1.x2()) &&
+		min(l1.y1(), l1.y2()) <= out.y && out.y <= max(l1.y1(), l1.y2()) &&
+		min(l2.x1(), l2.x2()) <= out.x && out.x <= max(l2.x1(), l2.x2()) &&
+		min(l2.y1(), l2.y2()) <= out.y && out.y <= max(l2.y1(), l2.y2()))
 		return true;
 
 	// Intersection point does not lie on both lines

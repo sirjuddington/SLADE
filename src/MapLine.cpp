@@ -432,7 +432,7 @@ void MapLine::setS2(MapSide* side)
 fpoint2_t MapLine::getPoint(uint8_t point)
 {
 	//if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
-		return fpoint2_t(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
+	return (point1() + point2()) * 0.5;
 }
 
 /* MapLine::point1
@@ -440,15 +440,23 @@ fpoint2_t MapLine::getPoint(uint8_t point)
  *******************************************************************/
 fpoint2_t MapLine::point1()
 {
-	return vertex1->getPoint(0);
+	return vertex1->point();
 }
 
 /* MapLine::point2
- * Returns the point at the first vertex.
+ * Returns the point at the second vertex.
  *******************************************************************/
 fpoint2_t MapLine::point2()
 {
-	return vertex2->getPoint(0);
+	return vertex2->point();
+}
+
+/* MapLine::seg
+ * Returns this line as a segment.
+ *******************************************************************/
+fseg2_t MapLine::seg()
+{
+	return fseg2_t(vertex1->point(), vertex2->point());
 }
 
 /* MapLine::getLength

@@ -100,6 +100,8 @@ private:
 		bool			ok;
 		double			distance;
 		vertex_t(double x=0, double y=0) { this->x = x; this->y = y; ok = true; }
+
+		operator fpoint2_t() const { return fpoint2_t(x, y); }
 	};
 	struct poly_outline_t
 	{

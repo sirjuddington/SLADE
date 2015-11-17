@@ -3041,24 +3041,24 @@ bool sortVPosYDesc(const fpoint2_t& left, const fpoint2_t& right)
  *******************************************************************/
 vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 {
+	fseg2_t cutter(x1, y1, x2, y2);
 	// Init
 	vector<fpoint2_t> intersect_points;
-	double x, y;
+	fpoint2_t intersection;
 
 	// Go through map lines
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		// Check for intersection
-		x = x1;
-		y = y1;
-		if (MathStuff::linesIntersect(x1, y1, x2, y2, lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2(), x, y))
+		intersection = cutter.p1();
+		if (MathStuff::linesIntersect(cutter, lines[a]->seg(), intersection))
 		{
 			// Add intersection point to vector
-			intersect_points.push_back(fpoint2_t(x, y));
-			LOG_MESSAGE(3, "Intersection point %1.9f,%1.9f valid with line %u", x, y, a);
+			intersect_points.push_back(intersection);
+			LOG_DEBUG("Intersection point ", intersection, " valid with ", lines[a]);
 		}
-		else if (x != x1 || y != y1)
-			LOG_MESSAGE(3, "Intersection point %1.20f,%1.20f invalid", x, y);
+		else if (intersection != cutter.p1())
+			LOG_DEBUG("Intersection point ", intersection, " invalid");
 	}
 
 	// Return if no intersections
@@ -3174,8 +3174,11 @@ void SLADEMap::updateGeometryInfo(long modified_time)
  *******************************************************************/
 bool SLADEMap::linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y)
 {
-	return MathStuff::linesIntersect(line1->vertex1->x, line1->vertex1->y, line1->vertex2->x, line1->vertex2->y,
-		line2->vertex1->x, line2->vertex1->y, line2->vertex2->x, line2->vertex2->y, x, y);
+	fpoint2_t intersection;
+	bool res = MathStuff::linesIntersect(line1->seg(), line2->seg(), intersection);
+	x = intersection.x;
+	y = intersection.y;
+	return res;
 }
 
 /* SLADEMap::findSectorTextPoint
@@ -4515,20 +4518,17 @@ bool SLADEMap::setLineSector(unsigned line, unsigned sector, bool front)
  *******************************************************************/
 void SLADEMap::splitLinesByLine(MapLine* split_line)
 {
-	double ix, iy;
-	double x1 = split_line->x1();
-	double y1 = split_line->y1();
-	double x2 = split_line->x2();
-	double y2 = split_line->y2();
+	fpoint2_t intersection;
+	fseg2_t split_segment = split_line->seg();
 
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		if (lines[a] == split_line)
 			continue;
 
-		if (MathStuff::linesIntersect(x1, y1, x2, y2, lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2(), ix, iy))
+		if (MathStuff::linesIntersect(split_segment, lines[a]->seg(), intersection))
 		{
-			MapVertex* v = createVertex(ix, iy, 0.9);
+			MapVertex* v = createVertex(intersection.x, intersection.y, 0.9);
 			//splitLine(lines[a], v);
 		}
 	}
@@ -4668,15 +4668,11 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 	}
 
 	// Split lines (by lines)
-	double l1x1, l1y1, l1x2, l1y2;
-	double l2x1, l2y1, l2x2, l2y2;
+	fseg2_t seg1;
 	for (unsigned a = 0; a < connected_lines.size(); a++)
 	{
 		MapLine* line1 = connected_lines[a];
-		l1x1 = line1->x1();
-		l1y1 = line1->y1();
-		l1x2 = line1->x2();
-		l1y2 = line1->y2();
+		seg1 = line1->seg();
 
 		unsigned n_lines = lines.size();
 		for (unsigned b = 0; b < n_lines; b++)
@@ -4690,17 +4686,12 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				line2->vertex2 == line1->vertex2)
 				continue;
 
-			l2x1 = line2->x1();
-			l2y1 = line2->y1();
-			l2x2 = line2->x2();
-			l2y2 = line2->y2();
-
 			// Check for intersection
-			double x, y;
-			if (MathStuff::linesIntersect(l1x1, l1y1, l1x2, l1y2, l2x1, l2y1, l2x2, l2y2, x, y))
+			fpoint2_t intersection;
+			if (MathStuff::linesIntersect(seg1, line2->seg(), intersection))
 			{
 				// Create split vertex
-				MapVertex* nv = createVertex(x, y);
+				MapVertex* nv = createVertex(intersection.x, intersection.y);
 				merged_vertices.push_back(nv);
 
 				// Split lines
@@ -4709,7 +4700,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				splitLine(line2, nv);
 				connected_lines.push_back(lines.back());
 
-				LOG_MESSAGE(4, "Lines %u and %u intersect", line1->getIndex(), line2->getIndex());
+				LOG_DEBUG("Lines ", line1, " and ", line2, " intersect");
 
 				a--;
 				break;
