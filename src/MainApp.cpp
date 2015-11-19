@@ -1071,7 +1071,7 @@ void MainApp::readConfigFile()
 
 	// Go through the file with the tokenizer
 	string token = tz.getToken();
-	while (token.Cmp(""))
+	while (!tz.atEnd())
 	{
 		// If we come across a 'cvars' token, read in the cvars section
 		if (!token.Cmp("cvars"))
@@ -1080,7 +1080,7 @@ void MainApp::readConfigFile()
 
 			// Keep reading name/value pairs until we hit the ending '}'
 			string cvar_name = tz.getToken();
-			while (cvar_name.Cmp("}"))
+			while (cvar_name.Cmp("}") && !tz.atEnd())
 			{
 				string cvar_val = tz.getToken();
 				read_cvar(cvar_name, cvar_val);
@@ -1096,7 +1096,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token.Cmp("}"))
+			while (token.Cmp("}") && !tz.atEnd())
 			{
 				theArchiveManager->addBaseResourcePath(token);
 				token = wxString::FromUTF8(UTF8(tz.getToken()));
@@ -1111,7 +1111,7 @@ void MainApp::readConfigFile()
 
 			// Read files until closing brace found
 			token = wxString::FromUTF8(UTF8(tz.getToken()));
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				theArchiveManager->addRecentFile(token);
 				token = wxString::FromUTF8(UTF8(tz.getToken()));
@@ -1132,7 +1132,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				string path = tz.getToken();
 				NodeBuilders::addBuilderPath(token, path);
@@ -1147,7 +1147,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				if (token.length())
 				{
