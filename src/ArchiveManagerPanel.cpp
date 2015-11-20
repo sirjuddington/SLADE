@@ -1109,9 +1109,6 @@ bool ArchiveManagerPanel::closeAll()
  *******************************************************************/
 void ArchiveManagerPanel::saveAll()
 {
-	// now we can ask about changes outside the dir archive
-	ignore_dir_archive_changes = false;
-
 	// Go through all open archives
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
@@ -1225,9 +1222,6 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive)
 	// Check for null pointer
 	if (!archive)
 		return false;
-
-	// now we can ask about changes outside the dir archive
-	ignore_dir_archive_changes = false;
 
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
@@ -2088,7 +2082,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	{
 		LOG_MESSAGE(2, "Finished checking %s for external changes", CHR(change_list.archive->getFilename()));
 
-		if (!ignore_dir_archive_changes && !change_list.changes.empty())
+		if (!change_list.changes.empty())
 		{
 			checked_dir_archive_changes = true;
 
@@ -2097,7 +2091,6 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 			dlg.ShowModal();
 			
 			checked_dir_archive_changes = false;
-			ignore_dir_archive_changes = true;
 		}
 		else
 		{

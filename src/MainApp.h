@@ -72,6 +72,7 @@ public:
 
 	void	onMenu(wxCommandEvent& e);
 	void	onVersionCheckCompleted(wxThreadEvent& e);
+	void	onActivate(wxActivateEvent& event);
 };
 
 #define theApp ((MainApp*)wxTheApp)
