@@ -82,7 +82,6 @@ public:
 	vector<ArchiveEntry*>	findAll(search_options_t& options);
 
 	// DirArchive-specific
-	void	checkUpdatedFiles(vector<dir_entry_change_t>& changes);
 	void	updateChangedEntries(vector<dir_entry_change_t>& changes);
 };
 
