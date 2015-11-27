@@ -772,7 +772,7 @@ bool KeyBind::readBinds(Tokenizer& tz)
 {
 	// Parse until ending }
 	string name = tz.getToken();
-	while (name != "}" && !name.IsEmpty())
+	while (name != "}" && !tz.atEnd())
 	{
 		// Clear any current binds for the key
 		getBind(name).keys.clear();

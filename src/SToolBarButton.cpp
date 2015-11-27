@@ -312,7 +312,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		state = STATE_MOUSEOVER;
 
 		// Set status bar help text
-		if (parent_window)
+		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText(help_text);
 	}
 
@@ -323,7 +323,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		state = STATE_NORMAL;
 
 		// Clear status bar help text
-		if (parent_window)
+		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText("");
 	}
 
@@ -348,7 +348,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		state = STATE_MOUSEOVER;
 
 		// Clear status bar help text
-		if (parent_window)
+		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText("");
 	}
 

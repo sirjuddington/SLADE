@@ -4342,10 +4342,10 @@ MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 /* SLADEMap::splitLine
  * Splits [line] at [vertex]
  *******************************************************************/
-void SLADEMap::splitLine(MapLine* l, MapVertex* v)
+MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 {
 	if (!l || !v)
-		return;
+		return NULL;
 
 	// Shorten line
 	MapVertex* v2 = l->vertex2;
@@ -4415,6 +4415,8 @@ void SLADEMap::splitLine(MapLine* l, MapVertex* v)
 	l->setIntProperty("side2.offsetx", xoff2 + nl->getLength());
 
 	geometry_updated = theApp->runTimer();
+
+	return nl;
 }
 
 /* SLADEMap::moveThing
@@ -4646,8 +4648,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		splitLinesAt(merged_vertices[a], split_dist);
 
 	// Split lines that moved onto existing vertices
-	unsigned nlines = connected_lines.size();
-	for (unsigned a = 0; a < nlines; a++)
+	for (unsigned a = 0; a < connected_lines.size(); a++)
 	{
 		unsigned nvertices = this->vertices.size();
 		for (unsigned b = 0; b < nvertices; b++)
@@ -4659,7 +4660,10 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				continue;
 
 			if (connected_lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
-				splitLine(connected_lines[a], vertex);
+			{
+				connected_lines.push_back(splitLine(connected_lines[a], vertex));
+				VECTOR_ADD_UNIQUE(merged_vertices, vertex);
+			}
 		}
 	}
 

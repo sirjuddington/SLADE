@@ -827,7 +827,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	floors[index].light = sector->getLight(1);
 	floors[index].flags = 0;
 	floors[index].plane = sector->getFloorPlane();
-	if (sector->getFloorTex() == theGameConfiguration->skyFlat())
+	if (S_CMPNOCASE(sector->getFloorTex(), theGameConfiguration->skyFlat()))
 		floors[index].flags |= SKY;
 
 	// Update floor VBO
@@ -848,7 +848,7 @@ void MapRenderer3D::updateSector(unsigned index)
 	ceilings[index].light = sector->getLight(2);
 	ceilings[index].flags = CEIL;
 	ceilings[index].plane = sector->getCeilingPlane();
-	if (sector->getCeilingTex() == theGameConfiguration->skyFlat())
+	if (S_CMPNOCASE(sector->getCeilingTex(), theGameConfiguration->skyFlat()))
 		ceilings[index].flags |= SKY;
 
 	// Update ceiling VBO
@@ -1260,8 +1260,6 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (lpeg)	// Lower unpegged
-			yoff += (ceiling1 - floor2);
 		if (udmf_zdoom)
 		{
 			// ZDoom UDMF extra offsets
@@ -1283,6 +1281,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		xoff *= sx;
 		yoff *= sy;
 
+		if (lpeg)	// Lower unpegged
+			yoff += (ceiling1 - floor2);
+
 		// Create quad
 		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), fp2, fp1);
 		quad.colour = colour1;
@@ -1291,7 +1292,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor2, floor1, false, sx, sy);
 		// No, the sky hack is only for ceilings!
-		// if (line->backSector()->getFloorTex() == sky_flat) quad.flags |= SKY;
+		// if (S_CMPNOCASE(sky_flat, line->backSector()->getFloorTex())) quad.flags |= SKY;
 		quad.flags |= LOWER;
 
 		// Add quad
@@ -1413,7 +1414,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.texture = theMapEditor->textureManager().getTexture(line->s1()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, ceiling2, !upeg, sx, sy);
 		// Sky hack only applies if both sectors have a sky ceiling
-		if (line->frontSector()->getCeilingTex() == sky_flat && line->backSector()->getCeilingTex() == sky_flat) quad.flags |= SKY;
+		if (S_CMPNOCASE(sky_flat, line->frontSector()->getCeilingTex()) && S_CMPNOCASE(sky_flat, line->backSector()->getCeilingTex())) quad.flags |= SKY;
 		quad.flags |= UPPER;
 
 		// Add quad
@@ -1428,8 +1429,6 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (lpeg)	// Lower unpegged
-			yoff += (ceiling2 - floor1);
 		if (udmf_zdoom)
 		{
 			// ZDoom UDMF extra offsets
@@ -1451,6 +1450,9 @@ void MapRenderer3D::updateLine(unsigned index)
 		xoff *= sx;
 		yoff *= sy;
 
+		if (lpeg)	// Lower unpegged
+			yoff += (ceiling2 - floor1);
+
 		// Create quad
 		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), fp1, fp2);
 		quad.colour = colour2;
@@ -1458,7 +1460,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexLower(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, floor1, floor2, false, sx, sy);
-		if (line->frontSector()->getFloorTex() == sky_flat) quad.flags |= SKY;
+		if (S_CMPNOCASE(sky_flat, line->frontSector()->getFloorTex())) quad.flags |= SKY;
 		quad.flags |= BACK;
 		quad.flags |= LOWER;
 
@@ -1581,7 +1583,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.light = light2;
 		quad.texture = theMapEditor->textureManager().getTexture(line->s2()->getTexUpper(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling2, ceiling1, !upeg, sx, sy);
-		if (line->frontSector()->getCeilingTex() == sky_flat) quad.flags |= SKY;
+		if (S_CMPNOCASE(sky_flat, line->frontSector()->getCeilingTex())) quad.flags |= SKY;
 		quad.flags |= BACK;
 		quad.flags |= UPPER;
 

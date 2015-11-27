@@ -733,7 +733,7 @@ void Misc::readWindowInfo(Tokenizer* tz)
 {
 	// Read definitions
 	string token = tz->getToken();
-	while (token != "}")
+	while (token != "}" && !tz->atEnd())
 	{
 		string id = token;
 		int width = tz->getInteger();

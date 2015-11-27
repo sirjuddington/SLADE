@@ -258,7 +258,7 @@ bool DirArchive::save(string filename)
 			wxRemoveFile(files[a]);
 		}
 	}
-	LOG_MESSAGE(2, "Remove check took %dms", theApp->runTimer() - time);
+	LOG_MESSAGE(2, "Remove check took %lums", theApp->runTimer() - time);
 
 	// Check for any directories to remove
 	for (int a = dirs.size() - 1; a >= 0; a--)

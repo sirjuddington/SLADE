@@ -749,6 +749,7 @@ void ArgsPanel::setup(argspec_t* args)
 
 	// Set the label text last, so very long labels will wrap naturally and not
 	// force the window to be ridiculously wide
+	Layout();
 	int available_width = fg_sizer->GetColWidths()[1];
 	for (int a = 0; a < args->count; a++)
 	{
@@ -856,6 +857,7 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	SetSizerAndFit(sizer);
 
 	// Bind events
+	tree_specials->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &ActionSpecialPanel::onSpecialSelectionChanged, this);
 	tree_specials->Bind(wxEVT_DATAVIEW_ITEM_ACTIVATED, &ActionSpecialPanel::onSpecialItemActivated, this);
 }
 
@@ -1175,10 +1177,10 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
 	showGeneralised(rb_generalised->GetValue());
 }
 
-/* ActionSpecialPanel::SpecialItemActivated
- * Called when the action special item is activated
+/* ActionSpecialPanel::onSpecialSelectionChanged
+ * Called when the action special selection is changed
  *******************************************************************/
-void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
+void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 {
 	if ((theGameConfiguration->isBoom() && rb_generalised->GetValue()))
 	{
@@ -1199,7 +1201,26 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 			arg_values[a] = panel_args->getArgValue(a);
 		panel_args->setup(&args);
 		panel_args->setValues(arg_values);
-		// Go to args tab
+	}
+}
+
+/* ActionSpecialPanel::SpecialItemActivated
+ * Called when the action special item is activated (double-clicked or
+ * enter pressed)
+ *******************************************************************/
+void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
+{
+	// Jump to args tab, if there is one
+	if (panel_args)
+	{
+		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
+		// Save and restore the current arg values, since setup() deletes and
+		// recreates the controls
+		int arg_values[5];
+		for (unsigned a = 0; a < 5; a++)
+			arg_values[a] = panel_args->getArgValue(a);
+		panel_args->setup(&args);
+		panel_args->setValues(arg_values);
 		panel_args->SetFocus();
 	}
 }

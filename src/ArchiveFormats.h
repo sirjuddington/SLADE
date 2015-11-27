@@ -254,4 +254,16 @@ public:
 	}
 };
 
+class ChasmBinArchiveDataFormat : public EntryDataFormat
+{
+public:
+	ChasmBinArchiveDataFormat()
+	: EntryDataFormat("archive_chasm_bin") {};
+
+	int isThisFormat(MemChunk& mc)
+	{
+		return ChasmBinArchive::isChasmBinArchive(mc) ? EDF_TRUE : EDF_FALSE;
+	}
+};
+
 #endif //ARCHIVEFORMATS_H

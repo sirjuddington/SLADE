@@ -92,6 +92,7 @@ public:
 	void	openLines(vector<MapObject*>& lines);
 
 	void	onRadioButtonChanged(wxCommandEvent& e);
+	void	onSpecialSelectionChanged(wxDataViewEvent& e);
 	void	onSpecialTextChanged(wxCommandEvent& e);
 	void	onSpecialItemActivated(wxDataViewEvent& e);
 };
