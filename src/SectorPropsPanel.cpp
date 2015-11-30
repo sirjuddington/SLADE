@@ -377,6 +377,9 @@ wxPanel* SectorPropsPanel::setupSpecialPanel()
  *******************************************************************/
 void SectorPropsPanel::openObjects(vector<MapObject*>& objects)
 {
+	if (objects.empty())
+		return;
+
 	int ival;
 	string sval;
 

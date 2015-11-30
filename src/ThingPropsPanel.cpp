@@ -754,6 +754,9 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
  *******************************************************************/
 void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 {
+	if (objects.empty())
+		return;
+
 	int map_format = theMapEditor->currentMapDesc().format;
 	int ival;
 	double fval;

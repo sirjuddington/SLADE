@@ -305,6 +305,9 @@ SidePropsPanel::~SidePropsPanel()
  *******************************************************************/
 void SidePropsPanel::openSides(vector<MapSide*>& sides)
 {
+	if (sides.empty())
+		return;
+
 	// --- Textures ---
 
 	// Upper
