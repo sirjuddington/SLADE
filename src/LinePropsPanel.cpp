@@ -254,6 +254,9 @@ wxPanel* LinePropsPanel::setupSpecialTab()
  *******************************************************************/
 void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 {
+	if (lines.empty())
+		return;
+
 	int map_format = theMapEditor->currentMapDesc().format;
 
 	// Load flags

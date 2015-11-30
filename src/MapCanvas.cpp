@@ -4027,7 +4027,12 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			{
 				vector<MapObject*> objects;
 				editor->getSelectedObjects(objects);
-				editObjectProperties(objects);
+				if (!objects.empty())
+				{
+					editObjectProperties(objects);
+					if (objects.size() == 1)
+						editor->clearSelection();
+				}
 			}
 			// Begin box selection if shift is held down, otherwise toggle selection on hilighted object
 			else if (e.ShiftDown())
