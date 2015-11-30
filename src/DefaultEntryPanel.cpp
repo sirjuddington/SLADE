@@ -52,6 +52,10 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent)
 {
 	sizer_main->AddStretchSpacer(1);
 
+	// Add index label
+	label_index = new wxStaticText(this, -1, "Index");
+	sizer_main->Add(label_index, 0, wxALL|wxALIGN_CENTER, 4);
+
 	// Add type label
 	label_type = new wxStaticText(this, -1, "Type");
 	sizer_main->Add(label_type, 0, wxALL|wxALIGN_CENTER, 4);
@@ -110,6 +114,7 @@ DefaultEntryPanel::~DefaultEntryPanel()
 bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Update labels
+	label_index->SetLabel(S_FMT("Entry Index: %d", entry->getParentDir()->entryIndex(entry)));
 	label_type->SetLabel(S_FMT("Entry Type: %s", entry->getTypeString()));
 	label_size->SetLabel(S_FMT("Entry Size: %d bytes", entry->getSize()));
 
@@ -161,8 +166,14 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 	bool gfx = false;
 	bool texture = false;
 	this->entries.clear();
+	size_t max = 0, min = entries[0]->getParentDir()->entryIndex(entries[0]);
 	for (unsigned a = 0; a < entries.size(); a++)
 	{
+		// Get index
+		size_t index = entries[a]->getParentDir()->entryIndex(entries[a]);
+		if (index < min)	min = index;
+		if (index > max)	max = index;
+
 		// Check for gfx entry
 		if (entries[a]->getType()->extraProps().propertyExists("image"))
 			gfx = true;
@@ -173,6 +184,7 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 
 		this->entries.push_back(entries[a]);
 	}
+	label_index->SetLabel(S_FMT("Entry Indices: from %d to %d", min, max));
 	if (gfx)
 	{
 		frame_actions->Show(true);

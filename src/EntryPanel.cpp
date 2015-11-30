@@ -227,7 +227,8 @@ void EntryPanel::updateStatus()
 {
 	// Basic info
 	if (entry)
-		theMainWindow->SetStatusText(S_FMT("%s, %d bytes, %s", entry->getName(), entry->getSize(), entry->getType()->getName()), 1);
+		theMainWindow->SetStatusText(S_FMT("%d: %s, %d bytes, %s", 
+		entry->getParentDir()->entryIndex(entry), entry->getName(), entry->getSize(), entry->getType()->getName()), 1);
 	else
 		theMainWindow->SetStatusText("", 1);
 
