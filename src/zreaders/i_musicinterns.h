@@ -12,6 +12,7 @@ public:
 	MIDIStreamer();
 	~MIDIStreamer();
 
+	int  GetSubsongs();
 	bool SetSubsong(int subsong);
 	void CreateSMF(TArray<uint8_t> &file, int looplimit=0);
 
@@ -24,6 +25,7 @@ protected:
 	virtual void CheckCaps(int tech);
 	virtual void DoRestart() = 0;
 	virtual bool CheckDone() = 0;
+	virtual int  GetMIDISubsongs();
 	virtual bool SetMIDISubsong(int subsong);
 	virtual uint32_t *MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t max_time) = 0;
 
@@ -168,6 +170,7 @@ protected:
 
 	int FindXMIDforms(const uint8_t *chunk, int len, TrackInfo *songs) const;
 	void FoundXMID(const uint8_t *chunk, int len, TrackInfo *song) const;
+	int  GetMIDISubsongs();
 	bool SetMIDISubsong(int subsong);
 	void DoRestart();
 	bool CheckDone();

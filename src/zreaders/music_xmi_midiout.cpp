@@ -225,6 +225,19 @@ void XMISong::FoundXMID(const uint8_t *chunk, int len, TrackInfo *song) const
 
 //==========================================================================
 //
+// XMISong :: GetMIDISubsongs
+//
+// Returns how many songs are available.
+//
+//==========================================================================
+
+int XMISong::GetMIDISubsongs()
+{
+	return NumSongs;
+}
+
+//==========================================================================
+//
 // XMISong :: SetMIDISubsong
 //
 // Selects which song in this file to play.
