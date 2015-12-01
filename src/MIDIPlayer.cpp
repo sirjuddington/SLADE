@@ -328,7 +328,11 @@ bool MIDIPlayer::stop()
 	{
 		int pid = program->GetPid();
 		if (program->Exists(pid))
+#ifdef WIN32
 			program->Kill(pid, wxSIGKILL, wxKILL_CHILDREN);
+#else
+			program->Kill(pid);
+#endif
 		stopped = !(program->Exists(pid));
 	}
 #ifndef NO_FLUIDSYNTH
