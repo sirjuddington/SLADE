@@ -193,250 +193,250 @@
 			Name="Dialogs"
 			>
 			<File
-				RelativePath=".\src\Dialogs\DirArchiveUpdateDialog.cpp"
+				RelativePath="..\..\src\Dialogs\DirArchiveUpdateDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Dialogs\DirArchiveUpdateDialog.h"
+				RelativePath="..\..\src\Dialogs\DirArchiveUpdateDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ExtMessageDialog.cpp"
+				RelativePath="..\..\src\ExtMessageDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ExtMessageDialog.h"
+				RelativePath="..\..\src\ExtMessageDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\GfxConvDialog.cpp"
+				RelativePath="..\..\src\GfxConvDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\GfxConvDialog.h"
+				RelativePath="..\..\src\GfxConvDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapEditorConfigDialog.cpp"
+				RelativePath="..\..\src\MapEditorConfigDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapEditorConfigDialog.h"
+				RelativePath="..\..\src\MapEditorConfigDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapReplaceDialog.cpp"
+				RelativePath="..\..\src\MapReplaceDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapReplaceDialog.h"
+				RelativePath="..\..\src\MapReplaceDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ModifyOffsetsDialog.cpp"
+				RelativePath="..\..\src\ModifyOffsetsDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ModifyOffsetsDialog.h"
+				RelativePath="..\..\src\ModifyOffsetsDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\PaletteDialog.cpp"
+				RelativePath="..\..\src\PaletteDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\PaletteDialog.h"
+				RelativePath="..\..\src\PaletteDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Dialogs\RunDialog.cpp"
+				RelativePath="..\..\src\Dialogs\RunDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Dialogs\RunDialog.h"
+				RelativePath="..\..\src\Dialogs\RunDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\TranslationEditorDialog.cpp"
+				RelativePath="..\..\src\TranslationEditorDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\TranslationEditorDialog.h"
+				RelativePath="..\..\src\TranslationEditorDialog.h"
 				>
 			</File>
 			<Filter
 				Name="Preferences"
 				>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\ACSPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\ACSPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\ACSPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\ACSPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\AdvancedPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\AdvancedPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\AdvancedPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\AdvancedPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\AudioPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\AudioPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\AudioPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\AudioPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\BaseResourceArchivesPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\BaseResourceArchivesPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\BaseResourceArchivesPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\BaseResourceArchivesPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\ColorimetryPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\ColorimetryPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\ColorimetryPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\ColorimetryPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\ColourPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\ColourPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\ColourPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\ColourPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\EditingPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\EditingPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\EditingPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\EditingPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\GeneralPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\GeneralPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\GeneralPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\GeneralPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\GraphicsPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\GraphicsPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\GraphicsPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\GraphicsPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\HudOffsetsPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\HudOffsetsPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\HudOffsetsPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\HudOffsetsPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\InputPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\InputPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\InputPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\InputPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\InterfacePrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\InterfacePrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\InterfacePrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\InterfacePrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\Map3DPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\Map3DPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\Map3DPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\Map3DPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\MapDisplayPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\MapDisplayPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\MapDisplayPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\MapDisplayPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\MapEditorPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\MapEditorPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\MapEditorPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\MapEditorPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\NodesPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\NodesPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\NodesPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\NodesPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\OpenGLPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\OpenGLPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\OpenGLPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\OpenGLPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\PNGPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\PNGPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\PNGPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\PNGPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\PreferencesDialog.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\PreferencesDialog.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\PreferencesDialog.h"
+					RelativePath="..\..\src\Dialogs\Preferences\PreferencesDialog.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\PrefsPanelBase.h"
+					RelativePath="..\..\src\Dialogs\Preferences\PrefsPanelBase.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\TextEditorPrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\TextEditorPrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\TextEditorPrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\TextEditorPrefsPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\TextStylePrefsPanel.cpp"
+					RelativePath="..\..\src\Dialogs\Preferences\TextStylePrefsPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\Preferences\TextStylePrefsPanel.h"
+					RelativePath="..\..\src\Dialogs\Preferences\TextStylePrefsPanel.h"
 					>
 				</File>
 			</Filter>
@@ -444,39 +444,39 @@
 				Name="SetupWizard"
 				>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\BaseResourceWizardPage.cpp"
+					RelativePath="..\..\src\Dialogs\SetupWizard\BaseResourceWizardPage.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\BaseResourceWizardPage.h"
+					RelativePath="..\..\src\Dialogs\SetupWizard\BaseResourceWizardPage.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp"
+					RelativePath="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\NodeBuildersWizardPage.h"
+					RelativePath="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\SetupWizardDialog.cpp"
+					RelativePath="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\SetupWizardDialog.h"
+					RelativePath="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\TempFolderWizardPage.cpp"
+					RelativePath="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\TempFolderWizardPage.h"
+					RelativePath="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Dialogs\SetupWizard\WizardPageBase.h"
+					RelativePath="..\..\src\Dialogs\SetupWizard\WizardPageBase.h"
 					>
 				</File>
 			</Filter>
@@ -485,281 +485,281 @@
 			Name="General"
 			>
 			<File
-				RelativePath=".\src\Clipboard.cpp"
+				RelativePath="..\..\src\Clipboard.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Clipboard.h"
+				RelativePath="..\..\src\Clipboard.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ColourConfiguration.cpp"
+				RelativePath="..\..\src\ColourConfiguration.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ColourConfiguration.h"
+				RelativePath="..\..\src\ColourConfiguration.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Drawing.cpp"
+				RelativePath="..\..\src\Drawing.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Drawing.h"
+				RelativePath="..\..\src\Drawing.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Executables.cpp"
+				RelativePath="..\..\src\Executables.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Executables.h"
+				RelativePath="..\..\src\Executables.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\FileMonitor.cpp"
+				RelativePath="..\..\src\FileMonitor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\FileMonitor.h"
+				RelativePath="..\..\src\FileMonitor.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\GMEPlayer.cpp"
+				RelativePath="..\..\src\GMEPlayer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\GMEPlayer.h"
+				RelativePath="..\..\src\GMEPlayer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\KeyBind.cpp"
+				RelativePath="..\..\src\KeyBind.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\KeyBind.h"
+				RelativePath="..\..\src\KeyBind.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ListenerAnnouncer.cpp"
+				RelativePath="..\..\src\ListenerAnnouncer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ListenerAnnouncer.h"
+				RelativePath="..\..\src\ListenerAnnouncer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Lua.cpp"
+				RelativePath="..\..\src\Lua.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Lua.h"
+				RelativePath="..\..\src\Lua.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Main.h"
+				RelativePath="..\..\src\Main.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MainApp.cpp"
+				RelativePath="..\..\src\MainApp.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MainApp.h"
+				RelativePath="..\..\src\MainApp.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MemChunk.cpp"
+				RelativePath="..\..\src\MemChunk.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MemChunk.h"
+				RelativePath="..\..\src\MemChunk.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MIDIPlayer.cpp"
+				RelativePath="..\..\src\MIDIPlayer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MIDIPlayer.h"
+				RelativePath="..\..\src\MIDIPlayer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Misc.cpp"
+				RelativePath="..\..\src\Misc.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Misc.h"
+				RelativePath="..\..\src\Misc.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ModMusic.cpp"
+				RelativePath="..\..\src\ModMusic.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ModMusic.h"
+				RelativePath="..\..\src\ModMusic.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\OpenGL.cpp"
+				RelativePath="..\..\src\OpenGL.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\OpenGL.h"
+				RelativePath="..\..\src\OpenGL.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\OPLPlayer.cpp"
+				RelativePath="..\..\src\OPLPlayer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\OPLPlayer.h"
+				RelativePath="..\..\src\OPLPlayer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SAction.cpp"
+				RelativePath="..\..\src\SAction.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SAction.h"
+				RelativePath="..\..\src\SAction.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Tree.cpp"
+				RelativePath="..\..\src\Tree.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Tree.h"
+				RelativePath="..\..\src\Tree.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\UndoRedo.cpp"
+				RelativePath="..\..\src\UndoRedo.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\UndoRedo.h"
+				RelativePath="..\..\src\UndoRedo.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\VersionCheck.cpp"
+				RelativePath="..\..\src\VersionCheck.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\VersionCheck.h"
+				RelativePath="..\..\src\VersionCheck.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\WxStuff.cpp"
+				RelativePath="..\..\src\WxStuff.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\WxStuff.h"
+				RelativePath="..\..\src\WxStuff.h"
 				>
 			</File>
 			<Filter
 				Name="Utility"
 				>
 				<File
-					RelativePath=".\src\AudioTags.cpp"
+					RelativePath="..\..\src\AudioTags.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\AudioTags.h"
+					RelativePath="..\..\src\AudioTags.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\CodePages.cpp"
+					RelativePath="..\..\src\CodePages.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\CodePages.h"
+					RelativePath="..\..\src\CodePages.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ColourConfiguration.cpp"
+					RelativePath="..\..\src\ColourConfiguration.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ColourConfiguration.h"
+					RelativePath="..\..\src\ColourConfiguration.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Compression.cpp"
+					RelativePath="..\..\src\Compression.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Compression.h"
+					RelativePath="..\..\src\Compression.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\KeyBind.cpp"
+					RelativePath="..\..\src\KeyBind.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\KeyBind.h"
+					RelativePath="..\..\src\KeyBind.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MathStuff.cpp"
+					RelativePath="..\..\src\MathStuff.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MathStuff.h"
+					RelativePath="..\..\src\MathStuff.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Parser.cpp"
+					RelativePath="..\..\src\Parser.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Parser.h"
+					RelativePath="..\..\src\Parser.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Polygon2D.cpp"
+					RelativePath="..\..\src\Polygon2D.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Polygon2D.h"
+					RelativePath="..\..\src\Polygon2D.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SFileDialog.cpp"
+					RelativePath="..\..\src\SFileDialog.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SFileDialog.h"
+					RelativePath="..\..\src\SFileDialog.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Structs.h"
+					RelativePath="..\..\src\Structs.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Tokenizer.cpp"
+					RelativePath="..\..\src\Tokenizer.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Tokenizer.h"
+					RelativePath="..\..\src\Tokenizer.h"
 					>
 				</File>
 				<Filter
 					Name="PropertyList"
 					>
 					<File
-						RelativePath=".\src\Property.cpp"
+						RelativePath="..\..\src\Property.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\Property.h"
+						RelativePath="..\..\src\Property.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PropertyList.cpp"
+						RelativePath="..\..\src\PropertyList.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PropertyList.h"
+						RelativePath="..\..\src\PropertyList.h"
 						>
 					</File>
 				</Filter>
@@ -768,23 +768,23 @@
 				Name="Console"
 				>
 				<File
-					RelativePath=".\src\Console.cpp"
+					RelativePath="..\..\src\Console.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Console.h"
+					RelativePath="..\..\src\Console.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ConsoleHelpers.h"
+					RelativePath="..\..\src\ConsoleHelpers.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\CVar.cpp"
+					RelativePath="..\..\src\CVar.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\CVar.h"
+					RelativePath="..\..\src\CVar.h"
 					>
 				</File>
 			</Filter>
@@ -793,81 +793,81 @@
 			Name="Main Editor"
 			>
 			<File
-				RelativePath=".\src\ArchiveOperations.cpp"
+				RelativePath="..\..\src\ArchiveOperations.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ArchiveOperations.h"
+				RelativePath="..\..\src\ArchiveOperations.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Conversions.cpp"
+				RelativePath="..\..\src\Conversions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\Conversions.h"
+				RelativePath="..\..\src\Conversions.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\EntryOperations.cpp"
+				RelativePath="..\..\src\EntryOperations.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\EntryOperations.h"
+				RelativePath="..\..\src\EntryOperations.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MainWindow.cpp"
+				RelativePath="..\..\src\MainWindow.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MainWindow.h"
+				RelativePath="..\..\src\MainWindow.h"
 				>
 			</File>
 			<Filter
 				Name="UI Elements"
 				>
 				<File
-					RelativePath=".\src\ArchiveManagerPanel.cpp"
+					RelativePath="..\..\src\ArchiveManagerPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ArchiveManagerPanel.h"
+					RelativePath="..\..\src\ArchiveManagerPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BaseResourceChooser.cpp"
+					RelativePath="..\..\src\BaseResourceChooser.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BaseResourceChooser.h"
+					RelativePath="..\..\src\BaseResourceChooser.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ConsolePanel.cpp"
+					RelativePath="..\..\src\ConsolePanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ConsolePanel.h"
+					RelativePath="..\..\src\ConsolePanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\DocsPage.cpp"
+					RelativePath="..\..\src\DocsPage.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\DocsPage.h"
+					RelativePath="..\..\src\DocsPage.h"
 					>
 				</File>
 				<Filter
 					Name="ArchivePanel"
 					>
 					<File
-						RelativePath=".\src\ArchivePanel.cpp"
+						RelativePath="..\..\src\ArchivePanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ArchivePanel.h"
+						RelativePath="..\..\src\ArchivePanel.h"
 						>
 					</File>
 				</Filter>
@@ -875,99 +875,99 @@
 					Name="EntryPanel"
 					>
 					<File
-						RelativePath=".\src\AnimatedEntryPanel.cpp"
+						RelativePath="..\..\src\AnimatedEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\AnimatedEntryPanel.h"
+						RelativePath="..\..\src\AnimatedEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ANSIEntryPanel.cpp"
+						RelativePath="..\..\src\ANSIEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ANSIEntryPanel.h"
+						RelativePath="..\..\src\ANSIEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\AudioEntryPanel.cpp"
+						RelativePath="..\..\src\AudioEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\AudioEntryPanel.h"
+						RelativePath="..\..\src\AudioEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\DataEntryPanel.cpp"
+						RelativePath="..\..\src\DataEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\DataEntryPanel.h"
+						RelativePath="..\..\src\DataEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\DefaultEntryPanel.cpp"
+						RelativePath="..\..\src\DefaultEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\DefaultEntryPanel.h"
+						RelativePath="..\..\src\DefaultEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\EntryPanel.cpp"
+						RelativePath="..\..\src\EntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\EntryPanel.h"
+						RelativePath="..\..\src\EntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\GfxEntryPanel.cpp"
+						RelativePath="..\..\src\GfxEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\GfxEntryPanel.h"
+						RelativePath="..\..\src\GfxEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\HexEntryPanel.cpp"
+						RelativePath="..\..\src\HexEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\HexEntryPanel.h"
+						RelativePath="..\..\src\HexEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MapEntryPanel.cpp"
+						RelativePath="..\..\src\MapEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MapEntryPanel.h"
+						RelativePath="..\..\src\MapEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PaletteEntryPanel.cpp"
+						RelativePath="..\..\src\PaletteEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PaletteEntryPanel.h"
+						RelativePath="..\..\src\PaletteEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SwitchesEntryPanel.cpp"
+						RelativePath="..\..\src\SwitchesEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SwitchesEntryPanel.h"
+						RelativePath="..\..\src\SwitchesEntryPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextEntryPanel.cpp"
+						RelativePath="..\..\src\TextEntryPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextEntryPanel.h"
+						RelativePath="..\..\src\TextEntryPanel.h"
 						>
 					</File>
 				</Filter>
@@ -975,55 +975,55 @@
 					Name="TextureXEditor"
 					>
 					<File
-						RelativePath=".\src\PatchBrowser.cpp"
+						RelativePath="..\..\src\PatchBrowser.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PatchBrowser.h"
+						RelativePath="..\..\src\PatchBrowser.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PatchTableBrowser.h"
+						RelativePath="..\..\src\PatchTableBrowser.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PatchTablePanel.cpp"
+						RelativePath="..\..\src\PatchTablePanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PatchTablePanel.h"
+						RelativePath="..\..\src\PatchTablePanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextureEditorPanel.cpp"
+						RelativePath="..\..\src\TextureEditorPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextureEditorPanel.h"
+						RelativePath="..\..\src\TextureEditorPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextureXEditor.cpp"
+						RelativePath="..\..\src\TextureXEditor.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextureXEditor.h"
+						RelativePath="..\..\src\TextureXEditor.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextureXPanel.cpp"
+						RelativePath="..\..\src\TextureXPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextureXPanel.h"
+						RelativePath="..\..\src\TextureXPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ZTextureEditorPanel.cpp"
+						RelativePath="..\..\src\ZTextureEditorPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ZTextureEditorPanel.h"
+						RelativePath="..\..\src\ZTextureEditorPanel.h"
 						>
 					</File>
 				</Filter>
@@ -1031,70 +1031,70 @@
 					Name="TextEditor"
 					>
 					<File
-						RelativePath=".\src\TextEditor.cpp"
+						RelativePath="..\..\src\TextEditor.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextEditor.h"
+						RelativePath="..\..\src\TextEditor.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextLanguage.cpp"
+						RelativePath="..\..\src\TextLanguage.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextLanguage.h"
+						RelativePath="..\..\src\TextLanguage.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextStyle.cpp"
+						RelativePath="..\..\src\TextStyle.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextStyle.h"
+						RelativePath="..\..\src\TextStyle.h"
 						>
 					</File>
 					<Filter
 						Name="Languages"
 						>
 						<File
-							RelativePath=".\dist\res\config\languages\0_base.txt"
+							RelativePath="..\..\dist\res\config\languages\0_base.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\acs.txt"
+							RelativePath="..\..\dist\res\config\languages\acs.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\decorate.txt"
+							RelativePath="..\..\dist\res\config\languages\decorate.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\edf.txt"
+							RelativePath="..\..\dist\res\config\languages\edf.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\fragglescript.txt"
+							RelativePath="..\..\dist\res\config\languages\fragglescript.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\hexen.txt"
+							RelativePath="..\..\dist\res\config\languages\hexen.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\kssc.txt"
+							RelativePath="..\..\dist\res\config\languages\kssc.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\usdf.txt"
+							RelativePath="..\..\dist\res\config\languages\usdf.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\zdaemon.txt"
+							RelativePath="..\..\dist\res\config\languages\zdaemon.txt"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\languages\zdoom.txt"
+							RelativePath="..\..\dist\res\config\languages\zdoom.txt"
 							>
 						</File>
 					</Filter>
@@ -1103,11 +1103,11 @@
 					Name="HexEditor"
 					>
 					<File
-						RelativePath=".\src\HexEditorPanel.cpp"
+						RelativePath="..\..\src\HexEditorPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\HexEditorPanel.h"
+						RelativePath="..\..\src\HexEditorPanel.h"
 						>
 					</File>
 				</Filter>
@@ -1117,245 +1117,245 @@
 			Name="Map Editor"
 			>
 			<File
-				RelativePath=".\src\MapBackupManager.cpp"
+				RelativePath="..\..\src\MapBackupManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapBackupManager.h"
+				RelativePath="..\..\src\MapBackupManager.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapChecks.cpp"
+				RelativePath="..\..\src\MapChecks.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapChecks.h"
+				RelativePath="..\..\src\MapChecks.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapEditor.cpp"
+				RelativePath="..\..\src\MapEditor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapEditor.h"
+				RelativePath="..\..\src\MapEditor.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapEditorWindow.cpp"
+				RelativePath="..\..\src\MapEditorWindow.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapEditorWindow.h"
+				RelativePath="..\..\src\MapEditorWindow.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapRenderer2D.cpp"
+				RelativePath="..\..\src\MapRenderer2D.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapRenderer2D.h"
+				RelativePath="..\..\src\MapRenderer2D.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapRenderer3D.cpp"
+				RelativePath="..\..\src\MapRenderer3D.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapRenderer3D.h"
+				RelativePath="..\..\src\MapRenderer3D.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapSpecials.cpp"
+				RelativePath="..\..\src\MapSpecials.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapSpecials.h"
+				RelativePath="..\..\src\MapSpecials.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapTextureManager.cpp"
+				RelativePath="..\..\src\MapTextureManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapTextureManager.h"
+				RelativePath="..\..\src\MapTextureManager.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\NodeBuilders.cpp"
+				RelativePath="..\..\src\NodeBuilders.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\NodeBuilders.h"
+				RelativePath="..\..\src\NodeBuilders.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ObjectEdit.cpp"
+				RelativePath="..\..\src\ObjectEdit.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ObjectEdit.h"
+				RelativePath="..\..\src\ObjectEdit.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SectorBuilder.cpp"
+				RelativePath="..\..\src\SectorBuilder.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SectorBuilder.h"
+				RelativePath="..\..\src\SectorBuilder.h"
 				>
 			</File>
 			<Filter
 				Name="UI Elements"
 				>
 				<File
-					RelativePath=".\src\GenLineSpecialPanel.cpp"
+					RelativePath="..\..\src\GenLineSpecialPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GenLineSpecialPanel.h"
+					RelativePath="..\..\src\GenLineSpecialPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapBackupPanel.cpp"
+					RelativePath="..\..\src\MapBackupPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapBackupPanel.h"
+					RelativePath="..\..\src\MapBackupPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapCanvas.cpp"
+					RelativePath="..\..\src\MapCanvas.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapCanvas.h"
+					RelativePath="..\..\src\MapCanvas.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapChecksPanel.cpp"
+					RelativePath="..\..\src\MapChecksPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapChecksPanel.h"
+					RelativePath="..\..\src\MapChecksPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MCAnimations.cpp"
+					RelativePath="..\..\src\MCAnimations.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MCAnimations.h"
+					RelativePath="..\..\src\MCAnimations.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ObjectEditPanel.cpp"
+					RelativePath="..\..\src\ObjectEditPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ObjectEditPanel.h"
+					RelativePath="..\..\src\ObjectEditPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ScriptEditorPanel.cpp"
+					RelativePath="..\..\src\ScriptEditorPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ScriptEditorPanel.h"
+					RelativePath="..\..\src\ScriptEditorPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ShapeDrawPanel.cpp"
+					RelativePath="..\..\src\ShapeDrawPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ShapeDrawPanel.h"
+					RelativePath="..\..\src\ShapeDrawPanel.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ThingTypeTreeView.cpp"
+					RelativePath="..\..\src\ThingTypeTreeView.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ThingTypeTreeView.h"
+					RelativePath="..\..\src\ThingTypeTreeView.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\UndoManagerHistoryPanel.cpp"
+					RelativePath="..\..\src\UndoManagerHistoryPanel.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\UndoManagerHistoryPanel.h"
+					RelativePath="..\..\src\UndoManagerHistoryPanel.h"
 					>
 				</File>
 				<Filter
 					Name="Overlays"
 					>
 					<File
-						RelativePath=".\src\InfoOverlay3d.cpp"
+						RelativePath="..\..\src\InfoOverlay3d.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\InfoOverlay3d.h"
+						RelativePath="..\..\src\InfoOverlay3d.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\LineInfoOverlay.cpp"
+						RelativePath="..\..\src\LineInfoOverlay.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\LineInfoOverlay.h"
+						RelativePath="..\..\src\LineInfoOverlay.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\LineTextureOverlay.cpp"
+						RelativePath="..\..\src\LineTextureOverlay.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\LineTextureOverlay.h"
+						RelativePath="..\..\src\LineTextureOverlay.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MCOverlay.h"
+						RelativePath="..\..\src\MCOverlay.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\QuickTextureOverlay3d.cpp"
+						RelativePath="..\..\src\QuickTextureOverlay3d.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\QuickTextureOverlay3d.h"
+						RelativePath="..\..\src\QuickTextureOverlay3d.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SectorInfoOverlay.cpp"
+						RelativePath="..\..\src\SectorInfoOverlay.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SectorInfoOverlay.h"
+						RelativePath="..\..\src\SectorInfoOverlay.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SectorTextureOverlay.cpp"
+						RelativePath="..\..\src\SectorTextureOverlay.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SectorTextureOverlay.h"
+						RelativePath="..\..\src\SectorTextureOverlay.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ThingInfoOverlay.cpp"
+						RelativePath="..\..\src\ThingInfoOverlay.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ThingInfoOverlay.h"
+						RelativePath="..\..\src\ThingInfoOverlay.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\VertexInfoOverlay.cpp"
+						RelativePath="..\..\src\VertexInfoOverlay.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\VertexInfoOverlay.h"
+						RelativePath="..\..\src\VertexInfoOverlay.h"
 						>
 					</File>
 				</Filter>
@@ -1363,55 +1363,55 @@
 					Name="Props Panels"
 					>
 					<File
-						RelativePath=".\src\LinePropsPanel.cpp"
+						RelativePath="..\..\src\LinePropsPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\LinePropsPanel.h"
+						RelativePath="..\..\src\LinePropsPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MapObjectPropsPanel.cpp"
+						RelativePath="..\..\src\MapObjectPropsPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MapObjectPropsPanel.h"
+						RelativePath="..\..\src\MapObjectPropsPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MOPGProperty.cpp"
+						RelativePath="..\..\src\MOPGProperty.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MOPGProperty.h"
+						RelativePath="..\..\src\MOPGProperty.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PropsPanelBase.h"
+						RelativePath="..\..\src\PropsPanelBase.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SectorPropsPanel.cpp"
+						RelativePath="..\..\src\SectorPropsPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SectorPropsPanel.h"
+						RelativePath="..\..\src\SectorPropsPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SidePropsPanel.cpp"
+						RelativePath="..\..\src\SidePropsPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SidePropsPanel.h"
+						RelativePath="..\..\src\SidePropsPanel.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ThingPropsPanel.cpp"
+						RelativePath="..\..\src\ThingPropsPanel.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ThingPropsPanel.h"
+						RelativePath="..\..\src\ThingPropsPanel.h"
 						>
 					</File>
 				</Filter>
@@ -1419,43 +1419,43 @@
 					Name="Dialogs"
 					>
 					<File
-						RelativePath=".\src\ActionSpecialDialog.cpp"
+						RelativePath="..\..\src\ActionSpecialDialog.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ActionSpecialDialog.h"
+						RelativePath="..\..\src\ActionSpecialDialog.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MapTextureBrowser.cpp"
+						RelativePath="..\..\src\MapTextureBrowser.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\MapTextureBrowser.h"
+						RelativePath="..\..\src\MapTextureBrowser.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SectorSpecialDialog.cpp"
+						RelativePath="..\..\src\SectorSpecialDialog.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SectorSpecialDialog.h"
+						RelativePath="..\..\src\SectorSpecialDialog.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ShowItemDialog.cpp"
+						RelativePath="..\..\src\ShowItemDialog.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ShowItemDialog.h"
+						RelativePath="..\..\src\ShowItemDialog.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ThingTypeBrowser.cpp"
+						RelativePath="..\..\src\ThingTypeBrowser.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\ThingTypeBrowser.h"
+						RelativePath="..\..\src\ThingTypeBrowser.h"
 						>
 					</File>
 				</Filter>
@@ -1464,67 +1464,67 @@
 				Name="SLADEMap"
 				>
 				<File
-					RelativePath=".\src\MapLine.cpp"
+					RelativePath="..\..\src\MapLine.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapLine.h"
+					RelativePath="..\..\src\MapLine.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapObject.cpp"
+					RelativePath="..\..\src\MapObject.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapObject.h"
+					RelativePath="..\..\src\MapObject.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapSector.cpp"
+					RelativePath="..\..\src\MapSector.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapSector.h"
+					RelativePath="..\..\src\MapSector.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapSide.cpp"
+					RelativePath="..\..\src\MapSide.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapSide.h"
+					RelativePath="..\..\src\MapSide.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapThing.cpp"
+					RelativePath="..\..\src\MapThing.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapThing.h"
+					RelativePath="..\..\src\MapThing.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapVertex.cpp"
+					RelativePath="..\..\src\MapVertex.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MapVertex.h"
+					RelativePath="..\..\src\MapVertex.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MobjPropertyList.cpp"
+					RelativePath="..\..\src\MobjPropertyList.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MobjPropertyList.h"
+					RelativePath="..\..\src\MobjPropertyList.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SLADEMap.cpp"
+					RelativePath="..\..\src\SLADEMap.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SLADEMap.h"
+					RelativePath="..\..\src\SLADEMap.h"
 					>
 				</File>
 			</Filter>
@@ -1532,224 +1532,224 @@
 				Name="GameConfiguration"
 				>
 				<File
-					RelativePath=".\src\ActionSpecial.cpp"
+					RelativePath="..\..\src\ActionSpecial.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ActionSpecial.h"
+					RelativePath="..\..\src\ActionSpecial.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Args.h"
+					RelativePath="..\..\src\Args.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GameConfiguration.cpp"
+					RelativePath="..\..\src\GameConfiguration.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GameConfiguration.h"
+					RelativePath="..\..\src\GameConfiguration.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GenLineSpecial.cpp"
+					RelativePath="..\..\src\GenLineSpecial.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GenLineSpecial.h"
+					RelativePath="..\..\src\GenLineSpecial.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ThingType.cpp"
+					RelativePath="..\..\src\ThingType.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ThingType.h"
+					RelativePath="..\..\src\ThingType.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\UDMFProperty.cpp"
+					RelativePath="..\..\src\UDMFProperty.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\UDMFProperty.h"
+					RelativePath="..\..\src\UDMFProperty.h"
 					>
 				</File>
 				<Filter
 					Name="Configurations"
 					>
 					<File
-						RelativePath=".\dist\res\config\executables.cfg"
+						RelativePath="..\..\dist\res\config\executables.cfg"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\nodebuilders.cfg"
+						RelativePath="..\..\dist\res\config\nodebuilders.cfg"
 						>
 					</File>
 					<Filter
 						Name="Games"
 						>
 						<File
-							RelativePath=".\dist\res\config\games\chex1.cfg"
+							RelativePath="..\..\dist\res\config\games\chex1.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\chex3.cfg"
+							RelativePath="..\..\dist\res\config\games\chex3.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\doom1.cfg"
+							RelativePath="..\..\dist\res\config\games\doom1.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\doom2.cfg"
+							RelativePath="..\..\dist\res\config\games\doom2.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\doom64.cfg"
+							RelativePath="..\..\dist\res\config\games\doom64.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\hacx.cfg"
+							RelativePath="..\..\dist\res\config\games\hacx.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\heretic.cfg"
+							RelativePath="..\..\dist\res\config\games\heretic.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\hexen.cfg"
+							RelativePath="..\..\dist\res\config\games\hexen.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\srb2.cfg"
+							RelativePath="..\..\dist\res\config\games\srb2.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\strife.cfg"
+							RelativePath="..\..\dist\res\config\games\strife.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\games\urbanbrawl.cfg"
+							RelativePath="..\..\dist\res\config\games\urbanbrawl.cfg"
 							>
 						</File>
 						<Filter
 							Name="Include"
 							>
 							<File
-								RelativePath=".\dist\res\config\games\include\flags_doom.cfg"
+								RelativePath="..\..\dist\res\config\games\include\flags_doom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\flags_doom64.cfg"
+								RelativePath="..\..\dist\res\config\games\include\flags_doom64.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\flags_hexen.cfg"
+								RelativePath="..\..\dist\res\config\games\include\flags_hexen.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\flags_strife.cfg"
+								RelativePath="..\..\dist\res\config\games\include\flags_strife.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\props_base.cfg"
+								RelativePath="..\..\dist\res\config\games\include\props_base.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\props_hexen.cfg"
+								RelativePath="..\..\dist\res\config\games\include\props_hexen.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\sectors_doom.cfg"
+								RelativePath="..\..\dist\res\config\games\include\sectors_doom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\sectors_doom64.cfg"
+								RelativePath="..\..\dist\res\config\games\include\sectors_doom64.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\sectors_heretic.cfg"
+								RelativePath="..\..\dist\res\config\games\include\sectors_heretic.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\sectors_hexen.cfg"
+								RelativePath="..\..\dist\res\config\games\include\sectors_hexen.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\sectors_strife.cfg"
+								RelativePath="..\..\dist\res\config\games\include\sectors_strife.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\specials_doom1.cfg"
+								RelativePath="..\..\dist\res\config\games\include\specials_doom1.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\specials_doom2.cfg"
+								RelativePath="..\..\dist\res\config\games\include\specials_doom2.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\specials_doom64.cfg"
+								RelativePath="..\..\dist\res\config\games\include\specials_doom64.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\specials_heretic.cfg"
+								RelativePath="..\..\dist\res\config\games\include\specials_heretic.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\specials_hexen.cfg"
+								RelativePath="..\..\dist\res\config\games\include\specials_hexen.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\specials_strife.cfg"
+								RelativePath="..\..\dist\res\config\games\include\specials_strife.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_action2.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_action2.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_chex1.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_chex1.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_chex3.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_chex3.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_common.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_common.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_doom1.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_doom1.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_doom2.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_doom2.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_doom64.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_doom64.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_hacx.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_hacx.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_heretic.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_heretic.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_hexen.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_hexen.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_srb2.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_srb2.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\games\include\things_strife.cfg"
+								RelativePath="..\..\dist\res\config\games\include\things_strife.cfg"
 								>
 							</File>
 						</Filter>
@@ -1758,114 +1758,114 @@
 						Name="Ports"
 						>
 						<File
-							RelativePath=".\dist\res\config\ports\boom.cfg"
+							RelativePath="..\..\dist\res\config\ports\boom.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\ports\edge.cfg"
+							RelativePath="..\..\dist\res\config\ports\edge.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\ports\eternity.cfg"
+							RelativePath="..\..\dist\res\config\ports\eternity.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\ports\legacy.cfg"
+							RelativePath="..\..\dist\res\config\ports\legacy.cfg"
 							>
 						</File>
 						<File
-							RelativePath=".\dist\res\config\ports\zdoom.cfg"
+							RelativePath="..\..\dist\res\config\ports\zdoom.cfg"
 							>
 						</File>
 						<Filter
 							Name="Include"
 							>
 							<File
-								RelativePath=".\dist\res\config\ports\include\flags_boom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\flags_boom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\flags_eternity.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\flags_eternity.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\flags_legacy.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\flags_legacy.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\flags_mbf.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\flags_mbf.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\flags_zdoom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\flags_zdoom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\props_all.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\props_all.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\props_boom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\props_boom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\props_zdoom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\props_zdoom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\sectors_zdoom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\sectors_zdoom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\specials_boom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\specials_boom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\specials_edge.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\specials_edge.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\specials_eternity.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\specials_eternity.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\specials_legacy.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\specials_legacy.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\specials_mbf.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\specials_mbf.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\specials_zdoom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\specials_zdoom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\things_boom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\things_boom.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\things_eternity.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\things_eternity.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\things_legacy.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\things_legacy.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\things_mbf.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\things_mbf.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\things_musinfo.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\things_musinfo.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\things_stealthmonsters.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\things_stealthmonsters.cfg"
 								>
 							</File>
 							<File
-								RelativePath=".\dist\res\config\ports\include\things_zdoom.cfg"
+								RelativePath="..\..\dist\res\config\ports\include\things_zdoom.cfg"
 								>
 							</File>
 						</Filter>
@@ -1877,226 +1877,226 @@
 			Name="Resources"
 			>
 			<File
-				RelativePath=".\src\ResourceManager.cpp"
+				RelativePath="..\..\src\ResourceManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ResourceManager.h"
+				RelativePath="..\..\src\ResourceManager.h"
 				>
 			</File>
 			<Filter
 				Name="Archive"
 				>
 				<File
-					RelativePath=".\src\ADatArchive.cpp"
+					RelativePath="..\..\src\ADatArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ADatArchive.h"
+					RelativePath="..\..\src\ADatArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Archive.cpp"
+					RelativePath="..\..\src\Archive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Archive.h"
+					RelativePath="..\..\src\Archive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ArchiveEntry.cpp"
+					RelativePath="..\..\src\ArchiveEntry.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ArchiveEntry.h"
+					RelativePath="..\..\src\ArchiveEntry.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ArchiveManager.cpp"
+					RelativePath="..\..\src\ArchiveManager.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ArchiveManager.h"
+					RelativePath="..\..\src\ArchiveManager.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Archives.h"
+					RelativePath="..\..\src\Archives.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BSPArchive.cpp"
+					RelativePath="..\..\src\BSPArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BSPArchive.h"
+					RelativePath="..\..\src\BSPArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BZip2Archive.cpp"
+					RelativePath="..\..\src\BZip2Archive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BZip2Archive.h"
+					RelativePath="..\..\src\BZip2Archive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ChasmBinArchive.cpp"
+					RelativePath="..\..\src\ChasmBinArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ChasmBinArchive.h"
+					RelativePath="..\..\src\ChasmBinArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\DatArchive.cpp"
+					RelativePath="..\..\src\DatArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\DatArchive.h"
+					RelativePath="..\..\src\DatArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\DirArchive.cpp"
+					RelativePath="..\..\src\DirArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\DirArchive.h"
+					RelativePath="..\..\src\DirArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\DiskArchive.cpp"
+					RelativePath="..\..\src\DiskArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\DiskArchive.h"
+					RelativePath="..\..\src\DiskArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GobArchive.cpp"
+					RelativePath="..\..\src\GobArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GobArchive.h"
+					RelativePath="..\..\src\GobArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GrpArchive.cpp"
+					RelativePath="..\..\src\GrpArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GrpArchive.h"
+					RelativePath="..\..\src\GrpArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GZipArchive.cpp"
+					RelativePath="..\..\src\GZipArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GZipArchive.h"
+					RelativePath="..\..\src\GZipArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\HogArchive.cpp"
+					RelativePath="..\..\src\HogArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\HogArchive.h"
+					RelativePath="..\..\src\HogArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\LfdArchive.cpp"
+					RelativePath="..\..\src\LfdArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\LfdArchive.h"
+					RelativePath="..\..\src\LfdArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\LibArchive.cpp"
+					RelativePath="..\..\src\LibArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\LibArchive.h"
+					RelativePath="..\..\src\LibArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\PakArchive.cpp"
+					RelativePath="..\..\src\PakArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\PakArchive.h"
+					RelativePath="..\..\src\PakArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\PodArchive.cpp"
+					RelativePath="..\..\src\PodArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\PodArchive.h"
+					RelativePath="..\..\src\PodArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ResArchive.cpp"
+					RelativePath="..\..\src\ResArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ResArchive.h"
+					RelativePath="..\..\src\ResArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\RffArchive.cpp"
+					RelativePath="..\..\src\RffArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\RffArchive.h"
+					RelativePath="..\..\src\RffArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\TarArchive.cpp"
+					RelativePath="..\..\src\TarArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\TarArchive.h"
+					RelativePath="..\..\src\TarArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Wad2Archive.cpp"
+					RelativePath="..\..\src\Wad2Archive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Wad2Archive.h"
+					RelativePath="..\..\src\Wad2Archive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\WadArchive.cpp"
+					RelativePath="..\..\src\WadArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\WadArchive.h"
+					RelativePath="..\..\src\WadArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\WadJArchive.cpp"
+					RelativePath="..\..\src\WadJArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\WadJArchive.h"
+					RelativePath="..\..\src\WadJArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\WolfArchive.cpp"
+					RelativePath="..\..\src\WolfArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\WolfArchive.h"
+					RelativePath="..\..\src\WolfArchive.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ZipArchive.cpp"
+					RelativePath="..\..\src\ZipArchive.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ZipArchive.h"
+					RelativePath="..\..\src\ZipArchive.h"
 					>
 				</File>
 			</Filter>
@@ -2104,23 +2104,23 @@
 				Name="Binary Control Lumps"
 				>
 				<File
-					RelativePath=".\src\AnimatedList.cpp"
+					RelativePath="..\..\src\AnimatedList.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\AnimatedList.h"
+					RelativePath="..\..\src\AnimatedList.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BinaryControlLump.h"
+					RelativePath="..\..\src\BinaryControlLump.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SwitchesList.cpp"
+					RelativePath="..\..\src\SwitchesList.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SwitchesList.h"
+					RelativePath="..\..\src\SwitchesList.h"
 					>
 				</File>
 			</Filter>
@@ -2128,82 +2128,82 @@
 				Name="Graphics"
 				>
 				<File
-					RelativePath=".\src\GLTexture.cpp"
+					RelativePath="..\..\src\GLTexture.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\GLTexture.h"
+					RelativePath="..\..\src\GLTexture.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Icons.cpp"
+					RelativePath="..\..\src\Icons.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Icons.h"
+					RelativePath="..\..\src\Icons.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Translation.cpp"
+					RelativePath="..\..\src\Translation.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Translation.h"
+					RelativePath="..\..\src\Translation.h"
 					>
 				</File>
 				<Filter
 					Name="Image"
 					>
 					<File
-						RelativePath=".\src\SIFDoom.h"
+						RelativePath="..\..\src\SIFDoom.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFHexen.h"
+						RelativePath="..\..\src\SIFHexen.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFImages.h"
+						RelativePath="..\..\src\SIFImages.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFJedi.h"
+						RelativePath="..\..\src\SIFJedi.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFormat.cpp"
+						RelativePath="..\..\src\SIFormat.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFormat.h"
+						RelativePath="..\..\src\SIFormat.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFOther.h"
+						RelativePath="..\..\src\SIFOther.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFQuake.h"
+						RelativePath="..\..\src\SIFQuake.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFRott.h"
+						RelativePath="..\..\src\SIFRott.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SIFZDoom.h"
+						RelativePath="..\..\src\SIFZDoom.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SImage.cpp"
+						RelativePath="..\..\src\SImage.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SImage.h"
+						RelativePath="..\..\src\SImage.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SImageFormats.cpp"
+						RelativePath="..\..\src\SImageFormats.cpp"
 						>
 					</File>
 				</Filter>
@@ -2211,27 +2211,27 @@
 					Name="Palette"
 					>
 					<File
-						RelativePath=".\src\CIEDeltaEquations.cpp"
+						RelativePath="..\..\src\CIEDeltaEquations.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\CIEDeltaEquations.h"
+						RelativePath="..\..\src\CIEDeltaEquations.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\Palette.cpp"
+						RelativePath="..\..\src\Palette.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\Palette.h"
+						RelativePath="..\..\src\Palette.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PaletteManager.cpp"
+						RelativePath="..\..\src\PaletteManager.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PaletteManager.h"
+						RelativePath="..\..\src\PaletteManager.h"
 						>
 					</File>
 				</Filter>
@@ -2239,27 +2239,27 @@
 					Name="Composite Texture"
 					>
 					<File
-						RelativePath=".\src\CTexture.cpp"
+						RelativePath="..\..\src\CTexture.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\CTexture.h"
+						RelativePath="..\..\src\CTexture.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PatchTable.cpp"
+						RelativePath="..\..\src\PatchTable.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\PatchTable.h"
+						RelativePath="..\..\src\PatchTable.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextureXList.cpp"
+						RelativePath="..\..\src\TextureXList.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\TextureXList.h"
+						RelativePath="..\..\src\TextureXList.h"
 						>
 					</File>
 				</Filter>
@@ -2267,11 +2267,11 @@
 					Name="Font"
 					>
 					<File
-						RelativePath=".\src\SFont.cpp"
+						RelativePath="..\..\src\SFont.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\SFont.h"
+						RelativePath="..\..\src\SFont.h"
 						>
 					</File>
 				</Filter>
@@ -2280,90 +2280,90 @@
 				Name="Entries"
 				>
 				<File
-					RelativePath=".\src\ArchiveFormats.h"
+					RelativePath="..\..\src\ArchiveFormats.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\AudioFormats.h"
+					RelativePath="..\..\src\AudioFormats.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\EntryDataFormat.cpp"
+					RelativePath="..\..\src\EntryDataFormat.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\EntryDataFormat.h"
+					RelativePath="..\..\src\EntryDataFormat.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\EntryType.cpp"
+					RelativePath="..\..\src\EntryType.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\EntryType.h"
+					RelativePath="..\..\src\EntryType.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\EntryTypeList.h"
+					RelativePath="..\..\src\EntryTypeList.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ImageFormats.h"
+					RelativePath="..\..\src\ImageFormats.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\LumpFormats.h"
+					RelativePath="..\..\src\LumpFormats.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\MiscFormats.h"
+					RelativePath="..\..\src\MiscFormats.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ModelFormats.h"
+					RelativePath="..\..\src\ModelFormats.h"
 					>
 				</File>
 				<Filter
 					Name="EntryTypes"
 					>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_archives.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_archives.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_audio.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_audio.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_fonts.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_fonts.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_gfx_doom.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_gfx_doom.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_gfx_others.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_gfx_others.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_gfx_std.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_gfx_std.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_map.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_map.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_misc.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_misc.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_model.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_model.txt"
 						>
 					</File>
 					<File
-						RelativePath=".\dist\res\config\entry_types\types_text.txt"
+						RelativePath="..\..\dist\res\config\entry_types\types_text.txt"
 						>
 					</File>
 				</Filter>
@@ -2373,131 +2373,131 @@
 			Name="UI Elements"
 			>
 			<File
-				RelativePath=".\src\ANSICanvas.cpp"
+				RelativePath="..\..\src\ANSICanvas.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ANSICanvas.h"
+				RelativePath="..\..\src\ANSICanvas.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ColourBox.cpp"
+				RelativePath="..\..\src\ColourBox.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ColourBox.h"
+				RelativePath="..\..\src\ColourBox.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\CTextureCanvas.cpp"
+				RelativePath="..\..\src\CTextureCanvas.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\CTextureCanvas.h"
+				RelativePath="..\..\src\CTextureCanvas.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\DockPanel.cpp"
+				RelativePath="..\..\src\DockPanel.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\DockPanel.h"
+				RelativePath="..\..\src\DockPanel.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\GfxCanvas.cpp"
+				RelativePath="..\..\src\GfxCanvas.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\GfxCanvas.h"
+				RelativePath="..\..\src\GfxCanvas.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapPreviewCanvas.cpp"
+				RelativePath="..\..\src\MapPreviewCanvas.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MapPreviewCanvas.h"
+				RelativePath="..\..\src\MapPreviewCanvas.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\NumberTextCtrl.cpp"
+				RelativePath="..\..\src\NumberTextCtrl.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\NumberTextCtrl.h"
+				RelativePath="..\..\src\NumberTextCtrl.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\OGLCanvas.cpp"
+				RelativePath="..\..\src\OGLCanvas.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\OGLCanvas.h"
+				RelativePath="..\..\src\OGLCanvas.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\PaletteCanvas.cpp"
+				RelativePath="..\..\src\PaletteCanvas.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\PaletteCanvas.h"
+				RelativePath="..\..\src\PaletteCanvas.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\PaletteChooser.cpp"
+				RelativePath="..\..\src\PaletteChooser.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\PaletteChooser.h"
+				RelativePath="..\..\src\PaletteChooser.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ResourceArchiveChooser.cpp"
+				RelativePath="..\..\src\ResourceArchiveChooser.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\ResourceArchiveChooser.h"
+				RelativePath="..\..\src\ResourceArchiveChooser.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SAuiTabArt.cpp"
+				RelativePath="..\..\src\SAuiTabArt.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SAuiTabArt.h"
+				RelativePath="..\..\src\SAuiTabArt.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SDialog.cpp"
+				RelativePath="..\..\src\SDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SDialog.h"
+				RelativePath="..\..\src\SDialog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SplashWindow.cpp"
+				RelativePath="..\..\src\SplashWindow.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\SplashWindow.h"
+				RelativePath="..\..\src\SplashWindow.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\STabCtrl.cpp"
+				RelativePath="..\..\src\STabCtrl.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\STabCtrl.h"
+				RelativePath="..\..\src\STabCtrl.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\STopWindow.cpp"
+				RelativePath="..\..\src\STopWindow.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\STopWindow.h"
+				RelativePath="..\..\src\STopWindow.h"
 				>
 			</File>
 			<Filter
@@ -2508,27 +2508,27 @@
 				Name="Lists"
 				>
 				<File
-					RelativePath=".\src\ArchiveEntryList.cpp"
+					RelativePath="..\..\src\ArchiveEntryList.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ArchiveEntryList.h"
+					RelativePath="..\..\src\ArchiveEntryList.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ListView.cpp"
+					RelativePath="..\..\src\ListView.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\ListView.h"
+					RelativePath="..\..\src\ListView.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\VirtualListView.cpp"
+					RelativePath="..\..\src\VirtualListView.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\VirtualListView.h"
+					RelativePath="..\..\src\VirtualListView.h"
 					>
 				</File>
 			</Filter>
@@ -2536,27 +2536,27 @@
 				Name="Browser"
 				>
 				<File
-					RelativePath=".\src\BrowserCanvas.cpp"
+					RelativePath="..\..\src\BrowserCanvas.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BrowserCanvas.h"
+					RelativePath="..\..\src\BrowserCanvas.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BrowserItem.cpp"
+					RelativePath="..\..\src\BrowserItem.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BrowserItem.h"
+					RelativePath="..\..\src\BrowserItem.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BrowserWindow.cpp"
+					RelativePath="..\..\src\BrowserWindow.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\BrowserWindow.h"
+					RelativePath="..\..\src\BrowserWindow.h"
 					>
 				</File>
 			</Filter>
@@ -2564,19 +2564,19 @@
 				Name="Tool Bar"
 				>
 				<File
-					RelativePath=".\src\SToolBar.cpp"
+					RelativePath="..\..\src\SToolBar.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SToolBar.h"
+					RelativePath="..\..\src\SToolBar.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SToolBarButton.cpp"
+					RelativePath="..\..\src\SToolBarButton.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\SToolBarButton.h"
+					RelativePath="..\..\src\SToolBarButton.h"
 					>
 				</File>
 			</Filter>
@@ -2585,40 +2585,40 @@
 			Name="zFiles"
 			>
 			<File
-				RelativePath=".\dist/slade.pk3"
+				RelativePath="..\..\dist\slade.pk3"
 				>
 			</File>
 			<File
-				RelativePath=".\dist\res\imfrates.txt"
+				RelativePath="..\..\dist\res\imfrates.txt"
 				>
 			</File>
 			<File
-				RelativePath=".\dist\res\html\startpage.htm"
+				RelativePath="..\..\dist\res\html\startpage.htm"
 				DeploymentContent="true"
 				>
 			</File>
 			<File
-				RelativePath=".\stuff.txt"
+				RelativePath="..\..\misc\stuff.txt"
 				>
 			</File>
 			<File
-				RelativePath=".\dist\res\tips.txt"
+				RelativePath="..\..\dist\res\tips.txt"
 				>
 			</File>
 			<File
-				RelativePath=".\udmf11.txt"
+				RelativePath="..\..\misc\udmf11.txt"
 				>
 			</File>
 			<File
-				RelativePath=".\udmf_zdoom.txt"
+				RelativePath="..\..\misc\udmf_zdoom.txt"
 				>
 			</File>
 			<File
-				RelativePath=".\usdf.txt"
+				RelativePath="..\..\misc\usdf.txt"
 				>
 			</File>
 			<File
-				RelativePath=".\usdf_zdoom.txt"
+				RelativePath="..\..\misc\usdf_zdoom.txt"
 				>
 			</File>
 		</Filter>
@@ -2629,7 +2629,7 @@
 				Name="Mus2Mid"
 				>
 				<File
-					RelativePath=".\src\mus2mid\mus2mid.cpp"
+					RelativePath="..\..\src\mus2mid\mus2mid.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -2651,7 +2651,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\src\mus2mid\mus2mid.h"
+					RelativePath="..\..\src\mus2mid\mus2mid.h"
 					>
 				</File>
 			</Filter>
@@ -2659,91 +2659,91 @@
 				Name="ZReaders"
 				>
 				<File
-					RelativePath=".\src\zreaders\ancientzip.cpp"
+					RelativePath="..\..\src\zreaders\ancientzip.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\ancientzip.h"
+					RelativePath="..\..\src\zreaders\ancientzip.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\files.cpp"
+					RelativePath="..\..\src\zreaders\files.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\files.h"
+					RelativePath="..\..\src\zreaders\files.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\i_music.cpp"
+					RelativePath="..\..\src\zreaders\i_music.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\i_music.h"
+					RelativePath="..\..\src\zreaders\i_music.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\i_musicinterns.h"
+					RelativePath="..\..\src\zreaders\i_musicinterns.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\m_alloc.cpp"
+					RelativePath="..\..\src\zreaders\m_alloc.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\m_alloc.h"
+					RelativePath="..\..\src\zreaders\m_alloc.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\m_swap.h"
+					RelativePath="..\..\src\zreaders\m_swap.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\mus2midi.h"
+					RelativePath="..\..\src\zreaders\mus2midi.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_hmi_midiout.cpp"
+					RelativePath="..\..\src\zreaders\music_hmi_midiout.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_midistream.cpp"
+					RelativePath="..\..\src\zreaders\music_midistream.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_mus_midiout.cpp"
+					RelativePath="..\..\src\zreaders\music_mus_midiout.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_opl3.cpp"
+					RelativePath="..\..\src\zreaders\music_opl3.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_opl3.h"
+					RelativePath="..\..\src\zreaders\music_opl3.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_opl_song.cpp"
+					RelativePath="..\..\src\zreaders\music_opl_song.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_opl_song.h"
+					RelativePath="..\..\src\zreaders\music_opl_song.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_smf_midiout.cpp"
+					RelativePath="..\..\src\zreaders\music_smf_midiout.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\music_xmi_midiout.cpp"
+					RelativePath="..\..\src\zreaders\music_xmi_midiout.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\tarray.h"
+					RelativePath="..\..\src\zreaders\tarray.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\zreaders\templates.h"
+					RelativePath="..\..\src\zreaders\templates.h"
 					>
 				</File>
 			</Filter>
@@ -2751,19 +2751,19 @@
 				Name="GLEW"
 				>
 				<File
-					RelativePath=".\src\glew\glew.c"
+					RelativePath="..\..\src\glew\glew.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\glew\glew.h"
+					RelativePath="..\..\src\glew\glew.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\glew\glxew.h"
+					RelativePath="..\..\src\glew\glxew.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\glew\wglew.h"
+					RelativePath="..\..\src\glew\wglew.h"
 					>
 				</File>
 			</Filter>
@@ -2771,231 +2771,231 @@
 				Name="Lua"
 				>
 				<File
-					RelativePath=".\src\lua\lapi.c"
+					RelativePath="..\..\src\lua\lapi.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lapi.h"
+					RelativePath="..\..\src\lua\lapi.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lauxlib.c"
+					RelativePath="..\..\src\lua\lauxlib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lauxlib.h"
+					RelativePath="..\..\src\lua\lauxlib.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lbaselib.c"
+					RelativePath="..\..\src\lua\lbaselib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lbitlib.c"
+					RelativePath="..\..\src\lua\lbitlib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lcode.c"
+					RelativePath="..\..\src\lua\lcode.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lcode.h"
+					RelativePath="..\..\src\lua\lcode.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lcorolib.c"
+					RelativePath="..\..\src\lua\lcorolib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lctype.c"
+					RelativePath="..\..\src\lua\lctype.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lctype.h"
+					RelativePath="..\..\src\lua\lctype.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ldblib.c"
+					RelativePath="..\..\src\lua\ldblib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ldebug.c"
+					RelativePath="..\..\src\lua\ldebug.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ldebug.h"
+					RelativePath="..\..\src\lua\ldebug.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ldo.c"
+					RelativePath="..\..\src\lua\ldo.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ldo.h"
+					RelativePath="..\..\src\lua\ldo.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ldump.c"
+					RelativePath="..\..\src\lua\ldump.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lfunc.c"
+					RelativePath="..\..\src\lua\lfunc.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lfunc.h"
+					RelativePath="..\..\src\lua\lfunc.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lgc.c"
+					RelativePath="..\..\src\lua\lgc.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lgc.h"
+					RelativePath="..\..\src\lua\lgc.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\linit.c"
+					RelativePath="..\..\src\lua\linit.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\liolib.c"
+					RelativePath="..\..\src\lua\liolib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\llex.c"
+					RelativePath="..\..\src\lua\llex.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\llex.h"
+					RelativePath="..\..\src\lua\llex.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\llimits.h"
+					RelativePath="..\..\src\lua\llimits.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lmathlib.c"
+					RelativePath="..\..\src\lua\lmathlib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lmem.c"
+					RelativePath="..\..\src\lua\lmem.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lmem.h"
+					RelativePath="..\..\src\lua\lmem.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\loadlib.c"
+					RelativePath="..\..\src\lua\loadlib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lobject.c"
+					RelativePath="..\..\src\lua\lobject.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lobject.h"
+					RelativePath="..\..\src\lua\lobject.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lopcodes.c"
+					RelativePath="..\..\src\lua\lopcodes.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lopcodes.h"
+					RelativePath="..\..\src\lua\lopcodes.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\loslib.c"
+					RelativePath="..\..\src\lua\loslib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lparser.c"
+					RelativePath="..\..\src\lua\lparser.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lparser.h"
+					RelativePath="..\..\src\lua\lparser.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lstate.c"
+					RelativePath="..\..\src\lua\lstate.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lstate.h"
+					RelativePath="..\..\src\lua\lstate.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lstring.c"
+					RelativePath="..\..\src\lua\lstring.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lstring.h"
+					RelativePath="..\..\src\lua\lstring.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lstrlib.c"
+					RelativePath="..\..\src\lua\lstrlib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ltable.c"
+					RelativePath="..\..\src\lua\ltable.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ltable.h"
+					RelativePath="..\..\src\lua\ltable.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ltablib.c"
+					RelativePath="..\..\src\lua\ltablib.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ltm.c"
+					RelativePath="..\..\src\lua\ltm.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\ltm.h"
+					RelativePath="..\..\src\lua\ltm.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lua.h"
+					RelativePath="..\..\src\lua\lua.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lua.hpp"
+					RelativePath="..\..\src\lua\lua.hpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\luaconf.h"
+					RelativePath="..\..\src\lua\luaconf.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lualib.h"
+					RelativePath="..\..\src\lua\lualib.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lundump.c"
+					RelativePath="..\..\src\lua\lundump.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lundump.h"
+					RelativePath="..\..\src\lua\lundump.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lvm.c"
+					RelativePath="..\..\src\lua\lvm.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lvm.h"
+					RelativePath="..\..\src\lua\lvm.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lzio.c"
+					RelativePath="..\..\src\lua\lzio.c"
 					>
 				</File>
 				<File
-					RelativePath=".\src\lua\lzio.h"
+					RelativePath="..\..\src\lua\lzio.h"
 					>
 				</File>
 			</Filter>
@@ -3415,58 +3415,58 @@
 				Name="DUMB"
 				>
 				<File
-					RelativePath=".\src\dumb\dumb.h"
+					RelativePath="..\..\src\dumb\dumb.h"
 					>
 				</File>
 				<Filter
 					Name="Core"
 					>
 					<File
-						RelativePath=".\src\dumb\core\atexit.c"
+						RelativePath="..\..\src\dumb\core\atexit.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\duhlen.c"
+						RelativePath="..\..\src\dumb\core\duhlen.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\duhtag.c"
+						RelativePath="..\..\src\dumb\core\duhtag.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\dumbfile.c"
+						RelativePath="..\..\src\dumb\core\dumbfile.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\loadduh.c"
+						RelativePath="..\..\src\dumb\core\loadduh.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\makeduh.c"
+						RelativePath="..\..\src\dumb\core\makeduh.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\rawsig.c"
+						RelativePath="..\..\src\dumb\core\rawsig.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\readduh.c"
+						RelativePath="..\..\src\dumb\core\readduh.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\register.c"
+						RelativePath="..\..\src\dumb\core\register.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\rendduh.c"
+						RelativePath="..\..\src\dumb\core\rendduh.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\rendsig.c"
+						RelativePath="..\..\src\dumb\core\rendsig.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\core\unload.c"
+						RelativePath="..\..\src\dumb\core\unload.c"
 						>
 					</File>
 				</Filter>
@@ -3474,47 +3474,47 @@
 					Name="Internal"
 					>
 					<File
-						RelativePath=".\src\dumb\internal\aldumb.h"
+						RelativePath="..\..\src\dumb\internal\aldumb.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\barray.h"
+						RelativePath="..\..\src\dumb\internal\barray.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\dumb.h"
+						RelativePath="..\..\src\dumb\internal\dumb.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\dumbfile.h"
+						RelativePath="..\..\src\dumb\internal\dumbfile.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\fir_resampler.h"
+						RelativePath="..\..\src\dumb\internal\fir_resampler.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\it.h"
+						RelativePath="..\..\src\dumb\internal\it.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\lpc.h"
+						RelativePath="..\..\src\dumb\internal\lpc.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\resampler.h"
+						RelativePath="..\..\src\dumb\internal\resampler.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\riff.h"
+						RelativePath="..\..\src\dumb\internal\riff.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\stack_alloc.h"
+						RelativePath="..\..\src\dumb\internal\stack_alloc.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\internal\tarray.h"
+						RelativePath="..\..\src\dumb\internal\tarray.h"
 						>
 					</File>
 				</Filter>
@@ -3522,15 +3522,15 @@
 					Name="Helpers"
 					>
 					<File
-						RelativePath=".\src\dumb\helpers\barray.c"
+						RelativePath="..\..\src\dumb\helpers\barray.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\clickrem.c"
+						RelativePath="..\..\src\dumb\helpers\clickrem.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\fir_resampler.c"
+						RelativePath="..\..\src\dumb\helpers\fir_resampler.c"
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
@@ -3552,51 +3552,51 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\lpc.c"
+						RelativePath="..\..\src\dumb\helpers\lpc.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\memfile.c"
+						RelativePath="..\..\src\dumb\helpers\memfile.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\resamp2.inc"
+						RelativePath="..\..\src\dumb\helpers\resamp2.inc"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\resamp3.inc"
+						RelativePath="..\..\src\dumb\helpers\resamp3.inc"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\resample.c"
+						RelativePath="..\..\src\dumb\helpers\resample.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\resample.inc"
+						RelativePath="..\..\src\dumb\helpers\resample.inc"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\resampler.c"
+						RelativePath="..\..\src\dumb\helpers\resampler.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\riff.c"
+						RelativePath="..\..\src\dumb\helpers\riff.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\sampbuf.c"
+						RelativePath="..\..\src\dumb\helpers\sampbuf.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\silence.c"
+						RelativePath="..\..\src\dumb\helpers\silence.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\stdfile.c"
+						RelativePath="..\..\src\dumb\helpers\stdfile.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\helpers\tarray.c"
+						RelativePath="..\..\src\dumb\helpers\tarray.c"
 						>
 					</File>
 				</Filter>
@@ -3604,251 +3604,251 @@
 					Name="it"
 					>
 					<File
-						RelativePath=".\src\dumb\it\itload.c"
+						RelativePath="..\..\src\dumb\it\itload.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\itload2.c"
+						RelativePath="..\..\src\dumb\it\itload2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\itmisc.c"
+						RelativePath="..\..\src\dumb\it\itmisc.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\itorder.c"
+						RelativePath="..\..\src\dumb\it\itorder.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\itread.c"
+						RelativePath="..\..\src\dumb\it\itread.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\itread2.c"
+						RelativePath="..\..\src\dumb\it\itread2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\itrender.c"
+						RelativePath="..\..\src\dumb\it\itrender.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\itunload.c"
+						RelativePath="..\..\src\dumb\it\itunload.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\load669.c"
+						RelativePath="..\..\src\dumb\it\load669.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\load6692.c"
+						RelativePath="..\..\src\dumb\it\load6692.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadamf.c"
+						RelativePath="..\..\src\dumb\it\loadamf.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadamf2.c"
+						RelativePath="..\..\src\dumb\it\loadamf2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadany.c"
+						RelativePath="..\..\src\dumb\it\loadany.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadany2.c"
+						RelativePath="..\..\src\dumb\it\loadany2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadasy.c"
+						RelativePath="..\..\src\dumb\it\loadasy.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadasy2.c"
+						RelativePath="..\..\src\dumb\it\loadasy2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadmod.c"
+						RelativePath="..\..\src\dumb\it\loadmod.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadmod2.c"
+						RelativePath="..\..\src\dumb\it\loadmod2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadmtm.c"
+						RelativePath="..\..\src\dumb\it\loadmtm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadmtm2.c"
+						RelativePath="..\..\src\dumb\it\loadmtm2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadokt.c"
+						RelativePath="..\..\src\dumb\it\loadokt.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadokt2.c"
+						RelativePath="..\..\src\dumb\it\loadokt2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadoldpsm.c"
+						RelativePath="..\..\src\dumb\it\loadoldpsm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadoldpsm2.c"
+						RelativePath="..\..\src\dumb\it\loadoldpsm2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadpsm.c"
+						RelativePath="..\..\src\dumb\it\loadpsm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadpsm2.c"
+						RelativePath="..\..\src\dumb\it\loadpsm2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadptm.c"
+						RelativePath="..\..\src\dumb\it\loadptm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadptm2.c"
+						RelativePath="..\..\src\dumb\it\loadptm2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadriff.c"
+						RelativePath="..\..\src\dumb\it\loadriff.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadriff2.c"
+						RelativePath="..\..\src\dumb\it\loadriff2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loads3m.c"
+						RelativePath="..\..\src\dumb\it\loads3m.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loads3m2.c"
+						RelativePath="..\..\src\dumb\it\loads3m2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadstm.c"
+						RelativePath="..\..\src\dumb\it\loadstm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadstm2.c"
+						RelativePath="..\..\src\dumb\it\loadstm2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadxm.c"
+						RelativePath="..\..\src\dumb\it\loadxm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\loadxm2.c"
+						RelativePath="..\..\src\dumb\it\loadxm2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\ptmeffect.c"
+						RelativePath="..\..\src\dumb\it\ptmeffect.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\read669.c"
+						RelativePath="..\..\src\dumb\it\read669.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\read6692.c"
+						RelativePath="..\..\src\dumb\it\read6692.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readam.c"
+						RelativePath="..\..\src\dumb\it\readam.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readamf.c"
+						RelativePath="..\..\src\dumb\it\readamf.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readamf2.c"
+						RelativePath="..\..\src\dumb\it\readamf2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readany.c"
+						RelativePath="..\..\src\dumb\it\readany.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readany2.c"
+						RelativePath="..\..\src\dumb\it\readany2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readasy.c"
+						RelativePath="..\..\src\dumb\it\readasy.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readdsmf.c"
+						RelativePath="..\..\src\dumb\it\readdsmf.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readmod.c"
+						RelativePath="..\..\src\dumb\it\readmod.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readmod2.c"
+						RelativePath="..\..\src\dumb\it\readmod2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readmtm.c"
+						RelativePath="..\..\src\dumb\it\readmtm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readokt.c"
+						RelativePath="..\..\src\dumb\it\readokt.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readokt2.c"
+						RelativePath="..\..\src\dumb\it\readokt2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readoldpsm.c"
+						RelativePath="..\..\src\dumb\it\readoldpsm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readpsm.c"
+						RelativePath="..\..\src\dumb\it\readpsm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readptm.c"
+						RelativePath="..\..\src\dumb\it\readptm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readriff.c"
+						RelativePath="..\..\src\dumb\it\readriff.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\reads3m.c"
+						RelativePath="..\..\src\dumb\it\reads3m.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\reads3m2.c"
+						RelativePath="..\..\src\dumb\it\reads3m2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readstm.c"
+						RelativePath="..\..\src\dumb\it\readstm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readstm2.c"
+						RelativePath="..\..\src\dumb\it\readstm2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readxm.c"
+						RelativePath="..\..\src\dumb\it\readxm.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\readxm2.c"
+						RelativePath="..\..\src\dumb\it\readxm2.c"
 						>
 					</File>
 					<File
-						RelativePath=".\src\dumb\it\xmeffect.c"
+						RelativePath="..\..\src\dumb\it\xmeffect.c"
 						>
 					</File>
 				</Filter>

@@ -9,13 +9,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Slade", "Slade3.vcproj", "{
 		{6077B7D6-349F-4077-B552-3BC302EF5859} = {6077B7D6-349F-4077-B552-3BC302EF5859}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "updaterevision", "src\updaterevision\updaterevision.vcproj", "{6077B7D6-349F-4077-B552-3BC302EF5859}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "updaterevision", "..\..\src\updaterevision\updaterevision.vcproj", "{6077B7D6-349F-4077-B552-3BC302EF5859}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "src\bzip2\bzip2.vcproj", "{A7DE5C73-D623-4118-A48A-BDFD1FAE97D4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "..\..\src\bzip2\bzip2.vcproj", "{A7DE5C73-D623-4118-A48A-BDFD1FAE97D4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lzmalib", "src\lzma\lzmalib.vcproj", "{6EB27E78-7C7A-4F08-8E19-957E8EB3A20F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lzmalib", "..\..\src\lzma\lzmalib.vcproj", "{6EB27E78-7C7A-4F08-8E19-957E8EB3A20F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "src\zlib\zlib.vcproj", "{F9D9E7D4-E1A2-4866-9E85-B1B14137EE63}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\..\src\zlib\zlib.vcproj", "{F9D9E7D4-E1A2-4866-9E85-B1B14137EE63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
