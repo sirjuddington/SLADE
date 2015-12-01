@@ -359,7 +359,7 @@ bool MIDIPlayer::isPlaying()
 
 		return true;
 	}
-#ifndef NO_FLUISYNTH
+#ifndef NO_FLUIDSYNTH
 	else
 	{
 		if (!fs_initialised)

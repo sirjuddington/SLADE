@@ -272,7 +272,7 @@ void EntryDataFormat::initBuiltinFormats()
 	new DoomPCSpeakerDataFormat();
 	new JaguarDoomSoundDataFormat();
 	new VocDataFormat();
-	new SPDCDataFormat();
+	new SPCDataFormat();
 	new BloodSFXDataFormat();
 	new WAVDataFormat();
 	new OggDataFormat();

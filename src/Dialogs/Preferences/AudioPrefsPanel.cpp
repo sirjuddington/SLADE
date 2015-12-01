@@ -245,8 +245,5 @@ void AudioPrefsPanel::onBtnBrowseTimidityExe(wxCommandEvent &e)
  *******************************************************************/
 void AudioPrefsPanel::onBtnResetPlayer(wxCommandEvent& e)
 {
-#ifndef NO_FLUIDSYNTH
 	theMIDIPlayer->resetPlayer();
-#endif
-	theMIDIPlayerApp->stop();
 }
