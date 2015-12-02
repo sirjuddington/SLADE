@@ -194,16 +194,9 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	opened = false;
 
 	// Enable all playback controls initially
-	if (usetimidity)
-		slider_seek->Disable();
-	else
-		slider_seek->Enable();
-
+	slider_seek->Enable();
 	btn_play->Enable();
-	if (usetimidity)
-		btn_pause->Disable();
-	else
-		btn_pause->Enable();
+	btn_pause->Enable();
 
 	btn_stop->Enable();
 	btn_prev->Enable();
@@ -457,6 +450,17 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 				btn_pause->Disable();
 			else
 				btn_pause->Enable();
+
+			if (usetimidity)
+			{
+				slider_seek->Disable();
+				slider_volume->Disable();
+			}
+			else
+			{
+				slider_seek->Enable();
+				slider_volume->Enable();
+			}
 
 			btn_stop->Enable();
 
