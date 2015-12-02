@@ -40,10 +40,10 @@
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, snd_autoplay)
+EXTERN_CVAR(Bool, dmx_padding)
 #ifndef NO_FLUIDSYNTH
 EXTERN_CVAR(String, fs_soundfont_path)
 EXTERN_CVAR(String, dir_last)
-EXTERN_CVAR(Bool, dmx_padding)
 CVAR(String, dir_last_soundfont, "", CVAR_SAVE)
 CVAR(Bool, snd_midi_usetimidity, false, CVAR_SAVE)
 #endif
@@ -73,11 +73,11 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_snd_autoplay = new wxCheckBox(this, -1, "Automatically play audio entries when opened");
 	sizer->Add(cb_snd_autoplay, 0, wxEXPAND|wxALL, 4);
 
-#ifndef NO_FLUIDSYNTH
 	// DMX Padding
 	cb_dmx_padding = new wxCheckBox(this, -1, "Use DMX padding when appropriate");
 	sizer->Add(cb_dmx_padding, 0, wxEXPAND|wxALL, 4);
 
+#ifndef NO_FLUIDSYNTH
 	// MIDI Soundfont path
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(new wxStaticText(this, -1, "Location of MIDI soundfont:"), 0, wxALL, 4);
@@ -86,9 +86,6 @@ AudioPrefsPanel::AudioPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	btn_browse_soundfont = new wxButton(this, -1, "Browse");
 	hbox->Add(btn_browse_soundfont, 0, wxEXPAND);
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-#endif
-
-#ifndef NO_FLUIDSYNTH
 	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL), 0, wxEXPAND|wxALL, 8);
 
 	// Timidity checkbox
@@ -156,9 +153,9 @@ void AudioPrefsPanel::init()
 void AudioPrefsPanel::applyPreferences()
 {
 	snd_autoplay = cb_snd_autoplay->GetValue();
+	dmx_padding = cb_dmx_padding->GetValue();
 #ifndef NO_FLUIDSYNTH
 	snd_midi_usetimidity = cb_snd_timidity->GetValue();
-	dmx_padding = cb_dmx_padding->GetValue();
 	fs_soundfont_path = text_soundfont_path->GetValue();
 	if (!theMIDIPlayer->isSoundfontLoaded())
 		theMIDIPlayer->reloadSoundfont();
