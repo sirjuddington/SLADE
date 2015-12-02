@@ -246,7 +246,10 @@ bool MIDIPlayer::openFile(string filename)
  *******************************************************************/
 bool MIDIPlayer::openData(MemChunk &mc)
 {
+	// Open midi
 	mc.seek(0, SEEK_SET);
+	data.importMem(mc.getData(), mc.getSize());
+
 	if (usetimidity)
 	{
 		wxFileName path(appPath("slade-timidity.mid", DIR_TEMP));
@@ -265,8 +268,6 @@ bool MIDIPlayer::openData(MemChunk &mc)
 		fs_player = NULL;
 		fs_player = new_fluid_player(fs_synth);
 
-		// Open midi
-		data.importMem(mc.getData(), mc.getSize());
 		if (fs_player)
 		{
 			//fluid_player_set_loop(fs_player, -1);
