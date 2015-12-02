@@ -47,6 +47,12 @@
  *******************************************************************/
 CVAR(Int, snd_volume, 100, CVAR_SAVE)
 CVAR(Bool, snd_autoplay, false, CVAR_SAVE)
+#ifndef NO_FLUIDSYNTH
+EXTERN_CVAR(Bool, snd_midi_usetimidity)
+#define usetimidity snd_midi_usetimidity
+#else
+#define usetimidity true
+#endif
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -188,9 +194,17 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	opened = false;
 
 	// Enable all playback controls initially
-	slider_seek->Enable();
+	if (usetimidity)
+		slider_seek->Disable();
+	else
+		slider_seek->Enable();
+
 	btn_play->Enable();
-	btn_pause->Enable();
+	if (usetimidity)
+		btn_pause->Disable();
+	else
+		btn_pause->Enable();
+
 	btn_stop->Enable();
 	btn_prev->Enable();
 	btn_next->Enable();
@@ -439,7 +453,11 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 		{
 			// Enable play controls
 			btn_play->Enable();
-			btn_pause->Enable();
+			if (usetimidity)
+				btn_pause->Disable();
+			else
+				btn_pause->Enable();
+
 			btn_stop->Enable();
 
 			// Setup seekbar
@@ -749,7 +767,12 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	case AUTYPE_MOD:
 		pos = mod.getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MIDI:
-		pos = theMIDIPlayer->getPosition(); break;
+		if (usetimidity)
+			pos = 0; 
+		else
+			pos = theMIDIPlayer->getPosition(); 
+		
+		break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) pos = media_ctrl->Tell(); break;
 	}
@@ -762,8 +785,13 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	        (audio_type == AUTYPE_SOUND && sound.getStatus() == sf::Sound::Stopped) ||
 	        (audio_type == AUTYPE_MUSIC && music.getStatus() == sf::Sound::Stopped) ||
 			(audio_type == AUTYPE_MOD && mod.getStatus() == sf::Sound::Stopped) ||
-			(audio_type == AUTYPE_MEDIA && media_ctrl && media_ctrl->GetState() == wxMEDIASTATE_STOPPED))
+			(audio_type == AUTYPE_MEDIA && media_ctrl && media_ctrl->GetState() == wxMEDIASTATE_STOPPED) ||
+			(audio_type == AUTYPE_MIDI && theMIDIPlayer && !theMIDIPlayer->isPlaying()))
+	{
 		timer_seek->Stop();
+		slider_seek->SetValue(0);
+	}
+	
 }
 
 /* AudioEntryPanel::onSliderSeekChanged
