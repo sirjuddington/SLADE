@@ -257,7 +257,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	{
 		chars[i].width = wxUINT16_SWAP_ON_BE(*(uint16_t*)p);
 		// Let's increase the total width
-		width+=chars[i].width;
+		width+=chars[i].width+1;
 		// The width information is enumerated for each character only if they are
 		// not constant width. Regardless, move the read pointer away after the last.
 		if (!(header->constantw) || (i == numchars - 1))
@@ -277,9 +277,6 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	// 0 is transparent, last is border color, the rest of the palette entries should
 	// be increasingly bright
 	palette.setTransIndex(0);
-
-	// Clear current data if it exists
-	clearData();
 
 	// The picture data follows, using the same RLE as FON1 and IMGZ.
 	for (size_t i = 0; i < numchars; ++i)
@@ -334,6 +331,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 	clearData();
 
 	data = new uint8_t[width*height];
+	memset(data, header->palsize, width*height);
 	uint8_t* d = data;
 	for (size_t i = 0; i < (unsigned)height; ++i)
 	{
@@ -342,7 +340,7 @@ bool SImage::loadFont2(const uint8_t* gfx_data, int size)
 			if (chars[j].width)
 			{
 				memcpy(d, chars[j].data+(i*chars[j].width), chars[j].width);
-				d+=chars[j].width;
+				d+=chars[j].width+1;
 			}
 		}
 	}
