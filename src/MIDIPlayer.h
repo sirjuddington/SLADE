@@ -47,11 +47,7 @@ public:
 	void resetPlayer()
 	{
 		stop();
-		if (instance)
-		{
-			delete instance;
-			instance = new MIDIPlayer();
-		}
+		instance = new MIDIPlayer();
 	}
 
 	bool	initFluidsynth();
