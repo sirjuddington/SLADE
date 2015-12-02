@@ -446,22 +446,7 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 		{
 			// Enable play controls
 			btn_play->Enable();
-			if (usetimidity)
-				btn_pause->Disable();
-			else
-				btn_pause->Enable();
-
-			if (usetimidity)
-			{
-				slider_seek->Disable();
-				slider_volume->Disable();
-			}
-			else
-			{
-				slider_seek->Enable();
-				slider_volume->Enable();
-			}
-
+			btn_pause->Enable();
 			btn_stop->Enable();
 
 			// Setup seekbar
@@ -771,12 +756,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	case AUTYPE_MOD:
 		pos = mod.getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MIDI:
-		if (usetimidity)
-			pos = 0; 
-		else
-			pos = theMIDIPlayer->getPosition(); 
-		
-		break;
+		pos = theMIDIPlayer->getPosition(); break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) pos = media_ctrl->Tell(); break;
 	}
