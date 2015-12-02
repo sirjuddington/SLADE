@@ -62,9 +62,9 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">true</GenerateManifest>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\src;$(FLUIDSYNTH)\include;$(ProjectDir)..\..\src\dumb;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\dumb;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)src;$(FLUIDSYNTH)\include;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist;$(SFML)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(FLUIDSYNTH)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(FLUIDSYNTH)\lib;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist;$(SFML)\lib;$(FTGL)\msvc\build;$(FREETYPE)\objs\win32;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FLUIDSYNTH)\include;$(ProjectDir)src\dumb;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(FLUIDSYNTH)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
