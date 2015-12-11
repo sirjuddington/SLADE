@@ -461,7 +461,8 @@ void MapRenderer3D::setLight(rgba_t& colour, uint8_t light, float alpha)
 		light = 255;
 
 	// Apply brightness
-	light = MathStuff::clamp(light * render_3d_brightness, 0, 255);
+	else
+		light = MathStuff::clamp(light * render_3d_brightness, 0, 255);
 
 	// If we have a non-coloured light, darken it a bit to
 	// closer resemble the software renderer light level
@@ -478,17 +479,19 @@ void MapRenderer3D::setFog(rgba_t &fogcol, uint8_t light)
 	if (!fog)
 		return;
 
-	GLfloat fogColor[3]= {fogcol.fr(), fogcol.fg(), fogcol.fb()};
+	// Setup fog colour
+	GLfloat fogColor[3] = { fogcol.fr(), fogcol.fg(), fogcol.fb() };
+	if (fog_colour_last.r != fogcol.r || fog_colour_last.g != fogcol.g || fog_colour_last.b != fogcol.b)
+		glFogfv(GL_FOG_COLOR, fogColor);
 
-	glEnable(GL_FOG);
+	fog_colour_last = fogcol;
 
-	glFogfv(GL_FOG_COLOR, fogColor);
-	glFogi(GL_FOG_MODE, GL_LINEAR);
-	glFogf(GL_FOG_DENSITY, 1.0f);
-	glFogf(GL_FOG_START, 0.0f);
 
-	// check if fog color is default
-	if ((fogColor[0] == 0 && fogColor[1] == 0 && fogColor[2] == 0) || !render_fog_new_formula)
+	// Setup fog depth
+	if (fog_light_last == light)
+		return;
+	
+	if (!render_fog_new_formula || (fogColor[0] == 0 && fogColor[1] == 0 && fogColor[2] == 0)) // check if fog color is default
 	{
 		float lm = light/170.0f;
 		glFogf(GL_FOG_END, (lm * lm * 3000.0f));
@@ -496,10 +499,7 @@ void MapRenderer3D::setFog(rgba_t &fogcol, uint8_t light)
 	else
 		glFogf(GL_FOG_END, render_fog_distance);
 
-	if (render_fog_quality)
-		glHint(GL_FOG_HINT, GL_NICEST);
-	else
-		glHint(GL_FOG_HINT, GL_FASTEST);
+	fog_light_last = light;
 }
 
 /* MapRenderer3D::renderMap
@@ -569,6 +569,20 @@ void MapRenderer3D::renderMap()
 	if (render_3d_sky)
 		renderSky();
 	OpenGL::setColour(COL_WHITE);
+
+	if (fog)
+	{
+		glEnable(GL_FOG);
+
+		glFogi(GL_FOG_MODE, GL_LINEAR);
+		glFogf(GL_FOG_DENSITY, 1.0f);
+		glFogf(GL_FOG_START, 0.0f);
+
+		if (render_fog_quality)
+			glHint(GL_FOG_HINT, GL_NICEST);
+		else
+			glHint(GL_FOG_HINT, GL_FASTEST);
+	}
 
 	// Render walls
 	renderWalls();
