@@ -482,24 +482,29 @@ void MapRenderer3D::setFog(rgba_t &fogcol, uint8_t light)
 	// Setup fog colour
 	GLfloat fogColor[3] = { fogcol.fr(), fogcol.fg(), fogcol.fb() };
 	if (fog_colour_last.r != fogcol.r || fog_colour_last.g != fogcol.g || fog_colour_last.b != fogcol.b)
+	{
 		glFogfv(GL_FOG_COLOR, fogColor);
-
-	fog_colour_last = fogcol;
+		fog_colour_last = fogcol;
+	}
 
 
 	// Setup fog depth
-	if (fog_light_last == light)
-		return;
-	
-	if (!render_fog_new_formula || (fogColor[0] == 0 && fogColor[1] == 0 && fogColor[2] == 0)) // check if fog color is default
+	float depth;
+
+	// check if fog color is default
+	if (!render_fog_new_formula || (fogColor[0] == 0 && fogColor[1] == 0 && fogColor[2] == 0))
 	{
-		float lm = light/170.0f;
-		glFogf(GL_FOG_END, (lm * lm * 3000.0f));
+		float lm = light / 170.0f;
+		depth = (lm * lm * 3000.0f);
 	}
 	else
-		glFogf(GL_FOG_END, render_fog_distance);
+		depth = render_fog_distance;
 
-	fog_light_last = light;
+	if (fog_depth_last != depth)
+	{
+		glFogf(GL_FOG_END, depth);
+		fog_depth_last = depth;
+	}
 }
 
 /* MapRenderer3D::renderMap

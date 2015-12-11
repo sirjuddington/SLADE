@@ -199,7 +199,7 @@ private:
 	bool		render_hilight;
 	bool		render_selection;
 	rgba_t		fog_colour_last;
-	uint8_t		fog_light_last;
+	float		fog_depth_last;
 
 	// Visibility
 	vector<float>	dist_sectors;
