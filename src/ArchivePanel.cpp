@@ -80,9 +80,10 @@ CVAR(String, last_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(Int, last_tint_amount, 50, CVAR_SAVE)
 CVAR(Bool, auto_entry_replace, false, CVAR_SAVE)
-EXTERN_CVAR(String, path_pngout);
-EXTERN_CVAR(String, path_pngcrush);
-EXTERN_CVAR(String, path_deflopt);
+EXTERN_CVAR(String, path_pngout)
+EXTERN_CVAR(String, path_pngcrush)
+EXTERN_CVAR(String, path_deflopt)
+EXTERN_CVAR(Bool, confirm_entry_revert)
 wxMenu* menu_archive = NULL;
 wxMenu* menu_entry = NULL;
 wxAuiToolBar* tb_archive = NULL;
@@ -1075,6 +1076,11 @@ bool ArchivePanel::deleteEntry(bool confirm)
  *******************************************************************/
 bool ArchivePanel::revertEntry()
 {
+	// Prompt to revert if configured to
+	if (confirm_entry_revert)
+		if (wxMessageBox("Are you sure you want to revert changes made to the entry?", "Revert Changes", wxICON_QUESTION | wxYES_NO) == wxNO)
+			return false;
+
 	// Get selected entries
 	vector<ArchiveEntry*> selected_entries = entry_list->getSelectedEntries();
 
@@ -1091,14 +1097,13 @@ bool ArchivePanel::revertEntry()
 	// Finish recording undo level
 	undo_manager->endRecord(true);
 
+	// Reload entry if currently open
+	if (selected_entries.size() == 1 && theActivePanel && theActivePanel->getEntry() == selected_entries[0])
+		theActivePanel->openEntry(selected_entries[0]);
+
 	// If the entries reverted were the only modified entries in the
 	// archive, the archive is no longer modified.
 	archive->findModifiedEntries();
-
-	// If there was only one selected entry, chances are its content
-	// were displayed, so this should be updated
-	if (theActivePanel)
-		theActivePanel->callRefresh();
 
 	return true;
 }

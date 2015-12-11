@@ -41,6 +41,7 @@ EXTERN_CVAR(Bool, percent_encoding)
 EXTERN_CVAR(Bool, auto_entry_replace)
 EXTERN_CVAR(Bool, save_archive_with_map)
 EXTERN_CVAR(Bool, confirm_entry_delete)
+EXTERN_CVAR(Bool, confirm_entry_revert)
 
 
 /*******************************************************************
@@ -81,6 +82,10 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_confirm_entry_delete = new wxCheckBox(this, -1, "Show confirmation dialog on deleting an entry");
 	sizer->Add(cb_confirm_entry_delete, 0, wxEXPAND|wxALL, 4);
 
+	// Confirm entry revert
+	cb_confirm_entry_revert = new wxCheckBox(this, -1, "Show confirmation dialog on reverting entry changes");
+	sizer->Add(cb_confirm_entry_revert, 0, wxEXPAND|wxALL, 4);
+
 	// Unsaved entry changes
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
@@ -108,6 +113,7 @@ void EditingPrefsPanel::init()
 	cb_save_archive_with_map->SetValue(save_archive_with_map);
 	choice_entry_mod->SetSelection(autosave_entry_changes);
 	cb_confirm_entry_delete->SetValue(confirm_entry_delete);
+	cb_confirm_entry_revert->SetValue(confirm_entry_revert);
 }
 
 /* EditingPrefsPanel::applyPreferences
@@ -121,4 +127,5 @@ void EditingPrefsPanel::applyPreferences()
 	save_archive_with_map = cb_save_archive_with_map->GetValue();
 	autosave_entry_changes = choice_entry_mod->GetSelection();
 	confirm_entry_delete = cb_confirm_entry_delete->GetValue();
+	confirm_entry_revert = cb_confirm_entry_revert->GetValue();
 }

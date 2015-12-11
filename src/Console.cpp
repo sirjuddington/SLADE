@@ -220,7 +220,7 @@ vector<string> Console::lastLogLines(int num)
 {
 	vector<string> lines;
 
-	while (num >= 0 && num < log.size())
+	while (num >= 0 && num < (int)log.size())
 	{
 		lines.push_back(log[log.size() - num - 1]);
 		num--;
