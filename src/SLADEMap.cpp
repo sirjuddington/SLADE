@@ -375,10 +375,10 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	if (ok)
 		current_format = map.format;
 
-	opened_time = theApp->runTimer() + 10;
-
 	initSectorPolygons();
 	recomputeSpecials();
+
+	opened_time = theApp->runTimer() + 10;
 
 	return ok;
 }
