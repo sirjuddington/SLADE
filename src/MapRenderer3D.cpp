@@ -2509,12 +2509,7 @@ void MapRenderer3D::checkVisibleFlats()
 		// Update sector info if needed
 		if (floors[a].updated_time < sector->modifiedTime() ||
 			floors[a].updated_time < sector->geometryUpdatedTime())
-		{
 			updateSector(a);
-
-			// update sector lines
-			sector->setModified();
-		}
 
 		// Set distance fade alpha
 		if (render_max_dist > 0)
