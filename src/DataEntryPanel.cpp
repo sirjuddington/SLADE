@@ -300,7 +300,7 @@ string DataEntryTable::GetColLabelValue(int col)
 	if ((unsigned)col < columns.size())
 		return columns[col].name;
 
-	return "Column" + col;
+	return S_FMT("Column%d", col);
 }
 
 /* DataEntryTable::GetRowLabelValue

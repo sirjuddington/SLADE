@@ -514,7 +514,7 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 bool Conversions::bloodToWav(ArchiveEntry* in, MemChunk& out)
 {
 	MemChunk& mc = in->getMCData();
-	if (mc.getSize() < 22 || mc.getSize() > 29 || (mc[12] != 1 && mc[12] != 5 || mc[mc.getSize()-1] != 0))
+	if (mc.getSize() < 22 || mc.getSize() > 29 || ((mc[12] != 1 && mc[12] != 5) || mc[mc.getSize()-1] != 0))
 	{
 		Global::error = "Invalid SFX";
 		return false;
@@ -849,7 +849,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 	// --- Read Doom sound ---
 	// -- Also AudioT sound --
 
-	size_t minsize = 4 + audioT ? 3 : 0;
+	size_t minsize = 4 + (audioT ? 3 : 0);
 	if (in.getSize() < minsize)
 	{
 		Global::error = "Invalid PC Speaker Sound";

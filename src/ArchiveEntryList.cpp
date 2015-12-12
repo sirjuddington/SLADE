@@ -634,7 +634,7 @@ int ArchiveEntryList::getEntryIndex(int index, bool filtered)
 	if (filtered)
 	{
 		if ((unsigned)index >= items.size())
-			return NULL;
+			return -1;
 		else
 			index = items[index];
 	}

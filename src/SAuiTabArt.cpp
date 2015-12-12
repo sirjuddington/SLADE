@@ -657,8 +657,6 @@ void SAuiDockArt::DrawPaneButton(wxDC& dc, wxWindow *WXUNUSED(window),
 	wxAuiPaneInfo& pane)
 {
 	wxBitmap bmp;
-	if (!(&pane))
-		return;
 	switch (button)
 	{
 	default:
