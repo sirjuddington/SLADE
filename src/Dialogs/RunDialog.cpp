@@ -466,7 +466,11 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
  *******************************************************************/
 void RunDialog::onBtnRun(wxCommandEvent& e)
 {
-	if (text_exe_path->GetValue() == "" || !wxFileExists(text_exe_path->GetValue()))
+	if (text_exe_path->GetValue() == "" || (!wxFileExists(text_exe_path->GetValue())
+#ifdef __WXOSX_MAC__
+        && !(text_exe_path->GetValue().EndsWith(".app"))
+#endif
+			))
 	{
 		wxMessageBox("Invalid executable path", "Error", wxICON_ERROR);
 		return;
