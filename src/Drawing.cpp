@@ -682,9 +682,9 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize(8);
+		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(12);
+		sf_str.setCharacterSize(gl_font_size);
 
 	// Setup alignment
 	if (alignment != ALIGN_LEFT)
@@ -731,9 +731,9 @@ fpoint2_t Drawing::textExtents(string text, int font)
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize(8);
+		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(12);
+		sf_str.setCharacterSize(gl_font_size);
 
 	// Return width and height of text
 	sf::FloatRect rect = sf_str.getGlobalBounds();
