@@ -22,14 +22,19 @@ struct dir_entry_change_t
 	string	entry_path;
 	string	file_path;
 	int		action;
+	// Note that this is nonsense for deleted files
+	time_t	mtime;
 
-	dir_entry_change_t(int action, string file = "", string entry = "")
+	dir_entry_change_t(int action = UPDATED, string file = "", string entry = "", time_t mtime = 0)
 	{
 		this->action = action;
 		this->entry_path = entry;
 		this->file_path = file;
+		this->mtime = mtime;
 	}
 };
+
+typedef std::map<string, dir_entry_change_t> ignored_file_changes_t;
 
 class DirArchive : public Archive
 {
@@ -38,6 +43,8 @@ private:
 	vector<key_value_t>	renamed_dirs;
 	mod_times_t			file_modification_times;
 	vector<string>		removed_files;
+
+	ignored_file_changes_t	ignored_file_changes;
 
 public:
 	DirArchive();
@@ -82,7 +89,9 @@ public:
 	vector<ArchiveEntry*>	findAll(search_options_t& options);
 
 	// DirArchive-specific
+	void	ignoreChangedEntries(vector<dir_entry_change_t>& changes);
 	void	updateChangedEntries(vector<dir_entry_change_t>& changes);
+	bool	shouldIgnoreEntryChange(dir_entry_change_t& change);
 };
 
 class DirArchiveTraverser : public wxDirTraverser

@@ -70,7 +70,7 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 	sizer->Add(list_changes, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
 
 	// OK button
-	btn_ok = new wxButton(this, -1, "Apply Selected Changes");
+	btn_ok = new wxButton(this, wxID_OK, "Apply Selected Changes");
 	sizer->AddSpacer(4);
 	sizer->Add(btn_ok, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	btn_ok->Bind(wxEVT_BUTTON, &DirArchiveUpdateDialog::onBtnOKClicked, this);
@@ -125,10 +125,14 @@ void DirArchiveUpdateDialog::onBtnOKClicked(wxCommandEvent& e)
 {
 	// Get selected changes to apply
 	vector<dir_entry_change_t> apply_changes;
+	vector<dir_entry_change_t> ignore_changes;
 	for (unsigned a = 0; a < changes.size(); a++)
 		if (list_changes->GetToggleValue(a, 0))
 			apply_changes.push_back(changes[a]);
+		else
+			ignore_changes.push_back(changes[a]);
 
+	archive->ignoreChangedEntries(ignore_changes);
 	archive->updateChangedEntries(apply_changes);
 
 	EndModal(wxID_OK);

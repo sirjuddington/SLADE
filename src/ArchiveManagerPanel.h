@@ -40,6 +40,8 @@ private:
 	vector<string>				removed_files;
 	dir_archive_changelist_t	change_list;
 
+	void addChange(dir_entry_change_t change);
+
 public:
 	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
 	virtual ~DirArchiveCheck();

@@ -582,14 +582,25 @@ vector<ArchiveEntry*> DirArchive::findAll(search_options_t& options)
 	return Archive::findAll(opt);
 }
 
+/* DirArchive::ignoreChangedEntries
+ * Remember to ignore the given files until they change again
+ *******************************************************************/
+void DirArchive::ignoreChangedEntries(vector<dir_entry_change_t>& changes)
+{
+	for (unsigned a = 0; a < changes.size(); a++)
+		ignored_file_changes[changes[a].file_path] = changes[a];
+}
+
 /* DirArchive::updateChangedEntries
  * Updates entries/directories based on [changes] list
  *******************************************************************/
 void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 {
-	// Modified Entries
 	for (unsigned a = 0; a < changes.size(); a++)
 	{
+		ignored_file_changes.erase(changes[a].file_path);
+
+		// Modified Entries
 		if (changes[a].action == dir_entry_change_t::UPDATED)
 		{
 			ArchiveEntry* entry = entryAtPath(changes[a].entry_path);
@@ -597,27 +608,17 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 			EntryType::detectEntryType(entry);
 			file_modification_times[entry] = wxFileModificationTime(changes[a].file_path);
 		}
-	}
 
-	// Deleted Entries
-	for (unsigned a = 0; a < changes.size(); a++)
-	{
-		if (changes[a].action == dir_entry_change_t::DELETED_FILE)
+		// Deleted Entries
+		else if (changes[a].action == dir_entry_change_t::DELETED_FILE)
 			removeEntry(entryAtPath(changes[a].entry_path));
-	}
 
-	// Deleted Directories
-	for (unsigned a = 0; a < changes.size(); a++)
-	{
-		if (changes[a].action == dir_entry_change_t::DELETED_DIR)
+		// Deleted Directories
+		else if (changes[a].action == dir_entry_change_t::DELETED_DIR)
 			removeDir(changes[a].entry_path);
-	}
 
-	// Added Entries/Directories
-	for (unsigned a = 0; a < changes.size(); a++)
-	{
 		// New Directory
-		if (changes[a].action == dir_entry_change_t::ADDED_DIR)
+		else if (changes[a].action == dir_entry_change_t::ADDED_DIR)
 		{
 			string name = changes[a].file_path;
 			name.Remove(0, filename.Length());
@@ -669,4 +670,40 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 			new_entry->setState(0);
 		}
 	}
+}
+
+/* DirArchive::shouldIgnoreEntryChange
+ * Returns true iff the user has previously indicated no interest in this
+ * change
+ *******************************************************************/
+bool DirArchive::shouldIgnoreEntryChange(dir_entry_change_t& change)
+{
+	ignored_file_changes_t::iterator it = ignored_file_changes.find(change.file_path);
+	// If we've never seen this file before, definitely don't ignore the change
+	if (it == ignored_file_changes.end())
+		return false;
+
+	dir_entry_change_t old_change = it->second;
+	bool was_deleted = (
+		old_change.action == dir_entry_change_t::DELETED_FILE ||
+		old_change.action == dir_entry_change_t::DELETED_DIR
+	);
+	bool is_deleted = (
+		change.action == dir_entry_change_t::DELETED_FILE ||
+		change.action == dir_entry_change_t::DELETED_DIR
+	);
+
+	// Was deleted, is still deleted, nothing's changed
+	if (was_deleted && is_deleted)
+		return true;
+
+	// Went from deleted to not, or vice versa; interesting
+	if (was_deleted != is_deleted)
+		return false;
+
+	// Otherwise, it was modified both times, which is only interesting if the
+	// mtime is different.  (You might think it's interesting if the mtime is
+	// /greater/, but this is more robust against changes to the system clock,
+	// and an unmodified file will never change mtime.)
+	return (old_change.mtime == change.mtime);
 }
