@@ -237,28 +237,14 @@ bool DirArchive::save(string filename)
 
 	// Check for any files to remove
 	time = theApp->runTimer();
-	for (unsigned a = 0; a < files.size(); a++)
+	for (unsigned a = 0; a < removed_files.size(); a++)
 	{
-		// Check if filename matches an existing entry
-		bool found = false;
-		for (unsigned e = 0; e < entry_paths.size(); e++)
+		if (wxFileExists(removed_files[a]))
 		{
-			if (files[a] == entry_paths[e])
-			{
-				found = true;
-				break;
-			}
-		}
-
-		// File on disk isn't part of the archive in memory
-		// (eg. has been removed or renamed/deleted)
-		if (!found)
-		{
-			LOG_MESSAGE(2, "Removing file %s", files[a]);
-			wxRemoveFile(files[a]);
+			LOG_MESSAGE(2, "Removing file %s", removed_files[a]);
+			wxRemoveFile(removed_files[a]);
 		}
 	}
-	LOG_MESSAGE(2, "Remove check took %lums", theApp->runTimer() - time);
 
 	// Check for any directories to remove
 	for (int a = dirs.size() - 1; a >= 0; a--)
@@ -275,12 +261,12 @@ bool DirArchive::save(string filename)
 		}
 
 		// Dir on disk isn't part of the archive in memory
-		if (!found)
-		{
+		// (Note that this will fail if there are any untracked files in the
+		// directory)
+		if (!found && wxRmdir(dirs[a]))
 			LOG_MESSAGE(2, "Removing directory %s", dirs[a]);
-			wxRmDir(dirs[a]);
-		}
 	}
+	LOG_MESSAGE(2, "Remove check took %lums", theApp->runTimer() - time);
 
 	// Go through entries
 	vector<string> files_written;
