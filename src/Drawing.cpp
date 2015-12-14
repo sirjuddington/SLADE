@@ -92,7 +92,17 @@ private:
 	static FontManager*	instance;
 
 public:
-	FontManager() {}
+	FontManager()
+	{
+#ifndef USE_SFML_RENDERWINDOW
+		font_normal = NULL;
+		font_condensed = NULL;
+		font_bold = NULL;
+		font_boldcondensed = NULL;
+		font_mono = NULL;
+		font_small = NULL;
+#endif
+	}
 	~FontManager()
 	{
 #ifndef USE_SFML_RENDERWINDOW
@@ -170,6 +180,13 @@ int FontManager::initFonts()
 {
 	// --- Load general fonts ---
 	int ret = 0;
+
+	if (font_normal)		{ delete font_normal;			font_normal = NULL;			}
+	if (font_condensed)		{ delete font_condensed;		font_condensed = NULL;		}
+	if (font_bold)			{ delete font_bold;				font_bold = NULL;			}
+	if (font_boldcondensed) { delete font_boldcondensed;	font_boldcondensed = NULL;	}
+	if (font_mono)			{ delete font_mono;				font_mono = NULL;			}
+	if (font_small)			{ delete font_small;			font_small = NULL;			}
 
 	// Normal
 	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");

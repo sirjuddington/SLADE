@@ -31,6 +31,7 @@
 #include "WxStuff.h"
 #include "OpenGLPrefsPanel.h"
 #include "NumberTextCtrl.h"
+#include "Drawing.h"
 
 
 /*******************************************************************
@@ -79,11 +80,13 @@ EXTERN_CVAR(Int, gl_font_size)
 	hbox->Add(new wxStaticText(this, -1, "Font size: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 	hbox->Add(ntc_font_size = new NumberTextCtrl(this), 1, wxEXPAND);
 	ntc_font_size->SetToolTip("The size of the font to use in OpenGL, eg. for info overlays in the map editor");
-	hbox->Add(new wxStaticText(this, -1, "*"), 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 8);
+//	hbox->Add(new wxStaticText(this, -1, "*"), 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 8);
+//
+//	// Requires restart footnote
+//	sizer->AddStretchSpacer(1);
+//	sizer->Add(new wxStaticText(this, -1, "* requires restart to take effect"), 0, wxALIGN_RIGHT|wxALL, 8);
 
-	// Requires restart footnote
-	sizer->AddStretchSpacer(1);
-	sizer->Add(new wxStaticText(this, -1, "* requires restart to take effect"), 0, wxALIGN_RIGHT|wxALL, 8);
+	last_font_size = gl_font_size;
 }
 
 /* OpenGLPrefsPanel::~OpenGLPrefsPanel
@@ -113,4 +116,9 @@ void OpenGLPrefsPanel::applyPreferences()
 	gl_point_sprite = cb_gl_point_sprite->GetValue();
 	gl_vbo = cb_gl_use_vbo->GetValue();
 	gl_font_size = ntc_font_size->getNumber();
+
+	if (gl_font_size != last_font_size)
+		Drawing::initFonts();
+
+	last_font_size = gl_font_size;
 }
