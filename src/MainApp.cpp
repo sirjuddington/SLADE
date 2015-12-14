@@ -977,6 +977,7 @@ bool MainApp::OnInit()
 	// Bind events
 	Bind(wxEVT_MENU, &MainApp::onMenu, this);
 	Bind(wxEVT_COMMAND_VERSIONCHECK_COMPLETED, &MainApp::onVersionCheckCompleted, this);
+	Bind(wxEVT_ACTIVATE_APP, &MainApp::onActivate, this);
 
 	return true;
 }
@@ -1443,6 +1444,23 @@ void MainApp::onVersionCheckCompleted(wxThreadEvent& e)
 		wxMessageBox("SLADE is already up to date", "Check for Updates");
 }
 
+/* MainApp::onActivate
+ * Called when the app gains focus
+ *******************************************************************/
+void MainApp::onActivate(wxActivateEvent& e)
+{
+	if (!e.GetActive())
+	{
+		e.Skip();
+		return;
+	}
+
+	// Check open directory archives for changes on the file system
+	if (theMainWindow && theMainWindow->getArchiveManagerPanel())
+		theMainWindow->getArchiveManagerPanel()->checkDirArchives();
+
+	e.Skip();
+}
 
 /*******************************************************************
  * CONSOLE COMMANDS

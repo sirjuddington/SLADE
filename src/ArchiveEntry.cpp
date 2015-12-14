@@ -481,8 +481,10 @@ bool ArchiveEntry::exportFile(string filename)
 		return false;
 	}
 
-	// Write entry data to the file
-	file.Write(getData(), this->getSize());
+	// Write entry data to the file, if any
+	const uint8_t* data = getData();
+	if (data)
+		file.Write(data, this->getSize());
 
 	return true;
 }

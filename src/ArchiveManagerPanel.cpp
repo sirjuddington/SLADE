@@ -98,6 +98,15 @@ DirArchiveCheck::~DirArchiveCheck()
 {
 }
 
+/* DirArchiveCheck::addChange
+ * Register a change to a file, as long as it hasn't been ignored
+ *******************************************************************/
+void DirArchiveCheck::addChange(dir_entry_change_t change)
+{
+	if (! ((DirArchive*)change_list.archive)->shouldIgnoreEntryChange(change))
+		change_list.changes.push_back(change);
+}
+
 /* DirArchiveCheck::Entry
  * DirArchiveCheck thread entry function
  *******************************************************************/
@@ -121,12 +130,12 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		if (entry_info[a].is_dir)
 		{
 			if (!wxDirExists(path))
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entry_info[a].entry_path));
+				addChange(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entry_info[a].entry_path));
 		}
 		else
 		{
 			if (!wxFileExists(path))
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entry_info[a].entry_path));
+				addChange(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entry_info[a].entry_path));
 		}
 	}
 
@@ -150,16 +159,13 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 			}
 		}
 
+		time_t mod = wxFileModificationTime(files[a]);
 		// No match, added to archive
 		if (!found)
-			change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a]));
-		else
-		{
-			// Matched, check modification time
-			time_t mod = wxFileModificationTime(files[a]);
-			if (mod > inf.file_modified)
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], inf.entry_path));
-		}
+			addChange(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a], "", mod));
+		// Matched, check modification time
+		else if (mod > inf.file_modified)
+			addChange(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], inf.entry_path, mod));
 	}
 
 	// Check for new dirs
@@ -182,9 +188,10 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 			}
 		}
 
+		time_t mod = wxFileModificationTime(dirs[a]);
 		// No match, added to archive
 		if (!found)
-			change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a]));
+			addChange(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a], "", mod));
 	}
 
 	// Send changes via event
@@ -1109,9 +1116,6 @@ bool ArchiveManagerPanel::closeAll()
  *******************************************************************/
 void ArchiveManagerPanel::saveAll()
 {
-	// now we can ask about changes outside the dir archive
-	ignore_dir_archive_changes = false;
-
 	// Go through all open archives
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
@@ -1225,9 +1229,6 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive)
 	// Check for null pointer
 	if (!archive)
 		return false;
-
-	// now we can ask about changes outside the dir archive
-	ignore_dir_archive_changes = false;
 
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
@@ -2088,7 +2089,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	{
 		LOG_MESSAGE(2, "Finished checking %s for external changes", CHR(change_list.archive->getFilename()));
 
-		if (!ignore_dir_archive_changes && !change_list.changes.empty())
+		if (!change_list.changes.empty())
 		{
 			checked_dir_archive_changes = true;
 
@@ -2097,7 +2098,6 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 			dlg.ShowModal();
 			
 			checked_dir_archive_changes = false;
-			ignore_dir_archive_changes = true;
 		}
 		else
 		{
