@@ -596,6 +596,8 @@ void DirArchive::ignoreChangedEntries(vector<dir_entry_change_t>& changes)
  *******************************************************************/
 void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 {
+	bool was_modified = isModified();
+
 	for (unsigned a = 0; a < changes.size(); a++)
 	{
 		ignored_file_changes.erase(changes[a].file_path);
@@ -670,6 +672,9 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 			new_entry->setState(0);
 		}
 	}
+
+	// Preserve old modified state
+	setModified(was_modified);
 }
 
 /* DirArchive::shouldIgnoreEntryChange
