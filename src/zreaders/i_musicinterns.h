@@ -10,7 +10,7 @@ class MIDIStreamer
 {
 public:
 	MIDIStreamer();
-	~MIDIStreamer();
+	virtual ~MIDIStreamer();
 
 	int  GetSubsongs();
 	bool SetSubsong(int subsong);

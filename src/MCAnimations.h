@@ -10,7 +10,7 @@ protected:
 
 public:
 	MCAnimation(long start, bool mode_3d = false) { starttime = start; this->mode_3d = mode_3d; }
-	~MCAnimation() {}
+	virtual ~MCAnimation() {}
 
 	bool	mode3d() { return mode_3d; }
 

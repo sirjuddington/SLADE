@@ -15,7 +15,7 @@ protected:
 
 public:
 	MCOverlay() { active = true; allow_3d_mlook = false; }
-	~MCOverlay() {}
+	virtual ~MCOverlay() {}
 
 	bool	isActive() { return active; }
 	bool	allow3dMlook() { return allow_3d_mlook; }
