@@ -24,6 +24,8 @@ public:
 		this->o_end = 0;
 	}
 
+	virtual ~TransRange() {}
+
 	uint8_t getType() { return type; }
 	uint8_t	oStart() { return o_start; }
 	uint8_t oEnd() { return o_end; }
