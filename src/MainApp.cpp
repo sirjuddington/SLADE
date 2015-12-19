@@ -128,7 +128,7 @@ EXTERN_CVAR(Bool, map_show_selection_numbers)
  * getTraceString(). wxStackWalker is currently unimplemented on mac,
  * so unfortunately it has to be disabled there
  *******************************************************************/
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
 class SLADEStackTrace : public wxStackWalker
 {
 private:
@@ -213,7 +213,7 @@ public:
 
 	~SLADECrashDialog() {}
 };
-#endif//__APPLE__
+#endif//!__APPLE__ && !__FreeBSD__
 
 /*******************************************************************
  * FUNCTIONS
@@ -876,7 +876,7 @@ int MainApp::OnExit()
 
 void MainApp::OnFatalException()
 {
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
 #ifndef _DEBUG
 	SLADEStackTrace st;
 	st.WalkFromException();
