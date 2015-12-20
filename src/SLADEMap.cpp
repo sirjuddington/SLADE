@@ -373,7 +373,12 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 
 	// Set map format
 	if (ok)
+	{
 		current_format = map.format;
+		// When creating a new map, retrieve UDMF namespace information from the configuration
+		if (map.format == MAP_UDMF && udmf_namespace.IsEmpty())
+			udmf_namespace = theGameConfiguration->udmfNamespace();
+	}
 
 	initSectorPolygons();
 	recomputeSpecials();
@@ -2336,9 +2341,6 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 
 	// Open temp text file
 	wxFile tempfile(appPath("sladetemp.txt", DIR_TEMP), wxFile::write);
-
-	// When creating a new map, retrieve UDMF namespace information from the configuration
-	if (udmf_namespace.IsEmpty()) udmf_namespace = theGameConfiguration->udmfNamespace();
 
 	// Write map namespace
 	tempfile.Write("// Written by SLADE3\n");

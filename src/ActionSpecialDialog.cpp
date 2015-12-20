@@ -677,12 +677,19 @@ ArgsPanel::ArgsPanel(wxWindow* parent)
  *******************************************************************/
 void ArgsPanel::setup(argspec_t* args)
 {
-	// Reset stuff
+	// Reset stuff (but preserve the values)
+	int old_values[5];
 	fg_sizer->Clear();
 	for (unsigned a = 0; a < 5; a++)
 	{
 		if (control_args[a])
+		{
+			old_values[a] = control_args[a]->getArgValue();
 			control_args[a]->Destroy();
+		}
+		else
+			old_values[a] = -1;
+
 		control_args[a] = NULL;
 		label_args[a]->SetLabelText(S_FMT("Arg %d:", a + 1));
 		label_args_desc[a]->Show(false);
@@ -716,6 +723,7 @@ void ArgsPanel::setup(argspec_t* args)
 		fg_sizer->Add(label_args[a], wxSizerFlags().Align(wxALIGN_TOP|wxALIGN_RIGHT).Border(wxALL, 4));
 
 		// Arg value
+		control_args[a]->setArgValue(old_values[a]);
 		fg_sizer->Add(control_args[a], wxSizerFlags().Expand());
 		
 		// Arg description
@@ -783,7 +791,7 @@ void ArgsPanel::setValues(int args[5])
 int ArgsPanel::getArgValue(int index)
 {
 	// Check index
-	if (index < 0 || index > 4)
+	if (index < 0 || index > 4 || !control_args[index])
 		return -1;
 
 	return control_args[index]->getArgValue();
@@ -1194,13 +1202,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-		// Save and restore the current arg values, since setup() deletes and
-		// recreates the controls
-		int arg_values[5];
-		for (unsigned a = 0; a < 5; a++)
-			arg_values[a] = panel_args->getArgValue(a);
 		panel_args->setup(&args);
-		panel_args->setValues(arg_values);
 	}
 }
 
@@ -1214,13 +1216,7 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-		// Save and restore the current arg values, since setup() deletes and
-		// recreates the controls
-		int arg_values[5];
-		for (unsigned a = 0; a < 5; a++)
-			arg_values[a] = panel_args->getArgValue(a);
 		panel_args->setup(&args);
-		panel_args->setValues(arg_values);
 		panel_args->SetFocus();
 	}
 }

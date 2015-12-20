@@ -513,7 +513,7 @@ void MapTextureManager::buildTexInfoList()
 
 	// Composite textures
 	vector<TextureResource::tex_res_t> textures;
-	theResourceManager->getAllTextures(textures, NULL);
+	theResourceManager->getAllTextures(textures, theArchiveManager->baseResourceArchive());
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
 		CTexture * tex = textures[a].tex;

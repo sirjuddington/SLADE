@@ -107,6 +107,41 @@ void MapSide::copy(MapObject* c)
 	MapObject::copy(c);
 }
 
+/* MapSide::getLight
+ * Returns the light level of the given side
+ *******************************************************************/
+uint8_t MapSide::getLight()
+{
+	int light = 0;
+	bool include_sector = true;
+
+	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	{
+		light += intProperty("light");
+		if (boolProperty("lightabsolute"))
+			include_sector = false;
+	}
+
+	if (include_sector && sector)
+		light += sector->getLight(0);
+
+	// Clamp range
+	if (light > 255)
+		return 255;
+	if (light < 0)
+		return 0;
+	return light;
+}
+
+/* MapSide::changeLight
+ * Change the light level of a side, if supported
+ *******************************************************************/
+void MapSide::changeLight(int amount)
+{
+	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+		setIntProperty("light", intProperty("light") + amount);
+}
+
 /* MapSide::setSector
  * Sets the side's sector to [sector]
  *******************************************************************/

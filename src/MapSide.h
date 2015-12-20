@@ -57,8 +57,10 @@ public:
 	string		getTexLower() { return tex_lower; }
 	short		getOffsetX() { return offset_x; }
 	short		getOffsetY() { return offset_y; }
+	uint8_t		getLight();
 
 	void	setSector(MapSector* sector);
+	void	changeLight(int amount);
 
 	int		intProperty(string key);
 	void	setIntProperty(string key, int value);

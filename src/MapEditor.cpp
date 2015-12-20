@@ -43,6 +43,7 @@
 #include "Clipboard.h"
 #include "UndoRedo.h"
 #include "MapChecks.h"
+#include <set>
 
 
 /*******************************************************************
@@ -545,6 +546,10 @@ void MapEditor::setEditMode(int mode)
 	else if (edit_mode == MODE_3D && mode != MODE_3D)
 		theMapEditor->setUndoManager(undo_manager);
 
+	int old_edit_mode = edit_mode;
+	vector<int> old_selection = selection;
+	vector<selection_3d_t> old_selection_3d = selection_3d;
+
 	// Set edit mode
 	edit_mode = mode;
 	sector_mode = SECTOR_BOTH;
@@ -558,6 +563,9 @@ void MapEditor::setEditMode(int mode)
 	tagged_lines.clear();
 	tagged_things.clear();
 	last_undo_level = "";
+
+	// Transfer selection to the new mode, if possible
+	migrateSelection(old_edit_mode, old_selection, old_selection_3d);
 
 	// Add editor message
 	switch (edit_mode)
@@ -1085,6 +1093,8 @@ void MapEditor::selectionUpdated()
 	theMapEditor->propsPanel()->openObjects(objects);
 
 	last_undo_level = "";
+
+	updateStatusText();
 }
 
 /* MapEditor::clearSelection
@@ -1102,6 +1112,7 @@ void MapEditor::clearSelection(bool animate)
 		if (animate && canvas) canvas->itemsSelected(selection, false);
 		selection.clear();
 		theMapEditor->propsPanel()->openObject(NULL);
+		updateStatusText();
 	}
 }
 
@@ -1378,6 +1389,141 @@ bool MapEditor::selectWithin(double xmin, double ymin, double xmax, double ymax,
 	return (nsel.size() > 0);
 }
 
+/* MapEditor::migrateSelection
+ * Preserves the selection when switching edit modes, when possible
+ * For example, selecting a sector and then switching to lines mode
+ * will select all its lines
+ *******************************************************************/
+void MapEditor::migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<selection_3d_t>& old_selection_3d)
+{
+	// Reduce confusion
+	int new_edit_mode = edit_mode;
+
+	// Avoid duplicates without any fuss by using a set
+	std::set<int> new_selection;
+	std::set<selection_3d_t> new_selection_3d;
+
+	if (old_edit_mode == edit_mode)
+	{
+		selection.insert(selection.end(), old_selection.begin(), old_selection.end());
+		return;
+	}
+
+	// 3D to 2D: select anything of the right type
+	if (old_edit_mode == MODE_3D)
+	{
+		for (unsigned a = 0; a < old_selection_3d.size(); a++)
+		{
+			if (new_edit_mode == MODE_THINGS && (
+				old_selection_3d[a].type == SEL_THING))
+			{
+				new_selection.insert(old_selection_3d[a].index);
+			}
+			else if (new_edit_mode == MODE_SECTORS && (
+				old_selection_3d[a].type == SEL_FLOOR ||
+				old_selection_3d[a].type == SEL_CEILING))
+			{
+				new_selection.insert(old_selection_3d[a].index);
+			}
+			else if (new_edit_mode == MODE_LINES && (
+				old_selection_3d[a].type == SEL_SIDE_BOTTOM ||
+				old_selection_3d[a].type == SEL_SIDE_MIDDLE ||
+				old_selection_3d[a].type == SEL_SIDE_TOP))
+			{
+				MapSide* side = map.getSide(old_selection_3d[a].index);
+				if (!side) continue;
+				new_selection.insert(side->getParentLine()->getIndex());
+			}
+		}
+	}
+
+	// 2D to 3D: can be done perfectly
+	else if (new_edit_mode == MODE_3D)
+	{
+		if (old_edit_mode == MODE_SECTORS)
+			for (unsigned a = 0; a < old_selection.size(); a++)
+			{
+				new_selection_3d.insert(selection_3d_t(old_selection[a], SEL_FLOOR));
+				new_selection_3d.insert(selection_3d_t(old_selection[a], SEL_CEILING));
+			}
+		else if (old_edit_mode == MODE_LINES)
+			for (unsigned a = 0; a < old_selection.size(); a++)
+			{
+				MapLine* line = map.getLine(old_selection[a]);
+				if (!line) continue;
+
+				// 2D mode works with lines, but 3D mode works with sides.
+				// Only select the visible areas -- i.e., the ones that need
+				// texturing
+				int textures = line->needsTexture();
+				MapSide* front = line->s1();
+				MapSide* back = line->s1();
+				if (front && textures & TEX_FRONT_UPPER)
+					new_selection_3d.insert(selection_3d_t(front->getIndex(), SEL_SIDE_TOP));
+				if (front && textures & TEX_FRONT_LOWER)
+					new_selection_3d.insert(selection_3d_t(front->getIndex(), SEL_SIDE_BOTTOM));
+				if (back && textures & TEX_BACK_UPPER)
+					new_selection_3d.insert(selection_3d_t(back->getIndex(), SEL_SIDE_TOP));
+				if (back && textures & TEX_BACK_LOWER)
+					new_selection_3d.insert(selection_3d_t(back->getIndex(), SEL_SIDE_BOTTOM));
+
+				// Also include any two-sided middle textures
+				if (front && (textures & TEX_FRONT_MIDDLE || !front->getTexMiddle().empty()))
+					new_selection_3d.insert(selection_3d_t(front->getIndex(), SEL_SIDE_MIDDLE));
+				if (back && (textures & TEX_BACK_MIDDLE || !back->getTexMiddle().empty()))
+					new_selection_3d.insert(selection_3d_t(back->getIndex(), SEL_SIDE_MIDDLE));
+			}
+		else if (old_edit_mode == MODE_THINGS)
+			for (unsigned a = 0; a < old_selection.size(); a++)
+			{
+				new_selection_3d.insert(selection_3d_t(old_selection[a], SEL_THING));
+			}
+	}
+
+	// Otherwise, 2D to 2D
+	// Sectors can be migrated to anything
+	else if (old_edit_mode == MODE_SECTORS)
+	{
+		for (unsigned a = 0; a < old_selection.size(); a++)
+		{
+			MapSector* sector = map.getSector(old_selection[a]);
+			if (!sector) continue;
+			if (new_edit_mode == MODE_LINES)
+			{
+				vector<MapLine*> lines;
+				sector->getLines(lines);
+				for (unsigned b = 0; b < lines.size(); b++)
+					new_selection.insert(lines[b]->getIndex());
+			}
+			else if (new_edit_mode == MODE_VERTICES)
+			{
+				vector<MapVertex*> vertices;
+				sector->getVertices(vertices);
+				for (unsigned b = 0; b < vertices.size(); b++)
+					new_selection.insert(vertices[b]->getIndex());
+			}
+			else if (new_edit_mode == MODE_THINGS)
+			{
+				// TODO this is much harder
+			}
+		}
+	}
+	// Lines can only reliably be migrated to vertices
+	else if (old_edit_mode == MODE_LINES && new_edit_mode == MODE_VERTICES)
+	{
+		for (unsigned a = 0; a < old_selection.size(); a++)
+		{
+			MapLine* line = map.getLine(old_selection[a]);
+			if (!line) continue;
+			new_selection.insert(line->v1()->getIndex());
+			new_selection.insert(line->v2()->getIndex());
+		}
+	}
+
+	selection.insert(selection.end(), new_selection.begin(), new_selection.end());
+	selection_3d.insert(selection_3d.end(), new_selection_3d.begin(), new_selection_3d.end());
+}
+
 /* MapEditor::getSelectedVertices
  * Adds all selected vertices to [list]
  *******************************************************************/
@@ -1648,6 +1794,19 @@ double MapEditor::snapToGrid(double position, bool force)
 	}
 
 	return ceil(position / gridSize() - 0.5) * gridSize();
+}
+
+/* MapEditor::relativeSnapToGrid
+ * Used for pasting.  Given an [origin] point and the current [mouse_pos],
+ * snaps in such a way that the mouse is a number of grid units away from the
+ * origin.
+ *******************************************************************/
+fpoint2_t MapEditor::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos)
+{
+	fpoint2_t delta = mouse_pos - origin;
+	delta.x = snapToGrid(delta.x, false);
+	delta.y = snapToGrid(delta.y, false);
+	return origin + delta;
 }
 
 
@@ -3482,7 +3641,10 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 			beginUndoRecord("Paste Map Architecture");
 			long move_time = theApp->runTimer();
 			MapArchClipboardItem* p = (MapArchClipboardItem*)theClipboard->getItem(a);
-			vector<MapVertex*> new_verts = p->pasteToMap(&map, mouse_pos);
+			// Snap the geometry in such a way that it stays in the same
+			// position relative to the grid
+			fpoint2_t pos = relativeSnapToGrid(p->getMidpoint(), mouse_pos);
+			vector<MapVertex*> new_verts = p->pasteToMap(&map, pos);
 			map.mergeArch(new_verts);
 			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
 			endUndoRecord(true);
@@ -3493,7 +3655,10 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 		{
 			beginUndoRecord("Paste Things", false, true, false);
 			MapThingsClipboardItem* p = (MapThingsClipboardItem*)theClipboard->getItem(a);
-			p->pasteToMap(&map, mouse_pos);
+			// Snap the geometry in such a way that it stays in the same
+			// position relative to the grid
+			fpoint2_t pos = relativeSnapToGrid(p->getMidpoint(), mouse_pos);
+			p->pasteToMap(&map, pos);
 			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
 			endUndoRecord(true);
 		}
@@ -3723,26 +3888,39 @@ void MapEditor::selectAdjacent3d(selection_3d_t item)
 				continue;
 
 			// Check for match
+			plane_t this_plane, other_plane;
 			if (item.type == SEL_FLOOR)
 			{
-				// Check sector floor height
-				if (osector->intProperty("heightfloor") != sector->intProperty("heightfloor"))
-					continue;
-
 				// Check sector floor texture
 				if (osector->getFloorTex() != sector->getFloorTex())
 					continue;
+
+				this_plane = sector->getFloorPlane();
+				other_plane = osector->getFloorPlane();
 			}
 			else
 			{
-				// Check sector ceiling height
-				if (osector->intProperty("heightceiling") != sector->intProperty("heightceiling"))
-					continue;
-
 				// Check sector ceiling texture
 				if (osector->getCeilingTex() != sector->getCeilingTex())
 					continue;
+
+				this_plane = sector->getCeilingPlane();
+				other_plane = osector->getCeilingPlane();
 			}
+
+			// Check that planes meet
+			fpoint2_t left = lines[a]->v1()->getPoint(0);
+			fpoint2_t right = lines[a]->v2()->getPoint(0);
+
+			double this_left_z = this_plane.height_at(left);
+			double other_left_z = other_plane.height_at(left);
+			if (fabs(this_left_z - other_left_z) > 1)
+				continue;
+
+			double this_right_z = this_plane.height_at(right);
+			double other_right_z = other_plane.height_at(right);
+			if (fabs(this_right_z - other_right_z) > 1)
+				continue;
 
 			// Check flat isn't already selected
 			bool selected = false;
@@ -3807,28 +3985,25 @@ void MapEditor::changeSectorLight3d(int amount)
 			MapSector* sector = side->getSector();
 			if (!sector) continue;
 
-			// Ignore if sector already processed
-			if (VECTOR_EXISTS(processed_sectors, sector))
-				continue;
-			else
-				processed_sectors.push_back(sector);
+			if (link_3d_light)
+			{
+				// Ignore if sector already processed
+				if (VECTOR_EXISTS(processed_sectors, sector))
+					continue;
+				else
+					processed_sectors.push_back(sector);
+			}
 
 			// Check for decrease when light = 255
-			int current_light = sector->getLight(0);
+			int current_light = side->getLight();
 			if (current_light == 255 && amount < -1)
 				amount++;
 
-			// Change sector light level
-			sector->changeLight(amount);
-
-			// If light levels are unlinked, change the floor and ceiling as
-			// well so they stay the same
-			if (!link_3d_light)
-			{
-				int actual_change = sector->getLight(0) - current_light;
-				sector->changeLight(-actual_change, 1);
-				sector->changeLight(-actual_change, 2);
-			}
+			// Change wall or sector light level
+			if (link_3d_light)
+				sector->changeLight(amount);
+			else
+				side->changeLight(amount);
 		}
 
 		// Flat
@@ -3836,26 +4011,27 @@ void MapEditor::changeSectorLight3d(int amount)
 		{
 			// Get sector
 			MapSector* s = map.getSector(items[a].index);
-
-			// Change light level
+			int where = 0;
 			if (items[a].type == SEL_FLOOR && !link_3d_light)
-				s->changeLight(amount, 1);
+				where = 1;
 			else if (items[a].type == SEL_CEILING && !link_3d_light)
-				s->changeLight(amount, 2);
-			else
+				where = 2;
+
+			// Check for decrease when light = 255
+			if (s->getLight(where) == 255 && amount < -1)
+				amount++;
+
+			// Ignore if sector already processed
+			if (link_3d_light)
 			{
-				// Ignore if sector already processed
 				if (VECTOR_EXISTS(processed_sectors, s))
 					continue;
 				else
 					processed_sectors.push_back(s);
-
-				// Check for decrease when light = 255
-				if (s->getLight(0) == 255 && amount < -1)
-					amount++;
-
-				s->changeLight(amount, 0);
 			}
+
+			// Change light level
+			s->changeLight(amount, where);
 		}
 	}
 
@@ -4187,6 +4363,11 @@ void MapEditor::autoAlignX3d(selection_3d_t start)
 	else if (start.type == SEL_SIDE_TOP)
 		tex = side->stringProperty("texturetop");
 
+	// Don't try to auto-align a missing texture (every line on the map will
+	// probably match)
+	if (tex == "-")
+		return;
+
 	// Get texture width
 	GLTexture* gl_tex = theMapEditor->textureManager().getTexture(tex, theGameConfiguration->mixTexFlats());
 	int tex_width = -1;
@@ -4209,36 +4390,41 @@ void MapEditor::autoAlignX3d(selection_3d_t start)
 	addEditorMessage("Auto-aligned on X axis");
 }
 
-/* MapEditor::resetWall3d
+/* MapEditor::resetOffsets3d
  * Resets offsets and scaling for the currently selected wall(s)
  *******************************************************************/
-void MapEditor::resetWall3d()
+void MapEditor::resetOffsets3d()
 {
 	// Get items to process
-	vector<selection_3d_t> items;
+	vector<selection_3d_t> walls;
+	vector<selection_3d_t> flats;
 	if (selection_3d.size() == 0)
 	{
 		if (hilight_3d.type == SEL_SIDE_TOP || hilight_3d.type == SEL_SIDE_BOTTOM || hilight_3d.type == SEL_SIDE_MIDDLE)
-			items.push_back(hilight_3d);
+			walls.push_back(hilight_3d);
+		else if (hilight_3d.type == SEL_FLOOR || hilight_3d.type == SEL_CEILING)
+			flats.push_back(hilight_3d);
 	}
 	else
 	{
 		for (unsigned a = 0; a < selection_3d.size(); a++)
 		{
 			if (selection_3d[a].type == SEL_SIDE_TOP || selection_3d[a].type == SEL_SIDE_BOTTOM || selection_3d[a].type == SEL_SIDE_MIDDLE)
-				items.push_back(selection_3d[a]);
+				walls.push_back(selection_3d[a]);
+			else if (selection_3d[a].type == SEL_FLOOR || selection_3d[a].type == SEL_CEILING)
+				flats.push_back(selection_3d[a]);
 		}
 	}
-	if (items.size() == 0)
+	if (walls.size() == 0 && flats.size() == 0)
 		return;
 
 	// Begin undo level
-	beginUndoRecord("Reset Wall", true, false, false);
+	beginUndoRecord("Reset Offsets", true, false, false);
 
-	// Go through items
-	for (unsigned a = 0; a < items.size(); a++)
+	// Go through walls
+	for (unsigned a = 0; a < walls.size(); a++)
 	{
-		MapSide* side = map.getSide(items[a].index);
+		MapSide* side = map.getSide(walls[a].index);
 		if (!side) continue;
 
 		// Reset offsets
@@ -4251,12 +4437,12 @@ void MapEditor::resetWall3d()
 		else
 		{
 			// Otherwise, reset offsets for the current wall part
-			if (items[a].type == SEL_SIDE_TOP)
+			if (walls[a].type == SEL_SIDE_TOP)
 			{
 				side->setFloatProperty("offsetx_top", 0);
 				side->setFloatProperty("offsety_top", 0);
 			}
-			else if (items[a].type == SEL_SIDE_MIDDLE)
+			else if (walls[a].type == SEL_SIDE_MIDDLE)
 			{
 				side->setFloatProperty("offsetx_mid", 0);
 				side->setFloatProperty("offsety_mid", 0);
@@ -4271,12 +4457,12 @@ void MapEditor::resetWall3d()
 		// Reset scaling
 		if (theGameConfiguration->udmfNamespace() == "zdoom")
 		{
-			if (items[a].type == SEL_SIDE_TOP)
+			if (walls[a].type == SEL_SIDE_TOP)
 			{
 				side->setFloatProperty("scalex_top", 1);
 				side->setFloatProperty("scaley_top", 1);
 			}
-			else if (items[a].type == SEL_SIDE_MIDDLE)
+			else if (walls[a].type == SEL_SIDE_MIDDLE)
 			{
 				side->setFloatProperty("scalex_mid", 1);
 				side->setFloatProperty("scaley_mid", 1);
@@ -4286,6 +4472,29 @@ void MapEditor::resetWall3d()
 				side->setFloatProperty("scalex_bottom", 1);
 				side->setFloatProperty("scaley_bottom", 1);
 			}
+		}
+	}
+
+	// Go through flats
+	if (theGameConfiguration->udmfNamespace() == "zdoom")
+	{
+		for (unsigned a = 0; a < flats.size(); a++)
+		{
+			MapSector* sector = map.getSector(flats[a].index);
+			if (!sector) continue;
+
+			string plane;
+			if (flats[a].type == SEL_FLOOR)
+				plane = "floor";
+			else
+				plane = "ceiling";
+
+			// Reset offsets, scale, and rotation
+			sector->setFloatProperty("xpanning" + plane, 0);
+			sector->setFloatProperty("ypanning" + plane, 0);
+			sector->setFloatProperty("xscale" + plane, 1);
+			sector->setFloatProperty("yscale" + plane, 1);
+			sector->setFloatProperty("rotation" + plane, 0);
 		}
 	}
 
@@ -4645,7 +4854,7 @@ void MapEditor::changeScale3d(double amount, bool x)
 			MapSector* sector = map.getSector(items[a].index);
 
 			// Build property string
-			string prop = x ? "xpanning" : "ypanning";
+			string prop = x ? "xscale" : "yscale";
 			prop += (items[a].type == SEL_FLOOR) ? "floor" : "ceiling";
 
 			// Set
@@ -4905,7 +5114,7 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 
 		// Reset wall offsets
 		else if (key == "me3d_wall_reset")
-			resetWall3d();
+			resetOffsets3d();
 
 		// Toggle lower unpegged
 		else if (key == "me3d_wall_unpeg_lower")
@@ -4971,6 +5180,11 @@ void MapEditor::updateStatusText()
 		case SECTOR_FLOOR: mode += " (Floors)"; break;
 		case SECTOR_CEILING: mode += " (Ceilings)"; break;
 		}
+	}
+
+	if (edit_mode != MODE_3D && selection.size() > 0)
+	{
+		mode += S_FMT(" (%lu selected)", selection.size());
 	}
 
 	theMapEditor->SetStatusText(mode, 1);

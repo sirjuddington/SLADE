@@ -1018,9 +1018,7 @@ void MapCanvas::drawPasteLines()
 	OpenGL::setColour(col);
 
 	// Draw
-	fpoint2_t pos = mouse_pos_m;
-	pos.x = editor->snapToGrid(pos.x);
-	pos.y = editor->snapToGrid(pos.y);
+	fpoint2_t pos = editor->relativeSnapToGrid(c->getMidpoint(), mouse_pos_m);
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -2630,7 +2628,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	if (list.size() == 1)
 		type += S_FMT(" #%d", list[0]->getIndex());
 	else if (list.size() > 1)
-		selsize = S_FMT("(%u selected)", list.size());
+		selsize = S_FMT("(%lu selected)", list.size());
 
 	// Create dialog for properties panel
 	SDialog dlg(theMapEditor, S_FMT("%s Properties %s", type, selsize), S_FMT("mobjprops_%d", editor->editMode()), -1, -1);
@@ -2929,8 +2927,7 @@ void MapCanvas::keyBinds2d(string name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state = MSTATE_NORMAL;
-			fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
-			editor->paste(pos);
+			editor->paste(mouse_pos_m);
 		}
 
 		// Cancel paste
@@ -4008,8 +4005,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		// Paste state, accept paste
 		else if (mouse_state == MSTATE_PASTE)
 		{
-			fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
-			editor->paste(pos);
+			editor->paste(mouse_pos_m);
 			if (!e.ShiftDown())
 				mouse_state = MSTATE_NORMAL;
 		}

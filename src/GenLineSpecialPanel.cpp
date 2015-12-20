@@ -106,7 +106,8 @@ void GenLineSpecialPanel::setupForType(int type)
 	unsigned n_props = 1;
 	gb_sizer->Add(label_props[0], wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(choice_props[0], wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
-	gb_sizer->AddGrowableCol(1, 1);
+	if (!gb_sizer->IsColGrowable(1))
+		gb_sizer->AddGrowableCol(1, 1);
 
 	// Floor
 	if (type == BoomGenLineSpecial::GS_FLOOR)
