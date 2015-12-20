@@ -268,7 +268,7 @@ public:
 	void	changeOffset3d(int amount, bool x);
 	void	changeSectorHeight3d(int amount);
 	void	autoAlignX3d(selection_3d_t start);
-	void	resetWall3d();
+	void	resetOffsets3d();
 	void	toggleUnpegged3d(bool lower);
 	void	copy3d(int type);
 	void	paste3d(int type);

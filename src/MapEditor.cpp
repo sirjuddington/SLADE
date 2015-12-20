@@ -4366,36 +4366,41 @@ void MapEditor::autoAlignX3d(selection_3d_t start)
 	addEditorMessage("Auto-aligned on X axis");
 }
 
-/* MapEditor::resetWall3d
+/* MapEditor::resetOffsets3d
  * Resets offsets and scaling for the currently selected wall(s)
  *******************************************************************/
-void MapEditor::resetWall3d()
+void MapEditor::resetOffsets3d()
 {
 	// Get items to process
-	vector<selection_3d_t> items;
+	vector<selection_3d_t> walls;
+	vector<selection_3d_t> flats;
 	if (selection_3d.size() == 0)
 	{
 		if (hilight_3d.type == SEL_SIDE_TOP || hilight_3d.type == SEL_SIDE_BOTTOM || hilight_3d.type == SEL_SIDE_MIDDLE)
-			items.push_back(hilight_3d);
+			walls.push_back(hilight_3d);
+		else if (hilight_3d.type == SEL_FLOOR || hilight_3d.type == SEL_CEILING)
+			flats.push_back(hilight_3d);
 	}
 	else
 	{
 		for (unsigned a = 0; a < selection_3d.size(); a++)
 		{
 			if (selection_3d[a].type == SEL_SIDE_TOP || selection_3d[a].type == SEL_SIDE_BOTTOM || selection_3d[a].type == SEL_SIDE_MIDDLE)
-				items.push_back(selection_3d[a]);
+				walls.push_back(selection_3d[a]);
+			else if (selection_3d[a].type == SEL_FLOOR || selection_3d[a].type == SEL_CEILING)
+				flats.push_back(selection_3d[a]);
 		}
 	}
-	if (items.size() == 0)
+	if (walls.size() == 0 && flats.size() == 0)
 		return;
 
 	// Begin undo level
-	beginUndoRecord("Reset Wall", true, false, false);
+	beginUndoRecord("Reset Offsets", true, false, false);
 
-	// Go through items
-	for (unsigned a = 0; a < items.size(); a++)
+	// Go through walls
+	for (unsigned a = 0; a < walls.size(); a++)
 	{
-		MapSide* side = map.getSide(items[a].index);
+		MapSide* side = map.getSide(walls[a].index);
 		if (!side) continue;
 
 		// Reset offsets
@@ -4408,12 +4413,12 @@ void MapEditor::resetWall3d()
 		else
 		{
 			// Otherwise, reset offsets for the current wall part
-			if (items[a].type == SEL_SIDE_TOP)
+			if (walls[a].type == SEL_SIDE_TOP)
 			{
 				side->setFloatProperty("offsetx_top", 0);
 				side->setFloatProperty("offsety_top", 0);
 			}
-			else if (items[a].type == SEL_SIDE_MIDDLE)
+			else if (walls[a].type == SEL_SIDE_MIDDLE)
 			{
 				side->setFloatProperty("offsetx_mid", 0);
 				side->setFloatProperty("offsety_mid", 0);
@@ -4428,12 +4433,12 @@ void MapEditor::resetWall3d()
 		// Reset scaling
 		if (theGameConfiguration->udmfNamespace() == "zdoom")
 		{
-			if (items[a].type == SEL_SIDE_TOP)
+			if (walls[a].type == SEL_SIDE_TOP)
 			{
 				side->setFloatProperty("scalex_top", 1);
 				side->setFloatProperty("scaley_top", 1);
 			}
-			else if (items[a].type == SEL_SIDE_MIDDLE)
+			else if (walls[a].type == SEL_SIDE_MIDDLE)
 			{
 				side->setFloatProperty("scalex_mid", 1);
 				side->setFloatProperty("scaley_mid", 1);
@@ -4443,6 +4448,29 @@ void MapEditor::resetWall3d()
 				side->setFloatProperty("scalex_bottom", 1);
 				side->setFloatProperty("scaley_bottom", 1);
 			}
+		}
+	}
+
+	// Go through flats
+	if (theGameConfiguration->udmfNamespace() == "zdoom")
+	{
+		for (unsigned a = 0; a < flats.size(); a++)
+		{
+			MapSector* sector = map.getSector(flats[a].index);
+			if (!sector) continue;
+
+			string plane;
+			if (flats[a].type == SEL_FLOOR)
+				plane = "floor";
+			else
+				plane = "ceiling";
+
+			// Reset offsets, scale, and rotation
+			sector->setFloatProperty("xpanning" + plane, 0);
+			sector->setFloatProperty("ypanning" + plane, 0);
+			sector->setFloatProperty("xscale" + plane, 1);
+			sector->setFloatProperty("yscale" + plane, 1);
+			sector->setFloatProperty("rotation" + plane, 0);
 		}
 	}
 
@@ -5062,7 +5090,7 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 
 		// Reset wall offsets
 		else if (key == "me3d_wall_reset")
-			resetWall3d();
+			resetOffsets3d();
 
 		// Toggle lower unpegged
 		else if (key == "me3d_wall_unpeg_lower")
