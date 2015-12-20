@@ -2630,7 +2630,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	if (list.size() == 1)
 		type += S_FMT(" #%d", list[0]->getIndex());
 	else if (list.size() > 1)
-		selsize = S_FMT("(%u selected)", list.size());
+		selsize = S_FMT("(%lu selected)", list.size());
 
 	// Create dialog for properties panel
 	SDialog dlg(theMapEditor, S_FMT("%s Properties %s", type, selsize), S_FMT("mobjprops_%d", editor->editMode()), -1, -1);

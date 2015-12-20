@@ -526,7 +526,7 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
  *******************************************************************/
 string MapThingsClipboardItem::getInfo()
 {
-	return S_FMT("%d Things", things.size());
+	return S_FMT("%lu Things", things.size());
 }
 
 /* MapThingsClipboardItem::pasteToMap
