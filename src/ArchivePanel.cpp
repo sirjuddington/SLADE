@@ -846,7 +846,7 @@ bool ArchivePanel::buildArchive()
 		return false;
 	}
 
-	Archive *new_archive;
+	Archive *new_archive = NULL;
 
 	// Create dialog
 	SFileDialog::fd_info_t info;
