@@ -1197,7 +1197,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	plane_t cp1 = line->frontSector()->getCeilingPlane();
 	rgba_t colour1 = line->frontSector()->getColour(0, true);
 	rgba_t fogcolour1 = line->frontSector()->getFogColour();
-	int light1 = line->frontSector()->getLight();
+	int light1 = line->s1()->getLight();
 	int xoff1 = line->s1()->getOffsetX();
 	int yoff1 = line->s1()->getOffsetY();
 
@@ -1253,7 +1253,7 @@ void MapRenderer3D::updateLine(unsigned index)
 	plane_t cp2 = line->backSector()->getCeilingPlane();
 	rgba_t colour2 = line->backSector()->getColour(0, true);
 	rgba_t fogcolour2 = line->backSector()->getFogColour();
-	int light2 = line->backSector()->getLight();
+	int light2 = line->s2()->getLight();
 	int xoff2 = line->s2()->getOffsetX();
 	int yoff2 = line->s2()->getOffsetY();
 	int lowceil = min(ceiling1, ceiling2);

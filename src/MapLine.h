@@ -115,8 +115,8 @@ public:
 	fpoint2_t	dirTabPoint(double length = 0);
 	double		distanceTo(double x, double y);
 	int			needsTexture();
-	void		clearUnneededTextures();
 
+	void	clearUnneededTextures();
 	void	resetInternals();
 	void	flip(bool sides = true);
 

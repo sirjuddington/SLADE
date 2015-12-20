@@ -3807,28 +3807,25 @@ void MapEditor::changeSectorLight3d(int amount)
 			MapSector* sector = side->getSector();
 			if (!sector) continue;
 
-			// Ignore if sector already processed
-			if (VECTOR_EXISTS(processed_sectors, sector))
-				continue;
-			else
-				processed_sectors.push_back(sector);
+			if (link_3d_light)
+			{
+				// Ignore if sector already processed
+				if (VECTOR_EXISTS(processed_sectors, sector))
+					continue;
+				else
+					processed_sectors.push_back(sector);
+			}
 
 			// Check for decrease when light = 255
-			int current_light = sector->getLight(0);
+			int current_light = side->getLight();
 			if (current_light == 255 && amount < -1)
 				amount++;
 
-			// Change sector light level
-			sector->changeLight(amount);
-
-			// If light levels are unlinked, change the floor and ceiling as
-			// well so they stay the same
-			if (!link_3d_light)
-			{
-				int actual_change = sector->getLight(0) - current_light;
-				sector->changeLight(-actual_change, 1);
-				sector->changeLight(-actual_change, 2);
-			}
+			// Change wall or sector light level
+			if (link_3d_light)
+				sector->changeLight(amount);
+			else
+				side->changeLight(amount);
 		}
 
 		// Flat
@@ -3836,26 +3833,27 @@ void MapEditor::changeSectorLight3d(int amount)
 		{
 			// Get sector
 			MapSector* s = map.getSector(items[a].index);
-
-			// Change light level
+			int where = 0;
 			if (items[a].type == SEL_FLOOR && !link_3d_light)
-				s->changeLight(amount, 1);
+				where = 1;
 			else if (items[a].type == SEL_CEILING && !link_3d_light)
-				s->changeLight(amount, 2);
-			else
+				where = 2;
+
+			// Check for decrease when light = 255
+			if (s->getLight(where) == 255 && amount < -1)
+				amount++;
+
+			// Ignore if sector already processed
+			if (link_3d_light)
 			{
-				// Ignore if sector already processed
 				if (VECTOR_EXISTS(processed_sectors, s))
 					continue;
 				else
 					processed_sectors.push_back(s);
-
-				// Check for decrease when light = 255
-				if (s->getLight(0) == 255 && amount < -1)
-					amount++;
-
-				s->changeLight(amount, 0);
 			}
+
+			// Change light level
+			s->changeLight(amount, where);
 		}
 	}
 
