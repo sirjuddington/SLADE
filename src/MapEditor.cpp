@@ -43,6 +43,7 @@
 #include "Clipboard.h"
 #include "UndoRedo.h"
 #include "MapChecks.h"
+#include <set>
 
 
 /*******************************************************************
@@ -545,6 +546,10 @@ void MapEditor::setEditMode(int mode)
 	else if (edit_mode == MODE_3D && mode != MODE_3D)
 		theMapEditor->setUndoManager(undo_manager);
 
+	int old_edit_mode = edit_mode;
+	vector<int> old_selection = selection;
+	vector<selection_3d_t> old_selection_3d = selection_3d;
+
 	// Set edit mode
 	edit_mode = mode;
 	sector_mode = SECTOR_BOTH;
@@ -558,6 +563,9 @@ void MapEditor::setEditMode(int mode)
 	tagged_lines.clear();
 	tagged_things.clear();
 	last_undo_level = "";
+
+	// Transfer selection to the new mode, if possible
+	migrateSelection(old_edit_mode, old_selection, old_selection_3d);
 
 	// Add editor message
 	switch (edit_mode)
@@ -1376,6 +1384,141 @@ bool MapEditor::selectWithin(double xmin, double ymin, double xmax, double ymax,
 	selectionUpdated();
 
 	return (nsel.size() > 0);
+}
+
+/* MapEditor::migrateSelection
+ * Preserves the selection when switching edit modes, when possible
+ * For example, selecting a sector and then switching to lines mode
+ * will select all its lines
+ *******************************************************************/
+void MapEditor::migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<selection_3d_t>& old_selection_3d)
+{
+	// Reduce confusion
+	int new_edit_mode = edit_mode;
+
+	// Avoid duplicates without any fuss by using a set
+	std::set<int> new_selection;
+	std::set<selection_3d_t> new_selection_3d;
+
+	if (old_edit_mode == edit_mode)
+	{
+		selection.insert(selection.end(), old_selection.begin(), old_selection.end());
+		return;
+	}
+
+	// 3D to 2D: select anything of the right type
+	if (old_edit_mode == MODE_3D)
+	{
+		for (unsigned a = 0; a < old_selection_3d.size(); a++)
+		{
+			if (new_edit_mode == MODE_THINGS && (
+				old_selection_3d[a].type == SEL_THING))
+			{
+				new_selection.insert(old_selection_3d[a].index);
+			}
+			else if (new_edit_mode == MODE_SECTORS && (
+				old_selection_3d[a].type == SEL_FLOOR ||
+				old_selection_3d[a].type == SEL_CEILING))
+			{
+				new_selection.insert(old_selection_3d[a].index);
+			}
+			else if (new_edit_mode == MODE_LINES && (
+				old_selection_3d[a].type == SEL_SIDE_BOTTOM ||
+				old_selection_3d[a].type == SEL_SIDE_MIDDLE ||
+				old_selection_3d[a].type == SEL_SIDE_TOP))
+			{
+				MapSide* side = map.getSide(old_selection_3d[a].index);
+				if (!side) continue;
+				new_selection.insert(side->getParentLine()->getIndex());
+			}
+		}
+	}
+
+	// 2D to 3D: can be done perfectly
+	else if (new_edit_mode == MODE_3D)
+	{
+		if (old_edit_mode == MODE_SECTORS)
+			for (unsigned a = 0; a < old_selection.size(); a++)
+			{
+				new_selection_3d.insert(selection_3d_t(old_selection[a], SEL_FLOOR));
+				new_selection_3d.insert(selection_3d_t(old_selection[a], SEL_CEILING));
+			}
+		else if (old_edit_mode == MODE_LINES)
+			for (unsigned a = 0; a < old_selection.size(); a++)
+			{
+				MapLine* line = map.getLine(old_selection[a]);
+				if (!line) continue;
+
+				// 2D mode works with lines, but 3D mode works with sides.
+				// Only select the visible areas -- i.e., the ones that need
+				// texturing
+				int textures = line->needsTexture();
+				MapSide* front = line->s1();
+				MapSide* back = line->s1();
+				if (front && textures & TEX_FRONT_UPPER)
+					new_selection_3d.insert(selection_3d_t(front->getIndex(), SEL_SIDE_TOP));
+				if (front && textures & TEX_FRONT_LOWER)
+					new_selection_3d.insert(selection_3d_t(front->getIndex(), SEL_SIDE_BOTTOM));
+				if (back && textures & TEX_BACK_UPPER)
+					new_selection_3d.insert(selection_3d_t(back->getIndex(), SEL_SIDE_TOP));
+				if (back && textures & TEX_BACK_LOWER)
+					new_selection_3d.insert(selection_3d_t(back->getIndex(), SEL_SIDE_BOTTOM));
+
+				// Also include any two-sided middle textures
+				if (front && (textures & TEX_FRONT_MIDDLE || !front->getTexMiddle().empty()))
+					new_selection_3d.insert(selection_3d_t(front->getIndex(), SEL_SIDE_MIDDLE));
+				if (back && (textures & TEX_BACK_MIDDLE || !back->getTexMiddle().empty()))
+					new_selection_3d.insert(selection_3d_t(back->getIndex(), SEL_SIDE_MIDDLE));
+			}
+		else if (old_edit_mode == MODE_THINGS)
+			for (unsigned a = 0; a < old_selection.size(); a++)
+			{
+				new_selection_3d.insert(selection_3d_t(old_selection[a], SEL_THING));
+			}
+	}
+
+	// Otherwise, 2D to 2D
+	// Sectors can be migrated to anything
+	else if (old_edit_mode == MODE_SECTORS)
+	{
+		for (unsigned a = 0; a < old_selection.size(); a++)
+		{
+			MapSector* sector = map.getSector(old_selection[a]);
+			if (!sector) continue;
+			if (new_edit_mode == MODE_LINES)
+			{
+				vector<MapLine*> lines;
+				sector->getLines(lines);
+				for (unsigned b = 0; b < lines.size(); b++)
+					new_selection.insert(lines[b]->getIndex());
+			}
+			else if (new_edit_mode == MODE_VERTICES)
+			{
+				vector<MapVertex*> vertices;
+				sector->getVertices(vertices);
+				for (unsigned b = 0; b < vertices.size(); b++)
+					new_selection.insert(vertices[b]->getIndex());
+			}
+			else if (new_edit_mode == MODE_THINGS)
+			{
+				// TODO this is much harder
+			}
+		}
+	}
+	// Lines can only reliably be migrated to vertices
+	else if (old_edit_mode == MODE_LINES && new_edit_mode == MODE_VERTICES)
+	{
+		for (unsigned a = 0; a < old_selection.size(); a++)
+		{
+			MapLine* line = map.getLine(old_selection[a]);
+			if (!line) continue;
+			new_selection.insert(line->v1()->getIndex());
+			new_selection.insert(line->v2()->getIndex());
+		}
+	}
+
+	selection.insert(selection.end(), new_selection.begin(), new_selection.end());
+	selection_3d.insert(selection_3d.end(), new_selection_3d.begin(), new_selection_3d.end());
 }
 
 /* MapEditor::getSelectedVertices
