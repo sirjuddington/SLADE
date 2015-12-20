@@ -3866,26 +3866,39 @@ void MapEditor::selectAdjacent3d(selection_3d_t item)
 				continue;
 
 			// Check for match
+			plane_t this_plane, other_plane;
 			if (item.type == SEL_FLOOR)
 			{
-				// Check sector floor height
-				if (osector->intProperty("heightfloor") != sector->intProperty("heightfloor"))
-					continue;
-
 				// Check sector floor texture
 				if (osector->getFloorTex() != sector->getFloorTex())
 					continue;
+
+				this_plane = sector->getFloorPlane();
+				other_plane = osector->getFloorPlane();
 			}
 			else
 			{
-				// Check sector ceiling height
-				if (osector->intProperty("heightceiling") != sector->intProperty("heightceiling"))
-					continue;
-
 				// Check sector ceiling texture
 				if (osector->getCeilingTex() != sector->getCeilingTex())
 					continue;
+
+				this_plane = sector->getCeilingPlane();
+				other_plane = osector->getCeilingPlane();
 			}
+
+			// Check that planes meet
+			fpoint2_t left = lines[a]->v1()->getPoint(0);
+			fpoint2_t right = lines[a]->v2()->getPoint(0);
+
+			double this_left_z = this_plane.height_at(left);
+			double other_left_z = other_plane.height_at(left);
+			if (fabs(this_left_z - other_left_z) > 1)
+				continue;
+
+			double this_right_z = this_plane.height_at(right);
+			double other_right_z = other_plane.height_at(right);
+			if (fabs(this_right_z - other_right_z) > 1)
+				continue;
 
 			// Check flat isn't already selected
 			bool selected = false;
