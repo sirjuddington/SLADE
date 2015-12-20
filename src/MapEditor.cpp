@@ -4830,7 +4830,7 @@ void MapEditor::changeScale3d(double amount, bool x)
 			MapSector* sector = map.getSector(items[a].index);
 
 			// Build property string
-			string prop = x ? "xpanning" : "ypanning";
+			string prop = x ? "xscale" : "yscale";
 			prop += (items[a].type == SEL_FLOOR) ? "floor" : "ceiling";
 
 			// Set
