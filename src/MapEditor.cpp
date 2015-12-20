@@ -4363,6 +4363,11 @@ void MapEditor::autoAlignX3d(selection_3d_t start)
 	else if (start.type == SEL_SIDE_TOP)
 		tex = side->stringProperty("texturetop");
 
+	// Don't try to auto-align a missing texture (every line on the map will
+	// probably match)
+	if (tex == "-")
+		return;
+
 	// Get texture width
 	GLTexture* gl_tex = theMapEditor->textureManager().getTexture(tex, theGameConfiguration->mixTexFlats());
 	int tex_width = -1;
