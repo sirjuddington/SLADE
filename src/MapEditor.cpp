@@ -1093,6 +1093,8 @@ void MapEditor::selectionUpdated()
 	theMapEditor->propsPanel()->openObjects(objects);
 
 	last_undo_level = "";
+
+	updateStatusText();
 }
 
 /* MapEditor::clearSelection
@@ -1110,6 +1112,7 @@ void MapEditor::clearSelection(bool animate)
 		if (animate && canvas) canvas->itemsSelected(selection, false);
 		selection.clear();
 		theMapEditor->propsPanel()->openObject(NULL);
+		updateStatusText();
 	}
 }
 
@@ -5125,6 +5128,11 @@ void MapEditor::updateStatusText()
 		case SECTOR_FLOOR: mode += " (Floors)"; break;
 		case SECTOR_CEILING: mode += " (Ceilings)"; break;
 		}
+	}
+
+	if (edit_mode != MODE_3D && selection.size() > 0)
+	{
+		mode += S_FMT(" (%lu selected)", selection.size());
 	}
 
 	theMapEditor->SetStatusText(mode, 1);
