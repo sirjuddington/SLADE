@@ -211,6 +211,7 @@ public:
 	void	incrementGrid();
 	void	decrementGrid();
 	double	snapToGrid(double position, bool force = true);
+	fpoint2_t relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos);
 
 	// Item moving
 	vector<int>&	movingItems() { return move_items; }

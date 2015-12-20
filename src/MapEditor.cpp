@@ -1796,6 +1796,19 @@ double MapEditor::snapToGrid(double position, bool force)
 	return ceil(position / gridSize() - 0.5) * gridSize();
 }
 
+/* MapEditor::relativeSnapToGrid
+ * Used for pasting.  Given an [origin] point and the current [mouse_pos],
+ * snaps in such a way that the mouse is a number of grid units away from the
+ * origin.
+ *******************************************************************/
+fpoint2_t MapEditor::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos)
+{
+	fpoint2_t delta = mouse_pos - origin;
+	delta.x = snapToGrid(delta.x, false);
+	delta.y = snapToGrid(delta.y, false);
+	return origin + delta;
+}
+
 
 #pragma endregion
 
@@ -3628,7 +3641,10 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 			beginUndoRecord("Paste Map Architecture");
 			long move_time = theApp->runTimer();
 			MapArchClipboardItem* p = (MapArchClipboardItem*)theClipboard->getItem(a);
-			vector<MapVertex*> new_verts = p->pasteToMap(&map, mouse_pos);
+			// Snap the geometry in such a way that it stays in the same
+			// position relative to the grid
+			fpoint2_t pos = relativeSnapToGrid(p->getMidpoint(), mouse_pos);
+			vector<MapVertex*> new_verts = p->pasteToMap(&map, pos);
 			map.mergeArch(new_verts);
 			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
 			endUndoRecord(true);
@@ -3639,7 +3655,10 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 		{
 			beginUndoRecord("Paste Things", false, true, false);
 			MapThingsClipboardItem* p = (MapThingsClipboardItem*)theClipboard->getItem(a);
-			p->pasteToMap(&map, mouse_pos);
+			// Snap the geometry in such a way that it stays in the same
+			// position relative to the grid
+			fpoint2_t pos = relativeSnapToGrid(p->getMidpoint(), mouse_pos);
+			p->pasteToMap(&map, pos);
 			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
 			endUndoRecord(true);
 		}

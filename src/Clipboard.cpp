@@ -298,6 +298,7 @@ void MapArchClipboardItem::addLines(vector<MapLine*> lines)
 	// Determine midpoint
 	double mid_x = min_x + ((max_x - min_x) * 0.5);
 	double mid_y = min_y + ((max_y - min_y) * 0.5);
+	this->midpoint.set(mid_x, mid_y);
 
 	// Copy vertices
 	for (unsigned a = 0; a < copy_verts.size(); a++)
@@ -512,6 +513,7 @@ void MapThingsClipboardItem::addThings(vector<MapThing*>& things)
 	// Get midpoint
 	double mid_x = min_x + ((max_x - min_x) * 0.5);
 	double mid_y = min_y + ((max_y - min_y) * 0.5);
+	this->midpoint.set(mid_x, mid_y);
 
 	// Adjust thing positions
 	for (unsigned a = 0; a < this->things.size(); a++)
