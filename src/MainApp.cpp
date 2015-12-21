@@ -131,10 +131,10 @@ EXTERN_CVAR(Bool, script_show_language_list)
 /* SLADEStackTrace class
  * Extension of the wxStackWalker class that formats stack trace
  * information to a multi-line string, that can be retrieved via
- * getTraceString(). wxStackWalker is currently unimplemented on mac,
- * so unfortunately it has to be disabled there
+ * getTraceString(). wxStackWalker is currently unimplemented on some
+ * platforms, so unfortunately it has to be disabled there
  *******************************************************************/
-#ifndef __APPLE__
+#if wxUSE_STACKWALKER
 class SLADEStackTrace : public wxStackWalker
 {
 private:
@@ -270,7 +270,7 @@ public:
 		EndModal(wxID_OK);
 	}
 };
-#endif//__APPLE__
+#endif//wxUSE_STACKWALKER
 
 
 /* MainAppFileListener and related Classes
@@ -1043,14 +1043,14 @@ int MainApp::OnExit()
 
 void MainApp::OnFatalException()
 {
-#ifndef __APPLE__
+#if wxUSE_STACKWALKER
 #ifndef _DEBUG
 	SLADEStackTrace st;
 	st.WalkFromException();
 	SLADECrashDialog sd(st);
 	sd.ShowModal();
-#endif
-#endif
+#endif//_DEBUG
+#endif//wxUSE_STACKWALKER
 }
 
 #ifdef __APPLE__
