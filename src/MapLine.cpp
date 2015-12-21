@@ -531,7 +531,7 @@ double MapLine::distanceTo(double x, double y)
 }
 
 // Minimum gap between planes for a texture to be considered missing
-static const float EPSILON = 0.001;
+static const float EPSILON = 0.001f;
 
 /* MapLine::needsTexture
  * Returns a flag set of any parts of the line that require a texture
