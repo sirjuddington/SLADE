@@ -132,7 +132,7 @@ EXTERN_CVAR(Bool, script_show_language_list)
  * Extension of the wxStackWalker class that formats stack trace
  * information to a multi-line string, that can be retrieved via
  * getTraceString(). wxStackWalker is currently unimplemented on some
- * platfoms, so unfortunately it has to be disabled there
+ * platforms, so unfortunately it has to be disabled there
  *******************************************************************/
 #if wxUSE_STACKWALKER
 class SLADEStackTrace : public wxStackWalker
