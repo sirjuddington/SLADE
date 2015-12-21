@@ -138,7 +138,9 @@ bool ArchiveManager::init()
 	}
 
 	// Find slade3.pk3 directory
-	string dir_slade_pk3 = appPath("slade.pk3", DIR_DATA);
+	string dir_slade_pk3 = appPath("slade.pk3", DIR_RES);
+	if (!wxFileExists(dir_slade_pk3))
+		dir_slade_pk3 = appPath("slade.pk3", DIR_DATA);
 	if (!wxFileExists(dir_slade_pk3))
 		dir_slade_pk3 = appPath("slade.pk3", DIR_APP);
 	if (!wxFileExists(dir_slade_pk3))
