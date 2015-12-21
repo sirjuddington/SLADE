@@ -105,6 +105,7 @@ namespace Global
 string	dir_data = "";
 string	dir_user = "";
 string	dir_app = "";
+string	dir_res = "";
 bool	exiting = false;
 string	current_action = "";
 bool	update_check_message_box = false;
@@ -348,6 +349,8 @@ string appPath(string filename, int dir)
 		return dir_user + sep + filename;
 	else if (dir == DIR_APP)
 		return dir_app + sep + filename;
+	else if (dir == DIR_RES)
+		return dir_res + sep + filename;
 	else if (dir == DIR_TEMP)
 	{
 		// Get temp path
@@ -445,6 +448,11 @@ bool MainApp::initDirectories()
 	string sep = "/";
 #endif
 
+	// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX), use this for the installation prefix
+#ifdef INSTALL_PREFIX
+	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
+#endif
+	
 	// Setup app dir
 	dir_app = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 
@@ -453,6 +461,7 @@ bool MainApp::initDirectories()
 	{
 		// Setup portable user/data dirs
 		dir_data = dir_app;
+		dir_res = dir_app;
 		dir_user = dir_app + sep + "config";
 	}
 	else
@@ -460,6 +469,7 @@ bool MainApp::initDirectories()
 		// Setup standard user/data dirs
 		dir_user = wxStandardPaths::Get().GetUserDataDir();
 		dir_data = wxStandardPaths::Get().GetDataDir();
+		dir_res = wxStandardPaths::Get().GetResourcesDir();
 	}
 
 	// Create user dir if necessary
@@ -475,6 +485,10 @@ bool MainApp::initDirectories()
 	// Check data dir
 	if (!wxDirExists(dir_data))
 		dir_data = dir_app;	// Use app dir if data dir doesn't exist
+
+	// Check res dir
+	if(!wxDirExists(dir_res))
+		dir_res = dir_app;	// Use app dir if res dir doesn't exist
 
 	return true;
 }
