@@ -449,9 +449,9 @@ bool MainApp::initDirectories()
 #endif
 
 	// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX), use this for the installation prefix
-#ifdef INSTALL_PREFIX
+#if defined(__UNIX__) && defined(INSTALL_PREFIX)
 	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
-#endif
+#endif//defined(__UNIX__) && defined(INSTALL_PREFIX)
 	
 	// Setup app dir
 	dir_app = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
