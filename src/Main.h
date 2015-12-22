@@ -106,7 +106,7 @@ namespace Global
 
 
 // Path related stuff
-enum Directory { DIR_USER, DIR_DATA, DIR_APP, DIR_TEMP };
+enum Directory { DIR_USER, DIR_DATA, DIR_APP, DIR_RES, DIR_TEMP };
 string appPath(string filename, int dir);
 
 
