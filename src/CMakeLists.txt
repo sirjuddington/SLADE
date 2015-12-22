@@ -127,12 +127,14 @@ if(APPLE)
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SLADE_OUTPUT_DIR}/slade.pk3" "$<TARGET_FILE_DIR:slade>/slade.pk3"
 	)
 else(APPLE)
-	install(TARGETS slade
-		RUNTIME DESTINATION bin
-		)
+	if(UNIX)
+		install(TARGETS slade
+			RUNTIME DESTINATION bin
+			)
 
-	install(FILES "${SLADE_OUTPUT_DIR}/slade.pk3"
-		DESTINATION share/slade3
-		)
+		install(FILES "${SLADE_OUTPUT_DIR}/slade.pk3"
+			DESTINATION share/slade3
+			)
+	endif(UNIX)
 endif(APPLE)
 
