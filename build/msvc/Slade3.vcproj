@@ -1583,6 +1583,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\dist\res\config\iwads.cfg"
+						>
+					</File>
+					<File
 						RelativePath="..\..\dist\res\config\nodebuilders.cfg"
 						>
 					</File>

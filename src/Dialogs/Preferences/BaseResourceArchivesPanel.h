@@ -14,6 +14,7 @@ public:
 	~BaseResourceArchivesPanel();
 
 	int		getSelectedPath();
+	void	autodetect();
 
 	void	onBtnAdd(wxCommandEvent& e);
 	void	onBtnRemove(wxCommandEvent& e);
