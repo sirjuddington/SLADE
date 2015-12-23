@@ -73,11 +73,11 @@ public:
 
 	unsigned vboDataSize();
 	unsigned writeToVBO(unsigned offset, unsigned index);
-	void     updateVBOData();
+	void     updateVBOData(unsigned start = 0);
 
 	void render();
 	void renderWireframe();
-	void renderVBO(bool colour = true);
+	void renderVBO(unsigned start = 0, bool colour = true);
 	void renderWireframeVBO(bool colour = true);
 
 	static void setupVBOPointers();

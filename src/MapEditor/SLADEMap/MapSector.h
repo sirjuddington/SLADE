@@ -49,6 +49,28 @@ public:
 		uint16_t flags;
 	};
 
+	struct ExFloorType
+	{
+		enum
+		{
+			// TODO how does vavoom work?  their wiki is always broken
+			//VAVOOM,
+			SOLID = 1,
+			SWIMMABLE = 2,
+			NONSOLID = 3,
+		};
+
+		Plane  floor_plane;
+		Plane  ceiling_plane;
+		unsigned control_sector_index;
+		int      floor_type;
+		float    alpha;
+	};
+
+public:
+	// TODO maybe make this private, maybe
+	vector<ExFloorType> extra_floors;
+
 	MapSector(SLADEMap* parent = nullptr);
 	MapSector(string f_tex, string c_tex, SLADEMap* parent = nullptr);
 	~MapSector();

@@ -250,12 +250,12 @@ unsigned Polygon2D::writeToVBO(unsigned offset, unsigned index)
 	return ofs;
 }
 
-void Polygon2D::updateVBOData()
+void Polygon2D::updateVBOData(unsigned start)
 {
 	// Go through subpolys
 	for (unsigned a = 0; a < subpolys_.size(); a++)
 		glBufferSubData(
-			GL_ARRAY_BUFFER, subpolys_[a]->vbo_offset, subpolys_[a]->n_vertices * 20, subpolys_[a]->vertices);
+			GL_ARRAY_BUFFER, subpolys_[a]->vbo_offset + start*20, subpolys_[a]->n_vertices * 20, subpolys_[a]->vertices);
 
 	// Update variables
 	vbo_update_ = 0;
@@ -293,12 +293,12 @@ void Polygon2D::renderWireframe()
 	}
 }
 
-void Polygon2D::renderVBO(bool colour)
+void Polygon2D::renderVBO(unsigned start, bool colour)
 {
 	// Render
 	// glColor4f(this->colour[0], this->colour[1], this->colour[2], this->colour[3]);
 	for (unsigned a = 0; a < subpolys_.size(); a++)
-		glDrawArrays(GL_TRIANGLE_FAN, subpolys_[a]->vbo_index, subpolys_[a]->n_vertices);
+		glDrawArrays(GL_TRIANGLE_FAN, subpolys_[a]->vbo_index + start, subpolys_[a]->n_vertices);
 }
 
 void Polygon2D::renderWireframeVBO(bool colour) {}
@@ -602,11 +602,9 @@ bool PolygonSplitter::detectUnclosed()
 	}
 
 	// If there are no end/start vertices, the polygon is closed
-	if (end_verts.empty() && start_verts.empty())
-		return false;
+	return !(end_verts.empty() && start_verts.empty());
 
 	// Not closed
-	return true;
 }
 
 bool PolygonSplitter::tracePolyOutline(int edge_start)
@@ -702,6 +700,7 @@ bool PolygonSplitter::testTracePolyOutline(int edge_start)
 	{
 		v1 = edges_[edge].v1;
 		v2 = edges_[edge].v2;
+		next = -1;
 
 		// Find the next convex edge with the lowest angle
 		next = findNextEdge(edge, false, true);
@@ -820,16 +819,16 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 
 		// Check if a split from the edge to this vertex would cross any other edges
 		intersect = false;
-		for (unsigned a = 0; a < edges_.size(); a++)
+		for (unsigned b = 0; b < edges_.size(); b++)
 		{
 			// Ignore edge if adjacent to the vertices we are looking at
-			if (edges_[a].v1 == index || edges_[a].v2 == index || edges_[a].v1 == v2 || edges_[a].v2 == v2
-				|| !edges_[a].ok)
+			if (edges_[b].v1 == index || edges_[b].v2 == index || edges_[b].v1 == v2 || edges_[b].v2 == v2
+				|| !edges_[b].ok)
 				continue;
 
 			// Intersection test
 			if (MathStuff::linesIntersect(
-					Seg2f(vertices_[v2], vert), Seg2f(vertices_[edges_[a].v1], vertices_[edges_[a].v2]), pointi))
+					Seg2f(vertices_[v2], vert), Seg2f(vertices_[edges_[b].v1], vertices_[edges_[b].v2]), pointi))
 			{
 				intersect = true;
 				break;

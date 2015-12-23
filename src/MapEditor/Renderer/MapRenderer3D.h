@@ -102,9 +102,11 @@ public:
 		ColRGBA    fogcolour;
 		GLTexture* texture;
 		Plane      plane;
+		float      base_alpha;
 		float      alpha;
 		MapSector* sector;
 		long       updated_time;
+		unsigned   vbo_start;
 
 		Flat()
 		{
@@ -112,6 +114,7 @@ public:
 			texture      = nullptr;
 			updated_time = 0;
 			flags        = 0;
+			base_alpha   = 1.0f;
 			alpha        = 1.0f;
 			sector       = nullptr;
 		}
@@ -170,7 +173,8 @@ public:
 
 	// Flats
 	void updateFlatTexCoords(unsigned index, bool floor);
-	void updateSector(unsigned index);
+	void updateSector(unsigned index, bool update_vbo = true);
+	bool isSectorStale(unsigned index);
 	void renderFlat(Flat* flat);
 	void renderFlats();
 	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f);
@@ -251,8 +255,7 @@ private:
 	Flat**                flats_;
 
 	// VBOs
-	unsigned vbo_floors_;
-	unsigned vbo_ceilings_;
+	unsigned vbo_flats_;
 	unsigned vbo_walls_;
 
 	// Sky
