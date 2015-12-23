@@ -414,7 +414,13 @@ acs_z : acs {
 		WARPF_ABSOLUTEOFFSET, WARPF_ABSOLUTEANGLE, WARPF_USECALLERANGLE, WARPF_NOCHECKPOSITION,
 		WARPF_INTERPOLATE, WARPF_WARPINTERPOLATION, WARPF_COPYINTERPOLATION, WARPF_STOP,
 		WARPF_TOFLOOR, WARPF_TESTONLY, WARPF_ABSOLUTEPOSITION, WARPF_BOB, WARPF_MOVEPTR,
-		WARPF_USEPTR
+		WARPF_USEPTR, WARPF_COPYVELOCITY, WARPF_COPYPITCH,
+
+		// PickActor flags
+		PICKAF_FORCETID, PICKAF_RETURNTID,
+
+		// Used by Thing_SetTranslation
+		TRANSLATION_ICE
 	}
 
 	functions
@@ -699,6 +705,7 @@ acs_z : acs {
 		GetLineRowOffset;
 		GetLineUDMFFixed = "int lineid, string key";
 		GetLineUDMFInt = "int lineid, string key";
+		GetMaxInventory = "int tid, str inventory";
 		GetPlayerInfo = "int playernumber, int playerinfo";
 		GetPlayerInput = "int player, int input";
 		GetPolyobjX = "int polynum";
@@ -733,7 +740,7 @@ acs_z : acs {
 		Log = "type:expression";
 		MorphActor = "int tid, [str playerclass, [str monsterclass, [int duration, [int style, [str morphflash, [str unmorphflash]]]]]]";
 		NamedScriptWait = "str script";
-		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask], [bool force_tid]";
+		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask], [int flags]";
 		PlayActorSound = "int tid, int sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
 		PlayerClass = "int playernumber";
 		PlayerCount;
@@ -773,7 +780,7 @@ acs_z : acs {
 		SetFloorTrigger = "int tag, int height, int special [, int arg1 [, int arg2 [, int arg3 [, int arg4 [, int arg5]]]]]";
 		SetFont = "str fontlump";
 		SetGravity = "fixed amount";
-		SetHUDClipRect = "int x; int y, int width, int height[, int wrapwidth]";
+		SetHUDClipRect = "int x, int y, int width, int height [, int wrapwidth [, bool aspectratio]]";
 		SetHUDSize = "int width, int height, bool statusbar";
 		SetHUDWrapWidth = "int wrapwidth";
 		SetLineActivation = "int lineid, int activation";
@@ -836,7 +843,7 @@ acs_z : acs {
 		UseInventory = "str classname";
 		VectorAngle = "int x, int y";
 		VectorLength = "int x, int y";
-		Warp = "int tid, fixed xofs, fixed yofs, fixed zofs, fixed angle, int flags, [str success_state], [bool exact], [fixed heightoffset]";
+		Warp = "int tid, fixed xofs, fixed yofs, fixed zofs, fixed angle, int flags, [str success_state], [bool exact], [fixed heightoffset], [fixed radiusoffset], [fixed pitch]";
 		
 		// Skulltag functions
 		BlueCount;

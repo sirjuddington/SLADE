@@ -54,7 +54,7 @@ z_decaldef {
 		translucent, add, fuzzy, fullbright, lowerdecal, colors, animator, decal,
 		decalgroup, generator, stretcher, GoalX, GoalY, StretchStart, StretchTime, 
 		fader, DecayStart, DecayTime, Combiner, slider, DistX, DistY, SlideStart, 
-		SlideTime, colorchanger, FadeStart, FadeTime, Color
+		SlideTime, colorchanger, FadeStart, FadeTime, Color, optional
 	}
 }
 
@@ -210,7 +210,7 @@ z_mapinfo {
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
-		DefaultSkill, ArmorFactor, EasyKey,
+		DefaultSkill, ArmorFactor, EasyKey, HealthFactor,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,

@@ -227,6 +227,9 @@ decorate : cstyle {
 		// A_CustomPunch flags
 		CPF_DAGGER, CPF_PULLIN, CPF_USEAMMO, CPF_NORANDOMPUFFZ, CPF_NOTURN, CPF_STEALARMOR,
 
+		// A_CheckProximity flags
+		CPXF_ANCESTOR, CPXF_LESSOREQUAL, CPXF_NOZ, CPXF_COUNTDEAD, CPXF_DEADONLY, CPXF_EXACT,
+
 		// A_ChangeVelocity flags
 		CVF_RELATIVE, CVF_REPLACE,
 
@@ -312,7 +315,7 @@ decorate : cstyle {
 		// A_Warp flags
 		WARPF_ABSOLUTEANGLE, WARPF_ABSOLUTEOFFSET, WARPF_COPYINTERPOLATION, WARPF_INTERPOLATE,WARPF_NOCHECKPOSITION, 
 		WARPF_STOP, WARPF_TESTONLY, WARPF_TOFLOOR, WARPF_USECALLERANGLE, WARPF_WARPINTERPOLATION, WARPF_ABSOLUTEPOSITION,
-		WARPF_BOB, WARPF_MOVEPTR, WARPF_USETID,
+		WARPF_BOB, WARPF_MOVEPTR, WARPF_USETID, WARPF_COPYPITCH, WARPF_COPYVELOCITY,
 
 		// A_WeaponReady flags
 		WRF_ALLOWRELOAD, WRF_ALLOWZOOM, WRF_NOBOB, WRF_NOFIRE, WRF_NOPRIMARY, WRF_NOSECONDARY, WRF_NOSWITCH, WRF_DISABLESWITCH,
@@ -376,7 +379,7 @@ decorate : cstyle {
 		A_TurretLook;
 		A_VileChase;
 		A_Wander;
-		A_Warp = "pointer destination, [float xofs], [float yofs], [float zofs], [float angle], [int flags], [state success_state], [float heightoffset]";
+		A_Warp = "pointer destination, [float xofs], [float yofs], [float zofs], [float angle], [int flags], [state success_state], [float heightoffset], [float radiusoffset], [float pitch]";
 
 		A_RearrangePointers = "pointer newtarget, [pointer newmaster], [pointer newtracer], [int flags]";
 		A_TransferPointer = "pointer source, pointer recipient, pointer sourcefield, [pointer recipientfield], [int flags]";
@@ -396,7 +399,7 @@ decorate : cstyle {
 		A_Blast = "[int flags], [int strength], [int radius], [float speed], [class blasteffect], [sound blastsound]";
 		A_Explode = "[int dmg], [int radius], [int flags], [bool alert], [int fulldmgradius], [int nails], [int naildmg], [string pufftype]";
 		A_RadiusThrust = "[int thrust], [int radius], [int flags], [int fullthrustdistance]";
-		A_RadiusGive = "class itemtype, int distance, int flags, [int amount], [class filter], [string species]";
+		A_RadiusGive = "class itemtype, float distance, int flags, [int amount], [class filter], [string species], [float mindist]";
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
 		A_Quake = "int intensity, int duration, int damrad, int tremrad, [sound sfx]";
@@ -457,6 +460,7 @@ decorate : cstyle {
 		A_CheckSight = "string state", "int offset";
 		A_CheckSightOrRange = "float distance, string state, [bool two_dimension]", "float distance, int offset, [bool two_dimension]";
 		A_CheckBlock = "string state, [int flags], [int pointer]";
+		A_CheckProximity = "string state, string classname, float distance, [int count], [int flags], [int ptr]";
 
 		A_Jump = "int chance, string state, [...]", "int chance, int offset, [...]";
 		A_JumpIf = "condition, string state", "condition, int offset";
@@ -583,7 +587,7 @@ decorate : cstyle {
 		A_SetCrosshair = "int number";
 		A_Punch;
 		A_Saw = "[string fullsound], [string hitsound], [int damage], [string pufftype], [int flags], [float range], [float spread_xy], [float spread_z], [float lifesteal], [int lifestealmax], [string armorbonustype]";
-		A_CustomPunch = "int damage, [bool norandom], [int flags], [string pufftype], [float range], [float lifesteal], [int lifestealmax], [string armorbonustype]";
+		A_CustomPunch = "int damage, [bool norandom], [int flags], [string pufftype], [float range], [float lifesteal], [int lifestealmax], [string armorbonustype], [string meleesound], [string misssound]";
 		A_FireBullets = "angle spread_horz, angle spread_vert, int numbullets, int damage, [string pufftype], [int flags], [float range]";
 		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [int spawnofs_horz], [float spawnheight], [int flags], [angle pitch]";
 		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn], [float spawnofs_z], [int spiraloffset]";
