@@ -77,17 +77,18 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
 	// Setup buttons
 	btn_add = new wxButton(this, -1, "Add Archive");
 	btn_remove = new wxButton(this, -1, "Remove Archive");
+	btn_detect = new wxButton(this, -1, "Detect Archives");
 
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	vbox->Add(btn_add, 0, wxEXPAND|wxBOTTOM, 4);
 	vbox->Add(btn_remove, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(btn_detect, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(vbox, 0, wxEXPAND|wxALL, 4);
 
 	// Bind events
 	btn_add->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnAdd, this);
 	btn_remove->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnRemove, this);
-
-	autodetect();
+	btn_detect->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnDetect, this);
 
 	// Init layout
 	Layout();
@@ -154,6 +155,14 @@ void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
 
 	// Also remove it from the archive manager
 	theArchiveManager->removeBaseResourcePath(index);
+}
+
+/* BaseResourceArchivesPanel::onBtnDetect
+ * Called when the 'Detect Archives' button is clicked
+ *******************************************************************/
+void BaseResourceArchivesPanel::onBtnDetect(wxCommandEvent& e)
+{
+	autodetect();
 }
 
 #ifdef __WXMSW__

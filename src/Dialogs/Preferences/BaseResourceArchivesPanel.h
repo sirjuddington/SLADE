@@ -8,6 +8,7 @@ private:
 	wxListBox*	list_base_archive_paths;
 	wxButton*	btn_add;
 	wxButton*	btn_remove;
+	wxButton*	btn_detect;
 
 public:
 	BaseResourceArchivesPanel(wxWindow* parent);
@@ -18,6 +19,7 @@ public:
 
 	void	onBtnAdd(wxCommandEvent& e);
 	void	onBtnRemove(wxCommandEvent& e);
+	void	onBtnDetect(wxCommandEvent& e);
 };
 
 #endif//__BASERESOURCEARCHIVESPANEL__
