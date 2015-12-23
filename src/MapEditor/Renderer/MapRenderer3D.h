@@ -135,6 +135,7 @@ public:
 
 	Quad* getQuad(MapEditor::Item item);
 	Flat* getFlat(MapEditor::Item item);
+	vector<vector<Flat>>* getSectorFlats() { return &sector_flats_; };
 
 	// Camera
 	void cameraMove(double distance, bool z = true);
@@ -242,13 +243,12 @@ private:
 	int    item_dist_;
 
 	// Map Structures
-	vector<Line>  lines_;
-	Quad**        quads_;
-	vector<Quad*> quads_transparent_;
-	vector<Thing> things_;
-	vector<Flat>  floors_;
-	vector<Flat>  ceilings_;
-	Flat**        flats_;
+	vector<Line>          lines_;
+	Quad**                quads_;
+	vector<Quad*>         quads_transparent_;
+	vector<Thing>         things_;
+	vector<vector<Flat>>  sector_flats_;
+	Flat**                flats_;
 
 	// VBOs
 	unsigned vbo_floors_;
