@@ -32,7 +32,8 @@ public:
 		MIDTEX = 64,
 
 		// Flat flags
-		CEIL = 8,
+		CEIL     = 8,
+		DRAWBOTH = 16,
 
 		// Thing flags
 		ICON  = 4,
@@ -172,7 +173,7 @@ public:
 	void renderSky();
 
 	// Flats
-	void updateFlatTexCoords(unsigned index, bool floor);
+	void updateFlatTexCoords(unsigned index, unsigned flat_index);
 	void updateSector(unsigned index, bool update_vbo = true);
 	bool isSectorStale(unsigned index);
 	void renderFlat(Flat* flat);

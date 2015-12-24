@@ -235,6 +235,12 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 
 		extra_floor.alpha = falpha;
 
+		// Liquids (swimmable, type 2) and floors with flag 4 have their inner
+		// surfaces drawn as well
+		// TODO this does something different with vavoom
+		if (flags & 4 || (type_flags & 3) == 2)
+			extra_floor.draw_inside = true;
+
 		vector<MapSector*> sectors;
 		map->putSectorsWithTag(sector_tag, sectors);
 		for (unsigned a = 0; a < sectors.size(); a++)

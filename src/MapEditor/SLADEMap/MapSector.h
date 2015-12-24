@@ -65,6 +65,7 @@ public:
 		unsigned control_sector_index;
 		int      floor_type;
 		float    alpha;
+		bool     draw_inside;
 	};
 
 public:

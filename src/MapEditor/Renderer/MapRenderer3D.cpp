@@ -843,7 +843,7 @@ void MapRenderer3D::renderSky()
 // -----------------------------------------------------------------------------
 // Updates the vertex texture coordinates of all polygons for sector [index]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
+void MapRenderer3D::updateFlatTexCoords(unsigned index, unsigned flat_index)
 {
 	using Game::UDMFFeature;
 
@@ -858,14 +858,15 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	double ox  = 0;
 	double oy  = 0;
 	// TODO 3dfloors
-	double sx  = sector_flats_[index][floor ? 0 : 1].texture->scaleX();
-	double sy  = sector_flats_[index][floor ? 0 : 1].texture->scaleY();
+	double sx  = sector_flats_[index][flat_index].texture->scaleX();
+	double sy  = sector_flats_[index][flat_index].texture->scaleY();
 	double rot = 0;
 
 	// Check for UDMF + panning/scaling/rotation
 	if (MapEditor::editContext().mapDesc().format == MAP_UDMF)
 	{
-		if (floor)
+		// TODO 3dfloors -- this should be taken from the control sector
+		if (!(sector_flats_[index][flat_index].flags & CEIL))
 		{
 			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
 			{
@@ -903,7 +904,7 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	oy /= sy;
 
 	// Update polygon texture coordinates
-	sector->polygon()->setTexture(sector_flats_[index][floor ? 0 : 1].texture);
+	sector->polygon()->setTexture(sector_flats_[index][flat_index].texture);
 	sector->polygon()->updateTextureCoords(sx, sy, ox, oy, rot);
 }
 
@@ -970,6 +971,8 @@ void MapRenderer3D::updateSector(unsigned index, bool update_vbo)
 		// TODO this probably comes from the control sector, unless there's a flag, yadda...
 		xf_floor.light = sector->lightAt(0);
 		xf_floor.flags = CEIL;
+		if (extra.draw_inside)
+			xf_floor.flags |= DRAWBOTH;
 		xf_floor.plane = control_sector->floor().plane;
 		xf_floor.base_alpha = extra.alpha;
 		sector_flats_[index].push_back(xf_floor);
@@ -983,6 +986,8 @@ void MapRenderer3D::updateSector(unsigned index, bool update_vbo)
 		// TODO this probably comes from the control sector, unless there's a flag, yadda...
 		xf_ceiling.light = sector->lightAt(0);
 		xf_ceiling.flags = 0;
+		if (extra.draw_inside)
+			xf_ceiling.flags |= DRAWBOTH;
 		xf_ceiling.plane = control_sector->ceiling().plane;
 		xf_ceiling.base_alpha = extra.alpha;
 		sector_flats_[index].push_back(xf_ceiling);
@@ -997,7 +1002,7 @@ void MapRenderer3D::updateSector(unsigned index, bool update_vbo)
 
 		for (unsigned a = 0; a < sector_flats_[index].size(); a++)
 		{
-			updateFlatTexCoords(index, sector_flats_[index][a].flags & CEIL);
+			updateFlatTexCoords(index, a);
 			Polygon2D::setupVBOPointers();
 			sector->polygon()->setZ(sector_flats_[index][a].plane);
 			sector->polygon()->updateVBOData(sector_flats_[index][a].vbo_start);
@@ -1118,7 +1123,7 @@ void MapRenderer3D::renderFlats()
 	// Init textures
 	glEnable(GL_TEXTURE_2D);
 
-	// Render all visible flats, ordered by texture
+	// Render all visible opaque flats, ordered by texture
 	unsigned a = 0;
 	flat_last_  = 0;
 	while (n_flats_ > 0)
@@ -1127,23 +1132,42 @@ void MapRenderer3D::renderFlats()
 		a        = 0;
 		while (a < n_flats_)
 		{
-			// Check texture
-			if (!tex_last_ && flats_[a]->texture)
-			{
-				tex_last_ = flats_[a]->texture;
-				flats_[a]->texture->bind();
-			}
-			if (flats_[a]->texture != tex_last_)
+			// Skip different textures on this loop, and save all translucent
+			// flats for last
+			if ((tex_last_ && flats_[a]->texture != tex_last_) ||
+				flats_[a]->base_alpha < 1.0f)
 			{
 				a++;
 				continue;
 			}
 
+			// Check texture
+			if (!tex_last_)
+				tex_last_ = flats_[a]->texture;
+			if (tex_last_)
+				flats_[a]->texture->bind();
+
 			// Render flat
 			renderFlat(flats_[a]);
 			flats_[a] = flats_[--n_flats_];
 		}
+		if (tex_last_ == NULL)
+			break;
 	}
+
+	// Render any remaining translucent flats, ordered by depth
+	// TODO order by depth?  how??  sector distance, then plane height?  (note
+	// that sloped and translucent is forbidden even in gzdoom)
+	for (unsigned b = 0; b < n_flats_; b++)
+	{
+		if (tex_last_ != flats_[b]->texture)
+		{
+			tex_last_ = flats_[b]->texture;
+			tex_last_->bind();
+		}
+		renderFlat(flats_[b]);
+	}
+	n_flats_ = 0;
 
 	// Reset gl stuff
 	glDisable(GL_TEXTURE_2D);
@@ -2534,7 +2558,7 @@ void MapRenderer3D::updateFlatsVBO()
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
 		// Slight chicken and egg problem: updateSector() has to run first to
-		// create a flat_3d_t for each 3D floor, but it tries to update VBOs,
+		// create a Flat for each 3D floor, but it tries to update VBOs,
 		// which may not exist the first time this function runs.
 		// So, skip the VBOs specifically for this call.
 		if (isSectorStale(a))
@@ -2827,8 +2851,18 @@ void MapRenderer3D::checkVisibleFlats()
 		// Add flats
 		for (unsigned b = 0; b < sector_flats_[a].size(); b++)
 		{
-			sector_flats_[a][b].alpha = alpha;
-			flats_[flat_idx++] = &sector_flats_[a][b];
+			Flat& flat = sector_flats_[a][b];
+			flat.alpha = alpha;
+			flats_[flat_idx++] = &flat;
+
+			// For two-sided flats, update which plane is currently visible
+			if (flat.flags & DRAWBOTH)
+			{
+				if (cam_position_.z < flat.plane.height_at(cam_position_.x, cam_position_.y))
+					flat.flags |= CEIL;
+				else
+					flat.flags &= ~CEIL;
+			}
 		}
 	}
 }
