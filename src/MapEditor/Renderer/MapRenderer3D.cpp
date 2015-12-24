@@ -922,11 +922,12 @@ void MapRenderer3D::updateSector(unsigned index, bool update_vbo)
 	sector_flats_[index].resize(2);
 
 	// Update floor
-	MapSector* sector  = map_->sector(index);
-	Flat& floor_flat   = sector_flats_[index][0];
-	floor_flat.sector  = sector;
-	floor_flat.texture = MapEditor::textureManager().flat(
-		sector->floor().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+	MapSector* sector            = map_->sector(index);
+	Flat& floor_flat             = sector_flats_[index][0];
+	floor_flat.sector            = sector;
+	floor_flat.extra_floor_index = -1;
+	floor_flat.texture                = MapEditor::textureManager().flat(
+        sector->floor().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 	floor_flat.colour     = sector->colourAt(1, true);
 	floor_flat.fogcolour  = sector->fogColour();
 	floor_flat.light      = sector->lightAt(1);
@@ -937,17 +938,16 @@ void MapRenderer3D::updateSector(unsigned index, bool update_vbo)
 		floor_flat.flags |= SKY;
 
 	// Update ceiling
-	Flat& ceiling_flat = sector_flats_[index][1];
-	ceiling_flat.sector = sector;
-	ceiling_flat.texture = MapEditor::textureManager().flat(
-		sector->ceiling().texture,
-		Game::configuration().featureSupported(Game::Feature::MixTexFlats)
-	);
-	ceiling_flat.colour = sector->colourAt(2, true);
-	ceiling_flat.fogcolour = sector->fogColour();
-	ceiling_flat.light = sector->lightAt(2);
-	ceiling_flat.flags = CEIL;
-	ceiling_flat.plane = sector->ceiling().plane;
+	Flat& ceiling_flat             = sector_flats_[index][1];
+	ceiling_flat.sector            = sector;
+	ceiling_flat.extra_floor_index = -1;
+	ceiling_flat.texture           = MapEditor::textureManager().flat(
+        sector->ceiling().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+	ceiling_flat.colour     = sector->colourAt(2, true);
+	ceiling_flat.fogcolour  = sector->fogColour();
+	ceiling_flat.light      = sector->lightAt(2);
+	ceiling_flat.flags      = CEIL;
+	ceiling_flat.plane      = sector->ceiling().plane;
 	ceiling_flat.base_alpha = 1.0f;
 	if (S_CMPNOCASE(sector->ceiling().texture, Game::configuration().skyFlat()))
 		ceiling_flat.flags |= SKY;
@@ -955,14 +955,16 @@ void MapRenderer3D::updateSector(unsigned index, bool update_vbo)
 	// Deal with 3D floors
 	for (unsigned a = 0; a < sector->extra_floors.size(); a++)
 	{
-		ExFloorType& extra = sector->extra_floors[a];
-		MapSector* control_sector = map_->sector(extra.control_sector_index);
+		ExFloorType& extra            = sector->extra_floors[a];
+		MapSector*     control_sector = map_->sector(extra.control_sector_index);
 
 		// TODO which of these is really a floor and which is really a ceiling?
 		// TODO BOTH sides of the inner flat are drawn sometimes!
 		Flat xf_floor;
-		xf_floor.sector = sector;
-		xf_floor.texture = MapEditor::textureManager().flat(control_sector->floor().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+		xf_floor.sector            = sector;
+		xf_floor.extra_floor_index = a;
+		xf_floor.texture           = MapEditor::textureManager().flat(
+            control_sector->floor().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 		// TODO wrong.  maybe?  does it inherit from parent?
 		xf_floor.colour = sector->colourAt(1);
 		// TODO again, maybe?
@@ -973,13 +975,15 @@ void MapRenderer3D::updateSector(unsigned index, bool update_vbo)
 		xf_floor.flags = CEIL;
 		if (extra.draw_inside)
 			xf_floor.flags |= DRAWBOTH;
-		xf_floor.plane = control_sector->floor().plane;
+		xf_floor.plane      = control_sector->floor().plane;
 		xf_floor.base_alpha = extra.alpha;
 		sector_flats_[index].push_back(xf_floor);
 
 		Flat xf_ceiling;
-		xf_ceiling.sector = sector;
-		xf_ceiling.texture = MapEditor::textureManager().flat(control_sector->ceiling().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
+		xf_ceiling.sector            = sector;
+		xf_ceiling.extra_floor_index = a;
+		xf_ceiling.texture           = MapEditor::textureManager().flat(
+            control_sector->ceiling().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 		xf_ceiling.colour = sector->colourAt(1);
 		// TODO again, maybe?
 		xf_ceiling.fogcolour = sector->fogColour();
@@ -988,7 +992,7 @@ void MapRenderer3D::updateSector(unsigned index, bool update_vbo)
 		xf_ceiling.flags = 0;
 		if (extra.draw_inside)
 			xf_ceiling.flags |= DRAWBOTH;
-		xf_ceiling.plane = control_sector->ceiling().plane;
+		xf_ceiling.plane      = control_sector->ceiling().plane;
 		xf_ceiling.base_alpha = extra.alpha;
 		sector_flats_[index].push_back(xf_ceiling);
 	}
@@ -1134,8 +1138,7 @@ void MapRenderer3D::renderFlats()
 		{
 			// Skip different textures on this loop, and save all translucent
 			// flats for last
-			if ((tex_last_ && flats_[a]->texture != tex_last_) ||
-				flats_[a]->base_alpha < 1.0f)
+			if ((tex_last_ && flats_[a]->texture != tex_last_) || flats_[a]->base_alpha < 1.0f)
 			{
 				a++;
 				continue;
@@ -1205,6 +1208,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 	// Go through selection
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		// TODO this code is awfully similar to the renderHilight code
 		// Ignore if not a sector hilight
 		if (selection[a].type != MapEditor::ItemType::Ceiling && selection[a].type != MapEditor::ItemType::Floor)
 			continue;
@@ -1216,10 +1220,28 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 
 		// Get plane
 		Plane plane;
-		if (selection[a].type == MapEditor::ItemType::Floor)
-			plane = sector->floor().plane;
+		if (selection[a].extra_floor_index >= 0 && selection[a].extra_floor_index < sector->extra_floors.size())
+		{
+			ExFloorType& extra          = sector->extra_floors[selection[a].extra_floor_index];
+			MapSector*   control_sector = map_->sector(extra.control_sector_index);
+			if (!control_sector)
+				return;
+
+			// Planes are reversed for a 3D floor
+			// TODO the DRAWBOTH hack makes the type wrong when you're inside
+			// TODO not true for vavoom
+			if (selection[a].type == MapEditor::ItemType::Floor)
+				plane = control_sector->ceiling().plane;
+			else
+				plane = control_sector->floor().plane;
+		}
 		else
-			plane = sector->ceiling().plane;
+		{
+			if (selection[a].type == MapEditor::ItemType::Floor)
+				plane = sector->floor().plane;
+			else
+				plane = sector->ceiling().plane;
+		}
 
 		// Draw sector outline
 		vector<MapLine*> lines;
@@ -2579,7 +2601,7 @@ void MapRenderer3D::updateFlatsVBO()
 	for (unsigned a = 0; a < sector_flats_.size(); a++)
 	{
 		MapSector* sector = sector_flats_[a][0].sector;
-		Polygon2D* poly = sector->polygon();
+		Polygon2D* poly   = sector->polygon();
 
 		// TODO i realize we'll have to do this if any 3d floors are /added/, too
 		unsigned start = index;
@@ -2594,7 +2616,8 @@ void MapRenderer3D::updateFlatsVBO()
 			index += poly->totalVertices();
 		}
 
-		// TODO this is extra super bad but basically we have to make sure the poly uses the offset for the /first/ sector flat here...  ugh
+		// TODO this is extra super bad but basically we have to make sure the poly uses the offset for the /first/
+		// sector flat here...  ugh
 		poly->setZ(sector_flats_[a][0].plane);
 		poly->writeToVBO(orig_offset, start);
 
@@ -2677,7 +2700,8 @@ void MapRenderer3D::quickVisDiscard()
 	for (unsigned a = 0; a < map_->nSides(); a++)
 	{
 		dist = dist_sectors_[map_->side(a)->sector()->index()];
-		lines_[map_->side(a)->parentLine()->index()].visible = !(dist < 0 || (render_max_dist > 0 && dist > render_max_dist));
+		lines_[map_->side(a)->parentLine()->index()].visible =
+			!(dist < 0 || (render_max_dist > 0 && dist > render_max_dist));
 	}
 }
 
@@ -2848,11 +2872,14 @@ void MapRenderer3D::checkVisibleFlats()
 		else
 			alpha = 1.0f;
 
+		// TODO this used to add all the floors, then all the ceilings, which would reduce the number of GL state calls
+		// -- can probably fix that
+
 		// Add flats
 		for (unsigned b = 0; b < sector_flats_[a].size(); b++)
 		{
-			Flat& flat = sector_flats_[a][b];
-			flat.alpha = alpha;
+			Flat& flat         = sector_flats_[a][b];
+			flat.alpha         = alpha;
 			flats_[flat_idx++] = &flat;
 
 			// For two-sided flats, update which plane is currently visible
@@ -3139,10 +3166,28 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 
 		// Get plane
 		Plane plane;
-		if (hilight.type == MapEditor::ItemType::Floor)
-			plane = sector->floor().plane;
+		if (hilight.extra_floor_index >= 0 && hilight.extra_floor_index < sector->extra_floors.size())
+		{
+			ExFloorType& extra          = sector->extra_floors[hilight.extra_floor_index];
+			MapSector*   control_sector = map_->sector(extra.control_sector_index);
+			if (!control_sector)
+				return;
+
+			// Planes are reversed for a 3D floor
+			// TODO the DRAWBOTH hack makes the type wrong when you're inside
+			// TODO not true for vavoom
+			if (hilight.type == MapEditor::ItemType::Floor)
+				plane = control_sector->ceiling().plane;
+			else
+				plane = control_sector->floor().plane;
+		}
 		else
-			plane = sector->ceiling().plane;
+		{
+			if (hilight.type == MapEditor::ItemType::Floor)
+				plane = sector->floor().plane;
+			else
+				plane = sector->ceiling().plane;
+		}
 
 		// Render sector outline
 		vector<MapLine*> lines;
