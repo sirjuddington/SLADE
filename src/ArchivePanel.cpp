@@ -1723,6 +1723,9 @@ bool ArchivePanel::gfxConvert()
 	entry_list->SetEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->SetEntriesAutoUpdate(true);
+
 		// Update splash window
 		theSplashWindow->setProgressMessage(selection[a]->getName());
 		theSplashWindow->setProgress((float)a / (float)selection.size());
@@ -1785,6 +1788,9 @@ bool ArchivePanel::gfxRemap()
 		entry_list->SetEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
+			if (a == selection.size()-1)
+				entry_list->SetEntriesAutoUpdate(true);
+
 			ArchiveEntry* entry = selection[a];
 			if (Misc::loadImageFromEntry(&temp, entry))
 			{
@@ -1838,6 +1844,9 @@ bool ArchivePanel::gfxColourise()
 		MemChunk mc;
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
+			if (a == selection.size()-1)
+				entry_list->SetEntriesAutoUpdate(true);
+
 			ArchiveEntry* entry = selection[a];
 			if (Misc::loadImageFromEntry(&temp, entry))
 			{
@@ -1890,6 +1899,9 @@ bool ArchivePanel::gfxTint()
 		entry_list->SetEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
+			if (a == selection.size()-1)
+				entry_list->SetEntriesAutoUpdate(true);
+
 			ArchiveEntry* entry = selection[a];
 			if (Misc::loadImageFromEntry(&temp, entry))
 			{
@@ -2222,8 +2234,12 @@ bool ArchivePanel::wavDSndConvert()
 
 	// Go through selection
 	bool errors = false;
+	entry_list->SetEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->SetEntriesAutoUpdate(true);
+
 		// Convert WAV -> Doom Sound if the entry is WAV format
 		if (selection[a]->getType()->getFormat() == "snd_wav")
 		{
@@ -2241,6 +2257,7 @@ bool ArchivePanel::wavDSndConvert()
 			selection[a]->setExtensionByType();								// Update extension if necessary
 		}
 	}
+	entry_list->SetEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2265,8 +2282,12 @@ bool ArchivePanel::dSndWavConvert()
 
 	// Go through selection
 	bool errors = false;
+	entry_list->SetEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->SetEntriesAutoUpdate(true);
+
 		bool worked = false;
 		MemChunk wav;
 		// Convert Doom Sound -> WAV if the entry is Doom Sound format
@@ -2303,6 +2324,7 @@ bool ArchivePanel::dSndWavConvert()
 			continue;
 		}
 	}
+	entry_list->SetEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2326,8 +2348,12 @@ bool ArchivePanel::musMidiConvert()
 	undo_manager->beginRecord("Convert Mus -> Midi");
 
 	// Go through selection
+	entry_list->SetEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->SetEntriesAutoUpdate(true);
+
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
 		if (selection[a]->getType()->getFormat() == "mus" ||
 			selection[a]->getType()->getFormat() == "hmi" ||
@@ -2349,6 +2375,7 @@ bool ArchivePanel::musMidiConvert()
 		}
 
 	}
+	entry_list->SetEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2365,11 +2392,15 @@ bool ArchivePanel::compileACS(bool hexen)
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
 	// Go through selection
+	entry_list->SetEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->SetEntriesAutoUpdate(true);
 		// Compile ACS script
 		EntryOperations::compileACS(selection[a], hexen, NULL, theMainWindow);
 	}
+	entry_list->SetEntriesAutoUpdate(true);
 
 	return true;
 }
@@ -2400,8 +2431,12 @@ bool ArchivePanel::optimizePNG()
 	undo_manager->beginRecord("Optimize PNG");
 
 	// Go through selection
+	entry_list->SetEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->SetEntriesAutoUpdate(true);
+
 		theSplashWindow->setProgressMessage(selection[a]->getName(true));
 		theSplashWindow->setProgress(float(a) / float(selection.size()));
 		if (selection[a]->getType()->getFormat() == "img_png")
@@ -2410,6 +2445,7 @@ bool ArchivePanel::optimizePNG()
 			EntryOperations::optimizePNG(selection[a]);
 		}
 	}
+	entry_list->SetEntriesAutoUpdate(true);
 	theSplashWindow->hide();
 
 	// Finish recording undo level
