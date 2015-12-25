@@ -86,18 +86,18 @@ TextureXListView::~TextureXListView()
 /* TextureXListView::getItemText
  * Returns the string for [item] at [column]
  *******************************************************************/
-string TextureXListView::getItemText(long item, long column) const
+string TextureXListView::getItemText(long item, long column, long index) const
 {
 	// Check texture list exists
 	if (!texturex)
 		return "INVALID INDEX";
 
 	// Check index is ok
-	if (item < 0 || (unsigned)item > texturex->nTextures())
+	if (index < 0 || (unsigned)index > texturex->nTextures())
 		return "INVALID INDEX";
 
 	// Get associated texture
-	CTexture* tex = texturex->getTexture(item);
+	CTexture* tex = texturex->getTexture(index);
 
 	if (column == 0)						// Name column
 		return tex->getName();
@@ -113,18 +113,18 @@ string TextureXListView::getItemText(long item, long column) const
  * Called when widget requests the attributes (text colour /
  * background colour / font) for [item]
  *******************************************************************/
-void TextureXListView::updateItemAttr(long item, long column) const
+void TextureXListView::updateItemAttr(long item, long column, long index) const
 {
 	// Check texture list exists
 	if (!texturex)
 		return;
 
 	// Check index is ok
-	if (item < 0 || (unsigned)item > texturex->nTextures())
+	if (index < 0 || (unsigned)index > texturex->nTextures())
 		return;
 
 	// Get associated texture
-	CTexture* tex = texturex->getTexture(item);
+	CTexture* tex = texturex->getTexture(index);
 
 	// Init attributes
 	item_attr->SetTextColour(WXCOL(ColourConfiguration::getColour("error")));
@@ -157,13 +157,48 @@ void TextureXListView::updateList(bool clear)
 		ClearAll();
 
 	// Set list size
+	items.clear();
 	if (texturex)
-		SetItemCount(texturex->nTextures());
+	{
+		unsigned count = texturex->nTextures();
+		SetItemCount(count);
+		for (unsigned a = 0; a < count; a++)
+			items.push_back(a);
+	}
 	else
 		SetItemCount(0);
 
+	sortItems();
 	updateWidth();
 	Refresh();
+}
+
+/* TextureXListView::sizeSort
+ * Returns true if texture at index [left] is smaller than [right]
+ *******************************************************************/
+bool TextureXListView::sizeSort(long left, long right)
+{
+	CTexture* tl = ((TextureXListView*)lv_current)->txList()->getTexture(left);
+	CTexture* tr = ((TextureXListView*)lv_current)->txList()->getTexture(right);
+	int s1 = tl->getWidth() * tl->getHeight();
+	int s2 = tr->getWidth() * tr->getHeight();
+
+	if (s1 == s2)
+		return left < right;
+	else
+		return lv_current->sortDescend() ? s1 > s2 : s2 > s1;
+}
+
+/* TextureXListView::sortItems
+ * Sorts the list items depending on the current sorting column
+ *******************************************************************/
+void TextureXListView::sortItems()
+{
+	lv_current = this;
+	if (sort_column == 1)
+		std::sort(items.begin(), items.end(), &TextureXListView::sizeSort);
+	else
+		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
 }
 
 
@@ -203,17 +238,17 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	// Add texture operations buttons
 	wxGridBagSizer* gbsizer = new wxGridBagSizer(4, 4);
 	framesizer->Add(gbsizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-	btn_move_up = new wxBitmapButton(this, -1, getIcon("t_up"));
+	btn_move_up = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "up"));
 	btn_move_up->SetToolTip("Move Up");
-	btn_move_down = new wxBitmapButton(this, -1, getIcon("t_down"));
+	btn_move_down = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "down"));
 	btn_move_down->SetToolTip("Move Down");
-	btn_new_texture = new wxBitmapButton(this, -1, getIcon("t_tex_new"));
+	btn_new_texture = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tex_new"));
 	btn_new_texture->SetToolTip("New");
-	btn_remove_texture = new wxBitmapButton(this, -1, getIcon("t_tex_delete"));
+	btn_remove_texture = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tex_delete"));
 	btn_remove_texture->SetToolTip("Remove");
-	btn_new_from_patch = new wxBitmapButton(this, -1, getIcon("t_tex_newpatch"));
+	btn_new_from_patch = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tex_newpatch"));
 	btn_new_from_patch->SetToolTip("New from Patch");
-	btn_new_from_file = new wxBitmapButton(this, -1, getIcon("t_tex_newfile"));
+	btn_new_from_file = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tex_newfile"));
 	btn_new_from_file->SetToolTip("New from File");
 	gbsizer->Add(btn_new_texture, wxGBPosition(0, 0), wxDefaultSpan);
 	gbsizer->Add(btn_new_from_patch, wxGBPosition(0, 1), wxDefaultSpan);

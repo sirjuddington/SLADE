@@ -338,8 +338,8 @@ void MapLine::setIntProperty(string key, int value)
 	// Special
 	else if (key == "special")
 	{
-		setModified();
 		special = value;
+		setModified();
 	}
 
 	// Line property
@@ -530,6 +530,9 @@ double MapLine::distanceTo(double x, double y)
 	return sqrt((ix-x)*(ix-x) + (iy-y)*(iy-y));
 }
 
+// Minimum gap between planes for a texture to be considered missing
+static const float EPSILON = 0.001f;
+
 /* MapLine::needsTexture
  * Returns a flag set of any parts of the line that require a texture
  *******************************************************************/
@@ -543,52 +546,49 @@ int MapLine::needsTexture()
 	if (!backSector())
 		return TEX_FRONT_MIDDLE;
 
-	// ZDoom's Plane_Align ensures a slope will hide the lower or upper texture
-	// of one side
-	bool aligned_floor = false;
-	bool aligned_ceiling = false;
-	if (special)
-	{
-		ActionSpecial* as = theGameConfiguration->actionSpecial(special);
-		if (as->getName() == "Plane_Align")
-		{
-			int prop;
-			prop = intProperty("arg0");
-			aligned_floor = (prop == 1 || prop == 2);
-			prop = intProperty("arg1");
-			aligned_ceiling = (prop == 1 || prop == 2);
-		}
-	}
+	// Get sector planes
+	plane_t floor_front = frontSector()->getFloorPlane();
+	plane_t ceiling_front = frontSector()->getCeilingPlane();
+	plane_t floor_back = backSector()->getFloorPlane();
+	plane_t ceiling_back = backSector()->getCeilingPlane();
 
-
-	// Get sector heights
-	int floor_front = frontSector()->getFloorHeight();
-	int ceiling_front = frontSector()->getCeilingHeight();
-	int floor_back = backSector()->getFloorHeight();
-	int ceiling_back = backSector()->getCeilingHeight();
+	double front_height, back_height;
 
 	int tex = 0;
-	if (aligned_floor)
-		;
 
-	// Front lower
-	else if (floor_front < floor_back)
+	// Check the floor
+	front_height = floor_front.height_at(x1(), y1());
+	back_height = floor_back.height_at(x1(), y1());
+
+	if (front_height - back_height > EPSILON)
+		tex |= TEX_BACK_LOWER;
+	if (back_height - front_height > EPSILON)
 		tex |= TEX_FRONT_LOWER;
 
-	// Back lower
-	else if (floor_front > floor_back)
+	front_height = floor_front.height_at(x2(), y2());
+	back_height = floor_back.height_at(x2(), y2());
+
+	if (front_height - back_height > EPSILON)
 		tex |= TEX_BACK_LOWER;
+	if (back_height - front_height > EPSILON)
+		tex |= TEX_FRONT_LOWER;
 
-	if (aligned_ceiling)
-		;
+	// Check the ceiling
+	front_height = ceiling_front.height_at(x1(), y1());
+	back_height = ceiling_back.height_at(x1(), y1());
 
-	// Front upper
-	else if (ceiling_front > ceiling_back)
+	if (back_height - front_height > EPSILON)
+		tex |= TEX_BACK_UPPER;
+	if (front_height - back_height > EPSILON)
 		tex |= TEX_FRONT_UPPER;
 
-	// Back upper
-	else if (ceiling_front < ceiling_back)
+	front_height = ceiling_front.height_at(x2(), y2());
+	back_height = ceiling_back.height_at(x2(), y2());
+
+	if (back_height - front_height > EPSILON)
 		tex |= TEX_BACK_UPPER;
+	if (front_height - back_height > EPSILON)
+		tex |= TEX_FRONT_UPPER;
 
 	return tex;
 }

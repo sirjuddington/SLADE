@@ -3,6 +3,7 @@
 #define __S_TOOL_BAR_H__
 
 class SToolBarButton;
+class SToolBar;
 class SToolBarGroup : public wxPanel
 {
 private:
@@ -10,7 +11,7 @@ private:
 	bool	hidden;
 
 public:
-	SToolBarGroup(wxWindow* parent, string name, bool force_name = false);
+	SToolBarGroup(SToolBar* parent, string name, bool force_name = false);
 	~SToolBarGroup();
 
 	string	getName() { return name; }
@@ -34,9 +35,10 @@ private:
 	int						min_height;
 	int						n_rows;
 	bool					draw_border;
+	bool					main_toolbar;
 
 public:
-	SToolBar(wxWindow* parent);
+	SToolBar(wxWindow* parent, bool main_toolbar = false);
 	~SToolBar();
 
 	int		minHeight() { return min_height; }
@@ -48,6 +50,7 @@ public:
 	void	enableGroup(string name, bool enable = true);
 	int		calculateNumRows(int width);
 	void	drawBorder(bool draw = true) { draw_border = draw; }
+	bool	mainToolbar() { return main_toolbar; }
 
 	// Events
 	void	onSize(wxSizeEvent& e);

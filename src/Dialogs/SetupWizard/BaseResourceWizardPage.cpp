@@ -48,6 +48,7 @@ BaseResourceWizardPage::BaseResourceWizardPage(wxWindow* parent) : WizardPageBas
 
 	// Add Base Resource Archive panel
 	bra_panel = new BaseResourceArchivesPanel(this);
+	bra_panel->autodetect();
 	sizer->Add(bra_panel, 1, wxEXPAND);
 }
 

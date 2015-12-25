@@ -15,9 +15,9 @@ private:
 
 protected:
 	// Virtual wxListCtrl overrides
-	string	getItemText(long item, long column) const;
-	int		getItemIcon(long item, long column) const;
-	void	updateItemAttr(long item, long column) const;
+	string	getItemText(long item, long column, long index) const;
+	int		getItemIcon(long item, long column, long index) const;
+	void	updateItemAttr(long item, long column, long index) const;
 
 public:
 	UndoListView(wxWindow* parent, UndoManager* manager);

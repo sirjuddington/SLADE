@@ -310,6 +310,19 @@ int MIDIStreamer::ClampLoopCount(int loopcount)
 
 //==========================================================================
 //
+// MIDIStreamer :: GetSubsongs
+//
+// Returns amount of subsongs. This is public.
+//
+//==========================================================================
+
+int MIDIStreamer::GetSubsongs()
+{
+	return GetMIDISubsongs();
+}
+
+//==========================================================================
+//
 // MIDIStreamer :: SetSubsong
 //
 // Selects which subsong to play in an already-playing file. This is public.
@@ -319,6 +332,19 @@ int MIDIStreamer::ClampLoopCount(int loopcount)
 bool MIDIStreamer::SetSubsong(int subsong)
 {
 	return SetMIDISubsong(subsong);
+}
+
+//==========================================================================
+//
+// MIDIStreamer :: GetMIDISubsongs
+//
+// Selects which subsong to play. This is private.
+//
+//==========================================================================
+
+int MIDIStreamer::GetMIDISubsongs()
+{
+	return 1;
 }
 
 //==========================================================================

@@ -67,26 +67,26 @@ GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Close archive with tab
 	cb_archive_close_tab = new wxCheckBox(this, -1, "Close archive when its tab is closed");
-	sizer->Add(cb_archive_close_tab, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_archive_close_tab, 0, wxEXPAND|wxALL, 4);
 
 	// Auto open wads in root
 	cb_wads_root = new wxCheckBox(this, -1, "Auto open nested wad archives");
 	cb_wads_root->SetToolTip("When opening a zip or folder archive, automatically open all wad entries in the root directory");
-	sizer->Add(cb_wads_root, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_wads_root, 0, wxEXPAND|wxALL, 4);
 
 #ifdef __WXMSW__
 	// Check for updates
 	cb_update_check = new wxCheckBox(this, -1, "Check for updates on startup");
-	sizer->Add(cb_update_check, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_update_check, 0, wxEXPAND|wxALL, 4);
 
 	// Check for beta updates
 	cb_update_check_beta = new wxCheckBox(this, -1, "Include beta versions when checking for updates");
-	sizer->Add(cb_update_check_beta, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_update_check_beta, 0, wxEXPAND|wxALL, 4);
 #endif
 
 	// Confirm exit
 	cb_confirm_exit = new wxCheckBox(this, -1, "Show confirmation dialog on exit");
-	sizer->Add(cb_confirm_exit, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_confirm_exit, 0, wxEXPAND|wxALL, 4);
 }
 
 /* GeneralPrefsPanel::~GeneralPrefsPanel

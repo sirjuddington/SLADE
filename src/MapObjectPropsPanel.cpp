@@ -97,18 +97,18 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Add button
-	btn_add = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	btn_add->SetToolTip("Add Property");
 	hbox->Add(btn_add, 0, wxEXPAND|wxRIGHT, 4);
 	hbox->AddStretchSpacer(1);
 
 	// Reset button
-	btn_reset = new wxBitmapButton(this, -1, getIcon("t_close"));
+	btn_reset = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "close"));
 	btn_reset->SetToolTip("Discard Changes");
 	hbox->Add(btn_reset, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Apply button
-	btn_apply = new wxBitmapButton(this, -1, getIcon("i_tick"));
+	btn_apply = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tick"));
 	btn_apply->SetToolTip("Apply Changes");
 	hbox->Add(btn_apply, 0, wxEXPAND);
 
@@ -459,13 +459,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	int map_format = theMapEditor->currentMapDesc().format;
 
 	// Clear property grid
-	for (unsigned a = 0; a < 5; a++)
-		args[a] = NULL;
-	pg_properties->Clear();
-	pg_props_side1->Clear();
-	pg_props_side2->Clear();
-	group_custom = NULL;
-	properties.clear();
+	clearGrid();
 	btn_add->Show(false);
 
 	// Hide buttons if not needed
@@ -479,12 +473,6 @@ void MapObjectPropsPanel::setupType(int objtype)
 		btn_apply->Show();
 		btn_reset->Show();
 	}
-
-	// Remove side1/2 tabs if they exist
-	while (stc_sections->GetPageCount() > 1)
-		stc_sections->RemovePage(1);
-	pg_props_side1->Show(false);
-	pg_props_side2->Show(false);
 
 	// Vertex properties
 	if (objtype == MOBJ_VERTEX)
@@ -763,14 +751,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		return;
 
 	// Clear property grids
-	for (unsigned a = 0; a < 5; a++)
-		args[a] = NULL;
-	pg_properties->Clear();
-	pg_props_side1->Clear();
-	pg_props_side2->Clear();
-	group_custom = NULL;
-	properties.clear();
-	btn_add->Show();
+	clearGrid();
 
 	// Hide buttons if not needed
 	if (no_apply || mobj_props_auto_apply)
@@ -783,12 +764,6 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		btn_apply->Show();
 		btn_reset->Show();
 	}
-
-	// Remove side1/2 tabs if they exist
-	while (stc_sections->GetPageCount() > 1)
-		stc_sections->RemovePage(1);
-	pg_props_side1->Show(false);
-	pg_props_side2->Show(false);
 
 	// Set main tab title
 	if (objtype == MOBJ_VERTEX)
@@ -1076,8 +1051,14 @@ void MapObjectPropsPanel::clearGrid()
 	btn_add->Show();
 
 	// Remove side1/2 tabs if they exist
+	// Calling RemovePage() changes the focus for no good reason; this is a
+	// workaround.  See http://trac.wxwidgets.org/ticket/11333
+	stc_sections->Freeze();
+	stc_sections->Hide();
 	while (stc_sections->GetPageCount() > 1)
 		stc_sections->RemovePage(1);
+	stc_sections->Show();
+	stc_sections->Thaw();
 	pg_props_side1->Show(false);
 	pg_props_side2->Show(false);
 }

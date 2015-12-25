@@ -123,6 +123,8 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override)
 		keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
 		if (kp.key != "")
 			sc = kp.as_string();
+		else
+			sc = "None";
 		sc_control = (kp.ctrl || kp.alt);
 	}
 
@@ -167,11 +169,11 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override)
 	// Append this action to the toolbar
 	wxAuiToolBarItem* item = NULL;
 	if (type == NORMAL)
-		item = toolbar->AddTool(wx_id, text, getIcon(useicon), helptext);
+		item = toolbar->AddTool(wx_id, text, Icons::getIcon(Icons::GENERAL, useicon), helptext);
 	else if (type == CHECK)
-		item = toolbar->AddTool(wx_id, text, getIcon(useicon), helptext, wxITEM_CHECK);
+		item = toolbar->AddTool(wx_id, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
 	else if (type == RADIO)
-		item = toolbar->AddTool(wx_id, text, getIcon(useicon), helptext, wxITEM_RADIO);
+		item = toolbar->AddTool(wx_id, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
 
 	return true;
 }
@@ -193,11 +195,11 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override)
 
 	// Append this action to the toolbar
 	if (type == NORMAL)
-		toolbar->AddTool(wx_id, "", getIcon(useicon), helptext);
+		toolbar->AddTool(wx_id, "", Icons::getIcon(Icons::GENERAL, useicon), helptext);
 	else if (type == CHECK)
-		toolbar->AddTool(wx_id, "", getIcon(useicon), helptext, wxITEM_CHECK);
+		toolbar->AddTool(wx_id, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
 	else if (type == RADIO)
-		toolbar->AddTool(wx_id, "", getIcon(useicon), helptext, wxITEM_RADIO);
+		toolbar->AddTool(wx_id, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
 
 	return true;
 }

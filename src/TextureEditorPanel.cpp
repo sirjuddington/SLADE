@@ -308,32 +308,32 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	framesizer->Add(vbox, 0, wxEXPAND|wxTOP|wxRIGHT|wxBOTTOM, 4);
 
 	// 'Add' button
-	btn_patch_add = new wxBitmapButton(panel, -1, getIcon("t_patch_add"));
+	btn_patch_add = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_add"));
 	btn_patch_add->SetToolTip("Add new patch to texture");
 	vbox->Add(btn_patch_add, 0, wxBOTTOM, 4);
 
 	// 'Remove' button
-	btn_patch_remove = new wxBitmapButton(panel, -1, getIcon("t_patch_remove"));
+	btn_patch_remove = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_remove"));
 	btn_patch_remove->SetToolTip("Remove selected patch(es) from texture");
 	vbox->Add(btn_patch_remove, 0, wxBOTTOM, 4);
 
 	// 'Back' button
-	btn_patch_back = new wxBitmapButton(panel, -1, getIcon("t_patch_back"));
+	btn_patch_back = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_back"));
 	btn_patch_back->SetToolTip("Send selected patch(es) back");
 	vbox->Add(btn_patch_back, 0, wxBOTTOM, 4);
 
 	// 'Forward' button
-	btn_patch_forward = new wxBitmapButton(panel, -1, getIcon("t_patch_forward"));
+	btn_patch_forward = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_forward"));
 	btn_patch_forward->SetToolTip("Bring selected patch(es) forward");
 	vbox->Add(btn_patch_forward, 0, wxBOTTOM, 4);
 
 	// 'Replace' button
-	btn_patch_replace = new wxBitmapButton(panel, -1, getIcon("t_patch_replace"));
+	btn_patch_replace = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_replace"));
 	btn_patch_replace->SetToolTip("Replace selected patch(es)");
 	vbox->Add(btn_patch_replace, 0, wxBOTTOM, 4);
 
 	// 'Duplicate' button
-	btn_patch_duplicate = new wxBitmapButton(panel, -1, getIcon("t_patch_duplicate"));
+	btn_patch_duplicate = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_duplicate"));
 	btn_patch_duplicate->SetToolTip("Duplicate selected patch(es)");
 	vbox->Add(btn_patch_duplicate, 0, wxBOTTOM, 4);
 
@@ -858,6 +858,7 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 
 		// Redraw texture canvas
 		tex_canvas->redraw(false);
+		updateTextureControls();
 	}
 
 	// RIGHT MOUSE UP
@@ -882,29 +883,47 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 		// Drag selected patches if left button is down and any patch is selected
 		if (hack_nodrag)
 			hack_nodrag = false;
-		else if (e.LeftIsDown() && list_patches->GetSelectedItemCount() > 0)
+		else if (e.LeftIsDown())
 		{
-			// Get drag amount according to texture
-			point2_t tex_cur = tex_canvas->screenToTexPosition(e.GetX(), e.GetY());
-			point2_t tex_prev = tex_canvas->screenToTexPosition(tex_canvas->getMousePrevPos().x, tex_canvas->getMousePrevPos().y);
-			point2_t diff = tex_cur - tex_prev;
-
-			// Move any selected patches
-			wxArrayInt selected_patches = list_patches->selectedItems();
-			for (size_t a = 0; a < selected_patches.size(); a++)
+			if (list_patches->GetSelectedItemCount() > 0)
 			{
-				CTPatch* patch = tex_current->getPatch(selected_patches[a]);
-				if (!patch) continue;
-				int16_t cx = patch->xOffset();
-				int16_t cy = patch->yOffset();
-				patch->setOffsetX(cx + diff.x);
-				patch->setOffsetY(cy + diff.y);
-				tex_modified = true;
-			}
+				// Get drag amount according to texture
+				point2_t tex_cur = tex_canvas->screenToTexPosition(e.GetX(), e.GetY());
+				point2_t tex_prev = tex_canvas->screenToTexPosition(tex_canvas->getMousePrevPos().x, tex_canvas->getMousePrevPos().y);
+				point2_t diff = tex_cur - tex_prev;
 
-			// Refresh texture canvas
-			tex_canvas->showGrid(true);
-			tex_canvas->redraw(false);
+				// Move any selected patches
+				wxArrayInt selected_patches = list_patches->selectedItems();
+				for (size_t a = 0; a < selected_patches.size(); a++)
+				{
+					CTPatch* patch = tex_current->getPatch(selected_patches[a]);
+					if (!patch) continue;
+					int16_t cx = patch->xOffset();
+					int16_t cy = patch->yOffset();
+					patch->setOffsetX(cx + diff.x);
+					patch->setOffsetY(cy + diff.y);
+					tex_modified = true;
+				}
+
+				// Refresh texture canvas
+				tex_canvas->showGrid(true);
+				tex_canvas->redraw(false);
+			}
+			else if (tex_current->isExtended() && tex_canvas->getViewType() > 0)
+			{
+				// Get drag amount according to texture
+				point2_t tex_cur = tex_canvas->screenToTexPosition(e.GetX(), e.GetY());
+				point2_t tex_prev = tex_canvas->screenToTexPosition(tex_canvas->getMousePrevPos().x, tex_canvas->getMousePrevPos().y);
+				point2_t diff = tex_cur - tex_prev;
+
+				// Modify offsets
+				tex_current->setOffsetX(tex_current->getOffsetX() - diff.x);
+				tex_current->setOffsetY(tex_current->getOffsetY() - diff.y);
+				tex_modified = true;
+
+				// Refresh texture canvas
+				tex_canvas->redraw(false);
+			}
 		}
 	}
 

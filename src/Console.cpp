@@ -213,6 +213,22 @@ string Console::lastLogLine()
 	return lastLine;
 }
 
+/* Console::lastLogLines
+ * Returns the last [num] lines added to the console log
+ *******************************************************************/
+vector<string> Console::lastLogLines(int num)
+{
+	vector<string> lines;
+
+	while (num >= 0 && num < (int)log.size())
+	{
+		lines.push_back(log[log.size() - num - 1]);
+		num--;
+	}
+
+	return lines;
+}
+
 /* Console::lastCommand
  * Returns the last command sent to the console
  *******************************************************************/

@@ -52,6 +52,7 @@
 #include "Misc.h"
 #include "VersionCheck.h"
 #include "dumb/dumb.h"
+#include "OpenGL.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>
@@ -60,6 +61,9 @@
 #include <wx/sysopt.h>
 #include <wx/filename.h>
 #include <wx/protocol/http.h>
+#include <wx/clipbrd.h>
+#include <wx/snglinst.h>
+#include <wx/ipc.h>
 
 #undef BOOL
 #include <FreeImage.h>
@@ -76,10 +80,9 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 0;
-	int version_num = 3105;
-	string version = "3.1.0.5";
-	
+	int beta_num = 2;
+	int version_num = 3110;
+	string version = "3.1.1 Beta 2";
 #ifdef GIT_DESCRIPTION
 	string sc_rev = GIT_DESCRIPTION;
 #else
@@ -95,11 +98,14 @@ namespace Global
 #endif
 
 	double ppi_scale = 1.0;
+	int win_version_major = 0;
+	int win_version_minor = 0;
 }
 
 string	dir_data = "";
 string	dir_user = "";
 string	dir_app = "";
+string	dir_res = "";
 bool	exiting = false;
 string	current_action = "";
 bool	update_check_message_box = false;
@@ -116,6 +122,7 @@ CVAR(Bool, update_check_beta, false, CVAR_SAVE)
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, map_show_selection_numbers)
+EXTERN_CVAR(Bool, script_show_language_list)
 
 
 /*******************************************************************
@@ -125,10 +132,10 @@ EXTERN_CVAR(Bool, map_show_selection_numbers)
 /* SLADEStackTrace class
  * Extension of the wxStackWalker class that formats stack trace
  * information to a multi-line string, that can be retrieved via
- * getTraceString(). wxStackWalker is currently unimplemented on mac,
- * so unfortunately it has to be disabled there
+ * getTraceString(). wxStackWalker is currently unimplemented on some
+ * platforms, so unfortunately it has to be disabled there
  *******************************************************************/
-#ifndef __APPLE__
+#if wxUSE_STACKWALKER
 class SLADEStackTrace : public wxStackWalker
 {
 private:
@@ -171,6 +178,9 @@ class SLADECrashDialog : public wxDialog
 {
 private:
 	wxTextCtrl*	text_stack;
+	wxButton*	btn_copy_trace;
+	wxButton*	btn_exit;
+	string		trace;
 
 public:
 	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE3 Application Crash")
@@ -181,39 +191,136 @@ public:
 
 		// Add general crash method
 		string message = "SLADE3 has crashed unexpectedly. To help fix the problem that caused this crash,\nplease copy+paste the information from the window below to a text file, and email\nit to <sirjuddington@gmail.com> along with a description of what you were\ndoing at the time of the crash. Sorry for the inconvenience.";
-		sizer->Add(new wxStaticText(this, -1, message), 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 4);
+		sizer->Add(new wxStaticText(this, -1, message), 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxTOP, 10);
 
-		// Setup stack trace string
-		string trace = S_FMT("Version: %s\n", Global::version);
+		// SLADE info
+		trace = S_FMT("Version: %s\n", Global::version);
 		if (current_action.IsEmpty())
 			trace += "No current action\n";
 		else
 			trace += S_FMT("Current action: %s", current_action);
 		trace += "\n";
+
+		// System info
+		OpenGL::gl_info_t gl_info = OpenGL::getInfo();
+		trace += "Operating System: " + wxGetOsDescription() + "\n";
+		trace += "Graphics Vendor: " + gl_info.vendor + "\n";
+		trace += "Graphics Hardware: " + gl_info.renderer + "\n";
+		trace += "OpenGL Version: " + gl_info.version + "\n";
+
+		// Stack trace
+		trace += "\n";
 		trace += st.getTraceString();
+
+		// Last 5 log lines
+		trace += "\nLast Log Messages:\n";
+		vector<string> lines = theConsole->lastLogLines(10);
+		for (unsigned a = 0; a < lines.size(); a++)
+			trace += lines[a];
 
 		// Add stack trace text area
 		text_stack = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL);
 		text_stack->SetValue(trace);
 		text_stack->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-		sizer->Add(text_stack, 1, wxEXPAND|wxALL, 4);
+		sizer->Add(text_stack, 1, wxEXPAND|wxALL, 10);
 
 		// Dump stack trace to a file (just in case)
 		wxFile file(appPath("slade3_crash.log", DIR_USER), wxFile::write);
 		file.Write(trace);
 		file.Close();
 
-		// Add standard 'OK' button
-		sizer->Add(CreateStdDialogButtonSizer(wxOK), 0, wxEXPAND|wxALL, 4);
+		// Also dump stack trace to console
+		std::cerr << trace;
+
+		// Add 'Copy Stack Trace' button
+		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 6);
+		btn_copy_trace = new wxButton(this, -1, "Copy Stack Trace");
+		hbox->AddStretchSpacer();
+		hbox->Add(btn_copy_trace, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		btn_copy_trace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnCopyTrace, this);
+
+		// Add 'Exit SLADE' button
+		btn_exit = new wxButton(this, -1, "Exit SLADE");
+		hbox->Add(btn_exit, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		btn_exit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
 
 		// Setup layout
 		Layout();
 		SetInitialSize(wxSize(500, 500));
+		CenterOnParent();
 	}
 
 	~SLADECrashDialog() {}
+
+	void onBtnCopyTrace(wxCommandEvent& e)
+	{
+		if (wxTheClipboard->Open())
+		{
+			wxTheClipboard->SetData(new wxTextDataObject(trace));
+			wxTheClipboard->Flush();
+			wxTheClipboard->Close();
+			wxMessageBox("Stack trace successfully copied to clipboard");
+		}
+		else
+			wxMessageBox("Unable to access the system clipboard, please select+copy the text above manually", wxMessageBoxCaptionStr, wxICON_EXCLAMATION);
+	}
+
+	void onBtnExit(wxCommandEvent& e)
+	{
+		EndModal(wxID_OK);
+	}
 };
-#endif//__APPLE__
+#endif//wxUSE_STACKWALKER
+
+
+/* MainAppFileListener and related Classes
+ * wxWidgets IPC classes used to send filenames of archives to open
+ * from one SLADE instance to another in the case where a second
+ * instance is opened
+ *******************************************************************/
+class MainAppFLConnection : public wxConnection
+{
+public:
+	MainAppFLConnection() {}
+	~MainAppFLConnection() {}
+
+	bool OnAdvise(const wxString& topic, const wxString& item, char* data, int size, wxIPCFormat format)
+	{
+		return true;
+	}
+
+	virtual bool OnPoke(const wxString& topic, const wxString& item, const void *data, size_t size, wxIPCFormat format)
+	{
+		theArchiveManager->openArchive(item);
+		return true;
+	}
+};
+
+class MainAppFileListener : public wxServer
+{
+public:
+	MainAppFileListener() {}
+	~MainAppFileListener() {}
+
+	wxConnectionBase* OnAcceptConnection(const wxString& topic)
+	{
+		return new MainAppFLConnection();
+	}
+};
+
+class MainAppFLClient : public wxClient
+{
+public:
+	MainAppFLClient() {}
+	~MainAppFLClient() {}
+
+	wxConnectionBase* OnMakeConnection()
+	{
+		return new MainAppFLConnection();
+	}
+};
+
 
 /*******************************************************************
  * FUNCTIONS
@@ -242,6 +349,8 @@ string appPath(string filename, int dir)
 		return dir_user + sep + filename;
 	else if (dir == DIR_APP)
 		return dir_app + sep + filename;
+	else if (dir == DIR_RES)
+		return dir_res + sep + filename;
 	else if (dir == DIR_TEMP)
 	{
 		// Get temp path
@@ -339,6 +448,11 @@ bool MainApp::initDirectories()
 	string sep = "/";
 #endif
 
+	// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX), use this for the installation prefix
+#if defined(__UNIX__) && defined(INSTALL_PREFIX)
+	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
+#endif//defined(__UNIX__) && defined(INSTALL_PREFIX)
+	
 	// Setup app dir
 	dir_app = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 
@@ -347,6 +461,7 @@ bool MainApp::initDirectories()
 	{
 		// Setup portable user/data dirs
 		dir_data = dir_app;
+		dir_res = dir_app;
 		dir_user = dir_app + sep + "config";
 	}
 	else
@@ -354,6 +469,7 @@ bool MainApp::initDirectories()
 		// Setup standard user/data dirs
 		dir_user = wxStandardPaths::Get().GetUserDataDir();
 		dir_data = wxStandardPaths::Get().GetDataDir();
+		dir_res = wxStandardPaths::Get().GetResourcesDir();
 	}
 
 	// Create user dir if necessary
@@ -369,6 +485,10 @@ bool MainApp::initDirectories()
 	// Check data dir
 	if (!wxDirExists(dir_data))
 		dir_data = dir_app;	// Use app dir if data dir doesn't exist
+
+	// Check res dir
+	if(!wxDirExists(dir_res))
+		dir_res = dir_app;	// Use app dir if res dir doesn't exist
 
 	return true;
 }
@@ -406,36 +526,36 @@ void MainApp::initLogFile()
 void MainApp::initActions()
 {
 	// MainWindow
-	new SAction("main_exit", "E&xit", "t_exit", "Quit SLADE", "", 0, wxID_EXIT);
-	new SAction("main_undo", "Undo", "t_undo", "Undo", "Ctrl+Z");
-	new SAction("main_redo", "Redo", "t_redo", "Redo", "Ctrl+Y");
-	new SAction("main_setbra", "Set &Base Resource Archive", "e_archive", "Set the Base Resource Archive, to act as the program 'IWAD'");
-	new SAction("main_preferences", "&Preferences...", "t_settings", "Setup SLADE options and preferences", "", NORMAL, wxID_PREFERENCES);
-	new SAction("main_showam", "&Archive Manager", "e_archive", "Toggle the Archive Manager window", "Ctrl+1");
-	new SAction("main_showconsole", "&Console", "t_console", "Toggle the Console window", "Ctrl+2");
-	new SAction("main_showundohistory", "&Undo History", "t_undo", "Toggle the Undo History window", "Ctrl+3");
-	new SAction("main_onlinedocs", "Online &Documentation", "t_wiki", "View SLADE documentation online");
-	new SAction("main_about", "&About", "i_logo", "Informaton about SLADE", "", 0, wxID_ABOUT);
+	new SAction("main_exit", "E&xit", "exit", "Quit SLADE", "", 0, wxID_EXIT);
+	new SAction("main_undo", "Undo", "undo", "Undo", "Ctrl+Z");
+	new SAction("main_redo", "Redo", "redo", "Redo", "Ctrl+Y");
+	new SAction("main_setbra", "Set &Base Resource Archive", "archive", "Set the Base Resource Archive, to act as the program 'IWAD'");
+	new SAction("main_preferences", "&Preferences...", "settings", "Setup SLADE options and preferences", "", NORMAL, wxID_PREFERENCES);
+	new SAction("main_showam", "&Archive Manager", "archive", "Toggle the Archive Manager window", "Ctrl+1");
+	new SAction("main_showconsole", "&Console", "console", "Toggle the Console window", "Ctrl+2");
+	new SAction("main_showundohistory", "&Undo History", "undo", "Toggle the Undo History window", "Ctrl+3");
+	new SAction("main_onlinedocs", "Online &Documentation", "wiki", "View SLADE documentation online");
+	new SAction("main_about", "&About", "logo", "Informaton about SLADE", "", 0, wxID_ABOUT);
 	new SAction("main_updatecheck", "Check for Updates...", "", "Check online for updates");
 
 	// ArchiveManagerPanel
-	new SAction("aman_newwad", "New Wad Archive", "t_newarchive", "Create a new Doom Wad Archive", "Ctrl+Shift+W");
-	new SAction("aman_newzip", "New Zip Archive", "t_newzip", "Create a new Zip Archive", "Ctrl+Shift+Z");
-	new SAction("aman_newmap", "New Map", "t_mapeditor", "Create a new standalone map", "Ctrl+Shift+M");
-	new SAction("aman_open", "&Open", "t_open", "Open an existing Archive", "Ctrl+O");
-	new SAction("aman_opendir", "Open &Directory", "t_opendir", "Open a directory as an Archive");
-	new SAction("aman_save", "&Save", "t_save", "Save the currently open Archive", "Ctrl+S");
-	new SAction("aman_saveas", "Save &As", "t_saveas", "Save the currently open Archive to a new file", "Ctrl+Shift+S");
-	new SAction("aman_saveall", "Save All", "t_saveall", "Save all open Archives");
-	new SAction("aman_close", "&Close", "t_close", "Close the currently open Archive", "Ctrl+W");
-	new SAction("aman_closeall", "Close All", "t_closeall", "Close all open Archives");
-	new SAction("aman_recent_open", "Open", "t_open", "Open the selected Archive(s)");
-	new SAction("aman_recent_remove", "Remove", "t_close", "Remove the selected Archive(s) from the recent list");
-	new SAction("aman_bookmark_go", "Go To", "t_open", "Go to the selected bookmark");
-	new SAction("aman_bookmark_remove", "Remove", "t_close", "Remove the selected bookmark(s) from the list");
-	new SAction("aman_save_a", "&Save", "t_save", "Save the selected Archive", "Ctrl+S");
-	new SAction("aman_saveas_a", "Save &As", "t_saveas", "Save the selected Archive to a new file", "Ctrl+Shift+S");
-	new SAction("aman_close_a", "&Close", "t_close", "Close the selected Archive", "Ctrl+W");
+	new SAction("aman_newwad", "New Wad Archive", "newarchive", "Create a new Doom Wad Archive", "Ctrl+Shift+W");
+	new SAction("aman_newzip", "New Zip Archive", "newzip", "Create a new Zip Archive", "Ctrl+Shift+Z");
+	new SAction("aman_newmap", "New Map", "mapeditor", "Create a new standalone map", "Ctrl+Shift+M");
+	new SAction("aman_open", "&Open", "open", "Open an existing Archive", "Ctrl+O");
+	new SAction("aman_opendir", "Open &Directory", "opendir", "Open a directory as an Archive");
+	new SAction("aman_save", "&Save", "save", "Save the currently open Archive", "Ctrl+S");
+	new SAction("aman_saveas", "Save &As", "saveas", "Save the currently open Archive to a new file", "Ctrl+Shift+S");
+	new SAction("aman_saveall", "Save All", "saveall", "Save all open Archives");
+	new SAction("aman_close", "&Close", "close", "Close the currently open Archive", "Ctrl+W");
+	new SAction("aman_closeall", "Close All", "closeall", "Close all open Archives");
+	new SAction("aman_recent_open", "Open", "open", "Open the selected Archive(s)");
+	new SAction("aman_recent_remove", "Remove", "close", "Remove the selected Archive(s) from the recent list");
+	new SAction("aman_bookmark_go", "Go To", "open", "Go to the selected bookmark");
+	new SAction("aman_bookmark_remove", "Remove", "close", "Remove the selected bookmark(s) from the list");
+	new SAction("aman_save_a", "&Save", "save", "Save the selected Archive", "Ctrl+S");
+	new SAction("aman_saveas_a", "Save &As", "saveas", "Save the selected Archive to a new file", "Ctrl+Shift+S");
+	new SAction("aman_close_a", "&Close", "close", "Close the selected Archive", "Ctrl+W");
 
 	// Recent files
 	new SAction("aman_recent1", "<insert recent file name>", "");
@@ -460,15 +580,15 @@ void MainApp::initActions()
 	new SAction("aman_recent20", "<insert recent file name>", "");
 
 	// ArchivePanel
-	new SAction("arch_newentry", "New Entry", "t_newentry", "Create a new empty entry");
-	new SAction("arch_newpalette", "New PLAYPAL", "e_palette", "Create a new palette entry");
-	new SAction("arch_newanimated", "New ANIMATED", "t_animation", "Create a new Boom ANIMATED entry");
-	new SAction("arch_newswitches", "New SWITCHES", "t_switch", "Create a new Boom SWITCHES entry");
-	new SAction("arch_newdir", "New Directory", "t_newfolder", "Create a new empty directory");
-	new SAction("arch_importfiles", "&Import Files", "t_importfiles", "Import multiple files into the archive", "kb:el_import_files");
-	new SAction("arch_buildarchive", "&Build Archive", "t_buildarchive", "Build archive from the current directory", "kb:el_build_archive");
-	new SAction("arch_texeditor", "&Texture Editor", "t_texeditor", "Open the texture editor for the current archive");
-	new SAction("arch_mapeditor", "&Map Editor", "t_mapeditor", "Open the map editor");
+	new SAction("arch_newentry", "New Entry", "newentry", "Create a new empty entry");
+	new SAction("arch_newpalette", "New PLAYPAL", "palette", "Create a new palette entry");
+	new SAction("arch_newanimated", "New ANIMATED", "animation", "Create a new Boom ANIMATED entry");
+	new SAction("arch_newswitches", "New SWITCHES", "switch", "Create a new Boom SWITCHES entry");
+	new SAction("arch_newdir", "New Directory", "newfolder", "Create a new empty directory");
+	new SAction("arch_importfiles", "&Import Files", "importfiles", "Import multiple files into the archive", "kb:el_import_files");
+	new SAction("arch_buildarchive", "&Build Archive", "buildarchive", "Build archive from the current directory", "kb:el_build_archive");
+	new SAction("arch_texeditor", "&Texture Editor", "texeditor", "Open the texture editor for the current archive");
+	new SAction("arch_mapeditor", "&Map Editor", "mapeditor", "Open the map editor");
 	new SAction("arch_clean_patches", "Remove Unused &Patches", "", "Remove any unused patches, and their associated entries");
 	new SAction("arch_clean_textures", "Remove Unused &Textures", "", "Remove any unused textures");
 	new SAction("arch_clean_flats", "Remove Unused &Flats", "", "Remove any unused flats");
@@ -476,57 +596,57 @@ void MainApp::initActions()
 	new SAction("arch_check_duplicates2", "Check Duplicate Entry Content", "", "Checks the archive for any entries sharing the same data");
 	new SAction("arch_clean_iwaddupes", "Remove Entries Duplicated from IWAD", "", "Remove entries that are exact duplicates of entries from the base resource archive");
 	new SAction("arch_replace_maps", "Replace in Maps", "", "Tool to find and replace thing types, specials and textures in all maps");
-	new SAction("arch_entry_rename", "Rename", "t_rename", "Rename the selected entries", "kb:el_rename");
-	new SAction("arch_entry_rename_each", "Rename Each", "t_renameeach", "Rename separately all the selected entries");
-	new SAction("arch_entry_delete", "Delete", "t_delete", "Delete the selected entries");
-	new SAction("arch_entry_revert", "Revert", "t_revert", "Revert any modifications made to the selected entries since the last save");
-	new SAction("arch_entry_cut", "Cut", "t_cut", "Cut the selected entries");
-	new SAction("arch_entry_copy", "Copy", "t_copy", "Copy the selected entries");
-	new SAction("arch_entry_paste", "Paste", "t_paste", "Paste the selected entries");
-	new SAction("arch_entry_moveup", "Move Up", "t_up", "Move the selected entries up", "kb:el_move_up");
-	new SAction("arch_entry_movedown", "Move Down", "t_down", "Move the selected entries down", "kb:el_move_down");
-	new SAction("arch_entry_sort", "Sort", "t_down", "Sort the entries in the list");
-	new SAction("arch_entry_import", "Import", "t_import", "Import a file to the selected entry", "kb:el_import");
-	new SAction("arch_entry_export", "Export", "t_export", "Export the selected entries to files", "kb:el_export");
-	new SAction("arch_entry_bookmark", "Bookmark", "t_bookmark", "Bookmark the current entry");
-	new SAction("arch_entry_opentab", "Open in Tab", "t_open", "Open selected entries in separate tabs");
-	new SAction("arch_entry_crc32", "Compute CRC-32 Checksum", "e_text", "Compute the CRC-32 checksums of the selected entries");
+	new SAction("arch_entry_rename", "Rename", "rename", "Rename the selected entries", "kb:el_rename");
+	new SAction("arch_entry_rename_each", "Rename Each", "renameeach", "Rename separately all the selected entries");
+	new SAction("arch_entry_delete", "Delete", "delete", "Delete the selected entries");
+	new SAction("arch_entry_revert", "Revert", "revert", "Revert any modifications made to the selected entries since the last save");
+	new SAction("arch_entry_cut", "Cut", "cut", "Cut the selected entries");
+	new SAction("arch_entry_copy", "Copy", "copy", "Copy the selected entries");
+	new SAction("arch_entry_paste", "Paste", "paste", "Paste the selected entries");
+	new SAction("arch_entry_moveup", "Move Up", "up", "Move the selected entries up", "kb:el_move_up");
+	new SAction("arch_entry_movedown", "Move Down", "down", "Move the selected entries down", "kb:el_move_down");
+	new SAction("arch_entry_sort", "Sort", "down", "Sort the entries in the list");
+	new SAction("arch_entry_import", "Import", "import", "Import a file to the selected entry", "kb:el_import");
+	new SAction("arch_entry_export", "Export", "export", "Export the selected entries to files", "kb:el_export");
+	new SAction("arch_entry_bookmark", "Bookmark", "bookmark", "Bookmark the current entry");
+	new SAction("arch_entry_opentab", "Open in Tab", "open", "Open selected entries in separate tabs");
+	new SAction("arch_entry_crc32", "Compute CRC-32 Checksum", "text", "Compute the CRC-32 checksums of the selected entries");
 	new SAction("arch_bas_convertb", "Convert to SWANTBLS", "", "Convert any selected SWITCHES and ANIMATED entries to a single SWANTBLS entry");
 	new SAction("arch_bas_convertz", "Convert to ANIMDEFS", "", "Convert any selected SWITCHES and ANIMATED entries to a single ANIMDEFS entry");
 	new SAction("arch_swan_convert", "Compile to SWITCHES and ANIMATED", "", "Convert SWANTBLS entries into SWITCHES and ANIMATED entries");
 	new SAction("arch_texturex_convertzd", "Convert to TEXTURES", "", "Convert any selected TEXTUREx entries to ZDoom TEXTURES format");
-	new SAction("arch_view_text", "View as Text", "e_text", "Open the selected entry in the text editor, regardless of type");
-	new SAction("arch_view_hex", "View as Hex", "e_data", "Open the selected entry in the hex editor, regardless of type");
-	new SAction("arch_gfx_convert", "Convert to...", "t_convert", "Open the Gfx Conversion Dialog for any selected gfx entries");
-	new SAction("arch_gfx_translate", "Colour Remap...", "t_remap", "Remap a range of colours in the selected gfx entries to another range (paletted gfx only)");
-	new SAction("arch_gfx_colourise", "Colourise", "t_colourise", "Colourise the selected gfx entries");
-	new SAction("arch_gfx_tint", "Tint", "t_tint", "Tint the selected gfx entries by a colour/amount");
-	new SAction("arch_gfx_offsets", "Modify Gfx Offsets", "t_offset", "Mass-modify the offsets for any selected gfx entries");
-	new SAction("arch_gfx_addptable", "Add to Patch Table", "e_pnames", "Add selected gfx entries to PNAMES");
-	new SAction("arch_gfx_addtexturex", "Add to TEXTUREx", "e_texturex", "Create textures from selected gfx entries and add them to TEXTUREx");
-	new SAction("arch_gfx_exportpng", "Export as PNG", "t_export", "Export selected gfx entries to PNG format files");
-	new SAction("arch_gfx_pngopt", "Optimize PNG", "t_pngopt", "Optimize PNG entries");
-	new SAction("arch_audio_convertwd", "Convert WAV to Doom Sound", "t_convert", "Convert any selected WAV format entries to Doom Sound format");
-	new SAction("arch_audio_convertdw", "Convert Doom Sound to WAV", "t_convert", "Convert any selected Doom Sound format entries to WAV format");
-	new SAction("arch_audio_convertmus", "Convert MUS to MIDI", "t_convert", "Convert any selected MUS format entries to MIDI format");
-	new SAction("arch_scripts_compileacs", "Compile ACS", "t_compile", "Compile any selected text entries to ACS bytecode");
-	new SAction("arch_scripts_compilehacs", "Compile ACS (Hexen bytecode)", "t_compile2", "Compile any selected text entries to Hexen-compatible ACS bytecode");
+	new SAction("arch_view_text", "View as Text", "text", "Open the selected entry in the text editor, regardless of type");
+	new SAction("arch_view_hex", "View as Hex", "data", "Open the selected entry in the hex editor, regardless of type");
+	new SAction("arch_gfx_convert", "Convert to...", "convert", "Open the Gfx Conversion Dialog for any selected gfx entries");
+	new SAction("arch_gfx_translate", "Colour Remap...", "remap", "Remap a range of colours in the selected gfx entries to another range (paletted gfx only)");
+	new SAction("arch_gfx_colourise", "Colourise", "colourise", "Colourise the selected gfx entries");
+	new SAction("arch_gfx_tint", "Tint", "tint", "Tint the selected gfx entries by a colour/amount");
+	new SAction("arch_gfx_offsets", "Modify Gfx Offsets", "offset", "Mass-modify the offsets for any selected gfx entries");
+	new SAction("arch_gfx_addptable", "Add to Patch Table", "pnames", "Add selected gfx entries to PNAMES");
+	new SAction("arch_gfx_addtexturex", "Add to TEXTUREx", "texturex", "Create textures from selected gfx entries and add them to TEXTUREx");
+	new SAction("arch_gfx_exportpng", "Export as PNG", "export", "Export selected gfx entries to PNG format files");
+	new SAction("arch_gfx_pngopt", "Optimize PNG", "pngopt", "Optimize PNG entries");
+	new SAction("arch_audio_convertwd", "Convert WAV to Doom Sound", "convert", "Convert any selected WAV format entries to Doom Sound format");
+	new SAction("arch_audio_convertdw", "Convert Doom Sound to WAV", "convert", "Convert any selected Doom Sound format entries to WAV format");
+	new SAction("arch_audio_convertmus", "Convert MUS to MIDI", "convert", "Convert any selected MUS format entries to MIDI format");
+	new SAction("arch_scripts_compileacs", "Compile ACS", "compile", "Compile any selected text entries to ACS bytecode");
+	new SAction("arch_scripts_compilehacs", "Compile ACS (Hexen bytecode)", "compile2", "Compile any selected text entries to Hexen-compatible ACS bytecode");
 	new SAction("arch_map_opendb2", "Open Map in Doom Builder 2", "", "Open the selected map in Doom Builder 2");
-	new SAction("arch_run", "Run Archive", "t_run", "Run the current archive", "Ctrl+Shift+R");
+	new SAction("arch_run", "Run Archive", "run", "Run the current archive", "Ctrl+Shift+R");
 
 	// GfxEntryPanel
-	new SAction("pgfx_mirror", "Mirror", "t_mirror", "Mirror the graphic horizontally");
-	new SAction("pgfx_flip", "Flip", "t_flip", "Flip the graphic vertically");
-	new SAction("pgfx_rotate", "Rotate", "t_rotate", "Rotate the graphic");
-	new SAction("pgfx_translate", "Colour Remap", "t_remap", "Remap a range of colours in the graphic to another range (paletted gfx only)");
-	new SAction("pgfx_colourise", "Colourise", "t_colourise", "Colourise the graphic");
-	new SAction("pgfx_tint", "Tint", "t_tint", "Tint the graphic by a colour/amount");
+	new SAction("pgfx_mirror", "Mirror", "mirror", "Mirror the graphic horizontally");
+	new SAction("pgfx_flip", "Flip", "flip", "Flip the graphic vertically");
+	new SAction("pgfx_rotate", "Rotate", "rotate", "Rotate the graphic");
+	new SAction("pgfx_translate", "Colour Remap", "remap", "Remap a range of colours in the graphic to another range (paletted gfx only)");
+	new SAction("pgfx_colourise", "Colourise", "colourise", "Colourise the graphic");
+	new SAction("pgfx_tint", "Tint", "tint", "Tint the graphic by a colour/amount");
 	new SAction("pgfx_alph", "alPh Chunk", "", "Add/Remove alPh chunk to/from the PNG", "", SAction::CHECK);
 	new SAction("pgfx_trns", "tRNS Chunk", "", "Add/Remove tRNS chunk to/from the PNG", "", SAction::CHECK);
 	new SAction("pgfx_extract", "Extract All", "", "Extract all images in this entry to separate PNGs");
-	new SAction("pgfx_crop", "Crop", "t_settings", "Crop the graphic");
-	new SAction("pgfx_convert", "Convert to...", "t_convert", "Open the Gfx Conversion Dialog for the entry");
-	new SAction("pgfx_pngopt", "Optimize PNG", "t_pngopt", "Optimize PNG entry");
+	new SAction("pgfx_crop", "Crop", "settings", "Crop the graphic");
+	new SAction("pgfx_convert", "Convert to...", "convert", "Open the Gfx Conversion Dialog for the entry");
+	new SAction("pgfx_pngopt", "Optimize PNG", "pngopt", "Optimize PNG entry");
 
 	// ArchiveEntryList
 	new SAction("aelt_sizecol", "Size", "", "Show the size column", "", SAction::CHECK);
@@ -538,99 +658,107 @@ void MainApp::initActions()
 	new SAction("aelt_bgalt", "Alternating Row Colour", "", "Show alternating row colours", "", SAction::CHECK);
 
 	// TextureEditorPanel
-	new SAction("txed_new", "New Texture", "t_tex_new", "Create a new, empty texture", "kb:txed_tex_new");
-	new SAction("txed_delete", "Delete Texture", "t_tex_delete", "Deletes the selected texture(s) from the list", "kb:txed_tex_delete");
-	new SAction("txed_new_patch", "New Texture from Patch", "t_tex_newpatch", "Create a new texture from an existing patch", "kb:txed_tex_new_patch");
-	new SAction("txed_new_file", "New Texture from File", "t_tex_newfile", "Create a new texture from an image file", "kb:txed_tex_new_file");
-	new SAction("txed_rename", "Rename Texture", "t_tex_rename", "Rename the selected texture(s)");
-	new SAction("txed_rename_each", "Rename Each", "t_tex_renameeach", "Rename separately all the selected textures");
-	new SAction("txed_export", "Export Texture", "t_tex_export", "Create standalone images from the selected texture(s)");
-	new SAction("txed_extract", "Extract Texture", "t_tex_extract", "Export the selected texture(s) as PNG files");
-	new SAction("txed_offsets", "Modify Offsets", "t_tex_offset", "Mass modify offsets in the selected texture(s)");
-	new SAction("txed_up", "Move Up", "t_up", "Move the selected texture(s) up in the list", "kb:txed_tex_up");
-	new SAction("txed_down", "Move Down", "t_down", "Move the selected texture(s) down in the list", "kb:txed_tex_down");
-	new SAction("txed_sort", "Sort", "t_down", "Sort the textures in the list");
-	new SAction("txed_copy", "Copy", "t_copy", "Copy the selected texture(s)", "Ctrl+C");
-	new SAction("txed_cut", "Cut", "t_cut", "Cut the selected texture(s)", "Ctrl+X");
-	new SAction("txed_paste", "Paste", "t_paste", "Paste the previously copied texture(s)", "Ctrl+V");
-	new SAction("txed_patch_add", "Add Patch", "t_patch_add", "Add a patch to the texture", "kb:txed_patch_add");
-	new SAction("txed_patch_remove", "Remove Selected Patch(es)", "t_patch_remove", "Remove selected patch(es) from the texture", "kb:txed_patch_delete");
-	new SAction("txed_patch_replace", "Replace Selected Patch(es)", "t_patch_replace", "Replace selected patch(es) with a different patch", "kb:txed_patch_replace");
-	new SAction("txed_patch_back", "Send Selected Patch(es) Back", "t_patch_back", "Send selected patch(es) toward the back", "kb:txed_patch_back");
-	new SAction("txed_patch_forward", "Bring Selected Patch(es) Forward", "t_patch_forward", "Bring selected patch(es) toward the front", "kb:txed_patch_forward");
-	new SAction("txed_patch_duplicate", "Duplicate Selected Patch(es)", "t_patch_duplicate", "Duplicate the selected patch(es)", "kb:txed_patch_duplicate");
+	new SAction("txed_new", "New Texture", "tex_new", "Create a new, empty texture", "kb:txed_tex_new");
+	new SAction("txed_delete", "Delete Texture", "tex_delete", "Deletes the selected texture(s) from the list", "kb:txed_tex_delete");
+	new SAction("txed_new_patch", "New Texture from Patch", "tex_newpatch", "Create a new texture from an existing patch", "kb:txed_tex_new_patch");
+	new SAction("txed_new_file", "New Texture from File", "tex_newfile", "Create a new texture from an image file", "kb:txed_tex_new_file");
+	new SAction("txed_rename", "Rename Texture", "tex_rename", "Rename the selected texture(s)");
+	new SAction("txed_rename_each", "Rename Each", "tex_renameeach", "Rename separately all the selected textures");
+	new SAction("txed_export", "Export Texture", "tex_export", "Create standalone images from the selected texture(s)");
+	new SAction("txed_extract", "Extract Texture", "tex_extract", "Export the selected texture(s) as PNG files");
+	new SAction("txed_offsets", "Modify Offsets", "tex_offset", "Mass modify offsets in the selected texture(s)");
+	new SAction("txed_up", "Move Up", "up", "Move the selected texture(s) up in the list", "kb:txed_tex_up");
+	new SAction("txed_down", "Move Down", "down", "Move the selected texture(s) down in the list", "kb:txed_tex_down");
+	new SAction("txed_sort", "Sort", "down", "Sort the textures in the list");
+	new SAction("txed_copy", "Copy", "copy", "Copy the selected texture(s)", "Ctrl+C");
+	new SAction("txed_cut", "Cut", "cut", "Cut the selected texture(s)", "Ctrl+X");
+	new SAction("txed_paste", "Paste", "paste", "Paste the previously copied texture(s)", "Ctrl+V");
+	new SAction("txed_patch_add", "Add Patch", "patch_add", "Add a patch to the texture", "kb:txed_patch_add");
+	new SAction("txed_patch_remove", "Remove Selected Patch(es)", "patch_remove", "Remove selected patch(es) from the texture", "kb:txed_patch_delete");
+	new SAction("txed_patch_replace", "Replace Selected Patch(es)", "patch_replace", "Replace selected patch(es) with a different patch", "kb:txed_patch_replace");
+	new SAction("txed_patch_back", "Send Selected Patch(es) Back", "patch_back", "Send selected patch(es) toward the back", "kb:txed_patch_back");
+	new SAction("txed_patch_forward", "Bring Selected Patch(es) Forward", "patch_forward", "Bring selected patch(es) toward the front", "kb:txed_patch_forward");
+	new SAction("txed_patch_duplicate", "Duplicate Selected Patch(es)", "patch_duplicate", "Duplicate the selected patch(es)", "kb:txed_patch_duplicate");
 
 	// AnimatedEntryPanel
-	new SAction("anim_new", "New Animation", "t_animation_new", "Create a new, dummy animation");
-	new SAction("anim_delete", "Delete Animation", "t_animation_delete", "Deletes the selected animation(s) from the list");
-	new SAction("anim_up", "Move Up", "t_up", "Move the selected animation(s) up in the list");
-	new SAction("anim_down", "Move Down", "t_down", "Move the selected animation(s) down in the list");
+	new SAction("anim_new", "New Animation", "animation_new", "Create a new, dummy animation");
+	new SAction("anim_delete", "Delete Animation", "animation_delete", "Deletes the selected animation(s) from the list");
+	new SAction("anim_up", "Move Up", "up", "Move the selected animation(s) up in the list");
+	new SAction("anim_down", "Move Down", "down", "Move the selected animation(s) down in the list");
 
 	// SwitchesEntryPanel
-	new SAction("swch_new", "New Switch", "t_switch_new", "Create a new, dummy switch");
-	new SAction("swch_delete", "Delete Switch", "t_switch_delete", "Deletes the selected switch(es) from the list");
-	new SAction("swch_up", "Move Up", "t_up", "Move the selected switch(es) up in the list");
-	new SAction("swch_down", "Move Down", "t_down", "Move the selected switch(es) down in the list");
+	new SAction("swch_new", "New Switch", "switch_new", "Create a new, dummy switch");
+	new SAction("swch_delete", "Delete Switch", "switch_delete", "Deletes the selected switch(es) from the list");
+	new SAction("swch_up", "Move Up", "up", "Move the selected switch(es) up in the list");
+	new SAction("swch_down", "Move Down", "down", "Move the selected switch(es) down in the list");
 
 	// PaletteEntryPanel
-	new SAction("ppal_addcustom", "Add to Custom Palettes", "t_plus", "Add the current palette to the custom palettes list");
-	new SAction("ppal_test", "Test Palette", "t_palette_test", "Temporarily add the current palette to the palette chooser");
-	new SAction("ppal_exportas", "Export As...", "t_export", "Export the current palette to a file");
-	new SAction("ppal_importfrom", "Import From...", "t_import", "Import data from a file in the current palette");
-	new SAction("ppal_colourise", "Colourise", "t_palette_colourise", "Colourise the palette");
-	new SAction("ppal_tint", "Tint", "t_palette_tint", "Tint the palette");
-	new SAction("ppal_tweak", "Tweak", "t_palette_tweak", "Tweak the palette");
-	new SAction("ppal_invert", "Invert", "t_palette_invert", "Invert the palette");
-	new SAction("ppal_moveup", "Pull Ahead", "t_palette_pull", "Move this palette one rank towards the first");
-	new SAction("ppal_movedown", "Push Back", "t_palette_push", "Move this palette one rank towards the last");
-	new SAction("ppal_duplicate", "Duplicate", "t_palette_duplicate", "Create a copy of this palette at the end");
-	new SAction("ppal_remove", "Remove", "t_palette_delete", "Erase this palette");
-	new SAction("ppal_removeothers", "Remove Others", "t_palette_deleteothers", "Keep only this palette and erase all others");
-	new SAction("ppal_report", "Write Report", "e_text", "Write an info report on this palette");
-	new SAction("ppal_generate", "Generate Palettes", "e_palette", "Generate full range of palettes from the first");
-	new SAction("ppal_colormap", "Generate Colormaps", "e_colormap", "Generate colormap lump from the first palette");
+	new SAction("ppal_addcustom", "Add to Custom Palettes", "plus", "Add the current palette to the custom palettes list");
+	new SAction("ppal_test", "Test Palette", "palette_test", "Temporarily add the current palette to the palette chooser");
+	new SAction("ppal_exportas", "Export As...", "export", "Export the current palette to a file");
+	new SAction("ppal_importfrom", "Import From...", "import", "Import data from a file in the current palette");
+	new SAction("ppal_colourise", "Colourise", "palette_colourise", "Colourise the palette");
+	new SAction("ppal_tint", "Tint", "palette_tint", "Tint the palette");
+	new SAction("ppal_tweak", "Tweak", "palette_tweak", "Tweak the palette");
+	new SAction("ppal_invert", "Invert", "palette_invert", "Invert the palette");
+	new SAction("ppal_moveup", "Pull Ahead", "palette_pull", "Move this palette one rank towards the first");
+	new SAction("ppal_movedown", "Push Back", "palette_push", "Move this palette one rank towards the last");
+	new SAction("ppal_duplicate", "Duplicate", "palette_duplicate", "Create a copy of this palette at the end");
+	new SAction("ppal_remove", "Remove", "palette_delete", "Erase this palette");
+	new SAction("ppal_removeothers", "Remove Others", "palette_deleteothers", "Keep only this palette and erase all others");
+	new SAction("ppal_report", "Write Report", "text", "Write an info report on this palette");
+	new SAction("ppal_generate", "Generate Palettes", "palette", "Generate full range of palettes from the first");
+	new SAction("ppal_colormap", "Generate Colormaps", "colormap", "Generate colormap lump from the first palette");
 
 	// MapEntryPanel
-	new SAction("pmap_open_text", "Edit Level Script", "e_text", "Open the map header as text (to edit fragglescript, etc.)");
+	new SAction("pmap_open_text", "Edit Level Script", "text", "Open the map header as text (to edit fragglescript, etc.)");
+
+	// DataEntryPanel
+	new SAction("data_add_row", "Add Row", "plus", "Add a new row (after the currently selected row");
+	new SAction("data_delete_row", "Delete Row(s)", "close", "Delete the currently selected row(s)");
+	new SAction("data_cut_row", "Cut Row(s)", "cut", "Cut the currently selected row(s)", "Ctrl+X");
+	new SAction("data_copy_row", "Copy Row(s)", "copy", "Copy the currently selected row(s)", "Ctrl+C");
+	new SAction("data_paste_row", "Paste Row(s)", "paste", "Paste at the currently selected row", "Ctrl+V");
+	new SAction("data_change_value", "Change Value...", "rename", "Change the value of the selected cell(s)");
 
 	// Map Editor Window
-	new SAction("mapw_save", "&Save Map Changes", "t_save", "Save any changes to the current map", "Ctrl+S");
-	new SAction("mapw_saveas", "Save Map &As...", "t_saveas", "Save the map to a new wad archive", "Ctrl+Shift+S");
-	new SAction("mapw_rename", "&Rename Map", "t_rename", "Rename the current map");
-	new SAction("mapw_convert", "Con&vert Map...", "t_convert", "Convert the current map to a different format");
-	new SAction("mapw_backup", "Restore Backup...", "t_undo", "Restore a previous backup of the current map");
-	new SAction("mapw_undo", "Undo", "t_undo", "Undo", "Ctrl+Z");
-	new SAction("mapw_redo", "Redo", "t_redo", "Redo", "Ctrl+Y");
-	new SAction("mapw_setbra", "Set &Base Resource Archive", "e_archive", "Set the Base Resource Archive, to act as the program 'IWAD'");
-	new SAction("mapw_preferences", "&Preferences...", "t_settings", "Setup SLADE options and preferences");
+	new SAction("mapw_save", "&Save Map Changes", "save", "Save any changes to the current map", "Ctrl+S");
+	new SAction("mapw_saveas", "Save Map &As...", "saveas", "Save the map to a new wad archive", "Ctrl+Shift+S");
+	new SAction("mapw_rename", "&Rename Map", "rename", "Rename the current map");
+	new SAction("mapw_convert", "Con&vert Map...", "convert", "Convert the current map to a different format");
+	new SAction("mapw_backup", "Restore Backup...", "undo", "Restore a previous backup of the current map");
+	new SAction("mapw_undo", "Undo", "undo", "Undo", "Ctrl+Z");
+	new SAction("mapw_redo", "Redo", "redo", "Redo", "Ctrl+Y");
+	new SAction("mapw_setbra", "Set &Base Resource Archive", "archive", "Set the Base Resource Archive, to act as the program 'IWAD'");
+	new SAction("mapw_preferences", "&Preferences...", "settings", "Setup SLADE options and preferences");
 	int group_mode = SAction::newGroup();
-	new SAction("mapw_mode_vertices", "Vertices Mode", "t_verts", "Change to vertices editing mode", "kb:me2d_mode_vertices", SAction::RADIO, -1, group_mode);
-	new SAction("mapw_mode_lines", "Lines Mode", "t_lines", "Change to lines editing mode", "kb:me2d_mode_lines", SAction::RADIO, -1, group_mode);
-	new SAction("mapw_mode_sectors", "Sectors Mode", "t_sectors", "Change to sectors editing mode", "kb:me2d_mode_sectors", SAction::RADIO, -1, group_mode);
-	new SAction("mapw_mode_things", "Things Mode", "t_things", "Change to things editing mode", "kb:me2d_mode_things", SAction::RADIO, -1, group_mode);
-	new SAction("mapw_mode_3d", "3d Mode", "t_3d", "Change to 3d editing mode", "kb:map_toggle_3d", SAction::RADIO, -1, group_mode);
+	new SAction("mapw_mode_vertices", "Vertices Mode", "verts", "Change to vertices editing mode", "kb:me2d_mode_vertices", SAction::RADIO, -1, group_mode);
+	new SAction("mapw_mode_lines", "Lines Mode", "lines", "Change to lines editing mode", "kb:me2d_mode_lines", SAction::RADIO, -1, group_mode);
+	new SAction("mapw_mode_sectors", "Sectors Mode", "sectors", "Change to sectors editing mode", "kb:me2d_mode_sectors", SAction::RADIO, -1, group_mode);
+	new SAction("mapw_mode_things", "Things Mode", "things", "Change to things editing mode", "kb:me2d_mode_things", SAction::RADIO, -1, group_mode);
+	new SAction("mapw_mode_3d", "3d Mode", "3d", "Change to 3d editing mode", "kb:map_toggle_3d", SAction::RADIO, -1, group_mode);
 	int group_flat_type = SAction::newGroup();
-	new SAction("mapw_flat_none", "Wireframe", "t_flat_w", "Don't show flats (wireframe)", "", SAction::RADIO, -1, group_flat_type);
-	new SAction("mapw_flat_untextured", "Untextured", "t_flat_u", "Show untextured flats", "", SAction::RADIO, -1, group_flat_type);
-	new SAction("mapw_flat_textured", "Textured", "t_flat_t", "Show textured flats", "", SAction::RADIO, -1, group_flat_type);
+	new SAction("mapw_flat_none", "Wireframe", "flat_w", "Don't show flats (wireframe)", "", SAction::RADIO, -1, group_flat_type);
+	new SAction("mapw_flat_untextured", "Untextured", "flat_u", "Show untextured flats", "", SAction::RADIO, -1, group_flat_type);
+	new SAction("mapw_flat_textured", "Textured", "flat_t", "Show textured flats", "", SAction::RADIO, -1, group_flat_type);
 	int group_sector_mode = SAction::newGroup();
-	new SAction("mapw_sectormode_normal", "Normal (Both)", "t_sector_both", "Edit sector floors and ceilings", "", SAction::RADIO, -1, group_sector_mode);
-	new SAction("mapw_sectormode_floor", "Floors", "t_sector_floor", "Edit sector floors", "", SAction::RADIO, -1, group_sector_mode);
-	new SAction("mapw_sectormode_ceiling", "Ceilings", "t_sector_ceiling", "Edit sector ceilings", "", SAction::RADIO, -1, group_sector_mode);
-	new SAction("mapw_showproperties", "&Item Properties", "t_properties", "Toggle the Item Properties window", "Ctrl+1");
-	new SAction("mapw_showconsole", "&Console", "t_console", "Toggle the Console window", "Ctrl+2");
-	new SAction("mapw_showundohistory", "&Undo History", "t_undo", "Toggle the Undo History window", "Ctrl+3");
-	new SAction("mapw_showchecks", "Map Checks", "i_tick", "Toggle the Map Checks window", "Ctrl+4");
-	new SAction("mapw_showscripteditor", "Script &Editor", "e_text", "Toggle the Script Editor window", "Ctrl+5");
-	new SAction("mapw_run_map", "Run Map", "t_run", "Run the current map", "Ctrl+Shift+R");
-	new SAction("mapw_draw_lines", "Draw Lines", "t_linedraw", "Begin line drawing", "kb:me2d_begin_linedraw");
-	new SAction("mapw_draw_shape", "Draw Shape", "t_shapedraw", "Begin shape drawing", "kb:me2d_begin_shapedraw");
-	new SAction("mapw_edit_objects", "Edit Object(s)", "t_objectedit", "Edit currently selected object(s)", "kb:me2d_begin_object_edit");
+	new SAction("mapw_sectormode_normal", "Normal (Both)", "sector_both", "Edit sector floors and ceilings", "", SAction::RADIO, -1, group_sector_mode);
+	new SAction("mapw_sectormode_floor", "Floors", "sector_floor", "Edit sector floors", "", SAction::RADIO, -1, group_sector_mode);
+	new SAction("mapw_sectormode_ceiling", "Ceilings", "sector_ceiling", "Edit sector ceilings", "", SAction::RADIO, -1, group_sector_mode);
+	new SAction("mapw_showproperties", "&Item Properties", "properties", "Toggle the Item Properties window", "Ctrl+1");
+	new SAction("mapw_showconsole", "&Console", "console", "Toggle the Console window", "Ctrl+2");
+	new SAction("mapw_showundohistory", "&Undo History", "undo", "Toggle the Undo History window", "Ctrl+3");
+	new SAction("mapw_showchecks", "Map Checks", "tick", "Toggle the Map Checks window", "Ctrl+4");
+	new SAction("mapw_showscripteditor", "Script &Editor", "text", "Toggle the Script Editor window", "Ctrl+5");
+	new SAction("mapw_run_map", "Run Map", "run", "Run the current map", "Ctrl+Shift+R");
+	new SAction("mapw_draw_lines", "Draw Lines", "linedraw", "Begin line drawing", "kb:me2d_begin_linedraw");
+	new SAction("mapw_draw_shape", "Draw Shape", "shapedraw", "Begin shape drawing", "kb:me2d_begin_shapedraw");
+	new SAction("mapw_edit_objects", "Edit Object(s)", "objectedit", "Edit currently selected object(s)", "kb:me2d_begin_object_edit");
 	new SAction("mapw_vertex_create", "Create Vertex Here", "", "Create a new vertex at the cursor position");
 	new SAction("mapw_line_changetexture", "Change Texture", "", "Change the currently selected or hilighted line texture(s)", "kb:me2d_line_change_texture");
 	new SAction("mapw_line_changespecial", "Change Special", "", "Change the currently selected or hilighted line special");
 	new SAction("mapw_line_tagedit", "Edit Tagged", "", "Select sectors/things to tag to this line's special", "kb:me2d_line_tag_edit");
-	new SAction("mapw_line_correctsectors", "Correct Sectors", "i_tick", "Correct line sector references");
+	new SAction("mapw_line_correctsectors", "Correct Sectors", "tick", "Correct line sector references");
 	new SAction("mapw_line_flip", "Flip Line", "", "Flip the currently selected of hilighted line(s)", "kb:me2d_line_flip");
 	new SAction("mapw_thing_changetype", "Change Type", "", "Change the currently selected or hilighted thing type(s)", "kb:me2d_thing_change_type");
 	new SAction("mapw_thing_create", "Create Thing Here", "", "Create a new thing at the cursor position");
@@ -639,23 +767,59 @@ void MainApp::initActions()
 	new SAction("mapw_sector_changespecial", "Change Special", "", "Change the currently selected or hilighted sector special(s)");
 	new SAction("mapw_sector_join", "Merge Sectors", "", "Join the currently selected sectors together, removing unneeded lines", "kb:me2d_sector_join");
 	new SAction("mapw_sector_join_keep", "Join Sectors", "", "Join the currently selected sectors together, keeping all lines", "kb:me2d_sector_join_keep");
-	new SAction("mapw_item_properties", "Properties", "t_properties", "Edit the currently selected item's properties");
+	new SAction("mapw_item_properties", "Properties", "properties", "Edit the currently selected item's properties");
 	new SAction("mapw_camera_set", "Move 3d Camera Here", "", "Set the current position of the 3d mode camera to the cursor position");
 	new SAction("mapw_clear_selection", "Clear Selection", "", "Clear the current selection, if any", "kb:me2d_clear_selection");
 	new SAction("mapw_show_fullmap", "Show Full Map", "", "Zooms out so that the full map is visible", "kb:me2d_show_all");
 	new SAction("mapw_show_item", "Show Item...", "", "Zoom and scroll to show a map item");
 	new SAction("mapw_toggle_selection_numbers", "Show Selection Numbers", "", "Show/hide selection numbers", "kb:me2d_toggle_selection_numbers", SAction::CHECK);
-	new SAction("mapw_mirror_y", "Mirror Vertically", "t_flip", "Mirror the selected objects vertically", "kb:me2d_mirror_y");
-	new SAction("mapw_mirror_x", "Mirror Horizontally", "t_mirror", "Mirror the selected objects horizontally", "kb:me2d_mirror_x");
+	new SAction("mapw_mirror_y", "Mirror Vertically", "flip", "Mirror the selected objects vertically", "kb:me2d_mirror_y");
+	new SAction("mapw_mirror_x", "Mirror Horizontally", "mirror", "Mirror the selected objects horizontally", "kb:me2d_mirror_x");
 
 	// Script editor
-	new SAction("mapw_script_save", "Save", "t_save", "Save changes to scripts");
-	new SAction("mapw_script_compile", "Compile", "t_compile", "Compile scripts");
-	new SAction("mapw_script_jumpto", "Jump To...", "t_up", "Jump to a specific script/function");
+	new SAction("mapw_script_save", "Save", "save", "Save changes to scripts");
+	new SAction("mapw_script_compile", "Compile", "compile", "Compile scripts");
+	new SAction("mapw_script_jumpto", "Jump To...", "up", "Jump to a specific script/function");
+	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK);
 
 
 	// Init checked actions
 	getAction("mapw_toggle_selection_numbers")->toggled = map_show_selection_numbers;
+	getAction("mapw_script_togglelanguage")->toggled = script_show_language_list;
+}
+
+/* MainApp::singleInstanceCheck
+ * Checks if another instance of SLADE is already running, and if so,
+ * sends the args to the file listener of the existing SLADE
+ * process. Returns false if another instance was found
+ *******************************************************************/
+bool MainApp::singleInstanceCheck()
+{
+	single_instance_checker = new wxSingleInstanceChecker;
+	if (single_instance_checker->IsAnotherRunning())
+	{
+		delete single_instance_checker;
+
+		// Connect to the file listener of the existing SLADE process
+		MainAppFLClient* client = new MainAppFLClient();
+		MainAppFLConnection* connection = (MainAppFLConnection*)client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files");
+
+		if (connection)
+		{
+			// Send args as archives to open
+			for (int a = 1; a < argc; a++)
+			{
+				string arg = argv[a];
+				connection->Poke(arg, arg);
+			}
+
+			connection->Disconnect();
+		}
+
+		return false;
+	}
+
+	return true;
 }
 
 /* MainApp::OnInit
@@ -663,6 +827,10 @@ void MainApp::initActions()
  *******************************************************************/
 bool MainApp::OnInit()
 {
+	// Check if an instance of SLADE is already running
+	if (!singleInstanceCheck())
+		return false;
+
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
 	setlocale(LC_ALL, "C");
@@ -671,6 +839,10 @@ bool MainApp::OnInit()
 	Global::error = "";
 	ArchiveManager::getInstance();
 	init_ok = false;
+
+	// Start up file listener
+	file_listener = new MainAppFileListener();
+	file_listener->Create("SLADE_MAFL");
 
 	// Init variables
 	action_invalid = new SAction("invalid", "Invalid Action", "", "Something's gone wrong here");
@@ -699,6 +871,12 @@ bool MainApp::OnInit()
 
 	// Init logfile
 	initLogFile();
+
+	// Get Windows version
+#ifdef __WXMSW__
+	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
+	LOG_MESSAGE(0, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
+#endif
 
 	// Init keybinds
 	KeyBind::initBinds();
@@ -733,7 +911,7 @@ bool MainApp::OnInit()
 
 	// Load program icons
 	wxLogMessage("Loading icons");
-	loadIcons();
+	Icons::loadIcons();
 
 	// Load program fonts
 	Drawing::initFonts();
@@ -813,6 +991,7 @@ bool MainApp::OnInit()
 	// Bind events
 	Bind(wxEVT_MENU, &MainApp::onMenu, this);
 	Bind(wxEVT_COMMAND_VERSIONCHECK_COMPLETED, &MainApp::onVersionCheckCompleted, this);
+	Bind(wxEVT_ACTIVATE_APP, &MainApp::onActivate, this);
 
 	return true;
 }
@@ -852,6 +1031,8 @@ int MainApp::OnExit()
 	ArchiveManager::deleteInstance();
 	Console::deleteInstance();
 	SplashWindow::deleteInstance();
+	delete single_instance_checker;
+	delete file_listener;
 
 	// Clear temp folder
 	wxDir temp;
@@ -876,14 +1057,14 @@ int MainApp::OnExit()
 
 void MainApp::OnFatalException()
 {
-#ifndef __APPLE__
+#if wxUSE_STACKWALKER
 #ifndef _DEBUG
 	SLADEStackTrace st;
 	st.WalkFromException();
 	SLADECrashDialog sd(st);
 	sd.ShowModal();
-#endif
-#endif
+#endif//_DEBUG
+#endif//wxUSE_STACKWALKER
 }
 
 #ifdef __APPLE__
@@ -905,7 +1086,7 @@ void MainApp::readConfigFile()
 
 	// Go through the file with the tokenizer
 	string token = tz.getToken();
-	while (token.Cmp(""))
+	while (!tz.atEnd())
 	{
 		// If we come across a 'cvars' token, read in the cvars section
 		if (!token.Cmp("cvars"))
@@ -914,7 +1095,7 @@ void MainApp::readConfigFile()
 
 			// Keep reading name/value pairs until we hit the ending '}'
 			string cvar_name = tz.getToken();
-			while (cvar_name.Cmp("}"))
+			while (cvar_name.Cmp("}") && !tz.atEnd())
 			{
 				string cvar_val = tz.getToken();
 				read_cvar(cvar_name, cvar_val);
@@ -930,7 +1111,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token.Cmp("}"))
+			while (token.Cmp("}") && !tz.atEnd())
 			{
 				theArchiveManager->addBaseResourcePath(token);
 				token = wxString::FromUTF8(UTF8(tz.getToken()));
@@ -945,7 +1126,7 @@ void MainApp::readConfigFile()
 
 			// Read files until closing brace found
 			token = wxString::FromUTF8(UTF8(tz.getToken()));
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				theArchiveManager->addRecentFile(token);
 				token = wxString::FromUTF8(UTF8(tz.getToken()));
@@ -966,7 +1147,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				string path = tz.getToken();
 				NodeBuilders::addBuilderPath(token, path);
@@ -981,7 +1162,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				if (token.length())
 				{
@@ -1277,6 +1458,23 @@ void MainApp::onVersionCheckCompleted(wxThreadEvent& e)
 		wxMessageBox("SLADE is already up to date", "Check for Updates");
 }
 
+/* MainApp::onActivate
+ * Called when the app gains focus
+ *******************************************************************/
+void MainApp::onActivate(wxActivateEvent& e)
+{
+	if (!e.GetActive())
+	{
+		e.Skip();
+		return;
+	}
+
+	// Check open directory archives for changes on the file system
+	if (theMainWindow && theMainWindow->getArchiveManagerPanel())
+		theMainWindow->getArchiveManagerPanel()->checkDirArchives();
+
+	e.Skip();
+}
 
 /*******************************************************************
  * CONSOLE COMMANDS

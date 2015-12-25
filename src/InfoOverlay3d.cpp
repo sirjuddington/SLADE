@@ -44,6 +44,7 @@
  * EXTERNAL VARIABLES
  *******************************************************************/
 EXTERN_CVAR(Bool, use_zeth_icons)
+EXTERN_CVAR(Int, gl_font_size)
 
 
 /*******************************************************************
@@ -224,41 +225,47 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		if (other_side)
 			other_sector = other_side->getSector();
 
-		plane_t top_plane, bottom_plane;
-		top_plane.a = 0.0; top_plane.b = 0.0; top_plane.c = 1.0;
-		bottom_plane.a = 0.0; bottom_plane.b = 0.0; bottom_plane.c = 1.0;
-
-		if (item_type == MapEditor::SEL_SIDE_MIDDLE)
+		double left_height, right_height;
+		if (item_type == MapEditor::SEL_SIDE_MIDDLE && other_sector)
 		{
-			if (other_sector)
-			{
-				// A two-sided line's middle area is the smallest distance
-				// between both sides' floors and ceilings
-				// TODO this is more complicated with slopes
-				top_plane.d = min(this_sector->getCeilingHeight(), other_sector->getCeilingHeight());
-				bottom_plane.d = max(this_sector->getFloorHeight(), other_sector->getFloorHeight());
-			}
-			else {
-				top_plane.d = this_sector->getCeilingHeight();
-				bottom_plane.d = this_sector->getFloorHeight();
-			}
+			// A two-sided line's middle area is the smallest distance between
+			// both sides' floors and ceilings, which is more complicated with
+			// slopes.
+			plane_t floor1 = this_sector->getFloorPlane();
+			plane_t floor2 = other_sector->getFloorPlane();
+			plane_t ceiling1 = this_sector->getCeilingPlane();
+			plane_t ceiling2 = other_sector->getCeilingPlane();
+			left_height = min(ceiling1.height_at(left_point), ceiling2.height_at(left_point))
+			            - max(floor1.height_at(left_point), floor2.height_at(left_point));
+			right_height = min(ceiling1.height_at(right_point), ceiling2.height_at(right_point))
+			             - max(floor1.height_at(right_point), floor2.height_at(right_point));
 		}
 		else
 		{
-			if (!other_sector) return;
-			if (item_type == MapEditor::SEL_SIDE_TOP)
+			plane_t top_plane, bottom_plane;
+			if (item_type == MapEditor::SEL_SIDE_MIDDLE)
 			{
-				top_plane.d = this_sector->getCeilingHeight();
-				bottom_plane.d = other_sector->getCeilingHeight();
+				top_plane = this_sector->getCeilingPlane();
+				bottom_plane = this_sector->getFloorPlane();
 			}
 			else
 			{
-				top_plane.d = other_sector->getFloorHeight();
-				bottom_plane.d = this_sector->getFloorHeight();
+				if (!other_sector) return;
+				if (item_type == MapEditor::SEL_SIDE_TOP)
+				{
+					top_plane = this_sector->getCeilingPlane();
+					bottom_plane = other_sector->getCeilingPlane();
+				}
+				else
+				{
+					top_plane = other_sector->getFloorPlane();
+					bottom_plane = this_sector->getFloorPlane();
+				}
 			}
+
+			left_height = top_plane.height_at(left_point) - bottom_plane.height_at(left_point);
+			right_height = top_plane.height_at(right_point) - bottom_plane.height_at(right_point);
 		}
-		double left_height = top_plane.height_at(left_point) - bottom_plane.height_at(left_point);
-		double right_height = top_plane.height_at(right_point) - bottom_plane.height_at(right_point);
 		if (fabs(left_height - right_height) < 0.001)
 			info2.push_back(S_FMT("Height: %d", (int)left_height));
 		else
@@ -484,7 +491,9 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	// Determine overlay height
 	int nlines = MAX(info.size(), info2.size());
 	if (nlines < 4) nlines = 4;
-	int height = nlines * 16 + 4;
+	double scale = (gl_font_size / 12.0);
+	int line_height = 16 * scale;
+	int height = nlines * line_height + 4;
 
 	// Get colours
 	rgba_t col_bg = ColourConfiguration::getColour("map_3d_overlay_background");
@@ -506,20 +515,20 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 	int y = height;
 	for (unsigned a = 0; a < info.size(); a++)
 	{
-		Drawing::drawText(info[a], middle - 44, bottom - y, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_RIGHT);
-		y -= 16;
+		Drawing::drawText(info[a], middle - (40 * scale) - 4, bottom - y, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_RIGHT);
+		y -= line_height;
 	}
 
 	// Draw info text lines (right)
 	y = height;
 	for (unsigned a = 0; a < info2.size(); a++)
 	{
-		Drawing::drawText(info2[a], middle + 44, bottom - y, col_fg, Drawing::FONT_CONDENSED);
-		y -= 16;
+		Drawing::drawText(info2[a], middle + (40 * scale) + 4, bottom - y, col_fg, Drawing::FONT_CONDENSED);
+		y -= line_height;
 	}
 
 	// Draw texture if any
-	drawTexture(alpha, middle - 40, bottom);
+	drawTexture(alpha, middle - (40 * scale), bottom);
 
 	// Done
 	glEnable(GL_LINE_SMOOTH);
@@ -530,6 +539,10 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
  *******************************************************************/
 void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 {
+	double scale = (gl_font_size / 12.0);
+	int tex_box_size = 80 * scale;
+	int line_height = 16 * scale;
+
 	// Get colours
 	rgba_t col_bg = ColourConfiguration::getColour("map_3d_overlay_background");
 	rgba_t col_fg = ColourConfiguration::getColour("map_3d_overlay_foreground");
@@ -542,15 +555,15 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 		glPushMatrix();
-		glTranslated(x, y-96, 0);
-		GLTexture::bgTex().draw2dTiled(80, 80);
+		glTranslated(x, y - tex_box_size - line_height, 0);
+		GLTexture::bgTex().draw2dTiled(tex_box_size, tex_box_size);
 		glPopMatrix();
 
 		// Draw texture
 		if (texture && texture != &(GLTexture::missingTex()))
 		{
 			OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-			Drawing::drawTextureWithin(texture, x, y - 96, x + 80, y - 16, 0);
+			Drawing::drawTextureWithin(texture, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0);
 		}
 		else if (texname == "-")
 		{
@@ -558,7 +571,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/minus");
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
-			Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.2);
+			Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);
 		}
 		else if (texname != "-" && texture == &(GLTexture::missingTex()))
 		{
@@ -566,7 +579,7 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 			GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(180, 0, 0, 255*alpha, 0);
-			Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.2);
+			Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.2);
 		}
 
 		glDisable(GL_TEXTURE_2D);
@@ -575,11 +588,11 @@ void InfoOverlay3D::drawTexture(float alpha, int x, int y)
 		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0);
 		glLineWidth(1.0f);
 		glDisable(GL_LINE_SMOOTH);
-		Drawing::drawRect(x, y-96, x+80, y-16);
+		Drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);
 	}
 
 	// Draw texture name (even if texture is blank)
 	if (texname.Length() > 8)
 		texname = texname.Truncate(8) + "...";
-	Drawing::drawText(texname, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
+	Drawing::drawText(texname, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
 }

@@ -90,8 +90,8 @@ bool ArchiveManager::validResDir(string dir)
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
 		"html/startpage.htm",
-		"icons/e_archive.png",
-		"icons/t_wiki.png",
+		"icons/entry_list/archive.png",
+		"icons/general/wiki.png",
 		"images/arrow.png",
 		"logo.png",
 		"palettes/Doom .pal",
@@ -138,7 +138,9 @@ bool ArchiveManager::init()
 	}
 
 	// Find slade3.pk3 directory
-	string dir_slade_pk3 = appPath("slade.pk3", DIR_DATA);
+	string dir_slade_pk3 = appPath("slade.pk3", DIR_RES);
+	if (!wxFileExists(dir_slade_pk3))
+		dir_slade_pk3 = appPath("slade.pk3", DIR_DATA);
 	if (!wxFileExists(dir_slade_pk3))
 		dir_slade_pk3 = appPath("slade.pk3", DIR_APP);
 	if (!wxFileExists(dir_slade_pk3))
@@ -318,6 +320,10 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 		new_archive = new TarArchive();
 	else if (DiskArchive::isDiskArchive(filename))
 		new_archive = new DiskArchive();
+	else if (PodArchive::isPodArchive(filename))
+		new_archive = new PodArchive();
+	else if (ChasmBinArchive::isChasmBinArchive(filename))
+		new_archive = new ChasmBinArchive();
 	else
 	{
 		// Unsupported format
@@ -428,6 +434,10 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 		new_archive = new TarArchive();
 	else if (DiskArchive::isDiskArchive(entry->getMCData()))
 		new_archive = new DiskArchive();
+	else if (entry->getName().Lower().EndsWith(".pod") && PodArchive::isPodArchive(entry->getMCData()))
+		new_archive = new PodArchive();
+	else if (ChasmBinArchive::isChasmBinArchive(entry->getMCData()))
+		new_archive = new ChasmBinArchive();
 	else
 	{
 		// Unsupported format
@@ -759,6 +769,8 @@ string ArchiveManager::getArchiveExtensionsString()
 	string ext_grp = "*.grp;*.GRP;*.Grp;*.prg;*.PRG;*.Prg";		extensions += ext_grp + ";";
 	string ext_rff = "*.rff;*.RFF;*.Rff";						extensions += ext_rff + ";";
 	string ext_disk = "*.disk;*.DISK;*.Disk";					extensions += ext_disk+ ";";
+	string ext_pod = "*.pod;*.POD;*.Pod";						extensions += ext_pod + ";";
+	string ext_csm = "*.bin;*.BIN;*.Bin";						extensions += ext_csm + ";";
 #ifdef __APPLE__
 	// Cocoa supports filters with file extensions only
 	string ext_wolf =	"*.wl1;*.wl3;*.wl6;"
@@ -776,22 +788,24 @@ string ArchiveManager::getArchiveExtensionsString()
 	                    "vgadict.*;VGADICT.*;Vgadict.*";		extensions += ext_wolf +";";
 #endif // __APPLE__
 
-	extensions += S_FMT("|Doom Wad files (*.wad)|%s",			ext_wad);
-	extensions += S_FMT("|Zip files (*.zip)|%s",				ext_zip);
-	extensions += S_FMT("|Pk3 (zip) files (*.pk3)|%s",			ext_pk3);
-	extensions += S_FMT("|JDF (zip) files (*.jdf)|%s",			ext_jdf);
-	extensions += S_FMT("|Data (dat) files (*.dat)|%s",			ext_dat);
-	extensions += S_FMT("|CD/HD (cd/hd) files (*.cd; *.hd)|%s",	ext_chd);
-	extensions += S_FMT("|Library (lib) files (*.lib)|%s",		ext_lib);
-	extensions += S_FMT("|Resource (res) files (*.res)|%s",		ext_res);
-	extensions += S_FMT("|Quake Pak files (*.pak)|%s",			ext_pak);
-	extensions += S_FMT("|Build Grp files (*.grp)|%s",			ext_grp);
-	extensions += S_FMT("|Dark Forces Gob files (*.gob)|%s",	ext_gob);
-	extensions += S_FMT("|Dark Forces Lfd files (*.lfd)|%s",	ext_lfd);
-	extensions += S_FMT("|Descent Hog files (*.hog)|%s",		ext_hog);
-	extensions += S_FMT("|Blood Rff files (*.rff)|%s",			ext_rff);
-	extensions += S_FMT("|Wolfenstein 3D files|%s",				ext_wolf);
-	extensions += S_FMT("|Nerve Software Disk files|%s",		ext_disk);
+	extensions += S_FMT("|Doom Wad files (*.wad)|%s",				ext_wad);
+	extensions += S_FMT("|Zip files (*.zip)|%s",					ext_zip);
+	extensions += S_FMT("|Pk3 (zip) files (*.pk3)|%s",				ext_pk3);
+	extensions += S_FMT("|JDF (zip) files (*.jdf)|%s",				ext_jdf);
+	extensions += S_FMT("|Data (dat) files (*.dat)|%s",				ext_dat);
+	extensions += S_FMT("|CD/HD (cd/hd) files (*.cd; *.hd)|%s",		ext_chd);
+	extensions += S_FMT("|Library (lib) files (*.lib)|%s",			ext_lib);
+	extensions += S_FMT("|Resource (res) files (*.res)|%s",			ext_res);
+	extensions += S_FMT("|Quake Pak files (*.pak)|%s",				ext_pak);
+	extensions += S_FMT("|Build Grp files (*.grp)|%s",				ext_grp);
+	extensions += S_FMT("|Dark Forces Gob files (*.gob)|%s",		ext_gob);
+	extensions += S_FMT("|Dark Forces Lfd files (*.lfd)|%s",		ext_lfd);
+	extensions += S_FMT("|Descent Hog files (*.hog)|%s",			ext_hog);
+	extensions += S_FMT("|Blood Rff files (*.rff)|%s",				ext_rff);
+	extensions += S_FMT("|Wolfenstein 3D files|%s",					ext_wolf);
+	extensions += S_FMT("|Nerve Software Disk files|%s",			ext_disk);
+	extensions += S_FMT("|Terminal Velocity POD files (*.pod)|%s",	ext_pod);
+	extensions += S_FMT("|Chasm: The Rift BIN files (*.bin)|%s",	ext_csm);
 
 	return extensions;
 }
@@ -1052,6 +1066,9 @@ void ArchiveManager::addRecentFile(string path)
 	// Check the path is valid
 	if (!(wxFileName::FileExists(path) || wxDirExists(path)))
 		return;
+
+	// Replace \ with /
+	path.Replace("\\", "/");
 
 	// Check if the file is already in the list
 	for (unsigned a = 0; a < recent_files.size(); a++)

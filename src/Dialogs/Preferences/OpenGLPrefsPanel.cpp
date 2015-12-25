@@ -30,6 +30,8 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "OpenGLPrefsPanel.h"
+#include "NumberTextCtrl.h"
+#include "Drawing.h"
 
 
 /*******************************************************************
@@ -38,6 +40,7 @@
 EXTERN_CVAR(Bool, gl_tex_enable_np2)
 EXTERN_CVAR(Bool, gl_point_sprite)
 EXTERN_CVAR(Bool, gl_vbo)
+EXTERN_CVAR(Int, gl_font_size)
 
 
 /*******************************************************************
@@ -65,11 +68,25 @@ EXTERN_CVAR(Bool, gl_vbo)
 	// Enable point sprites
 	cb_gl_point_sprite = new wxCheckBox(this, -1, "Enable point sprites if supported");
 	cb_gl_point_sprite->SetToolTip("Only disable this if you are experiencing graphical glitches like things disappearing");
-	sizer->Add(cb_gl_point_sprite, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_gl_point_sprite, 0, wxEXPAND|wxALL, 4);
 
 	// Enable VBOs
 	cb_gl_use_vbo = new wxCheckBox(this, -1, "Use Vertex Buffer Objects if supported");
-	sizer->Add(cb_gl_use_vbo, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_gl_use_vbo, 0, wxEXPAND|wxALL, 4);
+
+	// OpenGL font size
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
+	hbox->Add(new wxStaticText(this, -1, "Font size: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+	hbox->Add(ntc_font_size = new NumberTextCtrl(this), 1, wxEXPAND);
+	ntc_font_size->SetToolTip("The size of the font to use in OpenGL, eg. for info overlays in the map editor");
+//	hbox->Add(new wxStaticText(this, -1, "*"), 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 8);
+//
+//	// Requires restart footnote
+//	sizer->AddStretchSpacer(1);
+//	sizer->Add(new wxStaticText(this, -1, "* requires restart to take effect"), 0, wxALIGN_RIGHT|wxALL, 8);
+
+	last_font_size = gl_font_size;
 }
 
 /* OpenGLPrefsPanel::~OpenGLPrefsPanel
@@ -87,6 +104,7 @@ void OpenGLPrefsPanel::init()
 	cb_gl_np2->SetValue(gl_tex_enable_np2);
 	cb_gl_point_sprite->SetValue(gl_point_sprite);
 	cb_gl_use_vbo->SetValue(gl_vbo);
+	ntc_font_size->setNumber(gl_font_size);
 }
 
 /* OpenGLPrefsPanel::applyPreferences
@@ -97,4 +115,10 @@ void OpenGLPrefsPanel::applyPreferences()
 	gl_tex_enable_np2 = cb_gl_np2->GetValue();
 	gl_point_sprite = cb_gl_point_sprite->GetValue();
 	gl_vbo = cb_gl_use_vbo->GetValue();
+	gl_font_size = ntc_font_size->getNumber();
+
+	if (gl_font_size != last_font_size)
+		Drawing::initFonts();
+
+	last_font_size = gl_font_size;
 }

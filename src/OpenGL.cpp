@@ -44,7 +44,7 @@ namespace OpenGL
 {
 #ifndef USE_SFML_RENDERWINDOW
 	wxGLContext*	context = NULL;
-	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0 };
+	int				wx_gl_attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, WX_GL_STENCIL_SIZE, 8, 0 };
 #endif
 	bool			initialised = false;
 	double			version = 0;
@@ -53,6 +53,7 @@ namespace OpenGL
 	uint8_t			n_pow_two = 16;
 	float			max_point_size = -1.0f;	
 	int8_t			last_blend = BLEND_NORMAL;
+	gl_info_t		info;
 }
 
 
@@ -92,8 +93,14 @@ bool OpenGL::init()
 
 	wxLogMessage("Initialising OpenGL...");
 
+	// Get OpenGL info
+	info.vendor = wxString::From8BitData((const char*)glGetString(GL_VENDOR));
+	info.renderer = wxString::From8BitData((const char*)glGetString(GL_RENDERER));
+	info.version = wxString::From8BitData((const char*)glGetString(GL_VERSION));
+	info.extensions = wxString::From8BitData((const char*)glGetString(GL_EXTENSIONS));
+
 	// Get OpenGL version
-	string temp = wxString::From8BitData((const char*)glGetString(GL_VERSION));
+	string temp = info.version;
 	temp.Truncate(3);
 	temp.ToDouble(&version);
 	wxLogMessage("OpenGL Version: %1.1f", version);
@@ -322,4 +329,12 @@ void OpenGL::resetBlend()
 {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	last_blend = BLEND_NORMAL;
+}
+
+/* OpenGL::getInfo
+ * Returns OpenGL system info
+ *******************************************************************/
+OpenGL::gl_info_t OpenGL::getInfo()
+{
+	return info;
 }

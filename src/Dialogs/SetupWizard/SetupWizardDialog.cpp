@@ -61,7 +61,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) : wxDialog(parent, -1, "F
 
 	// Set icon
 	wxIcon icon;
-	icon.CopyFromBitmap(getIcon("i_logo"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "logo"));
 	SetIcon(icon);
 
 	// Setup layout

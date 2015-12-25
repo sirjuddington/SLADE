@@ -555,7 +555,7 @@ protected:
 		unsigned datastart = getLevelInfo(info, data, index);
 
 		// Check
-		if (datastart + info.width*info.height >= data.getSize())
+		if (datastart + info.width*info.height > data.getSize())
 			return false;
 
 		// Build palette
@@ -638,7 +638,7 @@ protected:
 		unsigned datastart = getLevelInfo(info, data, index);
 
 		// Check
-		if (datastart + info.width*info.height*4 >= data.getSize())
+		if (datastart + info.width*info.height*4 > data.getSize())
 			return false;
 
 		// Create image

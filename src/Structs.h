@@ -626,7 +626,34 @@ struct frect_t
 // plane_t: A 3d plane
 struct plane_t
 {
-	float a, b, c, d;
+	double a, b, c, d;
+
+	plane_t() : a(0.0), b(0.0), c(0.0), d(0.0) {}
+	plane_t(double a, double b, double c, double d) : a(a), b(b), c(c), d(d) {}
+
+	/** Construct a flat plane (perpendicular to the z axis) at the given height.
+	 */
+	static plane_t flat(float height)
+	{
+		return plane_t(0.0, 0.0, 1.0, height);
+	}
+
+	bool operator==(const plane_t& rhs) const
+	{
+		return a == rhs.a && b == rhs.b && c == rhs.c && d == rhs.d;
+	}
+	bool operator!=(const plane_t& rhs) const
+	{
+		return !(*this == rhs);
+	}
+
+	void set(double a, double b, double c, double d)
+	{
+		this->a = a;
+		this->b = b;
+		this->c = c;
+		this->d = d;
+	}
 
 	fpoint3_t normal()
 	{
@@ -637,18 +664,18 @@ struct plane_t
 	void normalize()
 	{
 		fpoint3_t vec(a, b, c);
-		float mag = vec.magnitude();
+		double mag = vec.magnitude();
 		a = a / mag;
 		b = b / mag;
 		c = c / mag;
 		d = d / mag;
 	}
 
-	float height_at(fpoint2_t& point)
+	double height_at(fpoint2_t& point)
 	{
 		return height_at(point.x, point.y);
 	}
-	float height_at(float x, float y)
+	double height_at(double x, double y)
 	{
 		return ((-a * x) + (-b * y) + d) / c;
 	}

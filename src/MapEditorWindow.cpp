@@ -256,7 +256,7 @@ void MapEditorWindow::setupLayout()
 
 
 	// --- Toolbars ---
-	toolbar = new SToolBar(this);
+	toolbar = new SToolBar(this, true);
 
 	// Map toolbar
 	SToolBarGroup* tbg_map = new SToolBarGroup(toolbar, "_Map");
@@ -307,7 +307,7 @@ void MapEditorWindow::setupLayout()
 
 	// Status bar
 	CreateStatusBar(4);
-	int status_widths[4] = { -1, 160, 200, 160 };
+	int status_widths[4] = { -1, 240, 200, 160 };
 	SetStatusWidths(4, status_widths);
 
 	// -- Console Panel --

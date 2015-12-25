@@ -100,11 +100,13 @@ namespace Global
 	extern int log_verbosity;
 	extern bool debug;
 	extern double ppi_scale;
+	extern int win_version_major;
+	extern int win_version_minor;
 };
 
 
 // Path related stuff
-enum Directory { DIR_USER, DIR_DATA, DIR_APP, DIR_TEMP };
+enum Directory { DIR_USER, DIR_DATA, DIR_APP, DIR_RES, DIR_TEMP };
 string appPath(string filename, int dir);
 
 

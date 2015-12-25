@@ -452,7 +452,7 @@ entry_types
 	
 	jedi_level : text
 	{
-		name = "DF Level";
+		name = "DF/TV Level";
 		match_ext = "lev", "lvl";
 	}
 
@@ -503,6 +503,12 @@ entry_types
 	{
 		name = "Source Code (Other)";
 		match_ext = "bas", "py", "pl", "pm", "php", "pas", "p", "pp", "vb", "rb", "l", "m", "d", "e";
+	}
+
+	tv_texdef : text
+	{
+		name = "TV Texture Definition";
+		match_ext = "tex";
 	}
 
 	txt : text

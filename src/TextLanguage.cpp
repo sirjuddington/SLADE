@@ -89,7 +89,7 @@ string TLFunction::generateCallTipString(int arg_set)
 
 	// Add extra buttons for selection if there is more than one arg set
 	if (arg_sets.size() > 1)
-		calltip += S_FMT("\001 %d of %d \002 ", arg_set+1, arg_sets.size());
+		calltip += S_FMT("\001 %d of %lu \002 ", arg_set+1, arg_sets.size());
 
 	// Generate scintilla-format calltip string
 	calltip += name + "(";

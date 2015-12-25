@@ -50,7 +50,7 @@ wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help, stri
 	wxMenuItem* item = new wxMenuItem(menu, id, label, help);
 
 	if (!icon.IsEmpty())
-		item->SetBitmap(getIcon(icon));
+		item->SetBitmap(Icons::getIcon(Icons::GENERAL, icon));
 
 	return item;
 }
@@ -78,10 +78,10 @@ wxFont getMonospaceFont(wxFont base)
 /* getTabArt
  * Returns the currently set AUI tab art provider
  *******************************************************************/
-wxAuiTabArt* getTabArt(bool close_buttons)
+wxAuiTabArt* getTabArt(bool close_buttons, bool main_tabs)
 {
 	//if (tab_style == 1)
-		return new SAuiTabArt(close_buttons);
+		return new SAuiTabArt(close_buttons, main_tabs);
 	//else if (tab_style == 2)
 	//	return new wxAuiSimpleTabArt();
 	//else

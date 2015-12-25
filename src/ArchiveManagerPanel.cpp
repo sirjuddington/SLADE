@@ -98,6 +98,15 @@ DirArchiveCheck::~DirArchiveCheck()
 {
 }
 
+/* DirArchiveCheck::addChange
+ * Register a change to a file, as long as it hasn't been ignored
+ *******************************************************************/
+void DirArchiveCheck::addChange(dir_entry_change_t change)
+{
+	if (! ((DirArchive*)change_list.archive)->shouldIgnoreEntryChange(change))
+		change_list.changes.push_back(change);
+}
+
 /* DirArchiveCheck::Entry
  * DirArchiveCheck thread entry function
  *******************************************************************/
@@ -121,12 +130,12 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		if (entry_info[a].is_dir)
 		{
 			if (!wxDirExists(path))
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entry_info[a].entry_path));
+				addChange(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entry_info[a].entry_path));
 		}
 		else
 		{
 			if (!wxFileExists(path))
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entry_info[a].entry_path));
+				addChange(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entry_info[a].entry_path));
 		}
 	}
 
@@ -150,16 +159,13 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 			}
 		}
 
+		time_t mod = wxFileModificationTime(files[a]);
 		// No match, added to archive
 		if (!found)
-			change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a]));
-		else
-		{
-			// Matched, check modification time
-			time_t mod = wxFileModificationTime(files[a]);
-			if (mod > inf.file_modified)
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], inf.entry_path));
-		}
+			addChange(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a], "", mod));
+		// Matched, check modification time
+		else if (mod > inf.file_modified)
+			addChange(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], inf.entry_path, mod));
 	}
 
 	// Check for new dirs
@@ -182,9 +188,10 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 			}
 		}
 
+		time_t mod = wxFileModificationTime(dirs[a]);
 		// No match, added to archive
 		if (!found)
-			change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a]));
+			addChange(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a], "", mod));
 	}
 
 	// Send changes via event
@@ -264,6 +271,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 
 	// Create/setup tabs
 	stc_tabs = new STabCtrl(this, false);
+	stc_tabs->SetInitialSize(wxSize(224, -1));
 	vbox->Add(stc_tabs, 1, wxEXPAND | wxALL, 4);
 
 	// Open archives tab
@@ -321,7 +329,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 
 	// Init layout
 	Layout();
-	SetInitialSize(wxSize(192, -1));
+	SetInitialSize(wxSize(256, -1));
 }
 
 /* ArchiveManagerPanel::~ArchiveManagerPanel
@@ -358,10 +366,10 @@ void ArchiveManagerPanel::createRecentPanel()
 
 	// Setup image list
 	wxImageList* list = new wxImageList(16, 16, false, 0);
-	list->Add(getIcon("e_archive"));
-	list->Add(getIcon("e_wad"));
-	list->Add(getIcon("e_zip"));
-	list->Add(getIcon("e_folder"));
+	list->Add(Icons::getIcon(Icons::ENTRY, "archive"));
+	list->Add(Icons::getIcon(Icons::ENTRY, "wad"));
+	list->Add(Icons::getIcon(Icons::ENTRY, "zip"));
+	list->Add(Icons::getIcon(Icons::ENTRY, "folder"));
 	list_recent->SetImageList(list, wxIMAGE_LIST_SMALL);
 }
 
@@ -422,17 +430,17 @@ void ArchiveManagerPanel::refreshRecentFileList()
 		{
 			// Get path and determine icon
 			string fn = theArchiveManager->recentFile(a);
-			string icon = "e_archive";
+			string icon = "archive";
 			if (fn.EndsWith(".wad"))
-				icon = "e_wad";
+				icon = "wad";
 			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
-				icon = "e_zip";
+				icon = "zip";
 			else if (wxDirExists(fn))
-				icon = "e_folder";
+				icon = "folder";
 
 			// Create and add menu item
 			wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
-			mi->SetBitmap(getIcon(icon));
+			mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
 			menu_recent->Append(mi);
 		}
 	}
@@ -773,18 +781,18 @@ void ArchiveManagerPanel::openTab(Archive* archive)
 		wp = new ArchivePanel(stc_archives, archive);
 
 		// Determine icon
-		string icon = "e_archive";
+		string icon = "archive";
 		if (archive->getType() == ARCHIVE_WAD)
-			icon = "e_wad";
+			icon = "wad";
 		else if (archive->getType() == ARCHIVE_ZIP)
-			icon = "e_zip";
+			icon = "zip";
 		else if (archive->getType() == ARCHIVE_FOLDER)
-			icon = "e_folder";
+			icon = "folder";
 
 		wp->SetName("archive");
 		stc_archives->AddPage(wp, archive->getFilename(false), false);
 		stc_archives->SetSelection(stc_archives->GetPageCount() - 1);
-		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon(icon));
+		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, icon));
 		wp->addMenus();
 		wp->Show(true);
 		wp->SetFocus();
@@ -843,7 +851,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 		}
 
 		stc_archives->AddPage(txed, S_FMT("Texture Editor (%s)", archive->getFilename(false)), true);
-		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon("e_texturex"));
+		stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, "texturex"));
 		txed->SetName("texture");
 		txed->setSelection(entry);
 		txed->Show(true);
@@ -933,7 +941,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
 
 	// Create new tab for the EntryPanel
 	stc_archives->AddPage(ep, S_FMT("%s/%s", entry->getParent()->getFilename(false), entry->getName()), true);
-	stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, getIcon(entry->getType()->getIcon()));
+	stc_archives->SetPageBitmap(stc_archives->GetPageCount() - 1, Icons::getIcon(Icons::ENTRY, entry->getType()->getIcon()));
 	ep->SetName("entry");
 	ep->Show(true);
 	ep->addCustomMenu();
@@ -1108,9 +1116,6 @@ bool ArchiveManagerPanel::closeAll()
  *******************************************************************/
 void ArchiveManagerPanel::saveAll()
 {
-	// now we can ask about changes outside the dir archive
-	ignore_dir_archive_changes = false;
-
 	// Go through all open archives
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
@@ -1224,9 +1229,6 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive)
 	// Check for null pointer
 	if (!archive)
 		return false;
-
-	// now we can ask about changes outside the dir archive
-	ignore_dir_archive_changes = false;
 
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
@@ -2087,7 +2089,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	{
 		LOG_MESSAGE(2, "Finished checking %s for external changes", CHR(change_list.archive->getFilename()));
 
-		if (!ignore_dir_archive_changes && !change_list.changes.empty())
+		if (!change_list.changes.empty())
 		{
 			checked_dir_archive_changes = true;
 
@@ -2096,7 +2098,6 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 			dlg.ShowModal();
 			
 			checked_dir_archive_changes = false;
-			ignore_dir_archive_changes = true;
 		}
 		else
 		{

@@ -20,6 +20,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = "data";
 	}
 
 	// Doom-format element is fourteen bytes, Hexen-format is sixteen,
@@ -32,6 +33,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = "data";
 	}
 
 	// Doom64 sidedef_t is 12-byte long; "normal" sidedefs are 30-byte long.
@@ -45,6 +47,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = "data";
 	}
 
 	// Doom64 sector_t is 24-byte long; "normal" sectors are 26-byte long.
@@ -59,6 +62,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = "data";
 	}
 
 	map_vertexes : map_base
@@ -69,6 +73,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = "data";
 	}
 
 	// ZDBSP compressed nodes listed before normal nodes since they
@@ -141,6 +146,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = data;
 	}
 
 	map_ssectors : map_base
@@ -150,6 +156,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = data;
 	}
 
 	map_segs : map_base
@@ -159,6 +166,7 @@ entry_types
 		icon = "e_map_data";
 		export_ext = "lmp";
 		category = "Maps";
+		editor = data;
 	}
 
 	map_reject : map_base
@@ -216,6 +224,7 @@ entry_types
 		size_multiple = 1488, 1516;
 		icon = "e_map_data";
 		export_ext = "lmp";
+		editor = data;
 	}
 
 	// The following four lumps are used by OpenGL ports (including EDGE, GZDoom, and others)
@@ -273,6 +282,7 @@ entry_types
 		size_multiple = 6;
 		export_ext = "lmp";
 		category = "Maps";
+		editor = data;
 	}
 
 	map_macros : map_base

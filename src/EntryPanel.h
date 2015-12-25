@@ -42,11 +42,12 @@ public:
 	bool			isModified() { return modified; }
 	bool			isActivePanel();
 	void			setUndoManager(UndoManager* manager) { undo_manager = manager; }
+	MemChunk*		getEntryData() { return &entry_data; }
 
 	bool			openEntry(ArchiveEntry* entry);
 	virtual bool	loadEntry(ArchiveEntry* entry);
 	virtual bool	saveEntry();
-	virtual bool	revertEntry();
+	virtual bool	revertEntry(bool confirm = true);
 	virtual void	refreshPanel();
 	virtual void	closeEntry();
 	void			updateStatus();

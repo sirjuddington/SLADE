@@ -16,6 +16,13 @@ struct selection_3d_t
 		this->index = index;
 		this->type = type;
 	}
+
+	bool operator<(const selection_3d_t& other) const {
+		if (this->type == other.type)
+			return this->index < other.index;
+		else
+			return this->type < other.type;
+	}
 };
 
 class MapCanvas;
@@ -93,6 +100,8 @@ private:
 		long	act_time;
 	};
 	vector<editor_msg_t>	editor_messages;
+
+	void migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<selection_3d_t>& old_selection_3d);
 
 	// 3d mode
 	selection_3d_t			hilight_3d;
@@ -202,6 +211,7 @@ public:
 	void	incrementGrid();
 	void	decrementGrid();
 	double	snapToGrid(double position, bool force = true);
+	fpoint2_t relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos);
 
 	// Item moving
 	vector<int>&	movingItems() { return move_items; }
@@ -259,7 +269,7 @@ public:
 	void	changeOffset3d(int amount, bool x);
 	void	changeSectorHeight3d(int amount);
 	void	autoAlignX3d(selection_3d_t start);
-	void	resetWall3d();
+	void	resetOffsets3d();
 	void	toggleUnpegged3d(bool lower);
 	void	copy3d(int type);
 	void	paste3d(int type);

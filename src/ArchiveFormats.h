@@ -242,4 +242,28 @@ public:
 	}
 };
 
+class PodArchiveDataFormat : public EntryDataFormat
+{
+public:
+	PodArchiveDataFormat() : EntryDataFormat("archive_pod") {};
+	~PodArchiveDataFormat() {}
+
+	int isThisFormat(MemChunk& mc)
+	{
+		return PodArchive::isPodArchive(mc) ? EDF_PROBABLY : EDF_FALSE;
+	}
+};
+
+class ChasmBinArchiveDataFormat : public EntryDataFormat
+{
+public:
+	ChasmBinArchiveDataFormat()
+	: EntryDataFormat("archive_chasm_bin") {};
+
+	int isThisFormat(MemChunk& mc)
+	{
+		return ChasmBinArchive::isChasmBinArchive(mc) ? EDF_TRUE : EDF_FALSE;
+	}
+};
+
 #endif //ARCHIVEFORMATS_H

@@ -38,6 +38,7 @@
 #include "SplashWindow.h"
 #include "Icons.h"
 #include "SIFormat.h"
+#include "Dialogs/Preferences/PreferencesDialog.h"
 
 
 /*******************************************************************
@@ -62,7 +63,7 @@ GfxConvDialog::GfxConvDialog(wxWindow* parent)
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(getIcon("t_convert"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "convert"));
 	SetIcon(icon);
 
 	setupLayout();
@@ -261,9 +262,17 @@ void GfxConvDialog::setupLayout()
 	gfx_target->setViewType(1);
 	vbox->Add(gfx_target->toPanel(this), 1, wxEXPAND|wxTOP|wxLEFT|wxRIGHT, 4);
 
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+
 	pal_chooser_target = new PaletteChooser(this, -1);
 	pal_chooser_target->selectPalette(target_palette_name);
-	vbox->Add(pal_chooser_target, 0, wxEXPAND|wxALL, 4);
+	hbox->Add(pal_chooser_target, 1, wxEXPAND|wxRIGHT, 4);
+
+	btn_colorimetry_settings = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "settings"), wxDefaultPosition, wxDefaultSize);
+	btn_colorimetry_settings->SetToolTip("Adjust Colorimetry Settings...");
+	hbox->Add(btn_colorimetry_settings, 0, wxEXPAND, 0);
+
+	vbox->Add(hbox, 0, wxEXPAND | wxALL, 4);
 
 
 	// 'Enable transparency' checkbox
@@ -344,6 +353,7 @@ void GfxConvDialog::setupLayout()
 	rb_transparency_brightness->Bind(wxEVT_RADIOBUTTON, &GfxConvDialog::onTransTypeChanged, this);
 	Bind(wxEVT_COLOURBOX_CHANGED, &GfxConvDialog::onTransColourChanged, this, colbox_transparent->GetId());
 	gfx_current->Bind(wxEVT_LEFT_DOWN, &GfxConvDialog::onPreviewCurrentMouseDown, this);
+	btn_colorimetry_settings->Bind(wxEVT_BUTTON, &GfxConvDialog::onBtnColorimetrySettings, this);
 
 
 	// Autosize to fit contents (and set this as the minimum size)
@@ -469,11 +479,13 @@ void GfxConvDialog::updateControls()
 
 		rb_transparency_colour->Enable(true);
 		rb_transparency_existing->Enable(true);
+		rb_transparency_brightness->Enable(true);
 	}
 	else
 	{
 		rb_transparency_colour->Enable(false);
 		rb_transparency_existing->Enable(false);
+		rb_transparency_brightness->Enable(false);
 		slider_alpha_threshold->Enable(false);
 	}
 }
@@ -702,6 +714,9 @@ void GfxConvDialog::onTransColourChanged(wxEvent& e)
 	updatePreviewGfx();
 }
 
+/* GfxConvDialog::onPreviewCurrentMouseDown
+ * Called when the 'current' gfx preview is clicked
+ *******************************************************************/
 void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 {
 	// Get image coordinates of the point clicked
@@ -714,5 +729,14 @@ void GfxConvDialog::onPreviewCurrentMouseDown(wxMouseEvent& e)
 
 	// Set the background colour
 	colbox_transparent->setColour(col);
+	updatePreviewGfx();
+}
+
+/* GfxConvDialog::onBtnColorimetrySettings
+ * Called when the 'Adjust Colorimetry Settings' button is clicked
+ *******************************************************************/
+void GfxConvDialog::onBtnColorimetrySettings(wxCommandEvent& e)
+{
+	PreferencesDialog::openPreferences(this, "Colorimetry");
 	updatePreviewGfx();
 }

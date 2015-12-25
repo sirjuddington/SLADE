@@ -19,3 +19,5 @@
 #include "BZip2Archive.h"
 #include "TarArchive.h"
 #include "DiskArchive.h"
+#include "PodArchive.h"
+#include "ChasmBinArchive.h"

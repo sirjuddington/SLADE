@@ -17,6 +17,10 @@ if (NO_FLUIDSYNTH)
 ADD_DEFINITIONS(-DNO_FLUIDSYNTH)
 endif(NO_FLUIDSYNTH)
 
+if (CMAKE_INSTALL_PREFIX)
+ADD_DEFINITIONS(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
+endif(CMAKE_INSTALL_PREFIX)
+
 find_package (PkgConfig REQUIRED)
 if (APPLE)
 	# There is no need to have GTK2 installed on OS X
@@ -27,15 +31,15 @@ else (APPLE)
 endif (APPLE)
 
 if(NOT NO_FLUIDSYNTH)
-	include(../FindFluidSynth.cmake)
+	include(../cmake/FindFluidSynth.cmake)
 else(NO_FLUIDSYNTH)
 	message(STATUS "Fluidsynth support is disabled.")
 endif()
 
-include(../FindFreeImage.cmake)
-include(../FindSFML.cmake)
-include(../FindFTGL.cmake)
-include(../FindGLEW.cmake)
+include(../cmake/FindFreeImage.cmake)
+include(../cmake/FindSFML.cmake)
+include(../cmake/FindFTGL.cmake)
+include(../cmake/FindGLEW.cmake)
 include(FindFreetype)
 if(NOT NO_FLUIDSYNTH)
 	if(NOT ${FLUIDSYNTH_FOUND})
@@ -73,6 +77,10 @@ set(DUMB_SOURCES
 )
 file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)
 
+set(SLADE_HEADERS
+)
+file(GLOB_RECURSE SLADE_HEADERS *.h *.hpp)
+
 if(APPLE)
 	set(OSX_ICON "${CMAKE_SOURCE_DIR}/SLADE-osx.icns")
 	set(OSX_PLIST "${CMAKE_SOURCE_DIR}/Info.plist")
@@ -100,6 +108,7 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 	${LUA_SOURCES}
 	${DUMB_SOURCES}
 	${SLADE_SOURCES}
+	${SLADE_HEADERS}
 )
 
 target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRARIES} ${FREEIMAGE_LIBRARIES} ${SFML_LIBRARY} ${FTGL_LIBRARY} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${GLEW_LIBRARY} ${GTK2_LIBRARIES})
@@ -110,10 +119,22 @@ endif()
 
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
+	# TODO: Installation targets for APPLE
 if(APPLE)
 	set_target_properties(slade PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${OSX_PLIST})
 
 	add_custom_command(TARGET slade POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SLADE_OUTPUT_DIR}/slade.pk3" "$<TARGET_FILE_DIR:slade>/slade.pk3"
 	)
+else(APPLE)
+	if(UNIX)
+		install(TARGETS slade
+			RUNTIME DESTINATION bin
+			)
+
+		install(FILES "${SLADE_OUTPUT_DIR}/slade.pk3"
+			DESTINATION share/slade3
+			)
+	endif(UNIX)
 endif(APPLE)
+

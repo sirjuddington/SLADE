@@ -133,7 +133,7 @@ static EMIDIType IdentifyMIDIType(uint32_t *id, int size)
 //
 //==========================================================================
 
-bool zmus2mid(MemChunk& musinput, MemChunk& midioutput)
+bool zmus2mid(MemChunk& musinput, MemChunk& midioutput, int subsong, int * num_tracks)
 {
 	EMIDIType type = IdentifyMIDIType((uint32_t*)musinput.getData(), musinput.getSize());
 	if (type != MIDI_NOTMIDI)
@@ -141,6 +141,13 @@ bool zmus2mid(MemChunk& musinput, MemChunk& midioutput)
 		MIDIStreamer* streamer = CreateMIDIStreamer(NULL, musinput.getData(), musinput.getSize(), type);
 		if (streamer)
 		{
+			if (num_tracks)
+				*num_tracks = streamer->GetSubsongs();
+			if (!streamer->SetSubsong(subsong))
+			{
+				delete streamer;
+				return false;
+			}
 			TArray<uint8_t> uint8_ts;
 			streamer->CreateSMF(uint8_ts, 1);
 			return (uint8_ts.Size() && midioutput.write(&uint8_ts[0], uint8_ts.Size()));

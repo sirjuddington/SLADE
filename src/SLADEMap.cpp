@@ -373,11 +373,17 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 
 	// Set map format
 	if (ok)
+	{
 		current_format = map.format;
-
-	opened_time = theApp->runTimer() + 10;
+		// When creating a new map, retrieve UDMF namespace information from the configuration
+		if (map.format == MAP_UDMF && udmf_namespace.IsEmpty())
+			udmf_namespace = theGameConfiguration->udmfNamespace();
+	}
 
 	initSectorPolygons();
+	recomputeSpecials();
+
+	opened_time = theApp->runTimer() + 10;
 
 	return ok;
 }
@@ -588,8 +594,8 @@ bool SLADEMap::addSector(doomsector_t& s)
 	MapSector* ns = new MapSector(wxString::FromAscii(s.f_tex, 8), wxString::FromAscii(s.c_tex, 8), this);
 
 	// Setup sector properties
-	ns->f_height = s.f_height;
-	ns->c_height = s.c_height;
+	ns->setFloorHeight(s.f_height);
+	ns->setCeilingHeight(s.c_height);
 	ns->light = s.light;
 	ns->special = s.special;
 	ns->tag = s.tag;
@@ -614,8 +620,8 @@ bool SLADEMap::addSector(doom64sector_t& s)
 								  theResourceManager->getTextureName(s.c_tex), this);
 
 	// Setup sector properties
-	ns->f_height = s.f_height;
-	ns->c_height = s.c_height;
+	ns->setFloorHeight(s.f_height);
+	ns->setCeilingHeight(s.c_height);
 	ns->light = 255;
 	ns->special = s.special;
 	ns->tag = s.tag;
@@ -1566,8 +1572,8 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 	usage_flat[ns->c_tex.Upper()] += 1;
 
 	// Set defaults
-	ns->f_height = 0;
-	ns->c_height = 0;
+	ns->setFloorHeight(0);
+	ns->setCeilingHeight(0);
 	ns->light = 160;
 	ns->special = 0;
 	ns->tag = 0;
@@ -1583,9 +1589,9 @@ bool SLADEMap::addSector(ParseTreeNode* def)
 			continue;
 
 		if (S_CMPNOCASE(prop->getName(), "heightfloor"))
-			ns->f_height = prop->getIntValue();
+			ns->setFloorHeight(prop->getIntValue());
 		else if (S_CMPNOCASE(prop->getName(), "heightceiling"))
-			ns->c_height = prop->getIntValue();
+			ns->setCeilingHeight(prop->getIntValue());
 		else if (S_CMPNOCASE(prop->getName(), "lightlevel"))
 			ns->light = prop->getIntValue();
 		else if (S_CMPNOCASE(prop->getName(), "special"))
@@ -2336,9 +2342,6 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	// Open temp text file
 	wxFile tempfile(appPath("sladetemp.txt", DIR_TEMP), wxFile::write);
 
-	// When creating a new map, retrieve UDMF namespace information from the configuration
-	if (udmf_namespace.IsEmpty()) udmf_namespace = theGameConfiguration->udmfNamespace();
-
 	// Write map namespace
 	tempfile.Write("// Written by SLADE3\n");
 	tempfile.Write(S_FMT("namespace=\"%s\";\n", udmf_namespace));
@@ -2493,6 +2496,8 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
  *******************************************************************/
 void SLADEMap::clearMap()
 {
+	map_specials.reset();
+
 	// Clear vectors
 	sides.clear();
 	lines.clear();
@@ -2525,28 +2530,77 @@ void SLADEMap::clearMap()
 /* SLADEMap::removeVertex
  * Removes [vertex] from the map
  *******************************************************************/
-bool SLADEMap::removeVertex(MapVertex* vertex)
+bool SLADEMap::removeVertex(MapVertex* vertex, bool merge_lines)
 {
 	// Check vertex was given
 	if (!vertex)
 		return false;
 
-	return removeVertex(vertex->index);
+	return removeVertex(vertex->index, merge_lines);
 }
 
 /* SLADEMap::removeVertex
  * Removes the vertex at [index] from the map
  *******************************************************************/
-bool SLADEMap::removeVertex(unsigned index)
+bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 {
 	// Check index
 	if (index >= vertices.size())
 		return false;
 
-	// Remove all connected lines
-	vector<MapLine*> clines = vertices[index]->connected_lines;
-	for (unsigned a = 0; a < clines.size(); a++)
-		removeLine(clines[a]);
+	// Check if we should merge connected lines
+	bool merged = false;
+	if (merge_lines && vertices[index]->connected_lines.size() == 2)
+	{
+		// Get other end vertex of second connected line
+		MapLine* l_first = vertices[index]->connected_lines[0];
+		MapLine* l_second = vertices[index]->connected_lines[1];
+		MapVertex* v_end = l_second->vertex2;
+		if (v_end == vertices[index])
+			v_end = l_second->vertex1;
+
+		// Remove second connected line
+		removeLine(l_second);
+
+		// Connect first connected line to other end vertex
+		l_first->setModified();
+		MapVertex* v_start = l_first->vertex1;
+		if (l_first->vertex1 == vertices[index])
+		{
+			l_first->vertex1 = v_end;
+			v_start = l_first->vertex2;
+		}
+		else
+			l_first->vertex2 = v_end;
+		vertices[index]->disconnectLine(l_first);
+		v_end->connectLine(l_first);
+		l_first->resetInternals();
+
+		// Check if we ended up with overlapping lines (ie. there was a triangle)
+		for (unsigned a = 0; a < v_end->nConnectedLines(); a++)
+		{
+			if (v_end->connected_lines[a] == l_first)
+				continue;
+
+			if ((v_end->connected_lines[a]->vertex1 == v_end && v_end->connected_lines[a]->vertex2 == v_start) ||
+				(v_end->connected_lines[a]->vertex2 == v_end && v_end->connected_lines[a]->vertex1 == v_start))
+			{
+				// Overlap found, remove line
+				removeLine(l_first);
+				break;
+			}
+		}
+
+		merged = true;
+	}
+	
+	if (!merged)
+	{
+		// Remove all connected lines
+		vector<MapLine*> clines = vertices[index]->connected_lines;
+		for (unsigned a = 0; a < clines.size(); a++)
+			removeLine(clines[a]);
+	}
 
 	// Remove the vertex
 	removeMapObject(vertices[index]);
@@ -3199,6 +3253,51 @@ void SLADEMap::initSectorPolygons()
 	theSplashWindow->setProgress(1.0f);
 }
 
+MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y)
+{
+	// Get sector
+	MapSector* sector = front ? line->frontSector() : line->backSector();
+	if (!sector)
+		return NULL;
+
+	// Get lines to test
+	vector<MapLine*> lines;
+	sector->getLines(lines);
+
+	// Get nearest line intersecting with line vector
+	MapLine* nearest = NULL;
+	fpoint2_t mid = line->getPoint(MOBJ_POINT_MID);
+	fpoint2_t vec = line->frontVector();
+	if (front)
+	{
+		vec.x = -vec.x;
+		vec.y = -vec.y;
+	}
+	double min_dist = 99999999999;
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		if (lines[a] == line)
+			continue;
+
+		double dist = MathStuff::distanceRayLine(mid, mid + vec, lines[a]->x1(), lines[a]->y1(), lines[a]->x2(), lines[a]->y2());
+
+		if (dist < min_dist && dist > 0)
+		{
+			min_dist = dist;
+			nearest = lines[a];
+		}
+	}
+
+	// Set intersection point
+	if (nearest)
+	{
+		hit_x = mid.x + (vec.x * min_dist);
+		hit_y = mid.y + (vec.y * min_dist);
+	}
+
+	return nearest;
+}
+
 /* SLADEMap::getSectorsByTag
  * Adds all sectors with tag [tag] to [list]
  *******************************************************************/
@@ -3250,7 +3349,7 @@ MapThing* SLADEMap::getFirstThingWithId(int id)
 	return NULL;
 }
 
-/* SLADEMap::getSectorsByTag
+/* SLADEMap::getThingsByIdInSectorTag
  * Adds all things with TID [id] that are also within a sector with
  * tag [tag] to [list]
  *******************************************************************/
@@ -3940,6 +4039,17 @@ bool SLADEMap::modifiedSince(long since, int type)
 	return false;
 }
 
+/* SLADEMap::recomputeSpecials
+ * Re-applies all the currently calculated special map properties (currently
+ * this just means ZDoom slopes).
+ * Since this needs to be done anytime the map changes, it's called whenever a
+ * map is read, an undo record ends, or an undo/redo is performed.
+ *******************************************************************/
+void SLADEMap::recomputeSpecials()
+{
+	map_specials.processMapSpecials(this);
+}
+
 /* SLADEMap::createVertex
  * Creates a new vertex at [x,y] and returns it. Splits any lines
  * within [split_dist] from the position
@@ -4234,10 +4344,10 @@ MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 /* SLADEMap::splitLine
  * Splits [line] at [vertex]
  *******************************************************************/
-void SLADEMap::splitLine(MapLine* l, MapVertex* v)
+MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 {
 	if (!l || !v)
-		return;
+		return NULL;
 
 	// Shorten line
 	MapVertex* v2 = l->vertex2;
@@ -4307,6 +4417,8 @@ void SLADEMap::splitLine(MapLine* l, MapVertex* v)
 	l->setIntProperty("side2.offsetx", xoff2 + nl->getLength());
 
 	geometry_updated = theApp->runTimer();
+
+	return nl;
 }
 
 /* SLADEMap::moveThing
@@ -4538,8 +4650,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		splitLinesAt(merged_vertices[a], split_dist);
 
 	// Split lines that moved onto existing vertices
-	unsigned nlines = connected_lines.size();
-	for (unsigned a = 0; a < nlines; a++)
+	for (unsigned a = 0; a < connected_lines.size(); a++)
 	{
 		unsigned nvertices = this->vertices.size();
 		for (unsigned b = 0; b < nvertices; b++)
@@ -4551,7 +4662,10 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				continue;
 
 			if (connected_lines[a]->distanceTo(vertex->x, vertex->y) < split_dist)
-				splitLine(connected_lines[a], vertex);
+			{
+				connected_lines.push_back(splitLine(connected_lines[a], vertex));
+				VECTOR_ADD_UNIQUE(merged_vertices, vertex);
+			}
 		}
 	}
 

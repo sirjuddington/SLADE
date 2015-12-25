@@ -75,11 +75,11 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	// Auto indent
 	cb_auto_indent = new wxCheckBox(this, -1, "Enable Auto-Indent");
-	sizer->Add(cb_auto_indent, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_auto_indent, 0, wxEXPAND|wxALL, 4);
 
 	// Trim whitespace
 	cb_trim_whitespace = new wxCheckBox(this, -1, "Trim Whitespace on Save");
-	sizer->Add(cb_trim_whitespace, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_trim_whitespace, 0, wxEXPAND|wxALL, 4);
 
 	// Separator
 	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL), 0, wxEXPAND|wxALL, 4);
@@ -93,23 +93,23 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 
 	// Syntax Hilighting
 	cb_syntax_hilight = new wxCheckBox(this, -1, "Show Syntax Hilighting");
-	sizer->Add(cb_syntax_hilight, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_syntax_hilight, 0, wxEXPAND|wxALL, 4);
 
 	// Indentation guides
 	cb_indent_guides = new wxCheckBox(this, -1, "Show Indentation Guides");
-	sizer->Add(cb_indent_guides, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_indent_guides, 0, wxEXPAND|wxALL, 4);
 
 	// Brace matching
 	cb_brace_match = new wxCheckBox(this, -1, "Hilight Matching Braces");
-	sizer->Add(cb_brace_match, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_brace_match, 0, wxEXPAND|wxALL, 4);
 
 	// Calltips on mouse hover
 	cb_calltips_mouse = new wxCheckBox(this, -1, "Show calltips on mouse hover");
-	sizer->Add(cb_calltips_mouse, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_calltips_mouse, 0, wxEXPAND|wxALL, 4);
 
 	// Calltips on parenthesis
 	cb_calltips_parenthesis = new wxCheckBox(this, -1, "Show calltips on opening parenthesis");
-	sizer->Add(cb_calltips_parenthesis, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_calltips_parenthesis, 0, wxEXPAND|wxALL, 4);
 }
 
 /* TextEditorPrefsPanel::~TextEditorPrefsPanel

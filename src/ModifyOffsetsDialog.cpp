@@ -53,7 +53,7 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 
 	// Set dialog icon
 	wxIcon icon;
-	icon.CopyFromBitmap(getIcon("t_offset"));
+	icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "offset"));
 	SetIcon(icon);
 
 	// Setup layout

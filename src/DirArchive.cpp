@@ -233,32 +233,18 @@ bool DirArchive::save(string filename)
 	wxDir dir(this->filename);
 	dir.Traverse(traverser, "", wxDIR_FILES|wxDIR_DIRS);
 	//wxDir::GetAllFiles(this->filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
-	LOG_MESSAGE(2, "GetAllFiles took %dms", theApp->runTimer() - time);
+	LOG_MESSAGE(2, "GetAllFiles took %lums", theApp->runTimer() - time);
 
 	// Check for any files to remove
 	time = theApp->runTimer();
-	for (unsigned a = 0; a < files.size(); a++)
+	for (unsigned a = 0; a < removed_files.size(); a++)
 	{
-		// Check if filename matches an existing entry
-		bool found = false;
-		for (unsigned e = 0; e < entry_paths.size(); e++)
+		if (wxFileExists(removed_files[a]))
 		{
-			if (files[a] == entry_paths[e])
-			{
-				found = true;
-				break;
-			}
-		}
-
-		// File on disk isn't part of the archive in memory
-		// (eg. has been removed or renamed/deleted)
-		if (!found)
-		{
-			LOG_MESSAGE(2, "Removing file %s", files[a]);
-			wxRemoveFile(files[a]);
+			LOG_MESSAGE(2, "Removing file %s", removed_files[a]);
+			wxRemoveFile(removed_files[a]);
 		}
 	}
-	LOG_MESSAGE(2, "Remove check took %dms", theApp->runTimer() - time);
 
 	// Check for any directories to remove
 	for (int a = dirs.size() - 1; a >= 0; a--)
@@ -275,12 +261,12 @@ bool DirArchive::save(string filename)
 		}
 
 		// Dir on disk isn't part of the archive in memory
-		if (!found)
-		{
+		// (Note that this will fail if there are any untracked files in the
+		// directory)
+		if (!found && wxRmdir(dirs[a]))
 			LOG_MESSAGE(2, "Removing directory %s", dirs[a]);
-			wxRmDir(dirs[a]);
-		}
 	}
+	LOG_MESSAGE(2, "Remove check took %lums", theApp->runTimer() - time);
 
 	// Go through entries
 	vector<string> files_written;
@@ -596,97 +582,13 @@ vector<ArchiveEntry*> DirArchive::findAll(search_options_t& options)
 	return Archive::findAll(opt);
 }
 
-/* DirArchive::checkUpdatedFiles
- * Checks if any entries/folders have been changed on disk, adds any
- * detected changes to [changes]
+/* DirArchive::ignoreChangedEntries
+ * Remember to ignore the given files until they change again
  *******************************************************************/
-void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
+void DirArchive::ignoreChangedEntries(vector<dir_entry_change_t>& changes)
 {
-	// Get flat entry list
-	vector<ArchiveEntry*> entries;
-	getEntryTreeAsList(entries);
-
-	// Get current directory structure
-	vector<string> files, dirs;
-	DirArchiveTraverser traverser(files, dirs);
-	wxDir dir(this->filename);
-	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
-
-	// Check for deleted files
-	for (unsigned a = 0; a < entries.size(); a++)
-	{
-		string path = entries[a]->exProp("filePath").getStringValue();
-
-		// Ignore if not on disk
-		if (path.IsEmpty())
-			continue;
-
-		if (entries[a]->getType() == EntryType::folderType())
-		{
-			if (!wxDirExists(path))
-				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entries[a]->getPath(true)));
-		}
-		else
-		{
-			if (!wxFileExists(path))
-				changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entries[a]->getPath(true)));
-		}
-	}
-
-	// Check for new/updated files
-	for (unsigned a = 0; a < files.size(); a++)
-	{
-		// Ignore files removed from archive since last save
-		if (VECTOR_EXISTS(removed_files, files[a]))
-			continue;
-
-		// Find file in archive
-		ArchiveEntry * entry = NULL;
-		for (unsigned b = 0; b < entries.size(); b++)
-		{
-			if (entries[b]->exProp("filePath").getStringValue() == files[a])
-			{
-				entry = entries[b];
-				break;
-			}
-		}
-
-		// No match, added to archive
-		if (!entry)
-			changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a]));
-		else
-		{
-			// Matched, check modification time
-			time_t mod = wxFileModificationTime(files[a]);
-			if (mod > file_modification_times[entry])
-				changes.push_back(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], entry->getPath(true)));
-		}
-	}
-
-	// Check for new dirs
-	for (unsigned a = 0; a < dirs.size(); a++)
-	{
-		//LOG_MESSAGE(3, dirs[a]);
-
-		// Ignore dirs removed from archive since last save
-		if (VECTOR_EXISTS(removed_files, dirs[a]))
-			continue;
-
-		// Find dir in archive
-		ArchiveEntry * entry = NULL;
-		for (unsigned b = 0; b < entries.size(); b++)
-		{
-			if (entries[b]->exProp("filePath").getStringValue() == dirs[a])
-			{
-				entry = entries[b];
-				break;
-			}
-		}
-
-		// No match, added to archive
-		if (!entry)
-			changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a]));
-	}
+	for (unsigned a = 0; a < changes.size(); a++)
+		ignored_file_changes[changes[a].file_path] = changes[a];
 }
 
 /* DirArchive::updateChangedEntries
@@ -694,9 +596,13 @@ void DirArchive::checkUpdatedFiles(vector<dir_entry_change_t>& changes)
  *******************************************************************/
 void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 {
-	// Modified Entries
+	bool was_modified = isModified();
+
 	for (unsigned a = 0; a < changes.size(); a++)
 	{
+		ignored_file_changes.erase(changes[a].file_path);
+
+		// Modified Entries
 		if (changes[a].action == dir_entry_change_t::UPDATED)
 		{
 			ArchiveEntry* entry = entryAtPath(changes[a].entry_path);
@@ -704,27 +610,17 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 			EntryType::detectEntryType(entry);
 			file_modification_times[entry] = wxFileModificationTime(changes[a].file_path);
 		}
-	}
 
-	// Deleted Entries
-	for (unsigned a = 0; a < changes.size(); a++)
-	{
-		if (changes[a].action == dir_entry_change_t::DELETED_FILE)
+		// Deleted Entries
+		else if (changes[a].action == dir_entry_change_t::DELETED_FILE)
 			removeEntry(entryAtPath(changes[a].entry_path));
-	}
 
-	// Deleted Directories
-	for (unsigned a = 0; a < changes.size(); a++)
-	{
-		if (changes[a].action == dir_entry_change_t::DELETED_DIR)
+		// Deleted Directories
+		else if (changes[a].action == dir_entry_change_t::DELETED_DIR)
 			removeDir(changes[a].entry_path);
-	}
 
-	// Added Entries/Directories
-	for (unsigned a = 0; a < changes.size(); a++)
-	{
 		// New Directory
-		if (changes[a].action == dir_entry_change_t::ADDED_DIR)
+		else if (changes[a].action == dir_entry_change_t::ADDED_DIR)
 		{
 			string name = changes[a].file_path;
 			name.Remove(0, filename.Length());
@@ -776,4 +672,43 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 			new_entry->setState(0);
 		}
 	}
+
+	// Preserve old modified state
+	setModified(was_modified);
+}
+
+/* DirArchive::shouldIgnoreEntryChange
+ * Returns true iff the user has previously indicated no interest in this
+ * change
+ *******************************************************************/
+bool DirArchive::shouldIgnoreEntryChange(dir_entry_change_t& change)
+{
+	ignored_file_changes_t::iterator it = ignored_file_changes.find(change.file_path);
+	// If we've never seen this file before, definitely don't ignore the change
+	if (it == ignored_file_changes.end())
+		return false;
+
+	dir_entry_change_t old_change = it->second;
+	bool was_deleted = (
+		old_change.action == dir_entry_change_t::DELETED_FILE ||
+		old_change.action == dir_entry_change_t::DELETED_DIR
+	);
+	bool is_deleted = (
+		change.action == dir_entry_change_t::DELETED_FILE ||
+		change.action == dir_entry_change_t::DELETED_DIR
+	);
+
+	// Was deleted, is still deleted, nothing's changed
+	if (was_deleted && is_deleted)
+		return true;
+
+	// Went from deleted to not, or vice versa; interesting
+	if (was_deleted != is_deleted)
+		return false;
+
+	// Otherwise, it was modified both times, which is only interesting if the
+	// mtime is different.  (You might think it's interesting if the mtime is
+	// /greater/, but this is more robust against changes to the system clock,
+	// and an unmodified file will never change mtime.)
+	return (old_change.mtime == change.mtime);
 }
