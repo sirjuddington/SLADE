@@ -1842,6 +1842,7 @@ bool ArchivePanel::gfxColourise()
 		// Apply translation to all entry images
 		SImage temp;
 		MemChunk mc;
+		entry_list->SetEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
 			if (a == selection.size()-1)
@@ -1863,7 +1864,7 @@ bool ArchivePanel::gfxColourise()
 					entry->importMemChunk(mc);
 			}
 		}
-
+		entry_list->SetEntriesAutoUpdate(true);
 		// Finish recording undo level
 		undo_manager->endRecord(true);
 	}
