@@ -1166,9 +1166,9 @@ void WadArchive::detectIncludes()
 	// EMAPINFO: extradata = lumpname
 	// EDFROOT: lumpinclude("lumpname")
 
-	char * lumptypes[6]  = { "DECORATE", "GLDEFS", "SBARINFO", "ZMAPINFO", "EMAPINFO", "EDFROOT" };
-	char * entrytypes[6] = { "decorate", "gldefslump", "sbarinfo", "xlat", "extradata", "edf" };
-	char * tokens[6] = { "#include", "#include", "#include", "translator", "extradata", "lumpinclude" };
+	const char * lumptypes[6]  = { "DECORATE", "GLDEFS", "SBARINFO", "ZMAPINFO", "EMAPINFO", "EDFROOT" };
+	const char * entrytypes[6] = { "decorate", "gldefslump", "sbarinfo", "xlat", "extradata", "edf" };
+	const char * tokens[6] = { "#include", "#include", "#include", "translator", "extradata", "lumpinclude" };
 	Archive::search_options_t opt;
 	opt.ignore_ext = true;
 	Tokenizer tz;
