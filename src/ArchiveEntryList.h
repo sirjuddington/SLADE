@@ -25,6 +25,7 @@ private:
 	int					col_name;
 	int					col_size;
 	int					col_type;
+	bool				entries_update;
 
 protected:
 	// Virtual wxListCtrl overrides
@@ -53,6 +54,8 @@ public:
 	void	applyFilter();
 	bool	goUpDir();
 	bool	setDir(ArchiveTreeNode* dir);
+
+	void	SetEntriesAutoUpdate(bool update) { entries_update = update; }
 
 	// Sorting
 	static bool	sortSize(long left, long right);

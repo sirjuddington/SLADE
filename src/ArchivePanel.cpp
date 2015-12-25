@@ -535,10 +535,15 @@ void ArchivePanel::undo()
 	if (!(cur_area && cur_area->undo()))
 	{
 		// Undo
+		entry_list->SetEntriesAutoUpdate(false);
 		undo_manager->undo();
+		entry_list->SetEntriesAutoUpdate(true);
 
 		// Refresh entry list
 		entry_list->updateList();
+
+		// SetEntriesAutoUpdate blocks previous announce
+		archive->announce("entries_changed");
 	}
 }
 
@@ -550,10 +555,15 @@ void ArchivePanel::redo()
 	if (!(cur_area && cur_area->redo()))
 	{
 		// Redo
+		entry_list->SetEntriesAutoUpdate(false);
 		undo_manager->redo();
+		entry_list->SetEntriesAutoUpdate(true);
 
 		// Refresh entry list
 		entry_list->updateList();
+
+		// SetEntriesAutoUpdate blocks previous announce
+		archive->announce("entries_changed");
 	}
 }
 
@@ -783,8 +793,12 @@ bool ArchivePanel::importFiles()
 		bool ok = false;
 		entry_list->Show(false);
 		theSplashWindow->show("Importing Files...", true);
+		entry_list->SetEntriesAutoUpdate(false);
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
+			if (a == info.filenames.size()-1)
+				entry_list->SetEntriesAutoUpdate(true);
+
 			// Get filename
 			string name = wxFileName(info.filenames[a]).GetFullName();
 
@@ -811,6 +825,7 @@ bool ArchivePanel::importFiles()
 		// End recording undo level
 		undo_manager->endRecord(true);
 
+		entry_list->SetEntriesAutoUpdate(true);
 		return ok;
 	}
 	else	// User cancelled, return false
@@ -906,8 +921,11 @@ bool ArchivePanel::renameEntry(bool each)
 	if (each || selection.size() == 1)
 	{
 		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
+		entry_list->SetEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
+			if (a == selection.size()-1)
+				entry_list->SetEntriesAutoUpdate(true);
 
 			// Prompt for a new name
 			string new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->getName());
@@ -936,8 +954,12 @@ bool ArchivePanel::renameEntry(bool each)
 			Misc::doMassRename(names, new_name);
 
 			// Go through the list
+			entry_list->SetEntriesAutoUpdate(false);
 			for (size_t a = 0; a < selection.size(); a++)
 			{
+				if (a == selection.size()-1)
+					entry_list->SetEntriesAutoUpdate(true);
+
 				ArchiveEntry* entry = selection[a];
 
 				// If the entry is a folder then skip it
@@ -972,8 +994,12 @@ bool ArchivePanel::renameEntry(bool each)
 	vector<ArchiveTreeNode*> selected_dirs = entry_list->getSelectedDirectories();
 
 	// Go through the list
+	entry_list->SetEntriesAutoUpdate(false);
 	for (size_t a = 0; a < selected_dirs.size(); a++)
 	{
+		if (a == selected_dirs.size()-1)
+			entry_list->SetEntriesAutoUpdate(true);
+
 		// Get the current directory's name
 		string old_name = selected_dirs[a]->getName();
 
@@ -996,6 +1022,7 @@ bool ArchivePanel::renameEntry(bool each)
 	// Finish recording undo level
 	undo_manager->endRecord(true);
 
+	entry_list->SetEntriesAutoUpdate(true);
 	return true;
 }
 
@@ -1036,8 +1063,12 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	undo_manager->beginRecord("Delete Entry");
 
 	// Go through the selected entries
+	entry_list->SetEntriesAutoUpdate(false);
 	for (int a = selected_entries.size() - 1; a >= 0; a--)
 	{
+		if (a==0)
+			entry_list->SetEntriesAutoUpdate(true);
+
 		// Remove from bookmarks
 		theArchiveManager->deleteBookmark(selected_entries[a]);
 
@@ -1047,14 +1078,19 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	}
 
 	// Go through the selected directories
+	entry_list->SetEntriesAutoUpdate(false);
 	for (int a = selected_dirs.size() - 1; a >= 0; a--)
 	{
+		if (a==0)
+			entry_list->SetEntriesAutoUpdate(true);
+
 		// Remove from bookmarks
 		theArchiveManager->deleteBookmarksInDir(selected_dirs[a]);
 
 		// Remove the selected directory from the archive
 		archive->removeDir(selected_dirs[a]->getName(), entry_list->getCurrentDir());
 	}
+	entry_list->SetEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -1440,6 +1476,7 @@ bool ArchivePanel::importEntry()
 	undo_manager->beginRecord("Import Entry");
 
 	// Go through the list
+	entry_list->SetEntriesAutoUpdate(false);
 	for (size_t a = 0; a < selection.size(); a++)
 	{
 		// Run open file dialog
@@ -1503,6 +1540,7 @@ bool ArchivePanel::importEntry()
 				openEntry(selection[a], true);
 		}
 	}
+	entry_list->SetEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -1632,6 +1670,7 @@ bool ArchivePanel::pasteEntry()
 	// Go through all clipboard items
 	bool pasted = false;
 	undo_manager->beginRecord("Paste Entry");
+	entry_list->SetEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < theClipboard->nItems(); a++)
 	{
 		// Check item type
@@ -1646,6 +1685,7 @@ bool ArchivePanel::pasteEntry()
 			pasted = true;
 	}
 	undo_manager->endRecord(true);
+	entry_list->SetEntriesAutoUpdate(true);
 
 	if (pasted)
 	{
@@ -1680,6 +1720,7 @@ bool ArchivePanel::gfxConvert()
 	undo_manager->beginRecord("Gfx Format Conversion");
 
 	// Write any changes
+	entry_list->SetEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Update splash window
@@ -1701,6 +1742,7 @@ bool ArchivePanel::gfxConvert()
 		EntryType::detectEntryType(selection[a]);
 		selection[a]->setExtensionByType();
 	}
+	entry_list->SetEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -1739,6 +1781,8 @@ bool ArchivePanel::gfxRemap()
 		// Apply translation to all entry images
 		SImage temp;
 		MemChunk mc;
+
+		entry_list->SetEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
 			ArchiveEntry* entry = selection[a];
@@ -1757,6 +1801,7 @@ bool ArchivePanel::gfxRemap()
 					entry->importMemChunk(mc);
 			}
 		}
+		entry_list->SetEntriesAutoUpdate(true);
 
 		// Update variables
 		((GfxEntryPanel*)gfx_area)->prevTranslation().copy(ted.getTranslation());
@@ -1842,6 +1887,7 @@ bool ArchivePanel::gfxTint()
 		// Apply translation to all entry images
 		SImage temp;
 		MemChunk mc;
+		entry_list->SetEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
 			ArchiveEntry* entry = selection[a];
@@ -1860,6 +1906,7 @@ bool ArchivePanel::gfxTint()
 					entry->importMemChunk(mc);
 			}
 		}
+		entry_list->SetEntriesAutoUpdate(true);
 
 		// Finish recording undo level
 		undo_manager->endRecord(true);
@@ -1889,6 +1936,7 @@ bool ArchivePanel::gfxModifyOffsets()
 	undo_manager->beginRecord("Gfx Modify Offsets");
 
 	// Go through selected entries
+	entry_list->SetEntriesAutoUpdate(false);
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 	for (uint32_t a = 0; a < selection.size(); a++)
 	{
@@ -1896,6 +1944,7 @@ bool ArchivePanel::gfxModifyOffsets()
 		EntryOperations::modifyGfxOffsets(selection[a], &mod);
 	}
 	theActivePanel->callRefresh();
+	entry_list->SetEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
