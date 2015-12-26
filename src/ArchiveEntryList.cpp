@@ -78,6 +78,7 @@ EXTERN_CVAR(Bool, list_font_monospace)
 	current_dir = NULL;
 	show_dir_back = false;
 	undo_manager = NULL;
+	entries_update = true;
 
 	// Create dummy 'up folder' entry
 	entry_dir_back = new ArchiveEntry();
@@ -775,9 +776,8 @@ void ArchiveEntryList::labelEdited(int col, int index, string new_label)
  *******************************************************************/
 void ArchiveEntryList::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer == archive && event_name != "closed")
+	if (entries_update && announcer == archive && event_name != "closed")
 	{
-		// Since refreshing the list is relatively fast, just refresh it on any change
 		updateList();
 		applyFilter();
 	}
