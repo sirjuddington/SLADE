@@ -55,7 +55,7 @@ public:
 	bool	goUpDir();
 	bool	setDir(ArchiveTreeNode* dir);
 
-	void	SetEntriesAutoUpdate(bool update) { entries_update = update; }
+	void	setEntriesAutoUpdate(bool update) { entries_update = update; }
 
 	// Sorting
 	static bool	sortSize(long left, long right);
