@@ -1,4 +1,6 @@
 
+#ifdef __cplusplus
+
 #ifdef _MSC_VER
 // Avoid many '#pragma once in main file' warnings from GCC or Clang
 // when this file is used as the prefix header
@@ -134,3 +136,5 @@ const string MAP_TYPE_NAMES[] = {
 };
 
 #endif // __MAIN_H__
+
+#endif /* __cplusplus */
