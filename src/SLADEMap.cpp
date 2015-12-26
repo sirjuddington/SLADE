@@ -4765,7 +4765,8 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 		merged = true;
 
 	// Correct sector references
-	if (merged)
+	correctSectors(connected_lines, true);
+	/*if (merged)
 		correctSectors(connected_lines, true);
 	else
 	{
@@ -4784,7 +4785,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 			else
 				removeSide(connected_lines[a]->side2);
 		}
-	}
+	}*/
 
 	// Flip any one-sided lines that only have a side 2
 	for (unsigned a = 0; a < connected_lines.size(); a++)
