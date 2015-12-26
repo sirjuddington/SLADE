@@ -132,22 +132,6 @@ void MapSector::setGeometryUpdated()
 	geometry_updated = theApp->runTimer();
 }
 
-/* MapSector::floorHeightAt
- * Returns the height of the floor at the given point
- *******************************************************************/
-double MapSector::floorHeightAt(double x, double y)
-{
-	return plane_floor.height_at(x, y);
-}
-
-/* MapSector::ceilingHeightAt
- * Returns the height of the ceiling at the given point
- *******************************************************************/
-double MapSector::ceilingHeightAt(double x, double y)
-{
-	return plane_ceiling.height_at(x, y);
-}
-
 /* MapSector::stringProperty
  * Returns the value of the string property matching [key]
  *******************************************************************/
@@ -327,12 +311,12 @@ Polygon2D* MapSector::getPolygon()
 }
 
 /* MapSector::isWithin
- * Returns true if the point [x, y] is inside the sector
+ * Returns true if the point is inside the sector
  *******************************************************************/
-bool MapSector::isWithin(double x, double y)
+bool MapSector::isWithin(fpoint2_t point)
 {
 	// Check with bbox first
-	if (!boundingBox().point_within(x, y))
+	if (!boundingBox().contains(point))
 		return false;
 
 	// Find nearest line in the sector
@@ -349,7 +333,7 @@ bool MapSector::isWithin(double x, double y)
 		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!", connected_sides[a]->getIndex());
 		//	continue;
 		//}
-		dist = connected_sides[a]->getParentLine()->distanceTo(x, y);
+		dist = connected_sides[a]->getParentLine()->distanceTo(point);
 
 		// Check distance
 		if (dist < min_dist)
@@ -364,7 +348,7 @@ bool MapSector::isWithin(double x, double y)
 		return false;
 
 	// Check the side of the nearest line
-	double side = MathStuff::lineSide(x, y, nline->x1(), nline->y1(), nline->x2(), nline->y2());
+	double side = MathStuff::lineSide(point, nline->seg());
 	if (side >= 0 && nline->frontSector() == this)
 		return true;
 	else if (side < 0 && nline->backSector() == this)
@@ -374,10 +358,10 @@ bool MapSector::isWithin(double x, double y)
 }
 
 /* MapSector::distanceTo
- * Returns the minimum distance from [x, y] to the closest line in
+ * Returns the minimum distance from the point to the closest line in
  * the sector
  *******************************************************************/
-double MapSector::distanceTo(double x, double y, double maxdist)
+double MapSector::distanceTo(fpoint2_t point, double maxdist)
 {
 	// Init
 	if (maxdist < 0)
@@ -387,16 +371,16 @@ double MapSector::distanceTo(double x, double y, double maxdist)
 	if (!bbox.is_valid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
+	double dist = MathStuff::distanceToLine(point, bbox.left_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.max.y, bbox.max.x, bbox.max.y);
+	dist = MathStuff::distanceToLine(point, bbox.top_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
+	dist = MathStuff::distanceToLine(point, bbox.right_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.min.y, bbox.min.x, bbox.min.y);
+	dist = MathStuff::distanceToLine(point, bbox.bottom_side());
 	if (dist < min_dist) min_dist = dist;
 
-	if (min_dist > maxdist && !bbox.point_within(x, y))
+	if (min_dist > maxdist && !bbox.contains(point))
 		return -1;
 
 	// Go through connected sides
@@ -407,7 +391,7 @@ double MapSector::distanceTo(double x, double y, double maxdist)
 		if (!line) continue;
 
 		// Check distance
-		dist = line->distanceTo(x, y);
+		dist = line->distanceTo(point);
 		if (dist < min_dist)
 			min_dist = dist;
 	}

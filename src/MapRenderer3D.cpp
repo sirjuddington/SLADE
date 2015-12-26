@@ -357,12 +357,12 @@ void MapRenderer3D::cameraUpdateVectors()
 	cam_direction.normalize();
 
 	// Calculate strafe vector
-	cam_strafe = fpoint3_t(cam_direction.x, cam_direction.y, 0).cross(fpoint3_t(0, 0, 1));
-	cam_strafe = cam_strafe.normalize();
+	cam_strafe = fpoint3_t(cam_direction, 0).cross(fpoint3_t(0, 0, 1));
+	cam_strafe.normalize();
 
 	// Calculate 3d direction vector
-	cam_dir3d = MathStuff::rotateVector3D(fpoint3_t(cam_direction.x, cam_direction.y, 0), cam_strafe, cam_pitch);
-	cam_dir3d = cam_dir3d.normalize();
+	cam_dir3d = MathStuff::rotateVector3D(fpoint3_t(cam_direction, 0), cam_strafe, cam_pitch);
+	cam_dir3d.normalize();
 }
 
 /* MapRenderer3D::cameraSet
@@ -393,14 +393,14 @@ void MapRenderer3D::cameraSetPosition(fpoint3_t position)
 void MapRenderer3D::cameraApplyGravity(double mult)
 {
 	// Get current sector
-	int sector = map->sectorAt(cam_position.x, cam_position.y);
+	int sector = map->sectorAt(cam_position.get2d());
 	if (sector < 0)
 		return;
 
 	// Get target height
 	int view_height = (map->currentFormat() == MAP_DOOM64) ? 56 : 41;
-	int fheight = map->getSector(sector)->floorHeightAt(cam_position.x, cam_position.y) + view_height;
-	int cheight = map->getSector(sector)->ceilingHeightAt(cam_position.x, cam_position.y);
+	int fheight = map->getSector(sector)->getFloorPlane().height_at(cam_position.get2d()) + view_height;
+	int cheight = map->getSector(sector)->getCeilingPlane().height_at(cam_position.get2d());
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -442,7 +442,7 @@ void MapRenderer3D::setupView(int width, int height)
 	glLoadIdentity();
 
 	// Calculate up vector
-	fpoint3_t up = cam_strafe.cross(cam_dir3d).normalize();
+	fpoint3_t up = cam_strafe.cross(cam_dir3d).normalized();
 
 	// Setup camera view
 	gluLookAt(cam_position.x, cam_position.y, cam_position.z,
@@ -1847,7 +1847,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 
 	// Setup thing info
 	things[index].type = theGameConfiguration->thingType(thing->getType());
-	things[index].sector = map->getSector(map->sectorAt(thing->xPos(), thing->yPos()));
+	things[index].sector = map->getSector(map->sectorAt(thing->point()));
 
 	// Get sprite texture
 	uint32_t theight = render_thing_icon_size;
@@ -1921,7 +1921,7 @@ void MapRenderer3D::renderThings()
 	uint8_t light;
 	float x1, y1, x2, y2;
 	unsigned update = 0;
-	fpoint2_t strafe(cam_position.x + cam_strafe.x, cam_position.y + cam_strafe.y);
+	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 	for (unsigned a = 0; a < map->nThings(); a++)
 	{
 		MapThing* thing = map->getThing(a);
@@ -1930,12 +1930,12 @@ void MapRenderer3D::renderThings()
 		// Check side of camera
 		if (cam_pitch > -0.9 && cam_pitch < 0.9)
 		{
-			if (MathStuff::lineSide(thing->xPos(), thing->yPos(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
+			if (MathStuff::lineSide(thing->point(), strafe) > 0)
 				continue;
 		}
 
 		// Check thing distance if needed
-		dist = MathStuff::distance(cam_position.x, cam_position.y, thing->xPos(), thing->yPos());
+		dist = MathStuff::distance(cam_position.get2d(), thing->point());
 		if (mdist > 0 && dist > mdist)
 			continue;
 
@@ -2313,10 +2313,9 @@ void MapRenderer3D::quickVisDiscard()
 		dist_sectors.resize(map->nSectors());
 
 	// Go through all sectors
-	double x = cam_position.x;
-	double y = cam_position.y;
+	fpoint2_t cam = cam_position.get2d();
 	double min_dist, dist;
-	fpoint2_t strafe(x + cam_strafe.x, y + cam_strafe.y);
+	fseg2_t strafe(cam, cam + cam_strafe.get2d());
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		// Get sector bbox
@@ -2326,16 +2325,16 @@ void MapRenderer3D::quickVisDiscard()
 		dist_sectors[a] = 0.0f;
 
 		// Check if within bbox
-		if (bbox.point_within(x, y))
+		if (bbox.contains(cam))
 			continue;
 
 		// Check side of camera
 		if (cam_pitch > -0.9 && cam_pitch < 0.9)
 		{
-			if (MathStuff::lineSide(bbox.min.x, bbox.min.y, x, y, strafe.x, strafe.y) > 0 &&
-			        MathStuff::lineSide(bbox.max.x, bbox.min.y, x, y, strafe.x, strafe.y) > 0 &&
-			        MathStuff::lineSide(bbox.max.x, bbox.max.y, x, y, strafe.x, strafe.y) > 0 &&
-			        MathStuff::lineSide(bbox.min.x, bbox.max.y, x, y, strafe.x, strafe.y) > 0)
+			if (MathStuff::lineSide(bbox.min, strafe) > 0 &&
+			        MathStuff::lineSide(fpoint2_t(bbox.max.x, bbox.min.y), strafe) > 0 &&
+			        MathStuff::lineSide(bbox.max, strafe) > 0 &&
+			        MathStuff::lineSide(fpoint2_t(bbox.min.x, bbox.max.y), strafe) > 0)
 			{
 				// Behind camera, invisible
 				dist_sectors[a] = -1.0f;
@@ -2347,13 +2346,13 @@ void MapRenderer3D::quickVisDiscard()
 		if (render_max_dist > 0)
 		{
 			min_dist = 9999999;
-			dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
+			dist = MathStuff::distanceToLine(cam, bbox.left_side());
 			if (dist < min_dist) min_dist = dist;
-			dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.max.y, bbox.max.x, bbox.max.y);
+			dist = MathStuff::distanceToLine(cam, bbox.top_side());
 			if (dist < min_dist) min_dist = dist;
-			dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
+			dist = MathStuff::distanceToLine(cam, bbox.right_side());
 			if (dist < min_dist) min_dist = dist;
-			dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.min.y, bbox.min.x, bbox.min.y);
+			dist = MathStuff::distanceToLine(cam, bbox.bottom_side());
 			if (dist < min_dist) min_dist = dist;
 
 			dist_sectors[a] = dist;
@@ -2402,7 +2401,7 @@ void MapRenderer3D::checkVisibleQuads()
 	n_quads = 0;
 	unsigned updates = 0;
 	bool update = false;
-	fpoint2_t strafe(cam_position.x+cam_strafe.x, cam_position.y+cam_strafe.y);
+	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		line = map->getLine(a);
@@ -2414,14 +2413,14 @@ void MapRenderer3D::checkVisibleQuads()
 		// Check side of camera
 		if (cam_pitch > -0.9 && cam_pitch < 0.9)
 		{
-			if (MathStuff::lineSide(line->x1(), line->y1(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0 &&
-			        MathStuff::lineSide(line->x2(), line->y2(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
+			if (MathStuff::lineSide(line->point1(), strafe) > 0 &&
+			        MathStuff::lineSide(line->point2(), strafe) > 0)
 				continue;
 		}
 
 		// Check for distance fade
 		if (render_max_dist > 0)
-			distfade = calcDistFade(MathStuff::distanceToLine(cam_position.x, cam_position.y, line->x1(), line->y1(), line->x2(), line->y2()), render_max_dist);
+			distfade = calcDistFade(MathStuff::distanceToLine(cam_position.get2d(), line->seg()), render_max_dist);
 		else
 			distfade = 1.0f;
 
@@ -2461,7 +2460,7 @@ void MapRenderer3D::checkVisibleQuads()
 		{
 			// Check we're on the right side of the quad
 			quad = &(lines[a].quads[q]);
-			if (MathStuff::lineSide(cam_position.x, cam_position.y, quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y) < 0)
+			if (MathStuff::lineSide(cam_position.get2d(), fseg2_t(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y)) < 0)
 				continue;
 
 			quads[n_quads] = quad;
@@ -2484,6 +2483,7 @@ void MapRenderer3D::checkVisibleFlats()
 	MapSector* sector;
 	n_flats = 0;
 	float alpha;
+	fpoint2_t cam = cam_position.get2d();
 	for (unsigned a = 0; a < map->nSectors(); a++)
 	{
 		sector = map->getSector(a);
@@ -2498,8 +2498,8 @@ void MapRenderer3D::checkVisibleFlats()
 			if (dist_sectors[a] > render_max_dist)
 				continue;
 			// Double-check distance
-			dist_sectors[a] = sector->distanceTo(cam_position.x, cam_position.y, render_max_dist);
-			if (dist_sectors[a] > render_max_dist && !sector->boundingBox().point_within(cam_position.x, cam_position.y))
+			dist_sectors[a] = sector->distanceTo(cam, render_max_dist);
+			if (dist_sectors[a] > render_max_dist && !sector->boundingBox().contains(cam))
 			{
 				dist_sectors[a] = -1;
 				continue;
@@ -2542,7 +2542,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 	// Init
 	double min_dist = 9999999;
 	selection_3d_t current;
-	fpoint2_t strafe(cam_position.x+cam_strafe.x, cam_position.y+cam_strafe.y);
+	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 
 	// Check for required map structures
 	if (!map || lines.size() != map->nLines() ||
@@ -2562,9 +2562,9 @@ selection_3d_t MapRenderer3D::determineHilight()
 		MapLine* line = map->getLine(a);
 
 		// Find (2d) distance to line
-		dist = MathStuff::distanceRayLine(fpoint2_t(cam_position.x, cam_position.y),
-		                                  fpoint2_t(cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y),
-		                                  line->x1(), line->y1(), line->x2(), line->y2());
+		dist = MathStuff::distanceRayLine(
+			cam_position.get2d(), (cam_position + cam_dir3d).get2d(),
+			line->point1(), line->point2());
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)
@@ -2577,7 +2577,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 			quad = &lines[a].quads[q];
 
 			// Check side of camera
-			if (MathStuff::lineSide(cam_position.x, cam_position.y, quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y) < 0)
+			if (MathStuff::lineSide(cam_position.get2d(), fseg2_t(quad->points[0].x, quad->points[0].y, quad->points[2].x, quad->points[2].y)) < 0)
 				continue;
 
 			// Check intersection height
@@ -2628,7 +2628,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 			if (cam_position.z > floors[a].plane.height_at(cam_position.x, cam_position.y))
 			{
 				// Check if intersection is within sector
-				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				if (map->getSector(a)->isWithin((cam_position + cam_dir3d * dist).get2d()))
 				{
 					current.index = a;
 					current.type = MapEditor::SEL_FLOOR;
@@ -2645,7 +2645,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 			if (cam_position.z < ceilings[a].plane.height_at(cam_position.x, cam_position.y))
 			{
 				// Check if intersection is within sector
-				if (map->getSector(a)->isWithin(cam_position.x + cam_dir3d.x*dist, cam_position.y + cam_dir3d.y*dist))
+				if (map->getSector(a)->isWithin((cam_position + cam_dir3d * dist).get2d()))
 				{
 					current.index = a;
 					current.type = MapEditor::SEL_CEILING;
@@ -2673,7 +2673,7 @@ selection_3d_t MapRenderer3D::determineHilight()
 
 		// Ignore if not visible
 		MapThing* thing = map->getThing(a);
-		if (MathStuff::lineSide(thing->xPos(), thing->yPos(), cam_position.x, cam_position.y, strafe.x, strafe.y) > 0)
+		if (MathStuff::lineSide(thing->point(), strafe) > 0)
 			continue;
 
 		// Ignore if not shown
@@ -2684,10 +2684,9 @@ selection_3d_t MapRenderer3D::determineHilight()
 		halfwidth = things[a].sprite->getWidth() * 0.5;
 		if (things[a].flags & ICON)
 			halfwidth = render_thing_icon_size*0.5;
-		dist = MathStuff::distanceRayLine(fpoint2_t(cam_position.x, cam_position.y),
-		                                  fpoint2_t(cam_position.x+cam_dir3d.x, cam_position.y+cam_dir3d.y),
-		                                  thing->xPos() - cam_strafe.x * halfwidth, thing->yPos() - cam_strafe.y * halfwidth,
-		                                  thing->xPos() + cam_strafe.x * halfwidth, thing->yPos() + cam_strafe.y * halfwidth);
+		dist = MathStuff::distanceRayLine(
+			cam_position.get2d(), (cam_position + cam_dir3d).get2d(),
+			thing->point() - cam_strafe.get2d() * halfwidth, thing->point() + cam_strafe.get2d() * halfwidth);
 
 		// Ignore if no intersection or something was closer
 		if (dist < 0 || dist >= min_dist)

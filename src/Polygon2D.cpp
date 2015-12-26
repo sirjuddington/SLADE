@@ -696,9 +696,9 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	int closest = -1;
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		if (MathStuff::lineSide(vertices[a].x, vertices[a].y, vertices[v1].x, vertices[v1].y, vertices[v2].x, vertices[v2].y) > 0 && vertices[a].ok)
+		if (MathStuff::lineSide(vertices[a], fseg2_t(vertices[v1], vertices[v2])) > 0 && vertices[a].ok)
 		{
-			vertices[a].distance = MathStuff::distance(vertices[v2].x, vertices[v2].y, vertices[a].x, vertices[a].y);
+			vertices[a].distance = MathStuff::distance(vertices[v2], vertices[a]);
 			if (vertices[a].distance < min_dist)
 			{
 				min_dist = vertices[a].distance;
@@ -716,7 +716,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	// See if we can split to here without crossing anything
 	// (this will be the case most of the time)
 	bool intersect = false;
-	double xi, yi;
+	fpoint2_t pointi;
 	for (unsigned a = 0; a < edges.size(); a++)
 	{
 		// Ignore edge if adjacent to the vertices we are looking at
@@ -724,7 +724,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 			continue;
 
 		// Intersection test
-		if (MathStuff::linesIntersect(vertices[v2].x, vertices[v2].y, vertices[closest].x, vertices[closest].y, vertices[edges[a].v1].x, vertices[edges[a].v1].y, vertices[edges[a].v2].x, vertices[edges[a].v2].y, xi, yi))
+		if (MathStuff::linesIntersect(fseg2_t(vertices[v2], vertices[closest]), fseg2_t(vertices[edges[a].v1], vertices[edges[a].v2]), pointi))
 		{
 			intersect = true;
 			break;
@@ -768,7 +768,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 				continue;
 
 			// Intersection test
-			if (MathStuff::linesIntersect(vertices[v2].x, vertices[v2].y, vert.x, vert.y, vertices[edges[a].v1].x, vertices[edges[a].v1].y, vertices[edges[a].v2].x, vertices[edges[a].v2].y, xi, yi))
+			if (MathStuff::linesIntersect(fseg2_t(vertices[v2], vert), fseg2_t(vertices[edges[a].v1], vertices[edges[a].v2]), pointi))
 			{
 				intersect = true;
 				break;

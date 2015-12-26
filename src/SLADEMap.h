@@ -210,11 +210,11 @@ public:
 	bool	removeThing(unsigned index);
 
 	// Geometry
-	int					nearestVertex(double x, double y, double min = 64);
-	int					nearestLine(double x, double y, double min = 64);
-	int					nearestThing(double x, double y, double min = 64);
-	vector<int>			nearestThingMulti(double x, double y);
-	int					sectorAt(double x, double y);
+	int					nearestVertex(fpoint2_t point, double min = 64);
+	int					nearestLine(fpoint2_t point, double min = 64);
+	int					nearestThing(fpoint2_t point, double min = 64);
+	vector<int>			nearestThingMulti(fpoint2_t point);
+	int					sectorAt(fpoint2_t point);
 	bbox_t				getMapBBox();
 	MapVertex*			vertexAt(double x, double y);
 	vector<fpoint2_t>	cutLines(double x1, double y1, double x2, double y2);

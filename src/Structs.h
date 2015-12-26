@@ -90,6 +90,27 @@ struct fpoint2_t
 		}
 	}
 
+	double distance_to(fpoint2_t point)
+	{
+		double dist_x = point.x - x;
+		double dist_y = point.y - y;
+
+		return sqrt((dist_x * dist_x) + (dist_y * dist_y));
+	}
+
+	// aka "Manhattan" distance -- just the sum of the vertical and horizontal
+	// distance, and an upper bound on the true distance
+	double taxicab_distance_to(fpoint2_t point)
+	{
+		double dist;
+		if (point.x < x)	dist = x - point.x;
+		else				dist = point.x - x;
+		if (point.y < y)	dist += y - point.y;
+		else				dist += point.y - y;
+
+		return dist;
+	}
+
 	double dot(fpoint2_t vec)
 	{
 		return x*vec.x + y*vec.y;
@@ -127,6 +148,10 @@ struct fpoint2_t
 	{
 		return (x == rhs.x && y == rhs.y);
 	}
+	bool operator!=(fpoint2_t rhs)
+	{
+		return (x != rhs.x || y != rhs.y);
+	}
 };
 
 
@@ -137,7 +162,7 @@ struct fpoint3_t
 
 	fpoint3_t() { x = y = z = 0; }
 	fpoint3_t(double X, double Y, double Z) { x = X; y = Y; z = Z; }
-	fpoint3_t(fpoint2_t p) { x = p.x; y = p.y; z = 0; }
+	fpoint3_t(fpoint2_t p, double Z = 0) { x = p.x; y = p.y; z = Z; }
 
 	void set(double X, double Y, double Z) { x = X; y = Y; z = Z; }
 	void set(fpoint3_t p) { x = p.x; y = p.y; z = p.z; }
@@ -152,13 +177,26 @@ struct fpoint3_t
 		return x*vec.x + y*vec.y + z*vec.z;
 	}
 
-	fpoint3_t normalize()
+	fpoint3_t normalized()
 	{
 		double mag = magnitude();
 		if (mag == 0)
 			return fpoint3_t(0, 0, 0);
 		else
 			return fpoint3_t(x / mag, y / mag, z / mag);
+	}
+
+	void normalize()
+	{
+		double mag = magnitude();
+		if (mag == 0)
+			set(0, 0, 0);
+		else
+		{
+			x /= mag;
+			y /= mag;
+			z /= mag;
+		}
 	}
 
 	double distance_to(fpoint3_t point)
@@ -472,12 +510,10 @@ struct rect_t
 		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool within(int x, int y)
+	bool contains(point2_t point)
 	{
-		if (x >= left() && x <= right() && y >= top() && y <= bottom())
-			return true;
-		else
-			return false;
+		return (point.x >= left() && point.x <= right() &&
+				point.y >= top() && point.y <= bottom());
 	}
 };
 
@@ -566,6 +602,8 @@ struct frect_t
 	double y1() { return tl.y; }
 	double x2() { return br.x; }
 	double y2() { return br.y; }
+	fpoint2_t p1() { return tl; }
+	fpoint2_t p2() { return br; }
 
 	double left()	{ return min(tl.x, br.x); }
 	double top()	{ return min(tl.y, br.y); }
@@ -613,14 +651,15 @@ struct frect_t
 		return sqrt(dist_x * dist_x + dist_y * dist_y);
 	}
 
-	bool within(double x, double y)
+	bool contains(fpoint2_t point)
 	{
-		if (x >= left() && x <= right() && y >= top() && y <= bottom())
-			return true;
-		else
-			return false;
+		return (point.x >= left() && point.x <= right() &&
+				point.y >= top() && point.y <= bottom());
 	}
 };
+// Rectangle is not really any different from a 2D segment, but using it to
+// mean that can be confusing, so here's an alias.
+typedef frect_t fseg2_t;
 
 
 // plane_t: A 3d plane
@@ -658,7 +697,8 @@ struct plane_t
 	fpoint3_t normal()
 	{
 		fpoint3_t norm(a, b, c);
-		return norm.normalize();
+		norm.normalize();
+		return norm;
 	}
 
 	void normalize()
@@ -671,7 +711,7 @@ struct plane_t
 		d = d / mag;
 	}
 
-	double height_at(fpoint2_t& point)
+	double height_at(fpoint2_t point)
 	{
 		return height_at(point.x, point.y);
 	}
@@ -721,6 +761,10 @@ struct bbox_t
 	{
 		return (x >= min.x && x <= max.x && y >= min.y && y <= max.y);
 	}
+	bool contains(fpoint2_t point)
+	{
+		return point_within(point.x, point.y);
+	}
 
 	bool is_within(fpoint2_t bmin, fpoint2_t bmax)
 	{
@@ -760,6 +804,26 @@ struct bbox_t
 	double mid_y()
 	{
 		return min.y + ((max.y - min.y) * 0.5);
+	}
+
+	fseg2_t left_side()
+	{
+		return fseg2_t(min.x, min.y, min.x, max.y);
+	}
+
+	fseg2_t right_side()
+	{
+		return fseg2_t(max.x, min.y, max.x, max.y);
+	}
+
+	fseg2_t bottom_side()
+	{
+		return fseg2_t(min.x, max.y, max.x, max.y);
+	}
+
+	fseg2_t top_side()
+	{
+		return fseg2_t(min.x, min.y, max.x, min.y);
 	}
 };
 

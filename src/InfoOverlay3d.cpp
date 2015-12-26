@@ -443,7 +443,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		}
 
 		// Sector
-		int sector = map->sectorAt(thing->xPos(), thing->yPos());
+		int sector = map->sectorAt(thing->point());
 		if (sector >= 0)
 			info2.push_back(S_FMT("In Sector #%d", sector));
 		else

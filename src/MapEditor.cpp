@@ -729,22 +729,22 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 
 	// Update hilighted object depending on mode
 	if (edit_mode == MODE_VERTICES)
-		hilight_item = map.nearestVertex(mouse_pos.x, mouse_pos.y, 32/dist_scale);
+		hilight_item = map.nearestVertex(mouse_pos, 32/dist_scale);
 	else if (edit_mode == MODE_LINES)
-		hilight_item = map.nearestLine(mouse_pos.x, mouse_pos.y, 32/dist_scale);
+		hilight_item = map.nearestLine(mouse_pos, 32/dist_scale);
 	else if (edit_mode == MODE_SECTORS)
-		hilight_item = map.sectorAt(mouse_pos.x, mouse_pos.y);
+		hilight_item = map.sectorAt(mouse_pos);
 	else if (edit_mode == MODE_THINGS)
 	{
 		hilight_item = -1;
 
 		// Get (possibly multiple) nearest-thing(s)
-		vector<int> nearest = map.nearestThingMulti(mouse_pos.x, mouse_pos.y);
+		vector<int> nearest = map.nearestThingMulti(mouse_pos);
 		if (nearest.size() == 1)
 		{
 			MapThing* t = map.getThing(nearest[0]);
 			ThingType* type = theGameConfiguration->thingType(t->getType());
-			double dist = MathStuff::distance(mouse_pos.x, mouse_pos.y, t->xPos(), t->yPos());
+			double dist = MathStuff::distance(mouse_pos, t->point());
 			if (dist <= type->getRadius() + (32/dist_scale))
 				hilight_item = nearest[0];
 		}
@@ -754,7 +754,7 @@ bool MapEditor::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 			{
 				MapThing* t = map.getThing(nearest[a]);
 				ThingType* type = theGameConfiguration->thingType(t->getType());
-				double dist = MathStuff::distance(mouse_pos.x, mouse_pos.y, t->xPos(), t->yPos());
+				double dist = MathStuff::distance(mouse_pos, t->point());
 				if (dist <= type->getRadius() + (32/dist_scale))
 					hilight_item = nearest[a];
 			}
@@ -2073,8 +2073,10 @@ void MapEditor::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
  *******************************************************************/
 void MapEditor::splitLine(double x, double y, double min_dist)
 {
+	fpoint2_t point(x, y);
+
 	// Get the closest line
-	int lindex = map.nearestLine(x, y, min_dist);
+	int lindex = map.nearestLine(point, min_dist);
 	MapLine* line = map.getLine(lindex);
 
 	// Do nothing if no line is close enough
@@ -2085,7 +2087,7 @@ void MapEditor::splitLine(double x, double y, double min_dist)
 	beginUndoRecord("Split Line", true, true, false);
 
 	// Get closest point on the line
-	fpoint2_t closest = MathStuff::closestPointOnLine(x, y, line->x1(), line->y1(), line->x2(), line->y2());
+	fpoint2_t closest = MathStuff::closestPointOnLine(point, line->seg());
 
 	// Create vertex there
 	MapVertex* vertex = map.createVertex(closest.x, closest.y);
@@ -2579,7 +2581,9 @@ int MapEditor::beginTagEdit()
  *******************************************************************/
 void MapEditor::tagSectorAt(double x, double y)
 {
-	int index = map.sectorAt(x, y);
+	fpoint2_t point(x, y);
+
+	int index = map.sectorAt(point);
 	if (index < 0)
 		return;
 
@@ -2774,14 +2778,16 @@ void MapEditor::createThing(double x, double y)
  *******************************************************************/
 void MapEditor::createSector(double x, double y)
 {
+	fpoint2_t point(x, y);
+
 	// Find nearest line
-	int nearest = map.nearestLine(x, y, 99999999);
+	int nearest = map.nearestLine(point, 99999999);
 	MapLine* line = map.getLine(nearest);
 	if (!line)
 		return;
 
 	// Determine side
-	double side = MathStuff::lineSide(x, y, line->x1(), line->y1(), line->x2(), line->y2());
+	double side = MathStuff::lineSide(point, line->seg());
 
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = NULL;
@@ -3031,12 +3037,9 @@ bool MapEditor::addLineDrawPoint(fpoint2_t point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		int vertex = map.nearestVertex(point.x, point.y);
+		int vertex = map.nearestVertex(point);
 		if (vertex >= 0)
-		{
-			point.x = map.getVertex(vertex)->xPos();
-			point.y = map.getVertex(vertex)->yPos();
-		}
+			point = map.getVertex(vertex)->point();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -3095,12 +3098,9 @@ void MapEditor::setShapeDrawOrigin(fpoint2_t point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		int vertex = map.nearestVertex(point.x, point.y);
+		int vertex = map.nearestVertex(point);
 		if (vertex >= 0)
-		{
-			point.x = map.getVertex(vertex)->xPos();
-			point.y = map.getVertex(vertex)->yPos();
-		}
+			point = map.getVertex(vertex)->point();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -5453,7 +5453,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	sf::Clock clock;
 	SLADEMap& map = theMapEditor->mapEditor().getMap();
 	for (unsigned a = 0; a < map.nThings(); a++)
-		map.sectorAt(map.getThing(a)->xPos(), map.getThing(a)->yPos());
+		map.sectorAt(map.getThing(a)->point());
 	long ms = clock.getElapsedTime().asMilliseconds();
 	wxLogMessage("Took %ldms", ms);
 }

@@ -90,45 +90,44 @@ int MathStuff::round(double val)
 }
 
 /* MathStuff::distance
- * Returns the distance between [x1,y1] and [x2,y2]
+ * Returns the distance between p1 and p2
  *******************************************************************/
-double MathStuff::distance(double x1, double y1, double x2, double y2)
+double MathStuff::distance(fpoint2_t p1, fpoint2_t p2)
 {
-	return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+	return sqrt((p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y));
 }
 
 /* MathStuff::distance3d
- * Returns the distance between [x1,y1,z1] and [x2,y2,z2]
+ * Returns the distance between p1 and p2
  *******************************************************************/
-double MathStuff::distance3d(double x1, double y1, double z1, double x2, double y2, double z2)
+double MathStuff::distance3d(fpoint3_t p1, fpoint3_t p2)
 {
-	return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
+	return sqrt((p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y) + (p2.z-p1.z)*(p2.z-p1.z));
 }
 
 /* MathStuff::lineSide
- * Returns the side of the line from [x1,y1] to [x2,y2] that the
- * point at [x,y] lies on. Positive is front, negative is back, zero
- * is on the line
+ * Returns the side of the line that the point lies on.  Positive is
+ * front, negative is back, zero is on the line
  *******************************************************************/
-double MathStuff::lineSide(double x, double y, double x1, double y1, double x2, double y2)
+double MathStuff::lineSide(fpoint2_t point, fseg2_t line)
 {
-	return -((y-y1)*(x2-x1) - (x-x1)*(y2-y1));
+	return (point.x - line.x1()) * line.height() - (point.y - line.y1()) * line.width();
 }
 
 /* MathStuff::closestPointOnLine
- * Returns the closest point to [x,y] along the line from [x1,y1] to
- * [x2,y2]
+ * Returns the point on the given line that's closest to the given
+ * point
  *******************************************************************/
-fpoint2_t MathStuff::closestPointOnLine(double x, double y, double x1, double y1, double x2, double y2)
+fpoint2_t MathStuff::closestPointOnLine(fpoint2_t point, fseg2_t line)
 {
 	// Get line length
-	double len = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+	double len = line.length();
 
 	// Calculate intersection distance
 	double u = 0;
 	if (len > 0)
 	{
-		u = ((x-x1)*(x2-x1) + (y-y1)*(y2-y1)) / (len*len);
+		u = MathStuff::lineSide(point, line) / (len * len);
 
 		// Limit intersection distance to the line
 		double lbound = 1 / len;
@@ -137,89 +136,85 @@ fpoint2_t MathStuff::closestPointOnLine(double x, double y, double x1, double y1
 	}
 
 	// Return intersection point
-	return fpoint2_t(x1 + u*(x2 - x1), y1 + u*(y2 - y1));
+	return fpoint2_t(line.x1() + u*line.width(), line.y1() + u*line.height());
 }
 
 /* MathStuff::distanceToLine
  * Returns the shortest distance between the point at [x,y] and the
  * line from [x1,y1] to [x2,y2]
  *******************************************************************/
-double MathStuff::distanceToLine(double x, double y, double x1, double y1, double x2, double y2)
+double MathStuff::distanceToLine(fpoint2_t point, fseg2_t line)
 {
 	// Calculate intersection point
-	fpoint2_t i = closestPointOnLine(x, y, x1, y1, x2, y2);
+	fpoint2_t i = closestPointOnLine(point, line);
 
 	// Return distance between intersection and point
 	// which is the shortest distance to the line
-	return sqrt((i.x-x)*(i.x-x) + (i.y-y)*(i.y-y));
+	return MathStuff::distance(i, point);
 }
 
 /* MathStuff::distanceToLineFast
- * Returns the shortest 'distance' between the point at [x,y] and the
- * line from [x1,y1] to [x2,y2]. The distance returned isn't the
- * real distance, but can be used to find the 'closest' line to the
- * point
+ * Returns the shortest 'distance' between the given point and line.
+ * The distance returned isn't the real distance, but can be used to
+ * find the 'closest' line to the point
  *******************************************************************/
-double MathStuff::distanceToLineFast(double x, double y, double x1, double y1, double x2, double y2)
+double MathStuff::distanceToLineFast(fpoint2_t point, fseg2_t line)
 {
 	// Calculate intersection point
-	fpoint2_t i = closestPointOnLine(x, y, x1, y1, x2, y2);
+	fpoint2_t i = closestPointOnLine(point, line);
 
 	// Return fast distance between intersection and point
 	// which is the shortest distance to the line
-	return (i.x-x)*(i.x-x) + (i.y-y)*(i.y-y);
+	return (i.x-point.x)*(i.x-point.x) + (i.y-point.y)*(i.y-point.y);
 }
 
 /* MathStuff::linesIntersect
- * Checks for an intersection between two lines [l1x1,l1y1]-[l1x2,l1y2]
- * and [l2x1,l2y1]-[l2x2,l2y2]. Returns true if they intersect and
- * sets [x,y] to the intersection point
+ * Checks for an intersection between two lines l1 and l2.  Returns
+ * true if they intersect and sets out to the intersection point
  *******************************************************************/
-bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y2,
-							   double l2x1, double l2y1, double l2x2, double l2y2,
-							   double& x, double& y)
+bool MathStuff::linesIntersect(fseg2_t l1, fseg2_t l2, fpoint2_t& out)
 {
 	// First, simple check for two parallel horizontal or vertical lines
-	if ((l1x1 == l1x2 && l2x1 == l2x2) || (l1y1 == l1y2 && l2y1 == l2y2))
+	if ((l1.x1() == l1.x2() && l2.x1() == l2.x2()) || (l1.y1() == l1.y2() && l2.y1() == l2.y2()))
 		return false;
 
 	// Second, check if the lines share any endpoints
-	if ((l1x1 == l2x1 && l1y1 == l2y1) ||
-			(l1x2 == l2x2 && l1y2 == l2y2) ||
-			(l1x1 == l2x2 && l1y1 == l2y2) ||
-			(l1x2 == l2x1 && l1y2 == l2y1))
+	if ((l1.x1() == l2.x1() && l1.y1() == l2.y1()) ||
+			(l1.x2() == l2.x2() && l1.y2() == l2.y2()) ||
+			(l1.x1() == l2.x2() && l1.y1() == l2.y2()) ||
+			(l1.x2() == l2.x1() && l1.y2() == l2.y1()))
 		return false;
 
 	// Third, check bounding boxes
-	if (max(l1x1, l1x2) < min(l2x1, l2x2) ||
-			max(l2x1, l2x2) < min(l1x1, l1x2) ||
-			max(l1y1, l1y2) < min(l2y1, l2y2) ||
-			max(l2y1, l2y2) < min(l1y1, l1y2))
+	if (max(l1.x1(), l1.x2()) < min(l2.x1(), l2.x2()) ||
+			max(l2.x1(), l2.x2()) < min(l1.x1(), l1.x2()) ||
+			max(l1.y1(), l1.y2()) < min(l2.y1(), l2.y2()) ||
+			max(l2.y1(), l2.y2()) < min(l1.y1(), l1.y2()))
 		return false;
 
 	// Fourth, check for two perpendicular horizontal or vertical lines
-	if (l1x1 == l1x2 && l2y1 == l2y2)
+	if (l1.x1() == l1.x2() && l2.y1() == l2.y2())
 	{
-		x = l1x1;
-		y = l2y1;
+		out.x = l1.x1();
+		out.y = l2.y1();
 		return true;
 	}
-	if (l1y1 == l1y2 && l2x1 == l2x2)
+	if (l1.y1() == l1.y2() && l2.x1() == l2.x2())
 	{
-		x = l2x1;
-		y = l1y1;
+		out.x = l2.x1();
+		out.y = l1.y1();
 		return true;
 	}
 
 	// Not a simple case, do full intersection calculation
 
 	// Calculate some values
-	double a1 = l1y2 - l1y1;
-	double a2 = l2y2 - l2y1;
-	double b1 = l1x1 - l1x2;
-	double b2 = l2x1 - l2x2;
-	double c1 = (a1 * l1x1) + (b1 * l1y1);
-	double c2 = (a2 * l2x1) + (b2 * l2y1);
+	double a1 = l1.y2() - l1.y1();
+	double a2 = l2.y2() - l2.y1();
+	double b1 = l1.x1() - l1.x2();
+	double b2 = l2.x1() - l2.x2();
+	double c1 = (a1 * l1.x1()) + (b1 * l1.y1());
+	double c2 = (a2 * l2.x1()) + (b2 * l2.y1());
 	double det = a1*b2 - a2*b1;
 
 	// Check for no intersection
@@ -227,18 +222,18 @@ bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y
 		return false;
 
 	// Calculate intersection point
-	x = (b2*c1 - b1*c2) / det;
-	y = (a1*c2 - a2*c1) / det;
+	out.x = (b2*c1 - b1*c2) / det;
+	out.y = (a1*c2 - a2*c1) / det;
 
 	// Round to nearest 3 decimal places
-	x = std::floor(x * 1000.0 + 0.5) / 1000.0;
-	y = std::floor(y * 1000.0 + 0.5) / 1000.0;
+	out.x = std::floor(out.x * 1000.0 + 0.5) / 1000.0;
+	out.y = std::floor(out.y * 1000.0 + 0.5) / 1000.0;
 
 	// Check that the intersection point is on both lines
-	if (min(l1x1, l1x2) <= x && x <= max(l1x1, l1x2) &&
-			min(l1y1, l1y2) <= y && y <= max(l1y1, l1y2) &&
-			min(l2x1, l2x2) <= x && x <= max(l2x1, l2x2) &&
-			min(l2y1, l2y2) <= y && y <= max(l2y1, l2y2))
+	if (min(l1.x1(), l1.x2()) <= out.x && out.x <= max(l1.x1(), l1.x2()) &&
+		min(l1.y1(), l1.y2()) <= out.y && out.y <= max(l1.y1(), l1.y2()) &&
+		min(l2.x1(), l2.x2()) <= out.x && out.x <= max(l2.x1(), l2.x2()) &&
+		min(l2.y1(), l2.y2()) <= out.y && out.y <= max(l2.y1(), l2.y2()))
 		return true;
 
 	// Intersection point does not lie on both lines
@@ -247,17 +242,17 @@ bool MathStuff::linesIntersect(double l1x1, double l1y1, double l1x2, double l1y
 
 /* MathStuff::distanceRayLine
  * Returns the distance between the ray [r1 -> r2] and the line
- * segment [x1,y1]-[x2,y2]
+ * segment [seg1 -> seg2]
  *******************************************************************/
-double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, double x1, double y1, double x2, double y2)
+double MathStuff::distanceRayLine(fpoint2_t r1, fpoint2_t r2, fpoint2_t s1, fpoint2_t s2)
 {
 	// Calculate the intersection distance from the ray
-	double u_ray = ((x2 - x1) * (r1.y - y1) - (y2 - y1) * (r1.x - x1)) /
-				   ((y2 - y1) * (r2.x - r1.x) - (x2 - x1) * (r2.y - r1.y));
+	double u_ray = ((s2.x - s1.x) * (r1.y - s1.y) - (s2.y - s1.y) * (r1.x - s1.x)) /
+				   ((s2.y - s1.y) * (r2.x - r1.x) - (s2.x - s1.x) * (r2.y - r1.y));
 
 	// Calculate the intersection distance from the line
-	double u_line = ((r2.x - r1.x) * (r1.y - y1) - (r2.y - r1.y) * (r1.x - x1)) /
-					((y2 - y1) * (r2.x - r1.x) - (x2 - x1) * (r2.y - r1.y));
+	double u_line = ((r2.x - r1.x) * (r1.y - s1.y) - (r2.y - r1.y) * (r1.x - s1.x)) /
+					((s2.y - s1.y) * (r2.x - r1.x) - (s2.x - s1.x) * (r2.y - r1.y));
 
 	// Return the distance on the ray if intersecting, or return -1
 	if((u_ray >= 0)/* && (u_ray <= 1024) */&& (u_line >= 0) && (u_line <= 1)) return u_ray; else return -1;
@@ -410,37 +405,36 @@ double MathStuff::distanceRayPlane(fpoint3_t r_o, fpoint3_t r_v, plane_t plane)
  * [line_x2,line_y2]. Box values must be from min to max.
  * Taken from http://stackoverflow.com/a/100165
  *******************************************************************/
-bool MathStuff::boxLineIntersect(double box_x1, double box_y1, double box_x2, double box_y2,
-						double line_x1, double line_y1, double line_x2, double line_y2)
+bool MathStuff::boxLineIntersect(frect_t box, fseg2_t line)
 {
 	// Find min and max X for the segment
-	double minX = line_x1;
-	double maxX = line_x2;
-	if (line_x1 > line_x2)
+	double minX = line.x1();
+	double maxX = line.x2();
+	if (line.x1() > line.x2())
 	{
-		minX = line_x2;
-		maxX = line_x1;
+		minX = line.x2();
+		maxX = line.x1();
 	}
 
 	// Find the intersection of the segment's and rectangle's x-projections
-	if (maxX > box_x2)
-		maxX = box_x2;
-	if (minX < box_x1)
-		minX = box_x1;
+	if (maxX > box.x2())
+		maxX = box.x2();
+	if (minX < box.x1())
+		minX = box.x1();
 
 	// If their projections do not intersect return false
 	if (minX > maxX)
 		return false;
 
 	// Find corresponding min and max Y for min and max X we found before
-	double minY = line_y1;
-	double maxY = line_y2;
-	double dx = line_x2 - line_x1;
+	double minY = line.y1();
+	double maxY = line.y2();
+	double dx = line.x2() - line.x1();
 
 	if (fabs(dx) > 0.0000001)
 	{
-		double a = (line_y2 - line_y1) / dx;
-		double b = line_y1 - a * line_x1;
+		double a = (line.y2() - line.y1()) / dx;
+		double b = line.y1() - a * line.x1();
 		minY = a * minX + b;
 		maxY = a * maxX + b;
 	}
@@ -452,10 +446,10 @@ bool MathStuff::boxLineIntersect(double box_x1, double box_y1, double box_x2, do
 	}
 
 	// Find the intersection of the segment's and rectangle's y-projections
-	if (maxY > box_y2)
-		maxY = box_y2;
-	if (minY < box_y1)
-		minY = box_y1;
+	if (maxY > box.y2())
+		maxY = box.y2();
+	if (minY < box.y1())
+		minY = box.y1();
 
 	// If Y-projections do not intersect return false
 	if (minY > maxY)
@@ -471,10 +465,10 @@ plane_t MathStuff::planeFromTriangle(fpoint3_t p1, fpoint3_t p2, fpoint3_t p3)
 {
 	fpoint3_t v1 = p3 - p1;
 	fpoint3_t v2 = p2 - p1;
-	v1 = v1.normalize();
-	v2 = v2.normalize();
+	v1.normalize();
+	v2.normalize();
 	fpoint3_t normal = v1.cross(v2);
-	normal.set(normal.normalize());
+	normal.normalize();
 
 	plane_t plane;
 	plane.a = normal.x;

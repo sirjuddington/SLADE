@@ -80,8 +80,6 @@ public:
 	short		getTag() { return tag; }
 	plane_t		getFloorPlane() { return plane_floor; }
 	plane_t		getCeilingPlane() { return plane_ceiling; }
-	double		floorHeightAt(double x, double y);
-	double		ceilingHeightAt(double x, double y);
 
 	string	stringProperty(string key);
 	int		intProperty(string key);
@@ -114,8 +112,8 @@ public:
 	vector<MapSide*>&	connectedSides() { return connected_sides; }
 	void				resetPolygon() { poly_needsupdate = true; }
 	Polygon2D*			getPolygon();
-	bool				isWithin(double x, double y);
-	double				distanceTo(double x, double y, double maxdist = -1);
+	bool				isWithin(fpoint2_t point);
+	double				distanceTo(fpoint2_t point, double maxdist = -1);
 	bool				getLines(vector<MapLine*>& list);
 	bool				getVertices(vector<MapVertex*>& list);
 	bool				getVertices(vector<MapObject*>& list);
@@ -132,6 +130,8 @@ public:
 
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
+
+	operator Debuggable() const { return Debuggable(S_FMT("<sector %u>", index)); }
 };
 
 // Note: these MUST be inline, or the linker will complain
