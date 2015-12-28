@@ -262,10 +262,11 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
 	if (exe)
 	{
+		if (exe->path.IsEmpty())
+			return "";
+
 		// Get exe path
 		string path = S_FMT("\"%s\"", exe->path);
-		if (path.IsEmpty())
-			return "";
 
 		unsigned cfg = choice_config->GetSelection();
 		if (cfg < exe->configs.size())
