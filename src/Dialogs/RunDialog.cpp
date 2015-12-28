@@ -42,6 +42,11 @@
 #include <wx/statline.h>
 #include <wx/filename.h>
 
+#ifdef __WXOSX_MAC__
+#include <CoreFoundation/CoreFoundation.h>
+#include <wx/stdpaths.h>
+#endif // __WXOSX_MAC__
+
 
 /*******************************************************************
  * VARIABLES
@@ -253,6 +258,38 @@ void RunDialog::openGameExe(unsigned index)
 	}
 }
 
+static string getExecutablePath(const Executables::game_exe_t* const exe)
+{
+	const string& exe_path = exe->path;
+
+#ifdef __WXOSX_MAC__
+	if (exe_path.EndsWith(".app"))
+	{
+		wxCFRef<CFStringRef> cf_path(CFStringCreateWithCString(kCFAllocatorDefault,
+			exe_path.utf8_str(), kCFStringEncodingUTF8));
+
+		if (NULL != cf_path)
+		{
+			wxCFRef<CFURLRef> cf_path_url(CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+				cf_path, kCFURLPOSIXPathStyle, true));
+
+			if (NULL != cf_path_url)
+			{
+				wxCFRef<CFBundleRef> cf_bundle(CFBundleCreate(0, cf_path_url));
+
+				if (NULL != cf_bundle)
+				{
+					const wxStandardPathsCF paths(cf_bundle);
+					return paths.GetExecutablePath();
+				}
+			}
+		}
+	}
+#endif // __WXOSX_MAC__
+
+	return exe_path;
+}
+
 /* RunDialog::getSelectedCommandLine
  * Returns a command line based on the currently selected run
  * configuration and resources
@@ -262,11 +299,13 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 	Executables::game_exe_t* exe = Executables::getGameExe(choice_game_exes->GetSelection());
 	if (exe)
 	{
-		if (exe->path.IsEmpty())
+		// Get exe path
+		const string exe_path = getExecutablePath(exe);
+
+		if (exe_path.IsEmpty())
 			return "";
 
-		// Get exe path
-		string path = S_FMT("\"%s\"", exe->path);
+		string path = S_FMT("\"%s\"", exe_path);
 
 		unsigned cfg = choice_config->GetSelection();
 		if (cfg < exe->configs.size())
