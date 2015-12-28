@@ -432,7 +432,7 @@ void MapLine::setS2(MapSide* side)
 fpoint2_t MapLine::getPoint(uint8_t point)
 {
 	//if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
-	return (point1() + point2()) * 0.5;
+	return point1() + (point2() - point1()) * 0.5;
 }
 
 /* MapLine::point1

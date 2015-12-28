@@ -127,7 +127,7 @@ fpoint2_t MathStuff::closestPointOnLine(fpoint2_t point, fseg2_t line)
 	double u = 0;
 	if (len > 0)
 	{
-		u = MathStuff::lineSide(point, line) / (len * len);
+		u = ((point.x - line.x1()) * line.width() + (point.y-line.y1()) * line.height()) / (len * len);
 
 		// Limit intersection distance to the line
 		double lbound = 1 / len;
