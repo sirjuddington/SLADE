@@ -340,7 +340,7 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 	double min_dist = 999999999;
 	MapLine* nearest = NULL;
 
-	//wxLogMessage("Find outer edge from vertex %d", vertex_right->getIndex());
+	//LOG_DEBUG("Finding outer edge from vertex", vertex_right, "at", vertex_right->point());
 
 	// Go through map lines
 	MapLine* line = NULL;
@@ -364,11 +364,12 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 		// Get x intercept
 		double int_frac = (vr_y - line->y1()) / (line->y2() - line->y1());
 		double int_x = line->x1() + ((line->x2() - line->x1()) * int_frac);
+		double dist = fabs(int_x - vr_x);
 
 		// Check if closest
-		if (int_x - vr_x < min_dist)
+		if (dist < min_dist)
 		{
-			min_dist = int_x - vr_x;
+			min_dist = dist;
 			nearest = line;
 		}
 	}
@@ -377,7 +378,7 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 	if (!nearest)
 		return edge_t(NULL);
 
-	//wxLogMessage("Found next outer line %d", nearest->getIndex());
+	//LOG_DEBUG("Found next outer line", nearest);
 
 	// Determine the edge side
 	double side = MathStuff::lineSide(vertex_right->point(), nearest->seg());
