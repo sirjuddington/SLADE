@@ -54,7 +54,12 @@ public:
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
 
-	operator Debuggable() const { return Debuggable(S_FMT("<vertex %u>", index)); }
+	operator Debuggable() const {
+		if (!this)
+			return Debuggable("<vertex NULL>");
+
+		return Debuggable(S_FMT("<vertex %u>", index));
+	}
 };
 
 #endif //__MAPVERTEX_H__

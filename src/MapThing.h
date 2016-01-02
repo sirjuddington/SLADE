@@ -74,7 +74,12 @@ public:
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
 
-	operator Debuggable() const { return Debuggable(S_FMT("<thing %u>", index)); }
+	operator Debuggable() const {
+		if (!this)
+			return Debuggable("<thing NULL>");
+
+		return Debuggable(S_FMT("<thing %u>", index));
+	}
 };
 
 #endif //__MAPTHING_H__
