@@ -57,6 +57,7 @@ CVAR(Int, render_3d_hilight, 1, CVAR_SAVE)
 CVAR(Float, render_3d_brightness, 1, CVAR_SAVE)
 CVAR(Float, render_fog_distance, 1500, CVAR_SAVE)
 CVAR(Bool, render_fog_new_formula, true, CVAR_SAVE)
+CVAR(Bool, render_shade_orthogonal_lines, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -1201,6 +1202,27 @@ void MapRenderer3D::updateLine(unsigned index)
 	int xoff1 = line->s1()->getOffsetX();
 	int yoff1 = line->s1()->getOffsetY();
 
+	if (render_shade_orthogonal_lines)
+	{
+		// Increase light level for N/S facing lines
+		if (line->x1() == line->x2())
+		{
+			colour1.r = MathStuff::clamp(colour1.r + 16, 0, 255);
+			colour1.g = MathStuff::clamp(colour1.g + 16, 0, 255);
+			colour1.b = MathStuff::clamp(colour1.b + 16, 0, 255);
+			light1 = MathStuff::clamp(light1 + 16, 0, 255);
+		}
+
+		// Decrease light level for E/W facing lines
+		if (line->y1() == line->y2())
+		{
+			colour1.r = MathStuff::clamp(colour1.r - 16, 0, 255);
+			colour1.g = MathStuff::clamp(colour1.g - 16, 0, 255);
+			colour1.b = MathStuff::clamp(colour1.b - 16, 0, 255);
+			light1 = MathStuff::clamp(light1 - 16, 0, 255);
+		}
+	}
+
 	// --- One-sided line ---
 	int length = MathStuff::round(line->getLength());
 	if (line->s1() && !line->s2())
@@ -1270,6 +1292,27 @@ void MapRenderer3D::updateLine(unsigned index)
 	double c1h2 = cp1.height_at(line->x2(), line->y2());
 	double c2h1 = cp2.height_at(line->x1(), line->y1());
 	double c2h2 = cp2.height_at(line->x2(), line->y2());
+
+	if (render_shade_orthogonal_lines)
+	{
+		// Increase light level for N/S facing lines
+		if (line->x1() == line->x2())
+		{
+			colour2.r = MathStuff::clamp(colour2.r + 16, 0, 255);
+			colour2.g = MathStuff::clamp(colour2.g + 16, 0, 255);
+			colour2.b = MathStuff::clamp(colour2.b + 16, 0, 255);
+			light2 = MathStuff::clamp(light2 + 16, 0, 255);
+		}
+
+		// Decrease light level for E/W facing lines
+		if (line->y1() == line->y2())
+		{
+			colour2.r = MathStuff::clamp(colour2.r - 16, 0, 255);
+			colour2.g = MathStuff::clamp(colour2.g - 16, 0, 255);
+			colour2.b = MathStuff::clamp(colour2.b - 16, 0, 255);
+			light2 = MathStuff::clamp(light2 - 16, 0, 255);
+		}
+	}
 
 	// Front lower
 	if (f2h1 > f1h1 || f2h2 > f1h2)
