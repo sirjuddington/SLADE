@@ -410,6 +410,9 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
+
+	// Initial focus to toolbar
+	toolbar->SetFocus();
 }
 
 #ifdef USE_WEBVIEW_STARTPAGE
@@ -430,10 +433,6 @@ void MainWindow::createStartPage(bool newtip)
 	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
 	export_entries.push_back(res_archive->entryAtPath("logo.png"));
 	export_entries.push_back(res_archive->entryAtPath("html/box-title-back.png"));
-	//export_entries.push_back(res_archive->entryAtPath("icons/e_archive.png"));
-	//export_entries.push_back(res_archive->entryAtPath("icons/e_wad.png"));
-	//export_entries.push_back(res_archive->entryAtPath("icons/e_zip.png"));
-	//export_entries.push_back(res_archive->entryAtPath("icons/e_folder.png"));
 
 	// Can't do anything without html entry
 	if (!entry_html)
@@ -531,10 +530,6 @@ void MainWindow::createStartPage(bool newtip)
 #ifdef __WXMSW__
 	html_startpage->Reload();
 #endif
-
-	// Clean up
-	//wxRemoveFile(html_file);
-	//wxRemoveFile(appPath("logo.png", DIR_TEMP));
 }
 
 #else
