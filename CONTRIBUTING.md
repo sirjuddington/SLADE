@@ -1,8 +1,6 @@
 ## Submitting an Issue
 
-When submitting a new issue, remember to select any appropriate labels for it (they can be set to the top-right of the issue description text box), such as `bug` or `feature request`.
-
-#### Bug Reports
+### Bug Reports
 
 When submitting a bug report, be sure to include the version of SLADE you are using, your OS and any other details that may be helpful.
 
@@ -12,13 +10,13 @@ If it is a crash, be sure to include the stack trace that was output when the pr
 
 To get the stack trace, simply copy all the text from the scrollable text box.
 
-#### Feature Requests
+### Feature Requests
 
 If you have a feature request, first make sure that it hasn't already been [requested](https://github.com/sirjuddington/SLADE/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+request%22), and that it is not already a [planned feature](https://github.com/sirjuddington/SLADE/wiki/Planned-Features).
 
 ## Submitting a Pull Request
 
-#### Branches
+### Branches
 
 Before submitting a pull request, make sure it is based off of the correct branch. Currently there are two main branches for SLADE development: **master** and **3.x.x**.
 
