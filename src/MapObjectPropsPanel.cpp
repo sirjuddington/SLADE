@@ -67,6 +67,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	this->no_apply = no_apply;
 	hide_flags = false;
 	hide_triggers = false;
+	udmf = false;
 
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -452,7 +453,7 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 void MapObjectPropsPanel::setupType(int objtype)
 {
 	// Nothing to do if it was already this type
-	if (last_type == objtype)
+	if (last_type == objtype && !udmf)
 		return;
 
 	// Get map format
@@ -737,6 +738,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	pg_properties->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 
 	last_type = objtype;
+	udmf = false;
 	
 	Layout();
 }
@@ -747,7 +749,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 {
 	// Nothing to do if it was already this type
-	if (last_type == objtype)
+	if (last_type == objtype && udmf)
 		return;
 
 	// Clear property grids
@@ -848,6 +850,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		args[arg] = pg_properties->GetProperty(S_FMT("arg%u", arg));
 
 	last_type = objtype;
+	udmf = true;
 
 	Layout();
 }
