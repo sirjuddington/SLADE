@@ -352,10 +352,11 @@ bool KeyBind::keyPressed(keypress_t key)
 		return false;
 
 	// Go through all keybinds
+	// (use sorted list for priority system)
 	bool pressed = false;
-	for (unsigned k = 0; k < keybinds.size(); k++)
+	for (unsigned k = 0; k < keybinds_sorted.size(); k++)
 	{
-		KeyBind& kb = keybinds[k];
+		KeyBind& kb = keybinds_sorted[k];
 
 		// Go through all keys bound to this keybind
 		for (unsigned a = 0; a < kb.keys.size(); a++)
@@ -815,6 +816,17 @@ bool KeyBind::readBinds(Tokenizer& tz)
 	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
 
 	return true;
+}
+
+/* KeyBind::updateSortedBindsList
+ * Updates the sorted keybinds list
+ *******************************************************************/
+void KeyBind::updateSortedBindsList()
+{
+	// Create sorted list
+	keybinds_sorted.clear();
+	keybinds_sorted = keybinds;
+	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
 }
 
 
