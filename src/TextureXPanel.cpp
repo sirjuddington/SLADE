@@ -44,6 +44,7 @@
 #include "SplashWindow.h"
 #include "SFileDialog.h"
 #include "ModifyOffsetsDialog.h"
+#include "UndoRedo.h"
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
 #include <wx/arrstr.h>
@@ -203,6 +204,143 @@ void TextureXListView::sortItems()
 
 
 /*******************************************************************
+ * UNDO STEPS
+ *******************************************************************/
+
+class TextureSwapUS : public UndoStep
+{
+private:
+	TextureXList&	texturex;
+	int				index1;
+	int				index2;
+
+public:
+	TextureSwapUS(TextureXList& texturex, int index1, int index2)
+		: texturex(texturex), index1(index1), index2(index2) {}
+	~TextureSwapUS() {}
+
+	bool doSwap()
+	{
+		// Get parent dir
+		texturex.swapTextures(index1, index2);
+		return true;
+	}
+
+	bool doUndo()
+	{
+		return doSwap();
+	}
+
+	bool doRedo()
+	{
+		return doSwap();
+	}
+};
+
+class TextureCreateDeleteUS : public UndoStep
+{
+private:
+	TextureXPanel*	tx_panel;
+	CTexture*		tex_removed;
+	int				index;
+	bool			created;
+
+public:
+	TextureCreateDeleteUS(TextureXPanel* tx_panel, CTexture* texture, bool created)
+		: tx_panel(tx_panel), created(created)
+	{
+		tex_removed = NULL;
+		index = tx_panel->txList().textureIndex(texture->getName());
+	}
+
+	~TextureCreateDeleteUS()
+	{
+		if (tex_removed)
+			delete tex_removed;
+	}
+
+	bool deleteTexture()
+	{
+		tex_removed = tx_panel->txList().removeTexture(index, false);
+		if (tx_panel->currentTexture() == tex_removed)
+			tx_panel->textureEditor()->clearTexture();
+		return true;
+	}
+
+	bool createTexture()
+	{
+		tx_panel->txList().addTexture(tex_removed, index);
+		tex_removed = NULL;
+		return true;
+	}
+
+	bool doUndo()
+	{
+		if (created)
+			return deleteTexture();
+		else
+			return createTexture();
+	}
+
+	bool doRedo()
+	{
+		if (!created)
+			return deleteTexture();
+		else
+			return createTexture();
+	}
+};
+
+class TextureModificationUS : public UndoStep
+{
+private:
+	TextureXPanel*	tx_panel;
+	CTexture*		tex_copy;
+	int				index;
+
+public:
+	TextureModificationUS(TextureXPanel* tx_panel, CTexture* texture)
+		: tx_panel(tx_panel)
+	{
+		tex_copy = new CTexture();
+		tex_copy->copyTexture(texture);
+		tex_copy->setState(texture->getState());
+		index = tx_panel->txList().textureIndex(tex_copy->getName());
+	}
+
+	~TextureModificationUS()
+	{
+		delete tex_copy;
+	}
+
+	bool swapData()
+	{
+		CTexture* replaced = tx_panel->txList().replaceTexture(index, tex_copy);
+		if (replaced)
+		{
+			if (tx_panel->currentTexture() == replaced || tx_panel->currentTexture() == tex_copy)
+				tx_panel->textureEditor()->openTexture(tex_copy, &(tx_panel->txList()));
+			tex_copy = replaced;
+		}
+		else
+			return false;
+
+		return true;
+	}
+
+	bool doUndo()
+	{
+		return swapData();
+	}
+
+	bool doRedo()
+	{
+		return swapData();
+	}
+};
+
+
+/*******************************************************************
  * TEXTUREXPANEL CLASS FUNCTIONS
  *******************************************************************/
 
@@ -216,6 +354,7 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	this->tx_editor = tx_editor;
 	this->tex_current = NULL;
 	this->modified = false;
+	undo_manager = tx_editor->getUndoManager();
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -227,7 +366,8 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	label_tx_format = new wxStaticText(this, -1, "Format:");
 	hbox->Add(label_tx_format, 0, wxALIGN_BOTTOM|wxRIGHT, 4);
-	btn_save = new wxButton(this, -1, "Save");
+	btn_save = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "save"));
+	btn_save->SetToolTip("Save");
 	hbox->AddStretchSpacer();
 	hbox->Add(btn_save, 0, wxEXPAND);
 	framesizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -380,6 +520,10 @@ void TextureXPanel::applyChanges()
 {
 	if (texture_editor->texModified() && tex_current)
 	{
+		undo_manager->beginRecord("Modify Texture");
+		undo_manager->recordUndoStep(new TextureModificationUS(this, tex_current));
+		undo_manager->endRecord(true);
+
 		tex_current->copyTexture(texture_editor->getTexture());
 		tex_current->setState(1);
 		tx_editor->patchTable().updatePatchUsage(tex_current);
@@ -466,6 +610,11 @@ void TextureXPanel::newTexture()
 	if (selected == -1) selected = texturex.nTextures() - 1; // Add to end of the list if nothing selected
 	texturex.addTexture(tex, selected + 1);
 
+	// Record undo level
+	undo_manager->beginRecord("New Texture");
+	undo_manager->recordUndoStep(new TextureCreateDeleteUS(this, tex, true));
+	undo_manager->endRecord(true);
+
 	// Update texture list
 	list_textures->updateList();
 
@@ -509,6 +658,11 @@ void TextureXPanel::newTextureFromPatch()
 		int selected = list_textures->getLastSelected();
 		if (selected == -1) selected = texturex.nTextures() - 1; // Add to end of the list if nothing selected
 		texturex.addTexture(tex, selected + 1);
+
+		// Record undo level
+		undo_manager->beginRecord("New Texture from Patch");
+		undo_manager->recordUndoStep(new TextureCreateDeleteUS(this, tex, true));
+		undo_manager->endRecord(true);
 
 		// Update texture list
 		list_textures->updateList();
@@ -599,6 +753,11 @@ void TextureXPanel::newTextureFromFile()
 			if (selected == -1) selected = texturex.nTextures() - 1; // Add to end of the list if nothing selected
 			texturex.addTexture(tex, selected + 1);
 
+			// Record undo level
+			undo_manager->beginRecord("New Texture from File");
+			undo_manager->recordUndoStep(new TextureCreateDeleteUS(this, tex, true));
+			undo_manager->endRecord(true);
+
 			// Update texture list
 			list_textures->updateList();
 
@@ -621,6 +780,9 @@ void TextureXPanel::removeTexture()
 	// Get selected textures
 	vector<long> selection = list_textures->getSelection();
 
+	// Begin recording undo level
+	undo_manager->beginRecord("Remove Texture(s)");
+
 	// Go through selection backwards
 	for (int a = selection.size() - 1; a >= 0; a--)
 	{
@@ -629,9 +791,15 @@ void TextureXPanel::removeTexture()
 		for (unsigned p = 0; p < tex->nPatches(); p++)
 			tx_editor->patchTable().patch(tex->getPatch(p)->getName()).removeTextureUsage(tex->getName());
 
+		// Record undo step
+		undo_manager->recordUndoStep(new TextureCreateDeleteUS(this, tex, false));
+
 		// Remove texture from list
 		texturex.removeTexture(selection[a]);
 	}
+
+	// End recording undo level
+	undo_manager->endRecord(true);
 
 	// Clear selection & refresh
 	list_textures->clearSelection();
@@ -654,12 +822,21 @@ void TextureXPanel::moveUp()
 	if (selection.size() > 0 && selection[0] == 0)
 		return;
 
+	// Begin recording undo level
+	undo_manager->beginRecord("Move Texture(s) Up");
+
 	// Go through selection
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Swap selected texture with the one above it
 		texturex.swapTextures(selection[a], selection[a] - 1);
+
+		// Record undo step
+		undo_manager->recordUndoStep(new TextureSwapUS(texturex, selection[a], selection[a] - 1));
 	}
+
+	// End recording undo level
+	undo_manager->endRecord(true);
 
 	// Update selection
 	list_textures->clearSelection();
@@ -685,12 +862,21 @@ void TextureXPanel::moveDown()
 	if (selection.size() > 0 && selection.back() == list_textures->GetItemCount()-1)
 		return;
 
+	// Begin recording undo level
+	undo_manager->beginRecord("Move Texture(s) Down");
+
 	// Go through selection backwards
 	for (int a = selection.size()-1; a >= 0; a--)
 	{
 		// Swap selected texture with the one below it
 		texturex.swapTextures(selection[a], selection[a] + 1);
+
+		// Record undo step
+		undo_manager->recordUndoStep(new TextureSwapUS(texturex, selection[a], selection[a] + 1));
 	}
+
+	// End recording undo level
+	undo_manager->endRecord(true);
 
 	// Update selection
 	list_textures->clearSelection();
@@ -736,6 +922,9 @@ void TextureXPanel::sort()
 		origindex[selection[i]] = selection[i];
 	}
 
+	// Begin recording undo level
+	undo_manager->beginRecord("Sort Textures");
+
 	// And now, sort the textures based on the map
 	std::map<string, size_t>::iterator itr = tmap.begin();
 	for (size_t i = 0; i < selection.size(); ++i)
@@ -748,12 +937,16 @@ void TextureXPanel::sort()
 			origindex[selection[i]] = origindex[itr->second];
 			origindex[itr->second] = tmp;
 			texturex.swapTextures(selection[i], itr->second);
+			undo_manager->recordUndoStep(new TextureSwapUS(texturex, selection[i], itr->second));
 			// Update the position of the displaced texture in the tmap
 			string name = S_FMT("%-8s%8d", texturex.getTexture(itr->second)->getName(), tmp);
 			tmap[name] = itr->second;
 		}
 		itr++;
 	}
+
+	// End recording undo level
+	undo_manager->endRecord(true);
 
 	// Cleanup
 	delete[] origindex;
@@ -800,6 +993,9 @@ void TextureXPanel::paste()
 	int selected = list_textures->getLastSelected();
 	if (selected == -1) selected = texturex.nTextures() - 1; // Add to end of the list if nothing selected
 
+	// Begin recording undo level
+	undo_manager->beginRecord("Paste Texture(s)");
+
 	// Go through clipboard items
 	for (unsigned a = 0; a < theClipboard->nItems(); a++)
 	{
@@ -815,6 +1011,9 @@ void TextureXPanel::paste()
 		ntex->copyTexture(item->getTexture(), true);
 		ntex->setState(2);
 		texturex.addTexture(ntex, ++selected);
+
+		// Record undo step
+		undo_manager->recordUndoStep(new TextureCreateDeleteUS(this, ntex, true));
 
 		// Deal with patches
 		for (unsigned p = 0; p < ntex->nPatches(); p++)
@@ -849,6 +1048,9 @@ void TextureXPanel::paste()
 				tx_editor->getArchive()->addEntry(entry, "patches", true);
 		}
 	}
+
+	// End recording undo level
+	undo_manager->endRecord(true);
 
 	// Refresh
 	list_textures->updateList();
@@ -1143,6 +1345,22 @@ bool TextureXPanel::modifyOffsets()
 	}
 
 	return true;
+}
+
+/* TextureXPanel::onUndo
+ * Called when an action is undone
+ *******************************************************************/
+void TextureXPanel::onUndo(string action)
+{
+	list_textures->updateList();
+}
+
+/* TextureXPanel::onRedo
+ * Called when an action is redone
+ *******************************************************************/
+void TextureXPanel::onRedo(string action)
+{
+	list_textures->updateList();
 }
 
 /* TextureXPanel::handleAction
