@@ -1076,8 +1076,20 @@ void MapObjectPropsPanel::clearGrid()
  *******************************************************************/
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
+	string type;
+	if (last_type == MOBJ_VERTEX)
+		type = "Vertex";
+	else if (last_type == MOBJ_LINE)
+		type = "Line";
+	else if (last_type == MOBJ_SECTOR)
+		type = "Sector";
+	else if (last_type == MOBJ_THING)
+		type = "Thing";
+
 	// Apply changes
+	theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 	applyChanges();
+	theMapEditor->mapEditor().endUndoRecord();
 
 	// Refresh map view
 	theMapEditor->forceRefresh(true);
@@ -1212,7 +1224,17 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 		if (properties[a]->getPropName() == name)
 		{
 			// Found, apply value
-			theMapEditor->mapEditor().beginUndoRecordLocked("Modify Properties", true, false, false);
+			string type;
+			if (last_type == MOBJ_VERTEX)
+				type = "Vertex";
+			else if (last_type == MOBJ_LINE)
+				type = "Line";
+			else if (last_type == MOBJ_SECTOR)
+				type = "Sector";
+			else if (last_type == MOBJ_THING)
+				type = "Thing";
+			
+			theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 			properties[a]->applyValue();
 			theMapEditor->mapEditor().endUndoRecord();
 			return;
