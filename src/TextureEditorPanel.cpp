@@ -911,7 +911,7 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_canvas->showGrid(true);
 				tex_canvas->redraw(false);
 			}
-			else if (tex_current->isExtended() && tex_canvas->getViewType() > 0)
+			else if (tex_current && tex_current->isExtended() && tex_canvas->getViewType() > 0)
 			{
 				// Get drag amount according to texture
 				point2_t tex_cur = tex_canvas->screenToTexPosition(e.GetX(), e.GetY());
