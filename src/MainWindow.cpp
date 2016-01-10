@@ -46,6 +46,7 @@
 #include "ArchivePanel.h"
 #include "Misc.h"
 #include "STabCtrl.h"
+#include "TextureXEditor.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>

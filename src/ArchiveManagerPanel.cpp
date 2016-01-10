@@ -1073,6 +1073,13 @@ bool ArchiveManagerPanel::undo()
 		return true;
 	}
 
+	// TEXTUREx panel
+	else if (S_CMPNOCASE(page_current->GetName(), "texture"))
+	{
+		((TextureXEditor*)page_current)->undo();
+		return true;
+	}
+
 	return false;
 }
 
@@ -1089,6 +1096,13 @@ bool ArchiveManagerPanel::redo()
 	if (S_CMPNOCASE(page_current->GetName(), "archive"))
 	{
 		((ArchivePanel*)page_current)->redo();
+		return true;
+	}
+
+	// TEXTUREx panel
+	else if (S_CMPNOCASE(page_current->GetName(), "texture"))
+	{
+		((TextureXEditor*)page_current)->redo();
 		return true;
 	}
 

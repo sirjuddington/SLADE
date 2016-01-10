@@ -248,6 +248,7 @@ void TextureEditorPanel::updateTextureControls()
 	if (!tex_current)
 		return;
 
+	bool modified = tex_modified;
 	text_tex_name->SetValue(tex_current->getName());
 	spin_tex_width->SetValue(tex_current->getWidth());
 	spin_tex_height->SetValue(tex_current->getHeight());
@@ -255,6 +256,7 @@ void TextureEditorPanel::updateTextureControls()
 	spin_tex_scaley->SetValue(tex_current->getScaleY()*8);
 	cb_tex_world_panning->SetValue(tex_current->worldPanning());
 	updateTextureScaleLabel();
+	tex_modified = modified;
 }
 
 /* TextureEditorPanel::updateTextureScaleLabel

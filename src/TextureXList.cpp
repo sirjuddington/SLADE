@@ -131,17 +131,21 @@ void TextureXList::addTexture(CTexture* tex, int position)
 /* TextureXList::removeTexture
  * Removes the texture at [index] from the list
  *******************************************************************/
-void TextureXList::removeTexture(unsigned index)
+CTexture* TextureXList::removeTexture(unsigned index, bool delete_texture)
 {
 	// Check index
 	if (index >= textures.size())
-		return;
+		return NULL;
 
 	// Delete the texture
-	delete textures[index];
+	if (delete_texture)
+		delete textures[index];
 
 	// Remove the texture from the list
+	CTexture* removed = textures[index];
 	textures.erase(textures.begin() + index);
+
+	return delete_texture ? NULL : removed;
 }
 
 /* TextureXList::swapTextures
@@ -162,6 +166,25 @@ void TextureXList::swapTextures(unsigned index1, unsigned index2)
 	int ti = textures[index1]->index;
 	textures[index1]->index = textures[index2]->index;
 	textures[index2]->index = ti;
+}
+
+/* TextureXList::replaceTexture
+ * Replaces the texture at [index] with [replacement], returns the
+ * original texture that was replaced (or NULL if index was invalid)
+ *******************************************************************/
+CTexture* TextureXList::replaceTexture(unsigned index, CTexture* replacement)
+{
+	// Check index
+	if (index >= textures.size())
+		return NULL;
+
+	// Replace texture
+	CTexture* replaced = textures[index];
+	textures[index] = replacement;
+	replacement->in_list = this;
+	replacement->index = index;
+
+	return replaced;
 }
 
 /* TextureXList::clear
