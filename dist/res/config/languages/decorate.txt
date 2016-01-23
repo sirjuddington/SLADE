@@ -16,7 +16,7 @@ decorate : cstyle {
 		Wall, Creature, Loop, Stop, Wait, Fail, Goto, Ready, Deselect, Select, Fire, AltFire,
 		Hold, AltHold, Flash, AltFlash, Reload, Zoom, Pickup, Use, Drop, Bright, Fast, Slow, NoDelay,
 		CanRaise, Idle, Active, Inactive, Light, Offset, Action, Native, Const, Enum, Replaces,
-		LightDone, Super, Spray, GenericFreezeDeath, GenericCrush,
+		LightDone, Super, Spray, GenericFreezeDeath, GenericCrush, User1, User2, User3, User4,
 
 		// Actor properties
 		
@@ -293,6 +293,9 @@ decorate : cstyle {
 		// A_SetPitch flags
 		SPF_FORCECLAMP, SPF_INTERPOLATE,
 
+		// A_SpawnParticle flags
+		SPF_FULLBRIGHT, SPF_RELACCEL, SPF_RELANG, SPF_RELATIVE, SPF_RELPOS, SPF_RELVEL,
+
 		// A_SpawnItemEx flags
 		SXF_ABSOLUTEANGLE, SXF_ABSOLUTEMOMENTUM, SXF_ABSOLUTEPOSITION, SXF_ABSOLUTEVELOCITY, SXF_CLIENTSIDE,
 		SXF_NOCHECKPOSITION, SXF_SETMASTER, SXF_TELEFRAG, SXF_TRANSFERAMBUSHFLAG, SXF_TRANSFERPITCH,
@@ -303,7 +306,7 @@ decorate : cstyle {
 
 		// A_Teleport flags
 		TF_FORCED, TF_RANDOMDECIDE, TF_TELEFRAG, TF_KEEPVELOCITY, TF_KEEPANGLE, TF_USESPOTZ, TF_NOSRCFOG,
-		TF_NODESTFOG, TF_USEACTORFOG, TF_NOJUMP, TF_KEEPORIENTATION, TF_NOFOG, TF_OVERRIDE,
+		TF_NODESTFOG, TF_USEACTORFOG, TF_NOJUMP, TF_KEEPORIENTATION, TF_NOFOG, TF_OVERRIDE, TF_SENSITIVEZ,
 
 		THINGSPEC_ClearSpecial, THINGSPEC_Default, THINGSPEC_MissileTrigger, THINGSPEC_MonsterTrigger,
 		THINGSPEC_NoDeathSpecial, THINGSPEC_ThingActs, THINGSPEC_ThingTargets, THINGSPEC_TriggerActs,
@@ -319,6 +322,7 @@ decorate : cstyle {
 
 		// A_WeaponReady flags
 		WRF_ALLOWRELOAD, WRF_ALLOWZOOM, WRF_NOBOB, WRF_NOFIRE, WRF_NOPRIMARY, WRF_NOSECONDARY, WRF_NOSWITCH, WRF_DISABLESWITCH,
+		WRF_ALLOWUSER1, WRF_ALLOWUSER2, WRF_ALLOWUSER3, WRF_ALLOWUSER4,
 
 		// A_Explode
 		XF_HURTSOURCE, XF_NOTMISSILE,
@@ -453,6 +457,7 @@ decorate : cstyle {
 		A_SpawnDebris = "string type, [bool translation], [float mult_h], [float mult_v]";
 		A_SpawnItem = "[string type], [float distance], [float zpos], [bool useammo], [bool translation]";
 		A_SpawnItemEx = "string type, [float xoffset], [float yoffset], [float zoffset], [float xvelocity], [float yvelocity], [float zvelocity], [float angle], [int flags], [int failchance], [int tid]";
+		A_SpawnParticle = "string color1 [, int flags [, int lifetime [, int size [, float angle [, float xoff [, float yoff [, float zoff [, float velx [, float vely [, float velz [, float accelx [, float accely [, float accelz [, float startalphaf [, float fadestepf]]]]]]]]]]]]]]]";
 
 		A_CheckCeiling = "string state", "int offset";
 		A_CheckFloor =	"string state", "int offset";
@@ -944,7 +949,7 @@ decorate : cstyle {
 		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
 		Sector_SetColor = "int tag, int r, int g, int b, int desaturate";
 		Sector_SetCurrent = "int tag, int amount, int angle, int useline";
-		Sector_SetDamage = "int tag, int amount, int mod";
+		Sector_SetDamage = "int tag, int amount, int mod, int interval, int leaky";
 		Sector_SetFade = "int tag, int r, int g, int b";
 		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetFloorScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
