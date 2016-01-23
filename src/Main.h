@@ -14,7 +14,7 @@
 #include <windows.h>
 #endif
 
-#ifdef _MSC_VER
+#if _MSC_VER < 1900
 #define _CRT_SECURE_NO_WARNINGS 1
 typedef __int8 int8_t;
 typedef unsigned __int8 uint8_t;
