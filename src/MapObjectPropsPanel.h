@@ -29,6 +29,7 @@ private:
 	wxButton*				btn_add;
 	wxPGProperty*			group_custom;
 	bool					no_apply;
+	bool					udmf;
 
 	// Hide properties
 	bool			hide_flags;

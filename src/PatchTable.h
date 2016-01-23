@@ -12,13 +12,13 @@ struct patch_t
 
 	void removeTextureUsage(string texture)
 	{
-		vector<string>::iterator i = used_in.begin();
-		while (i != used_in.end())
+		for (unsigned a = 0; a < used_in.size(); a++)
 		{
-			if (S_CMP(texture, *i))
-				used_in.erase(i);
-			else
-				i++;
+			if (S_CMP(texture, used_in[a]))
+			{
+				used_in.erase(used_in.begin() + a);
+				a--;
+			}
 		}
 	}
 };

@@ -2532,7 +2532,6 @@
     <None Include="..\..\src\dumb\helpers\resample.inc">
       <Filter>External\DUMB\helpers</Filter>
     </None>
-    <None Include="packages.config" />
     <None Include="..\..\win_installer\SLADE.iss">
       <Filter>Installer</Filter>
     </None>

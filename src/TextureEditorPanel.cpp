@@ -248,6 +248,7 @@ void TextureEditorPanel::updateTextureControls()
 	if (!tex_current)
 		return;
 
+	bool modified = tex_modified;
 	text_tex_name->SetValue(tex_current->getName());
 	spin_tex_width->SetValue(tex_current->getWidth());
 	spin_tex_height->SetValue(tex_current->getHeight());
@@ -255,6 +256,7 @@ void TextureEditorPanel::updateTextureControls()
 	spin_tex_scaley->SetValue(tex_current->getScaleY()*8);
 	cb_tex_world_panning->SetValue(tex_current->worldPanning());
 	updateTextureScaleLabel();
+	tex_modified = modified;
 }
 
 /* TextureEditorPanel::updateTextureScaleLabel
@@ -909,7 +911,7 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_canvas->showGrid(true);
 				tex_canvas->redraw(false);
 			}
-			else if (tex_current->isExtended() && tex_canvas->getViewType() > 0)
+			else if (tex_current && tex_current->isExtended() && tex_canvas->getViewType() > 0)
 			{
 				// Get drag amount according to texture
 				point2_t tex_cur = tex_canvas->screenToTexPosition(e.GetX(), e.GetY());

@@ -979,6 +979,8 @@ bool MainApp::OnInit()
 		SetupWizardDialog dlg(theMainWindow);
 		dlg.ShowModal();
 		setup_wizard_run = true;
+		theMainWindow->Update();
+		theMainWindow->Refresh();
 	}
 
 	// Check for updates

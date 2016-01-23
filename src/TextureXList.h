@@ -47,9 +47,10 @@ public:
 
 	void	setFormat(uint8_t format) { txformat = format; }
 
-	void	addTexture(CTexture* tex, int position = -1);
-	void	removeTexture(unsigned index);
-	void	swapTextures(unsigned index1, unsigned index2);
+	void		addTexture(CTexture* tex, int position = -1);
+	CTexture*	removeTexture(unsigned index, bool delete_texture = true);
+	void		swapTextures(unsigned index1, unsigned index2);
+	CTexture*	replaceTexture(unsigned index, CTexture* replacement);
 
 	void	clear(bool clear_patches = false);
 	void	removePatch(string patch);

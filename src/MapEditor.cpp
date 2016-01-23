@@ -5298,6 +5298,9 @@ void MapEditor::recordPropertyChangeUndoStep(MapObject* object)
  *******************************************************************/
 void MapEditor::doUndo()
 {
+	// Clear selection first, since part of it may become invalid
+	clearSelection();
+
 	// Undo
 	int time = theApp->runTimer() - 1;
 	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
@@ -5310,7 +5313,6 @@ void MapEditor::doUndo()
 
 		// Refresh stuff
 		//updateTagged();
-		clearSelection();
 		map.rebuildConnectedLines();
 		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();
@@ -5326,6 +5328,9 @@ void MapEditor::doUndo()
  *******************************************************************/
 void MapEditor::doRedo()
 {
+	// Clear selection first, since part of it may become invalid
+	clearSelection();
+
 	// Redo
 	int time = theApp->runTimer() - 1;
 	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
@@ -5338,7 +5343,6 @@ void MapEditor::doRedo()
 
 		// Refresh stuff
 		//updateTagged();
-		clearSelection();
 		map.rebuildConnectedLines();
 		map.rebuildConnectedSides();
 		map.geometry_updated = theApp->runTimer();

@@ -443,6 +443,9 @@ void InputPrefsPanel::applyPreferences()
 		item = list_binds->GetNextItem(item);
 	}
 
+	// Update sorted keybinds list
+	KeyBind::updateSortedBindsList();
+
 	// Update map editor menus
 	theMapEditor->setupMenu();
 }

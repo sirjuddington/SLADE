@@ -91,7 +91,7 @@ if(APPLE)
 endif(APPLE)
 
 # enable SSE instructions for dumb library
-set(CMAKE_C_FLAGS "-D_USE_SSE -msse")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
 add_executable(slade WIN32 MACOSX_BUNDLE
 	lzma/C/LzmaDec.c

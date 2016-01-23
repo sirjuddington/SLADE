@@ -67,6 +67,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	this->no_apply = no_apply;
 	hide_flags = false;
 	hide_triggers = false;
+	udmf = false;
 
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -452,7 +453,7 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 void MapObjectPropsPanel::setupType(int objtype)
 {
 	// Nothing to do if it was already this type
-	if (last_type == objtype)
+	if (last_type == objtype && !udmf)
 		return;
 
 	// Get map format
@@ -737,6 +738,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	pg_properties->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 
 	last_type = objtype;
+	udmf = false;
 	
 	Layout();
 }
@@ -747,7 +749,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 {
 	// Nothing to do if it was already this type
-	if (last_type == objtype)
+	if (last_type == objtype && udmf)
 		return;
 
 	// Clear property grids
@@ -848,6 +850,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		args[arg] = pg_properties->GetProperty(S_FMT("arg%u", arg));
 
 	last_type = objtype;
+	udmf = true;
 
 	Layout();
 }
@@ -1073,8 +1076,20 @@ void MapObjectPropsPanel::clearGrid()
  *******************************************************************/
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
+	string type;
+	if (last_type == MOBJ_VERTEX)
+		type = "Vertex";
+	else if (last_type == MOBJ_LINE)
+		type = "Line";
+	else if (last_type == MOBJ_SECTOR)
+		type = "Sector";
+	else if (last_type == MOBJ_THING)
+		type = "Thing";
+
 	// Apply changes
+	theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 	applyChanges();
+	theMapEditor->mapEditor().endUndoRecord();
 
 	// Refresh map view
 	theMapEditor->forceRefresh(true);
@@ -1209,7 +1224,17 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 		if (properties[a]->getPropName() == name)
 		{
 			// Found, apply value
-			theMapEditor->mapEditor().beginUndoRecordLocked("Modify Properties", true, false, false);
+			string type;
+			if (last_type == MOBJ_VERTEX)
+				type = "Vertex";
+			else if (last_type == MOBJ_LINE)
+				type = "Line";
+			else if (last_type == MOBJ_SECTOR)
+				type = "Sector";
+			else if (last_type == MOBJ_THING)
+				type = "Thing";
+			
+			theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 			properties[a]->applyValue();
 			theMapEditor->mapEditor().endUndoRecord();
 			return;

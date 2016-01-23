@@ -65,8 +65,9 @@ public:
 	void	createStartPage(bool newtip = true);
 	bool	exitProgram();
 
-	ArchiveManagerPanel*	getArchiveManagerPanel() { return panel_archivemanager; }
-	PaletteChooser*			getPaletteChooser() { return palette_chooser; }
+	ArchiveManagerPanel*		getArchiveManagerPanel() { return panel_archivemanager; }
+	PaletteChooser*				getPaletteChooser() { return palette_chooser; }
+	UndoManagerHistoryPanel*	getUndoHistoryPanel() { return panel_undo_history; }
 
 	Archive*				getCurrentArchive();
 	ArchiveEntry*			getCurrentEntry();
