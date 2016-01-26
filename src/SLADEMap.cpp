@@ -3049,10 +3049,10 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);
-			LOG_DEBUG("Intersection point ", intersection, " valid with ", lines[a]);
+			LOG_DEBUG("Intersection point", intersection, "valid with", lines[a]);
 		}
 		else if (intersection != cutter.p1())
-			LOG_DEBUG("Intersection point ", intersection, " invalid");
+			LOG_DEBUG("Intersection point", intersection, "invalid");
 	}
 
 	// Return if no intersections
@@ -4692,7 +4692,7 @@ bool SLADEMap::mergeArch(vector<MapVertex*> vertices)
 				splitLine(line2, nv);
 				connected_lines.push_back(lines.back());
 
-				LOG_DEBUG("Lines ", line1, " and ", line2, " intersect");
+				LOG_DEBUG("Lines", line1, "and", line2, "intersect");
 
 				a--;
 				break;

@@ -1206,7 +1206,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 	}
 }
 
-/* ActionSpecialPanel::SpecialItemActivated
+/* ActionSpecialPanel::onSpecialItemActivated
  * Called when the action special item is activated (double-clicked or
  * enter pressed)
  *******************************************************************/
@@ -1246,7 +1246,7 @@ ActionSpecialDialog::ActionSpecialDialog(wxWindow* parent, bool show_args)
 	// No args
 	if (theMapEditor->currentMapDesc().format == MAP_DOOM || !show_args)
 	{
-		panel_special = new ActionSpecialPanel(this);
+		panel_special = new ActionSpecialPanel(this, false);
 		sizer->Add(panel_special, 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 	}
 

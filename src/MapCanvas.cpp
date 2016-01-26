@@ -1358,8 +1358,9 @@ void MapCanvas::drawMap2d()
 				if (item->getType() == CLIPBOARD_MAP_THINGS)
 				{
 					vector<MapThing*> things;
-					((MapThingsClipboardItem*)item)->getThings(things);
-					fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
+					MapThingsClipboardItem* p = (MapThingsClipboardItem*)item;
+					p->getThings(things);
+					fpoint2_t pos(editor->relativeSnapToGrid(p->getMidpoint(), mouse_pos_m));
 					renderer_2d->renderPasteThings(things, pos);
 				}
 			}

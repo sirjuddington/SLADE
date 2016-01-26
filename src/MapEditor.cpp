@@ -578,6 +578,8 @@ void MapEditor::setEditMode(int mode)
 	default: break;
 	};
 
+	if (edit_mode != MODE_3D)
+		updateDisplay();
 	updateStatusText();
 }
 
