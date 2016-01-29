@@ -151,7 +151,7 @@ bool DefaultEntryPanel::loadEntry(ArchiveEntry* entry)
 bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 {
 	// Update labels
-	label_type->SetLabel(S_FMT("%d selected entries", entries.size()));
+	label_type->SetLabel(S_FMT("%lu selected entries", entries.size()));
 	unsigned size = 0;
 	for (unsigned a = 0; a < entries.size(); a++)
 		size += entries[a]->getSize();

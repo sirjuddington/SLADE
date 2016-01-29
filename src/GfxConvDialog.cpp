@@ -203,7 +203,7 @@ bool GfxConvDialog::nextItem()
 
 	// Update UI
 	updatePreviewGfx();
-	theSplashWindow->setProgressMessage(S_FMT("%d of %d", current_item, items.size()));
+	theSplashWindow->setProgressMessage(S_FMT("%d of %lu", current_item, items.size()));
 	theSplashWindow->setProgress((float)current_item / (float)items.size());
 
 	return ok;

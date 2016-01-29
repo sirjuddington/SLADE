@@ -715,7 +715,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	pal_canvas->getPalette().copyPalette(palettes[index]);
 
 	// Set current palette text
-	text_curpal->SetLabel(S_FMT("%d/%d", index+1, palettes.size()));
+	text_curpal->SetLabel(S_FMT("%u/%lu", index+1, palettes.size()));
 
 	// Refresh
 	Layout();
