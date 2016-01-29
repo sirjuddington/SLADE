@@ -119,58 +119,37 @@ struct arg_t
 		// Speed
 		else if (type == ARGT_SPEED)
 		{
-			// Label with the Boom generalized speed names
-			string speed_label;
-			if (value == 0)
-				speed_label = "broken (don't use!)";
-			else if (value < 8)
-				speed_label = "< slow";
-			else if (value == 8)
-				speed_label = "slow";
-			else if (value < 16)
-				speed_label = "slow ~ normal";
-			else if (value == 16)
-				speed_label = "normal";
-			else if (value < 32)
-				speed_label = "normal ~ fast";
-			else if (value == 32)
-				speed_label = "fast";
-			else if (value < 64)
-				speed_label = "fast ~ turbo";
-			else if (value == 64)
-				speed_label = "turbo";
+			string speed_label = speedLabel(value);
+			if (speed_label.empty())
+				return S_FMT("%d", value);
 			else
-				speed_label = "> turbo";
-			return S_FMT("%d (%s)", value, speed_label);
+				return S_FMT("%d (%s)", value, speed_label);
 		}
 
 		// Any other type
 		return S_FMT("%d", value);
 	}
 
-	static const string speedLabel(int value)
+	const string speedLabel(int value)
 	{
-		// Use the generalized Boom speeds as landmarks
+		// Speed can optionally have a set of predefined values, most taken
+		// from the Boom generalized values
+		if (!custom_values.size())
+			return "";
 		if (value == 0)
-			return "none, probably bogus";
-		else if (value < 8)
-			return "< slow";
-		else if (value == 8)
-			return "slow";
-		else if (value < 16)
-			return "slow ~ normal";
-		else if (value == 16)
-			return "normal";
-		else if (value < 32)
-			return "normal ~ fast";
-		else if (value == 32)
-			return "fast";
-		else if (value < 64)
-			return "fast ~ turbo";
-		else if (value == 64)
-			return "turbo";
-		else
-			return "> turbo";
+			return "broken";
+		if (value < custom_values.front().value)
+			return S_FMT("< %s", custom_values.front().name);
+		if (value > custom_values.back().value)
+			return S_FMT("> %s", custom_values.back().name);
+		for (unsigned a = 0; a < custom_values.size(); a++)
+		{
+			if (value == custom_values[a].value)
+				return custom_values[a].name;
+			if (a > 0 && value < custom_values[a].value)
+				return S_FMT("%s ~ %s", custom_values[a - 1].name, custom_values[a].name);
+		}
+		return "";
 	}
 };
 
