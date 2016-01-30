@@ -63,6 +63,8 @@ public:
 
 	bool	convertToTEXTURES();
 
+	bool	findErrors();
+
 	string	getTextureXFormatString();
 };
 

@@ -1161,6 +1161,46 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
 		return false;
 }
 
+/* EntryOperations::findTextureErrors
+ * Detect errors in a TEXTUREx entry
+ *******************************************************************/
+bool EntryOperations::findTextureErrors(vector<ArchiveEntry*> entries)
+{
+	// Check any entries were given
+	if (entries.size() == 0)
+		return false;
+
+	// Get parent archive of entries
+	Archive* parent = entries[0]->getParent();
+
+	// Can't do anything if entry isn't in an archive
+	if (!parent)
+		return false;
+
+	// Find patch table in parent archive
+	Archive::search_options_t opt;
+	opt.match_type = EntryType::getType("pnames");
+	ArchiveEntry* pnames = parent->findLast(opt);
+
+	// Check it exists
+	if (!pnames)
+		return false;
+
+	// Load patch table
+	PatchTable ptable;
+	ptable.loadPNAMES(pnames);
+
+	// Read all texture entries to a single list
+	TextureXList tx;
+	for (unsigned a = 0; a < entries.size(); a++)
+		tx.readTEXTUREXData(entries[a], ptable, true);
+
+	// Detect errors
+	tx.findErrors();
+
+	return true;
+}
+
 /* EntryOperations::compileACS
  * Attempts to compile [entry] as an ACS script. If the entry is
  * named SCRIPTS, the compiled data is imported to the BEHAVIOR
