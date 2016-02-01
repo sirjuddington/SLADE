@@ -750,48 +750,88 @@ vector<Archive*> ArchiveManager::getDependentArchives(Archive* archive)
  * Returns a string containing the extensions of all supported
  * archive formats, that can be used for wxWidgets file dialogs
  *******************************************************************/
-string ArchiveManager::getArchiveExtensionsString()
+string ArchiveManager::getArchiveExtensionsString(bool multi_case)
 {
+	// This is getting a bit silly, really need to look at that archive format system...
+
 	// Create extensions strings
 	string extensions = "Any supported file|";
-	string ext_wad = "*.wad;*.WAD;*.Wad;*.rts;*.RTS;*.Rts";		extensions += ext_wad + ";";
-	string ext_zip = "*.zip;*.ZIP;*.Zip";						extensions += ext_zip + ";";
-	string ext_pk3 = "*.pk3;*.PK3;*.Pk3;*.pke;*.PKE;*.Pke";		extensions += ext_pk3 + ";";
-	string ext_jdf = "*.jdf;*.JDF;*.Jdf";						extensions += ext_jdf + ";";
-	string ext_dat = "*.dat;*.DAT;*.Dat";						extensions += ext_dat + ";";
-	string ext_chd = "*.cd;*.CD;*.Cd;*.hd;*.HD;*.Hd";			extensions += ext_chd + ";";
-	string ext_lib = "*.lib;*.LIB;*.Lib";						extensions += ext_lib + ";";
-	string ext_res = "*.res;*.RES;*.Res";						extensions += ext_res + ";";
-	string ext_pak = "*.pak;*.PAK;*.Pak";						extensions += ext_pak + ";";
-	string ext_gob = "*.gob;*.GOB;*.Gob";						extensions += ext_gob + ";";
-	string ext_lfd = "*.lfd;*.LFD;*.Lfd";						extensions += ext_lfd + ";";
-	string ext_hog = "*.hob;*.HOG;*.Hog";						extensions += ext_hog + ";";
-	string ext_grp = "*.grp;*.GRP;*.Grp;*.prg;*.PRG;*.Prg";		extensions += ext_grp + ";";
-	string ext_rff = "*.rff;*.RFF;*.Rff";						extensions += ext_rff + ";";
-	string ext_disk = "*.disk;*.DISK;*.Disk";					extensions += ext_disk+ ";";
-	string ext_pod = "*.pod;*.POD;*.Pod";						extensions += ext_pod + ";";
-	string ext_csm = "*.bin;*.BIN;*.Bin";						extensions += ext_csm + ";";
+	string ext_wad, ext_zip, ext_pk3, ext_dat, ext_chd, ext_lib, ext_res, ext_pak, ext_gob;
+	string ext_lfd, ext_hog, ext_grp, ext_rff, ext_disk, ext_pod, ext_csm, ext_wolf;
+	if (multi_case)
+	{
+		string ext_wad = "*.wad;*.WAD;*.Wad;*.rts;*.RTS;*.Rts";		extensions += ext_wad + ";";
+		string ext_zip = "*.zip;*.ZIP;*.Zip";						extensions += ext_zip + ";";
+		string ext_pk3 = "*.pk3;*.PK3;*.Pk3;*.pke;*.PKE;*.Pke";		extensions += ext_pk3 + ";";
+		string ext_dat = "*.dat;*.DAT;*.Dat";						extensions += ext_dat + ";";
+		string ext_chd = "*.cd;*.CD;*.Cd;*.hd;*.HD;*.Hd";			extensions += ext_chd + ";";
+		string ext_lib = "*.lib;*.LIB;*.Lib";						extensions += ext_lib + ";";
+		string ext_res = "*.res;*.RES;*.Res";						extensions += ext_res + ";";
+		string ext_pak = "*.pak;*.PAK;*.Pak";						extensions += ext_pak + ";";
+		string ext_gob = "*.gob;*.GOB;*.Gob";						extensions += ext_gob + ";";
+		string ext_lfd = "*.lfd;*.LFD;*.Lfd";						extensions += ext_lfd + ";";
+		string ext_hog = "*.hob;*.HOG;*.Hog";						extensions += ext_hog + ";";
+		string ext_grp = "*.grp;*.GRP;*.Grp;*.prg;*.PRG;*.Prg";		extensions += ext_grp + ";";
+		string ext_rff = "*.rff;*.RFF;*.Rff";						extensions += ext_rff + ";";
+		string ext_disk = "*.disk;*.DISK;*.Disk";					extensions += ext_disk + ";";
+		string ext_pod = "*.pod;*.POD;*.Pod";						extensions += ext_pod + ";";
+		string ext_csm = "*.bin;*.BIN;*.Bin";						extensions += ext_csm + ";";
 #ifdef __APPLE__
-	// Cocoa supports filters with file extensions only
-	string ext_wolf =	"*.wl1;*.wl3;*.wl6;"
-						"*.sd1;*.sd2;*.sd3;*.sod";				extensions += ext_wolf +";";
+		// Cocoa supports filters with file extensions only
+		string ext_wolf = "*.wl1;*.wl3;*.wl6;"
+			"*.sd1;*.sd2;*.sd3;*.sod";				extensions += ext_wolf + ";";
 #else // !__APPLE__
-	string ext_wolf =	"vswap.*;VSWAP.*Vswap.*;"
-	                    "audiot.*;AUDIOT.*;Audiot.*;"
-	                    "audiohed.*;AUDIOHED.*;Audiohed.*;"
-	                    "gamemaps.*;GAMEMAPS.*;Gamemaps.*;"
-	                    "gfxtiles.*;GFXTILES.*;Gfxtiles.*;"
-	                    "maphead.*;MAPHEAD.*;Maphead.*"
-	                    "maptemp.*;MAPTEMP.*;Maptemp.*"
-	                    "vgagraph.*;VGAGRAPH.*;Vgagraph.*"
-	                    "vgahead.*;VGAHEAD.*;Vgahead.*;"
-	                    "vgadict.*;VGADICT.*;Vgadict.*";		extensions += ext_wolf +";";
+		string ext_wolf = "vswap.*;VSWAP.*Vswap.*;"
+			"audiot.*;AUDIOT.*;Audiot.*;"
+			"audiohed.*;AUDIOHED.*;Audiohed.*;"
+			"gamemaps.*;GAMEMAPS.*;Gamemaps.*;"
+			"gfxtiles.*;GFXTILES.*;Gfxtiles.*;"
+			"maphead.*;MAPHEAD.*;Maphead.*;"
+			"maptemp.*;MAPTEMP.*;Maptemp.*;"
+			"vgagraph.*;VGAGRAPH.*;Vgagraph.*;"
+			"vgahead.*;VGAHEAD.*;Vgahead.*;"
+			"vgadict.*;VGADICT.*;Vgadict.*";		extensions += ext_wolf + ";";
 #endif // __APPLE__
+	}
+	else
+	{
+		string ext_wad = "*.wad;*.rts";		extensions += ext_wad + ";";
+		string ext_zip = "*.zip";			extensions += ext_zip + ";";
+		string ext_pk3 = "*.pk3;*.pke";		extensions += ext_pk3 + ";";
+		string ext_dat = "*.dat";			extensions += ext_dat + ";";
+		string ext_chd = "*.cd;*.hd";		extensions += ext_chd + ";";
+		string ext_lib = "*.lib";			extensions += ext_lib + ";";
+		string ext_res = "*.res";			extensions += ext_res + ";";
+		string ext_pak = "*.pak";			extensions += ext_pak + ";";
+		string ext_gob = "*.gob";			extensions += ext_gob + ";";
+		string ext_lfd = "*.lfd";			extensions += ext_lfd + ";";
+		string ext_hog = "*.hob";			extensions += ext_hog + ";";
+		string ext_grp = "*.grp;*.prg";		extensions += ext_grp + ";";
+		string ext_rff = "*.rff";			extensions += ext_rff + ";";
+		string ext_disk = "*.disk";			extensions += ext_disk + ";";
+		string ext_pod = "*.pod";			extensions += ext_pod + ";";
+		string ext_csm = "*.bin";			extensions += ext_csm + ";";
+#ifdef __APPLE__
+		// Cocoa supports filters with file extensions only
+		string ext_wolf = "*.wl1;*.wl3;*.wl6;"
+			"*.sd1;*.sd2;*.sd3;*.sod";		extensions += ext_wolf + ";";
+#else // !__APPLE__
+		string ext_wolf = "vswap.*;"
+			"audiot.*;"
+			"audiohed.*;"
+			"gamemaps.*;"
+			"gfxtiles.*;"
+			"maphead.*;"
+			"maptemp.*;"
+			"vgagraph.*;"
+			"vgahead.*;"
+			"vgadict.*";					extensions += ext_wolf + ";";
+#endif // __APPLE__
+	}
 
 	extensions += S_FMT("|Doom Wad files (*.wad)|%s",				ext_wad);
 	extensions += S_FMT("|Zip files (*.zip)|%s",					ext_zip);
 	extensions += S_FMT("|Pk3 (zip) files (*.pk3)|%s",				ext_pk3);
-	extensions += S_FMT("|JDF (zip) files (*.jdf)|%s",				ext_jdf);
 	extensions += S_FMT("|Data (dat) files (*.dat)|%s",				ext_dat);
 	extensions += S_FMT("|CD/HD (cd/hd) files (*.cd; *.hd)|%s",		ext_chd);
 	extensions += S_FMT("|Library (lib) files (*.lib)|%s",			ext_lib);

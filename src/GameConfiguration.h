@@ -6,6 +6,7 @@
 #include "ThingType.h"
 #include "UDMFProperty.h"
 #include "PropertyList.h"
+#include "Tokenizer.h"
 
 // Tag types
 enum TagTypes
@@ -135,9 +136,10 @@ private:
 		bool operator>(const gconf_t& right) const { return title > right.title; }
 		bool operator<(const gconf_t& right) const { return title < right.title; }
 	};
-	gconf_t			gconf_none;
-	vector<gconf_t>	game_configs;
-	size_t			lastDefaultConfig;
+	gconf_t				gconf_none;
+	vector<gconf_t>		game_configs;
+	size_t				last_default_config;
+	vector<key_value_t>	game_base_resources;
 
 	// Basic port configuration info
 	struct pconf_t
@@ -238,6 +240,10 @@ public:
 	unsigned		nMapNames() { return maps.size(); }
 	string			mapName(unsigned index);
 	gc_mapinfo_t	mapInfo(string mapname);
+
+	void			readGameResourcePaths(Tokenizer& tz);
+	string			writeGameResourcePaths();
+	string			getGameBaseResourcePath(string game);
 
 	// Config #include handling
 	void	buildConfig(string filename, string& out);

@@ -65,8 +65,8 @@
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)src;$(FLUIDSYNTH)\include;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist;$(SFML)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(FLUIDSYNTH)\lib;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist;$(SFML)\lib;$(FTGL)\msvc\build;$(FREETYPE)\objs\win32;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FLUIDSYNTH)\include;$(ProjectDir)src\dumb;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(FLUIDSYNTH)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\dumb;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(SFML)\lib;$(FREEIMAGE)\Dist\x32;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -101,7 +101,7 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxbase30ud_xml.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;wxexpatd.lib;opengl32.lib;glu32.lib;sfml-main-d.lib;sfml-system-s-d.lib;sfml-window-s-d.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;flac.lib;ogg.lib;openal32.lib;freetype.lib;vorbis.lib;vorbisfile.lib;FreeImage.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -132,7 +132,7 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30u.lib;wxbase30u_net.lib;wxmsw30u_core.lib;wxmsw30u_gl.lib;wxmsw30u_aui.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30u.lib;wxbase30u_net.lib;wxbase30u_xml.lib;wxmsw30u_core.lib;wxmsw30u_gl.lib;wxmsw30u_aui.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;wxexpat.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -348,6 +348,9 @@
     <ClCompile Include="..\..\src\HogArchive.cpp" />
     <ClCompile Include="..\..\src\InfoOverlay3d.cpp" />
     <ClCompile Include="..\..\src\KeyBind.cpp" />
+    <ClCompile Include="..\..\src\Launcher\IdGames.cpp" />
+    <ClCompile Include="..\..\src\Launcher\UI\IdGamesPanel.cpp" />
+    <ClCompile Include="..\..\src\Launcher\UI\LauncherPanel.cpp" />
     <ClCompile Include="..\..\src\LfdArchive.cpp" />
     <ClCompile Include="..\..\src\LibArchive.cpp" />
     <ClCompile Include="..\..\src\LineInfoOverlay.cpp" />
@@ -505,6 +508,7 @@
     <ClCompile Include="..\..\src\UDMFProperty.cpp" />
     <ClCompile Include="..\..\src\UndoManagerHistoryPanel.cpp" />
     <ClCompile Include="..\..\src\UndoRedo.cpp" />
+    <ClCompile Include="..\..\src\Utility\XmlHelpers.cpp" />
     <ClCompile Include="..\..\src\VersionCheck.cpp" />
     <ClCompile Include="..\..\src\VertexInfoOverlay.cpp" />
     <ClCompile Include="..\..\src\VirtualListView.cpp" />
@@ -679,6 +683,10 @@
     <ClInclude Include="..\..\src\ImageFormats.h" />
     <ClInclude Include="..\..\src\InfoOverlay3d.h" />
     <ClInclude Include="..\..\src\KeyBind.h" />
+    <ClInclude Include="..\..\src\Launcher\IdGames.h" />
+    <ClInclude Include="..\..\src\Launcher\Library.h" />
+    <ClInclude Include="..\..\src\Launcher\UI\IdGamesPanel.h" />
+    <ClInclude Include="..\..\src\Launcher\UI\LauncherPanel.h" />
     <ClInclude Include="..\..\src\LfdArchive.h" />
     <ClInclude Include="..\..\src\LibArchive.h" />
     <ClInclude Include="..\..\src\LineInfoOverlay.h" />
@@ -836,6 +844,7 @@
     <ClInclude Include="..\..\src\UDMFProperty.h" />
     <ClInclude Include="..\..\src\UndoManagerHistoryPanel.h" />
     <ClInclude Include="..\..\src\UndoRedo.h" />
+    <ClInclude Include="..\..\src\Utility\XmlHelpers.h" />
     <ClInclude Include="..\..\src\VersionCheck.h" />
     <ClInclude Include="..\..\src\VertexInfoOverlay.h" />
     <ClInclude Include="..\..\src\VirtualListView.h" />

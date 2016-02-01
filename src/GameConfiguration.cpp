@@ -413,7 +413,7 @@ void GameConfiguration::init()
 	// Sort configuration lists by title
 	std::sort(game_configs.begin(), game_configs.end());
 	std::sort(port_configs.begin(), port_configs.end());
-	lastDefaultConfig = game_configs.size();
+	last_default_config = game_configs.size();
 
 	// Load last configuration if any
 	if (game_configuration != "")
@@ -447,6 +447,55 @@ gc_mapinfo_t GameConfiguration::mapInfo(string name)
 		return maps[0];
 	else
 		return gc_mapinfo_t();
+}
+
+/* GameConfiguration::readGameResourcePaths
+ * Read game base resource paths configuration from [tz]
+ *******************************************************************/
+void GameConfiguration::readGameResourcePaths(Tokenizer& tz)
+{
+	// Skip {
+	tz.skipToken();
+
+	while (!tz.atEnd())
+	{
+		// Read game (if } we're done)
+		string game = tz.getToken();
+		if (game == "}")
+			break;
+
+		// Add path
+		string path = tz.getToken();
+		game_base_resources.push_back(key_value_t(game, path));
+	}
+}
+
+/* GameConfiguration::writeGameResourcePaths
+ * Write game base resource paths configuration to a string
+ *******************************************************************/
+string GameConfiguration::writeGameResourcePaths()
+{
+	string ret = "game_base_resource_paths\n{\n";
+	for (unsigned a = 0; a < game_base_resources.size(); a++)
+		ret += S_FMT("\t%s \"%s\"\n",
+				CHR(game_base_resources[a].key),
+				CHR(game_base_resources[a].value)
+				);
+	ret += "}\n";
+
+	return ret;
+}
+
+/* GameConfiguration::getGameBaseResourcePath
+ * Returns the configured path to the base resource for [game]
+ *******************************************************************/
+string GameConfiguration::getGameBaseResourcePath(string game)
+{
+	for (unsigned a = 0; a < game_base_resources.size(); a++)
+		if (game_base_resources[a].key == game)
+			return game_base_resources[a].value;
+
+	return "";
 }
 
 /* GameConfiguration::gameConfig

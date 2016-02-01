@@ -47,6 +47,7 @@
 #include "Misc.h"
 #include "STabCtrl.h"
 #include "TextureXEditor.h"
+#include "Launcher/UI/LauncherPanel.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
@@ -231,6 +232,13 @@ void MainWindow::setupLayout()
 	else
 		html_startpage->Show(false);
 #endif
+
+	// Launcher
+	panel_launcher = new LauncherPanel(this);
+	stc_tabs->AddPage(panel_launcher, "Launcher");
+	stc_tabs->SetPageBitmap(
+		stc_tabs->GetPageIndex(panel_launcher),
+		Icons::getIcon(Icons::GENERAL, "run"));
 
 
 	// -- Console Panel --

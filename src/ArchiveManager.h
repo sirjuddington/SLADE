@@ -67,7 +67,7 @@ public:
 	vector<Archive*>
 				getDependentArchives(Archive* archive);
 	Archive*	programResourceArchive() { return program_resource_archive; }
-	string		getArchiveExtensionsString();
+	string		getArchiveExtensionsString(bool multi_case = true);
 	bool		archiveIsResource(Archive* archive);
 	void		setArchiveResource(Archive* archive, bool resource = true);
 

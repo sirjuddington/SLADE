@@ -169,6 +169,12 @@
     <Filter Include="Installer">
       <UniqueIdentifier>{fa5a343f-ee94-41ea-a75f-1d0292b58329}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Launcher">
+      <UniqueIdentifier>{64cd75a1-a981-40b2-b601-63e33085de5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Launcher\UI">
+      <UniqueIdentifier>{e88b1989-8846-4749-a209-347933e1a0d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\GfxConvDialog.cpp">
@@ -1368,6 +1374,18 @@
     <ClCompile Include="..\..\src\ChasmBinArchive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Launcher\UI\LauncherPanel.cpp">
+      <Filter>Launcher\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Launcher\IdGames.cpp">
+      <Filter>Launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Launcher\UI\IdGamesPanel.cpp">
+      <Filter>Launcher\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\XmlHelpers.cpp">
+      <Filter>General\Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\GfxConvDialog.h">
@@ -2360,6 +2378,21 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ChasmBinArchive.h">
       <Filter>Resources\Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Launcher\UI\LauncherPanel.h">
+      <Filter>Launcher\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Launcher\IdGames.h">
+      <Filter>Launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Launcher\UI\IdGamesPanel.h">
+      <Filter>Launcher\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\XmlHelpers.h">
+      <Filter>General\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Launcher\Library.h">
+      <Filter>Launcher</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

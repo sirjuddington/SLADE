@@ -940,6 +940,9 @@ bool MainApp::OnInit()
 	// Init game executables
 	Executables::init();
 
+	// Init game configuration
+	theGameConfiguration->init();
+
 	// Init actions
 	initActions();
 	theMainWindow;
@@ -969,9 +972,6 @@ bool MainApp::OnInit()
 
 	init_ok = true;
 	wxLogMessage("SLADE Initialisation OK");
-
-	// Init game configuration
-	theGameConfiguration->init();
 
 	// Show Setup Wizard if needed
 	if (!setup_wizard_run)
@@ -1182,6 +1182,10 @@ void MainApp::readConfigFile()
 			Misc::readWindowInfo(&tz);
 		}
 
+		// Read game base resource paths
+		if (token == "game_base_resource_paths")
+			theGameConfiguration->readGameResourcePaths(tz);
+
 		// Get next token
 		token = tz.getToken();
 	}
@@ -1246,6 +1250,10 @@ void MainApp::saveConfigFile()
 	file.Write("\nwindow_info\n{\n");
 	Misc::writeWindowInfo(file);
 	file.Write("}\n");
+
+	// Write game base resource paths
+	file.Write("\n");
+	file.Write(theGameConfiguration->writeGameResourcePaths());
 
 	// Close configuration file
 	file.Write("\n// End Configuration File\n\n");

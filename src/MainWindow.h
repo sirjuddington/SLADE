@@ -16,6 +16,7 @@
 class SToolBar;
 class STabCtrl;
 class UndoManagerHistoryPanel;
+class LauncherPanel;
 #ifdef USE_WEBVIEW_STARTPAGE
 class wxWebView;
 class DocsPage;
@@ -29,6 +30,7 @@ private:
 	wxAuiManager*				m_mgr;
 	int							lasttipindex;
 	PaletteChooser*				palette_chooser;
+	LauncherPanel*				panel_launcher;
 
 	// Start page
 #ifdef USE_WEBVIEW_STARTPAGE
