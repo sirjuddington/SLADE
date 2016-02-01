@@ -2356,17 +2356,14 @@ bool ArchivePanel::musMidiConvert()
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
-		if (selection[a]->getType()->getFormat() == "mus" ||
-			selection[a]->getType()->getFormat() == "hmi" ||
-			selection[a]->getType()->getFormat() == "hmp" ||
-			selection[a]->getType()->getFormat() == "xmi" ||
-			selection[a]->getType()->getFormat() == "gmid")
+		if (selection[a]->getType()->getFormat().StartsWith("midi_") &&
+			selection[a]->getType()->getFormat() != "midi_smf")
 		{
 			MemChunk midi;
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));	// Create undo step
-			if (selection[a]->getType()->getFormat() == "mus")
+			if (selection[a]->getType()->getFormat() == "midi_mus")
 				Conversions::musToMidi(selection[a]->getMCData(), midi);	// Convert
-			else if (selection[a]->getType()->getFormat() == "gmid")
+			else if (selection[a]->getType()->getFormat() == "midi_gmid")
 				Conversions::gmidToMidi(selection[a]->getMCData(), midi);	// Convert
 			else
 				Conversions::zmusToMidi(selection[a]->getMCData(), midi);	// Convert
@@ -2482,6 +2479,22 @@ bool ArchivePanel::convertTextures()
 
 	// Finish recording undo level
 	undo_manager->endRecord(false);
+
+	return false;
+}
+
+/* ArchivePanel::findTextureErrors
+ * Detect errors in a TEXTUREx entry
+ *******************************************************************/
+bool ArchivePanel::findTextureErrors()
+{
+	// Get selected entries
+	long index = entry_list->getSelection()[0];
+	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+
+	// Detect errors
+	if (EntryOperations::findTextureErrors(selection))
+		return true;
 
 	return false;
 }
@@ -2934,6 +2947,8 @@ bool ArchivePanel::handleAction(string id)
 		compileACS(true);
 	else if (id == "arch_texturex_convertzd")
 		convertTextures();
+	else if (id == "arch_texturex_finderrors")
+		findTextureErrors();
 	else if (id == "arch_map_opendb2")
 		mapOpenDb2();
 
@@ -3195,11 +3210,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!mus_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "mus" ||
-				selection[a]->getType()->getFormat() == "hmi" ||
-				selection[a]->getType()->getFormat() == "hmp" ||
-				selection[a]->getType()->getFormat() == "xmi" ||
-				selection[a]->getType()->getFormat() == "gmid")
+			if (selection[a]->getType()->getFormat().StartsWith("midi_") &&
+				selection[a]->getType()->getFormat() != "midi_smf")
 				mus_selected = true;
 		}
 		if (!text_selected)
@@ -3287,7 +3299,10 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 
 	// Add texturex related menu items if needed
 	if (texturex_selected)
+	{
 		theApp->getAction("arch_texturex_convertzd")->addToMenu(&context, true);
+		theApp->getAction("arch_texturex_finderrors")->addToMenu(&context, true);
+	}
 
 	// 'View As' menu
 	if (context_submenus)

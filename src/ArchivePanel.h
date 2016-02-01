@@ -109,6 +109,7 @@ public:
 	bool	optimizePNG();
 	bool	compileACS(bool hexen = false);
 	bool	convertTextures();
+	bool	findTextureErrors();
 	bool	mapOpenDb2();
 	bool	crc32();
 

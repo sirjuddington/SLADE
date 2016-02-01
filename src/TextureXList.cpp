@@ -823,3 +823,63 @@ bool TextureXList::convertToTEXTURES()
 
 	return true;
 }
+
+#include "SImage.h"
+/* TextureXList::findErrors
+ * Search for errors in texture list, return true if any are found
+ *******************************************************************/
+bool TextureXList::findErrors()
+{
+	bool ret = false;
+
+	// Texture errors:
+	// 1. A texture without any patch
+	// 2. A texture with missing patches
+	// 3. A texture with columns not covered by a patch
+
+	for (unsigned a = 0; a < textures.size(); a++)
+	{
+		if (textures[a]->nPatches() == 0)
+		{
+			ret = true;
+			wxLogMessage("Texture %u: %s does not have any patch", a, textures[a]->getName());
+		}
+		else
+		{
+			bool * columns = new bool[textures[a]->getWidth()];
+			memset(columns, false, textures[a]->getWidth());
+			for (size_t i = 0; i < textures[a]->nPatches(); ++i)
+			{
+				ArchiveEntry * patch = textures[a]->patches[i]->getPatchEntry();
+				if (patch == NULL)
+				{
+					ret = true;
+					wxLogMessage("Texture %u: %s: patch %s cannot be found in any open archive", 
+						a, textures[a]->getName(), textures[a]->patches[i]->getName());
+					// Don't list missing columns when we don't know the size of the patch
+					memset(columns, true, textures[a]->getWidth());
+				}
+				else
+				{
+					SImage img;
+					img.open(patch->getMCData());
+					size_t start = MAX(0, textures[a]->patches[i]->xOffset());
+					size_t end = MIN(textures[a]->getWidth(), img.getWidth() + start);
+					for (size_t c = start; c < end; ++c)
+						columns[c] = true;
+				}
+			}
+			for (size_t c = 0; c < textures[a]->getWidth(); ++c)
+			{
+				if (columns[c] == false)
+				{
+					ret = true;
+					wxLogMessage("Texture %u: %s: column %d without a patch", a, textures[a]->getName(), c);
+					break;
+				}
+			}
+			delete[] columns;
+		}
+	}
+	return ret;
+}
