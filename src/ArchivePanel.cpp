@@ -2356,11 +2356,11 @@ bool ArchivePanel::musMidiConvert()
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
-		if (selection[a]->getType()->getFormat() == "mus" ||
-			selection[a]->getType()->getFormat() == "hmi" ||
-			selection[a]->getType()->getFormat() == "hmp" ||
-			selection[a]->getType()->getFormat() == "xmi" ||
-			selection[a]->getType()->getFormat() == "gmid")
+		if (selection[a]->getType()->getFormat() == "midi_mus" ||
+			selection[a]->getType()->getFormat() == "midi_hmi" ||
+			selection[a]->getType()->getFormat() == "midi_hmp" ||
+			selection[a]->getType()->getFormat() == "midi_xmi" ||
+			selection[a]->getType()->getFormat() == "midi_gmid")
 		{
 			MemChunk midi;
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));	// Create undo step
@@ -3195,11 +3195,11 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!mus_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "mus" ||
-				selection[a]->getType()->getFormat() == "hmi" ||
-				selection[a]->getType()->getFormat() == "hmp" ||
-				selection[a]->getType()->getFormat() == "xmi" ||
-				selection[a]->getType()->getFormat() == "gmid")
+			if (selection[a]->getType()->getFormat() == "midi_mus" ||
+				selection[a]->getType()->getFormat() == "midi_hmi" ||
+				selection[a]->getType()->getFormat() == "midi_hmp" ||
+				selection[a]->getType()->getFormat() == "midi_xmi" ||
+				selection[a]->getType()->getFormat() == "midi_gmid")
 				mus_selected = true;
 		}
 		if (!text_selected)
