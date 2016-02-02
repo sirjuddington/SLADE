@@ -631,7 +631,7 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 	if (verbose)
 	{
 		string info = "Traced polygon outline: ";
-		info += S_FMT("%d edges, ", poly.edges.size());
+		info += S_FMT("%lu edges, ", poly.edges.size());
 		if (poly.convex) info += "convex, ";
 		else info += "concave, ";
 		if (poly.clockwise) info += "clockwise";
@@ -866,7 +866,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 			continue;
 		tracePolyOutline(a);
 	}
-	if (verbose) wxLogMessage("%d Polygon outlines detected", polygon_outlines.size());
+	if (verbose) wxLogMessage("%lu Polygon outlines detected", polygon_outlines.size());
 
 	// Check if any edges are not part of a polygon outline
 	for (unsigned a = 0; a < edges.size(); a++)

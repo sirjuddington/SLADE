@@ -78,6 +78,7 @@ public:
 	// Entry addition/removal
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
 	bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true);
+	bool			renameEntry(ArchiveEntry* entry, string name);
 
 	// Detection
 	mapdesc_t			getMapInfo(ArchiveEntry* maphead);

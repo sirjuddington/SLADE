@@ -233,8 +233,13 @@ void ActionSpecialTreeView::onItemActivated(wxDataViewEvent& e)
  *******************************************************************/
 class ArgsControl : public wxPanel
 {
+protected:
+	// Original arg configuration
+	arg_t&		arg;
+
 public:
-	ArgsControl(wxWindow* parent) : wxPanel(parent, -1)
+	ArgsControl(wxWindow* parent, arg_t& arg)
+		: wxPanel(parent, -1), arg(arg)
 	{
 		SetSizer(new wxBoxSizer(wxVERTICAL));
 	}
@@ -255,7 +260,7 @@ protected:
 	wxTextCtrl* text_control;
 
 public:
-	ArgsTextControl(wxWindow* parent) : ArgsControl(parent)
+	ArgsTextControl(wxWindow* parent, arg_t& arg) : ArgsControl(parent, arg)
 	{
 		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
 		text_control->SetValidator(wxIntegerValidator<unsigned char>());
@@ -318,21 +323,20 @@ public:
 
 class ArgsChoiceControl : public ArgsControl
 {
-private:
+protected:
 	wxComboBox*			choice_control;
-	vector<arg_val_t>&	choices;
 
 public:
-	ArgsChoiceControl(wxWindow* parent, vector<arg_val_t>& choices)
-		: ArgsControl(parent), choices(choices)
+	ArgsChoiceControl(wxWindow* parent, arg_t& arg)
+		: ArgsControl(parent, arg)
 	{
 		choice_control = new wxComboBox(this, -1, "", wxDefaultPosition, wxSize(100, -1));
 		choice_control->SetValidator(ComboBoxAwareIntegerValidator<unsigned char>());
 
-		for (unsigned i = 0; i < choices.size(); i++)
+		for (unsigned i = 0; i < arg.custom_values.size(); i++)
 		{
 			choice_control->Append(
-				S_FMT("%d: %s", choices[i].value, choices[i].name));
+				S_FMT("%d: %s", arg.custom_values[i].value, arg.custom_values[i].name));
 		}
 
 		GetSizer()->Add(choice_control, wxSizerFlags().Expand());
@@ -358,7 +362,7 @@ public:
 		}
 		else
 		{
-			return choices[selected].value;
+			return arg.custom_values[selected].value;
 		}
 	}
 
@@ -371,9 +375,9 @@ public:
 		}
 
 		// Look for a name for this value
-		for (unsigned i = 0; i < choices.size(); i++)
+		for (unsigned i = 0; i < arg.custom_values.size(); i++)
 		{
-			if (val == choices[i].value)
+			if (val == arg.custom_values[i].value)
 			{
 				choice_control->SetSelection(i);
 				return;
@@ -389,10 +393,8 @@ public:
 class ArgsFlagsControl : public ArgsTextControl
 {
 private:
-	// Reference to the arg's custom_flags
-	vector<arg_val_t>&	flags;
-	// Parallel vector of bitmasks for the groups each flag belongs to, or 0
-	// for an independent flag
+	// Vector of bitmasks for the groups each flag belongs to, or 0 for an
+	// independent flag, parallel to the arg's custom_flags
 	vector<int>			flag_to_bit_group;
 	// Parallel vector of the checkboxes and radio buttons we create
 	vector<wxControl*>	controls;
@@ -431,7 +433,7 @@ private:
 		// Doesn't matter what type of pointer this is; only need it to find
 		// the flag index
 		wxObject* control = event.GetEventObject();
-		for (unsigned i = 0; i < flags.size(); i++)
+		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
 		{
 			if (controls[i] == control)
 			{
@@ -439,11 +441,11 @@ private:
 				if (flag_to_bit_group[i])
 					val &= ~flag_to_bit_group[i];
 				else
-					val &= ~flags[i].value;
+					val &= ~arg.custom_flags[i].value;
 
 				// Then re-add if appropriate
 				if (event.IsChecked())
-					val |= flags[i].value;
+					val |= arg.custom_flags[i].value;
 				ArgsTextControl::setArgValue(val);
 				return;
 			}
@@ -465,24 +467,26 @@ private:
 	*******************************************************************/
 	void updateCheckState(long val)
 	{
-		for (unsigned i = 0; i < flags.size(); i++)
+		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
 		{
 			if (flag_to_bit_group[i])
 			{
-				bool checked = (val >= 0 && (val & flag_to_bit_group[i]) == flags[i].value);
+				bool checked = (val >= 0 && (val & flag_to_bit_group[i]) == arg.custom_flags[i].value);
 				static_cast<wxRadioButton*>(controls[i])->SetValue(checked);
 			}
 			else
 			{
-				bool checked = (val >= 0 && (val & flags[i].value) == flags[i].value);
+				bool checked = (val >= 0 && (val & arg.custom_flags[i].value) == arg.custom_flags[i].value);
 				static_cast<wxCheckBox*>(controls[i])->SetValue(checked);
 			}
 		}
 	}
 
 public:
-	ArgsFlagsControl(wxWindow* parent, vector<arg_val_t>& flags)
-		: ArgsTextControl(parent), flags(flags), flag_to_bit_group(flags.size(), 0), controls(flags.size(), NULL)
+	ArgsFlagsControl(wxWindow* parent, arg_t& arg)
+		: ArgsTextControl(parent, arg),
+		flag_to_bit_group(arg.custom_flags.size(), 0),
+		controls(arg.custom_flags.size(), NULL)
 	{
 		text_control->Bind(wxEVT_KEY_UP, &ArgsFlagsControl::onKeypress, this);
 
@@ -497,9 +501,9 @@ public:
 		// place this gets used is the "type" argument to ZDoom's
 		// Sector_Set3DFloor, where the first two bits are an enum.
 		vector<int> bit_groups;
-		for (unsigned i = 0; i < flags.size(); i++)
+		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
 		{
-			int value = flags[i].value;
+			int value = arg.custom_flags[i].value;
 			if (isPowerOfTwo(value))
 				continue;
 
@@ -516,19 +520,19 @@ public:
 				bit_groups.push_back(value);
 		}
 
-		vector<bool> flag_done(flags.size(), false);
-		for (unsigned i = 0; i < flags.size(); i++)
+		vector<bool> flag_done(arg.custom_flags.size(), false);
+		for (unsigned i = 0; i < arg.custom_flags.size(); i++)
 		{
 			if (flag_done[i])
 				continue;
 
 			// Check if this flag is part of a group
 			int group = 0;
-			int check_against = flags[i].value;
+			int check_against = arg.custom_flags[i].value;
 			// Special case: if the value is 0, it has no bits, so assume it's
 			// part of the next flag's group
-			if (flags[i].value == 0 && i < flags.size() - 1)
-				check_against = flags[i + 1].value;
+			if (arg.custom_flags[i].value == 0 && i < arg.custom_flags.size() - 1)
+				check_against = arg.custom_flags[i + 1].value;
 			for (unsigned j = 0; j < bit_groups.size(); j++)
 				if (bit_groups[j] & check_against) {
 					group = bit_groups[j];
@@ -538,18 +542,18 @@ public:
 			if (group)
 			{
 				addControl(
-					new wxRadioButton(this, -1, S_FMT("%d: %s", flags[i].value, flags[i].name),
+					new wxRadioButton(this, -1, S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name),
 						wxDefaultPosition, wxDefaultSize, wxRB_GROUP),
 					i, group);
 				// Find all the other (later) flags that are part of this same bit group
-				for (unsigned ii = i + 1; ii < flags.size(); ii++)
+				for (unsigned ii = i + 1; ii < arg.custom_flags.size(); ii++)
 				{
 					if (flag_done[ii])
 						continue;
-					if (flags[ii].value & group)
+					if (arg.custom_flags[ii].value & group)
 					{
 						addControl(
-							new wxRadioButton(this, -1, S_FMT("%d: %s", flags[ii].value, flags[ii].name)),
+							new wxRadioButton(this, -1, S_FMT("%d: %s", arg.custom_flags[ii].value, arg.custom_flags[ii].name)),
 							ii, group);
 						flag_done[ii] = true;
 					}
@@ -557,7 +561,7 @@ public:
 			}
 			else  // not in a group
 			{
-				control = new wxCheckBox(this, -1, S_FMT("%d: %s", flags[i].value, flags[i].name));
+				control = new wxCheckBox(this, -1, S_FMT("%d: %s", arg.custom_flags[i].value, arg.custom_flags[i].name));
 				addControl(control, i, 0);
 			}
 		}
@@ -575,7 +579,7 @@ public:
 /* ArgsSpeedControl
  * Arg control that shows a slider for selecting a flat movement speed.
  *******************************************************************/
-class ArgsSpeedControl : public ArgsTextControl
+class ArgsSpeedControl : public ArgsChoiceControl
 {
 protected:
 	wxSlider* slider_control;
@@ -588,7 +592,7 @@ protected:
 
 	void syncControls(int value)
 	{
-		ArgsTextControl::setArgValue(value);
+		ArgsChoiceControl::setArgValue(value);
 
 		if (value < 0)
 		{
@@ -600,7 +604,7 @@ protected:
 			slider_control->SetValue(value);
 			speed_label->SetLabel(S_FMT(
 				"%s (%.1f units per tic, %.1f units per sec)",
-				arg_t::speedLabel(value), value / 8.0,
+				arg.speedLabel(value), value / 8.0,
 				// A tic is 28ms, slightly less than 1/35 of a second
 				value / 8.0 * 1000.0 / 28.0
 			));
@@ -608,12 +612,13 @@ protected:
 	}
 
 public:
-	ArgsSpeedControl(wxWindow* parent) : ArgsTextControl(parent)
+	ArgsSpeedControl(wxWindow* parent, arg_t& arg)
+		: ArgsChoiceControl(parent, arg)
 	{
 		wxBoxSizer* row = new wxBoxSizer(wxHORIZONTAL);
 
-		GetSizer()->Detach(text_control);
-		row->Add(text_control, wxSizerFlags(1).Expand());
+		GetSizer()->Detach(choice_control);
+		row->Add(choice_control, wxSizerFlags(1).Expand());
 		speed_label = new wxStaticText(this, -1, "");
 		row->AddSpacer(4);
 		row->Add(speed_label, wxSizerFlags(4).Align(wxALIGN_CENTER_VERTICAL));
@@ -622,11 +627,9 @@ public:
 		slider_control = new wxSlider(this, -1, 0, 0, 255);
 		slider_control->SetLineSize(2);
 		slider_control->SetPageSize(8);
-		// These are the generalized Boom speeds
-		slider_control->SetTick(8);
-		slider_control->SetTick(16);
-		slider_control->SetTick(32);
-		slider_control->SetTick(64);
+		// Add a tic for every predefined value
+		for (unsigned a = 0; a < arg.custom_flags.size(); a++)
+			slider_control->SetTick(arg.custom_flags[a].value);
 		slider_control->Bind(wxEVT_SLIDER, &ArgsSpeedControl::onSlide, this);
 		GetSizer()->Add(slider_control, wxSizerFlags(1).Expand());
 
@@ -706,16 +709,16 @@ void ArgsPanel::setup(argspec_t* args)
 			has_desc = !arg.desc.IsEmpty();
 
 			if (arg.type == ARGT_CHOICE)
-				control_args[a] = new ArgsChoiceControl(this, arg.custom_values);
+				control_args[a] = new ArgsChoiceControl(this, arg);
 			else if (arg.type == ARGT_FLAGS)
-				control_args[a] = new ArgsFlagsControl(this, arg.custom_flags);
+				control_args[a] = new ArgsFlagsControl(this, arg);
 			else if (arg.type == ARGT_SPEED)
-				control_args[a] = new ArgsSpeedControl(this);
+				control_args[a] = new ArgsSpeedControl(this, arg);
 			else
-				control_args[a] = new ArgsTextControl(this);
+				control_args[a] = new ArgsTextControl(this, arg);
 		}
 		else {
-			control_args[a] = new ArgsTextControl(this);
+			control_args[a] = new ArgsTextControl(this, arg);
 		}
 
 		// Arg name

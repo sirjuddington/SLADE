@@ -402,8 +402,23 @@ ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  *******************************************************************/
 bool DirArchive::removeEntry(ArchiveEntry* entry, bool delete_entry)
 {
-	removed_files.push_back(entry->exProp("filePath").getStringValue());
-	return Archive::removeEntry(entry, delete_entry);
+	string old_name = entry->exProp("filePath").getStringValue();
+	bool success = Archive::removeEntry(entry, delete_entry);
+	if (success)
+		removed_files.push_back(old_name);
+	return success;
+}
+
+/* DirArchive::renameEntry
+ * Renames [entry].  Returns true if the rename succeeded
+ *******************************************************************/
+bool DirArchive::renameEntry(ArchiveEntry* entry, string name)
+{
+	string old_name = entry->exProp("filePath").getStringValue();
+	bool success = Archive::renameEntry(entry, name);
+	if (success)
+		removed_files.push_back(old_name);
+	return success;
 }
 
 /* DirArchive::getMapInfo

@@ -114,7 +114,7 @@ point2_t TLFunction::getArgTextExtent(int arg, int arg_set)
 	int start_pos = name.Length() + 1;
 	if (arg_sets.size() > 1)
 	{
-		string temp = S_FMT("\001 %d of %d \002 ", arg_set+1, arg_sets.size());
+		string temp = S_FMT("\001 %d of %lu \002 ", arg_set+1, arg_sets.size());
 		start_pos += temp.Length();
 	}
 

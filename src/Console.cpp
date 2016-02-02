@@ -348,7 +348,7 @@ CONSOLE_COMMAND (cvarlist, 0, true)
 	get_cvar_list(list);
 	sort(list.begin(), list.end());
 
-	theConsole->logMessage(S_FMT("%d CVars:", list.size()));
+	theConsole->logMessage(S_FMT("%lu CVars:", list.size()));
 
 	// Write list to console
 	for (unsigned a = 0; a < list.size(); a++)
