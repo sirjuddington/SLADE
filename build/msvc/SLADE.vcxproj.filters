@@ -171,15 +171,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\GfxConvDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ModifyOffsetsDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Clipboard.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -426,9 +417,6 @@
     <ClCompile Include="..\..\src\SFont.cpp">
       <Filter>Resources\Graphics\Font</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ExtMessageDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ZTextureEditorPanel.cpp">
       <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
     </ClCompile>
@@ -443,9 +431,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\SAction.cpp">
       <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TranslationEditorDialog.cpp">
-      <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\mus2mid\mus2mid.cpp">
       <Filter>External\Mus2Mid</Filter>
@@ -735,9 +720,6 @@
     <ClCompile Include="..\..\src\ThingTypeTreeView.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapEditorConfigDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapObjectPropsPanel.cpp">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClCompile>
@@ -782,9 +764,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\CIEDeltaEquations.cpp">
       <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapReplaceDialog.cpp">
-      <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Lua.cpp">
       <Filter>General</Filter>
@@ -923,9 +902,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp">
       <Filter>Dialogs\SetupWizard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Dialogs\RunDialog.cpp">
-      <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Executables.cpp">
       <Filter>General</Filter>
@@ -1085,9 +1061,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\DocsPage.cpp">
       <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Dialogs\DirArchiveUpdateDialog.cpp">
-      <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\dumb\core\atexit.c">
       <Filter>External\DUMB\core</Filter>
@@ -1368,17 +1341,35 @@
     <ClCompile Include="..\..\src\ChasmBinArchive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\DirArchiveUpdateDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\ExtMessageDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\GfxConvDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\MapEditorConfigDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\MapReplaceDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\ModifyOffsetsDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\PaletteDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\RunDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Dialogs\TranslationEditorDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\GfxConvDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ModifyOffsetsDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Clipboard.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -1653,9 +1644,6 @@
     <ClInclude Include="..\..\src\ANSICanvas.h">
       <Filter>UI Elements</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ExtMessageDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\LumpFormats.h">
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
     </ClInclude>
@@ -1673,9 +1661,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\SAction.h">
       <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TranslationEditorDialog.h">
-      <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\mus2mid\mus2mid.h">
       <Filter>External\Mus2Mid</Filter>
@@ -1971,9 +1956,6 @@
     <ClInclude Include="..\..\src\ThingTypeTreeView.h">
       <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapEditorConfigDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapObjectPropsPanel.h">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClInclude>
@@ -2015,9 +1997,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ScriptEditorPanel.h">
       <Filter>Map Editor\Script Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapReplaceDialog.h">
-      <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Lua.h">
       <Filter>General</Filter>
@@ -2138,9 +2117,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.h">
       <Filter>Dialogs\SetupWizard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Dialogs\RunDialog.h">
-      <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Executables.h">
       <Filter>General</Filter>
@@ -2301,9 +2277,6 @@
     <ClInclude Include="..\..\src\DocsPage.h">
       <Filter>Main Editor\UI Elements</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\dumb\dumb.h">
       <Filter>External\DUMB</Filter>
     </ClInclude>
@@ -2360,6 +2333,33 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ChasmBinArchive.h">
       <Filter>Resources\Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\ExtMessageDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\GfxConvDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\MapEditorConfigDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\MapReplaceDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\ModifyOffsetsDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\PaletteDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\RunDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\TranslationEditorDialog.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

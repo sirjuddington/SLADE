@@ -40,7 +40,7 @@
 #include "Tokenizer.h"
 #include "SplashWindow.h"
 #include "MapEditorWindow.h"
-#include "MapEditorConfigDialog.h"
+#include "Dialogs/MapEditorConfigDialog.h"
 #include "SToolBar.h"
 #include "UndoManagerHistoryPanel.h"
 #include "ArchivePanel.h"

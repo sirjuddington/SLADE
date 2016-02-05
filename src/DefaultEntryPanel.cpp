@@ -33,7 +33,7 @@
 #include "WxStuff.h"
 #include "DefaultEntryPanel.h"
 #include "Misc.h"
-#include "ModifyOffsetsDialog.h"
+#include "Dialogs/ModifyOffsetsDialog.h"
 #include "EntryOperations.h"
 #include "ArchiveManager.h"
 #include "HexEditorPanel.h"

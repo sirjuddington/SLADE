@@ -46,7 +46,7 @@
 #include "ScriptEditorPanel.h"
 #include "ObjectEditPanel.h"
 #include "Dialogs/RunDialog.h"
-#include "MapEditorConfigDialog.h"
+#include "Dialogs/MapEditorConfigDialog.h"
 #include "MapChecksPanel.h"
 #include "SplashWindow.h"
 #include "UndoManagerHistoryPanel.h"

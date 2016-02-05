@@ -36,7 +36,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "ColourBox.h"
-#include "PaletteDialog.h"
+#include "Dialogs/PaletteDialog.h"
 #include <wx/colordlg.h>
 
 

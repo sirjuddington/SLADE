@@ -34,7 +34,7 @@
 #include "WadArchive.h"
 #include "TextureXList.h"
 #include "ResourceManager.h"
-#include "ExtMessageDialog.h"
+#include "Dialogs/ExtMessageDialog.h"
 #include "MainWindow.h"
 #include "MapSide.h"
 #include "MapSector.h"

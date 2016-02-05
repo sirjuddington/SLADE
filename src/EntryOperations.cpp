@@ -35,12 +35,12 @@
 #include "ArchiveManager.h"
 #include "TextureXEditor.h"
 #include "EntryDataFormat.h"
-#include "ExtMessageDialog.h"
+#include "Dialogs/ExtMessageDialog.h"
 #include "MainWindow.h"
 #include "FileMonitor.h"
 #include "WadArchive.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
-#include "ModifyOffsetsDialog.h"
+#include "Dialogs/ModifyOffsetsDialog.h"
 #include <wx/filename.h>
 #include <wx/utils.h>
 

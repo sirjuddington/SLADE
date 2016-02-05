@@ -35,7 +35,7 @@
 #include "ArchiveManager.h"
 #include "Console.h"
 #include "SplashWindow.h"
-#include "ExtMessageDialog.h"
+#include "Dialogs/ExtMessageDialog.h"
 #include "ResourceManager.h"
 #include "UndoRedo.h"
 #include "UndoManagerHistoryPanel.h"

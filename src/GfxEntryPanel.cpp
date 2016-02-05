@@ -36,14 +36,14 @@
 #include "PaletteManager.h"
 #include "EntryOperations.h"
 #include "Icons.h"
-#include "GfxConvDialog.h"
-#include "TranslationEditorDialog.h"
+#include "Dialogs/GfxConvDialog.h"
+#include "Dialogs/TranslationEditorDialog.h"
 #include <wx/dialog.h>
 #include <wx/clrpicker.h>
 #include <wx/filename.h>
 #include "ConsoleHelpers.h"
 #include "SToolBar.h"
-#include "ModifyOffsetsDialog.h"
+#include "Dialogs/ModifyOffsetsDialog.h"
 
 
 /*******************************************************************

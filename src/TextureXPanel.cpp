@@ -40,10 +40,10 @@
 #include "ResourceManager.h"
 #include "ColourConfiguration.h"
 #include "KeyBind.h"
-#include "GfxConvDialog.h"
+#include "Dialogs/GfxConvDialog.h"
 #include "SplashWindow.h"
 #include "SFileDialog.h"
-#include "ModifyOffsetsDialog.h"
+#include "Dialogs/ModifyOffsetsDialog.h"
 #include "UndoRedo.h"
 #include <wx/filename.h>
 #include <wx/gbsizer.h>

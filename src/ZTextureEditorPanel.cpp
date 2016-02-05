@@ -32,7 +32,7 @@
 #include "WxStuff.h"
 #include "ZTextureEditorPanel.h"
 #include "Icons.h"
-#include "TranslationEditorDialog.h"
+#include "Dialogs/TranslationEditorDialog.h"
 #include "TextureXEditor.h"
 #include "MainWindow.h"
 #include <wx/gbsizer.h>

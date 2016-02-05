@@ -214,6 +214,12 @@
     <ClCompile Include="..\..\src\DataEntryPanel.cpp" />
     <ClCompile Include="..\..\src\DatArchive.cpp" />
     <ClCompile Include="..\..\src\Dialogs\DirArchiveUpdateDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\ExtMessageDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\GfxConvDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\MapEditorConfigDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\MapReplaceDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\ModifyOffsetsDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\PaletteDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\Preferences\ACSPrefsPanel.cpp" />
     <ClCompile Include="..\..\src\Dialogs\Preferences\AdvancedPrefsPanel.cpp" />
     <ClCompile Include="..\..\src\Dialogs\Preferences\AudioPrefsPanel.cpp" />
@@ -240,6 +246,7 @@
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp" />
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\TranslationEditorDialog.cpp" />
     <ClCompile Include="..\..\src\DirArchive.cpp" />
     <ClCompile Include="..\..\src\DiskArchive.cpp" />
     <ClCompile Include="..\..\src\DockPanel.cpp" />
@@ -333,12 +340,10 @@
     <ClCompile Include="..\..\src\dumb\it\xmeffect.c" />
     <ClCompile Include="..\..\src\EntryDataFormat.cpp" />
     <ClCompile Include="..\..\src\Executables.cpp" />
-    <ClCompile Include="..\..\src\ExtMessageDialog.cpp" />
     <ClCompile Include="..\..\src\FileMonitor.cpp" />
     <ClCompile Include="..\..\src\GameConfiguration.cpp" />
     <ClCompile Include="..\..\src\GenLineSpecial.cpp" />
     <ClCompile Include="..\..\src\GenLineSpecialPanel.cpp" />
-    <ClCompile Include="..\..\src\GfxConvDialog.cpp" />
     <ClCompile Include="..\..\src\glew\glew.c" />
     <ClCompile Include="..\..\src\GobArchive.cpp" />
     <ClCompile Include="..\..\src\GrpArchive.cpp" />
@@ -427,14 +432,12 @@
     <ClCompile Include="..\..\src\MapChecks.cpp" />
     <ClCompile Include="..\..\src\MapChecksPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor.cpp" />
-    <ClCompile Include="..\..\src\MapEditorConfigDialog.cpp" />
     <ClCompile Include="..\..\src\MapEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MapObject.cpp" />
     <ClCompile Include="..\..\src\MapObjectPropsPanel.cpp" />
     <ClCompile Include="..\..\src\MapPreviewCanvas.cpp" />
     <ClCompile Include="..\..\src\MapRenderer2D.cpp" />
     <ClCompile Include="..\..\src\MapRenderer3D.cpp" />
-    <ClCompile Include="..\..\src\MapReplaceDialog.cpp" />
     <ClCompile Include="..\..\src\MapSpecials.cpp" />
     <ClCompile Include="..\..\src\MapTextureBrowser.cpp" />
     <ClCompile Include="..\..\src\MapTextureManager.cpp" />
@@ -442,7 +445,6 @@
     <ClCompile Include="..\..\src\MCAnimations.cpp" />
     <ClCompile Include="..\..\src\MIDIPlayer.cpp" />
     <ClCompile Include="..\..\src\MobjPropertyList.cpp" />
-    <ClCompile Include="..\..\src\ModifyOffsetsDialog.cpp" />
     <ClCompile Include="..\..\src\ModMusic.cpp" />
     <ClCompile Include="..\..\src\MOPGProperty.cpp" />
     <ClCompile Include="..\..\src\mus2mid\mus2mid.cpp" />
@@ -451,7 +453,6 @@
     <ClCompile Include="..\..\src\ObjectEdit.cpp" />
     <ClCompile Include="..\..\src\ObjectEditPanel.cpp" />
     <ClCompile Include="..\..\src\PakArchive.cpp" />
-    <ClCompile Include="..\..\src\PaletteDialog.cpp" />
     <ClCompile Include="..\..\src\Clipboard.cpp" />
     <ClCompile Include="..\..\src\Console.cpp" />
     <ClCompile Include="..\..\src\CVar.cpp" />
@@ -500,7 +501,6 @@
     <ClCompile Include="..\..\src\ThingTypeTreeView.cpp" />
     <ClCompile Include="..\..\src\Tokenizer.cpp" />
     <ClCompile Include="..\..\src\Translation.cpp" />
-    <ClCompile Include="..\..\src\TranslationEditorDialog.cpp" />
     <ClCompile Include="..\..\src\Tree.cpp" />
     <ClCompile Include="..\..\src\UDMFProperty.cpp" />
     <ClCompile Include="..\..\src\UndoManagerHistoryPanel.cpp" />
@@ -614,6 +614,12 @@
     <ClInclude Include="..\..\src\DataEntryPanel.h" />
     <ClInclude Include="..\..\src\DatArchive.h" />
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\ExtMessageDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\GfxConvDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\MapEditorConfigDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\MapReplaceDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\ModifyOffsetsDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\PaletteDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\Preferences\ACSPrefsPanel.h" />
     <ClInclude Include="..\..\src\Dialogs\Preferences\AdvancedPrefsPanel.h" />
     <ClInclude Include="..\..\src\Dialogs\Preferences\AudioPrefsPanel.h" />
@@ -642,6 +648,7 @@
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.h" />
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\WizardPageBase.h" />
+    <ClInclude Include="..\..\src\Dialogs\TranslationEditorDialog.h" />
     <ClInclude Include="..\..\src\DirArchive.h" />
     <ClInclude Include="..\..\src\DiskArchive.h" />
     <ClInclude Include="..\..\src\DockPanel.h" />
@@ -661,12 +668,10 @@
     <ClInclude Include="..\..\src\dumb\internal\tarray.h" />
     <ClInclude Include="..\..\src\EntryDataFormat.h" />
     <ClInclude Include="..\..\src\Executables.h" />
-    <ClInclude Include="..\..\src\ExtMessageDialog.h" />
     <ClInclude Include="..\..\src\FileMonitor.h" />
     <ClInclude Include="..\..\src\GameConfiguration.h" />
     <ClInclude Include="..\..\src\GenLineSpecial.h" />
     <ClInclude Include="..\..\src\GenLineSpecialPanel.h" />
-    <ClInclude Include="..\..\src\GfxConvDialog.h" />
     <ClInclude Include="..\..\src\glew\glew.h" />
     <ClInclude Include="..\..\src\glew\glxew.h" />
     <ClInclude Include="..\..\src\glew\wglew.h" />
@@ -746,14 +751,12 @@
     <ClInclude Include="..\..\src\MapChecks.h" />
     <ClInclude Include="..\..\src\MapChecksPanel.h" />
     <ClInclude Include="..\..\src\MapEditor.h" />
-    <ClInclude Include="..\..\src\MapEditorConfigDialog.h" />
     <ClInclude Include="..\..\src\MapEntryPanel.h" />
     <ClInclude Include="..\..\src\MapObject.h" />
     <ClInclude Include="..\..\src\MapObjectPropsPanel.h" />
     <ClInclude Include="..\..\src\MapPreviewCanvas.h" />
     <ClInclude Include="..\..\src\MapRenderer2D.h" />
     <ClInclude Include="..\..\src\MapRenderer3D.h" />
-    <ClInclude Include="..\..\src\MapReplaceDialog.h" />
     <ClInclude Include="..\..\src\MapSpecials.h" />
     <ClInclude Include="..\..\src\MapTextureBrowser.h" />
     <ClInclude Include="..\..\src\MapTextureManager.h" />
@@ -764,7 +767,6 @@
     <ClInclude Include="..\..\src\MiscFormats.h" />
     <ClInclude Include="..\..\src\MobjPropertyList.h" />
     <ClInclude Include="..\..\src\ModelFormats.h" />
-    <ClInclude Include="..\..\src\ModifyOffsetsDialog.h" />
     <ClInclude Include="..\..\src\ModMusic.h" />
     <ClInclude Include="..\..\src\MOPGProperty.h" />
     <ClInclude Include="..\..\src\mus2mid\mus2mid.h" />
@@ -773,7 +775,6 @@
     <ClInclude Include="..\..\src\ObjectEdit.h" />
     <ClInclude Include="..\..\src\ObjectEditPanel.h" />
     <ClInclude Include="..\..\src\PakArchive.h" />
-    <ClInclude Include="..\..\src\PaletteDialog.h" />
     <ClInclude Include="..\..\src\Clipboard.h" />
     <ClInclude Include="..\..\src\Console.h" />
     <ClInclude Include="..\..\src\CVar.h" />
@@ -831,7 +832,6 @@
     <ClInclude Include="..\..\src\ThingTypeTreeView.h" />
     <ClInclude Include="..\..\src\Tokenizer.h" />
     <ClInclude Include="..\..\src\Translation.h" />
-    <ClInclude Include="..\..\src\TranslationEditorDialog.h" />
     <ClInclude Include="..\..\src\Tree.h" />
     <ClInclude Include="..\..\src\UDMFProperty.h" />
     <ClInclude Include="..\..\src\UndoManagerHistoryPanel.h" />
