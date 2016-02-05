@@ -35,7 +35,7 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "ResourceManager.h"
 #include "Dialogs/ExtMessageDialog.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "MapSide.h"
 #include "MapSector.h"
 #include "MapThing.h"

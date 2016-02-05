@@ -32,7 +32,7 @@
 #include "UI/WxStuff.h"
 #include "AudioEntryPanel.h"
 #include "Graphics/Icons.h"
-#include "Conversions.h"
+#include "MainEditor/Conversions.h"
 #include "Audio/MIDIPlayer.h"
 #include <wx/filename.h>
 #include <wx/gbsizer.h>

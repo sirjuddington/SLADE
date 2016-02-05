@@ -35,7 +35,7 @@
 #include "Archive/Archive.h"
 #include "Graphics/Icons.h"
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
-#include "BaseResourceChooser.h"
+#include "UI/BaseResourceChooser.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Utility/Tokenizer.h"
 #include "UI/SplashWindow.h"
@@ -43,10 +43,10 @@
 #include "Dialogs/MapEditorConfigDialog.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
-#include "ArchivePanel.h"
+#include "UI/ArchivePanel.h"
 #include "General/Misc.h"
 #include "UI/STabCtrl.h"
-#include "TextureXEditor.h"
+#include "UI/TextureXEditor/TextureXEditor.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
@@ -54,7 +54,7 @@
 
 #ifdef USE_WEBVIEW_STARTPAGE
 #include <wx/webview.h>
-#include "DocsPage.h"
+#include "UI/DocsPage.h"
 #endif
 
 

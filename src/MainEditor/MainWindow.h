@@ -2,7 +2,7 @@
 #ifndef __MAINWINDOW_H__
 #define __MAINWINDOW_H__
 
-#include "ArchiveManagerPanel.h"
+#include "UI/ArchiveManagerPanel.h"
 #include <wx/aui/auibook.h>
 #include <wx/aui/aui.h>
 #include "UI/PaletteChooser.h"

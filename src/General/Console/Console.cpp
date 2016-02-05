@@ -31,7 +31,7 @@
 #include "Console.h"
 #include "Utility/Tokenizer.h"
 #include "General/CVar.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include <wx/log.h>
 #include <wx/utils.h>
 #include <algorithm>

@@ -1252,7 +1252,7 @@ bool WolfArchive::isWolfArchive(string filename)
  * EXTRA CONSOLE COMMANDS
  *******************************************************************/
 #include "General/Console/Console.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 
 CONSOLE_COMMAND(addimfheader, 0, true)
 {

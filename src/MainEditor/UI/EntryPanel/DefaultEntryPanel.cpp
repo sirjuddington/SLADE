@@ -34,10 +34,10 @@
 #include "DefaultEntryPanel.h"
 #include "General/Misc.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
-#include "EntryOperations.h"
+#include "MainEditor/EntryOperations.h"
 #include "Archive/ArchiveManager.h"
 #include "UI/HexEditorPanel.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 
 
 /*******************************************************************

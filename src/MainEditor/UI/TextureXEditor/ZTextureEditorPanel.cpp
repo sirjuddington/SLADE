@@ -34,7 +34,7 @@
 #include "Graphics/Icons.h"
 #include "Dialogs/TranslationEditorDialog.h"
 #include "TextureXEditor.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include <wx/gbsizer.h>
 #include <wx/statline.h>
 

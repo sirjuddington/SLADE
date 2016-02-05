@@ -32,7 +32,7 @@
 #include "ScriptEditorPanel.h"
 #include "Archive/Archive.h"
 #include "UI/SToolBar/SToolBar.h"
-#include "EntryOperations.h"
+#include "MainEditor/EntryOperations.h"
 #include "GameConfiguration.h"
 #include "MapEditorWindow.h"
 #include <wx/dataview.h>

@@ -31,8 +31,8 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "EntryPanel.h"
-#include "MainWindow.h"
-#include "ArchivePanel.h"
+#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/ArchivePanel.h"
 #include "UI/SToolBar/SToolBarButton.h"
 
 

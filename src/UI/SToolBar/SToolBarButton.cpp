@@ -35,7 +35,7 @@
 #include "SToolBarButton.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include <wx/graphics.h>
 
 

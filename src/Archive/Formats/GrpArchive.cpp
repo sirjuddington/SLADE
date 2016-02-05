@@ -469,7 +469,7 @@ bool GrpArchive::isGrpArchive(string filename)
  * EXTRA CONSOLE COMMANDS
  *******************************************************************/
 #include "General/Console/Console.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 
 CONSOLE_COMMAND(lookupdat, 0, false)
 {

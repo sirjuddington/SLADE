@@ -10,7 +10,7 @@
 #include "General/ListenerAnnouncer.h"
 #include "Archive/Archive.h"
 #include "UI/Lists/ListView.h"
-#include "EntryPanel.h"
+#include "EntryPanel/EntryPanel.h"
 #include "MainApp.h"
 #include "UI/DockPanel.h"
 #include "Archive/Formats/DirArchive.h"

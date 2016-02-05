@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "UI/WxStuff.h"
 #include "PatchTablePanel.h"
 #include "Archive/Archive.h"

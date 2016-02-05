@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "PodArchive.h"
 #include "UI/SplashWindow.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "General/Console/Console.h"
 #include <wx/filename.h>
 

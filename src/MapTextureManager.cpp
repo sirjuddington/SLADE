@@ -32,7 +32,7 @@
 #include "MapTextureManager.h"
 #include "ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "MapEditorWindow.h"
 #include "OpenGL/OpenGL.h"

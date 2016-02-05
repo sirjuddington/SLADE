@@ -10,15 +10,6 @@
     <Filter Include="Main Editor">
       <UniqueIdentifier>{fef8e5a6-0991-4153-8f52-5d3f2da4e9d5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Main Editor\UI Elements">
-      <UniqueIdentifier>{f2373f73-d7a8-4389-a7d0-1b55a7511024}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Main Editor\UI Elements\EntryPanel">
-      <UniqueIdentifier>{0355b563-40d6-4783-b213-61d8271580d7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Main Editor\UI Elements\TextureXEditor">
-      <UniqueIdentifier>{68f7e12d-ec2c-42a8-8c84-f26092dd8c1f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Map Editor">
       <UniqueIdentifier>{e7c66597-c337-43fc-bedc-5e753bf3ddb8}</UniqueIdentifier>
     </Filter>
@@ -181,47 +172,17 @@
     <Filter Include="Archive\EntryType\DataFormats">
       <UniqueIdentifier>{639d4195-f616-4708-bc9b-82e7652914c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Main Editor\UI">
+      <UniqueIdentifier>{8803d335-a948-4502-8d58-a579053d1186}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main Editor\UI\EntryPanel">
+      <UniqueIdentifier>{9c20c338-759f-4b25-b4ee-488df95b1504}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main Editor\UI\TextureXEditor">
+      <UniqueIdentifier>{ecfc7349-8974-4e27-a2dc-301f8e30570b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\EntryOperations.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MainWindow.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveManagerPanel.cpp">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\AnimatedEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DefaultEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\EntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GfxEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SwitchesEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PatchTablePanel.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextureEditorPanel.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextureXEditor.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditorWindow.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
@@ -248,39 +209,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\SwitchesList.cpp">
       <Filter>Resources\Binary Control Lumps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchivePanel.cpp">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextureXPanel.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BaseResourceChooser.cpp">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PatchBrowser.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\HexEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveOperations.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\AudioEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Conversions.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ANSIEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ZTextureEditorPanel.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ResourceManager.cpp">
       <Filter>Resources</Filter>
@@ -783,9 +711,6 @@
     <ClCompile Include="..\..\src\MapBackupPanel.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\DocsPage.cpp">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\External\dumb\core\atexit.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
@@ -1046,9 +971,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DataEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\DirArchiveUpdateDialog.cpp">
       <Filter>Dialogs</Filter>
@@ -1380,47 +1302,86 @@
     <ClCompile Include="..\..\src\Archive\EntryType\EntryDataFormat.cpp">
       <Filter>Archive\EntryType</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\ArchiveOperations.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\Conversions.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\ArchivePanel.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\DocsPage.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AudioEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\DataEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\DefaultEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\EntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\GfxEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\HexEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\MapEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.cpp">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.cpp">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.cpp">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.cpp">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.cpp">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.cpp">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\EntryOperations.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MainWindow.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveManagerPanel.h">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\AnimatedEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DefaultEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\EntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GfxEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SwitchesEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PatchTablePanel.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextureEditorPanel.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextureXEditor.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditorWindow.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
@@ -1455,39 +1416,6 @@
       <Filter>Resources\Binary Control Lumps</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="..\..\src\ArchivePanel.h">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextureXPanel.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BaseResourceChooser.h">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PatchBrowser.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\HexEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveOperations.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\AudioEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Conversions.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ANSIEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ZTextureEditorPanel.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\External\bzip2\bzlib.h">
       <Filter>External\BZip2</Filter>
     </ClInclude>
@@ -1935,17 +1863,11 @@
     <ClInclude Include="..\..\src\MapBackupPanel.h">
       <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\DocsPage.h">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\External\dumb\dumb.h">
       <Filter>External\DUMB</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapSpecials.h">
       <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DataEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h">
       <Filter>Dialogs</Filter>
@@ -2375,6 +2297,84 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\Formats\All.h">
       <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\ArchiveOperations.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\Conversions.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\EntryOperations.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\MainWindow.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\ArchivePanel.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\DocsPage.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AudioEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\DataEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\DefaultEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\EntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\GfxEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\HexEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\MapEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.h">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.h">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.h">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.h">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.h">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.h">
+      <Filter>Main Editor\UI\TextureXEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\BaseResourceChooser.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

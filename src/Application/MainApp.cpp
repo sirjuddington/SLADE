@@ -29,7 +29,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "MainApp.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Tokenizer.h"
 #include "General/Console/Console.h"

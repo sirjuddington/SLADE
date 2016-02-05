@@ -35,7 +35,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
 #include "MainApp.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include <wx/dcbuffer.h>
 
 

@@ -30,7 +30,7 @@
 #include "UI/WxStuff.h"
 #include "GraphicsPrefsPanel.h"
 #include "OpenGL/GLTexture.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include <wx/filedlg.h>
 
 

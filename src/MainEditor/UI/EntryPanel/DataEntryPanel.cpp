@@ -33,7 +33,7 @@
 #include "DataEntryPanel.h"
 #include "General/ColourConfiguration.h"
 #include "BinaryControlLump.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 
 
 /*******************************************************************

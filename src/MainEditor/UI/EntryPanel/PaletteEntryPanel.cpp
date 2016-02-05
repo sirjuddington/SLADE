@@ -35,7 +35,7 @@
 #include "Graphics/Icons.h"
 #include "Utility/SFileDialog.h"
 #include "General/Misc.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include <wx/dialog.h>
 #include <wx/clrpicker.h>
 

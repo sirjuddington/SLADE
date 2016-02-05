@@ -37,7 +37,7 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Archive/ArchiveManager.h"
 #include "MapObjectPropsPanel.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Utility/SFileDialog.h"

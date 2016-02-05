@@ -27,7 +27,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "EntryType.h"
 #include "Utility/Tokenizer.h"
 #include "General/Console/Console.h"

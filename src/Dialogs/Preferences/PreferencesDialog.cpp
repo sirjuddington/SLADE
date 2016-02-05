@@ -54,7 +54,7 @@
 #include "OpenGLPrefsPanel.h"
 #include "HudOffsetsPrefsPanel.h"
 #include "Graphics/Icons.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include <wx/gbsizer.h>
 
 

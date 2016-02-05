@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "WadJArchive.h"
 #include "UI/SplashWindow.h"
 #include <wx/log.h>

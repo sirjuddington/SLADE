@@ -28,13 +28,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "UI/WxStuff.h"
 #include "GfxEntryPanel.h"
 #include "Graphics/Palette/Palette.h"
 #include "General/Misc.h"
 #include "Graphics/Palette/PaletteManager.h"
-#include "EntryOperations.h"
+#include "MainEditor/EntryOperations.h"
 #include "Graphics/Icons.h"
 #include "Dialogs/GfxConvDialog.h"
 #include "Dialogs/TranslationEditorDialog.h"
@@ -1089,8 +1089,8 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 // results in a circular include nightmare and nothing works anymore.
 #include "General/Console/Console.h"
 #include "MainApp.h"
-#include "ArchivePanel.h"
-#include "MainWindow.h"
+#include "MainEditor/UI/ArchivePanel.h"
+#include "MainEditor/MainWindow.h"
 
 GfxEntryPanel* CH::getCurrentGfxPanel()
 {

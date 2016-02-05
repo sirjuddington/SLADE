@@ -31,7 +31,7 @@
 #include "UI/WxStuff.h"
 #include "ColourPrefsPanel.h"
 #include "General/ColourConfiguration.h"
-#include "MainWindow.h"
+#include "MainEditor/MainWindow.h"
 #include "MapEditorWindow.h"
 #include "PreferencesDialog.h"
 #include <wx/propgrid/advprops.h>
