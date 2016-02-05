@@ -51,7 +51,7 @@
 #include "Executables.h"
 #include "Misc.h"
 #include "VersionCheck.h"
-#include "dumb/dumb.h"
+#include "External/dumb/dumb.h"
 #include "OpenGL.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>

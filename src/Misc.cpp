@@ -41,7 +41,7 @@
 #include "SIFormat.h"
 #include "Tokenizer.h"
 #include <wx/filename.h>
-#include "zlib/zlib.h"
+#include "External/zlib/zlib.h"
 
 
 /*******************************************************************

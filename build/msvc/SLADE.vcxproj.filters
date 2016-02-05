@@ -432,190 +432,187 @@
     <ClCompile Include="..\..\src\SAction.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\mus2mid\mus2mid.cpp">
+    <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
       <Filter>External\Mus2Mid</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\blocksort.c">
+    <ClCompile Include="..\..\src\External\bzip2\blocksort.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\bzlib.c">
+    <ClCompile Include="..\..\src\External\bzip2\bzlib.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\compress.c">
+    <ClCompile Include="..\..\src\External\bzip2\compress.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\crctable.c">
+    <ClCompile Include="..\..\src\External\bzip2\crctable.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\decompress.c">
+    <ClCompile Include="..\..\src\External\bzip2\decompress.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\huffman.c">
+    <ClCompile Include="..\..\src\External\bzip2\huffman.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\randtable.c">
+    <ClCompile Include="..\..\src\External\bzip2\randtable.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Compression.cpp">
       <Filter>General\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\ancientzip.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\ancientzip.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\files.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\files.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\m_alloc.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\m_alloc.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\adler32.c">
+    <ClCompile Include="..\..\src\External\zlib\adler32.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\crc32.c">
+    <ClCompile Include="..\..\src\External\zlib\crc32.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\deflate.c">
+    <ClCompile Include="..\..\src\External\zlib\deflate.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\gzio.c">
+    <ClCompile Include="..\..\src\External\zlib\gzio.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\infback.c">
+    <ClCompile Include="..\..\src\External\zlib\infback.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\inffast.c">
+    <ClCompile Include="..\..\src\External\zlib\inffast.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\inflate.c">
+    <ClCompile Include="..\..\src\External\zlib\inflate.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\inftrees.c">
+    <ClCompile Include="..\..\src\External\zlib\inftrees.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\trees.c">
+    <ClCompile Include="..\..\src\External\zlib\trees.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\uncompr.c">
+    <ClCompile Include="..\..\src\External\zlib\uncompr.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\zutil.c">
+    <ClCompile Include="..\..\src\External\zlib\zutil.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zAlloc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zAlloc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zBuf.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zBuf.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zBuf2.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zBuf2.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zCrc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zCrc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zCrcOpt.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zCrcOpt.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zDec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zDec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zFile.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zFile.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zIn.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zIn.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zStream.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zStream.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Alloc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Alloc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Bcj2.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Bcj2.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Bra.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Bra.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Bra86.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Bra86.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\BraIA64.c">
+    <ClCompile Include="..\..\src\External\lzma\C\BraIA64.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\CpuArch.c">
+    <ClCompile Include="..\..\src\External\lzma\C\CpuArch.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Delta.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Delta.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzFind.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzFind.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzFindMt.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzFindMt.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Lzma2Dec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma2Dec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Lzma2Enc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma2Enc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Lzma86Dec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma86Dec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Lzma86Enc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma86Enc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzmaDec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaDec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzmaEnc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaEnc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzmaLib.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaLib.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\MtCoder.c">
+    <ClCompile Include="..\..\src\External\lzma\C\MtCoder.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7Dec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7Dec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7Enc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7Enc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Sha256.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Sha256.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Threads.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Threads.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Xz.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Xz.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\XzCrc64.c">
+    <ClCompile Include="..\..\src\External\lzma\C\XzCrc64.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\XzDec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\XzDec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\XzEnc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\XzEnc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\XzIn.c">
+    <ClCompile Include="..\..\src\External\lzma\C\XzIn.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ADatArchive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\BSPArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BZip2Archive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\DatArchive.cpp">
@@ -702,7 +699,7 @@
     <ClCompile Include="..\..\src\ThingType.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\glew\glew.c">
+    <ClCompile Include="..\..\src\External\glew\glew.c">
       <Filter>External\GLEW</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapRenderer2D.cpp">
@@ -768,100 +765,100 @@
     <ClCompile Include="..\..\src\Lua.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lapi.c">
+    <ClCompile Include="..\..\src\External\lua\lapi.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lauxlib.c">
+    <ClCompile Include="..\..\src\External\lua\lauxlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lbaselib.c">
+    <ClCompile Include="..\..\src\External\lua\lbaselib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lbitlib.c">
+    <ClCompile Include="..\..\src\External\lua\lbitlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lcode.c">
+    <ClCompile Include="..\..\src\External\lua\lcode.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lcorolib.c">
+    <ClCompile Include="..\..\src\External\lua\lcorolib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lctype.c">
+    <ClCompile Include="..\..\src\External\lua\lctype.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ldblib.c">
+    <ClCompile Include="..\..\src\External\lua\ldblib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ldebug.c">
+    <ClCompile Include="..\..\src\External\lua\ldebug.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ldo.c">
+    <ClCompile Include="..\..\src\External\lua\ldo.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ldump.c">
+    <ClCompile Include="..\..\src\External\lua\ldump.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lfunc.c">
+    <ClCompile Include="..\..\src\External\lua\lfunc.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lgc.c">
+    <ClCompile Include="..\..\src\External\lua\lgc.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\linit.c">
+    <ClCompile Include="..\..\src\External\lua\linit.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\liolib.c">
+    <ClCompile Include="..\..\src\External\lua\liolib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\llex.c">
+    <ClCompile Include="..\..\src\External\lua\llex.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lmathlib.c">
+    <ClCompile Include="..\..\src\External\lua\lmathlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lmem.c">
+    <ClCompile Include="..\..\src\External\lua\lmem.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\loadlib.c">
+    <ClCompile Include="..\..\src\External\lua\loadlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lobject.c">
+    <ClCompile Include="..\..\src\External\lua\lobject.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lopcodes.c">
+    <ClCompile Include="..\..\src\External\lua\lopcodes.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\loslib.c">
+    <ClCompile Include="..\..\src\External\lua\loslib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lparser.c">
+    <ClCompile Include="..\..\src\External\lua\lparser.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lstate.c">
+    <ClCompile Include="..\..\src\External\lua\lstate.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lstring.c">
+    <ClCompile Include="..\..\src\External\lua\lstring.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lstrlib.c">
+    <ClCompile Include="..\..\src\External\lua\lstrlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ltable.c">
+    <ClCompile Include="..\..\src\External\lua\ltable.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ltablib.c">
+    <ClCompile Include="..\..\src\External\lua\ltablib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ltm.c">
+    <ClCompile Include="..\..\src\External\lua\ltm.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lundump.c">
+    <ClCompile Include="..\..\src\External\lua\lundump.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lvm.c">
+    <ClCompile Include="..\..\src\External\lua\lvm.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lzio.c">
+    <ClCompile Include="..\..\src\External\lua\lzio.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UndoRedo.cpp">
@@ -918,22 +915,22 @@
     <ClCompile Include="..\..\src\MapChecksPanel.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\i_music.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\i_music.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_hmi_midiout.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_hmi_midiout.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_midistream.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_midistream.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_mus_midiout.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_mus_midiout.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_smf_midiout.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_smf_midiout.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_xmi_midiout.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_xmi_midiout.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\DirArchive.cpp">
@@ -1062,262 +1059,262 @@
     <ClCompile Include="..\..\src\DocsPage.cpp">
       <Filter>Main Editor\UI Elements</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\atexit.c">
+    <ClCompile Include="..\..\src\External\dumb\core\atexit.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\duhlen.c">
+    <ClCompile Include="..\..\src\External\dumb\core\duhlen.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\duhtag.c">
+    <ClCompile Include="..\..\src\External\dumb\core\duhtag.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\dumbfile.c">
+    <ClCompile Include="..\..\src\External\dumb\core\dumbfile.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\loadduh.c">
+    <ClCompile Include="..\..\src\External\dumb\core\loadduh.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\makeduh.c">
+    <ClCompile Include="..\..\src\External\dumb\core\makeduh.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\rawsig.c">
+    <ClCompile Include="..\..\src\External\dumb\core\rawsig.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\readduh.c">
+    <ClCompile Include="..\..\src\External\dumb\core\readduh.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\register.c">
+    <ClCompile Include="..\..\src\External\dumb\core\register.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\rendduh.c">
+    <ClCompile Include="..\..\src\External\dumb\core\rendduh.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\rendsig.c">
+    <ClCompile Include="..\..\src\External\dumb\core\rendsig.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\unload.c">
+    <ClCompile Include="..\..\src\External\dumb\core\unload.c">
       <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\barray.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\barray.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\clickrem.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\clickrem.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\fir_resampler.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\fir_resampler.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\lpc.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\lpc.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\memfile.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\memfile.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\resample.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\resample.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\resampler.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\resampler.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\riff.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\riff.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\sampbuf.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\sampbuf.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\silence.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\silence.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\stdfile.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\stdfile.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\tarray.c">
+    <ClCompile Include="..\..\src\External\dumb\helpers\tarray.c">
       <Filter>External\DUMB\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itload.c">
+    <ClCompile Include="..\..\src\External\dumb\it\itload.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itload2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\itload2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itmisc.c">
+    <ClCompile Include="..\..\src\External\dumb\it\itmisc.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itorder.c">
+    <ClCompile Include="..\..\src\External\dumb\it\itorder.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itread.c">
+    <ClCompile Include="..\..\src\External\dumb\it\itread.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itread2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\itread2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itrender.c">
+    <ClCompile Include="..\..\src\External\dumb\it\itrender.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itunload.c">
+    <ClCompile Include="..\..\src\External\dumb\it\itunload.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\load669.c">
+    <ClCompile Include="..\..\src\External\dumb\it\load669.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\load6692.c">
+    <ClCompile Include="..\..\src\External\dumb\it\load6692.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadamf.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadamf.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadamf2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadamf2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadany.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadany.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadany2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadany2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadasy.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadasy.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadasy2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadasy2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadmod.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadmod.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadmod2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadmod2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadmtm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadmtm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadmtm2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadmtm2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadokt.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadokt.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadokt2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadokt2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadoldpsm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadoldpsm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadoldpsm2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadoldpsm2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadpsm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadpsm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadpsm2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadpsm2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadptm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadptm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadptm2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadptm2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadriff.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadriff.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadriff2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadriff2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loads3m.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loads3m.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loads3m2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loads3m2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadstm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadstm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadstm2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadstm2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadxm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadxm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadxm2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\loadxm2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\ptmeffect.c">
+    <ClCompile Include="..\..\src\External\dumb\it\ptmeffect.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\read669.c">
+    <ClCompile Include="..\..\src\External\dumb\it\read669.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\read6692.c">
+    <ClCompile Include="..\..\src\External\dumb\it\read6692.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readam.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readam.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readamf.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readamf.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readamf2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readamf2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readany.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readany.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readany2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readany2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readasy.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readasy.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readdsmf.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readdsmf.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readmod.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readmod.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readmod2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readmod2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readmtm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readmtm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readokt.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readokt.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readokt2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readokt2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readoldpsm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readoldpsm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readpsm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readpsm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readptm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readptm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readriff.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readriff.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\reads3m.c">
+    <ClCompile Include="..\..\src\External\dumb\it\reads3m.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\reads3m2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\reads3m2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readstm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readstm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readstm2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readstm2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readxm.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readxm.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readxm2.c">
+    <ClCompile Include="..\..\src\External\dumb\it\readxm2.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\xmeffect.c">
+    <ClCompile Include="..\..\src\External\dumb\it\xmeffect.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ModMusic.cpp">
@@ -1367,6 +1364,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\TranslationEditorDialog.cpp">
       <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\BZip2Archive.cpp">
+      <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1662,151 +1662,148 @@
     <ClInclude Include="..\..\src\SAction.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\mus2mid\mus2mid.h">
-      <Filter>External\Mus2Mid</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\bzip2\bzlib.h">
+    <ClInclude Include="..\..\src\External\bzip2\bzlib.h">
       <Filter>External\BZip2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\bzip2\bzlib_private.h">
+    <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h">
       <Filter>External\BZip2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Compression.h">
       <Filter>General\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\ancientzip.h">
+    <ClInclude Include="..\..\src\External\zreaders\ancientzip.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\files.h">
+    <ClInclude Include="..\..\src\External\zreaders\files.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\m_alloc.h">
+    <ClInclude Include="..\..\src\External\zreaders\m_alloc.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\tarray.h">
+    <ClInclude Include="..\..\src\External\zreaders\tarray.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\templates.h">
+    <ClInclude Include="..\..\src\External\zreaders\templates.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\crc32.h">
+    <ClInclude Include="..\..\src\External\zlib\crc32.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\deflate.h">
+    <ClInclude Include="..\..\src\External\zlib\deflate.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\inffast.h">
+    <ClInclude Include="..\..\src\External\zlib\inffast.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\inffixed.h">
+    <ClInclude Include="..\..\src\External\zlib\inffixed.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\inflate.h">
+    <ClInclude Include="..\..\src\External\zlib\inflate.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\inftrees.h">
+    <ClInclude Include="..\..\src\External\zlib\inftrees.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\trees.h">
+    <ClInclude Include="..\..\src\External\zlib\trees.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\zconf.h">
+    <ClInclude Include="..\..\src\External\zlib\zconf.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\zlib.h">
+    <ClInclude Include="..\..\src\External\zlib\zlib.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\zutil.h">
+    <ClInclude Include="..\..\src\External\zlib\zutil.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7z.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7z.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zAlloc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zAlloc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zBuf.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zBuf.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zCrc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zCrc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zFile.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zFile.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zVersion.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zVersion.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Alloc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Alloc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Bcj2.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Bcj2.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Bra.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Bra.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\CpuArch.h">
+    <ClInclude Include="..\..\src\External\lzma\C\CpuArch.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Delta.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Delta.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzFind.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzFind.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzFindMt.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzFindMt.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzHash.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzHash.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Lzma2Dec.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma2Dec.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Lzma2Enc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma2Enc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Lzma86.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma86.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzmaDec.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaDec.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzmaEnc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaEnc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzmaLib.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaLib.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\MtCoder.h">
+    <ClInclude Include="..\..\src\External\lzma\C\MtCoder.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Ppmd.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Ppmd.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Ppmd7.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Ppmd7.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\RotateDefs.h">
+    <ClInclude Include="..\..\src\External\lzma\C\RotateDefs.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Sha256.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Sha256.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Threads.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Threads.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Types.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Types.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Xz.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Xz.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\XzCrc64.h">
+    <ClInclude Include="..\..\src\External\lzma\C\XzCrc64.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\XzEnc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\XzEnc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ADatArchive.h">
@@ -1932,15 +1929,6 @@
     <ClInclude Include="..\..\src\ThingType.h">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\glew\glew.h">
-      <Filter>External\GLEW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\glew\glxew.h">
-      <Filter>External\GLEW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\glew\wglew.h">
-      <Filter>External\GLEW</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapRenderer2D.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
@@ -2001,79 +1989,79 @@
     <ClInclude Include="..\..\src\Lua.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lapi.h">
+    <ClInclude Include="..\..\src\External\lua\lapi.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lauxlib.h">
+    <ClInclude Include="..\..\src\External\lua\lauxlib.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lcode.h">
+    <ClInclude Include="..\..\src\External\lua\lcode.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lctype.h">
+    <ClInclude Include="..\..\src\External\lua\lctype.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\ldebug.h">
+    <ClInclude Include="..\..\src\External\lua\ldebug.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\ldo.h">
+    <ClInclude Include="..\..\src\External\lua\ldo.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lfunc.h">
+    <ClInclude Include="..\..\src\External\lua\lfunc.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lgc.h">
+    <ClInclude Include="..\..\src\External\lua\lgc.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\llex.h">
+    <ClInclude Include="..\..\src\External\lua\llex.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\llimits.h">
+    <ClInclude Include="..\..\src\External\lua\llimits.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lmem.h">
+    <ClInclude Include="..\..\src\External\lua\lmem.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lobject.h">
+    <ClInclude Include="..\..\src\External\lua\lobject.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lopcodes.h">
+    <ClInclude Include="..\..\src\External\lua\lopcodes.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lparser.h">
+    <ClInclude Include="..\..\src\External\lua\lparser.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lstate.h">
+    <ClInclude Include="..\..\src\External\lua\lstate.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lstring.h">
+    <ClInclude Include="..\..\src\External\lua\lstring.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\ltable.h">
+    <ClInclude Include="..\..\src\External\lua\ltable.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\ltm.h">
+    <ClInclude Include="..\..\src\External\lua\ltm.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lua.h">
+    <ClInclude Include="..\..\src\External\lua\lua.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lua.hpp">
+    <ClInclude Include="..\..\src\External\lua\lua.hpp">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\luaconf.h">
+    <ClInclude Include="..\..\src\External\lua\luaconf.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lualib.h">
+    <ClInclude Include="..\..\src\External\lua\lualib.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lundump.h">
+    <ClInclude Include="..\..\src\External\lua\lundump.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lvm.h">
+    <ClInclude Include="..\..\src\External\lua\lvm.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lzio.h">
+    <ClInclude Include="..\..\src\External\lua\lzio.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UndoRedo.h">
@@ -2133,16 +2121,16 @@
     <ClInclude Include="..\..\src\MapChecksPanel.h">
       <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\i_music.h">
+    <ClInclude Include="..\..\src\External\zreaders\i_music.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\i_musicinterns.h">
+    <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\m_swap.h">
+    <ClInclude Include="..\..\src\External\zreaders\m_swap.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\mus2midi.h">
+    <ClInclude Include="..\..\src\External\zreaders\mus2midi.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\DirArchive.h">
@@ -2277,41 +2265,8 @@
     <ClInclude Include="..\..\src\DocsPage.h">
       <Filter>Main Editor\UI Elements</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\dumb.h">
+    <ClInclude Include="..\..\src\External\dumb\dumb.h">
       <Filter>External\DUMB</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\aldumb.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\barray.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\dumb.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\dumbfile.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\fir_resampler.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\it.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\lpc.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\resampler.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\riff.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\stack_alloc.h">
-      <Filter>External\DUMB\internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\tarray.h">
-      <Filter>External\DUMB\internal</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ModMusic.h">
       <Filter>General</Filter>
@@ -2360,6 +2315,49 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\TranslationEditorDialog.h">
       <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\glew\wglew.h" />
+    <ClInclude Include="..\..\src\glew\glew.h">
+      <Filter>External\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\glew\glxew.h">
+      <Filter>External\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\mus2mid\mus2mid.h">
+      <Filter>External\Mus2Mid</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\dumb.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\aldumb.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\barray.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\dumbfile.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\fir_resampler.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\it.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\lpc.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\resampler.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\riff.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\stack_alloc.h">
+      <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\tarray.h">
+      <Filter>External\DUMB\internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2523,13 +2521,13 @@
     <None Include="..\..\dist\res\config\games\include\things_chex3.cfg">
       <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
     </None>
-    <None Include="..\..\src\dumb\helpers\resamp2.inc">
+    <None Include="..\..\src\External\dumb\helpers\resamp2.inc">
       <Filter>External\DUMB\helpers</Filter>
     </None>
-    <None Include="..\..\src\dumb\helpers\resamp3.inc">
+    <None Include="..\..\src\External\dumb\helpers\resamp3.inc">
       <Filter>External\DUMB\helpers</Filter>
     </None>
-    <None Include="..\..\src\dumb\helpers\resample.inc">
+    <None Include="..\..\src\External\dumb\helpers\resample.inc">
       <Filter>External\DUMB\helpers</Filter>
     </None>
     <None Include="..\..\win_installer\SLADE.iss">

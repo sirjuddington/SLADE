@@ -31,14 +31,16 @@
 #include "Archive.h"
 #include "Conversions.h"
 #include "ArchiveEntry.h"
-#include "mus2mid/mus2mid.h"
-#include "zreaders/i_music.h"
+#include "External/mus2mid/mus2mid.h"
+#include "External/zreaders/i_music.h"
+
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
 CVAR(Bool, dmx_padding, true, CVAR_SAVE)
 CVAR(Int, wolfsnd_rate, 7042, CVAR_SAVE)
+
 
 /*******************************************************************
  * STRUCTS
@@ -97,6 +99,7 @@ struct sunsnd_header_t
 	uint32_t rate;
 	uint32_t channels;
 };
+
 
 /*******************************************************************
  * FUNCTIONS

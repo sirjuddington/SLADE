@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Lua.h"
-#include "lua/lua.hpp"
+#include "External/lua/lua.hpp"
 #include "Console.h"
 #include <wx/file.h>
 

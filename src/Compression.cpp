@@ -29,11 +29,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Compression.h"
-#include "zreaders/ancientzip.h"
+#include "External/zreaders/ancientzip.h"
+
 
 /*******************************************************************
  * FUNCTIONS
  *******************************************************************/
+
 
 /* Compression::GenericInflate
  * Inflates the content of <in> to <out>
