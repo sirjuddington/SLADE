@@ -58,7 +58,7 @@
 #include "MainEditor/MainWindow.h"
 #include "Dialogs/TranslationEditorDialog.h"
 #include "Utility/SFileDialog.h"
-#include "MapEditorWindow.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "General/KeyBind.h"
 #include "Dialogs/MapEditorConfigDialog.h"
 #include "Graphics/Palette/PaletteManager.h"

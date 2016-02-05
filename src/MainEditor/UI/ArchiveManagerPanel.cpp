@@ -38,7 +38,7 @@
 #include "UI/SplashWindow.h"
 #include "MainEditor/MainWindow.h"
 #include "Graphics/Icons.h"
-#include "MapEditorWindow.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "Archive/Formats/DirArchive.h"
 #include "Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/STabCtrl.h"

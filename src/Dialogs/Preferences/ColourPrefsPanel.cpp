@@ -32,7 +32,7 @@
 #include "ColourPrefsPanel.h"
 #include "General/ColourConfiguration.h"
 #include "MainEditor/MainWindow.h"
-#include "MapEditorWindow.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "PreferencesDialog.h"
 #include <wx/propgrid/advprops.h>
 

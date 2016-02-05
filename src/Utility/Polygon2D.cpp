@@ -2,7 +2,7 @@
 #include "Main.h"
 #include "Polygon2D.h"
 #include "OpenGL/GLTexture.h"
-#include "SLADEMap.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MathStuff.h"
 #include "OpenGL/OpenGL.h"
 

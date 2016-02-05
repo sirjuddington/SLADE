@@ -33,7 +33,7 @@
 #include "UI/WxStuff.h"
 #include "MapEditorConfigDialog.h"
 #include "UI/BaseResourceChooser.h"
-#include "GameConfiguration.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Utility/SFileDialog.h"

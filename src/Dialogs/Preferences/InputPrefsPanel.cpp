@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "InputPrefsPanel.h"
-#include "MapEditorWindow.h"
+#include "MapEditor/MapEditorWindow.h"
 #include <wx/listctrl.h>
 
 

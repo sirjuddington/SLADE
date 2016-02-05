@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "NodesPrefsPanel.h"
-#include "NodeBuilders.h"
+#include "MapEditor/NodeBuilders.h"
 #include "Utility/SFileDialog.h"
 
 

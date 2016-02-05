@@ -35,7 +35,7 @@
 #include "General/Console/Console.h"
 #include "UI/SplashWindow.h"
 #include "ResourceManager.h"
-#include "GameConfiguration.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include <wx/filename.h>
 
 

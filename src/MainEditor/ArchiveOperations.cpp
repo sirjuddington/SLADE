@@ -36,10 +36,10 @@
 #include "ResourceManager.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "MainEditor/MainWindow.h"
-#include "MapSide.h"
-#include "MapSector.h"
-#include "MapThing.h"
-#include "MapLine.h"
+#include "MapEditor/SLADEMap/MapSide.h"
+#include "MapEditor/SLADEMap/MapSector.h"
+#include "MapEditor/SLADEMap/MapThing.h"
+#include "MapEditor/SLADEMap/MapLine.h"
 #include "General/Console/Console.h"
 #include <map>
 

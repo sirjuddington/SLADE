@@ -39,7 +39,7 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Utility/Tokenizer.h"
 #include "UI/SplashWindow.h"
-#include "MapEditorWindow.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "Dialogs/MapEditorConfigDialog.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"

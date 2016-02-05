@@ -30,8 +30,8 @@
 #include "Main.h"
 #include "Clipboard.h"
 #include "Graphics/CTexture/CTexture.h"
-#include "SLADEMap.h"
-#include "SectorBuilder.h"
+#include "MapEditor/SLADEMap/SLADEMap.h"
+#include "MapEditor/SectorBuilder.h"
 #include <map>
 #include <wx/clipbrd.h>
 
