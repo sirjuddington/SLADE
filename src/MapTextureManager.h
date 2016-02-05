@@ -2,7 +2,7 @@
 #ifndef __MAP_TEXTURE_MANAGER_H__
 #define __MAP_TEXTURE_MANAGER_H__
 
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 #include "ListenerAnnouncer.h"
 #include <map>
 

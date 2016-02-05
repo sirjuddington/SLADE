@@ -39,7 +39,7 @@
 #include "SIFormat.h"
 #include "ColourConfiguration.h"
 #include "MapThing.h"
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 #include "ArchiveManager.h"
 
 

@@ -32,10 +32,10 @@
 #include "Main.h"
 #include "VertexInfoOverlay.h"
 #include "MapVertex.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "MathStuff.h"
 #include "ColourConfiguration.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 
 
 /*******************************************************************

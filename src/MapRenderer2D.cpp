@@ -35,11 +35,11 @@
 #include "GameConfiguration.h"
 #include "ColourConfiguration.h"
 #include "MapEditorWindow.h"
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 #include "Polygon2D.h"
 #include "ObjectEdit.h"
-#include "OpenGL.h"
-#include "Drawing.h"
+#include "OpenGL/OpenGL.h"
+#include "OpenGL/Drawing.h"
 
 
 /*******************************************************************

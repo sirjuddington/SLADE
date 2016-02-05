@@ -36,7 +36,7 @@
 #include "ColourConfiguration.h"
 #include "MCAnimations.h"
 #include "ArchiveManager.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "MathStuff.h"
 #include "MainApp.h"
 #include "MapEditorWindow.h"

@@ -34,7 +34,7 @@
 #include "SectorBuilder.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 
 
 /*******************************************************************

@@ -172,6 +172,9 @@
     <Filter Include="Audio">
       <UniqueIdentifier>{cb94973b-677e-42d7-8005-53d669acbcbb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenGL">
+      <UniqueIdentifier>{690bfeb6-aa15-4bd5-ab7b-151877def763}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Clipboard.cpp">
@@ -190,9 +193,6 @@
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Misc.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\OpenGL.cpp">
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WxStuff.cpp">
@@ -278,9 +278,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\SwitchesList.cpp">
       <Filter>Resources\Binary Control Lumps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GLTexture.cpp">
-      <Filter>Resources\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Icons.cpp">
       <Filter>Resources\Graphics</Filter>
@@ -665,9 +662,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\SIFormat.cpp">
       <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Drawing.cpp">
-      <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\DockPanel.cpp">
       <Filter>UI Elements</Filter>
@@ -1371,6 +1365,15 @@
     <ClCompile Include="..\..\src\Audio\ModMusic.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\Drawing.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\OpenGL.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Clipboard.h">
@@ -1392,9 +1395,6 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Misc.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\OpenGL.h">
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WxStuff.h">
@@ -1486,9 +1486,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\SwitchesList.h">
       <Filter>Resources\Binary Control Lumps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GLTexture.h">
-      <Filter>Resources\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Icons.h">
       <Filter>Resources\Graphics</Filter>
@@ -1892,9 +1889,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\SIFRott.h">
       <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Drawing.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\DockPanel.h">
       <Filter>UI Elements</Filter>
@@ -2361,6 +2355,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Audio\ModMusic.h">
       <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\Drawing.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\OpenGL.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLTexture.h">
+      <Filter>OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

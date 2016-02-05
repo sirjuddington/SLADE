@@ -38,7 +38,7 @@
 #include "MapVertex.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 
 
 /*******************************************************************

@@ -33,7 +33,7 @@
 #include "AudioEntryPanel.h"
 #include "Icons.h"
 #include "Conversions.h"
-#include "MIDIPlayer.h"
+#include "Audio/MIDIPlayer.h"
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
 #include <wx/statline.h>

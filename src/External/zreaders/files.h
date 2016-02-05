@@ -5,8 +5,8 @@
 #include "../zlib/zlib.h"
 #include "../bzip2/bzlib.h"
 #include "../lzma/C/LzmaDec.h"
-#include "../Main.h"
-#include "../MemChunk.h"
+#include "Main.h"
+#include "MemChunk.h"
 #include "templates.h"
 #include "tarray.h"
 

@@ -1,10 +1,10 @@
 
 #include "Main.h"
 #include "Polygon2D.h"
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 
 Polygon2D::Polygon2D()
 {

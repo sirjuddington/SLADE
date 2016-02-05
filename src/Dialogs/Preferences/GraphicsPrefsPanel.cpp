@@ -29,7 +29,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "GraphicsPrefsPanel.h"
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 #include "MainWindow.h"
 #include <wx/filedlg.h>
 

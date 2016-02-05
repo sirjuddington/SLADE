@@ -35,9 +35,9 @@
 #include "ThingInfoOverlay.h"
 #include "GameConfiguration.h"
 #include "ColourConfiguration.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "MapEditorWindow.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 
 
 /*******************************************************************

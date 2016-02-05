@@ -2,7 +2,7 @@
 #ifndef __BROWSER_ITEM_H__
 #define __BROWSER_ITEM_H__
 
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 
 class BrowserWindow;
 class TextBox;

@@ -2,7 +2,7 @@
 #ifndef __SFONT_H__
 #define __SFONT_H__
 
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 
 // Some defines
 #define	SF_ALIGN_LEFT	0

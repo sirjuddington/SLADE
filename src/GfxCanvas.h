@@ -4,7 +4,7 @@
 
 #include "OGLCanvas.h"
 #include "SImage.h"
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 
 // Enumeration for view types
 enum

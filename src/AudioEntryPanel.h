@@ -7,7 +7,7 @@
 
 #undef Status
 #include <SFML/Audio.hpp>
-#include "ModMusic.h"
+#include "Audio/ModMusic.h"
 
 class AudioEntryPanel : public EntryPanel
 {

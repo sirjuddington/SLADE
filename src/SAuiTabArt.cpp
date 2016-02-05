@@ -32,7 +32,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "SAuiTabArt.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 
 #include <wx/image.h>
 #include <wx/settings.h>

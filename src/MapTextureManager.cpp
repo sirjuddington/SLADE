@@ -35,7 +35,7 @@
 #include "MainWindow.h"
 #include "ArchiveManager.h"
 #include "MapEditorWindow.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 #include "SImage.h"
 #include "Misc.h"
 

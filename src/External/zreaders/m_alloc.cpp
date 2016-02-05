@@ -42,7 +42,7 @@
 #include <malloc.h>
 #endif
 
-#include "../Main.h"
+#include "Main.h"
 #define I_FatalError wxLogMessage
 
 namespace GC

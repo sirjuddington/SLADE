@@ -31,9 +31,9 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "OGLCanvas.h"
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 #include "MainApp.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 
 #ifdef USE_SFML_RENDERWINDOW
 #ifdef __WXGTK__

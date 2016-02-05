@@ -32,9 +32,9 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "BrowserItem.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "SFont.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 #include "BrowserWindow.h"
 
 

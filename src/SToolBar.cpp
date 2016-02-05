@@ -33,7 +33,7 @@
 #include "WxStuff.h"
 #include "SToolBar.h"
 #include "SToolBarButton.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include <wx/wrapsizer.h>
 
 

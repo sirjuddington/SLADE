@@ -2,7 +2,7 @@
 #ifndef __OGLCANVAS_H__
 #define	__OGLCANVAS_H__
 
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 #include "Palette.h"
 #include <wx/control.h>
 #include <wx/timer.h>

@@ -33,11 +33,11 @@
 #include "WxStuff.h"
 #include "SectorInfoOverlay.h"
 #include "MapSector.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "MapEditorWindow.h"
 #include "ColourConfiguration.h"
 #include "GameConfiguration.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 
 
 /*******************************************************************

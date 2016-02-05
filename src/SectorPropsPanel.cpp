@@ -34,7 +34,7 @@
 #include "MapObjectPropsPanel.h"
 #include "MapObject.h"
 #include "MapEditorWindow.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "NumberTextCtrl.h"
 #include "MapTextureBrowser.h"
 #include "STabCtrl.h"

@@ -33,7 +33,7 @@
 #include "WxStuff.h"
 #include "MapSector.h"
 #include "SectorTextureOverlay.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "ColourConfiguration.h"
 #include "MapEditorWindow.h"
 #include "MapTextureBrowser.h"

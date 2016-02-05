@@ -33,7 +33,7 @@
 #include "ThingTypeBrowser.h"
 #include "MapEditorWindow.h"
 #include "GameConfiguration.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 
 
 /*******************************************************************

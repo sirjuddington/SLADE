@@ -34,7 +34,7 @@
 #include "GameConfiguration.h"
 #include "MapEditorWindow.h"
 #include "ActionSpecialDialog.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "ThingTypeBrowser.h"
 #include "MathStuff.h"
 #include "NumberTextCtrl.h"

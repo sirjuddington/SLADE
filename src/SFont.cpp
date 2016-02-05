@@ -33,7 +33,7 @@
 #include "SFont.h"
 #include "SImage.h"
 #include "ArchiveManager.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 
 
 /*******************************************************************

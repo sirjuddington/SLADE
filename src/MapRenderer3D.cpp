@@ -37,7 +37,7 @@
 #include "ColourConfiguration.h"
 #include "ResourceManager.h"
 #include "MainWindow.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 #include <SFML/System.hpp>
 
 

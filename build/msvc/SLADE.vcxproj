@@ -253,7 +253,6 @@
     <ClCompile Include="..\..\src\DiskArchive.cpp" />
     <ClCompile Include="..\..\src\DockPanel.cpp" />
     <ClCompile Include="..\..\src\DocsPage.cpp" />
-    <ClCompile Include="..\..\src\Drawing.cpp" />
     <ClCompile Include="..\..\src\External\dumb\core\atexit.c" />
     <ClCompile Include="..\..\src\External\dumb\core\duhlen.c" />
     <ClCompile Include="..\..\src\External\dumb\core\duhtag.c" />
@@ -452,6 +451,9 @@
     <ClCompile Include="..\..\src\NumberTextCtrl.cpp" />
     <ClCompile Include="..\..\src\ObjectEdit.cpp" />
     <ClCompile Include="..\..\src\ObjectEditPanel.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\Drawing.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\OpenGL.cpp" />
     <ClCompile Include="..\..\src\PakArchive.cpp" />
     <ClCompile Include="..\..\src\Clipboard.cpp" />
     <ClCompile Include="..\..\src\Console.cpp" />
@@ -460,7 +462,6 @@
     <ClCompile Include="..\..\src\MainApp.cpp" />
     <ClCompile Include="..\..\src\MemChunk.cpp" />
     <ClCompile Include="..\..\src\Misc.cpp" />
-    <ClCompile Include="..\..\src\OpenGL.cpp" />
     <ClCompile Include="..\..\src\Parser.cpp" />
     <ClCompile Include="..\..\src\PatchBrowser.cpp" />
     <ClCompile Include="..\..\src\PodArchive.cpp" />
@@ -546,7 +547,6 @@
     <ClCompile Include="..\..\src\ZipArchive.cpp" />
     <ClCompile Include="..\..\src\AnimatedList.cpp" />
     <ClCompile Include="..\..\src\SwitchesList.cpp" />
-    <ClCompile Include="..\..\src\GLTexture.cpp" />
     <ClCompile Include="..\..\src\Icons.cpp" />
     <ClCompile Include="..\..\src\SImage.cpp" />
     <ClCompile Include="..\..\src\Palette.cpp" />
@@ -655,7 +655,6 @@
     <ClInclude Include="..\..\src\DiskArchive.h" />
     <ClInclude Include="..\..\src\DockPanel.h" />
     <ClInclude Include="..\..\src\DocsPage.h" />
-    <ClInclude Include="..\..\src\Drawing.h" />
     <ClInclude Include="..\..\src\External\dumb\dumb.h" />
     <ClInclude Include="..\..\src\External\dumb\internal\aldumb.h" />
     <ClInclude Include="..\..\src\External\dumb\internal\barray.h" />
@@ -774,6 +773,9 @@
     <ClInclude Include="..\..\src\NumberTextCtrl.h" />
     <ClInclude Include="..\..\src\ObjectEdit.h" />
     <ClInclude Include="..\..\src\ObjectEditPanel.h" />
+    <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
+    <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
+    <ClInclude Include="..\..\src\OpenGL\OpenGL.h" />
     <ClInclude Include="..\..\src\PakArchive.h" />
     <ClInclude Include="..\..\src\Clipboard.h" />
     <ClInclude Include="..\..\src\Console.h" />
@@ -783,7 +785,6 @@
     <ClInclude Include="..\..\src\MainApp.h" />
     <ClInclude Include="..\..\src\MemChunk.h" />
     <ClInclude Include="..\..\src\Misc.h" />
-    <ClInclude Include="..\..\src\OpenGL.h" />
     <ClInclude Include="..\..\src\Parser.h" />
     <ClInclude Include="..\..\src\PatchBrowser.h" />
     <ClInclude Include="..\..\src\PodArchive.h" />
@@ -878,7 +879,6 @@
     <ClInclude Include="..\..\src\AnimatedList.h" />
     <ClInclude Include="..\..\src\BinaryControlLump.h" />
     <ClInclude Include="..\..\src\SwitchesList.h" />
-    <ClInclude Include="..\..\src\GLTexture.h" />
     <ClInclude Include="..\..\src\Icons.h" />
     <ClInclude Include="..\..\src\SImage.h" />
     <ClInclude Include="..\..\src\Palette.h" />

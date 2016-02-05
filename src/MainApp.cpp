@@ -42,7 +42,7 @@
 #include "SIFormat.h"
 #include "KeyBind.h"
 #include "ColourConfiguration.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "MapEditorWindow.h"
 #include "GameConfiguration.h"
 #include "NodeBuilders.h"
@@ -52,7 +52,7 @@
 #include "Misc.h"
 #include "VersionCheck.h"
 #include "External/dumb/dumb.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>

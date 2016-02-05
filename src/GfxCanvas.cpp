@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "GfxCanvas.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 
 
 /*******************************************************************

@@ -29,8 +29,8 @@
 #ifndef MUS2MID_H
 #define MUS2MID_H
 
-#include "../Main.h"
-#include "../MemChunk.h"
+#include "Main.h"
+#include "MemChunk.h"
 
 bool mus2mid(MemChunk& musinput, MemChunk& midioutput);
 

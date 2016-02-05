@@ -35,12 +35,12 @@
 #include "WxStuff.h"
 #include "MapEditorWindow.h"
 #include "QuickTextureOverlay3d.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "ResourceManager.h"
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 #include "MapEditor.h"
 #include "GameConfiguration.h"
-#include "OpenGL.h"
+#include "OpenGL/OpenGL.h"
 
 
 /*******************************************************************

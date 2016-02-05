@@ -35,7 +35,7 @@
 #include "MapLine.h"
 #include "MapSide.h"
 #include "ColourConfiguration.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 #include "MapEditorWindow.h"
 #include "MapTextureBrowser.h"
 

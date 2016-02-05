@@ -5,7 +5,7 @@
 #include "OGLCanvas.h"
 #include "CTexture.h"
 #include "Palette.h"
-#include "GLTexture.h"
+#include "OpenGL/GLTexture.h"
 #include "ListenerAnnouncer.h"
 #include "PatchTable.h"
 

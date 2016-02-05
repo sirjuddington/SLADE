@@ -35,7 +35,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "BrowserCanvas.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
 
 
 /*******************************************************************
