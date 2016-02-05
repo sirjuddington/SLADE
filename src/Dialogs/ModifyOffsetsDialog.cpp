@@ -32,7 +32,7 @@
 #include "UI/WxStuff.h"
 #include "ModifyOffsetsDialog.h"
 #include "General/Console/Console.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 
 
 /*******************************************************************

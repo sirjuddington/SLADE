@@ -6,8 +6,8 @@
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/PaletteChooser.h"
 #include "UI/ColourBox.h"
-#include "SIFormat.h"
-#include "CTexture.h"
+#include "Graphics/SImage/SIFormat.h"
+#include "Graphics/CTexture/CTexture.h"
 #include "UI/SDialog.h"
 
 /* Convert from anything to:

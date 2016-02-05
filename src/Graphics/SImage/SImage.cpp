@@ -36,7 +36,7 @@
 #include "SImage.h"
 #include "General/Misc.h"
 #include "SIFormat.h"
-#include "Translation.h"
+#include "Graphics/Translation.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
 #include "ArchiveManager.h"

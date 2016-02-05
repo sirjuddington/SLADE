@@ -53,7 +53,7 @@
 #include "InputPrefsPanel.h"
 #include "OpenGLPrefsPanel.h"
 #include "HudOffsetsPrefsPanel.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "MainWindow.h"
 #include <wx/gbsizer.h>
 

@@ -37,21 +37,6 @@
     <Filter Include="Resources\Binary Control Lumps">
       <UniqueIdentifier>{d01d3677-f00e-4933-b65c-688a19cb3264}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources\Graphics">
-      <UniqueIdentifier>{04a700d1-4c59-4db0-8c1b-7f55d079dbdc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Image">
-      <UniqueIdentifier>{2282b917-8937-43a4-946a-3d44fc79c9aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Palette">
-      <UniqueIdentifier>{91874625-b386-4240-be30-42817f5916bd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Composite Texture">
-      <UniqueIdentifier>{26f9c0ed-fcab-4243-977a-b0caec429bde}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Font">
-      <UniqueIdentifier>{a67c614b-3c23-4e50-8a01-6dd9e96388b9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources\Archive\EntryType">
       <UniqueIdentifier>{d894001c-5335-4237-9b18-60440a1e6a60}</UniqueIdentifier>
     </Filter>
@@ -84,9 +69,6 @@
     </Filter>
     <Filter Include="Resources\Archive\Formats">
       <UniqueIdentifier>{844561dc-871c-4534-ba8a-768af5269000}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Image\Formats">
-      <UniqueIdentifier>{544047dd-0bbf-43a3-b6ec-6f90661fad4c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Map Editor\GameConfiguration">
       <UniqueIdentifier>{d3422c45-1960-43b3-b586-6baffde25566}</UniqueIdentifier>
@@ -181,6 +163,24 @@
     <Filter Include="UI\Canvas">
       <UniqueIdentifier>{4f00b239-b18a-4eba-b70f-4348b33cf7ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{857f6ada-0a82-4c97-918e-13b8b9a67b70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\CTexture">
+      <UniqueIdentifier>{25d4520a-4015-4838-81d3-9596df6d636e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Font">
+      <UniqueIdentifier>{18c4582f-e6f1-408f-954a-523d9cc2493d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Palette">
+      <UniqueIdentifier>{2bb037c4-81ca-4e63-8a84-794b20f53218}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\SImage">
+      <UniqueIdentifier>{ae4890b7-0ebb-43df-9372-de1f518e38f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\SImage\Formats">
+      <UniqueIdentifier>{0cc23fc4-b04e-4b53-8110-c20f4c71c8fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\EntryOperations.cpp">
@@ -258,27 +258,6 @@
     <ClCompile Include="..\..\src\SwitchesList.cpp">
       <Filter>Resources\Binary Control Lumps</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Icons.cpp">
-      <Filter>Resources\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SImage.cpp">
-      <Filter>Resources\Graphics\Image</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Palette.cpp">
-      <Filter>Resources\Graphics\Palette</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteManager.cpp">
-      <Filter>Resources\Graphics\Palette</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CTexture.cpp">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PatchTable.cpp">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextureXList.cpp">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\EntryType.cpp">
       <Filter>Resources\Archive\EntryType</Filter>
     </ClCompile>
@@ -293,9 +272,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\BaseResourceChooser.cpp">
       <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SImageFormats.cpp">
-      <Filter>Resources\Graphics\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\PatchBrowser.cpp">
       <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
@@ -318,17 +294,11 @@
     <ClCompile Include="..\..\src\ANSIEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SFont.cpp">
-      <Filter>Resources\Graphics\Font</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ZTextureEditorPanel.cpp">
       <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ResourceManager.cpp">
       <Filter>Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Translation.cpp">
-      <Filter>Resources\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
       <Filter>External\Mus2Mid</Filter>
@@ -557,9 +527,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ZipArchive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SIFormat.cpp">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MCAnimations.cpp">
       <Filter>Map Editor\UI Elements</Filter>
@@ -1380,6 +1347,39 @@
     <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\CTexture.cpp">
+      <Filter>Graphics\CTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\PatchTable.cpp">
+      <Filter>Graphics\CTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\TextureXList.cpp">
+      <Filter>Graphics\CTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Font\SFont.cpp">
+      <Filter>Graphics\Font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Palette\Palette.cpp">
+      <Filter>Graphics\Palette</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Palette\PaletteManager.cpp">
+      <Filter>Graphics\Palette</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SImage.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SImageFormats.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Icons.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Translation.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SIFormat.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\EntryOperations.h">
@@ -1463,30 +1463,6 @@
     <ClInclude Include="..\..\src\SwitchesList.h">
       <Filter>Resources\Binary Control Lumps</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Icons.h">
-      <Filter>Resources\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SImage.h">
-      <Filter>Resources\Graphics\Image</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Palette.h">
-      <Filter>Resources\Graphics\Palette</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteManager.h">
-      <Filter>Resources\Graphics\Palette</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\CTexture.h">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PatchTable.h">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextureXList.h">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SFont.h">
-      <Filter>Resources\Graphics\Font</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\src\EntryType.h">
       <Filter>Resources\Archive\EntryType</Filter>
@@ -1544,12 +1520,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ZTextureEditorPanel.h">
       <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ResourceManager.h">
-      <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Translation.h">
-      <Filter>Resources\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\bzip2\bzlib.h">
       <Filter>External\BZip2</Filter>
@@ -1751,33 +1721,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Archives.h">
       <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFDoom.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFZDoom.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFHexen.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFImages.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFormat.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFOther.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFQuake.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFJedi.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFRott.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MCAnimations.h">
       <Filter>Map Editor\UI Elements</Filter>
@@ -2375,6 +2318,63 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h">
+      <Filter>Graphics\CTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h">
+      <Filter>Graphics\CTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h">
+      <Filter>Graphics\CTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Font\SFont.h">
+      <Filter>Graphics\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Palette\Palette.h">
+      <Filter>Graphics\Palette</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Palette\PaletteManager.h">
+      <Filter>Graphics\Palette</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\SImage.h">
+      <Filter>Graphics\SImage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFJedi.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFOther.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFQuake.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFRott.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFZDoom.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFDoom.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFHexen.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFImages.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Icons.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Translation.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ResourceManager.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h">
+      <Filter>Graphics\SImage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

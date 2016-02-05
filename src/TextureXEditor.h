@@ -6,7 +6,7 @@
 #include "TextureEditorPanel.h"
 #include "PatchTablePanel.h"
 #include "Archive.h"
-#include "PatchTable.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "UI/Lists/ListView.h"
 #include "PatchBrowser.h"
 #include <wx/aui/auibook.h>

@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "AudioEntryPanel.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "Conversions.h"
 #include "Audio/MIDIPlayer.h"
 #include <wx/filename.h>

@@ -31,8 +31,8 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "PaletteEntryPanel.h"
-#include "PaletteManager.h"
-#include "Icons.h"
+#include "Graphics/Palette/PaletteManager.h"
+#include "Graphics/Icons.h"
 #include "Utility/SFileDialog.h"
 #include "General/Misc.h"
 #include "MainWindow.h"
@@ -1032,7 +1032,7 @@ bool PaletteEntryPanel::invert()
 	return true;
 }
 
-#include "SIFormat.h"
+#include "Graphics/SImage/SIFormat.h"
 /* PaletteEntryPanel::generateColormaps
  * Generates a COLORMAP lump from the current palette
  *******************************************************************/

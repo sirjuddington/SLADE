@@ -56,14 +56,14 @@ EXTERN_CVAR(Bool, gfx_extraconv)
 /*******************************************************************
  * SIF* CLASSES
  *******************************************************************/
-#include "SIFImages.h"
-#include "SIFDoom.h"
-#include "SIFHexen.h"
-#include "SIFZDoom.h"
-#include "SIFQuake.h"
-#include "SIFOther.h"
-#include "SIFRott.h"
-#include "SIFJedi.h"
+#include "Formats/SIFImages.h"
+#include "Formats/SIFDoom.h"
+#include "Formats/SIFHexen.h"
+#include "Formats/SIFZDoom.h"
+#include "Formats/SIFQuake.h"
+#include "Formats/SIFOther.h"
+#include "Formats/SIFRott.h"
+#include "Formats/SIFJedi.h"
 
 
 /*******************************************************************

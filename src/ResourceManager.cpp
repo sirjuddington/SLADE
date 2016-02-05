@@ -33,8 +33,8 @@
 #include "ResourceManager.h"
 #include "ArchiveManager.h"
 #include "General/Console/Console.h"
-#include "CTexture.h"
-#include "TextureXList.h"
+#include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/TextureXList.h"
 
 
 /*******************************************************************

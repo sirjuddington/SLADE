@@ -31,7 +31,7 @@
 #include "Main.h"
 #include <wx/wxprec.h>
 #include "UI/WxStuff.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "SAuiTabArt.h"
 
 

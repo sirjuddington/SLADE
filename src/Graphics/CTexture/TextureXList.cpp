@@ -824,7 +824,7 @@ bool TextureXList::convertToTEXTURES()
 	return true;
 }
 
-#include "SImage.h"
+#include "Graphics/SImage/SImage.h"
 /* TextureXList::findErrors
  * Search for errors in texture list, return true if any are found
  *******************************************************************/

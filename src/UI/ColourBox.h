@@ -2,7 +2,7 @@
 #ifndef __COLOURBOX_H__
 #define	__COLOURBOX_H__
 
-#include "Palette.h"
+#include "Graphics/Palette/Palette.h"
 
 class ColourBox : public wxPanel
 {

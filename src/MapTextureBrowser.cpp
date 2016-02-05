@@ -33,7 +33,7 @@
 #include "MapTextureBrowser.h"
 #include "MapEditorWindow.h"
 #include "ResourceManager.h"
-#include "CTexture.h"
+#include "Graphics/CTexture/CTexture.h"
 #include "GameConfiguration.h"
 #include "SLADEMap.h"
 

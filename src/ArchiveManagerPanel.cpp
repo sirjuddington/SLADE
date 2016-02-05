@@ -37,7 +37,7 @@
 #include "TextureXEditor.h"
 #include "UI/SplashWindow.h"
 #include "MainWindow.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "MapEditorWindow.h"
 #include "DirArchive.h"
 #include "Dialogs/DirArchiveUpdateDialog.h"

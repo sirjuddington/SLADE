@@ -3,7 +3,7 @@
 #define	__ENTRYOPERATIONS_H__
 
 #include "ArchiveEntry.h"
-#include "SIFormat.h"
+#include "Graphics/SImage/SIFormat.h"
 
 class wxFrame;
 class ModifyOffsetsDialog;

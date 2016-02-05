@@ -31,7 +31,7 @@
 #include "UI/WxStuff.h"
 #include "InterfacePrefsPanel.h"
 #include "UI/STabCtrl.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include <wx/gbsizer.h>
 
 

@@ -33,7 +33,7 @@
 #include "UI/ConsolePanel.h"
 #include "ArchiveManager.h"
 #include "Archive.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "BaseResourceChooser.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"

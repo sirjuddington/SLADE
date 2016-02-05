@@ -36,7 +36,7 @@
 #include <wx/valnum.h>
 #include "ObjectEditPanel.h"
 #include "ObjectEdit.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "MapEditorWindow.h"
 #include "General/KeyBind.h"
 

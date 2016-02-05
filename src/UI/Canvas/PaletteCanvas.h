@@ -3,7 +3,7 @@
 #define	__PALETTECANVAS_H__
 
 #include "OGLCanvas.h"
-#include "Palette.h"
+#include "Graphics/Palette/Palette.h"
 #include <wx/colordlg.h>
 
 class PaletteCanvas : public OGLCanvas

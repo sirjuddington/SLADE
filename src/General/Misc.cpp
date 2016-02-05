@@ -31,14 +31,14 @@
  *******************************************************************/
 #include "Main.h"
 #include "General/Misc.h"
-#include "SImage.h"
+#include "Graphics/SImage/SImage.h"
 #include "Archive.h"
 #include "ArchiveEntry.h"
 #include "EntryDataFormat.h"
 #include "WadArchive.h"
 #include "ZipArchive.h"
 #include "General/Console/Console.h"
-#include "SIFormat.h"
+#include "Graphics/SImage/SIFormat.h"
 #include "Utility/Tokenizer.h"
 #include <wx/filename.h>
 #include "External/zlib/zlib.h"

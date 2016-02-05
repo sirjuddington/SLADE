@@ -32,7 +32,7 @@
 #include "ArchiveOperations.h"
 #include "ArchiveManager.h"
 #include "WadArchive.h"
-#include "TextureXList.h"
+#include "Graphics/CTexture/TextureXList.h"
 #include "ResourceManager.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "MainWindow.h"

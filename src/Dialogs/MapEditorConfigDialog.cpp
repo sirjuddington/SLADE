@@ -39,7 +39,7 @@
 #include "Utility/SFileDialog.h"
 #include "UI/SplashWindow.h"
 #include "General/ColourConfiguration.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "UI/ResourceArchiveChooser.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include <wx/statline.h>

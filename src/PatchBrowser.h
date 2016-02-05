@@ -4,7 +4,7 @@
 
 #include "UI/Browser/BrowserWindow.h"
 #include "General/ListenerAnnouncer.h"
-#include "PatchTable.h"
+#include "Graphics/CTexture/PatchTable.h"
 
 class PatchBrowserItem : public BrowserItem
 {

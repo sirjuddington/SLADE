@@ -33,7 +33,7 @@
 #include "ArchiveManager.h"
 #include "ResourceManager.h"
 #include "General/Misc.h"
-#include "SImage.h"
+#include "Graphics/SImage/SImage.h"
 #include "TextureXList.h"
 #include <wx/colour.h>
 

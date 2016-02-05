@@ -36,7 +36,7 @@
 #include "ZTextureEditorPanel.h"
 #include "General/Clipboard.h"
 #include "ArchiveManager.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "ResourceManager.h"
 #include "General/ColourConfiguration.h"
 #include "General/KeyBind.h"

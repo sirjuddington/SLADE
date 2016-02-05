@@ -5,7 +5,7 @@
 #include "EntryPanel.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "MainApp.h"
-#include "Translation.h"
+#include "Graphics/Translation.h"
 #include <wx/spinctrl.h>
 #include <wx/choice.h>
 

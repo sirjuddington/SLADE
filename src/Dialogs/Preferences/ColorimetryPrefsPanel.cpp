@@ -30,7 +30,7 @@
 #include "UI/WxStuff.h"
 #include "ColorimetryPrefsPanel.h"
 #include "Utility/CIEDeltaEquations.h"
-#include "Palette.h"
+#include "Graphics/Palette/Palette.h"
 
 
 /*******************************************************************

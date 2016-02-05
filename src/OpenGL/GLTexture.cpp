@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "GLTexture.h"
 #include "OpenGL.h"
-#include "SImage.h"
+#include "Graphics/SImage/SImage.h"
 #include <wx/colour.h>
 
 

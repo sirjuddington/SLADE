@@ -38,9 +38,9 @@
 #include "ArchiveManager.h"
 #include "ResourceManager.h"
 #include "General/Misc.h"
-#include "CTexture.h"
-#include "TextureXList.h"
-#include "SImage.h"
+#include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/TextureXList.h"
+#include "Graphics/SImage/SImage.h"
 
 
 /*******************************************************************

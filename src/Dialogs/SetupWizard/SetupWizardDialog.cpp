@@ -34,7 +34,7 @@
 #include "TempFolderWizardPage.h"
 #include "BaseResourceWizardPage.h"
 #include "NodeBuildersWizardPage.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 
 
 /*******************************************************************

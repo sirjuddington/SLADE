@@ -3,11 +3,11 @@
 #define __CTEXTURECANVAS_H__
 
 #include "OGLCanvas.h"
-#include "CTexture.h"
-#include "Palette.h"
+#include "Graphics/CTexture/CTexture.h"
+#include "Graphics/Palette/Palette.h"
 #include "OpenGL/GLTexture.h"
 #include "General/ListenerAnnouncer.h"
-#include "PatchTable.h"
+#include "Graphics/CTexture/PatchTable.h"
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 

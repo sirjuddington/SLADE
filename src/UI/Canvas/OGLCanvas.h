@@ -3,7 +3,7 @@
 #define	__OGLCANVAS_H__
 
 #include "OpenGL/OpenGL.h"
-#include "Palette.h"
+#include "Graphics/Palette/Palette.h"
 #include <wx/control.h>
 #include <wx/timer.h>
 

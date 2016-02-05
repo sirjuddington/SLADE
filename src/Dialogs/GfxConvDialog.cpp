@@ -34,10 +34,10 @@
 #include "General/Console/Console.h"
 #include "ArchiveManager.h"
 #include "General/Misc.h"
-#include "PaletteManager.h"
+#include "Graphics/Palette/PaletteManager.h"
 #include "UI/SplashWindow.h"
-#include "Icons.h"
-#include "SIFormat.h"
+#include "Graphics/Icons.h"
+#include "Graphics/SImage/SIFormat.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 
 

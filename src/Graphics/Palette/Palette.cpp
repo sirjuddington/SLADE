@@ -31,11 +31,12 @@
 #include "Main.h"
 #include "Palette.h"
 #include "General/Misc.h"
-#include "Translation.h"
-#include "SIFormat.h"
+#include "Graphics/Translation.h"
+#include "Graphics/SImage/SIFormat.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/CIEDeltaEquations.h"
 #include <wx/filename.h>
+
 
 /*******************************************************************
  * VARIABLES
@@ -50,6 +51,7 @@ CVAR(Float, col_match_l, 1.0, CVAR_SAVE)
 EXTERN_CVAR(Float, col_greyscale_r);
 EXTERN_CVAR(Float, col_greyscale_g);
 EXTERN_CVAR(Float, col_greyscale_b);
+
 
 /*******************************************************************
  * PALETTE8BIT CLASS FUNCTIONS

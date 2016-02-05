@@ -33,7 +33,7 @@
 #include "UI/WxStuff.h"
 #include "BrowserItem.h"
 #include "OpenGL/Drawing.h"
-#include "SFont.h"
+#include "Graphics/Font/SFont.h"
 #include "OpenGL/OpenGL.h"
 #include "BrowserWindow.h"
 

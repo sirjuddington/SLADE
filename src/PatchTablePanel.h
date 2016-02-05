@@ -2,7 +2,7 @@
 #ifndef __PATCH_TABLE_PANEL_H__
 #define __PATCH_TABLE_PANEL_H__
 
-#include "PatchTable.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/Canvas/GfxCanvas.h"
 

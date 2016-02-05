@@ -31,7 +31,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "SFont.h"
-#include "SImage.h"
+#include "Graphics/SImage/SImage.h"
 #include "ArchiveManager.h"
 #include "OpenGL/OpenGL.h"
 

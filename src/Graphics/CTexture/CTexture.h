@@ -5,7 +5,7 @@
 #include "Utility/Tokenizer.h"
 #include "ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
-#include "Translation.h"
+#include "Graphics/Translation.h"
 
 class SImage;
 

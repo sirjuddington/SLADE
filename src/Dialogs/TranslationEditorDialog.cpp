@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "TranslationEditorDialog.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
 #include "General/Misc.h"

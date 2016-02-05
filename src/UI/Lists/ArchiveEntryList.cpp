@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "ArchiveEntryList.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
 #include <wx/imaglist.h>

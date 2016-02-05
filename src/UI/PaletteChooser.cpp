@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "PaletteChooser.h"
-#include "PaletteManager.h"
+#include "Graphics/Palette/PaletteManager.h"
 #include "General/Misc.h"
 #include "Archive.h"
 

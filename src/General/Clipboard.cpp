@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Clipboard.h"
-#include "CTexture.h"
+#include "Graphics/CTexture/CTexture.h"
 #include "SLADEMap.h"
 #include "SectorBuilder.h"
 #include <map>

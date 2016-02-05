@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "General/SAction.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "MainApp.h"
 #include "General/KeyBind.h"
 #include <wx/aui/auibar.h>

@@ -36,7 +36,7 @@
 #include "SLADEMap.h"
 #include "MOPGProperty.h"
 #include "MapEditorWindow.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "UI/STabCtrl.h"
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>

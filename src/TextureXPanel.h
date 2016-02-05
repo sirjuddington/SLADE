@@ -2,7 +2,7 @@
 #ifndef __TEXTUREX_PANEL_H__
 #define __TEXTUREX_PANEL_H__
 
-#include "TextureXList.h"
+#include "Graphics/CTexture/TextureXList.h"
 #include "TextureEditorPanel.h"
 #include "UI/Lists/VirtualListView.h"
 #include "MainApp.h"

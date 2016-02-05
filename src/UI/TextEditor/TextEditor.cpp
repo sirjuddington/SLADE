@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "TextEditor.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "General/KeyBind.h"
 
 

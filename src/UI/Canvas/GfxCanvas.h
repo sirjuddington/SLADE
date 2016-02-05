@@ -3,7 +3,7 @@
 #define	__GFXCANVAS_H__
 
 #include "OGLCanvas.h"
-#include "SImage.h"
+#include "Graphics/SImage/SImage.h"
 #include "OpenGL/GLTexture.h"
 
 // Enumeration for view types

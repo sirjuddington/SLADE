@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "RunDialog.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
 #include "Utility/SFileDialog.h"
 #include "General/Executables.h"
 #include "UI/ResourceArchiveChooser.h"

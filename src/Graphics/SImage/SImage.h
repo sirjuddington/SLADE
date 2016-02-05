@@ -2,7 +2,7 @@
 #ifndef __SIMAGE_H__
 #define	__SIMAGE_H__
 
-#include "Palette.h"
+#include "Graphics/Palette/Palette.h"
 #include "General/ListenerAnnouncer.h"
 
 enum SIType

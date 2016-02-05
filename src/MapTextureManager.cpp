@@ -31,12 +31,12 @@
 #include "Main.h"
 #include "MapTextureManager.h"
 #include "ResourceManager.h"
-#include "CTexture.h"
+#include "Graphics/CTexture/CTexture.h"
 #include "MainWindow.h"
 #include "ArchiveManager.h"
 #include "MapEditorWindow.h"
 #include "OpenGL/OpenGL.h"
-#include "SImage.h"
+#include "Graphics/SImage/SImage.h"
 #include "General/Misc.h"
 
 

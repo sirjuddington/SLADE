@@ -5,7 +5,7 @@
 #include <wx/dialog.h>
 #include <wx/clrpicker.h>
 #include "UI/Canvas/PaletteCanvas.h"
-#include "Translation.h"
+#include "Graphics/Translation.h"
 #include "UI/Canvas/GfxCanvas.h"
 
 class GradientBox : public OGLCanvas
