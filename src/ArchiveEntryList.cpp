@@ -29,11 +29,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ArchiveEntryList.h"
 #include "Icons.h"
-#include "ColourConfiguration.h"
-#include "UndoRedo.h"
+#include "General/ColourConfiguration.h"
+#include "General/UndoRedo.h"
 #include <wx/imaglist.h>
 
 

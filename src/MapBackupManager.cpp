@@ -28,13 +28,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapBackupManager.h"
 #include "ZipArchive.h"
 #include "SDialog.h"
 #include "MapBackupPanel.h"
 #include "MapEditorWindow.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/datetime.h>
 
 

@@ -31,7 +31,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "PaletteDialog.h"
 
 

@@ -6,7 +6,7 @@
 #include "CTexture.h"
 #include "Palette.h"
 #include "OpenGL/GLTexture.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 #include "PatchTable.h"
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);

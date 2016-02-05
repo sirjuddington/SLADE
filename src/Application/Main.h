@@ -90,7 +90,7 @@ typename M::mapped_type findInMap(M& m, const typename M::key_type& k, typename 
 
 // Global internal includes
 #include "Utility/MemChunk.h"
-#include "CVar.h"
+#include "General/CVar.h"
 #include "Utility/Structs.h"
 
 // Namespace to hold 'global' variables

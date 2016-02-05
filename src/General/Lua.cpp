@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "Lua.h"
 #include "External/lua/lua.hpp"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include <wx/file.h>
 
 

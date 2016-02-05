@@ -3,7 +3,7 @@
 #define __ARCHIVE_ENTRY_LIST_H__
 
 #include "VirtualListView.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 #include "Archive.h"
 #include "MainApp.h"
 #include <wx/listctrl.h>

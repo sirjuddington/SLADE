@@ -29,13 +29,13 @@
  *******************************************************************/
 #include "Main.h"
 #include "MainWindow.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "PatchTablePanel.h"
 #include "Archive.h"
 #include "TextureXEditor.h"
 #include "ArchiveEntry.h"
 #include "ArchiveManager.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/filename.h>
 
 

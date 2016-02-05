@@ -2,7 +2,7 @@
 #ifndef	__CONSOLE_H__
 #define	__CONSOLE_H__
 
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 
 class ConsoleCommand
 {

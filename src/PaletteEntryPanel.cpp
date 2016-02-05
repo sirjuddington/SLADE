@@ -29,12 +29,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "PaletteEntryPanel.h"
 #include "PaletteManager.h"
 #include "Icons.h"
 #include "Utility/SFileDialog.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "MainWindow.h"
 #include <wx/dialog.h>
 #include <wx/clrpicker.h>

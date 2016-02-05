@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapTextureBrowser.h"
 #include "MapEditorWindow.h"
 #include "ResourceManager.h"

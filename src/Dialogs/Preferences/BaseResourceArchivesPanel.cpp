@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "BaseResourceArchivesPanel.h"
 #include "ArchiveManager.h"
 #include "Utility/Parser.h"

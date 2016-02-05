@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "LineInfoOverlay.h"
 #include "MapLine.h"
 #include "MapSide.h"
@@ -38,7 +38,7 @@
 #include "OpenGL/Drawing.h"
 #include "Utility/MathStuff.h"
 #include "MapEditorWindow.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "OpenGL/OpenGL.h"
 
 

@@ -4,7 +4,7 @@
 
 #include "OGLCanvas.h"
 #include "OpenGL/GLTexture.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 
 class ANSICanvas : public OGLCanvas, Listener
 {

@@ -36,7 +36,7 @@
 #include "MainApp.h"
 #include "Archive.h"
 #include "WadArchive.h"
-#include "UndoRedo.h"
+#include "General/UndoRedo.h"
 #include "SectorBuilder.h"
 #include "SplashWindow.h"
 #include <locale.h>

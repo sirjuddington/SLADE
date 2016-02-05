@@ -31,7 +31,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapChecksPanel.h"
 #include "SLADEMap.h"
 #include "MapChecks.h"

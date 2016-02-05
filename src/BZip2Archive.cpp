@@ -31,7 +31,7 @@
 #include "BZip2Archive.h"
 #include "SplashWindow.h"
 #include "Utility/Compression.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/filename.h>
 
 

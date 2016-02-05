@@ -3,7 +3,7 @@
 #define __INPUT_PREFS_PANEL_H__
 
 #include "PrefsPanelBase.h"
-#include "KeyBind.h"
+#include "General/KeyBind.h"
 #include <wx/treelist.h>
 
 class InputKeyCtrl : public wxTextCtrl

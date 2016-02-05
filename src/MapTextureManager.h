@@ -3,7 +3,7 @@
 #define __MAP_TEXTURE_MANAGER_H__
 
 #include "OpenGL/GLTexture.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 #include <map>
 
 struct map_tex_t

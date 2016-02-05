@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "DockPanel.h"
 #include <wx/aui/aui.h>
 

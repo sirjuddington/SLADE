@@ -30,11 +30,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
-#include "SAction.h"
+#include "UI/WxStuff.h"
+#include "General/SAction.h"
 #include "Icons.h"
 #include "MainApp.h"
-#include "KeyBind.h"
+#include "General/KeyBind.h"
 #include <wx/aui/auibar.h>
 
 

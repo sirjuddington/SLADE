@@ -1,6 +1,6 @@
 
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "STabCtrl.h"
 
 STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int height, bool main_tabs) : wxAuiNotebook()

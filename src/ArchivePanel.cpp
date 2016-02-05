@@ -30,8 +30,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Misc.h"
-#include "WxStuff.h"
+#include "General/Misc.h"
+#include "UI/WxStuff.h"
 #include "ArchivePanel.h"
 #include "WadArchive.h"
 #include "TextEntryPanel.h"
@@ -47,7 +47,7 @@
 #include "Dialogs/GfxConvDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "EntryOperations.h"
-#include "Clipboard.h"
+#include "General/Clipboard.h"
 #include "ArchiveManager.h"
 #include "MainWindow.h"
 #include "SplashWindow.h"
@@ -58,7 +58,7 @@
 #include "Dialogs/TranslationEditorDialog.h"
 #include "Utility/SFileDialog.h"
 #include "MapEditorWindow.h"
-#include "KeyBind.h"
+#include "General/KeyBind.h"
 #include "Dialogs/MapEditorConfigDialog.h"
 #include "PaletteManager.h"
 #include "Dialogs/MapReplaceDialog.h"
@@ -3731,8 +3731,8 @@ bool EntryDataUS::swapData()
 
 // I'd love to put them in their own file, but attempting to do so
 // results in a circular include nightmare and nothing works anymore.
-#include "ConsoleHelpers.h"
-#include "Console.h"
+#include "General/Console/ConsoleHelpers.h"
+#include "General/Console/Console.h"
 #include "MainApp.h"
 Archive* CH::getCurrentArchive()
 {

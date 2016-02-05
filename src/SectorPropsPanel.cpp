@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "SectorPropsPanel.h"
 #include "SectorSpecialDialog.h"
 #include "MapObjectPropsPanel.h"

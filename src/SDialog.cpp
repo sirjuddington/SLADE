@@ -29,9 +29,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "SDialog.h"
-#include "Misc.h"
+#include "General/Misc.h"
 
 
 /*******************************************************************

@@ -32,7 +32,7 @@
 #include "CTexture.h"
 #include "ArchiveManager.h"
 #include "ResourceManager.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "SImage.h"
 #include "TextureXList.h"
 #include <wx/colour.h>

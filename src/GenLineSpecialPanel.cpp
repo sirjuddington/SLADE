@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "GenLineSpecial.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "GenLineSpecialPanel.h"
 
 

@@ -3,7 +3,7 @@
 #define __PATCH_TABLE_H__
 
 #include "ArchiveEntry.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 
 struct patch_t
 {

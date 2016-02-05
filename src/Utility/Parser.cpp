@@ -32,7 +32,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Parser.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include <wx/regex.h>
 
 

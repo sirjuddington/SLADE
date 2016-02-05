@@ -33,11 +33,11 @@
  *******************************************************************/
 #include "Main.h"
 #include "MainWindow.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "PatchBrowser.h"
 #include "ArchiveManager.h"
 #include "ResourceManager.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "CTexture.h"
 #include "TextureXList.h"
 #include "SImage.h"

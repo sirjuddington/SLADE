@@ -30,9 +30,9 @@
 #include "Main.h"
 #include "Archive.h"
 #include "MainApp.h"
-#include "Misc.h"
-#include "UndoRedo.h"
-#include "Clipboard.h"
+#include "General/Misc.h"
+#include "General/UndoRedo.h"
+#include "General/Clipboard.h"
 #include <wx/filename.h>
 #include <wx/dir.h>
 

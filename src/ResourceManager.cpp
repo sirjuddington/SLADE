@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "ResourceManager.h"
 #include "ArchiveManager.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "CTexture.h"
 #include "TextureXList.h"
 

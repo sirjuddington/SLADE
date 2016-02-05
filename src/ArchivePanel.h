@@ -4,10 +4,10 @@
 
 #include "Archive.h"
 #include "EntryPanel.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 #include "ArchiveEntryList.h"
 #include "MainApp.h"
-#include "UndoRedo.h"
+#include "General/UndoRedo.h"
 #include <wx/textctrl.h>
 #include <wx/choice.h>
 

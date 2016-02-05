@@ -29,12 +29,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "TranslationEditorDialog.h"
 #include "Icons.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "ArchiveManager.h"
 #include <wx/ffile.h>
 #include <wx/gbsizer.h>

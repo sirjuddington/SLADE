@@ -30,12 +30,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapEditorWindow.h"
 #include "MapEditor.h"
 #include "InfoOverlay3d.h"
 #include "SLADEMap.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
 

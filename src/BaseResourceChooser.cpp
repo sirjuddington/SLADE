@@ -31,7 +31,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "BaseResourceChooser.h"
 #include "ArchiveManager.h"
 #include <wx/filename.h>

@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "CTextureCanvas.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "SImage.h"
 #include "OpenGL/Drawing.h"
 

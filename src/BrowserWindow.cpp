@@ -31,9 +31,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "BrowserWindow.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include <algorithm>
 #include <wx/splitter.h>
 #include <wx/dataview.h>

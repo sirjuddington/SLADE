@@ -29,8 +29,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
-#include "VersionCheck.h"
+#include "UI/WxStuff.h"
+#include "General/VersionCheck.h"
 #include <wx/protocol/http.h>
 #include <wx/sstream.h>
 

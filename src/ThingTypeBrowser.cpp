@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ThingTypeBrowser.h"
 #include "MapEditorWindow.h"
 #include "GameConfiguration.h"

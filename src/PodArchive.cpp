@@ -32,7 +32,7 @@
 #include "PodArchive.h"
 #include "SplashWindow.h"
 #include "MainWindow.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include <wx/filename.h>
 
 

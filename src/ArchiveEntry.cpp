@@ -33,7 +33,7 @@
 #include "Main.h"
 #include "ArchiveEntry.h"
 #include "Archive.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/filename.h>
 
 

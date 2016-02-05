@@ -33,9 +33,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ListView.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 
 
 /*******************************************************************

@@ -2,7 +2,7 @@
 #ifndef __PALETTECHOOSER_H__
 #define	__PALETTECHOOSER_H__
 
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 
 class Archive;
 class ArchiveEntry;

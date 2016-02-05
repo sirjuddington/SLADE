@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ACSPrefsPanel.h"
 #include "Utility/SFileDialog.h"
 #include <wx/listbox.h>

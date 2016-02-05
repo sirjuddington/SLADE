@@ -34,7 +34,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "SImage.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "SIFormat.h"
 #include "Translation.h"
 #include "Utility/MathStuff.h"

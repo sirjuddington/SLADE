@@ -30,9 +30,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "DefaultEntryPanel.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "EntryOperations.h"
 #include "ArchiveManager.h"

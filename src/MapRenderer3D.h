@@ -3,7 +3,7 @@
 #define __MAP_RENDERER_3D_H__
 
 #include "MapEditor.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 
 class GLTexture;
 class Polygon2D;

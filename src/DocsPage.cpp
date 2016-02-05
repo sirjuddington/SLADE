@@ -32,7 +32,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "DocsPage.h"
 #include "SToolBarButton.h"
 #include <wx/webview.h>

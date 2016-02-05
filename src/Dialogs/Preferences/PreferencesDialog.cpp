@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "PreferencesDialog.h"
 #include "BaseResourceArchivesPanel.h"
 #include "TextEditorPrefsPanel.h"

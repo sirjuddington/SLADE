@@ -29,9 +29,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "DataEntryPanel.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "BinaryControlLump.h"
 #include "MainWindow.h"
 

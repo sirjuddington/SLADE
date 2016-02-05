@@ -31,7 +31,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MOPGProperty.h"
 #include "SLADEMap.h"
 #include "ActionSpecialDialog.h"

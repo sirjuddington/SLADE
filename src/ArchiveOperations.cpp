@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ArchiveOperations.h"
 #include "ArchiveManager.h"
 #include "WadArchive.h"
@@ -40,7 +40,7 @@
 #include "MapSector.h"
 #include "MapThing.h"
 #include "MapLine.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include <map>
 
 

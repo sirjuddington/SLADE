@@ -28,8 +28,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Console.h"
-#include "WxStuff.h"
+#include "General/Console/Console.h"
+#include "UI/WxStuff.h"
 #include "ConsolePanel.h"
 
 

@@ -37,7 +37,7 @@
 #include "MapEditorWindow.h"
 #include "OpenGL/OpenGL.h"
 #include "SImage.h"
-#include "Misc.h"
+#include "General/Misc.h"
 
 
 /*******************************************************************

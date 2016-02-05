@@ -52,20 +52,8 @@
     <Filter Include="Resources\Graphics\Font">
       <UniqueIdentifier>{a67c614b-3c23-4e50-8a01-6dd9e96388b9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI Elements">
-      <UniqueIdentifier>{ec031215-840a-462e-b238-3ad04f542e91}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements\Browser">
-      <UniqueIdentifier>{2bb47c0d-bf68-47e1-bc1c-ce7926a17d1a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources\Archive\EntryType">
       <UniqueIdentifier>{d894001c-5335-4237-9b18-60440a1e6a60}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements\TextEditor">
-      <UniqueIdentifier>{54fbf714-855d-444d-885d-1e12f9df2ef7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements\Lists">
-      <UniqueIdentifier>{13cacd50-0c22-431c-b94e-2fc031b1c3dc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resources\Archive\EntryType\EntryDataFormat">
       <UniqueIdentifier>{c59be1fa-5ac3-471b-8512-cf3695aeac84}</UniqueIdentifier>
@@ -111,9 +99,6 @@
     </Filter>
     <Filter Include="Map Editor\GameConfiguration\Configurations">
       <UniqueIdentifier>{22412251-8001-4a47-b40f-114f27e933b9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements\SToolBar">
-      <UniqueIdentifier>{8a2b5ffe-17e4-4358-a572-8e338e14c933}</UniqueIdentifier>
     </Filter>
     <Filter Include="Map Editor\UI Elements\Overlays">
       <UniqueIdentifier>{373e0e80-3aef-4e5a-b892-d9bf8b525878}</UniqueIdentifier>
@@ -175,26 +160,26 @@
     <Filter Include="Utility\PropertyList">
       <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{ec031215-840a-462e-b238-3ad04f542e91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Browser">
+      <UniqueIdentifier>{2bb47c0d-bf68-47e1-bc1c-ce7926a17d1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\TextEditor">
+      <UniqueIdentifier>{54fbf714-855d-444d-885d-1e12f9df2ef7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Lists">
+      <UniqueIdentifier>{13cacd50-0c22-431c-b94e-2fc031b1c3dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\SToolBar">
+      <UniqueIdentifier>{8a2b5ffe-17e4-4358-a572-8e338e14c933}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application">
+      <UniqueIdentifier>{08f7e6cd-5237-4843-9d89-73bc8aa49ee1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Clipboard.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CVar.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ListenerAnnouncer.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MainApp.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Misc.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WxStuff.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\EntryOperations.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
@@ -292,49 +277,49 @@
       <Filter>Resources\Graphics\Composite Texture</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ColourBox.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ConsolePanel.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\CTextureCanvas.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\GfxCanvas.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\OGLCanvas.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\PaletteCanvas.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\PaletteChooser.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SplashWindow.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\EntryType.cpp">
       <Filter>Resources\Archive\EntryType</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\TextEditor.cpp">
-      <Filter>UI Elements\TextEditor</Filter>
+      <Filter>UI\TextEditor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\TextLanguage.cpp">
-      <Filter>UI Elements\TextEditor</Filter>
+      <Filter>UI\TextEditor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ArchiveEntryList.cpp">
-      <Filter>UI Elements\Lists</Filter>
+      <Filter>UI\Lists</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ListView.cpp">
-      <Filter>UI Elements\Lists</Filter>
+      <Filter>UI\Lists</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\EntryDataFormat.cpp">
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\VirtualListView.cpp">
-      <Filter>UI Elements\Lists</Filter>
+      <Filter>UI\Lists</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ArchivePanel.cpp">
       <Filter>Main Editor\UI Elements</Filter>
@@ -346,13 +331,10 @@
       <Filter>Main Editor\UI Elements</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\BrowserItem.cpp">
-      <Filter>UI Elements\Browser</Filter>
+      <Filter>UI\Browser</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\BrowserWindow.cpp">
-      <Filter>UI Elements\Browser</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Console.cpp">
-      <Filter>General\Console</Filter>
+      <Filter>UI\Browser</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SImageFormats.cpp">
       <Filter>Resources\Graphics\Image</Filter>
@@ -364,7 +346,7 @@
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\HexEditorPanel.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
@@ -373,7 +355,7 @@
       <Filter>Main Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\TextStyle.cpp">
-      <Filter>UI Elements\TextEditor</Filter>
+      <Filter>UI\TextEditor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\AudioEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
@@ -382,13 +364,13 @@
       <Filter>Main Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\BrowserCanvas.cpp">
-      <Filter>UI Elements\Browser</Filter>
+      <Filter>UI\Browser</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ANSIEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ANSICanvas.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SFont.cpp">
       <Filter>Resources\Graphics\Font</Filter>
@@ -401,9 +383,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Translation.cpp">
       <Filter>Resources\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SAction.cpp">
-      <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
       <Filter>External\Mus2Mid</Filter>
@@ -637,22 +616,13 @@
       <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\DockPanel.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\KeyBind.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ColourConfiguration.cpp">
-      <Filter>General</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MCAnimations.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapTextureManager.cpp">
       <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\FileMonitor.cpp">
-      <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\GameConfiguration.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
@@ -685,13 +655,13 @@
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SToolBar.cpp">
-      <Filter>UI Elements\SToolBar</Filter>
+      <Filter>UI\SToolBar</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SToolBarButton.cpp">
-      <Filter>UI Elements\SToolBar</Filter>
+      <Filter>UI\SToolBar</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapPreviewCanvas.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SectorTextureOverlay.cpp">
       <Filter>Map Editor\UI Elements\Overlays</Filter>
@@ -700,7 +670,7 @@
       <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\STopWindow.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SectorBuilder.cpp">
       <Filter>Map Editor</Filter>
@@ -719,9 +689,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ScriptEditorPanel.cpp">
       <Filter>Map Editor\Script Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Lua.cpp">
-      <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\External\lua\lapi.c">
       <Filter>External\Lua</Filter>
@@ -819,11 +786,8 @@
     <ClCompile Include="..\..\src\External\lua\lzio.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\UndoRedo.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\UndoManagerHistoryPanel.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\DiskArchive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
@@ -858,11 +822,8 @@
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp">
       <Filter>Dialogs\SetupWizard</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Executables.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ResourceArchiveChooser.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapChecks.cpp">
       <Filter>Map Editor</Filter>
@@ -988,7 +949,7 @@
       <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDialog.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\LinePropsPanel.cpp">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
@@ -1000,13 +961,10 @@
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\NumberTextCtrl.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThingPropsPanel.cpp">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\VersionCheck.cpp">
-      <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapBackupManager.cpp">
       <Filter>Map Editor</Filter>
@@ -1276,10 +1234,10 @@
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SAuiTabArt.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\STabCtrl.cpp">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
@@ -1374,29 +1332,53 @@
     <ClCompile Include="..\..\src\Utility\MemChunk.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\General\Clipboard.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\ColourConfiguration.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\CVar.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Executables.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\KeyBind.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\ListenerAnnouncer.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Lua.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Misc.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\UndoRedo.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\VersionCheck.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Console\Console.cpp">
+      <Filter>General\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\WxStuff.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Application\MainApp.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\SAction.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\FileMonitor.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\Clipboard.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\CVar.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ListenerAnnouncer.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Main.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MainApp.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Misc.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WxStuff.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\EntryOperations.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
@@ -1504,43 +1486,43 @@
     </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\src\ColourBox.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ConsolePanel.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\CTextureCanvas.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\GfxCanvas.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\OGLCanvas.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\PaletteCanvas.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\PaletteChooser.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SplashWindow.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\EntryType.h">
       <Filter>Resources\Archive\EntryType</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\TextEditor.h">
-      <Filter>UI Elements\TextEditor</Filter>
+      <Filter>UI\TextEditor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\TextLanguage.h">
-      <Filter>UI Elements\TextEditor</Filter>
+      <Filter>UI\TextEditor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ArchiveEntryList.h">
-      <Filter>UI Elements\Lists</Filter>
+      <Filter>UI\Lists</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ListView.h">
-      <Filter>UI Elements\Lists</Filter>
+      <Filter>UI\Lists</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\EntryDataFormat.h">
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
@@ -1561,7 +1543,7 @@
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\VirtualListView.h">
-      <Filter>UI Elements\Lists</Filter>
+      <Filter>UI\Lists</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ArchivePanel.h">
       <Filter>Main Editor\UI Elements</Filter>
@@ -1570,19 +1552,13 @@
       <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\BrowserItem.h">
-      <Filter>UI Elements\Browser</Filter>
+      <Filter>UI\Browser</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\BrowserWindow.h">
-      <Filter>UI Elements\Browser</Filter>
+      <Filter>UI\Browser</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\BaseResourceChooser.h">
       <Filter>Main Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Console.h">
-      <Filter>General\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ConsoleHelpers.h">
-      <Filter>General\Console</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\PatchBrowser.h">
       <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
@@ -1591,7 +1567,7 @@
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\HexEditorPanel.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
@@ -1600,7 +1576,7 @@
       <Filter>Main Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\TextStyle.h">
-      <Filter>UI Elements\TextEditor</Filter>
+      <Filter>UI\TextEditor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\AudioEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
@@ -1609,13 +1585,13 @@
       <Filter>Main Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\BrowserCanvas.h">
-      <Filter>UI Elements\Browser</Filter>
+      <Filter>UI\Browser</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ANSIEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ANSICanvas.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\LumpFormats.h">
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
@@ -1628,9 +1604,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Translation.h">
       <Filter>Resources\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SAction.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\bzip2\bzlib.h">
       <Filter>External\BZip2</Filter>
@@ -1861,22 +1834,13 @@
       <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\DockPanel.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\KeyBind.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ColourConfiguration.h">
-      <Filter>General</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MCAnimations.h">
       <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapTextureManager.h">
       <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\FileMonitor.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\GameConfiguration.h">
       <Filter>Map Editor\GameConfiguration</Filter>
@@ -1909,13 +1873,13 @@
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SToolBar.h">
-      <Filter>UI Elements\SToolBar</Filter>
+      <Filter>UI\SToolBar</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SToolBarButton.h">
-      <Filter>UI Elements\SToolBar</Filter>
+      <Filter>UI\SToolBar</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapPreviewCanvas.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MCOverlay.h">
       <Filter>Map Editor\UI Elements\Overlays</Filter>
@@ -1927,7 +1891,7 @@
       <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\STopWindow.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SectorBuilder.h">
       <Filter>Map Editor</Filter>
@@ -1943,9 +1907,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ScriptEditorPanel.h">
       <Filter>Map Editor\Script Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Lua.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\lua\lapi.h">
       <Filter>External\Lua</Filter>
@@ -2022,11 +1983,8 @@
     <ClInclude Include="..\..\src\External\lua\lzio.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\UndoRedo.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\UndoManagerHistoryPanel.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\DiskArchive.h">
       <Filter>Resources\Archive\Formats</Filter>
@@ -2064,11 +2022,8 @@
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.h">
       <Filter>Dialogs\SetupWizard</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Executables.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ResourceArchiveChooser.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapChecks.h">
       <Filter>Map Editor</Filter>
@@ -2191,7 +2146,7 @@
       <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SDialog.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\LinePropsPanel.h">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
@@ -2206,13 +2161,10 @@
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\NumberTextCtrl.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ThingPropsPanel.h">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\VersionCheck.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapBackupManager.h">
       <Filter>Map Editor</Filter>
@@ -2227,10 +2179,10 @@
       <Filter>External\DUMB</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SAuiTabArt.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\STabCtrl.h">
-      <Filter>UI Elements</Filter>
+      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapSpecials.h">
       <Filter>Map Editor</Filter>
@@ -2271,7 +2223,6 @@
     <ClInclude Include="..\..\src\Dialogs\TranslationEditorDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\glew\wglew.h" />
     <ClInclude Include="..\..\src\glew\glew.h">
       <Filter>External\GLEW</Filter>
     </ClInclude>
@@ -2366,6 +2317,60 @@
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utility\MemChunk.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\glew\wglew.h">
+      <Filter>External\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Clipboard.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\ColourConfiguration.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\CVar.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Executables.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\KeyBind.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\ListenerAnnouncer.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Lua.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Misc.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\UndoRedo.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\VersionCheck.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Console\Console.h">
+      <Filter>General\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Console\ConsoleHelpers.h">
+      <Filter>General\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\WxStuff.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\Main.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\MainApp.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\SAction.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\FileMonitor.h">
       <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>

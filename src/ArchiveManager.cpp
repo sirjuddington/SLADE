@@ -32,7 +32,7 @@
 #include "ArchiveManager.h"
 #include "Archives.h"
 #include "DirArchive.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "SplashWindow.h"
 #include "ResourceManager.h"
 #include "GameConfiguration.h"

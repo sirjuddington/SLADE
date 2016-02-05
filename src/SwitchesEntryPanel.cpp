@@ -29,11 +29,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "SwitchesEntryPanel.h"
 #include "Archive.h"
 #include "ArchiveManager.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/listctrl.h>
 
 

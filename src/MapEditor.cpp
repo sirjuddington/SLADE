@@ -30,18 +30,18 @@
  *******************************************************************/
 #include "Main.h"
 #include "MapEditor.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "ArchiveManager.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapEditorWindow.h"
 #include "GameConfiguration.h"
 #include "Utility/MathStuff.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "MapCanvas.h"
 #include "MapObjectPropsPanel.h"
 #include "SectorBuilder.h"
-#include "Clipboard.h"
-#include "UndoRedo.h"
+#include "General/Clipboard.h"
+#include "General/UndoRedo.h"
 #include "MapChecks.h"
 #include <set>
 

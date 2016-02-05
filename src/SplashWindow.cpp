@@ -30,10 +30,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "SplashWindow.h"
 #include "ArchiveManager.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "MainApp.h"
 #include "MainWindow.h"
 #include <wx/dcbuffer.h>

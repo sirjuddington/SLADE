@@ -33,7 +33,7 @@
 #include <cmath>
 
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "BrowserCanvas.h"
 #include "OpenGL/Drawing.h"
 

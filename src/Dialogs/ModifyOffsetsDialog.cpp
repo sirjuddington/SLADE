@@ -29,9 +29,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ModifyOffsetsDialog.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "Icons.h"
 
 

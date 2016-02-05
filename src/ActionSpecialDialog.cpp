@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ActionSpecialDialog.h"
 #include "GameConfiguration.h"
 #include "GenLineSpecialPanel.h"

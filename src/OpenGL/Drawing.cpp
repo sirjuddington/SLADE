@@ -31,9 +31,9 @@
 #include "Drawing.h"
 #include "GLTexture.h"
 #include "ArchiveManager.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "Utility/MathStuff.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "OpenGL.h"
 #include <wx/settings.h>
 

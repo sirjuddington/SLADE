@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "Utility/CodePages.h"
 #include "ANSICanvas.h"
 #include "ArchiveManager.h"

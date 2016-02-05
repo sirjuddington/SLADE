@@ -27,7 +27,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ColorimetryPrefsPanel.h"
 #include "Utility/CIEDeltaEquations.h"
 #include "Palette.h"

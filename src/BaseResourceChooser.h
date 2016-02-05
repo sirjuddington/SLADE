@@ -2,7 +2,7 @@
 #ifndef __BASE_RESOURCE_CHOOSER_H__
 #define __BASE_RESOURCE_CHOOSER_H__
 
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 
 
 class BaseResourceChooser : public wxChoice, public Listener

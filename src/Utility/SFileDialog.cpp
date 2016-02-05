@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "SFileDialog.h"
 #include <wx/filename.h>
 

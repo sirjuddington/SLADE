@@ -28,9 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ColourPrefsPanel.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "MainWindow.h"
 #include "MapEditorWindow.h"
 #include "PreferencesDialog.h"

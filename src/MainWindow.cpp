@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MainWindow.h"
 #include "ConsolePanel.h"
 #include "ArchiveManager.h"
@@ -44,7 +44,7 @@
 #include "SToolBar.h"
 #include "UndoManagerHistoryPanel.h"
 #include "ArchivePanel.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "STabCtrl.h"
 #include "TextureXEditor.h"
 #include <wx/aboutdlg.h>

@@ -7,7 +7,7 @@
 #include <wx/dirctrl.h>
 #include <wx/listbox.h>
 #include <wx/thread.h>
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 #include "Archive.h"
 #include "ListView.h"
 #include "EntryPanel.h"

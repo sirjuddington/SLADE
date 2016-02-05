@@ -8,7 +8,7 @@
 #include "SectorInfoOverlay.h"
 #include "ThingInfoOverlay.h"
 #include "InfoOverlay3d.h"
-#include "KeyBind.h"
+#include "General/KeyBind.h"
 #include "MainApp.h"
 #include "MCOverlay.h"
 #include "MapRenderer3D.h"

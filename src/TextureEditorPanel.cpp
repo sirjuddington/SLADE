@@ -28,11 +28,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "TextureEditorPanel.h"
 #include "Icons.h"
 #include "TextureXEditor.h"
-#include "KeyBind.h"
+#include "General/KeyBind.h"
 #include <wx/gbsizer.h>
 
 

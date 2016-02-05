@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "BrowserItem.h"
 #include "OpenGL/Drawing.h"
 #include "SFont.h"

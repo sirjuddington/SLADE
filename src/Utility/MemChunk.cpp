@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "MemChunk.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/log.h>
 
 

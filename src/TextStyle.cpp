@@ -33,7 +33,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "TextStyle.h"
 #include "ArchiveManager.h"
 #include <wx/dir.h>

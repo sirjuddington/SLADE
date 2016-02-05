@@ -30,10 +30,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "STopWindow.h"
 #include "SToolBar.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/aui/aui.h>
 
 

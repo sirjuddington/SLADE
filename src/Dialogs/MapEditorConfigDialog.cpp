@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapEditorConfigDialog.h"
 #include "BaseResourceChooser.h"
 #include "GameConfiguration.h"
@@ -38,7 +38,7 @@
 #include "WadArchive.h"
 #include "Utility/SFileDialog.h"
 #include "SplashWindow.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "Icons.h"
 #include "ResourceArchiveChooser.h"
 #include "MapPreviewCanvas.h"

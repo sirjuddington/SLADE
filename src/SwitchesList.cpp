@@ -27,7 +27,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "SwitchesList.h"
 #include "ListView.h"
 #include "Utility/Tokenizer.h"

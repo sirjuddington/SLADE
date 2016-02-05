@@ -2,7 +2,7 @@
 #ifndef __CONSOLEPANEL_H__
 #define __CONSOLEPANEL_H__
 
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 #include <wx/textctrl.h>
 
 class ConsolePanel : public wxPanel, Listener

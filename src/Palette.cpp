@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Palette.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "Translation.h"
 #include "SIFormat.h"
 #include "Utility/Tokenizer.h"

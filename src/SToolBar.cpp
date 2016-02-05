@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "SToolBar.h"
 #include "SToolBarButton.h"
 #include "OpenGL/Drawing.h"

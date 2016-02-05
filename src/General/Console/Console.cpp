@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "Console.h"
 #include "Utility/Tokenizer.h"
-#include "CVar.h"
+#include "General/CVar.h"
 #include "MainWindow.h"
 #include <wx/log.h>
 #include <wx/utils.h>

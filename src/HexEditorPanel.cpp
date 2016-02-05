@@ -30,9 +30,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "HexEditorPanel.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "Utility/CodePages.h"
 #include "ArchiveManager.h"
 #include <wx/numdlg.h>

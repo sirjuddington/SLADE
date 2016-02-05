@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapCanvas.h"
 #include "MapEditorWindow.h"
 #include "MainApp.h"
@@ -51,7 +51,7 @@
 #include "SplashWindow.h"
 #include "UndoManagerHistoryPanel.h"
 #include "MapBackupManager.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/aui/aui.h>
 
 

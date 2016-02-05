@@ -210,7 +210,7 @@ double CIE::CIEDE2000(lab_t& col1, lab_t& col2)
  * The provided results have a precision of four decimal points, so it's the margin of
  * precision that'll be used. The results are only valid if KL, KC and KH are set to 1.
  */
-#include "Console.h"
+#include "General/Console/Console.h"
 CONSOLE_COMMAND(testciede, 0)
 {
 	lab_t labs[34][2] =

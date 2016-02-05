@@ -30,14 +30,14 @@
  *******************************************************************/
 #include "Main.h"
 #include "MainWindow.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "TextureXEditor.h"
 #include "ArchiveManager.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "SplashWindow.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "ResourceManager.h"
-#include "UndoRedo.h"
+#include "General/UndoRedo.h"
 #include "UndoManagerHistoryPanel.h"
 #include <wx/dialog.h>
 #include <wx/radiobut.h>

@@ -32,7 +32,7 @@
 #include "PaletteManager.h"
 #include "ArchiveManager.h"
 #include "ZipArchive.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include <wx/dir.h>
 #include <wx/filename.h>
 

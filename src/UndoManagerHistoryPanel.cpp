@@ -31,9 +31,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "UndoManagerHistoryPanel.h"
-#include "UndoRedo.h"
+#include "General/UndoRedo.h"
 
 
 /*******************************************************************

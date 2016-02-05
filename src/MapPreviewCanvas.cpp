@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapPreviewCanvas.h"
 #include "WadArchive.h"
 #include "MapLine.h"
@@ -37,7 +37,7 @@
 #include "Utility/Parser.h"
 #include "SImage.h"
 #include "SIFormat.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "MapThing.h"
 #include "OpenGL/GLTexture.h"
 #include "ArchiveManager.h"

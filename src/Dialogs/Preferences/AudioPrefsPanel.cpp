@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "AudioPrefsPanel.h"
 #include "Audio/MIDIPlayer.h"
 #include <wx/filedlg.h>

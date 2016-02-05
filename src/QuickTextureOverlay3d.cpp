@@ -32,7 +32,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapEditorWindow.h"
 #include "QuickTextureOverlay3d.h"
 #include "OpenGL/Drawing.h"

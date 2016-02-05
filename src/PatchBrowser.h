@@ -3,7 +3,7 @@
 #define __PATCH_BROWSER_H__
 
 #include "BrowserWindow.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 #include "PatchTable.h"
 
 class PatchBrowserItem : public BrowserItem

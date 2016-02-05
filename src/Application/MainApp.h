@@ -2,7 +2,7 @@
 #ifndef __MAINAPP_H__
 #define __MAINAPP_H__
 
-#include "SAction.h"
+#include "General/SAction.h"
 #include <wx/app.h>
 #include <wx/log.h>
 #include <wx/stopwatch.h>

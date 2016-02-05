@@ -27,7 +27,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "GraphicsPrefsPanel.h"
 #include "OpenGL/GLTexture.h"
 #include "MainWindow.h"

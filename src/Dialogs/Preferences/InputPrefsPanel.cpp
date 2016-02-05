@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "InputPrefsPanel.h"
 #include "MapEditorWindow.h"
 #include <wx/listctrl.h>

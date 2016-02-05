@@ -30,11 +30,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "RunDialog.h"
 #include "Icons.h"
 #include "Utility/SFileDialog.h"
-#include "Executables.h"
+#include "General/Executables.h"
 #include "ResourceArchiveChooser.h"
 #include "Archive.h"
 #include "ArchiveManager.h"

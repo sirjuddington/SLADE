@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "OGLCanvas.h"
 #include "OpenGL/GLTexture.h"
 #include "MainApp.h"

@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #undef min
 #undef max
 #include <wx/valnum.h>
@@ -38,7 +38,7 @@
 #include "ObjectEdit.h"
 #include "Icons.h"
 #include "MapEditorWindow.h"
-#include "KeyBind.h"
+#include "General/KeyBind.h"
 
 
 /*******************************************************************

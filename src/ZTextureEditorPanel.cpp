@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ZTextureEditorPanel.h"
 #include "Icons.h"
 #include "Dialogs/TranslationEditorDialog.h"

@@ -31,7 +31,7 @@
 #include "ColourConfiguration.h"
 #include "Utility/Parser.h"
 #include "ArchiveManager.h"
-#include "Console.h"
+#include "Console/Console.h"
 #include <map>
 
 

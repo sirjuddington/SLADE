@@ -34,7 +34,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "ColourBox.h"
 #include "Dialogs/PaletteDialog.h"
 #include <wx/colordlg.h>

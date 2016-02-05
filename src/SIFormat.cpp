@@ -31,7 +31,7 @@
 #include "Main.h"
 #undef BOOL
 #include <FreeImage.h>
-#include "Misc.h"
+#include "General/Misc.h"
 #include "EntryType.h"
 #include "SIFormat.h"
 #include "Archive.h"

@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "MapObjectPropsPanel.h"
 #include "GameConfiguration.h"
 #include "SLADEMap.h"

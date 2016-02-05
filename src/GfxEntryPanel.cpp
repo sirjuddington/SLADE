@@ -29,10 +29,10 @@
  *******************************************************************/
 #include "Main.h"
 #include "MainWindow.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "GfxEntryPanel.h"
 #include "Palette.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "PaletteManager.h"
 #include "EntryOperations.h"
 #include "Icons.h"
@@ -41,7 +41,7 @@
 #include <wx/dialog.h>
 #include <wx/clrpicker.h>
 #include <wx/filename.h>
-#include "ConsoleHelpers.h"
+#include "General/Console/ConsoleHelpers.h"
 #include "SToolBar.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 
@@ -1087,7 +1087,7 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 
 // I'd love to put them in their own file, but attempting to do so
 // results in a circular include nightmare and nothing works anymore.
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "MainApp.h"
 #include "ArchivePanel.h"
 #include "MainWindow.h"

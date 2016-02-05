@@ -3,8 +3,8 @@
 #define __ENTRYPANEL_H__
 
 #include "ArchiveEntry.h"
-#include "ListenerAnnouncer.h"
-#include "UndoRedo.h"
+#include "General/ListenerAnnouncer.h"
+#include "General/UndoRedo.h"
 #include "SToolBar.h"
 
 class SToolBarButton;

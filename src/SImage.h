@@ -3,7 +3,7 @@
 #define	__SIMAGE_H__
 
 #include "Palette.h"
-#include "ListenerAnnouncer.h"
+#include "General/ListenerAnnouncer.h"
 
 enum SIType
 {

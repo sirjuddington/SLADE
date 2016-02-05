@@ -34,7 +34,7 @@
 #include "MapVertex.h"
 #include "OpenGL/Drawing.h"
 #include "Utility/MathStuff.h"
-#include "ColourConfiguration.h"
+#include "General/ColourConfiguration.h"
 #include "OpenGL/OpenGL.h"
 
 

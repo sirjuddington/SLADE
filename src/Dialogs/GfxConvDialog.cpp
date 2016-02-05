@@ -29,11 +29,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
+#include "UI/WxStuff.h"
 #include "GfxConvDialog.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "ArchiveManager.h"
-#include "Misc.h"
+#include "General/Misc.h"
 #include "PaletteManager.h"
 #include "SplashWindow.h"
 #include "Icons.h"
