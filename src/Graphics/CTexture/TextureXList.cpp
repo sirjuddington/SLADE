@@ -30,8 +30,8 @@
 #include "Main.h"
 #include "MainWindow.h"
 #include "TextureXList.h"
-#include "Archive.h"
-#include "ArchiveManager.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveManager.h"
 
 
 /*******************************************************************

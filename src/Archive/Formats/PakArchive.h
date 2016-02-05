@@ -1,16 +1,16 @@
 
-#ifndef __TAR_ARCHIVE_H__
-#define __TAR_ARCHIVE_H__
+#ifndef __PAK_ARCHIVE_H__
+#define __PAK_ARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
-class TarArchive : public Archive
+class PakArchive : public Archive
 {
 private:
 
 public:
-	TarArchive();
-	~TarArchive();
+	PakArchive();
+	~PakArchive();
 
 	// Archive type info
 	string	getFileExtensionString();
@@ -27,8 +27,8 @@ public:
 	virtual vector<mapdesc_t>	detectMaps() { return vector<mapdesc_t>(); }
 
 	// Static functions
-	static bool isTarArchive(MemChunk& mc);
-	static bool isTarArchive(string filename);
+	static bool isPakArchive(MemChunk& mc);
+	static bool isPakArchive(string filename);
 };
 
-#endif//__TAR_ARCHIVE_H__
+#endif//__PAK_ARCHIVE_H__

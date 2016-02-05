@@ -4,7 +4,7 @@
 
 #include <wx/stc/stc.h>
 #include <wx/minifram.h>
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 #include "TextLanguage.h"
 #include "TextStyle.h"
 

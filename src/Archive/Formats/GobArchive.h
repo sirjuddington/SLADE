@@ -1,22 +1,22 @@
 
-#ifndef __LIBARCHIVE_H__
-#define	__LIBARCHIVE_H__
+#ifndef __GOBARCHIVE_H__
+#define __GOBARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
-class LibArchive : public TreelessArchive
+class GobArchive : public TreelessArchive
 {
 public:
-	LibArchive();
-	~LibArchive();
+	GobArchive();
+	~GobArchive();
 
-	// Lib specific
+	// GOB specific
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
 	// Archive type info
-	string			getFileExtensionString();
-	string			getFormat();
+	string	getFileExtensionString();
+	string	getFormat();
 
 	// Opening/writing
 	bool	open(MemChunk& mc);							// Open from MemChunk
@@ -24,18 +24,20 @@ public:
 
 	// Misc
 	bool		loadEntryData(ArchiveEntry* entry);
-	unsigned 	numEntries() { return getRoot()->numEntries(); }
 
-	// Entry addition/modification
+	// Entry addition/removal
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
-	bool			renameEntry(ArchiveEntry* entry, string name);
+
+	// Entry modification
+	bool	renameEntry(ArchiveEntry* entry, string name);
 
 	// Detection
 	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
 
-	static bool isLibArchive(MemChunk& mc);
-	static bool isLibArchive(string filename);
+	// Static functions
+	static bool isGobArchive(MemChunk& mc);
+	static bool isGobArchive(string filename);
 };
 
-#endif	/* __LIBARCHIVE_H__ */
+#endif//__GOBARCHIVE_H__

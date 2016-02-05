@@ -39,7 +39,7 @@
 #include "Graphics/Translation.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 
 #undef BOOL
 #include <FreeImage.h>

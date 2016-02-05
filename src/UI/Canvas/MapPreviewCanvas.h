@@ -3,7 +3,7 @@
 #define __MAP_PREVIEW_CANVAS_H__
 
 #include "OGLCanvas.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 // Structs for basic map features
 struct mep_vertex_t

@@ -2,7 +2,7 @@
 #ifndef __TEXTUREXLIST_H__
 #define __TEXTUREXLIST_H__
 
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 #include "CTexture.h"
 #include "PatchTable.h"
 

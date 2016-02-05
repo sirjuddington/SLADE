@@ -1,16 +1,16 @@
 
-#ifndef __GRPARCHIVE_H__
-#define __GRPARCHIVE_H__
+#ifndef __RFFARCHIVE_H__
+#define __RFFARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
-class GrpArchive : public TreelessArchive
+class RffArchive : public TreelessArchive
 {
 public:
-	GrpArchive();
-	~GrpArchive();
+	RffArchive();
+	~RffArchive();
 
-	// GRP specific
+	// RFF specific
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
@@ -36,8 +36,8 @@ public:
 	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
 
 	// Static functions
-	static bool isGrpArchive(MemChunk& mc);
-	static bool isGrpArchive(string filename);
+	static bool isRffArchive(MemChunk& mc);
+	static bool isRffArchive(string filename);
 };
 
-#endif//__GRPARCHIVE_H__
+#endif//__RFFARCHIVE_H__

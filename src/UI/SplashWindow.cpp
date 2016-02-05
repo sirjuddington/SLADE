@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "SplashWindow.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
 #include "MainApp.h"
 #include "MainWindow.h"

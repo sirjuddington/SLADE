@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "SFont.h"
 #include "Graphics/SImage/SImage.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "OpenGL/OpenGL.h"
 
 

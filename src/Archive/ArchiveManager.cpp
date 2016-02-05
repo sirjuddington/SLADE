@@ -30,8 +30,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "ArchiveManager.h"
-#include "Archives.h"
-#include "DirArchive.h"
+#include "Formats/All.h"
+#include "Formats/DirArchive.h"
 #include "General/Console/Console.h"
 #include "UI/SplashWindow.h"
 #include "ResourceManager.h"

@@ -3,7 +3,7 @@
 #define __MAP_EDITOR_CONFIG_DIALOG_H__
 
 #include "UI/SDialog.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "UI/Lists/ListView.h"
 
 class MapPreviewCanvas;

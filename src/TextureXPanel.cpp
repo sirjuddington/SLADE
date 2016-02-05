@@ -35,7 +35,7 @@
 #include "TextureXEditor.h"
 #include "ZTextureEditorPanel.h"
 #include "General/Clipboard.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "Graphics/Icons.h"
 #include "ResourceManager.h"
 #include "General/ColourConfiguration.h"

@@ -35,8 +35,8 @@
 #include "Utility/Parser.h"
 #include "General/Misc.h"
 #include "General/Console/Console.h"
-#include "Archive.h"
-#include "ArchiveManager.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveManager.h"
 #include "SLADEMap.h"
 #include "GenLineSpecial.h"
 #include <wx/textfile.h>

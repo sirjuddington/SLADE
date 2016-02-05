@@ -2,7 +2,7 @@
 #ifndef __WAD2_ARCHIVE_H__
 #define __WAD2_ARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 // From http://www.gamers.org/dEngine/quake/spec/quake-spec31.html#CWADF
 struct wad2entry_t

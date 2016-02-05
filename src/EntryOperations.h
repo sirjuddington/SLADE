@@ -2,7 +2,7 @@
 #ifndef __ENTRYOPERATIONS_H__
 #define	__ENTRYOPERATIONS_H__
 
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 #include "Graphics/SImage/SIFormat.h"
 
 class wxFrame;

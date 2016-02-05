@@ -4,7 +4,7 @@
 
 #include "VirtualListView.h"
 #include "General/ListenerAnnouncer.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "MainApp.h"
 #include <wx/listctrl.h>
 #include <wx/textctrl.h>

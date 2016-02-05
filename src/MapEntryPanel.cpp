@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "MapEntryPanel.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "MapLine.h"
 #include "MapVertex.h"
 #include "Utility/Parser.h"

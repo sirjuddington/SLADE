@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "Drawing.h"
 #include "GLTexture.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
 #include "Utility/MathStuff.h"
 #include "General/Misc.h"

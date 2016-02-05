@@ -1,7 +1,7 @@
 #ifndef ANIMATEDLIST_H
 #define	ANIMATEDLIST_H
 
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 #include "BinaryControlLump.h"
 
 class AnimatedEntry

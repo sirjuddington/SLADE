@@ -35,7 +35,7 @@
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
 #include "General/Misc.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include <wx/ffile.h>
 #include <wx/gbsizer.h>
 

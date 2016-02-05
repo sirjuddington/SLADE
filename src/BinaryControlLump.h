@@ -2,7 +2,7 @@
 #ifndef BINARYCONTROLLUMPS_H
 #define	BINARYCONTROLLUMPS_H
 
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 
 // If the compiler pads the structures, this completely breaks parsing.
 #pragma pack(1)

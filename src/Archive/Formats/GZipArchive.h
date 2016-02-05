@@ -1,15 +1,22 @@
 
-#ifndef __BZIP2ARCHIVE_H__
-#define __BZIP2ARCHIVE_H__
+#ifndef __GZIPARCHIVE_H__
+#define __GZIPARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
-class BZip2Archive : public TreelessArchive
+class GZipArchive : public TreelessArchive
 {
+private:
+	string comment;
+	MemChunk xtra;
+	uint8_t flags;
+	uint32_t mtime;
+	uint8_t xfl;
+	uint8_t os;
 
 public:
-	BZip2Archive();
-	~BZip2Archive();
+	GZipArchive();
+	~GZipArchive();
 
 	// Archive type info
 	string	getFileExtensionString();
@@ -30,7 +37,7 @@ public:
 	bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true) { return false ; }
 
 	// Entry modification
-	bool	renameEntry(ArchiveEntry* entry, string name) { return false ; }
+	bool	renameEntry(ArchiveEntry* entry, string name);
 
 	// Entry moving
 	bool	swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2) { return false ; }
@@ -45,10 +52,10 @@ public:
 	vector<ArchiveEntry*>	findAll(search_options_t& options);
 
 	// Static functions
-	static bool isBZip2Archive(MemChunk& mc);
-	static bool isBZip2Archive(string filename);
+	static bool isGZipArchive(MemChunk& mc);
+	static bool isGZipArchive(string filename);
 
 };
 
 
-#endif //__BZIP2ARCHIVE_H__
+#endif //__GZIPARCHIVE_H__

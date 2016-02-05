@@ -28,9 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "Conversions.h"
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 #include "External/mus2mid/mus2mid.h"
 #include "External/zreaders/i_music.h"
 

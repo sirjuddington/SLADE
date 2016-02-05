@@ -2,7 +2,7 @@
 #ifndef __ARCHIVE_OPERATIONS_H__
 #define __ARCHIVE_OPERATIONS_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 namespace ArchiveOperations
 {

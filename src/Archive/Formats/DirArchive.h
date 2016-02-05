@@ -2,7 +2,7 @@
 #ifndef __DIR_ARCHIVE_H__
 #define __DIR_ARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include <map>
 #include <wx/dir.h>
 

@@ -2,7 +2,7 @@
 #ifndef __DIR_ARCHIVE_UPDATE_DIALOG__
 #define __DIR_ARCHIVE_UPDATE_DIALOG__
 
-#include "DirArchive.h"
+#include "Archive/Formats/DirArchive.h"
 #include "UI/SDialog.h"
 
 class wxDataViewListCtrl;

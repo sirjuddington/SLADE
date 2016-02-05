@@ -3,7 +3,7 @@
 #define __RESOURCE_MANAGER_H__
 
 #include "General/ListenerAnnouncer.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include <map>
 
 class ResourceManager;

@@ -1,16 +1,16 @@
 
-#ifndef __GOBARCHIVE_H__
-#define __GOBARCHIVE_H__
+#ifndef __HOGARCHIVE_H__
+#define __HOGARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
-class GobArchive : public TreelessArchive
+class HogArchive : public TreelessArchive
 {
 public:
-	GobArchive();
-	~GobArchive();
+	HogArchive();
+	~HogArchive();
 
-	// GOB specific
+	// HOG specific
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
@@ -36,8 +36,8 @@ public:
 	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
 
 	// Static functions
-	static bool isGobArchive(MemChunk& mc);
-	static bool isGobArchive(string filename);
+	static bool isHogArchive(MemChunk& mc);
+	static bool isHogArchive(string filename);
 };
 
-#endif//__GOBARCHIVE_H__
+#endif//__HOGARCHIVE_H__

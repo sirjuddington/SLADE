@@ -2,7 +2,7 @@
 #ifndef __WADJARCHIVE_H__
 #define	__WADJARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "WadArchive.h"
 
 class WadJArchive : public WadArchive

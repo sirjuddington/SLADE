@@ -35,7 +35,7 @@
 #include "General/Misc.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "EntryOperations.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "UI/HexEditorPanel.h"
 #include "MainWindow.h"
 

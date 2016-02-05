@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "MapPreviewCanvas.h"
-#include "WadArchive.h"
+#include "Archive/Formats/WadArchive.h"
 #include "MapLine.h"
 #include "MapVertex.h"
 #include "Utility/Parser.h"
@@ -40,7 +40,7 @@
 #include "General/ColourConfiguration.h"
 #include "MapThing.h"
 #include "OpenGL/GLTexture.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 
 
 /*******************************************************************

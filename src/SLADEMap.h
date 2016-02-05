@@ -7,7 +7,7 @@
 #include "MapSector.h"
 #include "MapVertex.h"
 #include "MapThing.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "Utility/PropertyList/PropertyList.h"
 #include "MapSpecials.h"
 

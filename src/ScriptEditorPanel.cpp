@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "ScriptEditorPanel.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "EntryOperations.h"
 #include "GameConfiguration.h"

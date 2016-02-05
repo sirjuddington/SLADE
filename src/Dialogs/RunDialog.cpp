@@ -36,8 +36,8 @@
 #include "Utility/SFileDialog.h"
 #include "General/Executables.h"
 #include "UI/ResourceArchiveChooser.h"
-#include "Archive.h"
-#include "ArchiveManager.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveManager.h"
 #include <wx/gbsizer.h>
 #include <wx/statline.h>
 #include <wx/filename.h>

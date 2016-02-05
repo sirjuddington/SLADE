@@ -32,7 +32,7 @@
 #include "MainWindow.h"
 #include "UI/WxStuff.h"
 #include "TextureXEditor.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
 #include "UI/SplashWindow.h"
 #include "Dialogs/ExtMessageDialog.h"

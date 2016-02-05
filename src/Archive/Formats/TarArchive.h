@@ -1,16 +1,16 @@
 
-#ifndef __DISKARCHIVE_H__
-#define __DISKARCHIVE_H__
+#ifndef __TAR_ARCHIVE_H__
+#define __TAR_ARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
-class DiskArchive : public Archive
+class TarArchive : public Archive
 {
 private:
 
 public:
-	DiskArchive();
-	~DiskArchive();
+	TarArchive();
+	~TarArchive();
 
 	// Archive type info
 	string	getFileExtensionString();
@@ -27,8 +27,8 @@ public:
 	virtual vector<mapdesc_t>	detectMaps() { return vector<mapdesc_t>(); }
 
 	// Static functions
-	static bool isDiskArchive(MemChunk& mc);
-	static bool isDiskArchive(string filename);
+	static bool isTarArchive(MemChunk& mc);
+	static bool isTarArchive(string filename);
 };
 
-#endif//__DISKARCHIVE_H__
+#endif//__TAR_ARCHIVE_H__

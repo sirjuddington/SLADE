@@ -2,7 +2,7 @@
 #ifndef __ADAT_ARCHIVE_H__
 #define __ADAT_ARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 class ADatArchive : public Archive
 {

@@ -47,7 +47,7 @@
 #include "MapDisplayPrefsPanel.h"
 #include "Map3DPrefsPanel.h"
 #include "AdvancedPrefsPanel.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "TextEditorPrefsPanel.h"
 #include "NodesPrefsPanel.h"
 #include "InputPrefsPanel.h"

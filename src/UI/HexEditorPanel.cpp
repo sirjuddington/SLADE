@@ -34,7 +34,7 @@
 #include "HexEditorPanel.h"
 #include "General/Console/Console.h"
 #include "Utility/CodePages.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include <wx/numdlg.h>
 
 

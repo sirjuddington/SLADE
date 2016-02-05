@@ -2,7 +2,7 @@
 #ifndef __POD_ARCHIVE_H__
 #define __POD_ARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 class PodArchive : public Archive
 {

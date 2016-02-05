@@ -2,7 +2,7 @@
 #ifndef __ARCHIVEENTRY_H__
 #define __ARCHIVEENTRY_H__
 
-#include "EntryType.h"
+#include "EntryType/EntryType.h"
 #include "Utility/PropertyList/PropertyList.h"
 
 class ArchiveTreeNode;

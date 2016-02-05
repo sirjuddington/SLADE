@@ -32,9 +32,9 @@
 #undef BOOL
 #include <FreeImage.h>
 #include "General/Misc.h"
-#include "EntryType.h"
+#include "Archive/EntryType/EntryType.h"
 #include "SIFormat.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 
 /*******************************************************************

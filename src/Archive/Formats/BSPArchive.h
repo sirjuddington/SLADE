@@ -2,7 +2,7 @@
 #ifndef __BSP_ARCHIVE_H__
 #define __BSP_ARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 class BSPArchive : public Archive
 {

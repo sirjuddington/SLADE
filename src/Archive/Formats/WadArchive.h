@@ -2,7 +2,7 @@
 #ifndef __WADARCHIVE_H__
 #define __WADARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 // Struct to hold namespace info
 struct wad_ns_pair_t

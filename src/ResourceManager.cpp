@@ -31,7 +31,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ResourceManager.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"

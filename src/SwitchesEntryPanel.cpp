@@ -31,8 +31,8 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "SwitchesEntryPanel.h"
-#include "Archive.h"
-#include "ArchiveManager.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include <wx/listctrl.h>
 

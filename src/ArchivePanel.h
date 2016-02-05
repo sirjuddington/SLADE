@@ -2,7 +2,7 @@
 #ifndef __ARCHIVEPANEL_H__
 #define __ARCHIVEPANEL_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "EntryPanel.h"
 #include "General/ListenerAnnouncer.h"
 #include "UI/Lists/ArchiveEntryList.h"

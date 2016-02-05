@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "CTexture.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "ResourceManager.h"
 #include "General/Misc.h"
 #include "Graphics/SImage/SImage.h"

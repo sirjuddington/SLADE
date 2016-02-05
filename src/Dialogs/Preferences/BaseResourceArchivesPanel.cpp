@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "BaseResourceArchivesPanel.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
 #ifdef __WXMSW__
 #include <wx/msw/registry.h>

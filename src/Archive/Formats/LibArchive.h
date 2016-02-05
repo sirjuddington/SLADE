@@ -1,22 +1,22 @@
 
-#ifndef __RFFARCHIVE_H__
-#define __RFFARCHIVE_H__
+#ifndef __LIBARCHIVE_H__
+#define	__LIBARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
-class RffArchive : public TreelessArchive
+class LibArchive : public TreelessArchive
 {
 public:
-	RffArchive();
-	~RffArchive();
+	LibArchive();
+	~LibArchive();
 
-	// RFF specific
+	// Lib specific
 	uint32_t	getEntryOffset(ArchiveEntry* entry);
 	void		setEntryOffset(ArchiveEntry* entry, uint32_t offset);
 
 	// Archive type info
-	string	getFileExtensionString();
-	string	getFormat();
+	string			getFileExtensionString();
+	string			getFormat();
 
 	// Opening/writing
 	bool	open(MemChunk& mc);							// Open from MemChunk
@@ -24,20 +24,18 @@ public:
 
 	// Misc
 	bool		loadEntryData(ArchiveEntry* entry);
+	unsigned 	numEntries() { return getRoot()->numEntries(); }
 
-	// Entry addition/removal
+	// Entry addition/modification
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false);
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false);
-
-	// Entry modification
-	bool	renameEntry(ArchiveEntry* entry, string name);
+	bool			renameEntry(ArchiveEntry* entry, string name);
 
 	// Detection
 	vector<mapdesc_t>	detectMaps() { vector<mapdesc_t> ret; return ret; }
 
-	// Static functions
-	static bool isRffArchive(MemChunk& mc);
-	static bool isRffArchive(string filename);
+	static bool isLibArchive(MemChunk& mc);
+	static bool isLibArchive(string filename);
 };
 
-#endif//__RFFARCHIVE_H__
+#endif	/* __LIBARCHIVE_H__ */

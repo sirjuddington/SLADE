@@ -33,7 +33,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "BaseResourceChooser.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include <wx/filename.h>
 
 

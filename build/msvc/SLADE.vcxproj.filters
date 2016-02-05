@@ -31,17 +31,8 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{d64306f1-d31f-41ea-9c7d-216cd339fe06}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources\Archive">
-      <UniqueIdentifier>{186bc297-c8b4-4c2d-b577-b663901227b8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources\Binary Control Lumps">
       <UniqueIdentifier>{d01d3677-f00e-4933-b65c-688a19cb3264}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Archive\EntryType">
-      <UniqueIdentifier>{d894001c-5335-4237-9b18-60440a1e6a60}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Archive\EntryType\EntryDataFormat">
-      <UniqueIdentifier>{c59be1fa-5ac3-471b-8512-cf3695aeac84}</UniqueIdentifier>
     </Filter>
     <Filter Include="General\Console">
       <UniqueIdentifier>{511149d3-5ded-4b1c-b004-d65769996d9d}</UniqueIdentifier>
@@ -66,9 +57,6 @@
     </Filter>
     <Filter Include="External\ZLib">
       <UniqueIdentifier>{1ca86170-39c5-4615-bb20-8f2d2fc14c42}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Archive\Formats">
-      <UniqueIdentifier>{844561dc-871c-4534-ba8a-768af5269000}</UniqueIdentifier>
     </Filter>
     <Filter Include="Map Editor\GameConfiguration">
       <UniqueIdentifier>{d3422c45-1960-43b3-b586-6baffde25566}</UniqueIdentifier>
@@ -181,6 +169,18 @@
     <Filter Include="Graphics\SImage\Formats">
       <UniqueIdentifier>{0cc23fc4-b04e-4b53-8110-c20f4c71c8fe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archive">
+      <UniqueIdentifier>{b5df9dec-a58e-4ba9-9e1e-e35bf05936c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\EntryType">
+      <UniqueIdentifier>{8793bf5a-5b6b-4541-836f-5e632a5867b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\Formats">
+      <UniqueIdentifier>{d76da1db-b5b2-428c-8715-07460cb6492c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\EntryType\DataFormats">
+      <UniqueIdentifier>{639d4195-f616-4708-bc9b-82e7652914c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\EntryOperations.cpp">
@@ -243,26 +243,11 @@
     <ClCompile Include="..\..\src\MapVertex.cpp">
       <Filter>Map Editor\SLADEMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Archive.cpp">
-      <Filter>Resources\Archive</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveEntry.cpp">
-      <Filter>Resources\Archive</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveManager.cpp">
-      <Filter>Resources\Archive</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\AnimatedList.cpp">
       <Filter>Resources\Binary Control Lumps</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SwitchesList.cpp">
       <Filter>Resources\Binary Control Lumps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\EntryType.cpp">
-      <Filter>Resources\Archive\EntryType</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\EntryDataFormat.cpp">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ArchivePanel.cpp">
       <Filter>Main Editor\UI Elements</Filter>
@@ -474,60 +459,6 @@
     <ClCompile Include="..\..\src\External\lzma\C\XzIn.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ADatArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BSPArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DatArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GobArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GrpArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GZipArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\HogArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\LfdArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\LibArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PakArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ResArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\RffArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TarArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Wad2Archive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WadArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WadJArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WolfArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ZipArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MCAnimations.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
@@ -684,9 +615,6 @@
     <ClCompile Include="..\..\src\External\lua\lzio.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\DiskArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\GenLineSpecial.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClCompile>
@@ -743,9 +671,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\External\zreaders\music_xmi_midiout.cpp">
       <Filter>External\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DirArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\InfoOverlay3d.cpp">
       <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
@@ -1122,14 +1047,8 @@
     <ClCompile Include="..\..\src\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\PodArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\DataEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ChasmBinArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\DirArchiveUpdateDialog.cpp">
       <Filter>Dialogs</Filter>
@@ -1157,9 +1076,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\TranslationEditorDialog.cpp">
       <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BZip2Archive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Audio\MIDIPlayer.cpp">
       <Filter>Audio</Filter>
@@ -1380,6 +1296,90 @@
     <ClCompile Include="..\..\src\Graphics\SImage\SIFormat.cpp">
       <Filter>Graphics\SImage</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Archive.cpp">
+      <Filter>Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\ArchiveEntry.cpp">
+      <Filter>Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\ArchiveManager.cpp">
+      <Filter>Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\EntryType\EntryType.cpp">
+      <Filter>Archive\EntryType</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\BZip2Archive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\ChasmBinArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\DatArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\DirArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\DiskArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\GobArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\GrpArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\GZipArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\HogArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\LfdArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\LibArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\PakArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\PodArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\ResArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\RffArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\TarArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\Wad2Archive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\WadArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\WadJArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\WolfArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\ZipArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\ADatArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\BSPArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\EntryType\EntryDataFormat.cpp">
+      <Filter>Archive\EntryType</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\EntryOperations.h">
@@ -1445,15 +1445,6 @@
     <ClInclude Include="..\..\src\SLADEMap.h">
       <Filter>Map Editor\SLADEMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Archive.h">
-      <Filter>Resources\Archive</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveEntry.h">
-      <Filter>Resources\Archive</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveManager.h">
-      <Filter>Resources\Archive</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\AnimatedList.h">
       <Filter>Resources\Binary Control Lumps</Filter>
     </ClInclude>
@@ -1464,27 +1455,6 @@
       <Filter>Resources\Binary Control Lumps</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="..\..\src\EntryType.h">
-      <Filter>Resources\Archive\EntryType</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\EntryDataFormat.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\AudioFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ImageFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MiscFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ModelFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ArchivePanel.h">
       <Filter>Main Editor\UI Elements</Filter>
     </ClInclude>
@@ -1514,9 +1484,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ANSIEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LumpFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ZTextureEditorPanel.h">
       <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
@@ -1662,66 +1629,6 @@
     <ClInclude Include="..\..\src\External\lzma\C\XzEnc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ADatArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BSPArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BZip2Archive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DatArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GobArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GrpArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GZipArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\HogArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LfdArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LibArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PakArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ResArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\RffArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TarArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Wad2Archive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WadArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WadJArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WolfArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ZipArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Archives.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MCAnimations.h">
       <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
@@ -1857,9 +1764,6 @@
     <ClInclude Include="..\..\src\External\lua\lzio.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\DiskArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\GenLineSpecial.h">
       <Filter>Map Editor\GameConfiguration</Filter>
     </ClInclude>
@@ -1913,9 +1817,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\mus2midi.h">
       <Filter>External\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DirArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\InfoOverlay3d.h">
       <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
@@ -2045,12 +1946,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\DataEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PodArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ChasmBinArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h">
       <Filter>Dialogs</Filter>
@@ -2375,6 +2270,111 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h">
       <Filter>Graphics\SImage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Archive.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\ArchiveEntry.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\ArchiveManager.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\EntryType.h">
+      <Filter>Archive\EntryType</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\BZip2Archive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\ChasmBinArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\DatArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\DirArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\DiskArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\GobArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\GrpArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\GZipArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\HogArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\LfdArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\LibArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\PakArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\PodArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\ResArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\RffArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\TarArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\Wad2Archive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\WadArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\WadJArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\WolfArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\ZipArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\ADatArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\BSPArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\EntryDataFormat.h">
+      <Filter>Archive\EntryType</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ArchiveFormats.h">
+      <Filter>Archive\EntryType\DataFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\AudioFormats.h">
+      <Filter>Archive\EntryType\DataFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ImageFormats.h">
+      <Filter>Archive\EntryType\DataFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\LumpFormats.h">
+      <Filter>Archive\EntryType\DataFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\MiscFormats.h">
+      <Filter>Archive\EntryType\DataFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ModelFormats.h">
+      <Filter>Archive\EntryType\DataFormats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\All.h">
+      <Filter>Archive\Formats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "EntryDataFormat.h"
-#include "Archives.h"
+#include "Archive/Formats/All.h"
 #include "BinaryControlLump.h"
 #include "Utility/Parser.h"
 
@@ -173,12 +173,12 @@ public:
 };
 
 // Format enumeration moved to separate files
-#include "ArchiveFormats.h"
-#include "AudioFormats.h"
-#include "ImageFormats.h"
-#include "LumpFormats.h"
-#include "MiscFormats.h"
-#include "ModelFormats.h"
+#include "DataFormats/ArchiveFormats.h"
+#include "DataFormats/AudioFormats.h"
+#include "DataFormats/ImageFormats.h"
+#include "DataFormats/LumpFormats.h"
+#include "DataFormats/MiscFormats.h"
+#include "DataFormats/ModelFormats.h"
 
 /* EntryDataFormat::initBuiltinFormats
  * Initialises all built-in data formats (this is currently all

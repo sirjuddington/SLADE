@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "ColourConfiguration.h"
 #include "Utility/Parser.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "Console/Console.h"
 #include <map>
 

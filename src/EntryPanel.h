@@ -2,7 +2,7 @@
 #ifndef __ENTRYPANEL_H__
 #define __ENTRYPANEL_H__
 
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
 #include "General/UndoRedo.h"
 #include "UI/SToolBar/SToolBar.h"

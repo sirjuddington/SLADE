@@ -30,8 +30,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "PaletteManager.h"
-#include "ArchiveManager.h"
-#include "ZipArchive.h"
+#include "Archive/ArchiveManager.h"
+#include "Archive/Formats/ZipArchive.h"
 #include "General/Misc.h"
 #include <wx/dir.h>
 #include <wx/filename.h>

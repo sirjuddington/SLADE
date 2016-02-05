@@ -2,7 +2,7 @@
 #ifndef __ZIPARCHIVE_H__
 #define __ZIPARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 class ZipArchive : public Archive
 {

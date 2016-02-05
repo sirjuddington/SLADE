@@ -1,7 +1,7 @@
 #ifndef SWITCHESLIST_H
 #define	SWITCHESLIST_H
 
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 #include "BinaryControlLump.h"
 
 class SwitchesEntry

@@ -3,7 +3,7 @@
 #define __CTEXTURE_H__
 
 #include "Utility/Tokenizer.h"
-#include "ArchiveEntry.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
 #include "Graphics/Translation.h"
 

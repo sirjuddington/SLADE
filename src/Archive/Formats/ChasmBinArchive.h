@@ -26,7 +26,7 @@
 #ifndef __CHASM_BIN_ARCHIVE_H__
 #define __CHASM_BIN_ARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 class ChasmBinArchive : public Archive
 {

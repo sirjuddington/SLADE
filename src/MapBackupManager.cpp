@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "MapBackupManager.h"
-#include "ZipArchive.h"
+#include "Archive/Formats/ZipArchive.h"
 #include "UI/SDialog.h"
 #include "MapBackupPanel.h"
 #include "MapEditorWindow.h"

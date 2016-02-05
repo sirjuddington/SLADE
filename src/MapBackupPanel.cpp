@@ -31,8 +31,8 @@
 #include "UI/WxStuff.h"
 #include "MapBackupPanel.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
-#include "ZipArchive.h"
-#include "WadArchive.h"
+#include "Archive/Formats/ZipArchive.h"
+#include "Archive/Formats/WadArchive.h"
 
 
 /*******************************************************************

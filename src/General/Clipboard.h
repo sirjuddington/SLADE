@@ -2,7 +2,7 @@
 #ifndef __CLIPBOARD_H__
 #define	__CLIPBOARD_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "Utility/Structs.h"
 
 enum ClipboardType

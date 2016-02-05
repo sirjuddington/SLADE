@@ -2,7 +2,7 @@
 #ifndef __DATARCHIVE_H__
 #define	__DATARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 class DatArchive : public TreelessArchive
 {

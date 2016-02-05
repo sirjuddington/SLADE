@@ -32,7 +32,7 @@
 #include "UI/WxStuff.h"
 #include "Utility/CodePages.h"
 #include "ANSICanvas.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 
 
 /*******************************************************************

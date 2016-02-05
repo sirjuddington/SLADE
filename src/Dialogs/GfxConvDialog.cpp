@@ -32,7 +32,7 @@
 #include "UI/WxStuff.h"
 #include "GfxConvDialog.h"
 #include "General/Console/Console.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "UI/SplashWindow.h"

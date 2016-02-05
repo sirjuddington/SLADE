@@ -2,7 +2,7 @@
 #ifndef __WOLFARCHIVE_H__
 #define	__WOLFARCHIVE_H__
 
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 struct WolfHandle
 {

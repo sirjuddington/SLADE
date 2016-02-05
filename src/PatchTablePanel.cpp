@@ -31,10 +31,10 @@
 #include "MainWindow.h"
 #include "UI/WxStuff.h"
 #include "PatchTablePanel.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "TextureXEditor.h"
-#include "ArchiveEntry.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include <wx/filename.h>
 

@@ -5,7 +5,7 @@
 #include "TextureXPanel.h"
 #include "TextureEditorPanel.h"
 #include "PatchTablePanel.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "UI/Lists/ListView.h"
 #include "PatchBrowser.h"

@@ -33,7 +33,7 @@
 #include "PaletteChooser.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "General/Misc.h"
-#include "Archive.h"
+#include "Archive/Archive.h"
 
 
 /*******************************************************************

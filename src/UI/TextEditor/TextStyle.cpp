@@ -35,7 +35,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "TextStyle.h"
-#include "ArchiveManager.h"
+#include "Archive/ArchiveManager.h"
 #include <wx/dir.h>
 
 
