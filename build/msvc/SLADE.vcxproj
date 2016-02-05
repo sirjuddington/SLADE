@@ -122,8 +122,6 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -187,18 +185,13 @@
     <ClCompile Include="..\..\src\ActionSpecial.cpp" />
     <ClCompile Include="..\..\src\ActionSpecialDialog.cpp" />
     <ClCompile Include="..\..\src\ADatArchive.cpp" />
-    <ClCompile Include="..\..\src\ANSICanvas.cpp" />
     <ClCompile Include="..\..\src\ANSIEntryPanel.cpp" />
     <ClCompile Include="..\..\src\Application\MainApp.cpp" />
-    <ClCompile Include="..\..\src\ArchiveEntryList.cpp" />
     <ClCompile Include="..\..\src\ArchiveOperations.cpp" />
     <ClCompile Include="..\..\src\AudioEntryPanel.cpp" />
     <ClCompile Include="..\..\src\Audio\MIDIPlayer.cpp" />
     <ClCompile Include="..\..\src\Audio\ModMusic.cpp" />
     <ClCompile Include="..\..\src\BaseResourceChooser.cpp" />
-    <ClCompile Include="..\..\src\BrowserCanvas.cpp" />
-    <ClCompile Include="..\..\src\BrowserItem.cpp" />
-    <ClCompile Include="..\..\src\BrowserWindow.cpp" />
     <ClCompile Include="..\..\src\BSPArchive.cpp" />
     <ClCompile Include="..\..\src\BZip2Archive.cpp" />
     <ClCompile Include="..\..\src\External\bzip2\blocksort.c" />
@@ -248,7 +241,6 @@
     <ClCompile Include="..\..\src\Dialogs\TranslationEditorDialog.cpp" />
     <ClCompile Include="..\..\src\DirArchive.cpp" />
     <ClCompile Include="..\..\src\DiskArchive.cpp" />
-    <ClCompile Include="..\..\src\DockPanel.cpp" />
     <ClCompile Include="..\..\src\DocsPage.cpp" />
     <ClCompile Include="..\..\src\External\dumb\core\atexit.c" />
     <ClCompile Include="..\..\src\External\dumb\core\duhlen.c" />
@@ -356,7 +348,6 @@
     <ClCompile Include="..\..\src\GobArchive.cpp" />
     <ClCompile Include="..\..\src\GrpArchive.cpp" />
     <ClCompile Include="..\..\src\GZipArchive.cpp" />
-    <ClCompile Include="..\..\src\HexEditorPanel.cpp" />
     <ClCompile Include="..\..\src\HexEntryPanel.cpp" />
     <ClCompile Include="..\..\src\HogArchive.cpp" />
     <ClCompile Include="..\..\src\InfoOverlay3d.cpp" />
@@ -441,7 +432,6 @@
     <ClCompile Include="..\..\src\MapEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MapObject.cpp" />
     <ClCompile Include="..\..\src\MapObjectPropsPanel.cpp" />
-    <ClCompile Include="..\..\src\MapPreviewCanvas.cpp" />
     <ClCompile Include="..\..\src\MapRenderer2D.cpp" />
     <ClCompile Include="..\..\src\MapRenderer3D.cpp" />
     <ClCompile Include="..\..\src\MapSpecials.cpp" />
@@ -452,7 +442,6 @@
     <ClCompile Include="..\..\src\MOPGProperty.cpp" />
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp" />
     <ClCompile Include="..\..\src\NodeBuilders.cpp" />
-    <ClCompile Include="..\..\src\NumberTextCtrl.cpp" />
     <ClCompile Include="..\..\src\ObjectEdit.cpp" />
     <ClCompile Include="..\..\src\ObjectEditPanel.cpp" />
     <ClCompile Include="..\..\src\OpenGL\Drawing.cpp" />
@@ -463,12 +452,9 @@
     <ClCompile Include="..\..\src\PodArchive.cpp" />
     <ClCompile Include="..\..\src\QuickTextureOverlay3d.cpp" />
     <ClCompile Include="..\..\src\ResArchive.cpp" />
-    <ClCompile Include="..\..\src\ResourceArchiveChooser.cpp" />
     <ClCompile Include="..\..\src\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\RffArchive.cpp" />
-    <ClCompile Include="..\..\src\SAuiTabArt.cpp" />
     <ClCompile Include="..\..\src\ScriptEditorPanel.cpp" />
-    <ClCompile Include="..\..\src\SDialog.cpp" />
     <ClCompile Include="..\..\src\SectorBuilder.cpp" />
     <ClCompile Include="..\..\src\SectorInfoOverlay.cpp" />
     <ClCompile Include="..\..\src\SectorPropsPanel.cpp" />
@@ -480,13 +466,7 @@
     <ClCompile Include="..\..\src\SidePropsPanel.cpp" />
     <ClCompile Include="..\..\src\SIFormat.cpp" />
     <ClCompile Include="..\..\src\SImageFormats.cpp" />
-    <ClCompile Include="..\..\src\STabCtrl.cpp" />
-    <ClCompile Include="..\..\src\SToolBar.cpp" />
-    <ClCompile Include="..\..\src\SToolBarButton.cpp" />
-    <ClCompile Include="..\..\src\STopWindow.cpp" />
     <ClCompile Include="..\..\src\TarArchive.cpp" />
-    <ClCompile Include="..\..\src\TextLanguage.cpp" />
-    <ClCompile Include="..\..\src\TextStyle.cpp" />
     <ClCompile Include="..\..\src\TextureXPanel.cpp" />
     <ClCompile Include="..\..\src\ThingInfoOverlay.cpp" />
     <ClCompile Include="..\..\src\ThingPropsPanel.cpp" />
@@ -495,8 +475,37 @@
     <ClCompile Include="..\..\src\ThingTypeTreeView.cpp" />
     <ClCompile Include="..\..\src\Translation.cpp" />
     <ClCompile Include="..\..\src\UDMFProperty.cpp" />
+    <ClCompile Include="..\..\src\UI\Browser\BrowserCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Browser\BrowserItem.cpp" />
+    <ClCompile Include="..\..\src\UI\Browser\BrowserWindow.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\ANSICanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\CTextureCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\GfxCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\MapPreviewCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\OGLCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\PaletteCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\ColourBox.cpp" />
+    <ClCompile Include="..\..\src\UI\ConsolePanel.cpp" />
+    <ClCompile Include="..\..\src\UI\DockPanel.cpp" />
+    <ClCompile Include="..\..\src\UI\HexEditorPanel.cpp" />
+    <ClCompile Include="..\..\src\UI\Lists\ArchiveEntryList.cpp" />
+    <ClCompile Include="..\..\src\UI\Lists\ListView.cpp" />
+    <ClCompile Include="..\..\src\UI\Lists\VirtualListView.cpp" />
+    <ClCompile Include="..\..\src\UI\NumberTextCtrl.cpp" />
+    <ClCompile Include="..\..\src\UI\PaletteChooser.cpp" />
+    <ClCompile Include="..\..\src\UI\ResourceArchiveChooser.cpp" />
+    <ClCompile Include="..\..\src\UI\SAuiTabArt.cpp" />
+    <ClCompile Include="..\..\src\UI\SDialog.cpp" />
+    <ClCompile Include="..\..\src\UI\SplashWindow.cpp" />
+    <ClCompile Include="..\..\src\UI\STabCtrl.cpp" />
+    <ClCompile Include="..\..\src\UI\SToolBar\SToolBar.cpp" />
+    <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp" />
+    <ClCompile Include="..\..\src\UI\STopWindow.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp" />
+    <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp" />
     <ClCompile Include="..\..\src\UI\WxStuff.cpp" />
-    <ClCompile Include="..\..\src\UndoManagerHistoryPanel.cpp" />
     <ClCompile Include="..\..\src\Utility\CIEDeltaEquations.cpp" />
     <ClCompile Include="..\..\src\Utility\CodePages.cpp" />
     <ClCompile Include="..\..\src\Utility\Compression.cpp" />
@@ -511,15 +520,12 @@
     <ClCompile Include="..\..\src\Utility\Tokenizer.cpp" />
     <ClCompile Include="..\..\src\Utility\Tree.cpp" />
     <ClCompile Include="..\..\src\VertexInfoOverlay.cpp" />
-    <ClCompile Include="..\..\src\VirtualListView.cpp" />
     <ClCompile Include="..\..\src\Wad2Archive.cpp" />
     <ClCompile Include="..\..\src\WadJArchive.cpp" />
     <ClCompile Include="..\..\src\WolfArchive.cpp" />
     <ClCompile Include="..\..\src\EntryOperations.cpp" />
     <ClCompile Include="..\..\src\MainWindow.cpp" />
     <ClCompile Include="..\..\src\ArchiveManagerPanel.cpp" />
-    <ClCompile Include="..\..\src\ConsolePanel.cpp" />
-    <ClCompile Include="..\..\src\TextEditor.cpp" />
     <ClCompile Include="..\..\src\ArchivePanel.cpp" />
     <ClCompile Include="..\..\src\AnimatedEntryPanel.cpp" />
     <ClCompile Include="..\..\src\DefaultEntryPanel.cpp" />
@@ -554,14 +560,6 @@
     <ClCompile Include="..\..\src\CTexture.cpp" />
     <ClCompile Include="..\..\src\PatchTable.cpp" />
     <ClCompile Include="..\..\src\TextureXList.cpp" />
-    <ClCompile Include="..\..\src\ColourBox.cpp" />
-    <ClCompile Include="..\..\src\CTextureCanvas.cpp" />
-    <ClCompile Include="..\..\src\GfxCanvas.cpp" />
-    <ClCompile Include="..\..\src\ListView.cpp" />
-    <ClCompile Include="..\..\src\OGLCanvas.cpp" />
-    <ClCompile Include="..\..\src\PaletteCanvas.cpp" />
-    <ClCompile Include="..\..\src\PaletteChooser.cpp" />
-    <ClCompile Include="..\..\src\SplashWindow.cpp" />
     <ClCompile Include="..\..\src\External\zlib\adler32.c" />
     <ClCompile Include="..\..\src\External\zlib\crc32.c" />
     <ClCompile Include="..\..\src\External\zlib\deflate.c" />
@@ -588,11 +586,9 @@
     <ClInclude Include="..\..\src\ActionSpecial.h" />
     <ClInclude Include="..\..\src\ActionSpecialDialog.h" />
     <ClInclude Include="..\..\src\ADatArchive.h" />
-    <ClInclude Include="..\..\src\ANSICanvas.h" />
     <ClInclude Include="..\..\src\ANSIEntryPanel.h" />
     <ClInclude Include="..\..\src\Application\Main.h" />
     <ClInclude Include="..\..\src\Application\MainApp.h" />
-    <ClInclude Include="..\..\src\ArchiveEntryList.h" />
     <ClInclude Include="..\..\src\ArchiveFormats.h" />
     <ClInclude Include="..\..\src\ArchiveOperations.h" />
     <ClInclude Include="..\..\src\Archives.h" />
@@ -602,9 +598,6 @@
     <ClInclude Include="..\..\src\Audio\MIDIPlayer.h" />
     <ClInclude Include="..\..\src\Audio\ModMusic.h" />
     <ClInclude Include="..\..\src\BaseResourceChooser.h" />
-    <ClInclude Include="..\..\src\BrowserCanvas.h" />
-    <ClInclude Include="..\..\src\BrowserItem.h" />
-    <ClInclude Include="..\..\src\BrowserWindow.h" />
     <ClInclude Include="..\..\src\BSPArchive.h" />
     <ClInclude Include="..\..\src\BZip2Archive.h" />
     <ClInclude Include="..\..\src\External\bzip2\bzlib.h" />
@@ -651,7 +644,6 @@
     <ClInclude Include="..\..\src\Dialogs\TranslationEditorDialog.h" />
     <ClInclude Include="..\..\src\DirArchive.h" />
     <ClInclude Include="..\..\src\DiskArchive.h" />
-    <ClInclude Include="..\..\src\DockPanel.h" />
     <ClInclude Include="..\..\src\DocsPage.h" />
     <ClInclude Include="..\..\src\External\dumb\dumb.h" />
     <ClInclude Include="..\..\src\External\dumb\internal\aldumb.h" />
@@ -688,7 +680,6 @@
     <ClInclude Include="..\..\src\GobArchive.h" />
     <ClInclude Include="..\..\src\GrpArchive.h" />
     <ClInclude Include="..\..\src\GZipArchive.h" />
-    <ClInclude Include="..\..\src\HexEditorPanel.h" />
     <ClInclude Include="..\..\src\HexEntryPanel.h" />
     <ClInclude Include="..\..\src\HogArchive.h" />
     <ClInclude Include="..\..\src\ImageFormats.h" />
@@ -762,7 +753,6 @@
     <ClInclude Include="..\..\src\MapEntryPanel.h" />
     <ClInclude Include="..\..\src\MapObject.h" />
     <ClInclude Include="..\..\src\MapObjectPropsPanel.h" />
-    <ClInclude Include="..\..\src\MapPreviewCanvas.h" />
     <ClInclude Include="..\..\src\MapRenderer2D.h" />
     <ClInclude Include="..\..\src\MapRenderer3D.h" />
     <ClInclude Include="..\..\src\MapSpecials.h" />
@@ -776,7 +766,6 @@
     <ClInclude Include="..\..\src\MOPGProperty.h" />
     <ClInclude Include="..\..\src\mus2mid\mus2mid.h" />
     <ClInclude Include="..\..\src\NodeBuilders.h" />
-    <ClInclude Include="..\..\src\NumberTextCtrl.h" />
     <ClInclude Include="..\..\src\ObjectEdit.h" />
     <ClInclude Include="..\..\src\ObjectEditPanel.h" />
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
@@ -788,12 +777,9 @@
     <ClInclude Include="..\..\src\PropsPanelBase.h" />
     <ClInclude Include="..\..\src\QuickTextureOverlay3d.h" />
     <ClInclude Include="..\..\src\ResArchive.h" />
-    <ClInclude Include="..\..\src\ResourceArchiveChooser.h" />
     <ClInclude Include="..\..\src\ResourceManager.h" />
     <ClInclude Include="..\..\src\RffArchive.h" />
-    <ClInclude Include="..\..\src\SAuiTabArt.h" />
     <ClInclude Include="..\..\src\ScriptEditorPanel.h" />
-    <ClInclude Include="..\..\src\SDialog.h" />
     <ClInclude Include="..\..\src\SectorBuilder.h" />
     <ClInclude Include="..\..\src\SectorInfoOverlay.h" />
     <ClInclude Include="..\..\src\SectorPropsPanel.h" />
@@ -811,13 +797,7 @@
     <ClInclude Include="..\..\src\SIFQuake.h" />
     <ClInclude Include="..\..\src\SIFRott.h" />
     <ClInclude Include="..\..\src\SIFZDoom.h" />
-    <ClInclude Include="..\..\src\STabCtrl.h" />
-    <ClInclude Include="..\..\src\STopWindow.h" />
-    <ClInclude Include="..\..\src\SToolBar.h" />
-    <ClInclude Include="..\..\src\SToolBarButton.h" />
     <ClInclude Include="..\..\src\TarArchive.h" />
-    <ClInclude Include="..\..\src\TextLanguage.h" />
-    <ClInclude Include="..\..\src\TextStyle.h" />
     <ClInclude Include="..\..\src\TextureXPanel.h" />
     <ClInclude Include="..\..\src\ThingInfoOverlay.h" />
     <ClInclude Include="..\..\src\ThingPropsPanel.h" />
@@ -826,8 +806,37 @@
     <ClInclude Include="..\..\src\ThingTypeTreeView.h" />
     <ClInclude Include="..\..\src\Translation.h" />
     <ClInclude Include="..\..\src\UDMFProperty.h" />
+    <ClInclude Include="..\..\src\UI\Browser\BrowserCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Browser\BrowserItem.h" />
+    <ClInclude Include="..\..\src\UI\Browser\BrowserWindow.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\ANSICanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\CTextureCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\GfxCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\MapPreviewCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\OGLCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\PaletteCanvas.h" />
+    <ClInclude Include="..\..\src\UI\ColourBox.h" />
+    <ClInclude Include="..\..\src\UI\ConsolePanel.h" />
+    <ClInclude Include="..\..\src\UI\DockPanel.h" />
+    <ClInclude Include="..\..\src\UI\HexEditorPanel.h" />
+    <ClInclude Include="..\..\src\UI\Lists\ArchiveEntryList.h" />
+    <ClInclude Include="..\..\src\UI\Lists\ListView.h" />
+    <ClInclude Include="..\..\src\UI\Lists\VirtualListView.h" />
+    <ClInclude Include="..\..\src\UI\NumberTextCtrl.h" />
+    <ClInclude Include="..\..\src\UI\PaletteChooser.h" />
+    <ClInclude Include="..\..\src\UI\ResourceArchiveChooser.h" />
+    <ClInclude Include="..\..\src\UI\SAuiTabArt.h" />
+    <ClInclude Include="..\..\src\UI\SDialog.h" />
+    <ClInclude Include="..\..\src\UI\SplashWindow.h" />
+    <ClInclude Include="..\..\src\UI\STabCtrl.h" />
+    <ClInclude Include="..\..\src\UI\SToolBar\SToolBar.h" />
+    <ClInclude Include="..\..\src\UI\SToolBar\SToolBarButton.h" />
+    <ClInclude Include="..\..\src\UI\STopWindow.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h" />
+    <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h" />
     <ClInclude Include="..\..\src\UI\WxStuff.h" />
-    <ClInclude Include="..\..\src\UndoManagerHistoryPanel.h" />
     <ClInclude Include="..\..\src\Utility\CIEDeltaEquations.h" />
     <ClInclude Include="..\..\src\Utility\CodePages.h" />
     <ClInclude Include="..\..\src\Utility\Compression.h" />
@@ -843,15 +852,12 @@
     <ClInclude Include="..\..\src\Utility\Tokenizer.h" />
     <ClInclude Include="..\..\src\Utility\Tree.h" />
     <ClInclude Include="..\..\src\VertexInfoOverlay.h" />
-    <ClInclude Include="..\..\src\VirtualListView.h" />
     <ClInclude Include="..\..\src\Wad2Archive.h" />
     <ClInclude Include="..\..\src\WadJArchive.h" />
     <ClInclude Include="..\..\src\WolfArchive.h" />
     <ClInclude Include="..\..\src\EntryOperations.h" />
     <ClInclude Include="..\..\src\MainWindow.h" />
     <ClInclude Include="..\..\src\ArchiveManagerPanel.h" />
-    <ClInclude Include="..\..\src\ConsolePanel.h" />
-    <ClInclude Include="..\..\src\TextEditor.h" />
     <ClInclude Include="..\..\src\ArchivePanel.h" />
     <ClInclude Include="..\..\src\AnimatedEntryPanel.h" />
     <ClInclude Include="..\..\src\DefaultEntryPanel.h" />
@@ -888,14 +894,6 @@
     <ClInclude Include="..\..\src\PatchTable.h" />
     <ClInclude Include="..\..\src\TextureXList.h" />
     <ClInclude Include="..\..\src\SFont.h" />
-    <ClInclude Include="..\..\src\ColourBox.h" />
-    <ClInclude Include="..\..\src\CTextureCanvas.h" />
-    <ClInclude Include="..\..\src\GfxCanvas.h" />
-    <ClInclude Include="..\..\src\ListView.h" />
-    <ClInclude Include="..\..\src\OGLCanvas.h" />
-    <ClInclude Include="..\..\src\PaletteCanvas.h" />
-    <ClInclude Include="..\..\src\PaletteChooser.h" />
-    <ClInclude Include="..\..\src\SplashWindow.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\src\External\zlib\crc32.h" />
     <ClInclude Include="..\..\src\External\zlib\deflate.h" />

@@ -33,7 +33,6 @@
 #include "UI/WxStuff.h"
 #include "TextEditor.h"
 #include "Icons.h"
-#include "TextStyle.h"
 #include "General/KeyBind.h"
 
 

@@ -38,7 +38,7 @@
 #include "WadArchive.h"
 #include "General/UndoRedo.h"
 #include "SectorBuilder.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include <locale.h>
 #include <wx/colour.h>
 

@@ -5,9 +5,9 @@
 #include "ArchiveManagerPanel.h"
 #include <wx/aui/auibook.h>
 #include <wx/aui/aui.h>
-#include "PaletteChooser.h"
+#include "UI/PaletteChooser.h"
 #include "MainApp.h"
-#include "STopWindow.h"
+#include "UI/STopWindow.h"
 
 #ifndef USE_WEBVIEW_STARTPAGE
 #include <wx/html/htmlwin.h>

@@ -34,8 +34,8 @@
 #include "GameConfiguration.h"
 #include "GenLineSpecialPanel.h"
 #include "MapEditorWindow.h"
-#include "NumberTextCtrl.h"
-#include "STabCtrl.h"
+#include "UI/NumberTextCtrl.h"
+#include "UI/STabCtrl.h"
 #include <wx/gbsizer.h>
 #include <wx/window.h>
 #undef min

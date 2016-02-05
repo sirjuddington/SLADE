@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "InterfacePrefsPanel.h"
-#include "STabCtrl.h"
+#include "UI/STabCtrl.h"
 #include "Icons.h"
 #include <wx/gbsizer.h>
 

@@ -55,7 +55,7 @@
 #include "QuickTextureOverlay3d.h"
 #include "ObjectEditPanel.h"
 #include "ShowItemDialog.h"
-#include "SDialog.h"
+#include "UI/SDialog.h"
 #include "LinePropsPanel.h"
 #include "SectorPropsPanel.h"
 #include "ThingPropsPanel.h"

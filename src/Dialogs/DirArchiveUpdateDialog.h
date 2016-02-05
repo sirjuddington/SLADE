@@ -3,7 +3,7 @@
 #define __DIR_ARCHIVE_UPDATE_DIALOG__
 
 #include "DirArchive.h"
-#include "SDialog.h"
+#include "UI/SDialog.h"
 
 class wxDataViewListCtrl;
 class DirArchiveUpdateDialog : public SDialog

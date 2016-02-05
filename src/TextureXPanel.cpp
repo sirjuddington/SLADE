@@ -41,7 +41,7 @@
 #include "General/ColourConfiguration.h"
 #include "General/KeyBind.h"
 #include "Dialogs/GfxConvDialog.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "General/UndoRedo.h"

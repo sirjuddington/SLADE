@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "GobArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include <wx/filename.h>
 
 

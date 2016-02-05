@@ -178,6 +178,9 @@
     <Filter Include="Application">
       <UniqueIdentifier>{08f7e6cd-5237-4843-9d89-73bc8aa49ee1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Canvas">
+      <UniqueIdentifier>{4f00b239-b18a-4eba-b70f-4348b33cf7ba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\EntryOperations.cpp">
@@ -276,50 +279,11 @@
     <ClCompile Include="..\..\src\TextureXList.cpp">
       <Filter>Resources\Graphics\Composite Texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ColourBox.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ConsolePanel.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CTextureCanvas.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GfxCanvas.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\OGLCanvas.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteCanvas.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteChooser.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SplashWindow.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\EntryType.cpp">
       <Filter>Resources\Archive\EntryType</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\TextEditor.cpp">
-      <Filter>UI\TextEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextLanguage.cpp">
-      <Filter>UI\TextEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveEntryList.cpp">
-      <Filter>UI\Lists</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ListView.cpp">
-      <Filter>UI\Lists</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\EntryDataFormat.cpp">
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\VirtualListView.cpp">
-      <Filter>UI\Lists</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ArchivePanel.cpp">
       <Filter>Main Editor\UI Elements</Filter>
@@ -330,12 +294,6 @@
     <ClCompile Include="..\..\src\BaseResourceChooser.cpp">
       <Filter>Main Editor\UI Elements</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\BrowserItem.cpp">
-      <Filter>UI\Browser</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BrowserWindow.cpp">
-      <Filter>UI\Browser</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\SImageFormats.cpp">
       <Filter>Resources\Graphics\Image</Filter>
     </ClCompile>
@@ -345,17 +303,11 @@
     <ClCompile Include="..\..\src\HexEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\HexEditorPanel.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ArchiveOperations.cpp">
       <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextStyle.cpp">
-      <Filter>UI\TextEditor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\AudioEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
@@ -363,14 +315,8 @@
     <ClCompile Include="..\..\src\Conversions.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\BrowserCanvas.cpp">
-      <Filter>UI\Browser</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ANSIEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ANSICanvas.cpp">
-      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SFont.cpp">
       <Filter>Resources\Graphics\Font</Filter>
@@ -615,9 +561,6 @@
     <ClCompile Include="..\..\src\SIFormat.cpp">
       <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\DockPanel.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MCAnimations.cpp">
       <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
@@ -654,23 +597,11 @@
     <ClCompile Include="..\..\src\MOPGProperty.cpp">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SToolBar.cpp">
-      <Filter>UI\SToolBar</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SToolBarButton.cpp">
-      <Filter>UI\SToolBar</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapPreviewCanvas.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\SectorTextureOverlay.cpp">
       <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\LineTextureOverlay.cpp">
       <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\STopWindow.cpp">
-      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SectorBuilder.cpp">
       <Filter>Map Editor</Filter>
@@ -786,9 +717,6 @@
     <ClCompile Include="..\..\src\External\lua\lzio.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\UndoManagerHistoryPanel.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\DiskArchive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
     </ClCompile>
@@ -821,9 +749,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp">
       <Filter>Dialogs\SetupWizard</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ResourceArchiveChooser.cpp">
-      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapChecks.cpp">
       <Filter>Map Editor</Filter>
@@ -948,9 +873,6 @@
     <ClCompile Include="..\..\src\Dialogs\Preferences\TextStylePrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SDialog.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\LinePropsPanel.cpp">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClCompile>
@@ -959,9 +881,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\SectorPropsPanel.cpp">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\NumberTextCtrl.cpp">
-      <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ThingPropsPanel.cpp">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
@@ -1233,12 +1152,6 @@
     <ClCompile Include="..\..\src\External\dumb\it\xmeffect.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SAuiTabArt.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\STabCtrl.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
@@ -1377,6 +1290,96 @@
     <ClCompile Include="..\..\src\Utility\FileMonitor.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\UI\Browser\BrowserCanvas.cpp">
+      <Filter>UI\Browser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Browser\BrowserItem.cpp">
+      <Filter>UI\Browser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Browser\BrowserWindow.cpp">
+      <Filter>UI\Browser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Lists\ArchiveEntryList.cpp">
+      <Filter>UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Lists\ListView.cpp">
+      <Filter>UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Lists\VirtualListView.cpp">
+      <Filter>UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SToolBar\SToolBar.cpp">
+      <Filter>UI\SToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp">
+      <Filter>UI\SToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp">
+      <Filter>UI\TextEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp">
+      <Filter>UI\TextEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp">
+      <Filter>UI\TextEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\ANSICanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\CTextureCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\GfxCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\MapPreviewCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\OGLCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\PaletteCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\ColourBox.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\ConsolePanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\DockPanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\HexEditorPanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\NumberTextCtrl.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\PaletteChooser.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\ResourceArchiveChooser.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SAuiTabArt.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SDialog.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SplashWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\STabCtrl.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\STopWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\EntryOperations.h">
@@ -1485,44 +1488,8 @@
       <Filter>Resources\Graphics\Font</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="..\..\src\ColourBox.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ConsolePanel.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\CTextureCanvas.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GfxCanvas.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\OGLCanvas.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteCanvas.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteChooser.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SplashWindow.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\EntryType.h">
       <Filter>Resources\Archive\EntryType</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextEditor.h">
-      <Filter>UI\TextEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextLanguage.h">
-      <Filter>UI\TextEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveEntryList.h">
-      <Filter>UI\Lists</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ListView.h">
-      <Filter>UI\Lists</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\EntryDataFormat.h">
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
@@ -1542,20 +1509,11 @@
     <ClInclude Include="..\..\src\ModelFormats.h">
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\VirtualListView.h">
-      <Filter>UI\Lists</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ArchivePanel.h">
       <Filter>Main Editor\UI Elements</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\TextureXPanel.h">
       <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BrowserItem.h">
-      <Filter>UI\Browser</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BrowserWindow.h">
-      <Filter>UI\Browser</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\BaseResourceChooser.h">
       <Filter>Main Editor\UI Elements</Filter>
@@ -1566,17 +1524,11 @@
     <ClInclude Include="..\..\src\HexEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\HexEditorPanel.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ArchiveOperations.h">
       <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextStyle.h">
-      <Filter>UI\TextEditor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\AudioEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
@@ -1584,14 +1536,8 @@
     <ClInclude Include="..\..\src\Conversions.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\BrowserCanvas.h">
-      <Filter>UI\Browser</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ANSIEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ANSICanvas.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\LumpFormats.h">
       <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
@@ -1833,9 +1779,6 @@
     <ClInclude Include="..\..\src\SIFRott.h">
       <Filter>Resources\Graphics\Image\Formats</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\DockPanel.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MCAnimations.h">
       <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
@@ -1872,15 +1815,6 @@
     <ClInclude Include="..\..\src\MOPGProperty.h">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\SToolBar.h">
-      <Filter>UI\SToolBar</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SToolBarButton.h">
-      <Filter>UI\SToolBar</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapPreviewCanvas.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MCOverlay.h">
       <Filter>Map Editor\UI Elements\Overlays</Filter>
     </ClInclude>
@@ -1889,9 +1823,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\LineTextureOverlay.h">
       <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\STopWindow.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SectorBuilder.h">
       <Filter>Map Editor</Filter>
@@ -1983,9 +1914,6 @@
     <ClInclude Include="..\..\src\External\lua\lzio.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\UndoManagerHistoryPanel.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\DiskArchive.h">
       <Filter>Resources\Archive\Formats</Filter>
     </ClInclude>
@@ -2021,9 +1949,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.h">
       <Filter>Dialogs\SetupWizard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ResourceArchiveChooser.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapChecks.h">
       <Filter>Map Editor</Filter>
@@ -2145,9 +2070,6 @@
     <ClInclude Include="..\..\src\Dialogs\Preferences\TextStylePrefsPanel.h">
       <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\SDialog.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\LinePropsPanel.h">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
     </ClInclude>
@@ -2159,9 +2081,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\PropsPanelBase.h">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\NumberTextCtrl.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ThingPropsPanel.h">
       <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
@@ -2177,12 +2096,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\dumb\dumb.h">
       <Filter>External\DUMB</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SAuiTabArt.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\STabCtrl.h">
-      <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapSpecials.h">
       <Filter>Map Editor</Filter>
@@ -2372,6 +2285,96 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Utility\FileMonitor.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Browser\BrowserCanvas.h">
+      <Filter>UI\Browser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Browser\BrowserItem.h">
+      <Filter>UI\Browser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Browser\BrowserWindow.h">
+      <Filter>UI\Browser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Lists\ArchiveEntryList.h">
+      <Filter>UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Lists\ListView.h">
+      <Filter>UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Lists\VirtualListView.h">
+      <Filter>UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SToolBar\SToolBar.h">
+      <Filter>UI\SToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SToolBar\SToolBarButton.h">
+      <Filter>UI\SToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h">
+      <Filter>UI\TextEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h">
+      <Filter>UI\TextEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h">
+      <Filter>UI\TextEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\ANSICanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\CTextureCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\GfxCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\MapPreviewCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\OGLCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\PaletteCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\ColourBox.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\ConsolePanel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\DockPanel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\HexEditorPanel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\NumberTextCtrl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\PaletteChooser.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\ResourceArchiveChooser.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SAuiTabArt.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SDialog.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SplashWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\STabCtrl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\STopWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,7 @@
 #define	__TEXTENTRYPANEL_H__
 
 #include "EntryPanel.h"
-#include "TextEditor.h"
+#include "UI/TextEditor/TextEditor.h"
 #include <wx/choice.h>
 
 class TextEntryPanel : public EntryPanel

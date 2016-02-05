@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "MapBackupPanel.h"
-#include "MapPreviewCanvas.h"
+#include "UI/Canvas/MapPreviewCanvas.h"
 #include "ZipArchive.h"
 #include "WadArchive.h"
 

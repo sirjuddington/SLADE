@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "LibArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include <wx/log.h>
 #include <wx/filename.h>
 

@@ -36,7 +36,7 @@
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "EntryOperations.h"
 #include "ArchiveManager.h"
-#include "HexEditorPanel.h"
+#include "UI/HexEditorPanel.h"
 #include "MainWindow.h"
 
 

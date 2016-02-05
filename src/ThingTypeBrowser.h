@@ -2,7 +2,7 @@
 #ifndef __THING_TYPE_BROWSER_H__
 #define __THING_TYPE_BROWSER_H__
 
-#include "BrowserWindow.h"
+#include "UI/Browser/BrowserWindow.h"
 
 class ThingType;
 class ThingBrowserItem : public BrowserItem

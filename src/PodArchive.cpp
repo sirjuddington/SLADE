@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "PodArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "MainWindow.h"
 #include "General/Console/Console.h"
 #include <wx/filename.h>

@@ -33,7 +33,7 @@
 #include "EntryPanel.h"
 #include "MainWindow.h"
 #include "ArchivePanel.h"
-#include "SToolBarButton.h"
+#include "UI/SToolBar/SToolBarButton.h"
 
 
 /*******************************************************************

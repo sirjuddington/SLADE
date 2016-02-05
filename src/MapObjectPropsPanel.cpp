@@ -37,7 +37,7 @@
 #include "MOPGProperty.h"
 #include "MapEditorWindow.h"
 #include "Icons.h"
-#include "STabCtrl.h"
+#include "UI/STabCtrl.h"
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
 #include <wx/gbsizer.h>

@@ -37,11 +37,11 @@
 #include "ArchiveManager.h"
 #include "WadArchive.h"
 #include "Utility/SFileDialog.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "General/ColourConfiguration.h"
 #include "Icons.h"
-#include "ResourceArchiveChooser.h"
-#include "MapPreviewCanvas.h"
+#include "UI/ResourceArchiveChooser.h"
+#include "UI/Canvas/MapPreviewCanvas.h"
 #include <wx/statline.h>
 #include <wx/gbsizer.h>
 #include <wx/imaglist.h>

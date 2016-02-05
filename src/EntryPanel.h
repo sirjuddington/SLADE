@@ -5,7 +5,7 @@
 #include "ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
 #include "General/UndoRedo.h"
-#include "SToolBar.h"
+#include "UI/SToolBar/SToolBar.h"
 
 class SToolBarButton;
 class EntryPanel : public wxPanel, public Listener

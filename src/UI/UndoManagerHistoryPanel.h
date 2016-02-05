@@ -2,7 +2,7 @@
 #ifndef __UNDO_MANAGER_HISTORY_PANEL_H__
 #define __UNDO_MANAGER_HISTORY_PANEL_H__
 
-#include "VirtualListView.h"
+#include "UI/Lists/VirtualListView.h"
 #include "General/ListenerAnnouncer.h"
 
 class UndoManager;

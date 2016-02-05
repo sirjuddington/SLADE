@@ -2,7 +2,7 @@
 #ifndef __PREFERENCES_DIALOG_H__
 #define __PREFERENCES_DIALOG_H__
 
-#include "SDialog.h"
+#include "UI/SDialog.h"
 #include <wx/treebook.h>
 
 class PrefsPanelBase;

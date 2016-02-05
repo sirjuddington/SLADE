@@ -2,7 +2,7 @@
 #ifndef __ACTION_SPECIAL_DIALOG_H__
 #define __ACTION_SPECIAL_DIALOG_H__
 
-#include "SDialog.h"
+#include "UI/SDialog.h"
 #include <wx/dataview.h>
 
 // A wxDataViewTreeCtrl specialisation showing the

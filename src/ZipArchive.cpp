@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "ZipArchive.h"
 #include "WadArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 #include <wx/ptr_scpd.h>

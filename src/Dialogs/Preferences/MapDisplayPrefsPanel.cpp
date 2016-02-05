@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "MapDisplayPrefsPanel.h"
-#include "STabCtrl.h"
+#include "UI/STabCtrl.h"
 #include <wx/statline.h>
 #include <wx/gbsizer.h>
 

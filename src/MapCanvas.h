@@ -2,7 +2,7 @@
 #ifndef __MAPCANVAS_H__
 #define __MAPCANVAS_H__
 
-#include "OGLCanvas.h"
+#include "UI/Canvas/OGLCanvas.h"
 #include "VertexInfoOverlay.h"
 #include "LineInfoOverlay.h"
 #include "SectorInfoOverlay.h"

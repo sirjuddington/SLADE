@@ -35,7 +35,7 @@
 #include "ArchiveManager.h"
 #include "General/Misc.h"
 #include "PaletteManager.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "Icons.h"
 #include "SIFormat.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"

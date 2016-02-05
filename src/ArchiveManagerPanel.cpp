@@ -35,13 +35,13 @@
 #include "ArchiveManager.h"
 #include "ArchivePanel.h"
 #include "TextureXEditor.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "MainWindow.h"
 #include "Icons.h"
 #include "MapEditorWindow.h"
 #include "DirArchive.h"
 #include "Dialogs/DirArchiveUpdateDialog.h"
-#include "STabCtrl.h"
+#include "UI/STabCtrl.h"
 #include <wx/filename.h>
 
 

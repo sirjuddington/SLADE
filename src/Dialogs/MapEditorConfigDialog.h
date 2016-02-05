@@ -2,9 +2,9 @@
 #ifndef __MAP_EDITOR_CONFIG_DIALOG_H__
 #define __MAP_EDITOR_CONFIG_DIALOG_H__
 
-#include "SDialog.h"
+#include "UI/SDialog.h"
 #include "Archive.h"
-#include "ListView.h"
+#include "UI/Lists/ListView.h"
 
 class MapPreviewCanvas;
 class BaseResourceChooser;

@@ -2,8 +2,8 @@
 #ifndef __SECTOR_SPECIAL_DIALOG_H__
 #define __SECTOR_SPECIAL_DIALOG_H__
 
-#include "SDialog.h"
-#include "ListView.h"
+#include "UI/SDialog.h"
+#include "UI/Lists/ListView.h"
 
 class SectorSpecialPanel : public wxPanel
 {

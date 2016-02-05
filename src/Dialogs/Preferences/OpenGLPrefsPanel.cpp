@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "OpenGLPrefsPanel.h"
-#include "NumberTextCtrl.h"
+#include "UI/NumberTextCtrl.h"
 #include "OpenGL/Drawing.h"
 
 

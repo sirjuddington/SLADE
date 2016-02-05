@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "TarArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include <wx/filename.h>
 
 

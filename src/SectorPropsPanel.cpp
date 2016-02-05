@@ -35,9 +35,9 @@
 #include "MapObject.h"
 #include "MapEditorWindow.h"
 #include "OpenGL/Drawing.h"
-#include "NumberTextCtrl.h"
+#include "UI/NumberTextCtrl.h"
 #include "MapTextureBrowser.h"
-#include "STabCtrl.h"
+#include "UI/STabCtrl.h"
 #include <wx/gbsizer.h>
 
 

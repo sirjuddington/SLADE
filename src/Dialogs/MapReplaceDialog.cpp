@@ -33,7 +33,7 @@
 #include "UI/WxStuff.h"
 #include "MapReplaceDialog.h"
 #include "ArchiveOperations.h"
-#include "STabCtrl.h"
+#include "UI/STabCtrl.h"
 #include <wx/gbsizer.h>
 #include <wx/statline.h>
 

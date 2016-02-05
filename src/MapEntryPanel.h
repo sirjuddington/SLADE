@@ -3,7 +3,7 @@
 #define __MAP_ENTRY_PANEL_H__
 
 #include "EntryPanel.h"
-#include "MapPreviewCanvas.h"
+#include "UI/Canvas/MapPreviewCanvas.h"
 
 class MapEntryPanel : public EntryPanel
 {

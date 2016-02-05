@@ -35,7 +35,7 @@
 #include "OpenGL/Drawing.h"
 #include "MapTextureBrowser.h"
 #include "GameConfiguration.h"
-#include "NumberTextCtrl.h"
+#include "UI/NumberTextCtrl.h"
 #include <wx/gbsizer.h>
 #undef min
 #undef max

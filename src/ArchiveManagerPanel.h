@@ -9,10 +9,10 @@
 #include <wx/thread.h>
 #include "General/ListenerAnnouncer.h"
 #include "Archive.h"
-#include "ListView.h"
+#include "UI/Lists/ListView.h"
 #include "EntryPanel.h"
 #include "MainApp.h"
-#include "DockPanel.h"
+#include "UI/DockPanel.h"
 #include "DirArchive.h"
 
 wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);

@@ -2,7 +2,7 @@
 #ifndef __PALETTEDIALOG_H__
 #define	__PALETTEDIALOG_H__
 
-#include "PaletteCanvas.h"
+#include "UI/Canvas/PaletteCanvas.h"
 
 class PaletteDialog : public wxDialog
 {

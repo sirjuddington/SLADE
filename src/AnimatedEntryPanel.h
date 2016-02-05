@@ -6,8 +6,8 @@
 #include "EntryPanel.h"
 #include "BinaryControlLump.h"
 #include "AnimatedList.h"
-#include "ListView.h"
-#include "GfxCanvas.h"
+#include "UI/Lists/ListView.h"
+#include "UI/Canvas/GfxCanvas.h"
 #include <wx/radiobut.h>
 
 class AnimatedEntryPanel : public EntryPanel, public SActionHandler

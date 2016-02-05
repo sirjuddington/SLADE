@@ -2,7 +2,7 @@
 #ifndef __MAP_TEXTURE_BROWSER_H__
 #define __MAP_TEXTURE_BROWSER_H__
 
-#include "BrowserWindow.h"
+#include "UI/Browser/BrowserWindow.h"
 
 class SLADEMap;
 class Archive;

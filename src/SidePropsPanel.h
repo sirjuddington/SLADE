@@ -2,7 +2,7 @@
 #ifndef __SIDE_PROPS_PANEL_H__
 #define __SIDE_PROPS_PANEL_H__
 
-#include <OGLCanvas.h>
+#include "UI/Canvas/OGLCanvas.h"
 
 class GLTexture;
 class SideTexCanvas : public OGLCanvas

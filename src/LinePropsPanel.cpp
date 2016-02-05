@@ -36,8 +36,8 @@
 #include "MapEditorWindow.h"
 #include "ActionSpecialDialog.h"
 #include "SidePropsPanel.h"
-#include "NumberTextCtrl.h"
-#include "STabCtrl.h"
+#include "UI/NumberTextCtrl.h"
+#include "UI/STabCtrl.h"
 #include <wx/gbsizer.h>
 #undef min
 #undef max

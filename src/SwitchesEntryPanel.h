@@ -6,8 +6,8 @@
 #include "EntryPanel.h"
 #include "BinaryControlLump.h"
 #include "SwitchesList.h"
-#include "GfxCanvas.h"
-#include "ListView.h"
+#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Lists/ListView.h"
 
 class SwitchesEntryPanel : public EntryPanel, public SActionHandler
 {

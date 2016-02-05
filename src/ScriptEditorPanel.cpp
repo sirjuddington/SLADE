@@ -31,7 +31,7 @@
 #include "UI/WxStuff.h"
 #include "ScriptEditorPanel.h"
 #include "Archive.h"
-#include "SToolBar.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "EntryOperations.h"
 #include "GameConfiguration.h"
 #include "MapEditorWindow.h"

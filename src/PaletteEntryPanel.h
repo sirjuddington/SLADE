@@ -3,7 +3,7 @@
 #define	__PALETTEENTRYPANEL_H__
 
 #include "EntryPanel.h"
-#include "PaletteCanvas.h"
+#include "UI/Canvas/PaletteCanvas.h"
 #include "MainApp.h"
 
 /* TODO:

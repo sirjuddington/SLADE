@@ -42,7 +42,7 @@
 #include <wx/clrpicker.h>
 #include <wx/filename.h>
 #include "General/Console/ConsoleHelpers.h"
-#include "SToolBar.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 
 

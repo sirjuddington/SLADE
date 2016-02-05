@@ -50,7 +50,7 @@
 #include "General/Clipboard.h"
 #include "ArchiveManager.h"
 #include "MainWindow.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "ArchiveOperations.h"
 #include "Icons.h"
 #include "Conversions.h"

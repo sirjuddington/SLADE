@@ -2,7 +2,7 @@
 #ifndef __SCRIPT_EDITOR_PANEL_H__
 #define __SCRIPT_EDITOR_PANEL_H__
 
-#include "TextEditor.h"
+#include "UI/TextEditor/TextEditor.h"
 #include "MainApp.h"
 #include <wx/treelist.h>
 

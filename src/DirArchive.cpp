@@ -32,7 +32,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "DirArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "WadArchive.h"
 #include "MainApp.h"
 #include <wx/filename.h>

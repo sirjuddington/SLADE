@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "STopWindow.h"
-#include "SToolBar.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "General/Misc.h"
 #include <wx/aui/aui.h>
 

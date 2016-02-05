@@ -34,7 +34,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "DocsPage.h"
-#include "SToolBarButton.h"
+#include "UI/SToolBar/SToolBarButton.h"
 #include <wx/webview.h>
 
 

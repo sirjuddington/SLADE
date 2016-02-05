@@ -31,7 +31,7 @@
 #include "UI/WxStuff.h"
 #include "MapBackupManager.h"
 #include "ZipArchive.h"
-#include "SDialog.h"
+#include "UI/SDialog.h"
 #include "MapBackupPanel.h"
 #include "MapEditorWindow.h"
 #include "General/Misc.h"

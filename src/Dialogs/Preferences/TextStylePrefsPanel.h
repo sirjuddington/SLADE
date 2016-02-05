@@ -3,7 +3,7 @@
 #define __TEXT_STYLE_PREFS_PANEL_H__
 
 #include "PrefsPanelBase.h"
-#include "TextStyle.h"
+#include "UI/TextEditor/TextStyle.h"
 #include <wx/clrpicker.h>
 #include <wx/fontpicker.h>
 

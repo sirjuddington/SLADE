@@ -3,12 +3,12 @@
 #define	__GFXCONVDIALOG_H__
 
 #include <wx/dialog.h>
-#include "GfxCanvas.h"
-#include "PaletteChooser.h"
-#include "ColourBox.h"
+#include "UI/Canvas/GfxCanvas.h"
+#include "UI/PaletteChooser.h"
+#include "UI/ColourBox.h"
 #include "SIFormat.h"
 #include "CTexture.h"
-#include "SDialog.h"
+#include "UI/SDialog.h"
 
 /* Convert from anything to:
  * Doom Gfx

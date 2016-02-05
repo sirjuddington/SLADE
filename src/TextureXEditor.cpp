@@ -34,11 +34,11 @@
 #include "TextureXEditor.h"
 #include "ArchiveManager.h"
 #include "General/Console/Console.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "ResourceManager.h"
 #include "General/UndoRedo.h"
-#include "UndoManagerHistoryPanel.h"
+#include "UI/UndoManagerHistoryPanel.h"
 #include <wx/dialog.h>
 #include <wx/radiobut.h>
 

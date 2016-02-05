@@ -3,7 +3,7 @@
 #define __HEX_ENTRY_PANEL__
 
 #include "EntryPanel.h"
-#include "HexEditorPanel.h"
+#include "UI/HexEditorPanel.h"
 
 class HexEntryPanel : public EntryPanel
 {

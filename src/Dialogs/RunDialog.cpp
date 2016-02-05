@@ -35,7 +35,7 @@
 #include "Icons.h"
 #include "Utility/SFileDialog.h"
 #include "General/Executables.h"
-#include "ResourceArchiveChooser.h"
+#include "UI/ResourceArchiveChooser.h"
 #include "Archive.h"
 #include "ArchiveManager.h"
 #include <wx/gbsizer.h>

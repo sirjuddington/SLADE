@@ -3,8 +3,8 @@
 #define __PATCH_TABLE_PANEL_H__
 
 #include "PatchTable.h"
-#include "VirtualListView.h"
-#include "GfxCanvas.h"
+#include "UI/Lists/VirtualListView.h"
+#include "UI/Canvas/GfxCanvas.h"
 
 class TextureXEditor;
 

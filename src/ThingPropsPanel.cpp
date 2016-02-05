@@ -37,8 +37,8 @@
 #include "OpenGL/Drawing.h"
 #include "ThingTypeBrowser.h"
 #include "Utility/MathStuff.h"
-#include "NumberTextCtrl.h"
-#include "STabCtrl.h"
+#include "UI/NumberTextCtrl.h"
+#include "UI/STabCtrl.h"
 #include <wx/gbsizer.h>
 
 

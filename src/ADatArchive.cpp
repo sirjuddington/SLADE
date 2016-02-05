@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ADatArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "Utility/Compression.h"
 #include "General/Misc.h"
 #include <wx/filename.h>

@@ -3,7 +3,7 @@
 #define	__GFXENTRYPANEL_H__
 
 #include "EntryPanel.h"
-#include "GfxCanvas.h"
+#include "UI/Canvas/GfxCanvas.h"
 #include "MainApp.h"
 #include "Translation.h"
 #include <wx/spinctrl.h>

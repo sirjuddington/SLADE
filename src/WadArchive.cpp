@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "WadArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "General/Misc.h"
 #include "Utility/Tokenizer.h"
 #include <wx/filename.h>

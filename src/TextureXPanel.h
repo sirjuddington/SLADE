@@ -4,7 +4,7 @@
 
 #include "TextureXList.h"
 #include "TextureEditorPanel.h"
-#include "VirtualListView.h"
+#include "UI/Lists/VirtualListView.h"
 #include "MainApp.h"
 
 class TextureXEditor;

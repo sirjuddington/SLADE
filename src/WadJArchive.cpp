@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "MainWindow.h"
 #include "WadJArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include <wx/log.h>
 #include <wx/filename.h>
 

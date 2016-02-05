@@ -33,7 +33,7 @@
 #include "ResourceArchiveChooser.h"
 #include "ArchiveManager.h"
 #include "Utility/SFileDialog.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 
 
 /*******************************************************************

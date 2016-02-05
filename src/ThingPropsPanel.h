@@ -3,7 +3,7 @@
 #define __THING_PROPS_PANEL_H__
 
 #include "PropsPanelBase.h"
-#include <OGLCanvas.h>
+#include "UI/Canvas/OGLCanvas.h"
 
 class GLTexture;
 class ThingType;

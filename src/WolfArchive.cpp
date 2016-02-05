@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "WolfArchive.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include <wx/log.h>
 #include <wx/filename.h>
 #include <wx/dir.h>

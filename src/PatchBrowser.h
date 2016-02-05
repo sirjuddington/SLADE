@@ -2,7 +2,7 @@
 #ifndef __PATCH_BROWSER_H__
 #define __PATCH_BROWSER_H__
 
-#include "BrowserWindow.h"
+#include "UI/Browser/BrowserWindow.h"
 #include "General/ListenerAnnouncer.h"
 #include "PatchTable.h"
 

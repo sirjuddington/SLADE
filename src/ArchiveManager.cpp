@@ -33,7 +33,7 @@
 #include "Archives.h"
 #include "DirArchive.h"
 #include "General/Console/Console.h"
-#include "SplashWindow.h"
+#include "UI/SplashWindow.h"
 #include "ResourceManager.h"
 #include "GameConfiguration.h"
 #include <wx/filename.h>

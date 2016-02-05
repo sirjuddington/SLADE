@@ -5,7 +5,7 @@
 #include "Archive.h"
 #include "EntryPanel.h"
 #include "General/ListenerAnnouncer.h"
-#include "ArchiveEntryList.h"
+#include "UI/Lists/ArchiveEntryList.h"
 #include "MainApp.h"
 #include "General/UndoRedo.h"
 #include <wx/textctrl.h>

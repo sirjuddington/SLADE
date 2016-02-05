@@ -2,9 +2,9 @@
 #ifndef __TEXTURE_EDITOR_PANEL_H__
 #define __TEXTURE_EDITOR_PANEL_H__
 
-#include "CTextureCanvas.h"
+#include "UI/Canvas/CTextureCanvas.h"
 #include "PatchTable.h"
-#include "ListView.h"
+#include "UI/Lists/ListView.h"
 #include "MainApp.h"
 #include <wx/spinctrl.h>
 
