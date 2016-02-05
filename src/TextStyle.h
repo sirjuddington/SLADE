@@ -2,7 +2,7 @@
 #ifndef __TEXT_STYLE_H__
 #define __TEXT_STYLE_H__
 
-#include "Parser.h"
+#include "Utility/Parser.h"
 #include <wx/font.h>
 #include <wx/stc/stc.h>
 

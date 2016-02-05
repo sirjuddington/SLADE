@@ -32,8 +32,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "TextLanguage.h"
-#include "Tokenizer.h"
-#include "Parser.h"
+#include "Utility/Tokenizer.h"
+#include "Utility/Parser.h"
 #include "ArchiveManager.h"
 
 

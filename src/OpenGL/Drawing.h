@@ -8,7 +8,7 @@
 
 #include <wx/colour.h>
 
-#include "Structs.h"
+#include "Utility/Structs.h"
 
 class GLTexture;
 class FontManager;

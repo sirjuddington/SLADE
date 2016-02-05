@@ -2,7 +2,7 @@
 #ifndef __ENTRYTYPE_H__
 #define __ENTRYTYPE_H__
 
-#include "PropertyList.h"
+#include "Utility/PropertyList/PropertyList.h"
 #include "EntryDataFormat.h"
 class ArchiveEntry;
 

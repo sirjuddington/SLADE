@@ -1181,7 +1181,7 @@ public:
 };
 
 #define GZIP_SIGNATURE 0x1F8B0800
-#include "Compression.h"
+#include "Utility/Compression.h"
 class VGZDataFormat : public EntryDataFormat
 {
 public:

@@ -33,7 +33,7 @@
 #include "WxStuff.h"
 #include "HexEditorPanel.h"
 #include "Console.h"
-#include "CodePages.h"
+#include "Utility/CodePages.h"
 #include "ArchiveManager.h"
 #include <wx/numdlg.h>
 

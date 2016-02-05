@@ -5,7 +5,7 @@
 #include "ActionSpecial.h"
 #include "ThingType.h"
 #include "UDMFProperty.h"
-#include "PropertyList.h"
+#include "Utility/PropertyList/PropertyList.h"
 
 // Tag types
 enum TagTypes

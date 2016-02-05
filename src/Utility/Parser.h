@@ -4,7 +4,7 @@
 
 #include "Tree.h"
 #include "Tokenizer.h"
-#include "Property.h"
+#include "PropertyList/Property.h"
 
 class Parser;
 class ParseTreeNode : public STreeNode

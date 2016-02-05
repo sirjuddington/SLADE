@@ -31,7 +31,7 @@
 #include "Misc.h"
 #include "AnimatedList.h"
 #include "ListView.h"
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 
 /*******************************************************************
  * ANIMATEDENTRY CLASS FUNCTIONS

@@ -2,7 +2,7 @@
 #ifndef __UDMF_PROPERTY_H__
 #define __UDMF_PROPERTY_H__
 
-#include "Property.h"
+#include "Utility/PropertyList/Property.h"
 
 class ParseTreeNode;
 class UDMFProperty

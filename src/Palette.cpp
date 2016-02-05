@@ -33,8 +33,8 @@
 #include "Misc.h"
 #include "Translation.h"
 #include "SIFormat.h"
-#include "Tokenizer.h"
-#include "CIEDeltaEquations.h"
+#include "Utility/Tokenizer.h"
+#include "Utility/CIEDeltaEquations.h"
 #include <wx/filename.h>
 
 /*******************************************************************

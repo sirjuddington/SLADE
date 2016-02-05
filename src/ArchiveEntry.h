@@ -3,7 +3,7 @@
 #define __ARCHIVEENTRY_H__
 
 #include "EntryType.h"
-#include "PropertyList.h"
+#include "Utility/PropertyList/PropertyList.h"
 
 class ArchiveTreeNode;
 class Archive;

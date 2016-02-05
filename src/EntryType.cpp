@@ -29,13 +29,13 @@
 #include "Main.h"
 #include "MainWindow.h"
 #include "EntryType.h"
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 #include "Console.h"
 #include "ArchiveManager.h"
 #include "ZipArchive.h"
 #include "WadArchive.h"
 #include "BinaryControlLump.h"
-#include "Parser.h"
+#include "Utility/Parser.h"
 #include "ConsoleHelpers.h"
 #include <wx/dir.h>
 #include <wx/filename.h>

@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ColourConfiguration.h"
-#include "Parser.h"
+#include "Utility/Parser.h"
 #include "ArchiveManager.h"
 #include "Console.h"
 #include <map>

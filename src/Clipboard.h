@@ -3,7 +3,7 @@
 #define	__CLIPBOARD_H__
 
 #include "Archive.h"
-#include "Structs.h"
+#include "Utility/Structs.h"
 
 enum ClipboardType
 {

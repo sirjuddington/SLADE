@@ -32,7 +32,7 @@
 #include "WxStuff.h"
 #include "MapRenderer3D.h"
 #include "SLADEMap.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 #include "MapEditorWindow.h"
 #include "ColourConfiguration.h"
 #include "ResourceManager.h"

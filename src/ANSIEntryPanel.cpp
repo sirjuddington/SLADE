@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
-#include "CodePages.h"
+#include "Utility/CodePages.h"
 #include "ANSIEntryPanel.h"
 
 

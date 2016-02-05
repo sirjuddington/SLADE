@@ -34,7 +34,7 @@
 #include "WadArchive.h"
 #include "MapLine.h"
 #include "MapVertex.h"
-#include "Parser.h"
+#include "Utility/Parser.h"
 #include "SImage.h"
 #include "SIFormat.h"
 #include "ColourConfiguration.h"

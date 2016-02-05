@@ -30,7 +30,7 @@
 #include "Misc.h"
 #include "SwitchesList.h"
 #include "ListView.h"
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 
 /*******************************************************************
  * SWITCHESENTRY CLASS FUNCTIONS

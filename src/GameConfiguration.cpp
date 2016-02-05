@@ -31,8 +31,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "GameConfiguration.h"
-#include "Tokenizer.h"
-#include "Parser.h"
+#include "Utility/Tokenizer.h"
+#include "Utility/Parser.h"
 #include "Misc.h"
 #include "Console.h"
 #include "Archive.h"

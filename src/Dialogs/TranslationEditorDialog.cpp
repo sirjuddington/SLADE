@@ -32,8 +32,8 @@
 #include "WxStuff.h"
 #include "TranslationEditorDialog.h"
 #include "Icons.h"
-#include "MathStuff.h"
-#include "Tokenizer.h"
+#include "Utility/MathStuff.h"
+#include "Utility/Tokenizer.h"
 #include "Misc.h"
 #include "ArchiveManager.h"
 #include <wx/ffile.h>

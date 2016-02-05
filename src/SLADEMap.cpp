@@ -29,8 +29,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "SLADEMap.h"
-#include "Parser.h"
-#include "MathStuff.h"
+#include "Utility/Parser.h"
+#include "Utility/MathStuff.h"
 #include "ResourceManager.h"
 #include "GameConfiguration.h"
 #include "MainApp.h"

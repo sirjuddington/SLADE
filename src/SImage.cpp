@@ -37,8 +37,8 @@
 #include "Misc.h"
 #include "SIFormat.h"
 #include "Translation.h"
-#include "MathStuff.h"
-#include "Tokenizer.h"
+#include "Utility/MathStuff.h"
+#include "Utility/Tokenizer.h"
 #include "ArchiveManager.h"
 
 #undef BOOL

@@ -40,7 +40,7 @@
 #include "MainWindow.h"
 #include "SToolBar.h"
 #include "WadArchive.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include "NodeBuilders.h"
 #include "ShapeDrawPanel.h"
 #include "ScriptEditorPanel.h"

@@ -32,7 +32,7 @@
 #include "WadArchive.h"
 #include "SplashWindow.h"
 #include "Misc.h"
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 #include <wx/filename.h>
 
 bool JaguarDecode(MemChunk& mc);

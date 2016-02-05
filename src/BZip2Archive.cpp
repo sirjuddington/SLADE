@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "BZip2Archive.h"
 #include "SplashWindow.h"
-#include "Compression.h"
+#include "Utility/Compression.h"
 #include "Misc.h"
 #include <wx/filename.h>
 

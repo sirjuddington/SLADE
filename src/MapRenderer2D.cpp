@@ -36,7 +36,7 @@
 #include "ColourConfiguration.h"
 #include "MapEditorWindow.h"
 #include "OpenGL/GLTexture.h"
-#include "Polygon2D.h"
+#include "Utility/Polygon2D.h"
 #include "ObjectEdit.h"
 #include "OpenGL/OpenGL.h"
 #include "OpenGL/Drawing.h"

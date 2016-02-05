@@ -31,7 +31,7 @@
 #include "WxStuff.h"
 #include "NodesPrefsPanel.h"
 #include "NodeBuilders.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 
 
 /*******************************************************************

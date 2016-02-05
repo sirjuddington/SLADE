@@ -42,7 +42,7 @@
 #include "KeyBind.h"
 #include "Dialogs/GfxConvDialog.h"
 #include "SplashWindow.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "UndoRedo.h"
 #include <wx/filename.h>

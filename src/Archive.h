@@ -3,7 +3,7 @@
 #define __ARCHIVE_H__
 
 #include "ArchiveEntry.h"
-#include "Tree.h"
+#include "Utility/Tree.h"
 #include "ListenerAnnouncer.h"
 
 class ArchiveTreeNode : public STreeNode

@@ -34,7 +34,7 @@
 #include "MapVertex.h"
 #include "MainApp.h"
 #include "SLADEMap.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 #include "GameConfiguration.h"
 #include <wx/colour.h>
 #include <cmath>

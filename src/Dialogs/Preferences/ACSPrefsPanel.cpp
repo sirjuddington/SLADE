@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "ACSPrefsPanel.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include <wx/listbox.h>
 
 

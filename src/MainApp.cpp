@@ -31,7 +31,7 @@
 #include "MainApp.h"
 #include "MainWindow.h"
 #include "ArchiveManager.h"
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 #include "Console.h"
 #include "Icons.h"
 #include "SplashWindow.h"

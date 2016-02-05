@@ -8,7 +8,7 @@
 #include "MapVertex.h"
 #include "MapThing.h"
 #include "Archive.h"
-#include "PropertyList.h"
+#include "Utility/PropertyList/PropertyList.h"
 #include "MapSpecials.h"
 
 struct mobj_holder_t

@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "WxStuff.h"
 #include "TempFolderWizardPage.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include <wx/dirdlg.h>
 #include <wx/stdpaths.h>
 #include <wx/dir.h>

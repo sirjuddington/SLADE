@@ -2,7 +2,7 @@
 #ifndef __KEYBIND_H__
 #define __KEYBIND_H__
 
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 
 #define KPM_CTRL	0x01
 #define KPM_ALT		0x02

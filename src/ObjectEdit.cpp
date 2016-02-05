@@ -34,7 +34,7 @@
 #include "Main.h"
 #include "SLADEMap.h"
 #include "ObjectEdit.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 
 
 /*******************************************************************

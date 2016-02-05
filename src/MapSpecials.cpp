@@ -33,8 +33,8 @@
 #include "SLADEMap.h"
 #include "MapSpecials.h"
 #include "GameConfiguration.h"
-#include "Tokenizer.h"
-#include "MathStuff.h"
+#include "Utility/Tokenizer.h"
+#include "Utility/MathStuff.h"
 #include <wx/colour.h>
 #include <cmath>
 

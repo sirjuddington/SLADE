@@ -33,7 +33,7 @@
 #include "PaletteEntryPanel.h"
 #include "PaletteManager.h"
 #include "Icons.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include "Misc.h"
 #include "MainWindow.h"
 #include <wx/dialog.h>

@@ -35,7 +35,7 @@
 #include "WxStuff.h"
 #include "MapEditorWindow.h"
 #include "GameConfiguration.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 #include "Console.h"
 #include "MapCanvas.h"
 #include "MapObjectPropsPanel.h"

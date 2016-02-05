@@ -33,7 +33,7 @@
 #include "Main.h"
 #include "SectorBuilder.h"
 #include "SLADEMap.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 #include "OpenGL/OpenGL.h"
 
 

@@ -33,7 +33,7 @@
 #include "WxStuff.h"
 #include "RunDialog.h"
 #include "Icons.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include "Executables.h"
 #include "ResourceArchiveChooser.h"
 #include "Archive.h"

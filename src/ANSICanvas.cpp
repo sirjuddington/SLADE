@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "WxStuff.h"
-#include "CodePages.h"
+#include "Utility/CodePages.h"
 #include "ANSICanvas.h"
 #include "ArchiveManager.h"
 

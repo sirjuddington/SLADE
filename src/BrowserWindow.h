@@ -2,7 +2,7 @@
 #ifndef __BROWSER_WINDOW_H__
 #define __BROWSER_WINDOW_H__
 
-#include "Tree.h"
+#include "Utility/Tree.h"
 #include "BrowserItem.h"
 #include "BrowserCanvas.h"
 #include <wx/treelist.h>

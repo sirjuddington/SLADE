@@ -32,7 +32,7 @@
 #include "WxStuff.h"
 #include "BaseResourceArchivesPanel.h"
 #include "ArchiveManager.h"
-#include "Parser.h"
+#include "Utility/Parser.h"
 #ifdef __WXMSW__
 #include <wx/msw/registry.h>
 #endif

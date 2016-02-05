@@ -1,6 +1,7 @@
 
 #ifndef __TOKENIZER_H__
 #define __TOKENIZER_H__
+
 #include "MemChunk.h"
 
 enum CommentTypes

@@ -36,7 +36,7 @@
 #include "GameConfiguration.h"
 #include "ArchiveManager.h"
 #include "WadArchive.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include "SplashWindow.h"
 #include "ColourConfiguration.h"
 #include "Icons.h"

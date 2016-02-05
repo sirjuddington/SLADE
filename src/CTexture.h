@@ -2,7 +2,7 @@
 #ifndef __CTEXTURE_H__
 #define __CTEXTURE_H__
 
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 #include "ArchiveEntry.h"
 #include "ListenerAnnouncer.h"
 #include "Translation.h"

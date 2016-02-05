@@ -6,7 +6,7 @@
 #include "../bzip2/bzlib.h"
 #include "../lzma/C/LzmaDec.h"
 #include "Main.h"
-#include "MemChunk.h"
+#include "Utility/MemChunk.h"
 #include "templates.h"
 #include "tarray.h"
 

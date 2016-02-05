@@ -36,7 +36,7 @@
 #include "MapSide.h"
 #include "MapSector.h"
 #include "OpenGL/Drawing.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 #include "MapEditorWindow.h"
 #include "ColourConfiguration.h"
 #include "OpenGL/OpenGL.h"

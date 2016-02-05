@@ -33,7 +33,7 @@
 #include "VertexInfoOverlay.h"
 #include "MapVertex.h"
 #include "OpenGL/Drawing.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 #include "ColourConfiguration.h"
 #include "OpenGL/OpenGL.h"
 

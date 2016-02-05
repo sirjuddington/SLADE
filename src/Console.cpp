@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Console.h"
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 #include "CVar.h"
 #include "MainWindow.h"
 #include <wx/log.h>
@@ -394,7 +394,7 @@ CONSOLE_COMMAND (testmatch, 0, false)
 // to Function = "Arg1", "Arg2", "Arg3";
 // Reads from a text file and outputs the result to the console
 #if 0
-#include "Parser.h"
+#include "Utility/Parser.h"
 
 CONSOLE_COMMAND (langfuncsplit, 1)
 {

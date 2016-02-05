@@ -56,7 +56,7 @@
 #include "Conversions.h"
 #include "MainWindow.h"
 #include "Dialogs/TranslationEditorDialog.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include "MapEditorWindow.h"
 #include "KeyBind.h"
 #include "Dialogs/MapEditorConfigDialog.h"

@@ -3,7 +3,7 @@
 #define __MAPSECTOR_H__
 
 #include "MapObject.h"
-#include "Polygon2D.h"
+#include "Utility/Polygon2D.h"
 
 class MapSide;
 class MapLine;

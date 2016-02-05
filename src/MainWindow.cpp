@@ -37,7 +37,7 @@
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "BaseResourceChooser.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 #include "SplashWindow.h"
 #include "MapEditorWindow.h"
 #include "Dialogs/MapEditorConfigDialog.h"

@@ -39,7 +39,7 @@
 #include "ZipArchive.h"
 #include "Console.h"
 #include "SIFormat.h"
-#include "Tokenizer.h"
+#include "Utility/Tokenizer.h"
 #include <wx/filename.h>
 #include "External/zlib/zlib.h"
 

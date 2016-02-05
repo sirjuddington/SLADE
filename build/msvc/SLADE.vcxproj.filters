@@ -64,12 +64,6 @@
     <Filter Include="UI Elements\TextEditor">
       <UniqueIdentifier>{54fbf714-855d-444d-885d-1e12f9df2ef7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="General\Utility">
-      <UniqueIdentifier>{3bdecab8-98a4-45cf-ab63-fe6368271c60}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="General\Utility\PropertyList">
-      <UniqueIdentifier>{363ddaab-2da0-45fb-8fc2-042e5c6723c4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI Elements\Lists">
       <UniqueIdentifier>{13cacd50-0c22-431c-b94e-2fc031b1c3dc}</UniqueIdentifier>
     </Filter>
@@ -175,6 +169,12 @@
     <Filter Include="OpenGL">
       <UniqueIdentifier>{690bfeb6-aa15-4bd5-ab7b-151877def763}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{1521702b-d69c-47d5-836d-e05a2e2720ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\PropertyList">
+      <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Clipboard.cpp">
@@ -189,20 +189,11 @@
     <ClCompile Include="..\..\src\MainApp.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MemChunk.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Misc.cpp">
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WxStuff.cpp">
       <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Property.cpp">
-      <Filter>General\Utility\PropertyList</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PropertyList.cpp">
-      <Filter>General\Utility\PropertyList</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\EntryOperations.cpp">
       <Filter>Main Editor</Filter>
@@ -333,15 +324,6 @@
     <ClCompile Include="..\..\src\TextLanguage.cpp">
       <Filter>UI Elements\TextEditor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Tree.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Tokenizer.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Parser.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ArchiveEntryList.cpp">
       <Filter>UI Elements\Lists</Filter>
     </ClCompile>
@@ -402,9 +384,6 @@
     <ClCompile Include="..\..\src\BrowserCanvas.cpp">
       <Filter>UI Elements\Browser</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\CodePages.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ANSIEntryPanel.cpp">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClCompile>
@@ -422,9 +401,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Translation.cpp">
       <Filter>Resources\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MathStuff.cpp">
-      <Filter>General\Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SAction.cpp">
       <Filter>General</Filter>
@@ -452,9 +428,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\External\bzip2\randtable.c">
       <Filter>External\BZip2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Compression.cpp">
-      <Filter>General\Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\External\zreaders\ancientzip.cpp">
       <Filter>External\ZReaders</Filter>
@@ -669,9 +642,6 @@
     <ClCompile Include="..\..\src\KeyBind.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SFileDialog.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ColourConfiguration.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -698,9 +668,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\MapRenderer2D.cpp">
       <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Polygon2D.cpp">
-      <Filter>General\Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UDMFProperty.cpp">
       <Filter>Map Editor\GameConfiguration</Filter>
@@ -752,9 +719,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ScriptEditorPanel.cpp">
       <Filter>Map Editor\Script Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CIEDeltaEquations.cpp">
-      <Filter>General\Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Lua.cpp">
       <Filter>General</Filter>
@@ -1374,6 +1338,42 @@
     <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utility\PropertyList\Property.cpp">
+      <Filter>Utility\PropertyList</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\PropertyList\PropertyList.cpp">
+      <Filter>Utility\PropertyList</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\CIEDeltaEquations.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\CodePages.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\Compression.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\MathStuff.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\Parser.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\Polygon2D.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\SFileDialog.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\Tokenizer.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\Tree.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\MemChunk.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Clipboard.h">
@@ -1391,20 +1391,11 @@
     <ClInclude Include="..\..\src\MainApp.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MemChunk.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Misc.h">
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WxStuff.h">
       <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Property.h">
-      <Filter>General\Utility\PropertyList</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PropertyList.h">
-      <Filter>General\Utility\PropertyList</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\EntryOperations.h">
       <Filter>Main Editor</Filter>
@@ -1545,18 +1536,6 @@
     <ClInclude Include="..\..\src\TextLanguage.h">
       <Filter>UI Elements\TextEditor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Tree.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Tokenizer.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Structs.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Parser.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ArchiveEntryList.h">
       <Filter>UI Elements\Lists</Filter>
     </ClInclude>
@@ -1632,9 +1611,6 @@
     <ClInclude Include="..\..\src\BrowserCanvas.h">
       <Filter>UI Elements\Browser</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\CodePages.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ANSIEntryPanel.h">
       <Filter>Main Editor\UI Elements\EntryPanel</Filter>
     </ClInclude>
@@ -1653,9 +1629,6 @@
     <ClInclude Include="..\..\src\Translation.h">
       <Filter>Resources\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MathStuff.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\SAction.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -1664,9 +1637,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h">
       <Filter>External\BZip2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Compression.h">
-      <Filter>General\Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\ancientzip.h">
       <Filter>External\ZReaders</Filter>
@@ -1896,9 +1866,6 @@
     <ClInclude Include="..\..\src\KeyBind.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\SFileDialog.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ColourConfiguration.h">
       <Filter>General</Filter>
     </ClInclude>
@@ -1925,9 +1892,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapRenderer2D.h">
       <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Polygon2D.h">
-      <Filter>General\Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UDMFProperty.h">
       <Filter>Map Editor\GameConfiguration</Filter>
@@ -2364,6 +2328,45 @@
     </ClInclude>
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h">
       <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\PropertyList\Property.h">
+      <Filter>Utility\PropertyList</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\PropertyList\PropertyList.h">
+      <Filter>Utility\PropertyList</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\CIEDeltaEquations.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\CodePages.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Compression.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\MathStuff.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Parser.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Polygon2D.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\SFileDialog.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Structs.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Tokenizer.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Tree.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\MemChunk.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

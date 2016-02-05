@@ -89,9 +89,9 @@ typename M::mapped_type findInMap(M& m, const typename M::key_type& k, typename 
 #include <wx/file.h>
 
 // Global internal includes
-#include "MemChunk.h"
+#include "Utility/MemChunk.h"
 #include "CVar.h"
-#include "Structs.h"
+#include "Utility/Structs.h"
 
 // Namespace to hold 'global' variables
 namespace Global

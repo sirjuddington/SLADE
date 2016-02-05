@@ -37,7 +37,7 @@
 #include "MCAnimations.h"
 #include "ArchiveManager.h"
 #include "OpenGL/Drawing.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 #include "MainApp.h"
 #include "MapEditorWindow.h"
 #include "MapRenderer2D.h"

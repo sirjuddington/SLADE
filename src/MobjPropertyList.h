@@ -2,7 +2,7 @@
 #ifndef __MOBJ_PROPERTY_LIST_H__
 #define __MOBJ_PROPERTY_LIST_H__
 
-#include "Property.h"
+#include "Utility/PropertyList/Property.h"
 
 class MobjPropertyList
 {

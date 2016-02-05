@@ -31,7 +31,7 @@
 #include "MapLine.h"
 #include "MapVertex.h"
 #include "MapSide.h"
-#include "MathStuff.h"
+#include "Utility/MathStuff.h"
 #include "SLADEMap.h"
 #include "MainApp.h"
 #include "GameConfiguration.h"

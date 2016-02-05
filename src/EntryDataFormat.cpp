@@ -31,7 +31,7 @@
 #include "EntryDataFormat.h"
 #include "Archives.h"
 #include "BinaryControlLump.h"
-#include "Parser.h"
+#include "Utility/Parser.h"
 
 
 /*******************************************************************

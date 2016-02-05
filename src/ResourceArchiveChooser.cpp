@@ -32,7 +32,7 @@
 #include "WxStuff.h"
 #include "ResourceArchiveChooser.h"
 #include "ArchiveManager.h"
-#include "SFileDialog.h"
+#include "Utility/SFileDialog.h"
 #include "SplashWindow.h"
 
 
