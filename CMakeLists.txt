@@ -25,13 +25,13 @@ find_package(OpenGL)
 
 if(NOT ZLIB_FOUND)
 	set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/zlib)
-	add_subdirectory(src/zlib)
+	add_subdirectory(src/External/zlib)
 	set(ZLIB_LIBRARY z)
 endif(NOT ZLIB_FOUND)
 
 if(NOT BZIP2_FOUND)
 	set(BZIP2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bzip2)
-	add_subdirectory(src/bzip2)
+	add_subdirectory(src/External/bzip2)
 	set(BZIP2_LIBRARIES bz2)
 endif(NOT BZIP2_FOUND)
 

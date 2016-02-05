@@ -61,7 +61,7 @@ endif()
 if(NOT ${GLEW_FOUND})
 	message(SEND_ERROR "GLEW required.")
 endif()
-include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./dumb ./Application)
+include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./External/dumb ./Application)
 
 if (NOT NO_FLUIDSYNTH)
 	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
@@ -72,10 +72,10 @@ set(SLADE_SOURCES
 file(GLOB_RECURSE SLADE_SOURCES *.cpp)
 set(LUA_SOURCES
 )
-file(GLOB LUA_SOURCES lua/*.c)
+file(GLOB LUA_SOURCES External/lua/*.c)
 set(DUMB_SOURCES
 )
-file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)
+file(GLOB_RECURSE DUMB_SOURCES External/dumb/*.c)
 
 set(SLADE_HEADERS
 )
@@ -94,17 +94,17 @@ endif(APPLE)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
 add_executable(slade WIN32 MACOSX_BUNDLE
-	lzma/C/LzmaDec.c
-	mus2mid/mus2mid.cpp
-	zreaders/ancientzip.cpp
-	zreaders/files.cpp
-	zreaders/m_alloc.cpp
-	zreaders/i_music.cpp
-	zreaders/music_hmi_midiout.cpp
-	zreaders/music_midistream.cpp
-	zreaders/music_mus_midiout.cpp
-	zreaders/music_smf_midiout.cpp
-	zreaders/music_xmi_midiout.cpp
+	External/lzma/C/LzmaDec.c
+	External/mus2mid/mus2mid.cpp
+	External/zreaders/ancientzip.cpp
+	External/zreaders/files.cpp
+	External/zreaders/m_alloc.cpp
+	External/zreaders/i_music.cpp
+	External/zreaders/music_hmi_midiout.cpp
+	External/zreaders/music_midistream.cpp
+	External/zreaders/music_mus_midiout.cpp
+	External/zreaders/music_smf_midiout.cpp
+	External/zreaders/music_xmi_midiout.cpp
 	${LUA_SOURCES}
 	${DUMB_SOURCES}
 	${SLADE_SOURCES}
