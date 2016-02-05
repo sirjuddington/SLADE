@@ -32,7 +32,7 @@
 #include "UI/WxStuff.h"
 #include "DataEntryPanel.h"
 #include "General/ColourConfiguration.h"
-#include "BinaryControlLump.h"
+#include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainWindow.h"
 
 

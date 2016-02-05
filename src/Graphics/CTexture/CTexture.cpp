@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "CTexture.h"
 #include "Archive/ArchiveManager.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "General/Misc.h"
 #include "Graphics/SImage/SImage.h"
 #include "TextureXList.h"

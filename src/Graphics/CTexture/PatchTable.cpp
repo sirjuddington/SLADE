@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "PatchTable.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "CTexture.h"
 
 

@@ -38,7 +38,7 @@
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "General/KeyBind.h"
 #include "General/ColourConfiguration.h"

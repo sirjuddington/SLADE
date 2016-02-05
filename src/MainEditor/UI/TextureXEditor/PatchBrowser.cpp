@@ -36,7 +36,7 @@
 #include "UI/WxStuff.h"
 #include "PatchBrowser.h"
 #include "Archive/ArchiveManager.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "General/Misc.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"

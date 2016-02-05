@@ -34,7 +34,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "Archive/Formats/WadArchive.h"
-#include "BinaryControlLump.h"
+#include "MainEditor/BinaryControlLump.h"
 #include "Utility/Parser.h"
 #include "General/Console/ConsoleHelpers.h"
 #include <wx/dir.h>

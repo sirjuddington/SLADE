@@ -31,7 +31,7 @@
 #include "SLADEMap.h"
 #include "Utility/Parser.h"
 #include "Utility/MathStuff.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MainApp.h"
 #include "Archive/Archive.h"

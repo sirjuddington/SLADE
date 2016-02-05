@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "MapTextureManager.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "MainEditor/MainWindow.h"
 #include "Archive/ArchiveManager.h"

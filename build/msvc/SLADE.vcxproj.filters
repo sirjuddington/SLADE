@@ -13,12 +13,6 @@
     <Filter Include="Map Editor">
       <UniqueIdentifier>{e7c66597-c337-43fc-bedc-5e753bf3ddb8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources">
-      <UniqueIdentifier>{d64306f1-d31f-41ea-9c7d-216cd339fe06}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Binary Control Lumps">
-      <UniqueIdentifier>{d01d3677-f00e-4933-b65c-688a19cb3264}</UniqueIdentifier>
-    </Filter>
     <Filter Include="General\Console">
       <UniqueIdentifier>{511149d3-5ded-4b1c-b004-d65769996d9d}</UniqueIdentifier>
     </Filter>
@@ -49,9 +43,6 @@
     <Filter Include="External\Lua">
       <UniqueIdentifier>{f31c9d96-4290-4a38-91d0-fb9955293323}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Dialogs\SetupWizard">
-      <UniqueIdentifier>{90dc0f0c-92e7-414e-a30b-76c8c288e615}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External\DUMB">
       <UniqueIdentifier>{ffdebfe3-3d6d-42d9-854b-4086903af5c1}</UniqueIdentifier>
     </Filter>
@@ -79,17 +70,11 @@
     <Filter Include="Utility">
       <UniqueIdentifier>{1521702b-d69c-47d5-836d-e05a2e2720ef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utility\PropertyList">
-      <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI">
       <UniqueIdentifier>{ec031215-840a-462e-b238-3ad04f542e91}</UniqueIdentifier>
     </Filter>
     <Filter Include="UI\Browser">
       <UniqueIdentifier>{2bb47c0d-bf68-47e1-bc1c-ce7926a17d1a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\TextEditor">
-      <UniqueIdentifier>{54fbf714-855d-444d-885d-1e12f9df2ef7}</UniqueIdentifier>
     </Filter>
     <Filter Include="UI\Lists">
       <UniqueIdentifier>{13cacd50-0c22-431c-b94e-2fc031b1c3dc}</UniqueIdentifier>
@@ -105,9 +90,6 @@
     </Filter>
     <Filter Include="Graphics">
       <UniqueIdentifier>{857f6ada-0a82-4c97-918e-13b8b9a67b70}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Graphics\CTexture">
-      <UniqueIdentifier>{25d4520a-4015-4838-81d3-9596df6d636e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Graphics\Font">
       <UniqueIdentifier>{18c4582f-e6f1-408f-954a-523d9cc2493d}</UniqueIdentifier>
@@ -130,20 +112,11 @@
     <Filter Include="Archive\Formats">
       <UniqueIdentifier>{d76da1db-b5b2-428c-8715-07460cb6492c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Archive\EntryType\DataFormats">
-      <UniqueIdentifier>{639d4195-f616-4708-bc9b-82e7652914c0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Main Editor\UI">
       <UniqueIdentifier>{8803d335-a948-4502-8d58-a579053d1186}</UniqueIdentifier>
     </Filter>
     <Filter Include="Main Editor\UI\EntryPanel">
       <UniqueIdentifier>{9c20c338-759f-4b25-b4ee-488df95b1504}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Main Editor\UI\TextureXEditor">
-      <UniqueIdentifier>{ecfc7349-8974-4e27-a2dc-301f8e30570b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\GameConfiguration">
-      <UniqueIdentifier>{69273e0b-abaf-403b-b0cb-f3aede6fb016}</UniqueIdentifier>
     </Filter>
     <Filter Include="Map Editor\Renderer">
       <UniqueIdentifier>{57c1dcd4-a300-4838-be69-1edcf651d8bb}</UniqueIdentifier>
@@ -163,17 +136,29 @@
     <Filter Include="Map Editor\UI\PropsPanel">
       <UniqueIdentifier>{6680c30b-5928-497f-bf0b-28e9a4a723e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Main Editor\UI\Texture Editor">
+      <UniqueIdentifier>{ecfc7349-8974-4e27-a2dc-301f8e30570b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dialogs\Setup Wizard">
+      <UniqueIdentifier>{90dc0f0c-92e7-414e-a30b-76c8c288e615}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\Game Configuration">
+      <UniqueIdentifier>{69273e0b-abaf-403b-b0cb-f3aede6fb016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Composite Texture">
+      <UniqueIdentifier>{25d4520a-4015-4838-81d3-9596df6d636e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\EntryType\Data Formats">
+      <UniqueIdentifier>{639d4195-f616-4708-bc9b-82e7652914c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Text Editor">
+      <UniqueIdentifier>{54fbf714-855d-444d-885d-1e12f9df2ef7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Property List">
+      <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\AnimatedList.cpp">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SwitchesList.cpp">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ResourceManager.cpp">
-      <Filter>Resources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
       <Filter>External\Mus2Mid</Filter>
     </ClCompile>
@@ -448,16 +433,16 @@
       <Filter>External\Lua</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\BaseResourceWizardPage.cpp">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.cpp">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.cpp">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\External\zreaders\i_music.cpp">
       <Filter>External\ZReaders</Filter>
@@ -841,10 +826,10 @@
       <Filter>OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utility\PropertyList\Property.cpp">
-      <Filter>Utility\PropertyList</Filter>
+      <Filter>Utility\Property List</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utility\PropertyList\PropertyList.cpp">
-      <Filter>Utility\PropertyList</Filter>
+      <Filter>Utility\Property List</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utility\CIEDeltaEquations.cpp">
       <Filter>Utility</Filter>
@@ -946,13 +931,13 @@
       <Filter>UI\SToolBar</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp">
-      <Filter>UI\TextEditor</Filter>
+      <Filter>UI\Text Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp">
-      <Filter>UI\TextEditor</Filter>
+      <Filter>UI\Text Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp">
-      <Filter>UI\TextEditor</Filter>
+      <Filter>UI\Text Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UI\Canvas\ANSICanvas.cpp">
       <Filter>UI\Canvas</Filter>
@@ -1012,13 +997,13 @@
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Graphics\CTexture\CTexture.cpp">
-      <Filter>Graphics\CTexture</Filter>
+      <Filter>Graphics\Composite Texture</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Graphics\CTexture\PatchTable.cpp">
-      <Filter>Graphics\CTexture</Filter>
+      <Filter>Graphics\Composite Texture</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Graphics\CTexture\TextureXList.cpp">
-      <Filter>Graphics\CTexture</Filter>
+      <Filter>Graphics\Composite Texture</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Graphics\Font\SFont.cpp">
       <Filter>Graphics\Font</Filter>
@@ -1186,22 +1171,22 @@
       <Filter>Main Editor\UI\EntryPanel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.cpp">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.cpp">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.cpp">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.cpp">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.cpp">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.cpp">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp">
       <Filter>UI</Filter>
@@ -1234,19 +1219,19 @@
       <Filter>Map Editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ThingType.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\Renderer\MapRenderer2D.cpp">
       <Filter>Map Editor\Renderer</Filter>
@@ -1362,17 +1347,17 @@
     <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.cpp">
       <Filter>Map Editor\Renderer\Overlays</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\General\ResourceManager.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\AnimatedList.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\AnimatedList.h">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BinaryControlLump.h">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SwitchesList.h">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\src\External\bzip2\bzlib.h">
       <Filter>External\BZip2</Filter>
@@ -1591,19 +1576,19 @@
       <Filter>External\Lua</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\BaseResourceWizardPage.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\WizardPageBase.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\i_music.h">
       <Filter>External\ZReaders</Filter>
@@ -1771,10 +1756,10 @@
       <Filter>OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utility\PropertyList\Property.h">
-      <Filter>Utility\PropertyList</Filter>
+      <Filter>Utility\Property List</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utility\PropertyList\PropertyList.h">
-      <Filter>Utility\PropertyList</Filter>
+      <Filter>Utility\Property List</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utility\CIEDeltaEquations.h">
       <Filter>Utility</Filter>
@@ -1888,13 +1873,13 @@
       <Filter>UI\SToolBar</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h">
-      <Filter>UI\TextEditor</Filter>
+      <Filter>UI\Text Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h">
-      <Filter>UI\TextEditor</Filter>
+      <Filter>UI\Text Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h">
-      <Filter>UI\TextEditor</Filter>
+      <Filter>UI\Text Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\Canvas\ANSICanvas.h">
       <Filter>UI\Canvas</Filter>
@@ -1954,13 +1939,13 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h">
-      <Filter>Graphics\CTexture</Filter>
+      <Filter>Graphics\Composite Texture</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h">
-      <Filter>Graphics\CTexture</Filter>
+      <Filter>Graphics\Composite Texture</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h">
-      <Filter>Graphics\CTexture</Filter>
+      <Filter>Graphics\Composite Texture</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\Font\SFont.h">
       <Filter>Graphics\Font</Filter>
@@ -2003,9 +1988,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\Translation.h">
       <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ResourceManager.h">
-      <Filter>Resources</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h">
       <Filter>Graphics\SImage</Filter>
@@ -2095,22 +2077,22 @@
       <Filter>Archive\EntryType</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ArchiveFormats.h">
-      <Filter>Archive\EntryType\DataFormats</Filter>
+      <Filter>Archive\EntryType\Data Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\AudioFormats.h">
-      <Filter>Archive\EntryType\DataFormats</Filter>
+      <Filter>Archive\EntryType\Data Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ImageFormats.h">
-      <Filter>Archive\EntryType\DataFormats</Filter>
+      <Filter>Archive\EntryType\Data Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\LumpFormats.h">
-      <Filter>Archive\EntryType\DataFormats</Filter>
+      <Filter>Archive\EntryType\Data Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\MiscFormats.h">
-      <Filter>Archive\EntryType\DataFormats</Filter>
+      <Filter>Archive\EntryType\Data Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ModelFormats.h">
-      <Filter>Archive\EntryType\DataFormats</Filter>
+      <Filter>Archive\EntryType\Data Formats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Archive\Formats\All.h">
       <Filter>Archive\Formats</Filter>
@@ -2173,22 +2155,22 @@
       <Filter>Main Editor\UI\EntryPanel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.h">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.h">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.h">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.h">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.h">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.h">
-      <Filter>Main Editor\UI\TextureXEditor</Filter>
+      <Filter>Main Editor\UI\Texture Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\UI\BaseResourceChooser.h">
       <Filter>UI</Filter>
@@ -2221,22 +2203,22 @@
       <Filter>Map Editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\Args.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ThingType.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
+      <Filter>Map Editor\Game Configuration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\Renderer\MapRenderer2D.h">
       <Filter>Map Editor\Renderer</Filter>
@@ -2357,6 +2339,18 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.h">
       <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\ResourceManager.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\AnimatedList.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\BinaryControlLump.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\SwitchesList.h">
+      <Filter>Main Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

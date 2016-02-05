@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "EntryDataFormat.h"
 #include "Archive/Formats/All.h"
-#include "BinaryControlLump.h"
+#include "MainEditor/BinaryControlLump.h"
 #include "Utility/Parser.h"
 
 

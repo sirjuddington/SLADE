@@ -33,7 +33,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Graphics/CTexture/TextureXList.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/SLADEMap/MapSide.h"

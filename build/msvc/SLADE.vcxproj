@@ -349,6 +349,7 @@
     <ClCompile Include="..\..\src\General\ListenerAnnouncer.cpp" />
     <ClCompile Include="..\..\src\General\Lua.cpp" />
     <ClCompile Include="..\..\src\General\Misc.cpp" />
+    <ClCompile Include="..\..\src\General\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\General\SAction.cpp" />
     <ClCompile Include="..\..\src\General\UndoRedo.cpp" />
     <ClCompile Include="..\..\src\General\VersionCheck.cpp" />
@@ -432,10 +433,12 @@
     <ClCompile Include="..\..\src\External\lzma\C\XzDec.c" />
     <ClCompile Include="..\..\src\External\lzma\C\XzEnc.c" />
     <ClCompile Include="..\..\src\External\lzma\C\XzIn.c" />
+    <ClCompile Include="..\..\src\MainEditor\AnimatedList.cpp" />
     <ClCompile Include="..\..\src\MainEditor\ArchiveOperations.cpp" />
     <ClCompile Include="..\..\src\MainEditor\Conversions.cpp" />
     <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp" />
     <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\ArchivePanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\DocsPage.cpp" />
@@ -513,7 +516,6 @@
     <ClCompile Include="..\..\src\OpenGL\Drawing.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\..\src\OpenGL\OpenGL.cpp" />
-    <ClCompile Include="..\..\src\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp" />
     <ClCompile Include="..\..\src\UI\Browser\BrowserCanvas.cpp" />
     <ClCompile Include="..\..\src\UI\Browser\BrowserItem.cpp" />
@@ -559,8 +561,6 @@
     <ClCompile Include="..\..\src\Utility\SFileDialog.cpp" />
     <ClCompile Include="..\..\src\Utility\Tokenizer.cpp" />
     <ClCompile Include="..\..\src\Utility\Tree.cpp" />
-    <ClCompile Include="..\..\src\AnimatedList.cpp" />
-    <ClCompile Include="..\..\src\SwitchesList.cpp" />
     <ClCompile Include="..\..\src\External\zlib\adler32.c" />
     <ClCompile Include="..\..\src\External\zlib\crc32.c" />
     <ClCompile Include="..\..\src\External\zlib\deflate.c" />
@@ -682,6 +682,7 @@
     <ClInclude Include="..\..\src\General\ListenerAnnouncer.h" />
     <ClInclude Include="..\..\src\General\Lua.h" />
     <ClInclude Include="..\..\src\General\Misc.h" />
+    <ClInclude Include="..\..\src\General\ResourceManager.h" />
     <ClInclude Include="..\..\src\General\SAction.h" />
     <ClInclude Include="..\..\src\General\UndoRedo.h" />
     <ClInclude Include="..\..\src\General\VersionCheck.h" />
@@ -761,10 +762,13 @@
     <ClInclude Include="..\..\src\External\lzma\C\Xz.h" />
     <ClInclude Include="..\..\src\External\lzma\C\XzCrc64.h" />
     <ClInclude Include="..\..\src\External\lzma\C\XzEnc.h" />
+    <ClInclude Include="..\..\src\MainEditor\AnimatedList.h" />
     <ClInclude Include="..\..\src\MainEditor\ArchiveOperations.h" />
+    <ClInclude Include="..\..\src\MainEditor\BinaryControlLump.h" />
     <ClInclude Include="..\..\src\MainEditor\Conversions.h" />
     <ClInclude Include="..\..\src\MainEditor\EntryOperations.h" />
     <ClInclude Include="..\..\src\MainEditor\MainWindow.h" />
+    <ClInclude Include="..\..\src\MainEditor\SwitchesList.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchivePanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\DocsPage.h" />
@@ -845,7 +849,6 @@
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
     <ClInclude Include="..\..\src\OpenGL\OpenGL.h" />
-    <ClInclude Include="..\..\src\ResourceManager.h" />
     <ClInclude Include="..\..\src\UI\BaseResourceChooser.h" />
     <ClInclude Include="..\..\src\UI\Browser\BrowserCanvas.h" />
     <ClInclude Include="..\..\src\UI\Browser\BrowserItem.h" />
@@ -892,9 +895,6 @@
     <ClInclude Include="..\..\src\Utility\Structs.h" />
     <ClInclude Include="..\..\src\Utility\Tokenizer.h" />
     <ClInclude Include="..\..\src\Utility\Tree.h" />
-    <ClInclude Include="..\..\src\AnimatedList.h" />
-    <ClInclude Include="..\..\src\BinaryControlLump.h" />
-    <ClInclude Include="..\..\src\SwitchesList.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\src\External\zlib\crc32.h" />
     <ClInclude Include="..\..\src\External\zlib\deflate.h" />

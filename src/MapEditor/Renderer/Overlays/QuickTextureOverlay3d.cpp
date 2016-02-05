@@ -36,7 +36,7 @@
 #include "MapEditor/MapEditorWindow.h"
 #include "QuickTextureOverlay3d.h"
 #include "OpenGL/Drawing.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "OpenGL/GLTexture.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"

@@ -37,7 +37,7 @@
 #include "General/Clipboard.h"
 #include "Archive/ArchiveManager.h"
 #include "Graphics/Icons.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "General/ColourConfiguration.h"
 #include "General/KeyBind.h"
 #include "Dialogs/GfxConvDialog.h"

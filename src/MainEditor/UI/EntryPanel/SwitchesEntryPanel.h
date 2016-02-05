@@ -4,8 +4,8 @@
 
 #include "MainApp.h"
 #include "EntryPanel.h"
-#include "BinaryControlLump.h"
-#include "SwitchesList.h"
+#include "MainEditor/BinaryControlLump.h"
+#include "MainEditor/SwitchesList.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include "UI/Lists/ListView.h"
 

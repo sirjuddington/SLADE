@@ -4,8 +4,8 @@
 
 #include "MainApp.h"
 #include "EntryPanel.h"
-#include "BinaryControlLump.h"
-#include "AnimatedList.h"
+#include "MainEditor/BinaryControlLump.h"
+#include "MainEditor/AnimatedList.h"
 #include "UI/Lists/ListView.h"
 #include "UI/Canvas/GfxCanvas.h"
 #include <wx/radiobut.h>

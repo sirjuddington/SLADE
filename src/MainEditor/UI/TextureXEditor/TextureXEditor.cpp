@@ -36,7 +36,7 @@
 #include "General/Console/Console.h"
 #include "UI/SplashWindow.h"
 #include "Dialogs/ExtMessageDialog.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include <wx/dialog.h>

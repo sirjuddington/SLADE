@@ -32,7 +32,7 @@
 #include "UI/WxStuff.h"
 #include "MapTextureBrowser.h"
 #include "MapEditor/MapEditorWindow.h"
-#include "ResourceManager.h"
+#include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
