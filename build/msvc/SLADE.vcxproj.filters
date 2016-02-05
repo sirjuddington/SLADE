@@ -169,6 +169,9 @@
     <Filter Include="Installer">
       <UniqueIdentifier>{fa5a343f-ee94-41ea-a75f-1d0292b58329}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{cb94973b-677e-42d7-8005-53d669acbcbb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Clipboard.cpp">
@@ -398,9 +401,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Conversions.cpp">
       <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MIDIPlayer.cpp">
-      <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\BrowserCanvas.cpp">
       <Filter>UI Elements\Browser</Filter>
@@ -1317,9 +1317,6 @@
     <ClCompile Include="..\..\src\External\dumb\it\xmeffect.c">
       <Filter>External\DUMB\it</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ModMusic.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\SAuiTabArt.cpp">
       <Filter>UI Elements</Filter>
     </ClCompile>
@@ -1367,6 +1364,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\BZip2Archive.cpp">
       <Filter>Resources\Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Audio\MIDIPlayer.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Audio\ModMusic.cpp">
+      <Filter>Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1628,9 +1631,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Conversions.h">
       <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MIDIPlayer.h">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\BrowserCanvas.h">
       <Filter>UI Elements\Browser</Filter>
@@ -2268,9 +2268,6 @@
     <ClInclude Include="..\..\src\External\dumb\dumb.h">
       <Filter>External\DUMB</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ModMusic.h">
-      <Filter>General</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\SAuiTabArt.h">
       <Filter>UI Elements</Filter>
     </ClInclude>
@@ -2358,6 +2355,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\dumb\internal\tarray.h">
       <Filter>External\DUMB\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Audio\MIDIPlayer.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Audio\ModMusic.h">
+      <Filter>Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
