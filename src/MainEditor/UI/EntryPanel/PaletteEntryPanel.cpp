@@ -36,7 +36,7 @@
 #include "Utility/SFileDialog.h"
 #include "General/Misc.h"
 #include "MainEditor/MainWindow.h"
-#include <wx/dialog.h>
+#include <wx/colordlg.h>
 #include <wx/clrpicker.h>
 
 

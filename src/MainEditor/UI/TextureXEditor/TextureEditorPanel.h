@@ -9,7 +9,7 @@
 #include <wx/spinctrl.h>
 
 class TextureXEditor;
-
+class TextureXList;
 class TextureEditorPanel : public wxPanel, SActionHandler
 {
 protected:

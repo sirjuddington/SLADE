@@ -2,6 +2,9 @@
 #ifndef __S_TOOL_BAR_BUTTON_H__
 #define __S_TOOL_BAR_BUTTON_H__
 
+#include <wx/control.h>
+#include <wx/bitmap.h>
+
 class SAction;
 class SToolBarButton : public wxControl
 {

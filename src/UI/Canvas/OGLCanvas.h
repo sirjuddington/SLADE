@@ -4,17 +4,17 @@
 
 #include "OpenGL/OpenGL.h"
 #include "Graphics/Palette/Palette.h"
-#include <wx/control.h>
 #include <wx/timer.h>
 
 #ifdef USE_SFML_RENDERWINDOW
 #undef None
 #include <SFML/Graphics.hpp>
+#include <wx/control.h>
 #else
 #include <wx/glcanvas.h>
 #endif
 
-class wxPanel;
+class wxWindow;
 #ifdef USE_SFML_RENDERWINDOW
 class OGLCanvas : public wxControl, public sf::RenderWindow
 {

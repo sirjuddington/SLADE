@@ -3,6 +3,7 @@
 #define __HEX_EDITOR_PANEL_H__
 
 #include <wx/grid.h>
+#include <wx/panel.h>
 
 class HexTable : public wxGridTableBase
 {
@@ -39,6 +40,9 @@ public:
 	double		getDoubleValue(uint32_t offset);
 };
 
+class wxButton;
+class wxRadioButton;
+class wxStaticText;
 class HexEditorPanel : public wxPanel
 {
 private:

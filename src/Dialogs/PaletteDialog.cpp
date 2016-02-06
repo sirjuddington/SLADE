@@ -30,9 +30,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Main.h"
 #include "UI/WxStuff.h"
+#include "Graphics/Palette/Palette.h"
 #include "PaletteDialog.h"
+#include "UI/Canvas/PaletteCanvas.h"
 
 
 /*******************************************************************

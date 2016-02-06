@@ -61,4 +61,16 @@ public:
 	}
 };
 
+// Basic 'interface' class for classes that handle SActions (yay multiple inheritance)
+class SActionHandler
+{
+	friend class MainApp;
+protected:
+	virtual bool	handleAction(string id) { return false; }
+
+public:
+	SActionHandler();
+	~SActionHandler();
+};
+
 #endif//__SACTION_H__

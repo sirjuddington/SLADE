@@ -30,6 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "UI/WxStuff.h"
+#include "Graphics/SImage/SImage.h"
 #include "TranslationEditorDialog.h"
 #include "Graphics/Icons.h"
 #include "Utility/MathStuff.h"

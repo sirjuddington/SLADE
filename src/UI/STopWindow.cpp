@@ -30,12 +30,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "STopWindow.h"
-#include "UI/SToolBar/SToolBar.h"
 #include "General/Misc.h"
+#include "SToolBar/SToolBar.h"
 #include <wx/aui/aui.h>
-
+#include <wx/menu.h>
 
 /*******************************************************************
  * STOPWINDOW CLASS FUNCTIONS

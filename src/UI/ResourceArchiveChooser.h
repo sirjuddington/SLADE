@@ -2,7 +2,11 @@
 #ifndef __RESOURCE_ARCHIVE_CHOOSER_H__
 #define __RESOURCE_ARCHIVE_CHOOSER_H__
 
+#include <wx/panel.h>
+
 class Archive;
+class wxButton;
+class wxCheckListBox;
 class ResourceArchiveChooser : public wxPanel
 {
 private:

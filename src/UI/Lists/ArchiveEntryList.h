@@ -4,10 +4,8 @@
 
 #include "VirtualListView.h"
 #include "General/ListenerAnnouncer.h"
+#include "General/SAction.h"
 #include "Archive/Archive.h"
-#include "MainApp.h"
-#include <wx/listctrl.h>
-#include <wx/textctrl.h>
 
 wxDECLARE_EVENT(EVT_AEL_DIR_CHANGED, wxCommandEvent);
 

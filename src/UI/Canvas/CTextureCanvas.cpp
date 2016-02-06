@@ -31,6 +31,7 @@
 #include "Main.h"
 #include "CTextureCanvas.h"
 #include "General/Misc.h"
+#include "Graphics/CTexture/CTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
 

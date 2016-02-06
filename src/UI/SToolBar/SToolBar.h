@@ -2,6 +2,8 @@
 #ifndef __S_TOOL_BAR_H__
 #define __S_TOOL_BAR_H__
 
+#include <wx/panel.h>
+
 class SToolBarButton;
 class SToolBar;
 class SToolBarGroup : public wxPanel

@@ -33,14 +33,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "VirtualListView.h"
-#include "ListView.h"
-#include "General/Console/Console.h"
+#include "UI/WxStuff.h"
 #ifdef __WXMSW__
 #include <CommCtrl.h>
 #endif
-
+#include <wx/settings.h>
 
 /*******************************************************************
  * VARIABLES

@@ -3,7 +3,7 @@
 #define __BASE_RESOURCE_CHOOSER_H__
 
 #include "General/ListenerAnnouncer.h"
-
+#include <wx/choice.h>
 
 class BaseResourceChooser : public wxChoice, public Listener
 {

@@ -29,11 +29,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "PaletteChooser.h"
-#include "Graphics/Palette/PaletteManager.h"
-#include "General/Misc.h"
 #include "Archive/Archive.h"
+#include "General/Misc.h"
+#include "Graphics/Palette/PaletteManager.h"
 
 
 /*******************************************************************

@@ -375,6 +375,9 @@ struct rgba_t
 #define COL_PURPLE	rgba_t(255, 0, 255, 255, 0)
 #define COL_CYAN	rgba_t(0, 255, 255, 255, 0)
 
+// Convert rgba_t to wxColor
+#define WXCOL(rgba) wxColor(rgba.r, rgba.g, rgba.b, rgba.a)
+
 // hsl_t: Represents a colour in HSL format, generally used for calculations
 struct hsl_t
 {

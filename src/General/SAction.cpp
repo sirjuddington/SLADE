@@ -203,3 +203,23 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override)
 
 	return true;
 }
+
+
+
+
+SActionHandler::SActionHandler()
+{
+	theApp->action_handlers.push_back(this);
+}
+
+SActionHandler::~SActionHandler()
+{
+	for (unsigned a = 0; a < theApp->action_handlers.size(); a++)
+	{
+		if (theApp->action_handlers[a] == this)
+		{
+			theApp->action_handlers.erase(theApp->action_handlers.begin() + a);
+			a--;
+		}
+	}
+}

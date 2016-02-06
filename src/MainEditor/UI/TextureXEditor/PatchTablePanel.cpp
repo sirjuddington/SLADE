@@ -36,6 +36,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
+#include "Graphics/SImage/SImage.h"
 #include <wx/filename.h>
 
 

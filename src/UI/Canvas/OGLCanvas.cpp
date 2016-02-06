@@ -29,11 +29,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "OGLCanvas.h"
-#include "OpenGL/GLTexture.h"
 #include "MainApp.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
+#include <wx/dcclient.h>
+#include <wx/panel.h>
+#include <wx/sizer.h>
 
 #ifdef USE_SFML_RENDERWINDOW
 #ifdef __WXGTK__

@@ -2,6 +2,8 @@
 #ifndef __NUMBER_TEXT_CTRL_H__
 #define __NUMBER_TEXT_CTRL_H__
 
+#include <wx/textctrl.h>
+
 class NumberTextCtrl : public wxTextCtrl
 {
 private:

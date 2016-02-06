@@ -29,10 +29,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
-#include "Utility/CodePages.h"
 #include "ANSICanvas.h"
 #include "Archive/ArchiveManager.h"
+#include "OpenGL/GLTexture.h"
+#include "Utility/CodePages.h"
 
 
 /*******************************************************************

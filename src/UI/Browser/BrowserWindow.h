@@ -5,8 +5,9 @@
 #include "Utility/Tree.h"
 #include "BrowserItem.h"
 #include "BrowserCanvas.h"
+#include "Graphics/Palette/Palette.h"
 #include <wx/treelist.h>
-#include <wx/frame.h>
+#include <wx/dialog.h>
 
 class BrowserTreeNode : public STreeNode
 {
@@ -38,6 +39,10 @@ public:
 };
 
 
+class wxChoice;
+class wxTextCtrl;
+class wxSlider;
+class wxStaticText;
 class BrowserWindow : public wxDialog
 {
 private:
@@ -68,7 +73,7 @@ public:
 	void			addGlobalItem(BrowserItem* item);
 	void			clearItems(BrowserTreeNode* node = NULL);
 	void			reloadItems(BrowserTreeNode* node = NULL);
-	BrowserItem*	getSelectedItem() { return canvas->getSelectedItem(); }
+	BrowserItem*	getSelectedItem();
 	bool			selectItem(string name, BrowserTreeNode* root = NULL);
 
 	unsigned		addSortType(string name);

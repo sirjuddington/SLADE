@@ -2,8 +2,9 @@
 #ifndef __COLOURBOX_H__
 #define	__COLOURBOX_H__
 
-#include "Graphics/Palette/Palette.h"
+#include <wx/panel.h>
 
+class Palette8bit;
 class ColourBox : public wxPanel
 {
 private:

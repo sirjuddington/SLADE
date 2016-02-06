@@ -2,6 +2,8 @@
 #ifndef __S_DIALOG_H__
 #define __S_DIALOG_H__
 
+#include <wx/dialog.h>
+
 class SDialog : public wxDialog
 {
 private:

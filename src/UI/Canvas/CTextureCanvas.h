@@ -3,14 +3,13 @@
 #define __CTEXTURECANVAS_H__
 
 #include "OGLCanvas.h"
-#include "Graphics/CTexture/CTexture.h"
-#include "Graphics/Palette/Palette.h"
 #include "OpenGL/GLTexture.h"
 #include "General/ListenerAnnouncer.h"
-#include "Graphics/CTexture/PatchTable.h"
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
 
+class CTexture;
+class Archive;
 class CTextureCanvas : public OGLCanvas, Listener
 {
 private:

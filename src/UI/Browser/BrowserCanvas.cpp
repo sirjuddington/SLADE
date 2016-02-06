@@ -29,13 +29,11 @@
 /*******************************************************************
  * INCLUDES
  *******************************************************************/
-#include <algorithm>
-#include <cmath>
-
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "BrowserCanvas.h"
 #include "OpenGL/Drawing.h"
+#include <wx/settings.h>
+#include <wx/scrolbar.h>
 
 
 /*******************************************************************

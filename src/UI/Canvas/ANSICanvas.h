@@ -3,9 +3,9 @@
 #define	__ANSICANVAS_H__
 
 #include "OGLCanvas.h"
-#include "OpenGL/GLTexture.h"
 #include "General/ListenerAnnouncer.h"
 
+class GLTexture;
 class ANSICanvas : public OGLCanvas, Listener
 {
 private:

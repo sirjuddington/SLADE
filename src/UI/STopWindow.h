@@ -2,7 +2,10 @@
 #ifndef __S_TOP_WINDOW_H__
 #define __S_TOP_WINDOW_H__
 
+#include <wx/frame.h>
+
 class SToolBar;
+class wxMenu;
 class STopWindow : public wxFrame
 {
 protected:

@@ -30,12 +30,14 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "HexEditorPanel.h"
-#include "General/Console/Console.h"
 #include "Utility/CodePages.h"
-#include "Archive/ArchiveManager.h"
+#include <wx/button.h>
 #include <wx/numdlg.h>
+#include <wx/radiobut.h>
+#include <wx/sizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

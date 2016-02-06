@@ -29,18 +29,17 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MapPreviewCanvas.h"
-#include "Archive/Formats/WadArchive.h"
-#include "MapEditor/SLADEMap/MapLine.h"
-#include "MapEditor/SLADEMap/MapVertex.h"
-#include "Utility/Parser.h"
-#include "Graphics/SImage/SImage.h"
-#include "Graphics/SImage/SIFormat.h"
-#include "General/ColourConfiguration.h"
-#include "MapEditor/SLADEMap/MapThing.h"
-#include "OpenGL/GLTexture.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/Formats/WadArchive.h"
+#include "General/ColourConfiguration.h"
+#include "Graphics/SImage/SIFormat.h"
+#include "Graphics/SImage/SImage.h"
+#include "MapEditor/SLADEMap/MapLine.h"
+#include "MapEditor/SLADEMap/MapThing.h"
+#include "MapEditor/SLADEMap/MapVertex.h"
+#include "OpenGL/GLTexture.h"
+#include "Utility/Parser.h"
 
 
 /*******************************************************************

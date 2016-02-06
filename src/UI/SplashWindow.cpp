@@ -30,7 +30,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "SplashWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"

@@ -29,9 +29,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "GfxCanvas.h"
+#include "Graphics/SImage/SImage.h"
 #include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 
 
 /*******************************************************************

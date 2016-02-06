@@ -32,6 +32,7 @@
 #include "UI/WxStuff.h"
 #include "ZTextureEditorPanel.h"
 #include "Graphics/Icons.h"
+#include "Graphics/SImage/SImage.h"
 #include "Dialogs/TranslationEditorDialog.h"
 #include "TextureXEditor.h"
 #include "MainEditor/MainWindow.h"

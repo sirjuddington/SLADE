@@ -3,8 +3,7 @@
 #define	__GFXCANVAS_H__
 
 #include "OGLCanvas.h"
-#include "Graphics/SImage/SImage.h"
-#include "OpenGL/GLTexture.h"
+#include "General/ListenerAnnouncer.h"
 
 // Enumeration for view types
 enum
@@ -16,6 +15,8 @@ enum
 	GFXVIEW_TILED,
 };
 
+class SImage;
+class GLTexture;
 class GfxCanvas : public OGLCanvas, Listener
 {
 private:

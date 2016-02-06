@@ -77,30 +77,4 @@ public:
 
 #define theApp ((MainApp*)wxTheApp)
 
-// Basic 'interface' class for classes that handle SActions (yay multiple inheritance)
-class SActionHandler
-{
-friend class MainApp;
-protected:
-	virtual bool	handleAction(string id) { return false; }
-
-public:
-	SActionHandler()
-	{
-		theApp->action_handlers.push_back(this);
-	}
-
-	~SActionHandler()
-	{
-		for (unsigned a = 0; a < theApp->action_handlers.size(); a++)
-		{
-			if (theApp->action_handlers[a] == this)
-			{
-				theApp->action_handlers.erase(theApp->action_handlers.begin() + a);
-				a--;
-			}
-		}
-	}
-};
-
 #endif //__MAINAPP_H__

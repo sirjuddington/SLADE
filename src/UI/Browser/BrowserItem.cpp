@@ -30,12 +30,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "BrowserItem.h"
-#include "OpenGL/Drawing.h"
-#include "Graphics/Font/SFont.h"
-#include "OpenGL/OpenGL.h"
 #include "BrowserWindow.h"
+#include "OpenGL/Drawing.h"
+#include "OpenGL/OpenGL.h"
 
 
 /*******************************************************************

@@ -3,6 +3,7 @@
 #define	__PALETTECHOOSER_H__
 
 #include "General/ListenerAnnouncer.h"
+#include <wx/choice.h>
 
 class Archive;
 class ArchiveEntry;

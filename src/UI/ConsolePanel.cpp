@@ -28,9 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "ConsolePanel.h"
 #include "General/Console/Console.h"
 #include "UI/WxStuff.h"
-#include "ConsolePanel.h"
 
 
 /*******************************************************************

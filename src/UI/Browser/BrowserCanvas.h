@@ -5,6 +5,7 @@
 #include "UI/Canvas/OGLCanvas.h"
 #include "BrowserItem.h"
 
+class wxScrollBar;
 class BrowserCanvas : public OGLCanvas
 {
 private:

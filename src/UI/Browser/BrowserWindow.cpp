@@ -31,12 +31,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "BrowserWindow.h"
-#include "General/Console/Console.h"
-#include <algorithm>
-#include <wx/splitter.h>
+#include <wx/choice.h>
 #include <wx/dataview.h>
+#include <wx/scrolbar.h>
+#include <wx/sizer.h>
+#include <wx/slider.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************
@@ -287,6 +288,11 @@ void BrowserWindow::reloadItems(BrowserTreeNode* node)
 	// Go through child nodes
 	for (unsigned a = 0; a < node->nChildren(); a++)
 		reloadItems((BrowserTreeNode*)node->getChild(a));
+}
+
+BrowserItem* BrowserWindow::getSelectedItem()
+{
+	return canvas->getSelectedItem();
 }
 
 /* BrowserWindow::selectItem

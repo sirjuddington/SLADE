@@ -30,6 +30,7 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "TextureEditorPanel.h"
+#include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/Icons.h"
 #include "TextureXEditor.h"
 #include "General/KeyBind.h"

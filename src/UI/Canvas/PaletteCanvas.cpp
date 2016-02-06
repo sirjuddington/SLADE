@@ -29,9 +29,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "PaletteCanvas.h"
-#include "OpenGL/OpenGL.h"
+#include <wx/colordlg.h>
 
 
 /*******************************************************************

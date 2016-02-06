@@ -30,13 +30,14 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MainApp.h"
 #include "SToolBarButton.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
 #include "MainEditor/MainWindow.h"
 #include <wx/graphics.h>
+#include <wx/dcclient.h>
+#include <wx/settings.h>
 
 
 /*******************************************************************
