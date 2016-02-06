@@ -28,31 +28,32 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
-#include "UI/MapCanvas.h"
 #include "MapEditorWindow.h"
-#include "MainApp.h"
-#include "UI/ConsolePanel.h"
+#include "Archive/ArchiveManager.h"
+#include "Archive/Formats/WadArchive.h"
+#include "Dialogs/MapEditorConfigDialog.h"
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
-#include "Archive/ArchiveManager.h"
-#include "UI/PropsPanel/MapObjectPropsPanel.h"
-#include "MainEditor/MainWindow.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "Archive/Formats/WadArchive.h"
-#include "Utility/SFileDialog.h"
-#include "NodeBuilders.h"
-#include "UI/ShapeDrawPanel.h"
-#include "UI/ScriptEditorPanel.h"
-#include "UI/ObjectEditPanel.h"
 #include "Dialogs/RunDialog.h"
-#include "Dialogs/MapEditorConfigDialog.h"
-#include "UI/MapChecksPanel.h"
-#include "UI/SplashWindow.h"
-#include "UI/UndoManagerHistoryPanel.h"
-#include "MapBackupManager.h"
 #include "General/Misc.h"
+#include "MainEditor/MainWindow.h"
+#include "MapBackupManager.h"
+#include "NodeBuilders.h"
+#include "UI/ConsolePanel.h"
+#include "UI/MapCanvas.h"
+#include "UI/MapChecksPanel.h"
+#include "UI/ObjectEditPanel.h"
+#include "UI/PropsPanel/MapObjectPropsPanel.h"
+#include "UI/SAuiTabArt.h"
+#include "UI/ScriptEditorPanel.h"
+#include "UI/ShapeDrawPanel.h"
+#include "UI/SplashWindow.h"
+#include "UI/SToolBar/SToolBar.h"
+#include "UI/UndoManagerHistoryPanel.h"
+#include "Utility/SFileDialog.h"
 #include <wx/aui/aui.h>
+#include <wx/menu.h>
+#include <wx/msgdlg.h>
 
 
 /*******************************************************************
@@ -243,7 +244,7 @@ void MapEditorWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
 	wxAuiManager* m_mgr = new wxAuiManager(this);
-	m_mgr->SetArtProvider(getDockArt());
+	m_mgr->SetArtProvider(new SAuiDockArt());
 	wxAuiPaneInfo p_inf;
 
 	// Map canvas

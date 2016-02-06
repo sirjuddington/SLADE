@@ -3,6 +3,7 @@
 #define __RUN_DIALOG_H__
 
 #include "UI/SDialog.h"
+#include "UI/WxBasicControls.h"
 
 class ResourceArchiveChooser;
 class Archive;

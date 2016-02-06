@@ -28,16 +28,22 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainEditor/MainWindow.h"
-#include "UI/WxStuff.h"
 #include "PatchTablePanel.h"
 #include "Archive/Archive.h"
-#include "TextureXEditor.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "Graphics/SImage/SImage.h"
+#include "MainEditor/MainWindow.h"
+#include "TextureXEditor.h"
+#include "UI/Canvas/GfxCanvas.h"
+#include <wx/button.h>
+#include <wx/filedlg.h>
 #include <wx/filename.h>
+#include <wx/msgdlg.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
+#include <wx/textdlg.h>
 
 
 /*******************************************************************

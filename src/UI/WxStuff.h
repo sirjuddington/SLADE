@@ -5,14 +5,16 @@
 #undef MIN
 #undef MAX
 
-#ifdef __WXMSW__
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
-#else
-#include <wx/wx.h>
-#endif
+//#ifdef __WXMSW__
+//#include <wx/wxprec.h>
+//#ifndef WX_PRECOMP
+//#include <wx/wx.h>
+//#endif
+//#else
+//#include <wx/wx.h>
+//#endif
+#include <wx/menu.h>
+#include <wx/font.h>
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))

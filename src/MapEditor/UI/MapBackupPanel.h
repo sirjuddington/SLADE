@@ -3,6 +3,7 @@
 #define __MAP_BACKUP_PANEL_H__
 
 #include "UI/Lists/ListView.h"
+#include <wx/panel.h>
 
 class MapPreviewCanvas;
 class Archive;

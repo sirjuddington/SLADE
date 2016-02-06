@@ -29,12 +29,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MapTextureBrowser.h"
-#include "MapEditor/MapEditorWindow.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 
 

@@ -28,14 +28,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ScriptEditorPanel.h"
 #include "Archive/Archive.h"
-#include "UI/SToolBar/SToolBar.h"
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditorWindow.h"
+#include "UI/SToolBar/SToolBar.h"
 #include <wx/dataview.h>
+#include <wx/sizer.h>
+#include <wx/treelist.h>
 
 
 /*******************************************************************

@@ -2,13 +2,10 @@
 #ifndef __GFXCONVDIALOG_H__
 #define	__GFXCONVDIALOG_H__
 
-#include <wx/dialog.h>
-#include "UI/Canvas/GfxCanvas.h"
-#include "UI/PaletteChooser.h"
-#include "UI/ColourBox.h"
-#include "Graphics/SImage/SIFormat.h"
-#include "Graphics/CTexture/CTexture.h"
 #include "UI/SDialog.h"
+#include "UI/WxBasicControls.h"
+#include "Graphics/SImage/SImage.h"
+#include "Graphics/SImage/SIFormat.h"
 
 /* Convert from anything to:
  * Doom Gfx
@@ -30,7 +27,10 @@
  *			- Select transparency colour (to 32bit - select colour, to paletted - select from target palette)
  */
 
+class Archive;
 class ArchiveEntry;
+class CTexture;
+class Palette8bit;
 
 struct gcd_item_t
 {
@@ -66,6 +66,9 @@ struct gcd_item_t
 	}
 };
 
+class GfxCanvas;
+class PaletteChooser;
+class ColourBox;
 class GfxConvDialog : public SDialog
 {
 private:

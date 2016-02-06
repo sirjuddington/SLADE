@@ -2,6 +2,9 @@
 #ifndef __PROPS_PANEL_BASE_H__
 #define __PROPS_PANEL_BASE_H__
 
+#include "UI/WxBasicControls.h"
+#include <wx/panel.h>
+
 class MapObject;
 class PropsPanelBase : public wxPanel
 {

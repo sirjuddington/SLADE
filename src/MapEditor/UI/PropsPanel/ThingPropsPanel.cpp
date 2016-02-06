@@ -28,18 +28,21 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ThingPropsPanel.h"
-#include "MapObjectPropsPanel.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
-#include "OpenGL/Drawing.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
-#include "Utility/MathStuff.h"
+#include "MapObjectPropsPanel.h"
+#include "OpenGL/Drawing.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
+#include "Utility/MathStuff.h"
+#include <wx/checkbox.h>
 #include <wx/gbsizer.h>
+#include <wx/radiobut.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

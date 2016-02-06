@@ -29,36 +29,37 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include <SFML/Window.hpp>
-#include "UI/WxStuff.h"
 #include "MapCanvas.h"
-#include "MapEditor/MapEditor.h"
-#include "General/ColourConfiguration.h"
-#include "MapEditor/Renderer/MCAnimations.h"
 #include "Archive/ArchiveManager.h"
-#include "OpenGL/Drawing.h"
-#include "Utility/MathStuff.h"
+#include "General/Clipboard.h"
+#include "General/ColourConfiguration.h"
+#include "General/UndoRedo.h"
 #include "MainApp.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/Renderer/MapRenderer2D.h"
 #include "MapEditor/Renderer/MapRenderer3D.h"
-#include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
-#include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
-#include "MapEditor/UI/PropsPanel/MapObjectPropsPanel.h"
-#include "MapEditor/Renderer/Overlays/SectorTextureOverlay.h"
+#include "MapEditor/Renderer/MCAnimations.h"
 #include "MapEditor/Renderer/Overlays/LineTextureOverlay.h"
+#include "MapEditor/Renderer/Overlays/QuickTextureOverlay3d.h"
+#include "MapEditor/Renderer/Overlays/SectorTextureOverlay.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
-#include "General/Clipboard.h"
+#include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
-#include "General/UndoRedo.h"
-#include "MapEditor/Renderer/Overlays/QuickTextureOverlay3d.h"
-#include "ObjectEditPanel.h"
 #include "MapEditor/UI/Dialogs/ShowItemDialog.h"
-#include "UI/SDialog.h"
+#include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapEditor/UI/PropsPanel/LinePropsPanel.h"
+#include "MapEditor/UI/PropsPanel/MapObjectPropsPanel.h"
 #include "MapEditor/UI/PropsPanel/SectorPropsPanel.h"
 #include "MapEditor/UI/PropsPanel/ThingPropsPanel.h"
+#include "ObjectEditPanel.h"
+#include "OpenGL/Drawing.h"
+#include "UI/SDialog.h"
+#include "Utility/MathStuff.h"
+#include <SFML/Window.hpp>
+#include <wx/menu.h>
+#include <wx/sizer.h>
 
 
 /*******************************************************************

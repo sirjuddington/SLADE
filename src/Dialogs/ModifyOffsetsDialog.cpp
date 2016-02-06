@@ -29,10 +29,14 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ModifyOffsetsDialog.h"
 #include "General/Console/Console.h"
 #include "Graphics/Icons.h"
+#include <wx/checkbox.h>
+#include <wx/choice.h>
+#include <wx/radiobut.h>
+#include <wx/sizer.h>
+#include <wx/textctrl.h>
 
 
 /*******************************************************************

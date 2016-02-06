@@ -7,6 +7,7 @@
 #include <wx/clrpicker.h>
 #include <wx/fontpicker.h>
 
+class wxListBox;
 class TextStylePrefsPanel : public PrefsPanelBase
 {
 private:

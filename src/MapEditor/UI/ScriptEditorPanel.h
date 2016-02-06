@@ -3,10 +3,11 @@
 #define __SCRIPT_EDITOR_PANEL_H__
 
 #include "UI/TextEditor/TextEditor.h"
-#include "MainApp.h"
-#include <wx/treelist.h>
+#include "General/SAction.h"
+#include <wx/panel.h>
 
 class ArchiveEntry;
+class wxTreeListCtrl;
 class ScriptEditorPanel : public wxPanel, SActionHandler
 {
 private:

@@ -3,12 +3,11 @@
 #define __AUDIO_ENTRY_PANEL_H__
 
 #include "EntryPanel.h"
-#include <wx/mediactrl.h>
+#include <wx/timer.h>
 
-#undef Status
-#include <SFML/Audio.hpp>
-#include "Audio/ModMusic.h"
-
+class ModMusic;
+namespace sf { class SoundBuffer; class Sound; class Music; }
+class wxMediaCtrl;
 class AudioEntryPanel : public EntryPanel
 {
 private:
@@ -33,9 +32,9 @@ private:
 	wxTextCtrl*		txt_info;
 
 	sf::SoundBuffer*	sound_buffer;
-	sf::Sound			sound;
-	sf::Music			music;
-	ModMusic			mod;
+	sf::Sound*			sound;
+	sf::Music*			music;
+	ModMusic*			mod;
 
 	enum
 	{

@@ -3,10 +3,10 @@
 #define __PREFERENCES_DIALOG_H__
 
 #include "UI/SDialog.h"
-#include <wx/treebook.h>
 
 class PrefsPanelBase;
 class BaseResourceArchivesPanel;
+class wxTreebook;
 class PreferencesDialog : public SDialog
 {
 private:

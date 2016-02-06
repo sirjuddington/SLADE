@@ -2,9 +2,10 @@
 #ifndef __MAP_EDITOR_CONFIG_DIALOG_H__
 #define __MAP_EDITOR_CONFIG_DIALOG_H__
 
-#include "UI/SDialog.h"
 #include "Archive/Archive.h"
 #include "UI/Lists/ListView.h"
+#include "UI/SDialog.h"
+#include "UI/WxBasicControls.h"
 
 class MapPreviewCanvas;
 class BaseResourceChooser;

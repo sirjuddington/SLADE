@@ -28,7 +28,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MainWindow.h"
 #include "UI/ConsolePanel.h"
 #include "Archive/ArchiveManager.h"
@@ -45,12 +44,16 @@
 #include "UI/UndoManagerHistoryPanel.h"
 #include "UI/ArchivePanel.h"
 #include "General/Misc.h"
+#include "UI/SAuiTabArt.h"
 #include "UI/STabCtrl.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
+#include "UI/PaletteChooser.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
 #include <wx/filename.h>
+#include <wx/menu.h>
+#include <wx/msgdlg.h>
 
 #ifdef USE_WEBVIEW_STARTPAGE
 #include <wx/webview.h>
@@ -183,7 +186,7 @@ void MainWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
 	m_mgr = new wxAuiManager(this);
-	m_mgr->SetArtProvider(getDockArt());
+	m_mgr->SetArtProvider(new SAuiDockArt());
 	wxAuiPaneInfo p_inf;
 
 	// Set icon

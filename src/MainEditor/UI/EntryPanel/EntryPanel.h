@@ -4,10 +4,12 @@
 
 #include "Archive/ArchiveEntry.h"
 #include "General/ListenerAnnouncer.h"
-#include "General/UndoRedo.h"
 #include "UI/SToolBar/SToolBar.h"
+#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/WxBasicControls.h"
+#include <wx/panel.h>
 
-class SToolBarButton;
+class UndoManager;
 class EntryPanel : public wxPanel, public Listener
 {
 private:

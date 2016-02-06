@@ -3,8 +3,8 @@
 #define __ANSI_ENTRY_PANEL__
 
 #include "EntryPanel.h"
-#include "UI/Canvas/ANSICanvas.h"
 
+class ANSICanvas;
 class ANSIEntryPanel : public EntryPanel
 {
 private:

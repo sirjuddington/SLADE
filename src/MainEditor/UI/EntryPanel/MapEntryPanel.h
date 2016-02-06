@@ -3,8 +3,9 @@
 #define __MAP_ENTRY_PANEL_H__
 
 #include "EntryPanel.h"
-#include "UI/Canvas/MapPreviewCanvas.h"
 
+class MapPreviewCanvas;
+class ArchiveEntry;
 class MapEntryPanel : public EntryPanel
 {
 private:

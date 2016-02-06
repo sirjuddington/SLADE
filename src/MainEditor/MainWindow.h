@@ -13,9 +13,11 @@
 #include <wx/html/htmlwin.h>
 #endif
 
+class PaletteChooser;
 class SToolBar;
 class STabCtrl;
 class UndoManagerHistoryPanel;
+class wxAuiManager;
 #ifdef USE_WEBVIEW_STARTPAGE
 class wxWebView;
 class DocsPage;

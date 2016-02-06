@@ -28,17 +28,19 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "SectorPropsPanel.h"
+#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/SLADEMap/MapObject.h"
+#include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapObjectPropsPanel.h"
-#include "MapEditor/SLADEMap/MapObject.h"
-#include "MapEditor/MapEditorWindow.h"
 #include "OpenGL/Drawing.h"
 #include "UI/NumberTextCtrl.h"
-#include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "UI/STabCtrl.h"
+#include <wx/checkbox.h>
 #include <wx/gbsizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

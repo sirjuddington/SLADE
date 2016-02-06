@@ -29,15 +29,20 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "PaletteEntryPanel.h"
-#include "Graphics/Palette/PaletteManager.h"
-#include "Graphics/Icons.h"
-#include "Utility/SFileDialog.h"
 #include "General/Misc.h"
+#include "Graphics/Icons.h"
+#include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/MainWindow.h"
-#include <wx/colordlg.h>
+#include "UI/Canvas/PaletteCanvas.h"
+#include "Utility/SFileDialog.h"
 #include <wx/clrpicker.h>
+#include <wx/colordlg.h>
+#include <wx/menu.h>
+#include <wx/radiobut.h>
+#include <wx/slider.h>
+#include <wx/stattext.h>
+#include <wx/textdlg.h>
 
 
 /*******************************************************************

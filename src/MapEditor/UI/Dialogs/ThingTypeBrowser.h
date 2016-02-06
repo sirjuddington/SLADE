@@ -17,6 +17,7 @@ public:
 	bool	loadImage();
 };
 
+class wxCheckBox;
 class ThingTypeBrowser : public BrowserWindow
 {
 private:

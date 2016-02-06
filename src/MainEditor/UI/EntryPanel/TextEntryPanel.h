@@ -4,7 +4,6 @@
 
 #include "EntryPanel.h"
 #include "UI/TextEditor/TextEditor.h"
-#include <wx/choice.h>
 
 class TextEntryPanel : public EntryPanel
 {

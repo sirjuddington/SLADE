@@ -8,6 +8,9 @@
 #include "TextLanguage.h"
 #include "TextStyle.h"
 
+class wxButton;
+class wxCheckBox;
+class wxTextCtrl;
 class FindReplaceDialog : public wxMiniFrame
 {
 private:
@@ -28,10 +31,10 @@ public:
 	wxButton*	getBtnReplaceAll() { return btn_replace_all; }
 	wxTextCtrl*	getTextFind() { return text_find; }
 	wxTextCtrl*	getTextReplace() { return text_replace; }
-	string		getFindString() { return text_find->GetValue(); }
-	string		getReplaceString() { return text_replace->GetValue(); }
-	bool		matchCase() { return cb_match_case->GetValue(); }
-	bool		matchWord() { return cb_match_word->GetValue(); }
+	string		getFindString();
+	string		getReplaceString();
+	bool		matchCase();
+	bool		matchWord();
 
 	// Events
 	void	onClose(wxCloseEvent& e);

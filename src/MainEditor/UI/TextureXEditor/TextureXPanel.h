@@ -2,10 +2,11 @@
 #ifndef __TEXTUREX_PANEL_H__
 #define __TEXTUREX_PANEL_H__
 
+#include "General/SAction.h"
 #include "Graphics/CTexture/TextureXList.h"
-#include "TextureEditorPanel.h"
 #include "UI/Lists/VirtualListView.h"
-#include "MainApp.h"
+#include "UI/WxBasicControls.h"
+#include <wx/panel.h>
 
 class TextureXEditor;
 
@@ -30,6 +31,7 @@ public:
 };
 
 class UndoManager;
+class TextureEditorPanel;
 class TextureXPanel : public wxPanel, SActionHandler
 {
 private:

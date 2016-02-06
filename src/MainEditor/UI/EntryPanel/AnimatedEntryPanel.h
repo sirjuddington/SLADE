@@ -2,14 +2,12 @@
 #ifndef ANIMATEDENTRYPANEL_H
 #define ANIMATEDENTRYPANEL_H
 
-#include "MainApp.h"
 #include "EntryPanel.h"
-#include "MainEditor/BinaryControlLump.h"
+#include "General/SAction.h"
 #include "MainEditor/AnimatedList.h"
 #include "UI/Lists/ListView.h"
-#include "UI/Canvas/GfxCanvas.h"
-#include <wx/radiobut.h>
 
+class GfxCanvas;
 class AnimatedEntryPanel : public EntryPanel, public SActionHandler
 {
 private:

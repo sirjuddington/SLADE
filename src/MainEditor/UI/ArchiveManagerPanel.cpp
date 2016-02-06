@@ -30,19 +30,23 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ArchiveManagerPanel.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/Formats/DirArchive.h"
 #include "ArchivePanel.h"
+#include "Dialogs/DirArchiveUpdateDialog.h"
+#include "EntryPanel/EntryPanel.h"
+#include "Graphics/Icons.h"
+#include "MainEditor/MainWindow.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/SplashWindow.h"
-#include "MainEditor/MainWindow.h"
-#include "Graphics/Icons.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "Archive/Formats/DirArchive.h"
-#include "Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/STabCtrl.h"
 #include <wx/filename.h>
+#include <wx/stattext.h>
+#include <wx/menu.h>
+#include <wx/msgdlg.h>
+#include <wx/filedlg.h>
 
 
 /*******************************************************************

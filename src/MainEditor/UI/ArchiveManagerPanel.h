@@ -2,18 +2,21 @@
 #ifndef __ARCHIVEMANAGERPANEL_H__
 #define __ARCHIVEMANAGERPANEL_H__
 
-#include <wx/listctrl.h>
+#include "Archive/Formats/DirArchive.h"
+#include "General/ListenerAnnouncer.h"
+#include "General/SAction.h"
+#include "UI/DockPanel.h"
+#include "UI/Lists/ListView.h"
 #include <wx/aui/auibook.h>
 #include <wx/dirctrl.h>
-#include <wx/listbox.h>
 #include <wx/thread.h>
-#include "General/ListenerAnnouncer.h"
-#include "Archive/Archive.h"
-#include "UI/Lists/ListView.h"
-#include "EntryPanel/EntryPanel.h"
-#include "MainApp.h"
-#include "UI/DockPanel.h"
-#include "Archive/Formats/DirArchive.h"
+
+class ArchiveManagerPanel;
+class ArchivePanel;
+class Archive;
+class STabCtrl;
+class TextureXEditor;
+class EntryPanel;
 
 wxDECLARE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
 
@@ -49,9 +52,7 @@ public:
 	ExitCode Entry();
 };
 
-class ArchiveManagerPanel;
-class ArchivePanel;
-class STabCtrl;
+
 
 class WMFileBrowser : public wxGenericDirCtrl
 {
@@ -66,7 +67,7 @@ public:
 	void onItemActivated(wxTreeEvent& e);
 };
 
-class TextureXEditor;
+
 class ArchiveManagerPanel : public DockPanel, Listener, SActionHandler
 {
 private:

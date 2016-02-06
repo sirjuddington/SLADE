@@ -29,7 +29,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include <wx/wxprec.h>
 #include "UI/WxStuff.h"
 #include "Graphics/Icons.h"
 #include "SAuiTabArt.h"

@@ -30,10 +30,18 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "TextEditor.h"
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
+#include <wx/app.h>
+#include <wx/button.h>
+#include <wx/checkbox.h>
+#include <wx/choice.h>
+#include <wx/dialog.h>
+#include <wx/msgdlg.h>
+#include <wx/panel.h>
+#include <wx/sizer.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************
@@ -131,6 +139,26 @@ FindReplaceDialog::FindReplaceDialog(wxWindow* parent) : wxMiniFrame(parent, -1,
  *******************************************************************/
 FindReplaceDialog::~FindReplaceDialog()
 {
+}
+
+string FindReplaceDialog::getFindString()
+{
+	return text_find->GetValue();
+}
+
+string FindReplaceDialog::getReplaceString()
+{
+	return text_replace->GetValue();
+}
+
+bool FindReplaceDialog::matchCase()
+{
+	return cb_match_case->GetValue();
+}
+
+bool FindReplaceDialog::matchWord()
+{
+	return cb_match_word->GetValue();
 }
 
 /* FindReplaceDialog::onClose

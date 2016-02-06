@@ -29,10 +29,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "Map3DPrefsPanel.h"
+#include <wx/checkbox.h>
 #include <wx/gbsizer.h>
+#include <wx/slider.h>
+#include <wx/spinctrl.h>
+#include <wx/statbox.h>
 #include <wx/statline.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
 
 
 /*******************************************************************

@@ -5,6 +5,7 @@
 #include "TextureEditorPanel.h"
 #include <wx/clrpicker.h>
 
+class wxSpinCtrlDouble;
 class ZTextureEditorPanel : public TextureEditorPanel
 {
 private:
@@ -51,8 +52,8 @@ public:
 	void	addPatch();
 	void	replacePatch();
 
-	void	enableTranslationControls(bool enable) { text_translation->Enable(enable); btn_edit_translation->Enable(enable); }
-	void	enableBlendControls(bool enable, bool tint = false) { cp_blend_col->Enable(enable); spin_tint_amount->Enable(enable && tint); }
+	void	enableTranslationControls(bool enable);
+	void	enableBlendControls(bool enable, bool tint = false);
 
 	// Events
 	void	onCBBlendRGBAChanged(wxCommandEvent& e);

@@ -4,6 +4,7 @@
 
 #include "UI/SDialog.h"
 #include "UI/Lists/ListView.h"
+#include "UI/WxBasicControls.h"
 
 class SectorSpecialPanel : public wxPanel
 {

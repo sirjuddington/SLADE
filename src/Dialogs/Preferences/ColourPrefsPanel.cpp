@@ -28,13 +28,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ColourPrefsPanel.h"
 #include "General/ColourConfiguration.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "PreferencesDialog.h"
+#include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

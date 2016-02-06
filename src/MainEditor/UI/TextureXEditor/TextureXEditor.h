@@ -7,11 +7,10 @@
 #include "PatchTablePanel.h"
 #include "Archive/Archive.h"
 #include "Graphics/CTexture/PatchTable.h"
-#include "UI/Lists/ListView.h"
 #include "PatchBrowser.h"
-#include <wx/aui/auibook.h>
 
 class UndoManager;
+class wxAuiNotebook;
 class TextureXEditor : public wxPanel, public Listener
 {
 private:

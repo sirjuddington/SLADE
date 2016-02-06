@@ -2,9 +2,11 @@
 #ifndef __DOCS_PAGE_H__
 #define __DOCS_PAGE_H__
 
-#include "UI/SToolBar/SToolBar.h"
+#include <wx/panel.h>
 
 class wxWebView;
+class SToolBar;
+class SToolBarButton;
 class DocsPage : public wxPanel
 {
 private:

@@ -3,6 +3,8 @@
 #define __SIDE_PROPS_PANEL_H__
 
 #include "UI/Canvas/OGLCanvas.h"
+#include <wx/combobox.h>
+#include <wx/panel.h>
 
 class GLTexture;
 class SideTexCanvas : public OGLCanvas

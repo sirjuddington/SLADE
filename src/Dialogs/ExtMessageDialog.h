@@ -3,6 +3,7 @@
 #define __EXT_MESSAGE_DIALOG_H__
 
 #include <wx/dialog.h>
+#include "UI/WxBasicControls.h"
 
 class ExtMessageDialog : public wxDialog
 {

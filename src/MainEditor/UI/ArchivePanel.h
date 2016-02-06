@@ -2,15 +2,25 @@
 #ifndef __ARCHIVEPANEL_H__
 #define __ARCHIVEPANEL_H__
 
-#include "Archive/Archive.h"
-#include "EntryPanel/EntryPanel.h"
-#include "General/ListenerAnnouncer.h"
-#include "UI/Lists/ArchiveEntryList.h"
-#include "MainApp.h"
-#include "General/UndoRedo.h"
-#include <wx/textctrl.h>
-#include <wx/choice.h>
+//#include "Archive/Archive.h"
+//#include "EntryPanel/EntryPanel.h"
+//#include "General/ListenerAnnouncer.h"
+//#include "UI/Lists/ArchiveEntryList.h"
+//#include "MainApp.h"
+//#include "General/UndoRedo.h"
+//#include <wx/textctrl.h>
+//#include <wx/choice.h>
 
+#include "General/ListenerAnnouncer.h"
+#include "General/UndoRedo.h"
+#include "General/SAction.h"
+#include "UI/Lists/ArchiveEntryList.h"
+#include "UI/WxBasicControls.h"
+#include <wx/panel.h>
+
+class wxStaticText;
+class wxBitmapButton;
+class EntryPanel;
 class ArchivePanel : public wxPanel, public Listener, SActionHandler
 {
 protected:

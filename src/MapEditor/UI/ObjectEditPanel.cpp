@@ -30,15 +30,20 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "ObjectEditPanel.h"
+#include "General/KeyBind.h"
+#include "Graphics/Icons.h"
+#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/ObjectEdit.h"
+#include <wx/bmpbuttn.h>
+#include <wx/checkbox.h>
+#include <wx/combobox.h>
+#include <wx/sizer.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
 #undef min
 #undef max
 #include <wx/valnum.h>
-#include "ObjectEditPanel.h"
-#include "MapEditor/ObjectEdit.h"
-#include "Graphics/Icons.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "General/KeyBind.h"
 
 
 /*******************************************************************

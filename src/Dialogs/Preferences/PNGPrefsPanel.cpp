@@ -28,9 +28,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "PNGPrefsPanel.h"
 #include <wx/filedlg.h>
+#include <wx/sizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
+#include <wx/button.h>
 
 
 /*******************************************************************
@@ -40,6 +44,7 @@ EXTERN_CVAR(String, path_pngout)
 EXTERN_CVAR(String, path_pngcrush)
 EXTERN_CVAR(String, path_deflopt)
 CVAR(String, dir_last_pngtool, "", CVAR_SAVE)
+
 
 /*******************************************************************
  * PNGPREFSPANEL CLASS FUNCTIONS

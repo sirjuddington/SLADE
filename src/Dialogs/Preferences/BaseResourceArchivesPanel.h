@@ -2,6 +2,10 @@
 #ifndef __BASERESOURCEARCHIVESPANEL__
 #define __BASERESOURCEARCHIVESPANEL__
 
+#include <wx/panel.h>
+
+class wxListBox;
+class wxButton;
 class BaseResourceArchivesPanel : public wxPanel
 {
 private:

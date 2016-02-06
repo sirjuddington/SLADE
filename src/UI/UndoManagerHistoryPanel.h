@@ -4,6 +4,7 @@
 
 #include "UI/Lists/VirtualListView.h"
 #include "General/ListenerAnnouncer.h"
+#include <wx/panel.h>
 
 class UndoManager;
 class UndoListView : public VirtualListView, public Listener

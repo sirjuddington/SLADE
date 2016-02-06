@@ -30,17 +30,21 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MapObjectPropsPanel.h"
+#include "Graphics/Icons.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MOPGProperty.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "Graphics/Icons.h"
 #include "UI/STabCtrl.h"
+#include <wx/bmpbuttn.h>
+#include <wx/checkbox.h>
+#include <wx/choice.h>
+#include <wx/gbsizer.h>
+#include <wx/msgdlg.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
-#include <wx/gbsizer.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************
@@ -148,6 +152,14 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
  *******************************************************************/
 MapObjectPropsPanel::~MapObjectPropsPanel()
 {
+}
+
+/* MapObjectPropsPanel::showAll
+ * Returns true if 'Show All' is ticked
+ *******************************************************************/
+bool MapObjectPropsPanel::showAll()
+{
+	return cb_show_all->IsChecked();
 }
 
 /* MapObjectPropsPanel::addBoolProperty

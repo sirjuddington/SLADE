@@ -28,9 +28,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "UI/Canvas/ANSICanvas.h"
 #include "Utility/CodePages.h"
 #include "ANSIEntryPanel.h"
+#include <wx/sizer.h>
 
 
 /*******************************************************************

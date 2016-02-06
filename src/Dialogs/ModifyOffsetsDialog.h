@@ -3,6 +3,7 @@
 #define	__MODIFYOFFSETSDIALOG_H__
 
 #include <wx/dialog.h>
+#include "UI/WxBasicControls.h"
 
 class ModifyOffsetsDialog : public wxDialog
 {

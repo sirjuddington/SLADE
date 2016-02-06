@@ -3,7 +3,7 @@
 #define __DATA_ENTRY_PANEL_H__
 
 #include "EntryPanel.h"
-#include "MainApp.h"
+#include "General/SAction.h"
 #include <wx/grid.h>
 
 struct int_string_t

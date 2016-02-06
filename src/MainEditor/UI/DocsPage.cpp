@@ -32,10 +32,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "DocsPage.h"
+#include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include <wx/webview.h>
+#include <wx/sizer.h>
 
 
 /*******************************************************************

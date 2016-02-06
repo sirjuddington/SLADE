@@ -29,15 +29,21 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ZTextureEditorPanel.h"
+#include "Dialogs/TranslationEditorDialog.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SImage.h"
-#include "Dialogs/TranslationEditorDialog.h"
-#include "TextureXEditor.h"
 #include "MainEditor/MainWindow.h"
+#include "TextureXEditor.h"
+#include "UI/Canvas/CTextureCanvas.h"
+#include <wx/checkbox.h>
 #include <wx/gbsizer.h>
+#include <wx/radiobut.h>
+#include <wx/scrolwin.h>
+#include <wx/spinctrl.h>
+#include <wx/statbox.h>
 #include <wx/statline.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************
@@ -547,6 +553,16 @@ void ZTextureEditorPanel::replacePatch()
 	updatePatchControls();
 
 	tex_modified = true;
+}
+
+void ZTextureEditorPanel::enableTranslationControls(bool enable)
+{
+	text_translation->Enable(enable); btn_edit_translation->Enable(enable);
+}
+
+void ZTextureEditorPanel::enableBlendControls(bool enable, bool tint)
+{
+	cp_blend_col->Enable(enable); spin_tint_amount->Enable(enable && tint);
 }
 
 

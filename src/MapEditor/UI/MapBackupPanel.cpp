@@ -28,11 +28,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MapBackupPanel.h"
-#include "UI/Canvas/MapPreviewCanvas.h"
-#include "Archive/Formats/ZipArchive.h"
 #include "Archive/Formats/WadArchive.h"
+#include "Archive/Formats/ZipArchive.h"
+#include "UI/Canvas/MapPreviewCanvas.h"
+#include <wx/sizer.h>
 
 
 /*******************************************************************

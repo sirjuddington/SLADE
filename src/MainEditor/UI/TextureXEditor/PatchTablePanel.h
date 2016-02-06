@@ -4,10 +4,10 @@
 
 #include "Graphics/CTexture/PatchTable.h"
 #include "UI/Lists/VirtualListView.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/WxBasicControls.h"
+#include <wx/panel.h>
 
 class TextureXEditor;
-
 class PatchTableListView : public VirtualListView, Listener
 {
 private:
@@ -29,6 +29,7 @@ public:
 	void		sortItems();
 };
 
+class GfxCanvas;
 class PatchTablePanel : public wxPanel, public Listener
 {
 private:

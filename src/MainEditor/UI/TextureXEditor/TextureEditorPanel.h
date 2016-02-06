@@ -2,14 +2,17 @@
 #ifndef __TEXTURE_EDITOR_PANEL_H__
 #define __TEXTURE_EDITOR_PANEL_H__
 
-#include "UI/Canvas/CTextureCanvas.h"
-#include "Graphics/CTexture/PatchTable.h"
+#include "General/SAction.h"
+#include "General/ListenerAnnouncer.h"
 #include "UI/Lists/ListView.h"
-#include "MainApp.h"
-#include <wx/spinctrl.h>
+#include "UI/WxBasicControls.h"
+#include <wx/panel.h>
 
 class TextureXEditor;
 class TextureXList;
+class CTextureCanvas;
+class CTexture;
+class Palette8bit;
 class TextureEditorPanel : public wxPanel, SActionHandler
 {
 protected:

@@ -29,7 +29,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ThingTypeTreeView.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 

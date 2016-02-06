@@ -2,12 +2,16 @@
 #ifndef __TRANSLATION_EDITOR_DIALOG_H__
 #define __TRANSLATION_EDITOR_DIALOG_H__
 
-#include <wx/dialog.h>
-#include <wx/clrpicker.h>
-#include "UI/Canvas/PaletteCanvas.h"
 #include "Graphics/Translation.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "Graphics/SImage/SImage.h"
+#include "UI/Canvas/OGLCanvas.h"
+#include "UI/WxBasicControls.h"
+#include <wx/clrpicker.h>
+#include <wx/dialog.h>
 
+class GfxCanvas;
+class PaletteCanvas;
+class Palette8bit;
 class GradientBox : public OGLCanvas
 {
 private:
@@ -27,6 +31,7 @@ public:
 };
 
 class ArchiveEntry;
+class wxListBox;
 class TranslationEditorDialog : public wxDialog
 {
 private:

@@ -4,6 +4,7 @@
 
 #include "PrefsPanelBase.h"
 #include "General/KeyBind.h"
+#include <wx/textctrl.h>
 #include <wx/treelist.h>
 
 class InputKeyCtrl : public wxTextCtrl

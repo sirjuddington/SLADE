@@ -29,18 +29,25 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ActionSpecialDialog.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
+#include <wx/checkbox.h>
+#include <wx/combobox.h>
+#include <wx/dcclient.h>
 #include <wx/gbsizer.h>
+#include <wx/radiobut.h>
+#include <wx/slider.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 #include <wx/window.h>
 #undef min
 #undef max
 #include <wx/valnum.h>
+
 
 
 /*******************************************************************

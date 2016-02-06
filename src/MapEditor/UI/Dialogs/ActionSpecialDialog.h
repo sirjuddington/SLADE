@@ -3,6 +3,7 @@
 #define __ACTION_SPECIAL_DIALOG_H__
 
 #include "UI/SDialog.h"
+#include "UI/WxBasicControls.h"
 #include <wx/dataview.h>
 
 // A wxDataViewTreeCtrl specialisation showing the
@@ -40,15 +41,15 @@ public:
 };
 
 struct argspec_t;
-class wxGridBagSizer;
+class wxFlexGridSizer;
 class ArgsControl;
 class ArgsPanel : public wxScrolled<wxPanel>
 {
 private:
 	wxFlexGridSizer*	fg_sizer;
-	ArgsControl*	control_args[5];
-	wxStaticText*	label_args[5];
-	wxStaticText*	label_args_desc[5];
+	ArgsControl*		control_args[5];
+	wxStaticText*		label_args[5];
+	wxStaticText*		label_args_desc[5];
 
 public:
 	ArgsPanel(wxWindow* parent);

@@ -29,16 +29,26 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
-#include "Graphics/SImage/SImage.h"
 #include "TranslationEditorDialog.h"
+#include "Archive/ArchiveManager.h"
+#include "General/Misc.h"
 #include "Graphics/Icons.h"
+#include "Graphics/SImage/SImage.h"
+#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/PaletteCanvas.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
-#include "General/Misc.h"
-#include "Archive/ArchiveManager.h"
+#include <wx/checkbox.h>
 #include <wx/ffile.h>
+#include <wx/filedlg.h>
 #include <wx/gbsizer.h>
+#include <wx/listbox.h>
+#include <wx/msgdlg.h>
+#include <wx/radiobut.h>
+#include <wx/slider.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
 
 
 /*******************************************************************

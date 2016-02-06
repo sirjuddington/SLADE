@@ -2,8 +2,10 @@
 #ifndef __SHAPE_DRAW_PANEL_H__
 #define __SHAPE_DRAW_PANEL_H__
 
-#include <wx/spinctrl.h>
+#include "UI/WxBasicControls.h"
+#include <wx/panel.h>
 
+class wxBoxSizer;
 class ShapeDrawPanel : public wxPanel
 {
 private:

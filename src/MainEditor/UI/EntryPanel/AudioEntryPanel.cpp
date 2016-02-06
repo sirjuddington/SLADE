@@ -29,17 +29,25 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "AudioEntryPanel.h"
+#include "Audio/MIDIPlayer.h"
+#include "Audio/Modmusic.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/Conversions.h"
-#include "Audio/MIDIPlayer.h"
+#include <wx/bmpbuttn.h>
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
-#include <wx/statline.h>
+#include <wx/mediactrl.h>
 #ifdef __WXMSW__
 #include <wx/msw/registry.h>
 #endif
+#include <wx/slider.h>
+#include <wx/statline.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
+
+#undef Status
+#include <SFML/Audio.hpp>
 
 
 /*******************************************************************
@@ -74,6 +82,9 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	num_tracks = 1;
 	subsong = 0;
 	song_length = 0;
+	sound = new sf::Sound();
+	music = new sf::Music();
+	mod = new ModMusic();
 
 #ifdef __WXMSW__
 	wxRegKey key(wxRegKey::HKLM, "Software\\Microsoft\\Active Setup\\Installed Components\\{6BF52A52-394A-11d3-B153-00C04F79FAA6}");
@@ -141,11 +152,11 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	sizer_gb->Add(slider_volume, wxGBPosition(1, 8));
 
 	// Set volume
-	sound.setVolume(snd_volume);
-	music.setVolume(snd_volume);
+	sound->setVolume(snd_volume);
+	music->setVolume(snd_volume);
 	theMIDIPlayer->setVolume(snd_volume);
 	if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01);
-	mod.setVolume(snd_volume);
+	mod->setVolume(snd_volume);
 	//theGMEPlayer->setVolume(snd_volume);
 	//theOPLPlayer->setVolume(snd_volume);
 
@@ -174,6 +185,11 @@ AudioEntryPanel::~AudioEntryPanel()
 	// Stop the timer to avoid crashes
 	timer_seek->Stop();
 	resetStream();
+
+	// Clean up
+	delete sound;
+	delete music;
+	delete mod;
 }
 
 /* AudioEntryPanel::loadEntry
@@ -381,7 +397,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 	{
 		LOG_MESSAGE(3, "opened as sound");
 		// Bind to sound
-		sound.setBuffer(*sound_buffer);
+		sound->setBuffer(*sound_buffer);
 		audio_type = AUTYPE_SOUND;
 
 		// Enable play controls
@@ -397,14 +413,14 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 
 		return true;
 	}
-	else if (music.openFromMemory((const char*)audio.getData(), audio.getSize()))
+	else if (music->openFromMemory((const char*)audio.getData(), audio.getSize()))
 	{
 		LOG_MESSAGE(3, "opened as music");
 		// Couldn't open the audio as a sf::SoundBuffer, try sf::Music instead
 		audio_type = AUTYPE_MUSIC;
 
 		// Enable play controls
-		setAudioDuration(music.getDuration().asMilliseconds());
+		setAudioDuration(music->getDuration().asMilliseconds());
 		btn_play->Enable();
 		btn_stop->Enable();
 
@@ -465,7 +481,7 @@ bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 bool AudioEntryPanel::openMod(MemChunk& data)
 {
 	// Attempt to load the mod
-	if (mod.loadFromMemory(data.getData(), data.getSize()))
+	if (mod->loadFromMemory(data.getData(), data.getSize()))
 	{
 		audio_type = AUTYPE_MOD;
 
@@ -474,7 +490,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 		btn_play->Enable();
 		btn_pause->Enable();
 		btn_stop->Enable();
-		setAudioDuration(mod.getDuration().asMilliseconds());
+		setAudioDuration(mod->getDuration().asMilliseconds());
 
 		return true;
 	}
@@ -526,11 +542,11 @@ void AudioEntryPanel::startStream()
 	switch (audio_type)
 	{
 	case AUTYPE_SOUND:
-		sound.play(); break;
+		sound->play(); break;
 	case AUTYPE_MUSIC:
-		music.play(); break;
+		music->play(); break;
 	case AUTYPE_MOD:
-		mod.play(); break;
+		mod->play(); break;
 	case AUTYPE_MIDI:
 		theMIDIPlayer->play(); break;
 	case AUTYPE_MEDIA:
@@ -546,11 +562,11 @@ void AudioEntryPanel::stopStream()
 	switch (audio_type)
 	{
 	case AUTYPE_SOUND:
-		sound.pause(); break;
+		sound->pause(); break;
 	case AUTYPE_MUSIC:
-		music.pause(); break;
+		music->pause(); break;
 	case AUTYPE_MOD:
-		mod.pause(); break;
+		mod->pause(); break;
 	case AUTYPE_MIDI:
 		theMIDIPlayer->pause();	break;
 	case AUTYPE_MEDIA:
@@ -567,11 +583,11 @@ void AudioEntryPanel::resetStream()
 	switch (audio_type)
 	{
 	case AUTYPE_SOUND:
-		sound.stop(); break;
+		sound->stop(); break;
 	case AUTYPE_MUSIC:
-		music.stop(); break;
+		music->stop(); break;
 	case AUTYPE_MOD:
-		mod.stop(); break;
+		mod->stop(); break;
 	case AUTYPE_MIDI:
 		theMIDIPlayer->stop(); break;
 	case AUTYPE_MEDIA:
@@ -750,11 +766,11 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	switch (audio_type)
 	{
 	case AUTYPE_SOUND:
-		pos = sound.getPlayingOffset().asMilliseconds(); break;
+		pos = sound->getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MUSIC:
-		pos = music.getPlayingOffset().asMilliseconds(); break;
+		pos = music->getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MOD:
-		pos = mod.getPlayingOffset().asMilliseconds(); break;
+		pos = mod->getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MIDI:
 		pos = theMIDIPlayer->getPosition(); break;
 	case AUTYPE_MEDIA:
@@ -766,9 +782,9 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 
 	// Stop the timer if playback has reached the end
 	if (pos >= slider_seek->GetMax() ||
-	        (audio_type == AUTYPE_SOUND && sound.getStatus() == sf::Sound::Stopped) ||
-	        (audio_type == AUTYPE_MUSIC && music.getStatus() == sf::Sound::Stopped) ||
-			(audio_type == AUTYPE_MOD && mod.getStatus() == sf::Sound::Stopped) ||
+	        (audio_type == AUTYPE_SOUND && sound->getStatus() == sf::Sound::Stopped) ||
+	        (audio_type == AUTYPE_MUSIC && music->getStatus() == sf::Sound::Stopped) ||
+			(audio_type == AUTYPE_MOD && mod->getStatus() == sf::Sound::Stopped) ||
 			(audio_type == AUTYPE_MEDIA && media_ctrl && media_ctrl->GetState() == wxMEDIASTATE_STOPPED) ||
 			(audio_type == AUTYPE_MIDI && theMIDIPlayer && !theMIDIPlayer->isPlaying()))
 	{
@@ -786,11 +802,11 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 	switch (audio_type)
 	{
 	case AUTYPE_SOUND:
-		sound.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
+		sound->setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
 	case AUTYPE_MUSIC:
-		music.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
+		music->setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
 	case AUTYPE_MOD:
-		mod.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
+		mod->setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
 	case AUTYPE_MIDI:
 		theMIDIPlayer->setPosition(slider_seek->GetValue()); break;
 	case AUTYPE_MEDIA:
@@ -808,14 +824,14 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 	switch (audio_type)
 	{
 	case AUTYPE_SOUND:
-		sound.setVolume(snd_volume); break;
+		sound->setVolume(snd_volume); break;
 	case AUTYPE_MUSIC:
-		music.setVolume(snd_volume); break;
+		music->setVolume(snd_volume); break;
 	case AUTYPE_MIDI:
 		theMIDIPlayer->setVolume(snd_volume); break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01); break;
 	case AUTYPE_MOD:
-		mod.setVolume(snd_volume); break;
+		mod->setVolume(snd_volume); break;
 	}
 }

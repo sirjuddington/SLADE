@@ -28,22 +28,27 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainEditor/MainWindow.h"
-#include "UI/WxStuff.h"
 #include "GfxEntryPanel.h"
-#include "Graphics/Palette/Palette.h"
+#include "Dialogs/GfxConvDialog.h"
+#include "Dialogs/ModifyOffsetsDialog.h"
+#include "Dialogs/TranslationEditorDialog.h"
+#include "General/Console/ConsoleHelpers.h"
 #include "General/Misc.h"
+#include "Graphics/Icons.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/EntryOperations.h"
-#include "Graphics/Icons.h"
-#include "Dialogs/GfxConvDialog.h"
-#include "Dialogs/TranslationEditorDialog.h"
-#include <wx/dialog.h>
-#include <wx/clrpicker.h>
-#include <wx/filename.h>
-#include "General/Console/ConsoleHelpers.h"
+#include "MainEditor/MainWindow.h"
 #include "UI/SToolBar/SToolBar.h"
-#include "Dialogs/ModifyOffsetsDialog.h"
+#include <wx/filename.h>
+#include <wx/sizer.h>
+#include <wx/spinctrl.h>
+#include <wx/stattext.h>
+#include <wx/checkbox.h>
+#include <wx/menu.h>
+#include <wx/slider.h>
+#include <wx/msgdlg.h>
+#include <wx/choicdlg.h>
 
 
 /*******************************************************************

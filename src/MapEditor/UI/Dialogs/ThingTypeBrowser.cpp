@@ -29,11 +29,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "ThingTypeBrowser.h"
-#include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "OpenGL/Drawing.h"
+#include <wx/checkbox.h>
+#include <wx/sizer.h>
 
 
 /*******************************************************************

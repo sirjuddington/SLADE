@@ -2,16 +2,16 @@
 #ifndef __MAPCANVAS_H__
 #define __MAPCANVAS_H__
 
-#include "UI/Canvas/OGLCanvas.h"
-#include "MapEditor/Renderer/Overlays/VertexInfoOverlay.h"
+#include "General/KeyBind.h"
+#include "General/SAction.h"
+#include "MapEditor/Renderer/MapRenderer3D.h"
+#include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
 #include "MapEditor/Renderer/Overlays/LineInfoOverlay.h"
+#include "MapEditor/Renderer/Overlays/MCOverlay.h"
 #include "MapEditor/Renderer/Overlays/SectorInfoOverlay.h"
 #include "MapEditor/Renderer/Overlays/ThingInfoOverlay.h"
-#include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
-#include "General/KeyBind.h"
-#include "MainApp.h"
-#include "MapEditor/Renderer/Overlays/MCOverlay.h"
-#include "MapEditor/Renderer/MapRenderer3D.h"
+#include "MapEditor/Renderer/Overlays/VertexInfoOverlay.h"
+#include "UI/Canvas/OGLCanvas.h"
 #include <SFML/System.hpp>
 
 class MapEditor;

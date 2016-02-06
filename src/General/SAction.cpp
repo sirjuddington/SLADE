@@ -36,6 +36,7 @@
 #include "MainApp.h"
 #include "General/KeyBind.h"
 #include <wx/aui/auibar.h>
+#include <wx/toolbar.h>
 
 
 /*******************************************************************

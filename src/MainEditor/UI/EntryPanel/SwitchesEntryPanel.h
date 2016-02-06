@@ -6,7 +6,6 @@
 #include "EntryPanel.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/SwitchesList.h"
-#include "UI/Canvas/GfxCanvas.h"
 #include "UI/Lists/ListView.h"
 
 class SwitchesEntryPanel : public EntryPanel, public SActionHandler
@@ -20,8 +19,6 @@ private:
 	wxTextCtrl*		text_offname;
 	wxTextCtrl*		text_onname;
 	wxButton*		butn_delete;
-	GfxCanvas*		off_canvas;
-	GfxCanvas*		on_canvas;
 	wxRadioButton*	rbtn_shareware;
 	wxRadioButton*	rbtn_registered;
 	wxRadioButton*	rbtn_commercial;

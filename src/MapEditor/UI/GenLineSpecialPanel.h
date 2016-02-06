@@ -3,9 +3,10 @@
 #define __GEN_LINE_SPECIAL_PANEL_H__
 
 #include <wx/panel.h>
-#include <wx/choice.h>
-#include <wx/gbsizer.h>
 
+class wxChoice;
+class wxStaticText;
+class wxGridBagSizer;
 class GenLineSpecialPanel : public wxPanel
 {
 private:

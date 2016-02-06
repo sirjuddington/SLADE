@@ -2,6 +2,10 @@
 #ifndef __SHOW_ITEM_DIALOG_H__
 #define __SHOW_ITEM_DIALOG_H__
 
+#include <wx/dialog.h>
+
+class wxChoice;
+class wxTextCtrl;
 class ShowItemDialog : public wxDialog
 {
 private:

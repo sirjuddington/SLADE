@@ -27,11 +27,14 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "GraphicsPrefsPanel.h"
-#include "OpenGL/GLTexture.h"
 #include "MainEditor/MainWindow.h"
+#include "OpenGL/GLTexture.h"
+#include <wx/checkbox.h>
+#include <wx/clrpicker.h>
 #include <wx/filedlg.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

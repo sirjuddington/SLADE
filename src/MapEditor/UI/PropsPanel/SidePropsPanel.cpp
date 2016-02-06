@@ -28,15 +28,16 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "SidePropsPanel.h"
-#include "OpenGL/GLTexture.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "OpenGL/Drawing.h"
-#include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
+#include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "UI/NumberTextCtrl.h"
 #include <wx/gbsizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 #undef min
 #undef max
 #include <wx/valnum.h>

@@ -4,6 +4,7 @@
 
 #include "SImage.h"
 
+class ArchiveEntry;
 class SIFormat
 {
 protected:

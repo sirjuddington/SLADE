@@ -32,6 +32,7 @@
 #include "TextureXList.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************

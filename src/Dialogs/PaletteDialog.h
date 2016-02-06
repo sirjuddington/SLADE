@@ -5,6 +5,7 @@
 #include <wx/dialog.h>
 
 class PaletteCanvas;
+class Palette8bit;
 class PaletteDialog : public wxDialog
 {
 private:

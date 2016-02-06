@@ -4,6 +4,7 @@
 
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
+#include <wx/combobox.h>
 
 class GLTexture;
 class FlatTexCanvas : public OGLCanvas

@@ -30,14 +30,17 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "DefaultEntryPanel.h"
-#include "General/Misc.h"
-#include "Dialogs/ModifyOffsetsDialog.h"
-#include "MainEditor/EntryOperations.h"
 #include "Archive/ArchiveManager.h"
-#include "UI/HexEditorPanel.h"
+#include "Dialogs/ModifyOffsetsDialog.h"
+#include "General/Misc.h"
+#include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainWindow.h"
+#include "UI/HexEditorPanel.h"
+#include <wx/button.h>
+#include <wx/sizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

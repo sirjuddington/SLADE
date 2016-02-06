@@ -29,16 +29,26 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "GfxConvDialog.h"
-#include "General/Console/Console.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
-#include "Graphics/Palette/PaletteManager.h"
-#include "UI/SplashWindow.h"
-#include "Graphics/Icons.h"
-#include "Graphics/SImage/SIFormat.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
+#include "General/Console/Console.h"
+#include "General/Misc.h"
+#include "Graphics/CTexture/CTexture.h"
+#include "Graphics/Icons.h"
+#include "Graphics/Palette/PaletteManager.h"
+#include "Graphics/SImage/SIFormat.h"
+#include "UI/Canvas/GfxCanvas.h"
+#include "UI/ColourBox.h"
+#include "UI/PaletteChooser.h"
+#include "UI/SplashWindow.h"
+#include <wx/bmpbuttn.h>
+#include <wx/checkbox.h>
+#include <wx/radiobut.h>
+#include <wx/sizer.h>
+#include <wx/slider.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

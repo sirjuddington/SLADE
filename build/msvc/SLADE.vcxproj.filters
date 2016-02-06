@@ -1296,9 +1296,6 @@
     <ClCompile Include="..\..\src\MapEditor\UI\ShapeDrawPanel.cpp">
       <Filter>Map Editor\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\UI\ThingTypeTreeView.cpp">
-      <Filter>Map Editor\UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ActionSpecialDialog.cpp">
       <Filter>Map Editor\UI\Dialogs</Filter>
     </ClCompile>
@@ -2286,9 +2283,6 @@
     <ClInclude Include="..\..\src\MapEditor\UI\ShapeDrawPanel.h">
       <Filter>Map Editor\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\UI\ThingTypeTreeView.h">
-      <Filter>Map Editor\UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ActionSpecialDialog.h">
       <Filter>Map Editor\UI\Dialogs</Filter>
     </ClInclude>
@@ -2351,6 +2345,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\SwitchesList.h">
       <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\WxBasicControls.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

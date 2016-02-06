@@ -3,8 +3,7 @@
 #define	__PALETTEENTRYPANEL_H__
 
 #include "EntryPanel.h"
-#include "UI/Canvas/PaletteCanvas.h"
-#include "MainApp.h"
+#include "General/SAction.h"
 
 /* TODO:
  * - Improve and enrich palette edition functions
@@ -18,6 +17,9 @@
  *   the full complement of 34 including one unused (a legacy of the Doom
  *   beta version which used a green colormap for the light amp visors).
  */
+class PaletteCanvas;
+class Palette8bit;
+class ArchiveEntry;
 class PaletteEntryPanel : public EntryPanel, public SActionHandler
 {
 private:

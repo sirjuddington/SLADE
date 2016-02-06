@@ -4,8 +4,8 @@
 
 #include "UI/Browser/BrowserWindow.h"
 #include "General/ListenerAnnouncer.h"
-#include "Graphics/CTexture/PatchTable.h"
 
+class Archive;
 class PatchBrowserItem : public BrowserItem
 {
 private:
@@ -22,6 +22,7 @@ public:
 };
 
 class TextureXList;
+class PatchTable;
 class PatchBrowser : public BrowserWindow, Listener
 {
 private:

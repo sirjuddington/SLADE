@@ -29,25 +29,31 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "TextureXPanel.h"
-#include "General/Misc.h"
-#include "TextureXEditor.h"
-#include "ZTextureEditorPanel.h"
-#include "General/Clipboard.h"
 #include "Archive/ArchiveManager.h"
-#include "Graphics/Icons.h"
-#include "General/ResourceManager.h"
+#include "Dialogs/GfxConvDialog.h"
+#include "Dialogs/ModifyOffsetsDialog.h"
+#include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/KeyBind.h"
-#include "Dialogs/GfxConvDialog.h"
+#include "General/Misc.h"
+#include "General/ResourceManager.h"
+#include "General/UndoRedo.h"
+#include "Graphics/Icons.h"
+#include "MainApp.h"
+#include "TextureXEditor.h"
 #include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
-#include "Dialogs/ModifyOffsetsDialog.h"
-#include "General/UndoRedo.h"
+#include "ZTextureEditorPanel.h"
+#include <wx/arrstr.h>
+#include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
-#include <wx/arrstr.h>
+#include <wx/menu.h>
+#include <wx/msgdlg.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
+#include <wx/textdlg.h>
 
 
 /*******************************************************************

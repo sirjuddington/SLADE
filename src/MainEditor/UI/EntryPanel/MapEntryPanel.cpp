@@ -29,15 +29,19 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MapEntryPanel.h"
 #include "Archive/Archive.h"
+#include "Graphics/SImage/SIFormat.h"
+#include "Graphics/SImage/SImage.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "MapEditor/SLADEMap/MapVertex.h"
+#include "UI/Canvas/MapPreviewCanvas.h"
 #include "Utility/Parser.h"
-#include "Graphics/SImage/SImage.h"
-#include "Graphics/SImage/SIFormat.h"
+#include <wx/checkbox.h>
+#include <wx/filedlg.h>
 #include <wx/filename.h>
+#include <wx/sizer.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

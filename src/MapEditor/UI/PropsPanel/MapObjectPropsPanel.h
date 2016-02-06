@@ -55,7 +55,7 @@ public:
 	~MapObjectPropsPanel();
 
 	vector<MapObject*>&	getObjects() { return objects; }
-	bool showAll() { return cb_show_all->IsChecked(); }
+	bool showAll();
 
 	void	openObject(MapObject* object);
 	void	openObjects(vector<MapObject*>& objects);

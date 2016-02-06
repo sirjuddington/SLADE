@@ -29,9 +29,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "SectorSpecialDialog.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include <wx/checkbox.h>
+#include <wx/choice.h>
+#include <wx/sizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

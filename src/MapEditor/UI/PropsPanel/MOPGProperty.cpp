@@ -31,17 +31,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MOPGProperty.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
-#include "MapEditor/UI/ThingTypeTreeView.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapObjectPropsPanel.h"
-#include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
-#include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
+#include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
+#include "MapObjectPropsPanel.h"
 
 
 /*******************************************************************

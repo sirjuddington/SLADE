@@ -30,21 +30,25 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
 #include "MapEditorConfigDialog.h"
-#include "UI/BaseResourceChooser.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"
-#include "Utility/SFileDialog.h"
-#include "UI/SplashWindow.h"
 #include "General/ColourConfiguration.h"
 #include "Graphics/Icons.h"
-#include "UI/ResourceArchiveChooser.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "UI/BaseResourceChooser.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
-#include <wx/statline.h>
+#include "UI/ResourceArchiveChooser.h"
+#include "UI/SplashWindow.h"
+#include "Utility/SFileDialog.h"
+#include <wx/button.h>
+#include <wx/combobox.h>
 #include <wx/gbsizer.h>
 #include <wx/imaglist.h>
+#include <wx/msgdlg.h>
+#include <wx/statbox.h>
+#include <wx/statline.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

@@ -32,15 +32,14 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainEditor/MainWindow.h"
-#include "UI/WxStuff.h"
 #include "PatchBrowser.h"
 #include "Archive/ArchiveManager.h"
-#include "General/ResourceManager.h"
 #include "General/Misc.h"
+#include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/SImage/SImage.h"
+#include "MainEditor/MainWindow.h"
 
 
 /*******************************************************************

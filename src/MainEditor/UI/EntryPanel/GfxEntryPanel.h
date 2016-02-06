@@ -4,10 +4,8 @@
 
 #include "EntryPanel.h"
 #include "UI/Canvas/GfxCanvas.h"
-#include "MainApp.h"
+#include "General/SAction.h"
 #include "Graphics/Translation.h"
-#include <wx/spinctrl.h>
-#include <wx/choice.h>
 
 class GfxEntryPanel : public EntryPanel, public SActionHandler
 {

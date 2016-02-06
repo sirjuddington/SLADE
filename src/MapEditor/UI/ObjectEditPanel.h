@@ -2,6 +2,9 @@
 #ifndef __OBJECT_EDIT_PANEL_H__
 #define __OBJECT_EDIT_PANEL_H__
 
+#include <wx/panel.h>
+#include "UI/WxBasicControls.h"
+
 class ObjectEditGroup;
 class ObjectEditPanel : public wxPanel
 {
