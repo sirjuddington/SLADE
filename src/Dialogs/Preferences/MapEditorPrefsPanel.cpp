@@ -29,9 +29,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "MapEditorPrefsPanel.h"
-#include "NumberTextCtrl.h"
+#include "UI/NumberTextCtrl.h"
+#include <wx/checkbox.h>
+#include <wx/sizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

@@ -29,13 +29,16 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "BaseResourceArchivesPanel.h"
-#include "ArchiveManager.h"
-#include "Parser.h"
+#include "Archive/ArchiveManager.h"
+#include "Utility/Parser.h"
+#include <wx/button.h>
+#include <wx/filedlg.h>
+#include <wx/listbox.h>
 #ifdef __WXMSW__
 #include <wx/msw/registry.h>
 #endif
+#include <wx/sizer.h>
 
 
 /*******************************************************************

@@ -2,11 +2,12 @@
 #ifndef __PREFERENCES_DIALOG_H__
 #define __PREFERENCES_DIALOG_H__
 
-#include "SDialog.h"
-#include <wx/treebook.h>
+#include "UI/SDialog.h"
 
 class PrefsPanelBase;
 class BaseResourceArchivesPanel;
+class wxPanel;
+class wxTreebook;
 class PreferencesDialog : public SDialog
 {
 private:

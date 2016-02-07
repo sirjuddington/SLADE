@@ -28,10 +28,16 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "NodesPrefsPanel.h"
-#include "NodeBuilders.h"
-#include "SFileDialog.h"
+#include "MapEditor/NodeBuilders.h"
+#include "Utility/SFileDialog.h"
+#include <wx/button.h>
+#include <wx/checklst.h>
+#include <wx/choice.h>
+#include <wx/sizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
 
 
 /*******************************************************************

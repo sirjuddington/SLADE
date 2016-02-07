@@ -3,8 +3,8 @@
 #define __ADVANCED_PREFS_PANEL_H__
 
 #include "PrefsPanelBase.h"
-#include <wx/propgrid/propgrid.h>
 
+class wxPropertyGrid;
 class AdvancedPrefsPanel : public PrefsPanelBase
 {
 private:

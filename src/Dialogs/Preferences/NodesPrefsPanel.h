@@ -4,6 +4,7 @@
 
 #include "PrefsPanelBase.h"
 
+class wxCheckListBox;
 class NodesPrefsPanel : public PrefsPanelBase
 {
 private:

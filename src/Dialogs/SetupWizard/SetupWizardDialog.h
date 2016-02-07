@@ -2,6 +2,9 @@
 #ifndef __SETUP_WIZARD_DIALOG_H__
 #define __SETUP_WIZARD_DIALOG_H__
 
+#include "UI/WxBasicControls.h"
+#include <wx/dialog.h>
+
 class WizardPageBase;
 class SetupWizardDialog : public wxDialog
 {
