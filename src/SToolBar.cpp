@@ -74,7 +74,7 @@ public:
 		wxPaintDC dc(this);
 
 		// Get system colours needed
-		wxColour col_background = Drawing::getPanelBGColour();
+		wxColour col_background = GetBackgroundColour();//toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
 		rgba_t bg(col_background.Red(), col_background.Green(), col_background.Blue());
 		wxColour col_light = WXCOL(bg.amp(50, 50, 50, 0));
 		wxColour col_dark = WXCOL(bg.amp(-50, -50, -50, 0));
@@ -109,6 +109,9 @@ public:
 		// Set window name
 		SetName("tb_vline");
 
+		//if (toolbar_win10)
+		//	SetBackgroundColour(*wxWHITE);
+
 		// Bind events
 		Bind(wxEVT_PAINT, &SToolBarVLine::onPaint, this);
 	}
@@ -118,7 +121,7 @@ public:
 		wxPaintDC dc(this);
 
 		// Get system colours needed
-		wxColour col_background = Drawing::getPanelBGColour();
+		wxColour col_background = GetBackgroundColour();//toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
 		wxColour col_light = Drawing::lightColour(col_background, 1.5f);
 		wxColour col_dark = Drawing::darkColour(col_background, 1.5f);
 
@@ -137,7 +140,7 @@ public:
 /* SToolBarGroup::SToolBarGroup
  * SToolBarGroup class constructor
  *******************************************************************/
-SToolBarGroup::SToolBarGroup(wxWindow* parent, string name, bool force_name) : wxPanel(parent, -1)
+SToolBarGroup::SToolBarGroup(SToolBar* parent, string name, bool force_name) : wxPanel(parent, -1)
 {
 	// Init variables
 	this->name = name;
@@ -149,8 +152,8 @@ SToolBarGroup::SToolBarGroup(wxWindow* parent, string name, bool force_name) : w
 	else
 		hidden = false;
 
-	// Set colours
-	SetBackgroundColour(Drawing::getPanelBGColour());
+	// Set colour
+	SetBackgroundColour(parent->GetBackgroundColour());
 
 	// Create sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -207,6 +210,7 @@ SToolBarButton* SToolBarGroup::addActionButton(string action, string icon, bool 
 
 	// Create button
 	SToolBarButton* button = new SToolBarButton(this, action, icon, show_name);
+	button->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the group
 	sizer->Add(button, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
@@ -226,6 +230,7 @@ SToolBarButton* SToolBarGroup::addActionButton(string action_id, string action_n
 
 	// Create button
 	SToolBarButton* button = new SToolBarButton(this, action_id, action_name, icon, help_text, show_name);
+	button->SetBackgroundColour(GetBackgroundColour());
 	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &SToolBarGroup::onButtonClicked, this, button->GetId());
 
 	// Add it to the group
@@ -303,26 +308,25 @@ protected:
 /* SToolBar::SToolBar
  * SToolBar class constructor
  *******************************************************************/
-SToolBar::SToolBar(wxWindow* parent) : wxPanel(parent, -1)
+SToolBar::SToolBar(wxWindow* parent, bool main_toolbar) : wxPanel(parent, -1)
 {
 	// Init variables
 	min_height = 0;
 	n_rows = 0;
 	draw_border = true;
+	this->main_toolbar = main_toolbar;
 
 	// Enable double buffering to avoid flickering
 #ifdef __WXMSW__
 	// In Windows, only enable on Vista or newer
-	int win_vers;
-	wxGetOsVersion(&win_vers);
-	if (win_vers >= 6)
+	if (Global::win_version_major >= 6)
 		SetDoubleBuffered(true);
 #elif !defined __WXMAC__
 	SetDoubleBuffered(true);
 #endif
 
 	// Set background colour
-	SetBackgroundColour(Drawing::getPanelBGColour());
+	SetBackgroundColour((main_toolbar && Global::win_version_major >= 10) ? wxColor(250, 250, 250) : Drawing::getPanelBGColour());
 
 	// Create sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -352,6 +356,9 @@ void SToolBar::addGroup(SToolBarGroup* group)
 {
 	// Set the group's parent
 	group->SetParent(this);
+
+	// Set background colour
+	group->SetBackgroundColour(GetBackgroundColour());
 
 	// Add it to the list of groups
 	groups.push_back(group);
@@ -497,14 +504,15 @@ void SToolBar::updateLayout(bool force, bool generate_event)
 		if (groups_line > 0)
 		{
 			SToolBarSeparator* sep = new SToolBarSeparator(this);
+			sep->SetBackgroundColour(GetBackgroundColour());
 			separators.push_back(sep);
-			hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL);
-			current_width += 4;
+			hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 2);
+			current_width += 8;
 		}
 
 		// Add the group
-		hbox->Add(groups[a], 0, wxEXPAND|wxTOP|wxBOTTOM, 2);
-		current_width += groups[a]->GetBestSize().x;
+		hbox->Add(groups[a], 0, wxEXPAND|wxTOP|wxBOTTOM|wxLEFT|wxRIGHT, 2);
+		current_width += groups[a]->GetBestSize().x + 4;
 
 		groups_line++;
 	}
@@ -541,7 +549,11 @@ void SToolBar::enableGroup(string name, bool enable)
 		if (S_CMPNOCASE(groups[a]->getName(), name))
 		{
 			if (groups[a]->IsEnabled() != enable)
+			{
 				groups[a]->Enable(enable);
+				groups[a]->Update();
+				groups[a]->Refresh();
+			}
 			else
 				return;
 		}
@@ -616,9 +628,9 @@ void SToolBar::onPaint(wxPaintEvent& e)
 	wxPaintDC dc(this);
 
 	// Get system colours needed
-	wxColour col_background = Drawing::getPanelBGColour();
+	wxColour col_background = GetBackgroundColour();
 	wxColour col_light = Drawing::lightColour(col_background, 1.5f);
-	wxColour col_dark = Drawing::darkColour(col_background, 1.5f);
+	//wxColour col_dark = win10_theme ? *wxWHITE : Drawing::darkColour(col_background, 1.5f);
 	
 	// Draw background
 	dc.SetBackground(wxBrush(col_background));
@@ -627,12 +639,12 @@ void SToolBar::onPaint(wxPaintEvent& e)
 	if (draw_border)
 	{
 		// Draw top
-		//dc.SetPen(wxPen(col_dark));// col_light));
+		//dc.SetPen(wxPen(wxColor(220, 220, 220)));// col_light));
 		//dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
 
 		// Draw bottom
-		dc.SetPen(wxPen(col_dark));
-		dc.DrawLine(wxPoint(0, GetSize().y-1), wxPoint(GetSize().x+1, GetSize().y-1));
+		//dc.SetPen(wxPen(col_dark));
+		//dc.DrawLine(wxPoint(0, GetSize().y-1), wxPoint(GetSize().x+1, GetSize().y-1));
 	}
 }
 

@@ -68,6 +68,7 @@ public:
 	vector<mapdesc_t>	detectMaps();
 	string				detectNamespace(ArchiveEntry* entry);
 	string				detectNamespace(size_t index, ArchiveTreeNode * dir = NULL);
+	void				detectIncludes();
 	bool				hasFlatHack();
 
 	// Search

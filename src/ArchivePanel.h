@@ -39,6 +39,7 @@ protected:
 	EntryPanel* hex_area;
 	EntryPanel* map_area;
 	EntryPanel* audio_area;
+	EntryPanel* data_area;
 
 	enum NewEntries
 	{
@@ -108,6 +109,7 @@ public:
 	bool	optimizePNG();
 	bool	compileACS(bool hexen = false);
 	bool	convertTextures();
+	bool	findTextureErrors();
 	bool	mapOpenDb2();
 	bool	crc32();
 

@@ -86,6 +86,32 @@ bool ModMusic::openFromFile(const std::string& filename)
 	}
 }
 
+/* ModMusic::loadFromMemory
+ * Loads mod data for playback
+ *******************************************************************/
+bool ModMusic::loadFromMemory(const uint8_t* data, const uint32_t size)
+{
+	// Init DUMB if needed
+	if (!init_done)
+		initDumb();
+
+	// Close current module if any
+	close();
+
+	// Load module file
+	dumb_module = dumb_read_any(dumbfile_open_memory((const char*)data, size), 0, 0);
+	if (dumb_module != NULL)
+	{
+		initialize(2, 44100);
+		return true;
+	}
+	else
+	{
+		LOG_MESSAGE(1, "Failed to load module music data");
+		return false;
+	}
+}
+
 /* ModMusic::getDuration
  * Returns the duration of the currently loaded mod
  *******************************************************************/
@@ -118,6 +144,7 @@ void ModMusic::onSeek(sf::Time timeOffset)
 {
 	long pos = static_cast<long>(timeOffset.asSeconds() * 65536);
 	dumb_player = duh_start_sigrenderer(dumb_module, 0, 2, pos);
+	//dumb_it_set_loop_callback(duh_get_it_sigrenderer(dumb_player), dumb_it_callback_terminate, NULL);
 }
 
 /* ModMusic::onGetData

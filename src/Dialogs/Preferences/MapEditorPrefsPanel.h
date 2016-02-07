@@ -14,6 +14,7 @@ private:
 	wxCheckBox*		cb_merge_undo_step;
 	wxCheckBox*		cb_props_auto_apply;
 	wxCheckBox*		cb_remove_invalid_lines;
+	wxCheckBox*		cb_merge_lines_vertex_delete;
 	NumberTextCtrl*	text_max_backups;
 
 public:

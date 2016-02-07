@@ -46,6 +46,8 @@ public:
 
 	ArchiveTreeNode*	clone();
 	bool				merge(ArchiveTreeNode* node, unsigned position = 0xFFFFFFFF, int state = 2);
+
+	bool	exportTo(string path);
 };
 
 // Define archive types
@@ -76,7 +78,9 @@ enum ArchiveTypes
 	ARCHIVE_BZ2,
 	ARCHIVE_7Z,
 	ARCHIVE_DISK,
-	ARCHIVE_FOLDER
+	ARCHIVE_FOLDER,
+	ARCHIVE_POD,
+	ARCHIVE_CHASM_BIN,
 };
 
 struct archive_desc_t

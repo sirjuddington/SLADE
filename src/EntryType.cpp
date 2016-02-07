@@ -67,7 +67,7 @@ EntryType::EntryType(string id)
 	this->id = id;
 	name = "Unknown";
 	extension = "dat";
-	icon = "e_default";
+	icon = "default";
 	editor = "default";
 	reliability = 255;
 	category = "Data";
@@ -442,6 +442,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 			else if (S_CMPNOCASE(fieldnode->getName(), "icon"))  			// Icon field
 			{
 				ntype->icon = fieldnode->getStringValue();
+				if (ntype->icon.StartsWith("e_"))
+					ntype->icon = ntype->icon.Mid(2);
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "editor"))  			// Editor field (to be removed)
 			{
@@ -545,21 +547,21 @@ bool EntryType::loadEntryTypes()
 
 	// Setup unknown type
 	etype_unknown.format = fmt_any;
-	etype_unknown.icon = "e_unknown";
+	etype_unknown.icon = "unknown";
 	etype_unknown.detectable = false;
 	etype_unknown.reliability = 0;
 	etype_unknown.addToList();
 
 	// Setup folder type
 	etype_folder.format = fmt_any;
-	etype_folder.icon = "e_folder";
+	etype_folder.icon = "folder";
 	etype_folder.name = "Folder";
 	etype_folder.detectable = false;
 	etype_folder.addToList();
 
 	// Setup marker type
 	etype_marker.format = fmt_any;
-	etype_marker.icon = "e_marker";
+	etype_marker.icon = "marker";
 	etype_marker.name = "Marker";
 	etype_marker.detectable = false;
 	etype_marker.category = "";		// No category, markers only appear when 'All' categories shown
@@ -567,7 +569,7 @@ bool EntryType::loadEntryTypes()
 
 	// Setup map marker type
 	etype_map.format = fmt_any;
-	etype_map.icon = "e_map";
+	etype_map.icon = "map";
 	etype_map.name = "Map Marker";
 	etype_map.category = "Maps";	// Should appear with maps
 	etype_map.detectable = false;

@@ -39,8 +39,13 @@
 #include "MathStuff.h"
 #include "MapEditorWindow.h"
 #include "ColourConfiguration.h"
-#include "GameConfiguration.h"
 #include "OpenGL.h"
+
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Int, gl_font_size)
 
 
 /*******************************************************************
@@ -52,7 +57,8 @@
  *******************************************************************/
 LineInfoOverlay::LineInfoOverlay()
 {
-	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16);
+	scale = gl_font_size / 12.0;
+	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * scale);
 	last_size = 100;
 }
 
@@ -203,7 +209,6 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 
 	// Slide in/out animation
 	float alpha_inv = 1.0f - alpha;
-	int bottom2 = bottom;
 	bottom += height*alpha_inv*alpha_inv;
 
 	// Determine widths
@@ -214,30 +219,34 @@ void LineInfoOverlay::draw(int bottom, int right, float alpha)
 		n_side_panels++;
 
 	// Draw overlay background
-	int main_panel_end = right - (n_side_panels*258);
+	scale = gl_font_size / 12.0;
+	int tex_box_size = 80 * scale;
+	int sinf_size = ((tex_box_size * 3) + 16);
+	int main_panel_end = right - (n_side_panels * (sinf_size +2));
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glLineWidth(1.0f);
 	Drawing::drawBorderedRect(0, bottom-height-4, main_panel_end, bottom+2, col_bg, col_border);
 
 	// Draw info text lines
+	text_box->setLineHeight(16 * scale);
 	text_box->draw(2, bottom - height, col_fg);
 
 	// Side info
-	int x = right - 256;
+	int x = right - sinf_size;
 	if (side_front.exists)
 	{
 		// Background
 		glDisable(GL_TEXTURE_2D);
-		Drawing::drawBorderedRect(x, bottom-height-4, x + 256, bottom+2, col_bg, col_border);
+		Drawing::drawBorderedRect(x, bottom-height-4, x + sinf_size, bottom+2, col_bg, col_border);
 
 		drawSide(bottom-4, right, alpha, side_front, x);
-		x -= 258;
+		x -= (sinf_size + 2);
 	}
 	if (side_back.exists)
 	{
 		// Background
 		glDisable(GL_TEXTURE_2D);
-		Drawing::drawBorderedRect(x, bottom-height-4, x + 256, bottom+2, col_bg, col_border);
+		Drawing::drawBorderedRect(x, bottom-height-4, x + sinf_size, bottom+2, col_bg, col_border);
 
 		drawSide(bottom-4, right, alpha, side_back, x);
 	}
@@ -256,15 +265,16 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side,
 	col_fg.a = col_fg.a*alpha;
 
 	// Index and sector index
-	Drawing::drawText(side.info, xstart + 4, bottom - 32, col_fg, Drawing::FONT_CONDENSED);
+	Drawing::drawText(side.info, xstart + 4, bottom - (32 * scale), col_fg, Drawing::FONT_CONDENSED);
 
 	// Texture offsets
-	Drawing::drawText(side.offsets, xstart + 4, bottom - 16, col_fg, Drawing::FONT_CONDENSED);
+	Drawing::drawText(side.offsets, xstart + 4, bottom - (16 * scale), col_fg, Drawing::FONT_CONDENSED);
 
 	// Textures
-	drawTexture(alpha, xstart + 4, bottom - 32, side.tex_upper, side.needs_upper);
-	drawTexture(alpha, xstart + 88, bottom - 32, side.tex_middle, side.needs_middle, "M");
-	drawTexture(alpha, xstart + 92 + 80, bottom - 32, side.tex_lower, side.needs_lower, "L");
+	int tex_box_size = 80 * scale;
+	drawTexture(alpha, xstart + 4, bottom - (32 * scale), side.tex_upper, side.needs_upper);
+	drawTexture(alpha, xstart + tex_box_size + 8, bottom - (32 * scale), side.tex_middle, side.needs_middle, "M");
+	drawTexture(alpha, xstart + tex_box_size + 12 + tex_box_size, bottom - (32 * scale), side.tex_lower, side.needs_lower, "L");
 }
 
 /* LineInfoOverlay::drawTexture
@@ -273,10 +283,10 @@ void LineInfoOverlay::drawSide(int bottom, int right, float alpha, side_t& side,
 void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, bool needed, string pos)
 {
 	bool required = (needed && texture == "-");
-	bool unknown = false;
+	int tex_box_size = 80 * scale;
+	int line_height = 16 * scale;
 
 	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
 	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
 	col_fg.a = col_fg.a*alpha;
 
@@ -290,20 +300,20 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 		glPushMatrix();
-		glTranslated(x, y-96, 0);
-		GLTexture::bgTex().draw2dTiled(80, 80);
+		glTranslated(x, y - tex_box_size - line_height, 0);
+		GLTexture::bgTex().draw2dTiled(tex_box_size, tex_box_size);
 		glPopMatrix();
 
 		// Draw texture
 		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-		Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0);
+		Drawing::drawTextureWithin(tex, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0);
 
 		glDisable(GL_TEXTURE_2D);
 
 		// Draw outline
 		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0);
 		glDisable(GL_LINE_SMOOTH);
-		Drawing::drawRect(x, y-96, x+80, y-16);
+		Drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);
 	}
 
 	// Unknown texture
@@ -313,7 +323,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
-		Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.15);
+		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
 
 		// Set colour to red (for text)
 		col_fg = col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f);
@@ -326,7 +336,7 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/minus");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
-		Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.15);
+		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
 
 		// Set colour to red (for text)
 		col_fg = col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f);
@@ -339,5 +349,5 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 		texture = texture.Truncate(8) + "...";
 	texture.Prepend(":");
 	texture.Prepend(pos);
-	Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
+	Drawing::drawText(texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
 }

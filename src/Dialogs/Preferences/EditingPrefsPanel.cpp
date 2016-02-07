@@ -41,6 +41,7 @@ EXTERN_CVAR(Bool, percent_encoding)
 EXTERN_CVAR(Bool, auto_entry_replace)
 EXTERN_CVAR(Bool, save_archive_with_map)
 EXTERN_CVAR(Bool, confirm_entry_delete)
+EXTERN_CVAR(Bool, confirm_entry_revert)
 
 
 /*******************************************************************
@@ -63,27 +64,31 @@ EditingPrefsPanel::EditingPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 
 	// Force uppercase
 	cb_wad_force_uppercase = new wxCheckBox(this, -1, "Force uppercase entry names in Wad Archives");
-	sizer->Add(cb_wad_force_uppercase, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_wad_force_uppercase, 0, wxEXPAND|wxALL, 4);
 
 	// Percent encoding
 	cb_zip_percent_encoding = new wxCheckBox(this, -1, "Use percent encoding if needed outside of Wad Archives");
-	sizer->Add(cb_zip_percent_encoding, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_zip_percent_encoding, 0, wxEXPAND|wxALL, 4);
 
 	// Automatically replace entries
 	cb_auto_entry_replace = new wxCheckBox(this, -1, "Automatically replace entries with same name as drag-and-dropped files");
-	sizer->Add(cb_auto_entry_replace, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_auto_entry_replace, 0, wxEXPAND|wxALL, 4);
 
 	// Save archive when saving map
 	cb_save_archive_with_map = new wxCheckBox(this, -1, "Save the map's parent archive when saving a map");
-	sizer->Add(cb_save_archive_with_map, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_save_archive_with_map, 0, wxEXPAND|wxALL, 4);
 
 	// Confirm entry delete
 	cb_confirm_entry_delete = new wxCheckBox(this, -1, "Show confirmation dialog on deleting an entry");
-	sizer->Add(cb_confirm_entry_delete, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_confirm_entry_delete, 0, wxEXPAND|wxALL, 4);
+
+	// Confirm entry revert
+	cb_confirm_entry_revert = new wxCheckBox(this, -1, "Show confirmation dialog on reverting entry changes");
+	sizer->Add(cb_confirm_entry_revert, 0, wxEXPAND|wxALL, 4);
 
 	// Unsaved entry changes
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 	string choices[] = { "Don't Save", "Save", "Ask" };
 	choice_entry_mod = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, choices);
 	hbox->Add(new wxStaticText(this, -1, "Action on unsaved entry changes:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
@@ -108,6 +113,7 @@ void EditingPrefsPanel::init()
 	cb_save_archive_with_map->SetValue(save_archive_with_map);
 	choice_entry_mod->SetSelection(autosave_entry_changes);
 	cb_confirm_entry_delete->SetValue(confirm_entry_delete);
+	cb_confirm_entry_revert->SetValue(confirm_entry_revert);
 }
 
 /* EditingPrefsPanel::applyPreferences
@@ -121,4 +127,5 @@ void EditingPrefsPanel::applyPreferences()
 	save_archive_with_map = cb_save_archive_with_map->GetValue();
 	autosave_entry_changes = choice_entry_mod->GetSelection();
 	confirm_entry_delete = cb_confirm_entry_delete->GetValue();
+	confirm_entry_revert = cb_confirm_entry_revert->GetValue();
 }

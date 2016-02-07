@@ -23,19 +23,23 @@ public:
 
 class MainWindow;
 class SActionHandler;
+class wxSingleInstanceChecker;
+class MainAppFileListener;
 
 class MainApp : public wxApp
 {
 friend class SAction;
 friend class SActionHandler;
 private:
-	MainWindow*				main_window;
-	int						cur_id;
-	SAction*				action_invalid;
-	vector<SAction*>		actions;
-	vector<SActionHandler*>	action_handlers;
-	bool					init_ok;
-	wxStopWatch				timer;
+	MainWindow*					main_window;
+	int							cur_id;
+	SAction*					action_invalid;
+	vector<SAction*>			actions;
+	vector<SActionHandler*>		action_handlers;
+	bool						init_ok;
+	wxStopWatch					timer;
+	wxSingleInstanceChecker*	single_instance_checker;
+	MainAppFileListener*		file_listener;
 
 public:
 	MainApp();
@@ -51,6 +55,7 @@ public:
 
 	MainWindow*	getMainWindow() { return main_window; }
 
+	bool	singleInstanceCheck();
 	bool	initDirectories();
 	void	initLogFile();
 	void	initActions();
@@ -67,6 +72,7 @@ public:
 
 	void	onMenu(wxCommandEvent& e);
 	void	onVersionCheckCompleted(wxThreadEvent& e);
+	void	onActivate(wxActivateEvent& event);
 };
 
 #define theApp ((MainApp*)wxTheApp)

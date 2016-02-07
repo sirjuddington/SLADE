@@ -282,6 +282,16 @@ entry_types
 		image_format = "jedi_wax";
 	}
 
+	gfx_tv_raw : gfx_other_base
+	{
+		name = "Graphic (TV RAW)";
+		editor = gfx;
+		match_ext = "raw";
+		match_archive = "archive_pod";
+		extra = image;
+		image_format = "raw_flat";
+	}
+
 	/*gfx_jedi_delt
 	{
 		name = "Graphic (Jedi DELT)";

@@ -11,6 +11,7 @@ private:
 
 	wxStaticText*	label_type;
 	wxStaticText*	label_size;
+	wxStaticText*	label_index;
 
 	// Actions
 	wxStaticBox*	frame_actions;

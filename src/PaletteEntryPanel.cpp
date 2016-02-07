@@ -70,7 +70,7 @@ public:
 
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("t_palette_colourise"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_colourise"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -168,7 +168,7 @@ public:
 
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("t_palette_tint"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_tint"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -297,7 +297,7 @@ public:
 
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("t_palette_tweak"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_tweak"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -449,7 +449,7 @@ public:
 
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("t_palette_invert"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_invert"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -528,7 +528,7 @@ public:
 
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("e_palette"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::ENTRY, "palette"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -591,10 +591,10 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent)
 
 	// Palette
 	SToolBarGroup* group_palette = new SToolBarGroup(toolbar, "Palette", true);
-	group_palette->addActionButton("pal_prev", "Previous Palette", "t_left", "");
+	group_palette->addActionButton("pal_prev", "Previous Palette", "left", "");
 	text_curpal = new wxStaticText(group_palette, -1, "XX/XX");
 	group_palette->addCustomControl(text_curpal);
-	group_palette->addActionButton("pal_next", "Next Palette", "t_right", "");
+	group_palette->addActionButton("pal_next", "Next Palette", "right", "");
 	toolbar->addGroup(group_palette);
 
 	// Current Palette
@@ -715,7 +715,7 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 	pal_canvas->getPalette().copyPalette(palettes[index]);
 
 	// Set current palette text
-	text_curpal->SetLabel(S_FMT("%d/%d", index+1, palettes.size()));
+	text_curpal->SetLabel(S_FMT("%u/%lu", index+1, palettes.size()));
 
 	// Refresh
 	Layout();

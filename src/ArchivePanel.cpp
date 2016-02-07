@@ -63,6 +63,7 @@
 #include "PaletteManager.h"
 #include "MapReplaceDialog.h"
 #include "Dialogs/RunDialog.h"
+#include "DataEntryPanel.h"
 #include <wx/aui/auibook.h>
 #include <wx/aui/auibar.h>
 #include <wx/filename.h>
@@ -79,9 +80,10 @@ CVAR(String, last_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(Int, last_tint_amount, 50, CVAR_SAVE)
 CVAR(Bool, auto_entry_replace, false, CVAR_SAVE)
-EXTERN_CVAR(String, path_pngout);
-EXTERN_CVAR(String, path_pngcrush);
-EXTERN_CVAR(String, path_deflopt);
+EXTERN_CVAR(String, path_pngout)
+EXTERN_CVAR(String, path_pngcrush)
+EXTERN_CVAR(String, path_deflopt)
+EXTERN_CVAR(Bool, confirm_entry_revert)
 wxMenu* menu_archive = NULL;
 wxMenu* menu_entry = NULL;
 wxAuiToolBar* tb_archive = NULL;
@@ -184,7 +186,7 @@ public:
 
 		// Set dialog icon
 		wxIcon icon;
-		icon.CopyFromBitmap(getIcon("e_palette"));
+		icon.CopyFromBitmap(Icons::getIcon(Icons::ENTRY, "palette"));
 		SetIcon(icon);
 
 		// Setup main sizer
@@ -275,7 +277,7 @@ size_t getNamespaceNumber(ArchiveEntry * entry, size_t index, vector<string> &ns
 			ens = "graphics";
 		else if (S_CMPNOCASE(entry->getType()->getCategory(), "Audio"))
 		{
-			if (S_CMPNOCASE(entry->getType()->getIcon(), "e_music"))
+			if (S_CMPNOCASE(entry->getType()->getIcon(), "music"))
 				ens = "music";
 			else ens = "sounds";
 		}
@@ -319,6 +321,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	ansi_area = new ANSIEntryPanel(this);
 	map_area = new MapEntryPanel(this);
 	audio_area = new AudioEntryPanel(this);
+	data_area = new DataEntryPanel(this);
 
 
 	// --- Setup Layout ---
@@ -345,7 +348,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	sizer_path_controls->Add(label_path, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4);
 
 	// 'Up' button
-	btn_updir = new wxBitmapButton(this, -1, getIcon("e_upfolder"));
+	btn_updir = new wxBitmapButton(this, -1, Icons::getIcon(Icons::ENTRY, "upfolder"));
 	btn_updir->Enable(false);
 	sizer_path_controls->Add(btn_updir, 0, wxEXPAND);
 
@@ -532,10 +535,15 @@ void ArchivePanel::undo()
 	if (!(cur_area && cur_area->undo()))
 	{
 		// Undo
+		entry_list->setEntriesAutoUpdate(false);
 		undo_manager->undo();
+		entry_list->setEntriesAutoUpdate(true);
 
 		// Refresh entry list
 		entry_list->updateList();
+
+		// setEntriesAutoUpdate blocks previous announce
+		archive->announce("entries_changed");
 	}
 }
 
@@ -547,10 +555,15 @@ void ArchivePanel::redo()
 	if (!(cur_area && cur_area->redo()))
 	{
 		// Redo
+		entry_list->setEntriesAutoUpdate(false);
 		undo_manager->redo();
+		entry_list->setEntriesAutoUpdate(true);
 
 		// Refresh entry list
 		entry_list->updateList();
+
+		// setEntriesAutoUpdate blocks previous announce
+		archive->announce("entries_changed");
 	}
 }
 
@@ -780,8 +793,12 @@ bool ArchivePanel::importFiles()
 		bool ok = false;
 		entry_list->Show(false);
 		theSplashWindow->show("Importing Files...", true);
+		entry_list->setEntriesAutoUpdate(false);
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
+			if (a == info.filenames.size()-1)
+				entry_list->setEntriesAutoUpdate(true);
+
 			// Get filename
 			string name = wxFileName(info.filenames[a]).GetFullName();
 
@@ -808,6 +825,7 @@ bool ArchivePanel::importFiles()
 		// End recording undo level
 		undo_manager->endRecord(true);
 
+		entry_list->setEntriesAutoUpdate(true);
 		return ok;
 	}
 	else	// User cancelled, return false
@@ -839,11 +857,11 @@ bool ArchivePanel::buildArchive()
 {
 	if (archive->getType() != ARCHIVE_FOLDER)
 	{
-		wxMessageBox("This function is not supported with archives", "Can't build archive", wxICON_ERROR);
+		wxMessageBox("This function is only supported with directories", "Can't build archive", wxICON_ERROR);
 		return false;
 	}
 
-	Archive *new_archive;
+	Archive *new_archive = NULL;
 
 	// Create dialog
 	SFileDialog::fd_info_t info;
@@ -896,15 +914,21 @@ bool ArchivePanel::renameEntry(bool each)
 	// Begin recording undo level
 	undo_manager->beginRecord("Rename Entry");
 
+	/* Define alphabet */
+	const wxString alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 	// Check any are selected
 	if (each || selection.size() == 1)
 	{
 		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
+		entry_list->setEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
+			if (a == selection.size()-1)
+				entry_list->setEntriesAutoUpdate(true);
 
 			// Prompt for a new name
-			string new_name = wxGetTextFromUser("Enter new entry name: (* = unchanged)", "Rename", selection[a]->getName());
+			string new_name = wxGetTextFromUser("Enter new entry name:", "Rename", selection[a]->getName());
 
 			// Rename entry (if needed)
 			if (!new_name.IsEmpty() && selection[a]->getName() != new_name)
@@ -922,7 +946,7 @@ bool ArchivePanel::renameEntry(bool each)
 		string filter = Misc::massRenameFilter(names);
 
 		// Prompt for a new name
-		string new_name = wxGetTextFromUser("Enter new entry name: (* = unchanged)", "Rename", filter);
+		string new_name = wxGetTextFromUser("Enter new entry name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n% = alphabet repeat number, & = entry number, %% or && = n-1)", "Rename", filter);
 
 		// Apply mass rename to list of names
 		if (!new_name.IsEmpty())
@@ -930,8 +954,12 @@ bool ArchivePanel::renameEntry(bool each)
 			Misc::doMassRename(names, new_name);
 
 			// Go through the list
+			entry_list->setEntriesAutoUpdate(false);
 			for (size_t a = 0; a < selection.size(); a++)
 			{
+				if (a == selection.size()-1)
+					entry_list->setEntriesAutoUpdate(true);
+
 				ArchiveEntry* entry = selection[a];
 
 				// If the entry is a folder then skip it
@@ -944,7 +972,17 @@ bool ArchivePanel::renameEntry(bool each)
 				// Rename the entry (if needed)
 				if (fn.GetName() != names[a])
 				{
-					fn.SetName(names[a]);							// Change name
+					wxString filename = names[a];
+					/* file renaming syntax */
+					int num = a / alphabet.size();
+					int cn = a-(num*alphabet.size());
+					filename.Replace("^^", alphabet.Lower()[cn]);
+					filename.Replace("^", alphabet[cn]);
+					filename.Replace("%%", wxString::FromDouble(num, 0));
+					filename.Replace("%", wxString::FromDouble(num+1, 0));
+					filename.Replace("&&", wxString::FromDouble(a, 0));
+					filename.Replace("&", wxString::FromDouble(a+1, 0));
+					fn.SetName(filename);							// Change name
 					archive->renameEntry(entry, fn.GetFullName());	// Rename in archive
 				}
 			}
@@ -956,8 +994,12 @@ bool ArchivePanel::renameEntry(bool each)
 	vector<ArchiveTreeNode*> selected_dirs = entry_list->getSelectedDirectories();
 
 	// Go through the list
+	entry_list->setEntriesAutoUpdate(false);
 	for (size_t a = 0; a < selected_dirs.size(); a++)
 	{
+		if (a == selected_dirs.size()-1)
+			entry_list->setEntriesAutoUpdate(true);
+
 		// Get the current directory's name
 		string old_name = selected_dirs[a]->getName();
 
@@ -980,6 +1022,7 @@ bool ArchivePanel::renameEntry(bool each)
 	// Finish recording undo level
 	undo_manager->endRecord(true);
 
+	entry_list->setEntriesAutoUpdate(true);
 	return true;
 }
 
@@ -1020,8 +1063,12 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	undo_manager->beginRecord("Delete Entry");
 
 	// Go through the selected entries
+	entry_list->setEntriesAutoUpdate(false);
 	for (int a = selected_entries.size() - 1; a >= 0; a--)
 	{
+		if (a==0)
+			entry_list->setEntriesAutoUpdate(true);
+
 		// Remove from bookmarks
 		theArchiveManager->deleteBookmark(selected_entries[a]);
 
@@ -1031,14 +1078,19 @@ bool ArchivePanel::deleteEntry(bool confirm)
 	}
 
 	// Go through the selected directories
+	entry_list->setEntriesAutoUpdate(false);
 	for (int a = selected_dirs.size() - 1; a >= 0; a--)
 	{
+		if (a==0)
+			entry_list->setEntriesAutoUpdate(true);
+
 		// Remove from bookmarks
 		theArchiveManager->deleteBookmarksInDir(selected_dirs[a]);
 
 		// Remove the selected directory from the archive
 		archive->removeDir(selected_dirs[a]->getName(), entry_list->getCurrentDir());
 	}
+	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -1060,6 +1112,11 @@ bool ArchivePanel::deleteEntry(bool confirm)
  *******************************************************************/
 bool ArchivePanel::revertEntry()
 {
+	// Prompt to revert if configured to
+	if (confirm_entry_revert)
+		if (wxMessageBox("Are you sure you want to revert changes made to the entry?", "Revert Changes", wxICON_QUESTION | wxYES_NO) == wxNO)
+			return false;
+
 	// Get selected entries
 	vector<ArchiveEntry*> selected_entries = entry_list->getSelectedEntries();
 
@@ -1076,14 +1133,13 @@ bool ArchivePanel::revertEntry()
 	// Finish recording undo level
 	undo_manager->endRecord(true);
 
+	// Reload entry if currently open
+	if (selected_entries.size() == 1 && theActivePanel && theActivePanel->getEntry() == selected_entries[0])
+		theActivePanel->openEntry(selected_entries[0]);
+
 	// If the entries reverted were the only modified entries in the
 	// archive, the archive is no longer modified.
 	archive->findModifiedEntries();
-
-	// If there was only one selected entry, chances are its content
-	// were displayed, so this should be updated
-	if (theActivePanel)
-		theActivePanel->callRefresh();
 
 	return true;
 }
@@ -1261,7 +1317,7 @@ bool ArchivePanel::sort()
 		string name, ename = entry->getName().Upper();
 		// Want to get another hack in this stuff? Yeah, of course you do!
 		// This here hack will sort Doom II songs by their associated map.
-		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->getType()->getIcon(), "e_music"))
+		if (ename.StartsWith("D_") && S_CMPNOCASE(entry->getType()->getIcon(), "music"))
 		{
 			if		(ename == "D_RUNNIN")	ename = "D_MAP01";
 			else if (ename == "D_STALKS")	ename = "D_MAP02";
@@ -1420,6 +1476,7 @@ bool ArchivePanel::importEntry()
 	undo_manager->beginRecord("Import Entry");
 
 	// Go through the list
+	entry_list->setEntriesAutoUpdate(false);
 	for (size_t a = 0; a < selection.size(); a++)
 	{
 		// Run open file dialog
@@ -1483,6 +1540,7 @@ bool ArchivePanel::importEntry()
 				openEntry(selection[a], true);
 		}
 	}
+	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -1497,11 +1555,12 @@ bool ArchivePanel::importEntry()
  *******************************************************************/
 bool ArchivePanel::exportEntry()
 {
-	// Get a list of selected entries
+	// Get a list of selected entries & dirs
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+	vector<ArchiveTreeNode*> selected_dirs = entry_list->getSelectedDirectories();
 
 	// If we're just exporting 1 entry
-	if (selection.size() == 1)
+	if (selection.size() == 1 && selected_dirs.size() == 0)
 	{
 		string name = Misc::lumpNameToFileName(selection[0]->getName());
 		wxFileName fn(name);
@@ -1520,7 +1579,7 @@ bool ArchivePanel::exportEntry()
 		SFileDialog::fd_info_t info;
 		if (SFileDialog::saveFiles(info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*.*", this))
 		{
-			// Go through the selection
+			// Go through the selected entries
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Setup entry filename
@@ -1534,6 +1593,10 @@ bool ArchivePanel::exportEntry()
 				// Do export
 				selection[a]->exportFile(fn.GetFullPath());
 			}
+
+			// Go through selected dirs
+			for (unsigned a = 0; a < selected_dirs.size(); a++)
+				selected_dirs[a]->exportTo(info.path + "/" + selected_dirs[a]->getName());
 		}
 	}
 
@@ -1607,6 +1670,7 @@ bool ArchivePanel::pasteEntry()
 	// Go through all clipboard items
 	bool pasted = false;
 	undo_manager->beginRecord("Paste Entry");
+	entry_list->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < theClipboard->nItems(); a++)
 	{
 		// Check item type
@@ -1621,6 +1685,7 @@ bool ArchivePanel::pasteEntry()
 			pasted = true;
 	}
 	undo_manager->endRecord(true);
+	entry_list->setEntriesAutoUpdate(true);
 
 	if (pasted)
 	{
@@ -1655,8 +1720,12 @@ bool ArchivePanel::gfxConvert()
 	undo_manager->beginRecord("Gfx Format Conversion");
 
 	// Write any changes
+	entry_list->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->setEntriesAutoUpdate(true);
+
 		// Update splash window
 		theSplashWindow->setProgressMessage(selection[a]->getName());
 		theSplashWindow->setProgress((float)a / (float)selection.size());
@@ -1676,6 +1745,7 @@ bool ArchivePanel::gfxConvert()
 		EntryType::detectEntryType(selection[a]);
 		selection[a]->setExtensionByType();
 	}
+	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -1714,8 +1784,13 @@ bool ArchivePanel::gfxRemap()
 		// Apply translation to all entry images
 		SImage temp;
 		MemChunk mc;
+
+		entry_list->setEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
+			if (a == selection.size()-1)
+				entry_list->setEntriesAutoUpdate(true);
+
 			ArchiveEntry* entry = selection[a];
 			if (Misc::loadImageFromEntry(&temp, entry))
 			{
@@ -1732,6 +1807,7 @@ bool ArchivePanel::gfxRemap()
 					entry->importMemChunk(mc);
 			}
 		}
+		entry_list->setEntriesAutoUpdate(true);
 
 		// Update variables
 		((GfxEntryPanel*)gfx_area)->prevTranslation().copy(ted.getTranslation());
@@ -1766,8 +1842,12 @@ bool ArchivePanel::gfxColourise()
 		// Apply translation to all entry images
 		SImage temp;
 		MemChunk mc;
+		entry_list->setEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
+			if (a == selection.size()-1)
+				entry_list->setEntriesAutoUpdate(true);
+
 			ArchiveEntry* entry = selection[a];
 			if (Misc::loadImageFromEntry(&temp, entry))
 			{
@@ -1784,7 +1864,7 @@ bool ArchivePanel::gfxColourise()
 					entry->importMemChunk(mc);
 			}
 		}
-
+		entry_list->setEntriesAutoUpdate(true);
 		// Finish recording undo level
 		undo_manager->endRecord(true);
 	}
@@ -1817,8 +1897,12 @@ bool ArchivePanel::gfxTint()
 		// Apply translation to all entry images
 		SImage temp;
 		MemChunk mc;
+		entry_list->setEntriesAutoUpdate(false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
+			if (a == selection.size()-1)
+				entry_list->setEntriesAutoUpdate(true);
+
 			ArchiveEntry* entry = selection[a];
 			if (Misc::loadImageFromEntry(&temp, entry))
 			{
@@ -1835,6 +1919,7 @@ bool ArchivePanel::gfxTint()
 					entry->importMemChunk(mc);
 			}
 		}
+		entry_list->setEntriesAutoUpdate(true);
 
 		// Finish recording undo level
 		undo_manager->endRecord(true);
@@ -1864,6 +1949,7 @@ bool ArchivePanel::gfxModifyOffsets()
 	undo_manager->beginRecord("Gfx Modify Offsets");
 
 	// Go through selected entries
+	entry_list->setEntriesAutoUpdate(false);
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 	for (uint32_t a = 0; a < selection.size(); a++)
 	{
@@ -1871,6 +1957,7 @@ bool ArchivePanel::gfxModifyOffsets()
 		EntryOperations::modifyGfxOffsets(selection[a], &mod);
 	}
 	theActivePanel->callRefresh();
+	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2148,8 +2235,12 @@ bool ArchivePanel::wavDSndConvert()
 
 	// Go through selection
 	bool errors = false;
+	entry_list->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->setEntriesAutoUpdate(true);
+
 		// Convert WAV -> Doom Sound if the entry is WAV format
 		if (selection[a]->getType()->getFormat() == "snd_wav")
 		{
@@ -2167,6 +2258,7 @@ bool ArchivePanel::wavDSndConvert()
 			selection[a]->setExtensionByType();								// Update extension if necessary
 		}
 	}
+	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2191,8 +2283,12 @@ bool ArchivePanel::dSndWavConvert()
 
 	// Go through selection
 	bool errors = false;
+	entry_list->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->setEntriesAutoUpdate(true);
+
 		bool worked = false;
 		MemChunk wav;
 		// Convert Doom Sound -> WAV if the entry is Doom Sound format
@@ -2229,6 +2325,7 @@ bool ArchivePanel::dSndWavConvert()
 			continue;
 		}
 	}
+	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2252,20 +2349,21 @@ bool ArchivePanel::musMidiConvert()
 	undo_manager->beginRecord("Convert Mus -> Midi");
 
 	// Go through selection
+	entry_list->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->setEntriesAutoUpdate(true);
+
 		// Convert MUS -> MIDI if the entry is a MIDI-like format
-		if (selection[a]->getType()->getFormat() == "mus" ||
-			selection[a]->getType()->getFormat() == "hmi" ||
-			selection[a]->getType()->getFormat() == "hmp" ||
-			selection[a]->getType()->getFormat() == "xmi" ||
-			selection[a]->getType()->getFormat() == "gmid")
+		if (selection[a]->getType()->getFormat().StartsWith("midi_") &&
+			selection[a]->getType()->getFormat() != "midi_smf")
 		{
 			MemChunk midi;
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));	// Create undo step
-			if (selection[a]->getType()->getFormat() == "mus")
+			if (selection[a]->getType()->getFormat() == "midi_mus")
 				Conversions::musToMidi(selection[a]->getMCData(), midi);	// Convert
-			else if (selection[a]->getType()->getFormat() == "gmid")
+			else if (selection[a]->getType()->getFormat() == "midi_gmid")
 				Conversions::gmidToMidi(selection[a]->getMCData(), midi);	// Convert
 			else
 				Conversions::zmusToMidi(selection[a]->getMCData(), midi);	// Convert
@@ -2275,6 +2373,7 @@ bool ArchivePanel::musMidiConvert()
 		}
 
 	}
+	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2291,11 +2390,15 @@ bool ArchivePanel::compileACS(bool hexen)
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
 	// Go through selection
+	entry_list->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->setEntriesAutoUpdate(true);
 		// Compile ACS script
 		EntryOperations::compileACS(selection[a], hexen, NULL, theMainWindow);
 	}
+	entry_list->setEntriesAutoUpdate(true);
 
 	return true;
 }
@@ -2326,8 +2429,12 @@ bool ArchivePanel::optimizePNG()
 	undo_manager->beginRecord("Optimize PNG");
 
 	// Go through selection
+	entry_list->setEntriesAutoUpdate(false);
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
+		if (a == selection.size()-1)
+			entry_list->setEntriesAutoUpdate(true);
+
 		theSplashWindow->setProgressMessage(selection[a]->getName(true));
 		theSplashWindow->setProgress(float(a) / float(selection.size()));
 		if (selection[a]->getType()->getFormat() == "img_png")
@@ -2336,6 +2443,7 @@ bool ArchivePanel::optimizePNG()
 			EntryOperations::optimizePNG(selection[a]);
 		}
 	}
+	entry_list->setEntriesAutoUpdate(true);
 	theSplashWindow->hide();
 
 	// Finish recording undo level
@@ -2371,6 +2479,22 @@ bool ArchivePanel::convertTextures()
 
 	// Finish recording undo level
 	undo_manager->endRecord(false);
+
+	return false;
+}
+
+/* ArchivePanel::findTextureErrors
+ * Detect errors in a TEXTUREx entry
+ *******************************************************************/
+bool ArchivePanel::findTextureErrors()
+{
+	// Get selected entries
+	long index = entry_list->getSelection()[0];
+	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+
+	// Detect errors
+	if (EntryOperations::findTextureErrors(selection))
+		return true;
 
 	return false;
 }
@@ -2465,6 +2589,8 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 			new_area = switches_area;
 		else if (!entry->getType()->getEditor().Cmp("audio"))
 			new_area = audio_area;
+		else if (!entry->getType()->getEditor().Cmp("data"))
+			new_area = data_area;
 		else if (!entry->getType()->getEditor().Cmp("default"))
 			new_area = default_area;
 		else
@@ -2821,6 +2947,8 @@ bool ArchivePanel::handleAction(string id)
 		compileACS(true);
 	else if (id == "arch_texturex_convertzd")
 		convertTextures();
+	else if (id == "arch_texturex_finderrors")
+		findTextureErrors();
 	else if (id == "arch_map_opendb2")
 		mapOpenDb2();
 
@@ -3082,11 +3210,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 		}
 		if (!mus_selected)
 		{
-			if (selection[a]->getType()->getFormat() == "mus" ||
-				selection[a]->getType()->getFormat() == "hmi" ||
-				selection[a]->getType()->getFormat() == "hmp" ||
-				selection[a]->getType()->getFormat() == "xmi" ||
-				selection[a]->getType()->getFormat() == "gmid")
+			if (selection[a]->getType()->getFormat().StartsWith("midi_") &&
+				selection[a]->getType()->getFormat() != "midi_smf")
 				mus_selected = true;
 		}
 		if (!text_selected)
@@ -3174,7 +3299,10 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 
 	// Add texturex related menu items if needed
 	if (texturex_selected)
+	{
 		theApp->getAction("arch_texturex_convertzd")->addToMenu(&context, true);
+		theApp->getAction("arch_texturex_finderrors")->addToMenu(&context, true);
+	}
 
 	// 'View As' menu
 	if (context_submenus)

@@ -30,6 +30,19 @@
 
 namespace OpenGL
 {
+	struct gl_info_t
+	{
+		string	vendor;
+		string	renderer;
+		string	version;
+		string	extensions;
+
+		gl_info_t()
+		{
+			vendor = renderer = version = extensions = "OpenGL not initialised";
+		}
+	};
+
 #ifndef USE_SFML_RENDERWINDOW
 	wxGLContext*	getContext(wxGLCanvas* canvas);
 #endif
@@ -53,6 +66,7 @@ namespace OpenGL
 	void			setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, int8_t blend = BLEND_IGNORE);
 	void			setBlend(int blend);
 	void			resetBlend();
+	gl_info_t		getInfo();
 }
 
 #endif//__OPENGL_H__

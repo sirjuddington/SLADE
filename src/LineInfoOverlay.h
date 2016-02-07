@@ -10,6 +10,7 @@ class LineInfoOverlay
 private:
 	TextBox*	text_box;
 	int			last_size;
+	double      scale;
 
 	struct side_t
 	{

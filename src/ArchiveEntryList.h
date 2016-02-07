@@ -16,9 +16,6 @@ class ArchiveEntryList : public VirtualListView, public Listener, public SAction
 {
 private:
 	Archive*			archive;
-	vector<unsigned>	filter;
-	bool				filter_active;
-	string				filter_name;
 	string				filter_category;
 	ArchiveTreeNode*	current_dir;
 	ArchiveEntry*		entry_dir_back;
@@ -28,12 +25,13 @@ private:
 	int					col_name;
 	int					col_size;
 	int					col_type;
+	bool				entries_update;
 
 protected:
 	// Virtual wxListCtrl overrides
-	string	getItemText(long item, long column) const;
-	int		getItemIcon(long item, long column) const;
-	void	updateItemAttr(long item, long column) const;
+	string	getItemText(long item, long column, long index) const;
+	int		getItemIcon(long item, long column, long index) const;
+	void	updateItemAttr(long item, long column, long index) const;
 
 public:
 	ArchiveEntryList(wxWindow* parent);
@@ -57,8 +55,14 @@ public:
 	bool	goUpDir();
 	bool	setDir(ArchiveTreeNode* dir);
 
-	ArchiveEntry*				getEntry(int index) const;
-	int							getEntryIndex(int index);
+	void	setEntriesAutoUpdate(bool update) { entries_update = update; }
+
+	// Sorting
+	static bool	sortSize(long left, long right);
+	void		sortItems();
+
+	ArchiveEntry*				getEntry(int index, bool filtered = true) const;
+	int							getEntryIndex(int index, bool filtered = true);
 	ArchiveEntry*				getFocusedEntry();
 	vector<ArchiveEntry*>		getSelectedEntries();
 	ArchiveEntry*				getLastSelectedEntry();

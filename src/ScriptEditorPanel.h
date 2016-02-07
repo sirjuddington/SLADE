@@ -28,6 +28,7 @@ public:
 
 	bool	openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = NULL);
 	void	populateWordList();
+	void	saveScripts();
 
 	bool	handleAction(string name);
 

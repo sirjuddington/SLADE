@@ -20,7 +20,7 @@ protected:
 
 public:
 	BrowserItem(string name, unsigned index = 0, string type = "item");
-	~BrowserItem();
+	virtual ~BrowserItem();
 
 	string		getName() { return name; }
 	unsigned	getIndex() { return index; }

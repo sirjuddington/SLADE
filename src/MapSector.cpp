@@ -35,7 +35,13 @@
 #include "MainApp.h"
 #include "SLADEMap.h"
 #include "MathStuff.h"
+#include "GameConfiguration.h"
 #include <wx/colour.h>
+#include <cmath>
+
+
+// Number of radians in the unit circle
+const double TAU = M_PI * 2;
 
 
 /*******************************************************************
@@ -50,8 +56,10 @@ MapSector::MapSector(SLADEMap* parent) : MapObject(MOBJ_SECTOR, parent)
 	// Init variables
 	this->special = 0;
 	this->tag = 0;
+	plane_floor.set(0, 0, 1, 0);
+	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::MapSector
@@ -64,8 +72,10 @@ MapSector::MapSector(string f_tex, string c_tex, SLADEMap* parent) : MapObject(M
 	this->c_tex = c_tex;
 	this->special = 0;
 	this->tag = 0;
+	plane_floor.set(0, 0, 1, 0);
+	plane_ceiling.set(0, 0, 1, 0);
 	poly_needsupdate = true;
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::~MapSector
@@ -100,6 +110,8 @@ void MapSector::copy(MapObject* s)
 	this->light = sector->light;
 	this->special = sector->special;
 	this->tag = sector->tag;
+	plane_floor.set(0, 0, 1, sector->f_height);
+	plane_ceiling.set(0, 0, 1, sector->c_height);
 
 	// Update texture counts (increment new)
 	if (parent_map)
@@ -110,6 +122,14 @@ void MapSector::copy(MapObject* s)
 
 	// Other properties
 	MapObject::copy(s);
+}
+
+/* MapSector::setGeometryUpdated
+ * Update the last time the sector geometry changed
+ *******************************************************************/
+void MapSector::setGeometryUpdated()
+{
+	geometry_updated = theApp->runTimer();
 }
 
 /* MapSector::stringProperty
@@ -196,9 +216,9 @@ void MapSector::setIntProperty(string key, int value)
 	setModified();
 
 	if (key == "heightfloor")
-		f_height = value;
+		setFloorHeight(value);
 	else if (key == "heightceiling")
-		c_height = value;
+		setCeilingHeight(value);
 	else if (key == "lightlevel")
 		light = value;
 	else if (key == "special")
@@ -207,6 +227,20 @@ void MapSector::setIntProperty(string key, int value)
 		tag = value;
 	else
 		MapObject::setIntProperty(key, value);
+}
+
+void MapSector::setFloorHeight(short height)
+{
+	f_height = height;
+	setFloorPlane(plane_t::flat(height));
+	setModified();
+}
+
+void MapSector::setCeilingHeight(short height)
+{
+	c_height = height;
+	setCeilingPlane(plane_t::flat(height));
+	setModified();
 }
 
 /* MapLine::getPoint
@@ -247,7 +281,7 @@ void MapSector::updateBBox()
 	}
 
 	text_point.set(0, 0);
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::boundingBox
@@ -277,12 +311,12 @@ Polygon2D* MapSector::getPolygon()
 }
 
 /* MapSector::isWithin
- * Returns true if the point [x, y] is inside the sector
+ * Returns true if the point is inside the sector
  *******************************************************************/
-bool MapSector::isWithin(double x, double y)
+bool MapSector::isWithin(fpoint2_t point)
 {
 	// Check with bbox first
-	if (!boundingBox().point_within(x, y))
+	if (!boundingBox().contains(point))
 		return false;
 
 	// Find nearest line in the sector
@@ -299,7 +333,7 @@ bool MapSector::isWithin(double x, double y)
 		//	LOG_MESSAGE(3, "Warning: connected side #%i has a NULL pointer parent line!", connected_sides[a]->getIndex());
 		//	continue;
 		//}
-		dist = connected_sides[a]->getParentLine()->distanceTo(x, y);
+		dist = connected_sides[a]->getParentLine()->distanceTo(point);
 
 		// Check distance
 		if (dist < min_dist)
@@ -314,7 +348,7 @@ bool MapSector::isWithin(double x, double y)
 		return false;
 
 	// Check the side of the nearest line
-	double side = MathStuff::lineSide(x, y, nline->x1(), nline->y1(), nline->x2(), nline->y2());
+	double side = MathStuff::lineSide(point, nline->seg());
 	if (side >= 0 && nline->frontSector() == this)
 		return true;
 	else if (side < 0 && nline->backSector() == this)
@@ -324,10 +358,10 @@ bool MapSector::isWithin(double x, double y)
 }
 
 /* MapSector::distanceTo
- * Returns the minimum distance from [x, y] to the closest line in
+ * Returns the minimum distance from the point to the closest line in
  * the sector
  *******************************************************************/
-double MapSector::distanceTo(double x, double y, double maxdist)
+double MapSector::distanceTo(fpoint2_t point, double maxdist)
 {
 	// Init
 	if (maxdist < 0)
@@ -337,16 +371,16 @@ double MapSector::distanceTo(double x, double y, double maxdist)
 	if (!bbox.is_valid())
 		updateBBox();
 	double min_dist = 9999999;
-	double dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y);
+	double dist = MathStuff::distanceToLine(point, bbox.left_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.min.x, bbox.max.y, bbox.max.x, bbox.max.y);
+	dist = MathStuff::distanceToLine(point, bbox.top_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y);
+	dist = MathStuff::distanceToLine(point, bbox.right_side());
 	if (dist < min_dist) min_dist = dist;
-	dist = MathStuff::distanceToLine(x, y, bbox.max.x, bbox.min.y, bbox.min.x, bbox.min.y);
+	dist = MathStuff::distanceToLine(point, bbox.bottom_side());
 	if (dist < min_dist) min_dist = dist;
 
-	if (min_dist > maxdist && !bbox.point_within(x, y))
+	if (min_dist > maxdist && !bbox.contains(point))
 		return -1;
 
 	// Go through connected sides
@@ -357,7 +391,7 @@ double MapSector::distanceTo(double x, double y, double maxdist)
 		if (!line) continue;
 
 		// Check distance
-		dist = line->distanceTo(x, y);
+		dist = line->distanceTo(point);
 		if (dist < min_dist)
 			min_dist = dist;
 	}
@@ -513,14 +547,39 @@ void MapSector::changeLight(int amount, int where)
 	}
 }
 
-/* MapSector::getLight
+/* MapSector::getColour
  * Returns the colour of the sector at [where] - 1 = floor,
  * 2 = ceiling. If [fullbright] is true, light level is ignored
  *******************************************************************/
 rgba_t MapSector::getColour(int where, bool fullbright)
 {
+	// Check for sector colour set in open script
+	// TODO: Test if this is correct behaviour
+	if (parent_map->mapSpecials()->tagColoursSet())
+	{
+		rgba_t col;
+		if (parent_map->mapSpecials()->getTagColour(tag, &col))
+		{
+			if (fullbright)
+				return col;
+
+			// Get sector light level
+			int ll = light;
+
+			// Clamp light level
+			if (ll > 255)
+				ll = 255;
+			if (ll < 0)
+				ll = 0;
+
+			// Calculate and return the colour
+			float lightmult = (float)ll / 255.0f;
+			return col.ampf(lightmult, lightmult, lightmult, 1.0f);
+		}
+	}
+
 	// Check for UDMF+ZDoom namespace
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if ((parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom")))
 	{
 		// Get sector light colour
 		int intcol = MapObject::intProperty("lightcolor");
@@ -563,24 +622,47 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		float lightmult = (float)ll / 255.0f;
 		return rgba_t(wxcol.Blue() * lightmult, wxcol.Green() * lightmult, wxcol.Red() * lightmult, 255);
 	}
+
+	// Other format, simply return the light level
+	if (fullbright)
+		return rgba_t(255, 255, 255, 255);
 	else
 	{
-		// Other format, simply return the light level
-		if (fullbright)
-			return rgba_t(255, 255, 255, 255);
-		else
-		{
-			int l = light;
+		int l = light;
 
-			// Clamp light level
-			if (l > 255)
-				l = 255;
-			if (l < 0)
-				l = 0;
+		// Clamp light level
+		if (l > 255)
+			l = 255;
+		if (l < 0)
+			l = 0;
 
-			return rgba_t(l, l, l, 255);
-		}
+		return rgba_t(l, l, l, 255);
 	}
+}
+
+/* MapSector::getColour
+ * Returns the fog colour of the sector
+ *******************************************************************/
+rgba_t MapSector::getFogColour()
+{
+	rgba_t color(0, 0, 0, 0);
+
+	// map specials/scripts
+	if (parent_map->mapSpecials()->tagFadeColoursSet())
+	{
+		if (parent_map->mapSpecials()->getTagFadeColour(tag, &color))
+			return color;
+	}
+
+	// udmf
+	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	{
+		int intcol = MapObject::intProperty("fadecolor");
+
+		wxColour wxcol(intcol);
+		color = rgba_t(wxcol.Blue(), wxcol.Green(), wxcol.Red(), 0);
+	}
+	return color;
 }
 
 /* MapSector::connectSide
@@ -593,7 +675,7 @@ void MapSector::connectSide(MapSide* side)
 	poly_needsupdate = true;
 	bbox.reset();
 	setModified();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::disconnectSide
@@ -613,7 +695,7 @@ void MapSector::disconnectSide(MapSide* side)
 	setModified();
 	poly_needsupdate = true;
 	bbox.reset();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }
 
 /* MapSector::writeBackup
@@ -654,5 +736,5 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	// Update geometry info
 	poly_needsupdate = true;
 	bbox.reset();
-	geometry_updated = theApp->runTimer();
+	setGeometryUpdated();
 }

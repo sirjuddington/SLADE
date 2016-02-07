@@ -14,7 +14,7 @@ public:
 	enum
 	{
 	    // Common flags
-	    TRANS	= 2,
+	    TRANSADD	= 2,
 
 	    // Quad/flat flags
 	    SKY		= 4,
@@ -42,6 +42,7 @@ public:
 	{
 		gl_vertex_t	points[4];
 		rgba_t		colour;
+		rgba_t		fogcolour;
 		uint8_t		light;
 		GLTexture*	texture;
 		uint8_t		flags;
@@ -88,6 +89,7 @@ public:
 		uint8_t		flags;
 		uint8_t		light;
 		rgba_t		colour;
+		rgba_t		fogcolour;
 		GLTexture*	texture;
 		plane_t		plane;
 		float		alpha;
@@ -141,6 +143,7 @@ public:
 	// -- Rendering --
 	void	setupView(int width, int height);
 	void	setLight(rgba_t& colour, uint8_t light, float alpha = 1.0f);
+	void	setFog(rgba_t &fogcol, uint8_t light);
 	void	renderMap();
 	void	renderSkySlice(float top, float bottom, float atop, float abottom, float size, float tx = 0.125f, float ty = 2.0f);
 	void	renderSky();
@@ -154,10 +157,12 @@ public:
 
 	// Walls
 	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom);
-	void	setupQuadTexCoords(quad_3d_t* quad, int length, double left, double top, bool pegbottom = false, double sx = 1, double sy = 1);
+	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, plane_t top, plane_t bottom);
+	void	setupQuadTexCoords(quad_3d_t* quad, int length, double o_left, double o_top, double h_top, double h_bottom, bool pegbottom = false, double sx = 1, double sy = 1);
 	void	updateLine(unsigned index);
 	void	renderQuad(quad_3d_t* quad, float alpha = 1.0f);
 	void	renderWalls();
+	void	renderTransparentWalls();
 	void	renderWallSelection(vector<selection_3d_t>& selection, float alpha = 1.0f);
 
 	// Things
@@ -187,13 +192,14 @@ private:
 	bool		udmf_zdoom;
 	bool		fullbright;
 	bool		fog;
-	int			last_light;
 	GLTexture*	tex_last;
 	unsigned	n_quads;
 	unsigned	n_flats;
 	int			flat_last;
 	bool		render_hilight;
 	bool		render_selection;
+	rgba_t		fog_colour_last;
+	float		fog_depth_last;
 
 	// Visibility
 	vector<float>	dist_sectors;
@@ -211,6 +217,7 @@ private:
 	// Map Structures
 	vector<line_3d_t>	lines;
 	quad_3d_t**			quads;
+	vector<quad_3d_t*>	quads_transparent;
 	vector<thing_3d_t>	things;
 	vector<flat_3d_t>	floors;
 	vector<flat_3d_t>	ceilings;

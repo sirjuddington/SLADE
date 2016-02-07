@@ -52,7 +52,7 @@ SwitchesEntryPanel::SwitchesEntryPanel(wxWindow* parent)
 
 	// Setup toolbar
 	SToolBarGroup* group = new SToolBarGroup(toolbar, "Switches");
-	group->addActionButton("new_switch", "New Switch", "t_switch_new", "Create a new switch definition", true);
+	group->addActionButton("new_switch", "New Switch", "switch_new", "Create a new switch definition", true);
 	toolbar->addGroup(group);
 
 	// Setup panel sizer

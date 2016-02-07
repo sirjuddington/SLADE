@@ -86,19 +86,19 @@ GraphicsPrefsPanel::GraphicsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent
 	hbox->Add(new wxStaticText(this, -1, "Presets:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 	hbox->Add(choice_presets, 1, wxEXPAND);
 
-	sizer->Add(vbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(vbox, 0, wxEXPAND|wxALL, 4);
 
 	// 'Show outline around gfx'
 	cb_show_border = new wxCheckBox(this, -1, "Show outline around graphics and textures");
-	sizer->Add(cb_show_border, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_show_border, 0, wxEXPAND|wxALL, 4);
 
 	// 'Hilight gfx on mouseover'
 	cb_hilight_mouseover = new wxCheckBox(this, -1, "Hilight graphics on mouse hover");
-	sizer->Add(cb_hilight_mouseover, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_hilight_mouseover, 0, wxEXPAND|wxALL, 4);
 
 	// 'Extra image conversion options'
 	cb_extra_gfxconv = new wxCheckBox(this, -1, "Offer additional conversion options");
-	sizer->Add(cb_extra_gfxconv, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
+	sizer->Add(cb_extra_gfxconv, 0, wxEXPAND|wxALL, 4);
 
 	// Browser background type
 	hbox = new wxBoxSizer(wxHORIZONTAL);

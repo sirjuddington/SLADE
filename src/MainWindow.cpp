@@ -46,6 +46,7 @@
 #include "ArchivePanel.h"
 #include "Misc.h"
 #include "STabCtrl.h"
+#include "TextureXEditor.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
@@ -193,7 +194,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Editor Area --
-	stc_tabs = new STabCtrl(this, true, true, 30);
+	stc_tabs = new STabCtrl(this, true, true, 27, true);
 
 	// Setup panel info & add panel
 	p_inf.CenterPane();
@@ -203,7 +204,7 @@ void MainWindow::setupLayout()
 
 	// Create Start Page
 #ifdef USE_WEBVIEW_STARTPAGE
-	html_startpage = wxWebView::New(stc_tabs, -1, wxEmptyString);
+	html_startpage = wxWebView::New(stc_tabs, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxWebViewBackendDefault, wxBORDER_NONE);
 	html_startpage->SetName("startpage");
 #ifdef __WXMAC__
 	html_startpage->SetZoomType(wxWEBVIEW_ZOOM_TYPE_TEXT);
@@ -213,7 +214,7 @@ void MainWindow::setupLayout()
 	if (show_start_page)
 	{
 		stc_tabs->AddPage(html_startpage,"Start Page");
-		stc_tabs->SetPageBitmap(0, getIcon("i_logo"));
+		stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "logo"));
 		createStartPage();
 	}
 	else
@@ -224,7 +225,7 @@ void MainWindow::setupLayout()
 	if (show_start_page)
 	{
 		stc_tabs->AddPage(html_startpage, "Start Page");
-		stc_tabs->SetPageBitmap(0, getIcon("i_logo"));
+		stc_tabs->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "logo"));
 		createStartPage();
 	}
 	else
@@ -277,6 +278,7 @@ void MainWindow::setupLayout()
 
 	// -- Menu bar --
 	wxMenuBar* menu = new wxMenuBar();
+	menu->SetThemeEnabled(false);
 
 	// File menu
 	wxMenu* fileNewMenu = new wxMenu("");
@@ -330,7 +332,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Toolbars --
-	toolbar = new SToolBar(this);
+	toolbar = new SToolBar(this, true);
 
 	// Create File toolbar
 	SToolBarGroup* tbg_file = new SToolBarGroup(toolbar, "_File");
@@ -369,7 +371,7 @@ void MainWindow::setupLayout()
 	SToolBarGroup* tbg_bra = new SToolBarGroup(toolbar, "_Base Resource", true);
 	BaseResourceChooser* brc = new BaseResourceChooser(tbg_bra);
 	tbg_bra->addCustomControl(brc);
-	tbg_bra->addActionButton("main_setbra", "t_settings");
+	tbg_bra->addActionButton("main_setbra", "settings");
 	toolbar->addGroup(tbg_bra);
 
 	// Create Palette Chooser toolbar
@@ -409,6 +411,9 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
+
+	// Initial focus to toolbar
+	toolbar->SetFocus();
 }
 
 #ifdef USE_WEBVIEW_STARTPAGE
@@ -429,10 +434,6 @@ void MainWindow::createStartPage(bool newtip)
 	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
 	export_entries.push_back(res_archive->entryAtPath("logo.png"));
 	export_entries.push_back(res_archive->entryAtPath("html/box-title-back.png"));
-	export_entries.push_back(res_archive->entryAtPath("icons/e_archive.png"));
-	export_entries.push_back(res_archive->entryAtPath("icons/e_wad.png"));
-	export_entries.push_back(res_archive->entryAtPath("icons/e_zip.png"));
-	export_entries.push_back(res_archive->entryAtPath("icons/e_folder.png"));
 
 	// Can't do anything without html entry
 	if (!entry_html)
@@ -486,13 +487,13 @@ void MainWindow::createStartPage(bool newtip)
 
 			// Determine icon
 			string fn = theArchiveManager->recentFile(a);
-			string icon = "e_archive";
+			string icon = "archive";
 			if (fn.EndsWith(".wad"))
-				icon = "e_wad";
+				icon = "wad";
 			else if (fn.EndsWith(".zip") || fn.EndsWith(".pk3") || fn.EndsWith(".pke"))
-				icon = "e_zip";
+				icon = "zip";
 			else if (wxDirExists(fn))
-				icon = "e_folder";
+				icon = "folder";
 
 			// Add recent file link
 			recent += S_FMT("<img src=\"%s.png\"></td><td valign=\"top\" class=\"box\">", icon);
@@ -510,6 +511,10 @@ void MainWindow::createStartPage(bool newtip)
 	// Write html and images to temp folder
 	for (unsigned a = 0; a < export_entries.size(); a++)
 		export_entries[a]->exportFile(appPath(export_entries[a]->getName(), DIR_TEMP));
+	Icons::exportIconPNG(Icons::ENTRY, "archive", appPath("archive.png", DIR_TEMP));
+	Icons::exportIconPNG(Icons::ENTRY, "wad", appPath("wad.png", DIR_TEMP));
+	Icons::exportIconPNG(Icons::ENTRY, "zip", appPath("zip.png", DIR_TEMP));
+	Icons::exportIconPNG(Icons::ENTRY, "folder", appPath("folder.png", DIR_TEMP));
 	string html_file = appPath("startpage.htm", DIR_TEMP);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
@@ -526,10 +531,6 @@ void MainWindow::createStartPage(bool newtip)
 #ifdef __WXMSW__
 	html_startpage->Reload();
 #endif
-
-	// Clean up
-	//wxRemoveFile(html_file);
-	//wxRemoveFile(appPath("logo.png", DIR_TEMP));
 }
 
 #else
@@ -750,7 +751,7 @@ void MainWindow::openDocs(string page_name)
 
 		// Add tab
 		stc_tabs->AddPage(docs_page, "Documentation", true, -1);
-		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, getIcon("t_wiki"));
+		stc_tabs->SetPageBitmap(stc_tabs->GetPageCount() - 1, Icons::getIcon(Icons::GENERAL, "wiki"));
 	}
 
 	// Load specified page, if any
@@ -1104,9 +1105,6 @@ void MainWindow::onActivate(wxActivateEvent& e)
 		SetStatusText("", 1);
 		SetStatusText("", 2);
 	}
-
-	// Check open directory archives for changes on the file system
-	panel_archivemanager->checkDirArchives();
 
 	e.Skip();
 }

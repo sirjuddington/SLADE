@@ -35,6 +35,7 @@ public:
 	~CTextureCanvas();
 
 	CTexture*	getTexture() { return texture; }
+	int			getViewType() { return view_type; }
 	void		setScale(double scale) { this->scale = scale; }
 	void		setViewType(int type) { this->view_type = type; }
 	void		drawOutside(bool draw = true) { draw_outside = draw; }
@@ -65,6 +66,7 @@ public:
 	void	redraw(bool update_tex = false);
 
 	point2_t	screenToTexPosition(int x, int y);
+	point2_t	texToScreenPosition(int x, int y);
 	int			patchAt(int x, int y);
 
 	bool	swapPatches(size_t p1, size_t p2);

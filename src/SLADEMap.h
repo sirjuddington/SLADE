@@ -9,6 +9,7 @@
 #include "MapThing.h"
 #include "Archive.h"
 #include "PropertyList.h"
+#include "MapSpecials.h"
 
 struct mobj_holder_t
 {
@@ -53,6 +54,9 @@ private:
 	string				name;
 	int					current_format;
 	long				opened_time;
+	MapSpecials			map_specials;
+	int					bulk_op_level;
+	bool				specials_expired;
 
 	// UDMF Extras
 	vector<ArchiveEntry*>	udmf_extra_entries;
@@ -178,6 +182,9 @@ public:
 	bool	readMap(Archive::mapdesc_t map);
 	void	clearMap();
 
+	MapSpecials*	mapSpecials() { return &map_specials; }
+	void			recomputeSpecials();
+
 	// Map loading
 	bool	readDoomMap(Archive::mapdesc_t map);
 	bool	readHexenMap(Archive::mapdesc_t map);
@@ -191,8 +198,8 @@ public:
 	bool	writeUDMFMap(ArchiveEntry* textmap);
 
 	// Item removal
-	bool	removeVertex(MapVertex* vertex);
-	bool	removeVertex(unsigned index);
+	bool	removeVertex(MapVertex* vertex, bool merge_lines = false);
+	bool	removeVertex(unsigned index, bool merge_lines = false);
 	bool	removeLine(MapLine* line);
 	bool	removeLine(unsigned index);
 	bool	removeSide(MapSide* side, bool remove_from_line = true);
@@ -203,11 +210,11 @@ public:
 	bool	removeThing(unsigned index);
 
 	// Geometry
-	int					nearestVertex(double x, double y, double min = 64);
-	int					nearestLine(double x, double y, double min = 64);
-	int					nearestThing(double x, double y, double min = 64);
-	vector<int>			nearestThingMulti(double x, double y);
-	int					sectorAt(double x, double y);
+	int					nearestVertex(fpoint2_t point, double min = 64);
+	int					nearestLine(fpoint2_t point, double min = 64);
+	int					nearestThing(fpoint2_t point, double min = 64);
+	vector<int>			nearestThingMulti(fpoint2_t point);
+	int					sectorAt(fpoint2_t point);
 	bbox_t				getMapBBox();
 	MapVertex*			vertexAt(double x, double y);
 	vector<fpoint2_t>	cutLines(double x1, double y1, double x2, double y2);
@@ -216,6 +223,7 @@ public:
 	bool				linesIntersect(MapLine* line1, MapLine* line2, double& x, double& y);
 	void				findSectorTextPoint(MapSector* sector);
 	void				initSectorPolygons();
+	MapLine*			lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y);
 
 	// Tags/Ids
 	MapThing* getFirstThingWithId(int id);
@@ -253,7 +261,7 @@ public:
 	void		moveVertex(unsigned vertex, double nx, double ny);
 	void		mergeVertices(unsigned vertex1, unsigned vertex2);
 	MapVertex*	mergeVerticesPoint(double x, double y);
-	void		splitLine(MapLine* line, MapVertex* vertex);
+	MapLine*	splitLine(MapLine* line, MapVertex* vertex);
 	void		moveThing(unsigned thing, double nx, double ny);
 	void		splitLinesAt(MapVertex* vertex, double split_dist = 0);
 	bool		setLineSector(unsigned line, unsigned sector, bool front = true);

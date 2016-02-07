@@ -19,6 +19,7 @@ private:
 	wxStaticText*	label_thing_dist;
 	wxCheckBox*		cb_show_distance;
 	wxCheckBox*		cb_invert_y;
+	wxCheckBox*		cb_shade_orthogonal;
 
 public:
 	Map3DPrefsPanel(wxWindow* parent);

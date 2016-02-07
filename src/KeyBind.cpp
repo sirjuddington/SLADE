@@ -352,10 +352,11 @@ bool KeyBind::keyPressed(keypress_t key)
 		return false;
 
 	// Go through all keybinds
+	// (use sorted list for priority system)
 	bool pressed = false;
-	for (unsigned k = 0; k < keybinds.size(); k++)
+	for (unsigned k = 0; k < keybinds_sorted.size(); k++)
 	{
-		KeyBind& kb = keybinds[k];
+		KeyBind& kb = keybinds_sorted[k];
 
 		// Go through all keys bound to this keybind
 		for (unsigned a = 0; a < kb.keys.size(); a++)
@@ -656,6 +657,7 @@ void KeyBind::initBinds()
 	addBind("me3d_yoff_up", keypress_t("num_up"), "Y offset up 1", group);
 	addBind("me3d_yoff_down8", keypress_t("num_2"), "Y offset down 8", group);
 	addBind("me3d_yoff_down", keypress_t("num_down"), "Y offset down 1", group);
+	addBind("me3d_wall_reset", keypress_t("R"), "Reset offsets and scaling", group);
 #ifdef __WXGTK__
 	addBind("me3d_xoff_up", keypress_t("num_left", KPM_SHIFT));
 	addBind("me3d_xoff_down", keypress_t("num_right", KPM_SHIFT));
@@ -678,7 +680,6 @@ void KeyBind::initBinds()
 	group = "Map Editor 3D Mode Walls";
 	addBind("me3d_wall_toggle_link_ofs", keypress_t("O", KPM_CTRL), "Toggle linked wall offsets", group);
 	addBind("me3d_wall_autoalign_x", keypress_t("A", KPM_CTRL), "Auto-align textures on X", group);
-	addBind("me3d_wall_reset", keypress_t("R"), "Reset wall (offsets and scaling)", group);
 	addBind("me3d_wall_unpeg_lower", keypress_t("L"), "Toggle lower unpegged", group);
 	addBind("me3d_wall_unpeg_upper", keypress_t("U"), "Toggle upper unpegged", group);
 
@@ -772,7 +773,7 @@ bool KeyBind::readBinds(Tokenizer& tz)
 {
 	// Parse until ending }
 	string name = tz.getToken();
-	while (name != "}" && !name.IsEmpty())
+	while (name != "}" && !tz.atEnd())
 	{
 		// Clear any current binds for the key
 		getBind(name).keys.clear();
@@ -815,6 +816,17 @@ bool KeyBind::readBinds(Tokenizer& tz)
 	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
 
 	return true;
+}
+
+/* KeyBind::updateSortedBindsList
+ * Updates the sorted keybinds list
+ *******************************************************************/
+void KeyBind::updateSortedBindsList()
+{
+	// Create sorted list
+	keybinds_sorted.clear();
+	keybinds_sorted = keybinds;
+	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
 }
 
 

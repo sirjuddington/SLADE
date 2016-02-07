@@ -63,7 +63,7 @@
 #define MUS_CTRLCHANGE	((uint8_t)0x40)
 #define MUS_SCOREEND	((uint8_t)0x60)
 
-typedef struct
+struct MUSHeader
 {
 	uint32_t Magic;
 	uint16_t SongLen;
@@ -73,6 +73,6 @@ typedef struct
 	uint16_t NumInstruments;
 	uint16_t Pad;
 	// uint16_t UsedInstruments[NumInstruments];
-} MUSHeader;
+};
 
 #endif //__MUS2MIDI_H__

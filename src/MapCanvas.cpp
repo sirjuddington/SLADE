@@ -86,6 +86,7 @@ CVAR(Int, map_crosshair, 0, CVAR_SAVE)
 CVAR(Bool, map_show_selection_numbers, true, CVAR_SAVE)
 CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
 CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
+CVAR(Int, grid_64_style, 1, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -510,8 +511,8 @@ void MapCanvas::viewMatchSpot(double mx, double my, double sx, double sy)
 void MapCanvas::set3dCameraThing(MapThing* thing)
 {
 	// Determine position
-	fpoint3_t pos(thing->xPos(), thing->yPos(), 40);
-	int sector = editor->getMap().sectorAt(pos.x, pos.y);
+	fpoint3_t pos(thing->point(), 40);
+	int sector = editor->getMap().sectorAt(thing->point());
 	if (sector >= 0)
 		pos.z += editor->getMap().getSector(sector)->getFloorHeight();
 
@@ -576,9 +577,17 @@ void MapCanvas::drawGrid()
 		}
 	}
 
+	// Disable dashed lines if 64 grid is set to crosses
+	if (grid_64_style > 1)
+		glDisable(GL_LINE_STIPPLE);
+
 	// Draw 64 grid if it's not too small and we're not on a larger grid size
-	if (64 > grid_hidelevel && gridsize < 64)
+	if (64 > grid_hidelevel && gridsize < 64 && grid_64_style > 0)
 	{
+		int cross_size = 8;
+		if (gridsize < cross_size)
+			cross_size = gridsize;
+
 		OpenGL::setColour(ColourConfiguration::getColour("map_64grid"));
 
 		// Vertical
@@ -586,8 +595,25 @@ void MapCanvas::drawGrid()
 		for (int x = start_x-ofs; x <= end_x; x += 64)
 		{
 			glBegin(GL_LINES);
-			glVertex2d(x, start_y);
-			glVertex2d(x, end_y);
+
+			if (grid_64_style > 1)
+			{
+				// Cross style
+				int y = start_y - (start_y % 64);
+				while (y < end_y)
+				{
+					glVertex2d(x, y - cross_size);
+					glVertex2d(x, y + cross_size);
+					y += 64;
+				}
+			}
+			else
+			{
+				// Full style
+				glVertex2d(x, start_y);
+				glVertex2d(x, end_y);
+			}
+
 			glEnd();
 		}
 
@@ -596,8 +622,25 @@ void MapCanvas::drawGrid()
 		for (int y = start_y-ofs; y <= end_y; y += 64)
 		{
 			glBegin(GL_LINES);
-			glVertex2d(start_x, y);
-			glVertex2d(end_x, y);
+
+			if (grid_64_style > 1)
+			{
+				// Cross style
+				int x = start_x - (start_x % 64);
+				while (x < end_x)
+				{
+					glVertex2d(x - cross_size, y);
+					glVertex2d(x + cross_size, y);
+					x += 64;
+				}
+			}
+			else
+			{
+				// Full style
+				glVertex2d(start_x, y);
+				glVertex2d(end_x, y);
+			}
+
 			glEnd();
 		}
 	}
@@ -865,7 +908,7 @@ void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
 	fpoint2_t tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1.x, p1.y, p2.x, p2.y)));
+	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
 	double hh = Drawing::textExtents(length).y * 0.5;
 
 	// Draw text
@@ -887,7 +930,7 @@ void MapCanvas::drawLineDrawLines()
 	if (modifiers_current & wxMOD_SHIFT)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
-		int vertex = editor->getMap().nearestVertex(end.x, end.y);
+		int vertex = editor->getMap().nearestVertex(end);
 		if (vertex >= 0)
 		{
 			end.x = editor->getMap().getVertex(vertex)->xPos();
@@ -975,9 +1018,7 @@ void MapCanvas::drawPasteLines()
 	OpenGL::setColour(col);
 
 	// Draw
-	fpoint2_t pos = mouse_pos_m;
-	pos.x = editor->snapToGrid(pos.x);
-	pos.y = editor->snapToGrid(pos.y);
+	fpoint2_t pos = editor->relativeSnapToGrid(c->getMidpoint(), mouse_pos_m);
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -1088,7 +1129,7 @@ void MapCanvas::drawObjectEdit()
 	if (group->getNearestLine(mouse_pos_m, 128 / view_scale, nl_v1, nl_v2))
 	{
 		fpoint2_t mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
-		int length = MathStuff::distance(nl_v1.x, nl_v1.y, nl_v2.x, nl_v2.y);
+		int length = MathStuff::distance(nl_v1, nl_v2);
 		int x = screenX(mid.x);
 		int y = screenY(mid.y) - 8;
 		setOverlayCoords(true);
@@ -1317,8 +1358,9 @@ void MapCanvas::drawMap2d()
 				if (item->getType() == CLIPBOARD_MAP_THINGS)
 				{
 					vector<MapThing*> things;
-					((MapThingsClipboardItem*)item)->getThings(things);
-					fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
+					MapThingsClipboardItem* p = (MapThingsClipboardItem*)item;
+					p->getThings(things);
+					fpoint2_t pos(editor->relativeSnapToGrid(p->getMidpoint(), mouse_pos_m));
 					renderer_2d->renderPasteThings(things, pos);
 				}
 			}
@@ -2579,7 +2621,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 		type = "Thing";
 
 	// Begin recording undo level
-	editor->undoManager()->beginRecord(S_FMT("Property Edit (%s)", type));
+	editor->beginUndoRecord(S_FMT("Property Edit (%s)", type));
 	for (unsigned a = 0; a < list.size(); a++)
 		editor->recordPropertyChangeUndoStep(list[a]);
 
@@ -2587,7 +2629,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	if (list.size() == 1)
 		type += S_FMT(" #%d", list[0]->getIndex());
 	else if (list.size() > 1)
-		selsize = S_FMT("(%d selected)", list.size());
+		selsize = S_FMT("(%lu selected)", list.size());
 
 	// Create dialog for properties panel
 	SDialog dlg(theMapEditor, S_FMT("%s Properties %s", type, selsize), S_FMT("mobjprops_%d", editor->editMode()), -1, -1);
@@ -2626,7 +2668,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	}
 
 	// End undo level
-	editor->undoManager()->endRecord(true);
+	editor->endUndoRecord(true);
 
 	// Clear property grid to avoid crash (wxPropertyGrid is at fault there)
 	//if (panel_props)
@@ -2886,8 +2928,7 @@ void MapCanvas::keyBinds2d(string name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state = MSTATE_NORMAL;
-			fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
-			editor->paste(pos);
+			editor->paste(mouse_pos_m);
 		}
 
 		// Cancel paste
@@ -3560,11 +3601,9 @@ bool MapCanvas::handleAction(string id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		fpoint3_t pos;
-		pos.x = mouse_pos_m.x;
-		pos.y = mouse_pos_m.y;
+		fpoint3_t pos(mouse_pos_m);
 		SLADEMap& map = editor->getMap();
-		MapSector* sector = map.getSector(map.sectorAt(pos.x, pos.y));
+		MapSector* sector = map.getSector(map.sectorAt(mouse_pos_m));
 		if (sector)
 			pos.z = sector->getFloorHeight() + 40;
 		renderer_3d->cameraSetPosition(pos);
@@ -3804,12 +3843,12 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
-			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			int nearest = editor->getMap().nearestLine(mouse_pos_m, 999999);
 			MapLine* line = editor->getMap().getLine(nearest);
 			if (line)
 			{
 				// Determine line side
-				double side = MathStuff::lineSide(mouse_pos_m.x, mouse_pos_m.y, line->x1(), line->y1(), line->x2(), line->y2());
+				double side = MathStuff::lineSide(mouse_pos_m, line->seg());
 				if (side >= 0)
 					sbuilder.traceSector(&(editor->getMap()), line, true);
 				else
@@ -3819,7 +3858,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F5)
 		{
 			// Get nearest line
-			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			int nearest = editor->getMap().nearestLine(mouse_pos_m, 999999);
 			MapLine* line = editor->getMap().getLine(nearest);
 
 			// Get sectors
@@ -3965,8 +4004,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		// Paste state, accept paste
 		else if (mouse_state == MSTATE_PASTE)
 		{
-			fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
-			editor->paste(pos);
+			editor->paste(mouse_pos_m);
 			if (!e.ShiftDown())
 				mouse_state = MSTATE_NORMAL;
 		}

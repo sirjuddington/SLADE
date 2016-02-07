@@ -98,7 +98,7 @@ int BrowserCanvas::getViewedIndex()
 	int viewed_item_id = (viewed_row + 0.5) * num_cols;
 	if (viewed_item_id < 0)
 		viewed_item_id = 0;
-	else if (viewed_item_id >= items_filter.size())
+	else if ((unsigned)viewed_item_id >= items_filter.size())
 		viewed_item_id = items_filter.size() - 1;
 
 	return items_filter[viewed_item_id];

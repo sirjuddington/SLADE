@@ -1161,6 +1161,46 @@ bool EntryOperations::convertTextures(vector<ArchiveEntry*> entries)
 		return false;
 }
 
+/* EntryOperations::findTextureErrors
+ * Detect errors in a TEXTUREx entry
+ *******************************************************************/
+bool EntryOperations::findTextureErrors(vector<ArchiveEntry*> entries)
+{
+	// Check any entries were given
+	if (entries.size() == 0)
+		return false;
+
+	// Get parent archive of entries
+	Archive* parent = entries[0]->getParent();
+
+	// Can't do anything if entry isn't in an archive
+	if (!parent)
+		return false;
+
+	// Find patch table in parent archive
+	Archive::search_options_t opt;
+	opt.match_type = EntryType::getType("pnames");
+	ArchiveEntry* pnames = parent->findLast(opt);
+
+	// Check it exists
+	if (!pnames)
+		return false;
+
+	// Load patch table
+	PatchTable ptable;
+	ptable.loadPNAMES(pnames);
+
+	// Read all texture entries to a single list
+	TextureXList tx;
+	for (unsigned a = 0; a < entries.size(); a++)
+		tx.readTEXTUREXData(entries[a], ptable, true);
+
+	// Detect errors
+	tx.findErrors();
+
+	return true;
+}
+
 /* EntryOperations::compileACS
  * Attempts to compile [entry] as an ACS script. If the entry is
  * named SCRIPTS, the compiled data is imported to the BEHAVIOR
@@ -1231,17 +1271,36 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	// Execute acc
 	string command = path_acc + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
+	wxArrayString errout;
 	theApp->SetTopWindow(parent);
-	wxExecute(command, output, wxEXEC_SYNC);
+	wxExecute(command, output, errout, wxEXEC_SYNC);
 	theApp->SetTopWindow(theMainWindow);
 
 	// Log output
-	theConsole->logMessage("ACC.exe Output:");
+	theConsole->logMessage("ACS compiler output:");
 	string output_log;
-	for (unsigned a = 0; a < output.size(); a++)
+	if (!output.IsEmpty())
 	{
-		theConsole->logMessage(output[a]);
-		output_log += output[a];
+		const char *title1 = "=== Log: ===\n";
+		theConsole->logMessage(title1);
+		output_log += title1;
+		for (unsigned a = 0; a < output.size(); a++)
+		{
+			theConsole->logMessage(output[a]);
+			output_log += output[a];
+		}
+	}
+
+	if (!errout.IsEmpty())
+	{
+		const char *title2 = "\n=== Error log: ===\n";
+		theConsole->logMessage(title2);
+		output_log += title2;
+		for (unsigned a = 0; a < errout.size(); a++)
+		{
+			theConsole->logMessage(errout[a]);
+			output_log += errout[a];
+		}
 	}
 
 	// Delete source file

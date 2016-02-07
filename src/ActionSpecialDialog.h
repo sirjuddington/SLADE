@@ -94,6 +94,7 @@ public:
 	void	onRadioButtonChanged(wxCommandEvent& e);
 	void	onSpecialSelectionChanged(wxDataViewEvent& e);
 	void	onSpecialTextChanged(wxCommandEvent& e);
+	void	onSpecialItemActivated(wxDataViewEvent& e);
 };
 
 class STabCtrl;

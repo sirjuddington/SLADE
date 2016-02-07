@@ -224,32 +224,32 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	framesizer->Add(gb_sizer, 0, wxEXPAND|wxTOP|wxRIGHT|wxBOTTOM, 4);
 
 	// 'Add' button
-	btn_patch_add = new wxBitmapButton(panel, -1, getIcon("t_patch_add"));
+	btn_patch_add = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_add"));
 	btn_patch_add->SetToolTip("Add new patch to texture");
 	gb_sizer->Add(btn_patch_add, wxGBPosition(0, 0));
 
 	// 'Remove' button
-	btn_patch_remove = new wxBitmapButton(panel, -1, getIcon("t_patch_remove"));
+	btn_patch_remove = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_remove"));
 	btn_patch_remove->SetToolTip("Remove selected patch(es) from texture");
 	gb_sizer->Add(btn_patch_remove, wxGBPosition(0, 1));
 
 	// 'Back' button
-	btn_patch_back = new wxBitmapButton(panel, -1, getIcon("t_patch_back"));
+	btn_patch_back = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_back"));
 	btn_patch_back->SetToolTip("Send selected patch(es) back");
 	gb_sizer->Add(btn_patch_back, wxGBPosition(1, 0));
 
 	// 'Forward' button
-	btn_patch_forward = new wxBitmapButton(panel, -1, getIcon("t_patch_forward"));
+	btn_patch_forward = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_forward"));
 	btn_patch_forward->SetToolTip("Bring selected patch(es) forward");
 	gb_sizer->Add(btn_patch_forward, wxGBPosition(1, 1));
 
 	// 'Replace' button
-	btn_patch_replace = new wxBitmapButton(panel, -1, getIcon("t_patch_replace"));
+	btn_patch_replace = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_replace"));
 	btn_patch_replace->SetToolTip("Replace selected patch(es)");
 	gb_sizer->Add(btn_patch_replace, wxGBPosition(2, 0));
 
 	// 'Duplicate' button
-	btn_patch_duplicate = new wxBitmapButton(panel, -1, getIcon("t_patch_duplicate"));
+	btn_patch_duplicate = new wxBitmapButton(panel, -1, Icons::getIcon(Icons::GENERAL, "patch_duplicate"));
 	btn_patch_duplicate->SetToolTip("Duplicate selected patch(es)");
 	gb_sizer->Add(btn_patch_duplicate, wxGBPosition(2, 1));
 

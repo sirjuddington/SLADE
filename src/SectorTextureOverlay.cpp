@@ -124,12 +124,12 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 	string ftex2, ctex2;
 	if (tex_floor.size() > 1)
 	{
-		ftex = S_FMT("Multiple (%d)", tex_floor.size());
+		ftex = S_FMT("Multiple (%lu)", tex_floor.size());
 		ftex2 = tex_floor[1];
 	}
 	if (tex_ceil.size() > 1)
 	{
-		ctex = S_FMT("Multiple (%d)", tex_ceil.size());
+		ctex = S_FMT("Multiple (%lu)", tex_ceil.size());
 		ctex2 = tex_ceil[1];
 	}
 

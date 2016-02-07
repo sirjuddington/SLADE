@@ -42,6 +42,11 @@
 #include <wx/statline.h>
 #include <wx/filename.h>
 
+#ifdef __WXOSX_MAC__
+#include <CoreFoundation/CoreFoundation.h>
+#include <wx/stdpaths.h>
+#endif // __WXOSX_MAC__
+
 
 /*******************************************************************
  * VARIABLES
@@ -130,9 +135,9 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	gb_sizer->Add(new wxStaticText(this, -1, "Game Executable:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_game_exes = new wxChoice(this, -1);
 	gb_sizer->Add(choice_game_exes, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
-	btn_add_game = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add_game = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	gb_sizer->Add(btn_add_game, wxGBPosition(0, 3));
-	btn_remove_game = new wxBitmapButton(this, -1, getIcon("t_minus"));
+	btn_remove_game = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "minus"));
 	gb_sizer->Add(btn_remove_game, wxGBPosition(0, 4));
 
 	// Executable path
@@ -140,7 +145,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	text_exe_path = new wxTextCtrl(this, -1, "");
 	text_exe_path->Enable(false);
 	gb_sizer->Add(text_exe_path, wxGBPosition(1, 1), wxGBSpan(1, 3), wxEXPAND);
-	btn_browse_exe = new wxBitmapButton(this, -1, getIcon("t_open"));
+	btn_browse_exe = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "open"));
 	btn_browse_exe->SetToolTip("Browse...");
 	gb_sizer->Add(btn_browse_exe, wxGBPosition(1, 4));
 
@@ -148,12 +153,12 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	gb_sizer->Add(new wxStaticText(this, -1, "Run Configuration:"), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	choice_config = new wxChoice(this, -1);
 	gb_sizer->Add(choice_config, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
-	btn_edit_config = new wxBitmapButton(this, -1, getIcon("t_settings"));
+	btn_edit_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "settings"));
 	btn_edit_config->SetToolTip("Edit command line");
 	gb_sizer->Add(btn_edit_config, wxGBPosition(2, 2));
-	btn_add_config = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	gb_sizer->Add(btn_add_config, wxGBPosition(2, 3));
-	btn_remove_config = new wxBitmapButton(this, -1, getIcon("t_minus"));
+	btn_remove_config = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "minus"));
 	btn_remove_config->Enable(false);
 	gb_sizer->Add(btn_remove_config, wxGBPosition(2, 4));
 
@@ -253,6 +258,38 @@ void RunDialog::openGameExe(unsigned index)
 	}
 }
 
+static string getExecutablePath(const Executables::game_exe_t* const exe)
+{
+	const string& exe_path = exe->path;
+
+#ifdef __WXOSX_MAC__
+	if (exe_path.EndsWith(".app"))
+	{
+		wxCFRef<CFStringRef> cf_path(CFStringCreateWithCString(kCFAllocatorDefault,
+			exe_path.utf8_str(), kCFStringEncodingUTF8));
+
+		if (NULL != cf_path)
+		{
+			wxCFRef<CFURLRef> cf_path_url(CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+				cf_path, kCFURLPOSIXPathStyle, true));
+
+			if (NULL != cf_path_url)
+			{
+				wxCFRef<CFBundleRef> cf_bundle(CFBundleCreate(0, cf_path_url));
+
+				if (NULL != cf_bundle)
+				{
+					const wxStandardPathsCF paths(cf_bundle);
+					return paths.GetExecutablePath();
+				}
+			}
+		}
+	}
+#endif // __WXOSX_MAC__
+
+	return exe_path;
+}
+
 /* RunDialog::getSelectedCommandLine
  * Returns a command line based on the currently selected run
  * configuration and resources
@@ -263,9 +300,12 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 	if (exe)
 	{
 		// Get exe path
-		string path = S_FMT("\"%s\"", exe->path);
-		if (path.IsEmpty())
+		const string exe_path = getExecutablePath(exe);
+
+		if (exe_path.IsEmpty())
 			return "";
+
+		string path = S_FMT("\"%s\"", exe_path);
 
 		unsigned cfg = choice_config->GetSelection();
 		if (cfg < exe->configs.size())
@@ -466,7 +506,11 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
  *******************************************************************/
 void RunDialog::onBtnRun(wxCommandEvent& e)
 {
-	if (text_exe_path->GetValue() == "" || !wxFileExists(text_exe_path->GetValue()))
+	if (text_exe_path->GetValue() == "" || (!wxFileExists(text_exe_path->GetValue())
+#ifdef __WXOSX_MAC__
+        && !(text_exe_path->GetValue().EndsWith(".app"))
+#endif
+			))
 	{
 		wxMessageBox("Invalid executable path", "Error", wxICON_ERROR);
 		return;

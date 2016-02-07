@@ -3,6 +3,7 @@
 #define	__CLIPBOARD_H__
 
 #include "Archive.h"
+#include "Structs.h"
 
 enum ClipboardType
 {
@@ -66,6 +67,7 @@ private:
 	vector<MapSide*>	sides;
 	vector<MapLine*>	lines;
 	vector<MapSector*>	sectors;
+	fpoint2_t			midpoint;
 
 public:
 	MapArchClipboardItem();
@@ -75,6 +77,7 @@ public:
 	string	getInfo();
 	vector<MapVertex*> pasteToMap(SLADEMap* map, fpoint2_t position);
 	void	getLines(vector<MapLine*>& list);
+	fpoint2_t getMidpoint() { return midpoint; }
 };
 
 class MapThing;
@@ -82,15 +85,17 @@ class MapThingsClipboardItem : public ClipboardItem
 {
 private:
 	vector<MapThing*>	things;
+	fpoint2_t			midpoint;
 
 public:
 	MapThingsClipboardItem();
 	~MapThingsClipboardItem();
 
-	void	addThings(vector<MapThing*>& things);
-	string	getInfo();
-	void	pasteToMap(SLADEMap* map, fpoint2_t position);
-	void	getThings(vector<MapThing*>& list);
+	void		addThings(vector<MapThing*>& things);
+	string		getInfo();
+	void		pasteToMap(SLADEMap* map, fpoint2_t position);
+	void		getThings(vector<MapThing*>& list);
+	fpoint2_t	getMidpoint() { return midpoint; }
 };
 
 class Clipboard

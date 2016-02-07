@@ -87,9 +87,9 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action, string icon, boo
 
 	// Load icon
 	if (icon.IsEmpty())
-		this->icon = getIcon(this->action->getIconName(), toolbar_size > 16);
+		this->icon = Icons::getIcon(Icons::GENERAL, this->action->getIconName(), toolbar_size > 16);
 	else
-		this->icon = getIcon(icon, toolbar_size > 16);
+		this->icon = Icons::getIcon(Icons::GENERAL, icon, toolbar_size > 16);
 
 	// Add shortcut to help text if it exists
 	string sc = this->action->getShortcutText();
@@ -142,7 +142,7 @@ SToolBarButton::SToolBarButton(wxWindow* parent, string action_id, string action
 	SetSize(size+name_width, size);
 
 	// Load icon
-	this->icon = getIcon(icon, toolbar_size > 16);
+	this->icon = Icons::getIcon(Icons::GENERAL, icon, toolbar_size > 16);
 
 	// Set tooltip
 	if (!show_name)
@@ -186,7 +186,7 @@ void SToolBarButton::onPaint(wxPaintEvent& e)
 	wxPaintDC dc(this);
 
 	// Get system colours needed
-	wxColour col_background = Drawing::getPanelBGColour();//Drawing::getMenuBarBGColour();
+	wxColour col_background = GetBackgroundColour();//toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
 	wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 
 	// Draw background
@@ -312,7 +312,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		state = STATE_MOUSEOVER;
 
 		// Set status bar help text
-		if (parent_window)
+		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText(help_text);
 	}
 
@@ -323,7 +323,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		state = STATE_NORMAL;
 
 		// Clear status bar help text
-		if (parent_window)
+		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText("");
 	}
 
@@ -348,7 +348,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		state = STATE_MOUSEOVER;
 
 		// Clear status bar help text
-		if (parent_window)
+		if (parent_window && parent_window->GetStatusBar())
 			parent_window->SetStatusText("");
 	}
 

@@ -3,21 +3,30 @@
 #define __MIDIPLAYER_H__
 
 #ifndef NO_FLUIDSYNTH
-
 #include <fluidsynth.h>
+#endif
+#include <wx/process.h>
+#include <SFML/System.hpp>
 
 class MIDIPlayer
 {
 private:
-	static MIDIPlayer*	instance;
+	static MIDIPlayer*		instance;
 
+#ifndef NO_FLUIDSYNTH
 	fluid_settings_t*		fs_settings;
 	fluid_synth_t*			fs_synth;
 	fluid_player_t*			fs_player;
 	fluid_audio_driver_t*	fs_adriver;
+#endif
 
-	bool		fs_initialised;
-	vector<int>	fs_soundfont_ids;
+	bool					fs_initialised;
+	vector<int>				fs_soundfont_ids;
+
+	MemChunk				data;
+	wxProcess				*program;
+	string					file;
+	sf::Clock				timer;
 
 public:
 	MIDIPlayer();
@@ -32,21 +41,19 @@ public:
 		return instance;
 	}
 
-	bool	isInitialised() { return fs_initialised; }
 	bool	isSoundfontLoaded() { return fs_soundfont_ids.size() > 0; }
+	bool	isReady();
 
 	void resetPlayer()
 	{
-		if (instance)
-		{
-			delete instance;
-			instance = new MIDIPlayer();
-		}
+		stop();
+		instance = new MIDIPlayer();
 	}
 
 	bool	initFluidsynth();
 	bool	reloadSoundfont();
 	bool	openFile(string filename);
+	bool	openData(MemChunk &mc);
 	bool	play();
 	bool	pause();
 	bool	stop();
@@ -55,41 +62,10 @@ public:
 	bool	setPosition(int pos);
 	int		getLength();
 	bool	setVolume(int volume);
+	string	getInfo();
 };
 
 // Define for less cumbersome MIDIPlayer::getInstance()
 #define theMIDIPlayer MIDIPlayer::getInstance()
-
-#endif
-
-#include <wx/process.h>
-
-class MIDIPlayerApp
-{
-private:
-	static MIDIPlayerApp*	instance;
-
-	wxProcess	 *program;
-	string	 file;
-
-public:
-	MIDIPlayerApp();
-	~MIDIPlayerApp();
-
-	static MIDIPlayerApp*	getInstance()
-	{
-		if (!instance)
-			instance = new MIDIPlayerApp();
-
-		return instance;
-	}
-
-	void	openFile(string filename);
-	bool	play();
-	bool	stop();
-	bool	isPlaying();
-};
-
-#define theMIDIPlayerApp MIDIPlayerApp::getInstance()
 
 #endif//__MIDIPLAYER_H__

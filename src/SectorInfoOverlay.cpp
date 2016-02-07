@@ -41,6 +41,12 @@
 
 
 /*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Int, gl_font_size)
+
+
+/*******************************************************************
  * SECTORINFOOVERLAY CLASS FUNCTIONS
  *******************************************************************/
 
@@ -49,7 +55,7 @@
  *******************************************************************/
 SectorInfoOverlay::SectorInfoOverlay()
 {
-	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16);
+	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (gl_font_size / 12.0));
 	last_size = 100;
 }
 
@@ -112,6 +118,8 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	glDisable(GL_LINE_SMOOTH);
 
 	// Determine overlay height
+	double scale = (gl_font_size / 12.0);
+	text_box->setLineHeight(16 * scale);
 	if (last_size != right)
 	{
 		last_size = right;
@@ -131,18 +139,19 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
 	rgba_t col_border(0, 0, 0, 140);
 
 	// Draw overlay background
+	int tex_box_size = 80 * scale;
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	Drawing::drawBorderedRect(0, bottom - height - 4, right - 190, bottom+2, col_bg, col_border);
-	Drawing::drawBorderedRect(right - 188, bottom - height - 4, right, bottom+2, col_bg, col_border);
+	Drawing::drawBorderedRect(0, bottom - height - 4, right - (tex_box_size * 2) - 30, bottom+2, col_bg, col_border);
+	Drawing::drawBorderedRect(right - (tex_box_size * 2) - 28, bottom - height - 4, right, bottom+2, col_bg, col_border);
 
 	// Draw info text lines
 	text_box->draw(2, bottom - height, col_fg);
 
 	// Ceiling texture
-	drawTexture(alpha, right - 88, bottom - 4, ctex, "C");
+	drawTexture(alpha, right - tex_box_size - 8, bottom - 4, ctex, "C");
 
 	// Floor texture
-	drawTexture(alpha, right - 88 - 92, bottom - 4, ftex, "F");
+	drawTexture(alpha, right - (tex_box_size * 2) - 20, bottom - 4, ftex, "F");
 
 	// Done
 	glEnable(GL_LINE_SMOOTH);
@@ -153,6 +162,10 @@ void SectorInfoOverlay::draw(int bottom, int right, float alpha)
  *******************************************************************/
 void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, string pos)
 {
+	double scale = (gl_font_size / 12.0);
+	int tex_box_size = 80 * scale;
+	int line_height = 16 * scale;
+
 	// Get colours
 	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
 	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
@@ -168,20 +181,20 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
 		glPushMatrix();
-		glTranslated(x, y-96, 0);
-		GLTexture::bgTex().draw2dTiled(80, 80);
+		glTranslated(x, y - tex_box_size - line_height, 0);
+		GLTexture::bgTex().draw2dTiled(tex_box_size, tex_box_size);
 		glPopMatrix();
 
 		// Draw texture
 		OpenGL::setColour(255, 255, 255, 255*alpha, 0);
-		Drawing::drawTextureWithin(tex, x, y - 96, x + 80, y - 16, 0);
+		Drawing::drawTextureWithin(tex, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0);
 
 		glDisable(GL_TEXTURE_2D);
 
 		// Draw outline
 		OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255*alpha, 0);
 		glDisable(GL_LINE_SMOOTH);
-		Drawing::drawRect(x, y-96, x+80, y-16);
+		Drawing::drawRect(x, y - tex_box_size - line_height, x + tex_box_size, y - line_height);
 	}
 
 	// Unknown texture
@@ -191,7 +204,7 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 		GLTexture* icon = theMapEditor->textureManager().getEditorImage("thing/unknown");
 		glEnable(GL_TEXTURE_2D);
 		OpenGL::setColour(180, 0, 0, 255*alpha, 0);
-		Drawing::drawTextureWithin(icon, x, y - 96, x + 80, y - 16, 0, 0.15);
+		Drawing::drawTextureWithin(icon, x, y - tex_box_size - line_height, x + tex_box_size, y - line_height, 0, 0.15);
 
 		// Set colour to red (for text)
 		col_fg = col_fg.ampf(1.0f, 0.0f, 0.0f, 1.0f);
@@ -202,5 +215,5 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 		texture = texture.Truncate(8) + "...";
 	texture.Prepend(":");
 	texture.Prepend(pos);
-	Drawing::drawText(texture, x + 40, y - 16, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
+	Drawing::drawText(texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
 }

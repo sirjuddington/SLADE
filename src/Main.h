@@ -1,4 +1,6 @@
 
+#ifdef __cplusplus
+
 #ifdef _MSC_VER
 // Avoid many '#pragma once in main file' warnings from GCC or Clang
 // when this file is used as the prefix header
@@ -12,7 +14,7 @@
 #include <windows.h>
 #endif
 
-#ifdef _MSC_VER
+#if defined _MSC_VER && _MSC_VER < 1900
 #define _CRT_SECURE_NO_WARNINGS 1
 typedef __int8 int8_t;
 typedef unsigned __int8 uint8_t;
@@ -100,11 +102,13 @@ namespace Global
 	extern int log_verbosity;
 	extern bool debug;
 	extern double ppi_scale;
+	extern int win_version_major;
+	extern int win_version_minor;
 };
 
 
 // Path related stuff
-enum Directory { DIR_USER, DIR_DATA, DIR_APP, DIR_TEMP };
+enum Directory { DIR_USER, DIR_DATA, DIR_APP, DIR_RES, DIR_TEMP };
 string appPath(string filename, int dir);
 
 
@@ -131,4 +135,88 @@ const string MAP_TYPE_NAMES[] = {
 	"Unknown",
 };
 
+// Debug helper type
+#ifdef WXDEBUG
+#include <typeinfo>
+class Debuggable
+{
+	string repr;
+
+public:
+	Debuggable(string v) { repr = v; }
+	Debuggable(const char* v) { repr = v; }
+	Debuggable(bool v) { repr = v ? "true" : "false"; }
+	Debuggable(int v) { repr = S_FMT("%d", v); }
+	Debuggable(unsigned int v) { repr = S_FMT("%u", v); }
+	Debuggable(long v) { repr = S_FMT("%ld", v); }
+	Debuggable(unsigned long v) { repr = S_FMT("%lu", v); }
+	Debuggable(double v) { repr = S_FMT("%g", v); }
+
+	Debuggable(fpoint2_t v) { repr = S_FMT("(%0.6f, %0.6f)", v.x, v.y); }
+	Debuggable(fpoint3_t v) { repr = S_FMT("(%0.6f, %0.6f, %0.6f)", v.x, v.y, v.z); }
+	Debuggable(frect_t v) { repr = S_FMT("(%0.6f, %0.6f to %0.6f, %0.6f)", v.x1(), v.y1(), v.x2(), v.y2()); }
+
+	template<typename T>
+	Debuggable(T* v) { repr = Debuggable(*v).repr; }
+
+	template<typename T>
+	Debuggable(vector<T> v) {
+		repr << "{";
+		for (unsigned int a = 0; a < v.size(); a++)
+		{
+			repr << Debuggable(v[a]).get();
+			if (a < v.size() - 1)
+				repr << ", ";
+		}
+		repr << "}";
+	}
+
+	string get() { return this->repr; }
+};
+
+inline void LOG_DEBUG(
+	Debuggable a1 = "",
+	Debuggable a2 = "",
+	Debuggable a3 = "",
+	Debuggable a4 = "",
+	Debuggable a5 = "",
+	Debuggable a6 = "",
+	Debuggable a7 = "",
+	Debuggable a8 = "",
+	Debuggable a9 = "",
+	Debuggable a10 = "",
+	Debuggable a11 = "",
+	Debuggable a12 = ""
+)
+{
+	string message;
+	message << a1.get() << " ";
+	message << a2.get() << " ";
+	message << a3.get() << " ";
+	message << a4.get() << " ";
+	message << a5.get() << " ";
+	message << a6.get() << " ";
+	message << a7.get() << " ";
+	message << a8.get() << " ";
+	message << a9.get() << " ";
+	message << a10.get() << " ";
+	message << a11.get() << " ";
+	message << a12.get();
+	message.Trim();
+	wxLogMessage("%s", message);
+}
+
+#define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)
+#else  // WXDEBUG
+struct Debuggable {
+	string repr;
+};
+#define LOG_DEBUG(...)
+#define LOG_DEBUG_VAR(name)
+#endif  // WXDEBUG
+
+
+
 #endif // __MAIN_H__
+
+#endif /* __cplusplus */

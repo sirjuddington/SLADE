@@ -62,7 +62,7 @@ SplashWindow::SplashWindow()
 	show_progress = false;
 	progress = 0.0f;
 	progress_indefinite_anim = 0.0f;
-	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	SetBackgroundColour(wxColour(180, 186, 200));
 
 	// Bind events
@@ -217,7 +217,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	string vers = "v" + Global::version;
 	wxSize text_size = dc.GetTextExtent(vers);
 	wxCoord x = width - text_size.GetWidth() - 8;
-	wxCoord y = 188 - text_size.GetHeight();
+	wxCoord y = 190 - text_size.GetHeight();
 	dc.DrawText(vers, x, y);
 
 	// Draw message
@@ -243,7 +243,9 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		if (progress >= 0)
 		{
 			rect_pbar.SetRight(progress * width);
+			rect_pbar.Deflate(1, 1);
 			dc.SetBrush(wxBrush(wxColour(100, 120, 255)));
+			dc.SetPen(*wxTRANSPARENT_PEN);
 			dc.DrawRectangle(rect_pbar);
 		}
 		else
@@ -298,5 +300,6 @@ CONSOLE_COMMAND (splash, 0, false)
 		theSplashWindow->show(args[0], true);
 		float prog = atof(CHR(args[1]));
 		theSplashWindow->setProgress(prog);
+		theSplashWindow->setProgressMessage(S_FMT("Progress %s", args[1]));
 	}
 }

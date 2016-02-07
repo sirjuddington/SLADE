@@ -29,7 +29,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "Archive.h"
-#include "MathStuff.h"
 #include "Conversions.h"
 #include "ArchiveEntry.h"
 #include "mus2mid/mus2mid.h"
@@ -39,6 +38,7 @@
  * VARIABLES
  *******************************************************************/
 CVAR(Bool, dmx_padding, true, CVAR_SAVE)
+CVAR(Int, wolfsnd_rate, 7042, CVAR_SAVE)
 
 /*******************************************************************
  * STRUCTS
@@ -86,6 +86,16 @@ struct spksnd_header_t
 {
 	uint16_t zero;
 	uint16_t samples;
+};
+// Sun sound header
+struct sunsnd_header_t
+{
+	uint32_t magic;
+	uint32_t offset;
+	uint32_t size;
+	uint32_t format;
+	uint32_t rate;
+	uint32_t channels;
 };
 
 /*******************************************************************
@@ -224,36 +234,49 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 		return false;
 	}
 
+	// Find fmt chunk
+	size_t ofs = 12;
+	while (ofs < in.getSize())
+	{
+		if (in[ofs] == 'f' && in[ofs+1] == 'm' && in[ofs+2] == 't' && in[ofs+3] == ' ')
+			break;
+		ofs += 8 + READ_L32(in, (ofs + 4));
+	}
+
 	// Read fmt chunk
+	if (ofs + sizeof(wav_fmtchunk_t) > in.getSize())
+	{
+		Global::error = "Invalid WAV: no 'fmt ' chunk";
+		return false;
+	}
+	in.seek(ofs, SEEK_SET);
 	wav_fmtchunk_t fmtchunk;
 	in.read(&fmtchunk, sizeof(wav_fmtchunk_t));
 
 	// Check fmt chunk values
-	if (fmtchunk.header.id[0] != 'f' || fmtchunk.header.id[1] != 'm' || fmtchunk.header.id[2] != 't' || fmtchunk.header.id[3] != ' ')
+	if (fmtchunk.channels != 1 || fmtchunk.bps != 8 || (fmtchunk.tag != 1 && (fmtchunk.tag == 0xFFFE && READ_L32(in, ofs+32) != 1)))
 	{
-		Global::error = "Invalid WAV";
+		Global::error = "Cannot convert WAV file, only 8-bit monophonic sounds in PCM format can be converted";
 		return false;
 	}
-	if (fmtchunk.channels != 1)
+
+	// Find data chunk
+	ofs += 8 + wxUINT32_SWAP_ON_BE(fmtchunk.header.size);
+	while (ofs < in.getSize())
 	{
-		Global::error = "Cannot convert, must be mono";
-		return false;
-	}
-	if (fmtchunk.bps != 8)
-	{
-		Global::error = "Cannot convert, must be 8bit";
-		return false;
+		if (in[ofs] == 'd' && in[ofs+1] == 'a' && in[ofs+2] == 't' && in[ofs+3] == 'a')
+			break;
+		ofs += 8 + READ_L32(in, (ofs + 4));
 	}
 
 	// Read data
-	in.read(&chunk, 8);
-
-	// Check data
-	if (chunk.id[0] != 'd' || chunk.id[1] != 'a' || chunk.id[2] != 't' || chunk.id[3] != 'a')
+	if (ofs + sizeof(wav_fmtchunk_t) > in.getSize())
 	{
-		Global::error = "Invalid WAV";
+		Global::error = "Invalid WAV: no 'data' chunk";
 		return false;
 	}
+	in.seek(ofs, SEEK_SET);
+	in.read(&chunk, 8);
 
 	uint8_t* data = new uint8_t[chunk.size];
 	uint8_t padding[16];
@@ -301,9 +324,9 @@ bool Conversions::musToMidi(MemChunk& in, MemChunk& out)
  * Converts MIDI-like music data [in] to midi, written to [out],
  * using ZDoom MIDI system
  *******************************************************************/
-bool Conversions::zmusToMidi(MemChunk& in, MemChunk& out)
+bool Conversions::zmusToMidi(MemChunk& in, MemChunk& out, int subsong, int * num_tracks)
 {
-	return zmus2mid(in, out);
+	return zmus2mid(in, out, subsong, num_tracks);
 }
 
 /* Conversions::vocToWav
@@ -332,9 +355,9 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 	{
 		// Parses through blocks
 		uint8_t blocktype = in[i];
-		size_t blocksize = READ_L24(in, i+1);
+		size_t blocksize = (i + 4 < e) ? READ_L24(in, i+1) : 0x1000000;
 		i+=4;
-		if (i + blocksize > e && blocktype != 0)
+		if (i + blocksize > e && i < e && blocktype != 0)
 		{
 			Global::error = S_FMT("VOC file cut abruptly in block %i", blockcount);
 			return false;
@@ -491,7 +514,7 @@ bool Conversions::vocToWav(MemChunk& in, MemChunk& out)
 bool Conversions::bloodToWav(ArchiveEntry* in, MemChunk& out)
 {
 	MemChunk& mc = in->getMCData();
-	if (mc.getSize() < 22 || mc.getSize() > 29 || (mc[12] != 1 && mc[12] != 5 || mc[mc.getSize()-1] != 0))
+	if (mc.getSize() < 22 || mc.getSize() > 29 || ((mc[12] != 1 && mc[12] != 5) || mc[mc.getSize()-1] != 0))
 	{
 		Global::error = "Invalid SFX";
 		return false;
@@ -560,7 +583,7 @@ bool Conversions::bloodToWav(ArchiveEntry* in, MemChunk& out)
  *******************************************************************/
 bool Conversions::wolfSndToWav(MemChunk& in, MemChunk& out)
 {
-	// --- Read Doom sound ---
+	// --- Read Wolf sound ---
 
 	// Read samples
 	size_t numsamples = in.getSize();
@@ -582,8 +605,8 @@ bool Conversions::wolfSndToWav(MemChunk& in, MemChunk& out)
 	fmtchunk.header.size = 16;
 	fmtchunk.tag = 1;
 	fmtchunk.channels = 1;
-	fmtchunk.samplerate = 7042;
-	fmtchunk.datarate = 7042;
+	fmtchunk.samplerate = wolfsnd_rate;
+	fmtchunk.datarate = wolfsnd_rate;
 	fmtchunk.blocksize = 1;
 	fmtchunk.bps = 8;
 
@@ -708,14 +731,100 @@ bool Conversions::gmidToMidi(MemChunk& in, MemChunk& out)
 	return true;
 }
 
+/* Conversions::rmidToMidi
+ * RMID file to Standard MIDI File
+ *******************************************************************/
+bool Conversions::rmidToMidi(MemChunk& in, MemChunk& out)
+{
+	// Skip beginning of file and look for MThd chunk
+	// (the standard MIDI header)
+	size_t size = in.getSize();
+	if (size < 36)
+		return false;
+	if (in[0] != 'R' && in[1] != 'I' && in[2] != 'F' && in[3] != 'F' &&
+	        ((READ_L32(in, 4) + 8) != size))
+		return false;
+
+	size_t offset = 12;
+	size_t datasize = 0;
+	bool notfound = true;
+	while (notfound)
+	{
+		if (offset + 20 >  size)
+			return false;
+		// Look for header
+		if (in[offset] == 'd' && in[offset+1] == 'a' && in[offset+2] == 't' && in[offset+3] == 'a' &&
+			in[offset+8] == 'M' && in[offset+9] == 'T' && in[offset+10] == 'h' && in[offset+11] == 'd')
+		{
+			notfound = false;
+			datasize = READ_L32(in, offset+4);
+			offset += 8;
+		}
+		else
+			offset += (READ_L32(in, offset+4) + 8);
+	}
+
+	// Write the rest of the file
+	if (offset + datasize <= size)
+	{
+		out.write(in.getData() + offset, datasize);
+		return true;
+	}
+	return false;
+}
+
+/* Conversions::addImfHeader
+ * Automatizes this: http://zdoom.org/wiki/Using_OPL_music_in_ZDoom
+ *******************************************************************/
+bool Conversions::addImfHeader(MemChunk& in, MemChunk& out)
+{
+	if (in.getSize() == 0)
+		return false;
+
+	uint32_t newsize = in.getSize() + 9;
+	uint8_t start = 0;
+	if (in[0] | in[1])
+	{
+		// non-zero start
+		newsize += 2;
+		start = 2;
+	}
+	else newsize += 4;
+
+	out.reSize(newsize, false);
+	out[0] = 'A'; out[1] = 'D'; out[2] = 'L'; out[3] = 'I'; out[4] = 'B';
+	out[5] = 1; out[6] = 0; out[7] = 0; out[8] = 1;
+	if (in[0] | in[1])
+	{
+		out[9] = in[0]; out[10] = in[1]; out[11] = 0; out[12] = 0;
+	}
+	else
+	{
+		out[9] = 0; out[10] = 0; out[11] = 0; out[12] = 0;
+	}
+	out.seek(13, SEEK_SET);
+	in.seek(start, SEEK_SET);
+	//size_t size = MIN(in.getSize() - start, newsize - 13);
+	//return in.readMC(out, size);
+	for (size_t i = 0; ((i + start < in.getSize()) && (13 + i < newsize)); ++i)
+	{
+		out[13 + i] = in[i+start];
+	}
+	return true;
+}
+
 /* Conversions::spkSndToWav
  * Converts Doom PC speaker sound data [in] to wav format, written 
- * to [out]
+ * to [out]. This code is partly adapted from info found on
+ * http://www.shikadi.net/moddingwiki/AudioT_Format and
+ * http://www.shikadi.net/moddingwiki/Inverse_Frequency_Sound_format 
+ *
  *******************************************************************/
 #define ORIG_RATE 140.0
 #define FACTOR 315	// 315*140 = 44100
-#define FREQ 1193170.0
+#define FREQ 1193181.0
 #define RATE (ORIG_RATE * FACTOR)
+#define PC_VOLUME 20
 uint16_t counters[128] =
 {
 	   0, 6818, 6628, 6449, 6279, 6087, 5906, 5736,
@@ -735,36 +844,63 @@ uint16_t counters[128] =
 	 276,  269,  261,  253,  246,  239,  232,  226,
 	 219,  213,  207,  201,  195,  190,  184,  179
 };
-bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out)
+bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 {
 	// --- Read Doom sound ---
+	// -- Also AudioT sound --
+
+	size_t minsize = 4 + (audioT ? 3 : 0);
+	if (in.getSize() < minsize)
+	{
+		Global::error = "Invalid PC Speaker Sound";
+		return false;
+	}
 
 	// Read doom sound header
 	spksnd_header_t header;
 	in.seek(0, SEEK_SET);
 	in.read(&header, 4);
+	size_t numsamples;
 
 	// Format checks
-	if (header.zero != 0)  	// Check for magic number
+	if (audioT)
 	{
-		Global::error = "Invalid Doom PC Speaker Sound";
-		return false;
+		numsamples = READ_L32(in, 0);
+		uint16_t priority;
+		in.read(&priority, 2);
+		if (in.getSize() < 6 + numsamples)
+		{
+			Global::error = "Invalid AudioT PC Speaker Sound";
+			return false;
+		}
 	}
-	if (header.samples > (in.getSize() - 4) || header.samples <= 4)  	// Check for sane values
+	else
 	{
-		Global::error = "Invalid Doom PC Speaker Sound";
-		return false;
+		if (header.zero != 0)  	// Check for magic number
+		{
+			Global::error = "Invalid Doom PC Speaker Sound";
+			return false;
+		}
+		if (header.samples > (in.getSize() - 4) || header.samples <= 4)  	// Check for sane values
+		{
+			Global::error = "Invalid Doom PC Speaker Sound";
+			return false;
+		}
+		numsamples = header.samples;
 	}
 
 	// Read samples
-	uint8_t* osamples = new uint8_t[header.samples];
-	uint8_t* nsamples = new uint8_t[header.samples*FACTOR];
-	in.read(osamples, header.samples);
+	uint8_t* osamples = new uint8_t[numsamples];
+	uint8_t* nsamples = new uint8_t[numsamples*FACTOR];
+	in.read(osamples, numsamples);
+
+	int sign = -1;
+	uint32_t phase_tic = 0;
 
 	// Convert counter values to sample values
-	for (int s = 0; s < header.samples; ++s)
+	for (size_t s = 0; s < numsamples; ++s)
 	{
-		if (osamples[s] > 127)
+		if (osamples[s] > 127 && !audioT)
 		{
 			wxLogMessage("Invalid PC Speaker counter value: %d > 127", osamples[s]);
 			delete[] osamples;
@@ -774,21 +910,28 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out)
 		if (osamples[s] > 0)
 		{
 			// First, convert counter value to frequency in Hz
-			double f = FREQ / (double)counters[osamples[s]];
-			//double f = FREQ / (440.0 * pow((double)2.0, (96-osamples[s])/24));
+			//double f = FREQ / (double)counters[osamples[s]];
+			uint32_t tone = audioT ? osamples[s] * 60 : counters[osamples[s]];
+			uint32_t phase_length = (tone * RATE) / (2 * FREQ);
 
-			// Then write a bunch of samples because WAVs at 140 Hz
-			// just plain don't work at all -- I know, I tried.
+			// Then write a bunch of samples.
 			for (int i = 0; i < FACTOR; ++i)
 			{
 				// Finally, convert frequency into sample value
 				int pos = (s*FACTOR) + i;
-				double time   = (double)pos/(double)RATE;
-				double sample = 1.0 + sin(time * 2.0 * PI * f);
-				nsamples[pos] = (uint8_t)(sample*128.0);
+				nsamples[pos] = 128 + sign*PC_VOLUME;
+				if (phase_tic++ >= phase_length)
+				{
+					sign = -sign;
+					phase_tic = 0;
+				}
 			}
 		}
-		else memset(nsamples + (s*FACTOR), 0, FACTOR);
+		else
+		{
+			memset(nsamples + (s*FACTOR), 128, FACTOR);
+			phase_tic = 0;
+		}
 	}
 
 	// --- Write WAV ---
@@ -799,7 +942,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out)
 	// Setup data header
 	char did[4] = { 'd', 'a', 't', 'a' };
 	memcpy(&wdhdr.id, &did, 4);
-	wdhdr.size = header.samples * FACTOR;
+	wdhdr.size = numsamples * FACTOR;
 
 	// Setup fmt chunk
 	char fid[4] = { 'f', 'm', 't', ' ' };
@@ -822,7 +965,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out)
 	out.write("WAVE", 4);
 	out.write(&fmtchunk, sizeof(wav_fmtchunk_t));
 	out.write(&wdhdr, 8);
-	out.write(nsamples, header.samples * FACTOR);
+	out.write(nsamples, numsamples * FACTOR);
 
 	// Ensure data ends on even byte boundary
 	if (header.samples % 2 != 0)
@@ -830,6 +973,117 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out)
 
 	delete[] osamples;
 	delete[] nsamples;
+
+	return true;
+}
+
+/* Conversions::auSndToWav
+ * Converts Sun/NeXT sound data [in] to wav format, written to [out]
+ *******************************************************************/
+bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
+{
+	// --- Read Sun sound ---
+
+	// Read doom sound header
+	sunsnd_header_t header;
+	in.seek(0, SEEK_SET);
+	in.read(&header, 24);
+
+	header.magic = wxUINT32_SWAP_ON_LE(header.magic);
+	header.offset = wxUINT32_SWAP_ON_LE(header.offset);
+	header.size = wxUINT32_SWAP_ON_LE(header.size);
+	header.format = wxUINT32_SWAP_ON_LE(header.format);
+	header.rate = wxUINT32_SWAP_ON_LE(header.rate);
+	header.channels = wxUINT32_SWAP_ON_LE(header.channels);
+
+	// Format checks
+	if (header.magic != 0x2E736E64)  	// ASCII code for ".snd"
+	{
+		Global::error = "Invalid Sun Sound";
+		return false;
+	}
+	// Only cover integer linear PCM for now
+	if (header.format < 2 || header.format > 5)
+	{
+		Global::error = S_FMT("Unsupported Sun Sound format (%d)", header.format);
+		return false;
+	}
+	uint8_t samplesize = header.format - 1;
+	if (header.format == 1) samplesize = 1;
+	else if (header.format >= 6) --samplesize;
+
+	// Read samples
+	uint8_t* samples = new uint8_t[header.size];
+	in.read(samples, header.size);
+
+	// Swap endianness around if needed
+	if (samplesize > 1)
+	{
+		uint8_t swapval = 0;
+		for (size_t i = 0; i < header.size / samplesize; ++i)
+		{
+			switch (samplesize)
+			{
+			case 2:
+				swapval = samples[i*2];
+				samples[i*2] = samples[i*2 + 1];
+				samples[i*2 + 1] = swapval;
+				break;
+			case 3:
+				swapval = samples[i*3];
+				samples[i*3] = samples[i*3 + 2];
+				samples[i*3 + 2] = swapval;
+				break;
+			case 4:
+				swapval = samples[i*4];
+				samples[i*4] = samples[i*4 + 3];
+				samples[i*4 + 3] = swapval;
+				swapval = samples[i*4 + 2];
+				samples[i*4 + 2] = samples[i*4 + 1];
+				samples[i*4 + 1] = swapval;
+				break;
+			}
+		}
+	}
+
+	// --- Write WAV ---
+
+	wav_chunk_t whdr, wdhdr;
+	wav_fmtchunk_t fmtchunk;
+
+	// Setup data header
+	char did[4] = { 'd', 'a', 't', 'a' };
+	memcpy(&wdhdr.id, &did, 4);
+	wdhdr.size = header.size;
+
+	// Setup fmt chunk
+	char fid[4] = { 'f', 'm', 't', ' ' };
+	memcpy(&fmtchunk.header.id, &fid, 4);
+	fmtchunk.header.size = 16;
+	fmtchunk.tag = 1;
+	fmtchunk.channels = header.channels;
+	fmtchunk.samplerate = header.rate;
+	fmtchunk.datarate = header.rate * header.channels;
+	fmtchunk.blocksize = samplesize;
+	fmtchunk.bps = 8 * samplesize;
+
+	// Setup main header
+	char wid[4] = { 'R', 'I', 'F', 'F' };
+	memcpy(&whdr.id, &wid, 4);
+	whdr.size = wdhdr.size + fmtchunk.header.size + 8;
+
+	// Write chunks
+	out.write(&whdr, 8);
+	out.write("WAVE", 4);
+	out.write(&fmtchunk, sizeof(wav_fmtchunk_t));
+	out.write(&wdhdr, 8);
+	out.write(samples, header.size);
+
+	// Ensure data ends on even byte boundary
+	if (header.size % 2 != 0)
+		out.write("\0", 1);
+
+	delete[] samples;
 
 	return true;
 }

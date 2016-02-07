@@ -67,6 +67,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	this->no_apply = no_apply;
 	hide_flags = false;
 	hide_triggers = false;
+	udmf = false;
 
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -97,18 +98,18 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) : Prop
 	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
 
 	// Add button
-	btn_add = new wxBitmapButton(this, -1, getIcon("t_plus"));
+	btn_add = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "plus"));
 	btn_add->SetToolTip("Add Property");
 	hbox->Add(btn_add, 0, wxEXPAND|wxRIGHT, 4);
 	hbox->AddStretchSpacer(1);
 
 	// Reset button
-	btn_reset = new wxBitmapButton(this, -1, getIcon("t_close"));
+	btn_reset = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "close"));
 	btn_reset->SetToolTip("Discard Changes");
 	hbox->Add(btn_reset, 0, wxEXPAND|wxRIGHT, 4);
 
 	// Apply button
-	btn_apply = new wxBitmapButton(this, -1, getIcon("i_tick"));
+	btn_apply = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "tick"));
 	btn_apply->SetToolTip("Apply Changes");
 	hbox->Add(btn_apply, 0, wxEXPAND);
 
@@ -452,20 +453,14 @@ void MapObjectPropsPanel::addUDMFProperty(UDMFProperty* prop, int objtype, strin
 void MapObjectPropsPanel::setupType(int objtype)
 {
 	// Nothing to do if it was already this type
-	if (last_type == objtype)
+	if (last_type == objtype && !udmf)
 		return;
 
 	// Get map format
 	int map_format = theMapEditor->currentMapDesc().format;
 
 	// Clear property grid
-	for (unsigned a = 0; a < 5; a++)
-		args[a] = NULL;
-	pg_properties->Clear();
-	pg_props_side1->Clear();
-	pg_props_side2->Clear();
-	group_custom = NULL;
-	properties.clear();
+	clearGrid();
 	btn_add->Show(false);
 
 	// Hide buttons if not needed
@@ -479,12 +474,6 @@ void MapObjectPropsPanel::setupType(int objtype)
 		btn_apply->Show();
 		btn_reset->Show();
 	}
-
-	// Remove side1/2 tabs if they exist
-	while (stc_sections->GetPageCount() > 1)
-		stc_sections->RemovePage(1);
-	pg_props_side1->Show(false);
-	pg_props_side2->Show(false);
 
 	// Vertex properties
 	if (objtype == MOBJ_VERTEX)
@@ -749,6 +738,7 @@ void MapObjectPropsPanel::setupType(int objtype)
 	pg_properties->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 
 	last_type = objtype;
+	udmf = false;
 	
 	Layout();
 }
@@ -759,18 +749,11 @@ void MapObjectPropsPanel::setupType(int objtype)
 void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 {
 	// Nothing to do if it was already this type
-	if (last_type == objtype)
+	if (last_type == objtype && udmf)
 		return;
 
 	// Clear property grids
-	for (unsigned a = 0; a < 5; a++)
-		args[a] = NULL;
-	pg_properties->Clear();
-	pg_props_side1->Clear();
-	pg_props_side2->Clear();
-	group_custom = NULL;
-	properties.clear();
-	btn_add->Show();
+	clearGrid();
 
 	// Hide buttons if not needed
 	if (no_apply || mobj_props_auto_apply)
@@ -783,12 +766,6 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		btn_apply->Show();
 		btn_reset->Show();
 	}
-
-	// Remove side1/2 tabs if they exist
-	while (stc_sections->GetPageCount() > 1)
-		stc_sections->RemovePage(1);
-	pg_props_side1->Show(false);
-	pg_props_side2->Show(false);
 
 	// Set main tab title
 	if (objtype == MOBJ_VERTEX)
@@ -873,6 +850,7 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 		args[arg] = pg_properties->GetProperty(S_FMT("arg%u", arg));
 
 	last_type = objtype;
+	udmf = true;
 
 	Layout();
 }
@@ -1076,8 +1054,14 @@ void MapObjectPropsPanel::clearGrid()
 	btn_add->Show();
 
 	// Remove side1/2 tabs if they exist
+	// Calling RemovePage() changes the focus for no good reason; this is a
+	// workaround.  See http://trac.wxwidgets.org/ticket/11333
+	stc_sections->Freeze();
+	stc_sections->Hide();
 	while (stc_sections->GetPageCount() > 1)
 		stc_sections->RemovePage(1);
+	stc_sections->Show();
+	stc_sections->Thaw();
 	pg_props_side1->Show(false);
 	pg_props_side2->Show(false);
 }
@@ -1092,8 +1076,20 @@ void MapObjectPropsPanel::clearGrid()
  *******************************************************************/
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
+	string type;
+	if (last_type == MOBJ_VERTEX)
+		type = "Vertex";
+	else if (last_type == MOBJ_LINE)
+		type = "Line";
+	else if (last_type == MOBJ_SECTOR)
+		type = "Sector";
+	else if (last_type == MOBJ_THING)
+		type = "Thing";
+
 	// Apply changes
+	theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 	applyChanges();
+	theMapEditor->mapEditor().endUndoRecord();
 
 	// Refresh map view
 	theMapEditor->forceRefresh(true);
@@ -1228,7 +1224,17 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 		if (properties[a]->getPropName() == name)
 		{
 			// Found, apply value
-			theMapEditor->mapEditor().beginUndoRecordLocked("Modify Properties", true, false, false);
+			string type;
+			if (last_type == MOBJ_VERTEX)
+				type = "Vertex";
+			else if (last_type == MOBJ_LINE)
+				type = "Line";
+			else if (last_type == MOBJ_SECTOR)
+				type = "Sector";
+			else if (last_type == MOBJ_THING)
+				type = "Thing";
+			
+			theMapEditor->mapEditor().beginUndoRecordLocked(S_FMT("Modify %s Properties", CHR(type)), true, false, false);
 			properties[a]->applyValue();
 			theMapEditor->mapEditor().endUndoRecord();
 			return;

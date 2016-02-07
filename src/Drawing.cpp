@@ -57,6 +57,7 @@ CVAR(Bool, hud_statusbar, 1, CVAR_SAVE)
 CVAR(Bool, hud_center, 1, CVAR_SAVE)
 CVAR(Bool, hud_wide, 0, CVAR_SAVE)
 CVAR(Bool, hud_bob, 0, CVAR_SAVE)
+CVAR(Int, gl_font_size, 12, CVAR_SAVE)
 
 #ifdef USE_SFML_RENDERWINDOW
 namespace Drawing
@@ -91,7 +92,17 @@ private:
 	static FontManager*	instance;
 
 public:
-	FontManager() {}
+	FontManager()
+	{
+#ifndef USE_SFML_RENDERWINDOW
+		font_normal = NULL;
+		font_condensed = NULL;
+		font_bold = NULL;
+		font_boldcondensed = NULL;
+		font_mono = NULL;
+		font_small = NULL;
+#endif
+	}
 	~FontManager()
 	{
 #ifndef USE_SFML_RENDERWINDOW
@@ -170,12 +181,19 @@ int FontManager::initFonts()
 	// --- Load general fonts ---
 	int ret = 0;
 
+	if (font_normal)		{ delete font_normal;			font_normal = NULL;			}
+	if (font_condensed)		{ delete font_condensed;		font_condensed = NULL;		}
+	if (font_bold)			{ delete font_bold;				font_bold = NULL;			}
+	if (font_boldcondensed) { delete font_boldcondensed;	font_boldcondensed = NULL;	}
+	if (font_mono)			{ delete font_mono;				font_mono = NULL;			}
+	if (font_small)			{ delete font_small;			font_small = NULL;			}
+
 	// Normal
 	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
 	if (entry)
 	{
 		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
-		font_normal->FaceSize(12);
+		font_normal->FaceSize(gl_font_size);
 
 		// Check it loaded ok
 		if (font_normal->Error())
@@ -191,7 +209,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_condensed->FaceSize(12);
+		font_condensed->FaceSize(gl_font_size);
 
 		// Check it loaded ok
 		if (font_condensed->Error())
@@ -207,7 +225,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
-		font_bold->FaceSize(12);
+		font_bold->FaceSize(gl_font_size);
 
 		// Check it loaded ok
 		if (font_bold->Error())
@@ -223,7 +241,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_boldcondensed->FaceSize(12);
+		font_boldcondensed->FaceSize(gl_font_size);
 
 		// Check it loaded ok
 		if (font_boldcondensed->Error())
@@ -239,7 +257,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
-		font_mono->FaceSize(12);
+		font_mono->FaceSize(gl_font_size);
 
 		// Check it loaded ok
 		if (font_mono->Error())
@@ -255,7 +273,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_small = new FTTextureFont(entry->getData(), entry->getSize());
-		font_small->FaceSize(8);
+		font_small->FaceSize((gl_font_size * 0.6) + 1);
 
 		// Check it loaded ok
 		if (font_small->Error())
@@ -357,44 +375,12 @@ void Drawing::drawLineTabbed(fpoint2_t start, fpoint2_t end, double tab, double 
 	mid.y = start.y + ((end.y - start.y) * 0.5);
 
 	// Calculate tab length
-	double tablen = MathStuff::distance(start.x, start.y, end.x, end.y) * tab;
+	double tablen = MathStuff::distance(start, end) * tab;
 	if (tablen > tab_max) tablen = tab_max;
 	if (tablen < 2) tablen = 2;
 
 	// Calculate tab endpoint
 	fpoint2_t invdir(-(end.y - start.y), end.x - start.x);
-	invdir.normalize();
-
-	// Draw tab
-	glBegin(GL_LINES);
-	glVertex2d(mid.x, mid.y);
-	glVertex2d(mid.x - invdir.x*tablen, mid.y - invdir.y*tablen);
-	glEnd();
-}
-
-/* Drawing::drawLineTabbed
- * Draws a line from [x1,y1] to [x2,y2]
- *******************************************************************/
-void Drawing::drawLineTabbed(double x1, double y1, double x2, double y2, double tab, double tab_max)
-{
-	// Draw line
-	glBegin(GL_LINES);
-	glVertex2d(x1, y1);
-	glVertex2d(x2, y2);
-	glEnd();
-
-	// Calculate midpoint
-	fpoint2_t mid;
-	mid.x = x1 + ((x2 - x1) * 0.5);
-	mid.y = y1 + ((y1 - y1) * 0.5);
-
-	// Calculate tab length
-	double tablen = MathStuff::distance(x1, y1, x2, y2) * tab;
-	if (tablen > tab_max) tablen = tab_max;
-	if (tablen < 2) tablen = 2;
-
-	// Calculate tab endpoint
-	fpoint2_t invdir(-(y2 - y1), x2 - x1);
 	invdir.normalize();
 
 	// Draw tab
@@ -664,9 +650,9 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize(8);
+		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(12);
+		sf_str.setCharacterSize(gl_font_size);
 
 	// Setup alignment
 	if (alignment != ALIGN_LEFT)
@@ -713,9 +699,9 @@ fpoint2_t Drawing::textExtents(string text, int font)
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize(8);
+		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(12);
+		sf_str.setCharacterSize(gl_font_size);
 
 	// Return width and height of text
 	sf::FloatRect rect = sf_str.getGlobalBounds();

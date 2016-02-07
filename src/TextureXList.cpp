@@ -131,17 +131,21 @@ void TextureXList::addTexture(CTexture* tex, int position)
 /* TextureXList::removeTexture
  * Removes the texture at [index] from the list
  *******************************************************************/
-void TextureXList::removeTexture(unsigned index)
+CTexture* TextureXList::removeTexture(unsigned index, bool delete_texture)
 {
 	// Check index
 	if (index >= textures.size())
-		return;
+		return NULL;
 
 	// Delete the texture
-	delete textures[index];
+	if (delete_texture)
+		delete textures[index];
 
 	// Remove the texture from the list
+	CTexture* removed = textures[index];
 	textures.erase(textures.begin() + index);
+
+	return delete_texture ? NULL : removed;
 }
 
 /* TextureXList::swapTextures
@@ -162,6 +166,25 @@ void TextureXList::swapTextures(unsigned index1, unsigned index2)
 	int ti = textures[index1]->index;
 	textures[index1]->index = textures[index2]->index;
 	textures[index2]->index = ti;
+}
+
+/* TextureXList::replaceTexture
+ * Replaces the texture at [index] with [replacement], returns the
+ * original texture that was replaced (or NULL if index was invalid)
+ *******************************************************************/
+CTexture* TextureXList::replaceTexture(unsigned index, CTexture* replacement)
+{
+	// Check index
+	if (index >= textures.size())
+		return NULL;
+
+	// Replace texture
+	CTexture* replaced = textures[index];
+	textures[index] = replacement;
+	replacement->in_list = this;
+	replacement->index = index;
+
+	return replaced;
 }
 
 /* TextureXList::clear
@@ -799,4 +822,64 @@ bool TextureXList::convertToTEXTURES()
 	txformat = TXF_TEXTURES;
 
 	return true;
+}
+
+#include "SImage.h"
+/* TextureXList::findErrors
+ * Search for errors in texture list, return true if any are found
+ *******************************************************************/
+bool TextureXList::findErrors()
+{
+	bool ret = false;
+
+	// Texture errors:
+	// 1. A texture without any patch
+	// 2. A texture with missing patches
+	// 3. A texture with columns not covered by a patch
+
+	for (unsigned a = 0; a < textures.size(); a++)
+	{
+		if (textures[a]->nPatches() == 0)
+		{
+			ret = true;
+			wxLogMessage("Texture %u: %s does not have any patch", a, textures[a]->getName());
+		}
+		else
+		{
+			bool * columns = new bool[textures[a]->getWidth()];
+			memset(columns, false, textures[a]->getWidth());
+			for (size_t i = 0; i < textures[a]->nPatches(); ++i)
+			{
+				ArchiveEntry * patch = textures[a]->patches[i]->getPatchEntry();
+				if (patch == NULL)
+				{
+					ret = true;
+					wxLogMessage("Texture %u: %s: patch %s cannot be found in any open archive", 
+						a, textures[a]->getName(), textures[a]->patches[i]->getName());
+					// Don't list missing columns when we don't know the size of the patch
+					memset(columns, true, textures[a]->getWidth());
+				}
+				else
+				{
+					SImage img;
+					img.open(patch->getMCData());
+					size_t start = MAX(0, textures[a]->patches[i]->xOffset());
+					size_t end = MIN(textures[a]->getWidth(), img.getWidth() + start);
+					for (size_t c = start; c < end; ++c)
+						columns[c] = true;
+				}
+			}
+			for (size_t c = 0; c < textures[a]->getWidth(); ++c)
+			{
+				if (columns[c] == false)
+				{
+					ret = true;
+					wxLogMessage("Texture %u: %s: column %d without a patch", a, textures[a]->getName(), c);
+					break;
+				}
+			}
+			delete[] columns;
+		}
+	}
+	return ret;
 }

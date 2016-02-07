@@ -77,7 +77,7 @@ entry_types
 	{
 		name = "DeHackEd";
 		match_name = "dehacked";
-		match_ext = "deh";
+		match_ext = "deh", "bex";
 		match_extorname = 1;
 		text_language = "dehacked";
 	}
@@ -168,6 +168,13 @@ entry_types
 		name = "Mapinfo (ZDoom)";
 		match_name = "zmapinfo";
 		text_language = "z_mapinfo";
+	}
+	
+	xlat : text
+	{
+		name = "Map Translator (ZDoom)";
+		match_name = "xlat*";
+		text_language = "z_xlat";
 	}
 	
 	menudef : text
@@ -345,7 +352,22 @@ entry_types
 		match_extorname = 1;
 		match_ext = "edf";
 		match_name = "edfroot", "estrings", "eterrain", "emenus", "esndseq",
-					 "esndinfo", "efonts", "emapinfo", "edf*";
+					 "esndinfo", "efonts", "edf*";
+	}
+	
+	emapinfo : text
+	{
+		name = "MAPINFO (Eternity)";
+		text_language = "emapinfo";
+		match_name = "emapinfo";
+		text_language = "edf";
+	}
+	
+	extradata : text
+	{
+		name = "Eternity ExtraData";
+		text_language = "edf";
+		detectable = 0;
 	}
 	
 	// PrBoom+ lumps
@@ -387,7 +409,7 @@ entry_types
 	misctext : text
 	{
 		name = "Text";
-		match_name = "extended", "copyrite", "serial", "license", "credits", "iwadinfo";
+		match_name = "extended", "copyrite", "serial", "license", "credits", "iwadinfo", "hacx-e";
 	}
 
 	shaders : text
@@ -452,7 +474,7 @@ entry_types
 	
 	jedi_level : text
 	{
-		name = "DF Level";
+		name = "DF/TV Level";
 		match_ext = "lev", "lvl";
 	}
 
@@ -503,6 +525,18 @@ entry_types
 	{
 		name = "Source Code (Other)";
 		match_ext = "bas", "py", "pl", "pm", "php", "pas", "p", "pp", "vb", "rb", "l", "m", "d", "e";
+	}
+
+	tv_texdef : text
+	{
+		name = "TV Texture Definition";
+		match_ext = "tex";
+	}
+
+	playlist : text
+	{
+		name = "Playlist";
+		match_ext = "m3u";
 	}
 
 	txt : text

@@ -33,6 +33,7 @@
 #include "SFileDialog.h"
 #include <wx/dirdlg.h>
 #include <wx/stdpaths.h>
+#include <wx/dir.h>
 
 
 /*******************************************************************
@@ -57,7 +58,7 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 
 	sizer->AddStretchSpacer();
 
-	rb_use_system = new wxRadioButton(this, -1, "Use system temp folder", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	rb_use_system = new wxRadioButton(this, -1, "Use system temp folder (Recommended)", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
 	sizer->Add(rb_use_system, 0, wxEXPAND|wxBOTTOM, 16);
 
 	rb_use_slade_dir = new wxRadioButton(this, -1, "Use SLADE installation folder");
@@ -143,7 +144,9 @@ void TempFolderWizardPage::applyChanges()
  *******************************************************************/
 string TempFolderWizardPage::getDescription()
 {
-	return "Select the temp folder for SLADE to use during various operations. Usually the system temp folder will be fine to use, however sometimes it will not be write accessable, which can cause problems.";
+	return "Select the temp folder for SLADE to use during various operations. "
+		"Usually the system temp folder will be fine to use, however sometimes "
+		"it will not be write accessable, which can cause problems.";
 }
 
 
@@ -176,6 +179,22 @@ void TempFolderWizardPage::onBtnBrowse(wxCommandEvent& e)
 	wxDirDialog dlg(this, "Select a folder to write temp files to");
 	if (dlg.ShowModal() == wxID_OK)
 	{
+		// Check directory is empty
+		wxDir dir;
+		dir.Open(dlg.GetPath());
+		if (dir.IsOpened())
+		{
+			if (dir.HasFiles() || dir.HasSubDirs())
+			{
+				if (wxMessageBox("The selected folder is not empty.\r\n\r\n"
+					"All files in this folder will be DELETED when SLADE exits.\r\n"
+					"Please make sure there are no important files in the folder.",
+					"Warning",
+					wxOK | wxCANCEL | wxICON_WARNING) != wxID_OK)
+					return;
+			}
+		}
+
 		text_custom_dir->SetValue(dlg.GetPath());
 	}
 }
