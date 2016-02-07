@@ -28,11 +28,14 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "InterfacePrefsPanel.h"
-#include "STabCtrl.h"
-#include "Icons.h"
+#include "Graphics/Icons.h"
+#include "UI/STabCtrl.h"
+#include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/gbsizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************

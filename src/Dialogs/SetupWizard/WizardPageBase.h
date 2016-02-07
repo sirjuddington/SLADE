@@ -2,6 +2,8 @@
 #ifndef __WIZARD_PAGE_BASE_H__
 #define __WIZARD_PAGE_BASE_H__
 
+#include <wx/panel.h>
+
 class WizardPageBase : public wxPanel
 {
 private:
