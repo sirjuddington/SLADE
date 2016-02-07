@@ -32,6 +32,7 @@ public:
 
 class ArchiveEntry;
 class wxListBox;
+class wxPanel;
 class TranslationEditorDialog : public wxDialog
 {
 private:

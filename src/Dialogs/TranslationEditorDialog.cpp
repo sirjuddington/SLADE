@@ -38,12 +38,14 @@
 #include "UI/Canvas/PaletteCanvas.h"
 #include "Utility/MathStuff.h"
 #include "Utility/Tokenizer.h"
+#include <wx/bmpbuttn.h>
 #include <wx/checkbox.h>
 #include <wx/ffile.h>
 #include <wx/filedlg.h>
 #include <wx/gbsizer.h>
 #include <wx/listbox.h>
 #include <wx/msgdlg.h>
+#include <wx/panel.h>
 #include <wx/radiobut.h>
 #include <wx/slider.h>
 #include <wx/statbox.h>

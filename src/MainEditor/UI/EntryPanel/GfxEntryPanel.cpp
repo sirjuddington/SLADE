@@ -49,6 +49,7 @@
 #include <wx/slider.h>
 #include <wx/msgdlg.h>
 #include <wx/choicdlg.h>
+#include <wx/bmpbuttn.h>
 
 
 /*******************************************************************

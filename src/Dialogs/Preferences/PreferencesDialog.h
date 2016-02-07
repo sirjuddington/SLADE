@@ -6,6 +6,7 @@
 
 class PrefsPanelBase;
 class BaseResourceArchivesPanel;
+class wxPanel;
 class wxTreebook;
 class PreferencesDialog : public SDialog
 {

@@ -41,6 +41,7 @@
 #include <wx/checkbox.h>
 #include <wx/gbsizer.h>
 #include <wx/radiobut.h>
+#include <wx/settings.h>
 #include <wx/statbox.h>
 #include <wx/stattext.h>
 

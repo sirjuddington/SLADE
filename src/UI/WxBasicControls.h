@@ -10,6 +10,7 @@ class wxMenu;
 class wxRadioButton;
 class wxSizer;
 class wxSlider;
+class wxSpinCtrl;
 class wxStaticBox;
 class wxStaticText;
 class wxTextCtrl;

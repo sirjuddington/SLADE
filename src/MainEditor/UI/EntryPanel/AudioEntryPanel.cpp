@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "AudioEntryPanel.h"
 #include "Audio/MIDIPlayer.h"
-#include "Audio/Modmusic.h"
+#include "Audio/ModMusic.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/Conversions.h"
 #include <wx/bmpbuttn.h>

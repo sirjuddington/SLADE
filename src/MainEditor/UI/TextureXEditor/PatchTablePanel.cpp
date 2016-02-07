@@ -41,6 +41,7 @@
 #include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
+#include <wx/settings.h>
 #include <wx/statbox.h>
 #include <wx/stattext.h>
 #include <wx/textdlg.h>

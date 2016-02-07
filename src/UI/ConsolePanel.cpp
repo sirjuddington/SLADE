@@ -32,6 +32,7 @@
 #include "General/Console/Console.h"
 #include "UI/WxStuff.h"
 #include <wx/textctrl.h>
+#include <wx/settings.h>
 #include <wx/sizer.h>
 
 

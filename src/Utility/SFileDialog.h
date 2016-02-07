@@ -2,6 +2,8 @@
 #ifndef __S_FILE_DIALOG_H__
 #define __S_FILE_DIALOG_H__
 
+#include <wx/filedlg.h>
+
 namespace SFileDialog
 {
 	struct fd_info_t

@@ -4,6 +4,7 @@
 
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
+#include <wx/control.h>
 
 class GLTexture;
 class ThingType;

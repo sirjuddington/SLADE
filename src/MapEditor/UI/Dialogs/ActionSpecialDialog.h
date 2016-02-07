@@ -5,6 +5,7 @@
 #include "UI/SDialog.h"
 #include "UI/WxBasicControls.h"
 #include <wx/dataview.h>
+#include <wx/scrolwin.h>
 
 // A wxDataViewTreeCtrl specialisation showing the
 // action specials and groups in a tree structure

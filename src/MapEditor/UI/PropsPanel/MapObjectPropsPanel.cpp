@@ -44,6 +44,7 @@
 #include <wx/msgdlg.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
+#include <wx/settings.h>
 #include <wx/stattext.h>
 
 

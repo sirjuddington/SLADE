@@ -36,6 +36,7 @@
 #include "MainEditor/MainWindow.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
+#include <wx/bmpbuttn.h>
 #include <wx/checkbox.h>
 #include <wx/gbsizer.h>
 #include <wx/radiobut.h>
