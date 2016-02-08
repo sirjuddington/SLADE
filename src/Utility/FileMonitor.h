@@ -2,6 +2,7 @@
 #ifndef __FILE_MONITOR_H__
 #define __FILE_MONITOR_H__
 
+#include "General/ListenerAnnouncer.h"
 #include <wx/timer.h>
 #include <wx/process.h>
 
@@ -41,6 +42,20 @@ public:
 
 	void	fileModified();
 	void	processTerminated();
+};
+
+class ArchiveEntry;
+class ExternalEditFileMonitor : public FileMonitor, Listener
+{
+private:
+	ArchiveEntry*	entry;
+
+public:
+	ExternalEditFileMonitor(string filename, ArchiveEntry* entry);
+	~ExternalEditFileMonitor();
+
+	void	fileModified();
+	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 };
 
 #endif//__FILE_MONITOR_H__

@@ -51,6 +51,7 @@
 #include "EntryPanel/SwitchesEntryPanel.h"
 #include "EntryPanel/TextEntryPanel.h"
 #include "General/Clipboard.h"
+#include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
@@ -500,6 +501,7 @@ void ArchivePanel::addMenus()
 		menu_entry->AppendSeparator();
 		theApp->getAction("arch_entry_import")->addToMenu(menu_entry, true);
 		theApp->getAction("arch_entry_export")->addToMenu(menu_entry, true);
+		theApp->getAction("arch_entry_openext")->addToMenu(menu_entry, true);
 		menu_entry->AppendSeparator();
 		theApp->getAction("arch_entry_bookmark")->addToMenu(menu_entry, true);
 	}
@@ -1701,6 +1703,15 @@ bool ArchivePanel::pasteEntry()
 	}
 	else
 		return false;
+}
+
+bool ArchivePanel::openEntryExternal()
+{
+	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+	for (unsigned a = 0; a < selection.size(); a++)
+		EntryOperations::openExternal(selection[a], 0);
+
+	return true;
 }
 
 /* ArchivePanel::gfxConvert
@@ -2909,6 +2920,10 @@ bool ArchivePanel::handleAction(string id)
 	else if (id == "arch_entry_exportas")
 		exportEntryAs();
 
+	// Entry->Open in External Editor
+	else if (id == "arch_entry_openext")
+		openEntryExternal();
+
 
 
 	// Context menu actions
@@ -3173,6 +3188,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	bool map_selected = false;
 	bool swan_selected = false;
 //	bool rle_selected = false;
+	string category = "";
 	for (size_t a = 0; a < selection.size(); a++)
 	{
 		// Check for gfx entry
@@ -3253,6 +3269,17 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 				rle_selected = true;
 		}
 #endif
+		if (category != "diff")
+		{
+			if (category == "")
+				category = selection[a]->getType()->getCategory();
+			else
+			{
+				string ed = selection[a]->getType()->getCategory();
+				if (category != ed)
+					category = "diff";
+			}
+		}
 	}
 
 	// Generate context menu
@@ -3274,8 +3301,25 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	theApp->getAction("arch_entry_sort")->addToMenu(&context, true);
 	context.AppendSeparator();
 	theApp->getAction("arch_entry_bookmark")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_opentab")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_crc32")->addToMenu(&context, true);
+	//theApp->getAction("arch_entry_opentab")->addToMenu(&context, true);
+	//theApp->getAction("arch_entry_crc32")->addToMenu(&context, true);
+
+	// Add 'Open In' menu
+	wxMenu* menu_open = new wxMenu();
+
+	// New Tab
+	theApp->getAction("arch_entry_opentab")->addToMenu(menu_open, true);
+	menu_open->AppendSeparator();
+
+	// External executables
+	vector<Executables::external_exe_t> external = Executables::getExternalExes(category);
+	for (unsigned a = 0; a < external.size(); a++)
+		menu_open->Append(-1, "With " + external[a].name);
+	if (menu_open->GetMenuItemCount() > 2)
+		menu_open->AppendSeparator();
+	theApp->getAction("arch_entry_setup_external")->addToMenu(menu_open);
+
+	context.AppendSubMenu(menu_open, "Open")->SetBitmap(Icons::getIcon(Icons::GENERAL, "open"));
 
 	// Add custom menu items
 	wxMenu* custom;

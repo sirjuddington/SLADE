@@ -204,3 +204,70 @@ void DB2MapFileMonitor::processTerminated()
 	// Remove the temp wadfile
 	wxRemoveFile(filename);
 }
+
+
+/*******************************************************************
+ * EXTERNALEDITFILEMONITOR CLASS FUNCTIONS
+ *******************************************************************
+ * A specialisation of FileMonitor to handle entries open externally
+ * for editing. When the file is modified, its data is read back in
+ * to the entry
+ */
+
+/* ExternalEditFileMonitor::ExternalEditFileMonitor
+ * ExternalEditFileMonitor class constructor
+ *******************************************************************/
+ExternalEditFileMonitor::ExternalEditFileMonitor(string filename, ArchiveEntry* entry)
+	: FileMonitor(filename), entry(entry)
+{
+	// Listen to entry parent archive
+	listenTo(entry->getParent());
+}
+
+/* ExternalEditFileMonitor::~ExternalEditFileMonitor
+ * ExternalEditFileMonitor class destructor
+ *******************************************************************/
+ExternalEditFileMonitor::~ExternalEditFileMonitor()
+{
+}
+
+/* ExternalEditFileMonitor::fileModified
+ * Called when the entry file has been modified
+ *******************************************************************/
+void ExternalEditFileMonitor::fileModified()
+{
+	entry->importFile(filename);
+}
+
+/* ExternalEditFileMonitor::onAnnouncement
+ * Called when an announcement is recieved from the parent archive
+ * of the entry being edited externally
+ *******************************************************************/
+void ExternalEditFileMonitor::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
+{
+	if (announcer != entry->getParent())
+		return;
+
+	bool finished = false;
+
+	// Parent archive closed
+	if (event_name == "closed")
+	{
+		wxRemoveFile(filename);
+		finished = true;
+	}
+
+	// Entry removed
+	else if (event_name == "entry_removed")
+	{
+		int index;
+		wxUIntPtr ptr;
+		event_data.read(&index, sizeof(int));
+		event_data.read(&ptr, sizeof(wxUIntPtr));
+		if (wxUIntToPtr(ptr) == entry)
+			finished = true;
+	}
+
+	if (finished)
+		delete this;
+}

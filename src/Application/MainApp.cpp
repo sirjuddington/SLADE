@@ -614,8 +614,9 @@ void MainApp::initActions()
 	new SAction("arch_entry_import", "Import", "import", "Import a file to the selected entry", "kb:el_import");
 	new SAction("arch_entry_export", "Export", "export", "Export the selected entries to files", "kb:el_export");
 	new SAction("arch_entry_bookmark", "Bookmark", "bookmark", "Bookmark the current entry");
-	new SAction("arch_entry_opentab", "Open in Tab", "open", "Open selected entries in separate tabs");
+	new SAction("arch_entry_opentab", "In New Tab", "", "Open selected entries in separate tabs");
 	new SAction("arch_entry_crc32", "Compute CRC-32 Checksum", "text", "Compute the CRC-32 checksums of the selected entries");
+	new SAction("arch_entry_setup_external", "Setup External Editors", "settings", "Open the preferences dialog to set up external editors");
 	new SAction("arch_bas_convertb", "Convert to SWANTBLS", "", "Convert any selected SWITCHES and ANIMATED entries to a single SWANTBLS entry");
 	new SAction("arch_bas_convertz", "Convert to ANIMDEFS", "", "Convert any selected SWITCHES and ANIMATED entries to a single ANIMDEFS entry");
 	new SAction("arch_swan_convert", "Compile to SWITCHES and ANIMATED", "", "Convert SWANTBLS entries into SWITCHES and ANIMATED entries");
@@ -1175,7 +1176,7 @@ void MainApp::readConfigFile()
 				if (token.length())
 				{
 					string path = tz.getToken();
-					Executables::setExePath(token, path);
+					Executables::setGameExePath(token, path);
 				}
 				token = tz.getToken();
 			}

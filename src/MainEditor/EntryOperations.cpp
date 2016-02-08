@@ -440,30 +440,6 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 	return true;
 }
 
-/* EntryOperations::openExternal
- * Opens [entry] in the default OS program for its data type
- *******************************************************************/
-bool EntryOperations::openExternal(ArchiveEntry* entry)
-{
-	if (!entry)
-		return false;
-
-	// Build entry filename
-	wxFileName fn;
-	fn.SetFullName(entry->getName(false));
-	if (entry->getType() != EntryType::unknownType())
-		fn.SetExt(entry->getType()->getExtension());
-
-	// Export to file
-	string path = appPath(fn.GetFullName(), DIR_TEMP);
-	entry->exportFile(path);
-
-	// Open the file externally
-	wxLaunchDefaultApplication(path);
-
-	return true;
-}
-
 /* EntryOperations::openMapDB2
  * Opens the map at [entry] with Doom Builder 2, including all open
  * resource archives. Sets up a FileMonitor to update the map in the
@@ -1610,6 +1586,42 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 
 		return false;
 	}
+
+	return true;
+}
+
+/* EntryOperations::openExternal
+ * Opens [entry] in the default OS program for its data type
+ *******************************************************************/
+bool EntryOperations::openExternal(ArchiveEntry* entry, int exe)
+{
+	if (!entry)
+		return false;
+
+	// Build entry filename
+	wxFileName fn;
+	fn.SetFullName(entry->getName(false));
+	if (entry->getType() != EntryType::unknownType())
+		fn.SetExt(entry->getType()->getExtension());
+
+	// Export to file
+	string path;
+	if (entry->getType()->getEditor() == "gfx")
+	{
+		// For gfx, convert to png first
+		fn.SetExt("png");
+		path = appPath(fn.GetFullName(), DIR_TEMP);
+		exportAsPNG(entry, path);
+	}
+	else
+	{
+		path = appPath(fn.GetFullName(), DIR_TEMP);
+		entry->exportFile(path);
+	}
+
+	// Open the file externally & monitor it for changes
+	wxLaunchDefaultApplication(path);
+	new ExternalEditFileMonitor(path, entry);
 
 	return true;
 }

@@ -32,6 +32,7 @@
 #include "Executables.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
+#include <wx/menu.h>
 
 
 /*******************************************************************
@@ -39,8 +40,9 @@
  *******************************************************************/
 namespace Executables
 {
-	vector<game_exe_t>	game_exes;
-	vector<key_value_t>	exe_paths;
+	vector<game_exe_t>		game_exes;
+	vector<key_value_t>		exe_paths;
+	vector<external_exe_t>	external_exes;
 }
 
 
@@ -81,10 +83,10 @@ unsigned Executables::nGameExes()
 	return game_exes.size();
 }
 
-/* Executables::setExePath
- * Sets the path of executable [id] to [path]
+/* Executables::setGameExePath
+ * Sets the path of game executable [id] to [path]
  *******************************************************************/
-void Executables::setExePath(string id, string path)
+void Executables::setGameExePath(string id, string path)
 {
 	exe_paths.push_back(key_value_t(id, path));
 }
@@ -105,17 +107,17 @@ string Executables::writePaths()
 }
 
 /* Executables::writeExecutables
- * Writes all game executable definitions as text
+ * Writes all executable definitions as text
  *******************************************************************/
 string Executables::writeExecutables()
 {
 	string ret = "executables\n{\n";
 
-	// Go through game exes
+	// Write game exes
 	for (unsigned a = 0; a < game_exes.size(); a++)
 	{
 		// ID
-		ret += S_FMT("\t%s\n\t{\n", game_exes[a].id);
+		ret += S_FMT("\tgame_exe %s\n\t{\n", game_exes[a].id);
 
 		// Name
 		ret += S_FMT("\t\tname = \"%s\";\n", game_exes[a].name);
@@ -130,13 +132,30 @@ string Executables::writeExecutables()
 		ret += "\t}\n\n";
 	}
 
-	ret += "}";
+	// Write external exes
+	for (unsigned a = 0; a < external_exes.size(); a++)
+	{
+		// Name
+		ret += S_FMT("\texternal_exe \"%s\"\n\t{\n", external_exes[a].name);
+
+		// Entry Category
+		ret += S_FMT("\t\tcategory = \"%s\";\n", external_exes[a].category);
+
+		// Path
+		string path = external_exes[a].path;
+		path.Replace("\\", "/");
+		ret += S_FMT("\t\tpath = \"%s\";\n", path);
+
+		ret += "\t}\n\n";
+	}
+
+	ret += "}\n";
 
 	return ret;
 }
 
 /* Executables::init
- * Reads all game executables definitions from the program resource
+ * Reads all executable definitions from the program resource
  * and user dir
  *******************************************************************/
 void Executables::init()
@@ -163,7 +182,7 @@ void Executables::init()
 }
 
 /* Executables::parse
- * Parses a game executables configuration from [p]
+ * Parses an executables configuration from [p]
  *******************************************************************/
 void Executables::parse(Parser* p, bool custom)
 {
@@ -172,61 +191,77 @@ void Executables::parse(Parser* p, bool custom)
 
 	for (unsigned a = 0; a < n->nChildren(); a++)
 	{
-		// Get game_exe_t being parsed
 		ParseTreeNode* exe_node = (ParseTreeNode*)n->getChild(a);
-		game_exe_t* exe = getGameExe(exe_node->getName().Lower());
-		if (!exe)
-		{
-			// Create if new
-			game_exe_t nexe;
-			nexe.custom = custom;
-			game_exes.push_back(nexe);
-			exe = &(game_exes.back());
-		}
+		string type = exe_node->getType();
 
-		exe->id = exe_node->getName();
-		for (unsigned b = 0; b < exe_node->nChildren(); b++)
-		{
-			ParseTreeNode* prop = (ParseTreeNode*)exe_node->getChild(b);
-			string prop_name = prop->getName().Lower();
+		// Game Executable (if type is blank it's a game executable in old config format)
+		if (type == "game_exe" || type.IsEmpty())
+			parseGameExe(exe_node, custom);
 
-			// Config
-			if (prop->getType().Lower() == "config")
+		// External Executable
+		else if (type == "external_exe")
+			parseExternalExe(exe_node);
+	}
+}
+
+/* Executables::parseGameExe
+ * Parses a game executable config from [node]
+ *******************************************************************/
+void Executables::parseGameExe(ParseTreeNode* node, bool custom)
+{
+	// Get game_exe_t being parsed
+	game_exe_t* exe = getGameExe(node->getName().Lower());
+	if (!exe)
+	{
+		// Create if new
+		game_exe_t nexe;
+		nexe.custom = custom;
+		game_exes.push_back(nexe);
+		exe = &(game_exes.back());
+	}
+
+	exe->id = node->getName();
+	for (unsigned b = 0; b < node->nChildren(); b++)
+	{
+		ParseTreeNode* prop = (ParseTreeNode*)node->getChild(b);
+		string prop_name = prop->getName().Lower();
+
+		// Config
+		if (prop->getType().Lower() == "config")
+		{
+			// Update if exists
+			bool found = false;
+			for (unsigned c = 0; c < exe->configs.size(); c++)
 			{
-				// Update if exists
-				bool found = false;
-				for (unsigned c = 0; c < exe->configs.size(); c++)
+				if (exe->configs[c].key == prop->getName())
 				{
-					if (exe->configs[c].key == prop->getName())
-					{
-						exe->configs[c].value = prop->getStringValue();
-						found = true;
-					}
-				}
-
-				// Create if new
-				if (!found)
-				{
-					exe->configs.push_back(key_value_t(prop->getName(), prop->getStringValue()));
-					exe->configs_custom.push_back(custom);
+					exe->configs[c].value = prop->getStringValue();
+					found = true;
 				}
 			}
 
-			// Name
-			else if (prop_name == "name")
-				exe->name = prop->getStringValue();
-
-			// Executable name
-			else if (prop_name == "exe_name")
-				exe->exe_name = prop->getStringValue();
+			// Create if new
+			if (!found)
+			{
+				exe->configs.push_back(key_value_t(prop->getName(), prop->getStringValue()));
+				exe->configs_custom.push_back(custom);
+			}
 		}
 
-		// Set path if loaded
-		for (unsigned pa = 0; pa < exe_paths.size(); pa++)
-		{
-			if (exe_paths[pa].key == exe->id)
-				exe->path = exe_paths[pa].value;
-		}
+		// Name
+		else if (prop_name == "name")
+			exe->name = prop->getStringValue();
+
+		// Executable name
+		else if (prop_name == "exe_name")
+			exe->exe_name = prop->getStringValue();
+	}
+
+	// Set path if loaded
+	for (unsigned pa = 0; pa < exe_paths.size(); pa++)
+	{
+		if (exe_paths[pa].key == exe->id)
+			exe->path = exe_paths[pa].value;
 	}
 }
 
@@ -297,4 +332,130 @@ bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
 	}
 	else
 		return false;
+}
+
+/* Executables::nExternalExes
+ * Returns the number of external executables for [category], or
+ * all if [category] is not specified
+ *******************************************************************/
+int Executables::nExternalExes(string category)
+{
+	int num = 0;
+	for (unsigned a = 0; a < external_exes.size(); a++)
+		if (category == "" || external_exes[a].category == category)
+			num++;
+
+	return num;
+}
+
+/* Executables::getExternalExe
+ * Returns the external executable matching [name] and [category].
+ * If [category] is empty, it is ignored
+ *******************************************************************/
+Executables::external_exe_t Executables::getExternalExe(string name, string category)
+{
+	for (unsigned a = 0; a < external_exes.size(); a++)
+		if (category == "" || external_exes[a].category == category)
+			if (external_exes[a].name == name)
+				return external_exes[a];
+
+	return external_exe_t();
+}
+
+/* Executables::getExternalExe
+ * Returns a list of all external executables matching [category].
+ * If [category] is empty, it is ignored
+ *******************************************************************/
+vector<Executables::external_exe_t> Executables::getExternalExes(string category)
+{
+	vector<external_exe_t> ret;
+	for (unsigned a = 0; a < external_exes.size(); a++)
+		if (category == "" || external_exes[a].category == category)
+			ret.push_back(external_exes[a]);
+
+	return ret;
+}
+
+/* Executables::parseExternalExe
+ * Parses an external executable config from [node]
+ *******************************************************************/
+void Executables::parseExternalExe(ParseTreeNode* node)
+{
+	external_exe_t exe;
+	exe.name = node->getName();
+
+	for (unsigned a = 0; a < node->nChildren(); a++)
+	{
+		ParseTreeNode* prop = (ParseTreeNode*)node->getChild(a);
+		string prop_name = prop->getName().Lower();
+
+		// Entry category
+		if (prop_name == "category")
+			exe.category = prop->getStringValue();
+
+		// Path
+		else if (prop_name == "path")
+			exe.path = prop->getStringValue();
+	}
+
+	external_exes.push_back(exe);
+}
+
+/* Executables::addExternalExe
+ * Adds a new external executable, if one matching [name] and
+ * [category] doesn't already exist
+ *******************************************************************/
+void Executables::addExternalExe(string name, string path, string category)
+{
+	// Check it doesn't already exist
+	for (unsigned a = 0; a < external_exes.size(); a++)
+		if (external_exes[a].name == name && external_exes[a].category == category)
+			return;
+
+	external_exe_t exe;
+	exe.name = name;
+	exe.path = path;
+	exe.category = category;
+	external_exes.push_back(exe);
+}
+
+/* Executables::setExternalExeName
+ * Sets the name of the external executable matching [name_old] and
+ * [category] to [name_new]
+ *******************************************************************/
+void Executables::setExternalExeName(string name_old, string name_new, string category)
+{
+	for (unsigned a = 0; a < external_exes.size(); a++)
+		if (external_exes[a].name == name_old && external_exes[a].category == category)
+		{
+			external_exes[a].name = name_new;
+			return;
+		}
+}
+
+/* Executables::setExternalExePath
+ * Sets the path of the external executable matching [name] and
+ * [category] to [path]
+ *******************************************************************/
+void Executables::setExternalExePath(string name, string path, string category)
+{
+	for (unsigned a = 0; a < external_exes.size(); a++)
+		if (external_exes[a].name == name && external_exes[a].category == category)
+		{
+			external_exes[a].path = path;
+			return;
+		}
+}
+
+/* Executables::removeExternalExe
+ * Removes the external executable matching [name] and [category]
+ *******************************************************************/
+void Executables::removeExternalExe(string name, string category)
+{
+	for (unsigned a = 0; a < external_exes.size(); a++)
+		if (external_exes[a].name == name && external_exes[a].category == category)
+		{
+			external_exes.erase(external_exes.begin() + a);
+			return;
+		}
 }
