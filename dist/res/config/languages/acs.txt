@@ -361,10 +361,13 @@ acs_z : acs {
 
 		NO_CHANGE, 
 
-		SECF_SILENT, SECF_NOFALLINGDAMAGE, SECF_FLOORDROP, SECF_NORESPAWN, 
+		SECF_SILENT, SECF_NOFALLINGDAMAGE, SECF_FLOORDROP, SECF_NORESPAWN, SECF_FRICTION,
+		SECF_PUSH, SECF_SILENTMOVE, SECF_DMGTERRAINFX, SECF_DMGENDGODMODE, SECF_DMGENDLEVEL,
+		SECF_DMGHAZARD,
 
 		BLOCKF_CREATURES, BLOCKF_MONSTERS, BLOCKF_PLAYERS, BLOCKF_FLOATERS, BLOCKF_HITSCAN,
 		BLOCKF_PROJECTILES, BLOCKF_EVERYTHING, BLOCKF_RAILING, BLOCKF_USE, BLOCKF_SIGHT, 
+		BLOCKF_SOUND,
 
 		FOGP_DENSITY, FOGP_OUTSIDEDENSITY, FOGP_SKYFOG, 
 
@@ -414,7 +417,13 @@ acs_z : acs {
 		WARPF_ABSOLUTEOFFSET, WARPF_ABSOLUTEANGLE, WARPF_USECALLERANGLE, WARPF_NOCHECKPOSITION,
 		WARPF_INTERPOLATE, WARPF_WARPINTERPOLATION, WARPF_COPYINTERPOLATION, WARPF_STOP,
 		WARPF_TOFLOOR, WARPF_TESTONLY, WARPF_ABSOLUTEPOSITION, WARPF_BOB, WARPF_MOVEPTR,
-		WARPF_USEPTR
+		WARPF_USEPTR, WARPF_COPYVELOCITY, WARPF_COPYPITCH,
+
+		// PickActor flags
+		PICKAF_FORCETID, PICKAF_RETURNTID,
+
+		// Used by Thing_SetTranslation
+		TRANSLATION_ICE
 	}
 
 	functions
@@ -565,7 +574,7 @@ acs_z : acs {
 		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
 		Sector_SetColor = "int tag, int r, int g, int b, int desaturate";
 		Sector_SetCurrent = "int tag, int amount, int angle, int useline";
-		Sector_SetDamage = "int tag, int amount, int mod";
+		Sector_SetDamage = "int tag, int amount, int mod, int interval, int leaky";
 		Sector_SetFade = "int tag, int r, int g, int b";
 		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetFloorScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
@@ -699,6 +708,7 @@ acs_z : acs {
 		GetLineRowOffset;
 		GetLineUDMFFixed = "int lineid, string key";
 		GetLineUDMFInt = "int lineid, string key";
+		GetMaxInventory = "int tid, str inventory";
 		GetPlayerInfo = "int playernumber, int playerinfo";
 		GetPlayerInput = "int player, int input";
 		GetPolyobjX = "int polynum";
@@ -727,13 +737,13 @@ acs_z : acs {
 		IsPointerEqual = "int ptr_select1, int ptr_select2, [int tid1], [int tid2]";
 		IsTIDUsed = "int tid";
 		LineSide;
-		LineAttack = "int tid, fixed angle, fixed pitch, int damage, [str pufftype], [str damagetype], [fixed range], [int flags]";
+		LineAttack = "int tid, fixed angle, fixed pitch, int damage, [str pufftype], [str damagetype], [fixed range], [int flags], [int pufftid]";
 		LocalAmbientSound = "str sound, int volume";
 		LocalSetMusic = "str song, [int order]";
 		Log = "type:expression";
 		MorphActor = "int tid, [str playerclass, [str monsterclass, [int duration, [int style, [str morphflash, [str unmorphflash]]]]]]";
 		NamedScriptWait = "str script";
-		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask], [bool force_tid]";
+		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask], [int flags]";
 		PlayActorSound = "int tid, int sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
 		PlayerClass = "int playernumber";
 		PlayerCount;
@@ -773,7 +783,7 @@ acs_z : acs {
 		SetFloorTrigger = "int tag, int height, int special [, int arg1 [, int arg2 [, int arg3 [, int arg4 [, int arg5]]]]]";
 		SetFont = "str fontlump";
 		SetGravity = "fixed amount";
-		SetHUDClipRect = "int x; int y, int width, int height[, int wrapwidth]";
+		SetHUDClipRect = "int x, int y, int width, int height [, int wrapwidth [, bool aspectratio]]";
 		SetHUDSize = "int width, int height, bool statusbar";
 		SetHUDWrapWidth = "int wrapwidth";
 		SetLineActivation = "int lineid, int activation";
@@ -787,6 +797,8 @@ acs_z : acs {
 		SetMusic = "str song, [int order]";
 		SetPointer = "int assign_slot, int tid[, int pointer_selector[, int flags]]";
 		SetResultValue = "int value";
+		SetSectorDamage = "int tag, int amount [, str damagetype [, int interval [, int leaky]]]";
+		SetSectorTerrain = "int tag, int whichplane, str terraintype";
 		SetSkyScrollSpeed = "int sky, float skyspeed";
 		SetThingSpecial = "int tid, int special [, int arg0 [, int arg1 [, int arg2 [, int arg3 [, int arg4]]]]]";
 		SetUserArray = "int tid, str name, int pos, int value";
@@ -803,6 +815,7 @@ acs_z : acs {
  		Spawn = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
 		SpawnDecal = "int tid, str decalname, [int flags], [fixed angle], [fixed zoffset], [fixed distance]";
 		SpawnForced = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
+		SpawnParticle = "str color [, bool fullbright [, int lifetime [, int size [, fixed x [, fixed y [, fixed z [, fixed xvel [, fixed yvel [, fixed zvel [, fixed accelx [, fixed accely [, fixed accelz [, int startalpha [, int fadestep]]]]]]]]]]]]]]";
 		SpawnProjectile = "int tid, string type, int angle, int speed, int vspeed, int gravity, int newtid";
 		SpawnSpot = "str classname, int spottid [, int tid [, int angle]]";
 		SpawnSpotFacing = "str classname, int spottid [, int tid]";
@@ -836,7 +849,7 @@ acs_z : acs {
 		UseInventory = "str classname";
 		VectorAngle = "int x, int y";
 		VectorLength = "int x, int y";
-		Warp = "int tid, fixed xofs, fixed yofs, fixed zofs, fixed angle, int flags, [str success_state], [bool exact], [fixed heightoffset]";
+		Warp = "int tid, fixed xofs, fixed yofs, fixed zofs, fixed angle, int flags, [str success_state], [bool exact], [fixed heightoffset], [fixed radiusoffset], [fixed pitch]";
 		
 		// Skulltag functions
 		BlueCount;
