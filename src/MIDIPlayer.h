@@ -43,12 +43,7 @@ public:
 
 	bool	isSoundfontLoaded() { return fs_soundfont_ids.size() > 0; }
 	bool	isReady();
-
-	void resetPlayer()
-	{
-		stop();
-		instance = new MIDIPlayer();
-	}
+	void	resetPlayer();
 
 	bool	initFluidsynth();
 	bool	reloadSoundfont();

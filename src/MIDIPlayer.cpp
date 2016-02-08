@@ -126,6 +126,16 @@ bool MIDIPlayer::isReady()
 	return false;
 }
 
+void MIDIPlayer::resetPlayer()
+{
+	stop();
+
+	if (instance)
+		delete instance;
+
+	instance = new MIDIPlayer();
+}
+
 
 /* MIDIPlayer::initFluidsynth
  * Initialises fluidsynth
