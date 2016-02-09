@@ -561,28 +561,7 @@ void MainApp::initActions()
 	new SAction("aman_save_a", "&Save", "save", "Save the selected Archive", "Ctrl+S");
 	new SAction("aman_saveas_a", "Save &As", "saveas", "Save the selected Archive to a new file", "Ctrl+Shift+S");
 	new SAction("aman_close_a", "&Close", "close", "Close the selected Archive", "Ctrl+W");
-
-	// Recent files
-	new SAction("aman_recent1", "<insert recent file name>", "");
-	new SAction("aman_recent2", "<insert recent file name>", "");
-	new SAction("aman_recent3", "<insert recent file name>", "");
-	new SAction("aman_recent4", "<insert recent file name>", "");
-	new SAction("aman_recent5", "<insert recent file name>", "");
-	new SAction("aman_recent6", "<insert recent file name>", "");
-	new SAction("aman_recent7", "<insert recent file name>", "");
-	new SAction("aman_recent8", "<insert recent file name>", "");
-	new SAction("aman_recent9", "<insert recent file name>", "");
-	new SAction("aman_recent10", "<insert recent file name>", "");
-	new SAction("aman_recent11", "<insert recent file name>", "");
-	new SAction("aman_recent12", "<insert recent file name>", "");
-	new SAction("aman_recent13", "<insert recent file name>", "");
-	new SAction("aman_recent14", "<insert recent file name>", "");
-	new SAction("aman_recent15", "<insert recent file name>", "");
-	new SAction("aman_recent16", "<insert recent file name>", "");
-	new SAction("aman_recent17", "<insert recent file name>", "");
-	new SAction("aman_recent18", "<insert recent file name>", "");
-	new SAction("aman_recent19", "<insert recent file name>", "");
-	new SAction("aman_recent20", "<insert recent file name>", "");
+	new SAction("aman_recent", "<insert recent file name>", "", "", "", 0, -1, -1, 20);
 
 	// ArchivePanel
 	new SAction("arch_newentry", "New Entry", "newentry", "Create a new empty entry");
