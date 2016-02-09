@@ -1292,7 +1292,7 @@ SAction* MainApp::getAction(string id)
 /* MainApp::doAction
  * Performs the SAction matching [id]
  *******************************************************************/
-bool MainApp::doAction(string id)
+bool MainApp::doAction(string id, int wx_id_offset)
 {
 	// Toggle action if necessary
 	toggleAction(id);
@@ -1301,6 +1301,7 @@ bool MainApp::doAction(string id)
 	bool handled = false;
 	for (unsigned a = 0; a < action_handlers.size(); a++)
 	{
+		action_handlers[a]->wx_id_offset = wx_id_offset;
 		if (action_handlers[a]->handleAction(id))
 		{
 			handled = true;
@@ -1355,11 +1356,13 @@ void MainApp::onMenu(wxCommandEvent& e)
 	// Find applicable action
 	string action = "";
 	SAction* s_action = NULL;
+	int wx_id_offset = 0;
 	for (unsigned a = 0; a < actions.size(); a++)
 	{
-		if (actions[a]->getWxId() == e.GetId())
+		if (actions[a]->isWxId(e.GetId()))
 		{
 			action = actions[a]->getId();
+			wx_id_offset = e.GetId() - actions[a]->getWxId();
 			s_action = actions[a];
 			break;
 		}
@@ -1370,7 +1373,7 @@ void MainApp::onMenu(wxCommandEvent& e)
 	if (!action.IsEmpty())
 	{
 		current_action = action;
-		handled = doAction(action);
+		handled = doAction(action, wx_id_offset);
 
 		// Check if triggering object is a menu item
 		if (s_action && s_action->type == SAction::CHECK)
