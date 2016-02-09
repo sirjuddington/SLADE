@@ -32,15 +32,14 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "QuickTextureOverlay3d.h"
-#include "OpenGL/Drawing.h"
 #include "General/ResourceManager.h"
-#include "OpenGL/GLTexture.h"
-#include "MapEditor/MapEditor.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapEditor.h"
+#include "MapEditor/MapEditorWindow.h"
+#include "OpenGL/Drawing.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
+#include "QuickTextureOverlay3d.h"
 
 
 /*******************************************************************

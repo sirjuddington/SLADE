@@ -544,7 +544,7 @@ void MapCanvas::drawGrid()
 	}
 
 	OpenGL::setColour(ColourConfiguration::getColour("map_grid"), false);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	OpenGL::setBlend(0);
 
 	// Determine smallest grid size to bother drawing
 	int grid_hidelevel = 2.0 / view_scale;
@@ -1493,7 +1493,7 @@ void MapCanvas::draw()
 		switch (editor->editMode())
 		{
 		case MapEditor::MODE_VERTICES:	info_vertex.update(editor->getHilightedVertex()); break;
-		case MapEditor::MODE_LINES:		info_line.update(editor->getHilightedLine()); break;
+		case MapEditor::MODE_LINES:		info_line.update(editor->getHilightedLine(), theMapEditor->currentMapDesc().format); break;
 		case MapEditor::MODE_SECTORS:	info_sector.update(editor->getHilightedSector()); break;
 		case MapEditor::MODE_THINGS:	info_thing.update(editor->getHilightedThing()); break;
 		}
@@ -1501,16 +1501,38 @@ void MapCanvas::draw()
 
 	// Draw current info overlay
 	glDisable(GL_TEXTURE_2D);
+	OpenGL::resetBlend();
 	if (editor->editMode() == MapEditor::MODE_VERTICES)
-		info_vertex.draw(GetSize().y, GetSize().x, anim_info_fade);
+	{
+		info_vertex.updateLayout(dim2_t(GetSize().x, -1));
+		info_vertex.setPosition(point2_t(0, GetSize().y - info_vertex.getHeight()));
+		info_vertex.draw(point2_t(0, 0));
+	}
 	else if (editor->editMode() == MapEditor::MODE_LINES)
-		info_line.draw(GetSize().y, GetSize().x, anim_info_fade);
+	{
+		info_line.updateLayout(dim2_t(GetSize().x, -1));
+		info_line.setPosition(point2_t(0, GetSize().y - info_line.getHeight()));
+		info_line.draw(point2_t(0, 0));
+	}
 	else if (editor->editMode() == MapEditor::MODE_SECTORS)
-		info_sector.draw(GetSize().y, GetSize().x, anim_info_fade);
+	{
+		info_sector.updateLayout(dim2_t(GetSize().x, -1));
+		info_sector.setPosition(point2_t(0, GetSize().y - info_sector.getHeight()));
+		info_sector.draw(point2_t(0, 0));
+	}
 	else if (editor->editMode() == MapEditor::MODE_THINGS)
-		info_thing.draw(GetSize().y, GetSize().x, anim_info_fade);
+	{
+		info_thing.updateLayout(dim2_t(GetSize().x, -1));
+		info_thing.setPosition(point2_t(0, GetSize().y - info_thing.getHeight()));
+		info_thing.draw(point2_t(0, 0));
+	}
 	else if (editor->editMode() == MapEditor::MODE_3D)
-		info_3d.draw(GetSize().y, GetSize().x, GetSize().x * 0.5, anim_info_fade);
+	{
+		info_3d.updateLayout(dim2_t(GetSize().x, -1));
+		info_3d.setPosition(point2_t(0, GetSize().y - info_3d.getHeight()));
+		info_3d.draw(point2_t(0, 0));
+		//info_3d.draw(GetSize().y, GetSize().x, GetSize().x * 0.5, anim_info_fade);
+	}
 
 	// Draw current fullscreen overlay
 	if (overlay_current)
@@ -2310,7 +2332,7 @@ void MapCanvas::updateInfoOverlay()
 	switch (editor->editMode())
 	{
 	case MapEditor::MODE_VERTICES:	info_vertex.update(editor->getHilightedVertex()); break;
-	case MapEditor::MODE_LINES:		info_line.update(editor->getHilightedLine()); break;
+	case MapEditor::MODE_LINES:		info_line.update(editor->getHilightedLine(), theMapEditor->currentMapDesc().format); break;
 	case MapEditor::MODE_SECTORS:	info_sector.update(editor->getHilightedSector()); break;
 	case MapEditor::MODE_THINGS:	info_thing.update(editor->getHilightedThing()); break;
 	}

@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "BrowserItem.h"
 #include "BrowserWindow.h"
+#include "Graphics/Font/SFont.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
 
@@ -101,7 +102,7 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 	{
 		// Create text box if needed
 		if (!text_box)
-			text_box = new TextBox(S_FMT("%d\n%s", index, name), font, 144, 16);
+			text_box = new STextBox(S_FMT("%d\n%s", index, name), font, 144, 16);
 		
 		int top = y;
 		top += ((size - text_box->getHeight()) * 0.5);

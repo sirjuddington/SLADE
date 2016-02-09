@@ -26,6 +26,53 @@
  *******************************************************************/
 
 
+#include "Main.h"
+#include "VertexInfoOverlay.h"
+#include "MapEditor/SLADEMap/MapVertex.h"
+#include "OpenGL/GLUI/TextBox.h"
+
+VertexInfoOverlay::VertexInfoOverlay() : GLUI::Panel(NULL)
+{
+	setSize(dim2_t(500, 20));
+	text_coords = new GLUI::TextBox(this, "");
+
+	setBGCol(rgba_t(0, 0, 0, 160));
+}
+
+void VertexInfoOverlay::update(MapVertex* vertex)
+{
+	if (!vertex)
+	{
+		text_coords->setText("");
+		return;
+	}
+
+	// Update info string
+	string text = S_FMT("Vertex %d: (%d, %d)", vertex->getIndex(), (int)vertex->xPos(), (int)vertex->yPos());
+
+	if (Global::debug)
+		text += S_FMT(" (%d)", vertex->getId());
+
+	text_coords->setText(text);
+}
+
+void VertexInfoOverlay::updateLayout(dim2_t fit)
+{
+	text_coords->updateLayout(dim2_t(fit.x, -1));
+	text_coords->setPosition(point2_t(4, 4));
+	setSize(dim2_t(fit.x, text_coords->bottom() + 4));
+}
+
+
+
+
+
+
+
+
+
+#if 0
+
 /*******************************************************************
  * INCLUDES
  *******************************************************************/
@@ -117,3 +164,5 @@ void VertexInfoOverlay::draw(int bottom, int right, float alpha)
 	// Done
 	glEnable(GL_LINE_SMOOTH);
 }
+
+#endif

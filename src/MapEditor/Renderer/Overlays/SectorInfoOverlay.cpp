@@ -26,6 +26,105 @@
  *******************************************************************/
 
 
+#include "Main.h"
+#include "SectorInfoOverlay.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/SLADEMap/MapSector.h"
+#include "OpenGL/Drawing.h"
+#include "OpenGL/GLUI/LayoutHelpers.h"
+#include "OpenGL/GLUI/TextBox.h"
+#include "OpenGL/GLUI/TextureBox.h"
+#include "OpenGL/OpenGL.h"
+
+using namespace GLUI;
+
+SectorInfoOverlay::SectorInfoOverlay()
+	: Panel(NULL),
+	text_info(new TextBox(this, "", Drawing::FONT_CONDENSED)),
+	tex_floor(new TextureBox(this)),
+	tex_ceiling(new TextureBox(this))
+{
+	setBGCol(rgba_t(0, 0, 0, 160));
+	tex_ceiling->setMargin(padding_t(4, 8, 8, 2));
+	tex_floor->setMargin(padding_t(4, 8, 4, 2));
+	text_info->setMargin(padding_t(4, 8, 4, 4));
+}
+
+SectorInfoOverlay::~SectorInfoOverlay()
+{
+}
+
+void SectorInfoOverlay::update(MapSector* sector)
+{
+	if (!sector)
+	{
+		setVisible(false);
+		return;
+	}
+
+	setVisible(true);
+	string info_text;
+
+	// Info (index + type)
+	int t = sector->intProperty("special");
+	string type = S_FMT("%s (Type %d)", theGameConfiguration->sectorTypeName(t), t);
+	if (Global::debug)
+		info_text += S_FMT("Sector #%d (%d): %s\n", sector->getIndex(), sector->getId(), type);
+	else
+		info_text += S_FMT("Sector #%d: %s\n", sector->getIndex(), type);
+
+	// Height
+	int fh = sector->intProperty("heightfloor");
+	int ch = sector->intProperty("heightceiling");
+	info_text += S_FMT("Height: %d to %d (%d total)\n", fh, ch, ch - fh);
+
+	// Brightness
+	info_text += S_FMT("Brightness: %d\n", sector->intProperty("lightlevel"));
+
+	// Tag
+	info_text += S_FMT("Tag: %d", sector->intProperty("id"));
+
+	// Info text
+	text_info->setText(info_text);
+
+	// Textures
+	tex_floor->setTexture(TextureBox::FLAT, sector->getFloorTex(), "F: ");
+	tex_ceiling->setTexture(TextureBox::FLAT, sector->getCeilingTex(), "C: ");
+}
+
+void SectorInfoOverlay::drawWidget(point2_t pos)
+{
+	glDisable(GL_TEXTURE_2D);
+
+	OpenGL::setColour(getBGCol());
+	Drawing::drawFilledRect(
+		fpoint2_t(pos.x, pos.y + text_info->top() - 4),
+		fpoint2_t(pos.x + size.x, pos.y + getHeight())
+		);
+}
+
+void SectorInfoOverlay::updateLayout(dim2_t fit)
+{
+	rect_t rect(0, 0, fit.x, 1000);
+
+	// Ceiling texture
+	tex_ceiling->updateLayout();
+	LayoutHelpers::placeWidgetWithin(tex_ceiling, rect, ALIGN_RIGHT, ALIGN_BOTTOM);
+
+	// Floor texture
+	tex_floor->updateLayout();
+	LayoutHelpers::placeWidgetToLeft(tex_floor, tex_ceiling, USE_MARGIN, ALIGN_BOTTOM);
+
+	// Info text
+	text_info->updateLayout(dim2_t(tex_floor->left(true) - text_info->getMargin().horizontal(), -1));
+	LayoutHelpers::placeWidgetWithin(text_info, rect, ALIGN_LEFT, ALIGN_BOTTOM);
+
+	fitToChildren();
+}
+
+
+#if 0
+
 /*******************************************************************
  * INCLUDES
  *******************************************************************/
@@ -55,7 +154,7 @@ EXTERN_CVAR(Int, gl_font_size)
  *******************************************************************/
 SectorInfoOverlay::SectorInfoOverlay()
 {
-	text_box = new TextBox("", Drawing::FONT_CONDENSED, 100, 16 * (gl_font_size / 12.0));
+	text_box = new STextBox("", Drawing::FONT_CONDENSED, 100, 16 * (gl_font_size / 12.0));
 	last_size = 100;
 }
 
@@ -217,3 +316,5 @@ void SectorInfoOverlay::drawTexture(float alpha, int x, int y, string texture, s
 	texture.Prepend(pos);
 	Drawing::drawText(texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
 }
+
+#endif

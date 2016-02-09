@@ -47,6 +47,7 @@ struct point2_t
 		return (x == rhs.x && y == rhs.y);
 	}
 };
+typedef point2_t dim2_t;
 
 // fpoint2_t: A 2d coordinate (or vector) with floating-point precision
 struct fpoint2_t
@@ -153,6 +154,7 @@ struct fpoint2_t
 		return (x != rhs.x || y != rhs.y);
 	}
 };
+typedef fpoint2_t fdim2_t;
 
 
 // fpoint3_t: A 3d coordinate (or vector) with floating-point precision

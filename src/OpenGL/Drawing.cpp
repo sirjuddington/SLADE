@@ -126,8 +126,10 @@ public:
 
 #ifdef USE_SFML_RENDERWINDOW
 	sf::Font*	getFont(int font);
+	int			getLineHeight(int font);
 #else
 	FTFont*		getFont(int font);
+	int			getLineHeight(int font);
 #endif
 
 };
@@ -320,6 +322,22 @@ FTFont* FontManager::getFont(int font)
 	default:							return font_normal;
 	};
 	return NULL;
+}
+#endif // USE_SFML_RENDERWINDOW
+
+/* FontManager::getFont
+ * Returns the line height for [font]
+ *******************************************************************/
+#ifdef USE_SFML_RENDERWINDOW
+int FontManager::getLineHeight(int font)
+{
+	return (int)getFont(font)->getLineSpacing(gl_font_size);
+}
+#else // USE_SFML_RENDERWINDOW
+int FontManager::getLineHeight(int font)
+{
+	// TODO: get from font
+	return gl_font_size * 1.2;
 }
 #endif // USE_SFML_RENDERWINDOW
 
@@ -811,6 +829,15 @@ void Drawing::setTextState(bool set)
 #endif
 }
 
+int Drawing::getFontLineHeight(int font)
+{
+#ifdef USE_SFML_RENDERWINDOW
+	return theFontManager->getFont(font)->getLineSpacing(gl_font_size);
+#else
+	return textExtents("Wg", font).y;
+#endif
+}
+
 /* Drawing::drawHud
  * Draws doom hud offset guide lines, from the center
  *******************************************************************/
@@ -947,13 +974,15 @@ wxColour Drawing::darkColour(const wxColour& colour, float percent)
 
 
 /*******************************************************************
- * TEXTBOX CLASS FUNCTIONS
+ * STEXTBOX CLASS FUNCTIONS
  *******************************************************************/
 
-/* TextBox::TextBox
- * TextBox class constructor
+using namespace Drawing;
+
+/* STextBox::STextBox
+ * STextBox class constructor
  *******************************************************************/
-TextBox::TextBox(string text, int font, int width, int line_height)
+STextBox::STextBox(string text, int font, int width, int line_height)
 {
 	this->font = font;
 	this->width = width;
@@ -962,11 +991,22 @@ TextBox::TextBox(string text, int font, int width, int line_height)
 	setText(text);
 }
 
-/* TextBox::split
+/* STextBox::getLineHeight
+ * Returns the current line height
+ *******************************************************************/
+int STextBox::getLineHeight()
+{
+	if (line_height < 0)
+		return theFontManager->getLineHeight(font);
+	else
+		return line_height;
+}
+
+/* STextBox::split
  * Splits [text] into separate lines (split by newlines), also
  * performs further splitting to word wrap the text within the box
  *******************************************************************/
-void TextBox::split(string text)
+void STextBox::split(string text)
 {
 	// Clear current text lines
 	lines.clear();
@@ -1051,29 +1091,47 @@ void TextBox::split(string text)
 		height = line_height * lines.size();
 }
 
-/* TextBox::setText
+/* STextBox::setText
  * Sets the text box text
  *******************************************************************/
-void TextBox::setText(string text)
+void STextBox::setText(string text)
 {
 	this->text = text;
 	split(text);
 }
 
-/* TextBox::setSize
+/* STextBox::setSize
  * Sets the text box width
  *******************************************************************/
-void TextBox::setSize(int width)
+void STextBox::setSize(int width)
 {
 	this->width = width;
 	split(this->text);
 }
 
-/* TextBox::draw
+/* STextBox::setFont
+ * Sets the text box font
+ *******************************************************************/
+void STextBox::setFont(int font)
+{
+	this->font = font;
+	split(this->text);
+}
+
+/* STextBox::draw
  * Draws the text box
  *******************************************************************/
-void TextBox::draw(int x, int y, rgba_t colour, int alignment)
+void STextBox::draw(int x, int y, rgba_t colour, int alignment)
 {
+	if (lines.empty())
+		return;
+
+	// Adjust x for alignment
+	if (alignment == Drawing::ALIGN_CENTER)
+		x = x + (width * 0.5);
+	else if (alignment == Drawing::ALIGN_RIGHT)
+		x = x + width;
+
 	frect_t b;
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);

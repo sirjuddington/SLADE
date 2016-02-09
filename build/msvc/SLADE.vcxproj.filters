@@ -157,6 +157,9 @@
     <Filter Include="Utility\Property List">
       <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenGL\GLUI">
+      <UniqueIdentifier>{6066c6f2-dbf1-40c3-8a33-f3659be6e54a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
@@ -1353,6 +1356,27 @@
     <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\GridPanel.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\ImageBox.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\LayoutHelpers.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\Panel.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\TextBox.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\TextureBox.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\Widget.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2348,6 +2372,30 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\WxBasicControls.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\GLUI.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\GridPanel.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\ImageBox.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\LayoutHelpers.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\Panel.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\TextBox.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\TextureBox.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\Widget.h">
+      <Filter>OpenGL\GLUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

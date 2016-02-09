@@ -57,6 +57,7 @@ namespace Drawing
 	fpoint2_t textExtents(string text, int font = FONT_NORMAL);
 	void enableTextStateReset(bool enable = true);
 	void setTextState(bool set = true);
+	int getFontLineHeight(int font);
 
 	// Specific
 	void drawHud();
@@ -75,8 +76,8 @@ namespace Drawing
 	wxColour darkColour(const wxColour& colour, float percent);
 }
 
-// TextBox class
-class TextBox
+// STextBox class
+class STextBox
 {
 private:
 	string			text;
@@ -89,14 +90,16 @@ private:
 	void	split(string text);
 
 public:
-	TextBox(string text, int font, int width, int line_height = -1);
-	~TextBox() {}
+	STextBox(string text, int font, int width, int line_height = -1);
+	~STextBox() {}
 
 	int		getHeight() { return height; }
 	int		getWidth() { return width; }
+	int		getLineHeight();
 	void	setText(string text);
 	void	setSize(int width);
 	void	setLineHeight(int height) { line_height = height; }
+	void	setFont(int font);
 	void	draw(int x, int y, rgba_t colour = COL_WHITE, int alignment = Drawing::ALIGN_LEFT);
 };
 

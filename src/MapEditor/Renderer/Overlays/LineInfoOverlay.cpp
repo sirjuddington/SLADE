@@ -26,6 +26,221 @@
  *******************************************************************/
 
 
+#include "Main.h"
+#include "LineInfoOverlay.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/SLADEMap/MapLine.h"
+#include "MapEditor/SLADEMap/MapSector.h"
+#include "MapEditor/SLADEMap/MapSide.h"
+#include "OpenGL/Drawing.h"
+#include "OpenGL/GLUI/LayoutHelpers.h"
+#include "OpenGL/GLUI/TextBox.h"
+#include "OpenGL/GLUI/TextureBox.h"
+#include "OpenGL/OpenGL.h"
+#include "Utility/MathStuff.h"
+
+using namespace GLUI;
+
+LineSideGLPanel::LineSideGLPanel(Widget* parent, string side) : Panel(parent), side(side), bg_height(0)
+{
+	tex_lower = new TextureBox(this);
+	tex_lower->setMargin(padding_t(4));
+
+	tex_middle = new TextureBox(this);
+	tex_middle->setMargin(padding_t(4));
+
+	tex_upper = new TextureBox(this);
+	tex_upper->setMargin(padding_t(4));
+
+	text_info = new GLUI::TextBox(this, "INFO\nOFFSETS");
+
+	setMargin(padding_t(4, 0));
+}
+
+LineSideGLPanel::~LineSideGLPanel()
+{
+}
+
+void LineSideGLPanel::update(MapSide* s, bool needs_upper, bool needs_middle, bool needs_lower)
+{
+	if (!s)
+	{
+		setVisible(false);
+		return;
+	}
+	
+	setVisible(true);
+
+	int xoff = s->intProperty("offsetx");
+	int yoff = s->intProperty("offsety");
+
+	string info;
+	if (Global::debug)
+		info = S_FMT("%s Side #%d (%d) (Sector %d)", CHR(side), s->getIndex(), s->getId(), s->getSector()->getIndex());
+	else
+		info = S_FMT("%s Side #%d (Sector %d)", CHR(side), s->getIndex(), s->getSector()->getIndex());
+	info += S_FMT("\nOffsets: (%d, %d)", xoff, yoff);
+	text_info->setText(info);
+
+	tex_lower->setTexture(TextureBox::TEXTURE, s->getTexLower(), "L: ", needs_lower);
+	tex_middle->setTexture(TextureBox::TEXTURE, s->getTexMiddle(), "M: ", needs_middle);
+	tex_upper->setTexture(TextureBox::TEXTURE, s->getTexUpper(), "U: ", needs_upper);
+
+	updateLayout(dim2_t(-1, -1));
+}
+
+void LineSideGLPanel::drawWidget(point2_t pos)
+{
+	/*glDisable(GL_TEXTURE_2D);
+
+	OpenGL::setColour(getBGCol());
+	Drawing::drawFilledRect(fpoint2_t(pos.x, pos.y + getHeight() - bg_height), pos + getSize());*/
+}
+
+void LineSideGLPanel::updateLayout(dim2_t fit)
+{
+	// Upper texture
+	tex_upper->updateLayout();
+	tex_upper->setPosition(point2_t(0, 0));
+
+	// Middle texture
+	tex_middle->updateLayout();
+	LayoutHelpers::placeWidgetToRight(tex_middle, tex_upper, USE_MARGIN, ALIGN_TOP);
+
+	// Lower texture
+	tex_lower->updateLayout();
+	LayoutHelpers::placeWidgetToRight(tex_lower, tex_middle, USE_MARGIN, ALIGN_TOP);
+
+	// Info
+	int width = tex_lower->right() - tex_upper->left();
+	text_info->updateLayout(dim2_t(width, -1));
+	LayoutHelpers::placeWidgetBelow(text_info, tex_upper, USE_MARGIN, ALIGN_LEFT);
+
+	// Size panel to fit
+	fitToChildren();
+}
+
+
+LineInfoOverlay::LineInfoOverlay() : Panel(NULL)
+{
+	text_info = new GLUI::TextBox(this, "LINE INFO");
+	ls_front = new LineSideGLPanel(this, "Front");
+	ls_back = new LineSideGLPanel(this, "Back");
+
+	text_info->setMargin(padding_t(4));
+}
+
+LineInfoOverlay::~LineInfoOverlay()
+{
+}
+
+void LineInfoOverlay::update(MapLine* line, int map_format)
+{
+	if (!line)
+	{
+		text_info->setText("");
+		ls_front->update(NULL);
+		ls_back->update(NULL);
+		return;
+	}
+
+	string info_text;
+
+	// General line info
+	if (Global::debug)
+		info_text += (S_FMT("Line #%d (%d)\n", line->getIndex(), line->getId()));
+	else
+		info_text += (S_FMT("Line #%d\n", line->getIndex()));
+	info_text += (S_FMT("Length: %d\n", MathStuff::round(line->getLength())));
+
+	// Line special
+	int as_id = line->intProperty("special");
+	if (line->props().propertyExists("macro"))
+	{
+		int macro = line->intProperty("macro");
+		info_text += (S_FMT("Macro: #%d\n", macro));
+	}
+	else
+		info_text += (S_FMT("Special: %d (%s)\n", as_id, theGameConfiguration->actionSpecialName(as_id)));
+
+	// Line trigger
+	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
+		info_text += (S_FMT("Trigger: %s\n", theGameConfiguration->spacTriggerString(line, map_format)));
+
+	// Line args (or sector tag)
+	if (map_format == MAP_HEXEN || map_format == MAP_UDMF)
+	{
+		int args[5];
+		args[0] = line->intProperty("arg0");
+		args[1] = line->intProperty("arg1");
+		args[2] = line->intProperty("arg2");
+		args[3] = line->intProperty("arg3");
+		args[4] = line->intProperty("arg4");
+		string argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args);
+		if (!argstr.IsEmpty())
+			info_text += (S_FMT("%s", argstr));
+		else
+			info_text += ("No Args");
+	}
+	else
+		info_text += (S_FMT("Sector Tag: %d", line->intProperty("arg0")));
+
+	// Line flags
+	if (map_format != MAP_UDMF)
+		info_text += (S_FMT("\nFlags: %s", theGameConfiguration->lineFlagsString(line)));
+
+	text_info->setText(info_text);
+
+	// Check needed textures
+	int needed_tex = line->needsTexture();
+	
+	// Front side
+	ls_front->update(line->s1(),
+		((needed_tex & TEX_FRONT_UPPER) > 0),
+		((needed_tex & TEX_FRONT_MIDDLE) > 0),
+		((needed_tex & TEX_FRONT_LOWER) > 0));
+
+	// Back side
+	ls_back->update(line->s2(),
+		((needed_tex & TEX_BACK_UPPER) > 0),
+		((needed_tex & TEX_BACK_MIDDLE) > 0),
+		((needed_tex & TEX_BACK_LOWER) > 0));
+}
+
+void LineInfoOverlay::drawWidget(point2_t pos)
+{
+	glDisable(GL_TEXTURE_2D);
+
+	OpenGL::setColour(getBGCol());
+	Drawing::drawFilledRect(
+		fpoint2_t(pos.x, pos.y + text_info->top(true)),
+		pos + size
+		);
+}
+
+void LineInfoOverlay::updateLayout(dim2_t fit)
+{
+	// Side panels
+	LayoutHelpers::placeWidgetWithin(ls_front, rect_t(point2_t(0, 0), point2_t(fit.x, 0)), ALIGN_RIGHT, ALIGN_TOP);
+	LayoutHelpers::placeWidgetToLeft(ls_back, ls_front, USE_MARGIN, ALIGN_TOP);
+
+	// Info text
+	int width = ls_back->isVisible() ? ls_back->left(true) : ls_front->left(true);
+	text_info->updateLayout(dim2_t(width, -1));
+	LayoutHelpers::alignBottoms(text_info, ls_front);
+
+	// Size panel to fit
+	fitToChildren();
+
+	ls_front->setBGHeight(text_info->getHeight() + 4);
+	ls_back->setBGHeight(text_info->getHeight() + 4);
+}
+
+
+
+#if 0
+
+
 /*******************************************************************
  * INCLUDES
  *******************************************************************/
@@ -351,3 +566,5 @@ void LineInfoOverlay::drawTexture(float alpha, int x, int y, string texture, boo
 	texture.Prepend(pos);
 	Drawing::drawText(texture, x + (tex_box_size * 0.5), y - line_height, col_fg, Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER);
 }
+
+#endif
