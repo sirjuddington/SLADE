@@ -1717,7 +1717,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 		for (unsigned a = 0; a < things.size(); ++a)
 		{
 			MapThing* thing = things[a];
-			ThingPath path;
+			ThingPath   path;
 			path.from_index = 0;
 			path.to_index   = 0;
 
@@ -2183,7 +2183,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		// Update polygon VBO data if needed
 		if (poly->vboUpdate() > 0)
 		{
-			poly->updateVBOData();
+			poly->updateVBOData(sector_vbo_offsets_[a]);
 			update++;
 			if (update > 200)
 				break;
@@ -2208,7 +2208,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			col.ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 			glColor4f(col.fr(), col.fg(), col.fb(), alpha);
 		}
-		poly->renderVBO(false);
+		poly->renderVBO(sector_vbo_offsets_[a]);
 	}
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -2990,11 +2990,11 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 		vpl = 4;
 
 	// Fill lines VBO
-	int      nverts = map_->nLines() * vpl;
-	GLVert*  lines  = new GLVert[nverts];
-	unsigned v      = 0;
-	ColRGBA  col;
-	float    alpha;
+	int       nverts = map_->nLines() * vpl;
+	GLVert* lines  = new GLVert[nverts];
+	unsigned  v      = 0;
+	ColRGBA    col;
+	float     alpha;
 	for (unsigned a = 0; a < map_->nLines(); a++)
 	{
 		MapLine* line = map_->line(a);
@@ -3058,6 +3058,8 @@ void MapRenderer2D::updateFlatsVBO()
 	if (vbo_flats_ == 0)
 		glGenBuffers(1, &vbo_flats_);
 
+	sector_vbo_offsets_.resize(map_->nSectors());
+
 	// Get total size needed
 	unsigned totalsize = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
@@ -3072,12 +3074,11 @@ void MapRenderer2D::updateFlatsVBO()
 
 	// Write polygon data to VBO
 	unsigned offset = 0;
-	unsigned index  = 0;
 	for (unsigned a = 0; a < map_->nSectors(); a++)
 	{
-		Polygon2D* poly = map_->sector(a)->polygon();
-		offset          = poly->writeToVBO(offset, index);
-		index += poly->totalVertices();
+		sector_vbo_offsets_[a] = offset;
+		Polygon2D* poly       = map_->sector(a)->polygon();
+		offset                = poly->writeToVBO(offset);
 	}
 
 	// Clean up
@@ -3103,7 +3104,7 @@ void MapRenderer2D::updateVisibility(Vec2f view_tl, Vec2f view_br)
 	{
 		// Check against sector bounding box
 		BBox bbox = map_->sector(a)->boundingBox();
-		vis_s_[a] = 0;
+		vis_s_[a]    = 0;
 		if (bbox.max.x < view_tl.x)
 			vis_s_[a] = VIS_LEFT;
 		if (bbox.max.y < view_tl.y)
@@ -3131,8 +3132,8 @@ void MapRenderer2D::updateVisibility(Vec2f view_tl, Vec2f view_br)
 	for (unsigned a = 0; a < vis_t_.size(); a++)
 	{
 		vis_t_[a] = 0;
-		x         = map_->thing(a)->xPos();
-		y         = map_->thing(a)->yPos();
+		x        = map_->thing(a)->xPos();
+		y        = map_->thing(a)->yPos();
 
 		// Get thing type properties from game configuration
 		auto& tt = Game::configuration().thingType(map_->thing(a)->type());

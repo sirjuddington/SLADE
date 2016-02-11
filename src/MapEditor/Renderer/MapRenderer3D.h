@@ -108,7 +108,7 @@ public:
 		MapSector* sector;
 		int        extra_floor_index;
 		long       updated_time;
-		unsigned   vbo_start;
+		unsigned   vbo_offset;
 
 		Flat()
 		{

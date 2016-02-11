@@ -22,16 +22,13 @@ public:
 
 	struct SubPoly
 	{
-		Vertex*  vertices;
-		unsigned n_vertices;
-		unsigned vbo_offset;
-		unsigned vbo_index;
+		Vertex* vertices;
+	unsigned     n_vertices;
 
 		SubPoly()
 		{
 			vertices   = nullptr;
 			n_vertices = 0;
-			vbo_offset = 0;
 		}
 		~SubPoly()
 		{
@@ -43,7 +40,7 @@ public:
 	Polygon2D();
 	~Polygon2D();
 
-	GLTexture* texture() { return texture_; }
+	GLTexture*  texture() { return texture_; }
 	float      colRed() { return colour_[0]; }
 	float      colGreen() { return colour_[1]; }
 	float      colBlue() { return colour_[2]; }
@@ -56,12 +53,12 @@ public:
 	void setZ(float z);
 	void setZ(Plane plane);
 
-	unsigned nSubPolys() { return subpolys_.size(); }
-	void     addSubPoly();
+	unsigned      nSubPolys() { return subpolys_.size(); }
+	void          addSubPoly();
 	SubPoly* subPoly(unsigned index);
-	void     removeSubPoly(unsigned index);
-	void     clear();
-	unsigned totalVertices();
+	void          removeSubPoly(unsigned index);
+	void          clear();
+	unsigned      totalVertices();
 
 	bool openSector(MapSector* sector);
 	void updateTextureCoords(
@@ -72,12 +69,12 @@ public:
 		double rotation = 0);
 
 	unsigned vboDataSize();
-	unsigned writeToVBO(unsigned offset, unsigned index);
-	void     updateVBOData(unsigned start = 0);
+	unsigned writeToVBO(unsigned offset);
+	void     updateVBOData(unsigned offset);
 
 	void render();
 	void renderWireframe();
-	void renderVBO(unsigned start = 0, bool colour = true);
+	void renderVBO(unsigned offset);
 	void renderWireframeVBO(bool colour = true);
 
 	static void setupVBOPointers();
@@ -95,6 +92,7 @@ private:
 class PolygonSplitter
 {
 	friend class Polygon2D;
+
 
 public:
 	PolygonSplitter();

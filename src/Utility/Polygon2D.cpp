@@ -38,6 +38,9 @@
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
 
+// Number of bytes per vertex in a GL vertex array
+static const int VERTEX_SIZE = 20;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -222,40 +225,37 @@ unsigned Polygon2D::vboDataSize()
 {
 	unsigned total = 0;
 	for (unsigned a = 0; a < subpolys_.size(); a++)
-		total += subpolys_[a]->n_vertices * 20;
+		total += subpolys_[a]->n_vertices * VERTEX_SIZE;
 	return total;
 }
 
-unsigned Polygon2D::writeToVBO(unsigned offset, unsigned index)
+unsigned Polygon2D::writeToVBO(unsigned offset)
 {
 	// Go through subpolys
-	unsigned ofs = offset;
-	unsigned i   = index;
 	for (unsigned a = 0; a < subpolys_.size(); a++)
 	{
 		// Write subpoly data to VBO at the correct offset
-		glBufferSubData(GL_ARRAY_BUFFER, ofs, subpolys_[a]->n_vertices * 20, subpolys_[a]->vertices);
-
-		// Update the subpoly vbo offset
-		subpolys_[a]->vbo_offset = ofs;
-		subpolys_[a]->vbo_index  = i;
-		ofs += subpolys_[a]->n_vertices * 20;
-		i += subpolys_[a]->n_vertices;
+		unsigned length = subpolys_[a]->n_vertices * VERTEX_SIZE;
+		glBufferSubData(GL_ARRAY_BUFFER, offset, length, subpolys_[a]->vertices);
+		offset += length;
 	}
 
 	// Update variables
 	vbo_update_ = 0;
 
 	// Return the offset to the end of the data
-	return ofs;
+	return offset;
 }
 
-void Polygon2D::updateVBOData(unsigned start)
+void Polygon2D::updateVBOData(unsigned offset)
 {
 	// Go through subpolys
 	for (unsigned a = 0; a < subpolys_.size(); a++)
-		glBufferSubData(
-			GL_ARRAY_BUFFER, subpolys_[a]->vbo_offset + start*20, subpolys_[a]->n_vertices * 20, subpolys_[a]->vertices);
+	{
+		unsigned length = subpolys_[a]->n_vertices * VERTEX_SIZE;
+		glBufferSubData(GL_ARRAY_BUFFER, offset, length, subpolys_[a]->vertices);
+		offset += length;
+	}
 
 	// Update variables
 	vbo_update_ = 0;
@@ -293,12 +293,16 @@ void Polygon2D::renderWireframe()
 	}
 }
 
-void Polygon2D::renderVBO(unsigned start, bool colour)
+void Polygon2D::renderVBO(unsigned offset)
 {
 	// Render
 	// glColor4f(this->colour[0], this->colour[1], this->colour[2], this->colour[3]);
+	unsigned index = offset / VERTEX_SIZE;
 	for (unsigned a = 0; a < subpolys_.size(); a++)
-		glDrawArrays(GL_TRIANGLE_FAN, subpolys_[a]->vbo_index + start, subpolys_[a]->n_vertices);
+	{
+		glDrawArrays(GL_TRIANGLE_FAN, index, subpolys_[a]->n_vertices);
+		index += subpolys_[a]->n_vertices;
+	}
 }
 
 void Polygon2D::renderWireframeVBO(bool colour) {}
@@ -611,8 +615,8 @@ bool PolygonSplitter::tracePolyOutline(int edge_start)
 {
 	polygon_outlines_.push_back(Outline());
 	Outline& poly   = polygon_outlines_.back();
-	poly.convex     = true;
-	double edge_sum = 0;
+	poly.convex          = true;
+	double edge_sum      = 0;
 
 	int edge = edge_start;
 	int v1, v2, next;
@@ -698,8 +702,8 @@ bool PolygonSplitter::testTracePolyOutline(int edge_start)
 	unsigned a = 0;
 	for (a = 0; a < 100000; a++)
 	{
-		v1 = edges_[edge].v1;
-		v2 = edges_[edge].v2;
+		v1   = edges_[edge].v1;
+		v2   = edges_[edge].v2;
 		next = -1;
 
 		// Find the next convex edge with the lowest angle
@@ -769,7 +773,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 
 	// See if we can split to here without crossing anything
 	// (this will be the case most of the time)
-	bool  intersect = false;
+	bool      intersect = false;
 	Vec2f pointi;
 	for (unsigned a = 0; a < edges_.size(); a++)
 	{
@@ -791,8 +795,8 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	if (!intersect)
 	{
 		// No edge intersections, create split
-		int e1            = addEdge(v2, closest);
-		int e2            = addEdge(closest, v2);
+		int e1           = addEdge(v2, closest);
+		int e2           = addEdge(closest, v2);
 		edges_[e1].sister = e2;
 		edges_[e2].sister = e1;
 
@@ -814,7 +818,7 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 	std::sort(sorted_verts.begin(), sorted_verts.end());
 	for (unsigned a = 0; a < sorted_verts.size(); a++)
 	{
-		int     index = sorted_verts[a].index;
+		int       index = sorted_verts[a].index;
 		Vertex& vert  = vertices_[index];
 
 		// Check if a split from the edge to this vertex would cross any other edges
@@ -838,8 +842,8 @@ bool PolygonSplitter::splitFromEdge(int splitter_edge)
 		if (!intersect)
 		{
 			// No edge intersections, create split
-			int e1            = addEdge(v2, index);
-			int e2            = addEdge(index, v2);
+			int e1           = addEdge(v2, index);
+			int e2           = addEdge(index, v2);
 			edges_[e1].sister = e2;
 			edges_[e2].sister = e1;
 
@@ -1020,7 +1024,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 			continue;
 
 		// Invalidate split
-		edges_[a].ok                = false;
+		edges_[a].ok               = false;
 		edges_[edges_[a].sister].ok = false;
 
 		// Check poly is still convex without split
@@ -1032,7 +1036,7 @@ bool PolygonSplitter::doSplitting(Polygon2D* poly)
 		}
 
 		// Not convex, split is needed
-		edges_[a].ok                = true;
+		edges_[a].ok               = true;
 		edges_[edges_[a].sister].ok = true;
 	}
 

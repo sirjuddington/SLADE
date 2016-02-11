@@ -129,9 +129,10 @@ private:
 	long       flats_updated_;
 
 	// VBOs etc
-	unsigned vbo_vertices_;
-	unsigned vbo_lines_;
-	unsigned vbo_flats_;
+	unsigned         vbo_vertices_;
+	unsigned         vbo_lines_;
+	unsigned         vbo_flats_;
+	vector<unsigned> sector_vbo_offsets_;
 
 	// Display lists
 	unsigned list_vertices_;
