@@ -12,6 +12,7 @@
 class wxStaticText;
 class wxBitmapButton;
 class EntryPanel;
+class ExternalEditManager;
 class ArchivePanel : public wxPanel, public Listener, SActionHandler
 {
 protected:
@@ -24,6 +25,11 @@ protected:
 	wxSizer*			sizer_path_controls;
 	UndoManager*		undo_manager;
 	bool				ignore_focus_change;
+
+	// External edit stuff
+	ExternalEditManager*	ee_manager;
+	string					current_external_exe_category;
+	vector<string>			current_external_exes;
 
 	// Entry panels
 	EntryPanel*	cur_area;
@@ -130,6 +136,7 @@ public:
 	void	focusOnEntry(ArchiveEntry* entry);
 	void	focusEntryList() { entry_list->SetFocus(); }
 	void	refreshPanel();
+	wxMenu*	createEntryOpenMenu(string category);
 
 	// SAction handler
 	bool	handleAction(string id);

@@ -59,6 +59,7 @@
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
+#include "MainEditor/ExternalEditManager.h"
 #include "MainEditor/MainWindow.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
@@ -310,6 +311,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	// Init variables
 	undo_manager = new UndoManager();
 	ignore_focus_change = false;
+	ee_manager = new ExternalEditManager();
 
 	// Set archive
 	this->archive = archive;
@@ -421,6 +423,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 ArchivePanel::~ArchivePanel()
 {
 	delete undo_manager;
+	delete ee_manager;
 }
 
 /* ArchivePanel::saveEntryChanges
@@ -1709,7 +1712,22 @@ bool ArchivePanel::openEntryExternal()
 {
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 	for (unsigned a = 0; a < selection.size(); a++)
-		EntryOperations::openExternal(selection[a], 0);
+	{
+		// Open entry in selected external editor
+		bool ok = ee_manager->openEntryExternal(
+					selection[a],
+					current_external_exes[wx_id_offset],
+					current_external_exe_category
+					);
+
+		// Show error message if failed
+		if (!ok)
+			wxMessageBox(
+				S_FMT("Failed opening %s in external editor: %s", selection[a]->getName(), Global::error),
+				"External Edit Failed",
+				wxOK | wxICON_ERROR
+				);
+	}
 
 	return true;
 }
@@ -2766,6 +2784,40 @@ void ArchivePanel::refreshPanel()
 	Refresh();
 }
 
+/* ArchivePanel::createEntryOpenMenu
+ * Creates and returns the 'Open In' submenu for the entry context
+ * menu, adding any external editors for entries of [category] 
+ *******************************************************************/
+wxMenu* ArchivePanel::createEntryOpenMenu(string category)
+{
+	current_external_exe_category = category;
+	current_external_exes.clear();
+	wxMenu* menu_open = new wxMenu();
+
+	// New Tab
+	theApp->getAction("arch_entry_opentab")->addToMenu(menu_open, true);
+	menu_open->AppendSeparator();
+
+	// External editors
+	vector<Executables::external_exe_t> external = Executables::getExternalExes(category);
+	SAction* a_open_ext = theApp->getAction("arch_entry_openext");
+	unsigned num = MIN(external.size(), 20);
+	for (unsigned a = 0; a < num; a++)
+	{
+		a_open_ext->addToMenu(menu_open, "With " + external[a].name, "NO", a);
+		current_external_exes.push_back(external[a].name);
+	}
+
+	// Add separator if any external editors were added
+	if (menu_open->GetMenuItemCount() > 2)
+		menu_open->AppendSeparator();
+
+	// Setup external editors
+	theApp->getAction("arch_entry_setup_external")->addToMenu(menu_open);
+
+	return menu_open;
+}
+
 /* ArchivePanel::handleAction
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
@@ -3305,21 +3357,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	//theApp->getAction("arch_entry_crc32")->addToMenu(&context, true);
 
 	// Add 'Open In' menu
-	wxMenu* menu_open = new wxMenu();
-
-	// New Tab
-	theApp->getAction("arch_entry_opentab")->addToMenu(menu_open, true);
-	menu_open->AppendSeparator();
-
-	// External executables
-	vector<Executables::external_exe_t> external = Executables::getExternalExes(category);
-	for (unsigned a = 0; a < external.size(); a++)
-		menu_open->Append(-1, "With " + external[a].name);
-	if (menu_open->GetMenuItemCount() > 2)
-		menu_open->AppendSeparator();
-	theApp->getAction("arch_entry_setup_external")->addToMenu(menu_open);
-
-	context.AppendSubMenu(menu_open, "Open")->SetBitmap(Icons::getIcon(Icons::GENERAL, "open"));
+	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(Icons::getIcon(Icons::GENERAL, "open"));
 
 	// Add custom menu items
 	wxMenu* custom;

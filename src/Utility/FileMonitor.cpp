@@ -44,17 +44,20 @@
 /* FileMonitor::FileMonitor
  * FileMonitor class constructor
  *******************************************************************/
-FileMonitor::FileMonitor(string filename)
+FileMonitor::FileMonitor(string filename, bool start)
 {
 	// Init variables
 	this->filename = filename;
-	file_modified = wxFileModificationTime(filename);
 
 	// Create process
 	process = new wxProcess(this);
 
 	// Start timer (updates every 1 sec)
-	Start(1000);
+	if (start)
+	{
+		file_modified = wxFileModificationTime(filename);
+		Start(1000);
+	}
 
 	// Bind events
 	Bind(wxEVT_END_PROCESS, &FileMonitor::onEndProcess, this);
@@ -90,6 +93,15 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 {
 	// Call any custom code for when the external process terminates
 	processTerminated();
+
+	// Check if the file has been modified since last update
+	time_t modified = wxFileModificationTime(filename);
+	if (modified > file_modified)
+	{
+		// Modified, update modification time and run any custom code
+		file_modified = modified;
+		fileModified();
+	}
 
 	// Delete this FileMonitor (its job is done)
 	delete this;
@@ -203,71 +215,4 @@ void DB2MapFileMonitor::processTerminated()
 
 	// Remove the temp wadfile
 	wxRemoveFile(filename);
-}
-
-
-/*******************************************************************
- * EXTERNALEDITFILEMONITOR CLASS FUNCTIONS
- *******************************************************************
- * A specialisation of FileMonitor to handle entries open externally
- * for editing. When the file is modified, its data is read back in
- * to the entry
- */
-
-/* ExternalEditFileMonitor::ExternalEditFileMonitor
- * ExternalEditFileMonitor class constructor
- *******************************************************************/
-ExternalEditFileMonitor::ExternalEditFileMonitor(string filename, ArchiveEntry* entry)
-	: FileMonitor(filename), entry(entry)
-{
-	// Listen to entry parent archive
-	listenTo(entry->getParent());
-}
-
-/* ExternalEditFileMonitor::~ExternalEditFileMonitor
- * ExternalEditFileMonitor class destructor
- *******************************************************************/
-ExternalEditFileMonitor::~ExternalEditFileMonitor()
-{
-}
-
-/* ExternalEditFileMonitor::fileModified
- * Called when the entry file has been modified
- *******************************************************************/
-void ExternalEditFileMonitor::fileModified()
-{
-	entry->importFile(filename);
-}
-
-/* ExternalEditFileMonitor::onAnnouncement
- * Called when an announcement is recieved from the parent archive
- * of the entry being edited externally
- *******************************************************************/
-void ExternalEditFileMonitor::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
-{
-	if (announcer != entry->getParent())
-		return;
-
-	bool finished = false;
-
-	// Parent archive closed
-	if (event_name == "closed")
-	{
-		wxRemoveFile(filename);
-		finished = true;
-	}
-
-	// Entry removed
-	else if (event_name == "entry_removed")
-	{
-		int index;
-		wxUIntPtr ptr;
-		event_data.read(&index, sizeof(int));
-		event_data.read(&ptr, sizeof(wxUIntPtr));
-		if (wxUIntToPtr(ptr) == entry)
-			finished = true;
-	}
-
-	if (finished)
-		delete this;
 }

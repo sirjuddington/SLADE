@@ -16,8 +16,8 @@ protected:
 	time_t	file_modified;
 
 public:
-	FileMonitor(string filename);
-	~FileMonitor();
+	FileMonitor(string filename, bool start = true);
+	virtual ~FileMonitor();
 
 	wxProcess*	getProcess() { return process; }
 	string		getFilename() { return filename; }
@@ -42,20 +42,6 @@ public:
 
 	void	fileModified();
 	void	processTerminated();
-};
-
-class ArchiveEntry;
-class ExternalEditFileMonitor : public FileMonitor, Listener
-{
-private:
-	ArchiveEntry*	entry;
-
-public:
-	ExternalEditFileMonitor(string filename, ArchiveEntry* entry);
-	~ExternalEditFileMonitor();
-
-	void	fileModified();
-	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 };
 
 #endif//__FILE_MONITOR_H__

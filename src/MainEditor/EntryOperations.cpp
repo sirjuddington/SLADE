@@ -1590,42 +1590,6 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	return true;
 }
 
-/* EntryOperations::openExternal
- * Opens [entry] in the default OS program for its data type
- *******************************************************************/
-bool EntryOperations::openExternal(ArchiveEntry* entry, int exe)
-{
-	if (!entry)
-		return false;
-
-	// Build entry filename
-	wxFileName fn;
-	fn.SetFullName(entry->getName(false));
-	if (entry->getType() != EntryType::unknownType())
-		fn.SetExt(entry->getType()->getExtension());
-
-	// Export to file
-	string path;
-	if (entry->getType()->getEditor() == "gfx")
-	{
-		// For gfx, convert to png first
-		fn.SetExt("png");
-		path = appPath(fn.GetFullName(), DIR_TEMP);
-		exportAsPNG(entry, path);
-	}
-	else
-	{
-		path = appPath(fn.GetFullName(), DIR_TEMP);
-		entry->exportFile(path);
-	}
-
-	// Open the file externally & monitor it for changes
-	wxLaunchDefaultApplication(path);
-	new ExternalEditFileMonitor(path, entry);
-
-	return true;
-}
-
 
 void fixpngsrc(ArchiveEntry* entry)
 {

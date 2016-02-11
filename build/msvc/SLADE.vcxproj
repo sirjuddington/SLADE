@@ -18,6 +18,7 @@
     <ProjectGuid>{33CC5FBD-4EB0-48A9-9069-0EC0B5FF5A46}</ProjectGuid>
     <RootNamespace>SLADE</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -33,7 +34,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -50,7 +51,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\dist\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\dist\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\dist\</OutDir>
@@ -65,8 +66,8 @@
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)src;$(FLUIDSYNTH)\include;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist;$(SFML)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(FLUIDSYNTH)\lib;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist;$(SFML)\lib;$(FTGL)\msvc\build;$(FREETYPE)\objs\win32;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FLUIDSYNTH)\include;$(ProjectDir)src\External\dumb;$(ProjectDir)..\..\src\Application;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(FLUIDSYNTH)\lib;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(ProjectDir)..\..\src\Application;$(SFML)\include;$(FREEIMAGE)\Dist\x32;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(SFML)\lib;$(FREEIMAGE)\Dist\x32;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -101,7 +102,7 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -437,6 +438,7 @@
     <ClCompile Include="..\..\src\MainEditor\ArchiveOperations.cpp" />
     <ClCompile Include="..\..\src\MainEditor\Conversions.cpp" />
     <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp" />
     <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp" />
     <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp" />
@@ -766,6 +768,7 @@
     <ClInclude Include="..\..\src\MainEditor\BinaryControlLump.h" />
     <ClInclude Include="..\..\src\MainEditor\Conversions.h" />
     <ClInclude Include="..\..\src\MainEditor\EntryOperations.h" />
+    <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h" />
     <ClInclude Include="..\..\src\MainEditor\MainWindow.h" />
     <ClInclude Include="..\..\src\MainEditor\SwitchesList.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h" />
