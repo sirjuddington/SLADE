@@ -1,4 +1,6 @@
 ## SLADE  
+
+[![Join the chat at https://gitter.im/sirjuddington/SLADE](https://badges.gitter.im/sirjuddington/SLADE.svg)](https://gitter.im/sirjuddington/SLADE?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 It's a Doom Editor
 
 ### About
