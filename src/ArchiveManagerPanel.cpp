@@ -593,6 +593,23 @@ bool ArchiveManagerPanel::isArchivePanel(int tab_index)
 		return false;
 }
 
+/* ArchiveManagerPanel::isEntryPanel
+ * Checks if the tab at [tab_index] is an EntryPanel. Returns true
+ * if it is, false if not
+ *******************************************************************/
+bool ArchiveManagerPanel::isEntryPanel(int tab_index)
+{
+	// Check that tab index is in range
+	if ((unsigned)tab_index >= stc_archives->GetPageCount())
+		return false;
+
+	// Check the page's name
+	if (!stc_archives->GetPage(tab_index)->GetName().CmpNoCase("entry"))
+		return true;
+	else
+		return false;
+}
+
 /* ArchiveManagerPanel::getArchive
  * Returns the archive associated with the archive tab at [tab_index]
  * or NULL if the index is invalid or the tab isn't an archive panel
@@ -676,12 +693,19 @@ EntryPanel* ArchiveManagerPanel::currentArea()
 	// Get current tab index
 	int selected = stc_archives->GetSelection();
 
-	// Check it's an archive tab
-	if (!isArchivePanel(selected))
-		return NULL;
+	// Entry tab
+	if (isEntryPanel(selected))
+		return (EntryPanel*)stc_archives->GetPage(selected);
 
-	ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(selected);
-	return ap->currentArea();
+	// Archive tab
+	if (isArchivePanel(selected))
+	{
+		ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(selected);
+		return ap->currentArea();
+	}
+
+	// No currently active entry panel
+	return NULL;
 }
 
 /* ArchiveManagerPanel::currentEntry
