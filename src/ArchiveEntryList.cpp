@@ -552,9 +552,9 @@ bool ArchiveEntryList::sortSize(long left, long right)
 void ArchiveEntryList::sortItems()
 {
 	lv_current = this;
-	if (sort_column == col_size)
+	if (col_size >= 0 && sort_column == col_size)
 		std::sort(items.begin(), items.end(), &ArchiveEntryList::sortSize);
-	else if (sort_column == col_index)
+	else if (col_index >= 0 && sort_column == col_index)
 		std::sort(items.begin(), items.end(), &VirtualListView::indexSort);
 	else
 		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
