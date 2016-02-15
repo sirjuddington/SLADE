@@ -2,6 +2,7 @@
 #include "Main.h"
 #include "ExternalEditManager.h"
 #include "Archive/Archive.h"
+#include "Conversions.h"
 #include "EntryOperations.h"
 #include "General/Misc.h"
 #include "General/Executables.h"
@@ -168,6 +169,71 @@ private:
 };
 
 
+class MIDIExternalFileMonitor : public ExternalEditFileMonitor
+{
+public:
+	MIDIExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
+		: ExternalEditFileMonitor(entry, manager) {}
+	~MIDIExternalFileMonitor() {}
+
+	void updateEntry()
+	{
+		// Can't convert back, just import the MIDI
+		entry->importFile(filename);
+	}
+
+	bool exportEntry()
+	{
+		wxFileName fn(appPath(entry->getName(), DIR_TEMP));
+		fn.SetExt("mid");
+
+		// Convert to MIDI data
+		MemChunk convdata;
+
+		// MUS
+		if (entry->getType()->getFormat() == "midi_mus")
+			Conversions::musToMidi(entry->getMCData(), convdata);
+
+		// HMI/HMP/XMI
+		else if (entry->getType()->getFormat() == "midi_xmi" || 
+			entry->getType()->getFormat() == "midi_hmi" || entry->getType()->getFormat() == "midi_hmp")
+			Conversions::zmusToMidi(entry->getMCData(), convdata, 0);
+
+		// GMID
+		else if (entry->getType()->getFormat() == "midi_gmid")
+			Conversions::gmidToMidi(entry->getMCData(), convdata);
+
+		else
+		{
+			Global::error = S_FMT("Type %s can not be converted to MIDI", CHR(entry->getType()->getName()));
+			return false;
+		}
+
+		// Export file and start monitoring if successful
+		filename = fn.GetFullPath();
+		if (convdata.exportFile(filename))
+		{
+			Start(1000);
+			return true;
+		}
+
+		return false;
+	}
+
+	static bool canHandleEntry(ArchiveEntry* entry)
+	{
+		if (entry->getType()->getFormat() == "midi" ||
+			entry->getType()->getFormat() == "midi_mus" ||
+			entry->getType()->getFormat() == "midi_xmi" ||
+			entry->getType()->getFormat() == "midi_hmi" ||
+			entry->getType()->getFormat() == "midi_hmp" ||
+			entry->getType()->getFormat() == "midi_gmid"
+			)
+			return true;
+		
+		return false;
+	}
+};
 
 
 
@@ -201,6 +267,9 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 	// Gfx entry
 	if (entry->getType()->getEditor() == "gfx" && entry->getType()->getId() != "png")
 		monitor = new GfxExternalFileMonitor(entry, this);
+	// MIDI entry
+	else if (MIDIExternalFileMonitor::canHandleEntry(entry))
+		monitor = new MIDIExternalFileMonitor(entry, this);
 	// Other entry
 	else
 		monitor = new ExternalEditFileMonitor(entry, this);
