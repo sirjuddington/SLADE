@@ -49,6 +49,7 @@ public:
 		if (ok)
 		{
 			filename = fn.GetFullPath();
+			file_modified = wxFileModificationTime(filename);
 			Start(1000);
 		}
 		else
@@ -92,7 +93,7 @@ class GfxExternalFileMonitor : public ExternalEditFileMonitor
 public:
 	GfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
 		: ExternalEditFileMonitor(entry, manager) {}
-	~GfxExternalFileMonitor() {}
+	virtual ~GfxExternalFileMonitor() {}
 
 	void updateEntry()
 	{
@@ -155,6 +156,7 @@ public:
 		filename = fn.GetFullPath();
 		if (png.exportFile(filename))
 		{
+			file_modified = wxFileModificationTime(filename);
 			Start(1000);
 			return true;
 		}
@@ -174,7 +176,7 @@ class MIDIExternalFileMonitor : public ExternalEditFileMonitor
 public:
 	MIDIExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
 		: ExternalEditFileMonitor(entry, manager) {}
-	~MIDIExternalFileMonitor() {}
+	virtual ~MIDIExternalFileMonitor() {}
 
 	void updateEntry()
 	{
@@ -213,6 +215,7 @@ public:
 		filename = fn.GetFullPath();
 		if (convdata.exportFile(filename))
 		{
+			file_modified = wxFileModificationTime(filename);
 			Start(1000);
 			return true;
 		}
@@ -233,6 +236,107 @@ public:
 		
 		return false;
 	}
+};
+
+class SfxExternalFileMonitor : public ExternalEditFileMonitor
+{
+public:
+	SfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
+		: ExternalEditFileMonitor(entry, manager), doom_sound(true) {}
+	virtual ~SfxExternalFileMonitor() {}
+
+	void updateEntry()
+	{
+		// Convert back to doom sound if it was originally
+		if (doom_sound)
+		{
+			MemChunk in, out;
+			in.importFile(filename);
+			if (Conversions::wavToDoomSnd(in, out))
+			{
+				// Import converted data to entry if successful
+				entry->importMemChunk(out);
+				return;
+			}
+		}
+
+		// Just import wav to entry if conversion to doom sound
+		// failed or the entry was not a convertable type
+		entry->importFile(filename);
+	}
+
+	bool exportEntry()
+	{
+		wxFileName fn(appPath(entry->getName(), DIR_TEMP));
+		fn.SetExt("mid");
+
+		// Convert to WAV data
+		MemChunk convdata;
+
+		// Doom Sound
+		if (entry->getType()->getFormat() == "snd_doom" ||
+			entry->getType()->getFormat() == "snd_doom_mac")
+			Conversions::doomSndToWav(entry->getMCData(), convdata);
+
+		// Doom PC Speaker Sound
+		else if (entry->getType()->getFormat() == "snd_speaker")
+			Conversions::spkSndToWav(entry->getMCData(), convdata);
+
+		// AudioT PC Speaker Sound
+		else if (entry->getType()->getFormat() == "snd_audiot")
+			Conversions::spkSndToWav(entry->getMCData(), convdata, true);
+
+		// Wolfenstein 3D Sound
+		else if (entry->getType()->getFormat() == "snd_wolf")
+			Conversions::wolfSndToWav(entry->getMCData(), convdata);
+
+		// Creative Voice File
+		else if (entry->getType()->getFormat() == "snd_voc")
+			Conversions::vocToWav(entry->getMCData(), convdata);
+
+		// Jaguar Doom Sound
+		else if (entry->getType()->getFormat() == "snd_jaguar")
+			Conversions::jagSndToWav(entry->getMCData(), convdata);
+
+		// Blood Sound
+		else if (entry->getType()->getFormat() == "snd_bloodsfx")
+			Conversions::bloodToWav(entry, convdata);
+
+		else
+		{
+			Global::error = S_FMT("Type %s can not be converted to WAV", CHR(entry->getType()->getName()));
+			return false;
+		}
+
+		// Export file and start monitoring if successful
+		filename = fn.GetFullPath();
+		if (convdata.exportFile(filename))
+		{
+			file_modified = wxFileModificationTime(filename);
+			Start(1000);
+			return true;
+		}
+
+		return false;
+	}
+
+	static bool canHandleEntry(ArchiveEntry* entry)
+	{
+		if (entry->getType()->getFormat() == "snd_doom" ||
+			entry->getType()->getFormat() == "snd_doom_mac" ||
+			entry->getType()->getFormat() == "snd_speaker" ||
+			entry->getType()->getFormat() == "snd_audiot" ||
+			entry->getType()->getFormat() == "snd_wolf" ||
+			entry->getType()->getFormat() == "snd_voc" ||
+			entry->getType()->getFormat() == "snd_jaguar" ||
+			entry->getType()->getFormat() == "snd_bloodsfx")
+			return true;
+
+		return false;
+	}
+
+private:
+	bool	doom_sound;
 };
 
 
@@ -270,6 +374,9 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 	// MIDI entry
 	else if (MIDIExternalFileMonitor::canHandleEntry(entry))
 		monitor = new MIDIExternalFileMonitor(entry, this);
+	// Sfx entry
+	else if (SfxExternalFileMonitor::canHandleEntry(entry))
+		monitor = new SfxExternalFileMonitor(entry, this);
 	// Other entry
 	else
 		monitor = new ExternalEditFileMonitor(entry, this);
@@ -308,10 +415,11 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 
 void ExternalEditManager::monitorStopped(ExternalEditFileMonitor* monitor)
 {
-	for (unsigned a = 0; a < file_monitors.size(); a++)
+	VECTOR_REMOVE(file_monitors, monitor);
+	/*for (unsigned a = 0; a < file_monitors.size(); a++)
 		if (file_monitors[a] == monitor)
 		{
 			file_monitors.erase(file_monitors.begin() + a);
 			return;
-		}
+		}*/
 }
