@@ -37,6 +37,7 @@
 #include "Dialogs/MapEditorConfigDialog.h"
 #include "Dialogs/MapReplaceDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
+#include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/RunDialog.h"
 #include "Dialogs/TranslationEditorDialog.h"
 #include "EntryPanel/AnimatedEntryPanel.h"
@@ -3023,6 +3024,8 @@ bool ArchivePanel::handleAction(string id)
 		findTextureErrors();
 	else if (id == "arch_map_opendb2")
 		mapOpenDb2();
+	else if (id == "arch_entry_setup_external")
+		PreferencesDialog::openPreferences(theMainWindow, "Editing", "external");
 
 	// Map Editor Panel
 	else if (id == "pmap_open_text")
