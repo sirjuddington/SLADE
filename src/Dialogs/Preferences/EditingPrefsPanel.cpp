@@ -346,6 +346,20 @@ void EditingPrefsPanel::applyPreferences()
 	confirm_entry_revert = cb_confirm_entry_revert->GetValue();
 }
 
+/* EditingPrefsPanel::showSubSection
+ * Shows [subsection] on the prefs page
+ *******************************************************************/
+void EditingPrefsPanel::showSubSection(string subsection)
+{
+	// 'External' tab
+	if (subsection == "external")
+		stc_tabs->SetSelection(1);
+
+	// Default to 'General' tab
+	else
+		stc_tabs->SetSelection(0);
+}
+
 
 /*******************************************************************
  * EDITINGPREFSPANEL CLASS EVENTS

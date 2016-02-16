@@ -178,7 +178,7 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 /* PreferencesDialog::showPage
  * Shows the preferences page matching [name]
  *******************************************************************/
-void PreferencesDialog::showPage(string name)
+void PreferencesDialog::showPage(string name, string subsection)
 {
 	// Go through all pages
 	for (unsigned a = 0; a < tree_prefs->GetPageCount(); a++)
@@ -186,6 +186,7 @@ void PreferencesDialog::showPage(string name)
 		if (S_CMPNOCASE(tree_prefs->GetPageText(a), name))
 		{
 			tree_prefs->SetSelection(a);
+			((PrefsPanelBase*)tree_prefs->GetPage(a))->showSubSection(subsection);
 			return;
 		}
 	}
@@ -258,13 +259,13 @@ void PreferencesDialog::onButtonClicked(wxCommandEvent& e)
  * Opens a preferences dialog on top of [parent], showing either the
  * last viewed page or [initial_page] if it is specified
  *******************************************************************/
-void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page)
+void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page, string subsection)
 {
 	// Setup dialog
 	PreferencesDialog dlg(parent);
 	if (initial_page.IsEmpty())
 		initial_page = last_page;
-	dlg.showPage(initial_page);
+	dlg.showPage(initial_page, subsection);
 	if (width > 0 && height > 0)
 		dlg.SetSize(width, height);
 	dlg.initPages();

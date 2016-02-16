@@ -41,6 +41,7 @@ public:
 
 	void	init();
 	void	applyPreferences();
+	void	showSubSection(string subsection);
 };
 
 #endif//__EDITING_PREFS_PANEL_H__

@@ -13,6 +13,7 @@ public:
 
 	virtual void init() {}
 	virtual void applyPreferences() {}
+	virtual void showSubSection(string subsection) {}
 };
 
 #endif//__PREFS_PANEL_BASE_H__
