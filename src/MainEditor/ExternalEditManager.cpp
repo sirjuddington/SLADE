@@ -1,4 +1,36 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ExternalEditManager.cpp
+ * Description: ExternalEditManager class, keeps track of all
+ *              entries currently being edited externally for a
+ *              single ArchivePanel. Also contains some FileMonitor
+ *              subclasses for handling export/import of various
+ *              entry types (conversions, etc.)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "ExternalEditManager.h"
 #include "Archive/Archive.h"
@@ -13,6 +45,12 @@
 #include <wx/filename.h>
 
 
+/*******************************************************************
+ * EXTERNALEDITFILEMONITOR CLASS
+ *******************************************************************
+ * FileMonitor subclass to handle exporting, monitoring and
+ * re-importing an entry
+ */
 class ExternalEditFileMonitor : public FileMonitor, Listener
 {
 public:
@@ -87,7 +125,11 @@ protected:
 };
 
 
-
+/*******************************************************************
+ * GFXEXTERNALFILEMONITOR CLASS
+ *******************************************************************
+ * ExternalEditFileMonitor subclass to handle gfx entries
+ */
 class GfxExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
@@ -171,6 +213,11 @@ private:
 };
 
 
+/*******************************************************************
+ * MIDIEXTERNALFILEMONITOR CLASS
+ *******************************************************************
+ * ExternalEditFileMonitor subclass to handle MIDI entries
+ */
 class MIDIExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
@@ -238,6 +285,12 @@ public:
 	}
 };
 
+
+/*******************************************************************
+ * SFXEXTERNALFILEMONITOR CLASS
+ *******************************************************************
+ * ExternalEditFileMonitor subclass to handle sfx entries
+ */
 class SfxExternalFileMonitor : public ExternalEditFileMonitor
 {
 public:
@@ -340,21 +393,29 @@ private:
 };
 
 
+/*******************************************************************
+ * EXTERNALEDITMANAGER CLASS FUNCTIONS
+ *******************************************************************/
 
-
-
-
-
+/* ExternalEditManager::ExternalEditManager
+ * ExternalEditManager class constructor
+ *******************************************************************/
 ExternalEditManager::ExternalEditManager()
 {
 }
 
+/* ExternalEditManager::~ExternalEditManager
+ * ExternalEditManager class destructor
+ *******************************************************************/
 ExternalEditManager::~ExternalEditManager()
 {
 	for (unsigned a = 0; a < file_monitors.size(); a++)
 		delete file_monitors[a];
 }
 
+/* ExternalEditManager::openEntryExternal
+ * Opens [entry] for external editing with [editor] for [category]
+ *******************************************************************/
 bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, string category)
 {
 	// Check the entry isn't already opened externally
@@ -413,13 +474,10 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 	return true;
 }
 
+/* ExternalEditManager::monitorStopped
+ * Called when a FileMonitor is stopped/deleted
+ *******************************************************************/
 void ExternalEditManager::monitorStopped(ExternalEditFileMonitor* monitor)
 {
 	VECTOR_REMOVE(file_monitors, monitor);
-	/*for (unsigned a = 0; a < file_monitors.size(); a++)
-		if (file_monitors[a] == monitor)
-		{
-			file_monitors.erase(file_monitors.begin() + a);
-			return;
-		}*/
 }
