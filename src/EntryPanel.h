@@ -47,7 +47,7 @@ public:
 	bool			openEntry(ArchiveEntry* entry);
 	virtual bool	loadEntry(ArchiveEntry* entry);
 	virtual bool	saveEntry();
-	virtual bool	revertEntry();
+	virtual bool	revertEntry(bool confirm = true);
 	virtual void	refreshPanel();
 	virtual void	closeEntry();
 	void			updateStatus();

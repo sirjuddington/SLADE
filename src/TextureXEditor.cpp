@@ -37,6 +37,8 @@
 #include "SplashWindow.h"
 #include "ExtMessageDialog.h"
 #include "ResourceManager.h"
+#include "UndoRedo.h"
+#include "UndoManagerHistoryPanel.h"
 #include <wx/dialog.h>
 #include <wx/radiobut.h>
 
@@ -159,6 +161,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 	this->archive = NULL;
 	this->pnames = NULL;
 	this->pb_update = true;
+	undo_manager = new UndoManager();
 	SetName("texturex");
 
 	// Create texture menu
@@ -233,6 +236,7 @@ TextureXEditor::~TextureXEditor()
 		pnames->unlock();
 	if (menu_texture)
 		delete menu_texture;
+	delete undo_manager;
 }
 
 /* TextureXEditor::openArchive
@@ -665,6 +669,31 @@ void TextureXEditor::updateMenuStatus()
 	showTextureMenu(tex);
 }
 
+/* TextureXEditor::undo
+ * Performs an undo operation
+ *******************************************************************/
+void TextureXEditor::undo()
+{
+	string action = undo_manager->undo();
+	if (action != "")
+	{
+		for (unsigned a = 0; a < texture_editors.size(); a++)
+			texture_editors[a]->onUndo(action);
+	}
+}
+
+/* TextureXEditor::redo
+ * Performs an redo operation
+ *******************************************************************/
+void TextureXEditor::redo()
+{
+	string action = undo_manager->redo();
+	if (action != "")
+	{
+		for (unsigned a = 0; a < texture_editors.size(); a++)
+			texture_editors[a]->onRedo(action);
+	}
+}
 
 /* TextureXEditor::onAnnouncement
  * Handles any announcements from the current texture
@@ -712,6 +741,8 @@ void TextureXEditor::onShow(wxShowEvent& e)
 		showTextureMenu(false);
 		return;
 	}
+	else
+		theMainWindow->getUndoHistoryPanel()->setManager(undo_manager);
 	updateMenuStatus();
 }
 

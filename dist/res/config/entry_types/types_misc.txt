@@ -43,6 +43,7 @@ entry_types
 		match_name = "M_FNAMES", "M_PNAMES", "FLATNAME";
 		icon = "e_pnames";
 		export_ext = "lmp";
+		editor = data;
 	}
 
 	// Miscellaneous binary lumps
@@ -52,6 +53,8 @@ entry_types
 		match_name = "genmidi";
 		export_ext = "lmp";
 		icon = "e_data";
+		size = 11908;
+		editor = data;
 	}
 
 	sndcurve

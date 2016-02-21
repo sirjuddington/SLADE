@@ -52,6 +52,7 @@
 #include "Misc.h"
 #include "VersionCheck.h"
 #include "dumb/dumb.h"
+#include "OpenGL.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/ffile.h>
@@ -60,6 +61,9 @@
 #include <wx/sysopt.h>
 #include <wx/filename.h>
 #include <wx/protocol/http.h>
+#include <wx/clipbrd.h>
+#include <wx/snglinst.h>
+#include <wx/ipc.h>
 
 #undef BOOL
 #include <FreeImage.h>
@@ -76,13 +80,14 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 1;
+	int beta_num = 3;
 	int version_num = 3110;
-	string version = "3.1.1 Beta 1"
+	string version = "3.1.1 Beta 3";
 #ifdef GIT_DESCRIPTION
-	                 " (" GIT_DESCRIPTION ")"
+	string sc_rev = GIT_DESCRIPTION;
+#else
+	string sc_rev = "";
 #endif
-	                 "";
 
 	int log_verbosity = 1;
 
@@ -100,6 +105,7 @@ namespace Global
 string	dir_data = "";
 string	dir_user = "";
 string	dir_app = "";
+string	dir_res = "";
 bool	exiting = false;
 string	current_action = "";
 bool	update_check_message_box = false;
@@ -126,10 +132,10 @@ EXTERN_CVAR(Bool, script_show_language_list)
 /* SLADEStackTrace class
  * Extension of the wxStackWalker class that formats stack trace
  * information to a multi-line string, that can be retrieved via
- * getTraceString(). wxStackWalker is currently unimplemented on mac,
- * so unfortunately it has to be disabled there
+ * getTraceString(). wxStackWalker is currently unimplemented on some
+ * platforms, so unfortunately it has to be disabled there
  *******************************************************************/
-#ifndef __APPLE__
+#if wxUSE_STACKWALKER
 class SLADEStackTrace : public wxStackWalker
 {
 private:
@@ -172,6 +178,9 @@ class SLADECrashDialog : public wxDialog
 {
 private:
 	wxTextCtrl*	text_stack;
+	wxButton*	btn_copy_trace;
+	wxButton*	btn_exit;
+	string		trace;
 
 public:
 	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE3 Application Crash")
@@ -182,39 +191,136 @@ public:
 
 		// Add general crash method
 		string message = "SLADE3 has crashed unexpectedly. To help fix the problem that caused this crash,\nplease copy+paste the information from the window below to a text file, and email\nit to <sirjuddington@gmail.com> along with a description of what you were\ndoing at the time of the crash. Sorry for the inconvenience.";
-		sizer->Add(new wxStaticText(this, -1, message), 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 4);
+		sizer->Add(new wxStaticText(this, -1, message), 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxTOP, 10);
 
-		// Setup stack trace string
-		string trace = S_FMT("Version: %s\n", Global::version);
+		// SLADE info
+		trace = S_FMT("Version: %s\n", Global::version);
 		if (current_action.IsEmpty())
 			trace += "No current action\n";
 		else
 			trace += S_FMT("Current action: %s", current_action);
 		trace += "\n";
+
+		// System info
+		OpenGL::gl_info_t gl_info = OpenGL::getInfo();
+		trace += "Operating System: " + wxGetOsDescription() + "\n";
+		trace += "Graphics Vendor: " + gl_info.vendor + "\n";
+		trace += "Graphics Hardware: " + gl_info.renderer + "\n";
+		trace += "OpenGL Version: " + gl_info.version + "\n";
+
+		// Stack trace
+		trace += "\n";
 		trace += st.getTraceString();
+
+		// Last 5 log lines
+		trace += "\nLast Log Messages:\n";
+		vector<string> lines = theConsole->lastLogLines(10);
+		for (unsigned a = 0; a < lines.size(); a++)
+			trace += lines[a];
 
 		// Add stack trace text area
 		text_stack = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL);
 		text_stack->SetValue(trace);
 		text_stack->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-		sizer->Add(text_stack, 1, wxEXPAND|wxALL, 4);
+		sizer->Add(text_stack, 1, wxEXPAND|wxALL, 10);
 
 		// Dump stack trace to a file (just in case)
 		wxFile file(appPath("slade3_crash.log", DIR_USER), wxFile::write);
 		file.Write(trace);
 		file.Close();
 
-		// Add standard 'OK' button
-		sizer->Add(CreateStdDialogButtonSizer(wxOK), 0, wxEXPAND|wxALL, 4);
+		// Also dump stack trace to console
+		std::cerr << trace;
+
+		// Add 'Copy Stack Trace' button
+		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 6);
+		btn_copy_trace = new wxButton(this, -1, "Copy Stack Trace");
+		hbox->AddStretchSpacer();
+		hbox->Add(btn_copy_trace, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		btn_copy_trace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnCopyTrace, this);
+
+		// Add 'Exit SLADE' button
+		btn_exit = new wxButton(this, -1, "Exit SLADE");
+		hbox->Add(btn_exit, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		btn_exit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
 
 		// Setup layout
 		Layout();
 		SetInitialSize(wxSize(500, 500));
+		CenterOnParent();
 	}
 
 	~SLADECrashDialog() {}
+
+	void onBtnCopyTrace(wxCommandEvent& e)
+	{
+		if (wxTheClipboard->Open())
+		{
+			wxTheClipboard->SetData(new wxTextDataObject(trace));
+			wxTheClipboard->Flush();
+			wxTheClipboard->Close();
+			wxMessageBox("Stack trace successfully copied to clipboard");
+		}
+		else
+			wxMessageBox("Unable to access the system clipboard, please select+copy the text above manually", wxMessageBoxCaptionStr, wxICON_EXCLAMATION);
+	}
+
+	void onBtnExit(wxCommandEvent& e)
+	{
+		EndModal(wxID_OK);
+	}
 };
-#endif//__APPLE__
+#endif//wxUSE_STACKWALKER
+
+
+/* MainAppFileListener and related Classes
+ * wxWidgets IPC classes used to send filenames of archives to open
+ * from one SLADE instance to another in the case where a second
+ * instance is opened
+ *******************************************************************/
+class MainAppFLConnection : public wxConnection
+{
+public:
+	MainAppFLConnection() {}
+	~MainAppFLConnection() {}
+
+	bool OnAdvise(const wxString& topic, const wxString& item, char* data, int size, wxIPCFormat format)
+	{
+		return true;
+	}
+
+	virtual bool OnPoke(const wxString& topic, const wxString& item, const void *data, size_t size, wxIPCFormat format)
+	{
+		theArchiveManager->openArchive(item);
+		return true;
+	}
+};
+
+class MainAppFileListener : public wxServer
+{
+public:
+	MainAppFileListener() {}
+	~MainAppFileListener() {}
+
+	wxConnectionBase* OnAcceptConnection(const wxString& topic)
+	{
+		return new MainAppFLConnection();
+	}
+};
+
+class MainAppFLClient : public wxClient
+{
+public:
+	MainAppFLClient() {}
+	~MainAppFLClient() {}
+
+	wxConnectionBase* OnMakeConnection()
+	{
+		return new MainAppFLConnection();
+	}
+};
+
 
 /*******************************************************************
  * FUNCTIONS
@@ -243,6 +349,8 @@ string appPath(string filename, int dir)
 		return dir_user + sep + filename;
 	else if (dir == DIR_APP)
 		return dir_app + sep + filename;
+	else if (dir == DIR_RES)
+		return dir_res + sep + filename;
 	else if (dir == DIR_TEMP)
 	{
 		// Get temp path
@@ -340,6 +448,11 @@ bool MainApp::initDirectories()
 	string sep = "/";
 #endif
 
+	// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX), use this for the installation prefix
+#if defined(__UNIX__) && defined(INSTALL_PREFIX)
+	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
+#endif//defined(__UNIX__) && defined(INSTALL_PREFIX)
+	
 	// Setup app dir
 	dir_app = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 
@@ -348,6 +461,7 @@ bool MainApp::initDirectories()
 	{
 		// Setup portable user/data dirs
 		dir_data = dir_app;
+		dir_res = dir_app;
 		dir_user = dir_app + sep + "config";
 	}
 	else
@@ -355,6 +469,7 @@ bool MainApp::initDirectories()
 		// Setup standard user/data dirs
 		dir_user = wxStandardPaths::Get().GetUserDataDir();
 		dir_data = wxStandardPaths::Get().GetDataDir();
+		dir_res = wxStandardPaths::Get().GetResourcesDir();
 	}
 
 	// Create user dir if necessary
@@ -370,6 +485,10 @@ bool MainApp::initDirectories()
 	// Check data dir
 	if (!wxDirExists(dir_data))
 		dir_data = dir_app;	// Use app dir if data dir doesn't exist
+
+	// Check res dir
+	if(!wxDirExists(dir_res))
+		dir_res = dir_app;	// Use app dir if res dir doesn't exist
 
 	return true;
 }
@@ -388,6 +507,7 @@ void MainApp::initLogFile()
 	string year = wxNow().Right(4);
 	wxLogMessage("SLADE - It's a Doom Editor");
 	wxLogMessage("Version %s", Global::version);
+	if (Global::sc_rev != "") wxLogMessage("Git Revision %s", Global::sc_rev);
 	wxLogMessage("Written by Simon Judd, 2008-%s", year);
 #ifdef SFML_VERSION_MAJOR
 	wxLogMessage("Compiled with wxWidgets %i.%i.%i and SFML %i.%i", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER, SFML_VERSION_MAJOR, SFML_VERSION_MINOR);
@@ -495,6 +615,7 @@ void MainApp::initActions()
 	new SAction("arch_bas_convertz", "Convert to ANIMDEFS", "", "Convert any selected SWITCHES and ANIMATED entries to a single ANIMDEFS entry");
 	new SAction("arch_swan_convert", "Compile to SWITCHES and ANIMATED", "", "Convert SWANTBLS entries into SWITCHES and ANIMATED entries");
 	new SAction("arch_texturex_convertzd", "Convert to TEXTURES", "", "Convert any selected TEXTUREx entries to ZDoom TEXTURES format");
+	new SAction("arch_texturex_finderrors", "Find Texture Errors", "", "Log to the console any error detected in the TEXTUREx entries");
 	new SAction("arch_view_text", "View as Text", "text", "Open the selected entry in the text editor, regardless of type");
 	new SAction("arch_view_hex", "View as Hex", "data", "Open the selected entry in the hex editor, regardless of type");
 	new SAction("arch_gfx_convert", "Convert to...", "convert", "Open the Gfx Conversion Dialog for any selected gfx entries");
@@ -668,11 +789,49 @@ void MainApp::initActions()
 	getAction("mapw_script_togglelanguage")->toggled = script_show_language_list;
 }
 
+/* MainApp::singleInstanceCheck
+ * Checks if another instance of SLADE is already running, and if so,
+ * sends the args to the file listener of the existing SLADE
+ * process. Returns false if another instance was found
+ *******************************************************************/
+bool MainApp::singleInstanceCheck()
+{
+	single_instance_checker = new wxSingleInstanceChecker;
+	if (single_instance_checker->IsAnotherRunning())
+	{
+		delete single_instance_checker;
+
+		// Connect to the file listener of the existing SLADE process
+		MainAppFLClient* client = new MainAppFLClient();
+		MainAppFLConnection* connection = (MainAppFLConnection*)client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files");
+
+		if (connection)
+		{
+			// Send args as archives to open
+			for (int a = 1; a < argc; a++)
+			{
+				string arg = argv[a];
+				connection->Poke(arg, arg);
+			}
+
+			connection->Disconnect();
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
 /* MainApp::OnInit
  * Application initialization, run when program is started
  *******************************************************************/
 bool MainApp::OnInit()
 {
+	// Check if an instance of SLADE is already running
+	if (!singleInstanceCheck())
+		return false;
+
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
 	setlocale(LC_ALL, "C");
@@ -681,6 +840,10 @@ bool MainApp::OnInit()
 	Global::error = "";
 	ArchiveManager::getInstance();
 	init_ok = false;
+
+	// Start up file listener
+	file_listener = new MainAppFileListener();
+	file_listener->Create("SLADE_MAFL");
 
 	// Init variables
 	action_invalid = new SAction("invalid", "Invalid Action", "", "Something's gone wrong here");
@@ -817,6 +980,8 @@ bool MainApp::OnInit()
 		SetupWizardDialog dlg(theMainWindow);
 		dlg.ShowModal();
 		setup_wizard_run = true;
+		theMainWindow->Update();
+		theMainWindow->Refresh();
 	}
 
 	// Check for updates
@@ -829,6 +994,7 @@ bool MainApp::OnInit()
 	// Bind events
 	Bind(wxEVT_MENU, &MainApp::onMenu, this);
 	Bind(wxEVT_COMMAND_VERSIONCHECK_COMPLETED, &MainApp::onVersionCheckCompleted, this);
+	Bind(wxEVT_ACTIVATE_APP, &MainApp::onActivate, this);
 
 	return true;
 }
@@ -868,6 +1034,8 @@ int MainApp::OnExit()
 	ArchiveManager::deleteInstance();
 	Console::deleteInstance();
 	SplashWindow::deleteInstance();
+	delete single_instance_checker;
+	delete file_listener;
 
 	// Clear temp folder
 	wxDir temp;
@@ -892,14 +1060,14 @@ int MainApp::OnExit()
 
 void MainApp::OnFatalException()
 {
-#ifndef __APPLE__
+#if wxUSE_STACKWALKER
 #ifndef _DEBUG
 	SLADEStackTrace st;
 	st.WalkFromException();
 	SLADECrashDialog sd(st);
 	sd.ShowModal();
-#endif
-#endif
+#endif//_DEBUG
+#endif//wxUSE_STACKWALKER
 }
 
 #ifdef __APPLE__
@@ -921,7 +1089,7 @@ void MainApp::readConfigFile()
 
 	// Go through the file with the tokenizer
 	string token = tz.getToken();
-	while (token.Cmp(""))
+	while (!tz.atEnd())
 	{
 		// If we come across a 'cvars' token, read in the cvars section
 		if (!token.Cmp("cvars"))
@@ -930,7 +1098,7 @@ void MainApp::readConfigFile()
 
 			// Keep reading name/value pairs until we hit the ending '}'
 			string cvar_name = tz.getToken();
-			while (cvar_name.Cmp("}"))
+			while (cvar_name.Cmp("}") && !tz.atEnd())
 			{
 				string cvar_val = tz.getToken();
 				read_cvar(cvar_name, cvar_val);
@@ -946,7 +1114,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token.Cmp("}"))
+			while (token.Cmp("}") && !tz.atEnd())
 			{
 				theArchiveManager->addBaseResourcePath(token);
 				token = wxString::FromUTF8(UTF8(tz.getToken()));
@@ -961,7 +1129,7 @@ void MainApp::readConfigFile()
 
 			// Read files until closing brace found
 			token = wxString::FromUTF8(UTF8(tz.getToken()));
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				theArchiveManager->addRecentFile(token);
 				token = wxString::FromUTF8(UTF8(tz.getToken()));
@@ -982,7 +1150,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				string path = tz.getToken();
 				NodeBuilders::addBuilderPath(token, path);
@@ -997,7 +1165,7 @@ void MainApp::readConfigFile()
 
 			// Read paths until closing brace found
 			token = tz.getToken();
-			while (token != "}")
+			while (token != "}" && !tz.atEnd())
 			{
 				if (token.length())
 				{
@@ -1293,6 +1461,23 @@ void MainApp::onVersionCheckCompleted(wxThreadEvent& e)
 		wxMessageBox("SLADE is already up to date", "Check for Updates");
 }
 
+/* MainApp::onActivate
+ * Called when the app gains focus
+ *******************************************************************/
+void MainApp::onActivate(wxActivateEvent& e)
+{
+	if (!e.GetActive())
+	{
+		e.Skip();
+		return;
+	}
+
+	// Check open directory archives for changes on the file system
+	if (theMainWindow && theMainWindow->getArchiveManagerPanel())
+		theMainWindow->getArchiveManagerPanel()->checkDirArchives();
+
+	e.Skip();
+}
 
 /*******************************************************************
  * CONSOLE COMMANDS

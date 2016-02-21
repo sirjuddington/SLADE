@@ -45,6 +45,7 @@ EXTERN_CVAR(Int, render_adaptive_ms)
 EXTERN_CVAR(Bool, render_3d_sky)
 EXTERN_CVAR(Bool, camera_3d_show_distance)
 EXTERN_CVAR(Bool, mlook_invert_y)
+EXTERN_CVAR(Bool, render_shade_orthogonal_lines)
 
 
 /*******************************************************************
@@ -113,6 +114,10 @@ Map3DPrefsPanel::Map3DPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	cb_invert_y = new wxCheckBox(this, -1, "Invert mouse Y axis");
 	fsizer->Add(cb_invert_y, 0, wxEXPAND|wxALL, 4);
 
+	// Shade orthogonal lines
+	cb_shade_orthogonal = new wxCheckBox(this, -1, "Shade orthogonal lines");
+	fsizer->Add(cb_shade_orthogonal, 0, wxEXPAND | wxALL, 4);
+
 
 	// Bind events
 	slider_max_render_dist->Bind(wxEVT_SLIDER, &Map3DPrefsPanel::onSliderMaxRenderDistChanged, this);
@@ -158,6 +163,7 @@ void Map3DPrefsPanel::init()
 	cb_render_sky->SetValue(render_3d_sky);
 	cb_show_distance->SetValue(camera_3d_show_distance);
 	cb_invert_y->SetValue(mlook_invert_y);
+	cb_shade_orthogonal->SetValue(render_shade_orthogonal_lines);
 
 	updateDistanceControls();
 }
@@ -218,6 +224,7 @@ void Map3DPrefsPanel::applyPreferences()
 	render_3d_sky = cb_render_sky->GetValue();
 	camera_3d_show_distance = cb_show_distance->GetValue();
 	mlook_invert_y = cb_invert_y->GetValue();
+	render_shade_orthogonal_lines = cb_shade_orthogonal->GetValue();
 }
 
 

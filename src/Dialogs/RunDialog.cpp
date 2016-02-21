@@ -42,6 +42,11 @@
 #include <wx/statline.h>
 #include <wx/filename.h>
 
+#ifdef __WXOSX_MAC__
+#include <CoreFoundation/CoreFoundation.h>
+#include <wx/stdpaths.h>
+#endif // __WXOSX_MAC__
+
 
 /*******************************************************************
  * VARIABLES
@@ -253,6 +258,38 @@ void RunDialog::openGameExe(unsigned index)
 	}
 }
 
+static string getExecutablePath(const Executables::game_exe_t* const exe)
+{
+	const string& exe_path = exe->path;
+
+#ifdef __WXOSX_MAC__
+	if (exe_path.EndsWith(".app"))
+	{
+		wxCFRef<CFStringRef> cf_path(CFStringCreateWithCString(kCFAllocatorDefault,
+			exe_path.utf8_str(), kCFStringEncodingUTF8));
+
+		if (NULL != cf_path)
+		{
+			wxCFRef<CFURLRef> cf_path_url(CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+				cf_path, kCFURLPOSIXPathStyle, true));
+
+			if (NULL != cf_path_url)
+			{
+				wxCFRef<CFBundleRef> cf_bundle(CFBundleCreate(0, cf_path_url));
+
+				if (NULL != cf_bundle)
+				{
+					const wxStandardPathsCF paths(cf_bundle);
+					return paths.GetExecutablePath();
+				}
+			}
+		}
+	}
+#endif // __WXOSX_MAC__
+
+	return exe_path;
+}
+
 /* RunDialog::getSelectedCommandLine
  * Returns a command line based on the currently selected run
  * configuration and resources
@@ -263,9 +300,12 @@ string RunDialog::getSelectedCommandLine(Archive* archive, string map_name, stri
 	if (exe)
 	{
 		// Get exe path
-		string path = S_FMT("\"%s\"", exe->path);
-		if (path.IsEmpty())
+		const string exe_path = getExecutablePath(exe);
+
+		if (exe_path.IsEmpty())
 			return "";
+
+		string path = S_FMT("\"%s\"", exe_path);
 
 		unsigned cfg = choice_config->GetSelection();
 		if (cfg < exe->configs.size())
@@ -426,8 +466,13 @@ void RunDialog::onBtnAddConfig(wxCommandEvent& e)
 	RunConfigDialog dlg(this, S_FMT("Add Run Config for %s", exe->name), "", init_params);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		Executables::addGameExeConfig(choice_game_exes->GetSelection(), dlg.getName(), dlg.getParams());
-		choice_config->AppendString(dlg.getName());
+		string name = dlg.getName();
+
+		if (name.IsEmpty())
+			name = S_FMT("Config %d", choice_config->GetCount() + 1);
+
+		Executables::addGameExeConfig(choice_game_exes->GetSelection(), name, dlg.getParams());
+		choice_config->AppendString(name);
 		choice_config->Select(choice_config->GetCount() - 1);
 	}
 }
@@ -449,9 +494,10 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
 	RunConfigDialog dlg(this, "Edit Run Config", name, params, custom);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		exe->configs[index].key = dlg.getName();
+		string name = dlg.getName().IsEmpty() ? exe->configs[index].key : dlg.getName();
+		exe->configs[index].key = name;
 		exe->configs[index].value = dlg.getParams();
-		choice_config->SetString(index, dlg.getName());
+		choice_config->SetString(index, name);
 	}
 }
 
@@ -460,7 +506,11 @@ void RunDialog::onBtnEditConfig(wxCommandEvent& e)
  *******************************************************************/
 void RunDialog::onBtnRun(wxCommandEvent& e)
 {
-	if (text_exe_path->GetValue() == "" || !wxFileExists(text_exe_path->GetValue()))
+	if (text_exe_path->GetValue() == "" || (!wxFileExists(text_exe_path->GetValue())
+#ifdef __WXOSX_MAC__
+        && !(text_exe_path->GetValue().EndsWith(".app"))
+#endif
+			))
 	{
 		wxMessageBox("Invalid executable path", "Error", wxICON_ERROR);
 		return;

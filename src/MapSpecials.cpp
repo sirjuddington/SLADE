@@ -435,7 +435,7 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 
 		if (thing->getType() == 9510 || thing->getType() == 9511)
 		{
-			int target_idx = map->sectorAt(thing->xPos(), thing->yPos());
+			int target_idx = map->sectorAt(thing->point());
 			if (target_idx < 0)
 				continue;
 			MapSector* target = map->getSector(target_idx);
@@ -577,7 +577,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
 		this_vertex = vertices[a];
-		this_dist = line->distanceTo(this_vertex->xPos(), this_vertex->yPos());
+		this_dist = line->distanceTo(this_vertex->point());
 		if (this_dist > furthest_dist)
 		{
 			furthest_dist = this_dist;
@@ -596,9 +596,9 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	// sector's height).
 	double modelz = model->getPlaneHeight<p>();
 	double targetz = target->getPlaneHeight<p>();
-	fpoint3_t p1(line->x1(), line->y1(), modelz);
-	fpoint3_t p2(line->x2(), line->y2(), modelz);
-	fpoint3_t p3(furthest_vertex->xPos(), furthest_vertex->yPos(), targetz);
+	fpoint3_t p1(line->point1(), modelz);
+	fpoint3_t p2(line->point2(), modelz);
+	fpoint3_t p3(furthest_vertex->point(), targetz);
 	target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 }
 
@@ -624,9 +624,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 
 		// Line slope things only affect the sector on the side of the line
 		// that faces the thing
-		double side = MathStuff::lineSide(
-			thing->xPos(), thing->yPos(),
-			line->x1(), line->y1(), line->x2(), line->y2());
+		double side = MathStuff::lineSide(thing->point(), line->seg());
 		MapSector* target = NULL;
 		if (side < 0)
 			target = line->backSector();
@@ -638,26 +636,21 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 		// Need to know the containing sector's height to find the thing's true height
 		if (!containing_sector)
 		{
-			int containing_sector_idx = map->sectorAt(
-				thing->xPos(), thing->yPos());
+			int containing_sector_idx = map->sectorAt(thing->point());
 			if (containing_sector_idx < 0)
 				return;
 			containing_sector = map->getSector(containing_sector_idx);
 			thingz = (
-				containing_sector->getPlane<p>().height_at(thing->xPos(), thing->yPos())
+				containing_sector->getPlane<p>().height_at(thing->point())
 				+ thing->floatProperty("height")
 			);
 		}
 
 		// Three points: endpoints of the line, and the thing itself
 		plane_t target_plane = target->getPlane<p>();
-		fpoint3_t p1(
-			lines[b]->x1(), lines[b]->y1(),
-			target_plane.height_at(lines[b]->x1(), lines[b]->y1()));
-		fpoint3_t p2(
-			lines[b]->x2(), lines[b]->y2(),
-			target_plane.height_at(lines[b]->x2(), lines[b]->y2()));
-		fpoint3_t p3(thing->xPos(), thing->yPos(), thingz);
+		fpoint3_t p1(lines[b]->point1(), target_plane.height_at(lines[b]->point1()));
+		fpoint3_t p2(lines[b]->point2(), target_plane.height_at(lines[b]->point2()));
+		fpoint3_t p3(thing->point(), thingz);
 		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 	}
 }
@@ -667,7 +660,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 {
 	// TODO should this apply to /all/ sectors at this point, in the case of an
 	// intersection?
-	int target_idx = map->sectorAt(thing->xPos(), thing->yPos());
+	int target_idx = map->sectorAt(thing->point());
 	if (target_idx < 0)
 		return;
 	MapSector* target = map->getSector(target_idx);
@@ -683,7 +676,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 	double tilt = (raw_angle - 90) / 360.0 * TAU;
 	// Resulting plane goes through the position of the thing
 	double z = target->getPlaneHeight<p>() + thing->floatProperty("height");
-	fpoint3_t point(thing->xPos(), thing->yPos(), z);
+	fpoint3_t point(thing->point(), z);
 
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
@@ -709,7 +702,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 template<PlaneType p>
 void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 {
-	int target_idx = map->sectorAt(thing->xPos(), thing->yPos());
+	int target_idx = map->sectorAt(thing->point());
 	if (target_idx < 0)
 		return;
 	MapSector* target = map->getSector(target_idx);
@@ -728,16 +721,16 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 		// Vavoom things use the plane defined by the thing and its two
 		// endpoints, based on the sector's original (flat) plane and treating
 		// the thing's height as absolute
-		short height = target->getPlaneHeight<p>();
-		fpoint3_t p1(thing->xPos(), thing->yPos(), thing->floatProperty("height"));
-		fpoint3_t p2(lines[a]->x1(), lines[a]->y1(), height);
-		fpoint3_t p3(lines[a]->x2(), lines[a]->y2(), height);
-
-		if (MathStuff::distanceToLineFast(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y) == 0)
+		if (MathStuff::distanceToLineFast(thing->point(), lines[a]->seg()) == 0)
 		{
 			LOG_MESSAGE(1, "Vavoom thing %d lies directly on its target line %d", thing->getIndex(), a);
 			return;
 		}
+
+		short height = target->getPlaneHeight<p>();
+		fpoint3_t p1(thing->point(), thing->floatProperty("height"));
+		fpoint3_t p2(lines[a]->point1(), height);
+		fpoint3_t p3(lines[a]->point2(), height);
 
 		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 		return;
@@ -762,9 +755,9 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 	// interesting slope, after all.
 	if (z1 || z2 || z3)
 	{
-		fpoint3_t p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
-		fpoint3_t p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
-		fpoint3_t p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
+		fpoint3_t p1(vertices[0]->point(), z1);
+		fpoint3_t p2(vertices[1]->point(), z2);
+		fpoint3_t p3(vertices[2]->point(), z3);
 		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 	}
 }

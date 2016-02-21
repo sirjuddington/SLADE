@@ -32,6 +32,10 @@
 #include "WxStuff.h"
 #include "BaseResourceArchivesPanel.h"
 #include "ArchiveManager.h"
+#include "Parser.h"
+#ifdef __WXMSW__
+#include <wx/msw/registry.h>
+#endif
 
 
 /*******************************************************************
@@ -73,15 +77,18 @@ BaseResourceArchivesPanel::BaseResourceArchivesPanel(wxWindow* parent)
 	// Setup buttons
 	btn_add = new wxButton(this, -1, "Add Archive");
 	btn_remove = new wxButton(this, -1, "Remove Archive");
+	btn_detect = new wxButton(this, -1, "Detect Archives");
 
 	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 	vbox->Add(btn_add, 0, wxEXPAND|wxBOTTOM, 4);
 	vbox->Add(btn_remove, 0, wxEXPAND|wxBOTTOM, 4);
+	vbox->Add(btn_detect, 0, wxEXPAND|wxBOTTOM, 4);
 	hbox->Add(vbox, 0, wxEXPAND|wxALL, 4);
 
 	// Bind events
 	btn_add->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnAdd, this);
 	btn_remove->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnRemove, this);
+	btn_detect->Bind(wxEVT_BUTTON, &BaseResourceArchivesPanel::onBtnDetect, this);
 
 	// Init layout
 	Layout();
@@ -148,4 +155,161 @@ void BaseResourceArchivesPanel::onBtnRemove(wxCommandEvent& e)
 
 	// Also remove it from the archive manager
 	theArchiveManager->removeBaseResourcePath(index);
+}
+
+/* BaseResourceArchivesPanel::onBtnDetect
+ * Called when the 'Detect Archives' button is clicked
+ *******************************************************************/
+void BaseResourceArchivesPanel::onBtnDetect(wxCommandEvent& e)
+{
+	autodetect();
+}
+
+#ifdef __WXMSW__
+/* QueryPathKey
+ * Inspired by ZDoom. Automatizes some repetitive steps. Puts the
+ * value of a registry key into the reference, and returns true if
+ * the value actually exists and isn't an empty string.
+ *******************************************************************/
+static bool QueryPathKey(wxRegKey::StdKey hkey, string path, string variable, string &value)
+{
+	wxRegKey key(hkey, path);
+	key.QueryValue(variable, value);
+	key.Close();
+
+	return (value.length() > 0);
+}
+#endif
+
+/* BaseResourceArchivesPanel::autodetect
+ * Automatically seek IWADs to populate the list
+ *******************************************************************/
+void BaseResourceArchivesPanel::autodetect()
+{
+	// List of known IWADs and common aliases
+	ArchiveEntry * iwadlist = theArchiveManager->programResourceArchive()->entryAtPath("config/iwads.cfg");
+	if (!iwadlist)
+		return;
+	Parser p;
+	p.parseText(iwadlist->getMCData(), "slade.pk3:config/iwads.cfg");
+
+
+	// Find IWADs from DOOMWADDIR and DOOMWADPATH
+	// See http://doomwiki.org/wiki/Environment_variables
+	string doomwaddir, doomwadpath, envvar;
+	envvar = "DOOMWADDIR";
+	wxGetEnv(envvar, &doomwaddir);
+	envvar = "DOOMWADPATH";
+	wxGetEnv(envvar, &doomwadpath);
+
+	if (doomwaddir.length() || doomwadpath.length())
+	{
+#ifdef WIN32
+		char separator = ';';
+		doomwadpath.Replace("\\", "/", true);
+		doomwaddir.Replace("\\", "/", true);
+#else
+		char separator = ':';
+#endif
+
+		wxArrayString paths = wxSplit(doomwadpath, separator);
+		paths.Add(doomwaddir);
+		wxArrayString iwadnames;
+		ParseTreeNode* list = (ParseTreeNode*)p.parseTreeRoot()->getChild("iwads");
+		for (size_t i = 0; i < list->nChildren(); ++i)
+			iwadnames.Add(list->getChild(i)->getName());
+
+		// Look for every known IWAD in every known IWAD directory
+		for (size_t i = 0; i < paths.size(); ++i)
+		{
+			string folder = paths[i];
+			if (folder.Last() != '/') folder += '/';
+			for (size_t j = 0; j < iwadnames.size(); ++j)
+			{
+				string iwad = folder + iwadnames[j];
+#ifndef WIN32
+				// Try a couple variants before throwing the towel about a name
+				if (!wxFileExists(iwad))
+					iwad = folder + iwadnames[j].Capitalize();
+				if (!wxFileExists(iwad))
+					iwad = folder + iwadnames[j].Upper();
+#endif
+				// If a valid combo is found, add it to the list unless already present
+				if (wxFileExists(iwad))
+				{
+					// Verify existence before adding it to the list
+					if (list_base_archive_paths->FindString(iwad) == wxNOT_FOUND)
+					{
+						theArchiveManager->addBaseResourcePath(iwad);
+						list_base_archive_paths->Append(iwad);
+					}
+				}
+			}
+		}
+	}
+
+	// Let's take a look at the registry
+	wxArrayString paths;
+	string path;
+	string gamepath;
+
+	// Now query GOG.com paths -- Windows only for now
+#ifdef __WXMSW__
+#ifdef _WIN64
+	string gogregistrypath = "Software\\Wow6432Node\\GOG.com";
+#else
+	// If a 32-bit ZDoom runs on a 64-bit Windows, this will be transparently and
+	// automatically redirected to the Wow6432Node address instead, so this address
+	// should be safe to use in all cases.
+	string gogregistrypath = "Software\\GOG.com";
+#endif
+	if (QueryPathKey(wxRegKey::HKLM, gogregistrypath, "DefaultPackPath", path))
+	{
+		ParseTreeNode* list = (ParseTreeNode*)p.parseTreeRoot()->getChild("gog");
+		for (size_t i = 0; i < list->nChildren(); ++i)
+		{
+			ParseTreeNode* child = (ParseTreeNode*)list->getChild(i);
+			gamepath = gogregistrypath + ((ParseTreeNode*)child->getChild("id"))->getStringValue();
+			if (QueryPathKey(wxRegKey::HKLM, gamepath, "Path", path))
+				paths.Add(path + ((ParseTreeNode*)child->getChild("path"))->getStringValue());
+		}
+
+	}
+#endif
+
+
+	// Now query Steam paths -- Windows only for now as well
+#ifdef __WXMSW__
+	if (QueryPathKey(wxRegKey::HKCU, "Software\\Valve\\Steam", "SteamPath", gamepath) ||
+		QueryPathKey(wxRegKey::HKLM, "Software\\Valve\\Steam", "InstallPath", gamepath))
+	{
+		gamepath += "/SteamApps/common/";
+		ParseTreeNode* list = (ParseTreeNode*)p.parseTreeRoot()->getChild("steam");
+		for (size_t i = 0; i < list->nChildren(); ++i)
+			paths.Add(gamepath + ((ParseTreeNode*)list->getChild(i))->getStringValue());
+	}
+#else
+	// TODO: Querying Steam registry on Linux and OSX. This involves parsing Steam's config.vdf file, which is found in
+	// FSFindFolder(kUserDomain, kApplicationSupportFolderType, kCreateFolder, &folder) + "/Steam/config/config.vdf" on OSX
+	// and in ~home/.local/share/Steam/config/config.vdf on Linux/BSD systems. There's also default install dirs in
+	// appSupportPath + "/Steam/SteamApps/common" for OSX, ~home/.local/share/Steam/SteamApps/common for Linux/BSD.
+#endif
+
+
+	// Add GOG & Steam paths
+	for (size_t i = 0; i < paths.size(); ++i)
+	{
+		string iwad = paths[i];
+		iwad.Replace("\\", "/", true);
+		if (wxFileExists(iwad))
+		{
+			// Verify existence before adding it to the list
+			if (list_base_archive_paths->FindString(iwad) == wxNOT_FOUND)
+			{
+				theArchiveManager->addBaseResourcePath(iwad);
+				list_base_archive_paths->Append(iwad);
+			}
+		}
+	}
+
 }

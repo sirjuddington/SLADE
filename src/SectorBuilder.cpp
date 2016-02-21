@@ -242,6 +242,8 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
  *******************************************************************/
 int SectorBuilder::nearestEdge(double x, double y)
 {
+	fpoint2_t point(x, y);
+
 	// Init variables
 	double min_dist = 99999999;
 	int nearest = -1;
@@ -251,9 +253,7 @@ int SectorBuilder::nearestEdge(double x, double y)
 	for (unsigned a = 0; a < o_edges.size(); a++)
 	{
 		// Get distance to edge
-		dist = MathStuff::distanceToLineFast(x, y,
-		                                     o_edges[a].line->x1(), o_edges[a].line->y1(),
-		                                     o_edges[a].line->x2(), o_edges[a].line->y2());
+		dist = MathStuff::distanceToLineFast(point, o_edges[a].line->seg());
 
 		// Check if minimum
 		if (dist < min_dist)
@@ -272,6 +272,8 @@ int SectorBuilder::nearestEdge(double x, double y)
  *******************************************************************/
 bool SectorBuilder::pointWithinOutline(double x, double y)
 {
+	fpoint2_t point(x, y);
+
 	// Check with bounding box
 	if (!o_bbox.point_within(x, y))
 	{
@@ -291,9 +293,7 @@ bool SectorBuilder::pointWithinOutline(double x, double y)
 	if (nearest >= 0)
 	{
 		// Check what side of the edge the point is on
-		double side = MathStuff::lineSide(x, y,
-		                                  o_edges[nearest].line->x1(), o_edges[nearest].line->y1(),
-		                                  o_edges[nearest].line->x2(), o_edges[nearest].line->y2());
+		double side = MathStuff::lineSide(point, o_edges[nearest].line->seg());
 
 		// Return true if it is on the correct side
 		if (side >= 0 && o_edges[nearest].front)
@@ -340,7 +340,7 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 	double min_dist = 999999999;
 	MapLine* nearest = NULL;
 
-	//wxLogMessage("Find outer edge from vertex %d", vertex_right->getIndex());
+	//LOG_DEBUG("Finding outer edge from vertex", vertex_right, "at", vertex_right->point());
 
 	// Go through map lines
 	MapLine* line = NULL;
@@ -364,11 +364,12 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 		// Get x intercept
 		double int_frac = (vr_y - line->y1()) / (line->y2() - line->y1());
 		double int_x = line->x1() + ((line->x2() - line->x1()) * int_frac);
+		double dist = fabs(int_x - vr_x);
 
 		// Check if closest
-		if (int_x - vr_x < min_dist)
+		if (dist < min_dist)
 		{
-			min_dist = int_x - vr_x;
+			min_dist = dist;
 			nearest = line;
 		}
 	}
@@ -377,10 +378,10 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 	if (!nearest)
 		return edge_t(NULL);
 
-	//wxLogMessage("Found next outer line %d", nearest->getIndex());
+	//LOG_DEBUG("Found next outer line", nearest);
 
 	// Determine the edge side
-	double side = MathStuff::lineSide(vr_x, vr_y, nearest->x1(), nearest->y1(), nearest->x2(), nearest->y2());
+	double side = MathStuff::lineSide(vertex_right->point(), nearest->seg());
 	if (side >= 0)
 		return edge_t(nearest, true);
 	else

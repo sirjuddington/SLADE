@@ -70,6 +70,15 @@ MapVertex::~MapVertex()
  *******************************************************************/
 fpoint2_t MapVertex::getPoint(uint8_t point)
 {
+	return this->point();
+}
+
+/* MapVertex::point
+ * Returns the vertex position, more explicitly than the overridden
+ * getPoint
+ *******************************************************************/
+fpoint2_t MapVertex::point()
+{
 	return fpoint2_t(x, y);
 }
 

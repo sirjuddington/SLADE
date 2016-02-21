@@ -511,8 +511,8 @@ void MapCanvas::viewMatchSpot(double mx, double my, double sx, double sy)
 void MapCanvas::set3dCameraThing(MapThing* thing)
 {
 	// Determine position
-	fpoint3_t pos(thing->xPos(), thing->yPos(), 40);
-	int sector = editor->getMap().sectorAt(pos.x, pos.y);
+	fpoint3_t pos(thing->point(), 40);
+	int sector = editor->getMap().sectorAt(thing->point());
 	if (sector >= 0)
 		pos.z += editor->getMap().getSector(sector)->getFloorHeight();
 
@@ -908,7 +908,7 @@ void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
 	fpoint2_t tp(mid.x + (vec.x * tdist), mid.y + (vec.y * tdist));
 
 	// Determine text half-height for vertical alignment
-	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1.x, p1.y, p2.x, p2.y)));
+	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
 	double hh = Drawing::textExtents(length).y * 0.5;
 
 	// Draw text
@@ -930,7 +930,7 @@ void MapCanvas::drawLineDrawLines()
 	if (modifiers_current & wxMOD_SHIFT)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
-		int vertex = editor->getMap().nearestVertex(end.x, end.y);
+		int vertex = editor->getMap().nearestVertex(end);
 		if (vertex >= 0)
 		{
 			end.x = editor->getMap().getVertex(vertex)->xPos();
@@ -1018,9 +1018,7 @@ void MapCanvas::drawPasteLines()
 	OpenGL::setColour(col);
 
 	// Draw
-	fpoint2_t pos = mouse_pos_m;
-	pos.x = editor->snapToGrid(pos.x);
-	pos.y = editor->snapToGrid(pos.y);
+	fpoint2_t pos = editor->relativeSnapToGrid(c->getMidpoint(), mouse_pos_m);
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -1131,7 +1129,7 @@ void MapCanvas::drawObjectEdit()
 	if (group->getNearestLine(mouse_pos_m, 128 / view_scale, nl_v1, nl_v2))
 	{
 		fpoint2_t mid(nl_v1.x + ((nl_v2.x - nl_v1.x) * 0.5), nl_v1.y + ((nl_v2.y - nl_v1.y) * 0.5));
-		int length = MathStuff::distance(nl_v1.x, nl_v1.y, nl_v2.x, nl_v2.y);
+		int length = MathStuff::distance(nl_v1, nl_v2);
 		int x = screenX(mid.x);
 		int y = screenY(mid.y) - 8;
 		setOverlayCoords(true);
@@ -1360,8 +1358,9 @@ void MapCanvas::drawMap2d()
 				if (item->getType() == CLIPBOARD_MAP_THINGS)
 				{
 					vector<MapThing*> things;
-					((MapThingsClipboardItem*)item)->getThings(things);
-					fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
+					MapThingsClipboardItem* p = (MapThingsClipboardItem*)item;
+					p->getThings(things);
+					fpoint2_t pos(editor->relativeSnapToGrid(p->getMidpoint(), mouse_pos_m));
 					renderer_2d->renderPasteThings(things, pos);
 				}
 			}
@@ -2630,7 +2629,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 	if (list.size() == 1)
 		type += S_FMT(" #%d", list[0]->getIndex());
 	else if (list.size() > 1)
-		selsize = S_FMT("(%u selected)", list.size());
+		selsize = S_FMT("(%lu selected)", list.size());
 
 	// Create dialog for properties panel
 	SDialog dlg(theMapEditor, S_FMT("%s Properties %s", type, selsize), S_FMT("mobjprops_%d", editor->editMode()), -1, -1);
@@ -2929,8 +2928,7 @@ void MapCanvas::keyBinds2d(string name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state = MSTATE_NORMAL;
-			fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
-			editor->paste(pos);
+			editor->paste(mouse_pos_m);
 		}
 
 		// Cancel paste
@@ -3603,11 +3601,9 @@ bool MapCanvas::handleAction(string id)
 	// Move 3d mode camera
 	else if (id == "mapw_camera_set")
 	{
-		fpoint3_t pos;
-		pos.x = mouse_pos_m.x;
-		pos.y = mouse_pos_m.y;
+		fpoint3_t pos(mouse_pos_m);
 		SLADEMap& map = editor->getMap();
-		MapSector* sector = map.getSector(map.sectorAt(pos.x, pos.y));
+		MapSector* sector = map.getSector(map.sectorAt(mouse_pos_m));
 		if (sector)
 			pos.z = sector->getFloorHeight() + 40;
 		renderer_3d->cameraSetPosition(pos);
@@ -3847,12 +3843,12 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
-			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			int nearest = editor->getMap().nearestLine(mouse_pos_m, 999999);
 			MapLine* line = editor->getMap().getLine(nearest);
 			if (line)
 			{
 				// Determine line side
-				double side = MathStuff::lineSide(mouse_pos_m.x, mouse_pos_m.y, line->x1(), line->y1(), line->x2(), line->y2());
+				double side = MathStuff::lineSide(mouse_pos_m, line->seg());
 				if (side >= 0)
 					sbuilder.traceSector(&(editor->getMap()), line, true);
 				else
@@ -3862,7 +3858,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F5)
 		{
 			// Get nearest line
-			int nearest = editor->getMap().nearestLine(mouse_pos_m.x, mouse_pos_m.y, 999999);
+			int nearest = editor->getMap().nearestLine(mouse_pos_m, 999999);
 			MapLine* line = editor->getMap().getLine(nearest);
 
 			// Get sectors
@@ -4008,8 +4004,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		// Paste state, accept paste
 		else if (mouse_state == MSTATE_PASTE)
 		{
-			fpoint2_t pos(editor->snapToGrid(mouse_pos_m.x), editor->snapToGrid(mouse_pos_m.y));
-			editor->paste(pos);
+			editor->paste(mouse_pos_m);
 			if (!e.ShiftDown())
 				mouse_state = MSTATE_NORMAL;
 		}
@@ -4027,7 +4022,12 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			{
 				vector<MapObject*> objects;
 				editor->getSelectedObjects(objects);
-				editObjectProperties(objects);
+				if (!objects.empty())
+				{
+					editObjectProperties(objects);
+					if (objects.size() == 1)
+						editor->clearSelection();
+				}
 			}
 			// Begin box selection if shift is held down, otherwise toggle selection on hilighted object
 			else if (e.ShiftDown())

@@ -10,55 +10,64 @@ entry_types
 		detectable = 0;
 	}
 
-	mus : music
+	midi_mus : music
 	{
 		name = "Music (MUS)";
-		format = mus;
+		format = midi_mus;
 		export_ext = "mus";
 		editor = audio;
 	}
 
-	midi : music
+	midi_smf : music
 	{
 		name = "Music (MIDI)";
-		format = midi;
+		format = midi_smf;
 		export_ext = "mid";
 		editor = audio;
 	}
 
-	xmi : music
+	midi_xmi : music
 	{
 		name = "Music (XMI)";
-		format = xmi;
+		format = midi_xmi;
 		export_ext = "xmi";
 		reliability = 100;
 		editor = audio;
 	}
 
-	hmi : music
+	midi_hmi : music
 	{
 		name = "Music (HMI)";
-		format = hmi;
+		format = midi_hmi;
 		export_ext = "hmi";
 		reliability = 100;
 		editor = audio;
 	}
 
-	hmp : music
+	midi_hmp : music
 	{
 		name = "Music (HMP)";
-		format = hmp;
+		format = midi_hmp;
 		export_ext = "hmp";
 		reliability = 100;
 		editor = audio;
 	}
 
-	gmid : music
+	midi_gmid : music
 	{
 		name = "Music (GMID)";
-		format = gmid;
+		format = midi_gmid;
 		export_ext = "gmd";
 		reliability = 75;
+		editor = audio;
+	}
+	
+	midi_rmid : music
+	{
+		name = "Music (RMID)";
+		format = midi_rmid;
+		export_ext = "rmi";
+		reliability = 100;
 		editor = audio;
 	}
 
@@ -94,7 +103,224 @@ entry_types
 		editor = audio;
 	}
 
+	mod_okt : music
+	{
+		name = "Music (OKT Module)";
+		format = mod_okt;
+		export_ext = "okt";
+		editor = audio;
+	}
 	
+/*
+	mod_669 : music
+	{
+		name = "Music (669 Module)";
+		format = mod_669;
+		export_ext = "669";
+		editor = audio;
+	}
+	
+	mod_amf : music
+	{
+		name = "Music (AMF Module)";
+		format = mod_amf;
+		export_ext = "amf";
+		editor = audio;
+	}
+	
+	mod_ams : music
+	{
+		name = "Music (AMS Module)";
+		format = mod_ams;
+		export_ext = "ams";
+		editor = audio;
+	}
+	
+	mod_dbm : music
+	{
+		name = "Music (DBM Module)";
+		format = mod_dbm;
+		export_ext = "dbm";
+		editor = audio;
+	}
+	
+	mod_dmf : music
+	{
+		name = "Music (DMF Module)";
+		format = mod_dmf;
+		export_ext = "dmf";
+		editor = audio;
+	}
+	
+	mod_dsm : music
+	{
+		name = "Music (DSM Module)";
+		format = mod_dsm;
+		export_ext = "dsm";
+		editor = audio;
+	}
+	
+	mod_far : music
+	{
+		name = "Music (FAR Module)";
+		format = mod_far;
+		export_ext = "far";
+		editor = audio;
+	}
+	
+	mod_mdl : music
+	{
+		name = "Music (MDL Module)";
+		format = mod_mdl;
+		export_ext = "mdl";
+		editor = audio;
+	}
+	
+	mod_med : music
+	{
+		name = "Music (MED Module)";
+		format = mod_med;
+		export_ext = "med";
+		editor = audio;
+	}
+	
+	mod_mtm : music
+	{
+		name = "Music (MTM Module)";
+		format = mod_mtm;
+		export_ext = "mtm";
+		editor = audio;
+	}
+
+	mod_ptm : music
+	{
+		name = "Music (PTM Module)";
+		format = mod_ptm;
+		export_ext = "ptm";
+		editor = audio;
+	}
+	
+	mod_stm : music
+	{
+		name = "Music (STM Module)";
+		format = mod_stm;
+		export_ext = "stm";
+		editor = audio;
+	}
+	
+	mod_ult : music
+	{
+		name = "Music (ULT Module)";
+		format = mod_ult;
+		export_ext = "ult";
+		editor = audio;
+	}
+
+ 	mod_umx : music
+	{
+		name = "Music (UMX Module)";
+		format = mod_umx;
+		export_ext = "umx";
+		editor = audio;
+	}
+	
+	mod_mt2 : music
+	{
+		name = "Music (MT2 Module)";
+		format = mod_mt2;
+		export_ext = "mt2";
+		editor = audio;
+	}
+	
+	mod_psm : music
+	{
+		name = "Music (PSM Module)";
+		format = mod_psm;
+		export_ext = "psm";
+		editor = audio;
+	}
+*/
+
+	gme_ay : music
+	{
+		name = "Music (AY)";
+		format = gme_ay;
+		export_ext = "ay";
+		editor = audio;
+	}
+
+	gme_gbs : music
+	{
+		name = "Music (GBS)";
+		format = gme_gbs;
+		export_ext = "gbs";
+		editor = audio;
+	}
+
+	gme_gym : music
+	{
+		name = "Music (GYM)";
+		format = gme_gym;
+		export_ext = "gym";
+		editor = audio;
+	}
+
+	gme_hes : music
+	{
+		name = "Music (HES)";
+		format = gme_hes;
+		export_ext = "hes";
+		editor = audio;
+	}
+
+	gme_kss : music
+	{
+		name = "Music (KSS)";
+		format = gme_kss;
+		export_ext = "kss";
+		editor = audio;
+	}
+
+	gme_nsf : music
+	{
+		name = "Music (NSF)";
+		format = gme_nsf;
+		export_ext = "nsf";
+		editor = audio;
+	}
+
+	gme_sap : music
+	{
+		name = "Music (SAP)";
+		format = gme_sap;
+		export_ext = "sap";
+		editor = audio;
+	}
+
+	gme_spc : music
+	{
+		name = "Music (SPC)";
+		format = gme_spc;
+		export_ext = "spc";
+		editor = audio;
+	}
+
+	gme_vgm : music
+	{
+		name = "Music (VGM)";
+		format = gme_vgm;
+		export_ext = "vgm";
+		editor = audio;
+	}
+
+	gme_vgz : music
+	{
+		name = "Music (VGZ)";
+		format = gme_vgz;
+		export_ext = "vgz";
+		editor = audio;
+	}
+
 	sound
 	{
 		icon = "e_sound";
@@ -130,23 +356,68 @@ entry_types
 		editor = audio;
 	}
 	
-	imf : sound
+	opl_imf : music
 	{
 		name = "IMF OPL File";
-		format = imf;
+		format = opl_imf;
 		reliability = 120;
 		export_ext = "imf";
 		editor = audio;
 	}
 	
+	opl_imf_raw : music
+	{
+		name = "IMF OPL Data";
+		format = opl_imf_raw;
+		reliability = 60;
+		export_ext = "imf";
+		editor = audio;
+	}
+	
+	opl_raw : music
+	{
+		name = "RDOS OPL File";
+		format = opl_raw;
+		reliability = 120;
+		export_ext = "raw";
+		editor = audio;
+	}
+	
+	opl_dro : music
+	{
+		name = "DOSBox OPL File";
+		format = opl_dro;
+		reliability = 120;
+		export_ext = "dro";
+		editor = audio;
+	}
+	
 	snd_wolf : sound
 	{
-		name = "Sound (Wolf3D Format)";
+		name = "Sound (Wolf3D PCM)";
 		format = snd_wolf;
 		match_name = "SND0*";
 		match_archive = "archive_wolf";
 		reliability = 10;
 		export_ext = "swp";
+		editor = audio;
+	}
+	
+	snd_audiot : sound
+	{
+		name = "Sound (AudioT PC FX)";
+		format = snd_audiot;
+		reliability = 10;
+		export_ext = "tpc";
+		editor = audio;
+	}
+	
+	opl_audiot : sound
+	{
+		name = "Sound (AudioT Adlib FX)";
+		format = opl_audiot;
+		reliability = 10;
+		export_ext = "tad";
 		editor = audio;
 	}
 	
@@ -185,6 +456,22 @@ entry_types
 		editor = audio;
 	}
 
+	snd_sun : sound
+	{
+		name = "Sound (Sun/NeXT)";
+		format = snd_sun;
+		export_ext = "snd";
+		editor = audio;
+	}
+
+	snd_aiff : sound
+	{
+		name = "Sound (AIFF)";
+		format = snd_aiff;
+		export_ext = "aif";
+		editor = audio;
+	}
+
 	snd_ogg : sound
 	{
 		name = "Sound (Ogg Vorbis)";
@@ -215,13 +502,5 @@ entry_types
 		format = snd_mp3;
 		export_ext = "mp3";
 		editor = audio;
-	}
-
-	snd_spc : sound
-	{
-		name = "Sound (SPC)";
-		format = snd_spc;
-		export_ext = "spc";
-		//editor = audio;
 	}
 }

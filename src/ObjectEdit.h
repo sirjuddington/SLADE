@@ -2,6 +2,8 @@
 #ifndef __OBJECT_EDIT_H__
 #define __OBJECT_EDIT_H__
 
+#include "Structs.h"
+
 class MapVertex;
 class MapLine;
 class MapThing;

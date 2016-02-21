@@ -78,6 +78,7 @@ EXTERN_CVAR(Bool, list_font_monospace)
 	current_dir = NULL;
 	show_dir_back = false;
 	undo_manager = NULL;
+	entries_update = true;
 
 	// Create dummy 'up folder' entry
 	entry_dir_back = new ArchiveEntry();
@@ -551,9 +552,9 @@ bool ArchiveEntryList::sortSize(long left, long right)
 void ArchiveEntryList::sortItems()
 {
 	lv_current = this;
-	if (sort_column == col_size)
+	if (col_size >= 0 && sort_column == col_size)
 		std::sort(items.begin(), items.end(), &ArchiveEntryList::sortSize);
-	else if (sort_column == col_index)
+	else if (col_index >= 0 && sort_column == col_index)
 		std::sort(items.begin(), items.end(), &VirtualListView::indexSort);
 	else
 		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
@@ -634,7 +635,7 @@ int ArchiveEntryList::getEntryIndex(int index, bool filtered)
 	if (filtered)
 	{
 		if ((unsigned)index >= items.size())
-			return NULL;
+			return -1;
 		else
 			index = items[index];
 	}
@@ -775,9 +776,8 @@ void ArchiveEntryList::labelEdited(int col, int index, string new_label)
  *******************************************************************/
 void ArchiveEntryList::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer == archive && event_name != "closed")
+	if (entries_update && announcer == archive && event_name != "closed")
 	{
-		// Since refreshing the list is relatively fast, just refresh it on any change
 		updateList();
 		applyFilter();
 	}

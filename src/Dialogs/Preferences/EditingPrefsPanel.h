@@ -13,6 +13,7 @@ private:
 	wxCheckBox*	cb_save_archive_with_map;
 	wxChoice*	choice_entry_mod;
 	wxCheckBox*	cb_confirm_entry_delete;
+	wxCheckBox*	cb_confirm_entry_revert;
 
 public:
 	EditingPrefsPanel(wxWindow* parent);

@@ -54,7 +54,7 @@ z_decaldef {
 		translucent, add, fuzzy, fullbright, lowerdecal, colors, animator, decal,
 		decalgroup, generator, stretcher, GoalX, GoalY, StretchStart, StretchTime, 
 		fader, DecayStart, DecayTime, Combiner, slider, DistX, DistY, SlideStart, 
-		SlideTime, colorchanger, FadeStart, FadeTime, Color
+		SlideTime, colorchanger, FadeStart, FadeTime, Color, optional
 	}
 }
 
@@ -210,7 +210,7 @@ z_mapinfo {
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
-		DefaultSkill, ArmorFactor, EasyKey,
+		DefaultSkill, ArmorFactor, EasyKey, HealthFactor,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
@@ -670,7 +670,7 @@ z_xlat {
 		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
 		Sector_SetColor = "int tag, int r, int g, int b, int desaturate";
 		Sector_SetCurrent = "int tag, int amount, int angle";
-		Sector_SetDamage = "int tag, int amount, int mod";
+		Sector_SetDamage = "int tag, int amount, int mod, int interval, int leaky";
 		Sector_SetFade = "int tag, int r, int g, int b";
 		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetFloorScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";

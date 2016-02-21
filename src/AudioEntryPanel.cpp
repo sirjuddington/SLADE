@@ -47,13 +47,16 @@
  *******************************************************************/
 CVAR(Int, snd_volume, 100, CVAR_SAVE)
 CVAR(Bool, snd_autoplay, false, CVAR_SAVE)
+#ifndef NO_FLUIDSYNTH
+EXTERN_CVAR(Bool, snd_midi_usetimidity)
+#define usetimidity snd_midi_usetimidity
+#else
+#define usetimidity true
+#endif
 
 /*******************************************************************
  * EXTERNAL VARIABLES
  *******************************************************************/
-#ifndef NO_FLUIDSYNTH
-EXTERN_CVAR(Bool, snd_midi_usetimidity)
-#endif
 
 /*******************************************************************
  * AUDIOENTRYPANEL CLASS FUNCTIONS
@@ -68,6 +71,9 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	timer_seek = new wxTimer(this);
 	sound_buffer = NULL;
 	audio_type = AUTYPE_INVALID;
+	num_tracks = 1;
+	subsong = 0;
+	song_length = 0;
 
 #ifdef __WXMSW__
 	wxRegKey key(wxRegKey::HKLM, "Software\\Microsoft\\Active Setup\\Installed Components\\{6BF52A52-394A-11d3-B153-00C04F79FAA6}");
@@ -99,7 +105,7 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 
 	// Add seekbar
 	slider_seek = new wxSlider(this, -1, 0, 0, 100);
-	sizer_gb->Add(slider_seek, wxGBPosition(0, 0), wxGBSpan(1, 6), wxEXPAND);
+	sizer_gb->Add(slider_seek, wxGBPosition(0, 0), wxGBSpan(1, 9), wxEXPAND);
 
 	// Add play controls
 	btn_play = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "play"));
@@ -108,25 +114,40 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	sizer_gb->Add(btn_pause, wxGBPosition(1, 1));
 	btn_stop = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "stop"));
 	sizer_gb->Add(btn_stop, wxGBPosition(1, 2));
+	btn_prev = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "prev"));
+	sizer_gb->Add(btn_prev, wxGBPosition(1, 3));
+	btn_next = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "next"));
+	sizer_gb->Add(btn_next, wxGBPosition(1, 4));
+
+	// Add title
+	txt_title = new wxStaticText(this, -1, wxEmptyString);
+	sizer_gb->Add(txt_title, wxGBPosition(3, 0), wxGBSpan(3, 9));
+
+	// Add info
+	txt_info = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_BESTWRAP);
+	sizer_gb->Add(txt_info, wxGBPosition(6, 0), wxGBSpan(9, 9), wxEXPAND|wxHORIZONTAL);
+
+	// Add track number
+	txt_track = new wxStaticText(this, -1, "1/1");
+	sizer_gb->Add(txt_track, wxGBPosition(1, 5), wxDefaultSpan, wxALIGN_CENTER);
 
 	// Separator
-	sizer_gb->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL), wxGBPosition(1, 3), wxDefaultSpan, wxEXPAND|wxLEFT|wxRIGHT, 8);
+	sizer_gb->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL), wxGBPosition(1, 6), wxDefaultSpan, wxEXPAND|wxLEFT|wxRIGHT, 8);
 
 	// Add volume slider
-	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 4), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	slider_volume = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(128, -1));
 	slider_volume->SetValue(snd_volume);
-	sizer_gb->Add(slider_volume, wxGBPosition(1, 5));
+	sizer_gb->Add(slider_volume, wxGBPosition(1, 8));
 
 	// Set volume
 	sound.setVolume(snd_volume);
 	music.setVolume(snd_volume);
-#ifndef NO_FLUIDSYNTH
-	if (!snd_midi_usetimidity)
-		theMIDIPlayer->setVolume(snd_volume);
-#endif
+	theMIDIPlayer->setVolume(snd_volume);
 	if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01);
 	mod.setVolume(snd_volume);
+	//theGMEPlayer->setVolume(snd_volume);
+	//theOPLPlayer->setVolume(snd_volume);
 
 	// Disable general entrypanel buttons
 	if (media_ctrl) media_ctrl->Show(false);
@@ -136,6 +157,8 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) : EntryPanel(parent, "audio")
 	btn_play->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnPlay, this);
 	btn_pause->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnPause, this);
 	btn_stop->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnStop, this);
+	btn_prev->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnPrev, this);
+	btn_next->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnNext, this);
 	slider_seek->Bind(wxEVT_SLIDER, &AudioEntryPanel::onSliderSeekChanged, this);
 	slider_volume->Bind(wxEVT_SLIDER, &AudioEntryPanel::onSliderVolumeChanged, this);
 	Bind(wxEVT_TIMER, &AudioEntryPanel::onTimer, this);
@@ -150,11 +173,7 @@ AudioEntryPanel::~AudioEntryPanel()
 {
 	// Stop the timer to avoid crashes
 	timer_seek->Stop();
-
-#ifndef  NO_FLUIDSYNTH
-	theMIDIPlayer->stop();
-#endif
-	theMIDIPlayerApp->stop();
+	resetStream();
 }
 
 /* AudioEntryPanel::loadEntry
@@ -162,6 +181,13 @@ AudioEntryPanel::~AudioEntryPanel()
  *******************************************************************/
 bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 {
+	// Are we reopening the same entry? For example having looked at
+	// a text file or image or any other non-audio entry, then
+	// going back to the original audio entry? Then no need to do
+	// abort the current song to restart it.
+	if (this->entry == entry)
+		return true;
+
 	// Stop anything currently playing
 	stopStream();
 	resetStream();
@@ -171,7 +197,10 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	slider_seek->Enable();
 	btn_play->Enable();
 	btn_pause->Enable();
+
 	btn_stop->Enable();
+	btn_prev->Enable();
+	btn_next->Enable();
 
 	// Reset seek slider
 	slider_seek->SetValue(0);
@@ -180,10 +209,13 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	if (wxFileExists(prevfile))
 		wxRemoveFile(prevfile);
 
+	// Open new data
+	this->entry = entry;
+	open();
+
 	// Autoplay if option is on
 	if (snd_autoplay)
 	{
-		this->entry = entry;
 		startStream();
 		timer_seek->Start(10);
 	}
@@ -198,6 +230,24 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 bool AudioEntryPanel::saveEntry()
 {
 	return true;
+}
+
+/* AudioEntryPanel::statusString
+ * Returns a string with extended editing/entry info for the status
+ * bar
+ *******************************************************************/
+string AudioEntryPanel::statusString()
+{
+	int hours, minutes, seconds, milliseconds = song_length % 1000;
+	seconds = (song_length / 1000) % 60;
+	minutes = (song_length / 60000) % 60;
+	hours = (song_length / 3600000);
+	string ret = wxEmptyString;
+	if (hours) ret = S_FMT("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+	else if (minutes) ret = S_FMT("%d:%02d.%03d", minutes, seconds, milliseconds);
+	else ret = S_FMT("%d:%03d", seconds, milliseconds);
+
+	return ret;
 }
 
 /* AudioEntryPanel::setAudioDuration
@@ -216,6 +266,7 @@ void AudioEntryPanel::setAudioDuration(int duration)
 		slider_seek->SetRange(0, duration);
 		slider_seek->SetPageSize(duration * 0.1);
 	}
+	song_length = duration;
 }
 
 /* AudioEntryPanel::open
@@ -226,6 +277,12 @@ bool AudioEntryPanel::open()
 	// Check if already opened
 	if (opened)
 		return true;
+
+	// Stop if sound currently playing
+	resetStream();
+
+	subsong = 0;
+	num_tracks = 1;
 
 	// Get entry data
 	MemChunk& mcdata = entry->getMCData();
@@ -243,6 +300,8 @@ bool AudioEntryPanel::open()
 		Conversions::doomSndToWav(mcdata, convdata);
 	else if (entry->getType()->getFormat() == "snd_speaker")	// Doom PC Speaker Sound -> WAV
 		Conversions::spkSndToWav(mcdata, convdata);
+	else if (entry->getType()->getFormat() == "snd_audiot")		// AudioT PC Speaker Sound -> WAV
+		Conversions::spkSndToWav(mcdata, convdata, true);
 	else if (entry->getType()->getFormat() == "snd_wolf")		// Wolfenstein 3D Sound -> WAV
 		Conversions::wolfSndToWav(mcdata, convdata);
 	else if (entry->getType()->getFormat() == "snd_voc")		// Creative Voice File -> WAV
@@ -251,18 +310,18 @@ bool AudioEntryPanel::open()
 		Conversions::jagSndToWav(mcdata, convdata);
 	else if (entry->getType()->getFormat() == "snd_bloodsfx")	// Blood Sound -> WAV
 		Conversions::bloodToWav(entry, convdata);
-	else if (entry->getType()->getFormat() == "mus")  			// MUS -> MIDI
+	else if (entry->getType()->getFormat() == "midi_mus")  			// MUS -> MIDI
 	{
-		Conversions::zmusToMidi(mcdata, convdata);
+		Conversions::musToMidi(mcdata, convdata);
 		path.SetExt("mid");
 	}
-	else if (entry->getType()->getFormat() == "xmi" ||  			// HMI/HMP/XMI -> MIDI
-				entry->getType()->getFormat() == "hmi" || entry->getType()->getFormat() == "hmp")
+	else if (entry->getType()->getFormat() == "midi_xmi" ||  		// HMI/HMP/XMI -> MIDI
+			 entry->getType()->getFormat() == "midi_hmi" || entry->getType()->getFormat() == "midi_hmp")
 	{
-		Conversions::zmusToMidi(mcdata, convdata);
+		Conversions::zmusToMidi(mcdata, convdata, 0, &num_tracks);
 		path.SetExt("mid");
 	}
-	else if (entry->getType()->getFormat() == "gmid")  			// GMID -> MIDI
+	else if (entry->getType()->getFormat() == "midi_gmid")  		// GMID -> MIDI
 	{
 		Conversions::gmidToMidi(mcdata, convdata);
 		path.SetExt("mid");
@@ -271,13 +330,10 @@ bool AudioEntryPanel::open()
 		convdata.importMem(mcdata.getData(), mcdata.getSize());
 
 	// MIDI format
-	if (entry->getType()->getFormat() == "midi" || entry->getType()->getFormat() == "mus" ||
-		entry->getType()->getFormat() == "gmid" || entry->getType()->getFormat() == "xmi" ||
-		entry->getType()->getFormat() == "hmp"  || entry->getType()->getFormat() == "hmi")
+	if (entry->getType()->getFormat().StartsWith("midi_"))
 	{
 		audio_type = AUTYPE_MIDI;
-		convdata.exportFile(path.GetFullPath());
-		openMidi(path.GetFullPath());
+		openMidi(convdata, path.GetFullPath());
 	}
 
 	// MOD format
@@ -291,6 +347,17 @@ bool AudioEntryPanel::open()
 	// Keep filename so we can delete it later
 	prevfile = path.GetFullPath();
 
+	txt_title->SetLabel(entry->getPath(true));
+	txt_track->SetLabel(S_FMT("%d/%d", subsong+1, num_tracks));
+	updateInfo();
+
+	// Disable prev/next track buttons if only one track is available
+	if (num_tracks < 2)
+	{
+		btn_prev->Disable();
+		btn_next->Disable();
+	}
+
 	opened = true;
 	return true;
 }
@@ -301,9 +368,7 @@ bool AudioEntryPanel::open()
 bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 {
 	// Stop if sound currently playing
-	sound.stop();
-	music.stop();
-	mod.stop();
+	resetStream();
 
 	// (Re)create sound buffer
 	if (sound_buffer)
@@ -320,7 +385,12 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 		audio_type = AUTYPE_SOUND;
 
 		// Enable play controls
+#if (SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR < 2)
+		// SFML before 2.2 has a bug where it reports an incorrect value for long sounds, so compute it ourselves then
+		setAudioDuration((sound_buffer->getSampleCount() / sound_buffer->getSampleRate())*(1000/sound_buffer->getChannelCount()));
+#else
 		setAudioDuration(sound_buffer->getDuration().asMilliseconds());
+#endif
 		btn_play->Enable();
 		btn_pause->Enable();
 		btn_stop->Enable();
@@ -335,7 +405,6 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 
 		// Enable play controls
 		setAudioDuration(music.getDuration().asMilliseconds());
-		//wxLogMessage("duration: %dms", music.getDuration().asMilliseconds());
 		btn_play->Enable();
 		btn_stop->Enable();
 
@@ -344,6 +413,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 	else
 	{
 		// Couldn't open as sound or music, try the wxMediaCtrl
+		LOG_MESSAGE(3, "opened as media");
 
 		// Dump audio to temp file
 		audio.exportFile(filename);
@@ -364,62 +434,27 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, string filename)
 /* AudioEntryPanel::openMidi
  * Opens a MIDI file for playback
  *******************************************************************/
-bool nosf_warned = false;	// One-time 'no soundfont loaded' warning
-bool AudioEntryPanel::openMidi(string filename)
+bool AudioEntryPanel::openMidi(MemChunk& data, string filename)
 {
-#ifndef NO_FLUIDSYNTH
+	// Enable volume control
+	slider_volume->Enable(true);
+
 	// Attempt to open midi
-	if (!snd_midi_usetimidity)
+	if (theMIDIPlayer->isReady())
 	{
-		// Enable volume control
-		slider_volume->Enable(true);
-		if (theMIDIPlayer->isInitialised() && theMIDIPlayer->isSoundfontLoaded())
+		if (theMIDIPlayer->openData(data))
 		{
-			if (theMIDIPlayer->openFile(filename))
-			{
-				// Enable play controls
-				btn_play->Enable();
-				btn_pause->Enable();
-				btn_stop->Enable();
+			// Enable play controls
+			btn_play->Enable();
+			btn_pause->Enable();
+			btn_stop->Enable();
 
-				// Setup seekbar
-				setAudioDuration(theMIDIPlayer->getLength());
+			// Setup seekbar
+			setAudioDuration(theMIDIPlayer->getLength());
 
-				return true;
-			}
-		}
-		else
-		{
-			// MIDI Player not initialised (no soundfont set), attempt to open with wxMediaCtrl
-			if (openMedia(filename))
-				return true;
+			return true;
 		}
 	}
-	else
-	{
-		// Disable some GUI elements due timidity liminations
-		slider_seek->Disable();
-		btn_pause->Disable();
-		slider_volume->Disable();
-
-		theMIDIPlayerApp->openFile(filename);
-		return true;
-	}
-#else
-	// Disable some GUI elements due timidity liminations
-	slider_seek->Disable();
-	btn_pause->Disable();
-	slider_volume->Disable();
-
-	theMIDIPlayerApp->openFile(filename);
-	return true;
-#endif
-
-	// Disable play controls
-	btn_play->Enable(false);
-	btn_pause->Enable(false);
-	btn_stop->Enable(false);
-	setAudioDuration(0);
 
 	return false;
 }
@@ -429,9 +464,8 @@ bool AudioEntryPanel::openMidi(string filename)
 *******************************************************************/
 bool AudioEntryPanel::openMod(MemChunk& data)
 {
-	string filename = appPath("sladetemp_mod", DIR_TEMP);
-	data.exportFile(filename);
-	if (mod.openFromFile(CHR(filename)))
+	// Attempt to load the mod
+	if (mod.loadFromMemory(data.getData(), data.getSize()))
 	{
 		audio_type = AUTYPE_MOD;
 
@@ -455,6 +489,7 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 
 		return false;
 	}
+	return false;
 }
 
 /* AudioEntryPanel::openMedia
@@ -497,15 +532,7 @@ void AudioEntryPanel::startStream()
 	case AUTYPE_MOD:
 		mod.play(); break;
 	case AUTYPE_MIDI:
-#ifndef NO_FLUIDSYNTH
-		if (!snd_midi_usetimidity)
-			theMIDIPlayer->play();
-		else
-			theMIDIPlayerApp->play();
-#else
-		theMIDIPlayerApp->play();
-#endif
-		break;
+		theMIDIPlayer->play(); break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->Play(); break;
 	}
@@ -525,11 +552,7 @@ void AudioEntryPanel::stopStream()
 	case AUTYPE_MOD:
 		mod.pause(); break;
 	case AUTYPE_MIDI:
-#ifndef NO_FLUIDSYNTH
-			theMIDIPlayer->pause();
-#endif
-			theMIDIPlayerApp->stop();
-			break;
+		theMIDIPlayer->pause();	break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->Pause(); break;
 	}
@@ -550,16 +573,90 @@ void AudioEntryPanel::resetStream()
 	case AUTYPE_MOD:
 		mod.stop(); break;
 	case AUTYPE_MIDI:
-#ifndef NO_FLUIDSYNTH
-			theMIDIPlayer->stop();
-#endif
-			theMIDIPlayerApp->stop();
-			break;
+		theMIDIPlayer->stop(); break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->Stop(); break;
 	}
 }
 
+/* AudioEntryPanel::updateInfo
+ * Used to update the info area, returns true if info is non-empty
+ *******************************************************************/
+bool AudioEntryPanel::updateInfo()
+{
+	txt_info->Clear();
+	string info = entry->getTypeString() + "\n";
+	MemChunk& mc = entry->getMCData();
+	switch (audio_type)
+	{
+	case AUTYPE_SOUND:
+	case AUTYPE_MUSIC:
+	case AUTYPE_MEDIA:
+		if (entry->getType() == EntryType::getType("snd_doom"))
+		{
+			size_t samplerate = READ_L16(mc, 2);
+			size_t samples = READ_L16(mc, 4);
+			info += S_FMT("%d samples at %d Hz", samples, samplerate);
+		}
+		else if (entry->getType() == EntryType::getType("snd_speaker"))
+		{
+			size_t samples = READ_L16(mc, 2);
+			info += S_FMT("%d samples", samples);
+		}
+		else if (entry->getType() == EntryType::getType("snd_audiot"))
+		{
+			size_t samples = READ_L16(mc, 0);
+			info += S_FMT("%d samples", samples);
+		}
+		/*
+		else if (entry->getType() == EntryType::getType("snd_sun"))
+			info += Audio::getSunInfo(mc);
+		else if (entry->getType() == EntryType::getType("snd_voc"))
+			info += Audio::getVocInfo(mc);
+		else if (entry->getType() == EntryType::getType("snd_wav"))
+			info += Audio::getWavInfo(mc);
+		else if (entry->getType() == EntryType::getType("snd_mp3"))
+			info += Audio::getID3Tag(mc);
+		else if (entry->getType() == EntryType::getType("snd_ogg"))
+			info += Audio::getOggComments(mc);
+		else if (entry->getType() == EntryType::getType("snd_flac"))
+			info += Audio::getFlacComments(mc);
+		else if (entry->getType() == EntryType::getType("snd_aiff"))
+			info += Audio::getAiffInfo(mc);
+			*/
+		break;
+	case AUTYPE_MOD:
+		/*if (entry->getType() == EntryType::getType("mod_it"))
+			info += Audio::getITComments(mc);
+		else if (entry->getType() == EntryType::getType("mod_mod"))
+			info += Audio::getModComments(mc);
+		else if (entry->getType() == EntryType::getType("mod_s3m"))
+			info += Audio::getS3MComments(mc);
+		else if (entry->getType() == EntryType::getType("mod_xm"))
+			info += Audio::getXMComments(mc);*/
+		break;
+	case AUTYPE_MIDI:
+		info += theMIDIPlayer->getInfo();
+		/*if (entry->getType() == EntryType::getType("midi_rmid"))
+			info+= Audio::getRmidInfo(mc);*/
+		break;
+	/*case AUTYPE_EMU:
+		info += theGMEPlayer->getInfo(subsong);
+		break;
+	case AUTYPE_OPL:
+		if (entry->getType() == EntryType::getType("opl_audiot"))
+		{
+			size_t samples = READ_L32(mc, 0);
+			info += S_FMT("%d samples", samples);
+		}
+		info += theOPLPlayer->getInfo();
+		break;*/
+	}
+	txt_info->SetValue(info);
+	if (info.length())
+		return true;
+	return false;
+}
 
 /*******************************************************************
  * AUDIOENTRYPANEL CLASS EVENTS
@@ -598,6 +695,50 @@ void AudioEntryPanel::onBtnStop(wxCommandEvent& e)
 	slider_seek->SetValue(0);
 }
 
+/* AudioEntryPanel::onBtnPrev
+ * Called when the previous track button is pressed
+ *******************************************************************/
+void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
+{
+	if (subsong > 0)
+		subsong--;
+	else subsong = num_tracks - 1;
+
+	if (entry->getType()->getFormat() == "xmi")
+	{
+		MemChunk& mcdata = entry->getMCData();
+		MemChunk convdata;
+		if (Conversions::zmusToMidi(mcdata, convdata, subsong))
+			openMidi(convdata, prevfile);
+	}
+	//else if (entry->getType()->getFormat().StartsWith("gme"))
+	//	theGMEPlayer->play(subsong);
+	txt_track->SetLabel(S_FMT("%d/%d", subsong+1, num_tracks));
+	updateInfo();
+}
+
+/* AudioEntryPanel::onBtnNext
+ * Called when the next track button is pressed
+ *******************************************************************/
+void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
+{
+	int newsong = (subsong + 1) % num_tracks;
+	if (entry->getType()->getFormat() == "xmi")
+	{
+		MemChunk& mcdata = entry->getMCData();
+		MemChunk convdata;
+		if (Conversions::zmusToMidi(mcdata, convdata, newsong) && openMidi(convdata, prevfile))
+			subsong = newsong;
+	}
+	/*else if (entry->getType()->getFormat().StartsWith("gme"))
+	{
+		if (theGMEPlayer->play(newsong))
+			subsong = newsong;
+	}*/
+	txt_track->SetLabel(S_FMT("%d/%d", subsong+1, num_tracks));
+	updateInfo();
+}
+
 /* AudioEntryPanel::onTimer
  * Called when the playback timer ticks
  *******************************************************************/
@@ -615,13 +756,7 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	case AUTYPE_MOD:
 		pos = mod.getPlayingOffset().asMilliseconds(); break;
 	case AUTYPE_MIDI:
-#ifndef NO_FLUIDSYNTH
-		if (!snd_midi_usetimidity)
-			pos = theMIDIPlayer->getPosition();
-#else
-		pos = 0;
-#endif
-		break;
+		pos = theMIDIPlayer->getPosition(); break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) pos = media_ctrl->Tell(); break;
 	}
@@ -634,8 +769,13 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	        (audio_type == AUTYPE_SOUND && sound.getStatus() == sf::Sound::Stopped) ||
 	        (audio_type == AUTYPE_MUSIC && music.getStatus() == sf::Sound::Stopped) ||
 			(audio_type == AUTYPE_MOD && mod.getStatus() == sf::Sound::Stopped) ||
-			(audio_type == AUTYPE_MEDIA && media_ctrl && media_ctrl->GetState() == wxMEDIASTATE_STOPPED))
+			(audio_type == AUTYPE_MEDIA && media_ctrl && media_ctrl->GetState() == wxMEDIASTATE_STOPPED) ||
+			(audio_type == AUTYPE_MIDI && theMIDIPlayer && !theMIDIPlayer->isPlaying()))
+	{
 		timer_seek->Stop();
+		slider_seek->SetValue(0);
+	}
+	
 }
 
 /* AudioEntryPanel::onSliderSeekChanged
@@ -652,11 +792,7 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 	case AUTYPE_MOD:
 		mod.setPlayingOffset(sf::milliseconds(slider_seek->GetValue())); break;
 	case AUTYPE_MIDI:
-#ifndef NO_FLUIDSYNTH
-		if (!snd_midi_usetimidity)
-			theMIDIPlayer->setPosition(slider_seek->GetValue());
-#endif
-		break;
+		theMIDIPlayer->setPosition(slider_seek->GetValue()); break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->Seek(slider_seek->GetValue()); break;
 	}
@@ -676,11 +812,7 @@ void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 	case AUTYPE_MUSIC:
 		music.setVolume(snd_volume); break;
 	case AUTYPE_MIDI:
-#ifndef NO_FLUIDSYNTH
-		if (!snd_midi_usetimidity)
-			theMIDIPlayer->setVolume(snd_volume);
-#endif
-		break;
+		theMIDIPlayer->setVolume(snd_volume); break;
 	case AUTYPE_MEDIA:
 		if (media_ctrl) media_ctrl->SetVolume(snd_volume*0.01); break;
 	case AUTYPE_MOD:

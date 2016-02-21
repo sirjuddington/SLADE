@@ -46,6 +46,7 @@
 #include "ArchivePanel.h"
 #include "Misc.h"
 #include "STabCtrl.h"
+#include "TextureXEditor.h"
 #include <wx/aboutdlg.h>
 #include <wx/dnd.h>
 #include <wx/statline.h>
@@ -410,6 +411,9 @@ void MainWindow::setupLayout()
 	Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &MainWindow::onTabChanged, this);
 	Bind(wxEVT_STOOLBAR_LAYOUT_UPDATED, &MainWindow::onToolBarLayoutChanged, this, toolbar->GetId());
 	Bind(wxEVT_ACTIVATE, &MainWindow::onActivate, this);
+
+	// Initial focus to toolbar
+	toolbar->SetFocus();
 }
 
 #ifdef USE_WEBVIEW_STARTPAGE
@@ -430,10 +434,6 @@ void MainWindow::createStartPage(bool newtip)
 	ArchiveEntry* entry_tips = res_archive->entryAtPath("tips.txt");
 	export_entries.push_back(res_archive->entryAtPath("logo.png"));
 	export_entries.push_back(res_archive->entryAtPath("html/box-title-back.png"));
-	//export_entries.push_back(res_archive->entryAtPath("icons/e_archive.png"));
-	//export_entries.push_back(res_archive->entryAtPath("icons/e_wad.png"));
-	//export_entries.push_back(res_archive->entryAtPath("icons/e_zip.png"));
-	//export_entries.push_back(res_archive->entryAtPath("icons/e_folder.png"));
 
 	// Can't do anything without html entry
 	if (!entry_html)
@@ -531,10 +531,6 @@ void MainWindow::createStartPage(bool newtip)
 #ifdef __WXMSW__
 	html_startpage->Reload();
 #endif
-
-	// Clean up
-	//wxRemoveFile(html_file);
-	//wxRemoveFile(appPath("logo.png", DIR_TEMP));
 }
 
 #else
@@ -630,6 +626,11 @@ bool MainWindow::exitProgram()
 		if (wxMessageBox("Are you sure you want to exit SLADE?", "SLADE", wxICON_QUESTION|wxYES_NO, this) != wxYES)
 			return false;
 	}
+
+	// Check if we can close the map editor
+	if (theMapEditor->IsShown())
+		if (!theMapEditor->tryClose())
+			return false;
 
 	// Close all archives
 	if (!panel_archivemanager->closeAll())
@@ -859,7 +860,10 @@ bool MainWindow::handleAction(string id)
 	{
 		wxAboutDialogInfo info;
 		info.SetName("SLADE");
-		info.SetVersion("v" + Global::version);
+		string version = "v" + Global::version;
+		if (Global::sc_rev != "")
+			version = version + " (Git Rev " + Global::sc_rev + ")";
+		info.SetVersion(version);
 		info.SetWebSite("http://slade.mancubus.net");
 		info.SetDescription("It's a Doom Editor");
 
@@ -1101,9 +1105,6 @@ void MainWindow::onActivate(wxActivateEvent& e)
 		SetStatusText("", 1);
 		SetStatusText("", 2);
 	}
-
-	// Check open directory archives for changes on the file system
-	panel_archivemanager->checkDirArchives();
 
 	e.Skip();
 }

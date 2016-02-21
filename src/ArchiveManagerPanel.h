@@ -40,6 +40,8 @@ private:
 	vector<string>				removed_files;
 	dir_archive_changelist_t	change_list;
 
+	void addChange(dir_entry_change_t change);
+
 public:
 	DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive);
 	virtual ~DirArchiveCheck();
@@ -83,7 +85,6 @@ private:
 	Archive*			pending_closed_archive;
 	bool				asked_save_unchanged;
 	bool				checked_dir_archive_changes;
-	bool				ignore_dir_archive_changes;
 	vector<Archive*>	checking_archives;
 
 public:
@@ -107,6 +108,7 @@ public:
 	void			updateBookmarkListItem(int index);
 	void			updateArchiveTabTitle(int index);
 	bool			isArchivePanel(int tab_index);
+	bool			isEntryPanel(int tab_index);
 	Archive*		getArchive(int tab_index);
 	int				currentTabIndex();
 	Archive*		currentArchive();

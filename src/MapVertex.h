@@ -39,6 +39,7 @@ public:
 	double		yPos() { return y; }
 
 	fpoint2_t	getPoint(uint8_t point);
+	fpoint2_t	point();
 
 	int		intProperty(string key);
 	double	floatProperty(string key);
@@ -52,6 +53,13 @@ public:
 
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
+
+	operator Debuggable() const {
+		if (!this)
+			return Debuggable("<vertex NULL>");
+
+		return Debuggable(S_FMT("<vertex %u>", index));
+	}
 };
 
 #endif //__MAPVERTEX_H__

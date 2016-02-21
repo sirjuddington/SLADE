@@ -98,6 +98,15 @@ DirArchiveCheck::~DirArchiveCheck()
 {
 }
 
+/* DirArchiveCheck::addChange
+ * Register a change to a file, as long as it hasn't been ignored
+ *******************************************************************/
+void DirArchiveCheck::addChange(dir_entry_change_t change)
+{
+	if (! ((DirArchive*)change_list.archive)->shouldIgnoreEntryChange(change))
+		change_list.changes.push_back(change);
+}
+
 /* DirArchiveCheck::Entry
  * DirArchiveCheck thread entry function
  *******************************************************************/
@@ -121,12 +130,12 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 		if (entry_info[a].is_dir)
 		{
 			if (!wxDirExists(path))
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entry_info[a].entry_path));
+				addChange(dir_entry_change_t(dir_entry_change_t::DELETED_DIR, path, entry_info[a].entry_path));
 		}
 		else
 		{
 			if (!wxFileExists(path))
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entry_info[a].entry_path));
+				addChange(dir_entry_change_t(dir_entry_change_t::DELETED_FILE, path, entry_info[a].entry_path));
 		}
 	}
 
@@ -150,16 +159,13 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 			}
 		}
 
+		time_t mod = wxFileModificationTime(files[a]);
 		// No match, added to archive
 		if (!found)
-			change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a]));
-		else
-		{
-			// Matched, check modification time
-			time_t mod = wxFileModificationTime(files[a]);
-			if (mod > inf.file_modified)
-				change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], inf.entry_path));
-		}
+			addChange(dir_entry_change_t(dir_entry_change_t::ADDED_FILE, files[a], "", mod));
+		// Matched, check modification time
+		else if (mod > inf.file_modified)
+			addChange(dir_entry_change_t(dir_entry_change_t::UPDATED, files[a], inf.entry_path, mod));
 	}
 
 	// Check for new dirs
@@ -182,9 +188,10 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 			}
 		}
 
+		time_t mod = wxFileModificationTime(dirs[a]);
 		// No match, added to archive
 		if (!found)
-			change_list.changes.push_back(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a]));
+			addChange(dir_entry_change_t(dir_entry_change_t::ADDED_DIR, dirs[a], "", mod));
 	}
 
 	// Send changes via event
@@ -586,6 +593,23 @@ bool ArchiveManagerPanel::isArchivePanel(int tab_index)
 		return false;
 }
 
+/* ArchiveManagerPanel::isEntryPanel
+ * Checks if the tab at [tab_index] is an EntryPanel. Returns true
+ * if it is, false if not
+ *******************************************************************/
+bool ArchiveManagerPanel::isEntryPanel(int tab_index)
+{
+	// Check that tab index is in range
+	if ((unsigned)tab_index >= stc_archives->GetPageCount())
+		return false;
+
+	// Check the page's name
+	if (!stc_archives->GetPage(tab_index)->GetName().CmpNoCase("entry"))
+		return true;
+	else
+		return false;
+}
+
 /* ArchiveManagerPanel::getArchive
  * Returns the archive associated with the archive tab at [tab_index]
  * or NULL if the index is invalid or the tab isn't an archive panel
@@ -669,12 +693,19 @@ EntryPanel* ArchiveManagerPanel::currentArea()
 	// Get current tab index
 	int selected = stc_archives->GetSelection();
 
-	// Check it's an archive tab
-	if (!isArchivePanel(selected))
-		return NULL;
+	// Entry tab
+	if (isEntryPanel(selected))
+		return (EntryPanel*)stc_archives->GetPage(selected);
 
-	ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(selected);
-	return ap->currentArea();
+	// Archive tab
+	if (isArchivePanel(selected))
+	{
+		ArchivePanel* ap = (ArchivePanel*)stc_archives->GetPage(selected);
+		return ap->currentArea();
+	}
+
+	// No currently active entry panel
+	return NULL;
 }
 
 /* ArchiveManagerPanel::currentEntry
@@ -1066,6 +1097,13 @@ bool ArchiveManagerPanel::undo()
 		return true;
 	}
 
+	// TEXTUREx panel
+	else if (S_CMPNOCASE(page_current->GetName(), "texture"))
+	{
+		((TextureXEditor*)page_current)->undo();
+		return true;
+	}
+
 	return false;
 }
 
@@ -1082,6 +1120,13 @@ bool ArchiveManagerPanel::redo()
 	if (S_CMPNOCASE(page_current->GetName(), "archive"))
 	{
 		((ArchivePanel*)page_current)->redo();
+		return true;
+	}
+
+	// TEXTUREx panel
+	else if (S_CMPNOCASE(page_current->GetName(), "texture"))
+	{
+		((TextureXEditor*)page_current)->redo();
 		return true;
 	}
 
@@ -1109,9 +1154,6 @@ bool ArchiveManagerPanel::closeAll()
  *******************************************************************/
 void ArchiveManagerPanel::saveAll()
 {
-	// now we can ask about changes outside the dir archive
-	ignore_dir_archive_changes = false;
-
 	// Go through all open archives
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
@@ -1226,9 +1268,6 @@ bool ArchiveManagerPanel::saveArchive(Archive* archive)
 	if (!archive)
 		return false;
 
-	// now we can ask about changes outside the dir archive
-	ignore_dir_archive_changes = false;
-
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
 
@@ -1287,6 +1326,8 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive)
 		// Add recent file
 		theArchiveManager->addRecentFile(filename);
 	}
+	else
+		return false;
 
 	return true;
 }
@@ -2086,7 +2127,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 	{
 		LOG_MESSAGE(2, "Finished checking %s for external changes", CHR(change_list.archive->getFilename()));
 
-		if (!ignore_dir_archive_changes && !change_list.changes.empty())
+		if (!change_list.changes.empty())
 		{
 			checked_dir_archive_changes = true;
 
@@ -2095,7 +2136,6 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 			dlg.ShowModal();
 			
 			checked_dir_archive_changes = false;
-			ignore_dir_archive_changes = true;
 		}
 		else
 		{

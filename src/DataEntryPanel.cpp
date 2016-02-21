@@ -47,6 +47,7 @@ DataEntryTable::DataEntryTable(DataEntryPanel* parent)
 {
 	row_stride = 0;
 	data_start = 0;
+	data_stop = 0;
 	row_first = 0;
 	this->parent = parent;
 }
@@ -66,7 +67,7 @@ int DataEntryTable::GetNumberRows()
 	if (row_stride == 0)
 		return 0;
 	else
-		return (data.getSize() - data_start) / row_stride;
+		return ((data_stop ? data_stop : data.getSize()) - data_start) / row_stride;
 }
 
 /* DataEntryTable::GetNumberCols
@@ -300,7 +301,7 @@ string DataEntryTable::GetColLabelValue(int col)
 	if ((unsigned)col < columns.size())
 		return columns[col].name;
 
-	return "Column" + col;
+	return S_FMT("Column%d", col);
 }
 
 /* DataEntryTable::GetRowLabelValue
@@ -432,6 +433,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	columns.clear();
 	row_stride = 0;
 	data_start = 0;
+	data_stop = 0;
 	row_first = 0;
 	row_prefix = "";
 
@@ -452,14 +454,12 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("X Position", COL_FIXED, 4, 0));
 			columns.push_back(dep_column_t("Y Position", COL_FIXED, 4, 4));
 			row_stride = 8;
-			data_start = 0;
 		}
 		else
 		{
 			columns.push_back(dep_column_t("X Position", COL_INT_SIGNED, 2, 0));
 			columns.push_back(dep_column_t("Y Position", COL_INT_SIGNED, 2, 2));
 			row_stride = 4;
-			data_start = 0;
 		}
 	}
 
@@ -477,7 +477,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Front Side", COL_INT_UNSIGNED, 2, 10));
 			columns.push_back(dep_column_t("Back Side", COL_INT_UNSIGNED, 2, 12));
 			row_stride = 14;
-			data_start = 0;
 		}
 
 		// Hexen format
@@ -495,7 +494,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Front Side", COL_INT_UNSIGNED, 2, 12));
 			columns.push_back(dep_column_t("Back Side", COL_INT_UNSIGNED, 2, 14));
 			row_stride = 16;
-			data_start = 0;
 		}
 
 		// Doom 64 format
@@ -509,7 +507,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Front Side", COL_INT_UNSIGNED, 2, 12));
 			columns.push_back(dep_column_t("Back Side", COL_INT_UNSIGNED, 2, 14));
 			row_stride = 16;
-			data_start = 0;
 		}
 	}
 
@@ -526,7 +523,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Middle Texture", COL_INT_UNSIGNED, 2, 8));
 			columns.push_back(dep_column_t("Sector", COL_INT_UNSIGNED, 2, 10));
 			row_stride = 12;
-			data_start = 0;
 		}
 
 		// Doom/Hexen format
@@ -539,7 +535,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Middle Texture", COL_STRING, 8, 20));
 			columns.push_back(dep_column_t("Sector", COL_INT_UNSIGNED, 2, 28));
 			row_stride = 30;
-			data_start = 0;
 		}
 	}
 
@@ -562,7 +557,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Tag", COL_INT_UNSIGNED, 2, 20));
 			columns.push_back(dep_column_t("Flags", COL_INT_UNSIGNED, 2, 22));
 			row_stride = 24;
-			data_start = 0;
 		}
 
 		// Doom/Hexen format
@@ -576,7 +570,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Special", COL_INT_UNSIGNED, 2, 22));
 			columns.push_back(dep_column_t("Tag", COL_INT_UNSIGNED, 2, 24));
 			row_stride = 26;
-			data_start = 0;
 		}
 	}
 
@@ -592,7 +585,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Type", COL_INT_UNSIGNED, 2, 6));
 			columns.push_back(dep_column_t("Flags", COL_INT_UNSIGNED, 2, 8));
 			row_stride = 10;
-			data_start = 0;
 		}
 
 		// Hexen format
@@ -612,7 +604,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Arg 4", COL_INT_UNSIGNED, 1, 18));
 			columns.push_back(dep_column_t("Arg 5", COL_INT_UNSIGNED, 1, 19));
 			row_stride = 20;
-			data_start = 0;
 		}
 
 		// Doom64 format
@@ -626,7 +617,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			columns.push_back(dep_column_t("Flags", COL_INT_SIGNED, 2, 10));
 			columns.push_back(dep_column_t("ID", COL_INT_SIGNED, 2, 12));
 			row_stride = 14;
-			data_start = 0;
 		}
 	}
 
@@ -642,7 +632,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.back().addCustomValue(1, "Back");
 		columns.push_back(dep_column_t("Offset", COL_INT_SIGNED, 2, 10));
 		row_stride = 12;
-		data_start = 0;
 	}
 
 	// SSECTORS
@@ -651,7 +640,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(dep_column_t("Seg Count", COL_INT_UNSIGNED, 2, 0));
 		columns.push_back(dep_column_t("First Seg", COL_INT_UNSIGNED, 2, 2));
 		row_stride = 4;
-		data_start = 0;
 	}
 
 	// NODES
@@ -672,7 +660,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(dep_column_t("Right Child", COL_INT_UNSIGNED, 2, 24));
 		columns.push_back(dep_column_t("Left Child", COL_INT_UNSIGNED, 2, 26));
 		row_stride = 28;
-		data_start = 0;
 	}
 
 	// LIGHTS
@@ -684,7 +671,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(dep_column_t("Pad (Unused)", COL_INT_UNSIGNED, 1, 3));
 		columns.push_back(dep_column_t("Tag", COL_INT_UNSIGNED, 2, 4));
 		row_stride = 6;
-		data_start = 0;
 	}
 
 	// SWITCHES
@@ -700,7 +686,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(col_type);
 
 		row_stride = 20;
-		data_start = 0;
 	}
 
 	// ANIMATED
@@ -717,11 +702,10 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(dep_column_t("Last Texture", COL_STRING, 8, 10));
 		columns.push_back(dep_column_t("Speed (Tics)", COL_INT_UNSIGNED, 4, 19));
 		row_stride = 23;
-		data_start = 0;
 	}
 
 	// PNAMES
-	else if (type == "pnames")
+	else if (type == "pnames" || type == "notpnames")
 	{
 		columns.push_back(dep_column_t("Patch Name", COL_STRING, 8, 0));
 		row_stride = 8;
@@ -762,7 +746,49 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 
 		row_stride = 1516;
-		data_start = 0;
+	}
+
+	// GENMIDI
+	else if (type == "genmidi")
+	{
+		columns.push_back(dep_column_t("Flags", COL_INT_UNSIGNED, 2, 0));
+		columns.push_back(dep_column_t("Second Tune", COL_INT_UNSIGNED, 1, 2));
+		columns.push_back(dep_column_t("Fixed Note", COL_INT_UNSIGNED, 1, 3));
+
+		// Voice data
+		unsigned offset = 4;
+		for (size_t i = 1; i < 3; ++i)
+		{
+			columns.push_back(dep_column_t(S_FMT("V%d: Mod Multi", i), COL_INT_UNSIGNED, 1, offset + 0));
+			columns.push_back(dep_column_t(S_FMT("V%d: Mod Attack", i), COL_INT_UNSIGNED, 1, offset + 1));
+			columns.push_back(dep_column_t(S_FMT("V%d: Mod Sustain", i), COL_INT_UNSIGNED, 1, offset + 2));
+			columns.push_back(dep_column_t(S_FMT("V%d: Mod Waveform", i), COL_INT_UNSIGNED, 1, offset + 3));
+			columns.push_back(dep_column_t(S_FMT("V%d: Mod Key Scale", i), COL_INT_UNSIGNED, 1, offset + 4));
+			columns.push_back(dep_column_t(S_FMT("V%d: Mod Output", i), COL_INT_UNSIGNED, 1, offset + 5));
+			columns.push_back(dep_column_t(S_FMT("V%d: Feedback", i), COL_INT_UNSIGNED, 1, offset + 6));
+			columns.push_back(dep_column_t(S_FMT("V%d: Car Multi", i), COL_INT_UNSIGNED, 1, offset + 7));
+			columns.push_back(dep_column_t(S_FMT("V%d: Car Attack", i), COL_INT_UNSIGNED, 1, offset + 8));
+			columns.push_back(dep_column_t(S_FMT("V%d: Car Sustain", i), COL_INT_UNSIGNED, 1, offset + 9));
+			columns.push_back(dep_column_t(S_FMT("V%d: Car Waveform", i), COL_INT_UNSIGNED, 1, offset + 10));
+			columns.push_back(dep_column_t(S_FMT("V%d: Car Key Scale", i), COL_INT_UNSIGNED, 1, offset + 11));
+			columns.push_back(dep_column_t(S_FMT("V%d: Car Output", i), COL_INT_UNSIGNED, 1, offset + 12));
+			columns.push_back(dep_column_t(S_FMT("V%d: Note Offset", i), COL_INT_SIGNED, 2, offset + 14));
+			offset += 16;
+		}
+		row_stride = 36;
+		data_start = 8;
+		data_stop = 6308;
+
+		// There are instrument names in a second table; unfortunately retrieving them would be hard
+		// (there are 6300 bytes of offset between both, plus an additional row stride of 32 bytes).
+		// Commenting out all the above code and uncommenting the one below allows to see the names.
+		// However seeing the values is probably more generally useful, the names are standard GM.
+		/* 
+		columns.push_back(dep_column_t("Instrument Name", COL_STRING, 32, 0));
+		row_stride = 32;
+		data_start = 6308;
+		*/
+
 	}
 
 	if (columns.empty())

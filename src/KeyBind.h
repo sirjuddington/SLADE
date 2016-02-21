@@ -115,6 +115,7 @@ public:
 	static void		initBinds();
 	static string	writeBinds();
 	static bool		readBinds(Tokenizer& tz);
+	static void     updateSortedBindsList();
 };
 
 

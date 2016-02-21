@@ -355,7 +355,7 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	if (tex.textures.size() == 1)
 		str_texture = S_FMT("%s (%dx%d)", tex.textures[0], tex_first->getWidth(), tex_first->getHeight());
 	else if (tex.textures.size() > 1)
-		str_texture = S_FMT("Multiple (%d)", tex.textures.size());
+		str_texture = S_FMT("Multiple (%lu)", tex.textures.size());
 	else
 		str_texture = "- (None)";
 

@@ -220,6 +220,11 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 
 		// So we have either a node or property name
 		string name = token;
+		if (name.IsEmpty())
+		{
+			wxLogMessage("Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
+			return false;
+		}
 
 		// Check next token to determine what we're doing
 		string next = tz.peekToken();
@@ -231,6 +236,12 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			type = name;
 			name = tz.getToken();
 			next = tz.peekToken();
+
+			if (name.IsEmpty())
+			{
+				wxLogMessage("Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
+				return false;
+			}
 		}
 
 		// Assignment

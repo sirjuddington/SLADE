@@ -198,6 +198,8 @@ private:
 	int			flat_last;
 	bool		render_hilight;
 	bool		render_selection;
+	rgba_t		fog_colour_last;
+	float		fog_depth_last;
 
 	// Visibility
 	vector<float>	dist_sectors;

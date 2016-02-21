@@ -37,6 +37,12 @@
 
 
 /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, confirm_entry_revert, true, CVAR_SAVE)
+
+
+/*******************************************************************
  * ENTRYPANEL CLASS FUNCTIONS
  *******************************************************************/
 
@@ -186,18 +192,27 @@ bool EntryPanel::saveEntry()
  * the EntryPanel. Returns false if no changes have been made or
  * if the entry data wasn't saved
  *******************************************************************/
-bool EntryPanel::revertEntry()
+bool EntryPanel::revertEntry(bool confirm)
 {
-	if (modified)
+	if (modified && entry_data.hasData())
 	{
-		if (entry_data.hasData())
+		bool ok = true;
+
+		// Prompt to revert if configured to
+		if (confirm_entry_revert && confirm)
+			if (wxMessageBox("Are you sure you want to revert changes made to the entry?", "Revert Changes", wxICON_QUESTION | wxYES_NO) == wxNO)
+				ok = false;
+
+		if (ok)
 		{
+			uint8_t state = entry->getState();
 			entry->importMemChunk(entry_data);
+			entry->setState(state);
 			EntryType::detectEntryType(entry);
 			loadEntry(entry);
-
-			return true;
 		}
+
+		return true;
 	}
 
 	return false;
@@ -227,7 +242,8 @@ void EntryPanel::updateStatus()
 {
 	// Basic info
 	if (entry)
-		theMainWindow->SetStatusText(S_FMT("%s, %d bytes, %s", entry->getName(), entry->getSize(), entry->getType()->getName()), 1);
+		theMainWindow->SetStatusText(S_FMT("%d: %s, %d bytes, %s", 
+		entry->getParentDir()->entryIndex(entry), entry->getName(), entry->getSize(), entry->getType()->getName()), 1);
 	else
 		theMainWindow->SetStatusText("", 1);
 

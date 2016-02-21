@@ -315,13 +315,14 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 			// Get cursor position in canvas coordinates
 			double x = -1.2 + ((double)e.GetX() / (double)GetSize().x) * 2.4;
 			double y = -1.2 + ((double)e.GetY() / (double)GetSize().y) * 2.4;
+			fpoint2_t cursor_pos(x, y);
 
 			// Find closest dir point to cursor
 			point_hl = -1;
 			double min_dist = 0.3;
 			for (unsigned a = 0; a < dir_points.size(); a++)
 			{
-				double dist = MathStuff::distance(x, y, dir_points[a].x, dir_points[a].y);
+				double dist = MathStuff::distance(cursor_pos, dir_points[a]);
 				if (dist < min_dist)
 				{
 					point_hl = a;
@@ -754,6 +755,9 @@ wxPanel* ThingPropsPanel::setupExtraFlagsTab()
  *******************************************************************/
 void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 {
+	if (objects.empty())
+		return;
+
 	int map_format = theMapEditor->currentMapDesc().format;
 	int ival;
 	double fval;

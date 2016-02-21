@@ -116,7 +116,7 @@ public:
 			}
 		}
 
-		LOG_MESSAGE(3, "Missing Texture Check: %d missing textures", parts.size());
+		LOG_MESSAGE(3, "Missing Texture Check: %lu missing textures", parts.size());
 	}
 
 	unsigned nProblems()
@@ -1200,6 +1200,7 @@ public:
 				continue;
 
 			radius = tt->getRadius() - 1;
+			frect_t bbox(thing->xPos(), thing->yPos(), radius * 2, radius * 2, 1);
 
 			// Go through lines
 			for (unsigned b = 0; b < check_lines.size(); b++)
@@ -1207,9 +1208,7 @@ public:
 				line = check_lines[b];
 
 				// Check intersection
-				if (MathStuff::boxLineIntersect(thing->xPos() - radius, thing->yPos() - radius,
-					thing->xPos() + radius, thing->yPos() + radius,
-					line->x1(), line->y1(), line->x2(), line->y2()))
+				if (MathStuff::boxLineIntersect(bbox, line->seg()))
 				{
 					things.push_back(thing);
 					lines.push_back(line);
@@ -1243,11 +1242,11 @@ public:
 			MapLine* line = lines[index];
 
 			// Get nearest line point to thing
-			fpoint2_t np = MathStuff::closestPointOnLine(thing->xPos(), thing->yPos(), line->x1(), line->y1(), line->x2(), line->y2());
+			fpoint2_t np = MathStuff::closestPointOnLine(thing->point(), line->seg());
 
 			// Get distance to move
 			double r = theGameConfiguration->thingType(thing->getType())->getRadius();
-			double dist = MathStuff::distance(0, 0, r, r);
+			double dist = MathStuff::distance(fpoint2_t(), fpoint2_t(r, r));
 
 			editor->beginUndoRecord("Move Thing", true, false, false);
 

@@ -371,7 +371,7 @@ CONSOLE_COMMAND(ccfg, 1, false)
 		sort(list.begin(), list.end());
 
 		// Dump list to console
-		theConsole->logMessage(S_FMT("%d Colours:", list.size()));
+		theConsole->logMessage(S_FMT("%lu Colours:", list.size()));
 		for (unsigned a = 0; a < list.size(); a++)
 			theConsole->logMessage(list[a]);
 	}

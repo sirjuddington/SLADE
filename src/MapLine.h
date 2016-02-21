@@ -109,20 +109,30 @@ public:
 	void	setS2(MapSide* side);
 
 	fpoint2_t	getPoint(uint8_t point);
+	fpoint2_t	point1();
+	fpoint2_t	point2();
+	fseg2_t		seg();
 	double		getLength();
 	bool		doubleSector();
 	fpoint2_t	frontVector();
 	fpoint2_t	dirTabPoint(double length = 0);
-	double		distanceTo(double x, double y);
+	double		distanceTo(fpoint2_t point);
 	int			needsTexture();
-	void		clearUnneededTextures();
 
+	void	clearUnneededTextures();
 	void	resetInternals();
 	void	flip(bool sides = true);
 
 	void	writeBackup(mobj_backup_t* backup);
 	void	readBackup(mobj_backup_t* backup);
 	void	copy(MapObject*);
+
+	operator Debuggable() const {
+		if (!this)
+			return "<line NULL>";
+
+		return Debuggable(S_FMT("<line %u>", index));
+	}
 };
 
 #endif //__MAPLINE_H__

@@ -549,7 +549,11 @@ void SToolBar::enableGroup(string name, bool enable)
 		if (S_CMPNOCASE(groups[a]->getName(), name))
 		{
 			if (groups[a]->IsEnabled() != enable)
+			{
 				groups[a]->Enable(enable);
+				groups[a]->Update();
+				groups[a]->Refresh();
+			}
 			else
 				return;
 		}

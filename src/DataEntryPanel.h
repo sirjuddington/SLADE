@@ -56,6 +56,7 @@ private:
 	vector<dep_column_t>	columns;
 	unsigned				row_stride;
 	unsigned				data_start;
+	unsigned				data_stop;
 	int						row_first;
 	string					row_prefix;
 	DataEntryPanel*			parent;

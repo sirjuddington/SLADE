@@ -24,6 +24,7 @@ public:
 	~ModMusic();
 
 	bool openFromFile(const std::string& filename);
+	bool loadFromMemory(const uint8_t* data, const uint32_t size);
 	sf::Time getDuration() const;
 
 	static void initDumb();

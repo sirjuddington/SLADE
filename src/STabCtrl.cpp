@@ -30,7 +30,7 @@ STabCtrl::~STabCtrl()
 wxSize STabCtrl::DoGetBestClientSize() const
 {
 	wxSize ret;
-	for (int i = 0; i < GetPageCount(); i++)
+	for (unsigned i = 0; i < GetPageCount(); i++)
 	{
 		wxWindow* page = GetPage(i);
 		ret.IncTo(page->GetBestSize());

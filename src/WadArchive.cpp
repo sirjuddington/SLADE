@@ -32,6 +32,7 @@
 #include "WadArchive.h"
 #include "SplashWindow.h"
 #include "Misc.h"
+#include "Tokenizer.h"
 #include <wx/filename.h>
 
 bool JaguarDecode(MemChunk& mc);
@@ -491,6 +492,9 @@ bool WadArchive::open(MemChunk& mc)
 		// Set entry to unchanged
 		entry->setState(0);
 	}
+
+	// Identify #included lumps (DECORATE, GLDEFS, etc.)
+	detectIncludes();
 
 	// Detect maps (will detect map entry types)
 	theSplashWindow->setProgressMessage("Detecting maps");
@@ -1147,6 +1151,59 @@ string WadArchive::detectNamespace(size_t index, ArchiveTreeNode * dir)
 
 	// In no namespace
 	return "global";
+}
+
+/* WadArchive::detectIncludes
+ * Parses the DECORATE, GLDEFS, etc. lumps for included files, and
+ * mark them as being of the same type
+ *******************************************************************/
+void WadArchive::detectIncludes()
+{
+	// DECORATE: #include "lumpname"
+	// GLDEFS: #include "lumpname"
+	// SBARINFO: #include "lumpname"
+	// ZMAPINFO: translator = "lumpname"
+	// EMAPINFO: extradata = lumpname
+	// EDFROOT: lumpinclude("lumpname")
+
+	const char * lumptypes[6]  = { "DECORATE", "GLDEFS", "SBARINFO", "ZMAPINFO", "EMAPINFO", "EDFROOT" };
+	const char * entrytypes[6] = { "decorate", "gldefslump", "sbarinfo", "xlat", "extradata", "edf" };
+	const char * tokens[6] = { "#include", "#include", "#include", "translator", "extradata", "lumpinclude" };
+	Archive::search_options_t opt;
+	opt.ignore_ext = true;
+	Tokenizer tz;
+	tz.setSpecialCharacters(";,:|={}/()");
+
+	for (int i = 0; i < 6; ++i)
+	{
+		opt.match_name = lumptypes[i];
+		vector<ArchiveEntry*> entries = findAll(opt);
+		if (entries.size())
+		{
+			for (size_t j = 0; j < entries.size(); ++j)
+			{
+				tz.openMem(&entries[j]->getMCData(), lumptypes[i]);
+				string token = tz.getToken();
+				while (token.length())
+				{
+					if (token.Lower() == tokens[i])
+					{
+						if (i >= 3) // skip '=' or '('
+							tz.getToken();
+						string name = tz.getToken();
+						if (i == 5) // skip ')'
+							tz.getToken();
+						opt.match_name = name;
+						ArchiveEntry * entry = findFirst(opt);
+						if (entry)
+							entry->setType(EntryType::getType(entrytypes[i]));
+					}
+					else tz.skipLineComment();
+					token = tz.getToken();
+				}
+			}
+		}
+	}
 }
 
 /* WadArchive::findFirst

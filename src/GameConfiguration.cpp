@@ -112,6 +112,7 @@ void GameConfiguration::setDefaults()
 	for (int a = 0; a < 4; a++)
 		map_formats[a] = false;
 	boom = false;
+	boom_sector_flag_start = 0;
 	as_generalized_s.setName("Boom Generalized Switched Special");
 	as_generalized_s.setTagged(AS_TT_SECTOR);
 	as_generalized_m.setName("Boom Generalized Manual Special");
