@@ -918,6 +918,10 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 			vector<MobjPropertyList::prop_t> objprops = objects[a]->props().allProperties();
 			for (unsigned b = 0; b < objprops.size(); b++)
 			{
+				// Ignore unset properties
+				if (!objprops[b].value.hasValue())
+					continue;
+
 				// Ignore side property
 				if (objprops[b].name.StartsWith("side1.") || objprops[b].name.StartsWith("side2."))
 					continue;
