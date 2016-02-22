@@ -987,9 +987,7 @@ void ActionSpecialPanel::setSpecial(int special)
 
 	// Regular action special
 	showGeneralised(false);
-	tree_specials->showSpecial(special);
-	tree_specials->SetFocus();
-	tree_specials->SetFocusFromKbd();
+	tree_specials->showSpecial(special, false);
 	text_special->SetValue(S_FMT("%d", special));
 
 	// Setup args if any
