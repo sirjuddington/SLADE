@@ -90,9 +90,9 @@ ModifyOffsetsDialog::ModifyOffsetsDialog()
 	opt_set = new wxRadioButton(this, -1, "Set Offsets");
 	hbox->Add(opt_set, 1, wxEXPAND|wxALL, 4);
 
-	entry_xoff = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
-	entry_yoff = new wxTextCtrl(this, -2, "", wxDefaultPosition, wxSize(40, -1));
-	cbox_relative = new wxCheckBox(this, -1, "Relative");
+	entry_xoff = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(40, -1));
+	entry_yoff = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(40, -1));
+	cbox_relative = new wxCheckBox(this, wxID_ANY, "Relative");
 	hbox->Add(entry_xoff, 0, wxEXPAND|wxALL, 4);
 	hbox->Add(entry_yoff, 0, wxEXPAND|wxALL, 4);
 	hbox->Add(cbox_relative, 0, wxEXPAND|wxALL, 4);

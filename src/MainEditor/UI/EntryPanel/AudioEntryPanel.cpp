@@ -612,17 +612,17 @@ bool AudioEntryPanel::updateInfo()
 		{
 			size_t samplerate = READ_L16(mc, 2);
 			size_t samples = READ_L16(mc, 4);
-			info += S_FMT("%d samples at %d Hz", samples, samplerate);
+			info += S_FMT("%zu samples at %zu Hz", samples, samplerate);
 		}
 		else if (entry->getType() == EntryType::getType("snd_speaker"))
 		{
 			size_t samples = READ_L16(mc, 2);
-			info += S_FMT("%d samples", samples);
+			info += S_FMT("%zu samples", samples);
 		}
 		else if (entry->getType() == EntryType::getType("snd_audiot"))
 		{
 			size_t samples = READ_L16(mc, 0);
-			info += S_FMT("%d samples", samples);
+			info += S_FMT("%zu samples", samples);
 		}
 		/*
 		else if (entry->getType() == EntryType::getType("snd_sun"))
@@ -663,7 +663,7 @@ bool AudioEntryPanel::updateInfo()
 		if (entry->getType() == EntryType::getType("opl_audiot"))
 		{
 			size_t samples = READ_L32(mc, 0);
-			info += S_FMT("%d samples", samples);
+			info += S_FMT("%zu samples", samples);
 		}
 		info += theOPLPlayer->getInfo();
 		break;*/
