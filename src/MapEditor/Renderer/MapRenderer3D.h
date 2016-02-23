@@ -182,8 +182,8 @@ public:
 	void renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Walls
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, double top, double bottom);
-	void setupQuad(Quad* quad, double x1, double y1, double x2, double y2, Plane top, Plane bottom);
+	void setupQuad(Quad* quad, Seg2f seg, double top, double bottom);
+	void setupQuad(Quad* quad, Seg2f seg, Plane top, Plane bottom);
 	void setupQuadTexCoords(
 		Quad*  quad,
 		int    length,

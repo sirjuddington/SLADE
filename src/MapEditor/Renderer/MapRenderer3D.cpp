@@ -1268,20 +1268,17 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 // -----------------------------------------------------------------------------
 void MapRenderer3D::setupQuad(
 	MapRenderer3D::Quad* quad,
-	double               x1,
-	double               y1,
-	double               x2,
-	double               y2,
-	double               top,
-	double               bottom)
+	Seg2f   seg,
+	double  top,
+	double  bottom)
 {
 	// Left
-	quad->points[0].x = quad->points[1].x = x1;
-	quad->points[0].y = quad->points[1].y = y1;
+	quad->points[0].x = quad->points[1].x = seg.x1();
+	quad->points[0].y = quad->points[1].y = seg.y1();
 
 	// Right
-	quad->points[2].x = quad->points[3].x = x2;
-	quad->points[2].y = quad->points[3].y = y2;
+	quad->points[2].x = quad->points[3].x = seg.x2();
+	quad->points[2].y = quad->points[3].y = seg.y2();
 
 	// Top/bottom
 	quad->points[0].z = quad->points[3].z = top;
@@ -1293,20 +1290,17 @@ void MapRenderer3D::setupQuad(
 // -----------------------------------------------------------------------------
 void MapRenderer3D::setupQuad(
 	MapRenderer3D::Quad* quad,
-	double               x1,
-	double               y1,
-	double               x2,
-	double               y2,
-	Plane                top,
-	Plane                bottom)
+	Seg2f seg,
+	Plane top,
+	Plane bottom)
 {
 	// Left
-	quad->points[0].x = quad->points[1].x = x1;
-	quad->points[0].y = quad->points[1].y = y1;
+	quad->points[0].x = quad->points[1].x = seg.x1();
+	quad->points[0].y = quad->points[1].y = seg.y1();
 
 	// Right
-	quad->points[2].x = quad->points[3].x = x2;
-	quad->points[2].y = quad->points[3].y = y2;
+	quad->points[2].x = quad->points[3].x = seg.x2();
+	quad->points[2].y = quad->points[3].y = seg.y2();
 
 	// Top/bottom
 	quad->points[0].z = top.height_at(quad->points[0].x, quad->points[0].y);
@@ -1466,7 +1460,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff *= lsy;
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), cp1, fp1);
+		setupQuad(&quad, line->seg(), cp1, fp1);
 		quad.colour    = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light     = light1;
@@ -1572,7 +1566,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			yoff += (ceiling1 - floor2);
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), fp2, fp1);
+		setupQuad(&quad, line->seg(), fp2, fp1);
 		quad.colour    = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light     = light1;
@@ -1663,7 +1657,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), top, bottom);
+		setupQuad(&quad, line->seg(), top, bottom);
 		quad.colour    = colour1.ampf(1.0f, 1.0f, 1.0f, alpha);
 		quad.fogcolour = fogcolour1;
 		quad.light     = light1;
@@ -1717,7 +1711,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff *= lsy;
 
 		// Create quad
-		setupQuad(&quad, line->x1(), line->y1(), line->x2(), line->y2(), cp1, cp2);
+		setupQuad(&quad, line->seg(), cp1, cp2);
 		quad.colour    = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light     = light1;
@@ -1776,7 +1770,7 @@ void MapRenderer3D::updateLine(unsigned index)
 			yoff += (ceiling2 - floor1);
 
 		// Create quad
-		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), fp1, fp2);
+		setupQuad(&quad, line->seg().flip(), fp1, fp2);
 		quad.colour    = colour2;
 		quad.fogcolour = fogcolour2;
 		quad.light     = light2;
@@ -1868,7 +1862,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		}
 
 		// Create quad
-		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), top, bottom);
+		setupQuad(&quad, line->seg().flip(), top, bottom);
 		quad.colour    = colour2.ampf(1.0f, 1.0f, 1.0f, alpha);
 		quad.fogcolour = fogcolour2;
 		quad.light     = light2;
@@ -1923,7 +1917,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff *= lsy;
 
 		// Create quad
-		setupQuad(&quad, line->x2(), line->y2(), line->x1(), line->y1(), cp2, cp1);
+		setupQuad(&quad, line->seg().flip(), cp2, cp1);
 		quad.colour    = colour2;
 		quad.fogcolour = fogcolour2;
 		quad.light     = light2;
