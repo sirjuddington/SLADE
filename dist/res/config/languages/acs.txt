@@ -160,7 +160,7 @@ acs_z : acs {
 	keywords = {
 		function, enter, respawn, death, lightning, unloading, disconnect,
 		fixed, global, net, import, libdefine, library, nocompact, nowadauthor,
-		EncryptStrings, static, wadauthor,
+		EncryptStrings, static, wadauthor, region, endregion,
 		
 		// Skulltag script types
 		BlueReturn, RedReturn, WhiteReturn, Pickup, ClientSide
@@ -815,7 +815,7 @@ acs_z : acs {
  		Spawn = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
 		SpawnDecal = "int tid, str decalname, [int flags], [fixed angle], [fixed zoffset], [fixed distance]";
 		SpawnForced = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
-		SpawnParticle = "str color [, bool fullbright [, int lifetime [, int size [, fixed x [, fixed y [, fixed z [, fixed xvel [, fixed yvel [, fixed zvel [, fixed accelx [, fixed accely [, fixed accelz [, int startalpha [, int fadestep]]]]]]]]]]]]]]";
+		SpawnParticle = "int color [, bool fullbright [, int lifetime [, int size [, fixed x [, fixed y [, fixed z [, fixed velx [, fixed vely [, fixed velz [, fixed accelx [, fixed accely [, fixed accelz [, int startalpha [, int fadestep]]]]]]]]]]]]]]";
 		SpawnProjectile = "int tid, string type, int angle, int speed, int vspeed, int gravity, int newtid";
 		SpawnSpot = "str classname, int spottid [, int tid [, int angle]]";
 		SpawnSpotFacing = "str classname, int spottid [, int tid]";
