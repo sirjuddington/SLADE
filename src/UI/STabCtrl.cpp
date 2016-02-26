@@ -10,7 +10,7 @@ STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int h
 	if (window_list)
 		style |= wxAUI_NB_WINDOWLIST_BUTTON;
 	if (close_buttons)
-		style |= wxAUI_NB_CLOSE_ON_ALL_TABS;
+		style |= wxAUI_NB_CLOSE_ON_ALL_TABS | wxAUI_NB_MIDDLE_CLICK_CLOSE;
 
 	// Create tab control
 	wxAuiNotebook::Create(parent, -1, wxDefaultPosition, wxDefaultSize, style);
