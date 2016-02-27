@@ -61,9 +61,12 @@ class NewMapDialog : public wxDialog
 private:
 	wxComboBox*	cbo_mapname;
 	wxChoice*	choice_mapformat;
+	wxButton*	btn_ok;
+	wxButton*	btn_cancel;
 
 public:
-	NewMapDialog(wxWindow* parent, int game, int port, vector<Archive::mapdesc_t>& maps, Archive* archive) : wxDialog(parent, -1, "New Map")
+	NewMapDialog(wxWindow* parent, int game, int port, vector<Archive::mapdesc_t>& maps, Archive* archive)
+		: wxDialog(parent, -1, "New Map")
 	{
 		// Setup dialog
 		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
@@ -92,7 +95,9 @@ public:
 		// Limit map name length if necessary
 		if (theGameConfiguration->anyMapName() &&
 			(!theGameConfiguration->allowLongNames() ||
-			(archive && archive->getType() != ARCHIVE_ZIP && archive->getType() != ARCHIVE_7Z && archive->getType() != ARCHIVE_FOLDER)))
+			(archive && archive->getType() != ARCHIVE_ZIP &&
+				archive->getType() != ARCHIVE_7Z &&
+				archive->getType() != ARCHIVE_FOLDER)))
 			cbo_mapname->SetMaxLength(8);
 
 		// Add possible map names to the combo box
@@ -141,11 +146,21 @@ public:
 			choice_mapformat->SetSelection(choice_mapformat->GetCount() - 1);
 
 		// Add dialog buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), wxGBPosition(2, 0), wxGBSpan(1, 2), wxEXPAND);
-		sizer->AddGrowableCol(1, 1);
+		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		msizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+		hbox->AddStretchSpacer();
+		btn_ok = new wxButton(this, -1, "OK");
+		hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, 4);
+		btn_cancel = new wxButton(this, -1, "Cancel");
+		hbox->Add(btn_cancel, 0, wxEXPAND);
+		sizer->AddGrowableCol(1);
+
+		// Bind events
+		btn_ok->Bind(wxEVT_BUTTON, &NewMapDialog::onBtnOk, this);
+		btn_cancel->Bind(wxEVT_BUTTON, &NewMapDialog::onBtnCancel, this);
 
 		Layout();
-		sizer->Fit(this);
+		msizer->Fit(this);
 		CenterOnParent();
 	}
 
@@ -158,6 +173,16 @@ public:
 	{
 		return choice_mapformat->GetStringSelection();
 	}
+
+	void onBtnOk(wxCommandEvent& e)
+	{
+		EndModal(wxID_OK);
+	}
+
+	void onBtnCancel(wxCommandEvent& e)
+	{
+		EndModal(wxID_CANCEL);
+	}
 };
 
 
@@ -168,7 +193,8 @@ public:
 /* MapEditorConfigDialog::MapEditorConfigDialog
  * MapEditorConfigDialog class constructor
  *******************************************************************/
-MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating) : SDialog(parent, "Launch Map Editor", "")
+MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive, bool show_maplist, bool creating)
+	: SDialog(parent, "Launch Map Editor", "")
 {
 	// Init variables
 	this->archive = archive;
