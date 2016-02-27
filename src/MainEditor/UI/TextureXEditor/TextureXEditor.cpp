@@ -30,7 +30,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "MainEditor/MainWindow.h"
-#include "UI/WxStuff.h"
 #include "TextureXEditor.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
@@ -38,6 +37,7 @@
 #include "Dialogs/ExtMessageDialog.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
+#include "UI/SAuiTabArt.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include <wx/dialog.h>
 #include <wx/radiobut.h>
@@ -208,7 +208,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1)
 
 	// Add tabs
 	tabs = new wxAuiNotebook(this, -1, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxAUI_NB_WINDOWLIST_BUTTON|wxBORDER_NONE);
-	tabs->SetArtProvider(getTabArt());
+	tabs->SetArtProvider(new SAuiTabArt());
 	sizer->Add(tabs, 1, wxEXPAND|wxALL, 4);
 
 	// Bind events
