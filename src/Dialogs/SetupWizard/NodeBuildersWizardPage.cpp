@@ -28,9 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "NodeBuildersWizardPage.h"
 #include "Dialogs/Preferences/NodesPrefsPanel.h"
+#include <wx/sizer.h>
 
 
 /*******************************************************************

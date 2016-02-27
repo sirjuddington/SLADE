@@ -3,7 +3,6 @@
 #define __TEXT_EDITOR_PREFS_PANEL_H__
 
 #include "PrefsPanelBase.h"
-#include <wx/spinctrl.h>
 
 class TextEditorPrefsPanel : public PrefsPanelBase
 {

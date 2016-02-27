@@ -29,8 +29,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "HudOffsetsPrefsPanel.h"
+#include <wx/checkbox.h>
+#include <wx/sizer.h>
+#include <wx/statbox.h>
 
 
 /*******************************************************************

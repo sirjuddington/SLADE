@@ -10,71 +10,8 @@
     <Filter Include="Main Editor">
       <UniqueIdentifier>{fef8e5a6-0991-4153-8f52-5d3f2da4e9d5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Main Editor\UI Elements">
-      <UniqueIdentifier>{f2373f73-d7a8-4389-a7d0-1b55a7511024}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Main Editor\UI Elements\EntryPanel">
-      <UniqueIdentifier>{0355b563-40d6-4783-b213-61d8271580d7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Main Editor\UI Elements\TextureXEditor">
-      <UniqueIdentifier>{68f7e12d-ec2c-42a8-8c84-f26092dd8c1f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Map Editor">
       <UniqueIdentifier>{e7c66597-c337-43fc-bedc-5e753bf3ddb8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\UI Elements">
-      <UniqueIdentifier>{d4677dbf-fb1f-45ef-9d81-5e63d8539139}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\SLADEMap">
-      <UniqueIdentifier>{fe62c46a-6958-43f8-912e-d4a1bf97c10b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources">
-      <UniqueIdentifier>{d64306f1-d31f-41ea-9c7d-216cd339fe06}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Archive">
-      <UniqueIdentifier>{186bc297-c8b4-4c2d-b577-b663901227b8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Binary Control Lumps">
-      <UniqueIdentifier>{d01d3677-f00e-4933-b65c-688a19cb3264}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics">
-      <UniqueIdentifier>{04a700d1-4c59-4db0-8c1b-7f55d079dbdc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Image">
-      <UniqueIdentifier>{2282b917-8937-43a4-946a-3d44fc79c9aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Palette">
-      <UniqueIdentifier>{91874625-b386-4240-be30-42817f5916bd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Composite Texture">
-      <UniqueIdentifier>{26f9c0ed-fcab-4243-977a-b0caec429bde}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Font">
-      <UniqueIdentifier>{a67c614b-3c23-4e50-8a01-6dd9e96388b9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements">
-      <UniqueIdentifier>{ec031215-840a-462e-b238-3ad04f542e91}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements\Browser">
-      <UniqueIdentifier>{2bb47c0d-bf68-47e1-bc1c-ce7926a17d1a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Archive\EntryType">
-      <UniqueIdentifier>{d894001c-5335-4237-9b18-60440a1e6a60}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements\TextEditor">
-      <UniqueIdentifier>{54fbf714-855d-444d-885d-1e12f9df2ef7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="General\Utility">
-      <UniqueIdentifier>{3bdecab8-98a4-45cf-ab63-fe6368271c60}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="General\Utility\PropertyList">
-      <UniqueIdentifier>{363ddaab-2da0-45fb-8fc2-042e5c6723c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements\Lists">
-      <UniqueIdentifier>{13cacd50-0c22-431c-b94e-2fc031b1c3dc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Archive\EntryType\EntryDataFormat">
-      <UniqueIdentifier>{c59be1fa-5ac3-471b-8512-cf3695aeac84}</UniqueIdentifier>
     </Filter>
     <Filter Include="General\Console">
       <UniqueIdentifier>{511149d3-5ded-4b1c-b004-d65769996d9d}</UniqueIdentifier>
@@ -100,56 +37,11 @@
     <Filter Include="External\ZLib">
       <UniqueIdentifier>{1ca86170-39c5-4615-bb20-8f2d2fc14c42}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources\Archive\Formats">
-      <UniqueIdentifier>{844561dc-871c-4534-ba8a-768af5269000}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Graphics\Image\Formats">
-      <UniqueIdentifier>{544047dd-0bbf-43a3-b6ec-6f90661fad4c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\GameConfiguration">
-      <UniqueIdentifier>{d3422c45-1960-43b3-b586-6baffde25566}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External\GLEW">
       <UniqueIdentifier>{a00649c9-b965-468e-8890-7338d43e5e39}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Map Editor\UI Elements\MapObjectPropsPanel">
-      <UniqueIdentifier>{682d8ffc-a877-4ad6-9fda-704467efe0da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\GameConfiguration\Configurations">
-      <UniqueIdentifier>{22412251-8001-4a47-b40f-114f27e933b9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI Elements\SToolBar">
-      <UniqueIdentifier>{8a2b5ffe-17e4-4358-a572-8e338e14c933}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\UI Elements\Overlays">
-      <UniqueIdentifier>{373e0e80-3aef-4e5a-b892-d9bf8b525878}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\Script Editor">
-      <UniqueIdentifier>{d49c5796-7d32-4213-adba-acc042385491}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External\Lua">
       <UniqueIdentifier>{f31c9d96-4290-4a38-91d0-fb9955293323}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\GameConfiguration\Configurations\Games">
-      <UniqueIdentifier>{f7e22cd9-1773-4f0d-8c9d-9f0c5d0c3ae0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\GameConfiguration\Configurations\Ports">
-      <UniqueIdentifier>{71f26981-aa9b-4ed8-b732-6d07a6c57faf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\GameConfiguration\Configurations\Games\Include">
-      <UniqueIdentifier>{eb1cd360-5f18-4f10-adbc-df5bc762285b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\GameConfiguration\Configurations\Ports\Include">
-      <UniqueIdentifier>{99eceb21-bb23-4972-bb7e-23a2cbe6de2b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Dialogs\SetupWizard">
-      <UniqueIdentifier>{90dc0f0c-92e7-414e-a30b-76c8c288e615}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\UI Elements\Overlays\Info">
-      <UniqueIdentifier>{0818b646-e0fb-4903-a683-74d0c149675b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Map Editor\UI Elements\Dialogs">
-      <UniqueIdentifier>{76701b85-f3f6-418f-b84e-cddfc761072f}</UniqueIdentifier>
     </Filter>
     <Filter Include="External\DUMB">
       <UniqueIdentifier>{ffdebfe3-3d6d-42d9-854b-4086903af5c1}</UniqueIdentifier>
@@ -169,829 +61,406 @@
     <Filter Include="Installer">
       <UniqueIdentifier>{fa5a343f-ee94-41ea-a75f-1d0292b58329}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{cb94973b-677e-42d7-8005-53d669acbcbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenGL">
+      <UniqueIdentifier>{690bfeb6-aa15-4bd5-ab7b-151877def763}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{1521702b-d69c-47d5-836d-e05a2e2720ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{ec031215-840a-462e-b238-3ad04f542e91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Browser">
+      <UniqueIdentifier>{2bb47c0d-bf68-47e1-bc1c-ce7926a17d1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Lists">
+      <UniqueIdentifier>{13cacd50-0c22-431c-b94e-2fc031b1c3dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\SToolBar">
+      <UniqueIdentifier>{8a2b5ffe-17e4-4358-a572-8e338e14c933}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application">
+      <UniqueIdentifier>{08f7e6cd-5237-4843-9d89-73bc8aa49ee1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Canvas">
+      <UniqueIdentifier>{4f00b239-b18a-4eba-b70f-4348b33cf7ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{857f6ada-0a82-4c97-918e-13b8b9a67b70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Font">
+      <UniqueIdentifier>{18c4582f-e6f1-408f-954a-523d9cc2493d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Palette">
+      <UniqueIdentifier>{2bb037c4-81ca-4e63-8a84-794b20f53218}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\SImage">
+      <UniqueIdentifier>{ae4890b7-0ebb-43df-9372-de1f518e38f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\SImage\Formats">
+      <UniqueIdentifier>{0cc23fc4-b04e-4b53-8110-c20f4c71c8fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive">
+      <UniqueIdentifier>{b5df9dec-a58e-4ba9-9e1e-e35bf05936c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\EntryType">
+      <UniqueIdentifier>{8793bf5a-5b6b-4541-836f-5e632a5867b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\Formats">
+      <UniqueIdentifier>{d76da1db-b5b2-428c-8715-07460cb6492c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main Editor\UI">
+      <UniqueIdentifier>{8803d335-a948-4502-8d58-a579053d1186}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main Editor\UI\EntryPanel">
+      <UniqueIdentifier>{9c20c338-759f-4b25-b4ee-488df95b1504}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\Renderer">
+      <UniqueIdentifier>{57c1dcd4-a300-4838-be69-1edcf651d8bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\Renderer\Overlays">
+      <UniqueIdentifier>{2825745b-4b26-4d1f-ab5d-07bed7feb6c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\SLADEMap">
+      <UniqueIdentifier>{7e714e7c-f40f-427e-b58a-88c904669f9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\UI">
+      <UniqueIdentifier>{7f918170-2c47-4971-a646-5754ab51b936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\UI\Dialogs">
+      <UniqueIdentifier>{b17c52c7-35bc-4b9f-a8f3-b02a1e4c3882}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\UI\PropsPanel">
+      <UniqueIdentifier>{6680c30b-5928-497f-bf0b-28e9a4a723e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main Editor\UI\Texture Editor">
+      <UniqueIdentifier>{ecfc7349-8974-4e27-a2dc-301f8e30570b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dialogs\Setup Wizard">
+      <UniqueIdentifier>{90dc0f0c-92e7-414e-a30b-76c8c288e615}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Map Editor\Game Configuration">
+      <UniqueIdentifier>{69273e0b-abaf-403b-b0cb-f3aede6fb016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Composite Texture">
+      <UniqueIdentifier>{25d4520a-4015-4838-81d3-9596df6d636e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archive\EntryType\Data Formats">
+      <UniqueIdentifier>{639d4195-f616-4708-bc9b-82e7652914c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Text Editor">
+      <UniqueIdentifier>{54fbf714-855d-444d-885d-1e12f9df2ef7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Property List">
+      <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\GfxConvDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ModifyOffsetsDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Clipboard.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CVar.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ListenerAnnouncer.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MainApp.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MemChunk.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Misc.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\OpenGL.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WxStuff.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Property.cpp">
-      <Filter>General\Utility\PropertyList</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PropertyList.cpp">
-      <Filter>General\Utility\PropertyList</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\EntryOperations.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MainWindow.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveManagerPanel.cpp">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\AnimatedEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DefaultEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\EntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GfxEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SwitchesEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PatchTablePanel.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextureEditorPanel.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextureXEditor.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditorWindow.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapCanvas.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapLine.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapSector.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapSide.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapThing.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapVertex.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Archive.cpp">
-      <Filter>Resources\Archive</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveEntry.cpp">
-      <Filter>Resources\Archive</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveManager.cpp">
-      <Filter>Resources\Archive</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\AnimatedList.cpp">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SwitchesList.cpp">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GLTexture.cpp">
-      <Filter>Resources\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Icons.cpp">
-      <Filter>Resources\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SImage.cpp">
-      <Filter>Resources\Graphics\Image</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Palette.cpp">
-      <Filter>Resources\Graphics\Palette</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteManager.cpp">
-      <Filter>Resources\Graphics\Palette</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CTexture.cpp">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PatchTable.cpp">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextureXList.cpp">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ColourBox.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ConsolePanel.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CTextureCanvas.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GfxCanvas.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\OGLCanvas.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteCanvas.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PaletteChooser.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SplashWindow.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\EntryType.cpp">
-      <Filter>Resources\Archive\EntryType</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextEditor.cpp">
-      <Filter>UI Elements\TextEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextLanguage.cpp">
-      <Filter>UI Elements\TextEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Tree.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Tokenizer.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Parser.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveEntryList.cpp">
-      <Filter>UI Elements\Lists</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ListView.cpp">
-      <Filter>UI Elements\Lists</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\EntryDataFormat.cpp">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\VirtualListView.cpp">
-      <Filter>UI Elements\Lists</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchivePanel.cpp">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextureXPanel.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BaseResourceChooser.cpp">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BrowserItem.cpp">
-      <Filter>UI Elements\Browser</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BrowserWindow.cpp">
-      <Filter>UI Elements\Browser</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Console.cpp">
-      <Filter>General\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SImageFormats.cpp">
-      <Filter>Resources\Graphics\Image</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PatchBrowser.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\HexEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\HexEditorPanel.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ArchiveOperations.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TextStyle.cpp">
-      <Filter>UI Elements\TextEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\AudioEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Conversions.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MIDIPlayer.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BrowserCanvas.cpp">
-      <Filter>UI Elements\Browser</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CodePages.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ANSIEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ANSICanvas.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SFont.cpp">
-      <Filter>Resources\Graphics\Font</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ExtMessageDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ZTextureEditorPanel.cpp">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ResourceManager.cpp">
-      <Filter>Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Translation.cpp">
-      <Filter>Resources\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MathStuff.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SAction.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TranslationEditorDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\mus2mid\mus2mid.cpp">
+    <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
       <Filter>External\Mus2Mid</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\blocksort.c">
+    <ClCompile Include="..\..\src\External\bzip2\blocksort.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\bzlib.c">
+    <ClCompile Include="..\..\src\External\bzip2\bzlib.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\compress.c">
+    <ClCompile Include="..\..\src\External\bzip2\compress.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\crctable.c">
+    <ClCompile Include="..\..\src\External\bzip2\crctable.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\decompress.c">
+    <ClCompile Include="..\..\src\External\bzip2\decompress.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\huffman.c">
+    <ClCompile Include="..\..\src\External\bzip2\huffman.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\bzip2\randtable.c">
+    <ClCompile Include="..\..\src\External\bzip2\randtable.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Compression.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\ancientzip.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\ancientzip.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\files.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\files.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\m_alloc.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\m_alloc.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\adler32.c">
+    <ClCompile Include="..\..\src\External\zlib\adler32.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\crc32.c">
+    <ClCompile Include="..\..\src\External\zlib\crc32.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\deflate.c">
+    <ClCompile Include="..\..\src\External\zlib\deflate.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\gzio.c">
+    <ClCompile Include="..\..\src\External\zlib\gzio.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\infback.c">
+    <ClCompile Include="..\..\src\External\zlib\infback.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\inffast.c">
+    <ClCompile Include="..\..\src\External\zlib\inffast.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\inflate.c">
+    <ClCompile Include="..\..\src\External\zlib\inflate.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\inftrees.c">
+    <ClCompile Include="..\..\src\External\zlib\inftrees.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\trees.c">
+    <ClCompile Include="..\..\src\External\zlib\trees.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\uncompr.c">
+    <ClCompile Include="..\..\src\External\zlib\uncompr.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zlib\zutil.c">
+    <ClCompile Include="..\..\src\External\zlib\zutil.c">
       <Filter>External\ZLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zAlloc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zAlloc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zBuf.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zBuf.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zBuf2.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zBuf2.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zCrc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zCrc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zCrcOpt.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zCrcOpt.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zDec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zDec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zFile.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zFile.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zIn.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zIn.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\7zStream.c">
+    <ClCompile Include="..\..\src\External\lzma\C\7zStream.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Alloc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Alloc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Bcj2.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Bcj2.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Bra.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Bra.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Bra86.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Bra86.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\BraIA64.c">
+    <ClCompile Include="..\..\src\External\lzma\C\BraIA64.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\CpuArch.c">
+    <ClCompile Include="..\..\src\External\lzma\C\CpuArch.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Delta.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Delta.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzFind.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzFind.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzFindMt.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzFindMt.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Lzma2Dec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma2Dec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Lzma2Enc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma2Enc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Lzma86Dec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma86Dec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Lzma86Enc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma86Enc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzmaDec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaDec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzmaEnc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaEnc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\LzmaLib.c">
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaLib.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\MtCoder.c">
+    <ClCompile Include="..\..\src\External\lzma\C\MtCoder.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7Dec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7Dec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7Enc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7Enc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Sha256.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Sha256.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Threads.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Threads.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\Xz.c">
+    <ClCompile Include="..\..\src\External\lzma\C\Xz.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\XzCrc64.c">
+    <ClCompile Include="..\..\src\External\lzma\C\XzCrc64.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\XzDec.c">
+    <ClCompile Include="..\..\src\External\lzma\C\XzDec.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\XzEnc.c">
+    <ClCompile Include="..\..\src\External\lzma\C\XzEnc.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lzma\C\XzIn.c">
+    <ClCompile Include="..\..\src\External\lzma\C\XzIn.c">
       <Filter>External\Lzma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ADatArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BSPArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BZip2Archive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DatArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GobArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GrpArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GZipArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\HogArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\LfdArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\LibArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\PakArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ResArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\RffArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\TarArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Wad2Archive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WadArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WadJArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WolfArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ZipArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SIFormat.cpp">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Drawing.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DockPanel.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\KeyBind.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SFileDialog.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ColourConfiguration.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MCAnimations.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapTextureManager.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\FileMonitor.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GameConfiguration.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ActionSpecial.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThingType.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\glew\glew.c">
+    <ClCompile Include="..\..\src\External\glew\glew.c">
       <Filter>External\GLEW</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapRenderer2D.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Polygon2D.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UDMFProperty.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapObject.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThingTypeTreeView.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditorConfigDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapObjectPropsPanel.cpp">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MOPGProperty.cpp">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SToolBar.cpp">
-      <Filter>UI Elements\SToolBar</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SToolBarButton.cpp">
-      <Filter>UI Elements\SToolBar</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapPreviewCanvas.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SectorTextureOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\LineTextureOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\STopWindow.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SectorBuilder.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SLADEMap.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\NodeBuilders.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ShapeDrawPanel.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapRenderer3D.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ScriptEditorPanel.cpp">
-      <Filter>Map Editor\Script Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\CIEDeltaEquations.cpp">
-      <Filter>General\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapReplaceDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Lua.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\lua\lapi.c">
+    <ClCompile Include="..\..\src\External\lua\lapi.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lauxlib.c">
+    <ClCompile Include="..\..\src\External\lua\lauxlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lbaselib.c">
+    <ClCompile Include="..\..\src\External\lua\lbaselib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lbitlib.c">
+    <ClCompile Include="..\..\src\External\lua\lbitlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lcode.c">
+    <ClCompile Include="..\..\src\External\lua\lcode.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lcorolib.c">
+    <ClCompile Include="..\..\src\External\lua\lcorolib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lctype.c">
+    <ClCompile Include="..\..\src\External\lua\lctype.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ldblib.c">
+    <ClCompile Include="..\..\src\External\lua\ldblib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ldebug.c">
+    <ClCompile Include="..\..\src\External\lua\ldebug.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ldo.c">
+    <ClCompile Include="..\..\src\External\lua\ldo.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ldump.c">
+    <ClCompile Include="..\..\src\External\lua\ldump.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lfunc.c">
+    <ClCompile Include="..\..\src\External\lua\lfunc.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lgc.c">
+    <ClCompile Include="..\..\src\External\lua\lgc.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\linit.c">
+    <ClCompile Include="..\..\src\External\lua\linit.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\liolib.c">
+    <ClCompile Include="..\..\src\External\lua\liolib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\llex.c">
+    <ClCompile Include="..\..\src\External\lua\llex.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lmathlib.c">
+    <ClCompile Include="..\..\src\External\lua\lmathlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lmem.c">
+    <ClCompile Include="..\..\src\External\lua\lmem.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\loadlib.c">
+    <ClCompile Include="..\..\src\External\lua\loadlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lobject.c">
+    <ClCompile Include="..\..\src\External\lua\lobject.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lopcodes.c">
+    <ClCompile Include="..\..\src\External\lua\lopcodes.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\loslib.c">
+    <ClCompile Include="..\..\src\External\lua\loslib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lparser.c">
+    <ClCompile Include="..\..\src\External\lua\lparser.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lstate.c">
+    <ClCompile Include="..\..\src\External\lua\lstate.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lstring.c">
+    <ClCompile Include="..\..\src\External\lua\lstring.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lstrlib.c">
+    <ClCompile Include="..\..\src\External\lua\lstrlib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ltable.c">
+    <ClCompile Include="..\..\src\External\lua\ltable.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ltablib.c">
+    <ClCompile Include="..\..\src\External\lua\ltablib.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\ltm.c">
+    <ClCompile Include="..\..\src\External\lua\ltm.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lundump.c">
+    <ClCompile Include="..\..\src\External\lua\lundump.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lvm.c">
+    <ClCompile Include="..\..\src\External\lua\lvm.c">
       <Filter>External\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\lua\lzio.c">
+    <ClCompile Include="..\..\src\External\lua\lzio.c">
       <Filter>External\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UndoRedo.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\UndoManagerHistoryPanel.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DiskArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GenLineSpecial.cpp">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\QuickTextureOverlay3d.cpp">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\GenLineSpecialPanel.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ObjectEdit.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ObjectEditPanel.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\BaseResourceWizardPage.cpp">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.cpp">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.cpp">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Dialogs\RunDialog.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Executables.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ResourceArchiveChooser.cpp">
-      <Filter>UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapChecks.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MobjPropertyList.cpp">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapChecksPanel.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\i_music.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\i_music.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_hmi_midiout.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_hmi_midiout.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_midistream.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_midistream.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_mus_midiout.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_mus_midiout.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_smf_midiout.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_smf_midiout.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\zreaders\music_xmi_midiout.cpp">
+    <ClCompile Include="..\..\src\External\zreaders\music_xmi_midiout.cpp">
       <Filter>External\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DirArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\InfoOverlay3d.cpp">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\LineInfoOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SectorInfoOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThingInfoOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\VertexInfoOverlay.cpp">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ActionSpecialDialog.cpp">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\SectorSpecialDialog.cpp">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ThingTypeBrowser.cpp">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\MapTextureBrowser.cpp">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ShowItemDialog.cpp">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\Preferences\ACSPrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
@@ -1056,1151 +525,1079 @@
     <ClCompile Include="..\..\src\Dialogs\Preferences\TextStylePrefsPanel.cpp">
       <Filter>Dialogs\Preferences</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SDialog.cpp">
-      <Filter>UI Elements</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\atexit.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\LinePropsPanel.cpp">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\duhlen.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SidePropsPanel.cpp">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\duhtag.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SectorPropsPanel.cpp">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\dumbfile.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\NumberTextCtrl.cpp">
-      <Filter>UI Elements</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\loadduh.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ThingPropsPanel.cpp">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\makeduh.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\VersionCheck.cpp">
-      <Filter>General</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\rawsig.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapBackupManager.cpp">
-      <Filter>Map Editor</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\readduh.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapBackupPanel.cpp">
-      <Filter>Map Editor\UI Elements</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\register.c">
+      <Filter>External\DUMB\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\DocsPage.cpp">
-      <Filter>Main Editor\UI Elements</Filter>
+    <ClCompile Include="..\..\src\External\dumb\core\rendduh.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\rendsig.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\unload.c">
+      <Filter>External\DUMB\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\barray.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\clickrem.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\fir_resampler.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\lpc.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\memfile.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\resample.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\resampler.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\riff.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\sampbuf.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\silence.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\stdfile.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\tarray.c">
+      <Filter>External\DUMB\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itload.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itload2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itmisc.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itorder.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itread.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itread2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itrender.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itunload.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\load669.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\load6692.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadamf.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadamf2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadany.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadany2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadasy.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadasy2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadmod.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadmod2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadmtm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadmtm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadokt.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadokt2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadoldpsm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadoldpsm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadpsm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadpsm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadptm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadptm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadriff.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadriff2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loads3m.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loads3m2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadstm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadstm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadxm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadxm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\ptmeffect.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\read669.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\read6692.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readam.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readamf.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readamf2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readany.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readany2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readasy.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readdsmf.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readmod.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readmod2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readmtm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readokt.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readokt2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readoldpsm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readpsm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readptm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readriff.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\reads3m.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\reads3m2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readstm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readstm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readxm.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readxm2.c">
+      <Filter>External\DUMB\it</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\xmeffect.c">
+      <Filter>External\DUMB\it</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\DirArchiveUpdateDialog.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\atexit.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Dialogs\ExtMessageDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\duhlen.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Dialogs\GfxConvDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\duhtag.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Dialogs\MapEditorConfigDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\dumbfile.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Dialogs\MapReplaceDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\loadduh.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Dialogs\ModifyOffsetsDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\makeduh.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Dialogs\PaletteDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\rawsig.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Dialogs\RunDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\readduh.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Dialogs\TranslationEditorDialog.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\register.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Audio\MIDIPlayer.cpp">
+      <Filter>Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\rendduh.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\Audio\ModMusic.cpp">
+      <Filter>Audio</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\rendsig.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\OpenGL\Drawing.cpp">
+      <Filter>OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\core\unload.c">
-      <Filter>External\DUMB\core</Filter>
+    <ClCompile Include="..\..\src\OpenGL\OpenGL.cpp">
+      <Filter>OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\barray.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp">
+      <Filter>OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\clickrem.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\PropertyList\Property.cpp">
+      <Filter>Utility\Property List</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\fir_resampler.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\PropertyList\PropertyList.cpp">
+      <Filter>Utility\Property List</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\lpc.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\CIEDeltaEquations.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\memfile.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\CodePages.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\resample.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\Compression.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\resampler.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\MathStuff.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\riff.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\Parser.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\sampbuf.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\Polygon2D.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\silence.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\SFileDialog.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\stdfile.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\Tokenizer.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\helpers\tarray.c">
-      <Filter>External\DUMB\helpers</Filter>
+    <ClCompile Include="..\..\src\Utility\Tree.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itload.c">
-      <Filter>External\DUMB\it</Filter>
+    <ClCompile Include="..\..\src\Utility\MemChunk.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itload2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itmisc.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itorder.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itread.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itread2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itrender.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\itunload.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\load669.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\load6692.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadamf.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadamf2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadany.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadany2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadasy.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadasy2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadmod.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadmod2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadmtm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadmtm2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadokt.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadokt2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadoldpsm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadoldpsm2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadpsm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadpsm2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadptm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadptm2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadriff.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadriff2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loads3m.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loads3m2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadstm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadstm2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadxm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\loadxm2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\ptmeffect.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\read669.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\read6692.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readam.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readamf.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readamf2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readany.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readany2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readasy.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readdsmf.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readmod.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readmod2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readmtm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readokt.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readokt2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readoldpsm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readpsm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readptm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readriff.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\reads3m.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\reads3m2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readstm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readstm2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readxm.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\readxm2.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dumb\it\xmeffect.c">
-      <Filter>External\DUMB\it</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ModMusic.cpp">
+    <ClCompile Include="..\..\src\General\Clipboard.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SAuiTabArt.cpp">
-      <Filter>UI Elements</Filter>
+    <ClCompile Include="..\..\src\General\ColourConfiguration.cpp">
+      <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\STabCtrl.cpp">
-      <Filter>UI Elements</Filter>
+    <ClCompile Include="..\..\src\General\CVar.cpp">
+      <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapSpecials.cpp">
+    <ClCompile Include="..\..\src\General\Executables.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\KeyBind.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\ListenerAnnouncer.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Lua.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Misc.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\UndoRedo.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\VersionCheck.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Console\Console.cpp">
+      <Filter>General\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\WxStuff.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Application\MainApp.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\SAction.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\FileMonitor.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Browser\BrowserCanvas.cpp">
+      <Filter>UI\Browser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Browser\BrowserItem.cpp">
+      <Filter>UI\Browser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Browser\BrowserWindow.cpp">
+      <Filter>UI\Browser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Lists\ArchiveEntryList.cpp">
+      <Filter>UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Lists\ListView.cpp">
+      <Filter>UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Lists\VirtualListView.cpp">
+      <Filter>UI\Lists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SToolBar\SToolBar.cpp">
+      <Filter>UI\SToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp">
+      <Filter>UI\SToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp">
+      <Filter>UI\Text Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp">
+      <Filter>UI\Text Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp">
+      <Filter>UI\Text Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\ANSICanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\CTextureCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\GfxCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\MapPreviewCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\OGLCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\Canvas\PaletteCanvas.cpp">
+      <Filter>UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\ColourBox.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\ConsolePanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\DockPanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\HexEditorPanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\NumberTextCtrl.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\PaletteChooser.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\ResourceArchiveChooser.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SAuiTabArt.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SDialog.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\SplashWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\STabCtrl.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\STopWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\CTexture.cpp">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\PatchTable.cpp">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\TextureXList.cpp">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Font\SFont.cpp">
+      <Filter>Graphics\Font</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Palette\Palette.cpp">
+      <Filter>Graphics\Palette</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Palette\PaletteManager.cpp">
+      <Filter>Graphics\Palette</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SImage.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SImageFormats.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Icons.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\Translation.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\SImage\SIFormat.cpp">
+      <Filter>Graphics\SImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Archive.cpp">
+      <Filter>Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\ArchiveEntry.cpp">
+      <Filter>Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\ArchiveManager.cpp">
+      <Filter>Archive</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\EntryType\EntryType.cpp">
+      <Filter>Archive\EntryType</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\BZip2Archive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\ChasmBinArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\DatArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\DirArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\DiskArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\GobArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\GrpArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\GZipArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\HogArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\LfdArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\LibArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\PakArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\PodArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\ResArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\RffArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\TarArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\Wad2Archive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\WadArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\WadJArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\WolfArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\ZipArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\ADatArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\Formats\BSPArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Archive\EntryType\EntryDataFormat.cpp">
+      <Filter>Archive\EntryType</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\ArchiveOperations.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\Conversions.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\ArchivePanel.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\DocsPage.cpp">
+      <Filter>Main Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AudioEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\DataEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\DefaultEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\EntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\GfxEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\HexEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\MapEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.cpp">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.cpp">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.cpp">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.cpp">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.cpp">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.cpp">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.cpp">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\MapBackupManager.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\PodArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
+    <ClCompile Include="..\..\src\MapEditor\MapChecks.cpp">
+      <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\DataEntryPanel.cpp">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
+    <ClCompile Include="..\..\src\MapEditor\MapEditor.cpp">
+      <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ChasmBinArchive.cpp">
-      <Filter>Resources\Archive\Formats</Filter>
+    <ClCompile Include="..\..\src\MapEditor\MapEditorWindow.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\MapSpecials.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\MapTextureManager.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\NodeBuilders.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\ObjectEdit.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SectorBuilder.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.cpp">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.cpp">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.cpp">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ThingType.cpp">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.cpp">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\MapRenderer2D.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\MapRenderer3D.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\MCAnimations.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\LineTextureOverlay.cpp">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\QuickTextureOverlay3d.cpp">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\SectorTextureOverlay.cpp">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapLine.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapObject.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapSector.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapSide.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapThing.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapVertex.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MobjPropertyList.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\SLADEMap.cpp">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\MapBackupPanel.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\MapCanvas.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\MapChecksPanel.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\ObjectEditPanel.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\ScriptEditorPanel.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\ShapeDrawPanel.cpp">
+      <Filter>Map Editor\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ActionSpecialDialog.cpp">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\MapTextureBrowser.cpp">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\SectorSpecialDialog.cpp">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ShowItemDialog.cpp">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ThingTypeBrowser.cpp">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\LinePropsPanel.cpp">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\MapObjectPropsPanel.cpp">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\MOPGProperty.cpp">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\SectorPropsPanel.cpp">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\SidePropsPanel.cpp">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\ThingPropsPanel.cpp">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\InfoOverlay3d.cpp">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\LineInfoOverlay.cpp">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\SectorInfoOverlay.cpp">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\ThingInfoOverlay.cpp">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.cpp">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\ResourceManager.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\AnimatedList.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp">
+      <Filter>Main Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\GfxConvDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ModifyOffsetsDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Clipboard.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\CVar.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ListenerAnnouncer.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Main.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MainApp.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MemChunk.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Misc.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\OpenGL.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WxStuff.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Property.h">
-      <Filter>General\Utility\PropertyList</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PropertyList.h">
-      <Filter>General\Utility\PropertyList</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\EntryOperations.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MainWindow.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveManagerPanel.h">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\AnimatedEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DefaultEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\EntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GfxEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SwitchesEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PatchTablePanel.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextureEditorPanel.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextureXEditor.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditorWindow.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapCanvas.h">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapLine.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapSector.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapSide.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapThing.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapVertex.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SLADEMap.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Archive.h">
-      <Filter>Resources\Archive</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveEntry.h">
-      <Filter>Resources\Archive</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveManager.h">
-      <Filter>Resources\Archive</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\AnimatedList.h">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BinaryControlLump.h">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SwitchesList.h">
-      <Filter>Resources\Binary Control Lumps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GLTexture.h">
-      <Filter>Resources\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Icons.h">
-      <Filter>Resources\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SImage.h">
-      <Filter>Resources\Graphics\Image</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Palette.h">
-      <Filter>Resources\Graphics\Palette</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteManager.h">
-      <Filter>Resources\Graphics\Palette</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\CTexture.h">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PatchTable.h">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextureXList.h">
-      <Filter>Resources\Graphics\Composite Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SFont.h">
-      <Filter>Resources\Graphics\Font</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="..\..\src\ColourBox.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ConsolePanel.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\CTextureCanvas.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GfxCanvas.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\OGLCanvas.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteCanvas.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PaletteChooser.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SplashWindow.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\EntryType.h">
-      <Filter>Resources\Archive\EntryType</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextEditor.h">
-      <Filter>UI Elements\TextEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextLanguage.h">
-      <Filter>UI Elements\TextEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Tree.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Tokenizer.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Structs.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Parser.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveEntryList.h">
-      <Filter>UI Elements\Lists</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ListView.h">
-      <Filter>UI Elements\Lists</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\EntryDataFormat.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\AudioFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ImageFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MiscFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ModelFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\VirtualListView.h">
-      <Filter>UI Elements\Lists</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchivePanel.h">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextureXPanel.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BrowserItem.h">
-      <Filter>UI Elements\Browser</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BrowserWindow.h">
-      <Filter>UI Elements\Browser</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BaseResourceChooser.h">
-      <Filter>Main Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Console.h">
-      <Filter>General\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ConsoleHelpers.h">
-      <Filter>General\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PatchBrowser.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\HexEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\HexEditorPanel.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ArchiveOperations.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TextStyle.h">
-      <Filter>UI Elements\TextEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\AudioEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Conversions.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MIDIPlayer.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BrowserCanvas.h">
-      <Filter>UI Elements\Browser</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\CodePages.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ANSIEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ANSICanvas.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ExtMessageDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LumpFormats.h">
-      <Filter>Resources\Archive\EntryType\EntryDataFormat</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ZTextureEditorPanel.h">
-      <Filter>Main Editor\UI Elements\TextureXEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ResourceManager.h">
-      <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Translation.h">
-      <Filter>Resources\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MathStuff.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SAction.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TranslationEditorDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mus2mid\mus2mid.h">
-      <Filter>External\Mus2Mid</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\bzip2\bzlib.h">
+    <ClInclude Include="..\..\src\External\bzip2\bzlib.h">
       <Filter>External\BZip2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\bzip2\bzlib_private.h">
+    <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h">
       <Filter>External\BZip2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Compression.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\ancientzip.h">
+    <ClInclude Include="..\..\src\External\zreaders\ancientzip.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\files.h">
+    <ClInclude Include="..\..\src\External\zreaders\files.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\m_alloc.h">
+    <ClInclude Include="..\..\src\External\zreaders\m_alloc.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\tarray.h">
+    <ClInclude Include="..\..\src\External\zreaders\tarray.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\templates.h">
+    <ClInclude Include="..\..\src\External\zreaders\templates.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\crc32.h">
+    <ClInclude Include="..\..\src\External\zlib\crc32.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\deflate.h">
+    <ClInclude Include="..\..\src\External\zlib\deflate.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\inffast.h">
+    <ClInclude Include="..\..\src\External\zlib\inffast.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\inffixed.h">
+    <ClInclude Include="..\..\src\External\zlib\inffixed.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\inflate.h">
+    <ClInclude Include="..\..\src\External\zlib\inflate.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\inftrees.h">
+    <ClInclude Include="..\..\src\External\zlib\inftrees.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\trees.h">
+    <ClInclude Include="..\..\src\External\zlib\trees.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\zconf.h">
+    <ClInclude Include="..\..\src\External\zlib\zconf.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\zlib.h">
+    <ClInclude Include="..\..\src\External\zlib\zlib.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zlib\zutil.h">
+    <ClInclude Include="..\..\src\External\zlib\zutil.h">
       <Filter>External\ZLib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7z.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7z.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zAlloc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zAlloc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zBuf.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zBuf.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zCrc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zCrc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zFile.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zFile.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\7zVersion.h">
+    <ClInclude Include="..\..\src\External\lzma\C\7zVersion.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Alloc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Alloc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Bcj2.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Bcj2.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Bra.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Bra.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\CpuArch.h">
+    <ClInclude Include="..\..\src\External\lzma\C\CpuArch.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Delta.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Delta.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzFind.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzFind.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzFindMt.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzFindMt.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzHash.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzHash.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Lzma2Dec.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma2Dec.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Lzma2Enc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma2Enc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Lzma86.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma86.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzmaDec.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaDec.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzmaEnc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaEnc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\LzmaLib.h">
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaLib.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\MtCoder.h">
+    <ClInclude Include="..\..\src\External\lzma\C\MtCoder.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Ppmd.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Ppmd.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Ppmd7.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Ppmd7.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\RotateDefs.h">
+    <ClInclude Include="..\..\src\External\lzma\C\RotateDefs.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Sha256.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Sha256.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Threads.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Threads.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Types.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Types.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\Xz.h">
+    <ClInclude Include="..\..\src\External\lzma\C\Xz.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\XzCrc64.h">
+    <ClInclude Include="..\..\src\External\lzma\C\XzCrc64.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lzma\C\XzEnc.h">
+    <ClInclude Include="..\..\src\External\lzma\C\XzEnc.h">
       <Filter>External\Lzma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ADatArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BSPArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\BZip2Archive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DatArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GobArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GrpArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GZipArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\HogArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LfdArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LibArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PakArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ResArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\RffArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\TarArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Wad2Archive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WadArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WadJArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WolfArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ZipArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Archives.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFDoom.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFZDoom.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFHexen.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFImages.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFormat.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFOther.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFQuake.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFJedi.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SIFRott.h">
-      <Filter>Resources\Graphics\Image\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Drawing.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DockPanel.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\KeyBind.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SFileDialog.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ColourConfiguration.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MCAnimations.h">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapTextureManager.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\FileMonitor.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GameConfiguration.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ActionSpecial.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Args.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ThingType.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\glew\glew.h">
-      <Filter>External\GLEW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\glew\glxew.h">
-      <Filter>External\GLEW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\glew\wglew.h">
-      <Filter>External\GLEW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapRenderer2D.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Polygon2D.h">
-      <Filter>General\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UDMFProperty.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapObject.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ThingTypeTreeView.h">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditorConfigDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapObjectPropsPanel.h">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MOPGProperty.h">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SToolBar.h">
-      <Filter>UI Elements\SToolBar</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SToolBarButton.h">
-      <Filter>UI Elements\SToolBar</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapPreviewCanvas.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MCOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SectorTextureOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LineTextureOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\STopWindow.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SectorBuilder.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\NodeBuilders.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ShapeDrawPanel.h">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapRenderer3D.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ScriptEditorPanel.h">
-      <Filter>Map Editor\Script Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapReplaceDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Lua.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\lua\lapi.h">
+    <ClInclude Include="..\..\src\External\lua\lapi.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lauxlib.h">
+    <ClInclude Include="..\..\src\External\lua\lauxlib.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lcode.h">
+    <ClInclude Include="..\..\src\External\lua\lcode.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lctype.h">
+    <ClInclude Include="..\..\src\External\lua\lctype.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\ldebug.h">
+    <ClInclude Include="..\..\src\External\lua\ldebug.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\ldo.h">
+    <ClInclude Include="..\..\src\External\lua\ldo.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lfunc.h">
+    <ClInclude Include="..\..\src\External\lua\lfunc.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lgc.h">
+    <ClInclude Include="..\..\src\External\lua\lgc.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\llex.h">
+    <ClInclude Include="..\..\src\External\lua\llex.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\llimits.h">
+    <ClInclude Include="..\..\src\External\lua\llimits.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lmem.h">
+    <ClInclude Include="..\..\src\External\lua\lmem.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lobject.h">
+    <ClInclude Include="..\..\src\External\lua\lobject.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lopcodes.h">
+    <ClInclude Include="..\..\src\External\lua\lopcodes.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lparser.h">
+    <ClInclude Include="..\..\src\External\lua\lparser.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lstate.h">
+    <ClInclude Include="..\..\src\External\lua\lstate.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lstring.h">
+    <ClInclude Include="..\..\src\External\lua\lstring.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\ltable.h">
+    <ClInclude Include="..\..\src\External\lua\ltable.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\ltm.h">
+    <ClInclude Include="..\..\src\External\lua\ltm.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lua.h">
+    <ClInclude Include="..\..\src\External\lua\lua.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lua.hpp">
+    <ClInclude Include="..\..\src\External\lua\lua.hpp">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\luaconf.h">
+    <ClInclude Include="..\..\src\External\lua\luaconf.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lualib.h">
+    <ClInclude Include="..\..\src\External\lua\lualib.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lundump.h">
+    <ClInclude Include="..\..\src\External\lua\lundump.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lvm.h">
+    <ClInclude Include="..\..\src\External\lua\lvm.h">
       <Filter>External\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\lua\lzio.h">
+    <ClInclude Include="..\..\src\External\lua\lzio.h">
       <Filter>External\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UndoRedo.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\UndoManagerHistoryPanel.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DiskArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GenLineSpecial.h">
-      <Filter>Map Editor\GameConfiguration</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\QuickTextureOverlay3d.h">
-      <Filter>Map Editor\UI Elements\Overlays</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\GenLineSpecialPanel.h">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ObjectEdit.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ObjectEditPanel.h">
-      <Filter>Map Editor\UI Elements</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\BaseResourceWizardPage.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\WizardPageBase.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.h">
-      <Filter>Dialogs\SetupWizard</Filter>
+      <Filter>Dialogs\Setup Wizard</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Dialogs\RunDialog.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Executables.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ResourceArchiveChooser.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapChecks.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MobjPropertyList.h">
-      <Filter>Map Editor\SLADEMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapChecksPanel.h">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\i_music.h">
+    <ClInclude Include="..\..\src\External\zreaders\i_music.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\i_musicinterns.h">
+    <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\m_swap.h">
+    <ClInclude Include="..\..\src\External\zreaders\m_swap.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\zreaders\mus2midi.h">
+    <ClInclude Include="..\..\src\External\zreaders\mus2midi.h">
       <Filter>External\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DirArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\InfoOverlay3d.h">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LineInfoOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SectorInfoOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ThingInfoOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\VertexInfoOverlay.h">
-      <Filter>Map Editor\UI Elements\Overlays\Info</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ActionSpecialDialog.h">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SectorSpecialDialog.h">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ThingTypeBrowser.h">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapTextureBrowser.h">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ShowItemDialog.h">
-      <Filter>Map Editor\UI Elements\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\Preferences\ACSPrefsPanel.h">
       <Filter>Dialogs\Preferences</Filter>
@@ -2268,268 +1665,700 @@
     <ClInclude Include="..\..\src\Dialogs\Preferences\TextStylePrefsPanel.h">
       <Filter>Dialogs\Preferences</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\SDialog.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\LinePropsPanel.h">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SidePropsPanel.h">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\SectorPropsPanel.h">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\PropsPanelBase.h">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\NumberTextCtrl.h">
-      <Filter>UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ThingPropsPanel.h">
-      <Filter>Map Editor\UI Elements\MapObjectPropsPanel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\VersionCheck.h">
-      <Filter>General</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapBackupManager.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\MapBackupPanel.h">
-      <Filter>Map Editor\UI Elements</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\DocsPage.h">
-      <Filter>Main Editor\UI Elements</Filter>
+    <ClInclude Include="..\..\src\External\dumb\dumb.h">
+      <Filter>External\DUMB</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\dumb.h">
-      <Filter>External\DUMB</Filter>
+    <ClInclude Include="..\..\src\Dialogs\ExtMessageDialog.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\aldumb.h">
+    <ClInclude Include="..\..\src\Dialogs\GfxConvDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\MapEditorConfigDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\MapReplaceDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\ModifyOffsetsDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\PaletteDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\RunDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Dialogs\TranslationEditorDialog.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\glew\glew.h">
+      <Filter>External\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\glew\glxew.h">
+      <Filter>External\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\mus2mid\mus2mid.h">
+      <Filter>External\Mus2Mid</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\dumb\internal\dumb.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\barray.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\aldumb.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\dumb.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\barray.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\dumbfile.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\dumbfile.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\fir_resampler.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\fir_resampler.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\it.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\it.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\lpc.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\lpc.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\resampler.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\resampler.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\riff.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\riff.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\stack_alloc.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\stack_alloc.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\dumb\internal\tarray.h">
+    <ClInclude Include="..\..\src\External\dumb\internal\tarray.h">
       <Filter>External\DUMB\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ModMusic.h">
+    <ClInclude Include="..\..\src\Audio\MIDIPlayer.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Audio\ModMusic.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\Drawing.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\OpenGL.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLTexture.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\PropertyList\Property.h">
+      <Filter>Utility\Property List</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\PropertyList\PropertyList.h">
+      <Filter>Utility\Property List</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\CIEDeltaEquations.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\CodePages.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Compression.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\MathStuff.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Parser.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Polygon2D.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\SFileDialog.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Structs.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Tokenizer.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\Tree.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\MemChunk.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\glew\wglew.h">
+      <Filter>External\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Clipboard.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\SAuiTabArt.h">
-      <Filter>UI Elements</Filter>
+    <ClInclude Include="..\..\src\General\ColourConfiguration.h">
+      <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\STabCtrl.h">
-      <Filter>UI Elements</Filter>
+    <ClInclude Include="..\..\src\General\CVar.h">
+      <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapSpecials.h">
+    <ClInclude Include="..\..\src\General\Executables.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\KeyBind.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\ListenerAnnouncer.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Lua.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Misc.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\UndoRedo.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\VersionCheck.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Console\Console.h">
+      <Filter>General\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Console\ConsoleHelpers.h">
+      <Filter>General\Console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\WxStuff.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\Main.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\MainApp.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\SAction.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\FileMonitor.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Browser\BrowserCanvas.h">
+      <Filter>UI\Browser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Browser\BrowserItem.h">
+      <Filter>UI\Browser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Browser\BrowserWindow.h">
+      <Filter>UI\Browser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Lists\ArchiveEntryList.h">
+      <Filter>UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Lists\ListView.h">
+      <Filter>UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Lists\VirtualListView.h">
+      <Filter>UI\Lists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SToolBar\SToolBar.h">
+      <Filter>UI\SToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SToolBar\SToolBarButton.h">
+      <Filter>UI\SToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h">
+      <Filter>UI\Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h">
+      <Filter>UI\Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h">
+      <Filter>UI\Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\ANSICanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\CTextureCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\GfxCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\MapPreviewCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\OGLCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\Canvas\PaletteCanvas.h">
+      <Filter>UI\Canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\ColourBox.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\ConsolePanel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\DockPanel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\HexEditorPanel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\NumberTextCtrl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\PaletteChooser.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\ResourceArchiveChooser.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SAuiTabArt.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SDialog.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\SplashWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\STabCtrl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\STopWindow.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h">
+      <Filter>Graphics\Composite Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Font\SFont.h">
+      <Filter>Graphics\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Palette\Palette.h">
+      <Filter>Graphics\Palette</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Palette\PaletteManager.h">
+      <Filter>Graphics\Palette</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\SImage.h">
+      <Filter>Graphics\SImage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFJedi.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFOther.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFQuake.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFRott.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFZDoom.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFDoom.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFHexen.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFImages.h">
+      <Filter>Graphics\SImage\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Icons.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\Translation.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h">
+      <Filter>Graphics\SImage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Archive.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\ArchiveEntry.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\ArchiveManager.h">
+      <Filter>Archive</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\EntryType.h">
+      <Filter>Archive\EntryType</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\BZip2Archive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\ChasmBinArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\DatArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\DirArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\DiskArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\GobArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\GrpArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\GZipArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\HogArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\LfdArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\LibArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\PakArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\PodArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\ResArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\RffArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\TarArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\Wad2Archive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\WadArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\WadJArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\WolfArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\ZipArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\ADatArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\BSPArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\EntryDataFormat.h">
+      <Filter>Archive\EntryType</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ArchiveFormats.h">
+      <Filter>Archive\EntryType\Data Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\AudioFormats.h">
+      <Filter>Archive\EntryType\Data Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ImageFormats.h">
+      <Filter>Archive\EntryType\Data Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\LumpFormats.h">
+      <Filter>Archive\EntryType\Data Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\MiscFormats.h">
+      <Filter>Archive\EntryType\Data Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ModelFormats.h">
+      <Filter>Archive\EntryType\Data Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Archive\Formats\All.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\ArchiveOperations.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\Conversions.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\EntryOperations.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\MainWindow.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\ArchivePanel.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\DocsPage.h">
+      <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AudioEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\DataEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\DefaultEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\EntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\GfxEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\HexEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\MapEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.h">
+      <Filter>Main Editor\UI\EntryPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.h">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.h">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.h">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.h">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.h">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.h">
+      <Filter>Main Editor\UI\Texture Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\BaseResourceChooser.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\MapBackupManager.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\DataEntryPanel.h">
-      <Filter>Main Editor\UI Elements\EntryPanel</Filter>
+    <ClInclude Include="..\..\src\MapEditor\MapChecks.h">
+      <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\PodArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
+    <ClInclude Include="..\..\src\MapEditor\MapEditor.h">
+      <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ChasmBinArchive.h">
-      <Filter>Resources\Archive\Formats</Filter>
+    <ClInclude Include="..\..\src\MapEditor\MapEditorWindow.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\MapSpecials.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\MapTextureManager.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\NodeBuilders.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\ObjectEdit.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SectorBuilder.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.h">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\Args.h">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.h">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.h">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ThingType.h">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.h">
+      <Filter>Map Editor\Game Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\MapRenderer2D.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\MapRenderer3D.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\MCAnimations.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\LineTextureOverlay.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\MCOverlay.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\QuickTextureOverlay3d.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\SectorTextureOverlay.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapLine.h">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapObject.h">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapSector.h">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapSide.h">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapThing.h">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapVertex.h">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MobjPropertyList.h">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\SLADEMap.h">
+      <Filter>Map Editor\SLADEMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\MapBackupPanel.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\MapCanvas.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\MapChecksPanel.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\ObjectEditPanel.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\ScriptEditorPanel.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\ShapeDrawPanel.h">
+      <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ActionSpecialDialog.h">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\MapTextureBrowser.h">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\SectorSpecialDialog.h">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ShowItemDialog.h">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ThingTypeBrowser.h">
+      <Filter>Map Editor\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\LinePropsPanel.h">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\MapObjectPropsPanel.h">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\MOPGProperty.h">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\PropsPanelBase.h">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\SectorPropsPanel.h">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\SidePropsPanel.h">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\ThingPropsPanel.h">
+      <Filter>Map Editor\UI\PropsPanel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\InfoOverlay3d.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\LineInfoOverlay.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\SectorInfoOverlay.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\ThingInfoOverlay.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\ResourceManager.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\AnimatedList.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\BinaryControlLump.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\SwitchesList.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\WxBasicControls.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
-    <None Include="..\..\dist\res\config\games\doom1.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\doom2.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\doom64.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\heretic.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\hexen.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\strife.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_doom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_doom64.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_hexen.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\flags_strife.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\props_base.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\props_hexen.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_doom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_doom64.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_heretic.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\sectors_hexen.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom1.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom2.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_doom64.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_heretic.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_hexen.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\specials_strife.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_common.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom1.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom2.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_doom64.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_heretic.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_hexen.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_strife.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\boom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\eternity.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\zdoom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_boom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_eternity.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_mbf.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\flags_zdoom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_all.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_boom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\props_zdoom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\sectors_zdoom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_boom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_eternity.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_mbf.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\specials_zdoom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_boom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_eternity.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_mbf.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_musinfo.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\ports\include\things_zdoom.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Ports\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\chex1.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\chex3.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_chex1.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\dist\res\config\games\include\things_chex3.cfg">
-      <Filter>Map Editor\GameConfiguration\Configurations\Games\Include</Filter>
-    </None>
-    <None Include="..\..\src\dumb\helpers\resamp2.inc">
+    <None Include="..\..\src\External\dumb\helpers\resamp2.inc">
       <Filter>External\DUMB\helpers</Filter>
     </None>
-    <None Include="..\..\src\dumb\helpers\resamp3.inc">
+    <None Include="..\..\src\External\dumb\helpers\resamp3.inc">
       <Filter>External\DUMB\helpers</Filter>
     </None>
-    <None Include="..\..\src\dumb\helpers\resample.inc">
+    <None Include="..\..\src\External\dumb\helpers\resample.inc">
       <Filter>External\DUMB\helpers</Filter>
     </None>
     <None Include="..\..\win_installer\SLADE.iss">
