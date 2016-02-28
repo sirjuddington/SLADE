@@ -2,15 +2,6 @@
 #ifndef __ARCHIVEPANEL_H__
 #define __ARCHIVEPANEL_H__
 
-//#include "Archive/Archive.h"
-//#include "EntryPanel/EntryPanel.h"
-//#include "General/ListenerAnnouncer.h"
-//#include "UI/Lists/ArchiveEntryList.h"
-//#include "MainApp.h"
-//#include "General/UndoRedo.h"
-//#include <wx/textctrl.h>
-//#include <wx/choice.h>
-
 #include "General/ListenerAnnouncer.h"
 #include "General/UndoRedo.h"
 #include "General/SAction.h"
@@ -21,6 +12,7 @@
 class wxStaticText;
 class wxBitmapButton;
 class EntryPanel;
+class ExternalEditManager;
 class ArchivePanel : public wxPanel, public Listener, SActionHandler
 {
 protected:
@@ -33,6 +25,11 @@ protected:
 	wxSizer*			sizer_path_controls;
 	UndoManager*		undo_manager;
 	bool				ignore_focus_change;
+
+	// External edit stuff
+	ExternalEditManager*	ee_manager;
+	string					current_external_exe_category;
+	vector<string>			current_external_exes;
 
 	// Entry panels
 	EntryPanel*	cur_area;
@@ -101,6 +98,7 @@ public:
 	bool	copyEntry();
 	bool	cutEntry();
 	bool	pasteEntry();
+	bool	openEntryExternal();
 
 	// Other entry actions
 	bool	gfxConvert();
@@ -110,7 +108,7 @@ public:
 	bool	gfxModifyOffsets();
 	bool	gfxExportPNG();
 	bool	swanConvert();
-	bool	basConvert(bool animdefs=false);
+	bool	basConvert(bool animdefs = false);
 	bool	palConvert();
 	bool	reloadCurrentPanel();
 	bool	wavDSndConvert();
@@ -124,7 +122,7 @@ public:
 	bool	crc32();
 
 	// Needed for some console commands
-	EntryPanel* 			currentArea() { return cur_area;}
+	EntryPanel* 			currentArea() { return cur_area; }
 	ArchiveEntry*			currentEntry();
 	vector<ArchiveEntry*>	currentEntries();
 	ArchiveTreeNode*		currentDir();
@@ -138,6 +136,7 @@ public:
 	void	focusOnEntry(ArchiveEntry* entry);
 	void	focusEntryList() { entry_list->SetFocus(); }
 	void	refreshPanel();
+	wxMenu*	createEntryOpenMenu(string category);
 
 	// SAction handler
 	bool	handleAction(string id);

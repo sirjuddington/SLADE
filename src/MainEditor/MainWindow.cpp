@@ -943,9 +943,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		index++;
-
-		panel_archivemanager->handleAction(S_FMT("aman_recent%lu", index));
+		theApp->doAction("aman_recent", index);
 		createStartPage();
 		html_startpage->Reload();
 	}
