@@ -37,6 +37,7 @@ decorate : cstyle {
 		MissileType, MissileHeight, MinMissileChance, 
 		WeaveIndexXY, WeaveIndexZ, ProjectileKickBack, 
 		RipperLevel, RipLevelMin, RipLevelMax,
+		Threshold, DefThreshold,
 		
 		// Physics
 		Gravity, Mass, Radius, Height, BounceFactor, BounceCount, BounceType, WallBounceFactor, PushFactor, 
@@ -206,11 +207,14 @@ decorate : cstyle {
 		CBAF_AIMFACING, CBAF_EXPLICITANGLE, CBAF_NOPITCH, CBAF_NORANDOM, CBAF_NORANDOMPUFFZ,
 
 		// A_CheckBlock flags
-		CBF_NOLINES, CBF_SETTARGET, CBF_SETMASTER, CBF_SETTRACER, CBF_SETONPTR,
+		CBF_NOLINES, CBF_SETTARGET, CBF_SETMASTER, CBF_SETTRACER, CBF_SETONPTR, CBF_DROPOFF,
 
 		CHAN_5, CHAN_6, CHAN_7, CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL,
 		CHAN_NOPAUSE, CHAN_UI, CHAN_VOICE, CHAN_WEAPON,
-		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT,
+
+		// A_Chase flags
+		CHF_DONTMOVE, CHF_FASTCHASE, CHF_NIGHTMAREFAST, CHF_NOPLAYACTIVE, CHF_RESURRECT, CHF_NORANDOMTURN,
+		CHF_NODIRECTIONTURN, CHF_NOPOSTATTACKTURN, CHF_STOPIFBLOCKED, CHF_DONTTURN,
 
 		// A_CheckLOF flags
 		CLOFF_NOAIM_VERT, CLOFF_NOAIM_HORZ, CLOFF_AIM_VERT_NOOFFSET, CLOFF_FROMBASE, CLOFF_MUL_HEIGHT,
@@ -228,7 +232,8 @@ decorate : cstyle {
 		CPF_DAGGER, CPF_PULLIN, CPF_USEAMMO, CPF_NORANDOMPUFFZ, CPF_NOTURN, CPF_STEALARMOR,
 
 		// A_CheckProximity flags
-		CPXF_ANCESTOR, CPXF_LESSOREQUAL, CPXF_NOZ, CPXF_COUNTDEAD, CPXF_DEADONLY, CPXF_EXACT,
+		CPXF_ANCESTOR, CPXF_LESSOREQUAL, CPXF_NOZ, CPXF_COUNTDEAD, CPXF_DEADONLY, CPXF_EXACT, CPXF_SETTARGET,
+		CPXF_SETMASTER, CPXF_SETTRACER, CPXF_FARTHEST, CPXF_CLOSEST, CPXF_SETONPTR, CPXF_CHECKSIGHT,
 
 		// A_ChangeVelocity flags
 		CVF_RELATIVE, CVF_REPLACE,
@@ -240,7 +245,13 @@ decorate : cstyle {
 		// Flags for A_Face* functions
 		FAF_BOTTOM, FAF_MIDDLE, FAF_TOP, FAF_NODISTFACTOR,
 
+		// A_FireBullets flags
 		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO, FBF_NORANDOMPUFFZ,
+
+		// A_FaceMovementDirection flags
+		FMDF_NOPITCH, FMDF_INTERPOLATE, FMDF_NOANGLE,
+
+		// A_FireCustomMissile flags
 		FPF_AIMATANGLE, FPF_TRANSFERTRANSLATION, FPF_NOAUTOAIM,
 
 		// A_Fade* functions flags
@@ -356,9 +367,10 @@ decorate : cstyle {
 		A_DamageTracer = "int amount, [string type], [int flags], [string filter_class], [string spceies]";
 		A_Die = "[string DamageType]";
 		A_ExtChase = "bool domelee, bool domissile, [bool playactive], [bool nightmarefast]";
-		A_FaceTarget = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags]";
-		A_FaceTracer = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags]";
-		A_FaceMaster = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags]";
+		A_FaceTarget = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags], [float z_ofs]";
+		A_FaceTracer = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags], [float z_ofs]";
+		A_FaceMaster = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags], [float z_ofs]";
+		A_FaceMovementDirection = "[float offset], [float anglelimit], [float pitchlimit], [int flags], [int ptr]";
 		A_FaceConsolePlayer = "[float maxturnangle]"; // Zandronum-only
 		A_FastChase;
 		A_KillChildren = "[string damagetype], [int flags], [string filter_class], [string spceies]";
@@ -382,7 +394,7 @@ decorate : cstyle {
 		A_Teleport = "[string teleportstate], [string targettype], [string fogtype], [int flags], [float mindist], [float maxdist], [pointer ptr]";
 		A_TurretLook;
 		A_VileChase;
-		A_Wander;
+		A_Wander = "[int flags]";
 		A_Warp = "pointer destination, [float xofs], [float yofs], [float zofs], [float angle], [int flags], [state success_state], [float heightoffset], [float radiusoffset], [float pitch]";
 
 		A_RearrangePointers = "pointer newtarget, [pointer newmaster], [pointer newtracer], [int flags]";
@@ -390,7 +402,7 @@ decorate : cstyle {
 
 		A_CustomMissile = "string missiletype, [float spawnheight], [int spawnofs_horiz], [angle angle], [int aimflags], [angle pitch], [int pointer]";
 		A_CustomBulletAttack = "float horz_spread, float vert_spread, int numbullets, int dmgperbullet, [string pufftype], [float range], [int flags], [int pointer]";
-		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [bool aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [string spawnclass], [float spawnofs_z], [int spiraloffset]";
+		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [int aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [string spawnclass], [float spawnofs_z], [int spiraloffset]";
 		A_CustomMeleeAttack = "[int damage], [string meleesound], [string misssound], [string damagetype], [bool bleed]";
 		A_CustomComboAttack = "string missiletype, float spawnheight, int damage, [string meleesound], [string damagetype], [bool bleed]";
 		A_MeleeAttack;
@@ -466,6 +478,7 @@ decorate : cstyle {
 		A_CheckSightOrRange = "float distance, string state, [bool two_dimension]", "float distance, int offset, [bool two_dimension]";
 		A_CheckBlock = "string state, [int flags], [int pointer]";
 		A_CheckProximity = "string state, string classname, float distance, [int count], [int flags], [int ptr]";
+		A_CheckSpecies = "string state, [string species], [int ptr]";
 
 		A_Jump = "int chance, string state, [...]", "int chance, int offset, [...]";
 		A_JumpIf = "condition, string state", "condition, int offset";
@@ -545,6 +558,7 @@ decorate : cstyle {
 		A_SetRipMax = "int max";
 		A_SetSpecies = "string species, [int pointer]";
 		A_SetPainThreshold = "int threshold, [int pointer]";
+		A_SetChaseThreshold = "int threshold, [bool def], [int ptr]";
 
 		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
 		A_Tracer;
@@ -787,6 +801,8 @@ decorate : cstyle {
 		frandom = "float min, float max";
 		randompick = "int value1, int value2, int value3, ...";
 		frandompick = "float value1, float value2, float value3, ...";
+		min = "int value1, int value2, int value3, ...", "float value1, float value2, float value3, ...";
+		max = "int value1, int value2, int value3, ...", "float value1, float value2, float value3, ...";
 		ACS_NamedExecute = "string script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
 		ACS_NamedExecuteAlways = "string script, [int mapnum], [int arg1], [int arg2], [int arg3]";
 		ACS_NamedExecuteWithResult = "string script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
@@ -797,6 +813,8 @@ decorate : cstyle {
 		CallACS = "string script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
 		CheckClass = "string classname, [int ptr_select], [bool match_superclass]";
 		IsPointerEqual = "int ptr_select1, int ptr_select2";
+		CountInv = "string itemtype, [int ptr_select]";
+		GetDistance = "bool checkz, [int ptr]";
 		
 		// Internal use only, normally
 		A_Turn = "[float angle]";
