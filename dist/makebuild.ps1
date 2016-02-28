@@ -54,7 +54,6 @@ Copy-Item (resolve-path ".\openal32.dll")       "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.exe")          "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.pdb")          "$releasedir" -Force
 Copy-Item (resolve-path ".\slade.pk3")          "$releasedir" -Force
-#Copy-Item (resolve-path ".\slade3.txt")         "$releasedir" -Force
 Write-Host "Done" -foregroundcolor green
 
 # Prompt to build binaries 7z
@@ -71,7 +70,6 @@ if ($buildbinaries.ToLower() -eq "y")
 	"$releasedir\openal32.dll" `
 	"$releasedir\SLADE.exe" `
 	"$releasedir\SLADE.pdb" `
-#	"$releasedir\slade3.txt" `
 	"$releasedir\slade.pk3"
 	Write-Host "Done" -foregroundcolor green
 }
