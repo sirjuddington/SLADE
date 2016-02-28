@@ -163,7 +163,11 @@ private:
 	void browse()
 	{
 		SFileDialog::fd_info_t info;
+#ifdef WIN32
 		if (SFileDialog::openFile(info, "Browse for External Editor", "Executable Files (*.exe)|*.exe", this))
+#else
+		if (SFileDialog::openFile(info, "Browse for External Editor", wxFileSelectorDefaultWildcardStr, this))
+#endif
 		{
 			text_path->SetValue(info.filenames[0]);
 
