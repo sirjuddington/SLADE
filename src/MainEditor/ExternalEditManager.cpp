@@ -451,7 +451,11 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
 
 	// Get external editor path
 	string exe_path = Executables::getExternalExe(editor, category).path;
+#ifdef WIN32
 	if (exe_path.IsEmpty() || !wxFileExists(exe_path))
+#else
+	if (exe_path.IsEmpty())
+#endif
 	{
 		Global::error = S_FMT("External editor %s has invalid path", editor);
 		delete monitor;
@@ -479,5 +483,6 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, 
  *******************************************************************/
 void ExternalEditManager::monitorStopped(ExternalEditFileMonitor* monitor)
 {
-	VECTOR_REMOVE(file_monitors, monitor);
+	if (VECTOR_EXISTS(file_monitors, monitor))
+		VECTOR_REMOVE(file_monitors, monitor);
 }
