@@ -1,11 +1,11 @@
-$version = "3110_b3"
-$versionstring = "3.1.1 Beta 3"
+$version = "3110"
+$versionstring = "3.1.1"
 
 # Check for 7-zip install
 $7zpath = "$env:ProgramFiles\7-Zip\7z.exe"
 if (-not (Test-Path $7zpath))
 {
-    Write-Host "7-zip is required to make slade.pk3 and the release binaries archive" -foregroundcolor red
+	Write-Host "7-zip is required to make slade.pk3 and the release binaries archive" -foregroundcolor red
 }
 
 # Prompt for version number
@@ -54,7 +54,7 @@ Copy-Item (resolve-path ".\openal32.dll")       "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.exe")          "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.pdb")          "$releasedir" -Force
 Copy-Item (resolve-path ".\slade.pk3")          "$releasedir" -Force
-Copy-Item (resolve-path ".\slade3.txt")         "$releasedir" -Force
+#Copy-Item (resolve-path ".\slade3.txt")         "$releasedir" -Force
 Write-Host "Done" -foregroundcolor green
 
 # Prompt to build binaries 7z
@@ -64,16 +64,16 @@ $buildbinaries = Read-Host
 # Build binaries 7z
 if ($buildbinaries.ToLower() -eq "y")
 {
-    Write-Host "`nBuiling binaries 7z..." -foregroundcolor yellow
-    & $7zpath a -t7z "$releasedir\slade_$version.7z" `
-    "$releasedir\FreeImage.dll" `
-    "$releasedir\libfluidsynth.dll" `
-    "$releasedir\openal32.dll" `
-    "$releasedir\SLADE.exe" `
-    "$releasedir\SLADE.pdb" `
-    "$releasedir\slade3.txt" `
-    "$releasedir\slade.pk3"
-    Write-Host "Done" -foregroundcolor green
+	Write-Host "`nBuiling binaries 7z..." -foregroundcolor yellow
+	& $7zpath a -t7z "$releasedir\slade_$version.7z" `
+	"$releasedir\FreeImage.dll" `
+	"$releasedir\libfluidsynth.dll" `
+	"$releasedir\openal32.dll" `
+	"$releasedir\SLADE.exe" `
+	"$releasedir\SLADE.pdb" `
+#	"$releasedir\slade3.txt" `
+	"$releasedir\slade.pk3"
+	Write-Host "Done" -foregroundcolor green
 }
 
 # Prompt to build installer
@@ -83,17 +83,17 @@ $buildinstaller = Read-Host
 # Build installer
 if ($buildinstaller.ToLower() -eq "y")
 {
-    $innocompiler = "${env:ProgramFiles(x86)}\Inno Setup 5\iscc.exe"
-    if (-not (Test-Path $innocompiler))
-    {
-        $innocompiler = "${env:ProgramFiles}\Inno Setup 5\iscc.exe"
-    }
-    if (Test-Path $innocompiler)
-    {
-        Write-Host "`nBuiling installer..." -foregroundcolor yellow
-        & $innocompiler "/Q" "/O$releasedir" "/F`"Setup_SLADE_$versionstring`"" (resolve-path "..\win_installer\SLADE.iss").Path
-        Write-Host "Done" -foregroundcolor green
-    }
+	$innocompiler = "${env:ProgramFiles(x86)}\Inno Setup 5\iscc.exe"
+	if (-not (Test-Path $innocompiler))
+	{
+		$innocompiler = "${env:ProgramFiles}\Inno Setup 5\iscc.exe"
+	}
+	if (Test-Path $innocompiler)
+	{
+		Write-Host "`nBuiling installer..." -foregroundcolor yellow
+		& $innocompiler "/Q" "/O$releasedir" "/F`"Setup_SLADE_$versionstring`"" (resolve-path "..\win_installer\SLADE.iss").Path
+		Write-Host "Done" -foregroundcolor green
+	}
 }
 
 # Done

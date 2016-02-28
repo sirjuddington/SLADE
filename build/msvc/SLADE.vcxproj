@@ -33,7 +33,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -916,6 +916,7 @@
     <ClInclude Include="..\..\src\External\zreaders\templates.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\dist\makebuild.ps1" />
     <None Include="slade.ico" />
     <None Include="..\..\src\External\dumb\helpers\resamp2.inc" />
     <None Include="..\..\src\External\dumb\helpers\resamp3.inc" />

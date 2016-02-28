@@ -2364,6 +2364,9 @@
     <None Include="..\..\win_installer\SLADE.iss">
       <Filter>Installer</Filter>
     </None>
+    <None Include="..\..\dist\makebuild.ps1">
+      <Filter>Installer</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SLADE.rc" />
