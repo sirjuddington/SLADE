@@ -71,7 +71,7 @@ public:
 		AppendColumn("Path");
 	}
 
-	ExternalEditorList::~ExternalEditorList() {}
+	~ExternalEditorList() {}
 
 	void setCategory(string category)
 	{
