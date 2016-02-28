@@ -505,7 +505,6 @@ void ArchivePanel::addMenus()
 		menu_entry->AppendSeparator();
 		theApp->getAction("arch_entry_import")->addToMenu(menu_entry, true);
 		theApp->getAction("arch_entry_export")->addToMenu(menu_entry, true);
-		theApp->getAction("arch_entry_openext")->addToMenu(menu_entry, true);
 		menu_entry->AppendSeparator();
 		theApp->getAction("arch_entry_bookmark")->addToMenu(menu_entry, true);
 	}
