@@ -429,6 +429,7 @@ MainApp::MainApp()
 	cur_id = 26000;
 	action_invalid = NULL;
 	init_ok = false;
+	save_config = true;
 }
 
 /* MainApp::~MainApp
@@ -1010,22 +1011,25 @@ int MainApp::OnExit()
 {
 	exiting = true;
 
-	// Save configuration
-	saveConfigFile();
+	if (save_config)
+	{
+		// Save configuration
+		saveConfigFile();
 
-	// Save text style configuration
-	StyleSet::saveCurrent();
+		// Save text style configuration
+		StyleSet::saveCurrent();
 
-	// Save colour configuration
-	MemChunk ccfg;
-	ColourConfiguration::writeConfiguration(ccfg);
-	ccfg.exportFile(appPath("colours.cfg", DIR_USER));
+		// Save colour configuration
+		MemChunk ccfg;
+		ColourConfiguration::writeConfiguration(ccfg);
+		ccfg.exportFile(appPath("colours.cfg", DIR_USER));
 
-	// Save game exes
-	wxFile f;
-	f.Open(appPath("executables.cfg", DIR_USER), wxFile::write);
-	f.Write(Executables::writeExecutables());
-	f.Close();
+		// Save game exes
+		wxFile f;
+		f.Open(appPath("executables.cfg", DIR_USER), wxFile::write);
+		f.Write(Executables::writeExecutables());
+		f.Close();
+	}
 
 	// Close the map editor if it's open
 	MapEditorWindow::deleteInstance();
@@ -1271,6 +1275,16 @@ void MainApp::checkForUpdates(bool message_box)
 #endif
 }
 
+/* MainApp::exitApp
+ * Exits the application. If [save_config] is fale, no configuration
+ * files will be saved (slade.cfg, executables.cfg, etc.)
+ *******************************************************************/
+void MainApp::exitApp(bool save_config)
+{
+	this->save_config = save_config;
+	theMainWindow->Close();
+}
+
 /* MainApp::getAction
  * Returns the SAction matching [id]
  *******************************************************************/
@@ -1500,4 +1514,16 @@ CONSOLE_COMMAND(setup_wizard, 0, false)
 {
 	SetupWizardDialog dlg(theMainWindow);
 	dlg.ShowModal();
+}
+
+CONSOLE_COMMAND(quit, 0, true)
+{
+	bool save_config = true;
+	for (unsigned a = 0; a < args.size(); a++)
+	{
+		if (args[a].Lower() == "nosave")
+			save_config = false;
+	}
+
+	theApp->exitApp(save_config);
 }

@@ -40,6 +40,7 @@ private:
 	wxStopWatch					timer;
 	wxSingleInstanceChecker*	single_instance_checker;
 	MainAppFileListener*		file_listener;
+	bool						save_config;
 
 public:
 	MainApp();
@@ -64,6 +65,7 @@ public:
 	bool	isInitialised() { return init_ok; }
 	long	runTimer() { return timer.Time(); }
 	void	checkForUpdates(bool message_box);
+	void	exitApp(bool save_config = true);
 
 	int			newMenuId() { return cur_id++; }
 	SAction*	getAction(string id);
