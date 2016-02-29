@@ -828,7 +828,7 @@ void ArchiveEntryList::onAnnouncement(Announcer* announcer, string event_name, M
 {
 	if (entries_update && announcer == archive && event_name != "closed")
 	{
-		updateList();
+		//updateList();
 		applyFilter();
 	}
 }
