@@ -68,6 +68,9 @@ namespace Drawing
 #endif
 
 
+EXTERN_CVAR(Float, gl_ui_scale)
+
+
 /*******************************************************************
  * FONTMANAGER CLASS
  *******************************************************************/
@@ -195,7 +198,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
-		font_normal->FaceSize(gl_font_size);
+		font_normal->FaceSize(12 * gl_ui_scale);
 
 		// Check it loaded ok
 		if (font_normal->Error())
@@ -211,7 +214,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_condensed->FaceSize(gl_font_size);
+		font_condensed->FaceSize(12 * gl_ui_scale);
 
 		// Check it loaded ok
 		if (font_condensed->Error())
@@ -227,7 +230,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
-		font_bold->FaceSize(gl_font_size);
+		font_bold->FaceSize(12 * gl_ui_scale);
 
 		// Check it loaded ok
 		if (font_bold->Error())
@@ -243,7 +246,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_boldcondensed->FaceSize(gl_font_size);
+		font_boldcondensed->FaceSize(12 * gl_ui_scale);
 
 		// Check it loaded ok
 		if (font_boldcondensed->Error())
@@ -259,7 +262,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
-		font_mono->FaceSize(gl_font_size);
+		font_mono->FaceSize(12 * gl_ui_scale);
 
 		// Check it loaded ok
 		if (font_mono->Error())
@@ -275,7 +278,7 @@ int FontManager::initFonts()
 	if (entry)
 	{
 		font_small = new FTTextureFont(entry->getData(), entry->getSize());
-		font_small->FaceSize((gl_font_size * 0.6) + 1);
+		font_small->FaceSize(((12 * gl_ui_scale) * 0.6) + 1);
 
 		// Check it loaded ok
 		if (font_small->Error())
@@ -331,13 +334,13 @@ FTFont* FontManager::getFont(int font)
 #ifdef USE_SFML_RENDERWINDOW
 int FontManager::getLineHeight(int font)
 {
-	return (int)getFont(font)->getLineSpacing(gl_font_size);
+	return (int)getFont(font)->getLineSpacing(12 * gl_ui_scale);
 }
 #else // USE_SFML_RENDERWINDOW
 int FontManager::getLineHeight(int font)
 {
 	// TODO: get from font
-	return gl_font_size * 1.2;
+	return (12 * gl_ui_scale) * 1.2;
 }
 #endif // USE_SFML_RENDERWINDOW
 
@@ -668,9 +671,9 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
+		sf_str.setCharacterSize(((12 * gl_ui_scale) * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(gl_font_size);
+		sf_str.setCharacterSize(12 * gl_ui_scale);
 
 	// Setup alignment
 	if (alignment != ALIGN_LEFT)
@@ -717,9 +720,9 @@ fpoint2_t Drawing::textExtents(string text, int font)
 	sf::Font* f = theFontManager->getFont(font);
 	sf_str.setFont(*f);
 	if (font == FONT_SMALL)
-		sf_str.setCharacterSize((gl_font_size * 0.6) + 1);
+		sf_str.setCharacterSize(((12 * gl_ui_scale) * 0.6) + 1);
 	else
-		sf_str.setCharacterSize(gl_font_size);
+		sf_str.setCharacterSize(12 * gl_ui_scale);
 
 	// Return width and height of text
 	sf::FloatRect rect = sf_str.getGlobalBounds();
@@ -832,7 +835,7 @@ void Drawing::setTextState(bool set)
 int Drawing::getFontLineHeight(int font)
 {
 #ifdef USE_SFML_RENDERWINDOW
-	return theFontManager->getFont(font)->getLineSpacing(gl_font_size);
+	return theFontManager->getFont(font)->getLineSpacing(12 * gl_ui_scale);
 #else
 	return textExtents("Wg", font).y;
 #endif

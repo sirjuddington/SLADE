@@ -47,6 +47,8 @@ void LayoutHelpers::placeWidgetAbove(Widget* widget, Widget* base, int padding, 
 {
 	if (padding == USE_MARGIN)
 		padding = base->getMargin().top + widget->getMargin().bottom;
+	else
+		padding *= baseScale();
 
 	widget->setPosition(point2_t(
 		widget->left(),
@@ -72,6 +74,8 @@ void LayoutHelpers::placeWidgetBelow(Widget* widget, Widget* base, int padding, 
 {
 	if (padding == USE_MARGIN)
 		padding = base->getMargin().bottom + widget->getMargin().top;
+	else
+		padding *= baseScale();
 
 	widget->setPosition(point2_t(
 		widget->left(),
@@ -97,6 +101,8 @@ void LayoutHelpers::placeWidgetToLeft(Widget* widget, Widget* base, int padding,
 {
 	if (padding == USE_MARGIN)
 		padding = base->getMargin().left + widget->getMargin().right;
+	else
+		padding *= baseScale();
 
 	widget->setPosition(point2_t(
 		base->left() - widget->getWidth() - padding,
@@ -122,6 +128,8 @@ void LayoutHelpers::placeWidgetToRight(Widget* widget, Widget* base, int padding
 {
 	if (padding == USE_MARGIN)
 		padding = base->getMargin().right + widget->getMargin().left;
+	else
+		padding *= baseScale();
 
 	widget->setPosition(point2_t(
 		base->right() + padding,

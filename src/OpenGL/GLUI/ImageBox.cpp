@@ -13,7 +13,7 @@ ImageBox::ImageBox(Widget* parent) : Widget(parent)
 	texture = NULL;
 	background = true;
 	border_style = BORDER_LINE;
-	max_scale = 1;
+	max_scale = baseScale();
 	image_colour = COL_WHITE;
 }
 
@@ -32,10 +32,15 @@ void ImageBox::setTexture(GLTexture* texture)
 	this->texture = texture;
 }
 
+void ImageBox::setMaxImageScale(double scale)
+{
+	max_scale = scale * baseScale();
+}
+
 void ImageBox::setSizeFromImage()
 {
 	if (texture)
-		setSize(dim2_t(texture->getWidth(), texture->getHeight()));
+		setSize(dim2_t(texture->getWidth() * baseScale(), texture->getHeight() * baseScale()));
 }
 
 bool ImageBox::loadImage(SImage* image, Palette8bit* palette)

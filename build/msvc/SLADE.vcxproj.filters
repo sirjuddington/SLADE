@@ -1377,7 +1377,7 @@
     <ClCompile Include="..\..\src\OpenGL\GLUI\Widget.cpp">
       <Filter>OpenGL\GLUI</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
+    <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2400,7 +2400,7 @@
     <ClInclude Include="..\..\src\OpenGL\GLUI\Widget.h">
       <Filter>OpenGL\GLUI</Filter>
     </ClInclude>
-	<ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h">
+    <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
   </ItemGroup>

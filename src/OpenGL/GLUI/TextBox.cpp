@@ -10,6 +10,7 @@ TextBox::TextBox(Widget* parent, string text, int font, int alignment, rgba_t co
 : Widget(parent), font(font), alignment(alignment), colour(colour), line_height(line_height)
 {
 	line_height_pixels = Drawing::getFontLineHeight(font) * line_height;
+	prev_scale = baseScale();
 }
 
 TextBox::~TextBox()
@@ -172,6 +173,13 @@ void TextBox::drawWidget(point2_t pos, float alpha)
 
 void TextBox::updateLayout(dim2_t fit)
 {
+	// Update line height if scale has changed
+	if (prev_scale != baseScale())
+	{
+		setLineHeight(line_height);
+		prev_scale = baseScale();
+	}
+
 	if (fit.x >= 0 && fit.x < text_width_full)
 	{
 		splitText(fit.x);

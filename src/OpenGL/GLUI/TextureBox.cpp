@@ -29,7 +29,7 @@ TextureBox::~TextureBox()
 void TextureBox::setTexture(int type, string texname, string prefix, bool required)
 {
 	image_texture->setVisible(true);
-	image_texture->setSize(dim2_t(box_size, box_size));
+	image_texture->setSize(dim2_t(box_size * baseScale(), box_size * baseScale()));
 	image_texture->setImageColour(COL_WHITE);
 
 	text_name->setText(prefix + texname);
@@ -88,7 +88,7 @@ void TextureBox::setTexture(int type, string texname, string prefix, bool requir
 void TextureBox::setTexture(GLTexture* texture, string texname)
 {
 	image_texture->setVisible(true);
-	image_texture->setSize(dim2_t(box_size, box_size));
+	image_texture->setSize(dim2_t(box_size * baseScale(), box_size * baseScale()));
 	image_texture->setImageColour(COL_WHITE);
 
 	text_name->setText(texname);

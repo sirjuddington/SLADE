@@ -27,7 +27,7 @@ namespace GLUI
 
 		void	setTexture(GLTexture* texture);
 		void	setBackgroundStyle(int style) { background = style; }
-		void	setMaxImageScale(double scale) { max_scale = scale; }
+		void	setMaxImageScale(double scale);
 		void	setImageColour(rgba_t colour) { image_colour = colour; }
 		void	setSizeFromImage();
 

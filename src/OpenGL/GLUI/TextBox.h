@@ -15,6 +15,7 @@ namespace GLUI
 		rgba_t			colour;
 		double			line_height;
 		int				font;
+		double			prev_scale;
 
 		int text_width_full;
 		int text_height_full;

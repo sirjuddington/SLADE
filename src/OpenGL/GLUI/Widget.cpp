@@ -1,8 +1,18 @@
 
 #include "Main.h"
 #include "Widget.h"
+#include "General/CVar.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
+
+CVAR(Float, gl_ui_scale, 1.0f, CVAR_SAVE)
+
+
+double GLUI::baseScale()
+{
+	return gl_ui_scale;
+}
+
 
 using namespace GLUI;
 

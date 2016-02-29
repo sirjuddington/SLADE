@@ -2,6 +2,8 @@
 
 namespace GLUI
 {
+	double	baseScale();
+
 	enum
 	{
 		ALIGN_NONE = 0,
@@ -26,10 +28,10 @@ namespace GLUI
 
 		void set(int left, int top, int right, int bottom)
 		{
-			this->left = left;
-			this->top = top;
-			this->right = right;
-			this->bottom = bottom;
+			this->left = left * baseScale();
+			this->top = top * baseScale();
+			this->right = right * baseScale();
+			this->bottom = bottom * baseScale();
 		}
 
 		int horizontal() { return left + right; }
