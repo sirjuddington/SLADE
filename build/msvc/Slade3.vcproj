@@ -145,7 +145,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBCMT"
-				AdditionalDependencies="winmm.lib comctl32.lib rpcrt4.lib wsock32.lib user32.lib shell32.lib advapi32.lib comdlg32.lib gdi32.lib ole32.lib oleaut32.lib fluidsynth.lib FreeImage.lib wxbase31u.lib wxmsw31u_core.lib wxmsw31u_aui.lib wxmsw31u_gl.lib wxmsw31u_html.lib wxmsw31u_adv.lib wxmsw31u_stc.lib wxmsw31u_media.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregexu.lib wxexpat.lib wxscintilla.lib sfml-graphics-s.lib sfml-window-s.lib sfml-audio-s.lib sfml-system-s.lib sfml-main.lib glu32.lib"
+				AdditionalDependencies="winmm.lib comctl32.lib comdlg32.lib rpcrt4.lib wsock32.lib kernel32.lib user32.lib shell32.lib advapi32.lib gdi32.lib ole32.lib oleaut32.lib winspool.lib fluidsynth.lib FreeImage.lib wxbase31u.lib wxbase31u_net.lib wxmsw31u_core.lib wxmsw31u_aui.lib wxmsw31u_gl.lib wxmsw31u_html.lib wxmsw31u_adv.lib wxmsw31u_stc.lib wxmsw31u_media.lib wxmsw31u_propgrid.lib wxmsw31u_webview.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregexu.lib wxexpat.lib wxscintilla.lib sfml-graphics-s.lib sfml-window-s.lib sfml-audio-s.lib sfml-system-s.lib sfml-main.lib glu32.lib"
 				LinkIncremental="1"
 				GenerateManifest="true"
 				GenerateDebugInformation="true"
@@ -3455,11 +3455,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\slade.ico"
+			RelativePath=".\Slade3.ico"
 			>
 		</File>
 		<File
-			RelativePath=".\SLADE.rc"
+			RelativePath=".\Slade3.rc"
 			>
 		</File>
 	</Files>
