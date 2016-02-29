@@ -30,17 +30,23 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "RunDialog.h"
-#include "Icons.h"
-#include "SFileDialog.h"
-#include "Executables.h"
-#include "ResourceArchiveChooser.h"
-#include "Archive.h"
-#include "ArchiveManager.h"
-#include <wx/gbsizer.h>
-#include <wx/statline.h>
+#include "Archive/Archive.h"
+#include "Archive/ArchiveManager.h"
+#include "General/Executables.h"
+#include "Graphics/Icons.h"
+#include "UI/ResourceArchiveChooser.h"
+#include "Utility/SFileDialog.h"
+#include <wx/bmpbuttn.h>
+#include <wx/choice.h>
 #include <wx/filename.h>
+#include <wx/gbsizer.h>
+#include <wx/msgdlg.h>
+#include <wx/statbox.h>
+#include <wx/statline.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
+#include <wx/textdlg.h>
 
 #ifdef __WXOSX_MAC__
 #include <CoreFoundation/CoreFoundation.h>
@@ -508,7 +514,7 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 {
 	if (text_exe_path->GetValue() == "" || (!wxFileExists(text_exe_path->GetValue())
 #ifdef __WXOSX_MAC__
-        && !(text_exe_path->GetValue().EndsWith(".app"))
+		&& !(text_exe_path->GetValue().EndsWith(".app"))
 #endif
 			))
 	{

@@ -28,9 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "BaseResourceWizardPage.h"
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
+#include <wx/sizer.h>
 
 
 /*******************************************************************

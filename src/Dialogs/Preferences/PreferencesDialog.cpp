@@ -29,33 +29,34 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "PreferencesDialog.h"
+#include "ACSPrefsPanel.h"
+#include "AdvancedPrefsPanel.h"
+#include "Archive/ArchiveManager.h"
+#include "AudioPrefsPanel.h"
 #include "BaseResourceArchivesPanel.h"
+#include "ColorimetryPrefsPanel.h"
+#include "ColourPrefsPanel.h"
+#include "EditingPrefsPanel.h"
+#include "GeneralPrefsPanel.h"
+#include "Graphics/Icons.h"
+#include "GraphicsPrefsPanel.h"
+#include "HudOffsetsPrefsPanel.h"
+#include "InputPrefsPanel.h"
+#include "InterfacePrefsPanel.h"
+#include "MainEditor/MainWindow.h"
+#include "Map3DPrefsPanel.h"
+#include "MapDisplayPrefsPanel.h"
+#include "MapEditorPrefsPanel.h"
+#include "NodesPrefsPanel.h"
+#include "OpenGLPrefsPanel.h"
+#include "PNGPrefsPanel.h"
+#include "TextEditorPrefsPanel.h"
 #include "TextEditorPrefsPanel.h"
 #include "TextStylePrefsPanel.h"
-#include "GeneralPrefsPanel.h"
-#include "InterfacePrefsPanel.h"
-#include "EditingPrefsPanel.h"
-#include "ACSPrefsPanel.h"
-#include "GraphicsPrefsPanel.h"
-#include "PNGPrefsPanel.h"
-#include "ColorimetryPrefsPanel.h"
-#include "AudioPrefsPanel.h"
-#include "ColourPrefsPanel.h"
-#include "MapEditorPrefsPanel.h"
-#include "MapDisplayPrefsPanel.h"
-#include "Map3DPrefsPanel.h"
-#include "AdvancedPrefsPanel.h"
-#include "ArchiveManager.h"
-#include "TextEditorPrefsPanel.h"
-#include "NodesPrefsPanel.h"
-#include "InputPrefsPanel.h"
-#include "OpenGLPrefsPanel.h"
-#include "HudOffsetsPrefsPanel.h"
-#include "Icons.h"
-#include "MainWindow.h"
 #include <wx/gbsizer.h>
+#include <wx/statbox.h>
+#include <wx/treebook.h>
 
 
 /*******************************************************************
@@ -177,7 +178,7 @@ wxPanel* PreferencesDialog::setupBaseResourceArchivesPanel()
 /* PreferencesDialog::showPage
  * Shows the preferences page matching [name]
  *******************************************************************/
-void PreferencesDialog::showPage(string name)
+void PreferencesDialog::showPage(string name, string subsection)
 {
 	// Go through all pages
 	for (unsigned a = 0; a < tree_prefs->GetPageCount(); a++)
@@ -185,6 +186,7 @@ void PreferencesDialog::showPage(string name)
 		if (S_CMPNOCASE(tree_prefs->GetPageText(a), name))
 		{
 			tree_prefs->SetSelection(a);
+			((PrefsPanelBase*)tree_prefs->GetPage(a))->showSubSection(subsection);
 			return;
 		}
 	}
@@ -257,13 +259,13 @@ void PreferencesDialog::onButtonClicked(wxCommandEvent& e)
  * Opens a preferences dialog on top of [parent], showing either the
  * last viewed page or [initial_page] if it is specified
  *******************************************************************/
-void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page)
+void PreferencesDialog::openPreferences(wxWindow* parent, string initial_page, string subsection)
 {
 	// Setup dialog
 	PreferencesDialog dlg(parent);
 	if (initial_page.IsEmpty())
 		initial_page = last_page;
-	dlg.showPage(initial_page);
+	dlg.showPage(initial_page, subsection);
 	if (width > 0 && height > 0)
 		dlg.SetSize(width, height);
 	dlg.initPages();

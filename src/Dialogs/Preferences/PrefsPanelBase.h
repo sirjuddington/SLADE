@@ -2,6 +2,9 @@
 #ifndef __PREFS_PANEL_BASE_H__
 #define __PREFS_PANEL_BASE_H__
 
+#include <wx/panel.h>
+#include "UI/WxBasicControls.h"
+
 class PrefsPanelBase : public wxPanel
 {
 public:
@@ -10,6 +13,7 @@ public:
 
 	virtual void init() {}
 	virtual void applyPreferences() {}
+	virtual void showSubSection(string subsection) {}
 };
 
 #endif//__PREFS_PANEL_BASE_H__

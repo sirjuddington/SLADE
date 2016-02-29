@@ -4,6 +4,7 @@
 
 #include "PrefsPanelBase.h"
 
+class wxListBox;
 class ACSPrefsPanel : public PrefsPanelBase
 {
 private:

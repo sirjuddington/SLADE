@@ -28,12 +28,16 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "TempFolderWizardPage.h"
-#include "SFileDialog.h"
-#include <wx/dirdlg.h>
-#include <wx/stdpaths.h>
+#include "Utility/SFileDialog.h"
+#include <wx/button.h>
 #include <wx/dir.h>
+#include <wx/dirdlg.h>
+#include <wx/msgdlg.h>
+#include <wx/radiobut.h>
+#include <wx/sizer.h>
+#include <wx/stdpaths.h>
+#include <wx/textctrl.h>
 
 
 /*******************************************************************

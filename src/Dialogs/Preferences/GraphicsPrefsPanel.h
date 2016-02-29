@@ -3,8 +3,8 @@
 #define __GFX_PREFS_PANEL_H__
 
 #include "PrefsPanelBase.h"
-#include <wx/clrpicker.h>
 
+class wxColourPickerCtrl;
 class GraphicsPrefsPanel : public PrefsPanelBase
 {
 private:

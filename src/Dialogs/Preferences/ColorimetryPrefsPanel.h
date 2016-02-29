@@ -3,8 +3,8 @@
 #define COLORIMETRY_PREFS_PANEL_H
 
 #include "PrefsPanelBase.h"
-#include <wx/spinctrl.h>
 
+class wxSpinCtrlDouble;
 class ColorimetryPrefsPanel : public PrefsPanelBase
 {
 private:
