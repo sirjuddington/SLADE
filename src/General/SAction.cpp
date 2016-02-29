@@ -52,7 +52,17 @@ int SAction::n_groups = 0;
 /* SAction::SAction
  * SAction class constructor
  *******************************************************************/
-SAction::SAction(string id, string text, string icon, string helptext, string shortcut, int type, int custom_wxid, int radio_group)
+SAction::SAction(
+	string id,
+	string text,
+	string icon,
+	string helptext,
+	string shortcut,
+	int type,
+	int custom_wxid,
+	int radio_group,
+	int reserve_ids
+	)
 {
 	// Init variables
 	this->id = id;
@@ -64,11 +74,15 @@ SAction::SAction(string id, string text, string icon, string helptext, string sh
 	this->group = radio_group;
 	this->toggled = false;
 	this->keybind = keybind;
+	this->reserved_ids = reserve_ids;
 
 	// Add to MainApp
 	theApp->actions.push_back(this);
 	if (custom_wxid == -1)
-		wx_id = theApp->cur_id++;
+	{
+		wx_id = theApp->cur_id;
+		theApp->cur_id += reserved_ids;
+	}
 	else
 		wx_id = custom_wxid;
 }
@@ -104,11 +118,11 @@ string SAction::getShortcutText()
  * If [popup] is true the shortcut key will always be added to the
  * item label
  *******************************************************************/
-bool SAction::addToMenu(wxMenu* menu, string text_override)
+bool SAction::addToMenu(wxMenu* menu, string text_override, string icon_override, int wx_id_offset)
 {
-	return addToMenu(menu, false, text_override);
+	return addToMenu(menu, false, text_override, icon_override, wx_id_offset);
 }
-bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override)
+bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, string icon_override, int wx_id_offset)
 {
 	// Can't add to nonexistant menu
 	if (!menu)
@@ -138,16 +152,18 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override)
 
 	// Append this action to the menu
 	string help = helptext;
+	int wid = wx_id + wx_id_offset;
+	string real_icon = (icon_override == "NO") ? icon : icon_override;
 	if (!sc.IsEmpty()) help += S_FMT(" (Shortcut: %s)", sc);
 	if (type == NORMAL)
-		menu->Append(createMenuItem(menu, wx_id, item_text, help, icon));
+		menu->Append(createMenuItem(menu, wid, item_text, help, real_icon));
 	else if (type == CHECK)
 	{
-		wxMenuItem* item = menu->AppendCheckItem(wx_id, item_text, help);
+		wxMenuItem* item = menu->AppendCheckItem(wid, item_text, help);
 		item->Check(toggled);
 	}
 	else if (type == RADIO)
-		menu->AppendRadioItem(wx_id, item_text, help);
+		menu->AppendRadioItem(wid, item_text, help);
 
 	return true;
 }
@@ -156,7 +172,7 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override)
  * Adds this action to [toolbar]. If [icon_override] is not "NO", it
  * will be used instead of the action's icon as the tool icon
  *******************************************************************/
-bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override)
+bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override, int wx_id_offset)
 {
 	// Can't add to nonexistant toolbar
 	if (!toolbar)
@@ -169,12 +185,13 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override)
 
 	// Append this action to the toolbar
 	wxAuiToolBarItem* item = NULL;
+	int wid = wx_id + wx_id_offset;
 	if (type == NORMAL)
-		item = toolbar->AddTool(wx_id, text, Icons::getIcon(Icons::GENERAL, useicon), helptext);
+		item = toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext);
 	else if (type == CHECK)
-		item = toolbar->AddTool(wx_id, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
+		item = toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
 	else if (type == RADIO)
-		item = toolbar->AddTool(wx_id, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
+		item = toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
 
 	return true;
 }
@@ -183,7 +200,7 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override)
  * Adds this action to [toolbar]. If [icon_override] is not "NO", it
  * will be used instead of the action's icon as the tool icon
  *******************************************************************/
-bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override)
+bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_offset)
 {
 	// Can't add to nonexistant toolbar
 	if (!toolbar)
@@ -195,12 +212,13 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override)
 		useicon = icon_override;
 
 	// Append this action to the toolbar
+	int wid = wx_id + wx_id_offset;
 	if (type == NORMAL)
-		toolbar->AddTool(wx_id, "", Icons::getIcon(Icons::GENERAL, useicon), helptext);
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext);
 	else if (type == CHECK)
-		toolbar->AddTool(wx_id, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
 	else if (type == RADIO)
-		toolbar->AddTool(wx_id, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
+		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
 
 	return true;
 }

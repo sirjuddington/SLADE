@@ -31,7 +31,7 @@ public:
 	wxPanel*	setupEditingPrefsPanel();
 	wxPanel*	setupBaseResourceArchivesPanel();
 
-	void	showPage(string name);
+	void	showPage(string name, string subsection = "");
 	string	currentPage();
 	void	initPages();
 	void	applyPreferences();
@@ -41,7 +41,7 @@ public:
 	void	onButtonClicked(wxCommandEvent& e);
 
 	// Static functions
-	static void	openPreferences(wxWindow* parent, string initial_page = "");
+	static void	openPreferences(wxWindow* parent, string initial_page = "", string subsection = "");
 };
 
 #endif//__PREFERENCES_DIALOG_H__

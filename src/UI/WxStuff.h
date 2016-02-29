@@ -5,14 +5,6 @@
 #undef MIN
 #undef MAX
 
-//#ifdef __WXMSW__
-//#include <wx/wxprec.h>
-//#ifndef WX_PRECOMP
-//#include <wx/wx.h>
-//#endif
-//#else
-//#include <wx/wx.h>
-//#endif
 #include <wx/menu.h>
 #include <wx/font.h>
 
@@ -22,11 +14,5 @@
 // Some misc wx-related functions
 wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help = wxEmptyString, string icon = wxEmptyString);
 wxFont		getMonospaceFont(wxFont base);
-
-// Tab art provider
-class wxAuiTabArt;
-class wxAuiDockArt;
-wxAuiTabArt*	getTabArt(bool close_buttons = false, bool main_tabs = false);
-wxAuiDockArt*	getDockArt();
 
 #endif //__WXSTUFF_H__

@@ -553,45 +553,61 @@ int GfxEntryPanel::detectOffsetType()
 	if (!entry->getParent())
 		return GFXVIEW_DEFAULT;
 
-	// Check what section of the archive the entry is in
-	string section = entry->getParent()->detectNamespace(entry);
+	// Check what section of the archive the entry is in -- only PNGs or images
+	// in the sprites section can be HUD or sprite
+	bool is_sprite = ("sprites" == entry->getParent()->detectNamespace(entry));
+	bool is_png = ("img_png" == entry->getType()->getFormat());
+	if (!is_sprite && !is_png)
+		return GFXVIEW_DEFAULT;
 
-	if (section == "sprites")
-	{
-		SImage* img = getImage();
-		int left = -img->offset().x;
-		int right = -img->offset().x + img->getWidth();
-		int top = -img->offset().y;
-		int bottom = -img->offset().y + img->getHeight();
+	SImage *img = getImage();
+	if (is_png && img->offset().x == 0 && img->offset().y == 0)
+		return GFXVIEW_DEFAULT;
 
-		if (top >= 0 && bottom <= 216 && left >= 0 && right <= 336)
-			return GFXVIEW_HUD;
-		else
-			return GFXVIEW_SPRITE;
-	}
+	int width = img->getWidth();
+	int height = img->getHeight();
+	int left = -img->offset().x;
+	int right = left + width;
+	int top = -img->offset().y;
+	int bottom = top + height;
+	int horiz_center = (left + right) / 2;
 
-	// Check for png image
-	if (entry->getType()->getFormat() == "img_png")
-	{
-		if (getImage()->offset().x == 0 &&
-		        getImage()->offset().y == 0)
-			return GFXVIEW_DEFAULT;
-		else
-		{
-			SImage* img = getImage();
-			int left = -img->offset().x;
-			int right = -img->offset().x + img->getWidth();
-			int top = -img->offset().y;
-			int bottom = -img->offset().y + img->getHeight();
+	// Determine sprite vs. HUD with a rough heuristic: give each one a
+	// penalty, measuring how far (in pixels) the offsets are from the "ideal"
+	// offsets for that type.  Lowest penalty wins.
+	int sprite_penalty = 0;
+	int hud_penalty = 0;
+	// The HUD is drawn with the origin in the top left, so HUD offsets
+	// generally put the center of the screen (160, 100) above or inside the
+	// top center of the sprite.
+	hud_penalty += abs(horiz_center - 160);
+	hud_penalty += abs(top - 100);
+	// It's extremely unusual for the bottom of the sprite to be above 168,
+	// which is where the weapon is cut off in fullscreen.  Extra penalty.
+	if (bottom < 168)
+		hud_penalty += (168 - bottom);
+	// Sprites are drawn relative to the center of an object at floor height,
+	// so the offsets generally put the origin (0, 0) near the vertical center
+	// line and the bottom edge.  Some sprites are vertically centered whereas
+	// some use a small bottom margin for feet, so split the difference and use
+	// 1/4 up from the bottom.
+	int bottom_quartile = (bottom * 3 + top) / 4;
+	sprite_penalty += abs(bottom_quartile - 0);
+	sprite_penalty += abs(horiz_center - 0);
+	// It's extremely unusual for the sprite to not contain the origin, which
+	// would draw it not touching its actual position.  Extra panalty for that,
+	// though allow for a sprite that floats up to its own height above the
+	// floor.
+	if (top > 0)
+		sprite_penalty += (top - 0);
+	else if (bottom < 0 - height)
+		sprite_penalty += (0 - height - bottom);
 
-			if (top >= 0 && bottom <= 216 && left >= 0 && right <= 336)
-				return GFXVIEW_HUD;
-			else
-				return GFXVIEW_SPRITE;
-		}
-	}
-
-	return GFXVIEW_DEFAULT;
+	// Sprites are more common than HUD, so in case of a tie, sprite wins
+	if (sprite_penalty > hud_penalty)
+		return GFXVIEW_HUD;
+	else
+		return GFXVIEW_SPRITE;
 }
 
 /* GfxEntryPanel::applyViewType

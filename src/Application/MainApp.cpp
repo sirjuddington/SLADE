@@ -27,7 +27,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-//#include "UI/WxStuff.h"
 #include "MainApp.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
@@ -85,9 +84,9 @@ namespace Global
 {
 	string error = "";
 
-	int beta_num = 3;
-	int version_num = 3110;
-	string version = "3.1.1 Beta 3";
+	int beta_num = 0;
+	int version_num = 3120;
+	string version = "3.1.2 Alpha";
 #ifdef GIT_DESCRIPTION
 	string sc_rev = GIT_DESCRIPTION;
 #else
@@ -430,6 +429,7 @@ MainApp::MainApp()
 	cur_id = 26000;
 	action_invalid = NULL;
 	init_ok = false;
+	save_config = true;
 }
 
 /* MainApp::~MainApp
@@ -561,28 +561,7 @@ void MainApp::initActions()
 	new SAction("aman_save_a", "&Save", "save", "Save the selected Archive", "Ctrl+S");
 	new SAction("aman_saveas_a", "Save &As", "saveas", "Save the selected Archive to a new file", "Ctrl+Shift+S");
 	new SAction("aman_close_a", "&Close", "close", "Close the selected Archive", "Ctrl+W");
-
-	// Recent files
-	new SAction("aman_recent1", "<insert recent file name>", "");
-	new SAction("aman_recent2", "<insert recent file name>", "");
-	new SAction("aman_recent3", "<insert recent file name>", "");
-	new SAction("aman_recent4", "<insert recent file name>", "");
-	new SAction("aman_recent5", "<insert recent file name>", "");
-	new SAction("aman_recent6", "<insert recent file name>", "");
-	new SAction("aman_recent7", "<insert recent file name>", "");
-	new SAction("aman_recent8", "<insert recent file name>", "");
-	new SAction("aman_recent9", "<insert recent file name>", "");
-	new SAction("aman_recent10", "<insert recent file name>", "");
-	new SAction("aman_recent11", "<insert recent file name>", "");
-	new SAction("aman_recent12", "<insert recent file name>", "");
-	new SAction("aman_recent13", "<insert recent file name>", "");
-	new SAction("aman_recent14", "<insert recent file name>", "");
-	new SAction("aman_recent15", "<insert recent file name>", "");
-	new SAction("aman_recent16", "<insert recent file name>", "");
-	new SAction("aman_recent17", "<insert recent file name>", "");
-	new SAction("aman_recent18", "<insert recent file name>", "");
-	new SAction("aman_recent19", "<insert recent file name>", "");
-	new SAction("aman_recent20", "<insert recent file name>", "");
+	new SAction("aman_recent", "<insert recent file name>", "", "", "", 0, -1, -1, 20);
 
 	// ArchivePanel
 	new SAction("arch_newentry", "New Entry", "newentry", "Create a new empty entry");
@@ -614,8 +593,10 @@ void MainApp::initActions()
 	new SAction("arch_entry_import", "Import", "import", "Import a file to the selected entry", "kb:el_import");
 	new SAction("arch_entry_export", "Export", "export", "Export the selected entries to files", "kb:el_export");
 	new SAction("arch_entry_bookmark", "Bookmark", "bookmark", "Bookmark the current entry");
-	new SAction("arch_entry_opentab", "Open in Tab", "open", "Open selected entries in separate tabs");
+	new SAction("arch_entry_opentab", "In New Tab", "", "Open selected entries in separate tabs");
 	new SAction("arch_entry_crc32", "Compute CRC-32 Checksum", "text", "Compute the CRC-32 checksums of the selected entries");
+	new SAction("arch_entry_openext", "", "", "", "", 0, -1, -1, 20);
+	new SAction("arch_entry_setup_external", "Setup External Editors", "settings", "Open the preferences dialog to set up external editors");
 	new SAction("arch_bas_convertb", "Convert to SWANTBLS", "", "Convert any selected SWITCHES and ANIMATED entries to a single SWANTBLS entry");
 	new SAction("arch_bas_convertz", "Convert to ANIMDEFS", "", "Convert any selected SWITCHES and ANIMATED entries to a single ANIMDEFS entry");
 	new SAction("arch_swan_convert", "Compile to SWITCHES and ANIMATED", "", "Convert SWANTBLS entries into SWITCHES and ANIMATED entries");
@@ -1011,22 +992,25 @@ int MainApp::OnExit()
 {
 	exiting = true;
 
-	// Save configuration
-	saveConfigFile();
+	if (save_config)
+	{
+		// Save configuration
+		saveConfigFile();
 
-	// Save text style configuration
-	StyleSet::saveCurrent();
+		// Save text style configuration
+		StyleSet::saveCurrent();
 
-	// Save colour configuration
-	MemChunk ccfg;
-	ColourConfiguration::writeConfiguration(ccfg);
-	ccfg.exportFile(appPath("colours.cfg", DIR_USER));
+		// Save colour configuration
+		MemChunk ccfg;
+		ColourConfiguration::writeConfiguration(ccfg);
+		ccfg.exportFile(appPath("colours.cfg", DIR_USER));
 
-	// Save game exes
-	wxFile f;
-	f.Open(appPath("executables.cfg", DIR_USER), wxFile::write);
-	f.Write(Executables::writeExecutables());
-	f.Close();
+		// Save game exes
+		wxFile f;
+		f.Open(appPath("executables.cfg", DIR_USER), wxFile::write);
+		f.Write(Executables::writeExecutables());
+		f.Close();
+	}
 
 	// Close the map editor if it's open
 	MapEditorWindow::deleteInstance();
@@ -1175,7 +1159,7 @@ void MainApp::readConfigFile()
 				if (token.length())
 				{
 					string path = tz.getToken();
-					Executables::setExePath(token, path);
+					Executables::setGameExePath(token, path);
 				}
 				token = tz.getToken();
 			}
@@ -1272,6 +1256,16 @@ void MainApp::checkForUpdates(bool message_box)
 #endif
 }
 
+/* MainApp::exitApp
+ * Exits the application. If [save_config] is fale, no configuration
+ * files will be saved (slade.cfg, executables.cfg, etc.)
+ *******************************************************************/
+void MainApp::exitApp(bool save_config)
+{
+	this->save_config = save_config;
+	theMainWindow->Close();
+}
+
 /* MainApp::getAction
  * Returns the SAction matching [id]
  *******************************************************************/
@@ -1291,7 +1285,7 @@ SAction* MainApp::getAction(string id)
 /* MainApp::doAction
  * Performs the SAction matching [id]
  *******************************************************************/
-bool MainApp::doAction(string id)
+bool MainApp::doAction(string id, int wx_id_offset)
 {
 	// Toggle action if necessary
 	toggleAction(id);
@@ -1300,6 +1294,7 @@ bool MainApp::doAction(string id)
 	bool handled = false;
 	for (unsigned a = 0; a < action_handlers.size(); a++)
 	{
+		action_handlers[a]->wx_id_offset = wx_id_offset;
 		if (action_handlers[a]->handleAction(id))
 		{
 			handled = true;
@@ -1354,11 +1349,13 @@ void MainApp::onMenu(wxCommandEvent& e)
 	// Find applicable action
 	string action = "";
 	SAction* s_action = NULL;
+	int wx_id_offset = 0;
 	for (unsigned a = 0; a < actions.size(); a++)
 	{
-		if (actions[a]->getWxId() == e.GetId())
+		if (actions[a]->isWxId(e.GetId()))
 		{
 			action = actions[a]->getId();
+			wx_id_offset = e.GetId() - actions[a]->getWxId();
 			s_action = actions[a];
 			break;
 		}
@@ -1369,7 +1366,7 @@ void MainApp::onMenu(wxCommandEvent& e)
 	if (!action.IsEmpty())
 	{
 		current_action = action;
-		handled = doAction(action);
+		handled = doAction(action, wx_id_offset);
 
 		// Check if triggering object is a menu item
 		if (s_action && s_action->type == SAction::CHECK)
@@ -1501,4 +1498,16 @@ CONSOLE_COMMAND(setup_wizard, 0, false)
 {
 	SetupWizardDialog dlg(theMainWindow);
 	dlg.ShowModal();
+}
+
+CONSOLE_COMMAND(quit, 0, true)
+{
+	bool save_config = true;
+	for (unsigned a = 0; a < args.size(); a++)
+	{
+		if (args[a].Lower() == "nosave")
+			save_config = false;
+	}
+
+	theApp->exitApp(save_config);
 }

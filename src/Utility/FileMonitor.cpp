@@ -44,17 +44,20 @@
 /* FileMonitor::FileMonitor
  * FileMonitor class constructor
  *******************************************************************/
-FileMonitor::FileMonitor(string filename)
+FileMonitor::FileMonitor(string filename, bool start)
 {
 	// Init variables
 	this->filename = filename;
-	file_modified = wxFileModificationTime(filename);
 
 	// Create process
 	process = new wxProcess(this);
 
 	// Start timer (updates every 1 sec)
-	Start(1000);
+	if (start)
+	{
+		file_modified = wxFileModificationTime(filename);
+		Start(1000);
+	}
 
 	// Bind events
 	Bind(wxEVT_END_PROCESS, &FileMonitor::onEndProcess, this);
@@ -90,6 +93,15 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 {
 	// Call any custom code for when the external process terminates
 	processTerminated();
+
+	// Check if the file has been modified since last update
+	time_t modified = wxFileModificationTime(filename);
+	if (modified > file_modified)
+	{
+		// Modified, update modification time and run any custom code
+		file_modified = modified;
+		fileModified();
+	}
 
 	// Delete this FileMonitor (its job is done)
 	delete this;

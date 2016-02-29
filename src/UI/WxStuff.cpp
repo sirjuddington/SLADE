@@ -50,7 +50,7 @@ wxMenuItem* createMenuItem(wxMenu* menu, int id, string label, string help, stri
 	wxMenuItem* item = new wxMenuItem(menu, id, label, help);
 
 	if (!icon.IsEmpty())
-		item->SetBitmap(Icons::getIcon(Icons::GENERAL, icon));
+		item->SetBitmap(Icons::getIcon(-1, icon));
 
 	return item;
 }
@@ -73,22 +73,4 @@ wxFont getMonospaceFont(wxFont base)
 	}
 
 	return font;
-}
-
-/* getTabArt
- * Returns the currently set AUI tab art provider
- *******************************************************************/
-wxAuiTabArt* getTabArt(bool close_buttons, bool main_tabs)
-{
-	//if (tab_style == 1)
-		return new SAuiTabArt(close_buttons, main_tabs);
-	//else if (tab_style == 2)
-	//	return new wxAuiSimpleTabArt();
-	//else
-	//	return new wxAuiDefaultTabArt();
-}
-
-wxAuiDockArt* getDockArt()
-{
-	return new SAuiDockArt();
 }

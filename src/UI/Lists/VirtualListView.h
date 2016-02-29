@@ -76,6 +76,7 @@ public:
 	virtual void	applyFilter() {}
 
 	// Sorting
+	int				sortColumn() { return sort_column; }
 	bool			sortDescend() { return sort_descend; }
 	static bool		defaultSort(long left, long right);
 	static bool		indexSort(long left, long right) { return lv_current->sort_descend ? right < left : left < right; }

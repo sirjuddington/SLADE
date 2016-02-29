@@ -1377,6 +1377,9 @@
     <ClCompile Include="..\..\src\OpenGL\GLUI\Widget.cpp">
       <Filter>OpenGL\GLUI</Filter>
     </ClCompile>
+	<ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2397,6 +2400,9 @@
     <ClInclude Include="..\..\src\OpenGL\GLUI\Widget.h">
       <Filter>OpenGL\GLUI</Filter>
     </ClInclude>
+	<ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
@@ -2410,6 +2416,9 @@
       <Filter>External\DUMB\helpers</Filter>
     </None>
     <None Include="..\..\win_installer\SLADE.iss">
+      <Filter>Installer</Filter>
+    </None>
+    <None Include="..\..\dist\makebuild.ps1">
       <Filter>Installer</Filter>
     </None>
   </ItemGroup>
