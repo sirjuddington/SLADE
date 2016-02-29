@@ -16,11 +16,11 @@ Panel::~Panel()
 {
 }
 
-void Panel::drawWidget(point2_t pos)
+void Panel::drawWidget(point2_t pos, float alpha)
 {
 	glDisable(GL_TEXTURE_2D);
 
-	OpenGL::setColour(col_bg);
+	OpenGL::setColour(getBGCol(alpha));
 	Drawing::drawFilledRect(pos, pos + getSize());
 }
 

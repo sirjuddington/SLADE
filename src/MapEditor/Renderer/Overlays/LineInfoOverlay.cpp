@@ -89,7 +89,7 @@ void LineSideGLPanel::update(MapSide* s, bool needs_upper, bool needs_middle, bo
 	updateLayout(dim2_t(-1, -1));
 }
 
-void LineSideGLPanel::drawWidget(point2_t pos)
+void LineSideGLPanel::drawWidget(point2_t pos, float alpha)
 {
 	/*glDisable(GL_TEXTURE_2D);
 
@@ -207,11 +207,11 @@ void LineInfoOverlay::update(MapLine* line, int map_format)
 		((needed_tex & TEX_BACK_LOWER) > 0));
 }
 
-void LineInfoOverlay::drawWidget(point2_t pos)
+void LineInfoOverlay::drawWidget(point2_t pos, float alpha)
 {
 	glDisable(GL_TEXTURE_2D);
 
-	OpenGL::setColour(getBGCol());
+	OpenGL::setColour(getBGCol(alpha));
 	Drawing::drawFilledRect(
 		fpoint2_t(pos.x, pos.y + text_info->top(true)),
 		pos + size

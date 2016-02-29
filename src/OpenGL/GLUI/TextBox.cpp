@@ -147,7 +147,7 @@ void TextBox::setFont(int font)
 	setText(text);
 }
 
-void TextBox::drawWidget(point2_t pos)
+void TextBox::drawWidget(point2_t pos, float alpha)
 {
 	if (lines.empty())
 		return;
@@ -160,9 +160,10 @@ void TextBox::drawWidget(point2_t pos)
 
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
-	for (unsigned a = 0; a < lines.size(); a++)
+	rgba_t col(colour.r, colour.g, colour.b, colour.a * alpha, colour.blend);
+	for (auto line : lines)
 	{
-		Drawing::drawText(lines[a], pos.x, pos.y, colour, font, alignment);
+		Drawing::drawText(line, pos.x, pos.y, col, font, alignment);
 		pos.y += line_height_pixels;
 	}
 	Drawing::enableTextStateReset(true);

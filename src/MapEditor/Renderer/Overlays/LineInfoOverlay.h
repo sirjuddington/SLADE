@@ -28,8 +28,8 @@ public:
 	void	setBGHeight(int height) { bg_height = height; }
 
 	// Widget
-	void	drawWidget(point2_t pos);
-	void	updateLayout(dim2_t fit);
+	void	drawWidget(point2_t pos, float alpha) override;
+	void	updateLayout(dim2_t fit) override;
 };
 
 class LineInfoOverlay : public GLUI::Panel
@@ -46,8 +46,8 @@ public:
 	void	update(MapLine* line, int map_format);
 
 	// Widget
-	void	drawWidget(point2_t pos);
-	void	updateLayout(dim2_t fit);
+	void	drawWidget(point2_t pos, float alpha) override;
+	void	updateLayout(dim2_t fit) override;
 };
 
 #if 0

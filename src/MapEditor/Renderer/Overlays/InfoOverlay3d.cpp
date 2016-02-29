@@ -484,7 +484,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 	last_update = theApp->runTimer();
 }
 
-void InfoOverlay3D::drawWidget(point2_t pos)
+void InfoOverlay3D::drawWidget(point2_t pos, float alpha)
 {
 	glDisable(GL_TEXTURE_2D);
 

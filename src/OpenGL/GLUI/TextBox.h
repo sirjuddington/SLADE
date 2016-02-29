@@ -38,8 +38,8 @@ namespace GLUI
 		void	setFont(int font);
 
 		// Widget
-		void	drawWidget(point2_t pos);
-		void	updateLayout(dim2_t fit = dim2_t(-1, -1));
+		void	drawWidget(point2_t pos, float alpha) override;
+		void	updateLayout(dim2_t fit = dim2_t(-1, -1)) override;
 
 		// Static
 		static rgba_t	defaultColour();

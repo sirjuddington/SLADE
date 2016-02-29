@@ -1531,7 +1531,6 @@ void MapCanvas::draw()
 		info_3d.updateLayout(dim2_t(GetSize().x, -1));
 		info_3d.setPosition(point2_t(0, GetSize().y - info_3d.getHeight()));
 		info_3d.draw(point2_t(0, 0));
-		//info_3d.draw(GetSize().y, GetSize().x, GetSize().x * 0.5, anim_info_fade);
 	}
 
 	// Draw current fullscreen overlay

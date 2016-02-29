@@ -6,21 +6,22 @@
 
 using namespace GLUI;
 
-Widget::Widget(Widget* parent) : parent(parent)
+Widget::Widget(Widget* parent)
+: parent(parent),
+	visible(true),
+	border_style(Widget::BORDER_NONE),
+	border_width(1.0f),
+	border_colour(COL_WHITE),
+	alpha(1.0f)
 {
-	visible = true;
-	border_style = BORDER_NONE;
-	border_width = 1.0f;
-	border_colour = COL_WHITE;
-
 	if (parent)
 		parent->children.push_back(this);
 }
 
 Widget::~Widget()
 {
-	for (unsigned a = 0; a < children.size(); a++)
-		delete children[a];
+	for (auto child : children)
+		delete child;
 }
 
 point2_t Widget::getAbsolutePosition()
@@ -43,7 +44,7 @@ void Widget::setBorder(float width, int style, rgba_t colour)
 	border_colour = colour;
 }
 
-void Widget::draw(point2_t pos)
+void Widget::draw(point2_t pos, float alpha)
 {
 	// Ignore if not visible
 	if (!visible)
@@ -51,11 +52,11 @@ void Widget::draw(point2_t pos)
 
 	// Draw this widget
 	point2_t p = pos + position;
-	drawWidget(p);
+	drawWidget(p, alpha * this->alpha);
 
 	// Draw all children
-	for (unsigned a = 0; a < children.size(); a++)
-		children[a]->draw(p);
+	for (auto child : children)
+		child->draw(p, alpha * this->alpha);
 
 	// Draw border
 	if (border_style == BORDER_LINE)
@@ -100,8 +101,8 @@ void Widget::fitToChildren(padding_t padding)
 
 	// Offset child widgets
 	point2_t offset(min_x, min_y);
-	for (unsigned a = 0; a < children.size(); a++)
-		children[a]->position = children[a]->position - offset;
+	for (auto child : children)
+		child->position = child->position - offset;
 
 	// Size to fit
 	setSize(dim2_t(max_x - min_x, max_y - min_y));

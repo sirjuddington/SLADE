@@ -19,8 +19,8 @@ public:
 
 	void	update(MapThing* thing);
 
-	void	drawWidget(point2_t pos);
-	void	updateLayout(dim2_t fit);
+	void	drawWidget(point2_t pos, float alpha) override;
+	void	updateLayout(dim2_t fit) override;
 };
 
 

@@ -58,10 +58,10 @@ bool ImageBox::loadImage(SImage* image, Palette8bit* palette)
 	}
 }
 
-void ImageBox::drawWidget(point2_t pos)
+void ImageBox::drawWidget(point2_t pos, float alpha)
 {
-	float alpha = 1.0f;
 	rgba_t col_fg = COL_WHITE;
+	col_fg.a *= alpha;
 
 	glEnable(GL_TEXTURE_2D);
 

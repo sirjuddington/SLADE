@@ -45,8 +45,8 @@ namespace GLUI
 		void	setBorder(float width, int style, rgba_t colour = COL_WHITE);
 
 		// Drawing
-		void			draw(point2_t pos);
-		virtual void	drawWidget(point2_t pos) {}
+		void			draw(point2_t pos, float alpha = 1.0f);
+		virtual void	drawWidget(point2_t pos, float alpha) {}
 
 		// Layout
 		virtual void	updateLayout(dim2_t fit = dim2_t(-1, -1)) {}
@@ -64,5 +64,8 @@ namespace GLUI
 		float	border_width;
 		int		border_style;
 		rgba_t	border_colour;
+
+		// Display
+		float	alpha;
 	};
 }

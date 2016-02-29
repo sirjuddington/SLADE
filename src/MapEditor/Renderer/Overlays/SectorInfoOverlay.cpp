@@ -92,11 +92,11 @@ void SectorInfoOverlay::update(MapSector* sector)
 	tex_ceiling->setTexture(TextureBox::FLAT, sector->getCeilingTex(), "C: ");
 }
 
-void SectorInfoOverlay::drawWidget(point2_t pos)
+void SectorInfoOverlay::drawWidget(point2_t pos, float alpha)
 {
 	glDisable(GL_TEXTURE_2D);
 
-	OpenGL::setColour(getBGCol());
+	OpenGL::setColour(getBGCol(alpha));
 	Drawing::drawFilledRect(
 		fpoint2_t(pos.x, pos.y + text_info->top() - 4),
 		fpoint2_t(pos.x + size.x, pos.y + getHeight())
