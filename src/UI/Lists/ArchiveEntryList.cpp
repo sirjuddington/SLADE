@@ -535,17 +535,70 @@ bool ArchiveEntryList::goUpDir()
 	return (setDir((ArchiveTreeNode*)current_dir->getParent()));
 }
 
-/* ArchiveEntryList::sortSize
- * For column sorting, returns true if entry [left] is smaller than
+/* ArchiveEntryList::entrySize
+ * Returns either the size of the entry at [index], or if it is a
+ * folder, the number of entries+subfolders within it
+ *******************************************************************/
+int ArchiveEntryList::entrySize(long index)
+{
+	ArchiveEntry* entry = getEntry(index, false);
+	if (entry->getType() == EntryType::folderType())
+	{
+		ArchiveTreeNode* dir = archive->getDir(entry->getName(), current_dir);
+		if (dir)
+			return dir->numEntries() + dir->nChildren();
+		else
+			return 0;
+	}
+	else
+		return entry->getSize();
+}
+
+/* ArchiveEntryList::entrySort
+ * For column sorting, returns true if entry [left] comes before
  * entry [right]
  *******************************************************************/
-bool ArchiveEntryList::sortSize(long left, long right)
+bool ArchiveEntryList::entrySort(long left, long right)
 {
-	int result = ((ArchiveEntryList*)lv_current)->getEntry(left, false)->getSize() - ((ArchiveEntryList*)lv_current)->getEntry(right, false)->getSize();
-	if (result == 0)
-		return left < right;
+	ArchiveEntryList* ael_current = (ArchiveEntryList*)lv_current;
+	ArchiveEntry* le = ael_current->getEntry(left, false);
+	ArchiveEntry* re = ael_current->getEntry(right, false);
+
+	// Sort folder->entry first
+	if (le->getType() == EntryType::folderType() && re->getType() != EntryType::folderType())
+		return true;
+	else if (re->getType() == EntryType::folderType() && le->getType() != EntryType::folderType())
+		return false;
+
+	// Sort folder<->folder or entry<->entry
 	else
+	{
+		int result = 0;
+
+		// Size sort
+		if (ael_current->col_size >= 0 && ael_current->col_size == lv_current->sortColumn())
+			result = ael_current->entrySize(left) - ael_current->entrySize(right);
+
+		// Index sort
+		else if (ael_current->col_index >= 0 && ael_current->col_index == lv_current->sortColumn())
+			result = 0;
+
+		// Name sort
+		else if (ael_current->col_name >= 0 && ael_current->col_name == lv_current->sortColumn())
+			result = le->getName().CompareTo(re->getName(), string::ignoreCase);
+
+		// Other (default) sort
+		else
+			return VirtualListView::defaultSort(left, right);
+
+		// If sort values are equal, just sort by index
+		if (result == 0)
+			result = left - right;
+
 		return lv_current->sortDescend() ? result > 0 : result < 0;
+	}
+
+	return true;
 }
 
 /* ArchiveEntryList::sortItems
@@ -554,12 +607,7 @@ bool ArchiveEntryList::sortSize(long left, long right)
 void ArchiveEntryList::sortItems()
 {
 	lv_current = this;
-	if (col_size >= 0 && sort_column == col_size)
-		std::sort(items.begin(), items.end(), &ArchiveEntryList::sortSize);
-	else if (col_index >= 0 && sort_column == col_index)
-		std::sort(items.begin(), items.end(), &VirtualListView::indexSort);
-	else
-		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+	std::sort(items.begin(), items.end(), &ArchiveEntryList::entrySort);
 }
 
 /* ArchiveEntryList::entriesBegin
