@@ -25,6 +25,8 @@ private:
 	int					col_type;
 	bool				entries_update;
 
+	int	entrySize(long index);
+
 protected:
 	// Virtual wxListCtrl overrides
 	string	getItemText(long item, long column, long index) const;
@@ -56,7 +58,7 @@ public:
 	void	setEntriesAutoUpdate(bool update) { entries_update = update; }
 
 	// Sorting
-	static bool	sortSize(long left, long right);
+	static bool	entrySort(long left, long right);
 	void		sortItems();
 
 	ArchiveEntry*				getEntry(int index, bool filtered = true) const;

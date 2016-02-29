@@ -28,7 +28,7 @@ var
 begin
 //	RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\VisualStudio\11.0\VC\VCRedist\' + GetString('x86', 'x64', 'ia64'), 'Install', version);
 
-	if not (FileExists('C:\Windows\System32\msvcr140.dll')) then
+	if not (FileExists('C:\Windows\System32\msvcp140.dll')) then
 		AddProduct('vcredist2015' + GetArchitectureString() + '.exe',
 			CustomMessage('vcredist2015_lcid') + '/passive /norestart',
 			CustomMessage('vcredist2015_title'),
