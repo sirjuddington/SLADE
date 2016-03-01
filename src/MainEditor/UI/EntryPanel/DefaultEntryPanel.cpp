@@ -187,7 +187,7 @@ bool DefaultEntryPanel::loadEntries(vector<ArchiveEntry*>& entries)
 
 		this->entries.push_back(entries[a]);
 	}
-	label_index->SetLabel(S_FMT("Entry Indices: from %zu to %zu", min, max));
+	label_index->SetLabel(S_FMT("Entry Indices: from %lu to %lu", (unsigned long) min, (unsigned long) max));
 	if (gfx)
 	{
 		frame_actions->Show(true);
