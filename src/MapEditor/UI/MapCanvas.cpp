@@ -2803,11 +2803,18 @@ void MapCanvas::onKeyBindPress(string name)
 		date.SetToCurrent();
 		string timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		string filename = S_FMT("sladeshot-%s.png", timestamp);
-		shot.saveToFile(CHR(appPath(filename, DIR_USER)));
+		string filename = appPath(S_FMT("sladeshot-%s.png", timestamp), DIR_USER);
+		if (shot.saveToFile(UTF8(filename)))
+		{
+			// Editor message if the file is actually written, with full path
+			editor->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
+		}
+		else
+		{
+			// Editor message also if the file couldn't be written
+			editor->addEditorMessage(S_FMT("Screenshot failed (%s)", filename));
+		}
 
-		// Editor message
-		editor->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
 	}
 #endif
 
