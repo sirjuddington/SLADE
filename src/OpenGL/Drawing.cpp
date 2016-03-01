@@ -642,7 +642,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 {
 	// Setup SFML string
 	sf::Text sf_str;
-	sf_str.setString(CHR(text));
+	sf_str.setString(UTF8(text));
 	sf_str.setPosition(x, y);
 	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 
