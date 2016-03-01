@@ -8,11 +8,11 @@ class NumberTextCtrl;
 class OpenGLPrefsPanel : public PrefsPanelBase
 {
 private:
-	wxCheckBox*	    cb_gl_np2;
-	wxCheckBox*	    cb_gl_point_sprite;
-	wxCheckBox*     cb_gl_use_vbo;
-	NumberTextCtrl* ntc_font_size;
-	int             last_font_size;
+	wxCheckBox*		cb_gl_np2;
+	wxCheckBox*		cb_gl_point_sprite;
+	wxCheckBox*		cb_gl_use_vbo;
+	NumberTextCtrl*	ntc_ui_scale;
+	double			last_ui_scale;
 
 public:
 	OpenGLPrefsPanel(wxWindow* parent);

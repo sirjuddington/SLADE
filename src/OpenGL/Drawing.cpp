@@ -57,7 +57,6 @@ CVAR(Bool, hud_statusbar, 1, CVAR_SAVE)
 CVAR(Bool, hud_center, 1, CVAR_SAVE)
 CVAR(Bool, hud_wide, 0, CVAR_SAVE)
 CVAR(Bool, hud_bob, 0, CVAR_SAVE)
-CVAR(Int, gl_font_size, 12, CVAR_SAVE)
 
 #ifdef USE_SFML_RENDERWINDOW
 namespace Drawing
@@ -68,6 +67,9 @@ namespace Drawing
 #endif
 
 
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Float, gl_ui_scale)
 
 
