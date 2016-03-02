@@ -30,6 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "TextStylePrefsPanel.h"
+#include "UI/TextEditor/TextEditor.h"
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/gbsizer.h>
@@ -154,6 +155,10 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	cp_background = new wxColourPickerCtrl(this, -1, WXCOL(COL_BLACK), wxDefaultPosition, wxDefaultSize, wxCLRP_SHOW_LABEL|wxCLRP_USE_TEXTCTRL);
 	vbox->Add(cp_background, 0, wxEXPAND);
 
+	// Preview
+	te_preview = new TextEditor(this, -1);
+	vbox->Add(te_preview, 1, wxEXPAND | wxALL, 4);
+
 
 	// Bind events
 	list_styles->Bind(wxEVT_LISTBOX, &TextStylePrefsPanel::onStyleSelected, this);
@@ -170,6 +175,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	btn_savestyleset->Bind(wxEVT_BUTTON, &TextStylePrefsPanel::onBtnSaveStyleSet, this);
 	choice_styleset->Bind(wxEVT_CHOICE, &TextStylePrefsPanel::onStyleSetSelected, this);
 	cb_font_override->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFont, this);
+	cb_font_override->Bind(wxEVT_FONTPICKER_CHANGED, &TextStylePrefsPanel::onFontOverrideChanged, this);
 
 	// Init controls
 	if (txed_override_font != "")
@@ -206,6 +212,7 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
  *******************************************************************/
 TextStylePrefsPanel::~TextStylePrefsPanel()
 {
+	delete language_preview;
 }
 
 /* TextStylePrefsPanel::init
@@ -213,6 +220,32 @@ TextStylePrefsPanel::~TextStylePrefsPanel()
  *******************************************************************/
 void TextStylePrefsPanel::init()
 {
+	te_preview->SetText("#include \"include.txt\"\n"
+		"\n"
+		"string text = \"A string here\";\n"
+		"char c = \'c\';\n"
+		"\n"
+		"// Comment\n"
+		"void function(int x, int y)\n"
+		"{\n"
+			"\tx = (x + 10);\n"
+			"\ty = CONSTANT;\n"
+			"\t\n"
+			"\treturn x + y;\n"
+		"}\n"
+		);
+
+	language_preview = new TextLanguage("preview");
+	language_preview->addConstant("CONSTANT");
+	language_preview->addKeyword("string");
+	language_preview->addKeyword("char");
+	language_preview->addKeyword("void");
+	language_preview->addKeyword("return");
+	language_preview->addKeyword("int");
+	language_preview->addFunction("function", "int x, int y");
+	te_preview->setLanguage(language_preview);
+
+	te_preview->SetReadOnly(true);
 }
 
 /* TextStylePrefsPanel::updateStyleControls
@@ -471,20 +504,6 @@ void TextStylePrefsPanel::applyPreferences()
  *******************************************************************/
 void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e)
 {
-	// Set style from current set depending on selection
-	//switch (list_styles->GetSelection())
-	//{
-	//case 0:
-	//	ts_current = ss_current.getStyle("default");
-	//	break;
-	//case 1:
-	//	ts_current = ss_current.getStyle("selection");
-	//	break;
-	//default:
-	//	break;
-	//}
-
-
 	int sel = list_styles->GetSelection();
 	if (sel == 0)
 		ts_current = ss_current.getStyle("default");
@@ -502,6 +521,7 @@ void TextStylePrefsPanel::onStyleSelected(wxCommandEvent& e)
 void TextStylePrefsPanel::onCBOverrideFontFace(wxCommandEvent& e)
 {
 	updateFontFace();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onCBOverrideFontSize
@@ -510,6 +530,7 @@ void TextStylePrefsPanel::onCBOverrideFontFace(wxCommandEvent& e)
 void TextStylePrefsPanel::onCBOverrideFontSize(wxCommandEvent& e)
 {
 	updateFontSize();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onCBOverrideFontBold
@@ -518,6 +539,7 @@ void TextStylePrefsPanel::onCBOverrideFontSize(wxCommandEvent& e)
 void TextStylePrefsPanel::onCBOverrideFontBold(wxCommandEvent& e)
 {
 	updateFontBold();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onCBOverrideFontItalic
@@ -526,6 +548,7 @@ void TextStylePrefsPanel::onCBOverrideFontBold(wxCommandEvent& e)
 void TextStylePrefsPanel::onCBOverrideFontItalic(wxCommandEvent& e)
 {
 	updateFontItalic();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onCBOverrideFontUnderlined
@@ -534,6 +557,7 @@ void TextStylePrefsPanel::onCBOverrideFontItalic(wxCommandEvent& e)
 void TextStylePrefsPanel::onCBOverrideFontUnderlined(wxCommandEvent& e)
 {
 	updateFontUnderlined();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onCBOverrideForeground
@@ -542,6 +566,7 @@ void TextStylePrefsPanel::onCBOverrideFontUnderlined(wxCommandEvent& e)
 void TextStylePrefsPanel::onCBOverrideForeground(wxCommandEvent& e)
 {
 	updateForeground();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onCBOverrideBackground
@@ -550,6 +575,7 @@ void TextStylePrefsPanel::onCBOverrideForeground(wxCommandEvent& e)
 void TextStylePrefsPanel::onCBOverrideBackground(wxCommandEvent& e)
 {
 	updateBackground();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onFontChanged
@@ -563,6 +589,7 @@ void TextStylePrefsPanel::onFontChanged(wxFontPickerEvent& e)
 	updateFontBold();
 	updateFontItalic();
 	updateFontUnderlined();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onForegroundChanged
@@ -571,6 +598,7 @@ void TextStylePrefsPanel::onFontChanged(wxFontPickerEvent& e)
 void TextStylePrefsPanel::onForegroundChanged(wxColourPickerEvent& e)
 {
 	updateForeground();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onBackgroundChanged
@@ -579,6 +607,7 @@ void TextStylePrefsPanel::onForegroundChanged(wxColourPickerEvent& e)
 void TextStylePrefsPanel::onBackgroundChanged(wxColourPickerEvent& e)
 {
 	updateBackground();
+	ss_current.applyTo(te_preview);
 }
 
 /* TextStylePrefsPanel::onBtnSaveStyleSet
@@ -616,6 +645,7 @@ void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
 		{
 			ss_current.copySet(set);
 			updateStyleControls();
+			ss_current.applyTo(te_preview);
 		}
 	}
 }
@@ -626,4 +656,13 @@ void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
 void TextStylePrefsPanel::onCBOverrideFont(wxCommandEvent& e)
 {
 	fp_font_override->Enable(cb_font_override->GetValue());
+	ss_current.applyTo(te_preview);
+}
+
+/* TextStylePrefsPanel::onFontOverrideChanged
+ * Called when the 'Override Default Font' font is changed
+ *******************************************************************/
+void TextStylePrefsPanel::onFontOverrideChanged(wxFontPickerEvent& e)
+{
+	ss_current.applyTo(te_preview);
 }

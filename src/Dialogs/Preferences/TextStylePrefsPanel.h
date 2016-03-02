@@ -8,6 +8,7 @@
 #include <wx/fontpicker.h>
 
 class wxListBox;
+class TextLanguage;
 class TextStylePrefsPanel : public PrefsPanelBase
 {
 private:
@@ -30,6 +31,9 @@ private:
 	wxCheckBox*			cb_override_font_underlined;
 	wxCheckBox*			cb_override_foreground;
 	wxCheckBox*			cb_override_background;
+
+	TextLanguage*		language_preview;
+	TextEditor*			te_preview;
 
 public:
 	TextStylePrefsPanel(wxWindow* parent);
@@ -63,6 +67,7 @@ public:
 	void	onBtnSaveStyleSet(wxCommandEvent& e);
 	void	onStyleSetSelected(wxCommandEvent& e);
 	void	onCBOverrideFont(wxCommandEvent& e);
+	void	onFontOverrideChanged(wxFontPickerEvent& e);
 };
 
 #endif//__TEXT_STYLE_PREFS_PANEL_H__
