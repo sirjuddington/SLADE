@@ -465,48 +465,48 @@ void ArchivePanel::addMenus()
 	{
 		// Archive menu
 		wxMenu* menu_new = new wxMenu("");
-		theApp->getAction("arch_newentry")->addToMenu(menu_new, true, "&Entry");
-		theApp->getAction("arch_newdir")->addToMenu(menu_new, true, "&Directory");
-		theApp->getAction("arch_newpalette")->addToMenu(menu_new, true, "&PLAYPAL");
-		theApp->getAction("arch_newanimated")->addToMenu(menu_new, true, "&ANIMATED");
-		theApp->getAction("arch_newswitches")->addToMenu(menu_new, true, "&SWITCHES");
+		theApp->getAction("arch_newentry")->addToMenu(menu_new, "&Entry");
+		theApp->getAction("arch_newdir")->addToMenu(menu_new, "&Directory");
+		theApp->getAction("arch_newpalette")->addToMenu(menu_new, "&PLAYPAL");
+		theApp->getAction("arch_newanimated")->addToMenu(menu_new, "&ANIMATED");
+		theApp->getAction("arch_newswitches")->addToMenu(menu_new, "&SWITCHES");
 		menu_archive = new wxMenu();
 		menu_archive->AppendSubMenu(menu_new, "&New");
-		theApp->getAction("arch_importfiles")->addToMenu(menu_archive, true);
-		theApp->getAction("arch_buildarchive")->addToMenu(menu_archive, true);
+		theApp->getAction("arch_importfiles")->addToMenu(menu_archive);
+		theApp->getAction("arch_buildarchive")->addToMenu(menu_archive);
 		menu_archive->AppendSeparator();
-		theApp->getAction("arch_texeditor")->addToMenu(menu_archive, true);
-		theApp->getAction("arch_mapeditor")->addToMenu(menu_archive, true);
+		theApp->getAction("arch_texeditor")->addToMenu(menu_archive);
+		theApp->getAction("arch_mapeditor")->addToMenu(menu_archive);
 		wxMenu* menu_clean = new wxMenu("");
-		theApp->getAction("arch_clean_patches")->addToMenu(menu_clean, true);
-		theApp->getAction("arch_clean_textures")->addToMenu(menu_clean, true);
-		theApp->getAction("arch_clean_flats")->addToMenu(menu_clean, true);
-		theApp->getAction("arch_clean_iwaddupes")->addToMenu(menu_clean, true);
-		theApp->getAction("arch_check_duplicates")->addToMenu(menu_clean, true);
-		theApp->getAction("arch_check_duplicates2")->addToMenu(menu_clean, true);
-		theApp->getAction("arch_replace_maps")->addToMenu(menu_clean, true);
+		theApp->getAction("arch_clean_patches")->addToMenu(menu_clean);
+		theApp->getAction("arch_clean_textures")->addToMenu(menu_clean);
+		theApp->getAction("arch_clean_flats")->addToMenu(menu_clean);
+		theApp->getAction("arch_clean_iwaddupes")->addToMenu(menu_clean);
+		theApp->getAction("arch_check_duplicates")->addToMenu(menu_clean);
+		theApp->getAction("arch_check_duplicates2")->addToMenu(menu_clean);
+		theApp->getAction("arch_replace_maps")->addToMenu(menu_clean);
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
 	}
 	if (!menu_entry)
 	{
 		// Entry menu
 		menu_entry = new wxMenu();
-		theApp->getAction("arch_entry_rename")->addToMenu(menu_entry, true);
-		theApp->getAction("arch_entry_delete")->addToMenu(menu_entry, true);
-		theApp->getAction("arch_entry_revert")->addToMenu(menu_entry, true);
+		theApp->getAction("arch_entry_rename")->addToMenu(menu_entry);
+		theApp->getAction("arch_entry_delete")->addToMenu(menu_entry);
+		theApp->getAction("arch_entry_revert")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_cut")->addToMenu(menu_entry, true);
-		theApp->getAction("arch_entry_copy")->addToMenu(menu_entry, true);
-		theApp->getAction("arch_entry_paste")->addToMenu(menu_entry, true);
+		theApp->getAction("arch_entry_cut")->addToMenu(menu_entry);
+		theApp->getAction("arch_entry_copy")->addToMenu(menu_entry);
+		theApp->getAction("arch_entry_paste")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_moveup")->addToMenu(menu_entry, true);
-		theApp->getAction("arch_entry_movedown")->addToMenu(menu_entry, true);
-		theApp->getAction("arch_entry_sort")->addToMenu(menu_entry, true);
+		theApp->getAction("arch_entry_moveup")->addToMenu(menu_entry);
+		theApp->getAction("arch_entry_movedown")->addToMenu(menu_entry);
+		theApp->getAction("arch_entry_sort")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_import")->addToMenu(menu_entry, true);
-		theApp->getAction("arch_entry_export")->addToMenu(menu_entry, true);
+		theApp->getAction("arch_entry_import")->addToMenu(menu_entry);
+		theApp->getAction("arch_entry_export")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_bookmark")->addToMenu(menu_entry, true);
+		theApp->getAction("arch_entry_bookmark")->addToMenu(menu_entry);
 	}
 
 	// Add them to the main window menubar
