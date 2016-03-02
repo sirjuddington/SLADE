@@ -41,6 +41,13 @@
 
 
 /*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(String, txed_override_font)
+EXTERN_CVAR(Int, txed_override_font_size)
+
+
+/*******************************************************************
  * TEXTSTYLEPREFSPANEL CLASS FUNCTIONS
  *******************************************************************/
 
@@ -62,9 +69,17 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	wxStaticBoxSizer* sizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	psizer->Add(sizer, 1, wxEXPAND|wxALL, 4);
 
+	// Styleset font override
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
+	cb_font_override = new wxCheckBox(this, -1, "Override Default Font");
+	cb_font_override->SetToolTip("Always use the selected font in the text editor, instead of the style's font below");
+	hbox->Add(cb_font_override, 0, wxEXPAND | wxALL, 4);
+	fp_font_override = new wxFontPickerCtrl(this, -1);
+	hbox->Add(fp_font_override, 1, wxEXPAND | wxALL, 4);
 
 	// Styleset controls
-	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 
 	// Styleset selection dropdown
@@ -154,6 +169,30 @@ TextStylePrefsPanel::TextStylePrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	cp_background->Bind(wxEVT_COLOURPICKER_CHANGED, &TextStylePrefsPanel::onBackgroundChanged, this);
 	btn_savestyleset->Bind(wxEVT_BUTTON, &TextStylePrefsPanel::onBtnSaveStyleSet, this);
 	choice_styleset->Bind(wxEVT_CHOICE, &TextStylePrefsPanel::onStyleSetSelected, this);
+	cb_font_override->Bind(wxEVT_CHECKBOX, &TextStylePrefsPanel::onCBOverrideFont, this);
+
+	// Init controls
+	if (txed_override_font != "")
+	{
+		cb_font_override->SetValue(true);
+		fp_font_override->SetSelectedFont(
+			wxFont(
+				txed_override_font_size == 0 ? 10 : txed_override_font_size,
+				wxFONTFAMILY_MODERN,
+				wxFONTSTYLE_NORMAL,
+				wxFONTWEIGHT_NORMAL,
+				false,
+				txed_override_font
+				)
+			);
+		fp_font_override->Enable(true);
+	}
+	else
+	{
+		cb_font_override->SetValue(false);
+		fp_font_override->SetSelectedFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+		fp_font_override->Enable(false);
+	}
 
 	// Select default style
 	init_done = false;
@@ -407,6 +446,17 @@ void TextStylePrefsPanel::updateBackground()
  *******************************************************************/
 void TextStylePrefsPanel::applyPreferences()
 {
+	if (cb_font_override->GetValue())
+	{
+		txed_override_font = fp_font_override->GetSelectedFont().GetFaceName();
+		txed_override_font_size = fp_font_override->GetSelectedFont().GetPointSize();
+	}
+	else
+	{
+		txed_override_font = "";
+		txed_override_font_size = 0;
+	}
+
 	// Apply styleset to global current
 	StyleSet::currentSet()->copySet(&ss_current);
 }
@@ -568,4 +618,12 @@ void TextStylePrefsPanel::onStyleSetSelected(wxCommandEvent& e)
 			updateStyleControls();
 		}
 	}
+}
+
+/* TextStylePrefsPanel::onCBOverrideFont
+ * Called when the 'Override Default Font' checkbox is changed
+ *******************************************************************/
+void TextStylePrefsPanel::onCBOverrideFont(wxCommandEvent& e)
+{
+	fp_font_override->Enable(cb_font_override->GetValue());
 }

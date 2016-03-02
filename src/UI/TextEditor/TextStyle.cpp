@@ -42,6 +42,8 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
+CVAR(String, txed_override_font, "", CVAR_SAVE)
+CVAR(Int, txed_override_font_size, 0, CVAR_SAVE)
 vector<StyleSet*>	style_sets;
 StyleSet*			ss_current = NULL;
 
@@ -148,11 +150,15 @@ void TextStyle::applyTo(TextEditor* stc)
 	for (unsigned a = 0; a < wx_styles.size(); a++)
 	{
 		// Set font face
-		if (!font.IsEmpty())
+		if (txed_override_font != "")
+			stc->StyleSetFaceName(wx_styles[a], txed_override_font);
+		else if (!font.IsEmpty())
 			stc->StyleSetFaceName(wx_styles[a], font);
 
 		// Set font size
-		if (size > 0)
+		if (txed_override_font_size > 0)
+			stc->StyleSetSize(wx_styles[a], txed_override_font_size);
+		else if (size > 0)
 			stc->StyleSetSize(wx_styles[a], size);
 
 		// Set foreground

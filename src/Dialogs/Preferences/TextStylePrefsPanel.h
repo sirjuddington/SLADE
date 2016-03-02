@@ -17,6 +17,8 @@ private:
 	wxListBox*			list_styles;
 	StyleSet			ss_current;
 	TextStyle*			ts_current;
+	wxCheckBox*			cb_font_override;
+	wxFontPickerCtrl*	fp_font_override;
 
 	wxColourPickerCtrl*	cp_foreground;
 	wxColourPickerCtrl*	cp_background;
@@ -60,6 +62,7 @@ public:
 	void	onBackgroundChanged(wxColourPickerEvent& e);
 	void	onBtnSaveStyleSet(wxCommandEvent& e);
 	void	onStyleSetSelected(wxCommandEvent& e);
+	void	onCBOverrideFont(wxCommandEvent& e);
 };
 
 #endif//__TEXT_STYLE_PREFS_PANEL_H__
