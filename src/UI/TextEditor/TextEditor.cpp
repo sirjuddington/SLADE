@@ -205,7 +205,12 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	// Line numbers by default
 	SetMarginType(0, wxSTC_MARGIN_NUMBER);
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, "9999"));
-	SetMarginWidth(1, 4);
+
+	// Folding margin
+	setupFoldMargin(1);
+
+	// Border margin
+	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
 	RegisterImage(1, Icons::getIcon(Icons::TEXT_EDITOR, "key"));
@@ -232,6 +237,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	Bind(wxEVT_LEFT_DOWN, &TextEditor::onMouseDown, this);
 	Bind(wxEVT_KILL_FOCUS, &TextEditor::onFocusLoss, this);
 	Bind(wxEVT_ACTIVATE, &TextEditor::onActivate, this);
+	Bind(wxEVT_STC_MARGINCLICK, &TextEditor::onMarginClick, this);
 	dlg_fr->getBtnFindNext()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
 	dlg_fr->getBtnReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
 	dlg_fr->getBtnReplaceAll()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplaceAll, this);
@@ -285,8 +291,35 @@ void TextEditor::setup()
 	else
 		SetLexer(wxSTC_LEX_NULL);
 
+	// Set folding options
+	SetProperty("fold", "1");
+	SetProperty("fold.preprocessor", "1");
+
 	// Re-colour text
 	Colourise(0, GetTextLength());
+}
+
+/* TextEditor::setupFoldMargin
+ * Sets up the code folding margin
+ *******************************************************************/
+void TextEditor::setupFoldMargin(int margin_num)
+{	
+	wxColour col_fg = WXCOL(StyleSet::currentSet()->getStyle("linenum")->getForeground());
+	wxColour col_bg = WXCOL(StyleSet::currentSet()->getStyle("linenum")->getBackground());
+
+	SetMarginType(margin_num, wxSTC_MARGIN_SYMBOL);
+	SetMarginWidth(margin_num, 16);
+	SetMarginSensitive(margin_num, true);
+	SetMarginMask(margin_num, wxSTC_MASK_FOLDERS);
+	SetFoldMarginColour(true, col_bg);
+	SetFoldMarginHiColour(true, col_bg);
+	MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN, wxSTC_MARK_BOXMINUS, col_bg, col_fg);
+	MarkerDefine(wxSTC_MARKNUM_FOLDER, wxSTC_MARK_BOXPLUS, col_bg, col_fg);
+	MarkerDefine(wxSTC_MARKNUM_FOLDERSUB, wxSTC_MARK_VLINE, col_bg, col_fg);
+	MarkerDefine(wxSTC_MARKNUM_FOLDERTAIL, wxSTC_MARK_LCORNER, col_bg, col_fg);
+	MarkerDefine(wxSTC_MARKNUM_FOLDEREND, wxSTC_MARK_BOXPLUSCONNECTED, col_bg, col_fg);
+	MarkerDefine(wxSTC_MARKNUM_FOLDEROPENMID, wxSTC_MARK_BOXMINUSCONNECTED, col_bg, col_fg);
+	MarkerDefine(wxSTC_MARKNUM_FOLDERMIDTAIL, wxSTC_MARK_TCORNER, col_bg, col_fg);
 }
 
 /* TextEditor::setLanguage
@@ -325,6 +358,10 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 		SetLexer(wxSTC_LEX_CPPNOCASE);
 	else
 		SetLexer(wxSTC_LEX_NULL);
+
+	// Set folding options
+	SetProperty("fold", "1");
+	SetProperty("fold.preprocessor", "1");
 
 	// Update variables
 	SetWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.$");
@@ -1274,4 +1311,18 @@ void TextEditor::onActivate(wxActivateEvent& e)
 {
 	if (!e.GetActive())
 		CallTipCancel();
+}
+
+/* TextEditor::onMarginClick
+ * Called when a margin is clicked
+ *******************************************************************/
+void TextEditor::onMarginClick(wxStyledTextEvent& e)
+{
+	if (e.GetMargin() == 1)
+	{
+		int line = LineFromPosition(e.GetPosition());
+		int level = GetFoldLevel(line);
+		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0)
+			ToggleFold(line);
+	}
 }

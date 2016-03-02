@@ -70,6 +70,7 @@ public:
 	bool			setLanguage(TextLanguage* lang);
 
 	void	setup();
+	void	setupFoldMargin(int margin_num);
 	bool	applyStyleSet(StyleSet* style);
 	bool	loadEntry(ArchiveEntry* entry);
 	void	getRawText(MemChunk& mc);
@@ -108,6 +109,7 @@ public:
 	void	onFRDBtnReplaceAll(wxCommandEvent& e);
 	void	onFRDKeyDown(wxKeyEvent& e);
 	void	onActivate(wxActivateEvent& e);
+	void	onMarginClick(wxStyledTextEvent& e);
 };
 
 #endif //__TEXTEDITOR_H__

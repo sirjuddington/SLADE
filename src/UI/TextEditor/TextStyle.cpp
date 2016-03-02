@@ -33,7 +33,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "TextEditor.h"
 #include "TextStyle.h"
 #include "Archive/ArchiveManager.h"
 #include <wx/dir.h>
@@ -143,7 +143,7 @@ bool TextStyle::parse(ParseTreeNode* node)
 /* TextStyle::applyTo
  * Applies the style settings to the scintilla text control [stc]
  *******************************************************************/
-void TextStyle::applyTo(wxStyledTextCtrl* stc)
+void TextStyle::applyTo(TextEditor* stc)
 {
 	for (unsigned a = 0; a < wx_styles.size(); a++)
 	{
@@ -348,7 +348,7 @@ bool StyleSet::parseSet(ParseTreeNode* root)
  * Applies all the styles in this set to the text styles in scintilla
  * text control [stc]
  *******************************************************************/
-void StyleSet::applyTo(wxStyledTextCtrl* stc)
+void StyleSet::applyTo(TextEditor* stc)
 {
 	// Set default style
 	ts_default.applyTo(stc);
@@ -374,6 +374,9 @@ void StyleSet::applyTo(wxStyledTextCtrl* stc)
 
 	// Set caret colour to text foreground colour
 	stc->SetCaretForeground(WXCOL(ts_default.foreground));
+
+	// Update code folding margin
+	stc->setupFoldMargin(1);
 }
 
 /* StyleSet::copySet
@@ -575,7 +578,7 @@ bool StyleSet::loadSet(unsigned index)
 /* StyleSet::applyCurrent
  * Applies the current style set to the scintilla text control [stc]
  *******************************************************************/
-void StyleSet::applyCurrent(wxStyledTextCtrl* stc)
+void StyleSet::applyCurrent(TextEditor* stc)
 {
 	currentSet()->applyTo(stc);
 }

@@ -4,8 +4,8 @@
 
 #include "Utility/Parser.h"
 #include <wx/font.h>
-#include <wx/stc/stc.h>
 
+class TextEditor;
 class TextStyle
 {
 	friend class StyleSet;
@@ -54,7 +54,7 @@ public:
 	rgba_t	getBackground() { return background; }
 
 	bool	parse(ParseTreeNode* node);
-	void	applyTo(wxStyledTextCtrl* stc);
+	void	applyTo(TextEditor* stc);
 	bool	copyStyle(TextStyle* copy);
 	string	getDefinition(unsigned tabs = 0);
 };
@@ -76,7 +76,7 @@ public:
 	unsigned	nStyles() { return styles.size(); }
 
 	bool		parseSet(ParseTreeNode* root);
-	void		applyTo(wxStyledTextCtrl* stc);
+	void		applyTo(TextEditor* stc);
 	bool		copySet(StyleSet* copy);
 	TextStyle*	getStyle(string name);
 	TextStyle*	getStyle(unsigned index);
@@ -88,7 +88,7 @@ public:
 	static StyleSet*	currentSet();
 	static bool			loadSet(string name);
 	static bool			loadSet(unsigned index);
-	static void			applyCurrent(wxStyledTextCtrl* stc);
+	static void			applyCurrent(TextEditor* stc);
 	static string		getName(unsigned index);
 	static unsigned		numSets();
 	static StyleSet*	getSet(unsigned index);
