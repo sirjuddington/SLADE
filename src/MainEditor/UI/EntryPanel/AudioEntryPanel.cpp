@@ -612,17 +612,17 @@ bool AudioEntryPanel::updateInfo()
 		{
 			size_t samplerate = READ_L16(mc, 2);
 			size_t samples = READ_L16(mc, 4);
-			info += S_FMT("%zu samples at %zu Hz", samples, samplerate);
+			info += S_FMT("%lu samples at %lu Hz", (unsigned long) samples, (unsigned long) samplerate);
 		}
 		else if (entry->getType() == EntryType::getType("snd_speaker"))
 		{
 			size_t samples = READ_L16(mc, 2);
-			info += S_FMT("%zu samples", samples);
+			info += S_FMT("%lu samples", (unsigned long) samples);
 		}
 		else if (entry->getType() == EntryType::getType("snd_audiot"))
 		{
 			size_t samples = READ_L16(mc, 0);
-			info += S_FMT("%zu samples", samples);
+			info += S_FMT("%lu samples", (unsigned long) samples);
 		}
 		/*
 		else if (entry->getType() == EntryType::getType("snd_sun"))
