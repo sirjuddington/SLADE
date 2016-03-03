@@ -314,6 +314,8 @@ StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_D
 	styles.push_back(new TextStyle("linenum",		"Line Numbers",		wxSTC_STYLE_LINENUMBER));
 	styles.push_back(new TextStyle("calltip",		"Call Tip",			wxSTC_STYLE_CALLTIP));
 	styles.push_back(new TextStyle("calltip_hl",	"Call Tip Highlight"));
+	styles.push_back(new TextStyle("foldmargin",	"Code Folding Margin"));
+	styles.push_back(new TextStyle("guides",		"Indent/Right Margin Guide"));
 }
 
 /* StyleSet::~StyleSet
@@ -382,7 +384,12 @@ void StyleSet::applyTo(TextEditor* stc)
 	stc->SetCaretForeground(WXCOL(ts_default.foreground));
 
 	// Update code folding margin
-	stc->setupFoldMargin(getStyle("linenum"));
+	stc->setupFoldMargin(getStyle("foldmargin"));
+
+	// Set indent and right margin line colour
+	stc->SetEdgeColour(WXCOL(getStyle("guides")->getForeground()));
+	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyle("guides")->getForeground()));
+	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyle("guides")->getForeground()));
 }
 
 /* StyleSet::copySet

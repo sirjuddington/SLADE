@@ -268,10 +268,10 @@ void TextEditor::setup()
 	SetMouseDwellTime(500);
 	AutoCompSetIgnoreCase(true);
 	SetIndentationGuides(txed_indent_guides);
-	StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(col_edge_line));
+	//StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(col_edge_line));
 
 	// Right margin line
-	SetEdgeColour(WXCOL(col_edge_line));
+	//SetEdgeColour(WXCOL(col_edge_line));
 	SetEdgeColumn(txed_edge_column);
 	if (txed_edge_column == 0)
 		SetEdgeMode(wxSTC_EDGE_NONE);
@@ -318,8 +318,8 @@ void TextEditor::setupFoldMargin(TextStyle* margin_style)
 	}
 	else
 	{
-		col_fg = WXCOL(StyleSet::currentSet()->getStyle("linenum")->getForeground());
-		col_bg = WXCOL(StyleSet::currentSet()->getStyle("linenum")->getBackground());
+		col_fg = WXCOL(StyleSet::currentSet()->getStyle("foldmargin")->getForeground());
+		col_bg = WXCOL(StyleSet::currentSet()->getStyle("foldmargin")->getBackground());
 	}
 
 	SetMarginType(1, wxSTC_MARGIN_SYMBOL);
