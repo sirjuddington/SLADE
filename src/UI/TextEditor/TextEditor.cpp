@@ -56,6 +56,9 @@ CVAR(Bool, txed_indent_guides, false, CVAR_SAVE)
 CVAR(String, txed_style_set, "SLADE Default", CVAR_SAVE)
 CVAR(Bool, txed_calltips_mouse, true, CVAR_SAVE)
 CVAR(Bool, txed_calltips_parenthesis, true, CVAR_SAVE)
+CVAR(Bool, txed_fold_enable, true, CVAR_SAVE)
+CVAR(Bool, txed_fold_comments, false, CVAR_SAVE)
+CVAR(Bool, txed_fold_preprocessor, true, CVAR_SAVE)
 rgba_t col_edge_line(200, 200, 230, 255);
 
 
@@ -241,8 +244,6 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	dlg_fr->getBtnFindNext()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
 	dlg_fr->getBtnReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
 	dlg_fr->getBtnReplaceAll()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplaceAll, this);
-	//dlg_fr->getTextFind()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnFindNext, this);
-	//dlg_fr->getTextReplace()->Bind(wxEVT_BUTTON, &TextEditor::onFRDBtnReplace, this);
 	dlg_fr->Bind(wxEVT_CHAR_HOOK, &TextEditor::onFRDKeyDown, this);
 }
 
@@ -292,8 +293,7 @@ void TextEditor::setup()
 		SetLexer(wxSTC_LEX_NULL);
 
 	// Set folding options
-	SetProperty("fold", "1");
-	SetProperty("fold.preprocessor", "1");
+	setupFolding();
 
 	// Re-colour text
 	Colourise(0, GetTextLength());
@@ -304,6 +304,12 @@ void TextEditor::setup()
  *******************************************************************/
 void TextEditor::setupFoldMargin(TextStyle* margin_style)
 {
+	if (!txed_fold_enable)
+	{
+		SetMarginWidth(1, 0);
+		return;
+	}
+
 	wxColour col_fg, col_bg;
 	if (margin_style)
 	{
@@ -369,8 +375,7 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 		SetLexer(wxSTC_LEX_NULL);
 
 	// Set folding options
-	SetProperty("fold", "1");
-	SetProperty("fold.preprocessor", "1");
+	setupFolding();
 
 	// Update variables
 	SetWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.$");
@@ -860,6 +865,23 @@ void TextEditor::openJumpToDialog()
 void TextEditor::foldAll(bool fold)
 {
 	FoldAll(fold ? wxSTC_FOLDACTION_CONTRACT : wxSTC_FOLDACTION_EXPAND);
+}
+
+/* TextEditor::setupFolding
+ * Sets up code folding options
+ *******************************************************************/
+void TextEditor::setupFolding()
+{
+	if (txed_fold_enable)
+	{
+		SetProperty("fold", "1");
+
+		if (txed_fold_preprocessor)
+			SetProperty("fold.preprocessor", "1");
+
+		if (txed_fold_comments)
+			SetProperty("fold.comment", "1");
+	}
 }
 
 

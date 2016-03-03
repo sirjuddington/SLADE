@@ -16,6 +16,9 @@ private:
 	wxCheckBox*	cb_indent_guides;
 	wxCheckBox*	cb_calltips_mouse;
 	wxCheckBox*	cb_calltips_parenthesis;
+	wxCheckBox*	cb_fold_enable;
+	wxCheckBox*	cb_fold_comments;
+	wxCheckBox*	cb_fold_preprocessor;
 
 public:
 	TextEditorPrefsPanel(wxWindow* parent);

@@ -96,6 +96,7 @@ public:
 
 	// Folding
 	void	foldAll(bool fold = true);
+	void	setupFolding();
 
 	// Events
 	void	onKeyDown(wxKeyEvent& e);
