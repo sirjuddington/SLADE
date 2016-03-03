@@ -501,6 +501,8 @@ void KeyBind::initBinds()
 	addBind("ted_findreplace", keypress_t("F", KPM_CTRL), "Find/Replace", group);
 	addBind("ted_findnext", keypress_t("f3"), "Find next", group);
 	addBind("ted_jumpto", keypress_t("J", KPM_CTRL), "Jump to", group);
+	addBind("ted_fold_foldall", keypress_t("[", KPM_CTRL|KPM_SHIFT), "Fold All", group);
+	addBind("ted_fold_unfoldall", keypress_t("]", KPM_CTRL|KPM_SHIFT), "Fold All", group);
 
 	// Texture editor (txed*)
 	group = "Texture Editor";

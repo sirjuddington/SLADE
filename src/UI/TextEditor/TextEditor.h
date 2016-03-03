@@ -94,6 +94,9 @@ public:
 	// Jump To
 	void	openJumpToDialog();
 
+	// Folding
+	void	foldAll(bool fold = true);
+
 	// Events
 	void	onKeyDown(wxKeyEvent& e);
 	void	onKeyUp(wxKeyEvent& e);

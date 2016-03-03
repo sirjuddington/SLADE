@@ -854,6 +854,14 @@ void TextEditor::openJumpToDialog()
 	}
 }
 
+/* TextEditor::foldAll
+ * Folds or unfolds all code folding levels, depending on [fold]
+ *******************************************************************/
+void TextEditor::foldAll(bool fold)
+{
+	FoldAll(fold ? wxSTC_FOLDACTION_CONTRACT : wxSTC_FOLDACTION_EXPAND);
+}
+
 
 /*******************************************************************
  * TEXTEDITOR CLASS EVENTS
@@ -915,6 +923,20 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		else if (name == "ted_jumpto")
 		{
 			openJumpToDialog();
+			handled = true;
+		}
+
+		// Fold all
+		else if (name == "ted_fold_foldall")
+		{
+			foldAll(true);
+			handled = true;
+		}
+
+		// Unfold all
+		else if (name == "ted_fold_unfoldall")
+		{
+			foldAll(false);
 			handled = true;
 		}
 	}

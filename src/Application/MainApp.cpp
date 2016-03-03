@@ -710,8 +710,10 @@ void MainApp::initActions()
 
 	// TextEntryPanel
 	new SAction("ptxt_wrap", "Word Wrapping", "", "Toggle word wrapping", "", SAction::CHECK);
-	new SAction("ptxt_jump_to", "Jump To...", "", "Jump to a section in the text", "kb:ted_jumpto");
+	new SAction("ptxt_jump_to", "Jump To...", "up", "Jump to a section in the text", "kb:ted_jumpto");
 	new SAction("ptxt_find_replace", "Find+Replace...", "", "Find and (optionally) replace text", "kb:ted_findreplace");
+	new SAction("ptxt_fold_foldall", "Fold All", "minus", "Fold all possible code", "kb:ted_fold_foldall");
+	new SAction("ptxt_fold_unfoldall", "Unfold All", "plus", "Unfold all folded code", "kb:ted_fold_unfoldall");
 
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "save", "Save any changes to the current map", "Ctrl+S");

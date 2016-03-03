@@ -83,6 +83,12 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	theApp->getAction("ptxt_jump_to")->addToMenu(menu_custom);
 	theApp->getAction("ptxt_find_replace")->addToMenu(menu_custom);
 
+	// 'Code Folding' submenu
+	wxMenu* menu_fold = new wxMenu();
+	menu_custom->AppendSubMenu(menu_fold, "Code Folding");
+	theApp->getAction("ptxt_fold_foldall")->addToMenu(menu_fold);
+	theApp->getAction("ptxt_fold_unfoldall")->addToMenu(menu_fold);
+
 	// 'Compile' submenu
 	wxMenu* menu_scripts = new wxMenu();
 	menu_custom->AppendSubMenu(menu_scripts, "Compile");
@@ -303,6 +309,14 @@ bool TextEntryPanel::handleAction(string id)
 			text_area->SetWrapMode(wxSTC_WRAP_NONE);
 		setModified(m);
 	}
+
+	// Fold All
+	else if (id == "ptxt_fold_foldall")
+		text_area->foldAll(true);
+
+	// Unfold All
+	else if (id == "ptxt_fold_unfoldall")
+		text_area->foldAll(false);
 
 	// Not handled
 	else
