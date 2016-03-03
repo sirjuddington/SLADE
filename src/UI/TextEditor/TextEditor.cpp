@@ -201,6 +201,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	ct_argset = 0;
 	ct_function = NULL;
 	ct_start = 0;
+	bm_cursor_last_pos = -1;
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -268,10 +269,8 @@ void TextEditor::setup()
 	SetMouseDwellTime(500);
 	AutoCompSetIgnoreCase(true);
 	SetIndentationGuides(txed_indent_guides);
-	//StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(col_edge_line));
 
 	// Right margin line
-	//SetEdgeColour(WXCOL(col_edge_line));
 	SetEdgeColumn(txed_edge_column);
 	if (txed_edge_column == 0)
 		SetEdgeMode(wxSTC_EDGE_NONE);
@@ -595,12 +594,22 @@ void TextEditor::checkBraceMatch()
 	bool refresh = true;
 #endif
 
+	// Ignore if cursor position hasn't changed since the last check
+	if (GetCurrentPos() == bm_cursor_last_pos)
+		return;
+
+	bm_cursor_last_pos = GetCurrentPos();
+
 	// Check for brace match at current position
 	int bracematch = BraceMatch(GetCurrentPos());
 	if (bracematch != wxSTC_INVALID_POSITION)
 	{
 		BraceHighlight(GetCurrentPos(), bracematch);
-		if (refresh) Refresh();
+		if (refresh)
+		{
+			Refresh();
+			Update();
+		}
 		return;
 	}
 
@@ -609,13 +618,21 @@ void TextEditor::checkBraceMatch()
 	if (bracematch != wxSTC_INVALID_POSITION)
 	{
 		BraceHighlight(GetCurrentPos() - 1, bracematch);
-		if (refresh) Refresh();
+		if (refresh)
+		{
+			Refresh();
+			Update();
+		}
 		return;
 	}
 
 	// No match at all, clear any previous brace match
 	BraceHighlight(-1, -1);
-	if (refresh) Refresh();
+	if (refresh)
+	{
+		Refresh();
+		Update();
+	}
 }
 
 /* TextEditor::openCalltip
