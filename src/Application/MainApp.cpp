@@ -708,6 +708,11 @@ void MainApp::initActions()
 	new SAction("data_paste_row", "Paste Row(s)", "paste", "Paste at the currently selected row", "Ctrl+V");
 	new SAction("data_change_value", "Change Value...", "rename", "Change the value of the selected cell(s)");
 
+	// TextEntryPanel
+	new SAction("ptxt_wrap", "Word Wrapping", "", "Toggle word wrapping", "", SAction::CHECK);
+	new SAction("ptxt_jump_to", "Jump To...", "", "Jump to a section in the text", "kb:ted_jumpto");
+	new SAction("ptxt_find_replace", "Find+Replace...", "", "Find and (optionally) replace text", "kb:ted_findreplace");
+
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "save", "Save any changes to the current map", "Ctrl+S");
 	new SAction("mapw_saveas", "Save Map &As...", "saveas", "Save the map to a new wad archive", "Ctrl+Shift+S");

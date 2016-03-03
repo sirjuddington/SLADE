@@ -3,9 +3,10 @@
 #define	__TEXTENTRYPANEL_H__
 
 #include "EntryPanel.h"
+#include "General/SAction.h"
 #include "UI/TextEditor/TextEditor.h"
 
-class TextEntryPanel : public EntryPanel
+class TextEntryPanel : public EntryPanel, SActionHandler
 {
 private:
 	TextEditor*	text_area;
@@ -26,13 +27,13 @@ public:
 	bool	undo();
 	bool	redo();
 
+	// SAction Handler
+	bool	handleAction(string id);
+
 	// Events
 	void	onTextModified(wxStyledTextEvent& e);
-	void	onBtnFindReplace(wxCommandEvent& e);
 	void	onChoiceLanguageChanged(wxCommandEvent& e);
 	void	onUpdateUI(wxStyledTextEvent& e);
-	void	onWordWrapChanged(wxCommandEvent& e);
-	void	onBtnJumpTo(wxCommandEvent& e);
 };
 
 
