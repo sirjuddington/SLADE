@@ -207,7 +207,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, "9999"));
 
 	// Folding margin
-	setupFoldMargin(1);
+	setupFoldMargin();
 
 	// Border margin
 	SetMarginWidth(2, 4);
@@ -302,15 +302,24 @@ void TextEditor::setup()
 /* TextEditor::setupFoldMargin
  * Sets up the code folding margin
  *******************************************************************/
-void TextEditor::setupFoldMargin(int margin_num)
-{	
-	wxColour col_fg = WXCOL(StyleSet::currentSet()->getStyle("linenum")->getForeground());
-	wxColour col_bg = WXCOL(StyleSet::currentSet()->getStyle("linenum")->getBackground());
+void TextEditor::setupFoldMargin(TextStyle* margin_style)
+{
+	wxColour col_fg, col_bg;
+	if (margin_style)
+	{
+		col_fg = WXCOL(margin_style->getForeground());
+		col_bg = WXCOL(margin_style->getBackground());
+	}
+	else
+	{
+		col_fg = WXCOL(StyleSet::currentSet()->getStyle("linenum")->getForeground());
+		col_bg = WXCOL(StyleSet::currentSet()->getStyle("linenum")->getBackground());
+	}
 
-	SetMarginType(margin_num, wxSTC_MARGIN_SYMBOL);
-	SetMarginWidth(margin_num, 16);
-	SetMarginSensitive(margin_num, true);
-	SetMarginMask(margin_num, wxSTC_MASK_FOLDERS);
+	SetMarginType(1, wxSTC_MARGIN_SYMBOL);
+	SetMarginWidth(1, 16);
+	SetMarginSensitive(1, true);
+	SetMarginMask(1, wxSTC_MASK_FOLDERS);
 	SetFoldMarginColour(true, col_bg);
 	SetFoldMarginHiColour(true, col_bg);
 	MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN, wxSTC_MARK_BOXMINUS, col_bg, col_fg);

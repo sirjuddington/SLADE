@@ -382,7 +382,7 @@ void StyleSet::applyTo(TextEditor* stc)
 	stc->SetCaretForeground(WXCOL(ts_default.foreground));
 
 	// Update code folding margin
-	stc->setupFoldMargin(1);
+	stc->setupFoldMargin(getStyle("linenum"));
 }
 
 /* StyleSet::copySet

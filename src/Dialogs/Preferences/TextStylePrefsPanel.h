@@ -48,6 +48,7 @@ public:
 	void	updateFontUnderlined();
 	void	updateForeground();
 	void	updateBackground();
+	void	updatePreview();
 
 	void	init();
 	void	applyPreferences();
