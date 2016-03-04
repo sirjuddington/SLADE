@@ -347,6 +347,24 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 	{
 		if (ParseTreeNode* node = (ParseTreeNode*)root->getChild(styles[a]->name))
 			styles[a]->parse(node);
+		else
+		{
+			if (styles[a]->name == "foldmargin")
+			{
+				// No 'foldmargin' style defined, copy it from line numbers style
+				styles[a]->foreground =
+					getStyle("linenum")->hasForeground() ?
+					getStyle("linenum")->getForeground() : ts_default.getForeground();
+				styles[a]->background =
+					getStyle("linenum")->hasBackground() ?
+					getStyle("linenum")->getBackground() : ts_default.getBackground();
+			}
+			else if (styles[a]->name == "guides")
+			{
+				// No 'guides' style defined, use the default foreground colour
+				styles[a]->foreground = ts_default.getForeground();
+			}
+		}
 	}
 
 	return true;
