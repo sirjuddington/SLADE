@@ -58,6 +58,12 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	text_area = new TextEditor(this, -1);
 	sizer_main->Add(text_area, 1, wxEXPAND, 0);
 
+	// Create the find+replace panel
+	panel_fr = new FindReplacePanel(this, text_area);
+	text_area->setFindReplacePanel(panel_fr);
+	panel_fr->Hide();
+	sizer_main->Add(panel_fr, 0, wxEXPAND|wxTOP, 8);
+
 	// Add 'Text Language' choice to toolbar
 	SToolBarGroup* group_language = new SToolBarGroup(toolbar, "Text Language", true);
 	languages = TextLanguage::getLanguageNames();
@@ -296,7 +302,7 @@ bool TextEntryPanel::handleAction(string id)
 
 	// Find+Replace
 	else if (id == "ptxt_find_replace")
-		text_area->showFindReplaceDialog();
+		text_area->showFindReplacePanel();
 
 	// Word Wrapping toggle
 	else if (id == "ptxt_wrap")

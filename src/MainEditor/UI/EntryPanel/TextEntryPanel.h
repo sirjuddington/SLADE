@@ -9,11 +9,12 @@
 class TextEntryPanel : public EntryPanel, SActionHandler
 {
 private:
-	TextEditor*	text_area;
-	wxButton*	btn_find_replace;
-	wxChoice*	choice_text_language;
-	wxCheckBox*	cb_wordwrap;
-	wxButton*	btn_jump_to;
+	TextEditor*			text_area;
+	FindReplacePanel*	panel_fr;
+	wxButton*			btn_find_replace;
+	wxChoice*			choice_text_language;
+	wxCheckBox*			cb_wordwrap;
+	wxButton*			btn_jump_to;
 
 public:
 	TextEntryPanel(wxWindow* parent);

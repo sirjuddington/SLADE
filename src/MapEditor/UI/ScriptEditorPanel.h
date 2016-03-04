@@ -15,10 +15,11 @@ private:
 	ArchiveEntry*	entry_script;
 	ArchiveEntry*	entry_compiled;
 
-	TextEditor*		text_editor;
-	wxButton*		btn_save;
-	wxButton*		btn_compile;
-	wxTreeListCtrl*	list_words;
+	TextEditor*			text_editor;
+	wxButton*			btn_save;
+	wxButton*			btn_compile;
+	wxTreeListCtrl*		list_words;
+	FindReplacePanel*	panel_fr;
 
 public:
 	ScriptEditorPanel(wxWindow* parent);

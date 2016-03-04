@@ -77,9 +77,11 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	// Add text editor
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 1, wxEXPAND);
+	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	hbox->Add(vbox, 1, wxEXPAND);
 
 	text_editor = new TextEditor(this, -1);
-	hbox->Add(text_editor, 1, wxEXPAND|wxALL, 4);
+	vbox->Add(text_editor, 1, wxEXPAND|wxALL, 4);
 
 	// Set language
 	string lang = theGameConfiguration->scriptLanguage();
@@ -95,6 +97,12 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 		entry_script->setName("SCRIPTS");
 		entry_compiled->setName("BEHAVIOR");
 	}
+
+	// Add Find+Replace panel
+	panel_fr = new FindReplacePanel(this, text_editor);
+	text_editor->setFindReplacePanel(panel_fr);
+	vbox->Add(panel_fr, 0, wxEXPAND | wxALL, 4);
+	panel_fr->Hide();
 
 	// Add function/constants list
 	list_words = new wxTreeListCtrl(this, -1);

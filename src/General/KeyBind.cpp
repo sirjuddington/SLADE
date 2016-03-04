@@ -500,6 +500,9 @@ void KeyBind::initBinds()
 	addBind("ted_calltip", keypress_t("space", KPM_CTRL|KPM_SHIFT), "Open CallTip", group);
 	addBind("ted_findreplace", keypress_t("F", KPM_CTRL), "Find/Replace", group);
 	addBind("ted_findnext", keypress_t("f3"), "Find next", group);
+	addBind("ted_findprev", keypress_t("f3", KPM_SHIFT), "Find previous", group);
+	addBind("ted_replacenext", keypress_t("R", KPM_ALT), "Replace next", group);
+	addBind("ted_replaceall", keypress_t("R", KPM_ALT|KPM_SHIFT), "Replace all", group);
 	addBind("ted_jumpto", keypress_t("J", KPM_CTRL), "Jump to", group);
 	addBind("ted_fold_foldall", keypress_t("[", KPM_CTRL|KPM_SHIFT), "Fold All", group);
 	addBind("ted_fold_unfoldall", keypress_t("]", KPM_CTRL|KPM_SHIFT), "Fold All", group);
