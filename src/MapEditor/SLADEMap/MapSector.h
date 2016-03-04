@@ -139,6 +139,7 @@ public:
 	}
 };
 
+#if 0
 // Note: these MUST be inline, or the linker will complain
 template<> inline short MapSector::getPlaneHeight<FLOOR_PLANE>() { return getFloorHeight(); }
 template<> inline short MapSector::getPlaneHeight<CEILING_PLANE>() { return getCeilingHeight(); }
@@ -146,7 +147,7 @@ template<> inline plane_t MapSector::getPlane<FLOOR_PLANE>() { return getFloorPl
 template<> inline plane_t MapSector::getPlane<CEILING_PLANE>() { return getCeilingPlane(); }
 template<> inline void MapSector::setPlane<FLOOR_PLANE>(plane_t plane) { setFloorPlane(plane); }
 template<> inline void MapSector::setPlane<CEILING_PLANE>(plane_t plane) { setCeilingPlane(plane); }
-
+#endif
 
 
 #endif //__MAPSECTOR_H__

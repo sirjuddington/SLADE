@@ -23,6 +23,12 @@ class MapSpecials
 	vector<sector_colour_t> sector_fadecolours;
 
 	void	processZDoomSlopes(SLADEMap* map);
+	void	applyPlaneAlign(MapLine* line, MapSector* sector, MapSector* model_sector, bool floor);
+	void	applyLineSlopeThing(SLADEMap* map, MapThing* thing, bool floor);
+	void	applySectorTiltThing(SLADEMap* map, MapThing* thing, bool floor);
+	void	applyVavoomSlopeThing(SLADEMap* map, MapThing* thing, bool floor);
+	void	applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights, bool floor);
+#if 0
 	template<PlaneType>
 	void	applyPlaneAlign(MapLine* line, MapSector* sector, MapSector* model_sector);
 	template<PlaneType>
@@ -33,6 +39,7 @@ class MapSpecials
 	void	applyVavoomSlopeThing(SLADEMap* map, MapThing* thing);
 	template<PlaneType>
 	void	applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights);
+#endif
 
 public:
 	void	reset();
