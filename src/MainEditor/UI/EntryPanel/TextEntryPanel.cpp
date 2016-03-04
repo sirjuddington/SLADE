@@ -63,6 +63,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	text_area->setFindReplacePanel(panel_fr);
 	panel_fr->Hide();
 	sizer_main->Add(panel_fr, 0, wxEXPAND|wxTOP, 8);
+	sizer_main->AddSpacer(4);
 
 	// Add 'Text Language' choice to toolbar
 	SToolBarGroup* group_language = new SToolBarGroup(toolbar, "Text Language", true);

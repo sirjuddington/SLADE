@@ -265,7 +265,7 @@ void FindReplacePanel::onKeyDown(wxKeyEvent& e)
  *******************************************************************/
 void FindReplacePanel::onTextFindEnter(wxCommandEvent& e)
 {
-	if (wxGetKeyState(wxKeyCode::WXK_SHIFT))
+	if (wxGetKeyState(WXK_SHIFT))
 		text_editor->findPrev(getFindText(), getFindFlags());
 	else
 		text_editor->findNext(getFindText(), getFindFlags());
