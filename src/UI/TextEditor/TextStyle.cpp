@@ -352,12 +352,8 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 			if (styles[a]->name == "foldmargin")
 			{
 				// No 'foldmargin' style defined, copy it from line numbers style
-				styles[a]->foreground =
-					getStyle("linenum")->hasForeground() ?
-					getStyle("linenum")->getForeground() : ts_default.getForeground();
-				styles[a]->background =
-					getStyle("linenum")->hasBackground() ?
-					getStyle("linenum")->getBackground() : ts_default.getBackground();
+				styles[a]->foreground = getStyleForeground("linenum");
+				styles[a]->background = getStyleBackground("linenum");
 			}
 			else if (styles[a]->name == "guides")
 			{
@@ -406,8 +402,8 @@ void StyleSet::applyTo(TextEditor* stc)
 
 	// Set indent and right margin line colour
 	stc->SetEdgeColour(WXCOL(getStyle("guides")->getForeground()));
-	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyle("guides")->getForeground()));
-	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyle("guides")->getForeground()));
+	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyleBackground("guides")));
+	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyleForeground("guides")));
 }
 
 /* StyleSet::copySet
@@ -504,6 +500,32 @@ bool StyleSet::writeFile(string filename)
 	file.Close();
 
 	return true;
+}
+
+/* StyleSet::getStyleForeground
+ * Returns the foreground colour of [style], or the default style's
+ * foreground colour if it is not set
+ *******************************************************************/
+rgba_t StyleSet::getStyleForeground(string style)
+{
+	TextStyle* s = getStyle(style);
+	if (s && s->hasForeground())
+		return s->getForeground();
+	else
+		return ts_default.getForeground();
+}
+
+/* StyleSet::getStyleBackground
+ * Returns the background colour of [style], or the default style's
+ * background colour if it is not set
+ *******************************************************************/
+rgba_t StyleSet::getStyleBackground(string style)
+{
+	TextStyle* s = getStyle(style);
+	if (s && s->hasBackground())
+		return s->getBackground();
+	else
+		return ts_default.getBackground();
 }
 
 

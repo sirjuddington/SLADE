@@ -82,6 +82,9 @@ public:
 	TextStyle*	getStyle(unsigned index);
 	bool		writeFile(string filename);
 
+	rgba_t	getStyleForeground(string style);
+	rgba_t	getStyleBackground(string style);
+
 	// Static functions for styleset management
 	static void			initCurrent();
 	static void			saveCurrent();
