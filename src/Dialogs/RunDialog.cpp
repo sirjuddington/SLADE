@@ -50,7 +50,7 @@
 
 #ifdef __WXOSX_MAC__
 #include <CoreFoundation/CoreFoundation.h>
-#include <wx/stdpaths.h>
+#include <wx/osx/core/cfstring.h>
 #endif // __WXOSX_MAC__
 
 
@@ -271,25 +271,31 @@ static string getExecutablePath(const Executables::game_exe_t* const exe)
 #ifdef __WXOSX_MAC__
 	if (exe_path.EndsWith(".app"))
 	{
-		wxCFRef<CFStringRef> cf_path(CFStringCreateWithCString(kCFAllocatorDefault,
+#define CF_CHECK_NULL(VAR) if (NULL == VAR) return exe_path;
+
+		const wxCFStringRef cf_path(CFStringCreateWithCString(kCFAllocatorDefault,
 			exe_path.utf8_str(), kCFStringEncodingUTF8));
+		CF_CHECK_NULL(cf_path);
 
-		if (NULL != cf_path)
-		{
-			wxCFRef<CFURLRef> cf_path_url(CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-				cf_path, kCFURLPOSIXPathStyle, true));
+		typedef wxCFRef<CFURLRef> wxCFURLRef;
 
-			if (NULL != cf_path_url)
-			{
-				wxCFRef<CFBundleRef> cf_bundle(CFBundleCreate(0, cf_path_url));
+		const wxCFURLRef cf_path_url(CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+			cf_path, kCFURLPOSIXPathStyle, true));
+		CF_CHECK_NULL(cf_path_url);
 
-				if (NULL != cf_bundle)
-				{
-					const wxStandardPathsCF paths(cf_bundle);
-					return paths.GetExecutablePath();
-				}
-			}
-		}
+		const wxCFRef<CFBundleRef> cf_bundle(CFBundleCreate(0, cf_path_url));
+		CF_CHECK_NULL(cf_bundle);
+
+		const wxCFURLRef cf_relative_url(CFBundleCopyExecutableURL(cf_bundle));
+		CF_CHECK_NULL(cf_relative_url);
+
+		const wxCFURLRef cf_absolute_url(CFURLCopyAbsoluteURL(cf_relative_url));
+		CF_CHECK_NULL(cf_absolute_url);
+
+		const wxCFStringRef cf_exe_path(CFURLCopyFileSystemPath(cf_absolute_url, kCFURLPOSIXPathStyle));
+		return wxCFStringRef::AsStringWithNormalizationFormC(cf_exe_path);
+
+#undef CF_CHECK_NULL
 	}
 #endif // __WXOSX_MAC__
 
