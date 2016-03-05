@@ -130,7 +130,7 @@ endif()
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
 set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER YES)
-set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Main.h)
+set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Application/Main.h)
 
 	# TODO: Installation targets for APPLE
 if(APPLE)
