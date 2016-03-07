@@ -80,7 +80,7 @@ ShapeDrawPanel::ShapeDrawPanel(wxWindow* parent) : wxPanel(parent, -1)
 	panel_sides = new wxPanel(this, -1);
 	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
 	panel_sides->SetSizer(hbox2);
-	spin_sides = new wxSpinCtrl(panel_sides, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_LEFT|wxTE_PROCESS_ENTER, 12, 1000);
+	spin_sides = new wxSpinCtrl(panel_sides, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_LEFT|wxTE_PROCESS_ENTER, 3, 1000);
 	hbox2->Add(new wxStaticText(panel_sides, -1, "Sides:"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
 	hbox2->Add(spin_sides, 1, wxEXPAND);
 
