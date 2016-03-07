@@ -3894,6 +3894,9 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	//if (mouse_state == MSTATE_EDIT)
 	//	determineObjectEditState();
 
+#ifndef __WXMAC__
+	// Skipping events on OS X doesn't do anything but causes
+	// sound alert (a.k.a. error beep) on every key press
 	if (e.GetKeyCode() != WXK_UP &&
 		e.GetKeyCode() != WXK_DOWN &&
 		e.GetKeyCode() != WXK_LEFT &&
@@ -3903,6 +3906,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		e.GetKeyCode() != WXK_NUMPAD_LEFT &&
 		e.GetKeyCode() != WXK_NUMPAD_RIGHT)
 		e.Skip();
+#endif // !__WXMAC__
 }
 
 /* MapCanvas::onKeyUp
