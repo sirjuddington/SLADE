@@ -64,6 +64,8 @@ ZipArchive::ZipArchive() : Archive(ARCHIVE_ZIP)
  *******************************************************************/
 ZipArchive::~ZipArchive()
 {
+	if (wxFileExists(temp_file))
+		wxRemoveFile(temp_file);
 }
 
 /* ZipArchive::getFileExtensionString
@@ -88,6 +90,10 @@ string ZipArchive::getFormat()
  *******************************************************************/
 bool ZipArchive::open(string filename)
 {
+	// Copy the zip to a temp file (for use when saving)
+	generateTempFileName(filename);
+	wxCopyFile(filename, temp_file);
+
 	// Open the file
 	wxFFileInputStream in(filename);
 	if (!in.IsOk())
@@ -246,16 +252,6 @@ bool ZipArchive::write(MemChunk& mc, bool update)
  *******************************************************************/
 bool ZipArchive::write(string filename, bool update)
 {
-	// If we're overwriting the current file, rename it so that it can still be read while writing the 'new' file
-	string current = this->filename;
-	bool temp = false;
-	if (S_CMPNOCASE(filename, this->filename))
-	{
-		current = appPath("tempzip.zip", DIR_TEMP);
-		wxCopyFile(this->filename, current);
-		temp = true;
-	}
-
 	// Open the file
 	wxFFileOutputStream out(filename);
 	if (!out.IsOk())
@@ -272,10 +268,11 @@ bool ZipArchive::write(string filename, bool update)
 		return false;
 	}
 
-	// Open old zip for copying, if it exists. This is used to copy any entries
-	// that have been previously saved/compressed and are unmodified, to greatly
-	// speed up zip file saving by not having to recompress unchanged entries
-	wxFFileInputStream in(current);
+	// Open old zip for copying, from the temp file that was copied on opening.
+	// This is used to copy any entries that have been previously saved/compressed
+	// and are unmodified, to greatly speed up zip file saving by not having to
+	// recompress unchanged entries
+	wxFFileInputStream in(temp_file);
 	wxZipInputStream inzip(in);
 
 	// Get a list of all entries in the old zip
@@ -330,6 +327,12 @@ bool ZipArchive::write(string filename, bool update)
 	// Clean up
 	delete[] c_entries;
 	zip.Close();
+	out.Close();
+
+	// Update the temp file
+	if (temp_file.IsEmpty())
+		generateTempFileName(filename);
+	wxCopyFile(filename, temp_file);
 
 	return true;
 }
@@ -611,6 +614,30 @@ vector<ArchiveEntry*> ZipArchive::findAll(search_options_t& options)
 	opt.dir = dir;
 	opt.match_namespace = "";
 	return Archive::findAll(opt);
+}
+
+/* ZipArchive::generateTempFileName
+ * Generates the temp file path to use, from [filename]. The temp
+ * file will be in the configured temp folder
+ *******************************************************************/
+void ZipArchive::generateTempFileName(string filename)
+{
+	wxFileName tfn(filename);
+	temp_file = appPath(tfn.GetFullName(), DIR_TEMP);
+	if (wxFileExists(temp_file))
+	{
+		// Make sure we don't overwrite an existing temp file
+		// (in case there are multiple zips open with the same name)
+		int n = 1;
+		while (1)
+		{
+			temp_file = appPath(S_FMT("%s.%d", CHR(tfn.GetFullName()), n), DIR_TEMP);
+			if (!wxFileExists(temp_file))
+				break;
+
+			n++;
+		}
+	}
 }
 
 
