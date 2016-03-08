@@ -970,6 +970,16 @@ bool MapEditorWindow::tryClose()
 	return true;
 }
 
+/* MapEditorWindow::hasMapOpen
+ * Returns true if the currently open map is from [archive]
+ *******************************************************************/
+bool MapEditorWindow::hasMapOpen(Archive* archive)
+{
+	if (!mdesc_current.head)
+		return false;
+	return (mdesc_current.head->getParent() == archive);
+}
+
 /* MapEditorWindow::editObjectProperties
  * Opens the property editor for [objects]
  *******************************************************************/

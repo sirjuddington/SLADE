@@ -1347,6 +1347,13 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 	if (!archive)
 		return false;
 
+	// Check if a map from the archive is currently open
+	if (theMapEditor->IsShown() && theMapEditor->hasMapOpen(archive))
+	{
+		if (!theMapEditor->Close())
+			return false;
+	}
+
 	// Check for unsaved entry changes
 	saveEntryChanges(archive);
 
