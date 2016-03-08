@@ -62,6 +62,9 @@ private:
 		int		line;
 	};
 
+	// Brace matching
+	int	bm_cursor_last_pos;
+
 public:
 	TextEditor(wxWindow* parent, int id);
 	~TextEditor();
