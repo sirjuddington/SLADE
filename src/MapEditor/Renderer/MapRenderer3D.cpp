@@ -1266,11 +1266,7 @@ void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float al
 // -----------------------------------------------------------------------------
 // Sets up coordinates for a quad
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setupQuad(
-	MapRenderer3D::Quad* quad,
-	Seg2f   seg,
-	double  top,
-	double  bottom)
+void MapRenderer3D::setupQuad(MapRenderer3D::Quad* quad, Seg2f seg, double top, double bottom)
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = seg.x1();
@@ -1288,11 +1284,7 @@ void MapRenderer3D::setupQuad(
 // -----------------------------------------------------------------------------
 // Sets up coordinates for a quad
 // -----------------------------------------------------------------------------
-void MapRenderer3D::setupQuad(
-	MapRenderer3D::Quad* quad,
-	Seg2f seg,
-	Plane top,
-	Plane bottom)
+void MapRenderer3D::setupQuad(MapRenderer3D::Quad* quad, Seg2f seg, Plane top, Plane bottom)
 {
 	// Left
 	quad->points[0].x = quad->points[1].x = seg.x1();
@@ -1351,6 +1343,32 @@ void MapRenderer3D::setupQuadTexCoords(
 	quad->points[2].ty = (y2 * y_mult) + ((h_bottom - quad->points[2].z) * y_mult);
 	quad->points[3].tx = (o_left + length) * x_mult;
 	quad->points[3].ty = (y1 * y_mult) + ((h_top - quad->points[3].z) * y_mult);
+}
+
+// -----------------------------------------------------------------------------
+// (Helper for updateLine) Fetches the per-wall-section offset and scale and
+// adjusts the existing offsets to match.
+// -----------------------------------------------------------------------------
+static inline void _apply_zdoom_per_section_offsets(
+	MapSide* side,
+	string   section_name,
+	double*  xoff,
+	double*  yoff,
+	double*  sx,
+	double*  sy)
+{
+	if (side->hasProp("offsetx_" + section_name))
+		*xoff += side->floatProperty("offsetx_" + section_name);
+	if (side->hasProp("offsety_" + section_name))
+		*yoff += side->floatProperty("offsety_" + section_name);
+
+	if (side->hasProp("scalex_" + section_name))
+		*sx = 1.0 / side->floatProperty("scalex_" + section_name);
+	if (side->hasProp("scaley_" + section_name))
+		*sy = 1.0 / side->floatProperty("scaley_" + section_name);
+
+	*xoff *= *sx;
+	*yoff *= *sy;
 }
 
 // -----------------------------------------------------------------------------
