@@ -632,7 +632,7 @@ bool MainWindow::exitProgram()
 
 	// Check if we can close the map editor
 	if (theMapEditor->IsShown())
-		if (!theMapEditor->tryClose())
+		if (!theMapEditor->Close())
 			return false;
 
 	// Close all archives

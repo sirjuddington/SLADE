@@ -8,6 +8,8 @@ protected:
 	uint32_t	cur_ptr;
 	uint32_t	size;
 
+	uint8_t*	allocData(uint32_t size, bool set_data = true);
+
 public:
 	MemChunk(uint32_t size = 0);
 	MemChunk(const uint8_t* data, uint32_t size);
