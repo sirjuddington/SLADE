@@ -1405,6 +1405,17 @@ void MapRenderer3D::updateLine(unsigned index)
 	if (line->hasProp("alpha"))
 		alpha = line->floatProperty("alpha");
 
+	int line_shading = 0;
+	if (render_shade_orthogonal_lines)
+	{
+		// Increase light level for N/S facing lines
+		if (line->x1() == line->x2())
+			line_shading = +16;
+		// Decrease light level for E/W facing lines
+		else if (line->y1() == line->y2())
+			line_shading = -16;
+	}
+
 	// Get first side info
 	int     floor1     = line->frontSector()->floor().height;
 	int     ceiling1   = line->frontSector()->ceiling().height;
@@ -1421,10 +1432,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Increase light level for N/S facing lines
 		if (line->x1() == line->x2())
 		{
-			colour1.r = MathStuff::clamp(colour1.r + 16, 0, 255);
-			colour1.g = MathStuff::clamp(colour1.g + 16, 0, 255);
-			colour1.b = MathStuff::clamp(colour1.b + 16, 0, 255);
-			light1    = MathStuff::clamp(light1 + 16, 0, 255);
+			colour1.r = MathStuff::clamp(colour1.r + line_shading, 0, 255);
+			colour1.g = MathStuff::clamp(colour1.g + line_shading, 0, 255);
+			colour1.b = MathStuff::clamp(colour1.b + line_shading, 0, 255);
+			light1    = MathStuff::clamp(light1 + line_shading, 0, 255);
 		}
 
 		// Decrease light level for E/W facing lines
@@ -1525,10 +1536,10 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Increase light level for N/S facing lines
 		if (line->x1() == line->x2())
 		{
-			colour2.r = MathStuff::clamp(colour2.r + 16, 0, 255);
-			colour2.g = MathStuff::clamp(colour2.g + 16, 0, 255);
-			colour2.b = MathStuff::clamp(colour2.b + 16, 0, 255);
-			light2    = MathStuff::clamp(light2 + 16, 0, 255);
+			colour2.r = MathStuff::clamp(colour2.r + line_shading, 0, 255);
+			colour2.g = MathStuff::clamp(colour2.g + line_shading, 0, 255);
+			colour2.b = MathStuff::clamp(colour2.b + line_shading, 0, 255);
+			light2    = MathStuff::clamp(light2 + line_shading, 0, 255);
 		}
 
 		// Decrease light level for E/W facing lines
