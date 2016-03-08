@@ -51,6 +51,7 @@ public:
 
 	struct ExFloorType
 	{
+		// TODO merge with surface?
 		enum
 		{
 			// TODO how does vavoom work?  their wiki is always broken
@@ -60,15 +61,21 @@ public:
 			NONSOLID = 3,
 		};
 
-		Plane  floor_plane;
-		Plane  ceiling_plane;
-		unsigned control_sector_index;
-		int      floor_type;
-		float    alpha;
-		bool     draw_inside;
+	Plane  floor_plane;
+	Plane  ceiling_plane;
+	unsigned control_sector_index;
+	unsigned control_line_index;
+	int      floor_type;
+	float    alpha;
+	bool     draw_inside;
 	};
 
-public:
+	enum PlaneType
+	{
+		FLOOR_PLANE,
+		CEILING_PLANE,
+	};
+
 	// TODO maybe make this private, maybe
 	vector<ExFloorType> extra_floors;
 
@@ -80,9 +87,9 @@ public:
 
 	const Surface& floor() const { return floor_; }
 	const Surface& ceiling() const { return ceiling_; }
-	short          lightLevel() const { return light_; }
-	short          special() const { return special_; }
-	short          tag() const { return id_; }
+	short   lightLevel() const { return light_; }
+	short   special() const { return special_; }
+	short   tag() const { return id_; }
 
 	string stringProperty(const string& key) override;
 	int    intProperty(const string& key) override;
@@ -101,6 +108,8 @@ public:
 	template<SurfaceType p> short planeHeight();
 	template<SurfaceType p> Plane plane();
 	template<SurfaceType p> void  setPlane(const Plane& plane);
+
+
 
 	Vec2f             getPoint(Point point) override;
 	void              resetBBox() { bbox_.reset(); }
@@ -150,6 +159,10 @@ private:
 	bool             poly_needsupdate_;
 	long             geometry_updated_;
 	Vec2f            text_point_;
+
+	// Computed properties from MapSpecials, not directly stored in the map data
+	Plane plane_floor;
+	Plane plane_ceiling;
 
 	void setGeometryUpdated();
 };

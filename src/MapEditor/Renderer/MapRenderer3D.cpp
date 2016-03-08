@@ -1482,6 +1482,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		quad.colour    = colour1;
 		quad.fogcolour = fogcolour1;
 		quad.light     = light1;
+		quad.texture   = MapEditor::textureManager().texture(line->s1()->texMiddle(), mixed);
 		setupQuadTexCoords(&quad, length, xoff, yoff, ceiling1, floor1, lpeg, sx, sy);
 
 		// Add middle quad and finish
@@ -1947,6 +1948,67 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Add quad
 		lines_[index].quads.push_back(quad);
+	}
+
+	// Add any middle lines created by 3D floors
+	// TODO this code is so, so duplicated, oh dear
+	// TODO going to have to deal with vertical overlaps (which already do
+	// weird things when sloped floors meet in the middle of a line)
+	// TODO relatedly, need to be able to SPLIT a quad even when there's no
+	// texture, because 3d floors can change the lighting
+	// TODO will one-sided lines ever have to worry about this?
+	// TODO need to do back sector too, but with some of the logic reversed
+	MapSector* sectors[2] = { line->backSector(), line->frontSector() };
+	for (unsigned front = 0; front < 2; front++)
+	{
+		MapSector* sector = sectors[front];
+		for (unsigned a = 0; a < sector->extra_floors.size(); a++)
+		{
+			ExFloorType& extra          = sector->extra_floors[a];
+			MapSector*   control_sector = map_->sector(extra.control_sector_index);
+			MapLine*     control_line   = map_->line(extra.control_line_index);
+
+			// TODO
+			xoff = yoff = 0;
+			sx = sy = 1;
+
+			// TODO there's a flag for showing on both sides
+			// TODO and flags for switching out where the texture comes from
+			string texname = control_line->s1()->texMiddle();
+
+			Quad quad;
+			Seg2f seg = line->seg();
+			// If the 3D floor is on the front side of the line, then the
+			// outside wall is on the back, so the line segment must be flipped
+			if (front)
+				seg = seg.flip();
+			setupQuad(&quad, seg, control_sector->ceiling().plane, control_sector->floor().plane);
+			// TODO all this nonsense
+			quad.colour    = colour1.ampf(1.0f, 1.0f, 1.0f, extra.alpha);
+			quad.fogcolour = fogcolour1;
+			quad.light     = light1;
+
+			quad.texture = MapEditor::textureManager().texture(texname, mixed);
+
+			setupQuadTexCoords(
+				&quad,
+				length,
+				xoff,
+				yoff,
+				control_sector->ceiling().height,
+				control_sector->floor().height,
+				false,
+				sx,
+				sy);
+			quad.flags |= MIDTEX;
+			// TODO other flags?
+			// TODO probably need to remember which extra-floor this came from
+			// too, which is slightly more complicated since it might be the
+			// sector on either side of the line
+			// TODO TRANSADD if that one flag is set!
+
+			lines_[index].quads.push_back(quad);
+		}
 	}
 
 	// Finished

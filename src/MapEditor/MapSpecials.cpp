@@ -218,8 +218,8 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 
 		int sector_tag = args[0];
 		int type_flags = args[1];
-		int flags = args[2];
-		int alpha = args[3];
+		int flags      = args[2];
+		int alpha      = args[3];
 
 		float falpha = alpha / 255.0f;
 
@@ -227,11 +227,12 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		// TODO only gzdoom supports slopes here.
 		// TODO this should probably happen live instead of being copied, if
 		// we're moving towards purely live updates here
-		extra_floor.floor_plane = control_sector->floor().plane;
+		extra_floor.floor_plane   = control_sector->floor().plane;
 		extra_floor.ceiling_plane = control_sector->ceiling().plane;
 
 		extra_floor.control_sector_index = control_sector->index();
-		extra_floor.floor_type = type_flags & 0x3;
+		extra_floor.control_line_index   = line->index();
+		extra_floor.floor_type           = type_flags & 0x3;
 
 		extra_floor.alpha = falpha;
 
@@ -783,7 +784,7 @@ template<SurfaceType p> void MapSpecials::applyLineSlopeThing(SLADEMap* map, Map
 
 	// These are computed on first use, to avoid extra work if no lines match
 	MapSector* containing_sector = nullptr;
-	double     thingz;
+	double     thingz            = 0;
 
 	vector<MapLine*> lines;
 	map->putLinesWithId(lineid, lines);
