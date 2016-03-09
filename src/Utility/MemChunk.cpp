@@ -49,7 +49,7 @@ MemChunk::MemChunk(uint32_t size)
 
 	// If a size is specified, allocate that much memory
 	if (size)
-		data = new uint8_t[size];
+		allocData(size);
 	else
 		data = NULL;
 }
@@ -116,31 +116,26 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 	// Check for invalid new size
 	if (new_size == 0)
 	{
-		wxLogMessage("MemChunk::reSize: new_size cannot be 0");
+		LOG_MESSAGE(1, "MemChunk::reSize: new_size cannot be 0");
 		return false;
 	}
 
-	// Resize data
+	// Attempt to allocate memory for new size
+	uint8_t* ndata = allocData(new_size, false);
+	if (!ndata)
+		return false;
+
+	// Preserve existing data if specified
 	if (preserve_data)
 	{
-		//uint8_t* ndata = (uint8_t*)realloc(data, new_size);
-		uint8_t* ndata = new uint8_t[new_size];
-		if (ndata)
-		{
-			memcpy(ndata, data, size*sizeof(uint8_t));
-			delete[] data;
-			data = ndata;
-		}
-		else
-		{
-			wxLogMessage("MemChunk::reSize: Allocation of %d bytes failed", new_size);
-			return false;
-		}
+		memcpy(ndata, data, size * sizeof(uint8_t));
+		delete[] data;
+		data = ndata;
 	}
 	else
 	{
 		clear();
-		data = new uint8_t[new_size];
+		data = ndata;
 	}
 
 	// Update variables
@@ -184,18 +179,21 @@ bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len)
 	// Read the file
 	if (size > 0)
 	{
-		data = new uint8_t[size];
-
-		// Read the file
-		file.Seek(offset, wxFromStart);
-		size_t count = file.Read(data, size);
-		if (count != size)
+		//data = new uint8_t[size];
+		if (allocData(size))
 		{
-			delete[] data;
-			wxLogMessage("MemChunk::importFile: Unable to read full file %s, read %u out of %u",
-			             filename, count, size);
-			Global::error = S_FMT("Unable to read file %s", filename);
-			return false;
+			// Read the file
+			file.Seek(offset, wxFromStart);
+			size_t count = file.Read(data, size);
+			if (count != size)
+			{
+				wxLogMessage("MemChunk::importFile: Unable to read full file %s, read %u out of %u",
+					filename, count, size);
+				Global::error = S_FMT("Unable to read file %s", filename);
+				clear();
+				file.Close();
+				return false;
+			}
 		}
 
 		file.Close();
@@ -232,8 +230,11 @@ bool MemChunk::importFileStream(wxFile& file, uint32_t len)
 	// Read the file
 	if (size > 0)
 	{
-		data = new uint8_t[size];
-		file.Read(data, size);
+		//data = new uint8_t[size];
+		if (allocData(size))
+			file.Read(data, size);
+		else
+			return false;
 	}
 
 	return true;
@@ -258,8 +259,10 @@ bool MemChunk::importMem(const uint8_t* start, uint32_t len)
 	// Load new data
 	if (size > 0)
 	{
-		data = new uint8_t[size];
-		memcpy(data, start, size);
+		if (allocData(size))
+			memcpy(data, start, size);
+		else
+			return false;
 	}
 
 	return true;
@@ -470,4 +473,37 @@ uint32_t MemChunk::crc()
 		return Misc::crc(data, size);
 	else
 		return 0;
+}
+
+
+/* MemChunk::allocData
+ * Allocates [size] bytes of data and returns it, or NULL if the
+ * allocation failed. If [set_data] is true, the MemChunk data will
+ * also be set to the allocated data if successful, or set to NULL
+ * and the size set to 0 if allocation failed.
+ *******************************************************************/
+uint8_t* MemChunk::allocData(uint32_t size, bool set_data)
+{
+	uint8_t* ndata = NULL;
+	try
+	{
+		ndata = new uint8_t[size];
+	}
+	catch (std::bad_alloc& ba)
+	{
+		LOG_MESSAGE(1, "MemChunk: Allocation of %d bytes failed: %s", size, ba.what());
+
+		if (set_data)
+		{
+			cur_ptr = 0;
+			this->size = 0;
+		}
+
+		return NULL;
+	}
+
+	if (set_data)
+		data = ndata;
+
+	return ndata;
 }

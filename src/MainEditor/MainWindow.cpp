@@ -632,7 +632,7 @@ bool MainWindow::exitProgram()
 
 	// Check if we can close the map editor
 	if (theMapEditor->IsShown())
-		if (!theMapEditor->tryClose())
+		if (!theMapEditor->Close())
 			return false;
 
 	// Close all archives
@@ -997,12 +997,11 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	else if (href.StartsWith("recent://"))
 	{
 		// Recent file
-		string rs = href.Right(1);
+		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		index++;
-
-		panel_archivemanager->handleAction(S_FMT("aman_recent%lu", index));
+		theApp->doAction("aman_recent", index);
+		createStartPage();
 	}
 	else if (href.StartsWith("action://"))
 	{

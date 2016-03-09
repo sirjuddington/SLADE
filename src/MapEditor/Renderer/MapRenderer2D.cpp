@@ -2945,6 +2945,7 @@ void MapRenderer2D::forceUpdate(float line_alpha)
 	this->view_scale_inv = 1.0 / view_scale;
 	tex_flats.clear();
 	thing_sprites.clear();
+	thing_paths.clear();
 
 	if (OpenGL::vboSupport())
 	{

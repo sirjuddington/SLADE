@@ -669,6 +669,9 @@ void MapEditor::clearMap()
 	// Clear undo manager
 	undo_manager->clear();
 	last_undo_level = "";
+
+	// Clear other data
+	pathed_things.clear();
 }
 
 #pragma region GENERAL

@@ -592,12 +592,11 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	}
 
 	// Calculate slope plane from our three points: this line's endpoints
-	// (at the model sector's height) and the found vertex (at this
-	// sector's height).
+	// (at the model sector's height) and the found vertex (at this sector's height).
 	double modelz = model->getPlaneHeight<p>();
 	double targetz = target->getPlaneHeight<p>();
-	fpoint3_t p1(line->point1(), modelz);
-	fpoint3_t p2(line->point2(), modelz);
+	fpoint3_t p1(line->x1(), line->y1(), modelz);
+	fpoint3_t p2(line->x2(), line->y2(), modelz);
 	fpoint3_t p3(furthest_vertex->point(), targetz);
 	target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 }
@@ -648,9 +647,9 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 
 		// Three points: endpoints of the line, and the thing itself
 		plane_t target_plane = target->getPlane<p>();
-		fpoint3_t p1(lines[b]->point1(), target_plane.height_at(lines[b]->point1()));
-		fpoint3_t p2(lines[b]->point2(), target_plane.height_at(lines[b]->point2()));
-		fpoint3_t p3(thing->point(), thingz);
+		fpoint3_t p1(lines[b]->x1(), lines[b]->y1(), target_plane.height_at(lines[b]->point1()));
+		fpoint3_t p2(lines[b]->x2(), lines[b]->y2(), target_plane.height_at(lines[b]->point2()));
+		fpoint3_t p3(thing->xPos(), thing->yPos(), thingz);
 		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 	}
 }
@@ -676,7 +675,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 	double tilt = (raw_angle - 90) / 360.0 * TAU;
 	// Resulting plane goes through the position of the thing
 	double z = target->getPlaneHeight<p>() + thing->floatProperty("height");
-	fpoint3_t point(thing->point(), z);
+	fpoint3_t point(thing->xPos(), thing->yPos(), z);
 
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
@@ -728,9 +727,9 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 		}
 
 		short height = target->getPlaneHeight<p>();
-		fpoint3_t p1(thing->point(), thing->floatProperty("height"));
-		fpoint3_t p2(lines[a]->point1(), height);
-		fpoint3_t p3(lines[a]->point2(), height);
+		fpoint3_t p1(thing->xPos(), thing->yPos(), thing->floatProperty("height"));
+		fpoint3_t p2(lines[a]->x1(), lines[a]->y1(), height);
+		fpoint3_t p3(lines[a]->x2(), lines[a]->y2(), height);
 
 		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 		return;
@@ -755,9 +754,9 @@ void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& 
 	// interesting slope, after all.
 	if (z1 || z2 || z3)
 	{
-		fpoint3_t p1(vertices[0]->point(), z1);
-		fpoint3_t p2(vertices[1]->point(), z2);
-		fpoint3_t p3(vertices[2]->point(), z3);
+		fpoint3_t p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
+		fpoint3_t p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
+		fpoint3_t p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
 		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 	}
 }

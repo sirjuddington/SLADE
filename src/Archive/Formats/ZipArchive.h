@@ -40,6 +40,11 @@ public:
 	// Static functions
 	static bool	isZipArchive(MemChunk& mc);
 	static bool isZipArchive(string filename);
+
+private:
+	string	temp_file;
+
+	void	generateTempFileName(string filename);
 };
 
 #endif//__ZIPARCHIVE_H__

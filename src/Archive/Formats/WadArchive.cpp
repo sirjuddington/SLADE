@@ -537,7 +537,11 @@ bool WadArchive::write(MemChunk& mc, bool update)
 	// Clear/init MemChunk
 	mc.clear();
 	mc.seek(0, SEEK_SET);
-	mc.reSize(dir_offset + numEntries() * 16);
+	if (!mc.reSize(dir_offset + numEntries() * 16))
+	{
+		Global::error = "Failed to allocate sufficient memory";
+		return false;
+	}
 
 	// Setup wad type
 	char wad_type[4] = { 'P', 'W', 'A', 'D' };
@@ -577,6 +581,82 @@ bool WadArchive::write(MemChunk& mc, bool update)
 			entry->exProp("Offset") = (int)offset;
 		}
 	}
+
+	return true;
+}
+
+/* WadArchive::write
+ * Writes the wad archive to a file at [filename]
+ * Returns true if successful, false otherwise
+ *******************************************************************/
+bool WadArchive::write(string filename, bool update)
+{
+	// Don't write if iwad
+	if (iwad && iwad_lock)
+	{
+		Global::error = "IWAD saving disabled";
+		return false;
+	}
+
+	// Open file for writing
+	wxFile file;
+	file.Open(filename, wxFile::write);
+	if (!file.IsOpened())
+	{
+		Global::error = "Unable to open file for writing";
+		return false;
+	}
+
+	// Determine directory offset & individual lump offsets
+	uint32_t dir_offset = 12;
+	ArchiveEntry* entry = NULL;
+	for (uint32_t l = 0; l < numEntries(); l++)
+	{
+		entry = getEntry(l);
+		setEntryOffset(entry, dir_offset);
+		dir_offset += entry->getSize();
+	}
+
+	// Setup wad type
+	char wad_type[4] = { 'P', 'W', 'A', 'D' };
+	if (iwad) wad_type[0] = 'I';
+
+	// Write the header
+	uint32_t num_lumps = numEntries();
+	file.Write(wad_type, 4);
+	file.Write(&num_lumps, 4);
+	file.Write(&dir_offset, 4);
+
+	// Write the lumps
+	for (uint32_t l = 0; l < num_lumps; l++)
+	{
+		entry = getEntry(l);
+		file.Write(entry->getData(), entry->getSize());
+	}
+
+	// Write the directory
+	for (uint32_t l = 0; l < num_lumps; l++)
+	{
+		entry = getEntry(l);
+		char name[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+		long offset = getEntryOffset(entry);
+		long size = entry->getSize();
+
+		for (size_t c = 0; c < entry->getName().length() && c < 8; c++)
+			name[c] = entry->getName()[c];
+
+		file.Write(&offset, 4);
+		file.Write(&size, 4);
+		file.Write(name, 8);
+
+		if (update)
+		{
+			entry->setState(0);
+			entry->exProp("Offset") = (int)offset;
+		}
+	}
+
+	file.Close();
 
 	return true;
 }

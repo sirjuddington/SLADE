@@ -2892,7 +2892,8 @@ void MapCanvas::keyBinds2dView(string name)
 	{
 		mouse_downpos.set(mouse_pos);
 		panning = true;
-		editor->clearHilight();
+		if (mouse_state == MSTATE_NORMAL)
+			editor->clearHilight();
 		SetCursor(wxCURSOR_SIZING);
 	}
 
@@ -3204,7 +3205,18 @@ void MapCanvas::keyBinds2d(string name)
 			else if (name == "me2d_line_tag_edit")
 			{
 				if (editor->beginTagEdit() > 0)
+				{
 					mouse_state = MSTATE_TAG_SECTORS;
+
+					// Setup help text
+					string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+					string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+					feature_help_lines.clear();
+					feature_help_lines.push_back("Tag Edit");
+					feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+					feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
+					feature_help_lines.push_back("Left Click = Toggle tagged sector");
+				}
 			}
 		}
 
@@ -3382,7 +3394,8 @@ void MapCanvas::onKeyBindRelease(string name)
 	if (name == "me2d_pan_view" && panning)
 	{
 		panning = false;
-		editor->updateHilight(mouse_pos_m, view_scale);
+		if (mouse_state == MSTATE_NORMAL)
+			editor->updateHilight(mouse_pos_m, view_scale);
 		SetCursor(wxNullCursor);
 	}
 
@@ -3894,6 +3907,9 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	//if (mouse_state == MSTATE_EDIT)
 	//	determineObjectEditState();
 
+#ifndef __WXMAC__
+	// Skipping events on OS X doesn't do anything but causes
+	// sound alert (a.k.a. error beep) on every key press
 	if (e.GetKeyCode() != WXK_UP &&
 		e.GetKeyCode() != WXK_DOWN &&
 		e.GetKeyCode() != WXK_LEFT &&
@@ -3903,6 +3919,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		e.GetKeyCode() != WXK_NUMPAD_LEFT &&
 		e.GetKeyCode() != WXK_NUMPAD_RIGHT)
 		e.Skip();
+#endif // !__WXMAC__
 }
 
 /* MapCanvas::onKeyUp
