@@ -2885,7 +2885,8 @@ void MapCanvas::keyBinds2dView(string name)
 	{
 		mouse_downpos.set(mouse_pos);
 		panning = true;
-		editor->clearHilight();
+		if (mouse_state == MSTATE_NORMAL)
+			editor->clearHilight();
 		SetCursor(wxCURSOR_SIZING);
 	}
 
@@ -3197,7 +3198,18 @@ void MapCanvas::keyBinds2d(string name)
 			else if (name == "me2d_line_tag_edit")
 			{
 				if (editor->beginTagEdit() > 0)
+				{
 					mouse_state = MSTATE_TAG_SECTORS;
+
+					// Setup help text
+					string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+					string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+					feature_help_lines.clear();
+					feature_help_lines.push_back("Tag Edit");
+					feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+					feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
+					feature_help_lines.push_back("Left Click = Toggle tagged sector");
+				}
 			}
 		}
 
@@ -3375,7 +3387,8 @@ void MapCanvas::onKeyBindRelease(string name)
 	if (name == "me2d_pan_view" && panning)
 	{
 		panning = false;
-		editor->updateHilight(mouse_pos_m, view_scale);
+		if (mouse_state == MSTATE_NORMAL)
+			editor->updateHilight(mouse_pos_m, view_scale);
 		SetCursor(wxNullCursor);
 	}
 
