@@ -123,13 +123,6 @@ CVAR(Bool, update_check_beta, false, CVAR_SAVE)
 
 
 /*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Bool, map_show_selection_numbers)
-EXTERN_CVAR(Bool, script_show_language_list)
-
-
-/*******************************************************************
  * CLASSES
  *******************************************************************/
 
@@ -766,7 +759,6 @@ void MainApp::initActions()
 	new SAction("mapw_clear_selection", "Clear Selection", "", "Clear the current selection, if any", "kb:me2d_clear_selection");
 	new SAction("mapw_show_fullmap", "Show Full Map", "", "Zooms out so that the full map is visible", "kb:me2d_show_all");
 	new SAction("mapw_show_item", "Show Item...", "", "Zoom and scroll to show a map item");
-	new SAction("mapw_toggle_selection_numbers", "Show Selection Numbers", "", "Show/hide selection numbers", "kb:me2d_toggle_selection_numbers", SAction::CHECK);
 	new SAction("mapw_mirror_y", "Mirror Vertically", "flip", "Mirror the selected objects vertically", "kb:me2d_mirror_y");
 	new SAction("mapw_mirror_x", "Mirror Horizontally", "mirror", "Mirror the selected objects horizontally", "kb:me2d_mirror_x");
 
@@ -774,12 +766,7 @@ void MainApp::initActions()
 	new SAction("mapw_script_save", "Save", "save", "Save changes to scripts");
 	new SAction("mapw_script_compile", "Compile", "compile", "Compile scripts");
 	new SAction("mapw_script_jumpto", "Jump To...", "up", "Jump to a specific script/function");
-	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK);
-
-
-	// Init checked actions
-	getAction("mapw_toggle_selection_numbers")->toggled = map_show_selection_numbers;
-	getAction("mapw_script_togglelanguage")->toggled = script_show_language_list;
+	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK, -1, -1, 1, "script_show_language_list");
 }
 
 /* MainApp::singleInstanceCheck
@@ -1327,7 +1314,7 @@ void MainApp::toggleAction(string id)
 
 	// Type is 'check', just toggle it
 	if (action && action->type == SAction::CHECK)
-		action->toggled = !action->toggled;
+		action->setToggled(!action->toggled);
 
 	// Type is 'radio', toggle this and un-toggle others in the group
 	else if (action && action->type == SAction::RADIO && action->group >= 0)
@@ -1336,10 +1323,10 @@ void MainApp::toggleAction(string id)
 		for (unsigned a = 0; a < actions.size(); a++)
 		{
 			if (actions[a]->group == action->group)
-				actions[a]->toggled = false;
+				actions[a]->setToggled(false);
 		}
 
-		action->toggled = true;
+		action->setToggled(true);
 	}
 }
 

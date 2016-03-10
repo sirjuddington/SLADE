@@ -242,7 +242,6 @@ bool ScriptEditorPanel::handleAction(string name)
 	// Toggle language list
 	else if (name == "mapw_script_togglelanguage")
 	{
-		script_show_language_list = !script_show_language_list;
 		list_words->Show(script_show_language_list);
 		Layout();
 		Refresh();
