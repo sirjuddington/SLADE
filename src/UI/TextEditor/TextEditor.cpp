@@ -60,6 +60,7 @@ CVAR(Bool, txed_calltips_parenthesis, true, CVAR_SAVE)
 CVAR(Bool, txed_fold_enable, true, CVAR_SAVE)
 CVAR(Bool, txed_fold_comments, false, CVAR_SAVE)
 CVAR(Bool, txed_fold_preprocessor, true, CVAR_SAVE)
+CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
 
 
 /*******************************************************************

@@ -46,6 +46,12 @@ CVAR(Bool, script_show_language_list, true, CVAR_SAVE)
 
 
 /*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Bool, txed_trim_whitespace)
+
+
+/*******************************************************************
  * SCRIPTEDTIORPANEL CLASS FUNCTIONS
  *******************************************************************/
 
@@ -187,6 +193,10 @@ void ScriptEditorPanel::populateWordList()
  *******************************************************************/
 void ScriptEditorPanel::saveScripts()
 {
+	// Trim whitespace
+	if (txed_trim_whitespace)
+		text_editor->trimWhitespace();
+
 	// Write text to entry
 	wxCharBuffer buf = text_editor->GetText().mb_str();
 	entry_script->importMem(buf, buf.length());
