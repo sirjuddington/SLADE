@@ -61,6 +61,7 @@ CVAR(Bool, txed_fold_enable, true, CVAR_SAVE)
 CVAR(Bool, txed_fold_comments, false, CVAR_SAVE)
 CVAR(Bool, txed_fold_preprocessor, true, CVAR_SAVE)
 CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
+CVAR(Bool, txed_word_wrap, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -383,6 +384,12 @@ void TextEditor::setup()
 
 	// Re-colour text
 	Colourise(0, GetTextLength());
+
+	// Set word wrapping
+	if (txed_word_wrap)
+		SetWrapMode(wxSTC_WRAP_WORD);
+	else
+		SetWrapMode(wxSTC_WRAP_NONE);
 }
 
 /* TextEditor::setupFoldMargin
