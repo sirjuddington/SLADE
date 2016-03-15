@@ -353,6 +353,9 @@ void MapSpecials::processACSScripts(ArchiveEntry* entry)
 	}
 }
 
+/* MapSpecials::processZDoomSlopes
+ * Process ZDoom slope specials
+ *******************************************************************/
 void MapSpecials::processZDoomSlopes(SLADEMap* map)
 {
 	// ZDoom has a variety of slope mechanisms, which must be evaluated in a
@@ -561,7 +564,9 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 	}
 }
 
-
+/* MapSpecials::applyPlaneAlign
+ * Applies a Plane_Align special on [line], to [target] from [model]
+ *******************************************************************/
 template<PlaneType p>
 void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* model)
 {
@@ -601,6 +606,10 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 	target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 }
 
+/* MapSpecials::applyLineSlopeThing
+ * Applies a line slope special on [thing], to it's containing sector
+ * in [map]
+ *******************************************************************/
 template<PlaneType p>
 void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 {
@@ -654,6 +663,10 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 	}
 }
 
+/* MapSpecials::applyLineSlopeThing
+ * Applies a tilt slope special on [thing], to it's containing sector
+ * in [map]
+ *******************************************************************/
 template<PlaneType p>
 void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 {
@@ -698,6 +711,10 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 	target->setPlane<p>(MathStuff::planeFromTriangle(point, point + vec1, point + vec2));
 }
 
+/* MapSpecials::applyVavoomSlopeThing
+ * Applies a vavoom slope special on [thing], to it's containing
+ * sector in [map]
+ *******************************************************************/
 template<PlaneType p>
 void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 {
@@ -738,25 +755,34 @@ void MapSpecials::applyVavoomSlopeThing(SLADEMap* map, MapThing* thing)
 	LOG_MESSAGE(1, "Vavoom thing %d has no matching line with first arg %d", thing->getIndex(), tid);
 }
 
+/* MapSpecials::vertexHeight
+ * Returns the floor/ceiling height of [vertex] in [sector]
+ *******************************************************************/
+template<PlaneType p>
+double MapSpecials::vertexHeight(MapVertex* vertex, MapSector* sector)
+{
+	// Return vertex height if set via UDMF property
+	string prop = (p == FLOOR_PLANE ? "zfloor" : "zceiling");
+	if (vertex->hasProp(prop))
+		return vertex->floatProperty(prop);
+
+	// Otherwise just return sector height
+	return sector->getPlaneHeight<p>();
+}
+
+/* MapSpecials::applyVertexHeightSlope
+ * Applies a slope to sector [target] based on the heights of its
+ * vertices (triangular sectors only)
+ *******************************************************************/
 template<PlaneType p>
 void MapSpecials::applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights)
 {
-	string prop = (p == FLOOR_PLANE ? "zfloor" : "zceiling");
-	if (!theGameConfiguration->getUDMFProperty(prop, MOBJ_VERTEX))
-		return;
+	double z1 = heights.count(vertices[0]) ? heights[vertices[0]] : vertexHeight<p>(vertices[0], target);
+	double z2 = heights.count(vertices[1]) ? heights[vertices[1]] : vertexHeight<p>(vertices[1], target);
+	double z3 = heights.count(vertices[2]) ? heights[vertices[2]] : vertexHeight<p>(vertices[2], target);
 
-	double z1 = heights.count(vertices[0]) ? heights[vertices[0]] : vertices[0]->floatProperty(prop);
-	double z2 = heights.count(vertices[1]) ? heights[vertices[1]] : vertices[1]->floatProperty(prop);
-	double z3 = heights.count(vertices[2]) ? heights[vertices[2]] : vertices[2]->floatProperty(prop);
-	// NOTE: there's currently no way to distinguish a height of 0 from an
-	// unset height, so assume the author intended to have a slope if at least
-	// one vertex has a non-zero height.  All zeroes would not be a very
-	// interesting slope, after all.
-	if (z1 || z2 || z3)
-	{
-		fpoint3_t p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
-		fpoint3_t p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
-		fpoint3_t p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
-		target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
-	}
+	fpoint3_t p1(vertices[0]->xPos(), vertices[0]->yPos(), z1);
+	fpoint3_t p2(vertices[1]->xPos(), vertices[1]->yPos(), z2);
+	fpoint3_t p3(vertices[2]->xPos(), vertices[2]->yPos(), z3);
+	target->setPlane<p>(MathStuff::planeFromTriangle(p1, p2, p3));
 }

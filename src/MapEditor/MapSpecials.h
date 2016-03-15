@@ -32,6 +32,8 @@ class MapSpecials
 	template<PlaneType>
 	void	applyVavoomSlopeThing(SLADEMap* map, MapThing* thing);
 	template<PlaneType>
+	double	vertexHeight(MapVertex* vertex, MapSector* sector);
+	template<PlaneType>
 	void	applyVertexHeightSlope(MapSector* target, vector<MapVertex*>& vertices, VertexHeightMap& heights);
 
 public:
