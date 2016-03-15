@@ -1,5 +1,5 @@
-$version = "3110"
-$versionstring = "3.1.1"
+$version = "3111"
+$versionstring = "3.1.1.1"
 
 # Check for 7-zip install
 $7zpath = "$env:ProgramFiles\7-Zip\7z.exe"
@@ -89,7 +89,7 @@ if ($buildinstaller.ToLower() -eq "y")
 	if (Test-Path $innocompiler)
 	{
 		Write-Host "`nBuiling installer..." -foregroundcolor yellow
-		& $innocompiler "/Q" "/O$releasedir" "/F`"Setup_SLADE_$versionstring`"" (resolve-path "..\win_installer\SLADE.iss").Path
+		& $innocompiler "/Q" "/O$releasedir" "/F`"Setup_SLADE_$version`"" (resolve-path "..\win_installer\SLADE.iss").Path
 		Write-Host "Done" -foregroundcolor green
 	}
 }
