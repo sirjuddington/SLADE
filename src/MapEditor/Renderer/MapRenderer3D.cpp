@@ -821,6 +821,11 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 		}
 	}
 
+	// Scaling applies to offsets as well.
+	// Note for posterity: worldpanning only applies to textures, not flats
+	ox /= sx;
+	oy /= sy;
+
 	// Update polygon texture coordinates
 	if (floor)
 		sector->getPolygon()->setTexture(floors[index].texture);
