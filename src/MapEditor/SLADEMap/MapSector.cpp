@@ -94,6 +94,8 @@ void MapSector::copy(MapObject* s)
 	if (s->getObjType() != MOBJ_SECTOR)
 		return;
 
+	setModified();
+
 	// Update texture counts (decrement previous)
 	if (parent_map)
 	{
@@ -231,16 +233,16 @@ void MapSector::setIntProperty(string key, int value)
 
 void MapSector::setFloorHeight(short height)
 {
+	setModified();
 	f_height = height;
 	setFloorPlane(plane_t::flat(height));
-	setModified();
 }
 
 void MapSector::setCeilingHeight(short height)
 {
+	setModified();
 	c_height = height;
 	setCeilingPlane(plane_t::flat(height));
-	setModified();
 }
 
 /* MapLine::getPoint
@@ -671,10 +673,10 @@ rgba_t MapSector::getFogColour()
  *******************************************************************/
 void MapSector::connectSide(MapSide* side)
 {
+	setModified();
 	connected_sides.push_back(side);
 	poly_needsupdate = true;
 	bbox.reset();
-	setModified();
 	setGeometryUpdated();
 }
 
@@ -683,6 +685,7 @@ void MapSector::connectSide(MapSide* side)
  *******************************************************************/
 void MapSector::disconnectSide(MapSide* side)
 {
+	setModified();
 	for (unsigned a = 0; a < connected_sides.size(); a++)
 	{
 		if (connected_sides[a] == side)
@@ -692,7 +695,6 @@ void MapSector::disconnectSide(MapSide* side)
 		}
 	}
 
-	setModified();
 	poly_needsupdate = true;
 	bbox.reset();
 	setGeometryUpdated();

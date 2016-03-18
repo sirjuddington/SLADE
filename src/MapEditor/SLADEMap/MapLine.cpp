@@ -286,6 +286,7 @@ void MapLine::setBoolProperty(string key, bool value)
 void MapLine::setIntProperty(string key, int value)
 {
 	MapVertex* vertex;
+	setModified();
 
 	// Front side property
 	if (key.StartsWith("side1."))
@@ -337,10 +338,7 @@ void MapLine::setIntProperty(string key, int value)
 
 	// Special
 	else if (key == "special")
-	{
 		special = value;
-		setModified();
-	}
 
 	// Line property
 	else
@@ -354,6 +352,8 @@ void MapLine::setIntProperty(string key, int value)
  *******************************************************************/
 void MapLine::setFloatProperty(string key, double value)
 {
+	setModified();
+
 	// Front side property
 	if (key.StartsWith("side1."))
 	{
@@ -380,6 +380,8 @@ void MapLine::setFloatProperty(string key, double value)
  *******************************************************************/
 void MapLine::setStringProperty(string key, string value)
 {
+	setModified();
+
 	// Front side property
 	if (key.StartsWith("side1."))
 	{
@@ -671,8 +673,6 @@ void MapLine::resetInternals()
 		s2->resetPolygon();
 		s2->resetBBox();
 	}
-
-	setModified();
 }
 
 /* MapLine::flip
