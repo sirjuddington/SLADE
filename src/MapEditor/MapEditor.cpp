@@ -1382,7 +1382,7 @@ bool MapEditor::selectWithin(double xmin, double ymin, double xmax, double ymax,
 		selection.push_back(nsel[a]);
 
 	if (add)
-		addEditorMessage(S_FMT("Selected %lu %s", asel.size(), getModeString()));
+		addEditorMessage(S_FMT("Selected %lu %s", nsel.size(), getModeString()));
 	else
 		addEditorMessage(S_FMT("Selected %lu %s", selection.size(), getModeString()));
 
