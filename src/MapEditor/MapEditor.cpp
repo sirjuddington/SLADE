@@ -3978,7 +3978,7 @@ void MapEditor::changeSectorLight3d(int amount)
 	beginUndoRecordLocked("Change Sector Light", true, false, false);
 
 	// Go through items
-	vector<MapSector*> processed_sectors;
+	std::set<MapObject*> processed;
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
@@ -3993,10 +3993,16 @@ void MapEditor::changeSectorLight3d(int amount)
 			if (link_3d_light)
 			{
 				// Ignore if sector already processed
-				if (VECTOR_EXISTS(processed_sectors, sector))
+				if (processed.count(sector))
 					continue;
-				else
-					processed_sectors.push_back(sector);
+				processed.insert(sector);
+			}
+			else
+			{
+				// Ignore if side already processed
+				if (processed.count(side))
+					continue;
+				processed.insert(side);
 			}
 
 			// Check for decrease when light = 255
@@ -4029,10 +4035,9 @@ void MapEditor::changeSectorLight3d(int amount)
 			// Ignore if sector already processed
 			if (link_3d_light)
 			{
-				if (VECTOR_EXISTS(processed_sectors, s))
+				if (processed.count(s))
 					continue;
-				else
-					processed_sectors.push_back(s);
+				processed.insert(s);
 			}
 
 			// Change light level
