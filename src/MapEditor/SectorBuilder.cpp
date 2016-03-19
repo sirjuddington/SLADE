@@ -196,7 +196,7 @@ bool SectorBuilder::traceOutline(MapLine* line, bool front)
 
 		// Get next edge
 		edge_t edge_next = nextEdge(edge, visited_lines);
-		LOG_MESSAGE(4, "Got next edge line %d", edge_next.line ? edge_next.line->getIndex() : -1);
+		LOG_MESSAGE(4, "Got next edge line %d, %s", edge_next.line ? edge_next.line->getIndex() : -1, edge_next.front ? "front" : "back");
 
 		// Check if no valid next edge was found
 		if (!edge_next.line)
