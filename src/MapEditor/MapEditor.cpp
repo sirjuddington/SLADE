@@ -2760,12 +2760,9 @@ void MapEditor::createThing(double x, double y)
 	// Setup properties
 	if (copy_thing)
 	{
-		// Copy properties from the last copied thing (except position)
-		//double x = thing->xPos();
-		//double y = thing->yPos();
-		thing->copy(copy_thing);
-		thing->setFloatProperty("x", x);
-		thing->setFloatProperty("y", y);
+		// Copy type and angle from the last copied thing
+		thing->setIntProperty("type", copy_thing->getType());
+		thing->setIntProperty("angle", copy_thing->getAngle());
 	}
 	else
 		theGameConfiguration->applyDefaults(thing, map.currentFormat() == MAP_UDMF);	// No thing properties to copy, get defaults from game configuration
