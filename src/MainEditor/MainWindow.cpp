@@ -710,6 +710,11 @@ void MainWindow::openMapEditor(Archive* archive)
 			return;
 		}
 
+		// Show map editor window
+		if (theMapEditor->IsIconized())
+			theMapEditor->Restore();
+		theMapEditor->Raise();
+
 		// Attempt to open map
 		if (!theMapEditor->openMap(md))
 		{
