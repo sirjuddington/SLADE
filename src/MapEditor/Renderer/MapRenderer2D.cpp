@@ -2011,6 +2011,11 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 				}
 			}
 
+			// Scaling applies to offsets as well.
+			// Note for posterity: worldpanning only applies to textures, not flats
+			ox /= sx;
+			oy /= sy;
+
 			poly->updateTextureCoords(sx, sy, ox, oy, rot);
 		}
 
