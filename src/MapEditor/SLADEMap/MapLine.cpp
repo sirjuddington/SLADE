@@ -286,24 +286,28 @@ void MapLine::setBoolProperty(string key, bool value)
 void MapLine::setIntProperty(string key, int value)
 {
 	MapVertex* vertex;
-	setModified();
 
 	// Front side property
 	if (key.StartsWith("side1."))
 	{
 		if (side1)
-			return side1->setIntProperty(key.Mid(6), value);
+			side1->setIntProperty(key.Mid(6), value);
+		return;
 	}
 
 	// Back side property
 	else if (key.StartsWith("side2."))
 	{
 		if (side2)
-			return side2->setIntProperty(key.Mid(6), value);
+			side2->setIntProperty(key.Mid(6), value);
+		return;
 	}
 
+	// Mark as modified only if a line prop, not a side prop, is changing
+	setModified();
+
 	// Vertices
-	else if (key == "v1")
+	if (key == "v1")
 	{
 		if ((vertex = parent_map->getVertex(value)))
 		{
@@ -352,8 +356,6 @@ void MapLine::setIntProperty(string key, int value)
  *******************************************************************/
 void MapLine::setFloatProperty(string key, double value)
 {
-	setModified();
-
 	// Front side property
 	if (key.StartsWith("side1."))
 	{
@@ -380,8 +382,6 @@ void MapLine::setFloatProperty(string key, double value)
  *******************************************************************/
 void MapLine::setStringProperty(string key, string value)
 {
-	setModified();
-
 	// Front side property
 	if (key.StartsWith("side1."))
 	{
