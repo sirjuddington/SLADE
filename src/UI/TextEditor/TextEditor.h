@@ -36,6 +36,7 @@ private:
 	wxCheckBox*	cb_match_word_whole;
 	wxCheckBox*	cb_match_word_start;
 	wxCheckBox*	cb_search_regex;
+	wxCheckBox*	cb_allow_escape;
 
 	// Events
 	void	onBtnFindNext(wxCommandEvent& e);

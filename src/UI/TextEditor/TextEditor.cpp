@@ -74,8 +74,11 @@ CVAR(Bool, txed_word_wrap, false, CVAR_SAVE)
 FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditor* text_editor)
 	: wxPanel(parent, -1), text_editor(text_editor)
 {
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
+
 	wxGridBagSizer* gb_sizer = new wxGridBagSizer(4, 4);
-	SetSizer(gb_sizer);
+	sizer->Add(gb_sizer, 1, wxEXPAND | wxBOTTOM, 4);
 
 	// Find
 	text_find = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
@@ -100,12 +103,16 @@ FindReplacePanel::FindReplacePanel(wxWindow* parent, TextEditor* text_editor)
 	cb_match_word_whole = new wxCheckBox(this, -1, "Match Word (Whole)");
 	cb_match_word_start = new wxCheckBox(this, -1, "Match Word (Start)");
 	cb_search_regex = new wxCheckBox(this, -1, "Regular Expression");
-	gb_sizer->Add(cb_match_case, wxGBPosition(0, 4), wxDefaultSpan, wxALIGN_CENTER_VERTICAL | wxLEFT, 4);
-	gb_sizer->Add(cb_search_regex, wxGBPosition(0, 5), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(cb_match_word_whole, wxGBPosition(1, 4), wxDefaultSpan, wxALIGN_CENTER_VERTICAL | wxLEFT, 4);
-	gb_sizer->Add(cb_match_word_start, wxGBPosition(1, 5), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	cb_allow_escape = new wxCheckBox(this, -1, "Allow Backslash Expressions");
+	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, 0, wxEXPAND);
+	hbox->Add(cb_match_case, 0, wxEXPAND | wxRIGHT, 4);
+	hbox->Add(cb_match_word_whole, 0, wxEXPAND | wxRIGHT, 4);
+	hbox->Add(cb_match_word_start, 0, wxEXPAND | wxRIGHT, 4);
+	hbox->Add(cb_search_regex, 0, wxEXPAND | wxRIGHT, 4);
+	hbox->Add(cb_allow_escape, 0, wxEXPAND);
 
-	gb_sizer->AddGrowableCol(1);
+	gb_sizer->AddGrowableCol(1, 1);
 
 	// Bind events
 	btn_find_next->Bind(wxEVT_BUTTON, &FindReplacePanel::onBtnFindNext, this);
@@ -143,7 +150,16 @@ void FindReplacePanel::setFindText(string find)
  *******************************************************************/
 string FindReplacePanel::getFindText()
 {
-	return text_find->GetValue();
+	string find = text_find->GetValue();
+
+	if (cb_allow_escape->GetValue())
+	{
+		find.Replace("\\n", "\n");
+		find.Replace("\\r", "\r");
+		find.Replace("\\t", "\t");
+	}
+
+	return find;
 }
 
 /* FindReplacePanel::getFindFlags
@@ -169,7 +185,16 @@ int FindReplacePanel::getFindFlags()
  *******************************************************************/
 string FindReplacePanel::getReplaceText()
 {
-	return text_replace->GetValue();
+	string replace = text_replace->GetValue();
+
+	if (cb_allow_escape->GetValue())
+	{
+		replace.Replace("\\n", "\n");
+		replace.Replace("\\r", "\r");
+		replace.Replace("\\t", "\t");
+	}
+
+	return replace;
 }
 
 
