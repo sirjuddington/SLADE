@@ -40,6 +40,7 @@
 #include <wx/dialog.h>
 #include <wx/gbsizer.h>
 #include <wx/msgdlg.h>
+#include <wx/numdlg.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -1079,6 +1080,35 @@ void TextEditor::openJumpToDialog()
 	}
 }
 
+/* TextEditor::jumpToLine
+ * Prompts the user for a line number and moves the cursor to the end
+ * of the entered line
+ *******************************************************************/
+void TextEditor::jumpToLine()
+{
+	int numlines = GetNumberOfLines();
+
+	// Prompt for line number
+	long line = wxGetNumberFromUser(
+		"Enter a line number to jump to",
+		S_FMT("Line number (1-%d):", numlines),
+		"Jump To Line",
+		GetCurrentLine() + 1,
+		1,
+		numlines,
+		this);
+
+	if (line >= 1)
+	{
+		// Move to line
+		int pos = GetLineEndPosition(line - 1);
+		SetCurrentPos(pos);
+		SetSelection(pos, pos);
+		EnsureCaretVisible();
+		SetFocus();
+	}
+}
+
 /* TextEditor::foldAll
  * Folds or unfolds all code folding levels, depending on [fold]
  *******************************************************************/
@@ -1218,6 +1248,13 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 		else if (name == "ted_fold_unfoldall")
 		{
 			foldAll(false);
+			handled = true;
+		}
+
+		// Jump to line
+		else if (name == "ted_jumptoline")
+		{
+			jumpToLine();
 			handled = true;
 		}
 	}

@@ -93,6 +93,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	// --- Custom menu ---
 	menu_custom = new wxMenu();
 	theApp->getAction("ptxt_jump_to")->addToMenu(menu_custom);
+	theApp->getAction("ptxt_jump_to_line")->addToMenu(menu_custom);
 	theApp->getAction("ptxt_find_replace")->addToMenu(menu_custom);
 
 	// 'Code Folding' submenu
@@ -302,9 +303,13 @@ bool TextEntryPanel::redo()
  *******************************************************************/
 bool TextEntryPanel::handleAction(string id)
 {
-	// Jump To
+	// Jump To Definition
 	if (id == "ptxt_jump_to")
 		text_area->openJumpToDialog();
+
+	// Jump To Line
+	else if (id == "ptxt_jump_to_line")
+		text_area->jumpToLine();
 
 	// Find+Replace
 	else if (id == "ptxt_find_replace")

@@ -105,6 +105,7 @@ public:
 
 	// Jump To
 	void	openJumpToDialog();
+	void	jumpToLine();
 
 	// Folding
 	void	foldAll(bool fold = true);
