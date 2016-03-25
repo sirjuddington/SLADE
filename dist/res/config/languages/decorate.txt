@@ -115,8 +115,11 @@ decorate : cstyle {
 
 		// DECORATE expressions
 		x, y, z, angle, momx, momy, momz, velx, vely, velz, pitch, tid, tidtohate, 
-		ceilingz, floorz, scalex, scaley, score, special, waterlevel, var, int, fixed_t, angle_t,
+		ceilingz, floorz, scalex, scaley, score, special, waterlevel, var, int,
 		roll,
+
+		// Scripting
+		bool, state, if, else, return,
 		
 		// Damage type properties
 		NoArmor, Factor, ReplaceFactor,
@@ -207,7 +210,8 @@ decorate : cstyle {
 		CBAF_AIMFACING, CBAF_EXPLICITANGLE, CBAF_NOPITCH, CBAF_NORANDOM, CBAF_NORANDOMPUFFZ,
 
 		// A_CheckBlock flags
-		CBF_NOLINES, CBF_SETTARGET, CBF_SETMASTER, CBF_SETTRACER, CBF_SETONPTR, CBF_DROPOFF,
+		CBF_NOLINES, CBF_SETTARGET, CBF_SETMASTER, CBF_SETTRACER, CBF_SETONPTR, CBF_DROPOFF, CBF_NOACTORS,
+		CBF_ABSOLUTEPOS, CBF_ABSOLUTEANGLE,
 
 		CHAN_5, CHAN_6, CHAN_7, CHAN_AUTO, CHAN_BODY, CHAN_ITEM, CHAN_LISTENERZ, CHAN_MAYBE_LOCAL,
 		CHAN_NOPAUSE, CHAN_UI, CHAN_VOICE, CHAN_WEAPON,
@@ -354,7 +358,7 @@ decorate : cstyle {
 		A_Burst = "string classname";
 		A_CentaurDefend;
 		A_Chase = "[string MeleeState], [string RangedState], [int Flags]";
-		A_CheckLOF = "state jump, [int flags], [float range], [float minrange], [float angle], [float pitch], [float offsetheight], [float offsetwidth], [pointer target]";
+		A_CheckLOF = "state jump, [int flags], [float range], [float minrange], [float angle], [float pitch], [float offsetheight], [float offsetwidth], [pointer target], [float offsetforward]";
 		A_ClearSoundTarget;
 		A_ClearTarget;
 		A_ClearLastHeard;
@@ -412,14 +416,14 @@ decorate : cstyle {
 		A_BasicAttack = "int meleedamage, string meleesound, string missiletype, float missileheight";
 		A_BulletAttack;
 		A_MonsterRail;
-		A_Blast = "[int flags], [int strength], [int radius], [float speed], [class blasteffect], [sound blastsound]";
+		A_Blast = "[int flags], [float strength], [float radius], [float speed], [class blasteffect], [sound blastsound]";
 		A_Explode = "[int dmg], [int radius], [int flags], [bool alert], [int fulldmgradius], [int nails], [int naildmg], [string pufftype]";
 		A_RadiusThrust = "[int thrust], [int radius], [int flags], [int fullthrustdistance]";
 		A_RadiusGive = "class itemtype, float distance, int flags, [int amount], [class filter], [string species], [float mindist]";
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
 		A_Quake = "int intensity, int duration, int damrad, int tremrad, [sound sfx]";
-		A_QuakeEx = "int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ]";
+		A_QuakeEx = "int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [int falloff], [int highpoint]";
 		A_SetTics = "int tics";
 
 		A_FreezeDeath;
@@ -476,7 +480,7 @@ decorate : cstyle {
 		A_CheckRange = "float distance, state label, [bool two_dimension]", "float distance, int offset, [bool two_dimension]";
 		A_CheckSight = "string state", "int offset";
 		A_CheckSightOrRange = "float distance, string state, [bool two_dimension]", "float distance, int offset, [bool two_dimension]";
-		A_CheckBlock = "string state, [int flags], [int pointer]";
+		A_CheckBlock = "string state, [int flags], [int pointer], [float xofs], [float yofs], [float zofs], [float angle]";
 		A_CheckProximity = "string state, string classname, float distance, [int count], [int flags], [int ptr]";
 		A_CheckSpecies = "string state, [string species], [int ptr]";
 
@@ -541,7 +545,7 @@ decorate : cstyle {
 		A_SetSpecial = "int special, [int arg0], [int arg1], [int arg2], [int arg3], [int arg4]";
 		A_SetSpeed = "float speed, [int pointer]";
 		A_SetFloatSpeed = "float speed, [int pointer]";
-		A_SetScale = "float scalex, [float scaley], [int pointer]";
+		A_SetScale = "float scalex, [float scaley], [int pointer], [bool usezero]";
 		A_SetMass = "int mass";
 		A_SetTeleFog = "string oldpos, string newpos";
 		A_SetRoll = "float roll, [int flags], [int pointer]";
@@ -795,6 +799,13 @@ decorate : cstyle {
 		abs = "int value";
 		cos = "angle degrees";
 		sin = "angle degrees";
+		tan = "angle degrees";
+		acos = "angle degrees";
+		asin = "angle degrees";
+		atan = "angle degrees";
+		cosh = "angle degrees";
+		sinh = "angle degrees";
+		tanh = "angle degrees";
 		sqrt = "float value";
 		random = "int min, int max";
 		random2 = "int mask";
@@ -803,6 +814,12 @@ decorate : cstyle {
 		frandompick = "float value1, float value2, float value3, ...";
 		min = "int value1, int value2, int value3, ...", "float value1, float value2, float value3, ...";
 		max = "int value1, int value2, int value3, ...", "float value1, float value2, float value3, ...";
+		exp = "int value", "float value";
+		log = "int value", "float value";
+		log10 = "int value", "float value";
+		ceil = "int value", "float value";
+		floor = "int value", "float value";
+		clamp = "int value, int min, int max", "float value, float min, float max";
 		ACS_NamedExecute = "string script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
 		ACS_NamedExecuteAlways = "string script, [int mapnum], [int arg1], [int arg2], [int arg3]";
 		ACS_NamedExecuteWithResult = "string script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
@@ -815,6 +832,8 @@ decorate : cstyle {
 		IsPointerEqual = "int ptr_select1, int ptr_select2";
 		CountInv = "string itemtype, [int ptr_select]";
 		GetDistance = "bool checkz, [int ptr]";
+		GetSpawnHealth;
+		GetGibHealth;
 		
 		// Internal use only, normally
 		A_Turn = "[float angle]";
@@ -922,6 +941,7 @@ decorate : cstyle {
 		Line_AlignCeiling  = "int lineid, int side";
 		Line_AlignFloor = "int lineid, int side";
 		Line_SetBlocking = "int lineid, int setflags, int clearflags";
+		Line_SetPortalTarget = "int sourceline, int targetline";
 		Line_SetTextureOffset = "int id, int x, int y, int side, int flags";
 		Line_SetTextureScale = "int id, int x, int y, int side, int flags";
 		NoiseAlert = "int target_tid, int emitter_tid";

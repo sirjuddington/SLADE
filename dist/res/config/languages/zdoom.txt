@@ -625,6 +625,7 @@ z_xlat {
 		Line_AlignCeiling  = "int lineid, int side";
 		Line_AlignFloor = "int lineid, int side";
 		Line_SetBlocking = "int lineid, int setflags, int clearflags";
+		Line_SetPortalTarget = "int sourceline, int targetline";
 		Line_SetTextureOffset = "int id, int x, int y, int side, int flags";
 		Line_SetTextureScale = "int id, int x, int y, int side, int flags";
 		NoiseAlert = "int target_tid, int emitter_tid";
