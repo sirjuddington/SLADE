@@ -882,7 +882,7 @@ bool ArchivePanel::buildArchive()
 		theSplashWindow->setProgress(0.0f);
 
 		// Create temporary archive
-		new_archive = theArchiveManager->newArchive(ARCHIVE_ZIP);
+		new_archive = theArchiveManager->createTemporaryArchive();
 
 		// prevent for "archive in archive" when saving in the current directory
 		if(wxFileExists(info.filenames[0]))
@@ -903,7 +903,7 @@ bool ArchivePanel::buildArchive()
 			if (wxGetKeyState(WXK_ESCAPE))
 			{
 				if (new_archive)
-					theArchiveManager->closeArchive(new_archive);
+					delete new_archive;
 
 				theSplashWindow->hide();
 				return true;
@@ -948,7 +948,7 @@ bool ArchivePanel::buildArchive()
 		// Save the archive
 		if (!new_archive->save(info.filenames[0]))
 		{
-			theArchiveManager->closeArchive(new_archive);
+			delete new_archive;
 			theSplashWindow->hide();
 
 			// If there was an error pop up a message box
@@ -958,7 +958,7 @@ bool ArchivePanel::buildArchive()
 	}
 
 	if (new_archive)
-		theArchiveManager->closeArchive(new_archive);
+		delete new_archive;
 
 	theSplashWindow->hide();
 
