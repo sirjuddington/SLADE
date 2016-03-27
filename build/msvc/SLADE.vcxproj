@@ -544,6 +544,7 @@
     <ClCompile Include="..\..\src\UI\SToolBar\SToolBar.cpp" />
     <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp" />
     <ClCompile Include="..\..\src\UI\STopWindow.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp" />
     <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp" />
     <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp" />
     <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp" />
@@ -877,6 +878,7 @@
     <ClInclude Include="..\..\src\UI\SToolBar\SToolBar.h" />
     <ClInclude Include="..\..\src\UI\SToolBar\SToolBarButton.h" />
     <ClInclude Include="..\..\src\UI\STopWindow.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h" />
     <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h" />
     <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h" />
     <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h" />

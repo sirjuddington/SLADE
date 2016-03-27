@@ -33,6 +33,7 @@
 #include "TextEditor.h"
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
+#include "SCallTip.h"
 #include <wx/app.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
@@ -63,6 +64,7 @@ CVAR(Bool, txed_fold_comments, false, CVAR_SAVE)
 CVAR(Bool, txed_fold_preprocessor, true, CVAR_SAVE)
 CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
 CVAR(Bool, txed_word_wrap, false, CVAR_SAVE)
+CVAR(Bool, txed_calltips_colourise, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -325,6 +327,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	ct_start = 0;
 	bm_cursor_last_pos = -1;
 	panel_fr = NULL;
+	call_tip = new SCallTip(this);
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -839,11 +842,43 @@ void TextEditor::checkBraceMatch()
 	}
 }
 
+/* TextEditor::showCalltip
+ * Shows the calltip window underneath [position] in the text
+ *******************************************************************/
+void TextEditor::showCalltip(int position)
+{
+	// Setup calltip colours
+	call_tip->setBackgroundColour(StyleSet::currentSet()->getStyle("calltip")->getBackground());
+	call_tip->setTextColour(StyleSet::currentSet()->getStyle("calltip")->getForeground());
+	call_tip->setTextHighlightColour(StyleSet::currentSet()->getStyle("calltip_hl")->getForeground());
+	if (txed_calltips_colourise)
+	{
+		call_tip->setFunctionColour(StyleSet::currentSet()->getStyle("function")->getForeground());
+		call_tip->setTypeColour(StyleSet::currentSet()->getStyle("keyword")->getForeground());
+	}
+
+	// Determine position
+	wxPoint pos = GetScreenPosition() + PointFromPosition(position);
+	pos.y += TextHeight(GetCurrentLine()) + 2;
+	call_tip->SetPosition(wxPoint(pos.x, pos.y));
+
+	call_tip->Show();
+}
+
+/* TextEditor::hideCalltip
+ * Hides the calltip window
+ *******************************************************************/
+void TextEditor::hideCalltip()
+{
+	call_tip->Hide();
+	CallTipCancel();
+}
+
 /* TextEditor::openCalltip
  * Opens a calltip for the function name before [pos]. Returns false
  * if the word before [pos] was not a function name, true otherwise
  *******************************************************************/
-bool TextEditor::openCalltip(int pos, int arg)
+bool TextEditor::openCalltip(int pos, int arg, bool dwell)
 {
 	// Don't bother if no language
 	if (!language)
@@ -851,6 +886,7 @@ bool TextEditor::openCalltip(int pos, int arg)
 
 	// Get start of word before bracket
 	int start = WordStartPosition(pos - 1, false);
+	int end = WordEndPosition(pos - 1, true);
 
 	// Get word before bracket
 	string word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true));
@@ -861,14 +897,16 @@ bool TextEditor::openCalltip(int pos, int arg)
 	// Show calltip if it's a function
 	if (func && func->nArgSets() > 0)
 	{
-		CallTipShow(start, func->generateCallTipString());
+		call_tip->enableArgSwitch(!dwell && func->nArgSets() > 1);
+		call_tip->openFunction(func, arg);
+		showCalltip(dwell ? pos : end + 1);
+
 		ct_function = func;
-		ct_argset = 0;
 		ct_start = pos;
+		ct_dwell = dwell;
 
 		// Highlight arg
-		point2_t arg_ext = ct_function->getArgTextExtent(arg);
-		CallTipSetHighlight(arg_ext.x, arg_ext.y);
+		call_tip->setCurrentArg(arg);
 
 		return true;
 	}
@@ -889,7 +927,7 @@ void TextEditor::updateCalltip()
 	if (!language)
 		return;
 
-	if (!CallTipActive())
+	if (!call_tip->IsShown())
 	{
 		// No calltip currently showing, check if we're in a function
 		int pos = GetCurrentPos() - 1;
@@ -913,7 +951,7 @@ void TextEditor::updateCalltip()
 			// If we find an opening bracket, try to open a calltip
 			if (chr == '(')
 			{
-				if (!openCalltip(pos))
+				if (!openCalltip(pos, 0))
 					return;
 				else
 					break;
@@ -926,6 +964,14 @@ void TextEditor::updateCalltip()
 
 	if (ct_function)
 	{
+		// Hide calltip if we've gone before the start of the function
+		if (GetCurrentPos() < ct_start)
+		{
+			hideCalltip();
+			ct_function = NULL;
+			return;
+		}
+
 		// Calltip currently showing, determine what arg we're at
 		int pos = ct_start+1;
 		int arg = 0;
@@ -959,7 +1005,7 @@ void TextEditor::updateCalltip()
 			// If it's a closing brace, we're outside the function, so cancel the calltip
 			if (chr == ')')
 			{
-				CallTipCancel();
+				hideCalltip();
 				ct_function = NULL;
 				return;
 			}
@@ -969,9 +1015,7 @@ void TextEditor::updateCalltip()
 		}
 
 		// Update calltip string with the selected arg set and the current arg highlighted
-		CallTipShow(ct_start, ct_function->generateCallTipString(ct_argset));
-		point2_t arg_ext = ct_function->getArgTextExtent(arg, ct_argset);
-		CallTipSetHighlight(arg_ext.x, arg_ext.y);
+		call_tip->setCurrentArg(arg);
 	}
 }
 
@@ -1262,9 +1306,28 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 	// Check for esc key
 	if (!handled && e.GetKeyCode() == WXK_ESCAPE)
 	{
+		// Hide call tip if showing
+		if (call_tip->IsShown())
+			call_tip->Show(false);
+
 		// Hide F+R panel if showing
-		if (panel_fr && panel_fr->IsShown())
+		else if (panel_fr && panel_fr->IsShown())
 			showFindReplacePanel(false);
+	}
+
+	// Check for up/down keys while calltip with multiple arg sets is open
+	if (call_tip->IsShown() && ct_function && ct_function->nArgSets() > 1 && !ct_dwell)
+	{
+		if (e.GetKeyCode() == WXK_UP)
+		{
+			call_tip->prevArgSet();
+			handled = true;
+		}
+		else if (e.GetKeyCode() == WXK_DOWN)
+		{
+			call_tip->nextArgSet();
+			handled = true;
+		}
 	}
 
 #ifdef __WXMSW__
@@ -1395,23 +1458,15 @@ void TextEditor::onCharAdded(wxStyledTextEvent& e)
 	{
 		// Call tip
 		if (e.GetKey() == '(' && txed_calltips_parenthesis)
-		{
-			openCalltip(GetCurrentPos());
-		}
+			openCalltip(GetCurrentPos(), 0);
 
 		// End call tip
-		if (e.GetKey() == ')')
-		{
-			CallTipCancel();
-		}
+		if (e.GetKey() == ')' || e.GetKey() == WXK_BACK)
+			updateCalltip();
 
 		// Comma, possibly update calltip
 		if (e.GetKey() == ',' && txed_calltips_parenthesis)
-		{
-			//openCalltip(GetCurrentPos());
-			//if (CallTipActive())
 			updateCalltip();
-		}
 	}
 
 	// Continue
@@ -1429,7 +1484,7 @@ void TextEditor::onUpdateUI(wxStyledTextEvent& e)
 		checkBraceMatch();
 
 	// If a calltip is open, update it
-	if (CallTipActive())
+	if (call_tip->IsShown())
 		updateCalltip();
 
 	e.Skip();
@@ -1471,8 +1526,11 @@ void TextEditor::onCalltipClicked(wxStyledTextEvent& e)
  *******************************************************************/
 void TextEditor::onMouseDwellStart(wxStyledTextEvent& e)
 {
-	if (wxTheApp->IsActive() && HasFocus() && !CallTipActive() && txed_calltips_mouse && e.GetPosition() >= 0)
-		openCalltip(e.GetPosition(), -1);
+	if (wxTheApp->IsActive() && HasFocus() && !call_tip->IsShown() && txed_calltips_mouse && e.GetPosition() >= 0)
+	{
+		openCalltip(e.GetPosition(), -1, true);
+		ct_dwell = true;
+	}
 }
 
 /* TextEditor::onMouseDwellEnd
@@ -1480,8 +1538,9 @@ void TextEditor::onMouseDwellStart(wxStyledTextEvent& e)
  *******************************************************************/
 void TextEditor::onMouseDwellEnd(wxStyledTextEvent& e)
 {
-	if (!(ct_function && ct_function->nArgSets() > 1) || !wxTheApp->IsActive() || !HasFocus())
-		CallTipCancel();
+	//if (!(ct_function && ct_function->nArgSets() > 1) || !wxTheApp->IsActive() || !HasFocus())
+	if (call_tip->IsShown() && ct_dwell)
+		hideCalltip();
 }
 
 /* TextEditor::onMouseDown
@@ -1536,12 +1595,12 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 				}
 			}
 
-			CallTipCancel();
+			hideCalltip();
 		}
 	}
 
 	if (e.RightDown() || e.LeftDown())
-		CallTipCancel();
+		hideCalltip();
 }
 
 /* TextEditor::onFocusLoss
@@ -1549,7 +1608,7 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
  *******************************************************************/
 void TextEditor::onFocusLoss(wxFocusEvent& e)
 {
-	CallTipCancel();
+	hideCalltip();
 	AutoCompCancel();
 	e.Skip();
 }
@@ -1560,7 +1619,7 @@ void TextEditor::onFocusLoss(wxFocusEvent& e)
 void TextEditor::onActivate(wxActivateEvent& e)
 {
 	if (!e.GetActive())
-		CallTipCancel();
+		hideCalltip();
 }
 
 /* TextEditor::onMarginClick

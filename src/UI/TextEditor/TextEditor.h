@@ -48,16 +48,19 @@ private:
 	void	onTextReplaceEnter(wxCommandEvent& e);
 };
 
+class SCallTip;
 class TextEditor : public wxStyledTextCtrl
 {
 private:
 	TextLanguage*		language;
 	FindReplacePanel*	panel_fr;
+	SCallTip*			call_tip;
 
 	// Calltip stuff
 	TLFunction*	ct_function;
 	int			ct_argset;
 	int			ct_start;
+	bool		ct_dwell;
 
 	// Autocompletion
 	string		autocomp_list;
@@ -100,7 +103,9 @@ public:
 	void	checkBraceMatch();
 
 	// Calltips
-	bool	openCalltip(int pos, int arg = 0);
+	void	showCalltip(int position);
+	void	hideCalltip();
+	bool	openCalltip(int pos, int arg = 0, bool dwell = false);
 	void	updateCalltip();
 
 	// Jump To

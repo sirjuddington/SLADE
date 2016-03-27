@@ -51,6 +51,8 @@ EXTERN_CVAR(String, txed_style_set)
 EXTERN_CVAR(Bool, txed_trim_whitespace)
 EXTERN_CVAR(Bool, txed_calltips_mouse)
 EXTERN_CVAR(Bool, txed_calltips_parenthesis)
+EXTERN_CVAR(Bool, txed_calltips_colourise)
+EXTERN_CVAR(Bool, txed_calltips_dim_optional)
 EXTERN_CVAR(Bool, txed_fold_enable)
 EXTERN_CVAR(Bool, txed_fold_comments)
 EXTERN_CVAR(Bool, txed_fold_preprocessor)
@@ -122,6 +124,15 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	cb_calltips_parenthesis = new wxCheckBox(this, -1, "Show calltips on opening parenthesis");
 	sizer->Add(cb_calltips_parenthesis, 0, wxEXPAND|wxALL, 4);
 
+	// Colourise calltips
+	cb_calltips_colourise = new wxCheckBox(this, -1, "Colourise calltip function name and parameter types");
+	sizer->Add(cb_calltips_colourise, 0, wxEXPAND | wxALL, 4);
+
+	// Dim optional calltip parameters
+	cb_calltips_dim_optional = new wxCheckBox(this, -1, "Dim optional function parameters in calltips");
+	cb_calltips_dim_optional->SetToolTip("If disabled, optional parameters will be shown between [] brackets");
+	sizer->Add(cb_calltips_dim_optional, 0, wxEXPAND | wxALL, 4);
+
 	// Separator
 	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL), 0, wxEXPAND | wxALL, 4);
 
@@ -158,6 +169,8 @@ void TextEditorPrefsPanel::init()
 	cb_brace_match->SetValue(txed_brace_match);
 	cb_calltips_mouse->SetValue(txed_calltips_mouse);
 	cb_calltips_parenthesis->SetValue(txed_calltips_parenthesis);
+	cb_calltips_colourise->SetValue(txed_calltips_colourise);
+	cb_calltips_dim_optional->SetValue(txed_calltips_dim_optional);
 	spin_right_margin->SetValue(txed_edge_column);
 	spin_tab_width->SetValue(txed_tab_width);
 	cb_fold_enable->SetValue(txed_fold_enable);
@@ -179,6 +192,8 @@ void TextEditorPrefsPanel::applyPreferences()
 	txed_edge_column = spin_right_margin->GetValue();
 	txed_calltips_mouse = cb_calltips_mouse->GetValue();
 	txed_calltips_parenthesis = cb_calltips_parenthesis->GetValue();
+	txed_calltips_colourise = cb_calltips_colourise->GetValue();
+	txed_calltips_dim_optional = cb_calltips_dim_optional->GetValue();
 	txed_fold_enable = cb_fold_enable->GetValue();
 	txed_fold_comments = cb_fold_comments->GetValue();
 	txed_fold_preprocessor = cb_fold_preprocessor->GetValue();
