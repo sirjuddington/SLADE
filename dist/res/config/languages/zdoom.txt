@@ -268,7 +268,7 @@ z_menudef {
 		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField
 	}
 	
-	functions { ifgame = "games ..."; ifoption = "options ..."; }
+	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
 	
 	constants = { 
 		doom, heretic, hexen, strife, chex, readthis, swapmenu, windows, unix, mac,
