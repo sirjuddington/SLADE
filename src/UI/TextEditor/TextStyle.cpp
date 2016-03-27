@@ -46,6 +46,7 @@ CVAR(String, txed_override_font, "", CVAR_SAVE)
 CVAR(Int, txed_override_font_size, 0, CVAR_SAVE)
 vector<StyleSet*>	style_sets;
 StyleSet*			ss_current = NULL;
+vector<TextEditor*>	StyleSet::editors;
 
 
 /*******************************************************************
@@ -667,6 +668,31 @@ StyleSet* StyleSet::getSet(unsigned index)
 		return NULL;
 
 	return style_sets[index];
+}
+
+/* StyleSet::addEditor
+ * Adds [stc] to the current list of text editors
+ *******************************************************************/
+void StyleSet::addEditor(TextEditor* stc)
+{
+	editors.push_back(stc);
+}
+
+/* StyleSet::removeEditor
+ * Removes [stc] from the current list of text editors
+ *******************************************************************/
+void StyleSet::removeEditor(TextEditor* stc)
+{
+	VECTOR_REMOVE(editors, stc);
+}
+
+/* StyleSet::applyCurrentToAll
+ * Applies the current style set to all text editors in the list
+ *******************************************************************/
+void StyleSet::applyCurrentToAll()
+{
+	for (unsigned a = 0; a < editors.size(); a++)
+		applyCurrent(editors[a]);
 }
 
 /* StyleSet::loadResourceStyles

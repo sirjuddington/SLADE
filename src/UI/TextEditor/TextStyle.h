@@ -67,6 +67,8 @@ private:
 	TextStyle	ts_selection;
 
 	vector<TextStyle*>	styles;
+	
+	static vector<TextEditor*>	editors;
 
 public:
 	StyleSet(string name = "Unnamed Style");
@@ -95,6 +97,9 @@ public:
 	static string		getName(unsigned index);
 	static unsigned		numSets();
 	static StyleSet*	getSet(unsigned index);
+	static void			addEditor(TextEditor* stc);
+	static void			removeEditor(TextEditor* stc);
+	static void			applyCurrentToAll();
 
 	static bool			loadResourceStyles();
 	static bool			loadCustomStyles();

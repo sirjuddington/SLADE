@@ -528,6 +528,7 @@ void TextStylePrefsPanel::applyPreferences()
 
 	// Apply styleset to global current
 	StyleSet::currentSet()->copySet(&ss_current);
+	StyleSet::applyCurrentToAll();
 }
 
 

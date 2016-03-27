@@ -353,6 +353,9 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	// Setup various configurable properties
 	setup();
 
+	// Add to text styles editor list
+	StyleSet::addEditor(this);
+
 	// Bind events
 	Bind(wxEVT_KEY_DOWN, &TextEditor::onKeyDown, this);
 	Bind(wxEVT_KEY_UP, &TextEditor::onKeyUp, this);
@@ -372,6 +375,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
  *******************************************************************/
 TextEditor::~TextEditor()
 {
+	StyleSet::removeEditor(this);
 }
 
 /* TextEditor::setup
