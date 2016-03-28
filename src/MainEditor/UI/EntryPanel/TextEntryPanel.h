@@ -15,6 +15,7 @@ private:
 	wxChoice*			choice_text_language;
 	wxCheckBox*			cb_wordwrap;
 	wxButton*			btn_jump_to;
+	wxChoice*			choice_jump_to;
 
 public:
 	TextEntryPanel(wxWindow* parent);

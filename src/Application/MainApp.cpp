@@ -703,7 +703,6 @@ void MainApp::initActions()
 
 	// TextEntryPanel
 	new SAction("ptxt_wrap", "Word Wrapping", "", "Toggle word wrapping", "", SAction::CHECK, -1, -1, 1, "txed_word_wrap");
-	new SAction("ptxt_jump_to", "Jump To Definition...", "up", "Jump to a definition or section in the text", "kb:ted_jumpto");
 	new SAction("ptxt_find_replace", "Find+Replace...", "", "Find and (optionally) replace text", "kb:ted_findreplace");
 	new SAction("ptxt_fold_foldall", "Fold All", "minus", "Fold all possible code", "kb:ted_fold_foldall");
 	new SAction("ptxt_fold_unfoldall", "Unfold All", "plus", "Unfold all folded code", "kb:ted_fold_unfoldall");

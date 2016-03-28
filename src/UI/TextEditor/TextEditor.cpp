@@ -66,6 +66,8 @@ CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
 CVAR(Bool, txed_word_wrap, false, CVAR_SAVE)
 CVAR(Bool, txed_calltips_colourise, true, CVAR_SAVE)
 
+wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
+
 
 /*******************************************************************
  * FINDREPLACEPANEL CLASS FUNCTIONS
@@ -311,6 +313,81 @@ void FindReplacePanel::onTextReplaceEnter(wxCommandEvent& e)
 
 
 /*******************************************************************
+ * JUMPTOCALCULATOR CLASS FUNCTIONS
+ *******************************************************************/
+
+/* JumpToCalculator::Entry
+ * JumpToCalculator thread entry function
+ *******************************************************************/
+wxThread::ExitCode JumpToCalculator::Entry()
+{
+	string jump_points;
+
+	Tokenizer tz;
+	tz.setSpecialCharacters(";,:|={}/()");
+	tz.openString(text);
+
+	string token = tz.getToken();
+	while (!tz.atEnd())
+	{
+		if (token == "{")
+		{
+			// Skip block
+			while (!tz.atEnd() && token != "}")
+				token = tz.getToken();
+		}
+
+		for (unsigned a = 0; a < block_names.size(); a++)
+		{
+			// Get jump block keyword
+			string block = block_names[a];
+			long skip = 0;
+			if (block.Contains(":"))
+			{
+				wxArrayString sp = wxSplit(block, ':');
+				sp.back().ToLong(&skip);
+				block = sp[0];
+			}
+
+			if (S_CMPNOCASE(token, block))
+			{
+				string name = tz.getToken();
+				for (int s = 0; s < skip; s++)
+					name = tz.getToken();
+
+				for (unsigned i = 0; i < ignore.size(); ++i)
+					if (S_CMPNOCASE(name, ignore[a]))
+						name = tz.getToken();
+
+				// Numbered block, add block name
+				if (name.IsNumber())
+					name = S_FMT("%s %s", block, name);
+				// Unnamed block, use block name
+				if (name == "{" || name == ";")
+					name = block;
+
+				// Add jump point
+				jump_points += S_FMT("%d,%s,", tz.lineNo() - 1, CHR(name));
+			}
+		}
+
+		token = tz.getToken();
+	}
+
+	// Remove ending comma
+	if (!jump_points.empty())
+		jump_points.RemoveLast(1);
+
+	// Send event
+	wxThreadEvent* event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
+	event->SetString(jump_points);
+	wxQueueEvent(handler, event);
+
+	return NULL;
+}
+
+
+/*******************************************************************
  * TEXTEDITOR CLASS FUNCTIONS
  *******************************************************************/
 
@@ -318,7 +395,7 @@ void FindReplacePanel::onTextReplaceEnter(wxCommandEvent& e)
  * TextEditor class constructor
  *******************************************************************/
 TextEditor::TextEditor(wxWindow* parent, int id)
-	: wxStyledTextCtrl(parent, id)
+	: wxStyledTextCtrl(parent, id), timer_update(this)
 {
 	// Init variables
 	language = NULL;
@@ -328,6 +405,8 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	bm_cursor_last_pos = -1;
 	panel_fr = NULL;
 	call_tip = new SCallTip(this);
+	choice_jump_to = NULL;
+	jump_to_calculator = NULL;
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -368,6 +447,9 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	Bind(wxEVT_KILL_FOCUS, &TextEditor::onFocusLoss, this);
 	Bind(wxEVT_ACTIVATE, &TextEditor::onActivate, this);
 	Bind(wxEVT_STC_MARGINCLICK, &TextEditor::onMarginClick, this);
+	Bind(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, &TextEditor::onJumpToCalculateComplete, this);
+	Bind(wxEVT_STC_MODIFIED, &TextEditor::onModified, this);
+	Bind(wxEVT_TIMER, &TextEditor::onUpdateTimer, this);
 }
 
 /* TextEditor::~TextEditor
@@ -376,6 +458,8 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 TextEditor::~TextEditor()
 {
 	StyleSet::removeEditor(this);
+	if (jump_to_calculator)
+		jump_to_calculator->Kill();
 }
 
 /* TextEditor::setup
@@ -509,6 +593,9 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 
 	// Re-colour text
 	Colourise(0, GetTextLength());
+
+	// Update Jump To list
+	updateJumpToList();
 
 	return true;
 }
@@ -1023,109 +1110,41 @@ void TextEditor::updateCalltip()
 	}
 }
 
-/* TextEditor::openJumpToDialog
- * Initialises and opens the 'Jump To' dialog
+/* TextEditor::setJumpToControl
+ * Sets the wxChoice control to use for the 'Jump To' feature
  *******************************************************************/
-void TextEditor::openJumpToDialog()
+void TextEditor::setJumpToControl(wxChoice* jump_to)
 {
-	// Can't do this without a language definition or defined blocks
-	if (!language || language->nJumpBlocks() == 0)
+	choice_jump_to = jump_to;
+	choice_jump_to->Bind(wxEVT_CHOICE, &TextEditor::onJumpToChoiceSelected, this);
+}
+
+/* TextEditor::updateJumpToList
+ * Begin updating the 'Jump To' list
+ *******************************************************************/
+void TextEditor::updateJumpToList()
+{
+	if (!choice_jump_to)
 		return;
 
-	// --- Scan for functions/scripts ---
-	Tokenizer tz;
-	vector<jp_t> jump_points;
-	tz.openString(GetText());
-
-	string token = tz.getToken();
-	while (!tz.atEnd())
+	if (!language || jump_to_calculator)
 	{
-		if (token == "{")
-		{
-			// Skip block
-			while (!tz.atEnd() && token != "}")
-				token = tz.getToken();
-		}
-
-		for (unsigned a = 0; a < language->nJumpBlocks(); a++)
-		{
-			// Get jump block keyword
-			string block = language->jumpBlock(a);
-			long skip = 0;
-			if (block.Contains(":"))
-			{
-				wxArrayString sp = wxSplit(block, ':');
-				sp.back().ToLong(&skip);
-				block = sp[0];
-			}
-
-			if (S_CMPNOCASE(token, block))
-			{
-				string name = tz.getToken();
-				for (int s = 0; s < skip; s++)
-					name = tz.getToken();
-
-				for (unsigned i = 0; i < language->nJBIgnore(); ++i)
-					if (S_CMPNOCASE(name, language->jBIgnore(i)))
-						name = tz.getToken();
-
-				// Numbered block, add block name
-				if (name.IsNumber())
-					name = S_FMT("%s %s", language->jumpBlock(a), name);
-				// Unnamed block, use block name
-				if (name == "{" || name == ";")
-					name = language->jumpBlock(a);
-
-				// Create jump point
-				jp_t jp;
-				jp.name = name;
-				jp.line = tz.lineNo() - 1;
-				jump_points.push_back(jp);
-			}
-		}
-
-		token = tz.getToken();
-	}
-
-	// Do nothing if no jump points
-	if (jump_points.size() == 0)
+		choice_jump_to->Clear();
 		return;
-
-
-	// --- Setup/show dialog ---
-	wxDialog dlg(this, -1, "Jump To...");
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	dlg.SetSizer(sizer);
-
-	// Add Jump to dropdown
-	wxChoice* choice_jump_to = new wxChoice(&dlg, -1);
-	sizer->Add(choice_jump_to, 0, wxEXPAND|wxALL, 4);
-	for (unsigned a = 0; a < jump_points.size(); a++)
-		choice_jump_to->Append(jump_points[a].name);
-	choice_jump_to->SetSelection(0);
-
-	// Add dialog buttons
-	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
-
-	// Show dialog
-	dlg.SetInitialSize(wxSize(250, -1));
-	dlg.CenterOnParent();
-	if (dlg.ShowModal() == wxID_OK)
-	{
-		int selection = choice_jump_to->GetSelection();
-		if (selection >= 0 && selection < (int)jump_points.size())
-		{
-			// Get line number
-			int line = jump_points[selection].line;
-
-			// Move to line
-			int pos = GetLineEndPosition(line);
-			SetCurrentPos(pos);
-			SetSelection(pos, pos);
-			SetFirstVisibleLine(line);
-			SetFocus();
-		}
 	}
+
+	// Get jump blocks and ignored blocks from the current language
+	vector<string> jump_blocks;
+	for (unsigned a = 0; a < language->nJumpBlocks(); a++)
+		jump_blocks.push_back(language->jumpBlock(a));
+	vector<string> ignore;
+	for (unsigned a = 0; a < language->nJBIgnore(); a++)
+		ignore.push_back(language->jBIgnore(a));
+
+	// Begin jump to calculation thread
+	choice_jump_to->Enable(false);
+	jump_to_calculator = new JumpToCalculator(this, GetText(), jump_blocks, ignore);
+	jump_to_calculator->Run();
 }
 
 /* TextEditor::jumpToLine
@@ -1275,13 +1294,6 @@ void TextEditor::onKeyDown(wxKeyEvent& e)
 			if (panel_fr && panel_fr->IsShown())
 				replaceAll(panel_fr->getFindText(), panel_fr->getReplaceText(), panel_fr->getFindFlags());
 
-			handled = true;
-		}
-
-		// Jump to
-		else if (name == "ted_jumpto")
-		{
-			openJumpToDialog();
 			handled = true;
 		}
 
@@ -1638,4 +1650,77 @@ void TextEditor::onMarginClick(wxStyledTextEvent& e)
 		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0)
 			ToggleFold(line);
 	}
+}
+
+/* TextEditor::onJumpToCalculateComplete
+ * Called when the 'Jump To' calculation thread completes
+ *******************************************************************/
+void TextEditor::onJumpToCalculateComplete(wxThreadEvent& e)
+{
+	if (!choice_jump_to)
+	{
+		jump_to_calculator = NULL;
+		return;
+	}
+
+	choice_jump_to->Clear();
+	jump_to_lines.clear();
+
+	string jump_points = e.GetString();
+	wxArrayString split = wxSplit(jump_points, ',');
+
+	vector<string> items;
+	for (unsigned a = 0; a < split.size(); a += 2)
+	{
+		if (a == split.size() - 1)
+			break;
+
+		long line;
+		if (!split[a].ToLong(&line))
+			line = 0;
+		string name = split[a + 1];
+
+		items.push_back(name);
+		jump_to_lines.push_back(line);
+	}
+
+	choice_jump_to->Append(items);
+	choice_jump_to->Enable(true);
+
+	jump_to_calculator = NULL;
+}
+
+/* TextEditor::onJumpToChoiceSelected
+ * Called when the 'Jump To' dropdown is changed
+ *******************************************************************/
+void TextEditor::onJumpToChoiceSelected(wxCommandEvent& e)
+{
+	// Move to line
+	int line = jump_to_lines[choice_jump_to->GetSelection()];
+	int pos = GetLineEndPosition(line);
+	SetCurrentPos(pos);
+	SetSelection(pos, pos);
+	SetFirstVisibleLine(line);
+	SetFocus();
+	choice_jump_to->SetSelection(-1);
+}
+
+/* TextEditor::onModified
+ * Called when the text is modified
+ *******************************************************************/
+void TextEditor::onModified(wxStyledTextEvent& e)
+{
+	// (Re)start update timer
+	timer_update.Start(1000, true);
+
+	e.Skip();
+}
+
+
+/* TextEditor::onUpdateTimer
+ * Called when the update timer finishes
+ *******************************************************************/
+void TextEditor::onUpdateTimer(wxTimerEvent& e)
+{
+	updateJumpToList();
 }

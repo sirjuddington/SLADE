@@ -34,6 +34,7 @@
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "UI/SToolBar/SToolBar.h"
+#include <wx/choice.h>
 #include <wx/dataview.h>
 #include <wx/sizer.h>
 #include <wx/treelist.h>
@@ -77,9 +78,14 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	wxArrayString actions;
 	actions.Add("mapw_script_save");
 	actions.Add("mapw_script_compile");
-	actions.Add("mapw_script_jumpto");
 	actions.Add("mapw_script_togglelanguage");
 	toolbar->addActionGroup("Scripts", actions);
+
+	// Jump To toolbar group
+	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
+	choice_jump_to = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(200, -1));
+	group_jump_to->addCustomControl(choice_jump_to);
+	toolbar->addGroup(group_jump_to);
 
 	// Add text editor
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -88,6 +94,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	hbox->Add(vbox, 1, wxEXPAND);
 
 	text_editor = new TextEditor(this, -1);
+	text_editor->setJumpToControl(choice_jump_to);
 	vbox->Add(text_editor, 1, wxEXPAND|wxALL, 4);
 
 	// Set language
@@ -155,7 +162,14 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	}
 
 	// Load script text
-	return text_editor->loadEntry(entry_script);
+	bool ok = text_editor->loadEntry(entry_script);
+	if (ok)
+	{
+		text_editor->updateJumpToList();
+		return true;
+	}
+	else
+		return false;
 }
 
 /* ScriptEditorPanel::populateWordList
@@ -212,6 +226,14 @@ void ScriptEditorPanel::saveScripts()
 	}
 }
 
+/* ScriptEditorPanel::updateUI
+ * Update script editor UI
+ *******************************************************************/
+void ScriptEditorPanel::updateUI()
+{
+	text_editor->updateJumpToList();
+}
+
 /* ScriptEditorPanel::handleAction
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
@@ -235,10 +257,6 @@ bool ScriptEditorPanel::handleAction(string name)
 	// Save Script
 	else if (name == "mapw_script_save")
 		saveScripts();
-
-	// Jump To
-	else if (name == "mapw_script_jumpto")
-		text_editor->openJumpToDialog();
 
 	// Toggle language list
 	else if (name == "mapw_script_togglelanguage")

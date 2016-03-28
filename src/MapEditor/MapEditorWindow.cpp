@@ -1194,6 +1194,7 @@ bool MapEditorWindow::handleAction(string id)
 		{
 			p_inf.Show(true);
 			p_inf.window->SetFocus();
+			((ScriptEditorPanel*)p_inf.window)->updateUI();
 		}
 
 		p_inf.MinSize(200, 128);

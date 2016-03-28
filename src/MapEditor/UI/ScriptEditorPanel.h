@@ -20,6 +20,7 @@ private:
 	wxButton*			btn_compile;
 	wxTreeListCtrl*		list_words;
 	FindReplacePanel*	panel_fr;
+	wxChoice*			choice_jump_to;
 
 public:
 	ScriptEditorPanel(wxWindow* parent);
@@ -31,6 +32,7 @@ public:
 	bool	openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = NULL);
 	void	populateWordList();
 	void	saveScripts();
+	void	updateUI();
 
 	bool	handleAction(string name);
 

@@ -2,8 +2,10 @@
 #ifndef __TEXTEDITOR_H__
 #define	__TEXTEDITOR_H__
 
-#include <wx/stc/stc.h>
 #include <wx/panel.h>
+#include <wx/stc/stc.h>
+#include <wx/thread.h>
+#include <wx/timer.h>
 #include "Archive/ArchiveEntry.h"
 #include "TextLanguage.h"
 #include "TextStyle.h"
@@ -48,13 +50,35 @@ private:
 	void	onTextReplaceEnter(wxCommandEvent& e);
 };
 
+wxDECLARE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
+
+class JumpToCalculator : public wxThread
+{
+public:
+	JumpToCalculator(wxEvtHandler* handler, string text, vector<string> block_names, vector<string> ignore)
+		: handler(handler), text(text), block_names(block_names), ignore(ignore) {}
+	virtual ~JumpToCalculator() {}
+
+	ExitCode Entry();
+
+private:
+	wxEvtHandler*	handler;
+	string			text;
+	vector<string>	block_names;
+	vector<string>	ignore;
+};
+
 class SCallTip;
+class wxChoice;
 class TextEditor : public wxStyledTextCtrl
 {
 private:
 	TextLanguage*		language;
 	FindReplacePanel*	panel_fr;
 	SCallTip*			call_tip;
+	wxChoice*			choice_jump_to;
+	JumpToCalculator*	jump_to_calculator;
+	wxTimer				timer_update;
 
 	// Calltip stuff
 	TLFunction*	ct_function;
@@ -65,15 +89,11 @@ private:
 	// Autocompletion
 	string		autocomp_list;
 
-	// Jump To stuff
-	struct jp_t
-	{
-		string	name;
-		int		line;
-	};
-
 	// Brace matching
 	int	bm_cursor_last_pos;
+
+	// Jump To
+	vector<int>	jump_to_lines;
 
 public:
 	TextEditor(wxWindow* parent, int id);
@@ -109,7 +129,8 @@ public:
 	void	updateCalltip();
 
 	// Jump To
-	void	openJumpToDialog();
+	void	setJumpToControl(wxChoice* jump_to);
+	void	updateJumpToList();
 	void	jumpToLine();
 
 	// Folding
@@ -128,6 +149,10 @@ public:
 	void	onFocusLoss(wxFocusEvent& e);
 	void	onActivate(wxActivateEvent& e);
 	void	onMarginClick(wxStyledTextEvent& e);
+	void	onJumpToCalculateComplete(wxThreadEvent& e);
+	void	onJumpToChoiceSelected(wxCommandEvent& e);
+	void	onModified(wxStyledTextEvent& e);
+	void	onUpdateTimer(wxTimerEvent& e);
 };
 
 #endif //__TEXTEDITOR_H__

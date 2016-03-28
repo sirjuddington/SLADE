@@ -35,6 +35,7 @@
 #include <wx/choice.h>
 #include <wx/menu.h>
 #include <wx/sizer.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************
@@ -80,6 +81,13 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	group_language->addCustomControl(choice_text_language);
 	toolbar->addGroup(group_language);
 
+	// Add 'Jump To' choice to toolbar
+	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
+	choice_jump_to = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(200, -1));
+	group_jump_to->addCustomControl(choice_jump_to);
+	toolbar->addGroup(group_jump_to);
+	text_area->setJumpToControl(choice_jump_to);
+
 	// Bind events
 	choice_text_language->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
 	text_area->Bind(wxEVT_STC_CHANGE, &TextEntryPanel::onTextModified, this);
@@ -92,9 +100,8 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 
 	// --- Custom menu ---
 	menu_custom = new wxMenu();
-	theApp->getAction("ptxt_jump_to")->addToMenu(menu_custom);
-	theApp->getAction("ptxt_jump_to_line")->addToMenu(menu_custom);
 	theApp->getAction("ptxt_find_replace")->addToMenu(menu_custom);
+	theApp->getAction("ptxt_jump_to_line")->addToMenu(menu_custom);
 
 	// 'Code Folding' submenu
 	wxMenu* menu_fold = new wxMenu();
@@ -303,12 +310,8 @@ bool TextEntryPanel::redo()
  *******************************************************************/
 bool TextEntryPanel::handleAction(string id)
 {
-	// Jump To Definition
-	if (id == "ptxt_jump_to")
-		text_area->openJumpToDialog();
-
 	// Jump To Line
-	else if (id == "ptxt_jump_to_line")
+	if (id == "ptxt_jump_to_line")
 		text_area->jumpToLine();
 
 	// Find+Replace
