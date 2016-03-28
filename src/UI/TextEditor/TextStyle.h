@@ -86,6 +86,8 @@ public:
 
 	rgba_t	getStyleForeground(string style);
 	rgba_t	getStyleBackground(string style);
+	string	getDefaultFontFace();
+	int		getDefaultFontSize();
 
 	// Static functions for styleset management
 	static void			initCurrent();

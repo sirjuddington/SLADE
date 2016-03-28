@@ -529,6 +529,28 @@ rgba_t StyleSet::getStyleBackground(string style)
 		return ts_default.getBackground();
 }
 
+/* StyleSet::getDefaultFontFace
+ * Returns the default style font face
+ *******************************************************************/
+string StyleSet::getDefaultFontFace()
+{
+	if (txed_override_font != "")
+		return txed_override_font;
+	else
+		return getStyle("default")->getFontFace();
+}
+
+/* StyleSet::getDefaultFontSize
+ * Returns the default style font size
+ *******************************************************************/
+int StyleSet::getDefaultFontSize()
+{
+	if (txed_override_font != "" && txed_override_font_size > 0)
+		return txed_override_font_size;
+	else
+		return getStyle("default")->getFontSize();
+}
+
 
 /*******************************************************************
  * STYLESET STATIC FUNCTIONS

@@ -53,6 +53,7 @@ EXTERN_CVAR(Bool, txed_calltips_mouse)
 EXTERN_CVAR(Bool, txed_calltips_parenthesis)
 EXTERN_CVAR(Bool, txed_calltips_colourise)
 EXTERN_CVAR(Bool, txed_calltips_dim_optional)
+EXTERN_CVAR(Bool, txed_calltips_use_font)
 EXTERN_CVAR(Bool, txed_fold_enable)
 EXTERN_CVAR(Bool, txed_fold_comments)
 EXTERN_CVAR(Bool, txed_fold_preprocessor)
@@ -133,6 +134,10 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	cb_calltips_dim_optional->SetToolTip("If disabled, optional parameters will be shown between [] brackets");
 	sizer->Add(cb_calltips_dim_optional, 0, wxEXPAND | wxALL, 4);
 
+	// Use text editor font in calltips
+	cb_calltips_use_font = new wxCheckBox(this, -1, "Use the text editor font in calltips");
+	sizer->Add(cb_calltips_use_font, 0, wxEXPAND | wxALL, 4);
+
 	// Separator
 	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL), 0, wxEXPAND | wxALL, 4);
 
@@ -171,6 +176,7 @@ void TextEditorPrefsPanel::init()
 	cb_calltips_parenthesis->SetValue(txed_calltips_parenthesis);
 	cb_calltips_colourise->SetValue(txed_calltips_colourise);
 	cb_calltips_dim_optional->SetValue(txed_calltips_dim_optional);
+	cb_calltips_use_font->SetValue(txed_calltips_use_font);
 	spin_right_margin->SetValue(txed_edge_column);
 	spin_tab_width->SetValue(txed_tab_width);
 	cb_fold_enable->SetValue(txed_fold_enable);
@@ -194,6 +200,7 @@ void TextEditorPrefsPanel::applyPreferences()
 	txed_calltips_parenthesis = cb_calltips_parenthesis->GetValue();
 	txed_calltips_colourise = cb_calltips_colourise->GetValue();
 	txed_calltips_dim_optional = cb_calltips_dim_optional->GetValue();
+	txed_calltips_use_font = cb_calltips_use_font->GetValue();
 	txed_fold_enable = cb_fold_enable->GetValue();
 	txed_fold_comments = cb_fold_comments->GetValue();
 	txed_fold_preprocessor = cb_fold_preprocessor->GetValue();

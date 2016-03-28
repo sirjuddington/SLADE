@@ -17,6 +17,7 @@ public:
 	void	setTypeColour(rgba_t col) { col_type = col; }
 	void	setCurrentArg(int arg) { arg_current = arg; updateSize(); }
 	void	enableArgSwitch(bool enable) { switch_args = enable; }
+	void	setFont(string face, int size);
 
 	void	openFunction(TLFunction* function, int arg = -1);
 	void	nextArgSet();
@@ -46,6 +47,7 @@ private:
 	wxRect			rect_btn_down;
 	int				btn_mouse_over;
 	wxBitmap		buffer;
+	wxFont			font;
 
 	void	addArg(vector<string>& tokens);
 	void	loadArgSet(int set);

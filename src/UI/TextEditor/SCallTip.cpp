@@ -56,6 +56,8 @@ SCallTip::SCallTip(wxWindow* parent)
 	btn_mouse_over(0),
 	buffer(1000, 1000, 32)
 {
+	font = GetFont();
+
 	Show(false);
 	SetDoubleBuffered(true);
 
@@ -71,6 +73,12 @@ SCallTip::SCallTip(wxWindow* parent)
  *******************************************************************/
 SCallTip::~SCallTip()
 {
+}
+
+void SCallTip::setFont(string face, int size)
+{
+	font.SetFaceName(face);
+	font.SetPointSize(size);
 }
 
 /* SCallTip::addArg
@@ -212,7 +220,7 @@ void SCallTip::updateBuffer()
 {
 	buffer.SetWidth(1000);
 	buffer.SetHeight(1000);
-	wxFont bold = GetFont().Bold();
+	wxFont bold = font.Bold();
 
 	// Setup faded text colour
 	rgba_t faded;
@@ -234,7 +242,7 @@ void SCallTip::updateBuffer()
 
 	if (function)
 	{
-		dc.SetFont(GetFont());
+		dc.SetFont(font);
 		dc.SetTextForeground(WXCOL(col_fg));
 
 		// Draw arg set switching stuff
@@ -331,7 +339,7 @@ void SCallTip::updateBuffer()
 				left = drawText(dc, "]", left, top, &rect);
 
 			// Comma (if needed)
-			dc.SetFont(GetFont());
+			dc.SetFont(font);
 			dc.SetTextForeground(WXCOL(col_fg));
 			if (a < args.size() - 1)
 				left = drawText(dc, ", ", left, top, &rect);
@@ -362,7 +370,7 @@ void SCallTip::updateBuffer()
 		string desc = function->getDescription();
 		if (!desc.IsEmpty())
 		{
-			wxFont italic = GetFont().Italic();
+			wxFont italic = font.Italic();
 			dc.SetFont(italic);
 			if (dc.GetTextExtent(desc).x > 600)
 			{
@@ -434,10 +442,6 @@ void SCallTip::onPaint(wxPaintEvent& e)
 {
 	// Create device context
 	wxAutoBufferedPaintDC dc(this);
-	dc.SetFont(GetFont());
-	wxFont italic = GetFont().Italic();
-	wxFont underlined = GetFont().Underlined();
-	wxFont bold = GetFont().Bold();
 
 	// Determine border colours
 	wxColour bg = WXCOL(col_bg);

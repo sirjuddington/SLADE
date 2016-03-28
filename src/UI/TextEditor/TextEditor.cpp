@@ -65,6 +65,7 @@ CVAR(Bool, txed_fold_preprocessor, true, CVAR_SAVE)
 CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
 CVAR(Bool, txed_word_wrap, false, CVAR_SAVE)
 CVAR(Bool, txed_calltips_colourise, true, CVAR_SAVE)
+CVAR(Bool, txed_calltips_use_font, false, CVAR_SAVE)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 
@@ -939,14 +940,17 @@ void TextEditor::checkBraceMatch()
 void TextEditor::showCalltip(int position)
 {
 	// Setup calltip colours
-	call_tip->setBackgroundColour(StyleSet::currentSet()->getStyle("calltip")->getBackground());
-	call_tip->setTextColour(StyleSet::currentSet()->getStyle("calltip")->getForeground());
-	call_tip->setTextHighlightColour(StyleSet::currentSet()->getStyle("calltip_hl")->getForeground());
+	StyleSet* ss_current = StyleSet::currentSet();
+	call_tip->setBackgroundColour(ss_current->getStyle("calltip")->getBackground());
+	call_tip->setTextColour(ss_current->getStyle("calltip")->getForeground());
+	call_tip->setTextHighlightColour(ss_current->getStyle("calltip_hl")->getForeground());
 	if (txed_calltips_colourise)
 	{
-		call_tip->setFunctionColour(StyleSet::currentSet()->getStyle("function")->getForeground());
-		call_tip->setTypeColour(StyleSet::currentSet()->getStyle("keyword")->getForeground());
+		call_tip->setFunctionColour(ss_current->getStyle("function")->getForeground());
+		call_tip->setTypeColour(ss_current->getStyle("keyword")->getForeground());
 	}
+	if (txed_calltips_use_font)
+		call_tip->setFont(ss_current->getDefaultFontFace(), ss_current->getDefaultFontSize());
 
 	// Determine position
 	wxPoint pos = GetScreenPosition() + PointFromPosition(position);
