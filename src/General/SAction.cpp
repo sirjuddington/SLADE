@@ -61,7 +61,8 @@ SAction::SAction(
 	int type,
 	int custom_wxid,
 	int radio_group,
-	int reserve_ids
+	int reserve_ids,
+	string linked_cvar
 	)
 {
 	// Init variables
@@ -75,6 +76,7 @@ SAction::SAction(
 	this->toggled = false;
 	this->keybind = keybind;
 	this->reserved_ids = reserve_ids;
+	this->linked_cvar = NULL;
 
 	// Add to MainApp
 	theApp->actions.push_back(this);
@@ -85,6 +87,17 @@ SAction::SAction(
 	}
 	else
 		wx_id = custom_wxid;
+
+	// Setup linked cvar
+	if (type == CHECK && !linked_cvar.IsEmpty())
+	{
+		CVar* cvar = get_cvar(linked_cvar);
+		if (cvar && cvar->type == CVAR_BOOLEAN)
+		{
+			this->linked_cvar = (CBoolCVar*)cvar;
+			toggled = cvar->GetValue().Bool;
+		}
+	}
 }
 
 /* SAction::~SAction
@@ -110,6 +123,17 @@ string SAction::getShortcutText()
 	}
 
 	return shortcut;
+}
+
+/* SAction::setToggled
+ * Sets the toggled state of the action to [toggle], and updates the
+ * value of the linked cvar (if any) to match
+ *******************************************************************/
+void SAction::setToggled(bool toggle)
+{
+	toggled = toggle;
+	if (linked_cvar)
+		*linked_cvar = toggle;
 }
 
 /* SAction::addToMenu
@@ -224,13 +248,21 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_o
 }
 
 
+/*******************************************************************
+ * SACTIONHANDLER CLASS FUNCTIONS
+ *******************************************************************/
 
-
+/* SActionHandler::SActionHandler
+ * SActionHandler class constructor
+ *******************************************************************/
 SActionHandler::SActionHandler()
 {
 	theApp->action_handlers.push_back(this);
 }
 
+/* SActionHandler::~SActionHandler
+ * SActionHandler class destructor
+ *******************************************************************/
 SActionHandler::~SActionHandler()
 {
 	for (unsigned a = 0; a < theApp->action_handlers.size(); a++)

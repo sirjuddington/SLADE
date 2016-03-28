@@ -1356,6 +1356,9 @@
     <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp">
+      <Filter>UI\Text Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2354,6 +2357,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h">
       <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h">
+      <Filter>UI\Text Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

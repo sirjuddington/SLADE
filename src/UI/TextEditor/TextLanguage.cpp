@@ -241,7 +241,7 @@ void TextLanguage::addConstant(string constant)
  * exists, [args] will be added to it as a new arg set, otherwise
  * a new function will be added
  *******************************************************************/
-void TextLanguage::addFunction(string name, string args)
+void TextLanguage::addFunction(string name, string args, string desc, bool replace)
 {
 	// Check if the function exists
 	TLFunction* func = getFunction(name);
@@ -253,8 +253,20 @@ void TextLanguage::addFunction(string name, string args)
 		functions.push_back(func);
 	}
 
+	// Remove/recreate the function if we're replacing it
+	else if (replace)
+	{
+		VECTOR_REMOVE(functions, func);
+		delete func;
+		func = new TLFunction(name);
+		functions.push_back(func);
+	}
+
 	// Add the arg set
 	func->addArgSet(args);
+
+	// Set description
+	func->setDescription(desc);
 }
 
 /* TextLanguage::getKeywordsList
@@ -602,13 +614,37 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				{
 					ParseTreeNode* child_func = (ParseTreeNode*)child->getChild(f);
 
-					// Add function
-					lang->addFunction(child_func->getName(), child_func->getStringValue(0));
-
-					// Add args
-					for (unsigned v = 1; v < child_func->nValues(); v++)
+					// Simple definition
+					if (child_func->nChildren() == 0)
 					{
-						lang->addFunction(child_func->getName(), child_func->getStringValue(v));
+						// Add function
+						lang->addFunction(child_func->getName(), child_func->getStringValue(0), "", true);
+
+						// Add args
+						for (unsigned v = 1; v < child_func->nValues(); v++)
+							lang->addFunction(child_func->getName(), child_func->getStringValue(v));
+					}
+
+					// Full definition
+					else
+					{
+						string name = child_func->getName();
+						string desc = "";
+						vector<string> args;
+						for (unsigned p = 0; p < child_func->nChildren(); p++)
+						{
+							ParseTreeNode* child_prop = (ParseTreeNode*)child_func->getChild(p);
+							if (child_prop->getName() == "args")
+							{
+								for (unsigned v = 0; v < child_prop->nValues(); v++)
+									args.push_back(child_prop->getStringValue(v));
+							}
+							else if (child_prop->getName() == "description")
+								desc = child_prop->getStringValue();
+						}
+
+						for (unsigned as = 0; as < args.size(); as++)
+							lang->addFunction(name, args[as], desc, as == 0);
 					}
 				}
 			}

@@ -3591,18 +3591,6 @@ bool MapCanvas::handleAction(string id)
 		return true;
 	}
 
-	// Toggle selection numbers
-	else if (id == "mapw_toggle_selection_numbers")
-	{
-		map_show_selection_numbers = !map_show_selection_numbers;
-		if (map_show_selection_numbers)
-			editor->addEditorMessage("Selection numbers enabled");
-		else
-			editor->addEditorMessage("Selection numbers disabled");
-
-		return true;
-	}
-
 	// Mirror Y
 	else if (id == "mapw_mirror_y")
 	{

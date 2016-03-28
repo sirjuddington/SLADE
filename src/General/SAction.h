@@ -6,6 +6,7 @@ class wxMenu;
 class wxAuiToolBar;
 class wxToolBar;
 class MainApp;
+class CBoolCVar;
 
 class SAction
 {
@@ -25,6 +26,7 @@ private:
 	int			group;
 	bool		toggled;
 	string		keybind;
+	CBoolCVar*	linked_cvar;
 
 	static int	n_groups;
 
@@ -46,7 +48,8 @@ public:
 		int type = NORMAL,
 		int custom_wxid = -1,
 		int radio_group = -1,
-		int reserve_ids = 1
+		int reserve_ids = 1,
+		string linked_cvar = ""
 		);
 	~SAction();
 
@@ -60,6 +63,7 @@ public:
 	bool	isToggled() { return toggled; }
 	bool	isRadio() { return type == RADIO; }
 	bool	isWxId(int id) { return id >= wx_id && id < wx_id + reserved_ids; }
+	void	setToggled(bool toggle = true);
 
 	bool	addToMenu(wxMenu* menu, string text_override = "NO", string icon_override = "NO", int wx_id_offset = 0);
 	bool	addToMenu(
