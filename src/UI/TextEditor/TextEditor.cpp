@@ -459,8 +459,6 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 TextEditor::~TextEditor()
 {
 	StyleSet::removeEditor(this);
-	if (jump_to_calculator)
-		jump_to_calculator->Kill();
 }
 
 /* TextEditor::setup
