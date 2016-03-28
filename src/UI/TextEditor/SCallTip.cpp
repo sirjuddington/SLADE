@@ -210,6 +210,20 @@ void SCallTip::updateSize()
 {
 	updateBuffer();
 	SetSize(buffer.GetWidth() + 24, buffer.GetHeight() + 16);
+
+	// Get screen bounds and window bounds
+	int index = wxDisplay::GetFromWindow(this);
+	wxDisplay display(index);
+	wxRect screen_area = display.GetClientArea();
+	wxRect ct_area = GetScreenRect();
+
+	// Check if calltip extends off the right of the screen
+	if (ct_area.GetRight() > screen_area.GetRight())
+	{
+		// Move back so we're within the screen
+		int offset = ct_area.GetRight() - screen_area.GetRight();
+		SetPosition(wxPoint(GetPosition().x - offset, GetPosition().y));
+	}
 	
 	Update();
 	Refresh();
