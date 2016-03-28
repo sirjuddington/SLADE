@@ -951,6 +951,8 @@ void TextEditor::showCalltip(int position)
 	}
 	if (txed_calltips_use_font)
 		call_tip->setFont(ss_current->getDefaultFontFace(), ss_current->getDefaultFontSize());
+	else
+		call_tip->setFont("", 0);
 
 	// Determine position
 	wxPoint pos = GetScreenPosition() + PointFromPosition(position);

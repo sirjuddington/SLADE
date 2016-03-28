@@ -31,6 +31,7 @@
 #include "SCallTip.h"
 #include "TextLanguage.h"
 #include "Utility/Tokenizer.h"
+#include <wx/display.h>
 
 
 /*******************************************************************
@@ -66,6 +67,7 @@ SCallTip::SCallTip(wxWindow* parent)
 	Bind(wxEVT_ERASE_BACKGROUND, &SCallTip::onEraseBackground, this);
 	Bind(wxEVT_MOTION, &SCallTip::onMouseMove, this);
 	Bind(wxEVT_LEFT_DOWN, &SCallTip::onMouseDown, this);
+	Bind(wxEVT_SHOW, &SCallTip::onShow, this);
 }
 
 /* SCallTip::~SCallTip
@@ -75,10 +77,21 @@ SCallTip::~SCallTip()
 {
 }
 
+/* SCallTip::setFont
+ * Sets the font [face] and [size]
+ *******************************************************************/
 void SCallTip::setFont(string face, int size)
 {
-	font.SetFaceName(face);
-	font.SetPointSize(size);
+	if (face == "")
+	{
+		font.SetFaceName(GetFont().GetFaceName());
+		font.SetPointSize(GetFont().GetPointSize());
+	}
+	else
+	{
+		font.SetFaceName(face);
+		font.SetPointSize(size);
+	}
 }
 
 /* SCallTip::addArg
@@ -305,7 +318,7 @@ void SCallTip::updateBuffer()
 		for (unsigned a = 0; a < args.size(); a++)
 		{
 			// Go down to next line if current is too long
-			if (left > 600)
+			if (left > SCALLTIP_MAX_WIDTH)
 			{
 				left = args_left;
 				top = rect.GetBottom() + 2;
@@ -372,7 +385,7 @@ void SCallTip::updateBuffer()
 		{
 			wxFont italic = font.Italic();
 			dc.SetFont(italic);
-			if (dc.GetTextExtent(desc).x > 600)
+			if (dc.GetTextExtent(desc).x > SCALLTIP_MAX_WIDTH)
 			{
 				// Description is too long, split into multiple lines
 				vector<string> desc_lines;
@@ -384,7 +397,7 @@ void SCallTip::updateBuffer()
 					bool split = false;
 					for (unsigned a = 0; a < extents.size(); a++)
 					{
-						if (extents[a] > 600)
+						if (extents[a] > SCALLTIP_MAX_WIDTH)
 						{
 							int eol = line.SubString(0, a).Last(' ');
 							desc_lines.push_back(line.SubString(0, eol));
@@ -535,4 +548,29 @@ void SCallTip::onMouseDown(wxMouseEvent& e)
 		else if (btn_mouse_over == 2)
 			prevArgSet();
 	}
+}
+
+/* SCallTip::onShow
+ * Called when the control is shown
+ *******************************************************************/
+void SCallTip::onShow(wxShowEvent& e)
+{
+	if (e.IsShown())
+	{
+		// Get screen bounds and window bounds
+		int index = wxDisplay::GetFromWindow(this);
+		wxDisplay display(index);
+		wxRect screen_area = display.GetClientArea();
+		wxRect ct_area = GetScreenRect();
+
+		// Check if calltip extends off the right of the screen
+		if (ct_area.GetRight() > screen_area.GetRight())
+		{
+			// Move back so we're within the screen
+			int offset = ct_area.GetRight() - screen_area.GetRight();
+			SetPosition(wxPoint(GetPosition().x - offset, GetPosition().y));
+		}
+	}
+
+	e.Skip();
 }

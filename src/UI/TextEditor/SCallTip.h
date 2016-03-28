@@ -3,6 +3,8 @@
 #include <wx/popupwin.h>
 #include <wx/dcbuffer.h>
 
+#define SCALLTIP_MAX_WIDTH 800
+
 class TLFunction;
 class SCallTip : public wxPopupWindow
 {
@@ -22,7 +24,6 @@ public:
 	void	openFunction(TLFunction* function, int arg = -1);
 	void	nextArgSet();
 	void	prevArgSet();
-
 
 	struct arg_t
 	{
@@ -61,4 +62,5 @@ private:
 	void	onEraseBackground(wxEraseEvent& e);
 	void	onMouseMove(wxMouseEvent& e);
 	void	onMouseDown(wxMouseEvent& e);
+	void	onShow(wxShowEvent& e);
 };
