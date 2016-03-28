@@ -772,11 +772,16 @@ void MainApp::initActions()
 /* MainApp::singleInstanceCheck
  * Checks if another instance of SLADE is already running, and if so,
  * sends the args to the file listener of the existing SLADE
- * process. Returns false if another instance was found
+ * process. Returns false if another instance was found and the new
+ * SLADE was started with arguments
  *******************************************************************/
 bool MainApp::singleInstanceCheck()
 {
 	single_instance_checker = new wxSingleInstanceChecker;
+
+	if (argc == 1)
+		return true;
+
 	if (single_instance_checker->IsAnotherRunning())
 	{
 		delete single_instance_checker;
