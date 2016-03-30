@@ -749,6 +749,8 @@ void MapObjectPropsPanel::setupType(int objtype)
 
 	// Set all bool properties to use checkboxes
 	pg_properties->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
+	pg_props_side1->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
+	pg_props_side2->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 
 	last_type = objtype;
 	udmf = false;
@@ -856,6 +858,8 @@ void MapObjectPropsPanel::setupTypeUDMF(int objtype)
 
 	// Set all bool properties to use checkboxes
 	pg_properties->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
+	pg_props_side1->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
+	pg_props_side2->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 
 	// Remember arg properties for passing to type/special properties (or set
 	// to NULL if args don't exist)

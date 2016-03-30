@@ -565,6 +565,7 @@ acs_z : acs {
 		Line_AlignCeiling  = "int lineid, int side";
 		Line_AlignFloor = "int lineid, int side";
 		Line_SetBlocking = "int lineid, int setflags, int clearflags";
+		Line_SetPortalTarget = "int sourceline, int targetline";
 		Line_SetTextureOffset = "int id, int x, int y, int side, int flags";
 		Line_SetTextureScale = "int id, int x, int y, int side, int flags";
 		NoiseAlert = "int target_tid, int emitter_tid";
@@ -792,7 +793,7 @@ acs_z : acs {
 		PolyWait = "int polynum";
 		Print = "type:expression";
 		PrintBold = "type:expression";
-		QuakeEx = "int tid, int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, sound sfx, [int flags], [fixed mulWaveX], [fixed mulWaveY], [fixed mulWaveZ]";
+		QuakeEx = "int tid, int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, sound sfx, [int flags], [fixed mulWaveX], [fixed mulWaveY], [fixed mulWaveZ], [int falloff], [int highpoint]";
 		Radius_Quake2 = "int tid, int intensity, int duration, int damrad, int tremrad, str sound";
 		Random = "int min, int max";
 		ReplaceTextures = "str oldtexturename, str newtexturename, [int flags]";
