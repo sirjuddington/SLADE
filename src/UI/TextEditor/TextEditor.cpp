@@ -1673,7 +1673,7 @@ void TextEditor::onJumpToCalculateComplete(wxThreadEvent& e)
 	string jump_points = e.GetString();
 	wxArrayString split = wxSplit(jump_points, ',');
 
-	vector<string> items;
+	wxArrayString items;
 	for (unsigned a = 0; a < split.size(); a += 2)
 	{
 		if (a == split.size() - 1)
