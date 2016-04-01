@@ -355,11 +355,14 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 				// No 'foldmargin' style defined, copy it from line numbers style
 				styles[a]->foreground = getStyleForeground("linenum");
 				styles[a]->background = getStyleBackground("linenum");
+				styles[a]->fg_defined = true;
+				styles[a]->bg_defined = true;
 			}
 			else if (styles[a]->name == "guides")
 			{
 				// No 'guides' style defined, use the default foreground colour
 				styles[a]->foreground = ts_default.getForeground();
+				styles[a]->fg_defined = true;
 			}
 		}
 	}
