@@ -1131,7 +1131,7 @@ void TextEditor::updateJumpToList()
 	if (!choice_jump_to)
 		return;
 
-	if (!language || jump_to_calculator)
+	if (!language || jump_to_calculator || GetText().length() == 0)
 	{
 		choice_jump_to->Clear();
 		return;
