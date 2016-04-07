@@ -626,7 +626,7 @@ rgba_t GLTexture::averageColour(rect_t area)
 	if ((unsigned)area.br.y > height)	area.br.y = height;
 
 	// Get texture pixels
-	uint8_t* pixels = new uint8_t[width*height*4];
+	uint8_t* pixels = new uint8_t[width*height*8];
 	glBindTexture(GL_TEXTURE_2D, tex[0].id);
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
