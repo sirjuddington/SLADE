@@ -31,6 +31,7 @@ private:
 	wxButton*		btn_fix1;
 	wxButton*		btn_fix2;
 	wxButton*		btn_edit_object;
+	wxButton*		btn_export;
 
 	struct check_item_t
 	{
@@ -59,6 +60,7 @@ public:
 	void	onBtnFix1(wxCommandEvent& e);
 	void	onBtnFix2(wxCommandEvent& e);
 	void	onBtnEditObject(wxCommandEvent& e);
+	void	onBtnExport(wxCommandEvent& e);
 };
 
 #endif//__MAP_CHECKS_DIALOG_H__
