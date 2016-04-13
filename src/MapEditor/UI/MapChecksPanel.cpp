@@ -36,6 +36,7 @@
 #include "MapEditor/MapChecks.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
+#include "Utility/SFileDialog.h"
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/gbsizer.h>
@@ -126,6 +127,10 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	label_status = new wxStaticText(this, -1, "");
 	hbox->Add(label_status, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
 
+	// Export button
+	btn_export = new wxButton(this, -1, "Export Results");
+	hbox->Add(btn_export, 0, wxEXPAND | wxRIGHT, 4);
+
 	// Check button
 	btn_check = new wxButton(this, -1, "Check");
 	hbox->Add(btn_check, 0, wxEXPAND);
@@ -136,6 +141,7 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	btn_edit_object->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnEditObject, this);
 	btn_fix1->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnFix1, this);
 	btn_fix2->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnFix2, this);
+	btn_export->Bind(wxEVT_BUTTON, &MapChecksPanel::onBtnExport, this);
 
 	// Check all by default
 	cb_missing_tex->SetValue(true);
@@ -152,6 +158,7 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	btn_fix1->Show(false);
 	btn_fix2->Show(false);
 	btn_edit_object->Enable(false);
+	btn_export->Enable(false);
 }
 
 /* MapChecksPanel::~MapChecksPanel
@@ -309,6 +316,7 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 	btn_fix1->Show(false);
 	btn_fix2->Show(false);
 	btn_edit_object->Enable(false);
+	btn_export->Enable(false);
 	check_items.clear();
 
 	// Clear previous checks
@@ -358,7 +366,10 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 	lb_errors->Show(true);
 
 	if (lb_errors->GetCount() > 0)
+	{
 		updateStatusText(S_FMT("%d problems found", lb_errors->GetCount()));
+		btn_export->Enable(true);
+	}
 	else
 		updateStatusText("No problems found");
 }
@@ -426,5 +437,29 @@ void MapChecksPanel::onBtnEditObject(wxCommandEvent& e)
 		vector<MapObject*> list;
 		list.push_back(check_items[selected].check->getObject(check_items[selected].index));
 		theMapEditor->editObjectProperties(list);
+	}
+}
+
+/* MapChecksPanel::onBtnExport
+ * Called when the 'Export Results' button is clicked
+ *******************************************************************/
+void MapChecksPanel::onBtnExport(wxCommandEvent& e)
+{
+	string map_name = theMapEditor->currentMapDesc().name;
+	SFileDialog::fd_info_t info;
+	if (SFileDialog::saveFile(
+		info,
+		"Export Map Check Results",
+		"Text Files (*.txt)|*.txt",
+		theMapEditor, map_name + "-Problems"))
+	{
+		string text = S_FMT("%d problems found in map %s:\n\n", check_items.size(), CHR(map_name));
+		for (unsigned a = 0; a < check_items.size(); a++)
+			text += check_items[a].check->problemDesc(check_items[a].index) + "\n";
+		wxFile file;
+		file.Open(info.filenames[0], wxFile::write);
+		if (file.IsOpened())
+			file.Write(text);
+		file.Close();
 	}
 }
