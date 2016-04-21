@@ -136,7 +136,7 @@ const string MAP_TYPE_NAMES[] = {
 };
 
 // Debug helper type
-#ifdef WXDEBUG
+#ifdef DEBUG
 #include <typeinfo>
 class Debuggable
 {
@@ -207,13 +207,14 @@ inline void LOG_DEBUG(
 }
 
 #define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)
-#else  // WXDEBUG
+#else  // DEBUG
 struct Debuggable {
-	string repr;
+	template<typename T>
+	Debuggable(T _unused) { }
 };
 #define LOG_DEBUG(...)
 #define LOG_DEBUG_VAR(name)
-#endif  // WXDEBUG
+#endif  // DEBUG
 
 
 
