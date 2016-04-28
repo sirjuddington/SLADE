@@ -1809,10 +1809,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\External\zreaders\m_swap.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\External\zreaders\mus2midi.h"
 					>
 				</File>

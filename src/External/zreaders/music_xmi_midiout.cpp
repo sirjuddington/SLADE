@@ -36,7 +36,7 @@
 
 #include "i_musicinterns.h"
 #include "templates.h"
-#include "m_swap.h"
+#include "portable_endian.h"
 
 // MACROS ------------------------------------------------------------------
 
@@ -164,12 +164,13 @@ int XMISong::FindXMIDforms(const uint8_t *chunk, int len, TrackInfo *songs) cons
 
 	for (int p = 0; p <= len - 12; )
 	{
-		int chunktype = GetNativeInt(chunk + p);
-		int chunklen = GetBigInt(chunk + p + 4);
+		uint32_t chunktype = BE_32U_TO_H(chunk + p);
+		int chunklen = BE_32I_TO_H(chunk + p + 4);
 
 		if (chunktype == MAKE_ID('F','O','R','M'))
 		{
-			if (GetNativeInt(chunk + p + 8) == MAKE_ID('X','M','I','D'))
+			uint32_t chunktype2 = *(uint32_t*)(chunk + p + 8);
+			if (chunktype2 == MAKE_ID('X','M','I','D'))
 			{
 				if (songs != NULL)
 				{
@@ -204,8 +205,8 @@ void XMISong::FoundXMID(const uint8_t *chunk, int len, TrackInfo *song) const
 {
 	for (int p = 0; p <= len - 8; )
 	{
-		int chunktype = GetNativeInt(chunk + p);
-		int chunklen = GetBigInt(chunk + p + 4);
+		uint32_t chunktype = *(uint32_t*)(chunk + p);
+		int chunklen = BE_32I_TO_H(chunk + p + 4);
 
 		if (chunktype == MAKE_ID('T','I','M','B'))
 		{
