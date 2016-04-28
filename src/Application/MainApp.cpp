@@ -815,7 +815,10 @@ bool MainApp::OnInit()
 {
 	// Check if an instance of SLADE is already running
 	if (!singleInstanceCheck())
+	{
+		printf("Found active instance. Quitting.\n");
 		return false;
+	}
 
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
