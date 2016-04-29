@@ -36,8 +36,8 @@
 
 #include "i_musicinterns.h"
 #include "i_music.h"
-#include "m_swap.h"
 #include "templates.h"
+#include "portable_endian.h"
 
 enum EMIDIType
 {

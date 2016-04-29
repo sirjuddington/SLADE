@@ -1599,9 +1599,6 @@
     <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\External\zreaders\m_swap.h">
-      <Filter>External\ZReaders</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\mus2midi.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>

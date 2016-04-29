@@ -39,7 +39,6 @@
 
 #include "i_musicinterns.h"
 #include "templates.h"
-#include "m_swap.h"
 
 // MACROS ------------------------------------------------------------------
 
