@@ -60,7 +60,10 @@ SCallTip::SCallTip(wxWindow* parent)
 	font = GetFont();
 
 	Show(false);
+
+#ifndef __WXOSX__
 	SetDoubleBuffered(true);
+#endif // !__WXOSX__
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SCallTip::onPaint, this);
