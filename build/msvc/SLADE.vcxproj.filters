@@ -183,9 +183,6 @@
     <ClCompile Include="..\..\src\External\bzip2\randtable.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\ancientzip.cpp">
-      <Filter>External\ZReaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\External\zreaders\files.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
@@ -1367,9 +1364,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h">
       <Filter>External\BZip2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\zreaders\ancientzip.h">
-      <Filter>External\ZReaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\files.h">
       <Filter>External\ZReaders</Filter>
