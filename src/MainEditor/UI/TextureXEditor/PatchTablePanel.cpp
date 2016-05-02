@@ -465,10 +465,11 @@ void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 void PatchTablePanel::updateDisplay()
 {
 	// Get selected patch
-	patch_t& patch = patch_table->patch(list_patches->getLastSelected());
+	int index = list_patches->getItemIndex(list_patches->getLastSelected());
+	patch_t& patch = patch_table->patch(index);
 
 	// Load the image
-	ArchiveEntry* entry = patch_table->patchEntry(list_patches->getLastSelected());
+	ArchiveEntry* entry = patch_table->patchEntry(index);
 	if (Misc::loadImageFromEntry(patch_canvas->getImage(), entry))
 	{
 		theMainWindow->getPaletteChooser()->setGlobalFromArchive(entry->getParent());
