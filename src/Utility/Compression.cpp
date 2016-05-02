@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Compression.h"
-#include "External/zreaders/ancientzip.h"
+#include "External/zreaders/files.h"
 
 
 /*******************************************************************
@@ -196,50 +196,6 @@ bool Compression::ZlibInflate(MemChunk& in, MemChunk& out, size_t maxsize)
 bool Compression::ZlibDeflate(MemChunk& in, MemChunk& out, int level)
 {
 	return Compression::GenericDeflate(in, out, level, 0, "ZlibDeflate");
-}
-
-/* Compression::ZipExplode
- * Explodes the content of <in> as a zip stream to <out>
- * This is one of the ZIP protocols not supported by wxWidgets
- *******************************************************************/
-bool Compression::ZipExplode(MemChunk& in, MemChunk& out, size_t size, int flags)
-{
-	in.seek(0, SEEK_SET);
-	out.clear();
-
-	FZipExploder exploder;
-	MemoryReader source(in);
-	uint8_t* cache = new uint8_t[size];
-
-	int ret = exploder.Explode(cache, size, &source, in.getSize(), flags);
-	if (ret > 0 && (unsigned)ret == size)
-	{
-		out.write(cache, size);
-		return true;
-	}
-	return false;
-}
-
-/* Compression::ZipUnshrink
- * Unshrinks the content of <in> as a zip stream to <out>
- * This is one of the ZIP protocols not supported by wxWidgets
- *******************************************************************/
-bool Compression::ZipUnshrink(MemChunk& in, MemChunk& out, size_t size)
-{
-	in.seek(0, SEEK_SET);
-	out.clear();
-
-	MemoryReader source(in);
-	uint8_t* cache = new uint8_t[size];
-
-	int ret = ShrinkLoop(cache, size, &source, in.getSize());
-	if (ret > 0 && (unsigned)ret == size)
-	{
-		out.write(cache, size);
-		delete[] cache;
-		return true;
-	}
-	return false;
 }
 
 /* Compression::BZip2Decompress

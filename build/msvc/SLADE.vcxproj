@@ -574,7 +574,6 @@
     <ClCompile Include="..\..\src\External\zlib\trees.c" />
     <ClCompile Include="..\..\src\External\zlib\uncompr.c" />
     <ClCompile Include="..\..\src\External\zlib\zutil.c" />
-    <ClCompile Include="..\..\src\External\zreaders\ancientzip.cpp" />
     <ClCompile Include="..\..\src\External\zreaders\files.cpp" />
     <ClCompile Include="..\..\src\External\zreaders\i_music.cpp" />
     <ClCompile Include="..\..\src\External\zreaders\music_hmi_midiout.cpp" />
@@ -910,7 +909,6 @@
     <ClInclude Include="..\..\src\External\zlib\zconf.h" />
     <ClInclude Include="..\..\src\External\zlib\zlib.h" />
     <ClInclude Include="..\..\src\External\zlib\zutil.h" />
-    <ClInclude Include="..\..\src\External\zreaders\ancientzip.h" />
     <ClInclude Include="..\..\src\External\zreaders\files.h" />
     <ClInclude Include="..\..\src\External\zreaders\i_music.h" />
     <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h" />

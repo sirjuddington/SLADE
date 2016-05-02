@@ -106,7 +106,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 add_executable(slade WIN32 MACOSX_BUNDLE
 	External/lzma/C/LzmaDec.c
 	External/mus2mid/mus2mid.cpp
-	External/zreaders/ancientzip.cpp
 	External/zreaders/files.cpp
 	External/zreaders/m_alloc.cpp
 	External/zreaders/i_music.cpp
