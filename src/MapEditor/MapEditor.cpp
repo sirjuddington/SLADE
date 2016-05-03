@@ -2758,14 +2758,13 @@ void MapEditor::createThing(double x, double y)
 	MapThing* thing = map.createThing(x, y);
 
 	// Setup properties
+	theGameConfiguration->applyDefaults(thing, map.currentFormat() == MAP_UDMF);
 	if (copy_thing)
 	{
 		// Copy type and angle from the last copied thing
 		thing->setIntProperty("type", copy_thing->getType());
 		thing->setIntProperty("angle", copy_thing->getAngle());
 	}
-	else
-		theGameConfiguration->applyDefaults(thing, map.currentFormat() == MAP_UDMF);	// No thing properties to copy, get defaults from game configuration
 
 	// End undo step
 	endUndoRecord(true);
