@@ -136,7 +136,11 @@ public:
 	void	viewFitToMap(bool snap = false);
 	void	viewShowObject();
 	void	viewMatchSpot(double mx, double my, double sx, double sy);
-	void	set3dCameraThing(MapThing* thing);
+
+	// 3d mode
+	void		set3dCameraThing(MapThing* thing);
+	fpoint2_t	get3dCameraPos();
+	fpoint2_t	get3dCameraDir();
 
 	// Drawing
 	void	drawGrid();
@@ -158,9 +162,10 @@ public:
 	void	update(long frametime);
 
 	// Mouse
-	void	mouseToCenter();
-	void	lockMouse(bool lock);
-	void	determineObjectEditState();
+	void		mouseToCenter();
+	void		lockMouse(bool lock);
+	void		determineObjectEditState();
+	fpoint2_t	mouseDownPosM() { return mouse_downpos_m; }
 
 	void	itemSelected(int index, bool selected = true);
 	void	itemsSelected(vector<int>& items, bool selected = true);

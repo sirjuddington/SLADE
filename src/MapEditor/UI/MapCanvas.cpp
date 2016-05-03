@@ -524,6 +524,22 @@ void MapCanvas::set3dCameraThing(MapThing* thing)
 	renderer_3d->cameraSet(pos, dir);
 }
 
+/* MapCanvas::get3dCameraPos
+ * Returns the current 3d mode camera position
+ *******************************************************************/
+fpoint2_t MapCanvas::get3dCameraPos()
+{
+	return fpoint2_t(renderer_3d->camPosition().x, renderer_3d->camPosition().y);
+}
+
+/* MapCanvas::get3dCameraDir
+ * Returns the current 3d mode camera direction
+ *******************************************************************/
+fpoint2_t MapCanvas::get3dCameraDir()
+{
+	return renderer_3d->camDirection();
+}
+
 /* MapCanvas::drawGrid
  * Draws the grid
  *******************************************************************/
@@ -4168,6 +4184,9 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 			// Set 3d camera
 			theApp->getAction("mapw_camera_set")->addToMenu(&menu_context, true);
+
+			// Run from here
+			theApp->getAction("mapw_run_map_here")->addToMenu(&menu_context, true);
 
 			// Mode-specific
 			bool object_selected = (editor->selectionSize() > 0 || editor->hilightItem() >= 0);

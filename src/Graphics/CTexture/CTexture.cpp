@@ -223,16 +223,16 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 	// Read basic info
 	this->type = type;
 	name = tz.getToken().Upper();
-	tz.getToken();	// Skip ,
+	tz.skipToken();	// Skip ,
 	offset_x = tz.getInteger();
-	tz.getToken();	// Skip ,
+	tz.skipToken();	// Skip ,
 	offset_y = tz.getInteger();
 
 	// Check if there is any extended info
 	if (tz.peekToken() == "{")
 	{
 		// Skip {
-		tz.getToken();
+		tz.skipToken();
 
 		// Parse extended info
 		string property = tz.getToken();
@@ -260,11 +260,22 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				// Add first translation string
 				translation.parse(tz.getToken());
 
-				// Add any subsequent translations (separated by commas)
-				while (tz.peekToken() == ",")
+				if (tz.peekToken() == "," && translation.builtInName() == "Desaturate")
 				{
-					tz.getToken();	// Skip ,
-					translation.parse(tz.getToken());
+					// Desaturation, get amount
+					tz.skipToken(); // Skip ,
+					int amount = tz.getInteger();
+					LOG_MESSAGE(2, "%d", amount);
+					translation.setDesaturationAmount(amount);
+				}
+				else
+				{
+					// Add any subsequent translations (separated by commas)
+					while (tz.peekToken() == ",")
+					{
+						tz.skipToken();	// Skip ,
+						translation.parse(tz.getToken());
+					}
 				}
 
 				blendtype = 1;
@@ -289,7 +300,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				else
 				{
 					// Second value could be alpha or green
-					tz.getToken();	// Skip ,
+					tz.skipToken();	// Skip ,
 					double second = tz.getDouble();
 
 					// If no third value, it's an alpha value
@@ -302,7 +313,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 					else
 					{
 						// Third value exists, must be R,G,B,A format
-						tz.getToken();	// Skip ,
+						tz.skipToken();	// Skip ,
 						first.ToDouble(&val);
 						colour.r = val*255;
 						colour.g = second*255;
@@ -312,7 +323,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 							wxLogMessage("Invalid TEXTURES definition, expected ',', got '%s'", tz.getToken());
 							return false;
 						}
-						tz.getToken();	// Skip ,
+						tz.skipToken();	// Skip ,
 						colour.a = tz.getDouble()*255;
 						blendtype = 3;
 					}
@@ -720,15 +731,15 @@ bool CTexture::parse(Tokenizer& tz, string type)
 	this->extended = true;
 	this->defined = false;
 	name = tz.getToken().Upper();
-	tz.getToken();	// Skip ,
+	tz.skipToken();	// Skip ,
 	width = tz.getInteger();
-	tz.getToken();	// Skip ,
+	tz.skipToken();	// Skip ,
 	height = tz.getInteger();
 
 	// Check for extended info
 	if (tz.peekToken() == "{")
 	{
-		tz.getToken();	// Skip {
+		tz.skipToken();	// Skip {
 
 		// Read properties
 		string property = tz.getToken();
@@ -753,7 +764,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			if (S_CMPNOCASE(property, "Offset"))
 			{
 				offset_x = tz.getInteger();
-				tz.getToken();	// Skip ,
+				tz.skipToken();	// Skip ,
 				offset_y = tz.getInteger();
 			}
 

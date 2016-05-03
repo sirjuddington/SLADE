@@ -46,7 +46,7 @@
 /* Translation::Translation
  * Translation class constructor
  *******************************************************************/
-Translation::Translation()
+Translation::Translation() : built_in_name(""), desat_amount(0)
 {
 }
 
@@ -71,6 +71,45 @@ void Translation::parse(string def)
 	tz.openString(def);
 
 	//wxLogMessage("Parse translation \"%s\"", def);
+	
+	// Test for ZDoom built-in translation
+	string test = tz.peekToken().Lower();
+	if (test == "inverse")
+	{
+		// TODO: Inverse translation
+		built_in_name = "Inverse";
+		return;
+	}
+	else if (test == "gold")
+	{
+		// TODO: Gold translation
+		built_in_name = "Gold";
+		return;
+	}
+	else if (test == "red")
+	{
+		// TODO: Red translation
+		built_in_name = "Red";
+		return;
+	}
+	else if (test == "green")
+	{
+		// TODO: Green translation
+		built_in_name = "Green";
+		return;
+	}
+	else if (test == "ice")
+	{
+		// TODO: Ice translation
+		built_in_name = "Ice";
+		return;
+	}
+	else if (test == "desaturate")
+	{
+		// TODO: Desaturate translation
+		built_in_name = "Desaturate";
+		return;
+	}
 
 	// Read original range
 	uint8_t o_start, o_end;
@@ -266,13 +305,23 @@ string Translation::asText()
 {
 	string ret;
 
-	// Go through translation ranges
-	for (unsigned a = 0; a < translations.size(); a++)
-		ret += S_FMT("\"%s\", ", translations[a]->asText());	// Add range to string
+	if (built_in_name.IsEmpty())
+	{
+		// Go through translation ranges
+		for (unsigned a = 0; a < translations.size(); a++)
+			ret += S_FMT("\"%s\", ", translations[a]->asText());	// Add range to string
 
-	// If any translations were defined, remove last ", "
-	if (!ret.IsEmpty())
-		ret.RemoveLast(2);
+		// If any translations were defined, remove last ", "
+		if (!ret.IsEmpty())
+			ret.RemoveLast(2);
+	}
+	else
+	{
+		// ZDoom built-in translation
+		ret = built_in_name;
+		if (built_in_name == "Desaturate")
+			ret += S_FMT(", %d", desat_amount);
+	}
 
 	return ret;
 }
@@ -285,6 +334,8 @@ void Translation::clear()
 	for (unsigned a = 0; a < translations.size(); a++)
 		delete translations[a];
 	translations.clear();
+	built_in_name = "";
+	desat_amount = 0;
 }
 
 /* Translation::copy
@@ -305,6 +356,9 @@ void Translation::copy(Translation& copy)
 		if (copy.translations[a]->type == TRANS_DESAT)
 			translations.push_back(new TransRangeDesat((TransRangeDesat*)copy.translations[a]));
 	}
+
+	built_in_name = copy.built_in_name;
+	desat_amount = copy.desat_amount;
 }
 
 /* Translation::getRange

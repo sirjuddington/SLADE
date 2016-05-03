@@ -761,6 +761,7 @@ void MainApp::initActions()
 	new SAction("mapw_show_item", "Show Item...", "", "Zoom and scroll to show a map item");
 	new SAction("mapw_mirror_y", "Mirror Vertically", "flip", "Mirror the selected objects vertically", "kb:me2d_mirror_y");
 	new SAction("mapw_mirror_x", "Mirror Horizontally", "mirror", "Mirror the selected objects horizontally", "kb:me2d_mirror_x");
+	new SAction("mapw_run_map_here", "Run Map from Here", "run", "Run the current map, starting at the current cursor position");
 
 	// Script editor
 	new SAction("mapw_script_save", "Save", "save", "Save changes to scripts");

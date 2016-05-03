@@ -2758,14 +2758,13 @@ void MapEditor::createThing(double x, double y)
 	MapThing* thing = map.createThing(x, y);
 
 	// Setup properties
+	theGameConfiguration->applyDefaults(thing, map.currentFormat() == MAP_UDMF);
 	if (copy_thing)
 	{
 		// Copy type and angle from the last copied thing
 		thing->setIntProperty("type", copy_thing->getType());
 		thing->setIntProperty("angle", copy_thing->getAngle());
 	}
-	else
-		theGameConfiguration->applyDefaults(thing, map.currentFormat() == MAP_UDMF);	// No thing properties to copy, get defaults from game configuration
 
 	// End undo step
 	endUndoRecord(true);
@@ -5361,6 +5360,76 @@ void MapEditor::doRedo()
 }
 
 #pragma endregion
+
+/* MapEditor::swapPlayerStart3d
+ * Moves the player 1 start thing to the current position and
+ * direction of the 3d mode camera
+ *******************************************************************/
+void MapEditor::swapPlayerStart3d()
+{
+	// Find player 1 start
+	MapThing* pstart = NULL;
+	for (unsigned a = 0; a < map.things.size(); a++)
+		if (map.things[a]->getType() == 1)
+		{
+			pstart = map.things[a];
+			break;
+		}
+	if (!pstart)
+		return;
+
+	// Save existing player start pos+dir
+	player_start_pos.set(pstart->point());
+	player_start_dir = pstart->getAngle();
+
+	fpoint2_t campos = canvas->get3dCameraPos();
+	pstart->setPos(campos.x, campos.y);
+	pstart->setAnglePoint(campos + canvas->get3dCameraDir());
+}
+
+/* MapEditor::swapPlayerStart2d
+ * Moves the player 1 start thing to [pos]
+ *******************************************************************/
+void MapEditor::swapPlayerStart2d(fpoint2_t pos)
+{
+	// Find player 1 start
+	MapThing* pstart = NULL;
+	for (unsigned a = 0; a < map.things.size(); a++)
+		if (map.things[a]->getType() == 1)
+		{
+			pstart = map.things[a];
+			break;
+		}
+	if (!pstart)
+		return;
+
+	// Save existing player start pos+dir
+	player_start_pos.set(pstart->point());
+	player_start_dir = pstart->getAngle();
+
+	pstart->setPos(pos.x, pos.y);
+}
+
+/* MapEditor::resetPlayerStart
+ * Resets the player 1 start thing to its original position
+ *******************************************************************/
+void MapEditor::resetPlayerStart()
+{
+	// Find player 1 start
+	MapThing* pstart = NULL;
+	for (unsigned a = 0; a < map.things.size(); a++)
+		if (map.things[a]->getType() == 1)
+		{
+			pstart = map.things[a];
+			break;
+		}
+	if (!pstart)
+		return;
+
+	pstart->setPos(player_start_pos.x, player_start_pos.y);
+	pstart->setIntProperty("angle", player_start_dir);
+}
+
 
 #pragma region CONSOLE COMMANDS
 

@@ -1076,6 +1076,15 @@ void ZTextureEditorPanel::onTextTranslationEnter(wxCommandEvent& e)
 		// Parse the translation component
 		trans.parse(token);
 
+		// Check for desaturate translation
+		if (trans.builtInName() == "Desaturate")
+		{
+			tz.skipToken(); // Skip ,
+			trans.setDesaturationAmount(tz.getInteger());
+			token = tz.getToken();
+			continue;
+		}
+
 		// Skip ,
 		if (tz.peekToken() == ",")
 			tz.getToken();
