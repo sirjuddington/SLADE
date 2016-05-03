@@ -135,6 +135,8 @@ class Translation
 {
 private:
 	vector<TransRange*>	translations;
+	string				built_in_name;
+	uint8_t				desat_amount;
 
 public:
 	Translation();
@@ -145,10 +147,12 @@ public:
 	string	asText();
 	void	clear();
 	void	copy(Translation& copy);
-	bool	isEmpty() { return translations.size() == 0; }
+	bool	isEmpty() { return built_in_name.IsEmpty() && translations.size() == 0; }
 
 	unsigned	nRanges() { return translations.size(); }
 	TransRange*	getRange(unsigned index);
+	string		builtInName() { return built_in_name; }
+	void		setDesaturationAmount(uint8_t amount) { desat_amount = amount; }
 
 	void	addRange(int type, int pos);
 	void	removeRange(int pos);
