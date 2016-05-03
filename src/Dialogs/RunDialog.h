@@ -23,9 +23,10 @@ private:
 	wxButton*				btn_cancel;
 	ResourceArchiveChooser*	rac_resources;
 	wxTextCtrl*				text_extra_params;
+	wxCheckBox*				cb_start_3d;
 
 public:
-	RunDialog(wxWindow* parent, Archive* archive);
+	RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb = false);
 	~RunDialog();
 
 	void	openGameExe(unsigned index);
@@ -33,6 +34,7 @@ public:
 	string	getSelectedResourceList();
 	string	getSelectedExeDir();
 	string	getSelectedExeId();
+	bool	start3dModeChecked();
 
 	// Events
 	void	onBtnAddGame(wxCommandEvent& e);

@@ -1239,17 +1239,28 @@ bool MapEditorWindow::handleAction(string id)
 	}
 
 	// Run Map
-	else if (id == "mapw_run_map")
+	else if (id == "mapw_run_map" || id == "mapw_run_map_here")
 	{
 		Archive* archive = NULL;
 		if (mdesc_current.head)
 			archive = mdesc_current.head->getParent();
-		RunDialog dlg(this, archive);
+		RunDialog dlg(this, archive, id == "mapw_run_map");
 		if (dlg.ShowModal() == wxID_OK)
 		{
+			// Move player 1 start if needed
+			if (id == "mapw_run_map_here")
+				editor.swapPlayerStart2d(map_canvas->mouseDownPosM());
+			else if (dlg.start3dModeChecked())
+				editor.swapPlayerStart3d();
+
+			// Write temp wad
 			WadArchive* wad = writeMap(mdesc_current.name);
 			if (wad)
 				wad->save(appPath("sladetemp_run.wad", DIR_TEMP));
+
+			// Reset player 1 start if moved
+			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
+				editor.resetPlayerStart();
 
 			string command = dlg.getSelectedCommandLine(archive, mdesc_current.name, wad->getFilename());
 			if (!command.IsEmpty())

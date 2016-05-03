@@ -76,10 +76,6 @@ private:
 	int			move_item_closest;
 
 	// Object edit
-	//vector<MapObject*>	edit_objects;
-	//bbox_t				edit_bbox;
-	//fpoint2_t			edit_midpoint;
-	//vector<MapLine*>	edit_objects_lines;
 	ObjectEditGroup	edit_object_group;
 
 	// Object properties and copy/paste
@@ -106,6 +102,10 @@ private:
 	// 3d mode
 	selection_3d_t			hilight_3d;
 	vector<selection_3d_t>	selection_3d;
+
+	// Player start swap
+	fpoint2_t	player_start_pos;
+	int			player_start_dir;
 
 	// Helper for selectAdjacent3d
 	bool wallMatches(MapSide* side, uint8_t part, string tex);
@@ -290,6 +290,11 @@ public:
 	void	recordPropertyChangeUndoStep(MapObject* object);
 	void	doUndo();
 	void	doRedo();
+
+	// Player start swapping
+	void	swapPlayerStart3d();
+	void	swapPlayerStart2d(fpoint2_t pos);
+	void	resetPlayerStart();
 
 	// Misc
 	string	getModeString();
