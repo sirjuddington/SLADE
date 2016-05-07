@@ -2951,16 +2951,38 @@ vector<int> SLADEMap::nearestThingMulti(fpoint2_t point)
  *******************************************************************/
 int SLADEMap::sectorAt(fpoint2_t point)
 {
+	int closest_sector = -1;
+	float closest_sector_distance = -1;
+
+	float sector_distance;
+	float vertex_distance;
+
+	vector<MapVertex*> sector_vertices;
+
 	// Go through sectors
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
 		// Check if point is within sector
-		if (sectors[a]->isWithin(point))
-			return a;
+		if (!sectors[a]->isWithin(point))
+			continue;
+
+		sector_distance = -1;
+		sectors[a]->getVertices(sector_vertices);
+		for (unsigned i = 0; i < sector_vertices.size(); i++)
+		{
+			vertex_distance = sector_vertices[i]->point().distance_to(point);
+			if (sector_distance < 0 || vertex_distance < sector_distance)
+				sector_distance = vertex_distance;
+		}
+
+		if (closest_sector < 0 || sector_distance < closest_sector_distance)
+		{
+			closest_sector = a;
+			closest_sector_distance = sector_distance;
+		}
 	}
 
-	// Not within a sector
-	return -1;
+	return closest_sector;
 }
 
 /* SLADEMap::getMapBBox
