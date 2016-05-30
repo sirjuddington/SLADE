@@ -190,7 +190,7 @@ void SCallTip::openFunction(TLFunction* function, int arg)
 void SCallTip::nextArgSet()
 {
 	arg_set_current++;
-	if (arg_set_current >= function->nArgSets())
+	if (arg_set_current >= (int)function->nArgSets())
 		arg_set_current = 0;
 	loadArgSet(arg_set_current);
 }
