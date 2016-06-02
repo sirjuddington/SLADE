@@ -186,9 +186,6 @@
     <ClCompile Include="..\..\src\External\bzip2\randtable.c">
       <Filter>External\BZip2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\ancientzip.cpp">
-      <Filter>External\ZReaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\External\zreaders\files.cpp">
       <Filter>External\ZReaders</Filter>
     </ClCompile>
@@ -1380,6 +1377,9 @@
     <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp">
+      <Filter>UI\Text Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1388,9 +1388,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h">
       <Filter>External\BZip2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\zreaders\ancientzip.h">
-      <Filter>External\ZReaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\files.h">
       <Filter>External\ZReaders</Filter>
@@ -1618,9 +1615,6 @@
       <Filter>External\ZReaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h">
-      <Filter>External\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\zreaders\m_swap.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\mus2midi.h">
@@ -2402,6 +2396,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h">
       <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h">
+      <Filter>UI\Text Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

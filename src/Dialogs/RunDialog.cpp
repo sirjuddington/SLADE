@@ -38,6 +38,7 @@
 #include "UI/ResourceArchiveChooser.h"
 #include "Utility/SFileDialog.h"
 #include <wx/bmpbuttn.h>
+#include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/filename.h>
 #include <wx/gbsizer.h>
@@ -50,7 +51,7 @@
 
 #ifdef __WXOSX_MAC__
 #include <CoreFoundation/CoreFoundation.h>
-#include <wx/stdpaths.h>
+#include <wx/osx/core/cfstring.h>
 #endif // __WXOSX_MAC__
 
 
@@ -60,6 +61,7 @@
 CVAR(String, run_last_exe, "", CVAR_SAVE)
 CVAR(Int, run_last_config, 0, CVAR_SAVE)
 CVAR(String, run_last_extra, "", CVAR_SAVE)
+CVAR(Bool, run_start_3d, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -127,7 +129,7 @@ public:
 /* RunDialog::RunDialog
  * RunDialog class constructor
  *******************************************************************/
-RunDialog::RunDialog(wxWindow* parent, Archive* archive)
+RunDialog::RunDialog(wxWindow* parent, Archive* archive, bool show_start_3d_cb)
 : SDialog(parent, "Run", "run", 500, 400)
 {
 	// Setup sizer
@@ -181,13 +183,22 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	rac_resources = new ResourceArchiveChooser(this, archive);
 	framesizer->Add(rac_resources, 1, wxEXPAND|wxALL, 4);
 
-	// Dialog buttons
+	// Start from 3d mode camera
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->AddSpacer(8);
-	sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	cb_start_3d = new wxCheckBox(this, -1, "Start from 3D mode camera position");
+	cb_start_3d->SetValue(run_start_3d);
+	if (show_start_3d_cb)
+		hbox->Add(cb_start_3d, 1, wxALIGN_CENTER_VERTICAL);
+	else
+	{
+		hbox->AddStretchSpacer();
+		cb_start_3d->Show(false);
+	}
 
+	// Dialog buttons
 	btn_run = new wxButton(this, wxID_OK, "Run");
-	hbox->AddStretchSpacer();
 	hbox->Add(btn_run, 0, wxEXPAND|wxRIGHT, 4);
 
 	btn_cancel = new wxButton(this, wxID_CANCEL, "Cancel");
@@ -226,6 +237,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
 	SetMinSize(wxSize(500, 400));
 	Layout();
 	CenterOnParent();
+	btn_run->SetFocusFromKbd();
 }
 
 /* RunDialog::~RunDialog
@@ -233,6 +245,7 @@ RunDialog::RunDialog(wxWindow* parent, Archive* archive)
  *******************************************************************/
 RunDialog::~RunDialog()
 {
+	run_start_3d = cb_start_3d->GetValue();
 }
 
 /* RunDialog::openGameExe
@@ -271,25 +284,31 @@ static string getExecutablePath(const Executables::game_exe_t* const exe)
 #ifdef __WXOSX_MAC__
 	if (exe_path.EndsWith(".app"))
 	{
-		wxCFRef<CFStringRef> cf_path(CFStringCreateWithCString(kCFAllocatorDefault,
+#define CF_CHECK_NULL(VAR) if (NULL == VAR) return exe_path;
+
+		const wxCFStringRef cf_path(CFStringCreateWithCString(kCFAllocatorDefault,
 			exe_path.utf8_str(), kCFStringEncodingUTF8));
+		CF_CHECK_NULL(cf_path);
 
-		if (NULL != cf_path)
-		{
-			wxCFRef<CFURLRef> cf_path_url(CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-				cf_path, kCFURLPOSIXPathStyle, true));
+		typedef wxCFRef<CFURLRef> wxCFURLRef;
 
-			if (NULL != cf_path_url)
-			{
-				wxCFRef<CFBundleRef> cf_bundle(CFBundleCreate(0, cf_path_url));
+		const wxCFURLRef cf_path_url(CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+			cf_path, kCFURLPOSIXPathStyle, true));
+		CF_CHECK_NULL(cf_path_url);
 
-				if (NULL != cf_bundle)
-				{
-					const wxStandardPathsCF paths(cf_bundle);
-					return paths.GetExecutablePath();
-				}
-			}
-		}
+		const wxCFRef<CFBundleRef> cf_bundle(CFBundleCreate(0, cf_path_url));
+		CF_CHECK_NULL(cf_bundle);
+
+		const wxCFURLRef cf_relative_url(CFBundleCopyExecutableURL(cf_bundle));
+		CF_CHECK_NULL(cf_relative_url);
+
+		const wxCFURLRef cf_absolute_url(CFURLCopyAbsoluteURL(cf_relative_url));
+		CF_CHECK_NULL(cf_absolute_url);
+
+		const wxCFStringRef cf_exe_path(CFURLCopyFileSystemPath(cf_absolute_url, kCFURLPOSIXPathStyle));
+		return wxCFStringRef::AsStringWithNormalizationFormC(cf_exe_path);
+
+#undef CF_CHECK_NULL
 	}
 #endif // __WXOSX_MAC__
 
@@ -415,6 +434,15 @@ string RunDialog::getSelectedExeId()
 		return exe->id;
 	else
 		return "";
+}
+
+/* RunDialog::start3dModeChecked
+ * Returns true if 'Start from 3D mode camera position' checkbox is
+ * checked
+ *******************************************************************/
+bool RunDialog::start3dModeChecked()
+{
+	return cb_start_3d->GetValue();
 }
 
 

@@ -81,13 +81,15 @@ public:
 
 	string getItemText(long item, long column, long index) const
 	{
-		if (item < 0 || item >= exes.size())
+		if (item < 0 || item >= (long)exes.size())
 			return "";
 
 		if (column == 0)
 			return exes[item].name;
 		if (column == 1)
 			return exes[item].path;
+
+		return "";
 	}
 
 private:

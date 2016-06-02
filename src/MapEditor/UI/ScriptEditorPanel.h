@@ -15,10 +15,12 @@ private:
 	ArchiveEntry*	entry_script;
 	ArchiveEntry*	entry_compiled;
 
-	TextEditor*		text_editor;
-	wxButton*		btn_save;
-	wxButton*		btn_compile;
-	wxTreeListCtrl*	list_words;
+	TextEditor*			text_editor;
+	wxButton*			btn_save;
+	wxButton*			btn_compile;
+	wxTreeListCtrl*		list_words;
+	FindReplacePanel*	panel_fr;
+	wxChoice*			choice_jump_to;
 
 public:
 	ScriptEditorPanel(wxWindow* parent);
@@ -30,6 +32,7 @@ public:
 	bool	openScripts(ArchiveEntry* scripts, ArchiveEntry* compiled = NULL);
 	void	populateWordList();
 	void	saveScripts();
+	void	updateUI();
 
 	bool	handleAction(string name);
 

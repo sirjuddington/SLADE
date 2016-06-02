@@ -3052,7 +3052,9 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 			LOG_DEBUG("Intersection point", intersection, "valid with", lines[a]);
 		}
 		else if (intersection != cutter.p1())
+		{
 			LOG_DEBUG("Intersection point", intersection, "invalid");
+		}
 	}
 
 	// Return if no intersections
@@ -4909,29 +4911,64 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		if (!ok)
 			continue;
 
-		// Ignore any subsequent edges that were part of the sector created
-		for (unsigned e = a; e < edges.size(); e++)
+		// Find any subsequent edges that were part of the sector created
+		bool has_existing_lines = false;
+		bool has_existing_sides = false;
+		bool has_zero_sided_lines = false;
+		vector<size_t> edges_in_sector;
+		for (unsigned b = 0; b < builder.nEdges(); b++)
 		{
-			if (edges[e].ignore)
-				continue;
+			MapLine* line = builder.getEdgeLine(b);
+			bool is_front = builder.edgeIsFront(b);
 
-			for (unsigned b = 0; b < builder.nEdges(); b++)
+			bool line_is_ours = false;
+			for (unsigned e = 0; e < edges.size(); e++)
 			{
-				if (edges[e].line == builder.getEdgeLine(b) &&
-					edges[e].front == builder.edgeIsFront(b))
+				if (edges[e].line == line)
 				{
-					edges[e].ignore = true;
-					break;
+					line_is_ours = true;
+					if (edges[e].front == is_front)
+					{
+						edges_in_sector.push_back(e);
+						break;
+					}
 				}
+			}
+
+			if (line_is_ours)
+			{
+				if (!line->s1() && !line->s2())
+					has_zero_sided_lines = true;
+			}
+			else
+			{
+				has_existing_lines = true;
+				if (is_front ? line->s1() : line->s2())
+					has_existing_sides = true;
 			}
 		}
 
+		// Pasting or moving a two-sided line into an enclosed void should NOT
+		// create a new sector out of the entire void.
+		// Heuristic: if the traced sector includes any edges that are NOT
+		// "ours", and NONE of those edges already exist, that sector must be
+		// in an enclosed void, and should not be drawn.
+		// However, if existing_only is false, the caller expects us to create
+		// new sides anyway; skip this check.
+		if (existing_only && has_existing_lines && !has_existing_sides)
+			continue;
+
+		// Ignore traced edges when trying to create any further sectors
+		for (size_t a = 0; a < edges_in_sector.size(); a++)
+			edges[edges_in_sector[a]].ignore = true;
+
 		// Check if sector traced is already valid
-		bool valid = builder.isValidSector();
+		if (builder.isValidSector())
+			continue;
 
 		// Check if we traced over an existing sector (or part of one)
 		MapSector* sector = builder.findExistingSector(sides_correct);
-		if (sector && !valid)
+		if (sector)
 		{
 			// Check if it's already been (re)used
 			bool reused = false;
@@ -4952,8 +4989,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		}
 
 		// Create sector
-		if (!valid)
-			builder.createSector(sector);
+		builder.createSector(sector);
 	}
 
 	// Remove any sides that weren't part of a sector

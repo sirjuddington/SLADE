@@ -1,11 +1,20 @@
-if (USE_WEBVIEW_STARTPAGE)
-find_package(wxWidgets 3.0 COMPONENTS std aui gl stc richtext propgrid media webview REQUIRED)
-ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
-else (USE_WEBVIEW_STARTPAGE)
-find_package(wxWidgets 3.0 COMPONENTS std aui gl stc richtext propgrid media html REQUIRED)
-endif (USE_WEBVIEW_STARTPAGE)
+# wxWidgets version minimum 3.0
+if(NOT WX_VERSION)
+	SET(WX_VERSION 3.0)
+endif(NOT WX_VERSION)
+
+# wxWidgets libs
+SET(WX_LIBS std aui gl stc richtext propgrid media)
+if (NO_WEBVIEW)
+	SET(WX_LIBS ${WX_LIBS} html)
+else (NO_WEBVIEW)
+	SET(WX_LIBS ${WX_LIBS} webview)
+	ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
+endif (NO_WEBVIEW)
+find_package(wxWidgets ${WX_VERSION} COMPONENTS ${WX_LIBS} REQUIRED)
 include(${wxWidgets_USE_FILE})
 
+# SFML
 if (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window graphics)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
@@ -13,6 +22,7 @@ else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window)
 endif(USE_SFML_RENDERWINDOW)
 
+# Fluidsynth
 if (NO_FLUIDSYNTH)
 ADD_DEFINITIONS(-DNO_FLUIDSYNTH)
 endif(NO_FLUIDSYNTH)
@@ -96,7 +106,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 add_executable(slade WIN32 MACOSX_BUNDLE
 	External/lzma/C/LzmaDec.c
 	External/mus2mid/mus2mid.cpp
-	External/zreaders/ancientzip.cpp
 	External/zreaders/files.cpp
 	External/zreaders/m_alloc.cpp
 	External/zreaders/i_music.cpp
@@ -120,7 +129,7 @@ endif()
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
 set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER YES)
-set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Main.h)
+set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Application/Main.h)
 
 	# TODO: Installation targets for APPLE
 if(APPLE)

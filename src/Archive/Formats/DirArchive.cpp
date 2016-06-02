@@ -628,7 +628,12 @@ void DirArchive::updateChangedEntries(vector<dir_entry_change_t>& changes)
 
 		// Deleted Entries
 		else if (changes[a].action == dir_entry_change_t::DELETED_FILE)
-			removeEntry(entryAtPath(changes[a].entry_path));
+		{
+			ArchiveEntry* entry = entryAtPath(changes[a].entry_path);
+			// If the parent directory was already removed, this entry no longer exists
+			if (entry)
+				removeEntry(entry);
+		}
 
 		// Deleted Directories
 		else if (changes[a].action == dir_entry_change_t::DELETED_DIR)

@@ -975,8 +975,10 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 		return;
 
 	// Update if needed
-	if ((object->modifiedTime() > last_update) ||																		// object updated
-		(object->getObjType() == MOBJ_SIDE && ((MapSide*)object)->getParentLine()->modifiedTime() > last_update))		// parent line updated
+	if ((object->modifiedTime() > last_update) ||									// object updated
+		(object->getObjType() == MOBJ_SIDE && (
+			((MapSide*)object)->getParentLine()->modifiedTime() > last_update ||	// parent line updated
+			((MapSide*)object)->getSector()->modifiedTime() > last_update)))		// parent sector updated
 		update(object->getIndex(), current_type, object->getParentMap());
 
 	// Init GL stuff

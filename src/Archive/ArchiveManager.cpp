@@ -541,6 +541,17 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 	}
 }
 
+/* ArchiveManager::createTemporaryArchive
+ * Creates a temporary zip archive for archive building
+ * This function doesn't connect archive with announcers and archive lists
+ *******************************************************************/
+Archive* ArchiveManager::createTemporaryArchive()
+{
+	Archive* new_archive = NULL;
+	new_archive = new ZipArchive();
+	return new_archive;
+}
+
 /* ArchiveManager::newArchive
  * Creates a new archive of the specified format and adds it to the
  * list of open archives. Returns the created archive, or NULL if an

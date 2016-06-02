@@ -1,9 +1,11 @@
 
-styleset {
+styleset
+{
 	name = "SLADE Default";
 
-	default {
-		//font = "";						// Undefined means use system default (monospace)
+	default
+	{
+		//font = "";					// Undefined means use system default (monospace)
 		size = 10;						// Default is 10
 		foreground = 0, 0, 0;			// Default is black (0,0,0)
 		background = 255, 255, 255;		// Default is white (255,255,255)
@@ -12,57 +14,81 @@ styleset {
 		underlined = false;				// Default is false
 	}
 
-	selection {
+	selection
+	{
 		background = 200, 200, 200;
 	}
 
-	preprocessor {
+	preprocessor
+	{
 		// Any omitted properties will be inherited from 'default'
 		foreground = 0, 150, 200;
 	}
 
-	comment {
+	comment
+	{
 		foreground = 0, 150, 60;
 	}
 
-	string {
+	string
+	{
 		foreground = 0, 120, 130;
 	}
 
-	character {
+	character
+	{
 		foreground = 0, 120, 130;
 	}
 
-	keyword {
+	keyword
+	{
 		foreground = 0, 30, 200;
 	}
 
-	constant {
+	constant
+	{
 		foreground = 180, 30, 200;
 	}
 
-	function {
+	function
+	{
 		foreground = 200, 100, 30;
 	}
 
-	bracematch {
+	bracematch
+	{
 		background = 170, 255, 170;
 	}
 
-	bracebad {
+	bracebad
+	{
 		background = 255, 170, 170;
 	}
 
-	linenum {
+	linenum
+	{
 		background = 240, 240, 240;
 	}
 
-	calltip {
+	calltip
+	{
 		background = 255, 255, 180;
 		foreground = 0, 0, 0;
 	}
 
-	calltip_hl {
+	calltip_hl
+	{
 		foreground = 0, 0, 200;
+	}
+
+	foldmargin
+	{
+		background = 240, 240, 240;
+		foreground = 100, 170, 170;
+	}
+
+	guides
+	{
+		foreground = 180, 210, 210;
 	}
 }

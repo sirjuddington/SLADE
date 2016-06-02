@@ -123,13 +123,6 @@ CVAR(Bool, update_check_beta, false, CVAR_SAVE)
 
 
 /*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Bool, map_show_selection_numbers)
-EXTERN_CVAR(Bool, script_show_language_list)
-
-
-/*******************************************************************
  * CLASSES
  *******************************************************************/
 
@@ -454,7 +447,7 @@ bool MainApp::initDirectories()
 #endif
 
 	// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX), use this for the installation prefix
-#if defined(__UNIX__) && defined(INSTALL_PREFIX)
+#if defined(__WXGTK__) && defined(INSTALL_PREFIX)
 	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
 #endif//defined(__UNIX__) && defined(INSTALL_PREFIX)
 	
@@ -708,6 +701,13 @@ void MainApp::initActions()
 	new SAction("data_paste_row", "Paste Row(s)", "paste", "Paste at the currently selected row", "Ctrl+V");
 	new SAction("data_change_value", "Change Value...", "rename", "Change the value of the selected cell(s)");
 
+	// TextEntryPanel
+	new SAction("ptxt_wrap", "Word Wrapping", "", "Toggle word wrapping", "", SAction::CHECK, -1, -1, 1, "txed_word_wrap");
+	new SAction("ptxt_find_replace", "Find+Replace...", "", "Find and (optionally) replace text", "kb:ted_findreplace");
+	new SAction("ptxt_fold_foldall", "Fold All", "minus", "Fold all possible code", "kb:ted_fold_foldall");
+	new SAction("ptxt_fold_unfoldall", "Unfold All", "plus", "Unfold all folded code", "kb:ted_fold_unfoldall");
+	new SAction("ptxt_jump_to_line", "Jump To Line...", "up", "Jump to a specific line number", "kb:ted_jumptoline");
+
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "save", "Save any changes to the current map", "Ctrl+S");
 	new SAction("mapw_saveas", "Save Map &As...", "saveas", "Save the map to a new wad archive", "Ctrl+Shift+S");
@@ -759,30 +759,30 @@ void MainApp::initActions()
 	new SAction("mapw_clear_selection", "Clear Selection", "", "Clear the current selection, if any", "kb:me2d_clear_selection");
 	new SAction("mapw_show_fullmap", "Show Full Map", "", "Zooms out so that the full map is visible", "kb:me2d_show_all");
 	new SAction("mapw_show_item", "Show Item...", "", "Zoom and scroll to show a map item");
-	new SAction("mapw_toggle_selection_numbers", "Show Selection Numbers", "", "Show/hide selection numbers", "kb:me2d_toggle_selection_numbers", SAction::CHECK);
 	new SAction("mapw_mirror_y", "Mirror Vertically", "flip", "Mirror the selected objects vertically", "kb:me2d_mirror_y");
 	new SAction("mapw_mirror_x", "Mirror Horizontally", "mirror", "Mirror the selected objects horizontally", "kb:me2d_mirror_x");
+	new SAction("mapw_run_map_here", "Run Map from Here", "run", "Run the current map, starting at the current cursor position");
 
 	// Script editor
 	new SAction("mapw_script_save", "Save", "save", "Save changes to scripts");
 	new SAction("mapw_script_compile", "Compile", "compile", "Compile scripts");
 	new SAction("mapw_script_jumpto", "Jump To...", "up", "Jump to a specific script/function");
-	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK);
-
-
-	// Init checked actions
-	getAction("mapw_toggle_selection_numbers")->toggled = map_show_selection_numbers;
-	getAction("mapw_script_togglelanguage")->toggled = script_show_language_list;
+	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK, -1, -1, 1, "script_show_language_list");
 }
 
 /* MainApp::singleInstanceCheck
  * Checks if another instance of SLADE is already running, and if so,
  * sends the args to the file listener of the existing SLADE
- * process. Returns false if another instance was found
+ * process. Returns false if another instance was found and the new
+ * SLADE was started with arguments
  *******************************************************************/
 bool MainApp::singleInstanceCheck()
 {
 	single_instance_checker = new wxSingleInstanceChecker;
+
+	if (argc == 1)
+		return true;
+
 	if (single_instance_checker->IsAnotherRunning())
 	{
 		delete single_instance_checker;
@@ -1320,7 +1320,7 @@ void MainApp::toggleAction(string id)
 
 	// Type is 'check', just toggle it
 	if (action && action->type == SAction::CHECK)
-		action->toggled = !action->toggled;
+		action->setToggled(!action->toggled);
 
 	// Type is 'radio', toggle this and un-toggle others in the group
 	else if (action && action->type == SAction::RADIO && action->group >= 0)
@@ -1329,10 +1329,10 @@ void MainApp::toggleAction(string id)
 		for (unsigned a = 0; a < actions.size(); a++)
 		{
 			if (actions[a]->group == action->group)
-				actions[a]->toggled = false;
+				actions[a]->setToggled(false);
 		}
 
-		action->toggled = true;
+		action->setToggled(true);
 	}
 }
 

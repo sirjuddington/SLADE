@@ -104,7 +104,9 @@ string MapObject::getTypeName()
 }
 
 /* MapObject::setModified
- * Sets the object as modified
+ * Sets the object as modified.
+ * Despite the name, THIS MUST BE CALLED **BEFORE** MODIFYING THE
+ * OBJECT -- this is where the backup for the undo system is made!
  *******************************************************************/
 void MapObject::setModified()
 {
@@ -124,6 +126,9 @@ void MapObject::setModified()
  *******************************************************************/
 void MapObject::copy(MapObject* c)
 {
+	// Update modified time
+	setModified();
+
 	// Can't copy an object of a different type
 	if (c->type != type)
 		return;
@@ -138,9 +143,6 @@ void MapObject::copy(MapObject* c)
 		this->parent_map = c->parent_map;
 		this->filtered = c->filtered;
 	}
-
-	// Update modified time
-	setModified();
 }
 
 /* MapObject::boolProperty
@@ -305,15 +307,15 @@ void MapObject::loadFromBackup(mobj_backup_t* backup)
 		return;
 	}
 
+	// Update modified time
+	setModified();
+
 	// Load general properties from list
 	properties.clear();
 	backup->properties.copyTo(properties);
 
 	// Object-specific properties
 	readBackup(backup);
-
-	// Update modified time
-	setModified();
 }
 
 /* MapObject::getBackup

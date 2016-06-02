@@ -551,6 +551,7 @@
     <ClCompile Include="..\..\src\UI\SToolBar\SToolBar.cpp" />
     <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp" />
     <ClCompile Include="..\..\src\UI\STopWindow.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp" />
     <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp" />
     <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp" />
     <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp" />
@@ -580,7 +581,6 @@
     <ClCompile Include="..\..\src\External\zlib\trees.c" />
     <ClCompile Include="..\..\src\External\zlib\uncompr.c" />
     <ClCompile Include="..\..\src\External\zlib\zutil.c" />
-    <ClCompile Include="..\..\src\External\zreaders\ancientzip.cpp" />
     <ClCompile Include="..\..\src\External\zreaders\files.cpp" />
     <ClCompile Include="..\..\src\External\zreaders\i_music.cpp" />
     <ClCompile Include="..\..\src\External\zreaders\music_hmi_midiout.cpp" />
@@ -892,6 +892,7 @@
     <ClInclude Include="..\..\src\UI\SToolBar\SToolBar.h" />
     <ClInclude Include="..\..\src\UI\SToolBar\SToolBarButton.h" />
     <ClInclude Include="..\..\src\UI\STopWindow.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h" />
     <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h" />
     <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h" />
     <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h" />
@@ -923,13 +924,11 @@
     <ClInclude Include="..\..\src\External\zlib\zconf.h" />
     <ClInclude Include="..\..\src\External\zlib\zlib.h" />
     <ClInclude Include="..\..\src\External\zlib\zutil.h" />
-    <ClInclude Include="..\..\src\External\zreaders\ancientzip.h" />
     <ClInclude Include="..\..\src\External\zreaders\files.h" />
     <ClInclude Include="..\..\src\External\zreaders\i_music.h" />
     <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h" />
     <ClInclude Include="..\..\src\External\zreaders\mus2midi.h" />
     <ClInclude Include="..\..\src\External\zreaders\m_alloc.h" />
-    <ClInclude Include="..\..\src\External\zreaders\m_swap.h" />
     <ClInclude Include="..\..\src\External\zreaders\tarray.h" />
     <ClInclude Include="..\..\src\External\zreaders\templates.h" />
   </ItemGroup>

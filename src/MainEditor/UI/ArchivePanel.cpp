@@ -88,6 +88,7 @@ CVAR(String, last_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(Int, last_tint_amount, 50, CVAR_SAVE)
 CVAR(Bool, auto_entry_replace, false, CVAR_SAVE)
+CVAR(Bool, archive_build_skip_hidden, true, CVAR_SAVE)
 EXTERN_CVAR(String, path_pngout)
 EXTERN_CVAR(String, path_pngcrush)
 EXTERN_CVAR(String, path_deflopt)
@@ -877,23 +878,77 @@ bool ArchivePanel::buildArchive()
 	SFileDialog::fd_info_t info;
 	if (SFileDialog::saveFile(info, "Build archive", "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)", this))
 	{
-		theSplashWindow->show(string("Building ") + info.filenames[0]);
-		theSplashWindow->setProgress(-1.0f);
+		theSplashWindow->show(string("Building ") + info.filenames[0], true);
+		theSplashWindow->setProgress(0.0f);
 
 		// Create temporary archive
-		new_archive = theArchiveManager->newArchive(ARCHIVE_ZIP);
+		new_archive = theArchiveManager->createTemporaryArchive();
 
 		// prevent for "archive in archive" when saving in the current directory
 		if(wxFileExists(info.filenames[0]))
 			wxRemoveFile(info.filenames[0]);
 
-		// import all files into new archive
-		new_archive->importDir(archive->getFilename());
+		// Log
+		theSplashWindow->setMessage("Importing files... (Esc to cancel)");
 
+		// import all files into new archive
+		// Get a list of all files in the directory
+		wxArrayString files;
+		wxDir::GetAllFiles(archive->getFilename(), &files);
+
+		// Go through files
+		for (unsigned a = 0; a < files.size(); a++)
+		{
+			// Cancel event
+			if (wxGetKeyState(WXK_ESCAPE))
+			{
+				if (new_archive)
+					delete new_archive;
+
+				theSplashWindow->hide();
+				return true;
+			}
+			
+			string name = files[a];
+			name.Replace(archive->getFilename(), "", false);	// Remove directory from entry name
+	
+			// Split filename into dir+name
+			wxFileName fn(name);
+			string ename = fn.GetFullName();
+			string edir = fn.GetPath();
+
+			// Remove beginning \ or / from dir
+			if (edir.StartsWith("\\") || edir.StartsWith("/"))
+				edir.Remove(0, 1);
+
+			// Skip hidden files
+			if (archive_build_skip_hidden && (edir[0] == '.' || ename[0] == '.'))
+				continue;
+
+			// Add the entry
+			ArchiveTreeNode* dir = new_archive->createDir(edir);
+			ArchiveEntry* entry = new_archive->addNewEntry(ename, dir->numEntries()+1, dir);
+
+			// Log
+			theSplashWindow->setProgressMessage(ename);
+			theSplashWindow->setProgress((float)a/files.size());
+
+			// Load data
+			entry->importFile(files[a]);
+	
+			// Set unmodified
+			entry->setState(0);
+			dir->getDirEntry()->setState(0);
+		}
+
+		theSplashWindow->setProgress(1.0f);
+		theSplashWindow->setMessage("Saving archive...");
+		theSplashWindow->setProgressMessage("");
+		
 		// Save the archive
 		if (!new_archive->save(info.filenames[0]))
 		{
-			theArchiveManager->closeArchive(new_archive);
+			delete new_archive;
 			theSplashWindow->hide();
 
 			// If there was an error pop up a message box
@@ -903,7 +958,7 @@ bool ArchivePanel::buildArchive()
 	}
 
 	if (new_archive)
-		theArchiveManager->closeArchive(new_archive);
+		delete new_archive;
 
 	theSplashWindow->hide();
 

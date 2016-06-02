@@ -139,6 +139,7 @@ public:
 
 	double		camPitch() { return cam_pitch; }
 	fpoint3_t	camPosition() { return cam_position; }
+	fpoint2_t	camDirection() { return cam_direction; }
 
 	// -- Rendering --
 	void	setupView(int width, int height);

@@ -29,17 +29,25 @@
  *******************************************************************/
 #include "Main.h"
 #include "TextEntryPanel.h"
+#include "MainApp.h"
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/choice.h>
+#include <wx/menu.h>
 #include <wx/sizer.h>
+#include <wx/stattext.h>
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
 wxArrayString languages;
+
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Bool, txed_trim_whitespace)
 
 
 /*******************************************************************
@@ -56,6 +64,13 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	text_area = new TextEditor(this, -1);
 	sizer_main->Add(text_area, 1, wxEXPAND, 0);
 
+	// Create the find+replace panel
+	panel_fr = new FindReplacePanel(this, text_area);
+	text_area->setFindReplacePanel(panel_fr);
+	panel_fr->Hide();
+	sizer_main->Add(panel_fr, 0, wxEXPAND|wxTOP, 8);
+	sizer_main->AddSpacer(4);
+
 	// Add 'Text Language' choice to toolbar
 	SToolBarGroup* group_language = new SToolBarGroup(toolbar, "Text Language", true);
 	languages = TextLanguage::getLanguageNames();
@@ -66,30 +81,45 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent)
 	group_language->addCustomControl(choice_text_language);
 	toolbar->addGroup(group_language);
 
-	// Add 'Word Wrap' checkbox to top sizer
-	sizer_bottom->AddStretchSpacer();
-	cb_wordwrap = new wxCheckBox(this, -1, "Word Wrapping");
-	sizer_bottom->Add(cb_wordwrap, 0, wxEXPAND, 0);
-
-	// Add 'Jump To' button to top sizer
-	btn_jump_to = new wxButton(this, -1, "Jump To");
-	sizer_bottom->Add(btn_jump_to, 0, wxEXPAND|wxRIGHT, 4);
-
-	// Add 'Find/Replace' button to top sizer
-	btn_find_replace = new wxButton(this, -1, "Find + Replace");
-	sizer_bottom->Add(btn_find_replace, 0, wxEXPAND, 0);
+	// Add 'Jump To' choice to toolbar
+	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
+	choice_jump_to = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(200, -1));
+	group_jump_to->addCustomControl(choice_jump_to);
+	toolbar->addGroup(group_jump_to);
+	text_area->setJumpToControl(choice_jump_to);
 
 	// Bind events
 	choice_text_language->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
 	text_area->Bind(wxEVT_STC_CHANGE, &TextEntryPanel::onTextModified, this);
-	btn_find_replace->Bind(wxEVT_BUTTON, &TextEntryPanel::onBtnFindReplace, this);
 	text_area->Bind(wxEVT_STC_UPDATEUI, &TextEntryPanel::onUpdateUI, this);
-	cb_wordwrap->Bind(wxEVT_CHECKBOX, &TextEntryPanel::onWordWrapChanged, this);
-	btn_jump_to->Bind(wxEVT_BUTTON, &TextEntryPanel::onBtnJumpTo, this);
 
 	// Custom toolbar
 	custom_toolbar_actions = "arch_scripts_compileacs;arch_scripts_compilehacs";
 	toolbar->addActionGroup("Scripts", wxSplit(custom_toolbar_actions, ';'));
+
+
+	// --- Custom menu ---
+	menu_custom = new wxMenu();
+	theApp->getAction("ptxt_find_replace")->addToMenu(menu_custom);
+	theApp->getAction("ptxt_jump_to_line")->addToMenu(menu_custom);
+
+	// 'Code Folding' submenu
+	wxMenu* menu_fold = new wxMenu();
+	menu_custom->AppendSubMenu(menu_fold, "Code Folding");
+	theApp->getAction("ptxt_fold_foldall")->addToMenu(menu_fold);
+	theApp->getAction("ptxt_fold_unfoldall")->addToMenu(menu_fold);
+
+	// 'Compile' submenu
+	wxMenu* menu_scripts = new wxMenu();
+	menu_custom->AppendSubMenu(menu_scripts, "Compile");
+	theApp->getAction("arch_scripts_compileacs")->addToMenu(menu_scripts);
+	theApp->getAction("arch_scripts_compilehacs")->addToMenu(menu_scripts);
+
+	menu_custom->AppendSeparator();
+
+	theApp->getAction("ptxt_wrap")->addToMenu(menu_custom);
+	custom_menu_name = "Text";
+
 
 	Layout();
 }
@@ -274,6 +304,47 @@ bool TextEntryPanel::redo()
 	return false;
 }
 
+/* TextEntryPanel::handleAction
+ * Handles the action [id]. Returns true if the action was handled,
+ * false otherwise
+ *******************************************************************/
+bool TextEntryPanel::handleAction(string id)
+{
+	// Jump To Line
+	if (id == "ptxt_jump_to_line")
+		text_area->jumpToLine();
+
+	// Find+Replace
+	else if (id == "ptxt_find_replace")
+		text_area->showFindReplacePanel();
+
+	// Word Wrapping toggle
+	else if (id == "ptxt_wrap")
+	{
+		SAction* action = theApp->getAction("ptxt_wrap");
+		bool m = isModified();
+		if (action->isToggled())
+			text_area->SetWrapMode(wxSTC_WRAP_WORD);
+		else
+			text_area->SetWrapMode(wxSTC_WRAP_NONE);
+		setModified(m);
+	}
+
+	// Fold All
+	else if (id == "ptxt_fold_foldall")
+		text_area->foldAll(true);
+
+	// Unfold All
+	else if (id == "ptxt_fold_unfoldall")
+		text_area->foldAll(false);
+
+	// Not handled
+	else
+		return false;
+
+	return true;
+}
+
 
 /*******************************************************************
  * TEXTENTRYPANEL CLASS EVENTS
@@ -287,14 +358,6 @@ void TextEntryPanel::onTextModified(wxStyledTextEvent& e)
 	if (!isModified() && text_area->CanUndo())
 		setModified();
 	e.Skip();
-}
-
-/* TextEntryPanel::onBtnFindReplace
- * Called when the 'Find+Replace' button is clicked
- *******************************************************************/
-void TextEntryPanel::onBtnFindReplace(wxCommandEvent& e)
-{
-	text_area->showFindReplaceDialog();
 }
 
 /* TextEntryPanel::onChoiceLanguageChanged
@@ -316,19 +379,6 @@ void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 		entry->exProps().removeProperty("TextLanguage");
 }
 
-/* TextEntryPanel::onWordWrapChanged
- * Called when the "Word Wrap" checkbox is clicked
- *******************************************************************/
-void TextEntryPanel::onWordWrapChanged(wxCommandEvent& e)
-{
-	bool m = isModified();
-	if (cb_wordwrap->IsChecked())
-		text_area->SetWrapMode(wxSTC_WRAP_WORD);
-	else
-		text_area->SetWrapMode(wxSTC_WRAP_NONE);
-	setModified(m);
-}
-
 /* TextEntryPanel::onUpdateUI
  * Called when the text editor UI is updated
  *******************************************************************/
@@ -336,12 +386,4 @@ void TextEntryPanel::onUpdateUI(wxStyledTextEvent& e)
 {
 	updateStatus();
 	e.Skip();
-}
-
-/* TextEntryPanel::onBtnJumpTo
- * Called when the 'Jump To' button is clicked
- *******************************************************************/
-void TextEntryPanel::onBtnJumpTo(wxCommandEvent& e)
-{
-	text_area->openJumpToDialog();
 }

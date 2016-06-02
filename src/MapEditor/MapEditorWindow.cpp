@@ -231,7 +231,6 @@ void MapEditorWindow::setupMenu()
 	menu_view->AppendSeparator();
 	theApp->getAction("mapw_show_fullmap")->addToMenu(menu_view);
 	theApp->getAction("mapw_show_item")->addToMenu(menu_view);
-	//theApp->getAction("mapw_toggle_selection_numbers")->addToMenu(menu_view, true);
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
@@ -970,6 +969,16 @@ bool MapEditorWindow::tryClose()
 	return true;
 }
 
+/* MapEditorWindow::hasMapOpen
+ * Returns true if the currently open map is from [archive]
+ *******************************************************************/
+bool MapEditorWindow::hasMapOpen(Archive* archive)
+{
+	if (!mdesc_current.head)
+		return false;
+	return (mdesc_current.head->getParent() == archive);
+}
+
 /* MapEditorWindow::editObjectProperties
  * Opens the property editor for [objects]
  *******************************************************************/
@@ -1185,6 +1194,7 @@ bool MapEditorWindow::handleAction(string id)
 		{
 			p_inf.Show(true);
 			p_inf.window->SetFocus();
+			((ScriptEditorPanel*)p_inf.window)->updateUI();
 		}
 
 		p_inf.MinSize(200, 128);
@@ -1229,17 +1239,28 @@ bool MapEditorWindow::handleAction(string id)
 	}
 
 	// Run Map
-	else if (id == "mapw_run_map")
+	else if (id == "mapw_run_map" || id == "mapw_run_map_here")
 	{
 		Archive* archive = NULL;
 		if (mdesc_current.head)
 			archive = mdesc_current.head->getParent();
-		RunDialog dlg(this, archive);
+		RunDialog dlg(this, archive, id == "mapw_run_map");
 		if (dlg.ShowModal() == wxID_OK)
 		{
+			// Move player 1 start if needed
+			if (id == "mapw_run_map_here")
+				editor.swapPlayerStart2d(map_canvas->mouseDownPosM());
+			else if (dlg.start3dModeChecked())
+				editor.swapPlayerStart3d();
+
+			// Write temp wad
 			WadArchive* wad = writeMap(mdesc_current.name);
 			if (wad)
 				wad->save(appPath("sladetemp_run.wad", DIR_TEMP));
+
+			// Reset player 1 start if moved
+			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")
+				editor.resetPlayerStart();
 
 			string command = dlg.getSelectedCommandLine(archive, mdesc_current.name, wad->getFilename());
 			if (!command.IsEmpty())

@@ -1773,14 +1773,6 @@
 				Name="ZReaders"
 				>
 				<File
-					RelativePath="..\..\src\External\zreaders\ancientzip.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\External\zreaders\ancientzip.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\External\zreaders\files.cpp"
 					>
 				</File>
@@ -1806,10 +1798,6 @@
 				</File>
 				<File
 					RelativePath="..\..\src\External\zreaders\m_alloc.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\External\zreaders\m_swap.h"
 					>
 				</File>
 				<File

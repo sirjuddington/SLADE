@@ -872,10 +872,13 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 	glLineWidth(map_image_thickness);
 	glEnable(GL_LINE_SMOOTH);
 
-	// Draw lines
+	// Draw 2s lines
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		mep_line_t line = lines[a];
+
+		if (!line.twosided)
+			continue;
 
 		// Check ends
 		if (line.v1 >= verts.size() || line.v2 >= verts.size())
@@ -892,6 +895,37 @@ void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 			OpenGL::setColour(col_save_line_macro);
 		else if (line.twosided)
 			OpenGL::setColour(col_save_line_2s);
+		else
+			OpenGL::setColour(col_save_line_1s);
+
+		// Draw line
+		glBegin(GL_LINES);
+		glVertex2d(v1.x, v1.y);
+		glVertex2d(v2.x, v2.y);
+		glEnd();
+	}
+
+	// Draw 1s lines
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		mep_line_t line = lines[a];
+
+		if (line.twosided)
+			continue;
+
+		// Check ends
+		if (line.v1 >= verts.size() || line.v2 >= verts.size())
+			continue;
+
+		// Get vertices
+		mep_vertex_t v1 = verts[lines[a].v1];
+		mep_vertex_t v2 = verts[lines[a].v2];
+
+		// Set colour
+		if (line.special)
+			OpenGL::setColour(col_save_line_special);
+		else if (line.macro)
+			OpenGL::setColour(col_save_line_macro);
 		else
 			OpenGL::setColour(col_save_line_1s);
 

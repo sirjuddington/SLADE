@@ -36,7 +36,7 @@
 
 #include "i_musicinterns.h"
 #include "templates.h"
-#include "m_swap.h"
+#include "portable_endian.h"
 
 // MACROS ------------------------------------------------------------------
 
@@ -175,7 +175,7 @@ void HMISong::SetupForHMI(int len)
 	int i, p;
 
 	ReadVarLen = ReadVarLenHMI;
-	NumTracks = GetShort(MusHeader + HMI_TRACK_COUNT_OFFSET);
+	NumTracks = LE_16I_TO_H(MusHeader + HMI_TRACK_COUNT_OFFSET);
 
 	if (NumTracks <= 0)
 	{
@@ -186,16 +186,16 @@ void HMISong::SetupForHMI(int len)
 	// HMI files have two values here, a full value and a quarter value. Some games, 
 	// notably Carmageddon, have identical values for some reason, so it's safer to
 	// use the quarter value and multiply it by four than to trust the full value.
-	Division = GetShort(MusHeader + HMI_DIVISION_OFFSET) << 2;
+	Division = LE_16I_TO_H(MusHeader + HMI_DIVISION_OFFSET) << 2;
 	InitialTempo = 4000000;
 
 	Tracks = new TrackInfo[NumTracks + 1];
-	int track_dir = GetInt(MusHeader + HMI_TRACK_DIR_PTR_OFFSET);
+	int track_dir = LE_32I_TO_H(MusHeader + HMI_TRACK_DIR_PTR_OFFSET);
 
 	// Gather information about each track
 	for (i = 0, p = 0; i < NumTracks; ++i)
 	{
-		int start = GetInt(MusHeader + track_dir + i*4);
+		int start = LE_32I_TO_H(MusHeader + track_dir + i*4);
 		int tracklen, datastart;
 
 		if (start > len - HMITRACK_DESIGNATION_OFFSET - 4)
@@ -217,7 +217,7 @@ void HMISong::SetupForHMI(int len)
 		}
 		else
 		{
-			tracklen = GetInt(MusHeader + track_dir + i*4 + 4) - start;
+			tracklen = LE_32I_TO_H(MusHeader + track_dir + i*4 + 4) - start;
 		}
 		// Clamp incomplete tracks to the end of the file.
 		tracklen = MIN(tracklen, len - start);
@@ -227,7 +227,7 @@ void HMISong::SetupForHMI(int len)
 		}
 
 		// Offset to actual MIDI events.
-		datastart = GetInt(MusHeader + start + HMITRACK_DATA_PTR_OFFSET);
+		datastart = LE_32I_TO_H(MusHeader + start + HMITRACK_DATA_PTR_OFFSET);
 		tracklen -= datastart;
 		if (tracklen <= 0)
 		{
@@ -243,7 +243,7 @@ void HMISong::SetupForHMI(int len)
 		// connected to the MIDI device.
 		for (int ii = 0; ii < NUM_HMI_DESIGNATIONS; ++ii)
 		{
-			Tracks[p].Designation[ii] = GetShort(MusHeader + start + HMITRACK_DESIGNATION_OFFSET + ii*2);
+			Tracks[p].Designation[ii] = LE_16I_TO_H(MusHeader + start + HMITRACK_DESIGNATION_OFFSET + ii*2);
 		}
 
 		p++;
@@ -279,7 +279,7 @@ void HMISong::SetupForHMP(int len)
 		return;
 	}
 
-	NumTracks = GetInt(MusHeader + HMP_TRACK_COUNT_OFFSET);
+	NumTracks = LE_32I_TO_H(MusHeader + HMP_TRACK_COUNT_OFFSET);
 
 	if (NumTracks <= 0)
 	{
@@ -287,7 +287,7 @@ void HMISong::SetupForHMP(int len)
 	}
 
 	// The division is the number of pulses per quarter note (PPQN).
-	Division = GetInt(MusHeader + HMP_DIVISION_OFFSET);
+	Division = LE_32I_TO_H(MusHeader + HMP_DIVISION_OFFSET);
 	InitialTempo = 1000000;
 
 	Tracks = new TrackInfo[NumTracks + 1];
@@ -303,7 +303,7 @@ void HMISong::SetupForHMP(int len)
 			break;
 		}
 
-		tracklen = GetInt(MusHeader + start + HMPTRACK_LEN_OFFSET);
+		tracklen = LE_32I_TO_H(MusHeader + start + HMPTRACK_LEN_OFFSET);
 		track_data += tracklen;
 
 		// Clamp incomplete tracks to the end of the file.

@@ -7,6 +7,7 @@ class TLFunction
 private:
 	string			name;
 	vector<string>	arg_sets;
+	string			description;
 
 public:
 	TLFunction(string name = "");
@@ -14,10 +15,12 @@ public:
 
 	string		getName() { return name; }
 	string		getArgSet(unsigned index);
+	string		getDescription() { return description; }
 	unsigned	nArgSets() { return arg_sets.size(); }
 
 	void	setName(string name) { this->name = name; }
 	void	addArgSet(string args) { arg_sets.push_back(args); }
+	void	setDescription(string desc) { description = desc; }
 
 	string		generateCallTipString(int arg_set = 0);
 	point2_t	getArgTextExtent(int arg, int arg_set = 0);
@@ -74,7 +77,7 @@ public:
 	void	setCaseSensitive(bool cs) { case_sensitive = cs; }
 	void	addKeyword(string keyword);
 	void	addConstant(string constant);
-	void	addFunction(string name, string args);
+	void	addFunction(string name, string args, string desc = "", bool replace = false);
 
 	string	getKeywordsList();
 	string	getConstantsList();

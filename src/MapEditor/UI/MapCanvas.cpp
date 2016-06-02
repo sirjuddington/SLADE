@@ -524,6 +524,22 @@ void MapCanvas::set3dCameraThing(MapThing* thing)
 	renderer_3d->cameraSet(pos, dir);
 }
 
+/* MapCanvas::get3dCameraPos
+ * Returns the current 3d mode camera position
+ *******************************************************************/
+fpoint2_t MapCanvas::get3dCameraPos()
+{
+	return fpoint2_t(renderer_3d->camPosition().x, renderer_3d->camPosition().y);
+}
+
+/* MapCanvas::get3dCameraDir
+ * Returns the current 3d mode camera direction
+ *******************************************************************/
+fpoint2_t MapCanvas::get3dCameraDir()
+{
+	return renderer_3d->camDirection();
+}
+
 /* MapCanvas::drawGrid
  * Draws the grid
  *******************************************************************/
@@ -2913,7 +2929,8 @@ void MapCanvas::keyBinds2dView(string name)
 	{
 		mouse_downpos.set(mouse_pos);
 		panning = true;
-		editor->clearHilight();
+		if (mouse_state == MSTATE_NORMAL)
+			editor->clearHilight();
 		SetCursor(wxCURSOR_SIZING);
 	}
 
@@ -3225,7 +3242,18 @@ void MapCanvas::keyBinds2d(string name)
 			else if (name == "me2d_line_tag_edit")
 			{
 				if (editor->beginTagEdit() > 0)
+				{
 					mouse_state = MSTATE_TAG_SECTORS;
+
+					// Setup help text
+					string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+					string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+					feature_help_lines.clear();
+					feature_help_lines.push_back("Tag Edit");
+					feature_help_lines.push_back(S_FMT("%s = Accept", key_accept));
+					feature_help_lines.push_back(S_FMT("%s = Cancel", key_cancel));
+					feature_help_lines.push_back("Left Click = Toggle tagged sector");
+				}
 			}
 		}
 
@@ -3403,7 +3431,8 @@ void MapCanvas::onKeyBindRelease(string name)
 	if (name == "me2d_pan_view" && panning)
 	{
 		panning = false;
-		editor->updateHilight(mouse_pos_m, view_scale);
+		if (mouse_state == MSTATE_NORMAL)
+			editor->updateHilight(mouse_pos_m, view_scale);
 		SetCursor(wxNullCursor);
 	}
 
@@ -3595,18 +3624,6 @@ bool MapCanvas::handleAction(string id)
 			if (index > -1)
 				editor->showItem(index);
 		}
-
-		return true;
-	}
-
-	// Toggle selection numbers
-	else if (id == "mapw_toggle_selection_numbers")
-	{
-		map_show_selection_numbers = !map_show_selection_numbers;
-		if (map_show_selection_numbers)
-			editor->addEditorMessage("Selection numbers enabled");
-		else
-			editor->addEditorMessage("Selection numbers disabled");
 
 		return true;
 	}
@@ -3915,6 +3932,9 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	//if (mouse_state == MSTATE_EDIT)
 	//	determineObjectEditState();
 
+#ifndef __WXMAC__
+	// Skipping events on OS X doesn't do anything but causes
+	// sound alert (a.k.a. error beep) on every key press
 	if (e.GetKeyCode() != WXK_UP &&
 		e.GetKeyCode() != WXK_DOWN &&
 		e.GetKeyCode() != WXK_LEFT &&
@@ -3924,6 +3944,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		e.GetKeyCode() != WXK_NUMPAD_LEFT &&
 		e.GetKeyCode() != WXK_NUMPAD_RIGHT)
 		e.Skip();
+#endif // !__WXMAC__
 }
 
 /* MapCanvas::onKeyUp
@@ -4184,6 +4205,9 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 			// Set 3d camera
 			theApp->getAction("mapw_camera_set")->addToMenu(&menu_context, true);
+
+			// Run from here
+			theApp->getAction("mapw_run_map_here")->addToMenu(&menu_context, true);
 
 			// Mode-specific
 			bool object_selected = (editor->selectionSize() > 0 || editor->hilightItem() >= 0);

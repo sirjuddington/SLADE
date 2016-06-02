@@ -1444,7 +1444,7 @@ void TextureXPanel::onTextureListSelect(wxListEvent& e)
 	}
 
 	// Get selected texture
-	CTexture* tex = texturex.getTexture(e.GetIndex());
+	CTexture* tex = texturex.getTexture(list_textures->getItemIndex(e.GetIndex()));
 
 	// Save any changes to previous texture
 	applyChanges();

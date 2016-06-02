@@ -38,8 +38,8 @@ srb2lua {
 	}
 
 	functions {
-		print = "string output, [string output2, [...]]";
-		freeslot = "string resource, [string resource2, [...]]";
+		print = "string output, [string output2], [...]";
+		freeslot = "string resource, [string resource2], [...]";
 		super = "mobj_t actor, int var1, int var2";
 		addHook = "string hook, function(?) fn, [int extra]";
 		EvalMath = "string word";
@@ -87,7 +87,7 @@ srb2lua {
 		P_SkimCheckMeleeRange = "mobj_t actor";
 		P_CheckMissileRange = "mobj_t actor";
 		P_NewChaseDir = "mobj_t actor";
-		P_LookForPlayers = "mobj_t actor, [fixed dist, [boolean allaround?, [boolean tracer?]]]";
+		P_LookForPlayers = "mobj_t actor, [fixed dist], [boolean allaround?], [boolean tracer?]";
 
 		// p_mobj
 		P_SpawnMobj = "fixed x, fixed y, fixed z, int type";
@@ -97,13 +97,13 @@ srb2lua {
 		P_SpawnPointMissile = "mobj_t source, fixed dest_x, fixed dest_y, fixed dest_z, int type, fixed x, fixed y, fixed z";
 		P_SpawnAlteredDirectionMissile = "mobj_t source, int type, fixed x, fixed y, fixed z, int angle_shift";
 		P_ColorTeamMissile = "mobj_t missile, player_t player";
-		P_SPMAngle = "mobj_t source, int type, angle angle, [boolean allowaim?, [int flags2]]";
+		P_SPMAngle = "mobj_t source, int type, angle angle, [boolean allowaim?], [int flags2]";
 		P_SpawnPlayerMissile = "mobj_t source, int type, [int flags2]";
 		P_MobjFlip = "mobj_t mobj";
 		P_WeaponOrPanel = "int type";
 		P_FlashPal = "player_t player, int type, int duration";
 		P_GetClosestAxis = "mobj_t mobj";
-		P_SpawnParaloop = "fixed x, fixed y, fixed z, fixed radius, int number, int type, int rotate, [int state, [boolean spawncenter?]]";
+		P_SpawnParaloop = "fixed x, fixed y, fixed z, fixed radius, int number, int type, int rotate, [int state], [boolean spawncenter?]";
 		P_BossTargetPlayer = "mobj_t actor, [boolean closest?]";
 		P_SupermanLook4Players = "mobj_t actor";
 		P_SetScale = "mobj_t mobj, fixed scale";
@@ -118,7 +118,7 @@ srb2lua {
 		P_GetPlayerControlDirection = "player_t player";
 		P_AddPlayerScore = "player_t player, int amount";
 		P_PlayerInPain = "player_t player";
-		P_DoPlayerPain = "player_t player, [mobj_t source, [mobj_t inflictor]]";
+		P_DoPlayerPain = "player_t player, [mobj_t source], [mobj_t inflictor]";
 		P_ResetPlayer = "player_t player";
 		P_IsObjectOnGround = "mobj_t mobj";
 		P_SetObjectMomZ = "mobj_t mobj, fixed momz, [boolean relative?]";
@@ -160,8 +160,8 @@ srb2lua {
 		// p_inter
 		P_RemoveShield = "player_t player";
 		P_SpawnShieldOrb = "player_t player";
-		P_DamageMobj = "mobj_t target, [mobj_t inflictor, [mobj_t source, [int damage]]]";
-		P_KillMobj = "mobj_t target, [mobj_t inflictor, [mobj_t source]]";
+		P_DamageMobj = "mobj_t target, [mobj_t inflictor], [mobj_t source], [int damage]";
+		P_KillMobj = "mobj_t target, [mobj_t inflictor], [mobj_t source]";
 		P_PlayerRingBurst = "player_t player, [int numrings]";
 		P_PlayerWeaponPanelBurst = "player_t player";
 		P_PlayerWeaponAmmoBurst = "player_t player";
@@ -182,13 +182,13 @@ srb2lua {
 		P_PlayerTouchingSectorSpecial = "player_t player, int section, int specialnum";
 		P_FindSpecialLineFromTag = "int special, int tag, [int start]";
 		P_SwitchWeather = "int weather, [player_t player]";
-		P_LinedefExecute = "int tag, [mobj_t actor, [sector_t caller]]";
+		P_LinedefExecute = "int tag, [mobj_t actor], [sector_t caller]";
 		P_SpawnLightningFlash = "sector_t sector";
 		P_FadeLight = "int tag, int destvalue, int speed";
 		P_ThingOnSpecial3DFloor = "mobj_t mobj";
 		P_SetupLevelSky = "int skynum, [player player]";
-		P_SetSkyboxMobj = "mobj_t mobj, [boolean centerpoint?, [player_t user]]";
-		P_StartQuake = "fixed intensity, int time, [table{x/y/z} epicenter, [fixed radius]]";
+		P_SetSkyboxMobj = "mobj_t mobj, [boolean centerpoint?], [player_t user]";
+		P_StartQuake = "fixed intensity, int time, [table{x/y/z} epicenter], [fixed radius]";
 		P_IsFlagAtBase = "int type";
 		EV_CrumbleChain = "sector_t sector, ffloor_t rover";
 
@@ -233,7 +233,7 @@ srb2lua {
 		G_TicsToMilliseconds = "int tics";
 
 		// console
-		COM_AddCommand = "string name, function(player_t player/[string arg/[...]]) fn, int flags";
+		COM_AddCommand = "string name, function(player_t player/[string arg]/...) fn, int flags";
 		COM_BufAddText = "player_t player, string text";
 		COM_BufInsertText = "player_t player, string text";
 		CV_RegisterVar = "table{string name/string defaultvalue/int flags/PossibleValue pv/function() fn}, [...]";
@@ -254,19 +254,19 @@ srb2lua {
 		hud.add = "function(drawer v/[player_t stplyr]), string type)";
 
 		// technically these are a part of the video code but you can rename that whatever you want...
-		draw = "int x, int y, patch patch, [int flags, [(unimplemented) colormap]]";
-		drawScaled = "fixed x, fixed y, fixed scale, patch patch, [int flags, [(unimplemented) colormap]]";
+		draw = "int x, int y, patch patch, [int flags], [(unimplemented) colormap]";
+		drawScaled = "fixed x, fixed y, fixed scale, patch patch, [int flags], [(unimplemented) colormap]";
 		drawNum = "int x, int y, int num, [int flags]";
-		drawPaddedNum = "int x, int y, int num, [int digits, [int flags]]";
-		drawFill = "[int x, [int y, [int w, [int h, [int color]]]]]";
-		drawString = "fixed x, fixed y, string str, [int flags, [string alignment]]";
+		drawPaddedNum = "int x, int y, int num, [int digits], [int flags]";
+		drawFill = "[int x], [int y], [int w], [int h], [int color]";
+		drawString = "fixed x, fixed y, string str, [int flags], [string alignment]";
 		patchExists = "string name";
 		cachePatch = "string name";
-		stringWidth = "string string, [int flags, [string widthtype]]";
+		stringWidth = "string string, [int flags], [string widthtype]";
 
 		// basic Lua
 		assert = "boolean assert, [string errormsg]";
-		collectgarbage = "[string opt, [string arg]]";
+		collectgarbage = "[string opt], [string arg]";
 		error = "string message, [int level]";
 		gcinfo = "(unknown)";
 		getfenv = "function(*) fn";
@@ -274,7 +274,7 @@ srb2lua {
 		ipairs = "table{} t";
 		next = "table{} t, [int index]";
 		pairs = "table{} t";
-		pcall = "function(*) fn, [* arg, [...]]";
+		pcall = "function(*) fn, [* arg], [...]";
 		rawequal = "* v1, * v2";
 		rawget = "table{} t, * index";
 		rawset = "table{} t, * index, * value";
@@ -284,20 +284,20 @@ srb2lua {
 		tonumber = "* e, [int base]";
 		tostring = "* e";
 		type = "* v";
-		unpack = "table{} list, [int start, [int end]]";
+		unpack = "table{} list, [int start], [int end]";
 		xpcall = "function(?) call, function(boolean status) errortrap";
 
 		coroutine.create = "function(?) fn";
-		coroutine.resume = "coroutine co, [* val, [...]]";
+		coroutine.resume = "coroutine co, [* val], [...]";
 		coroutine.running;
 		coroutine.status = "coroutine co";
 		coroutine.wrap = "function(?) fn";
 		coroutine.yield = "[...]";
 
-		string.byte = "string s, [int start, [int end]]";
-		string.char = "[int charid, [...]]";
+		string.byte = "string s, [int start], [int end]";
+		string.char = "[int charid], [...]";
 		string.dump = "function(?) fn";
-		string.find = "string s, string pattern, [int start, [boolean plain?]]";
+		string.find = "string s, string pattern, [int start], [boolean plain?]";
 		string.format = "string formatstr, [...]";
 		string.gfind = "string s, string pattern";
 		string.gmatch = "string s, string pattern";
@@ -310,7 +310,7 @@ srb2lua {
 		string.sub = "string s";
 		string.upper = "string s";
 
-		table.concat = "table{}, [string sep, [int start, [int end]]]";
+		table.concat = "table{}, [string sep], [int start], [int end]";
 		table.maxn = "table{}";
 		table.insert = "table{}, * element";
 		table.remove = "table{}, * key";
