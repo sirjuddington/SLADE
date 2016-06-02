@@ -1660,3 +1660,12 @@ CONSOLE_COMMAND(fixpngcrc, 0, true)
 			fixpngsrc(selection[a]);
 	}
 }
+
+CONSOLE_COMMAND(dump_metadata, 0, false)
+{
+	vector<ArchiveEntry*> selection = theMainWindow->getCurrentEntrySelection();
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
+		LOG_MESSAGE(0, selection[a]->getMetadata());
+	}
+}

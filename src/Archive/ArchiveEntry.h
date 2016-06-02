@@ -4,6 +4,7 @@
 
 #include "EntryType/EntryType.h"
 #include "Utility/PropertyList/PropertyList.h"
+#include <wx/datetime.h>
 
 class ArchiveTreeNode;
 class Archive;
@@ -28,6 +29,12 @@ private:
 	EntryType*			type;
 	ArchiveTreeNode*	parent;
 	PropertyList		ex_props;
+	
+	// Metadata
+	wxDateTime			date_created;
+	wxDateTime			date_modified;
+	string				md5;
+	vector<key_value_t>	metadata_extra;
 
 	// Entry status
 	uint8_t			state;			// 0 = unmodified, 1 = modified, 2 = newly created (not saved to disk)
@@ -107,6 +114,10 @@ public:
 	void	setExtensionByType();
 	int		getTypeReliability() { return (type ? (getType()->getReliability() * reliability / 255) : 0); }
 	bool	isInNamespace(string ns);
+	
+	// Metadata
+	void	updateMD5();
+	string	getMetadata();
 };
 
 #endif//__ARCHIVEENTRY_H__

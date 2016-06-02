@@ -555,6 +555,7 @@
     <ClCompile Include="..\..\src\Utility\Compression.cpp" />
     <ClCompile Include="..\..\src\Utility\FileMonitor.cpp" />
     <ClCompile Include="..\..\src\Utility\MathStuff.cpp" />
+    <ClCompile Include="..\..\src\Utility\MD5.cpp" />
     <ClCompile Include="..\..\src\Utility\MemChunk.cpp" />
     <ClCompile Include="..\..\src\Utility\Parser.cpp" />
     <ClCompile Include="..\..\src\Utility\Polygon2D.cpp" />
@@ -889,6 +890,7 @@
     <ClInclude Include="..\..\src\Utility\Compression.h" />
     <ClInclude Include="..\..\src\Utility\FileMonitor.h" />
     <ClInclude Include="..\..\src\Utility\MathStuff.h" />
+    <ClInclude Include="..\..\src\Utility\MD5.h" />
     <ClInclude Include="..\..\src\Utility\MemChunk.h" />
     <ClInclude Include="..\..\src\Utility\Parser.h" />
     <ClInclude Include="..\..\src\Utility\Polygon2D.h" />

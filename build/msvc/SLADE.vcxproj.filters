@@ -1356,6 +1356,9 @@
     <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp">
       <Filter>UI\Text Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utility\MD5.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2351,6 +2354,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h">
       <Filter>UI\Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\MD5.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

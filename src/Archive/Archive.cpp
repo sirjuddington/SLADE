@@ -33,6 +33,7 @@
 #include "General/Misc.h"
 #include "General/UndoRedo.h"
 #include "General/Clipboard.h"
+#include "Utility/Parser.h"
 #include <wx/filename.h>
 #include <wx/dir.h>
 
@@ -58,6 +59,7 @@
  * VARIABLES
  *******************************************************************/
 CVAR(Bool, archive_load_data, false, CVAR_SAVE)
+CVAR(Bool, archive_create_metadata, true, CVAR_SAVE)
 bool Archive::save_backup = true;
 
 
@@ -739,6 +741,7 @@ bool Archive::open(string filename)
 	sf::Clock timer;
 	if (open(mc))
 	{
+		readMetadata();
 		LOG_MESSAGE(2, "Archive::open took %dms", timer.getElapsedTime().asMilliseconds());
 		this->on_disk = true;
 		return true;
@@ -759,6 +762,8 @@ bool Archive::open(ArchiveEntry* entry)
 	// Load from entry's data
 	if (entry && open(entry->getMCData()))
 	{
+		readMetadata();
+		
 		// Update variables and return success
 		parent = entry;
 		parent->lock();
@@ -896,6 +901,9 @@ bool Archive::save(string filename)
 		Global::error = "Archive is read-only";
 		return false;
 	}
+
+	// Write metadata entry
+	writeMetadata();
 
 	// If the archive has a parent ArchiveEntry, just write it to that
 	if (parent)
@@ -1244,6 +1252,8 @@ ArchiveEntry* Archive::addNewEntry(string name, unsigned position, ArchiveTreeNo
 
 	// Create the new entry
 	ArchiveEntry* entry = new ArchiveEntry(name);
+	entry->date_created = wxDateTime::Now();
+	entry->date_modified = wxDateTime::Now();
 
 	// Add it to the archive
 	addEntry(entry, position, dir);
@@ -1264,6 +1274,8 @@ ArchiveEntry* Archive::addNewEntry(string name, string add_namespace)
 
 	// Create the new entry
 	ArchiveEntry* entry = new ArchiveEntry(name);
+	entry->date_created = wxDateTime::Now();
+	entry->date_modified = wxDateTime::Now();
 
 	// Add it to the archive
 	addEntry(entry, add_namespace);
@@ -1643,6 +1655,10 @@ ArchiveEntry* Archive::findFirst(search_options_t& options)
 			else if (options.match_type != entry->getType())
 				continue;
 		}
+		
+		// Check MD5
+		if (!options.match_md5.IsEmpty() && options.match_md5 != entry->md5)
+			continue;
 
 		// Check name
 		if (!options.match_name.IsEmpty())
@@ -1733,6 +1749,10 @@ ArchiveEntry* Archive::findLast(search_options_t& options)
 				continue;
 		}
 
+		// Check MD5
+		if (!options.match_md5.IsEmpty() && options.match_md5 != entry->md5)
+			continue;
+			
 		// Check name
 		if (!options.match_name.IsEmpty())
 		{
@@ -1792,6 +1812,10 @@ vector<ArchiveEntry*> Archive::findAll(search_options_t& options)
 			else if (options.match_type != entry->getType())
 				continue;
 		}
+		
+		// Check MD5
+		if (!options.match_md5.IsEmpty() && options.match_md5 != entry->md5)
+			continue;
 
 		// Check name
 		if (!options.match_name.IsEmpty())
@@ -1870,6 +1894,156 @@ vector<ArchiveEntry*> Archive::findModifiedEntries(ArchiveTreeNode* dir)
 
 	// Return matches
 	return ret;
+}
+
+void Archive::readMetadata()
+{
+	// Clear existing metadata info
+	vector<ArchiveEntry*> entries;
+	getEntryTreeAsList(entries);
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
+		entries[a]->date_created = wxInvalidDateTime;
+		entries[a]->date_modified = wxInvalidDateTime;
+	}
+
+	// Get metadata entry
+	ArchiveEntry* metadata = NULL;
+	for (unsigned a = 0; a < dir_root->numEntries(); a++)
+		if (dir_root->getEntry(a)->getType()->getId() == "metadata")
+			metadata = dir_root->getEntry(a);
+
+	if (!metadata)
+	{
+		LOG_MESSAGE(1, "No metadata found in archive");
+		return;
+	}
+
+	// Get metadata entry as text
+	string text = wxString::FromUTF8((const char*)metadata->getData(), metadata->getSize());
+	// If opening as UTF8 failed for some reason, try again as 8-bit data
+	if (text.length() == 0)
+		text = wxString::From8BitData((const char*)metadata->getData(), metadata->getSize());
+
+	// Parse metadata
+	Parser p;
+	p.parseText(text, "Metadata Entry");
+
+	string md_name, md_md5;
+	wxDateTime md_created, md_modified;
+	vector<key_value_t> md_extra;
+	search_options_t opt;
+
+	// Go through metadata blocks
+	for (unsigned a = 0; a < p.parseTreeRoot()->nChildren(); a++)
+	{
+		ParseTreeNode* node_metadata = (ParseTreeNode*)p.parseTreeRoot()->getChild(a);
+		if (!S_CMPNOCASE(node_metadata->getName(), "metadata"))
+			continue;
+
+		md_name = "";
+		md_md5 = "";
+		md_created = wxInvalidDateTime;
+		md_modified = wxInvalidDateTime;
+		md_extra.clear();
+
+		// Read fields
+		for (unsigned b = 0; b < node_metadata->nChildren(); b++)
+		{
+			ParseTreeNode* node_field = (ParseTreeNode*)node_metadata->getChild(b);
+			string field = node_field->getName().Lower();
+
+			if (field == "name")
+				md_name = node_field->getStringValue();
+			else if (field == "md5")
+				md_md5 = node_field->getStringValue();
+			else if (field == "created")
+				md_created.ParseISOCombined(node_field->getStringValue(), ' ');
+			else if (field == "modified")
+				md_modified.ParseISOCombined(node_field->getStringValue(), ' ');
+			else
+				md_extra.push_back(key_value_t(field, node_field->getStringValue()));
+		}
+
+		// Find matching entry
+		LOG_MESSAGE(2, "Find entry %s (md5 %s)", CHR(md_name), CHR(md_md5));
+		opt.match_md5 = md_md5;
+		ArchiveEntry* match = findFirst(opt);
+		if (match)
+		{
+			// Set entry metadata
+			match->date_created = md_created;
+			match->date_modified = md_modified;
+			match->metadata_extra.clear();
+			for (unsigned e = 0; e < md_extra.size(); e++)
+				match->metadata_extra.push_back(key_value_t(md_extra[e].key, md_extra[e].value));
+		}
+	}
+}
+
+void Archive::writeMetadata()
+{
+	// Get metadata entry
+	ArchiveEntry* metadata = NULL;
+	for (unsigned a = 0; a < dir_root->numEntries(); a++)
+	{
+		if (dir_root->getEntry(a)->getType()->getId() == "metadata")
+		{
+			metadata = dir_root->getEntry(a);
+
+			// Move to bottom
+			dir_root->removeEntry(a);
+			dir_root->addEntry(metadata);
+
+			break;
+		}
+	}
+
+	// Create metadata entry if needed
+	// TODO: This should probably be named smarter, but will do for now
+	if (!metadata)
+	{
+		if (archive_create_metadata)
+			metadata = addNewEntry("METADATA.txt");
+		else
+			return;
+	}
+
+	// Get full metadata as string
+	string metadata_text;
+	vector<ArchiveEntry*> entries;
+	getEntryTreeAsList(entries);
+	for (unsigned a = 0; a < entries.size(); a++)
+	{
+		// Don't store metadata for directories
+		if (entries[a]->getType() == EntryType::folderType())
+			continue;
+
+		// Don't store metadata for the metadata entry
+		if (entries[a] == metadata)
+			continue;
+
+		// Don't store metadata if 'empty'
+		if (entries[a]->date_created == wxInvalidDateTime &&
+			entries[a]->date_modified == wxInvalidDateTime &&
+			entries[a]->metadata_extra.empty())
+			continue;
+
+		metadata_text += entries[a]->getMetadata();
+		metadata_text += "\n";
+	}
+
+	// Remove metadata entry if empty
+	if (metadata_text.empty())
+	{
+		removeEntry(metadata);
+		return;
+	}
+	else
+	{
+		// Write metadata to entry
+		metadata->importMem((const uint8_t*)metadata_text.ToUTF8().data(), metadata_text.ToUTF8().length());
+	}
 }
 
 /*******************************************************************

@@ -216,6 +216,7 @@ public:
 		string				match_name;			// Ignore if empty
 		EntryType*			match_type;			// Ignore if NULL
 		string				match_namespace;	// Ignore if empty
+		string				match_md5;			// Ignore if empty
 		ArchiveTreeNode*	dir;				// Root if NULL
 		bool				ignore_ext;			// Defaults true
 		bool				search_subdirs;		// Defaults false
@@ -225,6 +226,7 @@ public:
 			match_name = "";
 			match_type = NULL;
 			match_namespace = "";
+			match_md5 = "";
 			dir = NULL;
 			ignore_ext = true;
 			search_subdirs = false;
@@ -234,6 +236,10 @@ public:
 	virtual ArchiveEntry*			findLast(search_options_t& options);
 	virtual vector<ArchiveEntry*>	findAll(search_options_t& options);
 	virtual vector<ArchiveEntry*>	findModifiedEntries(ArchiveTreeNode* dir = NULL);
+
+	// Metadata
+	virtual void	readMetadata();
+	virtual void	writeMetadata();
 };
 
 // Base class for list-based archive formats

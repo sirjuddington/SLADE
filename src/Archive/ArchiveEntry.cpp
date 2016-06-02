@@ -34,6 +34,7 @@
 #include "ArchiveEntry.h"
 #include "Archive.h"
 #include "General/Misc.h"
+#include "Utility/MD5.h"
 #include <wx/filename.h>
 
 
@@ -79,6 +80,9 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	this->next = NULL;
 	this->prev = NULL;
 	this->encrypted = copy.encrypted;
+	this->date_created = copy.date_created;
+	this->date_modified = copy.date_modified;
+	this->md5 = copy.md5;
 
 	// Copy data
 	data.importMem(copy.getData(true), copy.getSize());
@@ -89,6 +93,10 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	// Clear properties that shouldn't be copied
 	ex_props.removeProperty("ZipIndex");
 	ex_props.removeProperty("Offset");
+
+	// Copy extra metadata
+	for (unsigned a = 0; a < copy.metadata_extra.size(); a++)
+		this->metadata_extra.push_back(key_value_t(copy.metadata_extra[a].key, copy.metadata_extra[a].value));
 
 	// Set entry state
 	state = 2;
@@ -272,6 +280,7 @@ bool ArchiveEntry::rename(string new_name)
 
 	// Update attributes
 	name = new_name;
+	date_modified = wxDateTime::Now();
 	setState(1);
 
 	return true;
@@ -291,7 +300,9 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 	}
 
 	// Update attributes
+	date_modified = wxDateTime::Now();
 	setState(1);
+	updateMD5();
 
 	return data.reSize(new_size, preserve_data);
 }
@@ -344,7 +355,9 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	this->size = size;
 	setLoaded();
 	setType(EntryType::unknownType());
+	date_modified = wxDateTime::Now();
 	setState(1);
+	updateMD5();
 
 	return true;
 }
@@ -433,7 +446,9 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 		this->size = data.getSize();
 		setLoaded();
 		setType(EntryType::unknownType());
+		date_modified = wxDateTime::Now();
 		setState(1);
+		updateMD5();
 
 		return true;
 	}
@@ -510,7 +525,9 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 	{
 		// Update attributes
 		this->size = this->data.getSize();
+		date_modified = wxDateTime::Now();
 		setState(1);
+		updateMD5();
 
 		return true;
 	}
@@ -588,4 +605,56 @@ bool ArchiveEntry::isInNamespace(string ns)
 		ns = "global";	// Graphics namespace doesn't exist in wad files, use global instead
 
 	return getParent()->detectNamespace(this) == ns;
+}
+
+/* ArchiveEntry::updateMD5
+ * Updates MD5 hash to match current data
+ *******************************************************************/
+void ArchiveEntry::updateMD5()
+{
+	// Blank md5 if empty
+	if (getSize() == 0)
+	{
+		md5 = "";
+		return;
+	}
+
+	MD5 md5_gen;
+	md5_gen.init();
+	md5_gen.update(getData(), getSize());
+	md5_gen.finalize();
+
+	md5 = md5_gen.hexdigest();
+
+	//LOG_MESSAGE(3, "Entry %s MD5: %s", CHR(getPath(true)), CHR(md5));
+}
+
+/* ArchiveEntry::getMetadata
+ * Returns entry metadata definition block as a string
+ *******************************************************************/
+string ArchiveEntry::getMetadata()
+{
+	string block = "metadata\n{\n";
+
+	// Name
+	block += S_FMT("\tname = \"%s\";\n", CHR(getPath(true).Remove(0, 1)));
+
+	// Md5
+	if (!md5.empty())
+		block += S_FMT("\tmd5 = \"%s\";\n", CHR(md5));
+
+	// Created
+	if (date_created != wxInvalidDateTime)
+		block += S_FMT("\tcreated = \"%s\";\n", CHR(date_created.FormatISOCombined(' ')));
+
+	// Modified
+	if (date_modified != wxInvalidDateTime)
+		block += S_FMT("\tmodified = \"%s\";\n", CHR(date_modified.FormatISOCombined(' ')));
+
+	// Other metadata
+	for (unsigned a = 0; a < metadata_extra.size(); a++)
+		block += S_FMT("\t%s = \"%s\";\n", CHR(metadata_extra[a].key), CHR(metadata_extra[a].value));
+
+	block += "}\n";
+	return block;
 }
