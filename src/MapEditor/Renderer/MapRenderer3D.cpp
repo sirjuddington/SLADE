@@ -411,10 +411,22 @@ void MapRenderer3D::cameraApplyGravity(double mult)
 	if (sector < 0)
 		return;
 
-	// Get target height
-	int view_height = (map_->currentFormat() == MAP_DOOM64) ? 56 : 41;
-	int fheight     = map_->sector(sector)->floor().plane.height_at(cam_position_.get2d()) + view_height;
-	int cheight     = map_->sector(sector)->ceiling().plane.height_at(cam_position_.get2d());
+	// Get target height from nearest floor down
+	int   view_height = (map_->currentFormat() == MAP_DOOM64) ? 56 : 41;
+	Vec2f cam2d       = cam_position_.get2d();
+	int   fheight     = (int) round(map_->sector(sector)->floor().plane.height_at(cam2d) + view_height);
+	for (unsigned a = 0; a < sector_flats_[sector].size(); a++)
+	{
+		// TODO only check solid floors
+		if (sector_flats_[sector][a].flags & CEIL)
+			continue;
+		int this_height = (int) round(sector_flats_[sector][a].plane.height_at(cam2d) + view_height);
+		// Allow stepping up from one 3D floor to another by the default Doom
+		// step height of 24
+		if (this_height <= cam_position_.z + 24 && this_height > fheight)
+			fheight = this_height;
+	}
+	int cheight = (int) round(map_->sector(sector)->ceiling().plane.height_at(cam2d));
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
