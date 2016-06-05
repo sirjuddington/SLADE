@@ -236,7 +236,7 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		// surfaces drawn as well
 		// TODO this does something different with vavoom
 		extra_floor.draw_inside = (type_flags & 4 || (type_flags & 3) == 2);
-		extra_floor.ceiling_only = (flags & 8);
+		extra_floor.ceiling_only = (bool) (flags & 8);
 
 		// TODO only gzdoom supports slopes here.
 		// TODO this should probably happen live instead of being copied, if
@@ -256,7 +256,16 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		vector<MapSector*> sectors;
 		map->putSectorsWithTag(sector_tag, sectors);
 		for (unsigned a = 0; a < sectors.size(); a++)
+		{
 			sectors[a]->extra_floors.push_back(extra_floor);
+
+			// Mark the target sector as updated if the control sector has
+			// been; this is a sort of very rudimentary dependency graph
+			if (control_sector->geometryUpdatedTime() > sectors[a]->geometryUpdatedTime())
+				sectors[a]->setGeometryUpdated();
+			if (control_sector->modifiedTime() > sectors[a]->modifiedTime())
+				sectors[a]->setModified();
+		}
 		LOG_MESSAGE(4, "adding a 3d floor controlled by sector %d to %lu sectors", extra_floor.control_sector_index, sectors.size());
 	}
 

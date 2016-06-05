@@ -137,6 +137,8 @@ public:
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
 
+	void setGeometryUpdated();
+
 	operator Debuggable() const
 	{
 		if (!this)
@@ -159,13 +161,12 @@ private:
 	Polygon2D        polygon_;
 	bool             poly_needsupdate_;
 	long             geometry_updated_;
-	Vec2f            text_point_;
 
+	Vec2f        text_point_;
 	// Computed properties from MapSpecials, not directly stored in the map data
 	Plane plane_floor;
-	Plane plane_ceiling;
 
-	void setGeometryUpdated();
+	Plane plane_ceiling;
 };
 
 // Note: these MUST be inline, or the linker will complain
