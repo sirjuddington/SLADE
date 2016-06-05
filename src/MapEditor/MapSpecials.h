@@ -14,8 +14,7 @@ class MapSpecials
 public:
 	void reset();
 
-	void processMapSpecials(SLADEMap* map);
-	void processLineSpecial(MapLine* line);
+	void	processMapSpecials(SLADEMap* map);
 
 	bool tagColour(int tag, ColRGBA* colour);
 	bool tagFadeColour(int tag, ColRGBA* colour);

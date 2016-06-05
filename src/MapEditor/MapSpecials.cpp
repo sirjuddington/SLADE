@@ -82,15 +82,6 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 }
 
 // -----------------------------------------------------------------------------
-// Process a line's special, depending on the current game/port
-// -----------------------------------------------------------------------------
-void MapSpecials::processLineSpecial(MapLine* line)
-{
-	if (Game::configuration().currentPort() == "zdoom")
-		processZDoomLineSpecial(line);
-}
-
-// -----------------------------------------------------------------------------
 // Sets [colour] to the parsed colour for [tag].
 // Returns true if the tag has a colour, false otherwise
 // -----------------------------------------------------------------------------
