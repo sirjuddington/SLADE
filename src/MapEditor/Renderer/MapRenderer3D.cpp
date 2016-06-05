@@ -407,26 +407,29 @@ void MapRenderer3D::cameraSetPosition(Vec3f position)
 void MapRenderer3D::cameraApplyGravity(double mult)
 {
 	// Get current sector
-	int sector = map_->sectorAt(cam_position_.get2d());
-	if (sector < 0)
+	int sector_ids = map_->sectorAt(cam_position_.get2d());
+	if (sector_ids < 0)
 		return;
+	MapSector* sector = map_->sector(sector_ids);
 
-	// Get target height from nearest floor down
+	// Get target height from nearest floor down, including 3D floors
 	int   view_height = (map_->currentFormat() == MAP_DOOM64) ? 56 : 41;
 	Vec2f cam2d       = cam_position_.get2d();
-	int   fheight     = (int) round(map_->sector(sector)->floor().plane.height_at(cam2d) + view_height);
-	for (unsigned a = 0; a < sector_flats_[sector].size(); a++)
+	int   fheight     = (int) sector->floor().plane.height_at(cam2d) + view_height;
+	for (unsigned a = 0; a < sector->extra_floors.size(); a++)
 	{
-		// TODO only check solid floors
-		if (sector_flats_[sector][a].flags & CEIL)
+		ExFloorType& extra = sector->extra_floors[a];
+		// Only check solid floors
+		if (extra.floor_type != ExFloorType::SOLID)
 			continue;
-		int this_height = (int) round(sector_flats_[sector][a].plane.height_at(cam2d) + view_height);
+		MapSector* control_sector = map_->sector(extra.control_sector_index);
+		int        this_height    = control_sector->ceiling().plane.height_at(cam2d) + view_height;
 		// Allow stepping up from one 3D floor to another by the default Doom
 		// step height of 24
 		if (this_height <= cam_position_.z + 24 && this_height > fheight)
 			fheight = this_height;
 	}
-	int cheight = (int) round(map_->sector(sector)->ceiling().plane.height_at(cam2d));
+	int cheight = sector->ceiling().plane.height_at(cam2d);
 	if (fheight > cheight - 4)
 		fheight = cheight - 4;
 
@@ -864,7 +867,7 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, unsigned flat_index)
 		return;
 
 	// Get sector
-	MapSector* sector = map_->sector(index);
+	MapSector* sector         = map_->sector(index);
 	MapSector* control_sector = sector_flats_[index][flat_index].control_sector;
 
 	// Get scaling/offset info
@@ -1036,7 +1039,7 @@ void MapRenderer3D::updateSectorVBOs(unsigned index)
 	if (index >= map_->nSectors())
 		return;
 	MapSector* sector = map_->sector(index);
-	Polygon2D* poly = sector->polygon();
+	Polygon2D* poly   = sector->polygon();
 
 	// Update VBOs
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_flats_);
@@ -2014,8 +2017,8 @@ void MapRenderer3D::updateLine(unsigned index)
 				// A floor that's a flat plane can't possibly have any sides
 				continue;
 
-			MapSector*     control_sector = map_->sector(extra.control_sector_index);
-			MapLine*       control_line   = map_->line(extra.control_line_index);
+			MapSector* control_sector = map_->sector(extra.control_sector_index);
+			MapLine*   control_line   = map_->line(extra.control_line_index);
 
 			// TODO
 			xoff = yoff = 0;
@@ -2704,7 +2707,7 @@ void MapRenderer3D::updateFlatsVBO()
 			updateSectorFlats(a);
 
 		MapSector* sector = map_->sector(a);
-		Polygon2D* poly = sector->polygon();
+		Polygon2D* poly   = sector->polygon();
 		totalsize += poly->vboDataSize() * sector_flats_[a].size();
 	}
 
@@ -3278,7 +3281,7 @@ void MapRenderer3D::renderHilight(MapEditor::Item hilight, float alpha)
 		Plane plane;
 		if (hilight.extra_floor_index >= 0 && hilight.extra_floor_index < sector->extra_floors.size())
 		{
-			ExFloorType& extra          = sector->extra_floors[hilight.extra_floor_index];
+			ExFloorType& extra = sector->extra_floors[hilight.extra_floor_index];
 
 
 			// Planes are reversed for a 3D floor
