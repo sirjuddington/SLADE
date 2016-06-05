@@ -993,11 +993,11 @@ void MapRenderer3D::updateSectorFlats(unsigned index)
 		// TODO wrong.  maybe?  does it inherit from parent?
 		xf_floor.colour = control_sector->colourAt(1);
 		// TODO again, maybe?
-		xf_floor.fogcolour = sector->fogColour();
+		xf_floor.fogcolour = control_sector->fogColour();
 		// TODO oughta support screen blends too!!
 		// TODO this probably comes from the control sector, unless there's a flag, yadda...
 		// TODO more importantly, it propagates downwards to the next floor
-		xf_floor.light = control_sector->lightAt(0);
+		xf_floor.light = sector->lightAt(1, a);
 		xf_floor.flags = CEIL;
 		if (extra.draw_inside)
 			xf_floor.flags |= DRAWBOTH;
@@ -1012,9 +1012,9 @@ void MapRenderer3D::updateSectorFlats(unsigned index)
             control_sector->ceiling().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 		xf_ceiling.colour = control_sector->colourAt(1);
 		// TODO again, maybe?
-		xf_ceiling.fogcolour = sector->fogColour();
+		xf_ceiling.fogcolour = control_sector->fogColour();
 		// TODO this probably comes from the control sector, unless there's a flag, yadda...
-		xf_ceiling.light = control_sector->lightAt(0);
+		xf_ceiling.light = sector->lightAt(2, a);
 		xf_ceiling.flags = 0;
 		if (extra.draw_inside)
 			xf_ceiling.flags |= DRAWBOTH;
@@ -2010,7 +2010,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		for (unsigned a = 0; a < sector->extra_floors.size(); a++)
 		{
 			ExFloorType& extra = sector->extra_floors[a];
-			if (extra.ceiling_only)
+			if (extra.ceilingOnly())
 				// A floor that's a flat plane can't possibly have any sides
 				continue;
 

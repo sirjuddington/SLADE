@@ -55,20 +55,38 @@ public:
 		enum
 		{
 			// TODO how does vavoom work?  their wiki is always broken
-			//VAVOOM,
-			SOLID = 1,
-			SWIMMABLE = 2,
-			NONSOLID = 3,
-		};
+		// VAVOOM,
+		SOLID     = 1,
+		SWIMMABLE = 2,
+		NONSOLID  = 3,
+
+		DISABLE_LIGHTING = 1,
+		LIGHTING_INSIDE_ONLY = 2,
+		INNER_FOG_EFFECT = 4,
+		FLAT_AT_CEILING = 8,
+		USE_UPPER_TEXTURE = 16,
+		USE_LOWER_TEXTURE = 32,
+		ADDITIVE_TRANSPARENCY = 64,
+	};
 
 	Plane  floor_plane;
 	Plane  ceiling_plane;
+	short    effective_height;
+	short    floor_light;
+	short    ceiling_light;
 	unsigned control_sector_index;
 	unsigned control_line_index;
-	int      floor_type;
-	float    alpha;
-	bool     draw_inside;
-	bool     ceiling_only;
+	int floor_type;
+	float alpha;
+	bool draw_inside;
+	unsigned char flags;
+
+	bool disableLighting() { return flags & ExFloorType::DISABLE_LIGHTING; }
+	bool lightingInsideOnly() { return flags & ExFloorType::LIGHTING_INSIDE_ONLY; }
+	bool ceilingOnly() { return flags & ExFloorType::FLAT_AT_CEILING; }
+	bool useUpperTexture() { return flags & ExFloorType::USE_UPPER_TEXTURE; }
+	bool useLowerTexture() { return flags & ExFloorType::USE_LOWER_TEXTURE; }
+	bool additiveTransparency() { return flags & ExFloorType::ADDITIVE_TRANSPARENCY; }
 };
 
 	enum PlaneType
@@ -123,7 +141,7 @@ public:
 	bool              putLines(vector<MapLine*>& list);
 	bool              putVertices(vector<MapVertex*>& list);
 	bool              putVertices(vector<MapObject*>& list);
-	uint8_t           lightAt(int where = 0);
+	uint8_t           lightAt(int where = 0, int extra_floor_index = -1);
 	void              changeLight(int amount, int where = 0);
 	ColRGBA           colourAt(int where = 0, bool fullbright = false);
 	ColRGBA           fogColour();
