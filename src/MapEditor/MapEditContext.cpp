@@ -282,7 +282,7 @@ bool MapEditContext::update(long frametime)
 				// Update 3d info overlay
 				if (info_overlay_3d && hl.index >= 0)
 				{
-					info_3d_.update(hl.index, hl.type, &map_);
+					info_3d_.update(hl.index, hl.type, hl.extra_floor_index, &map_);
 					info_showing_ = true;
 				}
 				else

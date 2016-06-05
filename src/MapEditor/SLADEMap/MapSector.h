@@ -128,6 +128,7 @@ public:
 	ColRGBA           colourAt(int where = 0, bool fullbright = false);
 	ColRGBA           fogColour();
 	long              geometryUpdatedTime() const { return geometry_updated_; }
+	void              setGeometryUpdated();
 
 	void connectSide(MapSide* side);
 	void disconnectSide(MapSide* side);
@@ -136,8 +137,6 @@ public:
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;
-
-	void setGeometryUpdated();
 
 	operator Debuggable() const
 	{

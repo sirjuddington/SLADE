@@ -80,7 +80,7 @@ InfoOverlay3D::~InfoOverlay3D() {}
 // -----------------------------------------------------------------------------
 // Updates the info text for the object of [item_type] at [item_index] in [map]
 // -----------------------------------------------------------------------------
-void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEMap* map)
+void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, int extra_floor_index, SLADEMap* map)
 {
 	using Game::Feature;
 	using Game::UDMFFeature;
@@ -90,10 +90,11 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 	info2_.clear();
 
 	// Setup variables
-	current_type_  = item_type;
-	texname_       = "";
-	texture_       = nullptr;
-	thing_icon_    = false;
+	current_type_        = item_type;
+	current_floor_index_ = extra_floor_index;
+	texname_             = "";
+	texture_             = nullptr;
+	thing_icon_          = false;
 	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Wall
@@ -108,6 +109,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		if (!line)
 			return;
 		object_ = side;
+
+		// TODO 3d floors
 
 		// --- Line/side info ---
 		info_.push_back(S_FMT("Line #%d", line->index()));
@@ -220,10 +223,8 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 
 		// Height of this section of the wall
-		// TODO this is wrong in the case of slopes, but slope support only
-		// exists in the 3.1.1 branch
-		Vec2f    left_point, right_point;
-		MapSide* other_side;
+		Vec2f     left_point, right_point;
+		MapSide*  other_side;
 		if (side == line->s1())
 		{
 			left_point  = line->v1()->point();
@@ -304,11 +305,24 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 	// Floor
 	else if (item_type == MapEditor::ItemType::Floor || item_type == MapEditor::ItemType::Ceiling)
 	{
+		bool floor = (item_type == MapEditor::ItemType::Floor);
+
 		// Get sector
-		MapSector* sector = map->sector(item_index);
-		if (!sector)
+		MapSector* real_sector = map->sector(item_index);
+		if (!real_sector)
 			return;
-		object_ = sector;
+		object_ = real_sector;
+
+		// For a 3D floor, use the control sector for most properties
+		// TODO this is already duplicated elsewhere that examines a highlight; maybe need a map method?
+		MapSector* sector = real_sector;
+		if (extra_floor_index >= 0 && extra_floor_index < real_sector->extra_floors.size())
+		{
+			sector = map->sector(real_sector->extra_floors[extra_floor_index].control_sector_index);
+			if (!sector)
+				return;
+			floor = !floor;
+		}
 
 		// Get basic info
 		int fheight = sector->intProperty("heightfloor");
@@ -317,7 +331,10 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// --- Sector info ---
 
 		// Sector index
-		info_.push_back(S_FMT("Sector #%d", item_index));
+		if (sector == real_sector)
+			info_.push_back(S_FMT("Sector #%d", item_index));
+		else
+			info_.push_back(S_FMT("3D floor in sector #%d", item_index));
 
 		// Sector height
 		info_.push_back(S_FMT("Total Height: %d", cheight - fheight));
@@ -335,12 +352,13 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		// --- Flat info ---
 
 		// Height
-		if (item_type == MapEditor::ItemType::Floor)
+		if (floor)
 			info2_.push_back(S_FMT("Floor Height: %d", fheight));
 		else
 			info2_.push_back(S_FMT("Ceiling Height: %d", cheight));
 
 		// Light
+		// TODO this is more complex with 3D floors -- also i would like to not dupe code from the renderer, so maybe this should be MapSpecials's problem?
 		int light = sector->intProperty("lightlevel");
 		if (Game::configuration().featureSupported(UDMFFeature::FlatLighting))
 		{
@@ -381,8 +399,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		{
 			// Offsets
 			double xoff, yoff;
-			xoff = yoff = 0.0;
-			if (Game::configuration().featureSupported(UDMFFeature::FlatPanning))
+			if (floor)
 			{
 				if (item_type == MapEditor::ItemType::Floor)
 				{
@@ -417,7 +434,7 @@ void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEM
 		}
 
 		// Texture
-		if (item_type == MapEditor::ItemType::Floor)
+		if (floor)
 			texname_ = sector->floor().texture;
 		else
 			texname_ = sector->ceiling().texture;
@@ -516,12 +533,12 @@ void InfoOverlay3D::draw(int bottom, int right, int middle, float alpha)
 		return;
 
 	// Update if needed
-	if (object_
-		&& (object_->modifiedTime() > last_update_ || // object updated
-			(object_->objType() == MapObject::Type::Side
-			 && (((MapSide*)object_)->parentLine()->modifiedTime() > last_update_ || // parent line updated
-				 ((MapSide*)object_)->sector()->modifiedTime() > last_update_))))    // parent sector updated
-		update(object_->index(), current_type_, object_->parentMap());
+	if (object_ &&
+		(object_->modifiedTime() > last_update_ ||									// object_ updated
+		(object_->objType() == MapObject::Type::Side && (
+			((MapSide*)object_)->parentLine()->modifiedTime() > last_update_ ||	// parent line updated
+			((MapSide*)object_)->sector()->modifiedTime() > last_update_))))		// parent sector updated
+		update(object_->index(), current_type_, current_floor_index_, object_->parentMap());
 
 	// Init GL stuff
 	glLineWidth(1.0f);
