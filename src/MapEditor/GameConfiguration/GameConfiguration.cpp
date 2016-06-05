@@ -689,7 +689,7 @@ void GameConfiguration::readActionSpecials(ParseTreeNode* node, ActionSpecial* g
 	string groupname = "";
 	while (true)
 	{
-		if (group->getName() == "action_specials" || !group)
+		if (!group || group->getName() == "action_specials")
 			break;
 		else
 		{
@@ -773,7 +773,7 @@ void GameConfiguration::readThingTypes(ParseTreeNode* node, ThingType* group_def
 	string groupname = "";
 	while (true)
 	{
-		if (group->getName() == "thing_types" || !group)
+		if (!group || group->getName() == "thing_types")
 			break;
 		else
 		{
