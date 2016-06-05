@@ -187,6 +187,13 @@ void MapSpecials::processZDoomMapSpecials(SLADEMap* map)
 	// All slope specials, which must be done in a particular order
 	processZDoomSlopes(map);
 
+	// Clear out all 3D floors, or every call to this function will create
+	// duplicates!
+	// TODO this isn't a very good solution, but we don't have incremental
+	// updates yet
+	for (unsigned a = 0; a < map->nSectors(); a++)
+		map->sector(a)->extra_floors.clear();
+
 	// Line specials
 	for (unsigned a = 0; a < map->nLines(); a++)
 		processZDoomLineSpecial(map->line(a));
@@ -224,23 +231,27 @@ void MapSpecials::processZDoomLineSpecial(MapLine* line)
 		float falpha = alpha / 255.0f;
 
 		ExFloorType extra_floor;
+
+		// Liquids (swimmable, type 2) and floors with flag 4 have their inner
+		// surfaces drawn as well
+		// TODO this does something different with vavoom
+		extra_floor.draw_inside = (type_flags & 4 || (type_flags & 3) == 2);
+		extra_floor.ceiling_only = (flags & 8);
+
 		// TODO only gzdoom supports slopes here.
 		// TODO this should probably happen live instead of being copied, if
 		// we're moving towards purely live updates here
-		extra_floor.floor_plane   = control_sector->floor().plane;
 		extra_floor.ceiling_plane = control_sector->ceiling().plane;
+		if (extra_floor.ceiling_only)
+			extra_floor.floor_plane = extra_floor.ceiling_plane;
+		else
+			extra_floor.floor_plane = control_sector->floor().plane;
 
 		extra_floor.control_sector_index = control_sector->index();
 		extra_floor.control_line_index   = line->index();
 		extra_floor.floor_type           = type_flags & 0x3;
 
 		extra_floor.alpha = falpha;
-
-		// Liquids (swimmable, type 2) and floors with flag 4 have their inner
-		// surfaces drawn as well
-		// TODO this does something different with vavoom
-		if (flags & 4 || (type_flags & 3) == 2)
-			extra_floor.draw_inside = true;
 
 		vector<MapSector*> sectors;
 		map->putSectorsWithTag(sector_tag, sectors);

@@ -106,6 +106,7 @@ public:
 		float      base_alpha;
 		float      alpha;
 		MapSector* sector;
+		MapSector*	control_sector;
 		int        extra_floor_index;
 		long       updated_time;
 		unsigned   vbo_offset;
@@ -175,7 +176,9 @@ public:
 
 	// Flats
 	void updateFlatTexCoords(unsigned index, unsigned flat_index);
-	void updateSector(unsigned index, bool update_vbo = true);
+	void updateSector(unsigned index);
+	void	updateSectorFlats(unsigned index);
+	void	updateSectorVBOs(unsigned index);
 	bool isSectorStale(unsigned index);
 	void renderFlat(Flat* flat);
 	void renderFlats();

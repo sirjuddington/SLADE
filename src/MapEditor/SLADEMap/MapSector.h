@@ -68,7 +68,8 @@ public:
 	int      floor_type;
 	float    alpha;
 	bool     draw_inside;
-	};
+	bool     ceiling_only;
+};
 
 	enum PlaneType
 	{

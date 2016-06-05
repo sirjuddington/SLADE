@@ -2183,7 +2183,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		// Update polygon VBO data if needed
 		if (poly->vboUpdate() > 0)
 		{
-			poly->updateVBOData(sector_vbo_offsets_[a]);
+			poly->writeToVBO(sector_vbo_offsets_[a]);
 			update++;
 			if (update > 200)
 				break;
