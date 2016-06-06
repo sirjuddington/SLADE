@@ -2526,6 +2526,15 @@ bool ArchivePanel::openDir(ArchiveTreeNode* dir)
 	return entry_list->setDir(dir);
 }
 
+/* ArchivePanel::closeCurrentEntry
+ * Closes the current entry in archive tab.
+ *******************************************************************/
+void ArchivePanel::closeCurrentEntry()
+{
+	// Close the current entry
+	showEntryPanel(NULL, false);
+}
+
 /* ArchivePanel::openEntry
  * Shows the appropriate entry area and sends the given entry to it.
  * If [force] is true, the entry is opened even if it is already open
@@ -2538,6 +2547,11 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		wxLogMessage("Warning: NULL entry focused in the list");
 		return false;
 	}
+
+	// First check if the entry is already open in its own tab
+	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
+	if (panel->redirectToTab(entry))
+		closeCurrentEntry();
 
 	// Do nothing if the entry is already open
 	if (cur_area->getEntry() == entry && !force)
@@ -2626,6 +2640,11 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 	if (!entry)
 		return false;
 
+	// First check if the entry is already open in its own tab
+	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
+	if (panel->redirectToTab(entry))
+		closeCurrentEntry();
+
 	// Load the current entry into the panel
 	if (!text_area->openEntry(entry))
 	{
@@ -2713,13 +2732,16 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 		cur_area->Show(false);				// Hide current
 		cur_area->removeCustomMenu();		// Remove current custom menu (if any)
 		cur_area->removeCustomToolBar();	// Remove current custom toolbar (if any)
-		sizer->Replace(cur_area, new_area);	// Swap the panels
-		cur_area = new_area;				// Set the new panel to current
-		cur_area->Show(true);				// Show current
+		if (new_area != NULL)
+		{
+			sizer->Replace(cur_area, new_area);	// Swap the panels
+			cur_area = new_area;				// Set the new panel to current
+			cur_area->Show(true);				// Show current
 
-		// Add the current panel's custom menu and toolbar if needed
-		cur_area->addCustomMenu();
-		cur_area->addCustomToolBar();
+			// Add the current panel's custom menu and toolbar if needed
+			cur_area->addCustomMenu();
+			cur_area->addCustomToolBar();
+		}
 
 		// Set panel undo manager
 		cur_area->setUndoManager(undo_manager);

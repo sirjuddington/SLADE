@@ -138,6 +138,7 @@ public:
 	void	focusOnEntry(ArchiveEntry* entry);
 	void	focusEntryList() { entry_list->SetFocus(); }
 	void	refreshPanel();
+	void	closeCurrentEntry();
 
 	// SAction handler
 	bool	handleAction(string id);
