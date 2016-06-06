@@ -145,14 +145,17 @@ void ACSPrefsPanel::onBtnBrowseACCPath(wxCommandEvent& e)
 {
 	// Setup acc executable file string
 	string acc_exe = "acc";
+	string bcc_exe = "bcc";
 #ifdef WIN32
 	acc_exe += ".exe";	// exe extension in windows
+	bcc_exe += ".exe";
 #elif __WXOSX__
 	acc_exe = "";
+	bcc_exe = "";
 #endif
 
 	// Open file dialog
-	wxFileDialog fd(this, "Browse for ACC Executable", wxEmptyString, acc_exe, acc_exe);
+	wxFileDialog fd(this, "Browse for ACC Executable", wxEmptyString, acc_exe + ";" + bcc_exe, acc_exe + ";" + bcc_exe);
 	if (fd.ShowModal() == wxID_OK)
 		text_accpath->SetValue(fd.GetPath());
 }
