@@ -2551,7 +2551,10 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	// First check if the entry is already open in its own tab
 	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
 	if (panel->redirectToTab(entry))
+	{
 		closeCurrentEntry();
+		return true;
+	}
 
 	// Do nothing if the entry is already open
 	if (cur_area->getEntry() == entry && !force)
@@ -2643,7 +2646,10 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 	// First check if the entry is already open in its own tab
 	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
 	if (panel->redirectToTab(entry))
+	{
 		closeCurrentEntry();
+		return true;
+	}
 
 	// Load the current entry into the panel
 	if (!text_area->openEntry(entry))
@@ -2666,6 +2672,14 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 	// Check entry was given
 	if (!entry)
 		return false;
+
+	// First check if the entry is already open in its own tab
+	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
+	if (panel->redirectToTab(entry))
+	{
+		closeCurrentEntry();
+		return true;
+	}
 
 	// Load the current entry into the panel
 	if (!hex_area->openEntry(entry))
