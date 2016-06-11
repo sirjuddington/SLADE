@@ -2010,10 +2010,12 @@ void MapRenderer3D::updateLine(unsigned index)
 	// texture, because 3d floors can change the lighting
 	// TODO will one-sided lines ever have to worry about this?
 	// TODO need to do back sector too, but with some of the logic reversed
-	MapSector* sectors[2] = { line->backSector(), line->frontSector() };
+	MapSide* sides[2] = { line->s2(), line->s1() };
 	for (unsigned front = 0; front < 2; front++)
 	{
-		MapSector* sector = sectors[front];
+		MapSide* side = sides[front];
+		MapSector* sector = side->sector();
+
 		for (unsigned a = 0; a < sector->extra_floors.size(); a++)
 		{
 			ExFloorType& extra = sector->extra_floors[a];
@@ -2029,8 +2031,15 @@ void MapRenderer3D::updateLine(unsigned index)
 			sx = sy = 1;
 
 			// TODO there's a flag for showing on both sides
-			// TODO and flags for switching out where the texture comes from
-			string texname = control_line->s1()->texMiddle();
+			// TODO missing texture check should look for this!
+			string texname;
+			// Not documented, but in practice, when both flags are set, upper wins
+			if (extra.useUpperTexture())
+				texname = side->texUpper();
+			else if (extra.useLowerTexture())
+				texname = side->texLower();
+			else
+				texname = control_line->s1()->texMiddle();
 
 			Quad quad;
 			Seg2f seg = line->seg();
