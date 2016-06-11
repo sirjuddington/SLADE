@@ -984,19 +984,23 @@ void MapRenderer3D::updateSectorFlats(unsigned index)
 
 		// TODO which of these is really a floor and which is really a ceiling?
 		// TODO BOTH sides of the inner flat are drawn sometimes!
-		Flat& xf_floor             = sector_flats_[index][2 * (a + 1)];
-		xf_floor.sector            = sector;
-		xf_floor.control_sector    = control_sector;
+		// Bottom plane (defined by the floor of the control sector, but acts
+		// like a ceiling)
+		Flat& xf_floor          = sector_flats_[index][2 * (a + 1)];
+		xf_floor.sector         = sector;
+		xf_floor.control_sector = control_sector;
 		xf_floor.extra_floor_index = a;
 		xf_floor.texture           = MapEditor::textureManager().flat(
             control_sector->floor().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
 		// TODO wrong.  maybe?  does it inherit from parent?
-		xf_floor.colour = control_sector->colourAt(1);
-		// TODO again, maybe?
+		xf_floor.colour = control_sector->colourAt(1, true);
+		// TODO 3d floors have no fog color...  right?
 		xf_floor.fogcolour = control_sector->fogColour();
 		// TODO oughta support screen blends too!!
 		// TODO this probably comes from the control sector, unless there's a flag, yadda...
 		// TODO more importantly, it propagates downwards to the next floor
+		// TODO are the light levels of the inside and outside different?  christ
+		// TODO shouldn't this be 1?
 		xf_floor.light = sector->lightAt(1, a);
 		xf_floor.flags = CEIL;
 		if (extra.draw_inside)
@@ -1004,13 +1008,16 @@ void MapRenderer3D::updateSectorFlats(unsigned index)
 		xf_floor.plane      = extra.floor_plane;
 		xf_floor.base_alpha = extra.alpha;
 
+		// Top plane (defined by the ceiling of the control sector, but acts
+		// like a floor)
 		Flat& xf_ceiling             = sector_flats_[index][2 * (a + 1) + 1];
 		xf_ceiling.sector            = sector;
 		xf_ceiling.control_sector    = control_sector;
 		xf_ceiling.extra_floor_index = a;
 		xf_ceiling.texture           = MapEditor::textureManager().flat(
             control_sector->ceiling().texture, Game::configuration().featureSupported(Game::Feature::MixTexFlats));
-		xf_ceiling.colour = control_sector->colourAt(1);
+		// TODO chump hack to use the real sector's light, which is wrong; fix the method to take this into account
+		xf_ceiling.colour = sector->colourAt(2, true);
 		// TODO again, maybe?
 		xf_ceiling.fogcolour = control_sector->fogColour();
 		// TODO this probably comes from the control sector, unless there's a flag, yadda...
