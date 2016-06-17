@@ -2910,14 +2910,14 @@ void MapCanvas::keyBinds2dView(string name)
 	// Zoom out (follow mouse)
 	else if (name == "me2d_zoom_out_m")
 	{
-		zoom(0.8, true);
+		zoom(1.0 - (0.2 * mwheel_rotation), true);
 		zooming_cursor = true;
 	}
 
 	// Zoom in (follow mouse)
 	else if (name == "me2d_zoom_in_m")
 	{
-		zoom(1.25, true);
+		zoom(1.0 + (0.25 * mwheel_rotation), true);
 		zooming_cursor = true;
 	}
 
@@ -4415,6 +4415,17 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
+#ifdef __WXOSX__
+	mwheel_rotation = (double)e.GetWheelRotation() / (double)e.GetWheelDelta();
+	if (mwheel_rotation < 0)
+		mwheel_rotation = 0 - mwheel_rotation;
+#else
+	mwheel_rotation = 1;
+#endif
+
+	if (mwheel_rotation < 0.001)
+		return;
+
 	if (e.GetWheelRotation() > 0)
 	{
 		KeyBind::keyPressed(keypress_t("mwheelup", e.AltDown(), e.ControlDown(), e.ShiftDown()));

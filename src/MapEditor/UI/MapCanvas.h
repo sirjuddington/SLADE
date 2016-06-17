@@ -34,6 +34,7 @@ private:
 	MapRenderer3D*			renderer_3d;
 	int						modifiers_current;
 	int						mode_last;
+	double					mwheel_rotation;
 
 	// Mouse stuff
 	enum
