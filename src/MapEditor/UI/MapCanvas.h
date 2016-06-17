@@ -166,6 +166,7 @@ public:
 	void		lockMouse(bool lock);
 	void		determineObjectEditState();
 	fpoint2_t	mouseDownPosM() { return mouse_downpos_m; }
+	void		mouseLook3d();
 
 	void	itemSelected(int index, bool selected = true);
 	void	itemsSelected(vector<int>& items, bool selected = true);
