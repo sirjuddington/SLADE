@@ -89,6 +89,8 @@ CVAR(Bool, map_show_selection_numbers, true, CVAR_SAVE)
 CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
 CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
 CVAR(Int, grid_64_style, 1, CVAR_SAVE)
+CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVAR_SAVE)
+CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -2152,6 +2154,37 @@ void MapCanvas::determineObjectEditState()
 	}
 }
 
+/* MapCanvas::mouseLook3d
+ * Handles 3d mode mouselook
+ *******************************************************************/
+void MapCanvas::mouseLook3d()
+{
+	// Check for 3d mode
+	if (editor->editMode() == MapEditor::MODE_3D && mouse_locked)
+	{
+		if (!overlay_current || !overlayActive() || (overlay_current && overlay_current->allow3dMlook()))
+		{
+			// Get relative mouse movement
+			int xpos = wxGetMousePosition().x - GetScreenPosition().x;
+			int ypos = wxGetMousePosition().y - GetScreenPosition().y;
+			double xrel = xpos - int(GetSize().x * 0.5);
+			double yrel = ypos - int(GetSize().y * 0.5);
+
+			if (xrel != 0 || yrel != 0)
+			{
+                renderer_3d->cameraTurn(-xrel*0.1*camera_3d_sensitivity_x);
+				if (mlook_invert_y)
+                    renderer_3d->cameraPitch(yrel*0.003*camera_3d_sensitivity_y);
+				else
+                    renderer_3d->cameraPitch(-yrel*0.003*camera_3d_sensitivity_y);
+
+				mouseToCenter();
+				fr_idle = 0;
+			}
+		}
+	}
+}
+
 /* MapCanvas::itemSelected
  * Called when the item at [index] is selected or deselected (for
  * select/deselect animations)
@@ -2884,14 +2917,14 @@ void MapCanvas::keyBinds2dView(string name)
 	// Zoom out (follow mouse)
 	else if (name == "me2d_zoom_out_m")
 	{
-		zoom(0.8, true);
+		zoom(1.0 - (0.2 * mwheel_rotation), true);
 		zooming_cursor = true;
 	}
 
 	// Zoom in (follow mouse)
 	else if (name == "me2d_zoom_in_m")
 	{
-		zoom(1.25, true);
+		zoom(1.0 + (0.25 * mwheel_rotation), true);
 		zooming_cursor = true;
 	}
 
@@ -4269,28 +4302,6 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 		return;
 	}
 
-	// Check for 3d mode
-	if (editor->editMode() == MapEditor::MODE_3D && mouse_locked)
-	{
-		if (!overlay_current || !overlayActive() || (overlay_current && overlay_current->allow3dMlook()))
-		{
-			// Get relative mouse movement
-			double xrel = e.GetX() - int(GetSize().x * 0.5);
-			double yrel = e.GetY() - int(GetSize().y * 0.5);
-
-			renderer_3d->cameraTurn(-xrel*0.1);
-			if (mlook_invert_y)
-				renderer_3d->cameraPitch(yrel*0.003);
-			else
-				renderer_3d->cameraPitch(-yrel*0.003);
-
-			mouseToCenter();
-			fr_idle = 0;
-
-			return;
-		}
-	}
-
 	// Check if a full screen overlay is active
 	if (overlayActive())
 	{
@@ -4399,6 +4410,17 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
+#ifdef __WXOSX__
+	mwheel_rotation = (double)e.GetWheelRotation() / (double)e.GetWheelDelta();
+	if (mwheel_rotation < 0)
+		mwheel_rotation = 0 - mwheel_rotation;
+#else
+	mwheel_rotation = 1;
+#endif
+
+	if (mwheel_rotation < 0.001)
+		return;
+
 	if (e.GetWheelRotation() > 0)
 	{
 		KeyBind::keyPressed(keypress_t("mwheelup", e.AltDown(), e.ControlDown(), e.ShiftDown()));
@@ -4452,6 +4474,9 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
+	// Handle 3d mode mouselook
+	mouseLook3d();
+
 	// Get time since last redraw
 	long frametime = (sfclock.getElapsedTime().asMilliseconds()) - last_time;
 
@@ -4468,6 +4493,9 @@ void MapCanvas::onIdle(wxIdleEvent& e)
  *******************************************************************/
 void MapCanvas::onRTimer(wxTimerEvent& e)
 {
+	// Handle 3d mode mouselook
+	mouseLook3d();
+
 	// Get time since last redraw
 	long frametime = (sfclock.getElapsedTime().asMilliseconds()) - last_time;
 
