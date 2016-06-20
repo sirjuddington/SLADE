@@ -357,7 +357,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 					name = tz.getToken();
 
 				for (unsigned i = 0; i < ignore.size(); ++i)
-					if (S_CMPNOCASE(name, ignore[a]))
+					if (S_CMPNOCASE(name, ignore[i]))
 						name = tz.getToken();
 
 				// Numbered block, add block name

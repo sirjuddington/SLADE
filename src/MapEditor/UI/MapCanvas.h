@@ -34,6 +34,7 @@ private:
 	MapRenderer3D*			renderer_3d;
 	int						modifiers_current;
 	int						mode_last;
+	double					mwheel_rotation;
 
 	// Mouse stuff
 	enum
@@ -166,6 +167,7 @@ public:
 	void		lockMouse(bool lock);
 	void		determineObjectEditState();
 	fpoint2_t	mouseDownPosM() { return mouse_downpos_m; }
+	void		mouseLook3d();
 
 	void	itemSelected(int index, bool selected = true);
 	void	itemsSelected(vector<int>& items, bool selected = true);

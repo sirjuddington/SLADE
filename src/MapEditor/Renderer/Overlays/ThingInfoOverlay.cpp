@@ -388,6 +388,12 @@ void ThingInfoOverlay::draw(int bottom, int right, float alpha)
 	{
 		double width = tex->getWidth();
 		double height = tex->getHeight();
+		if (width > 128.0 || height > 128.0)
+		{
+			double factor = max(width, height) / 128.0;
+			width /= factor;
+			height /= factor;
+		}
 		if (isicon)
 		{
 			width = 64;

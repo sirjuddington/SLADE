@@ -1,5 +1,5 @@
-$version = "3111"
-$versionstring = "3.1.1.1"
+$version = "3112"
+$versionstring = "3.1.1.2"
 
 # Check for 7-zip install
 $7zpath = "$env:ProgramFiles\7-Zip\7z.exe"

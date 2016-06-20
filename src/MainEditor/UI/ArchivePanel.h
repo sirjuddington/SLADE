@@ -136,6 +136,7 @@ public:
 	void	focusOnEntry(ArchiveEntry* entry);
 	void	focusEntryList() { entry_list->SetFocus(); }
 	void	refreshPanel();
+	void	closeCurrentEntry();
 	wxMenu*	createEntryOpenMenu(string category);
 
 	// SAction handler
