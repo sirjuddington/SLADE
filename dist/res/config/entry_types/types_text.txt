@@ -514,6 +514,12 @@ entry_types
 		match_name = "shartit?";
 	}
 	
+	descent_briefing : text
+	{
+		name = "Descent Briefing";
+		match_ext = "txb", "ctb";
+	}
+
 	sourcecode_c : text
 	{
 		name = "Source Code (C Based)";
