@@ -2,13 +2,13 @@
 #ifndef __SECTOR_INFO_OVERLAY_H__
 #define __SECTOR_INFO_OVERLAY_H__
 
-#include "OpenGL/GLUI/Panel.h"
+#include "InfoOverlay.h"
 
 class MapSector;
 class TextureBox;
 namespace GLUI { class TextBox; }
 
-class SectorInfoOverlay : public GLUI::Panel
+class SectorInfoOverlay : public InfoOverlay
 {
 private:
 	GLUI::TextBox*	text_info;
@@ -24,29 +24,5 @@ public:
 	void	drawWidget(point2_t pos, float alpha) override;
 	void	updateLayout(dim2_t fit) override;
 };
-
-#if 0
-
-class MapSector;
-class STextBox;
-
-class SectorInfoOverlay
-{
-private:
-	STextBox*	text_box;
-	string		ftex;
-	string		ctex;
-	int			last_size;
-
-public:
-	SectorInfoOverlay();
-	~SectorInfoOverlay();
-
-	void	update(MapSector* sector);
-	void	draw(int bottom, int right, float alpha = 1.0f);
-	void	drawTexture(float alpha, int x, int y, string texture, string pos = "Upper");
-};
-
-#endif
 
 #endif//__SECTOR_INFO_OVERLAY_H__

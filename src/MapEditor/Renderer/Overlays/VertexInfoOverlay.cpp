@@ -26,69 +26,14 @@
  *******************************************************************/
 
 
-#include "Main.h"
-#include "VertexInfoOverlay.h"
-#include "MapEditor/SLADEMap/MapVertex.h"
-#include "OpenGL/GLUI/TextBox.h"
-
-VertexInfoOverlay::VertexInfoOverlay() : GLUI::Panel(NULL)
-{
-	setSize(dim2_t(500, 20));
-	text_coords = new GLUI::TextBox(this, "");
-
-	setBGCol(rgba_t(0, 0, 0, 160));
-}
-
-void VertexInfoOverlay::update(MapVertex* vertex)
-{
-	if (!vertex)
-	{
-		text_coords->setText("");
-		return;
-	}
-
-	// Update info string
-	string text = S_FMT("Vertex %d: (%d, %d)", vertex->getIndex(), (int)vertex->xPos(), (int)vertex->yPos());
-
-	if (Global::debug)
-		text += S_FMT(" (%d)", vertex->getId());
-
-	text_coords->setText(text);
-}
-
-void VertexInfoOverlay::updateLayout(dim2_t fit)
-{
-	text_coords->updateLayout(dim2_t(fit.x, -1));
-	text_coords->setPosition(point2_t(4, 4));
-	setSize(dim2_t(fit.x, text_coords->bottom() + 4));
-}
-
-
-
-
-
-
-
-
-
-#if 0
-
 /*******************************************************************
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
 #include "VertexInfoOverlay.h"
 #include "MapEditor/SLADEMap/MapVertex.h"
-#include "OpenGL/Drawing.h"
-#include "Utility/MathStuff.h"
-#include "General/ColourConfiguration.h"
-#include "OpenGL/OpenGL.h"
-
-
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Int, gl_font_size)
+#include "OpenGL/GLUI/Animator.h"
+#include "OpenGL/GLUI/TextBox.h"
 
 
 /*******************************************************************
@@ -100,69 +45,43 @@ EXTERN_CVAR(Int, gl_font_size)
  *******************************************************************/
 VertexInfoOverlay::VertexInfoOverlay()
 {
-	// Init variables
-	pos_frac = false;
-}
+	setSize(dim2_t(500, 20));
+	text_coords = new GLUI::TextBox(this, "");
 
-/* VertexInfoOverlay::~VertexInfoOverlay
- * VertexInfoOverlay class destructor
- *******************************************************************/
-VertexInfoOverlay::~VertexInfoOverlay()
-{
+	setBGCol(rgba_t(0, 0, 0, 160));
 }
 
 /* VertexInfoOverlay::update
- * Updates the overlay with info from [vertex]
+ * Update the info overlay with [vertex]
  *******************************************************************/
 void VertexInfoOverlay::update(MapVertex* vertex)
 {
 	if (!vertex)
+	{
+		// Animate
+		activate(false);
 		return;
+	}
+
+	// Animate
+	activate(true);
 
 	// Update info string
-	if (pos_frac)
-		info = S_FMT("Vertex %d: (%1.4f, %1.4f)", vertex->getIndex(), vertex->xPos(), vertex->yPos());
-	else
-		info = S_FMT("Vertex %d: (%d, %d)", vertex->getIndex(), (int)vertex->xPos(), (int)vertex->yPos());
+	string text = S_FMT("Vertex %d: (%d, %d)", vertex->getIndex(), (int)vertex->xPos(), (int)vertex->yPos());
 
 	if (Global::debug)
-		info += S_FMT(" (%d)", vertex->getId());
+		text += S_FMT(" (%d)", vertex->getId());
+
+	text_coords->setText(text);
 }
 
-/* VertexInfoOverlay::draw
- * Draws the overlay at [bottom] from 0 to [right]
+/* VertexInfoOverlay::updateLayout
+ * Update the widget layout to fit within [fit]. A negative [fit]
+ * dimension indicates no size limit
  *******************************************************************/
-void VertexInfoOverlay::draw(int bottom, int right, float alpha)
+void VertexInfoOverlay::updateLayout(dim2_t fit)
 {
-	// Don't bother if completely faded
-	if (alpha <= 0.0f)
-		return;
-
-	// Init GL stuff
-	glLineWidth(1.0f);
-	glDisable(GL_LINE_SMOOTH);
-
-	// Get colours
-	rgba_t col_bg = ColourConfiguration::getColour("map_overlay_background");
-	rgba_t col_fg = ColourConfiguration::getColour("map_overlay_foreground");
-	col_fg.a = col_fg.a*alpha;
-	col_bg.a = col_bg.a*alpha;
-	rgba_t col_border(0, 0, 0, 140);
-
-	// Slide in/out animation
-	float alpha_inv = 1.0f - alpha;
-	bottom += 16*alpha_inv*alpha_inv;
-
-	// Draw overlay background
-	int line_height = 16 * (gl_font_size / 12.0);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	Drawing::drawBorderedRect(0, bottom - line_height - 8, right, bottom + 2, col_bg, col_border);
-
-	// Draw text
-	Drawing::drawText(info, 2, bottom - line_height - 4, col_fg, Drawing::FONT_CONDENSED);
-
-	// Done
-	glEnable(GL_LINE_SMOOTH);
+	text_coords->updateLayout(dim2_t(fit.x, -1));
+	text_coords->setPosition(point2_t(4, 4));
+	setSize(dim2_t(fit.x, text_coords->bottom() + 4));
 }
-
-#endif

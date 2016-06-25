@@ -11,6 +11,7 @@
 #include "MapEditor/Renderer/Overlays/SectorInfoOverlay.h"
 #include "MapEditor/Renderer/Overlays/ThingInfoOverlay.h"
 #include "MapEditor/Renderer/Overlays/VertexInfoOverlay.h"
+#include "OpenGL/GLUI/Manager.h"
 #include "UI/Canvas/OGLCanvas.h"
 #include <SFML/System.hpp>
 
@@ -83,6 +84,7 @@ private:
 	// Info overlays
 	int					last_hilight;
 	int					last_hilight_type;
+	GLUI::Manager		ui_manager;
 	VertexInfoOverlay	info_vertex;
 	LineInfoOverlay		info_line;
 	SectorInfoOverlay	info_sector;
@@ -100,8 +102,6 @@ private:
 	// Animation
 	float	anim_flash_level;
 	bool	anim_flash_inc;
-	float	anim_info_fade;
-	bool	anim_info_show;
 	float	anim_overlay_fade;
 	double	anim_view_speed;
 	double	view_xoff_inter;

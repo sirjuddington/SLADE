@@ -4,6 +4,7 @@
 
 namespace GLUI
 {
+	class Animator;
 	class Widget
 	{
 	public:
@@ -35,9 +36,9 @@ namespace GLUI
 		int bottom(bool margin = false) { return position.y + size.y + (margin ? this->margin.bottom : 0); }
 		point2_t middle();
 
-		void	setPosition(point2_t pos) { position = pos; }
-		void	setSize(dim2_t dim) { size = dim; }
-		void	setVisible(bool vis) { visible = vis; }
+		void	setPosition(point2_t pos) { position = pos; onPositionChanged(); }
+		void	setSize(dim2_t dim) { size = dim; onSizeChanged(); }
+		void	setVisible(bool vis) { visible = vis; onVisibleChanged(); }
 		void	setMargin(padding_t margin) { this->margin = margin; }
 		void	setBorderWidth(float width) { border_width = width; }
 		void	setBorderStyle(int style) { border_style = style; }
@@ -52,6 +53,11 @@ namespace GLUI
 		virtual void	updateLayout(dim2_t fit = dim2_t(-1, -1)) {}
 		void			fitToChildren(padding_t padding = padding_t(0));
 
+		// Animation
+		point2_t	getAnimatedOffset();
+		float		getAnimatedAlpha();
+		void		animate(int time);
+
 	protected:
 		Widget*			parent;
 		vector<Widget*>	children;
@@ -65,7 +71,14 @@ namespace GLUI
 		int		border_style;
 		rgba_t	border_colour;
 
-		// Display
-		float	alpha;
+		// Display/Animation
+		float				alpha;
+		vector<Animator*>	animators;
+
+		// Events
+		// (eventually I'll add a proper event system, but overriding these will do for now)
+		virtual void	onPositionChanged() {}
+		virtual void	onSizeChanged() {}
+		virtual void	onVisibleChanged() {}
 	};
 }

@@ -1,6 +1,7 @@
 
 #include "Main.h"
 #include "Widget.h"
+#include "Animator.h"
 #include "General/CVar.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
@@ -32,6 +33,8 @@ Widget::~Widget()
 {
 	for (auto child : children)
 		delete child;
+	for (auto animator : animators)
+		delete animator;
 }
 
 point2_t Widget::getAbsolutePosition()
@@ -61,17 +64,19 @@ void Widget::draw(point2_t pos, float alpha)
 		return;
 
 	// Draw this widget
-	point2_t p = pos + position;
-	drawWidget(p, alpha * this->alpha);
+	point2_t p = pos + position + getAnimatedOffset();
+	drawWidget(p, alpha * this->alpha * getAnimatedAlpha());
 
 	// Draw all children
 	for (auto child : children)
-		child->draw(p, alpha * this->alpha);
+		child->draw(p, alpha * this->alpha * getAnimatedAlpha());
 
 	// Draw border
 	if (border_style == BORDER_LINE)
 	{
-		OpenGL::setColour(border_colour);
+		rgba_t bc = border_colour;
+		bc.a *= alpha * this->alpha * getAnimatedAlpha();
+		OpenGL::setColour(bc);
 		glDisable(GL_LINE_SMOOTH);
 		glDisable(GL_TEXTURE_2D);
 		glLineWidth(border_width);
@@ -116,4 +121,26 @@ void Widget::fitToChildren(padding_t padding)
 
 	// Size to fit
 	setSize(dim2_t(max_x - min_x, max_y - min_y));
+}
+
+point2_t Widget::getAnimatedOffset()
+{
+	point2_t offset;
+	for (auto animator : animators)
+		offset = offset + animator->getOffset();
+	return offset;
+}
+
+float Widget::getAnimatedAlpha()
+{
+	float alpha = 1.0f;
+	for (auto animator : animators)
+		alpha = alpha * animator->getAlpha();
+	return alpha;
+}
+
+void Widget::animate(int time)
+{
+	for (auto animator : animators)
+		animator->update(time);
 }

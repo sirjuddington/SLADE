@@ -2,7 +2,7 @@
 #ifndef __LINE_INFO_OVERLAY_H__
 #define __LINE_INFO_OVERLAY_H__
 
-#include "OpenGL/GLUI/Panel.h"
+#include "InfoOverlay.h"
 
 // Forward declarations
 class TextureBox;
@@ -28,11 +28,10 @@ public:
 	void	setBGHeight(int height) { bg_height = height; }
 
 	// Widget
-	void	drawWidget(point2_t pos, float alpha) override;
 	void	updateLayout(dim2_t fit) override;
 };
 
-class LineInfoOverlay : public GLUI::Panel
+class LineInfoOverlay : public InfoOverlay
 {
 private:
 	GLUI::TextBox*		text_info;
@@ -49,44 +48,5 @@ public:
 	void	drawWidget(point2_t pos, float alpha) override;
 	void	updateLayout(dim2_t fit) override;
 };
-
-#if 0
-
-class MapLine;
-class TextBox;
-
-class LineInfoOverlay
-{
-private:
-	TextBox*	text_box;
-	int			last_size;
-	double      scale;
-
-	struct side_t
-	{
-		bool	exists;
-		string	info;
-		string	offsets;
-		string	tex_upper;
-		string	tex_middle;
-		string	tex_lower;
-		bool	needs_upper;
-		bool	needs_middle;
-		bool	needs_lower;
-	};
-	side_t	side_front;
-	side_t	side_back;
-
-public:
-	LineInfoOverlay();
-	~LineInfoOverlay();
-
-	void	update(MapLine* line);
-	void	draw(int bottom, int right, float alpha = 1.0f);
-	void	drawSide(int bottom, int right, float alpha, side_t& side, int xstart = 0);
-	void	drawTexture(float alpha, int x, int y, string texture, bool needed, string pos = "U");
-};
-
-#endif
 
 #endif//__LINE_INFO_OVERLAY_H__

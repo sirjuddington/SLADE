@@ -114,7 +114,7 @@ EXTERN_CVAR(Float, render_3d_brightness)
  * MapCanvas class constructor
  *******************************************************************/
 MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
-	: OGLCanvas(parent, id, false)
+	: OGLCanvas(parent, id, false), ui_manager(this)
 {
 	// Init variables
 	this->editor = editor;
@@ -125,7 +125,6 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	last_hilight = -1;
 	anim_flash_level = 0.5f;
 	anim_flash_inc = true;
-	anim_info_fade = 0.0f;
 	anim_overlay_fade = 0.0f;
 	fade_vertices = 1.0f;
 	fade_lines = 1.0f;
@@ -151,6 +150,13 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	edit_rotate = false;
 	anim_help_fade = 0;
 	panning = false;
+
+	// Setup GLUI
+	ui_manager.addWidget(&info_vertex, GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(&info_line, GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(&info_sector, GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(&info_thing, GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(&info_3d, GLUI::Manager::DOCK_BOTTOM);
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -389,9 +395,9 @@ void MapCanvas::viewFitToMap(bool snap)
 		view_br.y = translateY(0);
 
 		if (map_bbox.min.x >= view_tl.x &&
-		        map_bbox.max.x <= view_br.x &&
-		        map_bbox.min.y >= view_tl.y &&
-		        map_bbox.max.y <= view_br.y)
+				map_bbox.max.x <= view_br.x &&
+				map_bbox.min.y >= view_tl.y &&
+				map_bbox.max.y <= view_br.y)
 			done = true;
 		else
 			view_scale *= 0.8;
@@ -488,9 +494,9 @@ void MapCanvas::viewShowObject()
 		view_br.y = translateY(0);
 
 		if (bbox.min.x >= view_tl.x &&
-		        bbox.max.x <= view_br.x &&
-		        bbox.min.y >= view_tl.y &&
-		        bbox.max.y <= view_br.y)
+				bbox.max.x <= view_br.x &&
+				bbox.min.y >= view_tl.y &&
+				bbox.max.y <= view_br.y)
 			done = true;
 		else
 			view_scale *= 0.8;
@@ -1427,13 +1433,8 @@ void MapCanvas::drawMap3d()
 		if (editor->set3dHilight(hl))
 		{
 			// Update 3d info overlay
-			if (info_overlay_3d && hl.index >= 0)
-			{
-				info_3d.update(hl.index, hl.type, &(editor->getMap()));
-				anim_info_show = true;
-			}
-			else
-				anim_info_show = false;
+			info_3d.update(hl.index, hl.type, &(editor->getMap()));
+			info_3d.activate(hl.index >= 0);
 
 			// Animation
 			animations.push_back(new MCAHilightFade3D(theApp->runTimer(), old_hl.index, old_hl.type, renderer_3d, anim_flash_level));
@@ -1505,7 +1506,6 @@ void MapCanvas::draw()
 	{
 		// Update hilight index
 		last_hilight = editor->hilightItem();
-		anim_info_show = (last_hilight != -1);
 
 		// Update info overlay depending on edit mode
 		switch (editor->editMode())
@@ -1520,36 +1520,12 @@ void MapCanvas::draw()
 	// Draw current info overlay
 	glDisable(GL_TEXTURE_2D);
 	OpenGL::resetBlend();
-	if (editor->editMode() == MapEditor::MODE_VERTICES)
-	{
-		info_vertex.updateLayout(dim2_t(GetSize().x, -1));
-		info_vertex.setPosition(point2_t(0, GetSize().y - info_vertex.getHeight()));
-		info_vertex.draw(point2_t(0, 0));
-	}
-	else if (editor->editMode() == MapEditor::MODE_LINES)
-	{
-		info_line.updateLayout(dim2_t(GetSize().x, -1));
-		info_line.setPosition(point2_t(0, GetSize().y - info_line.getHeight()));
-		info_line.draw(point2_t(0, 0));
-	}
-	else if (editor->editMode() == MapEditor::MODE_SECTORS)
-	{
-		info_sector.updateLayout(dim2_t(GetSize().x, -1));
-		info_sector.setPosition(point2_t(0, GetSize().y - info_sector.getHeight()));
-		info_sector.draw(point2_t(0, 0));
-	}
-	else if (editor->editMode() == MapEditor::MODE_THINGS)
-	{
-		info_thing.updateLayout(dim2_t(GetSize().x, -1));
-		info_thing.setPosition(point2_t(0, GetSize().y - info_thing.getHeight()));
-		info_thing.draw(point2_t(0, 0));
-	}
-	else if (editor->editMode() == MapEditor::MODE_3D)
-	{
-		info_3d.updateLayout(dim2_t(GetSize().x, -1));
-		info_3d.setPosition(point2_t(0, GetSize().y - info_3d.getHeight()));
-		info_3d.draw(point2_t(0, 0));
-	}
+	info_vertex.setVisible(editor->editMode() == MapEditor::MODE_VERTICES);
+	info_line.setVisible(editor->editMode() == MapEditor::MODE_LINES);
+	info_sector.setVisible(editor->editMode() == MapEditor::MODE_SECTORS);
+	info_thing.setVisible(editor->editMode() == MapEditor::MODE_THINGS);
+	info_3d.setVisible(editor->editMode() == MapEditor::MODE_3D && info_overlay_3d);
+	ui_manager.drawWidgets();
 
 	// Draw current fullscreen overlay
 	if (overlay_current)
@@ -1744,7 +1720,7 @@ bool MapCanvas::update2d(double mult)
 
 			// Check for zoom finish
 			if ((diff_scale < 0 && view_scale_inter < view_scale) ||
-			        (diff_scale > 0 && view_scale_inter > view_scale))
+					(diff_scale > 0 && view_scale_inter > view_scale))
 				view_scale_inter = view_scale;
 			else
 				view_anim = true;
@@ -1770,7 +1746,7 @@ bool MapCanvas::update2d(double mult)
 
 				// Check stuff
 				if ((diff_xoff < 0 && view_xoff_inter < view_xoff) ||
-				        (diff_xoff > 0 && view_xoff_inter > view_xoff))
+						(diff_xoff > 0 && view_xoff_inter > view_xoff))
 					view_xoff_inter = view_xoff;
 				else
 					view_anim = true;
@@ -1786,7 +1762,7 @@ bool MapCanvas::update2d(double mult)
 				view_yoff_inter += diff_yoff*anim_view_speed*mult;
 
 				if ((diff_yoff < 0 && view_yoff_inter < view_yoff) ||
-				        (diff_yoff > 0 && view_yoff_inter > view_yoff))
+						(diff_yoff > 0 && view_yoff_inter > view_yoff))
 					view_yoff_inter = view_yoff;
 				else
 					view_anim = true;
@@ -1921,6 +1897,9 @@ void MapCanvas::update(long frametime)
 	else
 		mode_anim = update2d(mult);
 
+	// Update GLUI
+	ui_manager.update(frametime);
+
 	// Flashing animation for hilight
 	// Pulsates between 0.5-1.0f (multiplied with hilight alpha)
 	if (anim_flash_inc)
@@ -1942,27 +1921,6 @@ void MapCanvas::update(long frametime)
 		{
 			anim_flash_inc = true;
 			anim_flash_level = 0.6f;
-		}
-	}
-
-	// Fader for info overlay
-	bool fade_anim = true;
-	if (anim_info_show && !overlayActive())
-	{
-		anim_info_fade += 0.1f*mult;
-		if (anim_info_fade > 1.0f)
-		{
-			anim_info_fade = 1.0f;
-			fade_anim = false;
-		}
-	}
-	else
-	{
-		anim_info_fade -= 0.04f*mult;
-		if (anim_info_fade < 0.0f)
-		{
-			anim_info_fade = 0.0f;
-			fade_anim = false;
 		}
 	}
 
@@ -2030,12 +1988,12 @@ void MapCanvas::update(long frametime)
 	// Determine the framerate limit
 #ifdef USE_SFML_RENDERWINDOW
 	// SFML RenderWindow can handle high framerates better than wxGLCanvas, or something like that
-	if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
+	if (mode_anim || overlay_fade_anim || help_fade_anim || anim_running)
 		fr_idle = 2;
 	else	// No high-priority animations running, throttle framerate
 		fr_idle = map_bg_ms;
 #else
-	//if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
+	//if (mode_anim || overlay_fade_anim || help_fade_anim || anim_running)
 		fr_idle = 10;
 	//else	// No high-priority animations running, throttle framerate
 	//	fr_idle = map_bg_ms;
@@ -2193,11 +2151,11 @@ void MapCanvas::mouseLook3d()
 
 			if (xrel != 0 || yrel != 0)
 			{
-                renderer_3d->cameraTurn(-xrel*0.1*camera_3d_sensitivity_x);
+				renderer_3d->cameraTurn(-xrel*0.1*camera_3d_sensitivity_x);
 				if (mlook_invert_y)
-                    renderer_3d->cameraPitch(yrel*0.003*camera_3d_sensitivity_y);
+					renderer_3d->cameraPitch(yrel*0.003*camera_3d_sensitivity_y);
 				else
-                    renderer_3d->cameraPitch(-yrel*0.003*camera_3d_sensitivity_y);
+					renderer_3d->cameraPitch(-yrel*0.003*camera_3d_sensitivity_y);
 
 				mouseToCenter();
 				fr_idle = 0;
@@ -2330,8 +2288,8 @@ void MapCanvas::itemSelected3d(selection_3d_t item, bool selected)
 {
 	// Wall selected
 	if (item.type == MapEditor::SEL_SIDE_BOTTOM ||
-	        item.type == MapEditor::SEL_SIDE_TOP ||
-	        item.type == MapEditor::SEL_SIDE_MIDDLE)
+			item.type == MapEditor::SEL_SIDE_TOP ||
+			item.type == MapEditor::SEL_SIDE_MIDDLE)
 	{
 		// Get quad
 		MapRenderer3D::quad_3d_t* quad = renderer_3d->getQuad(item);
@@ -3204,7 +3162,7 @@ void MapCanvas::keyBinds2d(string name)
 			for (unsigned a = 0; a < theClipboard->nItems(); a++)
 			{
 				if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH ||
-				        theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_THINGS)
+						theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_THINGS)
 				{
 					item = theClipboard->getItem(a);
 					break;
@@ -4202,7 +4160,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 			// Select
 			editor->selectWithin(min(mouse_downpos_m.x, mouse_pos_m.x), min(mouse_downpos_m.y, mouse_pos_m.y),
-			                     max(mouse_downpos_m.x, mouse_pos_m.x), max(mouse_downpos_m.y, mouse_pos_m.y), e.ShiftDown());
+								 max(mouse_downpos_m.x, mouse_pos_m.x), max(mouse_downpos_m.y, mouse_pos_m.y), e.ShiftDown());
 
 			// Begin selection box fade animation
 			animations.push_back(new MCASelboxFader(theApp->runTimer(), mouse_downpos_m, mouse_pos_m));

@@ -516,9 +516,11 @@
     <ClCompile Include="..\..\src\MapEditor\UI\ShapeDrawPanel.cpp" />
     <ClCompile Include="..\..\src\OpenGL\Drawing.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\GLUI\Animator.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLUI\GridPanel.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLUI\ImageBox.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLUI\LayoutHelpers.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\GLUI\Manager.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLUI\Panel.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLUI\TextBox.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLUI\TextureBox.cpp" />
@@ -816,6 +818,7 @@
     <ClInclude Include="..\..\src\MapEditor\Renderer\MapRenderer2D.h" />
     <ClInclude Include="..\..\src\MapEditor\Renderer\MapRenderer3D.h" />
     <ClInclude Include="..\..\src\MapEditor\Renderer\MCAnimations.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\InfoOverlay.h" />
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\InfoOverlay3d.h" />
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\LineInfoOverlay.h" />
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\LineTextureOverlay.h" />
@@ -856,10 +859,12 @@
     <ClInclude Include="..\..\src\mus2mid\mus2mid.h" />
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
+    <ClInclude Include="..\..\src\OpenGL\GLUI\Animator.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\GLUI.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\GridPanel.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\ImageBox.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\LayoutHelpers.h" />
+    <ClInclude Include="..\..\src\OpenGL\GLUI\Manager.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\Panel.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\TextBox.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\TextureBox.h" />

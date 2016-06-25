@@ -1380,6 +1380,12 @@
     <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp">
       <Filter>UI\Text Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\Manager.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\GLUI\Animator.cpp">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2399,6 +2405,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h">
       <Filter>UI\Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\Animator.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\Manager.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\InfoOverlay.h">
+      <Filter>Map Editor\Renderer\Overlays</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
