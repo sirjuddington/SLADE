@@ -269,6 +269,10 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
  *******************************************************************/
 bool GfxEntryPanel::saveEntry()
 {
+	// Set offsets
+	getImage()->setXOffset(spin_xoffset->GetValue());
+	getImage()->setYOffset(spin_yoffset->GetValue());
+
 	// Write new image data if modified
 	bool ok = true;
 	if (image_data_modified)
