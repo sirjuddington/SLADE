@@ -33,6 +33,12 @@
 
 
 /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+const string Tokenizer::DEFAULT_SPECIAL_CHARS = ";,:|={}/";
+
+
+/*******************************************************************
  * TOKENIZER CLASS FUNCTIONS
  *******************************************************************/
 
@@ -47,7 +53,7 @@ Tokenizer::Tokenizer(CommentTypes comments_style)
 	size = 0;
 	comments = comments_style;
 	debug = false;
-	special = ";,:|={}/";	// Default special characters
+	special = DEFAULT_SPECIAL_CHARS;
 	name = "nothing";
 	line = 1;
 	t_start = 0;

@@ -631,6 +631,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 			Tokenizer tz;
 			tz.openString(line);
 			tz.getToken();	// Skip #include
+			tz.setSpecialCharacters("");
 			string inc_name = tz.getToken();
 			string name = entry->getPath() + inc_name;
 
