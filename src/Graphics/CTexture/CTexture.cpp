@@ -355,7 +355,7 @@ string CTPatchEx::asText()
 	// Init text string
 	string typestring = "Patch";
 	if (type == PTYPE_GRAPHIC) typestring = "Graphic";
-	string text = S_FMT("\t%s %s, %d, %d\n", typestring, name, offset_x, offset_y);
+	string text = S_FMT("\t%s \"%s\", %d, %d\n", typestring, name, offset_x, offset_y);
 
 	// Check if we need to write any extra properties
 	if (!flip_x && !flip_y && !use_offsets && rotation == 0 && blendtype == 0 && alpha == 1.0f && S_CMPNOCASE(style, "Copy"))
@@ -846,14 +846,14 @@ string CTexture::asText()
 
 	// Define block
 	if (defined)
-		return S_FMT("define %s %d %d\n", name, def_width, def_height);
+		return S_FMT("define \"%s\" %d %d\n", name, def_width, def_height);
 
 	// Init text string
 	string text;
 	if (optional)
-		text = S_FMT("%s Optional %s, %d, %d\n{\n", type, name, width, height);
+		text = S_FMT("%s Optional \"%s\", %d, %d\n{\n", type, name, width, height);
 	else
-		text = S_FMT("%s %s, %d, %d\n{\n", type, name, width, height);
+		text = S_FMT("%s \"%s\", %d, %d\n{\n", type, name, width, height);
 
 	// Write texture properties
 	if (scale_x != 1.0)

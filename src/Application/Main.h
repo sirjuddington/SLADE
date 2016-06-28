@@ -136,7 +136,10 @@ const string MAP_TYPE_NAMES[] = {
 };
 
 // Debug helper type
-#ifdef DEBUG
+// Note: NDEBUG is a standard C macro indicating that assert()s should be
+// disabled, but it's also the only macro cmake defines differently between
+// debug and release builds, so we co-opt it just for this.
+#ifndef NDEBUG
 #include <typeinfo>
 class Debuggable
 {
@@ -207,7 +210,7 @@ inline void LOG_DEBUG(
 }
 
 #define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)
-#else  // DEBUG
+#else  // not NDEBUG
 struct Debuggable {
 	template<typename T>
 	Debuggable(T _unused) { }

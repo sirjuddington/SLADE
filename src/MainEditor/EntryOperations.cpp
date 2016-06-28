@@ -1318,6 +1318,11 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				Archive::search_options_t opt;
 				opt.match_namespace = "acs";
 				opt.match_name = entry->getName(true);
+				if (entry->getParent()->getDesc().names_extensions)
+				{
+					opt.match_name += ".o";
+					opt.ignore_ext = false;
+				}
 				ArchiveEntry* lib = entry->getParent()->findLast(opt);
 
 				// If it doesn't exist, create it
