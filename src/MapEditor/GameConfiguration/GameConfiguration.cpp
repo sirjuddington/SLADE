@@ -1863,7 +1863,7 @@ void GameConfiguration::setThingBasicFlag(string flag, MapThing* thing, int map_
 	unsigned long flag_val = 0;
 
 	// ZDoom uses Hexen-style flags
-	bool hexen = (currentGame() == "Hexen") || (currentPort() == "ZDoom");
+	bool hexen = (currentGame() == "hexen") || (currentPort() == "zdoom");
 
 	// Easy Skill
 	if (flag == "skill2" || flag == "skill1")
