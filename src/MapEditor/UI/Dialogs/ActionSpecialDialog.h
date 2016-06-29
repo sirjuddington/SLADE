@@ -56,7 +56,7 @@ public:
 	ArgsPanel(wxWindow* parent);
 	~ArgsPanel() {}
 
-	void	setup(argspec_t* args);
+	void	setup(argspec_t* args, bool udmf);
 	void	setValues(int args[5]);
 	int		getArgValue(int index);
 	void	onSize(wxSizeEvent& event);
