@@ -3193,7 +3193,13 @@ void MapEditor::updateShapeDraw(fpoint2_t point)
 		fpoint2_t start;
 		for (int a = 0; a < shapedraw_sides; a++)
 		{
-			fpoint2_t p(mid.x + sin(rot) * width, mid.y - cos(rot) * height);
+			// Calculate point (rounded)
+			fpoint2_t p(
+				MathStuff::round(mid.x + sin(rot) * width), 
+				MathStuff::round(mid.y - cos(rot) * height)
+				);
+
+			// Add point
 			draw_points.push_back(p);
 			rot -= (3.1415926535897932384626433832795 * 2) / (double)shapedraw_sides;
 
