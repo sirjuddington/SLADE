@@ -330,15 +330,9 @@ void MapLine::setIntProperty(string key, int value)
 
 	// Sides
 	else if (key == "sidefront")
-	{
-		if ((side1 = parent_map->getSide(value)))
-			side1->parent = this;
-	}
+		parent_map->setLineSide(this, parent_map->getSide(value), true);
 	else if (key == "sideback")
-	{
-		if ((side2 = parent_map->getSide(value)))
-			side2->parent = this;
-	}
+		parent_map->setLineSide(this, parent_map->getSide(value), false);
 
 	// Special
 	else if (key == "special")
@@ -406,12 +400,8 @@ void MapLine::setStringProperty(string key, string value)
  *******************************************************************/
 void MapLine::setS1(MapSide* side)
 {
-	if (!side1)
-	{
-		setModified();
-		side1 = side;
-		side->parent = this;
-	}
+	if (!side1 && parent_map)
+		parent_map->setLineSide(this, side, true);
 }
 
 /* MapLine::setS1
@@ -419,12 +409,8 @@ void MapLine::setS1(MapSide* side)
  *******************************************************************/
 void MapLine::setS2(MapSide* side)
 {
-	if (!side2)
-	{
-		setModified();
-		side2 = side;
-		side->parent = this;
-	}
+	if (!side2 && parent_map)
+		parent_map->setLineSide(this, side, false);
 }
 
 /* MapLine::getPoint

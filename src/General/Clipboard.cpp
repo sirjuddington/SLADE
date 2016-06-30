@@ -424,16 +424,13 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 
 		MapLine* newline = map->createLine(v1, v2, true);
 		newline->copy(lines[a]);
-		// lineMap[lines[a]] = newline;
 
 		// Set relative sides
-		bool s1 = false;
-		bool s2 = !(lines[a]->s2());
 		MapSide* newS1 = findInMap(sideMap, lines[a]->s1());
 		MapSide* newS2 = findInMap(sideMap, lines[a]->s2());
-		if(newS1)
+		if (newS1)
 			newline->setS1(newS1);
-		if(newS2)
+		if (newS2)
 			newline->setS2(newS2);
 
 		// Set important flags (needed when copying from Doom/Hexen format to UDMF)

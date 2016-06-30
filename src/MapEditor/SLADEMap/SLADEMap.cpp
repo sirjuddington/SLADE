@@ -4605,6 +4605,35 @@ bool SLADEMap::correctLineSectors(MapLine* line)
 	return changed;
 }
 
+/* SLADEMap::setLineSide
+ * Sets [line]'s front or back [side] (depending on [front]). If
+ * [side] already belongs to another line, use a copy of it instead
+ *******************************************************************/
+void SLADEMap::setLineSide(MapLine* line, MapSide* side, bool front)
+{
+	// Remove current side
+	MapSide* side_current = front ? line->side1 : line->side2;
+	if (side_current == side)
+		return;
+	if (side_current)
+		removeSide(side_current);
+
+	// If the new side is already part of another line, copy it
+	if (side->parent)
+	{
+		MapSide* new_side = createSide(side->sector);
+		new_side->copy(side);
+		side = new_side;
+	}
+
+	// Set side
+	if (front)
+		line->side1 = side;
+	else
+		line->side2 = side;
+	side->parent = line;
+}
+
 /* SLADEMap::mergeArch
  * Merges any map architecture (lines and vertices) connected to
  * vertices in [vertices]
