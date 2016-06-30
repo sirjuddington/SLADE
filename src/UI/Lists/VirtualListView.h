@@ -14,6 +14,7 @@ private:
 	string	search;
 	int		col_search;
 	bool	cols_editable[100];	// Never really going to have more than 100 columns
+	bool	selection_updating;
 
 	void	sendSelectionChangedEvent();
 
@@ -91,6 +92,7 @@ public:
 	void	onLabelEditBegin(wxListEvent& e);
 	void	onLabelEditEnd(wxListEvent& e);
 	void	onColumnLeftClick(wxListEvent& e);
+	void	onItemSelected(wxListEvent& e);
 };
 
 #endif//__VIRTUAL_LIST_VIEW_H__
