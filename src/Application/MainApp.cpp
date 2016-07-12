@@ -32,6 +32,7 @@
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "External/dumb/dumb.h"
+#include "External/email/wxMailer.h"
 #include "General/ColourConfiguration.h"
 #include "General/Console/Console.h"
 #include "General/Executables.h"
@@ -144,6 +145,7 @@ class SLADEStackTrace : public wxStackWalker
 {
 private:
 	string	stack_trace;
+	string	top_level;
 
 public:
 	SLADEStackTrace()
@@ -158,6 +160,11 @@ public:
 		return stack_trace;
 	}
 
+	string getTopLevel()
+	{
+		return top_level;
+	}
+
 	void OnStackFrame(const wxStackFrame& frame)
 	{
 		string location = "[unknown location] ";
@@ -169,7 +176,11 @@ public:
 		if (func_name.IsEmpty())
 			func_name = S_FMT("[unknown:%d]", address);
 
-		stack_trace.Append(S_FMT("%d: %s%s\n", frame.GetLevel(), location, func_name));
+		string line = S_FMT("%s%s", location, func_name);
+		stack_trace.Append(S_FMT("%d: %s\n", frame.GetLevel(), line));
+
+		if (frame.GetLevel() == 0)
+			top_level = line;
 	}
 };
 
@@ -184,11 +195,15 @@ private:
 	wxTextCtrl*	text_stack;
 	wxButton*	btn_copy_trace;
 	wxButton*	btn_exit;
+	wxButton*	btn_send;
 	string		trace;
+	string		top_level;
 
 public:
 	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE3 Application Crash")
 	{
+		top_level = st.getTopLevel();
+
 		// Setup sizer
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
@@ -249,6 +264,11 @@ public:
 		hbox->Add(btn_exit, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
 		btn_exit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
 
+		// Add 'Send Crash Report' button
+		btn_send = new wxButton(this, -1, "Send Crash Report");
+		hbox->Add(btn_send, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
+		btn_send->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnSend, this);
+
 		// Setup layout
 		Layout();
 		SetInitialSize(wxSize(500, 500));
@@ -268,6 +288,22 @@ public:
 		}
 		else
 			wxMessageBox("Unable to access the system clipboard, please select+copy the text above manually", wxMessageBoxCaptionStr, wxICON_EXCLAMATION);
+	}
+
+	void onBtnSend(wxCommandEvent& e)
+	{
+		wxMailer mailer("slade.errors@gmail.com", "hxixjnwdovyoktwq", "smtp://smtp.gmail.com:587");
+		wxEmailMessage msg;
+		msg.SetFrom("slade");
+		msg.SetTo("slade.errors@gmail.com");
+		msg.SetSubject("Crash @ " + top_level);
+		msg.SetMessage(trace);
+		msg.Finalize();
+
+		btn_send->SetLabel("Sending...");
+		mailer.Send(msg);
+
+		EndModal(wxID_OK);
 	}
 
 	void onBtnExit(wxCommandEvent& e)
