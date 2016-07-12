@@ -189,7 +189,7 @@ public:
  * A simple dialog that displays a crash message and a scrollable,
  * multi-line textbox with a stack trace
  *******************************************************************/
-class SLADECrashDialog : public wxDialog
+class SLADECrashDialog : public wxDialog, public wxThreadHelper
 {
 private:
 	wxTextCtrl*	text_stack;
@@ -215,14 +215,6 @@ public:
 						"of the crash, and click the 'Send Crash Report' button.";
 		wxStaticText* label = new wxStaticText(this, -1, message);
 		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
-		label->Wrap(480);
-
-		// Add small privacy disclaimer
-		string privacy = "* Note that sending a crash report will only send the information displayed below, "
-						 "along with a copy of the SLADE logs for this session.";
-		label = new wxStaticText(this, -1, privacy);
-		label->SetFont(wxFont(7, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_NORMAL));
-		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 		label->Wrap(480);
 
 		// Add description text area
@@ -272,6 +264,14 @@ public:
 		// Also dump stack trace to console
 		std::cerr << trace;
 
+		// Add small privacy disclaimer
+		string privacy = "Sending a crash report will only send the information displayed above, "
+						"along with a copy of the logs for this session.";
+		label = new wxStaticText(this, -1, privacy);
+		label->SetFont(GetFont().Italic().Scale(0.9));
+		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+		label->Wrap(480);
+
 		// Add 'Copy Stack Trace' button
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 6);
@@ -290,6 +290,9 @@ public:
 		hbox->Add(btn_send, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
 		btn_send->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnSend, this);
 
+		Bind(wxEVT_THREAD, &SLADECrashDialog::onThreadUpdate, this);
+		Bind(wxEVT_CLOSE_WINDOW, &SLADECrashDialog::onClose, this);
+
 		// Setup layout
 		Layout();
 		SetInitialSize(wxSize(500, 600));
@@ -297,6 +300,23 @@ public:
 	}
 
 	~SLADECrashDialog() {}
+
+	wxThread::ExitCode Entry()
+	{
+		wxMailer mailer("slade.errors@gmail.com", "hxixjnwdovyoktwq", "smtp://smtp.gmail.com:587");
+		wxEmailMessage msg;
+		msg.SetFrom(wxGetUserName());
+		msg.SetTo("slade.errors@gmail.com");
+		msg.SetSubject("[" + Global::version + "] @ " + top_level);
+		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
+		msg.AddAttachment(appPath("slade3.log", DIR_USER));
+		msg.Finalize();
+
+		mailer.Send(msg);
+
+		wxQueueEvent(GetEventHandler(), new wxThreadEvent());
+		return (wxThread::ExitCode)0;
+	}
 
 	void onBtnCopyTrace(wxCommandEvent& e)
 	{
@@ -313,24 +333,33 @@ public:
 
 	void onBtnSend(wxCommandEvent& e)
 	{
-		wxMailer mailer("slade.errors@gmail.com", "hxixjnwdovyoktwq", "smtp://smtp.gmail.com:587");
-		wxEmailMessage msg;
-		msg.SetFrom(wxGetUserName());
-		msg.SetTo("slade.errors@gmail.com");
-		msg.SetSubject("[" + Global::version + "] @ " + top_level);
-		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
-		msg.AddAttachment(appPath("slade3.log", DIR_USER));
-		msg.Finalize();
-
 		btn_send->SetLabel("Sending...");
-		mailer.Send(msg);
+		btn_send->Enable(false);
+		btn_exit->Enable(false);
 
-		EndModal(wxID_OK);
+		if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR)
+			EndModal(wxID_OK);
+
+		if (GetThread()->Run() != wxTHREAD_NO_ERROR)
+			EndModal(wxID_OK);
 	}
 
 	void onBtnExit(wxCommandEvent& e)
 	{
 		EndModal(wxID_OK);
+	}
+
+	void onThreadUpdate(wxThreadEvent& e)
+	{
+		EndModal(wxID_OK);
+	}
+
+	void onClose(wxCloseEvent& e)
+	{
+		if (GetThread() && GetThread()->IsRunning())
+			GetThread()->Wait();
+
+		Destroy();
 	}
 };
 #endif//wxUSE_STACKWALKER
