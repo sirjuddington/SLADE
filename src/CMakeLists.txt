@@ -36,9 +36,7 @@ else(NO_FLUIDSYNTH)
 	message(STATUS "Fluidsynth support is disabled.")
 endif()
 
-if (NOT APPLE)
-	find_package(CURL)
-endif()
+find_package(CURL)
 
 include(../cmake/FindFreeImage.cmake)
 include(../cmake/FindSFML.cmake)
@@ -65,10 +63,8 @@ endif()
 if(NOT ${GLEW_FOUND})
 	message(SEND_ERROR "GLEW required.")
 endif()
-if(NOT APPLE)
-	if(NOT ${CURL_FOUND})
-		message(SEND_ERROR "CURL required.")
-	endif()
+if(NOT ${CURL_FOUND})
+	message(SEND_ERROR "CURL required.")
 endif()
 include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./External/dumb ./Application)
 
@@ -76,9 +72,7 @@ if (NOT NO_FLUIDSYNTH)
 	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
 endif()
 
-if (NOT APPLE)
 	include_directories(${CURL_INCLUDE_DIR})
-endif()
 
 set(SLADE_SOURCES
 )
@@ -124,14 +118,22 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_HEADERS}
 )
 
-target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRARIES} ${FREEIMAGE_LIBRARIES} ${SFML_LIBRARY} ${FTGL_LIBRARY} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${GLEW_LIBRARY} ${GTK2_LIBRARIES})
+target_link_libraries(slade
+	${ZLIB_LIBRARY}
+	${BZIP2_LIBRARIES}
+	${wxWidgets_LIBRARIES}
+	${FREEIMAGE_LIBRARIES}
+	${SFML_LIBRARY}
+	${FTGL_LIBRARY}
+	${OPENGL_LIBRARIES}
+	${FREETYPE_LIBRARIES}
+	${GLEW_LIBRARY}
+	${GTK2_LIBRARIES}
+	${CURL_LIBRARIES}
+)
 
 if (NOT NO_FLUIDSYNTH)
 	target_link_libraries(slade ${FLUIDSYNTH_LIBRARIES})
-endif()
-
-if (NOT APPLE)
-	target_link_libraries(slade ${CURL_LIBRARIES})
 endif()
 
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
@@ -139,7 +141,7 @@ set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_D
 set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER YES)
 set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Application/Main.h)
 
-	# TODO: Installation targets for APPLE
+# TODO: Installation targets for APPLE
 if(APPLE)
 	set_target_properties(slade PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${OSX_PLIST})
 
