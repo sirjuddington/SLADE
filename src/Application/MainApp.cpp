@@ -294,10 +294,11 @@ public:
 	{
 		wxMailer mailer("slade.errors@gmail.com", "hxixjnwdovyoktwq", "smtp://smtp.gmail.com:587");
 		wxEmailMessage msg;
-		msg.SetFrom("slade");
+		msg.SetFrom(wxGetUserName());
 		msg.SetTo("slade.errors@gmail.com");
-		msg.SetSubject("Crash @ " + top_level);
+		msg.SetSubject("[" + Global::version + "] @ " + top_level);
 		msg.SetMessage(trace);
+		msg.AddAttachment(appPath("slade3.log", DIR_USER));
 		msg.Finalize();
 
 		btn_send->SetLabel("Sending...");
