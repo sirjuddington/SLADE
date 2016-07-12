@@ -36,6 +36,10 @@ else(NO_FLUIDSYNTH)
 	message(STATUS "Fluidsynth support is disabled.")
 endif()
 
+if (NOT APPLE)
+	find_package(CURL)
+endif()
+
 include(../cmake/FindFreeImage.cmake)
 include(../cmake/FindSFML.cmake)
 include(../cmake/FindFTGL.cmake)
@@ -61,10 +65,19 @@ endif()
 if(NOT ${GLEW_FOUND})
 	message(SEND_ERROR "GLEW required.")
 endif()
+if(NOT APPLE)
+	if(NOT ${CURL_FOUND})
+		message(SEND_ERROR "CURL required.")
+	endif()
+endif()
 include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./External/dumb ./Application)
 
 if (NOT NO_FLUIDSYNTH)
 	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
+endif()
+
+if (NOT APPLE)
+	include_directories(${CURL_INCLUDE_DIR})
 endif()
 
 set(SLADE_SOURCES
@@ -115,6 +128,10 @@ target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRA
 
 if (NOT NO_FLUIDSYNTH)
 	target_link_libraries(slade ${FLUIDSYNTH_LIBRARIES})
+endif()
+
+if (NOT APPLE)
+	target_link_libraries(slade ${CURL_LIBRARIES})
 endif()
 
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
