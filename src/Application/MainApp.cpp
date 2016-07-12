@@ -193,6 +193,7 @@ class SLADECrashDialog : public wxDialog
 {
 private:
 	wxTextCtrl*	text_stack;
+	wxTextCtrl*	text_description;
 	wxButton*	btn_copy_trace;
 	wxButton*	btn_exit;
 	wxButton*	btn_send;
@@ -200,7 +201,7 @@ private:
 	string		top_level;
 
 public:
-	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE3 Application Crash")
+	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE Application Crash")
 	{
 		top_level = st.getTopLevel();
 
@@ -208,9 +209,27 @@ public:
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
-		// Add general crash method
-		string message = "SLADE3 has crashed unexpectedly. To help fix the problem that caused this crash,\nplease copy+paste the information from the window below to a text file, and email\nit to <sirjuddington@gmail.com> along with a description of what you were\ndoing at the time of the crash. Sorry for the inconvenience.";
-		sizer->Add(new wxStaticText(this, -1, message), 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxTOP, 10);
+		// Add general crash message
+		string message = "SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
+						"please (optionally) enter a short description of what you were doing at the time "
+						"of the crash, and click the 'Send Crash Report' button.";
+		wxStaticText* label = new wxStaticText(this, -1, message);
+		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
+		label->Wrap(480);
+
+		// Add small privacy disclaimer
+		string privacy = "* Note that sending a crash report will only send the information displayed below, "
+						 "along with a copy of the SLADE logs for this session.";
+		label = new wxStaticText(this, -1, privacy);
+		label->SetFont(wxFont(7, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_NORMAL));
+		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+		label->Wrap(480);
+
+		// Add description text area
+		text_description = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(-1, 100), wxTE_MULTILINE);
+		sizer->Add(new wxStaticText(this, -1, "Description:"), 0, wxLEFT|wxRIGHT, 10);
+		sizer->AddSpacer(2);
+		sizer->Add(text_description, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 		// SLADE info
 		trace = S_FMT("Version: %s\n", Global::version);
@@ -241,7 +260,9 @@ public:
 		text_stack = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL);
 		text_stack->SetValue(trace);
 		text_stack->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-		sizer->Add(text_stack, 1, wxEXPAND|wxALL, 10);
+		sizer->Add(new wxStaticText(this, -1, "Crash Information:"), 0, wxLEFT|wxRIGHT, 10);
+		sizer->AddSpacer(2);
+		sizer->Add(text_stack, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 		// Dump stack trace to a file (just in case)
 		wxFile file(appPath("slade3_crash.log", DIR_USER), wxFile::write);
@@ -271,7 +292,7 @@ public:
 
 		// Setup layout
 		Layout();
-		SetInitialSize(wxSize(500, 500));
+		SetInitialSize(wxSize(500, 600));
 		CenterOnParent();
 	}
 
@@ -297,7 +318,7 @@ public:
 		msg.SetFrom(wxGetUserName());
 		msg.SetTo("slade.errors@gmail.com");
 		msg.SetSubject("[" + Global::version + "] @ " + top_level);
-		msg.SetMessage(trace);
+		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
 		msg.AddAttachment(appPath("slade3.log", DIR_USER));
 		msg.Finalize();
 
