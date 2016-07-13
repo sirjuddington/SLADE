@@ -303,6 +303,8 @@ public:
 	wxThread::ExitCode Entry()
 	{
 		wxMailer mailer("slade.errors@gmail.com", "hxixjnwdovyoktwq", "smtp://smtp.gmail.com:587");
+
+		// Create message
 		wxEmailMessage msg;
 		msg.SetFrom("SLADE");
 		msg.SetTo("slade.errors@gmail.com");
@@ -311,9 +313,14 @@ public:
 		msg.AddAttachment(appPath("slade3.log", DIR_USER));
 		msg.Finalize();
 
-		mailer.Send(msg);
+		// Send email
+		bool sent = mailer.Send(msg);
 
-		wxQueueEvent(GetEventHandler(), new wxThreadEvent());
+		// Send event
+		wxThreadEvent* evt = new wxThreadEvent();
+		evt->SetInt(sent ? 1 : 0);
+		wxQueueEvent(GetEventHandler(), evt);
+
 		return (wxThread::ExitCode)0;
 	}
 
@@ -350,7 +357,27 @@ public:
 
 	void onThreadUpdate(wxThreadEvent& e)
 	{
-		EndModal(wxID_OK);
+		if (e.GetInt() == 1)
+		{
+			// Report sent successfully, exit
+			wxMessageBox(
+				"The crash report was sent successfully, and SLADE will now close.",
+				"Crash Report Sent"
+			);
+			EndModal(wxID_OK);
+		}
+		else
+		{
+			// Sending failed
+			btn_send->SetLabel("Send Crash Report");
+			btn_send->Enable();
+			btn_exit->Enable();
+			wxMessageBox(
+				"The crash report failed to send. Please either try again or click 'Exit SLADE' "
+				"to exit without sending.",
+				"Failed to Send"
+			);
+		}
 	}
 
 	void onClose(wxCloseEvent& e)
