@@ -2,7 +2,7 @@
 #define COMMON2_H
 
 //
-// This includes won't be precompiled
+// These includes won't be precompiled
 //
 
 // SFML
