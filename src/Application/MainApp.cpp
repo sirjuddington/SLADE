@@ -268,9 +268,9 @@ public:
 		string privacy = "Sending a crash report will only send the information displayed above, "
 						"along with a copy of the logs for this session.";
 		label = new wxStaticText(this, -1, privacy);
-		label->SetFont(GetFont().Italic().Scale(0.9));
-		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+		label->SetFont(GetFont().Italic());
 		label->Wrap(480);
+		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 		// Add 'Copy Stack Trace' button
 		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -305,7 +305,7 @@ public:
 	{
 		wxMailer mailer("slade.errors@gmail.com", "hxixjnwdovyoktwq", "smtp://smtp.gmail.com:587");
 		wxEmailMessage msg;
-		msg.SetFrom(wxGetUserName());
+		msg.SetFrom("SLADE");
 		msg.SetTo("slade.errors@gmail.com");
 		msg.SetSubject("[" + Global::version + "] @ " + top_level);
 		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
