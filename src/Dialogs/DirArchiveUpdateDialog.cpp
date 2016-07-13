@@ -32,10 +32,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "DirArchiveUpdateDialog.h"
-#include <wx/button.h>
-#include <wx/dataview.h>
-#include <wx/sizer.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

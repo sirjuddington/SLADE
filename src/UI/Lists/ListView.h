@@ -2,7 +2,7 @@
 #ifndef __LISTVIEW_H__
 #define __LISTVIEW_H__
 
-#include <wx/listctrl.h>
+#include "common.h"
 
 enum
 {

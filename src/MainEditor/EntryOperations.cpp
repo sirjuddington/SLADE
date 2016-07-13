@@ -42,13 +42,6 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "UI/PaletteChooser.h"
-#include <wx/filename.h>
-#include <wx/utils.h>
-#include <wx/msgdlg.h>
-
-#ifdef __WXMSW__
-#include <wx/msw/registry.h>
-#endif
 
 
 /*******************************************************************

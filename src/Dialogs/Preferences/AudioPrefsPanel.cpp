@@ -30,15 +30,6 @@
 #include "Main.h"
 #include "AudioPrefsPanel.h"
 #include "Audio/MIDIPlayer.h"
-#include <wx/button.h>
-#include <wx/checkbox.h>
-#include <wx/filedlg.h>
-#include <wx/filename.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/statline.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 
 /*******************************************************************

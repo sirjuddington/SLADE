@@ -2,9 +2,9 @@
 #ifndef __MAP_REPLACE_DIALOG_H__
 #define __MAP_REPLACE_DIALOG_H__
 
+#include "common.h"
 #include "UI/WxBasicControls.h"
-#include <wx/panel.h>
-#include <wx/dialog.h>
+
 
 class Archive;
 class ThingTypeReplacePanel : public wxPanel

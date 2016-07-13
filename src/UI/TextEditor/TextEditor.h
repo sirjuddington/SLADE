@@ -2,10 +2,7 @@
 #ifndef __TEXTEDITOR_H__
 #define	__TEXTEDITOR_H__
 
-#include <wx/panel.h>
-#include <wx/stc/stc.h>
-#include <wx/thread.h>
-#include <wx/timer.h>
+#include "common.h"
 #include "Archive/ArchiveEntry.h"
 #include "TextLanguage.h"
 #include "TextStyle.h"

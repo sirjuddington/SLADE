@@ -39,8 +39,6 @@
 #include "General/UndoRedo.h"
 #include "MapEditor/SectorBuilder.h"
 #include "UI/SplashWindow.h"
-#include <locale.h>
-#include <wx/colour.h>
 
 #define IDEQ(x) (((x) != 0) && ((x) == id))
 

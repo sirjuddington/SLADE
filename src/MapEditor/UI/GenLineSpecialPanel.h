@@ -2,7 +2,7 @@
 #ifndef __GEN_LINE_SPECIAL_PANEL_H__
 #define __GEN_LINE_SPECIAL_PANEL_H__
 
-#include <wx/panel.h>
+#include "common.h"
 
 class wxChoice;
 class wxStaticText;

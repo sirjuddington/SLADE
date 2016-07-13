@@ -2,7 +2,7 @@
 #ifndef __VERSION_CHECK_H__
 #define __VERSION_CHECK_H__
 
-#include <wx/thread.h>
+#include "common.h"
 
 wxDECLARE_EVENT(wxEVT_COMMAND_VERSIONCHECK_COMPLETED, wxThreadEvent);
 

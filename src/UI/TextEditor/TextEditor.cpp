@@ -34,17 +34,6 @@
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
 #include "SCallTip.h"
-#include <wx/app.h>
-#include <wx/button.h>
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/dialog.h>
-#include <wx/gbsizer.h>
-#include <wx/msgdlg.h>
-#include <wx/numdlg.h>
-#include <wx/panel.h>
-#include <wx/sizer.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

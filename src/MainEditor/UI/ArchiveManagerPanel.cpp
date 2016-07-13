@@ -42,11 +42,6 @@
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/SplashWindow.h"
 #include "UI/STabCtrl.h"
-#include <wx/filename.h>
-#include <wx/stattext.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/filedlg.h>
 
 
 /*******************************************************************

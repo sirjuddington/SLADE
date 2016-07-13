@@ -43,7 +43,6 @@
 #include "General/Clipboard.h"
 #include "General/UndoRedo.h"
 #include "MapChecks.h"
-#include <set>
 
 
 /*******************************************************************

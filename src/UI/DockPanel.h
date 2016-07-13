@@ -2,7 +2,7 @@
 #ifndef __DOCK_PANEL_H__
 #define __DOCK_PANEL_H__
 
-#include <wx/panel.h>
+#include "common.h"
 
 class DockPanel : public wxPanel
 {

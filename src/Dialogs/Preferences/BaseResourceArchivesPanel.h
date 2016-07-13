@@ -2,7 +2,7 @@
 #ifndef __BASERESOURCEARCHIVESPANEL__
 #define __BASERESOURCEARCHIVESPANEL__
 
-#include <wx/panel.h>
+#include "common.h"
 
 class wxListBox;
 class wxButton;

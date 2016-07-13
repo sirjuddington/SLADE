@@ -2,8 +2,7 @@
 #ifndef __HEX_EDITOR_PANEL_H__
 #define __HEX_EDITOR_PANEL_H__
 
-#include <wx/grid.h>
-#include <wx/panel.h>
+#include "common.h"
 
 class HexTable : public wxGridTableBase
 {

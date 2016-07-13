@@ -30,14 +30,7 @@
 #include "Main.h"
 #include "ACSPrefsPanel.h"
 #include "Utility/SFileDialog.h"
-#include <wx/button.h>
-#include <wx/dirdlg.h>
-#include <wx/filedlg.h>
-#include <wx/listbox.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
+
 
 
 /*******************************************************************

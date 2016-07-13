@@ -31,10 +31,6 @@
 #include "Main.h"
 #include "MapEditorPrefsPanel.h"
 #include "UI/NumberTextCtrl.h"
-#include <wx/checkbox.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

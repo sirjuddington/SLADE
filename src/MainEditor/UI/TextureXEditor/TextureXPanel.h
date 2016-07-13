@@ -2,11 +2,11 @@
 #ifndef __TEXTUREX_PANEL_H__
 #define __TEXTUREX_PANEL_H__
 
+#include "common.h"
 #include "General/SAction.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/WxBasicControls.h"
-#include <wx/panel.h>
 
 class TextureXEditor;
 

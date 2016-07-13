@@ -33,9 +33,6 @@
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "MapEditor/SectorBuilder.h"
-#include <map>
-#include <wx/clipbrd.h>
-
 
 /*******************************************************************
  * VARIABLES

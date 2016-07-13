@@ -30,7 +30,6 @@
 #include "Main.h"
 #include "PakArchive.h"
 #include "UI/SplashWindow.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

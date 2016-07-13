@@ -37,8 +37,6 @@
 #include "MainEditor/BinaryControlLump.h"
 #include "Utility/Parser.h"
 #include "General/Console/ConsoleHelpers.h"
-#include <wx/dir.h>
-#include <wx/filename.h>
 
 
 /*******************************************************************

@@ -31,7 +31,6 @@
 #include "GLTexture.h"
 #include "OpenGL.h"
 #include "Graphics/SImage/SImage.h"
-#include <wx/colour.h>
 
 
 /*******************************************************************

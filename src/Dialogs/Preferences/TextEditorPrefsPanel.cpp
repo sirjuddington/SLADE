@@ -29,13 +29,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "TextEditorPrefsPanel.h"
-#include <wx/checkbox.h>
-#include <wx/sizer.h>
-#include <wx/spinctrl.h>
-#include <wx/statbox.h>
-#include <wx/statline.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 
 /*******************************************************************

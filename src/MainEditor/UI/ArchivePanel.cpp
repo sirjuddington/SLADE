@@ -66,17 +66,6 @@
 #include "MapEditor/MapEditorWindow.h"
 #include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
-#include <wx/aui/auibar.h>
-#include <wx/aui/auibook.h>
-#include <wx/bmpbuttn.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textdlg.h>
-
 
 /*******************************************************************
  * VARIABLES

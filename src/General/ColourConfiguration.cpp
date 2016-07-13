@@ -32,7 +32,6 @@
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
 #include "Console/Console.h"
-#include <map>
 
 
 /*******************************************************************

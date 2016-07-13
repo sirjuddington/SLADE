@@ -54,9 +54,7 @@
 #include "TextEditorPrefsPanel.h"
 #include "TextEditorPrefsPanel.h"
 #include "TextStylePrefsPanel.h"
-#include <wx/gbsizer.h>
-#include <wx/statbox.h>
-#include <wx/treebook.h>
+
 
 
 /*******************************************************************

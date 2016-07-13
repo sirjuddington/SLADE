@@ -52,25 +52,8 @@
 #include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
 #include "Utility/Tokenizer.h"
-#include <wx/button.h>
-#include <wx/clipbrd.h>
-#include <wx/dcmemory.h>
-#include <wx/dir.h>
-#include <wx/ffile.h>
-#include <wx/filename.h>
-#include <wx/image.h>
-#include <wx/ipc.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/protocol/http.h>
-#include <wx/snglinst.h>
-#include <wx/stackwalk.h>
-#include <wx/stattext.h>
-#include <wx/stdpaths.h>
-#include <wx/sysopt.h>
 
 #undef BOOL
-#include <FreeImage.h>
 
 #ifdef UPDATEREVISION
 #include "gitinfo.h"

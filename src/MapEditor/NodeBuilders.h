@@ -2,7 +2,7 @@
 #ifndef __NODE_BUILDERS_H__
 #define __NODE_BUILDERS_H__
 
-#include <wx/file.h>
+#include "common.h"
 
 namespace NodeBuilders
 {

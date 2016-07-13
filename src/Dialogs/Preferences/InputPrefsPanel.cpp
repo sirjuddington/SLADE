@@ -31,11 +31,6 @@
 #include "Main.h"
 #include "InputPrefsPanel.h"
 #include "MapEditor/MapEditorWindow.h"
-#include <wx/button.h>
-#include <wx/dialog.h>
-#include <wx/listctrl.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
 
 
 /*******************************************************************

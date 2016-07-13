@@ -35,7 +35,6 @@
 #include "Utility/MathStuff.h"
 #include "General/Misc.h"
 #include "OpenGL.h"
-#include <wx/settings.h>
 
 #ifdef USE_SFML_RENDERWINDOW
 #include <SFML/Graphics.hpp>

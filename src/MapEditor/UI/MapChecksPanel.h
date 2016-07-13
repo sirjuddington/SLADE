@@ -2,8 +2,8 @@
 #ifndef __MAP_CHECKS_DIALOG_H__
 #define __MAP_CHECKS_DIALOG_H__
 
+#include "common.h"
 #include "UI/WxBasicControls.h"
-#include <wx/panel.h>
 
 class SLADEMap;
 class MapCheck;

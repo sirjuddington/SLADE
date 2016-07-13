@@ -30,9 +30,6 @@
 #include "Main.h"
 #include "WolfArchive.h"
 #include "UI/SplashWindow.h"
-#include <wx/log.h>
-#include <wx/filename.h>
-#include <wx/dir.h>
 
 /*******************************************************************
  * ADDITIONAL FUNCTIONS
