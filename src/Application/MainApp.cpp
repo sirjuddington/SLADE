@@ -268,7 +268,6 @@ public:
 		string privacy = "Sending a crash report will only send the information displayed above, "
 						"along with a copy of the logs for this session.";
 		label = new wxStaticText(this, -1, privacy);
-		label->SetFont(GetFont().Italic());
 		label->Wrap(480);
 		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
