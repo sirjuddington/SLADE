@@ -157,6 +157,9 @@
     <Filter Include="Utility\Property List">
       <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External\wxEmail">
+      <UniqueIdentifier>{759de1e2-8da7-4e1c-b0b2-38f2deafdd20}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
@@ -1353,6 +1356,15 @@
     <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\External\email\wxEmailMessage.cpp">
+      <Filter>External\wxEmail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\email\wxEmailMessageID.cpp">
+      <Filter>External\wxEmail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\email\wxMailer.cpp">
+      <Filter>External\wxEmail</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2348,6 +2360,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\WxBasicControls.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\email\wxEmailMessage.h">
+      <Filter>External\wxEmail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\email\wxEmailMessageID.h">
+      <Filter>External\wxEmail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\email\wxMailer.h">
+      <Filter>External\wxEmail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
