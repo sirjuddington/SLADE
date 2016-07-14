@@ -66,6 +66,7 @@
 #include <wx/protocol/http.h>
 #include <wx/snglinst.h>
 #include <wx/stackwalk.h>
+#include <wx/statbmp.h>
 #include <wx/stattext.h>
 #include <wx/stdpaths.h>
 #include <wx/sysopt.h>
@@ -209,13 +210,26 @@ public:
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(sizer);
 
+		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND);
+
+		// Add dead doomguy picture
+		theArchiveManager->programResourceArchive()
+			->entryAtPath("images/STFDEAD0.png")
+			->exportFile(appPath("STFDEAD0.png", DIR_TEMP));
+		wxImage img;
+		img.LoadFile(appPath("STFDEAD0.png", DIR_TEMP));
+		img.Rescale(img.GetWidth(), img.GetHeight(), wxIMAGE_QUALITY_NEAREST);
+		wxStaticBitmap* picture = new wxStaticBitmap(this, -1, wxBitmap(img));
+		hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxTOP|wxBOTTOM, 10);
+
 		// Add general crash message
 		string message = "SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
-						"please (optionally) enter a short description of what you were doing at the time "
-						"of the crash, and click the 'Send Crash Report' button.";
+			"please (optionally) enter a short description of what you were doing at the time "
+			"of the crash, and click the 'Send Crash Report' button.";
 		wxStaticText* label = new wxStaticText(this, -1, message);
-		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
-		label->Wrap(480);
+		hbox->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
+		label->Wrap(480 - 20 - picture->GetSize().x);
 
 		// Add description text area
 		text_description = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(-1, 100), wxTE_MULTILINE);
@@ -272,7 +286,7 @@ public:
 		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 		// Add 'Copy Stack Trace' button
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		hbox = new wxBoxSizer(wxHORIZONTAL);
 		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 6);
 		btn_copy_trace = new wxButton(this, -1, "Copy Stack Trace");
 		hbox->AddStretchSpacer();
