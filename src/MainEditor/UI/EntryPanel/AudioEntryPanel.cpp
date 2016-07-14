@@ -34,20 +34,8 @@
 #include "Audio/ModMusic.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/Conversions.h"
-#include <wx/bmpbuttn.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/mediactrl.h>
-#ifdef __WXMSW__
-#include <wx/msw/registry.h>
-#endif
-#include <wx/slider.h>
-#include <wx/statline.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 #undef Status
-#include <SFML/Audio.hpp>
 
 
 /*******************************************************************

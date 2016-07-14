@@ -36,7 +36,6 @@
 #include "TextEditor.h"
 #include "TextStyle.h"
 #include "Archive/ArchiveManager.h"
-#include <wx/dir.h>
 
 
 /*******************************************************************

@@ -42,8 +42,6 @@
 #include "Archive/ArchiveManager.h"
 
 #undef BOOL
-#include <FreeImage.h>
-#include <wx/filefn.h>
 
 /*******************************************************************
  * VARIABLES

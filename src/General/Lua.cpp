@@ -31,7 +31,6 @@
 #include "Lua.h"
 #include "External/lua/lua.hpp"
 #include "General/Console/Console.h"
-#include <wx/file.h>
 
 
 /*******************************************************************

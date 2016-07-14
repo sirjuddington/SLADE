@@ -31,11 +31,6 @@
 #include "InterfacePrefsPanel.h"
 #include "Graphics/Icons.h"
 #include "UI/STabCtrl.h"
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/gbsizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

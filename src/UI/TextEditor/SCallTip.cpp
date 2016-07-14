@@ -31,7 +31,6 @@
 #include "SCallTip.h"
 #include "TextLanguage.h"
 #include "Utility/Tokenizer.h"
-#include <wx/display.h>
 
 
 /*******************************************************************

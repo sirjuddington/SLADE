@@ -2,8 +2,8 @@
 #ifndef __MAP_BACKUP_PANEL_H__
 #define __MAP_BACKUP_PANEL_H__
 
+#include "common.h"
 #include "UI/Lists/ListView.h"
-#include <wx/panel.h>
 
 class MapPreviewCanvas;
 class Archive;

@@ -31,7 +31,6 @@
 #include "Main.h"
 #include "HexEntryPanel.h"
 #include "UI/HexEditorPanel.h"
-#include <wx/sizer.h>
 
 
 /*******************************************************************

@@ -30,7 +30,6 @@
 #include "Main.h"
 #include "MathStuff.h"
 #include "General/Console/Console.h"
-#include <cmath>
 
 
 /*******************************************************************

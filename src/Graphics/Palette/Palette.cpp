@@ -35,7 +35,6 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/CIEDeltaEquations.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

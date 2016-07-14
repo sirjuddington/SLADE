@@ -33,7 +33,6 @@
 #include "UI/SplashWindow.h"
 #include "General/Misc.h"
 #include "Utility/Tokenizer.h"
-#include <wx/filename.h>
 
 bool JaguarDecode(MemChunk& mc);
 

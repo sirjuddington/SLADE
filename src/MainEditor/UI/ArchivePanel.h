@@ -7,7 +7,6 @@
 #include "General/SAction.h"
 #include "UI/Lists/ArchiveEntryList.h"
 #include "UI/WxBasicControls.h"
-#include <wx/panel.h>
 
 class wxStaticText;
 class wxBitmapButton;

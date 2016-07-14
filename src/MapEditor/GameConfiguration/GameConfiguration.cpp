@@ -39,10 +39,6 @@
 #include "Archive/ArchiveManager.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "GenLineSpecial.h"
-#include <wx/textfile.h>
-#include <wx/filename.h>
-#include <wx/dir.h>
-#include <wx/colour.h>
 
 
 /*******************************************************************

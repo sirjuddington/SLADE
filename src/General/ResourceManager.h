@@ -2,9 +2,9 @@
 #ifndef __RESOURCE_MANAGER_H__
 #define __RESOURCE_MANAGER_H__
 
+#include "common.h"
 #include "General/ListenerAnnouncer.h"
 #include "Archive/Archive.h"
-#include <map>
 
 class ResourceManager;
 class CTexture;

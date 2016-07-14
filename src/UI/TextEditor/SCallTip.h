@@ -1,7 +1,6 @@
 #pragma once
 
-#include <wx/popupwin.h>
-#include <wx/dcbuffer.h>
+#include "common.h"
 
 #define SCALLTIP_MAX_WIDTH 800
 

@@ -2,8 +2,8 @@
 #ifndef __ZTEXTURE_EDITOR_PANEL_H__
 #define __ZTEXTURE_EDITOR_PANEL_H__
 
+#include "common.h"
 #include "TextureEditorPanel.h"
-#include <wx/clrpicker.h>
 
 class wxSpinCtrlDouble;
 class ZTextureEditorPanel : public TextureEditorPanel

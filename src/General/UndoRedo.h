@@ -2,8 +2,8 @@
 #ifndef __UNDO_REDO_H__
 #define __UNDO_REDO_H__
 
+#include "common.h"
 #include "General/ListenerAnnouncer.h"
-#include <wx/datetime.h>
 
 class UndoStep
 {

@@ -51,9 +51,6 @@
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include "Utility/SFileDialog.h"
-#include <wx/aui/aui.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
 
 
 /*******************************************************************

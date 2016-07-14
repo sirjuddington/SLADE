@@ -2,9 +2,9 @@
 #ifndef __DATA_ENTRY_PANEL_H__
 #define __DATA_ENTRY_PANEL_H__
 
+#include "common.h"
 #include "EntryPanel.h"
 #include "General/SAction.h"
-#include <wx/grid.h>
 
 struct int_string_t
 {

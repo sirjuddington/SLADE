@@ -33,12 +33,6 @@
 #include "Main.h"
 #include "BrowserWindow.h"
 #include "General/Misc.h"
-#include <wx/choice.h>
-#include <wx/dataview.h>
-#include <wx/scrolbar.h>
-#include <wx/sizer.h>
-#include <wx/slider.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

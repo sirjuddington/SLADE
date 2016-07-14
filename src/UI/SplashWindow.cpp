@@ -35,8 +35,6 @@
 #include "General/Console/Console.h"
 #include "MainApp.h"
 #include "MainEditor/MainWindow.h"
-#include <wx/dcbuffer.h>
-
 
 /*******************************************************************
  * VARIABLES

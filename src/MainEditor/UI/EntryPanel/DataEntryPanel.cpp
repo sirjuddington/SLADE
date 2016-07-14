@@ -33,8 +33,6 @@
 #include "General/ColourConfiguration.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainWindow.h"
-#include <wx/combobox.h>
-#include <wx/menu.h>
 
 
 /*******************************************************************

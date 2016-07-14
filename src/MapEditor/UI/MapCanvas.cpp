@@ -57,10 +57,7 @@
 #include "OpenGL/Drawing.h"
 #include "UI/SDialog.h"
 #include "Utility/MathStuff.h"
-#include <wx/menu.h>
-#include <wx/sizer.h>
 #undef None
-#include <SFML/Window.hpp>
 
 
 /*******************************************************************

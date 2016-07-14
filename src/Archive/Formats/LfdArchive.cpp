@@ -31,7 +31,6 @@
 #include "Main.h"
 #include "LfdArchive.h"
 #include "UI/SplashWindow.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

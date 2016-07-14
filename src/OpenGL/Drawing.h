@@ -6,7 +6,7 @@
 #include <SFML/Graphics.hpp>
 #endif
 
-#include <wx/colour.h>
+#include "common.h"
 
 #include "Utility/Structs.h"
 

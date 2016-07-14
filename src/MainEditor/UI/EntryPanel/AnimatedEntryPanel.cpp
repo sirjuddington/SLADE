@@ -36,12 +36,6 @@
 #include "General/Misc.h"
 #include "UI/Lists/ListView.h"
 #include "UI/SToolBar/SToolBar.h"
-#include <wx/listctrl.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/radiobut.h>
-#include <wx/checkbox.h>
-#include <wx/menu.h>
 
 
 /*******************************************************************
