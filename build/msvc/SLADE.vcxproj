@@ -188,11 +188,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Application\MainApp.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="..\..\src\Application\MainApp.cpp" />
     <ClCompile Include="..\..\src\Archive\Archive.cpp" />
     <ClCompile Include="..\..\src\Archive\ArchiveEntry.cpp" />
     <ClCompile Include="..\..\src\Archive\ArchiveManager.cpp" />
@@ -1350,6 +1346,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="_CreatePCH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Application\Main.h" />
@@ -1391,6 +1392,8 @@
     <ClInclude Include="..\..\src\Archive\Formats\ZipArchive.h" />
     <ClInclude Include="..\..\src\Audio\MIDIPlayer.h" />
     <ClInclude Include="..\..\src\Audio\ModMusic.h" />
+    <ClInclude Include="..\..\src\common.h" />
+    <ClInclude Include="..\..\src\common2.h" />
     <ClInclude Include="..\..\src\External\bzip2\bzlib.h" />
     <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h" />
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h" />

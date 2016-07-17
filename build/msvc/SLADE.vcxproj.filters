@@ -1368,6 +1368,9 @@
     <ClCompile Include="..\..\src\External\email\wxMailer.cpp">
       <Filter>External\wxEmail</Filter>
     </ClCompile>
+    <ClCompile Include="_CreatePCH.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2373,6 +2376,8 @@
     <ClInclude Include="..\..\src\External\email\wxMailer.h">
       <Filter>External\wxEmail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\common.h" />
+    <ClInclude Include="..\..\src\common2.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />
