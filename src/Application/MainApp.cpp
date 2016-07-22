@@ -791,7 +791,8 @@ void MainApp::initActions()
 	new SAction("ppal_tint", "Tint", "palette_tint", "Tint the palette");
 	new SAction("ppal_tweak", "Tweak", "palette_tweak", "Tweak the palette");
 	new SAction("ppal_invert", "Invert", "palette_invert", "Invert the palette");
-	new SAction("ppal_moveup", "Pull Ahead", "palette_pull", "Move this palette one rank towards the first");
+    new SAction("ppal_gradient", "Gradient", "palette_gradientt", "Adda gradient to the palette");
+    new SAction("ppal_moveup", "Pull Ahead", "palette_pull", "Move this palette one rank towards the first");
 	new SAction("ppal_movedown", "Push Back", "palette_push", "Move this palette one rank towards the last");
 	new SAction("ppal_duplicate", "Duplicate", "palette_duplicate", "Create a copy of this palette at the end");
 	new SAction("ppal_remove", "Remove", "palette_delete", "Erase this palette");
