@@ -443,30 +443,30 @@ void Palette8bit::setColourB(uint8_t index, uint8_t val)
  *******************************************************************/
 void Palette8bit::setGradient(uint8_t startIndex, uint8_t endIndex, rgba_t startCol, rgba_t endCol)
 {
-    rgba_t gradCol = rgba_t();
-    int range = endIndex - startIndex;
-    
-    float r_range = endCol.fr() - startCol.fr();
-    float g_range = endCol.fg() - startCol.fg();
-    float b_range = endCol.fb() - startCol.fb();
-    
-    for (int a = 0; a <= range; a++)
-    {
-        float perc;
-        if (range <= 0)
-        {
-            perc = 0.0f;
-        }
-        else
-        {
-            perc = (float)a / (float)range;
-        }
-        
-        gradCol.set((int) (((r_range * perc) + startCol.fr()) * 255.0f),
-                    (int) (((g_range * perc) + startCol.fg()) * 255.0f),
-                    (int) (((b_range * perc) + startCol.fb()) * 255.0f));
-        colours[a + startIndex].set(gradCol);
-    }
+	rgba_t gradCol = rgba_t();
+	int range = endIndex - startIndex;
+	
+	float r_range = endCol.fr() - startCol.fr();
+	float g_range = endCol.fg() - startCol.fg();
+	float b_range = endCol.fb() - startCol.fb();
+	
+	for (int a = 0; a <= range; a++)
+	{
+		float perc;
+		if (range <= 0)
+		{
+			perc = 0.0f;
+		}
+		else
+		{
+			perc = (float)a / (float)range;
+		}
+		
+		gradCol.set((int) (((r_range * perc) + startCol.fr()) * 255.0f),
+					(int) (((g_range * perc) + startCol.fg()) * 255.0f),
+					(int) (((b_range * perc) + startCol.fb()) * 255.0f));
+		colours[a + startIndex].set(gradCol);
+	}
 }
 
 /* Palette8bit::copyPalette8bit

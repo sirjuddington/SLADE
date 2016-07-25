@@ -58,7 +58,7 @@ public:
 	bool	colourise();
 	bool	tweak();
 	bool	invert();
-    bool    gradient();
+	bool    gradient();
 	bool	testPalette();
 
 	// Temporary analysis tool to help reverse engineer stuff
