@@ -674,7 +674,6 @@ ArchiveEntry* ResourceManager::getFlatEntry(string flat, Archive* priority)
  *******************************************************************/
 ArchiveEntry* ResourceManager::getTextureEntry(string texture, string nspace, Archive* priority)
 {
-	//wxLogMessage("getTextureEntry called - texture: %s, nspace: %s, priority: %s", texture, nspace, priority->getFilename());
 	// Check resource with matching name exists
 	EntryResource& res = satextures[texture.Upper()];
 	if (res.entries.size() == 0)
