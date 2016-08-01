@@ -278,14 +278,18 @@ void ResourceManager::addEntry(ArchiveEntry* entry)
 		// Check for flat entry
 		if (type->getId() == "gfx_flat" || entry->isInNamespace("flats")) {
 			flats[name].add(entry);
-			flats[path].add(entry);
+			if (!entry->getParent()->isTreeless()) {
+				flats[path].add(entry);
+			}
 		}
 
 		// Check for stand-alone texture entry
 		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
 		{
 			satextures[name].add(entry);
-			satextures[path].add(entry);
+			if (!entry->getParent()->isTreeless()) {
+				satextures[path].add(entry);
+			}
 
 			// Add name to hash table
 			ResourceManager::Doom64HashTable[getTextureHash(name)] = name;
