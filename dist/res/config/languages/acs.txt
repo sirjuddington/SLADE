@@ -158,7 +158,7 @@ acs_z : acs {
 	blocks = "Script", "Function:1";
 
 	keywords = {
-		function, enter, respawn, death, lightning, unloading, disconnect,
+		function, enter, respawn, death, lightning, unloading, disconnect, kill,
 		fixed, global, net, import, libdefine, library, nocompact, nowadauthor,
 		EncryptStrings, static, wadauthor, region, endregion,
 		
@@ -235,7 +235,7 @@ acs_z : acs {
 		APROP_Dormant, APROP_Mass, APROP_Accuracy, APROP_Stamina, APROP_Height,
 		APROP_Radius, APROP_ReactionTime, APROP_AttackZOffset, APROP_MeleeRange,
 		APROP_ViewHeight, APROP_StencilColor, APROP_DamageMultiplier, APROP_Friction,
-		APROP_MaxStepHeight, APROP_MaxDropOffHeight,
+		APROP_MaxStepHeight, APROP_MaxDropOffHeight, APROP_DamageType,
 
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_Stencil, 
 		STYLE_OptFuzzy, STYLE_Translucent, STYLE_Add, STYLE_Shaded, 
@@ -258,7 +258,8 @@ acs_z : acs {
 		MRF_OLDEFFECTS, MRF_ADDSTAMINA, MRF_FULLHEALTH, MRF_UNDOBYTOMEOFPOWER, 
 		MRF_UNDOBYCHAOSDEVICE, MRF_FAILNOTELEFRAG, MRF_FAILNOLAUGH, 
 		MRF_WHENINVULNERABLE, MRF_LOSEACTUALWEAPON, MRF_NEWTIDBEHAVIOUR, 
-		MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES, 
+		MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES, MRF_UNDOALWAYS,
+		MRF_TRANSFERTRANSLATION,
 
 		T_ROCK1, T_ROCK2, T_ROCK3, T_DIRT1, T_DIRT2, T_DIRT3, T_DIRT4, T_DIRT5, T_DIRT6, 
 		T_STAINEDGLASS1, T_STAINEDGLASS2, T_STAINEDGLASS3, T_STAINEDGLASS4, 
