@@ -650,12 +650,6 @@ ArchiveEntry* ResourceManager::getFlatEntry(string flat, Archive* priority)
 	ArchiveEntry* entry = res.entries[0];
 	for (unsigned a = 0; a < res.entries.size(); a++)
 	{
-		// Talon1024 - If texture is a full path to the texture file in the archive,
-		// get the texture entry.
-		if (flat.IsSameAs(res.entries[a]->getPath(true).Mid(1), false)) {
-			return res.entries[a];
-		}
-
 		// If it's in the 'priority' archive, return it
 		if (priority && (res.entries[a]->getParent() == priority ||
 		                 // PK3 and Doom64 maps are contained in an embedded .wad,
@@ -694,13 +688,6 @@ ArchiveEntry* ResourceManager::getTextureEntry(string texture, string nspace, Ar
 		// namespace ought to be either "textures" or "hires"
 		if (nspace.IsEmpty() || res.entries[a]->isInNamespace(nspace))
 		{
-			// Talon1024 - If texture is a full path to the texture file in the archive,
-			// get the texture entry.
-			string entryPath = res.entries[a]->getPath(true).Mid(1);
-			if (texture.IsSameAs(res.entries[a]->getPath(true).Mid(1), false)) {
-				return res.entries[a];
-			}
-
 			// If it's in the 'priority' archive, return it
 			if (priority && (res.entries[a]->getParent() == priority ||
 			                 // PK3 and Doom64 maps are contained in an embedded .wad,
