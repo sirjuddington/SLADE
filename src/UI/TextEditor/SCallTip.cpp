@@ -63,6 +63,7 @@ SCallTip::SCallTip(wxWindow* parent)
 #ifndef __WXOSX__
 	SetDoubleBuffered(true);
 #endif // !__WXOSX__
+	SetBackgroundStyle(wxBG_STYLE_PAINT);
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SCallTip::onPaint, this);
