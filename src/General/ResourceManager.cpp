@@ -272,33 +272,32 @@ void ResourceManager::addEntry(ArchiveEntry* entry)
 			return;
 
 		// Check for patch entry
-		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches")) {
+		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches"))
+		{
 			patches[name].add(entry);
 			/*
 			if (name.Length() > 8) patches[name.Left(8)].add(entry);
-			if (!entry->getParent()->isTreeless()) {
+			if (!entry->getParent()->isTreeless())
 				patches[path].add(entry);
-			}
 			*/
 		}
 
 		// Check for flat entry
-		if (type->getId() == "gfx_flat" || entry->isInNamespace("flats")) {
+		if (type->getId() == "gfx_flat" || entry->isInNamespace("flats"))
+		{
 			flats[name].add(entry);
-			if (name.Length() > 8) flats[name.Left(8)].add(entry);
-			if (!entry->getParent()->isTreeless()) {
+			// if (name.Length() > 8) flats[name.Left(8)].add(entry);
+			if (!entry->getParent()->isTreeless())
 				flats[path].add(entry);
-			}
 		}
 
 		// Check for stand-alone texture entry
 		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
 		{
 			satextures[name].add(entry);
-			if (name.Length() > 8) satextures[name.Left(8)].add(entry);
-			if (!entry->getParent()->isTreeless()) {
+			// if (name.Length() > 8) satextures[name.Left(8)].add(entry);
+			if (!entry->getParent()->isTreeless())
 				satextures[path].add(entry);
-			}
 
 			// Add name to hash table
 			ResourceManager::Doom64HashTable[getTextureHash(name)] = name;
