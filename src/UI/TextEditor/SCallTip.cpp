@@ -214,7 +214,7 @@ void SCallTip::updateSize()
 	SetSize(buffer.GetWidth() + 24, buffer.GetHeight() + 16);
 
 	// Get screen bounds and window bounds
-	int index = wxDisplay::GetFromWindow(this);
+	int index = wxDisplay::GetFromWindow(this->GetParent());
 	wxDisplay display(index);
 	wxRect screen_area = display.GetClientArea();
 	wxRect ct_area = GetScreenRect();
