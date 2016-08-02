@@ -574,7 +574,7 @@ void SCallTip::onShow(wxShowEvent& e)
 	if (e.IsShown())
 	{
 		// Get screen bounds and window bounds
-		int index = wxDisplay::GetFromWindow(this);
+		int index = wxDisplay::GetFromWindow(this->GetParent());
 		wxDisplay display(index);
 		wxRect screen_area = display.GetClientArea();
 		wxRect ct_area = GetScreenRect();
