@@ -1739,11 +1739,20 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 		if (thing_paths[a].from_index == thing_paths[a].to_index)
 			continue;
 
-		Drawing::drawArrow(map->getThing(thing_paths[a].to_index)->getPoint(MOBJ_POINT_MID),
-			map->getThing(thing_paths[a].from_index)->getPoint(MOBJ_POINT_MID),
-			(thing_paths[a].type == PATH_DRAGON_BOTH || thing_paths[a].type == PATH_DRAGON) ? dragoncol : pathedcol, 
-			(thing_paths[a].type == PATH_NORMAL_BOTH || thing_paths[a].type == PATH_DRAGON_BOTH), 
-			arrowhead_angle, arrowhead_length);
+		MapThing *from = map->getThing(thing_paths[a].from_index);
+
+		if (from && ((from->intProperty("arg3") | (from->intProperty("arg4") << 8)) > 0))
+		{
+			MapThing *to = map->getThing(thing_paths[a].to_index);
+			if (!to)
+				continue;
+	
+			Drawing::drawArrow(to->getPoint(MOBJ_POINT_MID),
+				from->getPoint(MOBJ_POINT_MID),
+				(thing_paths[a].type == PATH_DRAGON_BOTH || thing_paths[a].type == PATH_DRAGON) ? dragoncol : pathedcol, 
+				(thing_paths[a].type == PATH_NORMAL_BOTH || thing_paths[a].type == PATH_DRAGON_BOTH), 
+				arrowhead_angle, arrowhead_length);
+		}
 	}
 }
 
