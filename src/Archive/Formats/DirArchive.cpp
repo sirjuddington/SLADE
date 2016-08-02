@@ -101,6 +101,9 @@ bool DirArchive::open(string filename)
 	wxDir dir(filename);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
 
+	// Stop announcements (don't want to be announcing modification due to entries being added etc)
+	setMuted(true);
+
 	theSplashWindow->setProgressMessage("Reading files");
 	for (unsigned a = 0; a < files.size(); a++)
 	{
