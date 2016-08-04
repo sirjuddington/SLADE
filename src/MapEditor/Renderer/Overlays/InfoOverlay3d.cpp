@@ -322,7 +322,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 
 		// Light
 		int light = sector->intProperty("lightlevel");
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		if (theGameConfiguration->udmfNamespace() == "zdoom" || theGameConfiguration->udmfNamespace() == "eternity")
 		{
 			// Get extra light info
 			int fl = 0;
@@ -386,6 +386,22 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 				yscale = sector->floatProperty("yscaleceiling");
 			}
 			info2.push_back(S_FMT("Scale: %1.2fx, %1.2fx", xscale, yscale));
+		}
+		else if(theGameConfiguration->udmfNamespace() == "eternity")
+		{
+			// Offsets
+			double xoff, yoff;
+			if(item_type == MapEditor::SEL_FLOOR)
+			{
+				xoff = sector->floatProperty("xpanningfloor");
+				yoff = sector->floatProperty("ypanningfloor");
+			}
+			else
+			{
+				xoff = sector->floatProperty("xpanningceiling");
+				yoff = sector->floatProperty("ypanningceiling");
+			}
+			info2.push_back(S_FMT("Offsets: %1.2f, %1.2f", xoff, yoff));
 		}
 
 		// Texture

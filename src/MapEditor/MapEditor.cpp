@@ -4089,7 +4089,9 @@ void MapEditor::changeOffset3d(int amount, bool x)
 	// Go through items
 	vector<int> done;
 	bool changed = false;
-	bool udmf_ext = (map.currentFormat() == MAP_UDMF && theGameConfiguration->udmfNamespace() == "zdoom");
+	// Currently udmf_ext covers stuff that happens to be both in EE and ZDoom,
+	// but be careful if extending this to make sure both engines support the feature this variable is tied to.
+	bool udmf_ext = (map.currentFormat() == MAP_UDMF && (theGameConfiguration->udmfNamespace() == "zdoom" || theGameConfiguration->udmfNamespace() == "eternity"));
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
@@ -4141,7 +4143,7 @@ void MapEditor::changeOffset3d(int amount, bool x)
 			changed = true;
 		}
 
-		// Flat (UDMF+ZDoom only)
+		// Flat (UDMF+ZDoom/UDMF+EE only)
 		else if (udmf_ext)
 		{
 			MapSector* sector = map.getSector(items[a].index);
@@ -4505,6 +4507,26 @@ void MapEditor::resetOffsets3d()
 			sector->setFloatProperty("ypanning" + plane, 0);
 			sector->setFloatProperty("xscale" + plane, 1);
 			sector->setFloatProperty("yscale" + plane, 1);
+			sector->setFloatProperty("rotation" + plane, 0);
+		}
+	}
+	// Go through flats
+	if(theGameConfiguration->udmfNamespace() == "eternity")
+	{
+		for(unsigned a = 0; a < flats.size(); a++)
+		{
+			MapSector* sector = map.getSector(flats[a].index);
+			if(!sector) continue;
+
+			string plane;
+			if(flats[a].type == SEL_FLOOR)
+				plane = "floor";
+			else
+				plane = "ceiling";
+
+			// Reset offsets, scale, and rotation
+			sector->setFloatProperty("xpanning" + plane, 0);
+			sector->setFloatProperty("ypanning" + plane, 0);
 			sector->setFloatProperty("rotation" + plane, 0);
 		}
 	}
@@ -5039,6 +5061,10 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		if (theMapEditor->currentMapDesc().format == MAP_UDMF &&
 				S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
 			ext = true;
+		bool ee_ext = false;
+		if(theMapEditor->currentMapDesc().format == MAP_UDMF &&
+			S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"))
+			ext = true;
 
 		// Clear selection
 		if (key == "me3d_clear_selection")
@@ -5050,7 +5076,7 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		// Toggle linked light levels
 		else if (key == "me3d_light_toggle_link")
 		{
-			if (!ext)
+			if (!ext && !ee_ext)
 				addEditorMessage("Unlinked light levels not supported in this game configuration");
 			else
 			{

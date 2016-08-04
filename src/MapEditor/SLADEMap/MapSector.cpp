@@ -202,6 +202,15 @@ void MapSector::setFloatProperty(string key, double value)
 		        key == "rotationfloor" || key == "rotationceiling")
 			polygon.setTexture(NULL);	// Clear texture to force update
 	}
+	// Due to the nature of the above if statement, it might be prudent to delete this, as it should handle EE's
+	// current nature of basically being a subset (mostly) of ZDoom UDMF.
+	else if(parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "eternity"))
+	{
+		if(key == "xpanningfloor" || key == "ypanningfloor" ||
+		   key == "xpanningceiling" || key == "ypanningceiling" ||
+		   key == "rotationfloor" || key == "rotationceiling")
+			polygon.setTexture(NULL);	// Clear texture to force update
+	}
 
 	MapObject::setFloatProperty(key, value);
 }
@@ -462,8 +471,9 @@ bool MapSector::getVertices(vector<MapObject*>& list)
  *******************************************************************/
 uint8_t MapSector::getLight(int where)
 {
-	// Check for UDMF+ZDoom namespace
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	// Check for UDMF+ZDoom/UDMF+Eternity namespace
+	if (parent_map->currentFormat() == MAP_UDMF &&
+		 (S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom") || S_CMPNOCASE(parent_map->udmfNamespace(), "eternity")))
 	{
 		// Get general light level
 		int l = light;
@@ -523,9 +533,10 @@ void MapSector::changeLight(int amount, int where)
 	else if (ll + amount < 0)
 		amount = -ll;
 
-	// Check for UDMF+ZDoom namespace
+	// Check for UDMF+ZDoom/UDMF+Eternity namespace
 	bool separate = false;
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if (parent_map->currentFormat() == MAP_UDMF && 
+		 (S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom") || S_CMPNOCASE(parent_map->udmfNamespace(), "eternity")))
 		separate = true;
 
 	// Change light level by amount

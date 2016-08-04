@@ -607,7 +607,8 @@ public:
 			// Go through uncompared things
 			int map_format = map->currentFormat();
 			bool udmf_zdoom = (map_format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"));
-			int min_skill = udmf_zdoom ? 1 : 2;
+			bool udmf_eternity = (map_format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"));
+			int min_skill = udmf_zdoom || udmf_eternity ? 1 : 2;
 			int max_skill = udmf_zdoom ? 17 : 5;
 			int max_class = udmf_zdoom ? 17 : 4;
 
