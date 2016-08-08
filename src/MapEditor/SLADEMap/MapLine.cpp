@@ -285,8 +285,6 @@ void MapLine::setBoolProperty(string key, bool value)
  *******************************************************************/
 void MapLine::setIntProperty(string key, int value)
 {
-	MapVertex* vertex;
-
 	// Front side property
 	if (key.StartsWith("side1."))
 	{
@@ -309,6 +307,7 @@ void MapLine::setIntProperty(string key, int value)
 	// Vertices
 	if (key == "v1")
 	{
+		MapVertex* vertex;
 		if ((vertex = parent_map->getVertex(value)))
 		{
 			vertex1->disconnectLine(this);
@@ -319,6 +318,7 @@ void MapLine::setIntProperty(string key, int value)
 	}
 	else if (key == "v2")
 	{
+		MapVertex* vertex;
 		if ((vertex = parent_map->getVertex(value)))
 		{
 			vertex2->disconnectLine(this);
@@ -330,9 +330,17 @@ void MapLine::setIntProperty(string key, int value)
 
 	// Sides
 	else if (key == "sidefront")
-		parent_map->setLineSide(this, parent_map->getSide(value), true);
+	{
+		MapSide* side = parent_map->getSide(value);
+		if (side)
+			parent_map->setLineSide(this, side, true);
+	}
 	else if (key == "sideback")
-		parent_map->setLineSide(this, parent_map->getSide(value), false);
+	{
+		MapSide* side = parent_map->getSide(value);
+		if (side)
+			parent_map->setLineSide(this, side, false);
+	}
 
 	// Special
 	else if (key == "special")
