@@ -502,10 +502,13 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 
 	// Add base resource archive to command line
 	Archive* base = theArchiveManager->baseResourceArchive();
-	if (base->getType() == ARCHIVE_WAD)
-		cmd += S_FMT(" -resource wad \"%s\"", base->getFilename());
-	else if (base->getType() == ARCHIVE_ZIP)
-		cmd += S_FMT(" -resource pk3 \"%s\"", base->getFilename());
+	if (base)
+	{
+		if (base->getType() == ARCHIVE_WAD)
+			cmd += S_FMT(" -resource wad \"%s\"", base->getFilename());
+		else if (base->getType() == ARCHIVE_ZIP)
+			cmd += S_FMT(" -resource pk3 \"%s\"", base->getFilename());
+	}
 
 	// Add resource archives to command line
 	for (int a = 0; a < theArchiveManager->numArchives(); ++a)
@@ -1230,9 +1233,12 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		// Ignore SCRIPTS
 		if (S_CMPNOCASE(entries[a]->getName(true), "SCRIPTS"))
 			continue;
+
 		// Ignore entries from other archives
-		if (entry->getParent()->getFilename(true) != entries[a]->getParent()->getFilename(true))
+		if (entry->getParent() &&
+			(entry->getParent()->getFilename(true) != entries[a]->getParent()->getFilename(true)))
 			continue;
+
 		string path = appPath(entries[a]->getName(true) + ".acs", DIR_TEMP);
 		entries[a]->exportFile(path);
 		lib_paths.Add(path);

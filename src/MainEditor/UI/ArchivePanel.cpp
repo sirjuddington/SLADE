@@ -1317,7 +1317,7 @@ bool ArchivePanel::sort()
 	initNamespaceVector(nspaces, dir->getArchive()->hasFlatHack());
 	vector<Archive::mapdesc_t> maps = dir->getArchive()->detectMaps();
 
-	string ns = dir->getArchive()->detectNamespace(dir->getEntry(selection[0]));
+	string ns = dir->getArchive()->detectNamespace(entry_list->getEntry(selection[0]));
 	size_t nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
@@ -1327,7 +1327,12 @@ bool ArchivePanel::sort()
 		bool ns_changed = false;
 		int mapindex = isInMap(selection[i], maps);
 		string mapname;
-		ArchiveEntry * entry = dir->getEntry(selection[i]);
+		ArchiveEntry * entry = entry_list->getEntry(selection[i]);
+
+		// Ignore subdirectories
+		if (entry->getType() == EntryType::folderType())
+			continue;
+
 		// If this is a map entry, deal with it
 		if (maps.size() && mapindex > -1)
 		{
@@ -1429,7 +1434,12 @@ bool ArchivePanel::sort()
 	std::map<string, size_t>::iterator itr = emap.begin();
 	for (size_t i = start; i < stop; ++i, itr++)
 	{
-		ArchiveEntry * entry = dir->getEntry(i);
+		ArchiveEntry * entry = entry_list->getEntry(i);
+
+		// Ignore subdirectories
+		if (entry->getType() == EntryType::folderType())
+			continue;
+
 		// If the entry isn't in its sorted place already
 		if (i != (size_t)itr->second)
 		{
