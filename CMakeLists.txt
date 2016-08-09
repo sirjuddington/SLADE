@@ -13,6 +13,11 @@ if(COMMAND cmake_policy)
 	cmake_policy( SET CMP0005 NEW )
 endif(COMMAND cmake_policy)
 
+if(COMMAND cmake_policy)
+	cmake_policy( SET CMP0011 NEW )
+endif(COMMAND cmake_policy)
+
+
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -35,7 +40,7 @@ if(NOT BZIP2_FOUND)
 	set(BZIP2_LIBRARIES bz2)
 endif(NOT BZIP2_FOUND)
 
-OPTION(USE_WEBVIEW_STARTPAGE "Use wxWebView to display the start page" OFF)
+OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)
 OPTION(USE_SFML_RENDERWINDOW "Use SFML RenderWindow for OpenGL displays" OFF)
 
 add_subdirectory(src)

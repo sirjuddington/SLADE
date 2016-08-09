@@ -6,7 +6,7 @@
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
  * Filename:    MapSpecials.cpp
- * Description: Various functions for processing map specials and
+ * Description: Various functions for processing map specials andit
  *              scripts, mostly for visual effects (transparency,
  *              colours, slopes, etc.)
  *
@@ -35,8 +35,7 @@
 #include "GameConfiguration/GameConfiguration.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/MathStuff.h"
-#include <wx/colour.h>
-#include <cmath>
+
 
 
 // Number of radians in the unit circle
@@ -607,7 +606,7 @@ void MapSpecials::applyPlaneAlign(MapLine* line, MapSector* target, MapSector* m
 }
 
 /* MapSpecials::applyLineSlopeThing
- * Applies a line slope special on [thing], to it's containing sector
+ * Applies a line slope special on [thing], to its containing sector
  * in [map]
  *******************************************************************/
 template<PlaneType p>
@@ -664,7 +663,7 @@ void MapSpecials::applyLineSlopeThing(SLADEMap* map, MapThing* thing)
 }
 
 /* MapSpecials::applyLineSlopeThing
- * Applies a tilt slope special on [thing], to it's containing sector
+ * Applies a tilt slope special on [thing], to its containing sector
  * in [map]
  *******************************************************************/
 template<PlaneType p>
@@ -712,7 +711,7 @@ void MapSpecials::applySectorTiltThing(SLADEMap* map, MapThing* thing)
 }
 
 /* MapSpecials::applyVavoomSlopeThing
- * Applies a vavoom slope special on [thing], to it's containing
+ * Applies a vavoom slope special on [thing], to its containing
  * sector in [map]
  *******************************************************************/
 template<PlaneType p>

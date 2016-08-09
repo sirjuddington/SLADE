@@ -29,12 +29,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "PNGPrefsPanel.h"
-#include <wx/filedlg.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
-#include <wx/button.h>
 
 
 /*******************************************************************

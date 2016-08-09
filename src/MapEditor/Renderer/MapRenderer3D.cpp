@@ -38,7 +38,6 @@
 #include "General/ResourceManager.h"
 #include "MainEditor/MainWindow.h"
 #include "OpenGL/OpenGL.h"
-#include <SFML/System.hpp>
 
 
 /*******************************************************************

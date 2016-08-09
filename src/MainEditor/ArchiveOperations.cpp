@@ -41,9 +41,7 @@
 #include "MapEditor/SLADEMap/MapThing.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "General/Console/Console.h"
-#include <map>
-#include <wx/choicdlg.h>
-#include <wx/msgdlg.h>
+
 
 
 /*******************************************************************

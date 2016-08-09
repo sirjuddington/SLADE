@@ -54,7 +54,7 @@ public:
 	void	setColourB(uint8_t index, uint8_t val);
 	void	setColourA(uint8_t index, uint8_t val)	{ colours[index].a = val; }
 	void	setTransIndex(short index)				{ index_trans = index; }
-
+	
 	void	copyPalette(Palette8bit* copy);
 	short	findColour(rgba_t colour);
 	short	nearestColour(rgba_t colour, int match = MATCH_DEFAULT);
@@ -68,6 +68,7 @@ public:
 	void	illuminate(float amount, int start, int end);
 	void	shift(float amount, int start, int end);
 	void	invert(int start, int end);
+	void    setGradient(uint8_t startIndex, uint8_t endIndex, rgba_t startCol, rgba_t endCol);
 
 	// For automated palette generation
 	void	idtint(int r, int g, int b, int shift, int steps);

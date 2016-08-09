@@ -35,7 +35,6 @@
 #include "UI/SplashWindow.h"
 #include "WadArchive.h"
 #include "MainApp.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************
@@ -101,6 +100,9 @@ bool DirArchive::open(string filename)
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir dir(filename);
 	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+
+	// Stop announcements (don't want to be announcing modification due to entries being added etc)
+	setMuted(true);
 
 	theSplashWindow->setProgressMessage("Reading files");
 	for (unsigned a = 0; a < files.size(); a++)

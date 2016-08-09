@@ -35,7 +35,7 @@
 
 #include "i_musicinterns.h"
 #include "templates.h"
-#include "m_swap.h"
+#include "portable_endian.h"
 
 // PUBLIC FUNCTION PROTOTYPES ----------------------------------------------
 
@@ -119,13 +119,13 @@ MUSSong::MUSSong (FILE *file, const uint8_t *musiccache, int len)
 	}
 
 	// Do some validation of the MUS file.
-	if (LittleShort(MusHeader->NumChans) > 15)
+	if (le16toh(MusHeader->NumChans) > 15)
 	{
 		return;
 	}
 
-	MusBuffer = (uint8_t *)MusHeader + LittleShort(MusHeader->SongStart);
-	MaxMusP = MIN<int>(LittleShort(MusHeader->SongLen), len - LittleShort(MusHeader->SongStart));
+	MusBuffer = (uint8_t *)MusHeader + le16toh(MusHeader->SongStart);
+	MaxMusP = MIN<int>(le16toh(MusHeader->SongLen), len - le16toh(MusHeader->SongStart));
 	Division = 140;
 	InitialTempo = 1000000;
 }
@@ -236,7 +236,7 @@ uint32_t *MUSSong::MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t 
 		case MUS_SYSEVENT:
 			status |= MIDI_CTRLCHANGE;
 			mid1 = CtrlTranslate[t];
-			mid2 = t == 12 ? LittleShort(MusHeader->NumChans) : 0;
+			mid2 = t == 12 ? le16toh(MusHeader->NumChans) : 0;
 			break;
 			
 		case MUS_CTRLCHANGE:

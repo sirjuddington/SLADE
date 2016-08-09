@@ -57,10 +57,7 @@
 #include "OpenGL/Drawing.h"
 #include "UI/SDialog.h"
 #include "Utility/MathStuff.h"
-#include <wx/menu.h>
-#include <wx/sizer.h>
 #undef None
-#include <SFML/Window.hpp>
 
 
 /*******************************************************************
@@ -2852,11 +2849,18 @@ void MapCanvas::onKeyBindPress(string name)
 		date.SetToCurrent();
 		string timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		string filename = S_FMT("sladeshot-%s.png", timestamp);
-		shot.saveToFile(CHR(appPath(filename, DIR_USER)));
+		string filename = appPath(S_FMT("sladeshot-%s.png", timestamp), DIR_USER);
+		if (shot.saveToFile(UTF8(filename)))
+		{
+			// Editor message if the file is actually written, with full path
+			editor->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
+		}
+		else
+		{
+			// Editor message also if the file couldn't be written
+			editor->addEditorMessage(S_FMT("Screenshot failed (%s)", filename));
+		}
 
-		// Editor message
-		editor->addEditorMessage(S_FMT("Screenshot taken (%s)", filename));
 	}
 #endif
 
@@ -3629,18 +3633,6 @@ bool MapCanvas::handleAction(string id)
 			if (index > -1)
 				editor->showItem(index);
 		}
-
-		return true;
-	}
-
-	// Toggle selection numbers
-	else if (id == "mapw_toggle_selection_numbers")
-	{
-		map_show_selection_numbers = !map_show_selection_numbers;
-		if (map_show_selection_numbers)
-			editor->addEditorMessage("Selection numbers enabled");
-		else
-			editor->addEditorMessage("Selection numbers disabled");
 
 		return true;
 	}

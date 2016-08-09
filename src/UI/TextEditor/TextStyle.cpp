@@ -33,17 +33,19 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "TextEditor.h"
 #include "TextStyle.h"
 #include "Archive/ArchiveManager.h"
-#include <wx/dir.h>
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
+CVAR(String, txed_override_font, "", CVAR_SAVE)
+CVAR(Int, txed_override_font_size, 0, CVAR_SAVE)
 vector<StyleSet*>	style_sets;
 StyleSet*			ss_current = NULL;
+vector<TextEditor*>	StyleSet::editors;
 
 
 /*******************************************************************
@@ -143,16 +145,20 @@ bool TextStyle::parse(ParseTreeNode* node)
 /* TextStyle::applyTo
  * Applies the style settings to the scintilla text control [stc]
  *******************************************************************/
-void TextStyle::applyTo(wxStyledTextCtrl* stc)
+void TextStyle::applyTo(TextEditor* stc)
 {
 	for (unsigned a = 0; a < wx_styles.size(); a++)
 	{
 		// Set font face
-		if (!font.IsEmpty())
+		if (txed_override_font != "")
+			stc->StyleSetFaceName(wx_styles[a], txed_override_font);
+		else if (!font.IsEmpty())
 			stc->StyleSetFaceName(wx_styles[a], font);
 
 		// Set font size
-		if (size > 0)
+		if (txed_override_font_size > 0)
+			stc->StyleSetSize(wx_styles[a], txed_override_font_size);
+		else if (size > 0)
 			stc->StyleSetSize(wx_styles[a], size);
 
 		// Set foreground
@@ -308,6 +314,8 @@ StyleSet::StyleSet(string name) : ts_default("default", "Default", wxSTC_STYLE_D
 	styles.push_back(new TextStyle("linenum",		"Line Numbers",		wxSTC_STYLE_LINENUMBER));
 	styles.push_back(new TextStyle("calltip",		"Call Tip",			wxSTC_STYLE_CALLTIP));
 	styles.push_back(new TextStyle("calltip_hl",	"Call Tip Highlight"));
+	styles.push_back(new TextStyle("foldmargin",	"Code Folding Margin"));
+	styles.push_back(new TextStyle("guides",		"Indent/Right Margin Guide"));
 }
 
 /* StyleSet::~StyleSet
@@ -339,6 +347,23 @@ bool StyleSet::parseSet(ParseTreeNode* root)
 	{
 		if (ParseTreeNode* node = (ParseTreeNode*)root->getChild(styles[a]->name))
 			styles[a]->parse(node);
+		else
+		{
+			if (styles[a]->name == "foldmargin")
+			{
+				// No 'foldmargin' style defined, copy it from line numbers style
+				styles[a]->foreground = getStyleForeground("linenum");
+				styles[a]->background = getStyleBackground("linenum");
+				styles[a]->fg_defined = true;
+				styles[a]->bg_defined = true;
+			}
+			else if (styles[a]->name == "guides")
+			{
+				// No 'guides' style defined, use the default foreground colour
+				styles[a]->foreground = ts_default.getForeground();
+				styles[a]->fg_defined = true;
+			}
+		}
 	}
 
 	return true;
@@ -348,7 +373,7 @@ bool StyleSet::parseSet(ParseTreeNode* root)
  * Applies all the styles in this set to the text styles in scintilla
  * text control [stc]
  *******************************************************************/
-void StyleSet::applyTo(wxStyledTextCtrl* stc)
+void StyleSet::applyTo(TextEditor* stc)
 {
 	// Set default style
 	ts_default.applyTo(stc);
@@ -374,6 +399,14 @@ void StyleSet::applyTo(wxStyledTextCtrl* stc)
 
 	// Set caret colour to text foreground colour
 	stc->SetCaretForeground(WXCOL(ts_default.foreground));
+
+	// Update code folding margin
+	stc->setupFoldMargin(getStyle("foldmargin"));
+
+	// Set indent and right margin line colour
+	stc->SetEdgeColour(WXCOL(getStyle("guides")->getForeground()));
+	stc->StyleSetBackground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyleBackground("guides")));
+	stc->StyleSetForeground(wxSTC_STYLE_INDENTGUIDE, WXCOL(getStyleForeground("guides")));
 }
 
 /* StyleSet::copySet
@@ -470,6 +503,54 @@ bool StyleSet::writeFile(string filename)
 	file.Close();
 
 	return true;
+}
+
+/* StyleSet::getStyleForeground
+ * Returns the foreground colour of [style], or the default style's
+ * foreground colour if it is not set
+ *******************************************************************/
+rgba_t StyleSet::getStyleForeground(string style)
+{
+	TextStyle* s = getStyle(style);
+	if (s && s->hasForeground())
+		return s->getForeground();
+	else
+		return ts_default.getForeground();
+}
+
+/* StyleSet::getStyleBackground
+ * Returns the background colour of [style], or the default style's
+ * background colour if it is not set
+ *******************************************************************/
+rgba_t StyleSet::getStyleBackground(string style)
+{
+	TextStyle* s = getStyle(style);
+	if (s && s->hasBackground())
+		return s->getBackground();
+	else
+		return ts_default.getBackground();
+}
+
+/* StyleSet::getDefaultFontFace
+ * Returns the default style font face
+ *******************************************************************/
+string StyleSet::getDefaultFontFace()
+{
+	if (txed_override_font != "")
+		return txed_override_font;
+	else
+		return getStyle("default")->getFontFace();
+}
+
+/* StyleSet::getDefaultFontSize
+ * Returns the default style font size
+ *******************************************************************/
+int StyleSet::getDefaultFontSize()
+{
+	if (txed_override_font != "" && txed_override_font_size > 0)
+		return txed_override_font_size;
+	else
+		return getStyle("default")->getFontSize();
 }
 
 
@@ -575,7 +656,7 @@ bool StyleSet::loadSet(unsigned index)
 /* StyleSet::applyCurrent
  * Applies the current style set to the scintilla text control [stc]
  *******************************************************************/
-void StyleSet::applyCurrent(wxStyledTextCtrl* stc)
+void StyleSet::applyCurrent(TextEditor* stc)
 {
 	currentSet()->applyTo(stc);
 }
@@ -611,6 +692,31 @@ StyleSet* StyleSet::getSet(unsigned index)
 		return NULL;
 
 	return style_sets[index];
+}
+
+/* StyleSet::addEditor
+ * Adds [stc] to the current list of text editors
+ *******************************************************************/
+void StyleSet::addEditor(TextEditor* stc)
+{
+	editors.push_back(stc);
+}
+
+/* StyleSet::removeEditor
+ * Removes [stc] from the current list of text editors
+ *******************************************************************/
+void StyleSet::removeEditor(TextEditor* stc)
+{
+	VECTOR_REMOVE(editors, stc);
+}
+
+/* StyleSet::applyCurrentToAll
+ * Applies the current style set to all text editors in the list
+ *******************************************************************/
+void StyleSet::applyCurrentToAll()
+{
+	for (unsigned a = 0; a < editors.size(); a++)
+		applyCurrent(editors[a]);
 }
 
 /* StyleSet::loadResourceStyles

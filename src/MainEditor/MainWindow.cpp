@@ -48,18 +48,10 @@
 #include "UI/STabCtrl.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
 #include "UI/PaletteChooser.h"
-#include <wx/aboutdlg.h>
-#include <wx/dnd.h>
-#include <wx/statline.h>
-#include <wx/filename.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
 
 #ifdef USE_WEBVIEW_STARTPAGE
-#include <wx/webview.h>
 #include "UI/DocsPage.h"
 #endif
-
 
 /*******************************************************************
  * VARIABLES
@@ -948,9 +940,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		index++;
-
-		panel_archivemanager->handleAction(S_FMT("aman_recent%lu", index));
+		theApp->doAction("aman_recent", index);
 		createStartPage();
 		html_startpage->Reload();
 	}
@@ -1004,12 +994,11 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	else if (href.StartsWith("recent://"))
 	{
 		// Recent file
-		string rs = href.Right(1);
+		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		index++;
-
-		panel_archivemanager->handleAction(S_FMT("aman_recent%lu", index));
+		theApp->doAction("aman_recent", index);
+		createStartPage();
 	}
 	else if (href.StartsWith("action://"))
 	{

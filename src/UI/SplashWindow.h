@@ -2,8 +2,7 @@
 #ifndef __SPLASHWINDOW_H__
 #define __SPLASHWINDOW_H__
 
-#include <wx/minifram.h>
-#include <wx/timer.h>
+#include "common.h"
 
 class SplashWindow : public wxMiniFrame
 {

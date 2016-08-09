@@ -39,8 +39,6 @@
 #include "General/UndoRedo.h"
 #include "MapEditor/SectorBuilder.h"
 #include "UI/SplashWindow.h"
-#include <locale.h>
-#include <wx/colour.h>
 
 #define IDEQ(x) (((x) != 0) && ((x) == id))
 
@@ -3052,7 +3050,9 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 			LOG_DEBUG("Intersection point", intersection, "valid with", lines[a]);
 		}
 		else if (intersection != cutter.p1())
+		{
 			LOG_DEBUG("Intersection point", intersection, "invalid");
+		}
 	}
 
 	// Return if no intersections

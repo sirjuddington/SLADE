@@ -31,10 +31,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "AdvancedPrefsPanel.h"
-#include <wx/propgrid/propgrid.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

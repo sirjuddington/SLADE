@@ -38,7 +38,7 @@
 #ifdef __WXMSW__
 #include <CommCtrl.h>
 #endif
-#include <wx/settings.h>
+#include "common.h"
 
 /*******************************************************************
  * VARIABLES

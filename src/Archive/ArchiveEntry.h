@@ -14,6 +14,7 @@ enum EncryptionModes
 	ENC_JAGUAR,
 	ENC_BLOOD,
 	ENC_SCRLE0,
+	ENC_TXB,
 };
 
 class ArchiveEntry

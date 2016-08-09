@@ -40,16 +40,6 @@
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainWindow.h"
 #include "UI/SToolBar/SToolBar.h"
-#include <wx/filename.h>
-#include <wx/sizer.h>
-#include <wx/spinctrl.h>
-#include <wx/stattext.h>
-#include <wx/checkbox.h>
-#include <wx/menu.h>
-#include <wx/slider.h>
-#include <wx/msgdlg.h>
-#include <wx/choicdlg.h>
-#include <wx/bmpbuttn.h>
 
 
 /*******************************************************************

@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "Wad2Archive.h"
 #include "UI/SplashWindow.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

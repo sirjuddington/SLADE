@@ -34,10 +34,6 @@
 #include "NodeBuildersWizardPage.h"
 #include "TempFolderWizardPage.h"
 #include "Graphics/Icons.h"
-#include <wx/button.h>
-#include <wx/icon.h>
-#include <wx/sizer.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

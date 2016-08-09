@@ -2,7 +2,7 @@
 #ifndef __ICONS_H__
 #define	__ICONS_H__
 
-#include <wx/bitmap.h>
+#include "common.h"
 
 class ArchiveTreeNode;
 
@@ -16,7 +16,7 @@ namespace Icons
 	};
 
 	bool			loadIcons();
-	wxBitmap		getIcon(int type, string name, bool large = false);
+	wxBitmap		getIcon(int type, string name, bool large = false, bool log_missing = true);
 	bool			exportIconPNG(int type, string name, string path);
 	vector<string>	getIconSets(int type);
 }

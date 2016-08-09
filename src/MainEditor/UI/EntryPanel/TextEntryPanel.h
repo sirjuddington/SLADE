@@ -3,16 +3,20 @@
 #define	__TEXTENTRYPANEL_H__
 
 #include "EntryPanel.h"
+#include "General/SAction.h"
 #include "UI/TextEditor/TextEditor.h"
+#include "MainEditor/EntryOperations.h"
 
-class TextEntryPanel : public EntryPanel
+class TextEntryPanel : public EntryPanel, SActionHandler
 {
 private:
-	TextEditor*	text_area;
-	wxButton*	btn_find_replace;
-	wxChoice*	choice_text_language;
-	wxCheckBox*	cb_wordwrap;
-	wxButton*	btn_jump_to;
+	TextEditor*			text_area;
+	FindReplacePanel*	panel_fr;
+	wxButton*			btn_find_replace;
+	wxChoice*			choice_text_language;
+	wxCheckBox*			cb_wordwrap;
+	wxButton*			btn_jump_to;
+	wxChoice*			choice_jump_to;
 
 public:
 	TextEntryPanel(wxWindow* parent);
@@ -26,13 +30,13 @@ public:
 	bool	undo();
 	bool	redo();
 
+	// SAction Handler
+	bool	handleAction(string id);
+
 	// Events
 	void	onTextModified(wxStyledTextEvent& e);
-	void	onBtnFindReplace(wxCommandEvent& e);
 	void	onChoiceLanguageChanged(wxCommandEvent& e);
 	void	onUpdateUI(wxStyledTextEvent& e);
-	void	onWordWrapChanged(wxCommandEvent& e);
-	void	onBtnJumpTo(wxCommandEvent& e);
 };
 
 

@@ -2,17 +2,9 @@
 #ifndef __OGLCANVAS_H__
 #define	__OGLCANVAS_H__
 
+#include "common.h"
 #include "OpenGL/OpenGL.h"
 #include "Graphics/Palette/Palette.h"
-#include <wx/timer.h>
-
-#ifdef USE_SFML_RENDERWINDOW
-#undef None
-#include <SFML/Graphics.hpp>
-#include <wx/control.h>
-#else
-#include <wx/glcanvas.h>
-#endif
 
 class wxWindow;
 #ifdef USE_SFML_RENDERWINDOW

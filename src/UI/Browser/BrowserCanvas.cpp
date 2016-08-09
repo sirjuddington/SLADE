@@ -32,8 +32,7 @@
 #include "Main.h"
 #include "BrowserCanvas.h"
 #include "OpenGL/Drawing.h"
-#include <wx/settings.h>
-#include <wx/scrolbar.h>
+
 
 
 /*******************************************************************

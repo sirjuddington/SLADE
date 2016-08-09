@@ -2,8 +2,7 @@
 #ifndef __TEXTEDITOR_H__
 #define	__TEXTEDITOR_H__
 
-#include <wx/stc/stc.h>
-#include <wx/minifram.h>
+#include "common.h"
 #include "Archive/ArchiveEntry.h"
 #include "TextLanguage.h"
 #include "TextStyle.h"
@@ -11,59 +10,87 @@
 class wxButton;
 class wxCheckBox;
 class wxTextCtrl;
-class FindReplaceDialog : public wxMiniFrame
+class TextEditor;
+class FindReplacePanel : public wxPanel
 {
+public:
+	FindReplacePanel(wxWindow* parent, TextEditor* text_editor);
+	~FindReplacePanel();
+
+	void	setFindText(string find);
+	string	getFindText();
+	int		getFindFlags();
+	string	getReplaceText();
+
 private:
+	TextEditor*	text_editor;
+
 	wxTextCtrl*	text_find;
 	wxTextCtrl*	text_replace;
 	wxButton*	btn_find_next;
+	wxButton*	btn_find_prev;
 	wxButton*	btn_replace;
 	wxButton*	btn_replace_all;
 	wxCheckBox*	cb_match_case;
-	wxCheckBox*	cb_match_word;
-
-public:
-	FindReplaceDialog(wxWindow* parent);
-	~FindReplaceDialog();
-
-	wxButton*	getBtnFindNext() { return btn_find_next; }
-	wxButton*	getBtnReplace() { return btn_replace; }
-	wxButton*	getBtnReplaceAll() { return btn_replace_all; }
-	wxTextCtrl*	getTextFind() { return text_find; }
-	wxTextCtrl*	getTextReplace() { return text_replace; }
-	string		getFindString();
-	string		getReplaceString();
-	bool		matchCase();
-	bool		matchWord();
+	wxCheckBox*	cb_match_word_whole;
+	wxCheckBox*	cb_match_word_start;
+	wxCheckBox*	cb_search_regex;
+	wxCheckBox*	cb_allow_escape;
 
 	// Events
-	void	onClose(wxCloseEvent& e);
+	void	onBtnFindNext(wxCommandEvent& e);
+	void	onBtnFindPrev(wxCommandEvent& e);
+	void	onBtnReplace(wxCommandEvent& e);
+	void	onBtnReplaceAll(wxCommandEvent& e);
 	void	onKeyDown(wxKeyEvent& e);
+	void	onTextFindEnter(wxCommandEvent& e);
+	void	onTextReplaceEnter(wxCommandEvent& e);
 };
 
+wxDECLARE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
+
+class JumpToCalculator : public wxThread
+{
+public:
+	JumpToCalculator(wxEvtHandler* handler, string text, vector<string> block_names, vector<string> ignore)
+		: handler(handler), text(text), block_names(block_names), ignore(ignore) {}
+	virtual ~JumpToCalculator() {}
+
+	ExitCode Entry();
+
+private:
+	wxEvtHandler*	handler;
+	string			text;
+	vector<string>	block_names;
+	vector<string>	ignore;
+};
+
+class SCallTip;
+class wxChoice;
 class TextEditor : public wxStyledTextCtrl
 {
 private:
 	TextLanguage*		language;
-	FindReplaceDialog*	dlg_fr;
+	FindReplacePanel*	panel_fr;
+	SCallTip*			call_tip;
+	wxChoice*			choice_jump_to;
+	JumpToCalculator*	jump_to_calculator;
+	wxTimer				timer_update;
 
 	// Calltip stuff
 	TLFunction*	ct_function;
 	int			ct_argset;
 	int			ct_start;
+	bool		ct_dwell;
 
 	// Autocompletion
 	string		autocomp_list;
 
-	// Jump To stuff
-	struct jp_t
-	{
-		string	name;
-		int		line;
-	};
-
 	// Brace matching
 	int	bm_cursor_last_pos;
+
+	// Jump To
+	vector<int>	jump_to_lines;
 
 public:
 	TextEditor(wxWindow* parent, int id);
@@ -73,6 +100,7 @@ public:
 	bool			setLanguage(TextLanguage* lang);
 
 	void	setup();
+	void	setupFoldMargin(TextStyle* margin_style = NULL);
 	bool	applyStyleSet(StyleSet* style);
 	bool	loadEntry(ArchiveEntry* entry);
 	void	getRawText(MemChunk& mc);
@@ -81,20 +109,30 @@ public:
 	void	trimWhitespace();
 
 	// Find/Replace
-	void	showFindReplaceDialog() { dlg_fr->Show(); dlg_fr->CenterOnParent(); dlg_fr->Raise(); }
-	bool	findNext(string find);
-	bool	replaceCurrent(string find, string replace);
-	int		replaceAll(string find, string replace);
+	void	setFindReplacePanel(FindReplacePanel* panel) { panel_fr = panel; }
+	void	showFindReplacePanel(bool show = true);
+	bool	findNext(string find, int flags);
+	bool	findPrev(string find, int flags);
+	bool	replaceCurrent(string find, string replace, int flags);
+	int		replaceAll(string find, string replace, int flags);
 
 	// Brace matching
 	void	checkBraceMatch();
 
 	// Calltips
-	bool	openCalltip(int pos, int arg = 0);
+	void	showCalltip(int position);
+	void	hideCalltip();
+	bool	openCalltip(int pos, int arg = 0, bool dwell = false);
 	void	updateCalltip();
 
 	// Jump To
-	void	openJumpToDialog();
+	void	setJumpToControl(wxChoice* jump_to);
+	void	updateJumpToList();
+	void	jumpToLine();
+
+	// Folding
+	void	foldAll(bool fold = true);
+	void	setupFolding();
 
 	// Events
 	void	onKeyDown(wxKeyEvent& e);
@@ -106,11 +144,12 @@ public:
 	void	onMouseDwellEnd(wxStyledTextEvent& e);
 	void	onMouseDown(wxMouseEvent& e);
 	void	onFocusLoss(wxFocusEvent& e);
-	void	onFRDBtnFindNext(wxCommandEvent& e);
-	void	onFRDBtnReplace(wxCommandEvent& e);
-	void	onFRDBtnReplaceAll(wxCommandEvent& e);
-	void	onFRDKeyDown(wxKeyEvent& e);
 	void	onActivate(wxActivateEvent& e);
+	void	onMarginClick(wxStyledTextEvent& e);
+	void	onJumpToCalculateComplete(wxThreadEvent& e);
+	void	onJumpToChoiceSelected(wxCommandEvent& e);
+	void	onModified(wxStyledTextEvent& e);
+	void	onUpdateTimer(wxTimerEvent& e);
 };
 
 #endif //__TEXTEDITOR_H__

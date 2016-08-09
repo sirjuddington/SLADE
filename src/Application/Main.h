@@ -10,9 +10,8 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#ifdef _WINDOWS
-#include <windows.h>
-#endif
+#include "common.h"
+#include "common2.h"
 
 #if defined _MSC_VER && _MSC_VER < 1900
 #define _CRT_SECURE_NO_WARNINGS 1
@@ -29,7 +28,6 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 // String stuff
-#include <wx/string.h>
 typedef wxString string;
 #define S_FMT wxString::Format
 #define S_CMP(s1, s2) s1.Cmp(s2) == 0
@@ -40,9 +38,7 @@ typedef wxString string;
 #define UTF8(s) (static_cast<const char*>((s).c_str()))
 
 // Vectors
-#include <vector>
 using std::vector;
-#include <algorithm>
 
 // A macro to check if a value exists in a vector
 #define VECTOR_EXISTS(vec, val) find(vec.begin(), vec.end(), val) != vec.end()
@@ -82,11 +78,9 @@ typename M::mapped_type findInMap(M& m, const typename M::key_type& k, typename 
 }
 
 // Logfile
-#include <wx/log.h>
 #define LOG_MESSAGE(level, ...) if (Global::log_verbosity >= level) wxLogMessage(__VA_ARGS__)
 
-// File handling
-#include <wx/file.h>
+#undef Bool
 
 // Global internal includes
 #include "Utility/MemChunk.h"
@@ -218,8 +212,6 @@ struct Debuggable {
 #define LOG_DEBUG(...)
 #define LOG_DEBUG_VAR(name)
 #endif  // DEBUG
-
-
 
 #endif // __MAIN_H__
 

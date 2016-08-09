@@ -29,13 +29,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "TextEditorPrefsPanel.h"
-#include <wx/checkbox.h>
-#include <wx/sizer.h>
-#include <wx/spinctrl.h>
-#include <wx/statbox.h>
-#include <wx/statline.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 
 /*******************************************************************
@@ -51,6 +44,12 @@ EXTERN_CVAR(String, txed_style_set)
 EXTERN_CVAR(Bool, txed_trim_whitespace)
 EXTERN_CVAR(Bool, txed_calltips_mouse)
 EXTERN_CVAR(Bool, txed_calltips_parenthesis)
+EXTERN_CVAR(Bool, txed_calltips_colourise)
+EXTERN_CVAR(Bool, txed_calltips_dim_optional)
+EXTERN_CVAR(Bool, txed_calltips_use_font)
+EXTERN_CVAR(Bool, txed_fold_enable)
+EXTERN_CVAR(Bool, txed_fold_comments)
+EXTERN_CVAR(Bool, txed_fold_preprocessor)
 
 
 /*******************************************************************
@@ -108,6 +107,9 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	cb_brace_match = new wxCheckBox(this, -1, "Hilight Matching Braces");
 	sizer->Add(cb_brace_match, 0, wxEXPAND|wxALL, 4);
 
+	// Separator
+	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL), 0, wxEXPAND | wxALL, 4);
+
 	// Calltips on mouse hover
 	cb_calltips_mouse = new wxCheckBox(this, -1, "Show calltips on mouse hover");
 	sizer->Add(cb_calltips_mouse, 0, wxEXPAND|wxALL, 4);
@@ -115,6 +117,35 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	// Calltips on parenthesis
 	cb_calltips_parenthesis = new wxCheckBox(this, -1, "Show calltips on opening parenthesis");
 	sizer->Add(cb_calltips_parenthesis, 0, wxEXPAND|wxALL, 4);
+
+	// Colourise calltips
+	cb_calltips_colourise = new wxCheckBox(this, -1, "Colourise calltip function name and parameter types");
+	sizer->Add(cb_calltips_colourise, 0, wxEXPAND | wxALL, 4);
+
+	// Dim optional calltip parameters
+	cb_calltips_dim_optional = new wxCheckBox(this, -1, "Dim optional function parameters in calltips");
+	cb_calltips_dim_optional->SetToolTip("If disabled, optional parameters will be shown between [] brackets");
+	sizer->Add(cb_calltips_dim_optional, 0, wxEXPAND | wxALL, 4);
+
+	// Use text editor font in calltips
+	cb_calltips_use_font = new wxCheckBox(this, -1, "Use the text editor font in calltips");
+	sizer->Add(cb_calltips_use_font, 0, wxEXPAND | wxALL, 4);
+
+	// Separator
+	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL), 0, wxEXPAND | wxALL, 4);
+
+	// Enable Code Folding
+	cb_fold_enable = new wxCheckBox(this, -1, "Enable Code Folding");
+	sizer->Add(cb_fold_enable, 0, wxEXPAND | wxALL, 4);
+
+	// Fold Comments
+	cb_fold_comments = new wxCheckBox(this, -1, "Fold comment blocks");
+	sizer->Add(cb_fold_comments, 0, wxEXPAND | wxALL, 4);
+
+	// Fold Preprcessor
+	cb_fold_preprocessor = new wxCheckBox(this, -1, "Fold preprocessor regions");
+	cb_fold_preprocessor->SetToolTip("Enable folding for preprocessor regions, eg. #if/#endif, #region/#endregion");
+	sizer->Add(cb_fold_preprocessor, 0, wxEXPAND | wxALL, 4);
 }
 
 /* TextEditorPrefsPanel::~TextEditorPrefsPanel
@@ -136,8 +167,14 @@ void TextEditorPrefsPanel::init()
 	cb_brace_match->SetValue(txed_brace_match);
 	cb_calltips_mouse->SetValue(txed_calltips_mouse);
 	cb_calltips_parenthesis->SetValue(txed_calltips_parenthesis);
+	cb_calltips_colourise->SetValue(txed_calltips_colourise);
+	cb_calltips_dim_optional->SetValue(txed_calltips_dim_optional);
+	cb_calltips_use_font->SetValue(txed_calltips_use_font);
 	spin_right_margin->SetValue(txed_edge_column);
 	spin_tab_width->SetValue(txed_tab_width);
+	cb_fold_enable->SetValue(txed_fold_enable);
+	cb_fold_comments->SetValue(txed_fold_comments);
+	cb_fold_preprocessor->SetValue(txed_fold_preprocessor);
 }
 
 /* TextEditorPrefsPanel::applyPreferences
@@ -154,4 +191,10 @@ void TextEditorPrefsPanel::applyPreferences()
 	txed_edge_column = spin_right_margin->GetValue();
 	txed_calltips_mouse = cb_calltips_mouse->GetValue();
 	txed_calltips_parenthesis = cb_calltips_parenthesis->GetValue();
+	txed_calltips_colourise = cb_calltips_colourise->GetValue();
+	txed_calltips_dim_optional = cb_calltips_dim_optional->GetValue();
+	txed_calltips_use_font = cb_calltips_use_font->GetValue();
+	txed_fold_enable = cb_fold_enable->GetValue();
+	txed_fold_comments = cb_fold_comments->GetValue();
+	txed_fold_preprocessor = cb_fold_preprocessor->GetValue();
 }

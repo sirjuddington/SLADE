@@ -6,7 +6,6 @@
 #include "General/ListenerAnnouncer.h"
 #include "UI/Lists/ListView.h"
 #include "UI/WxBasicControls.h"
-#include <wx/panel.h>
 
 class TextureXEditor;
 class TextureXList;

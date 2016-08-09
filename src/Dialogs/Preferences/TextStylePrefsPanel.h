@@ -2,12 +2,12 @@
 #ifndef __TEXT_STYLE_PREFS_PANEL_H__
 #define __TEXT_STYLE_PREFS_PANEL_H__
 
+#include "common.h"
 #include "PrefsPanelBase.h"
 #include "UI/TextEditor/TextStyle.h"
-#include <wx/clrpicker.h>
-#include <wx/fontpicker.h>
 
 class wxListBox;
+class TextLanguage;
 class TextStylePrefsPanel : public PrefsPanelBase
 {
 private:
@@ -17,6 +17,8 @@ private:
 	wxListBox*			list_styles;
 	StyleSet			ss_current;
 	TextStyle*			ts_current;
+	wxCheckBox*			cb_font_override;
+	wxFontPickerCtrl*	fp_font_override;
 
 	wxColourPickerCtrl*	cp_foreground;
 	wxColourPickerCtrl*	cp_background;
@@ -28,6 +30,9 @@ private:
 	wxCheckBox*			cb_override_font_underlined;
 	wxCheckBox*			cb_override_foreground;
 	wxCheckBox*			cb_override_background;
+
+	TextLanguage*		language_preview;
+	TextEditor*			te_preview;
 
 public:
 	TextStylePrefsPanel(wxWindow* parent);
@@ -42,6 +47,7 @@ public:
 	void	updateFontUnderlined();
 	void	updateForeground();
 	void	updateBackground();
+	void	updatePreview();
 
 	void	init();
 	void	applyPreferences();
@@ -60,6 +66,8 @@ public:
 	void	onBackgroundChanged(wxColourPickerEvent& e);
 	void	onBtnSaveStyleSet(wxCommandEvent& e);
 	void	onStyleSetSelected(wxCommandEvent& e);
+	void	onCBOverrideFont(wxCommandEvent& e);
+	void	onFontOverrideChanged(wxFontPickerEvent& e);
 };
 
 #endif//__TEXT_STYLE_PREFS_PANEL_H__

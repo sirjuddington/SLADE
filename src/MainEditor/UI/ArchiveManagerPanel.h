@@ -7,9 +7,6 @@
 #include "General/SAction.h"
 #include "UI/DockPanel.h"
 #include "UI/Lists/ListView.h"
-#include <wx/aui/auibook.h>
-#include <wx/dirctrl.h>
-#include <wx/thread.h>
 
 class ArchiveManagerPanel;
 class ArchivePanel;

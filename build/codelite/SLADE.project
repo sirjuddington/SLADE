@@ -520,8 +520,6 @@
       <File Name="src/mus2mid/mus2mid.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="ZReaders">
-      <File Name="src/zreaders/ancientzip.cpp"/>
-      <File Name="src/zreaders/ancientzip.h"/>
       <File Name="src/zreaders/files.cpp"/>
       <File Name="src/zreaders/files.h"/>
       <File Name="src/zreaders/m_alloc.cpp"/>

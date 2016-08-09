@@ -42,13 +42,6 @@
 #include "UI/ColourBox.h"
 #include "UI/PaletteChooser.h"
 #include "UI/SplashWindow.h"
-#include <wx/bmpbuttn.h>
-#include <wx/checkbox.h>
-#include <wx/radiobut.h>
-#include <wx/sizer.h>
-#include <wx/slider.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

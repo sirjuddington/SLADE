@@ -189,7 +189,7 @@ protected:
 				}
 
 				// If the current pixel is not transparent, add it to the current post
-				if (mask[offset] > 0)
+				if (!mask || mask[offset] > 0)
 				{
 					// If we're not currently building a post, begin one and set its offset
 					if (!ispost)

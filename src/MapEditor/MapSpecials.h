@@ -1,4 +1,4 @@
-#include <wx/hashmap.h>
+#include "common.h"
 #include "SLADEMap/MapLine.h"
 #include "SLADEMap/MapSector.h"
 #include "SLADEMap/MapThing.h"

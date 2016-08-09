@@ -42,13 +42,6 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "UI/PaletteChooser.h"
-#include <wx/filename.h>
-#include <wx/utils.h>
-#include <wx/msgdlg.h>
-
-#ifdef __WXMSW__
-#include <wx/msw/registry.h>
-#endif
 
 
 /*******************************************************************
@@ -436,30 +429,6 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 	}
 	else
 		return false;
-
-	return true;
-}
-
-/* EntryOperations::openExternal
- * Opens [entry] in the default OS program for its data type
- *******************************************************************/
-bool EntryOperations::openExternal(ArchiveEntry* entry)
-{
-	if (!entry)
-		return false;
-
-	// Build entry filename
-	wxFileName fn;
-	fn.SetFullName(entry->getName(false));
-	if (entry->getType() != EntryType::unknownType())
-		fn.SetExt(entry->getType()->getExtension());
-
-	// Export to file
-	string path = appPath(fn.GetFullName(), DIR_TEMP);
-	entry->exportFile(path);
-
-	// Open the file externally
-	wxLaunchDefaultApplication(path);
 
 	return true;
 }

@@ -36,7 +36,6 @@
 #include "UI/SplashWindow.h"
 #include "General/ResourceManager.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************
@@ -539,6 +538,17 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 		delete new_archive;
 		return NULL;
 	}
+}
+
+/* ArchiveManager::createTemporaryArchive
+ * Creates a temporary zip archive for archive building
+ * This function doesn't connect archive with announcers and archive lists
+ *******************************************************************/
+Archive* ArchiveManager::createTemporaryArchive()
+{
+	Archive* new_archive = NULL;
+	new_archive = new ZipArchive();
+	return new_archive;
 }
 
 /* ArchiveManager::newArchive

@@ -2,10 +2,10 @@
 #ifndef __TEXT_STYLE_H__
 #define __TEXT_STYLE_H__
 
+#include "common.h"
 #include "Utility/Parser.h"
-#include <wx/font.h>
-#include <wx/stc/stc.h>
 
+class TextEditor;
 class TextStyle
 {
 	friend class StyleSet;
@@ -54,7 +54,7 @@ public:
 	rgba_t	getBackground() { return background; }
 
 	bool	parse(ParseTreeNode* node);
-	void	applyTo(wxStyledTextCtrl* stc);
+	void	applyTo(TextEditor* stc);
 	bool	copyStyle(TextStyle* copy);
 	string	getDefinition(unsigned tabs = 0);
 };
@@ -67,6 +67,8 @@ private:
 	TextStyle	ts_selection;
 
 	vector<TextStyle*>	styles;
+	
+	static vector<TextEditor*>	editors;
 
 public:
 	StyleSet(string name = "Unnamed Style");
@@ -76,11 +78,16 @@ public:
 	unsigned	nStyles() { return styles.size(); }
 
 	bool		parseSet(ParseTreeNode* root);
-	void		applyTo(wxStyledTextCtrl* stc);
+	void		applyTo(TextEditor* stc);
 	bool		copySet(StyleSet* copy);
 	TextStyle*	getStyle(string name);
 	TextStyle*	getStyle(unsigned index);
 	bool		writeFile(string filename);
+
+	rgba_t	getStyleForeground(string style);
+	rgba_t	getStyleBackground(string style);
+	string	getDefaultFontFace();
+	int		getDefaultFontSize();
 
 	// Static functions for styleset management
 	static void			initCurrent();
@@ -88,10 +95,13 @@ public:
 	static StyleSet*	currentSet();
 	static bool			loadSet(string name);
 	static bool			loadSet(unsigned index);
-	static void			applyCurrent(wxStyledTextCtrl* stc);
+	static void			applyCurrent(TextEditor* stc);
 	static string		getName(unsigned index);
 	static unsigned		numSets();
 	static StyleSet*	getSet(unsigned index);
+	static void			addEditor(TextEditor* stc);
+	static void			removeEditor(TextEditor* stc);
+	static void			applyCurrentToAll();
 
 	static bool			loadResourceStyles();
 	static bool			loadCustomStyles();

@@ -51,9 +51,6 @@
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include "Utility/SFileDialog.h"
-#include <wx/aui/aui.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
 
 
 /*******************************************************************
@@ -231,7 +228,6 @@ void MapEditorWindow::setupMenu()
 	menu_view->AppendSeparator();
 	theApp->getAction("mapw_show_fullmap")->addToMenu(menu_view);
 	theApp->getAction("mapw_show_item")->addToMenu(menu_view);
-	//theApp->getAction("mapw_toggle_selection_numbers")->addToMenu(menu_view, true);
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
@@ -1195,6 +1191,7 @@ bool MapEditorWindow::handleAction(string id)
 		{
 			p_inf.Show(true);
 			p_inf.window->SetFocus();
+			((ScriptEditorPanel*)p_inf.window)->updateUI();
 		}
 
 		p_inf.MinSize(200, 128);

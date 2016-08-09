@@ -58,6 +58,7 @@ public:
 	Archive*	openArchive(ArchiveEntry* entry, bool manage = true, bool silent = false);
 	Archive*	openDirArchive(string dir, bool manage = true, bool silent = false);
 	Archive*	newArchive(uint8_t type);
+	Archive*	createTemporaryArchive();
 	bool		closeArchive(int index);
 	bool		closeArchive(string filename);
 	bool		closeArchive(Archive* archive);

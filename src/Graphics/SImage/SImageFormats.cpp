@@ -35,10 +35,8 @@
 #include "Main.h"
 #include "SImage.h"
 #undef BOOL
-#include "FreeImage.h"
 #include "General/Misc.h"
 #include "SIFormat.h"
-#include <wx/filefn.h>
 
 
 /*******************************************************************

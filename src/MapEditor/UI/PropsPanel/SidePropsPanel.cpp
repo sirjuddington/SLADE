@@ -35,12 +35,6 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/NumberTextCtrl.h"
-#include <wx/gbsizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#undef min
-#undef max
-#include <wx/valnum.h>
 
 
 /*******************************************************************

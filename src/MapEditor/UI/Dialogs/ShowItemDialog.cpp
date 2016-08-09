@@ -31,10 +31,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "ShowItemDialog.h"
-#include <wx/choice.h>
-#include <wx/gbsizer.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 
 /*******************************************************************

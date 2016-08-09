@@ -42,11 +42,6 @@
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/SplashWindow.h"
 #include "UI/STabCtrl.h"
-#include <wx/filename.h>
-#include <wx/stattext.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/filedlg.h>
 
 
 /*******************************************************************
@@ -412,7 +407,8 @@ void ArchiveManagerPanel::refreshRecentFileList()
 	list_recent->ClearAll();
 
 	// Get first recent file menu id
-	int id_recent_start = theApp->getAction("aman_recent1")->getWxId();
+	SAction* a_recent = theApp->getAction("aman_recent");
+	int id_recent_start = a_recent->getWxId();
 
 	// Clear menu; needs to do with a count down rather than up
 	// otherwise the following elements are not properly removed
@@ -443,9 +439,10 @@ void ArchiveManagerPanel::refreshRecentFileList()
 				icon = "folder";
 
 			// Create and add menu item
-			wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
-			mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
-			menu_recent->Append(mi);
+			a_recent->addToMenu(menu_recent, fn, icon, a);
+			//wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
+			//mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
+			//menu_recent->Append(mi);
 		}
 	}
 
@@ -1761,23 +1758,14 @@ bool ArchiveManagerPanel::handleAction(string id)
 		}
 	}
 
-	// File->Recent *and* Recent files context menu
-	else if (id.StartsWith("aman_recent"))
+	// File->Recent
+	else if (id == "aman_recent")
 	{
-		// Deal with those first
-		if (id == "aman_recent_open")
-			openSelection();
-		else if (id == "aman_recent_remove")
-			removeSelection();
-		// Only then is it safe to assume it's a File->Recent stuff
-		else
-		{
-			// Get recent file index
-			unsigned index = theApp->getAction(id)->getWxId() - theApp->getAction("aman_recent1")->getWxId();
+		// Get recent file index
+		unsigned index = wx_id_offset;//theApp->getAction(id)->getWxId() - theApp->getAction("aman_recent1")->getWxId();
 
-			// Open it
-			openFile(theArchiveManager->recentFile(index));
-		}
+		// Open it
+		openFile(theArchiveManager->recentFile(index));
 	}
 
 	// File->Save
@@ -1807,6 +1795,12 @@ bool ArchiveManagerPanel::handleAction(string id)
 		saveSelectionAs();
 	else if (id == "aman_close_a")
 		closeSelection();
+
+	// Recent files context menu
+	else if (id == "aman_recent_open")
+		openSelection();
+	else if (id == "aman_recent_remove")
+		removeSelection();
 
 	// Bookmarks context menu
 	else if (id == "aman_bookmark_go")

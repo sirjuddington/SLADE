@@ -33,12 +33,6 @@
 #include "Main.h"
 #include "BrowserWindow.h"
 #include "General/Misc.h"
-#include <wx/choice.h>
-#include <wx/dataview.h>
-#include <wx/scrolbar.h>
-#include <wx/sizer.h>
-#include <wx/slider.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************
@@ -142,7 +136,7 @@ BrowserWindow::BrowserWindow(wxWindow* parent)
 	Misc::winf_t info = Misc::getWindowInfo("browser");
 	if (!info.id.IsEmpty())
 	{
-		SetSize(info.width, info.height);
+		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
@@ -244,7 +238,7 @@ BrowserWindow::~BrowserWindow()
 {
 	browser_maximised = IsMaximized();
 	if (!IsMaximized())
-		Misc::setWindowInfo("browser", GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		Misc::setWindowInfo("browser", GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
 }
 
 /* BrowserWindow::addItem

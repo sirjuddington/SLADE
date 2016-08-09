@@ -37,6 +37,7 @@
 #include "Dialogs/MapEditorConfigDialog.h"
 #include "Dialogs/MapReplaceDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
+#include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/RunDialog.h"
 #include "Dialogs/TranslationEditorDialog.h"
 #include "EntryPanel/AnimatedEntryPanel.h"
@@ -51,6 +52,7 @@
 #include "EntryPanel/SwitchesEntryPanel.h"
 #include "EntryPanel/TextEntryPanel.h"
 #include "General/Clipboard.h"
+#include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
@@ -58,22 +60,12 @@
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
+#include "MainEditor/ExternalEditManager.h"
 #include "MainEditor/MainWindow.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
-#include <wx/aui/auibar.h>
-#include <wx/aui/auibook.h>
-#include <wx/bmpbuttn.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textdlg.h>
-
 
 /*******************************************************************
  * VARIABLES
@@ -85,6 +77,7 @@ CVAR(String, last_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(String, last_tint_colour, "RGB(255, 0, 0)", CVAR_SAVE)
 CVAR(Int, last_tint_amount, 50, CVAR_SAVE)
 CVAR(Bool, auto_entry_replace, false, CVAR_SAVE)
+CVAR(Bool, archive_build_skip_hidden, true, CVAR_SAVE)
 EXTERN_CVAR(String, path_pngout)
 EXTERN_CVAR(String, path_pngcrush)
 EXTERN_CVAR(String, path_deflopt)
@@ -309,6 +302,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	// Init variables
 	undo_manager = new UndoManager();
 	ignore_focus_change = false;
+	ee_manager = new ExternalEditManager();
 
 	// Set archive
 	this->archive = archive;
@@ -420,6 +414,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 ArchivePanel::~ArchivePanel()
 {
 	delete undo_manager;
+	delete ee_manager;
 }
 
 /* ArchivePanel::saveEntryChanges
@@ -866,23 +861,77 @@ bool ArchivePanel::buildArchive()
 	SFileDialog::fd_info_t info;
 	if (SFileDialog::saveFile(info, "Build archive", "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)", this))
 	{
-		theSplashWindow->show(string("Building ") + info.filenames[0]);
-		theSplashWindow->setProgress(-1.0f);
+		theSplashWindow->show(string("Building ") + info.filenames[0], true);
+		theSplashWindow->setProgress(0.0f);
 
 		// Create temporary archive
-		new_archive = theArchiveManager->newArchive(ARCHIVE_ZIP);
+		new_archive = theArchiveManager->createTemporaryArchive();
 
 		// prevent for "archive in archive" when saving in the current directory
 		if(wxFileExists(info.filenames[0]))
 			wxRemoveFile(info.filenames[0]);
 
-		// import all files into new archive
-		new_archive->importDir(archive->getFilename());
+		// Log
+		theSplashWindow->setMessage("Importing files... (Esc to cancel)");
 
+		// import all files into new archive
+		// Get a list of all files in the directory
+		wxArrayString files;
+		wxDir::GetAllFiles(archive->getFilename(), &files);
+
+		// Go through files
+		for (unsigned a = 0; a < files.size(); a++)
+		{
+			// Cancel event
+			if (wxGetKeyState(WXK_ESCAPE))
+			{
+				if (new_archive)
+					delete new_archive;
+
+				theSplashWindow->hide();
+				return true;
+			}
+			
+			string name = files[a];
+			name.Replace(archive->getFilename(), "", false);	// Remove directory from entry name
+	
+			// Split filename into dir+name
+			wxFileName fn(name);
+			string ename = fn.GetFullName();
+			string edir = fn.GetPath();
+
+			// Remove beginning \ or / from dir
+			if (edir.StartsWith("\\") || edir.StartsWith("/"))
+				edir.Remove(0, 1);
+
+			// Skip hidden files
+			if (archive_build_skip_hidden && (edir[0] == '.' || ename[0] == '.'))
+				continue;
+
+			// Add the entry
+			ArchiveTreeNode* dir = new_archive->createDir(edir);
+			ArchiveEntry* entry = new_archive->addNewEntry(ename, dir->numEntries()+1, dir);
+
+			// Log
+			theSplashWindow->setProgressMessage(ename);
+			theSplashWindow->setProgress((float)a/files.size());
+
+			// Load data
+			entry->importFile(files[a]);
+	
+			// Set unmodified
+			entry->setState(0);
+			dir->getDirEntry()->setState(0);
+		}
+
+		theSplashWindow->setProgress(1.0f);
+		theSplashWindow->setMessage("Saving archive...");
+		theSplashWindow->setProgressMessage("");
+		
 		// Save the archive
 		if (!new_archive->save(info.filenames[0]))
 		{
-			theArchiveManager->closeArchive(new_archive);
+			delete new_archive;
 			theSplashWindow->hide();
 
 			// If there was an error pop up a message box
@@ -892,7 +941,7 @@ bool ArchivePanel::buildArchive()
 	}
 
 	if (new_archive)
-		theArchiveManager->closeArchive(new_archive);
+		delete new_archive;
 
 	theSplashWindow->hide();
 
@@ -1705,6 +1754,30 @@ bool ArchivePanel::pasteEntry()
 	}
 	else
 		return false;
+}
+
+bool ArchivePanel::openEntryExternal()
+{
+	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
+		// Open entry in selected external editor
+		bool ok = ee_manager->openEntryExternal(
+					selection[a],
+					current_external_exes[wx_id_offset],
+					current_external_exe_category
+					);
+
+		// Show error message if failed
+		if (!ok)
+			wxMessageBox(
+				S_FMT("Failed opening %s in external editor: %s", selection[a]->getName(), Global::error),
+				"External Edit Failed",
+				wxOK | wxICON_ERROR
+				);
+	}
+
+	return true;
 }
 
 /* ArchivePanel::gfxConvert
@@ -2795,6 +2868,40 @@ void ArchivePanel::refreshPanel()
 	Refresh();
 }
 
+/* ArchivePanel::createEntryOpenMenu
+ * Creates and returns the 'Open In' submenu for the entry context
+ * menu, adding any external editors for entries of [category] 
+ *******************************************************************/
+wxMenu* ArchivePanel::createEntryOpenMenu(string category)
+{
+	current_external_exe_category = category;
+	current_external_exes.clear();
+	wxMenu* menu_open = new wxMenu();
+
+	// New Tab
+	theApp->getAction("arch_entry_opentab")->addToMenu(menu_open, true);
+	menu_open->AppendSeparator();
+
+	// External editors
+	vector<Executables::external_exe_t> external = Executables::getExternalExes(category);
+	SAction* a_open_ext = theApp->getAction("arch_entry_openext");
+	unsigned num = MIN(external.size(), 20);
+	for (unsigned a = 0; a < num; a++)
+	{
+		a_open_ext->addToMenu(menu_open, "With " + external[a].name, "NO", a);
+		current_external_exes.push_back(external[a].name);
+	}
+
+	// Add separator if any external editors were added
+	if (menu_open->GetMenuItemCount() > 2)
+		menu_open->AppendSeparator();
+
+	// Setup external editors
+	theApp->getAction("arch_entry_setup_external")->addToMenu(menu_open);
+
+	return menu_open;
+}
+
 /* ArchivePanel::handleAction
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
@@ -2949,6 +3056,10 @@ bool ArchivePanel::handleAction(string id)
 	else if (id == "arch_entry_exportas")
 		exportEntryAs();
 
+	// Entry->Open in External Editor
+	else if (id == "arch_entry_openext")
+		openEntryExternal();
+
 
 
 	// Context menu actions
@@ -2996,6 +3107,8 @@ bool ArchivePanel::handleAction(string id)
 		findTextureErrors();
 	else if (id == "arch_map_opendb2")
 		mapOpenDb2();
+	else if (id == "arch_entry_setup_external")
+		PreferencesDialog::openPreferences(theMainWindow, "Editing", "external");
 
 	// Map Editor Panel
 	else if (id == "pmap_open_text")
@@ -3213,6 +3326,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	bool map_selected = false;
 	bool swan_selected = false;
 //	bool rle_selected = false;
+	string category = "";
 	for (size_t a = 0; a < selection.size(); a++)
 	{
 		// Check for gfx entry
@@ -3293,6 +3407,17 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 				rle_selected = true;
 		}
 #endif
+		if (category != "diff")
+		{
+			if (category == "")
+				category = selection[a]->getType()->getCategory();
+			else
+			{
+				string ed = selection[a]->getType()->getCategory();
+				if (category != ed)
+					category = "diff";
+			}
+		}
 	}
 
 	// Generate context menu
@@ -3314,8 +3439,11 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	theApp->getAction("arch_entry_sort")->addToMenu(&context, true);
 	context.AppendSeparator();
 	theApp->getAction("arch_entry_bookmark")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_opentab")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_crc32")->addToMenu(&context, true);
+	//theApp->getAction("arch_entry_opentab")->addToMenu(&context, true);
+	//theApp->getAction("arch_entry_crc32")->addToMenu(&context, true);
+
+	// Add 'Open In' menu
+	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(Icons::getIcon(Icons::GENERAL, "open"));
 
 	// Add custom menu items
 	wxMenu* custom;

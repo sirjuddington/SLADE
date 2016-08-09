@@ -2,8 +2,7 @@
 #ifndef __S_AUI_TAB_ART_H__
 #define __S_AUI_TAB_ART_H__
 
-#include <wx/aui/auibook.h>
-#include <wx/aui/dockart.h>
+#include "common.h"
 
 class wxAuiCommandCapture : public wxEvtHandler
 {

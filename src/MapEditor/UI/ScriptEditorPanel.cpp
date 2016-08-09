@@ -34,15 +34,20 @@
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "UI/SToolBar/SToolBar.h"
-#include <wx/dataview.h>
-#include <wx/sizer.h>
-#include <wx/treelist.h>
+
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
 CVAR(Bool, script_show_language_list, true, CVAR_SAVE)
+CVAR(Bool, script_word_wrap, false, CVAR_SAVE)
+
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
+EXTERN_CVAR(Bool, txed_trim_whitespace)
 
 
 /*******************************************************************
@@ -70,16 +75,24 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 	wxArrayString actions;
 	actions.Add("mapw_script_save");
 	actions.Add("mapw_script_compile");
-	actions.Add("mapw_script_jumpto");
 	actions.Add("mapw_script_togglelanguage");
 	toolbar->addActionGroup("Scripts", actions);
+
+	// Jump To toolbar group
+	SToolBarGroup* group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
+	choice_jump_to = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(200, -1));
+	group_jump_to->addCustomControl(choice_jump_to);
+	toolbar->addGroup(group_jump_to);
 
 	// Add text editor
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 1, wxEXPAND);
+	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+	hbox->Add(vbox, 1, wxEXPAND);
 
 	text_editor = new TextEditor(this, -1);
-	hbox->Add(text_editor, 1, wxEXPAND|wxALL, 4);
+	text_editor->setJumpToControl(choice_jump_to);
+	vbox->Add(text_editor, 1, wxEXPAND|wxALL, 4);
 
 	// Set language
 	string lang = theGameConfiguration->scriptLanguage();
@@ -95,6 +108,12 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent)
 		entry_script->setName("SCRIPTS");
 		entry_compiled->setName("BEHAVIOR");
 	}
+
+	// Add Find+Replace panel
+	panel_fr = new FindReplacePanel(this, text_editor);
+	text_editor->setFindReplacePanel(panel_fr);
+	vbox->Add(panel_fr, 0, wxEXPAND | wxALL, 4);
+	panel_fr->Hide();
 
 	// Add function/constants list
 	list_words = new wxTreeListCtrl(this, -1);
@@ -140,7 +159,14 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	}
 
 	// Load script text
-	return text_editor->loadEntry(entry_script);
+	bool ok = text_editor->loadEntry(entry_script);
+	if (ok)
+	{
+		text_editor->updateJumpToList();
+		return true;
+	}
+	else
+		return false;
 }
 
 /* ScriptEditorPanel::populateWordList
@@ -179,6 +205,10 @@ void ScriptEditorPanel::populateWordList()
  *******************************************************************/
 void ScriptEditorPanel::saveScripts()
 {
+	// Trim whitespace
+	if (txed_trim_whitespace)
+		text_editor->trimWhitespace();
+
 	// Write text to entry
 	wxCharBuffer buf = text_editor->GetText().mb_str();
 	entry_script->importMem(buf, buf.length());
@@ -191,6 +221,14 @@ void ScriptEditorPanel::saveScripts()
 		map->mapSpecials()->processACSScripts(entry_script);
 		map->mapSpecials()->updateTaggedSectors(map);
 	}
+}
+
+/* ScriptEditorPanel::updateUI
+ * Update script editor UI
+ *******************************************************************/
+void ScriptEditorPanel::updateUI()
+{
+	text_editor->updateJumpToList();
 }
 
 /* ScriptEditorPanel::handleAction
@@ -217,14 +255,9 @@ bool ScriptEditorPanel::handleAction(string name)
 	else if (name == "mapw_script_save")
 		saveScripts();
 
-	// Jump To
-	else if (name == "mapw_script_jumpto")
-		text_editor->openJumpToDialog();
-
 	// Toggle language list
 	else if (name == "mapw_script_togglelanguage")
 	{
-		script_show_language_list = !script_show_language_list;
 		list_words->Show(script_show_language_list);
 		Layout();
 		Refresh();

@@ -206,11 +206,28 @@ bool Icons::loadIcons()
 }
 
 /* Icons::getIcon
- * Returns the icon matching <name> as a wxBitmap (for toolbars etc),
- * or an empty bitmap if no icon matching <name> was found
+ * Returns the icon matching [name] of [type] as a wxBitmap (for
+ * toolbars etc), or an empty bitmap if no icon was found. If [type]
+ * is less than 0, try all icon types. If [log_missing] is true, log
+ * an error message if the icon was not found
  *******************************************************************/
-wxBitmap Icons::getIcon(int type, string name, bool large)
+wxBitmap Icons::getIcon(int type, string name, bool large, bool log_missing)
 {
+	// Check all types if [type] is < 0
+	if (type < 0)
+	{
+		wxBitmap icon = getIcon(GENERAL, name, large, false);
+		if (!icon.IsOk())
+			icon = getIcon(ENTRY, name, large, false);
+		if (!icon.IsOk())
+			icon = getIcon(TEXT_EDITOR, name, large, false);
+
+		if (!icon.IsOk() && log_missing)
+			LOG_MESSAGE(2, "Icon \"%s\" does not exist", name);
+
+		return icon;
+	}
+
 	vector<icon_t>& icons = iconList(type);
 
 	for (size_t a = 0; a < icons.size(); a++)
@@ -229,7 +246,9 @@ wxBitmap Icons::getIcon(int type, string name, bool large)
 		}
 	}
 
-	wxLogMessage("Icon \"%s\" does not exist", name);
+	if (log_missing)
+		LOG_MESSAGE(2, "Icon \"%s\" does not exist", name);
+
 	return wxNullBitmap;
 }
 

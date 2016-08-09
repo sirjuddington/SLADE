@@ -53,26 +53,9 @@
 #include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
 #include "Utility/Tokenizer.h"
-#include <wx/button.h>
-#include <wx/clipbrd.h>
-#include <wx/dcmemory.h>
-#include <wx/dir.h>
-#include <wx/ffile.h>
-#include <wx/filename.h>
-#include <wx/image.h>
-#include <wx/ipc.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/protocol/http.h>
-#include <wx/snglinst.h>
-#include <wx/stackwalk.h>
 #include <wx/statbmp.h>
-#include <wx/stattext.h>
-#include <wx/stdpaths.h>
-#include <wx/sysopt.h>
 
 #undef BOOL
-#include <FreeImage.h>
 
 #ifdef UPDATEREVISION
 #include "gitinfo.h"
@@ -87,8 +70,8 @@ namespace Global
 	string error = "";
 
 	int beta_num = 0;
-	int version_num = 3113;
-	string version = "3.1.1.3";
+	int version_num = 3120;
+	string version = "3.1.2 Alpha";
 #ifdef GIT_DESCRIPTION
 	string sc_rev = GIT_DESCRIPTION;
 #else
@@ -122,13 +105,6 @@ CVAR(String, temp_location_custom, "", CVAR_SAVE)
 CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
 CVAR(Bool, update_check, true, CVAR_SAVE)
 CVAR(Bool, update_check_beta, false, CVAR_SAVE)
-
-
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Bool, map_show_selection_numbers)
-EXTERN_CVAR(Bool, script_show_language_list)
 
 
 /*******************************************************************
@@ -688,28 +664,7 @@ void MainApp::initActions()
 	new SAction("aman_save_a", "&Save", "save", "Save the selected Archive", "Ctrl+S");
 	new SAction("aman_saveas_a", "Save &As", "saveas", "Save the selected Archive to a new file", "Ctrl+Shift+S");
 	new SAction("aman_close_a", "&Close", "close", "Close the selected Archive", "Ctrl+W");
-
-	// Recent files
-	new SAction("aman_recent1", "<insert recent file name>", "");
-	new SAction("aman_recent2", "<insert recent file name>", "");
-	new SAction("aman_recent3", "<insert recent file name>", "");
-	new SAction("aman_recent4", "<insert recent file name>", "");
-	new SAction("aman_recent5", "<insert recent file name>", "");
-	new SAction("aman_recent6", "<insert recent file name>", "");
-	new SAction("aman_recent7", "<insert recent file name>", "");
-	new SAction("aman_recent8", "<insert recent file name>", "");
-	new SAction("aman_recent9", "<insert recent file name>", "");
-	new SAction("aman_recent10", "<insert recent file name>", "");
-	new SAction("aman_recent11", "<insert recent file name>", "");
-	new SAction("aman_recent12", "<insert recent file name>", "");
-	new SAction("aman_recent13", "<insert recent file name>", "");
-	new SAction("aman_recent14", "<insert recent file name>", "");
-	new SAction("aman_recent15", "<insert recent file name>", "");
-	new SAction("aman_recent16", "<insert recent file name>", "");
-	new SAction("aman_recent17", "<insert recent file name>", "");
-	new SAction("aman_recent18", "<insert recent file name>", "");
-	new SAction("aman_recent19", "<insert recent file name>", "");
-	new SAction("aman_recent20", "<insert recent file name>", "");
+	new SAction("aman_recent", "<insert recent file name>", "", "", "", 0, -1, -1, 20);
 
 	// ArchivePanel
 	new SAction("arch_newentry", "New Entry", "newentry", "Create a new empty entry");
@@ -741,8 +696,10 @@ void MainApp::initActions()
 	new SAction("arch_entry_import", "Import", "import", "Import a file to the selected entry", "kb:el_import");
 	new SAction("arch_entry_export", "Export", "export", "Export the selected entries to files", "kb:el_export");
 	new SAction("arch_entry_bookmark", "Bookmark", "bookmark", "Bookmark the current entry");
-	new SAction("arch_entry_opentab", "Open in Tab", "open", "Open selected entries in separate tabs");
+	new SAction("arch_entry_opentab", "In New Tab", "", "Open selected entries in separate tabs");
 	new SAction("arch_entry_crc32", "Compute CRC-32 Checksum", "text", "Compute the CRC-32 checksums of the selected entries");
+	new SAction("arch_entry_openext", "", "", "", "", 0, -1, -1, 20);
+	new SAction("arch_entry_setup_external", "Setup External Editors", "settings", "Open the preferences dialog to set up external editors");
 	new SAction("arch_bas_convertb", "Convert to SWANTBLS", "", "Convert any selected SWITCHES and ANIMATED entries to a single SWANTBLS entry");
 	new SAction("arch_bas_convertz", "Convert to ANIMDEFS", "", "Convert any selected SWITCHES and ANIMATED entries to a single ANIMDEFS entry");
 	new SAction("arch_swan_convert", "Compile to SWITCHES and ANIMATED", "", "Convert SWANTBLS entries into SWITCHES and ANIMATED entries");
@@ -834,6 +791,7 @@ void MainApp::initActions()
 	new SAction("ppal_tint", "Tint", "palette_tint", "Tint the palette");
 	new SAction("ppal_tweak", "Tweak", "palette_tweak", "Tweak the palette");
 	new SAction("ppal_invert", "Invert", "palette_invert", "Invert the palette");
+	new SAction("ppal_gradient", "Gradient", "palette_gradient", "Add a gradient to the palette");
 	new SAction("ppal_moveup", "Pull Ahead", "palette_pull", "Move this palette one rank towards the first");
 	new SAction("ppal_movedown", "Push Back", "palette_push", "Move this palette one rank towards the last");
 	new SAction("ppal_duplicate", "Duplicate", "palette_duplicate", "Create a copy of this palette at the end");
@@ -853,6 +811,13 @@ void MainApp::initActions()
 	new SAction("data_copy_row", "Copy Row(s)", "copy", "Copy the currently selected row(s)", "Ctrl+C");
 	new SAction("data_paste_row", "Paste Row(s)", "paste", "Paste at the currently selected row", "Ctrl+V");
 	new SAction("data_change_value", "Change Value...", "rename", "Change the value of the selected cell(s)");
+
+	// TextEntryPanel
+	new SAction("ptxt_wrap", "Word Wrapping", "", "Toggle word wrapping", "", SAction::CHECK, -1, -1, 1, "txed_word_wrap");
+	new SAction("ptxt_find_replace", "Find+Replace...", "", "Find and (optionally) replace text", "kb:ted_findreplace");
+	new SAction("ptxt_fold_foldall", "Fold All", "minus", "Fold all possible code", "kb:ted_fold_foldall");
+	new SAction("ptxt_fold_unfoldall", "Unfold All", "plus", "Unfold all folded code", "kb:ted_fold_unfoldall");
+	new SAction("ptxt_jump_to_line", "Jump To Line...", "up", "Jump to a specific line number", "kb:ted_jumptoline");
 
 	// Map Editor Window
 	new SAction("mapw_save", "&Save Map Changes", "save", "Save any changes to the current map", "Ctrl+S");
@@ -905,7 +870,6 @@ void MainApp::initActions()
 	new SAction("mapw_clear_selection", "Clear Selection", "", "Clear the current selection, if any", "kb:me2d_clear_selection");
 	new SAction("mapw_show_fullmap", "Show Full Map", "", "Zooms out so that the full map is visible", "kb:me2d_show_all");
 	new SAction("mapw_show_item", "Show Item...", "", "Zoom and scroll to show a map item");
-	new SAction("mapw_toggle_selection_numbers", "Show Selection Numbers", "", "Show/hide selection numbers", "kb:me2d_toggle_selection_numbers", SAction::CHECK);
 	new SAction("mapw_mirror_y", "Mirror Vertically", "flip", "Mirror the selected objects vertically", "kb:me2d_mirror_y");
 	new SAction("mapw_mirror_x", "Mirror Horizontally", "mirror", "Mirror the selected objects horizontally", "kb:me2d_mirror_x");
 	new SAction("mapw_run_map_here", "Run Map from Here", "run", "Run the current map, starting at the current cursor position");
@@ -914,22 +878,22 @@ void MainApp::initActions()
 	new SAction("mapw_script_save", "Save", "save", "Save changes to scripts");
 	new SAction("mapw_script_compile", "Compile", "compile", "Compile scripts");
 	new SAction("mapw_script_jumpto", "Jump To...", "up", "Jump to a specific script/function");
-	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK);
-
-
-	// Init checked actions
-	getAction("mapw_toggle_selection_numbers")->toggled = map_show_selection_numbers;
-	getAction("mapw_script_togglelanguage")->toggled = script_show_language_list;
+	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK, -1, -1, 1, "script_show_language_list");
 }
 
 /* MainApp::singleInstanceCheck
  * Checks if another instance of SLADE is already running, and if so,
  * sends the args to the file listener of the existing SLADE
- * process. Returns false if another instance was found
+ * process. Returns false if another instance was found and the new
+ * SLADE was started with arguments
  *******************************************************************/
 bool MainApp::singleInstanceCheck()
 {
 	single_instance_checker = new wxSingleInstanceChecker;
+
+	if (argc == 1)
+		return true;
+
 	if (single_instance_checker->IsAnotherRunning())
 	{
 		delete single_instance_checker;
@@ -963,7 +927,10 @@ bool MainApp::OnInit()
 {
 	// Check if an instance of SLADE is already running
 	if (!singleInstanceCheck())
+	{
+		printf("Found active instance. Quitting.\n");
 		return false;
+	}
 
 	// Set locale to C so that the tokenizer will work properly
 	// even in locales where the decimal separator is a comma.
@@ -1306,7 +1273,7 @@ void MainApp::readConfigFile()
 				if (token.length())
 				{
 					string path = tz.getToken();
-					Executables::setExePath(token, path);
+					Executables::setGameExePath(token, path);
 				}
 				token = tz.getToken();
 			}
@@ -1432,7 +1399,7 @@ SAction* MainApp::getAction(string id)
 /* MainApp::doAction
  * Performs the SAction matching [id]
  *******************************************************************/
-bool MainApp::doAction(string id)
+bool MainApp::doAction(string id, int wx_id_offset)
 {
 	// Toggle action if necessary
 	toggleAction(id);
@@ -1441,6 +1408,7 @@ bool MainApp::doAction(string id)
 	bool handled = false;
 	for (unsigned a = 0; a < action_handlers.size(); a++)
 	{
+		action_handlers[a]->wx_id_offset = wx_id_offset;
 		if (action_handlers[a]->handleAction(id))
 		{
 			handled = true;
@@ -1466,7 +1434,7 @@ void MainApp::toggleAction(string id)
 
 	// Type is 'check', just toggle it
 	if (action && action->type == SAction::CHECK)
-		action->toggled = !action->toggled;
+		action->setToggled(!action->toggled);
 
 	// Type is 'radio', toggle this and un-toggle others in the group
 	else if (action && action->type == SAction::RADIO && action->group >= 0)
@@ -1475,10 +1443,10 @@ void MainApp::toggleAction(string id)
 		for (unsigned a = 0; a < actions.size(); a++)
 		{
 			if (actions[a]->group == action->group)
-				actions[a]->toggled = false;
+				actions[a]->setToggled(false);
 		}
 
-		action->toggled = true;
+		action->setToggled(true);
 	}
 }
 
@@ -1495,11 +1463,13 @@ void MainApp::onMenu(wxCommandEvent& e)
 	// Find applicable action
 	string action = "";
 	SAction* s_action = NULL;
+	int wx_id_offset = 0;
 	for (unsigned a = 0; a < actions.size(); a++)
 	{
-		if (actions[a]->getWxId() == e.GetId())
+		if (actions[a]->isWxId(e.GetId()))
 		{
 			action = actions[a]->getId();
+			wx_id_offset = e.GetId() - actions[a]->getWxId();
 			s_action = actions[a];
 			break;
 		}
@@ -1510,7 +1480,7 @@ void MainApp::onMenu(wxCommandEvent& e)
 	if (!action.IsEmpty())
 	{
 		current_action = action;
-		handled = doAction(action);
+		handled = doAction(action, wx_id_offset);
 
 		// Check if triggering object is a menu item
 		if (s_action && s_action->type == SAction::CHECK)

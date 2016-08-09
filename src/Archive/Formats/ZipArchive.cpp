@@ -32,12 +32,6 @@
 #include "ZipArchive.h"
 #include "WadArchive.h"
 #include "UI/SplashWindow.h"
-#include <wx/wfstream.h>
-#include <wx/zipstrm.h>
-#include <wx/ptr_scpd.h>
-#include <wx/filename.h>
-#include <wx/msgdlg.h>
-#include <algorithm>
 
 
 /*******************************************************************

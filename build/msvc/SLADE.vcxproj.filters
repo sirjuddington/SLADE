@@ -158,7 +158,7 @@
       <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
     </Filter>
     <Filter Include="External\wxEmail">
-      <UniqueIdentifier>{759de1e2-8da7-4e1c-b0b2-38f2deafdd20}</UniqueIdentifier>
+      <UniqueIdentifier>{4d45f584-81e4-44d0-979d-f541131c9cc7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -185,9 +185,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\External\bzip2\randtable.c">
       <Filter>External\BZip2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\External\zreaders\ancientzip.cpp">
-      <Filter>External\ZReaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\External\zreaders\files.cpp">
       <Filter>External\ZReaders</Filter>
@@ -1356,6 +1353,12 @@
     <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp">
+      <Filter>UI\Text Editor</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\External\email\wxEmailMessage.cpp">
       <Filter>External\wxEmail</Filter>
     </ClCompile>
@@ -1365,6 +1368,9 @@
     <ClCompile Include="..\..\src\External\email\wxMailer.cpp">
       <Filter>External\wxEmail</Filter>
     </ClCompile>
+    <ClCompile Include="_CreatePCH.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1373,9 +1379,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h">
       <Filter>External\BZip2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\zreaders\ancientzip.h">
-      <Filter>External\ZReaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\files.h">
       <Filter>External\ZReaders</Filter>
@@ -1603,9 +1606,6 @@
       <Filter>External\ZReaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h">
-      <Filter>External\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\External\zreaders\m_swap.h">
       <Filter>External\ZReaders</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\External\zreaders\mus2midi.h">
@@ -2361,6 +2361,12 @@
     <ClInclude Include="..\..\src\UI\WxBasicControls.h">
       <Filter>UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h">
+      <Filter>UI\Text Editor</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\External\email\wxEmailMessage.h">
       <Filter>External\wxEmail</Filter>
     </ClInclude>
@@ -2370,6 +2376,8 @@
     <ClInclude Include="..\..\src\External\email\wxMailer.h">
       <Filter>External\wxEmail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\common.h" />
+    <ClInclude Include="..\..\src\common2.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />

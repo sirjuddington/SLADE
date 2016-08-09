@@ -30,7 +30,6 @@
  *******************************************************************/
 #include "Main.h"
 #undef BOOL
-#include <FreeImage.h>
 #include "General/Misc.h"
 #include "Archive/EntryType/EntryType.h"
 #include "SIFormat.h"
