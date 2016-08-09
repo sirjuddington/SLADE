@@ -147,6 +147,9 @@ void MapSide::changeLight(int amount)
  *******************************************************************/
 void MapSide::setSector(MapSector* sector)
 {
+	if (!sector)
+		return;
+
 	// Remove side from current sector, if any
 	if (this->sector)
 		this->sector->disconnectSide(this);

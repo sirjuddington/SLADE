@@ -332,6 +332,8 @@ void BrowserCanvas::updateLayout(int viewed_index)
 
 	// Determine number of columns
 	num_cols = GetSize().x / fullItemSizeX();
+	if (num_cols == 0)
+		num_cols = 1;
 
 	// Update the scrollbar, if present
 	if (scrollbar)
@@ -394,7 +396,7 @@ int BrowserCanvas::itemIndex(BrowserItem* item)
 	for (unsigned a = 0; a < items_filter.size(); a++)
 	{
 		if ((unsigned)items_filter[a] < items.size() &&
-		        items[items_filter[a]] == item)
+			items[items_filter[a]] == item)
 			return a;
 	}
 
@@ -493,6 +495,8 @@ void BrowserCanvas::showItem(int item, int where)
 
 	// Determine y-position of item
 	int num_cols = GetSize().x / fullItemSizeX();
+	if (num_cols == 0)
+		return;
 	int y_top = (item / num_cols) * fullItemSizeY();
 	int y_bottom = y_top + fullItemSizeY();
 

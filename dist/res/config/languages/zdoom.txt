@@ -222,7 +222,7 @@ z_mapinfo {
 		MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight, MenuFontColor_Selection, MenuBackButton,
 		PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX, TextScreenY, DefaultEndSequence, MapArrow,
 		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
-		DontCrunchCorpses, CheatKey,
+		DontCrunchCorpses, CheatKey, ForceKillScripts,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -288,12 +288,12 @@ z_modeldef {
 	keywords = {
 		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
 		Rotation-Speed, Rotation-Vector, Rotation-Center, 
-		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, 
+		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin
 	}
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
-		INHERITACTORPITCH, INHERITACTORROLL,
+		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL
 	}
 }
 
@@ -349,7 +349,7 @@ z_sbarinfo {
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
 		IfHealth, InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
-		WeaponAmmo, mugshot, IfInvulnerable
+		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel
 	}
 
 	constants = {
@@ -368,8 +368,9 @@ z_sbarinfo {
 		//Some default fonts
 		BIGFONT, INDEXFONT, SMALLFONT, HUDFONT_DOOM, INDEXFONT_DOOM, HUDFONT_RAVEN, INDEXFONT_RAVEN,
 
-		//Some default colors
-		Yellow, Red, Green, Blue, White, Black, untranslated
+		// Default font colors
+		Yellow, Red, Green, Blue, White, Black, untranslated, Brick, Tan, Gray, Grey, Brown, Gold, Orange, LightBlue, Cream, Olive,
+        DarkGreen, DarkRed, DarkBrown, Purple, DarkGray, DarkGrey, Cyan
 	}
 
 	functions {
