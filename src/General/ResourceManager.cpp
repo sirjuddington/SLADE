@@ -250,6 +250,8 @@ void ResourceManager::addEntry(ArchiveEntry* entry)
 
 	// Get resource name (extension cut, uppercase)
 	string name = entry->getName(true).Upper();
+	// Talon1024 - Get resource path (uppercase, without leading slash)
+	string path = entry->getPath(true).Upper().Mid(1);
 
 	// Check for palette entry
 	if (type->getId() == "palette")
@@ -271,16 +273,31 @@ void ResourceManager::addEntry(ArchiveEntry* entry)
 
 		// Check for patch entry
 		if (type->extraProps().propertyExists("patch") || entry->isInNamespace("patches"))
+		{
 			patches[name].add(entry);
+			/*
+			if (name.Length() > 8) patches[name.Left(8)].add(entry);
+			if (!entry->getParent()->isTreeless())
+				patches[path].add(entry);
+			*/
+		}
 
 		// Check for flat entry
 		if (type->getId() == "gfx_flat" || entry->isInNamespace("flats"))
+		{
 			flats[name].add(entry);
+			// if (name.Length() > 8) flats[name.Left(8)].add(entry);
+			if (!entry->getParent()->isTreeless())
+				flats[path].add(entry);
+		}
 
 		// Check for stand-alone texture entry
 		if (entry->isInNamespace("textures") || entry->isInNamespace("hires"))
 		{
 			satextures[name].add(entry);
+			// if (name.Length() > 8) satextures[name.Left(8)].add(entry);
+			if (!entry->getParent()->isTreeless())
+				satextures[path].add(entry);
 
 			// Add name to hash table
 			ResourceManager::Doom64HashTable[getTextureHash(name)] = name;
