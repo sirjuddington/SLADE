@@ -1264,9 +1264,12 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		// Ignore SCRIPTS
 		if (S_CMPNOCASE(entries[a]->getName(true), "SCRIPTS"))
 			continue;
+
 		// Ignore entries from other archives
-		if (entry->getParent()->getFilename(true) != entries[a]->getParent()->getFilename(true))
+		if (entry->getParent() &&
+			(entry->getParent()->getFilename(true) != entries[a]->getParent()->getFilename(true)))
 			continue;
+
 		string path = appPath(entries[a]->getName(true) + ".acs", DIR_TEMP);
 		entries[a]->exportFile(path);
 		lib_paths.Add(path);
