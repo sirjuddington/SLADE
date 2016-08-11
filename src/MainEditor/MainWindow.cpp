@@ -48,18 +48,10 @@
 #include "UI/STabCtrl.h"
 #include "UI/TextureXEditor/TextureXEditor.h"
 #include "UI/PaletteChooser.h"
-#include <wx/aboutdlg.h>
-#include <wx/dnd.h>
-#include <wx/statline.h>
-#include <wx/filename.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
 
 #ifdef USE_WEBVIEW_STARTPAGE
-#include <wx/webview.h>
 #include "UI/DocsPage.h"
 #endif
-
 
 /*******************************************************************
  * VARIABLES

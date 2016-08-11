@@ -35,7 +35,7 @@
 #include "Main.h"
 #include "ListView.h"
 #include "General/ColourConfiguration.h"
-#include <wx/settings.h>
+#include "common.h"
 
 
 /*******************************************************************

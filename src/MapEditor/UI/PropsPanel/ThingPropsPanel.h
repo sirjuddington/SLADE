@@ -2,9 +2,9 @@
 #ifndef __THING_PROPS_PANEL_H__
 #define __THING_PROPS_PANEL_H__
 
+#include "common.h"
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
-#include <wx/control.h>
 
 class GLTexture;
 class ThingType;

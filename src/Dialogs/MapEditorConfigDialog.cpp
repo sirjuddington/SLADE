@@ -41,14 +41,6 @@
 #include "UI/ResourceArchiveChooser.h"
 #include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
-#include <wx/button.h>
-#include <wx/combobox.h>
-#include <wx/gbsizer.h>
-#include <wx/imaglist.h>
-#include <wx/msgdlg.h>
-#include <wx/statbox.h>
-#include <wx/statline.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

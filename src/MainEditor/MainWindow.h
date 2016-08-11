@@ -2,16 +2,11 @@
 #ifndef __MAINWINDOW_H__
 #define __MAINWINDOW_H__
 
+#include "common.h"
 #include "UI/ArchiveManagerPanel.h"
-#include <wx/aui/auibook.h>
-#include <wx/aui/aui.h>
 #include "UI/PaletteChooser.h"
 #include "MainApp.h"
 #include "UI/STopWindow.h"
-
-#ifndef USE_WEBVIEW_STARTPAGE
-#include <wx/html/htmlwin.h>
-#endif
 
 class PaletteChooser;
 class SToolBar;

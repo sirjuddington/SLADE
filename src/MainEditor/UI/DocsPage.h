@@ -2,7 +2,7 @@
 #ifndef __DOCS_PAGE_H__
 #define __DOCS_PAGE_H__
 
-#include <wx/panel.h>
+#include "common.h"
 
 class wxWebView;
 class SToolBar;

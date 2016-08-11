@@ -39,10 +39,6 @@
 #include "Archive/ArchiveManager.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "GenLineSpecial.h"
-#include <wx/textfile.h>
-#include <wx/filename.h>
-#include <wx/dir.h>
-#include <wx/colour.h>
 
 
 /*******************************************************************
@@ -631,6 +627,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 			Tokenizer tz;
 			tz.openString(line);
 			tz.getToken();	// Skip #include
+			tz.setSpecialCharacters("");
 			string inc_name = tz.getToken();
 			string name = entry->getPath() + inc_name;
 
@@ -1862,7 +1859,7 @@ void GameConfiguration::setThingBasicFlag(string flag, MapThing* thing, int map_
 	unsigned long flag_val = 0;
 
 	// ZDoom uses Hexen-style flags
-	bool hexen = (currentGame() == "Hexen") || (currentPort() == "ZDoom");
+	bool hexen = (currentGame() == "hexen") || (currentPort() == "zdoom");
 
 	// Easy Skill
 	if (flag == "skill2" || flag == "skill1")

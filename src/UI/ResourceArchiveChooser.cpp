@@ -33,10 +33,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Utility/SFileDialog.h"
 #include "UI/SplashWindow.h"
-#include <wx/sizer.h>
-#include <wx/button.h>
-#include <wx/checklst.h>
-#include <wx/choicdlg.h>
 
 
 /*******************************************************************

@@ -40,7 +40,6 @@
 #include "General/Console/Console.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Utility/Tokenizer.h"
-#include <wx/filename.h>
 #include "External/zlib/zlib.h"
 
 

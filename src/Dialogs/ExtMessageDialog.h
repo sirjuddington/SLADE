@@ -2,7 +2,7 @@
 #ifndef __EXT_MESSAGE_DIALOG_H__
 #define __EXT_MESSAGE_DIALOG_H__
 
-#include <wx/dialog.h>
+#include "common.h"
 #include "UI/WxBasicControls.h"
 
 class ExtMessageDialog : public wxDialog

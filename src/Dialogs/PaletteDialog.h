@@ -2,7 +2,7 @@
 #ifndef __PALETTEDIALOG_H__
 #define	__PALETTEDIALOG_H__
 
-#include <wx/dialog.h>
+#include "common.h"
 
 class PaletteCanvas;
 class Palette8bit;

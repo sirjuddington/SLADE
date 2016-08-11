@@ -30,12 +30,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "ShapeDrawPanel.h"
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/sizer.h>
-#include <wx/spinctrl.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 
 /*******************************************************************

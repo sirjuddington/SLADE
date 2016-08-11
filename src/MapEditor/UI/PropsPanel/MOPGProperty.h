@@ -2,8 +2,7 @@
 #ifndef __MOPG_PROPERTY_H__
 #define __MOPG_PROPERTY_H__
 
-#include <wx/propgrid/propgrid.h>
-#include <wx/propgrid/advprops.h>
+#include "common.h"
 
 #include "MapEditor/GameConfiguration/Args.h"
 

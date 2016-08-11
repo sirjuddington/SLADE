@@ -35,17 +35,6 @@
 #include "MainApp.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
-#include <wx/bmpbuttn.h>
-#include <wx/button.h>
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/gbsizer.h>
-#include <wx/menu.h>
-#include <wx/slider.h>
-#include <wx/spinctrl.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 
 /*******************************************************************

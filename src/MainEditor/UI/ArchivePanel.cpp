@@ -66,17 +66,6 @@
 #include "MapEditor/MapEditorWindow.h"
 #include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
-#include <wx/aui/auibar.h>
-#include <wx/aui/auibook.h>
-#include <wx/bmpbuttn.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textdlg.h>
-
 
 /*******************************************************************
  * VARIABLES
@@ -550,9 +539,6 @@ void ArchivePanel::undo()
 		undo_manager->undo();
 		entry_list->setEntriesAutoUpdate(true);
 
-		// Refresh entry list
-		entry_list->updateList();
-
 		// setEntriesAutoUpdate blocks previous announce
 		archive->announce("entries_changed");
 	}
@@ -569,9 +555,6 @@ void ArchivePanel::redo()
 		entry_list->setEntriesAutoUpdate(false);
 		undo_manager->redo();
 		entry_list->setEntriesAutoUpdate(true);
-
-		// Refresh entry list
-		entry_list->updateList();
 
 		// setEntriesAutoUpdate blocks previous announce
 		archive->announce("entries_changed");

@@ -35,7 +35,6 @@
 #include "UI/SplashWindow.h"
 #include "WadArchive.h"
 #include "MainApp.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

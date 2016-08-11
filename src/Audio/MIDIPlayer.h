@@ -2,11 +2,7 @@
 #ifndef __MIDIPLAYER_H__
 #define __MIDIPLAYER_H__
 
-#ifndef NO_FLUIDSYNTH
-#include <fluidsynth.h>
-#endif
-#include <wx/process.h>
-#include <SFML/System.hpp>
+#include "common.h"
 
 class MIDIPlayer
 {

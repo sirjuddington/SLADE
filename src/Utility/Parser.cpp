@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "Parser.h"
 #include "General/Console/Console.h"
-#include <wx/regex.h>
 
 
 /*******************************************************************

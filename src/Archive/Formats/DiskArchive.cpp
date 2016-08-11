@@ -35,7 +35,6 @@
 #include "Main.h"
 #include "DiskArchive.h"
 #include "UI/SplashWindow.h"
-#include <wx/filename.h>
 
 struct diskentry_t
 {

@@ -157,7 +157,10 @@
     <Filter Include="Utility\Property List">
       <UniqueIdentifier>{999a30d0-f905-4f75-885f-209959ffe1c9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="OpenGL\GLUI">
+    <Filter Include="External\wxEmail">
+      <UniqueIdentifier>{4d45f584-81e4-44d0-979d-f541131c9cc7}</UniqueIdentifier>
+    </Filter>
+	<Filter Include="OpenGL\GLUI">
       <UniqueIdentifier>{6066c6f2-dbf1-40c3-8a33-f3659be6e54a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -1380,7 +1383,19 @@
     <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp">
       <Filter>UI\Text Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\OpenGL\GLUI\Manager.cpp">
+    <ClCompile Include="..\..\src\External\email\wxEmailMessage.cpp">
+      <Filter>External\wxEmail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\email\wxEmailMessageID.cpp">
+      <Filter>External\wxEmail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\email\wxMailer.cpp">
+      <Filter>External\wxEmail</Filter>
+    </ClCompile>
+    <ClCompile Include="_CreatePCH.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\src\OpenGL\GLUI\Manager.cpp">
       <Filter>OpenGL\GLUI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\OpenGL\GLUI\Animator.cpp">
@@ -2406,7 +2421,18 @@
     <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h">
       <Filter>UI\Text Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\OpenGL\GLUI\Animator.h">
+    <ClInclude Include="..\..\src\External\email\wxEmailMessage.h">
+      <Filter>External\wxEmail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\email\wxEmailMessageID.h">
+      <Filter>External\wxEmail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\External\email\wxMailer.h">
+      <Filter>External\wxEmail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common.h" />
+    <ClInclude Include="..\..\src\common2.h" />
+	<ClInclude Include="..\..\src\OpenGL\GLUI\Animator.h">
       <Filter>OpenGL\GLUI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\OpenGL\GLUI\Manager.h">

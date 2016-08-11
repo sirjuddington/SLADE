@@ -42,13 +42,6 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "UI/PaletteChooser.h"
-#include <wx/filename.h>
-#include <wx/utils.h>
-#include <wx/msgdlg.h>
-
-#ifdef __WXMSW__
-#include <wx/msw/registry.h>
-#endif
 
 
 /*******************************************************************
@@ -1318,6 +1311,11 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 				Archive::search_options_t opt;
 				opt.match_namespace = "acs";
 				opt.match_name = entry->getName(true);
+				if (entry->getParent()->getDesc().names_extensions)
+				{
+					opt.match_name += ".o";
+					opt.ignore_ext = false;
+				}
 				ArchiveEntry* lib = entry->getParent()->findLast(opt);
 
 				// If it doesn't exist, create it

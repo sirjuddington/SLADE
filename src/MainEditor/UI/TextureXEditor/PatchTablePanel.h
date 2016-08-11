@@ -2,10 +2,10 @@
 #ifndef __PATCH_TABLE_PANEL_H__
 #define __PATCH_TABLE_PANEL_H__
 
+#include "common.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/WxBasicControls.h"
-#include <wx/panel.h>
 
 class TextureXEditor;
 class PatchTableListView : public VirtualListView, Listener

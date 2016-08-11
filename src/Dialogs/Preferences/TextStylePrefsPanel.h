@@ -2,10 +2,9 @@
 #ifndef __TEXT_STYLE_PREFS_PANEL_H__
 #define __TEXT_STYLE_PREFS_PANEL_H__
 
+#include "common.h"
 #include "PrefsPanelBase.h"
 #include "UI/TextEditor/TextStyle.h"
-#include <wx/clrpicker.h>
-#include <wx/fontpicker.h>
 
 class wxListBox;
 class TextLanguage;

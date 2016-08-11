@@ -33,8 +33,6 @@
 #include "STopWindow.h"
 #include "General/Misc.h"
 #include "SToolBar/SToolBar.h"
-#include <wx/aui/aui.h>
-#include <wx/menu.h>
 
 /*******************************************************************
  * STOPWINDOW CLASS FUNCTIONS

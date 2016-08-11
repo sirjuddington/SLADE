@@ -2,7 +2,7 @@
 #ifndef __RESOURCE_ARCHIVE_CHOOSER_H__
 #define __RESOURCE_ARCHIVE_CHOOSER_H__
 
-#include <wx/panel.h>
+#include "common.h"
 
 class Archive;
 class wxButton;

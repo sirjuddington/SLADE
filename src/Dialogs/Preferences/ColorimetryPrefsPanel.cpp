@@ -30,12 +30,6 @@
 #include "ColorimetryPrefsPanel.h"
 #include "Graphics/Palette/Palette.h"
 #include "Utility/CIEDeltaEquations.h"
-#include <wx/choice.h>
-#include <wx/sizer.h>
-#include <wx/spinctrl.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 
 /*******************************************************************

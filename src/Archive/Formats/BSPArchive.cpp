@@ -31,7 +31,6 @@
 #include "Main.h"
 #include "BSPArchive.h"
 #include "UI/SplashWindow.h"
-#include <wx/filename.h>
 
 /*
 

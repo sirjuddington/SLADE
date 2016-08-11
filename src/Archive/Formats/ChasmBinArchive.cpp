@@ -30,7 +30,6 @@
 #include "Main.h"
 #include "ChasmBinArchive.h"
 #include "UI/SplashWindow.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

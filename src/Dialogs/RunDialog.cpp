@@ -37,17 +37,6 @@
 #include "Graphics/Icons.h"
 #include "UI/ResourceArchiveChooser.h"
 #include "Utility/SFileDialog.h"
-#include <wx/bmpbuttn.h>
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/msgdlg.h>
-#include <wx/statbox.h>
-#include <wx/statline.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
-#include <wx/textdlg.h>
 
 #ifdef __WXOSX_MAC__
 #include <CoreFoundation/CoreFoundation.h>

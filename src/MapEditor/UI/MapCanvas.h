@@ -2,6 +2,7 @@
 #ifndef __MAPCANVAS_H__
 #define __MAPCANVAS_H__
 
+#include "common.h"
 #include "General/KeyBind.h"
 #include "General/SAction.h"
 #include "MapEditor/Renderer/MapRenderer3D.h"
@@ -13,7 +14,6 @@
 #include "MapEditor/Renderer/Overlays/VertexInfoOverlay.h"
 #include "OpenGL/GLUI/Manager.h"
 #include "UI/Canvas/OGLCanvas.h"
-#include <SFML/System.hpp>
 
 class MapEditor;
 class MCAnimation;

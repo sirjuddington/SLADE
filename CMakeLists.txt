@@ -13,6 +13,11 @@ if(COMMAND cmake_policy)
 	cmake_policy( SET CMP0005 NEW )
 endif(COMMAND cmake_policy)
 
+if(COMMAND cmake_policy)
+	cmake_policy( SET CMP0011 NEW )
+endif(COMMAND cmake_policy)
+
+
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()

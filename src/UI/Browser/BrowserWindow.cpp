@@ -32,12 +32,13 @@
  *******************************************************************/
 #include "Main.h"
 #include "BrowserWindow.h"
-#include <wx/choice.h>
-#include <wx/dataview.h>
-#include <wx/scrolbar.h>
-#include <wx/sizer.h>
-#include <wx/slider.h>
-#include <wx/stattext.h>
+#include "General/Misc.h"
+
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, browser_maximised, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -127,8 +128,20 @@ public:
 /* BrowserWindow::BrowserWindow
  * BrowserWindow class constructor
  *******************************************************************/
-BrowserWindow::BrowserWindow(wxWindow* parent) : wxDialog(parent, -1, "Browser", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxMAXIMIZE_BOX)
+BrowserWindow::BrowserWindow(wxWindow* parent)
+	: wxDialog(parent, -1, "Browser", wxDefaultPosition, wxDefaultSize,
+		wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxMAXIMIZE_BOX)
 {
+	// Init size/pos
+	Misc::winf_t info = Misc::getWindowInfo("browser");
+	if (!info.id.IsEmpty())
+	{
+		SetSize(info.width, info.height);
+		SetPosition(wxPoint(info.left, info.top));
+	}
+	else
+		Misc::setWindowInfo("browser", 768, 600, 0, 0);
+
 	// Init variables
 	items_root = new BrowserTreeNode();
 	items_root->setName("All");
@@ -207,9 +220,12 @@ BrowserWindow::BrowserWindow(wxWindow* parent) : wxDialog(parent, -1, "Browser",
 	canvas->Bind(wxEVT_CHAR, &BrowserWindow::onCanvasKeyChar, this);
 
 	Layout();
-	SetInitialSize(wxSize(768, 600));
 	SetMinSize(wxSize(540, 400));
-	CenterOnParent();
+
+	if (browser_maximised)
+		Maximize();
+	else
+		CenterOnParent();
 
 	// Set focus to canvas
 	canvas->SetFocus();
@@ -220,6 +236,9 @@ BrowserWindow::BrowserWindow(wxWindow* parent) : wxDialog(parent, -1, "Browser",
  *******************************************************************/
 BrowserWindow::~BrowserWindow()
 {
+	browser_maximised = IsMaximized();
+	if (!IsMaximized())
+		Misc::setWindowInfo("browser", GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 }
 
 /* BrowserWindow::addItem
