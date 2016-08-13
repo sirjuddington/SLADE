@@ -801,7 +801,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 		ftgl_font->Render(CHR(text), -1);
 		glTranslatef(0.0f, -2.0f, 0.0f);
 		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(-1.0f, -1.0f, 0.0f);
+		glTranslatef(-1.0f, 1.0f, 0.0f);
 	}
 	OpenGL::setColour(colour);
 	ftgl_font->Render(CHR(text), -1);
