@@ -59,15 +59,15 @@ CVAR(Bool, hud_wide, 0, CVAR_SAVE)
 CVAR(Bool, hud_bob, 0, CVAR_SAVE)
 CVAR(Int, gl_font_size, 12, CVAR_SAVE)
 
-#ifdef USE_SFML_RENDERWINDOW
 namespace Drawing
 {
+#ifdef USE_SFML_RENDERWINDOW
 	sf::RenderWindow*	render_target = NULL;
 	bool				text_state_reset = true;
+#endif
 	double				text_outline_width = 0;
 	rgba_t				text_outline_colour = COL_BLACK;
 };
-#endif
 
 
 /*******************************************************************
@@ -785,11 +785,25 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	}
 
 	// Draw the string
-	OpenGL::setColour(colour);
 	glPushMatrix();
 	glTranslatef(xpos, ypos + ftgl_font->FaceSize(), 0.0f);
 	glTranslatef(-0.375f, -0.375f, 0);
 	glScalef(1.0f, -1.0f, 1.0f);
+	if (text_outline_width > 0)
+	{
+		// Draw outline if set
+		OpenGL::setColour(text_outline_colour);
+		glTranslatef(-1.0f, -1.0f, 0.0f);
+		ftgl_font->Render(CHR(text), -1);
+		glTranslatef(0.0f, 2.0f, 0.0f);
+		ftgl_font->Render(CHR(text), -1);
+		glTranslatef(2.0f, 0.0f, 0.0f);
+		ftgl_font->Render(CHR(text), -1);
+		glTranslatef(0.0f, -2.0f, 0.0f);
+		ftgl_font->Render(CHR(text), -1);
+		glTranslatef(-1.0f, -1.0f, 0.0f);
+	}
+	OpenGL::setColour(colour);
 	ftgl_font->Render(CHR(text), -1);
 	glPopMatrix();
 }
