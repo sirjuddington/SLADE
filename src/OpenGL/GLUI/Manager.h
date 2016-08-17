@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wx/event.h>
+
 class OGLCanvas;
 
 namespace GLUI
@@ -19,22 +21,34 @@ namespace GLUI
 			DOCK_LEFT,
 			DOCK_TOP,
 			DOCK_RIGHT,
-			DOCK_BOTTOM
+			DOCK_BOTTOM,
+			DOCK_FILL
 		};
 
 		struct widget_info_t
 		{
+			string		id;
 			Widget*		widget;
 			uint8_t		dock;
 
-			widget_info_t(Widget* widget, uint8_t dock = DOCK_NONE)
-				: widget(widget), dock(dock) {}
+			widget_info_t(Widget* widget, string id, uint8_t dock = DOCK_NONE)
+				: widget(widget), id(id), dock(dock) {}
 		};
 
-		void	addWidget(Widget* widget, uint8_t dock = DOCK_NONE);
+		void	addWidget(Widget* widget, string id, uint8_t dock = DOCK_NONE);
+		Widget*	getWidget(string id);
 
 		void	update(int time);
 		void	drawWidgets();
+
+		// Events
+		void	mouseMove(int x, int y);
+
+		// wx Events
+		void	onMouseMove(wxMouseEvent& e);
+		void	onMouseDown(wxMouseEvent& e);
+		void	onMouseUp(wxMouseEvent& e);
+		void	onSize(wxSizeEvent& e);
 
 	private:
 		OGLCanvas*				canvas;

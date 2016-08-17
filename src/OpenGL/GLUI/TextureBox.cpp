@@ -16,9 +16,11 @@ TextureBox::TextureBox(Widget* parent)
 	: Panel(parent),
 	box_size(80),
 	image_texture(new ImageBox(this)),
-	text_name(new TextBox(this, "", Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER))
+	text_name(new TextBox(this, "", Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER)),
+	show_always(false)
 {
 	text_name->setMargin(padding_t(0, 2, 0, 0));
+	image_texture->setSize(dim2_t(box_size * baseScale(), box_size * baseScale()));
 	setBGCol(rgba_t(0, 0, 0, 0));
 }
 
@@ -79,7 +81,7 @@ void TextureBox::setTexture(int type, string texname, string prefix, bool requir
 	else
 	{
 		image_texture->setTexture(NULL);
-		image_texture->setVisible(false);
+		image_texture->setVisible(show_always);
 	}
 
 	text_name->updateLayout();
@@ -116,7 +118,7 @@ void TextureBox::setTexture(GLTexture* texture, string texname)
 	else
 	{
 		image_texture->setTexture(NULL);
-		image_texture->setVisible(false);
+		image_texture->setVisible(show_always);
 	}
 
 	text_name->updateLayout();
@@ -125,5 +127,5 @@ void TextureBox::setTexture(GLTexture* texture, string texname)
 void TextureBox::updateLayout(dim2_t fit)
 {
 	LayoutHelpers::placeWidgetBelow(text_name, image_texture, USE_MARGIN, ALIGN_MIDDLE);
-	fitToChildren();
+	fitToChildren(padding_t(0), true);
 }

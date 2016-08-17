@@ -40,6 +40,11 @@
 #include "MapEditor/Renderer/MapRenderer2D.h"
 #include "MapEditor/Renderer/MapRenderer3D.h"
 #include "MapEditor/Renderer/MCAnimations.h"
+#include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
+#include "MapEditor/Renderer/Overlays/LineInfoOverlay.h"
+#include "MapEditor/Renderer/Overlays/SectorInfoOverlay.h"
+#include "MapEditor/Renderer/Overlays/ThingInfoOverlay.h"
+#include "MapEditor/Renderer/Overlays/VertexInfoOverlay.h"
 #include "MapEditor/Renderer/Overlays/LineTextureOverlay.h"
 #include "MapEditor/Renderer/Overlays/QuickTextureOverlay3d.h"
 #include "MapEditor/Renderer/Overlays/SectorTextureOverlay.h"
@@ -49,6 +54,7 @@
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ShowItemDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
+#include "MapEditor/UI/GLUI/LineTextureSelector.h"
 #include "MapEditor/UI/PropsPanel/LinePropsPanel.h"
 #include "MapEditor/UI/PropsPanel/MapObjectPropsPanel.h"
 #include "MapEditor/UI/PropsPanel/SectorPropsPanel.h"
@@ -58,6 +64,7 @@
 #include "UI/SDialog.h"
 #include "Utility/MathStuff.h"
 #undef None
+#include <SFML/Window.hpp>
 
 
 /*******************************************************************
@@ -149,11 +156,14 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	panning = false;
 
 	// Setup GLUI
-	ui_manager.addWidget(&info_vertex, GLUI::Manager::DOCK_BOTTOM);
-	ui_manager.addWidget(&info_line, GLUI::Manager::DOCK_BOTTOM);
-	ui_manager.addWidget(&info_sector, GLUI::Manager::DOCK_BOTTOM);
-	ui_manager.addWidget(&info_thing, GLUI::Manager::DOCK_BOTTOM);
-	ui_manager.addWidget(&info_3d, GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(info_vertex = new VertexInfoOverlay(), "info_vertex", GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(info_line = new LineInfoOverlay(), "info_line", GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(info_sector = new SectorInfoOverlay(), "info_sector", GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(info_thing = new ThingInfoOverlay(), "info_thing", GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(info_3d = new InfoOverlay3D(), "info_3d", GLUI::Manager::DOCK_BOTTOM);
+	ui_manager.addWidget(new LineTextureSelector(), "line_texture_selector", GLUI::Manager::DOCK_FILL);
+
+	ui_manager.getWidget("line_texture_selector")->setVisible(false);
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -1413,8 +1423,8 @@ void MapCanvas::drawMap3d()
 		if (editor->set3dHilight(hl))
 		{
 			// Update 3d info overlay
-			info_3d.update(hl.index, hl.type, &(editor->getMap()));
-			info_3d.activate(hl.index >= 0);
+			info_3d->update(hl.index, hl.type, &(editor->getMap()));
+			info_3d->activate(hl.index >= 0);
 
 			// Animation
 			animations.push_back(new MCAHilightFade3D(theApp->runTimer(), old_hl.index, old_hl.type, renderer_3d, anim_flash_level));
@@ -1490,21 +1500,21 @@ void MapCanvas::draw()
 		// Update info overlay depending on edit mode
 		switch (editor->editMode())
 		{
-		case MapEditor::MODE_VERTICES:	info_vertex.update(editor->getHilightedVertex()); break;
-		case MapEditor::MODE_LINES:		info_line.update(editor->getHilightedLine(), theMapEditor->currentMapDesc().format); break;
-		case MapEditor::MODE_SECTORS:	info_sector.update(editor->getHilightedSector()); break;
-		case MapEditor::MODE_THINGS:	info_thing.update(editor->getHilightedThing()); break;
+		case MapEditor::MODE_VERTICES:	info_vertex->update(editor->getHilightedVertex()); break;
+		case MapEditor::MODE_LINES:		info_line->update(editor->getHilightedLine(), theMapEditor->currentMapDesc().format); break;
+		case MapEditor::MODE_SECTORS:	info_sector->update(editor->getHilightedSector()); break;
+		case MapEditor::MODE_THINGS:	info_thing->update(editor->getHilightedThing()); break;
 		}
 	}
 
 	// Draw current info overlay
 	glDisable(GL_TEXTURE_2D);
 	OpenGL::resetBlend();
-	info_vertex.setVisible(editor->editMode() == MapEditor::MODE_VERTICES);
-	info_line.setVisible(editor->editMode() == MapEditor::MODE_LINES);
-	info_sector.setVisible(editor->editMode() == MapEditor::MODE_SECTORS);
-	info_thing.setVisible(editor->editMode() == MapEditor::MODE_THINGS);
-	info_3d.setVisible(editor->editMode() == MapEditor::MODE_3D && info_overlay_3d);
+	info_vertex->setVisible(editor->editMode() == MapEditor::MODE_VERTICES);
+	info_line->setVisible(editor->editMode() == MapEditor::MODE_LINES);
+	info_sector->setVisible(editor->editMode() == MapEditor::MODE_SECTORS);
+	info_thing->setVisible(editor->editMode() == MapEditor::MODE_THINGS);
+	info_3d->setVisible(editor->editMode() == MapEditor::MODE_3D && info_overlay_3d);
 	ui_manager.drawWidgets();
 
 	// Draw current fullscreen overlay
@@ -2317,10 +2327,10 @@ void MapCanvas::updateInfoOverlay()
 	// Update info overlay depending on edit mode
 	switch (editor->editMode())
 	{
-	case MapEditor::MODE_VERTICES:	info_vertex.update(editor->getHilightedVertex()); break;
-	case MapEditor::MODE_LINES:		info_line.update(editor->getHilightedLine(), theMapEditor->currentMapDesc().format); break;
-	case MapEditor::MODE_SECTORS:	info_sector.update(editor->getHilightedSector()); break;
-	case MapEditor::MODE_THINGS:	info_thing.update(editor->getHilightedThing()); break;
+	case MapEditor::MODE_VERTICES:	info_vertex->update(editor->getHilightedVertex()); break;
+	case MapEditor::MODE_LINES:		info_line->update(editor->getHilightedLine(), theMapEditor->currentMapDesc().format); break;
+	case MapEditor::MODE_SECTORS:	info_sector->update(editor->getHilightedSector()); break;
+	case MapEditor::MODE_THINGS:	info_thing->update(editor->getHilightedThing()); break;
 	}
 }
 
@@ -2334,7 +2344,7 @@ void MapCanvas::forceRefreshRenderer()
 	{
 		selection_3d_t hl;
 		hl = renderer_3d->determineHilight();
-		info_3d.update(hl.index, hl.type, &(editor->getMap()));
+		info_3d->update(hl.index, hl.type, &(editor->getMap()));
 	}
 
 	renderer_2d->forceUpdate();
@@ -3194,10 +3204,14 @@ void MapCanvas::keyBinds2d(string name)
 				// Open line texture overlay if anything is selected
 				if (selection.size() > 0)
 				{
-					if (overlay_current) delete overlay_current;
+					/*if (overlay_current) delete overlay_current;
 					LineTextureOverlay* lto = new LineTextureOverlay();
 					lto->openLines(selection);
-					overlay_current = lto;
+					overlay_current = lto;*/
+
+					auto selector = (LineTextureSelector*)ui_manager.getWidget("line_texture_selector");
+					selector->setLine(selection[0]);
+					selector->setVisible(true);
 				}
 			}
 

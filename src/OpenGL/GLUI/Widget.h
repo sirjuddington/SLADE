@@ -10,8 +10,12 @@ namespace GLUI
 	public:
 		enum
 		{
-			BORDER_NONE,
+			BORDER_NONE = 0,
 			BORDER_LINE,
+
+			MOUSE_LEFT = 0,
+			MOUSE_RIGHT,
+			MOUSE_MIDDLE
 		};
 
 		Widget(Widget* parent);
@@ -29,6 +33,7 @@ namespace GLUI
 		float			getBorderWidth() { return border_width; }
 		int				getBorderStyle() { return border_style; }
 		rgba_t			getBorderColour() { return border_colour; }
+		bool			mouseIsOver() { return mouse_over; }
 
 		int	left(bool margin = false) { return position.x - (margin ? this->margin.left : 0); }
 		int	top(bool margin = false) { return position.y - (margin ? this->margin.top : 0); }
@@ -51,12 +56,18 @@ namespace GLUI
 
 		// Layout
 		virtual void	updateLayout(dim2_t fit = dim2_t(-1, -1)) {}
-		void			fitToChildren(padding_t padding = padding_t(0));
+		void			fitToChildren(padding_t padding = padding_t(0), bool include_invisible = false);
 
 		// Animation
 		point2_t	getAnimatedOffset();
 		float		getAnimatedAlpha();
 		void		animate(int time);
+
+		// Input
+		void	mouseMove(int x, int y);
+		void	mouseOver(bool is_over);
+		void	mouseButtonDown(int button);
+		void	mouseButtonUp(int button);
 
 	protected:
 		Widget*			parent;
@@ -75,10 +86,18 @@ namespace GLUI
 		float				alpha;
 		vector<Animator*>	animators;
 
+		// Input
+		bool	mouse_over;
+
 		// Events
 		// (eventually I'll add a proper event system, but overriding these will do for now)
 		virtual void	onPositionChanged() {}
 		virtual void	onSizeChanged() {}
 		virtual void	onVisibleChanged() {}
+		virtual void	onMouseMove(int x, int y) {}
+		virtual void	onMouseEnter() {}
+		virtual void	onMouseLeave() {}
+		virtual void	onMouseDown(int button) {}
+		virtual void	onMouseUp(int button) {}
 	};
 }

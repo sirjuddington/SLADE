@@ -131,7 +131,7 @@ void LineSideGLPanel::updateLayout(dim2_t fit)
 	LayoutHelpers::placeWidgetBelow(text_info, tex_upper, USE_MARGIN, ALIGN_LEFT);
 
 	// Size panel to fit
-	fitToChildren();
+	fitToChildren(padding_t(0), true);
 }
 
 

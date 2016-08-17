@@ -19,16 +19,10 @@ ImageBox::ImageBox(Widget* parent) : Widget(parent)
 
 ImageBox::~ImageBox()
 {
-	//if (!texture)
-	//	delete texture;
 }
 
 void ImageBox::setTexture(GLTexture* texture)
 {
-	// Delete existing texture if necessary
-	//if (this->texture)
-	//	delete this->texture;
-
 	this->texture = texture;
 }
 
@@ -54,10 +48,6 @@ bool ImageBox::loadImage(SImage* image, Palette8bit* palette)
 	}
 	else
 	{
-		// Delete existing texture if necessary
-		//if (texture)
-		//	delete texture;
-
 		texture = new_tex;
 		return true;
 	}
@@ -88,10 +78,4 @@ void ImageBox::drawWidget(point2_t pos, float alpha)
 	}
 
 	glDisable(GL_TEXTURE_2D);
-
-	// Draw outline
-	/*OpenGL::setColour(col_fg.r, col_fg.g, col_fg.b, 255 * alpha, 0);
-	glDisable(GL_LINE_SMOOTH);
-	glLineWidth(1.0f);
-	Drawing::drawRect(pos.x, pos.y, pos.x + getWidth(), pos.y + getHeight());*/
 }

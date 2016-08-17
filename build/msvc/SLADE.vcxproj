@@ -1178,6 +1178,7 @@
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ShowItemDialog.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ThingTypeBrowser.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\GLUI\LineTextureSelector.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\MapBackupPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\MapCanvas.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\MapChecksPanel.cpp" />
@@ -1617,6 +1618,7 @@
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ShowItemDialog.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ThingTypeBrowser.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\GLUI\LineTextureSelector.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\MapBackupPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\MapCanvas.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\MapChecksPanel.h" />

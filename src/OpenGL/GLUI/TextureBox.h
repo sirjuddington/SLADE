@@ -7,12 +7,13 @@ namespace GLUI { class ImageBox; class TextBox; }
 
 class TextureBox : public GLUI::Panel
 {
-private:
+protected:
 	GLUI::ImageBox*	image_texture;
 	GLUI::TextBox*	text_name;
 	int				box_size;
 	string			sprite_translation;
 	string			sprite_palette;
+	bool			show_always;
 
 public:
 	TextureBox(Widget* parent);

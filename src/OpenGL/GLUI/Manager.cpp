@@ -44,6 +44,17 @@
  *******************************************************************/
 GLUI::Manager::Manager(OGLCanvas* canvas) : canvas(canvas)
 {
+	if (canvas)
+	{
+		canvas->Bind(wxEVT_MOTION, &Manager::onMouseMove, this);
+		canvas->Bind(wxEVT_LEFT_DOWN, &Manager::onMouseDown, this);
+		canvas->Bind(wxEVT_RIGHT_DOWN, &Manager::onMouseDown, this);
+		canvas->Bind(wxEVT_MIDDLE_DOWN, &Manager::onMouseDown, this);
+		canvas->Bind(wxEVT_LEFT_UP, &Manager::onMouseUp, this);
+		canvas->Bind(wxEVT_RIGHT_UP, &Manager::onMouseUp, this);
+		canvas->Bind(wxEVT_MIDDLE_UP, &Manager::onMouseUp, this);
+		canvas->Bind(wxEVT_SIZE, &Manager::onSize, this);
+	}
 }
 
 /* Manager::~Manager
@@ -57,18 +68,29 @@ GLUI::Manager::~Manager()
  * Adds [widget] as a child widget to be managed, with optional
  * [dock] location
  *******************************************************************/
-void GLUI::Manager::addWidget(Widget* widget, uint8_t dock)
+void GLUI::Manager::addWidget(Widget* widget, string id, uint8_t dock)
 {
 	// Update dock if widget is already managed
 	for (auto inf : widgets)
 		if (inf.widget == widget)
 		{
 			inf.dock = dock;
+			applyDocking(inf);
 			return;
 		}
 
 	// Otherwise add widget
-	widgets.push_back(widget_info_t(widget, dock));
+	widgets.push_back(widget_info_t(widget, id, dock));
+	applyDocking(widgets.back());
+}
+
+GLUI::Widget* GLUI::Manager::getWidget(string id)
+{
+	for (auto inf : widgets)
+		if (inf.id == id)
+			return inf.widget;
+
+	return nullptr;
 }
 
 /* Manager::update
@@ -76,9 +98,17 @@ void GLUI::Manager::addWidget(Widget* widget, uint8_t dock)
  *******************************************************************/
 void GLUI::Manager::update(int time)
 {
+	// Check if layout update is needed
+	//bool layout_update = (canvas_size.x != canvas->GetSize().x || canvas_size.y != canvas->GetSize().y);
+
 	// Update canvas size
 	canvas_size.x = canvas->GetSize().x;
 	canvas_size.y = canvas->GetSize().y;
+
+	// Update layout if needed
+	//if (layout_update)
+		for (auto inf : widgets)
+			applyDocking(inf);
 
 	// Update widget animations
 	for (auto inf : widgets)
@@ -91,10 +121,7 @@ void GLUI::Manager::update(int time)
 void GLUI::Manager::drawWidgets()
 {
 	for (auto inf : widgets)
-	{
-		applyDocking(inf);
 		inf.widget->draw(point2_t(0, 0));
-	}
 }
 
 /* Manager::applyDocking
@@ -107,20 +134,101 @@ void GLUI::Manager::applyDocking(widget_info_t& inf)
 	case DOCK_LEFT:
 		inf.widget->updateLayout(dim2_t(-1, canvas_size.y));
 		inf.widget->setPosition(point2_t(0, 0));
+		inf.widget->setSize(point2_t(inf.widget->getWidth(), canvas_size.y));
 		break;
 	case DOCK_TOP:
 		inf.widget->updateLayout(dim2_t(canvas_size.x, -1));
 		inf.widget->setPosition(point2_t(0, 0));
+		inf.widget->setSize(point2_t(canvas_size.x, inf.widget->getHeight()));
 		break;
 	case DOCK_RIGHT:
 		inf.widget->updateLayout(dim2_t(-1, canvas_size.y));
 		inf.widget->setPosition(point2_t(canvas_size.x - inf.widget->getWidth(), 0));
+		inf.widget->setSize(point2_t(inf.widget->getWidth(), canvas_size.y));
 		break;
 	case DOCK_BOTTOM:
 		inf.widget->updateLayout(dim2_t(canvas_size.x, -1));
 		inf.widget->setPosition(point2_t(0, canvas_size.y - inf.widget->getHeight()));
+		inf.widget->setSize(point2_t(canvas_size.x, inf.widget->getHeight()));
 		break;
+	case DOCK_FILL:
+		inf.widget->updateLayout(canvas_size);
+		inf.widget->setPosition(point2_t(0, 0));
+		inf.widget->setSize(canvas_size);
 	default:
 		break;
 	}
+}
+
+void GLUI::Manager::mouseMove(int x, int y)
+{
+	for (auto inf : widgets)
+	{
+		if (x >= inf.widget->left() && x <= inf.widget->right() &&
+			y >= inf.widget->top() && y <= inf.widget->bottom())
+		{
+			inf.widget->mouseMove(x, y);
+			inf.widget->mouseOver(true);
+		}
+		else
+			inf.widget->mouseOver(false);
+	}
+}
+
+
+void GLUI::Manager::onMouseMove(wxMouseEvent& e)
+{
+	mouseMove(e.GetPosition().x, e.GetPosition().y);
+	e.Skip();
+}
+
+void GLUI::Manager::onSize(wxSizeEvent& e)
+{
+	//// Update canvas size
+	//canvas_size.x = e.GetSize().x;
+	//canvas_size.y = e.GetSize().y;
+
+	//// Update widgets
+	//for (auto inf : widgets)
+	//	applyDocking(inf);
+
+	e.Skip();
+}
+
+void GLUI::Manager::onMouseDown(wxMouseEvent& e)
+{
+	// Get mouse button
+	int button;
+	switch (e.GetButton())
+	{
+	case wxMOUSE_BTN_LEFT: button = Widget::MOUSE_LEFT; break;
+	case wxMOUSE_BTN_RIGHT: button = Widget::MOUSE_RIGHT; break;
+	case wxMOUSE_BTN_MIDDLE: button = Widget::MOUSE_MIDDLE; break;
+	default: button = -1; break;
+	}
+
+	for (auto inf : widgets)
+		if (inf.widget->mouseIsOver())
+			inf.widget->mouseButtonDown(button);
+
+	e.Skip();
+}
+
+void GLUI::Manager::onMouseUp(wxMouseEvent& e)
+{
+	// Get mouse button
+	int button;
+	switch (e.GetButton())
+	{
+	case wxMOUSE_BTN_LEFT: button = Widget::MOUSE_LEFT; break;
+	case wxMOUSE_BTN_RIGHT: button = Widget::MOUSE_RIGHT; break;
+	case wxMOUSE_BTN_MIDDLE: button = Widget::MOUSE_MIDDLE; break;
+	default: button = -1; break;
+	}
+
+	for (auto inf : widgets)
+		if (inf.widget->mouseIsOver())
+			inf.widget->mouseButtonUp(button);
+
+	e.Skip();
 }

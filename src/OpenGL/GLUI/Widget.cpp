@@ -23,7 +23,8 @@ Widget::Widget(Widget* parent)
 	border_style(Widget::BORDER_NONE),
 	border_width(1.0f),
 	border_colour(COL_WHITE),
-	alpha(1.0f)
+	alpha(1.0f),
+	mouse_over(false)
 {
 	if (parent)
 		parent->children.push_back(this);
@@ -84,29 +85,36 @@ void Widget::draw(point2_t pos, float alpha)
 	}
 }
 
-void Widget::fitToChildren(padding_t padding)
+void Widget::fitToChildren(padding_t padding, bool include_invisible)
 {
 	if (children.empty())
 		return;
 
-	// Get min/max extents of child widgets
-	int min_x = children[0]->left(true);
-	int min_y = children[0]->top(true);
-	int max_x = children[0]->right(true);
-	int max_y = children[0]->bottom(true);
-	for (unsigned a = 1; a < children.size(); a++)
+	// Get min/max extents of visible child widgets
+	int min_x = 99999999;
+	int min_y = 99999999;
+	int max_x = -99999999;
+	int max_y = -99999999;
+	bool has_visible = false;
+	for (auto child : children)
 	{
-		Widget* child = children[a];
+		if (child->isVisible() || include_invisible)
+		{
+			if (child->left(true) < min_x)
+				min_x = child->left(true);
+			if (child->right(true) > max_x)
+				max_x = child->right(true);
+			if (child->top(true) < min_y)
+				min_y = child->top(true);
+			if (child->bottom(true) > max_y)
+				max_y = child->bottom(true);
 
-		if (child->left(true) < min_x)
-			min_x = child->left(true);
-		if (child->right(true) > max_x)
-			max_x = child->right(true);
-		if (child->top(true) < min_y)
-			min_y = child->top(true);
-		if (child->bottom(true) > max_y)
-			max_y = child->bottom(true);
+			has_visible = true;
+		}
 	}
+
+	if (!has_visible)
+		min_x = min_y = max_x = max_y = 0;
 
 	// Apply padding
 	min_x -= padding.left;
@@ -115,9 +123,12 @@ void Widget::fitToChildren(padding_t padding)
 	max_y += padding.bottom;
 
 	// Offset child widgets
-	point2_t offset(min_x, min_y);
-	for (auto child : children)
-		child->position = child->position - offset;
+	if (has_visible)
+	{
+		point2_t offset(min_x, min_y);
+		for (auto child : children)
+			child->position = child->position - offset;
+	}
 
 	// Size to fit
 	setSize(dim2_t(max_x - min_x, max_y - min_y));
@@ -143,4 +154,65 @@ void Widget::animate(int time)
 {
 	for (auto animator : animators)
 		animator->update(time);
+}
+
+void Widget::mouseMove(int x, int y)
+{
+	// Handle mouse move on children first
+	for (auto child : children)
+	{
+		// Check position is within child widget
+		if (x >= child->left() && x <= child->right() &&
+			y >= child->top() && y <= child->bottom())
+		{
+			child->mouseOver(true);
+			child->mouseMove(x - child->left(), y - child->top());
+		}
+		else
+			child->mouseOver(false);
+	}
+
+	onMouseMove(x, y);
+}
+
+void Widget::mouseOver(bool is_over)
+{
+	// Mouse enter/leave event
+	if (!mouse_over && is_over)
+		onMouseEnter();
+	if (mouse_over && !is_over)
+		onMouseLeave();
+
+	mouse_over = is_over;
+
+	// If the mouse isn't over this widget, it can't be over any children either
+	if (!is_over)
+		for (auto child : children)
+			child->mouseOver(is_over);
+}
+
+void Widget::mouseButtonDown(int button)
+{
+	// Handle mouse click on children first
+	for (auto child : children)
+	{
+		if (child->mouse_over)
+			child->mouseButtonDown(button);
+	}
+
+	// Do event
+	onMouseDown(button);
+}
+
+void Widget::mouseButtonUp(int button)
+{
+	// Handle mouse click on children first
+	for (auto child : children)
+	{
+		if (child->mouse_over)
+			child->mouseButtonUp(button);
+	}
+
+	// Do event
+	onMouseUp(button);
 }

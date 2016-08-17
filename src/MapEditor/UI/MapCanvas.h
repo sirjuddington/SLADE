@@ -6,15 +6,12 @@
 #include "General/KeyBind.h"
 #include "General/SAction.h"
 #include "MapEditor/Renderer/MapRenderer3D.h"
-#include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
-#include "MapEditor/Renderer/Overlays/LineInfoOverlay.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
-#include "MapEditor/Renderer/Overlays/SectorInfoOverlay.h"
-#include "MapEditor/Renderer/Overlays/ThingInfoOverlay.h"
-#include "MapEditor/Renderer/Overlays/VertexInfoOverlay.h"
 #include "OpenGL/GLUI/Manager.h"
 #include "UI/Canvas/OGLCanvas.h"
+#include <SFML/System.hpp>
 
+// Forward declarations
 class MapEditor;
 class MCAnimation;
 class MapSide;
@@ -22,6 +19,12 @@ class ThingType;
 class GLTexture;
 class MapRenderer2D;
 class MapThing;
+class VertexInfoOverlay;
+class LineInfoOverlay;
+class SectorInfoOverlay;
+class ThingInfoOverlay;
+class InfoOverlay3D;
+
 class MapCanvas : public OGLCanvas, public KeyBindHandler, public SActionHandler
 {
 private:
@@ -85,11 +88,11 @@ private:
 	int					last_hilight;
 	int					last_hilight_type;
 	GLUI::Manager		ui_manager;
-	VertexInfoOverlay	info_vertex;
-	LineInfoOverlay		info_line;
-	SectorInfoOverlay	info_sector;
-	ThingInfoOverlay	info_thing;
-	InfoOverlay3D		info_3d;
+	VertexInfoOverlay*	info_vertex;
+	LineInfoOverlay*	info_line;
+	SectorInfoOverlay*	info_sector;
+	ThingInfoOverlay*	info_thing;
+	InfoOverlay3D*		info_3d;
 	MCOverlay*			overlay_current;
 
 	// View properties
