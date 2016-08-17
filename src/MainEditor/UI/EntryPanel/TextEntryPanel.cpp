@@ -332,6 +332,13 @@ bool TextEntryPanel::handleAction(string id)
 	else if (id == "ptxt_fold_unfoldall")
 		text_area->foldAll(false);
 
+	// compileACS
+	else if (id == "arch_scripts_compileacs")
+		EntryOperations::compileACS(entry, false, NULL, NULL);
+
+	else if (id == "arch_scripts_compilehacs")
+		EntryOperations::compileACS(entry, true, NULL, NULL);
+
 	// Not handled
 	else
 		return false;

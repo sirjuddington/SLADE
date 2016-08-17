@@ -563,6 +563,116 @@ public:
 	}
 };
 
+/*******************************************************************
+ * PALETTEGRADIENTDIALOG CLASS
+ *******************************************************************
+ A dialog for the 'Gradient' function, allows the user to create a 
+ gradient between two colours, and apply it to a range of indexes in 
+ the palette.
+ */
+class PaletteGradientDialog : public wxDialog
+{
+private:
+	PaletteCanvas*		pal_preview;
+	Palette8bit*		palette;
+	wxColourPickerCtrl*	cp_startcolour;
+	wxColourPickerCtrl*	cp_endcolour;
+	
+public:
+	PaletteGradientDialog(wxWindow* parent, Palette8bit* pal)
+	: wxDialog(parent, -1, "Gradient", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+	{
+		// Init variable
+		this->palette = pal;
+		
+		// Set dialog icon
+		wxIcon icon;
+		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "palette_gradient"));
+		SetIcon(icon);
+		
+		// Setup main sizer
+		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(msizer);
+		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
+		
+		// Add colour choosers
+		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
+		
+		cp_startcolour = new wxColourPickerCtrl(this, -1, wxColour(0, 0, 0));
+		hbox->Add(new wxStaticText(this, -1, "Start Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+		hbox->Add(cp_startcolour, 0, wxEXPAND);
+		
+		cp_endcolour = new wxColourPickerCtrl(this, -1, wxColour(255, 255, 255));
+		hbox->Add(new wxStaticText(this, -1, "End Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
+		hbox->Add(cp_endcolour, 0, wxEXPAND);
+		
+		// Add preview
+		pal_preview = new PaletteCanvas(this, -1);
+		sizer->Add(pal_preview, 1, wxEXPAND|wxALL, 4);
+		
+		// Add buttons
+		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM|wxTOP, 4);
+		
+		// Setup preview
+		pal_preview->allowSelection(2);
+		pal_preview->SetInitialSize(wxSize(384, 384));
+		redraw();
+		
+		// Init layout
+		Layout();
+		
+		// Bind events
+		cp_startcolour->Bind(wxEVT_COLOURPICKER_CHANGED, &PaletteGradientDialog::onColourChanged, this);
+		cp_endcolour->Bind(wxEVT_COLOURPICKER_CHANGED, &PaletteGradientDialog::onColourChanged, this);
+		pal_preview->Bind(wxEVT_LEFT_UP, &PaletteGradientDialog::onPaletteLeftUp, this);
+		
+		// Setup dialog size
+		SetInitialSize(wxSize(-1, -1));
+		SetMinSize(GetSize());
+		CenterOnParent();
+	}
+	
+	Palette8bit* getFinalPalette()
+	{
+		return &(pal_preview->getPalette());
+	}
+	
+	rgba_t getStartColour()
+	{
+		wxColour col = cp_startcolour->GetColour();
+		return rgba_t(col.Red(), col.Green(), col.Blue());
+	}
+	
+	rgba_t getEndColour()
+	{
+		wxColour col = cp_endcolour->GetColour();
+		return rgba_t(col.Red(), col.Green(), col.Blue());
+	}
+	
+	// Re-apply the changes in selection and colour on a fresh palette
+	void redraw()
+	{
+		pal_preview->setPalette(palette);
+		pal_preview->getPalette().setGradient(
+			pal_preview->getSelectionStart(), pal_preview->getSelectionEnd(),
+											  getStartColour(), getEndColour());
+		pal_preview->draw();
+	}
+	
+	// Events
+	void onColourChanged(wxColourPickerEvent& e)
+	{
+		redraw();
+	}
+	
+	void onPaletteLeftUp(wxMouseEvent& e)
+	{
+		redraw();
+	}
+};
+
 
 
 /*******************************************************************
@@ -600,7 +710,7 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent)
 	toolbar->addActionGroup("Palette Organisation", wxSplit(actions, ';'));
 
 	// Colour Operations
-	actions = "ppal_colourise;ppal_tint;ppal_invert;ppal_tweak";
+	actions = "ppal_colourise;ppal_tint;ppal_invert;ppal_tweak;ppal_gradient";
 	toolbar->addActionGroup("Colours", wxSplit(actions, ';'));
 
 	// Palette Operations
@@ -1030,6 +1140,25 @@ bool PaletteEntryPanel::invert()
 	return true;
 }
 
+/* PaletteEntryPanel::gradient
+ * Applies a gradient to the palette
+ *******************************************************************/
+bool PaletteEntryPanel::gradient()
+{
+	Palette8bit* pal = new Palette8bit;
+	if (pal == NULL) return false;
+	pal->copyPalette(palettes[cur_palette]);
+	PaletteGradientDialog pgd(theMainWindow, pal);
+	if (pgd.ShowModal() == wxID_OK)
+	{
+		palettes[cur_palette]->copyPalette(pgd.getFinalPalette());
+		showPalette(cur_palette);
+		setModified();
+	}
+	delete pal;
+	return true;
+}
+
 #include "Graphics/SImage/SIFormat.h"
 /* PaletteEntryPanel::generateColormaps
  * Generates a COLORMAP lump from the current palette
@@ -1299,6 +1428,13 @@ bool PaletteEntryPanel::handleAction(string id)
 		invert();
 		return true;
 	}
+	
+	// Gradient
+	else if (id == "ppal_gradient")
+	{
+		gradient();
+		return true;
+	}
 
 	// Move Up
 	else if (id == "ppal_moveup")
@@ -1361,6 +1497,7 @@ bool PaletteEntryPanel::fillCustomMenu(wxMenu* custom)
 	theApp->getAction("ppal_tint")->addToMenu(custom);
 	theApp->getAction("ppal_tweak")->addToMenu(custom);
 	theApp->getAction("ppal_invert")->addToMenu(custom);
+	theApp->getAction("ppal_gradient")->addToMenu(custom);
 	theApp->getAction("ppal_test")->addToMenu(custom);
 	custom->AppendSeparator();
 	theApp->getAction("ppal_generate")->addToMenu(custom);

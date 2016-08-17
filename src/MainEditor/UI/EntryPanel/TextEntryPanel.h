@@ -5,6 +5,7 @@
 #include "EntryPanel.h"
 #include "General/SAction.h"
 #include "UI/TextEditor/TextEditor.h"
+#include "MainEditor/EntryOperations.h"
 
 class TextEntryPanel : public EntryPanel, SActionHandler
 {

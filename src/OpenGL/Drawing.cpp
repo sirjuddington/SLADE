@@ -57,13 +57,15 @@ CVAR(Bool, hud_center, 1, CVAR_SAVE)
 CVAR(Bool, hud_wide, 0, CVAR_SAVE)
 CVAR(Bool, hud_bob, 0, CVAR_SAVE)
 
-#ifdef USE_SFML_RENDERWINDOW
 namespace Drawing
 {
+#ifdef USE_SFML_RENDERWINDOW
 	sf::RenderWindow*	render_target = NULL;
 	bool				text_state_reset = true;
-};
 #endif
+	double				text_outline_width = 0;
+	rgba_t				text_outline_colour = COL_BLACK;
+};
 
 
 /*******************************************************************
@@ -700,6 +702,41 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 		if (text_state_reset)
 			setTextState(true);
 
+		if (text_outline_width > 0)
+		{
+#if (SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2
+			// Set text outline if SFML version is 2.4 or later
+			sf_str.setOutlineThickness(text_outline_width);
+			sf_str.setOutlineColor(
+				sf::Color(
+					text_outline_colour.r,
+					text_outline_colour.g,
+					text_outline_colour.b,
+					text_outline_colour.a
+				)
+			);
+#else
+			// On SFML < 2.4, use old hacky outline method
+			sf_str.setColor(
+				sf::Color(
+					text_outline_colour.r,
+					text_outline_colour.g,
+					text_outline_colour.b,
+					text_outline_colour.a
+				)
+			);
+			sf_str.setPosition(x - text_outline_width, y - text_outline_width);
+			render_target->draw(sf_str);
+			sf_str.setPosition(x - text_outline_width, y + text_outline_width);
+			render_target->draw(sf_str);
+			sf_str.setPosition(x + text_outline_width, y + text_outline_width);
+			render_target->draw(sf_str);
+			sf_str.setPosition(x + text_outline_width, y - text_outline_width);
+			render_target->draw(sf_str);
+			sf_str.setPosition(x, y);
+#endif
+		}
+
 		// Draw
 		render_target->draw(sf_str);
 
@@ -770,11 +807,25 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	}
 
 	// Draw the string
-	OpenGL::setColour(colour);
 	glPushMatrix();
 	glTranslatef(xpos, ypos + ftgl_font->FaceSize(), 0.0f);
 	glTranslatef(-0.375f, -0.375f, 0);
 	glScalef(1.0f, -1.0f, 1.0f);
+	if (text_outline_width > 0)
+	{
+		// Draw outline if set
+		OpenGL::setColour(text_outline_colour);
+		glTranslatef(-1.0f, -1.0f, 0.0f);
+		ftgl_font->Render(CHR(text), -1);
+		glTranslatef(0.0f, 2.0f, 0.0f);
+		ftgl_font->Render(CHR(text), -1);
+		glTranslatef(2.0f, 0.0f, 0.0f);
+		ftgl_font->Render(CHR(text), -1);
+		glTranslatef(0.0f, -2.0f, 0.0f);
+		ftgl_font->Render(CHR(text), -1);
+		glTranslatef(-1.0f, 1.0f, 0.0f);
+	}
+	OpenGL::setColour(colour);
 	ftgl_font->Render(CHR(text), -1);
 	glPopMatrix();
 }
@@ -798,6 +849,10 @@ fpoint2_t Drawing::textExtents(string text, int font)
 
 #endif
 
+/* Drawing::enableTextStateReset
+ * When enabled, the OpenGL state is set for text rendering each time
+ * drawText is called and restored after (SFML only)
+ *******************************************************************/
 void Drawing::enableTextStateReset(bool enable)
 {
 #ifdef USE_SFML_RENDERWINDOW
@@ -805,6 +860,10 @@ void Drawing::enableTextStateReset(bool enable)
 #endif
 }
 
+/* Drawing::setTextState
+ * Sets or restores (depending on [set]) the OpenGL state for SFML
+ * text rendering
+ *******************************************************************/
 void Drawing::setTextState(bool set)
 {
 #ifdef USE_SFML_RENDERWINDOW
@@ -831,6 +890,16 @@ void Drawing::setTextState(bool set)
 		glPopMatrix();
 	}
 #endif
+}
+
+/* Drawing::setTextOutline
+ * Sets the [thickness] and [colour] of the outline to use when
+ * drawing text
+ *******************************************************************/
+void Drawing::setTextOutline(double thickness, rgba_t colour)
+{
+	text_outline_width = thickness;
+	text_outline_colour = colour;
 }
 
 int Drawing::getFontLineHeight(int font)

@@ -57,6 +57,7 @@ namespace Drawing
 	fpoint2_t textExtents(string text, int font = FONT_NORMAL);
 	void enableTextStateReset(bool enable = true);
 	void setTextState(bool set = true);
+	void setTextOutline(double thickness, rgba_t colour = COL_BLACK);
 	int getFontLineHeight(int font);
 
 	// Specific
