@@ -347,6 +347,7 @@ void ResourceManager::removeEntry(ArchiveEntry* entry)
 {
 	// Get resource name (extension cut, uppercase)
 	string name = entry->getName(true).Upper();
+	string path = entry->getPath(true).Upper().Mid(1);
 
 	// Remove from palettes
 	palettes[name].remove(entry);
@@ -356,9 +357,11 @@ void ResourceManager::removeEntry(ArchiveEntry* entry)
 
 	// Remove from flats
 	flats[name].remove(entry);
+	flats[path].remove(entry);
 
 	// Remove from stand-alone textures
 	satextures[name].remove(entry);
+	satextures[path].remove(entry);
 
 	// Check for TEXTUREx entry
 	int txentry = 0;
