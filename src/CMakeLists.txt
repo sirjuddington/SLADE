@@ -131,6 +131,8 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_HEADERS}
 )
 
+set_target_properties(slade PROPERTIES CXX_STANDARD 11)
+
 if (NOT NO_COTIRE)
 	set_target_properties(slade PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "common.h")
 	cotire(slade)
@@ -155,7 +157,6 @@ if (NOT NO_FLUIDSYNTH)
 endif()
 
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
-
 set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER YES)
 set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Application/Main.h)
 

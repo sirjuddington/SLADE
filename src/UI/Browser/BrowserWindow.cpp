@@ -535,7 +535,7 @@ void BrowserWindow::addItemTree(BrowserTreeNode* node, wxTreeListItem& item)
 /* BrowserWindow::setFont
  * Sets the font to be used for item names
  *******************************************************************/
-void BrowserWindow::setFont(Fonts::Font& font)
+void BrowserWindow::setFont(Fonts::Font font)
 {
 	canvas->setFont(font);
 }

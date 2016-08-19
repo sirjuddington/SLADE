@@ -146,25 +146,49 @@ void Fonts::resetFontCache()
 #else
 namespace Fonts
 {
-	vector<FTFont*>	fonts;
+	std::map<string, std::unique_ptr<GLFONT>> fonts;
 }
 
 /* Fonts::getGLFont
  * Returns an OpenGL font matching [font], creating one if necessary
  *******************************************************************/
-GLFONT* Fonts::getGLFont(string name, int size)
+GLFONT* Fonts::getGLFont(Font& font)
 {
-	// TODO
+	// Determine font id (combined face+size)
+	// For FTGL we need to load the font separately for each size,
+	// since FTTextureFont::FaceSize triggers a full reload of the font
+	string font_id = S_FMT("%s:%d", font.name, font.size);
+
+	// Find existing font
+	if (fonts[font_id] != nullptr)
+		return fonts[font_id].get();
+
+	// Existing font not found, try to load it
+	ArchiveEntry* entry =
+		theArchiveManager->programResourceArchive()->entryAtPath(S_FMT("fonts/%s.ttf", font.name));
+	if (entry)
+	{
+		GLFONT* f = new FTTextureFont(entry->getData(), entry->getSize());
+		f->FaceSize(font.size * gl_ui_scale);
+
+		if (!f->Error())
+		{
+			fonts[font_id] = std::unique_ptr<GLFONT>(f);
+			return f;
+		}
+	}
+
+	// Font not found in program resource or was an invalid format
 	return nullptr;
 }
 
 /* Fonts::textExtents
  * Returns the width and height of [text] when drawn with [font]
  *******************************************************************/
-fpoint2_t Fonts::textExtents(string text, string font, int size)
+fpoint2_t Fonts::textExtents(string text, Font& font)
 {
 	// Get desired font
-	FTFont* ftgl_font = getFont(font, size);
+	FTFont* ftgl_font = getGLFont(font);
 
 	// If FTGL font is invalid, return empty
 	if (!ftgl_font)
@@ -172,15 +196,22 @@ fpoint2_t Fonts::textExtents(string text, string font, int size)
 
 	// Return width and height of text
 	FTBBox bbox = ftgl_font->BBox(CHR(text), -1);
-	return fpoint2_t(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
+	return fpoint2_t(bbox.Upper().X() - bbox.Lower().X(), bbox.Upper().Y() - bbox.Lower().Y());
 }
 
 /* Fonts::getFontLineHeight
  * Returns the line height of [font]
  *******************************************************************/
-int Drawing::getFontLineHeight(string font, int size)
+int Fonts::getFontLineHeight(Font& font)
 {
-	return textExtents("Wg", font, size).y;
+	// Get desired font
+	FTFont* ftgl_font = getGLFont(font);
+
+	// If FTGL font is invalid, return 16
+	if (!ftgl_font)
+		return 16 * gl_ui_scale;
+
+	return ftgl_font->LineHeight() * 1.1;
 }
 
 /* Fonts::resetFontCache

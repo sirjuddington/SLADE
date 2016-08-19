@@ -26,7 +26,7 @@ namespace GLUI
 		void	splitText(int fit_width);
 
 	public:
-		TextBox(Widget* parent, string text, Fonts::Font& font = Fonts::Font(), Drawing::Align alignment = Drawing::Align::Left, rgba_t colour = COL_WHITE, double line_height = 1.1);
+		TextBox(Widget* parent, string text, Fonts::Font font = Fonts::Font(), Drawing::Align alignment = Drawing::Align::Left, rgba_t colour = COL_WHITE, double line_height = 1.1);
 		virtual ~TextBox();
 
 		int		getLineHeightPixels();

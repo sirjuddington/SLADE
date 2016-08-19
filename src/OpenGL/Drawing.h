@@ -40,7 +40,7 @@ namespace Drawing
 	void	drawTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale = 1);
 
 	// Text drawing
-	void drawText(string text, int x = 0, int y = 0, rgba_t colour = COL_WHITE, Fonts::Font& font = Fonts::Font(), Align alignment = Align::Left, frect_t* bounds = NULL);
+	void drawText(string text, int x = 0, int y = 0, rgba_t colour = COL_WHITE, Fonts::Font font = Fonts::regularFont(), Align alignment = Align::Left, frect_t* bounds = NULL);
 	void enableTextStateReset(bool enable = true);
 	void setTextState(bool set = true);
 	void setTextOutline(double thickness, rgba_t colour = COL_BLACK);

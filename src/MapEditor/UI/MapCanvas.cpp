@@ -848,6 +848,7 @@ void MapCanvas::drawSelectionNumbers()
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
 	setOverlayCoords();
+	auto font = Fonts::boldFont();
 #if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
 	Drawing::setTextOutline(1.5f, COL_BLACK);
 #else
@@ -864,7 +865,7 @@ void MapCanvas::drawSelectionNumbers()
 		tp.y = screenY(tp.y);
 
 		text = S_FMT("%d", a+1);
-		fpoint2_t ts = Fonts::textExtents(text, Fonts::boldFont());
+		fpoint2_t ts = Fonts::textExtents(text, font);
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
 
@@ -929,10 +930,11 @@ void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
 
 	// Determine text half-height for vertical alignment
 	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
-	double hh = Fonts::textExtents(length, Fonts::regularFont()).y * 0.5;
+	auto font = Fonts::regularFont();
+	double hh = Fonts::textExtents(length, font).y * 0.5;
 
 	// Draw text
-	Drawing::drawText(length, screenX(tp.x), screenY(tp.y) - hh, col, Fonts::regularFont(), Drawing::Align::Center);
+	Drawing::drawText(length, screenX(tp.x), screenY(tp.y) - hh, col, font, Drawing::Align::Center);
 	glDisable(GL_TEXTURE_2D);
 }
 

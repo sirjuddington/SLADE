@@ -86,7 +86,7 @@ public:
 	void	addItemTree(BrowserTreeNode* node, wxTreeListItem& item);
 
 	// Canvas display options
-	void	setFont(Fonts::Font& font);
+	void	setFont(Fonts::Font font);
 	void	setItemNameType(int type);
 	void	setItemSize(int size);
 	void	setItemViewType(int type);

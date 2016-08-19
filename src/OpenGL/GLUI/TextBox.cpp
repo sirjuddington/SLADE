@@ -6,7 +6,7 @@
 
 using namespace GLUI;
 
-TextBox::TextBox(Widget* parent, string text, Fonts::Font& font, Drawing::Align alignment, rgba_t colour, double line_height)
+TextBox::TextBox(Widget* parent, string text, Fonts::Font font, Drawing::Align alignment, rgba_t colour, double line_height)
 : Widget(parent), font(font), alignment(alignment), colour(colour), line_height(line_height)
 {
 	line_height_pixels = Fonts::getFontLineHeight(font) * line_height;

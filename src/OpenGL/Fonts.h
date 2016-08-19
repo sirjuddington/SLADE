@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #define GLFONT sf::Font
 #else
+#include <FTGL/ftgl.h>
 #define GLFONT FTFont
 #endif
 

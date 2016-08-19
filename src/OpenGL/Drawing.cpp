@@ -470,10 +470,10 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, Fonts::Font& fo
  * Draws [text] at [x,y]. If [bounds] is not null, the bounding
  * coordinates of the rendered text string are written to it.
  *******************************************************************/
-void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds)
+void Drawing::drawText(string text, int x, int y, rgba_t colour, Fonts::Font font, Align alignment, frect_t* bounds)
 {
 	// Get desired font
-	FTFont* ftgl_font = theFontManager->getFont(font);
+	FTFont* ftgl_font = Fonts::getGLFont(font);
 
 	// If FTGL font is invalid, do nothing
 	if (!ftgl_font)
@@ -484,16 +484,17 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	int xpos = x;
 	int ypos = y;
 	float width = bbox.Upper().X() - bbox.Lower().X();
-	float height = ftgl_font->LineHeight();
-	if (alignment != ALIGN_LEFT)
+	float height = Fonts::getFontLineHeight(font);
+	if (alignment != Align::Left)
 	{
-		if (alignment == ALIGN_CENTER)
+		if (alignment == Align::Center)
 			xpos -= MathStuff::round(width*0.5);
 		else
 			xpos -= width;
 	}
 
 	// Set bounds rect
+	bbox = ftgl_font->BBox(CHR(text), -1, FTPoint(xpos, ypos));
 	if (bounds)
 	{
 		bbox = ftgl_font->BBox(CHR(text), -1, FTPoint(xpos, ypos));
@@ -502,7 +503,7 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 
 	// Draw the string
 	glPushMatrix();
-	glTranslatef(xpos, ypos + ftgl_font->FaceSize(), 0.0f);
+	glTranslatef(xpos, ypos + int(height * 0.8), 0.0f);
 	glTranslatef(-0.375f, -0.375f, 0);
 	glScalef(1.0f, -1.0f, 1.0f);
 	if (text_outline_width > 0)
@@ -522,23 +523,6 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	OpenGL::setColour(colour);
 	ftgl_font->Render(CHR(text), -1);
 	glPopMatrix();
-}
-
-/* Drawing::textExtents
- * Returns the width and height of [text] when drawn with [font]
- *******************************************************************/
-fpoint2_t Drawing::textExtents(string text, int font)
-{
-	// Get desired font
-	FTFont* ftgl_font = theFontManager->getFont(font);
-
-	// If FTGL font is invalid, return empty
-	if (!ftgl_font)
-		return fpoint2_t(0,0);
-
-	// Return width and height of text
-	FTBBox bbox = ftgl_font->BBox(CHR(text), -1);
-	return fpoint2_t(bbox.Upper().X() - bbox.Lower().X(), ftgl_font->LineHeight());
 }
 
 #endif
