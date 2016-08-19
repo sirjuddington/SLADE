@@ -773,8 +773,8 @@ void MapCanvas::drawEditorMessages()
 		}
 
 		// Draw message
-		Drawing::setTextOutline(1.0f, col_bg);
-		Drawing::drawText(editor->getEditorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
+		Drawing::setTextOutline(2.0f, col_bg);
+		Drawing::drawText(editor->getEditorMessage(a), 0, yoff, col, Fonts::boldFont(1.3f));
 		
 		yoff += 16;
 	}
@@ -798,29 +798,31 @@ void MapCanvas::drawFeatureHelpText()
 	rgba_t col_bg = ColourConfiguration::getColour("map_editor_message_outline");
 	col.a = col.a * anim_help_fade;
 	col_bg.a = col_bg.a * anim_help_fade;
-	Drawing::setTextOutline(1.0f, col_bg);
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 2, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT, &bounds);
+	Drawing::setTextOutline(2.0f, col_bg);
+	Drawing::drawText(feature_help_lines[0], GetSize().x - 4, 2, col, Fonts::boldFont(1.4f), Drawing::Align::Right, &bounds);
 
 	// Draw underline
 	glDisable(GL_TEXTURE_2D);
 	glLineWidth(1.0f);
 	OpenGL::setColour(col);
 	glBegin(GL_LINES);
-	glVertex2d(bounds.right() + 8, bounds.bottom() + 1);
-	glVertex2d(bounds.left() + 16, bounds.bottom() + 1);
-	glVertex2d(bounds.left() + 16, bounds.bottom() + 1);
+	glVertex2d(bounds.right() + 8, bounds.bottom() + 2);
+	glVertex2d(bounds.left() + 16, bounds.bottom() + 2);
+	glVertex2d(bounds.left() + 16, bounds.bottom() + 2);
 	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-	glVertex2d(bounds.left() - 48, bounds.bottom() + 1);
+	glVertex2d(bounds.left() - 48, bounds.bottom() + 2);
 	glEnd();
 
 	// Draw help text
-	int yoff = 22;
+	Fonts::Font font = Fonts::boldFont(1.2f);
+	int yoff = bounds.bottom() + 4;
+	int line_height = Fonts::getFontLineHeight(font);
 	Drawing::setTextState(true);
 	Drawing::enableTextStateReset(false);
 	for (unsigned a = 1; a < feature_help_lines.size(); a++)
 	{
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 2, yoff, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		yoff += 16;
+		Drawing::drawText(feature_help_lines[a], GetSize().x - 4, yoff, col, font, Drawing::Align::Right);
+		yoff += line_height;
 	}
 	Drawing::setTextOutline(0);
 	Drawing::setTextState(false);
@@ -847,7 +849,7 @@ void MapCanvas::drawSelectionNumbers()
 	Drawing::setTextState(true);
 	setOverlayCoords();
 #if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
-	Drawing::setTextOutline(1.0f, COL_BLACK);
+	Drawing::setTextOutline(1.5f, COL_BLACK);
 #else
 	if (editor->selectionSize() <= map_max_selection_numbers * 0.5)
 		Drawing::setTextOutline(1.0f, COL_BLACK);
@@ -862,7 +864,7 @@ void MapCanvas::drawSelectionNumbers()
 		tp.y = screenY(tp.y);
 
 		text = S_FMT("%d", a+1);
-		fpoint2_t ts = Drawing::textExtents(text, Drawing::FONT_BOLD);
+		fpoint2_t ts = Fonts::textExtents(text, Fonts::boldFont());
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
 
@@ -873,7 +875,7 @@ void MapCanvas::drawSelectionNumbers()
 		}
 
 		// Draw text
-		Drawing::drawText(S_FMT("%d", a+1), tp.x, tp.y, col, Drawing::FONT_BOLD);
+		Drawing::drawText(S_FMT("%d", a+1), tp.x, tp.y, col, Fonts::boldFont());
 	}
 	Drawing::setTextOutline(0);
 	Drawing::enableTextStateReset();
@@ -927,10 +929,10 @@ void MapCanvas::drawLineLength(fpoint2_t p1, fpoint2_t p2, rgba_t col)
 
 	// Determine text half-height for vertical alignment
 	string length = S_FMT("%d", MathStuff::round(MathStuff::distance(p1, p2)));
-	double hh = Drawing::textExtents(length).y * 0.5;
+	double hh = Fonts::textExtents(length, Fonts::regularFont()).y * 0.5;
 
 	// Draw text
-	Drawing::drawText(length, screenX(tp.x), screenY(tp.y) - hh, col, Drawing::FONT_NORMAL, Drawing::ALIGN_CENTER);
+	Drawing::drawText(length, screenX(tp.x), screenY(tp.y) - hh, col, Fonts::regularFont(), Drawing::Align::Center);
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -985,6 +987,7 @@ void MapCanvas::drawLineDrawLines()
 
 	// Draw line lengths
 	setOverlayCoords(true);
+	Drawing::setTextOutline(1.5f, COL_BLACK);
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
@@ -993,6 +996,7 @@ void MapCanvas::drawLineDrawLines()
 	if (npoints > 0 && draw_state == DSTATE_LINE)
 		drawLineLength(editor->lineDrawPoint(npoints-1), end, col);
 	setOverlayCoords(false);
+	Drawing::setTextOutline(0);
 
 	// Draw points
 	glPointSize(vertex_size);
@@ -1152,7 +1156,7 @@ void MapCanvas::drawObjectEdit()
 		int y = screenY(mid.y) - 8;
 		setOverlayCoords(true);
 		Drawing::setTextOutline(1.0f, COL_BLACK);
-		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Fonts::boldFont(), Drawing::Align::Center);
 		Drawing::setTextOutline(0);
 		setOverlayCoords(false);
 		glDisable(GL_TEXTURE_2D);
@@ -1567,7 +1571,7 @@ void MapCanvas::draw()
 		{
 			glEnable(GL_TEXTURE_2D);
 			OpenGL::setColour(col);
-			Drawing::drawText(S_FMT("%d", renderer_3d->itemDistance()), midx+5, midy+5, rgba_t(255, 255, 255, 200), Drawing::FONT_SMALL);
+			Drawing::drawText(S_FMT("%d", renderer_3d->itemDistance()), midx+5, midy+5, rgba_t(255, 255, 255, 200), Fonts::regularFont());
 			//Drawing::drawText(S_FMT("%1.2f", renderer_3d->camPitch()), midx+5, midy+30, rgba_t(255, 255, 255, 200), Drawing::FONT_SMALL);
 		}
 	}

@@ -16,7 +16,7 @@ TextureBox::TextureBox(Widget* parent)
 	: Panel(parent),
 	box_size(80),
 	image_texture(new ImageBox(this)),
-	text_name(new TextBox(this, "", Drawing::FONT_CONDENSED, Drawing::ALIGN_CENTER)),
+	text_name(new TextBox(this, "")),
 	show_always(false)
 {
 	text_name->setMargin(padding_t(0, 2, 0, 0));

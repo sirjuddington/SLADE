@@ -101,7 +101,14 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 	// Check if any sectors are open
 	if (sectors.size() == 0)
 	{
-		Drawing::drawText("No sectors are open. Just press escape and pretend this never happened.", width*0.5, height*0.5, COL_WHITE, 0, Drawing::ALIGN_CENTER);
+		Drawing::drawText(
+			"No sectors are open. Just press escape and pretend this never happened.",
+			width*0.5,
+			height*0.5,
+			COL_WHITE,
+			Fonts::regularFont(),
+			Drawing::Align::Center
+		);
 		return;
 	}
 
@@ -135,13 +142,13 @@ void SectorTextureOverlay::draw(int width, int height, float fade)
 	// Floor texture
 	glEnable(GL_LINE_SMOOTH);
 	drawTexture(fade, middlex - border - tex_size*0.5 - cur_size*0.5, middley - cur_size*0.5, cur_size, tex_floor, hover_floor);
-	Drawing::drawText("Floor:", middlex - border - tex_size*0.5, middley - tex_size*0.5 - 18, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
-	Drawing::drawText(ftex, middlex - border - tex_size*0.5, middley + tex_size*0.5 + 2, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+	Drawing::drawText("Floor:", middlex - border - tex_size*0.5, middley - tex_size*0.5 - 18, col_fg, Fonts::boldFont(), Drawing::Align::Center);
+	Drawing::drawText(ftex, middlex - border - tex_size*0.5, middley + tex_size*0.5 + 2, col_fg, Fonts::boldFont(), Drawing::Align::Center);
 
 	// Ceiling texture
 	drawTexture(fade, middlex + border + tex_size*0.5 - cur_size*0.5, middley - cur_size*0.5, cur_size, tex_ceil, hover_ceil);
-	Drawing::drawText("Ceiling:", middlex + border + tex_size*0.5, middley - tex_size*0.5 - 18, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
-	Drawing::drawText(ctex, middlex + border + tex_size*0.5, middley + tex_size*0.5 + 2, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+	Drawing::drawText("Ceiling:", middlex + border + tex_size*0.5, middley - tex_size*0.5 - 18, col_fg, Fonts::boldFont(), Drawing::Align::Center);
+	Drawing::drawText(ctex, middlex + border + tex_size*0.5, middley + tex_size*0.5 + 2, col_fg, Fonts::boldFont(), Drawing::Align::Center);
 }
 
 /* SectorTextureOverlay::drawTexture

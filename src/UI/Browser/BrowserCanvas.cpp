@@ -57,7 +57,7 @@ BrowserCanvas::BrowserCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 	item_border = 8;
 	scrollbar = NULL;
 	item_selected = NULL;
-	font = Drawing::FONT_BOLD;
+	font = Fonts::boldFont();
 	show_names = NAMES_NORMAL;
 	item_size = -1;
 	item_type = ITEMS_NORMAL;

@@ -4,6 +4,7 @@
 
 #include "UI/Canvas/OGLCanvas.h"
 #include "BrowserItem.h"
+#include "OpenGL/Fonts.h"
 
 class wxScrollBar;
 class BrowserCanvas : public OGLCanvas
@@ -16,16 +17,16 @@ private:
 	BrowserItem*			item_selected;
 
 	// Display
-	int	yoff;
-	int	item_border;
-	int	font;
-	int	show_names;
-	int	item_size;
-	int top_index;
-	int top_y;
-	int	item_type;
-	int	longest_text;
-	int	num_cols;
+	int			yoff;
+	int			item_border;
+	Fonts::Font	font;
+	int			show_names;
+	int			item_size;
+	int			top_index;
+	int			top_y;
+	int			item_type;
+	int			longest_text;
+	int			num_cols;
 
 public:
 	BrowserCanvas(wxWindow* parent);
@@ -59,7 +60,7 @@ public:
 	void					showItem(int item, int where);
 	void					showSelectedItem();
 	bool					searchItemFrom(int from);
-	void					setFont(int font) { this->font = font; }
+	void					setFont(Fonts::Font& font) { this->font = font; }
 	void					setItemNameType(int type) { this->show_names = type; }
 	void					setItemSize(int size) { this->item_size = size; }
 	void					setItemViewType(int type) { this->item_type = type; }

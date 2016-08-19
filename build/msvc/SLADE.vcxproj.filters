@@ -164,7 +164,7 @@
       <UniqueIdentifier>{6066c6f2-dbf1-40c3-8a33-f3659be6e54a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Map Editor\UI\GLUI">
-      <UniqueIdentifier>{0464f340-a00e-4614-8d78-5b24fcf5ecc9}</UniqueIdentifier>
+      <UniqueIdentifier>{7da11a22-c874-4541-ba7c-8e87a8e81b35}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1404,6 +1404,9 @@
     <ClCompile Include="..\..\src\OpenGL\GLUI\Animator.cpp">
       <Filter>OpenGL\GLUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\OpenGL\Fonts.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\UI\GLUI\LineTextureSelector.cpp">
       <Filter>Map Editor\UI\GLUI</Filter>
     </ClCompile>
@@ -2446,6 +2449,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\InfoOverlay.h">
       <Filter>Map Editor\Renderer\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\Fonts.h">
+      <Filter>OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\UI\GLUI\LineTextureSelector.h">
       <Filter>Map Editor\UI\GLUI</Filter>

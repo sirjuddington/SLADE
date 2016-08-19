@@ -113,7 +113,7 @@ void OpenGLPrefsPanel::applyPreferences()
 	gl_ui_scale = ntc_ui_scale->getDecNumber();
 
 	if (gl_ui_scale != last_ui_scale)
-		Drawing::initFonts();
+		Fonts::resetFontCache();
 
 	last_ui_scale = gl_ui_scale;
 }

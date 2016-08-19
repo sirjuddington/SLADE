@@ -2,6 +2,7 @@
 #ifndef __BROWSER_ITEM_H__
 #define __BROWSER_ITEM_H__
 
+#include "OpenGL/Fonts.h"
 #include "OpenGL/GLTexture.h"
 
 class BrowserWindow;
@@ -26,7 +27,7 @@ public:
 	unsigned	getIndex() { return index; }
 
 	virtual bool	loadImage();
-	void			draw(int size, int x, int y, int font, int nametype = 0, int viewtype = 0, rgba_t colour = COL_WHITE, bool text_shadow = true);
+	void			draw(int size, int x, int y, Fonts::Font& font, int nametype = 0, int viewtype = 0, rgba_t colour = COL_WHITE, bool text_shadow = true);
 	void			clearImage();
 	virtual string	itemInfo() { return ""; }
 };

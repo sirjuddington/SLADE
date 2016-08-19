@@ -60,7 +60,7 @@ using namespace GLUI;
  * InfoOverlay3D class constructor
  *******************************************************************/
 InfoOverlay3D::InfoOverlay3D()
-	: text_info1(new TextBox(this, "", Drawing::FONT_CONDENSED, Drawing::ALIGN_RIGHT)),
+	: text_info1(new TextBox(this, "", Fonts::regularFont(), Drawing::Align::Right)),
 	text_info2(new TextBox(this, "")),
 	tex_box(new TextureBox(this)),
 	object(NULL)

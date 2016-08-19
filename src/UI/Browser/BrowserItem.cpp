@@ -76,7 +76,7 @@ bool BrowserItem::loadImage()
  * Draws the item in a [size]x[size] box, keeping the correct aspect
  * ratio of it's image
  *******************************************************************/
-void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewtype, rgba_t colour, bool text_shadow)
+void BrowserItem::draw(int size, int x, int y, Fonts::Font& font, int nametype, int viewtype, rgba_t colour, bool text_shadow)
 {
 	// Determine item name string (for normal viewtype)
 	string draw_name = "";
@@ -92,11 +92,13 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 		draw_name += "...";
 	}
 
+	if (text_shadow)
+		Drawing::setTextOutline(1.0, COL_BLACK);
+
 	// Item name
 	if (viewtype == 0)
 	{
-		if (text_shadow) Drawing::drawText(draw_name, x+(size*0.5+1), y+size+5, COL_BLACK, font, Drawing::ALIGN_CENTER);
-		Drawing::drawText(draw_name, x+(size*0.5), y+size+4, colour, font, Drawing::ALIGN_CENTER);
+		Drawing::drawText(draw_name, x+(size*0.5), y+size+4, colour, font, Drawing::Align::Center);
 	}
 	else if (viewtype == 1)
 	{
@@ -106,11 +108,11 @@ void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewt
 		
 		int top = y;
 		top += ((size - text_box->getHeight()) * 0.5);
-
-		if (text_shadow)
-			text_box->draw(x + size + 9, top + 1, COL_BLACK);
 		text_box->draw(x + size + 8, top, colour);
 	}
+
+	if (text_shadow)
+		Drawing::setTextOutline(0);
 
 	// If the item is blank don't bother with the image
 	if (blank)

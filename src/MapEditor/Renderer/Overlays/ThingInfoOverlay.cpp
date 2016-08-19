@@ -61,7 +61,7 @@ using namespace GLUI;
  *******************************************************************/
 ThingInfoOverlay::ThingInfoOverlay()
 {
-	text_info = new TextBox(this, "", Drawing::FONT_CONDENSED);
+	text_info = new TextBox(this, "");
 	image_sprite = new ImageBox(this);
 	image_sprite->setBackgroundStyle(ImageBox::BACKGROUND_NONE);
 	image_sprite->setBorder(1.0f, Widget::BORDER_NONE);

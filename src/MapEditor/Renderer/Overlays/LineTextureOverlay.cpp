@@ -347,7 +347,14 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 	Drawing::drawRect(tex.position.x-halfsize, tex.position.y-halfsize, tex.position.x+halfsize, tex.position.y+halfsize);
 
 	// Draw position text
-	Drawing::drawText(position + ":", tex.position.x, tex.position.y - halfsize - 18, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+	Drawing::drawText(
+		position + ":",
+		tex.position.x,
+		tex.position.y - halfsize - 18,
+		col_fg,
+		Fonts::boldFont(),
+		Drawing::Align::Center
+	);
 
 	// Determine texture name text
 	string str_texture;
@@ -359,7 +366,14 @@ void LineTextureOverlay::drawTexture(float alpha, int size, tex_inf_t& tex, stri
 		str_texture = "- (None)";
 
 	// Draw texture name
-	Drawing::drawText(str_texture, tex.position.x, tex.position.y + halfsize + 2, col_fg, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+	Drawing::drawText(
+		str_texture,
+		tex.position.x,
+		tex.position.y + halfsize + 2,
+		col_fg,
+		Fonts::boldFont(),
+		Drawing::Align::Center
+	);
 }
 
 /* LineTextureOverlay::mouseMotion

@@ -1014,9 +1014,6 @@ bool MainApp::OnInit()
 	wxLogMessage("Loading icons");
 	Icons::loadIcons();
 
-	// Load program fonts
-	Drawing::initFonts();
-
 	// Load entry types
 	wxLogMessage("Loading entry types");
 	EntryDataFormat::initBuiltinFormats();

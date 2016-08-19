@@ -1,13 +1,12 @@
 
-#ifndef __DRAWING_H__
-#define __DRAWING_H__
+#pragma once
 
 #ifdef USE_SFML_RENDERWINDOW
 #include <SFML/Graphics.hpp>
 #endif
 
 #include "common.h"
-
+#include "Fonts.h"
 #include "Utility/Structs.h"
 
 class GLTexture;
@@ -15,24 +14,12 @@ class FontManager;
 
 namespace Drawing
 {
-	enum
+	enum class Align
 	{
-		// Text fonts
-		FONT_NORMAL = 0,
-		FONT_CONDENSED,
-		FONT_BOLD,
-		FONT_BOLDCONDENSED,
-		FONT_MONOSPACE,
-		FONT_SMALL,
-
-		// Text alignment
-		ALIGN_LEFT = 0,
-		ALIGN_RIGHT = 1,
-		ALIGN_CENTER = 2,
+		Left,
+		Right,
+		Center
 	};
-
-	// Initialisation
-	void initFonts();
 
 	// Basic drawing
 	void drawLine(fpoint2_t start, fpoint2_t end);
@@ -53,12 +40,10 @@ namespace Drawing
 	void	drawTextureWithin(GLTexture* tex, double x1, double y1, double x2, double y2, double padding, double max_scale = 1);
 
 	// Text drawing
-	void drawText(string text, int x = 0, int y = 0, rgba_t colour = COL_WHITE, int font = FONT_NORMAL, int alignment = ALIGN_LEFT, frect_t* bounds = NULL);
-	fpoint2_t textExtents(string text, int font = FONT_NORMAL);
+	void drawText(string text, int x = 0, int y = 0, rgba_t colour = COL_WHITE, Fonts::Font& font = Fonts::Font(), Align alignment = Align::Left, frect_t* bounds = NULL);
 	void enableTextStateReset(bool enable = true);
 	void setTextState(bool set = true);
 	void setTextOutline(double thickness, rgba_t colour = COL_BLACK);
-	int getFontLineHeight(int font);
 
 	// Specific
 	void drawHud();
@@ -83,7 +68,7 @@ class STextBox
 private:
 	string			text;
 	vector<string>	lines;
-	int				font;
+	Fonts::Font		font;
 	int				width;
 	int				height;
 	int				line_height;
@@ -91,7 +76,7 @@ private:
 	void	split(string text);
 
 public:
-	STextBox(string text, int font, int width, int line_height = -1);
+	STextBox(string text, Fonts::Font& font, int width, int line_height = -1);
 	~STextBox() {}
 
 	int		getHeight() { return height; }
@@ -100,8 +85,6 @@ public:
 	void	setText(string text);
 	void	setSize(int width);
 	void	setLineHeight(int height) { line_height = height; }
-	void	setFont(int font);
-	void	draw(int x, int y, rgba_t colour = COL_WHITE, int alignment = Drawing::ALIGN_LEFT);
+	void	setFont(Fonts::Font& font);
+	void	draw(int x, int y, rgba_t colour = COL_WHITE, Drawing::Align alignment = Drawing::Align::Left);
 };
-
-#endif//__DRAWING_H__

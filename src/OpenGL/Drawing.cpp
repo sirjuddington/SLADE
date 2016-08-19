@@ -75,290 +75,8 @@ EXTERN_CVAR(Float, gl_ui_scale)
 
 
 /*******************************************************************
- * FONTMANAGER CLASS
- *******************************************************************/
-class FontManager
-{
-private:
-#ifdef USE_SFML_RENDERWINDOW
-	sf::Font	font_normal;
-	sf::Font	font_condensed;
-	sf::Font	font_bold;
-	sf::Font	font_boldcondensed;
-	sf::Font	font_mono;
-	sf::Font	font_small;
-#else
-	FTFont*		font_normal;
-	FTFont*		font_condensed;
-	FTFont*		font_bold;
-	FTFont*		font_boldcondensed;
-	FTFont*		font_mono;
-	FTFont*		font_small;
-#endif
-	static FontManager*	instance;
-
-public:
-	FontManager()
-	{
-#ifndef USE_SFML_RENDERWINDOW
-		font_normal = NULL;
-		font_condensed = NULL;
-		font_bold = NULL;
-		font_boldcondensed = NULL;
-		font_mono = NULL;
-		font_small = NULL;
-#endif
-	}
-	~FontManager()
-	{
-#ifndef USE_SFML_RENDERWINDOW
-		if (font_normal)		{ delete font_normal;			font_normal = NULL;			}
-		if (font_condensed)		{ delete font_condensed;		font_condensed = NULL;		}
-		if (font_bold)			{ delete font_bold;				font_bold = NULL;			}
-		if (font_boldcondensed) { delete font_boldcondensed;	font_boldcondensed = NULL;	}
-		if (font_mono)			{ delete font_mono;				font_mono = NULL;			}
-		if (font_small)			{ delete font_small;			font_small = NULL;			}
-#endif
-	}
-
-	static FontManager*	getInstance()
-	{
-		if (!instance)
-			instance = new FontManager();
-
-		return instance;
-	}
-	int initFonts();
-
-#ifdef USE_SFML_RENDERWINDOW
-	sf::Font*	getFont(int font);
-	int			getLineHeight(int font);
-#else
-	FTFont*		getFont(int font);
-	int			getLineHeight(int font);
-#endif
-
-};
-#define theFontManager FontManager::getInstance()
-FontManager* FontManager::instance = NULL;
-
-
-/*******************************************************************
- * FONTMANAGER CLASS FUNCTIONS
- *******************************************************************/
-
-#ifdef USE_SFML_RENDERWINDOW
-
-/* FontManager::initFonts
- * Loads all needed fonts for rendering. SFML 2.x implementation
- *******************************************************************/
-int FontManager::initFonts()
-{
-	// --- Load general fonts ---
-	int ret = 0;
-
-	// Normal
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry) ++ret, font_normal.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	// Condensed
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry) ++ret, font_condensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	// Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry) ++ret, font_bold.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	// Condensed Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry) ++ret, font_boldcondensed.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	// Monospace
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry) ++ret, font_small.loadFromMemory((const char*)entry->getData(), entry->getSize());
-
-	return ret;
-}
-
-#else
-/* FontManager::initFonts
- * Loads all needed fonts for rendering. Non-SFML implementation
- *******************************************************************/
-int FontManager::initFonts()
-{
-	// --- Load general fonts ---
-	int ret = 0;
-
-	if (font_normal)		{ delete font_normal;			font_normal = NULL;			}
-	if (font_condensed)		{ delete font_condensed;		font_condensed = NULL;		}
-	if (font_bold)			{ delete font_bold;				font_bold = NULL;			}
-	if (font_boldcondensed) { delete font_boldcondensed;	font_boldcondensed = NULL;	}
-	if (font_mono)			{ delete font_mono;				font_mono = NULL;			}
-	if (font_small)			{ delete font_small;			font_small = NULL;			}
-
-	// Normal
-	ArchiveEntry* entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry)
-	{
-		font_normal = new FTTextureFont(entry->getData(), entry->getSize());
-		font_normal->FaceSize(12 * gl_ui_scale);
-
-		// Check it loaded ok
-		if (font_normal->Error())
-		{
-			delete font_normal;
-			font_normal = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Condensed
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-	if (entry)
-	{
-		font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_condensed->FaceSize(12 * gl_ui_scale);
-
-		// Check it loaded ok
-		if (font_condensed->Error())
-		{
-			delete font_condensed;
-			font_condensed = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-	if (entry)
-	{
-		font_bold = new FTTextureFont(entry->getData(), entry->getSize());
-		font_bold->FaceSize(12 * gl_ui_scale);
-
-		// Check it loaded ok
-		if (font_bold->Error())
-		{
-			delete font_bold;
-			font_bold = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Condensed bold
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-	if (entry)
-	{
-		font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
-		font_boldcondensed->FaceSize(12 * gl_ui_scale);
-
-		// Check it loaded ok
-		if (font_boldcondensed->Error())
-		{
-			delete font_boldcondensed;
-			font_boldcondensed = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Monospace
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-	if (entry)
-	{
-		font_mono = new FTTextureFont(entry->getData(), entry->getSize());
-		font_mono->FaceSize(12 * gl_ui_scale);
-
-		// Check it loaded ok
-		if (font_mono->Error())
-		{
-			delete font_mono;
-			font_mono = NULL;
-		}
-		else ++ ret;
-	}
-
-	// Small
-	entry = theArchiveManager->programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-	if (entry)
-	{
-		font_small = new FTTextureFont(entry->getData(), entry->getSize());
-		font_small->FaceSize(((12 * gl_ui_scale) * 0.6) + 1);
-
-		// Check it loaded ok
-		if (font_small->Error())
-		{
-			delete font_small;
-			font_small = NULL;
-		}
-		else ++ ret;
-	}
-
-	return ret;
-}
-#endif
-
-/* FontManager::getFont
- * Returns a font
- *******************************************************************/
-#ifdef USE_SFML_RENDERWINDOW
-sf::Font* FontManager::getFont(int font)
-{
-	switch (font)
-	{
-	case Drawing::FONT_NORMAL:			return &font_normal;
-	case Drawing::FONT_CONDENSED:		return &font_condensed;
-	case Drawing::FONT_BOLD:			return &font_bold;
-	case Drawing::FONT_BOLDCONDENSED:	return &font_boldcondensed;
-	case Drawing::FONT_MONOSPACE:		return &font_mono;
-	case Drawing::FONT_SMALL:			return &font_small;
-	default:							return &font_normal;
-	};
-	return NULL;
-}
-#else // USE_SFML_RENDERWINDOW
-FTFont* FontManager::getFont(int font)
-{
-	switch (font)
-	{
-	case Drawing::FONT_NORMAL:			return font_normal;
-	case Drawing::FONT_CONDENSED:		return font_condensed;
-	case Drawing::FONT_BOLD:			return font_bold;
-	case Drawing::FONT_BOLDCONDENSED:	return font_boldcondensed;
-	case Drawing::FONT_MONOSPACE:		return font_mono;
-	case Drawing::FONT_SMALL:			return font_small;
-	default:							return font_normal;
-	};
-	return NULL;
-}
-#endif // USE_SFML_RENDERWINDOW
-
-/* FontManager::getFont
- * Returns the line height for [font]
- *******************************************************************/
-#ifdef USE_SFML_RENDERWINDOW
-int FontManager::getLineHeight(int font)
-{
-	return (int)getFont(font)->getLineSpacing(12 * gl_ui_scale);
-}
-#else // USE_SFML_RENDERWINDOW
-int FontManager::getLineHeight(int font)
-{
-	// TODO: get from font
-	return (12 * gl_ui_scale) * 1.2;
-}
-#endif // USE_SFML_RENDERWINDOW
-
-
-/*******************************************************************
  * DRAWING NAMESPACE FUNCTIONS
  *******************************************************************/
-
-/* Drawing::initFonts
- * Creates a FontManager if needed and let it init its own fonts
- *******************************************************************/
-void Drawing::initFonts()
-{
-	theFontManager->initFonts();
-}
 
 /* Drawing::drawLine
  * Draws a line from [start] to [end]
@@ -662,7 +380,7 @@ void Drawing::drawTextureWithin(GLTexture* tex, double x1, double y1, double x2,
  * Draws [text] at [x,y]. If [bounds] is not null, the bounding
  * coordinates of the rendered text string are written to it.
  *******************************************************************/
-void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int alignment, frect_t* bounds)
+void Drawing::drawText(string text, int x, int y, rgba_t colour, Fonts::Font& font, Align alignment, frect_t* bounds)
 {
 	// Setup SFML string
 	sf::Text sf_str;
@@ -670,19 +388,16 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 
 	// Set font
-	sf::Font* f = theFontManager->getFont(font);
+	sf::Font* f = Fonts::getGLFont(font);
 	sf_str.setFont(*f);
-	if (font == FONT_SMALL)
-		sf_str.setCharacterSize(((12 * gl_ui_scale) * 0.6) + 1);
-	else
-		sf_str.setCharacterSize(12 * gl_ui_scale);
+	sf_str.setCharacterSize(font.size * gl_ui_scale);
 
 	// Setup alignment
-	if (alignment != ALIGN_LEFT)
+	if (alignment != Align::Left)
 	{
 		float width = sf_str.getLocalBounds().width;
 
-		if (alignment == ALIGN_CENTER)
+		if (alignment == Align::Center)
 			x -= MathStuff::round(width*0.5);
 		else
 			x -= width;
@@ -744,28 +459,6 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 		if (text_state_reset)
 			setTextState(false);
 	}
-}
-
-/* Drawing::textExtents
- * Returns the width and height of [text] when drawn with [font]
- *******************************************************************/
-fpoint2_t Drawing::textExtents(string text, int font)
-{
-	// Setup SFML string
-	sf::Text sf_str;
-	sf_str.setString(CHR(text));
-
-	// Set font
-	sf::Font* f = theFontManager->getFont(font);
-	sf_str.setFont(*f);
-	if (font == FONT_SMALL)
-		sf_str.setCharacterSize(((12 * gl_ui_scale) * 0.6) + 1);
-	else
-		sf_str.setCharacterSize(12 * gl_ui_scale);
-
-	// Return width and height of text
-	sf::FloatRect rect = sf_str.getGlobalBounds();
-	return fpoint2_t(rect.width, rect.height);
 }
 
 #else
@@ -901,15 +594,6 @@ void Drawing::setTextOutline(double thickness, rgba_t colour)
 {
 	text_outline_width = thickness;
 	text_outline_colour = colour;
-}
-
-int Drawing::getFontLineHeight(int font)
-{
-#ifdef USE_SFML_RENDERWINDOW
-	return theFontManager->getFont(font)->getLineSpacing(12 * gl_ui_scale);
-#else
-	return textExtents("Wg", font).y;
-#endif
 }
 
 /* Drawing::drawHud
@@ -1056,7 +740,7 @@ using namespace Drawing;
 /* STextBox::STextBox
  * STextBox class constructor
  *******************************************************************/
-STextBox::STextBox(string text, int font, int width, int line_height)
+STextBox::STextBox(string text, Fonts::Font& font, int width, int line_height)
 {
 	this->font = font;
 	this->width = width;
@@ -1071,7 +755,7 @@ STextBox::STextBox(string text, int font, int width, int line_height)
 int STextBox::getLineHeight()
 {
 	if (line_height < 0)
-		return theFontManager->getLineHeight(font);
+		return Fonts::getFontLineHeight(font);
 	else
 		return line_height;
 }
@@ -1110,7 +794,7 @@ void STextBox::split(string text)
 		}
 
 		// Get line width
-		double width = Drawing::textExtents(lines[line], font).x;
+		double width = Fonts::textExtents(lines[line], font).x;
 
 		// Continue to next line if within box
 		if (width < this->width)
@@ -1127,14 +811,14 @@ void STextBox::split(string text)
 				break;
 
 			c *= 0.5;
-			width = Drawing::textExtents(lines[line].Mid(0, c), font).x;
+			width = Fonts::textExtents(lines[line].Mid(0, c), font).x;
 		}
 
 		// Increment length until it doesn't fit
 		while (width < this->width)
 		{
 			c++;
-			width = Drawing::textExtents(lines[line].Mid(0, c), font).x;
+			width = Fonts::textExtents(lines[line].Mid(0, c), font).x;
 		}
 		c--;
 
@@ -1160,7 +844,7 @@ void STextBox::split(string text)
 
 	// Update height
 	if (line_height < 0)
-		height = Drawing::textExtents(lines[0], font).y * lines.size();
+		height = Fonts::textExtents(lines[0], font).y * lines.size();
 	else
 		height = line_height * lines.size();
 }
@@ -1186,7 +870,7 @@ void STextBox::setSize(int width)
 /* STextBox::setFont
  * Sets the text box font
  *******************************************************************/
-void STextBox::setFont(int font)
+void STextBox::setFont(Fonts::Font& font)
 {
 	this->font = font;
 	split(this->text);
@@ -1195,15 +879,15 @@ void STextBox::setFont(int font)
 /* STextBox::draw
  * Draws the text box
  *******************************************************************/
-void STextBox::draw(int x, int y, rgba_t colour, int alignment)
+void STextBox::draw(int x, int y, rgba_t colour, Drawing::Align alignment)
 {
 	if (lines.empty())
 		return;
 
 	// Adjust x for alignment
-	if (alignment == Drawing::ALIGN_CENTER)
+	if (alignment == Drawing::Align::Center)
 		x = x + (width * 0.5);
-	else if (alignment == Drawing::ALIGN_RIGHT)
+	else if (alignment == Drawing::Align::Right)
 		x = x + width;
 
 	frect_t b;

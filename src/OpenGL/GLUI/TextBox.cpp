@@ -6,10 +6,10 @@
 
 using namespace GLUI;
 
-TextBox::TextBox(Widget* parent, string text, int font, int alignment, rgba_t colour, double line_height)
+TextBox::TextBox(Widget* parent, string text, Fonts::Font& font, Drawing::Align alignment, rgba_t colour, double line_height)
 : Widget(parent), font(font), alignment(alignment), colour(colour), line_height(line_height)
 {
-	line_height_pixels = Drawing::getFontLineHeight(font) * line_height;
+	line_height_pixels = Fonts::getFontLineHeight(font) * line_height;
 	prev_scale = baseScale();
 }
 
@@ -52,7 +52,7 @@ void TextBox::splitText(int fit_width)
 		}
 
 		// Get line width
-		double width = Drawing::textExtents(lines[line], font).x;
+		double width = Fonts::textExtents(lines[line], font).x;
 
 		// Continue to next line if within box
 		if (fit_width < 0 || width < fit_width)
@@ -72,14 +72,14 @@ void TextBox::splitText(int fit_width)
 				break;
 
 			c *= 0.5;
-			width = Drawing::textExtents(lines[line].Mid(0, c), font).x;
+			width = Fonts::textExtents(lines[line].Mid(0, c), font).x;
 		}
 
 		// Increment length until it doesn't fit
 		while (width < fit_width)
 		{
 			c++;
-			width = Drawing::textExtents(lines[line].Mid(0, c), font).x;
+			width = Fonts::textExtents(lines[line].Mid(0, c), font).x;
 		}
 		c--;
 
@@ -128,7 +128,7 @@ void TextBox::setText(string text)
 
 void TextBox::setLineHeightPixels(int pixels)
 {
-	int lh = Drawing::getFontLineHeight(font);
+	int lh = Fonts::getFontLineHeight(font);
 	line_height = pixels / lh;
 	line_height_pixels = pixels;
 	text_height_full = lines.size() * line_height_pixels;
@@ -137,14 +137,14 @@ void TextBox::setLineHeightPixels(int pixels)
 void TextBox::setLineHeight(double mult)
 {
 	line_height = mult;
-	line_height_pixels = Drawing::getFontLineHeight(font) * mult;
+	line_height_pixels = Fonts::getFontLineHeight(font) * mult;
 	text_height_full = lines.size() * line_height_pixels;
 }
 
-void TextBox::setFont(int font)
+void TextBox::setFont(Fonts::Font& font)
 {
 	this->font = font;
-	line_height_pixels = Drawing::getFontLineHeight(font) * line_height;
+	line_height_pixels = Fonts::getFontLineHeight(font) * line_height;
 	setText(text);
 }
 
@@ -154,9 +154,9 @@ void TextBox::drawWidget(point2_t pos, float alpha)
 		return;
 
 	// Adjust x for alignment
-	if (alignment == Drawing::ALIGN_CENTER)
+	if (alignment == Drawing::Align::Center)
 		pos.x = pos.x + (size.x * 0.5);
-	else if (alignment == Drawing::ALIGN_RIGHT)
+	else if (alignment == Drawing::Align::Right)
 		pos.x = pos.x + size.x;
 
 	Drawing::enableTextStateReset(false);

@@ -1192,6 +1192,7 @@
     <ClCompile Include="..\..\src\MapEditor\UI\ScriptEditorPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\ShapeDrawPanel.cpp" />
     <ClCompile Include="..\..\src\OpenGL\Drawing.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\Fonts.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLUI\Animator.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLUI\GridPanel.cpp" />
@@ -1634,6 +1635,7 @@
     <ClInclude Include="..\..\src\MapEditor\UI\ShapeDrawPanel.h" />
     <ClInclude Include="..\..\src\mus2mid\mus2mid.h" />
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
+    <ClInclude Include="..\..\src\OpenGL\Fonts.h" />
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\Animator.h" />
     <ClInclude Include="..\..\src\OpenGL\GLUI\GLUI.h" />

@@ -50,7 +50,7 @@ using namespace GLUI;
  * SectorInfoOverlay class constructor
  *******************************************************************/
 SectorInfoOverlay::SectorInfoOverlay() :
-	text_info(new TextBox(this, "", Drawing::FONT_CONDENSED)),
+	text_info(new TextBox(this, "")),
 	tex_floor(new TextureBox(this)),
 	tex_ceiling(new TextureBox(this))
 {
