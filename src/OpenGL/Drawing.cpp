@@ -644,7 +644,6 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	// Setup SFML string
 	sf::Text sf_str;
 	sf_str.setString(UTF8(text));
-	sf_str.setPosition(x, y);
 	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 
 	// Set font
@@ -661,10 +660,11 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 		float width = sf_str.getLocalBounds().width;
 
 		if (alignment == ALIGN_CENTER)
-			sf_str.move(-MathStuff::round(width*0.5), 0.0f);
+			x -= MathStuff::round(width*0.5);
 		else
-			sf_str.move(-width, 0.0f);
+			x -= width;
 	}
+	sf_str.setPosition(x, y);
 
 	// Set bounds rect
 	if (bounds)
@@ -702,15 +702,16 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 					text_outline_colour.a
 				)
 			);
-			sf_str.setPosition(x - text_outline_width, y - text_outline_width);
+			sf_str.setPosition(x - 2, y - 1);
 			render_target->draw(sf_str);
-			sf_str.setPosition(x - text_outline_width, y + text_outline_width);
+			sf_str.setPosition(x - 2, y + 1);
 			render_target->draw(sf_str);
-			sf_str.setPosition(x + text_outline_width, y + text_outline_width);
+			sf_str.setPosition(x + 2, y + 1);
 			render_target->draw(sf_str);
-			sf_str.setPosition(x + text_outline_width, y - text_outline_width);
+			sf_str.setPosition(x + 2, y - 1);
 			render_target->draw(sf_str);
 			sf_str.setPosition(x, y);
+			sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
 #endif
 		}
 
@@ -792,15 +793,15 @@ void Drawing::drawText(string text, int x, int y, rgba_t colour, int font, int a
 	{
 		// Draw outline if set
 		OpenGL::setColour(text_outline_colour);
-		glTranslatef(-1.0f, -1.0f, 0.0f);
+		glTranslatef(-2.0f, -1.0f, 0.0f);
 		ftgl_font->Render(CHR(text), -1);
 		glTranslatef(0.0f, 2.0f, 0.0f);
 		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(2.0f, 0.0f, 0.0f);
+		glTranslatef(4.0f, 0.0f, 0.0f);
 		ftgl_font->Render(CHR(text), -1);
 		glTranslatef(0.0f, -2.0f, 0.0f);
 		ftgl_font->Render(CHR(text), -1);
-		glTranslatef(-1.0f, 1.0f, 0.0f);
+		glTranslatef(-2.0f, 1.0f, 0.0f);
 	}
 	OpenGL::setColour(colour);
 	ftgl_font->Render(CHR(text), -1);
