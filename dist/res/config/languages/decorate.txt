@@ -394,7 +394,7 @@ decorate : cstyle {
 		WRF_ALLOWUSER1, WRF_ALLOWUSER2, WRF_ALLOWUSER3, WRF_ALLOWUSER4,
 
 		// A_Explode
-		XF_HURTSOURCE, XF_NOTMISSILE,
+		XF_HURTSOURCE, XF_NOTMISSILE, XF_EXPLICITDAMAGETYPE,
 		
 		// A_ZoomFactor constants (not in constants.txt)
 		ZOOM_INSTANT, ZOOM_NOSCALETURNING,
@@ -472,7 +472,7 @@ decorate : cstyle {
 		A_BulletAttack;
 		A_MonsterRail;
 		A_Blast = "[int flags], [float strength], [float radius], [float speed], [class blasteffect], [sound blastsound]";
-		A_Explode = "[int dmg], [int radius], [int flags], [bool alert], [int fulldmgradius], [int nails], [int naildmg], [string pufftype]";
+		A_Explode = "[int dmg], [int radius], [int flags], [bool alert], [int fulldmgradius], [int nails], [int naildmg], [string pufftype], [string damagetype]";
 		A_RadiusDamageSelf = "[int damage], [float distance], [int flags], [string flashtype]";
 		A_RadiusThrust = "[int thrust], [int radius], [int flags], [int fullthrustdistance]";
 		A_RadiusGive = "class itemtype, float distance, int flags, [int amount], [class filter], [string species], [float mindist], [int limit]";
