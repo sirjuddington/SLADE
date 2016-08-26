@@ -80,7 +80,7 @@ void GLUI::Manager::addWidget(Widget* widget, string id, uint8_t dock)
 		}
 
 	// Otherwise add widget
-	widgets.push_back(widget_info_t(widget, id, dock));
+	widgets.push_back({ widget, id, dock });
 	applyDocking(widgets.back());
 }
 
@@ -127,7 +127,7 @@ void GLUI::Manager::drawWidgets()
 /* Manager::applyDocking
  * Apply docking position to widget [inf]
  *******************************************************************/
-void GLUI::Manager::applyDocking(widget_info_t& inf)
+void GLUI::Manager::applyDocking(WidgetInfo& inf)
 {
 	switch (inf.dock)
 	{
@@ -198,18 +198,18 @@ void GLUI::Manager::onSize(wxSizeEvent& e)
 void GLUI::Manager::onMouseDown(wxMouseEvent& e)
 {
 	// Get mouse button
-	int button;
+	MouseBtn button;
 	switch (e.GetButton())
 	{
-	case wxMOUSE_BTN_LEFT: button = Widget::MOUSE_LEFT; break;
-	case wxMOUSE_BTN_RIGHT: button = Widget::MOUSE_RIGHT; break;
-	case wxMOUSE_BTN_MIDDLE: button = Widget::MOUSE_MIDDLE; break;
-	default: button = -1; break;
+	case wxMOUSE_BTN_LEFT: button = MouseBtn::Left; break;
+	case wxMOUSE_BTN_RIGHT: button = MouseBtn::Right; break;
+	case wxMOUSE_BTN_MIDDLE: button = MouseBtn::Middle; break;
+	default: button = MouseBtn::Left; break;
 	}
 
 	for (auto inf : widgets)
 		if (inf.widget->mouseIsOver())
-			inf.widget->mouseButtonDown(button);
+			inf.widget->mouseButtonDown(button, e.GetPosition().x, e.GetPosition().y);
 
 	e.Skip();
 }
@@ -217,18 +217,18 @@ void GLUI::Manager::onMouseDown(wxMouseEvent& e)
 void GLUI::Manager::onMouseUp(wxMouseEvent& e)
 {
 	// Get mouse button
-	int button;
+	MouseBtn button;
 	switch (e.GetButton())
 	{
-	case wxMOUSE_BTN_LEFT: button = Widget::MOUSE_LEFT; break;
-	case wxMOUSE_BTN_RIGHT: button = Widget::MOUSE_RIGHT; break;
-	case wxMOUSE_BTN_MIDDLE: button = Widget::MOUSE_MIDDLE; break;
-	default: button = -1; break;
+	case wxMOUSE_BTN_LEFT: button = MouseBtn::Left; break;
+	case wxMOUSE_BTN_RIGHT: button = MouseBtn::Right; break;
+	case wxMOUSE_BTN_MIDDLE: button = MouseBtn::Middle; break;
+	default: button = MouseBtn::Left; break;
 	}
 
 	for (auto inf : widgets)
 		if (inf.widget->mouseIsOver())
-			inf.widget->mouseButtonUp(button);
+			inf.widget->mouseButtonUp(button, e.GetPosition().x, e.GetPosition().y);
 
 	e.Skip();
 }

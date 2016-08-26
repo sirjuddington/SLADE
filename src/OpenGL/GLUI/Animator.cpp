@@ -5,7 +5,7 @@
 using namespace GLUI;
 
 
-SlideAnimator::SlideAnimator(int duration, int slide_amount, uint8_t slide_dir, bool fade_alpha)
+SlideAnimator::SlideAnimator(int duration, int slide_amount, Direction slide_dir, bool fade_alpha)
 	: elapsed(0),
 	duration(duration),
 	slide_amount(slide_amount),
@@ -48,19 +48,19 @@ void SlideAnimator::update(int time)
 
 	switch (slide_dir)
 	{
-	case SLIDE_LEFT:
+	case Direction::Left:
 		offset.y = 0;
 		offset.x = (1.0f - multiplier) * slide_amount;
 		break;
-	case SLIDE_RIGHT:
+	case Direction::Right:
 		offset.y = 0;
 		offset.x = (1.0f - multiplier) * -slide_amount;
 		break;
-	case SLIDE_UP:
+	case Direction::Up:
 		offset.y = (1.0f - multiplier) * slide_amount;
 		offset.x = 0;
 		break;
-	case SLIDE_DOWN:
+	case Direction::Down:
 		offset.y = (1.0f - multiplier) * -slide_amount;
 		offset.x = 0;
 		break;

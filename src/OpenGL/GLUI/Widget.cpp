@@ -20,22 +20,22 @@ using namespace GLUI;
 Widget::Widget(Widget* parent)
 : parent(parent),
 	visible(true),
-	border_style(Widget::BORDER_NONE),
+	border_style(Border::None),
 	border_width(1.0f),
 	border_colour(COL_WHITE),
 	alpha(1.0f),
 	mouse_over(false)
 {
 	if (parent)
-		parent->children.push_back(this);
+		parent->children.push_back(Ptr(this));
 }
 
-Widget::~Widget()
+vector<Widget*>	Widget::getChildren()
 {
-	for (auto child : children)
-		delete child;
-	for (auto animator : animators)
-		delete animator;
+	vector<Widget*> ret;
+	for (auto& child : children)
+		ret.push_back(child.get());
+	return ret;
 }
 
 point2_t Widget::getAbsolutePosition()
@@ -51,7 +51,25 @@ point2_t Widget::middle()
 	return point2_t(position.x + (size.x / 2), position.y + (size.y / 2));
 }
 
-void Widget::setBorder(float width, int style, rgba_t colour)
+void Widget::setPosition(point2_t pos)
+{
+	position = pos;
+	evt_pos_changed.invoke({ this });
+}
+
+void Widget::setSize(dim2_t dim)
+{
+	size = dim;
+	evt_size_changed.invoke({ this });
+}
+
+void Widget::setVisible(bool vis)
+{
+	visible = vis;
+	evt_visible_changed.invoke({ this });
+}
+
+void Widget::setBorder(float width, Border style, rgba_t colour)
 {
 	border_width = width;
 	border_style = style;
@@ -69,11 +87,11 @@ void Widget::draw(point2_t pos, float alpha)
 	drawWidget(p, alpha * this->alpha * getAnimatedAlpha());
 
 	// Draw all children
-	for (auto child : children)
+	for (auto& child : children)
 		child->draw(p, alpha * this->alpha * getAnimatedAlpha());
 
 	// Draw border
-	if (border_style == BORDER_LINE)
+	if (border_style == Border::Line)
 	{
 		rgba_t bc = border_colour;
 		bc.a *= alpha * this->alpha * getAnimatedAlpha();
@@ -96,7 +114,7 @@ void Widget::fitToChildren(padding_t padding, bool include_invisible)
 	int max_x = -99999999;
 	int max_y = -99999999;
 	bool has_visible = false;
-	for (auto child : children)
+	for (auto& child : children)
 	{
 		if (child->isVisible() || include_invisible)
 		{
@@ -126,7 +144,7 @@ void Widget::fitToChildren(padding_t padding, bool include_invisible)
 	if (has_visible)
 	{
 		point2_t offset(min_x, min_y);
-		for (auto child : children)
+		for (auto& child : children)
 			child->position = child->position - offset;
 	}
 
@@ -137,7 +155,7 @@ void Widget::fitToChildren(padding_t padding, bool include_invisible)
 point2_t Widget::getAnimatedOffset()
 {
 	point2_t offset;
-	for (auto animator : animators)
+	for (auto& animator : animators)
 		offset = offset + animator->getOffset();
 	return offset;
 }
@@ -145,21 +163,21 @@ point2_t Widget::getAnimatedOffset()
 float Widget::getAnimatedAlpha()
 {
 	float alpha = 1.0f;
-	for (auto animator : animators)
+	for (auto& animator : animators)
 		alpha = alpha * animator->getAlpha();
 	return alpha;
 }
 
 void Widget::animate(int time)
 {
-	for (auto animator : animators)
+	for (auto& animator : animators)
 		animator->update(time);
 }
 
 void Widget::mouseMove(int x, int y)
 {
 	// Handle mouse move on children first
-	for (auto child : children)
+	for (auto& child : children)
 	{
 		// Check position is within child widget
 		if (x >= child->left() && x <= child->right() &&
@@ -172,47 +190,47 @@ void Widget::mouseMove(int x, int y)
 			child->mouseOver(false);
 	}
 
-	onMouseMove(x, y);
+	evt_mouse_move.invoke({ this, x, y, MouseBtn::None });
 }
 
 void Widget::mouseOver(bool is_over)
 {
 	// Mouse enter/leave event
 	if (!mouse_over && is_over)
-		onMouseEnter();
+		evt_mouse_enter.invoke({ this });
 	if (mouse_over && !is_over)
-		onMouseLeave();
+		evt_mouse_leave.invoke({ this });
 
 	mouse_over = is_over;
 
 	// If the mouse isn't over this widget, it can't be over any children either
 	if (!is_over)
-		for (auto child : children)
+		for (auto& child : children)
 			child->mouseOver(is_over);
 }
 
-void Widget::mouseButtonDown(int button)
+void Widget::mouseButtonDown(MouseBtn button, int x, int y)
 {
 	// Handle mouse click on children first
-	for (auto child : children)
+	for (auto& child : children)
 	{
 		if (child->mouse_over)
-			child->mouseButtonDown(button);
+			child->mouseButtonDown(button, x - child->left(), y - child->top());
 	}
 
 	// Do event
-	onMouseDown(button);
+	evt_mouse_down.invoke({ this, x, y, button });
 }
 
-void Widget::mouseButtonUp(int button)
+void Widget::mouseButtonUp(MouseBtn button, int x, int y)
 {
 	// Handle mouse click on children first
-	for (auto child : children)
+	for (auto& child : children)
 	{
 		if (child->mouse_over)
-			child->mouseButtonUp(button);
+			child->mouseButtonUp(button, x - child->left(), y - child->top());
 	}
 
 	// Do event
-	onMouseUp(button);
+	evt_mouse_up.invoke({ this, x, y, button });
 }

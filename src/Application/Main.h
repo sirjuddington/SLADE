@@ -37,8 +37,17 @@ typedef wxString string;
 #define CHR(s) (static_cast<const char*>((s).ToAscii()))
 #define UTF8(s) (static_cast<const char*>((s).c_str()))
 
-// Vectors
+// No std namespace for certain things
 using std::vector;
+using std::unique_ptr;
+using std::shared_ptr;
+
+// A make_unique implementation for c++11
+template <typename T, typename ...Args>
+unique_ptr<T> make_unique(Args&& ...args)
+{
+	return unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 // A macro to check if a value exists in a vector
 #define VECTOR_EXISTS(vec, val) find(vec.begin(), vec.end(), val) != vec.end()

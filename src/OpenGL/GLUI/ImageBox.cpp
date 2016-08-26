@@ -12,7 +12,7 @@ ImageBox::ImageBox(Widget* parent) : Widget(parent)
 {
 	texture = NULL;
 	background = true;
-	border_style = BORDER_LINE;
+	border_style = Border::Line;
 	max_scale = baseScale();
 	image_colour = COL_WHITE;
 }

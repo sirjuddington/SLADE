@@ -6,6 +6,8 @@ namespace GLUI
 	class Animator
 	{
 	public:
+		typedef std::unique_ptr<Animator> Ptr;
+
 		Animator() : alpha(1.0f) {}
 		~Animator() {}
 
@@ -23,28 +25,28 @@ namespace GLUI
 	class SlideAnimator : public Animator
 	{
 	public:
-		SlideAnimator(int duration, int slide_amount, uint8_t slide_dir, bool fade_alpha = true);
-		~SlideAnimator();
-
-		enum
+		enum class Direction
 		{
-			SLIDE_LEFT = 0,
-			SLIDE_UP,
-			SLIDE_RIGHT,
-			SLIDE_DOWN
+			Left = 0,
+			Up,
+			Right,
+			Down
 		};
+
+		SlideAnimator(int duration, int slide_amount, Direction slide_dir, bool fade_alpha = true);
+		~SlideAnimator();
 
 		void	setSlideAmount(int amount);
 		void	setReverse(bool reverse, float speed = 1.0f);
 		void	update(int time);
 
 	private:
-		int		elapsed;
-		int		duration;
-		int		slide_amount;
-		uint8_t	slide_dir;
-		bool	fade_alpha;
-		bool	reverse;
-		float	reverse_speed;
+		int			elapsed;
+		int			duration;
+		int			slide_amount;
+		Direction	slide_dir;
+		bool		fade_alpha;
+		bool		reverse;
+		float		reverse_speed;
 	};
 }

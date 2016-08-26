@@ -68,7 +68,6 @@ InfoOverlay3D::InfoOverlay3D()
 	text_info1->setMargin(padding_t(0, 4));
 	text_info2->setMargin(padding_t(0, 4));
 	tex_box->setMargin(padding_t(8, 4));
-	animators.push_back(anim_activate = new GLUI::SlideAnimator(100, 0, GLUI::SlideAnimator::SLIDE_UP));
 }
 
 /* InfoOverlay3D::~InfoOverlay3D

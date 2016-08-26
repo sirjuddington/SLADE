@@ -9,39 +9,41 @@
 
 using namespace GLUI;
 
-
 class LTSTextureBox : public TextureBox
 {
 public:
 	LTSTextureBox(Widget* parent) : TextureBox(parent)
 	{
 		setBoxSize(192);
+		setMargin(padding_t(8));
 		image_texture->setMaxImageScale(4.0);
 		show_always = true;
+
+		evt_mouse_enter.bind(this, EventFunc([this](EventInfo e)
+		{
+			image_texture->setBorderWidth(3.0f);
+		}
+		));
+
+		evt_mouse_leave.bind(this, EventFunc([this](EventInfo e)
+		{
+			image_texture->setBorderWidth(1.0f);
+		}
+		));
 	}
 
 	~LTSTextureBox() {}
 
 private:
-	void onMouseEnter() override
-	{
-		image_texture->setBorderWidth(3.0f);
-	}
+	//void onMouseDown(MouseBtn button) override
+	//{
+	//	//border_colour = rgba_t(255, 0, 0);
+	//}
 
-	void onMouseLeave() override
-	{
-		image_texture->setBorderWidth(1.0f);
-	}
-
-	void onMouseDown(int button) override
-	{
-		//border_colour = rgba_t(255, 0, 0);
-	}
-
-	void onMouseUp(int button) override
-	{
-		//border_colour = rgba_t(255, 255, 0);
-	}
+	//void onMouseUp(MouseBtn button) override
+	//{
+	//	//border_colour = rgba_t(255, 255, 0);
+	//}
 };
 
 
@@ -55,8 +57,8 @@ LTSPanel::LTSPanel(Widget* parent) : Panel(parent)
 	tex_back_middle = new LTSTextureBox(this);
 	tex_back_upper = new LTSTextureBox(this);
 
-	for (auto w : children)
-		w->setMargin(padding_t(8));
+	//for (auto& w : children)
+	//	w->setMargin(padding_t(8));
 
 	setBGCol(rgba_t(0, 0, 0, 0));
 }

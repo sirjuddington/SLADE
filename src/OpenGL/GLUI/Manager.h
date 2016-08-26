@@ -25,13 +25,13 @@ namespace GLUI
 			DOCK_FILL
 		};
 
-		struct widget_info_t
+		struct WidgetInfo
 		{
 			string		id;
 			Widget*		widget;
 			uint8_t		dock;
 
-			widget_info_t(Widget* widget, string id, uint8_t dock = DOCK_NONE)
+			WidgetInfo(Widget* widget, string id, uint8_t dock = DOCK_NONE)
 				: widget(widget), id(id), dock(dock) {}
 		};
 
@@ -51,10 +51,10 @@ namespace GLUI
 		void	onSize(wxSizeEvent& e);
 
 	private:
-		OGLCanvas*				canvas;
-		vector<widget_info_t>	widgets;
-		dim2_t					canvas_size;
+		OGLCanvas*			canvas;
+		vector<WidgetInfo>	widgets;
+		dim2_t				canvas_size;
 
-		void	applyDocking(widget_info_t& inf);
+		void	applyDocking(WidgetInfo& inf);
 	};
 }

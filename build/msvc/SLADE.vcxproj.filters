@@ -2456,6 +2456,9 @@
     <ClInclude Include="..\..\src\MapEditor\UI\GLUI\LineTextureSelector.h">
       <Filter>Map Editor\UI\GLUI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\OpenGL\GLUI\Event.h">
+      <Filter>OpenGL\GLUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="slade.ico" />

@@ -24,10 +24,6 @@ TextureBox::TextureBox(Widget* parent)
 	setBGCol(rgba_t(0, 0, 0, 0));
 }
 
-TextureBox::~TextureBox()
-{
-}
-
 void TextureBox::setTexture(int type, string texname, string prefix, bool required)
 {
 	image_texture->setVisible(true);
@@ -52,7 +48,7 @@ void TextureBox::setTexture(int type, string texname, string prefix, bool requir
 	{
 		image_texture->setTexture(tex);
 		image_texture->setBackgroundStyle(ImageBox::BACKGROUND_CHECKERBOARD);
-		image_texture->setBorderStyle(Widget::BORDER_LINE);
+		image_texture->setBorderStyle(Border::Line);
 		image_texture->setMaxImageScale(1);
 	}
 
@@ -61,7 +57,7 @@ void TextureBox::setTexture(int type, string texname, string prefix, bool requir
 	{
 		image_texture->setTexture(theMapEditor->textureManager().getEditorImage("thing/unknown"));
 		image_texture->setBackgroundStyle(ImageBox::BACKGROUND_NONE);
-		image_texture->setBorderStyle(Widget::BORDER_NONE);
+		image_texture->setBorderStyle(Border::None);
 		image_texture->setMaxImageScale(0.15);
 	}
 
@@ -70,7 +66,7 @@ void TextureBox::setTexture(int type, string texname, string prefix, bool requir
 	{
 		image_texture->setTexture(theMapEditor->textureManager().getEditorImage("thing/minus"));
 		image_texture->setBackgroundStyle(ImageBox::BACKGROUND_NONE);
-		image_texture->setBorderStyle(Widget::BORDER_NONE);
+		image_texture->setBorderStyle(Border::None);
 		image_texture->setMaxImageScale(0.15);
 		image_texture->setImageColour(rgba_t(180, 0, 0));
 		text_name->setColour(COL_RED);
@@ -101,7 +97,7 @@ void TextureBox::setTexture(GLTexture* texture, string texname)
 	{
 		image_texture->setTexture(texture);
 		image_texture->setBackgroundStyle(ImageBox::BACKGROUND_CHECKERBOARD);
-		image_texture->setBorderStyle(Widget::BORDER_LINE);
+		image_texture->setBorderStyle(Border::Line);
 		image_texture->setMaxImageScale(1);
 	}
 
@@ -110,7 +106,7 @@ void TextureBox::setTexture(GLTexture* texture, string texname)
 	{
 		image_texture->setTexture(theMapEditor->textureManager().getEditorImage("thing/unknown"));
 		image_texture->setBackgroundStyle(ImageBox::BACKGROUND_NONE);
-		image_texture->setBorderStyle(Widget::BORDER_NONE);
+		image_texture->setBorderStyle(Border::None);
 		image_texture->setMaxImageScale(0.15);
 	}
 

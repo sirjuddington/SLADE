@@ -17,7 +17,6 @@ protected:
 
 public:
 	TextureBox(Widget* parent);
-	~TextureBox();
 
 	int		getBoxSize() { return box_size; }
 	void	setBoxSize(int size) { box_size = size; }
