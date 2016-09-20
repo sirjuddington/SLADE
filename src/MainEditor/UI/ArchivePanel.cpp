@@ -1535,7 +1535,7 @@ bool ArchivePanel::importEntry()
 						ok = false;
 				}
 				// Warn if the offsets couldn't be written
-				if (ok && !si.getFormat()->writeOffset(si, selection[a], offset))
+				if (ok && si.getFormat() && !si.getFormat()->writeOffset(si, selection[a], offset))
 					wxLogMessage("Old offset information [%d, %d] couldn't be "
 					             "preserved in the new image format for image %s.",
 					             offset.x, offset.y, selection[a]->getName());
