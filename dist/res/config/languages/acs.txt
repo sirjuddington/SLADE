@@ -709,6 +709,8 @@ acs_z : acs {
 		CheckActorFloorTexture = "int tid, str texture";
 		CheckActorInventory = "int tid, str inventory_item";
 		CheckActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
+		CheckActorState = "int tid, str statename, [bool exact]";
+		CheckClass = "str classname";
 		CheckFlag = "int tid, str flag";
 		CheckFont = "str fontname";
 		CheckInventory = "str inventory_item";
@@ -722,6 +724,7 @@ acs_z : acs {
 		ClearLineSpecial;
 		Cos = "int angle";
 		CreateTranslation = "int transnumber, a:b=c:d, ...", "int transnumber, a:b=[red1,green1,blue1]:[red2,green2,blue2], ...";
+		DamageActor = "int target_tid, int target_pointer, int inflictor_tid, int inflictor_pointer, int amount, str damagetype";
 		Delay = "int tics";
 		DropInventory = "int tid, str item";
 		DropItem = "int tid, str item, [int dropamount], [int chance]";
@@ -818,6 +821,7 @@ acs_z : acs {
 		SetActivator = "int tid, [int pointer_selector]";
 		SetActivatorToTarget = "int tid";
 		SetActorAngle = "int tid, fixed angle";
+		SetActorFlag = "int tid, str flagname, bool set";
 		SetActorPitch = "int tid, fixed pitch";
 		SetActorPosition = "int tid, fixed x, fixed y, fixed z, bool fog";
 		SetActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";

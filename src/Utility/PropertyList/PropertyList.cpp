@@ -59,7 +59,7 @@ PropertyList::~PropertyList()
 bool PropertyList::propertyExists(string key)
 {
 	// Try to find specified key
-	if (properties.find(key) == properties.end())
+	if (properties.empty() || properties.find(key) == properties.end())
 		return false;
 	else
 		return true;

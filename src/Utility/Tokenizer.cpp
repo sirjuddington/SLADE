@@ -278,6 +278,9 @@ bool Tokenizer::incrementCurrent()
  *******************************************************************/
 void Tokenizer::skipLineComment()
 {
+	if (atEnd())
+		return;
+
 	// Increment position until a newline or end is found
 	while (current[0] != '\n' && current[0] != 13)
 	{
@@ -294,6 +297,9 @@ void Tokenizer::skipLineComment()
  *******************************************************************/
 void Tokenizer::skipMultilineComment()
 {
+	if (atEnd())
+		return;
+
 	// Increment position until '*/' or end is found
 	while (!(current[0] == '*' && current[1] == '/'))
 	{

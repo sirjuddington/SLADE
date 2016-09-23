@@ -246,7 +246,7 @@ public:
 	TextureCreateDeleteUS(TextureXPanel* tx_panel, CTexture* texture, bool created)
 		: tx_panel(tx_panel), created(created)
 	{
-		tex_removed = NULL;
+		tex_removed = created ? NULL : texture;
 		index = tx_panel->txList().textureIndex(texture->getName());
 	}
 
@@ -792,7 +792,7 @@ void TextureXPanel::removeTexture()
 		undo_manager->recordUndoStep(new TextureCreateDeleteUS(this, tex, false));
 
 		// Remove texture from list
-		texturex.removeTexture(selection[a]);
+		texturex.removeTexture(selection[a], false);
 	}
 
 	// End recording undo level

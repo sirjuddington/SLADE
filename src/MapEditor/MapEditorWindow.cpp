@@ -702,8 +702,10 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		wxArrayString out;
 		wxLogMessage("execute \"%s %s\"", builder.path, command);
 		theApp->SetTopWindow(this);
+		wxWindow* focus = wxWindow::FindFocus();
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		theApp->SetTopWindow(theMainWindow);
+		focus->SetFocusFromKbd();
 		wxLogMessage("Nodebuilder output:");
 		for (unsigned a = 0; a < out.size(); a++)
 			wxLogMessage(out[a]);
