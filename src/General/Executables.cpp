@@ -32,7 +32,6 @@
 #include "Executables.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
-#include <wx/menu.h>
 
 
 /*******************************************************************

@@ -285,8 +285,6 @@ void MapLine::setBoolProperty(string key, bool value)
  *******************************************************************/
 void MapLine::setIntProperty(string key, int value)
 {
-	MapVertex* vertex;
-
 	// Front side property
 	if (key.StartsWith("side1."))
 	{
@@ -309,6 +307,7 @@ void MapLine::setIntProperty(string key, int value)
 	// Vertices
 	if (key == "v1")
 	{
+		MapVertex* vertex;
 		if ((vertex = parent_map->getVertex(value)))
 		{
 			vertex1->disconnectLine(this);
@@ -319,6 +318,7 @@ void MapLine::setIntProperty(string key, int value)
 	}
 	else if (key == "v2")
 	{
+		MapVertex* vertex;
 		if ((vertex = parent_map->getVertex(value)))
 		{
 			vertex2->disconnectLine(this);
@@ -331,13 +331,15 @@ void MapLine::setIntProperty(string key, int value)
 	// Sides
 	else if (key == "sidefront")
 	{
-		if ((side1 = parent_map->getSide(value)))
-			side1->parent = this;
+		MapSide* side = parent_map->getSide(value);
+		if (side)
+			parent_map->setLineSide(this, side, true);
 	}
 	else if (key == "sideback")
 	{
-		if ((side2 = parent_map->getSide(value)))
-			side2->parent = this;
+		MapSide* side = parent_map->getSide(value);
+		if (side)
+			parent_map->setLineSide(this, side, false);
 	}
 
 	// Special
@@ -406,12 +408,8 @@ void MapLine::setStringProperty(string key, string value)
  *******************************************************************/
 void MapLine::setS1(MapSide* side)
 {
-	if (!side1)
-	{
-		setModified();
-		side1 = side;
-		side->parent = this;
-	}
+	if (!side1 && parent_map)
+		parent_map->setLineSide(this, side, true);
 }
 
 /* MapLine::setS1
@@ -419,12 +417,8 @@ void MapLine::setS1(MapSide* side)
  *******************************************************************/
 void MapLine::setS2(MapSide* side)
 {
-	if (!side2)
-	{
-		setModified();
-		side2 = side;
-		side->parent = this;
-	}
+	if (!side2 && parent_map)
+		parent_map->setLineSide(this, side, false);
 }
 
 /* MapLine::getPoint

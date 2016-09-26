@@ -66,17 +66,6 @@
 #include "MapEditor/MapEditorWindow.h"
 #include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
-#include <wx/aui/auibar.h>
-#include <wx/aui/auibook.h>
-#include <wx/bmpbuttn.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textdlg.h>
-
 
 /*******************************************************************
  * VARIABLES
@@ -550,9 +539,6 @@ void ArchivePanel::undo()
 		undo_manager->undo();
 		entry_list->setEntriesAutoUpdate(true);
 
-		// Refresh entry list
-		entry_list->updateList();
-
 		// setEntriesAutoUpdate blocks previous announce
 		archive->announce("entries_changed");
 	}
@@ -569,9 +555,6 @@ void ArchivePanel::redo()
 		entry_list->setEntriesAutoUpdate(false);
 		undo_manager->redo();
 		entry_list->setEntriesAutoUpdate(true);
-
-		// Refresh entry list
-		entry_list->updateList();
 
 		// setEntriesAutoUpdate blocks previous announce
 		archive->announce("entries_changed");
@@ -1334,7 +1317,7 @@ bool ArchivePanel::sort()
 	initNamespaceVector(nspaces, dir->getArchive()->hasFlatHack());
 	vector<Archive::mapdesc_t> maps = dir->getArchive()->detectMaps();
 
-	string ns = dir->getArchive()->detectNamespace(dir->getEntry(selection[0]));
+	string ns = dir->getArchive()->detectNamespace(entry_list->getEntry(selection[0]));
 	size_t nsn = 0, lnsn = 0;
 
 	// Fill a map with <entry name, entry index> pairs
@@ -1344,7 +1327,12 @@ bool ArchivePanel::sort()
 		bool ns_changed = false;
 		int mapindex = isInMap(selection[i], maps);
 		string mapname;
-		ArchiveEntry * entry = dir->getEntry(selection[i]);
+		ArchiveEntry * entry = entry_list->getEntry(selection[i]);
+
+		// Ignore subdirectories
+		if (entry->getType() == EntryType::folderType())
+			continue;
+
 		// If this is a map entry, deal with it
 		if (maps.size() && mapindex > -1)
 		{
@@ -1446,7 +1434,12 @@ bool ArchivePanel::sort()
 	std::map<string, size_t>::iterator itr = emap.begin();
 	for (size_t i = start; i < stop; ++i, itr++)
 	{
-		ArchiveEntry * entry = dir->getEntry(i);
+		ArchiveEntry * entry = entry_list->getEntry(i);
+
+		// Ignore subdirectories
+		if (entry->getType() == EntryType::folderType())
+			continue;
+
 		// If the entry isn't in its sorted place already
 		if (i != (size_t)itr->second)
 		{
@@ -1591,7 +1584,7 @@ bool ArchivePanel::importEntry()
 						ok = false;
 				}
 				// Warn if the offsets couldn't be written
-				if (ok && !si.getFormat()->writeOffset(si, selection[a], offset))
+				if (ok && si.getFormat() && !si.getFormat()->writeOffset(si, selection[a], offset))
 					wxLogMessage("Old offset information [%d, %d] couldn't be "
 					             "preserved in the new image format for image %s.",
 					             offset.x, offset.y, selection[a]->getName());
@@ -2610,6 +2603,15 @@ bool ArchivePanel::openDir(ArchiveTreeNode* dir)
 	return entry_list->setDir(dir);
 }
 
+/* ArchivePanel::closeCurrentEntry
+ * Closes the current entry in archive tab.
+ *******************************************************************/
+void ArchivePanel::closeCurrentEntry()
+{
+	// Close the current entry
+	showEntryPanel(NULL, false);
+}
+
 /* ArchivePanel::openEntry
  * Shows the appropriate entry area and sends the given entry to it.
  * If [force] is true, the entry is opened even if it is already open
@@ -2621,6 +2623,14 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	{
 		wxLogMessage("Warning: NULL entry focused in the list");
 		return false;
+	}
+
+	// First check if the entry is already open in its own tab
+	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
+	if (panel->redirectToTab(entry))
+	{
+		closeCurrentEntry();
+		return true;
 	}
 
 	// Do nothing if the entry is already open
@@ -2710,6 +2720,14 @@ bool ArchivePanel::openEntryAsText(ArchiveEntry* entry)
 	if (!entry)
 		return false;
 
+	// First check if the entry is already open in its own tab
+	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
+	if (panel->redirectToTab(entry))
+	{
+		closeCurrentEntry();
+		return true;
+	}
+
 	// Load the current entry into the panel
 	if (!text_area->openEntry(entry))
 	{
@@ -2731,6 +2749,14 @@ bool ArchivePanel::openEntryAsHex(ArchiveEntry* entry)
 	// Check entry was given
 	if (!entry)
 		return false;
+
+	// First check if the entry is already open in its own tab
+	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
+	if (panel->redirectToTab(entry))
+	{
+		closeCurrentEntry();
+		return true;
+	}
 
 	// Load the current entry into the panel
 	if (!hex_area->openEntry(entry))
@@ -2797,13 +2823,16 @@ bool ArchivePanel::showEntryPanel(EntryPanel* new_area, bool ask_save)
 		cur_area->Show(false);				// Hide current
 		cur_area->removeCustomMenu();		// Remove current custom menu (if any)
 		cur_area->removeCustomToolBar();	// Remove current custom toolbar (if any)
-		sizer->Replace(cur_area, new_area);	// Swap the panels
-		cur_area = new_area;				// Set the new panel to current
-		cur_area->Show(true);				// Show current
+		if (new_area != NULL)
+		{
+			sizer->Replace(cur_area, new_area);	// Swap the panels
+			cur_area = new_area;				// Set the new panel to current
+			cur_area->Show(true);				// Show current
 
-		// Add the current panel's custom menu and toolbar if needed
-		cur_area->addCustomMenu();
-		cur_area->addCustomToolBar();
+			// Add the current panel's custom menu and toolbar if needed
+			cur_area->addCustomMenu();
+			cur_area->addCustomToolBar();
+		}
 
 		// Set panel undo manager
 		cur_area->setUndoManager(undo_manager);

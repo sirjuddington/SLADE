@@ -42,11 +42,6 @@
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/SplashWindow.h"
 #include "UI/STabCtrl.h"
-#include <wx/filename.h>
-#include <wx/stattext.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/filedlg.h>
 
 
 /*******************************************************************
@@ -935,12 +930,11 @@ void ArchiveManagerPanel::closeTextureTab(int archive_index)
 	if (txed) stc_archives->DeletePage(stc_archives->GetPageIndex(txed));
 }
 
-/* ArchiveManagerPanel::openEntryTab
- * Opens the appropriate EntryPanel for [entry] in a new tab
+/* ArchiveManagerPanel::redirectToTab
+ * Redirects to the separated tab with given entry if exists
  *******************************************************************/
-void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
+bool ArchiveManagerPanel::redirectToTab(ArchiveEntry *entry)
 {
-	// First check if the entry is already open in a tab
 	for (unsigned a = 0; a < stc_archives->GetPageCount(); a++)
 	{
 		// Check page type is "entry"
@@ -953,9 +947,23 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
 		{
 			// Already open, switch to tab
 			stc_archives->SetSelection(a);
-			return;
+			return true;
 		}
 	}
+	return false;
+}
+
+/* ArchiveManagerPanel::openEntryTab
+ * Opens the appropriate EntryPanel for [entry] in a new tab
+ *******************************************************************/
+void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry)
+{
+	// Close the same entry in archive tab
+	ArchivePanel *panel = getArchiveTab(entry->getParent());
+	panel->closeCurrentEntry();
+
+	// First check if the entry is already open in a tab
+	redirectToTab(entry);
 
 	// Create an EntryPanel for the entry
 	EntryPanel* ep = ArchivePanel::createPanelForEntry(entry, stc_archives);

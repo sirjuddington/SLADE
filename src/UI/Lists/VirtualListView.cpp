@@ -38,7 +38,7 @@
 #ifdef __WXMSW__
 #include <CommCtrl.h>
 #endif
-#include <wx/settings.h>
+#include "common.h"
 
 /*******************************************************************
  * VARIABLES
@@ -78,6 +78,7 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	sort_column = -1;
 	filter_column = -1;
 	sort_descend = false;
+	selection_updating = false;
 	memset(cols_editable, 0, 100);
 
 	// Set monospace font if configured
@@ -96,6 +97,9 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &VirtualListView::onLabelEditBegin, this);
 	Bind(wxEVT_LIST_END_LABEL_EDIT, &VirtualListView::onLabelEditEnd, this);
 	Bind(wxEVT_LIST_COL_CLICK, &VirtualListView::onColumnLeftClick, this);
+#ifdef __WXGTK__
+	Bind(wxEVT_LIST_ITEM_SELECTED, &VirtualListView::onItemSelected, this);
+#endif
 }
 
 /* VirtualListView::~VirtualListView
@@ -115,6 +119,7 @@ void VirtualListView::sendSelectionChangedEvent()
 {
 	wxCommandEvent evt(EVT_VLV_SELECTION_CHANGED, GetId());
 	ProcessWindowEvent(evt);
+	selection_updating = false;
 }
 
 /* VirtualListView::updateWidth
@@ -672,4 +677,16 @@ void VirtualListView::onColumnLeftClick(wxListEvent& e)
 	}
 
 	updateList();
+}
+
+/* VirtualListView::onItemSelected
+ * Called when an item in the list is selected
+ *******************************************************************/
+void VirtualListView::onItemSelected(wxListEvent &e)
+{
+	if (!selection_updating)
+	{
+		selection_updating = true;
+		CallAfter(&VirtualListView::sendSelectionChangedEvent);
+	}
 }

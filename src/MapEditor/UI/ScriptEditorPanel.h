@@ -2,9 +2,9 @@
 #ifndef __SCRIPT_EDITOR_PANEL_H__
 #define __SCRIPT_EDITOR_PANEL_H__
 
+#include "common.h"
 #include "UI/TextEditor/TextEditor.h"
 #include "General/SAction.h"
-#include <wx/panel.h>
 
 class ArchiveEntry;
 class wxTreeListCtrl;

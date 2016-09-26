@@ -37,10 +37,6 @@
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainWindow.h"
 #include "UI/HexEditorPanel.h"
-#include <wx/button.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

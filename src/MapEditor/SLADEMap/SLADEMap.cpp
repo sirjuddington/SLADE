@@ -39,10 +39,14 @@
 #include "General/UndoRedo.h"
 #include "MapEditor/SectorBuilder.h"
 #include "UI/SplashWindow.h"
-#include <locale.h>
-#include <wx/colour.h>
 
 #define IDEQ(x) (((x) != 0) && ((x) == id))
+
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, map_split_auto_offset, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -3052,7 +3056,9 @@ vector<fpoint2_t> SLADEMap::cutLines(double x1, double y1, double x2, double y2)
 			LOG_DEBUG("Intersection point", intersection, "valid with", lines[a]);
 		}
 		else if (intersection != cutter.p1())
+		{
 			LOG_DEBUG("Intersection point", intersection, "invalid");
+		}
 	}
 
 	// Return if no intersections
@@ -4404,10 +4410,13 @@ MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 	lines.push_back(nl);
 
 	// Update x-offsets
-	int xoff1 = l->intProperty("side1.offsetx");
-	int xoff2 = l->intProperty("side2.offsetx");
-	nl->setIntProperty("side1.offsetx", xoff1 + l->getLength());
-	l->setIntProperty("side2.offsetx", xoff2 + nl->getLength());
+	if (map_split_auto_offset)
+	{
+		int xoff1 = l->intProperty("side1.offsetx");
+		int xoff2 = l->intProperty("side2.offsetx");
+		nl->setIntProperty("side1.offsetx", xoff1 + l->getLength());
+		l->setIntProperty("side2.offsetx", xoff2 + nl->getLength());
+	}
 
 	geometry_updated = theApp->runTimer();
 
@@ -4603,6 +4612,35 @@ bool SLADEMap::correctLineSectors(MapLine* line)
 		line->flip();
 
 	return changed;
+}
+
+/* SLADEMap::setLineSide
+ * Sets [line]'s front or back [side] (depending on [front]). If
+ * [side] already belongs to another line, use a copy of it instead
+ *******************************************************************/
+void SLADEMap::setLineSide(MapLine* line, MapSide* side, bool front)
+{
+	// Remove current side
+	MapSide* side_current = front ? line->side1 : line->side2;
+	if (side_current == side)
+		return;
+	if (side_current)
+		removeSide(side_current);
+
+	// If the new side is already part of another line, copy it
+	if (side->parent)
+	{
+		MapSide* new_side = createSide(side->sector);
+		new_side->copy(side);
+		side = new_side;
+	}
+
+	// Set side
+	if (front)
+		line->side1 = side;
+	else
+		line->side2 = side;
+	side->parent = line;
 }
 
 /* SLADEMap::mergeArch

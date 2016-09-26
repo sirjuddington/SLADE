@@ -2,7 +2,7 @@
 #ifndef __S_TOP_WINDOW_H__
 #define __S_TOP_WINDOW_H__
 
-#include <wx/frame.h>
+#include "common.h"
 
 class SToolBar;
 class wxMenu;

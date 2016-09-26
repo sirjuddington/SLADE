@@ -167,16 +167,11 @@ public:
 	vector<ArchiveEntry*>&	udmfExtraEntries() { return udmf_extra_entries; }
 
 	// MapObject id stuff (used for undo/redo)
-	void				addMapObject(MapObject* object);
-	void				removeMapObject(MapObject* object);
-	MapObject*			getObjectById(unsigned id) { return all_objects[id].mobj; }
-	//void				restoreObjectById(unsigned id);
-	//void				removeObjectById(unsigned id);
-	//vector<mobj_cd_t>&	createdDeletedObjectIds() { return created_deleted_objects; }
-	//void				clearCreatedDeletedOjbectIds() { created_deleted_objects.clear(); }
-
-	void				getObjectIdList(uint8_t type, vector<unsigned>& list);
-	void				restoreObjectIdList(uint8_t type, vector<unsigned>& list);
+	void		addMapObject(MapObject* object);
+	void		removeMapObject(MapObject* object);
+	MapObject*	getObjectById(unsigned id) { return all_objects[id].mobj; }
+	void		getObjectIdList(uint8_t type, vector<unsigned>& list);
+	void		restoreObjectIdList(uint8_t type, vector<unsigned>& list);
 
 	void	refreshIndices();
 	bool	readMap(Archive::mapdesc_t map);
@@ -268,6 +263,7 @@ public:
 	void		splitLinesByLine(MapLine* split_line);
 	int			mergeLine(unsigned line);
 	bool		correctLineSectors(MapLine* line);
+	void		setLineSide(MapLine* line, MapSide* side, bool front);
 
 	// Merge
 	bool		mergeArch(vector<MapVertex*> vertices);

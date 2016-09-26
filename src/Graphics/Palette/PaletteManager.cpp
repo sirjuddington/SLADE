@@ -33,8 +33,6 @@
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Misc.h"
-#include <wx/dir.h>
-#include <wx/filename.h>
 
 
 /*******************************************************************

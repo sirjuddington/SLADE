@@ -31,13 +31,6 @@
 #include "Main.h"
 #include "MapDisplayPrefsPanel.h"
 #include "UI/STabCtrl.h"
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/gbsizer.h>
-#include <wx/slider.h>
-#include <wx/statbox.h>
-#include <wx/statline.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

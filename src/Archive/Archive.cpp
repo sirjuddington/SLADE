@@ -33,10 +33,6 @@
 #include "General/Misc.h"
 #include "General/UndoRedo.h"
 #include "General/Clipboard.h"
-#include <wx/filename.h>
-#include <wx/dir.h>
-
-#include <SFML/System.hpp>
 
 /* Archive Directory Layout:
  * ---------------------

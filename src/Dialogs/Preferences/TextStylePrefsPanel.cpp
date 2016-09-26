@@ -31,14 +31,6 @@
 #include "Main.h"
 #include "TextStylePrefsPanel.h"
 #include "UI/TextEditor/TextEditor.h"
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/gbsizer.h>
-#include <wx/listbox.h>
-#include <wx/statbox.h>
-#include <wx/statline.h>
-#include <wx/stattext.h>
-#include <wx/textdlg.h>
 
 
 /*******************************************************************

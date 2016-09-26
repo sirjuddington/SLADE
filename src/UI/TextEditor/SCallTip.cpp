@@ -31,7 +31,6 @@
 #include "SCallTip.h"
 #include "TextLanguage.h"
 #include "Utility/Tokenizer.h"
-#include <wx/display.h>
 
 
 /*******************************************************************
@@ -64,6 +63,7 @@ SCallTip::SCallTip(wxWindow* parent)
 #ifndef __WXOSX__
 	SetDoubleBuffered(true);
 #endif // !__WXOSX__
+	SetBackgroundStyle(wxBG_STYLE_PAINT);
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SCallTip::onPaint, this);
@@ -190,7 +190,7 @@ void SCallTip::openFunction(TLFunction* function, int arg)
 void SCallTip::nextArgSet()
 {
 	arg_set_current++;
-	if (arg_set_current >= function->nArgSets())
+	if (arg_set_current >= (int)function->nArgSets())
 		arg_set_current = 0;
 	loadArgSet(arg_set_current);
 }
@@ -215,7 +215,7 @@ void SCallTip::updateSize()
 	SetSize(buffer.GetWidth() + 24, buffer.GetHeight() + 16);
 
 	// Get screen bounds and window bounds
-	int index = wxDisplay::GetFromWindow(this);
+	int index = wxDisplay::GetFromWindow(this->GetParent());
 	wxDisplay display(index);
 	wxRect screen_area = display.GetClientArea();
 	wxRect ct_area = GetScreenRect();
@@ -575,7 +575,7 @@ void SCallTip::onShow(wxShowEvent& e)
 	if (e.IsShown())
 	{
 		// Get screen bounds and window bounds
-		int index = wxDisplay::GetFromWindow(this);
+		int index = wxDisplay::GetFromWindow(this->GetParent());
 		wxDisplay display(index);
 		wxRect screen_area = display.GetClientArea();
 		wxRect ct_area = GetScreenRect();

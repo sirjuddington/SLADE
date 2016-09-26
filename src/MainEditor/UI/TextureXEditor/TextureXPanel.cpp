@@ -45,17 +45,6 @@
 #include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
 #include "ZTextureEditorPanel.h"
-#include <wx/arrstr.h>
-#include <wx/bmpbuttn.h>
-#include <wx/filedlg.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/settings.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textdlg.h>
 
 
 /*******************************************************************
@@ -257,7 +246,7 @@ public:
 	TextureCreateDeleteUS(TextureXPanel* tx_panel, CTexture* texture, bool created)
 		: tx_panel(tx_panel), created(created)
 	{
-		tex_removed = NULL;
+		tex_removed = created ? NULL : texture;
 		index = tx_panel->txList().textureIndex(texture->getName());
 	}
 
@@ -803,7 +792,7 @@ void TextureXPanel::removeTexture()
 		undo_manager->recordUndoStep(new TextureCreateDeleteUS(this, tex, false));
 
 		// Remove texture from list
-		texturex.removeTexture(selection[a]);
+		texturex.removeTexture(selection[a], false);
 	}
 
 	// End recording undo level

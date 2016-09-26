@@ -34,17 +34,6 @@
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
 #include "SCallTip.h"
-#include <wx/app.h>
-#include <wx/button.h>
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/dialog.h>
-#include <wx/gbsizer.h>
-#include <wx/msgdlg.h>
-#include <wx/numdlg.h>
-#include <wx/panel.h>
-#include <wx/sizer.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************
@@ -357,7 +346,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 					name = tz.getToken();
 
 				for (unsigned i = 0; i < ignore.size(); ++i)
-					if (S_CMPNOCASE(name, ignore[a]))
+					if (S_CMPNOCASE(name, ignore[i]))
 						name = tz.getToken();
 
 				// Numbered block, add block name

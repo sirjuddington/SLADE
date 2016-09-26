@@ -63,7 +63,7 @@ Property::Property(uint8_t type)
 	else
 	{
 		// Invalid type given, default to boolean
-		type = PROP_BOOL;
+		this->type = PROP_BOOL;
 		value.Boolean = true;
 	}
 }

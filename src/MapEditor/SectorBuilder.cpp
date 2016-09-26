@@ -342,7 +342,7 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 
 	//LOG_DEBUG("Finding outer edge from vertex", vertex_right, "at", vertex_right->point());
 
-	// Go through map lines
+	// Fire a ray east from the vertex and find the first line it crosses
 	MapLine* line = NULL;
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
@@ -367,10 +367,26 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 		double dist = fabs(int_x - vr_x);
 
 		// Check if closest
-		if (dist < min_dist)
+		if (!nearest || dist < min_dist)
 		{
 			min_dist = dist;
 			nearest = line;
+		}
+		else if (fabs(dist - min_dist) < 0.001)
+		{
+			// In the case of a tie, use the distance to each line as a
+			// tiebreaker -- this fixes cases where the ray hits a vertex
+			// shared by two lines.  Choosing the further line would mean
+			// choosing an inner edge, which is clearly wrong.
+			double line_dist = MathStuff::distanceToLineFast(
+				vertex_right->point(), line->seg());
+			double nearest_dist = MathStuff::distanceToLineFast(
+				vertex_right->point(), nearest->seg());
+			if (line_dist < nearest_dist)
+			{
+				min_dist = dist;
+				nearest = line;
+			}
 		}
 	}
 
@@ -378,10 +394,10 @@ SectorBuilder::edge_t SectorBuilder::findOuterEdge()
 	if (!nearest)
 		return edge_t(NULL);
 
-	//LOG_DEBUG("Found next outer line", nearest);
 
 	// Determine the edge side
 	double side = MathStuff::lineSide(vertex_right->point(), nearest->seg());
+	//LOG_DEBUG("Found next outer line", nearest, "on side", side);
 	if (side >= 0)
 		return edge_t(nearest, true);
 	else

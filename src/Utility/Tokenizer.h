@@ -82,6 +82,9 @@ public:
 	bool		atEnd() { return position == size; }
 
 	void	skipSection(string open, string close);
+
+	// Default special characters
+	static const string DEFAULT_SPECIAL_CHARS;
 };
 
 #endif //__TOKENIZER_H__

@@ -2,7 +2,7 @@
 #ifndef __S_TAB_CTRL_H__
 #define __S_TAB_CTRL_H__
 
-#include <wx/aui/auibook.h>
+#include "common.h"
 
 class STabCtrl : public wxAuiNotebook
 {

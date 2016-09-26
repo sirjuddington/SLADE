@@ -33,10 +33,7 @@
 #include "SToolBar.h"
 #include "SToolBarButton.h"
 #include "OpenGL/Drawing.h"
-#include <wx/dcclient.h>
-#include <wx/menu.h>
-#include <wx/stattext.h>
-#include <wx/wrapsizer.h>
+
 
 
 /*******************************************************************

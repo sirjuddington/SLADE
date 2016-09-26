@@ -18,7 +18,7 @@ en.vcredist2015_lcid=''
 
 [Code]
 const
-	vcredist2015_url = 'http://download.microsoft.com/download/C/E/5/CE514EAE-78A8-4381-86E8-29108D78DBD4/VC_redist.x86.exe';
+	vcredist2015_url = 'http://slade.mancubus.net/files/vcredist/2015U2/vc_redist.x86.exe';
 	vcredist2015_url_x64 = 'http://download.microsoft.com/download/C/E/5/CE514EAE-78A8-4381-86E8-29108D78DBD4/VC_redist.x64.exe';
 	vcredist2015_url_ia64 = 'http://download.microsoft.com/download/C/E/5/CE514EAE-78A8-4381-86E8-29108D78DBD4/VC_redist.x64.exe';
 

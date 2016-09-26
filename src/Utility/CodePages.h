@@ -3,7 +3,6 @@
 #define __CODEPAGES_H__
 
 #include "Main.h"
-#include <wx/colour.h>
 
 namespace CodePages
 {

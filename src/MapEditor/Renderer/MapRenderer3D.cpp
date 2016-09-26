@@ -38,7 +38,6 @@
 #include "General/ResourceManager.h"
 #include "MainEditor/MainWindow.h"
 #include "OpenGL/OpenGL.h"
-#include <SFML/System.hpp>
 
 
 /*******************************************************************
@@ -2228,6 +2227,10 @@ void MapRenderer3D::renderThingSelection(vector<selection_3d_t>& selection, floa
 		MapThing* thing = map->getThing(selection[a].index);
 		if (!thing)
 			return;
+
+		// Update if required
+		if (things[selection[a].index].type == NULL)
+			updateThing(selection[a].index, thing);
 
 		// Skip if not shown
 		if (!things[selection[a].index].type->isDecoration() && render_3d_things == 2)

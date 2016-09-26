@@ -7,7 +7,6 @@
 #include "General/SAction.h"
 #include "UI/Lists/ArchiveEntryList.h"
 #include "UI/WxBasicControls.h"
-#include <wx/panel.h>
 
 class wxStaticText;
 class wxBitmapButton;
@@ -136,6 +135,7 @@ public:
 	void	focusOnEntry(ArchiveEntry* entry);
 	void	focusEntryList() { entry_list->SetFocus(); }
 	void	refreshPanel();
+	void	closeCurrentEntry();
 	wxMenu*	createEntryOpenMenu(string category);
 
 	// SAction handler

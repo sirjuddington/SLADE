@@ -31,8 +31,6 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "General/VersionCheck.h"
-#include <wx/protocol/http.h>
-#include <wx/sstream.h>
 
 
 /*******************************************************************

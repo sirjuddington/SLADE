@@ -34,9 +34,6 @@
 #include "Graphics/Icons.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
-#include <wx/imaglist.h>
-#include <wx/settings.h>
-#include <wx/menu.h>
 
 
 /*******************************************************************

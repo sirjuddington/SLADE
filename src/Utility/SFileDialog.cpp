@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "UI/WxStuff.h"
 #include "SFileDialog.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

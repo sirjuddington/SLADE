@@ -42,7 +42,6 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "MainWindow.h"
 #include "Utility/FileMonitor.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

@@ -34,7 +34,6 @@
 #include "ArchiveEntry.h"
 #include "Archive.h"
 #include "General/Misc.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

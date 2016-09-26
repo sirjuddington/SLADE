@@ -3,8 +3,7 @@
 #define __DIR_ARCHIVE_H__
 
 #include "Archive/Archive.h"
-#include <map>
-#include <wx/dir.h>
+#include "common.h"
 
 typedef std::map<ArchiveEntry*, time_t> mod_times_t;
 

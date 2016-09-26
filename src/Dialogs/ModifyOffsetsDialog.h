@@ -2,7 +2,7 @@
 #ifndef __MODIFYOFFSETSDIALOG_H__
 #define	__MODIFYOFFSETSDIALOG_H__
 
-#include <wx/dialog.h>
+#include "common.h"
 #include "UI/WxBasicControls.h"
 
 class ModifyOffsetsDialog : public wxDialog

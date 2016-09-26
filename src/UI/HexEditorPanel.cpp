@@ -32,12 +32,7 @@
 #include "Main.h"
 #include "HexEditorPanel.h"
 #include "Utility/CodePages.h"
-#include <wx/button.h>
-#include <wx/numdlg.h>
-#include <wx/radiobut.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
+
 
 
 /*******************************************************************

@@ -6,8 +6,6 @@
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/WxBasicControls.h"
-#include <wx/clrpicker.h>
-#include <wx/dialog.h>
 
 class GfxCanvas;
 class PaletteCanvas;

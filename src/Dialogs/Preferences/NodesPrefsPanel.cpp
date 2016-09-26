@@ -31,13 +31,6 @@
 #include "NodesPrefsPanel.h"
 #include "MapEditor/NodeBuilders.h"
 #include "Utility/SFileDialog.h"
-#include <wx/button.h>
-#include <wx/checklst.h>
-#include <wx/choice.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 
 /*******************************************************************

@@ -158,7 +158,7 @@ acs_z : acs {
 	blocks = "Script", "Function:1";
 
 	keywords = {
-		function, enter, respawn, death, lightning, unloading, disconnect,
+		function, enter, respawn, death, lightning, unloading, disconnect, kill,
 		fixed, global, net, import, libdefine, library, nocompact, nowadauthor,
 		EncryptStrings, static, wadauthor, region, endregion,
 		
@@ -235,6 +235,7 @@ acs_z : acs {
 		APROP_Dormant, APROP_Mass, APROP_Accuracy, APROP_Stamina, APROP_Height,
 		APROP_Radius, APROP_ReactionTime, APROP_AttackZOffset, APROP_MeleeRange,
 		APROP_ViewHeight, APROP_StencilColor, APROP_DamageMultiplier, APROP_Friction,
+		APROP_MaxStepHeight, APROP_MaxDropOffHeight, APROP_DamageType,
 
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_Stencil, 
 		STYLE_OptFuzzy, STYLE_Translucent, STYLE_Add, STYLE_Shaded, 
@@ -257,7 +258,8 @@ acs_z : acs {
 		MRF_OLDEFFECTS, MRF_ADDSTAMINA, MRF_FULLHEALTH, MRF_UNDOBYTOMEOFPOWER, 
 		MRF_UNDOBYCHAOSDEVICE, MRF_FAILNOTELEFRAG, MRF_FAILNOLAUGH, 
 		MRF_WHENINVULNERABLE, MRF_LOSEACTUALWEAPON, MRF_NEWTIDBEHAVIOUR, 
-		MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES, 
+		MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES, MRF_UNDOALWAYS,
+		MRF_TRANSFERTRANSLATION,
 
 		T_ROCK1, T_ROCK2, T_ROCK3, T_DIRT1, T_DIRT2, T_DIRT3, T_DIRT4, T_DIRT5, T_DIRT6, 
 		T_STAINEDGLASS1, T_STAINEDGLASS2, T_STAINEDGLASS3, T_STAINEDGLASS4, 
@@ -330,7 +332,15 @@ acs_z : acs {
 
 		PTROP_UNSAFETARGET, PTROP_UNSAFEMASTER, PTROP_NOSAFEGUARDS, 
 
+		// Zandronum database additions
+		DB_ORDER_ASC, DB_ORDER_DESC,
+
 		TEAM_BLUE, TEAM_RED, NO_TEAM, 
+
+		// Team properties (Zandronum)
+		TPROP_Name, TPROP_Score, TPROP_IsValid, TPROP_NumPlayers, TPROP_NumLivePlayers, TPROP_TextColor,
+		TPROP_PlayerStartNum, TPROP_Spread, TPROP_Carrier, TPROP_Assister, TPROP_FragCount, TPROP_DeathCount,
+		TPROP_WinCount, TPROP_PointCount, TPROP_ReturnTics, TPROP_TeamItem, TPROP_WinnerTheme, TPROP_LoserTheme,
 
 		IS_WAITINGFORPLAYERS, IS_FIRSTCOUNTDOWN, IS_INPROGRESS, IS_BOSSFIGHT, 
 		IS_WAVECOMPLETE, IS_COUNTDOWN, 
@@ -423,7 +433,11 @@ acs_z : acs {
 		PICKAF_FORCETID, PICKAF_RETURNTID,
 
 		// Used by Thing_SetTranslation
-		TRANSLATION_ICE
+		TRANSLATION_ICE,
+
+		// CheckProximity flags
+		CPXF_ANCESTOR, CPXF_CHECKSIGHT, CPXF_CLOSEST, CPXF_COUNTDEAD, CPXF_DEADONLY, CPXF_EXACT, CPXF_FARTHEST,
+		CPXF_LESSOREQUAL, CPXF_NOZ, CPXF_SETMASTER, CPXF_SETONPTR, CPXF_SETTARGET, CPXF_SETTRACER
 	}
 
 	functions
@@ -695,10 +709,13 @@ acs_z : acs {
 		CheckActorFloorTexture = "int tid, str texture";
 		CheckActorInventory = "int tid, str inventory_item";
 		CheckActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
+		CheckActorState = "int tid, str statename, [bool exact]";
+		CheckClass = "str classname";
 		CheckFlag = "int tid, str flag";
 		CheckFont = "str fontname";
 		CheckInventory = "str inventory_item";
 		CheckPlayerCamera = "int player";
+		CheckProximity = "int tid, str classname, fixed distance, [int count], [int flags], [int pointer]";
 		CheckSight = "int source, int dest, [int flags]";
 		CheckWeapon = "str weapon";
 		ClassifyActor = "int tid";
@@ -707,6 +724,7 @@ acs_z : acs {
 		ClearLineSpecial;
 		Cos = "int angle";
 		CreateTranslation = "int transnumber, a:b=c:d, ...", "int transnumber, a:b=[red1,green1,blue1]:[red2,green2,blue2], ...";
+		DamageActor = "int target_tid, int target_pointer, int inflictor_tid, int inflictor_pointer, int amount, str damagetype";
 		Delay = "int tics";
 		DropInventory = "int tid, str item";
 		DropItem = "int tid, str item, [int dropamount], [int chance]";
@@ -793,7 +811,7 @@ acs_z : acs {
 		PolyWait = "int polynum";
 		Print = "type:expression";
 		PrintBold = "type:expression";
-		QuakeEx = "int tid, int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, sound sfx, [int flags], [fixed mulWaveX], [fixed mulWaveY], [fixed mulWaveZ], [int falloff], [int highpoint]";
+		QuakeEx = "int tid, int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, sound sfx, [int flags], [fixed mulWaveX], [fixed mulWaveY], [fixed mulWaveZ], [int falloff], [int highpoint], [fixed rollIntensity], [fixed rollWave]";
 		Radius_Quake2 = "int tid, int intensity, int duration, int damrad, int tremrad, str sound";
 		Random = "int min, int max";
 		ReplaceTextures = "str oldtexturename, str newtexturename, [int flags]";
@@ -803,6 +821,7 @@ acs_z : acs {
 		SetActivator = "int tid, [int pointer_selector]";
 		SetActivatorToTarget = "int tid";
 		SetActorAngle = "int tid, fixed angle";
+		SetActorFlag = "int tid, str flagname, bool set";
 		SetActorPitch = "int tid, fixed pitch";
 		SetActorPosition = "int tid, fixed x, fixed y, fixed z, bool fog";
 		SetActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
@@ -832,6 +851,7 @@ acs_z : acs {
 		SetMarineWeapon = "int tid, int weapon";
 		SetMugShotState = "str state";
 		SetMusic = "str song, [int order]";
+		SetMusicVolume = "fixed volume";
 		SetPointer = "int assign_slot, int tid, [int pointer_selector], [int flags]";
 		SetResultValue = "int value";
 		SetSectorDamage = "int tag, int amount, [str damagetype], [int interval], [int leaky]";
@@ -852,7 +872,7 @@ acs_z : acs {
  		Spawn = "str classname, fixed x, fixed y, fixed z, [int tid], [int angle]";
 		SpawnDecal = "int tid, str decalname, [int flags], [fixed angle], [fixed zoffset], [fixed distance]";
 		SpawnForced = "str classname, fixed x, fixed y, fixed z, [int tid], [int angle]";
-		SpawnParticle = "int color, [bool fullbright], [int lifetime], [int size], [fixed x], [fixed y], [fixed z], [fixed velx], [fixed vely], [fixed velz], [fixed accelx], [fixed accely], [fixed accelz], [int startalpha], [int fadestep]";
+		SpawnParticle = "int color, [bool fullbright], [int lifetime], [int size], [fixed x], [fixed y], [fixed z], [fixed velx], [fixed vely], [fixed velz], [fixed accelx], [fixed accely], [fixed accelz], [int startalpha], [int fadestep], [fixed endsize]";
 		SpawnProjectile = "int tid, string type, int angle, int speed, int vspeed, int gravity, int newtid";
 		SpawnSpot = "str classname, int spottid, [int tid], [int angle]";
 		SpawnSpotFacing = "str classname, int spottid, [int tid]";
@@ -860,6 +880,7 @@ acs_z : acs {
 		SpawnSpotForced = "str classname, int spottid, [int tid], [int angle]";
 		Sqrt = "int number";
 		StopSound = "int tid, [int channel]";
+		StrCaseCmp = "str string1, str string2, [int maxcomparenum]";
 		StrCmp = "str string1, str string2, [int maxcomparenum]";
 		StrCpy = "a:destination, string source, [int source_index]";
 		StrIcmp = "str string1, str string2, [int maxcomparenum]";
@@ -887,21 +908,61 @@ acs_z : acs {
 		VectorAngle = "int x, int y";
 		VectorLength = "int x, int y";
 		Warp = "int tid, fixed xofs, fixed yofs, fixed zofs, fixed angle, int flags, [str success_state], [bool exact], [fixed heightoffset], [fixed radiusoffset], [fixed pitch]";
-		
-		// Skulltag functions
+
+		// Skulltag/Zandronum action specials
+		Player_GiveItem = "unknown parameters list";
+		Player_RemoveItem = "unknown parameters list";
+		Player_SetTeam = "int team";
+		Team_GivePoints = "int team, int points, int announce";
+		Team_Score = "int points, int nogrin";
+
+		// Skulltag/Zandronum functions
+		AnnouncerSound = "str sound, int flags";
+		BeginDBTransaction;
 		BlueCount;
 		BlueScore;
+		BlueTeamCount;
+		BlueTeamScore;
 		ConsoleCommand = "str command";
+		ConsolePlayerNumber;
+		CountDBResults = "unknown parameters list";
+		EndDBTransaction;
+		FreeDBResults = "unknown parameters list";
+		GetDBEntries = "unknown parameters list";
+		GetDBEntry = "str table, str variable";
+		GetDBEntryRank = "unknown parameters list";
+		GetDBEntryString = "unknown parameters list";
+		GetDBResultKeyString = "unknown parameters list";
+		GetDBResultValue = "unknown parameters list";
+		GetDBResultValueString = "unknown parameters list";
+		GetGamemodeState;
 		GetInvasionState;
 		GetInvasionWave;
+		GetPlayerAccountName = "unknown parameters list";
+		GetPlayerLivesLeft = "int player";
+		GetTeamProperty = "int team, int property";
+		IncrementDBEntry = "unknown parameters list";
+		IsMultiplayer;
+		IsNetworkGame;
 		IsOneFlagCTF;
+		KickFromGame = "int player, str reason";
 		Music_Change = "str music, int pattern";
 		PlayerArmorPoints;
 		PlayerHealth;
+		PlayerIsLoggedIn = "int playernumber";
+		PlayerIsSpectator = "int player";
 		PlayerTeam;
 		RedCount;
 		RedScore;
+		RedTeamCount;
+		RedTeamScore;
+		RequestScriptPuke = "int script, int arg0, int arg1, int arg2";
+		ResetMap;
+		SetDBEntry = "str table, str variable, int value";
+		SetDBEntryString = "unknown parameters list";
+		SetPlayerLivesLeft = "int player, int amount";
 		SinglePlayer;
+		SortDBEntries = "unknown parameters list";
 		
 		// ZDaemon functions
 		GetTeamScore = "int team";

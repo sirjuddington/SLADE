@@ -33,7 +33,6 @@
 #include "UI/SplashWindow.h"
 #include "MainEditor/MainWindow.h"
 #include "General/Console/Console.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

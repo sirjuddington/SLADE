@@ -30,11 +30,7 @@
 #include "GraphicsPrefsPanel.h"
 #include "MainEditor/MainWindow.h"
 #include "OpenGL/GLTexture.h"
-#include <wx/checkbox.h>
-#include <wx/clrpicker.h>
-#include <wx/filedlg.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
+
 
 
 /*******************************************************************

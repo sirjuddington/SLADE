@@ -36,7 +36,6 @@
 #include "UI/SplashWindow.h"
 #include "General/ResourceManager.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

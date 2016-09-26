@@ -29,7 +29,12 @@
  *******************************************************************/
 #include "Main.h"
 #include "Tokenizer.h"
-#include <wx/log.h>
+
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+const string Tokenizer::DEFAULT_SPECIAL_CHARS = ";,:|={}/";
 
 
 /*******************************************************************
@@ -47,7 +52,7 @@ Tokenizer::Tokenizer(CommentTypes comments_style)
 	size = 0;
 	comments = comments_style;
 	debug = false;
-	special = ";,:|={}/";	// Default special characters
+	special = DEFAULT_SPECIAL_CHARS;
 	name = "nothing";
 	line = 1;
 	t_start = 0;
@@ -273,6 +278,9 @@ bool Tokenizer::incrementCurrent()
  *******************************************************************/
 void Tokenizer::skipLineComment()
 {
+	if (atEnd())
+		return;
+
 	// Increment position until a newline or end is found
 	while (current[0] != '\n' && current[0] != 13)
 	{
@@ -289,6 +297,9 @@ void Tokenizer::skipLineComment()
  *******************************************************************/
 void Tokenizer::skipMultilineComment()
 {
+	if (atEnd())
+		return;
+
 	// Increment position until '*/' or end is found
 	while (!(current[0] == '*' && current[1] == '/'))
 	{

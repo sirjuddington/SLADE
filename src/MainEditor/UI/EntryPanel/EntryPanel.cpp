@@ -34,8 +34,6 @@
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
-#include <wx/statbox.h>
-#include <wx/msgdlg.h>
 
 
 /*******************************************************************

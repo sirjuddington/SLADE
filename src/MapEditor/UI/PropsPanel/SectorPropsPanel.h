@@ -2,9 +2,9 @@
 #ifndef __SECTOR_PROPS_PANEL_H__
 #define __SECTOR_PROPS_PANEL_H__
 
+#include "common.h"
 #include "PropsPanelBase.h"
 #include "UI/Canvas/OGLCanvas.h"
-#include <wx/combobox.h>
 
 class GLTexture;
 class FlatTexCanvas : public OGLCanvas

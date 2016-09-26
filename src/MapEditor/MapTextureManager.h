@@ -2,9 +2,9 @@
 #ifndef __MAP_TEXTURE_MANAGER_H__
 #define __MAP_TEXTURE_MANAGER_H__
 
+#include "common.h"
 #include "OpenGL/GLTexture.h"
 #include "General/ListenerAnnouncer.h"
-#include <map>
 
 struct map_tex_t
 {
