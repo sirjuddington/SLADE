@@ -4526,6 +4526,9 @@ void MapEditor::resetOffsets3d()
  *******************************************************************/
 void MapEditor::toggleUnpegged3d(bool lower)
 {
+	if (selection_3d.size() == 0 && hilight_3d.index < 0)
+		return;
+
 	// Get items to process
 	vector<selection_3d_t> items;
 	if (selection_3d.size() == 0)

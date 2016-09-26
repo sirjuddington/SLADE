@@ -251,6 +251,26 @@ wxWindow* OGLCanvas::toPanel(wxWindow* parent)
 	return panel;
 }
 
+/* OGLCanvas::setActive
+ * Activates the GL context for this canvas. Returns false if setting
+ * the active context failed
+ *******************************************************************/
+bool OGLCanvas::setActive()
+{
+#ifdef USE_SFML_RENDERWINDOW
+	if (!sf::RenderWindow::setActive())
+		return false;
+
+	Drawing::setRenderTarget(this);
+	resetGLStates();
+	setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
+
+	return true;
+#else
+	return setContext();
+#endif
+}
+
 
 /*******************************************************************
  * OGLCANVAS EVENTS
@@ -272,14 +292,8 @@ void OGLCanvas::onPaint(wxPaintEvent& e)
 	if (IsShown())
 	{
 		// Set context to this window
-#ifdef USE_SFML_RENDERWINDOW
-		sf::RenderWindow::setActive();
-		Drawing::setRenderTarget(this);
-		resetGLStates();
-		setView(sf::View(sf::FloatRect(0.0f, 0.0f, GetSize().x, GetSize().y)));
-#else
-		setContext();
-#endif
+		if (!setActive())
+			return;
 
 		// Init if needed
 		if (!init_done)
