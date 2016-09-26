@@ -2361,6 +2361,9 @@ void MapCanvas::forceRefreshRenderer()
 		info_3d.update(hl.index, hl.type, &(editor->getMap()));
 	}
 
+	if (!setActive())
+		return;
+
 	renderer_2d->forceUpdate();
 	renderer_3d->clearData();
 }
