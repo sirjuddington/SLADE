@@ -166,7 +166,7 @@ string DataEntryTable::GetValue(int row, int col)
 	// Custom value column
 	else if (columns[col].type == COL_CUSTOM_VALUE)
 	{
-		int value;
+		int value = 0;
 		if (columns[col].size == 1)
 		{
 			int8_t val;

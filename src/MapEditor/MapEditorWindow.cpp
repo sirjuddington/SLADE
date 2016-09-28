@@ -936,6 +936,9 @@ void MapEditorWindow::closeMap()
  *******************************************************************/
 void MapEditorWindow::forceRefresh(bool renderer)
 {
+	if (!IsShown())
+		return;
+
 	if (renderer) map_canvas->forceRefreshRenderer();
 	map_canvas->Refresh();
 }
