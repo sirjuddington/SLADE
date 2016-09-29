@@ -555,6 +555,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 		mdesc_current = map;
 
 		// Read DECORATE definitions if any
+		theGameConfiguration->clearDecorateDefs();
 		theGameConfiguration->parseDecorateDefs(theArchiveManager->baseResourceArchive());
 		for (int i = 0; i < theArchiveManager->numArchives(); ++i)
 			theGameConfiguration->parseDecorateDefs(theArchiveManager->getArchive(i));

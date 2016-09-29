@@ -29,7 +29,9 @@
  *******************************************************************/
 #include "Main.h"
 #include "TextEntryPanel.h"
+#include "Archive/ArchiveManager.h"
 #include "MainApp.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************
@@ -219,6 +221,15 @@ bool TextEntryPanel::saveEntry()
 	// Set text if unknown
 	if (entry->getType() == EntryType::unknownType())
 		entry->setType(EntryType::getType("text"));
+
+	// Update DECORATE definitions if decorate
+	if (text_area->getLanguage()->getId() == "decorate")
+	{
+		theGameConfiguration->clearDecorateDefs();
+		theGameConfiguration->parseDecorateDefs(theArchiveManager->baseResourceArchive());
+		for (int i = 0; i < theArchiveManager->numArchives(); ++i)
+			theGameConfiguration->parseDecorateDefs(theArchiveManager->getArchive(i));
+	}
 
 	// Update variables
 	setModified(false);
