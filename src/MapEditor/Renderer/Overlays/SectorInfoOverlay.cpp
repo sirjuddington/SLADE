@@ -114,7 +114,7 @@ void SectorInfoOverlay::update(MapSector* sector)
 /* SectorInfoOverlay::drawWidget
  * Draw the widget at [pos] with [alpha] transparency
  *******************************************************************/
-void SectorInfoOverlay::drawWidget(point2_t pos, float alpha)
+void SectorInfoOverlay::drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale)
 {
 	glDisable(GL_TEXTURE_2D);
 
@@ -135,15 +135,15 @@ void SectorInfoOverlay::updateLayout(dim2_t fit)
 
 	// Ceiling texture
 	tex_ceiling->updateLayout();
-	LayoutHelpers::placeWidgetWithin(tex_ceiling, rect, ALIGN_RIGHT, ALIGN_BOTTOM);
+	LayoutHelpers::placeWidgetWithin(tex_ceiling, rect, Align::Right, Align::Bottom);
 
 	// Floor texture
 	tex_floor->updateLayout();
-	LayoutHelpers::placeWidgetToLeft(tex_floor, tex_ceiling, USE_MARGIN, ALIGN_BOTTOM);
+	LayoutHelpers::placeWidgetToLeft(tex_floor, tex_ceiling, USE_MARGIN, Align::Bottom);
 
 	// Info text
 	text_info->updateLayout(dim2_t(tex_floor->left(true) - text_info->getMargin().horizontal(), -1));
-	LayoutHelpers::placeWidgetWithin(text_info, rect, ALIGN_LEFT, ALIGN_BOTTOM);
+	LayoutHelpers::placeWidgetWithin(text_info, rect, Align::Left, Align::Bottom);
 
 	fitToChildren();
 }

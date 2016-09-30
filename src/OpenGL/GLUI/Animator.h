@@ -8,18 +8,60 @@ namespace GLUI
 	public:
 		typedef std::unique_ptr<Animator> Ptr;
 
-		Animator() : alpha(1.0f) {}
+		enum class Easing
+		{
+			None,
+			In,
+			Out,
+		};
+
+		Animator(Widget* parent, int duration = 0, Easing easing = Easing::None);
 		~Animator() {}
 
-		point2_t	getOffset() { return offset; }
+		fpoint2_t	getOffset() { return offset; }
+		fpoint2_t	getScale() { return scale; }
 		float		getAlpha() { return alpha; }
+
+		void	setReverse(bool reverse, float speed = 0.0f);
+		void	setEasing(Easing easing) { this->easing = easing; }
+		void	reset() { elapsed = reverse ? duration : 0; }
 
 		virtual void	update(int time) {}
 		virtual void	applyAnimation(Widget* target) {}
+		virtual bool	isActive();
 
 	protected:
-		point2_t	offset;
+		Widget*		parent;
+		fpoint2_t	offset;
+		fpoint2_t	scale;
 		float		alpha;
+		int			elapsed;
+		int			duration;
+		bool		reverse;
+		float		reverse_speed;
+		Easing		easing;
+
+		void	updateElapsed(int time);
+		float	animMultiplier();
+	};
+
+	class FadeAnimator : public Animator
+	{
+	public:
+		FadeAnimator(
+			Widget* parent,
+			int duration,
+			float fade_from = 0.0f,
+			float fade_to = 1.0f,
+			Easing easing = Easing::None
+		);
+		~FadeAnimator() {}
+
+		void	update(int time) override;
+
+	private:
+		float	fade_from;
+		float	fade_to;
 	};
 
 	class SlideAnimator : public Animator
@@ -33,20 +75,41 @@ namespace GLUI
 			Down
 		};
 
-		SlideAnimator(int duration, int slide_amount, Direction slide_dir, bool fade_alpha = true);
+		SlideAnimator(
+			Widget* parent,
+			int duration,
+			int slide_amount,
+			Direction slide_dir,
+			bool fade_alpha = true,
+			Easing easing = Easing::None
+		);
 		~SlideAnimator();
 
 		void	setSlideAmount(int amount);
-		void	setReverse(bool reverse, float speed = 1.0f);
-		void	update(int time);
+		void	update(int time) override;
 
 	private:
-		int			elapsed;
-		int			duration;
 		int			slide_amount;
 		Direction	slide_dir;
 		bool		fade_alpha;
-		bool		reverse;
-		float		reverse_speed;
+	};
+
+	class ScaleAnimator : public Animator
+	{
+	public:
+		ScaleAnimator(
+			Widget* parent,
+			int duration,
+			float scale_begin,
+			float scale_end,
+			Easing easing = Easing::None
+		);
+		~ScaleAnimator();
+
+		void update(int time) override;
+
+	private:
+		float	scale_begin;
+		float	scale_end;
 	};
 }

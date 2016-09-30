@@ -119,16 +119,16 @@ void LineSideGLPanel::updateLayout(dim2_t fit)
 
 	// Middle texture
 	tex_middle->updateLayout();
-	LayoutHelpers::placeWidgetToRight(tex_middle, tex_upper, USE_MARGIN, ALIGN_TOP);
+	LayoutHelpers::placeWidgetToRight(tex_middle, tex_upper, USE_MARGIN, Align::Top);
 
 	// Lower texture
 	tex_lower->updateLayout();
-	LayoutHelpers::placeWidgetToRight(tex_lower, tex_middle, USE_MARGIN, ALIGN_TOP);
+	LayoutHelpers::placeWidgetToRight(tex_lower, tex_middle, USE_MARGIN, Align::Top);
 
 	// Info
 	int width = tex_lower->right() - tex_upper->left();
 	text_info->updateLayout(dim2_t(width, -1));
-	LayoutHelpers::placeWidgetBelow(text_info, tex_upper, USE_MARGIN, ALIGN_LEFT);
+	LayoutHelpers::placeWidgetBelow(text_info, tex_upper, USE_MARGIN, Align::Left);
 
 	// Size panel to fit
 	fitToChildren(padding_t(0), true);
@@ -239,7 +239,7 @@ void LineInfoOverlay::update(MapLine* line, int map_format)
 /* LineInfoOverlay::drawWidget
  * Draw the widget at [pos] with [alpha] transparency
  *******************************************************************/
-void LineInfoOverlay::drawWidget(point2_t pos, float alpha)
+void LineInfoOverlay::drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale)
 {
 	glDisable(GL_TEXTURE_2D);
 
@@ -257,8 +257,8 @@ void LineInfoOverlay::drawWidget(point2_t pos, float alpha)
 void LineInfoOverlay::updateLayout(dim2_t fit)
 {
 	// Side panels
-	LayoutHelpers::placeWidgetWithin(ls_front, rect_t(point2_t(0, 0), point2_t(fit.x, 0)), ALIGN_RIGHT, ALIGN_TOP);
-	LayoutHelpers::placeWidgetToLeft(ls_back, ls_front, USE_MARGIN, ALIGN_TOP);
+	LayoutHelpers::placeWidgetWithin(ls_front, rect_t(point2_t(0, 0), point2_t(fit.x, 0)), Align::Right, Align::Top);
+	LayoutHelpers::placeWidgetToLeft(ls_back, ls_front, USE_MARGIN, Align::Top);
 
 	// Info text
 	int width = ls_back->isVisible() ? ls_back->left(true) : ls_front->left(true);

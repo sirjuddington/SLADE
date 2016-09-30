@@ -183,7 +183,7 @@ void ThingInfoOverlay::update(MapThing* thing)
 /* ThingInfoOverlay::drawWidget
  * Draw the widget at [pos] with [alpha] transparency
  *******************************************************************/
-void ThingInfoOverlay::drawWidget(point2_t pos, float alpha)
+void ThingInfoOverlay::drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale)
 {
 	glDisable(GL_TEXTURE_2D);
 
@@ -201,7 +201,14 @@ void ThingInfoOverlay::drawWidget(point2_t pos, float alpha)
 void ThingInfoOverlay::updateLayout(dim2_t fit)
 {
 	image_sprite->setSizeFromImage();
-	LayoutHelpers::placeWidgetWithin(image_sprite, rect_t(point2_t(0, 0), point2_t(fit.x, 0)), ALIGN_RIGHT, ALIGN_TOP, padding_t(8, 0));
+	LayoutHelpers::placeWidgetWithin(
+		image_sprite,
+		rect_t(point2_t(0, 0),
+		point2_t(fit.x, 0)),
+		Align::Right,
+		Align::Top,
+		padding_t(8, 0)
+	);
 
 	text_info->updateLayout(dim2_t(image_sprite->left() - 8, -1));
 	LayoutHelpers::alignBottoms(text_info, image_sprite);

@@ -501,7 +501,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 /* InfoOverlay3D::drawWidget
  * Draw the widget at [pos] with [alpha] transparency
  *******************************************************************/
-void InfoOverlay3D::drawWidget(point2_t pos, float alpha)
+void InfoOverlay3D::drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale)
 {
 	glDisable(GL_TEXTURE_2D);
 
@@ -520,15 +520,15 @@ void InfoOverlay3D::updateLayout(dim2_t fit)
 
 	// Image box
 	tex_box->updateLayout();
-	LayoutHelpers::placeWidgetWithin(tex_box, rect, ALIGN_MIDDLE, ALIGN_TOP);
+	LayoutHelpers::placeWidgetWithin(tex_box, rect, Align::Middle, Align::Top);
 
 	// Left text
 	text_info1->updateLayout();
-	LayoutHelpers::placeWidgetToLeft(text_info1, tex_box, USE_MARGIN, ALIGN_BOTTOM);
+	LayoutHelpers::placeWidgetToLeft(text_info1, tex_box, USE_MARGIN, Align::Bottom);
 
 	// Right text
 	text_info2->updateLayout();
-	LayoutHelpers::placeWidgetToRight(text_info2, tex_box, USE_MARGIN, ALIGN_BOTTOM);
+	LayoutHelpers::placeWidgetToRight(text_info2, tex_box, USE_MARGIN, Align::Bottom);
 
 	setSize(dim2_t(fit.x, tex_box->bottom(true)));
 }

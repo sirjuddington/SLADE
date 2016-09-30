@@ -57,10 +57,10 @@ void LayoutHelpers::placeWidgetAbove(Widget* widget, Widget* base, int padding, 
 
 	switch (align)
 	{
-	case ALIGN_LEFT: alignLefts(widget, base); break;
-	case ALIGN_RIGHT: alignRights(widget, base); break;
-	case ALIGN_MIDDLE: alignMiddlesH(widget, base); break;
-	case ALIGN_FILL: alignLefts(widget, base); sameWidth(widget, base); break;
+	case Align::Left: alignLefts(widget, base); break;
+	case Align::Right: alignRights(widget, base); break;
+	case Align::Middle: alignMiddlesH(widget, base); break;
+	case Align::Fill: alignLefts(widget, base); sameWidth(widget, base); break;
 	default: break;
 	}
 }
@@ -84,10 +84,10 @@ void LayoutHelpers::placeWidgetBelow(Widget* widget, Widget* base, int padding, 
 
 	switch (align)
 	{
-	case ALIGN_LEFT: alignLefts(widget, base); break;
-	case ALIGN_RIGHT: alignRights(widget, base); break;
-	case ALIGN_MIDDLE: alignMiddlesH(widget, base); break;
-	case ALIGN_FILL: alignLefts(widget, base); sameWidth(widget, base); break;
+	case Align::Left: alignLefts(widget, base); break;
+	case Align::Right: alignRights(widget, base); break;
+	case Align::Middle: alignMiddlesH(widget, base); break;
+	case Align::Fill: alignLefts(widget, base); sameWidth(widget, base); break;
 	default: break;
 	}
 }
@@ -111,10 +111,10 @@ void LayoutHelpers::placeWidgetToLeft(Widget* widget, Widget* base, int padding,
 
 	switch (align)
 	{
-	case ALIGN_TOP: alignTops(widget, base); break;
-	case ALIGN_BOTTOM: alignBottoms(widget, base); break;
-	case ALIGN_MIDDLE: alignMiddlesV(widget, base); break;
-	case ALIGN_FILL: alignTops(widget, base); sameHeight(widget, base); break;
+	case Align::Top: alignTops(widget, base); break;
+	case Align::Bottom: alignBottoms(widget, base); break;
+	case Align::Middle: alignMiddlesV(widget, base); break;
+	case Align::Fill: alignTops(widget, base); sameHeight(widget, base); break;
 	default: break;
 	}
 }
@@ -138,10 +138,10 @@ void LayoutHelpers::placeWidgetToRight(Widget* widget, Widget* base, int padding
 
 	switch (align)
 	{
-	case ALIGN_TOP: alignTops(widget, base); break;
-	case ALIGN_BOTTOM: alignBottoms(widget, base); break;
-	case ALIGN_MIDDLE: alignMiddlesV(widget, base); break;
-	case ALIGN_FILL: alignTops(widget, base); sameHeight(widget, base); break;
+	case Align::Top: alignTops(widget, base); break;
+	case Align::Bottom: alignBottoms(widget, base); break;
+	case Align::Middle: alignMiddlesV(widget, base); break;
+	case Align::Fill: alignTops(widget, base); sameHeight(widget, base); break;
 	default: break;
 	}
 }
@@ -153,25 +153,25 @@ void LayoutHelpers::placeWidgetWithin(Widget* widget, rect_t rect, int align_h, 
 	// Place horizontally
 	switch (align_h)
 	{
-	case ALIGN_LEFT:
+	case Align::Left:
 		widget->setPosition(point2_t(
 			rect.left() + padding.left + margin.left,
 			widget->top()
 			));
 		break;
-	case ALIGN_RIGHT:
+	case Align::Right:
 		widget->setPosition(point2_t(
 			rect.right() - padding.right - widget->getWidth() - margin.right,
 			widget->top()
 			));
 		break;
-	case ALIGN_MIDDLE:
+	case Align::Middle:
 		widget->setPosition(point2_t(
 			rect.middle().x - (widget->getWidth() / 2),
 			widget->top()
 			));
 		break;
-	case ALIGN_FILL:
+	case Align::Fill:
 		widget->setPosition(point2_t(
 			rect.left() + padding.left + margin.left,
 			widget->top()
@@ -187,25 +187,25 @@ void LayoutHelpers::placeWidgetWithin(Widget* widget, rect_t rect, int align_h, 
 	// Place vertically
 	switch (align_v)
 	{
-	case ALIGN_TOP:
+	case Align::Top:
 		widget->setPosition(point2_t(
 			widget->left(),
 			rect.top() + padding.top + margin.top
 			));
 		break;
-	case ALIGN_BOTTOM:
+	case Align::Bottom:
 		widget->setPosition(point2_t(
 			widget->left(),
 			rect.bottom() - padding.bottom - widget->getHeight() - margin.bottom
 			));
 		break;
-	case ALIGN_MIDDLE:
+	case Align::Middle:
 		widget->setPosition(point2_t(
 			widget->left(),
 			rect.middle().y - (widget->getHeight() / 2)
 			));
 		break;
-	case ALIGN_FILL:
+	case Align::Fill:
 		widget->setPosition(point2_t(
 			widget->left(),
 			rect.top() + padding.top + margin.top

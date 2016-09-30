@@ -45,7 +45,7 @@ public:
 	void	update(MapLine* line, int map_format);
 
 	// Widget
-	void	drawWidget(point2_t pos, float alpha) override;
+	void	drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale) override;
 	void	updateLayout(dim2_t fit) override;
 };
 

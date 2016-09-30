@@ -19,7 +19,7 @@ namespace GLUI
 		}
 		void setBGCol(rgba_t colour) { col_bg.set(colour); }
 
-		virtual void	drawWidget(point2_t pos, float alpha) override;
+		virtual void	drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale) override;
 
 		static rgba_t getDefaultBGCol();
 	};

@@ -21,7 +21,7 @@ public:
 
 	void	update(MapSector* sector);
 
-	void	drawWidget(point2_t pos, float alpha) override;
+	void	drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale) override;
 	void	updateLayout(dim2_t fit) override;
 };
 

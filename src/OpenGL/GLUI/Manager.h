@@ -41,6 +41,8 @@ namespace GLUI
 		void	update(int time);
 		void	drawWidgets();
 
+		void	setKeyboardFocus(Widget* widget) { keyboard_focus = widget; }
+
 		// Events
 		void	mouseMove(int x, int y);
 
@@ -49,11 +51,14 @@ namespace GLUI
 		void	onMouseDown(wxMouseEvent& e);
 		void	onMouseUp(wxMouseEvent& e);
 		void	onSize(wxSizeEvent& e);
+		void	onKeyDown(wxKeyEvent& e);
+		void	onKeyUp(wxKeyEvent& e);
 
 	private:
 		OGLCanvas*			canvas;
 		vector<WidgetInfo>	widgets;
 		dim2_t				canvas_size;
+		Widget*				keyboard_focus;
 
 		void	applyDocking(WidgetInfo& inf);
 	};

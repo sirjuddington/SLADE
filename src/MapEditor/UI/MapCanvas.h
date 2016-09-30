@@ -93,7 +93,8 @@ private:
 	SectorInfoOverlay*	info_sector;
 	ThingInfoOverlay*	info_thing;
 	InfoOverlay3D*		info_3d;
-	MCOverlay*			overlay_current;
+	//MCOverlay*			overlay_current;
+	string				overlay_current;
 
 	// View properties
 	double		view_xoff;

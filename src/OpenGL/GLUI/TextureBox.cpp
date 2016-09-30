@@ -122,6 +122,6 @@ void TextureBox::setTexture(GLTexture* texture, string texname)
 
 void TextureBox::updateLayout(dim2_t fit)
 {
-	LayoutHelpers::placeWidgetBelow(text_name, image_texture, USE_MARGIN, ALIGN_MIDDLE);
+	LayoutHelpers::placeWidgetBelow(text_name, image_texture, USE_MARGIN, Align::Middle);
 	fitToChildren(padding_t(0), true);
 }

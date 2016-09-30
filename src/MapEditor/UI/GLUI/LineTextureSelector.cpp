@@ -8,26 +8,39 @@
 #include "OpenGL/GLUI/TextureBox.h"
 
 using namespace GLUI;
+using namespace std::placeholders;
 
 class LTSTextureBox : public TextureBox
 {
 public:
-	LTSTextureBox(Widget* parent) : TextureBox(parent)
+	LTSTextureBox(Widget* parent) : TextureBox(parent), anim_visible(nullptr)
 	{
 		setBoxSize(192);
 		setMargin(padding_t(8));
 		image_texture->setMaxImageScale(4.0);
 		show_always = true;
 
-		evt_mouse_enter.bind(this, EventFunc([this](EventInfo e)
+		// Visible animation
+		setStandardAnimation(
+			Widget::StdAnim::Visible,
+			std::move(std::make_unique<ScaleAnimator>(this, 200, 0.8f, 1.0f, Animator::Easing::Out))
+		);
+
+		// Mouseover animation
+		setStandardAnimation(
+			Widget::StdAnim::MouseOver,
+			std::make_unique<ScaleAnimator>(this, 100, 1.0f, 1.05f, Animator::Easing::Out)
+		);
+
+		evt_mouse_enter.bind(this, EventFunc([this](EventInfo& e)
 		{
-			image_texture->setBorderWidth(3.0f);
+			//image_texture->setBorderWidth(3.0f);
 		}
 		));
 
-		evt_mouse_leave.bind(this, EventFunc([this](EventInfo e)
+		evt_mouse_leave.bind(this, EventFunc([this](EventInfo& e)
 		{
-			image_texture->setBorderWidth(1.0f);
+			//image_texture->setBorderWidth(1.0f);
 		}
 		));
 	}
@@ -35,15 +48,7 @@ public:
 	~LTSTextureBox() {}
 
 private:
-	//void onMouseDown(MouseBtn button) override
-	//{
-	//	//border_colour = rgba_t(255, 0, 0);
-	//}
-
-	//void onMouseUp(MouseBtn button) override
-	//{
-	//	//border_colour = rgba_t(255, 255, 0);
-	//}
+	ScaleAnimator*	anim_visible;
 };
 
 
@@ -57,9 +62,6 @@ LTSPanel::LTSPanel(Widget* parent) : Panel(parent)
 	tex_back_middle = new LTSTextureBox(this);
 	tex_back_upper = new LTSTextureBox(this);
 
-	//for (auto& w : children)
-	//	w->setMargin(padding_t(8));
-
 	setBGCol(rgba_t(0, 0, 0, 0));
 }
 
@@ -69,12 +71,12 @@ LTSPanel::~LTSPanel()
 
 void LTSPanel::setLine(MapLine* line)
 {
-	tex_front_lower->setVisible(false);
-	tex_front_middle->setVisible(false);
-	tex_front_upper->setVisible(false);
-	tex_back_lower->setVisible(false);
-	tex_back_middle->setVisible(false);
-	tex_back_upper->setVisible(false);
+	tex_front_lower->setVisible(false, false);
+	tex_front_middle->setVisible(false, false);
+	tex_front_upper->setVisible(false, false);
+	tex_back_lower->setVisible(false, false);
+	tex_back_middle->setVisible(false, false);
+	tex_back_upper->setVisible(false, false);
 
 	if (line->s1())
 	{
@@ -110,13 +112,13 @@ void LTSPanel::updateLayout(dim2_t fit)
 
 	// Front
 	tex_front_lower->setPosition(point2_t(0, 0));
-	LayoutHelpers::placeWidgetToRight(tex_front_middle, tex_front_lower, -1, ALIGN_MIDDLE);
-	LayoutHelpers::placeWidgetToRight(tex_front_upper, tex_front_middle, -1, ALIGN_MIDDLE);
+	LayoutHelpers::placeWidgetToRight(tex_front_middle, tex_front_lower, -1, Align::Middle);
+	LayoutHelpers::placeWidgetToRight(tex_front_upper, tex_front_middle, -1, Align::Middle);
 
 	// Back
-	LayoutHelpers::placeWidgetBelow(tex_back_lower, tex_front_lower, -1, ALIGN_MIDDLE);
-	LayoutHelpers::placeWidgetToRight(tex_back_middle, tex_back_lower, -1, ALIGN_MIDDLE);
-	LayoutHelpers::placeWidgetToRight(tex_back_upper, tex_back_middle, -1, ALIGN_MIDDLE);
+	LayoutHelpers::placeWidgetBelow(tex_back_lower, tex_front_lower, -1, Align::Middle);
+	LayoutHelpers::placeWidgetToRight(tex_back_middle, tex_back_lower, -1, Align::Middle);
+	LayoutHelpers::placeWidgetToRight(tex_back_upper, tex_back_middle, -1, Align::Middle);
 
 	fitToChildren();
 }
@@ -127,6 +129,9 @@ void LTSPanel::updateLayout(dim2_t fit)
 LineTextureSelector::LineTextureSelector() : Panel(NULL), panel_textures(new LTSPanel(this))
 {
 	setBGCol(rgba_t(0, 0, 0, 128));
+	evt_key_down.bind(this, std::bind(&LineTextureSelector::onKeyDown, this, _1));
+
+	setStandardAnimation(StdAnim::Visible, std::make_unique<FadeAnimator>(this, 200, 0.0f, 1.0f, Animator::Easing::Out));
 }
 
 LineTextureSelector::~LineTextureSelector()
@@ -139,5 +144,14 @@ void LineTextureSelector::updateLayout(dim2_t fit)
 	panel_textures->updateLayout(dim2_t(-1, -1));
 
 	// Place in middle
-	LayoutHelpers::placeWidgetWithinParent(panel_textures, ALIGN_MIDDLE, ALIGN_MIDDLE);
+	LayoutHelpers::placeWidgetWithinParent(panel_textures, Align::Middle, Align::Middle);
+}
+
+void LineTextureSelector::onKeyDown(KeyEventInfo& e)
+{
+	if (e.key == "escape")
+	{
+		setVisible(false);
+		e.handled = true;
+	}
 }

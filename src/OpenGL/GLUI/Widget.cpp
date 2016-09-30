@@ -38,6 +38,15 @@ vector<Widget*>	Widget::getChildren()
 	return ret;
 }
 
+bool Widget::isVisible()
+{
+	// Check if (in)visible animation is running
+	if (!visible && anim_standard[StdAnim::Visible])
+		return anim_standard[StdAnim::Visible]->isActive();
+
+	return visible;
+}
+
 point2_t Widget::getAbsolutePosition()
 {
 	if (parent)
@@ -54,19 +63,26 @@ point2_t Widget::middle()
 void Widget::setPosition(point2_t pos)
 {
 	position = pos;
-	evt_pos_changed.invoke({ this });
+	evt_pos_changed.invoke(EventInfo{ this });
 }
 
 void Widget::setSize(dim2_t dim)
 {
 	size = dim;
-	evt_size_changed.invoke({ this });
+	evt_size_changed.invoke(EventInfo{ this });
 }
 
-void Widget::setVisible(bool vis)
+void Widget::setVisible(bool vis, bool animate)
 {
 	visible = vis;
-	evt_visible_changed.invoke({ this });
+
+	if (animate && anim_standard[StdAnim::Visible])
+	{
+		anim_standard[StdAnim::Visible]->setReverse(!vis);
+		anim_standard[StdAnim::Visible]->reset();
+	}
+
+	evt_visible_changed.invoke(EventInfo{ this });
 }
 
 void Widget::setBorder(float width, Border style, rgba_t colour)
@@ -76,19 +92,38 @@ void Widget::setBorder(float width, Border style, rgba_t colour)
 	border_colour = colour;
 }
 
-void Widget::draw(point2_t pos, float alpha)
+void Widget::draw(fpoint2_t pos, float alpha, fpoint2_t scale)
 {
 	// Ignore if not visible
-	if (!visible)
+	if (!isVisible())
 		return;
 
+	// Get scale
+	fpoint2_t draw_scale = getAnimatedScale();
+	draw_scale.x *= scale.x;
+	draw_scale.y *= scale.y;
+	//bool is_scaled = (scale.x != 1.0 || scale.y != 1.0);
+
+	//// Apply scale
+	//if (is_scaled)
+	//{
+	//	glPushMatrix();
+	//	glScaled(scale.x, scale.y, 1.0);
+	//}
+
 	// Draw this widget
-	point2_t p = pos + position + getAnimatedOffset();
-	drawWidget(p, alpha * this->alpha * getAnimatedAlpha());
+	//fpoint2_t p = pos + position + getAnimatedOffset();
+	//fpoint2_t p = getAnimatedOffset();
+	//p.x = pos.x + ((p.x + position.x) * draw_scale.x);
+	//p.y = pos.y + ((p.y + position.y) * draw_scale.y);
+	fpoint2_t ofs = getAnimatedOffset();
+	fpoint2_t p = ofs + pos + fpoint2_t(position.x * scale.x, position.y * scale.y);
+
+	drawWidget(p, alpha * this->alpha * getAnimatedAlpha(), draw_scale);
 
 	// Draw all children
 	for (auto& child : children)
-		child->draw(p, alpha * this->alpha * getAnimatedAlpha());
+		child->draw(p, alpha * this->alpha * getAnimatedAlpha(), draw_scale);
 
 	// Draw border
 	if (border_style == Border::Line)
@@ -99,8 +134,12 @@ void Widget::draw(point2_t pos, float alpha)
 		glDisable(GL_LINE_SMOOTH);
 		glDisable(GL_TEXTURE_2D);
 		glLineWidth(border_width);
-		Drawing::drawRect(p.x, p.y, p.x + getWidth(), p.y + getHeight());
+		Drawing::drawRect(p.x, p.y, p.x + (getWidth() * draw_scale.x), p.y + (getHeight() * draw_scale.y));
 	}
+
+	//// Reset scale
+	//if (is_scaled)
+	//	glPopMatrix();
 }
 
 void Widget::fitToChildren(padding_t padding, bool include_invisible)
@@ -152,12 +191,23 @@ void Widget::fitToChildren(padding_t padding, bool include_invisible)
 	setSize(dim2_t(max_x - min_x, max_y - min_y));
 }
 
-point2_t Widget::getAnimatedOffset()
+fpoint2_t Widget::getAnimatedOffset()
 {
-	point2_t offset;
+	fpoint2_t offset;
 	for (auto& animator : animators)
 		offset = offset + animator->getOffset();
 	return offset;
+}
+
+fpoint2_t Widget::getAnimatedScale()
+{
+	fpoint2_t scale(1.0, 1.0);
+	for (auto& animator : animators)
+	{
+		scale.x *= animator->getScale().x;
+		scale.y *= animator->getScale().y;
+	}
+	return scale;
 }
 
 float Widget::getAnimatedAlpha()
@@ -172,6 +222,19 @@ void Widget::animate(int time)
 {
 	for (auto& animator : animators)
 		animator->update(time);
+
+	for (auto& child : children)
+		child->animate(time);
+}
+
+void Widget::setStandardAnimation(StdAnim anim, Animator::Ptr animator)
+{
+	Animator* a = animator.get();
+	animators.push_back(std::move(animator));
+	anim_standard[anim] = a;
+
+	if (anim == StdAnim::MouseOver)
+		a->setReverse(true);
 }
 
 void Widget::mouseMove(int x, int y)
@@ -190,16 +253,26 @@ void Widget::mouseMove(int x, int y)
 			child->mouseOver(false);
 	}
 
-	evt_mouse_move.invoke({ this, x, y, MouseBtn::None });
+	evt_mouse_move.invoke(MouseEventInfo{ this, x, y, MouseBtn::None });
 }
 
 void Widget::mouseOver(bool is_over)
 {
 	// Mouse enter/leave event
 	if (!mouse_over && is_over)
-		evt_mouse_enter.invoke({ this });
+	{
+		evt_mouse_enter.invoke(EventInfo{ this });
+
+		if (anim_standard[StdAnim::MouseOver])
+			anim_standard[StdAnim::MouseOver]->setReverse(false);
+	}
 	if (mouse_over && !is_over)
-		evt_mouse_leave.invoke({ this });
+	{
+		evt_mouse_leave.invoke(EventInfo{ this });
+
+		if (anim_standard[StdAnim::MouseOver])
+			anim_standard[StdAnim::MouseOver]->setReverse(true);
+	}
 
 	mouse_over = is_over;
 
@@ -219,7 +292,7 @@ void Widget::mouseButtonDown(MouseBtn button, int x, int y)
 	}
 
 	// Do event
-	evt_mouse_down.invoke({ this, x, y, button });
+	evt_mouse_down.invoke(MouseEventInfo{ this, x, y, button });
 }
 
 void Widget::mouseButtonUp(MouseBtn button, int x, int y)
@@ -232,5 +305,49 @@ void Widget::mouseButtonUp(MouseBtn button, int x, int y)
 	}
 
 	// Do event
-	evt_mouse_up.invoke({ this, x, y, button });
+	evt_mouse_up.invoke(MouseEventInfo{ this, x, y, button });
+}
+
+bool Widget::keyDown(string key, bool shift, bool ctrl, bool alt)
+{
+	// Handle key down on children first
+	bool handled = false;
+	for (auto& child : children)
+		if (child->keyDown(key, shift, ctrl, alt))
+		{
+			handled = true;
+			break;
+		}
+
+	// Do event
+	if (!handled)
+	{
+		KeyEventInfo evt(this, key, shift, ctrl, alt);
+		evt_key_down.invoke(evt);
+		handled = evt.handled;
+	}
+
+	return handled;
+}
+
+bool Widget::keyUp(string key, bool shift, bool ctrl, bool alt)
+{
+	// Handle key up on children first
+	bool handled = false;
+	for (auto& child : children)
+		if (child->keyUp(key, shift, ctrl, alt))
+		{
+			handled = true;
+			break;
+		}
+
+	// Do event
+	if (!handled)
+	{
+		KeyEventInfo evt(this, key, shift, ctrl, alt);
+		evt_key_up.invoke(evt);
+		handled = evt.handled;
+	}
+
+	return handled;
 }

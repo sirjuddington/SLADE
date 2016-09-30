@@ -4,15 +4,15 @@ namespace GLUI
 {
 	double	baseScale();
 
-	enum
+	enum Align
 	{
-		ALIGN_NONE = 0,
-		ALIGN_LEFT = 1,
-		ALIGN_RIGHT = 2,
-		ALIGN_TOP = 1,
-		ALIGN_BOTTOM = 2,
-		ALIGN_MIDDLE = 3,
-		ALIGN_FILL = 4
+		None = 0,
+		Left = 1,
+		Right = 2,
+		Top = 1,
+		Bottom = 2,
+		Middle = 3,
+		Fill = 4
 	};
 
 	struct padding_t

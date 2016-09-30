@@ -11,12 +11,12 @@ namespace GLUI
 
 	namespace LayoutHelpers
 	{
-		void	placeWidgetAbove(Widget* widget, Widget* base, int padding = USE_MARGIN, int align = ALIGN_NONE);
-		void	placeWidgetBelow(Widget* widget, Widget* base, int padding = USE_MARGIN, int align = ALIGN_NONE);
-		void	placeWidgetToLeft(Widget* widget, Widget* base, int padding = USE_MARGIN, int align = ALIGN_NONE);
-		void	placeWidgetToRight(Widget* widget, Widget* base, int padding = USE_MARGIN, int align = ALIGN_NONE);
-		void	placeWidgetWithin(Widget* widget, rect_t rect, int align_h = ALIGN_LEFT, int align_v = ALIGN_TOP, padding_t padding = padding_t(0));
-		void	placeWidgetWithinParent(Widget* widget, int align_h = ALIGN_LEFT, int align_v = ALIGN_TOP, padding_t padding = padding_t(0));
+		void	placeWidgetAbove(Widget* widget, Widget* base, int padding = USE_MARGIN, int align = Align::None);
+		void	placeWidgetBelow(Widget* widget, Widget* base, int padding = USE_MARGIN, int align = Align::None);
+		void	placeWidgetToLeft(Widget* widget, Widget* base, int padding = USE_MARGIN, int align = Align::None);
+		void	placeWidgetToRight(Widget* widget, Widget* base, int padding = USE_MARGIN, int align = Align::None);
+		void	placeWidgetWithin(Widget* widget, rect_t rect, int align_h = Align::Left, int align_v = Align::Top, padding_t padding = padding_t(0));
+		void	placeWidgetWithinParent(Widget* widget, int align_h = Align::Left, int align_v = Align::Top, padding_t padding = padding_t(0));
 
 		void	alignLefts(Widget* widget, Widget* base);
 		void	alignTops(Widget* widget, Widget* base);

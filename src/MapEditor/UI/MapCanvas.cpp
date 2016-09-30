@@ -147,7 +147,7 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditor* editor)
 	zooming_cursor = false;
 	mouse_selbegin = false;
 	mouse_movebegin = false;
-	overlay_current = NULL;
+	//overlay_current = NULL;
 	mouse_locked = false;
 	mouse_warp = false;
 	edit_state = 0;
@@ -212,10 +212,11 @@ MapCanvas::~MapCanvas()
  *******************************************************************/
 bool MapCanvas::overlayActive()
 {
-	if (!overlay_current)
+	/*if (!overlay_current)
 		return false;
 	else
-		return overlay_current->isActive();
+		return overlay_current->isActive();*/
+	return false;
 }
 
 /* MapCanvas::helpActive
@@ -1524,8 +1525,8 @@ void MapCanvas::draw()
 	ui_manager.drawWidgets();
 
 	// Draw current fullscreen overlay
-	if (overlay_current)
-		overlay_current->draw(GetSize().x, GetSize().y, anim_overlay_fade);
+	//if (overlay_current)
+	//	overlay_current->draw(GetSize().x, GetSize().y, anim_overlay_fade);
 
 	// Draw crosshair if 3d mode
 	if (editor->editMode() == MapEditor::MODE_3D)
@@ -1963,8 +1964,8 @@ void MapCanvas::update(long frametime)
 	}
 
 	// Update overlay animation (if active)
-	if (overlayActive())
-		overlay_current->update(frametime);
+	//if (overlayActive())
+	//	overlay_current->update(frametime);
 
 	// Update animations
 	bool anim_running = false;
@@ -2137,8 +2138,8 @@ void MapCanvas::mouseLook3d()
 	// Check for 3d mode
 	if (editor->editMode() == MapEditor::MODE_3D && mouse_locked)
 	{
-		if (!overlay_current || !overlayActive() || (overlay_current && overlay_current->allow3dMlook()))
-		{
+		//if (!overlay_current || !overlayActive() || (overlay_current && overlay_current->allow3dMlook()))
+		//{
 			// Get relative mouse movement
 			int xpos = wxGetMousePosition().x - GetScreenPosition().x;
 			int ypos = wxGetMousePosition().y - GetScreenPosition().y;
@@ -2156,7 +2157,7 @@ void MapCanvas::mouseLook3d()
 				mouseToCenter();
 				fr_idle = 0;
 			}
-		}
+		//}
 	}
 }
 
@@ -2474,10 +2475,10 @@ void MapCanvas::changeSectorTexture()
 		}
 		else
 		{
-			if (overlay_current) delete overlay_current;
-			SectorTextureOverlay* sto = new SectorTextureOverlay();
-			sto->openSectors(selection);
-			overlay_current = sto;
+			//if (overlay_current) delete overlay_current;
+			//SectorTextureOverlay* sto = new SectorTextureOverlay();
+			//sto->openSectors(selection);
+			//overlay_current = sto;
 			return;
 		}
 	}
@@ -2775,7 +2776,7 @@ void MapCanvas::onKeyBindPress(string name)
 		// Accept edit
 		if (name == "map_edit_accept")
 		{
-			overlay_current->close();
+			//overlay_current->close();
 			renderer_3d->enableHilight(true);
 			renderer_3d->enableSelection(true);
 		}
@@ -2783,7 +2784,7 @@ void MapCanvas::onKeyBindPress(string name)
 		// Cancel edit
 		else if (name == "map_edit_cancel")
 		{
-			overlay_current->close(true);
+			//overlay_current->close(true);
 			renderer_3d->enableHilight(true);
 			renderer_3d->enableSelection(true);
 		}
@@ -3215,9 +3216,11 @@ void MapCanvas::keyBinds2d(string name)
 					lto->openLines(selection);
 					overlay_current = lto;*/
 
+					overlay_current = "line_texture_selector";
 					auto selector = (LineTextureSelector*)ui_manager.getWidget("line_texture_selector");
 					selector->setLine(selection[0]);
 					selector->setVisible(true);
+					ui_manager.setKeyboardFocus(selector);
 				}
 			}
 
@@ -3397,16 +3400,16 @@ void MapCanvas::keyBinds3d(string name)
 		vector<selection_3d_t> sel;
 		editor->get3dSelectionOrHilight(sel);
 
-		if (QuickTextureOverlay3d::ok(sel))
-		{
-			if (overlay_current) delete overlay_current;
-			QuickTextureOverlay3d* qto = new QuickTextureOverlay3d(editor);
-			overlay_current = qto;
+		//if (QuickTextureOverlay3d::ok(sel))
+		//{
+		//	if (overlay_current) delete overlay_current;
+		//	QuickTextureOverlay3d* qto = new QuickTextureOverlay3d(editor);
+		//	overlay_current = qto;
 
-			renderer_3d->enableHilight(false);
-			renderer_3d->enableSelection(false);
-			editor->lockHilight(true);
-		}
+		//	renderer_3d->enableHilight(false);
+		//	renderer_3d->enableSelection(false);
+		//	editor->lockHilight(true);
+		//}
 	}
 
 	// Send to map editor
@@ -3681,10 +3684,10 @@ bool MapCanvas::handleAction(string id)
 		// Open line texture overlay if anything is selected
 		if (selection.size() > 0)
 		{
-			if (overlay_current) delete overlay_current;
-			LineTextureOverlay* lto = new LineTextureOverlay();
-			lto->openLines(selection);
-			overlay_current = lto;
+			//if (overlay_current) delete overlay_current;
+			//LineTextureOverlay* lto = new LineTextureOverlay();
+			//lto->openLines(selection);
+			//overlay_current = lto;
 		}
 		return true;
 	}
@@ -3856,8 +3859,8 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 	modifiers_current = e.GetModifiers();
 
 	// Send to overlay if active
-	if (overlayActive())
-		overlay_current->keyDown(KeyBind::keyName(e.GetKeyCode()));
+	//if (overlayActive())
+	//	overlay_current->keyDown(KeyBind::keyName(e.GetKeyCode()));
 
 	// Let keybind system handle it
 	KeyBind::keyPressed(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
@@ -3970,18 +3973,18 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	mouse_downpos_m.set(translateX(e.GetX()), translateY(e.GetY()));
 
 	// Check if a full screen overlay is active
-	if (overlayActive())
-	{
-		// Left click
-		if (e.LeftDown())
-			overlay_current->mouseLeftClick();
+	//if (overlayActive())
+	//{
+	//	// Left click
+	//	if (e.LeftDown())
+	//		overlay_current->mouseLeftClick();
 
-		// Right click
-		else if (e.RightDown())
-			overlay_current->mouseRightClick();
+	//	// Right click
+	//	else if (e.RightDown())
+	//		overlay_current->mouseRightClick();
 
-		return;
-	}
+	//	return;
+	//}
 
 	// Left button
 	if (e.LeftDown() || e.LeftDClick())
@@ -4282,11 +4285,11 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 	}
 
 	// Check if a full screen overlay is active
-	if (overlayActive())
-	{
-		overlay_current->mouseMotion(e.GetX(), e.GetY());
-		return;
-	}
+	//if (overlayActive())
+	//{
+	//	//overlay_current->mouseMotion(e.GetX(), e.GetY());
+	//	return;
+	//}
 
 	// Panning
 	if (panning)
@@ -4405,8 +4408,8 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 		KeyBind::keyPressed(keypress_t("mwheelup", e.AltDown(), e.ControlDown(), e.ShiftDown()));
 
 		// Send to overlay if active
-		if (overlayActive())
-			overlay_current->keyDown("mwheelup");
+		//if (overlayActive())
+		//	overlay_current->keyDown("mwheelup");
 
 		KeyBind::keyReleased("mwheelup");
 	}
@@ -4415,8 +4418,8 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 		KeyBind::keyPressed(keypress_t("mwheeldown", e.AltDown(), e.ControlDown(), e.ShiftDown()));
 
 		// Send to overlay if active
-		if (overlayActive())
-			overlay_current->keyDown("mwheeldown");
+		//if (overlayActive())
+		//	overlay_current->keyDown("mwheeldown");
 
 		KeyBind::keyReleased("mwheeldown");
 	}

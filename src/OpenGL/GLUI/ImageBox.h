@@ -33,7 +33,7 @@ namespace GLUI
 
 		bool	loadImage(SImage* image, Palette8bit* palette = NULL);
 
-		void	drawWidget(point2_t pos, float alpha) override;
+		void	drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale) override;
 
 		enum
 		{

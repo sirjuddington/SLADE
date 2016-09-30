@@ -7,8 +7,8 @@
  * Web:         http://slade.mancubus.net
  * Filename:    Manager.cpp
  * Description: GLUI Manager class. Attached to an OGLCanvas, handles
- *              drawing, layout (docking) and animation for child
- *              widgets
+ *              drawing, layout (docking), input and animation for
+ *              child widgets
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Manager.h"
+#include "General/KeyBind.h"
 #include "Widget.h"
 #include "UI/Canvas/OGLCanvas.h"
 
@@ -42,7 +43,7 @@
 /* Manager::Manager
  * Manager class constructor
  *******************************************************************/
-GLUI::Manager::Manager(OGLCanvas* canvas) : canvas(canvas)
+GLUI::Manager::Manager(OGLCanvas* canvas) : canvas(canvas), keyboard_focus(nullptr)
 {
 	if (canvas)
 	{
@@ -54,6 +55,8 @@ GLUI::Manager::Manager(OGLCanvas* canvas) : canvas(canvas)
 		canvas->Bind(wxEVT_RIGHT_UP, &Manager::onMouseUp, this);
 		canvas->Bind(wxEVT_MIDDLE_UP, &Manager::onMouseUp, this);
 		canvas->Bind(wxEVT_SIZE, &Manager::onSize, this);
+		canvas->Bind(wxEVT_KEY_DOWN, &Manager::onKeyDown, this);
+		canvas->Bind(wxEVT_KEY_UP, &Manager::onKeyUp, this);
 	}
 }
 
@@ -164,6 +167,12 @@ void GLUI::Manager::mouseMove(int x, int y)
 {
 	for (auto inf : widgets)
 	{
+		if (!inf.widget->isVisible())
+		{
+			inf.widget->mouseOver(false);
+			continue;
+		}
+
 		if (x >= inf.widget->left() && x <= inf.widget->right() &&
 			y >= inf.widget->top() && y <= inf.widget->bottom())
 		{
@@ -208,7 +217,7 @@ void GLUI::Manager::onMouseDown(wxMouseEvent& e)
 	}
 
 	for (auto inf : widgets)
-		if (inf.widget->mouseIsOver())
+		if (inf.widget->mouseIsOver() && inf.widget->isVisible())
 			inf.widget->mouseButtonDown(button, e.GetPosition().x, e.GetPosition().y);
 
 	e.Skip();
@@ -227,8 +236,42 @@ void GLUI::Manager::onMouseUp(wxMouseEvent& e)
 	}
 
 	for (auto inf : widgets)
-		if (inf.widget->mouseIsOver())
+		if (inf.widget->mouseIsOver() && inf.widget->isVisible())
 			inf.widget->mouseButtonUp(button, e.GetPosition().x, e.GetPosition().y);
+
+	e.Skip();
+}
+
+void GLUI::Manager::onKeyDown(wxKeyEvent& e)
+{
+	if (keyboard_focus &&
+		keyboard_focus->keyDown(
+			KeyBind::keyName(e.GetKeyCode()),
+			e.ShiftDown(),
+			e.CmdDown(),
+			e.AltDown()
+		))
+	{
+		e.Skip(false);
+		return;
+	}
+
+	e.Skip();
+}
+
+void GLUI::Manager::onKeyUp(wxKeyEvent& e)
+{
+	if (keyboard_focus &&
+		keyboard_focus->keyUp(
+			KeyBind::keyName(e.GetKeyCode()),
+			e.ShiftDown(),
+			e.CmdDown(),
+			e.AltDown()
+		))
+	{
+		e.Skip(false);
+		return;
+	}
 
 	e.Skip();
 }

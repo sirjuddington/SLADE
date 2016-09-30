@@ -16,7 +16,7 @@ Panel::~Panel()
 {
 }
 
-void Panel::drawWidget(point2_t pos, float alpha)
+void Panel::drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale)
 {
 	glDisable(GL_TEXTURE_2D);
 

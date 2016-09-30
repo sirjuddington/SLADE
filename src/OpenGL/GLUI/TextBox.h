@@ -40,7 +40,7 @@ namespace GLUI
 		void	setFont(Fonts::Font& font);
 
 		// Widget
-		void	drawWidget(point2_t pos, float alpha) override;
+		void	drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale) override;
 		void	updateLayout(dim2_t fit = dim2_t(-1, -1)) override;
 
 		// Static

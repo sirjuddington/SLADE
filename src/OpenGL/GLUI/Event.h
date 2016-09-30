@@ -26,9 +26,21 @@ namespace GLUI
 		MouseEventInfo(Widget* sender, int x_pos = 0, int y_pos = 0, MouseBtn button = MouseBtn::None)
 			: EventInfo{ sender }, x_pos(x_pos), y_pos(y_pos), button(button) {}
 	};
+	struct KeyEventInfo : public EventInfo
+	{
+		string	key;
+		bool	mod_shift = false;
+		bool	mod_ctrl = false;
+		bool	mod_alt = false;
+		bool	handled = false;
 
-	typedef std::function<void(EventInfo)> EventFunc;
-	typedef std::function<void(MouseEventInfo)> MouseEventFunc;
+		KeyEventInfo(Widget* sender, string key, bool mod_shift = false, bool mod_ctrl = false, bool mod_alt = false)
+			: EventInfo{ sender }, key(key), mod_shift(mod_shift), mod_ctrl(mod_ctrl), mod_alt(mod_alt) {}
+	};
+
+	typedef std::function<void(EventInfo&)> EventFunc;
+	typedef std::function<void(MouseEventInfo&)> MouseEventFunc;
+	typedef std::function<void(KeyEventInfo&)> KeyEventFunc;
 
 	template <class T>
 	class EventHandler

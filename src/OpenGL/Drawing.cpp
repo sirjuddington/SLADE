@@ -380,12 +380,13 @@ void Drawing::drawTextureWithin(GLTexture* tex, double x1, double y1, double x2,
  * Draws [text] at [x,y]. If [bounds] is not null, the bounding
  * coordinates of the rendered text string are written to it.
  *******************************************************************/
-void Drawing::drawText(string text, int x, int y, rgba_t colour, Fonts::Font font, Align alignment, frect_t* bounds)
+void Drawing::drawText(string text, int x, int y, rgba_t colour, Fonts::Font font, Align alignment, frect_t* bounds, fpoint2_t scale)
 {
 	// Setup SFML string
 	sf::Text sf_str;
 	sf_str.setString(UTF8(text));
 	sf_str.setColor(sf::Color(colour.r, colour.g, colour.b, colour.a));
+	sf_str.setScale(scale.x, scale.y);
 
 	// Set font
 	sf::Font* f = Fonts::getGLFont(font);

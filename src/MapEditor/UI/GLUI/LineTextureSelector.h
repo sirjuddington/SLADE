@@ -33,5 +33,8 @@ public:
 	void	updateLayout(dim2_t fit) override;
 
 private:
-	LTSPanel*	panel_textures;
+	LTSPanel*			panel_textures;
+	GLUI::FadeAnimator*	anim_visible;
+
+	void onKeyDown(GLUI::KeyEventInfo& e);
 };

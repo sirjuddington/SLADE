@@ -53,29 +53,31 @@ bool ImageBox::loadImage(SImage* image, Palette8bit* palette)
 	}
 }
 
-void ImageBox::drawWidget(point2_t pos, float alpha)
+void ImageBox::drawWidget(fpoint2_t pos, float alpha, fpoint2_t scale)
 {
 	rgba_t col_fg = COL_WHITE;
 	col_fg.a *= alpha;
 
 	glEnable(GL_TEXTURE_2D);
 
+	glPushMatrix();
+	glTranslated(pos.x, pos.y, 0);
+	glScaled(scale.x, scale.y, 1);
+
 	// Draw background
 	if (background == BACKGROUND_CHECKERBOARD)
 	{
 		OpenGL::setColour(255, 255, 255, 255 * alpha, 0);
-		glPushMatrix();
-		glTranslated(pos.x, pos.y, 0);
 		GLTexture::bgTex().draw2dTiled(getWidth(), getHeight());
-		glPopMatrix();
 	}
 
 	// Draw texture
 	if (texture)
 	{
 		OpenGL::setColour(image_colour.r, image_colour.g, image_colour.b, 255 * alpha, 0);
-		Drawing::drawTextureWithin(texture, pos.x, pos.y, pos.x + getWidth(), pos.y + getHeight(), 0, max_scale);
+		Drawing::drawTextureWithin(texture, 0, 0, getWidth(), getHeight(), 0, max_scale);
 	}
 
+	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 }
