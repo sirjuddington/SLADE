@@ -13,6 +13,11 @@ if(COMMAND cmake_policy)
 	cmake_policy( SET CMP0005 NEW )
 endif(COMMAND cmake_policy)
 
+if(COMMAND cmake_policy)
+	cmake_policy( SET CMP0011 NEW )
+endif(COMMAND cmake_policy)
+
+
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -25,17 +30,17 @@ find_package(OpenGL)
 
 if(NOT ZLIB_FOUND)
 	set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/zlib)
-	add_subdirectory(src/zlib)
+	add_subdirectory(src/External/zlib)
 	set(ZLIB_LIBRARY z)
 endif(NOT ZLIB_FOUND)
 
 if(NOT BZIP2_FOUND)
 	set(BZIP2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bzip2)
-	add_subdirectory(src/bzip2)
+	add_subdirectory(src/External/bzip2)
 	set(BZIP2_LIBRARIES bz2)
 endif(NOT BZIP2_FOUND)
 
-OPTION(USE_WEBVIEW_STARTPAGE "Use wxWebView to display the start page" OFF)
+OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)
 OPTION(USE_SFML_RENDERWINDOW "Use SFML RenderWindow for OpenGL displays" OFF)
 
 add_subdirectory(src)

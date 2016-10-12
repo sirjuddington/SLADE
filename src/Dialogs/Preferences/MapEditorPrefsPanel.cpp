@@ -29,9 +29,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "MapEditorPrefsPanel.h"
-#include "NumberTextCtrl.h"
+#include "UI/NumberTextCtrl.h"
 
 
 /*******************************************************************
@@ -45,6 +44,7 @@ EXTERN_CVAR(Bool, mobj_props_auto_apply)
 EXTERN_CVAR(Bool, map_remove_invalid_lines)
 EXTERN_CVAR(Int, max_map_backups)
 EXTERN_CVAR(Bool, map_merge_lines_on_delete_vertex)
+EXTERN_CVAR(Bool, map_split_auto_offset)
 
 
 /*******************************************************************
@@ -93,6 +93,10 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	cb_merge_lines_vertex_delete = new wxCheckBox(this, -1, "Merge connected lines when deleting a vertex");
 	sizer->Add(cb_merge_lines_vertex_delete, 0, wxEXPAND|wxALL, 4);
 
+	// Auto offset on line split
+	cb_split_auto_offset = new wxCheckBox(this, -1, "Automatic x-offset on line split");
+	sizer->Add(cb_split_auto_offset, 0, wxEXPAND|wxALL, 4);
+
 	// Maximum backups
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
@@ -122,6 +126,7 @@ void MapEditorPrefsPanel::init()
 	cb_props_auto_apply->SetValue(mobj_props_auto_apply);
 	cb_remove_invalid_lines->SetValue(map_remove_invalid_lines);
 	cb_merge_lines_vertex_delete->SetValue(map_merge_lines_on_delete_vertex);
+	cb_split_auto_offset->SetValue(map_split_auto_offset);
 	text_max_backups->setNumber(max_map_backups);
 }
 
@@ -137,5 +142,6 @@ void MapEditorPrefsPanel::applyPreferences()
 	mobj_props_auto_apply = cb_props_auto_apply->GetValue();
 	map_remove_invalid_lines = cb_remove_invalid_lines->GetValue();
 	map_merge_lines_on_delete_vertex = cb_merge_lines_vertex_delete->GetValue();
+	map_split_auto_offset = cb_split_auto_offset->GetValue();
 	max_map_backups = text_max_backups->getNumber();
 }

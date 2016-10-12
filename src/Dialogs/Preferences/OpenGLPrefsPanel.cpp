@@ -28,10 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "OpenGLPrefsPanel.h"
-#include "NumberTextCtrl.h"
-#include "Drawing.h"
+#include "OpenGL/Drawing.h"
+#include "UI/NumberTextCtrl.h"
 
 
 /*******************************************************************

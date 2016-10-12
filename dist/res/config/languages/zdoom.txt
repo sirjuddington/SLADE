@@ -54,7 +54,7 @@ z_decaldef {
 		translucent, add, fuzzy, fullbright, lowerdecal, colors, animator, decal,
 		decalgroup, generator, stretcher, GoalX, GoalY, StretchStart, StretchTime, 
 		fader, DecayStart, DecayTime, Combiner, slider, DistX, DistY, SlideStart, 
-		SlideTime, colorchanger, FadeStart, FadeTime, Color
+		SlideTime, colorchanger, FadeStart, FadeTime, Color, optional
 	}
 }
 
@@ -201,7 +201,7 @@ z_mapinfo {
 		SpiderMastermindSpecial, StrictMonsterActivation, StrifeFallingDamage,
 		SuckTime, TeamDamage, TeamPlayOff, TeamPlayOn, TitlePatch, TotalInfighting,
 		Translator, UnFreezeSinglePlayerConversations, UsePlayerStartZ, VertWallShade,
-		ForceFakeContrast, PrecacheTextures,
+		ForceFakeContrast, PrecacheTextures, PrecacheClasses,
 
 		// GZDoom
 		FogDensity, OutsideFogDensity, SkyFog, LightMode, NoColoredSpriteLighting, SkyRotate, PixelRatio,
@@ -210,7 +210,7 @@ z_mapinfo {
 		Skill, ClearSkills, AmmoFactor, DropAmmoFactor, DoubleAmmoFactor, DamageFactor, RespawnTime, RespawnLimit,
 		Aggressiveness, SpawnFilter, ACSReturn, Key, MustConfirm, Name, PlayerClassName, PicName, TextColor, EasyBossBrain,
 		FastMonsters, SlowMonsters, DisableCheats, AutoUseHealth, ReplaceActor, MonsterHealth, FriendlyHealth, NoPain,
-		DefaultSkill, ArmorFactor, EasyKey,
+		DefaultSkill, ArmorFactor, EasyKey, HealthFactor,
 
 		// GameInfo definitions
 		GameInfo, AddCreditPage, AddInfoPage, AddPlayerClasses, AddQuitMessages, AdvisoryTime, Border, BackpackType,
@@ -218,11 +218,11 @@ z_mapinfo {
 		FinaleFlat, FinaleMusic, FinalePage, InfoPage, IntermissionCounter, IntermissionMusic, MapInfo, NoLoopFinaleMusic,
 		PageTime, QuitSound, SkyFlatName, StatusBar, TeleFogHeight, TitleMusic, TitlePage, TitleTime, Translator,
 		WeaponSlot, ArmorIcons, DimColor, DimAmount, DefInventoryMaxAmount, DefaultRespawnTime, DefaultDropStyle, Endoom,
-		Player5Start, PickupColor, QuitMessages, MenuFontColor_Title, MenuFontColor_Label, MenuFontColor_Value,
+		PickupColor, QuitMessages, MenuFontColor_Title, MenuFontColor_Label, MenuFontColor_Value,
 		MenuFontColor_Action, MenuFontColor_Header, MenuFontColor_Highlight, MenuFontColor_Selection, MenuBackButton,
 		PlayerClasses, PauseSign, GibFactor, CursorPic, SwapMenu, TextScreenX, TextScreenY, DefaultEndSequence, MapArrow,
 		NoRandomPlayerclass, StatScreen_EnteringPatch, StatScreen_FinishedPatch, StatScreen_MapNameFont, NightmareFast,
-		DontCrunchCorpses, CheatKey,
+		DontCrunchCorpses, CheatKey, ForceKillScripts,
 
 		// Intermission definitions
 		Intermission, Link, Cast, Fader, GotoTitle, Image, Scroller, TextScreen, Wiper, Background, CDMusic, Draw,
@@ -268,7 +268,7 @@ z_menudef {
 		Title, PlayerNameBox, ValueText, MapControl, Else, TextField, NumberField
 	}
 	
-	functions { ifgame = "games ..."; ifoption = "options ..."; }
+	functions { ifgame = "game, [...]"; ifoption = "option, [...]"; }
 	
 	constants = { 
 		doom, heretic, hexen, strife, chex, readthis, swapmenu, windows, unix, mac,
@@ -288,12 +288,12 @@ z_modeldef {
 	keywords = {
 		MODEL, PATH, SKIN, SCALE, FRAME, FRAMEINDEX,
 		Rotation-Speed, Rotation-Vector, Rotation-Center, 
-		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, 
+		Offset, AngleOffset, PitchOffset, RollOffset, ZOffset, SurfaceSkin
 	}
 
 	constants = {
 		PITCHFROMMOMENTUM, IGNORETRANSLATION, INTERPOLATEDOUBLEDFRAMES, ROTATING, NOINTERPOLATION,
-		INHERITACTORPITCH, INHERITACTORROLL,
+		INHERITACTORPITCH, INHERITACTORROLL, USEACTORPITCH, USEACTORROLL
 	}
 }
 
@@ -349,7 +349,7 @@ z_sbarinfo {
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
 		IfHealth, InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
-		WeaponAmmo, mugshot
+		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel, IfCVarInt
 	}
 
 	constants = {
@@ -362,14 +362,16 @@ z_sbarinfo {
 		globalarray, accuracy, keys, savepercent, stamina, fillzeros, whennotzero, alternateonempty, artiflash, alwaysshowcounter,
 		center, centerbottom, invulnerable, keyslot, armortype, levelname, levellump, skillname, playerclass, playername, ammo1tag,
 		ammo2tag, weapontag, inventorytag, time, logtext, linebreaks, normal, pain, ouch, rampage, god, godanimated, grin, death,
-		xdeath, health2, healthspecial, directional, left, right, dontcap, prefix, itemflash, alticonfirst, alternateonfail,
+		xdeath, custom, health2, healthspecial, directional, left, right, dontcap, itemflash, alticonfirst, alternateonfail,
 		forcescale, skipalticon, skipicon, skipready, skipspawn, auto, cooperative, singleplayer, teamgame, deathmatch, weaponslot,
+		equal,
 
 		//Some default fonts
 		BIGFONT, INDEXFONT, SMALLFONT, HUDFONT_DOOM, INDEXFONT_DOOM, HUDFONT_RAVEN, INDEXFONT_RAVEN,
 
-		//Some default colors
-		Yellow, Red, Green, Blue, White, Black, untranslated
+		// Default font colors
+		Yellow, Red, Green, Blue, White, Black, untranslated, Brick, Tan, Gray, Grey, Brown, Gold, Orange, LightBlue, Cream, Olive,
+        DarkGreen, DarkRed, DarkBrown, Purple, DarkGray, DarkGrey, Cyan
 	}
 
 	functions {
@@ -378,6 +380,7 @@ z_sbarinfo {
 		alignment = "alignment";
 		ammo = "[class]";
 		hexenarmor = "[type], [slot]";
+		prefix = "value, pad";
 	}
 }
 
@@ -452,7 +455,7 @@ z_terrain {
 		smallclass, smallclip, smallsound,
 		baseclass, chunkclass, chunkxvelshift, chunkyvelshift, chunkzvelshift, chunkbasezvel, sound,
 		terrain, footclip, liquid, friction, damagetype, damageamount, damagetimemask, allowprotection,
-		floor, defaultterrain, noalert
+		floor, defaultterrain, noalert, optional
 	}
 
 	constants = {
@@ -625,6 +628,7 @@ z_xlat {
 		Line_AlignCeiling  = "int lineid, int side";
 		Line_AlignFloor = "int lineid, int side";
 		Line_SetBlocking = "int lineid, int setflags, int clearflags";
+		Line_SetPortalTarget = "int sourceline, int targetline";
 		Line_SetTextureOffset = "int id, int x, int y, int side, int flags";
 		Line_SetTextureScale = "int id, int x, int y, int side, int flags";
 		NoiseAlert = "int target_tid, int emitter_tid";
@@ -670,7 +674,7 @@ z_xlat {
 		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
 		Sector_SetColor = "int tag, int r, int g, int b, int desaturate";
 		Sector_SetCurrent = "int tag, int amount, int angle";
-		Sector_SetDamage = "int tag, int amount, int mod";
+		Sector_SetDamage = "int tag, int amount, int mod, int interval, int leaky";
 		Sector_SetFade = "int tag, int r, int g, int b";
 		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetFloorScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
@@ -726,6 +730,12 @@ z_xlat {
 		ThrustThingZ = "int tid, int zthrust, int dir, int set";
 		TranslucentLine = "int id, int amount, int transtype";
 		UsePuzzleItem = "int item, int script";
-		
+
+		// Skulltag/Zandronum action specials
+		Player_GiveItem = "unknown parameters list";
+		Player_RemoveItem = "unknown parameters list";
+		Player_SetTeam = "int team";
+		Team_GivePoints = "int team, int points, int announce";
+		Team_Score = "int points, int nogrin";
 	}
 }

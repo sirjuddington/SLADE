@@ -29,10 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "Map3DPrefsPanel.h"
-#include <wx/gbsizer.h>
-#include <wx/statline.h>
 
 
 /*******************************************************************

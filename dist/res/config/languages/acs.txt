@@ -158,9 +158,9 @@ acs_z : acs {
 	blocks = "Script", "Function:1";
 
 	keywords = {
-		function, enter, respawn, death, lightning, unloading, disconnect,
+		function, enter, respawn, death, lightning, unloading, disconnect, kill,
 		fixed, global, net, import, libdefine, library, nocompact, nowadauthor,
-		EncryptStrings, static, wadauthor,
+		EncryptStrings, static, wadauthor, region, endregion,
 		
 		// Skulltag script types
 		BlueReturn, RedReturn, WhiteReturn, Pickup, ClientSide
@@ -235,6 +235,7 @@ acs_z : acs {
 		APROP_Dormant, APROP_Mass, APROP_Accuracy, APROP_Stamina, APROP_Height,
 		APROP_Radius, APROP_ReactionTime, APROP_AttackZOffset, APROP_MeleeRange,
 		APROP_ViewHeight, APROP_StencilColor, APROP_DamageMultiplier, APROP_Friction,
+		APROP_MaxStepHeight, APROP_MaxDropOffHeight, APROP_DamageType,
 
 		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_Stencil, 
 		STYLE_OptFuzzy, STYLE_Translucent, STYLE_Add, STYLE_Shaded, 
@@ -257,7 +258,8 @@ acs_z : acs {
 		MRF_OLDEFFECTS, MRF_ADDSTAMINA, MRF_FULLHEALTH, MRF_UNDOBYTOMEOFPOWER, 
 		MRF_UNDOBYCHAOSDEVICE, MRF_FAILNOTELEFRAG, MRF_FAILNOLAUGH, 
 		MRF_WHENINVULNERABLE, MRF_LOSEACTUALWEAPON, MRF_NEWTIDBEHAVIOUR, 
-		MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES, 
+		MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES, MRF_UNDOALWAYS,
+		MRF_TRANSFERTRANSLATION,
 
 		T_ROCK1, T_ROCK2, T_ROCK3, T_DIRT1, T_DIRT2, T_DIRT3, T_DIRT4, T_DIRT5, T_DIRT6, 
 		T_STAINEDGLASS1, T_STAINEDGLASS2, T_STAINEDGLASS3, T_STAINEDGLASS4, 
@@ -330,7 +332,15 @@ acs_z : acs {
 
 		PTROP_UNSAFETARGET, PTROP_UNSAFEMASTER, PTROP_NOSAFEGUARDS, 
 
+		// Zandronum database additions
+		DB_ORDER_ASC, DB_ORDER_DESC,
+
 		TEAM_BLUE, TEAM_RED, NO_TEAM, 
+
+		// Team properties (Zandronum)
+		TPROP_Name, TPROP_Score, TPROP_IsValid, TPROP_NumPlayers, TPROP_NumLivePlayers, TPROP_TextColor,
+		TPROP_PlayerStartNum, TPROP_Spread, TPROP_Carrier, TPROP_Assister, TPROP_FragCount, TPROP_DeathCount,
+		TPROP_WinCount, TPROP_PointCount, TPROP_ReturnTics, TPROP_TeamItem, TPROP_WinnerTheme, TPROP_LoserTheme,
 
 		IS_WAITINGFORPLAYERS, IS_FIRSTCOUNTDOWN, IS_INPROGRESS, IS_BOSSFIGHT, 
 		IS_WAVECOMPLETE, IS_COUNTDOWN, 
@@ -361,10 +371,13 @@ acs_z : acs {
 
 		NO_CHANGE, 
 
-		SECF_SILENT, SECF_NOFALLINGDAMAGE, SECF_FLOORDROP, SECF_NORESPAWN, 
+		SECF_SILENT, SECF_NOFALLINGDAMAGE, SECF_FLOORDROP, SECF_NORESPAWN, SECF_FRICTION,
+		SECF_PUSH, SECF_SILENTMOVE, SECF_DMGTERRAINFX, SECF_DMGENDGODMODE, SECF_DMGENDLEVEL,
+		SECF_DMGHAZARD,
 
 		BLOCKF_CREATURES, BLOCKF_MONSTERS, BLOCKF_PLAYERS, BLOCKF_FLOATERS, BLOCKF_HITSCAN,
 		BLOCKF_PROJECTILES, BLOCKF_EVERYTHING, BLOCKF_RAILING, BLOCKF_USE, BLOCKF_SIGHT, 
+		BLOCKF_SOUND,
 
 		FOGP_DENSITY, FOGP_OUTSIDEDENSITY, FOGP_SKYFOG, 
 
@@ -414,20 +427,66 @@ acs_z : acs {
 		WARPF_ABSOLUTEOFFSET, WARPF_ABSOLUTEANGLE, WARPF_USECALLERANGLE, WARPF_NOCHECKPOSITION,
 		WARPF_INTERPOLATE, WARPF_WARPINTERPOLATION, WARPF_COPYINTERPOLATION, WARPF_STOP,
 		WARPF_TOFLOOR, WARPF_TESTONLY, WARPF_ABSOLUTEPOSITION, WARPF_BOB, WARPF_MOVEPTR,
-		WARPF_USEPTR
+		WARPF_USEPTR, WARPF_COPYVELOCITY, WARPF_COPYPITCH,
+
+		// PickActor flags
+		PICKAF_FORCETID, PICKAF_RETURNTID,
+
+		// Used by Thing_SetTranslation
+		TRANSLATION_ICE,
+
+		// CheckProximity flags
+		CPXF_ANCESTOR, CPXF_CHECKSIGHT, CPXF_CLOSEST, CPXF_COUNTDEAD, CPXF_DEADONLY, CPXF_EXACT, CPXF_FARTHEST,
+		CPXF_LESSOREQUAL, CPXF_NOZ, CPXF_SETMASTER, CPXF_SETONPTR, CPXF_SETTARGET, CPXF_SETTRACER
 	}
 
 	functions
 	{
 		// Action specials
-		ACS_Execute = "int script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
-		ACS_ExecuteAlways = "int script, [int mapnum], [int arg1], [int arg2], [int arg3]";
-		ACS_ExecuteWithResult = "int script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
-		ACS_LockedExecute = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
-		ACS_LockedExecuteDoor = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
-		ACS_Suspend = "int script, [int mapnum]";
-		ACS_Terminate = "int script, [int mapnum]";
-		Autosave;
+		ACS_Execute
+		{
+			args = "int script, [int mapnum], [int s_arg1], [int s_arg2], [int s_arg3]";
+			description = "Executes the specified script. Only one copy of the script can be running at a time when started using this function.";
+		}
+
+		ACS_ExecuteAlways
+		{
+			args = "int script, [int mapnum], [int arg1], [int arg2], [int arg3]";
+			description = "Executes the specified script. Multiple copies of the script can be running at the same time when started using this function, however they can not be suspended or terminated.";
+		}
+
+		ACS_ExecuteWithResult
+		{
+			args = "int script, [int s_arg1], [int s_arg2], [int s_arg3], [int s_arg4]";
+			description = "Executes the specified script and returns the value set in the script by SetResultValue";
+		}
+
+		ACS_LockedExecute
+		{
+			args = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
+			description = "Executes the specified script if the player has the right key. Displays the 'remote' locked message.";
+		}
+		
+		ACS_LockedExecuteDoor
+		{
+			args = "int script, [int mapnum], [int arg1], [int arg2], [int lock]";
+			description = "Executes the specified script if the player has the right key. Displays the 'door' locked message.";
+		}
+		
+		ACS_Suspend
+		{
+			args = "int script, [int mapnum]";
+			description = "Suspends execution of the specified script. Use ACS_Execute or ACS_LockedExecute to resume the script.";
+		}
+		
+		ACS_Terminate
+		{
+			args = "int script, [int mapnum]";
+			description = "Terminates execution of the specified script.";
+		}
+		
+		Autosave { args = ""; description = "Automatically saves the game to an autosave slot."; }
+		
 		Ceiling_CrushAndRaise = "int tag, int speed, int damage, [int crushmode]";
 		Ceiling_CrushAndRaiseA = "int tag, int downspeed, int upspeed, int damage, [int crushmode]";
 		Ceiling_CrushAndRaiseDist = "int tag, int dist, int speed, int damage, [int crushmode]";
@@ -520,6 +579,7 @@ acs_z : acs {
 		Line_AlignCeiling  = "int lineid, int side";
 		Line_AlignFloor = "int lineid, int side";
 		Line_SetBlocking = "int lineid, int setflags, int clearflags";
+		Line_SetPortalTarget = "int sourceline, int targetline";
 		Line_SetTextureOffset = "int id, int x, int y, int side, int flags";
 		Line_SetTextureScale = "int id, int x, int y, int side, int flags";
 		NoiseAlert = "int target_tid, int emitter_tid";
@@ -565,7 +625,7 @@ acs_z : acs {
 		Sector_SetCeilingScale2 = "int tag, int x-factor, int y-factor";
 		Sector_SetColor = "int tag, int r, int g, int b, int desaturate";
 		Sector_SetCurrent = "int tag, int amount, int angle, int useline";
-		Sector_SetDamage = "int tag, int amount, int mod";
+		Sector_SetDamage = "int tag, int amount, int mod, int interval, int leaky";
 		Sector_SetFade = "int tag, int r, int g, int b";
 		Sector_SetFloorPanning = "int tag, int x-int, int x-frac, int y-int, int y-frac";
 		Sector_SetFloorScale = "int tag, int x-int, int x-frac, int y-int, int y-frac";
@@ -649,10 +709,13 @@ acs_z : acs {
 		CheckActorFloorTexture = "int tid, str texture";
 		CheckActorInventory = "int tid, str inventory_item";
 		CheckActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
+		CheckActorState = "int tid, str statename, [bool exact]";
+		CheckClass = "str classname";
 		CheckFlag = "int tid, str flag";
 		CheckFont = "str fontname";
 		CheckInventory = "str inventory_item";
 		CheckPlayerCamera = "int player";
+		CheckProximity = "int tid, str classname, fixed distance, [int count], [int flags], [int pointer]";
 		CheckSight = "int source, int dest, [int flags]";
 		CheckWeapon = "str weapon";
 		ClassifyActor = "int tid";
@@ -661,6 +724,7 @@ acs_z : acs {
 		ClearLineSpecial;
 		Cos = "int angle";
 		CreateTranslation = "int transnumber, a:b=c:d, ...", "int transnumber, a:b=[red1,green1,blue1]:[red2,green2,blue2], ...";
+		DamageActor = "int target_tid, int target_pointer, int inflictor_tid, int inflictor_pointer, int amount, str damagetype";
 		Delay = "int tics";
 		DropInventory = "int tid, str item";
 		DropItem = "int tid, str item, [int dropamount], [int chance]";
@@ -699,6 +763,7 @@ acs_z : acs {
 		GetLineRowOffset;
 		GetLineUDMFFixed = "int lineid, string key";
 		GetLineUDMFInt = "int lineid, string key";
+		GetMaxInventory = "int tid, str inventory";
 		GetPlayerInfo = "int playernumber, int playerinfo";
 		GetPlayerInput = "int player, int input";
 		GetPolyobjX = "int polynum";
@@ -727,13 +792,13 @@ acs_z : acs {
 		IsPointerEqual = "int ptr_select1, int ptr_select2, [int tid1], [int tid2]";
 		IsTIDUsed = "int tid";
 		LineSide;
-		LineAttack = "int tid, fixed angle, fixed pitch, int damage, [str pufftype], [str damagetype], [fixed range], [int flags]";
+		LineAttack = "int tid, fixed angle, fixed pitch, int damage, [str pufftype], [str damagetype], [fixed range], [int flags], [int pufftid]";
 		LocalAmbientSound = "str sound, int volume";
 		LocalSetMusic = "str song, [int order]";
 		Log = "type:expression";
-		MorphActor = "int tid, [str playerclass, [str monsterclass, [int duration, [int style, [str morphflash, [str unmorphflash]]]]]]";
+		MorphActor = "int tid, [str playerclass], [str monsterclass], [int duration], [int style], [str morphflash], [str unmorphflash]";
 		NamedScriptWait = "str script";
-		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask], [bool force_tid]";
+		PickActor = "int source_tid, fixed angle, fixed pitch, fixed distance, int new_tid, [int actor_mask], [int wall_mask], [int flags]";
 		PlayActorSound = "int tid, int sound, [int channel], [fixed volume], [bool looping], [fixed attenuation]";
 		PlayerClass = "int playernumber";
 		PlayerCount;
@@ -746,49 +811,53 @@ acs_z : acs {
 		PolyWait = "int polynum";
 		Print = "type:expression";
 		PrintBold = "type:expression";
-		QuakeEx = "int tid, int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, sound sfx, [int flags], [fixed mulWaveX], [fixed mulWaveY], [fixed mulWaveZ]";
+		QuakeEx = "int tid, int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, sound sfx, [int flags], [fixed mulWaveX], [fixed mulWaveY], [fixed mulWaveZ], [int falloff], [int highpoint], [fixed rollIntensity], [fixed rollWave]";
 		Radius_Quake2 = "int tid, int intensity, int duration, int damrad, int tremrad, str sound";
 		Random = "int min, int max";
-		ReplaceTextures = "str oldtexturename, str newtexturename [, int flags]";
+		ReplaceTextures = "str oldtexturename, str newtexturename, [int flags]";
 		ScriptWait = "int script";
 		SectorDamage = "int tag, int amount, str type, str protection_item, int flags";
 		SectorSound = "str sound, int volume";
-		SetActivator = "int tid[, int pointer_selector]";
+		SetActivator = "int tid, [int pointer_selector]";
 		SetActivatorToTarget = "int tid";
 		SetActorAngle = "int tid, fixed angle";
+		SetActorFlag = "int tid, str flagname, bool set";
 		SetActorPitch = "int tid, fixed pitch";
 		SetActorPosition = "int tid, fixed x, fixed y, fixed z, bool fog";
 		SetActorProperty = "int tid, int property, int value", "int tid, int property, float value", "int tid, int property, str value";
 		SetActorRoll = "int tid, fixed angle";
-		SetActorState = "int tid, str statename[, bool exact]";
+		SetActorState = "int tid, str statename, [bool exact]";
 		SetActorTeleFog = "int tid, str sourcefog, str destfog";
 		SetActorVelocity = "int tid, fixed velx, fixed vely, fixed velz, bool add, bool setbob";
 		SetAirControl = "int amount";
 		SetAirSupply = "int playernum, int tics";
 		SetAmmoCapacity = "str typename, int maxamount";
 		SetCameraToTexture = "int cameratid, str texturename, int fov";
-		SetCeilingTrigger = "int tag, int height, int special [, int arg1 [, int arg2 [, int arg3 [, int arg4 [, int arg5]]]]]";
+		SetCeilingTrigger = "int tag, int height, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
 		SetCVar = "str cvarname, int newvalue", "str cvarname, fixed newvalue", "str cvarname, bool newvalue";
 		SetCVarString = "str cvarname, str newvalue";
-		SetFloorTrigger = "int tag, int height, int special [, int arg1 [, int arg2 [, int arg3 [, int arg4 [, int arg5]]]]]";
+		SetFloorTrigger = "int tag, int height, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
 		SetFont = "str fontlump";
 		SetGravity = "fixed amount";
-		SetHUDClipRect = "int x; int y, int width, int height[, int wrapwidth]";
+		SetHUDClipRect = "int x, int y, int width, int height, [int wrapwidth], [bool aspectratio]";
 		SetHUDSize = "int width, int height, bool statusbar";
 		SetHUDWrapWidth = "int wrapwidth";
 		SetLineActivation = "int lineid, int activation";
 		SetLineBlocking = "int lineid, int setting";
 		SetLineMonsterBlocking = "int lineid, int setting";
-		SetLineSpecial = "int lineid, int special [, int arg0 [, int arg1 [, int arg2 [, int arg3 [, int arg4]]]]]";
+		SetLineSpecial = "int lineid, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
 		SetLineTexture = "int lineid, int line_side, int sidedef_texture, str texturename";
 		SetMarineSprite = "int tid, str actorclass";
 		SetMarineWeapon = "int tid, int weapon";
 		SetMugShotState = "str state";
 		SetMusic = "str song, [int order]";
-		SetPointer = "int assign_slot, int tid[, int pointer_selector[, int flags]]";
+		SetMusicVolume = "fixed volume";
+		SetPointer = "int assign_slot, int tid, [int pointer_selector], [int flags]";
 		SetResultValue = "int value";
+		SetSectorDamage = "int tag, int amount, [str damagetype], [int interval], [int leaky]";
+		SetSectorTerrain = "int tag, int whichplane, str terraintype";
 		SetSkyScrollSpeed = "int sky, float skyspeed";
-		SetThingSpecial = "int tid, int special [, int arg0 [, int arg1 [, int arg2 [, int arg3 [, int arg4]]]]]";
+		SetThingSpecial = "int tid, int special, [int arg1], [int arg2], [int arg3], [int arg4], [int arg5]";
 		SetUserArray = "int tid, str name, int pos, int value";
 		SetUserCVar = "int playernum, str cvarname, int newvalue", "int playernum, str cvarname, fixed newvalue", "int playernum, str cvarname, bool newvalue";
 		SetUserCVarString = "int playernum, str cvarname, str newvalue";
@@ -800,18 +869,20 @@ acs_z : acs {
 		SoundSequenceOnPolyobj = "int polynum, str sndseq";
 		SoundSequenceOnSector = "int tag, string seqname, int location";
 		SoundVolume = "int tid, int channel, fixed volume";
- 		Spawn = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
+ 		Spawn = "str classname, fixed x, fixed y, fixed z, [int tid], [int angle]";
 		SpawnDecal = "int tid, str decalname, [int flags], [fixed angle], [fixed zoffset], [fixed distance]";
-		SpawnForced = "str classname, fixed x, fixed y, fixed z [, int tid [, int angle]]";
+		SpawnForced = "str classname, fixed x, fixed y, fixed z, [int tid], [int angle]";
+		SpawnParticle = "int color, [bool fullbright], [int lifetime], [int size], [fixed x], [fixed y], [fixed z], [fixed velx], [fixed vely], [fixed velz], [fixed accelx], [fixed accely], [fixed accelz], [int startalpha], [int fadestep], [fixed endsize]";
 		SpawnProjectile = "int tid, string type, int angle, int speed, int vspeed, int gravity, int newtid";
-		SpawnSpot = "str classname, int spottid [, int tid [, int angle]]";
-		SpawnSpotFacing = "str classname, int spottid [, int tid]";
-		SpawnSpotFacingForced = "str classname, int spottid [, int tid]";
-		SpawnSpotForced = "str classname, int spottid [, int tid [, int angle]]";
+		SpawnSpot = "str classname, int spottid, [int tid], [int angle]";
+		SpawnSpotFacing = "str classname, int spottid, [int tid]";
+		SpawnSpotFacingForced = "str classname, int spottid, [int tid]";
+		SpawnSpotForced = "str classname, int spottid, [int tid], [int angle]";
 		Sqrt = "int number";
 		StopSound = "int tid, [int channel]";
+		StrCaseCmp = "str string1, str string2, [int maxcomparenum]";
 		StrCmp = "str string1, str string2, [int maxcomparenum]";
-		StrCpy = "a:destination, string source[, int source_index]";
+		StrCpy = "a:destination, string source, [int source_index]";
 		StrIcmp = "str string1, str string2, [int maxcomparenum]";
 		StrLeft = "str string, int length";
 		StrLen = "str string";
@@ -830,28 +901,68 @@ acs_z : acs {
 		ThingCountSector = "int type, int tid, int tag";
 		ThingSound = "int tid, str sound, int volume";
 		Timer;
-		UniqueTID = "[int tid[, int limit]]";
+		UniqueTID = "[int tid], [int limit]";
 		UnMorphActor = "int tid, [bool force]";
 		UseActorInventory = "int TID, str classname";
 		UseInventory = "str classname";
 		VectorAngle = "int x, int y";
 		VectorLength = "int x, int y";
-		Warp = "int tid, fixed xofs, fixed yofs, fixed zofs, fixed angle, int flags, [str success_state], [bool exact], [fixed heightoffset]";
-		
-		// Skulltag functions
+		Warp = "int tid, fixed xofs, fixed yofs, fixed zofs, fixed angle, int flags, [str success_state], [bool exact], [fixed heightoffset], [fixed radiusoffset], [fixed pitch]";
+
+		// Skulltag/Zandronum action specials
+		Player_GiveItem = "unknown parameters list";
+		Player_RemoveItem = "unknown parameters list";
+		Player_SetTeam = "int team";
+		Team_GivePoints = "int team, int points, int announce";
+		Team_Score = "int points, int nogrin";
+
+		// Skulltag/Zandronum functions
+		AnnouncerSound = "str sound, int flags";
+		BeginDBTransaction;
 		BlueCount;
 		BlueScore;
+		BlueTeamCount;
+		BlueTeamScore;
 		ConsoleCommand = "str command";
+		ConsolePlayerNumber;
+		CountDBResults = "unknown parameters list";
+		EndDBTransaction;
+		FreeDBResults = "unknown parameters list";
+		GetDBEntries = "unknown parameters list";
+		GetDBEntry = "str table, str variable";
+		GetDBEntryRank = "unknown parameters list";
+		GetDBEntryString = "unknown parameters list";
+		GetDBResultKeyString = "unknown parameters list";
+		GetDBResultValue = "unknown parameters list";
+		GetDBResultValueString = "unknown parameters list";
+		GetGamemodeState;
 		GetInvasionState;
 		GetInvasionWave;
+		GetPlayerAccountName = "unknown parameters list";
+		GetPlayerLivesLeft = "int player";
+		GetTeamProperty = "int team, int property";
+		IncrementDBEntry = "unknown parameters list";
+		IsMultiplayer;
+		IsNetworkGame;
 		IsOneFlagCTF;
+		KickFromGame = "int player, str reason";
 		Music_Change = "str music, int pattern";
 		PlayerArmorPoints;
 		PlayerHealth;
+		PlayerIsLoggedIn = "int playernumber";
+		PlayerIsSpectator = "int player";
 		PlayerTeam;
 		RedCount;
 		RedScore;
+		RedTeamCount;
+		RedTeamScore;
+		RequestScriptPuke = "int script, int arg0, int arg1, int arg2";
+		ResetMap;
+		SetDBEntry = "str table, str variable, int value";
+		SetDBEntryString = "unknown parameters list";
+		SetPlayerLivesLeft = "int player, int amount";
 		SinglePlayer;
+		SortDBEntries = "unknown parameters list";
 		
 		// ZDaemon functions
 		GetTeamScore = "int team";

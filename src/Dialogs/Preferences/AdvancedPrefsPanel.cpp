@@ -30,7 +30,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "AdvancedPrefsPanel.h"
 
 

@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SLADE"
-#define MyAppVersion "3.1.1 Beta 1"
-#define VersionNum "3110"
+#define MyAppVersion "3.1.1.4"
+#define VersionNum "3114"
 #define MyAppURL "http://slade.mancubus.net"
 #define MyAppExeName "SLADE.exe"
 
@@ -24,9 +24,9 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-InfoBeforeFile=..\dist\slade3.txt
+;InfoBeforeFile=..\dist\slade3.txt
 OutputBaseFilename=Setup_{#MyAppName}_{#VersionNum}
-SetupIconFile=..\slade.ico
+SetupIconFile=..\build\msvc\slade.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -45,7 +45,7 @@ Source: "..\dist\libfluidsynth.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; Source: "..\dist\libsndfile-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\openal32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\slade.pk3"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\dist\slade3.txt"; DestDir: "{app}"; Flags: ignoreversion
+; Source: "..\dist\slade3.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\SLADE.pdb"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -65,7 +65,7 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 #include "scripts\products\fileversion.iss"
 #include "scripts\products\dotnetfxversion.iss"
 
-#include "scripts\products\vcredist2013.iss"
+#include "scripts\products\vcredist2015.iss"
 
 [Code]
 function InitializeSetup(): boolean;
@@ -73,8 +73,8 @@ begin
 	//init windows version
 	initwinversion();
 
-  // Check for VS2012 runtimes installed
-  vcredist2013();
+  // Check for VS2015 runtimes installed
+  vcredist2015();
 
   Result := true;
 end;

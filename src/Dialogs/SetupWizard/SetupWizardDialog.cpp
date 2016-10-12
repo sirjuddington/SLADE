@@ -29,12 +29,11 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "SetupWizardDialog.h"
-#include "TempFolderWizardPage.h"
 #include "BaseResourceWizardPage.h"
 #include "NodeBuildersWizardPage.h"
-#include "Icons.h"
+#include "TempFolderWizardPage.h"
+#include "Graphics/Icons.h"
 
 
 /*******************************************************************

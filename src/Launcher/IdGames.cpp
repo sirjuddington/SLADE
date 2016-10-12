@@ -1,8 +1,7 @@
 
 #include "Main.h"
-#include "WxStuff.h"
 #include "IdGames.h"
-#include "Console.h"
+#include "General/Console/Console.h"
 #include "Utility/XmlHelpers.h"
 #include <wx/protocol/http.h>
 #include <wx/sstream.h>

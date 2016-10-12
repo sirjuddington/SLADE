@@ -1,14 +1,13 @@
 
 #include "Main.h"
-#include "WxStuff.h"
 #include "LauncherPanel.h"
-#include "ListView.h"
-#include "STabCtrl.h"
-#include "Icons.h"
-#include "SToolBarButton.h"
-#include "ArchiveManager.h"
-#include "Executables.h"
-#include "GameConfiguration.h"
+#include "UI/Lists/ListView.h"
+#include "UI/STabCtrl.h"
+#include "Graphics/Icons.h"
+#include "UI/SToolBar/SToolBarButton.h"
+#include "Archive/ArchiveManager.h"
+#include "General/Executables.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "IdGamesPanel.h"
 #include <wx/choice.h>
 #include <wx/gbsizer.h>

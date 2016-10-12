@@ -29,7 +29,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "HudOffsetsPrefsPanel.h"
 
 

@@ -1,11 +1,20 @@
-if (USE_WEBVIEW_STARTPAGE)
-find_package(wxWidgets 3.0 COMPONENTS std aui gl stc richtext propgrid media webview REQUIRED)
-ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
-else (USE_WEBVIEW_STARTPAGE)
-find_package(wxWidgets 3.0 COMPONENTS std aui gl stc richtext propgrid media html REQUIRED)
-endif (USE_WEBVIEW_STARTPAGE)
+# wxWidgets version minimum 3.0
+if(NOT WX_VERSION)
+	SET(WX_VERSION 3.0)
+endif(NOT WX_VERSION)
+
+# wxWidgets libs
+SET(WX_LIBS std aui gl stc richtext propgrid media)
+if (NO_WEBVIEW)
+	SET(WX_LIBS ${WX_LIBS} html)
+else (NO_WEBVIEW)
+	SET(WX_LIBS ${WX_LIBS} webview)
+	ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
+endif (NO_WEBVIEW)
+find_package(wxWidgets ${WX_VERSION} COMPONENTS ${WX_LIBS} REQUIRED)
 include(${wxWidgets_USE_FILE})
 
+# SFML
 if (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window graphics)
 ADD_DEFINITIONS(-DUSE_SFML_RENDERWINDOW)
@@ -13,6 +22,7 @@ else (USE_SFML_RENDERWINDOW)
 set(SFML_FIND_COMPONENTS system audio window)
 endif(USE_SFML_RENDERWINDOW)
 
+# Fluidsynth
 if (NO_FLUIDSYNTH)
 ADD_DEFINITIONS(-DNO_FLUIDSYNTH)
 endif(NO_FLUIDSYNTH)
@@ -35,6 +45,12 @@ if(NOT NO_FLUIDSYNTH)
 else(NO_FLUIDSYNTH)
 	message(STATUS "Fluidsynth support is disabled.")
 endif()
+
+if (NOT NO_COTIRE)
+	include(../cmake/cotire.cmake)
+endif()
+
+find_package(CURL)
 
 include(../cmake/FindFreeImage.cmake)
 include(../cmake/FindSFML.cmake)
@@ -61,21 +77,26 @@ endif()
 if(NOT ${GLEW_FOUND})
 	message(SEND_ERROR "GLEW required.")
 endif()
-include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./dumb)
+if(NOT ${CURL_FOUND})
+	message(SEND_ERROR "CURL required.")
+endif()
+include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./External/dumb ./Application)
 
 if (NOT NO_FLUIDSYNTH)
 	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
 endif()
+
+	include_directories(${CURL_INCLUDE_DIR})
 
 set(SLADE_SOURCES
 )
 file(GLOB_RECURSE SLADE_SOURCES *.cpp)
 set(LUA_SOURCES
 )
-file(GLOB LUA_SOURCES lua/*.c)
+file(GLOB LUA_SOURCES External/lua/*.c)
 set(DUMB_SOURCES
 )
-file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)
+file(GLOB_RECURSE DUMB_SOURCES External/dumb/*.c)
 
 set(SLADE_HEADERS
 )
@@ -94,24 +115,40 @@ endif(APPLE)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
 add_executable(slade WIN32 MACOSX_BUNDLE
-	lzma/C/LzmaDec.c
-	mus2mid/mus2mid.cpp
-	zreaders/ancientzip.cpp
-	zreaders/files.cpp
-	zreaders/m_alloc.cpp
-	zreaders/i_music.cpp
-	zreaders/music_hmi_midiout.cpp
-	zreaders/music_midistream.cpp
-	zreaders/music_mus_midiout.cpp
-	zreaders/music_smf_midiout.cpp
-	zreaders/music_xmi_midiout.cpp
+	External/lzma/C/LzmaDec.c
+	External/mus2mid/mus2mid.cpp
+	External/zreaders/files.cpp
+	External/zreaders/m_alloc.cpp
+	External/zreaders/i_music.cpp
+	External/zreaders/music_hmi_midiout.cpp
+	External/zreaders/music_midistream.cpp
+	External/zreaders/music_mus_midiout.cpp
+	External/zreaders/music_smf_midiout.cpp
+	External/zreaders/music_xmi_midiout.cpp
 	${LUA_SOURCES}
 	${DUMB_SOURCES}
 	${SLADE_SOURCES}
 	${SLADE_HEADERS}
 )
 
-target_link_libraries(slade ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES} ${wxWidgets_LIBRARIES} ${FREEIMAGE_LIBRARIES} ${SFML_LIBRARY} ${FTGL_LIBRARY} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${GLEW_LIBRARY} ${GTK2_LIBRARIES})
+if (NOT NO_COTIRE)
+	set_target_properties(slade PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "common.h")
+	cotire(slade)
+endif()
+
+target_link_libraries(slade
+	${ZLIB_LIBRARY}
+	${BZIP2_LIBRARIES}
+	${wxWidgets_LIBRARIES}
+	${FREEIMAGE_LIBRARIES}
+	${SFML_LIBRARY}
+	${FTGL_LIBRARY}
+	${OPENGL_LIBRARIES}
+	${FREETYPE_LIBRARIES}
+	${GLEW_LIBRARY}
+	${GTK2_LIBRARIES}
+	${CURL_LIBRARIES}
+)
 
 if (NOT NO_FLUIDSYNTH)
 	target_link_libraries(slade ${FLUIDSYNTH_LIBRARIES})
@@ -120,9 +157,9 @@ endif()
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
 set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER YES)
-set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Main.h)
+set_target_properties(slade PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Application/Main.h)
 
-	# TODO: Installation targets for APPLE
+# TODO: Installation targets for APPLE
 if(APPLE)
 	set_target_properties(slade PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${OSX_PLIST})
 

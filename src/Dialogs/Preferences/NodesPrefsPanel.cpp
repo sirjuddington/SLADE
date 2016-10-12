@@ -28,10 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "NodesPrefsPanel.h"
-#include "NodeBuilders.h"
-#include "SFileDialog.h"
+#include "MapEditor/NodeBuilders.h"
+#include "Utility/SFileDialog.h"
 
 
 /*******************************************************************

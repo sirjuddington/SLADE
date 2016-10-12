@@ -18,12 +18,13 @@
     <ProjectGuid>{33CC5FBD-4EB0-48A9-9069-0EC0B5FF5A46}</ProjectGuid>
     <RootNamespace>SLADE</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -33,7 +34,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -50,7 +51,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\dist\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\dist\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\dist\</OutDir>
@@ -61,12 +62,12 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">true</GenerateManifest>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(ProjectDir)src;$(FLUIDSYNTH)\include;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist;$(SFML)\include;$(FTGL)\src;$(FREETYPE)\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">$(FLUIDSYNTH)\lib;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist;$(SFML)\lib;$(FTGL)\msvc\build;$(FREETYPE)\objs\win32;$(SolutionDir)$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\src;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\dumb;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\lib\vc_lib;$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(SFML)\lib;$(FREEIMAGE)\Dist\x32;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\src;$(ProjectDir)\fluidsynth\include;$(ProjectDir)..\..\src\External\dumb;$(WXWIN)\lib\vc_lib\mswu;$(WXWIN)\include;$(FREEIMAGE)\Dist\x32;$(SFML)\include;$(ProjectDir)..\..\src\Application;$(CURL)\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\fluidsynth\lib;$(SolutionDir)$(Configuration)\;$(WXWIN)\lib\vc_lib;$(FREEIMAGE)\Dist\x32;$(SFML)\lib;$(CURL)\lib\static-release-x86;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SLADE-dbg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,19 +90,20 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;CURL_STATICLIB;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30ud.lib;wxbase30ud_net.lib;wxbase30ud_xml.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxmsw30ud_aui.lib;wxmsw30ud_webview.lib;wxmsw30ud_adv.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;wxexpatd.lib;opengl32.lib;glu32.lib;sfml-main-d.lib;sfml-system-s-d.lib;sfml-window-s-d.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;flac.lib;ogg.lib;openal32.lib;freetype.lib;vorbis.lib;vorbisfile.lib;FreeImage.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31ud.lib;wxbase31ud_net.lib;wxbase31ud_xml.lib;wxmsw31ud_core.lib;wxmsw31ud_gl.lib;wxmsw31ud_aui.lib;wxmsw31ud_webview.lib;wxmsw31ud_adv.lib;wxmsw31ud_stc.lib;wxmsw31ud_propgrid.lib;wxmsw31ud_media.lib;wxregexud.lib;wxzlibd.lib;wxpngd.lib;wxtiffd.lib;wxjpegd.lib;wxscintillad.lib;wxexpatd.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s-d.lib;sfml-audio-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;sfml-main-d.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -116,23 +118,24 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;NOLIBMODPLUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;GLEW_STATIC;NOLIBMODPLUG;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase30u.lib;wxbase30u_net.lib;wxbase30u_xml.lib;wxmsw30u_core.lib;wxmsw30u_gl.lib;wxmsw30u_aui.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;wxexpat.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fluidsynth.lib;winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;wxbase31u.lib;wxbase31u_net.lib;wxbase31u_xml.lib;wxmsw31u_core.lib;wxmsw31u_gl.lib;wxmsw31u_aui.lib;wxmsw31u_webview.lib;wxmsw31u_adv.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_media.lib;wxregexu.lib;wxzlib.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxscintilla.lib;wxexpat.lib;opengl32.lib;glu32.lib;FreeImage.lib;sfml-graphics-s.lib;sfml-audio-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;freetype.lib;openal32.lib;wsock32.lib;flac.lib;ogg.lib;vorbis.lib;vorbisfile.lib;libcurl_a.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -158,14 +161,15 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <PrecompiledHeaderFile>Main.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>fluidsynth.lib;ftgl_static.lib;freetype2411.lib;FreeImage.lib;wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_aui.lib;wxmsw30u_gl.lib;wxmsw30u_webview.lib;wxmsw30u_adv.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_media.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;wxscintilla.lib;sfml-window-s.lib;sfml-audio-s.lib;sfml-system-s.lib;sfml-main.lib;openal32.lib;sndfile.lib;winmm.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -184,36 +188,79 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\ActionSpecial.cpp" />
-    <ClCompile Include="..\..\src\ActionSpecialDialog.cpp" />
-    <ClCompile Include="..\..\src\ADatArchive.cpp" />
-    <ClCompile Include="..\..\src\ANSICanvas.cpp" />
-    <ClCompile Include="..\..\src\ANSIEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\ArchiveEntryList.cpp" />
-    <ClCompile Include="..\..\src\ArchiveOperations.cpp" />
-    <ClCompile Include="..\..\src\AudioEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\BaseResourceChooser.cpp" />
-    <ClCompile Include="..\..\src\BrowserCanvas.cpp" />
-    <ClCompile Include="..\..\src\BrowserItem.cpp" />
-    <ClCompile Include="..\..\src\BrowserWindow.cpp" />
-    <ClCompile Include="..\..\src\BSPArchive.cpp" />
-    <ClCompile Include="..\..\src\BZip2Archive.cpp" />
-    <ClCompile Include="..\..\src\bzip2\blocksort.c" />
-    <ClCompile Include="..\..\src\bzip2\bzlib.c" />
-    <ClCompile Include="..\..\src\bzip2\compress.c" />
-    <ClCompile Include="..\..\src\bzip2\crctable.c" />
-    <ClCompile Include="..\..\src\bzip2\decompress.c" />
-    <ClCompile Include="..\..\src\bzip2\huffman.c" />
-    <ClCompile Include="..\..\src\bzip2\randtable.c" />
-    <ClCompile Include="..\..\src\ChasmBinArchive.cpp" />
-    <ClCompile Include="..\..\src\CIEDeltaEquations.cpp" />
-    <ClCompile Include="..\..\src\CodePages.cpp" />
-    <ClCompile Include="..\..\src\ColourConfiguration.cpp" />
-    <ClCompile Include="..\..\src\Compression.cpp" />
-    <ClCompile Include="..\..\src\Conversions.cpp" />
-    <ClCompile Include="..\..\src\DataEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\DatArchive.cpp" />
+    <ClCompile Include="..\..\src\Application\MainApp.cpp" />
+    <ClCompile Include="..\..\src\Archive\Archive.cpp" />
+    <ClCompile Include="..\..\src\Archive\ArchiveEntry.cpp" />
+    <ClCompile Include="..\..\src\Archive\ArchiveManager.cpp" />
+    <ClCompile Include="..\..\src\Archive\EntryType\EntryDataFormat.cpp" />
+    <ClCompile Include="..\..\src\Archive\EntryType\EntryType.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\ADatArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\BSPArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\BZip2Archive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\ChasmBinArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\DatArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\DirArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\DiskArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\GobArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\GrpArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\GZipArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\HogArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\LfdArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\LibArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\PakArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\PodArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\ResArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\RffArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\TarArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\Wad2Archive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\WadArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\WadJArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\WolfArchive.cpp" />
+    <ClCompile Include="..\..\src\Archive\Formats\ZipArchive.cpp" />
+    <ClCompile Include="..\..\src\Audio\MIDIPlayer.cpp" />
+    <ClCompile Include="..\..\src\Audio\ModMusic.cpp" />
+    <ClCompile Include="..\..\src\External\bzip2\blocksort.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\bzip2\bzlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\bzip2\compress.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\bzip2\crctable.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\bzip2\decompress.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\bzip2\huffman.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\bzip2\randtable.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Dialogs\DirArchiveUpdateDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\ExtMessageDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\GfxConvDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\MapEditorConfigDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\MapReplaceDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\ModifyOffsetsDialog.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\PaletteDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\Preferences\ACSPrefsPanel.cpp" />
     <ClCompile Include="..\..\src\Dialogs\Preferences\AdvancedPrefsPanel.cpp" />
     <ClCompile Include="..\..\src\Dialogs\Preferences\AudioPrefsPanel.cpp" />
@@ -240,384 +287,1126 @@
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\NodeBuildersWizardPage.cpp" />
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.cpp" />
     <ClCompile Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.cpp" />
-    <ClCompile Include="..\..\src\DirArchive.cpp" />
-    <ClCompile Include="..\..\src\DiskArchive.cpp" />
-    <ClCompile Include="..\..\src\DockPanel.cpp" />
-    <ClCompile Include="..\..\src\DocsPage.cpp" />
-    <ClCompile Include="..\..\src\Drawing.cpp" />
-    <ClCompile Include="..\..\src\dumb\core\atexit.c" />
-    <ClCompile Include="..\..\src\dumb\core\duhlen.c" />
-    <ClCompile Include="..\..\src\dumb\core\duhtag.c" />
-    <ClCompile Include="..\..\src\dumb\core\dumbfile.c" />
-    <ClCompile Include="..\..\src\dumb\core\loadduh.c" />
-    <ClCompile Include="..\..\src\dumb\core\makeduh.c" />
-    <ClCompile Include="..\..\src\dumb\core\rawsig.c" />
-    <ClCompile Include="..\..\src\dumb\core\readduh.c" />
-    <ClCompile Include="..\..\src\dumb\core\register.c" />
-    <ClCompile Include="..\..\src\dumb\core\rendduh.c" />
-    <ClCompile Include="..\..\src\dumb\core\rendsig.c" />
-    <ClCompile Include="..\..\src\dumb\core\unload.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\barray.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\clickrem.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\fir_resampler.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\lpc.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\memfile.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\resample.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\resampler.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\riff.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\sampbuf.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\silence.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\stdfile.c" />
-    <ClCompile Include="..\..\src\dumb\helpers\tarray.c" />
-    <ClCompile Include="..\..\src\dumb\it\itload.c" />
-    <ClCompile Include="..\..\src\dumb\it\itload2.c" />
-    <ClCompile Include="..\..\src\dumb\it\itmisc.c" />
-    <ClCompile Include="..\..\src\dumb\it\itorder.c" />
-    <ClCompile Include="..\..\src\dumb\it\itread.c" />
-    <ClCompile Include="..\..\src\dumb\it\itread2.c" />
-    <ClCompile Include="..\..\src\dumb\it\itrender.c" />
-    <ClCompile Include="..\..\src\dumb\it\itunload.c" />
-    <ClCompile Include="..\..\src\dumb\it\load669.c" />
-    <ClCompile Include="..\..\src\dumb\it\load6692.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadamf.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadamf2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadany.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadany2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadasy.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadasy2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadmod.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadmod2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadmtm.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadmtm2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadokt.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadokt2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadoldpsm.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadoldpsm2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadpsm.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadpsm2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadptm.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadptm2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadriff.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadriff2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loads3m.c" />
-    <ClCompile Include="..\..\src\dumb\it\loads3m2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadstm.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadstm2.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadxm.c" />
-    <ClCompile Include="..\..\src\dumb\it\loadxm2.c" />
-    <ClCompile Include="..\..\src\dumb\it\ptmeffect.c" />
-    <ClCompile Include="..\..\src\dumb\it\read669.c" />
-    <ClCompile Include="..\..\src\dumb\it\read6692.c" />
-    <ClCompile Include="..\..\src\dumb\it\readam.c" />
-    <ClCompile Include="..\..\src\dumb\it\readamf.c" />
-    <ClCompile Include="..\..\src\dumb\it\readamf2.c" />
-    <ClCompile Include="..\..\src\dumb\it\readany.c" />
-    <ClCompile Include="..\..\src\dumb\it\readany2.c" />
-    <ClCompile Include="..\..\src\dumb\it\readasy.c" />
-    <ClCompile Include="..\..\src\dumb\it\readdsmf.c" />
-    <ClCompile Include="..\..\src\dumb\it\readmod.c" />
-    <ClCompile Include="..\..\src\dumb\it\readmod2.c" />
-    <ClCompile Include="..\..\src\dumb\it\readmtm.c" />
-    <ClCompile Include="..\..\src\dumb\it\readokt.c" />
-    <ClCompile Include="..\..\src\dumb\it\readokt2.c" />
-    <ClCompile Include="..\..\src\dumb\it\readoldpsm.c" />
-    <ClCompile Include="..\..\src\dumb\it\readpsm.c" />
-    <ClCompile Include="..\..\src\dumb\it\readptm.c" />
-    <ClCompile Include="..\..\src\dumb\it\readriff.c" />
-    <ClCompile Include="..\..\src\dumb\it\reads3m.c" />
-    <ClCompile Include="..\..\src\dumb\it\reads3m2.c" />
-    <ClCompile Include="..\..\src\dumb\it\readstm.c" />
-    <ClCompile Include="..\..\src\dumb\it\readstm2.c" />
-    <ClCompile Include="..\..\src\dumb\it\readxm.c" />
-    <ClCompile Include="..\..\src\dumb\it\readxm2.c" />
-    <ClCompile Include="..\..\src\dumb\it\xmeffect.c" />
-    <ClCompile Include="..\..\src\EntryDataFormat.cpp" />
-    <ClCompile Include="..\..\src\Executables.cpp" />
-    <ClCompile Include="..\..\src\ExtMessageDialog.cpp" />
-    <ClCompile Include="..\..\src\FileMonitor.cpp" />
-    <ClCompile Include="..\..\src\GameConfiguration.cpp" />
-    <ClCompile Include="..\..\src\GenLineSpecial.cpp" />
-    <ClCompile Include="..\..\src\GenLineSpecialPanel.cpp" />
-    <ClCompile Include="..\..\src\GfxConvDialog.cpp" />
-    <ClCompile Include="..\..\src\glew\glew.c" />
-    <ClCompile Include="..\..\src\GobArchive.cpp" />
-    <ClCompile Include="..\..\src\GrpArchive.cpp" />
-    <ClCompile Include="..\..\src\GZipArchive.cpp" />
-    <ClCompile Include="..\..\src\HexEditorPanel.cpp" />
-    <ClCompile Include="..\..\src\HexEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\HogArchive.cpp" />
-    <ClCompile Include="..\..\src\InfoOverlay3d.cpp" />
-    <ClCompile Include="..\..\src\KeyBind.cpp" />
+    <ClCompile Include="..\..\src\Dialogs\TranslationEditorDialog.cpp" />
+    <ClCompile Include="..\..\src\External\dumb\core\atexit.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\duhlen.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\duhtag.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\dumbfile.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\loadduh.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\makeduh.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\rawsig.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\readduh.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\register.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\rendduh.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\rendsig.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\core\unload.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\barray.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\clickrem.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\fir_resampler.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\lpc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\memfile.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\resample.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\resampler.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\riff.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\sampbuf.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\silence.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\stdfile.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\helpers\tarray.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itload.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itload2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itmisc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itorder.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itread.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itread2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itrender.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\itunload.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\load669.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\load6692.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadamf.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadamf2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadany.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadany2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadasy.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadasy2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadmod.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadmod2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadmtm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadmtm2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadokt.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadokt2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadoldpsm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadoldpsm2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadpsm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadpsm2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadptm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadptm2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadriff.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadriff2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loads3m.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loads3m2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadstm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadstm2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadxm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\loadxm2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\ptmeffect.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\read669.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\read6692.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readam.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readamf.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readamf2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readany.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readany2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readasy.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readdsmf.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readmod.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readmod2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readmtm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readokt.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readokt2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readoldpsm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readpsm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readptm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readriff.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\reads3m.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\reads3m2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readstm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readstm2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readxm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\readxm2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\dumb\it\xmeffect.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\email\wxEmailMessage.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\email\wxEmailMessageID.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\email\wxMailer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\Clipboard.cpp" />
+    <ClCompile Include="..\..\src\General\ColourConfiguration.cpp" />
+    <ClCompile Include="..\..\src\General\Console\Console.cpp" />
+    <ClCompile Include="..\..\src\General\CVar.cpp" />
+    <ClCompile Include="..\..\src\General\Executables.cpp" />
+    <ClCompile Include="..\..\src\General\KeyBind.cpp" />
+    <ClCompile Include="..\..\src\General\ListenerAnnouncer.cpp" />
+    <ClCompile Include="..\..\src\General\Lua.cpp" />
+    <ClCompile Include="..\..\src\General\Misc.cpp" />
+    <ClCompile Include="..\..\src\General\ResourceManager.cpp" />
+    <ClCompile Include="..\..\src\General\SAction.cpp" />
+    <ClCompile Include="..\..\src\General\UndoRedo.cpp" />
+    <ClCompile Include="..\..\src\General\VersionCheck.cpp" />
+    <ClCompile Include="..\..\src\External\glew\glew.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Graphics\CTexture\CTexture.cpp" />
+    <ClCompile Include="..\..\src\Graphics\CTexture\PatchTable.cpp" />
+    <ClCompile Include="..\..\src\Graphics\CTexture\TextureXList.cpp" />
+    <ClCompile Include="..\..\src\Graphics\Font\SFont.cpp" />
+    <ClCompile Include="..\..\src\Graphics\Icons.cpp" />
+    <ClCompile Include="..\..\src\Graphics\Palette\Palette.cpp" />
+    <ClCompile Include="..\..\src\Graphics\Palette\PaletteManager.cpp" />
+    <ClCompile Include="..\..\src\Graphics\SImage\SIFormat.cpp" />
+    <ClCompile Include="..\..\src\Graphics\SImage\SImage.cpp" />
+    <ClCompile Include="..\..\src\Graphics\SImage\SImageFormats.cpp" />
+    <ClCompile Include="..\..\src\Graphics\Translation.cpp" />
+    <ClCompile Include="..\..\src\External\lua\lapi.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lauxlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lbaselib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lbitlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lcode.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lcorolib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lctype.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ldblib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ldebug.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ldo.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ldump.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lfunc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lgc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\linit.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\liolib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\llex.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lmathlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lmem.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\loadlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lobject.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lopcodes.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\loslib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lparser.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lstate.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lstring.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lstrlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ltable.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ltablib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\ltm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lundump.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lvm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lua\lzio.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zAlloc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zBuf.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zBuf2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zCrc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zCrcOpt.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zDec.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zFile.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zIn.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\7zStream.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Alloc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Bcj2.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Bra.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Bra86.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\BraIA64.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\CpuArch.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Delta.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\LzFind.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\LzFindMt.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma2Dec.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma2Enc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma86Dec.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Lzma86Enc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaDec.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaEnc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\LzmaLib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\MtCoder.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7Dec.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Ppmd7Enc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Sha256.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Threads.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\Xz.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\XzCrc64.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\XzDec.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\XzEnc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\lzma\C\XzIn.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Launcher\IdGames.cpp" />
     <ClCompile Include="..\..\src\Launcher\UI\IdGamesPanel.cpp" />
     <ClCompile Include="..\..\src\Launcher\UI\LauncherPanel.cpp" />
-    <ClCompile Include="..\..\src\LfdArchive.cpp" />
-    <ClCompile Include="..\..\src\LibArchive.cpp" />
-    <ClCompile Include="..\..\src\LineInfoOverlay.cpp" />
-    <ClCompile Include="..\..\src\LinePropsPanel.cpp" />
-    <ClCompile Include="..\..\src\LineTextureOverlay.cpp" />
-    <ClCompile Include="..\..\src\Lua.cpp" />
-    <ClCompile Include="..\..\src\lua\lapi.c" />
-    <ClCompile Include="..\..\src\lua\lauxlib.c" />
-    <ClCompile Include="..\..\src\lua\lbaselib.c" />
-    <ClCompile Include="..\..\src\lua\lbitlib.c" />
-    <ClCompile Include="..\..\src\lua\lcode.c" />
-    <ClCompile Include="..\..\src\lua\lcorolib.c" />
-    <ClCompile Include="..\..\src\lua\lctype.c" />
-    <ClCompile Include="..\..\src\lua\ldblib.c" />
-    <ClCompile Include="..\..\src\lua\ldebug.c" />
-    <ClCompile Include="..\..\src\lua\ldo.c" />
-    <ClCompile Include="..\..\src\lua\ldump.c" />
-    <ClCompile Include="..\..\src\lua\lfunc.c" />
-    <ClCompile Include="..\..\src\lua\lgc.c" />
-    <ClCompile Include="..\..\src\lua\linit.c" />
-    <ClCompile Include="..\..\src\lua\liolib.c" />
-    <ClCompile Include="..\..\src\lua\llex.c" />
-    <ClCompile Include="..\..\src\lua\lmathlib.c" />
-    <ClCompile Include="..\..\src\lua\lmem.c" />
-    <ClCompile Include="..\..\src\lua\loadlib.c" />
-    <ClCompile Include="..\..\src\lua\lobject.c" />
-    <ClCompile Include="..\..\src\lua\lopcodes.c" />
-    <ClCompile Include="..\..\src\lua\loslib.c" />
-    <ClCompile Include="..\..\src\lua\lparser.c" />
-    <ClCompile Include="..\..\src\lua\lstate.c" />
-    <ClCompile Include="..\..\src\lua\lstring.c" />
-    <ClCompile Include="..\..\src\lua\lstrlib.c" />
-    <ClCompile Include="..\..\src\lua\ltable.c" />
-    <ClCompile Include="..\..\src\lua\ltablib.c" />
-    <ClCompile Include="..\..\src\lua\ltm.c" />
-    <ClCompile Include="..\..\src\lua\lundump.c" />
-    <ClCompile Include="..\..\src\lua\lvm.c" />
-    <ClCompile Include="..\..\src\lua\lzio.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zAlloc.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zBuf.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zBuf2.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zCrc.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zCrcOpt.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zDec.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zFile.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zIn.c" />
-    <ClCompile Include="..\..\src\lzma\C\7zStream.c" />
-    <ClCompile Include="..\..\src\lzma\C\Alloc.c" />
-    <ClCompile Include="..\..\src\lzma\C\Bcj2.c" />
-    <ClCompile Include="..\..\src\lzma\C\Bra.c" />
-    <ClCompile Include="..\..\src\lzma\C\Bra86.c" />
-    <ClCompile Include="..\..\src\lzma\C\BraIA64.c" />
-    <ClCompile Include="..\..\src\lzma\C\CpuArch.c" />
-    <ClCompile Include="..\..\src\lzma\C\Delta.c" />
-    <ClCompile Include="..\..\src\lzma\C\LzFind.c" />
-    <ClCompile Include="..\..\src\lzma\C\LzFindMt.c" />
-    <ClCompile Include="..\..\src\lzma\C\Lzma2Dec.c" />
-    <ClCompile Include="..\..\src\lzma\C\Lzma2Enc.c" />
-    <ClCompile Include="..\..\src\lzma\C\Lzma86Dec.c" />
-    <ClCompile Include="..\..\src\lzma\C\Lzma86Enc.c" />
-    <ClCompile Include="..\..\src\lzma\C\LzmaDec.c" />
-    <ClCompile Include="..\..\src\lzma\C\LzmaEnc.c" />
-    <ClCompile Include="..\..\src\lzma\C\LzmaLib.c" />
-    <ClCompile Include="..\..\src\lzma\C\MtCoder.c" />
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7.c" />
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7Dec.c" />
-    <ClCompile Include="..\..\src\lzma\C\Ppmd7Enc.c" />
-    <ClCompile Include="..\..\src\lzma\C\Sha256.c" />
-    <ClCompile Include="..\..\src\lzma\C\Threads.c" />
-    <ClCompile Include="..\..\src\lzma\C\Xz.c" />
-    <ClCompile Include="..\..\src\lzma\C\XzCrc64.c" />
-    <ClCompile Include="..\..\src\lzma\C\XzDec.c" />
-    <ClCompile Include="..\..\src\lzma\C\XzEnc.c" />
-    <ClCompile Include="..\..\src\lzma\C\XzIn.c" />
-    <ClCompile Include="..\..\src\MapBackupManager.cpp" />
-    <ClCompile Include="..\..\src\MapBackupPanel.cpp" />
-    <ClCompile Include="..\..\src\MapChecks.cpp" />
-    <ClCompile Include="..\..\src\MapChecksPanel.cpp" />
-    <ClCompile Include="..\..\src\MapEditor.cpp" />
-    <ClCompile Include="..\..\src\MapEditorConfigDialog.cpp" />
-    <ClCompile Include="..\..\src\MapEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\MapObject.cpp" />
-    <ClCompile Include="..\..\src\MapObjectPropsPanel.cpp" />
-    <ClCompile Include="..\..\src\MapPreviewCanvas.cpp" />
-    <ClCompile Include="..\..\src\MapRenderer2D.cpp" />
-    <ClCompile Include="..\..\src\MapRenderer3D.cpp" />
-    <ClCompile Include="..\..\src\MapReplaceDialog.cpp" />
-    <ClCompile Include="..\..\src\MapSpecials.cpp" />
-    <ClCompile Include="..\..\src\MapTextureBrowser.cpp" />
-    <ClCompile Include="..\..\src\MapTextureManager.cpp" />
-    <ClCompile Include="..\..\src\MathStuff.cpp" />
-    <ClCompile Include="..\..\src\MCAnimations.cpp" />
-    <ClCompile Include="..\..\src\MIDIPlayer.cpp" />
-    <ClCompile Include="..\..\src\MobjPropertyList.cpp" />
-    <ClCompile Include="..\..\src\ModifyOffsetsDialog.cpp" />
-    <ClCompile Include="..\..\src\ModMusic.cpp" />
-    <ClCompile Include="..\..\src\MOPGProperty.cpp" />
-    <ClCompile Include="..\..\src\mus2mid\mus2mid.cpp" />
-    <ClCompile Include="..\..\src\NodeBuilders.cpp" />
-    <ClCompile Include="..\..\src\NumberTextCtrl.cpp" />
-    <ClCompile Include="..\..\src\ObjectEdit.cpp" />
-    <ClCompile Include="..\..\src\ObjectEditPanel.cpp" />
-    <ClCompile Include="..\..\src\PakArchive.cpp" />
-    <ClCompile Include="..\..\src\PaletteDialog.cpp" />
-    <ClCompile Include="..\..\src\Clipboard.cpp" />
-    <ClCompile Include="..\..\src\Console.cpp" />
-    <ClCompile Include="..\..\src\CVar.cpp" />
-    <ClCompile Include="..\..\src\ListenerAnnouncer.cpp" />
-    <ClCompile Include="..\..\src\MainApp.cpp" />
-    <ClCompile Include="..\..\src\MemChunk.cpp" />
-    <ClCompile Include="..\..\src\Misc.cpp" />
-    <ClCompile Include="..\..\src\OpenGL.cpp" />
-    <ClCompile Include="..\..\src\Parser.cpp" />
-    <ClCompile Include="..\..\src\PatchBrowser.cpp" />
-    <ClCompile Include="..\..\src\PodArchive.cpp" />
-    <ClCompile Include="..\..\src\Polygon2D.cpp" />
-    <ClCompile Include="..\..\src\QuickTextureOverlay3d.cpp" />
-    <ClCompile Include="..\..\src\ResArchive.cpp" />
-    <ClCompile Include="..\..\src\ResourceArchiveChooser.cpp" />
-    <ClCompile Include="..\..\src\ResourceManager.cpp" />
-    <ClCompile Include="..\..\src\RffArchive.cpp" />
-    <ClCompile Include="..\..\src\SAction.cpp" />
-    <ClCompile Include="..\..\src\SAuiTabArt.cpp" />
-    <ClCompile Include="..\..\src\ScriptEditorPanel.cpp" />
-    <ClCompile Include="..\..\src\SDialog.cpp" />
-    <ClCompile Include="..\..\src\SectorBuilder.cpp" />
-    <ClCompile Include="..\..\src\SectorInfoOverlay.cpp" />
-    <ClCompile Include="..\..\src\SectorPropsPanel.cpp" />
-    <ClCompile Include="..\..\src\SectorSpecialDialog.cpp" />
-    <ClCompile Include="..\..\src\SectorTextureOverlay.cpp" />
-    <ClCompile Include="..\..\src\SFileDialog.cpp" />
-    <ClCompile Include="..\..\src\SFont.cpp" />
-    <ClCompile Include="..\..\src\ShapeDrawPanel.cpp" />
-    <ClCompile Include="..\..\src\ShowItemDialog.cpp" />
-    <ClCompile Include="..\..\src\SidePropsPanel.cpp" />
-    <ClCompile Include="..\..\src\SIFormat.cpp" />
-    <ClCompile Include="..\..\src\SImageFormats.cpp" />
-    <ClCompile Include="..\..\src\STabCtrl.cpp" />
-    <ClCompile Include="..\..\src\SToolBar.cpp" />
-    <ClCompile Include="..\..\src\SToolBarButton.cpp" />
-    <ClCompile Include="..\..\src\STopWindow.cpp" />
-    <ClCompile Include="..\..\src\TarArchive.cpp" />
-    <ClCompile Include="..\..\src\TextLanguage.cpp" />
-    <ClCompile Include="..\..\src\TextStyle.cpp" />
-    <ClCompile Include="..\..\src\TextureXPanel.cpp" />
-    <ClCompile Include="..\..\src\ThingInfoOverlay.cpp" />
-    <ClCompile Include="..\..\src\ThingPropsPanel.cpp" />
-    <ClCompile Include="..\..\src\ThingType.cpp" />
-    <ClCompile Include="..\..\src\ThingTypeBrowser.cpp" />
-    <ClCompile Include="..\..\src\ThingTypeTreeView.cpp" />
-    <ClCompile Include="..\..\src\Tokenizer.cpp" />
-    <ClCompile Include="..\..\src\Translation.cpp" />
-    <ClCompile Include="..\..\src\TranslationEditorDialog.cpp" />
-    <ClCompile Include="..\..\src\Tree.cpp" />
-    <ClCompile Include="..\..\src\UDMFProperty.cpp" />
-    <ClCompile Include="..\..\src\UndoManagerHistoryPanel.cpp" />
-    <ClCompile Include="..\..\src\UndoRedo.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\AnimatedList.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\ArchiveOperations.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\Conversions.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\ArchivePanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\DocsPage.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\AudioEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\DataEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\DefaultEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\EntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\GfxEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\HexEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\MapEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.cpp" />
+    <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ThingType.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\MapBackupManager.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\MapChecks.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\MapEditor.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\MapEditorWindow.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\MapSpecials.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\MapTextureManager.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\NodeBuilders.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\ObjectEdit.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\MapRenderer2D.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\MapRenderer3D.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\MCAnimations.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\InfoOverlay3d.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\LineInfoOverlay.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\LineTextureOverlay.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\QuickTextureOverlay3d.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\SectorInfoOverlay.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\SectorTextureOverlay.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\ThingInfoOverlay.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SectorBuilder.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapLine.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapObject.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapSector.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapSide.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapThing.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapVertex.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\MobjPropertyList.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\SLADEMap\SLADEMap.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ActionSpecialDialog.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\MapTextureBrowser.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\SectorSpecialDialog.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ShowItemDialog.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\Dialogs\ThingTypeBrowser.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\MapBackupPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\MapCanvas.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\MapChecksPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\ObjectEditPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\LinePropsPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\MapObjectPropsPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\MOPGProperty.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\SectorPropsPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\SidePropsPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\ThingPropsPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\ScriptEditorPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\ShapeDrawPanel.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\Drawing.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp" />
+    <ClCompile Include="..\..\src\OpenGL\OpenGL.cpp" />
+    <ClCompile Include="..\..\src\UI\BaseResourceChooser.cpp" />
+    <ClCompile Include="..\..\src\UI\Browser\BrowserCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Browser\BrowserItem.cpp" />
+    <ClCompile Include="..\..\src\UI\Browser\BrowserWindow.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\ANSICanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\CTextureCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\GfxCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\MapPreviewCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\OGLCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\Canvas\PaletteCanvas.cpp" />
+    <ClCompile Include="..\..\src\UI\ColourBox.cpp" />
+    <ClCompile Include="..\..\src\UI\ConsolePanel.cpp" />
+    <ClCompile Include="..\..\src\UI\DockPanel.cpp" />
+    <ClCompile Include="..\..\src\UI\HexEditorPanel.cpp" />
+    <ClCompile Include="..\..\src\UI\Lists\ArchiveEntryList.cpp" />
+    <ClCompile Include="..\..\src\UI\Lists\ListView.cpp" />
+    <ClCompile Include="..\..\src\UI\Lists\VirtualListView.cpp" />
+    <ClCompile Include="..\..\src\UI\NumberTextCtrl.cpp" />
+    <ClCompile Include="..\..\src\UI\PaletteChooser.cpp" />
+    <ClCompile Include="..\..\src\UI\ResourceArchiveChooser.cpp" />
+    <ClCompile Include="..\..\src\UI\SAuiTabArt.cpp" />
+    <ClCompile Include="..\..\src\UI\SDialog.cpp" />
+    <ClCompile Include="..\..\src\UI\SplashWindow.cpp" />
+    <ClCompile Include="..\..\src\UI\STabCtrl.cpp" />
+    <ClCompile Include="..\..\src\UI\SToolBar\SToolBar.cpp" />
+    <ClCompile Include="..\..\src\UI\SToolBar\SToolBarButton.cpp" />
+    <ClCompile Include="..\..\src\UI\STopWindow.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\SCallTip.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\TextEditor.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\TextLanguage.cpp" />
+    <ClCompile Include="..\..\src\UI\TextEditor\TextStyle.cpp" />
+    <ClCompile Include="..\..\src\UI\UndoManagerHistoryPanel.cpp" />
+    <ClCompile Include="..\..\src\UI\WxStuff.cpp" />
+    <ClCompile Include="..\..\src\Utility\CIEDeltaEquations.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\CodePages.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\Compression.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utility\FileMonitor.cpp" />
+    <ClCompile Include="..\..\src\Utility\MathStuff.cpp" />
+    <ClCompile Include="..\..\src\Utility\MemChunk.cpp" />
+    <ClCompile Include="..\..\src\Utility\Parser.cpp" />
+    <ClCompile Include="..\..\src\Utility\Polygon2D.cpp" />
+    <ClCompile Include="..\..\src\Utility\PropertyList\Property.cpp" />
+    <ClCompile Include="..\..\src\Utility\PropertyList\PropertyList.cpp" />
+    <ClCompile Include="..\..\src\Utility\SFileDialog.cpp" />
+    <ClCompile Include="..\..\src\Utility\Tokenizer.cpp" />
+    <ClCompile Include="..\..\src\Utility\Tree.cpp" />
+    <ClCompile Include="..\..\src\External\zlib\adler32.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\crc32.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\deflate.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\gzio.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\infback.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\inffast.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\inflate.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\inftrees.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\trees.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\uncompr.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zlib\zutil.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zreaders\files.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zreaders\i_music.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zreaders\music_hmi_midiout.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zreaders\music_midistream.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zreaders\music_mus_midiout.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zreaders\music_smf_midiout.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zreaders\music_xmi_midiout.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\External\zreaders\m_alloc.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Utility\XmlHelpers.cpp" />
-    <ClCompile Include="..\..\src\VersionCheck.cpp" />
-    <ClCompile Include="..\..\src\VertexInfoOverlay.cpp" />
-    <ClCompile Include="..\..\src\VirtualListView.cpp" />
-    <ClCompile Include="..\..\src\Wad2Archive.cpp" />
-    <ClCompile Include="..\..\src\WadJArchive.cpp" />
-    <ClCompile Include="..\..\src\WolfArchive.cpp" />
-    <ClCompile Include="..\..\src\WxStuff.cpp" />
-    <ClCompile Include="..\..\src\Property.cpp" />
-    <ClCompile Include="..\..\src\PropertyList.cpp" />
-    <ClCompile Include="..\..\src\EntryOperations.cpp" />
-    <ClCompile Include="..\..\src\MainWindow.cpp" />
-    <ClCompile Include="..\..\src\ArchiveManagerPanel.cpp" />
-    <ClCompile Include="..\..\src\ConsolePanel.cpp" />
-    <ClCompile Include="..\..\src\TextEditor.cpp" />
-    <ClCompile Include="..\..\src\ArchivePanel.cpp" />
-    <ClCompile Include="..\..\src\AnimatedEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\DefaultEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\EntryPanel.cpp" />
-    <ClCompile Include="..\..\src\GfxEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\PaletteEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\SwitchesEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\TextEntryPanel.cpp" />
-    <ClCompile Include="..\..\src\PatchTablePanel.cpp" />
-    <ClCompile Include="..\..\src\TextureEditorPanel.cpp" />
-    <ClCompile Include="..\..\src\TextureXEditor.cpp" />
-    <ClCompile Include="..\..\src\MapEditorWindow.cpp" />
-    <ClCompile Include="..\..\src\MapCanvas.cpp" />
-    <ClCompile Include="..\..\src\MapLine.cpp" />
-    <ClCompile Include="..\..\src\MapSector.cpp" />
-    <ClCompile Include="..\..\src\MapSide.cpp" />
-    <ClCompile Include="..\..\src\MapThing.cpp" />
-    <ClCompile Include="..\..\src\MapVertex.cpp" />
-    <ClCompile Include="..\..\src\SLADEMap.cpp" />
-    <ClCompile Include="..\..\src\Archive.cpp" />
-    <ClCompile Include="..\..\src\ArchiveEntry.cpp" />
-    <ClCompile Include="..\..\src\ArchiveManager.cpp" />
-    <ClCompile Include="..\..\src\EntryType.cpp" />
-    <ClCompile Include="..\..\src\WadArchive.cpp" />
-    <ClCompile Include="..\..\src\ZipArchive.cpp" />
-    <ClCompile Include="..\..\src\AnimatedList.cpp" />
-    <ClCompile Include="..\..\src\SwitchesList.cpp" />
-    <ClCompile Include="..\..\src\GLTexture.cpp" />
-    <ClCompile Include="..\..\src\Icons.cpp" />
-    <ClCompile Include="..\..\src\SImage.cpp" />
-    <ClCompile Include="..\..\src\Palette.cpp" />
-    <ClCompile Include="..\..\src\PaletteManager.cpp" />
-    <ClCompile Include="..\..\src\CTexture.cpp" />
-    <ClCompile Include="..\..\src\PatchTable.cpp" />
-    <ClCompile Include="..\..\src\TextureXList.cpp" />
-    <ClCompile Include="..\..\src\ColourBox.cpp" />
-    <ClCompile Include="..\..\src\CTextureCanvas.cpp" />
-    <ClCompile Include="..\..\src\GfxCanvas.cpp" />
-    <ClCompile Include="..\..\src\ListView.cpp" />
-    <ClCompile Include="..\..\src\OGLCanvas.cpp" />
-    <ClCompile Include="..\..\src\PaletteCanvas.cpp" />
-    <ClCompile Include="..\..\src\PaletteChooser.cpp" />
-    <ClCompile Include="..\..\src\SplashWindow.cpp" />
-    <ClCompile Include="..\..\src\zlib\adler32.c" />
-    <ClCompile Include="..\..\src\zlib\crc32.c" />
-    <ClCompile Include="..\..\src\zlib\deflate.c" />
-    <ClCompile Include="..\..\src\zlib\gzio.c" />
-    <ClCompile Include="..\..\src\zlib\infback.c" />
-    <ClCompile Include="..\..\src\zlib\inffast.c" />
-    <ClCompile Include="..\..\src\zlib\inflate.c" />
-    <ClCompile Include="..\..\src\zlib\inftrees.c" />
-    <ClCompile Include="..\..\src\zlib\trees.c" />
-    <ClCompile Include="..\..\src\zlib\uncompr.c" />
-    <ClCompile Include="..\..\src\zlib\zutil.c" />
-    <ClCompile Include="..\..\src\zreaders\ancientzip.cpp" />
-    <ClCompile Include="..\..\src\zreaders\files.cpp" />
-    <ClCompile Include="..\..\src\zreaders\i_music.cpp" />
-    <ClCompile Include="..\..\src\zreaders\music_hmi_midiout.cpp" />
-    <ClCompile Include="..\..\src\zreaders\music_midistream.cpp" />
-    <ClCompile Include="..\..\src\zreaders\music_mus_midiout.cpp" />
-    <ClCompile Include="..\..\src\zreaders\music_smf_midiout.cpp" />
-    <ClCompile Include="..\..\src\zreaders\music_xmi_midiout.cpp" />
-    <ClCompile Include="..\..\src\zreaders\m_alloc.cpp" />
-    <ClCompile Include="..\..\src\ZTextureEditorPanel.cpp" />
+    <ClCompile Include="_CreatePCH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - FTGL|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\ActionSpecial.h" />
-    <ClInclude Include="..\..\src\ActionSpecialDialog.h" />
-    <ClInclude Include="..\..\src\ADatArchive.h" />
-    <ClInclude Include="..\..\src\ANSICanvas.h" />
-    <ClInclude Include="..\..\src\ANSIEntryPanel.h" />
-    <ClInclude Include="..\..\src\ArchiveEntryList.h" />
-    <ClInclude Include="..\..\src\ArchiveFormats.h" />
-    <ClInclude Include="..\..\src\ArchiveOperations.h" />
-    <ClInclude Include="..\..\src\Archives.h" />
-    <ClInclude Include="..\..\src\Args.h" />
-    <ClInclude Include="..\..\src\AudioEntryPanel.h" />
-    <ClInclude Include="..\..\src\AudioFormats.h" />
-    <ClInclude Include="..\..\src\BaseResourceChooser.h" />
-    <ClInclude Include="..\..\src\BrowserCanvas.h" />
-    <ClInclude Include="..\..\src\BrowserItem.h" />
-    <ClInclude Include="..\..\src\BrowserWindow.h" />
-    <ClInclude Include="..\..\src\BSPArchive.h" />
-    <ClInclude Include="..\..\src\BZip2Archive.h" />
-    <ClInclude Include="..\..\src\bzip2\bzlib.h" />
-    <ClInclude Include="..\..\src\bzip2\bzlib_private.h" />
-    <ClInclude Include="..\..\src\ChasmBinArchive.h" />
-    <ClInclude Include="..\..\src\CodePages.h" />
-    <ClInclude Include="..\..\src\ColourConfiguration.h" />
-    <ClInclude Include="..\..\src\Compression.h" />
-    <ClInclude Include="..\..\src\ConsoleHelpers.h" />
-    <ClInclude Include="..\..\src\Conversions.h" />
-    <ClInclude Include="..\..\src\DataEntryPanel.h" />
-    <ClInclude Include="..\..\src\DatArchive.h" />
+    <ClInclude Include="..\..\src\Application\Main.h" />
+    <ClInclude Include="..\..\src\Application\MainApp.h" />
+    <ClInclude Include="..\..\src\Archive\Archive.h" />
+    <ClInclude Include="..\..\src\Archive\ArchiveEntry.h" />
+    <ClInclude Include="..\..\src\Archive\ArchiveManager.h" />
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ArchiveFormats.h" />
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\AudioFormats.h" />
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ImageFormats.h" />
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\LumpFormats.h" />
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\MiscFormats.h" />
+    <ClInclude Include="..\..\src\Archive\EntryType\DataFormats\ModelFormats.h" />
+    <ClInclude Include="..\..\src\Archive\EntryType\EntryDataFormat.h" />
+    <ClInclude Include="..\..\src\Archive\EntryType\EntryType.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\ADatArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\All.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\BSPArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\BZip2Archive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\ChasmBinArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\DatArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\DirArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\DiskArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\GobArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\GrpArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\GZipArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\HogArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\LfdArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\LibArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\PakArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\PodArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\ResArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\RffArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\TarArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\Wad2Archive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\WadArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\WadJArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\WolfArchive.h" />
+    <ClInclude Include="..\..\src\Archive\Formats\ZipArchive.h" />
+    <ClInclude Include="..\..\src\Audio\MIDIPlayer.h" />
+    <ClInclude Include="..\..\src\Audio\ModMusic.h" />
+    <ClInclude Include="..\..\src\common.h" />
+    <ClInclude Include="..\..\src\common2.h" />
+    <ClInclude Include="..\..\src\External\bzip2\bzlib.h" />
+    <ClInclude Include="..\..\src\External\bzip2\bzlib_private.h" />
     <ClInclude Include="..\..\src\Dialogs\DirArchiveUpdateDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\ExtMessageDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\GfxConvDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\MapEditorConfigDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\MapReplaceDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\ModifyOffsetsDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\PaletteDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\Preferences\ACSPrefsPanel.h" />
     <ClInclude Include="..\..\src\Dialogs\Preferences\AdvancedPrefsPanel.h" />
     <ClInclude Include="..\..\src\Dialogs\Preferences\AudioPrefsPanel.h" />
@@ -646,344 +1435,277 @@
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\SetupWizardDialog.h" />
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\TempFolderWizardPage.h" />
     <ClInclude Include="..\..\src\Dialogs\SetupWizard\WizardPageBase.h" />
-    <ClInclude Include="..\..\src\DirArchive.h" />
-    <ClInclude Include="..\..\src\DiskArchive.h" />
-    <ClInclude Include="..\..\src\DockPanel.h" />
-    <ClInclude Include="..\..\src\DocsPage.h" />
-    <ClInclude Include="..\..\src\Drawing.h" />
-    <ClInclude Include="..\..\src\dumb\dumb.h" />
-    <ClInclude Include="..\..\src\dumb\internal\aldumb.h" />
-    <ClInclude Include="..\..\src\dumb\internal\barray.h" />
-    <ClInclude Include="..\..\src\dumb\internal\dumb.h" />
-    <ClInclude Include="..\..\src\dumb\internal\dumbfile.h" />
-    <ClInclude Include="..\..\src\dumb\internal\fir_resampler.h" />
-    <ClInclude Include="..\..\src\dumb\internal\it.h" />
-    <ClInclude Include="..\..\src\dumb\internal\lpc.h" />
-    <ClInclude Include="..\..\src\dumb\internal\resampler.h" />
-    <ClInclude Include="..\..\src\dumb\internal\riff.h" />
-    <ClInclude Include="..\..\src\dumb\internal\stack_alloc.h" />
-    <ClInclude Include="..\..\src\dumb\internal\tarray.h" />
-    <ClInclude Include="..\..\src\EntryDataFormat.h" />
-    <ClInclude Include="..\..\src\Executables.h" />
-    <ClInclude Include="..\..\src\ExtMessageDialog.h" />
-    <ClInclude Include="..\..\src\FileMonitor.h" />
-    <ClInclude Include="..\..\src\GameConfiguration.h" />
-    <ClInclude Include="..\..\src\GenLineSpecial.h" />
-    <ClInclude Include="..\..\src\GenLineSpecialPanel.h" />
-    <ClInclude Include="..\..\src\GfxConvDialog.h" />
+    <ClInclude Include="..\..\src\Dialogs\TranslationEditorDialog.h" />
+    <ClInclude Include="..\..\src\External\dumb\dumb.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\aldumb.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\barray.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\dumb.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\dumbfile.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\fir_resampler.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\it.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\lpc.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\resampler.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\riff.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\stack_alloc.h" />
+    <ClInclude Include="..\..\src\External\dumb\internal\tarray.h" />
+    <ClInclude Include="..\..\src\External\email\wxEmailMessage.h" />
+    <ClInclude Include="..\..\src\External\email\wxEmailMessageID.h" />
+    <ClInclude Include="..\..\src\External\email\wxMailer.h" />
+    <ClInclude Include="..\..\src\General\Clipboard.h" />
+    <ClInclude Include="..\..\src\General\ColourConfiguration.h" />
+    <ClInclude Include="..\..\src\General\Console\Console.h" />
+    <ClInclude Include="..\..\src\General\Console\ConsoleHelpers.h" />
+    <ClInclude Include="..\..\src\General\CVar.h" />
+    <ClInclude Include="..\..\src\General\Executables.h" />
+    <ClInclude Include="..\..\src\General\KeyBind.h" />
+    <ClInclude Include="..\..\src\General\ListenerAnnouncer.h" />
+    <ClInclude Include="..\..\src\General\Lua.h" />
+    <ClInclude Include="..\..\src\General\Misc.h" />
+    <ClInclude Include="..\..\src\General\ResourceManager.h" />
+    <ClInclude Include="..\..\src\General\SAction.h" />
+    <ClInclude Include="..\..\src\General\UndoRedo.h" />
+    <ClInclude Include="..\..\src\General\VersionCheck.h" />
     <ClInclude Include="..\..\src\glew\glew.h" />
     <ClInclude Include="..\..\src\glew\glxew.h" />
     <ClInclude Include="..\..\src\glew\wglew.h" />
-    <ClInclude Include="..\..\src\GobArchive.h" />
-    <ClInclude Include="..\..\src\GrpArchive.h" />
-    <ClInclude Include="..\..\src\GZipArchive.h" />
-    <ClInclude Include="..\..\src\HexEditorPanel.h" />
-    <ClInclude Include="..\..\src\HexEntryPanel.h" />
-    <ClInclude Include="..\..\src\HogArchive.h" />
-    <ClInclude Include="..\..\src\ImageFormats.h" />
-    <ClInclude Include="..\..\src\InfoOverlay3d.h" />
-    <ClInclude Include="..\..\src\KeyBind.h" />
+    <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h" />
+    <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h" />
+    <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h" />
+    <ClInclude Include="..\..\src\Graphics\Font\SFont.h" />
+    <ClInclude Include="..\..\src\Graphics\Icons.h" />
+    <ClInclude Include="..\..\src\Graphics\Palette\Palette.h" />
+    <ClInclude Include="..\..\src\Graphics\Palette\PaletteManager.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFDoom.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFHexen.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFImages.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFJedi.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFOther.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFQuake.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFRott.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\Formats\SIFZDoom.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\SIFormat.h" />
+    <ClInclude Include="..\..\src\Graphics\SImage\SImage.h" />
+    <ClInclude Include="..\..\src\Graphics\Translation.h" />
+    <ClInclude Include="..\..\src\External\lua\lapi.h" />
+    <ClInclude Include="..\..\src\External\lua\lauxlib.h" />
+    <ClInclude Include="..\..\src\External\lua\lcode.h" />
+    <ClInclude Include="..\..\src\External\lua\lctype.h" />
+    <ClInclude Include="..\..\src\External\lua\ldebug.h" />
+    <ClInclude Include="..\..\src\External\lua\ldo.h" />
+    <ClInclude Include="..\..\src\External\lua\lfunc.h" />
+    <ClInclude Include="..\..\src\External\lua\lgc.h" />
+    <ClInclude Include="..\..\src\External\lua\llex.h" />
+    <ClInclude Include="..\..\src\External\lua\llimits.h" />
+    <ClInclude Include="..\..\src\External\lua\lmem.h" />
+    <ClInclude Include="..\..\src\External\lua\lobject.h" />
+    <ClInclude Include="..\..\src\External\lua\lopcodes.h" />
+    <ClInclude Include="..\..\src\External\lua\lparser.h" />
+    <ClInclude Include="..\..\src\External\lua\lstate.h" />
+    <ClInclude Include="..\..\src\External\lua\lstring.h" />
+    <ClInclude Include="..\..\src\External\lua\ltable.h" />
+    <ClInclude Include="..\..\src\External\lua\ltm.h" />
+    <ClInclude Include="..\..\src\External\lua\lua.h" />
+    <ClInclude Include="..\..\src\External\lua\lua.hpp" />
+    <ClInclude Include="..\..\src\External\lua\luaconf.h" />
+    <ClInclude Include="..\..\src\External\lua\lualib.h" />
+    <ClInclude Include="..\..\src\External\lua\lundump.h" />
+    <ClInclude Include="..\..\src\External\lua\lvm.h" />
+    <ClInclude Include="..\..\src\External\lua\lzio.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\7z.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\7zAlloc.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\7zBuf.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\7zCrc.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\7zFile.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\7zVersion.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Alloc.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Bcj2.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Bra.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\CpuArch.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Delta.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\LzFind.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\LzFindMt.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\LzHash.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma2Dec.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma2Enc.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Lzma86.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaDec.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaEnc.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\LzmaLib.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\MtCoder.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Ppmd.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Ppmd7.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\RotateDefs.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Sha256.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Threads.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Types.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\Xz.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\XzCrc64.h" />
+    <ClInclude Include="..\..\src\External\lzma\C\XzEnc.h" />
     <ClInclude Include="..\..\src\Launcher\IdGames.h" />
     <ClInclude Include="..\..\src\Launcher\Library.h" />
     <ClInclude Include="..\..\src\Launcher\UI\IdGamesPanel.h" />
     <ClInclude Include="..\..\src\Launcher\UI\LauncherPanel.h" />
-    <ClInclude Include="..\..\src\LfdArchive.h" />
-    <ClInclude Include="..\..\src\LibArchive.h" />
-    <ClInclude Include="..\..\src\LineInfoOverlay.h" />
-    <ClInclude Include="..\..\src\LinePropsPanel.h" />
-    <ClInclude Include="..\..\src\LineTextureOverlay.h" />
-    <ClInclude Include="..\..\src\Lua.h" />
-    <ClInclude Include="..\..\src\lua\lapi.h" />
-    <ClInclude Include="..\..\src\lua\lauxlib.h" />
-    <ClInclude Include="..\..\src\lua\lcode.h" />
-    <ClInclude Include="..\..\src\lua\lctype.h" />
-    <ClInclude Include="..\..\src\lua\ldebug.h" />
-    <ClInclude Include="..\..\src\lua\ldo.h" />
-    <ClInclude Include="..\..\src\lua\lfunc.h" />
-    <ClInclude Include="..\..\src\lua\lgc.h" />
-    <ClInclude Include="..\..\src\lua\llex.h" />
-    <ClInclude Include="..\..\src\lua\llimits.h" />
-    <ClInclude Include="..\..\src\lua\lmem.h" />
-    <ClInclude Include="..\..\src\lua\lobject.h" />
-    <ClInclude Include="..\..\src\lua\lopcodes.h" />
-    <ClInclude Include="..\..\src\lua\lparser.h" />
-    <ClInclude Include="..\..\src\lua\lstate.h" />
-    <ClInclude Include="..\..\src\lua\lstring.h" />
-    <ClInclude Include="..\..\src\lua\ltable.h" />
-    <ClInclude Include="..\..\src\lua\ltm.h" />
-    <ClInclude Include="..\..\src\lua\lua.h" />
-    <ClInclude Include="..\..\src\lua\lua.hpp" />
-    <ClInclude Include="..\..\src\lua\luaconf.h" />
-    <ClInclude Include="..\..\src\lua\lualib.h" />
-    <ClInclude Include="..\..\src\lua\lundump.h" />
-    <ClInclude Include="..\..\src\lua\lvm.h" />
-    <ClInclude Include="..\..\src\lua\lzio.h" />
-    <ClInclude Include="..\..\src\LumpFormats.h" />
-    <ClInclude Include="..\..\src\lzma\C\7z.h" />
-    <ClInclude Include="..\..\src\lzma\C\7zAlloc.h" />
-    <ClInclude Include="..\..\src\lzma\C\7zBuf.h" />
-    <ClInclude Include="..\..\src\lzma\C\7zCrc.h" />
-    <ClInclude Include="..\..\src\lzma\C\7zFile.h" />
-    <ClInclude Include="..\..\src\lzma\C\7zVersion.h" />
-    <ClInclude Include="..\..\src\lzma\C\Alloc.h" />
-    <ClInclude Include="..\..\src\lzma\C\Bcj2.h" />
-    <ClInclude Include="..\..\src\lzma\C\Bra.h" />
-    <ClInclude Include="..\..\src\lzma\C\CpuArch.h" />
-    <ClInclude Include="..\..\src\lzma\C\Delta.h" />
-    <ClInclude Include="..\..\src\lzma\C\LzFind.h" />
-    <ClInclude Include="..\..\src\lzma\C\LzFindMt.h" />
-    <ClInclude Include="..\..\src\lzma\C\LzHash.h" />
-    <ClInclude Include="..\..\src\lzma\C\Lzma2Dec.h" />
-    <ClInclude Include="..\..\src\lzma\C\Lzma2Enc.h" />
-    <ClInclude Include="..\..\src\lzma\C\Lzma86.h" />
-    <ClInclude Include="..\..\src\lzma\C\LzmaDec.h" />
-    <ClInclude Include="..\..\src\lzma\C\LzmaEnc.h" />
-    <ClInclude Include="..\..\src\lzma\C\LzmaLib.h" />
-    <ClInclude Include="..\..\src\lzma\C\MtCoder.h" />
-    <ClInclude Include="..\..\src\lzma\C\Ppmd.h" />
-    <ClInclude Include="..\..\src\lzma\C\Ppmd7.h" />
-    <ClInclude Include="..\..\src\lzma\C\RotateDefs.h" />
-    <ClInclude Include="..\..\src\lzma\C\Sha256.h" />
-    <ClInclude Include="..\..\src\lzma\C\Threads.h" />
-    <ClInclude Include="..\..\src\lzma\C\Types.h" />
-    <ClInclude Include="..\..\src\lzma\C\Xz.h" />
-    <ClInclude Include="..\..\src\lzma\C\XzCrc64.h" />
-    <ClInclude Include="..\..\src\lzma\C\XzEnc.h" />
-    <ClInclude Include="..\..\src\MapBackupManager.h" />
-    <ClInclude Include="..\..\src\MapBackupPanel.h" />
-    <ClInclude Include="..\..\src\MapChecks.h" />
-    <ClInclude Include="..\..\src\MapChecksPanel.h" />
-    <ClInclude Include="..\..\src\MapEditor.h" />
-    <ClInclude Include="..\..\src\MapEditorConfigDialog.h" />
-    <ClInclude Include="..\..\src\MapEntryPanel.h" />
-    <ClInclude Include="..\..\src\MapObject.h" />
-    <ClInclude Include="..\..\src\MapObjectPropsPanel.h" />
-    <ClInclude Include="..\..\src\MapPreviewCanvas.h" />
-    <ClInclude Include="..\..\src\MapRenderer2D.h" />
-    <ClInclude Include="..\..\src\MapRenderer3D.h" />
-    <ClInclude Include="..\..\src\MapReplaceDialog.h" />
-    <ClInclude Include="..\..\src\MapSpecials.h" />
-    <ClInclude Include="..\..\src\MapTextureBrowser.h" />
-    <ClInclude Include="..\..\src\MapTextureManager.h" />
-    <ClInclude Include="..\..\src\MathStuff.h" />
-    <ClInclude Include="..\..\src\MCAnimations.h" />
-    <ClInclude Include="..\..\src\MCOverlay.h" />
-    <ClInclude Include="..\..\src\MIDIPlayer.h" />
-    <ClInclude Include="..\..\src\MiscFormats.h" />
-    <ClInclude Include="..\..\src\MobjPropertyList.h" />
-    <ClInclude Include="..\..\src\ModelFormats.h" />
-    <ClInclude Include="..\..\src\ModifyOffsetsDialog.h" />
-    <ClInclude Include="..\..\src\ModMusic.h" />
-    <ClInclude Include="..\..\src\MOPGProperty.h" />
+    <ClInclude Include="..\..\src\MainEditor\AnimatedList.h" />
+    <ClInclude Include="..\..\src\MainEditor\ArchiveOperations.h" />
+    <ClInclude Include="..\..\src\MainEditor\BinaryControlLump.h" />
+    <ClInclude Include="..\..\src\MainEditor\Conversions.h" />
+    <ClInclude Include="..\..\src\MainEditor\EntryOperations.h" />
+    <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h" />
+    <ClInclude Include="..\..\src\MainEditor\MainWindow.h" />
+    <ClInclude Include="..\..\src\MainEditor\SwitchesList.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\ArchivePanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\DocsPage.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AnimatedEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\ANSIEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\AudioEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\DataEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\DefaultEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\EntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\GfxEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\HexEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\MapEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.h" />
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\Args.h" />
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.h" />
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.h" />
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ThingType.h" />
+    <ClInclude Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.h" />
+    <ClInclude Include="..\..\src\MapEditor\MapBackupManager.h" />
+    <ClInclude Include="..\..\src\MapEditor\MapChecks.h" />
+    <ClInclude Include="..\..\src\MapEditor\MapEditor.h" />
+    <ClInclude Include="..\..\src\MapEditor\MapEditorWindow.h" />
+    <ClInclude Include="..\..\src\MapEditor\MapSpecials.h" />
+    <ClInclude Include="..\..\src\MapEditor\MapTextureManager.h" />
+    <ClInclude Include="..\..\src\MapEditor\NodeBuilders.h" />
+    <ClInclude Include="..\..\src\MapEditor\ObjectEdit.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\MapRenderer2D.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\MapRenderer3D.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\MCAnimations.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\InfoOverlay3d.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\LineInfoOverlay.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\LineTextureOverlay.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\MCOverlay.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\QuickTextureOverlay3d.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\SectorInfoOverlay.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\SectorTextureOverlay.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\ThingInfoOverlay.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.h" />
+    <ClInclude Include="..\..\src\MapEditor\SectorBuilder.h" />
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapLine.h" />
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapObject.h" />
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapSector.h" />
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapSide.h" />
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapThing.h" />
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapVertex.h" />
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\MobjPropertyList.h" />
+    <ClInclude Include="..\..\src\MapEditor\SLADEMap\SLADEMap.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ActionSpecialDialog.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\MapTextureBrowser.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\SectorSpecialDialog.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ShowItemDialog.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\Dialogs\ThingTypeBrowser.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\GenLineSpecialPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\MapBackupPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\MapCanvas.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\MapChecksPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\ObjectEditPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\LinePropsPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\MapObjectPropsPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\MOPGProperty.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\PropsPanelBase.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\SectorPropsPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\SidePropsPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\ThingPropsPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\ScriptEditorPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\ShapeDrawPanel.h" />
     <ClInclude Include="..\..\src\mus2mid\mus2mid.h" />
-    <ClInclude Include="..\..\src\NodeBuilders.h" />
-    <ClInclude Include="..\..\src\NumberTextCtrl.h" />
-    <ClInclude Include="..\..\src\ObjectEdit.h" />
-    <ClInclude Include="..\..\src\ObjectEditPanel.h" />
-    <ClInclude Include="..\..\src\PakArchive.h" />
-    <ClInclude Include="..\..\src\PaletteDialog.h" />
-    <ClInclude Include="..\..\src\Clipboard.h" />
-    <ClInclude Include="..\..\src\Console.h" />
-    <ClInclude Include="..\..\src\CVar.h" />
-    <ClInclude Include="..\..\src\ListenerAnnouncer.h" />
-    <ClInclude Include="..\..\src\Main.h" />
-    <ClInclude Include="..\..\src\MainApp.h" />
-    <ClInclude Include="..\..\src\MemChunk.h" />
-    <ClInclude Include="..\..\src\Misc.h" />
-    <ClInclude Include="..\..\src\OpenGL.h" />
-    <ClInclude Include="..\..\src\Parser.h" />
-    <ClInclude Include="..\..\src\PatchBrowser.h" />
-    <ClInclude Include="..\..\src\PodArchive.h" />
-    <ClInclude Include="..\..\src\Polygon2D.h" />
-    <ClInclude Include="..\..\src\PropsPanelBase.h" />
-    <ClInclude Include="..\..\src\QuickTextureOverlay3d.h" />
-    <ClInclude Include="..\..\src\ResArchive.h" />
-    <ClInclude Include="..\..\src\ResourceArchiveChooser.h" />
-    <ClInclude Include="..\..\src\ResourceManager.h" />
-    <ClInclude Include="..\..\src\RffArchive.h" />
-    <ClInclude Include="..\..\src\SAction.h" />
-    <ClInclude Include="..\..\src\SAuiTabArt.h" />
-    <ClInclude Include="..\..\src\ScriptEditorPanel.h" />
-    <ClInclude Include="..\..\src\SDialog.h" />
-    <ClInclude Include="..\..\src\SectorBuilder.h" />
-    <ClInclude Include="..\..\src\SectorInfoOverlay.h" />
-    <ClInclude Include="..\..\src\SectorPropsPanel.h" />
-    <ClInclude Include="..\..\src\SectorSpecialDialog.h" />
-    <ClInclude Include="..\..\src\SectorTextureOverlay.h" />
-    <ClInclude Include="..\..\src\SFileDialog.h" />
-    <ClInclude Include="..\..\src\ShapeDrawPanel.h" />
-    <ClInclude Include="..\..\src\ShowItemDialog.h" />
-    <ClInclude Include="..\..\src\SidePropsPanel.h" />
-    <ClInclude Include="..\..\src\SIFDoom.h" />
-    <ClInclude Include="..\..\src\SIFHexen.h" />
-    <ClInclude Include="..\..\src\SIFImages.h" />
-    <ClInclude Include="..\..\src\SIFJedi.h" />
-    <ClInclude Include="..\..\src\SIFormat.h" />
-    <ClInclude Include="..\..\src\SIFOther.h" />
-    <ClInclude Include="..\..\src\SIFQuake.h" />
-    <ClInclude Include="..\..\src\SIFRott.h" />
-    <ClInclude Include="..\..\src\SIFZDoom.h" />
-    <ClInclude Include="..\..\src\STabCtrl.h" />
-    <ClInclude Include="..\..\src\STopWindow.h" />
-    <ClInclude Include="..\..\src\SToolBar.h" />
-    <ClInclude Include="..\..\src\SToolBarButton.h" />
-    <ClInclude Include="..\..\src\Structs.h" />
-    <ClInclude Include="..\..\src\TarArchive.h" />
-    <ClInclude Include="..\..\src\TextLanguage.h" />
-    <ClInclude Include="..\..\src\TextStyle.h" />
-    <ClInclude Include="..\..\src\TextureXPanel.h" />
-    <ClInclude Include="..\..\src\ThingInfoOverlay.h" />
-    <ClInclude Include="..\..\src\ThingPropsPanel.h" />
-    <ClInclude Include="..\..\src\ThingType.h" />
-    <ClInclude Include="..\..\src\ThingTypeBrowser.h" />
-    <ClInclude Include="..\..\src\ThingTypeTreeView.h" />
-    <ClInclude Include="..\..\src\Tokenizer.h" />
-    <ClInclude Include="..\..\src\Translation.h" />
-    <ClInclude Include="..\..\src\TranslationEditorDialog.h" />
-    <ClInclude Include="..\..\src\Tree.h" />
-    <ClInclude Include="..\..\src\UDMFProperty.h" />
-    <ClInclude Include="..\..\src\UndoManagerHistoryPanel.h" />
-    <ClInclude Include="..\..\src\UndoRedo.h" />
+    <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
+    <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
+    <ClInclude Include="..\..\src\OpenGL\OpenGL.h" />
+    <ClInclude Include="..\..\src\UI\BaseResourceChooser.h" />
+    <ClInclude Include="..\..\src\UI\Browser\BrowserCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Browser\BrowserItem.h" />
+    <ClInclude Include="..\..\src\UI\Browser\BrowserWindow.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\ANSICanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\CTextureCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\GfxCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\MapPreviewCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\OGLCanvas.h" />
+    <ClInclude Include="..\..\src\UI\Canvas\PaletteCanvas.h" />
+    <ClInclude Include="..\..\src\UI\ColourBox.h" />
+    <ClInclude Include="..\..\src\UI\ConsolePanel.h" />
+    <ClInclude Include="..\..\src\UI\DockPanel.h" />
+    <ClInclude Include="..\..\src\UI\HexEditorPanel.h" />
+    <ClInclude Include="..\..\src\UI\Lists\ArchiveEntryList.h" />
+    <ClInclude Include="..\..\src\UI\Lists\ListView.h" />
+    <ClInclude Include="..\..\src\UI\Lists\VirtualListView.h" />
+    <ClInclude Include="..\..\src\UI\NumberTextCtrl.h" />
+    <ClInclude Include="..\..\src\UI\PaletteChooser.h" />
+    <ClInclude Include="..\..\src\UI\ResourceArchiveChooser.h" />
+    <ClInclude Include="..\..\src\UI\SAuiTabArt.h" />
+    <ClInclude Include="..\..\src\UI\SDialog.h" />
+    <ClInclude Include="..\..\src\UI\SplashWindow.h" />
+    <ClInclude Include="..\..\src\UI\STabCtrl.h" />
+    <ClInclude Include="..\..\src\UI\SToolBar\SToolBar.h" />
+    <ClInclude Include="..\..\src\UI\SToolBar\SToolBarButton.h" />
+    <ClInclude Include="..\..\src\UI\STopWindow.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\SCallTip.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\TextEditor.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\TextLanguage.h" />
+    <ClInclude Include="..\..\src\UI\TextEditor\TextStyle.h" />
+    <ClInclude Include="..\..\src\UI\UndoManagerHistoryPanel.h" />
+    <ClInclude Include="..\..\src\UI\WxBasicControls.h" />
+    <ClInclude Include="..\..\src\UI\WxStuff.h" />
+    <ClInclude Include="..\..\src\Utility\CIEDeltaEquations.h" />
+    <ClInclude Include="..\..\src\Utility\CodePages.h" />
+    <ClInclude Include="..\..\src\Utility\Compression.h" />
+    <ClInclude Include="..\..\src\Utility\FileMonitor.h" />
+    <ClInclude Include="..\..\src\Utility\MathStuff.h" />
+    <ClInclude Include="..\..\src\Utility\MemChunk.h" />
+    <ClInclude Include="..\..\src\Utility\Parser.h" />
+    <ClInclude Include="..\..\src\Utility\Polygon2D.h" />
+    <ClInclude Include="..\..\src\Utility\PropertyList\Property.h" />
+    <ClInclude Include="..\..\src\Utility\PropertyList\PropertyList.h" />
+    <ClInclude Include="..\..\src\Utility\SFileDialog.h" />
+    <ClInclude Include="..\..\src\Utility\Structs.h" />
+    <ClInclude Include="..\..\src\Utility\Tokenizer.h" />
+    <ClInclude Include="..\..\src\Utility\Tree.h" />
     <ClInclude Include="..\..\src\Utility\XmlHelpers.h" />
-    <ClInclude Include="..\..\src\VersionCheck.h" />
-    <ClInclude Include="..\..\src\VertexInfoOverlay.h" />
-    <ClInclude Include="..\..\src\VirtualListView.h" />
-    <ClInclude Include="..\..\src\Wad2Archive.h" />
-    <ClInclude Include="..\..\src\WadJArchive.h" />
-    <ClInclude Include="..\..\src\WolfArchive.h" />
-    <ClInclude Include="..\..\src\WxStuff.h" />
-    <ClInclude Include="..\..\src\Property.h" />
-    <ClInclude Include="..\..\src\PropertyList.h" />
-    <ClInclude Include="..\..\src\EntryOperations.h" />
-    <ClInclude Include="..\..\src\MainWindow.h" />
-    <ClInclude Include="..\..\src\ArchiveManagerPanel.h" />
-    <ClInclude Include="..\..\src\ConsolePanel.h" />
-    <ClInclude Include="..\..\src\TextEditor.h" />
-    <ClInclude Include="..\..\src\ArchivePanel.h" />
-    <ClInclude Include="..\..\src\AnimatedEntryPanel.h" />
-    <ClInclude Include="..\..\src\DefaultEntryPanel.h" />
-    <ClInclude Include="..\..\src\EntryPanel.h" />
-    <ClInclude Include="..\..\src\GfxEntryPanel.h" />
-    <ClInclude Include="..\..\src\PaletteEntryPanel.h" />
-    <ClInclude Include="..\..\src\SwitchesEntryPanel.h" />
-    <ClInclude Include="..\..\src\TextEntryPanel.h" />
-    <ClInclude Include="..\..\src\PatchTablePanel.h" />
-    <ClInclude Include="..\..\src\TextureEditorPanel.h" />
-    <ClInclude Include="..\..\src\TextureXEditor.h" />
-    <ClInclude Include="..\..\src\MapEditorWindow.h" />
-    <ClInclude Include="..\..\src\MapCanvas.h" />
-    <ClInclude Include="..\..\src\MapLine.h" />
-    <ClInclude Include="..\..\src\MapSector.h" />
-    <ClInclude Include="..\..\src\MapSide.h" />
-    <ClInclude Include="..\..\src\MapThing.h" />
-    <ClInclude Include="..\..\src\MapVertex.h" />
-    <ClInclude Include="..\..\src\SLADEMap.h" />
-    <ClInclude Include="..\..\src\Archive.h" />
-    <ClInclude Include="..\..\src\ArchiveEntry.h" />
-    <ClInclude Include="..\..\src\ArchiveManager.h" />
-    <ClInclude Include="..\..\src\EntryType.h" />
-    <ClInclude Include="..\..\src\WadArchive.h" />
-    <ClInclude Include="..\..\src\ZipArchive.h" />
-    <ClInclude Include="..\..\src\AnimatedList.h" />
-    <ClInclude Include="..\..\src\BinaryControlLump.h" />
-    <ClInclude Include="..\..\src\SwitchesList.h" />
-    <ClInclude Include="..\..\src\GLTexture.h" />
-    <ClInclude Include="..\..\src\Icons.h" />
-    <ClInclude Include="..\..\src\SImage.h" />
-    <ClInclude Include="..\..\src\Palette.h" />
-    <ClInclude Include="..\..\src\PaletteManager.h" />
-    <ClInclude Include="..\..\src\CTexture.h" />
-    <ClInclude Include="..\..\src\PatchTable.h" />
-    <ClInclude Include="..\..\src\TextureXList.h" />
-    <ClInclude Include="..\..\src\SFont.h" />
-    <ClInclude Include="..\..\src\ColourBox.h" />
-    <ClInclude Include="..\..\src\CTextureCanvas.h" />
-    <ClInclude Include="..\..\src\GfxCanvas.h" />
-    <ClInclude Include="..\..\src\ListView.h" />
-    <ClInclude Include="..\..\src\OGLCanvas.h" />
-    <ClInclude Include="..\..\src\PaletteCanvas.h" />
-    <ClInclude Include="..\..\src\PaletteChooser.h" />
-    <ClInclude Include="..\..\src\SplashWindow.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="..\..\src\zlib\crc32.h" />
-    <ClInclude Include="..\..\src\zlib\deflate.h" />
-    <ClInclude Include="..\..\src\zlib\inffast.h" />
-    <ClInclude Include="..\..\src\zlib\inffixed.h" />
-    <ClInclude Include="..\..\src\zlib\inflate.h" />
-    <ClInclude Include="..\..\src\zlib\inftrees.h" />
-    <ClInclude Include="..\..\src\zlib\trees.h" />
-    <ClInclude Include="..\..\src\zlib\zconf.h" />
-    <ClInclude Include="..\..\src\zlib\zlib.h" />
-    <ClInclude Include="..\..\src\zlib\zutil.h" />
-    <ClInclude Include="..\..\src\zreaders\ancientzip.h" />
-    <ClInclude Include="..\..\src\zreaders\files.h" />
-    <ClInclude Include="..\..\src\zreaders\i_music.h" />
-    <ClInclude Include="..\..\src\zreaders\i_musicinterns.h" />
-    <ClInclude Include="..\..\src\zreaders\mus2midi.h" />
-    <ClInclude Include="..\..\src\zreaders\m_alloc.h" />
-    <ClInclude Include="..\..\src\zreaders\m_swap.h" />
-    <ClInclude Include="..\..\src\zreaders\tarray.h" />
-    <ClInclude Include="..\..\src\zreaders\templates.h" />
-    <ClInclude Include="..\..\src\ZTextureEditorPanel.h" />
+    <ClInclude Include="..\..\src\External\zlib\crc32.h" />
+    <ClInclude Include="..\..\src\External\zlib\deflate.h" />
+    <ClInclude Include="..\..\src\External\zlib\inffast.h" />
+    <ClInclude Include="..\..\src\External\zlib\inffixed.h" />
+    <ClInclude Include="..\..\src\External\zlib\inflate.h" />
+    <ClInclude Include="..\..\src\External\zlib\inftrees.h" />
+    <ClInclude Include="..\..\src\External\zlib\trees.h" />
+    <ClInclude Include="..\..\src\External\zlib\zconf.h" />
+    <ClInclude Include="..\..\src\External\zlib\zlib.h" />
+    <ClInclude Include="..\..\src\External\zlib\zutil.h" />
+    <ClInclude Include="..\..\src\External\zreaders\files.h" />
+    <ClInclude Include="..\..\src\External\zreaders\i_music.h" />
+    <ClInclude Include="..\..\src\External\zreaders\i_musicinterns.h" />
+    <ClInclude Include="..\..\src\External\zreaders\mus2midi.h" />
+    <ClInclude Include="..\..\src\External\zreaders\m_alloc.h" />
+    <ClInclude Include="..\..\src\External\zreaders\tarray.h" />
+    <ClInclude Include="..\..\src\External\zreaders\templates.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\dist\res\config\games\chex1.cfg" />
-    <None Include="..\..\dist\res\config\games\chex3.cfg" />
-    <None Include="..\..\dist\res\config\games\doom1.cfg" />
-    <None Include="..\..\dist\res\config\games\doom2.cfg" />
-    <None Include="..\..\dist\res\config\games\doom64.cfg" />
-    <None Include="..\..\dist\res\config\games\heretic.cfg" />
-    <None Include="..\..\dist\res\config\games\hexen.cfg" />
-    <None Include="..\..\dist\res\config\games\include\flags_doom.cfg" />
-    <None Include="..\..\dist\res\config\games\include\flags_doom64.cfg" />
-    <None Include="..\..\dist\res\config\games\include\flags_hexen.cfg" />
-    <None Include="..\..\dist\res\config\games\include\flags_strife.cfg" />
-    <None Include="..\..\dist\res\config\games\include\props_base.cfg" />
-    <None Include="..\..\dist\res\config\games\include\props_hexen.cfg" />
-    <None Include="..\..\dist\res\config\games\include\sectors_doom.cfg" />
-    <None Include="..\..\dist\res\config\games\include\sectors_doom64.cfg" />
-    <None Include="..\..\dist\res\config\games\include\sectors_heretic.cfg" />
-    <None Include="..\..\dist\res\config\games\include\sectors_hexen.cfg" />
-    <None Include="..\..\dist\res\config\games\include\specials_doom1.cfg" />
-    <None Include="..\..\dist\res\config\games\include\specials_doom2.cfg" />
-    <None Include="..\..\dist\res\config\games\include\specials_doom64.cfg" />
-    <None Include="..\..\dist\res\config\games\include\specials_heretic.cfg" />
-    <None Include="..\..\dist\res\config\games\include\specials_hexen.cfg" />
-    <None Include="..\..\dist\res\config\games\include\specials_strife.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_chex1.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_chex3.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_common.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_doom1.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_doom2.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_doom64.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_heretic.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_hexen.cfg" />
-    <None Include="..\..\dist\res\config\games\include\things_strife.cfg" />
-    <None Include="..\..\dist\res\config\games\strife.cfg" />
-    <None Include="..\..\dist\res\config\ports\boom.cfg" />
-    <None Include="..\..\dist\res\config\ports\eternity.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\flags_boom.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\flags_eternity.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\flags_mbf.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\flags_zdoom.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\props_all.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\props_boom.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\props_zdoom.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\sectors_zdoom.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\specials_boom.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\specials_eternity.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\specials_mbf.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\specials_zdoom.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\things_boom.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\things_eternity.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\things_mbf.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\things_musinfo.cfg" />
-    <None Include="..\..\dist\res\config\ports\include\things_zdoom.cfg" />
-    <None Include="..\..\dist\res\config\ports\zdoom.cfg" />
+    <None Include="..\..\dist\makebuild.ps1" />
     <None Include="slade.ico" />
-    <None Include="..\..\src\dumb\helpers\resamp2.inc" />
-    <None Include="..\..\src\dumb\helpers\resamp3.inc" />
-    <None Include="..\..\src\dumb\helpers\resample.inc" />
+    <None Include="..\..\src\External\dumb\helpers\resamp2.inc" />
+    <None Include="..\..\src\External\dumb\helpers\resamp3.inc" />
+    <None Include="..\..\src\External\dumb\helpers\resample.inc" />
     <None Include="..\..\win_installer\SLADE.iss" />
   </ItemGroup>
   <ItemGroup>

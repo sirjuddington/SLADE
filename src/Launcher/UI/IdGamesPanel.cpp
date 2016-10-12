@@ -1,12 +1,11 @@
 
 #include "Main.h"
-#include "WxStuff.h"
 #include "IdGamesPanel.h"
-#include "ListView.h"
+#include "UI/Lists/ListView.h"
 #include "Launcher/IdGames.h"
 #include "Utility/XmlHelpers.h"
-#include "STabCtrl.h"
-#include "Icons.h"
+#include "UI/STabCtrl.h"
+#include "Graphics/Icons.h"
 #include <wx/xml/xml.h>
 #include <wx/sstream.h>
 #include <wx/gbsizer.h>

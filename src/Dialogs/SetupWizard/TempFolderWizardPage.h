@@ -3,6 +3,7 @@
 #define __TEMP_FOLDER_WIZARD_PAGE_H__
 
 #include "WizardPageBase.h"
+#include "UI/WxBasicControls.h"
 
 class TempFolderWizardPage : public WizardPageBase
 {

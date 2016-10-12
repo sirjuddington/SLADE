@@ -30,7 +30,7 @@ zd_patchinf {
 	}
 
 	functions {
-		Thing_Delete = "type [, flags [, x [, y [, z] ] ] ]";
+		Thing_Delete = "type, [flags], [x], [y], [z]";
 		Thing_ById_Delete = "id";
 		Thing_Change = "type, flags, x, y, z, new_angle, new_type, new_flags";
 		Thing_ById_Change = "sid, new_angle, new_type, new_flags";

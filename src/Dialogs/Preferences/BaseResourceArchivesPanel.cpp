@@ -29,13 +29,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "BaseResourceArchivesPanel.h"
-#include "ArchiveManager.h"
-#include "Parser.h"
-#ifdef __WXMSW__
-#include <wx/msw/registry.h>
-#endif
+#include "Archive/ArchiveManager.h"
+#include "Utility/Parser.h"
 
 
 /*******************************************************************

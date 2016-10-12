@@ -27,10 +27,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "ColorimetryPrefsPanel.h"
-#include "CIEDeltaEquations.h"
-#include "Palette.h"
+#include "Graphics/Palette/Palette.h"
+#include "Utility/CIEDeltaEquations.h"
 
 
 /*******************************************************************

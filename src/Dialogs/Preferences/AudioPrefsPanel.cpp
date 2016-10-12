@@ -28,12 +28,8 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "WxStuff.h"
 #include "AudioPrefsPanel.h"
-#include "MIDIPlayer.h"
-#include <wx/filedlg.h>
-#include <wx/filename.h>
-#include <wx/statline.h>
+#include "Audio/MIDIPlayer.h"
 
 
 /*******************************************************************

@@ -396,8 +396,14 @@ entry_types
 		match_name = "lua_*";
 		text_language = "srb2lua";
 	}
-
-	// ZDaemon text lumps
+        
+        soc : text
+	{
+		name = "Sonic Object Configuration";
+		match_name = "soc_*";
+	}
+	
+        // ZDaemon text lumps
 	patchinf : text
 	{
 		name = "Patchinfo";
@@ -514,6 +520,12 @@ entry_types
 		match_name = "shartit?";
 	}
 	
+	descent_briefing : text
+	{
+		name = "Descent Briefing";
+		match_ext = "txb", "ctb";
+	}
+
 	sourcecode_c : text
 	{
 		name = "Source Code (C Based)";

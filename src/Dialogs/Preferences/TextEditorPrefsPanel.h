@@ -3,7 +3,6 @@
 #define __TEXT_EDITOR_PREFS_PANEL_H__
 
 #include "PrefsPanelBase.h"
-#include <wx/spinctrl.h>
 
 class TextEditorPrefsPanel : public PrefsPanelBase
 {
@@ -17,6 +16,12 @@ private:
 	wxCheckBox*	cb_indent_guides;
 	wxCheckBox*	cb_calltips_mouse;
 	wxCheckBox*	cb_calltips_parenthesis;
+	wxCheckBox*	cb_calltips_colourise;
+	wxCheckBox*	cb_calltips_dim_optional;
+	wxCheckBox*	cb_calltips_use_font;
+	wxCheckBox*	cb_fold_enable;
+	wxCheckBox*	cb_fold_comments;
+	wxCheckBox*	cb_fold_preprocessor;
 
 public:
 	TextEditorPrefsPanel(wxWindow* parent);
