@@ -6,6 +6,7 @@
 #include "ThingType.h"
 #include "UDMFProperty.h"
 #include "Utility/PropertyList/PropertyList.h"
+#include "Utility/Tokenizer.h"
 
 // Tag types
 enum TagTypes
