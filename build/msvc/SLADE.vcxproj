@@ -1461,9 +1461,9 @@
     <ClInclude Include="..\..\src\General\SAction.h" />
     <ClInclude Include="..\..\src\General\UndoRedo.h" />
     <ClInclude Include="..\..\src\General\VersionCheck.h" />
-    <ClInclude Include="..\..\src\glew\glew.h" />
-    <ClInclude Include="..\..\src\glew\glxew.h" />
-    <ClInclude Include="..\..\src\glew\wglew.h" />
+    <ClInclude Include="..\..\src\External\glew\glew.h" />
+    <ClInclude Include="..\..\src\External\glew\glxew.h" />
+    <ClInclude Include="..\..\src\External\glew\wglew.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\CTexture.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\PatchTable.h" />
     <ClInclude Include="..\..\src\Graphics\CTexture\TextureXList.h" />
@@ -1620,7 +1620,7 @@
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\ThingPropsPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\ScriptEditorPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\ShapeDrawPanel.h" />
-    <ClInclude Include="..\..\src\mus2mid\mus2mid.h" />
+    <ClInclude Include="..\..\src\External\mus2mid\mus2mid.h" />
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
     <ClInclude Include="..\..\src\OpenGL\OpenGL.h" />
