@@ -165,7 +165,8 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 	EntryType* type = entry->getType();
 	string entryformat = type->getFormat();
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" ||
-	        entryformat == "img_doom_alpha" || "img_doom_beta" || entryformat == "img_png"))
+		entryformat == "img_doom_alpha" || entryformat == "img_doom_beta" ||
+		entryformat == "img_png"))
 	{
 		wxLogMessage("Entry \"%s\" is of type \"%s\" which does not support offsets", entry->getName(), entry->getType()->getName());
 		return false;
@@ -316,7 +317,8 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 	EntryType* type = entry->getType();
 	string entryformat = type->getFormat();
 	if (!(entryformat == "img_doom" || entryformat == "img_doom_arah" ||
-		entryformat == "img_doom_alpha" || "img_doom_beta" || entryformat == "img_png"))
+		entryformat == "img_doom_alpha" || entryformat == "img_doom_beta" ||
+		entryformat == "img_png"))
 	{
 		wxLogMessage("Entry \"%s\" is of type \"%s\" which does not support offsets", entry->getName(), entry->getType()->getName());
 		return false;

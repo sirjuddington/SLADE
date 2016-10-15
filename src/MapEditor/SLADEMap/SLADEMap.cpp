@@ -44,6 +44,12 @@
 
 
 /*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+CVAR(Bool, map_split_auto_offset, true, CVAR_SAVE)
+
+
+/*******************************************************************
  * SLADEMAP CLASS FUNCTIONS
  *******************************************************************/
 
@@ -4404,10 +4410,13 @@ MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 	lines.push_back(nl);
 
 	// Update x-offsets
-	int xoff1 = l->intProperty("side1.offsetx");
-	int xoff2 = l->intProperty("side2.offsetx");
-	nl->setIntProperty("side1.offsetx", xoff1 + l->getLength());
-	l->setIntProperty("side2.offsetx", xoff2 + nl->getLength());
+	if (map_split_auto_offset)
+	{
+		int xoff1 = l->intProperty("side1.offsetx");
+		int xoff2 = l->intProperty("side2.offsetx");
+		nl->setIntProperty("side1.offsetx", xoff1 + l->getLength());
+		l->setIntProperty("side2.offsetx", xoff2 + nl->getLength());
+	}
 
 	geometry_updated = theApp->runTimer();
 

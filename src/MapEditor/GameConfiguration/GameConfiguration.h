@@ -275,6 +275,7 @@ public:
 
 	// DECORATE
 	bool	parseDecorateDefs(Archive* archive);
+	void	clearDecorateDefs();
 
 	// Line flags
 	int		nLineFlags() { return flags_line.size(); }

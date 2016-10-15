@@ -44,7 +44,7 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-GameConfiguration* GameConfiguration::instance = NULL;
+GameConfiguration* GameConfiguration::instance = nullptr;
 CVAR(String, game_configuration, "", CVAR_SAVE)
 CVAR(String, port_configuration, "", CVAR_SAVE)
 CVAR(Bool, debug_configuration, false, CVAR_SAVE)
@@ -186,7 +186,7 @@ GameConfiguration::gconf_t GameConfiguration::readBasicGameConfig(MemChunk& mc)
 	gconf_t conf;
 
 	// Check for game section
-	ParseTreeNode* node_game = NULL;
+	ParseTreeNode* node_game = nullptr;
 	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
 	{
 		ParseTreeNode* child = (ParseTreeNode*)parser.parseTreeRoot()->getChild(a);
@@ -248,7 +248,7 @@ GameConfiguration::pconf_t GameConfiguration::readBasicPortConfig(MemChunk& mc)
 	pconf_t conf;
 
 	// Check for port section
-	ParseTreeNode* node_port = NULL;
+	ParseTreeNode* node_port = nullptr;
 	for (unsigned a = 0; a < parser.parseTreeRoot()->nChildren(); a++)
 	{
 		ParseTreeNode* child = (ParseTreeNode*)parser.parseTreeRoot()->getChild(a);
@@ -784,7 +784,7 @@ void GameConfiguration::readThingTypes(ParseTreeNode* node, ThingType* group_def
 
 
 	// --- Set up group default properties ---
-	ParseTreeNode* child = NULL;
+	ParseTreeNode* child = nullptr;
 	ThingType* tt_defaults = new ThingType();
 	tt_defaults->copy(group_defaults);
 	tt_defaults->parse(node);
@@ -1100,8 +1100,8 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t fo
 	ParseTreeNode* base = parser.parseTreeRoot();
 
 	// Read game/port section(s) if needed
-	ParseTreeNode* node_game = NULL;
-	ParseTreeNode* node_port = NULL;
+	ParseTreeNode* node_game = nullptr;
+	ParseTreeNode* node_port = nullptr;
 	if (!ignore_game)
 	{
 		// 'Game' section (this is required for it to be a valid game configuration, shouldn't be missing)
@@ -1136,7 +1136,7 @@ bool GameConfiguration::readConfiguration(string& cfg, string source, uint8_t fo
 	}
 
 	// Go through all other config sections
-	ParseTreeNode* node = NULL;
+	ParseTreeNode* node = nullptr;
 	for (unsigned a = 0; a < base->nChildren(); a++)
 	{
 		node = (ParseTreeNode*)base->getChild(a);
@@ -2315,11 +2315,11 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 					}
 
 					// Setup thing
-					if (!defined || title_given)
+					if (!defined || title_given || tt->decorate)
 						tt->name = name;
-					if (!defined || group_given)
+					if (!defined || group_given || tt->decorate)
 						tt->group = group.empty() ? "Decorate" : group;
-					if (!defined || sprite_given || tt->sprite.IsEmpty())
+					if (!defined || sprite_given || tt->sprite.IsEmpty() || tt->decorate)
 					{
 						if (found_props["sprite"].hasValue())
 						{
@@ -2524,6 +2524,19 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 	//tempfile.Close();
 
 	return true;
+}
+
+/* GameConfiguration::clearDecorateDefs
+ * Removes any thing definitions parsed from DECORATE entries
+ *******************************************************************/
+void GameConfiguration::clearDecorateDefs()
+{
+	/*for (auto def : thing_types)
+		if (def.second.type && def.second.type->decorate)
+		{
+			delete def.second.type;
+			def.second.type = nullptr;
+		}*/
 }
 
 /* GameConfiguration::lineFlag
@@ -2886,7 +2899,7 @@ UDMFProperty* GameConfiguration::getUDMFProperty(string name, int type)
 	else if (type == MOBJ_THING)
 		return udmf_thing_props[name].property;
 	else
-		return NULL;
+		return nullptr;
 }
 
 /* GameConfiguration::allUDMFProperties
@@ -2897,7 +2910,7 @@ vector<udmfp_t> GameConfiguration::allUDMFProperties(int type)
 	vector<udmfp_t> ret;
 
 	// Build list depending on type
-	UDMFPropMap* map = NULL;
+	UDMFPropMap* map = nullptr;
 	if (type == MOBJ_VERTEX)
 		map = &udmf_vertex_props;
 	else if (type == MOBJ_LINE)
@@ -2934,7 +2947,7 @@ vector<udmfp_t> GameConfiguration::allUDMFProperties(int type)
 void GameConfiguration::cleanObjectUDMFProps(MapObject* object)
 {
 	// Get UDMF properties list for type
-	UDMFPropMap* map = NULL;
+	UDMFPropMap* map = nullptr;
 	int type = object->getObjType();
 	if (type == MOBJ_VERTEX)
 		map = &udmf_vertex_props;

@@ -392,7 +392,7 @@ public:
 	MainAppFLConnection() {}
 	~MainAppFLConnection() {}
 
-	bool OnAdvise(const wxString& topic, const wxString& item, char* data, int size, wxIPCFormat format)
+	bool OnAdvise(const wxString& topic, const wxString& item, const void* data, size_t size, wxIPCFormat format)
 	{
 		return true;
 	}

@@ -349,7 +349,7 @@ z_sbarinfo {
 		Resolution, StatusBar, alpha, aspectratio, drawbar, DrawGem, DrawKeyBar, DrawInventoryBar, DrawImage, DrawMugShot,
 		DrawNumber, DrawSelectedInventory, DrawShader, DrawString, DrawSwitchableImage, Else, GameMode, HasWeaponPiece,
 		IfHealth, InInventory, Not, InventoryBarNotVisible, IsSelected, PlayerClass, PlayerType, UsesAmmo, UsesSecondaryAmmo,
-		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel
+		WeaponAmmo, mugshot, IfInvulnerable, IfWaterLevel, IfCVarInt
 	}
 
 	constants = {
@@ -362,8 +362,9 @@ z_sbarinfo {
 		globalarray, accuracy, keys, savepercent, stamina, fillzeros, whennotzero, alternateonempty, artiflash, alwaysshowcounter,
 		center, centerbottom, invulnerable, keyslot, armortype, levelname, levellump, skillname, playerclass, playername, ammo1tag,
 		ammo2tag, weapontag, inventorytag, time, logtext, linebreaks, normal, pain, ouch, rampage, god, godanimated, grin, death,
-		xdeath, custom, health2, healthspecial, directional, left, right, dontcap, prefix, itemflash, alticonfirst, alternateonfail,
+		xdeath, custom, health2, healthspecial, directional, left, right, dontcap, itemflash, alticonfirst, alternateonfail,
 		forcescale, skipalticon, skipicon, skipready, skipspawn, auto, cooperative, singleplayer, teamgame, deathmatch, weaponslot,
+		equal,
 
 		//Some default fonts
 		BIGFONT, INDEXFONT, SMALLFONT, HUDFONT_DOOM, INDEXFONT_DOOM, HUDFONT_RAVEN, INDEXFONT_RAVEN,
@@ -379,6 +380,7 @@ z_sbarinfo {
 		alignment = "alignment";
 		ammo = "[class]";
 		hexenarmor = "[type], [slot]";
+		prefix = "value, pad";
 	}
 }
 

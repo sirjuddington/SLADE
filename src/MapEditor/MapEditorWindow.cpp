@@ -555,6 +555,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 		mdesc_current = map;
 
 		// Read DECORATE definitions if any
+		theGameConfiguration->clearDecorateDefs();
 		theGameConfiguration->parseDecorateDefs(theArchiveManager->baseResourceArchive());
 		for (int i = 0; i < theArchiveManager->numArchives(); ++i)
 			theGameConfiguration->parseDecorateDefs(theArchiveManager->getArchive(i));
@@ -702,8 +703,10 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		wxArrayString out;
 		wxLogMessage("execute \"%s %s\"", builder.path, command);
 		theApp->SetTopWindow(this);
+		wxWindow* focus = wxWindow::FindFocus();
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		theApp->SetTopWindow(theMainWindow);
+		focus->SetFocusFromKbd();
 		wxLogMessage("Nodebuilder output:");
 		for (unsigned a = 0; a < out.size(); a++)
 			wxLogMessage(out[a]);
@@ -934,6 +937,9 @@ void MapEditorWindow::closeMap()
  *******************************************************************/
 void MapEditorWindow::forceRefresh(bool renderer)
 {
+	if (!IsShown())
+		return;
+
 	if (renderer) map_canvas->forceRefreshRenderer();
 	map_canvas->Refresh();
 }
