@@ -291,6 +291,12 @@ entry_types
 		icon = "e_texturex";
 		text_language = "z_textures";
 	}
+
+	trnslate : text
+	{
+		name = "Translation defs";
+		match_name = "trnslate";
+	}
 	
 	palvers : text
 	{

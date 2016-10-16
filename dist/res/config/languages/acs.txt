@@ -160,7 +160,7 @@ acs_z : acs {
 	keywords = {
 		function, enter, respawn, death, lightning, unloading, disconnect, kill,
 		fixed, global, net, import, libdefine, library, nocompact, nowadauthor,
-		EncryptStrings, static, wadauthor, region, endregion,
+		EncryptStrings, static, wadauthor, region, endregion, reopen,
 		
 		// Skulltag script types
 		BlueReturn, RedReturn, WhiteReturn, Pickup, ClientSide
@@ -822,6 +822,7 @@ acs_z : acs {
 		SetSectorTerrain = "int tag, int whichplane, str terraintype";
 		SetSkyScrollSpeed = "int sky, float skyspeed";
 		SetThingSpecial = "int tid, int special [, int arg0 [, int arg1 [, int arg2 [, int arg3 [, int arg4]]]]]";
+		SetTranslation = "int tid, str transname";
 		SetUserArray = "int tid, str name, int pos, int value";
 		SetUserCVar = "int playernum, str cvarname, int newvalue", "int playernum, str cvarname, fixed newvalue", "int playernum, str cvarname, bool newvalue";
 		SetUserCVarString = "int playernum, str cvarname, str newvalue";

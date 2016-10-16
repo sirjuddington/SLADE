@@ -48,7 +48,8 @@ decorate : cstyle {
 		// Rendering
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
 		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
-		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation,
+		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation, VisibleAngles,
+		VisiblePitch,
 		
 		// Sounds
 		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
@@ -117,7 +118,7 @@ decorate : cstyle {
 		// DECORATE expressions
 		x, y, z, angle, momx, momy, momz, velx, vely, velz, pitch, tid, tidtohate, 
 		ceilingz, floorz, scalex, scaley, score, special, waterlevel, var, int,
-		roll,
+		roll, visibleendangle, visibleendpitch, visiblestartangle, visiblestartpitch,
 
 		// Anonymous functions
 		bool, state, if, else, return, for, while, do, break, continue,
@@ -134,7 +135,7 @@ decorate : cstyle {
 		TRUE, FALSE,
 		
 		// Flags
-		ACTIVATEIMPACT, ACTIVATEMCROSS, ACTIVATEPCROSS, ACTLIKEBRIDGE, ADDITIVEPOISONDAMAGE,
+		ABSMASKANGLE, ABSMASKPITCH, ACTIVATEIMPACT, ACTIVATEMCROSS, ACTIVATEPCROSS, ACTLIKEBRIDGE, ADDITIVEPOISONDAMAGE,
 		ADDITIVEPOISONDURATION, AIMREFLECT, ALLOWBOUNCEONACTORS, ALLOWPAIN, ALLOWPARTICLES, ALLOWTHRUFLAGS, ALWAYSFAST,
 		ALWAYSPUFF, ALWAYSRESPAWN, ALWAYSTELEFRAG, AMBUSH, AVOIDMELEE, BLASTED, BLOCKEDBYSOLIDACTORS,
 		BLOODLESSIMPACT, BLOODSPLATTER, BOSS, BOSSDEATH, BOUNCEAUTOOFF, BOUNCEAUTOOFFFLOORONLY,
@@ -149,7 +150,7 @@ decorate : cstyle {
 		FORCEYBILLBOARD, FRIENDLY, FRIGHTENED, FULLVOLACTIVE, FULLVOLDEATH, GETOWNER, GHOST, GRENADETRAIL, HARMFRIENDS,
 		HERETICBOUNCE, HEXENBOUNCE, HITMASTER, HITTARGET, HITTRACER, ICECORPSE, ICEDAMAGE, ICESHATTER, INCOMBAT, INVISIBLE,
 		INVULNERABLE, ISMONSTER, JUMPDOWN, JUSTATTACKED, JUSTHIT, LAXTELEFRAGDMG, LONGMELEERANGE, LOOKALLAROUND, LOWGRAVITY, 
-		MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST, 
+		MASKROTATION, MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST, 
 		NEVERRESPAWN, NEVERTARGET, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS, NOBOSSRIP, NOBOUNCESOUND, 
 		NOCLIP, NODAMAGE, NODAMAGETHRUST, NODECAL, NODROPOFF, NOEXPLODEFLOOR, NOEXTREMEDEATH, NOFEAR, NOFORWARDFALL, 
 		NOGRAVITY, NOICEDEATH, NOINFIGHTING, NOINTERACTION, NOKILLSCRIPTS, NOLIFTDROP, NOMENU, NONSHOOTABLE, NOPAIN, 
@@ -319,7 +320,7 @@ decorate : cstyle {
 		PROP_TOTALLYFROZEN, PROP_WEAPONLEVEL2, PTROP_NOSAFEGUARDS, PTROP_UNSAFEMASTER, PTROP_UNSAFETARGET,
 
 		// psprite layers flags
-		PSPF_ADDWEAPON, PSPF_ADDBOB, PSPF_POWDOUBLE, PSPF_CVARFAST,
+		PSPF_ADDWEAPON, PSPF_ADDBOB, PSPF_POWDOUBLE, PSPF_CVARFAST, PSPF_FLIP,
 
 		// Default psprite layers
 		PSP_WEAPON, PSP_FLASH,
@@ -359,6 +360,11 @@ decorate : cstyle {
 		// A_SpawnParticle flags
 		SPF_FULLBRIGHT, SPF_RELACCEL, SPF_RELANG, SPF_RELATIVE, SPF_RELPOS, SPF_RELVEL, SPF_NOTIMEFREEZE,
 
+		// Render styles
+		STYLE_None, STYLE_Normal, STYLE_Fuzzy, STYLE_SoulTrans, STYLE_OptFuzzy, STYLE_Stencil, STYLE_Translucent,
+		STYLE_Add, STYLE_Shaded, STYLE_TranslucentStencil, STYLE_Shadow, STYLE_Subtract, STYLE_AddStencil,
+		STYLE_AddShaded,
+
 		// A_SelectWeapon flags
 		SWF_SELECTPRIORITY,
 
@@ -379,6 +385,11 @@ decorate : cstyle {
 		THINGSPEC_TriggerTargets,
 		TIF_NOTAKEINFINITE,
 		VAF_DMGTYPEAPPLYTODIRECT,
+
+		// A_SetVisibleRotation flags
+		VRF_NOANGLE, VRF_NOANGLEEND, VRF_NOANGLESTART, VRF_NOPITCH, VRF_NOPITCHEND, VRF_NOPITCHSTART,
+
+		// A_WolfAttack flags
 		WAF_NORANDOM, WAF_USEPUFF,
 
 		// A_Warp flags
@@ -589,6 +600,7 @@ decorate : cstyle {
 		A_SetShadow;
 		A_ClearShadow;
 		A_SetTranslucent = "float alpha, [int mode]";
+		A_SetRenderStyle = "float alpha, int style";
 		A_FadeIn = "[float increase_amount], [int flags]";
 		A_FadeOut = "[float reduce_amount], [int flags]";
 		A_FadeTo = "float target, [float amount], [int flags]";
@@ -624,6 +636,8 @@ decorate : cstyle {
 		A_SetChaseThreshold = "int threshold, [bool def], [int ptr]";
 		A_SetSpriteAngle = "[float angle], [int ptr]";
 		A_SetSpriteRotation = "[float angle], [int ptr]";
+		A_SetVisibleRotation = "[float anglestart], [float angleend], [float pitchstart], [float pitchend], [int flags], [int ptr]";
+		A_SetTranslation = "string transname";
 
 		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
 		A_Tracer;
@@ -646,6 +660,7 @@ decorate : cstyle {
 		A_TakeFromSiblings = "string type, [int count]";
 		A_TakeFromTarget = "string type, [int count], [int flags], [pointer forward]";
 		A_DropInventory = "string type";
+		A_SetInventory = "string type, int amount, [int ptr], [bool beyondMax]";
 		A_SelectWeapon = "string type, [int flags]";
 		A_GiveQuestItem = "int itemno";
 		A_DropItem = "class item, [int dropamount], [int chance]";
@@ -910,6 +925,10 @@ decorate : cstyle {
 		GetSpriteAngle = "[int ptr]";
 		GetSpriteRotation = "[int ptr]";
 		CountProximity = "string classname, float distance, [int flags], [int ptr]";
+		GetMissileDamage = "int mask, int add, [int ptr]";
+		OverlayID;
+		OverlayX = "[int layer]";
+		OverlayY = "[int layer]";
 		
 		// Internal use only, normally
 		A_Turn = "[float angle]";
