@@ -9,6 +9,7 @@
 #include "General/Executables.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "IdGamesPanel.h"
+#include "LibraryPanel.h"
 #include <wx/choice.h>
 #include <wx/gbsizer.h>
 #include <wx/dirctrl.h>
@@ -77,7 +78,8 @@ LauncherPanel::LauncherPanel(wxWindow* parent) : wxPanel(parent, -1)
 	tabs_library = new STabCtrl(splitter, false, false, 28);
 
 	// Library tab
-	tabs_library->AddPage(new wxPanel(tabs_library), "Library");
+	panel_library = new LibraryPanel(tabs_library);
+	tabs_library->AddPage(panel_library, "Library");
 	tabs_library->SetPageBitmap(0, Icons::getIcon(Icons::GENERAL, "properties"));
 
 	// idgames tab

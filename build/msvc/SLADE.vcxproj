@@ -1103,8 +1103,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\Launcher\IdGames.cpp" />
+    <ClCompile Include="..\..\src\Launcher\Mods.cpp" />
     <ClCompile Include="..\..\src\Launcher\UI\IdGamesPanel.cpp" />
     <ClCompile Include="..\..\src\Launcher\UI\LauncherPanel.cpp" />
+    <ClCompile Include="..\..\src\Launcher\UI\LibraryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\AnimatedList.cpp" />
     <ClCompile Include="..\..\src\MainEditor\ArchiveOperations.cpp" />
     <ClCompile Include="..\..\src\MainEditor\Conversions.cpp" />
@@ -1542,9 +1544,10 @@
     <ClInclude Include="..\..\src\External\lzma\C\XzCrc64.h" />
     <ClInclude Include="..\..\src\External\lzma\C\XzEnc.h" />
     <ClInclude Include="..\..\src\Launcher\IdGames.h" />
-    <ClInclude Include="..\..\src\Launcher\Library.h" />
+    <ClInclude Include="..\..\src\Launcher\Mods.h" />
     <ClInclude Include="..\..\src\Launcher\UI\IdGamesPanel.h" />
     <ClInclude Include="..\..\src\Launcher\UI\LauncherPanel.h" />
+    <ClInclude Include="..\..\src\Launcher\UI\LibraryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\AnimatedList.h" />
     <ClInclude Include="..\..\src\MainEditor\ArchiveOperations.h" />
     <ClInclude Include="..\..\src\MainEditor\BinaryControlLump.h" />

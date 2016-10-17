@@ -9,6 +9,7 @@ class STabCtrl;
 class ListView;
 class WMFileBrowser;
 class wxButton;
+class LibraryPanel;
 
 class LauncherPanel : public wxPanel
 {
@@ -25,8 +26,9 @@ private:
 	ListView*	lv_files;
 	wxButton*	btn_launch;
 
-	STabCtrl*	tabs_library;
-	ListView*	lv_recent_files;
+	STabCtrl*		tabs_library;
+	ListView*		lv_recent_files;
+	LibraryPanel*	panel_library;
 
 	wxPanel*	setupControlsPanel(wxWindow* parent);
 	wxPanel*	setupFileBrowserTab();

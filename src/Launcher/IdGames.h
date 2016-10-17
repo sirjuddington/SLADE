@@ -21,17 +21,17 @@ namespace idGames
 		vector<key_value_t>	params;
 	};
 
-	struct review_t
+	struct Review
 	{
 		string	text;
 		int		rating;
 
-		review_t() {}
-		review_t(string text, int rating)
+		Review() {}
+		Review(string text, int rating)
 			: text(text), rating(rating) {}
 	};
 
-	struct file_t
+	struct File
 	{
 		int					id;
 		string				title;
@@ -52,9 +52,9 @@ namespace idGames
 		double				rating;
 		int					votes;
 		string				url;
-		vector<review_t>	reviews;
+		vector<Review>	reviews;
 	};
 
-	void	readFileXml(file_t& file, wxXmlNode* file_node);
-	void	readFileReviews(file_t& file, wxXmlNode* reviews_node);
+	void	readFileXml(File& file, wxXmlNode* file_node);
+	void	readFileReviews(File& file, wxXmlNode* reviews_node);
 }

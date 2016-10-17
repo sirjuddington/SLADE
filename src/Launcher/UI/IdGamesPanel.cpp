@@ -10,6 +10,27 @@
 #include <wx/sstream.h>
 #include <wx/gbsizer.h>
 
+
+IdGamesDetailsPanel::IdGamesDetailsPanel(wxWindow* parent) : wxPanel(parent, -1)
+{
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(sizer);
+
+	text_textfile = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
+	sizer->Add(text_textfile, 1, wxEXPAND, 0);
+}
+
+IdGamesDetailsPanel::~IdGamesDetailsPanel()
+{
+}
+
+void IdGamesDetailsPanel::loadDetails(idGames::File file)
+{
+	text_textfile->SetValue(file.text_file);
+}
+
+
+
 IdGamesPanel::IdGamesPanel(wxWindow* parent)
 	: wxPanel(parent)
 {
@@ -51,8 +72,8 @@ IdGamesPanel::IdGamesPanel(wxWindow* parent)
 
 
 	// File info
-	wxPanel* temp = new wxPanel(this);
-	sizer->Add(temp, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, 8);
+	panel_details = new IdGamesDetailsPanel(this);
+	sizer->Add(panel_details, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, 8);
 
 
 	// Bind events
@@ -61,6 +82,7 @@ IdGamesPanel::IdGamesPanel(wxWindow* parent)
 	rb_search->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBSearchClicked, this);
 	rb_browse->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBBrowseClicked, this);
 	rb_latest->Bind(wxEVT_RADIOBUTTON, &IdGamesPanel::onRBLatestClicked, this);
+	lv_files->Bind(wxEVT_LIST_ITEM_SELECTED, &IdGamesPanel::onListItemSelected, this);
 }
 
 IdGamesPanel::~IdGamesPanel()
@@ -120,7 +142,7 @@ wxPanel* IdGamesPanel::setupSearchControlPanel()
 	return panel;
 }
 
-void IdGamesPanel::loadList(vector<idGames::file_t>& list)
+void IdGamesPanel::loadList(vector<idGames::File>& list)
 {
 	lv_files->Show(false);
 	lv_files->DeleteAllItems();
@@ -172,7 +194,7 @@ void IdGamesPanel::readLatestFiles(string& xml)
 		}
 
 		//// Read into idGames file
-		//idGames::file_t id_file;
+		//idGames::File id_file;
 		//idGames::readFileXml(id_file, file);
 
 		//// Add to list
@@ -183,7 +205,7 @@ void IdGamesPanel::readLatestFiles(string& xml)
 		//lv_files->addItem(lv_files->GetItemCount(), item);
 
 		// Add file to list
-		files_latest.push_back(idGames::file_t());
+		files_latest.push_back(idGames::File());
 		idGames::readFileXml(files_latest.back(), file);
 
 		file = file->GetNext();
@@ -285,7 +307,7 @@ void IdGamesPanel::readSearchResult(string& xml)
 		}
 
 		//// Read into idGames file
-		//idGames::file_t id_file;
+		//idGames::File id_file;
 		//idGames::readFileXml(id_file, file);
 
 		//// Add to list
@@ -296,7 +318,7 @@ void IdGamesPanel::readSearchResult(string& xml)
 		//lv_files->addItem(lv_files->GetItemCount(), item);
 
 		// Add file to list
-		files_search.push_back(idGames::file_t());
+		files_search.push_back(idGames::File());
 		idGames::readFileXml(files_search.back(), file);
 
 		file = file->GetNext();
@@ -382,4 +404,12 @@ void IdGamesPanel::onRBLatestClicked(wxCommandEvent& e)
 
 	// Load latest files list
 	loadList(files_latest);
+}
+
+void IdGamesPanel::onListItemSelected(wxListEvent& e)
+{
+	int selection = lv_files->selectedItems()[0];
+
+	if (rb_latest->GetValue())
+		panel_details->loadDetails(files_latest[selection]);
 }

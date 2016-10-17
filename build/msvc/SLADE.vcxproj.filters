@@ -1389,6 +1389,12 @@
     <ClCompile Include="..\..\src\Utility\XmlHelpers.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Launcher\Mods.cpp">
+      <Filter>Launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Launcher\UI\LibraryPanel.cpp">
+      <Filter>Launcher\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2405,11 +2411,14 @@
     <ClInclude Include="..\..\src\Launcher\IdGames.h">
       <Filter>Launcher</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Launcher\Library.h">
-      <Filter>Launcher</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Utility\XmlHelpers.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Launcher\Mods.h">
+      <Filter>Launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Launcher\UI\LibraryPanel.h">
+      <Filter>Launcher\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

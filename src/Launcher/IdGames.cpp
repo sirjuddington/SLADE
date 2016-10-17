@@ -91,7 +91,7 @@ wxThread::ExitCode ApiCall::Entry()
 
 
 
-void idGames::readFileXml(file_t& file, wxXmlNode* node)
+void idGames::readFileXml(File& file, wxXmlNode* node)
 {
 	wxXmlNode* child = node->GetChildren();
 	long l_val;
@@ -202,7 +202,7 @@ void idGames::readFileXml(file_t& file, wxXmlNode* node)
 	}
 }
 
-void idGames::readFileReviews(file_t& file, wxXmlNode* reviews_node)
+void idGames::readFileReviews(File& file, wxXmlNode* reviews_node)
 {
 	string r_text;
 	string r_rating;
@@ -230,7 +230,7 @@ void idGames::readFileReviews(file_t& file, wxXmlNode* reviews_node)
 		}
 
 		// Add review
-		file.reviews.push_back(review_t(r_text, l_val));
+		file.reviews.push_back(Review(r_text, l_val));
 
 		review_node = review_node->GetNext();
 	}

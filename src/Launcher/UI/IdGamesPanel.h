@@ -2,16 +2,16 @@
 
 #include "Launcher/IdGames.h"
 
-class IdGamesDetailsPanel
+class IdGamesDetailsPanel : public wxPanel
 {
 public:
 	IdGamesDetailsPanel(wxWindow* parent);
 	~IdGamesDetailsPanel();
 
-	void	loadDetails(idGames::file_t file);
+	void	loadDetails(idGames::File file);
 
 private:
-
+	wxTextCtrl*	text_textfile;
 };
 
 class ListView;
@@ -23,15 +23,16 @@ public:
 	~IdGamesPanel();
 
 private:
-	vector<idGames::file_t>	files_latest;
-	vector<idGames::file_t> files_search;
-	vector<idGames::file_t> files_browse;
+	vector<idGames::File>	files_latest;
+	vector<idGames::File>	files_search;
+	vector<idGames::File>	files_browse;
 
-	ListView*		lv_files;
-	wxButton*		btn_refresh;	// Temp
-	wxRadioButton*	rb_latest;
-	wxRadioButton*	rb_search;
-	wxRadioButton*	rb_browse;
+	ListView*				lv_files;
+	wxButton*				btn_refresh;	// Temp
+	wxRadioButton*			rb_latest;
+	wxRadioButton*			rb_search;
+	wxRadioButton*			rb_browse;
+	IdGamesDetailsPanel*	panel_details;
 
 	// Search
 	wxChoice*	choice_search_by;
@@ -42,7 +43,7 @@ private:
 
 	wxPanel*	setupSearchControlPanel();
 
-	void	loadList(vector<idGames::file_t>& list);
+	void	loadList(vector<idGames::File>& list);
 	
 	void	getLatestFiles();
 	void	readLatestFiles(string& xml);
@@ -56,4 +57,5 @@ private:
 	void	onRBSearchClicked(wxCommandEvent& e);
 	void	onRBLatestClicked(wxCommandEvent& e);
 	void	onRBBrowseClicked(wxCommandEvent& e);
+	void	onListItemSelected(wxListEvent& e);
 };
