@@ -11,8 +11,7 @@ usdf : cstyle {
 		voice, dialog, drop, link, ifitem, item, page,
 		actor, text, displaycost, yesmessage, nomessage,
 		log, giveitem, nextpage, closedialog, special,
-		arg0, arg1, arg2, arg3, arg4, cost, amount,
-		goodbye
+		arg0, arg1, arg2, arg3, arg4, cost, amount
 	}
 }
 
@@ -28,6 +27,6 @@ zsdf : usdf {
 		actor, text, displaycost, yesmessage, nomessage,
 		log, giveitem, nextpage, closedialog, special,
 		arg0, arg1, arg2, arg3, arg4, cost, amount, id,
-		goodbye
+		goodbye, require, exclude
 	}
 }
