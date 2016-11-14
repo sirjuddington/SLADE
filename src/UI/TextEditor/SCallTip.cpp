@@ -318,15 +318,22 @@ void SCallTip::updateBuffer()
 			rect_btn_down.Offset(12, 8);
 		}
 
+		// Draw function return type
+		string ftype = function->getReturnType() + " ";
+		wxRect rect;
+		dc.SetTextForeground(WXCOL(col_type));
+		dc.DrawLabel(ftype, wxNullBitmap, wxRect(left, 0, 900, 900), 0, -1, &rect);
+
 		// Draw function name
 		string fname = function->getName();
-		wxRect rect;
+		//wxRect rect;
 		dc.SetTextForeground(WXCOL(col_func));
-		dc.DrawLabel(fname, wxNullBitmap, wxRect(left, 0, 900, 900), 0, -1, &rect);
+		//dc.DrawLabel(fname, wxNullBitmap, wxRect(left, 0, 900, 900), 0, -1, &rect);
+		left = drawText(dc, fname, rect.GetRight() + 1, rect.GetTop(), &rect);
 
 		// Draw opening bracket
 		dc.SetTextForeground(WXCOL(col_fg));
-		left = drawText(dc, "(", rect.GetRight() + 1, rect.GetTop(), &rect);
+		left = drawText(dc, "(", left, rect.GetTop(), &rect);
 
 		// Draw args
 		int top = rect.GetTop();

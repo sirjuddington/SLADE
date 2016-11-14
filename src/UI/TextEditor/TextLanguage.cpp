@@ -50,9 +50,10 @@ vector<TextLanguage*>	text_languages;
 /* TLFunction::TLFunction
  * TLFunction class constructor
  *******************************************************************/
-TLFunction::TLFunction(string name)
+TLFunction::TLFunction(string name, string return_type) :
+	name{ name },
+	return_type{ return_type }
 {
-	this->name = name;
 }
 
 /* TLFunction::~TLFunction
@@ -212,7 +213,13 @@ void TextLanguage::copyTo(TextLanguage* copy)
 	{
 		TLFunction* f = functions[a];
 		for (unsigned b = 0; b < f->nArgSets(); b++)
-			copy->addFunction(f->getName(), f->getArgSet(b));
+			copy->addFunction(
+				f->getName(),
+				f->getArgSet(b),
+				f->getDescription(),
+				false,
+				f->getReturnType()
+			);
 	}
 }
 
@@ -241,7 +248,7 @@ void TextLanguage::addConstant(string constant)
  * exists, [args] will be added to it as a new arg set, otherwise
  * a new function will be added
  *******************************************************************/
-void TextLanguage::addFunction(string name, string args, string desc, bool replace)
+void TextLanguage::addFunction(string name, string args, string desc, bool replace, string return_type)
 {
 	// Check if the function exists
 	TLFunction* func = getFunction(name);
@@ -249,7 +256,7 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 	// If it doesn't, create it
 	if (!func)
 	{
-		func = new TLFunction(name);
+		func = new TLFunction(name, return_type.empty() ? "void" : return_type);
 		functions.push_back(func);
 	}
 
@@ -258,7 +265,7 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 	{
 		VECTOR_REMOVE(functions, func);
 		delete func;
-		func = new TLFunction(name);
+		func = new TLFunction(name, return_type.empty() ? "void" : return_type);
 		functions.push_back(func);
 	}
 
@@ -618,7 +625,12 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 					if (child_func->nChildren() == 0)
 					{
 						// Add function
-						lang->addFunction(child_func->getName(), child_func->getStringValue(0), "", true);
+						lang->addFunction(
+							child_func->getName(),
+							child_func->getStringValue(0),
+							"",
+							true,
+							child_func->getType());
 
 						// Add args
 						for (unsigned v = 1; v < child_func->nValues(); v++)
@@ -644,7 +656,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 						}
 
 						for (unsigned as = 0; as < args.size(); as++)
-							lang->addFunction(name, args[as], desc, as == 0);
+							lang->addFunction(name, args[as], desc, as == 0, child_func->getType());
 					}
 				}
 			}

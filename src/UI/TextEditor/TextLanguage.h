@@ -8,14 +8,16 @@ private:
 	string			name;
 	vector<string>	arg_sets;
 	string			description;
+	string			return_type;
 
 public:
-	TLFunction(string name = "");
+	TLFunction(string name = "", string return_type = "void");
 	~TLFunction();
 
 	string		getName() { return name; }
 	string		getArgSet(unsigned index);
 	string		getDescription() { return description; }
+	string		getReturnType() { return return_type; }
 	unsigned	nArgSets() { return arg_sets.size(); }
 
 	void	setName(string name) { this->name = name; }
@@ -77,7 +79,13 @@ public:
 	void	setCaseSensitive(bool cs) { case_sensitive = cs; }
 	void	addKeyword(string keyword);
 	void	addConstant(string constant);
-	void	addFunction(string name, string args, string desc = "", bool replace = false);
+	void	addFunction(
+		string name,
+		string args,
+		string desc = "",
+		bool replace = false,
+		string return_type = ""
+	);
 
 	string	getKeywordsList();
 	string	getConstantsList();
