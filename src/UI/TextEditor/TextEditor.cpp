@@ -34,6 +34,7 @@
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
 #include "SCallTip.h"
+#include "Lexer.h"
 
 
 /*******************************************************************
@@ -373,7 +374,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 	event->SetString(jump_points);
 	wxQueueEvent(handler, event);
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -385,18 +386,19 @@ wxThread::ExitCode JumpToCalculator::Entry()
  * TextEditor class constructor
  *******************************************************************/
 TextEditor::TextEditor(wxWindow* parent, int id)
-	: wxStyledTextCtrl(parent, id), timer_update(this)
+	: wxStyledTextCtrl(parent, id), timer_update(this), lexer(nullptr)
 {
 	// Init variables
-	language = NULL;
+	language = nullptr;
 	ct_argset = 0;
-	ct_function = NULL;
+	ct_function = nullptr;
 	ct_start = 0;
 	bm_cursor_last_pos = -1;
-	panel_fr = NULL;
+	panel_fr = nullptr;
 	call_tip = new SCallTip(this);
-	choice_jump_to = NULL;
-	jump_to_calculator = NULL;
+	choice_jump_to = nullptr;
+	jump_to_calculator = nullptr;
+	lexer = new Lexer();
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -417,7 +419,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	RegisterImage(3, Icons::getIcon(Icons::TEXT_EDITOR, "func"));
 
 	// Init w/no language
-	setLanguage(NULL);
+	setLanguage(nullptr);
 
 	// Setup various configurable properties
 	setup();
@@ -440,6 +442,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	Bind(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, &TextEditor::onJumpToCalculateComplete, this);
 	Bind(wxEVT_STC_MODIFIED, &TextEditor::onModified, this);
 	Bind(wxEVT_TIMER, &TextEditor::onUpdateTimer, this);
+	Bind(wxEVT_STC_STYLENEEDED, &TextEditor::onStyleNeeded, this);
 }
 
 /* TextEditor::~TextEditor
@@ -448,6 +451,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 TextEditor::~TextEditor()
 {
 	StyleSet::removeEditor(this);
+	delete lexer;
 }
 
 /* TextEditor::setup
@@ -479,10 +483,10 @@ void TextEditor::setup()
 	CallTipSetForegroundHighlight(WXCOL(StyleSet::currentSet()->getStyle("calltip_hl")->getForeground()));
 
 	// Set lexer
-	if (txed_syntax_hilight)
-		SetLexer(wxSTC_LEX_CPPNOCASE);
-	else
-		SetLexer(wxSTC_LEX_NULL);
+	//if (txed_syntax_hilight)
+	//	SetLexer(wxSTC_LEX_CPPNOCASE);
+	//else
+		SetLexer(0);
 
 	// Set folding options
 	setupFolding();
@@ -551,6 +555,8 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 
 		// Clear autocompletion list
 		autocomp_list.Clear();
+
+		lexer->clearWords();
 	}
 
 	// Setup syntax hilighting if needed
@@ -564,13 +570,20 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 
 		// Load autocompletion list
 		autocomp_list = lang->getAutocompletionList();
+
+		for (auto word : lang->getConstantsSorted())
+			lexer->addWord(word, wxSTC_C_GLOBALCLASS);
+		for (auto word : lang->getFunctionsSorted())
+			lexer->addWord(word, wxSTC_C_WORD2);
+		for (auto word : lang->getKeywordsSorted())
+			lexer->addWord(word, wxSTC_C_WORD);
 	}
 
 	// Set lexer
-	if (txed_syntax_hilight)
-		SetLexer(wxSTC_LEX_CPPNOCASE);
-	else
-		SetLexer(wxSTC_LEX_NULL);
+	//if (txed_syntax_hilight)
+	//	SetLexer(wxSTC_LEX_CPPNOCASE);
+	//else
+		SetLexer(0);
 
 	// Set folding options
 	setupFolding();
@@ -996,7 +1009,7 @@ bool TextEditor::openCalltip(int pos, int arg, bool dwell)
 	}
 	else
 	{
-		ct_function = NULL;
+		ct_function = nullptr;
 		return false;
 	}
 }
@@ -1052,7 +1065,7 @@ void TextEditor::updateCalltip()
 		if (GetCurrentPos() < ct_start)
 		{
 			hideCalltip();
-			ct_function = NULL;
+			ct_function = nullptr;
 			return;
 		}
 
@@ -1090,7 +1103,7 @@ void TextEditor::updateCalltip()
 			if (chr == ')')
 			{
 				hideCalltip();
-				ct_function = NULL;
+				ct_function = nullptr;
 				return;
 			}
 
@@ -1652,7 +1665,7 @@ void TextEditor::onJumpToCalculateComplete(wxThreadEvent& e)
 {
 	if (!choice_jump_to)
 	{
-		jump_to_calculator = NULL;
+		jump_to_calculator = nullptr;
 		return;
 	}
 
@@ -1680,7 +1693,7 @@ void TextEditor::onJumpToCalculateComplete(wxThreadEvent& e)
 	choice_jump_to->Append(items);
 	choice_jump_to->Enable(true);
 
-	jump_to_calculator = NULL;
+	jump_to_calculator = nullptr;
 }
 
 /* TextEditor::onJumpToChoiceSelected
@@ -1716,4 +1729,31 @@ void TextEditor::onModified(wxStyledTextEvent& e)
 void TextEditor::onUpdateTimer(wxTimerEvent& e)
 {
 	updateJumpToList();
+}
+
+void TextEditor::onStyleNeeded(wxStyledTextEvent& e)
+{
+	//int start = GetEndStyled();
+	//StartStyling(start, 0);
+
+	//while (start <= e.GetPosition())
+	//{
+	//	SetStyling(1, wxSTC_C_COMMENT);
+	//	start++;
+	//}
+
+	if (lexer)
+	{
+		int line_start = LineFromPosition(GetEndStyled());
+		int line_end = LineFromPosition(e.GetPosition());
+
+		for (int l = line_start; l <= line_end; l++)
+		{
+			int start = GetLineEndPosition(l - 1);
+			int end = GetLineEndPosition(l) - 1;
+			lexer->doStyling(this, start, end);
+		}
+
+		//lexer->doStyling(this, start, e.GetPosition());
+	}
 }

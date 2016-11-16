@@ -67,6 +67,7 @@ private:
 
 class SCallTip;
 class wxChoice;
+class Lexer;
 class TextEditor : public wxStyledTextCtrl
 {
 private:
@@ -76,6 +77,7 @@ private:
 	wxChoice*			choice_jump_to;
 	JumpToCalculator*	jump_to_calculator;
 	wxTimer				timer_update;
+	Lexer*				lexer;
 
 	// Calltip stuff
 	TLFunction*	ct_function;
@@ -150,6 +152,7 @@ public:
 	void	onJumpToChoiceSelected(wxCommandEvent& e);
 	void	onModified(wxStyledTextEvent& e);
 	void	onUpdateTimer(wxTimerEvent& e);
+	void	onStyleNeeded(wxStyledTextEvent& e);
 };
 
 #endif //__TEXTEDITOR_H__
