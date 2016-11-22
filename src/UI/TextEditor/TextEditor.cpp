@@ -1751,6 +1751,11 @@ void TextEditor::onStyleNeeded(wxStyledTextEvent& e)
 		{
 			int start = GetLineEndPosition(l - 1);
 			int end = GetLineEndPosition(l) - 1;
+
+			// Skip endline characters
+			while (GetCharAt(start) == '\n' || GetCharAt(start) == '\r')
+				start++;
+
 			lexer->doStyling(this, start, end);
 		}
 
