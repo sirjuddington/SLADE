@@ -50,6 +50,8 @@ EXTERN_CVAR(Bool, txed_calltips_use_font)
 EXTERN_CVAR(Bool, txed_fold_enable)
 EXTERN_CVAR(Bool, txed_fold_comments)
 EXTERN_CVAR(Bool, txed_fold_preprocessor)
+EXTERN_CVAR(Bool, txed_match_cursor_word)
+EXTERN_CVAR(Int, txed_hilight_current_line)
 
 
 /*******************************************************************
@@ -103,9 +105,24 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	cb_indent_guides = new wxCheckBox(this, -1, "Show Indentation Guides");
 	sizer->Add(cb_indent_guides, 0, wxEXPAND|wxALL, 4);
 
+	// Hilight current line
+	string choices[] = { "Off", "Background", "Background + Underline" };
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	choice_line_hilight = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 3, choices);
+	hbox->Add(new wxStaticText(this, -1, "Current Line Hilight: "), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 2);
+	hbox->Add(choice_line_hilight, 1, wxEXPAND);
+	sizer->Add(hbox, 0, wxALL, 4);
+
 	// Brace matching
 	cb_brace_match = new wxCheckBox(this, -1, "Hilight Matching Braces");
 	sizer->Add(cb_brace_match, 0, wxEXPAND|wxALL, 4);
+
+	// Word matching
+	cb_match_cursor_word = new wxCheckBox(this, -1, "Hilight Matching Words");
+	cb_match_cursor_word->SetToolTip(
+		"When enabled, any words matching the word at the current cursor position will be hilighted"
+	);
+	sizer->Add(cb_match_cursor_word, 0, wxEXPAND|wxALL, 4);
 
 	// Separator
 	sizer->Add(new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL), 0, wxEXPAND | wxALL, 4);
@@ -165,6 +182,7 @@ void TextEditorPrefsPanel::init()
 	cb_syntax_hilight->SetValue(txed_syntax_hilight);
 	cb_indent_guides->SetValue(txed_indent_guides);
 	cb_brace_match->SetValue(txed_brace_match);
+	cb_match_cursor_word->SetValue(txed_match_cursor_word);
 	cb_calltips_mouse->SetValue(txed_calltips_mouse);
 	cb_calltips_parenthesis->SetValue(txed_calltips_parenthesis);
 	cb_calltips_colourise->SetValue(txed_calltips_colourise);
@@ -175,6 +193,7 @@ void TextEditorPrefsPanel::init()
 	cb_fold_enable->SetValue(txed_fold_enable);
 	cb_fold_comments->SetValue(txed_fold_comments);
 	cb_fold_preprocessor->SetValue(txed_fold_preprocessor);
+	choice_line_hilight->SetSelection(txed_hilight_current_line);
 }
 
 /* TextEditorPrefsPanel::applyPreferences
@@ -187,6 +206,7 @@ void TextEditorPrefsPanel::applyPreferences()
 	txed_syntax_hilight = cb_syntax_hilight->GetValue();
 	txed_indent_guides = cb_indent_guides->GetValue();
 	txed_brace_match = cb_brace_match->GetValue();
+	txed_match_cursor_word = cb_match_cursor_word->GetValue();
 	txed_tab_width = spin_tab_width->GetValue();
 	txed_edge_column = spin_right_margin->GetValue();
 	txed_calltips_mouse = cb_calltips_mouse->GetValue();
@@ -197,4 +217,5 @@ void TextEditorPrefsPanel::applyPreferences()
 	txed_fold_enable = cb_fold_enable->GetValue();
 	txed_fold_comments = cb_fold_comments->GetValue();
 	txed_fold_preprocessor = cb_fold_preprocessor->GetValue();
+	txed_hilight_current_line = choice_line_hilight->GetSelection();
 }

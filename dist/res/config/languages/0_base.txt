@@ -4,6 +4,7 @@ cstyle {
 	comment_begin = "/*";
 	comment_end = "*/";
 	comment_line = "//";
+	comment_doc = "///";
 	preprocessor = "#";
 	case_sensitive = true;
 

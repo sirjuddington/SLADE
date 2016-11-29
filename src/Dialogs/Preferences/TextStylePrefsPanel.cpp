@@ -227,19 +227,24 @@ void TextStylePrefsPanel::init()
 			"\t{\n"
 				"\t\tx = CONSTANT;\n"
 				"\t\ty += 50;\n"
+				"\t\tobject.x_property = x;\n"
+				"\t\tobject.y_property = y;\n"
 			"\t}\n"
 		"}\n"
 		);
 
 	language_preview = new TextLanguage("preview");
-	language_preview->addConstant("CONSTANT");
-	language_preview->addConstant("OTHER_CONSTANT");
-	language_preview->addKeyword("string");
-	language_preview->addKeyword("char");
-	language_preview->addKeyword("void");
-	language_preview->addKeyword("return");
-	language_preview->addKeyword("int");
-	language_preview->addKeyword("if");
+	language_preview->addWord(TextLanguage::WordType::Constant, "CONSTANT");
+	language_preview->addWord(TextLanguage::WordType::Constant, "OTHER_CONSTANT");
+	language_preview->addWord(TextLanguage::WordType::Type, "string");
+	language_preview->addWord(TextLanguage::WordType::Type, "char");
+	language_preview->addWord(TextLanguage::WordType::Keyword, "void");
+	language_preview->addWord(TextLanguage::WordType::Keyword, "return");
+	language_preview->addWord(TextLanguage::WordType::Type, "int");
+	language_preview->addWord(TextLanguage::WordType::Keyword, "if");
+	language_preview->addWord(TextLanguage::WordType::Type, "object");
+	language_preview->addWord(TextLanguage::WordType::Property, "x_property");
+	language_preview->addWord(TextLanguage::WordType::Property, "y_property");
 	language_preview->addFunction("function", "int x, int y");
 	te_preview->setLanguage(language_preview);
 

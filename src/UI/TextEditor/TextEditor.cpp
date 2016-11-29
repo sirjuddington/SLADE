@@ -56,6 +56,8 @@ CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
 CVAR(Bool, txed_word_wrap, false, CVAR_SAVE)
 CVAR(Bool, txed_calltips_colourise, true, CVAR_SAVE)
 CVAR(Bool, txed_calltips_use_font, false, CVAR_SAVE)
+CVAR(Bool, txed_match_cursor_word, true, CVAR_SAVE)
+CVAR(Int, txed_hilight_current_line, 2, CVAR_SAVE)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 
@@ -499,6 +501,13 @@ void TextEditor::setup()
 		SetWrapMode(wxSTC_WRAP_WORD);
 	else
 		SetWrapMode(wxSTC_WRAP_NONE);
+
+	// Set word match indicator style
+	SetIndicatorCurrent(8);
+	IndicatorSetStyle(8, wxSTC_INDIC_ROUNDBOX);
+	IndicatorSetUnder(8, true);
+	IndicatorSetOutlineAlpha(8, 60);
+	IndicatorSetAlpha(8, 40);
 }
 
 /* TextEditor::setupFoldMargin
@@ -556,27 +565,18 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 		// Clear autocompletion list
 		autocomp_list.Clear();
 
-		lexer->clearWords();
+		// Set lexer to basic mode
+		lexer->loadLanguage(nullptr);
 	}
 
 	// Setup syntax hilighting if needed
 	else
 	{
-		// Load word lists
-		SetKeyWords(0, lang->getKeywordsList().Lower());
-		SetKeyWords(1, lang->getFunctionsList().Lower());
-		SetKeyWords(2, lang->getConstantsList().Lower());
-		SetKeyWords(3, lang->getConstantsList().Lower());
+		// Load to lexer
+		lexer->loadLanguage(lang);
 
 		// Load autocompletion list
 		autocomp_list = lang->getAutocompletionList();
-
-		for (auto word : lang->getConstantsSorted())
-			lexer->addWord(word, wxSTC_C_GLOBALCLASS);
-		for (auto word : lang->getFunctionsSorted())
-			lexer->addWord(word, wxSTC_C_WORD2);
-		for (auto word : lang->getKeywordsSorted())
-			lexer->addWord(word, wxSTC_C_WORD);
 	}
 
 	// Set lexer
@@ -1509,6 +1509,50 @@ void TextEditor::onUpdateUI(wxStyledTextEvent& e)
 	if (call_tip->IsShown())
 		updateCalltip();
 
+	// Do word matching if appropriate
+	if (txed_match_cursor_word && language)
+	{
+		int word_start = WordStartPosition(GetCurrentPos(), true);
+		int word_end = WordEndPosition(GetCurrentPos(), true);
+		string current_word = GetTextRange(word_start, word_end);
+		if (!current_word.IsEmpty() && HasFocus())
+		{
+			if (current_word != prev_word_match)
+			{
+				prev_word_match = current_word;
+
+				SetIndicatorCurrent(8);
+				IndicatorClearRange(0, GetTextLength());
+				SetTargetStart(0);
+				SetTargetEnd(GetTextLength());
+				SetSearchFlags(0);
+				while (SearchInTarget(current_word) != -1)
+				{
+					IndicatorFillRange(GetTargetStart(), GetTargetEnd() - GetTargetStart());
+					SetTargetStart(GetTargetEnd());
+					SetTargetEnd(GetTextLength());
+				}
+			}
+		}
+		else
+		{
+			SetIndicatorCurrent(8);
+			IndicatorClearRange(0, GetTextLength());
+			prev_word_match = "";
+		}
+	}
+
+	// Hilight current line
+	MarkerDeleteAll(1);
+	MarkerDeleteAll(2);
+	if (txed_hilight_current_line > 0 && HasFocus())
+	{
+		int line = LineFromPosition(GetCurrentPos());
+		MarkerAdd(line, 1);
+		if (txed_hilight_current_line > 1)
+			MarkerAdd(line, 2);
+	}
+
 	e.Skip();
 }
 
@@ -1584,30 +1628,31 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 
 		if (!word.IsEmpty())
 		{
-			// Check for keyword
-			if (language->isKeyword(word))
-			{
-				string url = language->getKeywordLink();
-				if (!url.IsEmpty())
-				{
-					url.Replace("%s", word);
-					wxLaunchDefaultBrowser(url);
-				}
-			}
+			// TODO: Reimplement for word lists
+			//// Check for keyword
+			//if (language->isKeyword(word))
+			//{
+			//	string url = language->getKeywordLink();
+			//	if (!url.IsEmpty())
+			//	{
+			//		url.Replace("%s", word);
+			//		wxLaunchDefaultBrowser(url);
+			//	}
+			//}
 
-			// Check for constant
-			else if (language->isConstant(word))
-			{
-				string url = language->getConstantLink();
-				if (!url.IsEmpty())
-				{
-					url.Replace("%s", word);
-					wxLaunchDefaultBrowser(url);
-				}
-			}
+			//// Check for constant
+			//else if (language->isConstant(word))
+			//{
+			//	string url = language->getConstantLink();
+			//	if (!url.IsEmpty())
+			//	{
+			//		url.Replace("%s", word);
+			//		wxLaunchDefaultBrowser(url);
+			//	}
+			//}
 
 			// Check for function
-			else if (language->isFunction(word))
+			if (language->isFunction(word))
 			{
 				string url = language->getFunctionLink();
 				if (!url.IsEmpty())
@@ -1630,8 +1675,19 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
  *******************************************************************/
 void TextEditor::onFocusLoss(wxFocusEvent& e)
 {
+	// Hide calltip+autocomplete box
 	hideCalltip();
 	AutoCompCancel();
+
+	// Hide current line marker
+	MarkerDeleteAll(1);
+	MarkerDeleteAll(2);
+
+	// Clear word matches
+	SetIndicatorCurrent(8);
+	IndicatorClearRange(0, GetTextLength());
+	prev_word_match = "";
+
 	e.Skip();
 }
 
@@ -1731,34 +1787,30 @@ void TextEditor::onUpdateTimer(wxTimerEvent& e)
 	updateJumpToList();
 }
 
+/* TextEditor::onStyleNeeded
+ * Called when text styling is needed
+ *******************************************************************/
 void TextEditor::onStyleNeeded(wxStyledTextEvent& e)
 {
-	//int start = GetEndStyled();
-	//StartStyling(start, 0);
-
-	//while (start <= e.GetPosition())
-	//{
-	//	SetStyling(1, wxSTC_C_COMMENT);
-	//	start++;
-	//}
-
 	if (lexer)
 	{
+		// Get range of lines to be updated
 		int line_start = LineFromPosition(GetEndStyled());
 		int line_end = LineFromPosition(e.GetPosition());
 
-		for (int l = line_start; l <= line_end; l++)
+		// Lex until done (end of lines, end of file or end of block comment)
+		int l = line_start;
+		bool force_next = false;
+		while (l <= GetNumberOfLines() && (l <= line_end || force_next))
 		{
-			int start = GetLineEndPosition(l - 1);
 			int end = GetLineEndPosition(l) - 1;
+			int start = end - GetLineLength(l) + 1;
 
-			// Skip endline characters
-			while (GetCharAt(start) == '\n' || GetCharAt(start) == '\r')
-				start++;
+			if (start > end)
+				end = start;
 
-			lexer->doStyling(this, start, end);
+			force_next = lexer->doStyling(this, start, end);
+			l++;
 		}
-
-		//lexer->doStyling(this, start, e.GetPosition());
 	}
 }
