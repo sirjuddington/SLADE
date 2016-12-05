@@ -50,6 +50,7 @@ EXTERN_CVAR(Bool, txed_calltips_use_font)
 EXTERN_CVAR(Bool, txed_fold_enable)
 EXTERN_CVAR(Bool, txed_fold_comments)
 EXTERN_CVAR(Bool, txed_fold_preprocessor)
+EXTERN_CVAR(Bool, txed_fold_lines)
 EXTERN_CVAR(Bool, txed_match_cursor_word)
 EXTERN_CVAR(Int, txed_hilight_current_line)
 
@@ -163,6 +164,10 @@ TextEditorPrefsPanel::TextEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pa
 	cb_fold_preprocessor = new wxCheckBox(this, -1, "Fold preprocessor regions");
 	cb_fold_preprocessor->SetToolTip("Enable folding for preprocessor regions, eg. #if/#endif, #region/#endregion");
 	sizer->Add(cb_fold_preprocessor, 0, wxEXPAND | wxALL, 4);
+
+	// Fold Lines
+	cb_fold_lines = new wxCheckBox(this, -1, "Show lines at contracted code folding regions");
+	sizer->Add(cb_fold_lines, 0, wxEXPAND | wxALL, 4);
 }
 
 /* TextEditorPrefsPanel::~TextEditorPrefsPanel
@@ -193,6 +198,7 @@ void TextEditorPrefsPanel::init()
 	cb_fold_enable->SetValue(txed_fold_enable);
 	cb_fold_comments->SetValue(txed_fold_comments);
 	cb_fold_preprocessor->SetValue(txed_fold_preprocessor);
+	cb_fold_lines->SetValue(txed_fold_lines);
 	choice_line_hilight->SetSelection(txed_hilight_current_line);
 }
 
@@ -217,5 +223,6 @@ void TextEditorPrefsPanel::applyPreferences()
 	txed_fold_enable = cb_fold_enable->GetValue();
 	txed_fold_comments = cb_fold_comments->GetValue();
 	txed_fold_preprocessor = cb_fold_preprocessor->GetValue();
+	txed_fold_lines = cb_fold_lines->GetValue();
 	txed_hilight_current_line = choice_line_hilight->GetSelection();
 }

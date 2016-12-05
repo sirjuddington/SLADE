@@ -34,7 +34,6 @@
 #include "Graphics/Icons.h"
 #include "General/KeyBind.h"
 #include "SCallTip.h"
-#include "Lexer.h"
 
 
 /*******************************************************************
@@ -52,6 +51,8 @@ CVAR(Bool, txed_calltips_parenthesis, true, CVAR_SAVE)
 CVAR(Bool, txed_fold_enable, true, CVAR_SAVE)
 CVAR(Bool, txed_fold_comments, false, CVAR_SAVE)
 CVAR(Bool, txed_fold_preprocessor, true, CVAR_SAVE)
+CVAR(Bool, txed_fold_lines, true, CVAR_SAVE)
+CVAR(Bool, txed_fold_debug, false, CVAR_SECRET)
 CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
 CVAR(Bool, txed_word_wrap, false, CVAR_SAVE)
 CVAR(Bool, txed_calltips_colourise, true, CVAR_SAVE)
@@ -388,7 +389,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
  * TextEditor class constructor
  *******************************************************************/
 TextEditor::TextEditor(wxWindow* parent, int id)
-	: wxStyledTextCtrl(parent, id), timer_update(this), lexer(nullptr)
+	: wxStyledTextCtrl(parent, id), timer_update(this)
 {
 	// Init variables
 	language = nullptr;
@@ -400,7 +401,6 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	call_tip = new SCallTip(this);
 	choice_jump_to = nullptr;
 	jump_to_calculator = nullptr;
-	lexer = new Lexer();
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -453,7 +453,6 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 TextEditor::~TextEditor()
 {
 	StyleSet::removeEditor(this);
-	delete lexer;
 }
 
 /* TextEditor::setup
@@ -566,14 +565,14 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 		autocomp_list.Clear();
 
 		// Set lexer to basic mode
-		lexer->loadLanguage(nullptr);
+		lexer.loadLanguage(nullptr);
 	}
 
 	// Setup syntax hilighting if needed
 	else
 	{
 		// Load to lexer
-		lexer->loadLanguage(lang);
+		lexer.loadLanguage(lang);
 
 		// Load autocompletion list
 		autocomp_list = lang->getAutocompletionList();
@@ -647,7 +646,7 @@ bool TextEditor::loadEntry(ArchiveEntry* entry)
 	SetText(text);
 
 	// Update line numbers margin width
-	string numlines = S_FMT("0%d", GetNumberOfLines());
+	string numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	return true;
@@ -1199,6 +1198,8 @@ void TextEditor::foldAll(bool fold)
 			ToggleFold(a);
 	}
 #endif
+
+	updateFolding();
 }
 
 /* TextEditor::setupFolding
@@ -1208,14 +1209,36 @@ void TextEditor::setupFolding()
 {
 	if (txed_fold_enable)
 	{
-		SetProperty("fold", "1");
+		// Set folding options
+		lexer.foldComments(txed_fold_comments);
+		lexer.foldPreprocessor(txed_fold_preprocessor);
 
-		if (txed_fold_preprocessor)
-			SetProperty("fold.preprocessor", "1");
-
-		if (txed_fold_comments)
-			SetProperty("fold.comment", "1");
+		int flags = 0;
+		if (txed_fold_debug)
+			flags |= wxSTC_FOLDFLAG_LEVELNUMBERS;
+		if (txed_fold_lines)
+			flags |= wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED;
+		SetFoldFlags(flags);
 	}
+}
+
+/* TextEditor::updateFolding
+ * Updates code folding markers
+ *******************************************************************/
+void TextEditor::updateFolding()
+{
+	/*MarkerDeleteAll(3);
+	MarkerDeleteAll(4);
+
+	for (int a = 0; a < GetNumberOfLines(); a++)
+	{
+		int level = GetFoldLevel(a);
+		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0 && GetFoldExpanded(a) == false)
+		{
+			MarkerAdd(a, 3);
+			MarkerAdd(a, 4);
+		}
+	}*/
 }
 
 
@@ -1446,7 +1469,7 @@ void TextEditor::onKeyUp(wxKeyEvent& e)
 void TextEditor::onCharAdded(wxStyledTextEvent& e)
 {
 	// Update line numbers margin width
-	string numlines = S_FMT("0%d", GetNumberOfLines());
+	string numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	// Auto indent
@@ -1711,6 +1734,7 @@ void TextEditor::onMarginClick(wxStyledTextEvent& e)
 		int level = GetFoldLevel(line);
 		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0)
 			ToggleFold(line);
+		updateFolding();
 	}
 }
 
@@ -1792,25 +1816,25 @@ void TextEditor::onUpdateTimer(wxTimerEvent& e)
  *******************************************************************/
 void TextEditor::onStyleNeeded(wxStyledTextEvent& e)
 {
-	if (lexer)
+	// Get range of lines to be updated
+	int line_start = LineFromPosition(GetEndStyled());
+	int line_end = LineFromPosition(e.GetPosition());
+
+	// Lex until done (end of lines, end of file or end of block comment)
+	int l = line_start;
+	bool force_next = false;
+	while (l <= GetNumberOfLines() && (l <= line_end || force_next))
 	{
-		// Get range of lines to be updated
-		int line_start = LineFromPosition(GetEndStyled());
-		int line_end = LineFromPosition(e.GetPosition());
+		int end = GetLineEndPosition(l) - 1;
+		int start = end - GetLineLength(l) + 1;
 
-		// Lex until done (end of lines, end of file or end of block comment)
-		int l = line_start;
-		bool force_next = false;
-		while (l <= GetNumberOfLines() && (l <= line_end || force_next))
-		{
-			int end = GetLineEndPosition(l) - 1;
-			int start = end - GetLineLength(l) + 1;
+		if (start > end)
+			end = start;
 
-			if (start > end)
-				end = start;
-
-			force_next = lexer->doStyling(this, start, end);
-			l++;
-		}
+		force_next = lexer.doStyling(this, start, end);
+		l++;
 	}
+
+	if (txed_fold_enable)
+		lexer.updateFolding(this, line_start);
 }

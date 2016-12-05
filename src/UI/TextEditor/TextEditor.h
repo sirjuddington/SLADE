@@ -6,6 +6,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "TextLanguage.h"
 #include "TextStyle.h"
+#include "Lexer.h"
 
 class wxButton;
 class wxCheckBox;
@@ -67,7 +68,6 @@ private:
 
 class SCallTip;
 class wxChoice;
-class Lexer;
 class TextEditor : public wxStyledTextCtrl
 {
 private:
@@ -77,7 +77,7 @@ private:
 	wxChoice*			choice_jump_to;
 	JumpToCalculator*	jump_to_calculator;
 	wxTimer				timer_update;
-	Lexer*				lexer;
+	Lexer				lexer;
 	string				prev_word_match;
 	string				autocomp_list;
 	int					bm_cursor_last_pos;
@@ -130,6 +130,7 @@ public:
 	// Folding
 	void	foldAll(bool fold = true);
 	void	setupFolding();
+	void	updateFolding();
 
 	// Events
 	void	onKeyDown(wxKeyEvent& e);

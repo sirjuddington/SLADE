@@ -39,6 +39,10 @@ public:
 	void	setBlockComment(string start, string end) { comment_block_start = start; comment_block_end = end; }
 	void	setDocComment(string token) { comment_doc_line = token; }
 
+	void	updateFolding(TextEditor* editor, int line_start);
+	void	foldComments(bool fold) { fold_comments = fold; }
+	void	foldPreprocessor(bool fold) { fold_preprocessor = fold; }
+
 private:
 	enum class State
 	{
@@ -65,6 +69,8 @@ private:
 	wxRegEx			re_int2;
 	wxRegEx			re_int3;
 	wxRegEx			re_float;
+	bool			fold_comments;
+	bool			fold_preprocessor;
 
 	struct WLIndex
 	{
@@ -76,8 +82,9 @@ private:
 	struct LineInfo
 	{
 		bool	commented;
-		int		fold_level;
-		LineInfo() : commented{ false }, fold_level{ 0 } {}
+		int		fold_increment;
+		bool	has_word;
+		LineInfo() : commented{ false }, fold_increment{ 0 }, has_word{ false } {}
 	};
 	std::map<int, LineInfo>	lines;
 
@@ -88,6 +95,8 @@ private:
 		int			line;
 		State		state;
 		int			length;
+		int			fold_increment;
+		bool		has_word;
 		TextEditor*	editor;
 	};
 	bool	processUnknown(LexerState& state);
