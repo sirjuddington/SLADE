@@ -105,7 +105,7 @@ bool Lexer::doStyling(TextEditor* editor, int start, int end)
 		editor
 	};
 
-	editor->StartStyling(start, 0);
+	editor->StartStyling(start, 31);
 	LOG_MESSAGE(3, "START STYLING FROM %d TO %d (LINE %d)", start, end, line + 1);
 
 	bool done = false;
@@ -199,6 +199,10 @@ bool Lexer::processUnknown(LexerState& state)
 	bool end = false;
 	bool pp = false;
 	string comment_begin = language ? language->getCommentBegin() : "";
+	string comment_doc = language ? language->getDocComment() : "";
+	string comment_line = language ? language->getLineComment() : "";
+	string block_begin = language ? language->getBlockBegin() : "";
+	string block_end = language ? language->getBlockEnd() : "";
 
 	while (true)
 	{
@@ -240,7 +244,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Start of doc line comment
-		else if (checkToken(state.editor, state.position, language->getDocComment()))
+		else if (checkToken(state.editor, state.position, comment_doc))
 		{
 			// Format as comment to end of line
 			state.editor->SetStyling(u_length, Style::Default);
@@ -249,7 +253,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Start of line comment
-		else if (checkToken(state.editor, state.position, language->getLineComment()))
+		else if (checkToken(state.editor, state.position, comment_line))
 		{
 			// Format as comment to end of line
 			state.editor->SetStyling(u_length, Style::Default);
@@ -316,13 +320,13 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Block begin
-		else if (checkToken(state.editor, state.position, language->getBlockBegin()))
+		else if (checkToken(state.editor, state.position, block_begin))
 		{
 			state.fold_increment++;
 		}
 
 		// Block end
-		else if (checkToken(state.editor, state.position, language->getBlockEnd()))
+		else if (checkToken(state.editor, state.position, block_end))
 		{
 			state.fold_increment--;
 		}

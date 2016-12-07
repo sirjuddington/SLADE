@@ -483,12 +483,6 @@ void TextEditor::setup()
 	StyleSetFont(wxSTC_STYLE_CALLTIP, font_ct);
 	CallTipSetForegroundHighlight(WXCOL(StyleSet::currentSet()->getStyle("calltip_hl")->getForeground()));
 
-	// Set lexer
-	//if (txed_syntax_hilight)
-	//	SetLexer(wxSTC_LEX_CPPNOCASE);
-	//else
-		SetLexer(0);
-
 	// Set folding options
 	setupFolding();
 
@@ -577,12 +571,6 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 		// Load autocompletion list
 		autocomp_list = lang->getAutocompletionList();
 	}
-
-	// Set lexer
-	//if (txed_syntax_hilight)
-	//	SetLexer(wxSTC_LEX_CPPNOCASE);
-	//else
-		SetLexer(0);
 
 	// Set folding options
 	setupFolding();

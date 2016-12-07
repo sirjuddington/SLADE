@@ -24,7 +24,7 @@ public:
 		Function		= wxSTC_C_WORD2,
 		Constant		= wxSTC_C_GLOBALCLASS,
 		Type			= wxSTC_C_IDENTIFIER,
-		Property		= wxSTC_C_USERLITERAL,
+		Property		= wxSTC_C_UUID,
 	};
 
 	void	loadLanguage(TextLanguage* language);
