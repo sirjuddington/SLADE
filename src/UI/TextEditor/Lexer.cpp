@@ -42,17 +42,12 @@
  * Lexer class constructor
  *******************************************************************/
 Lexer::Lexer() :
+	language{ nullptr },
 	re_int1{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT|wxRE_NOSUB },
 	re_int2{ "^0[0-9]+$", wxRE_DEFAULT|wxRE_NOSUB },
 	re_int3{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT|wxRE_NOSUB },
 	re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NOSUB },
-	comment_line{ "//" },
-	comment_block_start{ "/*" },
-	comment_block_end{ "*/" },
-	comment_doc_line{ "///" },
-	preprocessor{ '#' },
 	whitespace_chars{ { ' ', '\n', '\r', '\t' } },
-	basic_mode{ false },
 	fold_comments{ false },
 	fold_preprocessor{ false }
 {
@@ -68,22 +63,11 @@ Lexer::Lexer() :
  *******************************************************************/
 void Lexer::loadLanguage(TextLanguage* language)
 {
+	this->language = language;
 	clearWords();
 
-	// If no language given, enable basic mode
 	if (!language)
-	{
-		basic_mode = true;
 		return;
-	}
-
-	// Setup from language
-	basic_mode = false;
-	comment_line = language->getLineComment();
-	comment_block_start = language->getCommentBegin();
-	comment_block_end = language->getCommentEnd();
-	comment_doc_line = language->getDocComment();
-	preprocessor = language->getPreprocessor()[0];
 
 	// Load language words
 	for (auto word : language->getWordListSorted(TextLanguage::WordType::Constant))
@@ -173,7 +157,7 @@ void Lexer::styleWord(TextEditor* editor, string word)
 
 	if (word_list[wl].style > 0)
 		editor->SetStyling(word.length(), word_list[wl].style);
-	else if (word.StartsWith(preprocessor))
+	else if (word.StartsWith(language->getPreprocessor()))
 		editor->SetStyling(word.length(), Style::Preprocessor);
 	else
 	{
@@ -214,6 +198,7 @@ bool Lexer::processUnknown(LexerState& state)
 	int u_length = 0;
 	bool end = false;
 	bool pp = false;
+	string comment_begin = language ? language->getCommentBegin() : "";
 
 	while (true)
 	{
@@ -236,8 +221,8 @@ bool Lexer::processUnknown(LexerState& state)
 			break;
 		}
 
-		// Basic mode only supports strings
-		else if (basic_mode)
+		// No language set, only process strings
+		else if (!language)
 		{
 			u_length++;
 			state.position++;
@@ -255,7 +240,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Start of doc line comment
-		else if (checkToken(state.editor, state.position, comment_doc_line))
+		else if (checkToken(state.editor, state.position, language->getDocComment()))
 		{
 			// Format as comment to end of line
 			state.editor->SetStyling(u_length, Style::Default);
@@ -264,7 +249,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Start of line comment
-		else if (checkToken(state.editor, state.position, comment_line))
+		else if (checkToken(state.editor, state.position, language->getLineComment()))
 		{
 			// Format as comment to end of line
 			state.editor->SetStyling(u_length, Style::Default);
@@ -273,11 +258,11 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Start of block comment
-		else if (checkToken(state.editor, state.position, comment_block_start))
+		else if (checkToken(state.editor, state.position, comment_begin))
 		{
 			state.state = State::Comment;
-			state.position += comment_block_start.size();
-			state.length = comment_block_start.size();
+			state.position += comment_begin.size();
+			state.length = comment_begin.size();
 			if (fold_comments)
 			{
 				state.fold_increment++;
@@ -296,7 +281,7 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Preprocessor
-		else if (c == preprocessor)
+		else if (c == language->getPreprocessor()[0])
 		{
 			pp = true;
 			u_length++;
@@ -331,13 +316,13 @@ bool Lexer::processUnknown(LexerState& state)
 		}
 
 		// Block begin
-		else if (c == '{')
+		else if (checkToken(state.editor, state.position, language->getBlockBegin()))
 		{
 			state.fold_increment++;
 		}
 
 		// Block end
-		else if (c == '}')
+		else if (checkToken(state.editor, state.position, language->getBlockEnd()))
 		{
 			state.fold_increment--;
 		}
@@ -361,6 +346,7 @@ bool Lexer::processUnknown(LexerState& state)
 bool Lexer::processComment(LexerState& state)
 {
 	bool end = false;
+	string comment_block_end = language ? language->getCommentEnd() : "";
 
 	while (true)
 	{
@@ -430,17 +416,17 @@ bool Lexer::processWord(LexerState& state)
 	string word_string = wxString::FromAscii(&word[0], word.size());
 
 	// Check for preprocessor folding word
-	if (fold_preprocessor && word_string.StartsWith(preprocessor))
+	if (fold_preprocessor)
 	{
-		string word_lower = word_string.Lower().After(preprocessor);
-		if (word_lower == "region" ||
-			word_lower == "if" ||
-			word_lower == "ifdef" ||
-			word_lower == "ifndef")
-			state.fold_increment++;
-		else if (word_lower == "endregion" ||
-			word_lower == "endif")
-			state.fold_increment--;
+		char preprocessor = language->getPreprocessor()[0];
+		if (word_string.StartsWith(preprocessor))
+		{
+			string word_lower = word_string.Lower().After(preprocessor);
+			if (VECTOR_EXISTS(language->getPPBlockBegin(), word_lower))
+				state.fold_increment++;
+			else if (VECTOR_EXISTS(language->getPPBlockEnd(), word_lower))
+				state.fold_increment--;
+		}
 	}
 
 	LOG_MESSAGE(4, "word:%s", word_string);

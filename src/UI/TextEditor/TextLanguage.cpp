@@ -167,7 +167,9 @@ TextLanguage::TextLanguage(string id) :
 	line_comment{ "//" },
 	comment_begin{ "/*" },
 	comment_end{ "*/" },
-	preprocessor{ "#" }
+	preprocessor{ "#" },
+	block_begin{ "{" },
+	block_end{ "}" }
 {
 	// Init variables
 	this->id = id;
@@ -202,6 +204,8 @@ void TextLanguage::copyTo(TextLanguage* copy)
 	copy->case_sensitive = case_sensitive;
 	copy->f_lookup_url = f_lookup_url;
 	copy->doc_comment = doc_comment;
+	copy->block_begin = block_begin;
+	copy->block_end = block_end;
 
 	// Copy word lists
 	for (unsigned a = 0; a < 4; a++)
@@ -220,6 +224,14 @@ void TextLanguage::copyTo(TextLanguage* copy)
 				f->getReturnType()
 			);
 	}
+
+	// Copy preprocessor block begin/end
+	copy->pp_block_begin.clear();
+	copy->pp_block_end.clear();
+	for (unsigned a = 0; a < pp_block_begin.size(); a++)
+		copy->pp_block_begin.push_back(pp_block_begin[a]);
+	for (unsigned a = 0; a < pp_block_end.size(); a++)
+		copy->pp_block_end.push_back(pp_block_end[a]);
 }
 
 /* TextLanguage::addWord
@@ -526,6 +538,28 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			{
 				for (unsigned v = 0; v < child->nValues(); v++)
 					lang->jb_ignore.push_back(child->getStringValue(v));
+			}
+
+			// Block begin
+			else if (S_CMPNOCASE(child->getName(), "block_begin"))
+				lang->block_begin = child->getStringValue();
+
+			// Block end
+			else if (S_CMPNOCASE(child->getName(), "block_end"))
+				lang->block_end = child->getStringValue();
+
+			// Preprocessor block begin
+			else if (S_CMPNOCASE(child->getName(), "pp_block_begin"))
+			{
+				for (unsigned v = 0; v < child->nValues(); v++)
+					lang->pp_block_begin.push_back(child->getStringValue(v));
+			}
+
+			// Preprocessor block end
+			else if (S_CMPNOCASE(child->getName(), "pp_block_end"))
+			{
+				for (unsigned v = 0; v < child->nValues(); v++)
+					lang->pp_block_end.push_back(child->getStringValue(v));
 			}
 
 			// Keywords

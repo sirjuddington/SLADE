@@ -41,6 +41,10 @@ private:
 	bool				case_sensitive;
 	vector<string>		jump_blocks;	// The keywords to search for when creating jump to list (eg. 'script')
 	vector<string>		jb_ignore;		// The keywords to ignore when creating jump to list (eg. 'optional')
+	string				block_begin;	// The beginning of a block (eg. '{' in c/c++)
+	string				block_end;		// The end of a block (eg. '}' in c/c++)
+	vector<string>		pp_block_begin;	// Preprocessor words to start a folding block (eg. 'ifdef')
+	vector<string>		pp_block_end;	// Preprocessor words to end a folding block (eg. 'endif')
 
 	// Word lists
 	struct WordList
@@ -120,6 +124,11 @@ public:
 
 	void	clearWordList(WordType type) { word_lists[type].list.clear(); }
 	void	clearFunctions() { functions.clear(); }
+
+	string			getBlockBegin() { return block_begin; }
+	string			getBlockEnd() { return block_end; }
+	vector<string>&	getPPBlockBegin() { return pp_block_begin; }
+	vector<string>&	getPPBlockEnd() { return pp_block_end; }
 
 	// Static functions
 	static bool				readLanguageDefinition(MemChunk& mc, string source);

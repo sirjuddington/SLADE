@@ -35,9 +35,6 @@ public:
 
 	void	setWordChars(string chars);
 	void	setOperatorChars(string chars);
-	void	setLineComment(string token) { comment_line = token; }
-	void	setBlockComment(string start, string end) { comment_block_start = start; comment_block_end = end; }
-	void	setDocComment(string token) { comment_doc_line = token; }
 
 	void	updateFolding(TextEditor* editor, int line_start);
 	void	foldComments(bool fold) { fold_comments = fold; }
@@ -56,15 +53,10 @@ private:
 		Whitespace,
 	};
 
-	bool			basic_mode;
 	vector<char>	word_chars;
 	vector<char>	operator_chars;
 	vector<char>	whitespace_chars;
-	string			comment_line;
-	string			comment_block_start;
-	string			comment_block_end;
-	string			comment_doc_line;
-	char			preprocessor;
+	TextLanguage*	language;
 	wxRegEx			re_int1;
 	wxRegEx			re_int2;
 	wxRegEx			re_int3;
