@@ -51,10 +51,14 @@ CVAR(Bool, txed_calltips_parenthesis, true, CVAR_SAVE)
 CVAR(Bool, txed_fold_enable, true, CVAR_SAVE)
 CVAR(Bool, txed_fold_comments, false, CVAR_SAVE)
 CVAR(Bool, txed_fold_preprocessor, true, CVAR_SAVE)
+CVAR(Bool, txed_fold_lines, true, CVAR_SAVE)
+CVAR(Bool, txed_fold_debug, false, CVAR_SECRET)
 CVAR(Bool, txed_trim_whitespace, false, CVAR_SAVE)
 CVAR(Bool, txed_word_wrap, false, CVAR_SAVE)
 CVAR(Bool, txed_calltips_colourise, true, CVAR_SAVE)
 CVAR(Bool, txed_calltips_use_font, false, CVAR_SAVE)
+CVAR(Bool, txed_match_cursor_word, true, CVAR_SAVE)
+CVAR(Int, txed_hilight_current_line, 2, CVAR_SAVE)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 
@@ -373,7 +377,7 @@ wxThread::ExitCode JumpToCalculator::Entry()
 	event->SetString(jump_points);
 	wxQueueEvent(handler, event);
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -388,15 +392,15 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	: wxStyledTextCtrl(parent, id), timer_update(this)
 {
 	// Init variables
-	language = NULL;
+	language = nullptr;
 	ct_argset = 0;
-	ct_function = NULL;
+	ct_function = nullptr;
 	ct_start = 0;
 	bm_cursor_last_pos = -1;
-	panel_fr = NULL;
+	panel_fr = nullptr;
 	call_tip = new SCallTip(this);
-	choice_jump_to = NULL;
-	jump_to_calculator = NULL;
+	choice_jump_to = nullptr;
+	jump_to_calculator = nullptr;
 
 	// Set tab width
 	SetTabWidth(txed_tab_width);
@@ -417,7 +421,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	RegisterImage(3, Icons::getIcon(Icons::TEXT_EDITOR, "func"));
 
 	// Init w/no language
-	setLanguage(NULL);
+	setLanguage(nullptr);
 
 	// Setup various configurable properties
 	setup();
@@ -440,6 +444,7 @@ TextEditor::TextEditor(wxWindow* parent, int id)
 	Bind(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, &TextEditor::onJumpToCalculateComplete, this);
 	Bind(wxEVT_STC_MODIFIED, &TextEditor::onModified, this);
 	Bind(wxEVT_TIMER, &TextEditor::onUpdateTimer, this);
+	Bind(wxEVT_STC_STYLENEEDED, &TextEditor::onStyleNeeded, this);
 }
 
 /* TextEditor::~TextEditor
@@ -478,12 +483,6 @@ void TextEditor::setup()
 	StyleSetFont(wxSTC_STYLE_CALLTIP, font_ct);
 	CallTipSetForegroundHighlight(WXCOL(StyleSet::currentSet()->getStyle("calltip_hl")->getForeground()));
 
-	// Set lexer
-	if (txed_syntax_hilight)
-		SetLexer(wxSTC_LEX_CPPNOCASE);
-	else
-		SetLexer(wxSTC_LEX_NULL);
-
 	// Set folding options
 	setupFolding();
 
@@ -495,6 +494,13 @@ void TextEditor::setup()
 		SetWrapMode(wxSTC_WRAP_WORD);
 	else
 		SetWrapMode(wxSTC_WRAP_NONE);
+
+	// Set word match indicator style
+	SetIndicatorCurrent(8);
+	IndicatorSetStyle(8, wxSTC_INDIC_ROUNDBOX);
+	IndicatorSetUnder(8, true);
+	IndicatorSetOutlineAlpha(8, 60);
+	IndicatorSetAlpha(8, 40);
 }
 
 /* TextEditor::setupFoldMargin
@@ -551,26 +557,20 @@ bool TextEditor::setLanguage(TextLanguage* lang)
 
 		// Clear autocompletion list
 		autocomp_list.Clear();
+
+		// Set lexer to basic mode
+		lexer.loadLanguage(nullptr);
 	}
 
 	// Setup syntax hilighting if needed
 	else
 	{
-		// Load word lists
-		SetKeyWords(0, lang->getKeywordsList().Lower());
-		SetKeyWords(1, lang->getFunctionsList().Lower());
-		SetKeyWords(2, lang->getConstantsList().Lower());
-		SetKeyWords(3, lang->getConstantsList().Lower());
+		// Load to lexer
+		lexer.loadLanguage(lang);
 
 		// Load autocompletion list
 		autocomp_list = lang->getAutocompletionList();
 	}
-
-	// Set lexer
-	if (txed_syntax_hilight)
-		SetLexer(wxSTC_LEX_CPPNOCASE);
-	else
-		SetLexer(wxSTC_LEX_NULL);
 
 	// Set folding options
 	setupFolding();
@@ -634,7 +634,7 @@ bool TextEditor::loadEntry(ArchiveEntry* entry)
 	SetText(text);
 
 	// Update line numbers margin width
-	string numlines = S_FMT("0%d", GetNumberOfLines());
+	string numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	return true;
@@ -996,7 +996,7 @@ bool TextEditor::openCalltip(int pos, int arg, bool dwell)
 	}
 	else
 	{
-		ct_function = NULL;
+		ct_function = nullptr;
 		return false;
 	}
 }
@@ -1052,7 +1052,7 @@ void TextEditor::updateCalltip()
 		if (GetCurrentPos() < ct_start)
 		{
 			hideCalltip();
-			ct_function = NULL;
+			ct_function = nullptr;
 			return;
 		}
 
@@ -1090,7 +1090,7 @@ void TextEditor::updateCalltip()
 			if (chr == ')')
 			{
 				hideCalltip();
-				ct_function = NULL;
+				ct_function = nullptr;
 				return;
 			}
 
@@ -1186,6 +1186,8 @@ void TextEditor::foldAll(bool fold)
 			ToggleFold(a);
 	}
 #endif
+
+	updateFolding();
 }
 
 /* TextEditor::setupFolding
@@ -1195,14 +1197,36 @@ void TextEditor::setupFolding()
 {
 	if (txed_fold_enable)
 	{
-		SetProperty("fold", "1");
+		// Set folding options
+		lexer.foldComments(txed_fold_comments);
+		lexer.foldPreprocessor(txed_fold_preprocessor);
 
-		if (txed_fold_preprocessor)
-			SetProperty("fold.preprocessor", "1");
-
-		if (txed_fold_comments)
-			SetProperty("fold.comment", "1");
+		int flags = 0;
+		if (txed_fold_debug)
+			flags |= wxSTC_FOLDFLAG_LEVELNUMBERS;
+		if (txed_fold_lines)
+			flags |= wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED;
+		SetFoldFlags(flags);
 	}
+}
+
+/* TextEditor::updateFolding
+ * Updates code folding markers
+ *******************************************************************/
+void TextEditor::updateFolding()
+{
+	/*MarkerDeleteAll(3);
+	MarkerDeleteAll(4);
+
+	for (int a = 0; a < GetNumberOfLines(); a++)
+	{
+		int level = GetFoldLevel(a);
+		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0 && GetFoldExpanded(a) == false)
+		{
+			MarkerAdd(a, 3);
+			MarkerAdd(a, 4);
+		}
+	}*/
 }
 
 
@@ -1433,7 +1457,7 @@ void TextEditor::onKeyUp(wxKeyEvent& e)
 void TextEditor::onCharAdded(wxStyledTextEvent& e)
 {
 	// Update line numbers margin width
-	string numlines = S_FMT("0%d", GetNumberOfLines());
+	string numlines = S_FMT("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	// Auto indent
@@ -1495,6 +1519,50 @@ void TextEditor::onUpdateUI(wxStyledTextEvent& e)
 	// If a calltip is open, update it
 	if (call_tip->IsShown())
 		updateCalltip();
+
+	// Do word matching if appropriate
+	if (txed_match_cursor_word && language)
+	{
+		int word_start = WordStartPosition(GetCurrentPos(), true);
+		int word_end = WordEndPosition(GetCurrentPos(), true);
+		string current_word = GetTextRange(word_start, word_end);
+		if (!current_word.IsEmpty() && HasFocus())
+		{
+			if (current_word != prev_word_match)
+			{
+				prev_word_match = current_word;
+
+				SetIndicatorCurrent(8);
+				IndicatorClearRange(0, GetTextLength());
+				SetTargetStart(0);
+				SetTargetEnd(GetTextLength());
+				SetSearchFlags(0);
+				while (SearchInTarget(current_word) != -1)
+				{
+					IndicatorFillRange(GetTargetStart(), GetTargetEnd() - GetTargetStart());
+					SetTargetStart(GetTargetEnd());
+					SetTargetEnd(GetTextLength());
+				}
+			}
+		}
+		else
+		{
+			SetIndicatorCurrent(8);
+			IndicatorClearRange(0, GetTextLength());
+			prev_word_match = "";
+		}
+	}
+
+	// Hilight current line
+	MarkerDeleteAll(1);
+	MarkerDeleteAll(2);
+	if (txed_hilight_current_line > 0 && HasFocus())
+	{
+		int line = LineFromPosition(GetCurrentPos());
+		MarkerAdd(line, 1);
+		if (txed_hilight_current_line > 1)
+			MarkerAdd(line, 2);
+	}
 
 	e.Skip();
 }
@@ -1571,30 +1639,31 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
 
 		if (!word.IsEmpty())
 		{
-			// Check for keyword
-			if (language->isKeyword(word))
-			{
-				string url = language->getKeywordLink();
-				if (!url.IsEmpty())
-				{
-					url.Replace("%s", word);
-					wxLaunchDefaultBrowser(url);
-				}
-			}
+			// TODO: Reimplement for word lists
+			//// Check for keyword
+			//if (language->isKeyword(word))
+			//{
+			//	string url = language->getKeywordLink();
+			//	if (!url.IsEmpty())
+			//	{
+			//		url.Replace("%s", word);
+			//		wxLaunchDefaultBrowser(url);
+			//	}
+			//}
 
-			// Check for constant
-			else if (language->isConstant(word))
-			{
-				string url = language->getConstantLink();
-				if (!url.IsEmpty())
-				{
-					url.Replace("%s", word);
-					wxLaunchDefaultBrowser(url);
-				}
-			}
+			//// Check for constant
+			//else if (language->isConstant(word))
+			//{
+			//	string url = language->getConstantLink();
+			//	if (!url.IsEmpty())
+			//	{
+			//		url.Replace("%s", word);
+			//		wxLaunchDefaultBrowser(url);
+			//	}
+			//}
 
 			// Check for function
-			else if (language->isFunction(word))
+			if (language->isFunction(word))
 			{
 				string url = language->getFunctionLink();
 				if (!url.IsEmpty())
@@ -1617,8 +1686,19 @@ void TextEditor::onMouseDown(wxMouseEvent& e)
  *******************************************************************/
 void TextEditor::onFocusLoss(wxFocusEvent& e)
 {
+	// Hide calltip+autocomplete box
 	hideCalltip();
 	AutoCompCancel();
+
+	// Hide current line marker
+	MarkerDeleteAll(1);
+	MarkerDeleteAll(2);
+
+	// Clear word matches
+	SetIndicatorCurrent(8);
+	IndicatorClearRange(0, GetTextLength());
+	prev_word_match = "";
+
 	e.Skip();
 }
 
@@ -1642,6 +1722,7 @@ void TextEditor::onMarginClick(wxStyledTextEvent& e)
 		int level = GetFoldLevel(line);
 		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0)
 			ToggleFold(line);
+		updateFolding();
 	}
 }
 
@@ -1652,7 +1733,7 @@ void TextEditor::onJumpToCalculateComplete(wxThreadEvent& e)
 {
 	if (!choice_jump_to)
 	{
-		jump_to_calculator = NULL;
+		jump_to_calculator = nullptr;
 		return;
 	}
 
@@ -1680,7 +1761,7 @@ void TextEditor::onJumpToCalculateComplete(wxThreadEvent& e)
 	choice_jump_to->Append(items);
 	choice_jump_to->Enable(true);
 
-	jump_to_calculator = NULL;
+	jump_to_calculator = nullptr;
 }
 
 /* TextEditor::onJumpToChoiceSelected
@@ -1716,4 +1797,32 @@ void TextEditor::onModified(wxStyledTextEvent& e)
 void TextEditor::onUpdateTimer(wxTimerEvent& e)
 {
 	updateJumpToList();
+}
+
+/* TextEditor::onStyleNeeded
+ * Called when text styling is needed
+ *******************************************************************/
+void TextEditor::onStyleNeeded(wxStyledTextEvent& e)
+{
+	// Get range of lines to be updated
+	int line_start = LineFromPosition(GetEndStyled());
+	int line_end = LineFromPosition(e.GetPosition());
+
+	// Lex until done (end of lines, end of file or end of block comment)
+	int l = line_start;
+	bool force_next = false;
+	while (l <= GetNumberOfLines() && (l <= line_end || force_next))
+	{
+		int end = GetLineEndPosition(l) - 1;
+		int start = end - GetLineLength(l) + 1;
+
+		if (start > end)
+			end = start;
+
+		force_next = lexer.doStyling(this, start, end);
+		l++;
+	}
+
+	if (txed_fold_enable)
+		lexer.updateFolding(this, line_start);
 }

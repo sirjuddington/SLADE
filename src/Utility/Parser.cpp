@@ -256,7 +256,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 			// Check type of assignment list
 			token = tz.getToken();
 			string list_end = ";";
-			if (token == "{")
+			if (token == "{" && !tz.quotedString())
 			{
 				list_end = "}";
 				token = tz.getToken();
