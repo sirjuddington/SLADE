@@ -581,8 +581,10 @@ bool ArchiveEntryList::entrySort(long left, long right)
 			result = 0;
 
 		// Name sort
-		else if (ael_current->col_name >= 0 && ael_current->col_name == lv_current->sortColumn())
-			result = le->getName().CompareTo(re->getName(), string::ignoreCase);
+		else if (ael_current->col_name >= 0 && ael_current->col_name == lv_current->sortColumn()) {
+			const wxChar* reName = re->getName().c_str();
+			result = le->getName().CompareTo(reName, string::ignoreCase);
+        }
 
 		// Other (default) sort
 		else
