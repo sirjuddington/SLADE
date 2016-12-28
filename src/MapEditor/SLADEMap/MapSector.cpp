@@ -202,8 +202,7 @@ void MapSector::setFloatProperty(string key, double value)
 		        key == "rotationfloor" || key == "rotationceiling")
 			polygon.setTexture(NULL);	// Clear texture to force update
 	}
-	// Due to the nature of the above if statement, it might be prudent to delete this, as it should handle EE's
-	// current nature of basically being a subset (mostly) of ZDoom UDMF.
+	// Even though they're both the same as of 2016/12/28, these may differ in future, so keep them apart
 	else if(parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "eternity"))
 	{
 		if (key == "xpanningfloor" || key == "ypanningfloor" ||
