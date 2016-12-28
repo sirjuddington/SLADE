@@ -183,7 +183,7 @@ void ScriptEditorPanel::populateWordList()
 	// Get functions and constants
 	TextLanguage* tl = TextLanguage::getLanguage("acs_z");
 	wxArrayString functions = tl->getFunctionsSorted();
-	wxArrayString constants = tl->getConstantsSorted();
+	wxArrayString constants = tl->getWordListSorted(TextLanguage::WordType::Constant);
 
 	// Add functions to list
 	wxTreeListItem item = list_words->AppendItem(list_words->GetRootItem(), "Functions");

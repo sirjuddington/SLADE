@@ -50,9 +50,10 @@ vector<TextLanguage*>	text_languages;
 /* TLFunction::TLFunction
  * TLFunction class constructor
  *******************************************************************/
-TLFunction::TLFunction(string name)
+TLFunction::TLFunction(string name, string return_type) :
+	name{ name },
+	return_type{ return_type }
 {
-	this->name = name;
 }
 
 /* TLFunction::~TLFunction
@@ -162,7 +163,13 @@ point2_t TLFunction::getArgTextExtent(int arg, int arg_set)
 /* TextLanguage::TextLanguage
  * TextLanguage class constructor
  *******************************************************************/
-TextLanguage::TextLanguage(string id)
+TextLanguage::TextLanguage(string id) :
+	line_comment{ "//" },
+	comment_begin{ "/*" },
+	comment_end{ "*/" },
+	preprocessor{ "#" },
+	block_begin{ "{" },
+	block_end{ "}" }
 {
 	// Init variables
 	this->id = id;
@@ -195,45 +202,48 @@ void TextLanguage::copyTo(TextLanguage* copy)
 	copy->comment_end = comment_end;
 	copy->preprocessor = preprocessor;
 	copy->case_sensitive = case_sensitive;
-	copy->k_lookup_url = k_lookup_url;
-	copy->c_lookup_url = c_lookup_url;
 	copy->f_lookup_url = f_lookup_url;
+	copy->doc_comment = doc_comment;
+	copy->block_begin = block_begin;
+	copy->block_end = block_end;
 
-	// Copy keywords
-	for (unsigned a = 0; a < keywords.size(); a++)
-		copy->keywords.push_back(keywords[a]);
-
-	// Copy constants
-	for (unsigned a = 0; a < constants.size(); a++)
-		copy->constants.push_back(constants[a]);
+	// Copy word lists
+	for (unsigned a = 0; a < 4; a++)
+		copy->word_lists[a] = word_lists[a];
 
 	// Copy functions
 	for (unsigned a = 0; a < functions.size(); a++)
 	{
 		TLFunction* f = functions[a];
 		for (unsigned b = 0; b < f->nArgSets(); b++)
-			copy->addFunction(f->getName(), f->getArgSet(b));
+			copy->addFunction(
+				f->getName(),
+				f->getArgSet(b),
+				f->getDescription(),
+				false,
+				f->getReturnType()
+			);
 	}
+
+	// Copy preprocessor block begin/end
+	copy->pp_block_begin.clear();
+	copy->pp_block_end.clear();
+	for (unsigned a = 0; a < pp_block_begin.size(); a++)
+		copy->pp_block_begin.push_back(pp_block_begin[a]);
+	for (unsigned a = 0; a < pp_block_end.size(); a++)
+		copy->pp_block_end.push_back(pp_block_end[a]);
 }
 
-/* TextLanguage::addKeyword
- * Adds a new keyword to the language, if it doesn't exist already
+/* TextLanguage::addWord
+ * Adds a new word of [type] to the language, if it doesn't exist
+ * already
  *******************************************************************/
-void TextLanguage::addKeyword(string keyword)
+void TextLanguage::addWord(WordType type, string keyword)
 {
 	// Add only if it doesn't already exist
-	if (std::find(keywords.begin(), keywords.end(), keyword) == keywords.end())
-		keywords.push_back(keyword);
-}
-
-/* TextLanguage::addConstant
- * Adds a new constant to the language, if it doesn't exist already
- *******************************************************************/
-void TextLanguage::addConstant(string constant)
-{
-	// Add only if it doesn't already exist
-	if (std::find(constants.begin(), constants.end(), constant) == constants.end())
-		constants.push_back(constant);
+	vector<string>& list = word_lists[type].list;
+	if (std::find(list.begin(), list.end(), keyword) == list.end())
+		list.push_back(keyword);
 }
 
 /* TextLanguage::addFunction
@@ -241,7 +251,7 @@ void TextLanguage::addConstant(string constant)
  * exists, [args] will be added to it as a new arg set, otherwise
  * a new function will be added
  *******************************************************************/
-void TextLanguage::addFunction(string name, string args, string desc, bool replace)
+void TextLanguage::addFunction(string name, string args, string desc, bool replace, string return_type)
 {
 	// Check if the function exists
 	TLFunction* func = getFunction(name);
@@ -249,7 +259,7 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 	// If it doesn't, create it
 	if (!func)
 	{
-		func = new TLFunction(name);
+		func = new TLFunction(name, return_type.empty() ? "void" : return_type);
 		functions.push_back(func);
 	}
 
@@ -258,7 +268,7 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 	{
 		VECTOR_REMOVE(functions, func);
 		delete func;
-		func = new TLFunction(name);
+		func = new TLFunction(name, return_type.empty() ? "void" : return_type);
 		functions.push_back(func);
 	}
 
@@ -269,36 +279,20 @@ void TextLanguage::addFunction(string name, string args, string desc, bool repla
 	func->setDescription(desc);
 }
 
-/* TextLanguage::getKeywordsList
- * Returns a string of all keywords in the language, separated by
- * spaces, which can be sent directly to scintilla for syntax
+/* TextLanguage::getWordList
+ * Returns a string of all words of [type] in the language, separated
+ * by spaces, which can be sent directly to scintilla for syntax
  * hilighting
  *******************************************************************/
-string TextLanguage::getKeywordsList()
+string TextLanguage::getWordList(WordType type)
 {
 	// Init return string
 	string ret = "";
 
-	// Add each keyword to return string (separated by spaces)
-	for (size_t a = 0; a < keywords.size(); a++)
-		ret += keywords[a] + " ";
-
-	return ret;
-}
-
-/* TextLanguage::getConstantsList
- * Returns a string of all constants in the language, separated by
- * spaces, which can be sent directly to scintilla for syntax
- * hilighting
- *******************************************************************/
-string TextLanguage::getConstantsList()
-{
-	// Init return string
-	string ret = "";
-
-	// Add each constant to return string (separated by spaces)
-	for (size_t a = 0; a < constants.size(); a++)
-		ret += constants[a] + " ";
+	// Add each word to return string (separated by spaces)
+	vector<string>& list = word_lists[type].list;
+	for (size_t a = 0; a < list.size(); a++)
+		ret += list[a] + " ";
 
 	return ret;
 }
@@ -321,24 +315,22 @@ string TextLanguage::getFunctionsList()
 }
 
 /* TextLanguage::getAutocompletionList
- * Returns a string containing all keywords, constants and functions
- * that can be used directly in scintilla for an autocompletion list
+ * Returns a string containing all words and functions that can be
+ * used directly in scintilla for an autocompletion list
  *******************************************************************/
 string TextLanguage::getAutocompletionList(string start)
 {
-	// Firstly, add all functions, constants and keywords to a wxArrayString
+	// Firstly, add all functions and word lists to a wxArrayString
 	wxArrayString list;
 	start = start.Lower();
-	for (unsigned a = 0; a < keywords.size(); a++)
-	{
-		if (keywords[a].Lower().StartsWith(start))
-			list.Add(keywords[a] + "?1");
-	}
-	for (unsigned a = 0; a < constants.size(); a++)
-	{
-		if (constants[a].Lower().StartsWith(start))
-			list.Add(constants[a] + "?2");
-	}
+
+	// Add word lists
+	for (unsigned type = 0; type < 4; type++)
+		for (unsigned a = 0; a < word_lists[type].list.size(); a++)
+			if (word_lists[type].list[a].Lower().StartsWith(start))
+				list.Add(word_lists[type].list[a] + S_FMT("?%d", type + 1));
+
+	// Add functions
 	for (unsigned a = 0; a < functions.size(); a++)
 	{
 		if (functions[a]->getName().Lower().StartsWith(start))
@@ -356,12 +348,16 @@ string TextLanguage::getAutocompletionList(string start)
 	return ret;
 }
 
-wxArrayString TextLanguage::getKeywordsSorted()
+/* TextLanguage::getWordListSorted
+ * Returns a sorted wxArrayString of all words of [type] in the
+ * language
+ *******************************************************************/
+wxArrayString TextLanguage::getWordListSorted(WordType type)
 {
 	// Get list
 	wxArrayString list;
-	for (unsigned a = 0; a < keywords.size(); a++)
-		list.Add(keywords[a]);
+	for (unsigned a = 0; a < word_lists[type].list.size(); a++)
+		list.Add(word_lists[type].list[a]);
 
 	// Sort
 	list.Sort();
@@ -369,19 +365,9 @@ wxArrayString TextLanguage::getKeywordsSorted()
 	return list;
 }
 
-wxArrayString TextLanguage::getConstantsSorted()
-{
-	// Get list
-	wxArrayString list;
-	for (unsigned a = 0; a < constants.size(); a++)
-		list.Add(constants[a]);
-
-	// Sort
-	list.Sort();
-
-	return list;
-}
-
+/* TextLanguage::getFunctionsSorted
+ * Returns a sorted wxArrayString of all functions in the language
+ *******************************************************************/
 wxArrayString TextLanguage::getFunctionsSorted()
 {
 	// Get list
@@ -395,30 +381,16 @@ wxArrayString TextLanguage::getFunctionsSorted()
 	return list;
 }
 
-/* TextLanguage::isKeyword
- * Returns true if [word] is a keyword in this language, false
+/* TextLanguage::isWord
+ * Returns true if [word] is a [type] word in this language, false
  * otherwise
  *******************************************************************/
-bool TextLanguage::isKeyword(string word)
+bool TextLanguage::isWord(WordType type, string word)
 {
-	for (unsigned a = 0; a < keywords.size(); a++)
+	vector<string>& list = word_lists[type].list;
+	for (unsigned a = 0; a < list.size(); a++)
 	{
-		if (keywords[a] == word)
-			return true;
-	}
-
-	return false;
-}
-
-/* TextLanguage::isConstant
- * Returns true if [word] is a constant in this language, false
- * otherwise
- *******************************************************************/
-bool TextLanguage::isConstant(string word)
-{
-	for (unsigned a = 0; a < constants.size(); a++)
-	{
-		if (constants[a] == word)
+		if (list[a] == word)
 			return true;
 	}
 
@@ -529,7 +501,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 				lang->setCommentEnd(child->getStringValue());
 
 			// Line comment
-			else if (S_CMPNOCASE(child->getName(), "line_comment"))
+			else if (S_CMPNOCASE(child->getName(), "comment_line"))
 				lang->setLineComment(child->getStringValue());
 
 			// Preprocessor
@@ -540,13 +512,17 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 			else if (S_CMPNOCASE(child->getName(), "case_sensitive"))
 				lang->setCaseSensitive(child->getBoolValue());
 
+			// Doc comment
+			else if (S_CMPNOCASE(child->getName(), "comment_doc"))
+				lang->setDocComment(child->getStringValue());
+
 			// Keyword lookup link
 			else if (S_CMPNOCASE(child->getName(), "keyword_link"))
-				lang->k_lookup_url = child->getStringValue();
+				lang->word_lists[WordType::Keyword].lookup_url = child->getStringValue();
 
 			// Constant lookup link
 			else if (S_CMPNOCASE(child->getName(), "constant_link"))
-				lang->c_lookup_url = child->getStringValue();
+				lang->word_lists[WordType::Constant].lookup_url = child->getStringValue();
 
 			// Function lookup link
 			else if (S_CMPNOCASE(child->getName(), "function_link"))
@@ -564,6 +540,28 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 					lang->jb_ignore.push_back(child->getStringValue(v));
 			}
 
+			// Block begin
+			else if (S_CMPNOCASE(child->getName(), "block_begin"))
+				lang->block_begin = child->getStringValue();
+
+			// Block end
+			else if (S_CMPNOCASE(child->getName(), "block_end"))
+				lang->block_end = child->getStringValue();
+
+			// Preprocessor block begin
+			else if (S_CMPNOCASE(child->getName(), "pp_block_begin"))
+			{
+				for (unsigned v = 0; v < child->nValues(); v++)
+					lang->pp_block_begin.push_back(child->getStringValue(v));
+			}
+
+			// Preprocessor block end
+			else if (S_CMPNOCASE(child->getName(), "pp_block_end"))
+			{
+				for (unsigned v = 0; v < child->nValues(); v++)
+					lang->pp_block_end.push_back(child->getStringValue(v));
+			}
+
 			// Keywords
 			else if (S_CMPNOCASE(child->getName(), "keywords"))
 			{
@@ -576,12 +574,12 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 					if (S_CMPNOCASE(val, "$override"))
 					{
 						// Clear any inherited keywords
-						lang->clearKeywords();
+						lang->clearWordList(WordType::Keyword);
 					}
 
 					// Not a special symbol, add as keyword
 					else
-						lang->addKeyword(val);
+						lang->addWord(WordType::Keyword, val);
 				}
 			}
 
@@ -597,12 +595,54 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 					if (S_CMPNOCASE(val, "$override"))
 					{
 						// Clear any inherited constants
-						lang->clearConstants();
+						lang->clearWordList(WordType::Constant);
 					}
 
 					// Not a special symbol, add as constant
 					else
-						lang->addConstant(val);
+						lang->addWord(WordType::Constant, val);
+				}
+			}
+
+			// Types
+			else if (S_CMPNOCASE(child->getName(), "types"))
+			{
+				// Go through values
+				for (unsigned v = 0; v < child->nValues(); v++)
+				{
+					string val = child->getStringValue(v);
+
+					// Check for '$override'
+					if (S_CMPNOCASE(val, "$override"))
+					{
+						// Clear any inherited constants
+						lang->clearWordList(WordType::Type);
+					}
+
+					// Not a special symbol, add as constant
+					else
+						lang->addWord(WordType::Type, val);
+				}
+			}
+
+			// Properties
+			else if (S_CMPNOCASE(child->getName(), "properties"))
+			{
+				// Go through values
+				for (unsigned v = 0; v < child->nValues(); v++)
+				{
+					string val = child->getStringValue(v);
+
+					// Check for '$override'
+					if (S_CMPNOCASE(val, "$override"))
+					{
+						// Clear any inherited constants
+						lang->clearWordList(WordType::Property);
+					}
+
+					// Not a special symbol, add as constant
+					else
+						lang->addWord(WordType::Property, val);
 				}
 			}
 
@@ -618,7 +658,12 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 					if (child_func->nChildren() == 0)
 					{
 						// Add function
-						lang->addFunction(child_func->getName(), child_func->getStringValue(0), "", true);
+						lang->addFunction(
+							child_func->getName(),
+							child_func->getStringValue(0),
+							"",
+							true,
+							child_func->getType());
 
 						// Add args
 						for (unsigned v = 1; v < child_func->nValues(); v++)
@@ -644,7 +689,7 @@ bool TextLanguage::readLanguageDefinition(MemChunk& mc, string source)
 						}
 
 						for (unsigned as = 0; as < args.size(); as++)
-							lang->addFunction(name, args[as], desc, as == 0);
+							lang->addFunction(name, args[as], desc, as == 0, child_func->getType());
 					}
 				}
 			}

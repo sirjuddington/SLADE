@@ -76,7 +76,6 @@ EntryType::EntryType(string id)
 	size_limit[0] = -1;
 	size_limit[1] = -1;
 	detectable = true;
-	section = "none";
 }
 
 /* EntryType::~EntryType
@@ -356,7 +355,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 //   }
 
 	// Check for entry section match if needed
-	if (section != "none")
+	if (!section.empty())
 	{
 		// Check entry is part of an archive (if not it can't be in a section)
 		if (!entry->getParent())
@@ -364,8 +363,12 @@ int EntryType::isThisType(ArchiveEntry* entry)
 
 		string e_section = entry->getParent()->detectNamespace(entry);
 
-		if (e_section != section)
-			return EDF_FALSE;
+		//if (e_section != section)
+		//	return EDF_FALSE;
+		r = EDF_FALSE;
+		for (auto ns : section)
+			if (S_CMPNOCASE(ns, e_section))
+				r = EDF_TRUE;
 	}
 
 	// Passed all checks, so we have a match
@@ -449,7 +452,8 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "section"))  		// Section field
 			{
-				ntype->section = fieldnode->getStringValue();
+				for (unsigned v = 0; v < fieldnode->nValues(); v++)
+					ntype->section.push_back(fieldnode->getStringValue(v).Lower());
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "match_ext"))  		// Match Extension field
 			{

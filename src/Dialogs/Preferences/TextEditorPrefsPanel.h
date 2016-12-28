@@ -22,6 +22,9 @@ private:
 	wxCheckBox*	cb_fold_enable;
 	wxCheckBox*	cb_fold_comments;
 	wxCheckBox*	cb_fold_preprocessor;
+	wxCheckBox*	cb_fold_lines;
+	wxCheckBox*	cb_match_cursor_word;
+	wxChoice*	choice_line_hilight;
 
 public:
 	TextEditorPrefsPanel(wxWindow* parent);

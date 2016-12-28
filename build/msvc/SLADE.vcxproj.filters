@@ -1371,6 +1371,9 @@
     <ClCompile Include="_CreatePCH.cpp">
       <Filter>Application</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\UI\TextEditor\Lexer.cpp">
+      <Filter>UI\Text Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2377,6 +2380,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\External\mus2mid\mus2mid.h">
       <Filter>External\Mus2Mid</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\TextEditor\Lexer.h">
+      <Filter>UI\Text Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -85,6 +85,9 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 
 	// Create preferences TreeBook
 	tree_prefs = new wxTreebook(this, -1, wxDefaultPosition, wxDefaultSize);
+#if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
+	tree_prefs->GetTreeCtrl()->EnableSystemTheme(true);
+#endif
 
 	// Setup preferences TreeBook
 	PrefsPanelBase* panel;
