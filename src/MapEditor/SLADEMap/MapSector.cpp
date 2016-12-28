@@ -206,9 +206,11 @@ void MapSector::setFloatProperty(string key, double value)
 	// current nature of basically being a subset (mostly) of ZDoom UDMF.
 	else if(parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "eternity"))
 	{
-		if(key == "xpanningfloor" || key == "ypanningfloor" ||
-		   key == "xpanningceiling" || key == "ypanningceiling" ||
-		   key == "rotationfloor" || key == "rotationceiling")
+		if (key == "xpanningfloor" || key == "ypanningfloor" ||
+		        key == "xpanningceiling" || key == "ypanningceiling" ||
+		        key == "xscalefloor" || key == "yscalefloor" ||
+		        key == "xscaleceiling" || key == "yscaleceiling" ||
+		        key == "rotationfloor" || key == "rotationceiling")
 			polygon.setTexture(NULL);	// Clear texture to force update
 	}
 

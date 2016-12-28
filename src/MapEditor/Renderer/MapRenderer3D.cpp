@@ -825,16 +825,16 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 		{
 			ox = sector->floatProperty("xpanningfloor");
 			oy = sector->floatProperty("ypanningfloor");
-			//sx *= (1.0 / sector->floatProperty("xscalefloor"));
-			//sy *= (1.0 / sector->floatProperty("yscalefloor"));
+			sx *= (1.0 / sector->floatProperty("xscalefloor"));
+			sy *= (1.0 / sector->floatProperty("yscalefloor"));
 			rot = sector->floatProperty("rotationfloor");
 		}
       else
       {
          ox = sector->floatProperty("xpanningceiling");
          oy = sector->floatProperty("ypanningceiling");
-         //sx *= (1.0 / sector->floatProperty("xscaleceiling"));
-         //sy *= (1.0 / sector->floatProperty("yscaleceiling"));
+         sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+         sy *= (1.0 / sector->floatProperty("yscaleceiling"));
          rot = sector->floatProperty("rotationceiling");
       }
    }

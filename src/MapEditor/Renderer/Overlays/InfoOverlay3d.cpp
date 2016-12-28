@@ -402,6 +402,20 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 				yoff = sector->floatProperty("ypanningceiling");
 			}
 			info2.push_back(S_FMT("Offsets: %1.2f, %1.2f", xoff, yoff));
+
+			// Scaling
+			double xscale, yscale;
+			if (item_type == MapEditor::SEL_FLOOR)
+			{
+				xscale = sector->floatProperty("xscalefloor");
+				yscale = sector->floatProperty("yscalefloor");
+			}
+			else
+			{
+				xscale = sector->floatProperty("xscaleceiling");
+				yscale = sector->floatProperty("yscaleceiling");
+			}
+			info2.push_back(S_FMT("Scale: %1.2fx, %1.2fx", xscale, yscale));
 		}
 
 		// Texture
