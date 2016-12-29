@@ -301,6 +301,9 @@ string Misc::sizeAsString(uint32_t size)
  * ZDoom merely substitutes \ to ^, but Doomsday requires
  * percent encoding of every non-alphanumeric character.
  *******************************************************************/
+string GLOBAL_SEPARATOR_LMP_TO_FILENAME_A = "\\";
+string GLOBAL_SEPARATOR_LMP_TO_FILENAME_B = "/";
+string GLOBAL_SEPARATOR_LMP_TO_FILENAME_C = "^";
 string Misc::lumpNameToFileName(string lump)
 {
 	if (percent_encoding)
@@ -323,8 +326,10 @@ string Misc::lumpNameToFileName(string lump)
 	else
 	{
 		// ZDoom
-		lump.Replace("\\", "^");
-		lump.Replace("/", "^");
+		lump.Replace(GLOBAL_SEPARATOR_LMP_TO_FILENAME_A, GLOBAL_SEPARATOR_LMP_TO_FILENAME_C);
+		lump.Replace(GLOBAL_SEPARATOR_LMP_TO_FILENAME_B, GLOBAL_SEPARATOR_LMP_TO_FILENAME_C);
+		/*lump.Replace("\\", "^");
+		lump.Replace("/", "^");*/
 	}
 	return lump;
 }
