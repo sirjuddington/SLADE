@@ -136,10 +136,34 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 		return -1;
 
 	// Search for it
-	for (unsigned a = startfrom; a < entries.size(); a++)
+	size_t size = entries.size();
+	if (entry->index_guess < startfrom || entry->index_guess >= size)
 	{
-		if (entries[a] == entry)
-			return (int)a;
+		for (unsigned a = startfrom; a < size; a++)
+		{
+			if (entries[a] == entry)
+			{
+				entry->index_guess = (int)a;
+				return (int)a;
+			}
+		}
+	} else {
+		for (unsigned a = entry->index_guess; a < size; a++)
+		{
+			if (entries[a] == entry)
+			{
+				entry->index_guess = (int)a;
+				return (int)a;
+			}
+		}
+		for (unsigned a = startfrom; a < entry->index_guess; a++)
+		{
+			if (entries[a] == entry)
+			{
+				entry->index_guess = (int)a;
+				return (int)a;
+			}
+		}
 	}
 
 	// Not found

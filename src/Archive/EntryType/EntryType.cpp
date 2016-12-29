@@ -247,7 +247,8 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!size_multiple.empty())
 	{
 		bool match = false;
-		for (size_t a = 0; a < size_multiple.size(); a++)
+		size_t size_multiple_size = size_multiple.size();
+		for (size_t a = 0; a < size_multiple_size; a++)
 		{
 			if (entry->getSize() % size_multiple[a] == 0)
 			{
@@ -271,7 +272,7 @@ int EntryType::isThisType(ArchiveEntry* entry)
 	if (!match_name.empty() || !match_extension.empty())
 	{
 		// Get entry name (lowercase), find extension separator
-		string fn = entry->getName().Lower();
+		string fn = entry->getUpperName();
 		size_t ext_sep = fn.find_first_of('.', 0);
 
 		// Check for name match if needed
@@ -282,7 +283,8 @@ int EntryType::isThisType(ArchiveEntry* entry)
 				name = fn.Left(ext_sep);
 
 			bool match = false;
-			for (size_t a = 0; a < match_name.size(); a++)
+			size_t match_name_size = match_name.size();
+			for (size_t a = 0; a < match_name_size; a++)
 			{
 				if (name.Matches(match_name[a]))
 				{
@@ -303,7 +305,8 @@ int EntryType::isThisType(ArchiveEntry* entry)
 			if (ext_sep != wxString::npos)
 			{
 				string ext = fn.Mid(ext_sep+1);
-				for (size_t a = 0; a < match_extension.size(); a++)
+				size_t match_extension_size = match_extension.size();
+				for (size_t a = 0; a < match_extension_size; a++)
 				{
 					if (ext == match_extension[a])
 					{
@@ -458,12 +461,12 @@ bool EntryType::readEntryTypeDefinition(MemChunk& mc)
 			else if (S_CMPNOCASE(fieldnode->getName(), "match_ext"))  		// Match Extension field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_extension.push_back(fieldnode->getStringValue(v).Lower());
+					ntype->match_extension.push_back(fieldnode->getStringValue(v).Upper());
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "match_name"))  		// Match Name field
 			{
 				for (unsigned v = 0; v < fieldnode->nValues(); v++)
-					ntype->match_name.push_back(fieldnode->getStringValue(v).Lower());
+					ntype->match_name.push_back(fieldnode->getStringValue(v).Upper());
 			}
 			else if (S_CMPNOCASE(fieldnode->getName(), "match_extorname"))  // Match name or extension
 			{
@@ -661,7 +664,8 @@ bool EntryType::detectEntryType(ArchiveEntry* entry)
 	entry->setType(&etype_unknown);
 
 	// Go through all registered types
-	for (size_t a = 0; a < entry_types.size(); a++)
+	size_t entry_types_size = entry_types.size();
+	for (size_t a = 0; a < entry_types_size; a++)
 	{
 		// If the current type is more 'reliable' than this one, skip it
 		if (entry->getTypeReliability() >= entry_types[a]->getReliability())

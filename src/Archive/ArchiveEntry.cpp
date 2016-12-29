@@ -48,6 +48,7 @@ ArchiveEntry::ArchiveEntry(string name, uint32_t size)
 	// Initialise attributes
 	this->parent = NULL;
 	this->name = name;
+	this->upper_name = name.Upper();
 	this->size = size;
 	this->data_loaded = true;
 	this->state = 2;
@@ -58,6 +59,7 @@ ArchiveEntry::ArchiveEntry(string name, uint32_t size)
 	this->next = NULL;
 	this->prev = NULL;
 	this->encrypted = ENC_NONE;
+	this->index_guess = 0;
 }
 
 /* ArchiveEntry::ArchiveEntry
@@ -68,6 +70,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	// Initialise (copy) attributes
 	this->parent = NULL;
 	this->name = copy.name;
+	this->upper_name = copy.upper_name;
 	this->size = copy.size;
 	this->data_loaded = true;
 	this->state = 2;
@@ -78,6 +81,7 @@ ArchiveEntry::ArchiveEntry(ArchiveEntry& copy)
 	this->next = NULL;
 	this->prev = NULL;
 	this->encrypted = copy.encrypted;
+	this->index_guess = 0;
 
 	// Copy data
 	data.importMem(copy.getData(true), copy.getSize());
@@ -113,11 +117,23 @@ string ArchiveEntry::getName(bool cut_ext)
 	// Sanitize name if it contains the \ character (possible in WAD).
 	string saname = Misc::lumpNameToFileName(name);
 
+	return saname.BeforeFirst('.');
+	/*
 	// cut extension through wx function
 	wxFileName fn(saname);
 
 	// Perform reverse operation and return
 	return Misc::fileNameToLumpName(fn.GetName());
+	*/
+}
+
+
+/* ArchiveEntry::getUpperName
+* Returns the entry name in uppercase
+*******************************************************************/
+string ArchiveEntry::getUpperName()
+{
+	return upper_name;
 }
 
 /* ArchiveEntry::getParent
@@ -271,6 +287,7 @@ bool ArchiveEntry::rename(string new_name)
 
 	// Update attributes
 	name = new_name;
+	upper_name = name.Upper();
 	setState(1);
 
 	return true;

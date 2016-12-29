@@ -24,6 +24,7 @@ class ArchiveEntry
 private:
 	// Entry Info
 	string				name;
+	string				upper_name;
 	uint32_t			size;
 	MemChunk			data;
 	EntryType*			type;
@@ -49,6 +50,7 @@ public:
 
 	// Accessors
 	string				getName(bool cut_ext = false);
+	string				getUpperName();
 	uint32_t			getSize()			{ if (data_loaded) return data.getSize(); else return size; }
 	MemChunk&			getMCData(bool allow_load = true);
 	const uint8_t*		getData(bool allow_load = true);
@@ -67,7 +69,7 @@ public:
 	ArchiveEntry*		prevEntry()			{ return prev; }
 
 	// Modifiers (won't change entry state, except setState of course :P)
-	void		setName(string name) { this->name = name; }
+	void		setName(string name) { this->name = name; upper_name = name.Upper(); }
 	void		setLoaded(bool loaded = true) { data_loaded = loaded; }
 	void		setType(EntryType* type, int r = 0) { this->type = type; reliability = r; }
 	void		setState(uint8_t state);
@@ -108,6 +110,8 @@ public:
 	void	setExtensionByType();
 	int		getTypeReliability() { return (type ? (getType()->getReliability() * reliability / 255) : 0); }
 	bool	isInNamespace(string ns);
+
+	int index_guess; // for speed
 };
 
 #endif//__ARCHIVEENTRY_H__
