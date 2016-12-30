@@ -301,6 +301,8 @@ string Misc::sizeAsString(uint32_t size)
  * ZDoom merely substitutes \ to ^, but Doomsday requires
  * percent encoding of every non-alphanumeric character.
  *******************************************************************/
+// look i know it doesnt make sense but putting these here sped this function up a lot
+// blame wxstring okay?
 string GLOBAL_SEPARATOR_LMP_TO_FILENAME_A = "\\";
 string GLOBAL_SEPARATOR_LMP_TO_FILENAME_B = "/";
 string GLOBAL_SEPARATOR_LMP_TO_FILENAME_C = "^";

@@ -188,7 +188,8 @@ void VirtualListView::selectItems(long start, long end, bool select)
  *******************************************************************/
 void VirtualListView::selectAll()
 {
-	for (int a = 0; a < GetItemCount(); a++)
+	int itemcount = GetItemCount();
+	for (int a = 0; a < itemcount; a++)
 		SetItemState(a, 0xFFFF, wxLIST_STATE_SELECTED);
 
 	sendSelectionChangedEvent();
@@ -199,7 +200,8 @@ void VirtualListView::selectAll()
  *******************************************************************/
 void VirtualListView::clearSelection()
 {
-	for (int a = 0; a < GetItemCount(); a++)
+	int itemcount = GetItemCount();
+	for (int a = 0; a < itemcount; a++)
 		SetItemState(a, 0x0000, wxLIST_STATE_SELECTED|wxLIST_STATE_FOCUSED);
 }
 

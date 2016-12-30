@@ -136,6 +136,11 @@ string ArchiveEntry::getUpperName()
 	return upper_name;
 }
 
+string ArchiveEntry::getUpperNameNoExt()
+{
+	return Misc::lumpNameToFileName(upper_name).BeforeFirst('.');
+}
+
 /* ArchiveEntry::getParent
  * Returns the entry's parent archive
  *******************************************************************/

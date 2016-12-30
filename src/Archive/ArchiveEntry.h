@@ -51,6 +51,7 @@ public:
 	// Accessors
 	string				getName(bool cut_ext = false);
 	string				getUpperName();
+	string				getUpperNameNoExt();
 	uint32_t			getSize()			{ if (data_loaded) return data.getSize(); else return size; }
 	MemChunk&			getMCData(bool allow_load = true);
 	const uint8_t*		getData(bool allow_load = true);

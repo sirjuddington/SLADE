@@ -230,7 +230,8 @@ wxBitmap Icons::getIcon(int type, string name, bool large, bool log_missing)
 
 	vector<icon_t>& icons = iconList(type);
 
-	for (size_t a = 0; a < icons.size(); a++)
+	size_t icons_size = icons.size();
+	for (size_t a = 0; a < icons_size; a++)
 	{
 		if (icons[a].name.Cmp(name) == 0)
 		{

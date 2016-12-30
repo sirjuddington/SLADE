@@ -249,7 +249,7 @@ void ResourceManager::addEntry(ArchiveEntry* entry)
 	EntryType* type = entry->getType();
 
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getName(true).Upper();
+	string name = entry->getUpperNameNoExt();
 	// Talon1024 - Get resource path (uppercase, without leading slash)
 	string path = entry->getPath(true).Upper().Mid(1);
 
@@ -346,7 +346,7 @@ void ResourceManager::addEntry(ArchiveEntry* entry)
 void ResourceManager::removeEntry(ArchiveEntry* entry)
 {
 	// Get resource name (extension cut, uppercase)
-	string name = entry->getName(true).Upper();
+	string name = entry->getUpperNameNoExt();
 	string path = entry->getPath(true).Upper().Mid(1);
 
 	// Remove from palettes

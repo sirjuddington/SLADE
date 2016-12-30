@@ -605,7 +605,8 @@ bool EntryType::loadEntryTypes()
 
 	// Read in each file in the directory
 	bool etypes_read = false;
-	for (unsigned a = 0; a < et_dir->numEntries(); a++)
+	unsigned int et_dir_numEntries = et_dir->numEntries();
+	for (unsigned a = 0; a < et_dir_numEntries; a++)
 	{
 		if (readEntryTypeDefinition(et_dir->getEntry(a)->getMCData()))
 			etypes_read = true;
