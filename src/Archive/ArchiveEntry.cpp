@@ -117,7 +117,7 @@ string ArchiveEntry::getName(bool cut_ext)
 	// Sanitize name if it contains the \ character (possible in WAD).
 	string saname = Misc::lumpNameToFileName(name);
 
-	return saname.BeforeFirst('.');
+	return saname.BeforeLast('.');
 	/*
 	// cut extension through wx function
 	wxFileName fn(saname);
