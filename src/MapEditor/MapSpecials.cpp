@@ -63,6 +63,9 @@ void MapSpecials::processMapSpecials(SLADEMap* map)
 	// ZDoom
 	if (theGameConfiguration->currentPort() == "zdoom")
 		processZDoomMapSpecials(map);
+   // Eternity, currently no need for processEternityMapSpecials
+   else if (theGameConfiguration->currentPort() == "eternity")
+      processEternitySlopes(map);
 }
 
 /* MapSpecials::processLineSpecial
@@ -562,6 +565,119 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		}
 	}
 }
+
+/* MapSpecials::processEternitySlopes
+* Process Eternity slope specials
+*******************************************************************/
+void MapSpecials::processEternitySlopes(SLADEMap* map)
+{
+	// Eternity plans on having a few slope mechanisms,
+	// which must be evaluated in a specific order.
+	//  - Plane_Align, in line order
+	//  - vertex triangle slopes, in sector order
+	//  - Plane_Copy, in line order
+	//  - Plane_Align is implemented, and Plane_Copy will be in the near future
+
+	// First things first: reset every sector to flat planes
+	for(unsigned a = 0; a < map->nSectors(); a++)
+	{
+		MapSector* target = map->getSector(a);
+		target->setPlane<FLOOR_PLANE>(plane_t::flat(target->getPlaneHeight<FLOOR_PLANE>()));
+		target->setPlane<CEILING_PLANE>(plane_t::flat(target->getPlaneHeight<CEILING_PLANE>()));
+	}
+
+	// Plane_Align (line special 181)
+	for(unsigned a = 0; a < map->nLines(); a++)
+	{
+		MapLine* line = map->getLine(a);
+		if(line->getSpecial() != 181)
+			continue;
+
+		MapSector* sector1 = line->frontSector();
+		MapSector* sector2 = line->backSector();
+		if(!sector1 || !sector2)
+		{
+			LOG_MESSAGE(1, "Ignoring Plane_Align on one-sided line %d", line->getIndex());
+			continue;
+		}
+		if(sector1 == sector2)
+		{
+			LOG_MESSAGE(1, "Ignoring Plane_Align on line %d, which has the same sector on both sides", line->getIndex());
+			continue;
+		}
+
+		int floor_arg = line->intProperty("arg0");
+		if(floor_arg == 1)
+			applyPlaneAlign<FLOOR_PLANE>(line, sector1, sector2);
+		else if(floor_arg == 2)
+			applyPlaneAlign<FLOOR_PLANE>(line, sector2, sector1);
+
+		int ceiling_arg = line->intProperty("arg1");
+		if(ceiling_arg == 1)
+			applyPlaneAlign<CEILING_PLANE>(line, sector1, sector2);
+		else if(ceiling_arg == 2)
+			applyPlaneAlign<CEILING_PLANE>(line, sector2, sector1);
+	}
+
+	// Plane_Copy
+	vector<MapSector*> sectors;
+	for(unsigned a = 0; a < map->nLines(); a++)
+	{
+		MapLine* line = map->getLine(a);
+		if(line->getSpecial() != 118)
+			continue;
+
+		int tag;
+		MapSector* front = line->frontSector();
+		MapSector* back = line->backSector();
+		if((tag = line->intProperty("arg0")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if(sectors.size())
+				front->setFloorPlane(sectors[0]->getFloorPlane());
+		}
+		if((tag = line->intProperty("arg1")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if(sectors.size())
+				front->setCeilingPlane(sectors[0]->getCeilingPlane());
+		}
+		if((tag = line->intProperty("arg2")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if(sectors.size())
+				back->setFloorPlane(sectors[0]->getFloorPlane());
+		}
+		if((tag = line->intProperty("arg3")))
+		{
+			sectors.clear();
+			map->getSectorsByTag(tag, sectors);
+			if(sectors.size())
+				back->setCeilingPlane(sectors[0]->getCeilingPlane());
+		}
+
+		// The fifth "share" argument copies from one side of the line to the
+		// other
+		if(front && back)
+		{
+			int share = line->intProperty("arg4");
+
+			if((share & 3) == 1)
+				back->setFloorPlane(front->getFloorPlane());
+			else if((share & 3) == 2)
+				front->setFloorPlane(back->getFloorPlane());
+
+			if((share & 12) == 4)
+				back->setCeilingPlane(front->getCeilingPlane());
+			else if((share & 12) == 8)
+				front->setCeilingPlane(back->getCeilingPlane());
+		}
+	}
+}
+
 
 /* MapSpecials::applyPlaneAlign
  * Applies a Plane_Align special on [line], to [target] from [model]

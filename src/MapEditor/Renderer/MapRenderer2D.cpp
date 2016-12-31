@@ -1881,6 +1881,28 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 					rot = sector->floatProperty("rotationceiling");
 				}
 			}
+			// Check for UDMF + Eternity extensions
+			if(theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"))
+			{
+				// Floor
+				if(type <= 1)
+				{
+					ox = sector->floatProperty("xpanningfloor");
+					oy = sector->floatProperty("ypanningfloor");
+					//sx *= (1.0 / sector->floatProperty("xscalefloor"));
+					//sy *= (1.0 / sector->floatProperty("yscalefloor"));
+					rot = sector->floatProperty("rotationfloor");
+				}
+				// Ceiling
+				else
+				{
+					ox = sector->floatProperty("xpanningceiling");
+					oy = sector->floatProperty("ypanningceiling");
+					//sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+					//sy *= (1.0 / sector->floatProperty("yscaleceiling"));
+					rot = sector->floatProperty("rotationceiling");
+				}
+			}
 
 			poly->updateTextureCoords(sx, sy, ox, oy, rot);
 		}
@@ -2019,7 +2041,28 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 					rot = sector->floatProperty("rotationceiling");
 				}
 			}
-
+			// Check for UDMF + Eternity extensions
+			if(theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"))
+			{
+				// Floor
+				if(type <= 1)
+				{
+					ox = sector->floatProperty("xpanningfloor");
+					oy = sector->floatProperty("ypanningfloor");
+					sx *= (1.0 / sector->floatProperty("xscalefloor"));
+					sy *= (1.0 / sector->floatProperty("yscalefloor"));
+					rot = sector->floatProperty("rotationfloor");
+				}
+				// Ceiling
+				else
+				{
+					ox = sector->floatProperty("xpanningceiling");
+					oy = sector->floatProperty("ypanningceiling");
+					sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+					sy *= (1.0 / sector->floatProperty("yscaleceiling"));
+					rot = sector->floatProperty("rotationceiling");
+				}
+			}
 			// Scaling applies to offsets as well.
 			// Note for posterity: worldpanning only applies to textures, not flats
 			ox /= sx;
