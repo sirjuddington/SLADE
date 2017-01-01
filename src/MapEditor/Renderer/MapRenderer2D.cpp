@@ -1859,48 +1859,40 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 			double sx = tex->getScaleX();
 			double sy = tex->getScaleY();
 			double rot = 0;
-			// Check for UDMF + ZDoom extensions
-			if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
+			// Check for various UDMF extensions
+			if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 			{
 				// Floor
 				if (type <= 1)
 				{
-					ox = sector->floatProperty("xpanningfloor");
-					oy = sector->floatProperty("ypanningfloor");
-					sx *= (1.0 / sector->floatProperty("xscalefloor"));
-					sy *= (1.0 / sector->floatProperty("yscalefloor"));
-					rot = sector->floatProperty("rotationfloor");
+					if (theGameConfiguration->udmfFlatPanning())
+					{
+						ox = sector->floatProperty("xpanningfloor");
+						oy = sector->floatProperty("ypanningfloor");
+					}
+					if (theGameConfiguration->udmfFlatScaling())
+					{
+						sx *= (1.0 / sector->floatProperty("xscalefloor"));
+						sy *= (1.0 / sector->floatProperty("yscalefloor"));
+					}
+					if (theGameConfiguration->udmfFlatRotation())
+						rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
 				else
 				{
-					ox = sector->floatProperty("xpanningceiling");
-					oy = sector->floatProperty("ypanningceiling");
-					sx *= (1.0 / sector->floatProperty("xscaleceiling"));
-					sy *= (1.0 / sector->floatProperty("yscaleceiling"));
-					rot = sector->floatProperty("rotationceiling");
-				}
-			}
-			// Check for UDMF + Eternity extensions
-			if(theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"))
-			{
-				// Floor
-				if(type <= 1)
-				{
-					ox = sector->floatProperty("xpanningfloor");
-					oy = sector->floatProperty("ypanningfloor");
-					//sx *= (1.0 / sector->floatProperty("xscalefloor"));
-					//sy *= (1.0 / sector->floatProperty("yscalefloor"));
-					rot = sector->floatProperty("rotationfloor");
-				}
-				// Ceiling
-				else
-				{
-					ox = sector->floatProperty("xpanningceiling");
-					oy = sector->floatProperty("ypanningceiling");
-					//sx *= (1.0 / sector->floatProperty("xscaleceiling"));
-					//sy *= (1.0 / sector->floatProperty("yscaleceiling"));
-					rot = sector->floatProperty("rotationceiling");
+					if (theGameConfiguration->udmfFlatPanning())
+					{
+						ox = sector->floatProperty("xpanningceiling");
+						oy = sector->floatProperty("ypanningceiling");
+					}
+					if (theGameConfiguration->udmfFlatScaling())
+					{
+						sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+						sy *= (1.0 / sector->floatProperty("yscaleceiling"));
+					}
+					if(theGameConfiguration->udmfFlatRotation())
+						rot = sector->floatProperty("rotationceiling");
 				}
 			}
 
@@ -2019,48 +2011,40 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 			double sx = tex->getScaleX();
 			double sy = tex->getScaleY();
 			double rot = 0;
-			// Check for UDMF + ZDoom extensions
-			if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
+			// Check for various UDMF extensions
+			if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 			{
 				// Floor
 				if (type <= 1)
 				{
-					ox = sector->floatProperty("xpanningfloor");
-					oy = sector->floatProperty("ypanningfloor");
-					sx *= (1.0 / sector->floatProperty("xscalefloor"));
-					sy *= (1.0 / sector->floatProperty("yscalefloor"));
-					rot = sector->floatProperty("rotationfloor");
+					if (theGameConfiguration->udmfFlatPanning())
+					{
+						ox = sector->floatProperty("xpanningfloor");
+						oy = sector->floatProperty("ypanningfloor");
+					}
+					if (theGameConfiguration->udmfFlatScaling())
+					{
+						sx *= (1.0 / sector->floatProperty("xscalefloor"));
+						sy *= (1.0 / sector->floatProperty("yscalefloor"));
+					}
+					if (theGameConfiguration->udmfFlatRotation())
+						rot = sector->floatProperty("rotationfloor");
 				}
 				// Ceiling
 				else
 				{
-					ox = sector->floatProperty("xpanningceiling");
-					oy = sector->floatProperty("ypanningceiling");
-					sx *= (1.0 / sector->floatProperty("xscaleceiling"));
-					sy *= (1.0 / sector->floatProperty("yscaleceiling"));
-					rot = sector->floatProperty("rotationceiling");
-				}
-			}
-			// Check for UDMF + Eternity extensions
-			if(theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"))
-			{
-				// Floor
-				if(type <= 1)
-				{
-					ox = sector->floatProperty("xpanningfloor");
-					oy = sector->floatProperty("ypanningfloor");
-					sx *= (1.0 / sector->floatProperty("xscalefloor"));
-					sy *= (1.0 / sector->floatProperty("yscalefloor"));
-					rot = sector->floatProperty("rotationfloor");
-				}
-				// Ceiling
-				else
-				{
-					ox = sector->floatProperty("xpanningceiling");
-					oy = sector->floatProperty("ypanningceiling");
-					sx *= (1.0 / sector->floatProperty("xscaleceiling"));
-					sy *= (1.0 / sector->floatProperty("yscaleceiling"));
-					rot = sector->floatProperty("rotationceiling");
+					if (theGameConfiguration->udmfFlatPanning())
+					{
+						ox = sector->floatProperty("xpanningceiling");
+						oy = sector->floatProperty("ypanningceiling");
+					}
+					if (theGameConfiguration->udmfFlatScaling())
+					{
+						sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+						sy *= (1.0 / sector->floatProperty("yscaleceiling"));
+					}
+					if(theGameConfiguration->udmfFlatRotation())
+						rot = sector->floatProperty("rotationceiling");
 				}
 			}
 			// Scaling applies to offsets as well.

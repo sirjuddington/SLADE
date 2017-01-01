@@ -122,6 +122,16 @@ private:
 	vector<int>			light_levels;		// Light levels for up/down light in editor
 	bool				allow_long_names;	// Allow long names for maps/textures
 
+	bool				udmf_slopes;		// If UDMF has slope support
+	bool				udmf_flat_lighting;	// If UDMF has flat lighting independent from sector lighting
+	bool				udmf_flat_panning;	// If UDMF has flat panning
+	bool				udmf_flat_rotation;	// If UDMF has flat rotation
+	bool				udmf_flat_scaling;	// If UDMF has flat scaling
+	bool				udmf_line_transparency;	// If UDMF has line transparency
+	bool				udmf_side_scaling;	// If UDMF has line scaling
+	bool				udmf_texture_scaling;	// If UDMF has per-texture line scaling
+	bool				udmf_texture_offsets;	// If UDMF has per-texture offsets compared to per-sidedef
+
 	// Basic game configuration info
 	struct gconf_t
 	{
@@ -221,6 +231,15 @@ public:
 	string	scriptLanguage() { return script_language; }
 	int		lightLevelInterval();
 	bool	allowLongNames() { return allow_long_names; }
+	bool	udmfSlopes() { return udmf_slopes; }
+	bool	udmfFlatLighting() { return udmf_flat_lighting; }
+	bool	udmfFlatPanning() { return udmf_flat_panning; }
+	bool	udmfFlatRotation() { return udmf_flat_rotation; }
+	bool	udmfFlatScaling() { return udmf_flat_scaling; }
+	bool	udmfLineTransparency() { return udmf_line_transparency; }
+	bool	udmfSideScaling() { return udmf_side_scaling; }
+	bool	udmfTextureScaling() { return udmf_texture_scaling; }
+	bool	udmfTextureOffsets() { return udmf_texture_offsets; }
 
 	string			readConfigName(MemChunk& mc);
 	gconf_t			readBasicGameConfig(MemChunk& mc);

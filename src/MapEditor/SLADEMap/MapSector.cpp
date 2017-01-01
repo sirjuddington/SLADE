@@ -535,10 +535,7 @@ void MapSector::changeLight(int amount, int where)
 		amount = -ll;
 
 	// Check for UDMF+ZDoom/UDMF+Eternity namespace
-	bool separate = false;
-	if (parent_map->currentFormat() == MAP_UDMF && 
-		 (S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom") || S_CMPNOCASE(parent_map->udmfNamespace(), "eternity")))
-		separate = true;
+	bool separate = parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfFlatLighting();
 
 	// Change light level by amount
 	if (where == 1 && separate)
