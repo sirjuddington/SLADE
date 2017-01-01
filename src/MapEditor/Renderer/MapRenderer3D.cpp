@@ -800,44 +800,39 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	double rot = 0;
 
 	// Check for UDMF + ZDoom extensions
-	if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
+	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 	{
 		if (floor)
 		{
-			ox = sector->floatProperty("xpanningfloor");
-			oy = sector->floatProperty("ypanningfloor");
-			sx *= (1.0 / sector->floatProperty("xscalefloor"));
-			sy *= (1.0 / sector->floatProperty("yscalefloor"));
-			rot = sector->floatProperty("rotationfloor");
+			if(theGameConfiguration->udmfFlatPanning())
+			{
+				ox = sector->floatProperty("xpanningfloor");
+				oy = sector->floatProperty("ypanningfloor");
+			}
+			if(theGameConfiguration->udmfFlatScaling())
+			{
+				sx *= (1.0 / sector->floatProperty("xscalefloor"));
+				sy *= (1.0 / sector->floatProperty("yscalefloor"));
+			}
+			if(theGameConfiguration->udmfFlatRotation())
+				rot = sector->floatProperty("rotationfloor");
 		}
 		else
 		{
-			ox = sector->floatProperty("xpanningceiling");
-			oy = sector->floatProperty("ypanningceiling");
-			sx *= (1.0 / sector->floatProperty("xscaleceiling"));
-			sy *= (1.0 / sector->floatProperty("yscaleceiling"));
-			rot = sector->floatProperty("rotationceiling");
+			if(theGameConfiguration->udmfFlatPanning())
+			{
+				ox = sector->floatProperty("xpanningceiling");
+				oy = sector->floatProperty("ypanningceiling");
+			}
+			if(theGameConfiguration->udmfFlatScaling())
+			{
+				sx *= (1.0 / sector->floatProperty("xscaleceiling"));
+				sy *= (1.0 / sector->floatProperty("yscaleceiling"));
+			}
+			if(theGameConfiguration->udmfFlatRotation())
+				rot = sector->floatProperty("rotationceiling");
 		}
 	}
-	else if (theMapEditor->currentMapDesc().format == MAP_UDMF && S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"))
-	{
-		if(floor)
-		{
-			ox = sector->floatProperty("xpanningfloor");
-			oy = sector->floatProperty("ypanningfloor");
-			sx *= (1.0 / sector->floatProperty("xscalefloor"));
-			sy *= (1.0 / sector->floatProperty("yscalefloor"));
-			rot = sector->floatProperty("rotationfloor");
-		}
-      else
-      {
-         ox = sector->floatProperty("xpanningceiling");
-         oy = sector->floatProperty("ypanningceiling");
-         sx *= (1.0 / sector->floatProperty("xscaleceiling"));
-         sy *= (1.0 / sector->floatProperty("yscaleceiling"));
-         rot = sector->floatProperty("rotationceiling");
-      }
-   }
 
 	// Scaling applies to offsets as well.
 	// Note for posterity: worldpanning only applies to textures, not flats

@@ -322,7 +322,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 
 		// Light
 		int light = sector->intProperty("lightlevel");
-		if (theGameConfiguration->udmfNamespace() == "zdoom" || theGameConfiguration->udmfNamespace() == "eternity")
+		if (theGameConfiguration->udmfFlatLighting())
 		{
 			// Get extra light info
 			int fl = 0;

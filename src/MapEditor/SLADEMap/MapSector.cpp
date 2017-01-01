@@ -193,23 +193,12 @@ void MapSector::setStringProperty(string key, string value)
 void MapSector::setFloatProperty(string key, double value)
 {
 	// Check if flat offset/scale/rotation is changing (if UDMF + ZDoom)
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if (parent_map->currentFormat() == MAP_UDMF)
 	{
-		if (key == "xpanningfloor" || key == "ypanningfloor" ||
-		        key == "xpanningceiling" || key == "ypanningceiling" ||
-		        key == "xscalefloor" || key == "yscalefloor" ||
-		        key == "xscaleceiling" || key == "yscaleceiling" ||
-		        key == "rotationfloor" || key == "rotationceiling")
-			polygon.setTexture(NULL);	// Clear texture to force update
-	}
-	// Even though they're both the same as of 2016/12/28, these may differ in future, so keep them apart
-	else if(parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "eternity"))
-	{
-		if (key == "xpanningfloor" || key == "ypanningfloor" ||
-		        key == "xpanningceiling" || key == "ypanningceiling" ||
-		        key == "xscalefloor" || key == "yscalefloor" ||
-		        key == "xscaleceiling" || key == "yscaleceiling" ||
-		        key == "rotationfloor" || key == "rotationceiling")
+		if ((theGameConfiguration->udmfFlatPanning() && (key == "xpanningfloor" || key == "ypanningfloor")) ||
+			(theGameConfiguration->udmfFlatScaling() && (key == "xscalefloor" || key == "yscalefloor" ||
+			 key == "xscaleceiling" || key == "yscaleceiling")) || 
+			(theGameConfiguration->udmfFlatRotation() && (key == "rotationfloor" || key == "rotationceiling")))
 			polygon.setTexture(NULL);	// Clear texture to force update
 	}
 
@@ -473,8 +462,7 @@ bool MapSector::getVertices(vector<MapObject*>& list)
 uint8_t MapSector::getLight(int where)
 {
 	// Check for UDMF+ZDoom/UDMF+Eternity namespace
-	if (parent_map->currentFormat() == MAP_UDMF &&
-		 (S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom") || S_CMPNOCASE(parent_map->udmfNamespace(), "eternity")))
+	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfFlatLighting())
 	{
 		// Get general light level
 		int l = light;
