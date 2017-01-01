@@ -799,37 +799,37 @@ void MapRenderer3D::updateFlatTexCoords(unsigned index, bool floor)
 	double sy = floor ? floors[index].texture->getScaleY() : ceilings[index].texture->getScaleY();
 	double rot = 0;
 
-	// Check for UDMF + ZDoom extensions
+	// Check for UDMF + panning/scaling/rotation
 	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 	{
 		if (floor)
 		{
-			if(theGameConfiguration->udmfFlatPanning())
+			if (theGameConfiguration->udmfFlatPanning())
 			{
 				ox = sector->floatProperty("xpanningfloor");
 				oy = sector->floatProperty("ypanningfloor");
 			}
-			if(theGameConfiguration->udmfFlatScaling())
+			if (theGameConfiguration->udmfFlatScaling())
 			{
 				sx *= (1.0 / sector->floatProperty("xscalefloor"));
 				sy *= (1.0 / sector->floatProperty("yscalefloor"));
 			}
-			if(theGameConfiguration->udmfFlatRotation())
+			if (theGameConfiguration->udmfFlatRotation())
 				rot = sector->floatProperty("rotationfloor");
 		}
 		else
 		{
-			if(theGameConfiguration->udmfFlatPanning())
+			if (theGameConfiguration->udmfFlatPanning())
 			{
 				ox = sector->floatProperty("xpanningceiling");
 				oy = sector->floatProperty("ypanningceiling");
 			}
-			if(theGameConfiguration->udmfFlatScaling())
+			if (theGameConfiguration->udmfFlatScaling())
 			{
 				sx *= (1.0 / sector->floatProperty("xscaleceiling"));
 				sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 			}
-			if(theGameConfiguration->udmfFlatRotation())
+			if (theGameConfiguration->udmfFlatRotation())
 				rot = sector->floatProperty("rotationceiling");
 		}
 	}

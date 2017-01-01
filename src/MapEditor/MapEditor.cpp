@@ -4089,9 +4089,6 @@ void MapEditor::changeOffset3d(int amount, bool x)
 	// Go through items
 	vector<int> done;
 	bool changed = false;
-	// Currently udmf_ext covers stuff that happens to be both in EE and ZDoom,
-	// but be careful if extending this to make sure both engines support the feature this variable is tied to.
-	bool udmf_ext = (map.currentFormat() == MAP_UDMF && (theGameConfiguration->udmfNamespace() == "zdoom" || theGameConfiguration->udmfNamespace() == "eternity"));
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
@@ -4143,40 +4140,43 @@ void MapEditor::changeOffset3d(int amount, bool x)
 			changed = true;
 		}
 
-		// Flat (UDMF+ZDoom/UDMF+EE only)
-		else if (udmf_ext)
+		// Flat (UDMF only)
+		else
 		{
 			MapSector* sector = map.getSector(items[a].index);
 
-			if (items[a].type == SEL_FLOOR)
+			if (theGameConfiguration->udmfFlatPanning())
 			{
-				if (x)
+				if (items[a].type == SEL_FLOOR)
 				{
-					double offset = sector->floatProperty("xpanningfloor");
-					sector->setFloatProperty("xpanningfloor", offset + amount);
-				}
-				else
-				{
-					double offset = sector->floatProperty("ypanningfloor");
-					sector->setFloatProperty("ypanningfloor", offset + amount);
-				}
+					if (x)
+					{
+						double offset = sector->floatProperty("xpanningfloor");
+						sector->setFloatProperty("xpanningfloor", offset + amount);
+					}
+					else
+					{
+						double offset = sector->floatProperty("ypanningfloor");
+						sector->setFloatProperty("ypanningfloor", offset + amount);
+					}
 
-				changed = true;
-			}
-			else if (items[a].type == SEL_CEILING)
-			{
-				if (x)
-				{
-					double offset = sector->floatProperty("xpanningceiling");
-					sector->setFloatProperty("xpanningceiling", offset + amount);
+					changed = true;
 				}
-				else
+				else if (items[a].type == SEL_CEILING)
 				{
-					double offset = sector->floatProperty("ypanningceiling");
-					sector->setFloatProperty("ypanningceiling", offset + amount);
-				}
+					if (x)
+					{
+						double offset = sector->floatProperty("xpanningceiling");
+						sector->setFloatProperty("xpanningceiling", offset + amount);
+					}
+					else
+					{
+						double offset = sector->floatProperty("ypanningceiling");
+						sector->setFloatProperty("ypanningceiling", offset + amount);
+					}
 
-				changed = true;
+					changed = true;
+				}
 			}
 		}
 	}
@@ -4489,7 +4489,7 @@ void MapEditor::resetOffsets3d()
 	}
 
 	// Go through flats
-	if (theGameConfiguration->udmfNamespace() == "zdoom")
+	if (theGameConfiguration->udmfNamespace() != "")
 	{
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
@@ -4503,31 +4503,18 @@ void MapEditor::resetOffsets3d()
 				plane = "ceiling";
 
 			// Reset offsets, scale, and rotation
-			sector->setFloatProperty("xpanning" + plane, 0);
-			sector->setFloatProperty("ypanning" + plane, 0);
-			sector->setFloatProperty("xscale" + plane, 1);
-			sector->setFloatProperty("yscale" + plane, 1);
-			sector->setFloatProperty("rotation" + plane, 0);
-		}
-	}
-	// Go through flats
-	if(theGameConfiguration->udmfNamespace() == "eternity")
-	{
-		for(unsigned a = 0; a < flats.size(); a++)
-		{
-			MapSector* sector = map.getSector(flats[a].index);
-			if(!sector) continue;
-
-			string plane;
-			if(flats[a].type == SEL_FLOOR)
-				plane = "floor";
-			else
-				plane = "ceiling";
-
-			// Reset offsets, scale, and rotation
-			sector->setFloatProperty("xpanning" + plane, 0);
-			sector->setFloatProperty("ypanning" + plane, 0);
-			sector->setFloatProperty("rotation" + plane, 0);
+			if (theGameConfiguration->udmfFlatPanning())
+			{
+				sector->setFloatProperty("xpanning" + plane, 0);
+				sector->setFloatProperty("ypanning" + plane, 0);
+			}
+			if (theGameConfiguration->udmfFlatScaling())
+			{
+				sector->setFloatProperty("xscale" + plane, 1);
+				sector->setFloatProperty("yscale" + plane, 1);
+			}
+			if (theGameConfiguration->udmfFlatRotation())
+				sector->setFloatProperty("rotation" + plane, 0);
 		}
 	}
 
@@ -5064,7 +5051,6 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		if (theMapEditor->currentMapDesc().format == MAP_UDMF &&
 				S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
 			ext = true;
-		bool ee_ext = false;
 		if(theMapEditor->currentMapDesc().format == MAP_UDMF &&
 			S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"))
 			ext = true;
@@ -5079,7 +5065,7 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		// Toggle linked light levels
 		else if (key == "me3d_light_toggle_link")
 		{
-			if (!ext && !ee_ext)
+			if (!theGameConfiguration->udmfFlatLighting())
 				addEditorMessage("Unlinked light levels not supported in this game configuration");
 			else
 			{
@@ -5094,7 +5080,7 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		// Toggle linked offsets
 		else if (key == "me3d_wall_toggle_link_ofs")
 		{
-			if (!ext)
+			if (!theGameConfiguration->udmfTextureOffsets())
 				addEditorMessage("Unlinked wall offsets not supported in this game configuration");
 			else
 			{

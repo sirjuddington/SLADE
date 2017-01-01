@@ -192,7 +192,7 @@ void MapSector::setStringProperty(string key, string value)
  *******************************************************************/
 void MapSector::setFloatProperty(string key, double value)
 {
-	// Check if flat offset/scale/rotation is changing (if UDMF + ZDoom)
+	// Check if flat offset/scale/rotation is changing (if UDMF)
 	if (parent_map->currentFormat() == MAP_UDMF)
 	{
 		if ((theGameConfiguration->udmfFlatPanning() && (key == "xpanningfloor" || key == "ypanningfloor")) ||
@@ -461,7 +461,7 @@ bool MapSector::getVertices(vector<MapObject*>& list)
  *******************************************************************/
 uint8_t MapSector::getLight(int where)
 {
-	// Check for UDMF+ZDoom/UDMF+Eternity namespace
+	// Check for UDMF + flat lighting
 	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfFlatLighting())
 	{
 		// Get general light level
@@ -522,7 +522,7 @@ void MapSector::changeLight(int amount, int where)
 	else if (ll + amount < 0)
 		amount = -ll;
 
-	// Check for UDMF+ZDoom/UDMF+Eternity namespace
+	// Check for UDMF + flat lighting independent from the sector
 	bool separate = parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfFlatLighting();
 
 	// Change light level by amount

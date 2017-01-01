@@ -1891,7 +1891,7 @@ void MapRenderer2D::renderFlatsImmediate(int type, bool texture, float alpha)
 						sx *= (1.0 / sector->floatProperty("xscaleceiling"));
 						sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 					}
-					if(theGameConfiguration->udmfFlatRotation())
+					if (theGameConfiguration->udmfFlatRotation())
 						rot = sector->floatProperty("rotationceiling");
 				}
 			}
@@ -2043,7 +2043,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 						sx *= (1.0 / sector->floatProperty("xscaleceiling"));
 						sy *= (1.0 / sector->floatProperty("yscaleceiling"));
 					}
-					if(theGameConfiguration->udmfFlatRotation())
+					if (theGameConfiguration->udmfFlatRotation())
 						rot = sector->floatProperty("rotationceiling");
 				}
 			}
