@@ -116,7 +116,7 @@ void GameConfiguration::setDefaults()
 
 	udmf_texture_offsets = udmf_slopes = udmf_flat_lighting = udmf_flat_panning =
 	udmf_flat_rotation = udmf_flat_scaling = udmf_line_transparency =
-	udmf_side_scaling = udmf_texture_scaling = false;
+	udmf_sector_color = udmf_side_scaling = udmf_texture_scaling = false;
 }
 
 /* GameConfiguration::udmfNamespace
@@ -970,6 +970,7 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 		READ_BOOL(udmf_flat_rotation, udmf_flat_rotation); // UDMF flat rotation
 		READ_BOOL(udmf_flat_scaling, udmf_flat_scaling); // UDMF flat scaling
 		READ_BOOL(udmf_line_transparency, udmf_line_transparency); // UDMF line transparency
+		READ_BOOL(udmf_sector_color, udmf_sector_color); // UDMF sector color
 		READ_BOOL(udmf_side_scaling, udmf_side_scaling); // UDMF per-sidedef scaling
 		READ_BOOL(udmf_texture_scaling, udmf_texture_scaling); // UDMF per-texture scaling
 		READ_BOOL(udmf_texture_offsets, udmf_texture_offsets); // UDMF per-texture offsets

@@ -574,12 +574,20 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		}
 	}
 
-	// Check for UDMF+ZDoom namespace
-	if ((parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom")))
+	// Check for UDMF
+	if (parent_map->currentFormat() == MAP_UDMF && (theGameConfiguration->udmfSectorColor() ||
+		theGameConfiguration->udmfFlatLighting()))
 	{
 		// Get sector light colour
-		int intcol = MapObject::intProperty("lightcolor");
-		wxColour wxcol(intcol);
+		wxColour wxcol;
+		if(theGameConfiguration->udmfSectorColor())
+		{
+			int intcol = MapObject::intProperty("lightcolor");
+			wxcol = wxColour(intcol);
+		}
+		else
+			wxcol = wxColour(255, 255, 255, 255);
+		
 
 		// Ignore light level if fullbright
 		if (fullbright)
@@ -588,24 +596,27 @@ rgba_t MapSector::getColour(int where, bool fullbright)
 		// Get sector light level
 		int ll = light;
 
-		// Get specific light level
-		if (where == 1)
+		if (theGameConfiguration->udmfFlatLighting())
 		{
-			// Floor
-			int fl = MapObject::intProperty("lightfloor");
-			if (boolProperty("lightfloorabsolute"))
-				ll = fl;
-			else
-				ll += fl;
-		}
-		else if (where == 2)
-		{
-			// Ceiling
-			int cl = MapObject::intProperty("lightceiling");
-			if (boolProperty("lightceilingabsolute"))
-				ll = cl;
-			else
-				ll += cl;
+			// Get specific light level
+			if(where == 1)
+			{
+				// Floor
+				int fl = MapObject::intProperty("lightfloor");
+				if(boolProperty("lightfloorabsolute"))
+					ll = fl;
+				else
+					ll += fl;
+			}
+			else if(where == 2)
+			{
+				// Ceiling
+				int cl = MapObject::intProperty("lightceiling");
+				if(boolProperty("lightceilingabsolute"))
+					ll = cl;
+				else
+					ll += cl;
+			}
 		}
 
 		// Clamp light level

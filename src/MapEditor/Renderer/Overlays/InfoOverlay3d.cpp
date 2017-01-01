@@ -357,7 +357,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			info2.push_back(S_FMT("Light: %d", light));
 
 		// UDMF extras
-		if (theGameConfiguration->udmfNamespace() != "")
+		if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 		{
 			// Offsets
 			double xoff, yoff;

@@ -4468,7 +4468,7 @@ void MapEditor::resetOffsets3d()
 		}
 
 		// Reset scaling
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		if (theMapEditor->currentMapDesc().format == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (walls[a].type == SEL_SIDE_TOP)
 			{
@@ -4489,7 +4489,7 @@ void MapEditor::resetOffsets3d()
 	}
 
 	// Go through flats
-	if (theGameConfiguration->udmfNamespace() != "")
+	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 	{
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
@@ -4522,7 +4522,8 @@ void MapEditor::resetOffsets3d()
 	endUndoRecord();
 
 	// Editor message
-	if (theGameConfiguration->udmfNamespace() == "zdoom")
+	if (theMapEditor->currentMapDesc().format == MAP_UDMF && (theGameConfiguration->udmfFlatScaling() ||
+		theGameConfiguration->udmfSideScaling() || theGameConfiguration->udmfTextureScaling()))
 		addEditorMessage("Offsets and scaling reset");
 	else
 		addEditorMessage("Offsets reset");
@@ -4851,19 +4852,23 @@ void MapEditor::changeScale3d(double amount, bool x)
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
-		if (items[a].type >= SEL_SIDE_TOP && items[a].type <= SEL_SIDE_BOTTOM)
+		if (items[a].type >= SEL_SIDE_TOP && items[a].type <= SEL_SIDE_BOTTOM &&
+			(theGameConfiguration->udmfSideScaling() || theGameConfiguration->udmfTextureScaling()))
 		{
 			MapSide* side = map.getSide(items[a].index);
 
 			// Build property string (offset[x/y]_[top/mid/bottom])
 			string ofs = "scalex";
 			if (!x) ofs = "scaley";
-			if (items[a].type == SEL_SIDE_BOTTOM)
-				ofs += "_bottom";
-			else if (items[a].type == SEL_SIDE_TOP)
-				ofs += "_top";
-			else
-				ofs += "_mid";
+			if (theGameConfiguration->udmfTextureScaling())
+			{
+				if (items[a].type == SEL_SIDE_BOTTOM)
+					ofs += "_bottom";
+				else if (items[a].type == SEL_SIDE_TOP)
+					ofs += "_top";
+				else
+					ofs += "_mid";
+			}
 
 			// Change the offset
 			double scale = side->floatProperty(ofs);
@@ -4871,8 +4876,8 @@ void MapEditor::changeScale3d(double amount, bool x)
 				side->setFloatProperty(ofs, scale + amount);
 		}
 
-		// Flat (UDMF+ZDoom only)
-		else
+		// Flat (UDMF only)
+		else if (theGameConfiguration->udmfFlatScaling())
 		{
 			MapSector* sector = map.getSector(items[a].index);
 
@@ -5046,14 +5051,8 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 	// --- 3d mode keybinds ---
 	else if (key.StartsWith("me3d_") && edit_mode == MODE_3D)
 	{
-		// Check for extended udmf properties
-		bool ext = false;
-		if (theMapEditor->currentMapDesc().format == MAP_UDMF &&
-				S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom"))
-			ext = true;
-		if(theMapEditor->currentMapDesc().format == MAP_UDMF &&
-			S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "eternity"))
-			ext = true;
+		// Check is UDMF
+		bool is_udmf = theMapEditor->currentMapDesc().format == MAP_UDMF;
 
 		// Clear selection
 		if (key == "me3d_clear_selection")
@@ -5125,14 +5124,14 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		else if (key == "me3d_thing_down8")	changeThingZ3d(-8);
 
 		// Wall/Flat scale changes
-		else if (key == "me3d_scalex_up_l" && ext) changeScale3d(1, true);
-		else if (key == "me3d_scalex_up_s" && ext) changeScale3d(0.1, true);
-		else if (key == "me3d_scalex_down_l" && ext) changeScale3d(-1, true);
-		else if (key == "me3d_scalex_down_s" && ext) changeScale3d(-0.1, true);
-		else if (key == "me3d_scaley_up_l" && ext) changeScale3d(1, false);
-		else if (key == "me3d_scaley_up_s" && ext) changeScale3d(0.1, false);
-		else if (key == "me3d_scaley_down_l" && ext) changeScale3d(-1, false);
-		else if (key == "me3d_scaley_down_s" && ext) changeScale3d(-0.1, false);
+		else if (key == "me3d_scalex_up_l" && is_udmf) changeScale3d(1, true);
+		else if (key == "me3d_scalex_up_s" && is_udmf) changeScale3d(0.1, true);
+		else if (key == "me3d_scalex_down_l" && is_udmf) changeScale3d(-1, true);
+		else if (key == "me3d_scalex_down_s" && is_udmf) changeScale3d(-0.1, true);
+		else if (key == "me3d_scaley_up_l" && is_udmf) changeScale3d(1, false);
+		else if (key == "me3d_scaley_up_s" && is_udmf) changeScale3d(0.1, false);
+		else if (key == "me3d_scaley_down_l" && is_udmf) changeScale3d(-1, false);
+		else if (key == "me3d_scaley_down_s" && is_udmf) changeScale3d(-0.1, false);
 
 		// Auto-align
 		else if (key == "me3d_wall_autoalign_x")

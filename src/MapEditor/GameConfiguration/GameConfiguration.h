@@ -128,6 +128,7 @@ private:
 	bool				udmf_flat_rotation;	// If UDMF has flat rotation
 	bool				udmf_flat_scaling;	// If UDMF has flat scaling
 	bool				udmf_line_transparency;	// If UDMF has line transparency
+	bool				udmf_sector_color;	// If UDMF has sector colour
 	bool				udmf_side_scaling;	// If UDMF has line scaling
 	bool				udmf_texture_scaling;	// If UDMF has per-texture line scaling
 	bool				udmf_texture_offsets;	// If UDMF has per-texture offsets compared to per-sidedef
@@ -237,6 +238,7 @@ public:
 	bool	udmfFlatRotation() { return udmf_flat_rotation; }
 	bool	udmfFlatScaling() { return udmf_flat_scaling; }
 	bool	udmfLineTransparency() { return udmf_line_transparency; }
+	bool	udmfSectorColor() { return udmf_sector_color; }
 	bool	udmfSideScaling() { return udmf_side_scaling; }
 	bool	udmfTextureScaling() { return udmf_texture_scaling; }
 	bool	udmfTextureOffsets() { return udmf_texture_offsets; }
