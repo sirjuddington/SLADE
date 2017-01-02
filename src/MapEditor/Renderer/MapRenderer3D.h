@@ -190,7 +190,6 @@ public:
 
 private:
 	SLADEMap*	map;
-	bool		udmf_zdoom;
 	bool		fullbright;
 	bool		fog;
 	GLTexture*	tex_last;

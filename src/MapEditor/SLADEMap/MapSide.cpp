@@ -32,6 +32,7 @@
 #include "MapSector.h"
 #include "SLADEMap.h"
 #include "MainApp.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************
@@ -115,7 +116,7 @@ uint8_t MapSide::getLight()
 	int light = 0;
 	bool include_sector = true;
 
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfSideLighting())
 	{
 		light += intProperty("light");
 		if (boolProperty("lightabsolute"))
@@ -138,7 +139,7 @@ uint8_t MapSide::getLight()
  *******************************************************************/
 void MapSide::changeLight(int amount)
 {
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfSideLighting())
 		setIntProperty("light", intProperty("light") + amount);
 }
 

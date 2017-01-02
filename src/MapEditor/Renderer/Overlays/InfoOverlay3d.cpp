@@ -127,7 +127,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			info2.push_back("Upper Texture");
 
 		// Offsets
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			// Get x offset info
 			int xoff = side->intProperty("offsetx");
@@ -176,7 +176,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		}
 
 		// ZDoom UDMF extras
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			// Scale
 			double xscale, yscale;

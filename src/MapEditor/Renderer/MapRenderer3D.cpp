@@ -121,10 +121,6 @@ MapRenderer3D::~MapRenderer3D()
  *******************************************************************/
 bool MapRenderer3D::init()
 {
-	// Check to enable zdoom udmf extensions
-	if (S_CMPNOCASE(theGameConfiguration->udmfNamespace(), "zdoom") && map->currentFormat() == MAP_UDMF)
-		udmf_zdoom = true;
-
 	// Init camera
 	bbox_t bbox = map->getMapBBox();
 	cam_position.set(bbox.min.x + ((bbox.max.x - bbox.min.x)*0.5), bbox.min.y + ((bbox.max.y - bbox.min.y)*0.5), 64);
@@ -1250,7 +1246,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
@@ -1260,7 +1256,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s1()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
@@ -1340,7 +1336,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			// ZDoom UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_bottom"))
@@ -1351,7 +1347,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s1()->hasProp("scalex_bottom"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_bottom");
@@ -1392,7 +1388,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		xoff = xoff1;
 		yoff = yoff1;
 		double ytex = 0;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			if (line->s1()->hasProp("offsetx_mid"))
 				xoff += line->s1()->floatProperty("offsetx_mid");
@@ -1402,7 +1398,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s1()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_mid");
@@ -1414,7 +1410,8 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Setup quad coordinates
 		double top, bottom;
-		if ((map->currentFormat() == MAP_DOOM64) || (udmf_zdoom && line->boolProperty("wrapmidtex")))
+		if ((map->currentFormat() == MAP_DOOM64) || ((map->currentFormat() == MAP_UDMF &&
+			theGameConfiguration->udmfSideMidtexWrapping() && line->boolProperty("wrapmidtex"))))
 		{
 			top = lowceil;
 			bottom = highfloor;
@@ -1465,7 +1462,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff1;
 		yoff = yoff1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			// ZDoom UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_top"))
@@ -1476,7 +1473,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s1()->hasProp("scalex_top"))
 				sx = 1.0 / line->s1()->floatProperty("scalex_top");
@@ -1509,7 +1506,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			// ZDoom UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_bottom"))
@@ -1520,7 +1517,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s2()->hasProp("scalex_bottom"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_bottom");
@@ -1561,7 +1558,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		xoff = xoff2;
 		yoff = yoff2;
 		double ytex = 0;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			if (line->s2()->hasProp("offsetx_mid"))
 				xoff += line->s2()->floatProperty("offsetx_mid");
@@ -1571,7 +1568,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s2()->hasProp("scalex_mid"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_mid");
@@ -1583,7 +1580,8 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Setup quad coordinates
 		double top, bottom;
-		if ((map->currentFormat() == MAP_DOOM64) || (udmf_zdoom && line->boolProperty("wrapmidtex")))
+		if ((map->currentFormat() == MAP_DOOM64) || (map->currentFormat() == MAP_UDMF &&
+			theGameConfiguration->udmfSideMidtexWrapping() && line->boolProperty("wrapmidtex")))
 		{
 			top = lowceil;
 			bottom = highfloor;
@@ -1635,7 +1633,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		// Determine offsets
 		xoff = xoff2;
 		yoff = yoff2;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			// ZDoom UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_top"))
@@ -1646,7 +1644,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Texture scale
 		sx = sy = 1;
-		if (udmf_zdoom)
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (line->s2()->hasProp("scalex_top"))
 				sx = 1.0 / line->s2()->floatProperty("scalex_top");

@@ -129,6 +129,9 @@ private:
 	bool				udmf_flat_scaling;	// If UDMF has flat scaling
 	bool				udmf_line_transparency;	// If UDMF has line transparency
 	bool				udmf_sector_color;	// If UDMF has sector colour
+	bool				udmf_sector_fog;	// If UDMF has sector fog
+	bool				udmf_side_lighting;	// If UDMF has sidedef lighting independent from sector lighting
+	bool				udmf_side_midtex_wrapping;	// If UDMF has per-sidedef midtex wrapping
 	bool				udmf_side_scaling;	// If UDMF has line scaling
 	bool				udmf_texture_scaling;	// If UDMF has per-texture line scaling
 	bool				udmf_texture_offsets;	// If UDMF has per-texture offsets compared to per-sidedef
@@ -239,6 +242,9 @@ public:
 	bool	udmfFlatScaling() { return udmf_flat_scaling; }
 	bool	udmfLineTransparency() { return udmf_line_transparency; }
 	bool	udmfSectorColor() { return udmf_sector_color; }
+	bool	udmfSectorFog() { return udmf_sector_fog; }
+	bool	udmfSideLighting() { return udmf_side_lighting; }
+	bool	udmfSideMidtexWrapping() { return udmf_side_midtex_wrapping; }
 	bool	udmfSideScaling() { return udmf_side_scaling; }
 	bool	udmfTextureScaling() { return udmf_texture_scaling; }
 	bool	udmfTextureOffsets() { return udmf_texture_offsets; }
@@ -351,6 +357,8 @@ public:
 	void	dumpUDMFProperties();
 };
 
+// Define for less cumbersome map->currentFormat() == MAP_UDMF && theGameConfiguration->udmf
+#define UDMF_AND_HAS(prop) (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmf##prop())
 // Define for less cumbersome GameConfiguration::getInstance()
 #define theGameConfiguration GameConfiguration::getInstance()
 

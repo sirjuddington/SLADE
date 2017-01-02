@@ -662,7 +662,7 @@ rgba_t MapSector::getFogColour()
 	}
 
 	// udmf
-	if (parent_map->currentFormat() == MAP_UDMF && S_CMPNOCASE(parent_map->udmfNamespace(), "zdoom"))
+	if (parent_map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfSectorFog())
 	{
 		int intcol = MapObject::intProperty("fadecolor");
 
