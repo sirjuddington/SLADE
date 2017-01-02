@@ -357,8 +357,6 @@ public:
 	void	dumpUDMFProperties();
 };
 
-// Define for less cumbersome map->currentFormat() == MAP_UDMF && theGameConfiguration->udmf
-#define UDMF_AND_HAS(prop) (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmf##prop())
 // Define for less cumbersome GameConfiguration::getInstance()
 #define theGameConfiguration GameConfiguration::getInstance()
 

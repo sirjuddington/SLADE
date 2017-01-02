@@ -1338,7 +1338,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff = yoff1;
 		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
-			// ZDoom UDMF extra offsets
+			// UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_bottom"))
 				xoff += line->s1()->floatProperty("offsetx_bottom");
 			if (line->s1()->hasProp("offsety_bottom"))
@@ -1464,7 +1464,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff = yoff1;
 		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
-			// ZDoom UDMF extra offsets
+			// UDMF extra offsets
 			if (line->s1()->hasProp("offsetx_top"))
 				xoff += line->s1()->floatProperty("offsetx_top");
 			if (line->s1()->hasProp("offsety_top"))
@@ -1508,7 +1508,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff = yoff2;
 		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
-			// ZDoom UDMF extra offsets
+			// UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_bottom"))
 				xoff += line->s2()->floatProperty("offsetx_bottom");
 			if (line->s2()->hasProp("offsety_bottom"))
@@ -1635,7 +1635,7 @@ void MapRenderer3D::updateLine(unsigned index)
 		yoff = yoff2;
 		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
-			// ZDoom UDMF extra offsets
+			// UDMF extra offsets
 			if (line->s2()->hasProp("offsetx_top"))
 				xoff += line->s2()->floatProperty("offsetx_top");
 			if (line->s2()->hasProp("offsety_top"))

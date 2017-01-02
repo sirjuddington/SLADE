@@ -175,7 +175,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			info2.push_back(S_FMT("Offsets: %d, %d", side->intProperty("offsetx"), side->intProperty("offsety")));
 		}
 
-		// ZDoom UDMF extras
+		// UDMF extras
 		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			// Scale
