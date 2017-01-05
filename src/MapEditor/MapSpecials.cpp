@@ -574,9 +574,8 @@ void MapSpecials::processEternitySlopes(SLADEMap* map)
 	// Eternity plans on having a few slope mechanisms,
 	// which must be evaluated in a specific order.
 	//  - Plane_Align, in line order
-	//  - vertex triangle slopes, in sector order
+	//  - vertex triangle slopes, in sector order (wip)
 	//  - Plane_Copy, in line order
-	//  - Plane_Align is implemented, and Plane_Copy will be in the near future
 
 	// First things first: reset every sector to flat planes
 	for(unsigned a = 0; a < map->nSectors(); a++)
