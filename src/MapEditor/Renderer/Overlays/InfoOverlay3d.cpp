@@ -127,7 +127,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			info2.push_back("Upper Texture");
 
 		// Offsets
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureOffsets())
 		{
 			// Get x offset info
 			int xoff = side->intProperty("offsetx");
@@ -175,8 +175,8 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			info2.push_back(S_FMT("Offsets: %d, %d", side->intProperty("offsetx"), side->intProperty("offsety")));
 		}
 
-		// ZDoom UDMF extras
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		// UDMF extras
+		if (map->currentFormat() == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			// Scale
 			double xscale, yscale;
@@ -322,7 +322,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 
 		// Light
 		int light = sector->intProperty("lightlevel");
-		if (theGameConfiguration->udmfNamespace() == "zdoom" || theGameConfiguration->udmfNamespace() == "eternity")
+		if (theGameConfiguration->udmfFlatLighting())
 		{
 			// Get extra light info
 			int fl = 0;
@@ -356,64 +356,42 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		else
 			info2.push_back(S_FMT("Light: %d", light));
 
-		// ZDoom UDMF extras
-		if (theGameConfiguration->udmfNamespace() == "zdoom")
+		// UDMF extras
+		if (theMapEditor->currentMapDesc().format == MAP_UDMF)
 		{
 			// Offsets
 			double xoff, yoff;
-			if (item_type == MapEditor::SEL_FLOOR)
+			xoff = yoff = 0.0;
+			if (theGameConfiguration->udmfFlatPanning())
 			{
-				xoff = sector->floatProperty("xpanningfloor");
-				yoff = sector->floatProperty("ypanningfloor");
-			}
-			else
-			{
-				xoff = sector->floatProperty("xpanningceiling");
-				yoff = sector->floatProperty("ypanningceiling");
+				if (item_type == MapEditor::SEL_FLOOR)
+				{
+					xoff = sector->floatProperty("xpanningfloor");
+					yoff = sector->floatProperty("ypanningfloor");
+				}
+				else
+				{
+					xoff = sector->floatProperty("xpanningceiling");
+					yoff = sector->floatProperty("ypanningceiling");
+				}
 			}
 			info2.push_back(S_FMT("Offsets: %1.2f, %1.2f", xoff, yoff));
 
 			// Scaling
 			double xscale, yscale;
-			if (item_type == MapEditor::SEL_FLOOR)
+			xscale = yscale = 1.0;
+			if (theGameConfiguration->udmfFlatScaling())
 			{
-				xscale = sector->floatProperty("xscalefloor");
-				yscale = sector->floatProperty("yscalefloor");
-			}
-			else
-			{
-				xscale = sector->floatProperty("xscaleceiling");
-				yscale = sector->floatProperty("yscaleceiling");
-			}
-			info2.push_back(S_FMT("Scale: %1.2fx, %1.2fx", xscale, yscale));
-		}
-		else if(theGameConfiguration->udmfNamespace() == "eternity")
-		{
-			// Offsets
-			double xoff, yoff;
-			if(item_type == MapEditor::SEL_FLOOR)
-			{
-				xoff = sector->floatProperty("xpanningfloor");
-				yoff = sector->floatProperty("ypanningfloor");
-			}
-			else
-			{
-				xoff = sector->floatProperty("xpanningceiling");
-				yoff = sector->floatProperty("ypanningceiling");
-			}
-			info2.push_back(S_FMT("Offsets: %1.2f, %1.2f", xoff, yoff));
-
-			// Scaling
-			double xscale, yscale;
-			if (item_type == MapEditor::SEL_FLOOR)
-			{
-				xscale = sector->floatProperty("xscalefloor");
-				yscale = sector->floatProperty("yscalefloor");
-			}
-			else
-			{
-				xscale = sector->floatProperty("xscaleceiling");
-				yscale = sector->floatProperty("yscaleceiling");
+				if (item_type == MapEditor::SEL_FLOOR)
+				{
+					xscale = sector->floatProperty("xscalefloor");
+					yscale = sector->floatProperty("yscalefloor");
+				}
+				else
+				{
+					xscale = sector->floatProperty("xscaleceiling");
+					yscale = sector->floatProperty("yscaleceiling");
+				}
 			}
 			info2.push_back(S_FMT("Scale: %1.2fx, %1.2fx", xscale, yscale));
 		}

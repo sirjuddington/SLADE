@@ -113,6 +113,11 @@ void GameConfiguration::setDefaults()
 	as_generalized_s.setTagged(AS_TT_SECTOR);
 	as_generalized_m.setName("Boom Generalized Manual Special");
 	as_generalized_m.setTagged(AS_TT_SECTOR_BACK);
+
+	udmf_texture_offsets = udmf_slopes = udmf_flat_lighting = udmf_flat_panning =
+	udmf_flat_rotation = udmf_flat_scaling = udmf_line_transparency = udmf_sector_color =
+	udmf_sector_fog = udmf_side_lighting = udmf_side_midtex_wrapping = udmf_side_scaling =
+	udmf_texture_scaling = false;
 }
 
 /* GameConfiguration::udmfNamespace
@@ -874,6 +879,9 @@ void GameConfiguration::readUDMFProperties(ParseTreeNode* block, UDMFPropMap& pl
 	}
 }
 
+#define READ_BOOL(obj, field)	else if (S_CMPNOCASE(node->getName(), #field)) \
+									obj = node->getBoolValue()
+
 /* GameConfiguration::readGameSection
  * Reads a game or port definition from a parsed tree [node]. If
  * [port_section] is true it is a port definition
@@ -956,6 +964,20 @@ void GameConfiguration::readGameSection(ParseTreeNode* node_game, bool port_sect
 		// Long names
 		else if (S_CMPNOCASE(node->getName(), "long_names"))
 			allow_long_names = node->getBoolValue();
+
+		READ_BOOL(udmf_slopes, udmf_slopes); // UDMF slopes
+		READ_BOOL(udmf_flat_lighting, udmf_flat_lighting); // UDMF flat lighting
+		READ_BOOL(udmf_flat_panning, udmf_flat_panning); // UDMF flat panning
+		READ_BOOL(udmf_flat_rotation, udmf_flat_rotation); // UDMF flat rotation
+		READ_BOOL(udmf_flat_scaling, udmf_flat_scaling); // UDMF flat scaling
+		READ_BOOL(udmf_line_transparency, udmf_line_transparency); // UDMF line transparency
+		READ_BOOL(udmf_sector_color, udmf_sector_color); // UDMF sector color
+		READ_BOOL(udmf_sector_fog, udmf_sector_fog); // UDMF sector fog
+		READ_BOOL(udmf_side_lighting, udmf_side_lighting); // UDMF per-sidedef lighting
+		READ_BOOL(udmf_side_midtex_wrapping, udmf_side_midtex_wrapping); // UDMF per-sidetex midtex wrapping
+		READ_BOOL(udmf_side_scaling, udmf_side_scaling); // UDMF per-sidedef scaling
+		READ_BOOL(udmf_texture_scaling, udmf_texture_scaling); // UDMF per-texture scaling
+		READ_BOOL(udmf_texture_offsets, udmf_texture_offsets); // UDMF per-texture offsets
 
 		// Defaults section
 		else if (S_CMPNOCASE(node->getName(), "defaults"))
