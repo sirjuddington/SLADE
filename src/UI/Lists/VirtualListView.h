@@ -55,7 +55,7 @@ public:
 	void			selectItems(long start, long end, bool select = true);
 	void			selectAll();
 	void			clearSelection();
-	vector<long>	getSelection();
+	vector<long>	getSelection(bool item_indices = false);
 	long			getFirstSelected();
 	long			getLastSelected();
 
