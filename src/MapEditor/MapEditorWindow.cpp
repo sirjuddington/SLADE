@@ -670,6 +670,10 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	command = builder.command;
 	options = nodebuilder_options;
 
+	// Don't build if none selected
+	if (builder.id == "none")
+		return;
+
 	// Switch to ZDBSP if UDMF
 	if (mdesc_current.format == MAP_UDMF && nodebuilder_id != "zdbsp")
 	{

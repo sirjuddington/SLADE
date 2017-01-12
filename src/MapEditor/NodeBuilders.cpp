@@ -41,6 +41,7 @@ namespace NodeBuilders
 {
 	vector<builder_t>	builders;
 	builder_t			invalid;
+	builder_t			none;
 	string				custom;
 	vector<string>		builder_paths;
 }
@@ -55,8 +56,11 @@ namespace NodeBuilders
  *******************************************************************/
 void NodeBuilders::init()
 {
-	// Init invalid builder
+	// Init default builders
 	invalid.id = "invalid";
+	none.id = "none";
+	none.name = "Don't Build Nodes";
+	builders.push_back(none);
 
 	// Get nodebuilders configuration from slade.pk3
 	Archive* archive = theArchiveManager->programResourceArchive();
