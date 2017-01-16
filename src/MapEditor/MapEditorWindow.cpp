@@ -713,7 +713,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		wxWindow* focus = wxWindow::FindFocus();
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		theApp->SetTopWindow(theMainWindow);
-		focus->SetFocusFromKbd();
+		if (focus) focus->SetFocusFromKbd();
 		wxLogMessage("Nodebuilder output:");
 		for (unsigned a = 0; a < out.size(); a++)
 			wxLogMessage(out[a]);
@@ -1098,7 +1098,7 @@ bool MapEditorWindow::handleAction(string id)
 				vector<Archive::mapdesc_t> maps = data->detectMaps();
 				if (!maps.empty())
 				{
-					editor.getMap().clearMap();
+					editor.clearMap();
 					editor.openMap(maps[0]);
 					loadMapScripts(maps[0]);
 				}
