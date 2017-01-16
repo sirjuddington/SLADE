@@ -1577,31 +1577,32 @@ bool SImage::drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, 
 		d_colour = pal->colour(data[p]);
 	else
 		d_colour.set(data[p], data[p+1], data[p+2], data[p+3]);
+	float alpha = (float)colour.a / 255.0f;
 
 	// Additive blending
 	if (properties.blend == ADD)
 	{
-		d_colour.set(	MathStuff::clamp(d_colour.r+colour.r*properties.alpha, 0, 255),
-		                MathStuff::clamp(d_colour.g+colour.g*properties.alpha, 0, 255),
-		                MathStuff::clamp(d_colour.b+colour.b*properties.alpha, 0, 255),
+		d_colour.set(	MathStuff::clamp(d_colour.r+colour.r*alpha, 0, 255),
+		                MathStuff::clamp(d_colour.g+colour.g*alpha, 0, 255),
+		                MathStuff::clamp(d_colour.b+colour.b*alpha, 0, 255),
 		                MathStuff::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Subtractive blending
 	else if (properties.blend == SUBTRACT)
 	{
-		d_colour.set(	MathStuff::clamp(d_colour.r-colour.r*properties.alpha, 0, 255),
-		                MathStuff::clamp(d_colour.g-colour.g*properties.alpha, 0, 255),
-		                MathStuff::clamp(d_colour.b-colour.b*properties.alpha, 0, 255),
+		d_colour.set(	MathStuff::clamp(d_colour.r-colour.r*alpha, 0, 255),
+		                MathStuff::clamp(d_colour.g-colour.g*alpha, 0, 255),
+		                MathStuff::clamp(d_colour.b-colour.b*alpha, 0, 255),
 		                MathStuff::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
 	// Reverse-Subtractive blending
 	else if (properties.blend == REVERSE_SUBTRACT)
 	{
-		d_colour.set(	MathStuff::clamp((-d_colour.r)+colour.r*properties.alpha, 0, 255),
-		                MathStuff::clamp((-d_colour.g)+colour.g*properties.alpha, 0, 255),
-		                MathStuff::clamp((-d_colour.b)+colour.b*properties.alpha, 0, 255),
+		d_colour.set(	MathStuff::clamp((-d_colour.r)+colour.r*alpha, 0, 255),
+		                MathStuff::clamp((-d_colour.g)+colour.g*alpha, 0, 255),
+		                MathStuff::clamp((-d_colour.b)+colour.b*alpha, 0, 255),
 		                MathStuff::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
@@ -1617,10 +1618,10 @@ bool SImage::drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, 
 	// Normal blending (or unknown blend type)
 	else
 	{
-		float inv_alpha = 1.0f - properties.alpha;
-		d_colour.set(	d_colour.r*inv_alpha + colour.r*properties.alpha,
-		                d_colour.g*inv_alpha + colour.g*properties.alpha,
-		                d_colour.b*inv_alpha + colour.b*properties.alpha,
+		float inv_alpha = 1.0f - alpha;
+		d_colour.set(	d_colour.r*inv_alpha + colour.r*alpha,
+		                d_colour.g*inv_alpha + colour.g*alpha,
+		                d_colour.b*inv_alpha + colour.b*alpha,
 		                MathStuff::clamp(d_colour.a + colour.a, 0, 255));
 	}
 
