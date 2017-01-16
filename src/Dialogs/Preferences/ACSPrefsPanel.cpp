@@ -31,6 +31,7 @@
 #include "ACSPrefsPanel.h"
 #include "Utility/SFileDialog.h"
 #include <wx/button.h>
+#include <wx/checkbox.h>
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/listbox.h>
@@ -45,6 +46,7 @@
  *******************************************************************/
 EXTERN_CVAR(String, path_acc)
 EXTERN_CVAR(String, path_acc_libs)
+EXTERN_CVAR(Bool, acc_always_show_output)
 
 
 /*******************************************************************
@@ -94,6 +96,10 @@ ACSPrefsPanel::ACSPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
 	// Populate include paths list
 	list_inc_paths->Append(wxSplit(path_acc_libs, ';'));
 
+	// 'Always Show Output' checkbox
+	cb_always_show_output = new wxCheckBox(this, -1, "Always Show Compiler Output");
+	sizer->Add(cb_always_show_output, 0, wxEXPAND | wxALL, 4);
+
 	// Bind events
 	btn_browse_accpath->Bind(wxEVT_BUTTON, &ACSPrefsPanel::onBtnBrowseACCPath, this);
 	btn_incpath_add->Bind(wxEVT_BUTTON, &ACSPrefsPanel::onBtnAddIncPath, this);
@@ -113,6 +119,7 @@ ACSPrefsPanel::~ACSPrefsPanel()
 void ACSPrefsPanel::init()
 {
 	text_accpath->SetValue(wxString(path_acc));
+	cb_always_show_output->SetValue(acc_always_show_output);
 }
 
 /* ACSPrefsPanel::applyPreferences
@@ -131,6 +138,7 @@ void ACSPrefsPanel::applyPreferences()
 		paths_string.RemoveLast(1);
 
 	path_acc_libs = paths_string;
+	acc_always_show_output = cb_always_show_output->GetValue();
 }
 
 

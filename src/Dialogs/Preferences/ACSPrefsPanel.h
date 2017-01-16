@@ -13,6 +13,7 @@ private:
 	wxButton*	btn_incpath_add;
 	wxButton*	btn_incpath_remove;
 	wxListBox*	list_inc_paths;
+	wxCheckBox*	cb_always_show_output;
 
 public:
 	ACSPrefsPanel(wxWindow* parent);
