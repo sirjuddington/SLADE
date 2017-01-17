@@ -21,12 +21,25 @@ if (-not (Test-Path $7zpath))
 #    $versionstring = $version+"_b"+$beta
 #}
 
+# Prompt to build SLADE
+Write-Host "`nRebuild SLADE? (y/n) " -foregroundcolor cyan -nonewline
+$buildbinaries = Read-Host
+
+# Build SLADE
+if ($buildbinaries.ToLower() -eq "y")
+{
+	$devenvpath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\Common7\IDE\devenv.com"
+	& $devenvpath (resolve-path ..\build\msvc\SLADE.sln).Path /rebuild Release /project SLADE.vcxproj
+	& $devenvpath (resolve-path ..\build\msvc\SLADE.sln).Path /rebuild "Release - WinXP" /project SLADE.vcxproj
+}
+
 # Determine release directory
 $releasedir = "$PSScriptRoot\$version"
 
 # Create release directory if needed
 Write-Host "`nCreate directory $releasedir" -foregroundcolor yellow
 New-Item -ItemType directory -Force -Path $releasedir | out-null
+New-Item -ItemType directory -Force -Path "$releasedir\XP" | out-null
 
 # Remove existing pk3 if it exists
 $pk3path = ".\slade.pk3"
@@ -53,6 +66,8 @@ Copy-Item (resolve-path ".\libfluidsynth.dll")  "$releasedir" -Force
 Copy-Item (resolve-path ".\openal32.dll")		"$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.exe")          "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.pdb")          "$releasedir" -Force
+Copy-Item (resolve-path ".\WinXP\SLADE.exe")    "$releasedir\XP" -Force
+Copy-Item (resolve-path ".\WinXP\SLADE.pdb")    "$releasedir\XP" -Force
 Copy-Item (resolve-path ".\slade.pk3")          "$releasedir" -Force
 Write-Host "Done" -foregroundcolor green
 
@@ -72,6 +87,16 @@ if ($buildbinaries.ToLower() -eq "y")
 	"$releasedir\SLADE.pdb" `
 	"$releasedir\slade.pk3"
 	Write-Host "Done" -foregroundcolor green
+
+	Write-Host "`nBuilding XP binary 7z..." -ForegroundColor Yellow
+	& $7zpath a -t7z "$releasedir\slade_${version}_winxp.7z" `
+	"$releasedir\FreeImage.dll" `
+	"$releasedir\libfluidsynth.dll" `
+	"$releasedir\openal32.dll" `
+	"$releasedir\XP\SLADE.exe" `
+	"$releasedir\XP\SLADE.pdb" `
+	"$releasedir\slade.pk3"
+	Write-Host "Done" -ForegroundColor Green
 }
 
 # Prompt to build installer
