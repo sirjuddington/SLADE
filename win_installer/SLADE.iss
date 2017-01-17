@@ -42,8 +42,8 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: "..\dist\SLADE.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\FreeImage.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\libfluidsynth.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\openal32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\slade.pk3"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "..\dist\slade3.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\SLADE.pdb"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
