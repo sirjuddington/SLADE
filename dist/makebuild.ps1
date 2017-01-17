@@ -1,5 +1,5 @@
-$version = "3114"
-$versionstring = "3.1.1.4"
+$version = "3115"
+$versionstring = "3.1.1.5"
 
 # Check for 7-zip install
 $7zpath = "$env:ProgramFiles\7-Zip\7z.exe"
@@ -50,7 +50,6 @@ Write-Host "Done" -foregroundcolor green
 Write-Host "`nCopying SLADE files..." -foregroundcolor yellow
 Copy-Item (resolve-path ".\FreeImage.dll")      "$releasedir" -Force
 Copy-Item (resolve-path ".\libfluidsynth.dll")  "$releasedir" -Force
-Copy-Item (resolve-path ".\openal32.dll")       "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.exe")          "$releasedir" -Force
 Copy-Item (resolve-path ".\SLADE.pdb")          "$releasedir" -Force
 Copy-Item (resolve-path ".\slade.pk3")          "$releasedir" -Force
@@ -67,7 +66,6 @@ if ($buildbinaries.ToLower() -eq "y")
 	& $7zpath a -t7z "$releasedir\slade_$version.7z" `
 	"$releasedir\FreeImage.dll" `
 	"$releasedir\libfluidsynth.dll" `
-	"$releasedir\openal32.dll" `
 	"$releasedir\SLADE.exe" `
 	"$releasedir\SLADE.pdb" `
 	"$releasedir\slade.pk3"
