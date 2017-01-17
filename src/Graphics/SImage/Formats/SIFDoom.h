@@ -109,11 +109,11 @@ protected:
 					int pos = ((top + p)*width + c);
 
 					// Stop if we're outside the image
-					if (pos > width*height)
+					if (pos >= width*height)
 						break;
 
 					// Stop if for some reason we're outside the gfx data
-					if (bits > gfx_data + data.getSize())
+					if (bits >= gfx_data + data.getSize())
 						break;
 
 					// Fail if bogus data gives a negative pos (this corrupts the heap!)

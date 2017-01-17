@@ -144,30 +144,31 @@ bool Palette8bit::loadMem(const uint8_t* data, uint32_t size)
  *******************************************************************/
 bool Palette8bit::loadMem(MemChunk& mc, int format)
 {
-
 	// Raw data
 	if (format == FORMAT_RAW)
-	{
 		return loadMem(mc);
-	}
 
 	// Image
 	else if (format == FORMAT_IMAGE)
 	{
 		SImage image;
 		image.open(mc);
+
 		// Verify validity and only accept square images
 		if (!image.isValid())
 		{
-			wxLogMessage("Palette information cannot be loaded from an invalid image");
+			Global::error = "Palette information cannot be loaded from an invalid image";
+			LOG_MESSAGE(0, Global::error);
 			return false;
 		}
 		int side = image.getHeight();
 		if (side != image.getWidth() || side%16)
 		{
-			wxLogMessage("Palette information cannot be loaded from a non-square image");
+			Global::error = "Palette information cannot be loaded from a non-square image";
+			LOG_MESSAGE(0, Global::error);
 			return false;
 		}
+
 		// Find color cell size
 		int cell = side / 16;
 
@@ -177,23 +178,25 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 			// Find position in grid
 			int x = (a % 16) * cell;
 			int y = (a / 16) * cell;
+
 			// Ignore possible borders
 			if (cell > 3)
 				++x, ++y;
+
 			// Get color from image
 			rgba_t col = image.getPixel(x, y);
+
 			// Validate color cell
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
 				for (int c = y; c < (y + (cell > 3 ? cell - 1 : cell)); ++c)
 					if (!col.equals(image.getPixel(b, c)))
-					{
-						wxLogMessage("Image does not seem to be a valid palette, color discrepancy in cell %u at [%u, %u]", a, b, c);
-						return false;
-					}
+						LOG_MESSAGE(0, "Image does not seem to be a valid palette, color discrepancy in cell %u at [%u, %u]", a, b, c);
 
 			// Color is validated, so add it
+			LOG_MESSAGE(3, "Colour index %d / at %d,%d / rgb %d,%d,%d", a, x, y, col.r, col.g, col.b);
 			setColour(a, col);
 		}
+
 		return true;
 	}
 
@@ -213,13 +216,15 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 		{
 			if (!tz.checkToken("JASC-PAL") || !tz.checkToken("0100"))
 			{
-				wxLogMessage("Invalid JASC palette (unknown header)");
+				Global::error = "Invalid JASC palette (unknown header)";
+				LOG_MESSAGE(0, Global::error);
 				return false;
 			}
 			int count = tz.getInteger();
 			if (count > 256 || count < 0)
 			{
-				wxLogMessage("Invalid JASC palette (wrong count)");
+				Global::error = "Invalid JASC palette (wrong count)";
+				LOG_MESSAGE(0, Global::error);
 				return false;
 			}
 		}
@@ -227,7 +232,8 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 		{
 			if (!tz.checkToken("GIMP") || !tz.checkToken("Palette"))
 			{
-				wxLogMessage("Invalid GIMP palette (unknown header)");
+				Global::error = "Invalid GIMP palette (unknown header)";
+				LOG_MESSAGE(0, Global::error);
 				return false;
 			}
 		}
@@ -262,7 +268,11 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 
 	}
 
-	else wxLogMessage("Sorry, palette couldn't be imported, this format is not supported yet for import.");
+	else
+	{
+		Global::error = "Palette could not be imported, this format is not supported yet for import.";
+		LOG_MESSAGE(0, Global::error);
+	}
 
 	return false;
 }

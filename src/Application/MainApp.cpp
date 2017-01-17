@@ -1420,6 +1420,11 @@ bool MainApp::doAction(string id, int wx_id_offset)
 	if (!handled)
 		wxLogMessage("Warning: Action \"%s\" not handled", id);
 
+	// Log action (to log file only)
+	exiting = true;
+	wxLogMessage("**** Action \"%s\"", id);
+	exiting = false;
+
 	// Return true if handled
 	return handled;
 }

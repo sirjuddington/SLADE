@@ -951,6 +951,8 @@ bool PaletteEntryPanel::importFrom()
 			setModified();
 			showPalette(cur_palette);
 		}
+		else
+			wxMessageBox(Global::error, "Import Failed", wxICON_ERROR | wxOK);
 	}
 	return ret;
 }

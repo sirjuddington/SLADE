@@ -204,9 +204,10 @@ void VirtualListView::clearSelection()
 }
 
 /* VirtualListView::getSelection
- * Returns a list of all selected item indices
+ * Returns a list of all selected item indices. If [item_indices] is
+ * true, the returned indices will have sorting and filtering applied
  *******************************************************************/
-vector<long> VirtualListView::getSelection()
+vector<long> VirtualListView::getSelection(bool item_indices)
 {
 	// Init return array
 	vector<long> ret;
@@ -223,7 +224,7 @@ vector<long> VirtualListView::getSelection()
 			break;
 
 		// Otherwise add the selected index to the vector
-		ret.push_back(item);
+		ret.push_back(item_indices ? getItemIndex(item) : item);
 	}
 
 	return ret;

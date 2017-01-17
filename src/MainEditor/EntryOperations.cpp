@@ -53,6 +53,7 @@ CVAR(String, path_pngout, "", CVAR_SAVE);
 CVAR(String, path_pngcrush, "", CVAR_SAVE);
 CVAR(String, path_deflopt, "", CVAR_SAVE);
 CVAR(String, path_db2, "", CVAR_SAVE)
+CVAR(Bool, acc_always_show_output, false, CVAR_SAVE);
 
 
 /*******************************************************************
@@ -1281,7 +1282,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		for (unsigned a = 0; a < errout.size(); a++)
 		{
 			theConsole->logMessage(errout[a]);
-			output_log += errout[a];
+			output_log += errout[a] + "\n";
 		}
 	}
 
@@ -1293,7 +1294,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		wxRemoveFile(lib_paths[a]);
 
 	// Check it compiled successfully
-	if (wxFileExists(ofile))
+	bool success = wxFileExists(ofile);
+	if (success)
 	{
 		// If no target entry was given, find one
 		if (!target)
@@ -1340,7 +1342,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		// Delete compiled script file
 		wxRemoveFile(ofile);
 	}
-	else
+
+	if (!success || acc_always_show_output)
 	{
 		string errors;
 		if (wxFileExists(appPath("acs.err", DIR_TEMP)))
@@ -1355,12 +1358,18 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		else
 			errors = output_log;
 
-		ExtMessageDialog dlg(NULL, "Error Compiling");
-		dlg.setMessage("The following errors were encountered while compiling, please fix them and recompile:");
-		dlg.setExt(errors);
-		dlg.ShowModal();
+		if (errors != "" || !success)
+		{
+			ExtMessageDialog dlg(NULL, success ? "ACC Output" : "Error Compiling");
+			dlg.setMessage(success ?
+				"The following errors were encountered while compiling, please fix them and recompile:" :
+				"Compiler output shown below: "
+			);
+			dlg.setExt(errors);
+			dlg.ShowModal();
+		}
 
-		return false;
+		return success;
 	}
 
 	return true;

@@ -382,7 +382,7 @@ void PatchTablePanel::onBtnPatchFromFile(wxCommandEvent& e)
 void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
-	vector<long> selection = list_patches->getSelection();
+	vector<long> selection = list_patches->getSelection(true);
 	if (selection.size() == 0)
 		return;
 
@@ -427,7 +427,7 @@ void PatchTablePanel::onBtnRemovePatch(wxCommandEvent& e)
 void PatchTablePanel::onBtnChangePatch(wxCommandEvent& e)
 {
 	// Check anything is selected
-	vector<long> selection = list_patches->getSelection();
+	vector<long> selection = list_patches->getSelection(true);
 	if (selection.size() == 0)
 		return;
 

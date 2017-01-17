@@ -137,6 +137,7 @@ void NodesPrefsPanel::populateOptions(string options)
 {
 	// Get current builder
 	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder->GetSelection());
+	btn_browse_path->Enable(builder.id != "none");
 
 	// Set builder path
 	text_path->SetValue(builder.path);
