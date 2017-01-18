@@ -200,18 +200,26 @@ public:
 		hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxTOP|wxBOTTOM, 10);
 
 		// Add general crash message
+#ifndef NOCURL
 		string message = "SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
 			"please (optionally) enter a short description of what you were doing at the time "
 			"of the crash, and click the 'Send Crash Report' button.";
+#else
+		string message = "SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
+			"please email a copy of the stack trace below to sirjuddington@gmail.com, along with a "
+			"description of what you were doing at the time of the crash.";
+#endif
 		wxStaticText* label = new wxStaticText(this, -1, message);
 		hbox->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
 		label->Wrap(480 - 20 - picture->GetSize().x);
 
+#ifndef NOCURL
 		// Add description text area
 		text_description = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(-1, 100), wxTE_MULTILINE);
 		sizer->Add(new wxStaticText(this, -1, "Description:"), 0, wxLEFT|wxRIGHT, 10);
 		sizer->AddSpacer(2);
 		sizer->Add(text_description, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+#endif
 
 		// SLADE info
 		trace = S_FMT("Version: %s\n", Global::version);
@@ -254,12 +262,14 @@ public:
 		// Also dump stack trace to console
 		std::cerr << trace;
 
+#ifndef NOCURL
 		// Add small privacy disclaimer
 		string privacy = "Sending a crash report will only send the information displayed above, "
 						"along with a copy of the logs for this session.";
 		label = new wxStaticText(this, -1, privacy);
 		label->Wrap(480);
 		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+#endif
 
 		// Add 'Copy Stack Trace' button
 		hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -274,10 +284,12 @@ public:
 		hbox->Add(btn_exit, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
 		btn_exit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
 
+#ifndef NOCURL
 		// Add 'Send Crash Report' button
 		btn_send = new wxButton(this, -1, "Send Crash Report");
 		hbox->Add(btn_send, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
 		btn_send->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnSend, this);
+#endif
 
 		Bind(wxEVT_THREAD, &SLADECrashDialog::onThreadUpdate, this);
 		Bind(wxEVT_CLOSE_WINDOW, &SLADECrashDialog::onClose, this);
