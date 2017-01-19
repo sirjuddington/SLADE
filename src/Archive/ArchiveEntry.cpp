@@ -138,7 +138,7 @@ string ArchiveEntry::getUpperName()
 
 string ArchiveEntry::getUpperNameNoExt()
 {
-	return Misc::lumpNameToFileName(upper_name).BeforeFirst('.');
+	return Misc::lumpNameToFileName(upper_name).BeforeLast('.');
 }
 
 /* ArchiveEntry::getParent
