@@ -39,6 +39,7 @@
 #include <wx/clrpicker.h>
 #include <wx/colordlg.h>
 #include <wx/menu.h>
+#include <wx/msgdlg.h>
 #include <wx/radiobut.h>
 #include <wx/slider.h>
 #include <wx/stattext.h>
@@ -848,6 +849,8 @@ bool PaletteEntryPanel::importFrom()
 			setModified();
 			showPalette(cur_palette);
 		}
+		else
+			wxMessageBox(Global::error, "Import Failed", wxICON_ERROR | wxOK);
 	}
 	return ret;
 }

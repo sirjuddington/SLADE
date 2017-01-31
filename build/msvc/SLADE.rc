@@ -60,8 +60,8 @@ IDI_ICON1               ICON                    "slade.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,1,4
- PRODUCTVERSION 3,1,1,4
+ FILEVERSION 3,1,1,5
+ PRODUCTVERSION 3,1,1,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -77,12 +77,12 @@ BEGIN
         BLOCK "0c0904b0"
         BEGIN
             VALUE "FileDescription", "SLADE"
-            VALUE "FileVersion", "3.1.1.4"
+            VALUE "FileVersion", "3.1.1.5"
             VALUE "InternalName", "SLADE.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2016"
+            VALUE "LegalCopyright", "Copyright (C) 2017"
             VALUE "OriginalFilename", "SLADE.exe"
             VALUE "ProductName", "SLADE"
-            VALUE "ProductVersion", "3.1.1.4"
+            VALUE "ProductVersion", "3.1.1.5"
         END
     END
     BLOCK "VarFileInfo"

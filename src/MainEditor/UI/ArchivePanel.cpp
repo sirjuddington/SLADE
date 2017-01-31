@@ -377,13 +377,16 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 		choice_category->Append(cats[a]);
 	choice_category->SetSelection(0);
 	gb_sizer->Add(new wxStaticText(this, -1, "Show:"), wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(choice_category, wxGBPosition(0, 1), wxDefaultSpan, wxEXPAND);
+	gb_sizer->Add(choice_category, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
 	gb_sizer->AddGrowableCol(1, 1);
 
 	// Create filter
 	text_filter = new wxTextCtrl(this, -1);
 	gb_sizer->Add(new wxStaticText(this, -1, "Filter:"), wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_filter, wxGBPosition(1, 1), wxDefaultSpan, wxEXPAND);
+	btn_clear_filter = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "close"));
+	btn_clear_filter->SetToolTip("Clear Filter");
+	gb_sizer->Add(btn_clear_filter, wxGBPosition(1, 2), wxDefaultSpan, wxEXPAND);
 
 
 	// Add default entry panel
@@ -404,6 +407,7 @@ ArchivePanel::ArchivePanel(wxWindow* parent, Archive* archive)
 	choice_category->Bind(wxEVT_CHOICE, &ArchivePanel::onChoiceCategoryChanged, this);
 	Bind(EVT_AEL_DIR_CHANGED, &ArchivePanel::onDirChanged, this);
 	btn_updir->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnUpDir, this);
+	btn_clear_filter->Bind(wxEVT_BUTTON, &ArchivePanel::onBtnClearFilter, this);
 
 	// Do a quick check to see if we need the path display
 	if (archive->getRoot()->nChildren() == 0)
@@ -3719,6 +3723,14 @@ void ArchivePanel::onBtnUpDir(wxCommandEvent& e)
 {
 	// Go up a directory in the entry list
 	entry_list->goUpDir();
+}
+
+/* ArchivePanel::onBtnClearFilter
+ * Called when the 'Clear Filter' button is clicked
+ *******************************************************************/
+void ArchivePanel::onBtnClearFilter(wxCommandEvent& e)
+{
+	text_filter->SetValue("");
 }
 
 
