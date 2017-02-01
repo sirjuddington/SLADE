@@ -409,14 +409,8 @@ entry_types
 		match_name = "lua_*";
 		text_language = "srb2lua";
 	}
-        
-        soc : text
-	{
-		name = "Sonic Object Configuration";
-		match_name = "soc_*";
-	}
-	
-        // ZDaemon text lumps
+
+	// ZDaemon text lumps
 	patchinf : text
 	{
 		name = "Patchinfo";
