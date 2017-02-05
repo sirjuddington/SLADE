@@ -215,6 +215,7 @@ uint32_t valid_flat_size[][3] =
 	{   2,   2,	0 },	// lol Heretic F_SKY1
 	{  10,  12,	0 },	// gnum format
 	{  16,  16,	0 },	// |
+	{  32,  32,	0 },	// |
 	{  32,  64,	0 },	// Strife startup sprite
 	{  48,  48,	0 },	// |
 	{  64,  64,	1 },	// standard flat size
@@ -233,7 +234,7 @@ uint32_t valid_flat_size[][3] =
 	{2048,2048,	1 },	// super hires flat size (SRB2)
 	{4096,4096,	1 },	// |
 };
-uint32_t	n_valid_flat_sizes = 20;
+uint32_t	n_valid_flat_sizes = 21;
 
 
 /*******************************************************************
