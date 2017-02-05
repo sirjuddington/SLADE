@@ -391,9 +391,7 @@ void GfxCropDialog::onTextEnter(wxCommandEvent& e)
  *******************************************************************/
 void GfxCropDialog::onLeftTextFocus(wxFocusEvent& e)
 {
-	if (!text_left->HasFocus())
-		setLeft();
-
+	setLeft();
 	e.Skip();
 }
 
@@ -402,9 +400,7 @@ void GfxCropDialog::onLeftTextFocus(wxFocusEvent& e)
  *******************************************************************/
 void GfxCropDialog::onTopTextFocus(wxFocusEvent& e)
 {
-	if (!text_top->HasFocus())
-		setTop();
-
+	setTop();
 	e.Skip();
 }
 
@@ -413,9 +409,7 @@ void GfxCropDialog::onTopTextFocus(wxFocusEvent& e)
  *******************************************************************/
 void GfxCropDialog::onRightTextFocus(wxFocusEvent& e)
 {
-	if (!text_right->HasFocus())
-		setRight();
-
+	setRight();
 	e.Skip();
 }
 
@@ -424,9 +418,7 @@ void GfxCropDialog::onRightTextFocus(wxFocusEvent& e)
  *******************************************************************/
 void GfxCropDialog::onBottomTextFocus(wxFocusEvent& e)
 {
-	if (!text_bottom->HasFocus())
-		setBottom();
-
+	setBottom();
 	e.Skip();
 }
 
