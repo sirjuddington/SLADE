@@ -114,6 +114,14 @@ endif(APPLE)
 # enable SSE instructions for dumb library
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
+# c++14 is required to compile
+if(CMAKE_VERSION VERSION_LESS 3.1)
+    add_compile_options(-std=c++14)
+else()
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+endif()
+
 add_executable(slade WIN32 MACOSX_BUNDLE
 	External/lzma/C/LzmaDec.c
 	External/mus2mid/mus2mid.cpp
