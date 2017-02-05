@@ -1255,6 +1255,7 @@
     <ClCompile Include="..\..\src\Utility\PropertyList\Property.cpp" />
     <ClCompile Include="..\..\src\Utility\PropertyList\PropertyList.cpp" />
     <ClCompile Include="..\..\src\Utility\SFileDialog.cpp" />
+    <ClCompile Include="..\..\src\Utility\StringUtils.cpp" />
     <ClCompile Include="..\..\src\Utility\Tokenizer.cpp" />
     <ClCompile Include="..\..\src\Utility\Tree.cpp" />
     <ClCompile Include="..\..\src\External\zlib\adler32.c">
@@ -1676,6 +1677,7 @@
     <ClInclude Include="..\..\src\Utility\PropertyList\Property.h" />
     <ClInclude Include="..\..\src\Utility\PropertyList\PropertyList.h" />
     <ClInclude Include="..\..\src\Utility\SFileDialog.h" />
+    <ClInclude Include="..\..\src\Utility\StringUtils.h" />
     <ClInclude Include="..\..\src\Utility\Structs.h" />
     <ClInclude Include="..\..\src\Utility\Tokenizer.h" />
     <ClInclude Include="..\..\src\Utility\Tree.h" />

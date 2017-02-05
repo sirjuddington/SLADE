@@ -34,6 +34,7 @@
 #include "ArchiveEntry.h"
 #include "Archive.h"
 #include "General/Misc.h"
+#include "Utility/StringUtils.h"
 
 
 /*******************************************************************
@@ -117,7 +118,10 @@ string ArchiveEntry::getName(bool cut_ext)
 	// Sanitize name if it contains the \ character (possible in WAD).
 	string saname = Misc::lumpNameToFileName(name);
 
-	return saname.BeforeLast('.');
+	if (saname.Contains(StringUtils::FULLSTOP))
+		return saname.BeforeLast('.');
+	else
+		return saname;
 	/*
 	// cut extension through wx function
 	wxFileName fn(saname);
@@ -129,16 +133,22 @@ string ArchiveEntry::getName(bool cut_ext)
 
 
 /* ArchiveEntry::getUpperName
-* Returns the entry name in uppercase
-*******************************************************************/
+ * Returns the entry name in uppercase
+ *******************************************************************/
 string ArchiveEntry::getUpperName()
 {
 	return upper_name;
 }
 
+/* ArchiveEntry::getUpperNameNoExt
+ * Returns the entry name in uppercase with no file extension
+ *******************************************************************/
 string ArchiveEntry::getUpperNameNoExt()
 {
-	return Misc::lumpNameToFileName(upper_name).BeforeLast('.');
+	if (upper_name.Contains(StringUtils::FULLSTOP))
+		return Misc::lumpNameToFileName(upper_name).BeforeLast('.');
+	else
+		return Misc::lumpNameToFileName(upper_name);
 }
 
 /* ArchiveEntry::getParent

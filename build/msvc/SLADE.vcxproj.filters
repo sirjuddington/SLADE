@@ -1374,6 +1374,9 @@
     <ClCompile Include="..\..\src\UI\TextEditor\Lexer.cpp">
       <Filter>UI\Text Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utility\StringUtils.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2383,6 +2386,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\UI\TextEditor\Lexer.h">
       <Filter>UI\Text Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utility\StringUtils.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
