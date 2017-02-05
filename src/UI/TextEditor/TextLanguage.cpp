@@ -184,7 +184,8 @@ TextLanguage::TextLanguage(string id) :
 TextLanguage::~TextLanguage()
 {
 	// Remove from languages list
-	for (size_t a = 0; a < text_languages.size(); a++)
+	size_t text_languages_size = text_languages.size();
+	for (size_t a = 0; a < text_languages_size; a++)
 	{
 		if (text_languages[a] == this)
 			text_languages.erase(text_languages.begin() + a);
@@ -212,10 +213,12 @@ void TextLanguage::copyTo(TextLanguage* copy)
 		copy->word_lists[a] = word_lists[a];
 
 	// Copy functions
-	for (unsigned a = 0; a < functions.size(); a++)
+	size_t functions_size = functions.size();
+	for (unsigned a = 0; a < functions_size; a++)
 	{
 		TLFunction* f = functions[a];
-		for (unsigned b = 0; b < f->nArgSets(); b++)
+		size_t nargsets = f->nArgSets();
+		for (unsigned b = 0; b < nargsets; b++)
 			copy->addFunction(
 				f->getName(),
 				f->getArgSet(b),
@@ -228,9 +231,14 @@ void TextLanguage::copyTo(TextLanguage* copy)
 	// Copy preprocessor block begin/end
 	copy->pp_block_begin.clear();
 	copy->pp_block_end.clear();
-	for (unsigned a = 0; a < pp_block_begin.size(); a++)
+	size_t pp_block_begin_size = pp_block_begin.size();
+
+	for (unsigned a = 0; a < pp_block_begin_size; a++)
 		copy->pp_block_begin.push_back(pp_block_begin[a]);
-	for (unsigned a = 0; a < pp_block_end.size(); a++)
+
+	size_t pp_block_end_size = pp_block_end.size();
+
+	for (unsigned a = 0; a < pp_block_end_size; a++)
 		copy->pp_block_end.push_back(pp_block_end[a]);
 }
 
@@ -419,9 +427,10 @@ bool TextLanguage::isFunction(string word)
 TLFunction* TextLanguage::getFunction(string name)
 {
 	// Find function matching [name]
+	size_t functions_size = functions.size();
 	if (case_sensitive)
 	{
-		for (unsigned a = 0; a < functions.size(); a++)
+		for (unsigned a = 0; a < functions_size; a++)
 		{
 			if (functions[a]->getName() == name)
 				return functions[a];
@@ -429,7 +438,7 @@ TLFunction* TextLanguage::getFunction(string name)
 	}
 	else
 	{
-		for (unsigned a = 0; a < functions.size(); a++)
+		for (unsigned a = 0; a < functions_size; a++)
 		{
 			if (S_CMPNOCASE(functions[a]->getName(), name))
 				return functions[a];

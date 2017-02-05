@@ -1728,8 +1728,10 @@ bool ArchivePanel::pasteEntry()
 		index++;
 	else
 		index = -1;	// If not add to the end of the list
-
+	
 	// Go through all clipboard items
+	ArchiveManagerPanel *panel = theMainWindow->getArchiveManagerPanel();
+	panel->disableArchiveListUpdate();
 	bool pasted = false;
 	undo_manager->beginRecord("Paste Entry");
 	entry_list->setEntriesAutoUpdate(false);
@@ -1748,7 +1750,7 @@ bool ArchivePanel::pasteEntry()
 	}
 	undo_manager->endRecord(true);
 	entry_list->setEntriesAutoUpdate(true);
-
+	panel->refreshArchiveList();
 	if (pasted)
 	{
 		// Update archive

@@ -1449,7 +1449,7 @@ vector<ArchiveEntry*> WadArchive::findAll(search_options_t& options)
 	// Init search variables
 	ArchiveEntry* start = getEntry(0);
 	ArchiveEntry* end = NULL;
-	options.match_name = options.match_name.Lower();
+	options.match_name = options.match_name.Upper();
 	vector<ArchiveEntry*> ret;
 
 	// "graphics" namespace is the global namespace in a wad
@@ -1461,7 +1461,8 @@ vector<ArchiveEntry*> WadArchive::findAll(search_options_t& options)
 	{
 		// Find matching namespace
 		bool ns_found = false;
-		for (unsigned a = 0; a < namespaces.size(); a++)
+		size_t namespaces_size = namespaces.size();
+		for (unsigned a = 0; a < namespaces_size; a++)
 		{
 			if (namespaces[a].name == options.match_namespace)
 			{
@@ -1501,10 +1502,7 @@ vector<ArchiveEntry*> WadArchive::findAll(search_options_t& options)
 		// Check name
 		if (!options.match_name.IsEmpty())
 		{
-			// Force case insensitivity
-			options.match_name.MakeLower();
-
-			if (!options.match_name.Matches(entry->getName().Lower()))
+			if (!options.match_name.Matches(entry->getUpperName()))
 			{
 				entry = entry->nextEntry();
 				continue;

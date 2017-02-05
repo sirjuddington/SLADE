@@ -52,7 +52,7 @@ Tokenizer::Tokenizer(CommentTypes comments_style)
 	size = 0;
 	comments = comments_style;
 	debug = false;
-	special = DEFAULT_SPECIAL_CHARS;
+	setSpecialCharacters(DEFAULT_SPECIAL_CHARS);
 	name = "nothing";
 	line = 1;
 	t_start = 0;
@@ -67,6 +67,19 @@ Tokenizer::~Tokenizer()
 {
 	// Free memory if used
 	if (start) free(start);
+}
+
+/* Tokenizer::setSpecialCharacters
+* sets special to a value
+*******************************************************************/
+void Tokenizer::setSpecialCharacters(string special_new)
+{
+	this->special.clear();
+	this->special_length = special_new.size();
+	for (unsigned a = 0; a < special_length; a++)
+	{
+		this->special.push_back(special_new[a]);
+	}
 }
 
 /* Tokenizer::openFile
@@ -239,7 +252,7 @@ bool Tokenizer::isWhitespace(char p)
 bool Tokenizer::isSpecialCharacter(char p)
 {
 	// Check through special tokens string
-	for (unsigned a = 0; a < special.size(); a++)
+	for (unsigned a = 0; a < special_length; a++)
 	{
 		if (special[a] == p)
 			return true;

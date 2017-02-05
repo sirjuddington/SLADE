@@ -83,11 +83,14 @@ EntryTreeClipboardItem::EntryTreeClipboardItem(vector<ArchiveEntry*>& entries, v
 	{
 		wxTheClipboard->Clear();
 		wxFileDataObject* file = new wxFileDataObject();
+		string tmp_directory = appPath("", DIR_TEMP); // cache temp directory
+		string file_dot = ".";
 		for (unsigned a = 0; a < entries.size(); a++)
 		{
 			// Export to file
-			string filename = entries[a]->getName(true) + "." + entries[a]->getType()->getExtension();
-			filename = appPath(filename, DIR_TEMP);
+			string filename = tmp_directory + entries[a]->getName(true) + file_dot + entries[a]->getType()->getExtension();
+			//string filename = entries[a]->getName(true) + "." + entries[a]->getType()->getExtension();
+			//filename = appPath(filename, DIR_TEMP);
 			entries[a]->exportFile(filename);
 
 			// Add to clipboard

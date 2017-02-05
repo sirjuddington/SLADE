@@ -451,6 +451,14 @@ void ArchiveManagerPanel::refreshRecentFileList()
 	list_recent->updateSize();
 }
 
+/* ArchiveManagerPanel::disableArchiveListUpdate
+* disables updating the archive list 4 speed reasons
+*******************************************************************/
+void ArchiveManagerPanel::disableArchiveListUpdate()
+{
+	list_archives->enableSizeUpdate(false);
+}
+
 /* ArchiveManagerPanel::refreshArchiveList
  * Clears and rebuilds the open archives list
  *******************************************************************/
@@ -506,6 +514,7 @@ void ArchiveManagerPanel::updateOpenListItem(int index)
 	wxFileName fn(archive->getFilename());
 
 	// Set item name
+	
 	list_archives->setItemText(index, 0, fn.GetFullName());
 	list_archives->setItemText(index, 1, fn.GetPath());
 

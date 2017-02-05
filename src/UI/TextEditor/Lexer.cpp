@@ -198,11 +198,27 @@ bool Lexer::processUnknown(LexerState& state)
 	int u_length = 0;
 	bool end = false;
 	bool pp = false;
-	string comment_begin = language ? language->getCommentBegin() : "";
-	string comment_doc = language ? language->getDocComment() : "";
-	string comment_line = language ? language->getLineComment() : "";
-	string block_begin = language ? language->getBlockBegin() : "";
-	string block_end = language ? language->getBlockEnd() : "";
+	string comment_begin;
+	string comment_doc;
+	string comment_line;
+	string block_begin;
+	string block_end;
+
+	if (language)
+	{
+		comment_begin = language->getCommentBegin();
+		comment_doc = language->getDocComment();
+		comment_line = language->getLineComment();
+		block_begin = language->getBlockBegin();
+		block_end = language->getBlockEnd();
+	}
+	else {
+		comment_begin = "";
+		comment_doc = "";
+		comment_line = "";
+		block_begin = "";
+		block_end = "";
+	}
 
 	while (true)
 	{
@@ -592,7 +608,8 @@ bool Lexer::checkToken(TextEditor* editor, int pos, string& token)
 {
 	if (!token.empty())
 	{
-		for (unsigned a = 0; a < token.size(); a++)
+		size_t token_size = token.size();
+		for (unsigned a = 0; a < token_size; a++)
 			if (editor->GetCharAt(pos + a) != (int)token[a])
 				return false;
 

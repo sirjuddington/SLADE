@@ -1398,7 +1398,8 @@ void MainApp::exitApp(bool save_config)
 SAction* MainApp::getAction(string id)
 {
 	// Find matching action
-	for (unsigned a = 0; a < actions.size(); a++)
+	size_t actions_size = actions.size();
+	for (unsigned a = 0; a < actions_size; a++)
 	{
 		if (S_CMP(actions[a]->getId(), id))
 			return actions[a];
