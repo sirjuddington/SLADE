@@ -65,7 +65,9 @@ int NumberTextCtrl::getNumber(int base)
 
 	// Get integer value
 	long lval;
-	if (val.StartsWith("--") || val.StartsWith("++"))
+	if (val.IsEmpty())
+		return 0;
+	else if (val.StartsWith("--") || val.StartsWith("++"))
 		val = val.Mid(2);
 	else if (val.StartsWith("+"))
 		val = val.Mid(1);
@@ -94,7 +96,9 @@ double NumberTextCtrl::getDecNumber(double base)
 
 	// Get double value
 	double dval;
-	if (val.StartsWith("--") || val.StartsWith("++"))
+	if (val.IsEmpty())
+		return 0;
+	else if (val.StartsWith("--") || val.StartsWith("++"))
 		val = val.Mid(2);
 	else if (val.StartsWith("+"))
 		val = val.Mid(1);

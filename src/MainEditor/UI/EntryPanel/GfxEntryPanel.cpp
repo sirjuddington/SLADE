@@ -30,6 +30,7 @@
 #include "Main.h"
 #include "GfxEntryPanel.h"
 #include "Dialogs/GfxConvDialog.h"
+#include "Dialogs/GfxCropDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "Dialogs/TranslationEditorDialog.h"
 #include "General/Console/ConsoleHelpers.h"
@@ -49,54 +50,6 @@ EXTERN_CVAR(Bool, gfx_arc)
 EXTERN_CVAR(String, last_colour)
 EXTERN_CVAR(String, last_tint_colour)
 EXTERN_CVAR(Int, last_tint_amount)
-
-class GfxCropDialog : public wxDialog
-{
-private:
-	class CropCanvas : public OGLCanvas
-	{
-	public:
-		CropCanvas(wxWindow* parent) : OGLCanvas(parent, -1) {}
-
-		void draw()
-		{
-			drawCheckeredBackground();
-			SwapBuffers();
-		}
-	};
-
-	CropCanvas*	canvas_preview;
-
-public:
-	GfxCropDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal)
-		: wxDialog(parent, -1, "Crop", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-	{
-		// Set dialog icon
-		wxIcon icon;
-		icon.CopyFromBitmap(Icons::getIcon(Icons::GENERAL, "settings"));
-		SetIcon(icon);
-
-		// Setup main sizer
-		wxBoxSizer* msizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(msizer);
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND|wxALL, 6);
-
-		// Add preview
-		canvas_preview = new CropCanvas(this);
-		sizer->Add(canvas_preview, 1, wxEXPAND|wxALL, 4);
-
-		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxBOTTOM, 4);
-
-		// Setup dialog size
-		SetInitialSize(wxSize(-1, -1));
-		SetMinSize(GetSize());
-		CenterOnParent();
-	}
-
-	~GfxCropDialog() {}
-};
 
 
 /*******************************************************************
@@ -170,7 +123,6 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	custom_menu_name = "Graphic";
 
 	// Custom toolbar
-	custom_toolbar_actions = "pgfx_mirror;pgfx_flip;pgfx_rotate;pgfx_translate;pgfx_colourise;pgfx_tint;pgfx_pngopt";
 	setupToolbar();
 
 	// Bind Events
@@ -347,6 +299,7 @@ void GfxEntryPanel::setupToolbar()
 	g_image->addActionButton("pgfx_mirror", "");
 	g_image->addActionButton("pgfx_flip", "");
 	g_image->addActionButton("pgfx_rotate", "");
+	g_image->addActionButton("pgfx_crop", "");
 	g_image->addActionButton("pgfx_convert", "");
 	toolbar->addGroup(g_image);
 
@@ -797,13 +750,39 @@ bool GfxEntryPanel::handleAction(string id)
 	// Crop
 	else if (id == "pgfx_crop")
 	{
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
-		GfxCropDialog gcd(theMainWindow, entry, pal);
+		auto image = getImage();
+		auto pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		GfxCropDialog gcd(theMainWindow, image, pal);
 
 		// Show crop dialog
 		if (gcd.ShowModal() == wxID_OK)
 		{
-			// stuff
+			// Prompt to adjust offsets
+			auto crop = gcd.getCropRect();
+			if (crop.tl.x > 0 || crop.tl.y > 0)
+			{
+				if (wxMessageBox(
+					"Do you want to adjust the offsets? This will keep the graphic in the same relative "
+					"position it was before cropping.",
+					"Adjust Offsets?",
+					wxYES_NO) == wxYES)
+				{
+					image->setXOffset(image->offset().x - crop.tl.x);
+					image->setYOffset(image->offset().y - crop.tl.y);
+				}
+			}
+
+			// Crop image
+			image->crop(crop.x1(), crop.y1(), crop.x2(), crop.y2());
+
+			// Update UI
+			gfx_canvas->updateImageTexture();
+			gfx_canvas->Refresh();
+
+			// Update variables
+			image_data_modified = true;
+			Refresh();
+			setModified();
 		}
 	}
 

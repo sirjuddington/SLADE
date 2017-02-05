@@ -268,6 +268,31 @@ bool OGLCanvas::setActive()
 #endif
 }
 
+/* OGLCanvas::setup2D
+ * Sets up the OpenGL matrices for generic 2d (ortho)
+ *******************************************************************/
+void OGLCanvas::setup2D()
+{
+	// Setup the viewport
+	glViewport(0, 0, GetSize().x, GetSize().y);
+
+	// Setup the screen projection
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// Clear
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
+	if (OpenGL::accuracyTweak())
+		glTranslatef(0.375f, 0.375f, 0);
+}
+
 
 /*******************************************************************
  * OGLCANVAS EVENTS
