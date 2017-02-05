@@ -242,14 +242,13 @@ int SCallTip::drawText(wxDC& dc, string text, int left, int top, wxRect* bounds)
 	return bounds->GetRight() + 1;
 }
 
-/* SCallTip::updateBuffer
- * Redraws the calltip text to the buffer image, setting the buffer
- * image size to the exact dimensions of the text
+/* SCallTip::drawCallTip
+ * Using [dc], draw the calltip contents at [xoff,yoff]. Returns the
+ * dimensions of the drawn calltip text
  *******************************************************************/
-void SCallTip::updateBuffer()
+wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 {
-	buffer.SetWidth(1000);
-	buffer.SetHeight(1000);
+	wxSize ct_size;
 	wxFont bold = font.Bold();
 
 	// Setup faded text colour
@@ -263,8 +262,6 @@ void SCallTip::updateBuffer()
 	else
 		faded = col_fg;
 
-	wxMemoryDC dc(buffer);
-
 	// Clear
 	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.SetBrush(wxBrush(WXCOL(col_bg)));
@@ -276,7 +273,7 @@ void SCallTip::updateBuffer()
 		dc.SetTextForeground(WXCOL(col_fg));
 
 		// Draw arg set switching stuff
-		int left = 0;
+		int left = xoff;
 		if (switch_args)
 		{
 			// up-filled	\xE2\x96\xB2
@@ -289,7 +286,7 @@ void SCallTip::updateBuffer()
 			dc.DrawLabel(
 				wxString::FromUTF8("\xE2\x96\xB2"),
 				wxNullBitmap,
-				wxRect(0, 0, 100, 100),
+				wxRect(xoff, yoff, 100, 100),
 				0,
 				-1,
 				&rect_btn_up);
@@ -300,7 +297,7 @@ void SCallTip::updateBuffer()
 			dc.DrawLabel(
 				S_FMT("%d/%d", arg_set_current + 1, function->nArgSets()),
 				wxNullBitmap,
-				wxRect(rect_btn_up.GetRight() + 4, 0, width, 900),
+				wxRect(rect_btn_up.GetRight() + 4, yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
 
 			// Down arrow
@@ -308,7 +305,7 @@ void SCallTip::updateBuffer()
 			dc.DrawLabel(
 				wxString::FromUTF8("\xE2\x96\xBC"),
 				wxNullBitmap,
-				wxRect(rect_btn_up.GetRight() + width + 8, 0, 900, 900),
+				wxRect(rect_btn_up.GetRight() + width + 8, yoff, 900, 900),
 				0,
 				-1,
 				&rect_btn_down);
@@ -322,7 +319,7 @@ void SCallTip::updateBuffer()
 		string ftype = function->getReturnType() + " ";
 		wxRect rect;
 		dc.SetTextForeground(WXCOL(col_type));
-		dc.DrawLabel(ftype, wxNullBitmap, wxRect(left, 0, 900, 900), 0, -1, &rect);
+		dc.DrawLabel(ftype, wxNullBitmap, wxRect(left, yoff, 900, 900), 0, -1, &rect);
 
 		// Draw function name
 		string fname = function->getName();
@@ -456,15 +453,32 @@ void SCallTip::updateBuffer()
 		}
 
 		// Size buffer bitmap to fit
-		buffer.SetWidth(max_right + 1);
-		buffer.SetHeight(rect.GetBottom() + 1);
+		ct_size.SetWidth(max_right + 1);
+		ct_size.SetHeight(rect.GetBottom() + 1);
 	}
 	else
 	{
 		// No function, empty buffer
-		buffer.SetWidth(16);
-		buffer.SetHeight(16);
+		ct_size.SetWidth(16);
+		ct_size.SetHeight(16);
 	}
+
+	return ct_size;
+}
+
+/* SCallTip::updateBuffer
+ * Redraws the calltip text to the buffer image, setting the buffer
+ * image size to the exact dimensions of the text
+ *******************************************************************/
+void SCallTip::updateBuffer()
+{
+	buffer.SetWidth(1000);
+	buffer.SetHeight(1000);
+
+	wxMemoryDC dc(buffer);
+	auto size = drawCallTip(dc);
+	buffer.SetWidth(size.GetWidth());
+	buffer.SetHeight(size.GetHeight());
 }
 
 
@@ -513,7 +527,14 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	dc.DrawPoint(GetSize().x - 2, 1);
 
 	// Draw text
-	dc.DrawBitmap(buffer, 12, 8);
+#ifdef __WXOSX__
+	// Not sure if it's an osx or high-dpi issue (or both),
+	// but for some reason wx does not properly scale the bitmap when drawing it,
+	// so just draw the entire calltip again in this case
+	drawCallTip(dc, 12, 8);
+#else
+	dc.DrawBitmap(buffer, 12, 8, true);
+#endif
 }
 
 /* SCallTip::onEraseBackground
