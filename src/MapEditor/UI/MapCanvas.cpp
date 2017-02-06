@@ -1859,7 +1859,8 @@ bool MapCanvas::update3d(double mult)
 
 	// Update status bar
 	fpoint3_t pos = renderer_3d->camPosition();
-	theMapEditor->SetStatusText(S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z), 3);
+	string status_text = S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z);
+	theMapEditor->CallAfter(&MapEditorWindow::SetStatusText, status_text, 3);
 
 	return moving;
 }
@@ -4308,10 +4309,12 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 		mx = editor->snapToGrid(mx);
 		my = editor->snapToGrid(my);
 	}
+	string status_text;
 	if (theMapEditor->currentMapDesc().format == MAP_UDMF)
-		theMapEditor->SetStatusText(S_FMT("Position: (%1.3f, %1.3f)", mx, my), 3);
+		status_text = S_FMT("Position: (%1.3f, %1.3f)", mx, my);
 	else
-		theMapEditor->SetStatusText(S_FMT("Position: (%d, %d)", (int)mx, (int)my), 3);
+		status_text = S_FMT("Position: (%d, %d)", (int)mx, (int)my);
+	theMapEditor->CallAfter(&MapEditorWindow::SetStatusText, status_text, 3);
 
 	// Object edit
 	if (mouse_state == MSTATE_EDIT)

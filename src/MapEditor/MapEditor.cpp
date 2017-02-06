@@ -5212,7 +5212,7 @@ void MapEditor::updateStatusText()
 		mode += S_FMT(" (%lu selected)", selection.size());
 	}
 
-	theMapEditor->SetStatusText(mode, 1);
+	theMapEditor->CallAfter(&MapEditorWindow::SetStatusText, mode, 1);
 
 	// Grid
 	string grid;
@@ -5226,7 +5226,7 @@ void MapEditor::updateStatusText()
 	else
 		grid += " (Snapping OFF)";
 
-	theMapEditor->SetStatusText(grid, 2);
+	theMapEditor->CallAfter(&MapEditorWindow::SetStatusText, grid, 2);
 }
 
 #pragma region UNDO / REDO

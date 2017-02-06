@@ -242,13 +242,22 @@ void EntryPanel::updateStatus()
 {
 	// Basic info
 	if (entry)
-		theMainWindow->SetStatusText(S_FMT("%d: %s, %d bytes, %s", 
-		entry->getParentDir()->entryIndex(entry), entry->getName(), entry->getSize(), entry->getType()->getName()), 1);
+	{
+		string text = S_FMT(
+			"%d: %s, %d bytes, %s",
+			entry->getParentDir()->entryIndex(entry),
+			entry->getName(),
+			entry->getSize(),
+			entry->getType()->getName()
+		);
+
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
+	}
 	else
-		theMainWindow->SetStatusText("", 1);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, "", 1);
 
 	// Extended info
-	theMainWindow->SetStatusText(statusString(), 2);
+	theMainWindow->CallAfter(&MainWindow::SetStatusText, statusString(), 2);
 }
 
 /* EntryPanel::addCustomMenu
