@@ -22,9 +22,13 @@
 /src/gitinfo.h
 /build/msvc/Release
 /build/msvc/Debug
+/build/CMakeFiles
+/build/CMakeTools
 /win_installer/Output
 /ipch
 *.db
+*.ipch
+/.vscode/*
 
 /dist/*
 !/dist/res
