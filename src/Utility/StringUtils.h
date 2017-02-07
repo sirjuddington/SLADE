@@ -12,4 +12,8 @@ namespace StringUtils
 	static string	QUOTE_SINGLE = "'";
 	static string	QUOTE_DOUBLE = "\"";
 	static string	CARET = "^";
+	static string	ESCAPED_QUOTE_DOUBLE = "\\\"";
+	static string	ESCAPED_SLASH_BACK = "\\\\";
+
+	string	escapedString(const string& str, bool swap_backslash = false);
 }

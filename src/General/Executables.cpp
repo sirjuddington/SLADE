@@ -32,6 +32,7 @@
 #include "Executables.h"
 #include "Archive/ArchiveManager.h"
 #include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 
 /*******************************************************************
@@ -54,13 +55,11 @@ namespace Executables
  *******************************************************************/
 Executables::game_exe_t* Executables::getGameExe(string id)
 {
-	for (unsigned a = 0; a < game_exes.size(); a++)
-	{
-		if (game_exes[a].id == id)
-			return &(game_exes[a]);
-	}
+	for (auto& exe : game_exes)
+		if (exe.id == id)
+			return &exe;
 
-	return NULL;
+	return nullptr;
 }
 
 /* Executables::getGameExe
@@ -71,7 +70,7 @@ Executables::game_exe_t* Executables::getGameExe(unsigned index)
 	if (index < game_exes.size())
 		return &(game_exes[index]);
 	else
-		return NULL;
+		return nullptr;
 }
 
 /* Executables::nGameExes
@@ -87,7 +86,7 @@ unsigned Executables::nGameExes()
  *******************************************************************/
 void Executables::setGameExePath(string id, string path)
 {
-	exe_paths.push_back(key_value_t(id, path));
+	exe_paths.push_back({ id, path });
 }
 
 /* Executables::writePaths
@@ -96,12 +95,10 @@ void Executables::setGameExePath(string id, string path)
 string Executables::writePaths()
 {
 	string ret;
-	for (unsigned a = 0; a < game_exes.size(); a++)
-	{
-		string path = game_exes[a].path;
-		path.Replace("\\", "/");
-		ret += S_FMT("\t%s \"%s\"\n", game_exes[a].id, path);
-	}
+
+	for (auto& exe : game_exes)
+		ret += S_FMT("\t%s \"%s\"\n", exe.id, StringUtils::escapedString(exe.path, true));
+
 	return ret;
 }
 
@@ -113,35 +110,39 @@ string Executables::writeExecutables()
 	string ret = "executables\n{\n";
 
 	// Write game exes
-	for (unsigned a = 0; a < game_exes.size(); a++)
+	for (auto& exe : game_exes)
 	{
 		// ID
-		ret += S_FMT("\tgame_exe %s\n\t{\n", game_exes[a].id);
+		ret += S_FMT("\tgame_exe %s\n\t{\n", exe.id);
 
 		// Name
-		ret += S_FMT("\t\tname = \"%s\";\n", game_exes[a].name);
+		ret += S_FMT("\t\tname = \"%s\";\n", exe.name);
 
 		// Exe name
-		ret += S_FMT("\t\texe_name = \"%s\";\n\n", game_exes[a].exe_name);
+		ret += S_FMT("\t\texe_name = \"%s\";\n\n", exe.exe_name);
 
 		// Configs
-		for (unsigned b = 0; b < game_exes[a].configs.size(); b++)
-			ret += S_FMT("\t\tconfig \"%s\" = \"%s\";\n", game_exes[a].configs[b].key, game_exes[a].configs[b].value);
+		for (auto& config : exe.configs)
+			ret += S_FMT(
+				"\t\tconfig \"%s\" = \"%s\";\n",
+				config.key,
+				StringUtils::escapedString(config.value)
+			);
 
 		ret += "\t}\n\n";
 	}
 
 	// Write external exes
-	for (unsigned a = 0; a < external_exes.size(); a++)
+	for (auto& exe : external_exes)
 	{
 		// Name
-		ret += S_FMT("\texternal_exe \"%s\"\n\t{\n", external_exes[a].name);
+		ret += S_FMT("\texternal_exe \"%s\"\n\t{\n", exe.name);
 
 		// Entry Category
-		ret += S_FMT("\t\tcategory = \"%s\";\n", external_exes[a].category);
+		ret += S_FMT("\t\tcategory = \"%s\";\n", exe.category);
 
 		// Path
-		string path = external_exes[a].path;
+		string path = exe.path;
 		path.Replace("\\", "/");
 		ret += S_FMT("\t\tpath = \"%s\";\n", path);
 
@@ -257,11 +258,9 @@ void Executables::parseGameExe(ParseTreeNode* node, bool custom)
 	}
 
 	// Set path if loaded
-	for (unsigned pa = 0; pa < exe_paths.size(); pa++)
-	{
-		if (exe_paths[pa].key == exe->id)
-			exe->path = exe_paths[pa].value;
-	}
+	for (auto& path : exe_paths)
+		if (path.key == exe->id)
+			exe->path = path.value;
 }
 
 /* Executables::addGameExe
@@ -340,8 +339,8 @@ bool Executables::removeGameExeConfig(unsigned exe_index, unsigned config_index)
 int Executables::nExternalExes(string category)
 {
 	int num = 0;
-	for (unsigned a = 0; a < external_exes.size(); a++)
-		if (category == "" || external_exes[a].category == category)
+	for (auto& exe : external_exes)
+		if (category.IsEmpty() || exe.category == category)
 			num++;
 
 	return num;
@@ -353,10 +352,10 @@ int Executables::nExternalExes(string category)
  *******************************************************************/
 Executables::external_exe_t Executables::getExternalExe(string name, string category)
 {
-	for (unsigned a = 0; a < external_exes.size(); a++)
-		if (category == "" || external_exes[a].category == category)
-			if (external_exes[a].name == name)
-				return external_exes[a];
+	for (auto& exe : external_exes)
+		if (category.IsEmpty() || exe.category == category)
+			if (exe.name == name)
+				return exe;
 
 	return external_exe_t();
 }
@@ -368,9 +367,9 @@ Executables::external_exe_t Executables::getExternalExe(string name, string cate
 vector<Executables::external_exe_t> Executables::getExternalExes(string category)
 {
 	vector<external_exe_t> ret;
-	for (unsigned a = 0; a < external_exes.size(); a++)
-		if (category == "" || external_exes[a].category == category)
-			ret.push_back(external_exes[a]);
+	for (auto& exe : external_exes)
+		if (category.IsEmpty() || exe.category == category)
+			ret.push_back(exe);
 
 	return ret;
 }
@@ -407,8 +406,8 @@ void Executables::parseExternalExe(ParseTreeNode* node)
 void Executables::addExternalExe(string name, string path, string category)
 {
 	// Check it doesn't already exist
-	for (unsigned a = 0; a < external_exes.size(); a++)
-		if (external_exes[a].name == name && external_exes[a].category == category)
+	for (auto& exe : external_exes)
+		if (exe.name == name && exe.category == category)
 			return;
 
 	external_exe_t exe;
@@ -424,10 +423,10 @@ void Executables::addExternalExe(string name, string path, string category)
  *******************************************************************/
 void Executables::setExternalExeName(string name_old, string name_new, string category)
 {
-	for (unsigned a = 0; a < external_exes.size(); a++)
-		if (external_exes[a].name == name_old && external_exes[a].category == category)
+	for (auto& exe : external_exes)
+		if (exe.name == name_old && exe.category == category)
 		{
-			external_exes[a].name = name_new;
+			exe.name = name_new;
 			return;
 		}
 }
@@ -438,10 +437,10 @@ void Executables::setExternalExeName(string name_old, string name_new, string ca
  *******************************************************************/
 void Executables::setExternalExePath(string name, string path, string category)
 {
-	for (unsigned a = 0; a < external_exes.size(); a++)
-		if (external_exes[a].name == name && external_exes[a].category == category)
+	for (auto& exe : external_exes)
+		if (exe.name == name && exe.category == category)
 		{
-			external_exes[a].path = path;
+			exe.path = path;
 			return;
 		}
 }
