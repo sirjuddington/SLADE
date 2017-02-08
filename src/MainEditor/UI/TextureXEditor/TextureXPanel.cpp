@@ -159,9 +159,10 @@ void TextureXListView::updateList(bool clear)
 	if (texturex)
 	{
 		unsigned count = texturex->nTextures();
-		SetItemCount(count);
 		for (unsigned a = 0; a < count; a++)
 			items.push_back(a);
+		applyFilter();
+		SetItemCount(items.size());
 	}
 	else
 		SetItemCount(0);
@@ -197,6 +198,52 @@ void TextureXListView::sortItems()
 		std::sort(items.begin(), items.end(), &TextureXListView::sizeSort);
 	else
 		std::sort(items.begin(), items.end(), &VirtualListView::defaultSort);
+}
+
+/* TextureXListView::applyFilter
+ * Filters items by the current filter text string
+ *******************************************************************/
+void TextureXListView::applyFilter()
+{
+	// Show all if no filter
+	if (filter_text.IsEmpty())
+		return;
+
+	// Split filter by ,
+	wxArrayString terms = wxSplit(filter_text, ',');
+
+	// Process filter strings
+	for (auto& term : terms)
+	{
+		// Remove spaces
+		term.Replace(" ", "");
+
+		// Set to lowercase and add * to the end
+		if (!term.IsEmpty()) term = term.Lower() + "*";
+	}
+
+	// Go through filtered list
+	for (unsigned a = 0; a < items.size(); a++)
+	{
+		auto tex = texturex->getTexture(items[a]);
+
+		// Check for name match with filter
+		bool match = false;
+		for (auto& term : terms)
+		{
+			if (tex->getName().Lower().Matches(term))
+			{
+				match = true;
+				break;
+			}
+		}
+		if (match)
+			continue;
+
+		// No match, remove from filtered list
+		items.erase(items.begin() + a);
+		a--;
+	}
 }
 
 
@@ -372,6 +419,16 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	framesizer->Add(list_textures, 1, wxEXPAND|wxALL, 4);
 	sizer->Add(framesizer, 0, wxEXPAND|wxALL, 4);
 
+	// Texture list filter
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	text_filter = new wxTextCtrl(this, -1);
+	hbox->Add(new wxStaticText(this, -1, "Filter:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+	hbox->Add(text_filter, 1, wxEXPAND | wxRIGHT, 4);
+	btn_clear_filter = new wxBitmapButton(this, -1, Icons::getIcon(Icons::GENERAL, "close"));
+	btn_clear_filter->SetToolTip("Clear Filter");
+	hbox->Add(btn_clear_filter, 0, wxEXPAND);
+	framesizer->Add(hbox, 0, wxEXPAND | wxALL, 4);
+
 	// Add texture operations buttons
 	wxGridBagSizer* gbsizer = new wxGridBagSizer(4, 4);
 	framesizer->Add(gbsizer, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -406,6 +463,8 @@ TextureXPanel::TextureXPanel(wxWindow* parent, TextureXEditor* tx_editor) : wxPa
 	btn_move_down->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnMoveDown, this);
 	btn_save->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnSave, this);
 	Bind(wxEVT_SHOW, &TextureXPanel::onShow, this);
+	text_filter->Bind(wxEVT_TEXT, &TextureXPanel::onTextFilterChanged, this);
+	btn_clear_filter->Bind(wxEVT_BUTTON, &TextureXPanel::onBtnClearFitler, this);
 }
 
 /* TextureXPanel::~TextureXPanel
@@ -1631,9 +1690,29 @@ void TextureXPanel::onShow(wxShowEvent& e)
 }
 
 /* TextureXPanel::onBtnSave
-* Called when the 'Save' button is clicked
-*******************************************************************/
+ * Called when the 'Save' button is clicked
+ *******************************************************************/
 void TextureXPanel::onBtnSave(wxCommandEvent& e)
 {
 	tx_editor->saveChanges();
+}
+
+/* TextureXPanel::onTextFilterChanged
+ * Called when the filter text is changed
+ *******************************************************************/
+void TextureXPanel::onTextFilterChanged(wxCommandEvent& e)
+{
+	// Filter the entry list
+	list_textures->setFilter(text_filter->GetValue());
+
+	e.Skip();
+}
+
+/* TextureXPanel::onBtnClearFitler
+ * Called when the 'Clear Filter' button is clicked
+ *******************************************************************/
+void TextureXPanel::onBtnClearFitler(wxCommandEvent& e)
+{
+	text_filter->SetValue(wxEmptyString);
+	list_textures->setFilter(wxEmptyString);
 }
