@@ -27,16 +27,18 @@ class EntryResource : public Resource
 {
 	friend class ResourceManager;
 private:
-	vector<ArchiveEntry*>	entries;
+	vector<std::weak_ptr<ArchiveEntry>>	entries;
 
 public:
-	EntryResource(ArchiveEntry* entry = NULL);
+	EntryResource();
 	~EntryResource();
 
-	void	add(ArchiveEntry* entry);
-	void	remove(ArchiveEntry* entry);
+	void	add(ArchiveEntry::SPtr& entry);
+	void	remove(ArchiveEntry::SPtr& entry);
 
 	int		length();
+
+	ArchiveEntry*	getEntry(Archive* priority = nullptr, string nspace = "", bool ns_required = false);
 };
 
 class TextureResource : public Resource
@@ -92,8 +94,8 @@ public:
 	void	addArchive(Archive* archive);
 	void	removeArchive(Archive* archive);
 
-	void	addEntry(ArchiveEntry* entry);
-	void	removeEntry(ArchiveEntry* entry);
+	void	addEntry(ArchiveEntry::SPtr& entry);
+	void	removeEntry(ArchiveEntry::SPtr& entry);
 
 	void	listAllPatches();
 	void	getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority);
