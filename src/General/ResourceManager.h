@@ -3,11 +3,11 @@
 #define __RESOURCE_MANAGER_H__
 
 #include "common.h"
-#include "General/ListenerAnnouncer.h"
 #include "Archive/Archive.h"
+#include "General/ListenerAnnouncer.h"
+#include "Graphics/CTexture/CTexture.h"
 
 class ResourceManager;
-class CTexture;
 
 // This base class is probably not really needed
 class Resource
@@ -27,26 +27,34 @@ class EntryResource : public Resource
 {
 	friend class ResourceManager;
 private:
-	vector<ArchiveEntry*>	entries;
+	vector<std::weak_ptr<ArchiveEntry>>	entries;
 
 public:
-	EntryResource(ArchiveEntry* entry = NULL);
+	EntryResource();
 	~EntryResource();
 
-	void	add(ArchiveEntry* entry);
-	void	remove(ArchiveEntry* entry);
+	void	add(ArchiveEntry::SPtr& entry);
+	void	remove(ArchiveEntry::SPtr& entry);
 
 	int		length();
+
+	ArchiveEntry*	getEntry(Archive* priority = nullptr, string nspace = "", bool ns_required = false);
 };
 
 class TextureResource : public Resource
 {
 	friend class ResourceManager;
 public:
-	struct tex_res_t
+	struct Texture
 	{
-		CTexture*	tex;
+		CTexture	tex;
 		Archive*	parent;
+
+		Texture(CTexture* tex_copy, Archive* parent) : parent(parent)
+		{
+			if (tex_copy)
+				tex.copyTexture(tex_copy);
+		}
 	};
 
 	TextureResource();
@@ -58,7 +66,7 @@ public:
 	int		length();
 
 private:
-	vector<tex_res_t>	textures;
+	vector<std::unique_ptr<Texture>>	textures;
 };
 
 typedef std::map<string, EntryResource> EntryResourceMap;
@@ -92,13 +100,13 @@ public:
 	void	addArchive(Archive* archive);
 	void	removeArchive(Archive* archive);
 
-	void	addEntry(ArchiveEntry* entry);
-	void	removeEntry(ArchiveEntry* entry);
+	void	addEntry(ArchiveEntry::SPtr& entry);
+	void	removeEntry(ArchiveEntry::SPtr& entry);
 
 	void	listAllPatches();
 	void	getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority);
 
-	void	getAllTextures(vector<TextureResource::tex_res_t>& list, Archive* priority, Archive* ignore = NULL);
+	void	getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore = NULL);
 	void	getAllTextureNames(vector<string>& list);
 
 	void	getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority);

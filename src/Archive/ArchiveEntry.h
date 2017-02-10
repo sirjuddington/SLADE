@@ -113,6 +113,9 @@ public:
 	bool	isInNamespace(string ns);
 
 	int index_guess; // for speed
+
+	typedef	std::unique_ptr<ArchiveEntry>	UPtr;
+	typedef	std::shared_ptr<ArchiveEntry>	SPtr;
 };
 
 #endif//__ARCHIVEENTRY_H__
