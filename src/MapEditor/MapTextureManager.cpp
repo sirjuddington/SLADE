@@ -512,12 +512,12 @@ void MapTextureManager::buildTexInfoList()
 	// --- Textures ---
 
 	// Composite textures
-	vector<TextureResource::tex_res_t> textures;
+	vector<TextureResource::Texture*> textures;
 	theResourceManager->getAllTextures(textures, theArchiveManager->baseResourceArchive());
 	for (unsigned a = 0; a < textures.size(); a++)
 	{
-		CTexture * tex = textures[a].tex;
-		Archive* parent = textures[a].parent;
+		CTexture * tex = &textures[a]->tex;
+		Archive* parent = textures[a]->parent;
 		if (tex->isExtended())
 		{
 			if (S_CMPNOCASE(tex->getType(), "texture") || S_CMPNOCASE(tex->getType(), "walltexture"))

@@ -94,8 +94,16 @@ int EntryResource::length()
 	return entries.size();
 }
 
+/* EntryResource::getEntry
+ * Gets the most relevant entry for this resource, depending on
+ * [priority] and [nspace]. If [priority] is set, this will
+ * prioritize entries from the priority archive. If [nspace] is not
+ * empty, this will prioritize entries within that namespace, or
+ * if [ns_required] is true, ignore anything not in [nspace]
+ *******************************************************************/
 ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_required)
 {
+	// Check resoure has any entries
 	if (entries.empty())
 		return nullptr;
 
@@ -106,7 +114,7 @@ ArchiveEntry* EntryResource::getEntry(Archive* priority, string nspace, bool ns_
 		// Check if expired
 		if (i->expired())
 		{
-			entries.erase(i);
+			i = entries.erase(i);
 			continue;
 		}
 
@@ -173,14 +181,7 @@ void TextureResource::add(CTexture* tex, Archive* parent)
 	if (!tex || !parent)
 		return;
 
-	// Create resource
-	tex_res_t res;
-	res.tex = new CTexture();
-	res.tex->copyTexture(tex);
-	res.parent = parent;
-
-	// Add it
-	textures.push_back(res);
+	textures.push_back(std::make_unique<Texture>(tex, parent));
 }
 
 /* TextureResource::remove
@@ -190,16 +191,13 @@ void TextureResource::add(CTexture* tex, Archive* parent)
 void TextureResource::remove(Archive* parent)
 {
 	// Remove any textures with matching parent
-	unsigned a = 0;
-	while (a < textures.size())
+	auto i = textures.begin();
+	while (i != textures.end())
 	{
-		if (textures[a].parent == parent)
-		{
-			delete textures[a].tex;
-			textures.erase(textures.begin() + a);
-		}
+		if (i->get()->parent == parent)
+			i = textures.erase(i);
 		else
-			a++;
+			i++;
 	}
 }
 
@@ -455,94 +453,49 @@ void ResourceManager::listAllPatches()
  *******************************************************************/
 void ResourceManager::getAllPatchEntries(vector<ArchiveEntry*>& list, Archive* priority)
 {
-	//EntryResourceMap::iterator i = patches.begin();
-
-	//// Add all primary entries to the list
-	//while (i != patches.end())
-	//{
-	//	// Skip if no entries
-	//	if (i->second.length() == 0)
-	//	{
-	//		i++;
-	//		continue;
-	//	}
-
-	//	// Go through resource entries
-	//	ArchiveEntry* entry = i->second.entries[0];
-	//	for (int a = 0; a < i->second.length(); a++)
-	//	{
-	//		entry = i->second.entries[a];
-
-	//		// If it's in the 'priority' archive, exit loop
-	//		if (priority && i->second.entries[a]->getParent() == priority)
-	//			break;
-
-	//		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-	//		if (theArchiveManager->archiveIndex(entry->getParent()) <=
-	//		        theArchiveManager->archiveIndex(i->second.entries[a]->getParent()))
-	//			entry = i->second.entries[a];
-	//	}
-
-	//	// Add entry to the list
-	//	list.push_back(entry);
-
-	//	i++;
-	//}
-
 	for (auto& i : patches)
 	{
-		auto& res = i.second;
-
-		// Skip if no entries
-		if (res.length() == 0)
-			continue;
-
-		list.push_back(res.getEntry(priority));
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
 	}
 }
 
 /* ResourceManager::getAllTextures
  * Adds all current textures to [list]
  *******************************************************************/
-void ResourceManager::getAllTextures(vector<TextureResource::tex_res_t>& list, Archive* priority, Archive* ignore)
+void ResourceManager::getAllTextures(vector<TextureResource::Texture*>& list, Archive* priority, Archive* ignore)
 {
-	TextureResourceMap::iterator i = textures.begin();
-
 	// Add all primary textures to the list
-	while (i != textures.end())
+	for (auto& i : textures)
 	{
 		// Skip if no entries
-		if (i->second.length() == 0)
-		{
-			i++;
+		if (i.second.length() == 0)
 			continue;
-		}
 
 		// Go through resource textures
-		TextureResource::tex_res_t res = i->second.textures[0];
-		for (int a = 0; a < i->second.length(); a++)
+		TextureResource::Texture* res = i.second.textures[0].get();
+		for (int a = 0; a < i.second.length(); a++)
 		{
-			res = i->second.textures[a];
+			res = i.second.textures[a].get();
 
 			// Skip if it's in the 'ignore' archive
-			if (res.parent == ignore)
+			if (res->parent == ignore)
 				continue;
 
 			// If it's in the 'priority' archive, exit loop
-			if (priority && i->second.textures[a].parent == priority)
+			if (priority && i.second.textures[a].get()->parent == priority)
 				break;
 
 			// Otherwise, if it's in a 'later' archive than the current resource, set it
-			if (theArchiveManager->archiveIndex(res.parent) <=
-			        theArchiveManager->archiveIndex(i->second.textures[a].parent))
-				res = i->second.textures[a];
+			if (theArchiveManager->archiveIndex(res->parent) <=
+			        theArchiveManager->archiveIndex(i.second.textures[a].get()->parent))
+				res = i.second.textures[a].get();
 		}
 
 		// Add texture resource to the list
-		if (res.parent != ignore)
+		if (res->parent != ignore)
 			list.push_back(res);
-
-		i++;
 	}
 }
 
@@ -551,21 +504,10 @@ void ResourceManager::getAllTextures(vector<TextureResource::tex_res_t>& list, A
  *******************************************************************/
 void ResourceManager::getAllTextureNames(vector<string>& list)
 {
-	TextureResourceMap::iterator i = textures.begin();
-
 	// Add all primary textures to the list
-	while (i != textures.end())
-	{
-		// Skip if no entries
-		if (i->second.length() == 0)
-		{
-			i++;
-			continue;
-		}
-
-		list.push_back(i->first);
-		i++;
-	}
+	for (auto& i : textures)
+		if (i.second.length() > 0)	// Ignore if no entries
+			list.push_back(i.first);
 }
 
 /* ResourceManager::getAllFlatEntries
@@ -573,49 +515,11 @@ void ResourceManager::getAllTextureNames(vector<string>& list)
  *******************************************************************/
 void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* priority)
 {
-	//EntryResourceMap::iterator i = flats.begin();
-
-	//// Add all primary entries to the list
-	//while (i != flats.end())
-	//{
-	//	// Skip if no entries
-	//	if (i->second.length() == 0)
-	//	{
-	//		i++;
-	//		continue;
-	//	}
-
-	//	// Go through resource entries
-	//	ArchiveEntry* entry = i->second.entries[0];
-	//	for (int a = 0; a < i->second.length(); a++)
-	//	{
-	//		entry = i->second.entries[a];
-
-	//		// If it's in the 'priority' archive, exit loop
-	//		if (priority && i->second.entries[a]->getParent() == priority)
-	//			break;
-
-	//		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-	//		if (theArchiveManager->archiveIndex(entry->getParent()) <=
-	//		        theArchiveManager->archiveIndex(i->second.entries[a]->getParent()))
-	//			entry = i->second.entries[a];
-	//	}
-
-	//	// Add entry to the list
-	//	list.push_back(entry);
-
-	//	i++;
-	//}
-
 	for (auto& i : flats)
 	{
-		auto& res = i.second;
-
-		// Skip if no entries
-		if (res.length() == 0)
-			continue;
-
-		list.push_back(res.getEntry(priority));
+		auto entry = i.second.getEntry(priority);
+		if (entry)
+			list.push_back(entry);
 	}
 }
 
@@ -624,21 +528,10 @@ void ResourceManager::getAllFlatEntries(vector<ArchiveEntry*>& list, Archive* pr
  *******************************************************************/
 void ResourceManager::getAllFlatNames(vector<string>& list)
 {
-	EntryResourceMap::iterator i = flats.begin();
-
-	// Add all primary textures to the list
-	while (i != flats.end())
-	{
-		// Skip if no entries
-		if (i->second.length() == 0)
-		{
-			i++;
-			continue;
-		}
-
-		list.push_back(i->first);
-		i++;
-	}
+	// Add all primary flats to the list
+	for (auto& i : flats)
+		if (i.second.length() > 0)	// Ignore if no entries
+			list.push_back(i.first);
 }
 
 /* ResourceManager::getPaletteEntry
@@ -647,33 +540,7 @@ void ResourceManager::getAllFlatNames(vector<string>& list)
  *******************************************************************/
 ArchiveEntry* ResourceManager::getPaletteEntry(string palette, Archive* priority)
 {
-	// Check resource with matching name exists
-	EntryResource& res = palettes[palette.Upper()];
-	if (res.entries.size() == 0)
-		return nullptr;
-
-	return res.getEntry(priority);
-
-	//// Go through resource entries
-	//ArchiveEntry* entry = res.entries[0];
-	//for (unsigned a = 0; a < res.entries.size(); a++)
-	//{
-	//	// If it's in the 'priority' archive, return it
-	//	if (priority && (res.entries[a]->getParent() == priority ||
-	//	                 // PK3 and Doom64 maps are contained in an embedded .wad,
-	//	                 // so for them the real priority archive is their parent
-	//	                 // archive's own parent archive.
-	//	                 res.entries[a]->getParent() == priority->getParentArchive()))
-	//		return res.entries[a];
-
-	//	// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-	//	if (theArchiveManager->archiveIndex(entry->getParent()) <=
-	//	        theArchiveManager->archiveIndex(res.entries[a]->getParent()))
-	//		entry = res.entries[a];
-	//}
-
-	//// Return most relevant entry
-	//return entry;
+	return palettes[palette.Upper()].getEntry(priority);
 }
 
 /* ResourceManager::getPatchEntry
@@ -690,40 +557,7 @@ ArchiveEntry* ResourceManager::getPatchEntry(string patch, string nspace, Archiv
 	if (!nspace.CmpNoCase("textures"))
 		return getTextureEntry(patch, "textures", priority);
 
-	// Check resource with matching name exists
-	EntryResource& res = patches[patch.Upper()];
-	if (res.entries.size() == 0)
-		return nullptr;
-
-	//// Go through resource entries
-	//ArchiveEntry* entry = res.entries[0];
-	//for (unsigned a = 0; a < res.entries.size(); a++)
-	//{
-	//	// If the entry is in the correct namespace (if namespace is important)
-	//	if (nspace.IsEmpty() || res.entries[a]->isInNamespace(nspace))
-	//	{
-	//		// If it's in the 'priority' archive, return it
-	//		if (priority && (res.entries[a]->getParent() == priority ||
-	//		                 // PK3 and Doom64 maps are contained in an embedded .wad,
-	//		                 // so for them the real priority archive is their parent
-	//		                 // archive's own parent archive.
-	//		                 res.entries[a]->getParent() == priority->getParentArchive()))
-	//			return res.entries[a];
-
-	//		// Regardless of priority, if the first entry is not in the chosen namespace but
-	//		// the current entry is, then set it so that we'll be able to return something valid
-	//		if (!nspace.IsEmpty() && !entry->isInNamespace(nspace) && res.entries[a]->isInNamespace(nspace))
-	//			entry = res.entries[a];
-
-	//		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-	//		if (theArchiveManager->archiveIndex(entry->getParent()) <=
-	//		        theArchiveManager->archiveIndex(res.entries[a]->getParent()))
-	//			entry = res.entries[a];
-	//	}
-	//}
-
-	// Return most relevant entry
-	return res.getEntry(priority, nspace, true);
+	return patches[patch.Upper()].getEntry(priority, nspace, true);
 }
 
 /* ResourceManager::getFlatEntry
@@ -737,24 +571,6 @@ ArchiveEntry* ResourceManager::getFlatEntry(string flat, Archive* priority)
 	if (res.entries.size() == 0)
 		return nullptr;
 
-	//// Go through resource entries
-	//ArchiveEntry* entry = res.entries[0];
-	//for (unsigned a = 0; a < res.entries.size(); a++)
-	//{
-	//	// If it's in the 'priority' archive, return it
-	//	if (priority && (res.entries[a]->getParent() == priority ||
-	//	                 // PK3 and Doom64 maps are contained in an embedded .wad,
-	//	                 // so for them the real priority archive is their parent
-	//	                 // archive's own parent archive.
-	//	                 res.entries[a]->getParent() == priority->getParentArchive()))
-	//		return res.entries[a];
-
-	//	// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-	//	if (theArchiveManager->archiveIndex(entry->getParent()) <=
-	//	        theArchiveManager->archiveIndex(res.entries[a]->getParent()))
-	//		entry = res.entries[a];
-	//}
-
 	// Return most relevant entry
 	return res.getEntry(priority);
 }
@@ -765,36 +581,7 @@ ArchiveEntry* ResourceManager::getFlatEntry(string flat, Archive* priority)
  *******************************************************************/
 ArchiveEntry* ResourceManager::getTextureEntry(string texture, string nspace, Archive* priority)
 {
-	// Check resource with matching name exists
-	EntryResource& res = satextures[texture.Upper()];
-	if (res.entries.size() == 0)
-		return nullptr;
-
-	//// Go through resource entries
-	//ArchiveEntry* entry = nullptr;
-	//for (unsigned a = 0; a < res.entries.size(); a++)
-	//{
-	//	// If the entry is in the correct namespace (if namespace is important)
-	//	// namespace ought to be either "textures" or "hires"
-	//	if (nspace.IsEmpty() || res.entries[a]->isInNamespace(nspace))
-	//	{
-	//		// If it's in the 'priority' archive, return it
-	//		if (priority && (res.entries[a]->getParent() == priority ||
-	//		                 // PK3 and Doom64 maps are contained in an embedded .wad,
-	//		                 // so for them the real priority archive is their parent
-	//		                 // archive's own parent archive.
-	//		                 res.entries[a]->getParent() == priority->getParentArchive()))
-	//			return res.entries[a];
-
-	//		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
-	//		if (!entry || theArchiveManager->archiveIndex(entry->getParent()) <=
-	//		        theArchiveManager->archiveIndex(res.entries[a]->getParent()))
-	//			entry = res.entries[a];
-	//	}
-	//}
-
-	// Return most relevant entry
-	return res.getEntry(priority, nspace, true);
+	return satextures[texture.Upper()].getEntry(priority, nspace, true);
 }
 
 /* ResourceManager::getTexture
@@ -809,24 +596,24 @@ CTexture* ResourceManager::getTexture(string texture, Archive* priority, Archive
 		return nullptr;
 
 	// Go through resource textures
-	CTexture* tex = res.textures[0].tex;
-	Archive* parent = res.textures[0].parent;
+	CTexture* tex = &res.textures[0].get()->tex;
+	Archive* parent = res.textures[0].get()->parent;
 	for (unsigned a = 0; a < res.textures.size(); a++)
 	{
 		// Skip if it's in the 'ignore' archive
-		if (res.textures[a].parent == ignore)
+		if (res.textures[a].get()->parent == ignore)
 			continue;
 
 		// If it's in the 'priority' archive, return it
-		if (priority && res.textures[a].parent == priority)
-			return res.textures[a].tex;
+		if (priority && res.textures[a].get()->parent == priority)
+			return &res.textures[a].get()->tex;
 
 		// Otherwise, if it's in a 'later' archive than the current resource entry, set it
 		if (theArchiveManager->archiveIndex(parent) <=
-		        theArchiveManager->archiveIndex(res.textures[a].parent))
+		        theArchiveManager->archiveIndex(res.textures[a].get()->parent))
 		{
-			tex = res.textures[a].tex;
-			parent = res.textures[a].parent;
+			tex = &res.textures[a].get()->tex;
+			parent = res.textures[a].get()->parent;
 		}
 	}
 
@@ -886,4 +673,34 @@ void ResourceManager::onAnnouncement(Announcer* announcer, string event_name, Me
 CONSOLE_COMMAND(list_res_patches, 0, false)
 {
 	theResourceManager->listAllPatches();
+}
+
+#include "MainApp.h"
+CONSOLE_COMMAND(test_res_speed, 0, false)
+{
+	vector<ArchiveEntry*> list;
+
+	theConsole->logMessage("Testing...");
+
+	long times[5];
+
+	for (unsigned t = 0; t < 5; t++)
+	{
+		auto start = theApp->runTimer();
+		for (unsigned a = 0; a < 100; a++)
+		{
+			theResourceManager->getAllPatchEntries(list, nullptr);
+			list.clear();
+		}
+		for (unsigned a = 0; a < 100; a++)
+		{
+			theResourceManager->getAllFlatEntries(list, nullptr);
+			list.clear();
+		}
+		auto end = theApp->runTimer();
+		times[t] = end - start;
+	}
+
+	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
+	theConsole->logMessage(S_FMT("Test took %dms avg", (int)avg));
 }
