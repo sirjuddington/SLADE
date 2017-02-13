@@ -272,7 +272,7 @@ void ArchiveOperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 		{
 			++count;
 			dups += S_FMT("%s\n", search.match_name);
-			archive->removeEntry(entries[a], true);
+			archive->removeEntry(entries[a]);
 			entries[a] = NULL;
 		}
 	}

@@ -44,6 +44,10 @@ private:
 	ArchiveEntry*	prev;
 
 public:
+	typedef	std::unique_ptr<ArchiveEntry>	UPtr;
+	typedef	std::shared_ptr<ArchiveEntry>	SPtr;
+
+	// Constructor/Destructor
 	ArchiveEntry(string name = "", uint32_t size = 0);
 	ArchiveEntry(ArchiveEntry& copy);
 	~ArchiveEntry();
@@ -68,6 +72,7 @@ public:
 	int					isEncrypted()		{ return encrypted; }
 	ArchiveEntry*		nextEntry()			{ return next; }
 	ArchiveEntry*		prevEntry()			{ return prev; }
+	SPtr				getShared();
 
 	// Modifiers (won't change entry state, except setState of course :P)
 	void		setName(string name) { this->name = name; upper_name = name.Upper(); }
@@ -113,9 +118,6 @@ public:
 	bool	isInNamespace(string ns);
 
 	int index_guess; // for speed
-
-	typedef	std::unique_ptr<ArchiveEntry>	UPtr;
-	typedef	std::shared_ptr<ArchiveEntry>	SPtr;
 };
 
 #endif//__ARCHIVEENTRY_H__

@@ -223,6 +223,18 @@ MemChunk& ArchiveEntry::getMCData(bool allow_load)
 	return data;
 }
 
+/* ArchiveEntry::getShared
+ * Returns the parent ArchiveTreeNode's shared pointer to this entry,
+ * or nullptr if this entry has no parent
+ *******************************************************************/
+ArchiveEntry::SPtr ArchiveEntry::getShared()
+{
+	if (parent)
+		return parent->getEntryShared(this);
+	else
+		return nullptr;
+}
+
 /* ArchiveEntry::setState
  * Sets the entry's state. Won't change state if the change would be
  * redundant (eg new->modified, unmodified->unmodified)

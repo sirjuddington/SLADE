@@ -402,10 +402,10 @@ ArchiveEntry* DirArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
  * Removes [entry] from the archive. If [delete_entry] is true, the
  * entry will also be deleted. Returns true if the removal succeeded
  *******************************************************************/
-bool DirArchive::removeEntry(ArchiveEntry* entry, bool delete_entry)
+bool DirArchive::removeEntry(ArchiveEntry* entry)
 {
 	string old_name = entry->exProp("filePath").getStringValue();
-	bool success = Archive::removeEntry(entry, delete_entry);
+	bool success = Archive::removeEntry(entry);
 	if (success)
 		removed_files.push_back(old_name);
 	return success;

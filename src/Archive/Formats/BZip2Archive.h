@@ -27,7 +27,7 @@ public:
 	// Entry addition/removal
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL, bool copy = false) { return NULL; }
 	ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) { return NULL; }
-	bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true) { return false ; }
+	bool			removeEntry(ArchiveEntry* entry) { return false ; }
 
 	// Entry modification
 	bool	renameEntry(ArchiveEntry* entry, string name) { return false ; }

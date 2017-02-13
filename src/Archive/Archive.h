@@ -36,6 +36,7 @@ public:
 	ArchiveEntry::SPtr	getEntryShared(unsigned index);
 	ArchiveEntry*		getEntry(string name, bool cut_ext = false);
 	ArchiveEntry::SPtr	getEntryShared(string name, bool cut_ext = false);
+	ArchiveEntry::SPtr	getEntryShared(ArchiveEntry* entry);
 	unsigned			numEntries(bool inc_subdirs = false);
 	int					entryIndex(ArchiveEntry* entry, size_t startfrom = 0);
 
@@ -43,6 +44,7 @@ public:
 
 	void	linkEntries(ArchiveEntry* first, ArchiveEntry* second);
 	bool	addEntry(ArchiveEntry* entry, unsigned index = 0xFFFFFFFF);
+	bool	addEntry(ArchiveEntry::SPtr& entry, unsigned index = 0xFFFFFFFF);
 	bool	removeEntry(unsigned index);
 	bool	swapEntries(unsigned index1, unsigned index2);
 
@@ -197,7 +199,7 @@ public:
 	virtual ArchiveEntry*	addEntry(ArchiveEntry* entry, string add_namespace, bool copy = false) { return addEntry(entry, 0xFFFFFFFF, NULL, false); } // By default, add to the 'global' namespace (ie root dir)
 	virtual ArchiveEntry*	addNewEntry(string name = "", unsigned position = 0xFFFFFFFF, ArchiveTreeNode* dir = NULL);
 	virtual ArchiveEntry*	addNewEntry(string name, string add_namespace);
-	virtual bool			removeEntry(ArchiveEntry* entry, bool delete_entry = true);
+	virtual bool			removeEntry(ArchiveEntry* entry);
 
 	// Entry moving
 	virtual bool	swapEntries(unsigned index1, unsigned index2, ArchiveTreeNode* dir = NULL);

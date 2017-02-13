@@ -769,7 +769,7 @@ ArchiveEntry* WadArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 /* WadArchive::removeEntry
  * Override of Archive::removeEntry to update namespaces if needed
  *******************************************************************/
-bool WadArchive::removeEntry(ArchiveEntry* entry, bool delete_entry)
+bool WadArchive::removeEntry(ArchiveEntry* entry)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -779,7 +779,7 @@ bool WadArchive::removeEntry(ArchiveEntry* entry, bool delete_entry)
 	string name = entry->getName();
 
 	// Do default remove
-	bool ok = Archive::removeEntry(entry, delete_entry);
+	bool ok = Archive::removeEntry(entry);
 
 	if (ok)
 	{

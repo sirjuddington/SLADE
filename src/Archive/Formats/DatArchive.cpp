@@ -355,7 +355,7 @@ ArchiveEntry* DatArchive::addEntry(ArchiveEntry* entry, string add_namespace, bo
 /* DatArchive::removeEntry
  * Override of Archive::removeEntry to update namespaces if needed
  *******************************************************************/
-bool DatArchive::removeEntry(ArchiveEntry* entry, bool delete_entry)
+bool DatArchive::removeEntry(ArchiveEntry* entry)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -365,7 +365,7 @@ bool DatArchive::removeEntry(ArchiveEntry* entry, bool delete_entry)
 	string name = entry->getName();
 
 	// Do default remove
-	bool ok = Archive::removeEntry(entry, delete_entry);
+	bool ok = Archive::removeEntry(entry);
 
 	if (ok)
 	{
