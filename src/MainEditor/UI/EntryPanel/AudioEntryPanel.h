@@ -2,8 +2,8 @@
 #ifndef __AUDIO_ENTRY_PANEL_H__
 #define __AUDIO_ENTRY_PANEL_H__
 
+#include "common.h"
 #include "EntryPanel.h"
-#include <wx/timer.h>
 
 class ModMusic;
 namespace sf { class SoundBuffer; class Sound; class Music; }

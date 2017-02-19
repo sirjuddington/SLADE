@@ -6,8 +6,7 @@
 #include "BrowserItem.h"
 #include "BrowserCanvas.h"
 #include "Graphics/Palette/Palette.h"
-#include <wx/treelist.h>
-#include <wx/dialog.h>
+#include "common.h"
 
 class BrowserTreeNode : public STreeNode
 {

@@ -33,9 +33,6 @@
 #include "Main.h"
 #include "UndoManagerHistoryPanel.h"
 #include "General/UndoRedo.h"
-#include <wx/menu.h>
-#include <wx/settings.h>
-#include <wx/sizer.h>
 
 
 /*******************************************************************

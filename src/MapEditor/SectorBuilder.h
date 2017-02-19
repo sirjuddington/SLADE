@@ -2,7 +2,7 @@
 #ifndef __SECTOR_BUILDER_H__
 #define __SECTOR_BUILDER_H__
 
-#include <wx/hashmap.h>
+#include "common.h"
 
 // Forward declarations
 class MapLine;

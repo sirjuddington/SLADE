@@ -3,7 +3,7 @@
 #define __CONSOLEPANEL_H__
 
 #include "General/ListenerAnnouncer.h"
-#include <wx/panel.h>
+#include "common.h"
 
 class ConsolePanel : public wxPanel, Listener
 {

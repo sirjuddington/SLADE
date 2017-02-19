@@ -35,12 +35,6 @@
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "UI/NumberTextCtrl.h"
-#include <wx/gbsizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#undef min
-#undef max
-#include <wx/valnum.h>
 
 
 /*******************************************************************
@@ -159,15 +153,16 @@ TextureComboBox::TextureComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 	list.Add("-");
 
 	// Add all textures to dropdown on OSX, since the wxEVT_COMBOBOX_DROPDOWN event isn't supported there
-#ifdef __WXOSX__
-	vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
-	for (unsigned a = 0; a < textures.size(); a++)
-		list.Add(textures[a].name);
-#else
+	// (it is in wx 3.0.2, with cocoa at least)
+//#ifdef __WXOSX__
+//	vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
+//	for (unsigned a = 0; a < textures.size(); a++)
+//		list.Add(textures[a].name);
+//#else
 	// Bind events
 	Bind(wxEVT_COMBOBOX_DROPDOWN, &TextureComboBox::onDropDown, this);
 	Bind(wxEVT_COMBOBOX_CLOSEUP, &TextureComboBox::onCloseUp, this);
-#endif
+//#endif
 	Bind(wxEVT_KEY_DOWN, &TextureComboBox::onKeyDown, this);
 
 	Set(list);
@@ -185,6 +180,8 @@ void TextureComboBox::onDropDown(wxCommandEvent& e)
 {
 	// Get current value
 	string text = GetValue().Upper();
+	if (text == "-")
+		text = "";
 	
 	// Populate dropdown with matching texture names
 	vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
@@ -292,6 +289,11 @@ SidePropsPanel::SidePropsPanel(wxWindow* parent) : wxPanel(parent, -1)
 	gfx_upper->Bind(wxEVT_LEFT_DOWN, &SidePropsPanel::onTextureClicked, this);
 	gfx_middle->Bind(wxEVT_LEFT_DOWN, &SidePropsPanel::onTextureClicked, this);
 	gfx_lower->Bind(wxEVT_LEFT_DOWN, &SidePropsPanel::onTextureClicked, this);
+#ifdef __WXOSX__
+	tcb_upper->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
+	tcb_middle->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
+	tcb_lower ->Bind(wxEVT_COMBOBOX, &SidePropsPanel::onTextureChanged, this);
+#endif
 }
 
 /* SidePropsPanel::~SidePropsPanel

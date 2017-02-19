@@ -35,19 +35,6 @@
 #include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
-#include <wx/checkbox.h>
-#include <wx/combobox.h>
-#include <wx/dcclient.h>
-#include <wx/gbsizer.h>
-#include <wx/radiobut.h>
-#include <wx/slider.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/window.h>
-#undef min
-#undef max
-#include <wx/valnum.h>
-
 
 
 /*******************************************************************
@@ -267,10 +254,13 @@ protected:
 	wxTextCtrl* text_control;
 
 public:
-	ArgsTextControl(wxWindow* parent, arg_t& arg) : ArgsControl(parent, arg)
+	ArgsTextControl(wxWindow* parent, arg_t& arg, bool limit_byte) : ArgsControl(parent, arg)
 	{
 		text_control = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(40, -1));
-		text_control->SetValidator(wxIntegerValidator<unsigned char>());
+		if (limit_byte)
+			text_control->SetValidator(wxIntegerValidator<unsigned char>());
+		else
+			text_control->SetValidator(wxIntegerValidator<int>());
 		GetSizer()->Add(text_control, wxSizerFlags().Expand());
 	}
 
@@ -490,8 +480,8 @@ private:
 	}
 
 public:
-	ArgsFlagsControl(wxWindow* parent, arg_t& arg)
-		: ArgsTextControl(parent, arg),
+	ArgsFlagsControl(wxWindow* parent, arg_t& arg, bool limit_byte)
+		: ArgsTextControl(parent, arg, limit_byte),
 		flag_to_bit_group(arg.custom_flags.size(), 0),
 		controls(arg.custom_flags.size(), NULL)
 	{
@@ -685,7 +675,7 @@ ArgsPanel::ArgsPanel(wxWindow* parent)
 /* ArgsPanel::setup
  * Sets up the arg names and descriptions from specification in [args]
  *******************************************************************/
-void ArgsPanel::setup(argspec_t* args)
+void ArgsPanel::setup(argspec_t* args, bool udmf)
 {
 	// Reset stuff (but preserve the values)
 	int old_values[5];
@@ -718,14 +708,14 @@ void ArgsPanel::setup(argspec_t* args)
 			if (arg.type == ARGT_CHOICE)
 				control_args[a] = new ArgsChoiceControl(this, arg);
 			else if (arg.type == ARGT_FLAGS)
-				control_args[a] = new ArgsFlagsControl(this, arg);
+				control_args[a] = new ArgsFlagsControl(this, arg, !udmf);
 			else if (arg.type == ARGT_SPEED)
 				control_args[a] = new ArgsSpeedControl(this, arg);
 			else
-				control_args[a] = new ArgsTextControl(this, arg);
+				control_args[a] = new ArgsTextControl(this, arg, !udmf);
 		}
 		else {
-			control_args[a] = new ArgsTextControl(this, arg);
+			control_args[a] = new ArgsTextControl(this, arg, !udmf);
 		}
 
 		// Arg name
@@ -994,7 +984,7 @@ void ActionSpecialPanel::setSpecial(int special)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-		panel_args->setup(&args);
+		panel_args->setup(&args, (theMapEditor->currentMapDesc().format == MAP_UDMF));
 	}
 }
 
@@ -1210,7 +1200,7 @@ void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent &e)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-		panel_args->setup(&args);
+		panel_args->setup(&args, (theMapEditor->currentMapDesc().format == MAP_UDMF));
 	}
 }
 
@@ -1224,7 +1214,7 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent &e)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(selectedSpecial())->getArgspec();
-		panel_args->setup(&args);
+		panel_args->setup(&args, (theMapEditor->currentMapDesc().format == MAP_UDMF));
 		panel_args->SetFocus();
 	}
 }
@@ -1299,7 +1289,7 @@ void ActionSpecialDialog::setSpecial(int special)
 	if (panel_args)
 	{
 		argspec_t args = theGameConfiguration->actionSpecial(special)->getArgspec();
-		panel_args->setup(&args);
+		panel_args->setup(&args, (theMapEditor->currentMapDesc().format == MAP_UDMF));
 	}
 }
 

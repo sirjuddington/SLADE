@@ -31,9 +31,6 @@
 #include "Main.h"
 #include "MapEditor/GameConfiguration/GenLineSpecial.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
-#include <wx/choice.h>
-#include <wx/gbsizer.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

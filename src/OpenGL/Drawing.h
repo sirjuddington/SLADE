@@ -6,7 +6,7 @@
 #include <SFML/Graphics.hpp>
 #endif
 
-#include <wx/colour.h>
+#include "common.h"
 
 #include "Utility/Structs.h"
 
@@ -57,6 +57,7 @@ namespace Drawing
 	fpoint2_t textExtents(string text, int font = FONT_NORMAL);
 	void enableTextStateReset(bool enable = true);
 	void setTextState(bool set = true);
+	void setTextOutline(double thickness, rgba_t colour = COL_BLACK);
 
 	// Specific
 	void drawHud();

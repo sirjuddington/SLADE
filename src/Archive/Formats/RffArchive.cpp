@@ -65,7 +65,6 @@
 #include "Main.h"
 #include "RffArchive.h"
 #include "UI/SplashWindow.h"
-#include <wx/filename.h>
 
 
 /*******************************************************************

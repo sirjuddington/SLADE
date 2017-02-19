@@ -30,7 +30,6 @@
 #include "Main.h"
 #include "NodeBuildersWizardPage.h"
 #include "Dialogs/Preferences/NodesPrefsPanel.h"
-#include <wx/sizer.h>
 
 
 /*******************************************************************

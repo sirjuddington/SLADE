@@ -33,8 +33,6 @@
 #include "STopWindow.h"
 #include "General/Misc.h"
 #include "SToolBar/SToolBar.h"
-#include <wx/aui/aui.h>
-#include <wx/menu.h>
 
 /*******************************************************************
  * STOPWINDOW CLASS FUNCTIONS
@@ -44,13 +42,18 @@
  * STopWindow class constructor
  *******************************************************************/
 STopWindow::STopWindow(string title, string id, int x, int y, int width, int height)
+#ifndef __WXOSX__
 	: wxFrame(NULL, -1, title, wxPoint(x, y), wxSize(width, height))
+#else
+	: wxFrame(NULL, -1, title, wxDefaultPosition, wxSize(width, height))
+#endif
 {
 	// Enable fullscreen mode on OSX
 #if __APPLE__ && ((wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1) || wxMAJOR_VERSION > 3)
 	EnableFullScreenView(true);
 #endif
 
+#ifndef __WXOSX__
 	// Init size/pos
 	Misc::winf_t info = Misc::getWindowInfo(id);
 	if (!info.id.IsEmpty())
@@ -60,6 +63,7 @@ STopWindow::STopWindow(string title, string id, int x, int y, int width, int hei
 	}
 	else
 		Misc::setWindowInfo(id, width, height, x, y);
+#endif
 
 	// Init variables
 	custom_menus_begin = 0;
@@ -75,7 +79,7 @@ STopWindow::STopWindow(string title, string id, int x, int y, int width, int hei
  *******************************************************************/
 STopWindow::~STopWindow()
 {
-	if (!IsMaximized())
+	if (!IsMaximized() && !IsFullScreen())
 		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
 }
 
@@ -169,7 +173,7 @@ void STopWindow::removeAllCustomToolBars()
 void STopWindow::onSize(wxSizeEvent& e)
 {
 	// Update window size settings, but only if not maximized
-	if (!IsMaximized())
+	if (!IsMaximized() && !IsFullScreen())
 		Misc::setWindowInfo(id, GetSize().x, GetSize().y, -2, -2);
 
 	e.Skip();
@@ -181,7 +185,7 @@ void STopWindow::onSize(wxSizeEvent& e)
 void STopWindow::onMove(wxMoveEvent& e)
 {
 	// Update window position settings, but only if not maximized
-	if (!IsMaximized())
+	if (!IsMaximized() && !IsFullScreen())
 		Misc::setWindowInfo(id, -2, -2, GetPosition().x, GetPosition().y);
 
 	e.Skip();

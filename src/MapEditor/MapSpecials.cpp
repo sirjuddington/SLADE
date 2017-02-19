@@ -35,8 +35,7 @@
 #include "GameConfiguration/GameConfiguration.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/MathStuff.h"
-#include <wx/colour.h>
-#include <cmath>
+
 
 
 // Number of radians in the unit circle

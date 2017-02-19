@@ -7,7 +7,6 @@
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"
 #include "UI/WxBasicControls.h"
-#include <wx/panel.h>
 
 class UndoManager;
 class EntryPanel : public wxPanel, public Listener

@@ -2,10 +2,9 @@
 #ifndef __INPUT_PREFS_PANEL_H__
 #define __INPUT_PREFS_PANEL_H__
 
+#include "common.h"
 #include "PrefsPanelBase.h"
 #include "General/KeyBind.h"
-#include <wx/textctrl.h>
-#include <wx/treelist.h>
 
 class InputKeyCtrl : public wxTextCtrl
 {

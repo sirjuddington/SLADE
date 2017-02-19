@@ -48,7 +48,7 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
 	Misc::winf_t info = Misc::getWindowInfo(id);
 	if (!info.id.IsEmpty())
 	{
-		SetSize(info.width, info.height);
+		SetClientSize(info.width, info.height);
 		SetPosition(wxPoint(info.left, info.top));
 	}
 	else
@@ -69,7 +69,7 @@ SDialog::SDialog(wxWindow* parent, string title, string id, int x, int y, int wi
 SDialog::~SDialog()
 {
 	if (id != "")
-		Misc::setWindowInfo(id, GetSize().x, GetSize().y, GetPosition().x, GetPosition().y);
+		Misc::setWindowInfo(id, GetClientSize().x, GetClientSize().y, GetPosition().x, GetPosition().y);
 }
 
 /* SDialog::setSavedSize
@@ -81,12 +81,12 @@ void SDialog::setSavedSize(int def_width, int def_height)
 	if (!info.id.IsEmpty())
 	{
 		SetInitialSize(wxSize(info.width, info.height));
-		SetSize(info.width, info.height);
+		SetClientSize(info.width, info.height);
 	}
 	else
 	{
 		SetInitialSize(wxSize(def_width, def_height));
-		SetSize(def_width, def_height);
+		SetClientSize(def_width, def_height);
 	}
 }
 
@@ -101,7 +101,7 @@ void SDialog::setSavedSize(int def_width, int def_height)
 void SDialog::onSize(wxSizeEvent& e)
 {
 	// Update window size settings
-	Misc::setWindowInfo(id, GetSize().x, GetSize().y, -2, -2);
+	Misc::setWindowInfo(id, GetClientSize().x, GetClientSize().y, -2, -2);
 	e.Skip();
 }
 

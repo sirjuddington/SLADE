@@ -34,9 +34,6 @@
 #include "MapEditorWindow.h"
 #include "UI/MapBackupPanel.h"
 #include "UI/SDialog.h"
-#include <wx/datetime.h>
-#include <wx/msgdlg.h>
-#include <wx/sizer.h>
 
 
 /*******************************************************************

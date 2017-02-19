@@ -45,17 +45,6 @@
 #include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
 #include "ZTextureEditorPanel.h"
-#include <wx/arrstr.h>
-#include <wx/bmpbuttn.h>
-#include <wx/filedlg.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/menu.h>
-#include <wx/msgdlg.h>
-#include <wx/settings.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#include <wx/textdlg.h>
 
 
 /*******************************************************************

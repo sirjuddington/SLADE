@@ -34,10 +34,7 @@
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "UI/SToolBar/SToolBar.h"
-#include <wx/choice.h>
-#include <wx/dataview.h>
-#include <wx/sizer.h>
-#include <wx/treelist.h>
+
 
 
 /*******************************************************************

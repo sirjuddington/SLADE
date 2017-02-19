@@ -2,8 +2,8 @@
 #ifndef __MAPLINE_H__
 #define __MAPLINE_H__
 
+#include "common.h"
 #include "MapObject.h"
-#include <map>
 
 class MapVertex;
 class MapSide;

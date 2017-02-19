@@ -57,10 +57,7 @@
 #include "OpenGL/Drawing.h"
 #include "UI/SDialog.h"
 #include "Utility/MathStuff.h"
-#include <wx/menu.h>
-#include <wx/sizer.h>
 #undef None
-#include <SFML/Window.hpp>
 
 
 /*******************************************************************
@@ -89,6 +86,8 @@ CVAR(Bool, map_show_selection_numbers, true, CVAR_SAVE)
 CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
 CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
 CVAR(Int, grid_64_style, 1, CVAR_SAVE)
+CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVAR_SAVE)
+CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVAR_SAVE)
 
 // for testing
 PolygonSplitter splitter;
@@ -724,15 +723,14 @@ void MapCanvas::drawGrid()
  *******************************************************************/
 void MapCanvas::drawEditorMessages()
 {
-	// Go through editor messages
 	int yoff = 0;
 	if (map_showfps) yoff = 16;
+	rgba_t col_fg = ColourConfiguration::getColour("map_editor_message");
+	rgba_t col_bg = ColourConfiguration::getColour("map_editor_message_outline");
 	Drawing::setTextState(true);
 	Drawing::enableTextStateReset(false);
 
-	rgba_t col_fg = ColourConfiguration::getColour("map_editor_message");
-	rgba_t col_bg = ColourConfiguration::getColour("map_editor_message_outline");
-
+	// Go through editor messages
 	for (unsigned a = 0; a < editor->numEditorMessages(); a++)
 	{
 		// Check message time
@@ -751,19 +749,20 @@ void MapCanvas::drawEditorMessages()
 		}
 
 		// Setup message alpha
+		col_bg.a = 255;
 		if (time > 1500)
+		{
 			col.a = 255 - (double((time - 1500) / 500.0) * 255);
-
-		// Draw message outline
-		Drawing::drawText(editor->getEditorMessage(a), 2, yoff+1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), 2, yoff-1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), -2, yoff-1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
-		Drawing::drawText(editor->getEditorMessage(a), -2, yoff+1, rgba_t(col_bg.r, col_bg.g, col_bg.b, col.a), Drawing::FONT_BOLD);
+			col_bg.a = col.a;
+		}
 
 		// Draw message
+		Drawing::setTextOutline(1.0f, col_bg);
 		Drawing::drawText(editor->getEditorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
+		
 		yoff += 16;
 	}
+	Drawing::setTextOutline(0);
 	Drawing::setTextState(false);
 	Drawing::enableTextStateReset(true);
 }
@@ -783,10 +782,7 @@ void MapCanvas::drawFeatureHelpText()
 	rgba_t col_bg = ColourConfiguration::getColour("map_editor_message_outline");
 	col.a = col.a * anim_help_fade;
 	col_bg.a = col_bg.a * anim_help_fade;
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 3, 3, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 3, 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 1, 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-	Drawing::drawText(feature_help_lines[0], GetSize().x - 1, 3, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
+	Drawing::setTextOutline(1.0f, col_bg);
 	Drawing::drawText(feature_help_lines[0], GetSize().x - 2, 2, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT, &bounds);
 
 	// Draw underline
@@ -807,17 +803,10 @@ void MapCanvas::drawFeatureHelpText()
 	Drawing::enableTextStateReset(false);
 	for (unsigned a = 1; a < feature_help_lines.size(); a++)
 	{
-		// Draw outline
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff + 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 3, yoff - 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff - 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-		Drawing::drawText(feature_help_lines[a], GetSize().x - 1, yoff + 1, col_bg, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-
-		// Draw text
 		Drawing::drawText(feature_help_lines[a], GetSize().x - 2, yoff, col, Drawing::FONT_BOLD, Drawing::ALIGN_RIGHT);
-
 		yoff += 16;
 	}
+	Drawing::setTextOutline(0);
 	Drawing::setTextState(false);
 	Drawing::enableTextStateReset(true);
 }
@@ -841,7 +830,12 @@ void MapCanvas::drawSelectionNumbers()
 	Drawing::enableTextStateReset(false);
 	Drawing::setTextState(true);
 	setOverlayCoords();
-	bool outline = (editor->selectionSize() <= map_max_selection_numbers * 0.5);
+#if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
+	Drawing::setTextOutline(1.0f, COL_BLACK);
+#else
+	if (editor->selectionSize() <= map_max_selection_numbers * 0.5)
+		Drawing::setTextOutline(1.0f, COL_BLACK);
+#endif
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		if ((int)a > map_max_selection_numbers)
@@ -862,20 +856,10 @@ void MapCanvas::drawSelectionNumbers()
 			tp.y += 8;
 		}
 
-		// Draw text outline or shadow
-		if (outline)
-		{
-			Drawing::drawText(S_FMT("%d", a+1), tp.x+2, tp.y+1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
-			Drawing::drawText(S_FMT("%d", a+1), tp.x-2, tp.y+1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
-			Drawing::drawText(S_FMT("%d", a+1), tp.x-2, tp.y-1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
-			Drawing::drawText(S_FMT("%d", a+1), tp.x+2, tp.y-1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
-		}
-		else
-			Drawing::drawText(S_FMT("%d", a+1), tp.x+1, tp.y+1, rgba_t(0, 0, 0, 255), Drawing::FONT_BOLD);
-
 		// Draw text
 		Drawing::drawText(S_FMT("%d", a+1), tp.x, tp.y, col, Drawing::FONT_BOLD);
 	}
+	Drawing::setTextOutline(0);
 	Drawing::enableTextStateReset();
 	Drawing::setTextState(false);
 	setOverlayCoords(false);
@@ -1151,11 +1135,9 @@ void MapCanvas::drawObjectEdit()
 		int x = screenX(mid.x);
 		int y = screenY(mid.y) - 8;
 		setOverlayCoords(true);
-		Drawing::drawText(S_FMT("%d", length), x+2, y+1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
-		Drawing::drawText(S_FMT("%d", length), x-2, y+1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
-		Drawing::drawText(S_FMT("%d", length), x-2, y-1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
-		Drawing::drawText(S_FMT("%d", length), x+2, y-1, COL_BLACK, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::setTextOutline(1.0f, COL_BLACK);
 		Drawing::drawText(S_FMT("%d", length), x, y, COL_WHITE, Drawing::FONT_BOLD, Drawing::ALIGN_CENTER);
+		Drawing::setTextOutline(0);
 		setOverlayCoords(false);
 		glDisable(GL_TEXTURE_2D);
 	}
@@ -2152,6 +2134,37 @@ void MapCanvas::determineObjectEditState()
 	}
 }
 
+/* MapCanvas::mouseLook3d
+ * Handles 3d mode mouselook
+ *******************************************************************/
+void MapCanvas::mouseLook3d()
+{
+	// Check for 3d mode
+	if (editor->editMode() == MapEditor::MODE_3D && mouse_locked)
+	{
+		if (!overlay_current || !overlayActive() || (overlay_current && overlay_current->allow3dMlook()))
+		{
+			// Get relative mouse movement
+			int xpos = wxGetMousePosition().x - GetScreenPosition().x;
+			int ypos = wxGetMousePosition().y - GetScreenPosition().y;
+			double xrel = xpos - int(GetSize().x * 0.5);
+			double yrel = ypos - int(GetSize().y * 0.5);
+
+			if (xrel != 0 || yrel != 0)
+			{
+                renderer_3d->cameraTurn(-xrel*0.1*camera_3d_sensitivity_x);
+				if (mlook_invert_y)
+                    renderer_3d->cameraPitch(yrel*0.003*camera_3d_sensitivity_y);
+				else
+                    renderer_3d->cameraPitch(-yrel*0.003*camera_3d_sensitivity_y);
+
+				mouseToCenter();
+				fr_idle = 0;
+			}
+		}
+	}
+}
+
 /* MapCanvas::itemSelected
  * Called when the item at [index] is selected or deselected (for
  * select/deselect animations)
@@ -2884,14 +2897,14 @@ void MapCanvas::keyBinds2dView(string name)
 	// Zoom out (follow mouse)
 	else if (name == "me2d_zoom_out_m")
 	{
-		zoom(0.8, true);
+		zoom(1.0 - (0.2 * mwheel_rotation), true);
 		zooming_cursor = true;
 	}
 
 	// Zoom in (follow mouse)
 	else if (name == "me2d_zoom_in_m")
 	{
-		zoom(1.25, true);
+		zoom(1.0 + (0.25 * mwheel_rotation), true);
 		zooming_cursor = true;
 	}
 
@@ -4269,28 +4282,6 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 		return;
 	}
 
-	// Check for 3d mode
-	if (editor->editMode() == MapEditor::MODE_3D && mouse_locked)
-	{
-		if (!overlay_current || !overlayActive() || (overlay_current && overlay_current->allow3dMlook()))
-		{
-			// Get relative mouse movement
-			double xrel = e.GetX() - int(GetSize().x * 0.5);
-			double yrel = e.GetY() - int(GetSize().y * 0.5);
-
-			renderer_3d->cameraTurn(-xrel*0.1);
-			if (mlook_invert_y)
-				renderer_3d->cameraPitch(yrel*0.003);
-			else
-				renderer_3d->cameraPitch(-yrel*0.003);
-
-			mouseToCenter();
-			fr_idle = 0;
-
-			return;
-		}
-	}
-
 	// Check if a full screen overlay is active
 	if (overlayActive())
 	{
@@ -4399,6 +4390,17 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onMouseWheel(wxMouseEvent& e)
 {
+#ifdef __WXOSX__
+	mwheel_rotation = (double)e.GetWheelRotation() / (double)e.GetWheelDelta();
+	if (mwheel_rotation < 0)
+		mwheel_rotation = 0 - mwheel_rotation;
+#else
+	mwheel_rotation = 1;
+#endif
+
+	if (mwheel_rotation < 0.001)
+		return;
+
 	if (e.GetWheelRotation() > 0)
 	{
 		KeyBind::keyPressed(keypress_t("mwheelup", e.AltDown(), e.ControlDown(), e.ShiftDown()));
@@ -4452,6 +4454,9 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
  *******************************************************************/
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
+	// Handle 3d mode mouselook
+	mouseLook3d();
+
 	// Get time since last redraw
 	long frametime = (sfclock.getElapsedTime().asMilliseconds()) - last_time;
 
@@ -4468,6 +4473,9 @@ void MapCanvas::onIdle(wxIdleEvent& e)
  *******************************************************************/
 void MapCanvas::onRTimer(wxTimerEvent& e)
 {
+	// Handle 3d mode mouselook
+	mouseLook3d();
+
 	// Get time since last redraw
 	long frametime = (sfclock.getElapsedTime().asMilliseconds()) - last_time;
 

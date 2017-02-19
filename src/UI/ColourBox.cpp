@@ -36,10 +36,6 @@
 #include "Main.h"
 #include "ColourBox.h"
 #include "Dialogs/PaletteDialog.h"
-#include <wx/colordlg.h>
-#include <wx/sizer.h>
-#include <wx/slider.h>
-#include <wx/dcclient.h>
 
 
 /*******************************************************************

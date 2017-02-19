@@ -2,9 +2,8 @@
 #ifndef __FILE_MONITOR_H__
 #define __FILE_MONITOR_H__
 
+#include "common.h"
 #include "General/ListenerAnnouncer.h"
-#include <wx/timer.h>
-#include <wx/process.h>
 
 class FileMonitor : public wxTimer
 {

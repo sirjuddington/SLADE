@@ -30,12 +30,6 @@
 #include "Main.h"
 #include "TextEntryPanel.h"
 #include "MainApp.h"
-#include <wx/button.h>
-#include <wx/checkbox.h>
-#include <wx/choice.h>
-#include <wx/menu.h>
-#include <wx/sizer.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************
@@ -337,6 +331,13 @@ bool TextEntryPanel::handleAction(string id)
 	// Unfold All
 	else if (id == "ptxt_fold_unfoldall")
 		text_area->foldAll(false);
+
+	// compileACS
+	else if (id == "arch_scripts_compileacs")
+		EntryOperations::compileACS(entry, false, NULL, NULL);
+
+	else if (id == "arch_scripts_compilehacs")
+		EntryOperations::compileACS(entry, true, NULL, NULL);
 
 	// Not handled
 	else

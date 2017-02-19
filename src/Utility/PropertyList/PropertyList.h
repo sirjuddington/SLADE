@@ -2,8 +2,8 @@
 #ifndef __PROPERTY_LIST_H__
 #define __PROPERTY_LIST_H__
 
+#include "common.h"
 #include "Property.h"
-#include <map>
 
 class PropertyList
 {

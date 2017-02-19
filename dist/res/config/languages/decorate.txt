@@ -17,6 +17,7 @@ decorate : cstyle {
 		Hold, AltHold, Flash, AltFlash, Reload, Zoom, Pickup, Use, Drop, Bright, Fast, Slow, NoDelay,
 		CanRaise, Idle, Active, Inactive, Light, Offset, Action, Native, Const, Enum, Replaces,
 		LightDone, Super, Spray, GenericFreezeDeath, GenericCrush, User1, User2, User3, User4,
+		DeadLowered,
 
 		// Actor properties
 		
@@ -47,7 +48,7 @@ decorate : cstyle {
 		// Rendering
 		RenderStyle, None, Normal, Fuzzy, OptFuzzy, Translucent, SoulTrans, Stencil, AddStencil, StencilColor, Shaded, 
 		AddShaded, Shadow, Add, Subtract, DefaultAlpha, Alpha, XScale, YScale, Scale, Translation,
-		BloodColor, BloodType, Decal, FloatBobPhase,
+		BloodColor, BloodType, Decal, FloatBobPhase, DistanceCheck, SpriteAngle, SpriteRotation,
 		
 		// Sounds
 		SeeSound, AttackSound, PainSound, BounceSound, CrushPainSound,
@@ -118,8 +119,8 @@ decorate : cstyle {
 		ceilingz, floorz, scalex, scaley, score, special, waterlevel, var, int,
 		roll,
 
-		// Scripting
-		bool, state, if, else, return,
+		// Anonymous functions
+		bool, state, if, else, return, for, while, do, break, continue,
 		
 		// Damage type properties
 		NoArmor, Factor, ReplaceFactor,
@@ -134,7 +135,7 @@ decorate : cstyle {
 		
 		// Flags
 		ACTIVATEIMPACT, ACTIVATEMCROSS, ACTIVATEPCROSS, ACTLIKEBRIDGE, ADDITIVEPOISONDAMAGE,
-		ADDITIVEPOISONDURATION, AIMREFLECT, ALLOWBOUNCEONACTORS, ALLOWPAIN, ALLOWPARTICLES, ALWAYSFAST,
+		ADDITIVEPOISONDURATION, AIMREFLECT, ALLOWBOUNCEONACTORS, ALLOWPAIN, ALLOWPARTICLES, ALLOWTHRUFLAGS, ALWAYSFAST,
 		ALWAYSPUFF, ALWAYSRESPAWN, ALWAYSTELEFRAG, AMBUSH, AVOIDMELEE, BLASTED, BLOCKEDBYSOLIDACTORS,
 		BLOODLESSIMPACT, BLOODSPLATTER, BOSS, BOSSDEATH, BOUNCEAUTOOFF, BOUNCEAUTOOFFFLOORONLY,
 		BOUNCELIKEHERETIC, BOUNCEONACTORS, BOUNCEONCEILINGS, BOUNCEONFLOORS, BOUNCEONWALLS, BRIGHT, BUDDHA,
@@ -151,17 +152,17 @@ decorate : cstyle {
 		MBFBOUNCER, MISSILE, MISSILEEVENMORE, MISSILEMORE, MIRRORREFLECT, MOVEWITHSECTOR, MTHRUSPECIES, NEVERFAST, 
 		NEVERRESPAWN, NEVERTARGET, NOBLOCKMAP, NOBLOCKMONST, NOBLOOD, NOBLOODDECALS, NOBOSSRIP, NOBOUNCESOUND, 
 		NOCLIP, NODAMAGE, NODAMAGETHRUST, NODECAL, NODROPOFF, NOEXPLODEFLOOR, NOEXTREMEDEATH, NOFEAR, NOFORWARDFALL, 
-		NOGRAVITY, NOICEDEATH, NOINFIGHTING, NOINTERACTION, NOLIFTDROP, NOMENU, NONSHOOTABLE, NOPAIN, 
+		NOGRAVITY, NOICEDEATH, NOINFIGHTING, NOINTERACTION, NOKILLSCRIPTS, NOLIFTDROP, NOMENU, NONSHOOTABLE, NOPAIN, 
 		NORADIUSDMG, NOSECTOR, NOSKIN, NOSPLASHALERT, NOTARGET, NOTARGETSWITCH, NOTAUTOAIMED, NOTDMATCH, 
 		NOTELEFRAG, NOTELEOTHER, NOTELEPORT, NOTELESTOMP, NOTIMEFREEZE, NOTONAUTOMAP, NOTRIGGER,
 		NOVERTICALMELEERANGE, NOWALLBOUNCESND, OLDRADIUSDMG, PAINLESS, PICKUP, PIERCEARMOR, PUFFGETSOWNER,
 		PUFFONACTORS, PUSHABLE, QUARTERGRAVITY, QUICKTORETALIATE, RANDOMIZE, REFLECTIVE, RELATIVETOFLOOR,
 		RIPPER, ROCKETTRAIL, SCREENSEEKER, SEEINVISIBLE, SEEKERMISSILE, SEESDAGGERS, SHADOW, SHIELDREFLECT,
 		SHOOTABLE, SHORTMISSILERANGE, SKULLFLY, SKYEXPLODE, SLIDESONWALLS, SOLID, SPAWNCEILING, SPAWNFLOAT, 
-		SPAWNSOUNDSOURCE, SPECIAL, SPECIALFIREDAMAGE, SPECIALFLOORCLIP, SPECTRAL, STANDSTILL, STAYMORPHED,
+		SPAWNSOUNDSOURCE, SPECIAL, SPECIALFIREDAMAGE, SPECIALFLOORCLIP, SPECTRAL, SPRITEANGLE, STANDSTILL, STAYMORPHED,
 		STEALTH, STEPMISSILE, STRIFEDAMAGE, SUMMONEDMONSTER, SYNCHRONIZED, TELEPORT, TELESTOMP, TERRAIN,
-		THRUACTORS, THRUGHOST, THRUREFLECT, THRUSPECIES, TOUCHY, USEBOUNCESTATE, USESPECIAL, VISIBILITYPULSE,
-		VULNERABLE, WEAPONSPAWN, WINDTHRUST,
+		THRUACTORS, THRUGHOST, THRUREFLECT, THRUSPECIES, TOUCHY, USEBOUNCESTATE, USEKILLSCRIPTS, USESPECIAL,
+		VISIBILITYPULSE, VULNERABLE, WEAPONSPAWN, WINDTHRUST,
 
 		// INVENTORY.
 		INVENTORY,
@@ -185,7 +186,8 @@ decorate : cstyle {
 		NOAUTOFIRE, READYSNDHALF, DONTBOB, AXEBLOOD, NOALERT,
 		AMMO_OPTIONAL, ALT_AMMO_OPTIONAL, AMMO_CHECKBOTH, PRIMARY_USES_BOTH,
 		ALT_USES_BOTH, WIMPY_WEAPON, POWERED_UP, STAFF2_KICKBACK, EXPLOSIVE,
-		MELEEWEAPON, BFG, CHEATNOTWEAPON, NO_AUTO_SWITCH, NOAUTOAIM,
+		MELEEWEAPON, BFG, CHEATNOTWEAPON, NO_AUTO_SWITCH, NOAUTOAIM, NODEATHDESELECT,
+		NODEATHINPUT,
 
 		//thing activation
 		THINGSPEC_Default, THINGSPEC_ThingActs, THINGSPEC_TriggerActs, THINGSPEC_ThingTargets, THINGSPEC_TriggerTargets,
@@ -196,6 +198,12 @@ decorate : cstyle {
 		//both bouncetype and game constants
 		Doom, Heretic, Hexen, Chex, Raven, Strife, Classic, Grenade, DoomCompat, HereticCompat, HexenCompat,
 
+		// Skulltag/Zandronum
+		CLIENTSIDEONLY,
+
+		// Flat sprites
+		ROLLSPRITE, FLATSPRITE, WALLSPRITE, DONTFLIP, ROLLCENTER,
+
 		//constants, source: gzdoom.pk3
 		AAPTR_DEFAULT, AAPTR_FRIENDPLAYER, AAPTR_LINETARGET, AAPTR_MASTER, AAPTR_NULL, AAPTR_PLAYER_GETCONVERSATION,
 		AAPTR_PLAYER_GETTARGET, AAPTR_PLAYER1, AAPTR_PLAYER2, AAPTR_PLAYER3, AAPTR_PLAYER4, AAPTR_PLAYER5,
@@ -204,10 +212,17 @@ decorate : cstyle {
 		AF_ThingTargets, AF_TriggerActs, AF_TriggerTargets,
 		AMF_TARGETEMITTER, AMF_TARGETNONPLAYER, AMF_EMITFROMTARGET,
 		ATTN_IDLE, ATTN_NONE, ATTN_NORM, ATTN_STATIC,
+
+		// A_BFGSpray flags
+		BFGF_HURTSOURCE, BFGF_MISSILEORIGIN,
+
 		BF_AFFECTBOSSES, BF_DONTWARN, BF_USEAMMO, BF_NOIMPACTDAMAGE,
 		BLOCKF_CREATURES, BLOCKF_EVERYTHING, BLOCKF_FLOATERS, BLOCKF_MONSTERS, BLOCKF_PLAYERS,
 		BLOCKF_PROJECTILES, BLOCKF_RAILING, BLOCKF_USE,
+
+		// A_CustomBulletAttack flags
 		CBAF_AIMFACING, CBAF_EXPLICITANGLE, CBAF_NOPITCH, CBAF_NORANDOM, CBAF_NORANDOMPUFFZ,
+		CBAF_PUFFTARGET, CBAF_PUFFMASTER, CBAF_PUFFTRACER,
 
 		// A_CheckBlock flags
 		CBF_NOLINES, CBF_SETTARGET, CBF_SETMASTER, CBF_SETTRACER, CBF_SETONPTR, CBF_DROPOFF, CBF_NOACTORS,
@@ -235,6 +250,9 @@ decorate : cstyle {
 		// A_CustomPunch flags
 		CPF_DAGGER, CPF_PULLIN, CPF_USEAMMO, CPF_NORANDOMPUFFZ, CPF_NOTURN, CPF_STEALARMOR,
 
+		// A_CopySpriteFrame flags
+		CPSF_NOSPRITE, CPSF_NOFRAME,
+
 		// A_CheckProximity flags
 		CPXF_ANCESTOR, CPXF_LESSOREQUAL, CPXF_NOZ, CPXF_COUNTDEAD, CPXF_DEADONLY, CPXF_EXACT, CPXF_SETTARGET,
 		CPXF_SETMASTER, CPXF_SETTRACER, CPXF_FARTHEST, CPXF_CLOSEST, CPXF_SETONPTR, CPXF_CHECKSIGHT,
@@ -244,13 +262,14 @@ decorate : cstyle {
 
 		// Flags for A_Damage* functions
 		DMSS_AFFECTARMOR, DMSS_FOILBUDDHA, DMSS_FOILINVUL, DMSS_KILL, DMSS_NOFACTOR, DMSS_NOPROTECT, DMSS_EXFILTER,
-		DMSS_EXSPECIES, DMSS_EITHER,
+		DMSS_EXSPECIES, DMSS_EITHER, DMSS_INFLICTORDMGTYPE,
 
 		// Flags for A_Face* functions
 		FAF_BOTTOM, FAF_MIDDLE, FAF_TOP, FAF_NODISTFACTOR,
 
 		// A_FireBullets flags
 		FBF_EXPLICITANGLE, FBF_NOFLASH, FBF_NOPITCH, FBF_NORANDOM, FBF_USEAMMO, FBF_NORANDOMPUFFZ,
+		FBF_PUFFTARGET, FBF_PUFFMASTER, FBF_PUFFTRACER,
 
 		// A_FaceMovementDirection flags
 		FMDF_NOPITCH, FMDF_INTERPOLATE, FMDF_NOANGLE,
@@ -261,7 +280,25 @@ decorate : cstyle {
 		// A_Fade* functions flags
 		FTF_REMOVE, FTF_CLAMP,
 
+		// GetAngle flags
+		GAF_RELATIVE, GAF_SWITCH,
+
+		// A_GunFlash flags
 		GFF_NOEXTCHANGE,
+
+		// GetZAt native function flags
+		GZF_3DRESTRICT, GZF_ABSOLUTEANG, GZF_ABSOLUTEPOS, GZF_CEILING, GZF_NO3DFLOOR, GZF_NOPORTALS,
+
+		// GetPlayerInput stuffage
+		INPUT_OLDBUTTONS, INPUT_BUTTONS, INPUT_PITCH, INPUT_YAW, INPUT_ROLL, INPUT_FORWARDMOVE, INPUT_SIDEMOVE,
+		INPUT_UPMOVE,
+
+		MODINPUT_OLDBUTTONS, MODINPUT_BUTTONS, MODINPUT_PITCH, MODINPUT_YAW, MODINPUT_ROLL,
+		MODINPUT_FORWARDMOVE, MODINPUT_SIDEMOVE, MODINPUT_UPMOVE,
+
+		BT_ATTACK, BT_USE, BT_JUMP, BT_CROUCH, BT_TURN180, BT_ALTATTACK, BT_RELOAD, BT_ZOOM, BT_SPEED, BT_STRAFE,
+		BT_MOVERIGHT, BT_MOVELEFT, BT_BACK, BT_FORWARD, BT_RIGHT, BT_LEFT, BT_LOOKUP, BT_LOOKDOWN, BT_MOVEUP,
+		BT_MOVEDOWN, BT_SHOWSCORES, BT_USER1, BT_USER2, BT_USER3, BT_USER4,
 
 		// Flags for A_JumpIfTargetInLOS and A_JumpIfInTargetLOS
 		JLOSF_ALLYNOJUMP, JLOSF_CHECKMASTER, JLOSF_CHECKTRACER, JLOSF_CLOSENOFOV, JLOSF_CLOSENOJUMP, JLOSF_CLOSENOSIGHT, 
@@ -274,18 +311,27 @@ decorate : cstyle {
 		LOF_DONTCHASEGOAL, LOF_FULLVOLSEESOUND, LOF_NOJUMP, LOF_NOSEESOUND, LOF_NOSIGHTCHECK, LOF_NOSOUNDCHECK,
 		MRF_ADDSTAMINA, MRF_FAILNOLAUGH, MRF_FAILNOTELEFRAG, MRF_FULLHEALTH, MRF_LOSEACTUALWEAPON, 
 		MRF_NEWTIDBEHAVIOUR, MRF_UNDOBYCHAOSDEVICE, MRF_UNDOBYDEATH, MRF_UNDOBYDEATHFORCED, MRF_UNDOBYDEATHSAVES,
-		MRF_UNDOBYTOMEOFPOWER, MRF_WHENINVULNERABLE, MRF_UNDOALWAYS,
+		MRF_UNDOBYTOMEOFPOWER, MRF_WHENINVULNERABLE, MRF_UNDOALWAYS, MRF_TRANSFERTRANSLATION,
 		MSF_Classic, MSF_DontHurt, MSF_Standard,
 		PAF_AIMFACING, PAF_NOSKULLATTACK, PAF_NOTARGET,
 		PROP_ALLMAP, PROP_BUDDHA, PROP_FLIGHT, PROP_FLY, PROP_FROZEN, PROP_INFRARED, PROP_INSTANTWEAPONSWITCH,
 		PROP_INVISIBILITY, PROP_INVULNERABILITY , PROP_NOTARGET, PROP_RADIATIONSUIT, PROP_SPEED, PROP_STRENGTH,
 		PROP_TOTALLYFROZEN, PROP_WEAPONLEVEL2, PTROP_NOSAFEGUARDS, PTROP_UNSAFEMASTER, PTROP_UNSAFETARGET,
 
+		// psprite layers flags
+		PSPF_ADDWEAPON, PSPF_ADDBOB, PSPF_POWDOUBLE, PSPF_CVARFAST,
+
+		// Default psprite layers
+		PSP_WEAPON, PSP_FLASH,
+
 		// A_QuakeEx flags
 		QF_RELATIVE, QF_SCALEDOWN, QF_SCALEUP, QF_MAX, QF_FULLINTENSITY, QF_WAVE,
 
+		// A_RadiusDamageSelf flags
+		RDSF_BFGDAMAGE,
+
 		// A_RailAttack and A_CustomRailgun flags
-		RGF_CENTERZ, RGF_EXPLICITANGLE, RGF_FULLBRIGHT, RGF_NOPIERCING, RGF_SILENT,
+		RGF_CENTERZ, RGF_EXPLICITANGLE, RGF_FULLBRIGHT, RGF_NOPIERCING, RGF_SILENT, RGF_NORANDOMPUFFZ,
 
 		// A_RadiusGive flags
 		RGF_CORPSES, RGF_CUBE, RGF_GIVESELF, RGF_MISSILES, RGF_MONSTERS, RGF_NOMASTER, RGF_NOSIGHT, RGF_NOTARGET,
@@ -296,7 +342,9 @@ decorate : cstyle {
 		RMVF_EVERYTHING, RMVF_MISC, RMVF_MISSILES, RMVF_NOMONSTERS, RMVF_EXFILTER, RMVF_EXSPECIES, RMVF_EITHER,
 
 		RSF_FOG, RSF_KEEPTARGET, RSF_TELEFRAG,
-		RTF_AFFECTSOURCE, RTF_NOIMPACTDAMAGE, RTF_NOTMISSILE,
+
+		// A_RadiusThrust flags
+		RTF_AFFECTSOURCE, RTF_NOIMPACTDAMAGE, RTF_NOTMISSILE, RTF_THRUSTZ,
 
 		// A_Saw flags
 		SF_NOPULLIN, SF_NORANDOM, SF_NOTURN, SF_NOUSEAMMO, SF_NOUSEAMMOMISS, SF_RANDOMLIGHTBOTH,
@@ -309,7 +357,10 @@ decorate : cstyle {
 		SPF_FORCECLAMP, SPF_INTERPOLATE,
 
 		// A_SpawnParticle flags
-		SPF_FULLBRIGHT, SPF_RELACCEL, SPF_RELANG, SPF_RELATIVE, SPF_RELPOS, SPF_RELVEL,
+		SPF_FULLBRIGHT, SPF_RELACCEL, SPF_RELANG, SPF_RELATIVE, SPF_RELPOS, SPF_RELVEL, SPF_NOTIMEFREEZE,
+
+		// A_SelectWeapon flags
+		SWF_SELECTPRIORITY,
 
 		// A_SpawnItemEx flags
 		SXF_ABSOLUTEANGLE, SXF_ABSOLUTEMOMENTUM, SXF_ABSOLUTEPOSITION, SXF_ABSOLUTEVELOCITY, SXF_CLIENTSIDE,
@@ -334,6 +385,9 @@ decorate : cstyle {
 		WARPF_ABSOLUTEANGLE, WARPF_ABSOLUTEOFFSET, WARPF_COPYINTERPOLATION, WARPF_INTERPOLATE,WARPF_NOCHECKPOSITION, 
 		WARPF_STOP, WARPF_TESTONLY, WARPF_TOFLOOR, WARPF_USECALLERANGLE, WARPF_WARPINTERPOLATION, WARPF_ABSOLUTEPOSITION,
 		WARPF_BOB, WARPF_MOVEPTR, WARPF_USETID, WARPF_COPYPITCH, WARPF_COPYVELOCITY,
+
+		// A_WeaponOffset flags
+		WOF_KEEPX, WOF_KEEPY, WOF_ADD,
 
 		// A_WeaponReady flags
 		WRF_ALLOWRELOAD, WRF_ALLOWZOOM, WRF_NOBOB, WRF_NOFIRE, WRF_NOPRIMARY, WRF_NOSECONDARY, WRF_NOSWITCH, WRF_DISABLESWITCH,
@@ -363,12 +417,13 @@ decorate : cstyle {
 		A_ClearTarget;
 		A_ClearLastHeard;
 		A_CopyFriendliness = "[pointer source]";
-		A_DamageChildren = "int amount, [string type], [int flags], [string filter_class], [string spceies]";
-		A_DamageMaster = "int amount, [string type], [int flags], [string filter_class], [string spceies]";
-		A_DamageSelf = "int amount, [string type], [int flags], [string filter_class], [string spceies]";
-		A_DamageSiblings = "int amount, [string type], [int flags], [string filter_class], [string spceies]";
-		A_DamageTarget = "int amount, [string type], [int flags], [string filter_class], [string spceies]";
-		A_DamageTracer = "int amount, [string type], [int flags], [string filter_class], [string spceies]";
+		A_CopySpriteFrame = "int from, int to, [int flags]";
+		A_DamageChildren = "int amount, [string type], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_DamageMaster = "int amount, [string type], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_DamageSelf = "int amount, [string type], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_DamageSiblings = "int amount, [string type], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_DamageTarget = "int amount, [string type], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_DamageTracer = "int amount, [string type], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
 		A_Die = "[string DamageType]";
 		A_ExtChase = "bool domelee, bool domissile, [bool playactive], [bool nightmarefast]";
 		A_FaceTarget = "[float max_turn_allowed], [float max_pitch_allowed], [float ang_offset], [float pitch_offset], [int flags], [float z_ofs]";
@@ -377,11 +432,11 @@ decorate : cstyle {
 		A_FaceMovementDirection = "[float offset], [float anglelimit], [float pitchlimit], [int flags], [int ptr]";
 		A_FaceConsolePlayer = "[float maxturnangle]"; // Zandronum-only
 		A_FastChase;
-		A_KillChildren = "[string damagetype], [int flags], [string filter_class], [string spceies]";
-		A_KillMaster = "[string damagetype], [int flags], [string filter_class], [string spceies]";
-		A_KillSiblings = "[string damagetype], [int flags], [string filter_class], [string spceies]";
-		A_KillTarget = "[string damagetype], [int flags], [string filter_class], [string spceies]";
-		A_KillTracer = "[string damagetype], [int flags], [string filter_class], [string spceies]";
+		A_KillChildren = "[string damagetype], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_KillMaster = "[string damagetype], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_KillSiblings = "[string damagetype], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_KillTarget = "[string damagetype], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
+		A_KillTracer = "[string damagetype], [int flags], [string filter_class], [string spceies], [int source], [int inflictor]";
 		A_Look;
 		A_Look2;
 		A_LookEx = "[int flags], [fixed minseedist], [fixed maxseedist], [fixed maxheardist], [fixed fov], [state seestate]";
@@ -404,9 +459,9 @@ decorate : cstyle {
 		A_RearrangePointers = "pointer newtarget, [pointer newmaster], [pointer newtracer], [int flags]";
 		A_TransferPointer = "pointer source, pointer recipient, pointer sourcefield, [pointer recipientfield], [int flags]";
 
-		A_CustomMissile = "string missiletype, [float spawnheight], [int spawnofs_horiz], [angle angle], [int aimflags], [angle pitch], [int pointer]";
-		A_CustomBulletAttack = "float horz_spread, float vert_spread, int numbullets, int dmgperbullet, [string pufftype], [float range], [int flags], [int pointer]";
-		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [int aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [string spawnclass], [float spawnofs_z], [int spiraloffset]";
+		A_CustomMissile = "string missiletype, [float spawnheight], [float spawnofs_horiz], [angle angle], [int aimflags], [angle pitch], [int pointer]";
+		A_CustomBulletAttack = "float horz_spread, float vert_spread, int numbullets, int dmgperbullet, [string pufftype], [float range], [int flags], [int pointer], [string missile], [float spawnheight], [float spawnofs_xy]";
+		A_CustomRailgun = "int dmg, [int offset], [color ringcol], [color corecol], [int flags], [int aim], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [string spawnclass], [float spawnofs_z], [int spiraloffset], [int limit]";
 		A_CustomMeleeAttack = "[int damage], [string meleesound], [string misssound], [string damagetype], [bool bleed]";
 		A_CustomComboAttack = "string missiletype, float spawnheight, int damage, [string meleesound], [string damagetype], [bool bleed]";
 		A_MeleeAttack;
@@ -418,12 +473,13 @@ decorate : cstyle {
 		A_MonsterRail;
 		A_Blast = "[int flags], [float strength], [float radius], [float speed], [class blasteffect], [sound blastsound]";
 		A_Explode = "[int dmg], [int radius], [int flags], [bool alert], [int fulldmgradius], [int nails], [int naildmg], [string pufftype]";
+		A_RadiusDamageSelf = "[int damage], [float distance], [int flags], [string flashtype]";
 		A_RadiusThrust = "[int thrust], [int radius], [int flags], [int fullthrustdistance]";
-		A_RadiusGive = "class itemtype, float distance, int flags, [int amount], [class filter], [string species], [float mindist]";
+		A_RadiusGive = "class itemtype, float distance, int flags, [int amount], [class filter], [string species], [float mindist], [int limit]";
 		A_Detonate;
 		A_ThrowGrenade = "string spawntype, [float spawnheight], [float throwspeed_horz], [float throwspeed_vert], [bool useammo]";
 		A_Quake = "int intensity, int duration, int damrad, int tremrad, [sound sfx]";
-		A_QuakeEx = "int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [int falloff], [int highpoint]";
+		A_QuakeEx = "int intensityX, int intensityY, int intensityZ, int duration, int damrad, int tremrad, [sound sfx], [int flags], [float mulWaveX], [float mulWaveY], [float mulWaveZ], [int falloff], [int highpoint], [float rollIntensity], [float rollWave]";
 		A_SetTics = "int tics";
 
 		A_FreezeDeath;
@@ -453,6 +509,7 @@ decorate : cstyle {
 		A_PrintBold = "string text_to_all_players, [float time], [string fontname]";
 		A_Log = "string text";
 		A_LogInt = "int number";
+		A_LogFloat = "float number";
 
 		A_BossDeath;
 		A_KeenDie = "[int tag]";
@@ -473,7 +530,7 @@ decorate : cstyle {
 		A_SpawnDebris = "string type, [bool translation], [float mult_h], [float mult_v]";
 		A_SpawnItem = "[string type], [float distance], [float zpos], [bool useammo], [bool translation]";
 		A_SpawnItemEx = "string type, [float xoffset], [float yoffset], [float zoffset], [float xvelocity], [float yvelocity], [float zvelocity], [float angle], [int flags], [int failchance], [int tid]";
-		A_SpawnParticle = "string color1 [, int flags [, int lifetime [, int size [, float angle [, float xoff [, float yoff [, float zoff [, float velx [, float vely [, float velz [, float accelx [, float accely [, float accelz [, float startalphaf [, float fadestepf]]]]]]]]]]]]]]]";
+		A_SpawnParticle = "string color1 [, int flags [, int lifetime [, float size [, float angle [, float xoff [, float yoff [, float zoff [, float velx [, float vely [, float velz [, float accelx [, float accely [, float accelz [, float startalphaf [, float fadestepf [, float stepsize]]]]]]]]]]]]]]]]";
 
 		A_CheckCeiling = "string state", "int offset";
 		A_CheckFloor =	"string state", "int offset";
@@ -553,6 +610,8 @@ decorate : cstyle {
 		A_SwapTeleFog;
 		A_SetUserArray = "string name, int pos, int value";
 		A_SetUserVar = "string name, int value";
+		A_SetUserArrayFloat = "string name, int pos, float value";
+		A_SetUserVarFloat = "string name, float value";
 		A_ScaleVelocity = "float scale, [int pointer]";
 		A_ChangeVelocity = "[float x], [float y], [float z], [int flags], [int pointer]";
 		A_SetHealth = "int health, [int pointer]";
@@ -563,6 +622,8 @@ decorate : cstyle {
 		A_SetSpecies = "string species, [int pointer]";
 		A_SetPainThreshold = "int threshold, [int pointer]";
 		A_SetChaseThreshold = "int threshold, [bool def], [int ptr]";
+		A_SetSpriteAngle = "[float angle], [int ptr]";
+		A_SetSpriteRotation = "[float angle], [int ptr]";
 
 		A_SeekerMissile = "angle threshold, angle maxturnangle, [int flags], [int chance_to_reacquire], [int max_acquiring_distance]";
 		A_Tracer;
@@ -585,12 +646,17 @@ decorate : cstyle {
 		A_TakeFromSiblings = "string type, [int count]";
 		A_TakeFromTarget = "string type, [int count], [int flags], [pointer forward]";
 		A_DropInventory = "string type";
-		A_SelectWeapon = "string type";
+		A_SelectWeapon = "string type, [int flags]";
 		A_GiveQuestItem = "int itemno";
 		A_DropItem = "class item, [int dropamount], [int chance]";
 		A_DropWeaponPieces = "class piece_1, class piece_2, class piece_3";
 
 		A_WeaponReady = "[int flags]";
+		A_WeaponOffset = "[float x], [float y], [int flags]";
+		A_Overlay = "int layer, [state start], [bool nooverride]";
+		A_OverlayOffset = "[int layer], [float x], [float y], [int flags]";
+		A_OverlayFlags = "int layer, int flags, bool set";
+		A_ClearOverlays = "[int sstart], [int sstop], [bool safety]";
 		A_Lower;
 		A_Raise;
 		A_ReFire = "[string state]";
@@ -611,9 +677,9 @@ decorate : cstyle {
 		A_Punch;
 		A_Saw = "[string fullsound], [string hitsound], [int damage], [string pufftype], [int flags], [float range], [float spread_xy], [float spread_z], [float lifesteal], [int lifestealmax], [string armorbonustype]";
 		A_CustomPunch = "int damage, [bool norandom], [int flags], [string pufftype], [float range], [float lifesteal], [int lifestealmax], [string armorbonustype], [string meleesound], [string misssound]";
-		A_FireBullets = "angle spread_horz, angle spread_vert, int numbullets, int damage, [string pufftype], [int flags], [float range]";
-		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [int spawnofs_horz], [float spawnheight], [int flags], [angle pitch]";
-		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn], [float spawnofs_z], [int spiraloffset]";
+		A_FireBullets = "angle spread_horz, angle spread_vert, int numbullets, int damage, [string pufftype], [int flags], [float range], [string missile], [float spawnheight], [float spawnofs_xy]";
+		A_FireCustomMissile = "string missiletype, [angle angle], [bool useammo], [float spawnofs_horz], [float spawnheight], [int flags], [angle pitch]";
+		A_RailAttack = "int damage, [int spawnofs_horz], [bool useammo], [color ringcolor], [color corecolor], [int flags], [float maxdiff], [string pufftype], [float spread_xy], [float spread_z], [float range], [int duration], [float sparsity], [float driftspeed], [class spawn], [float spawnofs_z], [int spiraloffset], [int limit]";
 		A_FireAssaultGun;
 		A_FireBFG;
 		A_FireOldBFG;
@@ -679,7 +745,7 @@ decorate : cstyle {
 		A_SkelWhoosh;
 		A_StartFire;
 		A_FireCrackle;
-		A_BFGSpray = "[string flashtype], [int numrays], [int damage], [float angle], [float distance], [float vrange], [int explict_damage]";
+		A_BFGSpray = "[string flashtype], [int numrays], [int damage], [float angle], [float distance], [float vrange], [int explict_damage], [int flags]";
 		A_BarrelDestroy;
 		
 		// Restricted functions
@@ -791,7 +857,7 @@ decorate : cstyle {
 		A_ClearFlash; A_ShowElectricFlash; A_FireArrow = "class proj";
 		A_FireMauler1; A_FireMauler2Pre; A_FireMauler2; A_MaulerTorpedoWave;
 		A_Burnarea; A_Burnination;
-		A_FireGrenade = "class grenadetype, int angleofs, state flash";
+		A_FireGrenade = "class grenadetype, float angleofs, state flash";
 		A_TemplarAttack;
 		A_ExtraLightOff; A_Explode512; A_LightGoesOut;
 
@@ -806,6 +872,8 @@ decorate : cstyle {
 		cosh = "angle degrees";
 		sinh = "angle degrees";
 		tanh = "angle degrees";
+		atan2 = "int y, int x", "float y, float x";
+		VectorAngle = "int x, int y", "float x, float y";
 		sqrt = "float value";
 		random = "int min, int max";
 		random2 = "int mask";
@@ -832,8 +900,16 @@ decorate : cstyle {
 		IsPointerEqual = "int ptr_select1, int ptr_select2";
 		CountInv = "string itemtype, [int ptr_select]";
 		GetDistance = "bool checkz, [int ptr]";
+		GetAngle = "int flags, [int ptr]";
 		GetSpawnHealth;
 		GetGibHealth;
+		GetZAt = "[float x], [float y], [float angle], [int flags], [int pick_pointer]";
+		GetCrouchFactor = "[int pointer]";
+		GetCVar = "string cvar";
+		GetPlayerInput = "int inputnum, [int pointer]";
+		GetSpriteAngle = "[int ptr]";
+		GetSpriteRotation = "[int ptr]";
+		CountProximity = "string classname, float distance, [int flags], [int ptr]";
 		
 		// Internal use only, normally
 		A_Turn = "[float angle]";
@@ -1043,5 +1119,12 @@ decorate : cstyle {
 		ThrustThingZ = "int tid, int zthrust, int dir, int set";
 		TranslucentLine = "int id, int amount, int transtype";
 		UsePuzzleItem = "int item, int script";
+
+		// Skulltag/Zandronum action specials
+		Player_GiveItem = "unknown parameters list";
+		Player_RemoveItem = "unknown parameters list";
+		Player_SetTeam = "int team";
+		Team_GivePoints = "int team, int points, int announce";
+		Team_Score = "int points, int nogrin";
 	}
 }

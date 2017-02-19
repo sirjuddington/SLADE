@@ -32,7 +32,6 @@
 #include "Archive/Formats/WadArchive.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
-#include <wx/sizer.h>
 
 
 /*******************************************************************

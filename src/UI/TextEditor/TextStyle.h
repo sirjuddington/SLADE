@@ -2,8 +2,8 @@
 #ifndef __TEXT_STYLE_H__
 #define __TEXT_STYLE_H__
 
+#include "common.h"
 #include "Utility/Parser.h"
-#include <wx/font.h>
 
 class TextEditor;
 class TextStyle

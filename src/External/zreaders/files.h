@@ -10,6 +10,8 @@
 #include "templates.h"
 #include "tarray.h"
 
+#undef Status
+
 #if defined(_MSC_VER) || defined(__WATCOMC__)
 #define STACK_ARGS __cdecl
 #else

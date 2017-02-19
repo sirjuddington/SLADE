@@ -37,13 +37,6 @@
 #include "SidePropsPanel.h"
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
-#include <wx/checkbox.h>
-#include <wx/gbsizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
-#undef min
-#undef max
-#include <wx/valnum.h>
 
 
 /*******************************************************************

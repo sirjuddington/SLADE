@@ -31,7 +31,6 @@
 #include "Main.h"
 #include "MemChunk.h"
 #include "General/Misc.h"
-#include <wx/log.h>
 
 
 /*******************************************************************

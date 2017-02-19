@@ -620,7 +620,6 @@ void ArchiveEntry::updateMD5()
 	}
 
 	MD5 md5_gen;
-	md5_gen.init();
 	md5_gen.update(getData(), getSize());
 	md5_gen.finalize();
 

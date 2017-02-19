@@ -29,9 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "GeneralPrefsPanel.h"
-#include <wx/checkbox.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
+
 
 
 /*******************************************************************

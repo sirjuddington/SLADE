@@ -40,16 +40,6 @@
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainWindow.h"
 #include "UI/SToolBar/SToolBar.h"
-#include <wx/filename.h>
-#include <wx/sizer.h>
-#include <wx/spinctrl.h>
-#include <wx/stattext.h>
-#include <wx/checkbox.h>
-#include <wx/menu.h>
-#include <wx/slider.h>
-#include <wx/msgdlg.h>
-#include <wx/choicdlg.h>
-#include <wx/bmpbuttn.h>
 
 
 /*******************************************************************
@@ -269,6 +259,10 @@ bool GfxEntryPanel::loadEntry(ArchiveEntry* entry, int index)
  *******************************************************************/
 bool GfxEntryPanel::saveEntry()
 {
+	// Set offsets
+	getImage()->setXOffset(spin_xoffset->GetValue());
+	getImage()->setYOffset(spin_yoffset->GetValue());
+
 	// Write new image data if modified
 	bool ok = true;
 	if (image_data_modified)

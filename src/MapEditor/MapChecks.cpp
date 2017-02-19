@@ -38,7 +38,6 @@
 #include "UI/Dialogs/ThingTypeBrowser.h"
 #include "Utility/MathStuff.h"
 #include "SectorBuilder.h"
-#include <SFML/System.hpp>
 
 
 /*******************************************************************

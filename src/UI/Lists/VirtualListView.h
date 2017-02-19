@@ -2,7 +2,7 @@
 #ifndef __VIRTUAL_LIST_VIEW_H__
 #define __VIRTUAL_LIST_VIEW_H__
 
-#include <wx/listctrl.h>
+#include "common.h"
 
 // An event to indicate when the selection has changed
 wxDECLARE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
@@ -14,6 +14,7 @@ private:
 	string	search;
 	int		col_search;
 	bool	cols_editable[100];	// Never really going to have more than 100 columns
+	bool	selection_updating;
 
 	void	sendSelectionChangedEvent();
 
@@ -91,6 +92,7 @@ public:
 	void	onLabelEditBegin(wxListEvent& e);
 	void	onLabelEditEnd(wxListEvent& e);
 	void	onColumnLeftClick(wxListEvent& e);
+	void	onItemSelected(wxListEvent& e);
 };
 
 #endif//__VIRTUAL_LIST_VIEW_H__

@@ -37,11 +37,6 @@
 #include "MapEditor/SLADEMap/MapVertex.h"
 #include "UI/Canvas/MapPreviewCanvas.h"
 #include "Utility/Parser.h"
-#include <wx/checkbox.h>
-#include <wx/filedlg.h>
-#include <wx/filename.h>
-#include <wx/sizer.h>
-#include <wx/stattext.h>
 
 
 /*******************************************************************

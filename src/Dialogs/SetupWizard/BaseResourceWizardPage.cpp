@@ -30,7 +30,6 @@
 #include "Main.h"
 #include "BaseResourceWizardPage.h"
 #include "Dialogs/Preferences/BaseResourceArchivesPanel.h"
-#include <wx/sizer.h>
 
 
 /*******************************************************************

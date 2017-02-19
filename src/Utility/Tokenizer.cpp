@@ -29,7 +29,12 @@
  *******************************************************************/
 #include "Main.h"
 #include "Tokenizer.h"
-#include <wx/log.h>
+
+
+/*******************************************************************
+ * VARIABLES
+ *******************************************************************/
+const string Tokenizer::DEFAULT_SPECIAL_CHARS = ";,:|={}/";
 
 
 /*******************************************************************
@@ -47,7 +52,7 @@ Tokenizer::Tokenizer(CommentTypes comments_style)
 	size = 0;
 	comments = comments_style;
 	debug = false;
-	special = ";,:|={}/";	// Default special characters
+	special = DEFAULT_SPECIAL_CHARS;
 	name = "nothing";
 	line = 1;
 	t_start = 0;

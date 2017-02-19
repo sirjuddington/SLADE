@@ -2,9 +2,9 @@
 #ifndef __UNDO_MANAGER_HISTORY_PANEL_H__
 #define __UNDO_MANAGER_HISTORY_PANEL_H__
 
+#include "common.h"
 #include "UI/Lists/VirtualListView.h"
 #include "General/ListenerAnnouncer.h"
-#include <wx/panel.h>
 
 class UndoManager;
 class UndoListView : public VirtualListView, public Listener

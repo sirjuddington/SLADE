@@ -35,9 +35,6 @@
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
 #include "MainEditor/MainWindow.h"
-#include <wx/graphics.h>
-#include <wx/dcclient.h>
-#include <wx/settings.h>
 
 
 /*******************************************************************
