@@ -28,7 +28,7 @@ private:
 								// these will always be parsed as separate tokens
 	vector<char> special; // using a vector because wxstring does some horrible slow things
 							// so does vector but hey lesser of 2 evils
-	int			special_length;
+	size_t		special_length;
 	string		name;			// What file/entry/chunk is being tokenized
 	bool		qstring;		// True if the last read token was a quoted string
 	uint32_t	line;			// The current line number

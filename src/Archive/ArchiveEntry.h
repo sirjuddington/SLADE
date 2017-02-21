@@ -117,7 +117,7 @@ public:
 	int		getTypeReliability() { return (type ? (getType()->getReliability() * reliability / 255) : 0); }
 	bool	isInNamespace(string ns);
 
-	int index_guess; // for speed
+	size_t	index_guess; // for speed
 };
 
 #endif//__ARCHIVEENTRY_H__

@@ -714,6 +714,7 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// DIALOGUE
 	else if (type == "map_dialog")
 	{
+		// Full version:
 		columns.push_back(dep_column_t("Speaker ID", COL_INT_UNSIGNED, 4, 0));
 		columns.push_back(dep_column_t("Drop Type", COL_INT_SIGNED, 4, 4));
 		columns.push_back(dep_column_t("Item Check 1", COL_INT_SIGNED, 4, 8));
@@ -724,9 +725,19 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		columns.push_back(dep_column_t("Sound", COL_STRING, 8, 40));
 		columns.push_back(dep_column_t("Backdrop", COL_STRING, 8, 48));
 		columns.push_back(dep_column_t("Dialogue Text", COL_STRING, 320, 56));
+		unsigned offset = 320 + 56;
+		row_stride = 1516;
+
+		/*//Teaser version:
+		columns.push_back(dep_column_t("Speaker ID", COL_INT_UNSIGNED, 4, 0));
+		columns.push_back(dep_column_t("Drop Type", COL_INT_SIGNED, 4, 4));
+		columns.push_back(dep_column_t("Voice Number", COL_INT_UNSIGNED, 4, 8));
+		columns.push_back(dep_column_t("Speaker Name", COL_STRING, 16, 12));
+		columns.push_back(dep_column_t("Dialogue Text", COL_STRING, 320, 28));
+		unsigned offset = 320 + 28;
+		row_stride = 1488;*/
 
 		// Responses
-		unsigned offset = 320 + 56;
 		for (unsigned a = 1; a <= 5; a++)
 		{
 			columns.push_back(dep_column_t(S_FMT("Response %d: Give Type", a), COL_INT_SIGNED, 4, offset));
@@ -744,7 +755,6 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 			offset += 228;
 		}
 
-		row_stride = 1516;
 	}
 
 	// GENMIDI
