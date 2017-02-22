@@ -32,7 +32,7 @@ public:
 	void	setGroup(string group) { this->group = group; }
 	void	setTagged(int tagged) { this->tagged = tagged; }
 
-	string	getArgsString(int args[5]);
+	string	getArgsString(int args[5], string argstr[2]);
 
 	void	reset();
 	void	parse(ParseTreeNode* node, SpecialArgMap* shared_args);

@@ -71,7 +71,7 @@ public:
 	string	getTranslation() { return translation; }
 	string	getPalette() { return palette; }
 	const argspec_t getArgspec() { return argspec_t(args, arg_count); }
-	string	getArgsString(int args[5]);
+	string	getArgsString(int args[5], string argstr[2]);
 	void	setSprite(string sprite) { this->sprite = sprite; }
 
 	void	reset();

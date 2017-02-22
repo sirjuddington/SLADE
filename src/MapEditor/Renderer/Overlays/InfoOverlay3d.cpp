@@ -442,7 +442,10 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 			args[2] = thing->intProperty("arg2");
 			args[3] = thing->intProperty("arg3");
 			args[4] = thing->intProperty("arg4");
-			string argstr = tt->getArgsString(args);
+			string argxstr[2];
+			argxstr[0] = thing->stringProperty("arg0str");
+			argxstr[1] = thing->stringProperty("arg1str");
+			string argstr = tt->getArgsString(args, argxstr);
 
 			if (argstr.IsEmpty())
 				info2.push_back("No Args");
