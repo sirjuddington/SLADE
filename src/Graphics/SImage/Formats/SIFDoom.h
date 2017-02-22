@@ -193,8 +193,24 @@ protected:
 			uint8_t row_off = 0;
 			for (int r = 0; r < image.getHeight(); r++)
 			{
+				// For vanilla-compatible dimensions, use a split at 128 to prevent tiling.
+				if (image.getHeight() < 256)
+				{
+					if (row_off == 128)
+					{
+						// Finish current post if any
+						if (ispost)
+						{
+							col.posts.push_back(post);
+							post.pixels.clear();
+							ispost = false;
+						}
+					}
+				}
+
+				// Taller images cannot be expressed without tall patch support.
 				// If we're at offset 254, create a dummy post for tall doom gfx support
-				if (row_off == 254)
+				else if (row_off == 254)
 				{
 					// Finish current post if any
 					if (ispost)
