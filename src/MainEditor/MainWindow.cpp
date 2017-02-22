@@ -1093,14 +1093,17 @@ void MainWindow::onActivate(wxActivateEvent& e)
 	}
 
 	// Get current tab
-	wxWindow* page = stc_tabs->GetPage(stc_tabs->GetSelection());
-
-	// If start page is selected, refresh it
-	if (page && page->GetName() == "startpage")
+	if (stc_tabs->GetPageCount())
 	{
-		createStartPage(false);
-		SetStatusText("", 1);
-		SetStatusText("", 2);
+		wxWindow* page = stc_tabs->GetPage(stc_tabs->GetSelection());
+
+		// If start page is selected, refresh it
+		if (page && page->GetName() == "startpage")
+		{
+			createStartPage(false);
+			SetStatusText("", 1);
+			SetStatusText("", 2);
+		}
 	}
 
 	e.Skip();
