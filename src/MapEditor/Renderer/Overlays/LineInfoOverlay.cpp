@@ -112,7 +112,10 @@ void LineInfoOverlay::update(MapLine* line)
 		args[2] = line->intProperty("arg2");
 		args[3] = line->intProperty("arg3");
 		args[4] = line->intProperty("arg4");
-		string argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args);
+		string argxstr[2];
+		argxstr[0] = line->stringProperty("arg0str");
+		argxstr[1] = line->stringProperty("arg1str");
+		string argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args, argxstr);
 		if (!argstr.IsEmpty())
 			info_text += (S_FMT("%s", argstr));
 		else
