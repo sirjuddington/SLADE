@@ -304,6 +304,10 @@ bool TextEntryPanel::redo()
  *******************************************************************/
 bool TextEntryPanel::handleAction(string id)
 {
+	// Don't handle actions if hidden
+	if (!isActivePanel())
+		return false;
+
 	// Jump To Line
 	if (id == "ptxt_jump_to_line")
 		text_area->jumpToLine();

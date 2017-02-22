@@ -137,7 +137,7 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 		{
 			if (entries[a].get() == entry)
 			{
-				entry->index_guess = (int)a;
+				entry->index_guess = a;
 				return (int)a;
 			}
 		}
@@ -146,7 +146,7 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 		{
 			if (entries[a].get() == entry)
 			{
-				entry->index_guess = (int)a;
+				entry->index_guess = a;
 				return (int)a;
 			}
 		}
@@ -154,7 +154,7 @@ int ArchiveTreeNode::entryIndex(ArchiveEntry* entry, size_t startfrom)
 		{
 			if (entries[a].get() == entry)
 			{
-				entry->index_guess = (int)a;
+				entry->index_guess = a;
 				return (int)a;
 			}
 		}
