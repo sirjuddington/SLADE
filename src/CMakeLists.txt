@@ -1,3 +1,7 @@
+if (NOT NO_COTIRE)
+	include(../cmake/cotire.cmake)
+endif()
+
 # wxWidgets version minimum 3.0
 if(NOT WX_VERSION)
 	SET(WX_VERSION 3.0)
@@ -44,10 +48,6 @@ if(NOT NO_FLUIDSYNTH)
 	include(../cmake/FindFluidSynth.cmake)
 else(NO_FLUIDSYNTH)
 	message(STATUS "Fluidsynth support is disabled.")
-endif()
-
-if (NOT NO_COTIRE)
-	include(../cmake/cotire.cmake)
 endif()
 
 find_package(CURL)
@@ -139,11 +139,6 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 	${SLADE_HEADERS}
 )
 
-if (NOT NO_COTIRE)
-	set_target_properties(slade PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "common.h")
-	cotire(slade)
-endif()
-
 target_link_libraries(slade
 	${ZLIB_LIBRARY}
 	${BZIP2_LIBRARIES}
@@ -186,3 +181,7 @@ else(APPLE)
 	endif(UNIX)
 endif(APPLE)
 
+if (NOT NO_COTIRE)
+	set_target_properties(slade PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "common.h")
+	cotire(slade)
+endif()
