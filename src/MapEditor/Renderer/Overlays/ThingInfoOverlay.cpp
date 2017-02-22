@@ -130,11 +130,14 @@ void ThingInfoOverlay::update(MapThing* thing)
 		args[2] = thing->intProperty("arg2");
 		args[3] = thing->intProperty("arg3");
 		args[4] = thing->intProperty("arg4");
+		string argxstr[2];
+		argxstr[0] = thing->stringProperty("arg0str");
+		argxstr[1] = thing->stringProperty("arg1str");
 		string argstr;
 		if (tt->getArgspec().count > 0)
-			argstr = tt->getArgsString(args);
+			argstr = tt->getArgsString(args, argxstr);
 		else
-			argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args);
+			argstr = theGameConfiguration->actionSpecial(as_id)->getArgsString(args, argxstr);
 
 		if (!argstr.IsEmpty())
 			info_text += S_FMT("%s\n", argstr);

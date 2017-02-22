@@ -68,6 +68,30 @@ protected:
 		memset(img_data, 0, width * height);	// Set colour to palette index 0
 		uint8_t* img_mask = imageMask(image);
 		memset(img_mask, 0, width * height);	// Set mask to fully transparent
+
+		// Check for the Pleiades hack:
+		// Roger Ritenour's pleiades.wad for ZDoom uses 256-tall sky textures, 
+		// and since the patch format uses 8-bit values for the length of a column,
+		// the 256 height overflows to 0. To detect this situation, we check if
+		// every column represents precisely 261 bytes, in other words just enough
+		// for a single post of 256 pixels.
+		bool pleiadeshack = false;
+		if (height == 256)
+		{
+			pleiadeshack = true;
+			for (int c = 1; c < width; ++c)
+			{
+				if (col_offsets[c] - col_offsets[c - 1] != 261)
+				{
+					pleiadeshack = false;
+					break;
+				}
+			}
+			if (data.getSize() - col_offsets[width - 1] != 261)
+				pleiadeshack = false;
+		}
+
+		// Load data
 		for (int c = 0; c < width; c++)
 		{
 			// Get current column offset (byteswap if needed)
@@ -99,10 +123,14 @@ protected:
 
 				// Get no. of pixels
 				bits++;
-				uint8_t n_pix = *bits;
+				uint16_t n_pix = *bits;
+
+				// If this is a Pleiades sky, the height is 256.
+				if (pleiadeshack)
+					n_pix = 256;
 
 				if (version == 0) bits++; // Skip buffer
-				for (uint8_t p = 0; p < n_pix; p++)
+				for (uint16_t p = 0; p < n_pix; p++)
 				{
 					// Get pixel position
 					bits++;
@@ -165,8 +193,24 @@ protected:
 			uint8_t row_off = 0;
 			for (int r = 0; r < image.getHeight(); r++)
 			{
+				// For vanilla-compatible dimensions, use a split at 128 to prevent tiling.
+				if (image.getHeight() < 256)
+				{
+					if (row_off == 128)
+					{
+						// Finish current post if any
+						if (ispost)
+						{
+							col.posts.push_back(post);
+							post.pixels.clear();
+							ispost = false;
+						}
+					}
+				}
+
+				// Taller images cannot be expressed without tall patch support.
 				// If we're at offset 254, create a dummy post for tall doom gfx support
-				if (row_off == 254)
+				else if (row_off == 254)
 				{
 					// Finish current post if any
 					if (ispost)
