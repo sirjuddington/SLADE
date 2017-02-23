@@ -462,24 +462,42 @@ void MapEditorWindow::lockMapEntries(bool lock)
 	}
 }
 
-/* MapEditorWindow::createMap
- * Opens the map editor launcher dialog to create a new map
+/* MapEditorWindow::chooseMap
+ * Opens the map editor launcher dialog to create or open a map
  *******************************************************************/
-bool MapEditorWindow::createMap()
+bool MapEditorWindow::chooseMap(Archive* archive)
 {
-	MapEditorConfigDialog dialog(theMainWindow, NULL, false, true);
-	if (dialog.ShowModal() == wxID_OK)
+	MapEditorConfigDialog dlg(theMainWindow, archive, (bool)archive, !(bool)archive);
+
+	if (dlg.ShowModal() == wxID_OK)
 	{
-		Archive::mapdesc_t map = dialog.selectedMap();
-		theGameConfiguration->openConfig(dialog.selectedGame(), dialog.selectedPort(), map.format);
+		Archive::mapdesc_t md = dlg.selectedMap();
 
-		if (map.name.IsEmpty())
+		if (md.name.IsEmpty() || (archive && !md.head))
 			return false;
-		else
-			return openMap(map);
-	}
 
-	return false;
+		// Attempt to load selected game configuration
+		if (!theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort(), md.format))
+		{
+			wxMessageBox("An error occurred loading the game configuration, see the console log for details", "Error", wxICON_ERROR);
+			return false;
+		}
+
+		// Show md editor window
+		if (IsIconized())
+			Restore();
+		Raise();
+
+		// Attempt to open md
+		if (!openMap(md))
+		{
+			Hide();
+			wxMessageBox(S_FMT("Unable to open md %s: %s", md.name, Global::error), "Invalid md error", wxICON_ERROR);
+			return false;
+		}
+		else
+			return true;
+	}
 }
 
 /* MapEditorWindow::openMap

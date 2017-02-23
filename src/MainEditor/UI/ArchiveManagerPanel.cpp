@@ -1713,7 +1713,7 @@ bool ArchiveManagerPanel::handleAction(string id)
 	// File->New Map
 	else if (id == "aman_newmap")
 	{
-		if (!theMapEditor->createMap())
+		if (!theMapEditor->chooseMap())
 			theMapEditor->Show(false);
 	}
 
