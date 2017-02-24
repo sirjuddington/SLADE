@@ -687,33 +687,7 @@ void MainWindow::openTextureEditor(Archive* archive, ArchiveEntry* entry)
  *******************************************************************/
 void MainWindow::openMapEditor(Archive* archive)
 {
-	MapEditorConfigDialog dlg(this, archive);
-	if (dlg.ShowModal() == wxID_OK)
-	{
-		Archive::mapdesc_t md = dlg.selectedMap();
-
-		if (!md.head)
-			return;
-
-		// Attempt to load selected game configuration
-		if (!theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort(), md.format))
-		{
-			wxMessageBox("An error occurred loading the game configuration, see the console log for details", "Error", wxICON_ERROR);
-			return;
-		}
-
-		// Show map editor window
-		if (theMapEditor->IsIconized())
-			theMapEditor->Restore();
-		theMapEditor->Raise();
-
-		// Attempt to open map
-		if (!theMapEditor->openMap(md))
-		{
-			theMapEditor->Hide();
-			wxMessageBox(S_FMT("Unable to open map %s: %s", md.name, Global::error), "Invalid map error", wxICON_ERROR);
-		}
-	}
+	theMapEditor->chooseMap(archive);
 }
 
 /* MainWindow::openEntry
@@ -1093,14 +1067,17 @@ void MainWindow::onActivate(wxActivateEvent& e)
 	}
 
 	// Get current tab
-	wxWindow* page = stc_tabs->GetPage(stc_tabs->GetSelection());
-
-	// If start page is selected, refresh it
-	if (page && page->GetName() == "startpage")
+	if (stc_tabs->GetPageCount())
 	{
-		createStartPage(false);
-		SetStatusText("", 1);
-		SetStatusText("", 2);
+		wxWindow* page = stc_tabs->GetPage(stc_tabs->GetSelection());
+
+		// If start page is selected, refresh it
+		if (page && page->GetName() == "startpage")
+		{
+			createStartPage(false);
+			SetStatusText("", 1);
+			SetStatusText("", 2);
+		}
 	}
 
 	e.Skip();

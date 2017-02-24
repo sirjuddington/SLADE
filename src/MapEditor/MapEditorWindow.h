@@ -72,7 +72,7 @@ public:
 
 	void		setupMenu();
 	void		setupLayout();
-	bool		createMap();
+	bool		chooseMap(Archive* archive=NULL);
 	bool		openMap(Archive::mapdesc_t map);
 	void		loadMapScripts(Archive::mapdesc_t map);
 	WadArchive*	writeMap(string name="MAP01", bool nodes = true);

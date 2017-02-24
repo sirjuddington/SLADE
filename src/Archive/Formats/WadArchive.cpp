@@ -630,7 +630,10 @@ bool WadArchive::write(string filename, bool update)
 	for (uint32_t l = 0; l < num_lumps; l++)
 	{
 		entry = getEntry(l);
-		file.Write(entry->getData(), entry->getSize());
+		if (entry->getSize())
+		{
+			file.Write(entry->getData(), entry->getSize());
+		}
 	}
 
 	// Write the directory
