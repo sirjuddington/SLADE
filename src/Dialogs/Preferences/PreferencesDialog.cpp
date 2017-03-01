@@ -224,6 +224,9 @@ void PreferencesDialog::applyPreferences()
 	for (unsigned a = 0; a < prefs_pages.size(); a++)
 		prefs_pages[a]->applyPreferences();
 	prefs_advanced->applyPreferences();
+
+	// Write file so changes are not lost
+	theApp->saveConfigFile();
 }
 
 
