@@ -38,6 +38,7 @@
  *******************************************************************/
 EXTERN_CVAR(Bool, scroll_smooth)
 EXTERN_CVAR(Bool, selection_clear_click)
+EXTERN_CVAR(Bool, selection_clear_move)
 EXTERN_CVAR(Bool, property_edit_dclick)
 EXTERN_CVAR(Bool, map_merge_undo_step)
 EXTERN_CVAR(Bool, mobj_props_auto_apply)
@@ -72,6 +73,10 @@ MapEditorPrefsPanel::MapEditorPrefsPanel(wxWindow* parent) : PrefsPanelBase(pare
 	// Clear selection on click
 	cb_selection_clear_click = new wxCheckBox(this, -1, "Clear selection when nothing is clicked");
 	sizer->Add(cb_selection_clear_click, 0, wxEXPAND|wxALL, 4);
+
+	// Clear selection after dragging
+	cb_selection_clear_move = new wxCheckBox(this, -1, "Clear selection after moving (dragging) map elements");
+	sizer->Add(cb_selection_clear_move, 0, wxEXPAND|wxALL, 4);
 
 	// Double-click to edit selection properties
 	cb_property_edit_dclick = new wxCheckBox(this, -1, "Double-click to edit properties");
@@ -121,6 +126,7 @@ void MapEditorPrefsPanel::init()
 {
 	cb_scroll_smooth->SetValue(scroll_smooth);
 	cb_selection_clear_click->SetValue(selection_clear_click);
+	cb_selection_clear_move->SetValue(selection_clear_move);
 	cb_property_edit_dclick->SetValue(property_edit_dclick);
 	cb_merge_undo_step->SetValue(map_merge_undo_step);
 	cb_props_auto_apply->SetValue(mobj_props_auto_apply);
@@ -137,6 +143,7 @@ void MapEditorPrefsPanel::applyPreferences()
 {
 	scroll_smooth = cb_scroll_smooth->GetValue();
 	selection_clear_click = cb_selection_clear_click->GetValue();
+	selection_clear_move = cb_selection_clear_move->GetValue();
 	property_edit_dclick = cb_property_edit_dclick->GetValue();
 	map_merge_undo_step = cb_merge_undo_step->GetValue();
 	mobj_props_auto_apply = cb_props_auto_apply->GetValue();

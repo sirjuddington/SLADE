@@ -52,6 +52,7 @@ double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 
 CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
 CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
 CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
+CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -2012,7 +2013,7 @@ void MapEditor::endMove(bool accept)
 	}
 
 	// Clear selection
-	if (accept)
+	if (accept && selection_clear_move)
 		clearSelection(false);
 
 	// Clear moving items
