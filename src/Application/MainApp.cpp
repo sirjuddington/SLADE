@@ -477,7 +477,7 @@ string appPath(string filename, int dir)
 		if (temp_location == 0)
 			dir_temp = wxStandardPaths::Get().GetTempDir().Append(sep).Append("SLADE3");
 		else if (temp_location == 1)
-			dir_temp = dir_temp = dir_app + sep + "temp";
+			dir_temp = dir_app + sep + "temp";
 		else
 			dir_temp = temp_location_custom;
 
