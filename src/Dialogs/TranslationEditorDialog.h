@@ -6,6 +6,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "UI/Canvas/OGLCanvas.h"
 #include "UI/WxBasicControls.h"
+#include "UI/ColourBox.h"
 
 class GfxCanvas;
 class PaletteCanvas;
@@ -57,17 +58,17 @@ private:
 	wxCheckBox*		cb_target_reverse;
 
 	// Colour gradient target range
-	wxPanel*			panel_target_gradient;
-	wxColourPickerCtrl*	cp_range_begin;
-	wxColourPickerCtrl*	cp_range_end;
-	GradientBox*		gb_gradient;
+	wxPanel*		panel_target_gradient;
+	ColourBox*		cb_range_begin;
+	ColourBox*		cb_range_end;
+	GradientBox*	gb_gradient;
 
 	// Preview
-	PaletteCanvas*		pal_canvas_preview;
-	GfxCanvas*			gfx_preview;
+	PaletteCanvas*	pal_canvas_preview;
+	GfxCanvas*		gfx_preview;
 
 	// Truecolor
-	wxCheckBox*			cb_truecolor;
+	wxCheckBox*		cb_truecolor;
 
 public:
 	TranslationEditorDialog(wxWindow* parent, Palette8bit* pal, string title = "Edit Translation", SImage* preview_image = NULL);
@@ -91,8 +92,8 @@ public:
 	void	onRBPaletteSelected(wxCommandEvent& e);
 	void	onRBColourSelected(wxCommandEvent& e);
 	void	onRBDesaturateSelected(wxCommandEvent& e);
-	void	onBeginColourChanged(wxColourPickerEvent& e);
-	void	onEndColourChanged(wxColourPickerEvent& e);
+	void	onBeginColourChanged(wxEvent& e);
+	void	onEndColourChanged(wxEvent& e);
 	void	onPalOriginLeftUp(wxMouseEvent& e);
 	void	onPalTargetLeftUp(wxMouseEvent& e);
 	void	onBtnRemove(wxCommandEvent& e);
@@ -119,13 +120,13 @@ private:
 	GfxCanvas*			gfx_preview;
 	ArchiveEntry*		entry;
 	Palette8bit*		palette;
-	wxColourPickerCtrl*	cp_colour;
+	ColourBox*			cb_colour;
 
 public:
 	GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit* pal);
 	rgba_t getColour();
 	void setColour(string col);
-	void onColourChanged(wxColourPickerEvent& e);
+	void onColourChanged(wxEvent& e);
 	void onResize(wxSizeEvent& e);
 };
 
@@ -142,7 +143,7 @@ private:
 	GfxCanvas*			gfx_preview;
 	ArchiveEntry*		entry;
 	Palette8bit*		palette;
-	wxColourPickerCtrl*	cp_colour;
+	ColourBox*			cb_colour;
 	wxSlider*			slider_amount;
 	wxStaticText*		label_amount;
 
@@ -151,7 +152,7 @@ public:
 	rgba_t getColour();
 	float getAmount();
 	void setValues(string col, int val);
-	void onColourChanged(wxColourPickerEvent& e);
+	void onColourChanged(wxEvent& e);
 	void onAmountChanged(wxCommandEvent& e);
 	void onResize(wxSizeEvent& e);
 };

@@ -239,15 +239,19 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	vbox->Add(hbox, 0, wxEXPAND|wxBOTTOM, 4);
 
-	cp_range_begin = new wxColourPickerCtrl(panel_target_gradient, -1, WXCOL(COL_BLACK));
-	hbox->Add(cp_range_begin, 0, wxEXPAND|wxRIGHT, 4);
+	cb_range_begin = new ColourBox(panel_target_gradient, -1, false, true);
+	cb_range_begin->setColour(COL_BLACK);
+	cb_range_begin->setPalette(pal);
+	hbox->Add(cb_range_begin, 0, wxEXPAND|wxRIGHT, 4);
 	hbox->Add(new wxStaticText(panel_target_gradient, -1, "From"), 0, wxALIGN_CENTER_VERTICAL);
 
 	// End colour
-	cp_range_end = new wxColourPickerCtrl(panel_target_gradient, -1, WXCOL(COL_WHITE));
+	cb_range_end = new ColourBox(panel_target_gradient, -1, false, true);
+	cb_range_end->setColour(COL_WHITE);
+	cb_range_end->setPalette(pal);
 	hbox->AddStretchSpacer();
 	hbox->Add(new wxStaticText(panel_target_gradient, -1, "To"), 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(cp_range_end, 0, wxEXPAND);
+	hbox->Add(cb_range_end, 0, wxEXPAND);
 
 	// Gradient preview
 	gb_gradient = new GradientBox(panel_target_gradient);
@@ -317,8 +321,8 @@ TranslationEditorDialog::TranslationEditorDialog(wxWindow* parent, Palette8bit* 
 	rb_type_palette->Bind(wxEVT_RADIOBUTTON, &TranslationEditorDialog::onRBPaletteSelected, this);
 	rb_type_colour->Bind(wxEVT_RADIOBUTTON, &TranslationEditorDialog::onRBColourSelected, this);
 	rb_type_desaturate->Bind(wxEVT_RADIOBUTTON, &TranslationEditorDialog::onRBDesaturateSelected, this);
-	cp_range_begin->Bind(wxEVT_COLOURPICKER_CHANGED, &TranslationEditorDialog::onBeginColourChanged, this);
-	cp_range_end->Bind(wxEVT_COLOURPICKER_CHANGED, &TranslationEditorDialog::onEndColourChanged, this);
+	cb_range_begin->Bind(wxEVT_COLOURBOX_CHANGED, &TranslationEditorDialog::onBeginColourChanged, this);
+	cb_range_end->Bind(wxEVT_COLOURBOX_CHANGED, &TranslationEditorDialog::onEndColourChanged, this);
 	pal_canvas_original->Bind(wxEVT_LEFT_UP, &TranslationEditorDialog::onPalOriginLeftUp, this);
 	pal_canvas_target->Bind(wxEVT_LEFT_UP, &TranslationEditorDialog::onPalTargetLeftUp, this);
 	btn_add->Bind(wxEVT_BUTTON, &TranslationEditorDialog::onBtnAdd, this);
@@ -420,11 +424,11 @@ void TranslationEditorDialog::openRange(int index)
 
 		// Set beginning colour
 		gb_gradient->setStartCol(tcr->dStart());
-		cp_range_begin->SetColour(WXCOL(tcr->dStart()));
+		cb_range_begin->setColour(tcr->dStart());
 
 		// Set ending colour
 		gb_gradient->setEndCol(tcr->dEnd());
-		cp_range_end->SetColour(WXCOL(tcr->dEnd()));
+		cb_range_end->setColour(tcr->dEnd());
 
 		// Update UI
 		gb_gradient->Refresh();
@@ -443,14 +447,14 @@ void TranslationEditorDialog::openRange(int index)
 		col.r = MathStuff::clamp(tdr->dSr() * 128, 0, 255);
 		col.g = MathStuff::clamp(tdr->dSg() * 128, 0, 255);
 		col.b = MathStuff::clamp(tdr->dSb() * 128, 0, 255);
-		cp_range_begin->SetColour(WXCOL(col));
+		cb_range_begin->setColour(col);
 		gb_gradient->setStartCol(col);
 
 		// Set ending colour
 		col.r = MathStuff::clamp(tdr->dEr() * 128, 0, 255);
 		col.g = MathStuff::clamp(tdr->dEg() * 128, 0, 255);
 		col.b = MathStuff::clamp(tdr->dEb() * 128, 0, 255);
-		cp_range_end->SetColour(WXCOL(col));
+		cb_range_end->setColour(col);
 		gb_gradient->setEndCol(col);
 
 		// Update UI
@@ -718,10 +722,8 @@ void TranslationEditorDialog::onRBColourSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour gradient
-		wxColour sc = cp_range_begin->GetColour();
-		wxColour ec = cp_range_end->GetColour();
-		tr->setDStart(rgba_t(sc.Red(), sc.Green(), sc.Blue()));
-		tr->setDEnd(rgba_t(ec.Red(), ec.Green(), ec.Blue()));
+		tr->setDStart(cb_range_begin->getColour());
+		tr->setDEnd(cb_range_end->getColour());
 
 		// Update UI
 		updateListItem(index);
@@ -753,14 +755,14 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
 		// Target colour gradient
-		wxColour sc = cp_range_begin->GetColour();
-		wxColour ec = cp_range_end->GetColour();
-		tr->setDStart(MathStuff::clamp(sc.Red() / 127.0f, 0, 2),
-		              MathStuff::clamp(sc.Green() / 127.0f, 0, 2),
-		              MathStuff::clamp(sc.Blue() / 127.0f, 0, 2));
-		tr->setDEnd(MathStuff::clamp(ec.Red() / 127.0f, 0, 2),
-		            MathStuff::clamp(ec.Green() / 127.0f, 0, 2),
-		            MathStuff::clamp(ec.Blue() / 127.0f, 0, 2));
+		rgba_t sc = cb_range_begin->getColour();
+		rgba_t ec = cb_range_end->getColour();
+		tr->setDStart(MathStuff::clamp((double)sc.r / 127.0f, 0, 2),
+		              MathStuff::clamp((double)sc.g / 127.0f, 0, 2),
+		              MathStuff::clamp((double)sc.b / 127.0f, 0, 2));
+		tr->setDEnd(MathStuff::clamp((double)ec.r / 127.0f, 0, 2),
+		            MathStuff::clamp((double)ec.g / 127.0f, 0, 2),
+		            MathStuff::clamp((double)ec.b / 127.0f, 0, 2));
 
 		// Update UI
 		updateListItem(index);
@@ -772,21 +774,19 @@ void TranslationEditorDialog::onRBDesaturateSelected(wxCommandEvent& e)
 /* TranslationEditorDialog::onBeginColourChanged
  * Called when the target gradient start colour is changed
  *******************************************************************/
-void TranslationEditorDialog::onBeginColourChanged(wxColourPickerEvent& e)
+void TranslationEditorDialog::onBeginColourChanged(wxEvent& e)
 {
 	// Set start colour to selected colour
-	wxColour col = cp_range_begin->GetColour();
-	setStartColour(rgba_t(col.Red(), col.Green(), col.Blue()));
+	setStartColour(cb_range_begin->getColour());
 }
 
 /* TranslationEditorDialog::onEndColourChanged
  * Called when the target gradient end colour is changed
  *******************************************************************/
-void TranslationEditorDialog::onEndColourChanged(wxColourPickerEvent& e)
+void TranslationEditorDialog::onEndColourChanged(wxEvent& e)
 {
 	// Set end colour to selected colour
-	wxColour col = cp_range_end->GetColour();
-	setEndColour(rgba_t(col.Red(), col.Green(), col.Blue()));
+	setEndColour(cb_range_end->getColour());
 }
 
 /* TranslationEditorDialog::onPalOriginLeftUp
@@ -1105,9 +1105,11 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 
-	cp_colour = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
+	cb_colour = new ColourBox(this, -1, false, true);
+	cb_colour->setColour(COL_RED);
+	cb_colour->setPalette(pal);
 	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(cp_colour, 0, wxEXPAND);
+	hbox->Add(cb_colour, 0, wxEXPAND);
 
 	// Add preview
 	gfx_preview = new GfxCanvas(this, -1);
@@ -1121,15 +1123,15 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 	gfx_preview->setPalette(pal);
 	gfx_preview->SetInitialSize(wxSize(192, 192));
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	wxColour col = cp_colour->GetColour();
-	gfx_preview->getImage()->colourise(rgba_t(col.Red(), col.Green(), col.Blue()), pal);
+	rgba_t col = cb_colour->getColour();
+	gfx_preview->getImage()->colourise(col, pal);
 	gfx_preview->updateImageTexture();
 
 	// Init layout
 	Layout();
 
 	// Bind events
-	cp_colour->Bind(wxEVT_COLOURPICKER_CHANGED, &GfxColouriseDialog::onColourChanged, this);
+	cb_colour->Bind(wxEVT_COLOURBOX_CHANGED, &GfxColouriseDialog::onColourChanged, this);
 	Bind(wxEVT_SIZE, &GfxColouriseDialog::onResize, this);
 
 	// Setup dialog size
@@ -1140,25 +1142,24 @@ GfxColouriseDialog::GfxColouriseDialog(wxWindow* parent, ArchiveEntry* entry, Pa
 
 rgba_t GfxColouriseDialog::getColour()
 {
-	wxColour col = cp_colour->GetColour();
-	return rgba_t(col.Red(), col.Green(), col.Blue());
+	return cb_colour->getColour();
 }
 
 void GfxColouriseDialog::setColour(string col)
 {
 	wxColour colour(col);
-	cp_colour->SetColour(colour);
-	gfx_preview->getImage()->colourise(rgba_t(colour.Red(), colour.Green(), colour.Blue()), palette);
+	rgba_t rgba = rgba_t(colour.Red(), colour.Green(), colour.Blue());
+	cb_colour->setColour(rgba);
+	gfx_preview->getImage()->colourise(rgba, palette);
 	gfx_preview->updateImageTexture();
 	gfx_preview->Refresh();
 }
 
 // Events
-void GfxColouriseDialog::onColourChanged(wxColourPickerEvent& e)
+void GfxColouriseDialog::onColourChanged(wxEvent& e)
 {
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	wxColour col = cp_colour->GetColour();
-	gfx_preview->getImage()->colourise(rgba_t(col.Red(), col.Green(), col.Blue()), palette);
+	gfx_preview->getImage()->colourise(cb_colour->getColour(), palette);
 	gfx_preview->updateImageTexture();
 	gfx_preview->Refresh();
 }
@@ -1197,9 +1198,11 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit*
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, 0, wxEXPAND|wxALL, 4);
 
-	cp_colour = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
+	cb_colour = new ColourBox(this, -1, false, true);
+	cb_colour->setColour(COL_RED);
+	cb_colour->setPalette(pal);
 	hbox->Add(new wxStaticText(this, -1, "Colour:"), 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 4);
-	hbox->Add(cp_colour, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
+	hbox->Add(cb_colour, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8);
 
 	// Add 'amount' slider
 	hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -1223,7 +1226,6 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit*
 	gfx_preview->setPalette(pal);
 	gfx_preview->SetInitialSize(wxSize(256, 256));
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	wxColour col = cp_colour->GetColour();
 	gfx_preview->getImage()->tint(getColour(), getAmount(), pal);
 	gfx_preview->updateImageTexture();
 
@@ -1231,7 +1233,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit*
 	Layout();
 
 	// Bind events
-	cp_colour->Bind(wxEVT_COLOURPICKER_CHANGED, &GfxTintDialog::onColourChanged, this);
+	cb_colour->Bind(wxEVT_COLOURBOX_CHANGED, &GfxTintDialog::onColourChanged, this);
 	slider_amount->Bind(wxEVT_SLIDER, &GfxTintDialog::onAmountChanged, this);
 	Bind(wxEVT_SIZE, &GfxTintDialog::onResize, this);
 
@@ -1246,8 +1248,7 @@ GfxTintDialog::GfxTintDialog(wxWindow* parent, ArchiveEntry* entry, Palette8bit*
 
 rgba_t GfxTintDialog::getColour()
 {
-	wxColour col = cp_colour->GetColour();
-	return rgba_t(col.Red(), col.Green(), col.Blue());
+	return rgba_t(cb_colour->getColour());
 }
 
 float GfxTintDialog::getAmount()
@@ -1258,7 +1259,7 @@ float GfxTintDialog::getAmount()
 void GfxTintDialog::setValues(string col, int val)
 {
 	wxColour colour(col);
-	cp_colour->SetColour(colour);
+	cb_colour->setColour(rgba_t(colour.Red(), colour.Green(), colour.Blue()));
 	slider_amount->SetValue(val);
 	label_amount->SetLabel(S_FMT("%d%% ", slider_amount->GetValue()));
 	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
@@ -1267,10 +1268,9 @@ void GfxTintDialog::setValues(string col, int val)
 }
 
 // Events
-void GfxTintDialog::onColourChanged(wxColourPickerEvent& e)
+void GfxTintDialog::onColourChanged(wxEvent& e)
 {
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	wxColour col = cp_colour->GetColour();
 	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
 	gfx_preview->updateImageTexture();
 	gfx_preview->Refresh();
@@ -1279,7 +1279,6 @@ void GfxTintDialog::onColourChanged(wxColourPickerEvent& e)
 void GfxTintDialog::onAmountChanged(wxCommandEvent& e)
 {
 	Misc::loadImageFromEntry(gfx_preview->getImage(), entry);
-	wxColour col = cp_colour->GetColour();
 	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
 	gfx_preview->updateImageTexture();
 	gfx_preview->Refresh();

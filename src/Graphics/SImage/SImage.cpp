@@ -1710,7 +1710,7 @@ bool SImage::drawImage(SImage& img, int x_pos, int y_pos, si_drawprops_t& proper
  * Colourises the image to [colour]. If the image is paletted, each
  * pixel will be set to its nearest matching colour in [pal]
  *******************************************************************/
-bool SImage::colourise(rgba_t colour, Palette8bit* pal)
+bool SImage::colourise(rgba_t colour, Palette8bit* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type == ALPHAMAP)
@@ -1725,6 +1725,13 @@ bool SImage::colourise(rgba_t colour, Palette8bit* pal)
 	rgba_t col;
 	for (int a = 0; a < width*height*bpp; a+= bpp)
 	{
+		// Skip colors out of range if desired
+		if (type == PALMASK && start >= 0 && stop >= start && stop < 256) 
+		{
+			if (data[a] < start || data[a] > stop)
+				continue;
+		}
+
 		// Get current pixel colour
 		if (type == RGBA)
 			col.set(data[a], data[a+1], data[a+2], data[a+3]);
@@ -1752,7 +1759,7 @@ bool SImage::colourise(rgba_t colour, Palette8bit* pal)
  * Tints the image to [colour] by [amount]. If the image is paletted,
  * each pixel will be set to its nearest matching colour in [pal]
  *******************************************************************/
-bool SImage::tint(rgba_t colour, float amount, Palette8bit* pal)
+bool SImage::tint(rgba_t colour, float amount, Palette8bit* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type == ALPHAMAP)
@@ -1767,6 +1774,13 @@ bool SImage::tint(rgba_t colour, float amount, Palette8bit* pal)
 	rgba_t col;
 	for (int a = 0; a < width*height*bpp; a+= bpp)
 	{
+		// Skip colors out of range if desired
+		if (type == PALMASK && start >= 0 && stop >= start && stop < 256)
+		{
+			if (data[a] < start || data[a] > stop)
+				continue;
+		}
+
 		// Get current pixel colour
 		if (type == RGBA)
 			col.set(data[a], data[a+1], data[a+2], data[a+3]);
