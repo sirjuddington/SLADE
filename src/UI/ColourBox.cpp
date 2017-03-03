@@ -51,12 +51,13 @@ DEFINE_EVENT_TYPE(wxEVT_COLOURBOX_CHANGED)
 /* ColourBox::ColourBox
  * ColourBox class constructor
  *******************************************************************/
-ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha)
+ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha, bool mode)
 	: wxPanel(parent, id, wxDefaultPosition, wxSize(32, 24), wxSUNKEN_BORDER)
 {
 	alpha = enable_alpha;
 	palette = NULL;
 	colour = COL_BLACK;
+	altmode = mode;
 
 	// Bind events
 	Bind(wxEVT_PAINT, &ColourBox::onPaint, this);
@@ -67,12 +68,13 @@ ColourBox::ColourBox(wxWindow* parent, int id, bool enable_alpha)
 /* ColourBox::ColourBox
  * Alternate ColourBox class constructor
  *******************************************************************/
-ColourBox::ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha)
+ColourBox::ColourBox(wxWindow* parent, int id, rgba_t col, bool enable_alpha, bool mode)
 	: wxPanel(parent, id, wxDefaultPosition, wxSize(32, 24), wxSUNKEN_BORDER)
 {
 	alpha = enable_alpha;
 	palette = NULL;
 	colour = col;
+	altmode = mode;
 
 	// Bind events
 	Bind(wxEVT_PAINT, &ColourBox::onPaint, this);
@@ -95,6 +97,73 @@ void ColourBox::sendChangeEvent()
 	wxCommandEvent e(wxEVT_COLOURBOX_CHANGED, GetId());
 	e.SetEventObject(this);
 	GetEventHandler()->ProcessEvent(e);
+}
+
+/* ColourBox::PopPalette
+ * Pops up a palette dialog if palette data is available, and sends
+ * a change event after a colour is selected.
+ *******************************************************************/
+void ColourBox::popPalette()
+{
+	if (palette)
+	{
+		PaletteDialog pd(palette);
+		if (pd.ShowModal() == wxID_OK)
+		{
+			rgba_t col = pd.getSelectedColour();
+			if (col.a > 0)
+			{
+				colour = col;
+				sendChangeEvent();
+				Refresh();
+			}
+		}
+	}
+}
+
+/* ColourBox::PopColourPicker
+ * Pops up a standard colour picker dialog, and sends a change event 
+ * after a colour is selected.
+ *******************************************************************/
+void ColourBox::popColourPicker()
+{
+	wxColour col = wxGetColourFromUser(GetParent(), wxColour(colour.r, colour.g, colour.b));
+
+	if (col.Ok())
+	{
+		colour.r = col.Red();
+		colour.g = col.Green();
+		colour.b = col.Blue();
+		sendChangeEvent();
+		Refresh();
+	}
+}
+
+/* ColourBox::PopAlphaSlider
+ * Pops up an alpha slider control if alpha is enabled, and sends a
+ * change event after a value is selected.
+ *******************************************************************/
+void ColourBox::popAlphaSlider()
+{
+	// Do nothing if alpha disabled
+	if (!alpha)
+		return;
+
+	// Popup a dialog with a slider control for alpha
+	wxDialog dlg(NULL, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
+	wxBoxSizer* box = new wxBoxSizer(wxVERTICAL);
+	dlg.SetSizer(box);
+	wxSlider* slider = new wxSlider(&dlg, -1, colour.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+	box->Add(slider, 1, wxEXPAND | wxALL, 4);
+	box->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 4);
+	dlg.SetInitialSize();
+
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		colour.a = slider->GetValue();
+		sendChangeEvent();
+		Refresh();
+	}
 }
 
 
@@ -126,65 +195,35 @@ void ColourBox::onPaint(wxPaintEvent& e)
 }
 
 /* ColourBox::onMouseLeftDown
- * Called when the colour box is left clicked. Pops up either a
- * colour selection dialog, or a palette dialog if a palette has been
- * given to the colour box
+ * Called when the colour box is left clicked. 
  *******************************************************************/
 void ColourBox::onMouseLeftDown(wxMouseEvent& e)
 {
-	if (!palette)
+	if (!palette || altmode)
 	{
-		wxColour col = wxGetColourFromUser(GetParent(), wxColour(colour.r, colour.g, colour.b));
-
-		if (col.Ok())
-		{
-			colour.r = col.Red();
-			colour.g = col.Green();
-			colour.b = col.Blue();
-			sendChangeEvent();
-			Refresh();
-		}
+		popColourPicker();
 	}
 	else
 	{
-		PaletteDialog pd(palette);
-		if (pd.ShowModal() == wxID_OK)
-		{
-			rgba_t col = pd.getSelectedColour();
-			if (col.a > 0)
-			{
-				colour = col;
-				sendChangeEvent();
-				Refresh();
-			}
-		}
+		popPalette();
 	}
 }
 
 /* ColourBox::onMouseRightDown
- * Called when the colour box is right clicked. Pops up a simple
- * dialog with a slider control to select the colour alpha value,
- * if alpha is enabled
+ * Called when the colour box is right clicked. 
  *******************************************************************/
 void ColourBox::onMouseRightDown(wxMouseEvent& e)
 {
-	// Do nothing if alpha disabled
-	if (!alpha)
-		return;
-
-	// Popup a dialog with a slider control for alpha
-	wxDialog dlg(NULL, -1, "Set Alpha", wxDefaultPosition, wxDefaultSize);
-	wxBoxSizer* box = new wxBoxSizer(wxVERTICAL);
-	dlg.SetSizer(box);
-	wxSlider* slider = new wxSlider(&dlg, -1, colour.a, 0, 255, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-	box->Add(slider, 1, wxEXPAND|wxALL, 4);
-	box->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 4);
-	dlg.SetInitialSize();
-
-	if (dlg.ShowModal() == wxID_OK)
+	if (altmode && palette)
 	{
-		colour.a = slider->GetValue();
-		sendChangeEvent();
-		Refresh();
+		popPalette();
+	}
+	else if (alpha)
+	{
+		popAlphaSlider();
+	}
+	else
+	{
+		popColourPicker();
 	}
 }
