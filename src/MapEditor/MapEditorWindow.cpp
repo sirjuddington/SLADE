@@ -498,6 +498,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 		else
 			return true;
 	}
+	return false;
 }
 
 /* MapEditorWindow::openMap

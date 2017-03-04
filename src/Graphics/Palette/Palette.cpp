@@ -694,6 +694,56 @@ void Palette8bit::applyTranslation(Translation* trans)
 				temp.setColour(i, colours[di]);
 			}
 		}
+
+		// Colourised range
+		else if (r->getType() == TRANS_COLOURISE)
+		{
+			TransRangeColourise* tc = (TransRangeColourise*)r;
+			for (unsigned i = tc->oStart(); i <= tc->oEnd(); i++)
+			{
+				// Get colours
+				rgba_t col = colours[i];
+				rgba_t colour = tc->getColour();
+
+				// Colourise
+				float grey = (col.r*col_greyscale_r + col.g*col_greyscale_g + col.b*col_greyscale_b) / 255.0f;
+				if (grey > 1.0) grey = 1.0;
+				col.r = colour.r*grey;
+				col.g = colour.g*grey;
+				col.b = colour.b*grey;
+
+				// Find nearest colour in palette
+				uint8_t di = nearestColour(col);
+
+				// Apply new colour
+				temp.setColour(i, colours[di]);
+			}
+		}
+
+		// Tinted range
+		else if (r->getType() == TRANS_TINT)
+		{
+			TransRangeTint* tt = (TransRangeTint*)r;
+			for (unsigned i = tt->oStart(); i <= tt->oEnd(); i++)
+			{
+				// Get colours
+				rgba_t col = colours[i];
+				rgba_t colour = tt->getColour();
+
+				// Tint
+				float amount = tt->getAmount() * 0.01f;
+				float inv_amt = 1.0f - amount;
+				col.r = col.r*inv_amt + colour.r*amount;
+				col.g = col.g*inv_amt + colour.g*amount;
+				col.b = col.b*inv_amt + colour.b*amount;
+
+				// Find nearest colour in palette
+				uint8_t di = nearestColour(col);
+
+				// Apply new colour
+				temp.setColour(i, colours[di]);
+			}
+		}
 	}
 
 	// Load translated palette
