@@ -312,8 +312,8 @@ bool GfxCanvas::onImage(int x, int y)
 
 	if (view_type == GFXVIEW_DEFAULT)
 	{
-		left = 0;
-		top = 0;
+		left = offset.x;
+		top = offset.y;
 	}
 	else if (view_type == GFXVIEW_CENTERED)
 	{
@@ -352,8 +352,8 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 
 	if (view_type == GFXVIEW_DEFAULT)
 	{
-		left = 0;
-		top = 0;
+		left = offset.x;
+		top = offset.y;
 	}
 	else if (view_type == GFXVIEW_CENTERED)
 	{
