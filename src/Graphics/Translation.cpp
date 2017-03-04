@@ -67,7 +67,7 @@ void Translation::parse(string def)
 {
 	// Open definition string for processing w/tokenizer
 	Tokenizer tz;
-	tz.setSpecialCharacters("[]:%,=");
+	tz.setSpecialCharacters("[]:%,=#@");
 	tz.openString(def);
 
 	//wxLogMessage("Parse translation \"%s\"", def);
@@ -168,7 +168,7 @@ void Translation::parse(string def)
 		}
 		translations.push_back(tr);
 
-		//wxLogMessage("Added colour translation");
+		wxLogMessage("Added colour translation");
 	}
 	else if (tz.peekToken() == "%")
 	{
@@ -224,7 +224,48 @@ void Translation::parse(string def)
 		}
 		translations.push_back(tr);
 
-		//wxLogMessage("Added desat translation");
+		wxLogMessage("Added desat translation");
+	}
+	else if (tz.peekToken() == "#")
+	{
+		// Colourise translation
+		rgba_t col;
+		tz.skipToken(); // skip #
+		if (!tz.checkToken("[")) return;
+		col.r = tz.getInteger();
+		if (!tz.checkToken(",")) return;
+		col.g = tz.getInteger();
+		if (!tz.checkToken(",")) return;
+		col.b = tz.getInteger();
+		if (!tz.checkToken("]")) return;
+		TransRangeColourise* tr = new TransRangeColourise();
+		tr->o_start = o_start;
+		tr->o_end = o_end;
+		tr->setColour(col);
+		translations.push_back(tr);
+		DPrintf("Added colourise translation");
+	}
+	else if (tz.peekToken() == '@')
+	{
+		// Tint translation
+		rgba_t col;
+		uint8_t amount;
+		tz.skipToken(); // skip @
+		amount = tz.getInteger();
+		if (!tz.checkToken("[")) return;
+		col.r = tz.getInteger();
+		if (!tz.checkToken(",")) return;
+		col.g = tz.getInteger();
+		if (!tz.checkToken(",")) return;
+		col.b = tz.getInteger();
+		if (!tz.checkToken("]")) return;
+		TransRangeTint* tr = new TransRangeTint();
+		tr->o_start = o_start;
+		tr->o_end = o_end;
+		tr->setColour(col);
+		tr->setAmount(amount);
+		translations.push_back(tr);
+		DPrintf("Added tint translation");
 	}
 	else
 	{
@@ -254,7 +295,7 @@ void Translation::parse(string def)
 		}
 		translations.push_back(tr);
 
-		//wxLogMessage("Added range translation");
+		wxLogMessage("Added range translation");
 	}
 }
 
@@ -355,6 +396,10 @@ void Translation::copy(Translation& copy)
 			translations.push_back(new TransRangeColour((TransRangeColour*)copy.translations[a]));
 		if (copy.translations[a]->type == TRANS_DESAT)
 			translations.push_back(new TransRangeDesat((TransRangeDesat*)copy.translations[a]));
+		if (copy.translations[a]->type == TRANS_COLOURISE)
+			translations.push_back(new TransRangeColourise((TransRangeColourise*)copy.translations[a]));
+		if (copy.translations[a]->type == TRANS_TINT)
+			translations.push_back(new TransRangeTint((TransRangeTint*)copy.translations[a]));
 	}
 
 	built_in_name = copy.built_in_name;
@@ -387,6 +432,12 @@ void Translation::addRange(int type, int pos)
 		break;
 	case TRANS_DESAT:
 		tr = new TransRangeDesat();
+		break;
+	case TRANS_COLOURISE:
+		tr = new TransRangeColourise();
+		break;
+	case TRANS_TINT:
+		tr = new TransRangeTint();
 		break;
 	default:
 		tr = new TransRangePalette();

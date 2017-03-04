@@ -1340,33 +1340,33 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 		{
 			TransRange* r = tr->getRange(a);
 
+			// Check pixel is within translation range
+			if (i < r->oStart() || i > r->oEnd())
+				continue;
+
 			// Palette range translation
 			if (r->getType() == TRANS_PALETTE)
 			{
 				TransRangePalette* tp = (TransRangePalette*)r;
 
-				// Check pixel is within translation range
-				if (i >= tp->oStart() && i <= tp->oEnd())
+				// Figure out how far along the range this colour is
+				double range_frac = 0;
+				if (tp->oStart() != tp->oEnd())
+					range_frac = double(i - tp->oStart()) / double(tp->oEnd() - tp->oStart());
+
+				// Determine destination palette index
+				uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
+
+				// Apply new colour
+				data[p] = di;
+				if (truecolor)
 				{
-					// Figure out how far along the range this colour is
-					double range_frac = 0;
-					if (tp->oStart() != tp->oEnd())
-						range_frac = double(i - tp->oStart()) / double(tp->oEnd() - tp->oStart());
-
-					// Determine destination palette index
-					uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
-
-					// Apply new colour
-					data[p] = di;
-					if (truecolor)
-					{
-						int q = p*4;
-						rgba_t col = pal->colour(di);
-						newdata[q+0] = col.r;
-						newdata[q+1] = col.g;
-						newdata[q+2] = col.b;
-						newdata[q+3] = mask ? mask[p] : col.a;
-					}
+					int q = p * 4;
+					rgba_t col = pal->colour(di);
+					newdata[q + 0] = col.r;
+					newdata[q + 1] = col.g;
+					newdata[q + 2] = col.b;
+					newdata[q + 3] = mask ? mask[p] : col.a;
 				}
 			}
 
@@ -1375,32 +1375,28 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 			{
 				TransRangeColour* tc = (TransRangeColour*)r;
 
-				// Check pixel is within translation range
-				if (i >= tc->oStart() && i <= tc->oEnd())
+				// Figure out how far along the range this colour is
+				double range_frac = 0;
+				if (tc->oStart() != tc->oEnd())
+					range_frac = double(i - tc->oStart()) / double(tc->oEnd() - tc->oStart());
+
+				// Determine destination colour
+				uint8_t r = tc->dStart().r + range_frac * (tc->dEnd().r - tc->dStart().r);
+				uint8_t g = tc->dStart().g + range_frac * (tc->dEnd().g - tc->dStart().g);
+				uint8_t b = tc->dStart().b + range_frac * (tc->dEnd().b - tc->dStart().b);
+
+				// Find nearest colour in palette
+				uint8_t di = pal->nearestColour(rgba_t(r, g, b));
+
+				// Apply new colour
+				data[p] = di;
+				if (truecolor)
 				{
-					// Figure out how far along the range this colour is
-					double range_frac = 0;
-					if (tc->oStart() != tc->oEnd())
-						range_frac = double(i - tc->oStart()) / double(tc->oEnd() - tc->oStart());
-
-					// Determine destination colour
-					uint8_t r = tc->dStart().r + range_frac * (tc->dEnd().r - tc->dStart().r);
-					uint8_t g = tc->dStart().g + range_frac * (tc->dEnd().g - tc->dStart().g);
-					uint8_t b = tc->dStart().b + range_frac * (tc->dEnd().b - tc->dStart().b);
-
-					// Find nearest colour in palette
-					uint8_t di = pal->nearestColour(rgba_t(r, g, b));
-
-					// Apply new colour
-					data[p] = di;
-					if (truecolor)
-					{
-						int q = p*4;
-						newdata[q+0] = r;
-						newdata[q+1] = g;
-						newdata[q+2] = b;
-						newdata[q+3] = mask ? mask[p] : 255;
-					}
+					int q = p * 4;
+					newdata[q + 0] = r;
+					newdata[q + 1] = g;
+					newdata[q + 2] = b;
+					newdata[q + 3] = mask ? mask[p] : 255;
 				}
 			}
 
@@ -1409,31 +1405,89 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 			{
 				TransRangeDesat* td = (TransRangeDesat*)r;
 
-				// Check pixel is within translation range
-				if (i >= td->oStart() && i <= td->oEnd())
+				// Get greyscale colour
+				rgba_t col = pal->colour(i);
+				float grey = (col.r*0.3f + col.g*0.59f + col.b*0.11f) / 255.0f;
+
+				// Determine destination colour
+				uint8_t r = MIN(255, int((td->dSr() + grey*(td->dEr() - td->dSr()))*255.0f));
+				uint8_t g = MIN(255, int((td->dSg() + grey*(td->dEg() - td->dSg()))*255.0f));
+				uint8_t b = MIN(255, int((td->dSb() + grey*(td->dEb() - td->dSb()))*255.0f));
+
+				// Find nearest colour in palette
+				uint8_t di = pal->nearestColour(rgba_t(r, g, b));
+
+				// Apply new colour
+				data[p] = di;
+				if (truecolor)
 				{
-					// Get greyscale colour
-					rgba_t col = pal->colour(i);
-					float grey = (col.r*0.3f + col.g*0.59f + col.b*0.11f) / 255.0f;
+					int q = p * 4;
+					newdata[q + 0] = r;
+					newdata[q + 1] = g;
+					newdata[q + 2] = b;
+					newdata[q + 3] = mask ? mask[p] : 255;
+				}
+			}
 
-					// Determine destination colour
-					uint8_t r = MIN(255, int((td->dSr() + grey*(td->dEr() - td->dSr()))*255.0f));
-					uint8_t g = MIN(255, int((td->dSg() + grey*(td->dEg() - td->dSg()))*255.0f));
-					uint8_t b = MIN(255, int((td->dSb() + grey*(td->dEb() - td->dSb()))*255.0f));
+			// Colourised range
+			else if (r->getType() == TRANS_COLOURISE)
+			{
+				TransRangeColourise* tc = (TransRangeColourise*)r;
 
-					// Find nearest colour in palette
-					uint8_t di = pal->nearestColour(rgba_t(r, g, b));
+				// Get colours
+				rgba_t col = pal->colour(i);
+				rgba_t colour = tc->getColour();
 
-					// Apply new colour
-					data[p] = di;
-					if (truecolor)
-					{
-						int q = p*4;
-						newdata[q+0] = r;
-						newdata[q+1] = g;
-						newdata[q+2] = b;
-						newdata[q+3] = mask ? mask[p] : 255;
-					}
+				// Colourise
+				float grey = (col.r*col_greyscale_r + col.g*col_greyscale_g + col.b*col_greyscale_b) / 255.0f;
+				if (grey > 1.0) grey = 1.0;
+				col.r = colour.r*grey;
+				col.g = colour.g*grey;
+				col.b = colour.b*grey;
+
+				// Find nearest colour in palette
+				uint8_t di = pal->nearestColour(col);
+
+				// Apply new colour
+				data[p] = di;
+				if (truecolor)
+				{
+					int q = p * 4;
+					newdata[q + 0] = col.r;
+					newdata[q + 1] = col.g;
+					newdata[q + 2] = col.b;
+					newdata[q + 3] = mask ? mask[p] : 255;
+				}
+			}
+
+			// Colourised range
+			else if (r->getType() == TRANS_TINT)
+			{
+				TransRangeTint* tt = (TransRangeTint*)r;
+
+				// Get colours
+				rgba_t col = pal->colour(i);
+				rgba_t colour = tt->getColour();
+
+				// Colourise
+				float amount = tt->getAmount() * 0.01f;
+				float inv_amt = 1.0f - amount;
+				col.r = col.r*inv_amt + colour.r*amount;
+				col.g = col.g*inv_amt + colour.g*amount;
+				col.b = col.b*inv_amt + colour.b*amount;
+
+				// Find nearest colour in palette
+				uint8_t di = pal->nearestColour(col);
+
+				// Apply new colour
+				data[p] = di;
+				if (truecolor)
+				{
+					int q = p * 4;
+					newdata[q + 0] = col.r;
+					newdata[q + 1] = col.g;
+					newdata[q + 2] = col.b;
+					newdata[q + 3] = mask ? mask[p] : 255;
 				}
 			}
 		}
@@ -1504,15 +1558,12 @@ bool SImage::applyTranslation(string tr, Palette8bit* pal)
 	if (tr.StartsWith("\"$@", &table))
 	{
 		table.RemoveLast(1); // remove the closing '\"'
-		Archive *bra = theArchiveManager->baseResourceArchive();
-		if (bra)
+		ArchiveEntry *trantbl = theArchiveManager->getResourceEntry(table);
+		
+		if (trantbl && trantbl->getSize() == 256)
 		{
-			ArchiveEntry *trantbl = bra->getEntry(table);
-			if (trantbl && trantbl->getSize() == 256)
-			{
-				trans.read(trantbl->getData());
-				return applyTranslation(&trans, pal);
-			}
+			trans.read(trantbl->getData());
+			return applyTranslation(&trans, pal);
 		}
 	}
 	Tokenizer tz;
