@@ -675,8 +675,8 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 	// SWITCHES
 	else if (type == "switches")
 	{
-		columns.push_back(dep_column_t("On Texture", COL_STRING, 8, 0));
-		columns.push_back(dep_column_t("Off Texture", COL_STRING, 8, 9));
+		columns.push_back(dep_column_t("Off Texture", COL_STRING, 8, 0));
+		columns.push_back(dep_column_t("On Texture", COL_STRING, 8, 9));
 
 		dep_column_t col_type("Type", COL_CUSTOM_VALUE, 2, 18);
 		col_type.addCustomValue(SWCH_DEMO, "Shareware");
@@ -697,8 +697,8 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		col_type.addCustomValue(3, "Texture (Decals)");
 
 		columns.push_back(col_type);
-		columns.push_back(dep_column_t("First Texture", COL_STRING, 8, 1));
-		columns.push_back(dep_column_t("Last Texture", COL_STRING, 8, 10));
+		columns.push_back(dep_column_t("Last Texture", COL_STRING, 8, 1));
+		columns.push_back(dep_column_t("First Texture", COL_STRING, 8, 10));
 		columns.push_back(dep_column_t("Speed (Tics)", COL_INT_UNSIGNED, 4, 19));
 		row_stride = 23;
 	}
