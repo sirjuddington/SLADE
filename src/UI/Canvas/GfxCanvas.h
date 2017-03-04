@@ -23,7 +23,7 @@ private:
 	SImage*		image;
 	int			view_type;	// 0=default, 1=centered, 2=sprite offsets, 3=hud offsets, 4=tiled
 	double		scale;
-	fpoint2_t	offset;
+	fpoint2_t	offset;		// panning offsets (not image offsets)
 	GLTexture*	tex_image;
 	bool		update_texture;
 	bool		image_hilight;
