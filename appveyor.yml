@@ -1,0 +1,37 @@
+version: 1.0.{build}
+configuration:
+- Release - WinXP
+- Release
+init:
+- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+environment:
+  WXWIN: C:\Dev\Libs\wxWidgets-3.1.0
+  FREEIMAGEzip: C:\Dev\Libs\
+  SFMLzip: C:\Dev\Libs\
+  FREEIMAGE: C:\Dev\Libs\FreeImage
+  SFML: C:\Dev\Libs\SFML-2.3.2
+  CURL: C:\Dev\Libs\CURL
+install:
+- cmd: "IF NOT EXIST \"%CURL%\" git clone https://github.com/curl/curl.git %CURL%\nIF NOT EXIST \"%WXWIN%\" appveyor DownloadFile \"https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.0/wxWidgets-3.1.0.7z\"\nIF NOT EXIST \"%SFML%\" appveyor DownloadFile \"http://www.sfml-dev.org/files/SFML-2.3.2-windows-vc14-32-bit.zip\"\nIF NOT EXIST \"%FREEIMAGE%\" appveyor DownloadFile \"http://download2.nust.na/pub4/sourceforge/f/project/fr/freeimage/Binary Distribution/3.17.0/FreeImage3170Win32Win64.zip\"\nIF NOT EXIST \"%WXWIN%\" 7z x wxWidgets-3.1.0.7z -o%WXWIN% -aoa -y\nIF NOT EXIST \"%SFML%\" 7z x SFML-2.3.2-windows-vc14-32-bit.zip -o%SFMLzip% -aoa -y\nIF NOT EXIST \"%FREEIMAGE%\" 7z x FreeImage3170Win32Win64.zip -o%FREEIMAGEzip% -aoa -y\ncd %CURL%\\winbuild\n\"C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\Common7\\Tools\\VsDevCmd.bat\"\nnmake -f Makefile.vc mode=static VC=14 DEBUG=no\necho f | xcopy /f /Y \"%CURL%\\builds\\libcurl-vc14-x86-release-static-ipv6-sspi-winssl-obj-lib\\libcurl_a.lib\" \"%CURL%\\lib\\libcurl_a.lib\"\necho f | xcopy /f /y \"%CURL%\\builds\\libcurl-vc14-x86-release-static-ipv6-sspi-winssl-obj-lib\\libcurl_a.lib\" \"C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\lib\" \ncd %APPVEYOR_BUILD_FOLDER%\nSET PATH=%APPVEYOR_BUILD_FOLDER%;%PATH%;CURL;%CURL%\\builds"
+cache:
+- C:\Dev\Libs\wxWidgets-3.1.0
+- C:\Dev\Libs\FreeImage
+- C:\Dev\Libs\SFML-2.3.2
+- C:\Dev\Libs\CURL
+before_build:
+- cmd: msbuild %WXWIN%\build\msw\wx_vc14.sln /p:Configuration="Release" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+build:
+  project: build\msvc\SLADE.sln
+  verbosity: normal
+before_package:
+- cmd: >-
+    git rev-parse --short %APPVEYOR_REPO_COMMIT%>%TMP%/gitshort.txt
+
+    set /P GITSHORT=<%TMP%/gitshort.txt
+
+    set BUILD_ARCHIVE="%APPVEYOR_REPO_BRANCH%-%GITSHORT%-%CONFIGURATION%".7z
+after_build:
+- cmd: >-
+    7z a %BUILD_ARCHIVE% dist -xr!.gitignore
+
+    appveyor PushArtifact %BUILD_ARCHIVE%
