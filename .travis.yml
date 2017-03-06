@@ -220,6 +220,7 @@ before_script:
   - cd ..
   - export CFLAGS="-Wall -W -Werror $WFLAGS"
   - export CCACHE_COMPRESS=true
+  - cd /dist 
   - cmake .. -DCMAKE_BUILD_TYPE=Release
 
 script: make -k
