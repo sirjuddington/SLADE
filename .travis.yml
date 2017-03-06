@@ -215,7 +215,7 @@ before_script:
   - make
   - make install
   - ldconfig
-  cd ..
+  - cd ..
   - export CFLAGS="-Wall -W -Werror $WFLAGS"
   - export CCACHE_COMPRESS=true
   - cmake .. -DCMAKE_BUILD_TYPE=Release
