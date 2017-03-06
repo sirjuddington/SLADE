@@ -1234,6 +1234,66 @@ CONSOLE_COMMAND (crop, 4, true)
 	}
 }
 
+CONSOLE_COMMAND(adjust, 0, true)
+{
+	ArchivePanel* foo = CH::getCurrentArchivePanel();
+	if (!foo)
+	{
+		wxLogMessage("No active panel.");
+		return;
+	}
+	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
+	if (!meep)
+	{
+		wxLogMessage("No image selected.");
+		return;
+	}
+	ArchiveEntry* bar = foo->currentEntry();
+	if (!bar)
+	{
+		wxLogMessage("No active entry.");
+		return;
+	}
+	if (meep->getImage())
+	{
+		meep->getImage()->adjust();
+		meep->refresh();
+		MemChunk mc;
+		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+			bar->importMemChunk(mc);
+	}
+}
+
+CONSOLE_COMMAND(mirrorpad, 0, true)
+{
+	ArchivePanel* foo = CH::getCurrentArchivePanel();
+	if (!foo)
+	{
+		wxLogMessage("No active panel.");
+		return;
+	}
+	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
+	if (!meep)
+	{
+		wxLogMessage("No image selected.");
+		return;
+	}
+	ArchiveEntry* bar = foo->currentEntry();
+	if (!bar)
+	{
+		wxLogMessage("No active entry.");
+		return;
+	}
+	if (meep->getImage())
+	{
+		meep->getImage()->mirrorpad();
+		meep->refresh();
+		MemChunk mc;
+		if (meep->getImage()->getFormat()->saveImage(*meep->getImage(), mc))
+			bar->importMemChunk(mc);
+	}
+}
+
 CONSOLE_COMMAND(imgconv, 0, true)
 {
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
