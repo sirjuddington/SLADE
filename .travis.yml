@@ -209,6 +209,7 @@ addons:
     - libgtk-3-dev
 before_script:
   - git clone https://github.com/wxWidgets/wxWidgets.git
+  - cd wxWidgets
   - mkdir buildgtk
   - cd buildgtk
   - ../configure --with-gtk --enable-mediactrl --enable-webview
