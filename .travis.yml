@@ -15,15 +15,15 @@ matrix:
               - libfluidsynth-dev 
               - libsfml-dev 
               - libgstreamer0.10-dev 
-             - libgstreamer-plugins-base0.10-dev 
-             - libgconf2-dev freeglut3-dev 
-             - libmodplug-dev 
-             - libwebkit-dev 
-             - libwxgtk3.0-dev 
-             - libwxgtk-media3.0-dev 
-             - libcurl4-openssl-dev 
-             - libwxgtk-webview3.0-dev
-             - gcc-4.4
+              - libgstreamer-plugins-base0.10-dev 
+              - libgconf2-dev freeglut3-dev 
+              - libmodplug-dev 
+              - libwebkit-dev 
+              - libwxgtk3.0-dev 
+              - libwxgtk-media3.0-dev 
+              - libcurl4-openssl-dev 
+              - libwxgtk-webview3.0-dev
+              - gcc-4.4
           compiler: gcc-4.4
           #gcc-4.4 (Ubuntu/Linaro 4.4.7-8ubuntu1) 4.4.7
         - os: linux
