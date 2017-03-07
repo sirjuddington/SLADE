@@ -48,7 +48,7 @@ NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) : wxTextCtr
 	last_point = 0;
 	this->allow_decimal = allow_decimal;
 
-	SetToolTip("Use ++ or -- to make relative changes, e.g., ++16 to increase by 16");
+	SetToolTip("Use ++, --, *, / to make relative changes, e.g., ++16 to increase by 16");
 
 	// Bind events
 	Bind(wxEVT_CHAR, &NumberTextCtrl::onChar, this);
@@ -67,9 +67,9 @@ int NumberTextCtrl::getNumber(int base)
 	long lval;
 	if (val.IsEmpty())
 		return 0;
-	else if (val.StartsWith("--") || val.StartsWith("++"))
+	else if (val.StartsWith("--") || val.StartsWith("++") || val.StartsWith("**") || val.StartsWith("//"))
 		val = val.Mid(2);
-	else if (val.StartsWith("+"))
+	else if (val.StartsWith("+") || val.StartsWith("*") || val.StartsWith("/"))
 		val = val.Mid(1);
 	val.ToLong(&lval);
 
@@ -78,6 +78,10 @@ int NumberTextCtrl::getNumber(int base)
 		return base + lval;
 	else if (isDecrement())
 		return base - lval;
+	else if (isFactor())
+		return base * lval;
+	else if (isDivisor())
+		return base / lval;
 	else
 		return lval;
 }
@@ -129,6 +133,22 @@ bool NumberTextCtrl::isDecrement()
 	return GetValue().StartsWith("--");
 }
 
+/* NumberTextCtrl::isFactor
+ * Returns true if the entered value is an increment
+ *******************************************************************/
+bool NumberTextCtrl::isFactor()
+{
+	return GetValue().StartsWith("*");
+}
+
+/* NumberTextCtrl::isDivisor
+ * Returns true if the entered value is a decrement
+ *******************************************************************/
+bool NumberTextCtrl::isDivisor()
+{
+	return GetValue().StartsWith("/");
+}
+
 /* NumberTextCtrl::setNumber
  * Sets the text control value to [num]
  *******************************************************************/
@@ -167,7 +187,7 @@ void NumberTextCtrl::onChar(wxKeyEvent& e)
 	bool valid = false;
 	if (key >= '0' && key <= '9')
 		valid = true;
-	if (key == '-' || key == '+')
+	if (key == '-' || key == '+' || key == '*' || key == '/')
 		valid = true;
 	if (allow_decimal && key == '.')
 		valid = true;
@@ -189,6 +209,8 @@ void NumberTextCtrl::onChanged(wxCommandEvent& e)
 	bool valid = true;
 	int plus = 0;
 	int minus = 0;
+	int splat = 0;
+	int slash = 0;
 	int decimal = 0;
 	for (unsigned a = 0; a < new_value.size(); a++)
 	{
@@ -202,9 +224,9 @@ void NumberTextCtrl::onChanged(wxCommandEvent& e)
 		// Check for +
 		if (new_value.at(a) == '+')
 		{
-			if (num || plus == 2 || minus > 0)
+			if (num || plus == 2 || minus > 0 || splat > 0 || slash > 0)
 			{
-				// We've had a number, '-' or 2 '+' already, invalid
+				// We've had a number, a different operator, or 2 '+' already, invalid
 				valid = false;
 				break;
 			}
@@ -215,14 +237,40 @@ void NumberTextCtrl::onChanged(wxCommandEvent& e)
 		// Check for -
 		else if (new_value.at(a) == '-')
 		{
-			if (num || minus == 2 || plus > 0)
+			if (num || minus == 2 || plus > 0 || splat > 0 || slash > 0)
 			{
-				// We've had a number, '+' or 2 '-' already, invalid
+				// We've had a number, a different operator, or 2 '-' already, invalid
 				valid = false;
 				break;
 			}
 			else
 				minus++;
+		}
+
+		// Check for *
+		if (new_value.at(a) == '*')
+		{
+			if (num || splat == 2 || plus > 0 || minus > 0 || slash > 0)
+			{
+				// We've had a number, a different operator, or 2 '*' already, invalid
+				valid = false;
+				break;
+			}
+			else
+				splat++;
+		}
+
+		// Check for /
+		if (new_value.at(a) == '/')
+		{
+			if (num || slash == 2 || plus > 0 || minus > 0 || splat > 0)
+			{
+				// We've had a number, a different operator, or 2 '/' already, invalid
+				valid = false;
+				break;
+			}
+			else
+				slash++;
 		}
 
 		// Check for .
