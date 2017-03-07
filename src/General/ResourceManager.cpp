@@ -291,6 +291,9 @@ uint16_t ResourceManager::getTextureHash(string name)
  *******************************************************************/
 void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
 {
+	if (!entry.get())
+		return;
+
 	// Detect type if unknown
 	if (entry->getType() == EntryType::unknownType())
 		EntryType::detectEntryType(entry.get());
@@ -395,6 +398,9 @@ void ResourceManager::addEntry(ArchiveEntry::SPtr& entry)
  *******************************************************************/
 void ResourceManager::removeEntry(ArchiveEntry::SPtr& entry)
 {
+	if (!entry.get())
+		return;
+
 	// Get resource name (extension cut, uppercase)
 	string name = entry->getUpperNameNoExt();
 	string path = entry->getPath(true).Upper().Mid(1);

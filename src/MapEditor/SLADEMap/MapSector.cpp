@@ -732,7 +732,7 @@ void MapSector::readBackup(mobj_backup_t* backup)
 	c_tex = backup->props_internal["textureceiling"].getStringValue();
 	f_height = backup->props_internal["heightfloor"].getIntValue();
 	c_height = backup->props_internal["heightceiling"].getIntValue();
-	plane_floor.set(0, 0, 1, c_height);
+	plane_floor.set(0, 0, 1, f_height);
 	plane_ceiling.set(0, 0, 1, c_height);
 	light = backup->props_internal["lightlevel"].getIntValue();
 	special = backup->props_internal["special"].getIntValue();
