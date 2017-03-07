@@ -1853,3 +1853,138 @@ bool SImage::tint(rgba_t colour, float amount, Palette8bit* pal, int start, int 
 
 	return true;
 }
+
+/* SImage::adjust
+ * Automatically crop the image to remove fully transparent rows and
+ * columns from the sides. Returns true if successfully cropped.
+ *******************************************************************/
+bool SImage::adjust()
+{
+	int x1 = 0, x2 = width, y1 = 0, y2 = height;
+
+	// Loop for empty columns on the left
+	bool opaquefound = false;
+	while (x1 < x2)
+	{
+		for (int i = 0; i < y2; ++i)
+		{
+			size_t p = i*width + x1; // Pixel position
+			switch (type)
+			{
+			case PALMASK:	// Transparency is mask[p] == 0
+				if (mask[p])
+					opaquefound = true;
+				break;
+			case RGBA:		// Transparency is data[p*4 + 3] == 0
+				if (data[p * 4 + 3])
+					opaquefound = true;
+				break;
+			case ALPHAMAP:	// Transparency is data[p] == 0
+				if (data[p])
+					opaquefound = true;
+				break;
+			}
+			if (opaquefound) break;
+		}
+		if (opaquefound) break;
+		++x1;
+	}
+
+	if (x1 == x2) // Empty image, all columns are empty, crop it to a single pixel
+		return crop(0, 0, 1, 1);
+
+	// Now loop for empty columns on the right
+	opaquefound = false;
+	while (x2 > x1)
+	{
+		for (int i = 0; i < y2; ++i)
+		{
+			size_t p = i*width + x2 - 1;
+			switch (type)
+			{
+			case PALMASK:	if (mask[p]) opaquefound = true; break;
+			case RGBA:		if (data[p * 4 + 3]) opaquefound = true; break;
+			case ALPHAMAP:	if (data[p]) opaquefound = true; break;
+			}
+			if (opaquefound) break;
+		}
+		if (opaquefound) break;
+		--x2;
+	}
+
+	// Now loop for empty rows from the top
+	opaquefound = false;
+	while (y1 < y2)
+	{
+		for (int i = x1; i < x2; ++i)
+		{
+			size_t p = y1*width + i;
+			switch (type)
+			{
+			case PALMASK:	if (mask[p]) opaquefound = true; break;
+			case RGBA:		if (data[p * 4 + 3]) opaquefound = true; break;
+			case ALPHAMAP:	if (data[p]) opaquefound = true; break;
+			}
+			if (opaquefound) break;
+		}
+		if (opaquefound) break;
+		++y1;
+	}
+
+	// Finally loop for empty rows from the bottom
+
+	opaquefound = false;
+	while (y2 > y1)
+	{
+		for (int i = x1; i < x2; ++i)
+		{
+			size_t p = (y2 - 1)*width + i;
+			switch (type)
+			{
+			case PALMASK:	if (mask[p]) opaquefound = true; break;
+			case RGBA:		if (data[p * 4 + 3]) opaquefound = true; break;
+			case ALPHAMAP:	if (data[p]) opaquefound = true; break;
+			}
+			if (opaquefound) break;
+		}
+		if (opaquefound) break;
+		--y2;
+	}
+
+	// Now we've found the coordinates, so we can crop
+	if (x1 == 0 && y1 == 0 && x2 == width && y2 == height)
+		return false; // No adjustment needed
+	return crop(x1, y1, x2, y2);
+}
+
+bool SImage::mirrorpad()
+{
+	// Only pad images that actually have offsets
+	if (offset_x == 0 && offset_y == 0)
+		return false;
+
+	// Only pad images that need it, so for instance if width is 10, and ofsx is 5,
+	// then the image is already mirrored. If width is 11, accept ofsx 5 or 6 as good.
+	if (offset_x == width / 2 || (width % 2 == 1 && offset_x == width / 2 + 1))
+		return false;
+
+	// Now we need to pad. Padding to the right can be done just by resizing the image,
+	// padding to the left requires flipping it, resizing it, and flipping it back.
+
+	bool needflip = offset_x < width / 2;
+	int extra = abs((offset_x * 2) - width);
+
+	bool success = true;
+	if (needflip)
+		success = mirror(false);
+	if (success)
+		success = resize(width + extra, height);
+	else
+		return false;
+	if (needflip && success)
+	{
+		success = mirror(false);
+		offset_x += extra;
+	}
+	return success;
+}

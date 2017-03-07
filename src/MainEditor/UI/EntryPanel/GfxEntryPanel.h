@@ -61,7 +61,6 @@ public:
 	void	onGfxOffsetChanged(wxEvent& e);
 	void	onBtnNextImg(wxCommandEvent& e);
 	void	onBtnPrevImg(wxCommandEvent& e);
-	void	onCustomMenu(wxCommandEvent& e);
 	void	onBtnAutoOffset(wxCommandEvent& e);
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 
