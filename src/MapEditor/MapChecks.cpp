@@ -56,6 +56,7 @@ public:
 
 	void doCheck()
 	{
+		string sky_flat = theGameConfiguration->skyFlat();
 		for (unsigned a = 0; a < map->nLines(); a++)
 		{
 			// Check what textures the line needs
@@ -64,11 +65,17 @@ public:
 			MapSide* side2 = line->s2();
 			int needs = line->needsTexture();
 
+			// Detect if sky hack might apply
+			bool sky_hack = false;
+			if (side1 && S_CMPNOCASE(sky_flat, side1->getSector()->getCeilingTex()) &&
+				side2 && S_CMPNOCASE(sky_flat, side2->getSector()->getCeilingTex()))
+				sky_hack = true;
+
 			// Check for missing textures (front side)
 			if (side1)
 			{
 				// Upper
-				if ((needs & TEX_FRONT_UPPER) > 0 && side1->stringProperty("texturetop") == "-")
+				if ((needs & TEX_FRONT_UPPER) > 0 && side1->stringProperty("texturetop") == "-" && !sky_hack)
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_FRONT_UPPER);
@@ -93,7 +100,7 @@ public:
 			if (side2)
 			{
 				// Upper
-				if ((needs & TEX_BACK_UPPER) > 0 && side2->stringProperty("texturetop") == "-")
+				if ((needs & TEX_BACK_UPPER) > 0 && side2->stringProperty("texturetop") == "-" && !sky_hack)
 				{
 					lines.push_back(line);
 					parts.push_back(TEX_BACK_UPPER);
