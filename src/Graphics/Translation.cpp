@@ -167,8 +167,6 @@ void Translation::parse(string def)
 			tr->d_end.set(end);
 		}
 		translations.push_back(tr);
-
-		wxLogMessage("Added colour translation");
 	}
 	else if (tz.peekToken() == "%")
 	{
@@ -223,8 +221,6 @@ void Translation::parse(string def)
 			tr->d_eb = eb;
 		}
 		translations.push_back(tr);
-
-		wxLogMessage("Added desat translation");
 	}
 	else if (tz.peekToken() == "#")
 	{
@@ -243,7 +239,6 @@ void Translation::parse(string def)
 		tr->o_end = o_end;
 		tr->setColour(col);
 		translations.push_back(tr);
-		DPrintf("Added colourise translation");
 	}
 	else if (tz.peekToken() == '@')
 	{
@@ -265,7 +260,6 @@ void Translation::parse(string def)
 		tr->setColour(col);
 		tr->setAmount(amount);
 		translations.push_back(tr);
-		DPrintf("Added tint translation");
 	}
 	else
 	{
@@ -294,8 +288,6 @@ void Translation::parse(string def)
 			tr->d_end = d_end;
 		}
 		translations.push_back(tr);
-
-		wxLogMessage("Added range translation");
 	}
 }
 
