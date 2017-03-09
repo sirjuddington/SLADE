@@ -53,6 +53,7 @@ endif()
 find_package(FreeImage REQUIRED)
 find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 find_package(FTGL REQUIRED)
+find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(CURL REQUIRED)
@@ -64,14 +65,20 @@ endif()
 
 set(SLADE_SOURCES
 )
-file(GLOB_RECURSE SLADE_SOURCES *.cpp)
-set(LUA_SOURCES
-)
-file(GLOB LUA_SOURCES External/lua/*.c)
-set(DUMB_SOURCES
-)
-file(GLOB_RECURSE DUMB_SOURCES External/dumb/*.c)
-
+# Don't include external libraries here as they should be compiled separately
+file(GLOB_RECURSE SLADE_SOURCES
+	Application/*.cpp
+	Archive/*.cpp
+	Audio/*.cpp
+	Dialogs/*.cpp
+	General/*.cpp
+	Graphics/*.cpp
+	MainEditor/*.cpp
+	MapEditor/*.cpp
+	OpenGL/*.cpp
+	UI/*.cpp
+	Utility/*.cpp
+	)
 set(SLADE_HEADERS
 )
 file(GLOB_RECURSE SLADE_HEADERS *.h *.hpp)
@@ -88,6 +95,9 @@ endif(APPLE)
 # enable SSE instructions for dumb library
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
+# External libraries are compiled separately to enable unity builds
+add_subdirectory(External)
+
 # c++14 is required to compile
 if(CMAKE_VERSION VERSION_LESS 3.1)
 	add_compile_options(-std=c++14)
@@ -97,18 +107,6 @@ else()
 endif()
 
 add_executable(slade WIN32 MACOSX_BUNDLE
-	External/lzma/C/LzmaDec.c
-	External/mus2mid/mus2mid.cpp
-	External/zreaders/files.cpp
-	External/zreaders/m_alloc.cpp
-	External/zreaders/i_music.cpp
-	External/zreaders/music_hmi_midiout.cpp
-	External/zreaders/music_midistream.cpp
-	External/zreaders/music_mus_midiout.cpp
-	External/zreaders/music_smf_midiout.cpp
-	External/zreaders/music_xmi_midiout.cpp
-	${LUA_SOURCES}
-	${DUMB_SOURCES}
 	${SLADE_SOURCES}
 	${SLADE_HEADERS}
 )
@@ -116,6 +114,7 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 target_link_libraries(slade
 	${ZLIB_LIBRARY}
 	${BZIP2_LIBRARIES}
+	${EXTERNAL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${FREEIMAGE_LIBRARIES}
 	${SFML_LIBRARY}
@@ -156,6 +155,13 @@ else(APPLE)
 endif(APPLE)
 
 if (NOT NO_COTIRE)
-	set_target_properties(slade PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "common.h")
+	set_target_properties(slade PROPERTIES
+		COTIRE_CXX_PREFIX_HEADER_INIT "common.h"
+		# Enable multithreaded unity builds by default
+		# because otherwise probably no one would realize how
+		COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES -j
+		# Fixes macro definition bleedout
+		COTIRE_UNITY_SOURCE_PRE_UNDEFS "Bool"
+		)
 	cotire(slade)
 endif()
