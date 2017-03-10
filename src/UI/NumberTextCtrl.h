@@ -19,6 +19,8 @@ public:
 	double	getDecNumber(double base = 0);
 	bool	isIncrement();
 	bool	isDecrement();
+	bool	isFactor();
+	bool	isDivisor();
 
 	void	setNumber(int num);
 	void	setDecNumber(double num);

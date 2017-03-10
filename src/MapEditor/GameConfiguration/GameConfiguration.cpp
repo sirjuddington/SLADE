@@ -1710,8 +1710,8 @@ bool GameConfiguration::thingBasicFlagSet(string flag, MapThing* thing, int map_
 	// Get current flags
 	unsigned long flags = thing->intProperty("flags");
 
-	// ZDoom uses Hexen-style flags
-	bool hexen = (currentGame() == "hexen") || (currentPort() == "zdoom");
+	// Hexen-style flags in Hexen-format maps
+	bool hexen = map_format == MAP_HEXEN;
 
 	// Easy Skill
 	if (flag == "skill2" || flag == "skill1")

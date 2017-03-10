@@ -464,7 +464,7 @@ void Tokenizer::readToken(bool toeol)
 
 	// Write token to log if debug mode enabled
 	if (debug)
-		wxLogMessage(token_current);
+		wxLogMessage("%s", token_current);
 
 	// Return the token
 	return;
