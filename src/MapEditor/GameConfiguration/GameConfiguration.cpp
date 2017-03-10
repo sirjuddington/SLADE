@@ -2491,7 +2491,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 				else if (S_CMPNOCASE(token, "Translation1"))
 					found_props["translation"] = S_FMT("doom%d", tz.getInteger());
 			}
-			while (token != "}");
+			while (token != "}" && !token.empty());
 
 			// Add only if a DoomEdNum is present
 			if (type > 0)
