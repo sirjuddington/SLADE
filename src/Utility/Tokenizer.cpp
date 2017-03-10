@@ -453,6 +453,11 @@ void Tokenizer::readToken(bool toeol)
 			if (!toeol && isSpecialCharacter(current[0]))
 				return;
 
+			// Return if a comment starts without whitespace
+			if (comments & CCOMMENTS && token_current.size() && current + 1 < end &&
+				current[0] == '/' && (current[1] == '/' || current[1] == '*'))
+				return;
+
 			// Add current character to the token
 			token_current += current[0];
 
