@@ -16,8 +16,8 @@ private:
 	TextureXList*	texturex;
 
 protected:
-	string	getItemText(long item, long column, long index) const;
-	void	updateItemAttr(long item, long column, long index) const;
+	string	getItemText(long item, long column, long index) const override;
+	void	updateItemAttr(long item, long column, long index) const override;
 
 public:
 	TextureXListView(wxWindow* parent, TextureXList* texturex);
@@ -25,9 +25,9 @@ public:
 
 	TextureXList*	txList() { return texturex; }
 
-	void		updateList(bool clear = false);
+	void		updateList(bool clear = false) override;
 	static bool	sizeSort(long left, long right);
-	void		sortItems();
+	void		sortItems() override;
 	void		setFilter(string filter) { filter_text = filter; updateList(); }
 	void		applyFilter() override;
 };

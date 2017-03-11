@@ -413,8 +413,8 @@ public:
 
 		// Otherwise, check if it can be cropped to a valid size
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
-			if ((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1] &&
-				valid_flat_size[a][2] == 1 || gfx_extraconv)
+			if (((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1] &&
+				valid_flat_size[a][2] == 1) || gfx_extraconv)
 					return CONVERTIBLE;
 
 		return NOTWRITABLE;

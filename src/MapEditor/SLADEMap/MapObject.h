@@ -2,6 +2,8 @@
 #ifndef __MAP_OBJECT_H__
 #define __MAP_OBJECT_H__
 
+#pragma clang diagnostic ignored "-Wundefined-bool-conversion"
+
 #include "MobjPropertyList.h"
 
 class SLADEMap;
