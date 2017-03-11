@@ -2,7 +2,9 @@
 #ifndef __MAP_OBJECT_H__
 #define __MAP_OBJECT_H__
 
+#ifdef __clang__
 #pragma clang diagnostic ignored "-Wundefined-bool-conversion"
+#endif
 
 #include "MobjPropertyList.h"
 
