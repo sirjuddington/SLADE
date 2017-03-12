@@ -312,11 +312,12 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 					else
 					{
 						// Third value exists, must be R,G,B,A format
+						// RGB are ints in the 0-255 range; A is float in the 0.0-1.0 range
 						tz.skipToken();	// Skip ,
 						first.ToDouble(&val);
-						colour.r = val*255;
-						colour.g = second*255;
-						colour.b = tz.getDouble()*255;
+						colour.r = val;
+						colour.g = second;
+						colour.b = tz.getInteger();
 						if (tz.peekToken() != ",")
 						{
 							wxLogMessage("Invalid TEXTURES definition, expected ',', got '%s'", tz.getToken());
