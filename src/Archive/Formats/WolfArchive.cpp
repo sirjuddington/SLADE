@@ -473,7 +473,7 @@ bool WolfArchive::open(MemChunk& mc)
 	for (uint32_t d = 0; d < num_chunks; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_chunks*2.0f));
+		theSplashWindow->setProgress((float)d / (float)num_chunks*2.0f);
 
 		// Read offset info
 		uint32_t offset = 0;
@@ -496,7 +496,7 @@ bool WolfArchive::open(MemChunk& mc)
 	for (uint32_t d = 0, l = 0; d < num_chunks; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)(d + num_chunks) / (float)num_chunks*2.0f));
+		theSplashWindow->setProgress((float)(d + num_chunks) / (float)num_chunks*2.0f);
 
 		// Read size info
 		uint16_t size = 0;

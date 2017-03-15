@@ -72,7 +72,6 @@ SAction::SAction(
 	this->shortcut = shortcut;
 	this->group = radio_group;
 	this->toggled = false;
-	this->keybind = keybind;
 	this->reserved_ids = reserve_ids;
 	this->linked_cvar = NULL;
 

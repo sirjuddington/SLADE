@@ -1631,12 +1631,14 @@ void fixpngsrc(ArchiveEntry* entry)
 		if (pointer + 12 > entry->getSize())
 		{
 			wxLogMessage("Entry %s cannot be repaired.", entry->getName());
+			delete[] data;
 			return;
 		}
 		uint32_t chsz = READ_B32(data, pointer);
 		if (pointer + 12 + chsz > entry->getSize())
 		{
 			wxLogMessage("Entry %s cannot be repaired.", entry->getName());
+			delete[] data;
 			return;
 		}
 		uint32_t crc = Misc::crc(data + pointer + 4, 4 + chsz);

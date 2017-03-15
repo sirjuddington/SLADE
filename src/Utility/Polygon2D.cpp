@@ -651,7 +651,6 @@ bool PolygonSplitter::testTracePolyOutline(int edge_start)
 	{
 		v1 = edges[edge].v1;
 		v2 = edges[edge].v2;
-		next = -1;
 
 		// Find the next convex edge with the lowest angle
 		next = findNextEdge(edge, false, true);

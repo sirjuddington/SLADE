@@ -425,6 +425,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 		if (!texturex->read(&n_patches, 2))
 		{
 			wxLogMessage("Error: TEXTUREx entry is corrupt (can't read patchcount #%d)", a);
+			delete tex;
 			return false;
 		}
 
@@ -529,7 +530,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 	}
 
 	MemChunk txdata(datasize);
-	int32_t* offsets = new int32_t[numtextures];
+	vector<int32_t> offsets(numtextures);
 	int32_t foo = wxINT32_SWAP_ON_BE((signed) numtextures);
 
 	// Write header
@@ -656,16 +657,13 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_t
 
 	// Write offsets
 	SAFEFUNC(txdata.seek(4, SEEK_SET));
-	SAFEFUNC(txdata.write(offsets, 4*numtextures));
+	SAFEFUNC(txdata.write(offsets.data(), 4*numtextures));
 
 	// Write data to the TEXTUREx entry
 	texturex->importMemChunk(txdata);
 
 	// Update entry type
 	EntryType::detectEntryType(texturex);
-
-	// Clean up
-	delete[] offsets;
 
 	return true;
 }

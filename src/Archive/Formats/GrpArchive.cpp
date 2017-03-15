@@ -508,15 +508,20 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 
 	// Create extra palettes
 	data = new uint32_t[768];
-	nentry = entry->getParent()->addNewEntry("WATERPAL.PAL", index+2, entry->getParentDir()); if (!nentry) return;
+	nentry = entry->getParent()->addNewEntry("WATERPAL.PAL", index+2, entry->getParentDir());
+	if (!nentry) { delete[] data; return; }
 	mc.read(data, 768); nentry->importMem(data, 768);
-	nentry = entry->getParent()->addNewEntry("SLIMEPAL.PAL", index+3, entry->getParentDir()); if (!nentry) return;
+	nentry = entry->getParent()->addNewEntry("SLIMEPAL.PAL", index+3, entry->getParentDir());
+	if (!nentry) { delete[] data; return; }
 	mc.read(data, 768); nentry->importMem(data, 768);
-	nentry = entry->getParent()->addNewEntry("TITLEPAL.PAL", index+4, entry->getParentDir()); if (!nentry) return;
+	nentry = entry->getParent()->addNewEntry("TITLEPAL.PAL", index+4, entry->getParentDir());
+	if (!nentry) { delete[] data; return; }
 	mc.read(data, 768); nentry->importMem(data, 768);
-	nentry = entry->getParent()->addNewEntry("3DREALMS.PAL", index+5, entry->getParentDir()); if (!nentry) return;
+	nentry = entry->getParent()->addNewEntry("3DREALMS.PAL", index+5, entry->getParentDir());
+	if (!nentry) { delete[] data; return; }
 	mc.read(data, 768); nentry->importMem(data, 768);
-	nentry = entry->getParent()->addNewEntry("ENDINPAL.PAL", index+6, entry->getParentDir()); if (!nentry) return;
+	nentry = entry->getParent()->addNewEntry("ENDINPAL.PAL", index+6, entry->getParentDir());
+	if (!nentry) { delete[] data; return; }
 	mc.read(data, 768); nentry->importMem(data, 768);
 
 	// Clean up and go away

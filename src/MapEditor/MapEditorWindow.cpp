@@ -638,9 +638,10 @@ void MapEditorWindow::loadMapScripts(Archive::mapdesc_t map)
 		{
 			loadMapScripts(maps[0]);
 			wad->close();
-			delete wad;
 			return;
 		}
+
+		delete wad;
 	}
 
 	// Go through map entries
@@ -841,7 +842,10 @@ bool MapEditorWindow::saveMap()
 		if (amaps.size() > 0)
 			map = amaps[0];
 		else
+		{
+			delete tempwad;
 			return false;
+		}
 	}
 
 	// Unlock current map entries

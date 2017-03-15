@@ -888,12 +888,12 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 	if (tt->isAngled() || thing_force_dir || things_angles)
 		show_angle = true;
 
-	// If for whatever reason the thing texture doesn't exist, just draw a basic, square thing
-	if (!tex)
-	{
-		renderSquareThing(x, y, angle, tt, alpha);
-		return false;
-	}
+	//// If for whatever reason the thing texture doesn't exist, just draw a basic, square thing
+	//if (!tex)
+	//{
+	//	renderSquareThing(x, y, angle, tt, alpha);
+	//	return false;
+	//}
 
 	// Bind texture
 	if (tex_last != tex)

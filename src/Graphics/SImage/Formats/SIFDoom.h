@@ -19,7 +19,6 @@ protected:
 	{
 		// Init variables
 		const uint8_t* gfx_data = data.getData();
-		uint32_t* col_offsets = NULL;
 		int width = 0;
 		int height = 0;
 		int offset_x = 0;
@@ -49,7 +48,7 @@ protected:
 		image.create(width, height, PALMASK);
 
 		// Read column offsets
-		col_offsets = new uint32_t[width];
+		vector<uint32_t> col_offsets(width);
 		if (version > 0)
 		{
 			uint16_t* c_ofs = (uint16_t*)((uint8_t*)gfx_data + hdr_size);
@@ -160,9 +159,6 @@ protected:
 		// Setup variables
 		image.setXOffset(offset_x);
 		image.setYOffset(offset_y);
-
-		// Clean up
-		delete[] col_offsets;
 
 		return true;
 	}

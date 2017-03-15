@@ -756,7 +756,8 @@ public:
 			if (dir && cb_tree)
 				dir->merge(cb_tree->getTree(), 0, 0);
 
-			dir->getDirEntry()->setState(0);
+			if (dir)
+				dir->getDirEntry()->setState(0);
 
 			return !!dir;
 		}

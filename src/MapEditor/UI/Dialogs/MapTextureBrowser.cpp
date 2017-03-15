@@ -267,6 +267,9 @@ void MapTextureBrowser::doSort(unsigned sort_type)
  *******************************************************************/
 void MapTextureBrowser::updateUsage()
 {
+	if (!map)
+		return;
+
 	vector<BrowserItem*>& items = canvas->itemList();
 	for (unsigned i = 0; i < items.size(); i++)
 	{
@@ -276,7 +279,4 @@ void MapTextureBrowser::updateUsage()
 		else
 			item->setUsage(map->flatUsageCount(item->getName()));
 	}
-
-	if (!map)
-		return;
 }

@@ -1070,7 +1070,7 @@ bool SImage::rotate(int angle)
 		case 90:	j = (((nh - 1) - (i%width)) * nw) + (i/width);	break;
 		case 180:	j = (numpixels - 1) - i;						break;
 		case 270:	j = ((i%width) * nw) + ((nw - 1) - (i/width));	break;
-		default: return false;
+		default: delete[] nd; if (mask) delete[] nm; return false;
 		}
 		if (j >= numpixels)
 		{

@@ -189,7 +189,11 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 				mc.seek(myoffset, SEEK_SET);
 				delete nlump;
 			}
-			else return false;
+			else
+			{
+				delete nlump;
+				return false;
+			}
 			// Not a directory, then add to entry list
 		}
 		else

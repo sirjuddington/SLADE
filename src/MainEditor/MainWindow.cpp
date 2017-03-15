@@ -124,7 +124,6 @@ void MainWindow::loadLayout()
 		return;
 
 	// Parse layout
-	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
 	while (true)
 	{
 		// Read component+layout pair
@@ -150,7 +149,6 @@ void MainWindow::saveLayout()
 	wxFile file(appPath("mainwindow.layout", DIR_USER), wxFile::write);
 
 	// Write component layout
-	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
 
 	// Console pane
 	file.Write("\"console\" ");

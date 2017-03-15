@@ -351,7 +351,10 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 		if (amaps.size() > 0)
 			omap = amaps[0];
 		else
+		{
+			delete tempwad;
 			return false;
+		}
 	}
 
 	bool ok = false;

@@ -518,28 +518,28 @@ void MapSpecials::processZDoomSlopes(SLADEMap* map)
 		int tag;
 		MapSector* front = line->frontSector();
 		MapSector* back = line->backSector();
-		if ((tag = line->intProperty("arg0")))
+		if ((tag = line->intProperty("arg0")) && front)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
 				front->setFloorPlane(sectors[0]->getFloorPlane());
 		}
-		if ((tag = line->intProperty("arg1")))
+		if ((tag = line->intProperty("arg1")) && front)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
 				front->setCeilingPlane(sectors[0]->getCeilingPlane());
 		}
-		if ((tag = line->intProperty("arg2")))
+		if ((tag = line->intProperty("arg2")) && back)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);
 			if (sectors.size())
 				back->setFloorPlane(sectors[0]->getFloorPlane());
 		}
-		if ((tag = line->intProperty("arg3")))
+		if ((tag = line->intProperty("arg3")) && back)
 		{
 			sectors.clear();
 			map->getSectorsByTag(tag, sectors);

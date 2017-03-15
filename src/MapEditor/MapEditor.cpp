@@ -1961,8 +1961,8 @@ void MapEditor::endMove(bool accept)
 		beginUndoRecord(S_FMT("Move %s", getModeString()));
 
 		// Get list of vertices being moved
-		bool* move_verts = new bool[map.nVertices()];
-		memset(move_verts, 0, map.nVertices());
+		vector<bool> move_verts(map.nVertices());
+		memset(&move_verts[0], 0, map.nVertices());
 
 		if (edit_mode == MODE_VERTICES)
 		{
@@ -2225,9 +2225,10 @@ void MapEditor::changeSectorHeight(int amount, bool floor, bool ceiling)
 		what = "Floor and ceiling";
 	string inc = "increased";
 	if (amount < 0)
+	{
 		inc = "decreased";
-	if (amount < 0)
 		amount = -amount;
+	}
 	addEditorMessage(S_FMT("%s height %s by %d", what, inc, amount));
 
 	// Update display
@@ -2759,7 +2760,7 @@ void MapEditor::createThing(double x, double y)
 
 	// Setup properties
 	theGameConfiguration->applyDefaults(thing, map.currentFormat() == MAP_UDMF);
-	if (copy_thing)
+	if (copy_thing && thing)
 	{
 		// Copy type and angle from the last copied thing
 		thing->setIntProperty("type", copy_thing->getType());

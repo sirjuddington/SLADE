@@ -147,7 +147,7 @@ string ArchiveEntryList::getItemText(long item, long column, long index) const
 			if (entry == entry_dir_back)
 				dir = (ArchiveTreeNode*)current_dir->getParent();	// If it's the 'back directory', get the current dir's parent
 			else
-				dir = dir = archive->getDir(entry->getName(), current_dir);
+				dir = archive->getDir(entry->getName(), current_dir);
 
 			// If it's null, return error
 			if (!dir)
