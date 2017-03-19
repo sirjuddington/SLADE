@@ -135,6 +135,8 @@ private:
 	bool				udmf_side_scaling;	// If UDMF has line scaling
 	bool				udmf_texture_scaling;	// If UDMF has per-texture line scaling
 	bool				udmf_texture_offsets;	// If UDMF has per-texture offsets compared to per-sidedef
+	bool				udmf_thing_scaling;		// If UDMF has per-thing scaling
+	bool				udmf_thing_rotation;	// If UDMF has per-thing pitch and yaw rotation
 
 	// Basic game configuration info
 	struct gconf_t
@@ -248,6 +250,8 @@ public:
 	bool	udmfSideScaling() { return udmf_side_scaling; }
 	bool	udmfTextureScaling() { return udmf_texture_scaling; }
 	bool	udmfTextureOffsets() { return udmf_texture_offsets; }
+	bool	udmfThingScaling() { return udmf_thing_scaling; }
+	bool	udmfThingRotation() { return udmf_thing_rotation; }
 
 	string			readConfigName(MemChunk& mc);
 	gconf_t			readBasicGameConfig(MemChunk& mc);
