@@ -1961,21 +1961,21 @@ void MapEditor::endMove(bool accept)
 		beginUndoRecord(S_FMT("Move %s", getModeString()));
 
 		// Get list of vertices being moved
-		vector<bool> move_verts(map.nVertices());
+		vector<uint8_t> move_verts(map.nVertices());
 		memset(&move_verts[0], 0, map.nVertices());
 
 		if (edit_mode == MODE_VERTICES)
 		{
 			for (unsigned a = 0; a < move_items.size(); a++)
-				move_verts[move_items[a]] = true;
+				move_verts[move_items[a]] = 1;
 		}
 		else if (edit_mode == MODE_LINES)
 		{
 			for (unsigned a = 0; a < move_items.size(); a++)
 			{
 				MapLine* line = map.getLine(move_items[a]);
-				if (line->v1()) move_verts[line->v1()->getIndex()] = true;
-				if (line->v2()) move_verts[line->v2()->getIndex()] = true;
+				if (line->v1()) move_verts[line->v1()->getIndex()] = 1;
+				if (line->v2()) move_verts[line->v2()->getIndex()] = 1;
 			}
 		}
 		else if (edit_mode == MODE_SECTORS)
@@ -1985,7 +1985,7 @@ void MapEditor::endMove(bool accept)
 				map.getSector(move_items[a])->getVertices(sv);
 
 			for (unsigned a = 0; a < sv.size(); a++)
-				move_verts[sv[a]->getIndex()] = true;
+				move_verts[sv[a]->getIndex()] = 1;
 		}
 
 		// Move vertices
