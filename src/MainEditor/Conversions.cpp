@@ -111,6 +111,7 @@ namespace Conversions
 	uint8_t pcm16to8bits(int16_t val);
 	uint8_t pcm24to8bits(int32_t val);
 	uint8_t pcm32to8bits(int32_t val);
+	uint8_t stereoToMono(uint8_t left, uint8_t right);
 	int16_t AlawToLinear(uint8_t alaw);
 	int16_t mulawToLinear(uint8_t ulaw);
 }
@@ -275,17 +276,17 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	uint8_t wavbps = fmtchunk.bps / 8;
 
 	// Check fmt chunk values
-	if (fmtchunk.channels != 1 || fmtchunk.bps % 8 || wavbps > 4 ||
+	if (fmtchunk.channels > 2 || fmtchunk.bps % 8 || wavbps > 4 ||
 		(wavfmt != WAV_PCM && wavfmt != WAV_ALAW && wavfmt != WAV_ULAW))
 	{
-		Global::error = "Cannot convert WAV file, only monophonic sounds in PCM format can be converted";
+		Global::error = "Cannot convert WAV file, only stereo or monophonic sounds in PCM format can be converted";
 		return false;
 	}
 
 	// Warn
-	if (wavbps > 1 || wavfmt != WAV_PCM)
+	if (wavbps > 1 || wavfmt != WAV_PCM || fmtchunk.channels == 2)
 	{
-		if (!(wxMessageBox(S_FMT("Warning: conversion will result in loss of metadata and audio fidelity. Do you wish to proceed?"), "Conversion warning", wxOK | wxCANCEL) == wxOK))
+		if (!(wxMessageBox(S_FMT("Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?"), "Conversion warning", wxOK | wxCANCEL) == wxOK))
 		{
 			Global::error = "Conversion aborted by user";
 			return false;
@@ -342,6 +343,16 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 		}
 	}
 
+	// Merge stereo channels into a single mono one
+	if (fmtchunk.channels == 2)
+	{
+		chunk.size /= 2;
+		for (size_t i = 0; i < chunk.size; ++i)
+		{
+			size_t j = 2 * i;
+			data[i] = stereoToMono(data[j], data[j + 1]);
+		}
+	}
 
 	// --- Write Doom Sound ---
 
@@ -1177,14 +1188,26 @@ uint8_t Conversions::pcm24to8bits(int32_t val)
 }
 
 /* Conversions::pcm32to8bits
-* Converts a 32-bit signed sample to an 8-bit unsigned one.
-*******************************************************************/
+ * Converts a 32-bit signed sample to an 8-bit unsigned one.
+ *******************************************************************/
 uint8_t Conversions::pcm32to8bits(int32_t val)
 {
 	int32_t ret = (val >> 8);
 	if ((val & 0x800000FF) > 127)  ret++;
 	else if ((val & 0x800000FF) < -128) ret--;
 	return pcm24to8bits(ret);
+}
+
+/* Conversions::stereoToMono
+ * Averages the values of two eight-bit unsigned samples into one.
+ *******************************************************************/
+uint8_t Conversions::stereoToMono(uint8_t left, uint8_t right)
+{
+	uint16_t val = left + right;
+	val /= 2;
+	if (val > 255)
+		val = 255;
+	return (uint8_t)val;
 }
 
 /* The following two functions are adapted from Sun Microsystem's g711.cpp code.
