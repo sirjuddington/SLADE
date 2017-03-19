@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "TextureEditorPanel.h"
+#include "UI/ColourBox.h"
 
 class wxSpinCtrlDouble;
 class ZTextureEditorPanel : public TextureEditorPanel
@@ -32,7 +33,7 @@ private:
 	wxRadioButton*		rb_pc_translation;
 	wxRadioButton*		rb_pc_blend;
 	wxRadioButton*		rb_pc_tint;
-	wxColourPickerCtrl*	cp_blend_col;
+	ColourBox*			cb_blend_col;
 	wxSpinCtrlDouble*	spin_tint_amount;
 	wxTextCtrl*			text_translation;
 	wxButton*			btn_edit_translation;
@@ -77,7 +78,7 @@ public:
 	void	onPCBlendSelected(wxCommandEvent& e);
 	void	onPCTintSelected(wxCommandEvent& e);
 	void	onPCTranslationSelected(wxCommandEvent& e);
-	void	onPatchColourChanged(wxColourPickerEvent& e);
+	void	onPatchColourChanged(wxEvent& e);
 	void	onPatchTintAmountChanged(wxCommandEvent& e);
 	void	onBtnEditTranslation(wxCommandEvent& e);
 	void	onTextTranslationEnter(wxCommandEvent& e);
