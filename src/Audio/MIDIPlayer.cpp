@@ -286,7 +286,7 @@ bool MIDIPlayer::openData(MemChunk &mc)
 			return false;
 	}
 #endif // NO_FLUIDSYNTH
-	return true;
+	return false;
 }
 
 /* MIDIPlayer::play

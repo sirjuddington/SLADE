@@ -32,6 +32,7 @@
 #include "AudioEntryPanel.h"
 #include "Audio/MIDIPlayer.h"
 #include "Audio/ModMusic.h"
+#include "Audio/AudioTags.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/Conversions.h"
 
@@ -612,7 +613,6 @@ bool AudioEntryPanel::updateInfo()
 			size_t samples = READ_L16(mc, 0);
 			info += S_FMT("%lu samples", (unsigned long) samples);
 		}
-		/*
 		else if (entry->getType() == EntryType::getType("snd_sun"))
 			info += Audio::getSunInfo(mc);
 		else if (entry->getType() == EntryType::getType("snd_voc"))
@@ -627,22 +627,21 @@ bool AudioEntryPanel::updateInfo()
 			info += Audio::getFlacComments(mc);
 		else if (entry->getType() == EntryType::getType("snd_aiff"))
 			info += Audio::getAiffInfo(mc);
-			*/
 		break;
 	case AUTYPE_MOD:
-		/*if (entry->getType() == EntryType::getType("mod_it"))
+		if (entry->getType() == EntryType::getType("mod_it"))
 			info += Audio::getITComments(mc);
 		else if (entry->getType() == EntryType::getType("mod_mod"))
 			info += Audio::getModComments(mc);
 		else if (entry->getType() == EntryType::getType("mod_s3m"))
 			info += Audio::getS3MComments(mc);
 		else if (entry->getType() == EntryType::getType("mod_xm"))
-			info += Audio::getXMComments(mc);*/
+			info += Audio::getXMComments(mc);
 		break;
 	case AUTYPE_MIDI:
 		info += theMIDIPlayer->getInfo();
-		/*if (entry->getType() == EntryType::getType("midi_rmid"))
-			info+= Audio::getRmidInfo(mc);*/
+		if (entry->getType() == EntryType::getType("midi_rmid"))
+			info+= Audio::getRmidInfo(mc);
 		break;
 	/*case AUTYPE_EMU:
 		info += theGMEPlayer->getInfo(subsong);

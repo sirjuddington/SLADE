@@ -105,6 +105,17 @@ struct sunsnd_header_t
  * FUNCTIONS
  *******************************************************************/
 
+// More conversion functions for internal use only
+namespace Conversions
+{
+	uint8_t pcm16to8bits(int16_t val);
+	uint8_t pcm24to8bits(int32_t val);
+	uint8_t pcm32to8bits(int32_t val);
+	uint8_t stereoToMono(uint8_t left, uint8_t right);
+	int16_t AlawToLinear(uint8_t alaw);
+	int16_t mulawToLinear(uint8_t ulaw);
+}
+
 /* Conversions::doomSndToWav
  * Converts doom sound data [in] to wav format, written to [out]
  *******************************************************************/
@@ -210,6 +221,9 @@ bool Conversions::doomSndToWav(MemChunk& in, MemChunk& out)
 /* Conversions::wavToDoomSnd
  * Converts wav data [in] to doom sound format, written to [out]
  *******************************************************************/
+#define WAV_PCM 1
+#define WAV_ALAW 6
+#define WAV_ULAW 7
 bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 {
 	// --- Read WAV ---
@@ -255,12 +269,28 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	in.seek(ofs, SEEK_SET);
 	wav_fmtchunk_t fmtchunk;
 	in.read(&fmtchunk, sizeof(wav_fmtchunk_t));
+	
+	// Get format
+	uint8_t wavfmt = fmtchunk.tag == 0xFFFE ? READ_L32(in, ofs + 32) : fmtchunk.tag;
+	// Get byte per samples (from bits per sample)
+	uint8_t wavbps = fmtchunk.bps / 8;
 
 	// Check fmt chunk values
-	if (fmtchunk.channels != 1 || fmtchunk.bps != 8 || (fmtchunk.tag != 1 && (fmtchunk.tag == 0xFFFE && READ_L32(in, ofs+32) != 1)))
+	if (fmtchunk.channels > 2 || fmtchunk.bps % 8 || wavbps > 4 ||
+		(wavfmt != WAV_PCM && wavfmt != WAV_ALAW && wavfmt != WAV_ULAW))
 	{
-		Global::error = "Cannot convert WAV file, only 8-bit monophonic sounds in PCM format can be converted";
+		Global::error = "Cannot convert WAV file, only stereo or monophonic sounds in PCM format can be converted";
 		return false;
+	}
+
+	// Warn
+	if (wavbps > 1 || wavfmt != WAV_PCM || fmtchunk.channels == 2)
+	{
+		if (!(wxMessageBox(S_FMT("Warning: conversion will result in loss of metadata and audio quality. Do you wish to proceed?"), "Conversion warning", wxOK | wxCANCEL) == wxOK))
+		{
+			Global::error = "Conversion aborted by user";
+			return false;
+		}
 	}
 
 	// Find data chunk
@@ -281,10 +311,48 @@ bool Conversions::wavToDoomSnd(MemChunk& in, MemChunk& out)
 	in.seek(ofs, SEEK_SET);
 	in.read(&chunk, 8);
 
+	if (wavbps > 1)
+		chunk.size /= wavbps;
+
 	uint8_t* data = new uint8_t[chunk.size];
 	uint8_t padding[16];
-	in.read(data, chunk.size);
 
+	// Store sample data. A simple read for 8 bits per sample.
+	if (fmtchunk.bps == 8)
+		in.read(data, chunk.size);
+	// For 16, 24, or 32 bits per sample, downsample to 8.
+	else
+	{
+		int32_t val = 0;
+		for (size_t i = 0; i < chunk.size; ++i)
+		{
+			in.read(&val, wavbps);
+			if (wavbps == 4) data[i] = pcm32to8bits(val);
+			else if (wavbps == 3) data[i] = pcm24to8bits(val);
+			else if (wavbps == 2) data[i] = pcm16to8bits((int16_t)val);
+		}
+	}
+
+	// Convert A-law or µ-law to 8-bit linear
+	if (wavfmt == WAV_ALAW || wavfmt == WAV_ULAW)
+	{
+		for (size_t i = 0; i < chunk.size; ++i)
+		{
+			int16_t val = (wavfmt == WAV_ALAW) ? AlawToLinear(data[i]) : mulawToLinear(data[i]);
+			data[i] = pcm16to8bits(val);
+		}
+	}
+
+	// Merge stereo channels into a single mono one
+	if (fmtchunk.channels == 2)
+	{
+		chunk.size /= 2;
+		for (size_t i = 0; i < chunk.size; ++i)
+		{
+			size_t j = 2 * i;
+			data[i] = stereoToMono(data[j], data[j + 1]);
+		}
+	}
 
 	// --- Write Doom Sound ---
 
@@ -905,7 +973,7 @@ bool Conversions::spkSndToWav(MemChunk& in, MemChunk& out, bool audioT)
 	{
 		if (osamples[s] > 127 && !audioT)
 		{
-			wxLogMessage("Invalid PC Speaker counter value: %d > 127", osamples[s]);
+			Global::error = S_FMT("Invalid PC Speaker counter value: %d > 127", osamples[s]);
 			delete[] osamples;
 			delete[] nsamples;
 			return false;
@@ -1089,4 +1157,112 @@ bool Conversions::auSndToWav(MemChunk& in, MemChunk& out)
 	delete[] samples;
 
 	return true;
+}
+
+/* Conversions::pcm16to8bits
+ * Converts a 16-bit signed sample to an 8-bit unsigned one.
+ *******************************************************************/
+uint8_t Conversions::pcm16to8bits(int16_t val)
+{
+	// Value is in the [-32768, 32767] range.
+	// Shift it eight bits to [-128, 127] range,
+	// and add 128 to put it in [0, 255] range.
+	uint8_t ret = 128 + (val >> 8);
+	// Round value up or down depending on value
+	// of shifted-off bits.
+	if ((val & 0x80FF) > 127)  ret++;
+	else if ((val & 0x80FF) < -128) ret--;
+	// Send it.
+	return ret;
+}
+
+/* Conversions::pcm24to8bits
+ * Converts a 24-bit signed sample to an 8-bit unsigned one.
+ *******************************************************************/
+uint8_t Conversions::pcm24to8bits(int32_t val)
+{
+	int16_t ret = (val >> 8);
+	if ((val & 0x8000FF) > 127)  ret++;
+	else if ((val & 0x8000FF) < -128) ret--;
+	return pcm16to8bits(ret);
+}
+
+/* Conversions::pcm32to8bits
+ * Converts a 32-bit signed sample to an 8-bit unsigned one.
+ *******************************************************************/
+uint8_t Conversions::pcm32to8bits(int32_t val)
+{
+	int32_t ret = (val >> 8);
+	if ((val & 0x800000FF) > 127)  ret++;
+	else if ((val & 0x800000FF) < -128) ret--;
+	return pcm24to8bits(ret);
+}
+
+/* Conversions::stereoToMono
+ * Averages the values of two eight-bit unsigned samples into one.
+ *******************************************************************/
+uint8_t Conversions::stereoToMono(uint8_t left, uint8_t right)
+{
+	uint16_t val = left + right;
+	val /= 2;
+	if (val > 255)
+		val = 255;
+	return (uint8_t)val;
+}
+
+/* The following two functions are adapted from Sun Microsystem's g711.cpp code.
+ * Unrestricted use and modifications are allowed.
+ */
+
+#define	SIGN_BIT	(0x80)	// Sign bit (values are otherwise treated as unsigned).
+#define	QUANT_MASK	(0xf)	// Quantization field mask.
+#define	SEG_SHIFT	(4) 	// Left shift for segment number.
+#define	SEG_MASK	(0x70)	// Segment field mask.
+#define	BIAS		(0x84)	// Bias for linear code.
+
+/* Conversions::AlawToLinear
+ * Converts a 8-bit A-law sample to 16-bit signed linear PCM
+ *******************************************************************/
+int16_t Conversions::AlawToLinear(uint8_t alaw)
+{
+	int16_t	t;
+	int16_t	seg;
+
+	alaw ^= 0x55;
+
+	t = (alaw & QUANT_MASK) << 4;
+	seg = (alaw & SEG_MASK) >> SEG_SHIFT;
+	switch (seg)
+	{
+	case 0:
+		t += 8;
+		break;
+	case 1:
+		t += 0x108;
+		break;
+	default:
+		t += 0x108;
+		t <<= seg - 1;
+	}
+	return ((alaw & SIGN_BIT) ? t : -t);
+}
+
+ /* Conversions::mulawToLinear
+  * Converts a 8-bit µ-law sample to 16-bit signed linear PCM
+  *******************************************************************/
+int16_t Conversions::mulawToLinear(uint8_t ulaw)
+{
+	int	t;
+
+	/* Complement to obtain normal u-law value. */
+	ulaw = ~ulaw;
+
+	/*
+	* Extract and bias the quantization bits. Then
+	* shift up by the segment number and subtract out the bias.
+	*/
+	t = ((ulaw & QUANT_MASK) << 3) + BIAS;
+	t <<= (ulaw & SEG_MASK) >> SEG_SHIFT;
+
+	return ((ulaw & SIGN_BIT) ? (BIAS - t) : (t - BIAS));
 }
