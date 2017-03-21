@@ -30,9 +30,10 @@
  *******************************************************************/
 #include "Main.h"
 #include "ADatArchive.h"
-#include "UI/SplashWindow.h"
-#include "Utility/Compression.h"
 #include "General/Misc.h"
+#include "General/UI.h"
+#include "Utility/Compression.h"
+
 
 /*******************************************************************
  * CONSTANTS
@@ -114,11 +115,11 @@ bool ADatArchive::open(MemChunk& mc)
 	// Read the directory
 	size_t num_entries = dir_size / DIRENTRY;
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading dat archive data");
+	UI::setSplashProgressMessage("Reading dat archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_entries));
+		UI::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
 		char name[128];
@@ -167,11 +168,11 @@ bool ADatArchive::open(MemChunk& mc)
 	MemChunk edata;
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_entries)));
+		UI::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
 		ArchiveEntry* entry = all_entries[a];
@@ -207,7 +208,7 @@ bool ADatArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }

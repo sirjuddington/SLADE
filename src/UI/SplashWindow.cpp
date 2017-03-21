@@ -289,14 +289,14 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 CONSOLE_COMMAND (splash, 0, false)
 {
 	if (args.size() == 0)
-		theSplashWindow->hide();
+		SplashWindow::getInstance()->hide();
 	else if (args.size() == 1)
-		theSplashWindow->show(args[0]);
+		SplashWindow::getInstance()->show(args[0]);
 	else
 	{
-		theSplashWindow->show(args[0], true);
+		SplashWindow::getInstance()->show(args[0], true);
 		float prog = atof(CHR(args[1]));
-		theSplashWindow->setProgress(prog);
-		theSplashWindow->setProgressMessage(S_FMT("Progress %s", args[1]));
+		SplashWindow::getInstance()->setProgress(prog);
+		SplashWindow::getInstance()->setProgressMessage(S_FMT("Progress %s", args[1]));
 	}
 }

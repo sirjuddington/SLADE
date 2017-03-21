@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ResArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -113,7 +113,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 	for (uint32_t d = 0; d < num_lumps; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		char magic[4] = "";
@@ -180,7 +180,7 @@ bool ResArchive::readDirectory(MemChunk& mc, size_t dir_offset, size_t num_lumps
 			ArchiveTreeNode* ndir = createDir(name, parent);
 			if (ndir)
 			{
-				theSplashWindow->setProgressMessage(S_FMT("Reading res archive data: %s directory", name));
+				UI::setSplashProgressMessage(S_FMT("Reading res archive data: %s directory", name));
 				// Save offset to restore it once the recursion is done
 				size_t myoffset = mc.currentPos();
 				readDirectory(mc, d_o, n_l, ndir);
@@ -255,12 +255,12 @@ bool ResArchive::open(MemChunk& mc)
 
 	// Read the directory
 	mc.seek(dir_offset, SEEK_SET);
-	theSplashWindow->setProgressMessage("Reading res archive data");
+	UI::setSplashProgressMessage("Reading res archive data");
 	if (!readDirectory(mc, dir_offset, num_lumps, getRoot()))
 		return false;
 
 	// Detect maps (will detect map entry types)
-	theSplashWindow->setProgressMessage("Detecting maps");
+	UI::setSplashProgressMessage("Detecting maps");
 	detectMaps();
 
 	// Setup variables
@@ -268,7 +268,7 @@ bool ResArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }

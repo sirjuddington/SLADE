@@ -53,6 +53,6 @@ public:
 };
 
 // Define for less cumbersome SplashWindow::getInstance()
-#define theSplashWindow SplashWindow::getInstance()
+//#define theSplashWindow SplashWindow::getInstance()
 
 #endif//__SPLASHWINDOW_H__

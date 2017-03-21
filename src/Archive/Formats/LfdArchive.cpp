@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "LfdArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -135,13 +135,13 @@ bool LfdArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read each entry
-	theSplashWindow->setProgressMessage("Reading lfd archive data");
+	UI::setSplashProgressMessage("Reading lfd archive data");
 	size_t offset = dir_len + 16;
 	size_t size = mc.getSize();
 	for (uint32_t d = 0; offset < size; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_lumps));
+		UI::setSplashProgress(((float)d / (float)num_lumps));
 
 		// Read lump info
 		uint32_t length = 0;
@@ -190,11 +190,11 @@ bool LfdArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_lumps)));
+		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -223,7 +223,7 @@ bool LfdArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }

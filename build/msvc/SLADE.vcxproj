@@ -847,6 +847,7 @@
     <ClCompile Include="..\..\src\General\Misc.cpp" />
     <ClCompile Include="..\..\src\General\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\General\SAction.cpp" />
+    <ClCompile Include="..\..\src\General\UI.cpp" />
     <ClCompile Include="..\..\src\General\UndoRedo.cpp" />
     <ClCompile Include="..\..\src\General\VersionCheck.cpp" />
     <ClCompile Include="..\..\src\External\glew\glew.c">
@@ -1279,6 +1280,7 @@
     <ClCompile Include="..\..\src\MainEditor\Conversions.cpp" />
     <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp" />
     <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\MainEditor.cpp" />
     <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp" />
     <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp" />
@@ -1660,6 +1662,7 @@
     <ClInclude Include="..\..\src\General\Misc.h" />
     <ClInclude Include="..\..\src\General\ResourceManager.h" />
     <ClInclude Include="..\..\src\General\SAction.h" />
+    <ClInclude Include="..\..\src\General\UI.h" />
     <ClInclude Include="..\..\src\General\UndoRedo.h" />
     <ClInclude Include="..\..\src\General\VersionCheck.h" />
     <ClInclude Include="..\..\src\External\glew\glew.h" />
@@ -1744,6 +1747,7 @@
     <ClInclude Include="..\..\src\MainEditor\Conversions.h" />
     <ClInclude Include="..\..\src\MainEditor\EntryOperations.h" />
     <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h" />
+    <ClInclude Include="..\..\src\MainEditor\MainEditor.h" />
     <ClInclude Include="..\..\src\MainEditor\MainWindow.h" />
     <ClInclude Include="..\..\src\MainEditor\SwitchesList.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h" />

@@ -33,7 +33,7 @@
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
 #include "General/Console/Console.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 #include "General/ResourceManager.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 
@@ -948,18 +948,18 @@ bool ArchiveManager::openBaseResource(int index)
 		return false;
 
 	// Attempt to open the file
-	theSplashWindow->show(S_FMT("Opening %s...", filename), true);
+	UI::showSplash(S_FMT("Opening %s...", filename), true);
 	if (base_resource_archive->open(filename))
 	{
 		base_resource = index;
-		theSplashWindow->hide();
+		UI::hideSplash();
 		theResourceManager->addArchive(base_resource_archive);
 		announce("base_resource_changed");
 		return true;
 	}
 	delete base_resource_archive;
 	base_resource_archive = NULL;
-	theSplashWindow->hide();
+	UI::hideSplash();
 	announce("base_resource_changed");
 	return false;
 }

@@ -55,17 +55,18 @@
 #include "General/Executables.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/Conversions.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/ExternalEditManager.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
-#include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
+
 
 /*******************************************************************
  * VARIABLES
@@ -790,7 +791,7 @@ bool ArchivePanel::importFiles()
 		// Go through the list of files
 		bool ok = false;
 		entry_list->Show(false);
-		theSplashWindow->show("Importing Files...", true);
+		UI::showSplash("Importing Files...", true);
 		entry_list->setEntriesAutoUpdate(false);
 		for (size_t a = 0; a < info.filenames.size(); a++)
 		{
@@ -801,8 +802,8 @@ bool ArchivePanel::importFiles()
 			string name = wxFileName(info.filenames[a]).GetFullName();
 
 			// Update splash window
-			theSplashWindow->setProgress(float(a) / float(info.filenames.size()));
-			theSplashWindow->setProgressMessage(name);
+			UI::setSplashProgress(float(a) / float(info.filenames.size()));
+			UI::setSplashProgressMessage(name);
 
 			// Add the entry to the archive
 			ArchiveEntry* new_entry = archive->addNewEntry(name, index, entry_list->getCurrentDir());
@@ -817,7 +818,7 @@ bool ArchivePanel::importFiles()
 
 			if (index > 0) index++;
 		}
-		theSplashWindow->hide();
+		UI::hideSplash();
 		entry_list->Show(true);
 
 		// End recording undo level
@@ -865,8 +866,8 @@ bool ArchivePanel::buildArchive()
 	SFileDialog::fd_info_t info;
 	if (SFileDialog::saveFile(info, "Build archive", "Any Zip Format File (*.zip;*.pk3;*.pke;*.jdf)", this))
 	{
-		theSplashWindow->show(string("Building ") + info.filenames[0], true);
-		theSplashWindow->setProgress(0.0f);
+		UI::showSplash(string("Building ") + info.filenames[0], true);
+		UI::setSplashProgress(0.0f);
 
 		// Create temporary archive
 		new_archive = theArchiveManager->createTemporaryArchive();
@@ -876,7 +877,7 @@ bool ArchivePanel::buildArchive()
 			wxRemoveFile(info.filenames[0]);
 
 		// Log
-		theSplashWindow->setMessage("Importing files... (Esc to cancel)");
+		UI::setSplashMessage("Importing files... (Esc to cancel)");
 
 		// import all files into new archive
 		// Get a list of all files in the directory
@@ -892,7 +893,7 @@ bool ArchivePanel::buildArchive()
 				if (new_archive)
 					delete new_archive;
 
-				theSplashWindow->hide();
+				UI::hideSplash();
 				return true;
 			}
 			
@@ -917,8 +918,8 @@ bool ArchivePanel::buildArchive()
 			ArchiveEntry* entry = new_archive->addNewEntry(ename, dir->numEntries()+1, dir);
 
 			// Log
-			theSplashWindow->setProgressMessage(ename);
-			theSplashWindow->setProgress((float)a/files.size());
+			UI::setSplashProgressMessage(ename);
+			UI::setSplashProgress((float)a/files.size());
 
 			// Load data
 			entry->importFile(files[a]);
@@ -928,15 +929,15 @@ bool ArchivePanel::buildArchive()
 			dir->getDirEntry()->setState(0);
 		}
 
-		theSplashWindow->setProgress(1.0f);
-		theSplashWindow->setMessage("Saving archive...");
-		theSplashWindow->setProgressMessage("");
+		UI::setSplashProgress(1.0f);
+		UI::setSplashMessage("Saving archive...");
+		UI::setSplashProgressMessage("");
 		
 		// Save the archive
 		if (!new_archive->save(info.filenames[0]))
 		{
 			delete new_archive;
-			theSplashWindow->hide();
+			UI::hideSplash();
 
 			// If there was an error pop up a message box
 			wxMessageBox(S_FMT("Error:\n%s", Global::error), "Error", wxICON_ERROR);
@@ -947,7 +948,7 @@ bool ArchivePanel::buildArchive()
 	if (new_archive)
 		delete new_archive;
 
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Refresh entry list
 	entry_list->updateList();
@@ -1490,7 +1491,7 @@ bool ArchivePanel::openTab()
 
 	// Open each in its own tab
 	for (unsigned a = 0; a < selection.size(); a++)
-		theMainWindow->openEntry(selection[a]);
+		MainEditor::openEntry(selection[a]);
 
 	return true;
 }
@@ -1802,7 +1803,7 @@ bool ArchivePanel::gfxConvert()
 	gcd.ShowModal();
 
 	// Show splash window
-	theSplashWindow->show("Writing converted image data...", true);
+	UI::showSplash("Writing converted image data...", true);
 
 	// Begin recording undo level
 	undo_manager->beginRecord("Gfx Format Conversion");
@@ -1815,8 +1816,8 @@ bool ArchivePanel::gfxConvert()
 			entry_list->setEntriesAutoUpdate(true);
 
 		// Update splash window
-		theSplashWindow->setProgressMessage(selection[a]->getName());
-		theSplashWindow->setProgress((float)a / (float)selection.size());
+		UI::setSplashProgressMessage(selection[a]->getName());
+		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
 		if (!gcd.itemModified(a))
@@ -1839,7 +1840,7 @@ bool ArchivePanel::gfxConvert()
 	undo_manager->endRecord(true);
 
 	// Hide splash window
-	theSplashWindow->hide();
+	UI::hideSplash();
 	theActivePanel->callRefresh();
 
 	return true;
@@ -2511,7 +2512,7 @@ bool ArchivePanel::optimizePNG()
 	// Get selected entries
 	vector<ArchiveEntry*> selection = entry_list->getSelectedEntries();
 
-	theSplashWindow->show("Running external programs, please wait...", true);
+	UI::showSplash("Running external programs, please wait...", true);
 
 	// Begin recording undo level
 	undo_manager->beginRecord("Optimize PNG");
@@ -2523,8 +2524,8 @@ bool ArchivePanel::optimizePNG()
 		if (a == selection.size()-1)
 			entry_list->setEntriesAutoUpdate(true);
 
-		theSplashWindow->setProgressMessage(selection[a]->getName(true));
-		theSplashWindow->setProgress(float(a) / float(selection.size()));
+		UI::setSplashProgressMessage(selection[a]->getName(true));
+		UI::setSplashProgress(float(a) / float(selection.size()));
 		if (selection[a]->getType()->getFormat() == "img_png")
 		{
 			undo_manager->recordUndoStep(new EntryDataUS(selection[a]));
@@ -2532,7 +2533,7 @@ bool ArchivePanel::optimizePNG()
 		}
 	}
 	entry_list->setEntriesAutoUpdate(true);
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Finish recording undo level
 	undo_manager->endRecord(true);
@@ -2950,10 +2951,10 @@ bool ArchivePanel::handleAction(string id)
 
 	// Archive->Texture Editor
 	else if (id == "arch_texeditor")
-		theMainWindow->openTextureEditor(archive);
+		MainEditor::openTextureEditor(archive);
 
 	else if (id == "arch_mapeditor")
-		theMainWindow->openMapEditor(archive);
+		MainEditor::openMapEditor(archive);
 
 	// Archive->Convert To...
 	else if (id == "arch_convert")
@@ -3710,7 +3711,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 	else if (entry->getType()->getFormat() == "texturex" ||
 		     entry->getType() == EntryType::getType("pnames") ||
 	         entry->getType() == EntryType::getType("zdtextures"))
-		theMainWindow->openTextureEditor(archive, entry);
+		MainEditor::openTextureEditor(archive, entry);
 
 	// Map
 	// TODO: Needs to filter the game/port lists in the dialog by the map format
@@ -3744,7 +3745,7 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 
 	// Other entry
 	else if (entry->getType() != EntryType::folderType())
-		theMainWindow->openEntry(entry);
+		MainEditor::openEntry(entry);
 
 	e.Skip();
 }
@@ -4077,7 +4078,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 vector<ArchiveEntry*> Console_SearchEntries(string name)
 {
 	vector<ArchiveEntry*> entries;
-	Archive* archive = theMainWindow->getCurrentArchive();
+	Archive* archive = MainEditor::getCurrentArchive();
 	ArchivePanel* panel = CH::getCurrentArchivePanel();
 
 	if (archive)
@@ -4112,7 +4113,7 @@ CONSOLE_COMMAND(find, 1, true)
 
 CONSOLE_COMMAND(ren, 2, true)
 {
-	Archive* archive = theMainWindow->getCurrentArchive();
+	Archive* archive = MainEditor::getCurrentArchive();
 	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
 	if (entries.size() > 0)
 	{
@@ -4150,7 +4151,7 @@ CONSOLE_COMMAND(ren, 2, true)
 
 CONSOLE_COMMAND(cd, 1, true)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::getCurrentArchive();
 	ArchivePanel* panel = CH::getCurrentArchivePanel();
 
 	if (current && panel)

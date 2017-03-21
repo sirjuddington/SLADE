@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "BSPArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 /*
 
@@ -161,7 +161,7 @@ bool BSPArchive::open(MemChunk& mc)
 	mc.seek(texoffset, wxFromStart);
 	mc.read(&numtex, 4);
 	numtex = wxINT32_SWAP_ON_BE(numtex);
-	theSplashWindow->setProgressMessage("Reading BSP texture data");
+	UI::setSplashProgressMessage("Reading BSP texture data");
 
 	// Check that the offset table is within bounds
 	if (texoffset + ((numtex + 1)<<2) > size)
@@ -175,7 +175,7 @@ bool BSPArchive::open(MemChunk& mc)
 	for (size_t a = 0; a < numtex; ++a)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)a / (float)numtex));
+		UI::setSplashProgress(((float)a / (float)numtex));
 
 		size_t offset;
 		mc.read(&offset, 4);
@@ -258,11 +258,11 @@ bool BSPArchive::open(MemChunk& mc)
 
 	// Detect all entry types
 	MemChunk edata;
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)numtex)));
+		UI::setSplashProgress((((float)a / (float)numtex)));
 
 		// Get entry
 		ArchiveEntry* entry = getEntry(a);
@@ -291,7 +291,7 @@ bool BSPArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }

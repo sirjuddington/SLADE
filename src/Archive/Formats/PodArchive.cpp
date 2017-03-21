@@ -30,8 +30,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "PodArchive.h"
-#include "UI/SplashWindow.h"
-#include "MainEditor/MainWindow.h"
+#include "General/UI.h"
+#include "MainEditor/MainEditor.h"
 #include "General/Console/Console.h"
 
 
@@ -113,7 +113,7 @@ bool PodArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Create entries
-	theSplashWindow->setProgressMessage("Reading pod archive data");
+	UI::setSplashProgressMessage("Reading pod archive data");
 	for (unsigned a = 0; a < num_files; a++)
 	{
 		// Get the entry name as a wxFileName (so we can break it up)
@@ -137,7 +137,7 @@ bool PodArchive::open(MemChunk& mc)
 	// Detect entry types
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (unsigned a = 0; a < all_entries.size(); a++)
 	{
 		// Skip dir/marker
@@ -148,7 +148,7 @@ bool PodArchive::open(MemChunk& mc)
 		}
 
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)all_entries.size())));
+		UI::setSplashProgress((((float)a / (float)all_entries.size())));
 
 		// Read data
 		MemChunk edata;
@@ -175,7 +175,7 @@ bool PodArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }
@@ -395,7 +395,7 @@ bool PodArchive::isPodArchive(string filename)
 
 CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
-	Archive* archive = theMainWindow->getCurrentArchive();
+	Archive* archive = MainEditor::getCurrentArchive();
 	if (archive && archive->getType() == ARCHIVE_POD)
 		theConsole->logMessage(((PodArchive*)archive)->getId());
 	else
@@ -405,7 +405,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 
 CONSOLE_COMMAND(pod_set_id, 1, true)
 {
-	Archive* archive = theMainWindow->getCurrentArchive();
+	Archive* archive = MainEditor::getCurrentArchive();
 	if (archive && archive->getType() == ARCHIVE_POD)
 		((PodArchive*)archive)->setId(args[0].Truncate(80));
 	else

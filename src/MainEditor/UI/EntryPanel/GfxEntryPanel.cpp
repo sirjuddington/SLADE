@@ -39,6 +39,7 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/EntryOperations.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "UI/SToolBar/SToolBar.h"
 
@@ -485,7 +486,7 @@ void GfxEntryPanel::refreshPanel()
  *******************************************************************/
 void GfxEntryPanel::updateImagePalette()
 {
-	gfx_canvas->setPalette(theMainWindow->getPaletteChooser()->getSelectedPalette());
+	gfx_canvas->setPalette(MainEditor::getSelectedPalette());
 	gfx_canvas->updateImageTexture();
 }
 
@@ -670,7 +671,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_translate")
 	{
 		// Create translation editor dialog
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		Palette8bit* pal = MainEditor::getSelectedPalette();
 		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", gfx_canvas->getImage());
 
 		// Create translation to edit
@@ -697,7 +698,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Colourise
 	else if (id == "pgfx_colourise")
 	{
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		Palette8bit* pal = MainEditor::getSelectedPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry, pal);
 		gcd.setColour(last_colour);
 
@@ -723,7 +724,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Tint
 	else if (id == "pgfx_tint")
 	{
-		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		Palette8bit* pal = MainEditor::getSelectedPalette();
 		GfxTintDialog gtd(theMainWindow, entry, pal);
 		gtd.setValues(last_tint_colour, last_tint_amount);
 
@@ -751,7 +752,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_crop")
 	{
 		auto image = getImage();
-		auto pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		auto pal = MainEditor::getSelectedPalette();
 		GfxCropDialog gcd(theMainWindow, image, pal);
 
 		// Show crop dialog
@@ -1145,7 +1146,7 @@ CONSOLE_COMMAND(rotate, 1, true)
 	}
 
 	// Get current entry
-	ArchiveEntry* entry = theMainWindow->getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::getCurrentEntry();
 
 	if (meep->getImage())
 	{

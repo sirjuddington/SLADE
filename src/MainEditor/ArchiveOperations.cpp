@@ -35,6 +35,7 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "General/ResourceManager.h"
 #include "Dialogs/ExtMessageDialog.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/SLADEMap/MapSide.h"
 #include "MapEditor/SLADEMap/MapSector.h"
@@ -814,13 +815,13 @@ void ArchiveOperations::removeUnusedFlats(Archive* archive)
 
 CONSOLE_COMMAND(test_cleantex, 0, false)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::getCurrentArchive();
 	if (current) ArchiveOperations::removeUnusedTextures(current);
 }
 
 CONSOLE_COMMAND(test_cleanflats, 0, false)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::getCurrentArchive();
 	if (current) ArchiveOperations::removeUnusedFlats(current);
 }
 
@@ -1023,7 +1024,7 @@ size_t ArchiveOperations::replaceThings(Archive* archive, int oldtype, int newty
 
 CONSOLE_COMMAND(replacethings, 2, true)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::getCurrentArchive();
 	long oldtype, newtype;
 
 	if (current && args[0].ToLong(&oldtype) && args[1].ToLong(&newtype))
@@ -1034,7 +1035,7 @@ CONSOLE_COMMAND(replacethings, 2, true)
 
 CONSOLE_COMMAND(convertmapchex1to3, 0, false)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::getCurrentArchive();
 	long rep[23][2] = 
 	{				//  #	Chex 1 actor			==>	Chex 3 actor			(unwanted replacement)
 		{25, 78},	//  0	ChexTallFlower2			==> PropFlower1				(PropGlobeStand)
@@ -1069,7 +1070,7 @@ CONSOLE_COMMAND(convertmapchex1to3, 0, false)
 
 CONSOLE_COMMAND(convertmapchex2to3, 0, false)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::getCurrentArchive();
 	long rep[20][2] = 
 	{
 		{3001, 9057},	//  0	Quadrumpus
@@ -1364,7 +1365,7 @@ size_t ArchiveOperations::replaceSpecials(Archive* archive, int oldtype, int new
 
 CONSOLE_COMMAND(replacespecials, 2, true)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::getCurrentArchive();
 	long oldtype, newtype;
 	bool arg0 = false, arg1 = false, arg2 = false, arg3 = false, arg4 = false;
 	long oldarg0, oldarg1, oldarg2, oldarg3, oldarg4;
@@ -1707,7 +1708,7 @@ size_t ArchiveOperations::replaceTextures(Archive* archive, string oldtex, strin
 
 CONSOLE_COMMAND(replacetextures, 2, true)
 {
-	Archive* current = theMainWindow->getCurrentArchive();
+	Archive* current = MainEditor::getCurrentArchive();
 
 	if (current)
 	{

@@ -34,7 +34,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "DiskArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 struct diskentry_t
 {
@@ -113,11 +113,11 @@ bool DiskArchive::open(MemChunk& mc)
 	setMuted(true);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading disk archive data");
+	UI::setSplashProgressMessage("Reading disk archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(((float)d / (float)num_entries));
+		UI::setSplashProgress(((float)d / (float)num_entries));
 
 		// Read entry info
 		diskentry_t dent;
@@ -162,11 +162,11 @@ bool DiskArchive::open(MemChunk& mc)
 	MemChunk edata;
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < all_entries.size(); a++)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress((((float)a / (float)num_entries)));
+		UI::setSplashProgress((((float)a / (float)num_entries)));
 
 		// Get entry
 		ArchiveEntry* entry = all_entries[a];
@@ -195,7 +195,7 @@ bool DiskArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }

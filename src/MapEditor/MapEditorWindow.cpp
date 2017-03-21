@@ -36,6 +36,7 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/RunDialog.h"
 #include "General/Misc.h"
+#include "General/UI.h"
 #include "MainEditor/MainWindow.h"
 #include "MapBackupManager.h"
 #include "NodeBuilders.h"
@@ -47,7 +48,6 @@
 #include "UI/SAuiTabArt.h"
 #include "UI/ScriptEditorPanel.h"
 #include "UI/ShapeDrawPanel.h"
-#include "UI/SplashWindow.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include "Utility/SFileDialog.h"
@@ -564,9 +564,9 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	closeMap();
 
 	// Attempt to open map
-	theSplashWindow->show("Loading Map", true, this);
+	UI::showSplash("Loading Map", true, this);
 	bool ok = editor.openMap(map);
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Show window if opened ok
 	if (ok)

@@ -66,13 +66,6 @@ public:
 	PaletteChooser*				getPaletteChooser() { return palette_chooser; }
 	UndoManagerHistoryPanel*	getUndoHistoryPanel() { return panel_undo_history; }
 
-	Archive*				getCurrentArchive();
-	ArchiveEntry*			getCurrentEntry();
-	vector<ArchiveEntry*>	getCurrentEntrySelection();
-
-	void	openTextureEditor(Archive* archive, ArchiveEntry* entry = NULL);
-	void	openMapEditor(Archive* archive);
-	void	openEntry(ArchiveEntry* entry);
 #ifdef USE_WEBVIEW_STARTPAGE
 	void	openDocs(string page_name = "");
 #endif

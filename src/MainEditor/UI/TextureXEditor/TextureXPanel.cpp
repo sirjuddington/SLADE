@@ -39,10 +39,10 @@
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainApp.h"
 #include "TextureXEditor.h"
-#include "UI/SplashWindow.h"
 #include "Utility/SFileDialog.h"
 #include "ZTextureEditorPanel.h"
 
@@ -1216,14 +1216,14 @@ void TextureXPanel::exportTexture()
 	gcd.ShowModal();
 
 	// Show splash window
-	theSplashWindow->show("Writing converted image data...", true);
+	UI::showSplash("Writing converted image data...", true);
 
 	// Write any changes
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Update splash window
-		theSplashWindow->setProgressMessage(selection[a]->getName());
-		theSplashWindow->setProgress((float)a / (float)selection.size());
+		UI::setSplashProgressMessage(selection[a]->getName());
+		UI::setSplashProgress((float)a / (float)selection.size());
 
 		// Skip if the image wasn't converted
 		if (!gcd.itemModified(a))
@@ -1245,7 +1245,7 @@ void TextureXPanel::exportTexture()
 	}
 
 	// Hide splash window
-	theSplashWindow->hide();
+	UI::hideSplash();
 }
 
 /* TextureXPanel::exportAsPNG
@@ -1332,14 +1332,14 @@ void TextureXPanel::extractTexture()
 		if (SFileDialog::saveFiles(info, "Export Textures as PNG (Filename will be ignored)", "PNG Files (*.png)|*.png", this))
 		{
 			// Show splash window
-			theSplashWindow->show("Saving converted image data...", true);
+			UI::showSplash("Saving converted image data...", true);
 
 			// Go through the selection
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Update splash window
-				theSplashWindow->setProgressMessage(selection[a]->getName());
-				theSplashWindow->setProgress((float)a / (float)selection.size());
+				UI::setSplashProgressMessage(selection[a]->getName());
+				UI::setSplashProgress((float)a / (float)selection.size());
 
 				// Setup entry filename
 				wxFileName fn(selection[a]->getName());
@@ -1351,7 +1351,7 @@ void TextureXPanel::extractTexture()
 			}
 
 			// Hide splash window
-			theSplashWindow->hide();
+			UI::hideSplash();
 		}
 	}
 }

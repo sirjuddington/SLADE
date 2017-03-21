@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ChasmBinArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 
 
 /*******************************************************************
@@ -127,12 +127,12 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	num_entries = wxUINT16_SWAP_ON_BE(num_entries);
 
 	// Read the directory
-	theSplashWindow->setProgressMessage("Reading Chasm bin archive data");
+	UI::setSplashProgressMessage("Reading Chasm bin archive data");
 
 	for (uint16_t i = 0; i < num_entries; ++i)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(static_cast<float>(i) / num_entries);
+		UI::setSplashProgress(static_cast<float>(i) / num_entries);
 
 		// Read entry info
 		char name[NAME_SIZE] = {};
@@ -169,7 +169,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	}
 
 	// Detect all entry types
-	theSplashWindow->setProgressMessage("Detecting entry types");
+	UI::setSplashProgressMessage("Detecting entry types");
 
 	vector<ArchiveEntry*> all_entries;
 	getEntryTreeAsList(all_entries);
@@ -179,7 +179,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	for (size_t i = 0; i < all_entries.size(); ++i)
 	{
 		// Update splash window progress
-		theSplashWindow->setProgress(static_cast<float>(i) / num_entries);
+		UI::setSplashProgress(static_cast<float>(i) / num_entries);
 
 		// Get entry
 		ArchiveEntry* const entry = all_entries[i];
@@ -211,7 +211,7 @@ bool ChasmBinArchive::open(MemChunk& mc)
 	setModified(false);
 	announce("opened");
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }

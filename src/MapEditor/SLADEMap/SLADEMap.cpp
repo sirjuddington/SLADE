@@ -32,13 +32,13 @@
 #include "Utility/Parser.h"
 #include "Utility/MathStuff.h"
 #include "General/ResourceManager.h"
+#include "General/UI.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MainApp.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
 #include "General/UndoRedo.h"
 #include "MapEditor/SectorBuilder.h"
-#include "UI/SplashWindow.h"
 
 #define IDEQ(x) (((x) != 0) && ((x) == id))
 
@@ -705,10 +705,10 @@ bool SLADEMap::readDoomVertexes(ArchiveEntry* entry)
 
 	doomvertex_t* vert_data = (doomvertex_t*)entry->getData(true);
 	unsigned nv = entry->getSize() / sizeof(doomvertex_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / nv) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / nv) * 0.2f);
 		addVertex(vert_data[a]);
 	}
 
@@ -738,10 +738,10 @@ bool SLADEMap::readDoomSidedefs(ArchiveEntry* entry)
 
 	doomside_t* side_data = (doomside_t*)entry->getData(true);
 	unsigned ns = entry->getSize() / sizeof(doomside_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / ns) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
 		addSide(side_data[a]);
 	}
 
@@ -771,10 +771,10 @@ bool SLADEMap::readDoomLinedefs(ArchiveEntry* entry)
 
 	doomline_t* line_data = (doomline_t*)entry->getData(true);
 	unsigned nl = entry->getSize() / sizeof(doomline_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / nl) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
 		if (!addLine(line_data[a]))
 			LOG_MESSAGE(2, "Line %lu invalid, not added", a);
 	}
@@ -805,10 +805,10 @@ bool SLADEMap::readDoomSectors(ArchiveEntry* entry)
 
 	doomsector_t* sect_data = (doomsector_t*)entry->getData(true);
 	unsigned ns = entry->getSize() / sizeof(doomsector_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / ns) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / ns) * 0.2f);
 		addSector(sect_data[a]);
 	}
 
@@ -838,10 +838,10 @@ bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 
 	doomthing_t* thng_data = (doomthing_t*)entry->getData(true);
 	unsigned nt = entry->getSize() / sizeof(doomthing_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < nt; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / nt) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		addThing(thng_data[a]);
 	}
 
@@ -882,37 +882,37 @@ bool SLADEMap::readDoomMap(Archive::mapdesc_t map)
 	}
 
 	// ---- Read vertices ----
-	theSplashWindow->setProgressMessage("Reading Vertices");
-	theSplashWindow->setProgress(0.0f);
+	UI::setSplashProgressMessage("Reading Vertices");
+	UI::setSplashProgress(0.0f);
 	if (!readDoomVertexes(v))
 		return false;
 
 	// ---- Read sectors ----
-	theSplashWindow->setProgressMessage("Reading Sectors");
-	theSplashWindow->setProgress(0.2f);
+	UI::setSplashProgressMessage("Reading Sectors");
+	UI::setSplashProgress(0.2f);
 	if (!readDoomSectors(se))
 		return false;
 
 	// ---- Read sides ----
-	theSplashWindow->setProgressMessage("Reading Sides");
-	theSplashWindow->setProgress(0.4f);
+	UI::setSplashProgressMessage("Reading Sides");
+	UI::setSplashProgress(0.4f);
 	if (!readDoomSidedefs(si))
 		return false;
 
 	// ---- Read lines ----
-	theSplashWindow->setProgressMessage("Reading Lines");
-	theSplashWindow->setProgress(0.6f);
+	UI::setSplashProgressMessage("Reading Lines");
+	UI::setSplashProgress(0.6f);
 	if (!readDoomLinedefs(l))
 		return false;
 
 	// ---- Read things ----
-	theSplashWindow->setProgressMessage("Reading Things");
-	theSplashWindow->setProgress(0.8f);
+	UI::setSplashProgressMessage("Reading Things");
+	UI::setSplashProgress(0.8f);
 	if (!readDoomThings(t))
 		return false;
 
-	theSplashWindow->setProgressMessage("Init Map Data");
-	theSplashWindow->setProgress(1.0f);
+	UI::setSplashProgressMessage("Init Map Data");
+	UI::setSplashProgress(1.0f);
 
 	// Remove detached vertices
 	mapOpenChecks();
@@ -1054,10 +1054,10 @@ bool SLADEMap::readHexenLinedefs(ArchiveEntry* entry)
 
 	hexenline_t* line_data = (hexenline_t*)entry->getData(true);
 	unsigned nl = entry->getSize() / sizeof(hexenline_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / nl) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / nl) * 0.2f);
 		addLine(line_data[a]);
 	}
 
@@ -1086,10 +1086,10 @@ bool SLADEMap::readHexenThings(ArchiveEntry* entry)
 
 	hexenthing_t* thng_data = (hexenthing_t*)entry->getData(true);
 	unsigned nt = entry->getSize() / sizeof(hexenthing_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < nt; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / nt) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / nt) * 0.2f);
 		addThing(thng_data[a]);
 	}
 
@@ -1130,37 +1130,37 @@ bool SLADEMap::readHexenMap(Archive::mapdesc_t map)
 	}
 
 	// ---- Read vertices ----
-	theSplashWindow->setProgressMessage("Reading Vertices");
-	theSplashWindow->setProgress(0.0f);
+	UI::setSplashProgressMessage("Reading Vertices");
+	UI::setSplashProgress(0.0f);
 	if (!readDoomVertexes(v))
 		return false;
 
 	// ---- Read sectors ----
-	theSplashWindow->setProgressMessage("Reading Sectors");
-	theSplashWindow->setProgress(0.2f);
+	UI::setSplashProgressMessage("Reading Sectors");
+	UI::setSplashProgress(0.2f);
 	if (!readDoomSectors(se))
 		return false;
 
 	// ---- Read sides ----
-	theSplashWindow->setProgressMessage("Reading Sides");
-	theSplashWindow->setProgress(0.4f);
+	UI::setSplashProgressMessage("Reading Sides");
+	UI::setSplashProgress(0.4f);
 	if (!readDoomSidedefs(si))
 		return false;
 
 	// ---- Read lines ----
-	theSplashWindow->setProgressMessage("Reading Lines");
-	theSplashWindow->setProgress(0.6f);
+	UI::setSplashProgressMessage("Reading Lines");
+	UI::setSplashProgress(0.6f);
 	if (!readHexenLinedefs(l))
 		return false;
 
 	// ---- Read things ----
-	theSplashWindow->setProgressMessage("Reading Things");
-	theSplashWindow->setProgress(0.8f);
+	UI::setSplashProgressMessage("Reading Things");
+	UI::setSplashProgress(0.8f);
 	if (!readHexenThings(t))
 		return false;
 
-	theSplashWindow->setProgressMessage("Init Map Data");
-	theSplashWindow->setProgress(1.0f);
+	UI::setSplashProgressMessage("Init Map Data");
+	UI::setSplashProgress(1.0f);
 
 	// Remove detached vertices
 	mapOpenChecks();
@@ -1195,10 +1195,10 @@ bool SLADEMap::readDoom64Vertexes(ArchiveEntry* entry)
 
 	doom64vertex_t* vert_data = (doom64vertex_t*)entry->getData(true);
 	unsigned n = entry->getSize() / sizeof(doom64vertex_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / n) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
 		addVertex(vert_data[a]);
 	}
 
@@ -1227,10 +1227,10 @@ bool SLADEMap::readDoom64Sidedefs(ArchiveEntry* entry)
 
 	doom64side_t* side_data = (doom64side_t*)entry->getData(true);
 	unsigned n = entry->getSize() / sizeof(doom64side_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / n) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
 		addSide(side_data[a]);
 	}
 
@@ -1259,10 +1259,10 @@ bool SLADEMap::readDoom64Linedefs(ArchiveEntry* entry)
 
 	doom64line_t* line_data = (doom64line_t*)entry->getData(true);
 	unsigned n = entry->getSize() / sizeof(doom64line_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / n) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
 		addLine(line_data[a]);
 	}
 
@@ -1291,10 +1291,10 @@ bool SLADEMap::readDoom64Sectors(ArchiveEntry* entry)
 
 	doom64sector_t* sect_data = (doom64sector_t*)entry->getData(true);
 	unsigned n = entry->getSize() / sizeof(doom64sector_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / n) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
 		addSector(sect_data[a]);
 	}
 
@@ -1323,10 +1323,10 @@ bool SLADEMap::readDoom64Things(ArchiveEntry* entry)
 
 	doom64thing_t* thng_data = (doom64thing_t*)entry->getData(true);
 	unsigned n = entry->getSize() / sizeof(doom64thing_t);
-	float p = theSplashWindow->getProgress();
+	float p = UI::getSplashProgress();
 	for (size_t a = 0; a < n; a++)
 	{
-		theSplashWindow->setProgress(p + ((float)a / n) * 0.2f);
+		UI::setSplashProgress(p + ((float)a / n) * 0.2f);
 		addThing(thng_data[a]);
 	}
 
@@ -1367,37 +1367,37 @@ bool SLADEMap::readDoom64Map(Archive::mapdesc_t map)
 	}
 
 	// ---- Read vertices ----
-	theSplashWindow->setProgressMessage("Reading Vertices");
-	theSplashWindow->setProgress(0.0f);
+	UI::setSplashProgressMessage("Reading Vertices");
+	UI::setSplashProgress(0.0f);
 	if (!readDoom64Vertexes(v))
 		return false;
 
 	// ---- Read sectors ----
-	theSplashWindow->setProgressMessage("Reading Sectors");
-	theSplashWindow->setProgress(0.2f);
+	UI::setSplashProgressMessage("Reading Sectors");
+	UI::setSplashProgress(0.2f);
 	if (!readDoom64Sectors(se))
 		return false;
 
 	// ---- Read sides ----
-	theSplashWindow->setProgressMessage("Reading Sides");
-	theSplashWindow->setProgress(0.4f);
+	UI::setSplashProgressMessage("Reading Sides");
+	UI::setSplashProgress(0.4f);
 	if (!readDoom64Sidedefs(si))
 		return false;
 
 	// ---- Read lines ----
-	theSplashWindow->setProgressMessage("Reading Lines");
-	theSplashWindow->setProgress(0.6f);
+	UI::setSplashProgressMessage("Reading Lines");
+	UI::setSplashProgress(0.6f);
 	if (!readDoom64Linedefs(l))
 		return false;
 
 	// ---- Read things ----
-	theSplashWindow->setProgressMessage("Reading Things");
-	theSplashWindow->setProgress(0.8f);
+	UI::setSplashProgressMessage("Reading Things");
+	UI::setSplashProgress(0.8f);
 	if (!readDoom64Things(t))
 		return false;
 
-	theSplashWindow->setProgressMessage("Init Map Data");
-	theSplashWindow->setProgress(1.0f);
+	UI::setSplashProgressMessage("Init Map Data");
+	UI::setSplashProgress(1.0f);
 
 	// Remove detached vertices
 	mapOpenChecks();
@@ -1662,8 +1662,8 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 	ArchiveEntry* textmap = map.head->nextEntry();
 
 	// --- Parse UDMF text ---
-	theSplashWindow->setProgressMessage("Parsing TEXTMAP");
-	theSplashWindow->setProgress(-100.0f);
+	UI::setSplashProgressMessage("Parsing TEXTMAP");
+	UI::setSplashProgress(-100.0f);
 	Parser parser;
 	if (!parser.parseText(textmap->getMCData()))
 		return false;
@@ -1674,7 +1674,7 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 	// be created in the correct order (verts->sides->lines->sectors->things),
 	// even if they aren't defined in that order.
 	// Unknown definitions are also kept, just in case
-	theSplashWindow->setProgressMessage("Sorting definitions");
+	UI::setSplashProgressMessage("Sorting definitions");
 	ParseTreeNode* root = parser.parseTreeRoot();
 	vector<ParseTreeNode*> defs_vertices;
 	vector<ParseTreeNode*> defs_lines;
@@ -1684,7 +1684,7 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 	vector<ParseTreeNode*> defs_other;
 	for (unsigned a = 0; a < root->nChildren(); a++)
 	{
-		theSplashWindow->setProgress((float)a / root->nChildren());
+		UI::setSplashProgress((float)a / root->nChildren());
 
 		ParseTreeNode* node = (ParseTreeNode*)root->getChild(a);
 
@@ -1720,46 +1720,46 @@ bool SLADEMap::readUDMFMap(Archive::mapdesc_t map)
 	// Now create map structures from parsed data, in the right order
 
 	// Create vertices from parsed data
-	theSplashWindow->setProgressMessage("Reading Vertices");
+	UI::setSplashProgressMessage("Reading Vertices");
 	for (unsigned a = 0; a < defs_vertices.size(); a++)
 	{
-		theSplashWindow->setProgress(((float)a / defs_vertices.size()) * 0.2f);
+		UI::setSplashProgress(((float)a / defs_vertices.size()) * 0.2f);
 		addVertex(defs_vertices[a]);
 	}
 
 	// Create sectors from parsed data
-	theSplashWindow->setProgressMessage("Reading Sectors");
+	UI::setSplashProgressMessage("Reading Sectors");
 	for (unsigned a = 0; a < defs_sectors.size(); a++)
 	{
-		theSplashWindow->setProgress(0.2f + ((float)a / defs_sectors.size()) * 0.2f);
+		UI::setSplashProgress(0.2f + ((float)a / defs_sectors.size()) * 0.2f);
 		addSector(defs_sectors[a]);
 	}
 
 	// Create sides from parsed data
-	theSplashWindow->setProgressMessage("Reading Sides");
+	UI::setSplashProgressMessage("Reading Sides");
 	for (unsigned a = 0; a < defs_sides.size(); a++)
 	{
-		theSplashWindow->setProgress(0.4f + ((float)a / defs_sides.size()) * 0.2f);
+		UI::setSplashProgress(0.4f + ((float)a / defs_sides.size()) * 0.2f);
 		addSide(defs_sides[a]);
 	}
 
 	// Create lines from parsed data
-	theSplashWindow->setProgressMessage("Reading Lines");
+	UI::setSplashProgressMessage("Reading Lines");
 	for (unsigned a = 0; a < defs_lines.size(); a++)
 	{
-		theSplashWindow->setProgress(0.6f + ((float)a / defs_lines.size()) * 0.2f);
+		UI::setSplashProgress(0.6f + ((float)a / defs_lines.size()) * 0.2f);
 		addLine(defs_lines[a]);
 	}
 
 	// Create things from parsed data
-	theSplashWindow->setProgressMessage("Reading Things");
+	UI::setSplashProgressMessage("Reading Things");
 	for (unsigned a = 0; a < defs_things.size(); a++)
 	{
-		theSplashWindow->setProgress(0.8f + ((float)a / defs_things.size()) * 0.2f);
+		UI::setSplashProgress(0.8f + ((float)a / defs_things.size()) * 0.2f);
 		addThing(defs_things[a]);
 	}
 
-	theSplashWindow->setProgressMessage("Init map data");
+	UI::setSplashProgressMessage("Init map data");
 
 	// Remove detached vertices
 	mapOpenChecks();
@@ -3243,14 +3243,14 @@ void SLADEMap::findSectorTextPoint(MapSector* sector)
  *******************************************************************/
 void SLADEMap::initSectorPolygons()
 {
-	theSplashWindow->setProgressMessage("Building sector polygons");
-	theSplashWindow->setProgress(0.0f);
+	UI::setSplashProgressMessage("Building sector polygons");
+	UI::setSplashProgress(0.0f);
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
-		theSplashWindow->setProgress((float)a / (float)sectors.size());
+		UI::setSplashProgress((float)a / (float)sectors.size());
 		sectors[a]->getPolygon();
 	}
-	theSplashWindow->setProgress(1.0f);
+	UI::setSplashProgress(1.0f);
 }
 
 MapLine* SLADEMap::lineVectorIntersect(MapLine* line, bool front, double& hit_x, double& hit_y)

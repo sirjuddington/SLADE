@@ -35,6 +35,7 @@
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "General/Misc.h"
 #include "MainEditor/EntryOperations.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "UI/HexEditorPanel.h"
 
@@ -244,5 +245,5 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
  *******************************************************************/
 void DefaultEntryPanel::onBtnTextureEdit(wxCommandEvent& e)
 {
-	theMainWindow->openTextureEditor(entry->getParent(), entry);
+	MainEditor::openTextureEditor(entry->getParent(), entry);
 }

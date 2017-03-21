@@ -32,7 +32,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "DirArchive.h"
-#include "UI/SplashWindow.h"
+#include "General/UI.h"
 #include "WadArchive.h"
 #include "MainApp.h"
 
@@ -92,8 +92,8 @@ string DirArchive::getFormat()
  *******************************************************************/
 bool DirArchive::open(string filename)
 {
-	theSplashWindow->setProgressMessage("Reading directory structure");
-	theSplashWindow->setProgress(0);
+	UI::setSplashProgressMessage("Reading directory structure");
+	UI::setSplashProgress(0);
 	//wxArrayString files;
 	//wxDir::GetAllFiles(filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
 	vector<string> files, dirs;
@@ -104,10 +104,10 @@ bool DirArchive::open(string filename)
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	setMuted(true);
 
-	theSplashWindow->setProgressMessage("Reading files");
+	UI::setSplashProgressMessage("Reading files");
 	for (unsigned a = 0; a < files.size(); a++)
 	{
-		theSplashWindow->setProgress((float)a / (float)files.size());
+		UI::setSplashProgress((float)a / (float)files.size());
 
 		// Cut off directory to get entry name + relative path
 		string name = files[a];
@@ -171,7 +171,7 @@ bool DirArchive::open(string filename)
 	setModified(false);
 	on_disk = true;
 
-	theSplashWindow->setProgressMessage("");
+	UI::setSplashProgressMessage("");
 
 	return true;
 }

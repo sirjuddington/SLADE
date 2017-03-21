@@ -1407,6 +1407,12 @@
     <ClCompile Include="..\..\src\Audio\AudioTags.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\MainEditor.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\General\UI.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2425,6 +2431,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Audio\AudioTags.h">
       <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\MainEditor.h">
+      <Filter>Main Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\UI.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

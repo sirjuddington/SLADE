@@ -40,6 +40,7 @@
 #include "General/Lua.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
+#include "General/UI.h"
 #include "General/VersionCheck.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SIFormat.h"
@@ -1018,8 +1019,8 @@ bool MainApp::OnInit()
 	Global::ppi_scale = (double)(dc.GetPPI().x) / 96.0;
 
 	// Show splash screen
-	theSplashWindow->init();
-	theSplashWindow->show("Starting up...");
+	SplashWindow::getInstance()->init();
+	UI::showSplash("Starting up...");
 
 	// Init SImage formats
 	SIFormat::initFormats();
@@ -1067,8 +1068,8 @@ bool MainApp::OnInit()
 	// Show the main window
 	theMainWindow->Show(true);
 	SetTopWindow(theMainWindow);
-	theSplashWindow->SetParent(theMainWindow);
-	theSplashWindow->CentreOnParent();
+	SplashWindow::getInstance()->SetParent(theMainWindow);
+	SplashWindow::getInstance()->CentreOnParent();
 
 	// Open any archives on the command line
 	// argv[0] is normally the executable itself (i.e. Slade.exe)
@@ -1080,7 +1081,7 @@ bool MainApp::OnInit()
 	}
 
 	// Hide splash screen
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	init_ok = true;
 	wxLogMessage("SLADE Initialisation OK");

@@ -36,11 +36,11 @@
 #include "ArchivePanel.h"
 #include "Dialogs/DirArchiveUpdateDialog.h"
 #include "EntryPanel/EntryPanel.h"
+#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"
-#include "UI/SplashWindow.h"
 #include "UI/STabCtrl.h"
 
 
@@ -1039,7 +1039,7 @@ void ArchiveManagerPanel::closeEntryTabs(Archive* parent)
 void ArchiveManagerPanel::openFile(string filename)
 {
 	// Show splash screen
-	theSplashWindow->show("Opening Archive...", true);
+	UI::showSplash("Opening Archive...", true);
 
 	// test
 	wxStopWatch sw;
@@ -1052,7 +1052,7 @@ void ArchiveManagerPanel::openFile(string filename)
 	wxLogMessage("Opening took %d ms", (int)sw.Time());
 
 	// Hide splash screen
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Check that the archive opened ok
 	if (!new_archive)
@@ -1081,7 +1081,7 @@ void ArchiveManagerPanel::openFiles(wxArrayString& files)
 void ArchiveManagerPanel::openDirAsArchive(string dir)
 {
 	// Show splash screen
-	theSplashWindow->show("Opening Directory...", true);
+	UI::showSplash("Opening Directory...", true);
 
 	// test
 	wxStopWatch sw;
@@ -1094,7 +1094,7 @@ void ArchiveManagerPanel::openDirAsArchive(string dir)
 	wxLogMessage("Opening took %d ms", (int)sw.Time());
 
 	// Hide splash screen
-	theSplashWindow->hide();
+	UI::hideSplash();
 
 	// Check that the archive opened ok
 	if (!new_archive)
