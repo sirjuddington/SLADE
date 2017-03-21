@@ -102,6 +102,22 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_invalid_lines = new wxCheckBox(this, -1, "Check for invalid lines");
 	gb_sizer->Add(cb_invalid_lines, wxGBPosition(5, 0), wxDefaultSpan, wxEXPAND);
 
+	// Check tagged objects
+	cb_tagged_objects = new wxCheckBox(this, -1, "Check for missing tagged objects");
+	gb_sizer->Add(cb_tagged_objects, wxGBPosition(5, 1), wxDefaultSpan, wxEXPAND);
+
+	// Check special types
+	cb_unknown_special = new wxCheckBox(this, -1, "Check for unknown line and thing specials");
+	gb_sizer->Add(cb_unknown_special, wxGBPosition(6, 0), wxDefaultSpan, wxEXPAND);
+
+	// Check special types
+	cb_unknown_sector = new wxCheckBox(this, -1, "Check for unknown sector types");
+	gb_sizer->Add(cb_unknown_sector, wxGBPosition(6, 1), wxDefaultSpan, wxEXPAND);
+
+	// Check obsolete things
+	cb_obsolete_things = new wxCheckBox(this, -1, "Check for obsolete things");
+	gb_sizer->Add(cb_obsolete_things, wxGBPosition(7, 0), wxDefaultSpan, wxEXPAND);
+
 	// Error list
 	lb_errors = new wxListBox(this, -1);
 	sizer->Add(lb_errors, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 4);
@@ -149,6 +165,10 @@ MapChecksPanel::MapChecksPanel(wxWindow* parent, SLADEMap* map) : wxPanel(parent
 	cb_stuck_things->SetValue(true);
 	cb_invalid_lines->SetValue(true);
 	//cb_sector_refs->SetValue(true);
+	cb_tagged_objects->SetValue(true);
+	cb_unknown_special->SetValue(true);
+	cb_unknown_sector->SetValue(true);
+	//cb_obsolete_things->SetValue(true);
 
 	btn_fix1->Show(false);
 	btn_fix2->Show(false);
@@ -342,6 +362,14 @@ void MapChecksPanel::onBtnCheck(wxCommandEvent& e)
 		active_checks.push_back(MapCheck::sectorReferenceCheck(map));
 	if (cb_invalid_lines->GetValue())
 		active_checks.push_back(MapCheck::invalidLineCheck(map));
+	if (cb_tagged_objects->GetValue())
+		active_checks.push_back(MapCheck::missingTaggedCheck(map));
+	if (cb_unknown_special->GetValue())
+		active_checks.push_back(MapCheck::unknownSpecialCheck(map));
+	if (cb_unknown_sector->GetValue())
+		active_checks.push_back(MapCheck::unknownSectorCheck(map));
+	if (cb_obsolete_things->GetValue())
+		active_checks.push_back(MapCheck::obsoleteThingCheck(map));
 
 	// Run checks
 	for (unsigned a = 0; a < active_checks.size(); a++)
