@@ -9,6 +9,10 @@ enum ThingFlags
 	THING_PATHED	= 1<<0,	// Things that work in paths (ZDoom's interpolation points and patrol points)
 	THING_DRAGON	= 1<<1,	// Dragon makes its own paths, without using special things
 	THING_SCRIPT	= 1<<2,	// Special is actually a script number (like Hexen's Heresiarch)
+	THING_COOPSTART	= 1<<3, // Thing is a numbered player start
+	THING_DMSTART	= 1<<4, // Thing is a free-for-all player start
+	THING_TEAMSTART	= 1<<5, // Thing is a team-game player start
+	THING_OBSOLETE	= 1<<6,	// Thing is flagged as obsolete
 };
 
 class ParseTreeNode;

@@ -3860,6 +3860,117 @@ void MapEditor::getAdjacentWalls3d(selection_3d_t item, vector<selection_3d_t>& 
 	}
 }
 
+/* MapEditor::getAdjacentFlats3d
+ * Adds all walls and flats adjacent to [item] to [list]. Adjacent
+ * meaning connected and sharing a texture
+ *******************************************************************/
+void MapEditor::getAdjacentFlats3d(selection_3d_t item, vector<selection_3d_t>& list)
+{
+	// Check item
+	if (item.index < 0 || (item.type != SEL_FLOOR && item.type != SEL_CEILING))
+		return;
+
+	// Add item
+	list.push_back(item);
+
+	// Get initial sector
+	MapSector* sector = map.getSector(item.index);
+	if (!sector) return;
+
+	// Go through sector lines
+	vector<MapLine*> lines;
+	sector->getLines(lines);
+	for (unsigned a = 0; a < lines.size(); a++)
+	{
+		// Get sector on opposite side
+		MapSector* osector = NULL;
+		if (lines[a]->frontSector() == sector)
+			osector = lines[a]->backSector();
+		else
+			osector = lines[a]->frontSector();
+
+		// Skip if no sector
+		if (!osector || osector == sector)
+			continue;
+
+		// Check for match
+		plane_t this_plane, other_plane;
+		if (item.type == SEL_FLOOR)
+		{
+			// Check sector floor texture
+			if (osector->getFloorTex() != sector->getFloorTex())
+				continue;
+
+			this_plane = sector->getFloorPlane();
+			other_plane = osector->getFloorPlane();
+		}
+		else
+		{
+			// Check sector ceiling texture
+			if (osector->getCeilingTex() != sector->getCeilingTex())
+				continue;
+
+			this_plane = sector->getCeilingPlane();
+			other_plane = osector->getCeilingPlane();
+		}
+
+		// Check that planes meet
+		fpoint2_t left = lines[a]->v1()->getPoint(0);
+		fpoint2_t right = lines[a]->v2()->getPoint(0);
+
+		double this_left_z = this_plane.height_at(left);
+		double other_left_z = other_plane.height_at(left);
+		if (fabs(this_left_z - other_left_z) > 1)
+			continue;
+
+		double this_right_z = this_plane.height_at(right);
+		double other_right_z = other_plane.height_at(right);
+		if (fabs(this_right_z - other_right_z) > 1)
+			continue;
+
+		// Check flat isn't already listed
+		bool listed = false;
+		for (unsigned s = 0; s < list.size(); s++)
+		{
+			if (list[s].type == item.type && list[s].index == osector->getIndex())
+			{
+				listed = true;
+				break;
+			}
+		}
+
+		// Recursively list adjacent flats
+		if (!listed)
+		{
+			list.push_back(item);
+			getAdjacentFlats3d(selection_3d_t(osector->getIndex(), item.type), list);
+		}
+	}
+}
+
+/* MapEditor::getAdjacent3d
+ * Adds all walls and flats adjacent to [item] to [list]. Adjacent 
+ * meaning connected and sharing a texture
+ *******************************************************************/
+void MapEditor::getAdjacent3d(selection_3d_t item, vector<selection_3d_t>& list)
+{
+	// Check item
+	if (item.index < 0 || item.type == SEL_THING)
+		return;
+
+	// Flat
+	if (item.type == SEL_FLOOR || item.type == SEL_CEILING)
+	{
+		getAdjacentFlats3d(item, list);
+	}
+
+	// Wall
+	else if (item.type != SEL_THING)
+	{
+		getAdjacentWalls3d(item, list);
+	}
+}
+
 /* MapEditor::selectAdjacent3d
  * Selects all adjacent walls or flats to [item]
  *******************************************************************/
@@ -3869,91 +3980,13 @@ void MapEditor::selectAdjacent3d(selection_3d_t item)
 	if (item.index < 0)
 		return;
 
-	// Select item
-	selectItem3d(item, SELECT);
+	vector<selection_3d_t> list;
+	getAdjacent3d(item, list);
 
-	// Flat
-	if (item.type == SEL_FLOOR || item.type == SEL_CEILING)
+	// Select every list item
+	for (size_t i = 0; i < list.size(); ++i)
 	{
-		// Get initial sector
-		MapSector* sector = map.getSector(item.index);
-		if (!sector) return;
-
-		// Go through sector lines
-		vector<MapLine*> lines;
-		sector->getLines(lines);
-		for (unsigned a = 0; a < lines.size(); a++)
-		{
-			// Get sector on opposite side
-			MapSector* osector = NULL;
-			if (lines[a]->frontSector() == sector)
-				osector = lines[a]->backSector();
-			else
-				osector = lines[a]->frontSector();
-
-			// Skip if no sector
-			if (!osector || osector == sector)
-				continue;
-
-			// Check for match
-			plane_t this_plane, other_plane;
-			if (item.type == SEL_FLOOR)
-			{
-				// Check sector floor texture
-				if (osector->getFloorTex() != sector->getFloorTex())
-					continue;
-
-				this_plane = sector->getFloorPlane();
-				other_plane = osector->getFloorPlane();
-			}
-			else
-			{
-				// Check sector ceiling texture
-				if (osector->getCeilingTex() != sector->getCeilingTex())
-					continue;
-
-				this_plane = sector->getCeilingPlane();
-				other_plane = osector->getCeilingPlane();
-			}
-
-			// Check that planes meet
-			fpoint2_t left = lines[a]->v1()->getPoint(0);
-			fpoint2_t right = lines[a]->v2()->getPoint(0);
-
-			double this_left_z = this_plane.height_at(left);
-			double other_left_z = other_plane.height_at(left);
-			if (fabs(this_left_z - other_left_z) > 1)
-				continue;
-
-			double this_right_z = this_plane.height_at(right);
-			double other_right_z = other_plane.height_at(right);
-			if (fabs(this_right_z - other_right_z) > 1)
-				continue;
-
-			// Check flat isn't already selected
-			bool selected = false;
-			for (unsigned s = 0; s < selection_3d.size(); s++)
-			{
-				if (selection_3d[s].type == item.type && selection_3d[s].index == osector->getIndex())
-				{
-					selected = true;
-					break;
-				}
-			}
-
-			// Recursively select adjacent flats
-			if (!selected)
-				selectAdjacent3d(selection_3d_t(osector->getIndex(), item.type));
-		}
-	}
-
-	// Wall
-	else if (item.type != SEL_THING)
-	{
-		vector<selection_3d_t> list;
-		getAdjacentWalls3d(item, list);
-		for (unsigned a = 0; a < list.size(); a++)
-			selectItem3d(list[a], SELECT);
+		selectItem3d(list[i], SELECT);
 	}
 }
 
@@ -4413,12 +4446,15 @@ void MapEditor::resetOffsets3d()
 	// Get items to process
 	vector<selection_3d_t> walls;
 	vector<selection_3d_t> flats;
+	vector<selection_3d_t> things;
 	if (selection_3d.size() == 0)
 	{
 		if (hilight_3d.type == SEL_SIDE_TOP || hilight_3d.type == SEL_SIDE_BOTTOM || hilight_3d.type == SEL_SIDE_MIDDLE)
 			walls.push_back(hilight_3d);
 		else if (hilight_3d.type == SEL_FLOOR || hilight_3d.type == SEL_CEILING)
 			flats.push_back(hilight_3d);
+		else if (hilight_3d.type == SEL_THING)
+			things.push_back(hilight_3d);
 	}
 	else
 	{
@@ -4428,9 +4464,11 @@ void MapEditor::resetOffsets3d()
 				walls.push_back(selection_3d[a]);
 			else if (selection_3d[a].type == SEL_FLOOR || selection_3d[a].type == SEL_CEILING)
 				flats.push_back(selection_3d[a]);
+			else if (selection_3d[a].type == SEL_THING)
+				things.push_back(selection_3d[a]);
 		}
 	}
-	if (walls.size() == 0 && flats.size() == 0)
+	if (walls.size() == 0 && flats.size() == 0 && things.size() == 0)
 		return;
 
 	// Begin undo level
@@ -4517,6 +4555,37 @@ void MapEditor::resetOffsets3d()
 			}
 			if (theGameConfiguration->udmfFlatRotation())
 				sector->setFloatProperty("rotation" + plane, 0);
+		}
+	}
+
+	// Go through things
+	if (theMapEditor->currentMapDesc().format != MAP_DOOM)
+	{
+		for (unsigned a = 0; a < things.size(); ++a)
+		{
+			MapThing* thing = map.getThing(things[a].index);
+			if (!thing) continue;
+
+			// Reset height
+			if (theMapEditor->currentMapDesc().format != MAP_UDMF)
+				thing->setIntProperty("height", 0);
+			else
+			{
+				thing->setFloatProperty("height", 0);
+				// Reset scale
+				if (theGameConfiguration->udmfThingScaling())
+				{
+					thing->setFloatProperty("scalex", 1);
+					thing->setFloatProperty("scaley", 1);
+					thing->setFloatProperty("scale", 1);
+				}
+				// Reset non-angle rotations
+				if (theGameConfiguration->udmfThingRotation())
+				{
+					thing->setIntProperty("pitch", 0);
+					thing->setIntProperty("yaw", 0);
+				}
+			}
 		}
 	}
 
@@ -4776,6 +4845,109 @@ void MapEditor::paste3d(int type)
 	undo_manager_3d->endRecord(true);
 }
 
+/* MapEditor::floodFill3d
+ * Pastes previously copied wall/flat/thing info to selection and ad
+ *******************************************************************/
+void MapEditor::floodFill3d(int type)
+{
+	// Get items to paste to
+	vector<selection_3d_t> items;
+	if (hilight_3d.index >= 0 && hilight_3d.type != SEL_THING)
+	{
+		//items.push_back(hilight_3d);
+		getAdjacent3d(hilight_3d, items);
+	}
+
+	// Restrict floodfill to selection, if any
+	if (selection_3d.size() > 0)
+	{
+		for (vector<selection_3d_t>::iterator i = items.begin(); i < items.end(); ++i)
+		{
+			bool found = false;
+			for (unsigned a = 0; a < selection_3d.size(); a++)
+			{
+				if (selection_3d[a].type == i->type && selection_3d[a].index == i->index)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				items.erase(i);
+		}
+	}
+
+	// Begin undo step
+	string ptype = "Floodfill textures";
+	undo_manager_3d->beginRecord(ptype);
+
+	// Go through items
+	for (unsigned a = 0; a < items.size(); a++)
+	{
+		// Wall
+		if (items[a].type == SEL_SIDE_TOP || items[a].type == SEL_SIDE_MIDDLE || items[a].type == SEL_SIDE_BOTTOM)
+		{
+			MapSide* side = map.getSide(items[a].index);
+			recordPropertyChangeUndoStep(side);
+
+			// Upper wall
+			if (items[a].type == SEL_SIDE_TOP)
+			{
+				// Texture
+				if (type == COPY_TEXTYPE)
+					side->setStringProperty("texturetop", copy_texture);
+			}
+
+			// Middle wall
+			else if (items[a].type == SEL_SIDE_MIDDLE)
+			{
+				// Texture
+				if (type == COPY_TEXTYPE)
+					side->setStringProperty("texturemiddle", copy_texture);
+			}
+
+			// Lower wall
+			else if (items[a].type == SEL_SIDE_BOTTOM)
+			{
+				// Texture
+				if (type == COPY_TEXTYPE)
+					side->setStringProperty("texturebottom", copy_texture);
+			}
+		}
+
+		// Flat
+		else if (items[a].type == SEL_FLOOR || items[a].type == SEL_CEILING)
+		{
+			MapSector* sector = map.getSector(items[a].index);
+			recordPropertyChangeUndoStep(sector);
+
+			// Floor
+			if (items[a].type == SEL_FLOOR)
+			{
+				// Texture
+				if (type == COPY_TEXTYPE)
+					sector->setStringProperty("texturefloor", copy_texture);
+			}
+
+			// Ceiling
+			if (items[a].type == SEL_CEILING)
+			{
+				// Texture
+				if (type == COPY_TEXTYPE)
+					sector->setStringProperty("textureceiling", copy_texture);
+			}
+		}
+	}
+
+	// Editor message
+	if (type == COPY_TEXTYPE)
+	{
+		addEditorMessage("Floodfilled Texture");
+	}
+
+	undo_manager_3d->endRecord(true);
+}
+
 /* MapEditor::changeThingZ3d
  * Changes the Z height of selected 3d mode things by [amount]
  *******************************************************************/
@@ -4801,6 +4973,115 @@ void MapEditor::changeThingZ3d(int amount)
 				thing->setIntProperty("height", z);
 			}
 		}
+	}
+}
+
+/* MapEditor::changeHeight3d
+ * Changes the height of objects, depending on type:
+ * Things: Z height
+ * Flat: height
+ * Wall: vertical offset
+ *******************************************************************/
+void MapEditor::changeHeight3d(int amount)
+{
+	// Get items to process
+	vector<selection_3d_t> items;
+	if (selection_3d.empty() && hilight_3d.index >= 0)
+	{
+		if (hilight_3d.type != SEL_THING || map.currentFormat() != MAP_DOOM)
+			items.push_back(hilight_3d);
+	}
+	else for (unsigned a = 0; a < selection_3d.size(); a++)
+	{
+		if (selection_3d[a].type != SEL_THING || map.currentFormat() != MAP_DOOM)
+			items.push_back(selection_3d[a]);
+	}
+	if (items.empty())
+		return;
+
+	// Begin undo level
+	beginUndoRecordLocked("Change Height", true, false, false);
+
+	// Go through items
+	for (unsigned a = 0; a < items.size(); a++)
+	{
+		uint8_t type = items[a].type;
+
+		// Thing
+		if (type == SEL_THING)
+		{
+			MapThing* thing = map.getThing(items[a].index);
+			if (thing)
+			{
+				double z = thing->intProperty("height");
+				z += amount;
+				thing->setIntProperty("height", z);
+			}
+		}
+
+		// Wall
+		if (type == SEL_SIDE_BOTTOM || type == SEL_SIDE_MIDDLE || type == SEL_SIDE_TOP)
+		{
+			MapSide* side = map.getSide(items[a].index);
+
+			if (side)
+			{
+				string ofs = "offsety";
+
+				// If offsets are linked, just change the whole side offset
+				if (link_3d_offset)
+				{
+					int offset = side->intProperty(ofs);
+					side->setIntProperty(ofs, offset + amount);
+					continue;
+				}
+				// Unlinked offsets, build string (offsety_[top/mid/bottom])
+				else if (items[a].type == SEL_SIDE_BOTTOM)
+					ofs += "_bottom";
+				else if (items[a].type == SEL_SIDE_TOP)
+					ofs += "_top";
+				else
+					ofs += "_mid";
+
+				// Change the offset
+				float offset = side->floatProperty(ofs);
+				side->setFloatProperty(ofs, offset + amount);
+			}
+		}
+
+		// Floor
+		else if (type == SEL_FLOOR)
+		{
+			// Get sector
+			MapSector* sector = map.getSector(items[a].index);
+
+			// Change height
+			if (sector)
+				sector->setFloorHeight(sector->getFloorHeight() + amount);
+		}
+
+		// Ceiling
+		else if (type == SEL_CEILING)
+		{
+			// Get sector
+			MapSector* sector = map.getSector(items[a].index);
+
+			// Change height
+			if (sector)
+				sector->setCeilingHeight(sector->getCeilingHeight() + amount);
+		}
+	}
+
+	// End undo level
+	endUndoRecord();
+
+	// Editor message
+	if (items.size() > 0)
+	{
+		if (amount > 0)
+			addEditorMessage(S_FMT("Height increased by %d", amount));
+		else
+			addEditorMessage(S_FMT("Height decreased by %d", -amount));
 	}
 }
 
@@ -5096,6 +5377,7 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		// Copy/paste
 		else if (key == "me3d_copy_tex_type")	copy3d(COPY_TEXTYPE);
 		else if (key == "me3d_paste_tex_type")	paste3d(COPY_TEXTYPE);
+		else if (key == "me3d_paste_tex_adj")	floodFill3d(COPY_TEXTYPE);
 
 		// Light changes
 		else if	(key == "me3d_light_up16")		changeSectorLight3d(16);
@@ -5124,6 +5406,12 @@ bool MapEditor::handleKeyBind(string key, fpoint2_t position)
 		else if (key == "me3d_thing_up8")	changeThingZ3d(8);
 		else if (key == "me3d_thing_down")	changeThingZ3d(-1);
 		else if (key == "me3d_thing_down8")	changeThingZ3d(-8);
+
+		// Generic height change
+		else if (key == "me3d_generic_up8")		changeHeight3d(8);
+		else if (key == "me3d_generic_up")		changeHeight3d(1);
+		else if (key == "me3d_generic_down8")	changeHeight3d(-8);
+		else if (key == "me3d_generic_down")	changeHeight3d(-1);
 
 		// Wall/Flat scale changes
 		else if (key == "me3d_scalex_up_l" && is_udmf) changeScale3d(1, true);

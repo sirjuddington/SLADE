@@ -325,9 +325,10 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	gb_sizer->Add(rb_pc_tint, wxGBPosition(2, 1), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 
 	// Blend/Tint colour
-	cp_blend_col = new wxColourPickerCtrl(panel, -1);
+	cb_blend_col = new ColourBox(panel, -1, false, true);
+	cb_blend_col->setPalette(getPalette());
 	gb_sizer->Add(new wxStaticText(panel, -1, "Colour:"), wxGBPosition(3, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(cp_blend_col, wxGBPosition(3, 1), wxDefaultSpan, wxALIGN_RIGHT);
+	gb_sizer->Add(cb_blend_col, wxGBPosition(3, 1), wxDefaultSpan, wxALIGN_RIGHT);
 
 	// Tint amount
 	spin_tint_amount = new wxSpinCtrlDouble(panel, 01, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxALIGN_RIGHT|wxTE_PROCESS_ENTER, 0, 1, 0, 0.1);
@@ -364,7 +365,7 @@ wxPanel* ZTextureEditorPanel::createPatchControls(wxWindow* parent)
 	rb_pc_blend->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCBlendSelected, this);
 	rb_pc_tint->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCTintSelected, this);
 	rb_pc_translation->Bind(wxEVT_RADIOBUTTON, &ZTextureEditorPanel::onPCTranslationSelected, this);
-	cp_blend_col->Bind(wxEVT_COLOURPICKER_CHANGED, &ZTextureEditorPanel::onPatchColourChanged, this);
+	cb_blend_col->Bind(wxEVT_COLOURBOX_CHANGED, &ZTextureEditorPanel::onPatchColourChanged, this);
 	spin_tint_amount->Bind(wxEVT_SPINCTRLDOUBLE, &ZTextureEditorPanel::onPatchTintAmountChanged, this);
 	spin_tint_amount->Bind(wxEVT_TEXT_ENTER, &ZTextureEditorPanel::onPatchTintAmountChanged, this);
 	btn_edit_translation->Bind(wxEVT_BUTTON, &ZTextureEditorPanel::onBtnEditTranslation, this);
@@ -398,7 +399,7 @@ void ZTextureEditorPanel::updatePatchControls()
 		rb_pc_blend->Enable(false);
 		rb_pc_tint->Enable(false);
 		rb_pc_translation->Enable(false);
-		cp_blend_col->Enable(false);
+		cb_blend_col->Enable(false);
 		spin_tint_amount->Enable(false);
 		text_translation->Enable(false);
 		btn_edit_translation->Enable(false);
@@ -418,7 +419,7 @@ void ZTextureEditorPanel::updatePatchControls()
 		rb_pc_blend->Enable(true);
 		rb_pc_tint->Enable(true);
 		rb_pc_translation->Enable(true);
-		cp_blend_col->Enable(true);
+		cb_blend_col->Enable(true);
 		spin_tint_amount->Enable(true);
 		text_translation->Enable(true);
 		btn_edit_translation->Enable(true);
@@ -440,7 +441,7 @@ void ZTextureEditorPanel::updatePatchControls()
 			cb_useofs->SetValue(patch->useOffsets());
 			spin_alpha->SetValue(patch->getAlpha());
 			choice_style->SetStringSelection(patch->getStyle());
-			cp_blend_col->SetColour(WXCOL(patch->getColour()));
+			cb_blend_col->setColour(patch->getColour());
 			spin_tint_amount->SetValue((double)patch->getColour().a / 255.0);
 			text_translation->SetValue(patch->getTranslation().asText());
 
@@ -554,7 +555,7 @@ void ZTextureEditorPanel::enableTranslationControls(bool enable)
 
 void ZTextureEditorPanel::enableBlendControls(bool enable, bool tint)
 {
-	cp_blend_col->Enable(enable); spin_tint_amount->Enable(enable && tint);
+	cb_blend_col->Enable(enable); spin_tint_amount->Enable(enable && tint);
 }
 
 
@@ -957,7 +958,7 @@ void ZTextureEditorPanel::onPCTranslationSelected(wxCommandEvent& e)
 /* ZTextureEditorPanel::onPatchColourChanged
  * Called when the patch colour picker is changed
  *******************************************************************/
-void ZTextureEditorPanel::onPatchColourChanged(wxColourPickerEvent& e)
+void ZTextureEditorPanel::onPatchColourChanged(wxEvent& e)
 {
 	// Check texture is open
 	if (!tex_current)
@@ -969,8 +970,8 @@ void ZTextureEditorPanel::onPatchColourChanged(wxColourPickerEvent& e)
 		CTPatchEx* patch = (CTPatchEx*)tex_current->getPatch(list_patches->selectedItems()[a]);
 		if (patch)
 		{
-			wxColour col = cp_blend_col->GetColour();
-			patch->setColour(col.Red(), col.Green(), col.Blue(), spin_tint_amount->GetValue()*255);
+			rgba_t col = cb_blend_col->getColour();
+			patch->setColour(col.r, col.g, col.b, spin_tint_amount->GetValue()*255);
 		}
 	}
 
@@ -995,8 +996,8 @@ void ZTextureEditorPanel::onPatchTintAmountChanged(wxCommandEvent& e)
 		CTPatchEx* patch = (CTPatchEx*)tex_current->getPatch(list_patches->selectedItems()[a]);
 		if (patch)
 		{
-			wxColour col = cp_blend_col->GetColour();
-			patch->setColour(col.Red(), col.Green(), col.Blue(), spin_tint_amount->GetValue()*255);
+			rgba_t col = cb_blend_col->getColour();
+			patch->setColour(col.r, col.g, col.b, spin_tint_amount->GetValue()*255);
 		}
 	}
 

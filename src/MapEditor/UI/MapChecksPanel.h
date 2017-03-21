@@ -25,6 +25,10 @@ private:
 	wxCheckBox*		cb_stuck_things;
 	wxCheckBox*		cb_sector_refs;
 	wxCheckBox*		cb_invalid_lines;
+	wxCheckBox*		cb_tagged_objects;
+	wxCheckBox*		cb_unknown_special;
+	wxCheckBox*		cb_unknown_sector;
+	wxCheckBox*		cb_obsolete_things;
 	wxListBox*		lb_errors;
 	wxButton*		btn_check;
 	wxStaticText*	label_status;
