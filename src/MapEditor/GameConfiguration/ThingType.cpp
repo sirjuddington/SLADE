@@ -298,6 +298,14 @@ void ThingType::parse(ParseTreeNode* node)
 			this->flags |= THING_PATHED;
 		}
 
+		// Handle player starts
+		else if (S_CMPNOCASE(name, "player_coop"))
+			this->flags |= THING_COOPSTART;
+		else if (S_CMPNOCASE(name, "player_dm"))
+			this->flags |= THING_DMSTART;
+		else if (S_CMPNOCASE(name, "player_team"))
+			this->flags |= THING_TEAMSTART;
+
 		// Hexen's critters are weird
 		else if (S_CMPNOCASE(name, "dragon"))
 			this->flags |= THING_DRAGON;

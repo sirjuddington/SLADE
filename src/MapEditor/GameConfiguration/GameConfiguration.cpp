@@ -2178,6 +2178,10 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 						else if (S_CMPNOCASE(token, "//$Colour"))
 							found_props["colour"] = tz.getLine();
 
+						// Obsolete thing
+						else if (S_CMPNOCASE(token, "//$Obsolete"))
+							found_props["obsolete"] = true;
+
 						// Translation
 						else if (S_CMPNOCASE(token, "translation"))
 						{
@@ -2423,6 +2427,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 							tt->colour.r = 0xDA; tt->colour.g = 0xA5; tt->colour.b = 0x20; break;
 						}
 					}
+					if (found_props["obsolete"].hasValue()) tt->flags |= THING_OBSOLETE;
 				}
 			}
 		}
