@@ -1323,21 +1323,25 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 	for (int p = 0; p < width*height; p++)
 	{
 		uint8_t i = data[p];
+		rgba_t col = pal->colour(i);
 
 		// No need to process transparent pixels
 		if (mask && mask[p] == 0)
 			continue;
 
+		col = tr->translate(col, pal);
+		data[p] = col.index;
+
 		if (truecolor)
 		{
 			int q = p*4;
-			rgba_t col = pal->colour(i);
 			newdata[q+0] = col.r;
 			newdata[q+1] = col.g;
 			newdata[q+2] = col.b;
 			newdata[q+3] = mask ? mask[p] : col.a;
 		}
 
+#if 0
 		// Go through each translation component
 		for (unsigned a = 0; a < tr->nRanges(); a++)
 		{
@@ -1494,6 +1498,7 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 				}
 			}
 		}
+#endif 
 	}
 
 	if (truecolor)

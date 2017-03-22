@@ -622,6 +622,11 @@ void Palette8bit::applyTranslation(Translation* trans)
 	Palette8bit temp;
 	temp.copyPalette(this);
 
+	// Translate colors
+	for (size_t i = 0; i < 256; ++i)
+		temp.setColour(i, trans->translate(colours[i], this));
+
+#if 0
 	// Go through each translation component
 	for (unsigned a = 0; a < trans->nRanges(); a++)
 	{
@@ -748,6 +753,7 @@ void Palette8bit::applyTranslation(Translation* trans)
 			}
 		}
 	}
+#endif
 
 	// Load translated palette
 	copyPalette(&temp);
