@@ -187,6 +187,7 @@ public:
 	}
 };
 
+class Palette8bit;
 class Translation
 {
 private:
@@ -209,6 +210,8 @@ public:
 	TransRange*	getRange(unsigned index);
 	string		builtInName() { return built_in_name; }
 	void		setDesaturationAmount(uint8_t amount) { desat_amount = amount; }
+
+	rgba_t	translate(rgba_t col, Palette8bit* pal = NULL);
 
 	void	addRange(int type, int pos);
 	void	removeRange(int pos);

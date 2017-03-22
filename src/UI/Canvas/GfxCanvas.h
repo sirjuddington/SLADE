@@ -17,6 +17,7 @@ enum
 
 class SImage;
 class GLTexture;
+class Translation;
 class GfxCanvas : public OGLCanvas, Listener
 {
 private:
@@ -33,6 +34,9 @@ private:
 	point2_t	drag_pos;
 	point2_t	drag_origin;
 	point2_t	mouse_prev;
+	int			editing_mode;	// 0=drag offsets (default), 1: paint, 2: erase, 3: translate
+	rgba_t		paint_colour;
+	Translation* translation;
 
 public:
 	GfxCanvas(wxWindow* parent, int id);
@@ -47,12 +51,16 @@ public:
 	void	allowDrag(bool allow) { allow_drag = allow; }
 	bool	allowScroll() { return allow_scroll; }
 	void	allowScroll(bool allow) { allow_scroll = allow; }
+	void	setPaintColour(rgba_t &col) { paint_colour.set(col); }
+	void	setEditingMode(int mode) { editing_mode = mode; }
+	void	setTranslation(Translation* tr) { translation = tr; }
 
 	void	draw();
 	void	drawImage();
 	void	drawOffsetLines();
 	void	updateImageTexture();
 	void	endOffsetDrag();
+	void	paintPixel(int x, int y);
 
 	void	zoomToFit(bool mag = true, float padding = 0.0f);
 	void	resetOffsets() { offset.x = offset.y = 0; }
@@ -71,5 +79,6 @@ public:
 };
 
 DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED, -1)
+DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED, -1)
 
 #endif //__GFXCANVAS_H__

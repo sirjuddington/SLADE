@@ -36,6 +36,7 @@
 #include "Main.h"
 #include "ColourBox.h"
 #include "Dialogs/PaletteDialog.h"
+#include "Graphics/Palette/Palette.h"
 
 
 /*******************************************************************
@@ -134,6 +135,15 @@ void ColourBox::popColourPicker()
 		colour.r = col.Red();
 		colour.g = col.Green();
 		colour.b = col.Blue();
+		colour.index = -1;
+
+		if (palette)
+		{
+			int16_t index = palette->nearestColour(colour);
+			rgba_t pcol = palette->colour(index);
+			if (pcol.equals(colour))
+				colour.index = index;
+		}
 		sendChangeEvent();
 		Refresh();
 	}

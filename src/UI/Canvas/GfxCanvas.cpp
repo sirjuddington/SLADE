@@ -31,6 +31,7 @@
 #include "Main.h"
 #include "GfxCanvas.h"
 #include "Graphics/SImage/SImage.h"
+#include "Graphics/Translation.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 
@@ -39,6 +40,7 @@
  * VARIABLES
  *******************************************************************/
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED)
+DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED)
 CVAR(Bool, gfx_show_border, true, CVAR_SAVE)
 CVAR(Bool, gfx_hilight_mouseover, true, CVAR_SAVE)
 CVAR(Bool, gfx_arc, false, CVAR_SAVE)
@@ -65,6 +67,9 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id)
 	drag_origin.set(-1, -1);
 	allow_drag = false;
 	allow_scroll = false;
+	editing_mode = 0;
+	paint_colour = COL_BLACK;
+	translation = NULL;
 
 	// Listen to the image for changes
 	listenTo(image);
@@ -309,6 +314,7 @@ bool GfxCanvas::onImage(int x, int y)
 	// Determine top-left coordinates of image in screen coords
 	double left = GetSize().x * 0.5 + offset.x;
 	double top = GetSize().y * 0.5 + offset.y;
+	double yscale = scale * (gfx_arc ? 1.2 : 1);
 
 	if (view_type == GFXVIEW_DEFAULT)
 	{
@@ -318,24 +324,24 @@ bool GfxCanvas::onImage(int x, int y)
 	else if (view_type == GFXVIEW_CENTERED)
 	{
 		left -= (double)image->getWidth() * 0.5 * scale;
-		top -= (double)image->getHeight() * 0.5 * scale;
+		top -= (double)image->getHeight() * 0.5 * yscale;
 	}
 	else if (view_type == GFXVIEW_SPRITE)
 	{
 		left -= image->offset().x * scale;
-		top -= image->offset().y * scale;
+		top -= image->offset().y * yscale;
 	}
 	else if (view_type == GFXVIEW_HUD)
 	{
 		left -= 160 * scale;
-		top -= 100 * scale;
+		top -= 100 * scale * (gfx_arc ? 1.2 : 1);
 		left -= image->offset().x * scale;
-		top -= image->offset().y * scale;
+		top -= image->offset().y * yscale;
 	}
 
 	// Determine bottom-right coordinates of image in screen coords
 	double right = left + image->getWidth() * scale;
-	double bottom = top + image->getHeight() * scale;
+	double bottom = top + image->getHeight() * yscale;
 
 	return (x >= left && x <= right && y >= top && y <= bottom);
 }
@@ -349,6 +355,7 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 	// Determine top-left coordinates of image in screen coords
 	double left = GetSize().x * 0.5 + offset.x;
 	double top = GetSize().y * 0.5 + offset.y;
+	double yscale = scale * (gfx_arc ? 1.2 : 1);
 
 	if (view_type == GFXVIEW_DEFAULT)
 	{
@@ -358,24 +365,24 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 	else if (view_type == GFXVIEW_CENTERED)
 	{
 		left -= (double)image->getWidth() * 0.5 * scale;
-		top -= (double)image->getHeight() * 0.5 * scale;
+		top -= (double)image->getHeight() * 0.5 * yscale;
 	}
 	else if (view_type == GFXVIEW_SPRITE)
 	{
 		left -= image->offset().x * scale;
-		top -= image->offset().y * scale;
+		top -= image->offset().y * yscale;
 	}
 	else if (view_type == GFXVIEW_HUD)
 	{
 		left -= 160 * scale;
-		top -= 100 * scale;
+		top -= 100 * scale * (gfx_arc ? 1.2 : 1);
 		left -= image->offset().x * scale;
-		top -= image->offset().y * scale;
+		top -= image->offset().y * yscale;
 	}
 
 	// Determine bottom-right coordinates of image in screen coords
 	double right = left + image->getWidth() * scale;
-	double bottom = top + image->getHeight() * scale;
+	double bottom = top + image->getHeight() * yscale;
 
 	// Check if the pointer is within the image
 	if (x >= left && x <= right && y >= top && y <= bottom)
@@ -418,6 +425,33 @@ void GfxCanvas::endOffsetDrag()
 	drag_origin.set(-1, -1);
 }
 
+void GfxCanvas::paintPixel(int x, int y)
+{
+	point2_t coord = imageCoords(x, y);
+	bool painted = false;
+	if (editing_mode == 2) // eraser
+		painted = image->setPixel(coord.x, coord.y, 255, 0);
+	else if (editing_mode == 3) // translator
+	{
+		if (translation != NULL)
+		{
+			rgba_t col = image->getPixel(coord.x, coord.y, getPalette());
+			uint8_t alpha = col.a;
+			col.set(translation->translate(col, getPalette()));
+			col.a = alpha;
+			painted = image->setPixel(coord.x, coord.y, col);
+		}
+	}
+	else painted = image->setPixel(coord.x, coord.y, paint_colour);
+	if (painted)
+	{
+		// Generate event
+		wxNotifyEvent e(wxEVT_GFXCANVAS_PIXELS_CHANGED, GetId());
+		e.SetEventObject(this);
+		GetEventHandler()->ProcessEvent(e);
+	}
+}
+
 /* GfxCanvas::onAnnouncement
  * Called when an announcement is recieved from the image that this
  * GfxCanvas is displaying
@@ -443,10 +477,14 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 	bool on_image = onImage(x, y-2);
 
 	// Left mouse down
-	if (e.LeftDown())
+	if (e.LeftDown() && on_image)
 	{
+		// Paint in paint mode
+		if (editing_mode)
+			paintPixel(x, y);
+
 		// Begin drag if mouse is over image and dragging allowed
-		if (on_image && allow_drag)
+		else if (allow_drag)
 		{
 			drag_origin.set(x, y);
 			drag_pos.set(x, y);
@@ -486,19 +524,30 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		refresh = true;
 
 		// Update cursor if drag allowed
-		if (allow_drag)
+		if (on_image)
 		{
-			if (on_image)
+			if (editing_mode)
+				SetCursor(wxCursor(wxCURSOR_PENCIL));
+			else if (allow_drag)
 				SetCursor(wxCursor(wxCURSOR_SIZING));
-			else if (!e.LeftIsDown())
-				SetCursor(wxNullCursor);
 		}
+		else if (allow_drag && !e.LeftIsDown())
+			SetCursor(wxNullCursor);
 	}
 	// Drag
 	if (e.LeftIsDown())
 	{
-		drag_pos.set(e.GetPosition().x, e.GetPosition().y);
-		refresh = true;
+		if (editing_mode)
+		{
+			// This is not really satisfying right now:
+			// the same pixel can be repainted several times.
+			// paintPixel(e.GetX(), e.GetY() - 2);
+		}
+		else
+		{
+			drag_pos.set(e.GetPosition().x, e.GetPosition().y);
+			refresh = true;
+		}
 	}
 	else if (e.MiddleIsDown())
 	{
