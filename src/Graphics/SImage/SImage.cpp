@@ -306,6 +306,7 @@ rgba_t SImage::getPixel(unsigned x, unsigned y, Palette8bit* pal)
 			pal = &palette;
 
 		col.set(pal->colour(data[index]));
+		if (mask) col.a = mask[index];
 	}
 	else if (type == ALPHAMAP)
 	{
@@ -944,6 +945,7 @@ bool SImage::setPixel(int x, int y, rgba_t colour, Palette8bit* pal)
 		uint8_t index = (colour.index == -1) ? pal->nearestColour(colour) : colour.index;
 
 		data[y * width + x] = index;
+		if (mask) mask[y * width + x] = colour.a;
 	}
 	else if (type == ALPHAMAP)
 	{
