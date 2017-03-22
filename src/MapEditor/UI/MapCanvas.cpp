@@ -2410,6 +2410,7 @@ void MapCanvas::changeEditMode(int mode)
 		theApp->toggleAction("mapw_mode_things");
 	else if (mode == MapEditor::MODE_3D)
 	{
+		theApp->toggleAction("mapw_mode_3d");
 		KeyBind::releaseAll();
 		lockMouse(true);
 		renderer_3d->refresh();

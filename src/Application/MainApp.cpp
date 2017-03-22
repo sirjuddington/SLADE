@@ -737,18 +737,24 @@ void MainApp::initActions()
 	new SAction("arch_run", "Run Archive", "run", "Run the current archive", "Ctrl+Shift+R");
 
 	// GfxEntryPanel
+	int group_gfx_mode = SAction::newGroup();
 	new SAction("pgfx_mirror", "Mirror", "mirror", "Mirror the graphic horizontally");
 	new SAction("pgfx_flip", "Flip", "flip", "Flip the graphic vertically");
 	new SAction("pgfx_rotate", "Rotate", "rotate", "Rotate the graphic");
-	new SAction("pgfx_translate", "Colour Remap", "remap", "Remap a range of colours in the graphic to another range (paletted gfx only)");
+	new SAction("pgfx_remap", "Colour Remap", "remap", "Remap a range of colours in the graphic to another range (paletted gfx only)");
 	new SAction("pgfx_colourise", "Colourise", "colourise", "Colourise the graphic");
 	new SAction("pgfx_tint", "Tint", "tint", "Tint the graphic by a colour/amount");
 	new SAction("pgfx_alph", "alPh Chunk", "", "Add/Remove alPh chunk to/from the PNG", "", SAction::CHECK);
 	new SAction("pgfx_trns", "tRNS Chunk", "", "Add/Remove tRNS chunk to/from the PNG", "", SAction::CHECK);
 	new SAction("pgfx_extract", "Extract All", "", "Extract all images in this entry to separate PNGs");
-	new SAction("pgfx_crop", "Crop", "settings", "Crop the graphic");
+	new SAction("pgfx_crop", "Crop", "crop", "Crop the graphic");
 	new SAction("pgfx_convert", "Convert to...", "convert", "Open the Gfx Conversion Dialog for the entry");
 	new SAction("pgfx_pngopt", "Optimize PNG", "pngopt", "Optimize PNG entry");
+	new SAction("pgfx_settrans", "Set Translation", "gfx_translation", "Select translation for drawing tool");
+	new SAction("pgfx_drag", "Drag offsets", "gfx_drag", "Drag image to change its offsets", "", SAction::RADIO, -1, group_gfx_mode);
+	new SAction("pgfx_draw", "Draw pixels", "gfx_draw", "Draw on the image", "", SAction::RADIO, -1, group_gfx_mode);
+	new SAction("pgfx_erase", "Erase pixels", "gfx_erase", "Erase pixels from the image", "", SAction::RADIO, -1, group_gfx_mode);
+	new SAction("pgfx_magic", "Translate pixels", "gfx_translate", "Apply translation to pixels of the image", "", SAction::RADIO, -1, group_gfx_mode);
 
 	// ArchiveEntryList
 	new SAction("aelt_sizecol", "Size", "", "Show the size column", "", SAction::CHECK);
