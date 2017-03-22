@@ -309,6 +309,7 @@ bool GfxCanvas::onImage(int x, int y)
 	// Determine top-left coordinates of image in screen coords
 	double left = GetSize().x * 0.5 + offset.x;
 	double top = GetSize().y * 0.5 + offset.y;
+	double yscale = scale * (gfx_arc ? 1.2 : 1);
 
 	if (view_type == GFXVIEW_DEFAULT)
 	{
@@ -318,24 +319,24 @@ bool GfxCanvas::onImage(int x, int y)
 	else if (view_type == GFXVIEW_CENTERED)
 	{
 		left -= (double)image->getWidth() * 0.5 * scale;
-		top -= (double)image->getHeight() * 0.5 * scale;
+		top -= (double)image->getHeight() * 0.5 * yscale;
 	}
 	else if (view_type == GFXVIEW_SPRITE)
 	{
 		left -= image->offset().x * scale;
-		top -= image->offset().y * scale;
+		top -= image->offset().y * yscale;
 	}
 	else if (view_type == GFXVIEW_HUD)
 	{
 		left -= 160 * scale;
-		top -= 100 * scale;
+		top -= 100 * scale * (gfx_arc ? 1.2 : 1);
 		left -= image->offset().x * scale;
-		top -= image->offset().y * scale;
+		top -= image->offset().y * yscale;
 	}
 
 	// Determine bottom-right coordinates of image in screen coords
 	double right = left + image->getWidth() * scale;
-	double bottom = top + image->getHeight() * scale;
+	double bottom = top + image->getHeight() * yscale;
 
 	return (x >= left && x <= right && y >= top && y <= bottom);
 }
@@ -349,6 +350,7 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 	// Determine top-left coordinates of image in screen coords
 	double left = GetSize().x * 0.5 + offset.x;
 	double top = GetSize().y * 0.5 + offset.y;
+	double yscale = scale * (gfx_arc ? 1.2 : 1);
 
 	if (view_type == GFXVIEW_DEFAULT)
 	{
@@ -358,24 +360,24 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 	else if (view_type == GFXVIEW_CENTERED)
 	{
 		left -= (double)image->getWidth() * 0.5 * scale;
-		top -= (double)image->getHeight() * 0.5 * scale;
+		top -= (double)image->getHeight() * 0.5 * yscale;
 	}
 	else if (view_type == GFXVIEW_SPRITE)
 	{
 		left -= image->offset().x * scale;
-		top -= image->offset().y * scale;
+		top -= image->offset().y * yscale;
 	}
 	else if (view_type == GFXVIEW_HUD)
 	{
 		left -= 160 * scale;
-		top -= 100 * scale;
+		top -= 100 * scale * (gfx_arc ? 1.2 : 1);
 		left -= image->offset().x * scale;
-		top -= image->offset().y * scale;
+		top -= image->offset().y * yscale;
 	}
 
 	// Determine bottom-right coordinates of image in screen coords
 	double right = left + image->getWidth() * scale;
-	double bottom = top + image->getHeight() * scale;
+	double bottom = top + image->getHeight() * yscale;
 
 	// Check if the pointer is within the image
 	if (x >= left && x <= right && y >= top && y <= bottom)
