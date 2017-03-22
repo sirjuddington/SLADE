@@ -940,7 +940,10 @@ bool SImage::setPixel(int x, int y, rgba_t colour, Palette8bit* pal)
 		if (has_palette || !pal)
 			pal = &palette;
 
-		data[y * width + x] = pal->nearestColour(colour);
+		// Get color index to use (the rgba_t's index if defined, nearest colour otherwise)
+		uint8_t index = (colour.index == -1) ? pal->nearestColour(colour) : colour.index;
+
+		data[y * width + x] = index;
 	}
 	else if (type == ALPHAMAP)
 	{

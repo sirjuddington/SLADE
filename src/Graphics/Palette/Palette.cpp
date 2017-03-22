@@ -66,7 +66,7 @@ Palette8bit::Palette8bit()
 	// Init palette (to greyscale)
 	for (int a = 0; a < 256; a++)
 	{
-		colours[a].set(a, a, a, 255);
+		colours[a].set(a, a, a, 255, -1, a);
 		colours_lab[a].l = (double)a / 255.0;
 		colours_hsl[a].l = (double)a / 255.0;
 	}
@@ -99,7 +99,7 @@ bool Palette8bit::loadMem(MemChunk& mc)
 		if (mc.read(rgb, 3))
 		{
 			// Set colour in palette
-			colours[c].set(rgb[0], rgb[1], rgb[2], 255);
+			colours[c].set(rgb[0], rgb[1], rgb[2], 255, -1, c);
 			colours_lab[c] = Misc::rgbToLab((double)rgb[0]/255.0, (double)rgb[1]/255.0, (double)rgb[2]/255.0);
 			colours_hsl[c++] = Misc::rgbToHsl((double)rgb[0]/255.0, (double)rgb[1]/255.0, (double)rgb[2]/255.0);
 		}
@@ -127,7 +127,7 @@ bool Palette8bit::loadMem(const uint8_t* data, uint32_t size)
 	for (size_t a = 0; a < size; a += 3)
 	{
 		// Set colour in palette
-		colours[c].set(data[a], data[a+1], data[a+2], 255);
+		colours[c].set(data[a], data[a+1], data[a+2], 255, -1, c);
 		colours_lab[c] = Misc::rgbToLab((double)data[a]/255.0, (double)data[a+1]/255.0, (double)data[a+2]/255.0);
 		colours_hsl[c++] = Misc::rgbToHsl((double)data[a]/255.0, (double)data[a+1]/255.0, (double)data[a+2]/255.0);
 
@@ -185,6 +185,7 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 
 			// Get color from image
 			rgba_t col = image.getPixel(x, y);
+			col.index = a;
 
 			// Validate color cell
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
@@ -259,7 +260,7 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 			if (format == FORMAT_GIMP) tz.skipLineComment();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r = atoi(CHR(s1)); col.g = atoi(CHR(s2)); col.b = atoi(CHR(s3));
+			col.r = atoi(CHR(s1)); col.g = atoi(CHR(s2)); col.b = atoi(CHR(s3)); col.index = c;
 			setColour(c++, col);
 		}
 		while (c < 256 && !tz.peekToken().IsEmpty());
@@ -414,6 +415,7 @@ bool Palette8bit::loadFile(string filename, int format)
 void Palette8bit::setColour(uint8_t index, rgba_t col)
 {
 	colours[index].set(col);
+	colours[index].index = index;
 	colours_lab[index] = Misc::rgbToLab(col.dr(), col.dg(), col.db());
 	colours_hsl[index] = Misc::rgbToHsl(col.dr(), col.dg(), col.db());
 }
@@ -474,7 +476,8 @@ void Palette8bit::setGradient(uint8_t startIndex, uint8_t endIndex, rgba_t start
 		
 		gradCol.set((int) (((r_range * perc) + startCol.fr()) * 255.0f),
 					(int) (((g_range * perc) + startCol.fg()) * 255.0f),
-					(int) (((b_range * perc) + startCol.fb()) * 255.0f));
+					(int) (((b_range * perc) + startCol.fb()) * 255.0f),
+					255, -1, a + startIndex);
 		colours[a + startIndex].set(gradCol);
 	}
 }
@@ -826,7 +829,7 @@ void Palette8bit::idtint(int r, int g, int b, int shift, int steps)
 		int fg = colours[i].g + dg*shift/steps; if (fg < 0) fg = 0; else if (fg > 255) fg = 255;
 		int fb = colours[i].b + db*shift/steps; if (fb < 0) fb = 0; else if (fb > 255) fb = 255;
 		// Set the result in the palette
-		rgba_t col(fr, fg, fb, colours[i].a, colours[i].blend);
+		rgba_t col(fr, fg, fb, colours[i].a, colours[i].blend, i);
 		setColour(i, col);
 	}
 }

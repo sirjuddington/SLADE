@@ -253,28 +253,31 @@ struct fpoint3_t
 struct rgba_t
 {
 	uint8_t r, g, b, a;
+	int16_t index; // -1=not indexed
 	char blend; // 0=normal, 1=additive
 
 	// Constructors
-	rgba_t() { r = 0; g = 0; b = 0; a = 0; blend = -1; }
+	rgba_t() { r = 0; g = 0; b = 0; a = 0; blend = -1; index = -1; }
 
-	rgba_t(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1)
+	rgba_t(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1, int16_t INDEX = -1)
 	{
 		r = R;
 		g = G;
 		b = B;
 		a = A;
 		blend = BLEND;
+		index = -1;
 	}
 
 	// Functions
-	void set(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1)
+	void set(uint8_t R, uint8_t G, uint8_t B, uint8_t A = 255, char BLEND = -1, int16_t INDEX = -1)
 	{
 		r = R;
 		g = G;
 		b = B;
 		a = A;
 		blend = BLEND;
+		index = -1;
 	}
 
 	void set(rgba_t colour)
@@ -284,6 +287,7 @@ struct rgba_t
 		b = colour.b;
 		a = colour.a;
 		blend = colour.blend;
+		index = colour.index;
 	}
 
 	float fr() { return (float)r / 255.0f; }
@@ -296,10 +300,12 @@ struct rgba_t
 	double db() { return (double)b / 255.0; }
 	double da() { return (double)a / 255.0; }
 
-	bool equals(rgba_t rhs, bool alpha = false)
+	bool equals(rgba_t rhs, bool alpha = false, bool index = false)
 	{
 		bool col_equal = (r == rhs.r && g == rhs.g && b == rhs.b);
 
+		if (index)
+			col_equal &= (index == rhs.index);
 		if (alpha)
 			return col_equal && (a == rhs.a);
 		else
@@ -323,7 +329,7 @@ struct rgba_t
 		if (na > 255) na = 255;
 		if (na < 0) na = 0;
 
-		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend);
+		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
 	}
 
 	// Amplify/fade colour components by factors
@@ -343,7 +349,7 @@ struct rgba_t
 		if (na > 255) na = 255;
 		if (na < 0) na = 0;
 
-		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend);
+		return rgba_t((uint8_t)nr, (uint8_t)ng, (uint8_t)nb, (uint8_t)na, blend, -1);
 	}
 
 	void write(uint8_t* ptr)
