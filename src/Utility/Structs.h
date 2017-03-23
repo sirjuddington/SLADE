@@ -305,7 +305,7 @@ struct rgba_t
 		bool col_equal = (r == rhs.r && g == rhs.g && b == rhs.b);
 
 		if (index)
-			col_equal &= (index == rhs.index);
+			col_equal &= (this->index == rhs.index);
 		if (alpha)
 			return col_equal && (a == rhs.a);
 		else

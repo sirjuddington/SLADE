@@ -164,6 +164,15 @@ SToolBarButton::~SToolBarButton()
 {
 }
 
+/* SToolBarButton::setIcon
+ * Allows to dynamically change the button's icon
+ *******************************************************************/
+void SToolBarButton::setIcon(string icon)
+{
+	if (!icon.IsEmpty())
+		this->icon = Icons::getIcon(Icons::GENERAL, icon, toolbar_size > 16);
+}
+
 /* SToolBarButton::sendClickedEvent
  * Sends a button clicked event
  *******************************************************************/

@@ -19,6 +19,7 @@ private:
 	wxStaticText*	label_current_zoom;
 	ColourBox*		cb_colour;
 	wxChoice*		choice_offset_type;
+	wxChoice*		choice_brush;
 	wxSpinCtrl*		spin_xoffset;
 	wxSpinCtrl*		spin_yoffset;
 	wxCheckBox*		cb_tile;
@@ -33,6 +34,8 @@ private:
 	bool			offset_changing;
 	bool			editing;
 	Translation		edit_translation;
+	SToolBarButton*	button_brush;
+	wxMenu*			menu_brushes;
 
 public:
 	GfxEntryPanel(wxWindow* parent);
@@ -44,6 +47,7 @@ public:
 	bool	loadEntry(ArchiveEntry* entry, int index);
 	bool	saveEntry();
 	void	setupToolbar();
+	void	fillBrushMenu(wxMenu* bm);
 	void	updateImagePalette();
 	int		detectOffsetType();
 	void	applyViewType();
@@ -51,6 +55,8 @@ public:
 	void	refreshPanel();
 	string	statusString();
 	bool	extractAll();
+
+	bool	iconChanger(wxCommandEvent& e);
 
 	// SAction handler
 	bool	handleAction(string id);
@@ -68,7 +74,6 @@ public:
 	void	onBtnNextImg(wxCommandEvent& e);
 	void	onBtnPrevImg(wxCommandEvent& e);
 	void	onBtnAutoOffset(wxCommandEvent& e);
-	void	onBtnTranslation(wxCommandEvent& e);
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 
 	SImage*	getImage() { if (gfx_canvas) return gfx_canvas->getImage(); else return NULL; }

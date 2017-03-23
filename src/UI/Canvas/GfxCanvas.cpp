@@ -45,6 +45,155 @@ CVAR(Bool, gfx_show_border, true, CVAR_SAVE)
 CVAR(Bool, gfx_hilight_mouseover, true, CVAR_SAVE)
 CVAR(Bool, gfx_arc, false, CVAR_SAVE)
 
+#define BRCNTR 4	// Brush center
+#define BRPIX(b, x, y) brushes[(b)][BRCNTR+(x)][BRCNTR+(y)]
+static const uint8_t brushes[Brush::NUM_BRUSHES][9][9] =
+{
+	{	// Square 1
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 2
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 3
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // C
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 5
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Square 3
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 2
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 3
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // C
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 5
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Square 5
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 2
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 3
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // C
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 5
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Square 7
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 1
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 2
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 3
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // C
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 5
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 6
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Square 9
+		//0  1  2  3  C  5  6  7  8
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 0
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 1
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 2
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 3
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // C
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 5
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 6
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 7
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 8
+	},
+	{	// Circle 5
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 2
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 3
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // C
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 5
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Circle 7
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 1
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 2
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 3
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // C
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 5
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 6
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Circle 9
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 0
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 1
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 2
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 3
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // C
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 5
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 6
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 7
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 8
+	},
+	{	// Diamond 3
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 2
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 3
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // C
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 5
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Diamond 5
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 2
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 3
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // C
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 5
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Diamond 7
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 2
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 3
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // C
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 5
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Diamond 9
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 0
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 1
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 2
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 3
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // C
+		{ 0, 1, 1, 1, 1, 1, 1, 1, 0 }, // 5
+		{ 0, 0, 1, 1, 1, 1, 1, 0, 0 }, // 6
+		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 7
+		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 8
+	},
+};
 
 /*******************************************************************
  * GFXCANVAS CLASS FUNCTIONS
@@ -70,6 +219,9 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id)
 	editing_mode = 0;
 	paint_colour = COL_BLACK;
 	translation = NULL;
+	drawing = false;
+	drawing_mask = NULL;
+	brush = 0;
 
 	// Listen to the image for changes
 	listenTo(image);
@@ -203,6 +355,14 @@ void GfxCanvas::drawImage()
 	// Update texture if needed
 	if (update_texture)
 	{
+		// If the image change isn't caused by drawing, resize drawing mask
+		if (!drawing)
+		{
+			if (drawing_mask)
+				delete[] drawing_mask;
+			drawing_mask = new bool[image->getWidth() * image->getHeight()];
+			memset(drawing_mask, false, image->getWidth() * image->getHeight());
+		}
 		tex_image->loadImage(image, &palette);
 		update_texture = false;
 	}
@@ -224,8 +384,8 @@ void GfxCanvas::drawImage()
 		OpenGL::setColour(255, 255, 255, 255, 0);
 		tex_image->draw2d();
 
-		// Draw hilight
-		if (image_hilight && gfx_hilight_mouseover)
+		// Draw hilight when not in editing mode
+		if (image_hilight && gfx_hilight_mouseover && editing_mode == 0)
 		{
 			OpenGL::setColour(255, 255, 255, 80, 1);
 			tex_image->draw2d();
@@ -425,24 +585,45 @@ void GfxCanvas::endOffsetDrag()
 	drag_origin.set(-1, -1);
 }
 
+/* GfxCanvas::paintPixel
+ * Paints a pixel from the image at the given image coordinates.
+ *******************************************************************/
 void GfxCanvas::paintPixel(int x, int y)
 {
-	point2_t coord = imageCoords(x, y);
+	// With large brushes, it's very possible that some of the pixels
+	// are out of the image area; so don't process them.
+	if (x < 0 || y < 0 || x >= image->getWidth() || y >= image->getHeight())
+		return;
+
+	// Do not process pixels that were already modified in the
+	// current drawing operation. This mechanism is needed to
+	// allow freehand drawing, because an unpredictable number
+	// of mouse events can happen while the mouse moves, leading
+	// to the same pixel being processed over and over, and that
+	// does not play well when applying translations.
+	size_t pos = x + image->getWidth() * y;
+	if (drawing_mask[pos])
+		return;
+
 	bool painted = false;
 	if (editing_mode == 2) // eraser
-		painted = image->setPixel(coord.x, coord.y, 255, 0);
+		painted = image->setPixel(x, y, 255, 0);
 	else if (editing_mode == 3) // translator
 	{
 		if (translation != NULL)
 		{
-			rgba_t col = image->getPixel(coord.x, coord.y, getPalette());
-			uint8_t alpha = col.a;
-			col.set(translation->translate(col, getPalette()));
-			col.a = alpha;
-			painted = image->setPixel(coord.x, coord.y, col);
+			rgba_t ocol = image->getPixel(x, y, getPalette());
+			uint8_t alpha = ocol.a;
+			rgba_t ncol = (translation->translate(ocol, getPalette()));
+			ncol.a = alpha;
+			if (!ocol.equals(ncol, false, true))
+				painted = image->setPixel(x, y, ncol);
 		}
 	}
-	else painted = image->setPixel(coord.x, coord.y, paint_colour);
+	else painted = image->setPixel(x, y, paint_colour);
+
+	// Mark the modification, if any, and announce the modification
+	drawing_mask[pos] = painted;
 	if (painted)
 	{
 		// Generate event
@@ -450,6 +631,18 @@ void GfxCanvas::paintPixel(int x, int y)
 		e.SetEventObject(this);
 		GetEventHandler()->ProcessEvent(e);
 	}
+}
+
+/* GfxCanvas::brushCanvas
+ * Finds all the pixels under the brush, and paints them.
+ *******************************************************************/
+void GfxCanvas::brushCanvas(int x, int y)
+{
+	point2_t coord = imageCoords(x, y);
+	for (int i = -4; i < 5; ++i)
+		for (int j = -4; j < 5; ++j)
+			if (BRPIX(brush, i, j))
+				paintPixel(coord.x + i, coord.y + j);
 }
 
 /* GfxCanvas::onAnnouncement
@@ -481,7 +674,10 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 	{
 		// Paint in paint mode
 		if (editing_mode)
-			paintPixel(x, y);
+		{
+			drawing = true;
+			brushCanvas(x, y);
+		}
 
 		// Begin drag if mouse is over image and dragging allowed
 		else if (allow_drag)
@@ -500,6 +696,12 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
  *******************************************************************/
 void GfxCanvas::onMouseLeftUp(wxMouseEvent& e)
 {
+	// Stop drawing
+	if (drawing)
+	{
+		drawing = false;
+		memset(drawing_mask, false, image->getWidth() * image->getHeight());
+	}
 	// Stop dragging
 	if (drag_origin.x >= 0)
 	{
@@ -539,9 +741,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	{
 		if (editing_mode)
 		{
-			// This is not really satisfying right now:
-			// the same pixel can be repainted several times.
-			// paintPixel(e.GetX(), e.GetY() - 2);
+			brushCanvas(e.GetX(), e.GetY() - 2);
 		}
 		else
 		{

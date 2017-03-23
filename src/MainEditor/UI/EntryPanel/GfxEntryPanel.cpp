@@ -51,6 +51,21 @@ EXTERN_CVAR(String, last_colour)
 EXTERN_CVAR(String, last_tint_colour)
 EXTERN_CVAR(Int, last_tint_amount)
 
+string brushlist[Brush::NUM_BRUSHES] =
+{
+	"brush_sq_1",
+	"brush_sq_3",
+	"brush_sq_5",
+	"brush_sq_7",
+	"brush_sq_9",
+	"brush_ci_5",
+	"brush_ci_7",
+	"brush_ci_9",
+	"brush_di_3",
+	"brush_di_5",
+	"brush_di_7",
+	"brush_di_9",
+};
 
 /*******************************************************************
  * GFXENTRYPANEL CLASS FUNCTIONS
@@ -123,6 +138,10 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	menu_custom = new wxMenu();
 	fillCustomMenu(menu_custom);
 	custom_menu_name = "Graphic";
+
+	// Brushes menu
+	menu_brushes = new wxMenu();
+	fillBrushMenu(menu_brushes);
 
 	// Custom toolbar
 	setupToolbar();
@@ -303,6 +322,7 @@ void GfxEntryPanel::setupToolbar()
 	g_edit->addActionButton("pgfx_settrans", "");
 	cb_colour = new ColourBox(g_edit, -1, COL_BLACK, false, true);
 	cb_colour->setPalette(gfx_canvas->getPalette());
+	button_brush = g_edit->addActionButton("pgfx_setbrush", "");
 	g_edit->addCustomControl(cb_colour);
 	g_edit->addActionButton("pgfx_drag", "");
 	g_edit->addActionButton("pgfx_draw", "");
@@ -332,6 +352,27 @@ void GfxEntryPanel::setupToolbar()
 	g_png->addActionButton("pgfx_pngopt", "");
 	toolbar->addGroup(g_png);
 	toolbar->enableGroup("PNG", false);
+}
+
+void GfxEntryPanel::fillBrushMenu(wxMenu* bm)
+{
+	theApp->getAction("pgfx_brush_sq_1")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_sq_3")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_sq_5")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_sq_7")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_sq_9")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_ci_5")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_ci_7")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_ci_9")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_di_3")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_di_5")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_di_7")->addToMenu(bm);
+	theApp->getAction("pgfx_brush_di_9")->addToMenu(bm);
+}
+
+bool GfxEntryPanel::iconChanger(wxCommandEvent& e)
+{
+	return true;
 }
 
 /* GfxEntryPanel::extractAll
@@ -608,7 +649,6 @@ void GfxEntryPanel::applyViewType()
 	gfx_canvas->Refresh();
 }
 
-#include "Dialogs/PaletteDialog.h"
 /* GfxEntryPanel::handleAction
  * Handles the action [id]. Returns true if the action was handled,
  * false otherwise
@@ -623,8 +663,25 @@ bool GfxEntryPanel::handleAction(string id)
 	if (!id.StartsWith("pgfx_"))
 		return false;
 
+	// For pgfx_brush actions, the string after pgfx is a brush name
+	if (id.StartsWith("pgfx_brush"))
+	{
+		string br = id.AfterFirst('_');
+
+		uint8_t i;
+		for (i = 0; i < Brush::NUM_BRUSHES; ++i)
+			if (S_CMP(br, brushlist[i]))
+				break;
+
+		if (i == Brush::NUM_BRUSHES)
+			return false;
+
+		gfx_canvas->setBrush(i);
+		button_brush->setIcon(br);
+	}
+
 	// Editing - drag mode
-	if (id == "pgfx_drag")
+	else if (id == "pgfx_drag")
 	{
 		editing = false;
 		gfx_canvas->setEditingMode(0);
@@ -652,6 +709,7 @@ bool GfxEntryPanel::handleAction(string id)
 		gfx_canvas->setEditingMode(3);
 	}
 
+	// Editing - set translation
 	else if (id == "pgfx_settrans")
 	{
 		// Create translation editor dialog
@@ -669,6 +727,14 @@ bool GfxEntryPanel::handleAction(string id)
 			gfx_canvas->setTranslation(&edit_translation);
 		}
 
+	}
+
+	// Editing - set brush
+	else if (id == "pgfx_setbrush")
+	{
+		wxPoint p = button_brush->GetScreenPosition() -= GetScreenPosition();
+		p.y += button_brush->GetMaxHeight();
+		PopupMenu(menu_brushes, p);
 	}
 
 	// Mirror
