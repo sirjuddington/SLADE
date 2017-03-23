@@ -613,6 +613,8 @@ bool MainApp::initDirectories()
 	return true;
 }
 
+#include <iostream>     // std::cout, std::ios
+#include <sstream>      // std::ostringstream
 /* MainApp::initLogFile
  * Sets up the SLADE log file
  *******************************************************************/
@@ -755,6 +757,20 @@ void MainApp::initActions()
 	new SAction("pgfx_draw", "Draw pixels", "gfx_draw", "Draw on the image", "", SAction::RADIO, -1, group_gfx_mode);
 	new SAction("pgfx_erase", "Erase pixels", "gfx_erase", "Erase pixels from the image", "", SAction::RADIO, -1, group_gfx_mode);
 	new SAction("pgfx_magic", "Translate pixels", "gfx_translate", "Apply translation to pixels of the image", "", SAction::RADIO, -1, group_gfx_mode);
+	new SAction("pgfx_setbrush", "Set brush", "brush_sq_1", "Choose which brush to use");
+	// Brushes submenu
+	new SAction("pgfx_brush_sq_1", "Square 1x1", "brush_sq_1");
+	new SAction("pgfx_brush_sq_3", "Square 3x3", "brush_sq_3");
+	new SAction("pgfx_brush_sq_5", "Square 5x5", "brush_sq_5");
+	new SAction("pgfx_brush_sq_7", "Square 7x7", "brush_sq_7");
+	new SAction("pgfx_brush_sq_9", "Square 9x9", "brush_sq_9");
+	new SAction("pgfx_brush_ci_5", "Circle 5x5", "brush_ci_5");
+	new SAction("pgfx_brush_ci_7", "Circle 7x7", "brush_ci_7");
+	new SAction("pgfx_brush_ci_9", "Circle 9x9", "brush_ci_9");
+	new SAction("pgfx_brush_di_3", "Diamond 3x3", "brush_di_3");
+	new SAction("pgfx_brush_di_5", "Diamond 5x5", "brush_di_5");
+	new SAction("pgfx_brush_di_7", "Diamond 7x7", "brush_di_7");
+	new SAction("pgfx_brush_di_9", "Diamond 9x9", "brush_di_9");
 
 	// ArchiveEntryList
 	new SAction("aelt_sizecol", "Size", "", "Show the size column", "", SAction::CHECK);
