@@ -40,7 +40,7 @@
 #include "General/Executables.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/SImage/SIFormat.h"
-#include "MainWindow.h"
+#include "MainEditor.h"
 #include "Utility/FileMonitor.h"
 
 
@@ -182,7 +182,7 @@ public:
 		// Set export info
 		gfx_format = image.getFormat()->getId();
 		offsets = image.offset();
-		palette.copyPalette(theMainWindow->getPaletteChooser()->getSelectedPalette(entry));
+		palette.copyPalette(MainEditor::currentPalette(entry));
 
 		// Write png data
 		MemChunk png;

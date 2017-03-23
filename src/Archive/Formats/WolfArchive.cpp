@@ -1253,7 +1253,7 @@ bool WolfArchive::isWolfArchive(string filename)
 
 CONSOLE_COMMAND(addimfheader, 0, true)
 {
-	vector<ArchiveEntry*> entries = MainEditor::getCurrentEntrySelection();
+	vector<ArchiveEntry*> entries = MainEditor::currentEntrySelection();
 
 	for (size_t i = 0; i < entries.size(); ++i)
 		addIMFHeader(entries[i]);

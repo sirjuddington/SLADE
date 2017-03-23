@@ -486,7 +486,7 @@ void GfxEntryPanel::refreshPanel()
  *******************************************************************/
 void GfxEntryPanel::updateImagePalette()
 {
-	gfx_canvas->setPalette(MainEditor::getSelectedPalette());
+	gfx_canvas->setPalette(MainEditor::currentPalette());
 	gfx_canvas->updateImageTexture();
 }
 
@@ -671,7 +671,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_translate")
 	{
 		// Create translation editor dialog
-		Palette8bit* pal = MainEditor::getSelectedPalette();
+		Palette8bit* pal = MainEditor::currentPalette();
 		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", gfx_canvas->getImage());
 
 		// Create translation to edit
@@ -698,7 +698,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Colourise
 	else if (id == "pgfx_colourise")
 	{
-		Palette8bit* pal = MainEditor::getSelectedPalette();
+		Palette8bit* pal = MainEditor::currentPalette();
 		GfxColouriseDialog gcd(theMainWindow, entry, pal);
 		gcd.setColour(last_colour);
 
@@ -724,7 +724,7 @@ bool GfxEntryPanel::handleAction(string id)
 	// Tint
 	else if (id == "pgfx_tint")
 	{
-		Palette8bit* pal = MainEditor::getSelectedPalette();
+		Palette8bit* pal = MainEditor::currentPalette();
 		GfxTintDialog gtd(theMainWindow, entry, pal);
 		gtd.setValues(last_tint_colour, last_tint_amount);
 
@@ -752,7 +752,7 @@ bool GfxEntryPanel::handleAction(string id)
 	else if (id == "pgfx_crop")
 	{
 		auto image = getImage();
-		auto pal = MainEditor::getSelectedPalette();
+		auto pal = MainEditor::currentPalette();
 		GfxCropDialog gcd(theMainWindow, image, pal);
 
 		// Show crop dialog
@@ -1090,7 +1090,7 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 
 GfxEntryPanel* CH::getCurrentGfxPanel()
 {
-	EntryPanel* panel = theActivePanel;
+	EntryPanel* panel = MainEditor::currentEntryPanel();
 	if (panel)
 	{
 		if (!(panel->getName().CmpNoCase("gfx")))
@@ -1101,7 +1101,7 @@ GfxEntryPanel* CH::getCurrentGfxPanel()
 	return NULL;
 }
 
-CONSOLE_COMMAND(rotate, 1, true)
+CONSOLE_COMMAND (rotate, 1, true)
 {
 	double val;
 	string bluh = args[0];
@@ -1146,7 +1146,7 @@ CONSOLE_COMMAND(rotate, 1, true)
 	}
 
 	// Get current entry
-	ArchiveEntry* entry = MainEditor::getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (meep->getImage())
 	{

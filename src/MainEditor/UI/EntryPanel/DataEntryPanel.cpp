@@ -31,8 +31,9 @@
 #include "Main.h"
 #include "DataEntryPanel.h"
 #include "General/ColourConfiguration.h"
+#include "MainApp.h"
 #include "MainEditor/BinaryControlLump.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 
 
 /*******************************************************************
@@ -1071,7 +1072,7 @@ void DataEntryPanel::changeValue()
 	}
 
 	// Create dialog
-	wxDialog dlg(theMainWindow, -1, "Change Value");
+	wxDialog dlg(MainEditor::windowWx(), -1, "Change Value");
 
 	dep_column_t ci = table_data->getColumnInfo(selection[0].y);
 	wxArrayString choices;

@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "ColourPrefsPanel.h"
 #include "General/ColourConfiguration.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "PreferencesDialog.h"
 
@@ -198,7 +198,7 @@ void ColourPrefsPanel::applyPreferences()
 
 	pg_colours->Refresh();
 	pg_colours->RefreshEditor();
-	theMainWindow->Refresh();
+	MainEditor::windowWx()->Refresh();
 	theMapEditor->forceRefresh(true);
 }
 

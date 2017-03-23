@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "TextureXEditor.h"
 #include "Archive/ArchiveManager.h"

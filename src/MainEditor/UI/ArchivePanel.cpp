@@ -1187,8 +1187,10 @@ bool ArchivePanel::revertEntry()
 	undo_manager->endRecord(true);
 
 	// Reload entry if currently open
-	if (selected_entries.size() == 1 && theActivePanel && theActivePanel->getEntry() == selected_entries[0])
-		theActivePanel->openEntry(selected_entries[0]);
+	if (selected_entries.size() == 1 &&
+		MainEditor::currentEntryPanel() &&
+		MainEditor::currentEntryPanel()->getEntry() == selected_entries[0])
+		MainEditor::currentEntryPanel()->openEntry(selected_entries[0]);
 
 	// If the entries reverted were the only modified entries in the
 	// archive, the archive is no longer modified.
@@ -1841,7 +1843,7 @@ bool ArchivePanel::gfxConvert()
 
 	// Hide splash window
 	UI::hideSplash();
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -1904,7 +1906,7 @@ bool ArchivePanel::gfxRemap()
 		// Finish recording undo level
 		undo_manager->endRecord(true);
 	}
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -1959,7 +1961,7 @@ bool ArchivePanel::gfxColourise()
 	}
 	rgba_t gcdcol = gcd.getColour();
 	last_colour = S_FMT("RGB(%d, %d, %d)", gcdcol.r, gcdcol.g, gcdcol.b);
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -2016,7 +2018,7 @@ bool ArchivePanel::gfxTint()
 	rgba_t gtdcol = gtd.getColour();
 	last_tint_colour = S_FMT("RGB(%d, %d, %d)", gtdcol.r, gtdcol.g, gtdcol.b);
 	last_tint_amount = (int)(gtd.getAmount() * 100.0f);
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 
 	return true;
 }
@@ -2045,7 +2047,7 @@ bool ArchivePanel::gfxModifyOffsets()
 		undo_manager->recordUndoStep(new EntryDataUS(selection[a]));
 		EntryOperations::modifyGfxOffsets(selection[a], &mod);
 	}
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 	entry_list->setEntriesAutoUpdate(true);
 
 	// Finish recording undo level
@@ -2306,7 +2308,7 @@ bool ArchivePanel::palConvert()
 		dest[i] = ((dest[i] << 2) | (dest[i] >> 4));
 	}
 	pal6bit->importMem(dest, pal6bit->getSize());
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 	delete[] dest;
 	return true;
 }
@@ -3976,7 +3978,7 @@ CONSOLE_COMMAND(palconv64, 0, false)
 			dest[(3*i)+2] = b;
 		}
 		pal->importMem(dest, (pal->getSize()/2)*3);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4007,7 +4009,7 @@ CONSOLE_COMMAND(palconvpsx, 0, false)
 			dest[(3*i)+2] = b;
 		}
 		pal->importMem(dest, (pal->getSize()/2)*3);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4027,7 +4029,7 @@ CONSOLE_COMMAND(vertex32x, 0, false)
 			dest[2*i+1] = source[4*i+0];
 		}
 		v32x->importMem(dest, v32x->getSize()/2);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4047,7 +4049,7 @@ CONSOLE_COMMAND(vertexpsx, 0, false)
 			dest[2*i+1] = source[4*i+3];
 		}
 		vpsx->importMem(dest, vpsx->getSize()/2);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4069,7 +4071,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 			dest[3*i+2] = source[4*i+2];
 		}
 		lights->importMem(dest, entries * 3);
-		theActivePanel->callRefresh();
+		MainEditor::currentEntryPanel()->callRefresh();
 		delete[] dest;
 	}
 }
@@ -4078,7 +4080,7 @@ CONSOLE_COMMAND(lightspsxtopalette, 0, false)
 vector<ArchiveEntry*> Console_SearchEntries(string name)
 {
 	vector<ArchiveEntry*> entries;
-	Archive* archive = MainEditor::getCurrentArchive();
+	Archive* archive = MainEditor::currentArchive();
 	ArchivePanel* panel = CH::getCurrentArchivePanel();
 
 	if (archive)
@@ -4113,7 +4115,7 @@ CONSOLE_COMMAND(find, 1, true)
 
 CONSOLE_COMMAND(ren, 2, true)
 {
-	Archive* archive = MainEditor::getCurrentArchive();
+	Archive* archive = MainEditor::currentArchive();
 	vector<ArchiveEntry*> entries = Console_SearchEntries(args[0]);
 	if (entries.size() > 0)
 	{
@@ -4151,7 +4153,7 @@ CONSOLE_COMMAND(ren, 2, true)
 
 CONSOLE_COMMAND(cd, 1, true)
 {
-	Archive* current = MainEditor::getCurrentArchive();
+	Archive* current = MainEditor::currentArchive();
 	ArchivePanel* panel = CH::getCurrentArchivePanel();
 
 	if (current && panel)

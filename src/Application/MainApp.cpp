@@ -44,6 +44,7 @@
 #include "General/VersionCheck.h"
 #include "Graphics/Icons.h"
 #include "Graphics/SImage/SIFormat.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditorWindow.h"
@@ -1058,7 +1059,9 @@ bool MainApp::OnInit()
 
 	// Init actions
 	initActions();
-	theMainWindow;
+
+	// Init main editor
+	MainEditor::init();
 
 	// Init base resource
 	wxLogMessage("Loading base resource");

@@ -31,7 +31,7 @@
 #include "Console.h"
 #include "Utility/Tokenizer.h"
 #include "General/CVar.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 
 
 /*******************************************************************
@@ -363,7 +363,7 @@ CONSOLE_COMMAND(cmdhelp, 1, true)
 		if (theConsole->command(a).getName().Lower() == args[0].Lower())
 		{
 #ifdef USE_WEBVIEW_STARTPAGE
-			theMainWindow->openDocs(S_FMT("%s-Console-Command", args[0]));
+			MainEditor::openDocs(S_FMT("%s-Console-Command", args[0]));
 #else
 			string url = S_FMT("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
 			wxLaunchDefaultBrowser(url);

@@ -32,6 +32,7 @@
 #include "MapTextureManager.h"
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "MapEditorWindow.h"
@@ -63,7 +64,7 @@ MapTextureManager::MapTextureManager(Archive* archive)
 	// Listen to the various managers
 	listenTo(theResourceManager);
 	listenTo(theArchiveManager);
-	listenTo(thePaletteChooser);
+	listenTo(theMainWindow->getPaletteChooser());
 }
 
 /* MapTextureManager::~MapTextureManager
@@ -79,18 +80,18 @@ MapTextureManager::~MapTextureManager()
  *******************************************************************/
 Palette8bit* MapTextureManager::getResourcePalette()
 {
-	if (thePaletteChooser->globalSelected())
+	if (theMainWindow->getPaletteChooser()->globalSelected())
 	{
 		ArchiveEntry* entry = theResourceManager->getPaletteEntry("PLAYPAL", archive);
 
 		if (!entry)
-			return thePaletteChooser->getSelectedPalette();
+			return theMainWindow->getPaletteChooser()->getSelectedPalette();
 
 		palette->loadMem(entry->getMCData());
 		return palette;
 	}
 	else
-		return thePaletteChooser->getSelectedPalette();
+		return theMainWindow->getPaletteChooser()->getSelectedPalette();
 }
 
 /* MapTextureManager::getTexture
@@ -492,7 +493,7 @@ void MapTextureManager::refreshResources()
 	textures.clear();
 	flats.clear();
 	sprites.clear();
-	thePaletteChooser->setGlobalFromArchive(archive);
+	theMainWindow->getPaletteChooser()->setGlobalFromArchive(archive);
 	theMapEditor->forceRefresh(true);
 	palette = getResourcePalette();
 	buildTexInfoList();
@@ -590,7 +591,7 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 	// Only interested in the resource manager,
 	// archive manager and palette chooser.
 	if (announcer != theResourceManager
-	        && announcer != thePaletteChooser
+	        && announcer != theMainWindow->getPaletteChooser()
 	        && announcer != theArchiveManager)
 		return;
 

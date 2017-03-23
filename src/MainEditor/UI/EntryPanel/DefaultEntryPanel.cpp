@@ -30,13 +30,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "MainApp.h"
 #include "DefaultEntryPanel.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "General/Misc.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
 #include "UI/HexEditorPanel.h"
 
 
@@ -237,7 +237,7 @@ void DefaultEntryPanel::onBtnGfxModifyOffsets(wxCommandEvent& e)
 	// Apply offsets to selected entries
 	for (uint32_t a = 0; a < entries.size(); a++)
 		EntryOperations::modifyGfxOffsets(entries[a], &mod);
-	theActivePanel->callRefresh();
+	MainEditor::currentEntryPanel()->callRefresh();
 }
 
 /* DefaultEntryPanel::onBtnTextureEdit

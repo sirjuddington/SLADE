@@ -57,7 +57,6 @@
  * VARIABLES
  *******************************************************************/
 string main_window_layout = "";
-MainWindow* MainWindow::instance = NULL;
 CVAR(Bool, show_start_page, true, CVAR_SAVE);
 CVAR(String, global_palette, "", CVAR_SAVE);
 CVAR(Bool, mw_maximized, true, CVAR_SAVE);

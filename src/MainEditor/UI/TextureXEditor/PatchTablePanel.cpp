@@ -34,6 +34,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"
 #include "Graphics/SImage/SImage.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/GfxCanvas.h"

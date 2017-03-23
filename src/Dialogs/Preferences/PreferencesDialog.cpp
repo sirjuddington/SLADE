@@ -44,6 +44,7 @@
 #include "HudOffsetsPrefsPanel.h"
 #include "InputPrefsPanel.h"
 #include "InterfacePrefsPanel.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "Map3DPrefsPanel.h"
 #include "MapDisplayPrefsPanel.h"

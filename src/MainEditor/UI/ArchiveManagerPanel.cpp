@@ -38,6 +38,7 @@
 #include "EntryPanel/EntryPanel.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"

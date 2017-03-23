@@ -36,12 +36,13 @@
 #include "UI/TextureXEditor/TextureXEditor.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Dialogs/ExtMessageDialog.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 #include "Utility/FileMonitor.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "UI/PaletteChooser.h"
+#include "MainApp.h"
 
 
 /*******************************************************************
@@ -1257,7 +1258,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	wxArrayString errout;
 	theApp->SetTopWindow(parent);
 	wxExecute(command, output, errout, wxEXEC_SYNC);
-	theApp->SetTopWindow(theMainWindow);
+	theApp->SetTopWindow(MainEditor::windowWx());
 
 	// Log output
 	theConsole->logMessage("ACS compiler output:");
@@ -1396,7 +1397,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename)
 	// Write png data
 	MemChunk png;
 	SIFormat* fmt_png = SIFormat::getFormat("png");
-	if (!fmt_png->saveImage(image, png, theMainWindow->getPaletteChooser()->getSelectedPalette(entry)))
+	if (!fmt_png->saveImage(image, png, MainEditor::currentPalette(entry)))
 	{
 		wxLogMessage("Error converting %s", entry->getName());
 		return false;
@@ -1669,7 +1670,7 @@ void fixpngsrc(ArchiveEntry* entry)
 
 CONSOLE_COMMAND(fixpngcrc, 0, true)
 {
-	vector<ArchiveEntry*> selection = MainEditor::getCurrentEntrySelection();
+	vector<ArchiveEntry*> selection = MainEditor::currentEntrySelection();
 	if (selection.size() == 0)
 	{
 		wxLogMessage("No entry selected");

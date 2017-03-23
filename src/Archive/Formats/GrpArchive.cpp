@@ -472,7 +472,7 @@ bool GrpArchive::isGrpArchive(string filename)
 
 CONSOLE_COMMAND(lookupdat, 0, false)
 {
-	ArchiveEntry* entry = MainEditor::getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -531,7 +531,7 @@ CONSOLE_COMMAND(lookupdat, 0, false)
 
 CONSOLE_COMMAND(palettedat, 0, false)
 {
-	ArchiveEntry* entry = MainEditor::getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;
@@ -573,7 +573,7 @@ CONSOLE_COMMAND(palettedat, 0, false)
 
 CONSOLE_COMMAND(tablesdat, 0, false)
 {
-	ArchiveEntry* entry = MainEditor::getCurrentEntry();
+	ArchiveEntry* entry = MainEditor::currentEntry();
 
 	if (!entry)
 		return;

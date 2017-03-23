@@ -33,6 +33,7 @@
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "Utility/SFileDialog.h"
@@ -893,7 +894,7 @@ bool PaletteEntryPanel::addCustomPalette()
 	Palette8bit* pal = new Palette8bit();
 	pal->copyPalette(palettes[cur_palette]);
 	thePaletteManager->addPalette(pal, name);
-	thePaletteChooser->addPalette(name);
+	theMainWindow->getPaletteChooser()->addPalette(name);
 
 	return true;
 }
@@ -912,8 +913,8 @@ bool PaletteEntryPanel::testPalette()
 	Palette8bit* pal = new Palette8bit();
 	pal->copyPalette(palettes[cur_palette]);
 	thePaletteManager->addPalette(pal, name);
-	thePaletteChooser->addPalette(name);
-	thePaletteChooser->selectPalette(name);
+	theMainWindow->getPaletteChooser()->addPalette(name);
+	theMainWindow->getPaletteChooser()->selectPalette(name);
 
 	return true;
 }

@@ -28,11 +28,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainEditor/MainWindow.h"
 #include "TextureXList.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
-#include "UI/PaletteChooser.h"
+#include "MainEditor/MainEditor.h"
 
 
 /*******************************************************************
@@ -268,7 +267,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_ta
 	if (!add) clear();
 
 	// Update palette
-	theMainWindow->getPaletteChooser()->setGlobalFromArchive(texturex->getParent());
+	MainEditor::setGlobalPaletteFromArchive(texturex->getParent());
 
 	// Read TEXTUREx
 

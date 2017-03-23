@@ -37,7 +37,7 @@
 #include "Dialogs/RunDialog.h"
 #include "General/Misc.h"
 #include "General/UI.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
 #include "MapBackupManager.h"
 #include "NodeBuilders.h"
 #include "UI/ConsolePanel.h"
@@ -467,7 +467,7 @@ void MapEditorWindow::lockMapEntries(bool lock)
  *******************************************************************/
 bool MapEditorWindow::chooseMap(Archive* archive)
 {
-	MapEditorConfigDialog dlg(theMainWindow, archive, (bool)archive, !(bool)archive);
+	MapEditorConfigDialog dlg(MainEditor::windowWx(), archive, (bool)archive, !(bool)archive);
 
 	if (dlg.ShowModal() == wxID_OK)
 	{
@@ -729,7 +729,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		theApp->SetTopWindow(this);
 		wxWindow* focus = wxWindow::FindFocus();
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
-		theApp->SetTopWindow(theMainWindow);
+		theApp->SetTopWindow(MainEditor::windowWx());
 		if (focus) focus->SetFocusFromKbd();
 		wxLogMessage("Nodebuilder output:");
 		for (unsigned a = 0; a < out.size(); a++)

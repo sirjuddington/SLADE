@@ -36,6 +36,7 @@
 #include "MapEditor/MapEditorWindow.h"
 #include "General/ColourConfiguration.h"
 #include "General/ResourceManager.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "OpenGL/OpenGL.h"
 
@@ -100,7 +101,7 @@ MapRenderer3D::MapRenderer3D(SLADEMap* map)
 	init();
 
 	// Listen to stuff
-	listenTo(thePaletteChooser);
+	listenTo(theMainWindow->getPaletteChooser());
 	listenTo(theResourceManager);
 }
 
@@ -2956,7 +2957,7 @@ void MapRenderer3D::renderHilight(selection_3d_t hilight, float alpha)
  *******************************************************************/
 void MapRenderer3D::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
 {
-	if (announcer != thePaletteChooser && announcer != theResourceManager)
+	if (announcer != theMainWindow->getPaletteChooser() && announcer != theResourceManager)
 		return;
 
 	if (event_name == "resources_updated" || event_name == "main_palette_changed")

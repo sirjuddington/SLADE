@@ -30,6 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "EntryPanel.h"
+#include "MainEditor/MainEditor.h"
 #include "MainEditor/MainWindow.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/SToolBar/SToolBar.h"
@@ -312,7 +313,7 @@ void EntryPanel::removeCustomToolBar()
  *******************************************************************/
 bool EntryPanel::isActivePanel()
 {
-	return (IsShown() && theActivePanel == this);
+	return (IsShown() && MainEditor::currentEntryPanel() == this);
 }
 
 /* EntryPanel::updateToolbar

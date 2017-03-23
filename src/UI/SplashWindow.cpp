@@ -34,7 +34,8 @@
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
 #include "MainApp.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/MainEditor.h"
+
 
 /*******************************************************************
  * VARIABLES
@@ -146,7 +147,7 @@ void SplashWindow::show(string message, bool progress, wxWindow* parent)
 
 	// Set parent
 	if (!parent && theApp->isInitialised())
-		SetParent(theMainWindow);
+		SetParent(MainEditor::windowWx());
 	else
 		SetParent(parent);
 

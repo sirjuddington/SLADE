@@ -395,7 +395,7 @@ bool PodArchive::isPodArchive(string filename)
 
 CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
-	Archive* archive = MainEditor::getCurrentArchive();
+	Archive* archive = MainEditor::currentArchive();
 	if (archive && archive->getType() == ARCHIVE_POD)
 		theConsole->logMessage(((PodArchive*)archive)->getId());
 	else
@@ -405,7 +405,7 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 
 CONSOLE_COMMAND(pod_set_id, 1, true)
 {
-	Archive* archive = MainEditor::getCurrentArchive();
+	Archive* archive = MainEditor::currentArchive();
 	if (archive && archive->getType() == ARCHIVE_POD)
 		((PodArchive*)archive)->setId(args[0].Truncate(80));
 	else

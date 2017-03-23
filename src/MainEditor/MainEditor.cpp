@@ -5,31 +5,52 @@
 #include "MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
 
+namespace MainEditor
+{
+	MainWindow*	main_window = nullptr;
+}
+
+bool MainEditor::init()
+{
+	main_window = new MainWindow();
+	return true;
+}
+
+MainWindow* MainEditor::window()
+{
+	return main_window;
+}
+
+wxWindow* MainEditor::windowWx()
+{
+	return main_window;
+}
+
 /* MainWindow::getCurrentArchive
  * Returns the currently open archive (ie the current tab's archive,
  * if any)
  *******************************************************************/
-Archive* MainEditor::getCurrentArchive()
+Archive* MainEditor::currentArchive()
 {
-	return theMainWindow->getArchiveManagerPanel()->currentArchive();
+	return main_window->getArchiveManagerPanel()->currentArchive();
 }
 
 /* MainWindow::getCurrentEntry
  * Returns the currently open entry (current tab -> current entry
  * panel)
  *******************************************************************/
-ArchiveEntry* MainEditor::getCurrentEntry()
+ArchiveEntry* MainEditor::currentEntry()
 {
-	return theMainWindow->getArchiveManagerPanel()->currentEntry();
+	return main_window->getArchiveManagerPanel()->currentEntry();
 }
 
 /* MainWindow::getCurrentEntrySelection
  * Returns a list of all currently selected entries, in the current
  * archive panel
  *******************************************************************/
-vector<ArchiveEntry*> MainEditor::getCurrentEntrySelection()
+vector<ArchiveEntry*> MainEditor::currentEntrySelection()
 {
-	return theMainWindow->getArchiveManagerPanel()->currentEntrySelection();
+	return main_window->getArchiveManagerPanel()->currentEntrySelection();
 }
 
 /* MainWindow::openTextureEditor
@@ -37,7 +58,7 @@ vector<ArchiveEntry*> MainEditor::getCurrentEntrySelection()
  *******************************************************************/
 void MainEditor::openTextureEditor(Archive* archive, ArchiveEntry* entry)
 {
-	theMainWindow->getArchiveManagerPanel()->openTextureTab(theArchiveManager->archiveIndex(archive), entry);
+	main_window->getArchiveManagerPanel()->openTextureTab(theArchiveManager->archiveIndex(archive), entry);
 }
 
 /* MainWindow::openMapEditor
@@ -53,10 +74,25 @@ void MainEditor::openMapEditor(Archive* archive)
  *******************************************************************/
 void MainEditor::openEntry(ArchiveEntry* entry)
 {
-	theMainWindow->getArchiveManagerPanel()->openEntryTab(entry);
+	main_window->getArchiveManagerPanel()->openEntryTab(entry);
 }
 
-Palette8bit* MainEditor::getSelectedPalette()
+void MainEditor::setGlobalPaletteFromArchive(Archive * archive)
 {
-	return theMainWindow->getPaletteChooser()->getSelectedPalette();
+	main_window->getPaletteChooser()->setGlobalFromArchive(archive);
+}
+
+Palette8bit* MainEditor::currentPalette(ArchiveEntry* entry)
+{
+	return main_window->getPaletteChooser()->getSelectedPalette(entry);
+}
+
+EntryPanel* MainEditor::currentEntryPanel()
+{
+	return main_window->getArchiveManagerPanel()->currentArea();
+}
+
+void MainEditor::openDocs(string page_name)
+{
+	main_window->openDocs(page_name);
 }
