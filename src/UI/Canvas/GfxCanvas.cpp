@@ -384,8 +384,8 @@ void GfxCanvas::drawImage()
 		OpenGL::setColour(255, 255, 255, 255, 0);
 		tex_image->draw2d();
 
-		// Draw hilight
-		if (image_hilight && gfx_hilight_mouseover)
+		// Draw hilight when not in editing mode
+		if (image_hilight && gfx_hilight_mouseover && editing_mode == 0)
 		{
 			OpenGL::setColour(255, 255, 255, 80, 1);
 			tex_image->draw2d();
