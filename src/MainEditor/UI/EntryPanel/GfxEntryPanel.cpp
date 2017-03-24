@@ -158,6 +158,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	cb_arc->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onARCChanged, this);
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas->GetId());
 	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas->GetId());
+	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas->GetId());
 	btn_nextimg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnNextImg, this);
 	btn_previmg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnPrevImg, this);
 	btn_auto_offset->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
@@ -1200,8 +1201,8 @@ void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 }
 
 /* GfxEntryPanel::onBtnAutoOffset
-* Called when the 'modify offsets' button is clicked
-*******************************************************************/
+ * Called when the 'modify offsets' button is clicked
+ *******************************************************************/
 void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 {
 	ModifyOffsetsDialog dlg;
@@ -1223,6 +1224,14 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 		// Set changed
 		setModified();
 	}
+}
+
+/* GfxEntryPanel::onColourPicked
+ * Called when a pixel's colour has been picked on the canvas
+ *******************************************************************/
+void GfxEntryPanel::onColourPicked(wxEvent & e)
+{
+	cb_colour->setColour(gfx_canvas->getPaintColour());
 }
 
 

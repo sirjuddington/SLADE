@@ -41,6 +41,7 @@
  *******************************************************************/
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED)
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED)
+DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_COLOUR_PICKED)
 CVAR(Bool, gfx_show_border, true, CVAR_SAVE)
 CVAR(Bool, gfx_hilight_mouseover, true, CVAR_SAVE)
 CVAR(Bool, gfx_arc, false, CVAR_SAVE)
@@ -228,6 +229,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id)
 
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &GfxCanvas::onMouseLeftDown, this);
+	Bind(wxEVT_RIGHT_DOWN, &GfxCanvas::onMouseRightDown, this);
 	Bind(wxEVT_LEFT_UP, &GfxCanvas::onMouseLeftUp, this);
 	Bind(wxEVT_MOTION, &GfxCanvas::onMouseMovement, this);
 	Bind(wxEVT_LEAVE_WINDOW, &GfxCanvas::onMouseLeaving, this);
@@ -645,6 +647,23 @@ void GfxCanvas::brushCanvas(int x, int y)
 				paintPixel(coord.x + i, coord.y + j);
 }
 
+/* GfxCanvas::pickColour
+ * Finds the pixel under the cursor, and picks its colour.
+ *******************************************************************/
+void GfxCanvas::pickColour(int x, int y)
+{
+	// Get the pixel
+	point2_t coord = imageCoords(x, y);
+
+	// Pick its colour
+	paint_colour = image->getPixel(coord.x, coord.y, getPalette());
+
+	// Announce it triumphantly to the world
+	wxNotifyEvent e(wxEVT_GFXCANVAS_COLOUR_PICKED, GetId());
+	e.SetEventObject(this);
+	GetEventHandler()->ProcessEvent(e);
+}
+
 /* GfxCanvas::onAnnouncement
  * Called when an announcement is recieved from the image that this
  * GfxCanvas is displaying
@@ -691,6 +710,21 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 	e.Skip();
 }
 
+/* GfxCanvas::onMouseRightDown
+ * Called when the left button is pressed within the canvas
+ *******************************************************************/
+void GfxCanvas::onMouseRightDown(wxMouseEvent& e)
+{
+	int x = e.GetPosition().x;
+	int y = e.GetPosition().y - 2;
+
+	// Right mouse down
+	if (e.RightDown() && onImage(x, y))
+		pickColour(x, y);
+
+	e.Skip();
+}
+
 /* GfxCanvas::onMouseLeftUp
  * Called when the left button is released within the canvas
  *******************************************************************/
@@ -719,7 +753,9 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	bool refresh = false;
 
 	// Check if the mouse is over the image
-	bool on_image = onImage(e.GetX(), e.GetY()-2);
+	int x = e.GetPosition().x;
+	int y = e.GetPosition().y - 2;
+	bool on_image = onImage(x, y);
 	if (on_image != image_hilight)
 	{
 		image_hilight = on_image;
@@ -741,7 +777,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	{
 		if (editing_mode)
 		{
-			brushCanvas(e.GetX(), e.GetY() - 2);
+			brushCanvas(x, y);
 		}
 		else
 		{
@@ -754,6 +790,9 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		offset = offset + point2_t(e.GetPosition().x - mouse_prev.x, e.GetPosition().y - mouse_prev.y);
 		refresh = true;
 	}
+	// Right mouse down
+	if (e.RightIsDown() && on_image)
+		pickColour(x, y);
 
 	if (refresh)
 		Refresh();

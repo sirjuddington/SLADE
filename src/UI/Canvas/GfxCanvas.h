@@ -77,6 +77,7 @@ public:
 	void	setTranslation(Translation* tr) { translation = tr; }
 	void	setBrush(uint8_t br) { brush = br < Brush::NUM_BRUSHES ? br : 0; }
 	uint8_t	getBrush() { return brush; }
+	rgba_t	getPaintColour() { return paint_colour; }
 
 	void	draw();
 	void	drawImage();
@@ -85,6 +86,7 @@ public:
 	void	endOffsetDrag();
 	void	paintPixel(int x, int y);
 	void	brushCanvas(int x, int y);
+	void	pickColour(int x, int y);
 
 	void	zoomToFit(bool mag = true, float padding = 0.0f);
 	void	resetOffsets() { offset.x = offset.y = 0; }
@@ -96,6 +98,7 @@ public:
 
 	// Events
 	void	onMouseLeftDown(wxMouseEvent& e);
+	void	onMouseRightDown(wxMouseEvent & e);
 	void	onMouseLeftUp(wxMouseEvent& e);
 	void	onMouseMovement(wxMouseEvent& e);
 	void	onMouseLeaving(wxMouseEvent& e);
@@ -104,5 +107,6 @@ public:
 
 DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED, -1)
 DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED, -1)
+DECLARE_EVENT_TYPE(wxEVT_GFXCANVAS_COLOUR_PICKED, -1)
 
 #endif //__GFXCANVAS_H__
