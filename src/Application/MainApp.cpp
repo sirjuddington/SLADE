@@ -771,6 +771,21 @@ void MainApp::initActions()
 	new SAction("pgfx_brush_di_5", "Diamond 5x5", "brush_di_5");
 	new SAction("pgfx_brush_di_7", "Diamond 7x7", "brush_di_7");
 	new SAction("pgfx_brush_di_9", "Diamond 9x9", "brush_di_9");
+	new SAction("pgfx_brush_pa_a", "Dither Pattern A", "brush_pa_a");
+	new SAction("pgfx_brush_pa_b", "Dither Pattern B", "brush_pa_b");
+	new SAction("pgfx_brush_pa_c", "Dither Pattern C", "brush_pa_c");
+	new SAction("pgfx_brush_pa_d", "Dither Pattern D", "brush_pa_d");
+	new SAction("pgfx_brush_pa_e", "Dither Pattern E", "brush_pa_e");
+	new SAction("pgfx_brush_pa_f", "Dither Pattern F", "brush_pa_f");
+	new SAction("pgfx_brush_pa_g", "Dither Pattern G", "brush_pa_g");
+	new SAction("pgfx_brush_pa_h", "Dither Pattern H", "brush_pa_h");
+	new SAction("pgfx_brush_pa_i", "Dither Pattern I", "brush_pa_i");
+	new SAction("pgfx_brush_pa_j", "Dither Pattern J", "brush_pa_j");
+	new SAction("pgfx_brush_pa_k", "Dither Pattern K", "brush_pa_k");
+	new SAction("pgfx_brush_pa_l", "Dither Pattern L", "brush_pa_l");
+	new SAction("pgfx_brush_pa_m", "Dither Pattern M", "brush_pa_m");
+	new SAction("pgfx_brush_pa_n", "Dither Pattern N", "brush_pa_n");
+	new SAction("pgfx_brush_pa_o", "Dither Pattern O", "brush_pa_o");
 
 	// ArchiveEntryList
 	new SAction("aelt_sizecol", "Size", "", "Show the size column", "", SAction::CHECK);

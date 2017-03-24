@@ -65,6 +65,21 @@ string brushlist[Brush::NUM_BRUSHES] =
 	"brush_di_5",
 	"brush_di_7",
 	"brush_di_9",
+	"brush_pa_a",
+	"brush_pa_b",
+	"brush_pa_c",
+	"brush_pa_d",
+	"brush_pa_e",
+	"brush_pa_f",
+	"brush_pa_g",
+	"brush_pa_h",
+	"brush_pa_i",
+	"brush_pa_j",
+	"brush_pa_k",
+	"brush_pa_l",
+	"brush_pa_m",
+	"brush_pa_n",
+	"brush_pa_o",
 };
 
 /*******************************************************************
@@ -370,6 +385,23 @@ void GfxEntryPanel::fillBrushMenu(wxMenu* bm)
 	theApp->getAction("pgfx_brush_di_5")->addToMenu(bm);
 	theApp->getAction("pgfx_brush_di_7")->addToMenu(bm);
 	theApp->getAction("pgfx_brush_di_9")->addToMenu(bm);
+	wxMenu* pa = new wxMenu;
+	theApp->getAction("pgfx_brush_pa_a")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_b")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_c")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_d")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_e")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_f")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_g")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_h")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_i")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_j")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_k")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_l")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_m")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_n")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_o")->addToMenu(pa);
+	bm->AppendSubMenu(pa, "Dither Patterns");
 }
 
 bool GfxEntryPanel::iconChanger(wxCommandEvent& e)
