@@ -89,6 +89,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	gfx_canvas->allowDrag(true);
 	gfx_canvas->allowScroll(true);
 	gfx_canvas->setPalette(thePaletteChooser->getSelectedPalette());
+	gfx_canvas->setTranslation(&edit_translation);
 
 	// Offsets
 	spin_xoffset = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, SHRT_MIN, SHRT_MAX, 0);

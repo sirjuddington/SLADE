@@ -58,6 +58,9 @@ private:
 	bool		drawing;		// true if a drawing operation is ongoing
 	bool*		drawing_mask;	// keeps track of which pixels were already modified in this pass
 	uint8_t		brush;			// the index of the brush used to paint the image
+	point2_t	cursor_pos;		// position of cursor, relative to image
+	point2_t	prev_pos;		// previous position of cursor
+	GLTexture*	tex_brush;		// preview the effect of the brush
 
 public:
 	GfxCanvas(wxWindow* parent, int id);
@@ -87,6 +90,7 @@ public:
 	void	paintPixel(int x, int y);
 	void	brushCanvas(int x, int y);
 	void	pickColour(int x, int y);
+	void	generateBrushShadow();
 
 	void	zoomToFit(bool mag = true, float padding = 0.0f);
 	void	resetOffsets() { offset.x = offset.y = 0; }
