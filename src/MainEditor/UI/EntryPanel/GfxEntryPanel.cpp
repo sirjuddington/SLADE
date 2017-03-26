@@ -65,6 +65,21 @@ string brushlist[Brush::NUM_BRUSHES] =
 	"brush_di_5",
 	"brush_di_7",
 	"brush_di_9",
+	"brush_pa_a",
+	"brush_pa_b",
+	"brush_pa_c",
+	"brush_pa_d",
+	"brush_pa_e",
+	"brush_pa_f",
+	"brush_pa_g",
+	"brush_pa_h",
+	"brush_pa_i",
+	"brush_pa_j",
+	"brush_pa_k",
+	"brush_pa_l",
+	"brush_pa_m",
+	"brush_pa_n",
+	"brush_pa_o",
 };
 
 /*******************************************************************
@@ -89,6 +104,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	gfx_canvas->allowDrag(true);
 	gfx_canvas->allowScroll(true);
 	gfx_canvas->setPalette(thePaletteChooser->getSelectedPalette());
+	gfx_canvas->setTranslation(&edit_translation);
 
 	// Offsets
 	spin_xoffset = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, SHRT_MIN, SHRT_MAX, 0);
@@ -158,6 +174,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	cb_arc->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onARCChanged, this);
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas->GetId());
 	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas->GetId());
+	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas->GetId());
 	btn_nextimg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnNextImg, this);
 	btn_previmg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnPrevImg, this);
 	btn_auto_offset->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
@@ -368,6 +385,23 @@ void GfxEntryPanel::fillBrushMenu(wxMenu* bm)
 	theApp->getAction("pgfx_brush_di_5")->addToMenu(bm);
 	theApp->getAction("pgfx_brush_di_7")->addToMenu(bm);
 	theApp->getAction("pgfx_brush_di_9")->addToMenu(bm);
+	wxMenu* pa = new wxMenu;
+	theApp->getAction("pgfx_brush_pa_a")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_b")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_c")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_d")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_e")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_f")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_g")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_h")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_i")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_j")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_k")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_l")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_m")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_n")->addToMenu(pa);
+	theApp->getAction("pgfx_brush_pa_o")->addToMenu(pa);
+	bm->AppendSubMenu(pa, "Dither Patterns");
 }
 
 bool GfxEntryPanel::iconChanger(wxCommandEvent& e)
@@ -1200,8 +1234,8 @@ void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 }
 
 /* GfxEntryPanel::onBtnAutoOffset
-* Called when the 'modify offsets' button is clicked
-*******************************************************************/
+ * Called when the 'modify offsets' button is clicked
+ *******************************************************************/
 void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 {
 	ModifyOffsetsDialog dlg;
@@ -1223,6 +1257,14 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 		// Set changed
 		setModified();
 	}
+}
+
+/* GfxEntryPanel::onColourPicked
+ * Called when a pixel's colour has been picked on the canvas
+ *******************************************************************/
+void GfxEntryPanel::onColourPicked(wxEvent & e)
+{
+	cb_colour->setColour(gfx_canvas->getPaintColour());
 }
 
 

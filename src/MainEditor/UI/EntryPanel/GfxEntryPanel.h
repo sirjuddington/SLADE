@@ -74,6 +74,7 @@ public:
 	void	onBtnNextImg(wxCommandEvent& e);
 	void	onBtnPrevImg(wxCommandEvent& e);
 	void	onBtnAutoOffset(wxCommandEvent& e);
+	void	onColourPicked(wxEvent& e);
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);
 
 	SImage*	getImage() { if (gfx_canvas) return gfx_canvas->getImage(); else return NULL; }

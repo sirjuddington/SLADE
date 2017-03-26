@@ -41,6 +41,7 @@
  *******************************************************************/
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED)
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED)
+DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_COLOUR_PICKED)
 CVAR(Bool, gfx_show_border, true, CVAR_SAVE)
 CVAR(Bool, gfx_hilight_mouseover, true, CVAR_SAVE)
 CVAR(Bool, gfx_arc, false, CVAR_SAVE)
@@ -193,6 +194,185 @@ static const uint8_t brushes[Brush::NUM_BRUSHES][9][9] =
 		{ 0, 0, 0, 1, 1, 1, 0, 0, 0 }, // 7
 		{ 0, 0, 0, 0, 1, 0, 0, 0, 0 }, // 8
 	},
+	{	// Dither pattern A
+		//0  1  2  3  C  5  6  7  8
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 2
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 3
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // C
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 5
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 8
+	},
+	{	// Dither pattern B
+		//0  1  2  3  C  5  6  7  8
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 0, 0, 1, 0, 0, 0, 1, 0, 0 }, // 2
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 3
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // C
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 5
+		{ 0, 0, 1, 0, 0, 0, 1, 0, 0 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 8
+	},
+	{	// Dither pattern C
+		//0  1  2  3  C  5  6  7  8
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 0
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 1
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 2
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 3
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // C
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 5
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 6
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 7
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 8
+	},
+	{	// Dither pattern D
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 1
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 2
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 3
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // C
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 5
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 6
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Dither pattern E
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 0
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 1
+		{ 0, 0, 1, 0, 0, 0, 1, 0, 0 }, // 2
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 3
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // C
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 5
+		{ 0, 0, 1, 0, 0, 0, 1, 0, 0 }, // 6
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 7
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // 8
+	},
+	{	// Dither pattern F
+		//0  1  2  3  C  5  6  7  8
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 0
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 1
+		{ 0, 0, 1, 0, 0, 0, 1, 0, 0 }, // 2
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 3
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // C
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 5
+		{ 0, 0, 1, 0, 0, 0, 1, 0, 0 }, // 6
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 7
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 8
+	},
+	{	// Dither pattern G
+		//0  1  2  3  C  5  6  7  8
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 0
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 1
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 2
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 3
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // C
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 5
+		{ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, // 6
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 7
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 8
+	},
+	{	// Dither pattern H
+		//0  1  2  3  C  5  6  7  8
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 0
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 1
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 2
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 3
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // C
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 5
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 6
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 7
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 8
+	},
+	{	// Dither pattern I
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 0
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 1
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 2
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 3
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // C
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 5
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 6
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 7
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 8
+	},
+	{	// Dither pattern J
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 0
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 1
+		{ 1, 1, 0, 1, 1, 1, 0, 1, 1 }, // 2
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 3
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // C
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 5
+		{ 1, 1, 0, 1, 1, 1, 0, 1, 1 }, // 6
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 7
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 8
+	},
+	{	// Dither pattern K
+		//0  1  2  3  C  5  6  7  8
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 0
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 1
+		{ 1, 1, 0, 1, 1, 1, 0, 1, 1 }, // 2
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 3
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // C
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 5
+		{ 1, 1, 0, 1, 1, 1, 0, 1, 1 }, // 6
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 7
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 8
+	},
+	{	// Dither pattern L
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 0
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 1
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 2
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 3
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // C
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 5
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 6
+		{ 1, 0, 1, 0, 1, 0, 1, 0, 1 }, // 7
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 8
+	},
+	{	// Dither pattern M
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 0
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 1
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 2
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 3
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // C
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 5
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 6
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 7
+		{ 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // 8
+	},
+	{	// Dither pattern N
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 0
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 1
+		{ 1, 1, 0, 1, 1, 1, 0, 1, 1 }, // 2
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 3
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // C
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 5
+		{ 1, 1, 0, 1, 1, 1, 0, 1, 1 }, // 6
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 7
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 8
+	},
+	{	// Dither pattern O
+		//0  1  2  3  C  5  6  7  8
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 0
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 1
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 2
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 3
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // C
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 5
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 6
+		{ 1, 1, 1, 1, 1, 1, 1, 1, 1 }, // 7
+		{ 0, 1, 1, 1, 0, 1, 1, 1, 0 }, // 8
+	},
 };
 
 /*******************************************************************
@@ -213,7 +393,7 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id)
 	update_texture = false;
 	image_hilight = false;
 	drag_pos.set(0, 0);
-	drag_origin.set(-1, -1);
+	drag_origin.set(POINT_OUTSIDE);
 	allow_drag = false;
 	allow_scroll = false;
 	editing_mode = 0;
@@ -222,12 +402,16 @@ GfxCanvas::GfxCanvas(wxWindow* parent, int id)
 	drawing = false;
 	drawing_mask = NULL;
 	brush = 0;
+	tex_brush = new GLTexture();
+	cursor_pos.set(POINT_OUTSIDE);
+	prev_pos.set(POINT_OUTSIDE);
 
 	// Listen to the image for changes
 	listenTo(image);
 
 	// Bind events
 	Bind(wxEVT_LEFT_DOWN, &GfxCanvas::onMouseLeftDown, this);
+	Bind(wxEVT_RIGHT_DOWN, &GfxCanvas::onMouseRightDown, this);
 	Bind(wxEVT_LEFT_UP, &GfxCanvas::onMouseLeftUp, this);
 	Bind(wxEVT_MOTION, &GfxCanvas::onMouseMovement, this);
 	Bind(wxEVT_LEAVE_WINDOW, &GfxCanvas::onMouseLeaving, this);
@@ -384,7 +568,7 @@ void GfxCanvas::drawImage()
 		OpenGL::setColour(255, 255, 255, 255, 0);
 		tex_image->draw2d();
 
-		// Draw hilight when not in editing mode
+		// Draw hilight otherwise
 		if (image_hilight && gfx_hilight_mouseover && editing_mode == 0)
 		{
 			OpenGL::setColour(255, 255, 255, 80, 1);
@@ -406,6 +590,13 @@ void GfxCanvas::drawImage()
 		glTranslated(off_x, off_y, 0);
 		OpenGL::setColour(255, 255, 255, 255, 0);
 		tex_image->draw2d();
+	}
+	// Draw brush shadow when in editing mode
+	if (editing_mode > 0 && cursor_pos != POINT_OUTSIDE)
+	{
+		OpenGL::setColour(255, 255, 255, 160, 0);
+		tex_brush->draw2d();
+		OpenGL::setColour(255, 255, 255, 255, 0);
 	}
 
 	// Disable textures
@@ -468,42 +659,13 @@ void GfxCanvas::zoomToFit(bool mag, float padding)
  *******************************************************************/
 bool GfxCanvas::onImage(int x, int y)
 {
-	if (view_type == GFXVIEW_TILED)
+	// Don't disable in editing mode; it can be quite useful 
+	// to have a live preview of how a graphic will tile.
+	if (view_type == GFXVIEW_TILED && editing_mode == 0)
 		return false;
 
-	// Determine top-left coordinates of image in screen coords
-	double left = GetSize().x * 0.5 + offset.x;
-	double top = GetSize().y * 0.5 + offset.y;
-	double yscale = scale * (gfx_arc ? 1.2 : 1);
-
-	if (view_type == GFXVIEW_DEFAULT)
-	{
-		left = offset.x;
-		top = offset.y;
-	}
-	else if (view_type == GFXVIEW_CENTERED)
-	{
-		left -= (double)image->getWidth() * 0.5 * scale;
-		top -= (double)image->getHeight() * 0.5 * yscale;
-	}
-	else if (view_type == GFXVIEW_SPRITE)
-	{
-		left -= image->offset().x * scale;
-		top -= image->offset().y * yscale;
-	}
-	else if (view_type == GFXVIEW_HUD)
-	{
-		left -= 160 * scale;
-		top -= 100 * scale * (gfx_arc ? 1.2 : 1);
-		left -= image->offset().x * scale;
-		top -= image->offset().y * yscale;
-	}
-
-	// Determine bottom-right coordinates of image in screen coords
-	double right = left + image->getWidth() * scale;
-	double bottom = top + image->getHeight() * yscale;
-
-	return (x >= left && x <= right && y >= top && y <= bottom);
+	// No need to duplicate the imageCoords code.
+	return imageCoords(x, y) != POINT_OUTSIDE;
 }
 
 /* GfxCanvas::imageCoords
@@ -517,7 +679,7 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 	double top = GetSize().y * 0.5 + offset.y;
 	double yscale = scale * (gfx_arc ? 1.2 : 1);
 
-	if (view_type == GFXVIEW_DEFAULT)
+	if (view_type == GFXVIEW_DEFAULT || view_type == GFXVIEW_TILED)
 	{
 		left = offset.x;
 		top = offset.y;
@@ -556,7 +718,7 @@ point2_t GfxCanvas::imageCoords(int x, int y)
 		return point2_t(xpos * image->getWidth(), ypos * image->getHeight());
 	}
 	else
-		return point2_t(-1, -1);
+		return POINT_OUTSIDE;
 }
 
 /* GfxCanvas::endOffsetDrag
@@ -582,7 +744,7 @@ void GfxCanvas::endOffsetDrag()
 	}
 
 	// Stop drag
-	drag_origin.set(-1, -1);
+	drag_origin.set(POINT_OUTSIDE);
 }
 
 /* GfxCanvas::paintPixel
@@ -645,6 +807,51 @@ void GfxCanvas::brushCanvas(int x, int y)
 				paintPixel(coord.x + i, coord.y + j);
 }
 
+/* GfxCanvas::pickColour
+ * Finds the pixel under the cursor, and picks its colour.
+ *******************************************************************/
+void GfxCanvas::pickColour(int x, int y)
+{
+	// Get the pixel
+	point2_t coord = imageCoords(x, y);
+
+	// Pick its colour
+	paint_colour = image->getPixel(coord.x, coord.y, getPalette());
+
+	// Announce it triumphantly to the world
+	wxNotifyEvent e(wxEVT_GFXCANVAS_COLOUR_PICKED, GetId());
+	e.SetEventObject(this);
+	GetEventHandler()->ProcessEvent(e);
+}
+
+/* GfxCanvas::generateBrushShadow
+ * Creates a mask texture of the brush to preview its effect
+ *******************************************************************/
+void GfxCanvas::generateBrushShadow()
+{
+	// Generate image
+	SImage img;
+	img.create(image->getWidth(), image->getHeight(), SIType::RGBA);
+	for (int i = -4; i < 5; ++i)
+		for (int j = -4; j < 5; ++j)
+			if (BRPIX(brush, i, j))
+			{
+				rgba_t col = paint_colour;
+				if (editing_mode == 3 && translation)
+					col = translation->translate(image->getPixel(cursor_pos.x + i,
+						cursor_pos.y + j, getPalette()), getPalette());
+				// Not sure what's the best way to preview cutting out
+				// Mimicking the checkerboard pattern perhaps?
+				// Cyan will do for now
+				else if (editing_mode == 2)
+					col = COL_CYAN;
+				img.setPixel(cursor_pos.x + i, cursor_pos.y + j, col);
+			}
+
+	// Load it as a GL texture
+	tex_brush->loadImage(&img);
+}
+
 /* GfxCanvas::onAnnouncement
  * Called when an announcement is recieved from the image that this
  * GfxCanvas is displaying
@@ -691,6 +898,21 @@ void GfxCanvas::onMouseLeftDown(wxMouseEvent& e)
 	e.Skip();
 }
 
+/* GfxCanvas::onMouseRightDown
+ * Called when the left button is pressed within the canvas
+ *******************************************************************/
+void GfxCanvas::onMouseRightDown(wxMouseEvent& e)
+{
+	int x = e.GetPosition().x;
+	int y = e.GetPosition().y - 2;
+
+	// Right mouse down
+	if (e.RightDown() && onImage(x, y))
+		pickColour(x, y);
+
+	e.Skip();
+}
+
 /* GfxCanvas::onMouseLeftUp
  * Called when the left button is released within the canvas
  *******************************************************************/
@@ -719,7 +941,16 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	bool refresh = false;
 
 	// Check if the mouse is over the image
-	bool on_image = onImage(e.GetX(), e.GetY()-2);
+	int x = e.GetPosition().x;
+	int y = e.GetPosition().y - 2;
+	bool on_image = onImage(x, y);
+	cursor_pos = imageCoords(x, y);
+	if (on_image && editing_mode)
+	{
+		if (cursor_pos != prev_pos)
+			generateBrushShadow();
+		prev_pos = cursor_pos;
+	}
 	if (on_image != image_hilight)
 	{
 		image_hilight = on_image;
@@ -741,7 +972,7 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 	{
 		if (editing_mode)
 		{
-			brushCanvas(e.GetX(), e.GetY() - 2);
+			brushCanvas(x, y);
 		}
 		else
 		{
@@ -754,6 +985,9 @@ void GfxCanvas::onMouseMovement(wxMouseEvent& e)
 		offset = offset + point2_t(e.GetPosition().x - mouse_prev.x, e.GetPosition().y - mouse_prev.y);
 		refresh = true;
 	}
+	// Right mouse down
+	if (e.RightIsDown() && on_image)
+		pickColour(x, y);
 
 	if (refresh)
 		Refresh();

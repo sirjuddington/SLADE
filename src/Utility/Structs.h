@@ -46,7 +46,13 @@ struct point2_t
 	{
 		return (x == rhs.x && y == rhs.y);
 	}
+
+	bool operator!=(point2_t rhs)
+	{
+		return (x != rhs.x || y != rhs.y);
+	}
 };
+#define POINT_OUTSIDE point2_t(-1, -1)
 
 // fpoint2_t: A 2d coordinate (or vector) with floating-point precision
 struct fpoint2_t
@@ -266,7 +272,7 @@ struct rgba_t
 		b = B;
 		a = A;
 		blend = BLEND;
-		index = -1;
+		index = INDEX;
 	}
 
 	// Functions
@@ -277,7 +283,7 @@ struct rgba_t
 		b = B;
 		a = A;
 		blend = BLEND;
-		index = -1;
+		index = INDEX;
 	}
 
 	void set(rgba_t colour)
