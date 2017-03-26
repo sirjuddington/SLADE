@@ -994,7 +994,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette8bit* pal, bool fo
 
 			// Apply translation before anything in case we're forcing rgba (can't translate rgba images)
 			if (patch->getBlendType() == 1)
-				p_img.applyTranslation(&(patch->getTranslation()), pal);
+				p_img.applyTranslation(&(patch->getTranslation()), pal, force_rgba);
 
 			// Convert to RGBA if forced
 			if (force_rgba)

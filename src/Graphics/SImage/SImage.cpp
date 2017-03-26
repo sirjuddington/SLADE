@@ -1357,7 +1357,7 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 /* SImage::applyTranslation
  * Applies a palette translation to the image
  *******************************************************************/
-bool SImage::applyTranslation(string tr, Palette8bit* pal)
+bool SImage::applyTranslation(string tr, Palette8bit* pal, bool truecolor)
 {
 	// Some hardcoded translations from ZDoom
 	if (!tr.CmpNoCase("\"doom0\""))			tr = "\"112:127=96:111\"";
@@ -1426,7 +1426,7 @@ bool SImage::applyTranslation(string tr, Palette8bit* pal)
 		tz.getToken();
 		token = tz.getToken();
 	}
-	return applyTranslation(&trans, pal);
+	return applyTranslation(&trans, pal, truecolor);
 }
 
 /* SImage::drawPixel

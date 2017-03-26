@@ -157,7 +157,7 @@ public:
 	bool	resize(int nwidth, int nheight);
 	bool	setImageData(uint8_t* ndata, int nwidth, int nheight, SIType ntype);
 	bool	applyTranslation(Translation* tr, Palette8bit* pal = NULL, bool truecolor = false);
-	bool	applyTranslation(string tr, Palette8bit* pal = NULL);
+	bool	applyTranslation(string tr, Palette8bit* pal = NULL, bool truecolor = false);
 	bool	drawPixel(int x, int y, rgba_t colour, si_drawprops_t& properties, Palette8bit* pal);
 	bool	drawImage(SImage& img, int x, int y, si_drawprops_t& properties, Palette8bit* pal_src = NULL, Palette8bit* pal_dest = NULL);
 	bool	colourise(rgba_t colour, Palette8bit* pal = NULL, int start = -1, int stop = -1);
