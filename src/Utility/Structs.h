@@ -272,7 +272,7 @@ struct rgba_t
 		b = B;
 		a = A;
 		blend = BLEND;
-		index = -1;
+		index = INDEX;
 	}
 
 	// Functions
@@ -283,7 +283,7 @@ struct rgba_t
 		b = B;
 		a = A;
 		blend = BLEND;
-		index = -1;
+		index = INDEX;
 	}
 
 	void set(rgba_t colour)
