@@ -116,7 +116,7 @@ wxBitmap bitmapFromBits(const unsigned char bits[], int w, int h, const wxColour
 {
 	wxImage img = wxBitmap((const char*)bits, w, h).ConvertToImage();
 	img.Replace(0, 0, 0, 123, 123, 123);
-	img.Replace(255, 255, 255, color.Red(), color.Green(), color.Blue());
+	img.Replace(255, 255, 255, COLWX(color));
 	img.SetMaskColour(123, 123, 123);
 	return wxBitmap(img);
 }
@@ -594,7 +594,7 @@ void SAuiDockArt::DrawCaption(wxDC& dc,
 	//dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
 
 	wxColor sepCol;
-	int l = rgba_t(captionBackColour.Red(), captionBackColour.Green(), captionBackColour.Blue()).greyscale().r;
+	int l = rgba_t(COLWX(captionBackColour)).greyscale().r;
 	if (l < 100)
 		sepCol = Drawing::lightColour(captionBackColour, 2.0f);
 	else

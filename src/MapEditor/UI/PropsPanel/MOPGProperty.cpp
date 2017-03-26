@@ -978,7 +978,7 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 	// Set to common value
 	noupdate = true;
 	wxColor col(first);
-	col.Set(col.Blue(), col.Green(), col.Red());
+	col.Set(COLWX(col));
 	wxVariant var_value;
 	var_value << col;
 	SetValue(var_value);
@@ -1012,7 +1012,7 @@ void MOPGColourProperty::applyValue()
 	vector<MapObject*>& objects = parent->getObjects();
 	wxColor col;
 	col << m_value;
-	col.Set(col.Blue(), col.Green(), col.Red());
+	col.Set(COLWX(col));
 	for (unsigned a = 0; a < objects.size(); a++)
 		objects[a]->setIntProperty(GetName(), col.GetRGB());
 }

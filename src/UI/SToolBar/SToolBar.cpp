@@ -74,7 +74,7 @@ public:
 
 		// Get system colours needed
 		wxColour col_background = GetBackgroundColour();//toolbar_win10 ? *wxWHITE : Drawing::getPanelBGColour();
-		rgba_t bg(col_background.Red(), col_background.Green(), col_background.Blue());
+		rgba_t bg(COLWX(col_background));
 		wxColour col_light = WXCOL(bg.amp(50, 50, 50, 0));
 		wxColour col_dark = WXCOL(bg.amp(-50, -50, -50, 0));
 

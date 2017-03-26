@@ -294,7 +294,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 				if (tz.peekToken() != ",")
 				{
 					col.Set(first);
-					colour.set(col.Red(), col.Green(), col.Blue());
+					colour.set(COLWX(col));
 				}
 				else
 				{
@@ -306,7 +306,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 					if (tz.peekToken() != ",")
 					{
 						col.Set(first);
-						colour.set(col.Red(), col.Green(), col.Blue(), second*255);
+						colour.set(COLWX(col), second*255);
 						blendtype = 3;
 					}
 					else

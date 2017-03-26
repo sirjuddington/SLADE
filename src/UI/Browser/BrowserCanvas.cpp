@@ -175,11 +175,11 @@ void BrowserCanvas::draw()
 	{
 		// Get system panel background colour
 		wxColour bgcolwx = Drawing::getPanelBGColour();
-		col_bg.set(bgcolwx.Red(), bgcolwx.Green(), bgcolwx.Blue());
+		col_bg.set(COLWX(bgcolwx));
 
 		// Get system text colour
 		wxColour textcol = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-		col_text.set(textcol.Red(), textcol.Green(), textcol.Blue());
+		col_text.set(COLWX(textcol));
 
 		// Check text colour brightness, if it's dark don't draw text shadow
 		rgba_t col_temp = col_text;

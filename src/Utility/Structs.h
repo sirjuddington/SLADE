@@ -389,6 +389,7 @@ struct rgba_t
 
 // Convert rgba_t to wxColor
 #define WXCOL(rgba) wxColor(rgba.r, rgba.g, rgba.b, rgba.a)
+#define COLWX(wxcol) wxcol.Red(), wxcol.Green(), wxcol.Blue()
 
 // hsl_t: Represents a colour in HSL format, generally used for calculations
 struct hsl_t
