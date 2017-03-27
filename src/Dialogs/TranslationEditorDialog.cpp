@@ -500,10 +500,10 @@ void TranslationEditorDialog::openRange(int index)
 		// Update UI
 		gb_gradient->Refresh();
 	}
-	else if (tr->getType() == TRANS_COLOURISE)
+	else if (tr->getType() == TRANS_BLEND)
 	{
 		// Colourise range
-		TransRangeColourise* tcr = (TransRangeColourise*)tr;
+		TransRangeBlend* tcr = (TransRangeBlend*)tr;
 
 		// Select colourise type radiobox
 		rb_type_colourise->SetValue(true);
@@ -642,10 +642,10 @@ void TranslationEditorDialog::setTintColour(rgba_t col)
 	TransRange* tr = translation.getRange(list_translations->GetSelection());
 
 	// Check its type
-	if (tr->getType() == TRANS_COLOURISE)
+	if (tr->getType() == TRANS_BLEND)
 	{
 		// Colour range
-		TransRangeColourise* tcr = (TransRangeColourise*)tr;
+		TransRangeBlend* tcr = (TransRangeBlend*)tr;
 
 		// Set destination end colour
 		tcr->setColour(col);
@@ -982,8 +982,8 @@ void TranslationEditorDialog::onRBColouriseSelected(wxCommandEvent& e)
 		translation.removeRange(index);
 
 		// Recreate it
-		translation.addRange(TRANS_COLOURISE, index);
-		TransRangeColourise* tr = (TransRangeColourise*)translation.getRange(index);
+		translation.addRange(TRANS_BLEND, index);
+		TransRangeBlend* tr = (TransRangeBlend*)translation.getRange(index);
 		// Origin range
 		tr->setOStart(pal_canvas_original->getSelectionStart());
 		tr->setOEnd(pal_canvas_original->getSelectionEnd());
@@ -1131,7 +1131,7 @@ void TranslationEditorDialog::onBtnAdd(wxCommandEvent& e)
 	else if (rb_type_desaturate->GetValue())
 		translation.addRange(TRANS_DESAT, index);
 	else if (rb_type_colourise->GetValue())
-		translation.addRange(TRANS_COLOURISE, index);
+		translation.addRange(TRANS_BLEND, index);
 	else if (rb_type_tint->GetValue())
 		translation.addRange(TRANS_TINT, index);
 
@@ -1435,7 +1435,7 @@ rgba_t GfxColouriseDialog::getColour()
 void GfxColouriseDialog::setColour(string col)
 {
 	wxColour colour(col);
-	rgba_t rgba = rgba_t(colour.Red(), colour.Green(), colour.Blue());
+	rgba_t rgba = rgba_t(COLWX(colour));
 	cb_colour->setColour(rgba);
 	gfx_preview->getImage()->colourise(rgba, palette);
 	gfx_preview->updateImageTexture();
@@ -1546,7 +1546,7 @@ float GfxTintDialog::getAmount()
 void GfxTintDialog::setValues(string col, int val)
 {
 	wxColour colour(col);
-	cb_colour->setColour(rgba_t(colour.Red(), colour.Green(), colour.Blue()));
+	cb_colour->setColour(rgba_t(COLWX(colour)));
 	slider_amount->SetValue(val);
 	label_amount->SetLabel(S_FMT("%d%% ", slider_amount->GetValue()));
 	gfx_preview->getImage()->tint(getColour(), getAmount(), palette);
