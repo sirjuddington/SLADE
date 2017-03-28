@@ -243,6 +243,8 @@ public:
 	void	addRange(int type, int pos);
 	void	removeRange(int pos);
 	void	swapRanges(int pos1, int pos2);
+
+	static string getPredefined(string def);
 };
 
 #endif//__TRANSLATION_H__

@@ -146,50 +146,6 @@ void Translation::parse(string def)
 		return;
 	}
 
-	// Some hardcoded translations from ZDoom, used in config files
-	else if (test == "\"doom0\"")		def = "\"112:127=96:111\"";
-	else if (test == "\"doom1\"")		def = "\"112:127=64:79\"";
-	else if (test == "\"doom2\"")		def = "\"112:127=32:47\"";
-	else if (test == "\"doom3\"")		def = "\"112:127=88:103\"";
-	else if (test == "\"doom4\"")		def = "\"112:127=56:71\"";
-	else if (test == "\"doom5\"")		def = "\"112:127=176:191\"";
-	else if (test == "\"doom6\"")		def = "\"112:127=192:207\"";
-	else if (test == "\"heretic0\"")	def = "\"225:240=114:129\"";
-	else if (test == "\"heretic1\"")	def = "\"225:240=145:160\"";
-	else if (test == "\"heretic2\"")	def = "\"225:240=190:205\"";
-	else if (test == "\"heretic3\"")	def = "\"225:240=67:82\"";
-	else if (test == "\"heretic4\"")	def = "\"225:240=9:24\"";
-	else if (test == "\"heretic5\"")	def = "\"225:240=74:89\"";
-	else if (test == "\"heretic6\"")	def = "\"225:240=150:165\"";
-	else if (test == "\"heretic7\"")	def = "\"225:240=192:207\"";
-	else if (test == "\"heretic8\"")	def = "\"225:240=95:110\"";
-	else if (test == "\"strife0\"")		def = "\"32:63=0:31\", \"128:143=64:79\", \"241:246=224:229\", \"247:251=241:245\"";
-	else if (test == "\"strife1\"")		def = "\"32:63=0:31\", \"128:143=176:191\"";
-	else if (test == "\"strife2\"")		def = "\"32:47=208:223\", \"48:63=208:223\", \"128:143=16:31\"";
-	else if (test == "\"strife3\"")		def = "\"32:47=208:223\", \"48:63=208:223\", \"128:143=48:63\"";
-	else if (test == "\"strife4\"")		def = "\"32:63=0:31\", \"80:95=128:143\", \"128:143=80:95\", \"192:223=160:191\"";
-	else if (test == "\"strife5\"")		def = "\"32:63=0:31\", \"80:95=16:31\", \"128:143=96:111\", \"192:223=32:63\"";
-	else if (test == "\"strife6\"")		def = "\"32:63=0:31\", \"80:95=64:79\", \"128:143=144:159\", \"192=1\", \"193:223=1:31\"";
-	else if (test == "\"chex0\"")		def = "\"192:207=112:127\"";
-	else if (test == "\"chex1\"")		def = "\"192:207=96:111\"";
-	else if (test == "\"chex2\"")		def = "\"192:207=64:79\"";
-	else if (test == "\"chex3\"")		def = "\"192:207=32:47\"";
-	else if (test == "\"chex4\"")		def = "\"192:207=88:103\"";
-	else if (test == "\"chex5\"")		def = "\"192:207=56:71\"";
-	else if (test == "\"chex6\"")		def = "\"192:207=176:191\"";
-	// Some more from Eternity
-	else if (test == "\"tomato\"")		def = "\"112:113=171:171\", \"114:114=172:172\", \"115:122=173:187\", \"123:124=188:189\", \"125:126=45:47\", \"127:127=1:1\"";
-	else if (test == "\"dirt\"")		def = "\"112:117=128:133\", \"118:120=135:137\", \"121:123=139:143\", \"124:125=237:239\", \"126:127=1:2\"";
-	else if (test == "\"blue\"")		def = "\"112:121=197:206\", \"122:127=240:245";
-	else if (test == "\"gold\"")		def = "\"112:113=160:160\", \"114:119=161:166\", \"120:123=236:239\", \"124:125=1:2\", \"126:127=7:8\"";
-	else if (test == "\"sea\"")			def = "\"112:112=91:91\", \"113:114=94:95\", \"115:122=152:159\", \"123:126=9:12\", \"127:127=8:8\"";
-	else if (test == "\"black\"")		def = "\"112:112=101:101\", \"113:121=103:111\", \"122:125=5:8\", \"126:127=0:0\"";
-	else if (test == "\"purple\"")		def = "\"112:113=4:4\", \"114:115=170:170\", \"116:125=250:254\", \"126:127=46:46\"";
-	else if (test == "\"vomit\"")		def = "\"112:119=209:216\", \"120:121=218:220\", \"122:124=69:75\", \"125:127=237:239\"";
-	else if (test == "\"pink\"")		def = "\"112:113=16:17\", \"114:117=19:25\", \"118:119=27:28\", \"120:124=30:38\", \"125:126=41:43\", \"127:127=46:46\"";
-	else if (test == "\"cream\"")		def = "\"112:112=4:4\", \"113:118=48:63\", \"119:119=65:65\", \"120:124=68:76\", \"125:126=77:79\", \"127:127=1:1\"";
-	else if (test == "\"white\"")		def = "\"112:112=4:4\", \"113:115=80:82\", \"116:117=84:86\", \"118:120=89:93\", \"121:127=96:108\"";
-
 	// Get Hexen tables
 	else if (test.StartsWith("\"$@", &temp))
 	{
@@ -202,6 +158,10 @@ void Translation::parse(string def)
 			return;
 		}
 	}
+	// Test for hardcoded predefined translations
+	else def = getPredefined(def);
+
+	// Now we're guaranteed to have normal translation strings to parse
 	Tokenizer tz;
 	tz.openString(def);
 	string token = tz.getToken();
@@ -567,6 +527,9 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
 		return specialBlend(col, type, pal);
 	}
 
+	// Check for perfect palette matches
+	bool match = col.equals(pal->colour(i));
+
 	// Go through each translation component
 	for (unsigned a = 0; a < nRanges(); a++)
 	{
@@ -576,6 +539,9 @@ rgba_t Translation::translate(rgba_t col, Palette8bit * pal)
 		if (i < r->oStart() || i > r->oEnd())
 			continue;
 
+		// Only allow exact matches unless the translation applies to all colours
+		if (!match && r->oStart() != 0 && r->oEnd() != 255)
+			continue;
 
 		// Palette range translation
 		if (r->getType() == TRANS_PALETTE)
@@ -844,4 +810,58 @@ void Translation::swapRanges(int pos1, int pos2)
 	TransRange* temp = translations[pos1];
 	translations[pos1] = translations[pos2];
 	translations[pos2] = temp;
+}
+
+/* Translation::getPredefined
+ * Replaces a hardcoded translation name with its transcription
+ *******************************************************************/
+string Translation::getPredefined(string def)
+{
+	// Some hardcoded translations from ZDoom, used in config files
+	if (def == "\"doom0\"")			def = "\"112:127=96:111\"";
+	else if (def == "\"doom1\"")	def = "\"112:127=64:79\"";
+	else if (def == "\"doom2\"")	def = "\"112:127=32:47\"";
+	else if (def == "\"doom3\"")	def = "\"112:127=88:103\"";
+	else if (def == "\"doom4\"")	def = "\"112:127=56:71\"";
+	else if (def == "\"doom5\"")	def = "\"112:127=176:191\"";
+	else if (def == "\"doom6\"")	def = "\"112:127=192:207\"";
+	else if (def == "\"heretic0\"")	def = "\"225:240=114:129\"";
+	else if (def == "\"heretic1\"")	def = "\"225:240=145:160\"";
+	else if (def == "\"heretic2\"")	def = "\"225:240=190:205\"";
+	else if (def == "\"heretic3\"")	def = "\"225:240=67:82\"";
+	else if (def == "\"heretic4\"")	def = "\"225:240=9:24\"";
+	else if (def == "\"heretic5\"")	def = "\"225:240=74:89\"";
+	else if (def == "\"heretic6\"")	def = "\"225:240=150:165\"";
+	else if (def == "\"heretic7\"")	def = "\"225:240=192:207\"";
+	else if (def == "\"heretic8\"")	def = "\"225:240=95:110\"";
+	else if (def == "\"strife0\"")	def = "\"32:63=0:31\", \"128:143=64:79\", \"241:246=224:229\", \"247:251=241:245\"";
+	else if (def == "\"strife1\"")	def = "\"32:63=0:31\", \"128:143=176:191\"";
+	else if (def == "\"strife2\"")	def = "\"32:47=208:223\", \"48:63=208:223\", \"128:143=16:31\"";
+	else if (def == "\"strife3\"")	def = "\"32:47=208:223\", \"48:63=208:223\", \"128:143=48:63\"";
+	else if (def == "\"strife4\"")	def = "\"32:63=0:31\", \"80:95=128:143\", \"128:143=80:95\", \"192:223=160:191\"";
+	else if (def == "\"strife5\"")	def = "\"32:63=0:31\", \"80:95=16:31\", \"128:143=96:111\", \"192:223=32:63\"";
+	else if (def == "\"strife6\"")	def = "\"32:63=0:31\", \"80:95=64:79\", \"128:143=144:159\", \"192=1\", \"193:223=1:31\"";
+	else if (def == "\"chex0\"")	def = "\"192:207=112:127\"";
+	else if (def == "\"chex1\"")	def = "\"192:207=96:111\"";
+	else if (def == "\"chex2\"")	def = "\"192:207=64:79\"";
+	else if (def == "\"chex3\"")	def = "\"192:207=32:47\"";
+	else if (def == "\"chex4\"")	def = "\"192:207=88:103\"";
+	else if (def == "\"chex5\"")	def = "\"192:207=56:71\"";
+	else if (def == "\"chex6\"")	def = "\"192:207=176:191\"";
+	// Some more from Eternity
+	else if (def == "\"tomato\"")	def = "\"112:113=171:171\", \"114:114=172:172\", \"115:122=173:187\", \"123:124=188:189\", \"125:126=45:47\", \"127:127=1:1\"";
+	else if (def == "\"dirt\"")		def = "\"112:117=128:133\", \"118:120=135:137\", \"121:123=139:143\", \"124:125=237:239\", \"126:127=1:2\"";
+	else if (def == "\"blue\"")		def = "\"112:121=197:206\", \"122:127=240:245";
+	else if (def == "\"gold\"")		def = "\"112:113=160:160\", \"114:119=161:166\", \"120:123=236:239\", \"124:125=1:2\", \"126:127=7:8\"";
+	else if (def == "\"sea\"")		def = "\"112:112=91:91\", \"113:114=94:95\", \"115:122=152:159\", \"123:126=9:12\", \"127:127=8:8\"";
+	else if (def == "\"black\"")	def = "\"112:112=101:101\", \"113:121=103:111\", \"122:125=5:8\", \"126:127=0:0\"";
+	else if (def == "\"purple\"")	def = "\"112:113=4:4\", \"114:115=170:170\", \"116:125=250:254\", \"126:127=46:46\"";
+	else if (def == "\"vomit\"")	def = "\"112:119=209:216\", \"120:121=218:220\", \"122:124=69:75\", \"125:127=237:239\"";
+	else if (def == "\"pink\"")		def = "\"112:113=16:17\", \"114:117=19:25\", \"118:119=27:28\", \"120:124=30:38\", \"125:126=41:43\", \"127:127=46:46\"";
+	else if (def == "\"cream\"")	def = "\"112:112=4:4\", \"113:118=48:63\", \"119:119=65:65\", \"120:124=68:76\", \"125:126=77:79\", \"127:127=1:1\"";
+	else if (def == "\"white\"")	def = "\"112:112=4:4\", \"113:115=80:82\", \"116:117=84:86\", \"118:120=89:93\", \"121:127=96:108\"";
+	// And why not this one too
+	else if (def == "\"stealth\"")	def = "\"0:255=%[0.00,0.00,0.00]:[1.31,0.84,0.84]\"";
+
+	return def;
 }
