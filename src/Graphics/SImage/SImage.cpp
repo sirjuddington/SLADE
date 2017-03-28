@@ -1305,45 +1305,63 @@ bool SImage::applyTranslation(Translation* tr, Palette8bit* pal, bool truecolor)
 	if (!data)
 		return false;
 
-	// Can't apply a translation to a non-paletted image
-	if (type != PALMASK)
+	// Can't apply a translation to a non-coloured image
+	if (type == ALPHAMAP)
 		return false;
+
+	// Handle truecolor images
+	if (type == RGBA)
+		truecolor = true;
+	size_t bpp = getBpp();
 
 	// Get palette to use
 	if (has_palette || !pal)
 		pal = &palette;
 
 	uint8_t* newdata = NULL;
-	if (truecolor)
+	if (truecolor && type == PALMASK)
 	{
 		newdata = new uint8_t[width*height*4];
 		memset(newdata, 0, width*height*4);
 	}
+	else newdata = data;
 
 	// Go through pixels
 	for (int p = 0; p < width*height; p++)
 	{
-		uint8_t i = data[p];
-		rgba_t col = pal->colour(i);
 
 		// No need to process transparent pixels
 		if (mask && mask[p] == 0)
 			continue;
 
+		rgba_t col;
+		int q = p * bpp;
+		if (type == PALMASK)
+			col.set(pal->colour(data[p]));
+		else if (type == RGBA)
+		{
+			col.set(data[q], data[q + 1], data[q + 2], data[q + 3]);
+
+			// skip colours that don't match exactly to the palette
+			col.index = pal->nearestColour(col);
+			if (!col.equals(pal->colour(col.index)))
+				continue;
+		}
+
 		col = tr->translate(col, pal);
-		data[p] = col.index;
 
 		if (truecolor)
 		{
-			int q = p*4;
+			q = p*4;
 			newdata[q+0] = col.r;
 			newdata[q+1] = col.g;
 			newdata[q+2] = col.b;
 			newdata[q+3] = mask ? mask[p] : col.a;
 		}
+		else data[p] = col.index;
 	}
 
-	if (truecolor)
+	if (truecolor && type == PALMASK)
 	{
 		clearData(true);
 		data = newdata;
