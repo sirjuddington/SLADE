@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "EntryPanel.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/SToolBar/SToolBarButton.h"

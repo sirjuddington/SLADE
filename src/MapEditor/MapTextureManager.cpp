@@ -33,12 +33,13 @@
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "MapEditorWindow.h"
 #include "OpenGL/OpenGL.h"
 #include "Graphics/SImage/SImage.h"
 #include "General/Misc.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************

@@ -37,8 +37,9 @@
 #include "General/ColourConfiguration.h"
 #include "General/ResourceManager.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "OpenGL/OpenGL.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************

@@ -96,7 +96,7 @@ protected:
 
 public:
 	SActionHandler();
-	~SActionHandler();
+	virtual ~SActionHandler();
 };
 
 #endif//__SACTION_H__

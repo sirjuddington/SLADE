@@ -1281,7 +1281,6 @@
     <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp" />
     <ClCompile Include="..\..\src\MainEditor\ExternalEditManager.cpp" />
     <ClCompile Include="..\..\src\MainEditor\MainEditor.cpp" />
-    <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp" />
     <ClCompile Include="..\..\src\MainEditor\SwitchesList.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\ArchivePanel.cpp" />
@@ -1303,6 +1302,7 @@
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.cpp" />
+    <ClCompile Include="..\..\src\MainEditor\UI\MainWindow.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.cpp" />
     <ClCompile Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.cpp" />
@@ -1748,7 +1748,6 @@
     <ClInclude Include="..\..\src\MainEditor\EntryOperations.h" />
     <ClInclude Include="..\..\src\MainEditor\ExternalEditManager.h" />
     <ClInclude Include="..\..\src\MainEditor\MainEditor.h" />
-    <ClInclude Include="..\..\src\MainEditor\MainWindow.h" />
     <ClInclude Include="..\..\src\MainEditor\SwitchesList.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\ArchivePanel.h" />
@@ -1765,6 +1764,7 @@
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\PaletteEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\SwitchesEntryPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\EntryPanel\TextEntryPanel.h" />
+    <ClInclude Include="..\..\src\MainEditor\UI\MainWindow.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchBrowser.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\PatchTablePanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureEditorPanel.h" />

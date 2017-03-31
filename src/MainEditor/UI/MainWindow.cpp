@@ -37,21 +37,20 @@
 #include "UI/BaseResourceChooser.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Utility/Tokenizer.h"
-#include "UI/SplashWindow.h"
 #include "MapEditor/MapEditorWindow.h"
-#include "Dialogs/MapEditorConfigDialog.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
-#include "UI/ArchivePanel.h"
+#include "ArchivePanel.h"
 #include "General/Misc.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/STabCtrl.h"
-#include "UI/TextureXEditor/TextureXEditor.h"
+#include "TextureXEditor/TextureXEditor.h"
 #include "UI/PaletteChooser.h"
-
+#include "ArchiveManagerPanel.h"
 #ifdef USE_WEBVIEW_STARTPAGE
-#include "UI/DocsPage.h"
+#include "DocsPage.h"
 #endif
+
 
 /*******************************************************************
  * VARIABLES
@@ -74,7 +73,7 @@ public:
 	MainWindowDropTarget() {}
 	~MainWindowDropTarget() {}
 
-	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames)
+	bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames) override
 	{
 		for (unsigned a = 0; a < filenames.size(); a++)
 			theArchiveManager->openArchive(filenames[a]);
@@ -100,7 +99,7 @@ MainWindow::MainWindow()
 	setupLayout();
 	SetDropTarget(new MainWindowDropTarget());
 #ifdef USE_WEBVIEW_STARTPAGE
-	docs_page = NULL;
+	docs_page = nullptr;
 #endif
 }
 
@@ -255,7 +254,7 @@ void MainWindow::setupLayout()
 
 
 	// -- Undo History Panel --
-	panel_undo_history = new UndoManagerHistoryPanel(this, NULL);
+	panel_undo_history = new UndoManagerHistoryPanel(this, nullptr);
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -450,14 +449,12 @@ void MainWindow::createStartPage(bool newtip)
 			tip = "Did you know? Something is wrong with the tips.txt file in your slade.pk3.";
 		else
 		{
-			int tipindex = 0;
+			int tipindex = lasttipindex;
 			if (newtip || lasttipindex == 0)
 			{
 				// Don't show same tip twice in a row
 				do { tipindex = 1 + (rand() % numtips); } while (tipindex == lasttipindex);
 			}
-			else
-				tipindex = lasttipindex;
 			
 			lasttipindex = tipindex;
 			for (int a = 0; a < tipindex; a++)

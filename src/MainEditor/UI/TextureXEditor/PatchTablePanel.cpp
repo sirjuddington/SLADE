@@ -35,9 +35,10 @@
 #include "General/Misc.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/GfxCanvas.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************

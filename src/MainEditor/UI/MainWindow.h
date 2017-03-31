@@ -2,12 +2,10 @@
 #ifndef __MAINWINDOW_H__
 #define __MAINWINDOW_H__
 
-#include "common.h"
-#include "UI/ArchiveManagerPanel.h"
-#include "UI/PaletteChooser.h"
-#include "MainApp.h"
+#include "General/SAction.h"
 #include "UI/STopWindow.h"
 
+class ArchiveManagerPanel;
 class PaletteChooser;
 class SToolBar;
 class STabCtrl;
@@ -36,7 +34,7 @@ private:
 #endif
 
 	// Action handling
-	bool	handleAction(string id);
+	bool	handleAction(string id) override;
 
 public:
 	MainWindow();
@@ -59,7 +57,6 @@ public:
 #endif
 
 	// Events
-	void	onMenuItemClicked(wxCommandEvent& e);
 	void	onHTMLLinkClicked(wxEvent& e);
 	void	onClose(wxCloseEvent& e);
 	void	onTabChanged(wxAuiNotebookEvent& e);

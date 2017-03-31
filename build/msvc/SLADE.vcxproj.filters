@@ -1146,9 +1146,6 @@
     <ClCompile Include="..\..\src\MainEditor\EntryOperations.cpp">
       <Filter>Main Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MainEditor\MainWindow.cpp">
-      <Filter>Main Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
@@ -1412,6 +1409,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\General\UI.cpp">
       <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MainEditor\UI\MainWindow.cpp">
+      <Filter>Main Editor\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2145,9 +2145,6 @@
     <ClInclude Include="..\..\src\MainEditor\EntryOperations.h">
       <Filter>Main Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MainEditor\MainWindow.h">
-      <Filter>Main Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\ArchiveManagerPanel.h">
       <Filter>Main Editor\UI</Filter>
     </ClInclude>
@@ -2437,6 +2434,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\General\UI.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MainEditor\UI\MainWindow.h">
+      <Filter>Main Editor\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

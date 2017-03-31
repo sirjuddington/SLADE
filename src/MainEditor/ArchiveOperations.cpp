@@ -36,7 +36,7 @@
 #include "General/ResourceManager.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/SLADEMap/MapSide.h"
 #include "MapEditor/SLADEMap/MapSector.h"
 #include "MapEditor/SLADEMap/MapThing.h"

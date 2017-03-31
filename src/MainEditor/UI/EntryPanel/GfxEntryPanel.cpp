@@ -28,7 +28,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "MainApp.h"
 #include "GfxEntryPanel.h"
+#include "Archive/Archive.h"
 #include "Dialogs/GfxConvDialog.h"
 #include "Dialogs/GfxCropDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
@@ -37,10 +39,10 @@
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/Palette.h"
-#include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "UI/PaletteChooser.h"
 #include "UI/SToolBar/SToolBar.h"
 
 
@@ -1084,9 +1086,7 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 // I'd love to put them in their own file, but attempting to do so
 // results in a circular include nightmare and nothing works anymore.
 #include "General/Console/Console.h"
-#include "MainApp.h"
 #include "MainEditor/UI/ArchivePanel.h"
-#include "MainEditor/MainWindow.h"
 
 GfxEntryPanel* CH::getCurrentGfxPanel()
 {

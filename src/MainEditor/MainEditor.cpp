@@ -2,8 +2,10 @@
 #include "Main.h"
 #include "Archive/ArchiveManager.h"
 #include "MainEditor.h"
-#include "MainWindow.h"
+#include "UI/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
+#include "UI/ArchiveManagerPanel.h"
+#include "UI/PaletteChooser.h"
 
 namespace MainEditor
 {

@@ -29,13 +29,16 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "MainApp.h"
+#include "Archive/Archive.h"
 #include "PaletteEntryPanel.h"
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "UI/Canvas/PaletteCanvas.h"
+#include "UI/PaletteChooser.h"
 #include "Utility/SFileDialog.h"
 
 

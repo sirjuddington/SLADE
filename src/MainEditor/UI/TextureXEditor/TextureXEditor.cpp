@@ -29,15 +29,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "MainApp.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
 #include "Archive/ArchiveManager.h"
-#include "General/Console/Console.h"
-#include "UI/SplashWindow.h"
 #include "Dialogs/ExtMessageDialog.h"
 #include "General/ResourceManager.h"
 #include "General/UndoRedo.h"
+#include "UI/PaletteChooser.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/UndoManagerHistoryPanel.h"
 

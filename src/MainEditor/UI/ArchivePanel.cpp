@@ -31,8 +31,8 @@
  *******************************************************************/
 #include "Main.h"
 #include "ArchivePanel.h"
+#include "ArchiveManagerPanel.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/WadArchive.h"
 #include "Dialogs/GfxConvDialog.h"
 #include "Dialogs/MapEditorConfigDialog.h"
 #include "Dialogs/MapReplaceDialog.h"
@@ -63,9 +63,10 @@
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/ExternalEditManager.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "Utility/SFileDialog.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************

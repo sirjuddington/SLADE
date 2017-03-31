@@ -40,7 +40,8 @@
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
+#include "UI/PaletteChooser.h"
 
 
 /*******************************************************************

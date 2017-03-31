@@ -39,7 +39,7 @@
 #include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/MainWindow.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/STabCtrl.h"
