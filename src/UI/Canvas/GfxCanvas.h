@@ -90,7 +90,7 @@ public:
 	void	allowDrag(bool allow) { allow_drag = allow; }
 	bool	allowScroll() { return allow_scroll; }
 	void	allowScroll(bool allow) { allow_scroll = allow; }
-	void	setPaintColour(rgba_t &col) { paint_colour.set(col); }
+	void	setPaintColour(const rgba_t &col) { paint_colour.set(col); }
 	void	setEditingMode(int mode) { editing_mode = mode; }
 	void	setTranslation(Translation* tr) { translation = tr; }
 	void	setBrush(uint8_t br) { brush = br < Brush::NUM_BRUSHES ? br : 0; }
