@@ -1495,27 +1495,27 @@ bool PaletteEntryPanel::handleAction(string id)
  *******************************************************************/
 bool PaletteEntryPanel::fillCustomMenu(wxMenu* custom)
 {
-	theApp->getAction("ppal_addcustom")->addToMenu(custom);
-	theApp->getAction("ppal_exportas")->addToMenu(custom);
-	theApp->getAction("ppal_importfrom")->addToMenu(custom);
+	SAction::fromId("ppal_addcustom")->addToMenu(custom);
+	SAction::fromId("ppal_exportas")->addToMenu(custom);
+	SAction::fromId("ppal_importfrom")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("ppal_colourise")->addToMenu(custom);
-	theApp->getAction("ppal_tint")->addToMenu(custom);
-	theApp->getAction("ppal_tweak")->addToMenu(custom);
-	theApp->getAction("ppal_invert")->addToMenu(custom);
-	theApp->getAction("ppal_gradient")->addToMenu(custom);
-	theApp->getAction("ppal_test")->addToMenu(custom);
+	SAction::fromId("ppal_colourise")->addToMenu(custom);
+	SAction::fromId("ppal_tint")->addToMenu(custom);
+	SAction::fromId("ppal_tweak")->addToMenu(custom);
+	SAction::fromId("ppal_invert")->addToMenu(custom);
+	SAction::fromId("ppal_gradient")->addToMenu(custom);
+	SAction::fromId("ppal_test")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("ppal_generate")->addToMenu(custom);
-	theApp->getAction("ppal_duplicate")->addToMenu(custom);
-	theApp->getAction("ppal_remove")->addToMenu(custom);
-	theApp->getAction("ppal_removeothers")->addToMenu(custom);
-	theApp->getAction("ppal_colormap")->addToMenu(custom);
+	SAction::fromId("ppal_generate")->addToMenu(custom);
+	SAction::fromId("ppal_duplicate")->addToMenu(custom);
+	SAction::fromId("ppal_remove")->addToMenu(custom);
+	SAction::fromId("ppal_removeothers")->addToMenu(custom);
+	SAction::fromId("ppal_colormap")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("ppal_moveup")->addToMenu(custom);
-	theApp->getAction("ppal_movedown")->addToMenu(custom);
+	SAction::fromId("ppal_moveup")->addToMenu(custom);
+	SAction::fromId("ppal_movedown")->addToMenu(custom);
 //	custom->AppendSeparator();
-//	theApp->getAction("ppal_report")->addToMenu(custom);
+//	SAction::fromId("ppal_report")->addToMenu(custom);
 
 	return true;
 }

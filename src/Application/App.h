@@ -1,5 +1,7 @@
 #pragma once
 
+class SAction;
+
 namespace App
 {
 	bool	init();

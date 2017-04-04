@@ -461,48 +461,48 @@ void ArchivePanel::addMenus()
 	{
 		// Archive menu
 		wxMenu* menu_new = new wxMenu("");
-		theApp->getAction("arch_newentry")->addToMenu(menu_new, "&Entry");
-		theApp->getAction("arch_newdir")->addToMenu(menu_new, "&Directory");
-		theApp->getAction("arch_newpalette")->addToMenu(menu_new, "&PLAYPAL");
-		theApp->getAction("arch_newanimated")->addToMenu(menu_new, "&ANIMATED");
-		theApp->getAction("arch_newswitches")->addToMenu(menu_new, "&SWITCHES");
+		SAction::fromId("arch_newentry")->addToMenu(menu_new, "&Entry");
+		SAction::fromId("arch_newdir")->addToMenu(menu_new, "&Directory");
+		SAction::fromId("arch_newpalette")->addToMenu(menu_new, "&PLAYPAL");
+		SAction::fromId("arch_newanimated")->addToMenu(menu_new, "&ANIMATED");
+		SAction::fromId("arch_newswitches")->addToMenu(menu_new, "&SWITCHES");
 		menu_archive = new wxMenu();
 		menu_archive->AppendSubMenu(menu_new, "&New");
-		theApp->getAction("arch_importfiles")->addToMenu(menu_archive);
-		theApp->getAction("arch_buildarchive")->addToMenu(menu_archive);
+		SAction::fromId("arch_importfiles")->addToMenu(menu_archive);
+		SAction::fromId("arch_buildarchive")->addToMenu(menu_archive);
 		menu_archive->AppendSeparator();
-		theApp->getAction("arch_texeditor")->addToMenu(menu_archive);
-		theApp->getAction("arch_mapeditor")->addToMenu(menu_archive);
+		SAction::fromId("arch_texeditor")->addToMenu(menu_archive);
+		SAction::fromId("arch_mapeditor")->addToMenu(menu_archive);
 		wxMenu* menu_clean = new wxMenu("");
-		theApp->getAction("arch_clean_patches")->addToMenu(menu_clean);
-		theApp->getAction("arch_clean_textures")->addToMenu(menu_clean);
-		theApp->getAction("arch_clean_flats")->addToMenu(menu_clean);
-		theApp->getAction("arch_clean_iwaddupes")->addToMenu(menu_clean);
-		theApp->getAction("arch_check_duplicates")->addToMenu(menu_clean);
-		theApp->getAction("arch_check_duplicates2")->addToMenu(menu_clean);
-		theApp->getAction("arch_replace_maps")->addToMenu(menu_clean);
+		SAction::fromId("arch_clean_patches")->addToMenu(menu_clean);
+		SAction::fromId("arch_clean_textures")->addToMenu(menu_clean);
+		SAction::fromId("arch_clean_flats")->addToMenu(menu_clean);
+		SAction::fromId("arch_clean_iwaddupes")->addToMenu(menu_clean);
+		SAction::fromId("arch_check_duplicates")->addToMenu(menu_clean);
+		SAction::fromId("arch_check_duplicates2")->addToMenu(menu_clean);
+		SAction::fromId("arch_replace_maps")->addToMenu(menu_clean);
 		menu_archive->AppendSubMenu(menu_clean, "&Maintenance");
 	}
 	if (!menu_entry)
 	{
 		// Entry menu
 		menu_entry = new wxMenu();
-		theApp->getAction("arch_entry_rename")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_delete")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_revert")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_rename")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_delete")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_revert")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_cut")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_copy")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_paste")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_cut")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_copy")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_paste")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_moveup")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_movedown")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_sort")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_moveup")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_movedown")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_sort")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_import")->addToMenu(menu_entry);
-		theApp->getAction("arch_entry_export")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_import")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_export")->addToMenu(menu_entry);
 		menu_entry->AppendSeparator();
-		theApp->getAction("arch_entry_bookmark")->addToMenu(menu_entry);
+		SAction::fromId("arch_entry_bookmark")->addToMenu(menu_entry);
 	}
 
 	// Add them to the main window menubar
@@ -2889,12 +2889,12 @@ wxMenu* ArchivePanel::createEntryOpenMenu(string category)
 	wxMenu* menu_open = new wxMenu();
 
 	// New Tab
-	theApp->getAction("arch_entry_opentab")->addToMenu(menu_open, true);
+	SAction::fromId("arch_entry_opentab")->addToMenu(menu_open, true);
 	menu_open->AppendSeparator();
 
 	// External editors
 	vector<Executables::external_exe_t> external = Executables::getExternalExes(category);
-	SAction* a_open_ext = theApp->getAction("arch_entry_openext");
+	SAction* a_open_ext = SAction::fromId("arch_entry_openext");
 	unsigned num = MIN(external.size(), 20);
 	for (unsigned a = 0; a < num; a++)
 	{
@@ -2907,7 +2907,7 @@ wxMenu* ArchivePanel::createEntryOpenMenu(string category)
 		menu_open->AppendSeparator();
 
 	// Setup external editors
-	theApp->getAction("arch_entry_setup_external")->addToMenu(menu_open);
+	SAction::fromId("arch_entry_setup_external")->addToMenu(menu_open);
 
 	return menu_open;
 }
@@ -3432,25 +3432,25 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("arch_entry_rename")->addToMenu(&context, true);
-	if (selection.size() > 1) theApp->getAction("arch_entry_rename_each")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_delete")->addToMenu(&context, true);
-	if (modified_selected) theApp->getAction("arch_entry_revert")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_rename")->addToMenu(&context, true);
+	if (selection.size() > 1) SAction::fromId("arch_entry_rename_each")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_delete")->addToMenu(&context, true);
+	if (modified_selected) SAction::fromId("arch_entry_revert")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_cut")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_copy")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_paste")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_cut")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_copy")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_paste")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_import")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_export")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_import")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_export")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_moveup")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_movedown")->addToMenu(&context, true);
-	theApp->getAction("arch_entry_sort")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_moveup")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_movedown")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_sort")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("arch_entry_bookmark")->addToMenu(&context, true);
-	//theApp->getAction("arch_entry_opentab")->addToMenu(&context, true);
-	//theApp->getAction("arch_entry_crc32")->addToMenu(&context, true);
+	SAction::fromId("arch_entry_bookmark")->addToMenu(&context, true);
+	//SAction::fromId("arch_entry_opentab")->addToMenu(&context, true);
+	//SAction::fromId("arch_entry_crc32")->addToMenu(&context, true);
 
 	// Add 'Open In' menu
 	context.AppendSubMenu(createEntryOpenMenu(category), "Open")->SetBitmap(Icons::getIcon(Icons::GENERAL, "open"));
@@ -3472,19 +3472,19 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	// Add Boom Animations/Switches related menu items if they are selected
 	if (bas_selected)
 	{
-		theApp->getAction("arch_bas_convertb")->addToMenu(&context, true);
-		theApp->getAction("arch_bas_convertz")->addToMenu(&context, true);
+		SAction::fromId("arch_bas_convertb")->addToMenu(&context, true);
+		SAction::fromId("arch_bas_convertz")->addToMenu(&context, true);
 	}
 	if (swan_selected)
 	{
-		theApp->getAction("arch_swan_convert")->addToMenu(&context, true);
+		SAction::fromId("arch_swan_convert")->addToMenu(&context, true);
 	}
 
 	// Add texturex related menu items if needed
 	if (texturex_selected)
 	{
-		theApp->getAction("arch_texturex_convertzd")->addToMenu(&context, true);
-		theApp->getAction("arch_texturex_finderrors")->addToMenu(&context, true);
+		SAction::fromId("arch_texturex_convertzd")->addToMenu(&context, true);
+		SAction::fromId("arch_texturex_finderrors")->addToMenu(&context, true);
 	}
 
 	// 'View As' menu
@@ -3492,14 +3492,14 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	{
 		wxMenu* viewas = new wxMenu();
 		context.AppendSubMenu(viewas, "View As");
-		theApp->getAction("arch_view_text")->addToMenu(viewas, "Text");
-		theApp->getAction("arch_view_hex")->addToMenu(viewas, "Hex");
+		SAction::fromId("arch_view_text")->addToMenu(viewas, "Text");
+		SAction::fromId("arch_view_hex")->addToMenu(viewas, "Hex");
 	}
 	else
 	{
 		context.AppendSeparator();
-		theApp->getAction("arch_view_text")->addToMenu(&context, true);
-		theApp->getAction("arch_view_hex")->addToMenu(&context, true);
+		SAction::fromId("arch_view_text")->addToMenu(&context, true);
+		SAction::fromId("arch_view_hex")->addToMenu(&context, true);
 	}
 
 	// Add gfx-related menu items if gfx are selected (multi-select only)
@@ -3516,16 +3516,16 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			context.AppendSeparator();
 			gfx = &context;
 		}
-		theApp->getAction("arch_gfx_convert")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_translate")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_colourise")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_tint")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_offsets")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_addptable")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_addtexturex")->addToMenu(gfx, true);
-		theApp->getAction("arch_gfx_exportpng")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_convert")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_translate")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_colourise")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_tint")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_offsets")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_addptable")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_addtexturex")->addToMenu(gfx, true);
+		SAction::fromId("arch_gfx_exportpng")->addToMenu(gfx, true);
 		if (png_selected)
-			theApp->getAction("arch_gfx_pngopt")->addToMenu(gfx, true);
+			SAction::fromId("arch_gfx_pngopt")->addToMenu(gfx, true);
 	}
 
 	// Add Audio related menu items if needed
@@ -3543,11 +3543,11 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			audio = &context;
 		}
 		if (wav_selected)
-			theApp->getAction("arch_audio_convertwd")->addToMenu(audio, true);
+			SAction::fromId("arch_audio_convertwd")->addToMenu(audio, true);
 		if (dsnd_selected)
-			theApp->getAction("arch_audio_convertdw")->addToMenu(audio, true);
+			SAction::fromId("arch_audio_convertdw")->addToMenu(audio, true);
 		if (mus_selected)
-			theApp->getAction("arch_audio_convertmus")->addToMenu(audio, true);
+			SAction::fromId("arch_audio_convertmus")->addToMenu(audio, true);
 	}
 
 	// Add script related menu items if needed
@@ -3564,8 +3564,8 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 			context.AppendSeparator();
 			scripts = &context;
 		}
-		theApp->getAction("arch_scripts_compileacs")->addToMenu(scripts, true);
-		theApp->getAction("arch_scripts_compilehacs")->addToMenu(scripts, true);
+		SAction::fromId("arch_scripts_compileacs")->addToMenu(scripts, true);
+		SAction::fromId("arch_scripts_compilehacs")->addToMenu(scripts, true);
 	}
 
 	// Add map related menu items if needed
@@ -3573,7 +3573,7 @@ void ArchivePanel::onEntryListRightClick(wxListEvent& e)
 	{
 		// 'Open in Doom Builder 2' (windows-only)
 #ifdef __WXMSW__
-		theApp->getAction("arch_map_opendb2")->addToMenu(&context, true);
+		SAction::fromId("arch_map_opendb2")->addToMenu(&context, true);
 #endif
 	}
 

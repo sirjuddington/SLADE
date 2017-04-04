@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "General/SAction.h"
+#include "General/SAction.h" // TODO: Remove after SActionHandler split
 
 class SLADELog : public wxLog
 {
@@ -18,19 +18,16 @@ public:
 };
 
 class MainWindow;
+class SAction;
 class SActionHandler;
 class wxSingleInstanceChecker;
 class MainAppFileListener;
 
 class SLADEWxApp : public wxApp
 {
-friend class SAction;
 friend class SActionHandler;
 private:
 	MainWindow*					main_window;
-	int							cur_id;
-	SAction*					action_invalid;
-	vector<SAction*>			actions;
 	vector<SActionHandler*>		action_handlers;
 	bool						init_ok;
 	wxStopWatch					timer;
@@ -61,10 +58,7 @@ public:
 	void	checkForUpdates(bool message_box);
 	void	exitApp(bool save_config = true);
 
-	int			newMenuId() { return cur_id++; }
-	SAction*	getAction(string id);
-	bool		doAction(string id, int wx_id_offset = 0);
-	void		toggleAction(string id);
+	bool	doAction(string id, int wx_id_offset = 0);
 
 	void	onMenu(wxCommandEvent& e);
 	void	onVersionCheckCompleted(wxThreadEvent& e);

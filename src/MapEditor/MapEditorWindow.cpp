@@ -195,39 +195,39 @@ void MapEditorWindow::setupMenu()
 
 	// Map menu
 	wxMenu* menu_map = new wxMenu("");
-	theApp->getAction("mapw_save")->addToMenu(menu_map);
-	theApp->getAction("mapw_saveas")->addToMenu(menu_map);
-	theApp->getAction("mapw_rename")->addToMenu(menu_map);
-	theApp->getAction("mapw_backup")->addToMenu(menu_map);
+	SAction::fromId("mapw_save")->addToMenu(menu_map);
+	SAction::fromId("mapw_saveas")->addToMenu(menu_map);
+	SAction::fromId("mapw_rename")->addToMenu(menu_map);
+	SAction::fromId("mapw_backup")->addToMenu(menu_map);
 	menu_map->AppendSeparator();
-	theApp->getAction("mapw_run_map")->addToMenu(menu_map);
+	SAction::fromId("mapw_run_map")->addToMenu(menu_map);
 	menu->Append(menu_map, "&Map");
 
 	// Edit menu
 	wxMenu* menu_editor = new wxMenu("");
-	theApp->getAction("mapw_undo")->addToMenu(menu_editor);
-	theApp->getAction("mapw_redo")->addToMenu(menu_editor);
+	SAction::fromId("mapw_undo")->addToMenu(menu_editor);
+	SAction::fromId("mapw_redo")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
-	theApp->getAction("mapw_draw_lines")->addToMenu(menu_editor);
-	theApp->getAction("mapw_draw_shape")->addToMenu(menu_editor);
-	theApp->getAction("mapw_edit_objects")->addToMenu(menu_editor);
-	theApp->getAction("mapw_mirror_x")->addToMenu(menu_editor);
-	theApp->getAction("mapw_mirror_y")->addToMenu(menu_editor);
+	SAction::fromId("mapw_draw_lines")->addToMenu(menu_editor);
+	SAction::fromId("mapw_draw_shape")->addToMenu(menu_editor);
+	SAction::fromId("mapw_edit_objects")->addToMenu(menu_editor);
+	SAction::fromId("mapw_mirror_x")->addToMenu(menu_editor);
+	SAction::fromId("mapw_mirror_y")->addToMenu(menu_editor);
 	menu_editor->AppendSeparator();
-	theApp->getAction("mapw_preferences")->addToMenu(menu_editor);
-	theApp->getAction("mapw_setbra")->addToMenu(menu_editor);
+	SAction::fromId("mapw_preferences")->addToMenu(menu_editor);
+	SAction::fromId("mapw_setbra")->addToMenu(menu_editor);
 	menu->Append(menu_editor, "&Edit");
 
 	// View menu
 	wxMenu* menu_view = new wxMenu("");
-	theApp->getAction("mapw_showproperties")->addToMenu(menu_view);
-	theApp->getAction("mapw_showconsole")->addToMenu(menu_view);
-	theApp->getAction("mapw_showundohistory")->addToMenu(menu_view);
-	theApp->getAction("mapw_showchecks")->addToMenu(menu_view);
-	theApp->getAction("mapw_showscripteditor")->addToMenu(menu_view);
+	SAction::fromId("mapw_showproperties")->addToMenu(menu_view);
+	SAction::fromId("mapw_showconsole")->addToMenu(menu_view);
+	SAction::fromId("mapw_showundohistory")->addToMenu(menu_view);
+	SAction::fromId("mapw_showchecks")->addToMenu(menu_view);
+	SAction::fromId("mapw_showscripteditor")->addToMenu(menu_view);
 	menu_view->AppendSeparator();
-	theApp->getAction("mapw_show_fullmap")->addToMenu(menu_view);
-	theApp->getAction("mapw_show_item")->addToMenu(menu_view);
+	SAction::fromId("mapw_show_fullmap")->addToMenu(menu_view);
+	SAction::fromId("mapw_show_item")->addToMenu(menu_view);
 	menu->Append(menu_view, "View");
 
 	SetMenuBar(menu);
@@ -269,7 +269,7 @@ void MapEditorWindow::setupLayout()
 	tbg_mode->addActionButton("mapw_mode_sectors");
 	tbg_mode->addActionButton("mapw_mode_things");
 	tbg_mode->addActionButton("mapw_mode_3d");
-	theApp->toggleAction("mapw_mode_lines");	// Lines mode by default
+	SAction::fromId("mapw_mode_lines")->setChecked();	// Lines mode by default
 	toolbar->addGroup(tbg_mode);
 
 	// Flat type toolbar
@@ -280,9 +280,9 @@ void MapEditorWindow::setupLayout()
 	toolbar->addGroup(tbg_flats);
 
 	// Toggle current flat type
-	if (flat_drawtype == 0) theApp->toggleAction("mapw_flat_none");
-	else if (flat_drawtype == 1) theApp->toggleAction("mapw_flat_untextured");
-	else theApp->toggleAction("mapw_flat_textured");
+	if (flat_drawtype == 0) SAction::fromId("mapw_flat_none")->setChecked();
+	else if (flat_drawtype == 1) SAction::fromId("mapw_flat_untextured")->setChecked();
+	else SAction::fromId("mapw_flat_textured")->setChecked();
 
 	// Edit toolbar
 	SToolBarGroup* tbg_edit = new SToolBarGroup(toolbar, "_Edit");

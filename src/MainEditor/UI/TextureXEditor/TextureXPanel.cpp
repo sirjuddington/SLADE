@@ -1512,24 +1512,24 @@ void TextureXPanel::onTextureListRightClick(wxListEvent& e)
 	// Create context menu
 	wxMenu context;
 	wxMenu* texport = new wxMenu();
-	theApp->getAction("txed_delete")->addToMenu(&context, true);
+	SAction::fromId("txed_delete")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("txed_rename")->addToMenu(&context, true);
+	SAction::fromId("txed_rename")->addToMenu(&context, true);
 	if (list_textures->GetSelectedItemCount() > 1)
-		theApp->getAction("txed_rename_each")->addToMenu(&context, true);
+		SAction::fromId("txed_rename_each")->addToMenu(&context, true);
 	if (texturex.getFormat() == TXF_TEXTURES)
-		theApp->getAction("txed_offsets")->addToMenu(&context, true);
-	theApp->getAction("txed_export")->addToMenu(texport, "Archive (as image)");
-	theApp->getAction("txed_extract")->addToMenu(texport, "File");
+		SAction::fromId("txed_offsets")->addToMenu(&context, true);
+	SAction::fromId("txed_export")->addToMenu(texport, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(texport, "File");
 	context.AppendSubMenu(texport, "&Export To");
 	context.AppendSeparator();
-	theApp->getAction("txed_copy")->addToMenu(&context, true);
-	theApp->getAction("txed_cut")->addToMenu(&context, true);
-	theApp->getAction("txed_paste")->addToMenu(&context, true);
+	SAction::fromId("txed_copy")->addToMenu(&context, true);
+	SAction::fromId("txed_cut")->addToMenu(&context, true);
+	SAction::fromId("txed_paste")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("txed_up")->addToMenu(&context, true);
-	theApp->getAction("txed_down")->addToMenu(&context, true);
-	theApp->getAction("txed_sort")->addToMenu(&context, true);
+	SAction::fromId("txed_up")->addToMenu(&context, true);
+	SAction::fromId("txed_down")->addToMenu(&context, true);
+	SAction::fromId("txed_sort")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

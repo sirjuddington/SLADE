@@ -481,8 +481,6 @@ IMPLEMENT_APP(SLADEWxApp)
 SLADEWxApp::SLADEWxApp()
 {
 	main_window = NULL;
-	cur_id = 26000;
-	action_invalid = NULL;
 	init_ok = false;
 	save_config = true;
 }
@@ -526,17 +524,19 @@ void SLADEWxApp::initLogFile()
  *******************************************************************/
 void SLADEWxApp::initActions()
 {
+	SAction::initWxId(26000);
+
 	// MainWindow
-	new SAction("main_exit", "E&xit", "exit", "Quit SLADE", "", 0, wxID_EXIT);
+	new SAction("main_exit", "E&xit", "exit", "Quit SLADE", "", SAction::Type::Normal, wxID_EXIT);
 	new SAction("main_undo", "Undo", "undo", "Undo", "Ctrl+Z");
 	new SAction("main_redo", "Redo", "redo", "Redo", "Ctrl+Y");
 	new SAction("main_setbra", "Set &Base Resource Archive", "archive", "Set the Base Resource Archive, to act as the program 'IWAD'");
-	new SAction("main_preferences", "&Preferences...", "settings", "Setup SLADE options and preferences", "", NORMAL, wxID_PREFERENCES);
+	new SAction("main_preferences", "&Preferences...", "settings", "Setup SLADE options and preferences", "", SAction::Type::Normal, wxID_PREFERENCES);
 	new SAction("main_showam", "&Archive Manager", "archive", "Toggle the Archive Manager window", "Ctrl+1");
 	new SAction("main_showconsole", "&Console", "console", "Toggle the Console window", "Ctrl+2");
 	new SAction("main_showundohistory", "&Undo History", "undo", "Toggle the Undo History window", "Ctrl+3");
 	new SAction("main_onlinedocs", "Online &Documentation", "wiki", "View SLADE documentation online");
-	new SAction("main_about", "&About", "logo", "Informaton about SLADE", "", 0, wxID_ABOUT);
+	new SAction("main_about", "&About", "logo", "Informaton about SLADE", "", SAction::Type::Normal, wxID_ABOUT);
 	new SAction("main_updatecheck", "Check for Updates...", "", "Check online for updates");
 
 	// ArchiveManagerPanel
@@ -557,7 +557,7 @@ void SLADEWxApp::initActions()
 	new SAction("aman_save_a", "&Save", "save", "Save the selected Archive", "Ctrl+S");
 	new SAction("aman_saveas_a", "Save &As", "saveas", "Save the selected Archive to a new file", "Ctrl+Shift+S");
 	new SAction("aman_close_a", "&Close", "close", "Close the selected Archive", "Ctrl+W");
-	new SAction("aman_recent", "<insert recent file name>", "", "", "", 0, -1, -1, 20);
+	new SAction("aman_recent", "<insert recent file name>", "", "", "", SAction::Type::Normal, -1, -1, 20);
 
 	// ArchivePanel
 	new SAction("arch_newentry", "New Entry", "newentry", "Create a new empty entry");
@@ -591,7 +591,7 @@ void SLADEWxApp::initActions()
 	new SAction("arch_entry_bookmark", "Bookmark", "bookmark", "Bookmark the current entry");
 	new SAction("arch_entry_opentab", "In New Tab", "", "Open selected entries in separate tabs");
 	new SAction("arch_entry_crc32", "Compute CRC-32 Checksum", "text", "Compute the CRC-32 checksums of the selected entries");
-	new SAction("arch_entry_openext", "", "", "", "", 0, -1, -1, 20);
+	new SAction("arch_entry_openext", "", "", "", "", SAction::Type::Normal, -1, -1, 20);
 	new SAction("arch_entry_setup_external", "Setup External Editors", "settings", "Open the preferences dialog to set up external editors");
 	new SAction("arch_bas_convertb", "Convert to SWANTBLS", "", "Convert any selected SWITCHES and ANIMATED entries to a single SWANTBLS entry");
 	new SAction("arch_bas_convertz", "Convert to ANIMDEFS", "", "Convert any selected SWITCHES and ANIMATED entries to a single ANIMDEFS entry");
@@ -624,21 +624,21 @@ void SLADEWxApp::initActions()
 	new SAction("pgfx_translate", "Colour Remap", "remap", "Remap a range of colours in the graphic to another range (paletted gfx only)");
 	new SAction("pgfx_colourise", "Colourise", "colourise", "Colourise the graphic");
 	new SAction("pgfx_tint", "Tint", "tint", "Tint the graphic by a colour/amount");
-	new SAction("pgfx_alph", "alPh Chunk", "", "Add/Remove alPh chunk to/from the PNG", "", SAction::CHECK);
-	new SAction("pgfx_trns", "tRNS Chunk", "", "Add/Remove tRNS chunk to/from the PNG", "", SAction::CHECK);
+	new SAction("pgfx_alph", "alPh Chunk", "", "Add/Remove alPh chunk to/from the PNG", "", SAction::Type::Check);
+	new SAction("pgfx_trns", "tRNS Chunk", "", "Add/Remove tRNS chunk to/from the PNG", "", SAction::Type::Check);
 	new SAction("pgfx_extract", "Extract All", "", "Extract all images in this entry to separate PNGs");
 	new SAction("pgfx_crop", "Crop", "settings", "Crop the graphic");
 	new SAction("pgfx_convert", "Convert to...", "convert", "Open the Gfx Conversion Dialog for the entry");
 	new SAction("pgfx_pngopt", "Optimize PNG", "pngopt", "Optimize PNG entry");
 
 	// ArchiveEntryList
-	new SAction("aelt_sizecol", "Size", "", "Show the size column", "", SAction::CHECK);
-	new SAction("aelt_typecol", "Type", "", "Show the type column", "", SAction::CHECK);
-	new SAction("aelt_indexcol", "Index", "", "Show the index column", "", SAction::CHECK);
-	new SAction("aelt_hrules", "Horizontal Rules", "", "Show horizontal rules between entries", "", SAction::CHECK);
-	new SAction("aelt_vrules", "Vertical Rules", "", "Show vertical rules between columns", "", SAction::CHECK);
-	new SAction("aelt_bgcolour", "Colour by Type", "", "Colour item background by entry type", "", SAction::CHECK);
-	new SAction("aelt_bgalt", "Alternating Row Colour", "", "Show alternating row colours", "", SAction::CHECK);
+	new SAction("aelt_sizecol", "Size", "", "Show the size column", "", SAction::Type::Check);
+	new SAction("aelt_typecol", "Type", "", "Show the type column", "", SAction::Type::Check);
+	new SAction("aelt_indexcol", "Index", "", "Show the index column", "", SAction::Type::Check);
+	new SAction("aelt_hrules", "Horizontal Rules", "", "Show horizontal rules between entries", "", SAction::Type::Check);
+	new SAction("aelt_vrules", "Vertical Rules", "", "Show vertical rules between columns", "", SAction::Type::Check);
+	new SAction("aelt_bgcolour", "Colour by Type", "", "Colour item background by entry type", "", SAction::Type::Check);
+	new SAction("aelt_bgalt", "Alternating Row Colour", "", "Show alternating row colours", "", SAction::Type::Check);
 
 	// TextureEditorPanel
 	new SAction("txed_new", "New Texture", "tex_new", "Create a new, empty texture", "kb:txed_tex_new");
@@ -706,7 +706,7 @@ void SLADEWxApp::initActions()
 	new SAction("data_change_value", "Change Value...", "rename", "Change the value of the selected cell(s)");
 
 	// TextEntryPanel
-	new SAction("ptxt_wrap", "Word Wrapping", "", "Toggle word wrapping", "", SAction::CHECK, -1, -1, 1, "txed_word_wrap");
+	new SAction("ptxt_wrap", "Word Wrapping", "", "Toggle word wrapping", "", SAction::Type::Check, -1, -1, 1, "txed_word_wrap");
 	new SAction("ptxt_find_replace", "Find+Replace...", "", "Find and (optionally) replace text", "kb:ted_findreplace");
 	new SAction("ptxt_fold_foldall", "Fold All", "minus", "Fold all possible code", "kb:ted_fold_foldall");
 	new SAction("ptxt_fold_unfoldall", "Unfold All", "plus", "Unfold all folded code", "kb:ted_fold_unfoldall");
@@ -723,19 +723,19 @@ void SLADEWxApp::initActions()
 	new SAction("mapw_setbra", "Set &Base Resource Archive", "archive", "Set the Base Resource Archive, to act as the program 'IWAD'");
 	new SAction("mapw_preferences", "&Preferences...", "settings", "Setup SLADE options and preferences");
 	int group_mode = SAction::newGroup();
-	new SAction("mapw_mode_vertices", "Vertices Mode", "verts", "Change to vertices editing mode", "kb:me2d_mode_vertices", SAction::RADIO, -1, group_mode);
-	new SAction("mapw_mode_lines", "Lines Mode", "lines", "Change to lines editing mode", "kb:me2d_mode_lines", SAction::RADIO, -1, group_mode);
-	new SAction("mapw_mode_sectors", "Sectors Mode", "sectors", "Change to sectors editing mode", "kb:me2d_mode_sectors", SAction::RADIO, -1, group_mode);
-	new SAction("mapw_mode_things", "Things Mode", "things", "Change to things editing mode", "kb:me2d_mode_things", SAction::RADIO, -1, group_mode);
-	new SAction("mapw_mode_3d", "3d Mode", "3d", "Change to 3d editing mode", "kb:map_toggle_3d", SAction::RADIO, -1, group_mode);
+	new SAction("mapw_mode_vertices", "Vertices Mode", "verts", "Change to vertices editing mode", "kb:me2d_mode_vertices", SAction::Type::Radio, -1, group_mode);
+	new SAction("mapw_mode_lines", "Lines Mode", "lines", "Change to lines editing mode", "kb:me2d_mode_lines", SAction::Type::Radio, -1, group_mode);
+	new SAction("mapw_mode_sectors", "Sectors Mode", "sectors", "Change to sectors editing mode", "kb:me2d_mode_sectors", SAction::Type::Radio, -1, group_mode);
+	new SAction("mapw_mode_things", "Things Mode", "things", "Change to things editing mode", "kb:me2d_mode_things", SAction::Type::Radio, -1, group_mode);
+	new SAction("mapw_mode_3d", "3d Mode", "3d", "Change to 3d editing mode", "kb:map_toggle_3d", SAction::Type::Radio, -1, group_mode);
 	int group_flat_type = SAction::newGroup();
-	new SAction("mapw_flat_none", "Wireframe", "flat_w", "Don't show flats (wireframe)", "", SAction::RADIO, -1, group_flat_type);
-	new SAction("mapw_flat_untextured", "Untextured", "flat_u", "Show untextured flats", "", SAction::RADIO, -1, group_flat_type);
-	new SAction("mapw_flat_textured", "Textured", "flat_t", "Show textured flats", "", SAction::RADIO, -1, group_flat_type);
+	new SAction("mapw_flat_none", "Wireframe", "flat_w", "Don't show flats (wireframe)", "", SAction::Type::Radio, -1, group_flat_type);
+	new SAction("mapw_flat_untextured", "Untextured", "flat_u", "Show untextured flats", "", SAction::Type::Radio, -1, group_flat_type);
+	new SAction("mapw_flat_textured", "Textured", "flat_t", "Show textured flats", "", SAction::Type::Radio, -1, group_flat_type);
 	int group_sector_mode = SAction::newGroup();
-	new SAction("mapw_sectormode_normal", "Normal (Both)", "sector_both", "Edit sector floors and ceilings", "", SAction::RADIO, -1, group_sector_mode);
-	new SAction("mapw_sectormode_floor", "Floors", "sector_floor", "Edit sector floors", "", SAction::RADIO, -1, group_sector_mode);
-	new SAction("mapw_sectormode_ceiling", "Ceilings", "sector_ceiling", "Edit sector ceilings", "", SAction::RADIO, -1, group_sector_mode);
+	new SAction("mapw_sectormode_normal", "Normal (Both)", "sector_both", "Edit sector floors and ceilings", "", SAction::Type::Radio, -1, group_sector_mode);
+	new SAction("mapw_sectormode_floor", "Floors", "sector_floor", "Edit sector floors", "", SAction::Type::Radio, -1, group_sector_mode);
+	new SAction("mapw_sectormode_ceiling", "Ceilings", "sector_ceiling", "Edit sector ceilings", "", SAction::Type::Radio, -1, group_sector_mode);
 	new SAction("mapw_showproperties", "&Item Properties", "properties", "Toggle the Item Properties window", "Ctrl+1");
 	new SAction("mapw_showconsole", "&Console", "console", "Toggle the Console window", "Ctrl+2");
 	new SAction("mapw_showundohistory", "&Undo History", "undo", "Toggle the Undo History window", "Ctrl+3");
@@ -771,7 +771,7 @@ void SLADEWxApp::initActions()
 	new SAction("mapw_script_save", "Save", "save", "Save changes to scripts");
 	new SAction("mapw_script_compile", "Compile", "compile", "Compile scripts");
 	new SAction("mapw_script_jumpto", "Jump To...", "up", "Jump to a specific script/function");
-	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK, -1, -1, 1, "script_show_language_list");
+	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::Type::Check, -1, -1, 1, "script_show_language_list");
 }
 
 /* SLADEWxApp::singleInstanceCheck
@@ -839,9 +839,6 @@ bool SLADEWxApp::OnInit()
 	// Start up file listener
 	file_listener = new MainAppFileListener();
 	file_listener->Create("SLADE_MAFL");
-
-	// Init variables
-	action_invalid = new SAction("invalid", "Invalid Action", "", "Something's gone wrong here");
 
 	// Setup system options
 	wxSystemOptions::SetOption("mac.listctrl.always_use_generic", 1);
@@ -1277,30 +1274,13 @@ void SLADEWxApp::exitApp(bool save_config)
 	theMainWindow->Close();
 }
 
-/* SLADEWxApp::getAction
- * Returns the SAction matching [id]
- *******************************************************************/
-SAction* SLADEWxApp::getAction(string id)
-{
-	// Find matching action
-	size_t actions_size = actions.size();
-	for (unsigned a = 0; a < actions_size; a++)
-	{
-		if (S_CMP(actions[a]->getId(), id))
-			return actions[a];
-	}
-
-	// Not found
-	return action_invalid;
-}
-
 /* SLADEWxApp::doAction
  * Performs the SAction matching [id]
  *******************************************************************/
 bool SLADEWxApp::doAction(string id, int wx_id_offset)
 {
 	// Toggle action if necessary
-	toggleAction(id);
+	SAction::fromId(id)->toggle();
 
 	// Send action to all handlers
 	bool handled = false;
@@ -1327,32 +1307,6 @@ bool SLADEWxApp::doAction(string id, int wx_id_offset)
 	return handled;
 }
 
-/* SLADEWxApp::toggleAction
- * Toggles the SAction matching [id]
- *******************************************************************/
-void SLADEWxApp::toggleAction(string id)
-{
-	// Check action type for check/radio toggle
-	SAction* action = getAction(id);
-
-	// Type is 'check', just toggle it
-	if (action && action->type == SAction::CHECK)
-		action->setToggled(!action->toggled);
-
-	// Type is 'radio', toggle this and un-toggle others in the group
-	else if (action && action->type == SAction::RADIO && action->group >= 0)
-	{
-		// Go through and toggle off all other actions in the same group
-		for (unsigned a = 0; a < actions.size(); a++)
-		{
-			if (actions[a]->group == action->group)
-				actions[a]->setToggled(false);
-		}
-
-		action->setToggled(true);
-	}
-}
-
 
 /*******************************************************************
  * MAINAPP CLASS EVENTS
@@ -1363,35 +1317,25 @@ void SLADEWxApp::toggleAction(string id)
  *******************************************************************/
 void SLADEWxApp::onMenu(wxCommandEvent& e)
 {
-	// Find applicable action
-	string action = "";
-	SAction* s_action = NULL;
-	int wx_id_offset = 0;
-	for (unsigned a = 0; a < actions.size(); a++)
-	{
-		if (actions[a]->isWxId(e.GetId()))
-		{
-			action = actions[a]->getId();
-			wx_id_offset = e.GetId() - actions[a]->getWxId();
-			s_action = actions[a];
-			break;
-		}
-	}
-
-	// If action is valid, send to all action handlers
 	bool handled = false;
-	if (!action.IsEmpty())
+
+	// Find applicable action
+	auto s_action = SAction::fromWxId(e.GetId());
+	auto action = s_action->getId();
+
+	// Handle action if valid
+	if (action != "invalid")
 	{
 		current_action = action;
-		handled = doAction(action, wx_id_offset);
+		handled = doAction(action, e.GetId() - s_action->getWxId());
 
 		// Check if triggering object is a menu item
-		if (s_action && s_action->type == SAction::CHECK)
+		if (s_action && s_action->getType() == SAction::Type::Check)
 		{
 			if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
 			{
-				wxMenuItem* item = (wxMenuItem*)e.GetEventObject();
-				item->Check(s_action->toggled);
+				auto item = (wxMenuItem*)e.GetEventObject();
+				item->Check(s_action->isChecked());
 			}
 		}
 

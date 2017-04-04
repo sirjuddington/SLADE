@@ -529,11 +529,11 @@ void SwitchesEntryPanel::onListRightClick(wxListEvent& e)
 {
 	// Create context menu
 	wxMenu context;
-	theApp->getAction("swch_delete")->addToMenu(&context, true);
-	theApp->getAction("swch_new")->addToMenu(&context, true);
+	SAction::fromId("swch_delete")->addToMenu(&context, true);
+	SAction::fromId("swch_new")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("swch_up")->addToMenu(&context, true);
-	theApp->getAction("swch_down")->addToMenu(&context, true);
+	SAction::fromId("swch_up")->addToMenu(&context, true);
+	SAction::fromId("swch_down")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

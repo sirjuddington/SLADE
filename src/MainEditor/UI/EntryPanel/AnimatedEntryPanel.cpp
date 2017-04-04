@@ -563,11 +563,11 @@ void AnimatedEntryPanel::onListRightClick(wxListEvent& e)
 {
 	// Create context menu
 	wxMenu context;
-	theApp->getAction("anim_delete")->addToMenu(&context, true);
-	theApp->getAction("anim_new")->addToMenu(&context, true);
+	SAction::fromId("anim_delete")->addToMenu(&context, true);
+	SAction::fromId("anim_new")->addToMenu(&context, true);
 	context.AppendSeparator();
-	theApp->getAction("anim_up")->addToMenu(&context, true);
-	theApp->getAction("anim_down")->addToMenu(&context, true);
+	SAction::fromId("anim_up")->addToMenu(&context, true);
+	SAction::fromId("anim_down")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

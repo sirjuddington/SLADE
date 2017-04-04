@@ -273,47 +273,47 @@ void MainWindow::setupLayout()
 
 	// File menu
 	wxMenu* fileNewMenu = new wxMenu("");
-	theApp->getAction("aman_newwad")->addToMenu(fileNewMenu, "&Wad Archive");
-	theApp->getAction("aman_newzip")->addToMenu(fileNewMenu, "&Zip Archive");
-	theApp->getAction("aman_newmap")->addToMenu(fileNewMenu, "&Map");
+	SAction::fromId("aman_newwad")->addToMenu(fileNewMenu, "&Wad Archive");
+	SAction::fromId("aman_newzip")->addToMenu(fileNewMenu, "&Zip Archive");
+	SAction::fromId("aman_newmap")->addToMenu(fileNewMenu, "&Map");
 	wxMenu* fileMenu = new wxMenu("");
 	fileMenu->AppendSubMenu(fileNewMenu, "&New", "Create a new Archive");
-	theApp->getAction("aman_open")->addToMenu(fileMenu);
-	theApp->getAction("aman_opendir")->addToMenu(fileMenu);
+	SAction::fromId("aman_open")->addToMenu(fileMenu);
+	SAction::fromId("aman_opendir")->addToMenu(fileMenu);
 	fileMenu->AppendSeparator();
-	theApp->getAction("aman_save")->addToMenu(fileMenu);
-	theApp->getAction("aman_saveas")->addToMenu(fileMenu);
-	theApp->getAction("aman_saveall")->addToMenu(fileMenu);
+	SAction::fromId("aman_save")->addToMenu(fileMenu);
+	SAction::fromId("aman_saveas")->addToMenu(fileMenu);
+	SAction::fromId("aman_saveall")->addToMenu(fileMenu);
 	fileMenu->AppendSubMenu(panel_archivemanager->getRecentMenu(), "&Recent Files");
 	fileMenu->AppendSeparator();
-	theApp->getAction("aman_close")->addToMenu(fileMenu);
-	theApp->getAction("aman_closeall")->addToMenu(fileMenu);
+	SAction::fromId("aman_close")->addToMenu(fileMenu);
+	SAction::fromId("aman_closeall")->addToMenu(fileMenu);
 	fileMenu->AppendSeparator();
-	theApp->getAction("main_exit")->addToMenu(fileMenu);
+	SAction::fromId("main_exit")->addToMenu(fileMenu);
 	menu->Append(fileMenu, "&File");
 
 	// Edit menu
 	wxMenu* editorMenu = new wxMenu("");
-	theApp->getAction("main_undo")->addToMenu(editorMenu);
-	theApp->getAction("main_redo")->addToMenu(editorMenu);
+	SAction::fromId("main_undo")->addToMenu(editorMenu);
+	SAction::fromId("main_redo")->addToMenu(editorMenu);
 	editorMenu->AppendSeparator();
-	theApp->getAction("main_setbra")->addToMenu(editorMenu);
-	theApp->getAction("main_preferences")->addToMenu(editorMenu);
+	SAction::fromId("main_setbra")->addToMenu(editorMenu);
+	SAction::fromId("main_preferences")->addToMenu(editorMenu);
 	menu->Append(editorMenu, "E&dit");
 
 	// View menu
 	wxMenu* viewMenu = new wxMenu("");
-	theApp->getAction("main_showam")->addToMenu(viewMenu);
-	theApp->getAction("main_showconsole")->addToMenu(viewMenu);
-	theApp->getAction("main_showundohistory")->addToMenu(viewMenu);
+	SAction::fromId("main_showam")->addToMenu(viewMenu);
+	SAction::fromId("main_showconsole")->addToMenu(viewMenu);
+	SAction::fromId("main_showundohistory")->addToMenu(viewMenu);
 	menu->Append(viewMenu, "&View");
 
 	// Help menu
 	wxMenu* helpMenu = new wxMenu("");
-	theApp->getAction("main_onlinedocs")->addToMenu(helpMenu);
-	theApp->getAction("main_about")->addToMenu(helpMenu);
+	SAction::fromId("main_onlinedocs")->addToMenu(helpMenu);
+	SAction::fromId("main_about")->addToMenu(helpMenu);
 #ifdef __WXMSW__
-	theApp->getAction("main_updatecheck")->addToMenu(helpMenu);
+	SAction::fromId("main_updatecheck")->addToMenu(helpMenu);
 #endif
 	menu->Append(helpMenu, "&Help");
 

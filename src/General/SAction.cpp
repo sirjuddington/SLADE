@@ -40,7 +40,10 @@
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-int SAction::n_groups = 0;
+int					SAction::n_groups = 0;
+int					SAction::cur_id = 0;
+vector<SAction*>	SAction::actions;
+SAction*			SAction::action_invalid = nullptr;
 
 
 /*******************************************************************
@@ -56,43 +59,43 @@ SAction::SAction(
 	string icon,
 	string helptext,
 	string shortcut,
-	int type,
+	Type type,
 	int custom_wxid,
 	int radio_group,
 	int reserve_ids,
 	string linked_cvar
-	)
+) :
+	id { id },
+	reserved_ids{ reserve_ids },
+	text{ text },
+	icon{ icon },
+	helptext{ helptext },
+	shortcut{ shortcut },
+	type{ type },
+	group{ radio_group },
+	checked{ false },
+	linked_cvar{ nullptr }
 {
-	// Init variables
-	this->id = id;
-	this->text = text;
-	this->icon = icon;
-	this->helptext = helptext;
-	this->type = type;
-	this->shortcut = shortcut;
-	this->group = radio_group;
-	this->toggled = false;
-	this->reserved_ids = reserve_ids;
-	this->linked_cvar = NULL;
+	// Add to actions
+	actions.push_back(this);
 
-	// Add to SLADEWxApp
-	theApp->actions.push_back(this);
+	// Setup wxWidgets id stuff
 	if (custom_wxid == -1)
 	{
-		wx_id = theApp->cur_id;
-		theApp->cur_id += reserved_ids;
+		wx_id = cur_id;
+		cur_id += reserved_ids;
 	}
 	else
 		wx_id = custom_wxid;
 
 	// Setup linked cvar
-	if (type == CHECK && !linked_cvar.IsEmpty())
+	if (type == Type::Check && !linked_cvar.IsEmpty())
 	{
-		CVar* cvar = get_cvar(linked_cvar);
+		auto cvar = get_cvar(linked_cvar);
 		if (cvar && cvar->type == CVAR_BOOLEAN)
 		{
 			this->linked_cvar = (CBoolCVar*)cvar;
-			toggled = cvar->GetValue().Bool;
+			checked = cvar->GetValue().Bool;
 		}
 	}
 }
@@ -108,15 +111,15 @@ SAction::~SAction()
  * Returns the shortcut key for this action as a string, taking into
  * account if the shortcut is a keybind
  *******************************************************************/
-string SAction::getShortcutText()
+string SAction::getShortcutText() const
 {
 	if (shortcut.StartsWith("kb:"))
 	{
-		keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
+		auto kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
 		if (kp.key != "")
 			return kp.as_string();
-		else
-			return "INVALID KEYBIND";
+
+		return "INVALID KEYBIND";
 	}
 
 	return shortcut;
@@ -126,11 +129,32 @@ string SAction::getShortcutText()
  * Sets the toggled state of the action to [toggle], and updates the
  * value of the linked cvar (if any) to match
  *******************************************************************/
-void SAction::setToggled(bool toggle)
+void SAction::setChecked(bool toggle)
 {
-	toggled = toggle;
+	if (type == Type::Normal)
+	{
+		checked = false;
+		return;
+	}
+
+	// If toggling a radio action, un-toggle others in the group
+	if (toggle && type == Type::Radio && group >= 0)
+	{
+		// Go through and toggle off all other actions in the same group
+		for (unsigned a = 0; a < actions.size(); a++)
+		{
+			if (actions[a]->group == group)
+				actions[a]->setChecked(false);
+		}
+
+		checked = true;
+	}
+	else
+		checked = toggle;	// Otherwise just set toggled state
+
+	// Update linked CVar
 	if (linked_cvar)
-		*linked_cvar = toggle;
+		*linked_cvar = checked;
 }
 
 /* SAction::addToMenu
@@ -151,12 +175,10 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 
 	// Determine shortcut key
 	string sc = shortcut;
-	bool is_bind = false;
 	bool sc_control = shortcut.Contains("Ctrl") || shortcut.Contains("Alt");
 	if (shortcut.StartsWith("kb:"))
 	{
-		is_bind = true;
-		keypress_t kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
+		auto kp = KeyBind::getBind(shortcut.Mid(3)).getKey(0);
 		if (kp.key != "")
 			sc = kp.as_string();
 		else
@@ -176,14 +198,14 @@ bool SAction::addToMenu(wxMenu* menu, bool show_shortcut, string text_override, 
 	int wid = wx_id + wx_id_offset;
 	string real_icon = (icon_override == "NO") ? icon : icon_override;
 	if (!sc.IsEmpty()) help += S_FMT(" (Shortcut: %s)", sc);
-	if (type == NORMAL)
+	if (type == Type::Normal)
 		menu->Append(createMenuItem(menu, wid, item_text, help, real_icon));
-	else if (type == CHECK)
+	else if (type == Type::Check)
 	{
-		wxMenuItem* item = menu->AppendCheckItem(wid, item_text, help);
-		item->Check(toggled);
+		auto item = menu->AppendCheckItem(wid, item_text, help);
+		item->Check(checked);
 	}
-	else if (type == RADIO)
+	else if (type == Type::Radio)
 		menu->AppendRadioItem(wid, item_text, help);
 
 	return true;
@@ -205,14 +227,13 @@ bool SAction::addToToolbar(wxAuiToolBar* toolbar, string icon_override, int wx_i
 		useicon = icon_override;
 
 	// Append this action to the toolbar
-	wxAuiToolBarItem* item = NULL;
 	int wid = wx_id + wx_id_offset;
-	if (type == NORMAL)
-		item = toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext);
-	else if (type == CHECK)
-		item = toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
-	else if (type == RADIO)
-		item = toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
+	if (type == Type::Normal)
+		toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext);
+	else if (type == Type::Check)
+		toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
+	else if (type == Type::Radio)
+		toolbar->AddTool(wid, text, Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
 
 	return true;
 }
@@ -234,14 +255,66 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_o
 
 	// Append this action to the toolbar
 	int wid = wx_id + wx_id_offset;
-	if (type == NORMAL)
+	if (type == Type::Normal)
 		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext);
-	else if (type == CHECK)
+	else if (type == Type::Check)
 		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_CHECK);
-	else if (type == RADIO)
+	else if (type == Type::Radio)
 		toolbar->AddTool(wid, "", Icons::getIcon(Icons::GENERAL, useicon), helptext, wxITEM_RADIO);
 
 	return true;
+}
+
+
+/*******************************************************************
+ * SACTION CLASS STATIC FUNCTIONS
+ *******************************************************************/
+
+/* SAction::newGroup
+ * Returns a new, unused SAction group id
+ *******************************************************************/
+int SAction::newGroup()
+{
+	return n_groups++;
+}
+
+/* SAction::fromId
+ * Returns the SAction with id matching [id]
+ *******************************************************************/
+SAction* SAction::fromId(const string& id)
+{
+	// Find action with id
+	for (auto& action : actions)
+		if (S_CMPNOCASE(action->id, id))
+			return action;
+
+	// Not found
+	return invalidAction();
+}
+
+/* SAction::fromWxId
+ * Returns the SAction covering wxWidgets id [wx_id]
+ *******************************************************************/
+SAction* SAction::fromWxId(int wx_id)
+{
+	// Find action with id
+	for (auto& action : actions)
+		if (action->isWxId(wx_id))
+			return action;
+
+	// Not found
+	return invalidAction();
+}
+
+/* SAction::invalidAction
+ * Returns the global 'invalid' SAction, creating it if necessary
+ *******************************************************************/
+SAction* SAction::invalidAction()
+{
+	if (!action_invalid)
+		action_invalid = new SAction("invalid", "Invalid Action", "", "Something's gone wrong here");
+
+	return action_invalid;
 }
 
 

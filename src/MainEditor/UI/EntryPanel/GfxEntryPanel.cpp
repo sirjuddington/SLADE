@@ -273,9 +273,9 @@ bool GfxEntryPanel::saveEntry()
 		bool alph = EntryOperations::getalPhChunk(entry);
 		bool trns = EntryOperations::gettRNSChunk(entry);
 
-		if (alph != menu_custom->IsChecked(theApp->getAction("pgfx_alph")->getWxId()))
+		if (alph != menu_custom->IsChecked(SAction::fromId("pgfx_alph")->getWxId()))
 			EntryOperations::modifyalPhChunk(entry, !alph);
-		if (trns != menu_custom->IsChecked(theApp->getAction("pgfx_trns")->getWxId()))
+		if (trns != menu_custom->IsChecked(SAction::fromId("pgfx_trns")->getWxId()))
 			EntryOperations::modifytRNSChunk(entry, !trns);
 	}
 
@@ -375,12 +375,12 @@ void GfxEntryPanel::refresh()
 	spin_yoffset->SetValue(getImage()->offset().y);
 
 	// Get some needed menu ids
-	int MENU_GFXEP_PNGOPT = theApp->getAction("pgfx_pngopt")->getWxId();
-	int MENU_GFXEP_ALPH = theApp->getAction("pgfx_alph")->getWxId();
-	int MENU_GFXEP_TRNS = theApp->getAction("pgfx_trns")->getWxId();
-	int MENU_GFXEP_EXTRACT = theApp->getAction("pgfx_extract")->getWxId();
-	int MENU_GFXEP_TRANSLATE = theApp->getAction("pgfx_translate")->getWxId();
-	int MENU_ARCHGFX_EXPORTPNG = theApp->getAction("arch_gfx_exportpng")->getWxId();
+	int MENU_GFXEP_PNGOPT = SAction::fromId("pgfx_pngopt")->getWxId();
+	int MENU_GFXEP_ALPH = SAction::fromId("pgfx_alph")->getWxId();
+	int MENU_GFXEP_TRNS = SAction::fromId("pgfx_trns")->getWxId();
+	int MENU_GFXEP_EXTRACT = SAction::fromId("pgfx_extract")->getWxId();
+	int MENU_GFXEP_TRANSLATE = SAction::fromId("pgfx_translate")->getWxId();
+	int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
 
 	// Set PNG check menus
 	if (this->entry->getType() != NULL && this->entry->getType()->getFormat() == "img_png")
@@ -840,10 +840,10 @@ bool GfxEntryPanel::handleAction(string id)
 			setModified();
 
 			// Fix tRNS status if we converted to paletted PNG
-			int MENU_GFXEP_PNGOPT = theApp->getAction("pgfx_pngopt")->getWxId();
-			int MENU_GFXEP_ALPH = theApp->getAction("pgfx_alph")->getWxId();
-			int MENU_GFXEP_TRNS = theApp->getAction("pgfx_trns")->getWxId();
-			int MENU_ARCHGFX_EXPORTPNG = theApp->getAction("arch_gfx_exportpng")->getWxId();
+			int MENU_GFXEP_PNGOPT = SAction::fromId("pgfx_pngopt")->getWxId();
+			int MENU_GFXEP_ALPH = SAction::fromId("pgfx_alph")->getWxId();
+			int MENU_GFXEP_TRNS = SAction::fromId("pgfx_trns")->getWxId();
+			int MENU_ARCHGFX_EXPORTPNG = SAction::fromId("arch_gfx_exportpng")->getWxId();
 			if (format->getName() == "PNG")
 			{
 				ArchiveEntry temp;
@@ -887,25 +887,25 @@ bool GfxEntryPanel::handleAction(string id)
  *******************************************************************/
 bool GfxEntryPanel::fillCustomMenu(wxMenu* custom)
 {
-	theApp->getAction("pgfx_mirror")->addToMenu(custom);
-	theApp->getAction("pgfx_flip")->addToMenu(custom);
-	theApp->getAction("pgfx_rotate")->addToMenu(custom);
-	theApp->getAction("pgfx_convert")->addToMenu(custom);
+	SAction::fromId("pgfx_mirror")->addToMenu(custom);
+	SAction::fromId("pgfx_flip")->addToMenu(custom);
+	SAction::fromId("pgfx_rotate")->addToMenu(custom);
+	SAction::fromId("pgfx_convert")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("pgfx_translate")->addToMenu(custom);
-	theApp->getAction("pgfx_colourise")->addToMenu(custom);
-	theApp->getAction("pgfx_tint")->addToMenu(custom);
-	//theApp->getAction("pgfx_crop")->addToMenu(custom);
+	SAction::fromId("pgfx_translate")->addToMenu(custom);
+	SAction::fromId("pgfx_colourise")->addToMenu(custom);
+	SAction::fromId("pgfx_tint")->addToMenu(custom);
+	//SAction::fromId("pgfx_crop")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("pgfx_alph")->addToMenu(custom);
-	theApp->getAction("pgfx_trns")->addToMenu(custom);
-	theApp->getAction("pgfx_pngopt")->addToMenu(custom);
+	SAction::fromId("pgfx_alph")->addToMenu(custom);
+	SAction::fromId("pgfx_trns")->addToMenu(custom);
+	SAction::fromId("pgfx_pngopt")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("arch_gfx_exportpng")->addToMenu(custom);
-	theApp->getAction("pgfx_extract")->addToMenu(custom);
+	SAction::fromId("arch_gfx_exportpng")->addToMenu(custom);
+	SAction::fromId("pgfx_extract")->addToMenu(custom);
 	custom->AppendSeparator();
-	theApp->getAction("arch_gfx_addptable")->addToMenu(custom);
-	theApp->getAction("arch_gfx_addtexturex")->addToMenu(custom);
+	SAction::fromId("arch_gfx_addptable")->addToMenu(custom);
+	SAction::fromId("arch_gfx_addtexturex")->addToMenu(custom);
 	// TODO: Should change the way gfx conversion and offset modification work so I can put them in this menu
 
 	return true;

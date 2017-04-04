@@ -408,7 +408,7 @@ void ArchiveManagerPanel::refreshRecentFileList()
 	list_recent->ClearAll();
 
 	// Get first recent file menu id
-	SAction* a_recent = theApp->getAction("aman_recent");
+	SAction* a_recent = SAction::fromId("aman_recent");
 	int id_recent_start = a_recent->getWxId();
 
 	// Clear menu; needs to do with a count down rather than up
@@ -1772,7 +1772,7 @@ bool ArchiveManagerPanel::handleAction(string id)
 	else if (id == "aman_recent")
 	{
 		// Get recent file index
-		unsigned index = wx_id_offset;//theApp->getAction(id)->getWxId() - theApp->getAction("aman_recent1")->getWxId();
+		unsigned index = wx_id_offset;//SAction::fromId(id)->getWxId() - SAction::fromId("aman_recent1")->getWxId();
 
 		// Open it
 		openFile(theArchiveManager->recentFile(index));
@@ -1970,9 +1970,9 @@ void ArchiveManagerPanel::onListArchivesRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_save_a")->addToMenu(&context, true);
-	theApp->getAction("aman_saveas_a")->addToMenu(&context, true);
-	theApp->getAction("aman_close_a")->addToMenu(&context, true);
+	SAction::fromId("aman_save_a")->addToMenu(&context, true);
+	SAction::fromId("aman_saveas_a")->addToMenu(&context, true);
+	SAction::fromId("aman_close_a")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -1998,8 +1998,8 @@ void ArchiveManagerPanel::onListRecentRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_recent_open")->addToMenu(&context, true);
-	theApp->getAction("aman_recent_remove")->addToMenu(&context, true);
+	SAction::fromId("aman_recent_open")->addToMenu(&context, true);
+	SAction::fromId("aman_recent_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);
@@ -2024,8 +2024,8 @@ void ArchiveManagerPanel::onListBookmarksRightClick(wxListEvent& e)
 {
 	// Generate context menu
 	wxMenu context;
-	theApp->getAction("aman_bookmark_go")->addToMenu(&context, true);
-	theApp->getAction("aman_bookmark_remove")->addToMenu(&context, true);
+	SAction::fromId("aman_bookmark_go")->addToMenu(&context, true);
+	SAction::fromId("aman_bookmark_remove")->addToMenu(&context, true);
 
 	// Pop it up
 	PopupMenu(&context);

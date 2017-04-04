@@ -2381,12 +2381,12 @@ void MapCanvas::changeEditMode(int mode)
 	// Update toolbar
 	if (mode != mode_prev) theMapEditor->removeAllCustomToolBars();
 	if (mode == MapEditor::MODE_VERTICES)
-		theApp->toggleAction("mapw_mode_vertices");
+		SAction::fromId("mapw_mode_vertices")->setChecked();
 	else if (mode == MapEditor::MODE_LINES)
-		theApp->toggleAction("mapw_mode_lines");
+		SAction::fromId("mapw_mode_lines")->setChecked();
 	else if (mode == MapEditor::MODE_SECTORS)
 	{
-		theApp->toggleAction("mapw_mode_sectors");
+		SAction::fromId("mapw_mode_sectors")->setChecked();
 
 		// Sector mode toolbar
 		if (mode_prev != MapEditor::MODE_SECTORS)
@@ -2400,14 +2400,14 @@ void MapCanvas::changeEditMode(int mode)
 
 		// Toggle current sector mode
 		if (editor->sectorEditMode() == MapEditor::SECTOR_BOTH)
-			theApp->toggleAction("mapw_sectormode_normal");
+			SAction::fromId("mapw_sectormode_normal")->setChecked();
 		else if (editor->sectorEditMode() == MapEditor::SECTOR_FLOOR)
-			theApp->toggleAction("mapw_sectormode_floor");
+			SAction::fromId("mapw_sectormode_floor")->setChecked();
 		else if (editor->sectorEditMode() == MapEditor::SECTOR_CEILING)
-			theApp->toggleAction("mapw_sectormode_ceiling");
+			SAction::fromId("mapw_sectormode_ceiling")->setChecked();
 	}
 	else if (mode == MapEditor::MODE_THINGS)
-		theApp->toggleAction("mapw_mode_things");
+		SAction::fromId("mapw_mode_things")->setChecked();
 	else if (mode == MapEditor::MODE_3D)
 	{
 		KeyBind::releaseAll();
@@ -3099,9 +3099,18 @@ void MapCanvas::keyBinds2d(string name)
 			// Editor message and toolbar update
 			switch (flat_drawtype)
 			{
-			case 0: editor->addEditorMessage("Flats: None"); theApp->toggleAction("mapw_flat_none"); break;
-			case 1: editor->addEditorMessage("Flats: Untextured"); theApp->toggleAction("mapw_flat_untextured"); break;
-			case 2: editor->addEditorMessage("Flats: Textured"); theApp->toggleAction("mapw_flat_textured"); break;
+			case 0:
+				editor->addEditorMessage("Flats: None");
+				SAction::fromId("mapw_flat_none")->setChecked();
+				break;
+			case 1:
+				editor->addEditorMessage("Flats: Untextured");
+				SAction::fromId("mapw_flat_untextured")->setChecked();
+				break;
+			case 2:
+				editor->addEditorMessage("Flats: Textured");
+				SAction::fromId("mapw_flat_textured")->setChecked();
+				break;
 			default: break;
 			};
 
@@ -4200,28 +4209,28 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 			wxMenu menu_context;
 
 			// Set 3d camera
-			theApp->getAction("mapw_camera_set")->addToMenu(&menu_context, true);
+			SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
 
 			// Run from here
-			theApp->getAction("mapw_run_map_here")->addToMenu(&menu_context, true);
+			SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
 
 			// Mode-specific
 			bool object_selected = (editor->selectionSize() > 0 || editor->hilightItem() >= 0);
 			if (editor->editMode() == MapEditor::MODE_VERTICES)
 			{
 				menu_context.AppendSeparator();
-				theApp->getAction("mapw_vertex_create")->addToMenu(&menu_context, true);
+				SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
 			}
 			else if (editor->editMode() == MapEditor::MODE_LINES)
 			{
 				if (object_selected)
 				{
 					menu_context.AppendSeparator();
-					theApp->getAction("mapw_line_changetexture")->addToMenu(&menu_context, true);
-					theApp->getAction("mapw_line_changespecial")->addToMenu(&menu_context, true);
-					theApp->getAction("mapw_line_tagedit")->addToMenu(&menu_context, true);
-					theApp->getAction("mapw_line_flip")->addToMenu(&menu_context, true);
-					theApp->getAction("mapw_line_correctsectors")->addToMenu(&menu_context, true);
+					SAction::fromId("mapw_line_changetexture")->addToMenu(&menu_context, true);
+					SAction::fromId("mapw_line_changespecial")->addToMenu(&menu_context, true);
+					SAction::fromId("mapw_line_tagedit")->addToMenu(&menu_context, true);
+					SAction::fromId("mapw_line_flip")->addToMenu(&menu_context, true);
+					SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
 				}
 			}
 			else if (editor->editMode() == MapEditor::MODE_THINGS)
@@ -4229,37 +4238,37 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 				menu_context.AppendSeparator();
 
 				if (object_selected)
-					theApp->getAction("mapw_thing_changetype")->addToMenu(&menu_context, true);
+					SAction::fromId("mapw_thing_changetype")->addToMenu(&menu_context, true);
 
-				theApp->getAction("mapw_thing_create")->addToMenu(&menu_context, true);
+				SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
 			}
 			else if (editor->editMode() == MapEditor::MODE_SECTORS)
 			{
 				if (object_selected)
 				{
-					theApp->getAction("mapw_sector_changetexture")->addToMenu(&menu_context, true);
-					theApp->getAction("mapw_sector_changespecial")->addToMenu(&menu_context, true);
+					SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
+					SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
 					if (editor->getSelection().size() > 1)
 					{
-						theApp->getAction("mapw_sector_join")->addToMenu(&menu_context, true);
-						theApp->getAction("mapw_sector_join_keep")->addToMenu(&menu_context, true);
+						SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
+						SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);
 					}
 				}
 
-				theApp->getAction("mapw_sector_create")->addToMenu(&menu_context, true);
+				SAction::fromId("mapw_sector_create")->addToMenu(&menu_context, true);
 			}
 
 			if (object_selected)
 			{
 				// General edit
 				menu_context.AppendSeparator();
-				theApp->getAction("mapw_edit_objects")->addToMenu(&menu_context, true);
-				theApp->getAction("mapw_mirror_x")->addToMenu(&menu_context, true);
-				theApp->getAction("mapw_mirror_y")->addToMenu(&menu_context, true);
+				SAction::fromId("mapw_edit_objects")->addToMenu(&menu_context, true);
+				SAction::fromId("mapw_mirror_x")->addToMenu(&menu_context, true);
+				SAction::fromId("mapw_mirror_y")->addToMenu(&menu_context, true);
 
 				// Properties
 				menu_context.AppendSeparator();
-				theApp->getAction("mapw_item_properties")->addToMenu(&menu_context, true);
+				SAction::fromId("mapw_item_properties")->addToMenu(&menu_context, true);
 			}
 
 			PopupMenu(&menu_context);
