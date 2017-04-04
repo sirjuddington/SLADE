@@ -75,7 +75,7 @@ SAction::SAction(
 	this->reserved_ids = reserve_ids;
 	this->linked_cvar = NULL;
 
-	// Add to MainApp
+	// Add to SLADEWxApp
 	theApp->actions.push_back(this);
 	if (custom_wxid == -1)
 	{

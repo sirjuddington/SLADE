@@ -13,7 +13,7 @@ protected:
 #if (wxMAJOR_VERSION < 3)
 #error This will not compile with wxWidgets older than 3.0.0 !
 #endif
-	void DoLogText(const wxString& msg);
+	void DoLogText(const wxString& msg) override;
 
 public:
 	SLADELog() {}
@@ -25,7 +25,7 @@ class SActionHandler;
 class wxSingleInstanceChecker;
 class MainAppFileListener;
 
-class MainApp : public wxApp
+class SLADEWxApp : public wxApp
 {
 friend class SAction;
 friend class SActionHandler;
@@ -42,12 +42,12 @@ private:
 	bool						save_config;
 
 public:
-	MainApp();
-	~MainApp();
+	SLADEWxApp();
+	~SLADEWxApp();
 
-	virtual bool OnInit();
-	virtual int OnExit();
-	virtual void OnFatalException();
+	bool OnInit() override;
+	int OnExit() override;
+	void OnFatalException() override;
 
 #ifdef __APPLE__
 	virtual void MacOpenFile(const wxString &fileName);
@@ -76,6 +76,6 @@ public:
 	void	onActivate(wxActivateEvent& event);
 };
 
-#define theApp ((MainApp*)wxTheApp)
+#define theApp ((SLADEWxApp*)wxTheApp)
 
 #endif //__MAINAPP_H__

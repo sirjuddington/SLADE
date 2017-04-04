@@ -5,12 +5,12 @@
 class wxMenu;
 class wxAuiToolBar;
 class wxToolBar;
-class MainApp;
+class SLADEWxApp;
 class CBoolCVar;
 
 class SAction
 {
-friend class MainApp;
+friend class SLADEWxApp;
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,
 	// where xxxx is some 4 letter identifier for the SActionHandler that handles this action
@@ -88,7 +88,7 @@ public:
 // Basic 'interface' class for classes that handle SActions (yay multiple inheritance)
 class SActionHandler
 {
-	friend class MainApp;
+	friend class SLADEWxApp;
 protected:
 	int	wx_id_offset;
 

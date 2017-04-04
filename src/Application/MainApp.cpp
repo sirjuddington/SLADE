@@ -4,8 +4,8 @@
  *
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
- * Filename:    MainApp.cpp
- * Description: MainApp class functions.
+ * Filename:    SLADEWxApp.cpp
+ * Description: SLADEWxApp class functions.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -534,14 +534,14 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 
 
 /*******************************************************************
- * MAINAPP CLASS FUNCTIONS
+ * SLADEWXAPP CLASS FUNCTIONS
  *******************************************************************/
-IMPLEMENT_APP(MainApp)
+IMPLEMENT_APP(SLADEWxApp)
 
-/* MainApp::MainApp
- * MainApp class constructor
+/* SLADEWxApp::SLADEWxApp
+ * SLADEWxApp class constructor
  *******************************************************************/
-MainApp::MainApp()
+SLADEWxApp::SLADEWxApp()
 {
 	main_window = NULL;
 	cur_id = 26000;
@@ -550,19 +550,19 @@ MainApp::MainApp()
 	save_config = true;
 }
 
-/* MainApp::~MainApp
- * MainApp class destructor
+/* SLADEWxApp::~SLADEWxApp
+ * SLADEWxApp class destructor
  *******************************************************************/
-MainApp::~MainApp()
+SLADEWxApp::~SLADEWxApp()
 {
 }
 
-/* MainApp::initDirectories
+/* SLADEWxApp::initDirectories
  * Checks for and creates necessary application directories. Returns
  * true if all directories existed and were created successfully if
  * needed, false otherwise
  *******************************************************************/
-bool MainApp::initDirectories()
+bool SLADEWxApp::initDirectories()
 {
 	// Setup separator character
 #ifdef WIN32
@@ -616,10 +616,10 @@ bool MainApp::initDirectories()
 	return true;
 }
 
-/* MainApp::initLogFile
+/* SLADEWxApp::initLogFile
  * Sets up the SLADE log file
  *******************************************************************/
-void MainApp::initLogFile()
+void SLADEWxApp::initLogFile()
 {
 	// Set wxLog target(s)
 	wxLog::SetActiveTarget(new SLADELog());
@@ -643,10 +643,10 @@ void MainApp::initLogFile()
 	FreeImage_SetOutputMessage(FreeImageErrorHandler);
 }
 
-/* MainApp::initActions
+/* SLADEWxApp::initActions
  * Sets up all menu/toolbar actions
  *******************************************************************/
-void MainApp::initActions()
+void SLADEWxApp::initActions()
 {
 	// MainWindow
 	new SAction("main_exit", "E&xit", "exit", "Quit SLADE", "", 0, wxID_EXIT);
@@ -896,13 +896,13 @@ void MainApp::initActions()
 	new SAction("mapw_script_togglelanguage", "Show Language List", "properties", "Show/Hide the language list", "", SAction::CHECK, -1, -1, 1, "script_show_language_list");
 }
 
-/* MainApp::singleInstanceCheck
+/* SLADEWxApp::singleInstanceCheck
  * Checks if another instance of SLADE is already running, and if so,
  * sends the args to the file listener of the existing SLADE
  * process. Returns false if another instance was found and the new
  * SLADE was started with arguments
  *******************************************************************/
-bool MainApp::singleInstanceCheck()
+bool SLADEWxApp::singleInstanceCheck()
 {
 	single_instance_checker = new wxSingleInstanceChecker;
 
@@ -937,10 +937,10 @@ bool MainApp::singleInstanceCheck()
 	return true;
 }
 
-/* MainApp::OnInit
+/* SLADEWxApp::OnInit
  * Application initialization, run when program is started
  *******************************************************************/
-bool MainApp::OnInit()
+bool SLADEWxApp::OnInit()
 {
 	// Check if an instance of SLADE is already running
 	if (!singleInstanceCheck())
@@ -1111,17 +1111,17 @@ bool MainApp::OnInit()
 #endif
 
 	// Bind events
-	Bind(wxEVT_MENU, &MainApp::onMenu, this);
-	Bind(wxEVT_COMMAND_VERSIONCHECK_COMPLETED, &MainApp::onVersionCheckCompleted, this);
-	Bind(wxEVT_ACTIVATE_APP, &MainApp::onActivate, this);
+	Bind(wxEVT_MENU, &SLADEWxApp::onMenu, this);
+	Bind(wxEVT_COMMAND_VERSIONCHECK_COMPLETED, &SLADEWxApp::onVersionCheckCompleted, this);
+	Bind(wxEVT_ACTIVATE_APP, &SLADEWxApp::onActivate, this);
 
 	return true;
 }
 
-/* MainApp::OnExit
+/* SLADEWxApp::OnExit
  * Application shutdown, run when program is closed
  *******************************************************************/
-int MainApp::OnExit()
+int SLADEWxApp::OnExit()
 {
 	exiting = true;
 
@@ -1180,7 +1180,7 @@ int MainApp::OnExit()
 	return 0;
 }
 
-void MainApp::OnFatalException()
+void SLADEWxApp::OnFatalException()
 {
 #if wxUSE_STACKWALKER
 #ifndef _DEBUG
@@ -1193,16 +1193,16 @@ void MainApp::OnFatalException()
 }
 
 #ifdef __APPLE__
-void MainApp::MacOpenFile(const wxString &fileName)
+void SLADEWxApp::MacOpenFile(const wxString &fileName)
 {
 	theMainWindow->getArchiveManagerPanel()->openFile(fileName);
 }
 #endif // __APPLE__
 
-/* MainApp::readConfigFile
+/* SLADEWxApp::readConfigFile
  * Reads and parses the SLADE configuration file
  *******************************************************************/
-void MainApp::readConfigFile()
+void SLADEWxApp::readConfigFile()
 {
 	// Open SLADE.cfg
 	Tokenizer tz;
@@ -1310,10 +1310,10 @@ void MainApp::readConfigFile()
 	}
 }
 
-/* MainApp::saveConfigFile
+/* SLADEWxApp::saveConfigFile
  * Saves the SLADE configuration file
  *******************************************************************/
-void MainApp::saveConfigFile()
+void SLADEWxApp::saveConfigFile()
 {
 	// Open SLADE.cfg for writing text
 	wxFile file(appPath("slade3.cfg", DIR_USER), wxFile::write);
@@ -1374,11 +1374,11 @@ void MainApp::saveConfigFile()
 	file.Write("\n// End Configuration File\n\n");
 }
 
-/* MainApp::checkForUpdates
+/* SLADEWxApp::checkForUpdates
  * Runs the version checker, if [message_box] is true, a message box
  * will be shown if already up-to-date
  *******************************************************************/
-void MainApp::checkForUpdates(bool message_box)
+void SLADEWxApp::checkForUpdates(bool message_box)
 {
 #ifdef __WXMSW__
 	update_check_message_box = message_box;
@@ -1389,20 +1389,20 @@ void MainApp::checkForUpdates(bool message_box)
 #endif
 }
 
-/* MainApp::exitApp
+/* SLADEWxApp::exitApp
  * Exits the application. If [save_config] is fale, no configuration
  * files will be saved (slade.cfg, executables.cfg, etc.)
  *******************************************************************/
-void MainApp::exitApp(bool save_config)
+void SLADEWxApp::exitApp(bool save_config)
 {
 	this->save_config = save_config;
 	theMainWindow->Close();
 }
 
-/* MainApp::getAction
+/* SLADEWxApp::getAction
  * Returns the SAction matching [id]
  *******************************************************************/
-SAction* MainApp::getAction(string id)
+SAction* SLADEWxApp::getAction(string id)
 {
 	// Find matching action
 	size_t actions_size = actions.size();
@@ -1416,10 +1416,10 @@ SAction* MainApp::getAction(string id)
 	return action_invalid;
 }
 
-/* MainApp::doAction
+/* SLADEWxApp::doAction
  * Performs the SAction matching [id]
  *******************************************************************/
-bool MainApp::doAction(string id, int wx_id_offset)
+bool SLADEWxApp::doAction(string id, int wx_id_offset)
 {
 	// Toggle action if necessary
 	toggleAction(id);
@@ -1449,10 +1449,10 @@ bool MainApp::doAction(string id, int wx_id_offset)
 	return handled;
 }
 
-/* MainApp::toggleAction
+/* SLADEWxApp::toggleAction
  * Toggles the SAction matching [id]
  *******************************************************************/
-void MainApp::toggleAction(string id)
+void SLADEWxApp::toggleAction(string id)
 {
 	// Check action type for check/radio toggle
 	SAction* action = getAction(id);
@@ -1480,10 +1480,10 @@ void MainApp::toggleAction(string id)
  * MAINAPP CLASS EVENTS
  *******************************************************************/
 
-/* MainApp::onMenu
+/* SLADEWxApp::onMenu
  * Called when a menu item is selected in the application
  *******************************************************************/
-void MainApp::onMenu(wxCommandEvent& e)
+void SLADEWxApp::onMenu(wxCommandEvent& e)
 {
 	// Find applicable action
 	string action = "";
@@ -1525,10 +1525,10 @@ void MainApp::onMenu(wxCommandEvent& e)
 		e.Skip();
 }
 
-/* MainApp::onVersionCheckCompleted
+/* SLADEWxApp::onVersionCheckCompleted
  * Called when the VersionCheck thread completes
  *******************************************************************/
-void MainApp::onVersionCheckCompleted(wxThreadEvent& e)
+void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
 {
 	// Check failed
 	if (e.GetString() == "connect_failed")
@@ -1602,10 +1602,10 @@ void MainApp::onVersionCheckCompleted(wxThreadEvent& e)
 		wxMessageBox("SLADE is already up to date", "Check for Updates");
 }
 
-/* MainApp::onActivate
+/* SLADEWxApp::onActivate
  * Called when the app gains focus
  *******************************************************************/
-void MainApp::onActivate(wxActivateEvent& e)
+void SLADEWxApp::onActivate(wxActivateEvent& e)
 {
 	if (!e.GetActive())
 	{
