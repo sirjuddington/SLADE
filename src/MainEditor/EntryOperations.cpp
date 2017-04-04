@@ -42,7 +42,7 @@
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "UI/PaletteChooser.h"
-#include "MainApp.h"
+#include "App.h"
 
 
 /*******************************************************************
@@ -472,7 +472,7 @@ bool EntryOperations::openMapDB2(ArchiveEntry* entry)
 		return false;
 
 	// Export the map to a temp .wad file
-	string filename = appPath(entry->getParent()->getFilename(false) + "-" + entry->getName(true) + ".wad", DIR_TEMP);
+	string filename = App::path(entry->getParent()->getFilename(false) + "-" + entry->getName(true) + ".wad", App::Dir::Temp);
 	filename.Replace("/", "-");
 	if (map.archive)
 	{
@@ -1212,8 +1212,8 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	}
 
 	// Setup some path strings
-	string srcfile = appPath(entry->getName(true) + ".acs", DIR_TEMP);
-	string ofile = appPath(entry->getName(true) + ".o", DIR_TEMP);
+	string srcfile = App::path(entry->getName(true) + ".acs", App::Dir::Temp);
+	string ofile = App::path(entry->getName(true) + ".o", App::Dir::Temp);
 	wxArrayString include_paths = wxSplit(path_acc_libs, ';');
 
 	// Setup command options
@@ -1243,7 +1243,7 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 			(entry->getParent()->getFilename(true) != entries[a]->getParent()->getFilename(true)))
 			continue;
 
-		string path = appPath(entries[a]->getName(true) + ".acs", DIR_TEMP);
+		string path = App::path(entries[a]->getName(true) + ".acs", App::Dir::Temp);
 		entries[a]->exportFile(path);
 		lib_paths.Add(path);
 		LOG_MESSAGE(2, "Exporting ACS library %s", entries[a]->getName());
@@ -1347,10 +1347,10 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	if (!success || acc_always_show_output)
 	{
 		string errors;
-		if (wxFileExists(appPath("acs.err", DIR_TEMP)))
+		if (wxFileExists(App::path("acs.err", App::Dir::Temp)))
 		{
 			// Read acs.err to string
-			wxFile file(appPath("acs.err", DIR_TEMP));
+			wxFile file(App::path("acs.err", App::Dir::Temp));
 			char* buf = new char[file.Length()];
 			file.Read(buf, file.Length());
 			errors = wxString::From8BitData(buf, file.Length());

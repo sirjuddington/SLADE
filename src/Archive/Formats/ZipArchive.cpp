@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ZipArchive.h"
 #include "WadArchive.h"
 #include "General/UI.h"
@@ -206,7 +207,7 @@ bool ZipArchive::open(string filename)
 bool ZipArchive::open(MemChunk& mc)
 {
 	// Write the MemChunk to a temp file
-	string tempfile = appPath("slade-temp-open.zip", DIR_TEMP);
+	string tempfile = App::path("slade-temp-open.zip", App::Dir::Temp);
 	mc.exportFile(tempfile);
 
 	// Load the file
@@ -227,7 +228,7 @@ bool ZipArchive::write(MemChunk& mc, bool update)
 	bool success = false;
 
 	// Write to a temporary file
-	string tempfile = appPath("slade-temp-write.zip", DIR_TEMP);
+	string tempfile = App::path("slade-temp-write.zip", App::Dir::Temp);
 	if (write(tempfile, true))
 	{
 		// Load file into MemChunk
@@ -617,7 +618,7 @@ vector<ArchiveEntry*> ZipArchive::findAll(search_options_t& options)
 void ZipArchive::generateTempFileName(string filename)
 {
 	wxFileName tfn(filename);
-	temp_file = appPath(tfn.GetFullName(), DIR_TEMP);
+	temp_file = App::path(tfn.GetFullName(), App::Dir::Temp);
 	if (wxFileExists(temp_file))
 	{
 		// Make sure we don't overwrite an existing temp file
@@ -625,7 +626,7 @@ void ZipArchive::generateTempFileName(string filename)
 		int n = 1;
 		while (1)
 		{
-			temp_file = appPath(S_FMT("%s.%d", CHR(tfn.GetFullName()), n), DIR_TEMP);
+			temp_file = App::path(S_FMT("%s.%d", CHR(tfn.GetFullName()), n), App::Dir::Temp);
 			if (!wxFileExists(temp_file))
 				break;
 

@@ -225,7 +225,7 @@ void MapRenderer2D::renderVerticesImmediate()
 
 		glEndList();
 
-		vertices_updated = theApp->runTimer();
+		vertices_updated = App::runTimer();
 	}
 }
 
@@ -446,7 +446,7 @@ void MapRenderer2D::renderLinesImmediate(bool show_direction, float alpha)
 
 	glEndList();
 	lines_dirs = show_direction;
-	lines_updated = theApp->runTimer();
+	lines_updated = App::runTimer();
 }
 
 /* MapRenderer2D::renderLinesVBO
@@ -870,7 +870,7 @@ bool MapRenderer2D::renderSpriteThing(double x, double y, double angle, ThingTyp
 		if (index < thing_sprites.size())
 		{
 			thing_sprites[index] = tex;
-			thing_sprites_updated = theApp->runTimer();
+			thing_sprites_updated = App::runTimer();
 		}
 	}
 
@@ -1592,7 +1592,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			}
 		}
 		if (!update)
-			thing_paths_updated = theApp->runTimer();
+			thing_paths_updated = App::runTimer();
 	}
 
 	// Get colours
@@ -1728,7 +1728,7 @@ void MapRenderer2D::renderPathedThings(vector<MapThing*>& things)
 			}
 
 		}
-		thing_paths_updated = theApp->runTimer();
+		thing_paths_updated = App::runTimer();
 	}
 
 	// Setup GL stuff
@@ -1770,7 +1770,7 @@ void MapRenderer2D::renderFlats(int type, bool texture, float alpha)
 	else
 		renderFlatsImmediate(type, texture, alpha);
 
-	flats_updated = theApp->runTimer();
+	flats_updated = App::runTimer();
 }
 
 /* MapRenderer2D::sortPolyByTex
@@ -2803,7 +2803,7 @@ void MapRenderer2D::updateVerticesVBO()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	n_vertices = map->nVertices();
-	vertices_updated = theApp->runTimer();
+	vertices_updated = App::runTimer();
 }
 
 /* MapRenderer2D::updateLinesVBO
@@ -2875,7 +2875,7 @@ void MapRenderer2D::updateLinesVBO(bool show_direction, float base_alpha)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	n_lines = map->nLines();
-	lines_updated = theApp->runTimer();
+	lines_updated = App::runTimer();
 }
 
 /* MapRenderer2D::updateFlatsVBO
@@ -2915,7 +2915,7 @@ void MapRenderer2D::updateFlatsVBO()
 	// Clean up
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	flats_updated = theApp->runTimer();
+	flats_updated = App::runTimer();
 }
 
 /* MapRenderer2D::updateVisibility

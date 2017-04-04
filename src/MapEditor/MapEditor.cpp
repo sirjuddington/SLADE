@@ -1934,7 +1934,7 @@ void MapEditor::doMove(fpoint2_t mouse_pos)
  *******************************************************************/
 void MapEditor::endMove(bool accept)
 {
-	long move_time = theApp->runTimer();
+	long move_time = App::runTimer();
 
 	// Un-filter objects
 	for (unsigned a = 0; a < map.nLines(); a++)
@@ -3647,7 +3647,7 @@ void MapEditor::paste(fpoint2_t mouse_pos)
 		if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH)
 		{
 			beginUndoRecord("Paste Map Architecture");
-			long move_time = theApp->runTimer();
+			long move_time = App::runTimer();
 			MapArchClipboardItem* p = (MapArchClipboardItem*)theClipboard->getItem(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
@@ -5207,7 +5207,7 @@ long MapEditor::getEditorMessageTime(int index)
 	if (index < 0 || index >= (int)editor_messages.size())
 		return -1;
 
-	return theApp->runTimer() - editor_messages[index].act_time;
+	return App::runTimer() - editor_messages[index].act_time;
 }
 
 /* MapEditor::addEditorMessage
@@ -5222,7 +5222,7 @@ void MapEditor::addEditorMessage(string message)
 	// Add message to list
 	editor_msg_t msg;
 	msg.message = message;
-	msg.act_time = theApp->runTimer();
+	msg.act_time = App::runTimer();
 	editor_messages.push_back(msg);
 }
 
@@ -5541,7 +5541,7 @@ void MapEditor::beginUndoRecord(string name, bool mod, bool create, bool del)
 
 	// Init map/objects for recording
 	if (undo_modified)
-		MapObject::beginPropBackup(theApp->runTimer());
+		MapObject::beginPropBackup(App::runTimer());
 	if (undo_deleted || undo_created)
 	{
 		us_create_delete = new MapObjectCreateDeleteUS();
@@ -5617,7 +5617,7 @@ void MapEditor::doUndo()
 	clearSelection();
 
 	// Undo
-	int time = theApp->runTimer() - 1;
+	int time = App::runTimer() - 1;
 	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
 	string undo_name = manager->undo();
 
@@ -5630,7 +5630,7 @@ void MapEditor::doUndo()
 		//updateTagged();
 		map.rebuildConnectedLines();
 		map.rebuildConnectedSides();
-		map.geometry_updated = theApp->runTimer();
+		map.geometry_updated = App::runTimer();
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
 	}
@@ -5647,7 +5647,7 @@ void MapEditor::doRedo()
 	clearSelection();
 
 	// Redo
-	int time = theApp->runTimer() - 1;
+	int time = App::runTimer() - 1;
 	UndoManager* manager = (edit_mode == MODE_3D) ? undo_manager_3d : undo_manager;
 	string undo_name = manager->redo();
 
@@ -5660,7 +5660,7 @@ void MapEditor::doRedo()
 		//updateTagged();
 		map.rebuildConnectedLines();
 		map.rebuildConnectedSides();
-		map.geometry_updated = theApp->runTimer();
+		map.geometry_updated = App::runTimer();
 		map.updateGeometryInfo(time);
 		last_undo_level = "";
 	}

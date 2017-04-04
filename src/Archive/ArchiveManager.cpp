@@ -29,13 +29,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ArchiveManager.h"
 #include "Formats/All.h"
 #include "Formats/DirArchive.h"
 #include "General/Console/Console.h"
 #include "General/UI.h"
 #include "General/ResourceManager.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************
@@ -124,9 +124,9 @@ bool ArchiveManager::init()
 	program_resource_archive = new ZipArchive();
 
 #ifdef __WXOSX__
-	string resdir = appPath("../Resources", DIR_APP);	// Use Resources dir within bundle on mac
+	string resdir = App::path("../Resources", App::Dir::Executable);	// Use Resources dir within bundle on mac
 #else
-	string resdir = appPath("res", DIR_APP);
+	string resdir = App::path("res", App::Dir::Executable);
 #endif
 
 	if (wxDirExists(resdir) && validResDir(resdir))
@@ -137,13 +137,13 @@ bool ArchiveManager::init()
 	}
 
 	// Find slade3.pk3 directory
-	string dir_slade_pk3 = appPath("slade.pk3", DIR_RES);
+	string dir_slade_pk3 = App::path("slade.pk3", App::Dir::Resources);
 	if (!wxFileExists(dir_slade_pk3))
-		dir_slade_pk3 = appPath("slade.pk3", DIR_DATA);
+		dir_slade_pk3 = App::path("slade.pk3", App::Dir::Data);
 	if (!wxFileExists(dir_slade_pk3))
-		dir_slade_pk3 = appPath("slade.pk3", DIR_APP);
+		dir_slade_pk3 = App::path("slade.pk3", App::Dir::Executable);
 	if (!wxFileExists(dir_slade_pk3))
-		dir_slade_pk3 = appPath("slade.pk3", DIR_USER);
+		dir_slade_pk3 = App::path("slade.pk3", App::Dir::User);
 	if (!wxFileExists(dir_slade_pk3))
 		dir_slade_pk3 = "slade.pk3";
 

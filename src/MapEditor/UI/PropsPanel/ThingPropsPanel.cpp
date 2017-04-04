@@ -308,7 +308,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 	// Motion
 	if (e.Moving())
 	{
-		if (theApp->runTimer() > last_check + 15)
+		if (App::runTimer() > last_check + 15)
 		{
 			// Get cursor position in canvas coordinates
 			double x = -1.2 + ((double)e.GetX() / (double)GetSize().x) * 2.4;
@@ -328,7 +328,7 @@ void ThingDirCanvas::onMouseEvent(wxMouseEvent& e)
 				}
 			}
 
-			last_check = theApp->runTimer();
+			last_check = App::runTimer();
 		}
 	}
 

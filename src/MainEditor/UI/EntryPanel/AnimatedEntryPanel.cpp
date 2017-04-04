@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "AnimatedEntryPanel.h"
-#include "MainApp.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Misc.h"

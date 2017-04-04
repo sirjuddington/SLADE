@@ -27,7 +27,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainApp.h"
+#include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
@@ -94,17 +94,12 @@ namespace Global
 	int win_version_minor = 0;
 }
 
-string	dir_data = "";
-string	dir_user = "";
-string	dir_app = "";
-string	dir_res = "";
+
 bool	exiting = false;
 string	current_action = "";
 bool	update_check_message_box = false;
 CVAR(String, dir_last, "", CVAR_SAVE)
 CVAR(Int, log_verbosity, 1, CVAR_SAVE)
-CVAR(Int, temp_location, 0, CVAR_SAVE)
-CVAR(String, temp_location_custom, "", CVAR_SAVE)
 CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
 CVAR(Bool, update_check, true, CVAR_SAVE)
 CVAR(Bool, update_check_beta, false, CVAR_SAVE)
@@ -195,9 +190,9 @@ public:
 		// Add dead doomguy picture
 		theArchiveManager->programResourceArchive()
 			->entryAtPath("images/STFDEAD0.png")
-			->exportFile(appPath("STFDEAD0.png", DIR_TEMP));
+			->exportFile(App::path("STFDEAD0.png", App::Dir::Temp));
 		wxImage img;
-		img.LoadFile(appPath("STFDEAD0.png", DIR_TEMP));
+		img.LoadFile(App::path("STFDEAD0.png", App::Dir::Temp));
 		img.Rescale(img.GetWidth(), img.GetHeight(), wxIMAGE_QUALITY_NEAREST);
 		wxStaticBitmap* picture = new wxStaticBitmap(this, -1, wxBitmap(img));
 		hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxTOP|wxBOTTOM, 10);
@@ -258,7 +253,7 @@ public:
 		sizer->Add(text_stack, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 		// Dump stack trace to a file (just in case)
-		wxFile file(appPath("slade3_crash.log", DIR_USER), wxFile::write);
+		wxFile file(App::path("slade3_crash.log", App::Dir::User), wxFile::write);
 		file.Write(trace);
 		file.Close();
 
@@ -315,7 +310,7 @@ public:
 		msg.SetTo("slade.errors@gmail.com");
 		msg.SetSubject("[" + Global::version + "] @ " + top_level);
 		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
-		msg.AddAttachment(appPath("slade3.log", DIR_USER));
+		msg.AddAttachment(App::path("slade3.log", App::Dir::User));
 		msg.Finalize();
 
 		// Send email
@@ -445,64 +440,6 @@ public:
 
 
 /*******************************************************************
- * FUNCTIONS
- *******************************************************************/
-
-/* appPath
- * Prepends an application-related path to a filename,
- * DIR_DATA: SLADE application data directory (for SLADE.pk3)
- * DIR_USER: User configuration and resources directory
- * DIR_APP: Directory of the SLADE executable
- * DIR_TEMP: Temporary files directory
- *******************************************************************/
-int temp_fail_count = 0;
-string appPath(string filename, int dir)
-{
-	// Setup separator character
-#ifdef WIN32
-	string sep = "\\";
-#else
-	string sep = "/";
-#endif
-
-	if (dir == DIR_DATA)
-		return dir_data + sep + filename;
-	else if (dir == DIR_USER)
-		return dir_user + sep + filename;
-	else if (dir == DIR_APP)
-		return dir_app + sep + filename;
-	else if (dir == DIR_RES)
-		return dir_res + sep + filename;
-	else if (dir == DIR_TEMP)
-	{
-		// Get temp path
-		string dir_temp;
-		if (temp_location == 0)
-			dir_temp = wxStandardPaths::Get().GetTempDir().Append(sep).Append("SLADE3");
-		else if (temp_location == 1)
-			dir_temp = dir_app + sep + "temp";
-		else
-			dir_temp = temp_location_custom;
-
-		// Create folder if necessary
-		if (!wxDirExists(dir_temp) && temp_fail_count < 2)
-		{
-			if (!wxMkdir(dir_temp))
-			{
-				wxLogMessage("Unable to create temp directory \"%s\"", dir_temp);
-				temp_fail_count++;
-				return appPath(filename, dir);
-			}
-		}
-
-		return dir_temp + sep + filename;
-	}
-	else
-		return filename;
-}
-
-
-/*******************************************************************
  * SLADELOG CLASS FUNCTIONS
  *******************************************************************/
 
@@ -557,65 +494,6 @@ SLADEWxApp::~SLADEWxApp()
 {
 }
 
-/* SLADEWxApp::initDirectories
- * Checks for and creates necessary application directories. Returns
- * true if all directories existed and were created successfully if
- * needed, false otherwise
- *******************************************************************/
-bool SLADEWxApp::initDirectories()
-{
-	// Setup separator character
-#ifdef WIN32
-	string sep = "\\";
-#else
-	string sep = "/";
-#endif
-
-	// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX), use this for the installation prefix
-#if defined(__WXGTK__) && defined(INSTALL_PREFIX)
-	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
-#endif//defined(__UNIX__) && defined(INSTALL_PREFIX)
-	
-	// Setup app dir
-	dir_app = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
-
-	// Check for portable install
-	if (wxFileExists(appPath("portable", DIR_APP)))
-	{
-		// Setup portable user/data dirs
-		dir_data = dir_app;
-		dir_res = dir_app;
-		dir_user = dir_app + sep + "config";
-	}
-	else
-	{
-		// Setup standard user/data dirs
-		dir_user = wxStandardPaths::Get().GetUserDataDir();
-		dir_data = wxStandardPaths::Get().GetDataDir();
-		dir_res = wxStandardPaths::Get().GetResourcesDir();
-	}
-
-	// Create user dir if necessary
-	if (!wxDirExists(dir_user))
-	{
-		if (!wxMkdir(dir_user))
-		{
-			wxMessageBox(S_FMT("Unable to create user directory \"%s\"", dir_user), "Error", wxICON_ERROR);
-			return false;
-		}
-	}
-
-	// Check data dir
-	if (!wxDirExists(dir_data))
-		dir_data = dir_app;	// Use app dir if data dir doesn't exist
-
-	// Check res dir
-	if(!wxDirExists(dir_res))
-		dir_res = dir_app;	// Use app dir if res dir doesn't exist
-
-	return true;
-}
-
 /* SLADEWxApp::initLogFile
  * Sets up the SLADE log file
  *******************************************************************/
@@ -623,7 +501,7 @@ void SLADEWxApp::initLogFile()
 {
 	// Set wxLog target(s)
 	wxLog::SetActiveTarget(new SLADELog());
-	FILE* log_file = fopen(CHR(appPath("slade3.log", DIR_USER)), "wt");
+	FILE* log_file = fopen(CHR(App::path("slade3.log", App::Dir::User)), "wt");
 	new wxLogChain(new wxLogStderr(log_file));
 
 	// Write logfile header
@@ -980,8 +858,8 @@ bool SLADEWxApp::OnInit()
 	wxHandleFatalExceptions(true);
 #endif
 
-	// Init application directories
-	if (!initDirectories())
+	// Init application
+	if (!App::init())
 		return false;
 
 	// Load image handlers
@@ -1136,11 +1014,11 @@ int SLADEWxApp::OnExit()
 		// Save colour configuration
 		MemChunk ccfg;
 		ColourConfiguration::writeConfiguration(ccfg);
-		ccfg.exportFile(appPath("colours.cfg", DIR_USER));
+		ccfg.exportFile(App::path("colours.cfg", App::Dir::User));
 
 		// Save game exes
 		wxFile f;
-		f.Open(appPath("executables.cfg", DIR_USER), wxFile::write);
+		f.Open(App::path("executables.cfg", App::Dir::User), wxFile::write);
 		f.Write(Executables::writeExecutables());
 		f.Close();
 	}
@@ -1161,12 +1039,12 @@ int SLADEWxApp::OnExit()
 
 	// Clear temp folder
 	wxDir temp;
-	temp.Open(appPath("", DIR_TEMP));
+	temp.Open(App::path("", App::Dir::Temp));
 	string filename = wxEmptyString;
 	bool files = temp.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
 	while (files)
 	{
-		if (!wxRemoveFile(appPath(filename, DIR_TEMP)))
+		if (!wxRemoveFile(App::path(filename, App::Dir::Temp)))
 			wxLogMessage("Warning: Could not clean up temporary file \"%s\"", filename);
 		files = temp.GetNext(&filename);
 	}
@@ -1206,7 +1084,7 @@ void SLADEWxApp::readConfigFile()
 {
 	// Open SLADE.cfg
 	Tokenizer tz;
-	if (!tz.openFile(appPath("slade3.cfg", DIR_USER)))
+	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
 		return;
 
 	// Go through the file with the tokenizer
@@ -1316,7 +1194,7 @@ void SLADEWxApp::readConfigFile()
 void SLADEWxApp::saveConfigFile()
 {
 	// Open SLADE.cfg for writing text
-	wxFile file(appPath("slade3.cfg", DIR_USER), wxFile::write);
+	wxFile file(App::path("slade3.cfg", App::Dir::User), wxFile::write);
 
 	// Do nothing if it didn't open correctly
 	if (!file.IsOpened())

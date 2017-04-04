@@ -921,9 +921,6 @@
     <ClCompile Include="..\..\src\UI\WxStuff.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Application\MainApp.cpp">
-      <Filter>Application</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\General\SAction.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -1413,6 +1410,12 @@
     <ClCompile Include="..\..\src\MainEditor\UI\MainWindow.cpp">
       <Filter>Main Editor\UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Application\App.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Application\SLADEWxApp.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -1876,9 +1879,6 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Application\Main.h">
-      <Filter>Application</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Application\MainApp.h">
       <Filter>Application</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\General\SAction.h">
@@ -2437,6 +2437,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MainEditor\UI\MainWindow.h">
       <Filter>Main Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\App.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Application\SLADEWxApp.h">
+      <Filter>Application</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

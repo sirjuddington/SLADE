@@ -30,10 +30,10 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "GameConfiguration.h"
 #include "Utility/Tokenizer.h"
 #include "Utility/Parser.h"
-#include "General/Misc.h"
 #include "General/Console/Console.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
@@ -311,7 +311,7 @@ void GameConfiguration::init()
 {
 	// Add game configurations from user dir
 	wxArrayString allfiles;
-	wxDir::GetAllFiles(appPath("games", DIR_USER), &allfiles);
+	wxDir::GetAllFiles(App::path("games", App::Dir::User), &allfiles);
 	for (unsigned a = 0; a < allfiles.size(); a++)
 	{
 		// Read config info
@@ -330,7 +330,7 @@ void GameConfiguration::init()
 
 	// Add port configurations from user dir
 	allfiles.clear();
-	wxDir::GetAllFiles(appPath("ports", DIR_USER), &allfiles);
+	wxDir::GetAllFiles(App::path("ports", App::Dir::User), &allfiles);
 	for (unsigned a = 0; a < allfiles.size(); a++)
 	{
 		// Read config info
@@ -613,7 +613,7 @@ void GameConfiguration::buildConfig(ArchiveEntry* entry, string& out, bool use_r
 		return;
 
 	// Write entry to temp file
-	string filename = appPath(entry->getName(), DIR_TEMP);
+	string filename = App::path(entry->getName(), App::Dir::Temp);
 	entry->exportFile(filename);
 
 	// Open file
@@ -1435,7 +1435,7 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 			if (game_configs[a].user)
 			{
 				// Config is in user dir
-				string filename = appPath("games/", DIR_USER) + game_configs[a].filename + ".cfg";
+				string filename = App::path("games/", App::Dir::User) + game_configs[a].filename + ".cfg";
 				if (wxFileExists(filename))
 					buildConfig(filename, full_config);
 				else
@@ -1483,7 +1483,7 @@ bool GameConfiguration::openConfig(string game, string port, uint8_t format)
 				if (conf.user)
 				{
 					// Config is in user dir
-					string filename = appPath("games/", DIR_USER) + conf.filename + ".cfg";
+					string filename = App::path("games/", App::Dir::User) + conf.filename + ".cfg";
 					if (wxFileExists(filename))
 						buildConfig(filename, full_config);
 					else
@@ -2548,7 +2548,7 @@ bool GameConfiguration::parseDecorateDefs(Archive* archive)
 		token = tz.getToken();
 	}
 
-	//wxFile tempfile(appPath("decorate_full.txt", DIR_APP), wxFile::write);
+	//wxFile tempfile(App::path("decorate_full.txt", App::Dir::Executable), wxFile::write);
 	//tempfile.Write(full_defs);
 	//tempfile.Close();
 

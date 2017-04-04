@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "TempFolderWizardPage.h"
 #include "Utility/SFileDialog.h"
 
@@ -102,7 +103,7 @@ bool TempFolderWizardPage::canGoNext()
 	if (rb_use_system->GetValue())
 		testfilename = wxStandardPaths::Get().GetTempDir().Append(sep).Append("SLADE3").Append(sep).Append("test.txt");
 	else if (rb_use_slade_dir->GetValue())
-		testfilename = appPath("test.txt", DIR_APP);
+		testfilename = App::path("test.txt", App::Dir::Executable);
 	else
 		testfilename = text_custom_dir->GetValue() + sep + "test.txt";
 

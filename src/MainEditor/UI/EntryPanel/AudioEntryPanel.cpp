@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "AudioEntryPanel.h"
 #include "Audio/MIDIPlayer.h"
 #include "Audio/ModMusic.h"
@@ -293,7 +294,7 @@ bool AudioEntryPanel::open()
 	MemChunk& mcdata = entry->getMCData();
 
 	// Setup temp filename
-	wxFileName path(appPath(entry->getName(), DIR_TEMP));
+	wxFileName path(App::path(entry->getName(), App::Dir::Temp));
 	// Add extension if missing
 	if (path.GetExt().IsEmpty())
 		path.SetExt(entry->getType()->getExtension());

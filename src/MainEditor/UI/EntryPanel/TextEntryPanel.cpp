@@ -30,7 +30,7 @@
 #include "Main.h"
 #include "TextEntryPanel.h"
 #include "Archive/ArchiveManager.h"
-#include "MainApp.h"
+#include "App.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 

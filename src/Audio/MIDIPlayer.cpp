@@ -30,6 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MIDIPlayer.h"
 
 
@@ -39,6 +40,7 @@
 MIDIPlayer*	MIDIPlayer::instance = NULL;
 CVAR(String, fs_soundfont_path, "", CVAR_SAVE);
 CVAR(String, fs_driver, "", CVAR_SAVE);
+
 
 /*******************************************************************
  * EXTERNAL VARIABLES
@@ -52,6 +54,7 @@ EXTERN_CVAR(Bool, snd_midi_usetimidity)
 #else
 #define usetimidity true
 #endif
+
 
 /*******************************************************************
  * MIDIPLAYER FLUIDSYNTH IMPLEMENTATION
@@ -260,7 +263,7 @@ bool MIDIPlayer::openData(MemChunk &mc)
 
 	if (usetimidity)
 	{
-		wxFileName path(appPath("slade-timidity.mid", DIR_TEMP));
+		wxFileName path(App::path("slade-timidity.mid", App::Dir::Temp));
 		file = path.GetFullPath();
 		mc.exportFile(file);
 		return true;

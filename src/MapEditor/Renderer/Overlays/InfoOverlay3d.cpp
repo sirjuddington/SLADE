@@ -474,7 +474,7 @@ void InfoOverlay3D::update(int item_index, int item_type, SLADEMap* map)
 		texname = "";
 	}
 
-	last_update = theApp->runTimer();
+	last_update = App::runTimer();
 }
 
 /* InfoOverlay3D::draw

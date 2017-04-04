@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MapBackupPanel.h"
 #include "Archive/Formats/WadArchive.h"
 #include "Archive/Formats/ZipArchive.h"
@@ -80,7 +81,7 @@ bool MapBackupPanel::loadBackups(string archive_name, string map_name)
 {
 	// Open backup file
 	archive_name.Replace(".", "_");
-	string backup_file = appPath("backups", DIR_USER) + "/" + archive_name + "_backup.zip";
+	string backup_file = App::path("backups", App::Dir::User) + "/" + archive_name + "_backup.zip";
 	if (!archive_backups->open(backup_file))
 		return false;
 

@@ -3924,7 +3924,7 @@ bool EntryDataUS::swapData()
 // results in a circular include nightmare and nothing works anymore.
 #include "General/Console/ConsoleHelpers.h"
 #include "General/Console/Console.h"
-#include "MainApp.h"
+#include "App.h"
 Archive* CH::getCurrentArchive()
 {
 	if (theMainWindow)

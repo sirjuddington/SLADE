@@ -681,7 +681,7 @@ CONSOLE_COMMAND(list_res_patches, 0, false)
 	theResourceManager->listAllPatches();
 }
 
-#include "MainApp.h"
+#include "App.h"
 CONSOLE_COMMAND(test_res_speed, 0, false)
 {
 	vector<ArchiveEntry*> list;
@@ -692,7 +692,7 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 
 	for (unsigned t = 0; t < 5; t++)
 	{
-		auto start = theApp->runTimer();
+		auto start = App::runTimer();
 		for (unsigned a = 0; a < 100; a++)
 		{
 			theResourceManager->getAllPatchEntries(list, nullptr);
@@ -703,7 +703,7 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 			theResourceManager->getAllFlatEntries(list, nullptr);
 			list.clear();
 		}
-		auto end = theApp->runTimer();
+		auto end = App::runTimer();
 		times[t] = end - start;
 	}
 

@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainApp.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "PaletteEntryPanel.h"
 #include "General/Misc.h"
@@ -890,7 +890,7 @@ bool PaletteEntryPanel::addCustomPalette()
 		return false;
 
 	// Write current palette to the user palettes directory
-	string path = appPath(S_FMT("palettes/%s.pal", name), DIR_USER);
+	string path = App::path(S_FMT("palettes/%s.pal", name), App::Dir::User);
 	palettes[cur_palette]->saveFile(path);
 
 	// Add to palette manager and main palette chooser

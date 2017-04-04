@@ -32,7 +32,7 @@
 #include "General/KeyBind.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/Icons.h"
-#include "MainApp.h"
+#include "App.h"
 #include "TextureXEditor.h"
 #include "UI/Canvas/CTextureCanvas.h"
 

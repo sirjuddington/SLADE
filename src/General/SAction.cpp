@@ -33,7 +33,7 @@
 #include "UI/WxStuff.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
-#include "MainApp.h"
+#include "App.h"
 #include "General/KeyBind.h"
 
 

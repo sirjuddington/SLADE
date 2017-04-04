@@ -33,7 +33,7 @@
 #include "SplashWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "General/Console/Console.h"
-#include "MainApp.h"
+#include "App.h"
 #include "MainEditor/MainEditor.h"
 
 
@@ -116,7 +116,7 @@ void SplashWindow::setProgress(float progress)
 void SplashWindow::init()
 {
 	// Load logo image
-	string tempfile = appPath("temp.png", DIR_TEMP);
+	string tempfile = App::path("temp.png", App::Dir::Temp);
 	ArchiveEntry* logo = theArchiveManager->programResourceArchive()->getEntry("logo.png");
 	if (logo)
 	{

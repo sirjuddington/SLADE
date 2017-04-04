@@ -82,7 +82,7 @@ MapBackupManager::~MapBackupManager()
 bool MapBackupManager::writeBackup(vector<ArchiveEntry*>& map_data, string archive_name, string map_name)
 {
 	// Create backup directory if needed
-	string backup_dir = appPath("backups", DIR_USER);
+	string backup_dir = App::path("backups", App::Dir::User);
 	if (!wxDirExists(backup_dir)) wxMkdir(backup_dir);
 
 	// Open or create backup zip

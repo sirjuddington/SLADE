@@ -41,7 +41,7 @@
 #include "General/UndoRedo.h"
 #include "General/UI.h"
 #include "Graphics/Icons.h"
-#include "MainApp.h"
+#include "App.h"
 #include "TextureXEditor.h"
 #include "Utility/SFileDialog.h"
 #include "ZTextureEditorPanel.h"

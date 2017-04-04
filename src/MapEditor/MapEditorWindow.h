@@ -4,7 +4,7 @@
 
 #include "MapEditor.h"
 #include "MapTextureManager.h"
-#include "MainApp.h"
+#include "App.h"
 #include "UI/STopWindow.h"
 
 class MapObject;

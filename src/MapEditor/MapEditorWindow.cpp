@@ -86,7 +86,7 @@ MapEditorWindow::MapEditorWindow()
 	backup_manager = new MapBackupManager();
 
 	// Set icon
-	string icon_filename = appPath("slade.ico", DIR_TEMP);
+	string icon_filename = App::path("slade.ico", App::Dir::Temp);
 	theArchiveManager->programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
@@ -112,7 +112,7 @@ void MapEditorWindow::loadLayout()
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(appPath("mapwindow.layout", DIR_USER)))
+	if (!tz.openFile(App::path("mapwindow.layout", App::Dir::User)))
 		return;
 
 	// Parse layout
@@ -139,7 +139,7 @@ void MapEditorWindow::loadLayout()
 void MapEditorWindow::saveLayout()
 {
 	// Open layout file
-	wxFile file(appPath("mapwindow.layout", DIR_USER), wxFile::write);
+	wxFile file(App::path("mapwindow.layout", App::Dir::User), wxFile::write);
 
 	// Write component layout
 	wxAuiManager* m_mgr = wxAuiManager::GetManager(this);
@@ -679,7 +679,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	string options;
 
 	// Save wad to disk
-	string filename = appPath("sladetemp.wad", DIR_TEMP);
+	string filename = App::path("sladetemp.wad", App::Dir::Temp);
 	wad->save(filename);
 
 	// Get current nodebuilder
@@ -1286,7 +1286,7 @@ bool MapEditorWindow::handleAction(string id)
 			// Write temp wad
 			WadArchive* wad = writeMap(mdesc_current.name);
 			if (wad)
-				wad->save(appPath("sladetemp_run.wad", DIR_TEMP));
+				wad->save(App::path("sladetemp_run.wad", App::Dir::Temp));
 
 			// Reset player 1 start if moved
 			if (dlg.start3dModeChecked() || id == "mapw_run_map_here")

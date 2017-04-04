@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "PaletteManager.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
@@ -197,12 +198,12 @@ bool PaletteManager::loadResourcePalettes()
 bool PaletteManager::loadCustomPalettes()
 {
 	// If the directory doesn't exist create it
-	if (!wxDirExists(appPath("palettes", DIR_USER)))
-		wxMkdir(appPath("palettes", DIR_USER));
+	if (!wxDirExists(App::path("palettes", App::Dir::User)))
+		wxMkdir(App::path("palettes", App::Dir::User));
 
 	// Open the custom palettes directory
 	wxDir res_dir;
-	res_dir.Open(appPath("palettes", DIR_USER));
+	res_dir.Open(App::path("palettes", App::Dir::User));
 
 	// Go through each file in the directory
 	string filename = wxEmptyString;

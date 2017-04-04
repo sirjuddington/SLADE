@@ -118,7 +118,7 @@ void MainWindow::loadLayout()
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(appPath("mainwindow.layout", DIR_USER)))
+	if (!tz.openFile(App::path("mainwindow.layout", App::Dir::User)))
 		return;
 
 	// Parse layout
@@ -144,7 +144,7 @@ void MainWindow::loadLayout()
 void MainWindow::saveLayout()
 {
 	// Open layout file
-	wxFile file(appPath("mainwindow.layout", DIR_USER), wxFile::write);
+	wxFile file(App::path("mainwindow.layout", App::Dir::User), wxFile::write);
 
 	// Write component layout
 
@@ -178,7 +178,7 @@ void MainWindow::setupLayout()
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
-	string icon_filename = appPath("slade.ico", DIR_TEMP);
+	string icon_filename = App::path("slade.ico", App::Dir::Temp);
 	theArchiveManager->programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
 	SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 	wxRemoveFile(icon_filename);
@@ -499,12 +499,12 @@ void MainWindow::createStartPage(bool newtip)
 
 	// Write html and images to temp folder
 	for (unsigned a = 0; a < export_entries.size(); a++)
-		export_entries[a]->exportFile(appPath(export_entries[a]->getName(), DIR_TEMP));
-	Icons::exportIconPNG(Icons::ENTRY, "archive", appPath("archive.png", DIR_TEMP));
-	Icons::exportIconPNG(Icons::ENTRY, "wad", appPath("wad.png", DIR_TEMP));
-	Icons::exportIconPNG(Icons::ENTRY, "zip", appPath("zip.png", DIR_TEMP));
-	Icons::exportIconPNG(Icons::ENTRY, "folder", appPath("folder.png", DIR_TEMP));
-	string html_file = appPath("startpage.htm", DIR_TEMP);
+		export_entries[a]->exportFile(App::path(export_entries[a]->getName(), App::Dir::Temp));
+	Icons::exportIconPNG(Icons::ENTRY, "archive", App::path("archive.png", App::Dir::Temp));
+	Icons::exportIconPNG(Icons::ENTRY, "wad", App::path("wad.png", App::Dir::Temp));
+	Icons::exportIconPNG(Icons::ENTRY, "zip", App::path("zip.png", App::Dir::Temp));
+	Icons::exportIconPNG(Icons::ENTRY, "folder", App::path("folder.png", App::Dir::Temp));
+	string html_file = App::path("startpage.htm", App::Dir::Temp);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
 	outfile.Close();
@@ -588,8 +588,8 @@ void MainWindow::createStartPage(bool newtip)
 	html.Replace("#totd#", tip);
 
 	// Write html and images to temp folder
-	if (entry_logo) entry_logo->exportFile(appPath("logo.png", DIR_TEMP));
-	string html_file = appPath("startpage_basic.htm", DIR_TEMP);
+	if (entry_logo) entry_logo->exportFile(App::path("logo.png", App::Dir::Temp));
+	string html_file = App::path("startpage_basic.htm", App::Dir::Temp);
 	wxFile outfile(html_file, wxFile::write);
 	outfile.Write(html);
 	outfile.Close();
@@ -599,7 +599,7 @@ void MainWindow::createStartPage(bool newtip)
 
 	// Clean up
 	wxRemoveFile(html_file);
-	wxRemoveFile(appPath("logo.png", DIR_TEMP));
+	wxRemoveFile(App::path("logo.png", App::Dir::Temp));
 }
 #endif
 
@@ -785,7 +785,7 @@ bool MainWindow::handleAction(string id)
 		info.SetDescription("It's a Doom Editor");
 
 		// Set icon
-		string icon_filename = appPath("slade.ico", DIR_TEMP);
+		string icon_filename = App::path("slade.ico", App::Dir::Temp);
 		theArchiveManager->programResourceArchive()->getEntry("slade.ico")->exportFile(icon_filename);
 		info.SetIcon(wxIcon(icon_filename, wxBITMAP_TYPE_ICO));
 		wxRemoveFile(icon_filename);
@@ -882,7 +882,7 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	else if (wxFileExists(href))
 	{
 		// Navigating to file, open it
-		string page = appPath("startpage.htm", DIR_TEMP);
+		string page = App::path("startpage.htm", App::Dir::Temp);
 		if (wxFileName(href).GetLongPath() != wxFileName(page).GetLongPath())
 			theArchiveManager->openArchive(href);
 		ev.Veto();

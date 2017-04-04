@@ -34,7 +34,7 @@
 #include "General/ResourceManager.h"
 #include "General/UI.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MainApp.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/Formats/WadArchive.h"
 #include "General/UndoRedo.h"
@@ -162,7 +162,7 @@ MapObject* SLADEMap::getObject(uint8_t type, unsigned index)
  *******************************************************************/
 void SLADEMap::setGeometryUpdated()
 {
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 }
 
 /* SLADEMap::setThingsUpdated
@@ -170,7 +170,7 @@ void SLADEMap::setGeometryUpdated()
  *******************************************************************/
 void SLADEMap::setThingsUpdated()
 {
-	things_updated = theApp->runTimer();
+	things_updated = App::runTimer();
 }
 
 /* SLADEMap::refreshIndices
@@ -390,7 +390,7 @@ bool SLADEMap::readMap(Archive::mapdesc_t map)
 	initSectorPolygons();
 	recomputeSpecials();
 
-	opened_time = theApp->runTimer() + 10;
+	opened_time = App::runTimer() + 10;
 
 	return ok;
 }
@@ -925,7 +925,7 @@ bool SLADEMap::readDoomMap(Archive::mapdesc_t map)
 		sectors[a]->updateBBox();
 
 	// Update variables
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 
 	return true;
 }
@@ -2347,7 +2347,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		return false;
 
 	// Open temp text file
-	wxFile tempfile(appPath("sladetemp.txt", DIR_TEMP), wxFile::write);
+	wxFile tempfile(App::path("sladetemp.txt", App::Dir::Temp), wxFile::write);
 
 	// Write map namespace
 	tempfile.Write("// Written by SLADE3\n");
@@ -2493,7 +2493,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 	tempfile.Close();
 
 	// Load file to entry
-	textmap->importFile(appPath("sladetemp.txt", DIR_TEMP));
+	textmap->importFile(App::path("sladetemp.txt", App::Dir::Temp));
 
 	return true;
 }
@@ -2613,10 +2613,10 @@ bool SLADEMap::removeVertex(unsigned index, bool merge_lines)
 	removeMapObject(vertices[index]);
 	vertices[index] = vertices.back();
 	vertices[index]->index = index;
-	//vertices[index]->modified_time = theApp->runTimer();
+	//vertices[index]->modified_time = App::runTimer();
 	vertices.pop_back();
 
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 
 	return true;
 }
@@ -2663,10 +2663,10 @@ bool SLADEMap::removeLine(unsigned index)
 	removeMapObject(lines[index]);
 	lines[index] = lines[lines.size()-1];
 	lines[index]->index = index;
-	//lines[index]->modified_time = theApp->runTimer();
+	//lines[index]->modified_time = App::runTimer();
 	lines.pop_back();
 
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 
 	return true;
 }
@@ -2729,7 +2729,7 @@ bool SLADEMap::removeSide(unsigned index, bool remove_from_line)
 	removeMapObject(sides[index]);
 	sides[index] = sides.back();
 	sides[index]->index = index;
-	//sides[index]->modified_time = theApp->runTimer();
+	//sides[index]->modified_time = App::runTimer();
 	sides.pop_back();
 
 	return true;
@@ -2768,7 +2768,7 @@ bool SLADEMap::removeSector(unsigned index)
 	removeMapObject(sectors[index]);
 	sectors[index] = sectors.back();
 	sectors[index]->index = index;
-	//sectors[index]->modified_time = theApp->runTimer();
+	//sectors[index]->modified_time = App::runTimer();
 	sectors.pop_back();
 
 	return true;
@@ -2799,10 +2799,10 @@ bool SLADEMap::removeThing(unsigned index)
 	removeMapObject(things[index]);
 	things[index] = things.back();
 	things[index]->index = index;
-	//things[index]->modified_time = theApp->runTimer();
+	//things[index]->modified_time = App::runTimer();
 	things.pop_back();
 
-	things_updated = theApp->runTimer();
+	things_updated = App::runTimer();
 
 	return true;
 }
@@ -3973,7 +3973,7 @@ bool SLADEMap::isModified()
  *******************************************************************/
 void SLADEMap::setOpenedTime()
 {
-	opened_time = theApp->runTimer();
+	opened_time = App::runTimer();
 }
 
 /* SLADEMap::modifiedSince
@@ -4096,7 +4096,7 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 	}
 
 	// Set geometry age
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 
 	return nv;
 }
@@ -4164,7 +4164,7 @@ MapLine* SLADEMap::createLine(MapVertex* vertex1, MapVertex* vertex2, bool force
 	vertex2->connectLine(nl);
 
 	// Set geometry age
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 
 	return nl;
 }
@@ -4185,7 +4185,7 @@ MapThing* SLADEMap::createThing(double x, double y)
 
 	// Add to things
 	things.push_back(nt);
-	things_updated = theApp->runTimer();
+	things_updated = App::runTimer();
 
 	return nt;
 }
@@ -4251,7 +4251,7 @@ void SLADEMap::moveVertex(unsigned vertex, double nx, double ny)
 	for (unsigned a = 0; a < v->connected_lines.size(); a++)
 		v->connected_lines[a]->resetInternals();
 
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 }
 
 /* SLADEMap::mergeVertices
@@ -4308,7 +4308,7 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 		removeLine(zlines[a]);
 	}
 
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 }
 
 /* SLADEMap::mergeVerticesPoint
@@ -4337,7 +4337,7 @@ MapVertex* SLADEMap::mergeVerticesPoint(double x, double y)
 		a--;
 	}
 
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 
 	// Return the final merged vertex
 	return getVertex(merge);
@@ -4421,7 +4421,7 @@ MapLine* SLADEMap::splitLine(MapLine* l, MapVertex* v)
 		l->setIntProperty("side2.offsetx", xoff2 + nl->getLength());
 	}
 
-	geometry_updated = theApp->runTimer();
+	geometry_updated = App::runTimer();
 
 	return nl;
 }

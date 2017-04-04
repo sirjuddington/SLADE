@@ -898,8 +898,8 @@ void MapRenderer3D::updateSector(unsigned index)
 	}
 
 	// Finish up
-	floors[index].updated_time = theApp->runTimer();
-	ceilings[index].updated_time = theApp->runTimer();
+	floors[index].updated_time = App::runTimer();
+	ceilings[index].updated_time = App::runTimer();
 	if (OpenGL::vboSupport())
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1278,7 +1278,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 		// Add middle quad and finish
 		lines[index].quads.push_back(quad);
-		lines[index].updated_time = theApp->runTimer();
+		lines[index].updated_time = App::runTimer();
 		return;
 	}
 
@@ -1673,7 +1673,7 @@ void MapRenderer3D::updateLine(unsigned index)
 
 
 	// Finished
-	lines[index].updated_time = theApp->runTimer();
+	lines[index].updated_time = App::runTimer();
 }
 
 /* MapRenderer3D::renderQuad
@@ -1961,7 +1961,7 @@ void MapRenderer3D::updateThing(unsigned index, MapThing* thing)
 	// Adjust height by sprite Y offset if needed
 	things[index].z += theMapEditor->textureManager().getVerticalOffset(things[index].type->getSprite());
 
-	things[index].updated_time = theApp->runTimer();
+	things[index].updated_time = App::runTimer();
 }
 
 /* MapRenderer3D::renderThings

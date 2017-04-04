@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ColourConfiguration.h"
 #include "Utility/Parser.h"
 #include "Archive/ArchiveManager.h"
@@ -287,10 +288,10 @@ bool ColourConfiguration::init()
 	loadDefaults();
 
 	// Check for saved colour configuration
-	if (wxFileExists(appPath("colours.cfg", DIR_USER)))
+	if (wxFileExists(App::path("colours.cfg", App::Dir::User)))
 	{
 		MemChunk ccfg;
-		ccfg.importFile(appPath("colours.cfg", DIR_USER));
+		ccfg.importFile(App::path("colours.cfg", App::Dir::User));
 		readConfiguration(ccfg);
 	}
 

@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "ArchiveEntryList.h"
-#include "MainApp.h"
+#include "App.h"
 #include "Graphics/Icons.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"

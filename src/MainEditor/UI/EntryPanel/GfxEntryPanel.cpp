@@ -28,7 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainApp.h"
+#include "App.h"
 #include "GfxEntryPanel.h"
 #include "Archive/Archive.h"
 #include "Dialogs/GfxConvDialog.h"

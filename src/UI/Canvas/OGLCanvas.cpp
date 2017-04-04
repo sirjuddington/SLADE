@@ -30,7 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "OGLCanvas.h"
-#include "MainApp.h"
+#include "App.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 
@@ -57,7 +57,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 {
 	init_done = false;
 	recreate = false;
-	last_time = theApp->runTimer();
+	last_time = App::runTimer();
 
 	if (handle_timer)
 		timer.Start(timer_interval);
@@ -83,7 +83,7 @@ OGLCanvas::OGLCanvas(wxWindow* parent, int id, bool handle_timer, int timer_inte
 	: wxGLCanvas(parent, id, OpenGL::getWxGLAttribs(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE|wxWANTS_CHARS), timer(this)
 {
 	init_done = false;
-	last_time = theApp->runTimer();
+	last_time = App::runTimer();
 
 	//if (handle_timer)
 	//	timer.Start(timer_interval);
@@ -339,8 +339,8 @@ void OGLCanvas::onEraseBackground(wxEraseEvent& e)
 void OGLCanvas::onTimer(wxTimerEvent& e)
 {
 	// Get time since last redraw
-	long frametime = theApp->runTimer() - last_time;
-	last_time = theApp->runTimer();
+	long frametime = App::runTimer() - last_time;
+	last_time = App::runTimer();
 
 	// Update/refresh
 	update(frametime);

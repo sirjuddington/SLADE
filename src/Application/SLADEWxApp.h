@@ -1,10 +1,7 @@
-
-#ifndef __MAINAPP_H__
-#define __MAINAPP_H__
+#pragma once
 
 #include "common.h"
 #include "General/SAction.h"
-
 
 class SLADELog : public wxLog
 {
@@ -56,13 +53,11 @@ public:
 	MainWindow*	getMainWindow() { return main_window; }
 
 	bool	singleInstanceCheck();
-	bool	initDirectories();
 	void	initLogFile();
 	void	initActions();
 	void	readConfigFile();
 	void	saveConfigFile();
 	bool	isInitialised() { return init_ok; }
-	long	runTimer() { return timer.Time(); }
 	void	checkForUpdates(bool message_box);
 	void	exitApp(bool save_config = true);
 
@@ -77,5 +72,3 @@ public:
 };
 
 #define theApp ((SLADEWxApp*)wxTheApp)
-
-#endif //__MAINAPP_H__

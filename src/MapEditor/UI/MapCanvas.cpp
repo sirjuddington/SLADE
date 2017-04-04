@@ -34,7 +34,7 @@
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/UndoRedo.h"
-#include "MainApp.h"
+#include "App.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/Renderer/MapRenderer2D.h"
@@ -1416,7 +1416,7 @@ void MapCanvas::drawMap3d()
 				anim_info_show = false;
 
 			// Animation
-			animations.push_back(new MCAHilightFade3D(theApp->runTimer(), old_hl.index, old_hl.type, renderer_3d, anim_flash_level));
+			animations.push_back(new MCAHilightFade3D(App::runTimer(), old_hl.index, old_hl.type, renderer_3d, anim_flash_level));
 			anim_flash_inc = true;
 			anim_flash_level = 0.0f;
 		}
@@ -1609,7 +1609,7 @@ bool MapCanvas::update2d(double mult)
 		{
 			// Hilight fade animation
 			if (old_hl)
-				animations.push_back(new MCAHilightFade(theApp->runTimer(), old_hl, renderer_2d, anim_flash_level));
+				animations.push_back(new MCAHilightFade(App::runTimer(), old_hl, renderer_2d, anim_flash_level));
 
 			// Reset hilight flash
 			anim_flash_inc = true;
@@ -1976,7 +1976,7 @@ void MapCanvas::update(long frametime)
 	bool anim_running = false;
 	for (unsigned a = 0; a < animations.size(); a++)
 	{
-		if (!animations[a]->update(theApp->runTimer()))
+		if (!animations[a]->update(App::runTimer()))
 		{
 			// If animation is finished, delete and remove from the list
 			delete animations[a];
@@ -2185,7 +2185,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 		// Start animation
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = renderer_2d->scaledRadius(radius);
-		animations.push_back(new MCAThingSelection(theApp->runTimer(), t->xPos(), t->yPos(), radius, renderer_2d->viewScaleInv(), selected));
+		animations.push_back(new MCAThingSelection(App::runTimer(), t->xPos(), t->yPos(), radius, renderer_2d->viewScaleInv(), selected));
 	}
 
 	// Lines mode
@@ -2196,7 +2196,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 		vec.push_back(editor->getMap().getLine(index));
 
 		// Start animation
-		animations.push_back(new MCALineSelection(theApp->runTimer(), vec, selected));
+		animations.push_back(new MCALineSelection(App::runTimer(), vec, selected));
 	}
 
 	// Vertices mode
@@ -2212,7 +2212,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 		if (vs < 2.0) vs = 2.0;
 
 		// Start animation
-		animations.push_back(new MCAVertexSelection(theApp->runTimer(), verts, vs, selected));
+		animations.push_back(new MCAVertexSelection(App::runTimer(), verts, vs, selected));
 	}
 
 	// Sectors mode
@@ -2223,7 +2223,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 		polys.push_back(editor->getMap().getSector(index)->getPolygon());
 
 		// Start animation
-		animations.push_back(new MCASectorSelection(theApp->runTimer(), polys, selected));
+		animations.push_back(new MCASectorSelection(App::runTimer(), polys, selected));
 	}
 }
 
@@ -2249,7 +2249,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 			lines.push_back(editor->getMap().getLine(items[a]));
 
 		// Start animation
-		animations.push_back(new MCALineSelection(theApp->runTimer(), lines, selected));
+		animations.push_back(new MCALineSelection(App::runTimer(), lines, selected));
 	}
 
 	// Vertices mode
@@ -2266,7 +2266,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 		if (vs < 2.0) vs = 2.0;
 
 		// Start animation
-		animations.push_back(new MCAVertexSelection(theApp->runTimer(), verts, vs, selected));
+		animations.push_back(new MCAVertexSelection(App::runTimer(), verts, vs, selected));
 	}
 
 	// Sectors mode
@@ -2278,7 +2278,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 			polys.push_back(editor->getMap().getSector(items[a])->getPolygon());
 
 		// Start animation
-		animations.push_back(new MCASectorSelection(theApp->runTimer(), polys, selected));
+		animations.push_back(new MCASectorSelection(App::runTimer(), polys, selected));
 	}
 }
 
@@ -2304,7 +2304,7 @@ void MapCanvas::itemSelected3d(selection_3d_t item, bool selected)
 				points[a].set(quad->points[a].x, quad->points[a].y, quad->points[a].z);
 
 			// Start animation
-			animations.push_back(new MCA3dWallSelection(theApp->runTimer(), points, selected));
+			animations.push_back(new MCA3dWallSelection(App::runTimer(), points, selected));
 		}
 	}
 
@@ -2316,7 +2316,7 @@ void MapCanvas::itemSelected3d(selection_3d_t item, bool selected)
 
 		// Start animation
 		if (flat)
-			animations.push_back(new MCA3dFlatSelection(theApp->runTimer(), flat->sector, flat->plane, selected));
+			animations.push_back(new MCA3dFlatSelection(App::runTimer(), flat->sector, flat->plane, selected));
 	}
 }
 
@@ -2836,7 +2836,7 @@ void MapCanvas::onKeyBindPress(string name)
 		date.SetToCurrent();
 		string timestamp = date.FormatISOCombined('-');
 		timestamp.Replace(":", "");
-		string filename = appPath(S_FMT("sladeshot-%s.png", timestamp), DIR_USER);
+		string filename = App::path(S_FMT("sladeshot-%s.png", timestamp), App::Dir::User);
 		if (shot.saveToFile(UTF8(filename)))
 		{
 			// Editor message if the file is actually written, with full path
@@ -4168,7 +4168,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 			                     max(mouse_downpos_m.x, mouse_pos_m.x), max(mouse_downpos_m.y, mouse_pos_m.y), e.ShiftDown());
 
 			// Begin selection box fade animation
-			animations.push_back(new MCASelboxFader(theApp->runTimer(), mouse_downpos_m, mouse_pos_m));
+			animations.push_back(new MCASelboxFader(App::runTimer(), mouse_downpos_m, mouse_pos_m));
 		}
 
 		// If we're in object edit mode

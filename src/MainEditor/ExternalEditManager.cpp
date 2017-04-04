@@ -32,6 +32,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ExternalEditManager.h"
 #include "Archive/Archive.h"
 #include "Conversions.h"
@@ -78,7 +79,7 @@ public:
 	virtual bool exportEntry()
 	{
 		// Determine export filename/path
-		wxFileName fn(appPath(entry->getName(), DIR_TEMP));
+		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
 		fn.SetExt(entry->getType()->getExtension());
 
 		// Export entry and start monitoring
@@ -167,7 +168,7 @@ public:
 
 	bool exportEntry()
 	{
-		wxFileName fn(appPath(entry->getName(), DIR_TEMP));
+		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
 
 		fn.SetExt("png");
 
@@ -232,7 +233,7 @@ public:
 
 	bool exportEntry()
 	{
-		wxFileName fn(appPath(entry->getName(), DIR_TEMP));
+		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
 		fn.SetExt("mid");
 
 		// Convert to MIDI data
@@ -319,7 +320,7 @@ public:
 
 	bool exportEntry()
 	{
-		wxFileName fn(appPath(entry->getName(), DIR_TEMP));
+		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
 		fn.SetExt("mid");
 
 		// Convert to WAV data

@@ -29,7 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "Archive.h"
-#include "MainApp.h"
+#include "App.h"
 #include "General/Misc.h"
 #include "General/UndoRedo.h"
 #include "General/Clipboard.h"

@@ -27,16 +27,15 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MainEditor/MainEditor.h"
 #include "EntryType.h"
 #include "Utility/Tokenizer.h"
 #include "General/Console/Console.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/ZipArchive.h"
-#include "Archive/Formats/WadArchive.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "Utility/Parser.h"
-#include "General/Console/ConsoleHelpers.h"
 
 
 /*******************************************************************
@@ -619,12 +618,12 @@ bool EntryType::loadEntryTypes()
 	// -------- READ CUSTOM TYPES ---------
 
 	// If the directory doesn't exist create it
-	if (!wxDirExists(appPath("entry_types", DIR_USER)))
-		wxMkdir(appPath("entry_types", DIR_USER));
+	if (!wxDirExists(App::path("entry_types", App::Dir::User)))
+		wxMkdir(App::path("entry_types", App::Dir::User));
 
 	// Open the custom palettes directory
 	wxDir res_dir;
-	res_dir.Open(appPath("entry_types", DIR_USER));
+	res_dir.Open(App::path("entry_types", App::Dir::User));
 
 	// Go through each file in the directory
 	string filename = wxEmptyString;

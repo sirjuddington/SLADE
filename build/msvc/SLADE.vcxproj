@@ -193,7 +193,8 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Application\MainApp.cpp" />
+    <ClCompile Include="..\..\src\Application\App.cpp" />
+    <ClCompile Include="..\..\src\Application\SLADEWxApp.cpp" />
     <ClCompile Include="..\..\src\Archive\Archive.cpp" />
     <ClCompile Include="..\..\src\Archive\ArchiveEntry.cpp" />
     <ClCompile Include="..\..\src\Archive\ArchiveManager.cpp" />
@@ -1554,8 +1555,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\Application\App.h" />
     <ClInclude Include="..\..\src\Application\Main.h" />
-    <ClInclude Include="..\..\src\Application\MainApp.h" />
+    <ClInclude Include="..\..\src\Application\SLADEWxApp.h" />
     <ClInclude Include="..\..\src\Archive\Archive.h" />
     <ClInclude Include="..\..\src\Archive\ArchiveEntry.h" />
     <ClInclude Include="..\..\src\Archive\ArchiveManager.h" />

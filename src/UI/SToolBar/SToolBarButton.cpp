@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainApp.h"
+#include "App.h"
 #include "SToolBarButton.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"

@@ -29,7 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainApp.h"
+#include "App.h"
 #include "PreferencesDialog.h"
 #include "ACSPrefsPanel.h"
 #include "AdvancedPrefsPanel.h"

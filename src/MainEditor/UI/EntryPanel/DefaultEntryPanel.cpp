@@ -30,7 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "MainApp.h"
+#include "App.h"
 #include "DefaultEntryPanel.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/ModifyOffsetsDialog.h"

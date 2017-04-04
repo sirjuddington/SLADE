@@ -34,7 +34,7 @@
 #include "DirArchive.h"
 #include "General/UI.h"
 #include "WadArchive.h"
-#include "MainApp.h"
+#include "App.h"
 
 
 /*******************************************************************
@@ -229,16 +229,16 @@ bool DirArchive::save(string filename)
 	}
 
 	// Get current directory structure
-	long time = theApp->runTimer();
+	long time = App::runTimer();
 	vector<string> files, dirs;
 	DirArchiveTraverser traverser(files, dirs);
 	wxDir dir(this->filename);
 	dir.Traverse(traverser, "", wxDIR_FILES|wxDIR_DIRS);
 	//wxDir::GetAllFiles(this->filename, &files, wxEmptyString, wxDIR_FILES|wxDIR_DIRS);
-	LOG_MESSAGE(2, "GetAllFiles took %lums", theApp->runTimer() - time);
+	LOG_MESSAGE(2, "GetAllFiles took %lums", App::runTimer() - time);
 
 	// Check for any files to remove
-	time = theApp->runTimer();
+	time = App::runTimer();
 	for (unsigned a = 0; a < removed_files.size(); a++)
 	{
 		if (wxFileExists(removed_files[a]))
@@ -268,7 +268,7 @@ bool DirArchive::save(string filename)
 		if (!found && wxRmdir(dirs[a]))
 			LOG_MESSAGE(2, "Removing directory %s", dirs[a]);
 	}
-	LOG_MESSAGE(2, "Remove check took %lums", theApp->runTimer() - time);
+	LOG_MESSAGE(2, "Remove check took %lums", App::runTimer() - time);
 
 	// Go through entries
 	vector<string> files_written;
