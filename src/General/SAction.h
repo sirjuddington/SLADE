@@ -2,6 +2,7 @@
 #ifndef __SACTION_H__
 #define __SACTION_H__
 
+class ParseTreeNode;
 class wxMenu;
 class wxAuiToolBar;
 class wxToolBar;
@@ -25,10 +26,8 @@ public:
 		string helptext = "",
 		string shortcut = "",
 		Type type = Type::Normal,
-		int custom_wxid = -1,
 		int radio_group = -1,
-		int reserve_ids = 1,
-		string linked_cvar = ""
+		int reserve_ids = 1
 		);
 	~SAction();
 
@@ -59,6 +58,7 @@ public:
 
 	// Static functions
 	static void		initWxId(int id) { cur_id = id; }
+	static bool		initActions();
 	static int		newGroup();
 	static SAction*	fromId(const string& id);
 	static SAction*	fromWxId(int wx_id);
@@ -79,6 +79,9 @@ private:
 	bool		checked;
 	string		keybind;
 	CBoolCVar*	linked_cvar;
+
+	// Internal functions
+	bool	parse(ParseTreeNode* node);
 
 	// Static functions
 	static SAction*	invalidAction();

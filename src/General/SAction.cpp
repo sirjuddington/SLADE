@@ -30,10 +30,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "UI/WxStuff.h"
+#include "Archive/ArchiveManager.h"
+#include "General/KeyBind.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
-#include "General/KeyBind.h"
+#include "UI/WxStuff.h"
+#include "Utility/Parser.h"
 
 
 /*******************************************************************
@@ -61,12 +63,11 @@ SAction::SAction(
 	string helptext,
 	string shortcut,
 	Type type,
-	int custom_wxid,
 	int radio_group,
-	int reserve_ids,
-	string linked_cvar
+	int reserve_ids
 ) :
 	id { id },
+	wx_id{ -1 },
 	reserved_ids{ reserve_ids },
 	text{ text },
 	icon{ icon },
@@ -77,28 +78,28 @@ SAction::SAction(
 	checked{ false },
 	linked_cvar{ nullptr }
 {
-	// Add to actions
-	actions.push_back(this);
+	//// Add to actions
+	//actions.push_back(this);
 
-	// Setup wxWidgets id stuff
-	if (custom_wxid == -1)
-	{
-		wx_id = cur_id;
-		cur_id += reserved_ids;
-	}
-	else
-		wx_id = custom_wxid;
+	//// Setup wxWidgets id stuff
+	//if (custom_wxid == -1)
+	//{
+	//	wx_id = cur_id;
+	//	cur_id += reserved_ids;
+	//}
+	//else
+	//	wx_id = custom_wxid;
 
-	// Setup linked cvar
-	if (type == Type::Check && !linked_cvar.IsEmpty())
-	{
-		auto cvar = get_cvar(linked_cvar);
-		if (cvar && cvar->type == CVAR_BOOLEAN)
-		{
-			this->linked_cvar = (CBoolCVar*)cvar;
-			checked = cvar->GetValue().Bool;
-		}
-	}
+	//// Setup linked cvar
+	//if (type == Type::Check && !linked_cvar.IsEmpty())
+	//{
+	//	auto cvar = get_cvar(linked_cvar);
+	//	if (cvar && cvar->type == CVAR_BOOLEAN)
+	//	{
+	//		this->linked_cvar = (CBoolCVar*)cvar;
+	//		checked = cvar->GetValue().Bool;
+	//	}
+	//}
 }
 
 /* SAction::~SAction
@@ -266,10 +267,145 @@ bool SAction::addToToolbar(wxToolBar* toolbar, string icon_override, int wx_id_o
 	return true;
 }
 
+/* SAction::parse
+ * Loads a parsed SAction definition
+ *******************************************************************/
+bool SAction::parse(ParseTreeNode* node)
+{
+	string linked_cvar;
+	int custom_wxid = -1;
+
+	for (unsigned a = 0; a < node->nChildren(); a++)
+	{
+		auto prop = (ParseTreeNode*)node->getChild(a);
+		string prop_name = prop->getName();
+		
+		// Text
+		if (S_CMPNOCASE(prop_name, "text"))
+			text = prop->getStringValue();
+
+		// Icon
+		else if (S_CMPNOCASE(prop_name, "icon"))
+			icon = prop->getStringValue();
+
+		// Help Text
+		else if (S_CMPNOCASE(prop_name, "help_text"))
+			helptext = prop->getStringValue();
+
+		// Shortcut
+		else if (S_CMPNOCASE(prop_name, "shortcut"))
+			shortcut = prop->getStringValue();
+
+		// Keybind (shortcut)
+		else if (S_CMPNOCASE(prop_name, "keybind"))
+			shortcut = S_FMT("kb:%s", prop->getStringValue());
+
+		// Type
+		else if (S_CMPNOCASE(prop_name, "type"))
+		{
+			string lc_type = prop->getStringValue().Lower();
+			if (lc_type == "check")
+				type = Type::Check;
+			else if (lc_type == "radio")
+				type = Type::Radio;
+		}
+
+		// Linked CVar
+		else if (S_CMPNOCASE(prop_name, "linked_cvar"))
+			linked_cvar = prop->getStringValue();
+
+		// Custom wx id
+		else if (S_CMPNOCASE(prop_name, "custom_wx_id"))
+			custom_wxid = prop->getIntValue();
+
+		// Reserve ids
+		else if (S_CMPNOCASE(prop_name, "reserve_ids"))
+			reserved_ids = prop->getIntValue();
+	}
+
+	// Setup wxWidgets id stuff
+	if (custom_wxid == -1)
+	{
+		wx_id = cur_id;
+		cur_id += reserved_ids;
+	}
+	else
+		wx_id = custom_wxid;
+
+	// Setup linked cvar
+	if (type == Type::Check && !linked_cvar.IsEmpty())
+	{
+		auto cvar = get_cvar(linked_cvar);
+		if (cvar && cvar->type == CVAR_BOOLEAN)
+		{
+			this->linked_cvar = (CBoolCVar*)cvar;
+			checked = cvar->GetValue().Bool;
+		}
+	}
+	
+	return true;
+}
+
 
 /*******************************************************************
  * SACTION CLASS STATIC FUNCTIONS
  *******************************************************************/
+
+/* SAction::initActions
+ * Loads and parses all SActions configured in actions.cfg in the
+ * program resource archive
+ *******************************************************************/
+bool SAction::initActions()
+{
+	// Get actions.cfg from slade.pk3
+	auto cfg_entry = theArchiveManager->programResourceArchive()->entryAtPath("actions.cfg");
+	if (!cfg_entry)
+		return false;
+
+	Parser parser(cfg_entry->getParentDir());
+	if (parser.parseText(cfg_entry->getMCData(), "actions.cfg"))
+	{
+		auto root = parser.parseTreeRoot();
+		for (unsigned a = 0; a < root->nChildren(); a++)
+		{
+			auto node = (ParseTreeNode*)root->getChild(a);
+
+			// Single action
+			if (S_CMPNOCASE(node->getType(), "action"))
+			{
+				auto action = new SAction(node->getName(), node->getName());
+				if (action->parse(node))
+					actions.push_back(action);
+				else
+					delete action;
+			}
+
+			// Group of actions
+			else if (S_CMPNOCASE(node->getName(), "group"))
+			{
+				int group = newGroup();
+
+				for (unsigned b = 0; b < node->nChildren(); b++)
+				{
+					auto group_node = (ParseTreeNode*)node->getChild(b);
+					if (S_CMPNOCASE(group_node->getType(), "action"))
+					{
+						auto action = new SAction(group_node->getName(), group_node->getName());
+						if (action->parse(node))
+						{
+							action->group = group;
+							actions.push_back(action);
+						}
+						else
+							delete action;
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
 
 /* SAction::newGroup
  * Returns a new, unused SAction group id
@@ -339,6 +475,10 @@ SActionHandler::~SActionHandler()
 	VECTOR_REMOVE(action_handlers, this);
 }
 
+/* SActionHandler::doAction
+ * Handles the SAction [id], returns true if an SActionHandler
+ * handled the action, false otherwise
+ *******************************************************************/
 bool SActionHandler::doAction(string id)
 {
 	// Toggle action if necessary

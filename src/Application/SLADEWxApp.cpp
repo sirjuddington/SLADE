@@ -633,6 +633,10 @@ bool SLADEWxApp::OnInit()
 		return false;
 	}
 
+	// Init SActions
+	SAction::initWxId(26000);
+	SAction::initActions();
+
 	// Init lua
 	Lua::init();
 

@@ -31,8 +31,9 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "Parser.h"
+#include "Archive/Archive.h"
 #include "General/Console/Console.h"
+#include "Parser.h"
 
 
 /*******************************************************************
@@ -51,10 +52,12 @@ wxRegEx re_float("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT|wxRE_NO
 /* ParseTreeNode::ParseTreeNode
  * ParseTreeNode class constructor
  *******************************************************************/
-ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser) : STreeNode(parent)
+ParseTreeNode::ParseTreeNode(ParseTreeNode* parent, Parser* parser, ArchiveTreeNode* archive_dir) :
+	STreeNode{ parent },
+	parser{ parser },
+	archive_dir{ archive_dir }
 {
 	allowDup(true);
-	this->parser = parser;
 }
 
 /* ParseTreeNode::~ParseTreeNode
@@ -167,38 +170,67 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 					token = tz.getToken();
 					continue;
 				}
-				else
+
+				// Skip section
+				int skip = 0;
+				while (true)
 				{
-					// Skip section
-					int skip = 0;
-					while (true)
+					token = tz.getToken();
+					if (S_CMPNOCASE(token, "#endif"))
+						skip--;
+					else if (S_CMPNOCASE(token, "#ifdef"))
+						skip++;
+					else if (S_CMPNOCASE(token, "#ifndef"))
+						skip++;
+
+					if (skip < 0)
+						break;
+					if (token.IsEmpty())
 					{
-						token = tz.getToken();
-						if (S_CMPNOCASE(token, "#endif"))
-							skip--;
-						else if (S_CMPNOCASE(token, "#ifdef"))
-							skip++;
-						else if (S_CMPNOCASE(token, "#ifndef"))
-							skip++;
-
-						if (skip < 0)
-							break;
-						if (token.IsEmpty())
-						{
-							wxLogMessage("Error: found end of file within #if(n)def block");
-							break;
-						}
+						wxLogMessage("Error: found end of file within #if(n)def block");
+						break;
 					}
-
-					continue;
 				}
+
+				continue;
 			}
 
-			// #include (ignore)
+			// #include
 			if (S_CMPNOCASE(token, "#include"))
 			{
-				tz.skipToken();	// Skip include path
-				token = tz.getToken();
+				// Include entry at the given path if we have an archive dir set
+				if (archive_dir)
+				{
+					// Get entry to include
+					auto inc_path = tz.getToken();
+					auto archive = archive_dir->getArchive();
+					auto inc_entry = archive->entryAtPath(archive_dir->getPath() + inc_path);
+					if (!inc_entry) // Try absolute path
+						inc_entry = archive->entryAtPath(inc_path);
+
+					if (inc_entry)
+					{
+						// Save the current dir and set it to the included entry's dir
+						auto orig_dir = archive_dir;
+						archive_dir = inc_entry->getParentDir();
+
+						// Parse text in the entry
+						Tokenizer inc_tz;
+						inc_tz.openMem(&inc_entry->getMCData(), inc_entry->getName());
+						bool ok = parse(inc_tz);
+
+						// Reset dir and abort if parsing failed
+						archive_dir = orig_dir;
+						if (!ok)
+							return false;
+					}
+					else
+						LOG_MESSAGE(2, "Parsing error: Include entry %s not found", inc_path);
+				}
+				else
+					tz.skipToken();	// Skip include path
+
+				tz.getToken(&token);
 				continue;
 			}
 
@@ -394,10 +426,11 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 /* Parser::Parser
  * Parser class constructor
  *******************************************************************/
-Parser::Parser()
+Parser::Parser(ArchiveTreeNode* dir_root) :
+	archive_dir_root { dir_root }
 {
 	// Create parse tree root node
-	pt_root = new ParseTreeNode(NULL, this);
+	pt_root = std::make_unique<ParseTreeNode>(nullptr, this, archive_dir_root);
 }
 
 /* Parser::~Parser
@@ -405,8 +438,6 @@ Parser::Parser()
  *******************************************************************/
 Parser::~Parser()
 {
-	// Clean up
-	delete pt_root;
 }
 
 /* Parser::parseText
