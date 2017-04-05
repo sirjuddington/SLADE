@@ -309,7 +309,7 @@ public:
 	bool fixProblem(unsigned index, unsigned fix_type, MapEditor* editor)
 	{
 		// Begin tag edit
-		theApp->doAction("mapw_line_tagedit");
+		SActionHandler::doAction("mapw_line_tagedit");
 
 		return false;
 	}

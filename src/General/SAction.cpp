@@ -33,17 +33,18 @@
 #include "UI/WxStuff.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
-#include "App.h"
 #include "General/KeyBind.h"
 
 
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-int					SAction::n_groups = 0;
-int					SAction::cur_id = 0;
-vector<SAction*>	SAction::actions;
-SAction*			SAction::action_invalid = nullptr;
+int						SAction::n_groups = 0;
+int						SAction::cur_id = 0;
+vector<SAction*>		SAction::actions;
+SAction*				SAction::action_invalid = nullptr;
+vector<SActionHandler*>	SActionHandler::action_handlers;
+int						SActionHandler::wx_id_offset = 0;
 
 
 /*******************************************************************
@@ -327,7 +328,7 @@ SAction* SAction::invalidAction()
  *******************************************************************/
 SActionHandler::SActionHandler()
 {
-	theApp->action_handlers.push_back(this);
+	action_handlers.push_back(this);
 }
 
 /* SActionHandler::~SActionHandler
@@ -335,12 +336,36 @@ SActionHandler::SActionHandler()
  *******************************************************************/
 SActionHandler::~SActionHandler()
 {
-	for (unsigned a = 0; a < theApp->action_handlers.size(); a++)
+	VECTOR_REMOVE(action_handlers, this);
+}
+
+bool SActionHandler::doAction(string id)
+{
+	// Toggle action if necessary
+	SAction::fromId(id)->toggle();
+
+	// Send action to all handlers
+	bool handled = false;
+	for (unsigned a = 0; a < action_handlers.size(); a++)
 	{
-		if (theApp->action_handlers[a] == this)
+		action_handlers[a]->wx_id_offset = wx_id_offset;
+		if (action_handlers[a]->handleAction(id))
 		{
-			theApp->action_handlers.erase(theApp->action_handlers.begin() + a);
-			a--;
+			handled = true;
+			break;
 		}
 	}
+
+	// Warn if nothing handled it
+	if (!handled)
+		LOG_MESSAGE(1, "Warning: Action \"%s\" not handled", id);
+
+	// Log action (to log file only)
+	// TODO: this
+	//exiting = true;
+	//wxLogMessage("**** Action \"%s\"", id);
+	//exiting = false;
+
+	// Return true if handled
+	return handled;
 }

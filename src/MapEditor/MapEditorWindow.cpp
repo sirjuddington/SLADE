@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MapEditorWindow.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/Formats/WadArchive.h"

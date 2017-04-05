@@ -93,15 +93,20 @@ private:
 // Basic 'interface' class for classes that handle SActions (yay multiple inheritance)
 class SActionHandler
 {
-	friend class SLADEWxApp;
-protected:
-	int	wx_id_offset;
-
-	virtual bool	handleAction(string id) { return false; }
-
 public:
 	SActionHandler();
 	virtual ~SActionHandler();
+
+	static void	setWxIdOffset(int offset) { wx_id_offset = offset; }
+	static bool	doAction(string id);
+
+protected:
+	static int	wx_id_offset;
+
+	virtual bool	handleAction(string id) { return false; }
+
+private:
+	static vector<SActionHandler*>	action_handlers;
 };
 
 #endif//__SACTION_H__

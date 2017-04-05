@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "UI/WxStuff.h"
 #include "MapRenderer2D.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"

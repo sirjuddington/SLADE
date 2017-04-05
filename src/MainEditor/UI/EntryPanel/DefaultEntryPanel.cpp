@@ -30,14 +30,13 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "App.h"
 #include "DefaultEntryPanel.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/ModifyOffsetsDialog.h"
 #include "General/Misc.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
-#include "UI/HexEditorPanel.h"
+#include "General/SAction.h"
 
 
 /*******************************************************************
@@ -221,7 +220,7 @@ bool DefaultEntryPanel::saveEntry()
  *******************************************************************/
 void DefaultEntryPanel::onBtnGfxConvert(wxCommandEvent& e)
 {
-	theApp->doAction("arch_gfx_convert");
+	SActionHandler::doAction("arch_gfx_convert");
 }
 
 /* DefaultEntryPanel::onBtnGfxModifyOffsets

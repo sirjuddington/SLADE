@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ThingPropsPanel.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditorWindow.h"

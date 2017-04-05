@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MainWindow.h"
 #include "UI/ConsolePanel.h"
 #include "Archive/ArchiveManager.h"
@@ -857,7 +858,8 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		theApp->doAction("aman_recent", index);
+		SActionHandler::setWxIdOffset(index);
+		SActionHandler::doAction("aman_recent");
 		createStartPage();
 		html_startpage->Reload();
 	}
@@ -865,14 +867,14 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 	{
 		// Action
 		if (href.EndsWith("open"))
-			theApp->doAction("aman_open");
+			SActionHandler::doAction("aman_open");
 		else if (href.EndsWith("newwad"))
-			theApp->doAction("aman_newwad");
+			SActionHandler::doAction("aman_newwad");
 		else if (href.EndsWith("newzip"))
-			theApp->doAction("aman_newzip");
+			SActionHandler::doAction("aman_newzip");
 		else if (href.EndsWith("newmap"))
 		{
-			theApp->doAction("aman_newmap");
+			SActionHandler::doAction("aman_newmap");
 			return;
 		}
 		else if (href.EndsWith("reloadstartpage"))
@@ -914,20 +916,20 @@ void MainWindow::onHTMLLinkClicked(wxEvent& e)
 		string rs = href.Mid(9);
 		unsigned long index = 0;
 		rs.ToULong(&index);
-		theApp->doAction("aman_recent", index);
+		SActionHandler::doAction("aman_recent", index);
 		createStartPage();
 	}
 	else if (href.StartsWith("action://"))
 	{
 		// Action
 		if (href.EndsWith("open"))
-			theApp->doAction("aman_open");
+			SActionHandler::doAction("aman_open");
 		else if (href.EndsWith("newwad"))
-			theApp->doAction("aman_newwad");
+			SActionHandler::doAction("aman_newwad");
 		else if (href.EndsWith("newzip"))
-			theApp->doAction("aman_newzip");
+			SActionHandler::doAction("aman_newzip");
 		else if (href.EndsWith("newmap"))
-			theApp->doAction("aman_newmap");
+			SActionHandler::doAction("aman_newmap");
 		else if (href.EndsWith("reloadstartpage"))
 			createStartPage();
 	}

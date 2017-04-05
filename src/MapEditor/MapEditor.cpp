@@ -29,6 +29,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MapEditor.h"
 #include "General/ColourConfiguration.h"
 #include "Archive/ArchiveManager.h"

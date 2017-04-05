@@ -31,8 +31,6 @@
 #include "Main.h"
 #include "SwitchesEntryPanel.h"
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
 
 
 /*******************************************************************

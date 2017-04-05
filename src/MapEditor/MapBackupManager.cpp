@@ -28,6 +28,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "MapBackupManager.h"
 #include "Archive/Formats/ZipArchive.h"
 #include "General/Misc.h"

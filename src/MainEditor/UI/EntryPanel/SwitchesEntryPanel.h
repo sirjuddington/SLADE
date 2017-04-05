@@ -2,7 +2,7 @@
 #ifndef SWITCHESENTRYPANEL_H
 #define SWITCHESENTRYPANEL_H
 
-#include "App.h"
+#include "General/SAction.h"
 #include "EntryPanel.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/SwitchesList.h"

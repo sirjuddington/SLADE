@@ -30,7 +30,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "App.h"
 #include "SToolBarButton.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
@@ -334,7 +333,7 @@ void SToolBarButton::onMouseEvent(wxMouseEvent& e)
 		{
 			if (action->isRadio())
 				GetParent()->Refresh();
-			theApp->doAction(action->getId());
+			SActionHandler::doAction(action->getId());
 		}
 		else
 			sendClickedEvent();
