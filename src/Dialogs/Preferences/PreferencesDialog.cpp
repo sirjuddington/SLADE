@@ -228,7 +228,7 @@ void PreferencesDialog::applyPreferences()
 	prefs_advanced->applyPreferences();
 
 	// Write file so changes are not lost
-	theApp->saveConfigFile();
+	App::saveConfigFile();
 }
 
 

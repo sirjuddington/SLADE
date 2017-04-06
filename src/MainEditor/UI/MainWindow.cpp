@@ -637,7 +637,7 @@ bool MainWindow::exitProgram()
 	global_palette = palette_chooser->GetStringSelection();
 
 	// Exit application
-	wxTheApp->Exit();
+	App::exit(true);
 
 	return true;
 }

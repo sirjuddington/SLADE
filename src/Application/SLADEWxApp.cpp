@@ -30,26 +30,19 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
-#include "External/dumb/dumb.h"
 #include "External/email/wxMailer.h"
-#include "General/ColourConfiguration.h"
 #include "General/Console/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Lua.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/VersionCheck.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
-#include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/NodeBuilders.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
-#include "UI/SplashWindow.h"
-#include "UI/TextEditor/TextStyle.h"
-#include "Utility/Tokenizer.h"
 #include <wx/statbmp.h>
 
 #undef BOOL
@@ -87,7 +80,6 @@ namespace Global
 }
 
 
-bool	exiting = false;
 string	current_action = "";
 bool	update_check_message_box = false;
 CVAR(String, dir_last, "", CVAR_SAVE)
@@ -439,7 +431,6 @@ IMPLEMENT_APP(SLADEWxApp)
  *******************************************************************/
 SLADEWxApp::SLADEWxApp()
 {
-	save_config = true;
 }
 
 /* SLADEWxApp::~SLADEWxApp
@@ -561,59 +552,8 @@ bool SLADEWxApp::OnInit()
  *******************************************************************/
 int SLADEWxApp::OnExit()
 {
-	exiting = true;
-
-	if (save_config)
-	{
-		// Save configuration
-		saveConfigFile();
-
-		// Save text style configuration
-		StyleSet::saveCurrent();
-
-		// Save colour configuration
-		MemChunk ccfg;
-		ColourConfiguration::writeConfiguration(ccfg);
-		ccfg.exportFile(App::path("colours.cfg", App::Dir::User));
-
-		// Save game exes
-		wxFile f;
-		f.Open(App::path("executables.cfg", App::Dir::User), wxFile::write);
-		f.Write(Executables::writeExecutables());
-		f.Close();
-	}
-
-	// Close the map editor if it's open
-	MapEditorWindow::deleteInstance();
-
-	// Close all open archives
-	theArchiveManager->closeAll();
-
-	// Clean up
-	EntryType::cleanupEntryTypes();
-	ArchiveManager::deleteInstance();
-	Console::deleteInstance();
-	SplashWindow::deleteInstance();
 	delete single_instance_checker;
 	delete file_listener;
-
-	// Clear temp folder
-	wxDir temp;
-	temp.Open(App::path("", App::Dir::Temp));
-	string filename = wxEmptyString;
-	bool files = temp.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-	while (files)
-	{
-		if (!wxRemoveFile(App::path(filename, App::Dir::Temp)))
-			LOG_WARNING(1, "Warning: Could not clean up temporary file \"%s\"", filename);
-		files = temp.GetNext(&filename);
-	}
-
-	// Close lua
-	Lua::close();
-
-	// Close DUMB
-	dumb_exit();
 
 	return 0;
 }
@@ -637,71 +577,6 @@ void SLADEWxApp::MacOpenFile(const wxString &fileName)
 }
 #endif // __APPLE__
 
-
-/* SLADEWxApp::saveConfigFile
- * Saves the SLADE configuration file
- *******************************************************************/
-void SLADEWxApp::saveConfigFile()
-{
-	// Open SLADE.cfg for writing text
-	wxFile file(App::path("slade3.cfg", App::Dir::User), wxFile::write);
-
-	// Do nothing if it didn't open correctly
-	if (!file.IsOpened())
-		return;
-
-	// Write cfg header
-	file.Write("/*****************************************************\n");
-	file.Write(" * SLADE Configuration File\n");
-	file.Write(" * Don't edit this unless you know what you're doing\n");
-	file.Write(" *****************************************************/\n\n");
-
-	// Write cvars
-	save_cvars(file);
-
-	// Write base resource archive paths
-	file.Write("\nbase_resource_paths\n{\n");
-	for (size_t a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
-	{
-		string path = theArchiveManager->getBaseResourcePath(a);
-		path.Replace("\\", "/");
-		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
-	}
-	file.Write("}\n");
-
-	// Write recent files list (in reverse to keep proper order when reading back)
-	file.Write("\nrecent_files\n{\n");
-	for (int a = theArchiveManager->numRecentFiles() - 1; a >= 0; a--)
-	{
-		string path = theArchiveManager->recentFile(a);
-		path.Replace("\\", "/");
-		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
-	}
-	file.Write("}\n");
-
-	// Write keybinds
-	file.Write("\nkeys\n{\n");
-	file.Write(KeyBind::writeBinds());
-	file.Write("}\n");
-
-	// Write nodebuilder paths
-	file.Write("\n");
-	NodeBuilders::saveBuilderPaths(file);
-
-	// Write game exe paths
-	file.Write("\nexecutable_paths\n{\n");
-	file.Write(Executables::writePaths());
-	file.Write("}\n");
-
-	// Write window info
-	file.Write("\nwindow_info\n{\n");
-	Misc::writeWindowInfo(file);
-	file.Write("}\n");
-
-	// Close configuration file
-	file.Write("\n// End Configuration File\n\n");
-}
-
 /* SLADEWxApp::checkForUpdates
  * Runs the version checker, if [message_box] is true, a message box
  * will be shown if already up-to-date
@@ -715,16 +590,6 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 	checker->Create();
 	checker->Run();
 #endif
-}
-
-/* SLADEWxApp::exitApp
- * Exits the application. If [save_config] is fale, no configuration
- * files will be saved (slade.cfg, executables.cfg, etc.)
- *******************************************************************/
-void SLADEWxApp::exitApp(bool save_config)
-{
-	this->save_config = save_config;
-	theMainWindow->Close();
 }
 
 
@@ -891,5 +756,5 @@ CONSOLE_COMMAND(quit, 0, true)
 			save_config = false;
 	}
 
-	theApp->exitApp(save_config);
+	App::exit(save_config);
 }

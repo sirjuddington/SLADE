@@ -49,6 +49,8 @@
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
+#include "General/Console/Console.h"
+#include "External/dumb/dumb.h"
 
 
 /*******************************************************************
@@ -59,6 +61,7 @@ namespace App
 	wxStopWatch	timer;
 	int			temp_fail_count = 0;
 	bool		init_ok = false;
+	bool		exiting = false;
 
 	// Directory paths
 	string	dir_data = "";
@@ -136,7 +139,7 @@ namespace App
 		return true;
 	}
 
-	/* SLADEWxApp::readConfigFile
+	/* readConfigFile
 	 * Reads and parses the SLADE configuration file
 	 *******************************************************************/
 	void readConfigFile()
@@ -246,6 +249,16 @@ namespace App
 			token = tz.getToken();
 		}
 	}
+}
+
+bool App::isInitialised()
+{
+	return init_ok;
+}
+
+long App::runTimer()
+{
+	return timer.Time();
 }
 
 bool App::init()
@@ -364,14 +377,123 @@ bool App::init()
 	return true;
 }
 
-bool App::isInitialised()
+/* App::saveConfigFile
+ * Saves the SLADE configuration file
+ *******************************************************************/
+void App::saveConfigFile()
 {
-	return init_ok;
+	// Open SLADE.cfg for writing text
+	wxFile file(App::path("slade3.cfg", App::Dir::User), wxFile::write);
+
+	// Do nothing if it didn't open correctly
+	if (!file.IsOpened())
+		return;
+
+	// Write cfg header
+	file.Write("/*****************************************************\n");
+	file.Write(" * SLADE Configuration File\n");
+	file.Write(" * Don't edit this unless you know what you're doing\n");
+	file.Write(" *****************************************************/\n\n");
+
+	// Write cvars
+	save_cvars(file);
+
+	// Write base resource archive paths
+	file.Write("\nbase_resource_paths\n{\n");
+	for (size_t a = 0; a < theArchiveManager->numBaseResourcePaths(); a++)
+	{
+		string path = theArchiveManager->getBaseResourcePath(a);
+		path.Replace("\\", "/");
+		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
+	}
+	file.Write("}\n");
+
+	// Write recent files list (in reverse to keep proper order when reading back)
+	file.Write("\nrecent_files\n{\n");
+	for (int a = theArchiveManager->numRecentFiles() - 1; a >= 0; a--)
+	{
+		string path = theArchiveManager->recentFile(a);
+		path.Replace("\\", "/");
+		file.Write(S_FMT("\t\"%s\"\n", path), wxConvUTF8);
+	}
+	file.Write("}\n");
+
+	// Write keybinds
+	file.Write("\nkeys\n{\n");
+	file.Write(KeyBind::writeBinds());
+	file.Write("}\n");
+
+	// Write nodebuilder paths
+	file.Write("\n");
+	NodeBuilders::saveBuilderPaths(file);
+
+	// Write game exe paths
+	file.Write("\nexecutable_paths\n{\n");
+	file.Write(Executables::writePaths());
+	file.Write("}\n");
+
+	// Write window info
+	file.Write("\nwindow_info\n{\n");
+	Misc::writeWindowInfo(file);
+	file.Write("}\n");
+
+	// Close configuration file
+	file.Write("\n// End Configuration File\n\n");
 }
 
-long App::runTimer()
+void App::exit(bool save_config)
 {
-	return timer.Time();
+	exiting = true;
+
+	if (save_config)
+	{
+		// Save configuration
+		saveConfigFile();
+
+		// Save text style configuration
+		StyleSet::saveCurrent();
+
+		// Save colour configuration
+		MemChunk ccfg;
+		ColourConfiguration::writeConfiguration(ccfg);
+		ccfg.exportFile(App::path("colours.cfg", App::Dir::User));
+
+		// Save game exes
+		wxFile f;
+		f.Open(App::path("executables.cfg", App::Dir::User), wxFile::write);
+		f.Write(Executables::writeExecutables());
+		f.Close();
+	}
+
+	// Close all open archives
+	theArchiveManager->closeAll();
+
+	// Clean up
+	EntryType::cleanupEntryTypes();
+	ArchiveManager::deleteInstance();
+	Console::deleteInstance();
+	SplashWindow::deleteInstance();
+
+	// Clear temp folder
+	wxDir temp;
+	temp.Open(App::path("", App::Dir::Temp));
+	string filename = wxEmptyString;
+	bool files = temp.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
+	while (files)
+	{
+		if (!wxRemoveFile(App::path(filename, App::Dir::Temp)))
+			LOG_WARNING(1, "Warning: Could not clean up temporary file \"%s\"", filename);
+		files = temp.GetNext(&filename);
+	}
+
+	// Close lua
+	Lua::close();
+
+	// Close DUMB
+	dumb_exit();
+
+	// Exit wx Application
+	wxTheApp->Exit();
 }
 
 /* App::path

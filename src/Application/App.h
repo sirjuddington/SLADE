@@ -4,9 +4,12 @@ class SAction;
 
 namespace App
 {
-	bool	init();
 	bool	isInitialised();
 	long	runTimer();
+
+	bool	init();
+	void	saveConfigFile();
+	void	exit(bool save_config);
 
 	// Path related stuff
 	enum class Dir { User, Data, Executable, Resources, Temp };

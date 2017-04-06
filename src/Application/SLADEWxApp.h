@@ -21,9 +21,7 @@ public:
 #endif // __APPLE__
 
 	bool	singleInstanceCheck();
-	void	saveConfigFile();
 	void	checkForUpdates(bool message_box);
-	void	exitApp(bool save_config = true);
 
 	void	onMenu(wxCommandEvent& e);
 	void	onVersionCheckCompleted(wxThreadEvent& e);
@@ -32,7 +30,6 @@ public:
 private:
 	wxSingleInstanceChecker*	single_instance_checker;
 	MainAppFileListener*		file_listener;
-	bool						save_config;
 };
 
 #define theApp ((SLADEWxApp*)wxTheApp)
