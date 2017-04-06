@@ -224,6 +224,7 @@ uint32_t valid_flat_size[][3] =
 	{  80,  50, 0 },	// SRB2 fade mask size 1
 	{ 128, 128,	1 },	// |
 	{ 160, 100, 0 },	// SRB2 fade mask size 2
+	{ 256,  34, 0 },    // SRB2 colormap
 	{ 256,  66,	0 },	// Blake Stone colormap
 	{ 256, 200,	0 },	// Rise of the Triad sky
 	{ 256, 256,	1 },	// hires flat size
@@ -234,7 +235,7 @@ uint32_t valid_flat_size[][3] =
 	{2048,2048,	1 },	// super hires flat size (SRB2)
 	{4096,4096,	1 },	// |
 };
-uint32_t	n_valid_flat_sizes = 21;
+uint32_t	n_valid_flat_sizes = 22;
 
 
 /*******************************************************************
