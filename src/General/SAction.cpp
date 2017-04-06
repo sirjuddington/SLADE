@@ -391,7 +391,7 @@ bool SAction::initActions()
 					if (S_CMPNOCASE(group_node->getType(), "action"))
 					{
 						auto action = new SAction(group_node->getName(), group_node->getName());
-						if (action->parse(node))
+						if (action->parse(group_node))
 						{
 							action->group = group;
 							actions.push_back(action);
