@@ -121,9 +121,9 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
 	if (target_colformat >= 0 && !fmt->canWriteType((SIType)target_colformat))
 	{
 		if (target_colformat == RGBA)
-			wxLogMessage("Format \"%s\" cannot be written as RGBA data", fmt->getName());
+			LOG_MESSAGE(1, "Format \"%s\" cannot be written as RGBA data", fmt->getName());
 		else if (target_colformat == PALMASK)
-			wxLogMessage("Format \"%s\" cannot be written as paletted data", fmt->getName());
+			LOG_MESSAGE(1, "Format \"%s\" cannot be written as paletted data", fmt->getName());
 
 		return false;
 	}
@@ -135,7 +135,7 @@ bool EntryOperations::gfxConvert(ArchiveEntry* entry, string target_format, SIFo
 	int writable = fmt->canWrite(image);
 	if (writable == SIFormat::NOTWRITABLE)
 	{
-		wxLogMessage("Entry \"%s\" could not be converted to target format \"%s\"", entry->getName(), fmt->getName());
+		LOG_MESSAGE(1, "Entry \"%s\" could not be converted to target format \"%s\"", entry->getName(), fmt->getName());
 		return false;
 	}
 	else if (writable == SIFormat::CONVERTIBLE)
@@ -170,7 +170,7 @@ bool EntryOperations::modifyGfxOffsets(ArchiveEntry* entry, ModifyOffsetsDialog*
 		entryformat == "img_doom_alpha" || entryformat == "img_doom_beta" ||
 		entryformat == "img_png"))
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" which does not support offsets", entry->getName(), entry->getType()->getName());
+		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" which does not support offsets", entry->getName(), entry->getType()->getName());
 		return false;
 	}
 
@@ -322,7 +322,7 @@ bool EntryOperations::setGfxOffsets(ArchiveEntry* entry, int x, int y)
 		entryformat == "img_doom_alpha" || entryformat == "img_doom_beta" ||
 		entryformat == "img_png"))
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" which does not support offsets", entry->getName(), entry->getType()->getName());
+		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" which does not support offsets", entry->getName(), entry->getType()->getName());
 		return false;
 	}
 
@@ -551,7 +551,7 @@ bool EntryOperations::modifyalPhChunk(ArchiveEntry* entry, bool value)
 	// Check entry type
 	if (!(entry->getType()->getFormat() == "img_png"))
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getType()->getName());
+		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getType()->getName());
 		return false;
 	}
 
@@ -660,7 +660,7 @@ bool EntryOperations::modifytRNSChunk(ArchiveEntry* entry, bool value)
 	// Check entry type
 	if (!(entry->getType()->getFormat() == "img_png"))
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
+		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
 		return false;
 	}
 
@@ -777,7 +777,7 @@ bool EntryOperations::getalPhChunk(ArchiveEntry* entry)
 	// Check entry type
 	if (entry->getType()->getFormat() != "img_png")
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
+		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
 		return false;
 	}
 
@@ -811,7 +811,7 @@ bool EntryOperations::gettRNSChunk(ArchiveEntry* entry)
 	// Check entry type
 	if (entry->getType()->getFormat() != "img_png")
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
+		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
 		return false;
 	}
 
@@ -848,7 +848,7 @@ bool EntryOperations::readgrAbChunk(ArchiveEntry* entry, point2_t& offsets)
 	// Check entry type
 	if (entry->getType()->getFormat() != "img_png")
 	{
-		wxLogMessage("Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
+		LOG_MESSAGE(1, "Entry \"%s\" is of type \"%s\" rather than PNG", entry->getName(), entry->getTypeString());
 		return false;
 	}
 
@@ -936,14 +936,14 @@ bool EntryOperations::addToPatchTable(vector<ArchiveEntry*> entries)
 		// Check entry type
 		if (!(entries[a]->getType()->extraProps().propertyExists("image")))
 		{
-			wxLogMessage("Entry %s is not a valid image", entries[a]->getName());
+			LOG_MESSAGE(1, "Entry %s is not a valid image", entries[a]->getName());
 			continue;
 		}
 
 		// Check entry name
 		if (entries[a]->getName(true).Length() > 8)
 		{
-			wxLogMessage("Entry %s has too long a name to add to the patch table (name must be 8 characters max)", entries[a]->getName());
+			LOG_MESSAGE(1, "Entry %s has too long a name to add to the patch table (name must be 8 characters max)", entries[a]->getName());
 			continue;
 		}
 
@@ -1035,7 +1035,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		// Check entry type
 		if (!(entries[a]->getType()->extraProps().propertyExists("image")))
 		{
-			wxLogMessage("Entry %s is not a valid image", entries[a]->getName());
+			LOG_MESSAGE(1, "Entry %s is not a valid image", entries[a]->getName());
 			continue;
 		}
 
@@ -1043,7 +1043,7 @@ bool EntryOperations::createTexture(vector<ArchiveEntry*> entries)
 		string name = entries[a]->getName(true);
 		if (name.Length() > 8)
 		{
-			wxLogMessage("Entry %s has too long a name to add to the patch table (name must be 8 characters max)", entries[a]->getName());
+			LOG_MESSAGE(1, "Entry %s has too long a name to add to the patch table (name must be 8 characters max)", entries[a]->getName());
 			continue;
 		}
 
@@ -1390,7 +1390,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename)
 	SImage image;
 	if (!Misc::loadImageFromEntry(&image, entry))
 	{
-		wxLogMessage("Error converting %s: %s", entry->getName(), Global::error);
+		LOG_MESSAGE(1, "Error converting %s: %s", entry->getName(), Global::error);
 		return false;
 	}
 
@@ -1399,7 +1399,7 @@ bool EntryOperations::exportAsPNG(ArchiveEntry* entry, string filename)
 	SIFormat* fmt_png = SIFormat::getFormat("png");
 	if (!fmt_png->saveImage(image, png, MainEditor::currentPalette(entry)))
 	{
-		wxLogMessage("Error converting %s", entry->getName());
+		LOG_MESSAGE(1, "Error converting %s", entry->getName());
 		return false;
 	}
 
@@ -1435,7 +1435,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	        (pngpatho.IsEmpty() || !wxFileExists(pngpatho)) &&
 	        (pngpathd.IsEmpty() || !wxFileExists(pngpathd)))
 	{
-		wxLogMessage("PNG tool paths not defined or invalid, no optimization done.");
+		LOG_MESSAGE(1, "PNG tool paths not defined or invalid, no optimization done.");
 		return false;
 	}
 
@@ -1495,7 +1495,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					crushlog += output[i] + "\n";
 			}
-			wxLogMessage(crushlog);
+			LOG_MESSAGE(1, crushlog);
 		}
 	}
 
@@ -1546,7 +1546,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					pngoutlog += output[i] + "\n";
 			}
-			wxLogMessage(pngoutlog);
+			LOG_MESSAGE(1, pngoutlog);
 		}
 	}
 
@@ -1583,7 +1583,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 				for (size_t i = 0; i < output.GetCount(); ++i)
 					defloptlog += output[i] + "\n";
 			}
-			wxLogMessage(defloptlog);
+			LOG_MESSAGE(1, defloptlog);
 		}
 	}
 	output.Clear(); errors.Clear();
@@ -1592,7 +1592,7 @@ bool EntryOperations::optimizePNG(ArchiveEntry* entry)
 	if (alphchunk) modifyalPhChunk(entry, true);
 	if (grabchunk) setGfxOffsets(entry, offsets.x, offsets.y);
 
-	wxLogMessage("PNG %s size %i =PNGCrush=> %i =PNGout=> %i =DeflOpt=> %i =+grAb/alPh=> %i",
+	LOG_MESSAGE(1, "PNG %s size %i =PNGCrush=> %i =PNGout=> %i =DeflOpt=> %i =+grAb/alPh=> %i",
 	             entry->getName(), oldsize, crushsize, outsize, deflsize, entry->getSize());
 
 
@@ -1631,21 +1631,21 @@ void fixpngsrc(ArchiveEntry* entry)
 	{
 		if (pointer + 12 > entry->getSize())
 		{
-			wxLogMessage("Entry %s cannot be repaired.", entry->getName());
+			LOG_MESSAGE(1, "Entry %s cannot be repaired.", entry->getName());
 			delete[] data;
 			return;
 		}
 		uint32_t chsz = READ_B32(data, pointer);
 		if (pointer + 12 + chsz > entry->getSize())
 		{
-			wxLogMessage("Entry %s cannot be repaired.", entry->getName());
+			LOG_MESSAGE(1, "Entry %s cannot be repaired.", entry->getName());
 			delete[] data;
 			return;
 		}
 		uint32_t crc = Misc::crc(data + pointer + 4, 4 + chsz);
 		if (crc != READ_B32(data, pointer + 8 + chsz))
 		{
-			wxLogMessage("Chunk %c%c%c%c has bad CRC", data[pointer+4], data[pointer+5], data[pointer+6], data[pointer+7]);
+			LOG_MESSAGE(1, "Chunk %c%c%c%c has bad CRC", data[pointer+4], data[pointer+5], data[pointer+6], data[pointer+7]);
 			neededchange = true;
 			data[pointer +  8 + chsz] = crc >> 24;
 			data[pointer +  9 + chsz] = (crc & 0x00ffffff) >> 16;
@@ -1673,7 +1673,7 @@ CONSOLE_COMMAND(fixpngcrc, 0, true)
 	vector<ArchiveEntry*> selection = MainEditor::currentEntrySelection();
 	if (selection.size() == 0)
 	{
-		wxLogMessage("No entry selected");
+		LOG_MESSAGE(1, "No entry selected");
 		return;
 	}
 	for (size_t a = 0; a < selection.size(); ++a)

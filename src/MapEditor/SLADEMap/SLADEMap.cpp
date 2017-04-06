@@ -692,14 +692,14 @@ bool SLADEMap::readDoomVertexes(ArchiveEntry* entry)
 	if (!entry)
 	{
 		Global::error = "Map has no VERTEXES entry!";
-		wxLogMessage(Global::error);
+		Log::info(Global::error);
 		return false;
 	}
 
 	// Check for empty entry
 	if (entry->getSize() < sizeof(doomvertex_t))
 	{
-		wxLogMessage("Read 0 vertices");
+		Log::info(3, "Read 0 vertices");
 		return true;
 	}
 
@@ -725,7 +725,7 @@ bool SLADEMap::readDoomSidedefs(ArchiveEntry* entry)
 	if (!entry)
 	{
 		Global::error = "Map has no SIDEDEFS entry!";
-		wxLogMessage(Global::error);
+		Log::info(Global::error);
 		return false;
 	}
 
@@ -758,7 +758,7 @@ bool SLADEMap::readDoomLinedefs(ArchiveEntry* entry)
 	if (!entry)
 	{
 		Global::error = "Map has no LINEDEFS entry!";
-		wxLogMessage(Global::error);
+		Log::info(Global::error);
 		return false;
 	}
 
@@ -792,7 +792,7 @@ bool SLADEMap::readDoomSectors(ArchiveEntry* entry)
 	if (!entry)
 	{
 		Global::error = "Map has no SECTORS entry!";
-		wxLogMessage(Global::error);
+		Log::info(Global::error);
 		return false;
 	}
 
@@ -825,7 +825,7 @@ bool SLADEMap::readDoomThings(ArchiveEntry* entry)
 	if (!entry)
 	{
 		Global::error = "Map has no THINGS entry!";
-		wxLogMessage(Global::error);
+		Log::info(Global::error);
 		return false;
 	}
 
@@ -1492,7 +1492,7 @@ bool SLADEMap::addSide(ParseTreeNode* def)
 			ns->offset_y = prop->getIntValue();
 		else
 			ns->properties[prop->getName()] = prop->getValue();
-		//wxLogMessage("Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(), prop->getValue().getStringValue());
+		//LOG_MESSAGE(1, "Property %s type %s (%s)", prop->getName(), prop->getValue().typeString(), prop->getValue().getStringValue());
 	}
 
 	// Update texture counts
@@ -2381,7 +2381,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def += "}\n\n";
 		tempfile.Write(object_def);
 	}
-	//wxLogMessage("Writing things took %dms", clock.getElapsedTime().asMilliseconds());
+	//LOG_MESSAGE(1, "Writing things took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Write lines
 	//clock.restart();
@@ -2409,7 +2409,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def += "}\n\n";
 		tempfile.Write(object_def);
 	}
-	//wxLogMessage("Writing lines took %dms", clock.getElapsedTime().asMilliseconds());
+	//LOG_MESSAGE(1, "Writing lines took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Write sides
 	//clock.restart();
@@ -2440,7 +2440,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def += "}\n\n";
 		tempfile.Write(object_def);
 	}
-	//wxLogMessage("Writing sides took %dms", clock.getElapsedTime().asMilliseconds());
+	//LOG_MESSAGE(1, "Writing sides took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Write vertices
 	//clock.restart();
@@ -2461,7 +2461,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def += "}\n\n";
 		tempfile.Write(object_def);
 	}
-	//wxLogMessage("Writing vertices took %dms", clock.getElapsedTime().asMilliseconds());
+	//LOG_MESSAGE(1, "Writing vertices took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Write sectors
 	//clock.restart();
@@ -2487,7 +2487,7 @@ bool SLADEMap::writeUDMFMap(ArchiveEntry* textmap)
 		object_def += "}\n\n";
 		tempfile.Write(object_def);
 	}
-	//wxLogMessage("Writing sectors took %dms", clock.getElapsedTime().asMilliseconds());
+	//LOG_MESSAGE(1, "Writing sectors took %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Close file
 	tempfile.Close();
@@ -4089,7 +4089,7 @@ MapVertex* SLADEMap::createVertex(double x, double y, double split_dist)
 
 			if (lines[a]->distanceTo(point) < split_dist)
 			{
-				//wxLogMessage("Vertex at (%1.2f,%1.2f) splits line %d", x, y, a);
+				//LOG_MESSAGE(1, "Vertex at (%1.2f,%1.2f) splits line %d", x, y, a);
 				splitLine(lines[a], nv);
 			}
 		}
@@ -4116,7 +4116,7 @@ MapLine* SLADEMap::createLine(double x1, double y1, double x2, double y2, double
 		y2 = MathStuff::round(y2);
 	}
 
-	//wxLogMessage("Create line (%1.2f,%1.2f) to (%1.2f,%1.2f)", x1, y1, x2, y2);
+	//LOG_MESSAGE(1, "Create line (%1.2f,%1.2f) to (%1.2f,%1.2f)", x1, y1, x2, y2);
 
 	// Get vertices at points
 	MapVertex* vertex1 = vertexAt(x1, y1);
@@ -5043,7 +5043,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 			removeSide(edges[a].line->side2);
 	}
 
-	//wxLogMessage("Ran sector builder %d times", runs);
+	//LOG_MESSAGE(1, "Ran sector builder %d times", runs);
 
 	// Check if any lines need to be flipped
 	for (unsigned a = 0; a < lines.size(); a++)
@@ -5103,7 +5103,7 @@ void SLADEMap::correctSectors(vector<MapLine*> lines, bool existing_only)
 		// Set middle texture if needed
 		if (sides[a] == line->s1() && !line->s2() && sides[a]->stringProperty("texturemiddle") == "-")
 		{
-			//wxLogMessage("midtex");
+			//LOG_MESSAGE(1, "midtex");
 			// Find adjacent texture (any)
 			string tex = getAdjacentLineTexture(line->v1());
 			if (tex == "-")
@@ -5132,7 +5132,7 @@ void SLADEMap::mapOpenChecks()
 	int rsec = removeDetachedSectors();
 	int risides = removeInvalidSides();
 
-	wxLogMessage("Removed %d detached vertices, %d detached sides, %d invalid sides and %d detached sectors", rverts, rsides, risides, rsec);
+	LOG_MESSAGE(1, "Removed %d detached vertices, %d detached sides, %d invalid sides and %d detached sectors", rverts, rsides, risides, rsec);
 }
 
 /* SLADEMap::removeDetachedVertices

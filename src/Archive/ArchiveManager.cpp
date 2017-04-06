@@ -106,7 +106,7 @@ bool ArchiveManager::validResDir(string dir)
 		wxFileName fn(dir + "/" + paths[a]);
 		if (!wxFileExists(fn.GetFullPath()))
 		{
-			wxLogMessage("Resource %s was not found in dir %s!\n"
+			LOG_MESSAGE(1, "Resource %s was not found in dir %s!\n"
 				"This resource folder cannot be used. "
 				"(Did you install SLADE 3 in a SLumpEd folder?)", paths[a], dir);
 			return false;
@@ -150,7 +150,7 @@ bool ArchiveManager::init()
 	// Open slade.pk3
 	if (!program_resource_archive->open(dir_slade_pk3))
 	{
-		wxLogMessage("Unable to find slade.pk3!");
+		LOG_MESSAGE(1, "Unable to find slade.pk3!");
 		res_archive_open = false;
 	}
 	else
@@ -261,7 +261,7 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 
 	Archive* new_archive = getArchive(filename);
 
-	wxLogMessage("Opening archive %s", filename);
+	LOG_MESSAGE(1, "Opening archive %s", filename);
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -357,7 +357,7 @@ Archive* ArchiveManager::openArchive(string filename, bool manage, bool silent)
 	}
 	else
 	{
-		wxLogMessage("Error: " + Global::error);
+		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
 		return NULL;
 	}
@@ -474,7 +474,7 @@ Archive* ArchiveManager::openArchive(ArchiveEntry* entry, bool manage, bool sile
 	}
 	else
 	{
-		wxLogMessage("Error: " + Global::error);
+		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
 		return NULL;
 	}
@@ -488,7 +488,7 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 {
 	Archive* new_archive = getArchive(dir);
 
-	wxLogMessage("Opening directory %s as archive", dir);
+	LOG_MESSAGE(1, "Opening directory %s as archive", dir);
 
 	// If the archive is already open, just return it
 	if (new_archive)
@@ -534,7 +534,7 @@ Archive* ArchiveManager::openDirArchive(string dir, bool manage, bool silent)
 	}
 	else
 	{
-		wxLogMessage("Error: " + Global::error);
+		LOG_MESSAGE(1, "Error: " + Global::error);
 		delete new_archive;
 		return NULL;
 	}
@@ -574,7 +574,7 @@ Archive* ArchiveManager::newArchive(uint8_t type)
 		format_str = "zip";
 		break;
 	default:
-		wxLogMessage("This shouldn't happen.");
+		LOG_MESSAGE(1, "This shouldn't happen.");
 		return NULL;
 	}
 
@@ -1326,12 +1326,12 @@ void ArchiveManager::onAnnouncement(Announcer* announcer, string event_name, Mem
  *******************************************************************/
 CONSOLE_COMMAND (list_archives, 0, true)
 {
-	wxLogMessage("%d Open Archives:", theArchiveManager->numArchives());
+	LOG_MESSAGE(1, "%d Open Archives:", theArchiveManager->numArchives());
 
 	for (int a = 0; a < theArchiveManager->numArchives(); a++)
 	{
 		Archive* archive = theArchiveManager->getArchive(a);
-		wxLogMessage("%d: \"%s\"", a + 1, archive->getFilename());
+		LOG_MESSAGE(1, "%d: \"%s\"", a + 1, archive->getFilename());
 	}
 }
 

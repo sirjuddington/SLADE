@@ -170,7 +170,7 @@ void MapRenderer3D::refresh()
 	skytex1 = minf.sky1;
 	skytex2 = minf.sky2;
 	skycol_top.a = 0;
-	//wxLogMessage("sky1: %s, sky2: %s", skytex1, skytex2);
+	//LOG_MESSAGE(1, "sky1: %s, sky2: %s", skytex1, skytex2);
 }
 
 /* MapRenderer3D::clearData

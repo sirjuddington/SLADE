@@ -1065,7 +1065,7 @@ bool Archive::save(string filename)
 			{
 				// Copy current file contents to new backup file
 				string bakfile = this->filename + ".bak";
-				wxLogMessage("Creating backup %s", bakfile);
+				LOG_MESSAGE(1, "Creating backup %s", bakfile);
 				wxCopyFile(this->filename, bakfile, true);
 			}
 
@@ -1557,7 +1557,7 @@ bool Archive::swapEntries(ArchiveEntry* entry1, ArchiveEntry* entry2)
 	// Check they are both in the same directory
 	if (entry2->getParentDir() != dir)
 	{
-		wxLogMessage("Error: Can't swap two entries in different directories");
+		LOG_MESSAGE(1, "Error: Can't swap two entries in different directories");
 		return false;
 	}
 

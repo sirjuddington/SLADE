@@ -779,7 +779,7 @@ bool StyleSet::loadResourceStyles()
 	// Check it exists
 	if (!dir)
 	{
-		wxLogMessage("Warning: No 'config/text_styles' directory exists in slade.pk3");
+		LOG_MESSAGE(1, "Warning: No 'config/text_styles' directory exists in slade.pk3");
 		return false;
 	}
 

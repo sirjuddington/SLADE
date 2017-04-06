@@ -187,7 +187,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 						break;
 					if (token.IsEmpty())
 					{
-						wxLogMessage("Error: found end of file within #if(n)def block");
+						LOG_MESSAGE(1, "Error: found end of file within #if(n)def block");
 						break;
 					}
 				}
@@ -245,7 +245,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// If it's a special character (ie not a valid name), parsing fails
 		if (tz.isSpecialCharacter(token.at(0)))
 		{
-			wxLogMessage("Parsing error: Unexpected special character '%s' in %s (line %d)", token, tz.getName(), tz.lineNo());
+			LOG_MESSAGE(1, "Parsing error: Unexpected special character '%s' in %s (line %d)", token, tz.getName(), tz.lineNo());
 			return false;
 		}
 
@@ -253,7 +253,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		string name = token;
 		if (name.IsEmpty())
 		{
-			wxLogMessage("Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
+			LOG_MESSAGE(1, "Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
 			return false;
 		}
 
@@ -270,7 +270,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 
 			if (name.IsEmpty())
 			{
-				wxLogMessage("Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
+				LOG_MESSAGE(1, "Parsing error: Unexpected empty string in %s (line %d)", tz.getName(), tz.lineNo());
 				return false;
 			}
 		}
@@ -323,7 +323,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 					long val;
 					token.ToLong(&val, 0);
 					value = (int)val;
-					//wxLogMessage("%s: %s is hex %d", name, token, value.getIntValue());
+					//LOG_MESSAGE(1, "%s: %s is hex %d", name, token, value.getIntValue());
 				}
 				else if (re_float.Matches(token))  		// Floating point
 				{
@@ -345,7 +345,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 				{
 					string t = tz.getToken();
 					string n = tz.getName();
-					wxLogMessage("Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)", list_end, t, n, tz.lineNo());
+					LOG_MESSAGE(1, "Parsing error: Expected \",\" or \"%s\", got \"%s\" in %s (line %d)", list_end, t, n, tz.lineNo());
 					return false;
 				}
 
@@ -407,7 +407,7 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 		// Unexpected token
 		else
 		{
-			wxLogMessage("Parsing error: \"%s\" unexpected in %s (line %d)", next, tz.getName(), tz.lineNo());
+			LOG_MESSAGE(1, "Parsing error: \"%s\" unexpected in %s (line %d)", next, tz.getName(), tz.lineNo());
 			return false;
 		}
 
@@ -478,7 +478,7 @@ bool Parser::parseText(MemChunk& mc, string source, bool debug)
 	// Open the given text data
 	if (!tz.openMem(&mc, source))
 	{
-		wxLogMessage("Unable to open text data for parsing");
+		LOG_MESSAGE(1, "Unable to open text data for parsing");
 		return false;
 	}
 
@@ -493,7 +493,7 @@ bool Parser::parseText(string& text, string source, bool debug)
 	// Open the given text data
 	if (!tz.openString(text, 0, 0, source))
 	{
-		wxLogMessage("Unable to open text data for parsing");
+		LOG_MESSAGE(1, "Unable to open text data for parsing");
 		return false;
 	}
 

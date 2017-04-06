@@ -405,16 +405,16 @@ public:
 			if (bak)
 			{
 				backups.push_back(bak);
-				//wxLogMessage("%s #%d modified", objects[a]->getTypeName(), objects[a]->getIndex());
+				//LOG_MESSAGE(1, "%s #%d modified", objects[a]->getTypeName(), objects[a]->getIndex());
 			}
 		}
 
-		if (Global::log_verbosity >= 2)
+		if (Log::verbosity() >= 2)
 		{
 			string msg = "Modified ids: ";
 			for (unsigned a = 0; a < backups.size(); a++)
 				msg += S_FMT("%d, ", backups[a]->id);
-			wxLogMessage(msg);
+			Log::info(msg);
 		}
 	}
 
@@ -610,7 +610,7 @@ void MapEditor::setSectorEditMode(int mode)
  *******************************************************************/
 bool MapEditor::openMap(Archive::mapdesc_t map)
 {
-	wxLogMessage("Opening map %s", map.name);
+	LOG_MESSAGE(1, "Opening map %s", map.name);
 	if (!this->map.readMap(map))
 		return false;
 
@@ -5845,7 +5845,7 @@ CONSOLE_COMMAND(m_test_sector, 0, false)
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.sectorAt(map.getThing(a)->point());
 	long ms = clock.getElapsedTime().asMilliseconds();
-	wxLogMessage("Took %ldms", ms);
+	LOG_MESSAGE(1, "Took %ldms", ms);
 }
 
 CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
@@ -5858,33 +5858,33 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 	// Vertices
 	for (unsigned a = 0; a < map.nVertices(); a++)
 		map.getVertex(a)->backup(backup);
-	wxLogMessage("Vertices: %dms", clock.getElapsedTime().asMilliseconds());
+	LOG_MESSAGE(1, "Vertices: %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Lines
 	clock.restart();
 	for (unsigned a = 0; a < map.nLines(); a++)
 		map.getLine(a)->backup(backup);
-	wxLogMessage("Lines: %dms", clock.getElapsedTime().asMilliseconds());
+	LOG_MESSAGE(1, "Lines: %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Sides
 	clock.restart();
 	for (unsigned a = 0; a < map.nSides(); a++)
 		map.getSide(a)->backup(backup);
-	wxLogMessage("Sides: %dms", clock.getElapsedTime().asMilliseconds());
+	LOG_MESSAGE(1, "Sides: %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Sectors
 	clock.restart();
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		map.getSector(a)->backup(backup);
-	wxLogMessage("Sectors: %dms", clock.getElapsedTime().asMilliseconds());
+	LOG_MESSAGE(1, "Sectors: %dms", clock.getElapsedTime().asMilliseconds());
 
 	// Things
 	clock.restart();
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.getThing(a)->backup(backup);
-	wxLogMessage("Things: %dms", clock.getElapsedTime().asMilliseconds());
+	LOG_MESSAGE(1, "Things: %dms", clock.getElapsedTime().asMilliseconds());
 
-	wxLogMessage("Total: %dms", totalClock.getElapsedTime().asMilliseconds());
+	LOG_MESSAGE(1, "Total: %dms", totalClock.getElapsedTime().asMilliseconds());
 }
 
 CONSOLE_COMMAND(m_vertex_attached, 1, false)
@@ -5892,9 +5892,9 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 	MapVertex* vertex = theMapEditor->mapEditor().getMap().getVertex(atoi(CHR(args[0])));
 	if (vertex)
 	{
-		wxLogMessage("Attached lines:");
+		LOG_MESSAGE(1, "Attached lines:");
 		for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
-			wxLogMessage("Line #%lu", vertex->connectedLine(a)->getIndex());
+			LOG_MESSAGE(1, "Line #%lu", vertex->connectedLine(a)->getIndex());
 	}
 }
 

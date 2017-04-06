@@ -77,15 +77,14 @@ typename M::mapped_type findInMap(M& m, const typename M::key_type& k, typename 
 	}
 }
 
-// Logfile
-#define LOG_MESSAGE(level, ...) if (Global::log_verbosity >= level) wxLogMessage(__VA_ARGS__)
-
 #undef Bool
 
 // Global internal includes
-#include "Utility/MemChunk.h"
 #include "General/CVar.h"
+#include "General/Log.h"
+#include "Utility/MemChunk.h"
 #include "Utility/Structs.h"
+
 
 // Namespace to hold 'global' variables
 namespace Global
@@ -93,7 +92,6 @@ namespace Global
 	extern string error;
 	extern string version;
 	extern string sc_rev;
-	extern int log_verbosity;
 	extern bool debug;
 	extern double ppi_scale;
 	extern int win_version_major;
@@ -104,7 +102,6 @@ namespace Global
 // Random useful defines
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
-#define DPrintf wxLogMessage
 
 // Define map types
 enum MapTypes
@@ -195,7 +192,7 @@ inline void LOG_DEBUG(
 	message << a11.get() << " ";
 	message << a12.get();
 	message.Trim();
-	wxLogMessage("%s", message);
+	LOG_MESSAGE(Log::MessageType::Debug, "%s", message);
 }
 
 #define LOG_DEBUG_VAR(name) LOG_DEBUG(#name ": ", name)

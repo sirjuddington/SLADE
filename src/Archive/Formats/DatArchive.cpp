@@ -142,7 +142,7 @@ bool DatArchive::open(MemChunk& mc)
 		// the data file is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("DatArchive::open: Dat archive is invalid or corrupt at entry %i", d);
+			LOG_MESSAGE(1, "DatArchive::open: Dat archive is invalid or corrupt at entry %i", d);
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -585,7 +585,7 @@ bool DatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("DatArchive::loadEntryData: Failed to open datfile %s", filename);
+		LOG_MESSAGE(1, "DatArchive::loadEntryData: Failed to open datfile %s", filename);
 		return false;
 	}
 

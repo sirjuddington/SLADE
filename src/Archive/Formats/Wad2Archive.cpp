@@ -104,7 +104,7 @@ bool Wad2Archive::open(MemChunk& mc)
 	if (wad_type[0] != 'W' || wad_type[1] != 'A' || wad_type[2] != 'D' ||
 	        (wad_type[3] != '2' && wad_type[3] != '3'))
 	{
-		wxLogMessage("Wad2Archive::open: Invalid header");
+		LOG_MESSAGE(1, "Wad2Archive::open: Invalid header");
 		Global::error = "Invalid wad2 header";
 		return false;
 	}
@@ -135,7 +135,7 @@ bool Wad2Archive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if ((unsigned)(info.offset + info.dsize) > mc.getSize())
 		{
-			wxLogMessage("Wad2Archive::open: Wad2 archive is invalid or corrupt");
+			LOG_MESSAGE(1, "Wad2Archive::open: Wad2 archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -285,7 +285,7 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("Wad2Archive::loadEntryData: Failed to open wadfile %s", filename);
+		LOG_MESSAGE(1, "Wad2Archive::loadEntryData: Failed to open wadfile %s", filename);
 		return false;
 	}
 

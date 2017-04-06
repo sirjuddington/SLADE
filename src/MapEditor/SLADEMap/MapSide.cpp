@@ -266,7 +266,7 @@ void MapSide::writeBackup(mobj_backup_t* backup)
 	backup->props_internal["offsetx"] = offset_x;
 	backup->props_internal["offsety"] = offset_y;
 
-	//wxLogMessage("Side %d backup sector #%d", id, sector->getIndex());
+	//LOG_MESSAGE(1, "Side %d backup sector #%d", id, sector->getIndex());
 }
 
 /* MapSide::readBackup
@@ -281,7 +281,7 @@ void MapSide::readBackup(mobj_backup_t* backup)
 		sector->disconnectSide(this);
 		sector = (MapSector*)s;
 		sector->connectSide(this);
-		//wxLogMessage("Side %d load backup sector #%d", id, s->getIndex());
+		//LOG_MESSAGE(1, "Side %d load backup sector #%d", id, s->getIndex());
 	}
 	else
 	{

@@ -844,6 +844,7 @@
     <ClCompile Include="..\..\src\General\Executables.cpp" />
     <ClCompile Include="..\..\src\General\KeyBind.cpp" />
     <ClCompile Include="..\..\src\General\ListenerAnnouncer.cpp" />
+    <ClCompile Include="..\..\src\General\Log.cpp" />
     <ClCompile Include="..\..\src\General\Lua.cpp" />
     <ClCompile Include="..\..\src\General\Misc.cpp" />
     <ClCompile Include="..\..\src\General\ResourceManager.cpp" />
@@ -1660,6 +1661,7 @@
     <ClInclude Include="..\..\src\General\Executables.h" />
     <ClInclude Include="..\..\src\General\KeyBind.h" />
     <ClInclude Include="..\..\src\General\ListenerAnnouncer.h" />
+    <ClInclude Include="..\..\src\General\Log.h" />
     <ClInclude Include="..\..\src\General\Lua.h" />
     <ClInclude Include="..\..\src\General\Misc.h" />
     <ClInclude Include="..\..\src\General\ResourceManager.h" />

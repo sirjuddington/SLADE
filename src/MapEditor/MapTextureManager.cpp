@@ -498,7 +498,7 @@ void MapTextureManager::refreshResources()
 	theMapEditor->forceRefresh(true);
 	palette = getResourcePalette();
 	buildTexInfoList();
-	//wxLogMessage("texture manager cleared");
+	//LOG_MESSAGE(1, "texture manager cleared");
 }
 
 /* MapTextureManager::buildTexInfoList

@@ -430,7 +430,7 @@ void ZTextureEditorPanel::updatePatchControls()
 			CTPatchEx* patch = (CTPatchEx*)tex_current->getPatch(selection[0]);
 			if (!patch)
 			{
-				wxLogMessage("Error: Selected patch does not exist in texture");
+				LOG_MESSAGE(1, "Error: Selected patch does not exist in texture");
 				return;
 			}
 

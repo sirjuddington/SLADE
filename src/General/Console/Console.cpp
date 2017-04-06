@@ -75,7 +75,7 @@ void Console::addCommand(ConsoleCommand& c)
  *******************************************************************/
 void Console::execute(string command)
 {
-	wxLogMessage("> %s", command);
+	LOG_MESSAGE(1, "> %s", command);
 
 	// Don't bother doing anything else with an empty command
 	if (command.size() == 0)
@@ -154,9 +154,6 @@ void Console::execute(string command)
 			value = ((CStringCVar*)cvar)->value;
 
 		logMessage(S_FMT("\"%s\" = \"%s\"", cmd_name, value));
-
-		if (cmd_name == "log_verbosity")
-			Global::log_verbosity = cvar->GetValue().Int;
 
 		return;
 	}

@@ -138,7 +138,7 @@ string PropertyList::toString(bool condensed)
 			ret += key + " = " + val + ";\n";
 		//}
 
-		//wxLogMessage("key %s type %s value %s", key, i->second.typeString(), val);
+		//LOG_MESSAGE(1, "key %s type %s value %s", key, i->second.typeString(), val);
 
 		// Next property
 		i++;

@@ -726,22 +726,22 @@ void MapEditorWindow::buildNodes(Archive* wad)
 	if (wxFileExists(builder.path))
 	{
 		wxArrayString out;
-		wxLogMessage("execute \"%s %s\"", builder.path, command);
+		LOG_MESSAGE(1, "execute \"%s %s\"", builder.path, command);
 		theApp->SetTopWindow(this);
 		wxWindow* focus = wxWindow::FindFocus();
 		wxExecute(S_FMT("\"%s\" %s", builder.path, command), out, wxEXEC_HIDE_CONSOLE);
 		theApp->SetTopWindow(MainEditor::windowWx());
 		if (focus) focus->SetFocusFromKbd();
-		wxLogMessage("Nodebuilder output:");
+		LOG_MESSAGE(1, "Nodebuilder output:");
 		for (unsigned a = 0; a < out.size(); a++)
-			wxLogMessage(out[a]);
+			Log::info(out[a]);
 
 		// Re-load wad
 		wad->close();
 		wad->open(filename);
 	}
 	else if (nb_warned)
-		wxLogMessage("Nodebuilder path not set up, no nodes were built");
+		LOG_MESSAGE(1, "Nodebuilder path not set up, no nodes were built");
 }
 
 /* MapEditorWindow::writeMap

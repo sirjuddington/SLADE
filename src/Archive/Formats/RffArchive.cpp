@@ -192,7 +192,7 @@ bool RffArchive::open(MemChunk& mc)
 	// Check the header
 	if (magic[0] != 'R' || magic[1] != 'F' || magic[2] != 'F' || magic[3] != 0x1A || version != 0x301)
 	{
-		wxLogMessage("RffArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "RffArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid rff header";
 		return false;
 	}
@@ -230,7 +230,7 @@ bool RffArchive::open(MemChunk& mc)
 		// the rfffile is invalid
 		if (offset + size > mc.getSize())
 		{
-			wxLogMessage("RffArchive::open: rff archive is invalid or corrupt");
+			LOG_MESSAGE(1, "RffArchive::open: rff archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -314,7 +314,7 @@ bool RffArchive::open(MemChunk& mc)
  *******************************************************************/
 bool RffArchive::write(MemChunk& mc, bool update)
 {
-	wxLogMessage("Saving RFF files is not implemented because the format is not entirely known.");
+	LOG_MESSAGE(1, "Saving RFF files is not implemented because the format is not entirely known.");
 	return false;
 }
 
@@ -342,7 +342,7 @@ bool RffArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("RffArchive::loadEntryData: Failed to open rfffile %s", filename);
+		LOG_MESSAGE(1, "RffArchive::loadEntryData: Failed to open rfffile %s", filename);
 		return false;
 	}
 

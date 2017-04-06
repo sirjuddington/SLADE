@@ -503,7 +503,7 @@ bool SActionHandler::doAction(string id)
 	// Log action (to log file only)
 	// TODO: this
 	//exiting = true;
-	//wxLogMessage("**** Action \"%s\"", id);
+	//LOG_MESSAGE(1, "**** Action \"%s\"", id);
 	//exiting = false;
 
 	// Return true if handled

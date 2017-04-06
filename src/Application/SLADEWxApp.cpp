@@ -81,8 +81,6 @@ namespace Global
 	string sc_rev = "";
 #endif
 
-	int log_verbosity = 1;
-
 #ifdef DEBUG
 	bool debug = true;
 #else
@@ -99,7 +97,6 @@ bool	exiting = false;
 string	current_action = "";
 bool	update_check_message_box = false;
 CVAR(String, dir_last, "", CVAR_SAVE)
-CVAR(Int, log_verbosity, 1, CVAR_SAVE)
 CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
 CVAR(Bool, update_check, true, CVAR_SAVE)
 CVAR(Bool, update_check_beta, false, CVAR_SAVE)
@@ -440,37 +437,6 @@ public:
 
 
 /*******************************************************************
- * SLADELOG CLASS FUNCTIONS
- *******************************************************************/
-
-void SLADELog::DoLogText(const wxString& msg)
-{
-	if (!exiting)
-		theConsole->logMessage(msg);
-}
-
-
-/*******************************************************************
- * FREEIMAGE ERROR HANDLER
- *******************************************************************/
-
-/* FreeImageErrorHandler
- * Allows to catch FreeImage errors and log them to the console.
- *******************************************************************/
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
-{
-	string error = "FreeImage: ";
-	if (fif != FIF_UNKNOWN)
-	{
-		error += S_FMT("[%s] ", FreeImage_GetFormatFromFIF(fif));
-	}
-	error += message;
-
-	LOG_MESSAGE(2, error);
-}
-
-
-/*******************************************************************
  * SLADEWXAPP CLASS FUNCTIONS
  *******************************************************************/
 IMPLEMENT_APP(SLADEWxApp)
@@ -490,33 +456,6 @@ SLADEWxApp::SLADEWxApp()
  *******************************************************************/
 SLADEWxApp::~SLADEWxApp()
 {
-}
-
-/* SLADEWxApp::initLogFile
- * Sets up the SLADE log file
- *******************************************************************/
-void SLADEWxApp::initLogFile()
-{
-	// Set wxLog target(s)
-	wxLog::SetActiveTarget(new SLADELog());
-	FILE* log_file = fopen(CHR(App::path("slade3.log", App::Dir::User)), "wt");
-	new wxLogChain(new wxLogStderr(log_file));
-
-	// Write logfile header
-	string year = wxNow().Right(4);
-	wxLogMessage("SLADE - It's a Doom Editor");
-	wxLogMessage("Version %s", Global::version);
-	if (Global::sc_rev != "") wxLogMessage("Git Revision %s", Global::sc_rev);
-	wxLogMessage("Written by Simon Judd, 2008-%s", year);
-#ifdef SFML_VERSION_MAJOR
-	wxLogMessage("Compiled with wxWidgets %i.%i.%i and SFML %i.%i", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER, SFML_VERSION_MAJOR, SFML_VERSION_MINOR);
-#else
-	wxLogMessage("Compiled with wxWidgets %i.%i.%i", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER);
-#endif
-	wxLogMessage("--------------------------------");
-
-	// Set up FreeImage to use our log:
-	FreeImage_SetOutputMessage(FreeImageErrorHandler);
 }
 
 /* SLADEWxApp::singleInstanceCheck
@@ -600,32 +539,28 @@ bool SLADEWxApp::OnInit()
 	wxHandleFatalExceptions(true);
 #endif
 
-	// Init application
-	if (!App::init())
-		return false;
-
 	// Load image handlers
 	wxInitAllImageHandlers();
 
-	// Init logfile
-	initLogFile();
-
+	// Init application
+	if (!App::init())
+		return false;
+	
 	// Get Windows version
 #ifdef __WXMSW__
 	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
-	LOG_MESSAGE(0, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
+	LOG_MESSAGE(1, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
 #endif
 
 	// Init keybinds
 	KeyBind::initBinds();
 
 	// Load configuration file
-	wxLogMessage("Loading configuration");
+	Log::info("Loading configuration");
 	readConfigFile();
-	Global::log_verbosity = log_verbosity;
 
 	// Check that SLADE.pk3 can be found
-	wxLogMessage("Loading resources");
+	Log::info("Loading resources");
 	theArchiveManager->init();
 	if (!theArchiveManager->resArchiveOK())
 	{
@@ -652,28 +587,28 @@ bool SLADEWxApp::OnInit()
 	SIFormat::initFormats();
 
 	// Load program icons
-	wxLogMessage("Loading icons");
+	Log::info("Loading icons");
 	Icons::loadIcons();
 
 	// Load program fonts
 	Drawing::initFonts();
 
 	// Load entry types
-	wxLogMessage("Loading entry types");
+	Log::info("Loading entry types");
 	EntryDataFormat::initBuiltinFormats();
 	EntryType::loadEntryTypes();
 
 	// Load text languages
-	wxLogMessage("Loading text languages");
+	Log::info("Loading text languages");
 	TextLanguage::loadLanguages();
 
 	// Init text stylesets
-	wxLogMessage("Loading text style sets");
+	Log::info("Loading text style sets");
 	StyleSet::loadResourceStyles();
 	StyleSet::loadCustomStyles();
 
 	// Init colour configuration
-	wxLogMessage("Loading colour configuration");
+	Log::info("Loading colour configuration");
 	ColourConfiguration::init();
 
 	// Init nodebuilders
@@ -686,9 +621,9 @@ bool SLADEWxApp::OnInit()
 	MainEditor::init();
 
 	// Init base resource
-	wxLogMessage("Loading base resource");
+	Log::info("Loading base resource");
 	theArchiveManager->initBaseResource();
-	wxLogMessage("Base resource loaded");
+	Log::info("Base resource loaded");
 
 	// Show the main window
 	theMainWindow->Show(true);
@@ -709,7 +644,7 @@ bool SLADEWxApp::OnInit()
 	UI::hideSplash();
 
 	init_ok = true;
-	wxLogMessage("SLADE Initialisation OK");
+	Log::info("SLADE Initialisation OK");
 
 	// Init game configuration
 	theGameConfiguration->init();
@@ -788,7 +723,7 @@ int SLADEWxApp::OnExit()
 	while (files)
 	{
 		if (!wxRemoveFile(App::path(filename, App::Dir::Temp)))
-			wxLogMessage("Warning: Could not clean up temporary file \"%s\"", filename);
+			LOG_WARNING(1, "Warning: Could not clean up temporary file \"%s\"", filename);
 		files = temp.GetNext(&filename);
 	}
 

@@ -276,7 +276,7 @@ bool PodArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("PodArchive::loadEntryData: Failed to open file %s", filename);
+		LOG_MESSAGE(1, "PodArchive::loadEntryData: Failed to open file %s", filename);
 		return false;
 	}
 

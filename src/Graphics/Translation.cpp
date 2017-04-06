@@ -70,7 +70,7 @@ void Translation::parse(string def)
 	tz.setSpecialCharacters("[]:%,=#@");
 	tz.openString(def);
 
-	//wxLogMessage("Parse translation \"%s\"", def);
+	//LOG_MESSAGE(1, "Parse translation \"%s\"", def);
 	
 	// Test for ZDoom built-in translation
 	string test = tz.peekToken().Lower();

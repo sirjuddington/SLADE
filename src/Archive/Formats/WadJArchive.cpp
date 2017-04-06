@@ -103,7 +103,7 @@ bool JaguarDecode(MemChunk& mc)
 	}
 	// Finalize stuff
 	size_t osize = output - ostart;
-	//wxLogMessage("Input size = %d, used input = %d, computed length = %d, output size = %d", isize, input - istart, length, osize);
+	//LOG_MESSAGE(1, "Input size = %d, used input = %d, computed length = %d, output size = %d", isize, input - istart, length, osize);
 	mc.importMem(ostart, osize);
 	delete[] ostart;
 	return okay;
@@ -153,7 +153,7 @@ bool WadJArchive::open(MemChunk& mc)
 	// Check the header
 	if (wad_type[1] != 'W' || wad_type[2] != 'A' || wad_type[3] != 'D')
 	{
-		wxLogMessage("WadJArchive::openFile: File %s has invalid header", filename);
+		LOG_MESSAGE(1, "WadJArchive::openFile: File %s has invalid header", filename);
 		Global::error = "Invalid wad header";
 		return false;
 	}
@@ -219,7 +219,7 @@ bool WadJArchive::open(MemChunk& mc)
 		// the wadfile is invalid
 		if (offset + actualsize > mc.getSize())
 		{
-			wxLogMessage("WadJArchive::open: Wad archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WadJArchive::open: Wad archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt (lump %d: %s data goes past end of file)", d, name);
 			setMuted(false);
 			return false;
@@ -268,7 +268,7 @@ bool WadJArchive::open(MemChunk& mc)
 				        && (unsigned)(int)(entry->exProp("FullSize")) >  entry->getSize())
 					edata.reSize((int)(entry->exProp("FullSize")), true);
 				if (!JaguarDecode(edata))
-					wxLogMessage("%i: %s (following %s), did not decode properly", a, entry->getName(), a>0?getEntry(a-1)->getName():"nothing");
+					LOG_MESSAGE(1, "%i: %s (following %s), did not decode properly", a, entry->getName(), a>0?getEntry(a-1)->getName():"nothing");
 			}
 			entry->importMemChunk(edata);
 		}

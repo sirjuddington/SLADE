@@ -449,7 +449,7 @@ void ResourceManager::listAllPatches()
 	EntryResourceMap::iterator i = patches.begin();
 	while (i != patches.end())
 	{
-		wxLogMessage("%s (%d)", i->first, i->second.length());
+		LOG_MESSAGE(1, "%s (%d)", i->first, i->second.length());
 		i++;
 	}
 }

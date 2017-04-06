@@ -238,7 +238,7 @@ bool GfxEntryPanel::saveEntry()
 			if (writable == SIFormat::CONVERTIBLE)
 			{
 				format->convertWritable(*image, SIFormat::convert_options_t());
-				wxLogMessage("Image converted for writing");
+				LOG_MESSAGE(1, "Image converted for writing");
 			}
 
 			if (format->saveImage(*image, entry->getMCData(), gfx_canvas->getPalette()))
@@ -1115,33 +1115,33 @@ CONSOLE_COMMAND (rotate, 1, true)
 			val = 270.;
 		else
 		{
-			wxLogMessage("Invalid parameter: %s is not a number.", bluh.mb_str());
+			LOG_MESSAGE(1, "Invalid parameter: %s is not a number.", bluh.mb_str());
 			return;
 		}
 	}
 	int angle = (int)val;
 	if (angle % 90)
 	{
-		wxLogMessage("Invalid parameter: %i is not a multiple of 90.", angle);
+		LOG_MESSAGE(1, "Invalid parameter: %i is not a multiple of 90.", angle);
 		return;
 	}
 
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		wxLogMessage("No active panel.");
+		LOG_MESSAGE(1, "No active panel.");
 		return;
 	}
 	ArchiveEntry* bar = foo->currentEntry();
 	if (!bar)
 	{
-		wxLogMessage("No active entry.");
+		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
 	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		wxLogMessage("No image selected.");
+		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
 
@@ -1170,25 +1170,25 @@ CONSOLE_COMMAND (mirror, 1, true)
 		vertical = false;
 	else
 	{
-		wxLogMessage("Invalid parameter: %s is not a known value.", bluh.mb_str());
+		LOG_MESSAGE(1, "Invalid parameter: %s is not a known value.", bluh.mb_str());
 		return;
 	}
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		wxLogMessage("No active panel.");
+		LOG_MESSAGE(1, "No active panel.");
 		return;
 	}
 	ArchiveEntry* bar = foo->currentEntry();
 	if (!bar)
 	{
-		wxLogMessage("No active entry.");
+		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
 	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		wxLogMessage("No image selected.");
+		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
 	if (meep->getImage())
@@ -1209,19 +1209,19 @@ CONSOLE_COMMAND (crop, 4, true)
 		ArchivePanel* foo = CH::getCurrentArchivePanel();
 		if (!foo)
 		{
-			wxLogMessage("No active panel.");
+			LOG_MESSAGE(1, "No active panel.");
 			return;
 		}
 		GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 		if (!meep)
 		{
-			wxLogMessage("No image selected.");
+			LOG_MESSAGE(1, "No image selected.");
 			return;
 		}
 		ArchiveEntry* bar = foo->currentEntry();
 		if (!bar)
 		{
-			wxLogMessage("No active entry.");
+			LOG_MESSAGE(1, "No active entry.");
 			return;
 		}
 		if (meep->getImage())
@@ -1240,19 +1240,19 @@ CONSOLE_COMMAND(adjust, 0, true)
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		wxLogMessage("No active panel.");
+		LOG_MESSAGE(1, "No active panel.");
 		return;
 	}
 	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		wxLogMessage("No image selected.");
+		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
 	ArchiveEntry* bar = foo->currentEntry();
 	if (!bar)
 	{
-		wxLogMessage("No active entry.");
+		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
 	if (meep->getImage())
@@ -1270,19 +1270,19 @@ CONSOLE_COMMAND(mirrorpad, 0, true)
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		wxLogMessage("No active panel.");
+		LOG_MESSAGE(1, "No active panel.");
 		return;
 	}
 	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		wxLogMessage("No image selected.");
+		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
 	ArchiveEntry* bar = foo->currentEntry();
 	if (!bar)
 	{
-		wxLogMessage("No active entry.");
+		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
 	if (meep->getImage())
@@ -1300,19 +1300,19 @@ CONSOLE_COMMAND(imgconv, 0, true)
 	ArchivePanel* foo = CH::getCurrentArchivePanel();
 	if (!foo)
 	{
-		wxLogMessage("No active panel.");
+		LOG_MESSAGE(1, "No active panel.");
 		return;
 	}
 	ArchiveEntry* bar = foo->currentEntry();
 	if (!bar)
 	{
-		wxLogMessage("No active entry.");
+		LOG_MESSAGE(1, "No active entry.");
 		return;
 	}
 	GfxEntryPanel* meep = CH::getCurrentGfxPanel();
 	if (!meep)
 	{
-		wxLogMessage("No image selected.");
+		LOG_MESSAGE(1, "No image selected.");
 		return;
 	}
 	if (meep->getImage())

@@ -53,7 +53,7 @@ string findFileCasing(wxFileName filename)
 	wxDir dir(path);
 	if (!dir.IsOpened())
 	{
-		wxLogMessage("Error: No directory at path %s. This shouldn't happen.");
+		LOG_MESSAGE(1, "Error: No directory at path %s. This shouldn't happen.");
 		return "";
 	}
 
@@ -266,7 +266,7 @@ void ExpandWolfGraphLump (ArchiveEntry* entry, size_t lumpnum, size_t numlumps, 
 
 	if (expanded == 0 || expanded > 65000)
 	{
-		wxLogMessage("ExpandWolfGraphLump: invalid expanded size in entry %d", lumpnum);
+		LOG_MESSAGE(1, "ExpandWolfGraphLump: invalid expanded size in entry %d", lumpnum);
 		return;
 	}
 
@@ -303,7 +303,7 @@ void ExpandWolfGraphLump (ArchiveEntry* entry, size_t lumpnum, size_t numlumps, 
 		{
 			huffptr = hufftable + (nodeval - 256);
 		}
-		else wxLogMessage("ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum);
+		else LOG_MESSAGE(1, "ExpandWolfGraphLump: nodeval is out of control (%d) in entry %d", nodeval, lumpnum);
 	}
 
 	entry->importMem(start, expanded);
@@ -485,7 +485,7 @@ bool WolfArchive::open(MemChunk& mc)
 		if (pages[d].offset != 0 && pages[d].offset < (unsigned)((num_lumps + 1) * 6))
 		{
 			delete[] pages;
-			wxLogMessage("WolfArchive::open: Wolf archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WolfArchive::open: Wolf archive is invalid or corrupt");
 			Global::error = "Archive is invalid and/or corrupt ";
 			setMuted(false);
 			return false;
@@ -548,7 +548,7 @@ bool WolfArchive::open(MemChunk& mc)
 			if (getEntryOffset(nlump) + size > mc.getSize())
 			{
 				delete[] pages;
-				wxLogMessage("WolfArchive::open: Wolf archive is invalid or corrupt");
+				LOG_MESSAGE(1, "WolfArchive::open: Wolf archive is invalid or corrupt");
 				Global::error = "Archive is invalid and/or corrupt";
 				setMuted(false);
 				return false;
@@ -686,7 +686,7 @@ bool WolfArchive::openAudio(MemChunk& head, MemChunk& data)
 		// the data file is invalid
 		if (offset + size > data.getSize())
 		{
-			wxLogMessage("WolfArchive::openAudio: Wolf archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WolfArchive::openAudio: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
@@ -775,7 +775,7 @@ bool WolfArchive::openMaps(MemChunk& head, MemChunk& data)
 		// the data file is invalid
 		if (offset + size > data.getSize())
 		{
-			wxLogMessage("WolfArchive::openMaps: Wolf archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WolfArchive::openMaps: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
@@ -899,7 +899,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 		// the data file is invalid
 		if (offset + size > data.getSize())
 		{
-			wxLogMessage("WolfArchive::openGraph: Wolf archive is invalid or corrupt");
+			LOG_MESSAGE(1, "WolfArchive::openGraph: Wolf archive is invalid or corrupt");
 			Global::error = S_FMT("Archive is invalid and/or corrupt in entry %d", d);
 			setMuted(false);
 			return false;
@@ -939,7 +939,7 @@ bool WolfArchive::openGraph(MemChunk& head, MemChunk& data, MemChunk& dict)
 	UI::setSplashProgressMessage("Detecting entry types");
 	for (size_t a = 0; a < numEntries(); a++)
 	{
-		//wxLogMessage("Entry %d/%d", a, numEntries());
+		//LOG_MESSAGE(1, "Entry %d/%d", a, numEntries());
 		// Update splash window progress
 		UI::setSplashProgress((((float)a / (float)num_lumps)));
 
@@ -1055,7 +1055,7 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 	// Check if opening the file failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("WolfArchive::loadEntryData: Failed to open datfile %s", filename);
+		LOG_MESSAGE(1, "WolfArchive::loadEntryData: Failed to open datfile %s", filename);
 		return false;
 	}
 

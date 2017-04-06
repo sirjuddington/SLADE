@@ -2,20 +2,6 @@
 
 #include "common.h"
 
-class SLADELog : public wxLog
-{
-protected:
-// wx2.9.x is no longer supported.
-#if (wxMAJOR_VERSION < 3)
-#error This will not compile with wxWidgets older than 3.0.0 !
-#endif
-	void DoLogText(const wxString& msg) override;
-
-public:
-	SLADELog() {}
-	~SLADELog() {}
-};
-
 class MainWindow;
 class wxSingleInstanceChecker;
 class MainAppFileListener;
@@ -37,7 +23,6 @@ public:
 	MainWindow*	getMainWindow() { return main_window; }
 
 	bool	singleInstanceCheck();
-	void	initLogFile();
 	void	readConfigFile();
 	void	saveConfigFile();
 	bool	isInitialised() { return init_ok; }

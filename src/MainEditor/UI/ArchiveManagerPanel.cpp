@@ -1050,7 +1050,7 @@ void ArchiveManagerPanel::openFile(string filename)
 	Archive* new_archive = theArchiveManager->openArchive(filename);
 
 	sw.Pause();
-	wxLogMessage("Opening took %d ms", (int)sw.Time());
+	LOG_MESSAGE(1, "Opening took %d ms", (int)sw.Time());
 
 	// Hide splash screen
 	UI::hideSplash();
@@ -1092,7 +1092,7 @@ void ArchiveManagerPanel::openDirAsArchive(string dir)
 	Archive* new_archive = theArchiveManager->openDirArchive(dir);
 
 	sw.Pause();
-	wxLogMessage("Opening took %d ms", (int)sw.Time());
+	LOG_MESSAGE(1, "Opening took %d ms", (int)sw.Time());
 
 	// Hide splash screen
 	UI::hideSplash();

@@ -1416,6 +1416,9 @@
     <ClCompile Include="..\..\src\Application\SLADEWxApp.cpp">
       <Filter>Application</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\General\Log.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2443,6 +2446,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Application\SLADEWxApp.h">
       <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\General\Log.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

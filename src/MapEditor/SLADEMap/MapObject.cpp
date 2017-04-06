@@ -297,13 +297,13 @@ void MapObject::loadFromBackup(mobj_backup_t* backup)
 	// Check type match
 	if (backup->type != type)
 	{
-		wxLogMessage("loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj type mismatch, %d != %d", type, backup->type);
 		return;
 	}
 	// Check id match
 	if (backup->id != id)
 	{
-		wxLogMessage("loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
+		LOG_MESSAGE(1, "loadFromBackup: Mobj id mismatch, %d != %d", id, backup->id);
 		return;
 	}
 

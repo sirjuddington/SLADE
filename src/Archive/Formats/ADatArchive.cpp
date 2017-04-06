@@ -104,7 +104,7 @@ bool ADatArchive::open(MemChunk& mc)
 	// Check it
 	if (magic[0] != 'A' || magic[1] != 'D' || magic[2] != 'A' || magic[3] != 'T')
 	{
-		wxLogMessage("ADatArchive::open: Opening failed, invalid header");
+		LOG_MESSAGE(1, "ADatArchive::open: Opening failed, invalid header");
 		Global::error = "Invalid dat header";
 		return false;
 	}
@@ -141,7 +141,7 @@ bool ADatArchive::open(MemChunk& mc)
 		// Check offset+size
 		if ((unsigned)(offset + compsize) > mc.getSize())
 		{
-			wxLogMessage("ADatArchive::open: dat archive is invalid or corrupt (entry goes past end of file)");
+			LOG_MESSAGE(1, "ADatArchive::open: dat archive is invalid or corrupt (entry goes past end of file)");
 			Global::error = "Archive is invalid and/or corrupt";
 			setMuted(false);
 			return false;
@@ -187,7 +187,7 @@ bool ADatArchive::open(MemChunk& mc)
 				entry->importMemChunk(xdata);
 			else
 			{
-				wxLogMessage("Entry %s couldn't be inflated", entry->getName());
+				LOG_MESSAGE(1, "Entry %s couldn't be inflated", entry->getName());
 				entry->importMemChunk(edata);
 			}
 		}
@@ -255,7 +255,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		else
 		{
 			entry = &(entries[a]->getMCData());
-			wxLogMessage("Entry %s couldn't be deflated", entries[a]->getName());
+			LOG_MESSAGE(1, "Entry %s couldn't be deflated", entries[a]->getName());
 		}
 
 		// Update entry
@@ -275,7 +275,7 @@ bool ADatArchive::write(MemChunk& mc, bool update)
 		name.Remove(0, 1);	// Remove leading /
 		if (name.Len() > 128)
 		{
-			wxLogMessage("Warning: Entry %s path is too long (> 128 characters), putting it in the root directory", name);
+			LOG_MESSAGE(1, "Warning: Entry %s path is too long (> 128 characters), putting it in the root directory", name);
 			wxFileName fn(name);
 			name = fn.GetFullName();
 			if (name.Len() > 128)
@@ -365,7 +365,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	// Check it opened
 	if (!file.IsOpened())
 	{
-		wxLogMessage("ADatArchive::loadEntryData: Unable to open archive file %s", filename);
+		LOG_MESSAGE(1, "ADatArchive::loadEntryData: Unable to open archive file %s", filename);
 		return false;
 	}
 

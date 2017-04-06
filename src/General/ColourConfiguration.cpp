@@ -190,7 +190,7 @@ bool ColourConfiguration::readConfiguration(MemChunk& mc)
 				}
 
 				else
-					wxLogMessage("Warning: unknown colour definition property \"%s\"", prop->getName());
+					LOG_MESSAGE(1, "Warning: unknown colour definition property \"%s\"", prop->getName());
 			}
 		}
 	}

@@ -320,7 +320,7 @@ bool CTPatchEx::parse(Tokenizer& tz, uint8_t type)
 						colour.b = tz.getInteger();
 						if (tz.peekToken() != ",")
 						{
-							wxLogMessage("Invalid TEXTURES definition, expected ',', got '%s'", tz.getToken());
+							LOG_MESSAGE(1, "Invalid TEXTURES definition, expected ',', got '%s'", tz.getToken());
 							return false;
 						}
 						tz.skipToken();	// Skip ,
@@ -748,7 +748,7 @@ bool CTexture::parse(Tokenizer& tz, string type)
 			// Check if end of text is reached (error)
 			if (property.IsEmpty())
 			{
-				wxLogMessage("Error parsing texture %s: End of text found, missing } perhaps?", name);
+				LOG_MESSAGE(1, "Error parsing texture %s: End of text found, missing } perhaps?", name);
 				return false;
 			}
 

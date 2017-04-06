@@ -366,7 +366,7 @@ void EntryPanel::onBtnRevert(wxCommandEvent& e)
  *******************************************************************/
 void EntryPanel::onBtnEditExt(wxCommandEvent& e)
 {
-	wxLogMessage("External edit not implemented");
+	LOG_MESSAGE(1, "External edit not implemented");
 }
 
 /* EntryPanel::onToolbarButton

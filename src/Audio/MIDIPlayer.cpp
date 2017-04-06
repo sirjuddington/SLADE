@@ -84,7 +84,7 @@ MIDIPlayer::MIDIPlayer()
 #ifdef __WXGTK__
 		fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
 #else // __WXGTK__
-		wxLogMessage("Warning: No fluidsynth soundfont set, MIDI playback will not work");
+		LOG_MESSAGE(1, "Warning: No fluidsynth soundfont set, MIDI playback will not work");
 #endif // __WXGTK__
 	}
 
@@ -93,7 +93,7 @@ MIDIPlayer::MIDIPlayer()
 	reloadSoundfont();
 
 	if (!fs_player || !fs_adriver)
-		wxLogMessage("Warning: Failed to initialise FluidSynth, MIDI playback disabled");
+		LOG_MESSAGE(1, "Warning: Failed to initialise FluidSynth, MIDI playback disabled");
 #endif // NO_FLUIDSYNTH
 }
 

@@ -416,12 +416,12 @@ vector<MapVertex*> MapArchClipboardItem::pasteToMap(SLADEMap* map, fpoint2_t pos
 
 		if (!v1)
 		{
-			wxLogMessage("no v1");
+			LOG_MESSAGE(1, "no v1");
 			continue;
 		}
 		if (!v2)
 		{
-			wxLogMessage("no v2");
+			LOG_MESSAGE(1, "no v2");
 		}
 
 		MapLine* newline = map->createLine(v1, v2, true);

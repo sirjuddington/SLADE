@@ -172,7 +172,7 @@ int ThingTypeBrowser::getSelectedType()
 	BrowserItem* selected = getSelectedItem();
 	if (selected)
 	{
-		wxLogMessage("Selected item %d", selected->getIndex());
+		LOG_MESSAGE(1, "Selected item %d", selected->getIndex());
 		return selected->getIndex();
 	}
 	else

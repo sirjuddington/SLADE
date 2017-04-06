@@ -1514,7 +1514,7 @@ bool ArchivePanel::crc32()
 		uint32_t crc = selection[a]->getMCData().crc();
 		checksums += S_FMT("%s:\t%x\n", selection[a]->getName(), crc);
 	}
-	wxLogMessage(checksums);
+	LOG_MESSAGE(1, checksums);
 	wxMessageBox(checksums);
 
 	return true;
@@ -1593,7 +1593,7 @@ bool ArchivePanel::importEntry()
 				}
 				// Warn if the offsets couldn't be written
 				if (ok && si.getFormat() && !si.getFormat()->writeOffset(si, selection[a], offset))
-					wxLogMessage("Old offset information [%d, %d] couldn't be "
+					LOG_MESSAGE(1, "Old offset information [%d, %d] couldn't be "
 					             "preserved in the new image format for image %s.",
 					             offset.x, offset.y, selection[a]->getName());
 			}
@@ -1894,7 +1894,7 @@ bool ArchivePanel::gfxRemap()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
+					LOG_MESSAGE(1, "Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -1951,7 +1951,7 @@ bool ArchivePanel::gfxColourise()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
+					LOG_MESSAGE(1, "Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2006,7 +2006,7 @@ bool ArchivePanel::gfxTint()
 
 				// Write modified image data
 				if (!temp.getFormat()->saveImage(temp, mc, pal))
-					wxLogMessage("Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
+					LOG_MESSAGE(1, "Error: Could not write image data to entry %s, unsupported format for writing", entry->getName());
 				else
 					entry->importMemChunk(mc);
 			}
@@ -2340,7 +2340,7 @@ bool ArchivePanel::wavDSndConvert()
 			// Attempt conversion
 			if (!Conversions::wavToDoomSnd(selection[a]->getMCData(), dsnd))
 			{
-				wxLogMessage("Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
+				LOG_MESSAGE(1, "Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
 				errors = true;
 				continue;
 			}
@@ -2412,7 +2412,7 @@ bool ArchivePanel::dSndWavConvert()
 		}
 		else
 		{
-			wxLogMessage("Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
+			LOG_MESSAGE(1, "Error: Unable to convert entry %s: %s", selection[a]->getName(), Global::error);
 			errors = true;
 			continue;
 		}
@@ -2631,7 +2631,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 	// Null entry, do nothing
 	if (!entry)
 	{
-		wxLogMessage("Warning: NULL entry focused in the list");
+		LOG_MESSAGE(1, "Warning: NULL entry focused in the list");
 		return false;
 	}
 
@@ -2667,7 +2667,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		// Check it exists (really should)
 		if (!dir)
 		{
-			wxLogMessage("Error: Trying to open nonexistant directory %s", name);
+			LOG_MESSAGE(1, "Error: Trying to open nonexistant directory %s", name);
 			return false;
 		}
 		entry_list->setDir(dir);
@@ -2703,7 +2703,7 @@ bool ArchivePanel::openEntry(ArchiveEntry* entry, bool force)
 		else if (!entry->getType()->getEditor().Cmp("default"))
 			new_area = default_area;
 		else
-			wxLogMessage("Entry editor %s does not exist, using default editor", entry->getType()->getEditor());
+			LOG_MESSAGE(1, "Entry editor %s does not exist, using default editor", entry->getType()->getEditor());
 
 		// Load the entry into the panel
 		if (!new_area->openEntry(entry))
@@ -3877,7 +3877,7 @@ void ArchivePanel::onBtnClearFilter(wxCommandEvent& e)
  *******************************************************************/
 bool EntryDataUS::swapData()
 {
-	//wxLogMessage("Entry data swap...");
+	//LOG_MESSAGE(1, "Entry data swap...");
 
 	// Get parent dir
 	ArchiveTreeNode* dir = archive->getDir(path);
@@ -3889,18 +3889,18 @@ bool EntryDataUS::swapData()
 		// Backup data
 		MemChunk temp_data;
 		temp_data.importMem(entry->getData(), entry->getSize());
-		//wxLogMessage("Backup current data, size %d", entry->getSize());
+		//LOG_MESSAGE(1, "Backup current data, size %d", entry->getSize());
 
 		// Restore entry data
 		if (data.getSize() == 0)
 		{
 			entry->clearData();
-			//wxLogMessage("Clear entry data");
+			//LOG_MESSAGE(1, "Clear entry data");
 		}
 		else
 		{
 			entry->importMemChunk(data);
-			//wxLogMessage("Restored entry data, size %d", data.getSize());
+			//LOG_MESSAGE(1, "Restored entry data, size %d", data.getSize());
 		}
 
 		// Store previous entry data
@@ -4111,7 +4111,7 @@ CONSOLE_COMMAND(find, 1, true)
 			message += entries[i]->getPath(true) + "\n";
 		}
 	}
-	wxLogMessage(S_FMT("Found %i entr%s", count, count==1?"y":"ies\n") + message);
+	Log::info(S_FMT("Found %i entr%s", count, count==1?"y":"ies\n") + message);
 }
 
 CONSOLE_COMMAND(ren, 2, true)
@@ -4148,7 +4148,7 @@ CONSOLE_COMMAND(ren, 2, true)
 			if (archive->renameEntry(entries[i], newname))
 				++count;
 		}
-		wxLogMessage("Renamed %i entr%s", count, count==1?"y":"ies");
+		LOG_MESSAGE(1, "Renamed %i entr%s", count, count==1?"y":"ies");
 	}
 }
 
@@ -4175,7 +4175,7 @@ CONSOLE_COMMAND(cd, 1, true)
 		}
 		else
 		{
-			wxLogMessage("Error: Trying to open nonexistant directory %s", args[0]);
+			LOG_MESSAGE(1, "Error: Trying to open nonexistant directory %s", args[0]);
 		}
 
 	}

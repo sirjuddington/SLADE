@@ -371,7 +371,7 @@ protected:
 		// Check it loaded ok
 		if (png.getSize() == 0)
 		{
-			wxLogMessage("Error reading temporary file");
+			LOG_MESSAGE(1, "Error reading temporary file");
 			return false;
 		}
 

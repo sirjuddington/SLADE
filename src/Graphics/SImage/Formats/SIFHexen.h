@@ -86,20 +86,20 @@ protected:
 		// Check if data is paletted
 		if (image.getType() != PALMASK)
 		{
-			wxLogMessage("Cannot convert truecolour image to planar format - convert to 16-colour first.");
+			LOG_MESSAGE(1, "Cannot convert truecolour image to planar format - convert to 16-colour first.");
 			return false;
 		}
 
 		if (image.countColours() > 16)
 		{
-			wxLogMessage("Cannot convert to planar format, too many colors (%d)", image.countColours());
+			LOG_MESSAGE(1, "Cannot convert to planar format, too many colors (%d)", image.countColours());
 			return false;
 		}
 
 		// Check image size
 		if (!(image.getWidth() == 640 && image.getHeight() == 480))
 		{
-			wxLogMessage("Cannot convert to planar format, invalid size (must be 640x480)");
+			LOG_MESSAGE(1, "Cannot convert to planar format, invalid size (must be 640x480)");
 			return false;
 		}
 
@@ -284,20 +284,20 @@ protected:
 		// Check if data is paletted
 		if (image.getType() != PALMASK)
 		{
-			wxLogMessage("Cannot convert truecolour image to 4-bit format - convert to 16-colour first.");
+			LOG_MESSAGE(1, "Cannot convert truecolour image to 4-bit format - convert to 16-colour first.");
 			return false;
 		}
 
 		if (image.countColours() > 16)
 		{
-			wxLogMessage("Cannot convert to 4-bit format, too many colors (%d)", image.countColours());
+			LOG_MESSAGE(1, "Cannot convert to 4-bit format, too many colors (%d)", image.countColours());
 			return false;
 		}
 
 		// Check image size
 		if (!((image.getWidth() == 4 && image.getHeight() == 16) || (image.getWidth() == 16 && image.getHeight() == 23)))
 		{
-			wxLogMessage("No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)");
+			LOG_MESSAGE(1, "No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)");
 			return false;
 		}
 

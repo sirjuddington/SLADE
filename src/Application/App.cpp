@@ -29,7 +29,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "General/SAction.h"
 
 
 /*******************************************************************
@@ -122,6 +121,9 @@ bool App::init()
 	if (!initDirectories())
 		return false;
 
+	// Init log
+	Log::init();
+
 	return true;
 }
 
@@ -163,7 +165,7 @@ string App::path(string filename, Dir dir)
 		{
 			if (!wxMkdir(dir_temp))
 			{
-				LOG_MESSAGE(1, "Unable to create temp directory \"%s\"", dir_temp);
+				Log::warning(S_FMT("Unable to create temp directory \"%s\"", dir_temp));
 				temp_fail_count++;
 				return path(filename, dir);
 			}

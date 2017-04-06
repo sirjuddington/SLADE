@@ -159,7 +159,7 @@ bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len)
 	// Return false if file open failed
 	if (!file.IsOpened())
 	{
-		wxLogMessage("MemChunk::importFile: Unable to open file %s", filename);
+		LOG_MESSAGE(1, "MemChunk::importFile: Unable to open file %s", filename);
 		Global::error = S_FMT("Unable to open file %s", filename);
 		return false;
 	}
@@ -186,7 +186,7 @@ bool MemChunk::importFile(string filename, uint32_t offset, uint32_t len)
 			size_t count = file.Read(data, size);
 			if (count != size)
 			{
-				wxLogMessage("MemChunk::importFile: Unable to read full file %s, read %u out of %u",
+				LOG_MESSAGE(1, "MemChunk::importFile: Unable to read full file %s, read %u out of %u",
 					filename, count, size);
 				Global::error = S_FMT("Unable to read file %s", filename);
 				clear();
@@ -290,7 +290,7 @@ bool MemChunk::exportFile(string filename, uint32_t start, uint32_t size)
 	wxFile file(filename, wxFile::write);
 	if (!file.IsOpened())
 	{
-		wxLogMessage("Unable to write to file %s", filename);
+		LOG_MESSAGE(1, "Unable to write to file %s", filename);
 		Global::error = "Unable to open file for writing";
 		return false;
 	}

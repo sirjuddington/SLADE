@@ -1947,7 +1947,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 		Polygon2D* poly = map->getSector(a)->getPolygon();
 		if (poly && poly->vboUpdate() > 1)
 		{
-			//wxLogMessage("Updating sector %d polygon vbo data", a);
+			//LOG_MESSAGE(1, "Updating sector %d polygon vbo data", a);
 			updateFlatsVBO();
 			vbo_updated = true;
 		}
@@ -1961,7 +1961,7 @@ void MapRenderer2D::renderFlatsVBO(int type, bool texture, float alpha)
 	}
 
 	//if (vbo_updated)
-	//	wxLogMessage("Updated vbo");
+	//	LOG_MESSAGE(1, "Updated vbo");
 
 	// Setup opengl state
 	if (texture) glEnable(GL_TEXTURE_2D);

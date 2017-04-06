@@ -3883,14 +3883,14 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		{
 			Polygon2D poly;
 			sf::Clock clock;
-			wxLogMessage("Generating polygons...");
+			LOG_MESSAGE(1, "Generating polygons...");
 			for (unsigned a = 0; a < editor->getMap().nSectors(); a++)
 			{
 				if (!poly.openSector(editor->getMap().getSector(a)))
-					wxLogMessage("Splitting failed for sector %d", a);
+					LOG_MESSAGE(1, "Splitting failed for sector %d", a);
 			}
 			//int ms = clock.GetElapsedTime() * 1000;
-			//wxLogMessage("Polygon generation took %dms", ms);
+			//LOG_MESSAGE(1, "Polygon generation took %dms", ms);
 		}
 		if (e.GetKeyCode() == WXK_F7)
 		{
