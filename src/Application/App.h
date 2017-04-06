@@ -5,6 +5,7 @@ class SAction;
 namespace App
 {
 	bool	init();
+	bool	isInitialised();
 	long	runTimer();
 
 	// Path related stuff

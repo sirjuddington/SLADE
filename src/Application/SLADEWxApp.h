@@ -20,12 +20,8 @@ public:
 	virtual void MacOpenFile(const wxString &fileName);
 #endif // __APPLE__
 
-	MainWindow*	getMainWindow() { return main_window; }
-
 	bool	singleInstanceCheck();
-	void	readConfigFile();
 	void	saveConfigFile();
-	bool	isInitialised() { return init_ok; }
 	void	checkForUpdates(bool message_box);
 	void	exitApp(bool save_config = true);
 
@@ -34,9 +30,6 @@ public:
 	void	onActivate(wxActivateEvent& event);
 
 private:
-	MainWindow*					main_window;
-	bool						init_ok;
-	wxStopWatch					timer;
 	wxSingleInstanceChecker*	single_instance_checker;
 	MainAppFileListener*		file_listener;
 	bool						save_config;

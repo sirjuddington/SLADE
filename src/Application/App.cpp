@@ -1,3 +1,4 @@
+
 /*******************************************************************
  * SLADE - It's a Doom Editor
  * Copyright (C) 2008-2014 Simon Judd
@@ -29,6 +30,25 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
+#include "Utility/Tokenizer.h"
+#include "Archive/ArchiveManager.h"
+#include "General/KeyBind.h"
+#include "MapEditor/NodeBuilders.h"
+#include "General/Executables.h"
+#include "General/Misc.h"
+#include "General/Lua.h"
+#include "General/SAction.h"
+#include "General/UI.h"
+#include "UI/SplashWindow.h"
+#include "Graphics/SImage/SIFormat.h"
+#include "Graphics/Icons.h"
+#include "OpenGL/Drawing.h"
+#include "UI/TextEditor/TextLanguage.h"
+#include "UI/TextEditor/TextStyle.h"
+#include "General/ColourConfiguration.h"
+#include "MainEditor/MainEditor.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "Dialogs/SetupWizard/SetupWizardDialog.h"
 
 
 /*******************************************************************
@@ -38,6 +58,7 @@ namespace App
 {
 	wxStopWatch	timer;
 	int			temp_fail_count = 0;
+	bool		init_ok = false;
 
 	// Directory paths
 	string	dir_data = "";
@@ -53,6 +74,7 @@ namespace App
 
 CVAR(Int, temp_location, 0, CVAR_SAVE)
 CVAR(String, temp_location_custom, "", CVAR_SAVE)
+CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -113,10 +135,125 @@ namespace App
 
 		return true;
 	}
+
+	/* SLADEWxApp::readConfigFile
+	 * Reads and parses the SLADE configuration file
+	 *******************************************************************/
+	void readConfigFile()
+	{
+		// Open SLADE.cfg
+		Tokenizer tz;
+		if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
+			return;
+
+		// Go through the file with the tokenizer
+		string token = tz.getToken();
+		while (!tz.atEnd())
+		{
+			// If we come across a 'cvars' token, read in the cvars section
+			if (!token.Cmp("cvars"))
+			{
+				token = tz.getToken();	// Skip '{'
+
+										// Keep reading name/value pairs until we hit the ending '}'
+				string cvar_name = tz.getToken();
+				while (cvar_name.Cmp("}") && !tz.atEnd())
+				{
+					string cvar_val = tz.getToken();
+					read_cvar(cvar_name, cvar_val);
+					cvar_name = tz.getToken();
+				}
+			}
+
+			// Read base resource archive paths
+			if (!token.Cmp("base_resource_paths"))
+			{
+				// Skip {
+				token = wxString::FromUTF8(UTF8(tz.getToken()));
+
+				// Read paths until closing brace found
+				token = tz.getToken();
+				while (token.Cmp("}") && !tz.atEnd())
+				{
+					theArchiveManager->addBaseResourcePath(token);
+					token = wxString::FromUTF8(UTF8(tz.getToken()));
+				}
+			}
+
+			// Read recent files list
+			if (token == "recent_files")
+			{
+				// Skip {
+				token = tz.getToken();
+
+				// Read files until closing brace found
+				token = wxString::FromUTF8(UTF8(tz.getToken()));
+				while (token != "}" && !tz.atEnd())
+				{
+					theArchiveManager->addRecentFile(token);
+					token = wxString::FromUTF8(UTF8(tz.getToken()));
+				}
+			}
+
+			// Read keybinds
+			if (token == "keys")
+			{
+				token = tz.getToken();	// Skip {
+				KeyBind::readBinds(tz);
+			}
+
+			// Read nodebuilder paths
+			if (token == "nodebuilder_paths")
+			{
+				token = tz.getToken();	// Skip {
+
+										// Read paths until closing brace found
+				token = tz.getToken();
+				while (token != "}" && !tz.atEnd())
+				{
+					string path = tz.getToken();
+					NodeBuilders::addBuilderPath(token, path);
+					token = tz.getToken();
+				}
+			}
+
+			// Read game exe paths
+			if (token == "executable_paths")
+			{
+				token = tz.getToken();	// Skip {
+
+										// Read paths until closing brace found
+				token = tz.getToken();
+				while (token != "}" && !tz.atEnd())
+				{
+					if (token.length())
+					{
+						string path = tz.getToken();
+						Executables::setGameExePath(token, path);
+					}
+					token = tz.getToken();
+				}
+			}
+
+			// Read window size/position info
+			if (token == "window_info")
+			{
+				token = tz.getToken();	// Skip {
+				Misc::readWindowInfo(&tz);
+			}
+
+			// Get next token
+			token = tz.getToken();
+		}
+	}
 }
 
 bool App::init()
 {
+	// Set locale to C so that the tokenizer will work properly
+	// even in locales where the decimal separator is a comma.
+	setlocale(LC_ALL, "C");
+
 	// Init application directories
 	if (!initDirectories())
 		return false;
@@ -124,7 +261,112 @@ bool App::init()
 	// Init log
 	Log::init();
 
+	// Init keybinds
+	KeyBind::initBinds();
+
+	// Load configuration file
+	Log::info("Loading configuration");
+	readConfigFile();
+
+	// Check that SLADE.pk3 can be found
+	Log::info("Loading resources");
+	theArchiveManager->init();
+	if (!theArchiveManager->resArchiveOK())
+	{
+		wxMessageBox("Unable to find slade.pk3, make sure it exists in the same directory as the SLADE executable", "Error", wxICON_ERROR);
+		return false;
+	}
+
+	// Init SActions
+	SAction::initWxId(26000);
+	SAction::initActions();
+
+	// Init lua
+	Lua::init();
+
+	// Show splash screen
+	SplashWindow::getInstance()->init(); // TODO: Move SplashWindow singleton to App namespace
+	UI::showSplash("Starting up...");
+
+	// Init SImage formats
+	SIFormat::initFormats();
+
+	// Load program icons
+	Log::info("Loading icons");
+	Icons::loadIcons();
+
+	// Load program fonts
+	Drawing::initFonts();
+
+	// Load entry types
+	Log::info("Loading entry types");
+	EntryDataFormat::initBuiltinFormats();
+	EntryType::loadEntryTypes();
+
+	// Load text languages
+	Log::info("Loading text languages");
+	TextLanguage::loadLanguages();
+
+	// Init text stylesets
+	Log::info("Loading text style sets");
+	StyleSet::loadResourceStyles();
+	StyleSet::loadCustomStyles();
+
+	// Init colour configuration
+	Log::info("Loading colour configuration");
+	ColourConfiguration::init();
+
+	// Init nodebuilders
+	NodeBuilders::init();
+
+	// Init game executables
+	Executables::init();
+
+	// Init main editor
+	MainEditor::init();
+
+	// Init base resource
+	Log::info("Loading base resource");
+	theArchiveManager->initBaseResource();
+	Log::info("Base resource loaded");
+
+	// Init game configuration
+	theGameConfiguration->init();
+
+	// Show the main window
+	MainEditor::windowWx()->Show(true);
+	wxTheApp->SetTopWindow(MainEditor::windowWx());
+	SplashWindow::getInstance()->SetParent(MainEditor::windowWx());
+	SplashWindow::getInstance()->CentreOnParent();
+
+	// Open any archives on the command line
+	// argv[0] is normally the executable itself (i.e. SLADE.exe)
+	// and opening it as an archive should not be attempted...
+	for (int a = 1; a < wxTheApp->argc; a++)
+		theArchiveManager->openArchive(wxTheApp->argv[a]);
+
+	// Hide splash screen
+	UI::hideSplash();
+
+	init_ok = true;
+	Log::info("SLADE Initialisation OK");
+
+	// Show Setup Wizard if needed
+	if (!setup_wizard_run)
+	{
+		SetupWizardDialog dlg(MainEditor::windowWx());
+		dlg.ShowModal();
+		setup_wizard_run = true;
+		MainEditor::windowWx()->Update();
+		MainEditor::windowWx()->Refresh();
+	}
+
 	return true;
+}
+
+bool App::isInitialised()
+{
+	return init_ok;
 }
 
 long App::runTimer()

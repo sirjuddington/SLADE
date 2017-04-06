@@ -146,7 +146,7 @@ void SplashWindow::show(string message, bool progress, wxWindow* parent)
 		show_progress = false;
 
 	// Set parent
-	if (!parent && theApp->isInitialised())
+	if (!parent && App::isInitialised())
 		SetParent(MainEditor::windowWx());
 	else
 		SetParent(parent);

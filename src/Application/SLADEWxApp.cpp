@@ -29,7 +29,6 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/EntryType/EntryDataFormat.h"
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "External/dumb/dumb.h"
 #include "External/email/wxMailer.h"
@@ -40,20 +39,15 @@
 #include "General/Lua.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
-#include "General/UI.h"
 #include "General/VersionCheck.h"
-#include "Graphics/Icons.h"
-#include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "MapEditor/NodeBuilders.h"
 #include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
 #include "UI/SplashWindow.h"
-#include "UI/TextEditor/TextLanguage.h"
 #include "UI/TextEditor/TextStyle.h"
 #include "Utility/Tokenizer.h"
 #include <wx/statbmp.h>
@@ -97,7 +91,6 @@ bool	exiting = false;
 string	current_action = "";
 bool	update_check_message_box = false;
 CVAR(String, dir_last, "", CVAR_SAVE)
-CVAR(Bool, setup_wizard_run, false, CVAR_SAVE)
 CVAR(Bool, update_check, true, CVAR_SAVE)
 CVAR(Bool, update_check_beta, false, CVAR_SAVE)
 
@@ -446,8 +439,6 @@ IMPLEMENT_APP(SLADEWxApp)
  *******************************************************************/
 SLADEWxApp::SLADEWxApp()
 {
-	main_window = NULL;
-	init_ok = false;
 	save_config = true;
 }
 
@@ -511,14 +502,8 @@ bool SLADEWxApp::OnInit()
 		return false;
 	}
 
-	// Set locale to C so that the tokenizer will work properly
-	// even in locales where the decimal separator is a comma.
-	setlocale(LC_ALL, "C");
-
 	// Init global variables
 	Global::error = "";
-	ArchiveManager::getInstance();
-	init_ok = false;
 
 	// Start up file listener
 	file_listener = new MainAppFileListener();
@@ -542,122 +527,19 @@ bool SLADEWxApp::OnInit()
 	// Load image handlers
 	wxInitAllImageHandlers();
 
-	// Init application
-	if (!App::init())
-		return false;
-	
+	// Calculate scaling factor (from system ppi)
+	wxMemoryDC dc;
+	Global::ppi_scale = (double)(dc.GetPPI().x) / 96.0;
+
 	// Get Windows version
 #ifdef __WXMSW__
 	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
 	LOG_MESSAGE(1, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
 #endif
 
-	// Init keybinds
-	KeyBind::initBinds();
-
-	// Load configuration file
-	Log::info("Loading configuration");
-	readConfigFile();
-
-	// Check that SLADE.pk3 can be found
-	Log::info("Loading resources");
-	theArchiveManager->init();
-	if (!theArchiveManager->resArchiveOK())
-	{
-		wxMessageBox("Unable to find slade.pk3, make sure it exists in the same directory as the SLADE executable", "Error", wxICON_ERROR);
+	// Init application
+	if (!App::init())
 		return false;
-	}
-
-	// Init SActions
-	SAction::initWxId(26000);
-	SAction::initActions();
-
-	// Init lua
-	Lua::init();
-
-	// Calculate scaling factor (from system ppi)
-	wxMemoryDC dc;
-	Global::ppi_scale = (double)(dc.GetPPI().x) / 96.0;
-
-	// Show splash screen
-	SplashWindow::getInstance()->init();
-	UI::showSplash("Starting up...");
-
-	// Init SImage formats
-	SIFormat::initFormats();
-
-	// Load program icons
-	Log::info("Loading icons");
-	Icons::loadIcons();
-
-	// Load program fonts
-	Drawing::initFonts();
-
-	// Load entry types
-	Log::info("Loading entry types");
-	EntryDataFormat::initBuiltinFormats();
-	EntryType::loadEntryTypes();
-
-	// Load text languages
-	Log::info("Loading text languages");
-	TextLanguage::loadLanguages();
-
-	// Init text stylesets
-	Log::info("Loading text style sets");
-	StyleSet::loadResourceStyles();
-	StyleSet::loadCustomStyles();
-
-	// Init colour configuration
-	Log::info("Loading colour configuration");
-	ColourConfiguration::init();
-
-	// Init nodebuilders
-	NodeBuilders::init();
-
-	// Init game executables
-	Executables::init();
-
-	// Init main editor
-	MainEditor::init();
-
-	// Init base resource
-	Log::info("Loading base resource");
-	theArchiveManager->initBaseResource();
-	Log::info("Base resource loaded");
-
-	// Show the main window
-	theMainWindow->Show(true);
-	SetTopWindow(theMainWindow);
-	SplashWindow::getInstance()->SetParent(theMainWindow);
-	SplashWindow::getInstance()->CentreOnParent();
-
-	// Open any archives on the command line
-	// argv[0] is normally the executable itself (i.e. Slade.exe)
-	// and opening it as an archive should not be attempted...
-	for (int a = 1; a < argc; a++)
-	{
-		string arg = argv[a];
-		theArchiveManager->openArchive(arg);
-	}
-
-	// Hide splash screen
-	UI::hideSplash();
-
-	init_ok = true;
-	Log::info("SLADE Initialisation OK");
-
-	// Init game configuration
-	theGameConfiguration->init();
-
-	// Show Setup Wizard if needed
-	if (!setup_wizard_run)
-	{
-		SetupWizardDialog dlg(theMainWindow);
-		dlg.ShowModal();
-		setup_wizard_run = true;
-		theMainWindow->Update();
-		theMainWindow->Refresh();
-	}
 
 	// Check for updates
 #ifdef __WXMSW__
@@ -755,116 +637,6 @@ void SLADEWxApp::MacOpenFile(const wxString &fileName)
 }
 #endif // __APPLE__
 
-/* SLADEWxApp::readConfigFile
- * Reads and parses the SLADE configuration file
- *******************************************************************/
-void SLADEWxApp::readConfigFile()
-{
-	// Open SLADE.cfg
-	Tokenizer tz;
-	if (!tz.openFile(App::path("slade3.cfg", App::Dir::User)))
-		return;
-
-	// Go through the file with the tokenizer
-	string token = tz.getToken();
-	while (!tz.atEnd())
-	{
-		// If we come across a 'cvars' token, read in the cvars section
-		if (!token.Cmp("cvars"))
-		{
-			token = tz.getToken();	// Skip '{'
-
-			// Keep reading name/value pairs until we hit the ending '}'
-			string cvar_name = tz.getToken();
-			while (cvar_name.Cmp("}") && !tz.atEnd())
-			{
-				string cvar_val = tz.getToken();
-				read_cvar(cvar_name, cvar_val);
-				cvar_name = tz.getToken();
-			}
-		}
-
-		// Read base resource archive paths
-		if (!token.Cmp("base_resource_paths"))
-		{
-			// Skip {
-			token = wxString::FromUTF8(UTF8(tz.getToken()));
-
-			// Read paths until closing brace found
-			token = tz.getToken();
-			while (token.Cmp("}") && !tz.atEnd())
-			{
-				theArchiveManager->addBaseResourcePath(token);
-				token = wxString::FromUTF8(UTF8(tz.getToken()));
-			}
-		}
-
-		// Read recent files list
-		if (token == "recent_files")
-		{
-			// Skip {
-			token = tz.getToken();
-
-			// Read files until closing brace found
-			token = wxString::FromUTF8(UTF8(tz.getToken()));
-			while (token != "}" && !tz.atEnd())
-			{
-				theArchiveManager->addRecentFile(token);
-				token = wxString::FromUTF8(UTF8(tz.getToken()));
-			}
-		}
-
-		// Read keybinds
-		if (token == "keys")
-		{
-			token = tz.getToken();	// Skip {
-			KeyBind::readBinds(tz);
-		}
-
-		// Read nodebuilder paths
-		if (token == "nodebuilder_paths")
-		{
-			token = tz.getToken();	// Skip {
-
-			// Read paths until closing brace found
-			token = tz.getToken();
-			while (token != "}" && !tz.atEnd())
-			{
-				string path = tz.getToken();
-				NodeBuilders::addBuilderPath(token, path);
-				token = tz.getToken();
-			}
-		}
-
-		// Read game exe paths
-		if (token == "executable_paths")
-		{
-			token = tz.getToken();	// Skip {
-
-			// Read paths until closing brace found
-			token = tz.getToken();
-			while (token != "}" && !tz.atEnd())
-			{
-				if (token.length())
-				{
-					string path = tz.getToken();
-					Executables::setGameExePath(token, path);
-				}
-				token = tz.getToken();
-			}
-		}
-
-		// Read window size/position info
-		if (token == "window_info")
-		{
-			token = tz.getToken();	// Skip {
-			Misc::readWindowInfo(&tz);
-		}
-
-		// Get next token
-		token = tz.getToken();
-	}
-}
 
 /* SLADEWxApp::saveConfigFile
  * Saves the SLADE configuration file
