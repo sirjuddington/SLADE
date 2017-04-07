@@ -29,6 +29,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
+#include "SLADEWxApp.h"
 #include "MainWindow.h"
 #include "UI/ConsolePanel.h"
 #include "Archive/ArchiveManager.h"
@@ -61,6 +62,8 @@ CVAR(Bool, show_start_page, true, CVAR_SAVE);
 CVAR(String, global_palette, "", CVAR_SAVE);
 CVAR(Bool, mw_maximized, true, CVAR_SAVE);
 CVAR(Bool, confirm_exit, true, CVAR_SAVE);
+
+DECLARE_APP(SLADEWxApp)
 
 
 /*******************************************************************
@@ -813,7 +816,7 @@ bool MainWindow::handleAction(string id)
 	// Help->Check For Updates
 	if (id == "main_updatecheck")
 	{
-		theApp->checkForUpdates(true);
+		wxGetApp().checkForUpdates(true);
 		return true;
 	}
 

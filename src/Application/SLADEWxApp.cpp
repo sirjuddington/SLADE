@@ -28,20 +28,14 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
+#include "SLADEWxApp.h"
 #include "Archive/ArchiveManager.h"
-#include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "External/email/wxMailer.h"
 #include "General/Console/Console.h"
-#include "General/Executables.h"
-#include "General/KeyBind.h"
-#include "General/Misc.h"
-#include "General/ResourceManager.h"
 #include "General/VersionCheck.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
-#include "MapEditor/NodeBuilders.h"
-#include "OpenGL/Drawing.h"
 #include "OpenGL/OpenGL.h"
 #include <wx/statbmp.h>
 
@@ -429,7 +423,9 @@ IMPLEMENT_APP(SLADEWxApp)
 /* SLADEWxApp::SLADEWxApp
  * SLADEWxApp class constructor
  *******************************************************************/
-SLADEWxApp::SLADEWxApp()
+SLADEWxApp::SLADEWxApp() :
+	single_instance_checker{ nullptr },
+	file_listener{ nullptr }
 {
 }
 
@@ -458,22 +454,17 @@ bool SLADEWxApp::singleInstanceCheck()
 		delete single_instance_checker;
 
 		// Connect to the file listener of the existing SLADE process
-		MainAppFLClient* client = new MainAppFLClient();
-		MainAppFLConnection* connection = (MainAppFLConnection*)client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files");
+		auto client = std::make_unique<MainAppFLClient>();
+		auto connection = client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files");
 
 		if (connection)
 		{
 			// Send args as archives to open
 			for (int a = 1; a < argc; a++)
-			{
-				string arg = argv[a];
-				connection->Poke(arg, arg);
-			}
+				connection->Poke(argv[a], argv[a]);
 
 			connection->Disconnect();
 		}
-
-		delete client;
 
 		return false;
 	}
@@ -736,15 +727,9 @@ CONSOLE_COMMAND (crash, 0, false)
 {
 	if (wxMessageBox("Yes, this command does actually exist and *will* crash the program. Do you really want it to crash?", "...Really?", wxYES_NO|wxCENTRE) == wxYES)
 	{
-		uint8_t* test = NULL;
+		uint8_t* test = nullptr;
 		test[123] = 5;
 	}
-}
-
-CONSOLE_COMMAND(setup_wizard, 0, false)
-{
-	SetupWizardDialog dlg(theMainWindow);
-	dlg.ShowModal();
 }
 
 CONSOLE_COMMAND(quit, 0, true)

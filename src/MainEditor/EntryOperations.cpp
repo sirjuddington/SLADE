@@ -1256,9 +1256,9 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	string command = path_acc + " " + opt + " \"" + srcfile + "\" \"" + ofile + "\"";
 	wxArrayString output;
 	wxArrayString errout;
-	theApp->SetTopWindow(parent);
+	wxTheApp->SetTopWindow(parent);
 	wxExecute(command, output, errout, wxEXEC_SYNC);
-	theApp->SetTopWindow(MainEditor::windowWx());
+	wxTheApp->SetTopWindow(MainEditor::windowWx());
 
 	// Log output
 	Log::console("ACS compiler output:");

@@ -547,3 +547,10 @@ string App::path(string filename, Dir dir)
 
 	return filename;
 }
+
+
+CONSOLE_COMMAND(setup_wizard, 0, false)
+{
+	SetupWizardDialog dlg(MainEditor::windowWx());
+	dlg.ShowModal();
+}

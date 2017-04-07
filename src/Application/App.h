@@ -1,7 +1,6 @@
 #pragma once
 
 class Console;
-class SAction;
 
 namespace App
 {
@@ -17,6 +16,3 @@ namespace App
 	enum class Dir { User, Data, Executable, Resources, Temp };
 	string path(string filename, Dir dir);
 }
-
-// TODO: Remove when split done
-#include "SLADEWxApp.h"

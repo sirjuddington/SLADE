@@ -2,7 +2,6 @@
 
 #include "common.h"
 
-class MainWindow;
 class wxSingleInstanceChecker;
 class MainAppFileListener;
 
@@ -31,5 +30,3 @@ private:
 	wxSingleInstanceChecker*	single_instance_checker;
 	MainAppFileListener*		file_listener;
 };
-
-#define theApp ((SLADEWxApp*)wxTheApp)
