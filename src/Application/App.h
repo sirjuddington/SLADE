@@ -1,12 +1,14 @@
 #pragma once
 
 class Console;
+class PaletteManager;
 
 namespace App
 {
-	bool		isInitialised();
-	Console*	console();
-	long		runTimer();
+	bool			isInitialised();
+	Console*		console();
+	PaletteManager*	paletteManager();
+	long			runTimer();
 
 	bool	init();
 	void	saveConfigFile();

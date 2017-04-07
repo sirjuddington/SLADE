@@ -50,6 +50,7 @@
 #include "Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "General/Console/Console.h"
 #include "External/dumb/dumb.h"
+#include "Graphics/Palette/PaletteManager.h"
 
 
 /*******************************************************************
@@ -73,8 +74,9 @@ namespace App
 	string	dir_separator = "/";
 #endif
 
-	// Console
-	Console	console_main;
+	// App objects (managers, etc.)
+	Console			console_main;
+	PaletteManager	palette_manager;
 }
 
 CVAR(Int, temp_location, 0, CVAR_SAVE)
@@ -263,6 +265,11 @@ Console* App::console()
 	return &console_main;
 }
 
+PaletteManager* App::paletteManager()
+{
+	return &palette_manager;
+}
+
 long App::runTimer()
 {
 	return timer.Time();
@@ -306,6 +313,13 @@ bool App::init()
 
 	// Show splash screen
 	UI::showSplash("Starting up...");
+
+	// Init palettes
+	if (!palette_manager.init())
+	{
+		Log::error("Failed to initialise palettes");
+		return false;
+	}
 
 	// Init SImage formats
 	SIFormat::initFormats();

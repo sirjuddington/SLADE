@@ -30,6 +30,7 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
+#include "App.h"
 #include "ArchivePanel.h"
 #include "ArchiveManagerPanel.h"
 #include "Archive/ArchiveManager.h"
@@ -702,8 +703,8 @@ bool ArchivePanel::newEntry(int type)
 				Palette8bit* pal;
 				int choice = cp.getChoice();
 				if (choice)
-					pal = thePaletteManager->getPalette(choice - 1);
-				else pal = thePaletteManager->globalPalette();
+					pal = App::paletteManager()->getPalette(choice - 1);
+				else pal = App::paletteManager()->globalPalette();
 				pal->saveMem(mc);
 			}
 			else

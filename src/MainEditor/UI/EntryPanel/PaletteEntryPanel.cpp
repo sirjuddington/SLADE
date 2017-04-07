@@ -894,9 +894,9 @@ bool PaletteEntryPanel::addCustomPalette()
 	palettes[cur_palette]->saveFile(path);
 
 	// Add to palette manager and main palette chooser
-	Palette8bit* pal = new Palette8bit();
+	auto pal = std::make_unique<Palette8bit>();
 	pal->copyPalette(palettes[cur_palette]);
-	thePaletteManager->addPalette(pal, name);
+	App::paletteManager()->addPalette(std::move(pal), name);
 	theMainWindow->getPaletteChooser()->addPalette(name);
 
 	return true;
@@ -913,9 +913,9 @@ bool PaletteEntryPanel::testPalette()
 	string name = "Test: " + wxGetTextFromUser("Enter name for Palette:", "Test Palettes");
 
 	// Add to palette manager and main palette chooser
-	Palette8bit* pal = new Palette8bit();
+	auto pal = std::make_unique<Palette8bit>();
 	pal->copyPalette(palettes[cur_palette]);
-	thePaletteManager->addPalette(pal, name);
+	App::paletteManager()->addPalette(std::move(pal), name);
 	theMainWindow->getPaletteChooser()->addPalette(name);
 	theMainWindow->getPaletteChooser()->selectPalette(name);
 
