@@ -172,7 +172,6 @@ void Console::execute(string command)
 
 	// Command not found
 	logMessage(S_FMT("Unknown command: \"%s\"", cmd_name));
-	return;
 }
 
 /* Console::logMessage
@@ -180,47 +179,12 @@ void Console::execute(string command)
  *******************************************************************/
 void Console::logMessage(string message)
 {
-	// Add a newline to the end of the message if there isn't one
-	if (message.size() == 0 || message.Last() != '\n')
-		message.Append("\n");
-
 	// Log the message
-	log.push_back(message);
+	Log::message(Log::MessageType::Console, CHR(message));
 
 	// Announce that a new message has been logged
 	MemChunk mc;
 	announce("console_logmessage", mc);
-}
-
-/* Console::lastLogLine
- * Returns the last line added to the console log
- *******************************************************************/
-string Console::lastLogLine()
-{
-	// Init blank string
-	string lastLine = "";
-
-	// Get last line if any exist
-	if (log.size() > 0)
-		lastLine = log.back();
-
-	return lastLine;
-}
-
-/* Console::lastLogLines
- * Returns the last [num] lines added to the console log
- *******************************************************************/
-vector<string> Console::lastLogLines(int num)
-{
-	vector<string> lines;
-
-	while (num >= 0 && num < (int)log.size())
-	{
-		lines.push_back(log[log.size() - num - 1]);
-		num--;
-	}
-
-	return lines;
 }
 
 /* Console::lastCommand
@@ -236,20 +200,6 @@ string Console::lastCommand()
 		lastCmd = cmd_log.back();
 
 	return lastCmd;
-}
-
-/* Console::dumpLog
- * Returns the entire console log as one string, each message
- * separated by a newline
- *******************************************************************/
-string Console::dumpLog()
-{
-	string ret = "";
-
-	for (size_t a = 0; a < log.size(); a++)
-		ret += log.at(a);
-
-	return ret;
 }
 
 /* Console::prevCommand

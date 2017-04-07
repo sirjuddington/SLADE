@@ -220,11 +220,11 @@ public:
 		trace += "\n";
 		trace += st.getTraceString();
 
-		// Last 5 log lines
+		// Last 10 log lines
 		trace += "\nLast Log Messages:\n";
-		vector<string> lines = theConsole->lastLogLines(10);
-		for (unsigned a = 0; a < lines.size(); a++)
-			trace += lines[a];
+		auto& log = Log::history();
+		for (auto a = log.size() - 10; a < log.size(); a++)
+			trace += log[a].message + "\n";
 
 		// Add stack trace text area
 		text_stack = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL);

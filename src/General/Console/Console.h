@@ -6,12 +6,6 @@
 
 class ConsoleCommand
 {
-private:
-	string	name;
-	void	(*commandFunc)(vector<string>);
-	size_t	min_args;
-	bool	show_in_list;
-
 public:
 	ConsoleCommand(string name, void(*commandFunc)(vector<string>), int min_args, bool show_in_list = true);
 
@@ -24,18 +18,16 @@ public:
 
 	inline bool operator<(ConsoleCommand c) const { return name < c.getName(); }
 	inline bool operator>(ConsoleCommand c) const { return name > c.getName(); }
+
+private:
+	string	name;
+	void(*commandFunc)(vector<string>);
+	size_t	min_args;
+	bool	show_in_list;
 };
 
 class Console : public Announcer
 {
-private:
-	vector<ConsoleCommand> commands;
-
-	vector<string> log;
-	vector<string> cmd_log;
-
-	static Console* instance;
-
 public:
 	Console();
 	~Console();
@@ -59,12 +51,14 @@ public:
 	void			addCommand(ConsoleCommand& c);
 	void			execute(string command);
 	void			logMessage(string message);
-	string			lastLogLine();
-	vector<string>	lastLogLines(int num);
 	string			lastCommand();
-	string			dumpLog();
 	string			prevCommand(int index);
 	int				numPrevCommands() { return cmd_log.size(); }
+
+private:
+	vector<ConsoleCommand>	commands;
+	vector<string>			cmd_log;
+	static Console*			instance;
 };
 
 // Define for less cumbersome Console::getInstance()

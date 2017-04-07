@@ -16,6 +16,9 @@ namespace Log
 	{
 		string		message;
 		MessageType	type;
+		time_t		timestamp;
+
+		string	formattedMessageLine() const;
 	};
 
 	const vector<Message>&	history();

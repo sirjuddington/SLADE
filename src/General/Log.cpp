@@ -29,7 +29,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "General/Console/Console.h"
 #include <fstream>
 
 
@@ -59,6 +58,20 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 	error += message;
 
 	Log::error(error);
+}
+
+
+/*******************************************************************
+ * LOG::MESSAGE STRUCT FUNCTIONS
+ *******************************************************************/
+
+/* Log::Message::formattedMessageLine
+ * Returns the log entry as a formatted string:
+ * HH:MM:SS: <message>
+ *******************************************************************/
+string Log::Message::formattedMessageLine() const
+{
+	return S_FMT("%s: %s", wxDateTime(timestamp).FormatISOTime(), CHR(message));
 }
 
 
@@ -134,15 +147,12 @@ void Log::setVerbosity(int verbosity)
  *******************************************************************/
 void Log::message(MessageType type, const char* text)
 {
-	log.push_back({ S_FMT("%s: %s", wxDateTime::Now().FormatISOTime(), text), type });
-	if (log_file.is_open())
-	{
-		if (type != MessageType::Console)
-			sf::err() << log.back().message << "\n";
+	// Add log message
+	log.push_back({ text, type, wxDateTime::Now().GetTicks() });
 
-		// TODO: Make console use this log instead of keeping its own
-		theConsole->logMessage(log.back().message);
-	}
+	// Write to log file
+	if (log_file.is_open() && type != MessageType::Console)
+		sf::err() << log.back().formattedMessageLine() << "\n";
 }
 
 /* Log::message
@@ -153,13 +163,10 @@ void Log::message(MessageType type, int level, const char* text)
 	if (level > log_verbosity)
 		return;
 
-	log.push_back({ S_FMT("%s: %s", wxDateTime::Now().FormatISOTime(), text), type });
-	if (log_file.is_open())
-	{
-		if (type != MessageType::Console)
-			sf::err() << log.back().message << "\n";
+	// Add log message
+	log.push_back({ text, type, wxDateTime::Now().GetTicks() });
 
-		// TODO: Make console use this log instead of keeping its own
-		theConsole->logMessage(log.back().message);
-	}
+	// Write to log file
+	if (log_file.is_open() && type != MessageType::Console)
+		sf::err() << log.back().formattedMessageLine() << "\n";
 }

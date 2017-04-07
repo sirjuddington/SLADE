@@ -57,7 +57,10 @@ ConsolePanel::ConsolePanel(wxWindow* parent, int id)
 	text_command->Bind(wxEVT_KEY_DOWN, &ConsolePanel::onCommandKeyDown, this);
 
 	// Load the current contents of the console log
-	text_log->AppendText(theConsole->dumpLog());
+	string log_dump;
+	for (auto& msg : Log::history())
+		log_dump += msg.formattedMessageLine() + "\n";
+	text_log->AppendText(log_dump);
 }
 
 /* ConsolePanel::~ConsolePanel
@@ -101,7 +104,7 @@ void ConsolePanel::onAnnouncement(Announcer* announcer, string event_name, MemCh
 	// New console log message added
 	if (event_name == "console_logmessage")
 	{
-		text_log->AppendText(theConsole->lastLogLine());
+		text_log->AppendText(Log::history().back().formattedMessageLine() + "\n");
 	}
 }
 
