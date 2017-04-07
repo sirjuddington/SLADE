@@ -39,7 +39,6 @@
 #include "General/Lua.h"
 #include "General/SAction.h"
 #include "General/UI.h"
-#include "UI/SplashWindow.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/Icons.h"
 #include "OpenGL/Drawing.h"
@@ -306,7 +305,6 @@ bool App::init()
 	Lua::init();
 
 	// Show splash screen
-	SplashWindow::getInstance()->init(); // TODO: Move SplashWindow singleton to App namespace
 	UI::showSplash("Starting up...");
 
 	// Init SImage formats
@@ -357,8 +355,7 @@ bool App::init()
 	// Show the main window
 	MainEditor::windowWx()->Show(true);
 	wxTheApp->SetTopWindow(MainEditor::windowWx());
-	SplashWindow::getInstance()->SetParent(MainEditor::windowWx());
-	SplashWindow::getInstance()->CentreOnParent();
+	UI::showSplash("Starting up...", false, MainEditor::windowWx());
 
 	// Open any archives on the command line
 	// argv[0] is normally the executable itself (i.e. SLADE.exe)
@@ -479,7 +476,6 @@ void App::exit(bool save_config)
 	// Clean up
 	EntryType::cleanupEntryTypes();
 	ArchiveManager::deleteInstance();
-	SplashWindow::deleteInstance();
 
 	// Clear temp folder
 	wxDir temp;
