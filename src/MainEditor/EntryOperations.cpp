@@ -1261,16 +1261,16 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	theApp->SetTopWindow(MainEditor::windowWx());
 
 	// Log output
-	theConsole->logMessage("ACS compiler output:");
+	Log::console("ACS compiler output:");
 	string output_log;
 	if (!output.IsEmpty())
 	{
 		const char *title1 = "=== Log: ===\n";
-		theConsole->logMessage(title1);
+		Log::console(title1);
 		output_log += title1;
 		for (unsigned a = 0; a < output.size(); a++)
 		{
-			theConsole->logMessage(output[a]);
+			Log::console(output[a]);
 			output_log += output[a];
 		}
 	}
@@ -1278,11 +1278,11 @@ bool EntryOperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 	if (!errout.IsEmpty())
 	{
 		const char *title2 = "\n=== Error log: ===\n";
-		theConsole->logMessage(title2);
+		Log::console(title2);
 		output_log += title2;
 		for (unsigned a = 0; a < errout.size(); a++)
 		{
-			theConsole->logMessage(errout[a]);
+			Log::console(errout[a]);
 			output_log += errout[a] + "\n";
 		}
 	}
@@ -1666,7 +1666,6 @@ void fixpngsrc(ArchiveEntry* entry)
 /*******************************************************************
  * CONSOLE COMMANDS
  *******************************************************************/
-#include "MainEditor.h"
 
 CONSOLE_COMMAND(fixpngcrc, 0, true)
 {

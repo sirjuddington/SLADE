@@ -1,11 +1,13 @@
 #pragma once
 
+class Console;
 class SAction;
 
 namespace App
 {
-	bool	isInitialised();
-	long	runTimer();
+	bool		isInitialised();
+	Console*	console();
+	long		runTimer();
 
 	bool	init();
 	void	saveConfigFile();

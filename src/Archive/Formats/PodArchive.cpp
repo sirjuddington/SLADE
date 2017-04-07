@@ -397,9 +397,9 @@ CONSOLE_COMMAND(pod_get_id, 0, 1)
 {
 	Archive* archive = MainEditor::currentArchive();
 	if (archive && archive->getType() == ARCHIVE_POD)
-		theConsole->logMessage(((PodArchive*)archive)->getId());
+		Log::console(((PodArchive*)archive)->getId());
 	else
-		theConsole->logMessage("Current tab is not a POD archive");
+		Log::console("Current tab is not a POD archive");
 
 }
 
@@ -409,5 +409,5 @@ CONSOLE_COMMAND(pod_set_id, 1, true)
 	if (archive && archive->getType() == ARCHIVE_POD)
 		((PodArchive*)archive)->setId(args[0].Truncate(80));
 	else
-		theConsole->logMessage("Current tab is not a POD archive");
+		Log::console("Current tab is not a POD archive");
 }

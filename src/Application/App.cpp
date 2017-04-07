@@ -73,6 +73,9 @@ namespace App
 #else
 	string	dir_separator = "/";
 #endif
+
+	// Console
+	Console	console_main;
 }
 
 CVAR(Int, temp_location, 0, CVAR_SAVE)
@@ -254,6 +257,11 @@ namespace App
 bool App::isInitialised()
 {
 	return init_ok;
+}
+
+Console* App::console()
+{
+	return &console_main;
 }
 
 long App::runTimer()
@@ -471,7 +479,6 @@ void App::exit(bool save_config)
 	// Clean up
 	EntryType::cleanupEntryTypes();
 	ArchiveManager::deleteInstance();
-	Console::deleteInstance();
 	SplashWindow::deleteInstance();
 
 	// Clear temp folder

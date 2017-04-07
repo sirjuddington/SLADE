@@ -32,7 +32,6 @@
  *******************************************************************/
 #include "Main.h"
 #include "Archive/Archive.h"
-#include "General/Console/Console.h"
 #include "Parser.h"
 
 
@@ -524,22 +523,22 @@ bool Parser::defined(string def)
 }
 
 
-
-// Console test command
-/*
+#if 0
+// Console test commands
 CONSOLE_COMMAND (testparse, 0) {
 	string test = "root { item1 = value1; item2 = value1, value2; child1 { item1 = value1, value2, value3; item2 = value4; } child2 : child1 { item1 = value1; child3 { item1 = value1, value2; } } }";
 	Parser tp;
 	MemChunk mc((const uint8_t*)CHR(test), test.Length());
 	tp.parseText(mc);
 }
-*/
 
+#include "App.h"
 CONSOLE_COMMAND (testregex, 2, false)
 {
 	wxRegEx re(args[0]);
 	if (re.Matches(args[1]))
-		theConsole->logMessage("Matches");
+		Log::console("Matches");
 	else
-		theConsole->logMessage("Doesn't match");
+		Log::console("Doesn't match");
 }
+#endif

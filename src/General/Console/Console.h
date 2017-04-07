@@ -2,8 +2,6 @@
 #ifndef	__CONSOLE_H__
 #define	__CONSOLE_H__
 
-#include "General/ListenerAnnouncer.h"
-
 class ConsoleCommand
 {
 public:
@@ -26,31 +24,17 @@ private:
 	bool	show_in_list;
 };
 
-class Console : public Announcer
+class Console
 {
 public:
 	Console();
 	~Console();
-
-	static Console* getInstance()
-	{
-		if (!instance)
-			instance = new Console();
-
-		return instance;
-	}
-
-	static void deleteInstance()
-	{
-		if (instance) delete instance;
-	}
 
 	int numCommands() { return (int) commands.size(); }
 	ConsoleCommand& command(size_t index);
 
 	void			addCommand(ConsoleCommand& c);
 	void			execute(string command);
-	void			logMessage(string message);
 	string			lastCommand();
 	string			prevCommand(int index);
 	int				numPrevCommands() { return cmd_log.size(); }
@@ -58,11 +42,7 @@ public:
 private:
 	vector<ConsoleCommand>	commands;
 	vector<string>			cmd_log;
-	static Console*			instance;
 };
-
-// Define for less cumbersome Console::getInstance()
-#define theConsole Console::getInstance()
 
 // Define for neat console command definitions
 #define CONSOLE_COMMAND(name, min_args, show_in_list) \

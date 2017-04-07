@@ -129,7 +129,7 @@ const vector<Log::Message>& Log::history()
  * Returns the current log verbosity level, log messages with a
  * higher level than the current verbosity will not be logged
  *******************************************************************/
-const int& Log::verbosity()
+int Log::verbosity()
 {
 	return log_verbosity;
 }

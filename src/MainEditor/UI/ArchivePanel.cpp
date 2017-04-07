@@ -4214,7 +4214,7 @@ CONSOLE_COMMAND(run, 1, true)
 		s = t.getToken() + " ";
 		if (t.lineNo() != line || 1 + t.tokenEnd() >= mc.getSize())
 		{
-			theConsole->execute(cmdline);
+			App::console()->execute(cmdline);
 			cmdline.Empty();
 			line = t.lineNo();
 		};

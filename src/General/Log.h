@@ -22,7 +22,7 @@ namespace Log
 	};
 
 	const vector<Message>&	history();
-	const int&				verbosity();
+	int						verbosity();
 
 	void	setVerbosity(int verbosity);
 
@@ -42,6 +42,8 @@ namespace Log
 
 	inline void	debug(int level, const char* text) { message(MessageType::Debug, level, text); }
 	inline void	debug(const char* text) { message(MessageType::Debug, text); }
+
+	inline void	console(const char* text) { message(MessageType::Console, text); }
 }
 
 // Try to avoid using these and use Log::message/error/warning with S_FMT instead

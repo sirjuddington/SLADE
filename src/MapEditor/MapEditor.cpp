@@ -31,7 +31,6 @@
 #include "Main.h"
 #include "App.h"
 #include "MapEditor.h"
-#include "General/ColourConfiguration.h"
 #include "Archive/ArchiveManager.h"
 #include "UI/WxStuff.h"
 #include "MapEditorWindow.h"
@@ -5757,19 +5756,19 @@ CONSOLE_COMMAND(m_check, 0, true)
 {
 	if (args.empty())
 	{
-		theConsole->logMessage("Usage: m_check <check1> <check2> ...");
-		theConsole->logMessage("Available map checks:");
-		theConsole->logMessage("missing_tex: Check for missing textures");
-		theConsole->logMessage("special_tags: Check for missing action special tags");
-		theConsole->logMessage("intersecting_lines: Check for intersecting lines");
-		theConsole->logMessage("overlapping_lines: Check for overlapping lines");
-		theConsole->logMessage("overlapping_things: Check for overlapping things");
-		theConsole->logMessage("unknown_textures: Check for unknown wall textures");
-		theConsole->logMessage("unknown_flats: Check for unknown floor/ceiling textures");
-		theConsole->logMessage("unknown_things: Check for unknown thing types");
-		theConsole->logMessage("stuck_things: Check for things stuck in walls");
-		theConsole->logMessage("sector_references: Check for wrong sector references");
-		theConsole->logMessage("all: Run all checks");
+		Log::console("Usage: m_check <check1> <check2> ...");
+		Log::console("Available map checks:");
+		Log::console("missing_tex: Check for missing textures");
+		Log::console("special_tags: Check for missing action special tags");
+		Log::console("intersecting_lines: Check for intersecting lines");
+		Log::console("overlapping_lines: Check for overlapping lines");
+		Log::console("overlapping_things: Check for overlapping things");
+		Log::console("unknown_textures: Check for unknown wall textures");
+		Log::console("unknown_flats: Check for unknown floor/ceiling textures");
+		Log::console("unknown_things: Check for unknown thing types");
+		Log::console("stuck_things: Check for things stuck in walls");
+		Log::console("sector_references: Check for wrong sector references");
+		Log::console("all: Run all checks");
 
 		return;
 	}
@@ -5806,23 +5805,23 @@ CONSOLE_COMMAND(m_check, 0, true)
 			checks.push_back(MapCheck::sectorReferenceCheck(map));
 		
 		if (n == checks.size())
-			theConsole->logMessage(S_FMT("Unknown check \"%s\"", id));
+			Log::console(S_FMT("Unknown check \"%s\"", id));
 	}
 
 	// Run checks
 	for (unsigned a = 0; a < checks.size(); a++)
 	{
 		// Run
-		theConsole->logMessage(checks[a]->progressText());
+		Log::console(checks[a]->progressText());
 		checks[a]->doCheck();
 
 		// Check if no problems found
 		if (checks[a]->nProblems() == 0)
-			theConsole->logMessage(checks[a]->problemDesc(0));
+			Log::console(checks[a]->problemDesc(0));
 
 		// List problem details
 		for (unsigned b = 0; b < checks[a]->nProblems(); b++)
-			theConsole->logMessage(checks[a]->problemDesc(b));
+			Log::console(checks[a]->problemDesc(b));
 
 		// Clean up
 		delete checks[a];
@@ -5905,7 +5904,7 @@ CONSOLE_COMMAND(m_n_polys, 0, false)
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		npoly += map.getSector(a)->getPolygon()->nSubPolys();
 
-	theConsole->logMessage(S_FMT("%d polygons total", npoly));
+	Log::console(S_FMT("%d polygons total", npoly));
 }
 
 CONSOLE_COMMAND(mobj_info, 1, false)
@@ -5915,16 +5914,16 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 
 	MapObject* obj = theMapEditor->mapEditor().getMap().getObjectById(id);
 	if (!obj)
-		theConsole->logMessage("Object id out of range");
+		Log::console("Object id out of range");
 	else
 	{
 		mobj_backup_t bak;
 		obj->backup(&bak);
-		theConsole->logMessage(S_FMT("Object %d: %s #%lu", id, obj->getTypeName(), obj->getIndex()));
-		theConsole->logMessage("Properties:");
-		theConsole->logMessage(bak.properties.toString());
-		theConsole->logMessage("Properties (internal):");
-		theConsole->logMessage(bak.props_internal.toString());
+		Log::console(S_FMT("Object %d: %s #%lu", id, obj->getTypeName(), obj->getIndex()));
+		Log::console("Properties:");
+		Log::console(bak.properties.toString());
+		Log::console("Properties (internal):");
+		Log::console(bak.props_internal.toString());
 	}
 }
 

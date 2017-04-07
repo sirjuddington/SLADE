@@ -686,7 +686,7 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 {
 	vector<ArchiveEntry*> list;
 
-	theConsole->logMessage("Testing...");
+	Log::console("Testing...");
 
 	long times[5];
 
@@ -708,5 +708,5 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 	}
 
 	float avg = float(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
-	theConsole->logMessage(S_FMT("Test took %dms avg", (int)avg));
+	Log::console(S_FMT("Test took %dms avg", (int)avg));
 }
