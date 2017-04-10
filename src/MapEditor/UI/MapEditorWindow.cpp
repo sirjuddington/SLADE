@@ -86,7 +86,6 @@ MapEditorWindow::MapEditorWindow()
 	setupLayout();
 	Show(false);
 	custom_menus_begin = 2;
-	backup_manager = new MapBackupManager();
 
 	// Set icon
 	string icon_filename = App::path("slade.ico", App::Dir::Temp);
@@ -105,7 +104,6 @@ MapEditorWindow::MapEditorWindow()
 MapEditorWindow::~MapEditorWindow()
 {
 	wxAuiManager::GetManager(this)->UnInit();
-	delete backup_manager;
 }
 
 /* MapEditorWindow::loadLayout
@@ -604,7 +602,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 			SetTitle(S_FMT("SLADE - %s (UNSAVED)", map.name));
 
 		// Create backup
-		if (map.head && !backup_manager->writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
+		if (map.head && !MapEditor::backupManager().writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
 			LOG_MESSAGE(1, "Warning: Failed to backup map data");
 	}
 
@@ -872,7 +870,7 @@ bool MapEditorWindow::saveMap()
 	}
 
 	// Create backup
-	if (!backup_manager->writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
+	if (!MapEditor::backupManager().writeBackup(map_data, map.head->getTopParent()->getFilename(false), map.head->getName(true)))
 		LOG_MESSAGE(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
@@ -1129,7 +1127,7 @@ bool MapEditorWindow::handleAction(string id)
 	{
 		if (mdesc_current.head)
 		{
-			Archive* data = backup_manager->openBackup(mdesc_current.head->getTopParent()->getFilename(false), mdesc_current.name);
+			Archive* data = MapEditor::backupManager().openBackup(mdesc_current.head->getTopParent()->getFilename(false), mdesc_current.name);
 			if (data)
 			{
 				vector<Archive::mapdesc_t> maps = data->detectMaps();

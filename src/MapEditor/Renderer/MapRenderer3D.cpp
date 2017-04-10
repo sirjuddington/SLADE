@@ -43,6 +43,7 @@
 #include "UI/PaletteChooser.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************

@@ -40,6 +40,7 @@
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************

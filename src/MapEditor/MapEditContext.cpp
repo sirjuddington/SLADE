@@ -38,11 +38,11 @@
 #include "Utility/MathStuff.h"
 #include "General/Console/Console.h"
 #include "UI/MapCanvas.h"
-#include "UI/PropsPanel/MapObjectPropsPanel.h"
 #include "SectorBuilder.h"
 #include "General/Clipboard.h"
 #include "General/UndoRedo.h"
 #include "MapChecks.h"
+#include "MapTextureManager.h"
 
 
 /*******************************************************************

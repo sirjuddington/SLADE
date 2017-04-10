@@ -8,6 +8,7 @@ class MapEditorWindow;
 class MapObject;
 class ObjectEditGroup;
 class UndoManager;
+class MapBackupManager;
 
 namespace MapEditor
 {
@@ -28,6 +29,7 @@ namespace MapEditor
 	MapTextureManager&	textureManager();
 	MapEditorWindow*	window();
 	wxWindow*			windowWx();
+	MapBackupManager&	backupManager();
 
 	void	init();
 	void	forceRefresh(bool renderer = false);

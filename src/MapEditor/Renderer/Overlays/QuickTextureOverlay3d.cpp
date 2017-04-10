@@ -42,6 +42,7 @@
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "OpenGL/OpenGL.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************

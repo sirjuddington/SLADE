@@ -39,6 +39,7 @@
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/OpenGL.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************

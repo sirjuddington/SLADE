@@ -5,6 +5,7 @@
 #include "MapTextureManager.h"
 #include "UI/MapEditorWindow.h"
 #include "UI/PropsPanel/MapObjectPropsPanel.h"
+#include "MapBackupManager.h"
 
 namespace MapEditor
 {
@@ -12,6 +13,7 @@ namespace MapEditor
 	MapTextureManager	texture_manager;
 	Archive::mapdesc_t	current_map_desc;
 	MapEditorWindow*	map_window = nullptr;
+	MapBackupManager	backup_manager;
 }
 
 MapEditContext& MapEditor::editContext()
@@ -38,6 +40,11 @@ wxWindow* MapEditor::windowWx()
 		init();
 
 	return map_window;
+}
+
+MapBackupManager& MapEditor::backupManager()
+{
+	return backup_manager;
 }
 
 void MapEditor::init()
