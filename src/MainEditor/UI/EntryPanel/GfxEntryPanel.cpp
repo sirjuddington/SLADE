@@ -28,7 +28,6 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "App.h"
 #include "GfxEntryPanel.h"
 #include "Archive/Archive.h"
 #include "Dialogs/GfxConvDialog.h"
@@ -38,12 +37,10 @@
 #include "General/Console/ConsoleHelpers.h"
 #include "General/Misc.h"
 #include "Graphics/Icons.h"
-#include "Graphics/Palette/Palette.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/PaletteChooser.h"
-#include "UI/SToolBar/SToolBar.h"
 
 
 /*******************************************************************
@@ -54,6 +51,36 @@ EXTERN_CVAR(String, last_colour)
 EXTERN_CVAR(String, last_tint_colour)
 EXTERN_CVAR(Int, last_tint_amount)
 
+string brushlist[Brush::NUM_BRUSHES] =
+{
+	"brush_sq_1",
+	"brush_sq_3",
+	"brush_sq_5",
+	"brush_sq_7",
+	"brush_sq_9",
+	"brush_ci_5",
+	"brush_ci_7",
+	"brush_ci_9",
+	"brush_di_3",
+	"brush_di_5",
+	"brush_di_7",
+	"brush_di_9",
+	"brush_pa_a",
+	"brush_pa_b",
+	"brush_pa_c",
+	"brush_pa_d",
+	"brush_pa_e",
+	"brush_pa_f",
+	"brush_pa_g",
+	"brush_pa_h",
+	"brush_pa_i",
+	"brush_pa_j",
+	"brush_pa_k",
+	"brush_pa_l",
+	"brush_pa_m",
+	"brush_pa_n",
+	"brush_pa_o",
+};
 
 /*******************************************************************
  * GFXENTRYPANEL CLASS FUNCTIONS
@@ -67,6 +94,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 {
 	// Init variables
 	prev_translation.addRange(TRANS_PALETTE, 0);
+	edit_translation.addRange(TRANS_PALETTE, 0);
 	offset_changing = false;
 
 	// Add gfx canvas
@@ -75,6 +103,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	gfx_canvas->setViewType(GFXVIEW_DEFAULT);
 	gfx_canvas->allowDrag(true);
 	gfx_canvas->allowScroll(true);
+	gfx_canvas->setPalette(MainEditor::currentPalette());
+	gfx_canvas->setTranslation(&edit_translation);
 
 	// Offsets
 	spin_xoffset = new wxSpinCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxTE_PROCESS_ENTER, SHRT_MIN, SHRT_MAX, 0);
@@ -125,11 +155,16 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	fillCustomMenu(menu_custom);
 	custom_menu_name = "Graphic";
 
+	// Brushes menu
+	menu_brushes = new wxMenu();
+	fillBrushMenu(menu_brushes);
+
 	// Custom toolbar
 	setupToolbar();
 
 	// Bind Events
 	slider_zoom->Bind(wxEVT_SLIDER, &GfxEntryPanel::onZoomChanged, this);
+	cb_colour->Bind(wxEVT_COLOURBOX_CHANGED, &GfxEntryPanel::onPaintColourChanged, this);
 	spin_xoffset->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onXOffsetChanged, this);
 	spin_yoffset->Bind(wxEVT_SPINCTRL, &GfxEntryPanel::onYOffsetChanged, this);
 	spin_xoffset->Bind(wxEVT_TEXT_ENTER, &GfxEntryPanel::onXOffsetChanged, this);
@@ -138,6 +173,8 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent)
 	cb_tile->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onTileChanged, this);
 	cb_arc->Bind(wxEVT_CHECKBOX, &GfxEntryPanel::onARCChanged, this);
 	Bind(wxEVT_GFXCANVAS_OFFSET_CHANGED, &GfxEntryPanel::onGfxOffsetChanged, this, gfx_canvas->GetId());
+	Bind(wxEVT_GFXCANVAS_PIXELS_CHANGED, &GfxEntryPanel::onGfxPixelsChanged, this, gfx_canvas->GetId());
+	Bind(wxEVT_GFXCANVAS_COLOUR_PICKED, &GfxEntryPanel::onColourPicked, this, gfx_canvas->GetId());
 	btn_nextimg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnNextImg, this);
 	btn_previmg->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnPrevImg, this);
 	btn_auto_offset->Bind(wxEVT_BUTTON, &GfxEntryPanel::onBtnAutoOffset, this);
@@ -297,6 +334,20 @@ void GfxEntryPanel::setupToolbar()
 	g_zoom->addCustomControl(label_current_zoom);
 	toolbar->addGroup(g_zoom);
 
+	// Editing operations
+	SToolBarGroup* g_edit = new SToolBarGroup(toolbar, "Editing");
+	g_edit->addActionButton("pgfx_settrans", "");
+	cb_colour = new ColourBox(g_edit, -1, COL_BLACK, false, true);
+	cb_colour->setPalette(gfx_canvas->getPalette());
+	button_brush = g_edit->addActionButton("pgfx_setbrush", "");
+	g_edit->addCustomControl(cb_colour);
+	g_edit->addActionButton("pgfx_drag", "");
+	g_edit->addActionButton("pgfx_draw", "");
+	g_edit->addActionButton("pgfx_erase", "");
+	g_edit->addActionButton("pgfx_magic", "");
+	SAction::fromId("pgfx_drag")->setChecked(); // Drag offsets by default
+	toolbar->addGroup(g_edit);
+
 	// Image operations
 	SToolBarGroup* g_image = new SToolBarGroup(toolbar, "Image");
 	g_image->addActionButton("pgfx_mirror", "");
@@ -308,7 +359,7 @@ void GfxEntryPanel::setupToolbar()
 
 	// Colour operations
 	SToolBarGroup* g_colour = new SToolBarGroup(toolbar, "Colour");
-	g_colour->addActionButton("pgfx_translate", "");
+	g_colour->addActionButton("pgfx_remap", "");
 	g_colour->addActionButton("pgfx_colourise", "");
 	g_colour->addActionButton("pgfx_tint", "");
 	toolbar->addGroup(g_colour);
@@ -318,6 +369,44 @@ void GfxEntryPanel::setupToolbar()
 	g_png->addActionButton("pgfx_pngopt", "");
 	toolbar->addGroup(g_png);
 	toolbar->enableGroup("PNG", false);
+}
+
+void GfxEntryPanel::fillBrushMenu(wxMenu* bm)
+{
+	SAction::fromId("pgfx_brush_sq_1")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_sq_3")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_sq_5")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_sq_7")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_sq_9")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_ci_5")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_ci_7")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_ci_9")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_di_3")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_di_5")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_di_7")->addToMenu(bm);
+	SAction::fromId("pgfx_brush_di_9")->addToMenu(bm);
+	wxMenu* pa = new wxMenu;
+	SAction::fromId("pgfx_brush_pa_a")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_b")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_c")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_d")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_e")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_f")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_g")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_h")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_i")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_j")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_k")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_l")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_m")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_n")->addToMenu(pa);
+	SAction::fromId("pgfx_brush_pa_o")->addToMenu(pa);
+	bm->AppendSubMenu(pa, "Dither Patterns");
+}
+
+bool GfxEntryPanel::iconChanger(wxCommandEvent& e)
+{
+	return true;
 }
 
 /* GfxEntryPanel::extractAll
@@ -608,8 +697,82 @@ bool GfxEntryPanel::handleAction(string id)
 	if (!id.StartsWith("pgfx_"))
 		return false;
 
+	// For pgfx_brush actions, the string after pgfx is a brush name
+	if (id.StartsWith("pgfx_brush"))
+	{
+		string br = id.AfterFirst('_');
+
+		uint8_t i;
+		for (i = 0; i < Brush::NUM_BRUSHES; ++i)
+			if (S_CMP(br, brushlist[i]))
+				break;
+
+		if (i == Brush::NUM_BRUSHES)
+			return false;
+
+		gfx_canvas->setBrush(i);
+		button_brush->setIcon(br);
+	}
+
+	// Editing - drag mode
+	else if (id == "pgfx_drag")
+	{
+		editing = false;
+		gfx_canvas->setEditingMode(0);
+	}
+
+	// Editing - draw mode
+	else if (id == "pgfx_draw")
+	{
+		editing = true;
+		gfx_canvas->setEditingMode(1);
+		gfx_canvas->setPaintColour(cb_colour->getColour());
+	}
+
+	// Editing - erase mode
+	else if (id == "pgfx_erase")
+	{
+		editing = true;
+		gfx_canvas->setEditingMode(2);
+	}
+
+	// Editing - translate mode
+	else if (id == "pgfx_magic")
+	{
+		editing = true;
+		gfx_canvas->setEditingMode(3);
+	}
+
+	// Editing - set translation
+	else if (id == "pgfx_settrans")
+	{
+		// Create translation editor dialog
+		Palette8bit* pal = theMainWindow->getPaletteChooser()->getSelectedPalette();
+		TranslationEditorDialog ted(theMainWindow, pal, " Colour Remap", getImage());
+
+		// Create translation to edit
+		ted.openTranslation(edit_translation);
+
+		// Show the dialog
+		if (ted.ShowModal() == wxID_OK)
+		{
+			// Set the translation
+			edit_translation.copy(ted.getTranslation());
+			gfx_canvas->setTranslation(&edit_translation);
+		}
+
+	}
+
+	// Editing - set brush
+	else if (id == "pgfx_setbrush")
+	{
+		wxPoint p = button_brush->GetScreenPosition() -= GetScreenPosition();
+		p.y += button_brush->GetMaxHeight();
+		PopupMenu(menu_brushes, p);
+	}
+
 	// Mirror
-	if (id == "pgfx_mirror")
+	else if (id == "pgfx_mirror")
 	{
 		// Mirror X
 		getImage()->mirror(false);
@@ -670,7 +833,7 @@ bool GfxEntryPanel::handleAction(string id)
 	}
 
 	// Translate
-	else if (id == "pgfx_translate")
+	else if (id == "pgfx_remap")
 	{
 		// Create translation editor dialog
 		Palette8bit* pal = MainEditor::currentPalette();
@@ -935,6 +1098,15 @@ void GfxEntryPanel::onZoomChanged(wxCommandEvent& e)
 	gfx_canvas->Refresh();
 }
 
+/* GfxEntryPanel::onPaintColourChanged
+ * Called when the colour box's value is changed
+ *******************************************************************/
+void GfxEntryPanel::onPaintColourChanged(wxEvent& e)
+{
+	gfx_canvas->setPaintColour(cb_colour->getColour());
+}
+
+
 /* GfxEntryPanel::onXOffsetChanged
  * Called when the X offset value is modified
  *******************************************************************/
@@ -993,7 +1165,7 @@ void GfxEntryPanel::onARCChanged(wxCommandEvent& e)
 	gfx_canvas->Refresh();
 }
 
-/* GfxEntryPanel::gfxOffsetChanged
+/* GfxEntryPanel::onGfxOffsetChanged
  * Called when the gfx canvas image offsets are changed
  *******************************************************************/
 void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e)
@@ -1003,6 +1175,16 @@ void GfxEntryPanel::onGfxOffsetChanged(wxEvent& e)
 	spin_yoffset->SetValue(getImage()->offset().y);
 
 	// Set changed
+	setModified();
+}
+
+/* GfxEntryPanel::onGfxPixelsChanged
+ * Called when pixels are changed in the canvas
+ *******************************************************************/
+void GfxEntryPanel::onGfxPixelsChanged(wxEvent& e)
+{
+	// Set changed
+	image_data_modified = true;
 	setModified();
 }
 
@@ -1052,8 +1234,8 @@ void GfxEntryPanel::onBtnPrevImg(wxCommandEvent& e)
 }
 
 /* GfxEntryPanel::onBtnAutoOffset
-* Called when the 'modify offsets' button is clicked
-*******************************************************************/
+ * Called when the 'modify offsets' button is clicked
+ *******************************************************************/
 void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 {
 	ModifyOffsetsDialog dlg;
@@ -1075,6 +1257,14 @@ void GfxEntryPanel::onBtnAutoOffset(wxCommandEvent& e)
 		// Set changed
 		setModified();
 	}
+}
+
+/* GfxEntryPanel::onColourPicked
+ * Called when a pixel's colour has been picked on the canvas
+ *******************************************************************/
+void GfxEntryPanel::onColourPicked(wxEvent & e)
+{
+	cb_colour->setColour(gfx_canvas->getPaintColour());
 }
 
 

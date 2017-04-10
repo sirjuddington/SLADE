@@ -66,7 +66,7 @@ Palette8bit::Palette8bit()
 	// Init palette (to greyscale)
 	for (int a = 0; a < 256; a++)
 	{
-		colours[a].set(a, a, a, 255);
+		colours[a].set(a, a, a, 255, -1, a);
 		colours_lab[a].l = (double)a / 255.0;
 		colours_hsl[a].l = (double)a / 255.0;
 	}
@@ -99,7 +99,7 @@ bool Palette8bit::loadMem(MemChunk& mc)
 		if (mc.read(rgb, 3))
 		{
 			// Set colour in palette
-			colours[c].set(rgb[0], rgb[1], rgb[2], 255);
+			colours[c].set(rgb[0], rgb[1], rgb[2], 255, -1, c);
 			colours_lab[c] = Misc::rgbToLab((double)rgb[0]/255.0, (double)rgb[1]/255.0, (double)rgb[2]/255.0);
 			colours_hsl[c++] = Misc::rgbToHsl((double)rgb[0]/255.0, (double)rgb[1]/255.0, (double)rgb[2]/255.0);
 		}
@@ -127,7 +127,7 @@ bool Palette8bit::loadMem(const uint8_t* data, uint32_t size)
 	for (size_t a = 0; a < size; a += 3)
 	{
 		// Set colour in palette
-		colours[c].set(data[a], data[a+1], data[a+2], 255);
+		colours[c].set(data[a], data[a+1], data[a+2], 255, -1, c);
 		colours_lab[c] = Misc::rgbToLab((double)data[a]/255.0, (double)data[a+1]/255.0, (double)data[a+2]/255.0);
 		colours_hsl[c++] = Misc::rgbToHsl((double)data[a]/255.0, (double)data[a+1]/255.0, (double)data[a+2]/255.0);
 
@@ -185,6 +185,7 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 
 			// Get color from image
 			rgba_t col = image.getPixel(x, y);
+			col.index = a;
 
 			// Validate color cell
 			for (int b = x; b < (x + (cell > 3 ? cell - 1 : cell)); ++b)
@@ -259,7 +260,7 @@ bool Palette8bit::loadMem(MemChunk& mc, int format)
 			if (format == FORMAT_GIMP) tz.skipLineComment();
 
 			// If we haven't skipped this part from a continue, then we have a colour triplet.
-			col.r = atoi(CHR(s1)); col.g = atoi(CHR(s2)); col.b = atoi(CHR(s3));
+			col.r = atoi(CHR(s1)); col.g = atoi(CHR(s2)); col.b = atoi(CHR(s3)); col.index = c;
 			setColour(c++, col);
 		}
 		while (c < 256 && !tz.peekToken().IsEmpty());
@@ -414,6 +415,7 @@ bool Palette8bit::loadFile(string filename, int format)
 void Palette8bit::setColour(uint8_t index, rgba_t col)
 {
 	colours[index].set(col);
+	colours[index].index = index;
 	colours_lab[index] = Misc::rgbToLab(col.dr(), col.dg(), col.db());
 	colours_hsl[index] = Misc::rgbToHsl(col.dr(), col.dg(), col.db());
 }
@@ -474,7 +476,8 @@ void Palette8bit::setGradient(uint8_t startIndex, uint8_t endIndex, rgba_t start
 		
 		gradCol.set((int) (((r_range * perc) + startCol.fr()) * 255.0f),
 					(int) (((g_range * perc) + startCol.fg()) * 255.0f),
-					(int) (((b_range * perc) + startCol.fb()) * 255.0f));
+					(int) (((b_range * perc) + startCol.fb()) * 255.0f),
+					255, -1, a + startIndex);
 		colours[a + startIndex].set(gradCol);
 	}
 }
@@ -619,132 +622,9 @@ void Palette8bit::applyTranslation(Translation* trans)
 	Palette8bit temp;
 	temp.copyPalette(this);
 
-	// Go through each translation component
-	for (unsigned a = 0; a < trans->nRanges(); a++)
-	{
-		TransRange* r = trans->getRange(a);
-
-		// Palette range translation
-		if (r->getType() == TRANS_PALETTE)
-		{
-			TransRangePalette* tp = (TransRangePalette*)r;
-
-			// Do remap
-			for (unsigned i = tp->oStart(); i <= tp->oEnd(); i++)
-			{
-				// Figure out how far along the range this colour is
-				double range_frac = 0;
-				if (tp->oStart() != tp->oEnd())
-					range_frac = double(i - tp->oStart()) / double(tp->oEnd() - tp->oStart());
-
-				// Determine destination palette index
-				uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
-
-				// Apply new colour
-				temp.setColour(i, colours[di]);
-			}
-		}
-
-		// Colour range
-		else if (r->getType() == TRANS_COLOUR)
-		{
-			TransRangeColour* tc = (TransRangeColour*)r;
-
-			// Do remap
-			for (unsigned i = tc->oStart(); i <= tc->oEnd(); i++)
-			{
-				// Figure out how far along the range this colour is
-				double range_frac = 0;
-				if (tc->oStart() != tc->oEnd())
-					range_frac = double(i - tc->oStart()) / double(tc->oEnd() - tc->oStart());
-
-				// Determine destination colour
-				uint8_t r = tc->dStart().r + range_frac * (tc->dEnd().r - tc->dStart().r);
-				uint8_t g = tc->dStart().g + range_frac * (tc->dEnd().g - tc->dStart().g);
-				uint8_t b = tc->dStart().b + range_frac * (tc->dEnd().b - tc->dStart().b);
-
-				// Find nearest colour in palette
-				uint8_t di = nearestColour(rgba_t(r, g, b));
-
-				// Apply new colour
-				temp.setColour(i, colours[di]);
-			}
-		}
-
-		// Desaturated colour range
-		else if (r->getType() == TRANS_DESAT)
-		{
-			TransRangeDesat* td = (TransRangeDesat*)r;
-
-			// Do remap
-			for (unsigned i = td->oStart(); i <= td->oEnd(); i++)
-			{
-				// Get greyscale colour
-				float grey = (colours[i].r*0.3f + colours[i].g*0.59f + colours[i].b*0.11f) / 255.0f;
-
-				// Determine destination colour
-				uint8_t r = MIN(255, int((td->dSr() + grey*(td->dEr() - td->dSr()))*255.0f));
-				uint8_t g = MIN(255, int((td->dSg() + grey*(td->dEg() - td->dSg()))*255.0f));
-				uint8_t b = MIN(255, int((td->dSb() + grey*(td->dEb() - td->dSb()))*255.0f));
-
-				// Find nearest colour in palette
-				uint8_t di = nearestColour(rgba_t(r, g, b));
-
-				// Apply new colour
-				temp.setColour(i, colours[di]);
-			}
-		}
-
-		// Colourised range
-		else if (r->getType() == TRANS_COLOURISE)
-		{
-			TransRangeColourise* tc = (TransRangeColourise*)r;
-			for (unsigned i = tc->oStart(); i <= tc->oEnd(); i++)
-			{
-				// Get colours
-				rgba_t col = colours[i];
-				rgba_t colour = tc->getColour();
-
-				// Colourise
-				float grey = (col.r*col_greyscale_r + col.g*col_greyscale_g + col.b*col_greyscale_b) / 255.0f;
-				if (grey > 1.0) grey = 1.0;
-				col.r = colour.r*grey;
-				col.g = colour.g*grey;
-				col.b = colour.b*grey;
-
-				// Find nearest colour in palette
-				uint8_t di = nearestColour(col);
-
-				// Apply new colour
-				temp.setColour(i, colours[di]);
-			}
-		}
-
-		// Tinted range
-		else if (r->getType() == TRANS_TINT)
-		{
-			TransRangeTint* tt = (TransRangeTint*)r;
-			for (unsigned i = tt->oStart(); i <= tt->oEnd(); i++)
-			{
-				// Get colours
-				rgba_t col = colours[i];
-				rgba_t colour = tt->getColour();
-
-				// Tint
-				float amount = tt->getAmount() * 0.01f;
-				float inv_amt = 1.0f - amount;
-				col.r = col.r*inv_amt + colour.r*amount;
-				col.g = col.g*inv_amt + colour.g*amount;
-				col.b = col.b*inv_amt + colour.b*amount;
-
-				// Find nearest colour in palette
-				uint8_t di = nearestColour(col);
-
-				// Apply new colour
-				temp.setColour(i, colours[di]);
-			}
-		}
-	}
+	// Translate colors
+	for (size_t i = 0; i < 256; ++i)
+		temp.setColour(i, trans->translate(colours[i], this));
 
 	// Load translated palette
 	copyPalette(&temp);
@@ -826,7 +706,7 @@ void Palette8bit::idtint(int r, int g, int b, int shift, int steps)
 		int fg = colours[i].g + dg*shift/steps; if (fg < 0) fg = 0; else if (fg > 255) fg = 255;
 		int fb = colours[i].b + db*shift/steps; if (fb < 0) fb = 0; else if (fb > 255) fb = 255;
 		// Set the result in the palette
-		rgba_t col(fr, fg, fb, colours[i].a, colours[i].blend);
+		rgba_t col(fr, fg, fb, colours[i].a, colours[i].blend, i);
 		setColour(i, col);
 	}
 }

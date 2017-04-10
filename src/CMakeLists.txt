@@ -1,5 +1,5 @@
 if (NOT NO_COTIRE)
-	include(../cmake/cotire.cmake)
+	include(cotire)
 endif()
 
 # wxWidgets version minimum 3.0
@@ -45,59 +45,40 @@ else (APPLE)
 endif (APPLE)
 
 if(NOT NO_FLUIDSYNTH)
-	include(../cmake/FindFluidSynth.cmake)
+	find_package(FluidSynth REQUIRED)
 else(NO_FLUIDSYNTH)
 	message(STATUS "Fluidsynth support is disabled.")
 endif()
 
-find_package(CURL)
-
-include(../cmake/FindFreeImage.cmake)
-include(../cmake/FindSFML.cmake)
-include(../cmake/FindFTGL.cmake)
-include(../cmake/FindGLEW.cmake)
-include(FindFreetype)
-if(NOT NO_FLUIDSYNTH)
-	if(NOT ${FLUIDSYNTH_FOUND})
-		message(SEND_ERROR "Fluidsynth required.")
-	endif()
-endif()
-if(NOT ${FREEIMAGE_FOUND})
-	message(SEND_ERROR "FreeImage required.")
-endif()
-if(NOT ${SFML_FOUND})
-	message(SEND_ERROR "SFML required.")
-endif()
-if(NOT ${FTGL_FOUND})
-	message(SEND_ERROR "FTGL required.")
-endif()
-if(NOT ${FREETYPE_FOUND})
-	message(SEND_ERROR "Freetype required.")
-endif()
-if(NOT ${GLEW_FOUND})
-	message(SEND_ERROR "GLEW required.")
-endif()
-if(NOT ${CURL_FOUND})
-	message(SEND_ERROR "CURL required.")
-endif()
-include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} . ./External/dumb ./Application)
+find_package(FreeImage REQUIRED)
+find_package(SFML COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
+find_package(FTGL REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(Freetype REQUIRED)
+find_package(CURL REQUIRED)
+include_directories(${FREEIMAGE_INCLUDE_DIR} ${SFML_INCLUDE_DIR} ${FTGL_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${GLEW_INCLUDE_PATH} ${GTK2_INCLUDE_DIRS} ${CURL_INCLUDE_DIR} . ./External/dumb ./Application)
 
 if (NOT NO_FLUIDSYNTH)
 	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
 endif()
 
-	include_directories(${CURL_INCLUDE_DIR})
-
 set(SLADE_SOURCES
 )
-file(GLOB_RECURSE SLADE_SOURCES *.cpp)
-set(LUA_SOURCES
-)
-file(GLOB LUA_SOURCES External/lua/*.c)
-set(DUMB_SOURCES
-)
-file(GLOB_RECURSE DUMB_SOURCES External/dumb/*.c)
-
+# Don't include external libraries here as they should be compiled separately
+file(GLOB_RECURSE SLADE_SOURCES
+	Application/*.cpp
+	Archive/*.cpp
+	Audio/*.cpp
+	Dialogs/*.cpp
+	General/*.cpp
+	Graphics/*.cpp
+	MainEditor/*.cpp
+	MapEditor/*.cpp
+	OpenGL/*.cpp
+	UI/*.cpp
+	Utility/*.cpp
+	)
 set(SLADE_HEADERS
 )
 file(GLOB_RECURSE SLADE_HEADERS *.h *.hpp)
@@ -114,27 +95,18 @@ endif(APPLE)
 # enable SSE instructions for dumb library
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_SSE -msse")
 
+# External libraries are compiled separately to enable unity builds
+add_subdirectory(External)
+
 # c++14 is required to compile
 if(CMAKE_VERSION VERSION_LESS 3.1)
-    add_compile_options(-std=c++14)
+	add_compile_options(-std=c++14)
 else()
-    set(CMAKE_CXX_STANDARD 14)
-    set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+	set(CMAKE_CXX_STANDARD 14)
+	set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 endif()
 
 add_executable(slade WIN32 MACOSX_BUNDLE
-	External/lzma/C/LzmaDec.c
-	External/mus2mid/mus2mid.cpp
-	External/zreaders/files.cpp
-	External/zreaders/m_alloc.cpp
-	External/zreaders/i_music.cpp
-	External/zreaders/music_hmi_midiout.cpp
-	External/zreaders/music_midistream.cpp
-	External/zreaders/music_mus_midiout.cpp
-	External/zreaders/music_smf_midiout.cpp
-	External/zreaders/music_xmi_midiout.cpp
-	${LUA_SOURCES}
-	${DUMB_SOURCES}
 	${SLADE_SOURCES}
 	${SLADE_HEADERS}
 )
@@ -142,10 +114,11 @@ add_executable(slade WIN32 MACOSX_BUNDLE
 target_link_libraries(slade
 	${ZLIB_LIBRARY}
 	${BZIP2_LIBRARIES}
+	${EXTERNAL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${FREEIMAGE_LIBRARIES}
 	${SFML_LIBRARY}
-	${FTGL_LIBRARY}
+	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${FREETYPE_LIBRARIES}
 	${GLEW_LIBRARY}
@@ -182,6 +155,13 @@ else(APPLE)
 endif(APPLE)
 
 if (NOT NO_COTIRE)
-	set_target_properties(slade PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "common.h")
+	set_target_properties(slade PROPERTIES
+		COTIRE_CXX_PREFIX_HEADER_INIT "common.h"
+		# Enable multithreaded unity builds by default
+		# because otherwise probably no one would realize how
+		COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES -j
+		# Fixes macro definition bleedout
+		COTIRE_UNITY_SOURCE_PRE_UNDEFS "Bool"
+		)
 	cotire(slade)
 endif()

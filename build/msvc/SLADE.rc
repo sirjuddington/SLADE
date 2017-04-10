@@ -54,6 +54,19 @@ END
 // remains consistent on all systems.
 IDI_ICON1               ICON                    "slade.ico"
 
+// wxWidgets cursors not available by default on Windows
+//
+//WXCURSOR_HAND           CURSOR  DISCARDABLE     "wx/msw/hand.cur"
+//WXCURSOR_BULLSEYE       CURSOR  DISCARDABLE     "wx/msw/bullseye.cur"
+WXCURSOR_PENCIL         CURSOR  DISCARDABLE     "wx/msw/pencil.cur"
+//WXCURSOR_MAGNIFIER      CURSOR  DISCARDABLE     "wx/msw/magnif1.cur"
+//WXCURSOR_ROLLER         CURSOR  DISCARDABLE     "wx/msw/roller.cur"
+//WXCURSOR_PBRUSH         CURSOR  DISCARDABLE     "wx/msw/pbrush.cur"
+//WXCURSOR_PLEFT          CURSOR  DISCARDABLE     "wx/msw/pntleft.cur"
+//WXCURSOR_PRIGHT         CURSOR  DISCARDABLE     "wx/msw/pntright.cur"
+//WXCURSOR_BLANK          CURSOR  DISCARDABLE     "wx/msw/blank.cur"
+//WXCURSOR_CROSS          CURSOR  DISCARDABLE     "wx/msw/cross.cur"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
