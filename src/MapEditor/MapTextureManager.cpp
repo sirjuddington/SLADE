@@ -35,11 +35,13 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "Archive/ArchiveManager.h"
-#include "MapEditorWindow.h"
+#include "MapEditor.h"
+#include "MapEditContext.h"
 #include "OpenGL/OpenGL.h"
 #include "Graphics/SImage/SImage.h"
 #include "General/Misc.h"
 #include "UI/PaletteChooser.h"
+#include "GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************
@@ -61,11 +63,6 @@ MapTextureManager::MapTextureManager(Archive* archive)
 	this->archive = archive;
 	editor_images_loaded = false;
 	palette = new Palette8bit();
-
-	// Listen to the various managers
-	listenTo(theResourceManager);
-	listenTo(theArchiveManager);
-	listenTo(theMainWindow->getPaletteChooser());
 }
 
 /* MapTextureManager::~MapTextureManager
@@ -73,6 +70,18 @@ MapTextureManager::MapTextureManager(Archive* archive)
  *******************************************************************/
 MapTextureManager::~MapTextureManager()
 {
+}
+
+/* MapTextureManager::init
+ * Initialises the texture manager
+ *******************************************************************/
+void MapTextureManager::init()
+{
+	// Listen to the various managers
+	listenTo(theResourceManager);
+	listenTo(theArchiveManager);
+	listenTo(theMainWindow->getPaletteChooser());
+	palette = getResourcePalette();
 }
 
 /* MapTextureManager::getResourcePalette
@@ -495,7 +504,7 @@ void MapTextureManager::refreshResources()
 	flats.clear();
 	sprites.clear();
 	theMainWindow->getPaletteChooser()->setGlobalFromArchive(archive);
-	theMapEditor->forceRefresh(true);
+	MapEditor::forceRefresh(true);
 	palette = getResourcePalette();
 	buildTexInfoList();
 	//LOG_MESSAGE(1, "texture manager cleared");
@@ -605,8 +614,8 @@ void MapTextureManager::onAnnouncement(Announcer* announcer, string event_name, 
 		event_data.read(&ac_index, 4);
 		if (theArchiveManager->getArchive(ac_index) == archive)
 		{
-			theMapEditor->Hide();
-			theMapEditor->mapEditor().clearMap();
+			MapEditor::windowWx()->Hide();
+			MapEditor::editContext().clearMap();
 			archive = NULL;
 		}
 	}

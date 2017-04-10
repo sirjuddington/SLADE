@@ -1419,6 +1419,9 @@
     <ClCompile Include="..\..\src\General\Log.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\MapEditContext.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2449,6 +2452,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\General\Log.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\MapEditContext.h">
+      <Filter>Map Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

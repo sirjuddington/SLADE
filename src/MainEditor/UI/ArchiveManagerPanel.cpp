@@ -40,6 +40,7 @@
 #include "Graphics/Icons.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/STabCtrl.h"
@@ -1368,9 +1369,9 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 		return false;
 
 	// Check if a map from the archive is currently open
-	if (theMapEditor->IsShown() && theMapEditor->hasMapOpen(archive))
+	if (MapEditor::window()->IsShown() && MapEditor::window()->hasMapOpen(archive))
 	{
-		if (!theMapEditor->Close())
+		if (!MapEditor::window()->Close())
 			return false;
 	}
 
@@ -1714,8 +1715,8 @@ bool ArchiveManagerPanel::handleAction(string id)
 	// File->New Map
 	else if (id == "aman_newmap")
 	{
-		if (!theMapEditor->chooseMap())
-			theMapEditor->Show(false);
+		if (!MapEditor::chooseMap())
+			MapEditor::window()->Show(false);
 	}
 
 	// File->Open

@@ -65,9 +65,11 @@
 #include "MainEditor/ExternalEditManager.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/MapEditorWindow.h"
 #include "Utility/SFileDialog.h"
 #include "UI/PaletteChooser.h"
+#include "MapEditor/GameConfiguration/GameConfiguration.h"
 
 
 /*******************************************************************
@@ -507,14 +509,14 @@ void ArchivePanel::addMenus()
 	}
 
 	// Add them to the main window menubar
-	theMainWindow->addCustomMenu(menu_archive, "&Archive");
-	theMainWindow->addCustomMenu(menu_entry, "&Entry");
+	MainEditor::window()->addCustomMenu(menu_archive, "&Archive");
+	MainEditor::window()->addCustomMenu(menu_entry, "&Entry");
 	cur_area->addCustomMenu();
 	cur_area->addCustomToolBar();
 
 	// Also enable the related toolbars
-	theMainWindow->enableToolBar("_archive");
-	theMainWindow->enableToolBar("_entry");
+	MainEditor::window()->enableToolBar("_archive");
+	MainEditor::window()->enableToolBar("_entry");
 }
 
 /* ArchivePanel::removeMenus
@@ -524,14 +526,14 @@ void ArchivePanel::addMenus()
 void ArchivePanel::removeMenus()
 {
 	// Remove ArchivePanel menus from the main window menubar
-	theMainWindow->removeCustomMenu(menu_archive);
-	theMainWindow->removeCustomMenu(menu_entry);
+	MainEditor::window()->removeCustomMenu(menu_archive);
+	MainEditor::window()->removeCustomMenu(menu_entry);
 	cur_area->removeCustomMenu();
 	cur_area->removeCustomToolBar();
 
 	// Also disable the related toolbars
-	theMainWindow->enableToolBar("_archive", false);
-	theMainWindow->enableToolBar("_entry", false);
+	MainEditor::window()->enableToolBar("_archive", false);
+	MainEditor::window()->enableToolBar("_entry", false);
 }
 
 /* ArchivePanel::undo
@@ -3736,11 +3738,11 @@ void ArchivePanel::onEntryListActivated(wxListEvent& e)
 				theGameConfiguration->openConfig(dlg.selectedGame(), dlg.selectedPort(), info.format);
 
 				// Attempt to open map
-				if (theMapEditor->openMap(info))
-					theMapEditor->Show();
+				if (MapEditor::window()->openMap(info))
+					MapEditor::window()->Show();
 				else
 				{
-					theMapEditor->Hide();
+					MapEditor::window()->Hide();
 					wxMessageBox(S_FMT("Unable to open map %s: %s", entry->getName(), Global::error), "Invalid map error", wxICON_ERROR);
 				}
 			}
@@ -3928,11 +3930,11 @@ bool EntryDataUS::swapData()
 #include "App.h"
 Archive* CH::getCurrentArchive()
 {
-	if (theMainWindow)
+	if (MainEditor::window())
 	{
-		if (theMainWindow->getArchiveManagerPanel())
+		if (MainEditor::window()->getArchiveManagerPanel())
 		{
-			return theMainWindow->getArchiveManagerPanel()->currentArchive();
+			return MainEditor::window()->getArchiveManagerPanel()->currentArchive();
 		}
 	}
 	return NULL;
@@ -3940,7 +3942,7 @@ Archive* CH::getCurrentArchive()
 
 ArchivePanel* CH::getCurrentArchivePanel()
 {
-	ArchiveManagerPanel* archie = theMainWindow->getArchiveManagerPanel();
+	ArchiveManagerPanel* archie = MainEditor::window()->getArchiveManagerPanel();
 	if (archie)
 	{
 		if (archie->isArchivePanel(archie->currentTabIndex()))

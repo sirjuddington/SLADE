@@ -6,6 +6,7 @@
 #include "MapEditor/MapEditorWindow.h"
 #include "UI/ArchiveManagerPanel.h"
 #include "UI/PaletteChooser.h"
+#include "MapEditor/MapEditor.h"
 
 namespace MainEditor
 {
@@ -68,7 +69,7 @@ void MainEditor::openTextureEditor(Archive* archive, ArchiveEntry* entry)
  *******************************************************************/
 void MainEditor::openMapEditor(Archive* archive)
 {
-	theMapEditor->chooseMap(archive);
+	MapEditor::chooseMap(archive);
 }
 
 /* MainWindow::openEntry

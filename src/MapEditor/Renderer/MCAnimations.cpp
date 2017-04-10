@@ -193,9 +193,9 @@ void MCAThingSelection::draw()
 		// Get thing selection texture
 		GLTexture* tex = NULL;
 		if (thing_drawtype == TDT_ROUND || thing_drawtype == TDT_SPRITE)
-			tex = theMapEditor->textureManager().getEditorImage("thing/hilight");
+			tex = MapEditor::textureManager().getEditorImage("thing/hilight");
 		else
-			tex = theMapEditor->textureManager().getEditorImage("thing/square/hilight");
+			tex = MapEditor::textureManager().getEditorImage("thing/square/hilight");
 
 		if (!tex)
 			return;
@@ -373,18 +373,18 @@ void MCAVertexSelection::draw()
 	{
 		// Get appropriate vertex texture
 		GLTexture* tex;
-		//if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex_r");
-		//else tex = theMapEditor->textureManager().getEditorImage("vertex_s");
+		//if (vertex_round) tex = MapEditor::textureManager().getEditorImage("vertex_r");
+		//else tex = MapEditor::textureManager().getEditorImage("vertex_s");
 
 		if (select)
 		{
-			if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex/round");
-			else tex = theMapEditor->textureManager().getEditorImage("vertex/square");
+			if (vertex_round) tex = MapEditor::textureManager().getEditorImage("vertex/round");
+			else tex = MapEditor::textureManager().getEditorImage("vertex/square");
 		}
 		else
 		{
-			if (vertex_round) tex = theMapEditor->textureManager().getEditorImage("vertex/hilight_r");
-			else tex = theMapEditor->textureManager().getEditorImage("vertex/hilight_s");
+			if (vertex_round) tex = MapEditor::textureManager().getEditorImage("vertex/hilight_r");
+			else tex = MapEditor::textureManager().getEditorImage("vertex/hilight_s");
 		}
 
 		// If it was found, enable point sprites
@@ -745,5 +745,5 @@ bool MCAHilightFade3D::update(long time)
  *******************************************************************/
 void MCAHilightFade3D::draw()
 {
-	renderer->renderHilight(selection_3d_t(item_index, item_type), fade);
+	renderer->renderHilight({ item_index, item_type }, fade);
 }

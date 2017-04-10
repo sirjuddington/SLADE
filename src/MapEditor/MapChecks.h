@@ -5,7 +5,7 @@
 class SLADEMap;
 class MapTextureManager;
 class MapObject;
-class MapEditor;
+class MapEditContext;
 
 class MapCheck
 {
@@ -19,7 +19,7 @@ public:
 	virtual void		doCheck() = 0;
 	virtual unsigned	nProblems() = 0;
 	virtual string		problemDesc(unsigned index) = 0;
-	virtual bool		fixProblem(unsigned index, unsigned fix_type, MapEditor* editor) = 0;
+	virtual bool		fixProblem(unsigned index, unsigned fix_type, MapEditContext* editor) = 0;
 	virtual MapObject*	getObject(unsigned index) = 0;
 	virtual string		progressText() { return "Checking..."; }
 	virtual string		fixText(unsigned fix_type, unsigned index) { return ""; }

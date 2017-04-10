@@ -13,8 +13,8 @@
 #include "MapEditor/Renderer/Overlays/ThingInfoOverlay.h"
 #include "MapEditor/Renderer/Overlays/VertexInfoOverlay.h"
 #include "UI/Canvas/OGLCanvas.h"
+#include "MapEditor/MapEditContext.h"
 
-class MapEditor;
 class MCAnimation;
 class MapSide;
 class ThingType;
@@ -24,7 +24,7 @@ class MapThing;
 class MapCanvas : public OGLCanvas, public KeyBindHandler, public SActionHandler
 {
 private:
-	MapEditor*				editor;
+	MapEditContext*			editor;
 	vector<MCAnimation*>	animations;
 	int						frametime_last;
 	vector<int>				fps_avg;
@@ -118,7 +118,7 @@ private:
 	vector<string>	feature_help_lines;
 
 public:
-	MapCanvas(wxWindow* parent, int id, MapEditor* editor);
+	MapCanvas(wxWindow* parent, int id, MapEditContext* editor);
 	~MapCanvas();
 
 	bool	overlayActive();
@@ -171,8 +171,8 @@ public:
 
 	void	itemSelected(int index, bool selected = true);
 	void	itemsSelected(vector<int>& items, bool selected = true);
-	void	itemSelected3d(selection_3d_t item, bool selected = true);
-	void	itemsSelected3d(vector<selection_3d_t>& items, bool selected = true);
+	void	itemSelected3d(MapEditor::Selection3D item, bool selected = true);
+	void	itemsSelected3d(vector<MapEditor::Selection3D>& items, bool selected = true);
 	void	updateInfoOverlay();
 	void	forceRefreshRenderer();
 	void	changeEditMode(int mode);
@@ -185,8 +185,8 @@ public:
 	// Keybind/action handlers (that use UI features - anything else goes to MapEditor)
 	void	changeThingType();
 	void	changeSectorTexture();
-	void	changeThingType3d(selection_3d_t first);
-	void	changeTexture3d(selection_3d_t first);
+	void	changeThingType3d(MapEditor::Selection3D first);
+	void	changeTexture3d(MapEditor::Selection3D first);
 
 	// Keybind handling
 	void	onKeyBindPress(string name);
