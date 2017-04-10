@@ -1218,9 +1218,6 @@
     <ClCompile Include="..\..\src\MapEditor\MapEditor.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\MapEditorWindow.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\MapSpecials.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
@@ -1421,6 +1418,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\MapEditContext.cpp">
       <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UI\MapEditorWindow.cpp">
+      <Filter>Map Editor\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2226,9 +2226,6 @@
     <ClInclude Include="..\..\src\MapEditor\MapEditor.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\MapEditorWindow.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\MapSpecials.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
@@ -2455,6 +2452,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\MapEditContext.h">
       <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UI\MapEditorWindow.h">
+      <Filter>Map Editor\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

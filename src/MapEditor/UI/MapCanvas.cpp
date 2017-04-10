@@ -36,7 +36,7 @@
 #include "General/UndoRedo.h"
 #include "App.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/Renderer/MapRenderer2D.h"
 #include "MapEditor/Renderer/MapRenderer3D.h"
 #include "MapEditor/Renderer/MCAnimations.h"

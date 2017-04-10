@@ -31,7 +31,7 @@
 #include "Main.h"
 #include "InputPrefsPanel.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 
 
 /*******************************************************************

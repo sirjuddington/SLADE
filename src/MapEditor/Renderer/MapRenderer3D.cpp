@@ -34,7 +34,7 @@
 #include "MapRenderer3D.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "General/ColourConfiguration.h"
 #include "General/ResourceManager.h"
 #include "MainEditor/MainEditor.h"

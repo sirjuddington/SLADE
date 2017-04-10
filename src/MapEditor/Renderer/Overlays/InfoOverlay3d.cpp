@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "App.h"
 #include "UI/WxStuff.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/MapEditor.h"
 #include "InfoOverlay3d.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"

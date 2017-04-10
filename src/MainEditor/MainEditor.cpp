@@ -3,7 +3,7 @@
 #include "Archive/ArchiveManager.h"
 #include "MainEditor.h"
 #include "UI/MainWindow.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/ArchiveManagerPanel.h"
 #include "UI/PaletteChooser.h"
 #include "MapEditor/MapEditor.h"

@@ -3,7 +3,7 @@
 #include "MapEditContext.h"
 #include "MapEditor.h"
 #include "MapTextureManager.h"
-#include "MapEditorWindow.h"
+#include "UI/MapEditorWindow.h"
 #include "UI/PropsPanel/MapObjectPropsPanel.h"
 
 namespace MapEditor

@@ -2,7 +2,7 @@
 #ifndef __MAPEDITORWINDOW_H__
 #define __MAPEDITORWINDOW_H__
 
-#include "MapTextureManager.h"
+#include "MapEditor/MapTextureManager.h"
 #include "General/SAction.h"
 #include "UI/STopWindow.h"
 #include "Archive/Archive.h"

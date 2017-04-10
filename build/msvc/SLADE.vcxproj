@@ -1326,7 +1326,6 @@
     <ClCompile Include="..\..\src\MapEditor\MapChecks.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapEditContext.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapEditor.cpp" />
-    <ClCompile Include="..\..\src\MapEditor\MapEditorWindow.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapSpecials.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapTextureManager.cpp" />
     <ClCompile Include="..\..\src\MapEditor\NodeBuilders.cpp" />
@@ -1360,6 +1359,7 @@
     <ClCompile Include="..\..\src\MapEditor\UI\MapBackupPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\MapCanvas.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\MapChecksPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UI\MapEditorWindow.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\ObjectEditPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\LinePropsPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\MapObjectPropsPanel.cpp" />
@@ -1786,7 +1786,6 @@
     <ClInclude Include="..\..\src\MapEditor\MapChecks.h" />
     <ClInclude Include="..\..\src\MapEditor\MapEditContext.h" />
     <ClInclude Include="..\..\src\MapEditor\MapEditor.h" />
-    <ClInclude Include="..\..\src\MapEditor\MapEditorWindow.h" />
     <ClInclude Include="..\..\src\MapEditor\MapSpecials.h" />
     <ClInclude Include="..\..\src\MapEditor\MapTextureManager.h" />
     <ClInclude Include="..\..\src\MapEditor\NodeBuilders.h" />
@@ -1821,6 +1820,7 @@
     <ClInclude Include="..\..\src\MapEditor\UI\MapBackupPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\MapCanvas.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\MapChecksPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\UI\MapEditorWindow.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\ObjectEditPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\LinePropsPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\PropsPanel\MapObjectPropsPanel.h" />

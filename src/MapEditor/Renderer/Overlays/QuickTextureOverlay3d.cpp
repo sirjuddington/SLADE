@@ -33,7 +33,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "UI/WxStuff.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "QuickTextureOverlay3d.h"
 #include "OpenGL/Drawing.h"
 #include "General/ResourceManager.h"

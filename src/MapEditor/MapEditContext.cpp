@@ -33,7 +33,7 @@
 #include "MapEditContext.h"
 #include "Archive/ArchiveManager.h"
 #include "UI/WxStuff.h"
-#include "MapEditorWindow.h"
+#include "UI/MapEditorWindow.h"
 #include "GameConfiguration/GameConfiguration.h"
 #include "Utility/MathStuff.h"
 #include "General/Console/Console.h"
@@ -5724,8 +5724,6 @@ void MapEditContext::resetPlayerStart()
 	pstart->setIntProperty("angle", player_start_dir);
 }
 
-#if 0
-
 #pragma region CONSOLE COMMANDS
 
 /*******************************************************************
@@ -5735,7 +5733,7 @@ void MapEditContext::resetPlayerStart()
 CONSOLE_COMMAND(m_show_item, 1, true)
 {
 	int index = atoi(CHR(args[0]));
-	theMapEditor->mapEditor().showItem(index);
+	MapEditor::editContext().showItem(index);
 }
 
 CONSOLE_COMMAND(m_check, 0, true)
@@ -5759,8 +5757,8 @@ CONSOLE_COMMAND(m_check, 0, true)
 		return;
 	}
 
-	SLADEMap* map = &(theMapEditor->MapEditContext().getMap());
-	MapTextureManager* texman = &(theMapEditor->textureManager());
+	auto map = &(MapEditor::editContext().getMap());
+	auto texman = &(MapEditor::textureManager());
 
 	// Get checks to run
 	vector<MapCheck*> checks;
@@ -5826,7 +5824,7 @@ CONSOLE_COMMAND(m_check, 0, true)
 CONSOLE_COMMAND(m_test_sector, 0, false)
 {
 	sf::Clock clock;
-	SLADEMap& map = theMapEditor->MapEditContext().getMap();
+	SLADEMap& map = MapEditor::editContext().getMap();
 	for (unsigned a = 0; a < map.nThings(); a++)
 		map.sectorAt(map.getThing(a)->point());
 	long ms = clock.getElapsedTime().asMilliseconds();
@@ -5837,7 +5835,7 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 {
 	sf::Clock clock;
 	sf::Clock totalClock;
-	SLADEMap& map = theMapEditor->MapEditContext().getMap();
+	SLADEMap& map = MapEditor::editContext().getMap();
 	mobj_backup_t* backup = new mobj_backup_t();
 
 	// Vertices
@@ -5874,7 +5872,7 @@ CONSOLE_COMMAND(m_test_mobj_backup, 0, false)
 
 CONSOLE_COMMAND(m_vertex_attached, 1, false)
 {
-	MapVertex* vertex = theMapEditor->MapEditContext().getMap().getVertex(atoi(CHR(args[0])));
+	MapVertex* vertex = MapEditor::editContext().getMap().getVertex(atoi(CHR(args[0])));
 	if (vertex)
 	{
 		LOG_MESSAGE(1, "Attached lines:");
@@ -5885,7 +5883,7 @@ CONSOLE_COMMAND(m_vertex_attached, 1, false)
 
 CONSOLE_COMMAND(m_n_polys, 0, false)
 {
-	SLADEMap& map = theMapEditor->MapEditContext().getMap();
+	SLADEMap& map = MapEditor::editContext().getMap();
 	int npoly = 0;
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		npoly += map.getSector(a)->getPolygon()->nSubPolys();
@@ -5898,7 +5896,7 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 	long id;
 	args[0].ToLong(&id);
 
-	MapObject* obj = theMapEditor->MapEditContext().getMap().getObjectById(id);
+	MapObject* obj = MapEditor::editContext().getMap().getObjectById(id);
 	if (!obj)
 		Log::console("Object id out of range");
 	else
@@ -5923,5 +5921,3 @@ CONSOLE_COMMAND(mobj_info, 1, false)
 //	temp.save(args[0]);
 //	temp.close();
 //}
-
-#endif

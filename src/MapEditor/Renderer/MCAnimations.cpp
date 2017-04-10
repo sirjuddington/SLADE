@@ -33,7 +33,7 @@
 #include "UI/WxStuff.h"
 #include "MCAnimations.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/UI/MapEditorWindow.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "MapEditor/SLADEMap/MapVertex.h"
 #include "MapRenderer2D.h"
