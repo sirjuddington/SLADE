@@ -1324,6 +1324,7 @@
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapBackupManager.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapChecks.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\MapEditContext.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapEditor.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapEditorWindow.cpp" />
     <ClCompile Include="..\..\src\MapEditor\MapSpecials.cpp" />
@@ -1783,6 +1784,7 @@
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\UDMFProperty.h" />
     <ClInclude Include="..\..\src\MapEditor\MapBackupManager.h" />
     <ClInclude Include="..\..\src\MapEditor\MapChecks.h" />
+    <ClInclude Include="..\..\src\MapEditor\MapEditContext.h" />
     <ClInclude Include="..\..\src\MapEditor\MapEditor.h" />
     <ClInclude Include="..\..\src\MapEditor\MapEditorWindow.h" />
     <ClInclude Include="..\..\src\MapEditor\MapSpecials.h" />

@@ -31,7 +31,7 @@
 #include "App.h"
 #include "ThingPropsPanel.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapObjectPropsPanel.h"
@@ -39,6 +39,8 @@
 #include "UI/NumberTextCtrl.h"
 #include "UI/STabCtrl.h"
 #include "Utility/MathStuff.h"
+#include "MapEditor/MapTextureManager.h"
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -53,7 +55,7 @@
 SpriteTexCanvas::SpriteTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
 {
 	// Init variables
-	texture = NULL;
+	texture = nullptr;
 	col = COL_WHITE;
 	icon = false;
 	SetWindowStyleFlag(wxBORDER_SIMPLE);
@@ -86,12 +88,12 @@ void SpriteTexCanvas::setSprite(ThingType* type)
 	col = COL_WHITE;
 
 	// Sprite
-	texture = theMapEditor->textureManager().getSprite(texname, type->getTranslation(), type->getPalette());
+	texture = MapEditor::textureManager().getSprite(texname, type->getTranslation(), type->getPalette());
 
 	// Icon
 	if (!texture)
 	{
-		texture = theMapEditor->textureManager().getEditorImage(S_FMT("thing/%s", type->getIcon()));
+		texture = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type->getIcon()));
 		col = type->getColour();
 		icon = true;
 	}
@@ -99,7 +101,7 @@ void SpriteTexCanvas::setSprite(ThingType* type)
 	// Unknown
 	if (!texture)
 	{
-		texture = theMapEditor->textureManager().getEditorImage("thing/unknown");
+		texture = MapEditor::textureManager().getEditorImage("thing/unknown");
 		icon = true;
 	}
 
@@ -515,8 +517,8 @@ void AngleControl::onAngleTextChanged(wxCommandEvent& e)
  *******************************************************************/
 ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 {
-	panel_special = NULL;
-	panel_args = NULL;
+	panel_special = nullptr;
+	panel_args = nullptr;
 
 	// Setup sizer
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -534,11 +536,11 @@ ThingPropsPanel::ThingPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 		stc_tabs->AddPage(setupExtraFlagsTab(), "Extra Flags");
 
 	// Special tab
-	if (theMapEditor->currentMapDesc().format != MAP_DOOM)
+	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
 		stc_tabs->AddPage(panel_special = new ActionSpecialPanel(stc_tabs, false), "Special");
 
 	// Args tab
-	if (theMapEditor->currentMapDesc().format != MAP_DOOM)
+	if (MapEditor::editContext().mapDesc().format != MAP_DOOM)
 	{
 		stc_tabs->AddPage(panel_args = new ArgsPanel(stc_tabs), "Args");
 		if (panel_special)
@@ -577,7 +579,7 @@ ThingPropsPanel::~ThingPropsPanel()
  *******************************************************************/
 wxPanel* ThingPropsPanel::setupGeneralTab()
 {
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Create panel
 	wxPanel* panel = new wxPanel(stc_tabs, -1);
@@ -757,7 +759,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
 	if (objects.empty())
 		return;
 
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 	int ival;
 	double fval;
 
@@ -866,7 +868,7 @@ void ThingPropsPanel::openObjects(vector<MapObject*>& objects)
  *******************************************************************/
 void ThingPropsPanel::applyChanges()
 {
-	int map_format = theMapEditor->currentMapDesc().format;
+	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Apply general properties
 	for (unsigned a = 0; a < objects.size(); a++)
@@ -958,7 +960,7 @@ void ThingPropsPanel::onSpriteClicked(wxMouseEvent& e)
 		if (panel_args)
 		{
 			argspec_t as = tt->getArgspec();
-			panel_args->setup(&as, (theMapEditor->currentMapDesc().format == MAP_UDMF));
+			panel_args->setup(&as, (MapEditor::editContext().mapDesc().format == MAP_UDMF));
 		}
 
 		// Update layout

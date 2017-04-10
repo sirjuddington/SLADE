@@ -62,7 +62,7 @@ namespace Lua
 	}
 
 	/*int set_mobj_int_prop(lua_State* ls) {
-		SLADEMap& map = theMapEditor->mapEditor().getMap();
+		SLADEMap& map = MapEditor::editContext().getMap();
 
 		int argc = lua_gettop(ls);
 		if (argc < 4)

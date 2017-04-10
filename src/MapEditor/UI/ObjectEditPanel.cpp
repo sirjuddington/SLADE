@@ -33,8 +33,9 @@
 #include "ObjectEditPanel.h"
 #include "General/KeyBind.h"
 #include "Graphics/Icons.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/ObjectEdit.h"
+#include "MapEditor/MapEditContext.h"
 
 
 /*******************************************************************
@@ -196,7 +197,7 @@ void ObjectEditPanel::onBtnPreviewClicked(wxCommandEvent& e)
 	bool mirror_x = cb_mirror_x->GetValue();
 	bool mirror_y = cb_mirror_y->GetValue();
 
-	theMapEditor->mapEditor().getObjectEditGroup()->doAll(xoff, yoff, xscale / 100.0, yscale / 100.0, rotation, mirror_x, mirror_y);
+	MapEditor::editContext().getObjectEditGroup()->doAll(xoff, yoff, xscale / 100.0, yscale / 100.0, rotation, mirror_x, mirror_y);
 }
 
 /* ObjectEditPanel::onBtnCancelClicked

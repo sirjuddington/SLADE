@@ -41,7 +41,6 @@ struct mobj_cd_t
 class ParseTreeNode;
 class SLADEMap
 {
-	friend class MapEditor;
 private:
 	vector<MapLine*>	lines;
 	vector<MapSide*>	sides;

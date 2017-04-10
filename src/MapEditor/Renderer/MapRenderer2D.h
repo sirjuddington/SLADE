@@ -160,4 +160,13 @@ public:
 	void	clearTextureCache() { tex_flats.clear(); }
 };
 
+enum ThingDrawTypes
+{
+	TDT_SQUARE,
+	TDT_ROUND,
+	TDT_SPRITE,
+	TDT_SQUARESPRITE,
+	TDT_FRAMEDSPRITE,
+};
+
 #endif//__MAP_RENDERER_2D__

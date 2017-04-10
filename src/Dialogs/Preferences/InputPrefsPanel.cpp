@@ -30,6 +30,7 @@
  *******************************************************************/
 #include "Main.h"
 #include "InputPrefsPanel.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/MapEditorWindow.h"
 
 
@@ -445,7 +446,7 @@ void InputPrefsPanel::applyPreferences()
 	KeyBind::updateSortedBindsList();
 
 	// Update map editor menus
-	theMapEditor->setupMenu();
+	MapEditor::window()->setupMenu();
 }
 
 

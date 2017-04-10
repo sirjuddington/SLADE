@@ -62,6 +62,7 @@ public:
 	MapTextureManager(Archive* archive = NULL);
 	~MapTextureManager();
 
+	void	init();
 	void	setArchive(Archive* archive);
 	void	refreshResources();
 	void	buildTexInfoList();

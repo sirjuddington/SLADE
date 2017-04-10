@@ -33,8 +33,9 @@
 #include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -77,13 +78,13 @@ MapTexBrowserItem::~MapTexBrowserItem()
  *******************************************************************/
 bool MapTexBrowserItem::loadImage()
 {
-	GLTexture* tex = NULL;
+	GLTexture* tex = nullptr;
 
 	// Get texture or flat depending on type
 	if (type == "texture")
-		tex = theMapEditor->textureManager().getTexture(name, false);
+		tex = MapEditor::textureManager().getTexture(name, false);
 	else if (type == "flat")
-		tex = theMapEditor->textureManager().getFlat(name, false);
+		tex = MapEditor::textureManager().getFlat(name, false);
 
 	if (tex)
 	{
@@ -154,7 +155,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	{
 		addGlobalItem(new MapTexBrowserItem("-", 0, 0));
 
-		vector<map_texinfo_t>& textures = theMapEditor->textureManager().getAllTexturesInfo();
+		vector<map_texinfo_t>& textures = MapEditor::textureManager().getAllTexturesInfo();
 		for (unsigned a = 0; a < textures.size(); a++)
 		{
 			// Add browser item
@@ -166,7 +167,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, int type, string texture,
 	// Flats
 	if (type == 1 || theGameConfiguration->mixTexFlats())
 	{
-		vector<map_texinfo_t>& flats = theMapEditor->textureManager().getAllFlatsInfo();
+		vector<map_texinfo_t>& flats = MapEditor::textureManager().getAllFlatsInfo();
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
 			// Determine tree path

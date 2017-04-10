@@ -31,8 +31,7 @@
 #include "ColourPrefsPanel.h"
 #include "General/ColourConfiguration.h"
 #include "MainEditor/MainEditor.h"
-#include "MapEditor/MapEditorWindow.h"
-#include "PreferencesDialog.h"
+#include "MapEditor/MapEditor.h"
 
 
 /*******************************************************************
@@ -199,7 +198,7 @@ void ColourPrefsPanel::applyPreferences()
 	pg_colours->Refresh();
 	pg_colours->RefreshEditor();
 	MainEditor::windowWx()->Refresh();
-	theMapEditor->forceRefresh(true);
+	MapEditor::forceRefresh(true);
 }
 
 
@@ -215,5 +214,5 @@ void ColourPrefsPanel::onChoicePresetSelected(wxCommandEvent& e)
 	string config = choice_configs->GetStringSelection();
 	ColourConfiguration::readConfiguration(config);
 	refreshPropGrid();
-	theMapEditor->forceRefresh(true);
+	MapEditor::forceRefresh(true);
 }

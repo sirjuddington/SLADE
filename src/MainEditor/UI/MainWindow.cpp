@@ -39,7 +39,7 @@
 #include "UI/BaseResourceChooser.h"
 #include "Dialogs/Preferences/PreferencesDialog.h"
 #include "Utility/Tokenizer.h"
-#include "MapEditor/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "UI/SToolBar/SToolBar.h"
 #include "UI/UndoManagerHistoryPanel.h"
 #include "ArchivePanel.h"
@@ -621,8 +621,8 @@ bool MainWindow::exitProgram()
 	}
 
 	// Check if we can close the map editor
-	if (theMapEditor->IsShown())
-		if (!theMapEditor->Close())
+	if (MapEditor::windowWx()->IsShown())
+		if (!MapEditor::windowWx()->Close())
 			return false;
 
 	// Close all archives
