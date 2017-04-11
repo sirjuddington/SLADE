@@ -713,7 +713,7 @@ void MCAHilightFade::draw()
 MCAHilightFade3D::MCAHilightFade3D(
 	long start,
 	int item_index,
-	Edit3D::SelectionType item_type,
+	MapEditor::ItemType item_type,
 	MapRenderer3D* renderer,
 	float fade_init
 ) :

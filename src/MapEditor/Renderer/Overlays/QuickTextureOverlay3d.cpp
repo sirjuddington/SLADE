@@ -62,7 +62,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 
 	if (editor)
 	{
-		vector<Edit3D::Selection> sel;
+		vector<MapEditor::Item> sel;
 		editor->get3dSelectionOrHilight(sel);
 
 		if (!ok(sel))
@@ -79,9 +79,9 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 			sel_type = 0;
 			for (unsigned a = 0; a < sel.size(); a++)
 			{
-				if (sel[a].type != Edit3D::SelectionType::Thing &&
-					sel[a].type != Edit3D::SelectionType::Ceiling &&
-					sel[a].type != Edit3D::SelectionType::Floor)
+				if (sel[a].type != MapEditor::ItemType::Thing &&
+					sel[a].type != MapEditor::ItemType::Ceiling &&
+					sel[a].type != MapEditor::ItemType::Floor)
 				{
 					sel_type = 1;
 					initial = a;
@@ -92,15 +92,15 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 
 		// Get initial texture
 		string tex_init;
-		if (sel[initial].type == Edit3D::SelectionType::Ceiling)
+		if (sel[initial].type == MapEditor::ItemType::Ceiling)
 			tex_init = editor->getMap().getSector(sel[initial].index)->stringProperty("textureceiling");
-		else if (sel[initial].type == Edit3D::SelectionType::Floor)
+		else if (sel[initial].type == MapEditor::ItemType::Floor)
 			tex_init = editor->getMap().getSector(sel[initial].index)->stringProperty("texturefloor");
-		else if (sel[initial].type == Edit3D::SelectionType::WallTop)
+		else if (sel[initial].type == MapEditor::ItemType::WallTop)
 			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturetop");
-		else if (sel[initial].type == Edit3D::SelectionType::WallMiddle)
+		else if (sel[initial].type == MapEditor::ItemType::WallMiddle)
 			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturemiddle");
-		else if (sel[initial].type == Edit3D::SelectionType::WallBottom)
+		else if (sel[initial].type == MapEditor::ItemType::WallBottom)
 			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturebottom");
 
 		// Get all available texture names (sorted alphabetically)
@@ -164,7 +164,7 @@ void QuickTextureOverlay3d::applyTexture()
 		return;
 
 	// Get selection/hilight
-	vector<Edit3D::Selection> selection;
+	vector<MapEditor::Item> selection;
 	editor->get3dSelectionOrHilight(selection);
 
 	// Go through items
@@ -173,18 +173,18 @@ void QuickTextureOverlay3d::applyTexture()
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
 			// Thing (skip)
-			if (selection[a].type == Edit3D::SelectionType::Thing)
+			if (selection[a].type == MapEditor::ItemType::Thing)
 				continue;
 
 			// Floor
-			else if (selection[a].type == Edit3D::SelectionType::Floor && (sel_type == 0 || sel_type == 2))
+			else if (selection[a].type == MapEditor::ItemType::Floor && (sel_type == 0 || sel_type == 2))
 			{
 				MapSector* sector = editor->getMap().getSector(selection[a].index);
 				if (sector) sector->setStringProperty("texturefloor", textures[current_index].name);
 			}
 
 			// Ceiling
-			else if (selection[a].type == Edit3D::SelectionType::Ceiling && (sel_type == 0 || sel_type == 2))
+			else if (selection[a].type == MapEditor::ItemType::Ceiling && (sel_type == 0 || sel_type == 2))
 			{
 				MapSector* sector = editor->getMap().getSector(selection[a].index);
 				if (sector) sector->setStringProperty("textureceiling", textures[current_index].name);
@@ -197,13 +197,13 @@ void QuickTextureOverlay3d::applyTexture()
 				if (side)
 				{
 					// Upper
-					if (selection[a].type == Edit3D::SelectionType::WallTop)
+					if (selection[a].type == MapEditor::ItemType::WallTop)
 						side->setStringProperty("texturetop", textures[current_index].name);
 					// Middle
-					else if (selection[a].type == Edit3D::SelectionType::WallMiddle)
+					else if (selection[a].type == MapEditor::ItemType::WallMiddle)
 						side->setStringProperty("texturemiddle", textures[current_index].name);
 					// Lower
-					else if (selection[a].type == Edit3D::SelectionType::WallBottom)
+					else if (selection[a].type == MapEditor::ItemType::WallBottom)
 						side->setStringProperty("texturebottom", textures[current_index].name);
 				}
 			}
@@ -402,7 +402,7 @@ void QuickTextureOverlay3d::keyDown(string key)
 /* QuickTextureOverlay3d::ok
  * Returns true if [sel] is valid for quick texture selection
  *******************************************************************/
-bool QuickTextureOverlay3d::ok(vector<Edit3D::Selection> &sel)
+bool QuickTextureOverlay3d::ok(vector<MapEditor::Item> &sel)
 {
 	// Cancel if no selection
 	if (sel.empty())
@@ -412,7 +412,7 @@ bool QuickTextureOverlay3d::ok(vector<Edit3D::Selection> &sel)
 	bool ok = false;
 	for (unsigned a = 0; a < sel.size(); a++)
 	{
-		if (sel[a].type != Edit3D::SelectionType::Thing)
+		if (sel[a].type != MapEditor::ItemType::Thing)
 		{
 			ok = true;
 			break;

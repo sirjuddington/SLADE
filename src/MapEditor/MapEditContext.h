@@ -79,11 +79,11 @@ private:
 	};
 	vector<editor_msg_t>	editor_messages;
 
-	void migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<Edit3D::Selection>& old_selection_3d);
+	void migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<MapEditor::Item>& old_selection_3d);
 
 	// 3d mode
-	Edit3D::Selection			hilight_3d;
-	vector<Edit3D::Selection>	selection_3d;
+	MapEditor::Item			hilight_3d;
+	vector<MapEditor::Item>	selection_3d;
 
 	// Player start swap
 	fpoint2_t	player_start_pos;
@@ -139,10 +139,10 @@ public:
 	UndoManager*			undoManager() { return undo_manager; }
 	Archive::mapdesc_t&		mapDesc() { return map_desc; }
 
-	vector<Edit3D::Selection>&	get3dSelection() { return selection_3d; }
-	bool						set3dHilight(Edit3D::Selection hl);
-	Edit3D::Selection			hilightItem3d() { return hilight_3d; }
-	void						get3dSelectionOrHilight(vector<Edit3D::Selection>& list);
+	vector<MapEditor::Item>&	get3dSelection() { return selection_3d; }
+	bool						set3dHilight(MapEditor::Item hl);
+	MapEditor::Item			hilightItem3d() { return hilight_3d; }
+	void						get3dSelectionOrHilight(vector<MapEditor::Item>& list);
 
 	void	setEditMode(int mode);
 	void	setSectorEditMode(int mode);
@@ -173,7 +173,7 @@ public:
 	void		getSelectedObjects(vector<MapObject*>& list);
 	void		showItem(int index);
 	bool		isHilightOrSelection() { return !selection.empty() || hilight_item != -1; }
-	void		selectItem3d(Edit3D::Selection item, int sel = TOGGLE);
+	void		selectItem3d(MapEditor::Item item, int sel = TOGGLE);
 
 	// Grid
 	void	incrementGrid();

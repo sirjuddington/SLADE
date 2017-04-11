@@ -157,7 +157,7 @@ class MCAHilightFade3D : public MCAnimation
 {
 private:
 	int						item_index;
-	Edit3D::SelectionType	item_type;
+	MapEditor::ItemType	item_type;
 	float					fade;
 	float					init_fade;
 	MapRenderer3D*			renderer;
@@ -166,7 +166,7 @@ public:
 	MCAHilightFade3D(
 		long start,
 		int item_index,
-		Edit3D::SelectionType item_type,
+		MapEditor::ItemType item_type,
 		MapRenderer3D* renderer,
 		float fade_init
 	);

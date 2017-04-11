@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MapEditor/MapEditor.h"
+
 class MapEditContext;
 class MapSide;
 class UndoManager;
@@ -7,28 +9,6 @@ class UndoManager;
 class Edit3D
 {
 public:
-	enum class SelectionType
-	{
-		WallTop,
-		WallMiddle,
-		WallBottom,
-		Floor,
-		Ceiling,
-		Thing,
-	};
-
-	struct Selection
-	{
-		int				index;
-		SelectionType	type;
-
-		bool operator<(const Selection& other) const {
-			return (this->type == other.type) ?
-				this->index < other.index :
-				this->type < other.type;
-		}
-	};
-
 	explicit Edit3D(MapEditContext& context);
 
 	UndoManager*	undoManager() const { return undo_manager.get(); }
@@ -39,11 +19,11 @@ public:
 
 	void	setLinked(bool light, bool offsets) { link_light = light; link_offset = offsets; }
 
-	void	selectAdjacent(Selection item) const;
+	void	selectAdjacent(MapEditor::Item item) const;
 	void	changeSectorLight(int amount) const;
 	void	changeOffset(int amount, bool x) const;
 	void	changeSectorHeight(int amount) const;
-	void	autoAlignX(Selection start) const;
+	void	autoAlignX(MapEditor::Item start) const;
 	void	resetOffsets() const;
 	void	toggleUnpegged(bool lower) const;
 	//void	copy(int type);
@@ -55,7 +35,7 @@ public:
 	void	changeHeight(int amount) const;
 
 	// TODO: Change back to private once floodFill is moved here
-	vector<Selection>	getAdjacent(Selection item) const;
+	vector<MapEditor::Item>	getAdjacent(MapEditor::Item item) const;
 
 private:
 	MapEditContext&					context;
@@ -64,10 +44,10 @@ private:
 	bool							link_offset;
 
 	// Helper for selectAdjacent
-	static bool wallMatches(MapSide* side, SelectionType part, string tex);
-	void		getAdjacentWalls(Selection item, vector<Selection>& list) const;
-	void		getAdjacentFlats(Selection item, vector<Selection>& list) const;
+	static bool wallMatches(MapSide* side, MapEditor::ItemType part, string tex);
+	void		getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& list) const;
+	void		getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& list) const;
 
 	// Helper for autoAlignX3d
-	static void doAlignX(MapSide* side, int offset, string tex, vector<Selection>& walls_done, int tex_width);
+	static void doAlignX(MapSide* side, int offset, string tex, vector<MapEditor::Item>& walls_done, int tex_width);
 };

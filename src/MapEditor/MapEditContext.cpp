@@ -543,7 +543,7 @@ void MapEditContext::setEditMode(int mode)
 
 	int old_edit_mode = edit_mode;
 	vector<int> old_selection = selection;
-	vector<Edit3D::Selection> old_selection_3d = selection_3d;
+	vector<MapEditor::Item> old_selection_3d = selection_3d;
 
 	// Set edit mode
 	edit_mode = mode;
@@ -1380,7 +1380,7 @@ bool MapEditContext::selectWithin(double xmin, double ymin, double xmax, double 
 void MapEditContext::migrateSelection(
 	int old_edit_mode,
 	vector<int>& old_selection,
-	vector<Edit3D::Selection>& old_selection_3d
+	vector<MapEditor::Item>& old_selection_3d
 )
 {
 	// Reduce confusion
@@ -1388,7 +1388,7 @@ void MapEditContext::migrateSelection(
 
 	// Avoid duplicates without any fuss by using a set
 	std::set<int> new_selection;
-	std::set<Edit3D::Selection> new_selection_3d;
+	std::set<MapEditor::Item> new_selection_3d;
 
 	if (old_edit_mode == edit_mode)
 	{
@@ -1402,20 +1402,20 @@ void MapEditContext::migrateSelection(
 		for (unsigned a = 0; a < old_selection_3d.size(); a++)
 		{
 			if (new_edit_mode == MODE_THINGS && (
-				old_selection_3d[a].type == Edit3D::SelectionType::Thing))
+				old_selection_3d[a].type == MapEditor::ItemType::Thing))
 			{
 				new_selection.insert(old_selection_3d[a].index);
 			}
 			else if (new_edit_mode == MODE_SECTORS && (
-				old_selection_3d[a].type == Edit3D::SelectionType::Floor ||
-				old_selection_3d[a].type == Edit3D::SelectionType::Ceiling))
+				old_selection_3d[a].type == MapEditor::ItemType::Floor ||
+				old_selection_3d[a].type == MapEditor::ItemType::Ceiling))
 			{
 				new_selection.insert(old_selection_3d[a].index);
 			}
 			else if (new_edit_mode == MODE_LINES && (
-				old_selection_3d[a].type == Edit3D::SelectionType::WallBottom ||
-				old_selection_3d[a].type == Edit3D::SelectionType::WallMiddle ||
-				old_selection_3d[a].type == Edit3D::SelectionType::WallTop))
+				old_selection_3d[a].type == MapEditor::ItemType::WallBottom ||
+				old_selection_3d[a].type == MapEditor::ItemType::WallMiddle ||
+				old_selection_3d[a].type == MapEditor::ItemType::WallTop))
 			{
 				MapSide* side = map.getSide(old_selection_3d[a].index);
 				if (!side) continue;
@@ -1430,8 +1430,8 @@ void MapEditContext::migrateSelection(
 		if (old_edit_mode == MODE_SECTORS)
 			for (unsigned a = 0; a < old_selection.size(); a++)
 			{
-				new_selection_3d.insert(Edit3D::Selection{ old_selection[a], Edit3D::SelectionType::Floor });
-				new_selection_3d.insert(Edit3D::Selection{ old_selection[a], Edit3D::SelectionType::Ceiling });
+				new_selection_3d.insert(MapEditor::Item{ old_selection[a], MapEditor::ItemType::Floor });
+				new_selection_3d.insert(MapEditor::Item{ old_selection[a], MapEditor::ItemType::Ceiling });
 			}
 		else if (old_edit_mode == MODE_LINES)
 			for (unsigned a = 0; a < old_selection.size(); a++)
@@ -1446,24 +1446,24 @@ void MapEditContext::migrateSelection(
 				MapSide* front = line->s1();
 				MapSide* back = line->s1();
 				if (front && textures & TEX_FRONT_UPPER)
-					new_selection_3d.insert(Edit3D::Selection{ (int)front->getIndex(), Edit3D::SelectionType::WallTop });
+					new_selection_3d.insert(MapEditor::Item{ (int)front->getIndex(), MapEditor::ItemType::WallTop });
 				if (front && textures & TEX_FRONT_LOWER)
-					new_selection_3d.insert(Edit3D::Selection{ (int)front->getIndex(), Edit3D::SelectionType::WallBottom });
+					new_selection_3d.insert(MapEditor::Item{ (int)front->getIndex(), MapEditor::ItemType::WallBottom });
 				if (back && textures & TEX_BACK_UPPER)
-					new_selection_3d.insert(Edit3D::Selection{ (int)back->getIndex(), Edit3D::SelectionType::WallTop });
+					new_selection_3d.insert(MapEditor::Item{ (int)back->getIndex(), MapEditor::ItemType::WallTop });
 				if (back && textures & TEX_BACK_LOWER)
-					new_selection_3d.insert(Edit3D::Selection{ (int)back->getIndex(), Edit3D::SelectionType::WallBottom });
+					new_selection_3d.insert(MapEditor::Item{ (int)back->getIndex(), MapEditor::ItemType::WallBottom });
 
 				// Also include any two-sided middle textures
 				if (front && (textures & TEX_FRONT_MIDDLE || !front->getTexMiddle().empty()))
-					new_selection_3d.insert(Edit3D::Selection{ (int)front->getIndex(), Edit3D::SelectionType::WallMiddle });
+					new_selection_3d.insert(MapEditor::Item{ (int)front->getIndex(), MapEditor::ItemType::WallMiddle });
 				if (back && (textures & TEX_BACK_MIDDLE || !back->getTexMiddle().empty()))
-					new_selection_3d.insert(Edit3D::Selection{ (int)back->getIndex(), Edit3D::SelectionType::WallMiddle });
+					new_selection_3d.insert(MapEditor::Item{ (int)back->getIndex(), MapEditor::ItemType::WallMiddle });
 			}
 		else if (old_edit_mode == MODE_THINGS)
 			for (unsigned a = 0; a < old_selection.size(); a++)
 			{
-				new_selection_3d.insert(Edit3D::Selection{ old_selection[a], Edit3D::SelectionType::Thing });
+				new_selection_3d.insert(MapEditor::Item{ old_selection[a], MapEditor::ItemType::Thing });
 			}
 	}
 
@@ -1613,17 +1613,17 @@ void MapEditContext::getSelectedThings(vector<MapThing*>& list)
 		{
 			for (unsigned a = 0; a < selection_3d.size(); a++)
 			{
-				if (selection_3d[a].type == Edit3D::SelectionType::Thing)
+				if (selection_3d[a].type == MapEditor::ItemType::Thing)
 					list.push_back(map.getThing(selection_3d[a].index));
 			}
 		}
 
 		// Single selection
-		else if (selection_3d.size() == 1 && selection_3d[0].type == Edit3D::SelectionType::Thing)
+		else if (selection_3d.size() == 1 && selection_3d[0].type == MapEditor::ItemType::Thing)
 			list.push_back(map.getThing(selection_3d[0].index));
 
 		// No selection (use hilight
-		else if (hilight_3d.index >= 0 && hilight_3d.type == Edit3D::SelectionType::Thing)
+		else if (hilight_3d.index >= 0 && hilight_3d.type == MapEditor::ItemType::Thing)
 			list.push_back(map.getThing(hilight_3d.index));
 	}
 	else if (edit_mode == MODE_THINGS)
@@ -1681,7 +1681,7 @@ void MapEditContext::getSelectedObjects(vector<MapObject*>& list)
 /* MapEditContext::selectItem3d
  * Toggles selection on the currently hilighted 3d mode object
  *******************************************************************/
-void MapEditContext::selectItem3d(Edit3D::Selection item, int sel)
+void MapEditContext::selectItem3d(MapEditor::Item item, int sel)
 {
 	// Go through selection
 	for (unsigned a = 0; a < selection_3d.size(); a++)
@@ -1716,7 +1716,7 @@ void MapEditContext::selectItem3d(Edit3D::Selection item, int sel)
 /* MapEditContext::get3dSelectionOrHilight
  * Adds all 3d mode selected objects to [list]
  *******************************************************************/
-void MapEditContext::get3dSelectionOrHilight(vector<Edit3D::Selection>& list)
+void MapEditContext::get3dSelectionOrHilight(vector<MapEditor::Item>& list)
 {
 	if (selection_3d.empty() && hilight_3d.index >= 0)
 		list.push_back(hilight_3d);
@@ -3377,7 +3377,7 @@ void MapEditContext::paste(fpoint2_t mouse_pos)
  * Sets the 3d mode hilight (if [item] is different from the current
  * hilight)
  *******************************************************************/
-bool MapEditContext::set3dHilight(Edit3D::Selection item)
+bool MapEditContext::set3dHilight(MapEditor::Item item)
 {
 	bool changed = false;
 	if (item.index != hilight_3d.index || item.type != hilight_3d.type)
@@ -3401,7 +3401,7 @@ void MapEditContext::copy3d(int type)
 		return;
 
 	// Upper wall
-	else if (hilight_3d.type == Edit3D::SelectionType::WallTop)
+	else if (hilight_3d.type == MapEditor::ItemType::WallTop)
 	{
 		// Texture
 		if (type == COPY_TEXTYPE)
@@ -3409,7 +3409,7 @@ void MapEditContext::copy3d(int type)
 	}
 
 	// Middle wall
-	else if (hilight_3d.type == Edit3D::SelectionType::WallMiddle)
+	else if (hilight_3d.type == MapEditor::ItemType::WallMiddle)
 	{
 		// Texture
 		if (type == COPY_TEXTYPE)
@@ -3417,7 +3417,7 @@ void MapEditContext::copy3d(int type)
 	}
 
 	// Lower wall
-	else if (hilight_3d.type == Edit3D::SelectionType::WallBottom)
+	else if (hilight_3d.type == MapEditor::ItemType::WallBottom)
 	{
 		// Texture
 		if (type == COPY_TEXTYPE)
@@ -3425,7 +3425,7 @@ void MapEditContext::copy3d(int type)
 	}
 
 	// Floor
-	else if (hilight_3d.type == Edit3D::SelectionType::Floor)
+	else if (hilight_3d.type == MapEditor::ItemType::Floor)
 	{
 		// Texture
 		if (type == COPY_TEXTYPE)
@@ -3433,7 +3433,7 @@ void MapEditContext::copy3d(int type)
 	}
 
 	// Ceiling
-	else if (hilight_3d.type == Edit3D::SelectionType::Ceiling)
+	else if (hilight_3d.type == MapEditor::ItemType::Ceiling)
 	{
 		// Texture
 		if (type == COPY_TEXTYPE)
@@ -3441,7 +3441,7 @@ void MapEditContext::copy3d(int type)
 	}
 
 	// Thing
-	else if (hilight_3d.type == Edit3D::SelectionType::Thing)
+	else if (hilight_3d.type == MapEditor::ItemType::Thing)
 	{
 		if (!copy_thing)
 			copy_thing = new MapThing();
@@ -3456,7 +3456,7 @@ void MapEditContext::copy3d(int type)
 	// Editor message
 	if (type == COPY_TEXTYPE)
 	{
-		if (hilight_3d.type == Edit3D::SelectionType::Thing)
+		if (hilight_3d.type == MapEditor::ItemType::Thing)
 			addEditorMessage("Copied Thing Type");
 		else
 			addEditorMessage("Copied Texture");
@@ -3469,7 +3469,7 @@ void MapEditContext::copy3d(int type)
 void MapEditContext::paste3d(int type)
 {
 	// Get items to paste to
-	vector<Edit3D::Selection> items;
+	vector<MapEditor::Item> items;
 	if (selection_3d.size() == 0 && hilight_3d.index >= 0)
 		items.push_back(hilight_3d);
 	else if (selection_3d.size() > 0)
@@ -3490,13 +3490,13 @@ void MapEditContext::paste3d(int type)
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
-		if (items[a].type == Edit3D::SelectionType::WallTop || items[a].type == Edit3D::SelectionType::WallMiddle || items[a].type == Edit3D::SelectionType::WallBottom)
+		if (items[a].type == MapEditor::ItemType::WallTop || items[a].type == MapEditor::ItemType::WallMiddle || items[a].type == MapEditor::ItemType::WallBottom)
 		{
 			MapSide* side = map.getSide(items[a].index);
 			recordPropertyChangeUndoStep(side);
 
 			// Upper wall
-			if (items[a].type == Edit3D::SelectionType::WallTop)
+			if (items[a].type == MapEditor::ItemType::WallTop)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3504,7 +3504,7 @@ void MapEditContext::paste3d(int type)
 			}
 
 			// Middle wall
-			else if (items[a].type == Edit3D::SelectionType::WallMiddle)
+			else if (items[a].type == MapEditor::ItemType::WallMiddle)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3512,7 +3512,7 @@ void MapEditContext::paste3d(int type)
 			}
 
 			// Lower wall
-			else if (items[a].type == Edit3D::SelectionType::WallBottom)
+			else if (items[a].type == MapEditor::ItemType::WallBottom)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3521,13 +3521,13 @@ void MapEditContext::paste3d(int type)
 		}
 
 		// Flat
-		else if (items[a].type == Edit3D::SelectionType::Floor || items[a].type == Edit3D::SelectionType::Ceiling)
+		else if (items[a].type == MapEditor::ItemType::Floor || items[a].type == MapEditor::ItemType::Ceiling)
 		{
 			MapSector* sector = map.getSector(items[a].index);
 			recordPropertyChangeUndoStep(sector);
 
 			// Floor
-			if (items[a].type == Edit3D::SelectionType::Floor)
+			if (items[a].type == MapEditor::ItemType::Floor)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3535,7 +3535,7 @@ void MapEditContext::paste3d(int type)
 			}
 
 			// Ceiling
-			if (items[a].type == Edit3D::SelectionType::Ceiling)
+			if (items[a].type == MapEditor::ItemType::Ceiling)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3544,7 +3544,7 @@ void MapEditContext::paste3d(int type)
 		}
 
 		// Thing
-		else if (items[a].type == Edit3D::SelectionType::Thing)
+		else if (items[a].type == MapEditor::ItemType::Thing)
 		{
 			MapThing* thing = map.getThing(items[a].index);
 			recordPropertyChangeUndoStep(thing);
@@ -3558,7 +3558,7 @@ void MapEditContext::paste3d(int type)
 	// Editor message
 	if (type == COPY_TEXTYPE)
 	{
-		if (hilight_3d.type == Edit3D::SelectionType::Thing)
+		if (hilight_3d.type == MapEditor::ItemType::Thing)
 			addEditorMessage("Pasted Thing Type");
 		else
 			addEditorMessage("Pasted Texture");
@@ -3602,15 +3602,15 @@ void MapEditContext::floodFill3d(int type)
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Wall
-		if (items[a].type == Edit3D::SelectionType::WallTop ||
-			items[a].type == Edit3D::SelectionType::WallMiddle ||
-			items[a].type == Edit3D::SelectionType::WallBottom)
+		if (items[a].type == MapEditor::ItemType::WallTop ||
+			items[a].type == MapEditor::ItemType::WallMiddle ||
+			items[a].type == MapEditor::ItemType::WallBottom)
 		{
 			auto side = map.getSide(items[a].index);
 			recordPropertyChangeUndoStep(side);
 
 			// Upper wall
-			if (items[a].type == Edit3D::SelectionType::WallTop)
+			if (items[a].type == MapEditor::ItemType::WallTop)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3618,7 +3618,7 @@ void MapEditContext::floodFill3d(int type)
 			}
 
 			// Middle wall
-			else if (items[a].type == Edit3D::SelectionType::WallMiddle)
+			else if (items[a].type == MapEditor::ItemType::WallMiddle)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3626,7 +3626,7 @@ void MapEditContext::floodFill3d(int type)
 			}
 
 			// Lower wall
-			else if (items[a].type == Edit3D::SelectionType::WallBottom)
+			else if (items[a].type == MapEditor::ItemType::WallBottom)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3635,13 +3635,13 @@ void MapEditContext::floodFill3d(int type)
 		}
 
 		// Flat
-		else if (items[a].type == Edit3D::SelectionType::Floor || items[a].type == Edit3D::SelectionType::Ceiling)
+		else if (items[a].type == MapEditor::ItemType::Floor || items[a].type == MapEditor::ItemType::Ceiling)
 		{
 			MapSector* sector = map.getSector(items[a].index);
 			recordPropertyChangeUndoStep(sector);
 
 			// Floor
-			if (items[a].type == Edit3D::SelectionType::Floor)
+			if (items[a].type == MapEditor::ItemType::Floor)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)
@@ -3649,7 +3649,7 @@ void MapEditContext::floodFill3d(int type)
 			}
 
 			// Ceiling
-			if (items[a].type == Edit3D::SelectionType::Ceiling)
+			if (items[a].type == MapEditor::ItemType::Ceiling)
 			{
 				// Texture
 				if (type == COPY_TEXTYPE)

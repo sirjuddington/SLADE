@@ -59,7 +59,7 @@ EXTERN_CVAR(Int, gl_font_size)
  * InfoOverlay3D class constructor
  *******************************************************************/
 InfoOverlay3D::InfoOverlay3D() :
-	current_type(Edit3D::SelectionType::WallMiddle),
+	current_type(MapEditor::ItemType::WallMiddle),
 	texture(nullptr),
 	thing_icon(false),
 	object(nullptr),
@@ -78,7 +78,7 @@ InfoOverlay3D::~InfoOverlay3D()
  * Updates the info text for the object of [item_type] at [item_index]
  * in [map]
  *******************************************************************/
-void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLADEMap* map)
+void InfoOverlay3D::update(int item_index, MapEditor::ItemType item_type, SLADEMap* map)
 {
 	// Clear current info
 	info.clear();
@@ -92,9 +92,9 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 	int map_format = MapEditor::editContext().mapDesc().format;
 
 	// Wall
-	if (item_type == Edit3D::SelectionType::WallBottom ||
-		item_type == Edit3D::SelectionType::WallMiddle ||
-		item_type == Edit3D::SelectionType::WallTop)
+	if (item_type == MapEditor::ItemType::WallBottom ||
+		item_type == MapEditor::ItemType::WallMiddle ||
+		item_type == MapEditor::ItemType::WallTop)
 	{
 		// Get line and side
 		MapSide* side = map->getSide(item_index);
@@ -130,9 +130,9 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 		// --- Wall part info ---
 
 		// Part
-		if (item_type == Edit3D::SelectionType::WallBottom)
+		if (item_type == MapEditor::ItemType::WallBottom)
 			info2.push_back("Lower Texture");
-		else if (item_type == Edit3D::SelectionType::WallMiddle)
+		else if (item_type == MapEditor::ItemType::WallMiddle)
 			info2.push_back("Middle Texture");
 		else
 			info2.push_back("Upper Texture");
@@ -143,9 +143,9 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 			// Get x offset info
 			int xoff = side->intProperty("offsetx");
 			double xoff_part = 0;
-			if (item_type == Edit3D::SelectionType::WallBottom)
+			if (item_type == MapEditor::ItemType::WallBottom)
 				xoff_part = side->floatProperty("offsetx_bottom");
-			else if (item_type == Edit3D::SelectionType::WallMiddle)
+			else if (item_type == MapEditor::ItemType::WallMiddle)
 				xoff_part = side->floatProperty("offsetx_mid");
 			else
 				xoff_part = side->floatProperty("offsetx_top");
@@ -162,9 +162,9 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 			// Get y offset info
 			int yoff = side->intProperty("offsety");
 			double yoff_part = 0;
-			if (item_type == Edit3D::SelectionType::WallBottom)
+			if (item_type == MapEditor::ItemType::WallBottom)
 				yoff_part = side->floatProperty("offsety_bottom");
-			else if (item_type == Edit3D::SelectionType::WallMiddle)
+			else if (item_type == MapEditor::ItemType::WallMiddle)
 				yoff_part = side->floatProperty("offsety_mid");
 			else
 				yoff_part = side->floatProperty("offsety_top");
@@ -191,12 +191,12 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 		{
 			// Scale
 			double xscale, yscale;
-			if (item_type == Edit3D::SelectionType::WallBottom)
+			if (item_type == MapEditor::ItemType::WallBottom)
 			{
 				xscale = side->floatProperty("scalex_bottom");
 				yscale = side->floatProperty("scaley_bottom");
 			}
-			else if (item_type == Edit3D::SelectionType::WallMiddle)
+			else if (item_type == MapEditor::ItemType::WallMiddle)
 			{
 				xscale = side->floatProperty("scalex_mid");
 				yscale = side->floatProperty("scaley_mid");
@@ -237,7 +237,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 			other_sector = other_side->getSector();
 
 		double left_height, right_height;
-		if (item_type == Edit3D::SelectionType::WallMiddle && other_sector)
+		if (item_type == MapEditor::ItemType::WallMiddle && other_sector)
 		{
 			// A two-sided line's middle area is the smallest distance between
 			// both sides' floors and ceilings, which is more complicated with
@@ -254,7 +254,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 		else
 		{
 			plane_t top_plane, bottom_plane;
-			if (item_type == Edit3D::SelectionType::WallMiddle)
+			if (item_type == MapEditor::ItemType::WallMiddle)
 			{
 				top_plane = this_sector->getCeilingPlane();
 				bottom_plane = this_sector->getFloorPlane();
@@ -262,7 +262,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 			else
 			{
 				if (!other_sector) return;
-				if (item_type == Edit3D::SelectionType::WallTop)
+				if (item_type == MapEditor::ItemType::WallTop)
 				{
 					top_plane = this_sector->getCeilingPlane();
 					bottom_plane = other_sector->getCeilingPlane();
@@ -283,9 +283,9 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 			info2.push_back(S_FMT("Height: %d ~ %d", (int)left_height, (int)right_height));
 
 		// Texture
-		if (item_type == Edit3D::SelectionType::WallBottom)
+		if (item_type == MapEditor::ItemType::WallBottom)
 			texname = side->getTexLower();
-		else if (item_type == Edit3D::SelectionType::WallMiddle)
+		else if (item_type == MapEditor::ItemType::WallMiddle)
 			texname = side->getTexMiddle();
 		else
 			texname = side->getTexUpper();
@@ -294,7 +294,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 
 
 	// Floor
-	else if (item_type == Edit3D::SelectionType::Floor || item_type == Edit3D::SelectionType::Ceiling)
+	else if (item_type == MapEditor::ItemType::Floor || item_type == MapEditor::ItemType::Ceiling)
 	{
 		// Get sector
 		MapSector* sector = map->getSector(item_index);
@@ -326,7 +326,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 		// --- Flat info ---
 
 		// Height
-		if (item_type == Edit3D::SelectionType::Floor)
+		if (item_type == MapEditor::ItemType::Floor)
 			info2.push_back(S_FMT("Floor Height: %d", fheight));
 		else
 			info2.push_back(S_FMT("Ceiling Height: %d", cheight));
@@ -338,7 +338,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 			// Get extra light info
 			int fl = 0;
 			bool abs = false;
-			if (item_type == Edit3D::SelectionType::Floor)
+			if (item_type == MapEditor::ItemType::Floor)
 			{
 				fl = sector->intProperty("lightfloor");
 				abs = sector->boolProperty("lightfloorabsolute");
@@ -375,7 +375,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 			xoff = yoff = 0.0;
 			if (theGameConfiguration->udmfFlatPanning())
 			{
-				if (item_type == Edit3D::SelectionType::Floor)
+				if (item_type == MapEditor::ItemType::Floor)
 				{
 					xoff = sector->floatProperty("xpanningfloor");
 					yoff = sector->floatProperty("ypanningfloor");
@@ -393,7 +393,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 			xscale = yscale = 1.0;
 			if (theGameConfiguration->udmfFlatScaling())
 			{
-				if (item_type == Edit3D::SelectionType::Floor)
+				if (item_type == MapEditor::ItemType::Floor)
 				{
 					xscale = sector->floatProperty("xscalefloor");
 					yscale = sector->floatProperty("yscalefloor");
@@ -408,7 +408,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 		}
 
 		// Texture
-		if (item_type == Edit3D::SelectionType::Floor)
+		if (item_type == MapEditor::ItemType::Floor)
 			texname = sector->getFloorTex();
 		else
 			texname = sector->getCeilingTex();
@@ -416,7 +416,7 @@ void InfoOverlay3D::update(int item_index, Edit3D::SelectionType item_type, SLAD
 	}
 
 	// Thing
-	else if (item_type == Edit3D::SelectionType::Thing)
+	else if (item_type == MapEditor::ItemType::Thing)
 	{
 		// index, type, position, sector, zpos, height?, radius?
 

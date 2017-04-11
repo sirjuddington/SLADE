@@ -45,7 +45,7 @@ public:
 	void	doSearch();
 	void	keyDown(string key);
 
-	static bool	ok(vector<Edit3D::Selection> &sel);
+	static bool	ok(vector<MapEditor::Item> &sel);
 };
 
 #endif//__QUICK_TEXTURE_OVERLAY_3D_H__

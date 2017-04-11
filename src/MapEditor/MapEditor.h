@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Archive/Archive.h"
-
+class Archive;
 class MapEditContext;
 class MapTextureManager;
 class MapEditorWindow;
@@ -12,18 +11,36 @@ class MapBackupManager;
 
 namespace MapEditor
 {
-	/*struct Selection3D
+	enum class ItemType
 	{
-		int		index;
-		uint8_t	type;
+		// 2d modes
+		Vertex,
+		Line,
+		Sector,
 
-		bool operator<(const Selection3D& other) const {
+		// 3d mode
+		WallTop,
+		WallMiddle,
+		WallBottom,
+		Floor,
+		Ceiling,
+		Thing,	// (also 2d things mode)
+	};
+
+	struct Item
+	{
+		int			index;
+		ItemType	type;
+
+		bool operator<(const Item& other) const {
 			if (this->type == other.type)
 				return this->index < other.index;
 			else
 				return this->type < other.type;
 		}
-	};*/
+
+		explicit operator int() const { return index; }
+	};
 
 	MapEditContext&		editContext();
 	MapTextureManager&	textureManager();

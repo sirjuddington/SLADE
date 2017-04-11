@@ -1401,10 +1401,10 @@ void MapCanvas::drawMap3d()
 	renderer_3d->renderMap();
 
 	// Determine hilight
-	Edit3D::Selection hl;
+	MapEditor::Item hl;
 	if (!editor->hilightLocked())
 	{
-		Edit3D::Selection old_hl = editor->hilightItem3d();
+		MapEditor::Item old_hl = editor->hilightItem3d();
 		hl = renderer_3d->determineHilight();
 		if (editor->set3dHilight(hl))
 		{
@@ -1425,7 +1425,7 @@ void MapCanvas::drawMap3d()
 	}
 
 	// Draw selection if any
-	vector<Edit3D::Selection> selection = editor->get3dSelection();
+	vector<MapEditor::Item> selection = editor->get3dSelection();
 	renderer_3d->renderFlatSelection(selection);
 	renderer_3d->renderWallSelection(selection);
 	renderer_3d->renderThingSelection(selection);
@@ -2288,12 +2288,12 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
  * Called when 3d mode [item] is selected or deselected (for
  * select/deselect animations)
  *******************************************************************/
-void MapCanvas::itemSelected3d(Edit3D::Selection item, bool selected)
+void MapCanvas::itemSelected3d(MapEditor::Item item, bool selected)
 {
 	// Wall selected
-	if (item.type == Edit3D::SelectionType::WallBottom ||
-		item.type == Edit3D::SelectionType::WallTop ||
-		item.type == Edit3D::SelectionType::WallMiddle)
+	if (item.type == MapEditor::ItemType::WallBottom ||
+		item.type == MapEditor::ItemType::WallTop ||
+		item.type == MapEditor::ItemType::WallMiddle)
 	{
 		// Get quad
 		MapRenderer3D::quad_3d_t* quad = renderer_3d->getQuad(item);
@@ -2311,7 +2311,7 @@ void MapCanvas::itemSelected3d(Edit3D::Selection item, bool selected)
 	}
 
 	// Flat selected
-	if (item.type == Edit3D::SelectionType::Ceiling || item.type == Edit3D::SelectionType::Floor)
+	if (item.type == MapEditor::ItemType::Ceiling || item.type == MapEditor::ItemType::Floor)
 	{
 		// Get flat
 		MapRenderer3D::flat_3d_t* flat = renderer_3d->getFlat(item);
@@ -2326,7 +2326,7 @@ void MapCanvas::itemSelected3d(Edit3D::Selection item, bool selected)
  * Called when multiple 3d mode [items] are selected or deselected
  * (for select/deselect animations)
  *******************************************************************/
-void MapCanvas::itemsSelected3d(vector<Edit3D::Selection>& items, bool selected)
+void MapCanvas::itemsSelected3d(vector<MapEditor::Item>& items, bool selected)
 {
 	// Just do one animation per item in 3d mode
 	for (unsigned a = 0; a < items.size(); a++)
@@ -2356,7 +2356,7 @@ void MapCanvas::forceRefreshRenderer()
 	// Update 3d mode info overlay if needed
 	if (editor->editMode() == MapEditContext::MODE_3D)
 	{
-		Edit3D::Selection hl;
+		MapEditor::Item hl;
 		hl = renderer_3d->determineHilight();
 		info_3d.update(hl.index, hl.type, &(editor->getMap()));
 	}
@@ -2526,7 +2526,7 @@ void MapCanvas::changeSectorTexture()
  * Opens the thing type browser for the currently selected 3d mode
  * thing(s)
  *******************************************************************/
-void MapCanvas::changeThingType3d(Edit3D::Selection first)
+void MapCanvas::changeThingType3d(MapEditor::Item first)
 {
 	// Get first selected thing
 	MapThing* thing = editor->getMap().getThing(first.index);
@@ -2545,7 +2545,7 @@ void MapCanvas::changeThingType3d(Edit3D::Selection first)
  * Opens the texture browser for the currently selected 3d mode walls
  * and/or floors
  *******************************************************************/
-void MapCanvas::changeTexture3d(Edit3D::Selection first)
+void MapCanvas::changeTexture3d(MapEditor::Item first)
 {
 	// Check index
 	if (first.index < 0)
@@ -2554,21 +2554,21 @@ void MapCanvas::changeTexture3d(Edit3D::Selection first)
 	// Get initial texture
 	string tex;
 	int type = 0;
-	if (first.type == Edit3D::SelectionType::Floor)
+	if (first.type == MapEditor::ItemType::Floor)
 	{
 		tex = editor->getMap().getSector(first.index)->getFloorTex();
 		type = 1;
 	}
-	else if (first.type == Edit3D::SelectionType::Ceiling)
+	else if (first.type == MapEditor::ItemType::Ceiling)
 	{
 		tex = editor->getMap().getSector(first.index)->getCeilingTex();
 		type = 1;
 	}
-	else if (first.type == Edit3D::SelectionType::WallBottom)
+	else if (first.type == MapEditor::ItemType::WallBottom)
 		tex = editor->getMap().getSide(first.index)->stringProperty("texturebottom");
-	else if (first.type == Edit3D::SelectionType::WallMiddle)
+	else if (first.type == MapEditor::ItemType::WallMiddle)
 		tex = editor->getMap().getSide(first.index)->stringProperty("texturemiddle");
-	else if (first.type == Edit3D::SelectionType::WallTop)
+	else if (first.type == MapEditor::ItemType::WallTop)
 		tex = editor->getMap().getSide(first.index)->stringProperty("texturetop");
 
 	// Open texture browser
@@ -2578,13 +2578,13 @@ void MapCanvas::changeTexture3d(Edit3D::Selection first)
 	{
 		bool mix = theGameConfiguration->mixTexFlats();
 		tex = browser.getSelectedItem()->getName();
-		Edit3D::Selection hl = editor->hilightItem3d();
+		MapEditor::Item hl = editor->hilightItem3d();
 
 		// Begin undo level
 		editor->beginUndoRecord("Change Texture", true, false, false);
 
 		// Apply to flats
-		vector<Edit3D::Selection>& selection = editor->get3dSelection();
+		vector<MapEditor::Item>& selection = editor->get3dSelection();
 		if (mix || type == 1)
 		{
 			// Selection
@@ -2592,18 +2592,18 @@ void MapCanvas::changeTexture3d(Edit3D::Selection first)
 			{
 				for (unsigned a = 0; a < selection.size(); a++)
 				{
-					if (selection[a].type == Edit3D::SelectionType::Floor)
+					if (selection[a].type == MapEditor::ItemType::Floor)
 						editor->getMap().getSector(selection[a].index)->setStringProperty("texturefloor", tex);
-					else if (selection[a].type == Edit3D::SelectionType::Ceiling)
+					else if (selection[a].type == MapEditor::ItemType::Ceiling)
 						editor->getMap().getSector(selection[a].index)->setStringProperty("textureceiling", tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
-				if (hl.type == Edit3D::SelectionType::Floor)
+				if (hl.type == MapEditor::ItemType::Floor)
 					editor->getMap().getSector(hl.index)->setStringProperty("texturefloor", tex);
-				else if (hl.type == Edit3D::SelectionType::Ceiling)
+				else if (hl.type == MapEditor::ItemType::Ceiling)
 					editor->getMap().getSector(hl.index)->setStringProperty("textureceiling", tex);
 			}
 		}
@@ -2616,22 +2616,22 @@ void MapCanvas::changeTexture3d(Edit3D::Selection first)
 			{
 				for (unsigned a = 0; a < selection.size(); a++)
 				{
-					if (selection[a].type == Edit3D::SelectionType::WallBottom)
+					if (selection[a].type == MapEditor::ItemType::WallBottom)
 						editor->getMap().getSide(selection[a].index)->setStringProperty("texturebottom", tex);
-					else if (selection[a].type == Edit3D::SelectionType::WallMiddle)
+					else if (selection[a].type == MapEditor::ItemType::WallMiddle)
 						editor->getMap().getSide(selection[a].index)->setStringProperty("texturemiddle", tex);
-					else if (selection[a].type == Edit3D::SelectionType::WallTop)
+					else if (selection[a].type == MapEditor::ItemType::WallTop)
 						editor->getMap().getSide(selection[a].index)->setStringProperty("texturetop", tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
-				if (hl.type == Edit3D::SelectionType::WallBottom)
+				if (hl.type == MapEditor::ItemType::WallBottom)
 					editor->getMap().getSide(hl.index)->setStringProperty("texturebottom", tex);
-				else if (hl.type == Edit3D::SelectionType::WallMiddle)
+				else if (hl.type == MapEditor::ItemType::WallMiddle)
 					editor->getMap().getSide(hl.index)->setStringProperty("texturemiddle", tex);
-				else if (hl.type == Edit3D::SelectionType::WallTop)
+				else if (hl.type == MapEditor::ItemType::WallTop)
 					editor->getMap().getSide(hl.index)->setStringProperty("texturetop", tex);
 			}
 		}
@@ -3411,7 +3411,7 @@ void MapCanvas::keyBinds3d(string name)
 	// Quick texture
 	else if (name == "me3d_quick_texture")
 	{
-		vector<Edit3D::Selection> sel;
+		vector<MapEditor::Item> sel;
 		editor->get3dSelectionOrHilight(sel);
 
 		if (QuickTextureOverlay3d::ok(sel))
@@ -4103,12 +4103,12 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		if (editor->editMode() == MapEditContext::MODE_3D)
 		{
 			// Get first selected item
-			Edit3D::Selection first = editor->hilightItem3d();
+			MapEditor::Item first = editor->hilightItem3d();
 			if (editor->get3dSelection().size() > 0)
 				first = editor->get3dSelection()[0];
 
 			// Check type
-			if (first.type == Edit3D::SelectionType::Thing)
+			if (first.type == MapEditor::ItemType::Thing)
 				changeThingType3d(first);
 			else
 				changeTexture3d(first);
