@@ -7,6 +7,7 @@
 #include "ObjectEdit.h"
 #include "MapEditor.h"
 #include "Edit/LineDraw.h"
+#include "Edit/Edit3D.h"
 
 class MapCanvas;
 class UndoManager;
@@ -20,7 +21,6 @@ private:
 
 	// Undo/Redo stuff
 	UndoManager*				undo_manager;
-	UndoManager*				undo_manager_3d;
 	MapObjectCreateDeleteUS*	us_create_delete;
 
 	// Editor state
@@ -31,8 +31,6 @@ private:
 	int			gridsize;
 	int			sector_mode;
 	bool		grid_snap;
-	bool		link_3d_light;
-	bool		link_3d_offset;
 	int			current_tag;
 
 	// Undo/Redo
@@ -61,6 +59,7 @@ private:
 
 	// Editing
 	LineDraw	line_draw;
+	Edit3D		edit_3d;
 
 	// Object edit
 	ObjectEditGroup	edit_object_group;
@@ -80,24 +79,15 @@ private:
 	};
 	vector<editor_msg_t>	editor_messages;
 
-	void migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<MapEditor::Selection3D>& old_selection_3d);
+	void migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<Edit3D::Selection>& old_selection_3d);
 
 	// 3d mode
-	MapEditor::Selection3D			hilight_3d;
-	vector<MapEditor::Selection3D>	selection_3d;
+	Edit3D::Selection			hilight_3d;
+	vector<Edit3D::Selection>	selection_3d;
 
 	// Player start swap
 	fpoint2_t	player_start_pos;
 	int			player_start_dir;
-
-	// Helper for selectAdjacent3d
-	bool wallMatches(MapSide* side, uint8_t part, string tex);
-	void getAdjacentWalls3d(MapEditor::Selection3D item, vector<MapEditor::Selection3D>& list);
-	void getAdjacentFlats3d(MapEditor::Selection3D item, vector<MapEditor::Selection3D>& list);
-	void getAdjacent3d(MapEditor::Selection3D item, vector<MapEditor::Selection3D>& list);
-
-	// Helper for autoAlignX3d
-	void doAlignX3d(MapSide* side, int offset, string tex, vector<MapEditor::Selection3D>& walls_done, int tex_width);
 
 	void mergeLines(long, vector<fpoint2_t>&);
 
@@ -120,14 +110,6 @@ public:
 		DESELECT = 0,
 		SELECT,
 		TOGGLE,
-
-		// 3d mode selection type
-		SEL_SIDE_TOP = 0,
-		SEL_SIDE_MIDDLE,
-		SEL_SIDE_BOTTOM,
-		SEL_FLOOR,
-		SEL_CEILING,
-		SEL_THING,
 
 		// Copy/paste types
 		COPY_TEXTYPE = 0,
@@ -157,10 +139,10 @@ public:
 	UndoManager*			undoManager() { return undo_manager; }
 	Archive::mapdesc_t&		mapDesc() { return map_desc; }
 
-	vector<MapEditor::Selection3D>&	get3dSelection() { return selection_3d; }
-	bool					set3dHilight(MapEditor::Selection3D hl);
-	MapEditor::Selection3D			hilightItem3d() { return hilight_3d; }
-	void					get3dSelectionOrHilight(vector<MapEditor::Selection3D>& list);
+	vector<Edit3D::Selection>&	get3dSelection() { return selection_3d; }
+	bool						set3dHilight(Edit3D::Selection hl);
+	Edit3D::Selection			hilightItem3d() { return hilight_3d; }
+	void						get3dSelectionOrHilight(vector<Edit3D::Selection>& list);
 
 	void	setEditMode(int mode);
 	void	setSectorEditMode(int mode);
@@ -191,7 +173,7 @@ public:
 	void		getSelectedObjects(vector<MapObject*>& list);
 	void		showItem(int index);
 	bool		isHilightOrSelection() { return !selection.empty() || hilight_item != -1; }
-	void		selectItem3d(MapEditor::Selection3D item, int sel = TOGGLE);
+	void		selectItem3d(Edit3D::Selection item, int sel = TOGGLE);
 
 	// Grid
 	void	incrementGrid();
@@ -242,22 +224,12 @@ public:
 	// Copy/paste
 	void	copy();
 	void	paste(fpoint2_t mouse_pos);
+	void	copy3d(int type); // TODO: Move to Edit3D
+	void	paste3d(int type); // TODO: Move to Edit3D
 
 	// 3d mode
-	void	selectAdjacent3d(MapEditor::Selection3D item);
-	void	changeSectorLight3d(int amount);
-	void	changeOffset3d(int amount, bool x);
-	void	changeSectorHeight3d(int amount);
-	void	autoAlignX3d(MapEditor::Selection3D start);
-	void	resetOffsets3d();
-	void	toggleUnpegged3d(bool lower);
-	void	copy3d(int type);
-	void	paste3d(int type);
-	void	floodFill3d(int type);
-	void	changeThingZ3d(int amount);
-	void	deleteThing3d();
-	void	changeScale3d(double amount, bool x);
-	void	changeHeight3d(int amount);
+	void	floodFill3d(int type); // TODO: Move to Edit3D
+	Edit3D&	edit3d() { return edit_3d; }
 
 	// Editor messages
 	unsigned	numEditorMessages();

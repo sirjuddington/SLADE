@@ -207,12 +207,12 @@ void MapRenderer3D::buildSkyCircle()
 /* MapRenderer3D::getQuad
  * Returns the wall quad for wall selection [item]
  *******************************************************************/
-MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(MapEditor::Selection3D item)
+MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(Edit3D::Selection item)
 {
 	// Check item type
-	if (item.type != MapEditContext::SEL_SIDE_BOTTOM &&
-	        item.type != MapEditContext::SEL_SIDE_MIDDLE &&
-	        item.type != MapEditContext::SEL_SIDE_TOP)
+	if (item.type != Edit3D::SelectionType::WallBottom &&
+		item.type != Edit3D::SelectionType::WallMiddle &&
+		item.type != Edit3D::SelectionType::WallTop)
 		return nullptr;
 
 	// Get side
@@ -233,17 +233,17 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(MapEditor::Selection3D item)
 			continue;
 
 		// Check part
-		if (item.type == MapEditContext::SEL_SIDE_BOTTOM)
+		if (item.type == Edit3D::SelectionType::WallBottom)
 		{
 			if (quad->flags & LOWER)
 				return quad;
 		}
-		if (item.type == MapEditContext::SEL_SIDE_TOP)
+		if (item.type == Edit3D::SelectionType::WallTop)
 		{
 			if (quad->flags & UPPER)
 				return quad;
 		}
-		if (item.type == MapEditContext::SEL_SIDE_MIDDLE)
+		if (item.type == Edit3D::SelectionType::WallMiddle)
 		{
 			if ((quad->flags & UPPER) == 0 && (quad->flags & LOWER) == 0)
 				return quad;
@@ -257,18 +257,18 @@ MapRenderer3D::quad_3d_t* MapRenderer3D::getQuad(MapEditor::Selection3D item)
 /* MapRenderer3D::getFlat
  * Returns the flat for sector flat selection [item]
  *******************************************************************/
-MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(MapEditor::Selection3D item)
+MapRenderer3D::flat_3d_t* MapRenderer3D::getFlat(Edit3D::Selection item)
 {
 	// Check index
 	if ((unsigned)item.index >= floors.size())
 		return nullptr;
 
 	// Floor
-	if (item.type == MapEditContext::SEL_FLOOR)
+	if (item.type == Edit3D::SelectionType::Floor)
 		return &floors[item.index];
 
 	// Ceiling
-	else if (item.type == MapEditContext::SEL_CEILING)
+	else if (item.type == Edit3D::SelectionType::Ceiling)
 		return &ceilings[item.index];
 
 	// Wrong type
@@ -1042,7 +1042,7 @@ void MapRenderer3D::renderFlats()
 /* MapRenderer3D::renderFlatSelection
  * Renders selection overlay for all selected flats
  *******************************************************************/
-void MapRenderer3D::renderFlatSelection(vector<MapEditor::Selection3D>& selection, float alpha)
+void MapRenderer3D::renderFlatSelection(vector<Edit3D::Selection>& selection, float alpha)
 {
 	if (!render_selection)
 		return;
@@ -1066,7 +1066,7 @@ void MapRenderer3D::renderFlatSelection(vector<MapEditor::Selection3D>& selectio
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Ignore if not a sector hilight
-		if (selection[a].type != MapEditContext::SEL_CEILING && selection[a].type != MapEditContext::SEL_FLOOR)
+		if (selection[a].type != Edit3D::SelectionType::Ceiling && selection[a].type != Edit3D::SelectionType::Floor)
 			continue;
 
 		// Get sector
@@ -1076,7 +1076,7 @@ void MapRenderer3D::renderFlatSelection(vector<MapEditor::Selection3D>& selectio
 
 		// Get plane
 		plane_t plane;
-		if (selection[a].type == MapEditContext::SEL_FLOOR)
+		if (selection[a].type == Edit3D::SelectionType::Floor)
 			plane = sector->getFloorPlane();
 		else
 			plane = sector->getCeilingPlane();
@@ -1810,7 +1810,7 @@ void MapRenderer3D::renderTransparentWalls()
 /* MapRenderer3D::renderWallSelection
  * Renders selection overlay for all selected wall quads
  *******************************************************************/
-void MapRenderer3D::renderWallSelection(vector<MapEditor::Selection3D>& selection, float alpha)
+void MapRenderer3D::renderWallSelection(vector<Edit3D::Selection>& selection, float alpha)
 {
 	if (!render_selection)
 		return;
@@ -1835,9 +1835,9 @@ void MapRenderer3D::renderWallSelection(vector<MapEditor::Selection3D>& selectio
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Ignore if not a wall selection
-		if (selection[a].type != MapEditContext::SEL_SIDE_BOTTOM &&
-		        selection[a].type != MapEditContext::SEL_SIDE_MIDDLE &&
-		        selection[a].type != MapEditContext::SEL_SIDE_TOP)
+		if (selection[a].type != Edit3D::SelectionType::WallBottom &&
+		        selection[a].type != Edit3D::SelectionType::WallMiddle &&
+		        selection[a].type != Edit3D::SelectionType::WallTop)
 			continue;
 
 		// Get side
@@ -1861,7 +1861,7 @@ void MapRenderer3D::renderWallSelection(vector<MapEditor::Selection3D>& selectio
 			// Check quad is correct part
 			if (lines[line].quads[q].flags & UPPER)
 			{
-				if (selection[a].type == MapEditContext::SEL_SIDE_TOP)
+				if (selection[a].type == Edit3D::SelectionType::WallTop)
 				{
 					quad = &lines[line].quads[q];
 					break;
@@ -1869,13 +1869,13 @@ void MapRenderer3D::renderWallSelection(vector<MapEditor::Selection3D>& selectio
 			}
 			else if (lines[line].quads[q].flags & LOWER)
 			{
-				if (selection[a].type == MapEditContext::SEL_SIDE_BOTTOM)
+				if (selection[a].type == Edit3D::SelectionType::WallBottom)
 				{
 					quad = &lines[line].quads[q];
 					break;
 				}
 			}
-			else if (selection[a].type == MapEditContext::SEL_SIDE_MIDDLE)
+			else if (selection[a].type == Edit3D::SelectionType::WallMiddle)
 			{
 				quad = &lines[line].quads[q];
 				break;
@@ -2212,7 +2212,7 @@ void MapRenderer3D::renderThings()
 /* MapRenderer3D::renderThingSelection
  * Renders selection overlay for all selected things
  *******************************************************************/
-void MapRenderer3D::renderThingSelection(vector<MapEditor::Selection3D>& selection, float alpha)
+void MapRenderer3D::renderThingSelection(vector<Edit3D::Selection>& selection, float alpha)
 {
 	// Do nothing if no things visible
 	if (render_3d_things == 0 || !render_selection)
@@ -2237,7 +2237,7 @@ void MapRenderer3D::renderThingSelection(vector<MapEditor::Selection3D>& selecti
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Ignore if not a thing selection
-		if (selection[a].type != MapEditContext::SEL_THING)
+		if (selection[a].type != Edit3D::SelectionType::Thing)
 			continue;
 
 		// Get thing
@@ -2606,11 +2606,11 @@ void MapRenderer3D::checkVisibleFlats()
  * Finds the closest wall/flat/thing to the camera along the view
  * vector
  *******************************************************************/
-MapEditor::Selection3D MapRenderer3D::determineHilight()
+Edit3D::Selection MapRenderer3D::determineHilight()
 {
 	// Init
 	double min_dist = 9999999;
-	MapEditor::Selection3D current;
+	Edit3D::Selection current;
 	fseg2_t strafe(cam_position.get2d(), (cam_position + cam_strafe).get2d());
 
 	// Check for required map structures
@@ -2671,11 +2671,11 @@ MapEditor::Selection3D MapRenderer3D::determineHilight()
 
 				// Side part
 				if (quad->flags & UPPER)
-					current.type = MapEditContext::SEL_SIDE_TOP;
+					current.type = Edit3D::SelectionType::WallTop;
 				else if (quad->flags & LOWER)
-					current.type = MapEditContext::SEL_SIDE_BOTTOM;
+					current.type = Edit3D::SelectionType::WallBottom;
 				else
-					current.type = MapEditContext::SEL_SIDE_MIDDLE;
+					current.type = Edit3D::SelectionType::WallMiddle;
 
 				min_dist = dist;
 			}
@@ -2700,7 +2700,7 @@ MapEditor::Selection3D MapRenderer3D::determineHilight()
 				if (map->getSector(a)->isWithin((cam_position + cam_dir3d * dist).get2d()))
 				{
 					current.index = a;
-					current.type = MapEditContext::SEL_FLOOR;
+					current.type = Edit3D::SelectionType::Floor;
 					min_dist = dist;
 				}
 			}
@@ -2717,7 +2717,7 @@ MapEditor::Selection3D MapRenderer3D::determineHilight()
 				if (map->getSector(a)->isWithin((cam_position + cam_dir3d * dist).get2d()))
 				{
 					current.index = a;
-					current.type = MapEditContext::SEL_CEILING;
+					current.type = Edit3D::SelectionType::Ceiling;
 					min_dist = dist;
 				}
 			}
@@ -2769,7 +2769,7 @@ MapEditor::Selection3D MapRenderer3D::determineHilight()
 		if (height >= things[a].z && height <= things[a].z + theight)
 		{
 			current.index = a;
-			current.type = MapEditContext::SEL_THING;
+			current.type = Edit3D::SelectionType::Thing;
 			min_dist = dist;
 		}
 	}
@@ -2786,7 +2786,7 @@ MapEditor::Selection3D MapRenderer3D::determineHilight()
 /* MapRenderer3D::renderHilight
  * Renders the hilight overlay for the currently hilighted object
  *******************************************************************/
-void MapRenderer3D::renderHilight(MapEditor::Selection3D hilight, float alpha)
+void MapRenderer3D::renderHilight(Edit3D::Selection hilight, float alpha)
 {
 	// Do nothing if no item hilighted
 	if (hilight.index < 0 || render_3d_hilight == 0 || !render_hilight)
@@ -2803,9 +2803,9 @@ void MapRenderer3D::renderHilight(MapEditor::Selection3D hilight, float alpha)
 	OpenGL::setColour(col_hilight);
 
 	// Quad hilight
-	if (hilight.type == MapEditContext::SEL_SIDE_BOTTOM ||
-		hilight.type == MapEditContext::SEL_SIDE_MIDDLE ||
-		hilight.type == MapEditContext::SEL_SIDE_TOP)
+	if (hilight.type == Edit3D::SelectionType::WallBottom ||
+		hilight.type == Edit3D::SelectionType::WallMiddle ||
+		hilight.type == Edit3D::SelectionType::WallTop)
 	{
 		// Get side
 		MapSide* side = map->getSide(hilight.index);
@@ -2826,7 +2826,7 @@ void MapRenderer3D::renderHilight(MapEditor::Selection3D hilight, float alpha)
 			// Check quad is correct part
 			if (lines[line].quads[a].flags & UPPER)
 			{
-				if (hilight.type == MapEditContext::SEL_SIDE_TOP)
+				if (hilight.type == Edit3D::SelectionType::WallTop)
 				{
 					quad = &lines[line].quads[a];
 					break;
@@ -2834,13 +2834,13 @@ void MapRenderer3D::renderHilight(MapEditor::Selection3D hilight, float alpha)
 			}
 			else if (lines[line].quads[a].flags & LOWER)
 			{
-				if (hilight.type == MapEditContext::SEL_SIDE_BOTTOM)
+				if (hilight.type == Edit3D::SelectionType::WallBottom)
 				{
 					quad = &lines[line].quads[a];
 					break;
 				}
 			}
-			else if (hilight.type == MapEditContext::SEL_SIDE_MIDDLE)
+			else if (hilight.type == Edit3D::SelectionType::WallMiddle)
 			{
 				quad = &lines[line].quads[a];
 				break;
@@ -2870,7 +2870,7 @@ void MapRenderer3D::renderHilight(MapEditor::Selection3D hilight, float alpha)
 	}
 
 	// Sector hilight
-	if (hilight.type == MapEditContext::SEL_FLOOR || hilight.type == MapEditContext::SEL_CEILING)
+	if (hilight.type == Edit3D::SelectionType::Floor || hilight.type == Edit3D::SelectionType::Ceiling)
 	{
 		// Get sector
 		MapSector* sector = map->getSector(hilight.index);
@@ -2879,7 +2879,7 @@ void MapRenderer3D::renderHilight(MapEditor::Selection3D hilight, float alpha)
 
 		// Get plane
 		plane_t plane;
-		if (hilight.type == MapEditContext::SEL_FLOOR)
+		if (hilight.type == Edit3D::SelectionType::Floor)
 			plane = sector->getFloorPlane();
 		else
 			plane = sector->getCeilingPlane();
@@ -2910,7 +2910,7 @@ void MapRenderer3D::renderHilight(MapEditor::Selection3D hilight, float alpha)
 
 	// Thing hilight
 	double x1, y1, x2, y2;
-	if (hilight.type == MapEditContext::SEL_THING)
+	if (hilight.type == Edit3D::SelectionType::Thing)
 	{
 		// Get thing
 		fpoint2_t strafe(cam_position.x+cam_strafe.x, cam_position.y+cam_strafe.y);

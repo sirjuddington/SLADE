@@ -33,7 +33,7 @@
 #include "UI/WxStuff.h"
 #include "MCAnimations.h"
 #include "General/ColourConfiguration.h"
-#include "MapEditor/UI/MapEditorWindow.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/MapLine.h"
 #include "MapEditor/SLADEMap/MapVertex.h"
 #include "MapRenderer2D.h"
@@ -710,13 +710,20 @@ void MCAHilightFade::draw()
 /* MCAHilightFade3D::MCAHilightFade3D
  * MCAHilightFade3D class constructor
  *******************************************************************/
-MCAHilightFade3D::MCAHilightFade3D(long start, int item_index, uint8_t item_type, MapRenderer3D* renderer, float fade_init) : MCAnimation(start, true)
+MCAHilightFade3D::MCAHilightFade3D(
+	long start,
+	int item_index,
+	Edit3D::SelectionType item_type,
+	MapRenderer3D* renderer,
+	float fade_init
+) :
+	MCAnimation(start, true),
+	item_index{ item_index },
+	item_type{ item_type },
+	fade{ fade_init },
+	init_fade{ fade_init },
+	renderer{ renderer }
 {
-	this->item_index = item_index;
-	this->item_type = item_type;
-	this->renderer = renderer;
-	this->init_fade = fade_init;
-	this->fade = fade_init;
 }
 
 /* MCAHilightFade3D::~MCAHilightFade3D

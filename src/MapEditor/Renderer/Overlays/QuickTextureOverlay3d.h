@@ -3,7 +3,7 @@
 #define __QUICK_TEXTURE_OVERLAY_3D_H__
 
 #include "MCOverlay.h"
-#include "MapEditor/MapEditor.h"
+#include "MapEditor/Edit/Edit3D.h"
 
 class GLTexture;
 class MapEditContext;
@@ -21,7 +21,7 @@ private:
 	unsigned			current_index;
 	string				search;
 	double				anim_offset;
-	MapEditContext*			editor;
+	MapEditContext*		editor;
 	int					sel_type;	// 0=flats, 1=walls, 2=both
 
 public:
@@ -45,7 +45,7 @@ public:
 	void	doSearch();
 	void	keyDown(string key);
 
-	static bool	ok(vector<MapEditor::Selection3D> &sel);
+	static bool	ok(vector<Edit3D::Selection> &sel);
 };
 
 #endif//__QUICK_TEXTURE_OVERLAY_3D_H__

@@ -12,7 +12,7 @@ class MapBackupManager;
 
 namespace MapEditor
 {
-	struct Selection3D
+	/*struct Selection3D
 	{
 		int		index;
 		uint8_t	type;
@@ -23,7 +23,7 @@ namespace MapEditor
 			else
 				return this->type < other.type;
 		}
-	};
+	};*/
 
 	MapEditContext&		editContext();
 	MapTextureManager&	textureManager();

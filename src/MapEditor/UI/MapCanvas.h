@@ -171,8 +171,8 @@ public:
 
 	void	itemSelected(int index, bool selected = true);
 	void	itemsSelected(vector<int>& items, bool selected = true);
-	void	itemSelected3d(MapEditor::Selection3D item, bool selected = true);
-	void	itemsSelected3d(vector<MapEditor::Selection3D>& items, bool selected = true);
+	void	itemSelected3d(Edit3D::Selection item, bool selected = true);
+	void	itemsSelected3d(vector<Edit3D::Selection>& items, bool selected = true);
 	void	updateInfoOverlay();
 	void	forceRefreshRenderer();
 	void	changeEditMode(int mode);
@@ -185,8 +185,8 @@ public:
 	// Keybind/action handlers (that use UI features - anything else goes to MapEditor)
 	void	changeThingType();
 	void	changeSectorTexture();
-	void	changeThingType3d(MapEditor::Selection3D first);
-	void	changeTexture3d(MapEditor::Selection3D first);
+	void	changeThingType3d(Edit3D::Selection first);
+	void	changeTexture3d(Edit3D::Selection first);
 
 	// Keybind handling
 	void	onKeyBindPress(string name);

@@ -5,7 +5,7 @@ class MapEditContext;
 class LineDraw
 {
 public:
-	LineDraw(MapEditContext& context) : context(context) {}
+	explicit LineDraw(MapEditContext& context) : context(context) {}
 
 	unsigned	nPoints() const { return draw_points.size(); }
 	fpoint2_t	point(unsigned index);

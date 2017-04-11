@@ -2,9 +2,9 @@
 #ifndef __MAP_RENDERER_3D_H__
 #define __MAP_RENDERER_3D_H__
 
-#include "MapEditor/MapEditor.h"
 #include "MapEditor/SLADEMap/SLADEMap.h"
 #include "General/ListenerAnnouncer.h"
+#include "MapEditor/Edit/Edit3D.h"
 
 class GLTexture;
 class Polygon2D;
@@ -126,8 +126,8 @@ public:
 	void	clearData();
 	void	buildSkyCircle();
 
-	quad_3d_t*	getQuad(MapEditor::Selection3D item);
-	flat_3d_t*	getFlat(MapEditor::Selection3D item);
+	quad_3d_t*	getQuad(Edit3D::Selection item);
+	flat_3d_t*	getFlat(Edit3D::Selection item);
 
 	// Camera
 	void	cameraMove(double distance, bool z = true);
@@ -157,7 +157,7 @@ public:
 	void	updateSector(unsigned index);
 	void	renderFlat(flat_3d_t* flat);
 	void	renderFlats();
-	void	renderFlatSelection(vector<MapEditor::Selection3D>& selection, float alpha = 1.0f);
+	void	renderFlatSelection(vector<Edit3D::Selection>& selection, float alpha = 1.0f);
 
 	// Walls
 	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom);
@@ -167,12 +167,12 @@ public:
 	void	renderQuad(quad_3d_t* quad, float alpha = 1.0f);
 	void	renderWalls();
 	void	renderTransparentWalls();
-	void	renderWallSelection(vector<MapEditor::Selection3D>& selection, float alpha = 1.0f);
+	void	renderWallSelection(vector<Edit3D::Selection>& selection, float alpha = 1.0f);
 
 	// Things
 	void	updateThing(unsigned index, MapThing* thing);
 	void	renderThings();
-	void	renderThingSelection(vector<MapEditor::Selection3D>& selection, float alpha = 1.0f);
+	void	renderThingSelection(vector<Edit3D::Selection>& selection, float alpha = 1.0f);
 
 	// VBO stuff
 	void	updateFlatsVBO();
@@ -185,8 +185,8 @@ public:
 	void	checkVisibleFlats();
 
 	// Hilight
-	MapEditor::Selection3D	determineHilight();
-	void			renderHilight(MapEditor::Selection3D hilight, float alpha = 1.0f);
+	Edit3D::Selection	determineHilight();
+	void				renderHilight(Edit3D::Selection hilight, float alpha = 1.0f);
 
 	// Listener stuff
 	void	onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data);

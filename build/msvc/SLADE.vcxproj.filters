@@ -1428,6 +1428,9 @@
     <ClCompile Include="..\..\src\MapEditor\Edit\LineDraw.cpp">
       <Filter>Map Editor\Edit</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\Edit3D.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2463,6 +2466,9 @@
       <Filter>Map Editor\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\Edit\LineDraw.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\Edit3D.h">
       <Filter>Map Editor\Edit</Filter>
     </ClInclude>
   </ItemGroup>
