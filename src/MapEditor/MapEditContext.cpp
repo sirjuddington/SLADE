@@ -6,8 +6,9 @@
  * Email:       sirjuddington@gmail.com
  * Web:         http://slade.mancubus.net
  * Filename:    MapEditContext.cpp
- * Description: MapEditContext class - handles any map editing related
- *              stuff
+ * Description: MapEditContext class - handles the map editing
+ *              context for a map (selection, highlight, undo/redo,
+ *              editing functions, etc.)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -53,15 +54,6 @@ CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
 CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
 CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
 CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
-
-
-/*******************************************************************
- * EXTERNAL VARIABLES
- *******************************************************************/
-EXTERN_CVAR(Int, shapedraw_sides)
-EXTERN_CVAR(Int, shapedraw_shape)
-EXTERN_CVAR(Bool, shapedraw_centered)
-EXTERN_CVAR(Bool, shapedraw_lockratio)
 
 
 #pragma region UNDO STEPS
@@ -471,25 +463,30 @@ public:
 /* MapEditContext::MapEditContext
  * MapEditContext class constructor
  *******************************************************************/
-MapEditContext::MapEditContext()
+MapEditContext::MapEditContext() :
+	canvas(nullptr),
+	undo_manager(new UndoManager(&map)),
+	undo_manager_3d(new UndoManager(&map)),
+	us_create_delete(nullptr),
+	edit_mode(MODE_LINES),
+	hilight_item(-1),
+	hilight_locked(false),
+	gridsize(9),
+	sector_mode(SECTOR_BOTH),
+	grid_snap(true),
+	link_3d_light(true),
+	link_3d_offset(true),
+	current_tag(0),
+	undo_modified(false),
+	undo_created(false),
+	undo_deleted(false),
+	move_item_closest(0),
+	line_draw(*this),
+	copy_thing(nullptr),
+	copy_sector(nullptr),
+	copy_line(nullptr),
+	player_start_dir(0)
 {
-	// Init variables
-	edit_mode = MapEditContext::MODE_LINES;
-	hilight_item = -1;
-	gridsize = 9;
-	canvas = NULL;
-	hilight_locked = false;
-	sector_mode = SECTOR_BOTH;
-	grid_snap = true;
-	copy_thing = NULL;
-	copy_sector = NULL;
-	copy_line = NULL;
-	link_3d_light = true;
-	link_3d_offset = true;
-	undo_manager = new UndoManager(&map);
-	undo_manager_3d = new UndoManager(&map);
-	current_tag = 0;
-	us_create_delete = NULL;
 }
 
 /* MapEditContext::~MapEditContext
@@ -2997,294 +2994,6 @@ void MapEditContext::deleteObject()
 	// Clear hilight and selection
 	selection.clear();
 	hilight_item = -1;
-}
-
-#pragma endregion
-
-#pragma region LINE DRAWING
-
-/* MapEditContext::lineDrawPoint
- * Returns the line drawing point at [index]
- *******************************************************************/
-fpoint2_t MapEditContext::lineDrawPoint(unsigned index)
-{
-	// Check index
-	if (index >= draw_points.size())
-		return fpoint2_t(0, 0);
-
-	return draw_points[index];
-}
-
-/* MapEditContext::addLineDrawPoint
- * Adds a line drawing point at [point], or at the nearest vertex to
- * [point] if [nearest] is true
- *******************************************************************/
-bool MapEditContext::addLineDrawPoint(fpoint2_t point, bool nearest)
-{
-	// Snap to nearest vertex if necessary
-	if (nearest)
-	{
-		int vertex = map.nearestVertex(point);
-		if (vertex >= 0)
-			point = map.getVertex(vertex)->point();
-	}
-
-	// Otherwise, snap to grid if necessary
-	else if (grid_snap)
-	{
-		point.x = snapToGrid(point.x);
-		point.y = snapToGrid(point.y);
-	}
-
-	// Check if this is the same as the last point
-	if (draw_points.size() > 0 && point.x == draw_points.back().x && point.y == draw_points.back().y)
-	{
-		// End line drawing
-		endLineDraw(true);
-		MapEditor::showShapeDrawPanel(false);
-		return true;
-	}
-
-	// Add point
-	draw_points.push_back(point);
-
-	// Check if first and last points match
-	if (draw_points.size() > 1 && point.x == draw_points[0].x && point.y == draw_points[0].y)
-	{
-		endLineDraw(true);
-		MapEditor::showShapeDrawPanel(false);
-		return true;
-	}
-
-	return false;
-}
-
-/* MapEditContext::removeLineDrawPoint
- * Removes the most recent line drawing point, or cancels line
- * drawing if there are no points
- *******************************************************************/
-void MapEditContext::removeLineDrawPoint()
-{
-	if(draw_points.empty())
-	{
-		endLineDraw(false);
-		MapEditor::showShapeDrawPanel(false);
-	}
-	else
-	{
-		draw_points.pop_back();
-	}
-}
-
-/* MapEditContext::setShapeDrawOrigin
- * Sets the shape drawing origin to [point], or the nearest vertex to
- * [point] if [nearest] is true
- *******************************************************************/
-void MapEditContext::setShapeDrawOrigin(fpoint2_t point, bool nearest)
-{
-	// Snap to nearest vertex if necessary
-	if (nearest)
-	{
-		int vertex = map.nearestVertex(point);
-		if (vertex >= 0)
-			point = map.getVertex(vertex)->point();
-	}
-
-	// Otherwise, snap to grid if necessary
-	else if (grid_snap)
-	{
-		point.x = snapToGrid(point.x);
-		point.y = snapToGrid(point.y);
-	}
-
-	draw_origin = point;
-}
-
-/* MapEditContext::updateShapeDraw
- * Builds the current shape as line drawing points using the shape
- * draw origin and [point] for the size
- *******************************************************************/
-void MapEditContext::updateShapeDraw(fpoint2_t point)
-{
-	// Clear line draw points
-	draw_points.clear();
-
-	// Snap edge to grid if needed
-	if (grid_snap)
-	{
-		point.x = snapToGrid(point.x);
-		point.y = snapToGrid(point.y);
-	}
-
-	// Lock width:height at 1:1 if needed
-	fpoint2_t origin = draw_origin;
-	double width = fabs(point.x - origin.x);
-	double height = fabs(point.y - origin.y);
-	if (shapedraw_lockratio)
-	{
-		if (width < height)
-		{
-			if (origin.x < point.x)
-				point.x = origin.x + height;
-			else
-				point.x = origin.x - height;
-		}
-
-		if (height < width)
-		{
-			if (origin.y < point.y)
-				point.y = origin.y + width;
-			else
-				point.y = origin.y - width;
-		}
-	}
-
-	// Center on origin if needed
-	if (shapedraw_centered)
-	{
-		origin.x -= (point.x - origin.x);
-		origin.y -= (point.y - origin.y);
-	}
-
-	// Get box from tl->br
-	fpoint2_t tl(min(origin.x, point.x), min(origin.y, point.y));
-	fpoint2_t br(max(origin.x, point.x), max(origin.y, point.y));
-	width = br.x - tl.x;
-	height = br.y - tl.y;
-
-	// Rectangle
-	if (shapedraw_shape == 0)
-	{
-		draw_points.push_back(fpoint2_t(tl.x, tl.y));
-		draw_points.push_back(fpoint2_t(tl.x, br.y));
-		draw_points.push_back(fpoint2_t(br.x, br.y));
-		draw_points.push_back(fpoint2_t(br.x, tl.y));
-		draw_points.push_back(fpoint2_t(tl.x, tl.y));
-	}
-
-	// Ellipse
-	else if (shapedraw_shape == 1)
-	{
-		// Get midpoint
-		fpoint2_t mid;
-		mid.x = tl.x + ((br.x - tl.x) * 0.5);
-		mid.y = tl.y + ((br.y - tl.y) * 0.5);
-
-		// Get x/y radius
-		width *= 0.5;
-		height *= 0.5;
-
-		// Add ellipse points
-		double rot = 0;
-		fpoint2_t start;
-		for (int a = 0; a < shapedraw_sides; a++)
-		{
-			// Calculate point (rounded)
-			fpoint2_t p(
-				MathStuff::round(mid.x + sin(rot) * width), 
-				MathStuff::round(mid.y - cos(rot) * height)
-				);
-
-			// Add point
-			draw_points.push_back(p);
-			rot -= (3.1415926535897932384626433832795 * 2) / (double)shapedraw_sides;
-
-			if (a == 0)
-				start = p;
-		}
-
-		// Close ellipse
-		draw_points.push_back(start);
-	}
-}
-
-struct me_ls_t
-{
-	MapLine*	line;
-	bool		front;
-	bool		ignore;
-	me_ls_t(MapLine* line, bool front) { this->line = line; this->front = front; ignore = false; }
-};
-
-/* MapEditContext::endLineDraw
- * Ends the line drawing operation and applies changes if [accept]
- * is true
- *******************************************************************/
-void MapEditContext::endLineDraw(bool apply)
-{
-	// Check if we want to 'apply' the line draw (ie. create the lines)
-	if (apply && draw_points.size() > 1)
-	{
-		// Begin undo level
-		beginUndoRecord("Line Draw");
-
-		// Add extra points if any lines overlap existing vertices
-		for (unsigned a = 0; a < draw_points.size() - 1; a++)
-		{
-			MapVertex* v = map.lineCrossVertex(draw_points[a].x, draw_points[a].y, draw_points[a+1].x, draw_points[a+1].y);
-			while (v)
-			{
-				draw_points.insert(draw_points.begin()+a+1, fpoint2_t(v->xPos(), v->yPos()));
-				a++;
-				v = map.lineCrossVertex(draw_points[a].x, draw_points[a].y, draw_points[a+1].x, draw_points[a+1].y);
-			}
-		}
-
-		// Create vertices
-		for (unsigned a = 0; a < draw_points.size(); a++)
-			map.createVertex(draw_points[a].x, draw_points[a].y, 1);
-
-		// Create lines
-		unsigned nl_start = map.nLines();
-		for (unsigned a = 0; a < draw_points.size() - 1; a++)
-		{
-			// Check for intersections
-			vector<fpoint2_t> intersect = map.cutLines(draw_points[a].x, draw_points[a].y, draw_points[a+1].x, draw_points[a+1].y);
-			LOG_MESSAGE(2, "%lu intersect points", intersect.size());
-
-			// Create line normally if no intersections
-			if (intersect.size() == 0)
-				map.createLine(draw_points[a].x, draw_points[a].y, draw_points[a+1].x, draw_points[a+1].y, 1);
-			else
-			{
-				// Intersections exist, create multiple lines between intersection points
-
-				// From first point to first intersection
-				map.createLine(draw_points[a].x, draw_points[a].y, intersect[0].x, intersect[0].y, 1);
-
-				// Between intersection points
-				for (unsigned p = 0; p < intersect.size() - 1; p++)
-					map.createLine(intersect[p].x, intersect[p].y, intersect[p+1].x, intersect[p+1].y, 1);
-
-				// From last intersection to next point
-				map.createLine(intersect.back().x, intersect.back().y, draw_points[a+1].x, draw_points[a+1].y, 1);
-			}
-		}
-
-		// Build new sectors
-		vector<MapLine*> new_lines;
-		for (unsigned a = nl_start; a < map.nLines(); a++)
-			new_lines.push_back(map.getLine(a));
-		map.correctSectors(new_lines);
-
-		// Check for and attempt to correct invalid lines
-		vector<MapLine*> invalid_lines;
-		for (unsigned a = 0; a < new_lines.size(); a++)
-		{
-			if (new_lines[a]->s1())
-				continue;
-
-			new_lines[a]->flip();
-			invalid_lines.push_back(new_lines[a]);
-		}
-		map.correctSectors(invalid_lines);
-
-		// End recording undo level
-		endUndoRecord(true);
-	}
-
-	// Clear draw points
-	draw_points.clear();
 }
 
 #pragma endregion

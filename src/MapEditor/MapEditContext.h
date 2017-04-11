@@ -6,6 +6,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "ObjectEdit.h"
 #include "MapEditor.h"
+#include "Edit/LineDraw.h"
 
 class MapCanvas;
 class UndoManager;
@@ -58,6 +59,9 @@ private:
 	vector<int>	move_items;
 	int			move_item_closest;
 
+	// Editing
+	LineDraw	line_draw;
+
 	// Object edit
 	ObjectEditGroup	edit_object_group;
 
@@ -67,10 +71,6 @@ private:
 	MapLine*	copy_line;
 	string		copy_texture;
 	double		copy_offsets[2];
-
-	// Drawing
-	vector<fpoint2_t>	draw_points;
-	fpoint2_t			draw_origin;
 
 	// Editor messages
 	struct editor_msg_t
@@ -232,13 +232,7 @@ public:
 	void	deleteObject();
 
 	// Line drawing
-	unsigned	nLineDrawPoints() { return draw_points.size(); }
-	fpoint2_t	lineDrawPoint(unsigned index);
-	bool		addLineDrawPoint(fpoint2_t point, bool nearest = false);
-	void		removeLineDrawPoint();
-	void		setShapeDrawOrigin(fpoint2_t point, bool nearest = false);
-	void		updateShapeDraw(fpoint2_t point);
-	void		endLineDraw(bool apply = true);
+	LineDraw&	lineDraw() { return line_draw; }
 
 	// Object edit
 	ObjectEditGroup*	getObjectEditGroup() { return &edit_object_group; }

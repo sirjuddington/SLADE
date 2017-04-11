@@ -954,38 +954,39 @@ void MapCanvas::drawLineDrawLines()
 	}
 
 	// Draw lines
-	int npoints = editor->nLineDrawPoints();
+	auto& line_draw = editor->lineDraw();
+	int npoints = line_draw.nPoints();
 	glLineWidth(2.0f);
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
 		{
-			fpoint2_t p1 = editor->lineDrawPoint(a);
-			fpoint2_t p2 = editor->lineDrawPoint(a+1);
+			fpoint2_t p1 = line_draw.point(a);
+			fpoint2_t p2 = line_draw.point(a+1);
 			Drawing::drawLineTabbed(p1, p2);
 		}
 	}
 	if (npoints > 0 && draw_state == DSTATE_LINE)
-		Drawing::drawLineTabbed(editor->lineDrawPoint(npoints-1), end);
+		Drawing::drawLineTabbed(line_draw.point(npoints-1), end);
 
 	// Draw line lengths
 	setOverlayCoords(true);
 	if (npoints > 1)
 	{
 		for (int a = 0; a < npoints - 1; a++)
-			drawLineLength(editor->lineDrawPoint(a), editor->lineDrawPoint(a+1), col);
+			drawLineLength(line_draw.point(a), line_draw.point(a+1), col);
 	}
 	if (npoints > 0 && draw_state == DSTATE_LINE)
-		drawLineLength(editor->lineDrawPoint(npoints-1), end, col);
+		drawLineLength(line_draw.point(npoints-1), end, col);
 	setOverlayCoords(false);
 
 	// Draw points
 	glPointSize(vertex_size);
 	if (vertex_round) glEnable(GL_POINT_SMOOTH);
 	glBegin(GL_POINTS);
-	for (unsigned a = 0; a < editor->nLineDrawPoints(); a++)
+	for (unsigned a = 0; a < line_draw.nPoints(); a++)
 	{
-		fpoint2_t point = editor->lineDrawPoint(a);
+		fpoint2_t point = line_draw.point(a);
 		glVertex2d(point.x, point.y);
 	}
 	if (draw_state == DSTATE_LINE || draw_state == DSTATE_SHAPE_ORIGIN)
@@ -2953,7 +2954,7 @@ void MapCanvas::keyBinds2d(string name)
 		if (name == "map_edit_accept")
 		{
 			mouse_state = MSTATE_NORMAL;
-			editor->endLineDraw();
+			editor->lineDraw().end();
 			MapEditor::window()->showShapeDrawPanel(false);
 		}
 
@@ -2961,7 +2962,7 @@ void MapCanvas::keyBinds2d(string name)
 		else if (name == "map_edit_cancel")
 		{
 			mouse_state = MSTATE_NORMAL;
-			editor->endLineDraw(false);
+			editor->lineDraw().end(false);
 			MapEditor::window()->showShapeDrawPanel(false);
 		}
 	}
@@ -4033,7 +4034,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			// Line drawing
 			if (draw_state == DSTATE_LINE)
 			{
-				if (editor->addLineDrawPoint(mouse_downpos_m, nearest_vertex))
+				if (editor->lineDraw().addPoint(mouse_downpos_m, nearest_vertex))
 				{
 					// If line drawing finished, revert to normal state
 					mouse_state = MSTATE_NORMAL;
@@ -4046,13 +4047,13 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 				if (draw_state == DSTATE_SHAPE_ORIGIN)
 				{
 					// Set shape origin
-					editor->setShapeDrawOrigin(mouse_downpos_m, nearest_vertex);
+					editor->lineDraw().setShapeOrigin(mouse_downpos_m, nearest_vertex);
 					draw_state = DSTATE_SHAPE_EDGE;
 				}
 				else
 				{
 					// Finish shape draw
-					editor->endLineDraw(true);
+					editor->lineDraw().end(true);
 					MapEditor::window()->showShapeDrawPanel(false);
 					mouse_state = MSTATE_NORMAL;
 				}
@@ -4118,12 +4119,12 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		{
 			// Line drawing
 			if (draw_state == DSTATE_LINE)
-				editor->removeLineDrawPoint();
+				editor->lineDraw().removePoint();
 
 			// Shape drawing
 			else if (draw_state == DSTATE_SHAPE_EDGE)
 			{
-				editor->endLineDraw(false);
+				editor->lineDraw().end(false);
 				draw_state = DSTATE_SHAPE_ORIGIN;
 			}
 		}
@@ -4397,7 +4398,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 
 	// Update shape drawing if needed
 	if (mouse_state == MSTATE_LINE_DRAW && draw_state == DSTATE_SHAPE_EDGE)
-		editor->updateShapeDraw(mouse_pos_m);
+		editor->lineDraw().updateShape(mouse_pos_m);
 
 	e.Skip();
 }

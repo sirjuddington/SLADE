@@ -184,6 +184,9 @@
     <Filter Include="General\Colours">
       <UniqueIdentifier>{2396ead4-6f0e-4df8-9e57-2d51554e5f40}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Map Editor\Edit">
+      <UniqueIdentifier>{8c15c8af-a29b-46c5-b73c-699f04cea254}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\External\mus2mid\mus2mid.cpp">
@@ -1422,6 +1425,9 @@
     <ClCompile Include="..\..\src\MapEditor\UI\MapEditorWindow.cpp">
       <Filter>Map Editor\UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\LineDraw.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2455,6 +2461,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\UI\MapEditorWindow.h">
       <Filter>Map Editor\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\LineDraw.h">
+      <Filter>Map Editor\Edit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

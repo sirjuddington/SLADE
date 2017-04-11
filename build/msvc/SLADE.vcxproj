@@ -1317,6 +1317,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - WinXP|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\LineDraw.cpp" />
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.cpp" />
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.cpp" />
     <ClCompile Include="..\..\src\MapEditor\GameConfiguration\GenLineSpecial.cpp" />
@@ -1776,6 +1777,7 @@
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXEditor.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\TextureXPanel.h" />
     <ClInclude Include="..\..\src\MainEditor\UI\TextureXEditor\ZTextureEditorPanel.h" />
+    <ClInclude Include="..\..\src\MapEditor\Edit\LineDraw.h" />
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\ActionSpecial.h" />
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\Args.h" />
     <ClInclude Include="..\..\src\MapEditor\GameConfiguration\GameConfiguration.h" />
