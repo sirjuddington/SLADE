@@ -11,13 +11,13 @@ class Edit3D
 public:
 	explicit Edit3D(MapEditContext& context);
 
-	UndoManager*	undoManager() const { return undo_manager.get(); }
-	bool			lightLinked() const { return link_light; }
-	bool			offsetsLinked() const { return link_offset; }
-	bool			toggleLightLink() { link_light = !link_light; return link_light; }
-	bool			toggleOffsetLink() { link_offset = !link_offset; return link_offset; }
+	UndoManager*	undoManager() const { return undo_manager_.get(); }
+	bool			lightLinked() const { return link_light_; }
+	bool			offsetsLinked() const { return link_offset_; }
+	bool			toggleLightLink() { link_light_ = !link_light_; return link_light_; }
+	bool			toggleOffsetLink() { link_offset_ = !link_offset_; return link_offset_; }
 
-	void	setLinked(bool light, bool offsets) { link_light = light; link_offset = offsets; }
+	void	setLinked(bool light, bool offsets) { link_light_ = light; link_offset_ = offsets; }
 
 	void	selectAdjacent(MapEditor::Item item) const;
 	void	changeSectorLight(int amount) const;
@@ -38,10 +38,10 @@ public:
 	vector<MapEditor::Item>	getAdjacent(MapEditor::Item item) const;
 
 private:
-	MapEditContext&					context;
-	std::unique_ptr<UndoManager>	undo_manager;
-	bool							link_light;
-	bool							link_offset;
+	MapEditContext&					context_;
+	std::unique_ptr<UndoManager>	undo_manager_;
+	bool							link_light_;
+	bool							link_offset_;
 
 	// Helper for selectAdjacent
 	static bool wallMatches(MapSide* side, MapEditor::ItemType part, string tex);

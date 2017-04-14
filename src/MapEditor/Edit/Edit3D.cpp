@@ -46,11 +46,11 @@
  * Edit3D class constructor
  *******************************************************************/
 Edit3D::Edit3D(MapEditContext& context) :
-	context{ context },
-	link_light{ false },
-	link_offset{ false }
+	context_{ context },
+	link_light_{ false },
+	link_offset_{ false }
 {
-	undo_manager = std::make_unique<UndoManager>(&context.getMap());
+	undo_manager_ = std::make_unique<UndoManager>(&context.getMap());
 }
 
 /* Edit3D::selectAdjacent
@@ -62,9 +62,9 @@ void Edit3D::selectAdjacent(MapEditor::Item item) const
 	if (item.index < 0)
 		return;
 
-	// Select every list item
-	for (auto& i : getAdjacent(item))
-		context.selection().select(i);
+	// Select every adjacent item
+	context_.selection().select(getAdjacent(item));
+	context_.selectionUpdated();
 }
 
 /* Edit3D::changeSectorLight
@@ -74,8 +74,8 @@ void Edit3D::changeSectorLight(int amount) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.selection();
-	auto hilight_3d = context.hilightItem();
+	auto& selection_3d = context_.selection();
+	auto hilight_3d = context_.hilightItem();
 	if (selection_3d.empty() && hilight_3d.index >= 0 && hilight_3d.type != MapEditor::ItemType::Thing)
 		items.push_back(hilight_3d);
 	else
@@ -90,7 +90,7 @@ void Edit3D::changeSectorLight(int amount) const
 		return;
 
 	// Begin undo level
-	context.beginUndoRecordLocked("Change Sector Light", true, false, false);
+	context_.beginUndoRecordLocked("Change Sector Light", true, false, false);
 
 	// Go through items
 	std::set<MapObject*> processed;
@@ -102,12 +102,12 @@ void Edit3D::changeSectorLight(int amount) const
 			items[a].type == MapEditor::ItemType::WallTop)
 		{
 			// Get side
-			auto side = context.getMap().getSide(items[a].index);
+			auto side = context_.getMap().getSide(items[a].index);
 			if (!side) continue;
 			auto sector = side->getSector();
 			if (!sector) continue;
 
-			if (link_light)
+			if (link_light_)
 			{
 				// Ignore if sector already processed
 				if (processed.count(sector))
@@ -128,7 +128,7 @@ void Edit3D::changeSectorLight(int amount) const
 				amount++;
 
 			// Change wall or sector light level
-			if (link_light)
+			if (link_light_)
 				sector->changeLight(amount);
 			else
 				side->changeLight(amount);
@@ -138,11 +138,11 @@ void Edit3D::changeSectorLight(int amount) const
 		if (items[a].type == MapEditor::ItemType::Floor || items[a].type == MapEditor::ItemType::Ceiling)
 		{
 			// Get sector
-			auto s = context.getMap().getSector(items[a].index);
+			auto s = context_.getMap().getSector(items[a].index);
 			int where = 0;
-			if (items[a].type == MapEditor::ItemType::Floor && !link_light)
+			if (items[a].type == MapEditor::ItemType::Floor && !link_light_)
 			where = 1;
-			else if (items[a].type == MapEditor::ItemType::Ceiling && !link_light)
+			else if (items[a].type == MapEditor::ItemType::Ceiling && !link_light_)
 			where = 2;
 
 			// Check for decrease when light = 255
@@ -150,7 +150,7 @@ void Edit3D::changeSectorLight(int amount) const
 				amount++;
 
 			// Ignore if sector already processed
-			if (link_light)
+			if (link_light_)
 			{
 				if (processed.count(s))
 					continue;
@@ -163,15 +163,15 @@ void Edit3D::changeSectorLight(int amount) const
 	}
 
 	// End undo level
-	context.endUndoRecord();
+	context_.endUndoRecord();
 
 	// Editor message
 	if (items.size() > 0)
 	{
 		if (amount > 0)
-			context.addEditorMessage(S_FMT("Light increased by %d", amount));
+			context_.addEditorMessage(S_FMT("Light increased by %d", amount));
 		else
-			context.addEditorMessage(S_FMT("Light decreased by %d", -amount));
+			context_.addEditorMessage(S_FMT("Light decreased by %d", -amount));
 	}
 }
 
@@ -183,8 +183,8 @@ void Edit3D::changeOffset(int amount, bool x) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.selection();
-	auto hilight_3d = context.hilightItem();
+	auto& selection_3d = context_.selection();
+	auto hilight_3d = context_.hilightItem();
 	if (selection_3d.empty())
 	{
 		if (hilight_3d.index >= 0 && hilight_3d.type != MapEditor::ItemType::Thing)
@@ -202,7 +202,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		return;
 
 	// Begin undo level
-	context.beginUndoRecordLocked("Change Offset", true, false, false);
+	context_.beginUndoRecordLocked("Change Offset", true, false, false);
 
 	// Go through items
 	vector<int> done;
@@ -212,10 +212,10 @@ void Edit3D::changeOffset(int amount, bool x) const
 		// Wall
 		if (items[a].type >= MapEditor::ItemType::WallTop && items[a].type <= MapEditor::ItemType::WallBottom)
 		{
-			MapSide* side = context.getMap().getSide(items[a].index);
+			MapSide* side = context_.getMap().getSide(items[a].index);
 
 			// If offsets are linked, just change the whole side offset
-			if (link_offset)
+			if (link_offset_)
 			{
 				// Check we haven't processed this side already
 				if (VECTOR_EXISTS(done, items[a].index))
@@ -261,7 +261,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		// Flat (UDMF only)
 		else
 		{
-			MapSector* sector = context.getMap().getSector(items[a].index);
+			MapSector* sector = context_.getMap().getSector(items[a].index);
 
 			if (theGameConfiguration->udmfFlatPanning())
 			{
@@ -300,7 +300,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 	}
 
 	// End undo level
-	context.endUndoRecord(changed);
+	context_.endUndoRecord(changed);
 
 	// Editor message
 	if (items.size() > 0 && changed)
@@ -309,9 +309,9 @@ void Edit3D::changeOffset(int amount, bool x) const
 		if (!x) axis = "Y";
 
 		if (amount > 0)
-			context.addEditorMessage(S_FMT("%s offset increased by %d", axis, amount));
+			context_.addEditorMessage(S_FMT("%s offset increased by %d", axis, amount));
 		else
-			context.addEditorMessage(S_FMT("%s offset decreased by %d", axis, -amount));
+			context_.addEditorMessage(S_FMT("%s offset decreased by %d", axis, -amount));
 	}
 }
 
@@ -323,8 +323,8 @@ void Edit3D::changeSectorHeight(int amount) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.selection();
-	auto hilight_3d = context.hilightItem();
+	auto& selection_3d = context_.selection();
+	auto hilight_3d = context_.hilightItem();
 	if (selection_3d.empty() && hilight_3d.type != MapEditor::ItemType::Thing && hilight_3d.index >= 0)
 		items.push_back(hilight_3d);
 	else
@@ -339,7 +339,7 @@ void Edit3D::changeSectorHeight(int amount) const
 		return;
 
 	// Begin undo level
-	context.beginUndoRecordLocked("Change Sector Height", true, false, false);
+	context_.beginUndoRecordLocked("Change Sector Height", true, false, false);
 
 	// Go through items
 	vector<int> ceilings;
@@ -351,7 +351,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			items[a].type == MapEditor::ItemType::WallTop)
 		{
 			// Get sector
-			auto sector = context.getMap().getSide(items[a].index)->getSector();
+			auto sector = context_.getMap().getSide(items[a].index)->getSector();
 
 			// Check this sector's ceiling hasn't already been changed
 			int index = sector->getIndex();
@@ -370,7 +370,7 @@ void Edit3D::changeSectorHeight(int amount) const
 		else if (items[a].type == MapEditor::ItemType::Floor)
 		{
 			// Get sector
-			auto sector = context.getMap().getSector(items[a].index);
+			auto sector = context_.getMap().getSector(items[a].index);
 
 			// Change height
 			sector->setFloorHeight(sector->getFloorHeight() + amount);
@@ -380,7 +380,7 @@ void Edit3D::changeSectorHeight(int amount) const
 		else if (items[a].type == MapEditor::ItemType::Ceiling)
 		{
 			// Get sector
-			auto sector = context.getMap().getSector(items[a].index);
+			auto sector = context_.getMap().getSector(items[a].index);
 
 			// Check this sector's ceiling hasn't already been changed
 			bool done = false;
@@ -405,15 +405,15 @@ void Edit3D::changeSectorHeight(int amount) const
 	}
 
 	// End undo level
-	context.endUndoRecord();
+	context_.endUndoRecord();
 
 	// Editor message
 	if (items.size() > 0)
 	{
 		if (amount > 0)
-			context.addEditorMessage(S_FMT("Height increased by %d", amount));
+			context_.addEditorMessage(S_FMT("Height increased by %d", amount));
 		else
-			context.addEditorMessage(S_FMT("Height decreased by %d", -amount));
+			context_.addEditorMessage(S_FMT("Height decreased by %d", -amount));
 	}
 }
 
@@ -427,7 +427,7 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 		return;
 
 	// Get starting side
-	auto side = context.getMap().getSide(start.index);
+	auto side = context_.getMap().getSide(start.index);
 	if (!side) return;
 
 	// Get texture to match
@@ -454,16 +454,16 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 	vector<MapEditor::Item> walls_done;
 
 	// Begin undo level
-	context.beginUndoRecord("Auto Align X", true, false, false);
+	context_.beginUndoRecord("Auto Align X", true, false, false);
 
 	// Do alignment
 	doAlignX(side, side->intProperty("offsetx"), tex, walls_done, tex_width);
 
 	// End undo level
-	context.endUndoRecord();
+	context_.endUndoRecord();
 
 	// Editor message
-	context.addEditorMessage("Auto-aligned on X axis");
+	context_.addEditorMessage("Auto-aligned on X axis");
 }
 
 /* Edit3D::resetOffsets
@@ -475,8 +475,8 @@ void Edit3D::resetOffsets() const
 	vector<MapEditor::Item> walls;
 	vector<MapEditor::Item> flats;
 	vector<MapEditor::Item> things;
-	auto& selection_3d = context.selection();
-	auto hilight_3d = context.hilightItem();
+	auto& selection_3d = context_.selection();
+	auto hilight_3d = context_.hilightItem();
 	if (selection_3d.size() == 0)
 	{
 		if (hilight_3d.type == MapEditor::ItemType::WallTop ||
@@ -506,16 +506,16 @@ void Edit3D::resetOffsets() const
 		return;
 
 	// Begin undo level
-	context.beginUndoRecord("Reset Offsets", true, false, false);
+	context_.beginUndoRecord("Reset Offsets", true, false, false);
 
 	// Go through walls
 	for (unsigned a = 0; a < walls.size(); a++)
 	{
-		auto side = context.getMap().getSide(walls[a].index);
+		auto side = context_.getMap().getSide(walls[a].index);
 		if (!side) continue;
 
 		// Reset offsets
-		if (link_offset)
+		if (link_offset_)
 		{
 			// If offsets are linked, reset base offsets
 			side->setIntProperty("offsetx", 0);
@@ -542,7 +542,7 @@ void Edit3D::resetOffsets() const
 		}
 
 		// Reset scaling
-		if (context.mapDesc().format == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
+		if (context_.mapDesc().format == MAP_UDMF && theGameConfiguration->udmfTextureScaling())
 		{
 			if (walls[a].type == MapEditor::ItemType::WallTop)
 			{
@@ -563,11 +563,11 @@ void Edit3D::resetOffsets() const
 	}
 
 	// Go through flats
-	if (context.mapDesc().format == MAP_UDMF)
+	if (context_.mapDesc().format == MAP_UDMF)
 	{
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
-			auto sector = context.getMap().getSector(flats[a].index);
+			auto sector = context_.getMap().getSector(flats[a].index);
 			if (!sector) continue;
 
 			string plane;
@@ -593,15 +593,15 @@ void Edit3D::resetOffsets() const
 	}
 
 	// Go through things
-	if (context.mapDesc().format != MAP_DOOM)
+	if (context_.mapDesc().format != MAP_DOOM)
 	{
 		for (unsigned a = 0; a < things.size(); ++a)
 		{
-			auto thing = context.getMap().getThing(things[a].index);
+			auto thing = context_.getMap().getThing(things[a].index);
 			if (!thing) continue;
 
 			// Reset height
-			if (context.mapDesc().format != MAP_UDMF)
+			if (context_.mapDesc().format != MAP_UDMF)
 				thing->setIntProperty("height", 0);
 			else
 			{
@@ -624,14 +624,14 @@ void Edit3D::resetOffsets() const
 	}
 
 	// End undo level
-	context.endUndoRecord();
+	context_.endUndoRecord();
 
 	// Editor message
-	if (context.mapDesc().format == MAP_UDMF && (theGameConfiguration->udmfFlatScaling() ||
+	if (context_.mapDesc().format == MAP_UDMF && (theGameConfiguration->udmfFlatScaling() ||
 		theGameConfiguration->udmfSideScaling() || theGameConfiguration->udmfTextureScaling()))
-		context.addEditorMessage("Offsets and scaling reset");
+		context_.addEditorMessage("Offsets and scaling reset");
 	else
-		context.addEditorMessage("Offsets reset");
+		context_.addEditorMessage("Offsets reset");
 }
 
 /* Edit3D::toggleUnpegged
@@ -640,8 +640,8 @@ void Edit3D::resetOffsets() const
  *******************************************************************/
 void Edit3D::toggleUnpegged(bool lower) const
 {
-	auto& selection_3d = context.selection();
-	auto hilight_3d = context.hilightItem();
+	auto& selection_3d = context_.selection();
+	auto hilight_3d = context_.hilightItem();
 	if (selection_3d.size() == 0 && hilight_3d.index < 0)
 		return;
 
@@ -669,14 +669,14 @@ void Edit3D::toggleUnpegged(bool lower) const
 
 	// Begin undo level
 	string undo_type = lower ? "Toggle Lower Unpegged" : "Toggle Upper Unpegged";
-	undo_manager->beginRecord(undo_type);
+	undo_manager_->beginRecord(undo_type);
 
 	// Go through items
 	vector<MapLine*> processed_lines;
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Get line
-		auto line = context.getMap().getSide(items[a].index)->getParentLine();
+		auto line = context_.getMap().getSide(items[a].index)->getParentLine();
 		if (!line) continue;
 
 		// Skip if line already processed
@@ -686,18 +686,18 @@ void Edit3D::toggleUnpegged(bool lower) const
 			processed_lines.push_back(line);
 
 		// Toggle flag
-		context.recordPropertyChangeUndoStep(line);
+		context_.recordPropertyChangeUndoStep(line);
 		if (lower)
 		{
 			bool unpegged = theGameConfiguration->lineBasicFlagSet(
 				"dontpegbottom",
 				line,
-				context.mapDesc().format
+				context_.mapDesc().format
 			);
 			theGameConfiguration->setLineBasicFlag(
 				"dontpegbottom",
 				line,
-				context.getMap().currentFormat(),
+				context_.getMap().currentFormat(),
 				!unpegged
 			);
 		}
@@ -706,25 +706,25 @@ void Edit3D::toggleUnpegged(bool lower) const
 			bool unpegged = theGameConfiguration->lineBasicFlagSet(
 				"dontpegtop",
 				line,
-				context.mapDesc().format
+				context_.mapDesc().format
 			);
 			theGameConfiguration->setLineBasicFlag(
 				"dontpegtop",
 				line,
-				context.getMap().currentFormat(),
+				context_.getMap().currentFormat(),
 				!unpegged
 			);
 		}
 	}
 
 	// End undo level
-	undo_manager->endRecord(true);
+	undo_manager_->endRecord(true);
 
 	// Editor message
 	if (lower)
-		context.addEditorMessage("Lower Unpegged flag toggled");
+		context_.addEditorMessage("Lower Unpegged flag toggled");
 	else
-		context.addEditorMessage("Upper Unpegged flag toggled");
+		context_.addEditorMessage("Upper Unpegged flag toggled");
 }
 
 /* Edit3D::changeThingZ
@@ -733,21 +733,21 @@ void Edit3D::toggleUnpegged(bool lower) const
 void Edit3D::changeThingZ(int amount) const
 {
 	// Ignore for doom format
-	if (context.getMap().currentFormat() == MAP_DOOM)
+	if (context_.getMap().currentFormat() == MAP_DOOM)
 		return;
 
 	// Go through 3d selection
-	auto& selection_3d = context.selection();
+	auto& selection_3d = context_.selection();
 	for (unsigned a = 0; a < selection_3d.size(); a++)
 	{
 		// Check if thing
 		if (selection_3d[a].type == MapEditor::ItemType::Thing)
 		{
-			MapThing* thing = context.getMap().getThing(selection_3d[a].index);
+			MapThing* thing = context_.getMap().getThing(selection_3d[a].index);
 			if (thing)
 			{
 				// Change z height
-				context.recordPropertyChangeUndoStep(thing);
+				context_.recordPropertyChangeUndoStep(thing);
 				double z = thing->intProperty("height");
 				z += amount;
 				thing->setIntProperty("height", z);
@@ -762,18 +762,18 @@ void Edit3D::changeThingZ(int amount) const
 void Edit3D::deleteThing() const
 {
 	// Begin undo level
-	context.beginUndoRecord("Delete Thing", false, false, true);
+	context_.beginUndoRecord("Delete Thing", false, false, true);
 
 	// Go through 3d selection
-	auto& selection_3d = context.selection();
+	auto& selection_3d = context_.selection();
 	for (auto& item : selection_3d)
 	{
 		// Check if thing
 		if (item.type == MapEditor::ItemType::Thing)
-			context.getMap().removeThing(item.index);
+			context_.getMap().removeThing(item.index);
 	}
 
-	context.endUndoRecord();
+	context_.endUndoRecord();
 }
 
 /* Edit3D::changeScale
@@ -784,8 +784,8 @@ void Edit3D::changeScale(double amount, bool x) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.selection();
-	auto hilight_3d = context.hilightItem();
+	auto& selection_3d = context_.selection();
+	auto hilight_3d = context_.hilightItem();
 	if (selection_3d.empty())
 	{
 		if (hilight_3d.index >= 0 && hilight_3d.type != MapEditor::ItemType::Thing)
@@ -803,7 +803,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		return;
 
 	// Begin undo level
-	context.beginUndoRecordLocked("Change Scale", true, false, false);
+	context_.beginUndoRecordLocked("Change Scale", true, false, false);
 
 	// Go through selection
 	for (unsigned a = 0; a < items.size(); a++)
@@ -812,7 +812,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		if (items[a].type >= MapEditor::ItemType::WallTop && items[a].type <= MapEditor::ItemType::WallBottom &&
 			(theGameConfiguration->udmfSideScaling() || theGameConfiguration->udmfTextureScaling()))
 		{
-			auto side = context.getMap().getSide(items[a].index);
+			auto side = context_.getMap().getSide(items[a].index);
 
 			// Build property string (offset[x/y]_[top/mid/bottom])
 			string ofs = "scalex";
@@ -836,7 +836,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		// Flat (UDMF only)
 		else if (theGameConfiguration->udmfFlatScaling())
 		{
-			auto sector = context.getMap().getSector(items[a].index);
+			auto sector = context_.getMap().getSector(items[a].index);
 
 			// Build property string
 			string prop = x ? "xscale" : "yscale";
@@ -850,7 +850,7 @@ void Edit3D::changeScale(double amount, bool x) const
 	}
 
 	// End undo record
-	context.endUndoRecord(true);
+	context_.endUndoRecord(true);
 
 	// Editor message
 }
@@ -865,9 +865,9 @@ void Edit3D::changeHeight(int amount) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.selection();
-	auto hilight_3d = context.hilightItem();
-	auto& map = context.getMap();
+	auto& selection_3d = context_.selection();
+	auto hilight_3d = context_.hilightItem();
+	auto& map = context_.getMap();
 	if (selection_3d.empty() && hilight_3d.index >= 0)
 	{
 		if (hilight_3d.type != MapEditor::ItemType::Thing || map.currentFormat() != MAP_DOOM)
@@ -882,7 +882,7 @@ void Edit3D::changeHeight(int amount) const
 		return;
 
 	// Begin undo level
-	context.beginUndoRecordLocked("Change Height", true, false, false);
+	context_.beginUndoRecordLocked("Change Height", true, false, false);
 
 	// Go through items
 	for (unsigned a = 0; a < items.size(); a++)
@@ -913,7 +913,7 @@ void Edit3D::changeHeight(int amount) const
 				string ofs = "offsety";
 
 				// If offsets are linked, just change the whole side offset
-				if (link_offset)
+				if (link_offset_)
 				{
 					int offset = side->intProperty(ofs);
 					side->setIntProperty(ofs, offset + amount);
@@ -957,15 +957,15 @@ void Edit3D::changeHeight(int amount) const
 	}
 
 	// End undo level
-	context.endUndoRecord();
+	context_.endUndoRecord();
 
 	// Editor message
 	if (items.size() > 0)
 	{
 		if (amount > 0)
-			context.addEditorMessage(S_FMT("Height increased by %d", amount));
+			context_.addEditorMessage(S_FMT("Height increased by %d", amount));
 		else
-			context.addEditorMessage(S_FMT("Height decreased by %d", -amount));
+			context_.addEditorMessage(S_FMT("Height decreased by %d", -amount));
 	}
 }
 
@@ -1025,7 +1025,7 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 	list.push_back(item);
 
 	// Get initial side
-	auto side = context.getMap().getSide(item.index);
+	auto side = context_.getMap().getSide(item.index);
 	if (!side)
 		return;
 
@@ -1146,7 +1146,7 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 	list.push_back(item);
 
 	// Get initial sector
-	auto sector = context.getMap().getSector(item.index);
+	auto sector = context_.getMap().getSector(item.index);
 	if (!sector) return;
 
 	// Go through sector lines

@@ -152,8 +152,7 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 		default: break;
 		}
 
-		// TODO: This
-		//last_undo_level = "";
+		context_->resetLastUndoLevel();
 	}
 
 	return current != hilight_.index;
@@ -187,6 +186,20 @@ void ItemSelection::select(const MapEditor::Item& item, bool select, bool new_ch
 		last_change_.clear();
 
 	selectItem(item, select);
+}
+
+/* ItemSelection::select
+ * Changes the selection status of all items in [items] to [select].
+ * If [new_change] is true, a new change set is started
+ *******************************************************************/
+void ItemSelection::select(const vector<MapEditor::Item>& items, bool select, bool new_change)
+{
+	// Start new change set if specified
+	if (new_change)
+		last_change_.clear();
+
+	for (auto& item : items)
+		selectItem(item, select);
 }
 
 /* ItemSelection::selectAll
@@ -239,7 +252,6 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 		// Clear selection if specified
 		if (clear_none)
 		{
-			//if (canvas) canvas->itemsSelected3d(selection_3d, false); TODO: This
 			clearSelection();
 			if (context_)
 			{
@@ -531,7 +543,7 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	}
 
 	// Get selected objects
-    vector<MapObject*> list;
+	vector<MapObject*> list;
 	for (auto& item : selection_)
 		list.push_back(context_->getMap().getObject(type, item.index));
 
@@ -584,8 +596,8 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
 			if (baseItemType(item.type) == ItemType::Sector)
 			{
 				// Select floor+ceiling
-                new_selection.insert({ item.index, ItemType::Floor });
-                new_selection.insert({ item.index, ItemType::Ceiling });
+				new_selection.insert({ item.index, ItemType::Floor });
+				new_selection.insert({ item.index, ItemType::Ceiling });
 			}
 
 			// Line

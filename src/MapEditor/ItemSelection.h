@@ -49,6 +49,7 @@ public:
 	//void	clearSelection(MapEditContext& context, bool animate = true);
 
 	void	select(const MapEditor::Item& item, bool select = true, bool new_change = true);
+	void	select(const vector<MapEditor::Item>& items, bool select = true, bool new_change = true);
 	void	deSelect(const MapEditor::Item& item, bool new_change = true) { select(item, false, new_change); }
 	void	selectAll();
 	bool	toggleCurrent(bool clear_none = true);
