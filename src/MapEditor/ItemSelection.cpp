@@ -1,14 +1,51 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    ItemSelection.cpp
+ * Description: ItemSelection class - A container for a map editor's
+ *              current selection and hilight, along with various
+ *              utility functions for handling selection and hilight
+ *              for a MapEditContext
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
+#include "GameConfiguration/GameConfiguration.h"
 #include "ItemSelection.h"
 #include "MapEditContext.h"
-#include "GameConfiguration/ThingType.h"
-#include "GameConfiguration/GameConfiguration.h"
-#include "Utility/MathStuff.h"
 #include "UI/MapCanvas.h"
+#include "Utility/MathStuff.h"
 
+
+/*******************************************************************
+ * ITEMSELECTION CLASS FUNCTIONS
+ *******************************************************************/
 using MapEditor::ItemType;
 
+/* ItemSelection::ItemSelection
+ * ItemSelection class constructor
+ *******************************************************************/
 ItemSelection::ItemSelection(MapEditContext* context) :
 	hilight_{ -1, ItemType::Any },
 	hilight_lock_{ false },
@@ -16,6 +53,10 @@ ItemSelection::ItemSelection(MapEditContext* context) :
 {
 }
 
+/* ItemSelection::setHilight
+ * Sets the current hilight to [item]. Returns true if the hilight
+ * was changed
+ *******************************************************************/
 bool ItemSelection::setHilight(const MapEditor::Item& item)
 {
 	if (item != hilight_)
@@ -29,6 +70,10 @@ bool ItemSelection::setHilight(const MapEditor::Item& item)
 	return false;
 }
 
+/* ItemSelection::setHilight
+ * Sets the current hilight item index to [index]. Returns true if
+ * the hilight was changed
+ *******************************************************************/
 bool ItemSelection::setHilight(int index)
 {
 	if (index != hilight_.index)
@@ -42,7 +87,7 @@ bool ItemSelection::setHilight(int index)
 	return false;
 }
 
-/* MapEditContext::updateHilight
+/* ItemSelection::updateHilight
  * Hilights the map object closest to [mouse_pos], and updates
  * anything needed if the hilight is changed
  *******************************************************************/
@@ -114,7 +159,7 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	return current != hilight_.index;
 }
 
-/* MapEditContext::clearSelection
+/* ItemSelection::clearSelection
  * Clears the current selection
  *******************************************************************/
 void ItemSelection::clearSelection()
@@ -123,35 +168,18 @@ void ItemSelection::clearSelection()
 	last_change_.clear();
 	for (auto& item : selection_)
 		last_change_[item] = false;
-	//last_change_.deselected_.assign(selection_.begin(), selection_.end());
 
 	// Clear selection
 	selection_.clear();
+
+	if (context_)
+		context_->selectionUpdated();
 }
 
-//void ItemSelection::clearSelection(MapEditContext& context, bool animate)
-//{
-//	//auto canvas = context.getCanvas();
-//
-//	// TODO: Add some kind of 'selection updated' function to MapEditContext
-//	//if (context.editMode() == MapEditContext::MODE_3D)
-//	//{
-//	//	//if (animate && canvas) canvas->itemsSelected3d(selection_, false);
-//	//	selection_.clear();
-//	//}
-//	//else
-//	//{
-//	//	//if (animate && canvas) canvas->itemsSelected(selection, false);
-//	//	selection_.clear();
-//	//	MapEditor::openObjectProperties(nullptr);
-//	//	context.updateStatusText();
-//	//}
-//
-//	clearSelection();
-//	MapEditor::openObjectProperties(nullptr);
-//	context.updateStatusText();
-//}
-
+/* ItemSelection::select
+ * Changes the selection status of [item] to [select]. If
+ * [new_change] is true, a new change set is started
+ *******************************************************************/
 void ItemSelection::select(const MapEditor::Item& item, bool select, bool new_change)
 {
 	// Start new change set if specified
@@ -161,17 +189,14 @@ void ItemSelection::select(const MapEditor::Item& item, bool select, bool new_ch
 	selectItem(item, select);
 }
 
-/* MapEditContext::selectAll
- * Selects all objects depending on edit mode
+/* ItemSelection::selectAll
+ * Selects all objects depending on the context's edit mode
  *******************************************************************/
 void ItemSelection::selectAll()
 {
 	// Do nothing with no context
 	if (!context_)
 		return;
-
-	// Clear selection initially
-	//selection_.clear();
 
 	// Start new change set
 	last_change_.clear();
@@ -200,15 +225,10 @@ void ItemSelection::selectAll()
 	}
 
 	context_->addEditorMessage(S_FMT("Selected all %lu %s", selection_.size(), context_->getModeString()));
-
-	// TODO: This
-	//if (canvas)
-	//	canvas->itemsSelected(selection);
-
 	context_->selectionUpdated();
 }
 
-/* MapEditContext::selectCurrent
+/* ItemSelection::toggleCurrent
  * Toggles selection on the currently hilighted object
  *******************************************************************/
 bool ItemSelection::toggleCurrent(bool clear_none)
@@ -232,33 +252,17 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 	}
 
 	// Toggle selection on item
-	selectItem(hilight_, !isSelected(hilight_));
+	select(hilight_, !isSelected(hilight_), true);
 
 	if (context_)
 		context_->selectionUpdated();
 
-	//// Otherwise, check if item is in selection
-	//for (auto& item : selection_)
-	//{
-	//	if (item == hilight_)
-	//	{
-	//		selection_.erase(item);
-	//		//if (canvas) canvas->itemSelected3d(hilight_3d, false); TODO: This
-	//		if (context_)
-	//			context_->selectionUpdated();
-	//		return true;
-	//	}
-	//}
-
-	//// Not already selected, add to selection
-	//selection_.insert(hilight_);
-	////if (canvas) canvas->itemSelected3d(hilight_3d); TODO: This
-	//if (context_)
-	//	context_->selectionUpdated();
-
 	return true;
 }
 
+/* ItemSelection::selectVerticesWithin
+ * Selects all vertices in [map] that are within [rect]
+ *******************************************************************/
 void ItemSelection::selectVerticesWithin(const SLADEMap& map, const frect_t& rect)
 {
 	// Start new change set
@@ -270,6 +274,9 @@ void ItemSelection::selectVerticesWithin(const SLADEMap& map, const frect_t& rec
 			selectItem({ (int)a, ItemType::Vertex });
 }
 
+/* ItemSelection::selectLinesWithin
+ * Selects all lines in [map] that are within [rect]
+ *******************************************************************/
 void ItemSelection::selectLinesWithin(const SLADEMap& map, const frect_t& rect)
 {
 	// Start new change set
@@ -282,6 +289,9 @@ void ItemSelection::selectLinesWithin(const SLADEMap& map, const frect_t& rect)
 			selectItem({ (int)a, ItemType::Line });
 }
 
+/* ItemSelection::selectSectorsWithin
+ * Selects all sectors in [map] that are within [rect]
+ *******************************************************************/
 void ItemSelection::selectSectorsWithin(const SLADEMap& map, const frect_t& rect)
 {
 	// Start new change set
@@ -293,6 +303,9 @@ void ItemSelection::selectSectorsWithin(const SLADEMap& map, const frect_t& rect
 			selectItem({ (int)a, ItemType::Sector });
 }
 
+/* ItemSelection::selectThingsWithin
+ * Selects all things in [map] that are within [rect]
+ *******************************************************************/
 void ItemSelection::selectThingsWithin(const SLADEMap& map, const frect_t& rect)
 {
 	// Start new change set
@@ -304,9 +317,9 @@ void ItemSelection::selectThingsWithin(const SLADEMap& map, const frect_t& rect)
 			selectItem({ (int)a, ItemType::Thing });
 }
 
-/* MapEditContext::selectWithin
- * Selects all objects within the box from [xmin,ymin] to [xmax,ymax].
- * If [add] is false, the selection will be cleared first
+/* ItemSelection::selectWithin
+ * Selects all objects within [rect]. If [add] is false, the
+ * selection will be cleared first
  *******************************************************************/
 bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 {
@@ -328,6 +341,8 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 	default: break;
 	}
 
+	context_->selectionUpdated();
+
 	// Return true if any new items were selected
 	for (auto& change : last_change_)
 		if (change.second)
@@ -336,7 +351,7 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 	return false;
 }
 
-/* MapEditContext::getHilightedVertex
+/* ItemSelection::hilightedVertex
  * Returns the currently hilighted MapVertex
  *******************************************************************/
 MapVertex* ItemSelection::hilightedVertex() const
@@ -347,7 +362,7 @@ MapVertex* ItemSelection::hilightedVertex() const
 	return nullptr;
 }
 
-/* MapEditContext::getHilightedLine
+/* ItemSelection::hilightedLine
  * Returns the currently hilighted MapLine
  *******************************************************************/
 MapLine* ItemSelection::hilightedLine() const
@@ -358,7 +373,7 @@ MapLine* ItemSelection::hilightedLine() const
 	return nullptr;
 }
 
-/* MapEditContext::getHilightedSector
+/* ItemSelection::hilightedSector
  * Returns the currently hilighted MapSector
  *******************************************************************/
 MapSector* ItemSelection::hilightedSector() const
@@ -369,7 +384,7 @@ MapSector* ItemSelection::hilightedSector() const
 	return nullptr;
 }
 
-/* MapEditContext::getHilightedThing
+/* ItemSelection::hilightedThing
  * Returns the currently hilighted MapThing
  *******************************************************************/
 MapThing* ItemSelection::hilightedThing() const
@@ -380,7 +395,7 @@ MapThing* ItemSelection::hilightedThing() const
 	return nullptr;
 }
 
-/* MapEditContext::getHilightedObject
+/* ItemSelection::hilightedObject
  * Returns the currently hilighted MapObject
  *******************************************************************/
 MapObject* ItemSelection::hilightedObject() const
@@ -398,6 +413,11 @@ MapObject* ItemSelection::hilightedObject() const
 	}
 }
 
+/* ItemSelection::selectedVertices
+ * Returns as list of the currently selected vertices.
+ * If [try_hilight] is true, the hilighted vertex will be added to
+ * the list if nothing is selected
+ *******************************************************************/
 vector<MapVertex*> ItemSelection::selectedVertices(bool try_hilight) const
 {
 	vector<MapVertex*> list;
@@ -417,6 +437,11 @@ vector<MapVertex*> ItemSelection::selectedVertices(bool try_hilight) const
 	return list;
 }
 
+/* ItemSelection::selectedLines
+ * Returns as list of the currently selected lines.
+ * If [try_hilight] is true, the hilighted line will be added to
+ * the list if nothing is selected
+ *******************************************************************/
 vector<MapLine*> ItemSelection::selectedLines(bool try_hilight) const
 {
 	vector<MapLine*> list;
@@ -436,6 +461,11 @@ vector<MapLine*> ItemSelection::selectedLines(bool try_hilight) const
 	return list;
 }
 
+/* ItemSelection::selectedSectors
+ * Returns as list of the currently selected sectors.
+ * If [try_hilight] is true, the hilighted sector will be added to
+ * the list if nothing is selected
+ *******************************************************************/
 vector<MapSector*> ItemSelection::selectedSectors(bool try_hilight) const
 {
 	vector<MapSector*> list;
@@ -455,6 +485,11 @@ vector<MapSector*> ItemSelection::selectedSectors(bool try_hilight) const
 	return list;
 }
 
+/* ItemSelection::selectedThings
+ * Returns as list of the currently selected things.
+ * If [try_hilight] is true, the hilighted thing will be added to
+ * the list if nothing is selected
+ *******************************************************************/
 vector<MapThing*> ItemSelection::selectedThings(bool try_hilight) const
 {
 	vector<MapThing*> list;
@@ -474,12 +509,15 @@ vector<MapThing*> ItemSelection::selectedThings(bool try_hilight) const
 	return list;
 }
 
+/* ItemSelection::selectedObjects
+ * Returns as list of the currently selected objects depending on the
+ * context's edit mode. If [try_hilight] is true, the hilighted
+ * object will be added to the list if nothing is selected
+ *******************************************************************/
 vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 {
-	vector<MapObject*> list;
-
 	if (!context_)
-		return list;
+		return {};
 
 	// Get object type depending on edit mode
 	uint8_t type;
@@ -489,10 +527,11 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	case MapEditContext::MODE_LINES: type = MOBJ_LINE; break;
 	case MapEditContext::MODE_SECTORS: type = MOBJ_SECTOR; break;
 	case MapEditContext::MODE_THINGS: type = MOBJ_THING; break;
-	default: return list;
+	default: return {};
 	}
 
 	// Get selected objects
+    vector<MapObject*> list;
 	for (auto& item : selection_)
 		list.push_back(context_->getMap().getObject(type, item.index));
 
@@ -505,11 +544,11 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 
 /* ItemSelection::migrate
  * Converts the selection from [from_edit_mode] to one appropriate
- * for [to_edit_mode] (and [to_sector_mode] if applicable)
+ * for [to_edit_mode]
  * For example, selecting a sector and then switching to lines mode
  * will select all its lines
  *******************************************************************/
-void ItemSelection::migrate(int from_edit_mode, int to_edit_mode, int to_sector_mode)
+void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
 {
 	std::set<MapEditor::Item> new_selection;
 
@@ -544,13 +583,9 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode, int to_sector_
 			// Sector
 			if (baseItemType(item.type) == ItemType::Sector)
 			{
-				// Select floor if in applicable sector mode
-				if (to_sector_mode == MapEditContext::SECTOR_BOTH || to_sector_mode == MapEditContext::SECTOR_FLOOR)
-					new_selection.insert({ item.index, ItemType::Floor });
-
-				// Select ceiling if in applicable sector mode
-				if (to_sector_mode == MapEditContext::SECTOR_BOTH || to_sector_mode == MapEditContext::SECTOR_CEILING)
-					new_selection.insert({ item.index, ItemType::Ceiling });
+				// Select floor+ceiling
+                new_selection.insert({ item.index, ItemType::Floor });
+                new_selection.insert({ item.index, ItemType::Ceiling });
 			}
 
 			// Line
@@ -636,6 +671,10 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode, int to_sector_
 	selection_.assign(new_selection.begin(), new_selection.end());
 }
 
+/* ItemSelection::selectItem
+ * Selects or deselects [item] depending on the value of [select] and
+ * updates the current ChangeSet
+ *******************************************************************/
 void ItemSelection::selectItem(const MapEditor::Item& item, bool select)
 {
 	// Check if already selected

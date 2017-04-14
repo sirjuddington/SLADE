@@ -2331,6 +2331,119 @@ void MapCanvas::itemsSelected3d(vector<MapEditor::Item>& items, bool selected)
 		itemSelected3d(items[a], selected);
 }
 
+/* MapCanvas::animateSelectionChange
+ * Animates the last selection change from [selection]
+ *******************************************************************/
+void MapCanvas::animateSelectionChange(const ItemSelection &selection)
+{
+	using MapEditor::ItemType;
+
+    for (auto& change : selection.lastChange())
+	{
+		auto& item = change.first;
+
+		// 3d mode wall
+		if (MapEditor::baseItemType(item.type) == ItemType::Side)
+		{
+			// Get quad
+			auto quad = renderer_3d->getQuad(item);
+
+			if (quad)
+			{
+				// Get quad points
+				fpoint3_t points[4];
+				for (unsigned a = 0; a < 4; a++)
+					points[a].set(quad->points[a].x, quad->points[a].y, quad->points[a].z);
+
+				// Start animation
+				animations.push_back(new MCA3dWallSelection(App::runTimer(), points, change.second));
+			}
+		}
+
+		// 3d mode flat
+		else if (item.type == ItemType::Ceiling || item.type == ItemType::Floor)
+		{
+			// Get flat
+			auto flat = renderer_3d->getFlat(item);
+
+			// Start animation
+			if (flat)
+				animations.push_back(
+					new MCA3dFlatSelection(
+						App::runTimer(),
+						flat->sector,
+						flat->plane,
+						change.second
+					)
+				);
+		}
+
+		// 2d mode thing
+		else if (item.type == ItemType::Thing)
+		{
+			// Get thing
+			MapThing* t = editor->getMap().getThing(item.index);
+			if (!t) return;
+
+			// Get thing type
+			ThingType* tt = theGameConfiguration->thingType(t->getType());
+
+			// Start animation
+			double radius = tt->getRadius();
+			if (tt->shrinkOnZoom()) radius = renderer_2d->scaledRadius(radius);
+			animations.push_back(
+				new MCAThingSelection(
+					App::runTimer(),
+					t->xPos(),
+					t->yPos(),
+					radius,
+					renderer_2d->viewScaleInv(),
+					change.second
+				)
+			);
+		}
+
+		// 2d mode line
+		else if (item.type == ItemType::Line)
+		{
+			// Get line
+			vector<MapLine*> vec;
+			vec.push_back(editor->getMap().getLine(item.index));
+
+			// Start animation
+			animations.push_back(new MCALineSelection(App::runTimer(), vec, change.second));
+		}
+
+		// 2d mode vertex
+		else if (item.type == ItemType::Vertex)
+		{
+			// Get vertex
+			vector<MapVertex*> verts;
+			verts.push_back(editor->getMap().getVertex(item.index));
+
+			// Determine current vertex size
+			float vs = vertex_size;
+			if (view_scale < 1.0) vs *= view_scale;
+			if (vs < 2.0) vs = 2.0;
+
+			// Start animation
+			animations.push_back(new MCAVertexSelection(App::runTimer(), verts, vs, change.second));
+		}
+
+		// 2d mode sector
+		else if (item.type == ItemType::Sector)
+		{
+			// Get sector polygon
+			vector<Polygon2D*> polys;
+			polys.push_back(editor->getMap().getSector(item.index)->getPolygon());
+
+			// Start animation
+			animations.push_back(new MCASectorSelection(App::runTimer(), polys, change.second));
+		}
+	}
+}
+
+
 /* MapCanvas::updateInfoOverlay
  * Updates the current info overlay, depending on edit mode
  *******************************************************************/

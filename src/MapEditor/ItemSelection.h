@@ -19,9 +19,9 @@ public:
 	ItemSelection(MapEditContext* context = nullptr);
 
 	// Accessors
-	MapEditor::Item	hilight() const { return hilight_; }
-	bool			hilightLocked() const { return hilight_lock_; }
-	ChangeSet&		lastChange() { return last_change_; }
+	MapEditor::Item		hilight() const { return hilight_; }
+	bool				hilightLocked() const { return hilight_lock_; }
+	const ChangeSet&	lastChange() const { return last_change_; }
 
 	// Access to selection
 	vector<MapEditor::Item>::const_iterator begin() { return selection_.begin(); }
@@ -70,7 +70,7 @@ public:
 	vector<MapThing*>	selectedThings(bool try_hilight = true) const;
 	vector<MapObject*>	selectedObjects(bool try_hilight = true) const;
 
-	void	migrate(int from_edit_mode, int to_edit_mode, int to_sector_mode = 0);
+	void	migrate(int from_edit_mode, int to_edit_mode);
 
 	//void	showItem(int index);
 	//void	selectItem3d(MapEditor::Item item, int sel);

@@ -914,6 +914,9 @@ void MapEditContext::selectionUpdated()
 
 	last_undo_level = "";
 
+	if (canvas)
+		canvas->animateSelectionChange(item_selection);
+
 	updateStatusText();
 }
 

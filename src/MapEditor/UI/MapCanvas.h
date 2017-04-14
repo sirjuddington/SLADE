@@ -173,6 +173,7 @@ public:
 	void	itemsSelected(vector<int>& items, bool selected = true);
 	void	itemSelected3d(MapEditor::Item item, bool selected = true);
 	void	itemsSelected3d(vector<MapEditor::Item>& items, bool selected = true);
+	void 	animateSelectionChange(const ItemSelection& selection);
 	void	updateInfoOverlay();
 	void	forceRefreshRenderer();
 	void	changeEditMode(int mode);
