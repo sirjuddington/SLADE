@@ -1042,7 +1042,7 @@ void MapRenderer3D::renderFlats()
 /* MapRenderer3D::renderFlatSelection
  * Renders selection overlay for all selected flats
  *******************************************************************/
-void MapRenderer3D::renderFlatSelection(vector<MapEditor::Item>& selection, float alpha)
+void MapRenderer3D::renderFlatSelection(const ItemSelection& selection, float alpha)
 {
 	if (!render_selection)
 		return;
@@ -1810,7 +1810,7 @@ void MapRenderer3D::renderTransparentWalls()
 /* MapRenderer3D::renderWallSelection
  * Renders selection overlay for all selected wall quads
  *******************************************************************/
-void MapRenderer3D::renderWallSelection(vector<MapEditor::Item>& selection, float alpha)
+void MapRenderer3D::renderWallSelection(const ItemSelection& selection, float alpha)
 {
 	if (!render_selection)
 		return;
@@ -2212,7 +2212,7 @@ void MapRenderer3D::renderThings()
 /* MapRenderer3D::renderThingSelection
  * Renders selection overlay for all selected things
  *******************************************************************/
-void MapRenderer3D::renderThingSelection(vector<MapEditor::Item>& selection, float alpha)
+void MapRenderer3D::renderThingSelection(const ItemSelection& selection, float alpha)
 {
 	// Do nothing if no things visible
 	if (render_3d_things == 0 || !render_selection)

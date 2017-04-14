@@ -2,6 +2,7 @@
 #ifndef __MAP_RENDERER_2D__
 #define __MAP_RENDERER_2D__
 
+class ItemSelection;
 // Forward declarations
 class ThingType;
 class GLTexture;
@@ -98,7 +99,7 @@ public:
 	void	renderVerticesVBO();
 	void	renderVerticesImmediate();
 	void	renderVertexHilight(int index, float fade);
-	void	renderVertexSelection(vector<int>& selection, float fade = 1.0f);
+	void	renderVertexSelection(const ItemSelection& selection, float fade = 1.0f);
 
 	// Lines
 	rgba_t	lineColour(MapLine* line, bool ignore_filter = false);
@@ -106,7 +107,7 @@ public:
 	void	renderLinesVBO(bool show_direction, float alpha);
 	void	renderLinesImmediate(bool show_direction, float alpha);
 	void	renderLineHilight(int index, float fade);
-	void	renderLineSelection(vector<int>& selection, float fade = 1.0f);
+	void	renderLineSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedLines(vector<MapLine*>& lines, float fade);
 	void	renderTaggingLines(vector<MapLine*>& lines, float fade);
 
@@ -120,7 +121,7 @@ public:
 	void	renderThings(float alpha = 1.0f, bool force_dir = false);
 	void	renderThingsImmediate(float alpha);
 	void	renderThingHilight(int index, float fade);
-	void	renderThingSelection(vector<int>& selection, float fade = 1.0f);
+	void	renderThingSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedThings(vector<MapThing*>& things, float fade);
 	void	renderTaggingThings(vector<MapThing*>& things, float fade);
 	void	renderPathedThings(vector<MapThing*>& things);
@@ -130,7 +131,7 @@ public:
 	void	renderFlatsImmediate(int type, bool texture, float alpha);
 	void	renderFlatsVBO(int type, bool texture, float alpha);
 	void	renderFlatHilight(int index, float fade);
-	void	renderFlatSelection(vector<int>& selection, float fade = 1.0f);
+	void	renderFlatSelection(const ItemSelection& selection, float fade = 1.0f);
 	void	renderTaggedFlats(vector<MapSector*>& sectors, float fade);
 
 	// Moving

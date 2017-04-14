@@ -468,8 +468,7 @@ MapEditContext::MapEditContext() :
 	undo_manager(new UndoManager(&map)),
 	us_create_delete(nullptr),
 	edit_mode(MODE_LINES),
-	hilight_item(-1),
-	hilight_locked(false),
+	item_selection(this),
 	gridsize(9),
 	sector_mode(SECTOR_BOTH),
 	grid_snap(true),
@@ -542,25 +541,20 @@ void MapEditContext::setEditMode(int mode)
 		MapEditor::setUndoManager(undo_manager);
 
 	int old_edit_mode = edit_mode;
-	vector<int> old_selection = selection;
-	vector<MapEditor::Item> old_selection_3d = selection_3d;
 
 	// Set edit mode
 	edit_mode = mode;
 	sector_mode = SECTOR_BOTH;
 
 	// Clear hilight and selection stuff
-	hilight_item = -1;
-	hilight_3d.index = -1;
-	selection.clear();
-	selection_3d.clear();
+	item_selection.clearHilight();
 	tagged_sectors.clear();
 	tagged_lines.clear();
 	tagged_things.clear();
 	last_undo_level = "";
 
 	// Transfer selection to the new mode, if possible
-	migrateSelection(old_edit_mode, old_selection, old_selection_3d);
+	item_selection.migrate(old_edit_mode, edit_mode);
 
 	// Add editor message
 	switch (edit_mode)
@@ -655,8 +649,8 @@ void MapEditContext::clearMap()
 	map.clearMap();
 
 	// Clear selection
-	selection.clear();
-	hilight_item = -1;
+	item_selection.clear();
+	item_selection.clearHilight();
 	edit_3d.setLinked(true, true);
 
 	// Clear undo manager
@@ -675,20 +669,22 @@ void MapEditContext::clearMap()
  *******************************************************************/
 void MapEditContext::showItem(int index)
 {
-	selection.clear();
+	item_selection.clear();
 	int max;
+	MapEditor::ItemType type;
 	switch (edit_mode)
 	{
-	case MODE_VERTICES: max = map.nVertices(); break;
-	case MODE_LINES: max = map.nLines(); break;
-	case MODE_SECTORS: max = map.nSectors(); break;
-	case MODE_THINGS: max = map.nThings(); break;
-	default: max = 0; break;
+	case MODE_VERTICES: type = MapEditor::ItemType::Vertex; max = map.nVertices(); break;
+	case MODE_LINES: type = MapEditor::ItemType::Line; max = map.nLines(); break;
+	case MODE_SECTORS: type = MapEditor::ItemType::Sector; max = map.nSectors(); break;
+	case MODE_THINGS: type = MapEditor::ItemType::Thing; max = map.nThings(); break;
+	default: return;
 	}
 
 	if (index < max)
 	{
-		selection.push_back(index);
+		//selection.push_back(index);
+		item_selection.select({ index, type });
 		if (canvas) canvas->viewShowObject();
 	}
 }
@@ -707,159 +703,6 @@ string MapEditContext::getModeString()
 	case MODE_3D: return "3D";
 	default: return "Items";
 	};
-}
-
-#pragma endregion
-
-#pragma region HILIGHT
-
-/* MapEditContext::updateHilight
- * Hilights the map object closest to [mouse_pos], and updates
- * anything needed if the hilight is changed
- *******************************************************************/
-bool MapEditContext::updateHilight(fpoint2_t mouse_pos, double dist_scale)
-{
-	// Do nothing if hilight is locked
-	if (hilight_locked)
-		return false;
-
-	int current = hilight_item;
-
-	// Update hilighted object depending on mode
-	if (edit_mode == MODE_VERTICES)
-		hilight_item = map.nearestVertex(mouse_pos, 32/dist_scale);
-	else if (edit_mode == MODE_LINES)
-		hilight_item = map.nearestLine(mouse_pos, 32/dist_scale);
-	else if (edit_mode == MODE_SECTORS)
-		hilight_item = map.sectorAt(mouse_pos);
-	else if (edit_mode == MODE_THINGS)
-	{
-		hilight_item = -1;
-
-		// Get (possibly multiple) nearest-thing(s)
-		vector<int> nearest = map.nearestThingMulti(mouse_pos);
-		if (nearest.size() == 1)
-		{
-			MapThing* t = map.getThing(nearest[0]);
-			ThingType* type = theGameConfiguration->thingType(t->getType());
-			double dist = MathStuff::distance(mouse_pos, t->point());
-			if (dist <= type->getRadius() + (32/dist_scale))
-				hilight_item = nearest[0];
-		}
-		else
-		{
-			for (unsigned a = 0; a < nearest.size(); a++)
-			{
-				MapThing* t = map.getThing(nearest[a]);
-				ThingType* type = theGameConfiguration->thingType(t->getType());
-				double dist = MathStuff::distance(mouse_pos, t->point());
-				if (dist <= type->getRadius() + (32/dist_scale))
-					hilight_item = nearest[a];
-			}
-		}
-	}
-
-	// Update tagged lists if the hilight changed
-	if (current != hilight_item)
-		updateTagged();
-
-	// Update map object properties panel if the hilight changed
-	if (current != hilight_item && selection.empty())
-	{
-		switch (edit_mode)
-		{
-		case MODE_VERTICES: MapEditor::openObjectProperties(map.getVertex(hilight_item)); break;
-		case MODE_LINES: MapEditor::openObjectProperties(map.getLine(hilight_item)); break;
-		case MODE_SECTORS: MapEditor::openObjectProperties(map.getSector(hilight_item)); break;
-		case MODE_THINGS: MapEditor::openObjectProperties(map.getThing(hilight_item)); break;
-		default: break;
-		}
-
-		last_undo_level = "";
-	}
-
-	return current != hilight_item;
-}
-
-/* MapEditContext::getHilightedVertex
- * Returns the currently hilighted MapVertex
- *******************************************************************/
-MapVertex* MapEditContext::getHilightedVertex()
-{
-	// Check edit mode is correct
-	if (edit_mode != MODE_VERTICES)
-		return NULL;
-
-	// Having one item selected counts as a hilight
-	if (hilight_item == -1 && selection.size() == 1)
-		return map.getVertex(selection[0]);
-
-	return map.getVertex(hilight_item);
-}
-
-/* MapEditContext::getHilightedLine
- * Returns the currently hilighted MapLine
- *******************************************************************/
-MapLine* MapEditContext::getHilightedLine()
-{
-	// Check edit mode is correct
-	if (edit_mode != MODE_LINES)
-		return NULL;
-
-	// Having one item selected counts as a hilight
-	if (hilight_item == -1 && selection.size() == 1)
-		return map.getLine(selection[0]);
-
-	return map.getLine(hilight_item);
-}
-
-/* MapEditContext::getHilightedSector
- * Returns the currently hilighted MapSector
- *******************************************************************/
-MapSector* MapEditContext::getHilightedSector()
-{
-	// Check edit mode is correct
-	if (edit_mode != MODE_SECTORS)
-		return NULL;
-
-	// Having one item selected counts as a hilight
-	if (hilight_item == -1 && selection.size() == 1)
-		return map.getSector(selection[0]);
-
-	return map.getSector(hilight_item);
-}
-
-/* MapEditContext::getHilightedThing
- * Returns the currently hilighted MapThing
- *******************************************************************/
-MapThing* MapEditContext::getHilightedThing()
-{
-	// Check edit mode is correct
-	if (edit_mode != MODE_THINGS)
-		return NULL;
-
-	// Having one item selected counts as a hilight
-	if (hilight_item == -1 && selection.size() == 1)
-		return map.getThing(selection[0]);
-
-	return map.getThing(hilight_item);
-}
-
-/* MapEditContext::getHilightedObject
- * Returns the currently hilighted MapObject
- *******************************************************************/
-MapObject* MapEditContext::getHilightedObject()
-{
-	if (edit_mode == MODE_VERTICES)
-		return getHilightedVertex();
-	else if (edit_mode == MODE_LINES)
-		return getHilightedLine();
-	else if (edit_mode == MODE_SECTORS)
-		return getHilightedSector();
-	else if (edit_mode == MODE_THINGS)
-		return getHilightedThing();
-	else
-		return NULL;
 }
 
 #pragma endregion
@@ -890,6 +733,7 @@ void MapEditContext::updateTagged()
 	tagging_things.clear();
 
 	// Special
+	int hilight_item = item_selection.hilight().index;
 	if (hilight_item >= 0)
 	{
 		// Gather affecting objects
@@ -1065,666 +909,12 @@ void MapEditContext::updateTagged()
 void MapEditContext::selectionUpdated()
 {
 	// Open selected objects in properties panel
-	vector<MapObject*> objects;
-
-	if (edit_mode == MODE_VERTICES)
-	{
-		for (unsigned a = 0; a < selection.size(); a++)
-			objects.push_back(map.getVertex(selection[a]));
-	}
-	else if (edit_mode == MODE_LINES)
-	{
-		for (unsigned a = 0; a < selection.size(); a++)
-			objects.push_back(map.getLine(selection[a]));
-	}
-	else if (edit_mode == MODE_SECTORS)
-	{
-		for (unsigned a = 0; a < selection.size(); a++)
-			objects.push_back(map.getSector(selection[a]));
-	}
-	else if (edit_mode == MODE_THINGS)
-	{
-		for (unsigned a = 0; a < selection.size(); a++)
-			objects.push_back(map.getThing(selection[a]));
-	}
-
-	MapEditor::openMultiObjectProperties(objects);
+	auto selected = item_selection.selectedObjects();
+	MapEditor::openMultiObjectProperties(selected);
 
 	last_undo_level = "";
 
 	updateStatusText();
-}
-
-/* MapEditContext::clearSelection
- * Clears the current 2d/3d mode selection
- *******************************************************************/
-void MapEditContext::clearSelection(bool animate)
-{
-	if (edit_mode == MODE_3D)
-	{
-		if (animate && canvas) canvas->itemsSelected3d(selection_3d, false);
-		selection_3d.clear();
-	}
-	else
-	{
-		if (animate && canvas) canvas->itemsSelected(selection, false);
-		selection.clear();
-		MapEditor::openObjectProperties(nullptr);
-		updateStatusText();
-	}
-}
-
-/* MapEditContext::selectAll
- * Selects all objects depending on edit mode
- *******************************************************************/
-void MapEditContext::selectAll()
-{
-	// Clear selection initially
-	selection.clear();
-
-	// Select all items depending on mode
-	if (edit_mode == MODE_VERTICES)
-	{
-		for (unsigned a = 0; a < map.nVertices(); a++)
-			selection.push_back(a);
-	}
-	else if (edit_mode == MODE_LINES)
-	{
-		for (unsigned a = 0; a < map.nLines(); a++)
-			selection.push_back(a);
-	}
-	else if (edit_mode == MODE_SECTORS)
-	{
-		for (unsigned a = 0; a < map.nSectors(); a++)
-			selection.push_back(a);
-	}
-	else if (edit_mode == MODE_THINGS)
-	{
-		for (unsigned a = 0; a < map.nThings(); a++)
-			selection.push_back(a);
-	}
-
-	addEditorMessage(S_FMT("Selected all %lu %s", selection.size(), getModeString()));
-
-	if (canvas)
-		canvas->itemsSelected(selection);
-
-	selectionUpdated();
-}
-
-/* MapEditContext::selectCurrent
- * Toggles selection on the currently hilighted object
- *******************************************************************/
-bool MapEditContext::selectCurrent(bool clear_none)
-{
-	// --- 3d mode ---
-	if (edit_mode == MODE_3D)
-	{
-		// If nothing is hilighted
-		if (hilight_3d.index == -1)
-		{
-			// Clear selection if specified
-			if (clear_none)
-			{
-				if (canvas) canvas->itemsSelected3d(selection_3d, false);
-				selection_3d.clear();
-				addEditorMessage("Selection cleared");
-			}
-
-			return false;
-		}
-
-		// Otherwise, check if item is in selection
-		for (unsigned a = 0; a < selection_3d.size(); a++)
-		{
-			if (selection_3d[a].index == hilight_3d.index &&
-					selection_3d[a].type == hilight_3d.type)
-			{
-				// Already selected, deselect
-				selection_3d.erase(selection_3d.begin() + a);
-				if (canvas) canvas->itemSelected3d(hilight_3d, false);
-				return true;
-			}
-		}
-
-		// Not already selected, add to selection
-		selection_3d.push_back(hilight_3d);
-		if (canvas) canvas->itemSelected3d(hilight_3d);
-
-		return true;
-	}
-
-	// --- 2d mode ---
-	else
-	{
-		// If nothing is hilighted
-		if (hilight_item == -1)
-		{
-			// Clear selection if specified
-			if (clear_none)
-			{
-				if (canvas) canvas->itemsSelected(selection, false);
-				selection.clear();
-				selectionUpdated();
-				addEditorMessage("Selection cleared");
-			}
-
-			return false;
-		}
-
-		// Otherwise, check if item is in selection
-		for (unsigned a = 0; a < selection.size(); a++)
-		{
-			if (selection[a] == hilight_item)
-			{
-				// Already selected, deselect
-				selection.erase(selection.begin() + a);
-				if (canvas) canvas->itemSelected(hilight_item, false);
-				selectionUpdated();
-				return true;
-			}
-		}
-
-		// Not already selected, add to selection
-		selection.push_back(hilight_item);
-		if (canvas) canvas->itemSelected(hilight_item, true);
-
-		selectionUpdated();
-
-		return true;
-	}
-}
-
-/* MapEditContext::selectWithin
- * Selects all objects within the box from [xmin,ymin] to [xmax,ymax].
- * If [add] is false, the selection will be cleared first
- *******************************************************************/
-bool MapEditContext::selectWithin(double xmin, double ymin, double xmax, double ymax, bool add)
-{
-	// Select depending on editing mode
-	bool selected;
-	vector<int> nsel;
-	vector<int> asel;
-
-	// Vertices
-	if (edit_mode == MODE_VERTICES)
-	{
-		// Go through vertices
-		frect_t rect(xmin, ymin, xmax, ymax);
-		for (unsigned a = 0; a < map.nVertices(); a++)
-		{
-			// Check if already selected
-			if (std::find(selection.begin(), selection.end(), a) != selection.end())
-				selected = true;
-			else
-				selected = false;
-
-			// Select if vertex is within bounds
-			if (rect.contains(map.getVertex(a)->point()))
-			{
-				if (selected)
-					asel.push_back(a);
-				else
-					nsel.push_back(a);
-			}
-		}
-	}
-
-	// Lines
-	else if (edit_mode == MODE_LINES)
-	{
-		// Go through lines
-		MapLine* line;
-		frect_t rect(xmin, ymin, xmax, ymax);
-		for (unsigned a = 0; a < map.nLines(); a++)
-		{
-			// Check if already selected
-			if (std::find(selection.begin(), selection.end(), a) != selection.end())
-				selected = true;
-			else
-				selected = false;
-
-			// Select if both vertices are within bounds
-			line = map.getLine(a);
-			if (rect.contains(line->v1()->point()) && rect.contains(line->v2()->point()))
-			{
-				if (selected)
-					asel.push_back(a);
-				else
-					nsel.push_back(a);
-			}
-		}
-	}
-
-	// Sectors
-	else if (edit_mode == MODE_SECTORS)
-	{
-		// Go through sectors
-		fpoint2_t pmin(xmin, ymin);
-		fpoint2_t pmax(xmax, ymax);
-		for (unsigned a = 0; a < map.nSectors(); a++)
-		{
-			// Check if already selected
-			if (std::find(selection.begin(), selection.end(), a) != selection.end())
-				selected = true;
-			else
-				selected = false;
-
-			// Check if sector's bbox fits within the selection box
-			if (map.getSector(a)->boundingBox().is_within(pmin, pmax))
-			{
-				if (selected)
-					asel.push_back(a);
-				else
-					nsel.push_back(a);
-			}
-		}
-	}
-
-	// Things
-	else if (edit_mode == MODE_THINGS)
-	{
-		// Go through things
-		frect_t rect(xmin, ymin, xmax, ymax);
-		for (unsigned a = 0; a < map.nThings(); a++)
-		{
-			// Check if already selected
-			if (std::find(selection.begin(), selection.end(), a) != selection.end())
-				selected = true;
-			else
-				selected = false;
-
-			// Select if thing is within bounds
-			if (rect.contains(map.getThing(a)->point()))
-			{
-				if (selected)
-					asel.push_back(a);
-				else
-					nsel.push_back(a);
-			}
-		}
-	}
-
-
-	// Clear selection if anything was within the box
-	if (!add && (nsel.size() > 0 || asel.size() > 0))
-		clearSelection();
-
-	// Update selection
-	if (!add)
-	{
-		for (unsigned a = 0; a < asel.size(); a++)
-			selection.push_back(asel[a]);
-	}
-	for (unsigned a = 0; a < nsel.size(); a++)
-		selection.push_back(nsel[a]);
-
-	if (add)
-		addEditorMessage(S_FMT("Selected %lu %s", nsel.size(), getModeString()));
-	else
-		addEditorMessage(S_FMT("Selected %lu %s", selection.size(), getModeString()));
-
-	// Animate newly selected items
-	if (canvas && nsel.size() > 0) canvas->itemsSelected(nsel);
-
-	selectionUpdated();
-
-	return (nsel.size() > 0);
-}
-
-/* MapEditContext::migrateSelection
- * Preserves the selection when switching edit modes, when possible
- * For example, selecting a sector and then switching to lines mode
- * will select all its lines
- *******************************************************************/
-void MapEditContext::migrateSelection(
-	int old_edit_mode,
-	vector<int>& old_selection,
-	vector<MapEditor::Item>& old_selection_3d
-)
-{
-	// Reduce confusion
-	int new_edit_mode = edit_mode;
-
-	// Avoid duplicates without any fuss by using a set
-	std::set<int> new_selection;
-	std::set<MapEditor::Item> new_selection_3d;
-
-	if (old_edit_mode == edit_mode)
-	{
-		selection.insert(selection.end(), old_selection.begin(), old_selection.end());
-		return;
-	}
-
-	// 3D to 2D: select anything of the right type
-	if (old_edit_mode == MODE_3D)
-	{
-		for (unsigned a = 0; a < old_selection_3d.size(); a++)
-		{
-			if (new_edit_mode == MODE_THINGS && (
-				old_selection_3d[a].type == MapEditor::ItemType::Thing))
-			{
-				new_selection.insert(old_selection_3d[a].index);
-			}
-			else if (new_edit_mode == MODE_SECTORS && (
-				old_selection_3d[a].type == MapEditor::ItemType::Floor ||
-				old_selection_3d[a].type == MapEditor::ItemType::Ceiling))
-			{
-				new_selection.insert(old_selection_3d[a].index);
-			}
-			else if (new_edit_mode == MODE_LINES && (
-				old_selection_3d[a].type == MapEditor::ItemType::WallBottom ||
-				old_selection_3d[a].type == MapEditor::ItemType::WallMiddle ||
-				old_selection_3d[a].type == MapEditor::ItemType::WallTop))
-			{
-				MapSide* side = map.getSide(old_selection_3d[a].index);
-				if (!side) continue;
-				new_selection.insert(side->getParentLine()->getIndex());
-			}
-		}
-	}
-
-	// 2D to 3D: can be done perfectly
-	else if (new_edit_mode == MODE_3D)
-	{
-		if (old_edit_mode == MODE_SECTORS)
-			for (unsigned a = 0; a < old_selection.size(); a++)
-			{
-				new_selection_3d.insert(MapEditor::Item{ old_selection[a], MapEditor::ItemType::Floor });
-				new_selection_3d.insert(MapEditor::Item{ old_selection[a], MapEditor::ItemType::Ceiling });
-			}
-		else if (old_edit_mode == MODE_LINES)
-			for (unsigned a = 0; a < old_selection.size(); a++)
-			{
-				MapLine* line = map.getLine(old_selection[a]);
-				if (!line) continue;
-
-				// 2D mode works with lines, but 3D mode works with sides.
-				// Only select the visible areas -- i.e., the ones that need
-				// texturing
-				int textures = line->needsTexture();
-				MapSide* front = line->s1();
-				MapSide* back = line->s1();
-				if (front && textures & TEX_FRONT_UPPER)
-					new_selection_3d.insert(MapEditor::Item{ (int)front->getIndex(), MapEditor::ItemType::WallTop });
-				if (front && textures & TEX_FRONT_LOWER)
-					new_selection_3d.insert(MapEditor::Item{ (int)front->getIndex(), MapEditor::ItemType::WallBottom });
-				if (back && textures & TEX_BACK_UPPER)
-					new_selection_3d.insert(MapEditor::Item{ (int)back->getIndex(), MapEditor::ItemType::WallTop });
-				if (back && textures & TEX_BACK_LOWER)
-					new_selection_3d.insert(MapEditor::Item{ (int)back->getIndex(), MapEditor::ItemType::WallBottom });
-
-				// Also include any two-sided middle textures
-				if (front && (textures & TEX_FRONT_MIDDLE || !front->getTexMiddle().empty()))
-					new_selection_3d.insert(MapEditor::Item{ (int)front->getIndex(), MapEditor::ItemType::WallMiddle });
-				if (back && (textures & TEX_BACK_MIDDLE || !back->getTexMiddle().empty()))
-					new_selection_3d.insert(MapEditor::Item{ (int)back->getIndex(), MapEditor::ItemType::WallMiddle });
-			}
-		else if (old_edit_mode == MODE_THINGS)
-			for (unsigned a = 0; a < old_selection.size(); a++)
-			{
-				new_selection_3d.insert(MapEditor::Item{ old_selection[a], MapEditor::ItemType::Thing });
-			}
-	}
-
-	// Otherwise, 2D to 2D
-	// Sectors can be migrated to anything
-	else if (old_edit_mode == MODE_SECTORS)
-	{
-		for (unsigned a = 0; a < old_selection.size(); a++)
-		{
-			MapSector* sector = map.getSector(old_selection[a]);
-			if (!sector) continue;
-			if (new_edit_mode == MODE_LINES)
-			{
-				vector<MapLine*> lines;
-				sector->getLines(lines);
-				for (unsigned b = 0; b < lines.size(); b++)
-					new_selection.insert(lines[b]->getIndex());
-			}
-			else if (new_edit_mode == MODE_VERTICES)
-			{
-				vector<MapVertex*> vertices;
-				sector->getVertices(vertices);
-				for (unsigned b = 0; b < vertices.size(); b++)
-					new_selection.insert(vertices[b]->getIndex());
-			}
-			else if (new_edit_mode == MODE_THINGS)
-			{
-				// TODO this is much harder
-			}
-		}
-	}
-	// Lines can only reliably be migrated to vertices
-	else if (old_edit_mode == MODE_LINES && new_edit_mode == MODE_VERTICES)
-	{
-		for (unsigned a = 0; a < old_selection.size(); a++)
-		{
-			MapLine* line = map.getLine(old_selection[a]);
-			if (!line) continue;
-			new_selection.insert(line->v1()->getIndex());
-			new_selection.insert(line->v2()->getIndex());
-		}
-	}
-
-	selection.insert(selection.end(), new_selection.begin(), new_selection.end());
-	selection_3d.insert(selection_3d.end(), new_selection_3d.begin(), new_selection_3d.end());
-}
-
-/* MapEditContext::getSelectedVertices
- * Adds all selected vertices to [list]
- *******************************************************************/
-void MapEditContext::getSelectedVertices(vector<MapVertex*>& list)
-{
-	if (edit_mode != MODE_VERTICES)
-		return;
-
-	// Multiple selection
-	if (selection.size() > 1)
-	{
-		for (unsigned a = 0; a < selection.size(); a++)
-			list.push_back(map.getVertex(selection[a]));
-	}
-
-	// Single selection
-	else if (selection.size() == 1)
-		list.push_back(map.getVertex(selection[0]));
-
-	// No selection (use hilight)
-	else if (hilight_item >= 0)
-		list.push_back(map.getVertex(hilight_item));
-}
-
-/* MapEditContext::getSelectedLines
- * Adds all selected lines to [list]
- *******************************************************************/
-void MapEditContext::getSelectedLines(vector<MapLine*>& list)
-{
-	if (edit_mode == MODE_LINES)
-	{
-		// Multiple selection
-		if (selection.size() > 1)
-		{
-			for (unsigned a = 0; a < selection.size(); a++)
-				list.push_back(map.getLine(selection[a]));
-		}
-
-		// Single selection
-		else if (selection.size() == 1)
-			list.push_back(map.getLine(selection[0]));
-
-		// No selection (use hilight)
-		else if (hilight_item >= 0)
-			list.push_back(map.getLine(hilight_item));
-	}
-	else if (edit_mode == MODE_SECTORS)
-	{
-		// Get selected sectors
-		vector<MapSector*> sectors;
-		getSelectedSectors(sectors);
-
-		// Add lines of selected sectors
-		for (unsigned a = 0; a < sectors.size(); a++)
-		{
-			vector<MapLine*> seclines;
-			sectors[a]->getLines(seclines);
-			for (unsigned b = 0; b < seclines.size(); b++)
-			{
-				if (std::find(list.begin(), list.end(), seclines[b]) == list.end())
-					list.push_back(seclines[b]);
-			}
-		}
-	}
-}
-
-/* MapEditContext::getSelectedSectors
- * Adds all selected sectors to [list]
- *******************************************************************/
-void MapEditContext::getSelectedSectors(vector<MapSector*>& list)
-{
-	if (edit_mode != MODE_SECTORS)
-		return;
-
-	// Multiple selection
-	if (selection.size() > 1)
-	{
-		for (unsigned a = 0; a < selection.size(); a++)
-			list.push_back(map.getSector(selection[a]));
-	}
-
-	// Single selection
-	else if (selection.size() == 1)
-		list.push_back(map.getSector(selection[0]));
-
-	// No selection (use hilight)
-	else if (hilight_item >= 0)
-		list.push_back(map.getSector(hilight_item));
-}
-
-/* MapEditContext::getSelectedThings
- * Adds all selected things to [list]
- *******************************************************************/
-void MapEditContext::getSelectedThings(vector<MapThing*>& list)
-{
-	if (edit_mode == MODE_3D)
-	{
-		// Multiple selection
-		if (selection_3d.size() > 1)
-		{
-			for (unsigned a = 0; a < selection_3d.size(); a++)
-			{
-				if (selection_3d[a].type == MapEditor::ItemType::Thing)
-					list.push_back(map.getThing(selection_3d[a].index));
-			}
-		}
-
-		// Single selection
-		else if (selection_3d.size() == 1 && selection_3d[0].type == MapEditor::ItemType::Thing)
-			list.push_back(map.getThing(selection_3d[0].index));
-
-		// No selection (use hilight
-		else if (hilight_3d.index >= 0 && hilight_3d.type == MapEditor::ItemType::Thing)
-			list.push_back(map.getThing(hilight_3d.index));
-	}
-	else if (edit_mode == MODE_THINGS)
-	{
-		// Multiple selection
-		if (selection.size() > 1)
-		{
-			for (unsigned a = 0; a < selection.size(); a++)
-				list.push_back(map.getThing(selection[a]));
-		}
-
-		// Single selection
-		else if (selection.size() == 1)
-			list.push_back(map.getThing(selection[0]));
-
-		// No selection (use hilight)
-		else if (hilight_item >= 0)
-			list.push_back(map.getThing(hilight_item));
-	}
-}
-
-/* MapEditContext::getSelectedObjects
- * Adds all selected objects to [list], depending on edit mode
- *******************************************************************/
-void MapEditContext::getSelectedObjects(vector<MapObject*>& list)
-{
-	// Go through selection
-	if (selection.size() > 0)
-	{
-		for (unsigned a = 0; a < selection.size(); a++)
-		{
-			if (edit_mode == MODE_VERTICES)
-				list.push_back(map.getVertex(selection[a]));
-			else if (edit_mode == MODE_LINES)
-				list.push_back(map.getLine(selection[a]));
-			else if (edit_mode == MODE_SECTORS)
-				list.push_back(map.getSector(selection[a]));
-			else if (edit_mode == MODE_THINGS)
-				list.push_back(map.getThing(selection[a]));
-		}
-	}
-	else if (hilight_item >= 0)
-	{
-		if (edit_mode == MODE_VERTICES)
-			list.push_back(map.getVertex(hilight_item));
-		else if (edit_mode == MODE_LINES)
-			list.push_back(map.getLine(hilight_item));
-		else if (edit_mode == MODE_SECTORS)
-			list.push_back(map.getSector(hilight_item));
-		else if (edit_mode == MODE_THINGS)
-			list.push_back(map.getThing(hilight_item));
-	}
-}
-
-/* MapEditContext::selectItem3d
- * Toggles selection on the currently hilighted 3d mode object
- *******************************************************************/
-void MapEditContext::selectItem3d(MapEditor::Item item, int sel)
-{
-	// Go through selection
-	for (unsigned a = 0; a < selection_3d.size(); a++)
-	{
-		// Check for match
-		if (selection_3d[a].index == item.index && selection_3d[a].type == item.type)
-		{
-			// Selecting, do nothing
-			if (sel == SELECT)
-				return;
-
-			// Deselecting, remove from selection list
-			else if (sel == DESELECT || sel == TOGGLE)
-			{
-				selection_3d[a] = selection_3d.back();
-				selection_3d.pop_back();
-				last_undo_level = "";
-				return;
-			}
-		}
-	}
-
-	// Selection didn't exist, add if selecting or toggling
-	if (sel == SELECT || sel == TOGGLE)
-	{
-		selection_3d.push_back(item);
-		last_undo_level = "";
-		if (canvas) canvas->itemSelected3d(item);
-	}
-}
-
-/* MapEditContext::get3dSelectionOrHilight
- * Adds all 3d mode selected objects to [list]
- *******************************************************************/
-void MapEditContext::get3dSelectionOrHilight(vector<MapEditor::Item>& list)
-{
-	if (selection_3d.empty() && hilight_3d.index >= 0)
-		list.push_back(hilight_3d);
-	else if (!selection_3d.empty())
-	{
-		for (unsigned a = 0; a < selection_3d.size(); a++)
-			list.push_back(selection_3d[a]);
-	}
 }
 
 #pragma endregion
@@ -1809,19 +999,20 @@ fpoint2_t MapEditContext::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_p
 bool MapEditContext::beginMove(fpoint2_t mouse_pos)
 {
 	// Check if we have any selection or hilight
-	if (selection.size() == 0 && hilight_item == -1)
+	if (!item_selection.hasHilightOrSelection())
 		return false;
 
 	// Begin move operation
 	move_origin = mouse_pos;
 
 	// Create list of objects to move
-	if (selection.size() == 0)
-		move_items.push_back(hilight_item);
+	// TODO: Change move_items to vector<MapEditor::Item>
+	if (item_selection.size() == 0)
+		move_items.push_back(item_selection.hilight().index);
 	else
 	{
-		for (unsigned a = 0; a < selection.size(); a++)
-			move_items.push_back(selection[a]);
+		for (auto& item : item_selection)
+			move_items.push_back(item.index);
 	}
 
 	// Get list of vertices being moved (if any)
@@ -1996,7 +1187,7 @@ void MapEditContext::endMove(bool accept)
 
 	// Clear selection
 	if (accept && selection_clear_move)
-		clearSelection(false);
+		item_selection.clearSelection();
 
 	// Clear moving items
 	move_items.clear();
@@ -2010,7 +1201,6 @@ void MapEditContext::endMove(bool accept)
  *******************************************************************/
 void MapEditContext::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
 {
-
 	// Merge vertices and split lines
 	for (unsigned a = 0; a < merge_points.size(); a++)
 	{
@@ -2092,9 +1282,7 @@ void MapEditContext::splitLine(double x, double y, double min_dist)
 void MapEditContext::flipLines(bool sides)
 {
 	// Get selected/hilighted line(s)
-	vector<MapLine*> lines;
-	getSelectedLines(lines);
-
+	auto lines = item_selection.selectedLines();
 	if (lines.empty())
 		return;
 
@@ -2117,9 +1305,7 @@ void MapEditContext::flipLines(bool sides)
 void MapEditContext::correctLineSectors()
 {
 	// Get selected/hilighted line(s)
-	vector<MapLine*> lines;
-	getSelectedLines(lines);
-
+	auto lines = item_selection.selectedLines();
 	if (lines.empty())
 		return;
 
@@ -2157,11 +1343,8 @@ void MapEditContext::changeSectorHeight(int amount, bool floor, bool ceiling)
 		return;
 
 	// Get selected sectors (if any)
-	vector<MapSector*> selection;
-	getSelectedSectors(selection);
-
-	// Do nothing if no selection or hilight
-	if (selection.size() == 0)
+	auto selection = item_selection.selectedSectors();
+	if (selection.empty())
 		return;
 
 	// If we're modifying both heights, take sector_mode into account
@@ -2228,11 +1411,8 @@ void MapEditContext::changeSectorLight(bool up, bool fine)
 		return;
 
 	// Get selected sectors (if any)
-	vector<MapSector*> selection;
-	getSelectedSectors(selection);
-
-	// Do nothing if no selection or hilight
-	if (selection.size() == 0)
+	auto selection = item_selection.selectedSectors();
+	if (selection.empty())
 		return;
 
 	// Begin record undo level
@@ -2277,19 +1457,16 @@ void MapEditContext::joinSectors(bool remove_lines)
 	if (edit_mode != MODE_SECTORS)
 		return;
 
-	// Check selection
-	if (selection.size() < 2)
+	// Get sectors to merge
+	auto sectors = item_selection.selectedSectors(false);
+	if (sectors.size() < 2) // Need at least 2 sectors to join
 		return;
 
 	// Get 'target' sector
-	MapSector* target = map.getSector(selection[0]);
-
-	// Get sectors to merge
-	vector<MapSector*> sectors;
-	getSelectedSectors(sectors);
+	auto target = sectors[0];
 
 	// Clear selection
-	clearSelection();
+	item_selection.clearSelection();
 
 	// Init list of lines
 	vector<MapLine*> lines;
@@ -2301,11 +1478,11 @@ void MapEditContext::joinSectors(bool remove_lines)
 	for (unsigned a = 1; a < sectors.size(); a++)
 	{
 		// Go through sector sides
-		MapSector* sector = sectors[a];
+		auto sector = sectors[a];
 		while (sector->connectedSides().size() > 0)
 		{
 			// Set sector
-			MapSide* side = sector->connectedSides()[0];
+			auto side = sector->connectedSides()[0];
 			side->setSector(target);
 
 			// Add line to list if not already there
@@ -2355,9 +1532,9 @@ void MapEditContext::joinSectors(bool remove_lines)
 
 	// Editor message
 	if (nlines == 0)
-		addEditorMessage(S_FMT("Joined %lu Sectors", selection.size()));
+		addEditorMessage(S_FMT("Joined %lu Sectors", sectors.size()));
 	else
-		addEditorMessage(S_FMT("Joined %lu Sectors (removed %d Lines)", selection.size(), nlines));
+		addEditorMessage(S_FMT("Joined %lu Sectors (removed %d Lines)", sectors.size(), nlines));
 }
 
 #pragma endregion
@@ -2374,8 +1551,7 @@ void MapEditContext::changeThingType(int newtype)
 		return;
 
 	// Get selected things (if any)
-	vector<MapThing*> selection;
-	getSelectedThings(selection);
+	auto selection = item_selection.selectedThings();
 
 	// Do nothing if no selection or hilight
 	if (selection.size() == 0)
@@ -2407,19 +1583,23 @@ void MapEditContext::thingQuickAngle(fpoint2_t mouse_pos)
 	if (edit_mode != MODE_THINGS)
 		return;
 
-	// If selection is empty, check for hilight
-	if (selection.size() == 0 && hilight_item >= 0)
-	{
-		MapThing* thing = map.getThing(hilight_item);
-		map.getThing(hilight_item)->setAnglePoint(mouse_pos);
-		return;
-	}
+	auto selection = item_selection.selectedThings();
+	for (auto thing : selection)
+		thing->setAnglePoint(mouse_pos);
 
-	// Go through selection
-	for (unsigned a = 0; a < selection.size(); a++)
-	{
-		map.getThing(selection[a])->setAnglePoint(mouse_pos);
-	}
+	//// If selection is empty, check for hilight
+	//if (selection.size() == 0 && hilight_item >= 0)
+	//{
+	//	MapThing* thing = map.getThing(hilight_item);
+	//	map.getThing(hilight_item)->setAnglePoint(mouse_pos);
+	//	return;
+	//}
+
+	//// Go through selection
+	//for (unsigned a = 0; a < selection.size(); a++)
+	//{
+	//	map.getThing(selection[a])->setAnglePoint(mouse_pos);
+	//}
 }
 
 /* MapEditContext::mirror
@@ -2433,9 +1613,9 @@ void MapEditContext::mirror(bool x_axis)
 	{
 		// Begin undo level
 		beginUndoRecord("Mirror things", true, false, false);
+
 		// Get things to mirror
-		vector<MapThing*> things;
-		getSelectedThings(things);
+		auto things = item_selection.selectedThings();
 
 		// Get midpoint
 		bbox_t bbox;
@@ -2473,30 +1653,29 @@ void MapEditContext::mirror(bool x_axis)
 	{
 		// Begin undo level
 		beginUndoRecord("Mirror map architecture", true, false, false);
+
 		// Get vertices to mirror
 		vector<MapVertex*> vertices;
 		vector<MapLine*> lines;
 		if (edit_mode == MODE_VERTICES)
-			getSelectedVertices(vertices);
+			vertices = item_selection.selectedVertices();
 		else if (edit_mode == MODE_LINES)
 		{
-			vector<MapLine*> sel;
-			getSelectedLines(sel);
-			for (unsigned a = 0; a < sel.size(); a++)
+			auto sel = item_selection.selectedLines();
+			for (auto line : sel)
 			{
-				VECTOR_ADD_UNIQUE(vertices, sel[a]->v1());
-				VECTOR_ADD_UNIQUE(vertices, sel[a]->v2());
-				lines.push_back(sel[a]);
+				VECTOR_ADD_UNIQUE(vertices, line->v1());
+				VECTOR_ADD_UNIQUE(vertices, line->v2());
+				lines.push_back(line);
 			}
 		}
 		else if (edit_mode == MODE_SECTORS)
 		{
-			vector<MapSector*> sectors;
-			getSelectedSectors(sectors);
-			for (unsigned a = 0; a < sectors.size(); a++)
+			auto sectors = item_selection.selectedSectors();
+			for (auto sector : sectors)
 			{
-				sectors[a]->getVertices(vertices);
-				sectors[a]->getLines(lines);
+				sector->getVertices(vertices);
+				sector->getLines(lines);
 			}
 		}
 
@@ -2537,8 +1716,7 @@ int MapEditContext::beginTagEdit()
 		return 0;
 
 	// Get selected lines
-	vector<MapLine*> lines;
-	getSelectedLines(lines);
+	auto lines = item_selection.selectedLines();
 	if (lines.size() == 0)
 		return 0;
 
@@ -2556,7 +1734,7 @@ int MapEditContext::beginTagEdit()
 	// Sector tag (for now, 2 will be thing id tag)
 	for (unsigned a = 0; a < map.nSectors(); a++)
 	{
-		MapSector* sector = map.getSector(a);
+		auto sector = map.getSector(a);
 		if (sector->intProperty("id") == current_tag)
 			tagged_sectors.push_back(sector);
 	}
@@ -2575,7 +1753,7 @@ void MapEditContext::tagSectorAt(double x, double y)
 	if (index < 0)
 		return;
 
-	MapSector* sector = map.getSector(index);
+	auto sector = map.getSector(index);
 	for (unsigned a = 0; a < tagged_sectors.size(); a++)
 	{
 		// Check if already tagged
@@ -2600,8 +1778,7 @@ void MapEditContext::tagSectorAt(double x, double y)
 void MapEditContext::endTagEdit(bool accept)
 {
 	// Get selected lines
-	vector<MapLine*> lines;
-	getSelectedLines(lines);
+	auto lines = item_selection.selectedLines();
 
 	if (accept)
 	{
@@ -2655,21 +1832,22 @@ void MapEditContext::createObject(double x, double y)
 	if (edit_mode == MODE_VERTICES)
 	{
 		// If there are less than 2 vertices currently selected, just create a vertex at x,y
-		if (selection.size() < 2)
+		if (item_selection.size() < 2)
 			createVertex(x, y);
 		else
 		{
 			// Otherwise, create lines between selected vertices
 			beginUndoRecord("Create Lines", false, true, false);
-			for (unsigned a = 0; a < selection.size() - 1; a++)
-				map.createLine(map.getVertex(selection[a]), map.getVertex(selection[a+1]));
+			auto vertices = item_selection.selectedVertices(false);
+			for (unsigned a = 0; a < vertices.size() - 1; a++)
+				map.createLine(vertices[a], vertices[a+1]);
 			endUndoRecord(true);
 
 			// Editor message
-			addEditorMessage(S_FMT("Created %lu line(s)", selection.size() - 1));
+			addEditorMessage(S_FMT("Created %lu line(s)", item_selection.size() - 1));
 
 			// Clear selection
-			clearSelection();
+			item_selection.clearSelection();
 		}
 
 		return;
@@ -2775,8 +1953,8 @@ void MapEditContext::createSector(double x, double y)
 
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = nullptr;
-	if (edit_mode == MODE_SECTORS && selection.size() > 0)
-		sector_copy = map.getSector(selection[0]);
+	if (edit_mode == MODE_SECTORS && item_selection.size() > 0)
+		sector_copy = map.getSector(item_selection.begin()->index);
 
 	// Run sector builder
 	SectorBuilder builder;
@@ -2832,8 +2010,7 @@ void MapEditContext::deleteObject()
 	if (edit_mode == MODE_VERTICES)
 	{
 		// Get selected vertices
-		vector<MapVertex*> verts;
-		getSelectedVertices(verts);
+		auto verts = item_selection.selectedVertices();
 		int index = -1;
 		if (verts.size() == 1)
 			index = verts[0]->getIndex();
@@ -2859,8 +2036,7 @@ void MapEditContext::deleteObject()
 	else if (edit_mode == MODE_LINES)
 	{
 		// Get selected lines
-		vector<MapLine*> lines;
-		getSelectedLines(lines);
+		auto lines = item_selection.selectedLines();
 		int index = -1;
 		if (lines.size() == 1)
 			index = lines[0]->getIndex();
@@ -2886,8 +2062,7 @@ void MapEditContext::deleteObject()
 	else if (edit_mode == MODE_SECTORS)
 	{
 		// Get selected sectors
-		vector<MapSector*> sectors;
-		getSelectedSectors(sectors);
+		auto sectors = item_selection.selectedSectors();
 		int index = -1;
 		if (sectors.size() == 1)
 			index = sectors[0]->getIndex();
@@ -2968,8 +2143,7 @@ void MapEditContext::deleteObject()
 	else if (edit_mode == MODE_THINGS)
 	{
 		// Get selected things
-		vector<MapThing*> things;
-		getSelectedThings(things);
+		auto things = item_selection.selectedThings();
 		int index = -1;
 		if (things.size() == 1)
 			index = things[0]->getIndex();
@@ -2992,8 +2166,8 @@ void MapEditContext::deleteObject()
 	endUndoRecord(true);
 
 	// Clear hilight and selection
-	selection.clear();
-	hilight_item = -1;
+	item_selection.clearSelection();
+	item_selection.clearHilight();
 }
 
 #pragma endregion
@@ -3005,13 +2179,11 @@ void MapEditContext::deleteObject()
  *******************************************************************/
 bool MapEditContext::beginObjectEdit()
 {
-	vector<MapObject*> edit_objects;
-
 	// Things mode
 	if (edit_mode == MODE_THINGS)
 	{
 		// Get selected things
-		getSelectedObjects(edit_objects);
+		auto edit_objects = item_selection.selectedObjects();
 
 		// Setup object group
 		edit_object_group.clear();
@@ -3023,19 +2195,20 @@ bool MapEditContext::beginObjectEdit()
 	}
 	else
 	{
+		vector<MapObject*> edit_objects;
+
 		// Vertices mode
 		if (edit_mode == MODE_VERTICES)
 		{
 			// Get selected vertices
-			getSelectedObjects(edit_objects);
+			edit_objects = item_selection.selectedObjects();
 		}
 
 		// Lines mode
 		else if (edit_mode == MODE_LINES)
 		{
 			// Get vertices of selected lines
-			vector<MapLine*> lines;
-			getSelectedLines(lines);
+			auto lines = item_selection.selectedLines();
 			for (unsigned a = 0; a < lines.size(); a++)
 			{
 				VECTOR_ADD_UNIQUE(edit_objects, lines[a]->v1());
@@ -3047,8 +2220,7 @@ bool MapEditContext::beginObjectEdit()
 		else if (edit_mode == MODE_SECTORS)
 		{
 			// Get vertices of selected sectors
-			vector<MapSector*> sectors;
-			getSelectedSectors(sectors);
+			auto sectors = item_selection.selectedSectors();
 			for (unsigned a = 0; a < sectors.size(); a++)
 				sectors[a]->getVertices(edit_objects);
 		}
@@ -3106,7 +2278,7 @@ void MapEditContext::endObjectEdit(bool accept)
 		}
 
 		// Clear selection
-		clearSelection(false);
+		item_selection.clearSelection();
 
 		endUndoRecord(merge || !map_merge_undo_step);
 	}
@@ -3124,7 +2296,7 @@ void MapEditContext::endObjectEdit(bool accept)
 void MapEditContext::copyProperties(MapObject* object)
 {
 	// Do nothing if no selection or hilight
-	if (selection.size() == 0 && hilight_item < 0)
+	if (!item_selection.hasHilightOrSelection())
 		return;
 
 	// Sectors mode
@@ -3135,10 +2307,10 @@ void MapEditContext::copyProperties(MapObject* object)
 			copy_sector = new MapSector(nullptr);
 
 		// Copy selection/hilight properties
-		if (selection.size() > 0)
-			copy_sector->copy(map.getSector(selection[0]));
-		else if (hilight_item >= 0)
-			copy_sector->copy(map.getSector(hilight_item));
+		if (item_selection.size() > 0)
+			copy_sector->copy(map.getSector(item_selection[0].index));
+		else if (item_selection.hasHilight())
+			copy_sector->copy(item_selection.hilightedSector());
 
 		// Editor message
 		if (!object)
@@ -3158,10 +2330,10 @@ void MapEditContext::copyProperties(MapObject* object)
 		else
 		{
 			// Otherwise copy selection/hilight properties
-			if (selection.size() > 0)
-				copy_thing->copy(map.getThing(selection[0]));
-			else if (hilight_item >= 0)
-				copy_thing->copy(map.getThing(hilight_item));
+			if (item_selection.size() > 0)
+				copy_thing->copy(map.getThing(item_selection[0].index));
+			else if (item_selection.hasHilight())
+				copy_thing->copy(item_selection.hilightedThing());
 			else
 				return;
 		}
@@ -3176,10 +2348,10 @@ void MapEditContext::copyProperties(MapObject* object)
 		if (!copy_line)
 			copy_line = new MapLine(nullptr, nullptr, new MapSide(nullptr, nullptr), new MapSide(nullptr, nullptr), nullptr);
 
-		if (selection.size() > 0)
-			copy_line->copy(map.getLine(selection[0]));
-		else if (hilight_item >= 0)
-			copy_line->copy(map.getLine(hilight_item));
+		if (item_selection.size() > 0)
+			copy_line->copy(map.getLine(item_selection[0].index));
+		else if (item_selection.hasHilight())
+			copy_line->copy(item_selection.hilightedLine());
 
 		if(!object)
 			addEditorMessage("Copied line properties");
@@ -3192,7 +2364,7 @@ void MapEditContext::copyProperties(MapObject* object)
 void MapEditContext::pasteProperties()
 {
 	// Do nothing if no selection or hilight
-	if (selection.size() == 0 && hilight_item < 0)
+	if (!item_selection.hasHilightOrSelection())
 		return;
 
 	// Sectors mode
@@ -3204,13 +2376,16 @@ void MapEditContext::pasteProperties()
 
 		// Paste properties to selection/hilight
 		beginUndoRecord("Paste Sector Properties", true, false, false);
-		if (selection.size() > 0)
+		/*if (selection.size() > 0)
 		{
 			for (unsigned a = 0; a < selection.size(); a++)
 				map.getSector(selection[a])->copy(copy_sector);
 		}
 		else if (hilight_item >= 0)
-			map.getSector(hilight_item)->copy(copy_sector);
+			map.getSector(hilight_item)->copy(copy_sector);*/
+		auto sectors = item_selection.selectedSectors();
+		for (auto sector : sectors)
+			sector->copy(copy_sector);
 		endUndoRecord();
 
 		// Editor message
@@ -3226,23 +2401,33 @@ void MapEditContext::pasteProperties()
 
 		// Paste properties to selection/hilight
 		beginUndoRecord("Paste Thing Properties", true, false, false);
-		if (selection.size() > 0)
-		{
-			for (unsigned a = 0; a < selection.size(); a++)
-			{
-				// Paste properties (but keep position)
-				MapThing* thing = map.getThing(selection[a]);
-				double x = thing->xPos();
-				double y = thing->yPos();
-				thing->copy(copy_thing);
-				thing->setFloatProperty("x", x);
-				thing->setFloatProperty("y", y);
-			}
-		}
-		else if (hilight_item >= 0)
+		//if (selection.size() > 0)
+		//{
+		//	for (unsigned a = 0; a < selection.size(); a++)
+		//	{
+		//		// Paste properties (but keep position)
+		//		MapThing* thing = map.getThing(selection[a]);
+		//		double x = thing->xPos();
+		//		double y = thing->yPos();
+		//		thing->copy(copy_thing);
+		//		thing->setFloatProperty("x", x);
+		//		thing->setFloatProperty("y", y);
+		//	}
+		//}
+		//else if (hilight_item >= 0)
+		//{
+		//	// Paste properties (but keep position)
+		//	MapThing* thing = map.getThing(hilight_item);
+		//	double x = thing->xPos();
+		//	double y = thing->yPos();
+		//	thing->copy(copy_thing);
+		//	thing->setFloatProperty("x", x);
+		//	thing->setFloatProperty("y", y);
+		//}
+		auto things = item_selection.selectedThings();
+		for (auto thing : things)
 		{
 			// Paste properties (but keep position)
-			MapThing* thing = map.getThing(hilight_item);
 			double x = thing->xPos();
 			double y = thing->yPos();
 			thing->copy(copy_thing);
@@ -3264,13 +2449,16 @@ void MapEditContext::pasteProperties()
 
 		// Paste properties to selection/hilight
 		beginUndoRecord("Paste Line Properties", true, false, false);
-		if (selection.size() > 0)
+		/*if (selection.size() > 0)
 		{
 			for (unsigned a = 0; a < selection.size(); a++)
 				map.getLine(selection[a])->copy(copy_line);
 		}
 		else if (hilight_item >= 0)
-			map.getLine(hilight_item)->copy(copy_line);
+			map.getLine(hilight_item)->copy(copy_line);*/
+		auto lines = item_selection.selectedLines();
+		for (auto line : lines)
+			line->copy(copy_line);
 		endUndoRecord();
 
 		// Editor message
@@ -3300,11 +2488,10 @@ void MapEditContext::copy()
 	if (edit_mode == MODE_LINES || edit_mode == MODE_SECTORS)
 	{
 		// Get selected lines
-		vector<MapLine*> lines;
-		getSelectedLines(lines);
+		auto lines = item_selection.selectedLines();
 
 		// Add to clipboard
-		MapArchClipboardItem* c = new MapArchClipboardItem();
+		auto c = new MapArchClipboardItem();
 		c->addLines(lines);
 		theClipboard->addItem(c);
 
@@ -3316,11 +2503,10 @@ void MapEditContext::copy()
 	else if (edit_mode == MODE_THINGS)
 	{
 		// Get selected things
-		vector<MapThing*> things;
-		getSelectedThings(things);
+		auto things = item_selection.selectedThings();
 
 		// Add to clipboard
-		MapThingsClipboardItem* c = new MapThingsClipboardItem();
+		auto c = new MapThingsClipboardItem();
 		c->addThings(things);
 		theClipboard->addItem(c);
 
@@ -3342,11 +2528,11 @@ void MapEditContext::paste(fpoint2_t mouse_pos)
 		{
 			beginUndoRecord("Paste Map Architecture");
 			long move_time = App::runTimer();
-			MapArchClipboardItem* p = (MapArchClipboardItem*)theClipboard->getItem(a);
+			auto p = (MapArchClipboardItem*)theClipboard->getItem(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
 			fpoint2_t pos = relativeSnapToGrid(p->getMidpoint(), mouse_pos);
-			vector<MapVertex*> new_verts = p->pasteToMap(&map, pos);
+			auto new_verts = p->pasteToMap(&map, pos);
 			map.mergeArch(new_verts);
 			addEditorMessage(S_FMT("Pasted %s", p->getInfo()));
 			endUndoRecord(true);
@@ -3356,7 +2542,7 @@ void MapEditContext::paste(fpoint2_t mouse_pos)
 		else if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_THINGS)
 		{
 			beginUndoRecord("Paste Things", false, true, false);
-			MapThingsClipboardItem* p = (MapThingsClipboardItem*)theClipboard->getItem(a);
+			auto p = (MapThingsClipboardItem*)theClipboard->getItem(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
 			fpoint2_t pos = relativeSnapToGrid(p->getMidpoint(), mouse_pos);
@@ -3373,29 +2559,13 @@ void MapEditContext::paste(fpoint2_t mouse_pos)
 
 #pragma region EDITING_3D
 
-/* MapEditContext::set3dHilight
- * Sets the 3d mode hilight (if [item] is different from the current
- * hilight)
- *******************************************************************/
-bool MapEditContext::set3dHilight(MapEditor::Item item)
-{
-	bool changed = false;
-	if (item.index != hilight_3d.index || item.type != hilight_3d.type)
-	{
-		last_undo_level = "";
-		changed = true;
-	}
-
-	hilight_3d = item;
-
-	return changed;
-}
-
 /* MapEditContext::copy3d
  * Copies the currently hilighted 3d wall/flat/thing
  *******************************************************************/
 void MapEditContext::copy3d(int type)
 {
+	auto& hilight_3d = item_selection.hilight();
+
 	// Check hilight
 	if (hilight_3d.index < 0)
 		return;
@@ -3470,12 +2640,12 @@ void MapEditContext::paste3d(int type)
 {
 	// Get items to paste to
 	vector<MapEditor::Item> items;
-	if (selection_3d.size() == 0 && hilight_3d.index >= 0)
-		items.push_back(hilight_3d);
-	else if (selection_3d.size() > 0)
+	if (item_selection.size() == 0 && item_selection.hilight().index >= 0)
+		items.push_back(item_selection.hilight());
+	else if (item_selection.size() > 0)
 	{
-		for (unsigned a = 0; a < selection_3d.size(); a++)
-			items.push_back(selection_3d[a]);
+		for (unsigned a = 0; a < item_selection.size(); a++)
+			items.push_back(item_selection[a]);
 	}
 	else
 		return;
@@ -3558,7 +2728,7 @@ void MapEditContext::paste3d(int type)
 	// Editor message
 	if (type == COPY_TEXTYPE)
 	{
-		if (hilight_3d.type == MapEditor::ItemType::Thing)
+		if (item_selection.hilight().type == MapEditor::ItemType::Thing)
 			addEditorMessage("Pasted Thing Type");
 		else
 			addEditorMessage("Pasted Texture");
@@ -3573,17 +2743,17 @@ void MapEditContext::paste3d(int type)
 void MapEditContext::floodFill3d(int type)
 {
 	// Get items to paste to
-	auto items = edit_3d.getAdjacent(hilight_3d);
+	auto items = edit_3d.getAdjacent(item_selection.hilight());
 
 	// Restrict floodfill to selection, if any
-	if (selection_3d.size() > 0)
+	if (item_selection.size() > 0)
 	{
 		for (auto i = items.begin(); i < items.end(); ++i)
 		{
 			bool found = false;
-			for (unsigned a = 0; a < selection_3d.size(); a++)
+			for (unsigned a = 0; a < item_selection.size(); a++)
 			{
-				if (selection_3d[a].type == i->type && selection_3d[a].index == i->index)
+				if (item_selection[a].type == i->type && item_selection[a].index == i->index)
 				{
 					found = true;
 					break;
@@ -3753,12 +2923,12 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 
 		// Select all
 		else if (key == "select_all")
-			selectAll();
+			item_selection.selectAll();
 
 		// Clear selection
 		else if (key == "me2d_clear_selection")
 		{
-			clearSelection();
+			item_selection.clearSelection();
 			addEditorMessage("Selection cleared");
 		}
 
@@ -3766,10 +2936,10 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		else if (key == "me2d_lock_hilight")
 		{
 			// Toggle lock
-			hilight_locked = !hilight_locked;
+			item_selection.lockHilight(!item_selection.hilightLocked());
 
 			// Add editor message
-			if (hilight_locked)
+			if (item_selection.hilightLocked())
 				addEditorMessage("Locked current hilight");
 			else
 				addEditorMessage("Unlocked hilight");
@@ -3826,7 +2996,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		// Clear selection
 		if (key == "me3d_clear_selection")
 		{
-			clearSelection();
+			item_selection.clearSelection();
 			addEditorMessage("Selection cleared");
 		}
 
@@ -3909,7 +3079,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 
 		// Auto-align
 		else if (key == "me3d_wall_autoalign_x")
-			edit_3d.autoAlignX(hilight_3d);
+			edit_3d.autoAlignX(item_selection.hilight());
 
 		// Reset wall offsets
 		else if (key == "me3d_wall_reset")
@@ -3943,8 +3113,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 void MapEditContext::updateDisplay()
 {
 	// Update map object properties panel
-	vector<MapObject*> selection;
-	getSelectedObjects(selection);
+	auto selection = item_selection.selectedObjects();
 	MapEditor::openMultiObjectProperties(selection);
 
 	// Update canvas info overlay
@@ -3981,9 +3150,9 @@ void MapEditContext::updateStatusText()
 		}
 	}
 
-	if (edit_mode != MODE_3D && selection.size() > 0)
+	if (edit_mode != MODE_3D && item_selection.size() > 0)
 	{
-		mode += S_FMT(" (%lu selected)", selection.size());
+		mode += S_FMT(" (%lu selected)", item_selection.size());
 	}
 
 	MapEditor::windowWx()->CallAfter(&MapEditorWindow::SetStatusText, mode, 1);
@@ -4098,7 +3267,7 @@ void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 void MapEditContext::doUndo()
 {
 	// Clear selection first, since part of it may become invalid
-	clearSelection();
+	item_selection.clearSelection();
 
 	// Undo
 	int time = App::runTimer() - 1;
@@ -4128,7 +3297,7 @@ void MapEditContext::doUndo()
 void MapEditContext::doRedo()
 {
 	// Clear selection first, since part of it may become invalid
-	clearSelection();
+	item_selection.clearSelection();
 
 	// Redo
 	int time = App::runTimer() - 1;

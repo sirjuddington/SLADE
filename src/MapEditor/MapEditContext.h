@@ -8,6 +8,7 @@
 #include "MapEditor.h"
 #include "Edit/LineDraw.h"
 #include "Edit/Edit3D.h"
+#include "ItemSelection.h"
 
 class MapCanvas;
 class UndoManager;
@@ -24,14 +25,12 @@ private:
 	MapObjectCreateDeleteUS*	us_create_delete;
 
 	// Editor state
-	uint8_t		edit_mode;
-	int			hilight_item;
-	bool		hilight_locked;
-	vector<int>	selection;
-	int			gridsize;
-	int			sector_mode;
-	bool		grid_snap;
-	int			current_tag;
+	uint8_t			edit_mode;
+	ItemSelection	item_selection;
+	int				gridsize;
+	int				sector_mode;
+	bool			grid_snap;
+	int				current_tag;
 
 	// Undo/Redo
 	bool	undo_modified;
@@ -81,10 +80,6 @@ private:
 
 	void migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<MapEditor::Item>& old_selection_3d);
 
-	// 3d mode
-	MapEditor::Item			hilight_3d;
-	vector<MapEditor::Item>	selection_3d;
-
 	// Player start swap
 	fpoint2_t	player_start_pos;
 	int			player_start_dir;
@@ -121,28 +116,29 @@ public:
 	~MapEditContext();
 
 	SLADEMap&				getMap() { return map; }
-	uint8_t					editMode() { return edit_mode; }
+	uint8_t					editMode() const { return edit_mode; }
 	int						sectorEditMode() { return sector_mode; }
 	double					gridSize();
-	unsigned				selectionSize() { return selection.size(); }
-	vector<int>&			getSelection() { return selection; }
-	int						hilightItem() { return hilight_item; }
+	//unsigned				selectionSize() { return item_selection.size(); }
+	ItemSelection&			selection() { return item_selection; }
+	MapEditor::Item			hilightItem() { return item_selection.hilight(); }
 	vector<MapSector*>&		taggedSectors() { return tagged_sectors; }
 	vector<MapLine*>&		taggedLines() { return tagged_lines; }
 	vector<MapThing*>&		taggedThings() { return tagged_things; }
 	vector<MapLine*>&		taggingLines() { return tagging_lines; }
 	vector<MapThing*>&		taggingThings() { return tagging_things; }
 	vector<MapThing*>&		pathedThings() { return pathed_things; }
-	bool					hilightLocked() { return hilight_locked; }
-	void					lockHilight(bool lock = true) { hilight_locked = lock; }
+	//bool					hilightLocked() { return item_selection.hilightLocked(); }
+	//void					lockHilight(bool lock = true) { item_selection.lockHilight(lock); }
 	bool					gridSnap() { return grid_snap; }
 	UndoManager*			undoManager() { return undo_manager; }
 	Archive::mapdesc_t&		mapDesc() { return map_desc; }
+	MapCanvas*				getCanvas() const { return canvas; }
 
-	vector<MapEditor::Item>&	get3dSelection() { return selection_3d; }
-	bool						set3dHilight(MapEditor::Item hl);
-	MapEditor::Item			hilightItem3d() { return hilight_3d; }
-	void						get3dSelectionOrHilight(vector<MapEditor::Item>& list);
+	//vector<MapEditor::Item>&	get3dSelection() { return selection_3d; }
+	//bool						set3dHilight(MapEditor::Item hl);
+	//MapEditor::Item			hilightItem3d() { return hilight_3d; }
+	//void						get3dSelectionOrHilight(vector<MapEditor::Item>& list);
 
 	void	setEditMode(int mode);
 	void	setSectorEditMode(int mode);
@@ -153,27 +149,9 @@ public:
 	void	clearMap();
 
 	// Selection/hilight
-	void		clearHilight() { if (!hilight_locked) hilight_item = -1; }
-	bool		updateHilight(fpoint2_t mouse_pos, double dist_scale);
-	void		updateTagged();
-	void		selectionUpdated();
-	void		clearSelection(bool animate = true);
-	void		selectAll();
-	bool		selectCurrent(bool clear_none = true);
-	bool		selectWithin(double xmin, double ymin, double xmax, double ymax, bool add = false);
-	MapVertex*	getHilightedVertex();
-	MapLine*	getHilightedLine();
-	MapSector*	getHilightedSector();
-	MapThing*	getHilightedThing();
-	MapObject*	getHilightedObject();
-	void		getSelectedVertices(vector<MapVertex*>& list);
-	void		getSelectedLines(vector<MapLine*>& list);
-	void		getSelectedSectors(vector<MapSector*>& list);
-	void		getSelectedThings(vector<MapThing*>& list);
-	void		getSelectedObjects(vector<MapObject*>& list);
-	void		showItem(int index);
-	bool		isHilightOrSelection() { return !selection.empty() || hilight_item != -1; }
-	void		selectItem3d(MapEditor::Item item, int sel = TOGGLE);
+	void	showItem(int index);
+	void	updateTagged();
+	void	selectionUpdated();
 
 	// Grid
 	void	incrementGrid();
@@ -244,6 +222,7 @@ public:
 	void	recordPropertyChangeUndoStep(MapObject* object);
 	void	doUndo();
 	void	doRedo();
+	void	resetLastUndoLevel() { last_undo_level = ""; }
 
 	// Player start swapping
 	void	swapPlayerStart3d();

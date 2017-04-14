@@ -300,7 +300,7 @@ void MapRenderer2D::renderVertexHilight(int index, float fade)
  * Renders the vertex selection overlay for vertex indices in
  * [selection]
  *******************************************************************/
-void MapRenderer2D::renderVertexSelection(vector<int>& selection, float fade)
+void MapRenderer2D::renderVertexSelection(const ItemSelection& selection, float fade)
 {
 	// Check anything is selected
 	if (selection.size() == 0)
@@ -321,7 +321,7 @@ void MapRenderer2D::renderVertexSelection(vector<int>& selection, float fade)
 	// Draw selected vertices
 	glBegin(GL_POINTS);
 	for (unsigned a = 0; a < selection.size(); a++)
-		glVertex2d(map->getVertex(selection[a])->xPos(), map->getVertex(selection[a])->yPos());
+		glVertex2d(map->getVertex(selection[a].index)->xPos(), map->getVertex(selection[a].index)->yPos());
 	glEnd();
 
 	if (point)
@@ -541,7 +541,7 @@ void MapRenderer2D::renderLineHilight(int index, float fade)
 /* MapRenderer2D::renderLineSelection
  * Renders the line selection overlay for line indices in [selection]
  *******************************************************************/
-void MapRenderer2D::renderLineSelection(vector<int>& selection, float fade)
+void MapRenderer2D::renderLineSelection(const ItemSelection& selection, float fade)
 {
 	// Check anything is selected
 	if (selection.size() == 0)
@@ -566,7 +566,7 @@ void MapRenderer2D::renderLineSelection(vector<int>& selection, float fade)
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Get line properties
-		line = map->getLine(selection[a]);
+		line = map->getLine(selection[a].index);
 		x1 = line->v1()->xPos();
 		y1 = line->v1()->yPos();
 		x2 = line->v2()->xPos();
@@ -604,7 +604,7 @@ void MapRenderer2D::renderTaggedLines(vector<MapLine*>& lines, float fade)
 
 	// Go through tagged lines
 	double x1, y1, x2, y2;
-	MapObject* object = MapEditor::editContext().getHilightedObject();
+	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		// Render line
@@ -655,7 +655,7 @@ void MapRenderer2D::renderTaggingLines(vector<MapLine*>& lines, float fade)
 
 	// Go through tagging lines
 	double x1, y1, x2, y2;
-	MapObject* object = MapEditor::editContext().getHilightedObject();
+	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		// Render line
@@ -1422,7 +1422,7 @@ void MapRenderer2D::renderThingHilight(int index, float fade)
  * Renders the thing selection overlay for thing indices in
  * [selection]
  *******************************************************************/
-void MapRenderer2D::renderThingSelection(vector<int>& selection, float fade)
+void MapRenderer2D::renderThingSelection(const ItemSelection& selection, float fade)
 {
 	// Check anything is selected
 	if (selection.size() == 0)
@@ -1443,7 +1443,7 @@ void MapRenderer2D::renderThingSelection(vector<int>& selection, float fade)
 	// Draw all selection overlays
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		MapThing* thing = map->getThing(selection[a]);
+		MapThing* thing = map->getThing(selection[a].index);
 		ThingType* tt = theGameConfiguration->thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);
@@ -1504,7 +1504,7 @@ void MapRenderer2D::renderTaggedThings(vector<MapThing*>& things, float fade)
 
 	// Draw action lines
 	// Because gl state is in texture mode above, we cannot merge the loops
-	MapObject* object = MapEditor::editContext().getHilightedObject();
+	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
 		fpoint2_t dst = object->getPoint(MOBJ_POINT_WITHIN);
@@ -1558,7 +1558,7 @@ void MapRenderer2D::renderTaggingThings(vector<MapThing*>& things, float fade)
 
 	// Draw action lines
 	// Because gl state is in texture mode above, we cannot merge the loops
-	MapObject* object = MapEditor::editContext().getHilightedObject();
+	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	if (object && action_lines)
 	{
 		fpoint2_t src = object->getPoint(MOBJ_POINT_WITHIN);
@@ -2161,7 +2161,7 @@ void MapRenderer2D::renderFlatHilight(int index, float fade)
  * Renders the flat selection overlay for sector indices in
  * [selection]
  *******************************************************************/
-void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
+void MapRenderer2D::renderFlatSelection(const ItemSelection& selection, float fade)
 {
 	// Check anything is selected
 	if (selection.size() == 0)
@@ -2182,17 +2182,17 @@ void MapRenderer2D::renderFlatSelection(vector<int>& selection, float fade)
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
 		// Don't draw if outside screen (but still draw if it's small)
-		if (vis_s[selection[a]] > 0 && vis_s[selection[a]] != VIS_SMALL)
+		if (vis_s[selection[a].index] > 0 && vis_s[selection[a].index] != VIS_SMALL)
 			continue;
 
 		// Get the sector's polygon
-		Polygon2D* poly = map->getSector(selection[a])->getPolygon();
-		vector<MapSide*>& sides = map->getSector(selection[a])->connectedSides();
+		Polygon2D* poly = map->getSector(selection[a].index)->getPolygon();
+		vector<MapSide*>& sides = map->getSector(selection[a].index)->connectedSides();
 
 		if (poly->hasPolygon())
 		{
 			if (sector_selected_fill)
-				map->getSector(selection[a])->getPolygon()->render();
+				map->getSector(selection[a].index)->getPolygon()->render();
 
 			for (unsigned s = 0; s < sides.size(); s++)
 				sides_selected.push_back(sides[s]);
@@ -2250,7 +2250,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
 
 	// Render each sector polygon
 	glDisable(GL_TEXTURE_2D);
-	MapObject* object = MapEditor::editContext().getHilightedObject();
+	MapObject* object = MapEditor::editContext().selection().hilightedObject();
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
 		sectors[a]->getPolygon()->render();

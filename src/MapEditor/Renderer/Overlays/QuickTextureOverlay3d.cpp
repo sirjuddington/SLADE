@@ -62,8 +62,7 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 
 	if (editor)
 	{
-		vector<MapEditor::Item> sel;
-		editor->get3dSelectionOrHilight(sel);
+		auto& sel = editor->selection();
 
 		if (!ok(sel))
 		{
@@ -164,8 +163,7 @@ void QuickTextureOverlay3d::applyTexture()
 		return;
 
 	// Get selection/hilight
-	vector<MapEditor::Item> selection;
-	editor->get3dSelectionOrHilight(selection);
+	auto& selection = editor->selection();
 
 	// Go through items
 	if (!selection.empty())
@@ -322,7 +320,7 @@ void QuickTextureOverlay3d::close(bool cancel)
 	if (editor)
 	{
 		editor->endUndoRecord(true);
-		editor->lockHilight(false);
+		editor->selection().lockHilight(false);
 		if (cancel)
 			editor->doUndo();
 	}
@@ -402,7 +400,7 @@ void QuickTextureOverlay3d::keyDown(string key)
 /* QuickTextureOverlay3d::ok
  * Returns true if [sel] is valid for quick texture selection
  *******************************************************************/
-bool QuickTextureOverlay3d::ok(vector<MapEditor::Item> &sel)
+bool QuickTextureOverlay3d::ok(const ItemSelection& sel)
 {
 	// Cancel if no selection
 	if (sel.empty())

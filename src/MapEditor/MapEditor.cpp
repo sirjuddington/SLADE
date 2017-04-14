@@ -91,3 +91,21 @@ void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 {
 	map_window->showObjectEditPanel(show, group);
 }
+
+MapEditor::ItemType MapEditor::baseItemType(const ItemType& type)
+{
+	switch (type)
+	{
+	case ItemType::Vertex:		return ItemType::Vertex;
+	case ItemType::Line:		return ItemType::Line;
+	case ItemType::Side:
+	case ItemType::WallBottom:
+	case ItemType::WallMiddle:
+	case ItemType::WallTop:		return ItemType::Side;
+	case ItemType::Sector:
+	case ItemType::Ceiling:
+	case ItemType::Floor:		return ItemType::Sector;
+	case ItemType::Thing:		return ItemType::Thing;
+	default:					return ItemType::Any;
+	}
+}

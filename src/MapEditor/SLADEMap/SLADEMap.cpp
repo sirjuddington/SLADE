@@ -80,11 +80,11 @@ SLADEMap::~SLADEMap()
 /* SLADEMap::getVertex
  * Returns the vertex at [index], or NULL if [index] is invalid
  *******************************************************************/
-MapVertex* SLADEMap::getVertex(unsigned index)
+MapVertex* SLADEMap::getVertex(unsigned index) const
 {
 	// Check index
 	if (index >= vertices.size())
-		return NULL;
+		return nullptr;
 
 	return vertices[index];
 }
@@ -92,11 +92,11 @@ MapVertex* SLADEMap::getVertex(unsigned index)
 /* SLADEMap::getSide
  * Returns the side at [index], or NULL if [index] is invalid
  *******************************************************************/
-MapSide* SLADEMap::getSide(unsigned index)
+MapSide* SLADEMap::getSide(unsigned index) const
 {
 	// Check index
 	if (index >= sides.size())
-		return NULL;
+		return nullptr;
 
 	return sides[index];
 }
@@ -104,11 +104,11 @@ MapSide* SLADEMap::getSide(unsigned index)
 /* SLADEMap::getLine
  * Returns the line at [index], or NULL if [index] is invalid
  *******************************************************************/
-MapLine* SLADEMap::getLine(unsigned index)
+MapLine* SLADEMap::getLine(unsigned index) const
 {
 	// Check index
 	if (index >= lines.size())
-		return NULL;
+		return nullptr;
 
 	return lines[index];
 }
@@ -116,11 +116,11 @@ MapLine* SLADEMap::getLine(unsigned index)
 /* SLADEMap::getSector
  * Returns the sector at [index], or NULL if [index] is invalid
  *******************************************************************/
-MapSector* SLADEMap::getSector(unsigned index)
+MapSector* SLADEMap::getSector(unsigned index) const
 {
 	// Check index
 	if (index >= sectors.size())
-		return NULL;
+		return nullptr;
 
 	return sectors[index];
 }
@@ -128,11 +128,11 @@ MapSector* SLADEMap::getSector(unsigned index)
 /* SLADEMap::getThing
  * Returns the thing at [index], or NULL if [index] is invalid
  *******************************************************************/
-MapThing* SLADEMap::getThing(unsigned index)
+MapThing* SLADEMap::getThing(unsigned index) const
 {
 	// Check index
 	if (index >= things.size())
-		return NULL;
+		return nullptr;
 
 	return things[index];
 }
@@ -141,20 +141,17 @@ MapThing* SLADEMap::getThing(unsigned index)
  * Returns the object of [type] at [index], or NULL if [index] is
  * invalid
  *******************************************************************/
-MapObject* SLADEMap::getObject(uint8_t type, unsigned index)
+MapObject* SLADEMap::getObject(uint8_t type, unsigned index) const
 {
-	if (type == MOBJ_VERTEX)
-		return getVertex(index);
-	else if (type == MOBJ_LINE)
-		return getLine(index);
-	else if (type == MOBJ_SIDE)
-		return getSide(index);
-	else if (type == MOBJ_SECTOR)
-		return getSector(index);
-	else if (type == MOBJ_THING)
-		return getThing(index);
-
-	return NULL;
+	switch (type)
+	{
+	case MOBJ_VERTEX:	return getVertex(index);
+	case MOBJ_LINE:		return getLine(index);
+	case MOBJ_SIDE:		return getSide(index);
+	case MOBJ_SECTOR:	return getSector(index);
+	case MOBJ_THING:	return getThing(index);
+	default:			return nullptr;
+	}
 }
 
 /* SLADEMap::setGeometryUpdated

@@ -421,14 +421,14 @@ void MapCanvas::viewShowObject()
 
 	// Create list of objects
 	vector<int> objects;
-	vector<int>& selection = editor->getSelection();
+	auto& selection = editor->selection();
 	if (selection.size() > 0)
 	{
 		for (unsigned a = 0; a < selection.size(); a++)
-			objects.push_back(selection[a]);
+			objects.push_back(selection[a].index);
 	}
-	else if (editor->hilightItem() >= 0)
-		objects.push_back(editor->hilightItem());
+	else if (editor->hilightItem().index >= 0)
+		objects.push_back(editor->hilightItem().index);
 	else
 		return;	// Nothing selected or hilighted
 
@@ -818,8 +818,7 @@ void MapCanvas::drawFeatureHelpText()
 void MapCanvas::drawSelectionNumbers()
 {
 	// Check if any selection exists
-	vector<MapObject*> selection;
-	editor->getSelectedObjects(selection);
+	auto selection = editor->selection().selectedObjects();
 	if (selection.size() == 0)
 		return;
 
@@ -874,8 +873,7 @@ void MapCanvas::drawSelectionNumbers()
 void MapCanvas::drawThingQuickAngleLines()
 {
 	// Check if any selection exists
-	vector<MapThing*> selection;
-	editor->getSelectedThings(selection);
+	auto selection = editor->selection().selectedThings();
 	if (selection.size() == 0)
 		return;
 
@@ -1219,11 +1217,11 @@ void MapCanvas::drawMap2d()
 
 		// Selection if needed
 		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
-			renderer_2d->renderVertexSelection(editor->getSelection(), anim_flash_level);
+			renderer_2d->renderVertexSelection(editor->selection(), anim_flash_level);
 
 		// Hilight if needed
 		if (mouse_state == MSTATE_NORMAL && !overlayActive())
-			renderer_2d->renderVertexHilight(editor->hilightItem(), anim_flash_level);
+			renderer_2d->renderVertexHilight(editor->hilightItem().index, anim_flash_level);
 	}
 	else if (editor->editMode() == MapEditContext::MODE_LINES)
 	{
@@ -1234,11 +1232,11 @@ void MapCanvas::drawMap2d()
 
 		// Selection if needed
 		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
-			renderer_2d->renderLineSelection(editor->getSelection(), anim_flash_level);
+			renderer_2d->renderLineSelection(editor->selection(), anim_flash_level);
 
 		// Hilight if needed
 		if (mouse_state == MSTATE_NORMAL && !overlayActive())
-			renderer_2d->renderLineHilight(editor->hilightItem(), anim_flash_level);
+			renderer_2d->renderLineHilight(editor->hilightItem().index, anim_flash_level);
 	}
 	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
 	{
@@ -1249,13 +1247,13 @@ void MapCanvas::drawMap2d()
 
 		// Selection if needed
 		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
-			renderer_2d->renderFlatSelection(editor->getSelection(), anim_flash_level);
+			renderer_2d->renderFlatSelection(editor->selection(), anim_flash_level);
 
 		splitter.testRender();	// Testing
 
 		// Hilight if needed
 		if (mouse_state == MSTATE_NORMAL && !overlayActive())
-			renderer_2d->renderFlatHilight(editor->hilightItem(), anim_flash_level);
+			renderer_2d->renderFlatHilight(editor->hilightItem().index, anim_flash_level);
 	}
 	else if (editor->editMode() == MapEditContext::MODE_THINGS)
 	{
@@ -1274,11 +1272,11 @@ void MapCanvas::drawMap2d()
 
 		// Selection if needed
 		if (mouse_state != MSTATE_MOVE && !overlayActive() && mouse_state != MSTATE_EDIT)
-			renderer_2d->renderThingSelection(editor->getSelection(), anim_flash_level);
+			renderer_2d->renderThingSelection(editor->selection(), anim_flash_level);
 
 		// Hilight if needed
 		if (mouse_state == MSTATE_NORMAL && !overlayActive())
-			renderer_2d->renderThingHilight(editor->hilightItem(), anim_flash_level);
+			renderer_2d->renderThingHilight(editor->hilightItem().index, anim_flash_level);
 	}
 
 
@@ -1298,7 +1296,7 @@ void MapCanvas::drawMap2d()
 	}
 
 	// Draw selection numbers if needed
-	if (editor->selectionSize() > 0 && mouse_state == MSTATE_NORMAL && map_show_selection_numbers)
+	if (editor->selection().size() > 0 && mouse_state == MSTATE_NORMAL && map_show_selection_numbers)
 		drawSelectionNumbers();
 
 	// Draw thing quick angle lines if needed
@@ -1401,12 +1399,12 @@ void MapCanvas::drawMap3d()
 	renderer_3d->renderMap();
 
 	// Determine hilight
-	MapEditor::Item hl;
-	if (!editor->hilightLocked())
+	MapEditor::Item hl{ -1, MapEditor::ItemType::Any };
+	if (!editor->selection().hilightLocked())
 	{
-		MapEditor::Item old_hl = editor->hilightItem3d();
+		auto old_hl = editor->selection().hilight();
 		hl = renderer_3d->determineHilight();
-		if (editor->set3dHilight(hl))
+		if (editor->selection().setHilight(hl))
 		{
 			// Update 3d info overlay
 			if (info_overlay_3d && hl.index >= 0)
@@ -1425,7 +1423,7 @@ void MapCanvas::drawMap3d()
 	}
 
 	// Draw selection if any
-	vector<MapEditor::Item> selection = editor->get3dSelection();
+	auto selection = editor->selection();
 	renderer_3d->renderFlatSelection(selection);
 	renderer_3d->renderWallSelection(selection);
 	renderer_3d->renderThingSelection(selection);
@@ -1483,19 +1481,19 @@ void MapCanvas::draw()
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Check if we have to update the info
-	if (editor->editMode() != MapEditContext::MODE_3D && editor->hilightItem() != last_hilight)
+	if (editor->editMode() != MapEditContext::MODE_3D && editor->hilightItem().index != last_hilight)
 	{
 		// Update hilight index
-		last_hilight = editor->hilightItem();
+		last_hilight = editor->hilightItem().index;
 		anim_info_show = (last_hilight != -1);
 
 		// Update info overlay depending on edit mode
 		switch (editor->editMode())
 		{
-		case MapEditContext::MODE_VERTICES:	info_vertex.update(editor->getHilightedVertex()); break;
-		case MapEditContext::MODE_LINES:	info_line.update(editor->getHilightedLine()); break;
-		case MapEditContext::MODE_SECTORS:	info_sector.update(editor->getHilightedSector()); break;
-		case MapEditContext::MODE_THINGS:	info_thing.update(editor->getHilightedThing()); break;
+		case MapEditContext::MODE_VERTICES:	info_vertex.update(editor->selection().hilightedVertex()); break;
+		case MapEditContext::MODE_LINES:	info_line.update(editor->selection().hilightedLine()); break;
+		case MapEditContext::MODE_SECTORS:	info_sector.update(editor->selection().hilightedSector()); break;
+		case MapEditContext::MODE_THINGS:	info_thing.update(editor->selection().hilightedThing()); break;
 		}
 	}
 
@@ -1606,8 +1604,8 @@ bool MapCanvas::update2d(double mult)
 	// Update hilight if needed
 	if (mouse_state == MSTATE_NORMAL && !mouse_movebegin)
 	{
-		MapObject* old_hl = editor->getHilightedObject();
-		if (editor->updateHilight(mouse_pos_m, view_scale) && hilight_smooth)
+		auto old_hl = editor->selection().hilightedObject();
+		if (editor->selection().updateHilight(mouse_pos_m, view_scale) && hilight_smooth)
 		{
 			// Hilight fade animation
 			if (old_hl)
@@ -2341,10 +2339,10 @@ void MapCanvas::updateInfoOverlay()
 	// Update info overlay depending on edit mode
 	switch (editor->editMode())
 	{
-	case MapEditContext::MODE_VERTICES:	info_vertex.update(editor->getHilightedVertex()); break;
-	case MapEditContext::MODE_LINES:		info_line.update(editor->getHilightedLine()); break;
-	case MapEditContext::MODE_SECTORS:	info_sector.update(editor->getHilightedSector()); break;
-	case MapEditContext::MODE_THINGS:	info_thing.update(editor->getHilightedThing()); break;
+	case MapEditContext::MODE_VERTICES:	info_vertex.update(editor->selection().hilightedVertex()); break;
+	case MapEditContext::MODE_LINES:	info_line.update(editor->selection().hilightedLine()); break;
+	case MapEditContext::MODE_SECTORS:	info_sector.update(editor->selection().hilightedSector()); break;
+	case MapEditContext::MODE_THINGS:	info_thing.update(editor->selection().hilightedThing()); break;
 	}
 }
 
@@ -2433,16 +2431,15 @@ void MapCanvas::changeThingType()
 {
 	// Determine the initial type
 	int type = -1;
-	vector<MapThing*> selection;
-	editor->getSelectedThings(selection);
+	auto selection = editor->selection().selectedThings();
 	if (selection.size() > 0)
 		type = selection[0]->intProperty("type");
 	else
 		return;
 
 	// Lock hilight in the editor
-	bool hl_lock = editor->hilightLocked();
-	editor->lockHilight();
+	bool hl_lock = editor->selection().hilightLocked();
+	editor->selection().lockHilight();
 
 	// Open type browser
 	ThingTypeBrowser browser(MapEditor::window(), type);
@@ -2453,7 +2450,7 @@ void MapCanvas::changeThingType()
 	}
 
 	// Unlock hilight if needed
-	editor->lockHilight(hl_lock);
+	editor->selection().lockHilight(hl_lock);
 }
 
 /* MapCanvas::changeSectorTexture
@@ -2467,8 +2464,7 @@ void MapCanvas::changeSectorTexture()
 	string texture = "";
 	string browser_title;
 	string undo_name;
-	vector<MapSector*> selection;
-	editor->getSelectedSectors(selection);
+	auto selection = editor->selection().selectedSectors();
 	if (selection.size() > 0)
 	{
 		// Check edit mode
@@ -2497,8 +2493,8 @@ void MapCanvas::changeSectorTexture()
 		return;
 
 	// Lock hilight in the editor
-	bool hl_lock = editor->hilightLocked();
-	editor->lockHilight();
+	bool hl_lock = editor->selection().hilightLocked();
+	editor->selection().lockHilight();
 
 	// Open texture browser
 	MapTextureBrowser browser(MapEditor::window(), 1, texture, &(MapEditor::editContext().getMap()));
@@ -2518,7 +2514,7 @@ void MapCanvas::changeSectorTexture()
 	}
 
 	// Unlock hilight if needed
-	editor->lockHilight(hl_lock);
+	editor->selection().lockHilight(hl_lock);
 	renderer_2d->clearTextureCache();
 }
 
@@ -2578,13 +2574,13 @@ void MapCanvas::changeTexture3d(MapEditor::Item first)
 	{
 		bool mix = theGameConfiguration->mixTexFlats();
 		tex = browser.getSelectedItem()->getName();
-		MapEditor::Item hl = editor->hilightItem3d();
+		MapEditor::Item hl = editor->hilightItem();
 
 		// Begin undo level
 		editor->beginUndoRecord("Change Texture", true, false, false);
 
 		// Apply to flats
-		vector<MapEditor::Item>& selection = editor->get3dSelection();
+		auto& selection = editor->selection();
 		if (mix || type == 1)
 		{
 			// Selection
@@ -2929,7 +2925,7 @@ void MapCanvas::keyBinds2dView(string name)
 		mouse_downpos.set(mouse_pos);
 		panning = true;
 		if (mouse_state == MSTATE_NORMAL)
-			editor->clearHilight();
+			editor->selection().clearHilight();
 		SetCursor(wxCURSOR_SIZING);
 	}
 
@@ -3211,8 +3207,7 @@ void MapCanvas::keyBinds2d(string name)
 		// Object Properties
 		else if (name == "me2d_object_properties")
 		{
-			vector<MapObject*> objects;
-			editor->getSelectedObjects(objects);
+			auto objects = editor->selection().selectedObjects();
 			if (!objects.empty())
 				editObjectProperties(objects);
 		}
@@ -3225,14 +3220,13 @@ void MapCanvas::keyBinds2d(string name)
 			if (name == "me2d_line_change_texture")
 			{
 				// Get selection
-				vector<MapLine*> selection;
-				editor->getSelectedLines(selection);
+				auto selection = editor->selection().selectedLines();
 
 				// Open line texture overlay if anything is selected
 				if (selection.size() > 0)
 				{
 					if (overlay_current) delete overlay_current;
-					LineTextureOverlay* lto = new LineTextureOverlay();
+					auto lto = new LineTextureOverlay();
 					lto->openLines(selection);
 					overlay_current = lto;
 				}
@@ -3278,7 +3272,7 @@ void MapCanvas::keyBinds2d(string name)
 			{
 				if (mouse_state == MSTATE_NORMAL)
 				{
-					if (editor->isHilightOrSelection())
+					if (editor->selection().hasHilightOrSelection())
 						editor->beginUndoRecord("Thing Direction Change", true, false, false);
 
 					mouse_state = MSTATE_THING_ANGLE;
@@ -3411,8 +3405,7 @@ void MapCanvas::keyBinds3d(string name)
 	// Quick texture
 	else if (name == "me3d_quick_texture")
 	{
-		vector<MapEditor::Item> sel;
-		editor->get3dSelectionOrHilight(sel);
+		auto sel = editor->selection();
 
 		if (QuickTextureOverlay3d::ok(sel))
 		{
@@ -3422,7 +3415,7 @@ void MapCanvas::keyBinds3d(string name)
 
 			renderer_3d->enableHilight(false);
 			renderer_3d->enableSelection(false);
-			editor->lockHilight(true);
+			editor->selection().lockHilight(true);
 		}
 	}
 
@@ -3440,7 +3433,7 @@ void MapCanvas::onKeyBindRelease(string name)
 	{
 		panning = false;
 		if (mouse_state == MSTATE_NORMAL)
-			editor->updateHilight(mouse_pos_m, view_scale);
+			editor->selection().updateHilight(mouse_pos_m, view_scale);
 		SetCursor(wxNullCursor);
 	}
 
@@ -3448,7 +3441,7 @@ void MapCanvas::onKeyBindRelease(string name)
 	{
 		mouse_state = MSTATE_NORMAL;
 		editor->endUndoRecord(true);
-		editor->updateHilight(mouse_pos_m, view_scale);
+		editor->selection().updateHilight(mouse_pos_m, view_scale);
 	}
 }
 
@@ -3669,8 +3662,7 @@ bool MapCanvas::handleAction(string id)
 	else if (id == "mapw_item_properties")
 	{
 		// Get selection
-		vector<MapObject*> list;
-		editor->getSelectedObjects(list);
+		auto list = editor->selection().selectedObjects();
 
 		editObjectProperties(list);
 
@@ -3692,14 +3684,13 @@ bool MapCanvas::handleAction(string id)
 	else if (id == "mapw_line_changetexture")
 	{
 		// Get selection
-		vector<MapLine*> selection;
-		editor->getSelectedLines(selection);
+		auto selection = editor->selection().selectedLines();
 
 		// Open line texture overlay if anything is selected
 		if (selection.size() > 0)
 		{
 			if (overlay_current) delete overlay_current;
-			LineTextureOverlay* lto = new LineTextureOverlay();
+			auto lto = new LineTextureOverlay();
 			lto->openLines(selection);
 			overlay_current = lto;
 		}
@@ -3710,10 +3701,7 @@ bool MapCanvas::handleAction(string id)
 	else if (id == "mapw_line_changespecial")
 	{
 		// Get selection
-		//vector<MapLine*> selection;
-		//editor->getSelectedLines(selection);
-		vector<MapObject*> selection;
-		editor->getSelectedObjects(selection);
+		auto selection = editor->selection().selectedObjects();
 
 		// Open action special selection dialog
 		if (selection.size() > 0)
@@ -3797,8 +3785,7 @@ bool MapCanvas::handleAction(string id)
 	else if (id == "mapw_sector_changespecial")
 	{
 		// Get selection
-		vector<MapSector*> selection;
-		editor->getSelectedSectors(selection);
+		auto selection = editor->selection().selectedSectors();
 
 		// Open sector special selection dialog
 		if (selection.size() > 0)
@@ -3930,7 +3917,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		{
 			splitter.setVerbose(true);
 			splitter.clear();
-			splitter.openSector(editor->getHilightedSector());
+			splitter.openSector(editor->selection().hilightedSector());
 			Polygon2D temp;
 			splitter.doSplitting(&temp);
 		}
@@ -3980,7 +3967,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
 	// Update hilight
 	if (mouse_state == MSTATE_NORMAL)
-		editor->updateHilight(mouse_pos_m, view_scale);
+		editor->selection().updateHilight(mouse_pos_m, view_scale);
 
 	// Update mouse variables
 	mouse_downpos.set(e.GetX(), e.GetY());
@@ -4015,9 +4002,9 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			else
 			{
 				if (e.ShiftDown())	// Shift down, select all matching adjacent structures
-					editor->edit3d().selectAdjacent(editor->hilightItem3d());
+					editor->edit3d().selectAdjacent(editor->hilightItem());
 				else	// Toggle selection
-					editor->selectCurrent();
+					editor->selection().toggleCurrent();
 			}
 
 			return;
@@ -4079,20 +4066,19 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			// Double click to edit the current selection
 			if (e.LeftDClick() && property_edit_dclick)
 			{
-				vector<MapObject*> objects;
-				editor->getSelectedObjects(objects);
+				auto objects = editor->selection().selectedObjects();
 				if (!objects.empty())
 				{
 					editObjectProperties(objects);
 					if (objects.size() == 1)
-						editor->clearSelection();
+						editor->selection().clearSelection();
 				}
 			}
 			// Begin box selection if shift is held down, otherwise toggle selection on hilighted object
 			else if (e.ShiftDown())
 				mouse_state = MSTATE_SELECTION;
 			else
-				mouse_selbegin = !editor->selectCurrent(selection_clear_click);
+				mouse_selbegin = !editor->selection().toggleCurrent(selection_clear_click);
 		}
 	}
 
@@ -4103,9 +4089,9 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		if (editor->editMode() == MapEditContext::MODE_3D)
 		{
 			// Get first selected item
-			MapEditor::Item first = editor->hilightItem3d();
-			if (editor->get3dSelection().size() > 0)
-				first = editor->get3dSelection()[0];
+			MapEditor::Item first = editor->hilightItem();
+			if (editor->selection().size() > 0)
+				first = editor->selection()[0];
 
 			// Check type
 			if (first.type == MapEditor::ItemType::Thing)
@@ -4133,7 +4119,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		else if (mouse_state == MSTATE_NORMAL)
 		{
 			// Begin move if something is selected/hilighted
-			if (editor->isHilightOrSelection())
+			if (editor->selection().hasHilightOrSelection())
 				mouse_movebegin = true;
 			//else if (editor->editMode() == MapEditContext::MODE_VERTICES)
 			//	editor->splitLine(mouse_pos_m.x, mouse_pos_m.y, 16/view_scale);
@@ -4176,8 +4162,14 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 			mouse_state = MSTATE_NORMAL;
 
 			// Select
-			editor->selectWithin(min(mouse_downpos_m.x, mouse_pos_m.x), min(mouse_downpos_m.y, mouse_pos_m.y),
-								 max(mouse_downpos_m.x, mouse_pos_m.x), max(mouse_downpos_m.y, mouse_pos_m.y), e.ShiftDown());
+			editor->selection().selectWithin(
+				frect_t(
+					min(mouse_downpos_m.x, mouse_pos_m.x),
+					min(mouse_downpos_m.y, mouse_pos_m.y),
+					max(mouse_downpos_m.x, mouse_pos_m.x),
+					max(mouse_downpos_m.y, mouse_pos_m.y)),
+				e.ShiftDown()
+			);
 
 			// Begin selection box fade animation
 			animations.push_back(new MCASelboxFader(App::runTimer(), mouse_downpos_m, mouse_pos_m));
@@ -4218,7 +4210,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 			SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
 
 			// Mode-specific
-			bool object_selected = (editor->selectionSize() > 0 || editor->hilightItem() >= 0);
+			bool object_selected = editor->selection().hasHilightOrSelection();
 			if (editor->editMode() == MapEditContext::MODE_VERTICES)
 			{
 				menu_context.AppendSeparator();
@@ -4251,7 +4243,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 				{
 					SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
 					SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
-					if (editor->getSelection().size() > 1)
+					if (editor->selection().size() > 1)
 					{
 						SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
 						SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);

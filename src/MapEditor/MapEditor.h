@@ -19,12 +19,15 @@ namespace MapEditor
 		Sector,
 
 		// 3d mode
+		Side,
 		WallTop,
 		WallMiddle,
 		WallBottom,
 		Floor,
 		Ceiling,
 		Thing,	// (also 2d things mode)
+
+		Any
 	};
 
 	struct Item
@@ -32,13 +35,25 @@ namespace MapEditor
 		int			index;
 		ItemType	type;
 
+		Item(int index = -1, ItemType type = ItemType::Any) : index{ index }, type{ type } {}
+
+		// Comparison operators
 		bool operator<(const Item& other) const {
 			if (this->type == other.type)
 				return this->index < other.index;
 			else
 				return this->type < other.type;
 		}
+		bool operator==(const Item& other) const
+		{
+			return index == other.index && (type == ItemType::Any || type == other.type);
+		}
+		bool operator!=(const Item& other) const
+		{
+			return !(*this == other);
+		}
 
+		// Conversion operators
 		explicit operator int() const { return index; }
 	};
 
@@ -58,4 +73,6 @@ namespace MapEditor
 
 	void	showShapeDrawPanel(bool show = true);
 	void	showObjectEditPanel(bool show = true, ObjectEditGroup* group = nullptr);
+
+	ItemType	baseItemType(const ItemType& type);
 }

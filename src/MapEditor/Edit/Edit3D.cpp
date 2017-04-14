@@ -64,7 +64,7 @@ void Edit3D::selectAdjacent(MapEditor::Item item) const
 
 	// Select every list item
 	for (auto& i : getAdjacent(item))
-		context.selectItem3d(i, MapEditContext::SELECT);
+		context.selection().select(i);
 }
 
 /* Edit3D::changeSectorLight
@@ -74,8 +74,8 @@ void Edit3D::changeSectorLight(int amount) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.get3dSelection();
-	auto hilight_3d = context.hilightItem3d();
+	auto& selection_3d = context.selection();
+	auto hilight_3d = context.hilightItem();
 	if (selection_3d.empty() && hilight_3d.index >= 0 && hilight_3d.type != MapEditor::ItemType::Thing)
 		items.push_back(hilight_3d);
 	else
@@ -183,8 +183,8 @@ void Edit3D::changeOffset(int amount, bool x) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.get3dSelection();
-	auto hilight_3d = context.hilightItem3d();
+	auto& selection_3d = context.selection();
+	auto hilight_3d = context.hilightItem();
 	if (selection_3d.empty())
 	{
 		if (hilight_3d.index >= 0 && hilight_3d.type != MapEditor::ItemType::Thing)
@@ -323,8 +323,8 @@ void Edit3D::changeSectorHeight(int amount) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.get3dSelection();
-	auto hilight_3d = context.hilightItem3d();
+	auto& selection_3d = context.selection();
+	auto hilight_3d = context.hilightItem();
 	if (selection_3d.empty() && hilight_3d.type != MapEditor::ItemType::Thing && hilight_3d.index >= 0)
 		items.push_back(hilight_3d);
 	else
@@ -475,8 +475,8 @@ void Edit3D::resetOffsets() const
 	vector<MapEditor::Item> walls;
 	vector<MapEditor::Item> flats;
 	vector<MapEditor::Item> things;
-	auto& selection_3d = context.get3dSelection();
-	auto hilight_3d = context.hilightItem3d();
+	auto& selection_3d = context.selection();
+	auto hilight_3d = context.hilightItem();
 	if (selection_3d.size() == 0)
 	{
 		if (hilight_3d.type == MapEditor::ItemType::WallTop ||
@@ -640,8 +640,8 @@ void Edit3D::resetOffsets() const
  *******************************************************************/
 void Edit3D::toggleUnpegged(bool lower) const
 {
-	auto& selection_3d = context.get3dSelection();
-	auto hilight_3d = context.hilightItem3d();
+	auto& selection_3d = context.selection();
+	auto hilight_3d = context.hilightItem();
 	if (selection_3d.size() == 0 && hilight_3d.index < 0)
 		return;
 
@@ -737,7 +737,7 @@ void Edit3D::changeThingZ(int amount) const
 		return;
 
 	// Go through 3d selection
-	auto& selection_3d = context.get3dSelection();
+	auto& selection_3d = context.selection();
 	for (unsigned a = 0; a < selection_3d.size(); a++)
 	{
 		// Check if thing
@@ -765,7 +765,7 @@ void Edit3D::deleteThing() const
 	context.beginUndoRecord("Delete Thing", false, false, true);
 
 	// Go through 3d selection
-	auto& selection_3d = context.get3dSelection();
+	auto& selection_3d = context.selection();
 	for (auto& item : selection_3d)
 	{
 		// Check if thing
@@ -784,8 +784,8 @@ void Edit3D::changeScale(double amount, bool x) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.get3dSelection();
-	auto hilight_3d = context.hilightItem3d();
+	auto& selection_3d = context.selection();
+	auto hilight_3d = context.hilightItem();
 	if (selection_3d.empty())
 	{
 		if (hilight_3d.index >= 0 && hilight_3d.type != MapEditor::ItemType::Thing)
@@ -865,8 +865,8 @@ void Edit3D::changeHeight(int amount) const
 {
 	// Get items to process
 	vector<MapEditor::Item> items;
-	auto& selection_3d = context.get3dSelection();
-	auto hilight_3d = context.hilightItem3d();
+	auto& selection_3d = context.selection();
+	auto hilight_3d = context.hilightItem();
 	auto& map = context.getMap();
 	if (selection_3d.empty() && hilight_3d.index >= 0)
 	{

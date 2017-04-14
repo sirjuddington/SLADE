@@ -6,6 +6,7 @@
 #include "General/ListenerAnnouncer.h"
 #include "MapEditor/Edit/Edit3D.h"
 
+class ItemSelection;
 class GLTexture;
 class Polygon2D;
 class ThingType;
@@ -157,7 +158,7 @@ public:
 	void	updateSector(unsigned index);
 	void	renderFlat(flat_3d_t* flat);
 	void	renderFlats();
-	void	renderFlatSelection(vector<MapEditor::Item>& selection, float alpha = 1.0f);
+	void	renderFlatSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Walls
 	void	setupQuad(quad_3d_t* quad, double x1, double y1, double x2, double y2, double top, double bottom);
@@ -167,12 +168,12 @@ public:
 	void	renderQuad(quad_3d_t* quad, float alpha = 1.0f);
 	void	renderWalls();
 	void	renderTransparentWalls();
-	void	renderWallSelection(vector<MapEditor::Item>& selection, float alpha = 1.0f);
+	void	renderWallSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// Things
 	void	updateThing(unsigned index, MapThing* thing);
 	void	renderThings();
-	void	renderThingSelection(vector<MapEditor::Item>& selection, float alpha = 1.0f);
+	void	renderThingSelection(const ItemSelection& selection, float alpha = 1.0f);
 
 	// VBO stuff
 	void	updateFlatsVBO();

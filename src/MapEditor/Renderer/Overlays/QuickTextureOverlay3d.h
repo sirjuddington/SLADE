@@ -5,6 +5,7 @@
 #include "MCOverlay.h"
 #include "MapEditor/Edit/Edit3D.h"
 
+class ItemSelection;
 class GLTexture;
 class MapEditContext;
 
@@ -45,7 +46,7 @@ public:
 	void	doSearch();
 	void	keyDown(string key);
 
-	static bool	ok(vector<MapEditor::Item> &sel);
+	static bool	ok(const ItemSelection& sel);
 };
 
 #endif//__QUICK_TEXTURE_OVERLAY_3D_H__
