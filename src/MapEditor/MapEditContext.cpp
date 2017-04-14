@@ -2564,7 +2564,7 @@ void MapEditContext::paste(fpoint2_t mouse_pos)
  *******************************************************************/
 void MapEditContext::copy3d(int type)
 {
-	auto& hilight_3d = item_selection.hilight();
+	auto hilight_3d = item_selection.hilight();
 
 	// Check hilight
 	if (hilight_3d.index < 0)

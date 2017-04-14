@@ -833,7 +833,7 @@ void MapCanvas::drawSelectionNumbers()
 #if USE_SFML_RENDERWINDOW && ((SFML_VERSION_MAJOR == 2 && SFML_VERSION_MINOR >= 4) || SFML_VERSION_MAJOR > 2)
 	Drawing::setTextOutline(1.0f, COL_BLACK);
 #else
-	if (editor->selectionSize() <= map_max_selection_numbers * 0.5)
+	if (editor->selection().size() <= map_max_selection_numbers * 0.5)
 		Drawing::setTextOutline(1.0f, COL_BLACK);
 #endif
 	for (unsigned a = 0; a < selection.size(); a++)
