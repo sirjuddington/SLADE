@@ -33,7 +33,7 @@ private:
 	MapRenderer2D*			renderer_2d;
 	MapRenderer3D*			renderer_3d;
 	int						modifiers_current;
-	int						mode_last;
+	MapEditor::Mode			mode_last;
 	double					mwheel_rotation;
 
 	// Mouse stuff
@@ -176,7 +176,7 @@ public:
 	void 	animateSelectionChange(const ItemSelection& selection);
 	void	updateInfoOverlay();
 	void	forceRefreshRenderer();
-	void	changeEditMode(int mode);
+	void	changeEditMode(MapEditor::Mode mode);
 	void	changeFlatType(int type);
 	void	editObjectProperties(vector<MapObject*>& objects);
 	void	beginLineDraw();

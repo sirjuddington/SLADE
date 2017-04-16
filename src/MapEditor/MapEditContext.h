@@ -25,12 +25,12 @@ private:
 	MapObjectCreateDeleteUS*	us_create_delete;
 
 	// Editor state
-	uint8_t			edit_mode;
-	ItemSelection	item_selection;
-	int				gridsize;
-	int				sector_mode;
-	bool			grid_snap;
-	int				current_tag;
+	MapEditor::Mode			edit_mode;
+	ItemSelection			item_selection;
+	int						gridsize;
+	MapEditor::SectorMode	sector_mode;
+	bool					grid_snap;
+	int						current_tag;
 
 	// Undo/Redo
 	bool	undo_modified;
@@ -78,8 +78,6 @@ private:
 	};
 	vector<editor_msg_t>	editor_messages;
 
-	void migrateSelection(int old_edit_mode, vector<int>& old_selection, vector<MapEditor::Item>& old_selection_3d);
-
 	// Player start swap
 	fpoint2_t	player_start_pos;
 	int			player_start_dir;
@@ -89,18 +87,6 @@ private:
 public:
 	enum
 	{
-		// Editor modes
-		MODE_VERTICES = 0,
-		MODE_LINES,
-		MODE_SECTORS,
-		MODE_THINGS,
-		MODE_3D,
-
-		// Sector edit modes (for shortcut keys, mostly)
-		SECTOR_BOTH = 0,
-		SECTOR_FLOOR,
-		SECTOR_CEILING,
-
 		// Selection
 		DESELECT = 0,
 		SELECT,
@@ -116,10 +102,9 @@ public:
 	~MapEditContext();
 
 	SLADEMap&				getMap() { return map; }
-	uint8_t					editMode() const { return edit_mode; }
-	int						sectorEditMode() { return sector_mode; }
+	MapEditor::Mode			editMode() const { return edit_mode; }
+	MapEditor::SectorMode	sectorEditMode() { return sector_mode; }
 	double					gridSize();
-	//unsigned				selectionSize() { return item_selection.size(); }
 	ItemSelection&			selection() { return item_selection; }
 	MapEditor::Item			hilightItem() { return item_selection.hilight(); }
 	vector<MapSector*>&		taggedSectors() { return tagged_sectors; }
@@ -128,20 +113,14 @@ public:
 	vector<MapLine*>&		taggingLines() { return tagging_lines; }
 	vector<MapThing*>&		taggingThings() { return tagging_things; }
 	vector<MapThing*>&		pathedThings() { return pathed_things; }
-	//bool					hilightLocked() { return item_selection.hilightLocked(); }
-	//void					lockHilight(bool lock = true) { item_selection.lockHilight(lock); }
 	bool					gridSnap() { return grid_snap; }
 	UndoManager*			undoManager() { return undo_manager; }
 	Archive::mapdesc_t&		mapDesc() { return map_desc; }
 	MapCanvas*				getCanvas() const { return canvas; }
 
-	//vector<MapEditor::Item>&	get3dSelection() { return selection_3d; }
-	//bool						set3dHilight(MapEditor::Item hl);
-	//MapEditor::Item			hilightItem3d() { return hilight_3d; }
-	//void						get3dSelectionOrHilight(vector<MapEditor::Item>& list);
-
-	void	setEditMode(int mode);
-	void	setSectorEditMode(int mode);
+	void	setEditMode(MapEditor::Mode mode);
+	void	setSectorEditMode(MapEditor::SectorMode mode);
+	void 	cycleSectorEditMode();
 	void	setCanvas(MapCanvas* canvas) { this->canvas = canvas; }
 
 	// Map loading

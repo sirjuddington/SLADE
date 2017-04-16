@@ -60,6 +60,9 @@
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #undef None
 
+using MapEditor::Mode;
+using MapEditor::SectorMode;
+
 
 /*******************************************************************
  * VARIABLES
@@ -433,12 +436,12 @@ void MapCanvas::viewShowObject()
 		return;	// Nothing selected or hilighted
 
 	// Generate bbox (depending on object type)
-	if (editor->editMode() == MapEditContext::MODE_VERTICES)
+	if (editor->editMode() == Mode::Vertices)
 	{
 		for (unsigned a = 0; a < objects.size(); a++)
 			bbox.extend(map.getVertex(objects[a])->xPos(), map.getVertex(objects[a])->yPos());
 	}
-	else if (editor->editMode() == MapEditContext::MODE_LINES)
+	else if (editor->editMode() == Mode::Lines)
 	{
 		MapLine* line;
 		for (unsigned a = 0; a < objects.size(); a++)
@@ -448,7 +451,7 @@ void MapCanvas::viewShowObject()
 			bbox.extend(line->v2()->xPos(), line->v2()->yPos());
 		}
 	}
-	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+	else if (editor->editMode() == Mode::Sectors)
 	{
 		bbox = map.getSector(objects[0])->boundingBox();
 		for (unsigned a = 1; a < objects.size(); a++)
@@ -464,7 +467,7 @@ void MapCanvas::viewShowObject()
 				bbox.max.y = sbb.max.y;
 		}
 	}
-	else if (editor->editMode() == MapEditContext::MODE_THINGS)
+	else if (editor->editMode() == Mode::Things)
 	{
 		for (unsigned a = 0; a < objects.size(); a++)
 			bbox.extend(map.getThing(objects[a])->xPos(), map.getThing(objects[a])->yPos());
@@ -850,7 +853,7 @@ void MapCanvas::drawSelectionNumbers()
 		tp.x -= ts.x * 0.5;
 		tp.y -= ts.y * 0.5;
 
-		if (editor->editMode() == MapEditContext::MODE_VERTICES)
+		if (editor->editMode() == Mode::Vertices)
 		{
 			tp.x += 8;
 			tp.y += 8;
@@ -1187,11 +1190,11 @@ void MapCanvas::drawMap2d()
 
 		// Adjust flat type depending on sector mode
 		int drawtype = 0;
-		if (editor->editMode() == MapEditContext::MODE_SECTORS)
+		if (editor->editMode() == Mode::Sectors)
 		{
-			if (editor->sectorEditMode() == MapEditContext::SECTOR_FLOOR)
+			if (editor->sectorEditMode() == SectorMode::Floor)
 				drawtype = 1;
-			else if (editor->sectorEditMode() == MapEditContext::SECTOR_CEILING)
+			else if (editor->sectorEditMode() == SectorMode::Ceiling)
 				drawtype = 2;
 		}
 
@@ -1203,7 +1206,7 @@ void MapCanvas::drawMap2d()
 
 	// --- Draw map (depending on mode) ---
 	OpenGL::resetBlend();
-	if (editor->editMode() == MapEditContext::MODE_VERTICES)
+	if (editor->editMode() == Mode::Vertices)
 	{
 		// Vertices mode
 		renderer_2d->renderThings(fade_things);						// Things
@@ -1223,7 +1226,7 @@ void MapCanvas::drawMap2d()
 		if (mouse_state == MSTATE_NORMAL && !overlayActive())
 			renderer_2d->renderVertexHilight(editor->hilightItem().index, anim_flash_level);
 	}
-	else if (editor->editMode() == MapEditContext::MODE_LINES)
+	else if (editor->editMode() == Mode::Lines)
 	{
 		// Lines mode
 		renderer_2d->renderThings(fade_things);		// Things
@@ -1238,7 +1241,7 @@ void MapCanvas::drawMap2d()
 		if (mouse_state == MSTATE_NORMAL && !overlayActive())
 			renderer_2d->renderLineHilight(editor->hilightItem().index, anim_flash_level);
 	}
-	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+	else if (editor->editMode() == Mode::Sectors)
 	{
 		// Sectors mode
 		renderer_2d->renderThings(fade_things);					// Things
@@ -1255,7 +1258,7 @@ void MapCanvas::drawMap2d()
 		if (mouse_state == MSTATE_NORMAL && !overlayActive())
 			renderer_2d->renderFlatHilight(editor->hilightItem().index, anim_flash_level);
 	}
-	else if (editor->editMode() == MapEditContext::MODE_THINGS)
+	else if (editor->editMode() == Mode::Things)
 	{
 		// Check if we should force thing angles visible
 		bool force_dir = false;
@@ -1349,7 +1352,7 @@ void MapCanvas::drawMap2d()
 	if (mouse_state == MSTATE_PASTE)
 	{
 
-		if (editor->editMode() == MapEditContext::MODE_THINGS)
+		if (editor->editMode() == Mode::Things)
 		{
 			// Get clipboard item
 			for (unsigned a = 0; a < theClipboard->nItems(); a++)
@@ -1374,13 +1377,13 @@ void MapCanvas::drawMap2d()
 	{
 		switch (editor->editMode())
 		{
-		case MapEditContext::MODE_VERTICES:
+		case Mode::Vertices:
 			renderer_2d->renderMovingVertices(editor->movingItems(), editor->moveVector()); break;
-		case MapEditContext::MODE_LINES:
+		case Mode::Lines:
 			renderer_2d->renderMovingLines(editor->movingItems(), editor->moveVector()); break;
-		case MapEditContext::MODE_SECTORS:
+		case Mode::Sectors:
 			renderer_2d->renderMovingSectors(editor->movingItems(), editor->moveVector()); break;
-		case MapEditContext::MODE_THINGS:
+		case Mode::Things:
 			renderer_2d->renderMovingThings(editor->movingItems(), editor->moveVector()); break;
 		default: break;
 		};
@@ -1461,7 +1464,7 @@ void MapCanvas::draw()
 	glDisable(GL_TEXTURE_2D);
 
 	// Draw 2d or 3d map depending on mode
-	if (editor->editMode() == MapEditContext::MODE_3D)
+	if (editor->editMode() == Mode::Visual)
 		drawMap3d();
 	else
 		drawMap2d();
@@ -1481,7 +1484,7 @@ void MapCanvas::draw()
 		glTranslatef(0.375f, 0.375f, 0);
 
 	// Check if we have to update the info
-	if (editor->editMode() != MapEditContext::MODE_3D && editor->hilightItem().index != last_hilight)
+	if (editor->editMode() != Mode::Visual && editor->hilightItem().index != last_hilight)
 	{
 		// Update hilight index
 		last_hilight = editor->hilightItem().index;
@@ -1490,24 +1493,24 @@ void MapCanvas::draw()
 		// Update info overlay depending on edit mode
 		switch (editor->editMode())
 		{
-		case MapEditContext::MODE_VERTICES:	info_vertex.update(editor->selection().hilightedVertex()); break;
-		case MapEditContext::MODE_LINES:	info_line.update(editor->selection().hilightedLine()); break;
-		case MapEditContext::MODE_SECTORS:	info_sector.update(editor->selection().hilightedSector()); break;
-		case MapEditContext::MODE_THINGS:	info_thing.update(editor->selection().hilightedThing()); break;
+		case Mode::Vertices:	info_vertex.update(editor->selection().hilightedVertex()); break;
+		case Mode::Lines:	info_line.update(editor->selection().hilightedLine()); break;
+		case Mode::Sectors:	info_sector.update(editor->selection().hilightedSector()); break;
+		case Mode::Things:	info_thing.update(editor->selection().hilightedThing()); break;
 		}
 	}
 
 	// Draw current info overlay
 	glDisable(GL_TEXTURE_2D);
-	if (editor->editMode() == MapEditContext::MODE_VERTICES)
+	if (editor->editMode() == Mode::Vertices)
 		info_vertex.draw(GetSize().y, GetSize().x, anim_info_fade);
-	else if (editor->editMode() == MapEditContext::MODE_LINES)
+	else if (editor->editMode() == Mode::Lines)
 		info_line.draw(GetSize().y, GetSize().x, anim_info_fade);
-	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+	else if (editor->editMode() == Mode::Sectors)
 		info_sector.draw(GetSize().y, GetSize().x, anim_info_fade);
-	else if (editor->editMode() == MapEditContext::MODE_THINGS)
+	else if (editor->editMode() == Mode::Things)
 		info_thing.draw(GetSize().y, GetSize().x, anim_info_fade);
-	else if (editor->editMode() == MapEditContext::MODE_3D)
+	else if (editor->editMode() == Mode::Visual)
 		info_3d.draw(GetSize().y, GetSize().x, GetSize().x * 0.5, anim_info_fade);
 
 	// Draw current fullscreen overlay
@@ -1515,7 +1518,7 @@ void MapCanvas::draw()
 		overlay_current->draw(GetSize().x, GetSize().y, anim_overlay_fade);
 
 	// Draw crosshair if 3d mode
-	if (editor->editMode() == MapEditContext::MODE_3D)
+	if (editor->editMode() == Mode::Visual)
 	{
 		// Get crosshair colour
 		rgba_t col = ColourConfiguration::getColour("map_3d_crosshair");
@@ -1647,28 +1650,28 @@ bool MapCanvas::update2d(double mult)
 	// Interpolate
 	bool anim_mode_crossfade = false;
 	float mcs_speed = 0.08f;
-	if (editor->editMode() == MapEditContext::MODE_VERTICES)
+	if (editor->editMode() == Mode::Vertices)
 	{
 		if (fade_vertices < 1.0f)  { fade_vertices += mcs_speed*(1.0f-fa_vertices)*mult; anim_mode_crossfade = true; }
 		fade_lines = fa_lines;
 		if (fade_flats > fa_flats) { fade_flats -= mcs_speed*(1.0f-fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things > fa_things) { fade_things -= mcs_speed*(1.0f-fa_things)*mult; anim_mode_crossfade = true; }
 	}
-	else if (editor->editMode() == MapEditContext::MODE_LINES)
+	else if (editor->editMode() == Mode::Lines)
 	{
 		if (fade_vertices > fa_vertices) { fade_vertices -= mcs_speed*(1.0f-fa_vertices)*mult; anim_mode_crossfade = true; }
 		fade_lines = 1.0f;
 		if (fade_flats > fa_flats) { fade_flats -= mcs_speed*(1.0f-fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things > fa_things) { fade_things -= mcs_speed*(1.0f-fa_things)*mult; anim_mode_crossfade = true; }
 	}
-	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+	else if (editor->editMode() == Mode::Sectors)
 	{
 		if (fade_vertices > fa_vertices) { fade_vertices -= mcs_speed*(1.0f-fa_vertices)*mult; anim_mode_crossfade = true; }
 		fade_lines = fa_lines;
 		if (fade_flats < 1.0f) { fade_flats += mcs_speed*(1.0f-fa_flats)*mult; anim_mode_crossfade = true; }
 		if (fade_things > fa_things) { fade_things -= mcs_speed*(1.0f-fa_things)*mult; anim_mode_crossfade = true; }
 	}
-	else if (editor->editMode() == MapEditContext::MODE_THINGS)
+	else if (editor->editMode() == Mode::Things)
 	{
 		if (fade_vertices > fa_vertices) { fade_vertices -= mcs_speed*(1.0f-fa_vertices)*mult; anim_mode_crossfade = true; }
 		fade_lines = fa_lines;
@@ -1876,7 +1879,7 @@ void MapCanvas::update(long frametime)
 
 	// Update stuff depending on (2d/3d) mode
 	bool mode_anim = false;
-	if (editor->editMode() == MapEditContext::MODE_3D)
+	if (editor->editMode() == Mode::Visual)
 		mode_anim = update3d(mult);
 	else
 		mode_anim = update2d(mult);
@@ -2141,7 +2144,7 @@ void MapCanvas::determineObjectEditState()
 void MapCanvas::mouseLook3d()
 {
 	// Check for 3d mode
-	if (editor->editMode() == MapEditContext::MODE_3D && mouse_locked)
+	if (editor->editMode() == Mode::Visual && mouse_locked)
 	{
 		if (!overlay_current || !overlayActive() || (overlay_current && overlay_current->allow3dMlook()))
 		{
@@ -2173,7 +2176,7 @@ void MapCanvas::mouseLook3d()
 void MapCanvas::itemSelected(int index, bool selected)
 {
 	// Things mode
-	if (editor->editMode() == MapEditContext::MODE_THINGS)
+	if (editor->editMode() == Mode::Things)
 	{
 		// Get thing
 		MapThing* t = editor->getMap().getThing(index);
@@ -2189,7 +2192,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 	}
 
 	// Lines mode
-	else if (editor->editMode() == MapEditContext::MODE_LINES)
+	else if (editor->editMode() == Mode::Lines)
 	{
 		// Get line
 		vector<MapLine*> vec;
@@ -2200,7 +2203,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 	}
 
 	// Vertices mode
-	else if (editor->editMode() == MapEditContext::MODE_VERTICES)
+	else if (editor->editMode() == Mode::Vertices)
 	{
 		// Get vertex
 		vector<MapVertex*> verts;
@@ -2216,7 +2219,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 	}
 
 	// Sectors mode
-	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+	else if (editor->editMode() == Mode::Sectors)
 	{
 		// Get sector polygon
 		vector<Polygon2D*> polys;
@@ -2234,7 +2237,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 {
 	// Things mode
-	if (editor->editMode() == MapEditContext::MODE_THINGS)
+	if (editor->editMode() == Mode::Things)
 	{
 		// Go through selection
 		for (unsigned a = 0; a < items.size(); a++)
@@ -2242,7 +2245,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 	}
 
 	// Lines mode
-	else if (editor->editMode() == MapEditContext::MODE_LINES)
+	else if (editor->editMode() == Mode::Lines)
 	{
 		vector<MapLine*> lines;
 		for (unsigned a = 0; a < items.size(); a++)
@@ -2253,7 +2256,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 	}
 
 	// Vertices mode
-	else if (editor->editMode() == MapEditContext::MODE_VERTICES)
+	else if (editor->editMode() == Mode::Vertices)
 	{
 		// Get list of vertices
 		vector<MapVertex*> verts;
@@ -2270,7 +2273,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 	}
 
 	// Sectors mode
-	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+	else if (editor->editMode() == Mode::Sectors)
 	{
 		// Get list of sector polygons
 		vector<Polygon2D*> polys;
@@ -2452,10 +2455,10 @@ void MapCanvas::updateInfoOverlay()
 	// Update info overlay depending on edit mode
 	switch (editor->editMode())
 	{
-	case MapEditContext::MODE_VERTICES:	info_vertex.update(editor->selection().hilightedVertex()); break;
-	case MapEditContext::MODE_LINES:	info_line.update(editor->selection().hilightedLine()); break;
-	case MapEditContext::MODE_SECTORS:	info_sector.update(editor->selection().hilightedSector()); break;
-	case MapEditContext::MODE_THINGS:	info_thing.update(editor->selection().hilightedThing()); break;
+	case Mode::Vertices:	info_vertex.update(editor->selection().hilightedVertex()); break;
+	case Mode::Lines:	info_line.update(editor->selection().hilightedLine()); break;
+	case Mode::Sectors:	info_sector.update(editor->selection().hilightedSector()); break;
+	case Mode::Things:	info_thing.update(editor->selection().hilightedThing()); break;
 	}
 }
 
@@ -2465,7 +2468,7 @@ void MapCanvas::updateInfoOverlay()
 void MapCanvas::forceRefreshRenderer()
 {
 	// Update 3d mode info overlay if needed
-	if (editor->editMode() == MapEditContext::MODE_3D)
+	if (editor->editMode() == Mode::Visual)
 	{
 		MapEditor::Item hl;
 		hl = renderer_3d->determineHilight();
@@ -2482,10 +2485,10 @@ void MapCanvas::forceRefreshRenderer()
 /* MapCanvas::changeEditMode
  * Changes the edit mode to [mode]
  *******************************************************************/
-void MapCanvas::changeEditMode(int mode)
+void MapCanvas::changeEditMode(Mode mode)
 {
 	// Set edit mode
-	int mode_prev = editor->editMode();
+	auto mode_prev = editor->editMode();
 	editor->setEditMode(mode);
 
 	// Unlock mouse
@@ -2493,16 +2496,16 @@ void MapCanvas::changeEditMode(int mode)
 
 	// Update toolbar
 	if (mode != mode_prev) MapEditor::window()->removeAllCustomToolBars();
-	if (mode == MapEditContext::MODE_VERTICES)
+	if (mode == Mode::Vertices)
 		SAction::fromId("mapw_mode_vertices")->setChecked();
-	else if (mode == MapEditContext::MODE_LINES)
+	else if (mode == Mode::Lines)
 		SAction::fromId("mapw_mode_lines")->setChecked();
-	else if (mode == MapEditContext::MODE_SECTORS)
+	else if (mode == Mode::Sectors)
 	{
 		SAction::fromId("mapw_mode_sectors")->setChecked();
 
 		// Sector mode toolbar
-		if (mode_prev != MapEditContext::MODE_SECTORS)
+		if (mode_prev != Mode::Sectors)
 		{
 			wxArrayString actions;
 			actions.Add("mapw_sectormode_normal");
@@ -2512,16 +2515,16 @@ void MapCanvas::changeEditMode(int mode)
 		}
 
 		// Toggle current sector mode
-		if (editor->sectorEditMode() == MapEditContext::SECTOR_BOTH)
+		if (editor->sectorEditMode() == SectorMode::Both)
 			SAction::fromId("mapw_sectormode_normal")->setChecked();
-		else if (editor->sectorEditMode() == MapEditContext::SECTOR_FLOOR)
+		else if (editor->sectorEditMode() == SectorMode::Floor)
 			SAction::fromId("mapw_sectormode_floor")->setChecked();
-		else if (editor->sectorEditMode() == MapEditContext::SECTOR_CEILING)
+		else if (editor->sectorEditMode() == SectorMode::Ceiling)
 			SAction::fromId("mapw_sectormode_ceiling")->setChecked();
 	}
-	else if (mode == MapEditContext::MODE_THINGS)
+	else if (mode == Mode::Things)
 		SAction::fromId("mapw_mode_things")->setChecked();
-	else if (mode == MapEditContext::MODE_3D)
+	else if (mode == Mode::Visual)
 	{
 		SAction::fromId("mapw_mode_3d")->setChecked();
 		KeyBind::releaseAll();
@@ -2531,7 +2534,7 @@ void MapCanvas::changeEditMode(int mode)
 	MapEditor::window()->refreshToolBar();
 
 	// Refresh
-	//if (mode != MapEditContext::MODE_LINES)
+	//if (mode != Mode::Lines)
 	//	renderer_2d->forceUpdate(fade_lines);
 	//else
 	//	renderer_2d->forceUpdate(1.0f);
@@ -2581,13 +2584,13 @@ void MapCanvas::changeSectorTexture()
 	if (selection.size() > 0)
 	{
 		// Check edit mode
-		if (editor->sectorEditMode() == MapEditContext::SECTOR_FLOOR)
+		if (editor->sectorEditMode() == SectorMode::Floor)
 		{
 			texture = selection[0]->stringProperty("texturefloor");
 			browser_title = "Browse Floor Texture";
 			undo_name = "Change Floor Texture";
 		}
-		else if (editor->sectorEditMode() == MapEditContext::SECTOR_CEILING)
+		else if (editor->sectorEditMode() == SectorMode::Ceiling)
 		{
 			texture = selection[0]->stringProperty("textureceiling");
 			browser_title = "Browse Ceiling Texture";
@@ -2618,9 +2621,9 @@ void MapCanvas::changeSectorTexture()
 		editor->beginUndoRecord(undo_name, true, false, false);
 		for (unsigned a = 0; a < selection.size(); a++)
 		{
-			if (editor->sectorEditMode() == MapEditContext::SECTOR_FLOOR)
+			if (editor->sectorEditMode() == SectorMode::Floor)
 				selection[a]->setStringProperty("texturefloor", browser.getSelectedItem()->getName());
-			else if (editor->sectorEditMode() == MapEditContext::SECTOR_CEILING)
+			else if (editor->sectorEditMode() == SectorMode::Ceiling)
 				selection[a]->setStringProperty("textureceiling", browser.getSelectedItem()->getName());
 		}
 		editor->endUndoRecord();
@@ -2758,13 +2761,13 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 {
 	// Determine selection type
 	string type = "Object";
-	if (editor->editMode() == MapEditContext::MODE_VERTICES)
+	if (editor->editMode() == Mode::Vertices)
 		type = "Vertex";
-	else if (editor->editMode() == MapEditContext::MODE_LINES)
+	else if (editor->editMode() == Mode::Lines)
 		type = "Line";
-	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+	else if (editor->editMode() == Mode::Sectors)
 		type = "Sector";
-	else if (editor->editMode() == MapEditContext::MODE_THINGS)
+	else if (editor->editMode() == Mode::Things)
 		type = "Thing";
 
 	// Begin recording undo level
@@ -2785,11 +2788,11 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 
 	// Create properties panel
 	PropsPanelBase* panel_props = nullptr;
-	if (editor->editMode() == MapEditContext::MODE_LINES)
+	if (editor->editMode() == Mode::Lines)
 		sizer->Add(panel_props = new LinePropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
-	else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+	else if (editor->editMode() == Mode::Sectors)
 		sizer->Add(panel_props = new SectorPropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
-	else if (editor->editMode() == MapEditContext::MODE_THINGS)
+	else if (editor->editMode() == Mode::Things)
 		sizer->Add(panel_props = new ThingPropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
 	else
 		sizer->Add(panel_props = new MapObjectPropsPanel(&dlg, true), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
@@ -2810,7 +2813,7 @@ void MapCanvas::editObjectProperties(vector<MapObject*>& list)
 		renderer_2d->forceUpdate(fade_lines);
 		editor->updateDisplay();
 
-		if (editor->editMode() == MapEditContext::MODE_THINGS)
+		if (editor->editMode() == Mode::Things)
 			editor->copyProperties(list[0]);
 	}
 
@@ -2916,12 +2919,12 @@ void MapCanvas::onKeyBindPress(string name)
 	// Toggle 3d mode
 	if (name == "map_toggle_3d")
 	{
-		if (editor->editMode() == MapEditContext::MODE_3D)
+		if (editor->editMode() == Mode::Visual)
 			changeEditMode(mode_last);
 		else
 		{
 			mode_last = editor->editMode();
-			changeEditMode(MapEditContext::MODE_3D);
+			changeEditMode(Mode::Visual);
 		}
 	}
 
@@ -2971,7 +2974,7 @@ void MapCanvas::onKeyBindPress(string name)
 	}
 
 	// Handle keybinds depending on mode
-	if (editor->editMode() == MapEditContext::MODE_3D)
+	if (editor->editMode() == Mode::Visual)
 		keyBinds3d(name);
 	else
 	{
@@ -3183,23 +3186,23 @@ void MapCanvas::keyBinds2d(string name)
 
 		// Vertices mode
 		if (name == "me2d_mode_vertices")
-			changeEditMode(MapEditContext::MODE_VERTICES);
+			changeEditMode(Mode::Vertices);
 
 		// Lines mode
 		else if (name == "me2d_mode_lines")
-			changeEditMode(MapEditContext::MODE_LINES);
+			changeEditMode(Mode::Lines);
 
 		// Sectors mode
 		else if (name == "me2d_mode_sectors")
-			changeEditMode(MapEditContext::MODE_SECTORS);
+			changeEditMode(Mode::Sectors);
 
 		// Things mode
 		else if (name == "me2d_mode_things")
-			changeEditMode(MapEditContext::MODE_THINGS);
+			changeEditMode(Mode::Things);
 
 		// 3d mode
 		else if (name == "me2d_mode_3d")
-			changeEditMode(MapEditContext::MODE_3D);
+			changeEditMode(Mode::Visual);
 
 		// Cycle flat type
 		else if (name == "me2d_flat_type")
@@ -3259,7 +3262,7 @@ void MapCanvas::keyBinds2d(string name)
 		else if (name == "me2d_create_object")
 		{
 			// If in lines mode, begin line drawing
-			if (editor->editMode() == MapEditContext::MODE_LINES)
+			if (editor->editMode() == Mode::Lines)
 			{
 				draw_state = DSTATE_LINE;
 				mouse_state = MSTATE_LINE_DRAW;
@@ -3327,7 +3330,7 @@ void MapCanvas::keyBinds2d(string name)
 
 
 		// --- Lines edit mode ---
-		if (editor->editMode() == MapEditContext::MODE_LINES)
+		if (editor->editMode() == Mode::Lines)
 		{
 			// Change line texture
 			if (name == "me2d_line_change_texture")
@@ -3374,7 +3377,7 @@ void MapCanvas::keyBinds2d(string name)
 
 
 		// --- Things edit mode ---
-		else if (editor->editMode() == MapEditContext::MODE_THINGS)
+		else if (editor->editMode() == Mode::Things)
 		{
 			// Change type
 			if (name == "me2d_thing_change_type")
@@ -3395,7 +3398,7 @@ void MapCanvas::keyBinds2d(string name)
 
 
 		// --- Sectors edit mode ---
-		else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+		else if (editor->editMode() == Mode::Sectors)
 		{
 			// Change sector texture
 			if (name == "me2d_sector_change_texture")
@@ -3575,28 +3578,28 @@ bool MapCanvas::handleAction(string id)
 	// Vertices mode
 	if (id == "mapw_mode_vertices")
 	{
-		changeEditMode(MapEditContext::MODE_VERTICES);
+		changeEditMode(Mode::Vertices);
 		return true;
 	}
 
 	// Lines mode
 	else if (id == "mapw_mode_lines")
 	{
-		changeEditMode(MapEditContext::MODE_LINES);
+		changeEditMode(Mode::Lines);
 		return true;
 	}
 
 	// Sectors mode
 	else if (id == "mapw_mode_sectors")
 	{
-		changeEditMode(MapEditContext::MODE_SECTORS);
+		changeEditMode(Mode::Sectors);
 		return true;
 	}
 
 	// Things mode
 	else if (id == "mapw_mode_things")
 	{
-		changeEditMode(MapEditContext::MODE_THINGS);
+		changeEditMode(Mode::Things);
 		return true;
 	}
 
@@ -3605,7 +3608,7 @@ bool MapCanvas::handleAction(string id)
 	{
 		SetFocusFromKbd();
 		SetFocus();
-		changeEditMode(MapEditContext::MODE_3D);
+		changeEditMode(Mode::Visual);
 		return true;
 	}
 
@@ -3633,21 +3636,21 @@ bool MapCanvas::handleAction(string id)
 	// Normal sector edit mode
 	else if (id == "mapw_sectormode_normal")
 	{
-		editor->setSectorEditMode(MapEditContext::SECTOR_BOTH);
+		editor->setSectorEditMode(SectorMode::Both);
 		return true;
 	}
 
 	// Floors sector edit mode
 	else if (id == "mapw_sectormode_floor")
 	{
-		editor->setSectorEditMode(MapEditContext::SECTOR_FLOOR);
+		editor->setSectorEditMode(SectorMode::Floor);
 		return true;
 	}
 
 	// Ceilings sector edit mode
 	else if (id == "mapw_sectormode_ceiling")
 	{
-		editor->setSectorEditMode(MapEditContext::SECTOR_CEILING);
+		editor->setSectorEditMode(SectorMode::Ceiling);
 		return true;
 	}
 
@@ -3686,13 +3689,13 @@ bool MapCanvas::handleAction(string id)
 		ShowItemDialog dlg(this);
 		switch (editor->editMode())
 		{
-		case MapEditContext::MODE_VERTICES:
+		case Mode::Vertices:
 			dlg.setType(MOBJ_VERTEX); break;
-		case MapEditContext::MODE_LINES:
+		case Mode::Lines:
 			dlg.setType(MOBJ_LINE); break;
-		case MapEditContext::MODE_SECTORS:
+		case Mode::Sectors:
 			dlg.setType(MOBJ_SECTOR); break;
-		case MapEditContext::MODE_THINGS:
+		case Mode::Things:
 			dlg.setType(MOBJ_THING); break;
 		default:
 			return true;
@@ -3711,15 +3714,15 @@ bool MapCanvas::handleAction(string id)
 			switch (dlg.getType())
 			{
 			case MOBJ_VERTEX:
-				editor->setEditMode(MapEditContext::MODE_VERTICES); break;
+				editor->setEditMode(Mode::Vertices); break;
 			case MOBJ_LINE:
-				editor->setEditMode(MapEditContext::MODE_LINES); break;
+				editor->setEditMode(Mode::Lines); break;
 			case MOBJ_SIDE:
-				editor->setEditMode(MapEditContext::MODE_LINES); side = true; break;
+				editor->setEditMode(Mode::Lines); side = true; break;
 			case MOBJ_SECTOR:
-				editor->setEditMode(MapEditContext::MODE_SECTORS); break;
+				editor->setEditMode(Mode::Sectors); break;
 			case MOBJ_THING:
-				editor->setEditMode(MapEditContext::MODE_THINGS); break;
+				editor->setEditMode(Mode::Things); break;
 			default:
 				break;
 			}
@@ -4026,7 +4029,7 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 
 			editor->addEditorMessage(S_FMT("Front %d Back %d", i1, i2));
 		}
-		if (e.GetKeyCode() == WXK_F5 && editor->editMode() == MapEditContext::MODE_SECTORS)
+		if (e.GetKeyCode() == WXK_F5 && editor->editMode() == Mode::Sectors)
 		{
 			splitter.setVerbose(true);
 			splitter.clear();
@@ -4104,7 +4107,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	if (e.LeftDown() || e.LeftDClick())
 	{
 		// 3d mode
-		if (editor->editMode() == MapEditContext::MODE_3D)
+		if (editor->editMode() == Mode::Visual)
 		{
 			// If the mouse is unlocked, lock the mouse
 			if (!mouse_locked)
@@ -4199,7 +4202,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	else if (e.RightDown())
 	{
 		// 3d mode
-		if (editor->editMode() == MapEditContext::MODE_3D)
+		if (editor->editMode() == Mode::Visual)
 		{
 			// Get first selected item
 			MapEditor::Item first = editor->hilightItem();
@@ -4234,7 +4237,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			// Begin move if something is selected/hilighted
 			if (editor->selection().hasHilightOrSelection())
 				mouse_movebegin = true;
-			//else if (editor->editMode() == MapEditContext::MODE_VERTICES)
+			//else if (editor->editMode() == Mode::Vertices)
 			//	editor->splitLine(mouse_pos_m.x, mouse_pos_m.y, 16/view_scale);
 		}
 	}
@@ -4324,12 +4327,12 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 			// Mode-specific
 			bool object_selected = editor->selection().hasHilightOrSelection();
-			if (editor->editMode() == MapEditContext::MODE_VERTICES)
+			if (editor->editMode() == Mode::Vertices)
 			{
 				menu_context.AppendSeparator();
 				SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
 			}
-			else if (editor->editMode() == MapEditContext::MODE_LINES)
+			else if (editor->editMode() == Mode::Lines)
 			{
 				if (object_selected)
 				{
@@ -4341,7 +4344,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 					SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
 				}
 			}
-			else if (editor->editMode() == MapEditContext::MODE_THINGS)
+			else if (editor->editMode() == Mode::Things)
 			{
 				menu_context.AppendSeparator();
 
@@ -4350,7 +4353,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 				SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
 			}
-			else if (editor->editMode() == MapEditContext::MODE_SECTORS)
+			else if (editor->editMode() == Mode::Sectors)
 			{
 				if (object_selected)
 				{
@@ -4622,7 +4625,7 @@ void MapCanvas::onFocus(wxFocusEvent& e)
 {
 	if (e.GetEventType() == wxEVT_SET_FOCUS)
 	{
-		if (editor->editMode() == MapEditContext::MODE_3D)
+		if (editor->editMode() == Mode::Visual)
 			lockMouse(true);
 	}
 	else if (e.GetEventType() == wxEVT_KILL_FOCUS)

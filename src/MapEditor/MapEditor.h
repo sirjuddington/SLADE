@@ -30,6 +30,22 @@ namespace MapEditor
 		Any
 	};
 
+	enum class Mode
+	{
+		Vertices,
+		Lines,
+		Sectors,
+		Things,
+		Visual
+	};
+
+	enum class SectorMode
+	{
+		Both,
+		Floor,
+		Ceiling
+	};
+
 	struct Item
 	{
 		int			index;

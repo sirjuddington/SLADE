@@ -42,6 +42,8 @@
  * ITEMSELECTION CLASS FUNCTIONS
  *******************************************************************/
 using MapEditor::ItemType;
+using MapEditor::Mode;
+using MapEditor::SectorMode;
 
 /* ItemSelection::ItemSelection
  * ItemSelection class constructor
@@ -101,13 +103,13 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 
 	// Update hilighted object depending on mode
 	auto& map = context_->getMap();
-	if (context_->editMode() == MapEditContext::MODE_VERTICES)
+	if (context_->editMode() == Mode::Vertices)
 		hilight_ = { map.nearestVertex(mouse_pos, 32 / dist_scale), ItemType::Vertex };
-	else if (context_->editMode() == MapEditContext::MODE_LINES)
+	else if (context_->editMode() == Mode::Lines)
 		hilight_ = { map.nearestLine(mouse_pos, 32 / dist_scale), ItemType::Line };
-	else if (context_->editMode() == MapEditContext::MODE_SECTORS)
+	else if (context_->editMode() == Mode::Sectors)
 		hilight_ = { map.sectorAt(mouse_pos), ItemType::Sector };
-	else if (context_->editMode() == MapEditContext::MODE_THINGS)
+	else if (context_->editMode() == Mode::Things)
 	{
 		hilight_ = { -1, ItemType::Thing };
 
@@ -141,13 +143,13 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	{
 		switch (context_->editMode())
 		{
-		case MapEditContext::MODE_VERTICES:
+		case Mode::Vertices:
 			MapEditor::openObjectProperties(map.getVertex(hilight_.index)); break;
-		case MapEditContext::MODE_LINES:
+		case Mode::Lines:
 			MapEditor::openObjectProperties(map.getLine(hilight_.index)); break;
-		case MapEditContext::MODE_SECTORS:
+		case Mode::Sectors:
 			MapEditor::openObjectProperties(map.getSector(hilight_.index)); break;
-		case MapEditContext::MODE_THINGS:
+		case Mode::Things:
 			MapEditor::openObjectProperties(map.getThing(hilight_.index)); break;
 		default: break;
 		}
@@ -216,22 +218,22 @@ void ItemSelection::selectAll()
 
 	// Select all items depending on mode
 	auto& map = context_->getMap();
-	if (context_->editMode() == MapEditContext::MODE_VERTICES)
+	if (context_->editMode() == Mode::Vertices)
 	{
 		for (unsigned a = 0; a < map.nVertices(); a++)
 			selectItem({ (int)a, ItemType::Vertex });
 	}
-	else if (context_->editMode() == MapEditContext::MODE_LINES)
+	else if (context_->editMode() == Mode::Lines)
 	{
 		for (unsigned a = 0; a < map.nLines(); a++)
 			selectItem({ (int)a, ItemType::Line });
 	}
-	else if (context_->editMode() == MapEditContext::MODE_SECTORS)
+	else if (context_->editMode() == Mode::Sectors)
 	{
 		for (unsigned a = 0; a < map.nSectors(); a++)
 			selectItem({ (int)a, ItemType::Sector });
 	}
-	else if (context_->editMode() == MapEditContext::MODE_THINGS)
+	else if (context_->editMode() == Mode::Things)
 	{
 		for (unsigned a = 0; a < map.nThings(); a++)
 			selectItem({ (int)a, ItemType::Thing });
@@ -346,10 +348,10 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 	// Select depending on edit mode
 	switch (context_->editMode())
 	{
-	case MapEditContext::MODE_VERTICES:	selectVerticesWithin(context_->getMap(), rect); break;
-	case MapEditContext::MODE_LINES:	selectLinesWithin(context_->getMap(), rect); break;
-	case MapEditContext::MODE_SECTORS:	selectSectorsWithin(context_->getMap(), rect); break;
-	case MapEditContext::MODE_THINGS:	selectThingsWithin(context_->getMap(), rect); break;
+	case Mode::Vertices:	selectVerticesWithin(context_->getMap(), rect); break;
+	case Mode::Lines:	selectLinesWithin(context_->getMap(), rect); break;
+	case Mode::Sectors:	selectSectorsWithin(context_->getMap(), rect); break;
+	case Mode::Things:	selectThingsWithin(context_->getMap(), rect); break;
 	default: break;
 	}
 
@@ -417,10 +419,10 @@ MapObject* ItemSelection::hilightedObject() const
 
 	switch (context_->editMode())
 	{
-	case MapEditContext::MODE_VERTICES: return hilightedVertex();
-	case MapEditContext::MODE_LINES:	return hilightedLine();
-	case MapEditContext::MODE_SECTORS:	return hilightedSector();
-	case MapEditContext::MODE_THINGS:	return hilightedThing();
+	case Mode::Vertices: return hilightedVertex();
+	case Mode::Lines:	return hilightedLine();
+	case Mode::Sectors:	return hilightedSector();
+	case Mode::Things:	return hilightedThing();
 	default:							return nullptr;
 	}
 }
@@ -535,10 +537,10 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	uint8_t type;
 	switch (context_->editMode())
 	{
-	case MapEditContext::MODE_VERTICES: type = MOBJ_VERTEX; break;
-	case MapEditContext::MODE_LINES: type = MOBJ_LINE; break;
-	case MapEditContext::MODE_SECTORS: type = MOBJ_SECTOR; break;
-	case MapEditContext::MODE_THINGS: type = MOBJ_THING; break;
+	case Mode::Vertices: type = MOBJ_VERTEX; break;
+	case Mode::Lines: type = MOBJ_LINE; break;
+	case Mode::Sectors: type = MOBJ_SECTOR; break;
+	case Mode::Things: type = MOBJ_THING; break;
 	default: return {};
 	}
 
@@ -560,25 +562,25 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
  * For example, selecting a sector and then switching to lines mode
  * will select all its lines
  *******************************************************************/
-void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
+void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 {
 	std::set<MapEditor::Item> new_selection;
 
 	// 3D to 2D: select anything of the right type
-	if (from_edit_mode == MapEditContext::MODE_3D)
+	if (from_edit_mode == Mode::Visual)
 	{
 		for (auto& item : selection_)
 		{
 			// To things mode
-			if (to_edit_mode == MapEditContext::MODE_THINGS && baseItemType(item.type) == ItemType::Thing)
+			if (to_edit_mode == Mode::Things && baseItemType(item.type) == ItemType::Thing)
 				new_selection.insert({ item.index, ItemType::Thing });
 
 			// To sectors mode
-			else if (to_edit_mode == MapEditContext::MODE_SECTORS && baseItemType(item.type) == ItemType::Sector)
+			else if (to_edit_mode == Mode::Sectors && baseItemType(item.type) == ItemType::Sector)
 				new_selection.insert({ item.index, ItemType::Sector });
 
 			// To lines mode
-			else if (to_edit_mode == MapEditContext::MODE_LINES && baseItemType(item.type) == ItemType::Side)
+			else if (to_edit_mode == Mode::Lines && baseItemType(item.type) == ItemType::Side)
 			{
 				auto side = context_->getMap().getSide(item.index);
 				if (!side) continue;
@@ -588,7 +590,7 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
 	}
 
 	// 2D to 3D: can be done perfectly
-	else if (to_edit_mode == MapEditContext::MODE_3D)
+	else if (to_edit_mode == Mode::Visual)
 	{
 		for (auto& item : selection_)
 		{
@@ -634,7 +636,7 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
 	// Otherwise, 2D to 2D
 
 	// Sectors can be migrated to anything
-	else if (from_edit_mode == MapEditContext::MODE_SECTORS)
+	else if (from_edit_mode == Mode::Sectors)
 	{
 		for (auto& item : selection_)
 		{
@@ -642,7 +644,7 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
 			if (!sector) continue;
 
 			// To lines mode
-			if (to_edit_mode == MapEditContext::MODE_LINES)
+			if (to_edit_mode == Mode::Lines)
 			{
 				vector<MapLine*> lines;
 				sector->getLines(lines);
@@ -651,7 +653,7 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
 			}
 
 			// To vertices mode
-			else if (to_edit_mode == MapEditContext::MODE_VERTICES)
+			else if (to_edit_mode == Mode::Vertices)
 			{
 				vector<MapVertex*> vertices;
 				sector->getVertices(vertices);
@@ -660,7 +662,7 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
 			}
 
 			// To things mode
-			else if (to_edit_mode == MapEditContext::MODE_THINGS)
+			else if (to_edit_mode == Mode::Things)
 			{
 				// TODO this is much harder
 			}
@@ -668,7 +670,7 @@ void ItemSelection::migrate(int from_edit_mode, int to_edit_mode)
 	}
 
 	// Lines can only reliably be migrated to vertices
-	else if (from_edit_mode == MapEditContext::MODE_LINES && to_edit_mode == MapEditContext::MODE_VERTICES)
+	else if (from_edit_mode == Mode::Lines && to_edit_mode == Mode::Vertices)
 	{
 		for (auto& item : selection_)
 		{

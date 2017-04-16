@@ -71,7 +71,7 @@ public:
 	vector<MapThing*>	selectedThings(bool try_hilight = true) const;
 	vector<MapObject*>	selectedObjects(bool try_hilight = true) const;
 
-	void	migrate(int from_edit_mode, int to_edit_mode);
+	void	migrate(MapEditor::Mode from_edit_mode, MapEditor::Mode to_edit_mode);
 
 	//void	showItem(int index);
 	//void	selectItem3d(MapEditor::Item item, int sel);

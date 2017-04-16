@@ -459,6 +459,8 @@ public:
 /*******************************************************************
  * MapEditContext CLASS FUNCTIONS
  *******************************************************************/
+using MapEditor::Mode;
+using MapEditor::SectorMode;
 
 /* MapEditContext::MapEditContext
  * MapEditContext class constructor
@@ -467,10 +469,10 @@ MapEditContext::MapEditContext() :
 	canvas(nullptr),
 	undo_manager(new UndoManager(&map)),
 	us_create_delete(nullptr),
-	edit_mode(MODE_LINES),
+	edit_mode(Mode::Lines),
 	item_selection(this),
 	gridsize(9),
-	sector_mode(SECTOR_BOTH),
+	sector_mode(SectorMode::Both),
 	grid_snap(true),
 	current_tag(0),
 	undo_modified(false),
@@ -514,37 +516,37 @@ MapEditContext::~MapEditContext()
 /* MapEditContext::setEditMode
  * Changes the current edit mode to [mode]
  *******************************************************************/
-void MapEditContext::setEditMode(int mode)
+void MapEditContext::setEditMode(Mode mode)
 {
 	// Check if we are changing to the same mode
 	if (mode == edit_mode)
 	{
 		// Cycle sector edit mode
-		if (mode == MODE_SECTORS)
-			setSectorEditMode(sector_mode + 1);
+		if (mode == Mode::Sectors)
+			cycleSectorEditMode();
 
 		// Do nothing otherwise
 		return;
 	}
 
 	// Clear 3d mode undo manager on exiting 3d mode
-	if (edit_mode == MODE_3D && mode != MODE_3D)
+	if (edit_mode == Mode::Visual && mode != Mode::Visual)
 	{
 		undo_manager->createMergedLevel(edit_3d.undoManager(), "3D Mode Editing");
 		edit_3d.undoManager()->clear();
 	}
 
 	// Set undo manager for history panel
-	if (mode == MODE_3D && edit_mode != MODE_3D)
+	if (mode == Mode::Visual && edit_mode != Mode::Visual)
 		MapEditor::setUndoManager(edit_3d.undoManager());
-	else if (edit_mode == MODE_3D && mode != MODE_3D)
+	else if (edit_mode == Mode::Visual && mode != Mode::Visual)
 		MapEditor::setUndoManager(undo_manager);
 
-	int old_edit_mode = edit_mode;
+	auto old_edit_mode = edit_mode;
 
 	// Set edit mode
 	edit_mode = mode;
-	sector_mode = SECTOR_BOTH;
+	sector_mode = SectorMode::Both;
 
 	// Clear hilight and selection stuff
 	item_selection.clearHilight();
@@ -559,15 +561,15 @@ void MapEditContext::setEditMode(int mode)
 	// Add editor message
 	switch (edit_mode)
 	{
-	case MODE_VERTICES: addEditorMessage("Vertices mode"); break;
-	case MODE_LINES:	addEditorMessage("Lines mode"); break;
-	case MODE_SECTORS:	addEditorMessage("Sectors mode (Normal)"); break;
-	case MODE_THINGS:	addEditorMessage("Things mode"); break;
-	case MODE_3D:		addEditorMessage("3d mode"); break;
+	case Mode::Vertices: addEditorMessage("Vertices mode"); break;
+	case Mode::Lines:	addEditorMessage("Lines mode"); break;
+	case Mode::Sectors:	addEditorMessage("Sectors mode (Normal)"); break;
+	case Mode::Things:	addEditorMessage("Things mode"); break;
+	case Mode::Visual:		addEditorMessage("3d mode"); break;
 	default: break;
 	};
 
-	if (edit_mode != MODE_3D)
+	if (edit_mode != Mode::Visual)
 		updateDisplay();
 	updateStatusText();
 }
@@ -575,22 +577,33 @@ void MapEditContext::setEditMode(int mode)
 /* MapEditContext::setSectorEditMode
  * Changes the current sector edit mode to [mode]
  *******************************************************************/
-void MapEditContext::setSectorEditMode(int mode)
+void MapEditContext::setSectorEditMode(SectorMode mode)
 {
 	// Set sector mode
 	sector_mode = mode;
-	if (sector_mode > SECTOR_CEILING || sector_mode < 0)
-		sector_mode = SECTOR_BOTH;
 
 	// Editor message
-	if (sector_mode == SECTOR_BOTH)
+	if (sector_mode == SectorMode::Both)
 		addEditorMessage("Sectors mode (Normal)");
-	else if (sector_mode == SECTOR_FLOOR)
+	else if (sector_mode == SectorMode::Floor)
 		addEditorMessage("Sectors mode (Floors)");
 	else
 		addEditorMessage("Sectors mode (Ceilings)");
 
 	updateStatusText();
+}
+
+/* MapEditContext::cycleSectorEditMode
+ * Cycles to the next sector edit mode. Both -> Floors -> Ceilings
+ *******************************************************************/
+void MapEditContext::cycleSectorEditMode()
+{
+	switch (sector_mode)
+	{
+		case SectorMode::Both: setSectorEditMode(SectorMode::Floor); break;
+		case SectorMode::Floor: setSectorEditMode(SectorMode::Ceiling); break;
+		default: setSectorEditMode(SectorMode::Both);
+	}
 }
 
 /* MapEditContext::openMap
@@ -674,10 +687,10 @@ void MapEditContext::showItem(int index)
 	MapEditor::ItemType type;
 	switch (edit_mode)
 	{
-	case MODE_VERTICES: type = MapEditor::ItemType::Vertex; max = map.nVertices(); break;
-	case MODE_LINES: type = MapEditor::ItemType::Line; max = map.nLines(); break;
-	case MODE_SECTORS: type = MapEditor::ItemType::Sector; max = map.nSectors(); break;
-	case MODE_THINGS: type = MapEditor::ItemType::Thing; max = map.nThings(); break;
+	case Mode::Vertices: type = MapEditor::ItemType::Vertex; max = map.nVertices(); break;
+	case Mode::Lines: type = MapEditor::ItemType::Line; max = map.nLines(); break;
+	case Mode::Sectors: type = MapEditor::ItemType::Sector; max = map.nSectors(); break;
+	case Mode::Things: type = MapEditor::ItemType::Thing; max = map.nThings(); break;
 	default: return;
 	}
 
@@ -696,11 +709,11 @@ string MapEditContext::getModeString()
 {
 	switch (edit_mode)
 	{
-	case MODE_VERTICES: return "Vertices";
-	case MODE_LINES: return "Lines";
-	case MODE_SECTORS: return "Sectors";
-	case MODE_THINGS: return "Things";
-	case MODE_3D: return "3D";
+	case Mode::Vertices: return "Vertices";
+	case Mode::Lines: return "Lines";
+	case Mode::Sectors: return "Sectors";
+	case Mode::Things: return "Things";
+	case Mode::Visual: return "3D";
 	default: return "Items";
 	};
 }
@@ -738,18 +751,18 @@ void MapEditContext::updateTagged()
 	{
 		// Gather affecting objects
 		int type, tag = 0, ttype = 0;
-		if (edit_mode == MODE_LINES)
+		if (edit_mode == Mode::Lines)
 		{
 			type = SLADEMap::LINEDEFS;
 			tag = map.getLine(hilight_item)->intProperty("id");
 		}
-		else if (edit_mode == MODE_THINGS)
+		else if (edit_mode == Mode::Things)
 		{
 			type = SLADEMap::THINGS;
 			tag = map.getThing(hilight_item)->intProperty("id");
 			ttype = map.getThing(hilight_item)->getType();
 		}
-		else if (edit_mode == MODE_SECTORS)
+		else if (edit_mode == Mode::Sectors)
 		{
 			type = SLADEMap::SECTORS;
 			tag = map.getSector(hilight_item)->intProperty("id");
@@ -761,13 +774,13 @@ void MapEditContext::updateTagged()
 		}
 
 		// Gather affected objects
-		if (edit_mode == MODE_LINES || edit_mode == MODE_THINGS)
+		if (edit_mode == Mode::Lines || edit_mode == Mode::Things)
 		{
 			MapSector* back = NULL;
 			MapSector* front = NULL;
 			int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
 			// Line specials have front and possibly back sectors
-			if (edit_mode == MODE_LINES)
+			if (edit_mode == Mode::Lines)
 			{
 				MapLine* line = map.getLine(hilight_item);
 				if (line->s2()) back = line->s2()->getSector();
@@ -782,7 +795,7 @@ void MapEditContext::updateTagged()
 
 				// Hexen and UDMF things can have specials too
 			}
-			else /* edit_mode == MODE_THINGS */
+			else /* edit_mode == Mode::Things */
 			{
 				MapThing* thing = map.getThing(hilight_item);
 				if (theGameConfiguration->thingType(thing->getType())->getFlags() & THING_SCRIPT)
@@ -1020,17 +1033,17 @@ bool MapEditContext::beginMove(fpoint2_t mouse_pos)
 
 	// Get list of vertices being moved (if any)
 	vector<MapVertex*> move_verts;
-	if (edit_mode != MODE_THINGS)
+	if (edit_mode != Mode::Things)
 	{
 		// Vertices mode
-		if (edit_mode == MODE_VERTICES)
+		if (edit_mode == Mode::Vertices)
 		{
 			for (unsigned a = 0; a < move_items.size(); a++)
 				move_verts.push_back(map.getVertex(move_items[a]));
 		}
 
 		// Lines mode
-		else if (edit_mode == MODE_LINES)
+		else if (edit_mode == Mode::Lines)
 		{
 			for (unsigned a = 0; a < move_items.size(); a++)
 			{
@@ -1041,7 +1054,7 @@ bool MapEditContext::beginMove(fpoint2_t mouse_pos)
 		}
 
 		// Sectors mode
-		else if (edit_mode == MODE_SECTORS)
+		else if (edit_mode == Mode::Sectors)
 		{
 			for (unsigned a = 0; a < move_items.size(); a++)
 				map.getSector(move_items[a])->getVertices(move_verts);
@@ -1049,7 +1062,7 @@ bool MapEditContext::beginMove(fpoint2_t mouse_pos)
 	}
 
 	// Filter out map objects being moved
-	if (edit_mode == MODE_THINGS)
+	if (edit_mode == Mode::Things)
 	{
 		// Filter moving things
 		for (unsigned a = 0; a < move_items.size(); a++)
@@ -1074,7 +1087,7 @@ bool MapEditContext::beginMove(fpoint2_t mouse_pos)
 void MapEditContext::doMove(fpoint2_t mouse_pos)
 {
 	// Special case: single vertex or thing
-	if (move_items.size() == 1 && (edit_mode == MODE_VERTICES || edit_mode == MODE_THINGS))
+	if (move_items.size() == 1 && (edit_mode == Mode::Vertices || edit_mode == Mode::Things))
 	{
 		// Get new position
 		double nx = mouse_pos.x;
@@ -1086,9 +1099,9 @@ void MapEditContext::doMove(fpoint2_t mouse_pos)
 		}
 
 		// Update move vector
-		if (edit_mode == MODE_VERTICES)
+		if (edit_mode == Mode::Vertices)
 			move_vec.set(nx - map.getVertex(move_items[0])->xPos(), ny - map.getVertex(move_items[0])->yPos());
-		else if (edit_mode == MODE_THINGS)
+		else if (edit_mode == Mode::Things)
 			move_vec.set(nx - map.getThing(move_items[0])->xPos(), ny - map.getThing(move_items[0])->yPos());
 
 		return;
@@ -1119,7 +1132,7 @@ void MapEditContext::endMove(bool accept)
 		map.getThing(a)->filter(false);
 
 	// Move depending on edit mode
-	if (edit_mode == MODE_THINGS && accept)
+	if (edit_mode == Mode::Things && accept)
 	{
 		// Move things
 		beginUndoRecord("Move Things", true, false, false);
@@ -1140,12 +1153,12 @@ void MapEditContext::endMove(bool accept)
 		vector<uint8_t> move_verts(map.nVertices());
 		memset(&move_verts[0], 0, map.nVertices());
 
-		if (edit_mode == MODE_VERTICES)
+		if (edit_mode == Mode::Vertices)
 		{
 			for (unsigned a = 0; a < move_items.size(); a++)
 				move_verts[move_items[a]] = 1;
 		}
-		else if (edit_mode == MODE_LINES)
+		else if (edit_mode == Mode::Lines)
 		{
 			for (unsigned a = 0; a < move_items.size(); a++)
 			{
@@ -1154,7 +1167,7 @@ void MapEditContext::endMove(bool accept)
 				if (line->v2()) move_verts[line->v2()->getIndex()] = 1;
 			}
 		}
-		else if (edit_mode == MODE_SECTORS)
+		else if (edit_mode == Mode::Sectors)
 		{
 			vector<MapVertex*> sv;
 			for (unsigned a = 0; a < move_items.size(); a++)
@@ -1342,7 +1355,7 @@ void MapEditContext::correctLineSectors()
 void MapEditContext::changeSectorHeight(int amount, bool floor, bool ceiling)
 {
 	// Do nothing if not in sectors mode
-	if (edit_mode != MODE_SECTORS)
+	if (edit_mode != Mode::Sectors)
 		return;
 
 	// Get selected sectors (if any)
@@ -1353,9 +1366,9 @@ void MapEditContext::changeSectorHeight(int amount, bool floor, bool ceiling)
 	// If we're modifying both heights, take sector_mode into account
 	if (floor && ceiling)
 	{
-		if (sector_mode == SECTOR_FLOOR)
+		if (sector_mode == SectorMode::Floor)
 			ceiling = false;
-		if (sector_mode == SECTOR_CEILING)
+		if (sector_mode == SectorMode::Ceiling)
 			floor = false;
 	}
 
@@ -1410,7 +1423,7 @@ void MapEditContext::changeSectorHeight(int amount, bool floor, bool ceiling)
 void MapEditContext::changeSectorLight(bool up, bool fine)
 {
 	// Do nothing if not in sectors mode
-	if (edit_mode != MODE_SECTORS)
+	if (edit_mode != Mode::Sectors)
 		return;
 
 	// Get selected sectors (if any)
@@ -1457,7 +1470,7 @@ void MapEditContext::changeSectorLight(bool up, bool fine)
 void MapEditContext::joinSectors(bool remove_lines)
 {
 	// Check edit mode
-	if (edit_mode != MODE_SECTORS)
+	if (edit_mode != Mode::Sectors)
 		return;
 
 	// Get sectors to merge
@@ -1550,7 +1563,7 @@ void MapEditContext::joinSectors(bool remove_lines)
 void MapEditContext::changeThingType(int newtype)
 {
 	// Do nothing if not in things mode
-	if (edit_mode != MODE_THINGS && edit_mode != MODE_3D)
+	if (edit_mode != Mode::Things && edit_mode != Mode::Visual)
 		return;
 
 	// Get selected things (if any)
@@ -1583,7 +1596,7 @@ void MapEditContext::changeThingType(int newtype)
 void MapEditContext::thingQuickAngle(fpoint2_t mouse_pos)
 {
 	// Do nothing if not in things mode
-	if (edit_mode != MODE_THINGS)
+	if (edit_mode != Mode::Things)
 		return;
 
 	auto selection = item_selection.selectedThings();
@@ -1612,7 +1625,7 @@ void MapEditContext::thingQuickAngle(fpoint2_t mouse_pos)
 void MapEditContext::mirror(bool x_axis)
 {
 	// Mirror things
-	if (edit_mode == MODE_THINGS)
+	if (edit_mode == Mode::Things)
 	{
 		// Begin undo level
 		beginUndoRecord("Mirror things", true, false, false);
@@ -1652,7 +1665,7 @@ void MapEditContext::mirror(bool x_axis)
 	}
 
 	// Mirror map architecture
-	else if (edit_mode != MODE_3D)
+	else if (edit_mode != Mode::Visual)
 	{
 		// Begin undo level
 		beginUndoRecord("Mirror map architecture", true, false, false);
@@ -1660,9 +1673,9 @@ void MapEditContext::mirror(bool x_axis)
 		// Get vertices to mirror
 		vector<MapVertex*> vertices;
 		vector<MapLine*> lines;
-		if (edit_mode == MODE_VERTICES)
+		if (edit_mode == Mode::Vertices)
 			vertices = item_selection.selectedVertices();
-		else if (edit_mode == MODE_LINES)
+		else if (edit_mode == Mode::Lines)
 		{
 			auto sel = item_selection.selectedLines();
 			for (auto line : sel)
@@ -1672,7 +1685,7 @@ void MapEditContext::mirror(bool x_axis)
 				lines.push_back(line);
 			}
 		}
-		else if (edit_mode == MODE_SECTORS)
+		else if (edit_mode == Mode::Sectors)
 		{
 			auto sectors = item_selection.selectedSectors();
 			for (auto sector : sectors)
@@ -1715,7 +1728,7 @@ void MapEditContext::mirror(bool x_axis)
 int MapEditContext::beginTagEdit()
 {
 	// Check lines mode
-	if (edit_mode != MODE_LINES)
+	if (edit_mode != Mode::Lines)
 		return 0;
 
 	// Get selected lines
@@ -1832,7 +1845,7 @@ void MapEditContext::endTagEdit(bool accept)
 void MapEditContext::createObject(double x, double y)
 {
 	// Vertices mode
-	if (edit_mode == MODE_VERTICES)
+	if (edit_mode == Mode::Vertices)
 	{
 		// If there are less than 2 vertices currently selected, just create a vertex at x,y
 		if (item_selection.size() < 2)
@@ -1857,7 +1870,7 @@ void MapEditContext::createObject(double x, double y)
 	}
 
 	// Sectors mode
-	if (edit_mode == MODE_SECTORS)
+	if (edit_mode == Mode::Sectors)
 	{
 		// Sector
 		if (map.nLines() > 0)
@@ -1868,13 +1881,13 @@ void MapEditContext::createObject(double x, double y)
 		{
 			// Just create a vertex
 			createVertex(x, y);
-			setEditMode(MODE_LINES);
+			setEditMode(Mode::Lines);
 		}
 		return;
 	}
 
 	// Things mode
-	if (edit_mode == MODE_THINGS)
+	if (edit_mode == Mode::Things)
 	{
 		createThing(x, y);
 		return;
@@ -1956,7 +1969,7 @@ void MapEditContext::createSector(double x, double y)
 
 	// Get sector to copy if we're in sectors mode
 	MapSector* sector_copy = nullptr;
-	if (edit_mode == MODE_SECTORS && item_selection.size() > 0)
+	if (edit_mode == Mode::Sectors && item_selection.size() > 0)
 		sector_copy = map.getSector(item_selection.begin()->index);
 
 	// Run sector builder
@@ -2010,7 +2023,7 @@ void MapEditContext::deleteObject()
 	vector<MapObject*> objects_prop_change;
 
 	// Vertices mode
-	if (edit_mode == MODE_VERTICES)
+	if (edit_mode == Mode::Vertices)
 	{
 		// Get selected vertices
 		auto verts = item_selection.selectedVertices();
@@ -2036,7 +2049,7 @@ void MapEditContext::deleteObject()
 	}
 
 	// Lines mode
-	else if (edit_mode == MODE_LINES)
+	else if (edit_mode == Mode::Lines)
 	{
 		// Get selected lines
 		auto lines = item_selection.selectedLines();
@@ -2062,7 +2075,7 @@ void MapEditContext::deleteObject()
 	}
 
 	// Sectors mode
-	else if (edit_mode == MODE_SECTORS)
+	else if (edit_mode == Mode::Sectors)
 	{
 		// Get selected sectors
 		auto sectors = item_selection.selectedSectors();
@@ -2143,7 +2156,7 @@ void MapEditContext::deleteObject()
 	}
 
 	// Things mode
-	else if (edit_mode == MODE_THINGS)
+	else if (edit_mode == Mode::Things)
 	{
 		// Get selected things
 		auto things = item_selection.selectedThings();
@@ -2183,7 +2196,7 @@ void MapEditContext::deleteObject()
 bool MapEditContext::beginObjectEdit()
 {
 	// Things mode
-	if (edit_mode == MODE_THINGS)
+	if (edit_mode == Mode::Things)
 	{
 		// Get selected things
 		auto edit_objects = item_selection.selectedObjects();
@@ -2201,14 +2214,14 @@ bool MapEditContext::beginObjectEdit()
 		vector<MapObject*> edit_objects;
 
 		// Vertices mode
-		if (edit_mode == MODE_VERTICES)
+		if (edit_mode == Mode::Vertices)
 		{
 			// Get selected vertices
 			edit_objects = item_selection.selectedObjects();
 		}
 
 		// Lines mode
-		else if (edit_mode == MODE_LINES)
+		else if (edit_mode == Mode::Lines)
 		{
 			// Get vertices of selected lines
 			auto lines = item_selection.selectedLines();
@@ -2220,7 +2233,7 @@ bool MapEditContext::beginObjectEdit()
 		}
 
 		// Sectors mode
-		else if (edit_mode == MODE_SECTORS)
+		else if (edit_mode == Mode::Sectors)
 		{
 			// Get vertices of selected sectors
 			auto sectors = item_selection.selectedSectors();
@@ -2266,7 +2279,7 @@ void MapEditContext::endObjectEdit(bool accept)
 
 		// Do merge
 		bool merge = true;
-		if (edit_mode != MODE_THINGS)
+		if (edit_mode != Mode::Things)
 		{
 			// Begin extra 'Merge' undo step if wanted
 			if (map_merge_undo_step)
@@ -2303,7 +2316,7 @@ void MapEditContext::copyProperties(MapObject* object)
 		return;
 
 	// Sectors mode
-	if (edit_mode == MODE_SECTORS)
+	if (edit_mode == Mode::Sectors)
 	{
 		// Create copy sector if needed
 		if (!copy_sector)
@@ -2321,7 +2334,7 @@ void MapEditContext::copyProperties(MapObject* object)
 	}
 
 	// Things mode
-	else if (edit_mode == MODE_THINGS)
+	else if (edit_mode == Mode::Things)
 	{
 		// Create copy thing if needed
 		if (!copy_thing)
@@ -2346,7 +2359,7 @@ void MapEditContext::copyProperties(MapObject* object)
 			addEditorMessage("Copied thing properties");
 	}
 
-	else if (edit_mode == MODE_LINES)
+	else if (edit_mode == Mode::Lines)
 	{
 		if (!copy_line)
 			copy_line = new MapLine(nullptr, nullptr, new MapSide(nullptr, nullptr), new MapSide(nullptr, nullptr), nullptr);
@@ -2371,7 +2384,7 @@ void MapEditContext::pasteProperties()
 		return;
 
 	// Sectors mode
-	if (edit_mode == MODE_SECTORS)
+	if (edit_mode == Mode::Sectors)
 	{
 		// Do nothing if no properties have been copied
 		if (!copy_sector)
@@ -2396,7 +2409,7 @@ void MapEditContext::pasteProperties()
 	}
 
 	// Things mode
-	if (edit_mode == MODE_THINGS)
+	if (edit_mode == Mode::Things)
 	{
 		// Do nothing if no properties have been copied
 		if (!copy_thing)
@@ -2444,7 +2457,7 @@ void MapEditContext::pasteProperties()
 	}
 
 	// Lines mode
-	else if (edit_mode == MODE_LINES)
+	else if (edit_mode == Mode::Lines)
 	{
 		// Do nothing if no properties have been copied
 		if (!copy_line)
@@ -2478,7 +2491,7 @@ void MapEditContext::pasteProperties()
 void MapEditContext::copy()
 {
 	// Can't copy/paste vertices (no point)
-	if (edit_mode == MODE_VERTICES)
+	if (edit_mode == Mode::Vertices)
 	{
 		//addEditorMessage("Copy/Paste not supported for vertices");
 		return;
@@ -2488,7 +2501,7 @@ void MapEditContext::copy()
 	theClipboard->clear();
 
 	// Copy lines
-	if (edit_mode == MODE_LINES || edit_mode == MODE_SECTORS)
+	if (edit_mode == Mode::Lines || edit_mode == Mode::Sectors)
 	{
 		// Get selected lines
 		auto lines = item_selection.selectedLines();
@@ -2503,7 +2516,7 @@ void MapEditContext::copy()
 	}
 
 	// Copy things
-	else if (edit_mode == MODE_THINGS)
+	else if (edit_mode == Mode::Things)
 	{
 		// Get selected things
 		auto things = item_selection.selectedThings();
@@ -2903,7 +2916,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 	// --- General keybinds ---
 
 	bool handled = true;
-	if (edit_mode != MODE_3D)
+	if (edit_mode != Mode::Visual)
 	{
 		// Increment grid
 		if (key == "me2d_grid_inc")
@@ -2960,7 +2973,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 	}
 
 	// --- Sector mode keybinds ---
-	if (key.StartsWith("me2d_sector") && edit_mode == MODE_SECTORS)
+	if (key.StartsWith("me2d_sector") && edit_mode == Mode::Sectors)
 	{
 		// Height changes
 		if		(key == "me2d_sector_floor_up8")	changeSectorHeight(8, true, false);
@@ -2991,7 +3004,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 	}
 
 	// --- 3d mode keybinds ---
-	else if (key.StartsWith("me3d_") && edit_mode == MODE_3D)
+	else if (key.StartsWith("me3d_") && edit_mode == Mode::Visual)
 	{
 		// Check is UDMF
 		bool is_udmf = map.currentFormat() == MAP_UDMF;
@@ -3136,24 +3149,24 @@ void MapEditContext::updateStatusText()
 	string mode = "Mode: ";
 	switch (edit_mode)
 	{
-	case MODE_VERTICES: mode += "Vertices"; break;
-	case MODE_LINES: mode += "Lines"; break;
-	case MODE_SECTORS: mode += "Sectors"; break;
-	case MODE_THINGS: mode += "Things"; break;
-	case MODE_3D: mode += "3D"; break;
+	case Mode::Vertices: mode += "Vertices"; break;
+	case Mode::Lines: mode += "Lines"; break;
+	case Mode::Sectors: mode += "Sectors"; break;
+	case Mode::Things: mode += "Things"; break;
+	case Mode::Visual: mode += "3D"; break;
 	}
 
-	if (edit_mode == MODE_SECTORS)
+	if (edit_mode == Mode::Sectors)
 	{
 		switch (sector_mode)
 		{
-		case SECTOR_BOTH: mode += " (Normal)"; break;
-		case SECTOR_FLOOR: mode += " (Floors)"; break;
-		case SECTOR_CEILING: mode += " (Ceilings)"; break;
+		case SectorMode::Both: mode += " (Normal)"; break;
+		case SectorMode::Floor: mode += " (Floors)"; break;
+		case SectorMode::Ceiling: mode += " (Ceilings)"; break;
 		}
 	}
 
-	if (edit_mode != MODE_3D && item_selection.size() > 0)
+	if (edit_mode != Mode::Visual && item_selection.size() > 0)
 	{
 		mode += S_FMT(" (%lu selected)", item_selection.size());
 	}
@@ -3185,7 +3198,7 @@ void MapEditContext::updateStatusText()
 void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool del)
 {
 	// Setup
-	UndoManager* manager = (edit_mode == MODE_3D) ? edit_3d.undoManager() : undo_manager;
+	UndoManager* manager = (edit_mode == Mode::Visual) ? edit_3d.undoManager() : undo_manager;
 	if (manager->currentlyRecording())
 		return;
 	undo_modified = mod;
@@ -3231,7 +3244,7 @@ void MapEditContext::beginUndoRecordLocked(string name, bool mod, bool create, b
  *******************************************************************/
 void MapEditContext::endUndoRecord(bool success)
 {
-	UndoManager* manager = (edit_mode == MODE_3D) ? edit_3d.undoManager() : undo_manager;
+	UndoManager* manager = (edit_mode == Mode::Visual) ? edit_3d.undoManager() : undo_manager;
 
 	if (manager->currentlyRecording())
 	{
@@ -3260,7 +3273,7 @@ void MapEditContext::endUndoRecord(bool success)
  *******************************************************************/
 void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 {
-	UndoManager* manager = (edit_mode == MODE_3D) ? edit_3d.undoManager() : undo_manager;
+	UndoManager* manager = (edit_mode == Mode::Visual) ? edit_3d.undoManager() : undo_manager;
 	manager->recordUndoStep(new PropertyChangeUS(object));
 }
 
@@ -3274,7 +3287,7 @@ void MapEditContext::doUndo()
 
 	// Undo
 	int time = App::runTimer() - 1;
-	UndoManager* manager = (edit_mode == MODE_3D) ? edit_3d.undoManager() : undo_manager;
+	UndoManager* manager = (edit_mode == Mode::Visual) ? edit_3d.undoManager() : undo_manager;
 	string undo_name = manager->undo();
 
 	// Editor message
@@ -3304,7 +3317,7 @@ void MapEditContext::doRedo()
 
 	// Redo
 	int time = App::runTimer() - 1;
-	UndoManager* manager = (edit_mode == MODE_3D) ? edit_3d.undoManager() : undo_manager;
+	UndoManager* manager = (edit_mode == Mode::Visual) ? edit_3d.undoManager() : undo_manager;
 	string undo_name = manager->redo();
 
 	// Editor message

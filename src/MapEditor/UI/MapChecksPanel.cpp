@@ -206,16 +206,16 @@ void MapChecksPanel::showCheckItem(unsigned index)
 		switch (obj->getObjType())
 		{
 		case MOBJ_VERTEX:
-			MapEditor::editContext().setEditMode(MapEditContext::MODE_VERTICES);
+			MapEditor::editContext().setEditMode(MapEditor::Mode::Vertices);
 			break;
 		case MOBJ_LINE:
-			MapEditor::editContext().setEditMode(MapEditContext::MODE_LINES);
+			MapEditor::editContext().setEditMode(MapEditor::Mode::Lines);
 			break;
 		case MOBJ_SECTOR:
-			MapEditor::editContext().setEditMode(MapEditContext::MODE_SECTORS);
+			MapEditor::editContext().setEditMode(MapEditor::Mode::Sectors);
 			break;
 		case MOBJ_THING:
-			MapEditor::editContext().setEditMode(MapEditContext::MODE_THINGS);
+			MapEditor::editContext().setEditMode(MapEditor::Mode::Things);
 			break;
 		default: break;
 		}
