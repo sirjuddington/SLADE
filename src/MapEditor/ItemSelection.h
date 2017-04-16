@@ -29,6 +29,8 @@ public:
 	MapEditor::Item& operator[] (unsigned index) { return selection_[index]; }
 	const MapEditor::Item& operator[] (unsigned index) const { return selection_[index]; }
 
+	vector<MapEditor::Item>	selectionOrHilight();
+
 	// Setters
 	void	lockHilight(bool lock = true) { hilight_lock_ = lock; }
 	bool	setHilight(const MapEditor::Item& item);

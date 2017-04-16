@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MapEditor/SLADEMap/MapThing.h"
 #include "MapEditor/MapEditor.h"
 
 class MapEditContext;
@@ -9,6 +10,13 @@ class UndoManager;
 class Edit3D
 {
 public:
+	enum class CopyType
+	{
+		TexType,
+		Offsets,
+		Scale
+	};
+
 	explicit Edit3D(MapEditContext& context);
 
 	UndoManager*	undoManager() const { return undo_manager_.get(); }
@@ -26,22 +34,23 @@ public:
 	void	autoAlignX(MapEditor::Item start) const;
 	void	resetOffsets() const;
 	void	toggleUnpegged(bool lower) const;
-	//void	copy(int type);
-	//void	paste(int type);
-	//void	floodFill(int type);
+	void	copy(CopyType type);
+	void	paste(CopyType type);
+	void	floodFill(CopyType type);
 	void	changeThingZ(int amount) const;
 	void	deleteThing() const;
 	void	changeScale(double amount, bool x) const;
 	void	changeHeight(int amount) const;
-
-	// TODO: Change back to private once floodFill is moved here
-	vector<MapEditor::Item>	getAdjacent(MapEditor::Item item) const;
 
 private:
 	MapEditContext&					context_;
 	std::unique_ptr<UndoManager>	undo_manager_;
 	bool							link_light_;
 	bool							link_offset_;
+	string							copy_texture_;
+	MapThing						copy_thing_;
+
+	vector<MapEditor::Item>	getAdjacent(MapEditor::Item item) const;
 
 	// Helper for selectAdjacent
 	static bool wallMatches(MapSide* side, MapEditor::ItemType part, string tex);

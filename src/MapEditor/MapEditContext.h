@@ -3,16 +3,17 @@
 #define __MAP_EDITOR_H__
 
 #include "Archive/Archive.h"
-#include "SLADEMap/SLADEMap.h"
-#include "ObjectEdit.h"
-#include "MapEditor.h"
-#include "Edit/LineDraw.h"
 #include "Edit/Edit3D.h"
+#include "Edit/LineDraw.h"
 #include "ItemSelection.h"
+#include "MapEditor.h"
+#include "ObjectEdit.h"
+#include "SLADEMap/SLADEMap.h"
 
 class MapCanvas;
 class UndoManager;
-class MapObjectCreateDeleteUS;
+class UndoStep;
+
 class MapEditContext
 {
 private:
@@ -21,8 +22,8 @@ private:
 	Archive::mapdesc_t	map_desc;
 
 	// Undo/Redo stuff
-	UndoManager*				undo_manager;
-	MapObjectCreateDeleteUS*	us_create_delete;
+	UndoManager*	undo_manager;
+	UndoStep*		us_create_delete;
 
 	// Editor state
 	MapEditor::Mode			edit_mode;
@@ -67,8 +68,6 @@ private:
 	MapThing*	copy_thing;
 	MapSector*	copy_sector;
 	MapLine*	copy_line;
-	string		copy_texture;
-	double		copy_offsets[2];
 
 	// Editor messages
 	struct editor_msg_t
@@ -91,11 +90,6 @@ public:
 		DESELECT = 0,
 		SELECT,
 		TOGGLE,
-
-		// Copy/paste types
-		COPY_TEXTYPE = 0,
-		COPY_OFFSETS,
-		COPY_SCALE,
 	};
 
 	MapEditContext();
@@ -133,10 +127,10 @@ public:
 	void	selectionUpdated();
 
 	// Grid
-	void	incrementGrid();
-	void	decrementGrid();
-	double	snapToGrid(double position, bool force = true);
-	fpoint2_t relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos);
+	void		incrementGrid();
+	void		decrementGrid();
+	double		snapToGrid(double position, bool force = true);
+	fpoint2_t	relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos);
 
 	// Item moving
 	vector<int>&	movingItems() { return move_items; }
@@ -181,11 +175,8 @@ public:
 	// Copy/paste
 	void	copy();
 	void	paste(fpoint2_t mouse_pos);
-	void	copy3d(int type); // TODO: Move to Edit3D
-	void	paste3d(int type); // TODO: Move to Edit3D
 
 	// 3d mode
-	void	floodFill3d(int type); // TODO: Move to Edit3D
 	Edit3D&	edit3d() { return edit_3d; }
 
 	// Editor messages

@@ -55,6 +55,18 @@ ItemSelection::ItemSelection(MapEditContext* context) :
 {
 }
 
+vector<MapEditor::Item> ItemSelection::selectionOrHilight()
+{
+	vector<MapEditor::Item> list;
+
+	if (selection_.size() > 0)
+		list.assign(selection_.begin(), selection_.end());
+	else if (hilight_.index >= 0)
+		list.push_back(hilight_);
+
+	return list;
+}
+
 /* ItemSelection::setHilight
  * Sets the current hilight to [item]. Returns true if the hilight
  * was changed

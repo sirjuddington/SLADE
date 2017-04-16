@@ -31,19 +31,19 @@
  *******************************************************************/
 #include "Main.h"
 #include "App.h"
-#include "MapEditContext.h"
 #include "Archive/ArchiveManager.h"
-#include "UI/WxStuff.h"
-#include "UI/MapEditorWindow.h"
 #include "GameConfiguration/GameConfiguration.h"
-#include "Utility/MathStuff.h"
-#include "General/Console/Console.h"
-#include "UI/MapCanvas.h"
-#include "SectorBuilder.h"
 #include "General/Clipboard.h"
+#include "General/Console/Console.h"
 #include "General/UndoRedo.h"
 #include "MapChecks.h"
+#include "MapEditContext.h"
 #include "MapTextureManager.h"
+#include "SectorBuilder.h"
+#include "UI/MapCanvas.h"
+#include "UI/MapEditorWindow.h"
+#include "UndoSteps.h"
+#include "Utility/MathStuff.h"
 
 
 /*******************************************************************
@@ -54,406 +54,6 @@ CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
 CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
 CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
 CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
-
-
-#pragma region UNDO STEPS
-
-/*******************************************************************
- * PROPERTYCHANGEUS CLASS
- *******************************************************************
- * UndoStep for when a MapObject has properties changed
- */
-class PropertyChangeUS : public UndoStep
-{
-private:
-	mobj_backup_t*	backup;
-
-public:
-	PropertyChangeUS(MapObject* object)
-	{
-		backup = new mobj_backup_t();
-		object->backup(backup);
-	}
-
-	~PropertyChangeUS()
-	{
-		delete backup;
-	}
-
-	void doSwap(MapObject* obj)
-	{
-		mobj_backup_t* temp = new mobj_backup_t();
-		obj->backup(temp);
-		obj->loadFromBackup(backup);
-		delete backup;
-		backup = temp;
-	}
-
-	bool doUndo()
-	{
-		MapObject* obj = UndoRedo::currentMap()->getObjectById(backup->id);
-		if (obj) doSwap(obj);
-
-		return true;
-	}
-
-	bool doRedo()
-	{
-		MapObject* obj = UndoRedo::currentMap()->getObjectById(backup->id);
-		if (obj) doSwap(obj);
-
-		return true;
-	}
-};
-
-/*******************************************************************
- * MAPOBJECTCREATEDELETEUS CLASS
- *******************************************************************
- * UndoStep for when a MapObject is either created or deleted
- */
-class MapObjectCreateDeleteUS : public UndoStep
-{
-private:
-	//vector<mobj_cd_t>	objects;
-
-	vector<unsigned>	vertices;
-	vector<unsigned>	lines;
-	vector<unsigned>	sides;
-	vector<unsigned>	sectors;
-	vector<unsigned>	things;
-
-public:
-	MapObjectCreateDeleteUS()
-	{
-		SLADEMap* map = UndoRedo::currentMap();
-		map->getObjectIdList(MOBJ_VERTEX, vertices);
-		map->getObjectIdList(MOBJ_LINE, lines);
-		map->getObjectIdList(MOBJ_SIDE, sides);
-		map->getObjectIdList(MOBJ_SECTOR, sectors);
-		map->getObjectIdList(MOBJ_THING, things);
-	}
-
-	~MapObjectCreateDeleteUS() {}
-
-	bool isValid(vector<unsigned>& list)
-	{
-		return !(list.size() == 1 && list[0] == 0);
-	}
-
-	void swapLists()
-	{
-		// Backup
-		vector<unsigned> vertices;
-		vector<unsigned> lines;
-		vector<unsigned> sides;
-		vector<unsigned> sectors;
-		vector<unsigned> things;
-		SLADEMap* map = UndoRedo::currentMap();
-		if (isValid(this->vertices))	map->getObjectIdList(MOBJ_VERTEX, vertices);
-		if (isValid(this->lines))		map->getObjectIdList(MOBJ_LINE, lines);
-		if (isValid(this->sides))		map->getObjectIdList(MOBJ_SIDE, sides);
-		if (isValid(this->sectors))		map->getObjectIdList(MOBJ_SECTOR, sectors);
-		if (isValid(this->things))		map->getObjectIdList(MOBJ_THING, things);
-
-		// Restore
-		if (isValid(this->vertices))
-		{
-			map->restoreObjectIdList(MOBJ_VERTEX, this->vertices);
-			this->vertices = vertices;
-			map->updateGeometryInfo(0);
-		}
-		if (isValid(this->lines))
-		{
-			map->restoreObjectIdList(MOBJ_LINE, this->lines);
-			this->lines = lines;
-			map->updateGeometryInfo(0);
-		}
-		if (isValid(this->sides))
-		{
-			map->restoreObjectIdList(MOBJ_SIDE, this->sides);
-			this->sides = sides;
-		}
-		if (isValid(this->sectors))
-		{
-			map->restoreObjectIdList(MOBJ_SECTOR, this->sectors);
-			this->sectors = sectors;
-		}
-		if (isValid(this->things))
-		{
-			map->restoreObjectIdList(MOBJ_THING, this->things);
-			this->things = things;
-		}
-	}
-
-	bool doUndo()
-	{
-		swapLists();
-		return true;
-	}
-
-	bool doRedo()
-	{
-		swapLists();
-		return true;
-	}
-
-	void checkChanges()
-	{
-		SLADEMap* map = UndoRedo::currentMap();
-
-		// Check vertices changed
-		bool vertices_changed = false;
-		if (map->nVertices() != vertices.size())
-			vertices_changed = true;
-		else
-			for (unsigned a = 0; a < map->nVertices(); a++)
-				if (map->getVertex(a)->getId() != vertices[a])
-				{
-					vertices_changed = true;
-					break;
-				}
-		if (!vertices_changed)
-		{
-			// No change, clear
-			vertices.clear();
-			vertices.push_back(0);
-			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No vertices added/deleted");
-		}
-
-		// Check lines changed
-		bool lines_changed = false;
-		if (map->nLines() != lines.size())
-			lines_changed = true;
-		else
-			for (unsigned a = 0; a < map->nLines(); a++)
-				if (map->getLine(a)->getId() != lines[a])
-				{
-					lines_changed = true;
-					break;
-				}
-		if (!lines_changed)
-		{
-			// No change, clear
-			lines.clear();
-			lines.push_back(0);
-			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No lines added/deleted");
-		}
-
-		// Check sides changed
-		bool sides_changed = false;
-		if (map->nSides() != sides.size())
-			sides_changed = true;
-		else
-			for (unsigned a = 0; a < map->nSides(); a++)
-				if (map->getSide(a)->getId() != sides[a])
-				{
-					sides_changed = true;
-					break;
-				}
-		if (!sides_changed)
-		{
-			// No change, clear
-			sides.clear();
-			sides.push_back(0);
-			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No sides added/deleted");
-		}
-
-		// Check sectors changed
-		bool sectors_changed = false;
-		if (map->nSectors() != sectors.size())
-			sectors_changed = true;
-		else
-			for (unsigned a = 0; a < map->nSectors(); a++)
-				if (map->getSector(a)->getId() != sectors[a])
-				{
-					sectors_changed = true;
-					break;
-				}
-		if (!sectors_changed)
-		{
-			// No change, clear
-			sectors.clear();
-			sectors.push_back(0);
-			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No sectors added/deleted");
-		}
-
-		// Check things changed
-		bool things_changed = false;
-		if (map->nThings() != things.size())
-			things_changed = true;
-		else
-			for (unsigned a = 0; a < map->nThings(); a++)
-				if (map->getThing(a)->getId() != things[a])
-				{
-					things_changed = true;
-					break;
-				}
-		if (!things_changed)
-		{
-			// No change, clear
-			things.clear();
-			things.push_back(0);
-			LOG_MESSAGE(3, "MapObjectCreateDeleteUS: No things added/deleted");
-		}
-	}
-
-	bool isOk()
-	{
-		// Check for any changes at all
-		if (vertices.size() == 1 && vertices[0] == 0 &&
-			lines.size() == 1 && lines[0] == 0 &&
-			sides.size() == 1 && sides[0] == 0 &&
-			sectors.size() == 1 && sectors[0] == 0 &&
-			things.size() == 1 && things[0] == 0)
-			return false;
-
-		return true;
-	}
-
-	//MapObjectCreateDeleteUS()
-	//{
-	//	// Get recently created and deleted object ids from map
-	//	// (in the order they were created/deleted)
-	//	vector<mobj_cd_t>& cd_objects = UndoRedo::currentMap()->createdDeletedObjectIds();
-	//	for (unsigned a = 0; a < cd_objects.size(); a++)
-	//		objects.push_back(cd_objects[a]);
-
-	//	if (Global::log_verbosity >= 4)
-	//	{
-	//		string ids;
-	//		for (unsigned a = 0; a < cd_objects.size(); a++)
-	//		{
-	//			if (cd_objects[a].created)
-	//				ids += S_FMT("%d, ", cd_objects[a].id);
-	//		}
-	//		LOG_MESSAGE(4, "Created: %s", ids);
-
-	//		ids = "";
-	//		for (unsigned a = 0; a < cd_objects.size(); a++)
-	//		{
-	//			if (!cd_objects[a].created)
-	//				ids += S_FMT("%d, ", cd_objects[a].id);
-	//		}
-	//		LOG_MESSAGE(4, "Deleted: %s", ids);
-	//	}
-	//}
-
-	//~MapObjectCreateDeleteUS() {}
-
-	//bool doUndo()
-	//{
-	//	// Undo creation/deletion
-	//	for (int a = objects.size() - 1; a >= 0; a--)
-	//	{
-	//		if (objects[a].created)
-	//			UndoRedo::currentMap()->removeObjectById(objects[a].id);
-	//		else
-	//			UndoRedo::currentMap()->restoreObjectById(objects[a].id);
-	//	}
-
-	//	return true;
-	//}
-
-	//bool doRedo()
-	//{
-	//	// Redo creation/deletion
-	//	for (unsigned a = 0; a < objects.size(); a++)
-	//	{
-	//		if (!objects[a].created)
-	//			UndoRedo::currentMap()->removeObjectById(objects[a].id);
-	//		else
-	//			UndoRedo::currentMap()->restoreObjectById(objects[a].id);
-	//	}
-
-	//	return true;
-	//}
-
-	//bool isOk()
-	//{
-	//	return !objects.empty();
-	//}
-};
-
-
-/*******************************************************************
- * MULTIMAPOBJECTPROPERTYCHANGEUS CLASS
- *******************************************************************
- * UndoStep for when multiple MapObjects have properties changed
- */
-class MultiMapObjectPropertyChangeUS : public UndoStep
-{
-private:
-	vector<mobj_backup_t*>	backups;
-
-public:
-	MultiMapObjectPropertyChangeUS()
-	{
-		// Get backups of recently modified map objects
-		vector<MapObject*> objects = UndoRedo::currentMap()->getAllModifiedObjects(MapObject::propBackupTime());
-		for (unsigned a = 0; a < objects.size(); a++)
-		{
-			mobj_backup_t* bak = objects[a]->getBackup(true);
-			if (bak)
-			{
-				backups.push_back(bak);
-				//LOG_MESSAGE(1, "%s #%d modified", objects[a]->getTypeName(), objects[a]->getIndex());
-			}
-		}
-
-		if (Log::verbosity() >= 2)
-		{
-			string msg = "Modified ids: ";
-			for (unsigned a = 0; a < backups.size(); a++)
-				msg += S_FMT("%d, ", backups[a]->id);
-			Log::info(msg);
-		}
-	}
-
-	~MultiMapObjectPropertyChangeUS()
-	{
-		for (unsigned a = 0; a < backups.size(); a++)
-			delete backups[a];
-	}
-
-	void doSwap(MapObject* obj, unsigned index)
-	{
-		mobj_backup_t* temp = new mobj_backup_t();
-		obj->backup(temp);
-		obj->loadFromBackup(backups[index]);
-		delete backups[index];
-		backups[index] = temp;
-	}
-
-	bool doUndo()
-	{
-		for (unsigned a = 0; a < backups.size(); a++)
-		{
-			MapObject* obj = UndoRedo::currentMap()->getObjectById(backups[a]->id);
-			if (obj) doSwap(obj, a);
-		}
-
-		return true;
-	}
-
-	bool doRedo()
-	{
-		//LOG_MESSAGE(2, "Restore %lu objects", backups.size());
-		for (unsigned a = 0; a < backups.size(); a++)
-		{
-			MapObject* obj = UndoRedo::currentMap()->getObjectById(backups[a]->id);
-			if (obj) doSwap(obj, a);
-		}
-
-		return true;
-	}
-
-	bool isOk()
-	{
-		return !backups.empty();
-	}
-};
-
-#pragma endregion
 
 
 /*******************************************************************
@@ -1139,7 +739,7 @@ void MapEditContext::endMove(bool accept)
 		for (unsigned a = 0; a < move_items.size(); a++)
 		{
 			MapThing* t = map.getThing(move_items[a]);
-			undo_manager->recordUndoStep(new PropertyChangeUS(t));
+			undo_manager->recordUndoStep(new MapEditor::PropertyChangeUS(t));
 			map.moveThing(move_items[a], t->xPos() + move_vec.x, t->yPos() + move_vec.y);
 		}
 		endUndoRecord(true);
@@ -1306,7 +906,7 @@ void MapEditContext::flipLines(bool sides)
 	undo_manager->beginRecord("Flip Line");
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
-		undo_manager->recordUndoStep(new PropertyChangeUS(lines[a]));
+		undo_manager->recordUndoStep(new MapEditor::PropertyChangeUS(lines[a]));
 		lines[a]->flip(sides);
 	}
 	undo_manager->endRecord(true);
@@ -2573,288 +2173,6 @@ void MapEditContext::paste(fpoint2_t mouse_pos)
 
 #pragma endregion
 
-#pragma region EDITING_3D
-
-/* MapEditContext::copy3d
- * Copies the currently hilighted 3d wall/flat/thing
- *******************************************************************/
-void MapEditContext::copy3d(int type)
-{
-	auto hilight_3d = item_selection.hilight();
-
-	// Check hilight
-	if (hilight_3d.index < 0)
-		return;
-
-	// Upper wall
-	else if (hilight_3d.type == MapEditor::ItemType::WallTop)
-	{
-		// Texture
-		if (type == COPY_TEXTYPE)
-			copy_texture = map.getSide(hilight_3d.index)->stringProperty("texturetop");
-	}
-
-	// Middle wall
-	else if (hilight_3d.type == MapEditor::ItemType::WallMiddle)
-	{
-		// Texture
-		if (type == COPY_TEXTYPE)
-			copy_texture = map.getSide(hilight_3d.index)->stringProperty("texturemiddle");
-	}
-
-	// Lower wall
-	else if (hilight_3d.type == MapEditor::ItemType::WallBottom)
-	{
-		// Texture
-		if (type == COPY_TEXTYPE)
-			copy_texture = map.getSide(hilight_3d.index)->stringProperty("texturebottom");
-	}
-
-	// Floor
-	else if (hilight_3d.type == MapEditor::ItemType::Floor)
-	{
-		// Texture
-		if (type == COPY_TEXTYPE)
-			copy_texture = map.getSector(hilight_3d.index)->getFloorTex();
-	}
-
-	// Ceiling
-	else if (hilight_3d.type == MapEditor::ItemType::Ceiling)
-	{
-		// Texture
-		if (type == COPY_TEXTYPE)
-			copy_texture = map.getSector(hilight_3d.index)->getCeilingTex();
-	}
-
-	// Thing
-	else if (hilight_3d.type == MapEditor::ItemType::Thing)
-	{
-		if (!copy_thing)
-			copy_thing = new MapThing();
-
-		copy_thing->copy(map.getThing(hilight_3d.index));
-	}
-
-	// Flash
-	if (canvas)
-		canvas->itemSelected3d(hilight_3d);
-
-	// Editor message
-	if (type == COPY_TEXTYPE)
-	{
-		if (hilight_3d.type == MapEditor::ItemType::Thing)
-			addEditorMessage("Copied Thing Type");
-		else
-			addEditorMessage("Copied Texture");
-	}
-}
-
-/* MapEditContext::paste3d
- * Pastes previously copied wall/flat/thing info to selection
- *******************************************************************/
-void MapEditContext::paste3d(int type)
-{
-	// Get items to paste to
-	vector<MapEditor::Item> items;
-	if (item_selection.size() == 0 && item_selection.hilight().index >= 0)
-		items.push_back(item_selection.hilight());
-	else if (item_selection.size() > 0)
-	{
-		for (unsigned a = 0; a < item_selection.size(); a++)
-			items.push_back(item_selection[a]);
-	}
-	else
-		return;
-
-	// Begin undo step
-	string ptype = "Paste Properties";
-	if (type == COPY_TEXTYPE)
-		ptype = "Paste Texture/Type";
-	edit_3d.undoManager()->beginRecord(ptype);
-
-	// Go through items
-	for (unsigned a = 0; a < items.size(); a++)
-	{
-		// Wall
-		if (items[a].type == MapEditor::ItemType::WallTop || items[a].type == MapEditor::ItemType::WallMiddle || items[a].type == MapEditor::ItemType::WallBottom)
-		{
-			MapSide* side = map.getSide(items[a].index);
-			recordPropertyChangeUndoStep(side);
-
-			// Upper wall
-			if (items[a].type == MapEditor::ItemType::WallTop)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					side->setStringProperty("texturetop", copy_texture);
-			}
-
-			// Middle wall
-			else if (items[a].type == MapEditor::ItemType::WallMiddle)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					side->setStringProperty("texturemiddle", copy_texture);
-			}
-
-			// Lower wall
-			else if (items[a].type == MapEditor::ItemType::WallBottom)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					side->setStringProperty("texturebottom", copy_texture);
-			}
-		}
-
-		// Flat
-		else if (items[a].type == MapEditor::ItemType::Floor || items[a].type == MapEditor::ItemType::Ceiling)
-		{
-			MapSector* sector = map.getSector(items[a].index);
-			recordPropertyChangeUndoStep(sector);
-
-			// Floor
-			if (items[a].type == MapEditor::ItemType::Floor)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					sector->setStringProperty("texturefloor", copy_texture);
-			}
-
-			// Ceiling
-			if (items[a].type == MapEditor::ItemType::Ceiling)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					sector->setStringProperty("textureceiling", copy_texture);
-			}
-		}
-
-		// Thing
-		else if (items[a].type == MapEditor::ItemType::Thing)
-		{
-			MapThing* thing = map.getThing(items[a].index);
-			recordPropertyChangeUndoStep(thing);
-
-			// Type
-			if (type == COPY_TEXTYPE && copy_thing)
-				thing->setIntProperty("type", copy_thing->getType());
-		}
-	}
-
-	// Editor message
-	if (type == COPY_TEXTYPE)
-	{
-		if (item_selection.hilight().type == MapEditor::ItemType::Thing)
-			addEditorMessage("Pasted Thing Type");
-		else
-			addEditorMessage("Pasted Texture");
-	}
-
-	edit_3d.undoManager()->endRecord(true);
-}
-
-/* MapEditContext::floodFill3d
- * Pastes previously copied wall/flat/thing info to selection and ad
- *******************************************************************/
-void MapEditContext::floodFill3d(int type)
-{
-	// Get items to paste to
-	auto items = edit_3d.getAdjacent(item_selection.hilight());
-
-	// Restrict floodfill to selection, if any
-	if (item_selection.size() > 0)
-	{
-		for (auto i = items.begin(); i < items.end(); ++i)
-		{
-			bool found = false;
-			for (unsigned a = 0; a < item_selection.size(); a++)
-			{
-				if (item_selection[a].type == i->type && item_selection[a].index == i->index)
-				{
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				items.erase(i);
-		}
-	}
-
-	// Begin undo step
-	string ptype = "Floodfill textures";
-	edit_3d.undoManager()->beginRecord(ptype);
-
-	// Go through items
-	for (unsigned a = 0; a < items.size(); a++)
-	{
-		// Wall
-		if (items[a].type == MapEditor::ItemType::WallTop ||
-			items[a].type == MapEditor::ItemType::WallMiddle ||
-			items[a].type == MapEditor::ItemType::WallBottom)
-		{
-			auto side = map.getSide(items[a].index);
-			recordPropertyChangeUndoStep(side);
-
-			// Upper wall
-			if (items[a].type == MapEditor::ItemType::WallTop)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					side->setStringProperty("texturetop", copy_texture);
-			}
-
-			// Middle wall
-			else if (items[a].type == MapEditor::ItemType::WallMiddle)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					side->setStringProperty("texturemiddle", copy_texture);
-			}
-
-			// Lower wall
-			else if (items[a].type == MapEditor::ItemType::WallBottom)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					side->setStringProperty("texturebottom", copy_texture);
-			}
-		}
-
-		// Flat
-		else if (items[a].type == MapEditor::ItemType::Floor || items[a].type == MapEditor::ItemType::Ceiling)
-		{
-			MapSector* sector = map.getSector(items[a].index);
-			recordPropertyChangeUndoStep(sector);
-
-			// Floor
-			if (items[a].type == MapEditor::ItemType::Floor)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					sector->setStringProperty("texturefloor", copy_texture);
-			}
-
-			// Ceiling
-			if (items[a].type == MapEditor::ItemType::Ceiling)
-			{
-				// Texture
-				if (type == COPY_TEXTYPE)
-					sector->setStringProperty("textureceiling", copy_texture);
-			}
-		}
-	}
-
-	// Editor message
-	if (type == COPY_TEXTYPE)
-	{
-		addEditorMessage("Floodfilled Texture");
-	}
-
-	edit_3d.undoManager()->endRecord(true);
-}
-
-#pragma endregion
-
 #pragma region EDITOR MESSAGES
 
 /* MapEditContext::getEditorMessage
@@ -3045,9 +2363,9 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		}
 
 		// Copy/paste
-		else if (key == "me3d_copy_tex_type")	copy3d(COPY_TEXTYPE);
-		else if (key == "me3d_paste_tex_type")	paste3d(COPY_TEXTYPE);
-		else if (key == "me3d_paste_tex_adj")	floodFill3d(COPY_TEXTYPE);
+		else if (key == "me3d_copy_tex_type")	edit_3d.copy(Edit3D::CopyType::TexType);
+		else if (key == "me3d_paste_tex_type")	edit_3d.paste(Edit3D::CopyType::TexType);
+		else if (key == "me3d_paste_tex_adj")	edit_3d.floodFill(Edit3D::CopyType::TexType);
 
 		// Light changes
 		else if	(key == "me3d_light_up16")		edit_3d.changeSectorLight(16);
@@ -3213,7 +2531,7 @@ void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool de
 		MapObject::beginPropBackup(App::runTimer());
 	if (undo_deleted || undo_created)
 	{
-		us_create_delete = new MapObjectCreateDeleteUS();
+		us_create_delete = new MapEditor::MapObjectCreateDeleteUS();
 		//manager->recordUndoStep(new MapObjectCreateDeleteUS());
 		//map.clearCreatedDeletedOjbectIds();
 	}
@@ -3253,10 +2571,10 @@ void MapEditContext::endUndoRecord(bool success)
 		bool modified = false;
 		bool created_deleted = false;
 		if (undo_modified)
-			modified = manager->recordUndoStep(new MultiMapObjectPropertyChangeUS());
+			modified = manager->recordUndoStep(new MapEditor::MultiMapObjectPropertyChangeUS());
 		if (undo_created || undo_deleted)
 		{
-			us_create_delete->checkChanges();
+			((MapEditor::MapObjectCreateDeleteUS*)us_create_delete)->checkChanges();
 			created_deleted = manager->recordUndoStep(us_create_delete);
 		}
 
@@ -3274,7 +2592,7 @@ void MapEditContext::endUndoRecord(bool success)
 void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 {
 	UndoManager* manager = (edit_mode == Mode::Visual) ? edit_3d.undoManager() : undo_manager;
-	manager->recordUndoStep(new PropertyChangeUS(object));
+	manager->recordUndoStep(new MapEditor::PropertyChangeUS(object));
 }
 
 /* MapEditContext::doUndo
