@@ -9,6 +9,9 @@
 #include "MapEditor.h"
 #include "ObjectEdit.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Renderer/MapRenderer2D.h"
+#include "Renderer/MapRenderer3D.h"
+
 
 class MapCanvas;
 class UndoManager;
@@ -28,20 +31,22 @@ public:
 
 	SLADEMap&				map() { return map_; }
 	MapEditor::Mode			editMode() const { return edit_mode_; }
-	MapEditor::SectorMode	sectorEditMode() { return sector_mode_; }
+	MapEditor::SectorMode	sectorEditMode() const { return sector_mode_; }
 	double					gridSize();
 	ItemSelection&			selection() { return selection_; }
-	MapEditor::Item			hilightItem() { return selection_.hilight(); }
+	MapEditor::Item			hilightItem() const { return selection_.hilight(); }
 	vector<MapSector*>&		taggedSectors() { return tagged_sectors_; }
 	vector<MapLine*>&		taggedLines() { return tagged_lines_; }
 	vector<MapThing*>&		taggedThings() { return tagged_things_; }
 	vector<MapLine*>&		taggingLines() { return tagging_lines_; }
 	vector<MapThing*>&		taggingThings() { return tagging_things_; }
 	vector<MapThing*>&		pathedThings() { return pathed_things_; }
-	bool					gridSnap() { return grid_snap_; }
-	UndoManager*			undoManager() { return undo_manager_; }
+	bool					gridSnap() const { return grid_snap_; }
+	UndoManager*			undoManager() const { return undo_manager_; }
 	Archive::mapdesc_t&		mapDesc() { return map_desc_; }
 	MapCanvas*				canvas() const { return canvas_; }
+	MapRenderer2D&			renderer2D() { return renderer_2d_; }
+	MapRenderer3D&			renderer3D() { return renderer_3d_; }
 
 	void	setEditMode(MapEditor::Mode mode);
 	void	setSectorEditMode(MapEditor::SectorMode mode);
@@ -113,7 +118,7 @@ public:
 	Edit3D&	edit3d() { return edit_3d_; }
 
 	// Editor messages
-	unsigned	numEditorMessages() { return editor_messages_.size(); }
+	unsigned	numEditorMessages() const { return editor_messages_.size(); }
 	string		editorMessage(int index);
 	long		editorMessageTime(int index);
 	void		addEditorMessage(string message);
@@ -133,7 +138,7 @@ public:
 	void	resetPlayerStart();
 
 	// Misc
-	string	modeString(bool plural = true);
+	string	modeString(bool plural = true) const;
 	bool	handleKeyBind(string key, fpoint2_t position);
 	void	updateDisplay();
 	void	updateStatusText();
@@ -198,6 +203,10 @@ private:
 	// Player start swap
 	fpoint2_t	player_start_pos_;
 	int			player_start_dir_;
+
+	// Renderers
+	MapRenderer2D	renderer_2d_;
+	MapRenderer3D	renderer_3d_;
 };
 
 #endif//__MAP_EDITOR_H__

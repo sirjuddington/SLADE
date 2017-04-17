@@ -5,7 +5,6 @@
 #include "common.h"
 #include "General/KeyBind.h"
 #include "General/SAction.h"
-#include "MapEditor/Renderer/MapRenderer3D.h"
 #include "MapEditor/Renderer/Overlays/InfoOverlay3d.h"
 #include "MapEditor/Renderer/Overlays/LineInfoOverlay.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
@@ -19,7 +18,6 @@ class MCAnimation;
 class MapSide;
 class ThingType;
 class GLTexture;
-class MapRenderer2D;
 class MapThing;
 class MapCanvas : public OGLCanvas, public KeyBindHandler, public SActionHandler
 {
@@ -30,8 +28,6 @@ private:
 	vector<int>				fps_avg;
 	int						fr_idle;
 	sf::Clock				sfclock;
-	MapRenderer2D*			renderer_2d; // TODO: Move these out to MapEditContext
-	MapRenderer3D*			renderer_3d; // ^
 	int						modifiers_current;
 	MapEditor::Mode			mode_last;
 	double					mwheel_rotation;
@@ -204,6 +200,9 @@ public:
 	void	onIdle(wxIdleEvent& e);
 	void	onRTimer(wxTimerEvent& e);
 	void	onFocus(wxFocusEvent& e);
+
+	// Temporary until MapRenderer* redux
+	float	lineFadeLevel() const { return fade_lines; }
 };
 
 #endif //__MAPCANVAS_H__

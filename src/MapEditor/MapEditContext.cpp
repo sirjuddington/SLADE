@@ -45,6 +45,9 @@
 #include "UndoSteps.h"
 #include "Utility/MathStuff.h"
 
+using MapEditor::Mode;
+using MapEditor::SectorMode;
+
 
 /*******************************************************************
  * VARIABLES
@@ -59,8 +62,6 @@ CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
 /*******************************************************************
  * MapEditContext CLASS FUNCTIONS
  *******************************************************************/
-using MapEditor::Mode;
-using MapEditor::SectorMode;
 
 /* MapEditContext::MapEditContext
  * MapEditContext class constructor
@@ -84,7 +85,9 @@ MapEditContext::MapEditContext() :
 	copy_thing_(nullptr),
 	copy_sector_(nullptr),
 	copy_line_(nullptr),
-	player_start_dir_(0)
+	player_start_dir_(0),
+	renderer_2d_(&map_),
+	renderer_3d_(&map_)
 {
 }
 
@@ -218,8 +221,8 @@ bool MapEditContext::openMap(Archive::mapdesc_t map)
 	// Find camera thing
 	if (canvas_)
 	{
-		MapThing* cam = NULL;
-		MapThing* pstart = NULL;
+		MapThing* cam = nullptr;
+		MapThing* pstart = nullptr;
 		for (unsigned a = 0; a < this->map_.nThings(); a++)
 		{
 			MapThing* thing = this->map_.getThing(a);
@@ -303,7 +306,7 @@ void MapEditContext::showItem(int index)
 /* MapEditContext::getModeString
  * Returns a string representation of the current edit mode
  *******************************************************************/
-string MapEditContext::modeString(bool plural)
+string MapEditContext::modeString(bool plural) const
 {
 	switch (edit_mode_)
 	{
@@ -371,8 +374,8 @@ void MapEditContext::updateTagged()
 		// Gather affected objects
 		if (edit_mode_ == Mode::Lines || edit_mode_ == Mode::Things)
 		{
-			MapSector* back = NULL;
-			MapSector* front = NULL;
+			MapSector* back = nullptr;
+			MapSector* front = nullptr;
 			int needs_tag, tag, arg2, arg3, arg4, arg5, tid;
 			// Line specials have front and possibly back sectors
 			if (edit_mode_ == Mode::Lines)
@@ -1091,7 +1094,7 @@ void MapEditContext::changeSectorTexture()
 
 	// Unlock hilight if needed
 	selection_.lockHilight(hl_lock);
-	//canvas_->renderer2D()->clearTextureCache(); // TODO: This
+	renderer_2d_.clearTextureCache();
 }
 
 /* MapEditContext::joinSectors
@@ -1352,7 +1355,7 @@ void MapEditContext::editObjectProperties()
 	bool done = MapEditor::editObjectProperties(selection);
 	if (done)
 	{
-		//renderer_2d->forceUpdate(fade_lines); // TODO: This once the 2d renderer is moved here
+		renderer_2d_.forceUpdate(canvas_->lineFadeLevel());
 		updateDisplay();
 
 		if (edit_mode_ == Mode::Things)
