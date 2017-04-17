@@ -1237,6 +1237,106 @@ void Edit3D::changeHeight(int amount) const
 	}
 }
 
+/* Edit3D::changeTexture
+ * Opens the texture browser for the currently selected 3d mode walls
+ * and/or floors
+ *******************************************************************/
+void Edit3D::changeTexture() const
+{
+	// Check for selection or hilight
+	auto selection = context_.selection().selectionOrHilight();
+	if (selection.empty())
+		return;
+
+	// Get initial texture
+	string tex;
+	int type = 0;
+	auto& first = selection[0];
+	auto& map = context_.map();
+	if (first.type == MapEditor::ItemType::Floor)
+	{
+		tex = map.getSector(first.index)->getFloorTex();
+		type = 1;
+	}
+	else if (first.type == MapEditor::ItemType::Ceiling)
+	{
+		tex = map.getSector(first.index)->getCeilingTex();
+		type = 1;
+	}
+	else if (first.type == MapEditor::ItemType::WallBottom)
+		tex = map.getSide(first.index)->stringProperty("texturebottom");
+	else if (first.type == MapEditor::ItemType::WallMiddle)
+		tex = map.getSide(first.index)->stringProperty("texturemiddle");
+	else if (first.type == MapEditor::ItemType::WallTop)
+		tex = map.getSide(first.index)->stringProperty("texturetop");
+
+	// Open texture browser
+	tex = MapEditor::browseTexture(tex, type, map);
+	if (!tex.empty())
+	{
+		bool mix = theGameConfiguration->mixTexFlats();
+		MapEditor::Item hl = context_.hilightItem();
+
+		// Begin undo level
+		context_.beginUndoRecord("Change Texture", true, false, false);
+
+		// Apply to flats
+		if (mix || type == 1)
+		{
+			// Selection
+			if (selection.size() > 0)
+			{
+				for (unsigned a = 0; a < selection.size(); a++)
+				{
+					if (selection[a].type == MapEditor::ItemType::Floor)
+						map.getSector(selection[a].index)->setStringProperty("texturefloor", tex);
+					else if (selection[a].type == MapEditor::ItemType::Ceiling)
+						map.getSector(selection[a].index)->setStringProperty("textureceiling", tex);
+				}
+			}
+			else if (hl.index >= 0)
+			{
+				// Hilight if no selection
+				if (hl.type == MapEditor::ItemType::Floor)
+					map.getSector(hl.index)->setStringProperty("texturefloor", tex);
+				else if (hl.type == MapEditor::ItemType::Ceiling)
+					map.getSector(hl.index)->setStringProperty("textureceiling", tex);
+			}
+		}
+
+		// Apply to walls
+		if (mix || type == 0)
+		{
+			// Selection
+			if (selection.size() > 0)
+			{
+				for (unsigned a = 0; a < selection.size(); a++)
+				{
+					if (selection[a].type == MapEditor::ItemType::WallBottom)
+						map.getSide(selection[a].index)->setStringProperty("texturebottom", tex);
+					else if (selection[a].type == MapEditor::ItemType::WallMiddle)
+						map.getSide(selection[a].index)->setStringProperty("texturemiddle", tex);
+					else if (selection[a].type == MapEditor::ItemType::WallTop)
+						map.getSide(selection[a].index)->setStringProperty("texturetop", tex);
+				}
+			}
+			else if (hl.index >= 0)
+			{
+				// Hilight if no selection
+				if (hl.type == MapEditor::ItemType::WallBottom)
+					map.getSide(hl.index)->setStringProperty("texturebottom", tex);
+				else if (hl.type == MapEditor::ItemType::WallMiddle)
+					map.getSide(hl.index)->setStringProperty("texturemiddle", tex);
+				else if (hl.type == MapEditor::ItemType::WallTop)
+					map.getSide(hl.index)->setStringProperty("texturetop", tex);
+			}
+		}
+
+		// End undo level
+		context_.endUndoRecord();
+	}
+}
+
 /* Edit3D::getAdjacent
  * Returns a list of all walls or flats adjacent to [item]. Adjacent
  * meaning connected and sharing a texture

@@ -303,17 +303,18 @@ void MapEditContext::showItem(int index)
 /* MapEditContext::getModeString
  * Returns a string representation of the current edit mode
  *******************************************************************/
-string MapEditContext::modeString()
+string MapEditContext::modeString(bool plural)
 {
 	switch (edit_mode_)
 	{
-	case Mode::Vertices: return "Vertices";
-	case Mode::Lines: return "Lines";
-	case Mode::Sectors: return "Sectors";
-	case Mode::Things: return "Things";
-	case Mode::Visual: return "3D";
-	default: return "Items";
+	case Mode::Vertices:	return plural ? "Vertices" : "Vertex";
+	case Mode::Lines:		return plural ? "Lines" : "Line";
+	case Mode::Sectors:		return plural ? "Sectors" : "Sector";
+	case Mode::Things:		return plural ? "Things" : "Thing";
+	case Mode::Visual:		return "3D";
 	};
+
+	return plural ? "Items" : "Object";
 }
 
 /* MapEditContext::updateThingLists
@@ -1032,6 +1033,67 @@ void MapEditContext::changeSectorLight(bool up, bool fine)
 	updateDisplay();
 }
 
+/* MapEditContext::changeSectorTexture
+ * Depending on the current sector edit mode, either opens the
+ * sector texture overlay (normal) or browses for the ceiling or
+ * floor texture (ceiling/floor edit mode)
+ *******************************************************************/
+void MapEditContext::changeSectorTexture()
+{
+	// Determine the initial texture
+	string texture = "";
+	string browser_title;
+	string undo_name;
+
+	// Get selected sectors
+	auto selection = selection_.selectedSectors();
+	if (selection.empty())
+		return;
+
+	// Check edit mode
+	if (sector_mode_ == SectorMode::Floor)
+	{
+		texture = selection[0]->stringProperty("texturefloor");
+		browser_title = "Browse Floor Texture";
+		undo_name = "Change Floor Texture";
+	}
+	else if (sector_mode_ == SectorMode::Ceiling)
+	{
+		texture = selection[0]->stringProperty("textureceiling");
+		browser_title = "Browse Ceiling Texture";
+		undo_name = "Change Ceiling Texture";
+	}
+	else
+	{
+		canvas_->openSectorTextureOverlay(selection);
+		return;
+	}
+
+	// Lock hilight
+	bool hl_lock = selection_.hilightLocked();
+	selection_.lockHilight();
+
+	// Open texture browser
+	string selected_tex = MapEditor::browseTexture(texture, 1, map_, browser_title);
+	if (!selected_tex.empty())
+	{
+		// Set texture depending on edit mode
+		beginUndoRecord(undo_name, true, false, false);
+		for (unsigned a = 0; a < selection.size(); a++)
+		{
+			if (sector_mode_ == SectorMode::Floor)
+				selection[a]->setStringProperty("texturefloor", selected_tex);
+			else if (sector_mode_ == SectorMode::Ceiling)
+				selection[a]->setStringProperty("textureceiling", selected_tex);
+		}
+		endUndoRecord();
+	}
+
+	// Unlock hilight if needed
+	selection_.lockHilight(hl_lock);
+	//canvas_->renderer2D()->clearTextureCache(); // TODO: This
+}
+
 /* MapEditContext::joinSectors
  * Joins all selected sectors. If [remove_lines] is true, all
  * resulting lines with both sides set to the joined sector are
@@ -1124,14 +1186,10 @@ void MapEditContext::joinSectors(bool remove_lines)
 }
 
 /* MapEditContext::changeThingType
- * Changes all selected things types to [newtype]
+ * Opens the thing type browser for the currently selected thing(s)
  *******************************************************************/
-void MapEditContext::changeThingType(int newtype)
+void MapEditContext::changeThingType()
 {
-	// Do nothing if not in things mode
-	if (edit_mode_ != Mode::Things && edit_mode_ != Mode::Visual)
-		return;
-
 	// Get selected things (if any)
 	auto selection = selection_.selectedThings();
 
@@ -1139,21 +1197,26 @@ void MapEditContext::changeThingType(int newtype)
 	if (selection.size() == 0)
 		return;
 
-	// Go through selection
-	beginUndoRecord("Thing Type Change", true, false, false);
-	for (unsigned a = 0; a < selection.size(); a++)
-		selection[a]->setIntProperty("type", newtype);
-	endUndoRecord(true);
+	// Browse thing type
+	int newtype = MapEditor::browseThingType(selection[0]->getType(), map_);
+	if (newtype >= 0)
+	{
+		// Go through selection
+		beginUndoRecord("Thing Type Change", true, false, false);
+		for (unsigned a = 0; a < selection.size(); a++)
+			selection[a]->setIntProperty("type", newtype);
+		endUndoRecord(true);
 
-	// Add editor message
-	string type_name = theGameConfiguration->thingType(newtype)->getName();
-	if (selection.size() == 1)
-		addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
-	else
-		addEditorMessage(S_FMT("Changed %lu things to type \"%s\"", selection.size(), type_name));
+		// Add editor message
+		string type_name = theGameConfiguration->thingType(newtype)->getName();
+		if (selection.size() == 1)
+			addEditorMessage(S_FMT("Changed type to \"%s\"", type_name));
+		else
+			addEditorMessage(S_FMT("Changed %lu things to type \"%s\"", selection.size(), type_name));
 
-	// Update display
-	updateDisplay();
+		// Update display
+		updateDisplay();
+	}
 }
 
 /* MapEditContext::thingQuickAngle
@@ -1269,6 +1332,35 @@ void MapEditContext::mirror(bool x_axis)
 
 		endUndoRecord(true);
 	}
+}
+
+/* MapEditContext::editObjectProperties
+ * Opens a dialog containing a MapObjectPropsPanel to edit properties
+ * for all selected (or hilighted) objects
+ *******************************************************************/
+void MapEditContext::editObjectProperties()
+{
+	auto selection = selection_.selectedObjects();
+	if (selection.empty())
+		return;
+
+	// Begin recording undo level
+	beginUndoRecord(S_FMT("Property Edit (%s)", modeString(false)));
+	for (auto item : selection)
+		recordPropertyChangeUndoStep(item);
+
+	bool done = MapEditor::editObjectProperties(selection);
+	if (done)
+	{
+		//renderer_2d->forceUpdate(fade_lines); // TODO: This once the 2d renderer is moved here
+		updateDisplay();
+
+		if (edit_mode_ == Mode::Things)
+			copyProperties(selection[0]);
+	}
+
+	// End undo level
+	endUndoRecord(done);
 }
 
 /* MapEditContext::beginTagEdit

@@ -1015,19 +1015,10 @@ bool MapEditorWindow::tryClose()
  *******************************************************************/
 bool MapEditorWindow::hasMapOpen(Archive* archive)
 {
-	// TODO: This
-	return false;
-	/*if (!mdesc_current.head)
+	auto& mdesc = MapEditor::editContext().mapDesc();
+	if (!mdesc.head)
 		return false;
-	return (mdesc_current.head->getParent() == archive);*/
-}
-
-/* MapEditorWindow::editObjectProperties
- * Opens the property editor for [objects]
- *******************************************************************/
-void MapEditorWindow::editObjectProperties(vector<MapObject*>& objects)
-{
-	map_canvas->editObjectProperties(objects);
+	return (mdesc.head->getParent() == archive);
 }
 
 /* MapEditorWindow::setUndoManager

@@ -42,10 +42,8 @@
 #include "MapEditor/Renderer/Overlays/SectorTextureOverlay.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapEditor/UI/Dialogs/ActionSpecialDialog.h"
-#include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
 #include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
 #include "MapEditor/UI/Dialogs/ShowItemDialog.h"
-#include "MapEditor/UI/Dialogs/ThingTypeBrowser.h"
 #include "MapEditor/UI/PropsPanel/LinePropsPanel.h"
 #include "MapEditor/UI/PropsPanel/MapObjectPropsPanel.h"
 #include "MapEditor/UI/PropsPanel/SectorPropsPanel.h"
@@ -2374,291 +2372,6 @@ void MapCanvas::changeEditMode(Mode mode)
 	//	renderer_2d->forceUpdate(1.0f);
 }
 
-/* MapCanvas::changeThingType
- * Opens the thing type browser for the currently selected thing(s)
- *******************************************************************/
-void MapCanvas::changeThingType()
-{
-	// Determine the initial type
-	int type = -1;
-	auto selection = editor->selection().selectedThings();
-	if (selection.size() > 0)
-		type = selection[0]->intProperty("type");
-	else
-		return;
-
-	// Lock hilight in the editor
-	bool hl_lock = editor->selection().hilightLocked();
-	editor->selection().lockHilight();
-
-	// Open type browser
-	ThingTypeBrowser browser(MapEditor::window(), type);
-	if (browser.ShowModal() == wxID_OK)
-	{
-		editor->changeThingType(browser.getSelectedType());
-		editor->copyProperties(selection[0]);
-	}
-
-	// Unlock hilight if needed
-	editor->selection().lockHilight(hl_lock);
-}
-
-/* MapCanvas::changeSectorTexture
- * Depending on the current sector edit mode, either opens the
- * sector texture overlay (normal) or browses for the ceiling or
- * floor texture (ceiling/floor edit mode)
- *******************************************************************/
-void MapCanvas::changeSectorTexture()
-{
-	// Determine the initial texture
-	string texture = "";
-	string browser_title;
-	string undo_name;
-	auto selection = editor->selection().selectedSectors();
-	if (selection.size() > 0)
-	{
-		// Check edit mode
-		if (editor->sectorEditMode() == SectorMode::Floor)
-		{
-			texture = selection[0]->stringProperty("texturefloor");
-			browser_title = "Browse Floor Texture";
-			undo_name = "Change Floor Texture";
-		}
-		else if (editor->sectorEditMode() == SectorMode::Ceiling)
-		{
-			texture = selection[0]->stringProperty("textureceiling");
-			browser_title = "Browse Ceiling Texture";
-			undo_name = "Change Ceiling Texture";
-		}
-		else
-		{
-			if (overlay_current) delete overlay_current;
-			SectorTextureOverlay* sto = new SectorTextureOverlay();
-			sto->openSectors(selection);
-			overlay_current = sto;
-			return;
-		}
-	}
-	else
-		return;
-
-	// Lock hilight in the editor
-	bool hl_lock = editor->selection().hilightLocked();
-	editor->selection().lockHilight();
-
-	// Open texture browser
-	MapTextureBrowser browser(MapEditor::window(), 1, texture, &(MapEditor::editContext().map()));
-	browser.SetTitle(browser_title);
-	if (browser.ShowModal() == wxID_OK)
-	{
-		// Set texture depending on edit mode
-		editor->beginUndoRecord(undo_name, true, false, false);
-		for (unsigned a = 0; a < selection.size(); a++)
-		{
-			if (editor->sectorEditMode() == SectorMode::Floor)
-				selection[a]->setStringProperty("texturefloor", browser.getSelectedItem()->getName());
-			else if (editor->sectorEditMode() == SectorMode::Ceiling)
-				selection[a]->setStringProperty("textureceiling", browser.getSelectedItem()->getName());
-		}
-		editor->endUndoRecord();
-	}
-
-	// Unlock hilight if needed
-	editor->selection().lockHilight(hl_lock);
-	renderer_2d->clearTextureCache();
-}
-
-/* MapCanvas::changeThingType3d
- * Opens the thing type browser for the currently selected 3d mode
- * thing(s)
- *******************************************************************/
-void MapCanvas::changeThingType3d(MapEditor::Item first)
-{
-	// Get first selected thing
-	MapThing* thing = editor->map().getThing(first.index);
-
-	// Do nothing if no things selected/hilighted
-	if (!thing)
-		return;
-
-	// Open type browser
-	ThingTypeBrowser browser(MapEditor::window(), thing->getType());
-	if (browser.ShowModal() == wxID_OK)
-		editor->changeThingType(browser.getSelectedType());
-}
-
-/* MapCanvas::changeTexture3d
- * Opens the texture browser for the currently selected 3d mode walls
- * and/or floors
- *******************************************************************/
-void MapCanvas::changeTexture3d(MapEditor::Item first)
-{
-	// Check index
-	if (first.index < 0)
-		return;
-
-	// Get initial texture
-	string tex;
-	int type = 0;
-	if (first.type == MapEditor::ItemType::Floor)
-	{
-		tex = editor->map().getSector(first.index)->getFloorTex();
-		type = 1;
-	}
-	else if (first.type == MapEditor::ItemType::Ceiling)
-	{
-		tex = editor->map().getSector(first.index)->getCeilingTex();
-		type = 1;
-	}
-	else if (first.type == MapEditor::ItemType::WallBottom)
-		tex = editor->map().getSide(first.index)->stringProperty("texturebottom");
-	else if (first.type == MapEditor::ItemType::WallMiddle)
-		tex = editor->map().getSide(first.index)->stringProperty("texturemiddle");
-	else if (first.type == MapEditor::ItemType::WallTop)
-		tex = editor->map().getSide(first.index)->stringProperty("texturetop");
-
-	// Open texture browser
-	MapTextureBrowser browser(MapEditor::window(), type, tex, &(MapEditor::editContext().map()));
-	browser.SetTitle("Browse Texture");
-	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem() != nullptr)
-	{
-		bool mix = theGameConfiguration->mixTexFlats();
-		tex = browser.getSelectedItem()->getName();
-		MapEditor::Item hl = editor->hilightItem();
-
-		// Begin undo level
-		editor->beginUndoRecord("Change Texture", true, false, false);
-
-		// Apply to flats
-		auto& selection = editor->selection();
-		if (mix || type == 1)
-		{
-			// Selection
-			if (selection.size() > 0)
-			{
-				for (unsigned a = 0; a < selection.size(); a++)
-				{
-					if (selection[a].type == MapEditor::ItemType::Floor)
-						editor->map().getSector(selection[a].index)->setStringProperty("texturefloor", tex);
-					else if (selection[a].type == MapEditor::ItemType::Ceiling)
-						editor->map().getSector(selection[a].index)->setStringProperty("textureceiling", tex);
-				}
-			}
-			else if (hl.index >= 0)
-			{
-				// Hilight if no selection
-				if (hl.type == MapEditor::ItemType::Floor)
-					editor->map().getSector(hl.index)->setStringProperty("texturefloor", tex);
-				else if (hl.type == MapEditor::ItemType::Ceiling)
-					editor->map().getSector(hl.index)->setStringProperty("textureceiling", tex);
-			}
-		}
-
-		// Apply to walls
-		if (mix || type == 0)
-		{
-			// Selection
-			if (selection.size() > 0)
-			{
-				for (unsigned a = 0; a < selection.size(); a++)
-				{
-					if (selection[a].type == MapEditor::ItemType::WallBottom)
-						editor->map().getSide(selection[a].index)->setStringProperty("texturebottom", tex);
-					else if (selection[a].type == MapEditor::ItemType::WallMiddle)
-						editor->map().getSide(selection[a].index)->setStringProperty("texturemiddle", tex);
-					else if (selection[a].type == MapEditor::ItemType::WallTop)
-						editor->map().getSide(selection[a].index)->setStringProperty("texturetop", tex);
-				}
-			}
-			else if (hl.index >= 0)
-			{
-				// Hilight if no selection
-				if (hl.type == MapEditor::ItemType::WallBottom)
-					editor->map().getSide(hl.index)->setStringProperty("texturebottom", tex);
-				else if (hl.type == MapEditor::ItemType::WallMiddle)
-					editor->map().getSide(hl.index)->setStringProperty("texturemiddle", tex);
-				else if (hl.type == MapEditor::ItemType::WallTop)
-					editor->map().getSide(hl.index)->setStringProperty("texturetop", tex);
-			}
-		}
-
-		// End undo level
-		editor->endUndoRecord();
-	}
-}
-
-/* MapCanvas::editObjectProperties
- * Opens a dialog containing a MapObjectPropsPanel to edit properties
- * for all objects in [list]
- *******************************************************************/
-void MapCanvas::editObjectProperties(vector<MapObject*>& list)
-{
-	// Determine selection type
-	string type = "Object";
-	if (editor->editMode() == Mode::Vertices)
-		type = "Vertex";
-	else if (editor->editMode() == Mode::Lines)
-		type = "Line";
-	else if (editor->editMode() == Mode::Sectors)
-		type = "Sector";
-	else if (editor->editMode() == Mode::Things)
-		type = "Thing";
-
-	// Begin recording undo level
-	editor->beginUndoRecord(S_FMT("Property Edit (%s)", type));
-	for (unsigned a = 0; a < list.size(); a++)
-		editor->recordPropertyChangeUndoStep(list[a]);
-
-	string selsize = "";
-	if (list.size() == 1)
-		type += S_FMT(" #%d", list[0]->getIndex());
-	else if (list.size() > 1)
-		selsize = S_FMT("(%lu selected)", list.size());
-
-	// Create dialog for properties panel
-	SDialog dlg(MapEditor::window(), S_FMT("%s Properties %s", type, selsize), S_FMT("mobjprops_%d", editor->editMode()), -1, -1);
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	dlg.SetSizer(sizer);
-
-	// Create properties panel
-	PropsPanelBase* panel_props = nullptr;
-	if (editor->editMode() == Mode::Lines)
-		sizer->Add(panel_props = new LinePropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
-	else if (editor->editMode() == Mode::Sectors)
-		sizer->Add(panel_props = new SectorPropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
-	else if (editor->editMode() == Mode::Things)
-		sizer->Add(panel_props = new ThingPropsPanel(&dlg), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
-	else
-		sizer->Add(panel_props = new MapObjectPropsPanel(&dlg, true), 1, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 10);
-
-	// Add dialog buttons
-	sizer->AddSpacer(4);
-	sizer->Add(dlg.CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
-
-	// Open current selection
-	panel_props->openObjects(list);
-
-	// Open the dialog and apply changes if OK was clicked
-	dlg.SetMinClientSize(sizer->GetMinSize());
-	dlg.CenterOnParent();
-	if (dlg.ShowModal() == wxID_OK)
-	{
-		panel_props->applyChanges();
-		renderer_2d->forceUpdate(fade_lines);
-		editor->updateDisplay();
-
-		if (editor->editMode() == Mode::Things)
-			editor->copyProperties(list[0]);
-	}
-
-	// End undo level
-	editor->endUndoRecord(true);
-
-	// Clear property grid to avoid crash (wxPropertyGrid is at fault there)
-	//if (panel_props)
-	//	panel_props->clearGrid();
-}
-
 /* MapCanvas::beginLineDraw
  * Sets up and begins line drawing
  *******************************************************************/
@@ -2720,6 +2433,17 @@ void MapCanvas::beginObjectEdit()
 		feature_help_lines.push_back("Shift = Disable grid snapping");
 		feature_help_lines.push_back("Ctrl = Rotate");
 	}
+}
+
+/* MapCanvas::openSectorTextureOverlay
+ * Opens the sector texture selection overlay
+ *******************************************************************/
+void MapCanvas::openSectorTextureOverlay(vector<MapSector*>& sectors)
+{
+	if (overlay_current) delete overlay_current;
+	auto sto = new SectorTextureOverlay();
+	sto->openSectors(sectors);
+	overlay_current = sto;
 }
 
 /* MapCanvas::onKeyBindPress
@@ -3156,11 +2880,7 @@ void MapCanvas::keyBinds2d(string name)
 
 		// Object Properties
 		else if (name == "me2d_object_properties")
-		{
-			auto objects = editor->selection().selectedObjects();
-			if (!objects.empty())
-				editObjectProperties(objects);
-		}
+				editor->editObjectProperties();
 
 
 		// --- Lines edit mode ---
@@ -3215,7 +2935,7 @@ void MapCanvas::keyBinds2d(string name)
 		{
 			// Change type
 			if (name == "me2d_thing_change_type")
-				changeThingType();
+				editor->changeThingType();
 
 			// Quick angle
 			else if (name == "me2d_thing_quick_angle")
@@ -3236,7 +2956,7 @@ void MapCanvas::keyBinds2d(string name)
 		{
 			// Change sector texture
 			if (name == "me2d_sector_change_texture")
-				changeSectorTexture();
+				editor->changeSectorTexture();
 		}
 	}
 }
@@ -3610,14 +3330,7 @@ bool MapCanvas::handleAction(string id)
 
 	// Edit item properties
 	else if (id == "mapw_item_properties")
-	{
-		// Get selection
-		auto list = editor->selection().selectedObjects();
-
-		editObjectProperties(list);
-
-		return true;
-	}
+		editor->editObjectProperties();
 
 	// --- Vertex context menu ---
 
@@ -3711,7 +3424,7 @@ bool MapCanvas::handleAction(string id)
 	// Change thing type
 	else if (id == "mapw_thing_changetype")
 	{
-		changeThingType();
+		editor->changeThingType();
 		return true;
 	}
 
@@ -3727,7 +3440,7 @@ bool MapCanvas::handleAction(string id)
 	// Change sector texture
 	else if (id == "mapw_sector_changetexture")
 	{
-		changeSectorTexture();
+		editor->changeSectorTexture();
 		return true;
 	}
 
@@ -4016,13 +3729,9 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 			// Double click to edit the current selection
 			if (e.LeftDClick() && property_edit_dclick)
 			{
-				auto objects = editor->selection().selectedObjects();
-				if (!objects.empty())
-				{
-					editObjectProperties(objects);
-					if (objects.size() == 1)
-						editor->selection().clearSelection();
-				}
+				editor->editObjectProperties();
+				if (editor->selection().size() == 1)
+					editor->selection().clearSelection();
 			}
 			// Begin box selection if shift is held down, otherwise toggle selection on hilighted object
 			else if (e.ShiftDown())
@@ -4038,16 +3747,16 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 		// 3d mode
 		if (editor->editMode() == Mode::Visual)
 		{
-			// Get first selected item
-			MapEditor::Item first = editor->hilightItem();
-			if (editor->selection().size() > 0)
-				first = editor->selection()[0];
-
-			// Check type
-			if (first.type == MapEditor::ItemType::Thing)
-				changeThingType3d(first);
-			else
-				changeTexture3d(first);
+			// Get selection or hilight
+			auto sel = editor->selection().selectionOrHilight();
+			if (!sel.empty())
+			{
+				// Check type
+				if (sel[0].type == MapEditor::ItemType::Thing)
+					editor->changeThingType();
+				else
+					editor->edit3d().changeTexture();
+			}
 		}
 
 		// Remove line draw point if in line drawing state

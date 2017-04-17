@@ -30,8 +30,8 @@ private:
 	vector<int>				fps_avg;
 	int						fr_idle;
 	sf::Clock				sfclock;
-	MapRenderer2D*			renderer_2d;
-	MapRenderer3D*			renderer_3d;
+	MapRenderer2D*			renderer_2d; // TODO: Move these out to MapEditContext
+	MapRenderer3D*			renderer_3d; // ^
 	int						modifiers_current;
 	MapEditor::Mode			mode_last;
 	double					mwheel_rotation;
@@ -174,17 +174,12 @@ public:
 	void	updateInfoOverlay();
 	void	forceRefreshRenderer();
 	void	changeEditMode(MapEditor::Mode mode);
-	void	changeFlatType(int type);
-	void	editObjectProperties(vector<MapObject*>& objects);
 	void	beginLineDraw();
 	void	beginShapeDraw();
 	void	beginObjectEdit();
 
-	// Keybind/action handlers (that use UI features - anything else goes to MapEditor)
-	void	changeThingType();
-	void	changeSectorTexture();
-	void	changeThingType3d(MapEditor::Item first);
-	void	changeTexture3d(MapEditor::Item first);
+	// Overlays
+	void 	openSectorTextureOverlay(vector<MapSector*>& sectors);
 
 	// Keybind handling
 	void	onKeyBindPress(string name);

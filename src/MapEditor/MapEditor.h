@@ -1,13 +1,14 @@
 #pragma once
 
 class Archive;
+class MapBackupManager;
 class MapEditContext;
-class MapTextureManager;
 class MapEditorWindow;
 class MapObject;
+class MapTextureManager;
 class ObjectEditGroup;
+class SLADEMap;
 class UndoManager;
-class MapBackupManager;
 
 namespace MapEditor
 {
@@ -89,6 +90,16 @@ namespace MapEditor
 
 	void	showShapeDrawPanel(bool show = true);
 	void	showObjectEditPanel(bool show = true, ObjectEditGroup* group = nullptr);
+
+	string	browseTexture(
+		const string& init_texture,
+		int tex_type,
+		SLADEMap& map,
+		const string& title = "Browse Texture"
+	);
+	int 	browseThingType(int init_type, SLADEMap& map);
+
+	bool	editObjectProperties(vector<MapObject*>& list);
 
 	ItemType	baseItemType(const ItemType& type);
 }

@@ -78,10 +78,12 @@ public:
 	void	correctLineSectors();
 	void	changeSectorHeight(int amount, bool floor = true, bool ceiling = true);
 	void	changeSectorLight(bool up, bool fine);
+	void 	changeSectorTexture();
 	void	joinSectors(bool remove_lines);
-	void	changeThingType(int newtype);
+	void	changeThingType();
 	void	thingQuickAngle(fpoint2_t mouse_pos);
 	void	mirror(bool x_axis);
+	void 	editObjectProperties();
 
 	// Tag edit
 	int		beginTagEdit();
@@ -131,7 +133,7 @@ public:
 	void	resetPlayerStart();
 
 	// Misc
-	string	modeString();
+	string	modeString(bool plural = true);
 	bool	handleKeyBind(string key, fpoint2_t position);
 	void	updateDisplay();
 	void	updateStatusText();

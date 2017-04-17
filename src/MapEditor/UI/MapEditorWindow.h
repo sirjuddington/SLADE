@@ -39,7 +39,6 @@ public:
 	void		closeMap();
 	void		forceRefresh(bool renderer = false);
 	void		refreshToolBar();
-	void		editObjectProperties(vector<MapObject*>& objects);
 	void		setUndoManager(UndoManager* manager);
 	bool		tryClose();
 	bool		hasMapOpen(Archive* archive);
