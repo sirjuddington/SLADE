@@ -1372,6 +1372,7 @@
     <ClCompile Include="..\..\src\MapEditor\UI\PropsPanel\ThingPropsPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\ScriptEditorPanel.cpp" />
     <ClCompile Include="..\..\src\MapEditor\UI\ShapeDrawPanel.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\UndoSteps.cpp" />
     <ClCompile Include="..\..\src\OpenGL\Drawing.cpp" />
     <ClCompile Include="..\..\src\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\..\src\OpenGL\OpenGL.cpp" />
@@ -1838,6 +1839,7 @@
     <ClInclude Include="..\..\src\MapEditor\UI\ScriptEditorPanel.h" />
     <ClInclude Include="..\..\src\MapEditor\UI\ShapeDrawPanel.h" />
     <ClInclude Include="..\..\src\External\mus2mid\mus2mid.h" />
+    <ClInclude Include="..\..\src\MapEditor\UndoSteps.h" />
     <ClInclude Include="..\..\src\OpenGL\Drawing.h" />
     <ClInclude Include="..\..\src\OpenGL\GLTexture.h" />
     <ClInclude Include="..\..\src\OpenGL\OpenGL.h" />

@@ -1434,6 +1434,9 @@
     <ClCompile Include="..\..\src\MapEditor\ItemSelection.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\UndoSteps.cpp">
+      <Filter>Map Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2475,6 +2478,9 @@
       <Filter>Map Editor\Edit</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\ItemSelection.h">
+      <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\UndoSteps.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
   </ItemGroup>
