@@ -169,10 +169,7 @@ public:
 	fpoint2_t	mouseDownPosM() { return mouse_downpos_m; }
 	void		mouseLook3d();
 
-	void	itemSelected(int index, bool selected = true);
-	void	itemsSelected(vector<int>& items, bool selected = true);
-	void	itemSelected3d(MapEditor::Item item, bool selected = true);
-	void	itemsSelected3d(vector<MapEditor::Item>& items, bool selected = true);
+	void	animateSelectionChange(const MapEditor::Item& item, bool selected = true);
 	void 	animateSelectionChange(const ItemSelection& selection);
 	void	updateInfoOverlay();
 	void	forceRefreshRenderer();

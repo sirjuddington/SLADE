@@ -33,6 +33,7 @@
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapTextureManager.h"
+#include "MapEditor/UI/MapCanvas.h"
 #include "MapEditor/UndoSteps.h"
 #include "Utility/MathStuff.h"
 
@@ -785,10 +786,10 @@ void Edit3D::copy(CopyType type)
 	{
 		copy_thing_.copy(map.getThing(hl.index));
 	}
-//
-//	// Flash
-//	if (canvas)
-//		canvas->itemSelected3d(hl);
+
+	// Flash
+	if (context_.canvas())
+		context_.canvas()->animateSelectionChange(hl);
 
 	// Editor message
 	if (type == CopyType::TexType)
@@ -805,18 +806,6 @@ void Edit3D::copy(CopyType type)
  *******************************************************************/
 void Edit3D::paste(CopyType type)
 {
-//	// Get items to paste to
-//	vector<MapEditor::Item> items;
-//	if (item_selection.size() == 0 && item_selection.hilight().index >= 0)
-//		items.push_back(item_selection.hilight());
-//	else if (item_selection.size() > 0)
-//	{
-//		for (unsigned a = 0; a < item_selection.size(); a++)
-//			items.push_back(item_selection[a]);
-//	}
-//	else
-//		return;
-
 	// Begin undo step
 	string ptype = "Paste Properties";
 	if (type == CopyType::TexType)

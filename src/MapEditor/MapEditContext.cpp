@@ -1534,8 +1534,10 @@ void MapEditContext::createSector(double x, double y)
 	{
 		beginUndoRecord("Create Sector", true, true, false);
 		builder.createSector(nullptr, sector_copy);
+
+		// Flash
 		if (canvas_)
-			canvas_->itemSelected(map_.nSectors() - 1);
+			canvas_->animateSelectionChange({ (int)map_.nSectors() - 1, MapEditor::ItemType::Sector });
 	}
 
 	// Set some sector defaults from game configuration if needed
