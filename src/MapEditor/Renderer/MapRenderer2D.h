@@ -2,15 +2,17 @@
 #ifndef __MAP_RENDERER_2D__
 #define __MAP_RENDERER_2D__
 
-class ItemSelection;
+#include "MapEditor/MapEditor.h"
+
 // Forward declarations
-class ThingType;
 class GLTexture;
-class ObjectEditGroup;
-class SLADEMap;
+class ItemSelection;
 class MapLine;
 class MapSector;
 class MapThing;
+class ObjectEditGroup;
+class SLADEMap;
+class ThingType;
 
 class MapRenderer2D
 {
@@ -135,10 +137,10 @@ public:
 	void	renderTaggedFlats(vector<MapSector*>& sectors, float fade);
 
 	// Moving
-	void	renderMovingVertices(vector<int>& vertices, fpoint2_t move_vec);
-	void	renderMovingLines(vector<int>& lines, fpoint2_t move_vec);
-	void	renderMovingSectors(vector<int>& sectors, fpoint2_t move_vec);
-	void	renderMovingThings(vector<int>& things, fpoint2_t move_vec);
+	void	renderMovingVertices(const vector<MapEditor::Item>& vertices, fpoint2_t move_vec);
+	void	renderMovingLines(const vector<MapEditor::Item>& lines, fpoint2_t move_vec);
+	void	renderMovingSectors(const vector<MapEditor::Item>& sectors, fpoint2_t move_vec);
+	void	renderMovingThings(const vector<MapEditor::Item>& things, fpoint2_t move_vec);
 
 	// Paste
 	void	renderPasteThings(vector<MapThing*>& things, fpoint2_t pos);

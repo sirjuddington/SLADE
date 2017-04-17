@@ -17,14 +17,6 @@ class UndoStep;
 class MapEditContext
 {
 public:
-	enum
-	{
-		// Selection
-		DESELECT = 0,
-		SELECT,
-		TOGGLE,
-	};
-
 	struct EditorMessage
 	{
 		string	message;
@@ -72,14 +64,14 @@ public:
 	fpoint2_t	relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos);
 
 	// Item moving
-	vector<int>&	movingItems() { return move_items_; }
-	fpoint2_t		moveVector() { return move_vec_; }
-	bool			beginMove(fpoint2_t mouse_pos);
-	void			doMove(fpoint2_t mouse_pos);
-	void			endMove(bool accept = true);
+	const vector<MapEditor::Item>&	movingItems() const { return move_items_; }
+	fpoint2_t						moveVector() { return move_vec_; }
+	bool							beginMove(fpoint2_t mouse_pos);
+	void							doMove(fpoint2_t mouse_pos);
+	void							endMove(bool accept = true);
 
 	// Editing
-	void	copyProperties(MapObject* object = NULL);
+	void	copyProperties(MapObject* object = nullptr);
 	void	pasteProperties();
 	void	splitLine(double x, double y, double min_dist = 64);
 	void	flipLines(bool sides = true);
@@ -119,7 +111,7 @@ public:
 	Edit3D&	edit3d() { return edit_3d_; }
 
 	// Editor messages
-	unsigned	numEditorMessages();
+	unsigned	numEditorMessages() { return editor_messages_.size(); }
 	string		editorMessage(int index);
 	long		editorMessageTime(int index);
 	void		addEditorMessage(string message);
@@ -181,10 +173,10 @@ private:
 	vector<MapThing*>	pathed_things_;
 
 	// Moving
-	fpoint2_t	move_origin_;
-	fpoint2_t	move_vec_;
-	vector<int>	move_items_;
-	int			move_item_closest_;
+	fpoint2_t				move_origin_;
+	fpoint2_t				move_vec_;
+	vector<MapEditor::Item>	move_items_;
+	MapEditor::Item			move_item_closest_;
 
 	// Editing
 	LineDraw	line_draw_;
@@ -204,8 +196,6 @@ private:
 	// Player start swap
 	fpoint2_t	player_start_pos_;
 	int			player_start_dir_;
-
-	void mergeLines(long, vector<fpoint2_t>&);
 };
 
 #endif//__MAP_EDITOR_H__

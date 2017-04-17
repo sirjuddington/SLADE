@@ -2294,7 +2294,7 @@ void MapRenderer2D::renderTaggedFlats(vector<MapSector*>& sectors, float fade)
  * Renders the moving overlay for vertex indices in [vertices], to
  * show movement by [move_vec]
  *******************************************************************/
-void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_vec)
+void MapRenderer2D::renderMovingVertices(const vector<MapEditor::Item>& vertices, fpoint2_t move_vec)
 {
 	uint8_t* lines_drawn = new uint8_t[map->nLines()];
 	memset(lines_drawn, 0, map->nLines());
@@ -2302,7 +2302,7 @@ void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_v
 	// Determine what lines need drawing (and which of their vertices are being moved)
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		MapVertex* v = map->getVertex(vertices[a]);
+		MapVertex* v = map->getVertex(vertices[a].index);
 		for (unsigned l = 0; l < v->nConnectedLines(); l++)
 		{
 			MapLine* line = v->connectedLine(l);
@@ -2350,8 +2350,8 @@ void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_v
 	glBegin(GL_POINTS);
 	for (unsigned a = 0; a < vertices.size(); a++)
 	{
-		glVertex2d(map->getVertex(vertices[a])->xPos() + move_vec.x,
-				   map->getVertex(vertices[a])->yPos() + move_vec.y);
+		glVertex2d(map->getVertex(vertices[a].index)->xPos() + move_vec.x,
+				   map->getVertex(vertices[a].index)->yPos() + move_vec.y);
 	}
 	glEnd();
 
@@ -2368,7 +2368,7 @@ void MapRenderer2D::renderMovingVertices(vector<int>& vertices, fpoint2_t move_v
  * Renders the moving overlay for line indices in [lines], to show
  * movement by [move_vec]
  *******************************************************************/
-void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
+void MapRenderer2D::renderMovingLines(const vector<MapEditor::Item>& lines, fpoint2_t move_vec)
 {
 	uint8_t* lines_drawn = new uint8_t[map->nLines()];
 	memset(lines_drawn, 0, map->nLines());
@@ -2377,7 +2377,7 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
 		// Check first vertex
-		MapVertex* v = map->getLine(lines[a])->v1();
+		MapVertex* v = map->getLine(lines[a].index)->v1();
 		for (unsigned l = 0; l < v->nConnectedLines(); l++)
 		{
 			MapLine* line = v->connectedLine(l);
@@ -2387,7 +2387,7 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 		}
 
 		// Check second vertex
-		v = map->getLine(lines[a])->v2();
+		v = map->getLine(lines[a].index)->v2();
 		for (unsigned l = 0; l < v->nConnectedLines(); l++)
 		{
 			MapLine* line = v->connectedLine(l);
@@ -2435,7 +2435,7 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
 	glBegin(GL_LINES);
 	for (unsigned a = 0; a < lines.size(); a++)
 	{
-		MapLine* line = map->getLine(lines[a]);
+		MapLine* line = map->getLine(lines[a].index);
 		glVertex2d(line->x1() + move_vec.x, line->y1() + move_vec.y);
 		glVertex2d(line->x2() + move_vec.x, line->y2() + move_vec.y);
 	}
@@ -2449,7 +2449,7 @@ void MapRenderer2D::renderMovingLines(vector<int>& lines, fpoint2_t move_vec)
  * Renders the moving overlay for sector indices in [sectors], to
  * show movement by [move_vec]
  *******************************************************************/
-void MapRenderer2D::renderMovingSectors(vector<int>& sectors, fpoint2_t move_vec)
+void MapRenderer2D::renderMovingSectors(const vector<MapEditor::Item>& sectors, fpoint2_t move_vec)
 {
 	// Determine what lines are being moved
 	uint8_t* lines_moved = new uint8_t[map->nLines()];
@@ -2457,17 +2457,17 @@ void MapRenderer2D::renderMovingSectors(vector<int>& sectors, fpoint2_t move_vec
 	for (unsigned a = 0; a < sectors.size(); a++)
 	{
 		// Go through connected sides
-		vector<MapSide*>& sides = map->getSector(sectors[a])->connectedSides();
+		vector<MapSide*>& sides = map->getSector(sectors[a].index)->connectedSides();
 		for (unsigned s = 0; s < sides.size(); s++)
 			lines_moved[sides[s]->getParentLine()->getIndex()] = 1;	// Mark parent line as moved
 	}
 
 	// Build list of moving lines
-	vector<int> lines;
+	vector<MapEditor::Item> lines;
 	for (unsigned a = 0; a < map->nLines(); a++)
 	{
 		if (lines_moved[a] > 0)
-			lines.push_back(a);
+			lines.push_back({ (int)a, MapEditor::ItemType::Line });
 	}
 
 	// Draw moving lines
@@ -2481,7 +2481,7 @@ void MapRenderer2D::renderMovingSectors(vector<int>& sectors, fpoint2_t move_vec
  * Renders the moving overlay for thing indices in [things], to
  * show movement by [move_vec]
  *******************************************************************/
-void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
+void MapRenderer2D::renderMovingThings(const vector<MapEditor::Item>& things, fpoint2_t move_vec)
 {
 	// Enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -2495,7 +2495,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 	for (unsigned a = 0; a < things.size(); a++)
 	{
 		// Get thing info
-		thing = map->getThing(things[a]);
+		thing = map->getThing(things[a].index);
 		x = thing->xPos() + move_vec.x;
 		y = thing->yPos() + move_vec.y;
 		angle = thing->getAngle();
@@ -2520,13 +2520,13 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 		for (unsigned a = 0; a < things.size(); a++)
 		{
 			// Get thing info
-			thing = map->getThing(things[a]);
+			thing = map->getThing(things[a].index);
 			ThingType* tt = theGameConfiguration->thingType(thing->getType());
 			x = thing->xPos() + move_vec.x;
 			y = thing->yPos() + move_vec.y;
 			angle = thing->getAngle();
 
-			renderSpriteThing(x, y, angle, tt, things[a], 1.0f, true);
+			renderSpriteThing(x, y, angle, tt, things[a].index, 1.0f, true);
 		}
 	}
 
@@ -2537,7 +2537,7 @@ void MapRenderer2D::renderMovingThings(vector<int>& things, fpoint2_t move_vec)
 	bool point = setupThingOverlay();
 	for (unsigned a = 0; a < things.size(); a++)
 	{
-		thing = map->getThing(things[a]);
+		thing = map->getThing(things[a].index);
 		ThingType* tt = theGameConfiguration->thingType(thing->getType());
 		double radius = tt->getRadius();
 		if (tt->shrinkOnZoom()) radius = scaledRadius(radius);

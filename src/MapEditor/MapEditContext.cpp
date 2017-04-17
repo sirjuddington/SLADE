@@ -274,8 +274,6 @@ void MapEditContext::clearMap()
 	pathed_things_.clear();
 }
 
-#pragma region GENERAL
-
 /* MapEditContext::showItem
  * Moves and zooms the view to show the object at [index], depending
  * on the current edit mode
@@ -317,10 +315,6 @@ string MapEditContext::modeString()
 	default: return "Items";
 	};
 }
-
-#pragma endregion
-
-#pragma region TAGGING
 
 /* MapEditContext::updateThingLists
  * Rebuilds thing info lists (pathed things, etc.)
@@ -512,10 +506,6 @@ void MapEditContext::updateTagged()
 	}
 }
 
-#pragma endregion
-
-#pragma region SELECTION
-
 /* MapEditContext::selectionUpdated
  * Called when the selection is updated, updates the properties panel
  *******************************************************************/
@@ -532,10 +522,6 @@ void MapEditContext::selectionUpdated()
 
 	updateStatusText();
 }
-
-#pragma endregion
-
-#pragma region GRID
 
 /* MapEditContext::gridSize
  * Returns the current grid size
@@ -602,13 +588,6 @@ fpoint2_t MapEditContext::relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_p
 	return origin + delta;
 }
 
-
-#pragma endregion
-
-#pragma region EDITING
-
-#pragma region MOVE
-
 /* MapEditContext::beginMode
  * Begins a move operation, starting from [mouse_pos]
  *******************************************************************/
@@ -620,16 +599,7 @@ bool MapEditContext::beginMove(fpoint2_t mouse_pos)
 
 	// Begin move operation
 	move_origin_ = mouse_pos;
-
-	// Create list of objects to move
-	// TODO: Change move_items to vector<MapEditor::Item>
-	if (selection_.size() == 0)
-		move_items_.push_back(selection_.hilight().index);
-	else
-	{
-		for (auto& item : selection_)
-			move_items_.push_back(item.index);
-	}
+	move_items_ = selection_.selectionOrHilight();
 
 	// Get list of vertices being moved (if any)
 	vector<MapVertex*> move_verts;
@@ -638,26 +608,26 @@ bool MapEditContext::beginMove(fpoint2_t mouse_pos)
 		// Vertices mode
 		if (edit_mode_ == Mode::Vertices)
 		{
-			for (unsigned a = 0; a < move_items_.size(); a++)
-				move_verts.push_back(map_.getVertex(move_items_[a]));
+			for (auto& item : move_items_)
+				move_verts.push_back(map_.getVertex(item.index));
 		}
 
 		// Lines mode
 		else if (edit_mode_ == Mode::Lines)
 		{
-			for (unsigned a = 0; a < move_items_.size(); a++)
+			for (auto& item : move_items_)
 			{
 				// Duplicate vertices shouldn't matter here
-				move_verts.push_back(map_.getLine(move_items_[a])->v1());
-				move_verts.push_back(map_.getLine(move_items_[a])->v2());
+				move_verts.push_back(map_.getLine(item.index)->v1());
+				move_verts.push_back(map_.getLine(item.index)->v2());
 			}
 		}
 
 		// Sectors mode
 		else if (edit_mode_ == Mode::Sectors)
 		{
-			for (unsigned a = 0; a < move_items_.size(); a++)
-				map_.getSector(move_items_[a])->getVertices(move_verts);
+			for (auto& item : move_items_)
+				map_.getSector(item.index)->getVertices(move_verts);
 		}
 	}
 
@@ -665,16 +635,16 @@ bool MapEditContext::beginMove(fpoint2_t mouse_pos)
 	if (edit_mode_ == Mode::Things)
 	{
 		// Filter moving things
-		for (unsigned a = 0; a < move_items_.size(); a++)
-			map_.getThing(move_items_[a])->filter(true);
+		for (auto& item : move_items_)
+			map_.getThing(item.index)->filter(true);
 	}
 	else
 	{
 		// Filter moving lines
-		for (unsigned a = 0; a < move_verts.size(); a++)
+		for (auto vertex : move_verts)
 		{
-			for (unsigned l = 0; l < move_verts[a]->nConnectedLines(); l++)
-				move_verts[a]->connectedLine(l)->filter(true);
+			for (unsigned l = 0; l < vertex->nConnectedLines(); l++)
+				vertex->connectedLine(l)->filter(true);
 		}
 	}
 
@@ -700,9 +670,15 @@ void MapEditContext::doMove(fpoint2_t mouse_pos)
 
 		// Update move vector
 		if (edit_mode_ == Mode::Vertices)
-			move_vec_.set(nx - map_.getVertex(move_items_[0])->xPos(), ny - map_.getVertex(move_items_[0])->yPos());
+			move_vec_.set(
+				nx - map_.getVertex(move_items_[0].index)->xPos(),
+				ny - map_.getVertex(move_items_[0].index)->yPos()
+			);
 		else if (edit_mode_ == Mode::Things)
-			move_vec_.set(nx - map_.getThing(move_items_[0])->xPos(), ny - map_.getThing(move_items_[0])->yPos());
+			move_vec_.set(
+				nx - map_.getThing(move_items_[0].index)->xPos(),
+				ny - map_.getThing(move_items_[0].index)->yPos()
+			);
 
 		return;
 	}
@@ -736,11 +712,11 @@ void MapEditContext::endMove(bool accept)
 	{
 		// Move things
 		beginUndoRecord("Move Things", true, false, false);
-		for (unsigned a = 0; a < move_items_.size(); a++)
+		for (auto& item : move_items_)
 		{
-			MapThing* t = map_.getThing(move_items_[a]);
+			MapThing* t = map_.getThing(item.index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(t));
-			map_.moveThing(move_items_[a], t->xPos() + move_vec_.x, t->yPos() + move_vec_.y);
+			map_.moveThing(item.index, t->xPos() + move_vec_.x, t->yPos() + move_vec_.y);
 		}
 		endUndoRecord(true);
 	}
@@ -755,14 +731,14 @@ void MapEditContext::endMove(bool accept)
 
 		if (edit_mode_ == Mode::Vertices)
 		{
-			for (unsigned a = 0; a < move_items_.size(); a++)
-				move_verts[move_items_[a]] = 1;
+			for (auto& item : move_items_)
+				move_verts[item.index] = 1;
 		}
 		else if (edit_mode_ == Mode::Lines)
 		{
-			for (unsigned a = 0; a < move_items_.size(); a++)
+			for (auto& item : move_items_)
 			{
-				MapLine* line = map_.getLine(move_items_[a]);
+				MapLine* line = map_.getLine(item.index);
 				if (line->v1()) move_verts[line->v1()->getIndex()] = 1;
 				if (line->v2()) move_verts[line->v2()->getIndex()] = 1;
 			}
@@ -770,11 +746,11 @@ void MapEditContext::endMove(bool accept)
 		else if (edit_mode_ == Mode::Sectors)
 		{
 			vector<MapVertex*> sv;
-			for (unsigned a = 0; a < move_items_.size(); a++)
-				map_.getSector(move_items_[a])->getVertices(sv);
+			for (auto& item : move_items_)
+				map_.getSector(item.index)->getVertices(sv);
 
-			for (unsigned a = 0; a < sv.size(); a++)
-				move_verts[sv[a]->getIndex()] = 1;
+			for (auto vertex : sv)
+				move_verts[vertex->getIndex()] = 1;
 		}
 
 		// Move vertices
@@ -789,14 +765,14 @@ void MapEditContext::endMove(bool accept)
 		}
 
 		// Begin extra 'Merge' undo step if wanted
-		bool merge = true;
 		if (map_merge_undo_step)
 		{
 			endUndoRecord(true);
 			beginUndoRecord("Merge");
 		}
 
-		merge = map_.mergeArch(moved_verts);
+		// Do merge
+		bool merge = map_.mergeArch(moved_verts);
 
 		endUndoRecord(merge || !map_merge_undo_step);
 	}
@@ -812,6 +788,7 @@ void MapEditContext::endMove(bool accept)
 	map_.refreshIndices();
 }
 
+#if 0
 /* MapEditContext::mergeLines
  * Currently unused
  *******************************************************************/
@@ -856,10 +833,7 @@ void MapEditContext::mergeLines(long move_time, vector<fpoint2_t>& merge_points)
 	map_.removeZeroLengthLines();
 
 }
-
-#pragma endregion
-
-#pragma region LINES
+#endif
 
 /* MapEditContext::splitLine
  * Splits the line closest to [x,y] at the closest point on the line
@@ -943,10 +917,6 @@ void MapEditContext::correctLineSectors()
 		updateDisplay();
 	}
 }
-
-#pragma endregion
-
-#pragma region SECTORS
 
 /* MapEditContext::changeSectorHeight
  * Changes floor and/or ceiling heights on all selected sectors by
@@ -1153,10 +1123,6 @@ void MapEditContext::joinSectors(bool remove_lines)
 		addEditorMessage(S_FMT("Joined %lu Sectors (removed %d Lines)", sectors.size(), nlines));
 }
 
-#pragma endregion
-
-#pragma region THINGS
-
 /* MapEditContext::changeThingType
  * Changes all selected things types to [newtype]
  *******************************************************************/
@@ -1199,23 +1165,10 @@ void MapEditContext::thingQuickAngle(fpoint2_t mouse_pos)
 	if (edit_mode_ != Mode::Things)
 		return;
 
-	auto selection = selection_.selectedThings();
-	for (auto thing : selection)
+	beginUndoRecord("Thing Quick Angle Change", true, false, false);
+	for (auto thing : selection_.selectedThings())
 		thing->setAnglePoint(mouse_pos);
-
-	//// If selection is empty, check for hilight
-	//if (selection.size() == 0 && hilight_item >= 0)
-	//{
-	//	MapThing* thing = map.getThing(hilight_item);
-	//	map.getThing(hilight_item)->setAnglePoint(mouse_pos);
-	//	return;
-	//}
-
-	//// Go through selection
-	//for (unsigned a = 0; a < selection.size(); a++)
-	//{
-	//	map.getThing(selection[a])->setAnglePoint(mouse_pos);
-	//}
+	endUndoRecord(true);
 }
 
 /* MapEditContext::mirror
@@ -1228,7 +1181,7 @@ void MapEditContext::mirror(bool x_axis)
 	if (edit_mode_ == Mode::Things)
 	{
 		// Begin undo level
-		beginUndoRecord("Mirror things", true, false, false);
+		beginUndoRecord("Mirror Things", true, false, false);
 
 		// Get things to mirror
 		auto things = selection_.selectedThings();
@@ -1268,7 +1221,7 @@ void MapEditContext::mirror(bool x_axis)
 	else if (edit_mode_ != Mode::Visual)
 	{
 		// Begin undo level
-		beginUndoRecord("Mirror map architecture", true, false, false);
+		beginUndoRecord("Mirror Map Architecture", true, false, false);
 
 		// Get vertices to mirror
 		vector<MapVertex*> vertices;
@@ -1317,10 +1270,6 @@ void MapEditContext::mirror(bool x_axis)
 		endUndoRecord(true);
 	}
 }
-
-#pragma endregion
-
-#pragma region TAG EDIT
 
 /* MapEditContext::beginTagEdit
  * Begins a tag edit operation
@@ -1434,10 +1383,6 @@ void MapEditContext::endTagEdit(bool accept)
 
 	updateTagged();
 }
-
-#pragma endregion
-
-#pragma region OBJECT CREATION
 
 /* MapEditContext::createObject
  * Creates an object (depending on edit mode) at [x,y]
@@ -1611,10 +1556,6 @@ void MapEditContext::createSector(double x, double y)
 		addEditorMessage("Sector creation failed: " + builder.getError());
 }
 
-#pragma endregion
-
-#pragma region OBJECT DELETION
-
 /* MapEditContext::deleteObject
  * Deletes all selected objects, depending on edit mode
  *******************************************************************/
@@ -1786,10 +1727,6 @@ void MapEditContext::deleteObject()
 	selection_.clearHilight();
 }
 
-#pragma endregion
-
-#pragma region OBJECT EDIT
-
 /* MapEditContext::beginObjectEdit
  * Begins an object edit operation
  *******************************************************************/
@@ -1902,10 +1839,6 @@ void MapEditContext::endObjectEdit(bool accept)
 	MapEditor::showObjectEditPanel(false, nullptr);
 }
 
-#pragma endregion
-
-#pragma region COPY / PASTE
-
 /* MapEditContext::copyProperties
  * Copies the properties from [object] to be used for paste/create
  *******************************************************************/
@@ -1992,15 +1925,7 @@ void MapEditContext::pasteProperties()
 
 		// Paste properties to selection/hilight
 		beginUndoRecord("Paste Sector Properties", true, false, false);
-		/*if (selection.size() > 0)
-		{
-			for (unsigned a = 0; a < selection.size(); a++)
-				map.getSector(selection[a])->copy(copy_sector);
-		}
-		else if (hilight_item >= 0)
-			map.getSector(hilight_item)->copy(copy_sector);*/
-		auto sectors = selection_.selectedSectors();
-		for (auto sector : sectors)
+		for (auto sector : selection_.selectedSectors())
 			sector->copy(copy_sector_);
 		endUndoRecord();
 
@@ -2017,31 +1942,7 @@ void MapEditContext::pasteProperties()
 
 		// Paste properties to selection/hilight
 		beginUndoRecord("Paste Thing Properties", true, false, false);
-		//if (selection.size() > 0)
-		//{
-		//	for (unsigned a = 0; a < selection.size(); a++)
-		//	{
-		//		// Paste properties (but keep position)
-		//		MapThing* thing = map.getThing(selection[a]);
-		//		double x = thing->xPos();
-		//		double y = thing->yPos();
-		//		thing->copy(copy_thing);
-		//		thing->setFloatProperty("x", x);
-		//		thing->setFloatProperty("y", y);
-		//	}
-		//}
-		//else if (hilight_item >= 0)
-		//{
-		//	// Paste properties (but keep position)
-		//	MapThing* thing = map.getThing(hilight_item);
-		//	double x = thing->xPos();
-		//	double y = thing->yPos();
-		//	thing->copy(copy_thing);
-		//	thing->setFloatProperty("x", x);
-		//	thing->setFloatProperty("y", y);
-		//}
-		auto things = selection_.selectedThings();
-		for (auto thing : things)
+		for (auto thing : selection_.selectedThings())
 		{
 			// Paste properties (but keep position)
 			double x = thing->xPos();
@@ -2065,15 +1966,7 @@ void MapEditContext::pasteProperties()
 
 		// Paste properties to selection/hilight
 		beginUndoRecord("Paste Line Properties", true, false, false);
-		/*if (selection.size() > 0)
-		{
-			for (unsigned a = 0; a < selection.size(); a++)
-				map.getLine(selection[a])->copy(copy_line);
-		}
-		else if (hilight_item >= 0)
-			map.getLine(hilight_item)->copy(copy_line);*/
-		auto lines = selection_.selectedLines();
-		for (auto line : lines)
+		for (auto line : selection_.selectedLines())
 			line->copy(copy_line_);
 		endUndoRecord();
 
@@ -2143,7 +2036,6 @@ void MapEditContext::paste(fpoint2_t mouse_pos)
 		if (theClipboard->getItem(a)->getType() == CLIPBOARD_MAP_ARCH)
 		{
 			beginUndoRecord("Paste Map Architecture");
-			long move_time = App::runTimer();
 			auto p = (MapArchClipboardItem*)theClipboard->getItem(a);
 			// Snap the geometry in such a way that it stays in the same
 			// position relative to the grid
@@ -2168,12 +2060,6 @@ void MapEditContext::paste(fpoint2_t mouse_pos)
 		}
 	}
 }
-
-#pragma endregion
-
-#pragma endregion
-
-#pragma region EDITOR MESSAGES
 
 /* MapEditContext::getEditorMessage
  * Returns the current editor message at [index]
@@ -2215,16 +2101,6 @@ void MapEditContext::addEditorMessage(string message)
 	msg.act_time = App::runTimer();
 	editor_messages_.push_back(msg);
 }
-
-/* MapEditContext::numEditorMessages
- * Returns the number of currently active editor messages
- *******************************************************************/
-unsigned MapEditContext::numEditorMessages()
-{
-	return editor_messages_.size();
-}
-
-#pragma endregion
 
 /* MapEditContext::handleKeyBind
  * Handles the keybind [key]
@@ -2506,8 +2382,6 @@ void MapEditContext::updateStatusText()
 	MapEditor::windowWx()->CallAfter(&MapEditorWindow::SetStatusText, grid, 2);
 }
 
-#pragma region UNDO / REDO
-
 /* MapEditContext::beginUndoRecord
  * Begins recording undo level [name]. [mod] is true if the operation
  * about to begin will modify object properties, [create/del] are
@@ -2530,11 +2404,7 @@ void MapEditContext::beginUndoRecord(string name, bool mod, bool create, bool de
 	if (undo_modified_)
 		MapObject::beginPropBackup(App::runTimer());
 	if (undo_deleted_ || undo_created_)
-	{
 		us_create_delete_ = new MapEditor::MapObjectCreateDeleteUS();
-		//manager->recordUndoStep(new MapObjectCreateDeleteUS());
-		//map.clearCreatedDeletedOjbectIds();
-	}
 
 	// Make sure all modified objects will be picked up
 	wxMilliSleep(5);
@@ -2655,8 +2525,6 @@ void MapEditContext::doRedo()
 	map_.recomputeSpecials();
 }
 
-#pragma endregion
-
 /* MapEditContext::swapPlayerStart3d
  * Moves the player 1 start thing to the current position and
  * direction of the 3d mode camera
@@ -2726,7 +2594,6 @@ void MapEditContext::resetPlayerStart()
 	pstart->setIntProperty("angle", player_start_dir_);
 }
 
-#pragma region CONSOLE COMMANDS
 
 /*******************************************************************
  * CONSOLE COMMANDS
@@ -2813,9 +2680,6 @@ CONSOLE_COMMAND(m_check, 0, true)
 		delete checks[a];
 	}
 }
-
-#pragma endregion
-
 
 
 
