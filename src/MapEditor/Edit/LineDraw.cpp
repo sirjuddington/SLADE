@@ -68,9 +68,9 @@ bool LineDraw::addPoint(fpoint2_t point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		int vertex = context.getMap().nearestVertex(point);
+		int vertex = context.map().nearestVertex(point);
 		if (vertex >= 0)
-			point = context.getMap().getVertex(vertex)->point();
+			point = context.map().getVertex(vertex)->point();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -129,9 +129,9 @@ void LineDraw::setShapeOrigin(fpoint2_t point, bool nearest)
 	// Snap to nearest vertex if necessary
 	if (nearest)
 	{
-		int vertex = context.getMap().nearestVertex(point);
+		int vertex = context.map().nearestVertex(point);
 		if (vertex >= 0)
-			point = context.getMap().getVertex(vertex)->point();
+			point = context.map().getVertex(vertex)->point();
 	}
 
 	// Otherwise, snap to grid if necessary
@@ -259,7 +259,7 @@ void LineDraw::end(bool apply)
 	context.beginUndoRecord("Line Draw");
 
 	// Add extra points if any lines overlap existing vertices
-	auto& map = context.getMap();
+	auto& map = context.map();
 	for (unsigned a = 0; a < draw_points.size() - 1; a++)
 	{
 		auto v = map.lineCrossVertex(

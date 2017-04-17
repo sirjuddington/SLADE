@@ -462,7 +462,7 @@ void LinePropsPanel::onOverrideSpecialChecked(wxCommandEvent& e)
  *******************************************************************/
 void LinePropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	text_tag->setNumber(MapEditor::editContext().getMap().findUnusedSectorTag());
+	text_tag->setNumber(MapEditor::editContext().map().findUnusedSectorTag());
 }
 
 /* LinePropsPanel::onBtnNewId
@@ -470,5 +470,5 @@ void LinePropsPanel::onBtnNewTag(wxCommandEvent& e)
  *******************************************************************/
 void LinePropsPanel::onBtnNewId(wxCommandEvent& e)
 {
-	text_id->setNumber(MapEditor::editContext().getMap().findUnusedLineId());
+	text_id->setNumber(MapEditor::editContext().map().findUnusedLineId());
 }

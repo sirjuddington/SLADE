@@ -92,15 +92,15 @@ QuickTextureOverlay3d::QuickTextureOverlay3d(MapEditContext* editor)
 		// Get initial texture
 		string tex_init;
 		if (sel[initial].type == MapEditor::ItemType::Ceiling)
-			tex_init = editor->getMap().getSector(sel[initial].index)->stringProperty("textureceiling");
+			tex_init = editor->map().getSector(sel[initial].index)->stringProperty("textureceiling");
 		else if (sel[initial].type == MapEditor::ItemType::Floor)
-			tex_init = editor->getMap().getSector(sel[initial].index)->stringProperty("texturefloor");
+			tex_init = editor->map().getSector(sel[initial].index)->stringProperty("texturefloor");
 		else if (sel[initial].type == MapEditor::ItemType::WallTop)
-			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturetop");
+			tex_init = editor->map().getSide(sel[initial].index)->stringProperty("texturetop");
 		else if (sel[initial].type == MapEditor::ItemType::WallMiddle)
-			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturemiddle");
+			tex_init = editor->map().getSide(sel[initial].index)->stringProperty("texturemiddle");
 		else if (sel[initial].type == MapEditor::ItemType::WallBottom)
-			tex_init = editor->getMap().getSide(sel[initial].index)->stringProperty("texturebottom");
+			tex_init = editor->map().getSide(sel[initial].index)->stringProperty("texturebottom");
 
 		// Get all available texture names (sorted alphabetically)
 		vector<string> tex_names;
@@ -177,21 +177,21 @@ void QuickTextureOverlay3d::applyTexture()
 			// Floor
 			else if (selection[a].type == MapEditor::ItemType::Floor && (sel_type == 0 || sel_type == 2))
 			{
-				MapSector* sector = editor->getMap().getSector(selection[a].index);
+				MapSector* sector = editor->map().getSector(selection[a].index);
 				if (sector) sector->setStringProperty("texturefloor", textures[current_index].name);
 			}
 
 			// Ceiling
 			else if (selection[a].type == MapEditor::ItemType::Ceiling && (sel_type == 0 || sel_type == 2))
 			{
-				MapSector* sector = editor->getMap().getSector(selection[a].index);
+				MapSector* sector = editor->map().getSector(selection[a].index);
 				if (sector) sector->setStringProperty("textureceiling", textures[current_index].name);
 			}
 
 			// Wall
 			else if (sel_type > 0)
 			{
-				MapSide* side = editor->getMap().getSide(selection[a].index);
+				MapSide* side = editor->map().getSide(selection[a].index);
 				if (side)
 				{
 					// Upper

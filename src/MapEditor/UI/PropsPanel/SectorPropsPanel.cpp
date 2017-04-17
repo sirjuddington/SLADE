@@ -527,7 +527,7 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
 	}
 
 	// Browse
-	MapTextureBrowser browser(this, 1, tc->getTexName(), &(MapEditor::editContext().getMap()));
+	MapTextureBrowser browser(this, 1, tc->getTexName(), &(MapEditor::editContext().map()));
 	if (browser.ShowModal() == wxID_OK)
 		cb->SetValue(browser.getSelectedItem()->getName());
 }
@@ -537,6 +537,6 @@ void SectorPropsPanel::onTextureClicked(wxMouseEvent& e)
  *******************************************************************/
 void SectorPropsPanel::onBtnNewTag(wxCommandEvent& e)
 {
-	int tag = MapEditor::editContext().getMap().findUnusedSectorTag();
+	int tag = MapEditor::editContext().map().findUnusedSectorTag();
 	text_tag->SetValue(S_FMT("%d", tag));
 }

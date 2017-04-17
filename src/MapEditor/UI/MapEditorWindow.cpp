@@ -400,7 +400,7 @@ void MapEditorWindow::setupLayout()
 
 
 	// --- Map Checks Panel ---
-	panel_checks = new MapChecksPanel(this, &(MapEditor::editContext().getMap()));
+	panel_checks = new MapChecksPanel(this, &(MapEditor::editContext().map()));
 
 	// Setup panel info & add panel
 	p_inf.DefaultPane();
@@ -509,7 +509,7 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 {
 	// If a map is currently open and modified, prompt to save changes
-	if (MapEditor::editContext().getMap().isModified())
+	if (MapEditor::editContext().map().isModified())
 	{
 		wxMessageDialog md(this, S_FMT("Save changes to map %s?", MapEditor::editContext().mapDesc().name), "Unsaved Changes", wxYES_NO | wxCANCEL);
 		int answer = md.ShowModal();
@@ -756,7 +756,7 @@ WadArchive* MapEditorWindow::writeMap(string name, bool nodes)
 
 	// Get map data entries
 	vector<ArchiveEntry*> new_map_data;
-	SLADEMap& map = MapEditor::editContext().getMap();
+	SLADEMap& map = MapEditor::editContext().map();
 	if (mdesc_current.format == MAP_DOOM)
 		map.writeDoomMap(new_map_data);
 	else if (mdesc_current.format == MAP_HEXEN)
@@ -892,7 +892,7 @@ bool MapEditorWindow::saveMap()
 
 	// Finish
 	lockMapEntries();
-	MapEditor::editContext().getMap().setOpenedTime();
+	MapEditor::editContext().map().setOpenedTime();
 
 	return true;
 }
@@ -997,7 +997,7 @@ void MapEditorWindow::refreshToolBar()
  *******************************************************************/
 bool MapEditorWindow::tryClose()
 {
-	if (MapEditor::editContext().getMap().isModified())
+	if (MapEditor::editContext().map().isModified())
 	{
 		wxMessageDialog md(this, S_FMT("Save changes to map %s?", MapEditor::editContext().mapDesc().name), "Unsaved Changes", wxYES_NO | wxCANCEL);
 		int answer = md.ShowModal();

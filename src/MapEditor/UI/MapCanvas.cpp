@@ -136,8 +136,8 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* editor)
 	mouse_downpos.set(-1, -1);
 	fr_idle = 0;
 	last_time = 0;
-	renderer_2d = new MapRenderer2D(&editor->getMap());
-	renderer_3d = new MapRenderer3D(&editor->getMap());
+	renderer_2d = new MapRenderer2D(&editor->map());
+	renderer_3d = new MapRenderer3D(&editor->map());
 	view_xoff_inter = 0;
 	view_yoff_inter = 0;
 	view_scale_inter = 1;
@@ -372,7 +372,7 @@ void MapCanvas::zoom(double amount, bool toward_cursor)
 void MapCanvas::viewFitToMap(bool snap)
 {
 	// Get the map bbox
-	bbox_t map_bbox = editor->getMap().getMapBBox();
+	bbox_t map_bbox = editor->map().getMapBBox();
 
 	// Reset zoom and set offsets to the middle of the map
 	view_scale = 2;
@@ -420,7 +420,7 @@ void MapCanvas::viewShowObject()
 {
 	// Determine bbox of hilighted or selected object(s)
 	bbox_t bbox;
-	SLADEMap& map = editor->getMap();
+	SLADEMap& map = editor->map();
 
 	// Create list of objects
 	vector<int> objects;
@@ -517,9 +517,9 @@ void MapCanvas::set3dCameraThing(MapThing* thing)
 {
 	// Determine position
 	fpoint3_t pos(thing->point(), 40);
-	int sector = editor->getMap().sectorAt(thing->point());
+	int sector = editor->map().sectorAt(thing->point());
 	if (sector >= 0)
-		pos.z += editor->getMap().getSector(sector)->getFloorHeight();
+		pos.z += editor->map().getSector(sector)->getFloorHeight();
 
 	// Determine direction
 	fpoint2_t dir = MathStuff::vectorAngle(MathStuff::degToRad(thing->getAngle()));
@@ -738,7 +738,7 @@ void MapCanvas::drawEditorMessages()
 	for (unsigned a = 0; a < editor->numEditorMessages(); a++)
 	{
 		// Check message time
-		long time = editor->getEditorMessageTime(a);
+		long time = editor->editorMessageTime(a);
 		if (time > 2000)
 			continue;
 
@@ -762,7 +762,7 @@ void MapCanvas::drawEditorMessages()
 
 		// Draw message
 		Drawing::setTextOutline(1.0f, col_bg);
-		Drawing::drawText(editor->getEditorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
+		Drawing::drawText(editor->editorMessage(a), 0, yoff, col, Drawing::FONT_BOLD);
 		
 		yoff += 16;
 	}
@@ -934,11 +934,11 @@ void MapCanvas::drawLineDrawLines()
 	if (modifiers_current & wxMOD_SHIFT)
 	{
 		// If shift is held down, snap to the nearest vertex (if any)
-		int vertex = editor->getMap().nearestVertex(end);
+		int vertex = editor->map().nearestVertex(end);
 		if (vertex >= 0)
 		{
-			end.x = editor->getMap().getVertex(vertex)->xPos();
-			end.y = editor->getMap().getVertex(vertex)->yPos();
+			end.x = editor->map().getVertex(vertex)->xPos();
+			end.y = editor->map().getVertex(vertex)->yPos();
 		}
 		else if (editor->gridSnap())
 		{
@@ -1039,7 +1039,7 @@ void MapCanvas::drawPasteLines()
  *******************************************************************/
 void MapCanvas::drawObjectEdit()
 {
-	ObjectEditGroup* group = editor->getObjectEditGroup();
+	ObjectEditGroup* group = editor->objectEditGroup();
 	rgba_t col = ColourConfiguration::getColour("map_object_edit");
 
 	// Map objects
@@ -1412,7 +1412,7 @@ void MapCanvas::drawMap3d()
 			// Update 3d info overlay
 			if (info_overlay_3d && hl.index >= 0)
 			{
-				info_3d.update(hl.index, hl.type, &(editor->getMap()));
+				info_3d.update(hl.index, hl.type, &(editor->map()));
 				anim_info_show = true;
 			}
 			else
@@ -2055,7 +2055,7 @@ void MapCanvas::lockMouse(bool lock)
 void MapCanvas::determineObjectEditState()
 {
 	// Get object edit bbox
-	bbox_t bbox = editor->getObjectEditGroup()->getBBox();
+	bbox_t bbox = editor->objectEditGroup()->getBBox();
 	int bbox_pad = 8;
 	int left = screenX(bbox.min.x) - bbox_pad;
 	int right = screenX(bbox.max.x) + bbox_pad;
@@ -2179,7 +2179,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 	if (editor->editMode() == Mode::Things)
 	{
 		// Get thing
-		MapThing* t = editor->getMap().getThing(index);
+		MapThing* t = editor->map().getThing(index);
 		if (!t) return;
 
 		// Get thing type
@@ -2196,7 +2196,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 	{
 		// Get line
 		vector<MapLine*> vec;
-		vec.push_back(editor->getMap().getLine(index));
+		vec.push_back(editor->map().getLine(index));
 
 		// Start animation
 		animations.push_back(new MCALineSelection(App::runTimer(), vec, selected));
@@ -2207,7 +2207,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 	{
 		// Get vertex
 		vector<MapVertex*> verts;
-		verts.push_back(editor->getMap().getVertex(index));
+		verts.push_back(editor->map().getVertex(index));
 
 		// Determine current vertex size
 		float vs = vertex_size;
@@ -2223,7 +2223,7 @@ void MapCanvas::itemSelected(int index, bool selected)
 	{
 		// Get sector polygon
 		vector<Polygon2D*> polys;
-		polys.push_back(editor->getMap().getSector(index)->getPolygon());
+		polys.push_back(editor->map().getSector(index)->getPolygon());
 
 		// Start animation
 		animations.push_back(new MCASectorSelection(App::runTimer(), polys, selected));
@@ -2249,7 +2249,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 	{
 		vector<MapLine*> lines;
 		for (unsigned a = 0; a < items.size(); a++)
-			lines.push_back(editor->getMap().getLine(items[a]));
+			lines.push_back(editor->map().getLine(items[a]));
 
 		// Start animation
 		animations.push_back(new MCALineSelection(App::runTimer(), lines, selected));
@@ -2261,7 +2261,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 		// Get list of vertices
 		vector<MapVertex*> verts;
 		for (unsigned a = 0; a < items.size(); a++)
-			verts.push_back(editor->getMap().getVertex(items[a]));
+			verts.push_back(editor->map().getVertex(items[a]));
 
 		// Determine current vertex size
 		float vs = vertex_size;
@@ -2278,7 +2278,7 @@ void MapCanvas::itemsSelected(vector<int>& items, bool selected)
 		// Get list of sector polygons
 		vector<Polygon2D*> polys;
 		for (unsigned a = 0; a < items.size(); a++)
-			polys.push_back(editor->getMap().getSector(items[a])->getPolygon());
+			polys.push_back(editor->map().getSector(items[a])->getPolygon());
 
 		// Start animation
 		animations.push_back(new MCASectorSelection(App::runTimer(), polys, selected));
@@ -2385,7 +2385,7 @@ void MapCanvas::animateSelectionChange(const ItemSelection &selection)
 		else if (item.type == ItemType::Thing)
 		{
 			// Get thing
-			MapThing* t = editor->getMap().getThing(item.index);
+			MapThing* t = editor->map().getThing(item.index);
 			if (!t) return;
 
 			// Get thing type
@@ -2411,7 +2411,7 @@ void MapCanvas::animateSelectionChange(const ItemSelection &selection)
 		{
 			// Get line
 			vector<MapLine*> vec;
-			vec.push_back(editor->getMap().getLine(item.index));
+			vec.push_back(editor->map().getLine(item.index));
 
 			// Start animation
 			animations.push_back(new MCALineSelection(App::runTimer(), vec, change.second));
@@ -2422,7 +2422,7 @@ void MapCanvas::animateSelectionChange(const ItemSelection &selection)
 		{
 			// Get vertex
 			vector<MapVertex*> verts;
-			verts.push_back(editor->getMap().getVertex(item.index));
+			verts.push_back(editor->map().getVertex(item.index));
 
 			// Determine current vertex size
 			float vs = vertex_size;
@@ -2438,7 +2438,7 @@ void MapCanvas::animateSelectionChange(const ItemSelection &selection)
 		{
 			// Get sector polygon
 			vector<Polygon2D*> polys;
-			polys.push_back(editor->getMap().getSector(item.index)->getPolygon());
+			polys.push_back(editor->map().getSector(item.index)->getPolygon());
 
 			// Start animation
 			animations.push_back(new MCASectorSelection(App::runTimer(), polys, change.second));
@@ -2472,7 +2472,7 @@ void MapCanvas::forceRefreshRenderer()
 	{
 		MapEditor::Item hl;
 		hl = renderer_3d->determineHilight();
-		info_3d.update(hl.index, hl.type, &(editor->getMap()));
+		info_3d.update(hl.index, hl.type, &(editor->map()));
 	}
 
 	if (!setActive())
@@ -2613,7 +2613,7 @@ void MapCanvas::changeSectorTexture()
 	editor->selection().lockHilight();
 
 	// Open texture browser
-	MapTextureBrowser browser(MapEditor::window(), 1, texture, &(MapEditor::editContext().getMap()));
+	MapTextureBrowser browser(MapEditor::window(), 1, texture, &(MapEditor::editContext().map()));
 	browser.SetTitle(browser_title);
 	if (browser.ShowModal() == wxID_OK)
 	{
@@ -2641,7 +2641,7 @@ void MapCanvas::changeSectorTexture()
 void MapCanvas::changeThingType3d(MapEditor::Item first)
 {
 	// Get first selected thing
-	MapThing* thing = editor->getMap().getThing(first.index);
+	MapThing* thing = editor->map().getThing(first.index);
 
 	// Do nothing if no things selected/hilighted
 	if (!thing)
@@ -2668,23 +2668,23 @@ void MapCanvas::changeTexture3d(MapEditor::Item first)
 	int type = 0;
 	if (first.type == MapEditor::ItemType::Floor)
 	{
-		tex = editor->getMap().getSector(first.index)->getFloorTex();
+		tex = editor->map().getSector(first.index)->getFloorTex();
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::Ceiling)
 	{
-		tex = editor->getMap().getSector(first.index)->getCeilingTex();
+		tex = editor->map().getSector(first.index)->getCeilingTex();
 		type = 1;
 	}
 	else if (first.type == MapEditor::ItemType::WallBottom)
-		tex = editor->getMap().getSide(first.index)->stringProperty("texturebottom");
+		tex = editor->map().getSide(first.index)->stringProperty("texturebottom");
 	else if (first.type == MapEditor::ItemType::WallMiddle)
-		tex = editor->getMap().getSide(first.index)->stringProperty("texturemiddle");
+		tex = editor->map().getSide(first.index)->stringProperty("texturemiddle");
 	else if (first.type == MapEditor::ItemType::WallTop)
-		tex = editor->getMap().getSide(first.index)->stringProperty("texturetop");
+		tex = editor->map().getSide(first.index)->stringProperty("texturetop");
 
 	// Open texture browser
-	MapTextureBrowser browser(MapEditor::window(), type, tex, &(MapEditor::editContext().getMap()));
+	MapTextureBrowser browser(MapEditor::window(), type, tex, &(MapEditor::editContext().map()));
 	browser.SetTitle("Browse Texture");
 	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem() != nullptr)
 	{
@@ -2705,18 +2705,18 @@ void MapCanvas::changeTexture3d(MapEditor::Item first)
 				for (unsigned a = 0; a < selection.size(); a++)
 				{
 					if (selection[a].type == MapEditor::ItemType::Floor)
-						editor->getMap().getSector(selection[a].index)->setStringProperty("texturefloor", tex);
+						editor->map().getSector(selection[a].index)->setStringProperty("texturefloor", tex);
 					else if (selection[a].type == MapEditor::ItemType::Ceiling)
-						editor->getMap().getSector(selection[a].index)->setStringProperty("textureceiling", tex);
+						editor->map().getSector(selection[a].index)->setStringProperty("textureceiling", tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
 				if (hl.type == MapEditor::ItemType::Floor)
-					editor->getMap().getSector(hl.index)->setStringProperty("texturefloor", tex);
+					editor->map().getSector(hl.index)->setStringProperty("texturefloor", tex);
 				else if (hl.type == MapEditor::ItemType::Ceiling)
-					editor->getMap().getSector(hl.index)->setStringProperty("textureceiling", tex);
+					editor->map().getSector(hl.index)->setStringProperty("textureceiling", tex);
 			}
 		}
 
@@ -2729,22 +2729,22 @@ void MapCanvas::changeTexture3d(MapEditor::Item first)
 				for (unsigned a = 0; a < selection.size(); a++)
 				{
 					if (selection[a].type == MapEditor::ItemType::WallBottom)
-						editor->getMap().getSide(selection[a].index)->setStringProperty("texturebottom", tex);
+						editor->map().getSide(selection[a].index)->setStringProperty("texturebottom", tex);
 					else if (selection[a].type == MapEditor::ItemType::WallMiddle)
-						editor->getMap().getSide(selection[a].index)->setStringProperty("texturemiddle", tex);
+						editor->map().getSide(selection[a].index)->setStringProperty("texturemiddle", tex);
 					else if (selection[a].type == MapEditor::ItemType::WallTop)
-						editor->getMap().getSide(selection[a].index)->setStringProperty("texturetop", tex);
+						editor->map().getSide(selection[a].index)->setStringProperty("texturetop", tex);
 				}
 			}
 			else if (hl.index >= 0)
 			{
 				// Hilight if no selection
 				if (hl.type == MapEditor::ItemType::WallBottom)
-					editor->getMap().getSide(hl.index)->setStringProperty("texturebottom", tex);
+					editor->map().getSide(hl.index)->setStringProperty("texturebottom", tex);
 				else if (hl.type == MapEditor::ItemType::WallMiddle)
-					editor->getMap().getSide(hl.index)->setStringProperty("texturemiddle", tex);
+					editor->map().getSide(hl.index)->setStringProperty("texturemiddle", tex);
 				else if (hl.type == MapEditor::ItemType::WallTop)
-					editor->getMap().getSide(hl.index)->setStringProperty("texturetop", tex);
+					editor->map().getSide(hl.index)->setStringProperty("texturetop", tex);
 			}
 		}
 
@@ -3730,7 +3730,7 @@ bool MapCanvas::handleAction(string id)
 			// If side, get its parent line
 			if (side)
 			{
-				MapSide* s = editor->getMap().getSide(index);
+				MapSide* s = editor->map().getSide(index);
 				if (s && s->getParentLine())
 					index = s->getParentLine()->getIndex();
 				else
@@ -3766,7 +3766,7 @@ bool MapCanvas::handleAction(string id)
 	else if (id == "mapw_camera_set")
 	{
 		fpoint3_t pos(mouse_pos_m);
-		SLADEMap& map = editor->getMap();
+		SLADEMap& map = editor->map();
 		MapSector* sector = map.getSector(map.sectorAt(mouse_pos_m));
 		if (sector)
 			pos.z = sector->getFloorHeight() + 40;
@@ -3990,9 +3990,9 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 			Polygon2D poly;
 			sf::Clock clock;
 			LOG_MESSAGE(1, "Generating polygons...");
-			for (unsigned a = 0; a < editor->getMap().nSectors(); a++)
+			for (unsigned a = 0; a < editor->map().nSectors(); a++)
 			{
-				if (!poly.openSector(editor->getMap().getSector(a)))
+				if (!poly.openSector(editor->map().getSector(a)))
 					LOG_MESSAGE(1, "Splitting failed for sector %d", a);
 			}
 			//int ms = clock.GetElapsedTime() * 1000;
@@ -4001,27 +4001,27 @@ void MapCanvas::onKeyDown(wxKeyEvent& e)
 		if (e.GetKeyCode() == WXK_F7)
 		{
 			// Get nearest line
-			int nearest = editor->getMap().nearestLine(mouse_pos_m, 999999);
-			MapLine* line = editor->getMap().getLine(nearest);
+			int nearest = editor->map().nearestLine(mouse_pos_m, 999999);
+			MapLine* line = editor->map().getLine(nearest);
 			if (line)
 			{
 				// Determine line side
 				double side = MathStuff::lineSide(mouse_pos_m, line->seg());
 				if (side >= 0)
-					sbuilder.traceSector(&(editor->getMap()), line, true);
+					sbuilder.traceSector(&(editor->map()), line, true);
 				else
-					sbuilder.traceSector(&(editor->getMap()), line, false);
+					sbuilder.traceSector(&(editor->map()), line, false);
 			}
 		}
 		if (e.GetKeyCode() == WXK_F5)
 		{
 			// Get nearest line
-			int nearest = editor->getMap().nearestLine(mouse_pos_m, 999999);
-			MapLine* line = editor->getMap().getLine(nearest);
+			int nearest = editor->map().nearestLine(mouse_pos_m, 999999);
+			MapLine* line = editor->map().getLine(nearest);
 
 			// Get sectors
-			MapSector* sec1 = editor->getMap().getLineSideSector(line, true);
-			MapSector* sec2 = editor->getMap().getLineSideSector(line, false);
+			MapSector* sec1 = editor->map().getLineSideSector(line, true);
+			MapSector* sec2 = editor->map().getLineSideSector(line, false);
 			int i1 = -1;
 			int i2 = -1;
 			if (sec1) i1 = sec1->getIndex();
@@ -4293,7 +4293,7 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 		// If we're in object edit mode
 		if (mouse_state == MSTATE_EDIT)
-			editor->getObjectEditGroup()->resetPositions();
+			editor->objectEditGroup()->resetPositions();
 	}
 
 	// Right button
@@ -4445,8 +4445,8 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 			if (edit_rotate)
 			{
 				// Rotate
-				editor->getObjectEditGroup()->doRotate(mouse_downpos_m, mouse_pos_m, !e.ShiftDown());
-				MapEditor::window()->objectEditPanel()->update(editor->getObjectEditGroup(), true);
+				editor->objectEditGroup()->doRotate(mouse_downpos_m, mouse_pos_m, !e.ShiftDown());
+				MapEditor::window()->objectEditPanel()->update(editor->objectEditGroup(), true);
 			}
 			else
 			{
@@ -4464,18 +4464,18 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 				if (edit_state == ESTATE_MOVE)
 				{
 					// Move objects
-					editor->getObjectEditGroup()->doMove(xoff, yoff);
-					MapEditor::window()->objectEditPanel()->update(editor->getObjectEditGroup());
+					editor->objectEditGroup()->doMove(xoff, yoff);
+					MapEditor::window()->objectEditPanel()->update(editor->objectEditGroup());
 				}
 				else
 				{
 					// Scale objects
-					editor->getObjectEditGroup()->doScale(xoff, yoff,
+					editor->objectEditGroup()->doScale(xoff, yoff,
 						(edit_state == ESTATE_SIZE_L || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_BL),	// Left?
 						(edit_state == ESTATE_SIZE_T || edit_state == ESTATE_SIZE_TL || edit_state == ESTATE_SIZE_TR),	// Top?
 						(edit_state == ESTATE_SIZE_R || edit_state == ESTATE_SIZE_TR || edit_state == ESTATE_SIZE_BR),	// Right?
 						(edit_state == ESTATE_SIZE_B || edit_state == ESTATE_SIZE_BL || edit_state == ESTATE_SIZE_BR));	// Bottom?
-					MapEditor::window()->objectEditPanel()->update(editor->getObjectEditGroup());
+					MapEditor::window()->objectEditPanel()->update(editor->objectEditGroup());
 				}
 			}
 		}

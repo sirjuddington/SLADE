@@ -16,73 +16,6 @@ class UndoStep;
 
 class MapEditContext
 {
-private:
-	SLADEMap			map;
-	MapCanvas*			canvas;
-	Archive::mapdesc_t	map_desc;
-
-	// Undo/Redo stuff
-	UndoManager*	undo_manager;
-	UndoStep*		us_create_delete;
-
-	// Editor state
-	MapEditor::Mode			edit_mode;
-	ItemSelection			item_selection;
-	int						gridsize;
-	MapEditor::SectorMode	sector_mode;
-	bool					grid_snap;
-	int						current_tag;
-
-	// Undo/Redo
-	bool	undo_modified;
-	bool	undo_created;
-	bool	undo_deleted;
-	string	last_undo_level;
-
-	// Tagged items
-	vector<MapSector*>	tagged_sectors;
-	vector<MapLine*>	tagged_lines;
-	vector<MapThing*>	tagged_things;
-
-	// Tagging items
-	vector<MapLine*>	tagging_lines;
-	vector<MapThing*>	tagging_things;
-
-	// Pathed things
-	vector<MapThing*>	pathed_things;
-
-	// Moving
-	fpoint2_t	move_origin;
-	fpoint2_t	move_vec;
-	vector<int>	move_items;
-	int			move_item_closest;
-
-	// Editing
-	LineDraw	line_draw;
-	Edit3D		edit_3d;
-
-	// Object edit
-	ObjectEditGroup	edit_object_group;
-
-	// Object properties and copy/paste
-	MapThing*	copy_thing;
-	MapSector*	copy_sector;
-	MapLine*	copy_line;
-
-	// Editor messages
-	struct editor_msg_t
-	{
-		string	message;
-		long	act_time;
-	};
-	vector<editor_msg_t>	editor_messages;
-
-	// Player start swap
-	fpoint2_t	player_start_pos;
-	int			player_start_dir;
-
-	void mergeLines(long, vector<fpoint2_t>&);
-
 public:
 	enum
 	{
@@ -92,30 +25,36 @@ public:
 		TOGGLE,
 	};
 
+	struct EditorMessage
+	{
+		string	message;
+		long	act_time;
+	};
+
 	MapEditContext();
 	~MapEditContext();
 
-	SLADEMap&				getMap() { return map; }
-	MapEditor::Mode			editMode() const { return edit_mode; }
-	MapEditor::SectorMode	sectorEditMode() { return sector_mode; }
+	SLADEMap&				map() { return map_; }
+	MapEditor::Mode			editMode() const { return edit_mode_; }
+	MapEditor::SectorMode	sectorEditMode() { return sector_mode_; }
 	double					gridSize();
-	ItemSelection&			selection() { return item_selection; }
-	MapEditor::Item			hilightItem() { return item_selection.hilight(); }
-	vector<MapSector*>&		taggedSectors() { return tagged_sectors; }
-	vector<MapLine*>&		taggedLines() { return tagged_lines; }
-	vector<MapThing*>&		taggedThings() { return tagged_things; }
-	vector<MapLine*>&		taggingLines() { return tagging_lines; }
-	vector<MapThing*>&		taggingThings() { return tagging_things; }
-	vector<MapThing*>&		pathedThings() { return pathed_things; }
-	bool					gridSnap() { return grid_snap; }
-	UndoManager*			undoManager() { return undo_manager; }
-	Archive::mapdesc_t&		mapDesc() { return map_desc; }
-	MapCanvas*				getCanvas() const { return canvas; }
+	ItemSelection&			selection() { return selection_; }
+	MapEditor::Item			hilightItem() { return selection_.hilight(); }
+	vector<MapSector*>&		taggedSectors() { return tagged_sectors_; }
+	vector<MapLine*>&		taggedLines() { return tagged_lines_; }
+	vector<MapThing*>&		taggedThings() { return tagged_things_; }
+	vector<MapLine*>&		taggingLines() { return tagging_lines_; }
+	vector<MapThing*>&		taggingThings() { return tagging_things_; }
+	vector<MapThing*>&		pathedThings() { return pathed_things_; }
+	bool					gridSnap() { return grid_snap_; }
+	UndoManager*			undoManager() { return undo_manager_; }
+	Archive::mapdesc_t&		mapDesc() { return map_desc_; }
+	MapCanvas*				canvas() const { return canvas_; }
 
 	void	setEditMode(MapEditor::Mode mode);
 	void	setSectorEditMode(MapEditor::SectorMode mode);
 	void 	cycleSectorEditMode();
-	void	setCanvas(MapCanvas* canvas) { this->canvas = canvas; }
+	void	setCanvas(MapCanvas* canvas) { this->canvas_ = canvas; }
 
 	// Map loading
 	bool	openMap(Archive::mapdesc_t map);
@@ -133,8 +72,8 @@ public:
 	fpoint2_t	relativeSnapToGrid(fpoint2_t origin, fpoint2_t mouse_pos);
 
 	// Item moving
-	vector<int>&	movingItems() { return move_items; }
-	fpoint2_t		moveVector() { return move_vec; }
+	vector<int>&	movingItems() { return move_items_; }
+	fpoint2_t		moveVector() { return move_vec_; }
 	bool			beginMove(fpoint2_t mouse_pos);
 	void			doMove(fpoint2_t mouse_pos);
 	void			endMove(bool accept = true);
@@ -165,10 +104,10 @@ public:
 	void	deleteObject();
 
 	// Line drawing
-	LineDraw&	lineDraw() { return line_draw; }
+	LineDraw&	lineDraw() { return line_draw_; }
 
 	// Object edit
-	ObjectEditGroup*	getObjectEditGroup() { return &edit_object_group; }
+	ObjectEditGroup*	objectEditGroup() { return &edit_object_group_; }
 	bool				beginObjectEdit();
 	void				endObjectEdit(bool accept);
 
@@ -177,12 +116,12 @@ public:
 	void	paste(fpoint2_t mouse_pos);
 
 	// 3d mode
-	Edit3D&	edit3d() { return edit_3d; }
+	Edit3D&	edit3d() { return edit_3d_; }
 
 	// Editor messages
 	unsigned	numEditorMessages();
-	string		getEditorMessage(int index);
-	long		getEditorMessageTime(int index);
+	string		editorMessage(int index);
+	long		editorMessageTime(int index);
 	void		addEditorMessage(string message);
 
 	// Undo/Redo
@@ -192,7 +131,7 @@ public:
 	void	recordPropertyChangeUndoStep(MapObject* object);
 	void	doUndo();
 	void	doRedo();
-	void	resetLastUndoLevel() { last_undo_level = ""; }
+	void	resetLastUndoLevel() { last_undo_level_ = ""; }
 
 	// Player start swapping
 	void	swapPlayerStart3d();
@@ -200,11 +139,73 @@ public:
 	void	resetPlayerStart();
 
 	// Misc
-	string	getModeString();
+	string	modeString();
 	bool	handleKeyBind(string key, fpoint2_t position);
 	void	updateDisplay();
 	void	updateStatusText();
 	void	updateThingLists();
+
+private:
+	SLADEMap			map_;
+	MapCanvas*			canvas_;
+	Archive::mapdesc_t	map_desc_;
+
+	// Undo/Redo stuff
+	UndoManager*	undo_manager_;
+	UndoStep*		us_create_delete_;
+
+	// Editor state
+	MapEditor::Mode			edit_mode_;
+	ItemSelection			selection_;
+	int						grid_size_;
+	MapEditor::SectorMode	sector_mode_;
+	bool					grid_snap_;
+	int						current_tag_;
+
+	// Undo/Redo
+	bool	undo_modified_;
+	bool	undo_created_;
+	bool	undo_deleted_;
+	string	last_undo_level_;
+
+	// Tagged items
+	vector<MapSector*>	tagged_sectors_;
+	vector<MapLine*>	tagged_lines_;
+	vector<MapThing*>	tagged_things_;
+
+	// Tagging items
+	vector<MapLine*>	tagging_lines_;
+	vector<MapThing*>	tagging_things_;
+
+	// Pathed things
+	vector<MapThing*>	pathed_things_;
+
+	// Moving
+	fpoint2_t	move_origin_;
+	fpoint2_t	move_vec_;
+	vector<int>	move_items_;
+	int			move_item_closest_;
+
+	// Editing
+	LineDraw	line_draw_;
+	Edit3D		edit_3d_;
+
+	// Object edit
+	ObjectEditGroup	edit_object_group_;
+
+	// Object properties and copy/paste
+	MapThing*	copy_thing_;
+	MapSector*	copy_sector_;
+	MapLine*	copy_line_;
+
+	// Editor messages
+	vector<EditorMessage>	editor_messages_;
+
+	// Player start swap
+	fpoint2_t	player_start_pos_;
+	int			player_start_dir_;
+
+	void mergeLines(long, vector<fpoint2_t>&);
 };
 
 #endif//__MAP_EDITOR_H__

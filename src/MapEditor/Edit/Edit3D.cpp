@@ -51,7 +51,7 @@ Edit3D::Edit3D(MapEditContext& context) :
 	link_light_{ false },
 	link_offset_{ false }
 {
-	undo_manager_ = std::make_unique<UndoManager>(&context.getMap());
+	undo_manager_ = std::make_unique<UndoManager>(&context.map());
 }
 
 /* Edit3D::selectAdjacent
@@ -103,7 +103,7 @@ void Edit3D::changeSectorLight(int amount) const
 			items[a].type == ItemType::WallTop)
 		{
 			// Get side
-			auto side = context_.getMap().getSide(items[a].index);
+			auto side = context_.map().getSide(items[a].index);
 			if (!side) continue;
 			auto sector = side->getSector();
 			if (!sector) continue;
@@ -139,7 +139,7 @@ void Edit3D::changeSectorLight(int amount) const
 		if (items[a].type == ItemType::Floor || items[a].type == ItemType::Ceiling)
 		{
 			// Get sector
-			auto s = context_.getMap().getSector(items[a].index);
+			auto s = context_.map().getSector(items[a].index);
 			int where = 0;
 			if (items[a].type == ItemType::Floor && !link_light_)
 			where = 1;
@@ -213,7 +213,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		// Wall
 		if (items[a].type >= ItemType::WallTop && items[a].type <= ItemType::WallBottom)
 		{
-			MapSide* side = context_.getMap().getSide(items[a].index);
+			MapSide* side = context_.map().getSide(items[a].index);
 
 			// If offsets are linked, just change the whole side offset
 			if (link_offset_)
@@ -262,7 +262,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		// Flat (UDMF only)
 		else
 		{
-			MapSector* sector = context_.getMap().getSector(items[a].index);
+			MapSector* sector = context_.map().getSector(items[a].index);
 
 			if (theGameConfiguration->udmfFlatPanning())
 			{
@@ -352,7 +352,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			items[a].type == ItemType::WallTop)
 		{
 			// Get sector
-			auto sector = context_.getMap().getSide(items[a].index)->getSector();
+			auto sector = context_.map().getSide(items[a].index)->getSector();
 
 			// Check this sector's ceiling hasn't already been changed
 			int index = sector->getIndex();
@@ -371,7 +371,7 @@ void Edit3D::changeSectorHeight(int amount) const
 		else if (items[a].type == ItemType::Floor)
 		{
 			// Get sector
-			auto sector = context_.getMap().getSector(items[a].index);
+			auto sector = context_.map().getSector(items[a].index);
 
 			// Change height
 			sector->setFloorHeight(sector->getFloorHeight() + amount);
@@ -381,7 +381,7 @@ void Edit3D::changeSectorHeight(int amount) const
 		else if (items[a].type == ItemType::Ceiling)
 		{
 			// Get sector
-			auto sector = context_.getMap().getSector(items[a].index);
+			auto sector = context_.map().getSector(items[a].index);
 
 			// Check this sector's ceiling hasn't already been changed
 			bool done = false;
@@ -428,7 +428,7 @@ void Edit3D::autoAlignX(MapEditor::Item start) const
 		return;
 
 	// Get starting side
-	auto side = context_.getMap().getSide(start.index);
+	auto side = context_.map().getSide(start.index);
 	if (!side) return;
 
 	// Get texture to match
@@ -512,7 +512,7 @@ void Edit3D::resetOffsets() const
 	// Go through walls
 	for (unsigned a = 0; a < walls.size(); a++)
 	{
-		auto side = context_.getMap().getSide(walls[a].index);
+		auto side = context_.map().getSide(walls[a].index);
 		if (!side) continue;
 
 		// Reset offsets
@@ -568,7 +568,7 @@ void Edit3D::resetOffsets() const
 	{
 		for (unsigned a = 0; a < flats.size(); a++)
 		{
-			auto sector = context_.getMap().getSector(flats[a].index);
+			auto sector = context_.map().getSector(flats[a].index);
 			if (!sector) continue;
 
 			string plane;
@@ -598,7 +598,7 @@ void Edit3D::resetOffsets() const
 	{
 		for (unsigned a = 0; a < things.size(); ++a)
 		{
-			auto thing = context_.getMap().getThing(things[a].index);
+			auto thing = context_.map().getThing(things[a].index);
 			if (!thing) continue;
 
 			// Reset height
@@ -677,7 +677,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 	for (unsigned a = 0; a < items.size(); a++)
 	{
 		// Get line
-		auto line = context_.getMap().getSide(items[a].index)->getParentLine();
+		auto line = context_.map().getSide(items[a].index)->getParentLine();
 		if (!line) continue;
 
 		// Skip if line already processed
@@ -698,7 +698,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 			theGameConfiguration->setLineBasicFlag(
 				"dontpegbottom",
 				line,
-				context_.getMap().currentFormat(),
+				context_.map().currentFormat(),
 				!unpegged
 			);
 		}
@@ -712,7 +712,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 			theGameConfiguration->setLineBasicFlag(
 				"dontpegtop",
 				line,
-				context_.getMap().currentFormat(),
+				context_.map().currentFormat(),
 				!unpegged
 			);
 		}
@@ -734,7 +734,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 void Edit3D::copy(CopyType type)
 {
 	auto hl = context_.selection().hilight();
-	auto& map = context_.getMap();
+	auto& map = context_.map();
 
 	// Check hilight
 	if (hl.index < 0)
@@ -830,7 +830,7 @@ void Edit3D::paste(CopyType type)
 		// Wall
 		if (MapEditor::baseItemType(item.type) == ItemType::Side)
 		{
-			MapSide* side = context_.getMap().getSide(item.index);
+			MapSide* side = context_.map().getSide(item.index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(side));
 
 			// Upper wall
@@ -861,7 +861,7 @@ void Edit3D::paste(CopyType type)
 		// Flat
 		else if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
 		{
-			MapSector* sector = context_.getMap().getSector(item.index);
+			MapSector* sector = context_.map().getSector(item.index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(sector));
 
 			// Floor
@@ -884,7 +884,7 @@ void Edit3D::paste(CopyType type)
 		// Thing
 		else if (item.type == ItemType::Thing)
 		{
-			MapThing* thing = context_.getMap().getThing(item.index);
+			MapThing* thing = context_.map().getThing(item.index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(thing));
 
 			// Type
@@ -945,7 +945,7 @@ void Edit3D::floodFill(CopyType type)
 			items[a].type == ItemType::WallMiddle ||
 			items[a].type == ItemType::WallBottom)
 		{
-			auto side = context_.getMap().getSide(items[a].index);
+			auto side = context_.map().getSide(items[a].index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(side));
 
 			// Upper wall
@@ -976,7 +976,7 @@ void Edit3D::floodFill(CopyType type)
 		// Flat
 		else if (items[a].type == ItemType::Floor || items[a].type == ItemType::Ceiling)
 		{
-			MapSector* sector = context_.getMap().getSector(items[a].index);
+			MapSector* sector = context_.map().getSector(items[a].index);
 			undo_manager_->recordUndoStep(new MapEditor::PropertyChangeUS(sector));
 
 			// Floor
@@ -1012,7 +1012,7 @@ void Edit3D::floodFill(CopyType type)
 void Edit3D::changeThingZ(int amount) const
 {
 	// Ignore for doom format
-	if (context_.getMap().currentFormat() == MAP_DOOM)
+	if (context_.map().currentFormat() == MAP_DOOM)
 		return;
 
 	// Go through 3d selection
@@ -1022,7 +1022,7 @@ void Edit3D::changeThingZ(int amount) const
 		// Check if thing
 		if (selection_3d[a].type == ItemType::Thing)
 		{
-			MapThing* thing = context_.getMap().getThing(selection_3d[a].index);
+			MapThing* thing = context_.map().getThing(selection_3d[a].index);
 			if (thing)
 			{
 				// Change z height
@@ -1049,7 +1049,7 @@ void Edit3D::deleteThing() const
 	{
 		// Check if thing
 		if (item.type == ItemType::Thing)
-			context_.getMap().removeThing(item.index);
+			context_.map().removeThing(item.index);
 	}
 
 	context_.endUndoRecord();
@@ -1091,7 +1091,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		if (items[a].type >= ItemType::WallTop && items[a].type <= ItemType::WallBottom &&
 			(theGameConfiguration->udmfSideScaling() || theGameConfiguration->udmfTextureScaling()))
 		{
-			auto side = context_.getMap().getSide(items[a].index);
+			auto side = context_.map().getSide(items[a].index);
 
 			// Build property string (offset[x/y]_[top/mid/bottom])
 			string ofs = "scalex";
@@ -1115,7 +1115,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		// Flat (UDMF only)
 		else if (theGameConfiguration->udmfFlatScaling())
 		{
-			auto sector = context_.getMap().getSector(items[a].index);
+			auto sector = context_.map().getSector(items[a].index);
 
 			// Build property string
 			string prop = x ? "xscale" : "yscale";
@@ -1146,7 +1146,7 @@ void Edit3D::changeHeight(int amount) const
 	vector<MapEditor::Item> items;
 	auto& selection_3d = context_.selection();
 	auto hilight_3d = context_.hilightItem();
-	auto& map = context_.getMap();
+	auto& map = context_.map();
 	if (selection_3d.empty() && hilight_3d.index >= 0)
 	{
 		if (hilight_3d.type != ItemType::Thing || map.currentFormat() != MAP_DOOM)
@@ -1327,7 +1327,7 @@ void Edit3D::getAdjacentWalls(MapEditor::Item item, vector<MapEditor::Item>& lis
 	list.push_back(item);
 
 	// Get initial side
-	auto side = context_.getMap().getSide(item.index);
+	auto side = context_.map().getSide(item.index);
 	if (!side)
 		return;
 
@@ -1448,7 +1448,7 @@ void Edit3D::getAdjacentFlats(MapEditor::Item item, vector<MapEditor::Item>& lis
 	list.push_back(item);
 
 	// Get initial sector
-	auto sector = context_.getMap().getSector(item.index);
+	auto sector = context_.map().getSector(item.index);
 	if (!sector) return;
 
 	// Go through sector lines

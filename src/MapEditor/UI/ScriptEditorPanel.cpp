@@ -153,7 +153,7 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	string lang = theGameConfiguration->scriptLanguage();
 	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		auto map = MapEditor::editContext().getMap();
+		auto map = MapEditor::editContext().map();
 		map.mapSpecials()->processACSScripts(entry_script);
 		map.mapSpecials()->updateTaggedSectors(&map);
 	}
@@ -217,7 +217,7 @@ void ScriptEditorPanel::saveScripts()
 	string lang = theGameConfiguration->scriptLanguage();
 	if (entry_script->getSize() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
-		SLADEMap* map = &(MapEditor::editContext().getMap());
+		SLADEMap* map = &(MapEditor::editContext().map());
 		map->mapSpecials()->processACSScripts(entry_script);
 		map->mapSpecials()->updateTaggedSectors(map);
 	}

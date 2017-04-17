@@ -114,7 +114,7 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 	int current = hilight_.index;
 
 	// Update hilighted object depending on mode
-	auto& map = context_->getMap();
+	auto& map = context_->map();
 	if (context_->editMode() == Mode::Vertices)
 		hilight_ = { map.nearestVertex(mouse_pos, 32 / dist_scale), ItemType::Vertex };
 	else if (context_->editMode() == Mode::Lines)
@@ -229,7 +229,7 @@ void ItemSelection::selectAll()
 	last_change_.clear();
 
 	// Select all items depending on mode
-	auto& map = context_->getMap();
+	auto& map = context_->map();
 	if (context_->editMode() == Mode::Vertices)
 	{
 		for (unsigned a = 0; a < map.nVertices(); a++)
@@ -251,7 +251,7 @@ void ItemSelection::selectAll()
 			selectItem({ (int)a, ItemType::Thing });
 	}
 
-	context_->addEditorMessage(S_FMT("Selected all %lu %s", selection_.size(), context_->getModeString()));
+	context_->addEditorMessage(S_FMT("Selected all %lu %s", selection_.size(), context_->modeString()));
 	context_->selectionUpdated();
 }
 
@@ -360,10 +360,10 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 	// Select depending on edit mode
 	switch (context_->editMode())
 	{
-	case Mode::Vertices:	selectVerticesWithin(context_->getMap(), rect); break;
-	case Mode::Lines:	selectLinesWithin(context_->getMap(), rect); break;
-	case Mode::Sectors:	selectSectorsWithin(context_->getMap(), rect); break;
-	case Mode::Things:	selectThingsWithin(context_->getMap(), rect); break;
+	case Mode::Vertices:	selectVerticesWithin(context_->map(), rect); break;
+	case Mode::Lines:	selectLinesWithin(context_->map(), rect); break;
+	case Mode::Sectors:	selectSectorsWithin(context_->map(), rect); break;
+	case Mode::Things:	selectThingsWithin(context_->map(), rect); break;
 	default: break;
 	}
 
@@ -383,7 +383,7 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 MapVertex* ItemSelection::hilightedVertex() const
 {
 	if (context_ && hilight_.index >= 0 && hilight_.type == ItemType::Vertex)
-		return context_->getMap().getVertex(hilight_.index);
+		return context_->map().getVertex(hilight_.index);
 
 	return nullptr;
 }
@@ -394,7 +394,7 @@ MapVertex* ItemSelection::hilightedVertex() const
 MapLine* ItemSelection::hilightedLine() const
 {
 	if (context_ && hilight_.index >= 0 && hilight_.type == ItemType::Line)
-		return context_->getMap().getLine(hilight_.index);
+		return context_->map().getLine(hilight_.index);
 
 	return nullptr;
 }
@@ -405,7 +405,7 @@ MapLine* ItemSelection::hilightedLine() const
 MapSector* ItemSelection::hilightedSector() const
 {
 	if (context_ && hilight_.index >= 0 && hilight_.type == ItemType::Sector)
-		return context_->getMap().getSector(hilight_.index);
+		return context_->map().getSector(hilight_.index);
 
 	return nullptr;
 }
@@ -416,7 +416,7 @@ MapSector* ItemSelection::hilightedSector() const
 MapThing* ItemSelection::hilightedThing() const
 {
 	if (context_ && hilight_.index >= 0 && hilight_.type == ItemType::Thing)
-		return context_->getMap().getThing(hilight_.index);
+		return context_->map().getThing(hilight_.index);
 
 	return nullptr;
 }
@@ -454,11 +454,11 @@ vector<MapVertex*> ItemSelection::selectedVertices(bool try_hilight) const
 	// Get selected vertices
 	for (auto& item : selection_)
 		if (item.type == ItemType::Vertex)
-			list.push_back(context_->getMap().getVertex(item.index));
+			list.push_back(context_->map().getVertex(item.index));
 
 	// If no vertices were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Vertex)
-		list.push_back(context_->getMap().getVertex(hilight_.index));
+		list.push_back(context_->map().getVertex(hilight_.index));
 
 	return list;
 }
@@ -478,11 +478,11 @@ vector<MapLine*> ItemSelection::selectedLines(bool try_hilight) const
 	// Get selected lines
 	for (auto& item : selection_)
 		if (item.type == ItemType::Line)
-			list.push_back(context_->getMap().getLine(item.index));
+			list.push_back(context_->map().getLine(item.index));
 
 	// If no lines were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Line)
-		list.push_back(context_->getMap().getLine(hilight_.index));
+		list.push_back(context_->map().getLine(hilight_.index));
 
 	return list;
 }
@@ -502,11 +502,11 @@ vector<MapSector*> ItemSelection::selectedSectors(bool try_hilight) const
 	// Get selected sectors
 	for (auto& item : selection_)
 		if (item.type == ItemType::Sector)
-			list.push_back(context_->getMap().getSector(item.index));
+			list.push_back(context_->map().getSector(item.index));
 
 	// If no sectors were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Sector)
-		list.push_back(context_->getMap().getSector(hilight_.index));
+		list.push_back(context_->map().getSector(hilight_.index));
 
 	return list;
 }
@@ -526,11 +526,11 @@ vector<MapThing*> ItemSelection::selectedThings(bool try_hilight) const
 	// Get selected things
 	for (auto& item : selection_)
 		if (item.type == ItemType::Thing)
-			list.push_back(context_->getMap().getThing(item.index));
+			list.push_back(context_->map().getThing(item.index));
 
 	// If no things were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0 && hilight_.type == ItemType::Thing)
-		list.push_back(context_->getMap().getThing(hilight_.index));
+		list.push_back(context_->map().getThing(hilight_.index));
 
 	return list;
 }
@@ -559,11 +559,11 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	// Get selected objects
 	vector<MapObject*> list;
 	for (auto& item : selection_)
-		list.push_back(context_->getMap().getObject(type, item.index));
+		list.push_back(context_->map().getObject(type, item.index));
 
 	// If no objects were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0)
-		list.push_back(context_->getMap().getObject(type, hilight_.index));
+		list.push_back(context_->map().getObject(type, hilight_.index));
 
 	return list;
 }
@@ -594,7 +594,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 			// To lines mode
 			else if (to_edit_mode == Mode::Lines && baseItemType(item.type) == ItemType::Side)
 			{
-				auto side = context_->getMap().getSide(item.index);
+				auto side = context_->map().getSide(item.index);
 				if (!side) continue;
 				new_selection.insert({ (int)side->getParentLine()->getIndex(), ItemType::Line });
 			}
@@ -617,7 +617,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 			// Line
 			else if (baseItemType(item.type) == ItemType::Line)
 			{
-				auto line = context_->getMap().getLine(item.index);
+				auto line = context_->map().getLine(item.index);
 				auto front = line->s1();
 				auto back = line->s2();
 
@@ -652,7 +652,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 	{
 		for (auto& item : selection_)
 		{
-			auto sector = context_->getMap().getSector(item.index);
+			auto sector = context_->map().getSector(item.index);
 			if (!sector) continue;
 
 			// To lines mode
@@ -686,7 +686,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 	{
 		for (auto& item : selection_)
 		{
-			auto line = context_->getMap().getLine(item.index);
+			auto line = context_->map().getLine(item.index);
 			if (!line) continue;
 			new_selection.insert({ (int)line->v1()->getIndex(), ItemType::Vertex });
 			new_selection.insert({ (int)line->v2()->getIndex(), ItemType::Vertex });
