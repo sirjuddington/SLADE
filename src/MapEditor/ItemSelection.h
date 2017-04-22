@@ -38,7 +38,6 @@ public:
 
 	unsigned	size() const { return selection_.size(); }
 	bool		empty() const { return selection_.empty(); }
-	void		clear() { selection_.clear(); }
 	void		clearHilight() { if (!hilight_lock_) hilight_.index = -1; }
 
 	bool	hasHilight() const { return hilight_.index >= 0; }
@@ -47,8 +46,7 @@ public:
 	bool	isHilighted(const MapEditor::Item& item) const { return item == hilight_; }
 
 	bool	updateHilight(fpoint2_t mouse_pos, double dist_scale);
-	void	clearSelection();
-	//void	clearSelection(MapEditContext& context, bool animate = true);
+	void	clear();
 
 	void	select(const MapEditor::Item& item, bool select = true, bool new_change = true);
 	void	select(const vector<MapEditor::Item>& items, bool select = true, bool new_change = true);

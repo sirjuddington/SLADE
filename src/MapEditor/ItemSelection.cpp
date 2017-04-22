@@ -175,7 +175,7 @@ bool ItemSelection::updateHilight(fpoint2_t mouse_pos, double dist_scale)
 /* ItemSelection::clearSelection
  * Clears the current selection
  *******************************************************************/
-void ItemSelection::clearSelection()
+void ItemSelection::clear()
 {
 	// Update change set
 	last_change_.clear();
@@ -266,7 +266,7 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 		// Clear selection if specified
 		if (clear_none)
 		{
-			clearSelection();
+			clear();
 			if (context_)
 			{
 				context_->selectionUpdated();
@@ -355,15 +355,15 @@ bool ItemSelection::selectWithin(const frect_t& rect, bool add)
 
 	// Clear current selection if not adding
 	if (!add)
-		clearSelection();
+		clear();
 
 	// Select depending on edit mode
 	switch (context_->editMode())
 	{
 	case Mode::Vertices:	selectVerticesWithin(context_->map(), rect); break;
-	case Mode::Lines:	selectLinesWithin(context_->map(), rect); break;
-	case Mode::Sectors:	selectSectorsWithin(context_->map(), rect); break;
-	case Mode::Things:	selectThingsWithin(context_->map(), rect); break;
+	case Mode::Lines:		selectLinesWithin(context_->map(), rect); break;
+	case Mode::Sectors:		selectSectorsWithin(context_->map(), rect); break;
+	case Mode::Things:		selectThingsWithin(context_->map(), rect); break;
 	default: break;
 	}
 
@@ -706,13 +706,15 @@ void ItemSelection::selectItem(const MapEditor::Item& item, bool select)
 	// Check if already selected
 	bool selected = VECTOR_EXISTS(selection_, item);
 
-	// (De)Select item
-	if (select)	selection_.push_back(item);
-	else		VECTOR_REMOVE(selection_, item);
-
-	// Update change set
+	// (De)Select and update change set
 	if (select && !selected)
+	{
+		selection_.push_back(item);
 		last_change_[item] = true;
+	}
 	if (!select && selected)
+	{
+		VECTOR_REMOVE(selection_, item);
 		last_change_[item] = false;
+	}
 }

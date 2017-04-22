@@ -44,6 +44,10 @@
 #include "UI/MapEditorWindow.h"
 #include "UndoSteps.h"
 #include "Utility/MathStuff.h"
+#include "General/UI.h"
+#include "MapEditor/Renderer/Overlays/SectorTextureOverlay.h"
+#include "MapEditor/Renderer/Overlays/QuickTextureOverlay3d.h"
+#include "MapEditor/Renderer/Overlays/LineTextureOverlay.h"
 
 using MapEditor::Mode;
 using MapEditor::SectorMode;
@@ -82,12 +86,14 @@ MapEditContext::MapEditContext() :
 	move_item_closest_(0),
 	line_draw_(*this),
 	edit_3d_(*this),
+	object_edit_(*this),
 	copy_thing_(nullptr),
 	copy_sector_(nullptr),
 	copy_line_(nullptr),
 	player_start_dir_(0),
-	renderer_2d_(&map_),
-	renderer_3d_(&map_)
+	renderer_(*this),
+	input_(*this),
+    overlay_current_(nullptr)
 {
 }
 
@@ -113,7 +119,8 @@ MapEditContext::~MapEditContext()
 		delete copy_line_;
 	}
 	delete undo_manager_;
-	//delete undo_manager_3d;
+	if (overlay_current_)
+		delete overlay_current_;
 }
 
 /* MapEditContext::setEditMode
@@ -145,7 +152,7 @@ void MapEditContext::setEditMode(Mode mode)
 	else if (edit_mode_ == Mode::Visual && mode != Mode::Visual)
 		MapEditor::setUndoManager(undo_manager_);
 
-	auto old_edit_mode = edit_mode_;
+	edit_mode_prev_ = edit_mode_;
 
 	// Set edit mode
 	edit_mode_ = mode;
@@ -159,7 +166,7 @@ void MapEditContext::setEditMode(Mode mode)
 	last_undo_level_ = "";
 
 	// Transfer selection to the new mode, if possible
-	selection_.migrate(old_edit_mode, edit_mode_);
+	selection_.migrate(edit_mode_prev_, edit_mode_);
 
 	// Add editor message
 	switch (edit_mode_)
@@ -175,6 +182,48 @@ void MapEditContext::setEditMode(Mode mode)
 	if (edit_mode_ != Mode::Visual)
 		updateDisplay();
 	updateStatusText();
+
+	// Unlock mouse
+	canvas_->lockMouse(false);
+
+	// Update toolbar
+	if (mode != edit_mode_prev_) MapEditor::window()->removeAllCustomToolBars();
+	if (mode == Mode::Vertices)
+		SAction::fromId("mapw_mode_vertices")->setChecked();
+	else if (mode == Mode::Lines)
+		SAction::fromId("mapw_mode_lines")->setChecked();
+	else if (mode == Mode::Sectors)
+	{
+		SAction::fromId("mapw_mode_sectors")->setChecked();
+
+		// Sector mode toolbar
+		if (edit_mode_prev_ != Mode::Sectors)
+		{
+			wxArrayString actions;
+			actions.Add("mapw_sectormode_normal");
+			actions.Add("mapw_sectormode_floor");
+			actions.Add("mapw_sectormode_ceiling");
+			MapEditor::window()->addCustomToolBar("Sector Mode", actions);
+		}
+
+		// Toggle current sector mode
+		if (sector_mode_ == SectorMode::Both)
+			SAction::fromId("mapw_sectormode_normal")->setChecked();
+		else if (sector_mode_ == SectorMode::Floor)
+			SAction::fromId("mapw_sectormode_floor")->setChecked();
+		else if (sector_mode_ == SectorMode::Ceiling)
+			SAction::fromId("mapw_sectormode_ceiling")->setChecked();
+	}
+	else if (mode == Mode::Things)
+		SAction::fromId("mapw_mode_things")->setChecked();
+	else if (mode == Mode::Visual)
+	{
+		SAction::fromId("mapw_mode_3d")->setChecked();
+		KeyBind::releaseAll();
+		canvas_->lockMouse(true);
+		renderer_.renderer3D().refresh();
+	}
+	MapEditor::window()->refreshToolBar();
 }
 
 /* MapEditContext::setSectorEditMode
@@ -237,9 +286,9 @@ bool MapEditContext::openMap(Archive::mapdesc_t map)
 
 		// Set canvas 3d camera
 		if (cam)
-			canvas_->set3dCameraThing(cam);
+			renderer_.setCameraThing(cam);
 		else if (pstart)
-			canvas_->set3dCameraThing(pstart);
+			renderer_.setCameraThing(pstart);
 
 		// Reset rendering data
 		canvas_->forceRefreshRenderer();
@@ -299,7 +348,8 @@ void MapEditContext::showItem(int index)
 	{
 		//selection.push_back(index);
 		selection_.select({ index, type });
-		if (canvas_) canvas_->viewShowObject();
+		renderer_.viewFitToObjects(selection_.selectedObjects(false));
+		//if (canvas_) canvas_->viewShowObject();
 	}
 }
 
@@ -328,6 +378,11 @@ void MapEditContext::updateThingLists()
 	pathed_things_.clear();
 	map_.getPathedThings(pathed_things_);
 	map_.setThingsUpdated();
+}
+
+void MapEditContext::setCursor(UI::MouseCursor cursor) const
+{
+	UI::setCursor(canvas_, cursor);
 }
 
 /* MapEditContext::updateTagged
@@ -783,7 +838,7 @@ void MapEditContext::endMove(bool accept)
 
 	// Clear selection
 	if (accept && selection_clear_move)
-		selection_.clearSelection();
+		selection_.clear();
 
 	// Clear moving items
 	move_items_.clear();
@@ -1068,7 +1123,7 @@ void MapEditContext::changeSectorTexture()
 	}
 	else
 	{
-		canvas_->openSectorTextureOverlay(selection);
+		openSectorTextureOverlay(selection);
 		return;
 	}
 
@@ -1094,7 +1149,7 @@ void MapEditContext::changeSectorTexture()
 
 	// Unlock hilight if needed
 	selection_.lockHilight(hl_lock);
-	renderer_2d_.clearTextureCache();
+	renderer_.renderer2D().clearTextureCache();
 }
 
 /* MapEditContext::joinSectors
@@ -1117,7 +1172,7 @@ void MapEditContext::joinSectors(bool remove_lines)
 	auto target = sectors[0];
 
 	// Clear selection
-	selection_.clearSelection();
+	selection_.clear();
 
 	// Init list of lines
 	vector<MapLine*> lines;
@@ -1355,7 +1410,7 @@ void MapEditContext::editObjectProperties()
 	bool done = MapEditor::editObjectProperties(selection);
 	if (done)
 	{
-		renderer_2d_.forceUpdate(canvas_->lineFadeLevel());
+		renderer_.renderer2D().forceUpdate(canvas_->lineFadeLevel());
 		updateDisplay();
 
 		if (edit_mode_ == Mode::Things)
@@ -1477,6 +1532,7 @@ void MapEditContext::endTagEdit(bool accept)
 		addEditorMessage("Tag edit cancelled");
 
 	updateTagged();
+	setFeatureHelp({});
 }
 
 /* MapEditContext::createObject
@@ -1503,7 +1559,7 @@ void MapEditContext::createObject(double x, double y)
 			addEditorMessage(S_FMT("Created %lu line(s)", selection_.size() - 1));
 
 			// Clear selection
-			selection_.clearSelection();
+			selection_.clear();
 		}
 
 		return;
@@ -1820,120 +1876,8 @@ void MapEditContext::deleteObject()
 	endUndoRecord(true);
 
 	// Clear hilight and selection
-	selection_.clearSelection();
+	selection_.clear();
 	selection_.clearHilight();
-}
-
-/* MapEditContext::beginObjectEdit
- * Begins an object edit operation
- *******************************************************************/
-bool MapEditContext::beginObjectEdit()
-{
-	// Things mode
-	if (edit_mode_ == Mode::Things)
-	{
-		// Get selected things
-		auto edit_objects = selection_.selectedObjects();
-
-		// Setup object group
-		edit_object_group_.clear();
-		for (unsigned a = 0; a < edit_objects.size(); a++)
-			edit_object_group_.addThing((MapThing*)edit_objects[a]);
-
-		// Filter objects
-		edit_object_group_.filterObjects(true);
-	}
-	else
-	{
-		vector<MapObject*> edit_objects;
-
-		// Vertices mode
-		if (edit_mode_ == Mode::Vertices)
-		{
-			// Get selected vertices
-			edit_objects = selection_.selectedObjects();
-		}
-
-		// Lines mode
-		else if (edit_mode_ == Mode::Lines)
-		{
-			// Get vertices of selected lines
-			auto lines = selection_.selectedLines();
-			for (unsigned a = 0; a < lines.size(); a++)
-			{
-				VECTOR_ADD_UNIQUE(edit_objects, lines[a]->v1());
-				VECTOR_ADD_UNIQUE(edit_objects, lines[a]->v2());
-			}
-		}
-
-		// Sectors mode
-		else if (edit_mode_ == Mode::Sectors)
-		{
-			// Get vertices of selected sectors
-			auto sectors = selection_.selectedSectors();
-			for (unsigned a = 0; a < sectors.size(); a++)
-				sectors[a]->getVertices(edit_objects);
-		}
-
-		// Setup object group
-		edit_object_group_.clear();
-		for (unsigned a = 0; a < edit_objects.size(); a++)
-			edit_object_group_.addVertex((MapVertex*)edit_objects[a]);
-		edit_object_group_.addConnectedLines();
-
-		// Filter objects
-		edit_object_group_.filterObjects(true);
-	}
-
-	if (edit_object_group_.empty())
-		return false;
-
-	MapEditor::showObjectEditPanel(true, &edit_object_group_);
-
-	return true;
-}
-
-/* MapEditContext::endObjectEdit
- * Ends the object edit operation and applies changes if [accept] is
- * true
- *******************************************************************/
-void MapEditContext::endObjectEdit(bool accept)
-{
-	// Un-filter objects
-	edit_object_group_.filterObjects(false);
-
-	// Apply change if accepted
-	if (accept)
-	{
-		// Begin recording undo level
-		beginUndoRecord(S_FMT("Edit %s", modeString()));
-
-		// Apply changes
-		edit_object_group_.applyEdit();
-
-		// Do merge
-		bool merge = true;
-		if (edit_mode_ != Mode::Things)
-		{
-			// Begin extra 'Merge' undo step if wanted
-			if (map_merge_undo_step)
-			{
-				endUndoRecord(true);
-				beginUndoRecord("Merge");
-			}
-
-			vector<MapVertex*> vertices;
-			edit_object_group_.getVertices(vertices);
-			merge = map_.mergeArch(vertices);
-		}
-
-		// Clear selection
-		selection_.clearSelection();
-
-		endUndoRecord(merge || !map_merge_undo_step);
-	}
-
-	MapEditor::showObjectEditPanel(false, nullptr);
 }
 
 /* MapEditContext::copyProperties
@@ -2199,6 +2143,16 @@ void MapEditContext::addEditorMessage(string message)
 	editor_messages_.push_back(msg);
 }
 
+void MapEditContext::setFeatureHelp(const vector<string>& lines)
+{
+	feature_help_lines_.clear();
+	feature_help_lines_ = lines;
+
+	Log::debug("Set Feature Help Text:");
+	for (auto& l : feature_help_lines_)
+		Log::debug(l);
+}
+
 /* MapEditContext::handleKeyBind
  * Handles the keybind [key]
  *******************************************************************/
@@ -2235,7 +2189,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		// Clear selection
 		else if (key == "me2d_clear_selection")
 		{
-			selection_.clearSelection();
+			selection_.clear();
 			addEditorMessage("Selection cleared");
 		}
 
@@ -2303,7 +2257,7 @@ bool MapEditContext::handleKeyBind(string key, fpoint2_t position)
 		// Clear selection
 		if (key == "me3d_clear_selection")
 		{
-			selection_.clearSelection();
+			selection_.clear();
 			addEditorMessage("Selection cleared");
 		}
 
@@ -2568,7 +2522,7 @@ void MapEditContext::recordPropertyChangeUndoStep(MapObject* object)
 void MapEditContext::doUndo()
 {
 	// Clear selection first, since part of it may become invalid
-	selection_.clearSelection();
+	selection_.clear();
 
 	// Undo
 	int time = App::runTimer() - 1;
@@ -2598,7 +2552,7 @@ void MapEditContext::doUndo()
 void MapEditContext::doRedo()
 {
 	// Clear selection first, since part of it may become invalid
-	selection_.clearSelection();
+	selection_.clear();
 
 	// Redo
 	int time = App::runTimer() - 1;
@@ -2622,6 +2576,26 @@ void MapEditContext::doRedo()
 	map_.recomputeSpecials();
 }
 
+bool MapEditContext::overlayActive()
+{
+	if (!overlay_current_)
+		return false;
+	else
+		return overlay_current_->isActive();
+}
+
+/* MapEditContext::openSectorTextureOverlay
+ * Opens the sector texture selection overlay
+ *******************************************************************/
+void MapEditContext::openSectorTextureOverlay(vector<MapSector*>& sectors)
+{
+	if (overlay_current_) delete overlay_current_;
+	auto sto = new SectorTextureOverlay();
+	sto->openSectors(sectors);
+	overlay_current_ = sto;
+}
+
+
 /* MapEditContext::swapPlayerStart3d
  * Moves the player 1 start thing to the current position and
  * direction of the 3d mode camera
@@ -2643,9 +2617,9 @@ void MapEditContext::swapPlayerStart3d()
 	player_start_pos_.set(pstart->point());
 	player_start_dir_ = pstart->getAngle();
 
-	fpoint2_t campos = canvas_->get3dCameraPos();
+	fpoint2_t campos = renderer_.cameraPos2D();
 	pstart->setPos(campos.x, campos.y);
-	pstart->setAnglePoint(campos + canvas_->get3dCameraDir());
+	pstart->setAnglePoint(campos + renderer_.cameraDir2D());
 }
 
 /* MapEditContext::swapPlayerStart2d
@@ -2689,6 +2663,41 @@ void MapEditContext::resetPlayerStart()
 
 	pstart->setPos(player_start_pos_.x, player_start_pos_.y);
 	pstart->setIntProperty("angle", player_start_dir_);
+}
+
+void MapEditContext::openQuickTextureOverlay()
+{
+	if (QuickTextureOverlay3d::ok(selection_))
+	{
+		if (overlay_current_) delete overlay_current_;
+		QuickTextureOverlay3d* qto = new QuickTextureOverlay3d(this);
+		overlay_current_ = qto;
+
+		renderer_.renderer3D().enableHilight(false);
+		renderer_.renderer3D().enableSelection(false);
+		selection_.lockHilight(true);
+	}
+}
+
+void MapEditContext::openLineTextureOverlay()
+{
+	// Get selection
+	auto lines = selection_.selectedLines();
+
+	// Open line texture overlay if anything is selected
+	if (lines.size() > 0)
+	{
+		if (overlay_current_) delete overlay_current_;
+		auto lto = new LineTextureOverlay();
+		lto->openLines(lines);
+		overlay_current_ = lto;
+	}
+}
+
+void MapEditContext::closeCurrentOverlay(bool cancel)
+{
+	if (overlay_current_ && overlay_current_->isActive())
+		overlay_current_->close(cancel);
 }
 
 

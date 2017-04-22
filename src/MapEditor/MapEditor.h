@@ -84,9 +84,11 @@ namespace MapEditor
 	void	forceRefresh(bool renderer = false);
 	bool	chooseMap(Archive* archive = nullptr);
 	void	setUndoManager(UndoManager* manager);
+	void 	setStatusText(const string& text);
 
 	void	openObjectProperties(MapObject* object);
 	void	openMultiObjectProperties(vector<MapObject*>& objects);
+	bool	editObjectProperties(vector<MapObject*>& list);
 
 	void	showShapeDrawPanel(bool show = true);
 	void	showObjectEditPanel(bool show = true, ObjectEditGroup* group = nullptr);
@@ -98,8 +100,6 @@ namespace MapEditor
 		const string& title = "Browse Texture"
 	);
 	int 	browseThingType(int init_type, SLADEMap& map);
-
-	bool	editObjectProperties(vector<MapObject*>& list);
 
 	ItemType	baseItemType(const ItemType& type);
 }

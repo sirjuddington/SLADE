@@ -30,12 +30,12 @@
  * INCLUDES
  *******************************************************************/
 #include "Main.h"
-#include "ObjectEditPanel.h"
 #include "General/KeyBind.h"
 #include "Graphics/Icons.h"
-#include "MapEditor/MapEditor.h"
-#include "MapEditor/ObjectEdit.h"
+#include "MapEditor/Edit/ObjectEdit.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
+#include "ObjectEditPanel.h"
 
 
 /*******************************************************************
@@ -197,7 +197,15 @@ void ObjectEditPanel::onBtnPreviewClicked(wxCommandEvent& e)
 	bool mirror_x = cb_mirror_x->GetValue();
 	bool mirror_y = cb_mirror_y->GetValue();
 
-	MapEditor::editContext().objectEditGroup()->doAll(xoff, yoff, xscale / 100.0, yscale / 100.0, rotation, mirror_x, mirror_y);
+	MapEditor::editContext().objectEdit().group().doAll(
+		xoff,
+		yoff,
+		xscale / 100.0,
+		yscale / 100.0,
+		rotation,
+		mirror_x,
+		mirror_y
+	);
 }
 
 /* ObjectEditPanel::onBtnCancelClicked

@@ -2,20 +2,24 @@
 #ifndef __MAP_EDITOR_H__
 #define __MAP_EDITOR_H__
 
+#include <General/UI.h>
 #include "Archive/Archive.h"
 #include "Edit/Edit3D.h"
 #include "Edit/LineDraw.h"
 #include "ItemSelection.h"
 #include "MapEditor.h"
-#include "ObjectEdit.h"
+#include "Edit/ObjectEdit.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Renderer/MapRenderer2D.h"
-#include "Renderer/MapRenderer3D.h"
+#include "Renderer/Renderer.h"
+#include "Edit/Input.h"
 
+
+namespace UI { enum class MouseCursor; }
 
 class MapCanvas;
 class UndoManager;
 class UndoStep;
+class MCOverlay;
 
 class MapEditContext
 {
@@ -45,10 +49,11 @@ public:
 	UndoManager*			undoManager() const { return undo_manager_; }
 	Archive::mapdesc_t&		mapDesc() { return map_desc_; }
 	MapCanvas*				canvas() const { return canvas_; }
-	MapRenderer2D&			renderer2D() { return renderer_2d_; }
-	MapRenderer3D&			renderer3D() { return renderer_3d_; }
+	MapEditor::Renderer&	renderer() { return renderer_; }
+	MapEditor::Input&		input() { return input_; }
 
 	void	setEditMode(MapEditor::Mode mode);
+	void 	setPrevEditMode() { setEditMode(edit_mode_prev_); }
 	void	setSectorEditMode(MapEditor::SectorMode mode);
 	void 	cycleSectorEditMode();
 	void	setCanvas(MapCanvas* canvas) { this->canvas_ = canvas; }
@@ -102,26 +107,24 @@ public:
 	void	createSector(double x, double y);
 	void	deleteObject();
 
-	// Line drawing
+	// Editing handlers
 	LineDraw&	lineDraw() { return line_draw_; }
-
-	// Object edit
-	ObjectEditGroup*	objectEditGroup() { return &edit_object_group_; }
-	bool				beginObjectEdit();
-	void				endObjectEdit(bool accept);
+	ObjectEdit&	objectEdit() { return object_edit_; }
+	Edit3D&		edit3d() { return edit_3d_; }
 
 	// Copy/paste
 	void	copy();
 	void	paste(fpoint2_t mouse_pos);
-
-	// 3d mode
-	Edit3D&	edit3d() { return edit_3d_; }
 
 	// Editor messages
 	unsigned	numEditorMessages() const { return editor_messages_.size(); }
 	string		editorMessage(int index);
 	long		editorMessageTime(int index);
 	void		addEditorMessage(string message);
+
+	// Feature help text
+	const vector<string>&	featureHelpLines() const { return feature_help_lines_; }
+	void					setFeatureHelp(const vector<string>& lines);
 
 	// Undo/Redo
 	void	beginUndoRecord(string name, bool mod = true, bool create = true, bool del = true);
@@ -131,6 +134,14 @@ public:
 	void	doUndo();
 	void	doRedo();
 	void	resetLastUndoLevel() { last_undo_level_ = ""; }
+
+	// Full-Screen Overlay
+	MCOverlay*	currentOverlay() { return overlay_current_; }
+	bool		overlayActive();
+	void 		closeCurrentOverlay(bool cancel = false);
+	void		openSectorTextureOverlay(vector<MapSector*>& sectors);
+	void 		openQuickTextureOverlay();
+	void 		openLineTextureOverlay();
 
 	// Player start swapping
 	void	swapPlayerStart3d();
@@ -143,6 +154,7 @@ public:
 	void	updateDisplay();
 	void	updateStatusText();
 	void	updateThingLists();
+	void	setCursor(UI::MouseCursor cursor) const;
 
 private:
 	SLADEMap			map_;
@@ -155,6 +167,7 @@ private:
 
 	// Editor state
 	MapEditor::Mode			edit_mode_;
+	MapEditor::Mode			edit_mode_prev_;
 	ItemSelection			selection_;
 	int						grid_size_;
 	MapEditor::SectorMode	sector_mode_;
@@ -188,9 +201,7 @@ private:
 	// Editing
 	LineDraw	line_draw_;
 	Edit3D		edit_3d_;
-
-	// Object edit
-	ObjectEditGroup	edit_object_group_;
+	ObjectEdit	object_edit_;
 
 	// Object properties and copy/paste
 	MapThing*	copy_thing_;
@@ -200,13 +211,21 @@ private:
 	// Editor messages
 	vector<EditorMessage>	editor_messages_;
 
+	// Feature help text
+	vector<string>	feature_help_lines_;
+
 	// Player start swap
 	fpoint2_t	player_start_pos_;
 	int			player_start_dir_;
 
-	// Renderers
-	MapRenderer2D	renderer_2d_;
-	MapRenderer3D	renderer_3d_;
+	// Renderer
+	MapEditor::Renderer	renderer_;
+
+	// Input
+	MapEditor::Input	input_;
+
+	// Full-Screen Overlay
+	MCOverlay*  overlay_current_;
 };
 
 #endif//__MAP_EDITOR_H__

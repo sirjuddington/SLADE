@@ -1230,9 +1230,6 @@
     <ClCompile Include="..\..\src\MapEditor\NodeBuilders.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\MapEditor\ObjectEdit.cpp">
-      <Filter>Map Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\SectorBuilder.cpp">
       <Filter>Map Editor</Filter>
     </ClCompile>
@@ -1436,6 +1433,15 @@
     </ClCompile>
     <ClCompile Include="..\..\src\MapEditor\UndoSteps.cpp">
       <Filter>Map Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\Renderer.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\Input.cpp">
+      <Filter>Map Editor\Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Edit\ObjectEdit.cpp">
+      <Filter>Map Editor\Edit</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2250,9 +2256,6 @@
     <ClInclude Include="..\..\src\MapEditor\NodeBuilders.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\MapEditor\ObjectEdit.h">
-      <Filter>Map Editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\SectorBuilder.h">
       <Filter>Map Editor</Filter>
     </ClInclude>
@@ -2482,6 +2485,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\UndoSteps.h">
       <Filter>Map Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\Renderer.h">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\Input.h">
+      <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Edit\ObjectEdit.h">
+      <Filter>Map Editor\Edit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

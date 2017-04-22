@@ -237,31 +237,6 @@ int* OpenGL::getWxGLAttribs()
 }
 #endif
 
-#ifdef _MSC_VER
-
-/* OpenGL::setColour
- * Sets the colour to [col], and changes the colour blend mode if
- * needed and [set_blend] is true
- *******************************************************************/
-void OpenGL::setColour(rgba_t& col, bool set_blend)
-{
-	// Colour
-	glColor4ub(col.r, col.g, col.b, col.a);
-
-	// Blend
-	if (set_blend && col.blend != last_blend)
-	{
-		if (col.blend == BLEND_NORMAL)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (col.blend == BLEND_ADDITIVE)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-		last_blend = col.blend;
-	}
-}
-
-#else
-
 /* OpenGL::setColour
  * Sets the colour to [col], and changes the colour blend mode if
  * needed and [set_blend] is true
@@ -282,8 +257,6 @@ void OpenGL::setColour(rgba_t col, bool set_blend)
 		last_blend = col.blend;
 	}
 }
-
-#endif//_MSC_VER
 
 /* OpenGL::setColour
  * Sets the colour to [r,g,b,a], and changes the colour blend mode to

@@ -32,6 +32,9 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapEditContext.h"
 #include "Utility/MathStuff.h"
+#include "General/KeyBind.h"
+
+using namespace MapEditor;
 
 
 /*******************************************************************
@@ -242,6 +245,41 @@ void LineDraw::updateShape(fpoint2_t point)
 	}
 }
 
+/* LineDraw::begin
+ * Begins a line or shape (if [shape] = true) drawing operation
+ *******************************************************************/
+void LineDraw::begin(bool shape)
+{
+	// Setup state
+	state_current = shape ? State::ShapeOrigin : State::Line;
+	context.input().setMouseState(Input::MouseState::LineDraw);
+
+	// Setup help text
+	string key_accept = KeyBind::getBind("map_edit_accept").keysAsString();
+	string key_cancel = KeyBind::getBind("map_edit_cancel").keysAsString();
+	if (shape)
+	{
+		context.setFeatureHelp({
+			"Shape Drawing",
+			S_FMT("%s = Accept", key_accept),
+			S_FMT("%s = Cancel", key_cancel),
+			"Left Click = Draw point",
+			"Right Click = Undo previous point"
+		});
+	}
+	else
+	{
+		context.setFeatureHelp({
+			"Line Drawing",
+			S_FMT("%s = Accept", key_accept),
+			S_FMT("%s = Cancel", key_cancel),
+			"Left Click = Draw point",
+			"Right Click = Undo previous point",
+			"Shift = Snap to nearest vertex"
+		});
+	}
+}
+
 /* LineDraw::end
  * Ends the line drawing operation and applies changes if [accept]
  * is true
@@ -252,6 +290,7 @@ void LineDraw::end(bool apply)
 	if (!apply || draw_points.size() <= 1)
 	{
 		draw_points.clear();
+		context.setFeatureHelp({});
 		return;
 	}
 
@@ -364,4 +403,7 @@ void LineDraw::end(bool apply)
 
 	// Clear draw points
 	draw_points.clear();
+
+	// Clear feature help text
+	context.setFeatureHelp({});
 }

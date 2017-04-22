@@ -59,6 +59,21 @@ void UI::setSplashProgress(float progress)
 		splash_window->setProgress(progress);
 }
 
+void UI::setCursor(wxWindow* window, MouseCursor cursor)
+{
+	switch (cursor)
+	{
+	case MouseCursor::Hand: window->SetCursor(wxCursor(wxCURSOR_HAND)); break;
+	case MouseCursor::Move: window->SetCursor(wxCursor(wxCURSOR_SIZING)); break;
+	case MouseCursor::Cross: window->SetCursor(wxCursor(wxCURSOR_CROSS)); break;
+	case MouseCursor::SizeNS: window->SetCursor(wxCursor(wxCURSOR_SIZENS)); break;
+	case MouseCursor::SizeWE: window->SetCursor(wxCursor(wxCURSOR_SIZEWE)); break;
+	case MouseCursor::SizeNESW: window->SetCursor(wxCursor(wxCURSOR_SIZENESW)); break;
+	case MouseCursor::SizeNWSE: window->SetCursor(wxCursor(wxCURSOR_SIZENWSE)); break;
+	default: window->SetCursor(wxNullCursor);
+	}
+}
+
 
 /* Console Command - "splash"
  * Shows the splash screen with the given message, or hides it if

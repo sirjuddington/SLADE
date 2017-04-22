@@ -55,6 +55,7 @@
 #include "UI/UndoManagerHistoryPanel.h"
 #include "Utility/SFileDialog.h"
 #include "MapEditor/GameConfiguration/GameConfiguration.h"
+#include "MapEditor/MapTextureManager.h"
 
 
 /*******************************************************************
@@ -560,8 +561,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 	}
 
 	// Set texture manager archive
-	// TODO: This
-	//tex_man.setArchive(archive);
+	MapEditor::textureManager().setArchive(archive);
 
 	// Clear current map
 	closeMap();
@@ -592,7 +592,7 @@ bool MapEditorWindow::openMap(Archive::mapdesc_t map)
 		// Reset map checks panel
 		panel_checks->reset();
 
-		map_canvas->viewFitToMap(true);
+		MapEditor::editContext().renderer().viewFitToMap(true);
 		map_canvas->Refresh();
 
 		// Set window title
@@ -1039,7 +1039,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	wxAuiPaneInfo& p_inf = m_mgr->GetPane("object_edit");
 
 	// Save current y offset
-	double top = map_canvas->translateY(0);
+	double top = MapEditor::editContext().renderer().translateY(0);
 
 	// Enable/disable panel
 	if (show) panel_obj_edit->init(group);
@@ -1050,7 +1050,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	m_mgr->Update();
 
 	// Restore y offset
-	map_canvas->setTopY(top);
+	MapEditor::editContext().renderer().setTopY(top);
 	map_canvas->Enable(true);
 	map_canvas->SetFocus();
 }
@@ -1065,7 +1065,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	wxAuiPaneInfo& p_inf = m_mgr->GetPane("shape_draw");
 
 	// Save current y offset
-	double top = map_canvas->translateY(0);
+	double top = MapEditor::editContext().renderer().translateY(0);
 
 	// Enable/disable panel
 	p_inf.Show(show);
@@ -1075,7 +1075,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	m_mgr->Update();
 
 	// Restore y offset
-	map_canvas->setTopY(top);
+	MapEditor::editContext().renderer().setTopY(top);
 	map_canvas->Enable(true);
 	map_canvas->SetFocus();
 }
@@ -1283,11 +1283,12 @@ bool MapEditorWindow::handleAction(string id)
 		RunDialog dlg(this, archive, id == "mapw_run_map");
 		if (dlg.ShowModal() == wxID_OK)
 		{
+			auto& edit_context = MapEditor::editContext();
 			// Move player 1 start if needed
 			if (id == "mapw_run_map_here")
-				MapEditor::editContext().swapPlayerStart2d(map_canvas->mouseDownPosM());
+				edit_context.swapPlayerStart2d(edit_context.input().mouseDownPosMap());
 			else if (dlg.start3dModeChecked())
-				MapEditor::editContext().swapPlayerStart3d();
+				edit_context.swapPlayerStart3d();
 
 			// Write temp wad
 			WadArchive* wad = writeMap(mdesc_current.name);

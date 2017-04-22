@@ -11,4 +11,18 @@ namespace UI
 	void	setSplashMessage(string message);
 	void	setSplashProgressMessage(string message);
 	void	setSplashProgress(float progress);
+
+	// Mouse Cursor
+	enum class MouseCursor
+	{
+		Normal,
+		Hand,
+		Move,
+		Cross,
+		SizeNS,
+		SizeWE,
+		SizeNESW,
+		SizeNWSE
+	};
+	void	setCursor(wxWindow* window, MouseCursor cursor);
 }

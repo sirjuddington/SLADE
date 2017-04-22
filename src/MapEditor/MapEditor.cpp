@@ -14,16 +14,19 @@
 
 namespace MapEditor
 {
-	MapEditContext		edit_context;
-	MapTextureManager	texture_manager;
-	Archive::mapdesc_t	current_map_desc;
-	MapEditorWindow*	map_window = nullptr;
-	MapBackupManager	backup_manager;
+	std::unique_ptr<MapEditContext>		edit_context;
+	MapTextureManager					texture_manager;
+	Archive::mapdesc_t					current_map_desc;
+	std::unique_ptr<MapEditorWindow>	map_window;
+	MapBackupManager					backup_manager;
 }
 
 MapEditContext& MapEditor::editContext()
 {
-	return edit_context;
+	if (!edit_context)
+		edit_context = std::make_unique<MapEditContext>();
+
+	return *edit_context;
 }
 
 MapTextureManager& MapEditor::textureManager()
@@ -36,7 +39,7 @@ MapEditorWindow* MapEditor::window()
 	if (!map_window)
 		init();
 
-	return map_window;
+	return map_window.get();
 }
 
 wxWindow* MapEditor::windowWx()
@@ -44,7 +47,7 @@ wxWindow* MapEditor::windowWx()
 	if (!map_window)
 		init();
 
-	return map_window;
+	return map_window.get();
 }
 
 MapBackupManager& MapEditor::backupManager()
@@ -54,7 +57,7 @@ MapBackupManager& MapEditor::backupManager()
 
 void MapEditor::init()
 {
-	map_window = new MapEditorWindow();
+	map_window = std::make_unique<MapEditorWindow>();
 	texture_manager.init();
 }
 
@@ -75,6 +78,11 @@ bool MapEditor::chooseMap(Archive* archive)
 void MapEditor::setUndoManager(UndoManager* manager)
 {
 	map_window->setUndoManager(manager);
+}
+
+void ::MapEditor::setStatusText(const string &text)
+{
+	map_window->CallAfter(&MapEditorWindow::SetStatusText, text, 3);
 }
 
 void MapEditor::openObjectProperties(MapObject* object)
@@ -100,7 +108,7 @@ void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 string MapEditor::browseTexture(const string &init_texture, int tex_type, SLADEMap& map, const string& title)
 {
 	// Open texture browser
-	MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
+	MapTextureBrowser browser(map_window.get(), tex_type, init_texture, &map);
 	browser.SetTitle(title);
 
 	// Return selected texture if not cancelled
@@ -113,7 +121,7 @@ string MapEditor::browseTexture(const string &init_texture, int tex_type, SLADEM
 int MapEditor::browseThingType(int init_type, SLADEMap& map)
 {
 	// Open thing browser
-	ThingTypeBrowser browser(map_window, init_type);
+	ThingTypeBrowser browser(map_window.get(), init_type);
 
 	if (browser.ShowModal() == wxID_OK)
 		return browser.getSelectedType();
@@ -124,7 +132,7 @@ int MapEditor::browseThingType(int init_type, SLADEMap& map)
 bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 {
 	string selsize = "";
-	string type = edit_context.modeString(false);
+	string type = edit_context->modeString(false);
 	if (list.size() == 1)
 		type += S_FMT(" #%d", list[0]->getIndex());
 	else if (list.size() > 1)
@@ -134,7 +142,7 @@ bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 	SDialog dlg(
 		MapEditor::window(),
 		S_FMT("%s Properties %s", type, selsize),
-		S_FMT("mobjprops_%s", CHR(edit_context.modeString(false))),
+		S_FMT("mobjprops_%s", CHR(edit_context->modeString(false))),
 		-1,
 		-1
 	);
@@ -143,7 +151,7 @@ bool MapEditor::editObjectProperties(vector<MapObject*>& list)
 
 	// Create properties panel
 	PropsPanelBase* panel_props = nullptr;
-	switch (edit_context.editMode())
+	switch (edit_context->editMode())
 	{
 	case Mode::Lines:
 		sizer->Add(panel_props = new LinePropsPanel(&dlg), 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10); break;
