@@ -395,11 +395,12 @@ void MapCanvas::drawMap2d()
 	}
 
 	// Draw animations
-	for (unsigned a = 0; a < animations.size(); a++)
+	editor->renderer().drawAnimations();
+	/*for (unsigned a = 0; a < animations.size(); a++)
 	{
 		if (!animations[a]->mode3d())
 			animations[a]->draw();
-	}
+	}*/
 
 	// Draw paste objects if needed
 	if (mouse_state == Input::MouseState::Paste)
@@ -472,7 +473,15 @@ void MapCanvas::drawMap3d()
 				anim_info_show = false;
 
 			// Animation
-			animations.push_back(
+			editor->renderer().addAnimation(
+				std::make_unique<MCAHilightFade3D>(
+					App::runTimer(),
+					old_hl.index,
+					old_hl.type,
+					&editor->renderer().renderer3D(),
+					anim_flash_level
+			));
+			/*animations.push_back(
 				new MCAHilightFade3D(
 					App::runTimer(),
 					old_hl.index,
@@ -480,7 +489,7 @@ void MapCanvas::drawMap3d()
 					&editor->renderer().renderer3D(),
 					anim_flash_level
 				)
-			);
+			);*/
 			anim_flash_inc = true;
 			anim_flash_level = 0.0f;
 		}
@@ -497,11 +506,12 @@ void MapCanvas::drawMap3d()
 		editor->renderer().renderer3D().renderHilight(hl, anim_flash_level);
 
 	// Draw animations
-	for (unsigned a = 0; a < animations.size(); a++)
+	editor->renderer().drawAnimations();
+	/*for (unsigned a = 0; a < animations.size(); a++)
 	{
 		if (animations[a]->mode3d())
 			animations[a]->draw();
-	}
+	}*/
 }
 
 /* MapCanvas::draw
@@ -673,9 +683,16 @@ bool MapCanvas::update2d(double mult)
 		{
 			// Hilight fade animation
 			if (old_hl)
-				animations.push_back(
-					new MCAHilightFade(App::runTimer(), old_hl, &editor->renderer().renderer2D(), anim_flash_level)
-				);
+				editor->renderer().addAnimation(
+					std::make_unique<MCAHilightFade>(
+						App::runTimer(),
+						old_hl,
+						&editor->renderer().renderer2D(),
+						anim_flash_level
+				));
+				//animations.push_back(
+				//	new MCAHilightFade(App::runTimer(), old_hl, &editor->renderer().renderer2D(), anim_flash_level)
+				//);
 
 			// Reset hilight flash
 			anim_flash_inc = true;
@@ -959,24 +976,25 @@ void MapCanvas::update(long frametime)
 		editor->currentOverlay()->update(frametime);
 
 	// Update animations
-	bool anim_running = false;
-	for (unsigned a = 0; a < animations.size(); a++)
-	{
-		if (!animations[a]->update(App::runTimer()))
-		{
-			// If animation is finished, delete and remove from the list
-			delete animations[a];
-			animations.erase(animations.begin() + a);
-			a--;
-		}
-		else
-			anim_running = true;
-	}
+	editor->renderer().updateAnimations();
+	//bool anim_running = false;
+	//for (unsigned a = 0; a < animations.size(); a++)
+	//{
+	//	if (!animations[a]->update(App::runTimer()))
+	//	{
+	//		// If animation is finished, delete and remove from the list
+	//		delete animations[a];
+	//		animations.erase(animations.begin() + a);
+	//		a--;
+	//	}
+	//	else
+	//		anim_running = true;
+	//}
 
 	// Determine the framerate limit
 #ifdef USE_SFML_RENDERWINDOW
 	// SFML RenderWindow can handle high framerates better than wxGLCanvas, or something like that
-	if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
+	if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || editor->renderer().animationsActive())
 		fr_idle = 2;
 	else	// No high-priority animations running, throttle framerate
 		fr_idle = map_bg_ms;
@@ -1061,122 +1079,6 @@ void MapCanvas::mouseLook3d()
 			}
 		}
 	}
-}
-
-/* MapCanvas::animateSelectionChange
- * Animates the (de)selection of [item], depending on [selected]
- *******************************************************************/
-void MapCanvas::animateSelectionChange(const MapEditor::Item& item, bool selected)
-{
-	using MapEditor::ItemType;
-
-	// 3d mode wall
-	if (MapEditor::baseItemType(item.type) == ItemType::Side)
-	{
-		// Get quad
-		auto quad = editor->renderer().renderer3D().getQuad(item);
-
-		if (quad)
-		{
-			// Get quad points
-			fpoint3_t points[4];
-			for (unsigned a = 0; a < 4; a++)
-				points[a].set(quad->points[a].x, quad->points[a].y, quad->points[a].z);
-
-			// Start animation
-			animations.push_back(new MCA3dWallSelection(App::runTimer(), points, selected));
-		}
-	}
-
-	// 3d mode flat
-	else if (item.type == ItemType::Ceiling || item.type == ItemType::Floor)
-	{
-		// Get flat
-		auto flat = editor->renderer().renderer3D().getFlat(item);
-
-		// Start animation
-		if (flat)
-			animations.push_back(
-				new MCA3dFlatSelection(
-					App::runTimer(),
-					flat->sector,
-					flat->plane,
-					selected
-				)
-			);
-	}
-
-	// 2d mode thing
-	else if (item.type == ItemType::Thing)
-	{
-		// Get thing
-		MapThing* t = editor->map().getThing(item.index);
-		if (!t) return;
-
-		// Get thing type
-		ThingType* tt = theGameConfiguration->thingType(t->getType());
-
-		// Start animation
-		double radius = tt->getRadius();
-		if (tt->shrinkOnZoom()) radius = editor->renderer().renderer2D().scaledRadius(radius);
-		animations.push_back(
-			new MCAThingSelection(
-				App::runTimer(),
-				t->xPos(),
-				t->yPos(),
-				radius,
-				editor->renderer().renderer2D().viewScaleInv(),
-				selected
-			)
-		);
-	}
-
-	// 2d mode line
-	else if (item.type == ItemType::Line)
-	{
-		// Get line
-		vector<MapLine*> vec;
-		vec.push_back(editor->map().getLine(item.index));
-
-		// Start animation
-		animations.push_back(new MCALineSelection(App::runTimer(), vec, selected));
-	}
-
-	// 2d mode vertex
-	else if (item.type == ItemType::Vertex)
-	{
-		// Get vertex
-		vector<MapVertex*> verts;
-		verts.push_back(editor->map().getVertex(item.index));
-
-		// Determine current vertex size
-		float vs = vertex_size;
-		if (editor->renderer().viewScale() < 1.0) vs *= editor->renderer().viewScale();
-		if (vs < 2.0) vs = 2.0;
-
-		// Start animation
-		animations.push_back(new MCAVertexSelection(App::runTimer(), verts, vs, selected));
-	}
-
-	// 2d mode sector
-	else if (item.type == ItemType::Sector)
-	{
-		// Get sector polygon
-		vector<Polygon2D*> polys;
-		polys.push_back(editor->map().getSector(item.index)->getPolygon());
-
-		// Start animation
-		animations.push_back(new MCASectorSelection(App::runTimer(), polys, selected));
-	}
-}
-
-/* MapCanvas::animateSelectionChange
- * Animates the last selection change from [selection]
- *******************************************************************/
-void MapCanvas::animateSelectionChange(const ItemSelection &selection)
-{
-	for (auto& change : selection.lastChange())
-		animateSelectionChange(change.first, change.second);
 }
 
 /* MapCanvas::updateInfoOverlay
@@ -1980,7 +1882,13 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 			);
 
 			// Begin selection box fade animation
-			animations.push_back(new MCASelboxFader(App::runTimer(), mouse_downpos_m, editor->input().mousePosMap()));
+			editor->renderer().addAnimation(
+				std::make_unique<MCASelboxFader>(
+					App::runTimer(),
+					mouse_downpos_m,
+					editor->input().mousePosMap()
+			));
+			//animations.push_back(new MCASelboxFader(App::runTimer(), mouse_downpos_m, editor->input().mousePosMap()));
 		}
 
 		// If we're in object edit mode

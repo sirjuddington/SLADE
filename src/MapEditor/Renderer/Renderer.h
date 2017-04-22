@@ -108,8 +108,10 @@ namespace MapEditor
 		void	drawLineDrawLines(bool snap_nearest_vertex) const;
 		void	drawPasteLines() const;
 		void	drawObjectEdit() const;
+		void	drawAnimations() const;
 		//void	drawMap2d();
 		//void	drawMap3d();
+		//void	draw();
 
 		// MapCanvas migration
 		// TODO: Remove these once MapCanvas split complete
@@ -121,7 +123,12 @@ namespace MapEditor
 		int		screenX(double x) const { return view_.screenX(x); }
 		int		screenY(double y) const { return view_.screenY(y); }
 
-		void	draw();
+		// Animation
+		bool	animationsActive() const;
+		void	updateAnimations();
+		void	animateSelectionChange(const MapEditor::Item& item, bool selected = true);
+		void	animateSelectionChange(const ItemSelection &selection);
+		void	addAnimation(std::unique_ptr<MCAnimation> animation);
 
 	private:
 		MapEditContext&	context_;
@@ -129,7 +136,7 @@ namespace MapEditor
 		MapRenderer3D	renderer_3d_;
 		RenderView		view_;
 
-		// Full-screen overlay
-		MCOverlay*  overlay_current_;
+		// Animation
+		vector<std::unique_ptr<MCAnimation>>	animations_;
 	};
 }

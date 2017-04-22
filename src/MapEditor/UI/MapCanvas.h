@@ -13,7 +13,6 @@
 #include "UI/Canvas/OGLCanvas.h"
 #include "MapEditor/MapEditContext.h"
 
-class MCAnimation;
 class MapSide;
 class ThingType;
 class GLTexture;
@@ -22,7 +21,6 @@ class MapCanvas : public OGLCanvas, public KeyBindHandler, public SActionHandler
 {
 private:
 	MapEditContext*			editor;
-	vector<MCAnimation*>	animations;
 	int						frametime_last;
 	vector<int>				fps_avg;
 	int						fr_idle;
@@ -83,8 +81,6 @@ public:
 	void	lockMouse(bool lock);
 	void	mouseLook3d();
 
-	void	animateSelectionChange(const MapEditor::Item& item, bool selected = true);
-	void 	animateSelectionChange(const ItemSelection& selection);
 	void	updateInfoOverlay();
 	void	forceRefreshRenderer();
 

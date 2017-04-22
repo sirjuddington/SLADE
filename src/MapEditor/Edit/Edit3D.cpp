@@ -788,8 +788,7 @@ void Edit3D::copy(CopyType type)
 	}
 
 	// Flash
-	if (context_.canvas())
-		context_.canvas()->animateSelectionChange(hl);
+	context_.renderer().animateSelectionChange(hl);
 
 	// Editor message
 	if (type == CopyType::TexType)

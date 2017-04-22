@@ -93,7 +93,7 @@ MapEditContext::MapEditContext() :
 	player_start_dir_(0),
 	renderer_(*this),
 	input_(*this),
-    overlay_current_(nullptr)
+	overlay_current_(nullptr)
 {
 }
 
@@ -576,8 +576,7 @@ void MapEditContext::selectionUpdated()
 
 	last_undo_level_ = "";
 
-	if (canvas_)
-		canvas_->animateSelectionChange(selection_);
+	renderer_.animateSelectionChange(selection_);
 
 	updateStatusText();
 }
@@ -1687,8 +1686,7 @@ void MapEditContext::createSector(double x, double y)
 		builder.createSector(nullptr, sector_copy);
 
 		// Flash
-		if (canvas_)
-			canvas_->animateSelectionChange({ (int)map_.nSectors() - 1, MapEditor::ItemType::Sector });
+		renderer_.animateSelectionChange({ (int)map_.nSectors() - 1, MapEditor::ItemType::Sector });
 	}
 
 	// Set some sector defaults from game configuration if needed

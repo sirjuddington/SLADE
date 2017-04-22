@@ -152,41 +152,38 @@ bool RenderView::interpolate(double mult, const fpoint2_t* towards)
 	else
 		scale_inter_ = scale_;
 
-	//if (!towards)
+	// X offset
+	double diff_xoff = offset_.x - offset_inter_.x;
+	if (diff_xoff < -0.05 || diff_xoff > 0.05)
 	{
-		// X offset
-		double diff_xoff = offset_.x - offset_inter_.x;
-		if (diff_xoff < -0.05 || diff_xoff > 0.05)
-		{
-			// Interpolate offset
-			offset_inter_.x += diff_xoff*mult;
+		// Interpolate offset
+		offset_inter_.x += diff_xoff*mult;
 
-			// Check stuff
-			if ((diff_xoff < 0 && offset_inter_.x < offset_.x) ||
-				(diff_xoff > 0 && offset_inter_.x > offset_.x))
-				offset_inter_.x = offset_.x;
-			else
-				interpolating = true;
-		}
-		else
+		// Check stuff
+		if ((diff_xoff < 0 && offset_inter_.x < offset_.x) ||
+			(diff_xoff > 0 && offset_inter_.x > offset_.x))
 			offset_inter_.x = offset_.x;
-
-		// Y offset
-		double diff_yoff = offset_.y - offset_inter_.y;
-		if (diff_yoff < -0.05 || diff_yoff > 0.05)
-		{
-			// Interpolate offset
-			offset_inter_.y += diff_yoff*mult;
-
-			if ((diff_yoff < 0 && offset_inter_.y < offset_.y) ||
-				(diff_yoff > 0 && offset_inter_.y > offset_.y))
-				offset_inter_.y = offset_.y;
-			else
-				interpolating = true;
-		}
 		else
-			offset_inter_.y = offset_.y;
+			interpolating = true;
 	}
+	else
+		offset_inter_.x = offset_.x;
+
+	// Y offset
+	double diff_yoff = offset_.y - offset_inter_.y;
+	if (diff_yoff < -0.05 || diff_yoff > 0.05)
+	{
+		// Interpolate offset
+		offset_inter_.y += diff_yoff*mult;
+
+		if ((diff_yoff < 0 && offset_inter_.y < offset_.y) ||
+			(diff_yoff > 0 && offset_inter_.y > offset_.y))
+			offset_inter_.y = offset_.y;
+		else
+			interpolating = true;
+	}
+	else
+		offset_inter_.y = offset_.y;
 
 	return interpolating;
 }
@@ -1103,4 +1100,169 @@ void Renderer::drawObjectEdit() const
 		view_.setOverlayCoords(false);
 		glDisable(GL_TEXTURE_2D);
 	}
+}
+
+/* Renderer::drawAnimations
+ * Draws all MCAnimations for the current edit mode
+ *******************************************************************/
+void Renderer::drawAnimations() const
+{
+	auto mode = context_.editMode();
+	for (auto& animation : animations_)
+	{
+		if ((mode == Mode::Visual && animation->mode3d()) ||
+			(mode != Mode::Visual && !animation->mode3d()))
+			animation->draw();
+	}
+}
+
+/* Renderer::animationsActive
+ * Returns true if any animations are currently active
+ *******************************************************************/
+bool Renderer::animationsActive() const
+{
+	return !animations_.empty();
+}
+
+/* Renderer::updateAnimations
+ * Updates all currently active animations
+ *******************************************************************/
+void Renderer::updateAnimations()
+{
+	bool anim_running = false;
+	for (unsigned a = 0; a < animations_.size(); a++)
+	{
+		if (!animations_[a]->update(App::runTimer()))
+		{
+			// If animation is finished, remove it from the list
+			animations_.erase(animations_.begin() + a);
+			a--;
+		}
+		else
+			anim_running = true;
+	}
+}
+
+/* Renderer::animateSelectionChange
+ * Animates the (de)selection of [item], depending on [selected]
+ *******************************************************************/
+void Renderer::animateSelectionChange(const MapEditor::Item& item, bool selected)
+{
+	using MapEditor::ItemType;
+
+	// 3d mode wall
+	if (MapEditor::baseItemType(item.type) == ItemType::Side)
+	{
+		// Get quad
+		auto quad = renderer_3d_.getQuad(item);
+
+		if (quad)
+		{
+			// Get quad points
+			fpoint3_t points[4];
+			for (unsigned a = 0; a < 4; a++)
+				points[a].set(quad->points[a].x, quad->points[a].y, quad->points[a].z);
+
+			// Start animation
+			animations_.push_back(std::make_unique<MCA3dWallSelection>(App::runTimer(), points, selected));
+		}
+	}
+
+	// 3d mode flat
+	else if (item.type == ItemType::Ceiling || item.type == ItemType::Floor)
+	{
+		// Get flat
+		auto flat = renderer_3d_.getFlat(item);
+
+		// Start animation
+		if (flat)
+			animations_.push_back(
+				std::make_unique<MCA3dFlatSelection>(
+					App::runTimer(),
+					flat->sector,
+					flat->plane,
+					selected
+				)
+			);
+	}
+
+	// 2d mode thing
+	else if (item.type == ItemType::Thing)
+	{
+		// Get thing
+		auto t = context_.map().getThing(item.index);
+		if (!t) return;
+
+		// Get thing type
+		auto tt = theGameConfiguration->thingType(t->getType());
+
+		// Start animation
+		double radius = tt->getRadius();
+		if (tt->shrinkOnZoom()) radius = context_.renderer().renderer2D().scaledRadius(radius);
+		animations_.push_back(
+			std::make_unique<MCAThingSelection>(
+				App::runTimer(),
+				t->xPos(),
+				t->yPos(),
+				radius,
+				context_.renderer().renderer2D().viewScaleInv(),
+				selected
+			)
+		);
+	}
+
+	// 2d mode line
+	else if (item.type == ItemType::Line)
+	{
+		// Get line
+		vector<MapLine*> vec;
+		vec.push_back(context_.map().getLine(item.index));
+
+		// Start animation
+		animations_.push_back(std::make_unique<MCALineSelection>(App::runTimer(), vec, selected));
+	}
+
+	// 2d mode vertex
+	else if (item.type == ItemType::Vertex)
+	{
+		// Get vertex
+		vector<MapVertex*> verts;
+		verts.push_back(context_.map().getVertex(item.index));
+
+		// Determine current vertex size
+		float vs = vertex_size;
+		if (context_.renderer().viewScale() < 1.0) vs *= context_.renderer().viewScale();
+		if (vs < 2.0) vs = 2.0;
+
+		// Start animation
+		animations_.push_back(std::make_unique<MCAVertexSelection>(App::runTimer(), verts, vs, selected));
+	}
+
+	// 2d mode sector
+	else if (item.type == ItemType::Sector)
+	{
+		// Get sector polygon
+		vector<Polygon2D*> polys;
+		polys.push_back(context_.map().getSector(item.index)->getPolygon());
+
+		// Start animation
+		animations_.push_back(std::make_unique<MCASectorSelection>(App::runTimer(), polys, selected));
+	}
+}
+
+/* Renderer::animateSelectionChange
+ * Animates the last selection change from [selection]
+ *******************************************************************/
+void Renderer::animateSelectionChange(const ItemSelection &selection)
+{
+	for (auto& change : selection.lastChange())
+		animateSelectionChange(change.first, change.second);
+}
+
+/* Renderer::addAnimation
+ * Adds [animation] to the list of active animations
+ *******************************************************************/
+void Renderer::addAnimation(std::unique_ptr<MCAnimation> animation)
+{
+	animations_.push_back(std::move(animation));
 }
