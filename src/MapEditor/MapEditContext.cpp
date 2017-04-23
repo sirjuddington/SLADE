@@ -51,6 +51,7 @@
 
 using MapEditor::Mode;
 using MapEditor::SectorMode;
+using namespace MapEditor;
 
 
 /*******************************************************************
@@ -61,6 +62,9 @@ CVAR(Bool, map_merge_undo_step, true, CVAR_SAVE)
 CVAR(Bool, map_remove_invalid_lines, false, CVAR_SAVE)
 CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVAR_SAVE)
 CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
+CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
+CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
+CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
 
 
 /*******************************************************************
@@ -71,29 +75,30 @@ CVAR(Bool, selection_clear_move, true, CVAR_SAVE)
  * MapEditContext class constructor
  *******************************************************************/
 MapEditContext::MapEditContext() :
-	canvas_(nullptr),
-	undo_manager_(new UndoManager(&map_)),
-	us_create_delete_(nullptr),
-	edit_mode_(Mode::Lines),
-	selection_(this),
-	grid_size_(9),
-	sector_mode_(SectorMode::Both),
-	grid_snap_(true),
-	current_tag_(0),
-	undo_modified_(false),
-	undo_created_(false),
-	undo_deleted_(false),
-	move_item_closest_(0),
-	line_draw_(*this),
-	edit_3d_(*this),
-	object_edit_(*this),
-	copy_thing_(nullptr),
-	copy_sector_(nullptr),
-	copy_line_(nullptr),
-	player_start_dir_(0),
-	renderer_(*this),
-	input_(*this),
-	overlay_current_(nullptr)
+	canvas_{nullptr},
+	next_frame_length_{0},
+	undo_manager_{new UndoManager{&map_}},
+	us_create_delete_{nullptr},
+	edit_mode_{Mode::Lines},
+	selection_{this},
+	grid_size_{9},
+	sector_mode_{SectorMode::Both},
+	grid_snap_{true},
+	current_tag_{0},
+	undo_modified_{false},
+	undo_created_{false},
+	undo_deleted_{false},
+	move_item_closest_{0},
+	line_draw_{*this},
+	edit_3d_{*this},
+	object_edit_{*this},
+	copy_thing_{nullptr},
+	copy_sector_{nullptr},
+	copy_line_{nullptr},
+	player_start_dir_{0},
+	renderer_{*this},
+	input_{*this},
+	overlay_current_{nullptr}
 {
 }
 
@@ -258,6 +263,90 @@ void MapEditContext::cycleSectorEditMode()
 	}
 }
 
+bool MapEditContext::update(long frametime)
+{
+	// Ignore if we aren't ready to update
+	if (frametime < next_frame_length_)
+		return false;
+
+	// Set initial time (ms) until next update
+	// This will be set lower if animations are active
+	next_frame_length_ = overlayActive() ? 2 : map_bg_ms;
+
+	// Get frame time multiplier
+	double mult = (double)frametime / 10.0f;
+
+	// 3d mode
+	if (edit_mode_ == Mode::Visual && !overlayActive())
+	{
+		// Update camera
+		if (input_.updateCamera3d(mult))
+			next_frame_length_ = 2;
+
+		// Update status bar
+		auto pos = renderer_.renderer3D().camPosition();
+		MapEditor::setStatusText(S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z));
+		
+		// Update hilight
+		MapEditor::Item hl{ -1, MapEditor::ItemType::Any };
+		if (!selection_.hilightLocked())
+		{
+			auto old_hl = selection_.hilight();
+			hl = renderer_.renderer3D().determineHilight();
+			if (selection_.setHilight(hl))
+			{
+				// Update 3d info overlay
+				if (info_overlay_3d && hl.index >= 0)
+				{
+					info_3d_.update(hl.index, hl.type, &map_);
+					info_showing_ = true;
+				}
+				else
+					info_showing_ = false;
+
+				// Animation
+				renderer_.animateHilightChange(old_hl);
+			}
+		}
+	}
+
+	// 2d mode
+	else
+	{
+		// Update hilight if needed
+		auto prev_hl = selection_.hilight();
+		if (input_.mouseState() == Input::MouseState::Normal/* && !mouse_movebegin*/)
+		{
+			auto old_hl = selection_.hilightedObject();
+			if (selection_.updateHilight(input_.mousePosMap(), renderer_.view().scale()) && hilight_smooth)
+				renderer_.animateHilightChange({}, old_hl);
+		}
+
+		// Do item moving if needed
+		if (input_.mouseState() == Input::MouseState::Move)
+			doMove(input_.mousePosMap());
+
+		// Check if we have to update the info overlay
+		if (selection_.hilight() != prev_hl)
+		{
+			// Update info overlay depending on edit mode
+			updateInfoOverlay();
+			info_showing_ = selection_.hasHilight();
+		}
+	}
+
+	// Update overlay animation (if active)
+	if (overlayActive())
+		overlay_current_->update(frametime);
+
+	// Update animations
+	renderer_.updateAnimations(mult);
+	if (renderer_.animationsActive())
+		next_frame_length_ = 2;
+
+	return true;
+}
+
 /* MapEditContext::openMap
  * Opens [map]
  *******************************************************************/
@@ -291,7 +380,7 @@ bool MapEditContext::openMap(Archive::mapdesc_t map)
 			renderer_.setCameraThing(pstart);
 
 		// Reset rendering data
-		canvas_->forceRefreshRenderer();
+		forceRefreshRenderer();
 	}
 
 	edit_3d_.setLinked(true, true);
@@ -383,6 +472,24 @@ void MapEditContext::updateThingLists()
 void MapEditContext::setCursor(UI::MouseCursor cursor) const
 {
 	UI::setCursor(canvas_, cursor);
+}
+
+/* MapEditContext::forceRefreshRenderer
+ * Forces a full refresh of the 2d/3d renderers
+ *******************************************************************/
+void MapEditContext::forceRefreshRenderer()
+{
+	// Update 3d mode info overlay if needed
+	if (edit_mode_ == Mode::Visual)
+	{
+		auto hl = renderer_.renderer3D().determineHilight();
+		info_3d_.update(hl.index, hl.type, &map_);
+	}
+
+	if (!canvas_->setActive())
+		return;
+
+	renderer_.forceUpdate();
 }
 
 /* MapEditContext::updateTagged
@@ -1409,7 +1516,7 @@ void MapEditContext::editObjectProperties()
 	bool done = MapEditor::editObjectProperties(selection);
 	if (done)
 	{
-		renderer_.renderer2D().forceUpdate(canvas_->lineFadeLevel());
+		renderer_.forceUpdate();
 		updateDisplay();
 
 		if (edit_mode_ == Mode::Things)
@@ -2378,7 +2485,7 @@ void MapEditContext::updateDisplay()
 	// Update canvas info overlay
 	if (canvas_)
 	{
-		canvas_->updateInfoOverlay();
+		updateInfoOverlay();
 		canvas_->Refresh();
 	}
 }
@@ -2692,10 +2799,43 @@ void MapEditContext::openLineTextureOverlay()
 	}
 }
 
-void MapEditContext::closeCurrentOverlay(bool cancel)
+void MapEditContext::closeCurrentOverlay(bool cancel) const
 {
 	if (overlay_current_ && overlay_current_->isActive())
 		overlay_current_->close(cancel);
+}
+
+/* MapEditContext::updateInfoOverlay
+ * Updates the current info overlay, depending on edit mode
+ *******************************************************************/
+void MapEditContext::updateInfoOverlay()
+{
+	// Update info overlay depending on edit mode
+	switch (edit_mode_)
+	{
+	case Mode::Vertices:	info_vertex_.update(selection_.hilightedVertex()); break;
+	case Mode::Lines:		info_line_.update(selection_.hilightedLine()); break;
+	case Mode::Sectors:		info_sector_.update(selection_.hilightedSector()); break;
+	case Mode::Things:		info_thing_.update(selection_.hilightedThing()); break;
+	default: break;
+	}
+}
+
+void MapEditContext::drawInfoOverlay(const point2_t& size, float alpha)
+{
+	switch (edit_mode_)
+	{
+	case Mode::Vertices:
+		info_vertex_.draw(size.y, size.x, alpha); return;
+	case Mode::Lines:
+		info_line_.draw(size.y, size.x, alpha); return;
+	case Mode::Sectors:
+		info_sector_.draw(size.y, size.x, alpha); return;
+	case Mode::Things:
+		info_thing_.draw(size.y, size.x, alpha); return;
+	case Mode::Visual:
+		info_3d_.draw(size.y, size.x, size.x * 0.5, alpha); return;
+	}
 }
 
 

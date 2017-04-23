@@ -1,4 +1,32 @@
 
+/*******************************************************************
+ * SLADE - It's a Doom Editor
+ * Copyright (C) 2008-2014 Simon Judd
+ *
+ * Email:       sirjuddington@gmail.com
+ * Web:         http://slade.mancubus.net
+ * Filename:    Input.cpp
+ * Description: Input class - handles input for the map editor
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *******************************************************************/
+
+
+/*******************************************************************
+ * INCLUDES
+ *******************************************************************/
 #include "Main.h"
 #include "Input.h"
 #include "MapEditor/MapEditContext.h"
@@ -11,6 +39,10 @@
 
 using namespace MapEditor;
 
+
+/*******************************************************************
+ * EXTERNAL VARIABLES
+ *******************************************************************/
 EXTERN_CVAR(Bool, selection_clear_click)
 EXTERN_CVAR(Int, flat_drawtype)
 EXTERN_CVAR(Bool, map_show_selection_numbers)
@@ -21,6 +53,11 @@ EXTERN_CVAR(Int, render_3d_things_style)
 EXTERN_CVAR(Int, render_3d_hilight)
 EXTERN_CVAR(Bool, info_overlay_3d)
 
+
+/*******************************************************************
+ * INPUT CLASS FUNCTIONS
+ *******************************************************************/
+
 Input::Input(MapEditContext& context) :
 	context_{context},
 	panning_{false},
@@ -28,6 +65,7 @@ Input::Input(MapEditContext& context) :
 	mouse_pos_{0, 0},
 	mouse_down_pos_{-1, -1},
 	mouse_drag_{DragType::None},
+	mouse_wheel_speed_{0},
 	shift_down_{false},
 	ctrl_down_{false},
 	alt_down_{false}
@@ -37,7 +75,7 @@ Input::Input(MapEditContext& context) :
 void Input::mouseMove(int new_x, int new_y)
 {
 	mouse_pos_ = { new_x, new_y };
-	mouse_pos_map_ = context_.renderer().mapPos(mouse_pos_);
+	mouse_pos_map_ = context_.renderer().view().mapPos(mouse_pos_);
 }
 
 void Input::mouseDown()
@@ -142,7 +180,7 @@ void Input::onKeyBindRelease(string name)
 	{
 		panning_ = false;
 		if (mouse_state_ == MouseState::Normal)
-			context_.selection().updateHilight(mouse_pos_map_, context_.renderer().viewScale());
+			context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
 		context_.setCursor(UI::MouseCursor::Normal);
 	}
 
@@ -150,7 +188,7 @@ void Input::onKeyBindRelease(string name)
 	{
 		mouse_state_ = MouseState::Normal;
 		context_.endUndoRecord(true);
-		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().viewScale());
+		context_.selection().updateHilight(mouse_pos_map_, context_.renderer().view().scale());
 	}
 }
 
@@ -158,19 +196,19 @@ void Input::handleKeyBind2dView(const string& name)
 {
 	// Pan left
 	if (name == "me2d_left")
-		context_.renderer().pan(-128 / context_.renderer().viewScale(), 0);
+		context_.renderer().pan(-128, 0, true);
 
 	// Pan right
 	else if (name == "me2d_right")
-		context_.renderer().pan(128 / context_.renderer().viewScale(), 0);
+		context_.renderer().pan(128, 0, true);
 
 	// Pan up
 	else if (name == "me2d_up")
-		context_.renderer().pan(0, 128 / context_.renderer().viewScale());
+		context_.renderer().pan(0, 128, true);
 
 	// Pan down
 	else if (name == "me2d_down")
-		context_.renderer().pan(0, -128 / context_.renderer().viewScale());
+		context_.renderer().pan(0, -128, true);
 
 	// Zoom out
 	else if (name == "me2d_zoom_out")
@@ -406,7 +444,7 @@ void Input::handleKeyBind2d(const string& name)
 
 		// Split line
 		else if (name == "me2d_split_line")
-			context_.splitLine(context_.input().mousePosMap().x, context_.input().mousePosMap().y, 16 / context_.renderer().viewScale());
+			context_.splitLine(context_.input().mousePosMap().x, context_.input().mousePosMap().y, 16 / context_.renderer().view().scale());
 
 		// Begin line drawing
 		else if (name == "me2d_begin_linedraw")
@@ -665,4 +703,74 @@ void Input::handleKeyBind3d(const string& name)
 	// Send to map editor
 	else
 		context_.handleKeyBind(name, mouse_pos_map_);
+}
+
+bool Input::updateCamera3d(double mult)
+{
+	// --- Check for held-down keys ---
+	bool moving = false;
+	double speed = shift_down_ ? mult * 8 : mult * 4;
+	auto& r3d = context_.renderer().renderer3D();
+
+	// Camera forward
+	if (KeyBind::isPressed("me3d_camera_forward"))
+	{
+		r3d.cameraMove(speed, !camera_3d_gravity);
+		moving = true;
+	}
+
+	// Camera backward
+	if (KeyBind::isPressed("me3d_camera_back"))
+	{
+		r3d.cameraMove(-speed, !camera_3d_gravity);
+		moving = true;
+	}
+
+	// Camera left (strafe)
+	if (KeyBind::isPressed("me3d_camera_left"))
+	{
+		r3d.cameraStrafe(-speed);
+		moving = true;
+	}
+
+	// Camera right (strafe)
+	if (KeyBind::isPressed("me3d_camera_right"))
+	{
+		r3d.cameraStrafe(speed);
+		moving = true;
+	}
+
+	// Camera up
+	if (KeyBind::isPressed("me3d_camera_up"))
+	{
+		r3d.cameraMoveUp(speed);
+		moving = true;
+	}
+
+	// Camera down
+	if (KeyBind::isPressed("me3d_camera_down"))
+	{
+		r3d.cameraMoveUp(-speed);
+		moving = true;
+	}
+
+	// Camera turn left
+	if (KeyBind::isPressed("me3d_camera_turn_left"))
+	{
+		r3d.cameraTurn(shift_down_ ? mult * 2 : mult);
+		moving = true;
+	}
+
+	// Camera turn right
+	if (KeyBind::isPressed("me3d_camera_turn_right"))
+	{
+		r3d.cameraTurn(shift_down_ ? -mult * 2 : -mult);
+		moving = true;
+	}
+
+	// Apply gravity to camera if needed
+	if (camera_3d_gravity)
+		r3d.cameraApplyGravity(mult);
+
+	return moving;
 }

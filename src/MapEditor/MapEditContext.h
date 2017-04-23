@@ -2,16 +2,21 @@
 #ifndef __MAP_EDITOR_H__
 #define __MAP_EDITOR_H__
 
-#include <General/UI.h>
 #include "Archive/Archive.h"
 #include "Edit/Edit3D.h"
+#include "Edit/Input.h"
 #include "Edit/LineDraw.h"
+#include "Edit/ObjectEdit.h"
+#include "General/UI.h"
 #include "ItemSelection.h"
 #include "MapEditor.h"
-#include "Edit/ObjectEdit.h"
-#include "SLADEMap/SLADEMap.h"
+#include "Renderer/Overlays/InfoOverlay3d.h"
+#include "Renderer/Overlays/LineInfoOverlay.h"
+#include "Renderer/Overlays/SectorInfoOverlay.h"
+#include "Renderer/Overlays/ThingInfoOverlay.h"
+#include "Renderer/Overlays/VertexInfoOverlay.h"
 #include "Renderer/Renderer.h"
-#include "Edit/Input.h"
+#include "SLADEMap/SLADEMap.h"
 
 
 namespace UI { enum class MouseCursor; }
@@ -57,6 +62,9 @@ public:
 	void	setSectorEditMode(MapEditor::SectorMode mode);
 	void 	cycleSectorEditMode();
 	void	setCanvas(MapCanvas* canvas) { this->canvas_ = canvas; }
+
+	// General
+	bool	update(long frametime);
 
 	// Map loading
 	bool	openMap(Archive::mapdesc_t map);
@@ -135,13 +143,16 @@ public:
 	void	doRedo();
 	void	resetLastUndoLevel() { last_undo_level_ = ""; }
 
-	// Full-Screen Overlay
-	MCOverlay*	currentOverlay() { return overlay_current_; }
+	// Overlays
+	MCOverlay*	currentOverlay() const { return overlay_current_; }
 	bool		overlayActive();
-	void 		closeCurrentOverlay(bool cancel = false);
+	void 		closeCurrentOverlay(bool cancel = false) const;
 	void		openSectorTextureOverlay(vector<MapSector*>& sectors);
 	void 		openQuickTextureOverlay();
 	void 		openLineTextureOverlay();
+	bool		infoOverlayActive() const { return info_showing_; }
+	void		updateInfoOverlay();
+	void		drawInfoOverlay(const point2_t& size, float alpha);
 
 	// Player start swapping
 	void	swapPlayerStart3d();
@@ -155,11 +166,13 @@ public:
 	void	updateStatusText();
 	void	updateThingLists();
 	void	setCursor(UI::MouseCursor cursor) const;
+	void	forceRefreshRenderer();
 
 private:
 	SLADEMap			map_;
 	MapCanvas*			canvas_;
 	Archive::mapdesc_t	map_desc_;
+	long				next_frame_length_;
 
 	// Undo/Redo stuff
 	UndoManager*	undo_manager_;
@@ -226,6 +239,14 @@ private:
 
 	// Full-Screen Overlay
 	MCOverlay*  overlay_current_;
+
+	// Info overlays
+	bool				info_showing_;
+	VertexInfoOverlay	info_vertex_;
+	LineInfoOverlay		info_line_;
+	SectorInfoOverlay	info_sector_;
+	ThingInfoOverlay	info_thing_;
+	InfoOverlay3D		info_3d_;
 };
 
 #endif//__MAP_EDITOR_H__

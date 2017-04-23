@@ -1443,6 +1443,9 @@
     <ClCompile Include="..\..\src\MapEditor\Edit\ObjectEdit.cpp">
       <Filter>Map Editor\Edit</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MapEditor\Renderer\RenderView.cpp">
+      <Filter>Map Editor\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2494,6 +2497,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\MapEditor\Edit\ObjectEdit.h">
       <Filter>Map Editor\Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\MapEditor\Renderer\RenderView.h">
+      <Filter>Map Editor\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

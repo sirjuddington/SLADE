@@ -1346,6 +1346,7 @@
     <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\ThingInfoOverlay.cpp" />
     <ClCompile Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.cpp" />
     <ClCompile Include="..\..\src\MapEditor\Renderer\Renderer.cpp" />
+    <ClCompile Include="..\..\src\MapEditor\Renderer\RenderView.cpp" />
     <ClCompile Include="..\..\src\MapEditor\SectorBuilder.cpp" />
     <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapLine.cpp" />
     <ClCompile Include="..\..\src\MapEditor\SLADEMap\MapObject.cpp" />
@@ -1813,6 +1814,7 @@
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\ThingInfoOverlay.h" />
     <ClInclude Include="..\..\src\MapEditor\Renderer\Overlays\VertexInfoOverlay.h" />
     <ClInclude Include="..\..\src\MapEditor\Renderer\Renderer.h" />
+    <ClInclude Include="..\..\src\MapEditor\Renderer\RenderView.h" />
     <ClInclude Include="..\..\src\MapEditor\SectorBuilder.h" />
     <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapLine.h" />
     <ClInclude Include="..\..\src\MapEditor\SLADEMap\MapObject.h" />

@@ -978,7 +978,7 @@ void MapEditorWindow::forceRefresh(bool renderer)
 	if (!IsShown())
 		return;
 
-	if (renderer) map_canvas->forceRefreshRenderer();
+	if (renderer) MapEditor::editContext().forceRefreshRenderer();
 	map_canvas->Refresh();
 }
 
@@ -1039,7 +1039,7 @@ void MapEditorWindow::showObjectEditPanel(bool show, ObjectEditGroup* group)
 	wxAuiPaneInfo& p_inf = m_mgr->GetPane("object_edit");
 
 	// Save current y offset
-	double top = MapEditor::editContext().renderer().translateY(0);
+	double top = MapEditor::editContext().renderer().view().mapY(0);
 
 	// Enable/disable panel
 	if (show) panel_obj_edit->init(group);
@@ -1065,7 +1065,7 @@ void MapEditorWindow::showShapeDrawPanel(bool show)
 	wxAuiPaneInfo& p_inf = m_mgr->GetPane("shape_draw");
 
 	// Save current y offset
-	double top = MapEditor::editContext().renderer().translateY(0);
+	double top = MapEditor::editContext().renderer().view().mapY(0);
 
 	// Enable/disable panel
 	p_inf.Show(show);

@@ -31,9 +31,7 @@
 #include "Main.h"
 #include "App.h"
 #include "General/Clipboard.h"
-#include "General/ColourConfiguration.h"	
 #include "MapCanvas.h"
-#include "MapEditor/GameConfiguration/GameConfiguration.h"
 #include "MapEditor/Renderer/MapRenderer2D.h"
 #include "MapEditor/Renderer/MCAnimations.h"
 #include "MapEditor/Renderer/Overlays/MCOverlay.h"
@@ -56,29 +54,10 @@ using namespace MapEditor;
 /*******************************************************************
  * VARIABLES
  *******************************************************************/
-CVAR(Int, things_always, 2, CVAR_SAVE)
-CVAR(Int, vertices_always, 0, CVAR_SAVE)
-CVAR(Bool, line_tabs_always, 1, CVAR_SAVE)
-CVAR(Bool, flat_fade, 1, CVAR_SAVE)
-CVAR(Bool, line_fade, 0, CVAR_SAVE)
-CVAR(Bool, grid_dashed, false, CVAR_SAVE)
-CVAR(Bool, scroll_smooth, true, CVAR_SAVE)
 CVAR(Int, flat_drawtype, 2, CVAR_SAVE)
 CVAR(Bool, selection_clear_click, false, CVAR_SAVE)
 CVAR(Bool, property_edit_dclick, true, CVAR_SAVE)
-CVAR(Bool, map_showfps, false, CVAR_SAVE)
-CVAR(Bool, camera_3d_gravity, true, CVAR_SAVE)
-CVAR(Int, camera_3d_crosshair_size, 6, CVAR_SAVE)
-CVAR(Bool, camera_3d_show_distance, false, CVAR_SAVE)
-CVAR(Int, map_bg_ms, 15, CVAR_SAVE)
-CVAR(Bool, info_overlay_3d, true, CVAR_SAVE)
-CVAR(Bool, hilight_smooth, true, CVAR_SAVE)
-CVAR(Bool, map_show_help, true, CVAR_SAVE)
-CVAR(Int, map_crosshair, 0, CVAR_SAVE)
-CVAR(Bool, map_show_selection_numbers, true, CVAR_SAVE)
-CVAR(Int, map_max_selection_numbers, 1000, CVAR_SAVE)
 CVAR(Bool, mlook_invert_y, false, CVAR_SAVE)
-CVAR(Int, grid_64_style, 1, CVAR_SAVE)
 CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVAR_SAVE)
 CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVAR_SAVE)
 
@@ -109,23 +88,12 @@ MapCanvas::MapCanvas(wxWindow* parent, int id, MapEditContext* editor)
 	// Init variables
 	this->editor = editor;
 	editor->setCanvas(this);
-	last_hilight = -1;
-	anim_flash_level = 0.5f;
-	anim_flash_inc = true;
-	anim_info_fade = 0.0f;
-	anim_overlay_fade = 0.0f;
-	fade_vertices = 1.0f;
-	fade_lines = 1.0f;
-	fade_flats = 1.0f;
-	fade_things = 1.0f;
 	fr_idle = 0;
 	last_time = 0;
-	anim_view_speed = 0.05;
 	mouse_selbegin = false;
 	mouse_movebegin = false;
 	mouse_locked = false;
 	mouse_warp = false;
-	anim_help_fade = 0;
 
 #ifdef USE_SFML_RENDERWINDOW
 	setVerticalSyncEnabled(false);
@@ -167,353 +135,6 @@ MapCanvas::~MapCanvas()
 {
 }
 
-/* MapCanvas::helpActive
- * Returns true if feature help text should be shown currently
- *******************************************************************/
-bool MapCanvas::helpActive()
-{
-	// Disable if no help
-	if (editor->featureHelpLines().empty())
-		return false;
-
-	// Enable depending on current state
-	if (editor->input().mouseState() == Input::MouseState::ObjectEdit ||
-		editor->input().mouseState() == Input::MouseState::LineDraw ||
-		editor->input().mouseState() == Input::MouseState::TagSectors)
-		return true;
-
-	return false;
-}
-
-/* MapCanvas::drawMap2d
- * Draws the 2d map
- *******************************************************************/
-void MapCanvas::drawMap2d()
-{
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0.0f, GetSize().x, 0.0f, GetSize().y, -1.0f, 1.0f);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implemenataions)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Translate to middle of screen
-	glTranslated(GetSize().x * 0.5, GetSize().y * 0.5, 0);
-
-	// Zoom
-	glScaled(editor->renderer().viewScale(true), editor->renderer().viewScale(true), 1);
-
-	// Translate to offsets
-	glTranslated(-editor->renderer().viewXOff(true), -editor->renderer().viewYOff(true), 0);
-
-	// Update visibility info if needed
-	if (!editor->renderer().renderer2D().visOK())
-		editor->renderer().renderer2D().updateVisibility(view_tl, view_br);
-
-
-	// Draw flats if needed
-	OpenGL::setColour(COL_WHITE);
-	if (flat_drawtype > 0)
-	{
-		bool texture = false;
-		if (flat_drawtype > 1)
-			texture = true;
-
-		// Adjust flat type depending on sector mode
-		int drawtype = 0;
-		if (editor->editMode() == Mode::Sectors)
-		{
-			if (editor->sectorEditMode() == SectorMode::Floor)
-				drawtype = 1;
-			else if (editor->sectorEditMode() == SectorMode::Ceiling)
-				drawtype = 2;
-		}
-
-		editor->renderer().renderer2D().renderFlats(drawtype, texture, fade_flats);
-	}
-
-	// Draw grid
-	editor->renderer().drawGrid();
-
-	// --- Draw map (depending on mode) ---
-	auto mouse_state = editor->input().mouseState();
-	OpenGL::resetBlend();
-	if (editor->editMode() == Mode::Vertices)
-	{
-		// Vertices mode
-		editor->renderer().renderer2D().renderThings(fade_things);						// Things
-		editor->renderer().renderer2D().renderLines(line_tabs_always, fade_lines);		// Lines
-
-		// Vertices
-		if (mouse_state == Input::MouseState::Move)
-			editor->renderer().renderer2D().renderVertices(0.25f);
-		else
-			editor->renderer().renderer2D().renderVertices(fade_vertices);
-
-		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !editor->overlayActive() && mouse_state != Input::MouseState::ObjectEdit)
-			editor->renderer().renderer2D().renderVertexSelection(editor->selection(), anim_flash_level);
-
-		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !editor->overlayActive())
-			editor->renderer().renderer2D().renderVertexHilight(editor->hilightItem().index, anim_flash_level);
-	}
-	else if (editor->editMode() == Mode::Lines)
-	{
-		// Lines mode
-		editor->renderer().renderer2D().renderThings(fade_things);		// Things
-		editor->renderer().renderer2D().renderVertices(fade_vertices);	// Vertices
-		editor->renderer().renderer2D().renderLines(true);				// Lines
-
-		// Selection if needed
-		if (mouse_state != Input::MouseState::Move &&
-			!editor->overlayActive() &&
-			mouse_state != Input::MouseState::ObjectEdit)
-			editor->renderer().renderer2D().renderLineSelection(editor->selection(), anim_flash_level);
-
-		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !editor->overlayActive())
-			editor->renderer().renderer2D().renderLineHilight(editor->hilightItem().index, anim_flash_level);
-	}
-	else if (editor->editMode() == Mode::Sectors)
-	{
-		// Sectors mode
-		editor->renderer().renderer2D().renderThings(fade_things);					// Things
-		editor->renderer().renderer2D().renderVertices(fade_vertices);				// Vertices
-		editor->renderer().renderer2D().renderLines(line_tabs_always, fade_lines);	// Lines
-
-		// Selection if needed
-		if (mouse_state != Input::MouseState::Move &&
-			!editor->overlayActive() &&
-			mouse_state != Input::MouseState::ObjectEdit)
-			editor->renderer().renderer2D().renderFlatSelection(editor->selection(), anim_flash_level);
-
-		splitter.testRender();	// Testing
-
-		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !editor->overlayActive())
-			editor->renderer().renderer2D().renderFlatHilight(editor->hilightItem().index, anim_flash_level);
-	}
-	else if (editor->editMode() == Mode::Things)
-	{
-		// Check if we should force thing angles visible
-		bool force_dir = false;
-		if (mouse_state == Input::MouseState::ThingAngle)
-			force_dir = true;
-
-		// Things mode
-		editor->renderer().renderer2D().renderVertices(fade_vertices);				// Vertices
-		editor->renderer().renderer2D().renderLines(line_tabs_always, fade_lines);	// Lines
-		editor->renderer().renderer2D().renderThings(fade_things, force_dir);		// Things
-
-		// Thing paths
-		editor->renderer().renderer2D().renderPathedThings(editor->pathedThings());
-
-		// Selection if needed
-		if (mouse_state != Input::MouseState::Move &&
-			!editor->overlayActive() &&
-			mouse_state != Input::MouseState::ObjectEdit)
-			editor->renderer().renderer2D().renderThingSelection(editor->selection(), anim_flash_level);
-
-		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !editor->overlayActive())
-			editor->renderer().renderer2D().renderThingHilight(editor->hilightItem().index, anim_flash_level);
-	}
-
-
-	// Draw tagged sectors/lines/things if needed
-	if (!editor->overlayActive() &&
-		(mouse_state == Input::MouseState::Normal ||
-			mouse_state == Input::MouseState::TagSectors ||
-			mouse_state == Input::MouseState::TagThings))
-	{
-		if (editor->taggedSectors().size() > 0)
-			editor->renderer().renderer2D().renderTaggedFlats(editor->taggedSectors(), anim_flash_level);
-		if (editor->taggedLines().size() > 0)
-			editor->renderer().renderer2D().renderTaggedLines(editor->taggedLines(), anim_flash_level);
-		if (editor->taggedThings().size() > 0)
-			editor->renderer().renderer2D().renderTaggedThings(editor->taggedThings(), anim_flash_level);
-		if (editor->taggingLines().size() > 0)
-			editor->renderer().renderer2D().renderTaggingLines(editor->taggingLines(), anim_flash_level);
-		if (editor->taggingThings().size() > 0)
-			editor->renderer().renderer2D().renderTaggingThings(editor->taggingThings(), anim_flash_level);
-	}
-
-	// Draw selection numbers if needed
-	if (editor->selection().size() > 0 && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
-		editor->renderer().drawSelectionNumbers();
-
-	// Draw thing quick angle lines if needed
-	if (mouse_state == Input::MouseState::ThingAngle)
-		editor->renderer().drawThingQuickAngleLines();
-
-	// Draw line drawing lines if needed
-	if (mouse_state == Input::MouseState::LineDraw)
-		editor->renderer().drawLineDrawLines(editor->input().shiftDown());
-
-	// Draw object edit objects if needed
-	if (mouse_state == Input::MouseState::ObjectEdit)
-		editor->renderer().drawObjectEdit();
-
-	// Draw sectorbuilder test stuff
-	//sbuilder.drawResult();
-
-
-	// Draw selection box if active
-	auto mx = editor->renderer().translateX(editor->input().mousePos().x, true);
-	auto my = editor->renderer().translateY(editor->input().mousePos().y, true);
-	auto mdx = editor->renderer().translateX(editor->input().mouseDownPos().x, true);
-	auto mdy = editor->renderer().translateY(editor->input().mouseDownPos().y, true);
-	if (mouse_state == Input::MouseState::Selection)
-	{
-		// Outline
-		OpenGL::setColour(ColourConfiguration::getColour("map_selbox_outline"));
-		glLineWidth(2.0f);
-		glBegin(GL_LINE_LOOP);
-		glVertex2d(mdx, mdy);
-		glVertex2d(mdx, my);
-		glVertex2d(mx, my);
-		glVertex2d(mx, mdy);
-		glEnd();
-
-		// Fill
-		OpenGL::setColour(ColourConfiguration::getColour("map_selbox_fill"));
-		glBegin(GL_QUADS);
-		glVertex2d(mdx, mdy);
-		glVertex2d(mdx, my);
-		glVertex2d(mx, my);
-		glVertex2d(mx, mdy);
-		glEnd();
-	}
-
-	// Draw animations
-	editor->renderer().drawAnimations();
-	/*for (unsigned a = 0; a < animations.size(); a++)
-	{
-		if (!animations[a]->mode3d())
-			animations[a]->draw();
-	}*/
-
-	// Draw paste objects if needed
-	if (mouse_state == Input::MouseState::Paste)
-	{
-
-		if (editor->editMode() == Mode::Things)
-		{
-			// Get clipboard item
-			for (unsigned a = 0; a < theClipboard->nItems(); a++)
-			{
-				ClipboardItem* item = theClipboard->getItem(a);
-				if (item->getType() == CLIPBOARD_MAP_THINGS)
-				{
-					vector<MapThing*> things;
-					MapThingsClipboardItem* p = (MapThingsClipboardItem*)item;
-					p->getThings(things);
-					fpoint2_t pos(editor->relativeSnapToGrid(p->getMidpoint(), { mx, my }));
-					editor->renderer().renderer2D().renderPasteThings(things, pos);
-				}
-			}
-		}
-		else
-			editor->renderer().drawPasteLines();
-	}
-
-	// Draw moving stuff if needed
-	if (mouse_state == Input::MouseState::Move)
-	{
-		switch (editor->editMode())
-		{
-		case Mode::Vertices:
-			editor->renderer().renderer2D().renderMovingVertices(editor->movingItems(), editor->moveVector()); break;
-		case Mode::Lines:
-			editor->renderer().renderer2D().renderMovingLines(editor->movingItems(), editor->moveVector()); break;
-		case Mode::Sectors:
-			editor->renderer().renderer2D().renderMovingSectors(editor->movingItems(), editor->moveVector()); break;
-		case Mode::Things:
-			editor->renderer().renderer2D().renderMovingThings(editor->movingItems(), editor->moveVector()); break;
-		default: break;
-		};
-	}
-}
-
-/* MapCanvas::drawMap3d
- * Draws the 3d map
- *******************************************************************/
-void MapCanvas::drawMap3d()
-{
-	// Setup 3d renderer view
-	editor->renderer().renderer3D().setupView(GetSize().x, GetSize().y);
-
-	// Render 3d map
-	editor->renderer().renderer3D().renderMap();
-
-	// Determine hilight
-	MapEditor::Item hl{ -1, MapEditor::ItemType::Any };
-	if (!editor->selection().hilightLocked())
-	{
-		auto old_hl = editor->selection().hilight();
-		hl = editor->renderer().renderer3D().determineHilight();
-		if (editor->selection().setHilight(hl))
-		{
-			// Update 3d info overlay
-			if (info_overlay_3d && hl.index >= 0)
-			{
-				info_3d.update(hl.index, hl.type, &(editor->map()));
-				anim_info_show = true;
-			}
-			else
-				anim_info_show = false;
-
-			// Animation
-			editor->renderer().addAnimation(
-				std::make_unique<MCAHilightFade3D>(
-					App::runTimer(),
-					old_hl.index,
-					old_hl.type,
-					&editor->renderer().renderer3D(),
-					anim_flash_level
-			));
-			/*animations.push_back(
-				new MCAHilightFade3D(
-					App::runTimer(),
-					old_hl.index,
-					old_hl.type,
-					&editor->renderer().renderer3D(),
-					anim_flash_level
-				)
-			);*/
-			anim_flash_inc = true;
-			anim_flash_level = 0.0f;
-		}
-	}
-
-	// Draw selection if any
-	auto selection = editor->selection();
-	editor->renderer().renderer3D().renderFlatSelection(selection);
-	editor->renderer().renderer3D().renderWallSelection(selection);
-	editor->renderer().renderer3D().renderThingSelection(selection);
-
-	// Draw hilight if any
-	if (hl.index >= 0)
-		editor->renderer().renderer3D().renderHilight(hl, anim_flash_level);
-
-	// Draw animations
-	editor->renderer().drawAnimations();
-	/*for (unsigned a = 0; a < animations.size(); a++)
-	{
-		if (animations[a]->mode3d())
-			animations[a]->draw();
-	}*/
-}
-
 /* MapCanvas::draw
  * Draw the current map (2d or 3d) and any overlays etc
  *******************************************************************/
@@ -522,490 +143,11 @@ void MapCanvas::draw()
 	if (!IsEnabled())
 		return;
 
-	// Setup the viewport
-	glViewport(0, 0, GetSize().x, GetSize().y);
-
-	// Setup GL state
-	rgba_t col_bg = ColourConfiguration::getColour("map_background");
-	glClearColor(col_bg.fr(), col_bg.fg(), col_bg.fb(), 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisable(GL_TEXTURE_2D);
-
-	// Draw 2d or 3d map depending on mode
-	if (editor->editMode() == Mode::Visual)
-		drawMap3d();
-	else
-		drawMap2d();
-
-	// Draw info overlay
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implemenataions)
-	if (OpenGL::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Check if we have to update the info
-	if (editor->editMode() != Mode::Visual && editor->hilightItem().index != last_hilight)
-	{
-		// Update hilight index
-		last_hilight = editor->hilightItem().index;
-		anim_info_show = (last_hilight != -1);
-
-		// Update info overlay depending on edit mode
-		switch (editor->editMode())
-		{
-		case Mode::Vertices:	info_vertex.update(editor->selection().hilightedVertex()); break;
-		case Mode::Lines:	info_line.update(editor->selection().hilightedLine()); break;
-		case Mode::Sectors:	info_sector.update(editor->selection().hilightedSector()); break;
-		case Mode::Things:	info_thing.update(editor->selection().hilightedThing()); break;
-		}
-	}
-
-	// Draw current info overlay
-	glDisable(GL_TEXTURE_2D);
-	if (editor->editMode() == Mode::Vertices)
-		info_vertex.draw(GetSize().y, GetSize().x, anim_info_fade);
-	else if (editor->editMode() == Mode::Lines)
-		info_line.draw(GetSize().y, GetSize().x, anim_info_fade);
-	else if (editor->editMode() == Mode::Sectors)
-		info_sector.draw(GetSize().y, GetSize().x, anim_info_fade);
-	else if (editor->editMode() == Mode::Things)
-		info_thing.draw(GetSize().y, GetSize().x, anim_info_fade);
-	else if (editor->editMode() == Mode::Visual)
-		info_3d.draw(GetSize().y, GetSize().x, GetSize().x * 0.5, anim_info_fade);
-
-	// Draw current fullscreen overlay
-	if (editor->currentOverlay())
-		editor->currentOverlay()->draw(GetSize().x, GetSize().y, anim_overlay_fade);
-
-	// Draw crosshair if 3d mode
-	if (editor->editMode() == Mode::Visual)
-	{
-		// Get crosshair colour
-		rgba_t col = ColourConfiguration::getColour("map_3d_crosshair");
-		OpenGL::setColour(col);
-
-		glDisable(GL_TEXTURE_2D);
-		glEnable(GL_LINE_SMOOTH);
-		glLineWidth(1.5f);
-
-		double midx = GetSize().x * 0.5;
-		double midy = GetSize().y * 0.5;
-		int size = camera_3d_crosshair_size;
-
-		glBegin(GL_LINES);
-		// Right
-		OpenGL::setColour(col, false);
-		glVertex2d(midx+1, midy);
-		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-		glVertex2d(midx+size, midy);
-
-		// Left
-		OpenGL::setColour(col, false);
-		glVertex2d(midx-1, midy);
-		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-		glVertex2d(midx-size, midy);
-
-		// Bottom
-		OpenGL::setColour(col, false);
-		glVertex2d(midx, midy+1);
-		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-		glVertex2d(midx, midy+size);
-
-		// Top
-		OpenGL::setColour(col, false);
-		glVertex2d(midx, midy-1);
-		glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-		glVertex2d(midx, midy-size);
-		glEnd();
-
-		// Draw item distance (if any)
-		if (editor->renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
-		{
-			glEnable(GL_TEXTURE_2D);
-			OpenGL::setColour(col);
-			Drawing::drawText(S_FMT("%d", editor->renderer().renderer3D().itemDistance()), midx+5, midy+5, rgba_t(255, 255, 255, 200), Drawing::FONT_SMALL);
-			//Drawing::drawText(S_FMT("%1.2f", editor->renderer().renderer3D().camPitch()), midx+5, midy+30, rgba_t(255, 255, 255, 200), Drawing::FONT_SMALL);
-		}
-	}
-
-	// FPS counter
-	if (map_showfps)
-	{
-		glEnable(GL_TEXTURE_2D);
-		if (frametime_last > 0)
-		{
-			int fps = MathStuff::round(1.0 / (frametime_last/1000.0));
-			fps_avg.push_back(fps);
-			if (fps_avg.size() > 20) fps_avg.erase(fps_avg.begin());
-		}
-		int afps = 0;
-		for (unsigned a = 0; a < fps_avg.size(); a++)
-			afps += fps_avg[a];
-		if (fps_avg.size() > 0) afps /= fps_avg.size();
-		Drawing::drawText(S_FMT("FPS: %d", afps));
-	}
-
-	// test
-	//Drawing::drawText(S_FMT("Render distance: %1.2f", (double)render_max_dist), 0, 100);
-
-	// Editor messages
-	editor->renderer().drawEditorMessages();
-
-	// Help text
-	editor->renderer().drawFeatureHelpText();
+	editor->renderer().draw();
 
 	SwapBuffers();
 
 	glFinish();
-}
-
-/* MapCanvas::update2d
- * Updates the current 2d map editor state (animations, hilight etc.)
- *******************************************************************/
-bool MapCanvas::update2d(double mult)
-{
-	// Update hilight if needed
-	if (editor->input().mouseState() == Input::MouseState::Normal && !mouse_movebegin)
-	{
-		auto old_hl = editor->selection().hilightedObject();
-		if (editor->selection().updateHilight(editor->input().mousePosMap(), editor->renderer().viewScale()) && hilight_smooth)
-		{
-			// Hilight fade animation
-			if (old_hl)
-				editor->renderer().addAnimation(
-					std::make_unique<MCAHilightFade>(
-						App::runTimer(),
-						old_hl,
-						&editor->renderer().renderer2D(),
-						anim_flash_level
-				));
-				//animations.push_back(
-				//	new MCAHilightFade(App::runTimer(), old_hl, &editor->renderer().renderer2D(), anim_flash_level)
-				//);
-
-			// Reset hilight flash
-			anim_flash_inc = true;
-			anim_flash_level = 0.0f;
-		}
-	}
-
-	// Do item moving if needed
-	if (editor->input().mouseState() == Input::MouseState::Move)
-		editor->doMove(editor->input().mousePosMap());
-
-	// --- Fade map objects depending on mode ---
-
-	// Determine fade levels
-	float fa_vertices, fa_lines, fa_flats, fa_things;
-
-	// Vertices
-	if (vertices_always == 0)		fa_vertices = 0.0f;
-	else if (vertices_always == 1)	fa_vertices = 1.0f;
-	else							fa_vertices = 0.5f;
-
-	// Things
-	if (things_always == 0)			fa_things = 0.0f;
-	else if (things_always == 1)	fa_things = 1.0f;
-	else							fa_things = 0.5f;
-
-	// Lines
-	if (line_fade)	fa_lines = 0.5f;
-	else			fa_lines = 1.0f;
-
-	// Flats
-	if (flat_fade)	fa_flats = 0.7f;
-	else			fa_flats = 1.0f;
-
-	// Interpolate
-	bool anim_mode_crossfade = false;
-	float mcs_speed = 0.08f;
-	if (editor->editMode() == Mode::Vertices)
-	{
-		if (fade_vertices < 1.0f)  { fade_vertices += mcs_speed*(1.0f-fa_vertices)*mult; anim_mode_crossfade = true; }
-		fade_lines = fa_lines;
-		if (fade_flats > fa_flats) { fade_flats -= mcs_speed*(1.0f-fa_flats)*mult; anim_mode_crossfade = true; }
-		if (fade_things > fa_things) { fade_things -= mcs_speed*(1.0f-fa_things)*mult; anim_mode_crossfade = true; }
-	}
-	else if (editor->editMode() == Mode::Lines)
-	{
-		if (fade_vertices > fa_vertices) { fade_vertices -= mcs_speed*(1.0f-fa_vertices)*mult; anim_mode_crossfade = true; }
-		fade_lines = 1.0f;
-		if (fade_flats > fa_flats) { fade_flats -= mcs_speed*(1.0f-fa_flats)*mult; anim_mode_crossfade = true; }
-		if (fade_things > fa_things) { fade_things -= mcs_speed*(1.0f-fa_things)*mult; anim_mode_crossfade = true; }
-	}
-	else if (editor->editMode() == Mode::Sectors)
-	{
-		if (fade_vertices > fa_vertices) { fade_vertices -= mcs_speed*(1.0f-fa_vertices)*mult; anim_mode_crossfade = true; }
-		fade_lines = fa_lines;
-		if (fade_flats < 1.0f) { fade_flats += mcs_speed*(1.0f-fa_flats)*mult; anim_mode_crossfade = true; }
-		if (fade_things > fa_things) { fade_things -= mcs_speed*(1.0f-fa_things)*mult; anim_mode_crossfade = true; }
-	}
-	else if (editor->editMode() == Mode::Things)
-	{
-		if (fade_vertices > fa_vertices) { fade_vertices -= mcs_speed*(1.0f-fa_vertices)*mult; anim_mode_crossfade = true; }
-		fade_lines = fa_lines;
-		if (fade_flats > fa_flats) { fade_flats -= mcs_speed*(1.0f-fa_flats)*mult; anim_mode_crossfade = true; }
-		if (fade_things < 1.0f) { fade_things += mcs_speed*(1.0f-fa_things)*mult; anim_mode_crossfade = true; }
-	}
-
-	// Clamp
-	if (fade_vertices < fa_vertices) fade_vertices = fa_vertices;
-	if (fade_vertices > 1.0f) fade_vertices = 1.0f;
-	if (fade_lines < fa_lines) fade_lines = fa_lines;
-	if (fade_lines > 1.0f) fade_lines = 1.0f;
-	if (fade_flats < fa_flats) fade_flats = fa_flats;
-	if (fade_flats > 1.0f) fade_flats = 1.0f;
-	if (fade_things < fa_things) fade_things = fa_things;
-	if (fade_things > 1.0f) fade_things = 1.0f;
-
-	// View pan/zoom animation
-	anim_view_speed = editor->renderer().interpolateView(scroll_smooth, anim_view_speed, mult);
-	bool view_anim = editor->renderer().viewIsInterpolated();
-
-	// Update renderer scale
-	editor->renderer().renderer2D().setScale(editor->renderer().viewScale(true));
-
-	// Check if framerate shouldn't be throttled
-	if (editor->input().mouseState() == Input::MouseState::Selection ||
-		editor->input().panning() ||
-		view_anim ||
-		anim_mode_crossfade)
-		return true;
-	else
-		return false;
-}
-
-/* MapCanvas::update3d
- * Updates the current 3d map editor state (animations, movement etc.)
- *******************************************************************/
-bool MapCanvas::update3d(double mult)
-{
-	// Check if overlay active
-	if (editor->overlayActive())
-		return true;
-
-	// --- Check for held-down keys ---
-	bool moving = false;
-	bool fast = editor->input().shiftDown();
-	double speed = fast ? mult * 8 : mult * 4;
-
-	// Camera forward
-	if (KeyBind::isPressed("me3d_camera_forward"))
-	{
-		editor->renderer().renderer3D().cameraMove(speed, !camera_3d_gravity);
-		moving = true;
-	}
-
-	// Camera backward
-	if (KeyBind::isPressed("me3d_camera_back"))
-	{
-		editor->renderer().renderer3D().cameraMove(-speed, !camera_3d_gravity);
-		moving = true;
-	}
-
-	// Camera left (strafe)
-	if (KeyBind::isPressed("me3d_camera_left"))
-	{
-		editor->renderer().renderer3D().cameraStrafe(-speed);
-		moving = true;
-	}
-
-	// Camera right (strafe)
-	if (KeyBind::isPressed("me3d_camera_right"))
-	{
-		editor->renderer().renderer3D().cameraStrafe(speed);
-		moving = true;
-	}
-
-	// Camera up
-	if (KeyBind::isPressed("me3d_camera_up"))
-	{
-		editor->renderer().renderer3D().cameraMoveUp(speed);
-		moving = true;
-	}
-
-	// Camera down
-	if (KeyBind::isPressed("me3d_camera_down"))
-	{
-		editor->renderer().renderer3D().cameraMoveUp(-speed);
-		moving = true;
-	}
-
-	// Camera turn left
-	if (KeyBind::isPressed("me3d_camera_turn_left"))
-	{
-		editor->renderer().renderer3D().cameraTurn(fast ? mult*2 : mult);
-		moving = true;
-	}
-
-	// Camera turn right
-	if (KeyBind::isPressed("me3d_camera_turn_right"))
-	{
-		editor->renderer().renderer3D().cameraTurn(fast ? -mult*2 : -mult);
-		moving = true;
-	}
-
-	// Apply gravity to camera if needed
-	if (camera_3d_gravity)
-		editor->renderer().renderer3D().cameraApplyGravity(mult);
-
-	// Update status bar
-	fpoint3_t pos = editor->renderer().renderer3D().camPosition();
-	string status_text = S_FMT("Position: (%d, %d, %d)", (int)pos.x, (int)pos.y, (int)pos.z);
-	MapEditor::window()->CallAfter(&MapEditorWindow::SetStatusText, status_text, 3);
-
-	return moving;
-}
-
-/* MapCanvas::update
- * Updates the current map editor state (animations etc.), given time
- * since the last frame [frametime]
- *******************************************************************/
-void MapCanvas::update(long frametime)
-{
-	// Get frame time multiplier
-	float mult = (float)frametime / 10.0f;
-
-	// Update stuff depending on (2d/3d) mode
-	bool mode_anim = false;
-	if (editor->editMode() == Mode::Visual)
-		mode_anim = update3d(mult);
-	else
-		mode_anim = update2d(mult);
-
-	// Flashing animation for hilight
-	// Pulsates between 0.5-1.0f (multiplied with hilight alpha)
-	if (anim_flash_inc)
-	{
-		if (anim_flash_level < 0.5f)
-			anim_flash_level += 0.053*mult;	// Initial fade in
-		else
-			anim_flash_level += 0.015f*mult;
-		if (anim_flash_level >= 1.0f)
-		{
-			anim_flash_inc = false;
-			anim_flash_level = 1.0f;
-		}
-	}
-	else
-	{
-		anim_flash_level -= 0.015f*mult;
-		if (anim_flash_level <= 0.5f)
-		{
-			anim_flash_inc = true;
-			anim_flash_level = 0.6f;
-		}
-	}
-
-	// Fader for info overlay
-	bool fade_anim = true;
-	if (anim_info_show && !editor->overlayActive())
-	{
-		anim_info_fade += 0.1f*mult;
-		if (anim_info_fade > 1.0f)
-		{
-			anim_info_fade = 1.0f;
-			fade_anim = false;
-		}
-	}
-	else
-	{
-		anim_info_fade -= 0.04f*mult;
-		if (anim_info_fade < 0.0f)
-		{
-			anim_info_fade = 0.0f;
-			fade_anim = false;
-		}
-	}
-
-	// Fader for fullscreen overlay
-	bool overlay_fade_anim = true;
-	if (editor->overlayActive())
-	{
-		anim_overlay_fade += 0.1f*mult;
-		if (anim_overlay_fade > 1.0f)
-		{
-			anim_overlay_fade = 1.0f;
-			overlay_fade_anim = false;
-		}
-	}
-	else
-	{
-		anim_overlay_fade -= 0.05f*mult;
-		if (anim_overlay_fade < 0.0f)
-		{
-			anim_overlay_fade = 0.0f;
-			overlay_fade_anim = false;
-		}
-	}
-
-	// Fader for help text
-	bool help_fade_anim = true;
-	if (helpActive())
-	{
-		anim_help_fade += 0.07f*mult;
-		if (anim_help_fade > 1.0f)
-		{
-			anim_help_fade = 1.0f;
-			help_fade_anim = false;
-		}
-	}
-	else
-	{
-		anim_help_fade -= 0.05f*mult;
-		if (anim_help_fade < 0.0f)
-		{
-			anim_help_fade = 0.0f;
-			help_fade_anim = false;
-		}
-	}
-
-	// Update overlay animation (if active)
-	if (editor->overlayActive())
-		editor->currentOverlay()->update(frametime);
-
-	// Update animations
-	editor->renderer().updateAnimations();
-	//bool anim_running = false;
-	//for (unsigned a = 0; a < animations.size(); a++)
-	//{
-	//	if (!animations[a]->update(App::runTimer()))
-	//	{
-	//		// If animation is finished, delete and remove from the list
-	//		delete animations[a];
-	//		animations.erase(animations.begin() + a);
-	//		a--;
-	//	}
-	//	else
-	//		anim_running = true;
-	//}
-
-	// Determine the framerate limit
-#ifdef USE_SFML_RENDERWINDOW
-	// SFML RenderWindow can handle high framerates better than wxGLCanvas, or something like that
-	if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || editor->renderer().animationsActive())
-		fr_idle = 2;
-	else	// No high-priority animations running, throttle framerate
-		fr_idle = map_bg_ms;
-#else
-	//if (mode_anim || fade_anim || overlay_fade_anim || help_fade_anim || anim_running)
-		fr_idle = 10;
-	//else	// No high-priority animations running, throttle framerate
-	//	fr_idle = map_bg_ms;
-#endif
-
-	frametime_last = frametime;
 }
 
 /* MapCanvas::mouseToCenter
@@ -1079,41 +221,6 @@ void MapCanvas::mouseLook3d()
 			}
 		}
 	}
-}
-
-/* MapCanvas::updateInfoOverlay
- * Updates the current info overlay, depending on edit mode
- *******************************************************************/
-void MapCanvas::updateInfoOverlay()
-{
-	// Update info overlay depending on edit mode
-	switch (editor->editMode())
-	{
-	case Mode::Vertices:	info_vertex.update(editor->selection().hilightedVertex()); break;
-	case Mode::Lines:	info_line.update(editor->selection().hilightedLine()); break;
-	case Mode::Sectors:	info_sector.update(editor->selection().hilightedSector()); break;
-	case Mode::Things:	info_thing.update(editor->selection().hilightedThing()); break;
-	default: break;
-	}
-}
-
-/* MapCanvas::forceRefreshRenderer
- * Forces a full refresh of the 2d/3d renderers
- *******************************************************************/
-void MapCanvas::forceRefreshRenderer()
-{
-	// Update 3d mode info overlay if needed
-	if (editor->editMode() == Mode::Visual)
-	{
-		auto hl = editor->renderer().renderer3D().determineHilight();
-		info_3d.update(hl.index, hl.type, &(editor->map()));
-	}
-
-	if (!setActive())
-		return;
-
-	editor->renderer().renderer2D().forceUpdate();
-	editor->renderer().renderer3D().clearData();
 }
 
 /* MapCanvas::onKeyBindPress
@@ -1551,13 +658,6 @@ void MapCanvas::onSize(wxSizeEvent& e)
 {
 	// Update screen limits
 	editor->renderer().setViewSize(GetSize().x, GetSize().y);
-	view_tl.x = editor->renderer().translateX(0);
-	view_tl.y = editor->renderer().translateY(GetSize().y);
-	view_br.x = editor->renderer().translateX(GetSize().x);
-	view_br.y = editor->renderer().translateY(0);
-
-	// Update map item visibility
-	editor->renderer().renderer2D().updateVisibility(view_tl, view_br);
 
 	e.Skip();
 }
@@ -1676,7 +776,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 
 	// Update hilight
 	if (mouse_state == Input::MouseState::Normal)
-		editor->selection().updateHilight(editor->input().mousePosMap(), editor->renderer().viewScale());
+		editor->selection().updateHilight(editor->input().mousePosMap(), editor->renderer().view().scale());
 
 	// Update mouse variables
 	editor->input().mouseDown();
@@ -1852,7 +952,6 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 
 	// Clear mouse down position
 	editor->input().mouseUp();
-	//mouse_downpos.set(-1, -1);
 
 	// Check if a full screen overlay is active
 	if (editor->overlayActive())
@@ -1888,7 +987,6 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 					mouse_downpos_m,
 					editor->input().mousePosMap()
 			));
-			//animations.push_back(new MCASelboxFader(App::runTimer(), mouse_downpos_m, editor->input().mousePosMap()));
 		}
 
 		// If we're in object edit mode
@@ -2019,7 +1117,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 
 	// panning
 	if (editor->input().panning())
-		editor->renderer().pan((mouse_pos.x - e.GetX()) / editor->renderer().viewScale(), -((mouse_pos.y - e.GetY()) / editor->renderer().viewScale()));
+		editor->renderer().pan(mouse_pos.x - e.GetX(), -(mouse_pos.y - e.GetY()), true);
 
 	// Update mouse variables
 	editor->input().mouseMove(e.GetX(), e.GetY());
@@ -2175,12 +1273,11 @@ void MapCanvas::onIdle(wxIdleEvent& e)
 	// Get time since last redraw
 	long frametime = (sfclock.getElapsedTime().asMilliseconds()) - last_time;
 
-	if (frametime < fr_idle)
-		return;
-
-	last_time = (sfclock.getElapsedTime().asMilliseconds());
-	update(frametime);
-	Refresh();
+	if (editor->update(frametime))
+	{
+		last_time = (sfclock.getElapsedTime().asMilliseconds());
+		Refresh();
+	}
 }
 
 /* MapCanvas::onRTimer
@@ -2194,14 +1291,10 @@ void MapCanvas::onRTimer(wxTimerEvent& e)
 	// Get time since last redraw
 	long frametime = (sfclock.getElapsedTime().asMilliseconds()) - last_time;
 
-	if (frametime > fr_idle)
+	if (editor->update(frametime))
 	{
 		last_time = (sfclock.getElapsedTime().asMilliseconds());
-		if (MapEditor::window()->IsActive())
-		{
-			update(frametime);
-			Refresh();
-		}
+		Refresh();
 	}
 
 	timer.Start(-1, true);

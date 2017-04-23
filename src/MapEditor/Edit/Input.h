@@ -59,6 +59,7 @@ namespace MapEditor
 		void	handleKeyBind2dView(const string& name);
 		void 	handleKeyBind2d(const string& name);
 		void 	handleKeyBind3d(const string& name);
+		bool	updateCamera3d(double mult);
 
 	private:
 		MapEditContext&	context_;

@@ -798,10 +798,10 @@ void ObjectEdit::determineState()
 	// Get object edit bbox
 	auto bbox = group_.getBBox();
 	int bbox_pad = 8;
-	int left = context_.renderer().screenX(bbox.min.x) - bbox_pad;
-	int right = context_.renderer().screenX(bbox.max.x) + bbox_pad;
-	int top = context_.renderer().screenY(bbox.max.y) - bbox_pad;
-	int bottom = context_.renderer().screenY(bbox.min.y) + bbox_pad;
+	int left = context_.renderer().view().screenX(bbox.min.x) - bbox_pad;
+	int right = context_.renderer().view().screenX(bbox.max.x) + bbox_pad;
+	int top = context_.renderer().view().screenY(bbox.max.y) - bbox_pad;
+	int bottom = context_.renderer().view().screenY(bbox.min.y) + bbox_pad;
 	rotating_ = context_.input().ctrlDown();
 
 	// Check if mouse is outside the bbox
